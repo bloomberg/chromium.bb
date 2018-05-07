@@ -164,7 +164,9 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
     CGFloat progress =
         [self.headerView searchFieldProgressForOffset:offset
                                        safeAreaInsets:safeAreaInsets];
-    [self.toolbarDelegate setScrollProgressForTabletOmnibox:progress];
+    if (self.isShowing) {
+      [self.toolbarDelegate setScrollProgressForTabletOmnibox:progress];
+    }
   }
 
   NSArray* constraints =

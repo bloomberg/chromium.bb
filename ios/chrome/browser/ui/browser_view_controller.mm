@@ -1199,6 +1199,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
           !helper->IsFindUIActive());
 }
 
+- (BOOL)canShowTabStrip {
+  return IsUIRefreshPhase1Enabled() ? IsRegularXRegularSizeClass(self)
+                                    : IsIPadIdiom();
+}
+
 - (web::UserAgentType)userAgentType {
   web::WebState* webState = [_model currentTab].webState;
   if (!webState)
@@ -1291,7 +1296,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   BOOL compactWidth = self.traitCollection.horizontalSizeClass ==
                       UIUserInterfaceSizeClassCompact;
   return self.tabModel.currentTab.isVoiceSearchResultsTab &&
-         (!IsIPadIdiom() || compactWidth);
+         (![self canShowTabStrip] || compactWidth);
 }
 
 - (void)setHideStatusBar:(BOOL)hideStatusBar {
@@ -1306,7 +1311,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (![self isViewLoaded])
     return results;
 
-  if (!IsIPadIdiom()) {
+  if (![self canShowTabStrip]) {
     if (self.primaryToolbarCoordinator.viewController.view) {
       [results addObject:[HeaderDefinition
                              definitionWithView:self.primaryToolbarCoordinator
@@ -1338,7 +1343,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (CGFloat)headerOffset {
-  if (IsIPadIdiom())
+  if ([self canShowTabStrip])
     return StatusBarHeight();
   return 0.0;
 }
@@ -1812,6 +1817,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Update the toolbar visibility.
   [self updateToolbar];
 
+  // Update the tab strip visibility.
+  if (self.tabStripView) {
+    [self showTabStripView:self.tabStripView];
+    self.tabStripView.hidden = ![self canShowTabStrip];
+    _fakeStatusBarView.hidden = ![self canShowTabStrip];
+    [self addConstraintsToPrimaryToolbar];
+  }
+
   // Normally this happens in -viewSafeAreaInsetsDidChange, but added here to
   // support iOS10.
   if (IsUIRefreshPhase1Enabled() && !base::ios::IsRunningOnIOS11OrLater()) {
@@ -1948,8 +1961,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
-  return (IsIPadIdiom() || _isOffTheRecord) ? UIStatusBarStyleLightContent
-                                            : UIStatusBarStyleDefault;
+  return ([self canShowTabStrip] || _isOffTheRecord)
+             ? UIStatusBarStyleLightContent
+             : UIStatusBarStyleDefault;
 }
 
 #pragma mark - ** Private BVC Methods **
@@ -2154,15 +2168,31 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   return secondaryToolbar.intrinsicContentSize.height + unsafeHeight;
 }
 
-- (void)addConstraintsToToolbar {
+- (void)addConstraintsToPrimaryToolbar {
   NSLayoutYAxisAnchor* topAnchor;
   // On iPad, the toolbar is underneath the tab strip.
   // On iPhone, it is underneath the top of the screen.
-  if (IsIPadIdiom()) {
+  if ([self canShowTabStrip]) {
     topAnchor = self.tabStripView.bottomAnchor;
   } else {
     topAnchor = [self view].topAnchor;
   }
+
+  // Only add leading and trailing constraints once as they are never updated.
+  // This uses the existance of |primaryToolbarOffsetConstraint| as a proxy for
+  // whether we've already added the leading and trailing constraints.
+  if (!self.primaryToolbarOffsetConstraint) {
+    [NSLayoutConstraint activateConstraints:@[
+      [self.primaryToolbarCoordinator.viewController.view.leadingAnchor
+          constraintEqualToAnchor:[self view].leadingAnchor],
+      [self.primaryToolbarCoordinator.viewController.view.trailingAnchor
+          constraintEqualToAnchor:[self view].trailingAnchor],
+    ]];
+  }
+
+  // Offset and Height can be updated, so reset first.
+  self.primaryToolbarOffsetConstraint.active = NO;
+  self.primaryToolbarHeightConstraint.active = NO;
 
   // Create a constraint for the vertical positioning of the toolbar.
   UIView* primaryView = self.primaryToolbarCoordinator.viewController.view;
@@ -2174,15 +2204,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.primaryToolbarHeightConstraint = [primaryView.heightAnchor
       constraintEqualToConstant:[self primaryToolbarHeightWithInset]];
 
-  [NSLayoutConstraint activateConstraints:@[
-    self.primaryToolbarOffsetConstraint,
-    self.primaryToolbarHeightConstraint,
-    [self.primaryToolbarCoordinator.viewController.view.leadingAnchor
-        constraintEqualToAnchor:[self view].leadingAnchor],
-    [self.primaryToolbarCoordinator.viewController.view.trailingAnchor
-        constraintEqualToAnchor:[self view].trailingAnchor],
-  ]];
+  self.primaryToolbarOffsetConstraint.active = YES;
+  self.primaryToolbarHeightConstraint.active = YES;
+}
 
+- (void)addConstraintsToSecondaryToolbar {
   if (self.secondaryToolbarCoordinator) {
     // Create a constraint for the height of the toolbar to include the unsafe
     // area height.
@@ -2207,6 +2233,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
         self.view, guide,
         LayoutSides::kBottom | LayoutSides::kLeading | LayoutSides::kTrailing);
   }
+}
+
+- (void)addConstraintsToToolbar {
+  [self addConstraintsToPrimaryToolbar];
+  [self addConstraintsToSecondaryToolbar];
   [[self view] layoutIfNeeded];
 }
 
@@ -2461,9 +2492,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   // Hide the toolbar if displaying the compact NTP.
   web::NavigationItem* item = [tab navigationManager]->GetVisibleItem();
-  BOOL isRegularXRegular = IsUIRefreshPhase1Enabled()
-                               ? IsRegularXRegularSizeClass(self)
-                               : IsIPadIdiom();
   BOOL hideToolbar = NO;
   if (item) {
     GURL url = item->GetURL();
@@ -2471,7 +2499,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     hideToolbar = isNTP && !_isOffTheRecord &&
                   ![self.primaryToolbarCoordinator isOmniboxFirstResponder] &&
                   ![self.primaryToolbarCoordinator showingOmniboxPopup] &&
-                  !isRegularXRegular;
+                  ![self canShowTabStrip];
   }
   [self.primaryToolbarCoordinator.viewController.view setHidden:hideToolbar];
 }
@@ -2519,13 +2547,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (CGFloat)headerHeightForTab:(Tab*)tab {
-  BOOL isRegularXRegular = IsUIRefreshPhase1Enabled()
-                               ? IsRegularXRegularSizeClass(self)
-                               : IsIPadIdiom();
   id nativeController = [self nativeControllerForTab:tab];
   if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)] &&
       [nativeController respondsToSelector:@selector(toolbarHeight)] &&
-      [nativeController toolbarHeight] > 0.0 && !isRegularXRegular) {
+      [nativeController toolbarHeight] > 0.0 && ![self canShowTabStrip]) {
     // On iPhone, don't add any header height for ToolbarOwner native
     // controllers when they're displaying their own toolbar.
     return 0;
@@ -2559,7 +2584,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     // toolbar_view manages it's alpha changes would also need to be updated.
     // TODO(crbug.com/778822): This can be cleaned up when the new fullscreen
     // is enabled.
-    if (isPrimaryToolbar && !IsIPadIdiom()) {
+    if (isPrimaryToolbar && ![self canShowTabStrip]) {
       self.primaryToolbarOffsetConstraint.constant = yOrigin;
     }
     CGRect frame = [header.view frame];
@@ -2800,7 +2825,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   CRWWebController* webController = tab.webController;
 
   CGRect referenceFrame = CGRectZero;
-  if (IsIPadIdiom()) {
+  if ([self canShowTabStrip]) {
     referenceFrame = webController.visibleFrame;
     referenceFrame.origin.y -= kIPadFindBarOverlap;
   } else {
@@ -3931,12 +3956,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (CGFloat)nativeContentHeaderHeightForWebState:(web::WebState*)webState {
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  BOOL isRegularXRegular = IsUIRefreshPhase1Enabled()
-                               ? IsRegularXRegularSizeClass(self)
-                               : IsIPadIdiom();
   if (IsUIRefreshPhase1Enabled() && tab &&
       tab.webState->GetVisibleURL() == kChromeUINewTabURL &&
-      !isRegularXRegular) {
+      ![self canShowTabStrip]) {
     // Also subtract the top safe area so the view will appear as full screen.
     // TODO(crbug.com/826369) Remove this once NTP is out of native content.
     if (@available(iOS 11, *)) {
@@ -4458,7 +4480,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (void)locationBarBeganEdit {
   // On handsets, if a page is currently loading it should be stopped.
-  if (!IsIPadIdiom() && [self.helper isToolbarLoading:self.currentWebState]) {
+  if (![self canShowTabStrip] &&
+      [self.helper isToolbarLoading:self.currentWebState]) {
     [self.dispatcher stopLoading];
     _locationBarEditCancelledLoad = YES;
   }
@@ -4869,7 +4892,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [_model closeTabAtIndex:tabIndex];
 
   // Do not animate close in iPad.
-  if (!IsIPadIdiom()) {
+  if (![self canShowTabStrip]) {
     [self.contentArea addSubview:exitingPage];
     page_animation_util::AnimateOutWithCompletion(
         exitingPage, 0, YES, IsPortrait(), ^{
@@ -5008,7 +5031,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
     didFinishLoadingTab:(Tab*)tab
                 success:(BOOL)success {
   [self tabLoadComplete:tab withSuccess:success];
-  if (IsIPadIdiom()) {
+  if ([self canShowTabStrip]) {
     UIUserInterfaceSizeClass sizeClass =
         self.view.window.traitCollection.horizontalSizeClass;
     [SizeClassRecorder pageLoadedWithHorizontalSizeClass:sizeClass];
@@ -5043,7 +5066,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // The rest of this function initiates the new tab animation, which is
   // phone-specific.  Call the foreground tab added completion block; for
   // iPhones, this will get executed after the animation has finished.
-  if (IsIPadIdiom()) {
+  if ([self canShowTabStrip]) {
     if (self.foregroundTabWasAddedCompletionBlock) {
       // This callback is called before webState is activated (on
       // kTabModelNewTabWillOpenNotification notification). Dispatch the
@@ -5081,7 +5104,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
     UIView* newPage = nil;
     CGFloat offset = 0;
     if (tab.webState->GetLastCommittedURL() == kChromeUINewTabURL &&
-        !_isOffTheRecord && !IsIPadIdiom()) {
+        !_isOffTheRecord && ![self canShowTabStrip]) {
       offset = 0;
       // Temporary expand content area to take whole view space. Otherwise the
       // animated NTP will be clipped by content area bound. Previous frame will
@@ -5339,7 +5362,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 #pragma mark - SideSwipeControllerDelegate
 
 - (void)sideSwipeViewDismissAnimationDidEnd:(UIView*)sideSwipeView {
-  DCHECK(!IsIPadIdiom());
+  DCHECK(![self canShowTabStrip]);
   // Update frame incase orientation changed while |contentArea| was out of
   // the view hierarchy.
   self.contentArea.frame = sideSwipeView.frame;
