@@ -13,8 +13,9 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace {
 const char kResetReportUrl[] =
@@ -31,10 +32,9 @@ GURL GetClientReportUrl(const std::string& report_url) {
 
 }  // namespace
 
-ResetReportUploader::ResetReportUploader(content::BrowserContext* context)
-    : url_request_context_getter_(
-          content::BrowserContext::GetDefaultStoragePartition(context)->
-              GetURLRequestContext()) {}
+ResetReportUploader::ResetReportUploader(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : url_loader_factory_(std::move(url_loader_factory)) {}
 
 ResetReportUploader::~ResetReportUploader() {}
 
@@ -43,6 +43,11 @@ void ResetReportUploader::DispatchReport(
   std::string request_data;
   CHECK(report.SerializeToString(&request_data));
 
+  DispatchReportInternal(request_data);
+}
+
+void ResetReportUploader::DispatchReportInternal(
+    const std::string& request_data) {
   // Create traffic annotation tag.
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("profile_resetter_upload", R"(
@@ -72,19 +77,31 @@ void ResetReportUploader::DispatchReport(
             "send the data."
         })");
 
-  // Note fetcher will be deleted by OnURLFetchComplete.
-  net::URLFetcher* fetcher =
-      net::URLFetcher::Create(GetClientReportUrl(kResetReportUrl),
-                              net::URLFetcher::POST, this, traffic_annotation)
-          .release();
-  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                        net::LOAD_DO_NOT_SAVE_COOKIES |
-                        net::LOAD_DISABLE_CACHE);
-  fetcher->SetRequestContext(url_request_context_getter_.get());
-  fetcher->SetUploadData("application/octet-stream", request_data);
-  fetcher->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GetClientReportUrl(kResetReportUrl);
+  resource_request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
+                                 net::LOAD_DO_NOT_SAVE_COOKIES |
+                                 net::LOAD_DISABLE_CACHE;
+  resource_request->method = "POST";
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       traffic_annotation);
+  simple_url_loader->AttachStringForUpload(request_data,
+                                           "application/octet-stream");
+  auto it = simple_url_loaders_.insert(simple_url_loaders_.begin(),
+                                       std::move(simple_url_loader));
+  it->get()->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&ResetReportUploader::OnSimpleLoaderComplete,
+                     base::Unretained(this), std::move(it)));
 }
 
-void ResetReportUploader::OnURLFetchComplete(const net::URLFetcher* source) {
-  delete source;
+void ResetReportUploader::OnSimpleLoaderComplete(
+    SimpleURLLoaderList::iterator it,
+    std::unique_ptr<std::string> response_body) {
+  simple_url_loaders_.erase(it);
+}
+
+GURL ResetReportUploader::GetClientReportUrlForTesting() {
+  return GetClientReportUrl(kResetReportUrl);
 }

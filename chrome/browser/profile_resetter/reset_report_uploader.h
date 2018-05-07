@@ -5,18 +5,16 @@
 #ifndef CHROME_BROWSER_PROFILE_RESETTER_RESET_REPORT_UPLOADER_H_
 #define CHROME_BROWSER_PROFILE_RESETTER_RESET_REPORT_UPLOADER_H_
 
+#include <list>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
-namespace content {
-class BrowserContext;
-}
-
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
 }
 
 namespace reset_report {
@@ -24,18 +22,27 @@ class ChromeResetReport;
 }
 
 // Service whose job is up upload ChromeResetReports.
-class ResetReportUploader : public KeyedService,
-                            private net::URLFetcherDelegate {
+class ResetReportUploader : public KeyedService {
  public:
-  explicit ResetReportUploader(content::BrowserContext* context);
+  explicit ResetReportUploader(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~ResetReportUploader() override;
 
   void DispatchReport(const reset_report::ChromeResetReport& report);
 
- private:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  // Visible for testing:
+  void DispatchReportInternal(const std::string& request_data);
+  static GURL GetClientReportUrlForTesting();
 
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+ private:
+  using SimpleURLLoaderList =
+      std::list<std::unique_ptr<network::SimpleURLLoader>>;
+
+  void OnSimpleLoaderComplete(SimpleURLLoaderList::iterator it,
+                              std::unique_ptr<std::string> response_body);
+
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  SimpleURLLoaderList simple_url_loaders_;
 
   DISALLOW_COPY_AND_ASSIGN(ResetReportUploader);
 };
