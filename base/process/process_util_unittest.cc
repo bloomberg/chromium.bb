@@ -932,6 +932,30 @@ TEST_F(ProcessUtilTest, LaunchWithHandleTransfer) {
   EXPECT_EQ(0, exit_code);
 }
 
+MULTIPROCESS_TEST_MAIN(ProcessUtilsVerifyNamespace) {
+  CHECK(PathExists(FilePath("/data")));
+  CHECK(!PathExists(FilePath("/svc")));
+  return 0;
+}
+
+TEST_F(ProcessUtilTest, LaunchNamespaceMap) {
+  LaunchOptions options;
+  options.clone_flags &= ~LP_CLONE_FDIO_NAMESPACE;
+  options.paths_to_map.push_back("/data");
+
+  // gtest uses /tmp to pass flags to the launched process, so it needs to be
+  // mapped as well.
+  options.paths_to_map.push_back("/tmp");
+
+  Process process =
+      SpawnChildWithOptions("ProcessUtilsVerifyNamespace", options);
+  ASSERT_TRUE(process.IsValid());
+
+  int exit_code;
+  ASSERT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
+                                             &exit_code));
+  EXPECT_EQ(0, exit_code);
+}
 #endif  // defined(OS_FUCHSIA)
 
 namespace {
