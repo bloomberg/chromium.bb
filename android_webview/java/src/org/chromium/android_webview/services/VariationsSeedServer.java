@@ -8,10 +8,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
-import android.os.ParcelFileDescriptor.AutoCloseOutputStream;
-
-import org.chromium.android_webview.VariationsUtils;
-import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
 
 /**
  * VariationsSeedServer is a bound service that shares the Variations seed with all the WebViews
@@ -19,17 +15,12 @@ import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInf
  * service should write the seed.
  */
 public class VariationsSeedServer extends Service {
+    private VariationsSeedHolder mSeedHolder;
+
     private final IVariationsSeedServer.Stub mBinder = new IVariationsSeedServer.Stub() {
         @Override
         public void getSeed(ParcelFileDescriptor newSeedFile, long oldSeedDate) {
-            // Write a minimally correct seed so that readSeedFile() can read it without error.
-            // TODO(paulmiller): Write the actual seed, once seed downloading is implemented.
-            SeedInfo mock = new SeedInfo();
-            mock.signature = "";
-            mock.country = "";
-            mock.date = "Sun, 23 Jun 1912 00:00:00 GMT";
-            mock.seedData = new byte[0];
-            VariationsUtils.writeSeed(new AutoCloseOutputStream(newSeedFile), mock);
+            mSeedHolder.writeSeedIfNewer(newSeedFile, oldSeedDate);
         }
     };
 
@@ -42,5 +33,6 @@ public class VariationsSeedServer extends Service {
     public void onCreate() {
         super.onCreate();
         ServiceInit.init(getApplicationContext());
+        mSeedHolder = VariationsSeedHolder.getInstance();
     }
 }

@@ -60,7 +60,7 @@ public class VariationsSeedFetcher {
     private static VariationsSeedFetcher sInstance;
 
     @VisibleForTesting
-    VariationsSeedFetcher() {}
+    public VariationsSeedFetcher() {}
 
     public static VariationsSeedFetcher get() {
         // TODO(aberent) Check not running on UI thread. Doing so however makes Robolectric testing

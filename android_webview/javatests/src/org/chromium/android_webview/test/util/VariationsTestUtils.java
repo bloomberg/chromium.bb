@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 /**
- * Provide a canonical mock seed for tests.
+ * Utilities for dealing with variations seeds.
  */
 public class VariationsTestUtils {
     public static void assertSeedsEqual(SeedInfo expected, SeedInfo actual) {
