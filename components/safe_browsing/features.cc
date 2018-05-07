@@ -48,6 +48,10 @@ const base::Feature kGoogleBrandedPhishingWarning{
 const base::Feature kThreatDomDetailsTagAndAttributeFeature{
     "ThreatDomDetailsTagAttributes", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSuspiciousSiteTriggerQuotaFeature{
+    "SafeBrowsingSuspiciousSiteTriggerQuota",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kTriggerThrottlerDailyQuotaFeature{
     "SafeBrowsingTriggerThrottlerDailyQuota",
     base::FEATURE_DISABLED_BY_DEFAULT};
