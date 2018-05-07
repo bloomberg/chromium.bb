@@ -522,14 +522,11 @@ public class TabsTest {
         mActivityTestRule.getActivity();
 
         int initialTabCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
-        ChromeTabUtils.newTabFromMenu(
-                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        View button = mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button);
-        OverviewModeBehaviorWatcher overviewModeWatcher = new OverviewModeBehaviorWatcher(
-                mActivityTestRule.getActivity().getLayoutManager(), true, false);
-        TouchCommon.singleClickView(button);
-        overviewModeWatcher.waitForBehavior();
+        ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity(), ContentUrlConstants.ABOUT_BLANK_URL, false);
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { mActivityTestRule.getActivity().getLayoutManager().showOverview(false); });
+
         Assert.assertTrue("Expected: " + (initialTabCount + 1) + " tab Got: "
                         + mActivityTestRule.getActivity().getCurrentTabModel().getCount(),
                 (initialTabCount + 1)
