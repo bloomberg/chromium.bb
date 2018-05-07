@@ -302,13 +302,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "shareFile"),
                       TestParameter(NOT_IN_GUEST_MODE, "shareDirectory")));
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_RestoreGeometry DISABLED_RestoreGeometry
-#else
-#define MAYBE_RestoreGeometry RestoreGeometry
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_RestoreGeometry,
+    RestoreGeometry,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "restoreGeometry"),
                       TestParameter(IN_GUEST_MODE, "restoreGeometry"),
