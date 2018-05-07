@@ -34,6 +34,10 @@ std::string CreateLibAssistantConfig() {
   discovery.SetKey("enable_mdns", Value(false));
   config.SetKey("discovery", std::move(discovery));
 
+  Value internal(Type::DICTIONARY);
+  internal.SetKey("disable_log_files", Value(true));
+  config.SetKey("internal", std::move(internal));
+
   std::string json;
   base::JSONWriter::Write(config, &json);
   return json;
