@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_LIFECYCLE_UNIT_OBSERVER_H_
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_LIFECYCLE_UNIT_OBSERVER_H_
 
+#include "chrome/browser/resource_coordinator/lifecycle_state.h"
 #include "content/public/browser/visibility.h"
-#include "services/resource_coordinator/public/mojom/lifecycle.mojom.h"
 
 namespace resource_coordinator {
 
@@ -18,9 +18,8 @@ class LifecycleUnitObserver {
   virtual ~LifecycleUnitObserver();
 
   // Invoked when the state of the observed LifecycleUnit changes.
-  virtual void OnLifecycleUnitStateChanged(
-      LifecycleUnit* lifecycle_unit,
-      mojom::LifecycleState previous_state);
+  virtual void OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit,
+                                           LifecycleState last_state);
 
   // Invoked when the visibility of the observed LifecyleUnit changes.
   virtual void OnLifecycleUnitVisibilityChanged(LifecycleUnit* lifecycle_unit,
