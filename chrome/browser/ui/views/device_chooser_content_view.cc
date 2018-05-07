@@ -220,7 +220,7 @@ gfx::ImageSkia DeviceChooserContentView::GetIcon(int row) {
 
   if (chooser_controller_->IsConnected(row))
     return gfx::CreateVectorIcon(vector_icons::kBluetoothConnectedIcon,
-                                 gfx::kChromeIconGrey);
+                                 TableModel::kIconSize, gfx::kChromeIconGrey);
 
   int level = chooser_controller_->GetSignalStrengthLevel(row);
 
