@@ -23,7 +23,8 @@ ForwardingAudioStreamFactory::ForwardingAudioStreamFactory(
     std::unique_ptr<AudioStreamBrokerFactory> broker_factory)
     : WebContentsObserver(web_contents),
       connector_(std::move(connector)),
-      broker_factory_(std::move(broker_factory)) {
+      broker_factory_(std::move(broker_factory)),
+      group_id_(base::UnguessableToken::Create()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(web_contents);
   DCHECK(broker_factory_);

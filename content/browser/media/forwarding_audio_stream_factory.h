@@ -11,6 +11,7 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "content/browser/media/audio_stream_broker.h"
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
@@ -41,6 +42,8 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
       std::unique_ptr<AudioStreamBrokerFactory> factory);
 
   ~ForwardingAudioStreamFactory() final;
+
+  const base::UnguessableToken& group_id() { return group_id_; }
 
   // TODO(https://crbug.com/803102): Add loopback and muting streams.
   // TODO(https://crbug.com/787806): Automatically restore streams on audio
@@ -80,6 +83,11 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
 
   const std::unique_ptr<service_manager::Connector> connector_;
   const std::unique_ptr<AudioStreamBrokerFactory> broker_factory_;
+
+  // Unique id indentifying all streams belonging to the WebContents owning
+  // |this|.
+  // TODO(https://crbug.com/824019): Use this for loopback.
+  const base::UnguessableToken group_id_;
 
   // Lazily acquired. Reset on connection error and when we no longer have any
   // streams. Note: we don't want muting to force the connection to be open,
