@@ -47,6 +47,7 @@ namespace views {
 void MenuConfig::Init() {
   font_list = gfx::FontList(gfx::Font([NSFont menuFontOfSize:0.0]));
   check_selected_combobox_item = true;
+  arrow_key_selection_wraps = false;
   if (ui::MaterialDesignController::IsSecondaryUiMaterial())
     InitMaterialMenuConfig(this);
 }

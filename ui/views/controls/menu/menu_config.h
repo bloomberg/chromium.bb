@@ -21,6 +21,11 @@ struct VIEWS_EXPORT MenuConfig {
 
   static const MenuConfig& instance();
 
+  // Helper methods to simplify access to MenuConfig:
+  // Returns the appropriate corner radius for the menu controlled by
+  // |controller|, or the default corner radius if |controller| is nullptr.
+  int CornerRadiusForMenu(const MenuController* controller) const;
+
   // Font list used by menus.
   gfx::FontList font_list;
 
@@ -163,8 +168,8 @@ struct VIEWS_EXPORT MenuConfig {
   // Vertical padding for touchable menus.
   int vertical_touchable_menu_item_padding;
 
-  // Helper methods to simplify access to MenuConfig:
-  int CornerRadiusForMenu(const MenuController* controller) const;
+  // Whether arrow keys should wrap around the end of the menu when selecting.
+  bool arrow_key_selection_wraps;
 
  private:
   // Configures a MenuConfig as appropriate for the current platform.

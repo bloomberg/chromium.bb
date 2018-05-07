@@ -294,6 +294,11 @@ class MenuControllerTest : public ViewsTestBase {
     event_generator_->PressKey(key_code, 0);
   }
 
+  void DispatchKey(ui::KeyboardCode key_code) {
+    ui::KeyEvent event(ui::EventType::ET_KEY_PRESSED, key_code, 0);
+    menu_controller_->OnWillDispatchKeyEvent(&event);
+  }
+
 #if defined(USE_AURA)
   // Verifies that a non-nested menu fully closes when receiving an escape key.
   void TestAsyncEscapeKey() {
@@ -485,7 +490,7 @@ class MenuControllerTest : public ViewsTestBase {
   }
   MenuController* menu_controller() { return menu_controller_; }
   const MenuItemView* pending_state_item() const {
-      return menu_controller_->pending_state_.item;
+    return menu_controller_->pending_state_.item;
   }
   MenuController::ExitType menu_exit_type() const {
     return menu_controller_->exit_type_;
@@ -532,6 +537,10 @@ class MenuControllerTest : public ViewsTestBase {
   }
 
   int CountOwnerOnGestureEvent() const { return owner_->gesture_count(); }
+
+  bool SelectionWraps() {
+    return MenuConfig::instance().arrow_key_selection_wraps;
+  }
 
  private:
   void Init() {
@@ -644,8 +653,12 @@ TEST_F(MenuControllerTest, InitialSelectedItem) {
   // The last selectable item should be item "Four".
   MenuItemView* last_selectable =
       FindInitialSelectableMenuItemUp(menu_item());
-  ASSERT_NE(nullptr, last_selectable);
-  EXPECT_EQ(4, last_selectable->GetCommand());
+  if (SelectionWraps()) {
+    ASSERT_NE(nullptr, last_selectable);
+    EXPECT_EQ(4, last_selectable->GetCommand());
+  } else {
+    ASSERT_EQ(nullptr, last_selectable);
+  }
 
   // Leave items "One" and "Two" enabled.
   menu_item()->GetSubmenu()->GetMenuItemAt(0)->SetEnabled(true);
@@ -658,8 +671,12 @@ TEST_F(MenuControllerTest, InitialSelectedItem) {
   EXPECT_EQ(1, first_selectable->GetCommand());
   // The last selectable item should be item "Two".
   last_selectable = FindInitialSelectableMenuItemUp(menu_item());
-  ASSERT_NE(nullptr, last_selectable);
-  EXPECT_EQ(2, last_selectable->GetCommand());
+  if (SelectionWraps()) {
+    ASSERT_NE(nullptr, last_selectable);
+    EXPECT_EQ(2, last_selectable->GetCommand());
+  } else {
+    ASSERT_EQ(nullptr, last_selectable);
+  }
 
   // Leave only a single item "One" enabled.
   menu_item()->GetSubmenu()->GetMenuItemAt(0)->SetEnabled(true);
@@ -672,8 +689,12 @@ TEST_F(MenuControllerTest, InitialSelectedItem) {
   EXPECT_EQ(1, first_selectable->GetCommand());
   // The last selectable item should be item "One".
   last_selectable = FindInitialSelectableMenuItemUp(menu_item());
-  ASSERT_NE(nullptr, last_selectable);
-  EXPECT_EQ(1, last_selectable->GetCommand());
+  if (SelectionWraps()) {
+    ASSERT_NE(nullptr, last_selectable);
+    EXPECT_EQ(1, last_selectable->GetCommand());
+  } else {
+    ASSERT_EQ(nullptr, last_selectable);
+  }
 
   // Leave only a single item "Three" enabled.
   menu_item()->GetSubmenu()->GetMenuItemAt(0)->SetEnabled(false);
@@ -686,8 +707,12 @@ TEST_F(MenuControllerTest, InitialSelectedItem) {
   EXPECT_EQ(3, first_selectable->GetCommand());
   // The last selectable item should be item "Three".
   last_selectable = FindInitialSelectableMenuItemUp(menu_item());
-  ASSERT_NE(nullptr, last_selectable);
-  EXPECT_EQ(3, last_selectable->GetCommand());
+  if (SelectionWraps()) {
+    ASSERT_NE(nullptr, last_selectable);
+    EXPECT_EQ(3, last_selectable->GetCommand());
+  } else {
+    ASSERT_EQ(nullptr, last_selectable);
+  }
 
   // Leave only a single item ("Two") selected. It should be the first and the
   // last selectable item.
@@ -699,8 +724,12 @@ TEST_F(MenuControllerTest, InitialSelectedItem) {
   ASSERT_NE(nullptr, first_selectable);
   EXPECT_EQ(2, first_selectable->GetCommand());
   last_selectable = FindInitialSelectableMenuItemUp(menu_item());
-  ASSERT_NE(nullptr, last_selectable);
-  EXPECT_EQ(2, last_selectable->GetCommand());
+  if (SelectionWraps()) {
+    ASSERT_NE(nullptr, last_selectable);
+    EXPECT_EQ(2, last_selectable->GetCommand());
+  } else {
+    ASSERT_EQ(nullptr, last_selectable);
+  }
 
   // There should be no next or previous selectable item since there is only a
   // single enabled item in the menu.
@@ -730,14 +759,20 @@ TEST_F(MenuControllerTest, NextSelectedItem) {
   IncrementSelection();
   EXPECT_EQ(4, pending_state_item()->GetCommand());
 
-  // Wrap around.
-  IncrementSelection();
-  EXPECT_EQ(1, pending_state_item()->GetCommand());
+  if (SelectionWraps()) {
+    // Wrap around.
+    IncrementSelection();
+    EXPECT_EQ(1, pending_state_item()->GetCommand());
 
-  // Move up in the menu.
-  // Wrap around.
-  DecrementSelection();
-  EXPECT_EQ(4, pending_state_item()->GetCommand());
+    // Move up in the menu.
+    // Wrap around.
+    DecrementSelection();
+    EXPECT_EQ(4, pending_state_item()->GetCommand());
+  } else {
+    // Don't wrap.
+    IncrementSelection();
+    EXPECT_EQ(4, pending_state_item()->GetCommand());
+  }
 
   // Skip disabled item.
   DecrementSelection();
@@ -762,7 +797,10 @@ TEST_F(MenuControllerTest, PreviousSelectedItem) {
 
   // Move up and select a previous (in our case the last enabled) item.
   DecrementSelection();
-  EXPECT_EQ(3, pending_state_item()->GetCommand());
+  if (SelectionWraps())
+    EXPECT_EQ(3, pending_state_item()->GetCommand());
+  else
+    EXPECT_EQ(0, pending_state_item()->GetCommand());
 
   // Clear references in menu controller to the menu item that is going away.
   ResetSelection();
@@ -843,7 +881,10 @@ TEST_F(MenuControllerTest, SelectChildButtonView) {
   // Increment selection twice to wrap around.
   IncrementSelection();
   IncrementSelection();
-  EXPECT_EQ(1, pending_state_item()->GetCommand());
+  if (SelectionWraps())
+    EXPECT_EQ(1, pending_state_item()->GetCommand());
+  else
+    EXPECT_EQ(5, pending_state_item()->GetCommand());
 
   // Clear references in menu controller to the menu item that is going away.
   ResetSelection();
@@ -1286,6 +1327,36 @@ TEST_F(MenuControllerTest, AsynchronousGestureDeletesController) {
   // Close to remove observers before test TearDown
   sub_menu->Close();
   EXPECT_EQ(1, nested_delegate->on_menu_closed_called());
+}
+
+TEST_F(MenuControllerTest, ArrowKeysAtEnds) {
+  menu_item()->GetSubmenu()->GetMenuItemAt(2)->SetEnabled(false);
+
+  SetPendingStateItem(menu_item()->GetSubmenu()->GetMenuItemAt(0));
+  EXPECT_EQ(1, pending_state_item()->GetCommand());
+
+  if (SelectionWraps()) {
+    DispatchKey(ui::VKEY_UP);
+    EXPECT_EQ(4, pending_state_item()->GetCommand());
+
+    DispatchKey(ui::VKEY_DOWN);
+    EXPECT_EQ(1, pending_state_item()->GetCommand());
+  } else {
+    DispatchKey(ui::VKEY_UP);
+    EXPECT_EQ(1, pending_state_item()->GetCommand());
+  }
+
+  DispatchKey(ui::VKEY_DOWN);
+  EXPECT_EQ(2, pending_state_item()->GetCommand());
+
+  DispatchKey(ui::VKEY_DOWN);
+  EXPECT_EQ(4, pending_state_item()->GetCommand());
+
+  DispatchKey(ui::VKEY_DOWN);
+  if (SelectionWraps())
+    EXPECT_EQ(1, pending_state_item()->GetCommand());
+  else
+    EXPECT_EQ(4, pending_state_item()->GetCommand());
 }
 
 #if defined(USE_AURA)

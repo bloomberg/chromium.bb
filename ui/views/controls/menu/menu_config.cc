@@ -57,7 +57,8 @@ MenuConfig::MenuConfig()
       touchable_menu_height(36),
       touchable_menu_width(256),
       touchable_menu_shadow_elevation(12),
-      vertical_touchable_menu_item_padding(8) {
+      vertical_touchable_menu_item_padding(8),
+      arrow_key_selection_wraps(true) {
   Init();
 }
 

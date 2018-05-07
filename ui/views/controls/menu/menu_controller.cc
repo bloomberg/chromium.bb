@@ -2303,14 +2303,20 @@ MenuItemView* MenuController::FindNextSelectableMenuItem(
   // Loop through the menu items skipping any invisible menus. The loop stops
   // when we wrap or find a visible and enabled child.
   do {
+    if (!MenuConfig::instance().arrow_key_selection_wraps) {
+      if (index == 0 && direction == INCREMENT_SELECTION_UP)
+        return nullptr;
+      if (index == parent_count - 1 && direction == INCREMENT_SELECTION_DOWN)
+        return nullptr;
+    }
     index = (index + delta + parent_count) % parent_count;
     if (index == stop_index && !include_all_items)
-      return NULL;
+      return nullptr;
     MenuItemView* child = parent->GetSubmenu()->GetMenuItemAt(index);
     if (child->visible() && child->enabled())
       return child;
   } while (index != stop_index);
-  return NULL;
+  return nullptr;
 }
 
 void MenuController::OpenSubmenuChangeSelectionIfCan() {
