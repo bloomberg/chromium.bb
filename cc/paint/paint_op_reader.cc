@@ -228,10 +228,9 @@ void PaintOpReader::Read(PaintFlags* flags) {
   ReadSimple(&flags->blend_mode_);
   ReadSimple(&flags->bitfields_uint_);
 
-  // TODO(enne): ReadTypeface, http://crbug.com/737629
-
   // Flattenables must be read at 4-byte boundary, which should be the case
   // here.
+  AlignMemory(4);
   ReadFlattenable(&flags->path_effect_);
   AlignMemory(4);
   ReadFlattenable(&flags->mask_filter_);
