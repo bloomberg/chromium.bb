@@ -185,7 +185,7 @@ class BlockedSchemeNavigationBrowserTest
     ASSERT_TRUE(embedded_test_server()->Start());
 
     base::FilePath path;
-    ASSERT_TRUE(PathService::Get(content::DIR_TEST_DATA, &path));
+    ASSERT_TRUE(base::PathService::Get(content::DIR_TEST_DATA, &path));
     path = path.AppendASCII("data_url_navigations.html");
     ASSERT_TRUE(base::PathExists(path));
 

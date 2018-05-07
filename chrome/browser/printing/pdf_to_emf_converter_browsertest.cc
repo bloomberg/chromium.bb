@@ -192,7 +192,7 @@ class PdfToEmfConverterBrowserTest : public InProcessBrowserTest {
  private:
   base::FilePath GetTestDataDir() const {
     base::FilePath test_data_dir;
-    if (PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir))
+    if (base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir))
       test_data_dir = test_data_dir.AppendASCII("printing");
     else
       test_data_dir.clear();

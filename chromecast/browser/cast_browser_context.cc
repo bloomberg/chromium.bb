@@ -72,7 +72,7 @@ CastBrowserContext::~CastBrowserContext() {
 
 void CastBrowserContext::InitWhileIOAllowed() {
 #if defined(OS_ANDROID)
-  CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &path_));
+  CHECK(base::PathService::Get(base::DIR_ANDROID_APP_DATA, &path_));
   path_ = path_.Append(FILE_PATH_LITERAL("cast_shell"));
 
   if (!base::PathExists(path_))
@@ -82,7 +82,7 @@ void CastBrowserContext::InitWhileIOAllowed() {
   // incognito mode.  This means that all of the persistent
   // data (currently only cookies and local storage) will be
   // shared in a single location as defined here.
-  CHECK(PathService::Get(DIR_CAST_HOME, &path_));
+  CHECK(base::PathService::Get(DIR_CAST_HOME, &path_));
 #endif  // defined(OS_ANDROID)
   BrowserContext::Initialize(this, path_);
 }

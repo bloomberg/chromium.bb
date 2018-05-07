@@ -368,7 +368,7 @@ bool CreateShortcutOnDesktop(const base::FilePath& shortcut_filename,
 
 void DeleteShortcutOnDesktop(const base::FilePath& shortcut_filename) {
   base::FilePath desktop_path;
-  if (PathService::Get(base::DIR_USER_DESKTOP, &desktop_path))
+  if (base::PathService::Get(base::DIR_USER_DESKTOP, &desktop_path))
     base::DeleteFile(desktop_path.Append(shortcut_filename), false);
 }
 
@@ -1091,7 +1091,7 @@ void DeleteAllDesktopShortcuts(const base::FilePath& profile_path) {
 
   // Delete shortcuts from Desktop.
   base::FilePath desktop_path;
-  if (PathService::Get(base::DIR_USER_DESKTOP, &desktop_path)) {
+  if (base::PathService::Get(base::DIR_USER_DESKTOP, &desktop_path)) {
     std::vector<base::FilePath> shortcut_filenames_desktop =
         GetExistingProfileShortcutFilenames(profile_path, desktop_path);
     for (const auto& shortcut : shortcut_filenames_desktop) {

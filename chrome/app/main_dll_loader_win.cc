@@ -244,7 +244,7 @@ void ChromeDllLoader::OnBeforeLaunch(const base::CommandLine& cmd_line,
 
     // Launch the watcher process.
     base::FilePath exe_path;
-    if (PathService::Get(base::FILE_EXE, &exe_path)) {
+    if (base::PathService::Get(base::FILE_EXE, &exe_path)) {
       chrome_watcher_client_.reset(new ChromeWatcherClient(
           base::Bind(&GenerateChromeWatcherCommandLine, exe_path)));
       chrome_watcher_client_->LaunchWatcher();

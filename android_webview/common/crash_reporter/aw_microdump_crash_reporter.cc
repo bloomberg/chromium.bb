@@ -82,7 +82,7 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
   }
 
   bool GetCrashDumpLocation(base::FilePath* crash_dir) override {
-    return PathService::Get(android_webview::DIR_CRASH_DUMPS, crash_dir);
+    return base::PathService::Get(android_webview::DIR_CRASH_DUMPS, crash_dir);
   }
 
  private:

@@ -275,7 +275,7 @@ bool InstallUtil::IsPerUserInstall() {
 bool InstallUtil::IsFirstRunSentinelPresent() {
   // TODO(msw): Consolidate with first_run::internal::IsFirstRunSentinelPresent.
   base::FilePath user_data_dir;
-  return !PathService::Get(chrome::DIR_USER_DATA, &user_data_dir) ||
+  return !base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir) ||
          base::PathExists(user_data_dir.Append(chrome::kFirstRunSentinel));
 }
 

@@ -84,7 +84,7 @@ VideoConfig DefaultVideoConfig() {
 
 base::FilePath GetTestDataFilePath(const std::string& name) {
   base::FilePath file_path;
-  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &file_path));
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &file_path));
 
   file_path = file_path.Append(FILE_PATH_LITERAL("media"))
       .Append(FILE_PATH_LITERAL("test")).Append(FILE_PATH_LITERAL("data"))

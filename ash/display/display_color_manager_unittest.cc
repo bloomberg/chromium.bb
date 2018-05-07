@@ -115,7 +115,7 @@ class DisplayColorManagerTest : public testing::Test {
     color_manager_ =
         std::make_unique<DisplayColorManagerForTest>(&configurator_);
 
-    EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &color_path_));
+    EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &color_path_));
 
     color_path_ = color_path_.Append(FILE_PATH_LITERAL("ash"))
                       .Append(FILE_PATH_LITERAL("display"))

@@ -426,7 +426,7 @@ int DoUninstallTasks(bool chrome_still_running) {
     // work done by setup.exe on uninstall.
     VLOG(1) << "Executing uninstall actions";
     base::FilePath chrome_exe;
-    if (PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    if (base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
       ShellUtil::ShortcutLocation user_shortcut_locations[] = {
           ShellUtil::SHORTCUT_LOCATION_DESKTOP,
           ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH,

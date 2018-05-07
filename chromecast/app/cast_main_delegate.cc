@@ -72,7 +72,7 @@ bool CastMainDelegate::BasicStartupComplete(int* exit_code) {
   // Browser process logs are recorded for attaching with crash dumps.
   if (process_type.empty()) {
     base::FilePath log_file;
-    PathService::Get(FILE_CAST_ANDROID_LOG, &log_file);
+    base::PathService::Get(FILE_CAST_ANDROID_LOG, &log_file);
     settings.logging_dest = logging::LOG_TO_ALL;
     settings.log_file = log_file.value().c_str();
     settings.delete_old = logging::DELETE_OLD_LOG_FILE;
@@ -142,7 +142,7 @@ void CastMainDelegate::PreSandboxStartup() {
 // TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
 #if defined(OS_ANDROID)
   base::FilePath log_file;
-  PathService::Get(FILE_CAST_ANDROID_LOG, &log_file);
+  base::PathService::Get(FILE_CAST_ANDROID_LOG, &log_file);
   chromecast::CrashHandler::Initialize(process_type, log_file);
 #elif defined(OS_LINUX)
   crash_reporter::SetCrashReporterClient(g_crash_reporter_client.Pointer());
@@ -184,7 +184,7 @@ void CastMainDelegate::ZygoteForked() {
 
 void CastMainDelegate::InitializeResourceBundle() {
   base::FilePath pak_file;
-  CHECK(PathService::Get(FILE_CAST_PAK, &pak_file));
+  CHECK(base::PathService::Get(FILE_CAST_PAK, &pak_file));
 #if defined(OS_ANDROID)
   // On Android, the renderer runs with a different UID and can never access
   // the file system. Use the file descriptor passed in at launch time.

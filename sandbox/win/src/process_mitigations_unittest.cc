@@ -95,10 +95,10 @@ void TestWin10MsSigned(bool expect_success,
   // Choose the appropriate DLL and make sure the sandbox allows access to it.
   base::FilePath dll_path;
   if (use_ms_signed_binary) {
-    EXPECT_TRUE(PathService::Get(base::DIR_SYSTEM, &dll_path));
+    EXPECT_TRUE(base::PathService::Get(base::DIR_SYSTEM, &dll_path));
     dll_path = dll_path.Append(L"gdi32.dll");
   } else {
-    EXPECT_TRUE(PathService::Get(base::DIR_EXE, &dll_path));
+    EXPECT_TRUE(base::PathService::Get(base::DIR_EXE, &dll_path));
     dll_path = dll_path.Append(hooking_dll::g_hook_dll_file);
   }
   EXPECT_TRUE(runner.AddFsRule(sandbox::TargetPolicy::FILES_ALLOW_READONLY,

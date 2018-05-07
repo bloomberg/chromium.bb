@@ -140,7 +140,7 @@ void CreateUninstallKey(const base::string16& uninstall_id,
   }
 
   base::FilePath unstall_binary;
-  CHECK(PathService::Get(base::FILE_EXE, &unstall_binary));
+  CHECK(base::PathService::Get(base::FILE_EXE, &unstall_binary));
 
   base::CommandLine uninstall_command(unstall_binary);
   uninstall_command.AppendSwitch(uninstall_switch);
@@ -186,7 +186,7 @@ base::FilePath GetInstallLocation(const base::string16& uninstall_id) {
 
 void DeleteProgramDir(const std::string& delete_switch) {
   base::FilePath installer_source;
-  if (!PathService::Get(base::FILE_EXE, &installer_source))
+  if (!base::PathService::Get(base::FILE_EXE, &installer_source))
     return;
   // Deletes only subdirs of program files.
   if (!IsProgramsFilesParent(installer_source))
@@ -206,7 +206,7 @@ void DeleteProgramDir(const std::string& delete_switch) {
 
 bool IsProgramsFilesParent(const base::FilePath& path) {
   base::FilePath program_files;
-  if (!PathService::Get(base::DIR_PROGRAM_FILESX86, &program_files))
+  if (!base::PathService::Get(base::DIR_PROGRAM_FILESX86, &program_files))
     return false;
   return program_files.IsParent(path);
 }

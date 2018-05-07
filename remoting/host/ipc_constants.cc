@@ -20,7 +20,7 @@ const base::FilePath::CharType kDesktopBinaryName[] =
 bool GetInstalledBinaryPath(const base::FilePath::StringType& binary,
                             base::FilePath* full_path) {
   base::FilePath dir_path;
-  if (!PathService::Get(base::DIR_EXE, &dir_path)) {
+  if (!base::PathService::Get(base::DIR_EXE, &dir_path)) {
     LOG(ERROR) << "Failed to get the executable file name.";
     return false;
   }

@@ -120,7 +120,8 @@ void LayerTreePixelTest::BeginTest() {
 
 void LayerTreePixelTest::AfterTest() {
   base::FilePath test_data_dir;
-  EXPECT_TRUE(PathService::Get(viz::Paths::DIR_TEST_DATA, &test_data_dir));
+  EXPECT_TRUE(
+      base::PathService::Get(viz::Paths::DIR_TEST_DATA, &test_data_dir));
   base::FilePath ref_file_path = test_data_dir.Append(ref_file_);
 
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();

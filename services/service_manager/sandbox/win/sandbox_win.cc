@@ -152,7 +152,7 @@ bool AddDirectory(int path,
                   sandbox::TargetPolicy::Semantics access,
                   sandbox::TargetPolicy* policy) {
   base::FilePath directory;
-  if (!PathService::Get(path, &directory))
+  if (!base::PathService::Get(path, &directory))
     return false;
 
   if (sub_dir)
@@ -342,7 +342,7 @@ sandbox::ResultCode AddGenericPolicy(sandbox::TargetPolicy* policy) {
 // Add the policy for debug message only in debug
 #ifndef NDEBUG
   base::FilePath app_dir;
-  if (!PathService::Get(base::DIR_MODULE, &app_dir))
+  if (!base::PathService::Get(base::DIR_MODULE, &app_dir))
     return sandbox::SBOX_ERROR_GENERIC;
 
   wchar_t long_path_buf[MAX_PATH];
@@ -363,7 +363,7 @@ sandbox::ResultCode AddGenericPolicy(sandbox::TargetPolicy* policy) {
 // Add the policy for read-only PDB file access for stack traces.
 #if !defined(OFFICIAL_BUILD)
   base::FilePath exe;
-  if (!PathService::Get(base::FILE_EXE, &exe))
+  if (!base::PathService::Get(base::FILE_EXE, &exe))
     return sandbox::SBOX_ERROR_GENERIC;
   base::FilePath pdb_path = exe.DirName().Append(L"*.pdb");
   result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,

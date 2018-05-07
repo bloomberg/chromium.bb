@@ -120,7 +120,7 @@ static IntCallback IntCallbackAdapter(base::RepeatingClosure f) {
 const bool kDefaultFileSchemeAllowed = false;
 
 void GetUserDataDir(FilePath* user_data_dir) {
-  if (!PathService::Get(base::DIR_ANDROID_APP_DATA, user_data_dir)) {
+  if (!base::PathService::Get(base::DIR_ANDROID_APP_DATA, user_data_dir)) {
     NOTREACHED() << "Failed to get app data directory for Android WebView";
   }
 }

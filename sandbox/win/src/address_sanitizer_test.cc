@@ -78,7 +78,7 @@ TEST_F(AddressSanitizerTests, TestAddressSanitizer) {
   ASSERT_EQ(SBOX_ALL_OK, runner.GetPolicy()->SetStderrHandle(tmp_handle.Get()));
 
   base::FilePath exe;
-  ASSERT_TRUE(PathService::Get(base::FILE_EXE, &exe));
+  ASSERT_TRUE(base::PathService::Get(base::FILE_EXE, &exe));
   base::FilePath pdb_path = exe.DirName().Append(L"*.pdb");
   ASSERT_TRUE(runner.AddFsRule(TargetPolicy::FILES_ALLOW_READONLY,
                                pdb_path.value().c_str()));

@@ -339,7 +339,7 @@ TEST_F(ComponentInstallerTest, UnpackPathInstallError) {
   // Test the precondition that DIR_COMPONENT_USER is not registered with
   // the path service.
   base::FilePath base_dir;
-  EXPECT_FALSE(PathService::Get(DIR_COMPONENT_USER, &base_dir));
+  EXPECT_FALSE(base::PathService::Get(DIR_COMPONENT_USER, &base_dir));
 
   // Calling |Install| fails since DIR_COMPONENT_USER does not exist.
   installer->Install(

@@ -115,7 +115,7 @@ class NaClExtensionTest : public ExtensionBrowserTest {
 
   bool IsNaClPluginLoaded() {
     base::FilePath path;
-    if (PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
+    if (base::PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
       // Make sure plugins are loaded off disk first.
       {
         base::RunLoop run_loop;

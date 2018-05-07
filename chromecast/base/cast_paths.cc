@@ -32,7 +32,7 @@ bool PathProvider(int key, base::FilePath* result) {
 #if defined(OS_ANDROID)
     case FILE_CAST_ANDROID_LOG: {
       base::FilePath base_dir;
-      CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &base_dir));
+      CHECK(base::PathService::Get(base::DIR_ANDROID_APP_DATA, &base_dir));
       *result = base_dir.AppendASCII("cast_shell.log");
       return true;
     }
@@ -40,10 +40,10 @@ bool PathProvider(int key, base::FilePath* result) {
     case FILE_CAST_CONFIG: {
       base::FilePath data_dir;
 #if defined(OS_ANDROID)
-      CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &data_dir));
+      CHECK(base::PathService::Get(base::DIR_ANDROID_APP_DATA, &data_dir));
       *result = data_dir.Append("cast_shell.conf");
 #else
-      CHECK(PathService::Get(DIR_CAST_HOME, &data_dir));
+      CHECK(base::PathService::Get(DIR_CAST_HOME, &data_dir));
       *result = data_dir.Append(".eureka.conf");
 #endif  // defined(OS_ANDROID)
       return true;
@@ -51,10 +51,10 @@ bool PathProvider(int key, base::FilePath* result) {
     case FILE_CAST_CRL: {
       base::FilePath data_dir;
 #if defined(OS_ANDROID)
-      CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &data_dir));
+      CHECK(base::PathService::Get(base::DIR_ANDROID_APP_DATA, &data_dir));
       *result = data_dir.Append("cast_shell.crl");
 #else
-      CHECK(PathService::Get(DIR_CAST_HOME, &data_dir));
+      CHECK(base::PathService::Get(DIR_CAST_HOME, &data_dir));
       *result = data_dir.Append(".eureka.crl");
 #endif  // defined(OS_ANDROID)
       return true;
@@ -62,10 +62,10 @@ bool PathProvider(int key, base::FilePath* result) {
     case FILE_CAST_PAK: {
       base::FilePath base_dir;
 #if defined(OS_ANDROID)
-      CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &base_dir));
+      CHECK(base::PathService::Get(base::DIR_ANDROID_APP_DATA, &base_dir));
       *result = base_dir.Append("paks/cast_shell.pak");
 #else
-      CHECK(PathService::Get(base::DIR_MODULE, &base_dir));
+      CHECK(base::PathService::Get(base::DIR_MODULE, &base_dir));
       *result = base_dir.Append("assets/cast_shell.pak");
 #endif  // defined(OS_ANDROID)
       return true;
@@ -75,7 +75,7 @@ bool PathProvider(int key, base::FilePath* result) {
 }
 
 void RegisterPathProvider() {
-  PathService::RegisterProvider(PathProvider, PATH_START, PATH_END);
+  base::PathService::RegisterProvider(PathProvider, PATH_START, PATH_END);
 }
 
 }  // namespace chromecast

@@ -703,7 +703,7 @@ int main(int argc, char** argv) {
   const base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   base::FilePath media_path = cmd->GetSwitchValuePath(media::cast::kLibDir);
   if (media_path.empty()) {
-    if (!PathService::Get(base::DIR_MODULE, &media_path)) {
+    if (!base::PathService::Get(base::DIR_MODULE, &media_path)) {
       LOG(ERROR) << "Failed to load FFmpeg.";
       return 1;
     }

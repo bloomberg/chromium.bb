@@ -15,7 +15,7 @@ namespace media {
 
 TEST(JpegParserTest, Parsing) {
   base::FilePath data_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &data_dir));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &data_dir));
 
   // This sample frame is captured from Chromebook Pixel
   base::FilePath file_path = data_dir.AppendASCII("media")
@@ -83,7 +83,7 @@ TEST(JpegParserTest, Parsing) {
 
 TEST(JpegParserTest, CodedSizeNotEqualVisibleSize) {
   base::FilePath data_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &data_dir));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &data_dir));
 
   base::FilePath file_path = data_dir.AppendASCII("media")
                                  .AppendASCII("test")

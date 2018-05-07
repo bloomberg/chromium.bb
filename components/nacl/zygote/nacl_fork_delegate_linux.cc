@@ -206,8 +206,8 @@ void NaClForkDelegate::Init(const int sandboxdesc,
           &helper_exe)) {
     status_ = kNaClHelperMissing;
   } else if (use_nacl_bootstrap &&
-             !PathService::Get(nacl::FILE_NACL_HELPER_BOOTSTRAP,
-                               &helper_bootstrap_exe)) {
+             !base::PathService::Get(nacl::FILE_NACL_HELPER_BOOTSTRAP,
+                                     &helper_bootstrap_exe)) {
     status_ = kNaClHelperBootstrapMissing;
   } else {
     base::CommandLine::StringVector argv_to_launch;

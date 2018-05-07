@@ -50,8 +50,9 @@ FakeCryptohomeClient::FakeCryptohomeClient()
       system_salt_(GetStubSystemSalt()),
       weak_ptr_factory_(this) {
   base::FilePath cache_path;
-  locked_ = PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES, &cache_path) &&
-            base::PathExists(cache_path);
+  locked_ =
+      base::PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES, &cache_path) &&
+      base::PathExists(cache_path);
   if (locked_)
     LoadInstallAttributes();
 }
@@ -262,7 +263,7 @@ bool FakeCryptohomeClient::InstallAttributesFinalize(bool* successful) {
   // browser is restarted. This is used for ease of development when device
   // enrollment is required.
   base::FilePath cache_path;
-  if (!PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES, &cache_path))
+  if (!base::PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES, &cache_path))
     return false;
 
   cryptohome::SerializedInstallAttributes install_attrs_proto;
@@ -766,7 +767,7 @@ void FakeCryptohomeClient::NotifyDircryptoMigrationProgress(
 bool FakeCryptohomeClient::LoadInstallAttributes() {
   base::FilePath cache_file;
   const bool file_exists =
-      PathService::Get(FILE_INSTALL_ATTRIBUTES, &cache_file) &&
+      base::PathService::Get(FILE_INSTALL_ATTRIBUTES, &cache_file) &&
       base::PathExists(cache_file);
   DCHECK(file_exists);
   // Mostly copied from chrome/browser/chromeos/settings/install_attributes.cc.

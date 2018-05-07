@@ -17,7 +17,7 @@ constexpr int kReadFileSizeLimitInBytes = 10 * 1024 * 1024;
 // Get the root path for assistant files.
 base::FilePath GetRootPath() {
   base::FilePath home_dir;
-  CHECK(PathService::Get(base::DIR_HOME, &home_dir));
+  CHECK(base::PathService::Get(base::DIR_HOME, &home_dir));
   // Ensures DIR_HOME is overridden after primary user sign-in.
   CHECK_NE(base::GetHomeDir(), home_dir);
   return home_dir;

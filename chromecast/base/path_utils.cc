@@ -17,7 +17,7 @@ base::FilePath GetPath(base::BasePathKey default_dir_key,
     return path;
 
   base::FilePath default_dir;
-  if (!PathService::Get(default_dir_key, &default_dir))
+  if (!base::PathService::Get(default_dir_key, &default_dir))
     LOG(DFATAL) << "Cannot get default dir: " << default_dir_key;
 
   base::FilePath adjusted_path(default_dir.Append(path));

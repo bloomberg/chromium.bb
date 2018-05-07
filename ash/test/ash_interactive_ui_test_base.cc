@@ -43,7 +43,7 @@ void AshInteractiveUITestBase::SetUp() {
   ui::ResourceBundle::InitSharedInstanceWithLocale(
       "en-US", NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
   base::FilePath resources_pack_path;
-  PathService::Get(base::DIR_MODULE, &resources_pack_path);
+  base::PathService::Get(base::DIR_MODULE, &resources_pack_path);
   resources_pack_path =
       resources_pack_path.Append(FILE_PATH_LITERAL("resources.pak"));
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(

@@ -103,8 +103,9 @@ void FileTransferMessageHandler::ParseNewRequest(
   }
 
   base::FilePath target_directory;
-  if (!PathService::Get(base::DIR_USER_DESKTOP, &target_directory)) {
-    CancelAndSendError("Failed to get DIR_USER_DESKTOP from PathService::Get");
+  if (!base::PathService::Get(base::DIR_USER_DESKTOP, &target_directory)) {
+    CancelAndSendError(
+        "Failed to get DIR_USER_DESKTOP from base::PathService::Get");
     return;
   }
 

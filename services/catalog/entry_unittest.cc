@@ -34,7 +34,7 @@ class EntryTest : public testing::Test {
 
   std::unique_ptr<base::Value> ReadManifest(const std::string& manifest) {
     base::FilePath manifest_path;
-    PathService::Get(base::DIR_SOURCE_ROOT, &manifest_path);
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &manifest_path);
     manifest_path =
         manifest_path.AppendASCII("services/catalog/test_data/" + manifest);
 

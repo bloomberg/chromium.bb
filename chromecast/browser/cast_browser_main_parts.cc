@@ -431,7 +431,7 @@ int CastBrowserMainParts::PreCreateThreads() {
           crash_dumps_dir, kAndroidMinidumpDescriptor));
 #else
   base::FilePath home_dir;
-  CHECK(PathService::Get(DIR_CAST_HOME, &home_dir));
+  CHECK(base::PathService::Get(DIR_CAST_HOME, &home_dir));
   if (!base::CreateDirectory(home_dir))
     return 1;
 #endif

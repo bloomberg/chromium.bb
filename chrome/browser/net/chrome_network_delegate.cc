@@ -148,7 +148,7 @@ bool IsAccessAllowedInternal(const base::FilePath& path,
   };
 
   base::FilePath temp_dir;
-  if (PathService::Get(base::DIR_TEMP, &temp_dir))
+  if (base::PathService::Get(base::DIR_TEMP, &temp_dir))
     whitelist.push_back(temp_dir);
 
   // The actual location of "/home/chronos/user/Xyz" is the Xyz directory under

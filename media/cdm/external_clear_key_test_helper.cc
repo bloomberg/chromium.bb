@@ -33,7 +33,7 @@ void ExternalClearKeyTestHelper::LoadLibrary() {
   // Determine the location of the CDM. It is expected to be in the same
   // directory as the current module.
   base::FilePath cdm_base_path;
-  ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &cdm_base_path));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &cdm_base_path));
   cdm_base_path = cdm_base_path.Append(
       GetPlatformSpecificDirectory(kClearKeyCdmBaseDirectory));
   library_path_ = cdm_base_path.AppendASCII(

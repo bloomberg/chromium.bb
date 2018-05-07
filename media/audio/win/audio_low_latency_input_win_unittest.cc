@@ -106,7 +106,7 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
   explicit WriteToFileAudioSink(const char* file_name)
       : buffer_(0, kMaxBufferSize), bytes_to_write_(0) {
     base::FilePath file_path;
-    EXPECT_TRUE(PathService::Get(base::DIR_EXE, &file_path));
+    EXPECT_TRUE(base::PathService::Get(base::DIR_EXE, &file_path));
     file_path = file_path.AppendASCII(file_name);
     binary_file_ = base::OpenFile(file_path, "wb");
     DLOG_IF(ERROR, !binary_file_) << "Failed to open binary PCM data file.";

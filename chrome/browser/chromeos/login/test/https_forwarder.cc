@@ -83,7 +83,7 @@ bool ForwardingServer::GenerateAdditionalArguments(
     base::DictionaryValue* arguments) const {
   base::FilePath source_root_dir;
   if (!net::LocalTestServer::GenerateAdditionalArguments(arguments) ||
-      !PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir))
+      !base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir))
     return false;
 
   arguments->SetString("ssl-host", ssl_host_);

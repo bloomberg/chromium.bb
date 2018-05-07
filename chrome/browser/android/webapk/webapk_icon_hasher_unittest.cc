@@ -92,7 +92,7 @@ TEST_F(WebApkIconHasherTest, Success) {
       "http://www.google.com/chrome/test/data/android/google.png";
   base::FilePath source_path;
   base::FilePath icon_path;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &source_path));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_path));
   icon_path = source_path.AppendASCII("chrome")
                   .AppendASCII("test")
                   .AppendASCII("data")

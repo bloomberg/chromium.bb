@@ -93,7 +93,7 @@ class ReadFromFileAudioSource : public AudioOutputStream::AudioSourceCallback {
     // Get complete file path to output file in directory containing
     // media_unittests.exe.
     base::FilePath file_name;
-    EXPECT_TRUE(PathService::Get(base::DIR_EXE, &file_name));
+    EXPECT_TRUE(base::PathService::Get(base::DIR_EXE, &file_name));
     file_name = file_name.AppendASCII(kDeltaTimeMsFileName);
 
     EXPECT_TRUE(!text_file_);

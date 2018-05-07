@@ -126,7 +126,7 @@ class FullDuplexAudioSinkSource
     // Get complete file path to output file in the directory containing
     // media_unittests.exe. Example: src/build/Debug/audio_delay_values_ms.txt.
     base::FilePath file_name;
-    EXPECT_TRUE(PathService::Get(base::DIR_EXE, &file_name));
+    EXPECT_TRUE(base::PathService::Get(base::DIR_EXE, &file_name));
     file_name = file_name.AppendASCII(kDelayValuesFileName);
 
     FILE* text_file = base::OpenFile(file_name, "wt");

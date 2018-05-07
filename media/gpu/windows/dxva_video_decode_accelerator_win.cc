@@ -1618,7 +1618,7 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
         enable_accelerated_vpx_decode_ & gpu::GpuPreferences::VPX_VENDOR_AMD &&
         profile == VP9PROFILE_PROFILE0) {
       base::FilePath dll_path;
-      if (PathService::Get(program_files_key, &dll_path)) {
+      if (base::PathService::Get(program_files_key, &dll_path)) {
         codec_ = media::kCodecVP9;
         dll_path = dll_path.Append(kAMDVPXDecoderDLLPath);
         dll_path = dll_path.Append(kAMDVP9DecoderDLLName);

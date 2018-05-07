@@ -131,9 +131,9 @@ HeadlessBrowserTest::HeadlessBrowserTest() {
   // On Mac the source root is not set properly. We override it by assuming
   // that is two directories up from the execution test file.
   base::FilePath dir_exe_path;
-  CHECK(PathService::Get(base::DIR_EXE, &dir_exe_path));
+  CHECK(base::PathService::Get(base::DIR_EXE, &dir_exe_path));
   dir_exe_path = dir_exe_path.Append("../../");
-  CHECK(PathService::Override(base::DIR_SOURCE_ROOT, dir_exe_path));
+  CHECK(base::PathService::Override(base::DIR_SOURCE_ROOT, dir_exe_path));
 #endif  // defined(OS_MACOSX)
   base::FilePath headless_test_data(FILE_PATH_LITERAL("headless/test/data"));
   CreateTestServer(headless_test_data);

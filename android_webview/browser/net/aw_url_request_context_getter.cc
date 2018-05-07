@@ -241,7 +241,7 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(network::switches::kLogNetLog)) {
     FilePath net_log_path;
-    PathService::Get(base::DIR_ANDROID_APP_DATA, &net_log_path);
+    base::PathService::Get(base::DIR_ANDROID_APP_DATA, &net_log_path);
     FilePath log_name =
         command_line.GetSwitchValuePath(network::switches::kLogNetLog);
     net_log_path = net_log_path.Append(log_name);

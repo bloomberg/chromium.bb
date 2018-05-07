@@ -272,7 +272,7 @@ void RegisterStubPathOverridesIfNecessary() {
 
   base::FilePath user_data_dir;
   if (base::SysInfo::IsRunningOnChromeOS() ||
-      !PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+      !base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
     return;
   }
 
