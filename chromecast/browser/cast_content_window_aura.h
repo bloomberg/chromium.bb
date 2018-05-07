@@ -35,11 +35,6 @@ class CastContentWindowAura : public CastContentWindow,
   void EnableTouchInput(bool enabled) override;
 
   // CastSideSwipeGestureHandlerInterface implementation:
-  void OnSideSwipeBegin(CastSideSwipeOrigin swipe_origin,
-                        ui::GestureEvent* gesture_event) override;
-  void OnSideSwipeEnd(CastSideSwipeOrigin swipe_origin,
-                      ui::GestureEvent* gesture_event) override;
-
   bool CanHandleSwipe(CastSideSwipeOrigin swipe_origin) override;
   void HandleSideSwipeBegin(CastSideSwipeOrigin swipe_origin,
                             const gfx::Point& touch_location) override;

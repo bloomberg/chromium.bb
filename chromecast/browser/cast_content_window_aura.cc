@@ -120,24 +120,6 @@ void CastContentWindowAura::RequestVisibility(
 
 void CastContentWindowAura::RequestMoveOut(){};
 
-void CastContentWindowAura::OnSideSwipeBegin(CastSideSwipeOrigin swipe_origin,
-                                             ui::GestureEvent* gesture_event) {
-  if (swipe_origin == CastSideSwipeOrigin::LEFT) {
-    if (delegate_->CanHandleGesture(GestureType::GO_BACK))
-      gesture_event->SetHandled();
-    return;
-  }
-}
-
-void CastContentWindowAura::OnSideSwipeEnd(CastSideSwipeOrigin swipe_origin,
-                                           ui::GestureEvent* gesture_event) {
-  if (swipe_origin == CastSideSwipeOrigin::LEFT) {
-    if (delegate_->ConsumeGesture(GestureType::GO_BACK))
-      gesture_event->SetHandled();
-    return;
-  }
-}
-
 bool CastContentWindowAura::CanHandleSwipe(CastSideSwipeOrigin swipe_origin) {
   return swipe_origin == CastSideSwipeOrigin::LEFT &&
          delegate_->CanHandleGesture(GestureType::GO_BACK);
