@@ -876,7 +876,6 @@
 <translation id="3715569262675717862">根據用戶端憑證進行驗證</translation>
 <translation id="3736879847913515635">允許在使用者管理工具中新增使用者</translation>
 <translation id="3737544779868348650">裝置網路主機名稱</translation>
-<translation id="3740754010292550733">設定更新重新啟動通知期</translation>
 <translation id="3750220015372671395">禁止在這些網站上使用金鑰產生功能</translation>
 <translation id="3756011779061588474">封鎖開發人員模式</translation>
 <translation id="3758089716224084329">允許你指定 <ph name="PRODUCT_NAME" /> 使用的 Proxy 伺服器，並禁止使用者變更 Proxy 設定。
@@ -974,9 +973,6 @@
       列出系統自動為零售模式裝置中的示範模式使用者所安裝的擴充功能。這些擴充功能會儲存在裝置上，並且可以在安裝後進行離線安裝。
 
       每個清單項目都含有目錄，其中的「extension-id」欄位必須包含擴充功能 ID，且「update-url」欄位必須包含更新網址。</translation>
-<translation id="3873159954366380945">讓你設定要顯示 <ph name="PRODUCT_NAME" /> 重新啟動通知 (為了套用待安裝的更新) 的時間範圍。
-
-      這項設定可用於控制時間範圍 (以毫秒為單位)，透過定期通知讓使用者瞭解 <ph name="PRODUCT_NAME" /> 必須重新啟動 (或者 <ph name="PRODUCT_OS_NAME" /> 必須重新啟動) 才能套用更新。在此期間內，系統會根據 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策的設定持續告知使用者必須進行更新。如果不予設定，則系統會使用 345600000 毫秒 (四天) 做為 <ph name="PRODUCT_OS_NAME" /> 的預設時間範圍，並以 604800000 毫秒 (一週) 做為所有其他平台的預設時間範圍。</translation>
 <translation id="3877517141460819966">整合式雙重驗證模式</translation>
 <translation id="388237772682176890">自 M53 起我們已淘汰這項政策，至 M54 則移除了這項政策 (因為我們已不再支援 SPDY/3.1)。
 

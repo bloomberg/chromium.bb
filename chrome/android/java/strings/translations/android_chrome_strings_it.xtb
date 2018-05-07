@@ -158,7 +158,6 @@
 <translation id="2450083983707403292">Vuoi avviare di nuovo il download di <ph name="FILE_NAME" />?</translation>
 <translation id="2476578072172137802">Impostazioni sito</translation>
 <translation id="2482878487686419369">Notifiche</translation>
-<translation id="2490674006498621843">Trascina verso l'alto la barra degli strumenti per trovare i tuoi file e le tue pagine nei download</translation>
 <translation id="2496180316473517155">Cronologia di navigazione</translation>
 <translation id="2498359688066513246">Guida e feedback</translation>
 <translation id="2501278716633472235">Indietro</translation>
@@ -182,6 +181,7 @@
 <translation id="2650751991977523696">Scaricare nuovamente il file?</translation>
 <translation id="2653659639078652383">Invia</translation>
 <translation id="2677748264148917807">Esci</translation>
+<translation id="2693813674743028984">Nascondi spazio di archiviazione</translation>
 <translation id="2704606927547763573">Copiata</translation>
 <translation id="2707726405694321444">Aggiorna la pagina</translation>
 <translation id="2709516037105925701">Compilazione automatica</translation>
@@ -207,6 +207,7 @@
 <translation id="2956410042958133412">Questo account è gestito da <ph name="PARENT_NAME_1" /> e <ph name="PARENT_NAME_2" /></translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Tutti i diritti riservati.</translation>
 <translation id="2962095958535813455">Schede in incognito attivate</translation>
+<translation id="2965945119655563012">Mostra spazio di archiviazione</translation>
 <translation id="2968755619301702150">Visualizzatore certificati</translation>
 <translation id="2979025552038692506">Scheda in incognito selezionata</translation>
 <translation id="2989523299700148168">Visitati di recente</translation>
@@ -334,6 +335,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4170011742729630528">Il servizio non è disponibile, riprova più tardi.</translation>
 <translation id="4181841719683918333">Lingue</translation>
 <translation id="4195643157523330669">Apri in un'altra scheda</translation>
+<translation id="4198423547019359126">Nessun percorso di download disponibile</translation>
 <translation id="4226663524361240545">Le notifiche possono far vibrare il dispositivo</translation>
 <translation id="4242533952199664413">Apri le impostazioni</translation>
 <translation id="424864128008805179">Uscire da Chrome?</translation>
@@ -670,6 +672,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7121362699166175603">Consente di cancellare la cronologia e i completamenti automatici nella barra degli indirizzi. Il tuo account Google potrebbe avere altri tipi di cronologia di navigazione all'indirizzo <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Consenti motore di ricerca corrente</translation>
 <translation id="7138678301420049075">Altro</translation>
+<translation id="7144878232160441200">Riprova</translation>
 <translation id="7149893636342594995">Ultimo giorno</translation>
 <translation id="7177466738963138057">Puoi cambiarlo in un secondo momento nelle Impostazioni</translation>
 <translation id="7180611975245234373">Aggiorna</translation>
@@ -699,6 +702,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7455923816558154057">Tocca per visualizzare</translation>
 <translation id="7473891865547856676">No grazie</translation>
 <translation id="7475192538862203634">Se il problema si verifica di frequente, prova questi <ph name="BEGIN_LINK" />suggerimenti<ph name="END_LINK" />.</translation>
+<translation id="7475688122056506577">Scheda SD non trovata. Potrebbero mancare alcuni dei tuoi file.</translation>
 <translation id="748127970106343339">Conferma eliminazione credenziali dispositivo</translation>
 <translation id="7481312909269577407">Avanti</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Ultimo aggiornamento: <ph name="TIME_SINCE_UPDATE" />)</translation>
@@ -762,6 +766,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8026334261755873520">Cancella dati di navigazione</translation>
 <translation id="8035133914807600019">Nuova cartella…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> giorni rimanenti</translation>
+<translation id="804335162455518893">Scheda SD non trovata</translation>
 <translation id="805047784848435650">In base alla tua cronologia di navigazione</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponibili</translation>
 <translation id="8058746566562539958">Apri in nuova scheda di Chrome</translation>

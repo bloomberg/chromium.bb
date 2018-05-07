@@ -89,6 +89,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="1810107444790159527">Okvir s popisom</translation>
 <translation id="1828385960365606039">svibanj</translation>
 <translation id="1834891354138622109">Stupac</translation>
+<translation id="1845944666972354496">Dvaput dodirnite za aktiviranje</translation>
 <translation id="1865601187525349519">Završetak teksta</translation>
 <translation id="1876229593313240038">dokm</translation>
 <translation id="188130072164734898">Izgovara trenutačno vrijeme i datum.</translation>
@@ -120,6 +121,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="2179452035581866348">ChromeVox upotrebljava zvukove da bi vam pružio bitne i dodatne informacije. Saznajte značenje tih zvukova da biste se kretali brže. Kada se naučite snalaziti, možete isključiti tekstne opise u govoru i koristiti ih za bitne informacije o stranici. Evo kompletnog popisa zvukova i njihovih značenja.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{zatvoreni navodnik}one{# zatvoreni navodnik}few{# zatvorena navodnika}other{# zatvorenih navodnika}}</translation>
 <translation id="2199994615414171367">Prethodni matematički izraz</translation>
+<translation id="2203046366315513658">Smanjivanje vrijednosti</translation>
 <translation id="2220529011494928058">Prijavite poteškoću</translation>
 <translation id="2223693656926968778">Radnja na trenutačnoj stavci</translation>
 <translation id="225732394367814946">Povećanje brzine govora</translation>
@@ -158,6 +160,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="2637227747952042642">Matematički</translation>
 <translation id="2639750663247012216">Modifikator ChromeVoxa</translation>
 <translation id="2644542693584024604">pravopisna pogreška</translation>
+<translation id="2673280813984708147">uređuje</translation>
 <translation id="267442004702508783">osvježavanje</translation>
 <translation id="2684412629217766642">Zatvaranje vodiča za ChromeVox</translation>
 <translation id="2697408785920771974">autougr</translation>
@@ -209,6 +212,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="3060756054951570867">otvoren je izbornik <ph name="TITLE" /></translation>
 <translation id="3078345202707391975">Sljedeći naslov razine 2</translation>
 <translation id="3078740164268491126">tablica</translation>
+<translation id="3082249673510793544">Pomicanje unatrag</translation>
 <translation id="3082557070674409251">Kliknuto</translation>
 <translation id="3084806535845658316">nema odjeka tipkanja</translation>
 <translation id="3086746722712840547">napom</translation>
@@ -396,6 +400,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="4372705107434148843">Zaustavljanje govora</translation>
 <translation id="4373197658375206385">Nema prethodne stavke koja nije veza.</translation>
 <translation id="4376316291247992553">Prikazivanje slike kao uzorka ispisanog brajicom</translation>
+<translation id="4378308539633073595">Pomicanje unaprijed</translation>
 <translation id="4391478986194775161">sdržjinfo</translation>
 <translation id="443163561286008705">poništi</translation>
 <translation id="4457472090507035117">Odaberite trenutačni glas:</translation>
@@ -403,6 +408,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="4476183483923481720">novi redak</translation>
 <translation id="4482330759234983253">Prethodna tablica</translation>
 <translation id="4491109536499578614">Slika</translation>
+<translation id="4517854969512651305">Povećavanje vrijednosti</translation>
 <translation id="4529987814483543472">Klasična karta tipkovnice</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{kosa crta}one{# kosa crta}few{# kose crte}other{# kosih crta}}</translation>
 <translation id="4547556996012970016">Sljedeći naslov razine 5</translation>
@@ -418,6 +424,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="461613135510474570">Rečenica</translation>
 <translation id="463135993322337640">Pritisnite ChromeVox "O", "N" da biste saznali novosti</translation>
 <translation id="4647836961514597010">Odabir boja</translation>
+<translation id="4652110509054054146">Koristite tipku za pretraživanje i lijevu ili desnu strelicu za tipke Home ili End, tipku za pretraživanje, tipku Control i lijevu ili desnu strelicu za kombinaciju tipki Control Home ili Control End, tipku za pretraživanje i strelicu prema gore ili dolje za tipku Page Up ili Page Down.</translation>
 <translation id="4660783501463101648">Verzija Classic je uklonjena. Uklonjen je prekidač tipkovnice za vraćanje na ChromeVox Classic.</translation>
 <translation id="4661075872484491155">stablo</translation>
 <translation id="4668929960204016307">,</translation>

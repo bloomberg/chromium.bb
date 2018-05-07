@@ -164,6 +164,7 @@
 <translation id="4379531060876907730">Tai yra jūsų rašiklio įrankiai</translation>
 <translation id="4421231901400348175"><ph name="HELPER_NAME" /> gali valdyti jūsų ekraną naudodamas (-a) Nuotolinę pagalbą.</translation>
 <translation id="4430019312045809116">Apimtis</translation>
+<translation id="4450893287417543264">Daugiau neberodyti</translation>
 <translation id="4479639480957787382">Eternetas</translation>
 <translation id="4481530544597605423">Atsieti įrenginiai</translation>
 <translation id="4508225577814909926">„<ph name="NAME" />“: jungiamasi...</translation>
@@ -196,6 +197,7 @@
 <translation id="54609108002486618">Valdoma</translation>
 <translation id="553675580533261935">Išeinama iš sesijos</translation>
 <translation id="5548285847212963613">Galite prisijungti prie šio tinklo naudodami plėtinį „<ph name="EXTENSION_NAME" />“.</translation>
+<translation id="554893713779400387">Perjungti diktavimą</translation>
 <translation id="5571066253365925590">„Bluetooth“ įgalinta</translation>
 <translation id="5597451508971090205"><ph name="DATE" />, <ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">Paspauskite „Ctrl“ + „Alt“ + Z, kad išjungtumėte ekrano skaitymą balsu.</translation>
@@ -284,6 +286,7 @@
 <translation id="7536035074519304529">IP adresas: <ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140">„<ph name="DISPLAY_NAME" />“ nepalaiko <ph name="SPECIFIED_RESOLUTION" />. Skyra pakeista į <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Jaustukų paletė</translation>
+<translation id="7564874036684306347">Perkėlus langus į kitą darbalaukį gali pasireikšti nenumatyta elgsena. Vėlesni pranešimai, langai ir dialogų langai gali būti padalyti keliuose darbalaukiuose.</translation>
 <translation id="7569509451529460200">Brailio rašmenys ir „ChromeVox“ įgalinti</translation>
 <translation id="7593891976182323525">Paieškos arba antrojo lygio klavišas</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (savininkas)</translation>
@@ -296,6 +299,7 @@
 <translation id="7798302898096527229">Jei norite atšaukti, paspauskite paieškos klavišą arba „Shift“.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Stiprus signalas</translation>
+<translation id="7842569679327885685">Įspėjimas: eksperimentinė funkcija</translation>
 <translation id="7904094684485781019">Šios paskyros administratorius neleidžia naudoti kelių paskyrų.</translation>
 <translation id="7933084174919150729">„Google“ padėjėjas pasiekiamas tik pagrindiniame profilyje.</translation>
 <translation id="79341161159229895">Paskyrą tvarko: <ph name="FIRST_PARENT_EMAIL" /> ir <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -348,6 +352,7 @@
 <translation id="9091626656156419976">Pašalintas vaizdas „<ph name="DISPLAY_NAME" />“</translation>
 <translation id="9111102763498581341">Atrakinti</translation>
 <translation id="9151726767154816831">Kad atnaujintumėte, paleiskite iš naujo ir naudokite „Powerwash“</translation>
+<translation id="9179259655489829027">Naudodami šią funkciją galite greitai pasiekti bet kurį prisijungusį naudotoją be slaptažodžio. Šią funkciją naudokite tik su patikimomis paskyromis.</translation>
 <translation id="9194617393863864469">Prisijungti kaip kitas naudotojas...</translation>
 <translation id="9201131092683066720">Likusi akumuliatoriaus įkrova: <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Išjungiamas sujungiamojo darbalaukio režimas</translation>

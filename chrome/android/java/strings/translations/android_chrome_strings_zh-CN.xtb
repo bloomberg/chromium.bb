@@ -158,7 +158,6 @@
 <translation id="2450083983707403292">要重新开始下载 <ph name="FILE_NAME" /> 吗？</translation>
 <translation id="2476578072172137802">网站设置</translation>
 <translation id="2482878487686419369">通知</translation>
-<translation id="2490674006498621843">上拉工具栏即可在“下载内容”中查找您的文件和网页</translation>
 <translation id="2496180316473517155">浏览记录</translation>
 <translation id="2498359688066513246">帮助和反馈</translation>
 <translation id="2501278716633472235">返回</translation>
@@ -673,6 +672,7 @@
 <translation id="7121362699166175603">清除历史记录和地址栏中的自动填充项。您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
 <translation id="7128222689758636196">适用于当前的搜索引擎</translation>
 <translation id="7138678301420049075">其他</translation>
+<translation id="7144878232160441200">重试</translation>
 <translation id="7149893636342594995">过去 24 小时</translation>
 <translation id="7177466738963138057">以后，您可以在“设置”中更改此设置。</translation>
 <translation id="7180611975245234373">刷新</translation>

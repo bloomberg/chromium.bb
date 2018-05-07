@@ -1226,7 +1226,7 @@
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME" /> 将立即重新启动并重置</translation>
 <translation id="2885378588091291677">任务管理器</translation>
 <translation id="2886771036282400576">• <ph name="PERMISSION" /></translation>
-<translation id="2886800363598651778">在您的所有设备上同步并量身定制 Chrome</translation>
+<translation id="2886800363598651778">在您的所有设备上同步并个性化设置 Chrome</translation>
 <translation id="2887525882758501333">PDF 文档</translation>
 <translation id="2888807692577297075">找不到与&lt;b&gt;“<ph name="SEARCH_STRING" />”&lt;/b&gt;匹配的项</translation>
 <translation id="2889064240420137087">链接打开方式...</translation>
@@ -3449,11 +3449,11 @@
 <translation id="6383051423892982287">使用您自己的<ph name="BEGIN_LINK" />同步密码<ph name="END_LINK" />加密已同步的数据</translation>
 <translation id="6384275966486438344">将您的搜索设置更改为：<ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">网站可以保存和读取 Cookie 数据</translation>
-<translation id="6388429472088318283">过滤语言</translation>
+<translation id="6388429472088318283">搜索语言</translation>
 <translation id="6388771388956873507">找到您设备上的指纹传感器并用手指触摸它</translation>
 <translation id="6390799748543157332">当您关闭以访客身份打开的所有窗口后，您在此窗口中浏览的网页将不会显示在浏览器历史记录中，也不会在计算机上留下其他痕迹（例如Cookie）。不过，您下载的所有文件均会保留下来。</translation>
 <translation id="6395423953133416962">发送<ph name="BEGIN_LINK1" />系统信息<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />指标<ph name="END_LINK2" /></translation>
-<translation id="6397094776139756010">用于进行同步和个性化的选项</translation>
+<translation id="6397094776139756010">同步和个性化选项</translation>
 <translation id="6397592254427394018">在隐身窗口中打开所有书签(&amp;I)</translation>
 <translation id="6398715114293939307">移除 Google Play 商店</translation>
 <translation id="6398765197997659313">退出全屏模式</translation>
@@ -3642,7 +3642,7 @@
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6664237456442406323">很遗憾，您的计算机配置了格式错误的硬件 ID。这导致 Chrome 操作系统无法使用最新的安全修正程序进行更新，以致您的计算机<ph name="BEGIN_BOLD" />很容易遭到恶意攻击<ph name="END_BOLD" />。</translation>
 <translation id="6664774537677393800">打开您的个人资料时出了点问题。请先退出，然后重新登录。</translation>
-<translation id="6670647982128220776">与同步和个性化有关的功能现已全部纳入到同一控件下。开启此控件可能会更改您的当前设置。</translation>
+<translation id="6670647982128220776">与同步和个性化相关的功能现已全部纳入到同一控件下。开启此控件可能会更改您的当前设置。</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">您希望 Google 将此网页的内容从<ph name="SOURCE_LANGUAGE" />翻译为<ph name="TARGET_LANGUAGE" />吗？</translation>
 <translation id="6675665718701918026">已连接指针设备</translation>

@@ -430,6 +430,21 @@
       Spell checking can still be performed using a downloaded dictionary; this policy only controls the usage of the online service.
 
       If this setting is not configured then users can choose whether the spell checking service should be used or not.</translation>
+<translation id="2294283832646774959">Configures a list of printers.
+
+      This policy allows administrators to provide printer configurations for
+      their users.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> and <ph name="PRINTER_DESCRIPTION" /> are free-form strings that can be customised for ease of printer selection. <ph name="PRINTER_MANUFACTURER" /> and <ph name="PRINTER_MODEL" /> serve to ease printer identification by end users. They represent the manufacturer and model of the printer. <ph name="PRINTER_URI" /> should be an address reachable from a client computer including the <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> and <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> is optional. If provided, it is used to help de-duplicate <ph name="ZEROCONF_DISCOVERY" /> printers.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> must match one of the strings which represent a <ph name="PRODUCT_NAME" />-supported printer. The string will be used to identify and install the appropriate PPD for the printer. More information can be found at https://support.google.com/chrome?p=noncloudprint.
+
+      Printer setup is completed upon the first use of a printer. PPDs are not downloaded until the printer is used. After that time, frequently used PPDs are cached.
+
+      This policy has no effect on whether users can configure printers on individual devices. It is intended to be supplementary to the configuration of printers by individual users.
+
+      For Active Directory managed devices this policy supports expansion of <ph name="MACHINE_NAME_VARIABLE" /> to the Active Directory machine name or a substring of it. For example, if the machine name is <ph name="MACHINE_NAME_EXAMPLE" />, then <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> would be replaced by the 4 characters starting after the 6th position, i.e. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Note that the position is zero-based.
+      </translation>
 <translation id="2294382669900758280">Video playing in Android apps is not taken into consideration, even if this policy is set to <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Configure the default New Tab page in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Specify a list of enabled plug-ins</translation>
@@ -909,7 +924,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3715569262675717862">Authentication based on client certificates</translation>
 <translation id="3736879847913515635">Enable add person in user manager</translation>
 <translation id="3737544779868348650">Device network hostname</translation>
-<translation id="3740754010292550733">Set the period for update relaunch notifications</translation>
 <translation id="3750220015372671395">Block key generation on these sites</translation>
 <translation id="3756011779061588474">Block developer mode</translation>
 <translation id="3758089716224084329">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings.
@@ -1016,9 +1030,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Lists extensions that are automatically installed for the Demo user, for devices in retail mode. These extensions are saved in the device and can be installed while offline, after the installation.
 
       Each list entry contains a dictionary that must include the extension ID in the 'extension-id' field, and its update URL in the 'update-url' field.</translation>
-<translation id="3873159954366380945">Allows you to set the time period over which <ph name="PRODUCT_NAME" /> relaunch notifications are shown to apply a pending update.
-
-      This policy setting can be used to control the time period, in milliseconds, over which a user is progressively informed that <ph name="PRODUCT_NAME" /> must be relaunched (or <ph name="PRODUCT_OS_NAME" /> must be restarted) for an update. Over this time period, the user will be repeatedly informed of the need for an update based on the setting of the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> policy. If not set, the default period of 345,600,000 milliseconds (four days) is used for <ph name="PRODUCT_OS_NAME" /> and 604,800,000 milliseconds (one week) for all other platforms.</translation>
 <translation id="3877517141460819966">Integrated second factor authentication mode</translation>
 <translation id="388237772682176890">This policy is deprecated in M53 and removed in M54, because SPDY/3.1 support is removed.
 
@@ -1233,6 +1244,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4508686775017063528">If this policy is set to true or is not set, <ph name="PRODUCT_NAME" /> will be enabled, and users will be able to launch it from the app menu, page context menus, media controls on Cast-enabled websites and (if shown), the cast toolbar icon.
 
           If this policy set to false, <ph name="PRODUCT_NAME" /> will be disabled.</translation>
+<translation id="4515404363392014383">Enable Safe Browsing for trusted sources</translation>
 <translation id="4518251772179446575">Ask whenever a site wants to track the users' physical location</translation>
 <translation id="4519046672992331730">Enables search suggestions in <ph name="PRODUCT_NAME" />'s omnibox and prevents users from changing this setting.
 
@@ -1355,6 +1367,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this policy is set to false, screen wake lock requests will be ignored.</translation>
 <translation id="487460824085252184">Migrate automatically, don’t ask for user consent.</translation>
+<translation id="4874982543810021567">Block WebUSB on these sites</translation>
 <translation id="4876805738539874299">Maximum SSL version enabled</translation>
 <translation id="4897928009230106190">Specifies the parameters used when doing suggestion search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {searchTerms} in above example, it will be replaced with real search terms data.
 
@@ -1926,6 +1939,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is left not set, network prediction will be enabled but the user will be able to change it.</translation>
 <translation id="6658245400435704251">Specifies the number of seconds up to which a device may randomly delay its download of an update from the time the update was first pushed out to the server. The device may wait a portion of this time in terms of wall-clock-time and the remaining portion in terms of the number of update checks. In any case, the scatter is upper bounded to a constant amount of time so that a device does not ever get stuck waiting to download an update forever.</translation>
 <translation id="6665670272107384733">Set how often user has to enter password to use quick unlock</translation>
+<translation id="6681229465468164801">Allows you to set a list of url patterns that specify sites which are prevented from asking the user to grant them access to a USB device.
+
+          If this policy is left not set, the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
+
+          URL patterns in this policy should not clash with ones configured via WebUsbAskForUrls. It is unspecified which of the two policies takes precedence if a URL matches with both.</translation>
 <translation id="6689792153960219308">Report hardware status</translation>
 <translation id="6698071416141001300">Password protection at-risk account flagging is triggered by password reuse</translation>
 <translation id="6699880231565102694">Enable two-factor authentication for remote access hosts</translation>
@@ -2095,6 +2113,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this setting is disabled or not set, then default Safe Browsing protection is applied to all resources.
       This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="7079519252486108041">Block pop-ups on these sites</translation>
+<translation id="7085803328069945025">Allows you to set a list of url patterns that specify sites which are allowed to ask the user to grant them access to a USB device.
+
+          If this policy is left not set, the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
+
+          URL patterns in this policy should not clash with ones configured via WebUsbBlockedForUrls. It is unspecified which of the two policies takes precedence if a URL matches with both.</translation>
 <translation id="7106631983877564505">Enable lock when <ph name="PRODUCT_OS_NAME" /> devices become idle or suspended.
 
       If you enable this setting, users will be asked for a password to unlock the device from sleep.
@@ -2793,6 +2816,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="9096086085182305205">Authentication server whitelist</translation>
 <translation id="9098553063150791878">Policies for HTTP authentication</translation>
 <translation id="9105265795073104888">Only a subset of proxy configuration options are made available to Android apps. Android apps may voluntarily choose to use the proxy. You cannot force them to use a proxy.</translation>
+<translation id="9106865192244721694">Allow WebUSB on these sites</translation>
 <translation id="9112727953998243860">Enterprise printer configuration file</translation>
 <translation id="9112897538922695510">Allows you to register a list of protocol handlers. This can only be a recommended policy. The property |protocol| should be set to the scheme such as 'mailto' and the property |url| should be set to the URL pattern of the application that handles the scheme. The pattern can include a '%s', which if present will be replaced by the handled URL.
 
@@ -2832,6 +2856,11 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="915194831143859291">If this policy is set to false or not configured, <ph name="PRODUCT_OS_NAME" /> will allow the user to shut down the device.
       If this policy is set to true, <ph name="PRODUCT_OS_NAME" /> will trigger a reboot when the user shuts down the device. <ph name="PRODUCT_OS_NAME" /> replaces all occurrences of shutdown buttons in the UI by reboot buttons. If the user shuts down the device using the power button, it will not automatically reboot, even if the policy is enabled.</translation>
 <translation id="9158929520101169054">Allow Multiple Sign-in Within the Browser</translation>
+<translation id="9165792353046089850">Allows you to set whether websites are allowed to get access to connected USB devices. Access can be completely blocked, or the user can be asked every time a website wants to get access to connected USB devices.
+
+          This policy can be overridden for specific URL patterns using the 'WebUsbAskForUrls' and 'WebUsbBlockedForUrls' policies.
+
+          If this policy is left not set, '3' will be used, and the user will be able to change it.</translation>
 <translation id="9167719789236691545">Disable Drive in the <ph name="PRODUCT_OS_NAME" /> Files app</translation>
 <translation id="9187743794267626640">Disable mounting of external storage</translation>
 <translation id="9197740283131855199">Percentage by which to scale the screen dim delay if the user becomes active after dimming</translation>

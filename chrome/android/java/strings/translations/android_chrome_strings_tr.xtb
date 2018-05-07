@@ -82,10 +82,12 @@
 <translation id="1718835860248848330">Son saat</translation>
 <translation id="1729516292547892356">Sanal gerçeklik içeriğini görüntülemek için Google VR Hizmetleri'ni güncelleyin</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Son Güncellenme: <ph name="TIME_SINCE_UPDATE" /></translation>
+<translation id="1743802530341753419">Sitelerin bir cihaza bağlanmasına izin verilmeden önce sor (önerilir)</translation>
 <translation id="1749561566933687563">Yer işaretlerinizi senkronize edin</translation>
 <translation id="17513872634828108">Açık sekmeler</translation>
 <translation id="1756600373018374892">Sekmelerinize hızlı bir şekilde erişmek için bu düğmeye dokunun.</translation>
 <translation id="1779089405699405702">Görsel kod çözücüsü</translation>
+<translation id="1792959175193046959">Dosyaların indirileceği varsayılan konumu istediğiniz zaman değiştirebilirsiniz</translation>
 <translation id="1807246157184219062">Açık</translation>
 <translation id="1829244130665387512">Sayfada bul</translation>
 <translation id="1832521218263067499">Güvenlik olayları</translation>
@@ -158,7 +160,6 @@
 <translation id="2450083983707403292"><ph name="FILE_NAME" /> dosyasını tekrar indirmeye başlamak istiyor musunuz?</translation>
 <translation id="2476578072172137802">Site Ayarları</translation>
 <translation id="2482878487686419369">Bildirimler</translation>
-<translation id="2490674006498621843">Dosyalarınızı ve sayfalarınızı indirilenler bölümünde bulmak için araç çubuğunu yukarı çekin</translation>
 <translation id="2496180316473517155">Tarama geçmişi</translation>
 <translation id="2498359688066513246">Yardım ve geri bildirim</translation>
 <translation id="2501278716633472235">Geri dön</translation>
@@ -648,6 +649,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6910211073230771657">Silindi</translation>
 <translation id="6912998170423641340">Sitelerin panodaki metni ve resimleri okumasını engelleyin</translation>
 <translation id="6914783257214138813">Şifreleriniz, dışa aktarılan dosyayı görebilen herkes tarafından görülebilir.</translation>
+<translation id="6942665639005891494">Dosyaların indirileceği varsayılan konumu istediğiniz zaman Ayarlar menü seçeneğini kullanarak değiştirebilirsiniz</translation>
 <translation id="6945221475159498467">Seç</translation>
 <translation id="6963766334940102469">Yer işaretlerini silme</translation>
 <translation id="6965382102122355670">Tamam</translation>
@@ -673,6 +675,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7121362699166175603">Geçmişi ve adres çubuğundaki otomatik tamamlamaları temizler. Google Hesabınızın <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> adresinde başka biçimlerde tarama geçmişi olabilir.</translation>
 <translation id="7128222689758636196">Geçerli arama motoruna izin verin</translation>
 <translation id="7138678301420049075">Diğer</translation>
+<translation id="7144878232160441200">Yeniden Dene</translation>
 <translation id="7149893636342594995">Son 24 saat</translation>
 <translation id="7177466738963138057">Bunu daha sonra Ayarlar'da değiştirebilirsiniz</translation>
 <translation id="7180611975245234373">Yenile</translation>
@@ -814,6 +817,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="8503813439785031346">Kullanıcı adı</translation>
 <translation id="8514477925623180633">Chrome'da depolanan şifreleri dışa aktarın</translation>
 <translation id="8514577642972634246">Gizli moda geç</translation>
+<translation id="851751545965956758">Sitelerin cihazlara bağlanmasını engelle</translation>
 <translation id="8523928698583292556">Kayıtlı şifreyi sil</translation>
 <translation id="854522910157234410">Şu sayfayı aç:</translation>
 <translation id="8559990750235505898">Diğer dillerdeki sayfaları çevirmeyi öner</translation>

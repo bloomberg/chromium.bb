@@ -399,7 +399,6 @@
 <translation id="3678529606614285348">Abrir a página numa nova janela de navegação anónima (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Relatório de falhas capturado no(a) <ph name="CRASH_TIME" /> e carregado no(a) <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Informações do certificado</translation>
-<translation id="3690164694835360974">Início de sessão não seguro</translation>
 <translation id="3704162925118123524">A rede que está a utilizar pode exigir que visite a respetivapágina de início de sessão.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">A carregar...</translation>
@@ -718,6 +717,7 @@
 <translation id="6047927260846328439">Este conteúdo pode tentar enganá-lo de forma a que instale software ou revele informações pessoais. <ph name="BEGIN_LINK" />Mostrar mesmo assim<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Não pode visitar <ph name="SITE" /> neste momento, porque o Website utiliza a afixação de certificados. Os erros de rede e os ataques são geralmente temporários, pelo que esta página deverá funcionar mais tarde.</translation>
 <translation id="6059925163896151826">Dispositivos USB</translation>
+<translation id="6071091556643036997">O tipo de política é inválido.</translation>
 <translation id="6080696365213338172">Acedeu a conteúdos utilizando um certificado fornecido por um gestor. Os dados que fornecer a <ph name="DOMAIN" /> podem ser intercetados pelo seu gestor.</translation>
 <translation id="610911394827799129">A sua Conta Google pode ter outras formas do histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Nenhuma}=1{1 palavra-passe (sincronizada)}other{# palavras-passe (sincronizadas)}}</translation>
@@ -834,7 +834,6 @@
 <translation id="7138472120740807366">Método de fornecimento</translation>
 <translation id="7139724024395191329">Emirado</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
-<translation id="7155487117670177674">Pagamento não seguro</translation>
 <translation id="717330890047184534">ID Gaia:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="7180611975245234373">Atualizar</translation>

@@ -82,10 +82,12 @@
 <translation id="1718835860248848330">Zadnji sat</translation>
 <translation id="1729516292547892356">Da biste gledali sadržaj virtualne stvarnosti, ažurirajte Googleove VR usluge</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – ažurirano <ph name="TIME_SINCE_UPDATE" /></translation>
+<translation id="1743802530341753419">Web-lokacije moraju tražiti dopuštenje za povezivanje s uređajem (preporučeno)</translation>
 <translation id="1749561566933687563">Sinkronizirajte oznake</translation>
 <translation id="17513872634828108">Otvorene kartice</translation>
 <translation id="1756600373018374892">Dodirnite ovaj gumb da biste brzo pristupili svojim karticama.</translation>
 <translation id="1779089405699405702">Dekodiranje slika</translation>
+<translation id="1792959175193046959">Zadanu lokaciju preuzimanja možete promijeniti kad god želite</translation>
 <translation id="1807246157184219062">Svijetlo</translation>
 <translation id="1829244130665387512">Traži na stranici</translation>
 <translation id="1832521218263067499">Sigurnosni incidenti</translation>
@@ -158,7 +160,6 @@
 <translation id="2450083983707403292">Želite li ponovo pokrenuti preuzimanje datoteke <ph name="FILE_NAME" />?</translation>
 <translation id="2476578072172137802">Postavke web-lokacije</translation>
 <translation id="2482878487686419369">Obavijesti</translation>
-<translation id="2490674006498621843">Povucite alatnu traku prema gore da biste pronašli datoteke i stranice u preuzimanjima</translation>
 <translation id="2496180316473517155">Povijest pregledavanja</translation>
 <translation id="2498359688066513246">Pomoć i povratne informacije</translation>
 <translation id="2501278716633472235">Natrag</translation>
@@ -648,6 +649,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6910211073230771657">Izbrisano</translation>
 <translation id="6912998170423641340">Blokiraj web-lokacijama čitanje teksta i slika iz međuspremnika</translation>
 <translation id="6914783257214138813">Vaše zaporke bit će vidljive svima koji vide izvezenu datoteku.</translation>
+<translation id="6942665639005891494">Zadanu lokaciju preuzimanja možete promijeniti kad god želite putem opcije u izborniku Postavke</translation>
 <translation id="6945221475159498467">Odaberi</translation>
 <translation id="6963766334940102469">Brisanje oznaka</translation>
 <translation id="6965382102122355670">U redu</translation>
@@ -673,6 +675,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7121362699166175603">Briše povijest i automatska dovršavanja u adresnoj traci. Na vašem Google računu možda postoje drugi oblici povijesti pregledavanja na stranici <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Dopusti za trenutačnu tražilicu</translation>
 <translation id="7138678301420049075">Ostalo</translation>
+<translation id="7144878232160441200">Pokušaj ponovo</translation>
 <translation id="7149893636342594995">Posljednja 24 sata</translation>
 <translation id="7177466738963138057">Kasnije to možete promijeniti u odjeljku Postavke</translation>
 <translation id="7180611975245234373">Osvježi</translation>
@@ -814,6 +817,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="8503813439785031346">Korisničko ime</translation>
 <translation id="8514477925623180633">Izvoz zaporki pohranjenih u Chromeu</translation>
 <translation id="8514577642972634246">Ulaz u anonimni način</translation>
+<translation id="851751545965956758">Blokiraj povezivanje web-lokacija s uređajima</translation>
 <translation id="8523928698583292556">Izbriši pohranjenu zaporku</translation>
 <translation id="854522910157234410">Otvori tu stranicu:</translation>
 <translation id="8559990750235505898">Ponuda prevođenja stranica na druge jezike</translation>

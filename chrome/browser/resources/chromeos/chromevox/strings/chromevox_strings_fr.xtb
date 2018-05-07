@@ -89,6 +89,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="1810107444790159527">Zone de liste</translation>
 <translation id="1828385960365606039">Mai</translation>
 <translation id="1834891354138622109">Colonne</translation>
+<translation id="1845944666972354496">Appuyer deux fois pour activer</translation>
 <translation id="1865601187525349519">Fin du texte</translation>
 <translation id="1876229593313240038">doc.</translation>
 <translation id="188130072164734898">Énoncer la date et l'heure actuelles</translation>
@@ -120,6 +121,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="2179452035581866348">ChromeVox utilise des sons pour vous fournir des informations essentielles et des données complémentaires. Découvrez la signification de chaque son afin d'optimiser votre navigation. Lorsque ces sons vous sont devenus familiers, vous pouvez désactiver les descriptions vocales détaillées et ne vous fier qu'à eux pour obtenir les informations essentielles présentes sur la page. Voici la liste complète des sons, avec la signification de chacun.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{parenthèse fermée}one{# parenthèse fermée}other{# parenthèses fermées}}</translation>
 <translation id="2199994615414171367">Objet Math précédent</translation>
+<translation id="2203046366315513658">Diminuer la valeur</translation>
 <translation id="2220529011494928058">Signaler un problème</translation>
 <translation id="2223693656926968778">Effectuer une action sur l'élément actuel</translation>
 <translation id="225732394367814946">Accélérer la cadence de la voix</translation>
@@ -158,6 +160,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="2637227747952042642">Objet Math</translation>
 <translation id="2639750663247012216">Touche de modification ChromeVox</translation>
 <translation id="2644542693584024604">faute d'orthographe</translation>
+<translation id="2673280813984708147">modifie</translation>
 <translation id="267442004702508783">actualiser</translation>
 <translation id="2684412629217766642">Fermer le didacticiel ChromeVox</translation>
 <translation id="2697408785920771974">autoinl</translation>
@@ -209,6 +212,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="3060756054951570867">menu <ph name="TITLE" /> ouvert</translation>
 <translation id="3078345202707391975">En-tête suivant de niveau 2</translation>
 <translation id="3078740164268491126">tableau</translation>
+<translation id="3082249673510793544">Faire défiler vers l'arrière</translation>
 <translation id="3082557070674409251">Élément sur lequel vous avez cliqué</translation>
 <translation id="3084806535845658316">aucun écho de saisie</translation>
 <translation id="3086746722712840547">remarque</translation>
@@ -396,6 +400,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="4372705107434148843">Arrêter la diffusion vocale</translation>
 <translation id="4373197658375206385">Aucun élément précédent autre qu'un lien</translation>
 <translation id="4376316291247992553">Consulter une image en braille</translation>
+<translation id="4378308539633073595">Faire défiler vers l'avant</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">réinitialiser</translation>
 <translation id="4457472090507035117">Sélectionner la voix actuelle :</translation>
@@ -403,6 +408,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="4476183483923481720">Nouvelle ligne</translation>
 <translation id="4482330759234983253">Tableau précédent</translation>
 <translation id="4491109536499578614">Image</translation>
+<translation id="4517854969512651305">Augmenter la valeur</translation>
 <translation id="4529987814483543472">Mappage classique du clavier</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barre oblique}one{# barre oblique}other{# barres obliques}}</translation>
 <translation id="4547556996012970016">En-tête suivant de niveau 5</translation>
@@ -418,6 +424,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="461613135510474570">Navigation par phrase</translation>
 <translation id="463135993322337640">Appuyez sur ChromeVox o, n pour découvrir les nouveautés</translation>
 <translation id="4647836961514597010">Palette couleurs</translation>
+<translation id="4652110509054054146">Utilisez la touche de recherche et la flèche de gauche ou la flèche de droite pour accéder à l'accueil ou terminer la session, ou la touche de recherche, Contrôle, flèche de gauche ou flèche de droite pour accéder à l'accueil du contrôle ou terminer la session, ou la touche de recherche, flèche vers le haut ou flèche vers le bas pour accéder à la page précédente ou à la page suivante.</translation>
 <translation id="4660783501463101648">Version classique supprimée. Il est désormais impossible de basculer vers la version classique de ChromeVox par le biais de la touche du clavier initialement prévue à cet effet.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>

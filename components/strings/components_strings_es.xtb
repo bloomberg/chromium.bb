@@ -399,7 +399,6 @@
 <translation id="3678529606614285348">Abre una página en una nueva ventana de incógnito (Ctrl + Mayús + N).</translation>
 <translation id="3679803492151881375">Informe sobre fallos registrado el <ph name="CRASH_TIME" /> y subido el <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Datos del certificado</translation>
-<translation id="3690164694835360974">Inicio de sesión no seguro</translation>
 <translation id="3704162925118123524">La red que estás utilizando puede requerir el acceso a su página de inicio de sesión.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Cargando...</translation>
@@ -718,6 +717,7 @@
 <translation id="6047927260846328439">Es posible que este contenido intente engañarte para que instales software o reveles información personal. <ph name="BEGIN_LINK" />Mostrar de todos modos<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">No puedes acceder a <ph name="SITE" /> en este momento porque el sitio web utiliza la fijación de certificados. Los ataques y los errores de red suelen ser temporales, por lo que es probable que esta página funcione más tarde.</translation>
 <translation id="6059925163896151826">Dispositivos USB</translation>
+<translation id="6071091556643036997">El tipo de política no es válido.</translation>
 <translation id="6080696365213338172">Has accedido al contenido mediante un certificado proporcionado por el administrador. Los datos que proporciones a <ph name="DOMAIN" /> pueden ser interceptados por tu administrador.</translation>
 <translation id="610911394827799129">Es posible que tu cuenta de Google tenga otros tipos de historial de navegación en la página <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Ninguna}=1{1 contraseña (sincronizada)}other{# contraseñas (sincronizadas)}}</translation>
@@ -834,7 +834,6 @@
 <translation id="7138472120740807366">Método de entrega</translation>
 <translation id="7139724024395191329">Emirato</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> más}other{<ph name="PAYMENT_METHOD_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> más}}</translation>
-<translation id="7155487117670177674">Pago no seguro</translation>
 <translation id="717330890047184534">ID de GAIA:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> más}other{<ph name="SHIPPING_OPTION_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> más}}</translation>
 <translation id="7180611975245234373">Actualizar</translation>

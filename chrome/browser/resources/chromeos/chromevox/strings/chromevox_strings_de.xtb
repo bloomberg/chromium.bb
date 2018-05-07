@@ -89,6 +89,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="1810107444790159527">Listenfeld</translation>
 <translation id="1828385960365606039">Mai</translation>
 <translation id="1834891354138622109">Spalte</translation>
+<translation id="1845944666972354496">Zum Aktivieren doppeltippen</translation>
 <translation id="1865601187525349519">Ende des Texts</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Uhrzeit und Datum ansagen</translation>
@@ -119,6 +120,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="2179452035581866348">Mit ChromeVox erhalten Sie wichtige und zusätzliche Informationen mithilfe von Tönen. Wenn Sie sich merken, was die einzelnen Töne bedeuten, können Sie sie zur schnelleren Navigation verwenden. Sobald Sie mit dem Gerät vertraut sind, können Sie die ausführlichen gesprochenen Beschreibungen deaktivieren und Töne nutzen, um wichtige Informationen zur Seite zu erhalten. Nachfolgend finden Sie eine vollständige Liste der Töne und ihrer Bedeutung.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{runde Klammer zu}other{# runde Klammern zu}}</translation>
 <translation id="2199994615414171367">Vorheriger mathematischer Ausdruck</translation>
+<translation id="2203046366315513658">Wert verringern</translation>
 <translation id="2220529011494928058">Problem melden</translation>
 <translation id="2223693656926968778">Aktion für aktuelles Element durchführen</translation>
 <translation id="225732394367814946">Sprechgeschwindigkeit erhöhen</translation>
@@ -157,6 +159,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="2637227747952042642">Mathematik</translation>
 <translation id="2639750663247012216">ChromeVox-Modifikator</translation>
 <translation id="2644542693584024604">misspelled</translation>
+<translation id="2673280813984708147">bearbeitet gerade</translation>
 <translation id="267442004702508783">Aktualisieren</translation>
 <translation id="2684412629217766642">ChromeVox-Anleitung schließen</translation>
 <translation id="2697408785920771974">autoinl</translation>
@@ -208,6 +211,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="3060756054951570867">Menü "<ph name="TITLE" />" geöffnet</translation>
 <translation id="3078345202707391975">Nächste Überschrift der Ebene 2</translation>
 <translation id="3078740164268491126">Tabelle</translation>
+<translation id="3082249673510793544">Zurückscrollen</translation>
 <translation id="3082557070674409251">Angeklickt</translation>
 <translation id="3084806535845658316">Kein Eingabeecho</translation>
 <translation id="3086746722712840547">note</translation>
@@ -395,6 +399,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="4372705107434148843">Sprachausgabe anhalten</translation>
 <translation id="4373197658375206385">Kein vorheriges Element, das kein Link ist</translation>
 <translation id="4376316291247992553">Grafik als Braille anzeigen</translation>
+<translation id="4378308539633073595">Weiterscrollen</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">reset</translation>
 <translation id="4457472090507035117">Aktuelle Stimme auswählen:</translation>
@@ -402,6 +407,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="4476183483923481720">Neue Zeile</translation>
 <translation id="4482330759234983253">Vorherige Tabelle</translation>
 <translation id="4491109536499578614">Bild</translation>
+<translation id="4517854969512651305">Wert erhöhen</translation>
 <translation id="4529987814483543472">Klassische Tastaturbelegung</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{Schrägstrich}other{# Schrägstriche}}</translation>
 <translation id="4547556996012970016">Nächste Überschrift der Ebene 5</translation>
@@ -417,6 +423,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="461613135510474570">Satz</translation>
 <translation id="463135993322337640">Wenn Sie mehr über die neuen Funktionen von ChromeVox erfahren möchten, drücken Sie ChromeVox "O" und "N"</translation>
 <translation id="4647836961514597010">Farbauswahl</translation>
+<translation id="4652110509054054146">Drücken Sie die Suchtaste in Verbindung mit dem Links- oder Rechtspfeil für "Home" oder "Ende", die Suchtaste in Verbindung mit der linken oder rechten Steuerungstaste für "Strg-Home" oder "Strg-Ende" und die Suchtaste in Verbindung mit dem Aufwärts- oder Abwärtspfeil für "Bild auf" oder "Bild ab".</translation>
 <translation id="4660783501463101648">Classic wurde entfernt. Die Tastaturschaltfläche für den Wechsel zu ChromeVox Classic wurde entfernt.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>

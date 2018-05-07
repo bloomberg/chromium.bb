@@ -82,10 +82,12 @@
 <translation id="1718835860248848330">Last hour</translation>
 <translation id="1729516292547892356">To view virtual reality content, update Google VR Services</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – Updated <ph name="TIME_SINCE_UPDATE" /></translation>
+<translation id="1743802530341753419">Ask before allowing sites to connect to a device (recommended)</translation>
 <translation id="1749561566933687563">Sync your bookmarks</translation>
 <translation id="17513872634828108">Open tabs</translation>
 <translation id="1756600373018374892">Tap this button for quick access to your tabs.</translation>
 <translation id="1779089405699405702">Image decoder</translation>
+<translation id="1792959175193046959">Change the default download location at any time</translation>
 <translation id="1807246157184219062">Light</translation>
 <translation id="1829244130665387512">Find in page</translation>
 <translation id="1832521218263067499">Security incidents</translation>
@@ -158,7 +160,6 @@
 <translation id="2450083983707403292">Do you want to start downloading <ph name="FILE_NAME" /> again?</translation>
 <translation id="2476578072172137802">Site Settings</translation>
 <translation id="2482878487686419369">Notifications</translation>
-<translation id="2490674006498621843">Pull up the toolbar to find your files and pages in downloads</translation>
 <translation id="2496180316473517155">Browsing history</translation>
 <translation id="2498359688066513246">Help &amp; feedback</translation>
 <translation id="2501278716633472235">Go back</translation>
@@ -648,6 +649,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6910211073230771657">Deleted</translation>
 <translation id="6912998170423641340">Block sites from reading text and images from the clipboard</translation>
 <translation id="6914783257214138813">Your passwords will be visible to anyone who can see the exported file.</translation>
+<translation id="6942665639005891494">Change the default download location at any time using the Settings menu option</translation>
 <translation id="6945221475159498467">Select</translation>
 <translation id="6963766334940102469">Delete bookmarks</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -673,6 +675,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7121362699166175603">Clears history and autocompletions in the address bar. Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Allow for current search engine</translation>
 <translation id="7138678301420049075">Other</translation>
+<translation id="7144878232160441200">Retry</translation>
 <translation id="7149893636342594995">Last 24 Hours</translation>
 <translation id="7177466738963138057">You can change this later in Settings</translation>
 <translation id="7180611975245234373">Refresh</translation>
@@ -814,6 +817,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8503813439785031346">Username</translation>
 <translation id="8514477925623180633">Export passwords stored with Chrome</translation>
 <translation id="8514577642972634246">Enter incognito mode</translation>
+<translation id="851751545965956758">Block sites from connecting to devices</translation>
 <translation id="8523928698583292556">Delete stored password</translation>
 <translation id="854522910157234410">Open this page:</translation>
 <translation id="8559990750235505898">Offer to translate pages in other languages</translation>

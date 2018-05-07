@@ -421,6 +421,21 @@
       Totuși, verificarea ortografiei se poate face cu un dicționar descărcat; această politică afectează numai utilizarea serviciului web.
 
       Dacă această setare nu este configurată, atunci utilizatorii pot alege dacă se va utiliza sau nu serviciul de verificare a ortografiei.</translation>
+<translation id="2294283832646774959">Configurează o listă de imprimante.
+
+      Această politică permite administratorilor să ofere utilizatorilor configurații ale
+      imprimantelor.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> și <ph name="PRINTER_DESCRIPTION" /> sunt șiruri cu formă liberă care pot fi personalizate pentru a selecta mai ușor o imprimantă. <ph name="PRINTER_MANUFACTURER" /> și <ph name="PRINTER_MODEL" /> sunt folosite pentru a simplifica identificarea imprimantei de către utilizatorii finali. Acestea reprezintă producătorul și modelul imprimantei. <ph name="PRINTER_URI" /> trebuie să fie o adresă care poate fi accesată de pe computerul unui client, inclusiv <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> și <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> este opțional. Dacă este specificat, acesta este folosit pentru a deduplica imprimantele <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> trebuie să corespundă unuia dintre șirurile care reprezintă o imprimantă <ph name="PRODUCT_NAME" /> compatibilă. Șirul va fi folosit pentru a identifica și instala PPD-ul corespunzător imprimantei. Mai multe informații sunt disponibile la https://support.google.com/chrome?p=noncloudprint.
+
+      Configurarea imprimantei este finalizată la prima folosire a acesteia. PPD-urile nu sunt descărcate înainte de folosirea imprimantei. După aceea, PPD-urile folosite frecvent sunt stocate în memoria cache.
+
+      Această politică nu afectează opțiunea utilizatorilor de a configura imprimantele pe dispozitive individuale. Este menită să fie suplimentară față de configurarea imprimantelor de către utilizatori individuali.
+
+      Pentru dispozitivele gestionate cu Active Directory, această politică acceptă extinderea <ph name="MACHINE_NAME_VARIABLE" /> la numele computerului cu Active Directory sau la un subșir al acestuia. De exemplu, dacă numele computerului este <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> va fi înlocuit de cele 4 caractere care urmează după cea de-a 6-a poziție, adică <ph name="MACHINE_NAME_PART_EXAMPLE" />. Reține că poziția începe de la zero.
+      </translation>
 <translation id="2294382669900758280">Redarea videoclipurilor în aplicațiile Android nu este luată în considerare, chiar dacă politica este setată la <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Configurează pagina Filă nouă prestabilită în <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Specifică o listă de pluginuri activate</translation>
@@ -880,7 +895,6 @@
 <translation id="3715569262675717862">Autentificare pe baza certificatelor de client</translation>
 <translation id="3736879847913515635">Activează adăugarea de persoane în managerul de utilizatori</translation>
 <translation id="3737544779868348650">Numele de gazdă al rețelei dispozitivului</translation>
-<translation id="3740754010292550733">Setează perioada pentru notificările privind relansarea după actualizare</translation>
 <translation id="3750220015372671395">Blochează generarea cheilor pe aceste site-uri</translation>
 <translation id="3756011779061588474">Blocați modul pentru dezvoltatori</translation>
 <translation id="3758089716224084329">Îți permite să specifici serverul proxy folosit de <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice setările de proxy.
@@ -985,9 +999,6 @@
       Politica indică extensiile instalate automat pentru utilizatorul demonstrativ, pentru dispozitivele în modul Vânzare. Aceste extensii sunt salvate pe dispozitiv și pot fi instalate offline, după instalare.
 
       Fiecare intrare din listă conține un dicționar care trebuie să includă codul extensiei în câmpul „extension-id”, precum și adresa URL pentru actualizare în câmpul „update-url”.</translation>
-<translation id="3873159954366380945">Îți permite să setezi perioada de timp în care se afișează notificările de relansare a <ph name="PRODUCT_NAME" /> pentru a aplica o actualizare în așteptare.
-
-      Setarea acestei politici poate fi folosită pentru a controla perioada de timp, în milisecunde, în care utilizatorul este informat treptat că este necesară relansarea <ph name="PRODUCT_NAME" /> (sau repornirea <ph name="PRODUCT_OS_NAME" />) pentru o actualizare. În această perioadă, utilizatorul va fi informat în mod repetat despre necesitatea unei actualizări pe baza setării politicii <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Dacă aceasta nu este setată, se folosește perioada prestabilită de 345600000 milisecunde (patru zile) pentru <ph name="PRODUCT_OS_NAME" /> și perioada prestabilită de 604800000 milisecunde (o săptămână) pentru toate celelalte platforme.</translation>
 <translation id="3877517141460819966">Modul integrat de autentificare cu doi factori</translation>
 <translation id="388237772682176890">Politica nu mai este dezvoltată în M53 și a fost eliminată din M54, deoarece compatibilitatea cu SPDY/3.1 a fost eliminată.
 
@@ -1192,6 +1203,7 @@
 <translation id="4508686775017063528">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_NAME" /> va fi activat, iar utilizatorii îl vor putea lansa din meniul aplicației, din meniurile contextuale ale paginilor, din comenzile media de pe site-urile compatibile cu Cast și folosind pictograma Cast din bara de instrumente (dacă se afișează).
 
           Dacă politica este dezactivată, <ph name="PRODUCT_NAME" /> va fi dezactivat.</translation>
+<translation id="4515404363392014383">Activează Navigarea sigură pentru sursele de încredere</translation>
 <translation id="4518251772179446575">Notifică-mă dacă un site încearcă să urmărească locația fizică a utilizatorilor</translation>
 <translation id="4519046672992331730">Activează sugestiile de căutare în caseta polivalentă din <ph name="PRODUCT_NAME" /> și împiedică modificarea acestei setări de către utilizatori.
 
@@ -1312,6 +1324,7 @@
 
           Dacă această politică este dezactivată, solicitările de blocare a activării ecranului vor fi ignorate.</translation>
 <translation id="487460824085252184">Migrează automat, nu cere consimțământul utilizatorului.</translation>
+<translation id="4874982543810021567">Blochează WebUSB de pe aceste site-uri</translation>
 <translation id="4876805738539874299">Versiunea maximă SSL a fost activată</translation>
 <translation id="4897928009230106190">Specifică parametrii utilizați la căutarea sugestiilor cu POST. Politica este alcătuită din perechi nume/valoare separate prin virgulă. Dacă o valoare este un parametru șablon, precum {searchTerms} din exemplul de mai sus, acesta va fi înlocuit cu datele termenilor de căutare reali.
 
@@ -1846,6 +1859,11 @@
       Dacă această politică nu este configurată, anticiparea în rețea va fi activată, dar utilizatorul o va putea modifica.</translation>
 <translation id="6658245400435704251">Specifică numărul de secunde până la care un dispozitiv poate întârzia în mod aleatoriu descărcarea unei actualizări, din momentul în care respectiva actualizare a fost publicată pe server. O parte din perioada în care dispozitivul așteaptă efectuarea actualizării poate fi exprimată în termeni temporali, iar partea rămasă printr-un număr de verificări ale existenței unei actualizări. În orice caz, difuzarea are ca limită superioară o valoare constantă de timp, astfel încât un dispozitiv nu poate rămâne niciodată blocat definitiv în așteptarea descărcării unei actualizări.</translation>
 <translation id="6665670272107384733">Setează frecvența cu care un utilizator trebuie să introducă parola pentru a folosi deblocarea rapidă</translation>
+<translation id="6681229465468164801">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile împiedicate să ceară utilizatorului să le acorde acces la un dispozitiv USB.
+
+          Dacă această politică nu este configurată, va fi folosită valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultWebUsbGuardSetting”, în cazul în care aceasta este configurată, fie din configurația personală a utilizatorului, în caz contrar.
+
+          Șabloanele de adrese URL din această politică nu trebuie să fie în contradicție cu cele configurate prin WebUsbAskForUrls. Nu se precizează care dintre cele două politici are întâietate dacă o adresă URL corespunde cu amândouă.</translation>
 <translation id="6689792153960219308">Raportează starea hardware-ului</translation>
 <translation id="6698071416141001300">Declanșarea semnalării unui cont protejat prin parolă care prezintă un risc este activată de refolosirea parolei</translation>
 <translation id="6699880231565102694">Activați autentificarea cu doi factori pentru gazdele de acces la distanță</translation>
@@ -1999,6 +2017,11 @@
       Dacă setarea este dezactivată sau neconfigurată, protecția prestabilită prin Navigarea sigură se aplică tuturor resurselor.
       Această politică nu este disponibilă în instanțele Windows care nu sunt asociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Blochează ferestrele pop-up de pe aceste site-uri</translation>
+<translation id="7085803328069945025">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile care au permisiunea să ceară utilizatorului să le acorde acces la un dispozitiv USB.
+
+          Dacă această politică nu este configurată, va fi folosită valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultWebUsbGuardSetting”, în cazul în care aceasta este configurată, fie din configurația personală a utilizatorului, în caz contrar.
+
+          Șabloanele de adrese URL din această politică nu trebuie să fie în contradicție cu cele configurate prin WebUsbBlockedForUrls. Nu se precizează care dintre cele două politici are întâietate dacă o adresă URL corespunde cu amândouă.</translation>
 <translation id="7106631983877564505">Activează blocarea când dispozitivele <ph name="PRODUCT_OS_NAME" /> ajung să fie inactive sau suspendate.
 
       Dacă activezi această setare, utilizatorilor li se va solicita o parolă pentru a debloca dispozitivul din modul inactiv.
@@ -2526,7 +2549,7 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
           Separă numele serverelor prin virgulă. Sunt permise metacaracterele (*).
 
           Dacă politica nu este configurată, <ph name="PRODUCT_NAME" /> va încerca să detecteze dacă un anumit server se află în intranet și numai după aceea va răspunde la solicitările IWA. Dacă un server este detectat ca fiind pe internet, <ph name="PRODUCT_NAME" /> va ignora solicitările IWA trimise de acesta.</translation>
-<translation id="8667812577403206506">Îți permite să controlezi dacă mașinile virtuale au permisiunea de a rula pe sistemul de operare Chrome.
+<translation id="8667812577403206506">Îți permite să stabilești dacă mașinile virtuale au permisiunea de a rula pe sistemul de operare Chrome.
 
       Dacă politica este activată, dispozitivul are permisiunea de a rula mașini virtuale.
       Dacă politica este dezactivată, dispozitivul nu va avea permisiunea de a rula mașini virtuale.
@@ -2674,6 +2697,7 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="9096086085182305205">Lista albă de autentificare a serverelor</translation>
 <translation id="9098553063150791878">Politici pentru autentificarea HTTP</translation>
 <translation id="9105265795073104888">Un singur subset de opțiuni pentru configurarea proxy-ului este pus la dispoziția aplicațiilor Android. Acestea pot alege în mod voluntar să folosească proxy-ul. Nu le poți forța să folosească un proxy.</translation>
+<translation id="9106865192244721694">Permite WebUSB pe aceste site-uri</translation>
 <translation id="9112727953998243860">Fișier de configurare a imprimantelor companiei</translation>
 <translation id="9112897538922695510">Vă permite să înregistrați o listă de handlere de protocol. Aceasta poate fi doar o politică recomandată. Valoarea proprietății |protocol| trebuie setată la o schemă ca „mailto”, iar valoarea proprietății |url| trebuie setată la șablonul adresei URL al aplicației care gestionează schema. Șablonul poate include „%s”, care, dacă este prezent, va fi înlocuit cu adresa URL gestionată.
 
@@ -2706,6 +2730,11 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="915194831143859291">Dacă această politică este dezactivată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> îi va permite utilizatorului să oprească dispozitivul.
       Dacă această politică este activată, <ph name="PRODUCT_OS_NAME" /> va declanșa o repornire când utilizatorul închide dispozitivul. <ph name="PRODUCT_OS_NAME" /> înlocuiește toate aparițiile butoanelor de închidere din interfața de utilizare cu butoane de repornire. Dacă utilizatorul închide dispozitivul folosind butonul de pornire, acesta nu va reporni automat, chiar dacă politica este activată.</translation>
 <translation id="9158929520101169054">Permite conectarea multiplă în browser</translation>
+<translation id="9165792353046089850">Îți permite să setezi dacă site-urile primesc acces la dispozitivele USB conectate. Accesul poate fi blocat complet sau utilizatorul poate fi întrebat de fiecare dată când un site dorește să primească acces la dispozitivele USB conectate.
+
+          Această politică poate fi înlocuită pentru anumite șabloane de adrese URL prin aplicarea politicilor „WebUsbAskForUrls” și „WebUsbBlockedForUrls”.
+
+          Dacă această politică nu este configurată, va fi folosită valoarea „3”, iar utilizatorul o va putea modifica.</translation>
 <translation id="9167719789236691545">Dezactivează Drive în aplicația Fișiere din <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="9187743794267626640">Dezactivați conectarea dispozitivelor de stocare externe</translation>
 <translation id="9197740283131855199">Procentul cu care se va ajusta intervalul de reducere a luminozității ecranului dacă utilizatorul devine activ după reducerea luminozității</translation>

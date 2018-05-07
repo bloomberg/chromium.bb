@@ -402,7 +402,7 @@
           Als dit beleid niet is ingesteld, wordt er geen waarschuwingsdialoogvenster weergegeven.
 
           De beleidswaarde moet worden opgegeven in milliseconden. De waarde die wordt opgegeven, moet kleiner zijn dan of gelijk aan de inactieve vertraging.</translation>
-<translation id="2289578386193672044">Hiermee wordt een lijst opgegeven met apps en extensies die zonder gebruikersinteractie op de achtergrond worden geïnstalleerd en die niet kunnen worden verwijderd of uitgeschakeld door de gebruiker. Alle rechten die worden aangevraagd door de apps/extensies, worden impliciet zonder gebruikersinteractie verleend, inclusief aanvullende rechten die worden aangevraagd door toekomstige versies van de app/extensie. Bovendien worden rechten verleend voor de API's van de enterprise.deviceAttributes- en enterprise.platformKeys-extensie. (Deze twee API's zijn niet beschikbaar voor apps/extensies die niet gedwongen zijn geïnstalleerd.)
+<translation id="2289578386193672044">Hiermee wordt een lijst opgegeven met apps en extensies die zonder gebruikersinteractie op de achtergrond worden geïnstalleerd en die niet kunnen worden verwijderd of uitgeschakeld door de gebruiker. Alle machtigingen die worden aangevraagd door de apps/extensies, worden impliciet zonder gebruikersinteractie verleend, inclusief aanvullende machtigingen die worden aangevraagd door toekomstige versies van de app/extensie. Bovendien worden machtigingen verleend voor de API's van de enterprise.deviceAttributes- en enterprise.platformKeys-extensie. (Deze twee API's zijn niet beschikbaar voor apps/extensies die niet gedwongen zijn geïnstalleerd.)
 
           Dit beleid krijgt voorrang boven een potentieel conflicterend <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />-beleid. Als een app of extensie die eerder gedwongen is geïnstalleerd uit deze lijst wordt verwijderd, wordt de app of extensie automatisch verwijderd door <ph name="PRODUCT_NAME" />.
 
@@ -420,6 +420,20 @@
       Spellingcontrole kan nog steeds worden uitgevoerd met een gedownload woordenboek. Dit beleid beheert alleen het gebruik van de online service.
 
       Als deze instelling niet is geconfigureerd, kunnen gebruikers kiezen of de service voor spellingcontrole moet worden gebruikt.</translation>
+<translation id="2294283832646774959">Hiermee configureer je een lijst met printers.
+
+      Met dit beleid kunnen beheerders hun gebruikers voorzien van printerconfiguraties.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> en <ph name="PRINTER_DESCRIPTION" /> zijn vrije tekenreeksen die kunnen worden aangepast om de printerselectie te vereenvoudigen. <ph name="PRINTER_MANUFACTURER" /> en <ph name="PRINTER_MODEL" /> zijn bedoeld om de printeridentificatie door eindgebruikers te vereenvoudigen. Ze staan voor de fabrikant en het model van de printer. <ph name="PRINTER_URI" /> moet een adres zijn dat bereikbaar is vanaf een clientcomputer, inclusief <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> en <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> is optioneel. Als de UUID van de printer is opgegeven, wordt deze gebruikt om <ph name="ZEROCONF_DISCOVERY" />-printers te dedupliceren.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> moet overeenkomen met een van de tekenreeksen die een door <ph name="PRODUCT_NAME" /> ondersteunde printer vertegenwoordigen. De tekenreeks wordt gebruikt om de juiste PPD voor de printer te identificeren en te installeren. Meer informatie hierover vind je op https://support.google.com/chrome?p=noncloudprint.
+
+      De instellingen van de printer worden voltooid wanneer de printer voor het eerst wordt gebruikt. Daarna worden veelgebruikte PPD's opgeslagen in het cachegeheugen.
+
+      Dit beleid is niet van invloed op de mogelijkheid van gebruikers om printers op afzonderlijke apparaten in te stellen. Het is bedoeld als aanvulling op de printerinstellingen van afzonderlijke gebruikers.
+
+      Voor apparaten die via Active Directory worden beheerd, ondersteunt dit beleid de uitbreiding van <ph name="MACHINE_NAME_VARIABLE" /> naar de naam van de Active Directory-machine of naar een subtekenreeks daarvan. Als de machinenaam bijvoorbeeld <ph name="MACHINE_NAME_EXAMPLE" /> is, wordt <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> vervangen door de vier tekens vanaf de zesde positie, oftewel <ph name="MACHINE_NAME_PART_EXAMPLE" />. Houd er rekening mee dat de positie op nul is gebaseerd.
+      </translation>
 <translation id="2294382669900758280">Er wordt geen rekening gehouden met het afspelen van video in Android-apps, zelfs niet wanneer dit beleid is ingesteld op <ph name="TRUE" /> (Waar).</translation>
 <translation id="2298647742290373702">De standaardpagina 'Nieuw tabblad' configureren in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Een lijst met ingeschakelde plug-ins specificeren</translation>
@@ -896,7 +910,6 @@
 <translation id="3715569262675717862">Verificatie op basis van clientcertificaten</translation>
 <translation id="3736879847913515635">'Persoon toevoegen' inschakelen in gebruikersbeheer</translation>
 <translation id="3737544779868348650">Hostnaam van apparaat in netwerk</translation>
-<translation id="3740754010292550733">Stel de periode in voor meldingen over opnieuw opstarten na updates</translation>
 <translation id="3750220015372671395">Het genereren van sleutels op deze sites blokkeren</translation>
 <translation id="3756011779061588474">Ontwikkelaarsmodus blokkeren</translation>
 <translation id="3758089716224084329">Hiermee kun je de proxyserver specificeren die door <ph name="PRODUCT_NAME" /> wordt gebruikt en wordt voorkomen dat gebruikers proxyinstellingen kunnen aanpassen.
@@ -1003,9 +1016,6 @@
       Hiermee vermeld je extensies die automatisch worden geïnstalleerd voor de demogebruiker, voor apparaten in de commerciële modus. Deze extensies worden opgeslagen op het apparaat en kunnen worden geïnstalleerd in de offline modus, na de installatie.
 
       Elke lijstvermelding bevat een woordenboek dat de extensie-ID moet bevatten in het veld 'Extensie-ID' en de update-URL in het veld 'Update-URL'.</translation>
-<translation id="3873159954366380945">Hiermee kun je de periode instellen waarin meldingen om <ph name="PRODUCT_NAME" /> opnieuw op te starten, worden weergegeven om een update toe te passen.
-
-      Met deze beleidsinstelling kun je de periode bepalen (in milliseconden) waarin een gebruiker op progressieve wijze wordt geïnformeerd dat <ph name="PRODUCT_NAME" /> opnieuw moet worden gestart (of dat <ph name="PRODUCT_OS_NAME" /> opnieuw moet worden gestart) om een update toe te passen. De gebruiker wordt gedurende deze periode herhaaldelijk geïnformeerd over de update op basis van de instelling van het <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-beleid. Als dit niet is ingesteld, wordt de standaardperiode van 345.600.000 milliseconden (vier dagen) gehanteerd voor <ph name="PRODUCT_OS_NAME" /> en 604.800.000 milliseconden (één week) voor alle andere platforms.</translation>
 <translation id="3877517141460819966">Geïntegreerde modus voor authenticatie met twee factoren</translation>
 <translation id="388237772682176890">Dit beleid is beëindigd in M53 en is verwijderd in M54, omdat de ondersteuning voor SPDY/3.1 is verwijderd.
 
@@ -1219,6 +1229,7 @@
 <translation id="4508686775017063528">Als dit beleid is ingesteld op 'waar' (true) of niet is ingesteld, is <ph name="PRODUCT_NAME" /> ingeschakeld en kunnen gebruikers deze functie starten vanuit het app-menu, contextmenu's op pagina's, mediabedieningsopties op websites die werken met Cast en via het Cast-icoon in de werkbalk (als dit wordt weergegeven).
 
           Als dit beleid is ingesteld op 'onwaar' (false), is <ph name="PRODUCT_NAME" /> uitgeschakeld.</translation>
+<translation id="4515404363392014383">'Safe Browsing' inschakelen voor vertrouwde bronnen</translation>
 <translation id="4518251772179446575">Goedkeuring vragen wanneer een site de fysieke locatie van gebruikers wil bijhouden</translation>
 <translation id="4519046672992331730">Hiermee worden zoeksuggesties in de omnibox van <ph name="PRODUCT_NAME" /> ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
@@ -1337,6 +1348,7 @@
 
           Als dit beleid is ingesteld als 'false', worden verzoeken voor schermactiveringsvergrendeling genegeerd.</translation>
 <translation id="487460824085252184">Automatisch migreren, niet om toestemming van de gebruiker vragen.</translation>
+<translation id="4874982543810021567">WebUSB blokkeren op deze sites</translation>
 <translation id="4876805738539874299">Maximale SSL-versie ingeschakeld</translation>
 <translation id="4897928009230106190">Specificeert de parameters die worden gebruikt voor het uitvoeren van een voorgestelde zoekopdracht met POST. Het bestaat uit door komma's gescheiden naam/waarde-paren. Als een waarde een templateparameter, zoals {searchTerms} in het bovenstaande voorbeeld, is, wordt de waarde vervangen door echte zoektermgegevens.
 
@@ -1911,6 +1923,11 @@
       Als dit beleid niet wordt ingesteld, wordt netwerkvoorspelling ingeschakeld, maar kan de gebruiker dit wijzigen.</translation>
 <translation id="6658245400435704251">Bepaalt het maximaal aantal seconden dat een apparaat willekeurig de download van een update mag uitstellen vanaf het moment dat de update voor het eerst naar de server werd gepusht. Het apparaat kan een deel van deze tijd wachten in termen van kloktijd en het resterende deel in termen van het aantal updatecontroles. De maximale spreiding is in elk geval begrensd door een constante periode zodat een apparaat nooit vastloopt tijdens het wachten tot een update kan worden gedownload.</translation>
 <translation id="6665670272107384733">Instellen hoe vaak een gebruiker het wachtwoord moet opgeven om de functie voor snel ontgrendelen te kunnen gebruiken</translation>
+<translation id="6681229465468164801">Hiermee kun je een lijst met URL-patronen opgeven voor sites die de gebruiker geen toestemming mogen vragen om ze toegang te verlenen tot een USB-apparaat.
+
+          Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites. Je vindt deze in het beleid DefaultWebUsbGuardSetting (als dit is ingesteld) of in de persoonlijke instellingen van de gebruiker.
+
+          De URL-patronen in dit beleid mogen niet conflicteren met de patronen die zijn ingesteld via WebUsbAskForUrls. Er is niet opgegeven welk beleid voorrang krijgt wanneer een URL met beide overeenkomt.</translation>
 <translation id="6689792153960219308">De hardwarestatus melden</translation>
 <translation id="6698071416141001300">Accountmarkering wegens wachtwoordbeveiligingsrisico wordt geactiveerd bij hergebruik van een wachtwoord</translation>
 <translation id="6699880231565102694">Authenticatie in twee stappen inschakelen voor hosts voor externe toegang</translation>
@@ -2066,6 +2083,11 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als deze instelling is uitgeschakeld of niet is ingesteld, wordt standaard de Safe Browsing-beveiliging toegepast op alle bronnen.
       Dit beleid is niet beschikbaar op Windows-instanties die niet aan een <ph name="MS_AD_NAME" />-domein zijn gekoppeld.</translation>
 <translation id="7079519252486108041">Pop-ups blokkeren op deze sites</translation>
+<translation id="7085803328069945025">Hiermee kun je een lijst met URL-patronen opgeven voor sites die de gebruiker toestemming mogen vragen om ze toegang te verlenen tot een USB-apparaat.
+
+          Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites. Je vindt deze in het beleid DefaultWebUsbGuardSetting (als dit is ingesteld) of in de persoonlijke instellingen van de gebruiker.
+
+          De URL-patronen in dit beleid mogen niet conflicteren met de patronen die zijn ingesteld via WebUsbBlockedForUrls. Er is niet opgegeven welk beleid voorrang krijgt wanneer een URL met beide overeenkomt.</translation>
 <translation id="7106631983877564505">Hiermee wordt de vergrendeling ingeschakeld wanneer <ph name="PRODUCT_OS_NAME" />-apparaten inactief worden of overschakelen op de slaapstand.
 
       Als je deze instelling inschakelt, worden gebruikers om een wachtwoord gevraagd om het apparaat te ontgrendelen als het zich in de slaapstand bevindt.
@@ -2756,6 +2778,7 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 <translation id="9096086085182305205">Witte lijst voor verificatieserver</translation>
 <translation id="9098553063150791878">Beleid voor HTTP-verificatie</translation>
 <translation id="9105265795073104888">Er is slechts een subset van de configuratieopties voor de proxy beschikbaar voor Android-apps. Android-apps kunnen op vrijwillige basis gebruikmaken van de proxy. Je kunt Android-apps niet dwingen een proxy te gebruiken.</translation>
+<translation id="9106865192244721694">WebUSB toestaan op deze sites</translation>
 <translation id="9112727953998243860">Configuratiebestand voor bedrijfsprinters</translation>
 <translation id="9112897538922695510">Hiermee kun je een lijst met protocolhandlers registreren. Dit kan alleen een aanbevolen beleid zijn. De eigenschap |protocol| moet worden ingesteld op het schema, zoals 'mailto', en de eigenschap |url| moet worden ingesteld op het URL-patroon van de app die het schema verwerkt. Het patroon kan een '%s' bevatten, die indien aanwezig wordt vervangen door de verwerkte URL.
 
@@ -2795,13 +2818,18 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 <translation id="915194831143859291">Als dit beleid wordt ingesteld op 'onwaar' of niet wordt geconfigureerd, staat <ph name="PRODUCT_OS_NAME" /> de gebruiker toe het apparaat af te sluiten.
       Als dit beleid wordt ingesteld op 'waar', activeert <ph name="PRODUCT_OS_NAME" /> een herstart wanneer de gebruiker het apparaat afsluit. <ph name="PRODUCT_OS_NAME" /> vervangt alle instanties van afsluitknoppen in de gebruikersinterface door herstartknoppen. Als de gebruiker het apparaat afsluit met de aan/uit-knop, wordt het apparaat niet automatisch opnieuw opgestart, ook niet wanneer het beleid is ingeschakeld.</translation>
 <translation id="9158929520101169054">Toegang tot meerdere accounts toestaan in de browser</translation>
+<translation id="9165792353046089850">Hiermee kun je instellen of websites toegang mogen krijgen tot aangesloten USB-apparaten. De toegang kan volledig worden geblokkeerd of de gebruiker kan elke keer om toestemming worden gevraagd wanneer een website toegang wil hebben tot aangesloten USB-apparaten.
+
+          Dit beleid kan worden overschreven voor bepaalde URL-patronen door gebruik te maken van de beleidsregels WebUsbAskForUrls en WebUsbBlockedForUrls.
+
+          Als dit beleid niet is ingesteld, wordt de waarde 3 gebruikt en kan de gebruiker deze wijzigen.</translation>
 <translation id="9167719789236691545">Drive uitschakelen in de app Bestanden van <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="9187743794267626640">Koppelen van externe opslag uitschakelen</translation>
 <translation id="9197740283131855199">Percentage waarmee de dimvertraging van het scherm wordt geschaald als de gebruiker actief wordt na het dimmen</translation>
 <translation id="9200828125069750521">Parameters voor afbeeldings-URL die POST gebruikt</translation>
 <translation id="9210953373038593554">Hiermee configureer je de verificatietypen voor SAML-logins.
 
-      Wanneer dit beleid is ingesteld op Standaard (waarde 0), wordt het gedrag van SAML-logins bepaald door de browser, afhankelijk van andere factoren. In het meeste basale scenario worden de gebruikersverificatie en de beveiliging van gebruikersgegevens in de cache gebaseerd op wachtwoorden die handmatig door gebruikers worden ingevoerd.
+      Wanneer dit beleid is ingesteld op Standaard (waarde 0), wordt het gedrag van SAML-logins bepaald door de browser, afhankelijk van andere factoren. In het meest basale scenario worden de gebruikersverificatie en de beveiliging van gebruikersgegevens in de cache gebaseerd op wachtwoorden die handmatig door gebruikers worden ingevoerd.
 
       Wanneer dit beleid is ingesteld op ClientCertificate (waarde 1), wordt verificatie van clientcertificaten gebruikt voor nieuw toegevoegde gebruikers die via SAML inloggen. Voor dergelijke gebruikers worden geen wachtwoorden gebruikt. Hun gegevens in de lokale cache worden beveiligd met de bijbehorende cryptografische sleutels. Met deze instellingen is bijvoorbeeld de configuratie van slimme gebruikersverificatie op basis van smartcards mogelijk (houd er rekening mee dat middleware-apps voor smartcards via het beleid DeviceLoginScreenAppInstallList moeten worden geïnstalleerd).
 

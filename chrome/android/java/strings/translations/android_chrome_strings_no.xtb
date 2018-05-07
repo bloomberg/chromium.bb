@@ -82,10 +82,12 @@
 <translation id="1718835860248848330">Siste time</translation>
 <translation id="1729516292547892356">Du må oppdatere Google VR Services for å kunne se innhold for virtuell virkelighet.</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – oppdatert <ph name="TIME_SINCE_UPDATE" /></translation>
+<translation id="1743802530341753419">Spør før nettsteder kan koble til en enhet (anbefales)</translation>
 <translation id="1749561566933687563">Synkroniser bokmerkene dine</translation>
 <translation id="17513872634828108">Åpne faner</translation>
 <translation id="1756600373018374892">Trykk på denne knappen for å få rask tilgang til fanene dine.</translation>
 <translation id="1779089405699405702">Bildedekoder</translation>
+<translation id="1792959175193046959">Endre standard nedlastingssted når som helst</translation>
 <translation id="1807246157184219062">Lys</translation>
 <translation id="1829244130665387512">Finn på side</translation>
 <translation id="1832521218263067499">Sikkerhetshendelser</translation>
@@ -158,7 +160,6 @@
 <translation id="2450083983707403292">Vil du laste ned <ph name="FILE_NAME" /> på nytt?</translation>
 <translation id="2476578072172137802">Nettstedsinnstillinger</translation>
 <translation id="2482878487686419369">Varsler</translation>
-<translation id="2490674006498621843">Dra opp verktøyraden for å finne filene og sidene dine i nedlastinger</translation>
 <translation id="2496180316473517155">Nettlesingslogg</translation>
 <translation id="2498359688066513246">Hjelp og tilbakemelding</translation>
 <translation id="2501278716633472235">Gå tilbake</translation>
@@ -182,6 +183,7 @@
 <translation id="2650751991977523696">Vil du laste ned filen på nytt?</translation>
 <translation id="2653659639078652383">Send</translation>
 <translation id="2677748264148917807">Gå ut</translation>
+<translation id="2693813674743028984">Skjul lagring</translation>
 <translation id="2704606927547763573">Kopiert</translation>
 <translation id="2707726405694321444">Last inn siden på nytt</translation>
 <translation id="2709516037105925701">Autofyll</translation>
@@ -207,6 +209,7 @@
 <translation id="2956410042958133412">Denne kontoen er administrert av <ph name="PARENT_NAME_1" /> og <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Med enerett.</translation>
 <translation id="2962095958535813455">Byttet til inkognitofaner</translation>
+<translation id="2965945119655563012">Vis lagring</translation>
 <translation id="2968755619301702150">Visningsprogram for sertifikater</translation>
 <translation id="2979025552038692506">Valgt inkognitofane</translation>
 <translation id="2989523299700148168">Nylig besøkte</translation>
@@ -334,6 +337,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4170011742729630528">Tjenesten er ikke tilgjengelig. Prøv på nytt senere.</translation>
 <translation id="4181841719683918333">Språk</translation>
 <translation id="4195643157523330669">Åpne i ny fane</translation>
+<translation id="4198423547019359126">Ingen tilgjengelige nedlastingssteder</translation>
 <translation id="4226663524361240545">Varsler kan gjøre at enheten vibrerer</translation>
 <translation id="4242533952199664413">Åpne innstillingene</translation>
 <translation id="424864128008805179">Vil du logge av Chrome?</translation>
@@ -645,6 +649,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6910211073230771657">Slettet</translation>
 <translation id="6912998170423641340">Blokkér nettsteder fra å få tilgang til tekst og bilder fra utklippstavlen</translation>
 <translation id="6914783257214138813">Passordene dine blir synlige for alle som kan se den eksporterte filen.</translation>
+<translation id="6942665639005891494">Endre standard nedlastingssted når som helst via menyalternativet Innstillinger</translation>
 <translation id="6945221475159498467">Velg</translation>
 <translation id="6963766334940102469">Slett bokmerker</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -670,6 +675,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7121362699166175603">Tømmer loggen og fjerner autofullføringer i adressefeltet. Det kan hende Google-kontoen din har andre typer nettlesingslogger på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Tillat for den aktive søkemotoren</translation>
 <translation id="7138678301420049075">Annet</translation>
+<translation id="7144878232160441200">Prøv på nytt</translation>
 <translation id="7149893636342594995">Siste døgn</translation>
 <translation id="7177466738963138057">Du kan endre dette senere i Innstillinger</translation>
 <translation id="7180611975245234373">Last inn på nytt</translation>
@@ -699,6 +705,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7455923816558154057">Trykk for å se</translation>
 <translation id="7473891865547856676">Nei takk</translation>
 <translation id="7475192538862203634">Hvis du ser dette ofte, kan du prøve disse <ph name="BEGIN_LINK" />forslagene<ph name="END_LINK" />.</translation>
+<translation id="7475688122056506577">Finner ikke noe SD-kort. Noen av filene dine kan mangle.</translation>
 <translation id="748127970106343339">Bekreft sletting av enhetslegitimasjon</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (oppdatert <ph name="TIME_SINCE_UPDATE" />)</translation>
@@ -762,6 +769,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8026334261755873520">Slett nettlesingsdata</translation>
 <translation id="8035133914807600019">Ny mappe</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dager igjen</translation>
+<translation id="804335162455518893">Finner ikke noe SD-kort</translation>
 <translation id="805047784848435650">Basert på nettlesingsloggen din</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB tilgjengelig</translation>
 <translation id="8058746566562539958">Åpne i en ny Chrome-fane</translation>
@@ -809,6 +817,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8503813439785031346">Brukernavn</translation>
 <translation id="8514477925623180633">Eksportér passord som er lagret med Chrome</translation>
 <translation id="8514577642972634246">Slå på inkognitomodus</translation>
+<translation id="851751545965956758">Blokkér at nettsteder kobler til enheter</translation>
 <translation id="8523928698583292556">Slett lagrede passord</translation>
 <translation id="854522910157234410">Åpne denne siden</translation>
 <translation id="8559990750235505898">Tilby å oversette sider på andre språk</translation>

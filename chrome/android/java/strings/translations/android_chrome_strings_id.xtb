@@ -82,10 +82,12 @@
 <translation id="1718835860248848330">Jam terakhir</translation>
 <translation id="1729516292547892356">Untuk melihat konten realitas maya, update Layanan Google VR</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Diupdate <ph name="TIME_SINCE_UPDATE" /></translation>
+<translation id="1743802530341753419">Tanya sebelum mengizinkan situs terhubung ke perangkat (disarankan)</translation>
 <translation id="1749561566933687563">Sinkronisasikan bookmark Anda</translation>
 <translation id="17513872634828108">Buka tab</translation>
 <translation id="1756600373018374892">Tekan tombol ini untuk akses cepat ke tab Anda.</translation>
 <translation id="1779089405699405702">Pendekode gambar</translation>
+<translation id="1792959175193046959">Ubah lokasi download default kapan saja</translation>
 <translation id="1807246157184219062">Terang</translation>
 <translation id="1829244130665387512">Cari di halaman</translation>
 <translation id="1832521218263067499">Insiden keamanan</translation>
@@ -158,7 +160,6 @@
 <translation id="2450083983707403292">Ingin mulai mendownload <ph name="FILE_NAME" /> lagi?</translation>
 <translation id="2476578072172137802">Setelan Situs</translation>
 <translation id="2482878487686419369">Notifikasi</translation>
-<translation id="2490674006498621843">Tarik toolbar ke atas untuk menemukan file dan halaman di bagian download</translation>
 <translation id="2496180316473517155">Histori jelajah</translation>
 <translation id="2498359688066513246">Bantuan &amp; masukan</translation>
 <translation id="2501278716633472235">Kembali</translation>
@@ -648,6 +649,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6910211073230771657">Dihapus</translation>
 <translation id="6912998170423641340">Blokir situs agar tidak membaca teks dan gambar dari papan klip</translation>
 <translation id="6914783257214138813">Sandi akan terlihat oleh orang yang dapat melihat file yang diekspor.</translation>
+<translation id="6942665639005891494">Ubah lokasi download default kapan saja menggunakan opsi menu Setelan</translation>
 <translation id="6945221475159498467">Pilih</translation>
 <translation id="6963766334940102469">Hapus bookmark</translation>
 <translation id="6965382102122355670">Oke</translation>
@@ -673,6 +675,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7121362699166175603">Menghapus histori dan pelengkapan otomatis di kolom URL. Akun Google Anda mungkin memiliki bentuk histori browsing lainnya di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Mengizinkan mesin telusur saat ini</translation>
 <translation id="7138678301420049075">Lainnya</translation>
+<translation id="7144878232160441200">Coba lagi</translation>
 <translation id="7149893636342594995">24 jam terakhir</translation>
 <translation id="7177466738963138057">Anda dapat mengubah ini nanti di Setelan</translation>
 <translation id="7180611975245234373">Segarkan</translation>
@@ -814,6 +817,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8503813439785031346">Nama Pengguna</translation>
 <translation id="8514477925623180633">Ekspor sandi yang disimpan dengan Chrome</translation>
 <translation id="8514577642972634246">Masuki mode penyamaran</translation>
+<translation id="851751545965956758">Blokir situs agar tidak terhubung ke perangkat</translation>
 <translation id="8523928698583292556">Hapus sandi tersimpan</translation>
 <translation id="854522910157234410">Buka halaman ini</translation>
 <translation id="8559990750235505898">Tawarkan penerjemahan halaman ke dalam bahasa lain</translation>

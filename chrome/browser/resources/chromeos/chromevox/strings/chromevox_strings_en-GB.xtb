@@ -89,6 +89,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="1810107444790159527">List box</translation>
 <translation id="1828385960365606039">May</translation>
 <translation id="1834891354138622109">Column</translation>
+<translation id="1845944666972354496">Double tap to activate</translation>
 <translation id="1865601187525349519">End of text</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Speak the current time and date.</translation>
@@ -120,6 +121,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="2179452035581866348">ChromeVox uses sounds to give you essential and additional information. You can use these sounds to navigate more quickly by learning what each sound means. Once you get more comfortable, you can turn off verbose descriptions in speech and rely on them for essential information about the page. Here's a complete list of sounds and what they mean.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{close paren}other{# close parens}}</translation>
 <translation id="2199994615414171367">Previous math</translation>
+<translation id="2203046366315513658">Decrease value</translation>
 <translation id="2220529011494928058">Report an issue</translation>
 <translation id="2223693656926968778">Take action on current item</translation>
 <translation id="225732394367814946">Increase rate of speech</translation>
@@ -158,6 +160,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="2637227747952042642">Math</translation>
 <translation id="2639750663247012216">ChromeVox modifier</translation>
 <translation id="2644542693584024604">misspelled</translation>
+<translation id="2673280813984708147">is editing</translation>
 <translation id="267442004702508783">refresh</translation>
 <translation id="2684412629217766642">Close ChromeVox Tutorial</translation>
 <translation id="2697408785920771974">autoinl</translation>
@@ -209,6 +212,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="3060756054951570867"><ph name="TITLE" /> menu opened</translation>
 <translation id="3078345202707391975">Next level 2 heading</translation>
 <translation id="3078740164268491126">table</translation>
+<translation id="3082249673510793544">Scroll back</translation>
 <translation id="3082557070674409251">Clicked</translation>
 <translation id="3084806535845658316">no typing echo</translation>
 <translation id="3086746722712840547">note</translation>
@@ -396,6 +400,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4372705107434148843">Stop speech</translation>
 <translation id="4373197658375206385">No previous item that isn't a link.</translation>
 <translation id="4376316291247992553">View Graphic As Braille</translation>
+<translation id="4378308539633073595">Scroll forwards</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">reset</translation>
 <translation id="4457472090507035117">Select current voice:</translation>
@@ -403,6 +408,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4476183483923481720">new line</translation>
 <translation id="4482330759234983253">Previous table</translation>
 <translation id="4491109536499578614">Image</translation>
+<translation id="4517854969512651305">Increase value</translation>
 <translation id="4529987814483543472">Classic keymap</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{slash}other{# slashes}}</translation>
 <translation id="4547556996012970016">Next level 5 heading</translation>
@@ -418,6 +424,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="461613135510474570">Sentence</translation>
 <translation id="463135993322337640">Press ChromeVox o, n to find out what's new</translation>
 <translation id="4647836961514597010">Colour picker</translation>
+<translation id="4652110509054054146">Use Search Left or Right for Home or End, Search Control Left or Right for Control Home or End, Search Up or Down for Page Up or Down.</translation>
 <translation id="4660783501463101648">Classic removed. The keyboard toggle to switch back into ChromeVox Classic has been removed.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>

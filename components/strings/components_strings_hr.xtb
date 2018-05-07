@@ -398,7 +398,6 @@
 <translation id="3678529606614285348">Otvorite stranicu u novom anonimnom prozoru (Ctrl – Shift – N)</translation>
 <translation id="3679803492151881375">Izvješće o rušenju programa generirano u <ph name="CRASH_TIME" />, preneseno u <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Podaci o certifikatu</translation>
-<translation id="3690164694835360974">Prijava nije sigurna</translation>
 <translation id="3704162925118123524">Mreža koju upotrebljavate može zahtijevati posjet stranici za prijavu.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Učitavanje...</translation>
@@ -717,6 +716,7 @@
 <translation id="6047927260846328439">Ovaj vas sadržaj može na prijevaru pokušati navesti da instalirate softver ili odate svoje osobne podatke. <ph name="BEGIN_LINK" />Ipak prikaži<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Trenutačno ne možete otvoriti <ph name="SITE" /> jer web-lokacija upotrebljava prikvačivanje certifikata. Mrežne pogreške i napadi obično su privremeni, tako da će stranica kasnije vjerojatno funkcionirati.</translation>
 <translation id="6059925163896151826">USB uređaji</translation>
+<translation id="6071091556643036997">Vrsta pravila nije važeća.</translation>
 <translation id="6080696365213338172">Pristupili ste sadržaju pomoću certifikata koji je izdao administrator. Administrator može presresti podatke koje dostavljate domeni <ph name="DOMAIN" />.</translation>
 <translation id="610911394827799129">Na vašem Google računu možda postoje drugi oblici povijesti pregledavanja na stranici <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Nijedna}=1{1 zaporka (sinkronizirana)}one{# zaporka (sinkronizirana)}few{# zaporke (sinkronizirane)}other{# zaporki (sinkroniziranih)}}</translation>
@@ -833,7 +833,6 @@
 <translation id="7138472120740807366">Način isporuke</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
-<translation id="7155487117670177674">Plaćanje nije sigurno</translation>
 <translation id="717330890047184534">ID za GAIA-u:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="7180611975245234373">Osvježi</translation>

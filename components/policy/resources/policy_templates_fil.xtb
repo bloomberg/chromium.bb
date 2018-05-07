@@ -428,6 +428,21 @@
       Maisasagawa pa rin ang pag-spell check gamit ang isang na-download na diksyunaryo; ang paggamit ng online na serbisyo lang ang kinokontrol ng patakarang ito.
 
       Kung hindi na-configure ang setting na ito, mapipili ng mga user kung dapat gamitin ang serbisyo ng pag-spell check o hindi.</translation>
+<translation id="2294283832646774959">Nagko-configure ng listahan ng mga printer.
+
+      Binibigyang-daan ng patakarang ito ang mga administrator na magbigay ng mga configuration ng printer para sa
+      kanilang mga user.
+
+      Ang <ph name="PRINTER_DISPLAY_NAME" /> at <ph name="PRINTER_DESCRIPTION" /> ay mga free form na string na maaaring i-customize para sa mas madaling pagpili ng printer. Pinapadali ng <ph name="PRINTER_MANUFACTURER" /> at <ph name="PRINTER_MODEL" /> ang pagtukoy ng printer ng mga end user. Kinakatawan ng mga ito ang manufacturer at modelo ng printer. Ang <ph name="PRINTER_URI" /> ay dapat isang address na mapupuntahan mula sa isang client na computer kabilang ang <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, at <ph name="URI_QUEUE" />. Opsyonal ang <ph name="PRINTER_UUID" />. Kung ibibigay, gagamitin ito para makatulong na mag-deduplicate ng mga printer sa <ph name="ZEROCONF_DISCOVERY" />.
+
+      Tumutugma dapat ang <ph name="PRINTER_EFFECTIVE_MODEL" /> sa isa sa mga string na kumakatawan sa isang printer na sinusuportahan ng <ph name="PRODUCT_NAME" />. Gagamitin ang string para tukuyin at i-install ang naaangkop na PPD para sa printer. Makakahanap ng higit pang impormasyon sa https://support.google.com/chrome?p=noncloudprint.
+
+      Makukumpleto ang pag-set up ng printer sa unang paggamit ng printer. Hindi mada-download ang mga PPD hanggang magamit ang printer. Pagkatapos ng oras na iyon, maka-cache ang mga PPD na madalas gamitin.
+
+      Walang epekto ang patakarang ito sa kung maaaring mag-configure ng mga printer ang mga user sa mga indibidwal na device. Nilalayon itong maging karagdagan sa configuration ng mga printer ng mga indibidwal na user.
+
+      Para sa mga device na pinapamahalaan ng Active Directory, sinusuportahan ng patakarang ito ang pag-expand ng <ph name="MACHINE_NAME_VARIABLE" /> sa pangalan ng machine ng Active Directory o isang substring nito. Halimbawa, kung ang pangalan ng machine ay <ph name="MACHINE_NAME_EXAMPLE" />, mapapalitan ang <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> ng 4 na character simula pagkatapos ng ika-6 na posisyon, ibig sabihin, ang <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tandaang ang posisyon ay zero-based.
+      </translation>
 <translation id="2294382669900758280">Hindi isinasaalang-alang ang pag-play ng Video sa mga Android app, kahit nakatakda ang patakarang ito sa <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">I-configure ang default na page ng Bagong Tab sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Tukuyin ang isang listahan ng mga pinapaganang plugin</translation>
@@ -904,7 +919,6 @@
 <translation id="3715569262675717862">Pag-authenticate batay sa mga certificate ng kliyente</translation>
 <translation id="3736879847913515635">I-enable ang magdagdag ng tao sa user manager</translation>
 <translation id="3737544779868348650">Hostname ng network ng device</translation>
-<translation id="3740754010292550733">Itakda ang panahon ng mga notification ng muling paglulunsad para sa pag-update</translation>
 <translation id="3750220015372671395">I-block ang pagbuo ng key sa mga site na ito</translation>
 <translation id="3756011779061588474">I-block ang mode ng developer</translation>
 <translation id="3758089716224084329">Binibigyang-daan kang tukuyin ang proxy server na ginamit ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang mga setting ng proxy.
@@ -1005,9 +1019,6 @@
       Nililista ang mga extension na awtomatikong naka-install para sa user ng Demo, para sa mga device na nasa retail mode. Naka-save ang mga extension na ito sa device at maaaring i-install habang naka-offline, pagkatapos ng pag-install.
 
       Ang bawat entry sa listahan ay naglalaman ng diksyunaryong dapat kabilangan ng ID ng extension sa field na 'extension-id,' at ng URL ng update nito sa field na 'update-url.'</translation>
-<translation id="3873159954366380945">Pinapayagan kang itakda ang yugto ng panahon kung saan ipinapakita ang mga notification sa muling paglulunsad ng <ph name="PRODUCT_NAME" /> para maglapat ng nakabinbing update.
-
-      Maaaring gamitin ang setting ng patakarang ito para kontrolin ang yugto ng panahon, sa millisecond, kung saan tuluy-tuloy na ipinapaalam sa isang user na dapat muling ilunsad ang <ph name="PRODUCT_NAME" /> (o dapat na ma-restart ang <ph name="PRODUCT_OS_NAME" />) para sa isang update. Sa yugto ng panahong ito, paulit-ulit na ipapaalam sa user na kailangang mag-update batay sa setting ng patakarang <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Kung hindi nakatakda, gagamitin ang default na panahon na 345600000 millisecond (apat na araw) para sa <ph name="PRODUCT_OS_NAME" /> at 604800000 millisecond (isang linggo) para sa lahat ng iba pang platform.</translation>
 <translation id="3877517141460819966">Kasamang second factor authentication mode</translation>
 <translation id="388237772682176890">Ang patakarang ito ay hindi na ginagamit sa M53 at inalis na sa M54, dahil inalis na ang suporta sa SPDY/3.1.
 
@@ -1222,6 +1233,7 @@
 <translation id="4508686775017063528">Kung nakatakda ang patakarang ito sa true o hindi ito nakatakda, mae-enable ang <ph name="PRODUCT_NAME" />, at mailulunsad ito ng mga user mula sa menu ng app, mga menu ng konteksto ng page, mga pagkontrol ng media sa mga website na may naka-enable na Cast, at (kung ipinapakita) sa icon ng toolbar ng Cast. 
 
           Kung nakatakda ang patakarang ito sa false, madi-disable ang <ph name="PRODUCT_NAME" />.</translation>
+<translation id="4515404363392014383">I-enable ang Ligtas na Pag-browse para sa mga pinagkakatiwalang source</translation>
 <translation id="4518251772179446575">Magtanong sa tuwing gusto ng site na subaybayan ang aktwal na lokasyon ng mga user</translation>
 <translation id="4519046672992331730">Pinapagana ang mga suhestiyon sa paghahanap sa omnibox ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang setting na ito.
 
@@ -1344,6 +1356,7 @@
 
           Kung nakatakda sa false ang patakarang ito, babalewalain ang mga kahilingan sa lock ng pagpapagana ng screen.</translation>
 <translation id="487460824085252184">Awtomatikong nagma-migrate, hindi humihingi ng pahintulot mula sa user.</translation>
+<translation id="4874982543810021567">I-block ang WebUSB sa mga site na ito</translation>
 <translation id="4876805738539874299">Naka-enable ang maximum na bersyon ng SSL</translation>
 <translation id="4897928009230106190">Tinutukoy ang mga parameter na ginamit kapag gumagawa ng paghahanap ng mungkahi gamit ang POST. Binubuo ito ng mga pares ng pangalan/value na pinaghihiwalay ng kuwit. Kung isang parameter ng template ang isang value, tulad ng {searchTerms} sa halimbawa sa itaas, papalitan ito ng data ng tunay na mga termino para sa paghahanap.
 
@@ -1915,6 +1928,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung maiiwang hindi nakatakda ang patakaran na ito, mae-enable ang panghuhula ng network ngunit magagawa ng user na baguhin ito.</translation>
 <translation id="6658245400435704251">Tinutukoy ang bilang ng mga segundo kung kailan maaaring random na antalahin ng device ang pag-download ng isang update mula sa panahon kung kailan unang na-push out ang update sa server. Maaaring hintayin ng device ang isang bahagi ng panahong ito sa pamamagitan ng oras sa orasan at ng mga natitirang bahagi sa pamamagitan ng dami ng mga pagtingin ng update. Sa anumang sitwasyon, ang scatter ay nililimitahan sa itaas sa iisang parehong tagal ng panahon upang hindi maantala nang matagal ang isang device sa paghihintay na mag-download ng isang update.</translation>
 <translation id="6665670272107384733">Itakda kung gaano kadalas kailangang ilagay ng user ang password para magamit ang mabilisang pag-unlock</translation>
+<translation id="6681229465468164801">Nagbibigay-daan sa iyo na magtakda ng listahan ng mga pattern ng url na tumutukoy sa mga site na pinipigilang magtanong sa user na bigyan siya ng access sa isang USB device.
+
+          Kung hahayaang hindi nakatakda ang patakarang ito, ang pangkalahatang default na value ang gagamitin para sa lahat ng site na magmumula sa patakarang 'DefaultWebUsbGuardSetting' kung nakatakda ito, o kung hindi, sa personal na configuration ng user.
+
+          Hindi dapat sumasalungat ang mga pattern ng URL sa patakarang ito sa mga pattern ng URL na na-configure sa pamamagitan ng WebUsbAskForUrls. Hindi tinutukoy kung alin sa dalawang patakaran ang masusunod kung tumutugma ang isang URL sa parehong patakaran.</translation>
 <translation id="6689792153960219308">Iulat ang status ng hardware</translation>
 <translation id="6698071416141001300">Ang pag-flag ng account na may nakompromisong proteksyon sa password ay nati-trigger ng muling paggamit ng password</translation>
 <translation id="6699880231565102694">Paganahin ang pagpapatotoong may dalawang salik para sa mga host ng malayuang pag-access</translation>
@@ -2084,6 +2102,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung idi-disable o hindi itatakda ang setting na ito, ilalapat ang default na proteksyon ng Ligtas na Pag-browse sa lahat ng resource.
       Hindi available ang patakarang ito sa mga instance ng Windows na hindi kasali sa isang <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="7079519252486108041">I-block ang mga popup sa mga site na ito</translation>
+<translation id="7085803328069945025">Nagbibigay-daan sa iyo na magtakda ng listahan ng mga pattern ng url na tumutukoy sa mga site na pinapayagang magtanong sa user na bigyan siya ng access sa isang USB device.
+
+          Kung hahayaang hindi nakatakda ang patakarang ito, ang pangkalahatang default na value ang gagamitin para sa lahat ng site na magmumula sa patakarang 'DefaultWebUsbGuardSetting' kung nakatakda ito, o kung hindi, sa personal na configuration ng user.
+
+          Hindi dapat sumasalungat ang mga pattern ng URL sa patakarang ito sa mga pattern ng URL na na-configure sa pamamagitan ng WebUsbBlockedForUrls. Hindi tinutukoy kung alin sa dalawang patakaran ang masusunod kung tumutugma ang isang URL sa parehong patakaran.</translation>
 <translation id="7106631983877564505">Paganahin ang pag-lock kapag naging idle o nasuspinde ang mga device ng <ph name="PRODUCT_OS_NAME" />.
 
       Kung ie-enable mo ang setting na ito, hihingan ng password ang mga user upang i-unlock ang device mula sa pag-sleep.
@@ -2781,6 +2804,7 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="9096086085182305205">Whitelist ng server sa pagpapatotoo</translation>
 <translation id="9098553063150791878">Mga patakaran para sa pagpapatotoo ng HTTP</translation>
 <translation id="9105265795073104888">Mayroon lang subset ng opsyon sa configuration ng proxy sa mga Android app. Maaaring boluntaryong piliin ng mga Android app na gamitin ang proxy. Hindi mo maaaring puwersahin ang mga ito na gumamit ng proxy.</translation>
+<translation id="9106865192244721694">Payagan ang WebUSB sa mga site na ito</translation>
 <translation id="9112727953998243860">File ng configuration ng printer ng enterprise</translation>
 <translation id="9112897538922695510">Nagbibigay-daan sa iyong magrehistro ng isang listahan ng mga tagapangasiwa ng protocol. Dapat ay isa itong inirerekomendang patakaran. Dapat itakda ang property na |protocol| sa scheme gaya ng 'mailto' at dapat itakda ang property na |url| sa pattern ng URL ng application na nangangasiwa sa scheme. Maaaring maglaman ng '%s' ang pattern, at kung mayroon nito, papalitan ito ng pinapangasiwaang URL.
 
@@ -2820,6 +2844,11 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="915194831143859291">Kung nakatakda sa false o hindi naka-configure ang patakarang ito, papayagan ng <ph name="PRODUCT_OS_NAME" /> ang user na i-shut down ang device.
       Kung nakatakda sa true ang patakarang ito, magti-trigger ang <ph name="PRODUCT_OS_NAME" /> ng reboot kapag i-shut down ng user ang device. Papalitan ng <ph name="PRODUCT_OS_NAME" /> ang lahat ng button ng pag-shutdown sa UI ng mga button sa pag-reboot. Kung i-shut down ng user ang device gamit ang button ng power, hindi ito awtomatikong magre-reboot, kahit na naka-enable ang patakaran.</translation>
 <translation id="9158929520101169054">Payagan ang Maraming Pag-sign Sa Browser</translation>
+<translation id="9165792353046089850">Binibigyang-daan kang itakda kung pinapayagan ang mga website na magkaroon ng access sa mga nakakonektang USB device. Maaaring ganap na i-block ang access, o maaaring tanungin ang user sa tuwing gusto ng website na magkaroon ng access sa mga nakakonektang USB device.
+
+          Maaaring ma-override ang patakarang ito para sa mga partikular na pattern ng URL gamit ang mga patakarang 'WebUsbAskForUrls' at 'WebUsbBlockedForUrls.'
+
+          Kung hahayaang hindi nakatakda ang patakarang ito, gagamitin ang '3,' at mababago ito ng user.</translation>
 <translation id="9167719789236691545">I-disable ang Drive sa app na Mga File ng <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="9187743794267626640">Huwag paganahin ang pag-mount ng panlabas na storage</translation>
 <translation id="9197740283131855199">Porsyento na nase-scale ang pagkaantala ng pagdilim ng screen kapag naging aktibo ang user pagkatapos ng pagdilim</translation>

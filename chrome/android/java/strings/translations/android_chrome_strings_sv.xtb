@@ -82,10 +82,12 @@
 <translation id="1718835860248848330">Senaste timmen</translation>
 <translation id="1729516292547892356">Uppdatera Googles VR-tjänster om du vill visa innehåll med virtuell verklighet</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – uppdaterades <ph name="TIME_SINCE_UPDATE" /></translation>
+<translation id="1743802530341753419">Fråga innan webbplatser tillåts ansluta till en enhet (rekommenderas)</translation>
 <translation id="1749561566933687563">Synkronisera bokmärken</translation>
 <translation id="17513872634828108">Öppna flikar</translation>
 <translation id="1756600373018374892">Den här knappen ger snabb tillgång till flikarna.</translation>
 <translation id="1779089405699405702">Bildavkodare</translation>
+<translation id="1792959175193046959">Ändra standardplats för nedladdningar när som helst</translation>
 <translation id="1807246157184219062">Ljus</translation>
 <translation id="1829244130665387512">Hitta på sida</translation>
 <translation id="1832521218263067499">Incidenter som rör säkerheten</translation>
@@ -158,7 +160,6 @@
 <translation id="2450083983707403292">Vill du börja ladda ned <ph name="FILE_NAME" /> igen?</translation>
 <translation id="2476578072172137802">Inställningar för webbplatsen</translation>
 <translation id="2482878487686419369">Aviseringar</translation>
-<translation id="2490674006498621843">Du hittar filerna och sidorna under Nedladdningar i verktygsfältet</translation>
 <translation id="2496180316473517155">Webbhistorik</translation>
 <translation id="2498359688066513246">Hjälp och feedback</translation>
 <translation id="2501278716633472235">Föregående</translation>
@@ -648,6 +649,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6910211073230771657">Borttagen</translation>
 <translation id="6912998170423641340">Webbplatser ges inte tillgång till text och bilder i Urklipp</translation>
 <translation id="6914783257214138813">Alla med tillgång till den exporterade filen kan läsa dina lösenord.</translation>
+<translation id="6942665639005891494">Ändra standardplats för nedladdningar när som helst via alternativet i inställningsmenyn</translation>
 <translation id="6945221475159498467">Välj</translation>
 <translation id="6963766334940102469">Radera bokmärken</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -673,6 +675,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7121362699166175603">Historik och autoslutföranden i adressfältet rensas. Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Tillåt för den nuvarande sökmotorn</translation>
 <translation id="7138678301420049075">Övrigt</translation>
+<translation id="7144878232160441200">Försök igen</translation>
 <translation id="7149893636342594995">Senaste 24 timmarna</translation>
 <translation id="7177466738963138057">Du kan ändra detta senare i inställningarna</translation>
 <translation id="7180611975245234373">Uppdatera</translation>
@@ -814,6 +817,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8503813439785031346">Användarnamn</translation>
 <translation id="8514477925623180633">Exportera lösenord som har sparats i Chrome</translation>
 <translation id="8514577642972634246">Starta inkognitoläget</translation>
+<translation id="851751545965956758">Förhindra att webbplatser ansluter till enheter</translation>
 <translation id="8523928698583292556">Radera sparat lösenord</translation>
 <translation id="854522910157234410">Öppna sidan</translation>
 <translation id="8559990750235505898">Erbjud översättning av sidor till andra språk</translation>

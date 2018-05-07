@@ -398,7 +398,6 @@
 <translation id="3678529606614285348">Открыть страницу в новом окне в режиме инкогнито (Ctrl + Shift + N)</translation>
 <translation id="3679803492151881375"><ph name="CRASH_TIME" />: отчет о сбоях сохранен. <ph name="UPLOAD_TIME" />: отчет о сбоях загружен.</translation>
 <translation id="3681007416295224113">Данные сертификата</translation>
-<translation id="3690164694835360974">Незащищенный вход</translation>
 <translation id="3704162925118123524">Возможно, вам нужно перейти на страницу входа используемой сети.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Загрузка...</translation>
@@ -717,6 +716,7 @@
 <translation id="6047927260846328439">Посещение этой страницы может привести к установке вредоносной программы или хищению вашей личной информации. <ph name="BEGIN_LINK" />Все равно продолжить<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Веб-сайт <ph name="SITE" /> использует механизм Certificate Pinning, поэтому на нем могла произойти подмена сертификата. Открыть сайт в настоящее время нельзя. Сбой мог быть вызван сетевой ошибкой или действиями злоумышленников. Скорее всего, сайт заработает через некоторое время.</translation>
 <translation id="6059925163896151826">USB-устройства</translation>
+<translation id="6071091556643036997">Указан неверный тип правил.</translation>
 <translation id="6080696365213338172">Вы используете сертификат, предоставленный администратором, поэтому он может заблокировать передачу данных на сайт <ph name="DOMAIN" />.</translation>
 <translation id="610911394827799129">Информация о других ваших действиях в Интернете может также храниться на странице <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Нет}=1{1 синхронизированный пароль}one{# синхронизированный пароль}few{# синхронизированных пароля}many{# синхронизированных паролей}other{# синхронизированного пароля}}</translation>
@@ -833,7 +833,6 @@
 <translation id="7138472120740807366">Способ доставки</translation>
 <translation id="7139724024395191329">Эмират</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способ оплаты}one{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способ оплаты}few{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способа оплаты}many{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способов оплаты}other{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способа оплаты}}</translation>
-<translation id="7155487117670177674">Незащищенная оплата</translation>
 <translation id="717330890047184534">Идентификатор GAIA:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> вариант доставки}one{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> вариант доставки}few{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> варианта доставки}many{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> вариантов доставки}other{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> варианта доставки}}</translation>
 <translation id="7180611975245234373">Обновить</translation>

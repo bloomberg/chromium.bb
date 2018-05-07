@@ -89,6 +89,7 @@
 <translation id="1810107444790159527">תיבת רשימה</translation>
 <translation id="1828385960365606039">מאי</translation>
 <translation id="1834891354138622109">עמודה</translation>
+<translation id="1845944666972354496">אפשר להפעיל באמצעות הקשה כפולה</translation>
 <translation id="1865601187525349519">סוף הטקסט</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">אמור את התאריך והשעה הנוכחיים.</translation>
@@ -120,6 +121,7 @@
 <translation id="2179452035581866348">‏ChromeVox משתמש בצליל כדי לספק לך מידע נוסף וחשוב. למד מה המשמעות של כל צליל כדי להשתמש בצלילים האלו לניווט מהיר יותר. אחרי שתתרגל לצלילים, תוכל להשבית תיאורים מילוליים בדיבור ולהפעיל אותם רק כדי לקבל מידע חשוב על הדף. הנה רשימה של כל הצלילים והמשמעות שלהם.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{סגור סוגריים}two{# סימני סגור סוגריים}many{# סימני סגור סוגריים}other{# סימני סגור סוגריים}}</translation>
 <translation id="2199994615414171367">הביטוי המתמטי הקודם</translation>
+<translation id="2203046366315513658">החלשת עוצמת הקול</translation>
 <translation id="2220529011494928058">דיווח על בעיה</translation>
 <translation id="2223693656926968778">נקוט פעולה לגבי הפריט הנוכחי</translation>
 <translation id="225732394367814946">הגבר את קצב הדיבור</translation>
@@ -158,6 +160,7 @@
 <translation id="2637227747952042642">Math</translation>
 <translation id="2639750663247012216">‏מקש צירוף של ChromeVox</translation>
 <translation id="2644542693584024604">misspelled</translation>
+<translation id="2673280813984708147">עורך/ת</translation>
 <translation id="267442004702508783">רענון</translation>
 <translation id="2684412629217766642">‏סגור את מערך השיעור של ChromeVox</translation>
 <translation id="2697408785920771974">autoinl</translation>
@@ -209,6 +212,7 @@
 <translation id="3060756054951570867">תפריט <ph name="TITLE" /> נפתח</translation>
 <translation id="3078345202707391975">הכותרת הבאה של רמה 2</translation>
 <translation id="3078740164268491126">טבלה</translation>
+<translation id="3082249673510793544">גלילה לאחור</translation>
 <translation id="3082557070674409251">בוצעה לחיצה</translation>
 <translation id="3084806535845658316">ללא הד הקלדה</translation>
 <translation id="3086746722712840547">note</translation>
@@ -396,6 +400,7 @@
 <translation id="4372705107434148843">הפסק דיבור</translation>
 <translation id="4373197658375206385">אין פריט קודם שאינו קישור.</translation>
 <translation id="4376316291247992553">הגת גרפיקה כברייל</translation>
+<translation id="4378308539633073595">גלילה קדימה</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">reset</translation>
 <translation id="4457472090507035117">בחר את הקול המוגדר כרגע:</translation>
@@ -403,6 +408,7 @@
 <translation id="4476183483923481720">שורה חדשה</translation>
 <translation id="4482330759234983253">הטבלה הקודמת</translation>
 <translation id="4491109536499578614">תמונה</translation>
+<translation id="4517854969512651305">הגברת עוצמת הקול</translation>
 <translation id="4529987814483543472">מפת מקשים קלאסית</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{קו נטוי}two{# סימני קו נטוי}many{# סימני קו נטוי}other{# סימני קו נטוי}}</translation>
 <translation id="4547556996012970016">הכותרת הבאה של רמה 5</translation>
@@ -418,6 +424,7 @@
 <translation id="461613135510474570">משפט</translation>
 <translation id="463135993322337640">‏לחיצה על ChromeVox+o+n תציג את העדכונים</translation>
 <translation id="4647836961514597010">בוחר צבעים</translation>
+<translation id="4652110509054054146">‏אפשר להשתמש במקש החיפוש יחד עם החץ שמאלה או ימינה במקום מקש Home או End, אפשר להשתמש במקש החיפוש יחד עם Control וחץ ימינה או שמאלה במקום Control עם מקש Home או End, אפשר להשתמש במקש החיפוש יחד עם החץ כלפי מעלה או מטה במקום מקש Page Up או Page Down.</translation>
 <translation id="4660783501463101648">‏הגירסה הקלאסית הוסרה. לחצן החלפת המצב במקלדת למעבר חזרה אל הגירסה הקלאסית של ChromeVox הוסר.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>

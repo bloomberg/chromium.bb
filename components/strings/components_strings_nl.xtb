@@ -395,7 +395,6 @@
 <translation id="3678529606614285348">Pagina openen in een nieuw incognitovenster (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Crashrapport vastgelegd op <ph name="CRASH_TIME" />, geüpload op <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Certificaatgegevens</translation>
-<translation id="3690164694835360974">Inloggen niet veilig</translation>
 <translation id="3704162925118123524">Het is mogelijk dat je de inlogpagina moet bezoeken van het netwerk dat je gebruikt.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Bezig met laden...</translation>
@@ -714,6 +713,7 @@
 <translation id="6047927260846328439">Deze content probeert je mogelijk te misleiden om software te installeren of persoonlijke gegevens openbaar te maken. <ph name="BEGIN_LINK" />Toch weergeven<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Je kunt <ph name="SITE" /> momenteel niet bezoeken, omdat de website gebruikmaakt van certificaatpinning. Netwerkfouten en aanvallen zijn doorgaans tijdelijk, dus deze pagina werkt later waarschijnlijk correct.</translation>
 <translation id="6059925163896151826">USB-apparaten</translation>
+<translation id="6071091556643036997">Het type beleid is ongeldig.</translation>
 <translation id="6080696365213338172">Je hebt toegang tot content gekregen met behulp van een certificaat van je beheerder. Gegevens die je verstrekt aan <ph name="DOMAIN" />, kunnen door je beheerder worden onderschept.</translation>
 <translation id="610911394827799129">Er kunnen andere vormen van browsegeschiedenis zijn opgeslagen voor je Google-account op <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Geen}=1{1 wachtwoord (gesynchroniseerd)}other{# wachtwoorden (gesynchroniseerd)}}</translation>
@@ -829,7 +829,6 @@
 <translation id="7138472120740807366">Bezorgingsmethode</translation>
 <translation id="7139724024395191329">Emiraat</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
-<translation id="7155487117670177674">Betalen niet veilig</translation>
 <translation id="717330890047184534">Gaia-ID:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="7180611975245234373">Vernieuwen</translation>

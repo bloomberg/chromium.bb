@@ -399,7 +399,6 @@
 <translation id="3678529606614285348">Deschide pagina într-o fereastră incognito nouă (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Raport de blocare creat <ph name="CRASH_TIME" /> și încărcat <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Informații despre certificat</translation>
-<translation id="3690164694835360974">Conectarea nu este securizată</translation>
 <translation id="3704162925118123524">Rețeaua pe care o folosești poate solicita accesarea paginii de conectare.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Se încarcă…</translation>
@@ -718,6 +717,7 @@
 <translation id="6047927260846328439">Acest conținut ar putea încerca să te păcălească să instalezi software sau să dezvălui informații cu caracter personal. <ph name="BEGIN_LINK" />Afișează oricum<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Nu poți accesa <ph name="SITE" /> acum, deoarece site-ul folosește fixarea certificatelor. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu.</translation>
 <translation id="6059925163896151826">Dispozitive USB</translation>
+<translation id="6071091556643036997">Tipul de politică nu este valid.</translation>
 <translation id="6080696365213338172">Ați accesat conținut utilizând un certificat oferit de administrator. Datele pe care le transmiteți către <ph name="DOMAIN" /> pot fi interceptate de administratorul dvs.</translation>
 <translation id="610911394827799129">Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Niciuna}=1{1 parolă (sincronizată)}few{# parole (sincronizate)}other{# de parole (sincronizate)}}</translation>
@@ -834,7 +834,6 @@
 <translation id="7138472120740807366">Metodă de livrare</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> și încă <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" /> și încă <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> și încă <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
-<translation id="7155487117670177674">Plata nu este securizată</translation>
 <translation id="717330890047184534">Cod Gaia:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> și încă <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> și încă <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> și încă <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="7180611975245234373">Actualizați</translation>

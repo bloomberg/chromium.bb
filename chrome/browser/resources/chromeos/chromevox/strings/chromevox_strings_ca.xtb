@@ -89,6 +89,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="1810107444790159527">Quadre de llista</translation>
 <translation id="1828385960365606039">Maig</translation>
 <translation id="1834891354138622109">Columna</translation>
+<translation id="1845944666972354496">Fes doble toc per activar</translation>
 <translation id="1865601187525349519">Fi del text</translation>
 <translation id="1876229593313240038">document</translation>
 <translation id="188130072164734898">Diu en veu alta la data i l'hora actuals.</translation>
@@ -119,6 +120,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="2179452035581866348">ChromeVox fa servir sons per donar-te informació essencial i addicional. Pots aprendre què signifiquen i així utilitzar-los per navegar més de pressa. Un cop t'hi familiaritzis, pots desactivar les descripcions en veu alta detallades i dependre dels sons per obtenir informació essencial de la pàgina. Aquí tens una llista completa dels sons i del que signifiquen.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{parèntesi de tancament}other{# parèntesis de tancament}}</translation>
 <translation id="2199994615414171367">Expressió matemàtica anterior</translation>
+<translation id="2203046366315513658">Disminueix el valor</translation>
 <translation id="2220529011494928058">Informeu d'un problema</translation>
 <translation id="2223693656926968778">Emprèn una acció sobre l'element actual</translation>
 <translation id="225732394367814946">Augmenta la velocitat de la veu.</translation>
@@ -157,6 +159,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="2637227747952042642">Matemàtic</translation>
 <translation id="2639750663247012216">Tecla modificadora de ChromeVox</translation>
 <translation id="2644542693584024604">amb errors ortogràfics</translation>
+<translation id="2673280813984708147">està editant</translation>
 <translation id="267442004702508783">actualitza</translation>
 <translation id="2684412629217766642">Tanca el tutorial de ChromeVox</translation>
 <translation id="2697408785920771974">autoinl</translation>
@@ -208,6 +211,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="3060756054951570867">S'ha obert el menú <ph name="TITLE" />.</translation>
 <translation id="3078345202707391975">Capçalera del nivell 2 següent</translation>
 <translation id="3078740164268491126">taula</translation>
+<translation id="3082249673510793544">Desplaça cap enrere</translation>
 <translation id="3082557070674409251">S'hi ha fet clic.</translation>
 <translation id="3084806535845658316">sense retorn d'escriptura</translation>
 <translation id="3086746722712840547">nota</translation>
@@ -395,6 +399,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4372705107434148843">Atura la veu</translation>
 <translation id="4373197658375206385">No hi ha cap element anterior que no sigui un enllaç.</translation>
 <translation id="4376316291247992553">Mostra el gràfic com a braille</translation>
+<translation id="4378308539633073595">Desplaça cap endavant</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">restableix</translation>
 <translation id="4457472090507035117">Selecciona la veu actual:</translation>
@@ -402,6 +407,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4476183483923481720">línia nova</translation>
 <translation id="4482330759234983253">Taula anterior</translation>
 <translation id="4491109536499578614">Imatge</translation>
+<translation id="4517854969512651305">Augmenta el valor</translation>
 <translation id="4529987814483543472">Mapa de teclat clàssic</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barra inclinada}other{# barres inclinades}}</translation>
 <translation id="4547556996012970016">Capçalera del nivell 5 següent</translation>
@@ -417,6 +423,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="461613135510474570">Frase</translation>
 <translation id="463135993322337640">Prem les tecles O i N de ChromeVox per descobrir-ne les novetats</translation>
 <translation id="4647836961514597010">Selector de color</translation>
+<translation id="4652110509054054146">Fes servir Cerca+fletxa esquerra/dreta en comptes d'Inici/Fi; Cerca+Control+fletxa esquerra/dreta en comptes de Control+Inici/Fi, i Cerca+fletxa amunt/avall en comptes de Re/Av Pàg.</translation>
 <translation id="4660783501463101648">La versió clàssica s'ha suprimit. S'ha tret la combinació de tecles que permetia tornar a la versió clàssica de ChromeVox.</translation>
 <translation id="4661075872484491155">arbre</translation>
 <translation id="4668929960204016307">,</translation>

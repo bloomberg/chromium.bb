@@ -420,7 +420,7 @@
 
           Sila ambil perhatian bahawa kod sumber mana-mana sambungan mungkin diubah oleh pengguna melalui Alatan Pembangun (berkemungkinan menyebabkan disfungsi pada sambungan). Jika perkara ini menimbulkan kebimbangan, maka dasar <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> harus ditetapkan.
 
-          Setiap item senarai dasar ini ialah rentetan yang mengandungi ID sambungan dan URL "kemas kini" yang dipisahkan oleh koma bertitik (<ph name="SEMICOLON" />) sebagai pillihan. ID sambungan ialah rentetan 32 huruf yang didapati contohnya di <ph name="CHROME_EXTENSIONS_LINK" /> apabila dalam mod pembangun. URL "kemas kini", jika dinyatakan, harus menunjuk kepada dokumen XML Manifes Kemas Kini seperti yang dihuraikan di  <ph name="LINK_TO_EXTENSION_DOC1" />. Secara lalai, URL kemas kini Gedung Web Chrome digunakan (pada masa ini ialah "https://clients2.google.com/service/update2/crx"). Sila ambil perhatian bahawa URL "kemas kini" yang ditetapkan dalam dasar ini hanya digunakan untuk pemasangan awal; kemas kini sambungan yang berikutnya menggunakan URL kemas kini yang ditunjukkan dalam manifes sambungan tersebut. Selain itu, sila ambil perhatian bahawa menentukan URL "kemas kini" secara jelas adalah mandatori dalam <ph name="PRODUCT_NAME" /> sehingga dan termasuk versi 67.
+          Setiap item senarai dasar ini ialah rentetan yang mengandungi ID sambungan dan URL "kemas kini" yang dipisahkan oleh koma bertitik (<ph name="SEMICOLON" />) sebagai pillihan. ID sambungan ialah rentetan 32 huruf yang didapati contohnya di <ph name="CHROME_EXTENSIONS_LINK" /> apabila dalam mod pembangun. URL "kemas kini", jika dinyatakan, harus menunjuk kepada dokumen XML Manifes Kemas Kini seperti yang dihuraikan di <ph name="LINK_TO_EXTENSION_DOC1" />. Secara lalai, URL kemas kini Gedung Web Chrome digunakan (pada masa ini ialah "https://clients2.google.com/service/update2/crx"). Sila ambil perhatian bahawa URL "kemas kini" yang ditetapkan dalam dasar ini hanya digunakan untuk pemasangan awal; kemas kini sambungan yang berikutnya menggunakan URL kemas kini yang ditunjukkan dalam manifes sambungan tersebut. Selain itu, sila ambil perhatian bahawa menentukan URL "kemas kini" secara jelas adalah mandatori dalam <ph name="PRODUCT_NAME" /> sehingga dan termasuk versi 67.
 
           Contohnya, <ph name="EXTENSION_POLICY_EXAMPLE" /> memasang apl <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> daripada URL "kemas kini" standard Gedung Web Chrome. Untuk mendapatkan maklumat lanjut tentang mengehoskan sambungan, lihat: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
@@ -430,6 +430,21 @@
       Semakan ejaan masih boleh dilakukan menggunakan kamus yang dimuat turun; dasar ini hanya mengawal penggunaan perkhidmatan dalam talian.
 
       Jika tetapan ini tidak dikonfigurasi, maka pengguna boleh memilih sama ada perkhidmatan semakan ejaan harus digunakan atau tidak.</translation>
+<translation id="2294283832646774959">Mengkonfigurasi senarai pencetak.
+
+      Dasar ini membolehkan pentadbir menyediakan konfigurasi pencetak untuk pengguna mereka.
+.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> dan <ph name="PRINTER_DESCRIPTION" /> ialah rentetan bentuk bebas yang boleh disesuaikan untuk memudahkan pemilihan pencetak. <ph name="PRINTER_MANUFACTURER" /> dan <ph name="PRINTER_MODEL" /> bertujuan untuk memudahkan pengenalan pencetak oleh pengguna akhir. Dua butiran ini mewakili pengilang dan model pencetak. <ph name="PRINTER_URI" /> haruslah alamat yang boleh dicapai daripada komputer pelanggan termasuk <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> dan <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> adalah pilihan. Jika disediakan, maklumat ini digunakan untuk membantu menyahgandaduaan pencetak <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> mesti sepadan dengan satu daripada rentetan yang mewakili pencetak yang menyokong <ph name="PRODUCT_NAME" />. Rentetan itu akan digunakan untuk mengenal pasti dan memasang PPD yang sesuai untuk pencetak. Maklumat lanjut boleh ditemui di https://support.google.com/chrome?p=noncloudprint.
+
+      Persediaan pencetak selesai pada penggunaan pertama pencetak. PPD tidak dimuat turun sehinggalah pencetak digunakan. Selepas waktu itu, PPD yang kerap digunakan akan dicache.
+
+      Dasar ini tidak mempengaruhi sama ada pengguna boleh mengkonfigurasi pencetak pada peranti individu atau tidak. Dasar ini bertujuan menjadi pelengkap kepada pengkonfigurasian pencetak oleh pengguna individu.
+
+      Untuk peranti diurus Active Directory, dasar ini menyokong pengembangan <ph name="MACHINE_NAME_VARIABLE" /> kepada nama mesin Active Directory atau subrentetannya. Sebagai contoh, jika nama mesin ialah <ph name="MACHINE_NAME_EXAMPLE" />, maka <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> akan digantikan oleh 4 aksara yang bermula selepas kedudukan ke-6, iaitu <ph name="MACHINE_NAME_PART_EXAMPLE" />. Sila ambil perhatian bahawa kedudukan adalah berasaskan sifar.
+      </translation>
 <translation id="2294382669900758280">Tindakan memainkan video dalam apl Android tidak diambil kira, walaupun jika dasar ini ditetapkan kepada <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Konfigurasi halaman Tab Baharu lalai dalam <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Tentukan senarai pemalam yang didayakan</translation>
@@ -908,7 +923,6 @@
 <translation id="3715569262675717862">Pengesahan berdasarkan sijil klien</translation>
 <translation id="3736879847913515635">Dayakan tambah orang dalam pengurus pengguna</translation>
 <translation id="3737544779868348650">Nama hos rangkaian peranti</translation>
-<translation id="3740754010292550733">Tetapkan tempoh untuk pemberitahuan pelancaran semula kemas kini</translation>
 <translation id="3750220015372671395">Sekat penghasilan kunci pada tapak ini</translation>
 <translation id="3756011779061588474">Sekat mod pembangun</translation>
 <translation id="3758089716224084329">Membenarkan anda menetapkan pelayan proksi yang digunakan oleh <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan proksi.
@@ -1014,9 +1028,6 @@
       Senarai sambungan yang dipasang secara automatik untuk pengguna Tunjuk Cara, bagi peranti dalam mod runcit. Sambungan ini disimpan dalam peranti dan boleh dipasang semasa di luar talian selepas pemasangan.
 
       Setiap masukan senarai mengandungi kamus yang mesti merangkumi ID sambungan dalam medan 'extension-id' dan URL kemas kininya dalam medan 'update-url'.</translation>
-<translation id="3873159954366380945">Membolehkan anda menetapkan tempoh masa pemberitahuan pelancaran semula <ph name="PRODUCT_NAME" /> dipaparkan untuk menggunakan kemas kini yang belum selesai.
-
-      Tetapan dasar ini boleh digunakan untuk mengawal tempoh masa, dalam milisaat, ketika pengguna diberitahu secara progresif bahawa <ph name="PRODUCT_NAME" /> mesti dilancarkan semula (atau <ph name="PRODUCT_OS_NAME" /> mesti dimulakan semula) untuk menggunakan kemas kini. Sepanjang tempoh masa ini, pengguna akan diberitahu berulang kali tentang keperluan untuk menggunakan kemas kini berdasarkan tetapan dasar <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Jika tidak ditetapkan, tempoh lalai selama 345600000 milisaat (empat hari) akan digunakan untuk <ph name="PRODUCT_OS_NAME" /> dan 604800000 milisaat (seminggu) untuk semua platform lain.</translation>
 <translation id="3877517141460819966">Mod pengesahan faktor kedua bersepadu</translation>
 <translation id="388237772682176890">Dasar ini ditamatkan dalam M53 dan dialih keluar dalam M54 kerana sokongan SPDY/3.1 dialih keluar.
 
@@ -1231,6 +1242,7 @@
 <translation id="4508686775017063528">Jika dasar ini ditetapkan kepada benar atau tidak ditetapkan, <ph name="PRODUCT_NAME" /> akan didayakan dan pengguna akan dapat melancarkan produk ini daripada menu apl, menu konteks halaman, kawalan media di tapak web berdaya Cast dan (jika ditunjukkan) ikon bar alat Cast.
 
           Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_NAME" /> akan dilumpuhkan.</translation>
+<translation id="4515404363392014383">Dayakan Penyemakan Imbas Selamat untuk sumber yang dipercayai</translation>
 <translation id="4518251772179446575">Tanya sama ada tapak mahu menjejak lokasi fizikal pengguna</translation>
 <translation id="4519046672992331730">Mendayakan cadangan carian dalam Kotak Omni <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah tetapan ini.
 
@@ -1353,6 +1365,7 @@
 
           Jika dasar ini ditetapkan kepada palsu, permintaan kunci bangkit skrin akan diabaikan.</translation>
 <translation id="487460824085252184">Pindahkan secara automatik, jangan minta persetujuan pengguna.</translation>
+<translation id="4874982543810021567">Sekat WebUSB di tapak ini</translation>
 <translation id="4876805738539874299">Versi SSL maksimum didayakan</translation>
 <translation id="4897928009230106190">Menentukan parameter yang digunakan apabila melakukan carian cadangan dengan POST. Parameter ini mengandungi pasangan nama/nilai yang dipisahkan koma. Jika nilai merupakan parameter templat, seperti {searchTerms} dalam contoh di atas, nilai ini akan digantikan dengan data istilah carian sebenar.
 
@@ -1923,6 +1936,11 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini dibiarkan tanpa ditetapkan, ramalan rangkaian akan didayakan tetapi pengguna akan boleh mengubahnya.</translation>
 <translation id="6658245400435704251">Menyatakan bilangan saat sehingga peranti boleh melambatkan muat turun kemas kini secara rawak dari masa kemas kini mula ditolak keluar ke pelayan. Peranti mungkin menunggu sebahagian masa ini dari segi masa jam dinding dan bahagian yang selebihnya dari segi bilangan semakan kemas kini. Dalam apa jua keadaan, serakan atas disempadani oleh jumlah masa yang tetap supaya peranti tidak sekali-kali akan tersekat menunggu selama-lamanya untuk memuat turun kemas kini.</translation>
 <translation id="6665670272107384733">Tetapkan kekerapan pengguna perlu memasukkan kata laluan untuk menggunakan buka kunci pantas</translation>
+<translation id="6681229465468164801">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang dihalang daripada meminta pengguna memberikan tapak tersebut akses kepada peranti USB.
+
+          Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultWebUsbGuardSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna akan digunakan.
+
+          Corak URL dalam dasar ini tidak boleh bercanggah dengan corak yang dikonfigurasi melalui WebUsbAskForUrls. Antara dua dasar ini, tidak dinyatakan dasar yang diberi keutamaan jika URL didapati sepadan dengan kedua-dua dasar.</translation>
 <translation id="6689792153960219308">Laporkan status perkakasan</translation>
 <translation id="6698071416141001300">Penandaan akaun perlindungan kata laluan berisiko dicetuskan oleh penggunaan semula kata laluan</translation>
 <translation id="6699880231565102694">Dayakan pengesahan dua faktor untuk hos akses jauh</translation>
@@ -2093,6 +2111,11 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka perlindungan Safe Browsing lalai akan digunakan pada semua sumber.
       Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Sekat pop muncul pada tapak ini</translation>
+<translation id="7085803328069945025">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang dibenarkan meminta pengguna memberikan tapak tersebut akses kepada peranti USB.
+
+          Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultWebUsbGuardSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna akan digunakan.
+
+          Corak URL dalam dasar ini tidak boleh bercanggah dengan corak yang dikonfigurasi melalui WebUsbBlockedForUrls. Antara dua dasar ini, tidak dinyatakan dasar yang diberi keutamaan jika URL didapati sepadan dengan kedua-dua dasar.</translation>
 <translation id="7106631983877564505">Dayakan kunci apabila peranti <ph name="PRODUCT_OS_NAME" /> melahu atau digantung.
 
       Jika anda mendayakan tetapan ini, pengguna akan diminta memberikan kata laluan untuk membuka kunci peranti daripada keadaan tidur.
@@ -2793,6 +2816,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="9096086085182305205">Senarai putih pelayan pengesahan</translation>
 <translation id="9098553063150791878">Dasar untuk pengesahan HTTP</translation>
 <translation id="9105265795073104888">Hanya subset pilihan konfigurasi proksi disediakan kepada apl Android. Apl Android boleh memilih untuk menggunakan proksi secara sukarela. Anda tidak boleh memaksanya untuk menggunakan proksi.</translation>
+<translation id="9106865192244721694">Benarkan WebUSB di tapak ini</translation>
 <translation id="9112727953998243860">Fail konfigurasi pencetak perusahaan</translation>
 <translation id="9112897538922695510">Membolehkan anda mendaftar senarai pengendali protokol. Langkah ini hanya boleh menjadi dasar yang disyorkan. Sifat |protocol| hendaklah ditetapkan kepada skema seperti 'mailto' dan sifat |url| hendaklah ditetapkan kepada corak URL aplikasi yang mengendalikan skema. Corak boleh mengandungi '%s', di mana apabila disertakan akan digantikan oleh URL yang dikendalikan.
 
@@ -2832,6 +2856,11 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="915194831143859291">Jika dasar ini ditetapkan kepada palsu atau tidak dikonfigurasikan, <ph name="PRODUCT_OS_NAME" /> akan membenarkan pengguna mematikan peranti.
       Jika dasar ini ditetapkan kepada benar, <ph name="PRODUCT_OS_NAME" /> akan mencetus but semula apabila pengguna mematikan peranti. <ph name="PRODUCT_OS_NAME" /> menggantikan semua kejadian bagi butang matikan dalam UI oleh butang but semula. Jika pengguna mematikan peranti menggunakan butang kuasa, peranti tidak akan but semula secara automatik, walaupun dasar didayakan.</translation>
 <translation id="9158929520101169054">Benarkan Berbilang Log Masuk Dalam Penyemak Imbas</translation>
+<translation id="9165792353046089850">Membenarkan anda menetapkan sama ada tapak web dibenarkan untuk mendapatkan akses kepada peranti USB yang disambungkan. Akses boleh disekat sepenuhnya atau pengguna boleh ditanya setiap kali tapak web ingin mendapatkan akses kepada peranti USB yang disambungkan.
+
+          Dasar ini boleh diatasi untuk corak URL tertentu menggunakan dasar 'WebUsbAskForUrls' dan 'WebUsbBlockedForUrls'.
+
+          Jika dasar ini dibiarkan tanpa ditetapkan, '3' akan digunakan dan pengguna akan dapat mengubahnya.</translation>
 <translation id="9167719789236691545">Lumpuhkan Drive dalam apl Fail <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="9187743794267626640">Lumpuhkan pelekapan storan luaran</translation>
 <translation id="9197740283131855199">Peratusan yang digunakan untuk menskala kelewatan pemalapan skrin jika pengguna menjadi aktif selepas pemalapan</translation>

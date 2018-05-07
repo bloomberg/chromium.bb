@@ -1002,7 +1002,7 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2562685439590298522">Documentos</translation>
 <translation id="2562743677925229011">No accediste a <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Se activó tu servicio de datos "<ph name="NAME" />" y está listo para que lo uses.</translation>
-<translation id="2564520396658920462">La ejecución de JavaScript mediante AppleScript está desactivada. Para activarla, en la barra de menú, visita Ver &gt; Desarrollador &gt; Permitir JavaScript para eventos de Apple. Puedes obtener más información en https://support.google.com/chrome/?p=applescript</translation>
+<translation id="2564520396658920462">La ejecución de JavaScript mediante AppleScript está desactivada. Para activarla, en la barra de menú, visita Ver &gt; Desarrollador &gt; Permitir JavaScript para eventos de Apple. Obtener más información en https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2566124945717127842">Usa la función Powerwash para restablecer el dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> y que quede como nuevo.</translation>
 <translation id="2567257616420533738">Se guardó la contraseña. Visualiza y administra las contraseñas guardadas en <ph name="SAVED_PASSWORDS_LINK" /></translation>
 <translation id="2568774940984945469">Contenedor de la barra de información</translation>

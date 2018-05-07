@@ -428,7 +428,7 @@ Si cette règle n'est pas configurée, le paramètre "BlockPopups" est utilisé 
 
           Notez que le code source de toute extension peut être modifié par les utilisateurs (cela pouvant entraîner son dysfonctionnement) via les outils pour les développeurs. Si cela pose problème, la règle <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> doit être définie.
 
-          Chaque élément de la règle correspond à une chaîne constituée d'un ID d'extension et d'une URL de mise à jour séparés par un point-virgule (<ph name="SEMICOLON" />). L'ID d'extension est la chaîne de 32 lettres qui se trouve, par exemple, dans <ph name="CHROME_EXTENSIONS_LINK" /> en mode développeur. L'URL de mise à jour, si elle est spécifiée, doit renvoyer à un fichier manifeste de mise à jour au format XML, comme décrit sur la page <ph name="LINK_TO_EXTENSION_DOC1" />. Par défaut, l'URL de mise à jour du Chrome Web Store est utilisée (cette URL est actuellement la suivante : "https://clients2.google.com/service/update2/crx"). Notez que l'URL de mise à jour spécifiée dans cette règle n'est utilisée que pour l'installation initiale. Toute mise à jour ultérieure de l'extension est effectuée avec l'URL indiquée dans le fichier manifeste de l'extension. Notez également qu'il était obligatoire de spécifier clairement l'URL de mise à jour dans <ph name="PRODUCT_NAME" /> (jusqu'à la version 67 comprise).
+          Chaque élément de la règle correspond à une chaîne constituée d'un ID d'extension et éventuellement d'une URL de mise à jour, séparés par un point-virgule (<ph name="SEMICOLON" />). L'ID d'extension est la chaîne de 32 lettres qui se trouve, par exemple, dans <ph name="CHROME_EXTENSIONS_LINK" /> en mode développeur. L'URL de mise à jour, si elle est spécifiée, doit renvoyer à un fichier manifeste de mise à jour au format XML, comme décrit sur la page <ph name="LINK_TO_EXTENSION_DOC1" />. Par défaut, l'URL de mise à jour du Chrome Web Store est utilisée (cette URL est actuellement la suivante : "https://clients2.google.com/service/update2/crx"). Notez que l'URL de mise à jour spécifiée dans cette règle n'est utilisée que pour l'installation initiale. Toute mise à jour ultérieure de l'extension est effectuée avec l'URL indiquée dans le fichier manifeste de l'extension. Notez également qu'il était obligatoire de spécifier clairement l'URL de mise à jour dans <ph name="PRODUCT_NAME" /> (jusqu'à la version 67 comprise).
 
           Par exemple, <ph name="EXTENSION_POLICY_EXAMPLE" /> installe l'application <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> à partir de l'URL de mise à jour standard du Chrome Web Store. Pour en savoir plus sur l'hébergement des extensions, consultez la page <ph name="LINK_TO_EXTENSION_DOC2" />.
 
@@ -438,6 +438,21 @@ Si cette règle n'est pas configurée, le paramètre "BlockPopups" est utilisé 
       Il reste toutefois possible de procéder à la correction orthographique à l'aide d'un dictionnaire téléchargé. Cette règle ne contrôle que l'utilisation du service en ligne.
 
       En cas de non-configuration de ce paramètre, les utilisateurs peuvent décider d'utiliser le service de correction orthographique ou non.</translation>
+<translation id="2294283832646774959">Configure une liste d'imprimantes.
+
+      Cette règle autorise les administrateurs à fournir des configurations d'imprimante
+      pour leurs utilisateurs.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> et <ph name="PRINTER_DESCRIPTION" /> sont des chaînes au format libre que vous pouvez personnaliser pour sélectionner facilement l'imprimante. <ph name="PRINTER_MANUFACTURER" /> et <ph name="PRINTER_MODEL" /> servent à faciliter l'identification de l'imprimante par les utilisateurs finaux. Ces chaînes correspondent au fabricant et au modèle de l'imprimante. <ph name="PRINTER_URI" /> doit être une adresse accessible à partir d'un ordinateur client, et doit contenir le <ph name="URI_SCHEME" />, le <ph name="URI_PORT" /> et la <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> est facultatif. S'il est indiqué, il est utilisé pour supprimer les imprimantes en double <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> doit correspondre à l'une des chaînes qui représentent une imprimante <ph name="PRODUCT_NAME" /> compatible. Cette chaîne est utilisée pour identifier et installer le fichier PPD approprié pour l'imprimante. Pour plus d'informations, consultez la page https://support.google.com/chrome?p=noncloudprint.
+
+      La configuration d'une imprimante est effectuée lors de sa première utilisation. Les fichiers PPD ne sont pas téléchargés tant que l'imprimante n'a pas été utilisée. Par la suite, les fichiers PPD fréquemment utilisés sont mis en cache.
+
+      Cette règle n'a aucune incidence sur la capacité ou non des utilisateurs à configurer des imprimantes sur différents appareils. Elle est destinée à compléter la configuration des imprimantes effectuée par les différents utilisateurs.
+
+      Pour les appareils gérés par Active Directory, cette règle permet l'expansion de <ph name="MACHINE_NAME_VARIABLE" /> en fonction du nom de machine Active Directory ou de l'une de ses sous-chaînes. Par exemple, si le nom de machine est <ph name="MACHINE_NAME_EXAMPLE" />, alors <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> est remplacé par les 4 caractères suivant la 6e position, soit <ph name="MACHINE_NAME_PART_EXAMPLE" />. Notez que la position prend en compte le zéro.
+      </translation>
 <translation id="2294382669900758280">La lecture vidéo dans les applications Android n'est pas prise en compte même si cette règle est définie sur "<ph name="TRUE" />".</translation>
 <translation id="2298647742290373702">Configurer la page "Nouvel onglet" par défaut dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Indiquer une liste de plug-ins activés</translation>
@@ -917,7 +932,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3715569262675717862">Authentification basée sur les certificats client</translation>
 <translation id="3736879847913515635">Autoriser l'ajout de personnes dans le gestionnaire d'utilisateurs</translation>
 <translation id="3737544779868348650">Nom d'hôte du réseau de l'appareil</translation>
-<translation id="3740754010292550733">Définir la période d'affichage des notifications de redémarrage pour mise à jour</translation>
 <translation id="3750220015372671395">Bloquer la génération de clé sur ces sites</translation>
 <translation id="3756011779061588474">Bloquer le mode développeur</translation>
 <translation id="3758089716224084329">Permet de préciser le serveur proxy utilisé par <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de modifier les paramètres de proxy.
@@ -1024,9 +1038,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
        Elle répertorie les extensions qui sont automatiquement installées pour l'utilisateur de la démonstration sur les appareils en mode "point de vente". Celles-ci sont enregistrées dans l'appareil. Elles peuvent être installées hors connexion, une fois l'installation terminée.
 
        Chaque entrée de la liste contient un dictionnaire qui doit inclure l'identifiant d'extension dans le champ "extension-id", ainsi que son adresse URL dans le champ "update-url".</translation>
-<translation id="3873159954366380945">Permet de définir la période de notifications de redémarrage de <ph name="PRODUCT_NAME" /> pour l'application d'une mise à jour en attente.
-
-      Cette règle permet de contrôler la durée, en millisecondes, de la période durant laquelle un utilisateur est tenu informé que <ph name="PRODUCT_NAME" /> doit être relancé (ou que <ph name="PRODUCT_OS_NAME" /> doit être redémarré) en raison d'une mise à jour. Durant cette période, l'utilisateur recevra des notifications répétées l'informant de la nécessité d'une mise à jour, suivant la règle <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Par défaut, la période définie est de 345 600 000 millisecondes (quatre jours) pour <ph name="PRODUCT_OS_NAME" /> et de 604 800 000 millisecondes (une semaine) pour toutes les autres plates-formes.</translation>
 <translation id="3877517141460819966">Mode d'authentification à deux facteurs intégré</translation>
 <translation id="388237772682176890">Cette règle a été abandonnée dans la version M53 et supprimée dans la version M54, car le protocole SPDY 3.1 n'est plus pris en charge.
 
@@ -1242,6 +1253,7 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4508686775017063528">Si cette règle est définie sur "true" ou n'est pas définie, <ph name="PRODUCT_NAME" /> est activé, et les utilisateurs peuvent le lancer depuis le menu de l'application, les menus contextuels des pages, les commandes multimédias sur les sites Web compatibles Cast et l'icône Cast de la barre d'outils (si elle est affichée).
 
           Si cette règle est définie sur "false", <ph name="PRODUCT_NAME" /> est désactivé.</translation>
+<translation id="4515404363392014383">Activer la navigation sécurisée pour les sources fiables</translation>
 <translation id="4518251772179446575">Demander chaque fois qu'un site veut suivre la position géographique des utilisateurs</translation>
 <translation id="4519046672992331730">Activer les suggestions de recherche dans l'Omnibox de <ph name="PRODUCT_NAME" /> et empêcher les utilisateurs de modifier ce paramètre
 
@@ -1363,6 +1375,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 
           Si cette règle est définie sur "false", les demandes des WakeLock sont ignorées.</translation>
 <translation id="487460824085252184">Effectuer automatiquement la migration, sans demander l'autorisation de l'utilisateur.</translation>
+<translation id="4874982543810021567">Bloquer WebUSB sur ces sites</translation>
 <translation id="4876805738539874299">Version SSL maximale activée</translation>
 <translation id="4897928009230106190">Spécifie les paramètres utilisés pour la recherche de suggestions avec POST. Il s'agit de paires de noms et de valeurs séparées par une virgule. Si une valeur est équivalente à un paramètre modèle, comme "{searchTerms}" dans l'exemple ci-dessus, elle est remplacée par des termes de recherche réels.
 
@@ -1939,6 +1952,11 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
       Si vous ne définissez pas cette règle, la prédiction de réseau sera activée, mais les utilisateurs pourront la modifier.</translation>
 <translation id="6658245400435704251">Indique le nombre maximal de secondes pendant lesquelles un appareil peut retarder de façon aléatoire le téléchargement d'une mise à jour à partir du moment où celle-ci est disponible sur le serveur. L'appareil peut attendre pendant une certaine partie de ce temps en termes de temps de l'horloge et pendant la partie restante en termes de nombre de recherches de mise à jour. Dans tous les cas, le facteur de dispersion est limité à une quantité de temps constante, de sorte qu'un appareil ne reste jamais bloqué dans l'attente d'une mise à jour.</translation>
 <translation id="6665670272107384733">Définir la fréquence à laquelle l'utilisateur doit saisir le mot de passe pour utiliser le déverrouillage rapide</translation>
+<translation id="6681229465468164801">Cette règle permet de définir une liste de formats d'URL spécifiant les sites non autorisés à demander à l'utilisateur l'accès à un périphérique USB.
+
+          Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultWebUsbGuardSetting" si celle-ci est définie ou, à défaut, à partir de la configuration personnelle de l'utilisateur.
+
+          Les formats d'URL de cette règle ne doivent pas entrer en conflit avec ceux qui ont été configurés via WebUsbAskForUrls. Aucun paramètre ne spécifie quelle règle est prioritaire si une URL est incluse dans les deux.</translation>
 <translation id="6689792153960219308">Envoyer des rapports sur l'état du matériel</translation>
 <translation id="6698071416141001300">Le signalement d'un compte à risque au niveau de la protection par mot de passe est déclenché par la réutilisation d'un mot de passe</translation>
 <translation id="6699880231565102694">Activer l'authentification forte pour les hôtes d'accès à distance</translation>
@@ -2109,6 +2127,11 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       S'il est désactivé ou qu'il n'est pas configuré, la protection par défaut offerte par la navigation privée est appliquée à toutes les ressources.
       Cette règle n'est pas disponible sur les instances de Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Bloquer les fenêtres pop-up sur ces sites</translation>
+<translation id="7085803328069945025">Cette règle permet de définir une liste de formats d'URL spécifiant les sites autorisés à demander à l'utilisateur l'accès à un périphérique USB.
+
+          Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultWebUsbGuardSetting" si celle-ci est définie ou, à défaut, à partir de la configuration personnelle de l'utilisateur.
+
+          Les formats d'URL de cette règle ne doivent pas entrer en conflit avec ceux qui ont été configurés via WebUsbBlockedForUrls. Aucun paramètre ne spécifie quelle règle est prioritaire si une URL est incluse dans les deux.</translation>
 <translation id="7106631983877564505">Activer le verrouillage lorsque les appareils exécutant <ph name="PRODUCT_OS_NAME" /> sont inactifs ou en veille.
 
       Si vous activez ce paramètre, les utilisateurs sont invités à fournir un mot de passe pour réactiver l'appareil lorsqu'il est en veille.
@@ -2444,7 +2467,7 @@ Si ce paramètre est activé, cette machine peut découvrir et se connecter à d
 Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtrées par le pare-feu, cette machine peut uniquement se connecter aux machines hôte au sein du réseau local.</translation>
 <translation id="7976157349247117979">Nom de la destination <ph name="PRODUCT_NAME" /></translation>
 <translation id="7978060394348264922">
-      Nous vous conseillons d'examiner le paramètre de la règle pour obtenir
+      Nous vous conseillons d'examiner le paramètre de la règle IsolateOrigins pour obtenir
       le meilleur résultat, c'est-à-dire l'isolation avec un impact limité sur les utilisateurs,
       et d'utiliser IsolateOrigins avec une liste des sites que vous souhaitez isoler.
       Le paramètre SitePerProcess isole tous les sites.
@@ -2810,6 +2833,7 @@ indique uniquement les imprimantes qui peuvent être choisies.
 <translation id="9096086085182305205">Liste blanche des serveurs d'authentification</translation>
 <translation id="9098553063150791878">Règles pour l'authentification HTTP</translation>
 <translation id="9105265795073104888">Les applications Android n'ont accès qu'à un sous-ensemble d'options de configuration du proxy. Elles peuvent avoir été volontairement conçues pour utiliser le proxy, mais vous ne pouvez pas les forcer à effectuer cette opération.</translation>
+<translation id="9106865192244721694">Autoriser WebUSB sur ces sites</translation>
 <translation id="9112727953998243860">Fichier de configuration des imprimantes d'entreprise</translation>
 <translation id="9112897538922695510">Permettre d'inscrire une liste de gestionnaires de protocoles. Cette règle ne peut être qu'une recommandation. La propriété |protocol| doit être définie sur un schéma tel que "mailto", et la propriété |url| doit être définie sur le format d'URL de l'application qui gère le schéma. Le modèle peut inclure une variable "%s", qui sera remplacée par l'URL traitée le cas échéant.
 
@@ -2849,6 +2873,11 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
 <translation id="915194831143859291">Si la règle est définie sur "False" ou n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> permet à l'utilisateur d'arrêter l'appareil.
       Si cette règle est définie sur "True", <ph name="PRODUCT_OS_NAME" /> déclenche un redémarrage lorsque l'utilisateur arrête l'appareil. <ph name="PRODUCT_OS_NAME" /> remplace toutes les occurrences des boutons d'arrêt de l'interface utilisateur par des boutons de redémarrage. Si l'utilisateur arrête l'appareil au moyen du bouton Marche/Arrêt, celui-ci ne redémarre pas automatiquement, même si la règle est activée.</translation>
 <translation id="9158929520101169054">Autoriser la connexion multicompte dans le navigateur</translation>
+<translation id="9165792353046089850">Cette règle permet de définir si les sites Web sont autorisés à accéder aux appareils USB connectés. Soit l'accès est complètement bloqué, soit l'utilisateur reçoit un message chaque fois qu'un site Web souhaite accéder aux appareils USB connectés.
+
+          Cette règle peut être ignorée pour les formats d'URL spécifiques qui utilisent les règles "WebUsbAskForUrls" et "WebUsbBlockedForUrls".
+
+          Si cette règle n'est pas configurée, la valeur "3" est appliquée et peut être modifiée par l'utilisateur.</translation>
 <translation id="9167719789236691545">Désactiver Drive dans l'application "Fichiers" de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="9187743794267626640">Désactiver le montage de périphériques de stockage externe</translation>
 <translation id="9197740283131855199">Pourcentage d'adaptation du délai d'assombrissement de l'écran si l'utilisateur devient actif après la réduction de la luminosité</translation>

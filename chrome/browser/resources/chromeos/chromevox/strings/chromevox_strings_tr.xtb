@@ -89,6 +89,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="1810107444790159527">Liste kutusu</translation>
 <translation id="1828385960365606039">Mayıs</translation>
 <translation id="1834891354138622109">Sütun</translation>
+<translation id="1845944666972354496">Etkinleştirmek için iki kez dokunun</translation>
 <translation id="1865601187525349519">Metnin sonu</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Geçerli saati ve tarihi söyle.</translation>
@@ -119,6 +120,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="2179452035581866348">ChromeVox gerekli bilgilerin yanı sıra ek bilgiler sağlamak için sesleri kullanır. Hangi sesin ne anlama geldiğini öğrendiğinizde bu seslerden faydalanarak daha hızlı gezinebilirsiniz. Kullanmaya alıştıktan sonra konuşma formundaki ayrıntılı açıklamaları kapatabilir ve ses özelliğini, sayfayla ilgili gerekli bilgileri almak için kullanabilirsiniz. Aşağıda seslerin ve ne anlama geldiklerinin kapsamlı bir listesini bulabilirsiniz.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{kapa parantez}other{# kapa parantez}}</translation>
 <translation id="2199994615414171367">Önceki matematik tuşu</translation>
+<translation id="2203046366315513658">Değeri azaltma</translation>
 <translation id="2220529011494928058">Sorun bildir</translation>
 <translation id="2223693656926968778">Mevcut öğe üzerinde işlem yap</translation>
 <translation id="225732394367814946">Konuşma hızını artır</translation>
@@ -157,6 +159,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="2637227747952042642">Matematik</translation>
 <translation id="2639750663247012216">ChromeVox değiştirici</translation>
 <translation id="2644542693584024604">misspelled</translation>
+<translation id="2673280813984708147">düzenleniyor</translation>
 <translation id="267442004702508783">yenile</translation>
 <translation id="2684412629217766642">ChromeVox Eğiticisi'ni kapat</translation>
 <translation id="2697408785920771974">autoinl</translation>
@@ -208,6 +211,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="3060756054951570867"><ph name="TITLE" /> menüsü açıldı</translation>
 <translation id="3078345202707391975">Sonraki 2. düzey başlık</translation>
 <translation id="3078740164268491126">tablo</translation>
+<translation id="3082249673510793544">Geri kaydırma</translation>
 <translation id="3082557070674409251">Tıklandı</translation>
 <translation id="3084806535845658316">yazma yansıtması yok</translation>
 <translation id="3086746722712840547">note</translation>
@@ -395,6 +399,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="4372705107434148843">Konuşmayı durdur</translation>
 <translation id="4373197658375206385">Bağlantı olmayan önceki öğe yok.</translation>
 <translation id="4376316291247992553">Grafiği Braille Olarak Göster</translation>
+<translation id="4378308539633073595">İleri kaydırma</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">reset</translation>
 <translation id="4457472090507035117">Geçerli sesi seçin:</translation>
@@ -402,6 +407,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="4476183483923481720">yeni satır</translation>
 <translation id="4482330759234983253">Önceki tablo</translation>
 <translation id="4491109536499578614">Resim</translation>
+<translation id="4517854969512651305">Değeri artırma</translation>
 <translation id="4529987814483543472">Klasik tuş eşleşmesi</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{eğik çizgi}other{# eğik çizgi}}</translation>
 <translation id="4547556996012970016">Sonraki 5. düzey başlık</translation>
@@ -417,6 +423,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="461613135510474570">Cümle</translation>
 <translation id="463135993322337640">Yenilikler hakkında bilgi edinmek için ChromeVox o, n tuşlarına basın</translation>
 <translation id="4647836961514597010">Renk seçici</translation>
+<translation id="4652110509054054146">Home veya End tuşunun işlevi için Ara Sol veya Sağ tuşlarını, Control Home veya End tuşunun işlevi için Ara Control Sol veya Sağ tuşlarını, Page Up veya Down tuşunun işlevi için Ara Yukarı veya Aşağı tuşlarını kullanın.</translation>
 <translation id="4660783501463101648">Classic kaldırıldı. ChromeVox Classic'e geçiş için kullanılan klavye geçiş tuşu kaldırıldı.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>

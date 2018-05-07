@@ -412,6 +412,21 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Kontrolu pravopisu je stále možné vykonať pomocou stiahnutého slovníka. Toto pravidlo sa vzťahuje iba na používanie služieb online.
 
       Ak toto nastavenie nie je nakonfigurované, používatelia môžu zvoliť, či službu na kontrolu pravopisu chcú použiť alebo nie.</translation>
+<translation id="2294283832646774959">Umožňuje nakonfigurovať zoznam tlačiarní.
+
+      Toto pravidlo umožňuje správcom poskytnúť používateľom konfigurácie 
+      tlačiarní.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> a <ph name="PRINTER_DESCRIPTION" /> sú prispôsobiteľné textové reťazce, pomocou ktorých je možné zjednodušiť výber tlačiarne. Hodnoty <ph name="PRINTER_MANUFACTURER" /> a <ph name="PRINTER_MODEL" /> uľahčujú identifikáciu tlačiarní koncovými používateľmi. Prestavujú výrobcu a model tlačiarne. <ph name="PRINTER_URI" /> by mala byť adresa dostupná z klientského počítača vrátane údajov <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> a <ph name="URI_QUEUE" />. Hodnota <ph name="PRINTER_UUID" /> je voliteľná.  Ak je zadaná, používa sa na odobranie duplicitných tlačiarní <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> sa musí zhodovať z jedným reťazcom predstavujúcim podporovanú tlačiareň <ph name="PRODUCT_NAME" />. Reťazec sa použije na identifikáciu a inštaláciu príslušného súboru PPD pre tlačiareň. Ďalšie informácie nájdete na adrese https://support.google.com/chrome?p=noncloudprint.
+
+      Nastavenie tlačiarne sa dokončí pri prvom použití. Súbory PPD sa stiahnu až pri použití tlačiarne. Často používané súbory PPD sa následne uložia do vyrovnávacej pamäte.
+
+      Toto pravidlo nemá vplyv na to, či používatelia môžu konfigurovať tlačiarne v jednotlivých zariadeniach. Je určené ako doplnok konfigurácie tlačiarní jednotlivými používateľmi.
+
+      V prípade spravovaných zariadení Active Directory toto pravidlo podporuje rozšírenie premennej <ph name="MACHINE_NAME_VARIABLE" /> na názov zariadenia Active Directory alebo jeho podradený reťazec. Ak je napríklad názov zariadenia <ph name="MACHINE_NAME_EXAMPLE" />, potom bude premenná <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> nahradená štyrmi znakmi nasledujúcimi po šiestom mieste, t. j. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Pozície sa počítajú od nuly.
+      </translation>
 <translation id="2294382669900758280">Prehrávanie videí v aplikáciách pre Android sa neberie do úvahy ani v prípade, ak je toto pravidlo nastavené na hodnotu <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Nastavenie predvolenej stránky na novej karte v prehliadači <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Určiť zoznam povolených doplnkov</translation>
@@ -721,7 +736,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom na používateľov, pozrite si nastavenie pravidla IsolateOrigins. Pravidlo IsolateOrigins použite so zoznamom webov, ktoré chcete izolovať. Toto nastavenie – SitePerProcess – izoluje všetky weby.
       Ak toto pravidlo povolíte, všetky weby sa budú spúšťať vo vlastných procesoch.
       Ak toto pravidlo zakážete, nenastane žiadna explicitná izoláciu webu a skúšobné testy pravidiel IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť ale pravidlo SitePerProcess ručne povoliť.
-      Ak toto pravidlo nenakonfigurujete, používateľ nebude môcť dané nastavenie zmeniť.
+      Ak toto pravidlo nenakonfigurujete, používateľ bude môcť dané nastavenie zmeniť.
       </translation>
 <translation id="306887062252197004">Toto pravidlo umožňuje používateľom funkcie WebDriver prepísať
       pravidlá, ktoré môžu prekážať v jej fungovaní.
@@ -890,7 +905,6 @@ Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom
 <translation id="3715569262675717862">Overenie totožnosti na základe certifikátov klienta</translation>
 <translation id="3736879847913515635">Povoliť pridanie osoby pomocou správcu používateľov</translation>
 <translation id="3737544779868348650">Názov hostiteľa zariadenia v sieti</translation>
-<translation id="3740754010292550733">Nastavte obdobie upozornení na opätovné spustenie z dôvodu aktualizácie</translation>
 <translation id="3750220015372671395">Blokovať generovanie kľúčov na týchto weboch</translation>
 <translation id="3756011779061588474">Blokovať režim pre vývojárov</translation>
 <translation id="3758089716224084329">Umožňuje špecifikovať proxy server, ktorý bude <ph name="PRODUCT_NAME" /> používať, a bráni používateľom zmeniť nastavenia proxy servera.
@@ -991,9 +1005,6 @@ Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom
       Zoznam rozšírení, ktoré sa automaticky nainštalujú pre používateľa ukážky v zariadeniach v režime predaja. Tieto rozšírenia sa uložia v zariadení a po inštalácii môžu byť nainštalované v režime offline.
 
       Každý záznam v zozname obsahuje adresár, ktorý musí zahŕňať ID rozšírenia v poli „extension-id“ a jeho webovú adresu pre aktualizácie v poli „update-url“.</translation>
-<translation id="3873159954366380945">Umožňuje nastaviť časové obdobie, počas ktorého sa zobrazujú upozornenia na opätovné spustenie prehliadača <ph name="PRODUCT_NAME" />, aby sa použila čakajúca aktualizácia.
-
-      Pomocou tohto nastavenia pravidla môžete ovládať časové obdobie (v milisekundách), počas ktorého je používateľ postupne informovaný o tom, že <ph name="PRODUCT_NAME" /> musí znova spustiť (alebo že sa <ph name="PRODUCT_OS_NAME" /> musí reštartovať), aby mohol použiť aktualizáciu. V priebehu tohto časového obdobia bude používateľ opakovane informovaný o potrebe aktualizácie na základe nastavenia pravidla <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Ak pravidlo nenastavíte, použije sa predvolené obdobie 345 600 000 milisekúnd (štyri dni) pre prehliadač <ph name="PRODUCT_OS_NAME" /> a 604 800 000 milisekúnd (jeden týždeň) pre všetky ostatné platformy.</translation>
 <translation id="3877517141460819966">Režim integrovaného druhého faktora overenia totožnosti</translation>
 <translation id="388237772682176890">Podpora tohto pravidla bola ukončená vo verzii M53. Toto pravidlo bolo odstránené vo verzii M54, pretože bola ukončená podpora protokolu SPDY/3.1.
 
@@ -1208,6 +1219,7 @@ Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom
 <translation id="4508686775017063528">Ak toto pravidlo nastavíte na hodnotu True alebo ho nenastavíte, funkcia <ph name="PRODUCT_NAME" /> bude povolená a používatelia ju budú môcť spustiť v ponuke aplikácií, kontextových ponukách na stránke, ovládacích prvkoch médií na weboch podporujúcich funkciu Cast a (ak sa zobrazuje) pomocou ikony panela s nástrojmi funkcie Cast.
 
           Ak je toto pravidlo nastavené na hodnotu False, funkcia <ph name="PRODUCT_NAME" /> bude zakázaná.</translation>
+<translation id="4515404363392014383">Povolenie bezpečného prehliadania pre dôveryhodné zdroje</translation>
 <translation id="4518251772179446575">Opýtať sa vždy, keď chcú stránky sledovať fyzickú polohu používateľa</translation>
 <translation id="4519046672992331730">Vo všeobecnom poli prehliadača <ph name="PRODUCT_NAME" /> povolí funkciu návrhov pre vyhľadávanie a bráni používateľom toto nastavenie zmeniť.
 
@@ -1332,6 +1344,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
           Ak je toto pravidlo nastavené na hodnotu False, budú sa žiadosti o uzamknutie obrazovky v aktívnom režime ignorovať.</translation>
 <translation id="487460824085252184">Migrovať automaticky, nepýtať sa na súhlas používateľa</translation>
+<translation id="4874982543810021567">Blokovanie WebUSB na týchto weboch</translation>
 <translation id="4876805738539874299">Maximálna povolená verzia SSL</translation>
 <translation id="4897928009230106190">Určuje parametre, ktoré sa použijú pri hľadaní návrhov pomocou metódy POST. Pozostáva z párov názov/hodnota oddelených čiarkami. Ak je hodnota parameter šablóny, napr. hodnota {searchTerms} v príklade vyššie, bude nahradená údajmi skutočných vyhľadávaných výrazov.
 
@@ -1901,6 +1914,11 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Ak ponecháte toto pravidlo nenastavené, bude predpovedanie siete aktivované, no používatelia budú môcť nastavenie zmeniť.</translation>
 <translation id="6658245400435704251">Určí počet sekúnd, o koľko môže zariadenie náhodne zdržať sťahovanie aktualizácie odvtedy, čo bola aktualizácia odoslaná na server. Zariadenie môže čakať určitý čas a sa pokúsiť o určitý počet kontrol aktualizácií. Oneskorenie je obmedzené nemenným maximálnym časovým intervalom tak, aby zariadenie nečakalo na stiahnutie aktualizácie donekonečna.</translation>
 <translation id="6665670272107384733">Nastaviť, ako často musí používateľ zadávať heslo na používanie rýchleho odomknutia</translation>
+<translation id="6681229465468164801">Umožňuje nastaviť zoznam vzorov webových adries určujúcich weby, ktoré nemôžu používateľa požiadať o udelenie prístupu k zariadeniu USB.
+
+          Ak toto pravidlo ponecháte nenastavené, použije sa globálna predvolená hodnota pre všetky weby buď z pravidla DefaultWebUsbGuardSetting (ak je nastavené), alebo z osobnej konfigurácie používateľa.
+
+          Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, ktoré sú nakonfigurované prostredníctvom pravidla WebUsbAskForUrls. Ak webová adresa zodpovedá obom pravidlám, nie je určené, ktoré z nich má prednosť.</translation>
 <translation id="6689792153960219308">Nahlásiť stav hardvéru</translation>
 <translation id="6698071416141001300">Nahlásenie ohrozeného účtu v rámci ochrany heslom sa spúšťa po opätovnom použití hesla</translation>
 <translation id="6699880231565102694">Povolenie dvojfázového overenia totožnosti pre hostiteľov vzdialeného prístupu</translation>
@@ -1957,7 +1975,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Tieto pravidlá platia pre prihlasovaciu obrazovku. Pozrite si tiež pravidlo <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, ktoré platí pre reláciu používateľa. Obe pravidlá odporúčame nastaviť na rovnakú hodnotu. V prípade nezhody týchto hodnôt môže pri spúšťaní relácie používateľa nastať oneskorenie spôsobené používaním hodnoty zadanej v pravidle pre používateľa.
       Ak toto pravidlo povolíte, jednotlivé zdroje v zozname (oddelené čiarkami) sa spustia vo vlastných procesoch. 
 Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/, izolovaná bude aj adresa https://foo.example.com/ ako súčasť webu https://example.com/.
-      Ak toto pravidlo zakážete, nenastane žiadna explicitná izoláciu webu a skúšobné testy pravidiel IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť ale pravidlo SitePerProcess ručne povoliť. Ak toto pravidlo nenakonfigurujete, pre prihlasovaciu obrazovku sa použijú nastavenia izolácie webov predvolené v rámci danej platformy.
+      Ak toto pravidlo zakážete, nenastane žiadna explicitná izolácia webu a skúšobné testy pravidiel IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť ale pravidlo SitePerProcess ručne povoliť. Ak toto pravidlo nenakonfigurujete, pre prihlasovaciu obrazovku sa použijú nastavenia izolácie webov predvolené v rámci danej platformy.
       </translation>
 <translation id="6894178810167845842">Webová adresa stránky na novej karte</translation>
 <translation id="6899705656741990703">Automaticky zisťovať nastavenia servera proxy</translation>
@@ -2067,6 +2085,11 @@ Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adr
       Ak toto nastavenie vypnete alebo nenastavíte, bude sa pre všetky zdroje používať predvolená ochrana Bezpečného prehliadania.
       Toto pravidlo nie je k dispozícii v inštanciách systému Windows, ktoré nie sú pripojené k doméne <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Blokovať kontextové okná na týchto webových stránkach</translation>
+<translation id="7085803328069945025">Umožňuje nastaviť zoznam vzorov webových adries určujúcich weby, ktoré môžu používateľa požiadať o udelenie prístupu k zariadeniu USB.
+
+          Ak toto pravidlo ponecháte nenastavené, použije sa globálna predvolená hodnota pre všetky weby buď z pravidla DefaultWebUsbGuardSetting (ak je nastavené), alebo z osobnej konfigurácie používateľa.
+
+          Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, ktoré sú nakonfigurované prostredníctvom pravidla WebUsbAskForUrls. Ak webová adresa zodpovedá obom pravidlám, nie je určené, ktoré z nich má prednosť.</translation>
 <translation id="7106631983877564505">Povolí uzamknutie v prípade, ak sú zariadenia so systémom <ph name="PRODUCT_OS_NAME" /> nečinné alebo pozastavené.
 
       Ak toto nastavenie povolíte, pri pokuse o odomknutie zariadenia a prebudenie z režimu spánku sa používateľom zobrazí výzva na zadanie hesla.
@@ -2404,7 +2427,7 @@ Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adr
 <translation id="7978060394348264922">
       Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom na používateľov, pozrite si nastavenie pravidla IsolateOrigins. Pravidlo IsolateOrigins použite so zoznamom webov, ktoré chcete izolovať. Toto nastavenie – SitePerProcess – izoluje všetky weby.
       Ak toto pravidlo povolíte, všetky weby sa budú spúšťať vo vlastných procesoch.
-      Ak toto pravidlo zakážete, nenastane žiadna explicitná izoláciu webu a skúšobné testy pravidiel IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť ale pravidlo SitePerProcess ručne povoliť. Ak toto pravidlo nenakonfigurujete, používateľ nebude môcť dané nastavenie zmeniť.
+      Ak toto pravidlo zakážete, nenastane žiadna explicitná izoláciu webu a skúšobné testy pravidiel IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť ale pravidlo SitePerProcess ručne povoliť. Ak toto pravidlo nenakonfigurujete, používateľ bude môcť dané nastavenie zmeniť.
       V prehliadači <ph name="PRODUCT_OS_NAME" /> odporúčame nastaviť na rovnakú hodnotu tiež pravidlo zariadenia <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Ak sa hodnoty nastavené v týchto dvoch pravidlách nezhodujú, môže pri začatí relácie používateľa nastať oneskorenie spôsobené použitím hodnoty zadanej v pravidle pre používateľa.
       </translation>
 <translation id="7980227303582973781">Žiadne špeciálne obmedzenia</translation>
@@ -2611,7 +2634,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
       Ak toto pravidlo nastavíte na hodnotu True, zariadenie bude môcť spúšťať virtuálne počítače.
       Ak ho nastavíte na hodnotu False, zariadenie nebude môcť spúšťať virtuálne počítače.
       Keď ho zmeníte na hodnotu False, použije sa na začínajúce nové virtuálne počítače, ale nevypne tie, ktoré sú už spustené.
-      Ak toto pravidlo nenastavíte v spravovanom zariadení, bude môcť spúšťať virtuálne počítače.
+      Ak toto pravidlo nenastavíte v spravovanom zariadení, nebude môcť spúšťať virtuálne počítače.
       Nespravované zariadenia môžu spúšťať virtuálne počítače.</translation>
 <translation id="8672321184841719703">Cieľová verzia automatickej aktualizácie</translation>
 <translation id="867410340948518937">U2F (univerzálny druhý faktor)</translation>
@@ -2744,7 +2767,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="9034729899149506577">
       Ak toto pravidlo povolíte, jednotlivé zdroje v zozname (oddelené čiarkami) sa spustia vo vlastných procesoch. Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/, izolovaná bude aj adresa https://foo.example.com/ ako súčasť webu https://example.com/.
       Ak toto pravidlo zakážete, nenastane žiadna explicitná izoláciu webu a skúšobné testy pravidiel IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť ale pravidlo SitePerProcess ručne povoliť.
-      Ak toto pravidlo nenakonfigurujete, používateľ nebude môcť dané nastavenie zmeniť.
+      Ak toto pravidlo nenakonfigurujete, používateľ bude môcť dané nastavenie zmeniť.
       V prehliadači <ph name="PRODUCT_OS_NAME" /> odporúčame nastaviť na rovnakú hodnotu tiež pravidlo zariadenia <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Ak sa hodnoty nastavené v týchto dvoch pravidlách nezhodujú, môže pri začatí relácie používateľa nastať oneskorenie spôsobené použitím hodnoty zadanej v pravidle pre používateľa.
       </translation>
 <translation id="9035964157729712237">ID rozšírení, ktoré majú byť zo zoznamu zakázaných rozšírení vyňaté</translation>
@@ -2755,6 +2778,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="9096086085182305205">Zoznam povolených overovacích serverov</translation>
 <translation id="9098553063150791878">Pravidlá pre overenie HTTP</translation>
 <translation id="9105265795073104888">Aplikácie pre Android majú k dispozícii iba podmnožinu možností konfigurácie proxy servera. Aplikácie pre Android sa môžu samostatne rozhodnúť, či budú proxy server používať. Nie je možné to vynútiť.</translation>
+<translation id="9106865192244721694">Povolenie WebUSB na týchto weboch</translation>
 <translation id="9112727953998243860">Konfiguračný súbor podnikovej tlačiarne</translation>
 <translation id="9112897538922695510">Umožňuje zaregistrovať zoznam obslužných nástrojov protokolu. Môže to byť iba odporúčané pravidlo. Vlastnosť |protocol| by mala byť nastavená na schému, ako napríklad „mailto“, a vlasnosť |url| by mala byť nastavená na vzor webovej adresy aplikácie, ktorá danú schému obsluhuje. Vzor môže zahrnovať reťazec „%s“, ktorý bude nahradený obsluhovanou webovou adresou (ak bude použitý).
 
@@ -2794,6 +2818,11 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="915194831143859291">Ak toto pravidlo nastavíte na možnosť False alebo ho nenakonfigurujete, systém <ph name="PRODUCT_OS_NAME" /> umožní používateľovi vypnúť zariadenie.
       Ak toto pravidlo nastavíte na možnosť True, systém <ph name="PRODUCT_OS_NAME" /> spustí reštart, keď používateľ vypne zariadenie. <ph name="PRODUCT_OS_NAME" /> nahradí v používateľskom rozhraní všetky výskyty tlačidiel na vypnutie tlačidlami na reštartovanie. Ak teda používateľ vypne zariadenie pomocou vypínača, automaticky sa nereštartuje, a to ani vtedy, keď je toto pravidlo povolené.</translation>
 <translation id="9158929520101169054">Povoliť viacnásobné prihlásenie v rámci prehliadača</translation>
+<translation id="9165792353046089850">Umožňuje nastaviť, či môžu weby získať prístup k pripojeným zariadeniam USB. Prístup môže byť úplne zablokovaný alebo je možné používateľa požiadať, keď chce web získať prístup k pripojeným zariadeniam USB.
+
+          Toto pravidlo môžte prepísať v prípade konkrétnych vzorov webových adries pomocou pravidiel WebUsbAskForUrls a WebUsbBlockedForUrls.
+
+          Ak toto pravidlo ponecháte nenastavené, použije sa hodnota 3 a používateľ ju bude môcť zmeniť.</translation>
 <translation id="9167719789236691545">Zakázať Disk v aplikácii Súbory systému <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="9187743794267626640">Zákaz pripojenia externého ukladacieho priestoru</translation>
 <translation id="9197740283131855199">Percentuálna hodnota, o ktorú sa predĺži oneskorenie stmavenia obrazovky, keď sa zaznamená aktivita používateľa po stmavení obrazovky</translation>

@@ -677,7 +677,7 @@
 
           此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
 <translation id="3056439054015239107">
-      此政策适用于登录屏幕。另请参阅适用于用户会话的 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 政策。我们建议您将这两项政策设为相同的值。如果这两项政策的值不一致，并且系统应用的是由用户政策指定的值，系统在进入用户会话时便可能会出现延迟。
+      此政策适用于登录屏幕。另请参阅适用于用户会话的 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 政策。我们建议您将这两项政策设为相同的值。如果这两项政策的值不一致，系统在进入用户会话时，在应用由用户政策指定的值的过程中，便可能会出现延迟。
       若想做到两全其美（既能实现隔离，又能减少给用户带来的影响），您最好先查看一下 IsolateOrigins 政策设置，了解如何使用 IsolateOrigins 政策来设置您想隔离的一系列网站。SitePerProcess 这项设置会隔离所有网站。
       如果启用了此政策，每个网站都会在自己的进程中运行。
       如果停用了此政策，则不会发生明确的网站隔离，IsolateOrigins 和 SitePerProcess 的现场试验也将停用。用户仍可手动启用 SitePerProcess。
@@ -841,7 +841,6 @@
 <translation id="3715569262675717862">基于客户端证书的身份验证</translation>
 <translation id="3736879847913515635">允许通过用户管理器添加用户</translation>
 <translation id="3737544779868348650">设备网络主机名</translation>
-<translation id="3740754010292550733">设置显示浏览器重新启动通知（提示用户应用更新）的时间段</translation>
 <translation id="3750220015372671395">禁止在这些网站上使用密钥生成功能</translation>
 <translation id="3756011779061588474">禁止开发者模式</translation>
 <translation id="3758089716224084329">可让您指定 <ph name="PRODUCT_NAME" /> 使用的代理服务器，并禁止用户更改代理设置。
@@ -936,9 +935,6 @@
     列出系统自动为演示用户安装的扩展程序（它们将安装在零售模式下的设备上）。安装后，这些扩展程序保存在该设备中，并且可以在离线状态下安装。
 
       每个列表条目都包含一个字典，其“extension-id”字段必须包含扩展程序 ID，而其“update-url”字段必须包含更新网址。</translation>
-<translation id="3873159954366380945">可让您设置系统显示 <ph name="PRODUCT_NAME" /> 重新启动通知（提示用户进行更新）的时间段。
-
-      此政策设置可用于控制该时间段的时长（精确到毫秒），系统将在该时间段内循序渐进地通知用户必须重新启动 <ph name="PRODUCT_NAME" />（或 <ph name="PRODUCT_OS_NAME" />）以进行更新。在该时间段内，系统将会根据 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策的设置重复提示用户需要进行更新。如果未设置此政策，系统将会使用 345600000 毫秒（4 天）作为 <ph name="PRODUCT_OS_NAME" /> 的默认时长，并使用 604800000 毫秒（1 周）作为所有其他平台的默认时长。</translation>
 <translation id="3877517141460819966">集成的双重身份验证模式</translation>
 <translation id="388237772682176890">我们在 M53 中弃用了此政策，并在 M54 中移除了此政策（因为 SPDY/3.1 已不再受支持）。
 
@@ -1126,7 +1122,7 @@
 <translation id="4485425108474077672">配置“打开新的标签页”页面网址</translation>
 <translation id="4492287494009043413">停用截取屏幕截图功能</translation>
 <translation id="4497968613298501984">配置企业登录网址（仅限 HTTP 和 HTTPS 方案）列表。系统会在这些网址上捕获密码指纹，并使用指纹进行密码重用检测。
-      此设置应仅供使用 SSO/SMAL 系统的 GSuite 用户使用。
+      此设置应仅供使用 SSO/SMAL 系统的 G Suite 用户使用。
       为了使 <ph name="PRODUCT_NAME" /> 能够正确捕获密码指纹，请务必确保您的登录页面遵循了 https://www.chromium.org/developers/design-documents/create-amazing-password-forms 上所述的指南。
 
       如果启用了此设置，密码保护服务就会在这些网址上捕获密码指纹，以用于密码重用检测。
@@ -1249,7 +1245,7 @@
       如果此政策未设置或为空，那么所有用户都可以登录 <ph name="PRODUCT_NAME" />。</translation>
 <translation id="4858735034935305895">允许全屏模式</translation>
 <translation id="4868249328547841081">配置用于更改密码的网址（仅限 HTTP 和 HTTPS 方案）。密码保护服务会在用户遭遇网上诱骗时将用户转到此网址，以便其更改密码。
-      此设置应仅供使用 SSO/SMAL 系统的 GSuite 用户使用。
+      此设置应仅供使用 SSO/SMAL 系统的 G Suite 用户使用。
       为了使 <ph name="PRODUCT_NAME" /> 能够正确捕获这一用于更改密码的页面中的新密码指纹，请务必确保该页面遵循了 https://www.chromium.org/developers/design-documents/create-amazing-password-forms 上所述的指南。
 
       如果启用了此设置，密码保护服务就会在用户遭遇网上诱骗时将用户转到此网址，以便其更改密码。
@@ -1838,7 +1834,7 @@
 
       无论选项值是什么，系统都会向网页报告内存信息，但出于安全考虑，系统会限制所报告的内存大小，并会限制更新率。要获取准确的实时数据，请使用遥测等工具。</translation>
 <translation id="6870914592443697993">
-      此政策适用于登录屏幕。另请参阅适用于用户会话的 <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> 政策。我们建议您将这两项政策设为相同的值。如果这两项政策的值不一致，并且系统应用的是由用户政策指定的值，系统在进入用户会话时便可能会出现延迟。
+      此政策适用于登录屏幕。另请参阅适用于用户会话的 <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> 政策。我们建议您将这两项政策设为相同的值。如果这两项政策的值不一致，系统在进入用户会话时，在应用由用户政策指定的值的过程中，便可能会出现延迟。
       如果启用了此政策，则相关列表中以英文逗号分隔的每个指定来源都会在自己的进程中运行。这也会隔离以子网域命名的来源；例如，指定 https://example.com/ 也会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
       如果停用了此政策，则不会发生明确的网站隔离，IsolateOrigins 和 SitePerProcess 的现场试验也将停用。用户仍可手动启用 IsolateOrigins。
       如果未配置此政策，系统将为登录屏幕使用平台默认的网站隔离设置。
@@ -2252,7 +2248,7 @@
       如果启用了此政策，每个网站都会在自己的进程中运行。
       如果停用了此政策，则不会发生明确的网站隔离，IsolateOrigins 和 SitePerProcess 的现场试验也将停用。用户仍可手动启用 SitePerProcess。
       如果未配置此政策，用户将能够更改此设置。
-      倘若您使用的是 <ph name="PRODUCT_OS_NAME" />，我们建议您也将设备政策 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 设为相同的值。如果这两项政策指定的值不一致，并且系统应用的是由用户政策指定的值，系统在进入用户会话时便可能会出现延迟。
+      倘若您使用的是 <ph name="PRODUCT_OS_NAME" />，我们建议您也将设备政策 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 设为相同的值。如果这两项政策指定的值不一致，系统在进入用户会话时，在应用由用户政策指定的值的过程中，便可能会出现延迟。
       </translation>
 <translation id="7980227303582973781">无特殊限制</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
@@ -2574,7 +2570,7 @@
       如果启用了此政策，则相关列表中以英文逗号分隔的每个指定来源都会在自己的进程中运行。这也会隔离以子网域命名的来源；例如，指定 https://example.com/ 也会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
       如果停用了此政策，则不会发生明确的网站隔离，IsolateOrigins 和 SitePerProcess 的现场试验也将停用。用户仍可手动启用 IsolateOrigins。
       如果未配置此政策，用户将能够更改此设置。
-      倘若您使用的是 <ph name="PRODUCT_OS_NAME" />，我们建议您也将设备政策 <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> 设为相同的值。如果这两项政策指定的值不一致，并且系统应用的是由用户政策指定的值，系统在进入用户会话时便可能会出现延迟。
+      倘若您使用的是 <ph name="PRODUCT_OS_NAME" />，我们建议您也将设备政策 <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> 设为相同的值。如果这两项政策指定的值不一致，系统在进入用户会话时，在应用由用户政策指定的值的过程中，便可能会出现延迟。
       </translation>
 <translation id="9035964157729712237">要从黑名单中排除的扩展程序 ID</translation>
 <translation id="9042911395677044526">允许将要按用户应用的网络配置推送到 <ph name="PRODUCT_OS_NAME" />设备。网络配置是 JSON 格式的字符串，具体定义如 <ph name="ONC_SPEC_URL" /> 中的开放网络配置格式所述。</translation>

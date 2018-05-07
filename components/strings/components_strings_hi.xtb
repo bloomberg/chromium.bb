@@ -49,6 +49,7 @@
     &lt;li&gt;पक्का करें कि आपका इंटरनेट कनेक्शन ठीक से काम कर रहा है.&lt;/li&gt;
     &lt;li&gt;वेबसाइट के मालिक से संपर्क करें.&lt;/li&gt;
     &lt;/ol&gt;</translation>
+<translation id="1257286744552378071">आपने अपना पासवर्ड ऐसी साइट पर डाला है जिसे आपका संगठन प्रबंधित नहीं करता है. अपना खाता सुरक्षित करने के लिए, दूसरे ऐप्लिकेशन और साइटों पर अपना पासवर्ड दोबारा इस्तेमाल न करें.</translation>
 <translation id="1263231323834454256">पठन सूची</translation>
 <translation id="1264126396475825575">ख़राबी रिपोर्ट <ph name="CRASH_TIME" /> पर कैप्चर की गई (अभी तक अपलोड नहीं की गई या उसे अनदेखा किया गया)</translation>
 <translation id="1270502636509132238">पिकअप का तरीका</translation>
@@ -187,6 +188,7 @@
 <translation id="2212735316055980242">नीति नहीं मिली</translation>
 <translation id="2213606439339815911">प्रविष्टियां फ़ेच की जा रही हैं...</translation>
 <translation id="2218879909401188352"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> पर इस समय मौजूद हमलावर ऐसे खतरनाक ऐप्लिकेशन इंस्टॉल कर सकते हैं जो आपके डिवाइस को नुकसान पहुंचा सकते हैं और आपके मोबाइल बिल में अनजाने खर्चे जोड़ सकते हैं या आपकी व्‍यक्‍तिगत जानकारी चुरा सकते हैं. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जानें<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2224337661447660594">इंटरनेट कनेक्शन नहीं है</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />निदान ऐप्लिकेशन<ph name="END_LINK" /> का उपयोग करके अपने कनेक्शन को ठीक करें</translation>
 <translation id="2239100178324503013">अभी भेजें</translation>
 <translation id="225207911366869382">यह मान इस नीति के लिए हटा दिया गया है.</translation>
@@ -360,6 +362,7 @@
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> वर्तमान में पहुंच योग्य नहीं है.</translation>
 <translation id="3427092606871434483">अनुमति दें (डिफ़ॉल्ट)</translation>
 <translation id="3427342743765426898">&amp;संपादित करना फिर से करें</translation>
+<translation id="342781501876943858">अगर आपने अपने पासवर्ड का दूसरी साइटों पर दोबारा इस्तेमाल किया है, तो क्रोमियम आपको उसे रीसेट करने का सुझाव देता है.</translation>
 <translation id="3431636764301398940">इस कार्ड को इस डिवाइस पर सहेजें</translation>
 <translation id="3447661539832366887">इस डिवाइस के मालिक ने डायनासोर गेम को बंद कर दिया है.</translation>
 <translation id="3447884698081792621">प्रमाणपत्र (<ph name="ISSUER" /> की ओर से जारी किया गया) दिखाएं</translation>
@@ -396,7 +399,6 @@
 <translation id="3678529606614285348">पेज को नई गुप्त विंडो में खोलें (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">ख़राबी रिपोर्ट <ph name="CRASH_TIME" /> पर कैप्चर की गई, <ph name="UPLOAD_TIME" /> पर अपलोड की गई</translation>
 <translation id="3681007416295224113">प्रमाणपत्र जानकारी</translation>
-<translation id="3690164694835360974">लॉगिन सुरक्षित नहीं है</translation>
 <translation id="3704162925118123524">आप जिस नेटवर्क का उपयोग कर रहे हैं उसके लिए आपको प्रवेश पृष्‍ठ पर जाने की आवश्‍यकता हो सकती है.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">लोड हो रही हैं...</translation>
@@ -499,6 +501,7 @@
 <translation id="4340982228985273705">इस कंप्यूटर की पहचान एंटरप्राइज़ की ओर से प्रबंधित होने के रूप में नहीं की गई है इसलिए नीति सिर्फ़ Chrome वेबस्टोर पर होस्ट किए जाने वाले एक्सटेंशन ही अपने आप इंस्टॉल कर सकती है. Chrome वेबस्टोर अपडेट यूआरएल "<ph name="CWS_UPDATE_URL" />" है.</translation>
 <translation id="4346197816712207223">स्वीकार किए जाने वाले क्रेडिट कार्ड</translation>
 <translation id="4356973930735388585">इस साइट पर मौजूद हमलावर आपके कंप्यूटर पर ऐसे खतरनाक प्रोग्राम इंस्टॉल करने की कोशिश कर सकते हैं जो आपकी जानकारी (उदाहरण के लिए, फ़ोटो, पासवर्ड, संदेश और क्रेडिट कार्ड) चुरा लेते हैं या उसे हटा देते हैं.</translation>
+<translation id="4358461427845829800">भुगतान विधियां प्रबंधित करें...</translation>
 <translation id="4372948949327679948">अपेक्षित <ph name="VALUE_TYPE" /> मान.</translation>
 <translation id="4377125064752653719">आपने <ph name="DOMAIN" /> तक पहुंचने का प्रयास किया, लेकिन सर्वर द्वारा प्रस्तुत प्रमाणपत्र को उसके जारीकर्ता द्वारा रद्द कर दिया गया है. इसका अर्थ है कि सर्वर द्वारा प्रस्तुत सुरक्षा प्रमाणिकता पर पूर्णतया विश्वास नहीं करना चाहिए. हो सकता है कि आप किसी हमलावर से बातचीत कर रहे हों.</translation>
 <translation id="4406896451731180161">खोज परिणाम</translation>
@@ -585,6 +588,7 @@
 <translation id="5115563688576182185">(64-बिट)</translation>
 <translation id="5121084798328133320">आपकी ओर से पुष्टि होने के बाद, आपके Google Payments खाते में मौजूद कार्ड के विवरण इस साइट से शेयर किए जाएंगे.</translation>
 <translation id="5128122789703661928">इस नाम वाला सीज़न मिटाने के लिए मान्य नहीं है.</translation>
+<translation id="5135404736266831032">पते प्रबंधित करें...</translation>
 <translation id="5141240743006678641">समन्वयित पासवर्ड अपने Google प्रमाणिकता के साथ एन्क्रिप्ट करें</translation>
 <translation id="5145883236150621069">नीति प्रतिसाद में गड़बड़ी कोड मौजूद है</translation>
 <translation id="5159010409087891077">पेज को नई गुप्त विंडो में खोलें (⇧⌘N)</translation>
@@ -669,9 +673,11 @@
 <translation id="5685654322157854305">शिपिंग पता जोड़ें</translation>
 <translation id="5689199277474810259">JSON में निर्यात करें</translation>
 <translation id="5689516760719285838">स्थान</translation>
+<translation id="570530837424789914">प्रबंधित करें...</translation>
 <translation id="5710435578057952990">इस वेबसाइट की पहचान सत्यापित नहीं की गई है.</translation>
 <translation id="5719499550583120431">प्रीपेड कार्ड स्वीकार किए जाते हैं.</translation>
 <translation id="5720705177508910913">वर्तमान उपयोगकर्ता</translation>
+<translation id="5730040223043577876">अगर आपने अपने पासवर्ड का दूसरी साइटों पर दोबारा इस्तेमाल किया है, तो Chrome आपको उसे रीसेट करने का सुझाव देता है.</translation>
 <translation id="5732392974455271431">आपके अभिभावक इसे आपके लिए अनवरोधित कर सकते हैं</translation>
 <translation id="5763042198335101085">मान्य ईमेल पता डालें</translation>
 <translation id="5765072501007116331">वितरण के तरीके और ज़रूरतें देखने के लिए, कोई पता चुनें</translation>
@@ -758,6 +764,7 @@
 <translation id="6446608382365791566">और जानकारी जोड़ें</translation>
 <translation id="6447842834002726250">कुकी</translation>
 <translation id="6451458296329894277">फ़ार्म पुन: जमा करने की दुबारा पूछें</translation>
+<translation id="6465306955648956876">पासवर्ड प्रबंधित करें...</translation>
 <translation id="647261751007945333">डिवाइस नीतियां</translation>
 <translation id="6477321094435799029">Chrome को इस पेज पर असामान्य कोड मिला था और उसने आपकी व्यक्तिगत जानकारी (उदाहरण के लिए, पासवर्ड, फ़ोन नंबर और क्रेडिट कार्ड) की सुरक्षा करने के लिए उसे अवरुद्ध कर दिया है.</translation>
 <translation id="6489534406876378309">क्रैश अपलोड करना प्रारंभ करें</translation>
@@ -777,6 +784,7 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> खोज</translation>
 <translation id="6630809736994426279">इस समय <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> पर मौजूद हमलावर आपके Mac पर ऐसे खतरनाक प्रोग्राम इंस्टॉल करने की कोशिश कर सकते हैं जो आपकी जानकारी (उदाहरण के लिए, फ़ोटो, पासवर्ड, संदेश और क्रेडिट कार्ड) चुराते हैं या उसे हटा देते हैं. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जानें<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6644283850729428850">यह नीति हटा दी गई है.</translation>
+<translation id="6646269444027925224">{COUNT,plural, =0{कोई नहीं}=1{1 साइट से (आप अपने Google खाते से साइन आउट नहीं होंगे)}one{# साइटों से (आप अपने Google खाते से साइन आउट नहीं होंगे)}other{# साइटों से (आप अपने Google खाते से साइन आउट नहीं होंगे)}}</translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="6671697161687535275">क्रोमियम से फ़ॉर्म सुझाव निकालें?</translation>
 <translation id="6685834062052613830">प्रस्थान करें और सेटअप पूरा करें</translation>
@@ -803,6 +811,7 @@
 <translation id="6915804003454593391">उपयोगकर्ता:</translation>
 <translation id="6945221475159498467">चुनें</translation>
 <translation id="6948701128805548767">पिकअप के तरीके और ज़रूरतें देखने के लिए, कोई पता चुनें</translation>
+<translation id="6949872517221025916">पासवर्ड रीसेट करें</translation>
 <translation id="6957887021205513506">सर्वर का प्रमाणपत्र फर्जी दिखाई देता है.</translation>
 <translation id="6965382102122355670">ठीक है</translation>
 <translation id="6965978654500191972">डिवाइस</translation>
@@ -824,7 +833,7 @@
 <translation id="7138472120740807366">वितरण का तरीका</translation>
 <translation id="7139724024395191329">अमीरात</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> अन्य}one{<ph name="PAYMENT_METHOD_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> अन्य}other{<ph name="PAYMENT_METHOD_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> अन्य}}</translation>
-<translation id="7155487117670177674">भुगतान सुरक्षित नहीं है</translation>
+<translation id="717330890047184534">Gaia आईडी:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> अन्य}one{<ph name="SHIPPING_OPTION_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> अन्य}other{<ph name="SHIPPING_OPTION_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> अन्य}}</translation>
 <translation id="7180611975245234373">रीफ्रेश करें</translation>
 <translation id="7182878459783632708">कोई नीति सेट नहीं की गई है</translation>
@@ -1026,6 +1035,7 @@
 <translation id="8553075262323480129">अनुवाद विफल हो गया क्योंकि पेज की भाषा निर्धारित नहीं की जा सकी.</translation>
 <translation id="8557066899867184262">कार्ड वेरीफ़िकेशन कोड (सीवीसी) आपके कार्ड के पीछे मौजूद होता है.</translation>
 <translation id="8559762987265718583"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> से एक निजी कनेक्‍शन स्‍थापित नहीं किया जा सकता क्‍योंकि आपके डिवाइस का दिनांक और समय (<ph name="DATE_AND_TIME" />) गलत है.</translation>
+<translation id="8564985650692024650">अगर आपने अपने <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> पासवर्ड का दूसरी साइटों पर दोबारा इस्तेमाल किया है, तो क्रोमियम आपको उसे रीसेट करने का सुझाव देता है.</translation>
 <translation id="8571890674111243710">पेज का अनुवाद <ph name="LANGUAGE" /> में कर रहा है...</translation>
 <translation id="858637041960032120">फ़ोन नंबर जोड़ें
 </translation>
@@ -1053,6 +1063,7 @@
 <translation id="884264119367021077">शिपिंग पता</translation>
 <translation id="884923133447025588">कोई निरस्तीकरण प्रक्रिया प्राप्त नहीं हुई.</translation>
 <translation id="885730110891505394">Google के साथ साझा करना</translation>
+<translation id="8858065207712248076">अगर आपने अपने <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> पासवर्ड का दूसरी साइटों पर दोबारा इस्तेमाल किया है, तो Chrome आपको उसे रीसेट करने का सुझाव देता है.</translation>
 <translation id="8866481888320382733">नीति सेटिंग पार्स करने में गड़बड़ी</translation>
 <translation id="8870413625673593573">हाल ही में बंद किए गए</translation>
 <translation id="8874824191258364635">मान्य कार्ड संख्या डालें</translation>

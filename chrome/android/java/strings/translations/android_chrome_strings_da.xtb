@@ -82,10 +82,12 @@
 <translation id="1718835860248848330">Den seneste time</translation>
 <translation id="1729516292547892356">Opdater Google VR-tjenester for at se virtual reality-indhold</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – opdateret <ph name="TIME_SINCE_UPDATE" /></translation>
+<translation id="1743802530341753419">Spørg om tilladelse, før websites opretter forbindelse til en enhed (anbefales)</translation>
 <translation id="1749561566933687563">Synkroniser dine bogmærker</translation>
 <translation id="17513872634828108">Åbne faner</translation>
 <translation id="1756600373018374892">Tryk på denne knap for hurtigt at få adgang til dine faner.</translation>
 <translation id="1779089405699405702">Værktøj til afkodning af billeder</translation>
+<translation id="1792959175193046959">Du kan til enhver tid skifte standardplaceringen for downloads</translation>
 <translation id="1807246157184219062">Lys</translation>
 <translation id="1829244130665387512">Find på siden</translation>
 <translation id="1832521218263067499">Sikkerhedshændelser</translation>
@@ -158,7 +160,6 @@
 <translation id="2450083983707403292">Vil du begynde at downloade <ph name="FILE_NAME" /> igen?</translation>
 <translation id="2476578072172137802">Indstillinger for website</translation>
 <translation id="2482878487686419369">Underretninger</translation>
-<translation id="2490674006498621843">Træk værktøjslinjen op for at finde dine filer og sider i Downloads</translation>
 <translation id="2496180316473517155">Browserhistorik</translation>
 <translation id="2498359688066513246">Hjælp og feedback</translation>
 <translation id="2501278716633472235">Gå tilbage</translation>
@@ -648,6 +649,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6910211073230771657">Slettet</translation>
 <translation id="6912998170423641340">Bloker websites, så de ikke kan læse tekst og billeder fra udklipsholderen</translation>
 <translation id="6914783257214138813">Dine adgangskoder vil være synlige for alle, der kan se den eksporterede fil.</translation>
+<translation id="6942665639005891494">Du kan til enhver tid ændre standardplaceringen for downloads via menuen Indstillinger</translation>
 <translation id="6945221475159498467">Vælg</translation>
 <translation id="6963766334940102469">Slet bogmærker</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -673,6 +675,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7121362699166175603">Rydder historikken og autofuldførelser i adresselinjen. Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Tillad for den aktuelle søgemaskine</translation>
 <translation id="7138678301420049075">Andet</translation>
+<translation id="7144878232160441200">Prøv igen</translation>
 <translation id="7149893636342594995">De seneste 24 timer</translation>
 <translation id="7177466738963138057">Du kan ændre dette senere i Indstillinger</translation>
 <translation id="7180611975245234373">Opdater</translation>
@@ -814,6 +817,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8503813439785031346">Brugernavn</translation>
 <translation id="8514477925623180633">Eksportér adgangskoder, der er gemt med Chrome</translation>
 <translation id="8514577642972634246">Slå inkognitotilstand til</translation>
+<translation id="851751545965956758">Bloker websites fra at oprette forbindelse til enheder</translation>
 <translation id="8523928698583292556">Slet den gemte adgangskode</translation>
 <translation id="854522910157234410">Åbn denne side</translation>
 <translation id="8559990750235505898">Tilbyd at oversætte sider på andre sprog</translation>

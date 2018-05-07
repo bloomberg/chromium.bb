@@ -89,6 +89,7 @@
 <translation id="1810107444790159527">کادر فهرست</translation>
 <translation id="1828385960365606039">مه</translation>
 <translation id="1834891354138622109">ستون</translation>
+<translation id="1845944666972354496">برای فعال کردن دو ضربه سریع بزنید</translation>
 <translation id="1865601187525349519">پایان نوشتار</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">تاریخ و زمان کنونی را بگویید.</translation>
@@ -120,6 +121,7 @@
 <translation id="2179452035581866348">‏ChromeVox با استفاده از آواها اطلاعات ضروری و تکمیلی را به شما می‌دهد. با یادگیری معنای هر آوا، می‌توانید از این آواها برای پیمایش سریع‌تر استفاده کنید. همین‌که احساس راحتی کردید، می‌توانید توضیحات مفصل صوتی را خاموش کنید و برای کسب اطلاعات ضروری درباره صفحه به آنها تکیه کنید. اینجا فهرست کاملی از آواها و معنایشان آورده شده است.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{پرانتز بسته}one{# پرانتز بسته}other{# پرانتز بسته}}</translation>
 <translation id="2199994615414171367">عبارت ریاضی قبلی</translation>
+<translation id="2203046366315513658">کاهش مقدار</translation>
 <translation id="2220529011494928058">گزارش یک مشکل</translation>
 <translation id="2223693656926968778">در خصوص مورد کنونی اقدامی انجام دهید</translation>
 <translation id="225732394367814946">افزایش سرعت گفتار</translation>
@@ -158,6 +160,7 @@
 <translation id="2637227747952042642">ریاضی</translation>
 <translation id="2639750663247012216">‏تغییردهنده Chrome Vox</translation>
 <translation id="2644542693584024604">املای اشتباه</translation>
+<translation id="2673280813984708147">درحال ویرایش</translation>
 <translation id="267442004702508783">بازخوانی</translation>
 <translation id="2684412629217766642">‏بستن برنامه آموزشی ChromeVox</translation>
 <translation id="2697408785920771974">autoinl</translation>
@@ -209,6 +212,7 @@
 <translation id="3060756054951570867">منوی <ph name="TITLE" /> باز شد</translation>
 <translation id="3078345202707391975">عنوان بعدی سطح ۲</translation>
 <translation id="3078740164268491126">جدول</translation>
+<translation id="3082249673510793544">پیمایش به عقب</translation>
 <translation id="3082557070674409251">کلیک شد</translation>
 <translation id="3084806535845658316">فاقد بازگویی تایپ</translation>
 <translation id="3086746722712840547">نت</translation>
@@ -396,6 +400,7 @@
 <translation id="4372705107434148843">توقف گفتار</translation>
 <translation id="4373197658375206385">مورد قبلی که پیوند نباشد وجود ندارد.</translation>
 <translation id="4376316291247992553">مشاهده گرافیک به‌صورت خط بریل</translation>
+<translation id="4378308539633073595">پیمایش به جلو</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">بازنشانی</translation>
 <translation id="4457472090507035117">انتخاب صدای فعلی:</translation>
@@ -403,6 +408,7 @@
 <translation id="4476183483923481720">خط جدید</translation>
 <translation id="4482330759234983253">جدول قبلی</translation>
 <translation id="4491109536499578614">تصویر</translation>
+<translation id="4517854969512651305">افزایش مقدار</translation>
 <translation id="4529987814483543472">نقشه کلید کلاسیک</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{ممیز}one{# ممیز}other{# ممیز}}</translation>
 <translation id="4547556996012970016">عنوان بعدی سطح ۵</translation>
@@ -418,6 +424,7 @@
 <translation id="461613135510474570">جمله</translation>
 <translation id="463135993322337640">‏برای آشنایی با موارد جدید،‌ به ترتیب کلیدهای ChromeVox،‏ n و o را فشار دهید</translation>
 <translation id="4647836961514597010">انتخابگر رنگ</translation>
+<translation id="4652110509054054146">‏از Search و پیکان چپ یا راست برای Home یا End استفاده کنید، از Search با کنترل و پیکان چپ یا راست برای Control Home یا End، از Search و پیکان بالا یا پایین برای Page Up یا Page Down.</translation>
 <translation id="4660783501463101648">‏نسخه کلاسیک برداشته شد. تغییر حالت صفحه‌کلید برای تغییر برگشتن به ChromeVox Classic برداشته شد.</translation>
 <translation id="4661075872484491155">درخت</translation>
 <translation id="4668929960204016307">،</translation>

@@ -398,7 +398,6 @@
 <translation id="3678529606614285348">ገጹን ማንነት በማያሳውቅ አዲስ መስኮት ውስጥ ይክፈቱ (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">የብልሽት ሪፖርት <ph name="CRASH_TIME" /> ላይ ተይዟል፣ <ph name="UPLOAD_TIME" /> ላይ ተሰቅሏል</translation>
 <translation id="3681007416295224113">የሰርቲፊኬት መረጃ</translation>
-<translation id="3690164694835360974">መግቢያ ደህንነቱ የተጠበቀ አይደለም</translation>
 <translation id="3704162925118123524">እየተጠቀሙ ያሉት አውታረ መረብ በመለያ መግቢያ ገጹን እንዲጎበኙ ሊጠይቅዎት ይችላል።</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">በመጫን ላይ…</translation>
@@ -717,6 +716,7 @@
 <translation id="6047927260846328439">ይህ ይዘት ሶፍትዌር እንዲጭኑ ወይም የግል መረጃ ገልጸው እንዲያሳዩ እርስዎን ለማሳሳት ሊሞክር ይችል ይሆናል። <ph name="BEGIN_LINK" />የሆነው ሆኖ አሳይ<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923"><ph name="SITE" /> የዕውቅና ማረጋገጫ ሚስማር መሰካትን ስለሚጠቀም ድር ጣቢያውን አሁን መጎብኘት አይችሉም። የአውታረ መረብ ስህተቶች እና ጥቃቶች ብዙውን ጊዜ ጊዜያዊ ስለሆኑ ይህ ገጽ በኋላ ላይ ሊሠራ ይችላል።</translation>
 <translation id="6059925163896151826">የዩኤስቢ መሣሪያዎች</translation>
+<translation id="6071091556643036997">የመመሪያው አይነት ልክ ያልሆነ ነው።</translation>
 <translation id="6080696365213338172">በአስተዳዳሪ የቀረበ የእውቅና ማረጋገጫ በመጠቀም ይዘት ደርሰዋል። ለ<ph name="DOMAIN" /> የሚያቀርቡት ውሂብ በአስተዳዳሪዎ ሊያዝ ይችላል።</translation>
 <translation id="610911394827799129">የእርስዎ Google መለያ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ላይ ሌሎች የአሰሳ ታሪክ ዓይነቶች ሊኖረው ይችላል።</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{ምንም}=1{1 የይለፍ ቃል (የተሰመረ)}one{# የይለፍ ቃሎች (የተሰመሩ)}other{# የይለፍ ቃሎች (የተሰመሩ)}}</translation>
@@ -833,7 +833,6 @@
 <translation id="7138472120740807366">የማድረሻ ስልት</translation>
 <translation id="7139724024395191329">ኤሚሬት</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> እና <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ተጨማሪ}one{<ph name="PAYMENT_METHOD_PREVIEW" /> እና <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ተጨማሪ}other{<ph name="PAYMENT_METHOD_PREVIEW" /> እና <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ተጨማሪ}}</translation>
-<translation id="7155487117670177674">ክፍያ ደህንነቱ የተጠበቀ አይደለም</translation>
 <translation id="717330890047184534">የGaia መታወቂያ፦</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> እና <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ተጨማሪ}one{<ph name="SHIPPING_OPTION_PREVIEW" /> እና <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ተጨማሪ}other{<ph name="SHIPPING_OPTION_PREVIEW" /> እና <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ተጨማሪ}}</translation>
 <translation id="7180611975245234373">አድስ</translation>

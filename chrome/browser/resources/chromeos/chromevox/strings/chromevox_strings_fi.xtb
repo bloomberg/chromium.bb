@@ -89,6 +89,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="1810107444790159527">Luetteloruutu</translation>
 <translation id="1828385960365606039">touko</translation>
 <translation id="1834891354138622109">Sarake</translation>
+<translation id="1845944666972354496">Aktivoi kaksoisnapauttamalla</translation>
 <translation id="1865601187525349519">Tekstin loppu</translation>
 <translation id="1876229593313240038">dok.</translation>
 <translation id="188130072164734898">Sano tämänhetkinen aika ja päivämäärä.</translation>
@@ -120,6 +121,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="2179452035581866348">ChromeVox antaa sinulle tärkeitä tietoja ja lisätietoja äänillä. Näiden äänten avulla voit navigoida nopeammin, kun opit, mitä mikäkin ääni tarkoittaa. Kun alat tottua ääniin, voit poistaa sanalliset kuvaukset käytöstä ja käyttää niitä vain kun tarvitset olennaisia tietoja sivusta. Tässä on täydellinen luettelo äänistä ja siitä, mitä ne tarkoittavat.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{oikea kaarisulje}other{# oikeaa kaarisuljetta}}</translation>
 <translation id="2199994615414171367">Edellinen matemaattinen lauseke</translation>
+<translation id="2203046366315513658">Vähennä arvoa</translation>
 <translation id="2220529011494928058">Ilmoita ongelmasta</translation>
 <translation id="2223693656926968778">Käsittele nykyistä kohdetta</translation>
 <translation id="225732394367814946">Lisää puhenopeutta</translation>
@@ -158,6 +160,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="2637227747952042642">Matematiikka</translation>
 <translation id="2639750663247012216">ChromeVox-muokkaaja</translation>
 <translation id="2644542693584024604">väärin kirjoitettu</translation>
+<translation id="2673280813984708147">on muokkaamassa</translation>
 <translation id="267442004702508783">Päivitä.</translation>
 <translation id="2684412629217766642">Sulje ChromeVox-opetusohjelma</translation>
 <translation id="2697408785920771974">autoinl</translation>
@@ -209,6 +212,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="3060756054951570867"><ph name="TITLE" />-valikko avattu</translation>
 <translation id="3078345202707391975">Seuraava tason 2 otsikko</translation>
 <translation id="3078740164268491126">taulukko</translation>
+<translation id="3082249673510793544">Vieritä taaksepäin</translation>
 <translation id="3082557070674409251">Klikattiin</translation>
 <translation id="3084806535845658316">ei kirjoituksen puhumista</translation>
 <translation id="3086746722712840547">huom.</translation>
@@ -396,6 +400,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="4372705107434148843">Lopeta puhe</translation>
 <translation id="4373197658375206385">Ei edellisiä kohteita, jotka eivät ole linkkejä.</translation>
 <translation id="4376316291247992553">Näytä kuva pistekirjoituksena.</translation>
+<translation id="4378308539633073595">Vieritä eteenpäin</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">palauta</translation>
 <translation id="4457472090507035117">Valitse nykyinen ääni:</translation>
@@ -403,6 +408,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="4476183483923481720">uusi rivi</translation>
 <translation id="4482330759234983253">Edellinen taulukko</translation>
 <translation id="4491109536499578614">Kuva</translation>
+<translation id="4517854969512651305">Suurenna arvoa</translation>
 <translation id="4529987814483543472">Perinteinen näppäinasettelu</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{kauttaviiva}other{# kauttaviivaa}}</translation>
 <translation id="4547556996012970016">Seuraava tason 5 otsikko</translation>
@@ -418,6 +424,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="461613135510474570">Virke</translation>
 <translation id="463135993322337640">Saat tietoja uusista ominaisuuksista painamalla ChromeVox + o + n.</translation>
 <translation id="4647836961514597010">Värinvalitsin</translation>
+<translation id="4652110509054054146">Paina Haku ja vasen tai oikea nuolinäppäin Home- tai End-näppäimen sijaan, Haku, Control ja vasen tai oikea nuolinäppäin Control ja Home- tai End-näppäimen sijaan sekä Haku ja ylä- tai alanuoli Page Up- tai Page Down ‑näppäimen sijaan.</translation>
 <translation id="4660783501463101648">Classic poistettiin. ChromeVox Classicin käyttöönoton pikanäppäin poistettiin.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>

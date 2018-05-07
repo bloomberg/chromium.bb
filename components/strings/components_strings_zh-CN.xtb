@@ -188,7 +188,7 @@
 <translation id="2212735316055980242">找不到策略</translation>
 <translation id="2213606439339815911">正在获取条目…</translation>
 <translation id="2218879909401188352"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 上的现有攻击者可能会安装危险应用来损害您的设备、给您的手机帐单增添隐含费用或窃取您的个人信息。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2224337661447660594">无法访问互联网</translation>
+<translation id="2224337661447660594">未连接到互联网</translation>
 <translation id="2230458221926704099">请使用<ph name="BEGIN_LINK" />诊断应用<ph name="END_LINK" />修复网络连接</translation>
 <translation id="2239100178324503013">立即发送</translation>
 <translation id="225207911366869382">适用于该政策的此值已弃用。</translation>
@@ -396,7 +396,6 @@
 <translation id="3678529606614285348">在新的无痕式窗口中打开网页 (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">崩溃报告的获取时间：<ph name="CRASH_TIME" />；上传时间：<ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">证书信息</translation>
-<translation id="3690164694835360974">登录方式不安全</translation>
 <translation id="3704162925118123524">您正在使用的网络可能会要求您访问其登录页面。</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> - <ph name="BOOKMARKED" /> - <ph name="TITLE" /> - <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">正在加载...</translation>
@@ -830,7 +829,6 @@
 <translation id="7138472120740807366">递送方式</translation>
 <translation id="7139724024395191329">酋长国</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 种付款方式}other{<ph name="PAYMENT_METHOD_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 种付款方式}}</translation>
-<translation id="7155487117670177674">付款方式不安全</translation>
 <translation id="717330890047184534">GAIA ID：</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 种送货方式}other{<ph name="SHIPPING_OPTION_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 种送货方式}}</translation>
 <translation id="7180611975245234373">刷新</translation>

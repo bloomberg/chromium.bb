@@ -82,10 +82,12 @@
 <translation id="1718835860248848330">Остання година</translation>
 <translation id="1729516292547892356">Щоб переглядати вміст віртуальної реальності, оновіть Google VR-сервіси</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – оновлено <ph name="TIME_SINCE_UPDATE" /></translation>
+<translation id="1743802530341753419">Запитувати, перш ніж дозволяти сайтам підключатися до пристрою (рекомендовано)</translation>
 <translation id="1749561566933687563">Синхронізуйте свої закладки</translation>
 <translation id="17513872634828108">Відкриті вкладки</translation>
 <translation id="1756600373018374892">Торкніться цієї кнопки, щоб отримати швидкий доступ до вкладок.</translation>
 <translation id="1779089405699405702">Декодер зображень</translation>
+<translation id="1792959175193046959">Будь-коли змінюйте папку для завантажень за умовчанням</translation>
 <translation id="1807246157184219062">Світла</translation>
 <translation id="1829244130665387512">Знайти на сторінці</translation>
 <translation id="1832521218263067499">Випадки порушення безпеки</translation>
@@ -158,7 +160,6 @@
 <translation id="2450083983707403292">Завантажити файл <ph name="FILE_NAME" /> ще раз?</translation>
 <translation id="2476578072172137802">Налаштування сайту</translation>
 <translation id="2482878487686419369">Сповіщення</translation>
-<translation id="2490674006498621843">Потягніть угору панель інструментів, щоб знайти свої файли та сторінки в розділі "Завантаження"</translation>
 <translation id="2496180316473517155">Історія переглядів</translation>
 <translation id="2498359688066513246">Довідка й відгуки</translation>
 <translation id="2501278716633472235">Назад</translation>
@@ -648,6 +649,7 @@
 <translation id="6910211073230771657">Видалено</translation>
 <translation id="6912998170423641340">Не дозволяти сайтам переглядати тексти й зображення в буфері обміну</translation>
 <translation id="6914783257214138813">Ваші паролі бачитимуть усі, хто може переглядати експортований файл.</translation>
+<translation id="6942665639005891494">Будь-коли змінюйте папку для завантажень за умовчанням, використовуючи відповідну опцію в меню "Налаштування"</translation>
 <translation id="6945221475159498467">Вибрати</translation>
 <translation id="6963766334940102469">Видалити закладки</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -673,6 +675,7 @@
 <translation id="7121362699166175603">Очищує історію й автозавершення в адресному рядку. У вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> можуть бути інші форми історії веб-перегляду.</translation>
 <translation id="7128222689758636196">Дозволити поточній пошуковій системі</translation>
 <translation id="7138678301420049075">Інше</translation>
+<translation id="7144878232160441200">Повторити спробу</translation>
 <translation id="7149893636342594995">Останні 24 години</translation>
 <translation id="7177466738963138057">Це можна змінити пізніше в налаштуваннях</translation>
 <translation id="7180611975245234373">Оновити</translation>
@@ -814,6 +817,7 @@
 <translation id="8503813439785031346">Ім’я користувача</translation>
 <translation id="8514477925623180633">Експортувати паролі, збережені в Chrome</translation>
 <translation id="8514577642972634246">Перейти в режим анонімного перегляду</translation>
+<translation id="851751545965956758">Заборонити сайтам підключатися до пристроїв</translation>
 <translation id="8523928698583292556">Видалити збережений пароль</translation>
 <translation id="854522910157234410">Відкрити цю сторінку</translation>
 <translation id="8559990750235505898">Пропозиція перекладати сторінки іншими мовами</translation>

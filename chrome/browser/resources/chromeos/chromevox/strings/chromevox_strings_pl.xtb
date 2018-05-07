@@ -89,6 +89,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="1810107444790159527">Pole listy</translation>
 <translation id="1828385960365606039">maj</translation>
 <translation id="1834891354138622109">Kolumna</translation>
+<translation id="1845944666972354496">Kliknij dwukrotnie, by użyć</translation>
 <translation id="1865601187525349519">Koniec tekstu</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Powiedz bieżącą godzinę i datę.</translation>
@@ -120,6 +121,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="2179452035581866348">ChromeVox przekazuje ważne informacje dodatkowe za pomocą dźwięków. Gdy poznasz ich znaczenie, możesz przy ich użyciu szybciej się poruszać. Gdy już zyskasz więcej pewności, możesz wyłączyć wyczerpujące opisy głosowe i uzyskiwać ważne informacje o stronie na podstawie samych dźwięków. Oto kompletna lista dźwięków i ich znaczeń.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{nawias okrągły zamykający}few{# nawiasy okrągłe zamykające}many{# nawiasów okrągłych zamykających}other{# close parens}}</translation>
 <translation id="2199994615414171367">Poprzednie wyrażenie matematyczne</translation>
+<translation id="2203046366315513658">Zmniejsz wartość</translation>
 <translation id="2220529011494928058">Zgłoś problem</translation>
 <translation id="2223693656926968778">Wykonaj działanie na bieżącym elemencie</translation>
 <translation id="225732394367814946">Zwiększ tempo mowy</translation>
@@ -158,6 +160,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="2637227747952042642">Matematyczny</translation>
 <translation id="2639750663247012216">Modyfikator ChromeVox</translation>
 <translation id="2644542693584024604">błędny zapis</translation>
+<translation id="2673280813984708147">edytuje</translation>
 <translation id="267442004702508783">odśwież</translation>
 <translation id="2684412629217766642">Zamknij samouczek czytnika ChromeVox</translation>
 <translation id="2697408785920771974">autoinl</translation>
@@ -209,6 +212,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="3060756054951570867">otwarte menu <ph name="TITLE" /></translation>
 <translation id="3078345202707391975">Następny nagłówek poziomu 2</translation>
 <translation id="3078740164268491126">tabela</translation>
+<translation id="3082249673510793544">Przewiń do tyłu</translation>
 <translation id="3082557070674409251">Kliknięte</translation>
 <translation id="3084806535845658316">bez odczytywania podczas pisania</translation>
 <translation id="3086746722712840547">note</translation>
@@ -396,6 +400,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="4372705107434148843">Zakończ mowę</translation>
 <translation id="4373197658375206385">Brak poprzedniego elementu niebędącego linkiem.</translation>
 <translation id="4376316291247992553">Wyświetl grafikę w systemie brajlowskim</translation>
+<translation id="4378308539633073595">Przewiń do przodu</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">zresetuj</translation>
 <translation id="4457472090507035117">Wybierz bieżący głos:</translation>
@@ -403,6 +408,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="4476183483923481720">nowy wiersz</translation>
 <translation id="4482330759234983253">Poprzednia tabela</translation>
 <translation id="4491109536499578614">Obraz</translation>
+<translation id="4517854969512651305">Zwiększ wartość</translation>
 <translation id="4529987814483543472">Klasyczny układ klawiatury</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{ukośnik}few{# ukośniki}many{# ukośników}other{# slashes}}</translation>
 <translation id="4547556996012970016">Następny nagłówek poziomu 5</translation>
@@ -418,6 +424,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="461613135510474570">Zdanie</translation>
 <translation id="463135993322337640">Naciśnij ChromeVox + O + N, by poznać nowe funkcje</translation>
 <translation id="4647836961514597010">Selektor kolorów</translation>
+<translation id="4652110509054054146">Klawisz wyszukiwania i strzałka w lewo lub prawo to klawisz Home lub End. Klawisz wyszukiwania, Control i strzałka w lewo lub prawo to Control z klawiszem Home lub End. Klawisz wyszukiwania i strzałka w górę lub w dół to klawisz Page Up lub Page Down.</translation>
 <translation id="4660783501463101648">Klasyczny ChromeVox został usunięty. Przełącznik pozwalający na powrót do niego został usunięty.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>

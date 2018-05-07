@@ -89,6 +89,7 @@
 <translation id="1810107444790159527">ช่องรายการ</translation>
 <translation id="1828385960365606039">พฤษภาคม</translation>
 <translation id="1834891354138622109">คอลัมน์</translation>
+<translation id="1845944666972354496">แตะสองครั้งเพื่อเปิดใช้งาน</translation>
 <translation id="1865601187525349519">สิ้นสุดข้อความ</translation>
 <translation id="1876229593313240038">เอกสาร</translation>
 <translation id="188130072164734898">พูดเวลาและวันที่ปัจจุบัน</translation>
@@ -119,6 +120,7 @@
 <translation id="2179452035581866348">ChromeVox ใช้เสียงเพื่อให้ข้อมูลเพิ่มเติมที่สำคัญแก่คุณ คุณสามารถใช้เสียงเหล่านี้เพื่อไปยังที่ต่างๆ เร็วขึ้นโดยเรียนรู้ความหมายของแต่ละเสียง เมื่อคุ้นเคยมากขึ้นแล้ว คุณสามารถปิดคำอธิบายโดยละเอียดในเสียงพูดและใช้คำอธิบายเหล่านี้เพื่อรับข้อมูลสำคัญเกี่ยวกับหน้าดังกล่าว ต่อไปนี้คือรายการเสียงทั้งหมดรวมถึงความหมายของแต่ละเสียง</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{วงเล็บปิด}other{# วงเล็บปิด}}</translation>
 <translation id="2199994615414171367">คณิตศาสตร์ก่อนหน้า</translation>
+<translation id="2203046366315513658">ลดค่า</translation>
 <translation id="2220529011494928058">รายงานปัญหา</translation>
 <translation id="2223693656926968778">ดำเนินการกับรายการปัจจุบัน</translation>
 <translation id="225732394367814946">เพิ่มอัตราการพูด</translation>
@@ -157,6 +159,7 @@
 <translation id="2637227747952042642">คณิตศาสตร์</translation>
 <translation id="2639750663247012216">คีย์ตัวปรับแต่ง ChromeVox</translation>
 <translation id="2644542693584024604">สะกดผิด</translation>
+<translation id="2673280813984708147">กำลังแก้ไข</translation>
 <translation id="267442004702508783">รีเฟรช</translation>
 <translation id="2684412629217766642">ปิดบทแนะนำ ChromeVox</translation>
 <translation id="2697408785920771974">autoinl</translation>
@@ -208,6 +211,7 @@
 <translation id="3060756054951570867">เปิดเมนู <ph name="TITLE" /> แล้ว</translation>
 <translation id="3078345202707391975">ส่วนหัวระดับถัดไป  2</translation>
 <translation id="3078740164268491126">ตาราง</translation>
+<translation id="3082249673510793544">เลื่อนกลับ</translation>
 <translation id="3082557070674409251">คลิกแล้ว</translation>
 <translation id="3084806535845658316">ไม่พูดขณะพิมพ์</translation>
 <translation id="3086746722712840547">หมายเหตุ</translation>
@@ -395,6 +399,7 @@
 <translation id="4372705107434148843">หยุดการพูด</translation>
 <translation id="4373197658375206385">ไม่มีรายการก่อนหน้าที่ไม่ใช่ลิงก์</translation>
 <translation id="4376316291247992553">ดูภาพเป็นอักษรเบรลล์</translation>
+<translation id="4378308539633073595">เลื่อนไปข้างหน้า</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">รีเซ็ต</translation>
 <translation id="4457472090507035117">เลือกเสียงปัจจุบัน:</translation>
@@ -402,6 +407,7 @@
 <translation id="4476183483923481720">บรรทัดใหม่</translation>
 <translation id="4482330759234983253">ตารางก่อนหน้า</translation>
 <translation id="4491109536499578614">รูปภาพ</translation>
+<translation id="4517854969512651305">เพิ่มค่า</translation>
 <translation id="4529987814483543472">รูปแบบแป้นคลาสสิก</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{เครื่องหมายทับ}other{# เครื่องหมายทับ}}</translation>
 <translation id="4547556996012970016">ส่วนหัวระดับ 5 ถัดไป</translation>
@@ -417,6 +423,7 @@
 <translation id="461613135510474570">ประโยค</translation>
 <translation id="463135993322337640">กด ChromeVox o, n เพื่อดูเวอร์ชันใหม่</translation>
 <translation id="4647836961514597010">ตัวเลือกสี</translation>
+<translation id="4652110509054054146">ใช้แป้นค้นหาและลูกศรซ้ายหรือขวาเพื่อไปยังจุดเริ่มต้นหรือจุดสิ้นสุด ใช้แป้นค้นหา ปุ่ม Control และลูกศรซ้ายหรือขวาเพื่อควบคุมจุดเริ่มต้นหรือจุดสิ้นสุด ใช้แป้นค้นหาและลูกศรขึ้นหรือลงเพื่อเลื่อนหน้าขึ้นหรือลง</translation>
 <translation id="4660783501463101648">นำเวอร์ชันคลาสสิกออกแล้ว ระบบนำการสลับแป้นพิมพ์เพื่อสลับกลับไปยัง ChromeVox คลาสสิกออกแล้ว</translation>
 <translation id="4661075872484491155">แผนผัง</translation>
 <translation id="4668929960204016307">,</translation>

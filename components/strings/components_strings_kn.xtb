@@ -392,7 +392,6 @@
 <translation id="3678529606614285348">ಪುಟವನ್ನು ಹೊಸ ಅದೃಶ್ಯ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375"><ph name="CRASH_TIME" /> ನಲ್ಲಿ ಕ್ರ್ಯಾಶ್ ವರದಿಯನ್ನು ಸೆರೆಹಿಡಿಯಲಾಗಿದೆ, <ph name="UPLOAD_TIME" /> ಸಮಯಕ್ಕೆ ಅಪ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="3681007416295224113">ಪ್ರಮಾಣಪತ್ರ ಮಾಹಿತಿ</translation>
-<translation id="3690164694835360974">ಲಾಗಿನ್ ಸುರಕ್ಷಿತವಾಗಿಲ್ಲ</translation>
 <translation id="3704162925118123524">ನೀವು ಬಳಸುತ್ತಿರುವ ನೆಟ್‌ವರ್ಕ್‌ನ ಲಾಗಿನ್ ಪುಟಕ್ಕೆ ಭೇಟಿ ನೀಡಬೇಕಾದ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">ಲೋಡ್ ಆಗುತ್ತಿದೆ...</translation>
@@ -818,7 +817,6 @@
 <translation id="7138472120740807366">ವಿತರಣೆ ವಿಧಾನ</translation>
 <translation id="7139724024395191329">ಎಮಿರೇಟ್</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ಇನ್ನಷ್ಟು}one{<ph name="PAYMENT_METHOD_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ಇನ್ನಷ್ಟು}other{<ph name="PAYMENT_METHOD_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ಇನ್ನಷ್ಟು}}</translation>
-<translation id="7155487117670177674">ಪಾವತಿ ಸುರಕ್ಷಿತವಾಗಿಲ್ಲ</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ಇನ್ನಷ್ಟು}one{<ph name="SHIPPING_OPTION_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ಇನ್ನಷ್ಟು}other{<ph name="SHIPPING_OPTION_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ಇನ್ನಷ್ಟು}}</translation>
 <translation id="7180611975245234373">ರಿಫ್ರೆಶ್ ಮಾಡಿ</translation>
 <translation id="7182878459783632708">ಯಾವುದೇ ನೀತಿಗಳನ್ನು ಹೊಂದಿಸಿಲ್ಲ</translation>

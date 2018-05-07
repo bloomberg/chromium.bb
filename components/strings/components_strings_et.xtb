@@ -49,6 +49,7 @@
     &lt;li&gt;Veenduge, et Interneti-ühendus töötaks tavapäraselt.&lt;/li&gt;
     &lt;li&gt;Võtke ühendust veebisaidi omanikuga.&lt;/li&gt;
     &lt;/ol&gt;</translation>
+<translation id="1257286744552378071">Sisestasite oma parooli saidile, mida ei halda teie organisatsioon. Oma konto kaitsmiseks ärge kasutage oma parooli muudes rakendustes ega saitidel.</translation>
 <translation id="1263231323834454256">Lugemisloend</translation>
 <translation id="1264126396475825575">Krahhiaruanne talletati <ph name="CRASH_TIME" /> (ei ole veel üles laaditud ega eiratud)</translation>
 <translation id="1270502636509132238">Kättesaamisviis</translation>
@@ -187,6 +188,7 @@
 <translation id="2212735316055980242">Reeglit ei leitud</translation>
 <translation id="2213606439339815911">Kirjete toomine ...</translation>
 <translation id="2218879909401188352">Saidil <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> olevad ründajad võivad installida ohtlikke rakendusi, mis kahjustavad teie seadet, lisavad mobiiliarvele varjatud kulusid või varastavad teie isiklikke andmeid. <ph name="BEGIN_LEARN_MORE_LINK" />Lisateave<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2224337661447660594">Interneti-ühendus puudub</translation>
 <translation id="2230458221926704099">Parandage oma ühendus <ph name="BEGIN_LINK" />diagnostikarakenduse<ph name="END_LINK" /> abil</translation>
 <translation id="2239100178324503013">Saada kohe</translation>
 <translation id="225207911366869382">Väärtus on eeskirjade jaoks aegunud.</translation>
@@ -360,6 +362,7 @@
 <translation id="3422472998109090673">Hostiga <ph name="HOST_NAME" /> ei saa praegu ühendust.</translation>
 <translation id="3427092606871434483">Luba (vaikimisi)</translation>
 <translation id="3427342743765426898">&amp;Muuda uuesti</translation>
+<translation id="342781501876943858">Chromium soovitab teil parooli lähtestada, kui kasutasite seda ka muudel saitidel.</translation>
 <translation id="3431636764301398940">Salvesta kaart sellesse seadmesse</translation>
 <translation id="3447661539832366887">Seadme omanik lülitas dinosaurusemängu välja.</translation>
 <translation id="3447884698081792621">Kuva sertifikaat (väljastas <ph name="ISSUER" />)</translation>
@@ -396,7 +399,6 @@
 <translation id="3678529606614285348">Avage leht uues inkognito aknas (Ctrl + tõstuklahv + N)</translation>
 <translation id="3679803492151881375">Krahhiaruanne jäädvustati ajal <ph name="CRASH_TIME" />, see laaditi üles ajal <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Sertifikaadi andmed</translation>
-<translation id="3690164694835360974">Sisselogimine pole turvaline</translation>
 <translation id="3704162925118123524">Võrk, mida kasutate, võib nõuda sisselogimislehe külastamist.</translation>
 <translation id="3704609568417268905"><ph name="TIME" />, <ph name="BOOKMARKED" />, <ph name="TITLE" />, <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Laadimine...</translation>
@@ -499,6 +501,7 @@
 <translation id="4340982228985273705">Tuvastati, et tegemist ei ole ettevõtte hallatava arvutiga, seega saab reegel installida ainult Chrome'i veebipoes hostitavaid laiendusi. Chrome'i veebipoe värskenduse URL on „<ph name="CWS_UPDATE_URL" />”.</translation>
 <translation id="4346197816712207223">Aktsepteeritavad krediitkaardid</translation>
 <translation id="4356973930735388585">Saidil olevad ründajad võivad proovida installida teie arvutisse ohtlikke programme, mis varastavad teie teavet või kustutavad selle (nt fotod, paroolid, sõnumid ja krediitkaardiandmed).</translation>
+<translation id="4358461427845829800">Halda makseviise …</translation>
 <translation id="4372948949327679948">Oodatud väärtus: <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Püüdsite jõuda saidile <ph name="DOMAIN" />, kuid sertifikaadi väljaandja on serveri esitatud sertifikaadi tagasi võtnud. See tähendab, et serveri esitatud turvamandaate ei tohiks mingil juhul usaldada. Võimalik, et suhtlete ründajaga.</translation>
 <translation id="4406896451731180161">otsingutulemused</translation>
@@ -585,6 +588,7 @@
 <translation id="5115563688576182185">(64-bitine)</translation>
 <translation id="5121084798328133320">Pärast kinnitamist jagatakse teie Google Paymentsi konto kaardi üksikasju selle saidiga.</translation>
 <translation id="5128122789703661928">Selle nimega seanssi ei saa kustutada.</translation>
+<translation id="5135404736266831032">Halda aadresse …</translation>
 <translation id="5141240743006678641">Krüpteerige sünkroonitud paroolid oma Google'i mandaadiga</translation>
 <translation id="5145883236150621069">Reegli vastuses sisaldus veakood</translation>
 <translation id="5159010409087891077">Avage leht uues inkognito aknas (⇧ ⌘ N)</translation>
@@ -669,9 +673,11 @@
 <translation id="5685654322157854305">Lisage tarneaadress</translation>
 <translation id="5689199277474810259">Ekspordi JSON-vormingus</translation>
 <translation id="5689516760719285838">Asukoht</translation>
+<translation id="570530837424789914">Halda …</translation>
 <translation id="5710435578057952990">Selle veebisaidi identiteeti pole kinnitanud.</translation>
 <translation id="5719499550583120431">Kaupmees aktsepteerib ettemakstud kaarte.</translation>
 <translation id="5720705177508910913">Praegune kasutaja</translation>
+<translation id="5730040223043577876">Chrome soovitab teil parooli lähtestada, kui kasutasite seda ka muudel saitidel.</translation>
 <translation id="5732392974455271431">Vanemad saavad blokeeringu teie eest tühistada</translation>
 <translation id="5763042198335101085">Sisestage kehtiv e-posti aadress</translation>
 <translation id="5765072501007116331">Kohaletoimetamisviiside ja nõuete nägemiseks valige aadress</translation>
@@ -758,6 +764,7 @@
 <translation id="6446608382365791566">Lisateabe lisamine</translation>
 <translation id="6447842834002726250">Küpsised</translation>
 <translation id="6451458296329894277">Kinnita vormi uuestiesitamist</translation>
+<translation id="6465306955648956876">Halda paroole …</translation>
 <translation id="647261751007945333">Seadme reeglid</translation>
 <translation id="6477321094435799029">Chrome tuvastas sellel lehel ebatavalise koodi ja blokeeris selle, et teie isiklikke andmeid (nt paroolid, telefoninumbrid ja krediitkaardiandmed) kaitsta.</translation>
 <translation id="6489534406876378309">Krahhide üleslaadimise alustamine</translation>
@@ -777,6 +784,7 @@
 <translation id="6628463337424475685"><ph name="ENGINE" />'i otsing</translation>
 <translation id="6630809736994426279">Saidil <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> olevad ründajad võivad proovida installida teie Maci ohtlikke programme, mis varastavad teie teavet või kustutavad selle (nt fotod, paroolid, sõnumid ja krediitkaarditeave). <ph name="BEGIN_LEARN_MORE_LINK" />Lisateave<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6644283850729428850">See reegel on aegunud.</translation>
+<translation id="6646269444027925224">{COUNT,plural, =0{Mitte ükski}=1{1 saidilt (teid ei logita Google'i kontolt välja)}other{# saidilt (teid ei logita Google'i kontolt välja)}}</translation>
 <translation id="6657585470893396449">Parool</translation>
 <translation id="6671697161687535275">Kas eemaldada Chromiumist vormi soovitus?</translation>
 <translation id="6685834062052613830">Logige välja ja viige seadistus lõpule</translation>
@@ -803,6 +811,7 @@
 <translation id="6915804003454593391">Kasutaja:</translation>
 <translation id="6945221475159498467">Vali</translation>
 <translation id="6948701128805548767">Kättesaamisviiside ja nõuete nägemiseks valige aadress</translation>
+<translation id="6949872517221025916">Lähtestage parool</translation>
 <translation id="6957887021205513506">Serveri sertifikaat näib olevat võltsing.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Seade</translation>
@@ -824,7 +833,7 @@
 <translation id="7138472120740807366">Kohaletoimetamisviis</translation>
 <translation id="7139724024395191329">Emiraat</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> ja veel <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> ja veel <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
-<translation id="7155487117670177674">Makse pole turvaline</translation>
+<translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> ja veel <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> ja veel <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="7180611975245234373">Värskenda</translation>
 <translation id="7182878459783632708">Reegleid pole määratud</translation>
@@ -1026,6 +1035,7 @@
 <translation id="8553075262323480129">Tõlkimine nurjus, kuna lehe keelt ei õnnestunud määrata.</translation>
 <translation id="8557066899867184262">CVC asub kaardi tagaküljel.</translation>
 <translation id="8559762987265718583">Privaatset ühendust ei saa domeeniga <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> luua, kuna seadme kuupäev ja kellaaeg (<ph name="DATE_AND_TIME" />) on valed.</translation>
+<translation id="8564985650692024650">Chromium soovitab teil organisatsiooni <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> parooli lähtestada, kui kasutasite seda ka muudel saitidel.</translation>
 <translation id="8571890674111243710">Lehe tõlkimine <ph name="LANGUAGE" /> keelde...</translation>
 <translation id="858637041960032120">Lisage telefoninumber</translation>
 <translation id="859285277496340001">Sertifikaat ei määratle mehhanismi enda võimaliku tühistamise kontrollimiseks.</translation>
@@ -1052,6 +1062,7 @@
 <translation id="884264119367021077">Tarneaadress</translation>
 <translation id="884923133447025588">Tühistusmehhanismi ei leitud.</translation>
 <translation id="885730110891505394">Jagamine Google'iga</translation>
+<translation id="8858065207712248076">Chromium soovitab teil organisatsiooni <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> parooli lähtestada, kui kasutasite seda ka muudel saitidel.</translation>
 <translation id="8866481888320382733">Reegli seadete sõelumisel ilmnes viga</translation>
 <translation id="8870413625673593573">Viimati suletud</translation>
 <translation id="8874824191258364635">Sisestaeg kehtiv kaardinumber</translation>

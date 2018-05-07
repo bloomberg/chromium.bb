@@ -418,11 +418,11 @@
 
           Bu politika, çakışabilecek bir <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> politikasına göre önceliklidir. Daha önce zorunlu olarak yüklenmiş bir uygulama veya uzantı bu listeden kaldırılırsa <ph name="PRODUCT_NAME" /> tarafından da yüklemesi otomatik olarak kaldırılır.
 
-          Bir <ph name="MS_AD_NAME" /> alan adına katılmamış Windows örnekleri için zorunlu olarak yüklenen uygulamalar ve uzantılar yalnızca Chrome Web Mağazası'nda listelenenlerle sınırlıdır
+          Bir <ph name="MS_AD_NAME" /> alan adına katılmamış Windows örnekleri için zorunlu olarak yüklenen uygulamalar ve uzantılar yalnızca Chrome Web Mağazası'nda listelenenlerle sınırlıdır.
 
           Bir uzantının kaynak kodunun kullanıcılar tarafından Geliştirici Araçları kullanılarak (uzantının işlevselliğini devre dışı bırakabilecek şekilde) değiştirilebileceğini unutmayın. Böyle bir endişe olması durumunda, <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> politikası ayarlanmalıdır.
 
-          Politikaya ait her liste öğesi, noktalı virgülle (<ph name="SEMICOLON" />) ayrılmış bir uzantı kimliği ve bir "güncelleme" URL'si içeren bir dizedir. Uzantı kimliği, örneğin, geliştirici modundayken <ph name="CHROME_EXTENSIONS_LINK" /> bağlantısında bulunabilen 32 harfli bir dizedir. "Güncelleme" URL'si (belirtilmişse), <ph name="LINK_TO_EXTENSION_DOC1" /> dokümanında açıklandığı gibi bir Güncelleme Manifest XML dokümanına işaret etmelidir. Varsayılan olarak, Chrome Web Mağazası'nın güncelleme URL'si (şu anda "https://clients2.google.com/service/update2/crx") kullanılır. Bu politikada ayarlanmış "güncelleme" URL'sinin sadece ilk yükleme için kullanıldığına, uzantının sonraki güncellemelerinde ise uzantının manifest dosyasında belirtilen güncelleme URL'sinin kullanıldığına dikkat edin. Ayrıca "güncelleme" URL'sinin açık şekilde belirtilmesinin sürüm 67'ye kadar olan <ph name="PRODUCT_NAME" /> sürümlerinde (67 sürümü sürüm dahil) zorunlu olduğunu unutmayın.
+          Politikaya ait her liste öğesi, noktalı virgülle (<ph name="SEMICOLON" />) ayrılmış bir uzantı kimliği ve bir "güncelleme" URL'si içeren bir dizedir. Uzantı kimliği, örneğin, geliştirici modundayken <ph name="CHROME_EXTENSIONS_LINK" /> bağlantısında bulunabilen 32 harfli bir dizedir. "Güncelleme" URL'si (belirtilmişse), <ph name="LINK_TO_EXTENSION_DOC1" /> dokümanında açıklandığı gibi bir Güncelleme Manifest XML dokümanına işaret etmelidir. Varsayılan olarak, Chrome Web Mağazası'nın güncelleme URL'si (şu anda "https://clients2.google.com/service/update2/crx") kullanılır. Bu politikada ayarlanmış "güncelleme" URL'sinin sadece ilk yükleme için kullanıldığına, uzantının sonraki güncellemelerinde ise uzantının manifest dosyasında belirtilen güncelleme URL'sinin kullanıldığına dikkat edin. Ayrıca "güncelleme" URL'sinin açık şekilde belirtilmesinin sürüm 67'ye kadar olan <ph name="PRODUCT_NAME" /> sürümlerinde (sürüm 67 dahil) zorunlu olduğunu unutmayın.
 
           Örneğin, <ph name="EXTENSION_POLICY_EXAMPLE" />, standart Chrome Web Mağazası "güncelleme" URL'sinden <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> uygulamasını yükler. Uzantıların barındırılması ile ilgili daha fazla bilgi için bkz.: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
@@ -432,6 +432,20 @@
       Yazım denetimi indirilen bir sözlük kullanılarak gerçekleştirilebilir; bu politika yalnızca çevrimiçi hizmetin kullanımını denetler.
 
       Bu ayar yapılandırılmazsa, kullanıcılar yazım denetimi hizmetinin kullanılıp kullanılmayacağını belirleyebilirler.</translation>
+<translation id="2294283832646774959">Yazıcılar listesini yapılandırır.
+
+      Bu politika, yöneticilerin kendi kullanıcıları için yazıcı yapılandırmaları sunmalarına izin verir.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> ve <ph name="PRINTER_DESCRIPTION" />, yazıcı seçimini kolaylaştıracak şekilde özelleştirilebilen serbest biçimli dizelerdir. <ph name="PRINTER_MANUFACTURER" /> ve <ph name="PRINTER_MODEL" />, son kullanıcıların yazıcıyı tanımasını kolaylaştırmayı amaçlar. Bu ibareler yazıcının üreticisini ve modelini temsil eder. <ph name="PRINTER_URI" />; <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> ve <ph name="URI_QUEUE" /> bilgilerini içeren bir istemci bilgisayardan ulaşılabilen bir adres olmalıdır. <ph name="PRINTER_UUID" /> isteğe bağlıdır. Sağlandığı takdirde, <ph name="ZEROCONF_DISCOVERY" /> yazıcıların tekilleştirilmesine yardımcı olmak için kullanılabilir.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" />, <ph name="PRODUCT_NAME" /> tarafından desteklenen bir yazıcıyı temsil eden dizelerden biriyle eşleşmelidir. Dize, yazıcıya uygun PPD'yi tanımlamak ve yüklemek için kullanılır. Daha fazla bilgiye https://support.google.com/chrome?p=noncloudprint adresinden ulaşabilirsiniz.
+
+      Yazıcı ilk kez kullanıldığında kurulum tamamlanmış olur. Yazıcı kullanılana kadar PPD'ler indirilmez. Bundan sonra sık kullanılan PPD'ler önbelleğe alınır.
+
+      Bu politika, kullanıcıların yazıcıları ayrı ayrı cihazlarda yapılandırıp yapılandıramayacakları konusunu etkilemez. Ayrı ayrı kullanıcılar tarafından yazıcıların yapılandırılması konusunda tamamlayıcı olacak şekilde tasarlanmıştır.
+
+      Active Directory tarafından yönetilen cihazlarda bu politika, <ph name="MACHINE_NAME_VARIABLE" /> değişkeninin Active Directory makine adına veya bunun bir alt dizesine genişletilmesini destekler. Örneğin, makine adı <ph name="MACHINE_NAME_EXAMPLE" /> ise <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />, 6. konumdan sonra başlayan 4 karakterle değiştirilir (<ph name="MACHINE_NAME_PART_EXAMPLE" /> gibi). Konumun sıfır tabanlı olduğuna dikkat edin.
+      </translation>
 <translation id="2294382669900758280">Bu politika <ph name="TRUE" /> seçeneğine ayarlansa bile Android uygulamalarında video oynatma dikkate alınmaz.</translation>
 <translation id="2298647742290373702"><ph name="PRODUCT_NAME" /> ürününde varsayılan Yeni Sekme sayfasını yapılandırın.</translation>
 <translation id="2299220924812062390">Etkinleştirilmiş eklentilerin listesini belirt</translation>
@@ -732,7 +746,7 @@
 
           Bu politika ancak 'DefaultSearchProviderEnabled' politikası etkinleştirilirse dikkate alınır.</translation>
 <translation id="3056439054015239107">
-      Bu politika, oturum açma ekranı için geçerlidir. Lütfen ayrıca kullanıcı oturumu için geçerli olan <ph name="SITE_PER_PROCESS_POLICY_NAME" /> politikasına da bakın. Her iki politikanın da aynı değere ayarlanması önerilir. Değerler eşleşmezse kullanıcı politikasının belirttiği değer uygulanırken kullanıcı oturumuna girildiğinde bir gecikme olabilir.
+      Bu politika, oturum açma ekranı için geçerlidir. Lütfen ayrıca kullanıcı oturumu için geçerli olan <ph name="SITE_PER_PROCESS_POLICY_NAME" /> politikasına da bakın. Her iki politikanın da aynı değere ayarlanması önerilir. Değerler eşleşmezse kullanıcı oturumuna giriş sırasında kullanıcı politikası tarafından belirtilen değer uygulanırken gecikme olabilir.
       Hem izolasyondan hem de kullanıcılar için sınırlı etkiden en iyi şekilde 
       yararlanmak üzere IsolateOrigins politika ayarına bakmak isteyebilirsiniz. 
       Bunun için, izole etmek istediğiniz sitelerin listesiyle IsolateOrigins'i 
@@ -907,7 +921,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 <translation id="3715569262675717862">İstemci sertifikalarına dayalı kimlik doğrulama</translation>
 <translation id="3736879847913515635">Kullanıcı yöneticisinde kişi eklemeyi etkinleştir</translation>
 <translation id="3737544779868348650">Cihaz ağı ana makine adı</translation>
-<translation id="3740754010292550733">Güncelleme yeniden başlatma bildirimlerinin dönemini ayarlama</translation>
 <translation id="3750220015372671395">Bu sitelerde anahtar oluşturmayı engelle</translation>
 <translation id="3756011779061588474">Geliştirici modunu engelle</translation>
 <translation id="3758089716224084329"><ph name="PRODUCT_NAME" /> tarafından kullanılan proxy sunucuyu belirtmenize olanak tanır ve kullanıcıların proxy ayarlarını değiştirmelerini önler.
@@ -1005,9 +1018,6 @@ Bu politika yanlış seçeneğine ayarlanırsa kiosk oturum bilgileri rapor edil
       Perakende modundaki cihazlar için Demo kullanıcı adına otomatik olarak yüklenmiş uzantıları listeler. Bu uzantılar cihaza kaydedilir ve yüklemeden sonra çevrimdışıyken yüklenebilir.
 
       Her bir liste girişi, 'extension-id' alanında uzantı kimliği ve 'update-url' alanında güncelleme URL'si bulunması gereken bir sözlük içerir.</translation>
-<translation id="3873159954366380945">Bekleyen bir güncellemenin uygulanması için <ph name="PRODUCT_NAME" /> öğesinin yeniden başlatılmasıyla ilgili bildirimlerin gösterileceği dönemi ayarlamanıza olanak tanır.
-
-      Bu politika ayarı, kullanıcıya bir güncelleme için <ph name="PRODUCT_NAME" /> öğesinin (veya <ph name="PRODUCT_OS_NAME" /> işletim sisteminin) yeniden başlatılması gerektiği bilgisinin kademeli olarak verileceği dönemi milisaniye cinsinden kontrol etmek için kullanılabilir. Bu dönem boyunca, kullanıcıya <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> politikasının ayarına dayalı olarak bir güncelleme gerektiği konusunda, tekrarlanan şekilde bilgi verilir. Herhangi bir değer ayarlanmazsa, varsayılan olarak <ph name="PRODUCT_OS_NAME" /> için 345.600.000 milisaniye (dört gün), diğer tüm platformlar için de 604.800.000 milisaniye (bir hafta) değeri kullanılır.</translation>
 <translation id="3877517141460819966">Entegre iki etmenli kimlik doğrulama modu</translation>
 <translation id="388237772682176890">SPDY/3.1 desteği kaldırıldığı için bu politika M53 sürümünde kullanımdan kaldırılmış ve M54 sürümünde üründen çıkarılmıştır.
  
@@ -1223,6 +1233,7 @@ politikayı geçersiz kılamaz.
 <translation id="4508686775017063528">Bu politika true (doğru) değerine ayarlanırsa veya hiç ayarlanmazsa <ph name="PRODUCT_NAME" /> etkinleştirilir ve kullanıcılar uygulama menüsünden, sayfa içerik menülerinden, Cast uyumlu web sitelerindeki medya denetimlerinden ve (gösteriliyorsa) Cast araç çubuğu simgesinden bu özelliği başlatabilir.
 
           Bu politika false (yanlış) değerine ayarlanırsa <ph name="PRODUCT_NAME" /> devre dışı bırakılır.</translation>
+<translation id="4515404363392014383">Güvenilen kaynaklar için Güvenli Tarama'yı etkinleştir</translation>
 <translation id="4518251772179446575">Bir site, kullanıcının fiziksel konumunu izlemek istediğinde sor</translation>
 <translation id="4519046672992331730"><ph name="PRODUCT_NAME" /> Çok Amaçlı Adres Çubuğu'nda arama önerilerini etkinleştirir ve kullanıcıların bu ayarı değiştirmesini önler.
 
@@ -1345,6 +1356,7 @@ politikayı geçersiz kılamaz.
 
           Bu politika yanlış seçeneğine ayarlanırsa, ekran uyandırma kilitleri için yapılan istekler dikkate alınmaz.</translation>
 <translation id="487460824085252184">Otomatik olarak taşı, kullanıcıdan onay isteme.</translation>
+<translation id="4874982543810021567">Bu sitelerde WebUSB'yi engelle</translation>
 <translation id="4876805738539874299">Etkinleştirilen maksimum SSL sürümü</translation>
 <translation id="4897928009230106190">POST ile öneri araması yaparken kullanılan parametreleri belirtir. Virgülle ayrılmış ad/değer çiftlerini içeren bir listeden oluşur. Bir değer, yukarıdaki örnekteki {searchTerms} gibi bir şablon parametresi ise gerçek arama terimleri verisiyle değiştirilir.
 
@@ -1914,6 +1926,11 @@ politikayı geçersiz kılamaz.
       Bu politika ayarlanmadan bırakılırsa ağ tahmini etkinleştirilir, ancak isteyen kullanıcı bu ayarı değiştirebilir.</translation>
 <translation id="6658245400435704251">Bir güncelleme sunucuya ilk gönderildiği andan itibaren bir cihazın rastgele şekilde güncelleme yüklemesini geciktirebileceği süreyi saniye olarak belirtir. Cihaz bu sürenin bir kısmında gerçek zaman olarak, geri kalan kısmında ise güncelleme denetlemelerinin sayısınca bekleyebilir. Cihazın bir güncellemeyi sürekli bekler durumda kalmaması için, dağılım her durumda üst sınır olarak sabit bir süre ile kısıtlıdır.</translation>
 <translation id="6665670272107384733">Hızlı kilit açmayı kullanmak için kullanıcının şifreyi hangi sıklıkta girmesi gerektiğini ayarla</translation>
+<translation id="6681229465468164801">USB cihazlarına erişmek için kullanıcıdan izin istemesi engellenen sitelerin belirtildiği URL kalıpları listesini ayarlamanıza olanak sağlar.
+
+          Bu politika ayarlanmadan bırakılırsa, tüm siteler için ya "DefaultWebUsbGuardSetting" politikasından (ayarlanmışsa) ya da kullanıcının kişisel yapılandırmasından gelen genel varsayılan değer kullanılır.
+
+          Bu politikadaki URL kalıplar WebUsbAskForUrls aracılığıyla yapılandırılan URL kalıplarıyla çakışmamalıdır. Bir URL her ikisinde de yer alırsa, bu iki politikadan hangisinin öncelikli olacağı belirsizdir.</translation>
 <translation id="6689792153960219308">Donanım durumunu bildir</translation>
 <translation id="6698071416141001300">Şifre koruma hizmetinin risk altındaki hesabı işaretleme özelliği, şifre yeniden kullanımıyla tetiklendi</translation>
 <translation id="6699880231565102694">Uzaktan erişim ana makineleri için iki öğeli kimlik doğrulamayı etkinleştir</translation>
@@ -1943,7 +1960,7 @@ politikayı geçersiz kılamaz.
 
       <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" /> olarak ayarlanırsa, kullanıcılar <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı güncellemesini yüklemek için powerwash sürecini tetikleyebilirler.
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" /> olarak ayarlanırsa kullanıcılar cihaz genelindeki durumu (kurumsal kayıt dahil) koruyan ancak kullanıcı verilerini kaybeden <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ürün yazılımı güncelleme sürecini başlatabilirler. Bu güncelleme süreci 68 sürümünden itibaren kullanılabilir.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" /> olarak ayarlanırsa kullanıcılar cihaz genelindeki durumu (kurumsal kayıt dahil) koruyan ancak kullanıcı verilerini kaybeden <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ürün yazılımı güncelleme sürecini başlatabilirler. Bu güncelleme süreci sürüm 68'den itibaren kullanılabilir.
 
       Politika ayarlanmazsa <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ürün yazılımı güncelleme işlevselliği kullanılamaz.</translation>
 <translation id="6757438632136860443"><ph name="FLASH_PLUGIN_NAME" /> eklentisini çalıştırmasına izin verilen siteleri belirten URL kalıplarının listesini ayarlamanıza izin verir.
@@ -1967,7 +1984,7 @@ politikayı geçersiz kılamaz.
       raporlanan boyutlar sayısal hale getirilir ve güncelleme hızı güvenlik nedeniyle sınırlanır. Gerçek zamanlı
       doğru veriler edinmek için lütfen Telemetry gibi araçlar kullanın.</translation>
 <translation id="6870914592443697993">
-      Bu politika, oturum açma ekranı için geçerlidir. Lütfen ayrıca kullanıcı oturumu için geçerli olan <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> politikasına da bakın. Her iki politikanın da aynı değere ayarlanması önerilir. Değerler eşleşmezse kullanıcı politikasının belirttiği değer uygulanırken kullanıcı oturumuna girildiğinde bir gecikme olabilir.
+      Bu politika, oturum açma ekranı için geçerlidir. Lütfen ayrıca kullanıcı oturumu için geçerli olan <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> politikasına da bakın. Her iki politikanın da aynı değere ayarlanması önerilir. Değerler eşleşmezse kullanıcı oturumuna giriş sırasında kullanıcı politikası tarafından belirtilen değer uygulanırken gecikme olabilir.
       Bu politikanın etkinleştirilmesi halinde, virgülle ayrılmış listede ad verilmiş 
       her kaynak kendi işleminde çalışır. Bu politika ayrıca alt alan adlarıyla 
       adlandırılan kaynakları da izole eder; örneğin, https://example.com/ 
@@ -2085,6 +2102,11 @@ kalır. Ancak kullanıcılar yine de IsolateOrigins'i, manuel olarak etkinleşti
       Bu ayar devre dışı bırakılırsa veya ayarlanmazsa varsayılan Güvenli Tarama koruması tüm kaynaklara uygulanır.
       Bu politika, bir <ph name="MS_AD_NAME" /> alanına katılmayan Windows örneklerinde kullanılamaz.</translation>
 <translation id="7079519252486108041">Bu sitelerde pop-up'ları engelle</translation>
+<translation id="7085803328069945025">USB cihazlarına erişmek için kullanıcıya sormasına izin verilen sitelerin belirtildiği URL kalıpları listesini ayarlamanıza olanak sağlar.
+
+         Bu politika ayarlanmadan bırakılırsa, tüm siteler için ya "DefaultWebUsbGuardSetting" politikasından (ayarlanmışsa) ya da kullanıcının kişisel yapılandırmasından gelen genel varsayılan değer kullanılır.
+
+         Bu politikadaki URL kalıplar WebUsbAskForUrls aracılığıyla yapılandırılan URL kalıplarıyla çakışmamalıdır. Bir URL her ikisinde de yer alırsa, bu iki politikadan hangisinin öncelikli olacağı belirsizdir.</translation>
 <translation id="7106631983877564505"><ph name="PRODUCT_OS_NAME" /> cihazları boştayken veya askıya alındığında kilidi etkinleştir.
 
       Bu ayarı etkinleştirirseniz uykudaki cihazlarının kilidini açabilmeleri için kullanıcılardan şifre girmeleri istenir.
@@ -2424,7 +2446,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       dışı  kalır. Ancak kullanıcılar yine de SitePerProcess’i manuel olarak 
       etkinleştirebilirler.
       Politika yapılandırılmazsa kullanıcı bu ayarı değiştirebilir.
-      <ph name="PRODUCT_OS_NAME" /> işletim sisteminde, <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> cihaz politikasının da aynı değere ayarlanması önerilir. İki politikanın belirttiği değerler eşleşmezse kullanıcı politikasının belirttiği değer uygulanırken kullanıcı oturumu açıldığında bir gecikme olabilir.
+      <ph name="PRODUCT_OS_NAME" /> işletim sisteminde, <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> cihaz politikasının da aynı değere ayarlanması önerilir. İki politikanın belirttiği değerler eşleşmezse kullanıcı oturumuna giriş sırasında kullanıcı politikası tarafından belirtilen değer uygulanırken gecikme olabilir.
       </translation>
 <translation id="7980227303582973781">Özel kısıtlama yok</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
@@ -2628,7 +2650,7 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
           Birden fazla sunucu adını virgülle ayırın. Joker karakterlere (*) izin verilir.
 
           Bu politikayı ayarlanmamış olarak bırakırsanız, <ph name="PRODUCT_NAME" /> sunucunun İntranet'te olup olmadığını saptamaya çalışır ve buna göre IWA taleplerini yanıtlar. Sunucunun İnternet'te olduğu saptanırsa, sunucudan gelen IWA talepleri <ph name="PRODUCT_NAME" /> tarafından yoksayılır.</translation>
-<translation id="8667812577403206506">Chrome OS'ta sanal makinelerin çalıştırılmasına izin verilip verilmediğini kontrol etmenize olanak tanır.
+<translation id="8667812577403206506">Chrome OS'te sanal makinelerin çalıştırılmasına izin verilip verilmediğini kontrol etmenize olanak tanır.
 
       Politika Doğru (True) değerine ayarlanırsa cihazın sanal makineler
       çalıştırmasına izin verilir.
@@ -2776,7 +2798,7 @@ olan sanal makineleri kapatmaz.
       Bu politikanın devre dışı bırakılması halinde hiçbir Site İzolasyonu yapılmaz 
 ve IsolateOrigins ile SitePerProcess'in saha denemeleri devre dışı  
 kalır. Ancak kullanıcılar yine de IsolateOrigins'i manuel olarak etkinleştirebilir.
-      Politika yapılandırılmazsa, kullanıcı bu ayarı değiştirebilir. <ph name="PRODUCT_OS_NAME" /> işletim sisteminde <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> cihaz politikasının da aynı değere ayarlanması önerilir. İki politikanın belirttiği değerler eşleşmezse kullanıcı politikasının belirttiği değer uygulanırken kullanıcı oturumu açıldığında bir gecikme olabilir.
+      Politika yapılandırılmazsa, kullanıcı bu ayarı değiştirebilir. <ph name="PRODUCT_OS_NAME" /> işletim sisteminde <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> cihaz politikasının da aynı değere ayarlanması önerilir. İki politikanın belirttiği değerler eşleşmezse kullanıcı oturumuna giriş sırasında kullanıcı politikası tarafından belirtilen değer uygulanırken gecikme olabilir.
       </translation>
 <translation id="9035964157729712237">Kara listeden muaf tutulacak uzantı kimlikleri</translation>
 <translation id="9042911395677044526">Kullanıcılara ayrı ayrı uygulanacak ağ yapılandırmasını bir <ph name="PRODUCT_OS_NAME" /> cihazına iletmeye olanak verir. Ağ yapılandırması, Açık Ağ Yapılandırma biçimi tarafından <ph name="ONC_SPEC_URL" /> adresinde tanımlandığı gibi, JSON biçimli bir dizedir.</translation>
@@ -2786,6 +2808,7 @@ kalır. Ancak kullanıcılar yine de IsolateOrigins'i manuel olarak etkinleşti
 <translation id="9096086085182305205">Kimlik doğrulama sunucusu beyaz listesi</translation>
 <translation id="9098553063150791878">HTTP kimlik doğrulaması için politikalar</translation>
 <translation id="9105265795073104888">Sadece proxy yapılandırma seçeneklerinin bir alt kümesi Android uygulamalarında kullanılabilir. Android uygulamaları proxy kullamayı kendi tercihleriyle seçebilir. Uygulamaları proxy kullanmaya zorlayamazsınız.</translation>
+<translation id="9106865192244721694">Bu sitelerde WebUSB'ye izin ver</translation>
 <translation id="9112727953998243860">Kurumsal yazıcı yapılandırma dosyası</translation>
 <translation id="9112897538922695510">Bir protokol işleyicileri listesini kaydetmenize olanak tanır. Bu, yalnızca önerilen bir politika olabilir. |protocol| özelliğinin "mailto" gibi şemaya ayarlanması ve |url| özelliğinin de şemayı işleyen uygulamanın URL kalıbına ayarlanması gerekir. Kalıp bir "%s" makrosu içerebilir; bu durumda, makro işlenen URL tarafından değiştirilir.
 
@@ -2826,6 +2849,11 @@ kalır. Ancak kullanıcılar yine de IsolateOrigins'i manuel olarak etkinleşti
 <translation id="915194831143859291">Bu politika yanlış seçeneğine ayarlanırsa veya hiç yapılandırılmazsa <ph name="PRODUCT_OS_NAME" />, kullanıcının cihazı kapatmasına izin verir.
       Bu politika doğru seçeneğine ayarlanırsa, kullanıcı cihazı kapattığında <ph name="PRODUCT_OS_NAME" />, yeniden başlatma işlemi tetikler. <ph name="PRODUCT_OS_NAME" />, kullanıcı arayüzündeki tüm kapatma düğmelerini yeniden başlatma düğmeleriyle değiştirir. Kullanıcı güç düğmesini kullanarak cihazı kapatırsa, politika etkinleştirilmiş olsa dahi cihaz otomatik olarak yeniden başlatılmaz.</translation>
 <translation id="9158929520101169054">Tarayıcıda Çoklu Oturum Açmaya İzin Ver</translation>
+<translation id="9165792353046089850">Web sitelerinin bağlı USB cihazlarına erişim sağlamalarına izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Erişim tamamıyla engellenebilir veya bir web sitesinin bağlı USB cihazlarına erişim sağlamak istediği her defasında, kullanıcıya onay verip vermediği sorulabilir.
+
+          Bu politika "WebUsbAskForUrls" ve "WebUsbBlockedForUrls" politikaları kullanılarak belirli URL kalıpları için geçersiz kılınabilir.
+
+          Bu politika ayarlanmadan bırakılırsa "3" değeri kullanılır ve kullanıcı bu değeri değiştirebilir.</translation>
 <translation id="9167719789236691545"><ph name="PRODUCT_OS_NAME" />, Dosyalar uygulamasında Drive'ı devre dışı bırak</translation>
 <translation id="9187743794267626640">Harici depolama birimi eklemeyi devre dışı bırak</translation>
 <translation id="9197740283131855199">Kullanıcı, ekran kararmasından sonra etkin duruma gelirse ekranın kararma gecikmesinin ölçekleneceği yüzde</translation>

@@ -397,7 +397,6 @@
 <translation id="3678529606614285348">নতুন ছদ্মবেশী উইন্ডোতে (Ctrl-Shift-N) করে একটি পৃষ্ঠা খুলুন</translation>
 <translation id="3679803492151881375">ক্র্যাশ প্রতিবেদন <ph name="CRASH_TIME" /> এ ক্যাপচার করা হয়েছে, <ph name="UPLOAD_TIME" /> এ আপলোড করা হয়েছে</translation>
 <translation id="3681007416295224113">শংসাপত্র তথ্য</translation>
-<translation id="3690164694835360974">লগইন সুরক্ষিত নয়</translation>
 <translation id="3704162925118123524">আপনি যে নেটওয়ার্কটি ব্যবহার করছেন সেটির জন্য অপনাকে এটির লগ ইন পৃষ্ঠাতে যেতে হতে পরে৷</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">লোড হচ্ছে...</translation>
@@ -824,7 +823,6 @@
 <translation id="7138472120740807366">ডেলিভারির পদ্ধতি</translation>
 <translation id="7139724024395191329">এমিরেট</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />টি}one{<ph name="PAYMENT_METHOD_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />টি}other{<ph name="PAYMENT_METHOD_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />টি}}</translation>
-<translation id="7155487117670177674">পেমেন্ট সুরক্ষিত নয়</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />টি}one{<ph name="SHIPPING_OPTION_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />টি}other{<ph name="SHIPPING_OPTION_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />টি}}</translation>
 <translation id="7180611975245234373">রিফ্রেশ করুন</translation>
 <translation id="7182878459783632708">কোন নীতি সেট করা নেই</translation>

@@ -420,6 +420,21 @@
       Provjera pravopisa još se uvijek može vršiti pomoću preuzetog rječnika; to pravilo upravlja samo upotrebom mrežne usluge.
 
       Ako ta postavka nije konfigurirana, korisnici mogu sami odlučiti hoće li se usluga provjere pravopisa upotrebljavati ili neće.</translation>
+<translation id="2294283832646774959">Konfigurira popis pisača.
+
+      To pravilo omogućuje administratorima da navedu konfiguracije pisača za
+      korisnike.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> nemaju nizove koji se mogu prilagoditi radi lakšeg odabira pisača. <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> olakšavaju krajnjim korisnicima da prepoznaju pisače tako što predstavljaju proizvođača i model pisača. <ph name="PRINTER_URI" /> treba biti adresa kojoj se može pristupiti s računala klijenta uključujući <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. Polje <ph name="PRINTER_UUID" /> izborno je. Ako se navede, služi za uklanjanje duplikata <ph name="ZEROCONF_DISCOVERY" /> pisača.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> mora odgovarati jednom od nizova koji predstavljaju pisač koji <ph name="PRODUCT_NAME" /> podržava. Niz će se koristiti za identifikaciju i instaliranje odgovarajućeg PPD-a za pisač. Više informacija dostupno je na https://support.google.com/chrome?p=noncloudprint.
+
+      Postavljanje pisača dovršava se po prvoj upotrebi pisača. PPD-ovi će se preuzeti tek kada se pisač upotrijebi. Nakon toga često korišteni PPD-ovi spremit će se u predmemoriju.
+
+      To pravilo ne utječe na to mogu li korisnici konfigurirati pisače na pojedinačnim uređajima. Služi kao dodatno pravilo za konfiguraciju pisača koju vrše pojedinačni korisnici.
+
+      Za uređaje kojima upravlja Active Directory to pravilo podržava proširivanje naziva uređaja <ph name="MACHINE_NAME_VARIABLE" /> na naziv uređaja Active Directoryja ili njegov podniz. Na primjer, ako naziv uređaja glasi <ph name="MACHINE_NAME_EXAMPLE" />, onda će se <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> zamijenjen s četiri znaka počevši od šestog položaja, tj. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Položaj je utemeljen na nuli.
+      </translation>
 <translation id="2294382669900758280">Reprodukcija videozapisa u Android aplikacijama ne uzima se u obzir, čak i ako se to pravilo postavi na <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Konfigurira zadanu stranicu nove kartice u pregledniku <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Odredi popis omogućenih dodataka</translation>
@@ -874,7 +889,6 @@
 <translation id="3715569262675717862">Autentifikacija na temelju korisničkih certifikata</translation>
 <translation id="3736879847913515635">Omogućivanje dodavanja osobe u upravitelju korisnika</translation>
 <translation id="3737544779868348650">Naziv hosta mreže uređaja</translation>
-<translation id="3740754010292550733">Postavi razdoblje za obavijesti o ponovnom pokretanju radi ažuriranja</translation>
 <translation id="3750220015372671395">Blokiraj generiranje ključeva na ovim web-lokacijama</translation>
 <translation id="3756011779061588474">Blokiraj način rada razvojnog programera</translation>
 <translation id="3758089716224084329">Omogućuje vam da odredite proxy poslužitelj kojim se koristi <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da mijenjaju postavke proxyja.
@@ -973,9 +987,6 @@
       Navodi proširenja koja se automatski instaliraju za korisnike demo verzije, za uređaje u prodajnom načinu. Ta se proširenja spremaju na uređaj i mogu se instalirati izvanmrežno, nakon instalacije.
 
       Svaki unos popisa sadrži rječnik koji mora uključivati ID proširenja u polju "extension-id" i njegov URL za ažuriranje u polju "update-url".</translation>
-<translation id="3873159954366380945">Omogućuje postavljanje razdoblja tijekom kojeg će se prikazivati obavijesti o ponovnom pokretanju preglednika <ph name="PRODUCT_NAME" /> radi primjene ažuriranja na čekanju.
-
-      Pomoću ove postavke pravila može se odrediti razdoblje u milisekundama tijekom kojeg se korisnik progresivno obavještava o tome da je potrebno ponovo pokrenuti <ph name="PRODUCT_NAME" /> (ili <ph name="PRODUCT_OS_NAME" />) radi ažuriranja. Tijekom tog će se vremena korisniku prikazivati ponavljajuća obavijest o potrebnom ažuriranju na temelju postavke pravila <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Ako se ne postavi, koristit će se zadano razdoblje od 345.600.000 miliskundi (četiri dana) za <ph name="PRODUCT_OS_NAME" /> i 604.800.000 milisekundi (jedan tjedan) za sve ostale platforme.</translation>
 <translation id="3877517141460819966">Integrirani način dvostruke autentifikacije</translation>
 <translation id="388237772682176890">To je pravilo obustavljeno u verziji M53 i uklonjeno u verziji M54 jer je uklonjena podrška za SPDY/3.1.
 
@@ -1180,6 +1191,7 @@
 <translation id="4508686775017063528">Ako se to pravilo postavi na "točno" ili se ne postavi, <ph name="PRODUCT_NAME" /> bit će omogućen i korisnici će ga moći pokrenuti putem izbornika aplikacije, kontekstnih izbornika na stranici, medijskih kontrola na web-lokacijama koje podržavaju Cast te ikone Casta na alatnoj traci (ako je prikazana).
 
           Ako se pravilo postavi na "netočno", <ph name="PRODUCT_NAME" /> bit će onemogućen.</translation>
+<translation id="4515404363392014383">Omogući Sigurno pregledavanje za pouzdane izvore</translation>
 <translation id="4518251772179446575">Pitaj kad web-lokacija želi pratiti fizičku lokaciju korisnika</translation>
 <translation id="4519046672992331730">Omogućuje prijedloge pretraživanja u višenamjenskom okviru usluge <ph name="PRODUCT_NAME" /> i sprječava korisnike da promijene tu postavku.
 
@@ -1301,6 +1313,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
           Ako je to pravilo postavljeno na netočno, ti će se zahtjevi zanemarivati.</translation>
 <translation id="487460824085252184">Migrira automatski, bez traženja pristanka korisnika.</translation>
+<translation id="4874982543810021567">Blokiraj WebUSB na ovim web-lokacijama</translation>
 <translation id="4876805738539874299">Maksimalna verzija SSL-a omogućena</translation>
 <translation id="4897928009230106190">Određuje parametre koji se upotrebljavaju prilikom pretraživanja prijedloga pomoću POST metode. Sastoji se od zarezom odvojenih parova naziv/vrijednost. Ako je vrijednost parametar predloška, primjerice {searchTerms} u gornjem primjeru, zamijenit će se podacima stvarnih pojmova za pretraživanje.
 
@@ -1836,6 +1849,11 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       Ako se to pravilo ne postavi, mrežno predviđanje bit će omogućeno, no korisnik će to moći promijeniti.</translation>
 <translation id="6658245400435704251">Određuje do koliko sekundi uređaj može nasumično odgađati preuzimanje ažuriranja od trenutka kad je ažuriranje prvi put poslano na poslužitelj. Uređaj može dio tog vremena čekati u smislu stvarnog proteka vremena, a preostalo vrijeme u smislu broja provjera ažuriranja. U bilo kojem slučaju, gornja granica raspršivanja konstantan je iznos vremena tako da uređaj nikad ne može zauvijek zapeti čekajući ažuriranje.</translation>
 <translation id="6665670272107384733">Odredi koliko često korisnik mora unijeti zaporku za upotrebu brzog otključavanja</translation>
+<translation id="6681229465468164801">Omogućuje vam postavljanje popisa uzoraka URL-ova koji navode web-lokacije kojima se sprječava da od korisnika traže dopuštenje za pristup USB uređaju.
+
+          Ako se to pravilo ne postavi, za sve će se web-lokacije upotrebljavati globalna zadana vrijednost iz pravila "DefaultWebUsbGuardSetting", ako je postavljeno, ili vrijednost iz osobne korisnikove konfiguracije.
+
+          Uzorci URL-ova u ovom pravilu ne smiju biti u sukobu s uzorcima konfiguriranim u pravilu "WebUsbBlockedForUrls". Ako za URL postoje podudaranja u oba pravila, nije određeno koje će od njih imati prednost.</translation>
 <translation id="6689792153960219308">Izvješćivanje o statusu hardvera</translation>
 <translation id="6698071416141001300">Označavanje računa čija je zaštita zaporkom ugrožena aktivira se ponovnom upotrebom zaporke</translation>
 <translation id="6699880231565102694">Omogući autentifikaciju s dva čimbenika za hostove daljinskog pristupa</translation>
@@ -1982,6 +2000,11 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       Ako se ta postavka onemogući ili se ne postavi, na sve se resurse primjenjuje zadana zaštita Sigurnog pregledavanja.
       To pravilo nije dostupno u instancama Windowsa koje nisu pridružene domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Blokiraj skočne prozore na ovim web-lokacijama</translation>
+<translation id="7085803328069945025">Omogućuje vam postavljanje popisa uzoraka URL-ova koji navode web-lokacije kojima je dopušteno da od korisnika traže dopuštenje za pristup USB uređaju.
+
+          Ako se to pravilo ne postavi, za sve web-lokacije upotrebljavat će se globalna zadana vrijednost iz pravila "DefaultWebUsbGuardSetting", ako je postavljeno, ili vrijednost iz korisnikove osobne konfiguracije.
+
+          Uzorci URL-ova u ovom pravilu ne smiju biti u sukobu s uzorcima konfiguriranim u pravilu "WebUsbBlockedForUrls". Ako za URL postoje podudaranja u oba pravila, nije određeno koje će od njih imati prednost.</translation>
 <translation id="7106631983877564505">Omogući zaključavanje kada uređaji <ph name="PRODUCT_OS_NAME" /> prijeđu u stanje mirovanja ili se isključe.
 
       Ako omogućite tu postavku, korisnici će morati unijeti zaporku za otključavanje uređaja u stanju mirovanja.
@@ -2659,6 +2682,7 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="9096086085182305205">Bijela lista poslužitelja za autentifikaciju</translation>
 <translation id="9098553063150791878">Pravila za HTTP autentifikaciju</translation>
 <translation id="9105265795073104888">Android aplikacijama dostupan je samo podskup opcija za konfiguraciju proxyja. Android aplikacije taj proxy mogu upotrebljavati dobrovoljno. Upotrebu proxyja ne možete im nametnuti.</translation>
+<translation id="9106865192244721694">Dopusti WebUSB na ovim web-lokacijama</translation>
 <translation id="9112727953998243860">Datoteka za konfiguraciju pisača tvrtke</translation>
 <translation id="9112897538922695510">Omogućuje vam registriranje popisa rukovatelja protokola. To pravilo može biti samo preporučeno. Entitet |protocol| treba se postaviti u shemu kao "mailto", a entitet |url| treba se postaviti u uzorak URL-a aplikacije koja rukuje shemom. Uzorak može uključivati "%s" koji će se, ako postoji, zamijeniti rukovanim URL-om.
 
@@ -2691,6 +2715,11 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="915194831143859291">Ako se to pravilo postavi na "netočno" ili se ne konfigurira, <ph name="PRODUCT_OS_NAME" /> dopustit će korisniku isključivanje uređaja.
       Ako se pravilo postavi na "točno", <ph name="PRODUCT_OS_NAME" /> ponovo će pokrenuti uređaj kada ga korisnik isključi. <ph name="PRODUCT_OS_NAME" /> zamjenjuje sve gumbe za isključivanje na korisničkom sučelju gumbima za ponovno pokretanje. Ako korisnik isključi uređaj tipkom za uključivanje/isključivanje, uređaj se neće automatski ponovo pokrenuti, čak ni ako je to pravilo omogućeno.</translation>
 <translation id="9158929520101169054">Omogući višestruku prijavu u pregledniku</translation>
+<translation id="9165792353046089850">Omogućuje vam da odredite smiju li web-lokacije dobivati pristup povezanim USB uređajima. Pristup se može potpuno blokirati ili se može tražiti dopuštenje korisnika svaki put kad neka web-lokacija želi pristupiti povezanom USB uređaju.
+
+          To se pravilo može nadjačati za određene uzorke URL-ova pomoću pravila "WebUsbAskForUrls" i "WebUsbBlockedForUrls".
+
+          Ako se pravilo ne postavi, upotrebljavat će se vrijednost "3" i korisnik će to moći promijeniti.</translation>
 <translation id="9167719789236691545">Onemogući Disk u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="9187743794267626640">Onemogući priključivanje vanjske pohrane</translation>
 <translation id="9197740283131855199">Postotak skaliranja odgode zatamnjivanja zaslona ako korisnik postane aktivan nakon zatamnjivanja</translation>

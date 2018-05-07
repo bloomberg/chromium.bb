@@ -417,6 +417,20 @@
       Podeu continuar comprovant la correcció ortogràfica amb un diccionari que hàgiu baixat. Aquesta política només controla l'ús del servei en línia.
 
       Si no configureu aquest paràmetre, els usuaris podran triar si volen utilitzar el servei de correcció automàtica o no.</translation>
+<translation id="2294283832646774959">Configura una llista d'impressores.
+
+      Aquesta política permet als administradors proporcionar configuracions d'impressores als usuaris.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> són cadenes de format lliure que es poden personalitzar per facilitar la selecció de la impressora. Les cadenes <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> representen el fabricant i el model de la impressora, i serveixen perquè els usuaris finals puguin identificar la impressora més fàcilment. <ph name="PRINTER_URI" /> ha de ser una adreça accessible des d'un ordinador de client, com ara <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> és opcional. Si s'indica, s'utilitza per eliminar la duplicació d'impressores <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> ha de coincidir amb una de les cadenes que representen una impressora <ph name="PRODUCT_NAME" /> admesa. La cadena s'utilitzarà per identificar i instal·lar el fitxer PPD adequat per a la impressora. Pots trobar-ne més informació a https://support.google.com/chrome?p=noncloudprint.
+
+      La configuració d'una impressora es completa quan s'utilitza per primera vegada, moment en què es baixen els fitxers PPD. Després, els que s'utilitzen sovint es desen a la memòria cau.
+
+      Aquesta política no té cap efecte en si els usuaris poden configurar impressores en dispositius concrets, sinó que s'ha creat per complementar la configuració d'impressores per part dels usuaris.
+
+      En el cas dels dispositius gestionats d'Active Directory, aquesta política permet ampliar <ph name="MACHINE_NAME_VARIABLE" /> per incloure-hi el nom del dispositiu d'Active Directory o una subcadena d'aquest. Si, per exemple, el nom del dispositiu és <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> se substituirà pels 4 caràcters posteriors a la sisena posició, és a dir, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Fixa't que la posició es basa en zero.
+      </translation>
 <translation id="2294382669900758280">La reproducció de vídeo en aplicacions per a Android no es té en compte encara que aquesta política s'estableixi en "<ph name="TRUE" />".</translation>
 <translation id="2298647742290373702">Configura la pàgina Pestanya nova predeterminada a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Especifica una llista de connectors activats</translation>
@@ -872,7 +886,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3715569262675717862">Autenticació basada en certificats del client</translation>
 <translation id="3736879847913515635">Activa l'opció Afegeix una persona al gestor d'usuaris</translation>
 <translation id="3737544779868348650">Nom d'amfitrió de la xarxa del dispositiu</translation>
-<translation id="3740754010292550733">Estableix el període per actualitzar les notificacions de reinici</translation>
 <translation id="3750220015372671395">Bloqueja la generació de claus en aquests llocs web</translation>
 <translation id="3756011779061588474">Bloquejar el mode de desenvolupador</translation>
 <translation id="3758089716224084329">Et permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> utilitza i impedeix que els usuaris en canviïn la configuració.
@@ -969,9 +982,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
      Especifica les extensions que s'instal·len automàticament per a l'usuari de la demostració en els dispositius en mode de venda. Aquestes extensions es desen al dispositiu i es poden instal·lar fora de línia, després de la instal·lació.
 
       Cada entrada de la llista conté un diccionari que ha d'incloure l'identificador de l'extensió al camp "extension-id" i l'URL d'actualització al camp "update-url".</translation>
-<translation id="3873159954366380945">Et permet establir el període de temps durant el qual es mostren les notificacions per reiniciar <ph name="PRODUCT_NAME" /> a fi d'aplicar una actualització pendent.
-
-      Aquesta política es pot utilitzar per controlar el període de temps, en mil·lisegons, durant el qual s'informa l'usuari de manera progressiva que cal reiniciar <ph name="PRODUCT_NAME" /> (o <ph name="PRODUCT_OS_NAME" />) per aplicar una actualització. Durant aquest període de temps, s'informa l'usuari repetidament de la necessitat de fer una actualització en funció de com estigui configurada la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Si la política no s'estableix, s'utilitza el període predeterminat de 345.600.000 mil·lisegons (quatre dies) per a <ph name="PRODUCT_OS_NAME" /> i de 604.800.000 mil·lisegons (una setmana) per a la resta de plataformes.</translation>
 <translation id="3877517141460819966">Mode d'autenticació de dos factors integrat</translation>
 <translation id="388237772682176890">Aquesta política es considera obsoleta a M53 i s'ha suprimit a M54, perquè el protocol SPDY/3.1 ja no s'admet.
 
@@ -1176,6 +1186,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4508686775017063528">Si aquesta política es defineix com a "true" o no es defineix, <ph name="PRODUCT_NAME" /> s'activarà i els usuaris podran iniciar-lo des del menú d'aplicacions, des dels menús contextuals d'una pàgina, des dels controls multimèdia de llocs web compatibles amb Cast i (si es mostra) des de la icona de la barra d'eines de Cast.
 
           Si aquesta política es defineix com a "false", <ph name="PRODUCT_NAME" /> es desactivarà.</translation>
+<translation id="4515404363392014383">Activa Navegació segura per a fonts de confiança</translation>
 <translation id="4518251772179446575">Demana permís cada vegada que un lloc vulgui fer un seguiment de la ubicació física dels usuaris</translation>
 <translation id="4519046672992331730">Activa els suggeriments de cerca a l'omnibox de <ph name="PRODUCT_NAME" /> i impedeix que els usuaris puguin canviar aquesta configuració.
 
@@ -1296,6 +1307,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           Si es defineix com a falsa, les sol·licituds de wake lock de la pantalla es rebutjaran.</translation>
 <translation id="487460824085252184">Migra les dades automàticament sense demanar el consentiment de l'usuari.</translation>
+<translation id="4874982543810021567">Bloqueja WebUSB en aquests llocs web</translation>
 <translation id="4876805738539874299">Versió SSL màxima activada</translation>
 <translation id="4897928009230106190">Especifica els paràmetres utilitzats en fer una cerca suggerida amb POST. Consisteix en parelles de nom/valor separades per comes. Si un valor és un paràmetre de plantilla, com ara {searchTerms} a l'exemple anterior, se substituirà per dades de termes de cerca reals.
 
@@ -1822,6 +1834,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política no s'estableix, la predicció de xarxa s'activarà però l'usuari podrà canviar-la.</translation>
 <translation id="6658245400435704251">Especifica el nombre de segons fins a què un dispositiu pot retardar aleatòriament la baixada d'una actualització des del moment en què l'actualització es transmet per primera vegada des del servidor. El dispositiu pot esperar una part d'aquest temps en termes de rellotge i la part restant en termes de nombre de comprovacions d'actualitzacions. En qualsevol cas, la dispersió tendeix cap amunt a una quantitat constant de temps, de manera que un dispositiu mai no es quedi encallat mentre espera que es baixi una actualització.</translation>
 <translation id="6665670272107384733">Defineix amb quina freqüència l'usuari ha d'introduir la contrasenya per utilitzar el desbloqueig ràpid</translation>
+<translation id="6681229465468164801">Permet definir una llista de patrons d'URL que especifiquin llocs web que no poden demanar a l'usuari que els concedeixi accés a un dispositiu USB.
+
+          Si aquesta política es deixa sense establir, s'utilitzarà per a tots els llocs web el valor global predeterminat indicat a la política DefaultWebUsbGuardSetting (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.
+
+          Els patrons d'URL d'aquesta política no poden entrar en conflicte amb els configurats mitjançant WebUsbAskForUrls. No s'ha especificat quina de les dues polítiques té prioritat si un URL coincideix amb totes dues.</translation>
 <translation id="6689792153960219308">Informa de l'estat del maquinari</translation>
 <translation id="6698071416141001300">El marcatge de la protecció de contrasenyes als comptes en perill s'activa quan es reutilitza una contrasenya</translation>
 <translation id="6699880231565102694">Activació de l'autenticació de dos factors per als amfitrions d'accés remot</translation>
@@ -1969,6 +1986,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta opció de configuració està desactivada o no s'estableix, s'aplicarà la protecció predeterminada de Navegació segura a tots els recursos.
       Aquesta política no està disponible en instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Bloqueja les finestres emergents en aquests llocs</translation>
+<translation id="7085803328069945025">Permet definir una llista de patrons d'URL que especifiquin llocs web que poden demanar a l'usuari que els concedeixi accés a un dispositiu USB.
+
+          Si aquesta política es deixa sense establir, s'utilitzarà per a tots els llocs web el valor global predeterminat indicat a la política DefaultWebUsbGuardSetting (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.
+
+          Els patrons d'URL d'aquesta política no poden entrar en conflicte amb els configurats mitjançant WebUsbBlockedForUrls. No s'ha especificat quina de les dues polítiques té prioritat si un URL coincideix amb totes dues.</translation>
 <translation id="7106631983877564505">Permet activar el bloqueig quan els dispositius de <ph name="PRODUCT_OS_NAME" /> estiguin inactius o suspesos.
 
       Si activeu aquesta opció de configuració, es demanarà als usuaris una contrasenya per desbloquejar el dispositiu que estigui inactiu.
@@ -2642,6 +2664,7 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="9096086085182305205">Llista blanca del servidor d'autenticació</translation>
 <translation id="9098553063150791878">Polítiques per a l'autenticació HTTP</translation>
 <translation id="9105265795073104888">Les aplicacions per a Android tenen disponible un subconjunt d'opcions de configuració per al servidor intermediari. No pots forçar-les a utilitzar un servidor intermediari, sinó que és decisió d'elles.</translation>
+<translation id="9106865192244721694">Permet WebUSB en aquests llocs web</translation>
 <translation id="9112727953998243860">Fitxer de configuració de la impressora d'empresa</translation>
 <translation id="9112897538922695510">Us permet registrar una llista de gestors de protocol. Això només pot ser una política recomanada. El |protocol| de la propietat s'ha de definir a l'esquema, com ara "mailto" i l'|url| de la propietat s'ha de definir al patró d'URL de l'aplicació que gestiona l'esquema. El patró pot incloure "%s" i, en cas que s'hi inclogui, se substituirà per l'URL gestionat.
 
@@ -2674,6 +2697,11 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="915194831143859291">Si aquesta política s'estableix en false o no es configura, <ph name="PRODUCT_OS_NAME" /> permetrà que l'usuari apagui el dispositiu.
       Si aquesta política s'estableix en true, <ph name="PRODUCT_OS_NAME" /> reiniciarà el dispositiu quan l'usuari l'apagui. És a dir, <ph name="PRODUCT_OS_NAME" /> substitueix tots els botons d'apagat de la interfície d'usuari per botons de reinici. Per tant, si l'usuari apaga el dispositiu amb el botó d'engegada, es reiniciarà de manera automàtica, encara que la política estigui activada.</translation>
 <translation id="9158929520101169054">Permet l'inici de sessió múltiple al navegador</translation>
+<translation id="9165792353046089850">Permet definir si els llocs web poden obtenir accés a dispositius USB connectats. L'accés es pot bloquejar completament o es pot consultar a l'usuari cada cop que un lloc web vulgui obtenir accés a dispositius USB connectats.
+
+          En el cas de patrons d'URL específics, aquesta política es pot substituir per les polítiques WebUsbAskForUrls i WebUsbBlockedForUrls.
+
+          Si aquesta política es deixa sense definir, es farà servir el valor "3" i l'usuari podrà canviar-lo.</translation>
 <translation id="9167719789236691545">Desactiva Drive a l'aplicació Fitxers de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="9187743794267626640">Desactivació del muntatge d'emmagatzematge extern</translation>
 <translation id="9197740283131855199">Percentatge que permet ajustar el temps d'espera d'inactivitat de la pantalla si l'usuari passa a estar actiu després de la inactivitat.</translation>

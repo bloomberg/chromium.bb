@@ -403,6 +403,20 @@ Je-li tato zásada ponechána nenastavená, žádné aplikace ani rozšíření 
       Kontrolu pravopisu lze nicméně provést pomocí staženého slovníku. Tato zásada se vztahuje pouze na používání internetových služeb.
 
       Pokud toto nastavení není nakonfigurováno, uživatelé mohou zvolit, zda službu pro kontrolu pravopisu chtějí použít či nikoli.</translation>
+<translation id="2294283832646774959">Konfiguruje seznam tiskáren.
+
+Tato zásada administrátorům umožňuje poskytnout uživatelům konfigurace tiskáren.
+
+Hodnoty <ph name="PRINTER_DISPLAY_NAME" /> a <ph name="PRINTER_DESCRIPTION" /> jsou volně upravitelné textové řetězce, pomocí kterých lze usnadnit výběr tiskárny. Hodnoty <ph name="PRINTER_MANUFACTURER" /> a <ph name="PRINTER_MODEL" /> koncovým uživatelům umožní snáze tiskárnu rozpoznat. Představují výrobce a model tiskárny. Hodnotou <ph name="PRINTER_URI" /> by měla být adresa přístupná z klientského počítače, včetně údajů <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> a <ph name="URI_QUEUE" />. Hodnota <ph name="PRINTER_UUID" /> je volitelná. Pokud je zadána, slouží k odebrání duplicitních tiskáren <ph name="ZEROCONF_DISCOVERY" />.
+
+Hodnota <ph name="PRINTER_EFFECTIVE_MODEL" /> musí odpovídat jednomu z řetězců, které představují tiskárny podporované systémem <ph name="PRODUCT_NAME" />. Řetězec se použije k identifikaci a instalaci vhodného souboru PPD pro tiskárnu. Další informace naleznete na stránce https://support.google.com/chrome?p=noncloudprint.
+
+Nastavení tiskárny se dokončí při jejím prvním použití. Soubory PPD se stáhnou až při použití tiskárny. Často používané soubory PPD budou následně uloženy do mezipaměti.
+
+Tato zásada nemá vliv na to, zda uživatelé mohou konfigurovat tiskárny na jednotlivých zařízeních. Je zamýšlena jako doplněk ke konfiguraci tiskáren ze strany jednotlivých uživatelů.
+
+U zařízení spravovaných pomocí služby Active Directory tato zásada podporuje rozšíření <ph name="MACHINE_NAME_VARIABLE" /> na název počítače ve službě Active Directory nebo jeho podřetězec. V případě názvu počítače <ph name="MACHINE_NAME_EXAMPLE" /> by byl řetězec <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> nahrazen čtyřmi znaky po šesté pozici, tj. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Pozice se počítají od nuly.
+      </translation>
 <translation id="2294382669900758280">Přehrávání videí v aplikacích Android není bráno v potaz ani v případě, že je tato zásada nastavena na hodnotu <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Konfiguruje výchozí stránku Nová karta v prohlížeči <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Zadat seznam aktivovaných pluginů</translation>
@@ -872,7 +886,6 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 <translation id="3715569262675717862">Ověřování založené na certifikátech klientů</translation>
 <translation id="3736879847913515635">Povolit přidání osoby ve správci uživatelů</translation>
 <translation id="3737544779868348650">Název hostitele používaný pro zařízení v síti</translation>
-<translation id="3740754010292550733">Nastavit dobu oznámení o restartu z důvodu aktualizace</translation>
 <translation id="3750220015372671395">Blokovat generování klíčů na těchto stránkách</translation>
 <translation id="3756011779061588474">Blokovat režim pro vývojáře</translation>
 <translation id="3758089716224084329">Umožňuje zadat proxy server, který bude prohlížeč <ph name="PRODUCT_NAME" /> používat, a brání uživatelům ve změně nastavení proxy serveru.
@@ -976,9 +989,6 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
       Seznam rozšíření, která se automaticky nainstalují pro uživatele ukázky v zařízeních v režimu pro obchody. Tato rozšíření se uloží v zařízení a po instalaci mohou být nainstalována v režimu offline.
 
       Každý záznam v seznamu obsahuje adresář, který musí zahrnovat ID rozšíření v poli „extension-id“ a jeho webovou adresu pro aktualizace v poli „update-url“.</translation>
-<translation id="3873159954366380945">Umožňuje nastavit dobu, po kterou se budou zobrazovat oznámení o restartu prohlížeče <ph name="PRODUCT_NAME" /> za účelem použití aktualizace čekající na vyřízení.
-
-      Pomocí této zásady lze ovládat dobu (v milisekundách), po kterou je uživatel postupně informován o tom, že je třeba prohlížeč <ph name="PRODUCT_NAME" /> nebo systém <ph name="PRODUCT_OS_NAME" /> kvůli aktualizaci restartovat. Během této doby bude uživatel na základě nastavení zásady <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> opakovaně informován, že je potřeba nainstalovat aktualizaci. Pokud tuto zásadu nenastavíte, použije se pro systém <ph name="PRODUCT_OS_NAME" /> výchozí doba 345 600 000 milisekund (čtyři dny) a pro všechny ostatní platformy 604 800 000 milisekund (jeden týden).</translation>
 <translation id="3877517141460819966">Režim integrovaného dvoufaktorového ověření</translation>
 <translation id="388237772682176890">Ve verzi M53 byla podpora této zásady ukončena a ve verzi M54 byla tato zásada zcela odstraněna, protože byla odstraněna podpora protokolu SPDY/3.1.
 
@@ -1191,6 +1201,7 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
 <translation id="4508686775017063528">Pokud je tato zásada nastavena na hodnotu True nebo není nastavena, služba <ph name="PRODUCT_NAME" /> bude aktivována a uživatelé ji budou moci spustit pomocí nabídky aplikace, kontextových nabídek stránky, ovládacích prvků médií na webových stránkách s podporou technologie Cast a ikony Cast na panelu nástrojů (bude-li zobrazena).
 
           Je-li tato zásada nastavena na hodnotu False, služba <ph name="PRODUCT_NAME" /> bude deaktivována.</translation>
+<translation id="4515404363392014383">Zapnout Bezpečné prohlížení pro důvěryhodné zdroje</translation>
 <translation id="4518251772179446575">Dotázat se vždy, když se webové stránky snaží sledovat fyzickou polohu uživatele</translation>
 <translation id="4519046672992331730">Aktivuje v adresním řádku prohlížeče <ph name="PRODUCT_NAME" /> funkci návrhů pro vyhledávání a brání uživatelům, aby toto nastavení změnili.
 
@@ -1313,6 +1324,7 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
 
           Pokud má tato zásada hodnotu false, budou požadavky na uzamčení obrazovky při probuzení ignorovány.</translation>
 <translation id="487460824085252184">Migrovat automaticky, nežádat uživatele o souhlas.</translation>
+<translation id="4874982543810021567">Blokovat rozhraní WebUSB na těchto webech</translation>
 <translation id="4876805738539874299">Maximální povolená verze SSL</translation>
 <translation id="4897928009230106190">Udává parametry, které se použijí při vyhledávání s našeptávačem pomocí metody POST. Sestává z párů název–hodnota oddělených čárkou. Pokud je hodnotou parametr šablony (např. {searchTerms} v příkladu výše), bude nahrazen skutečnými údaji vyhledávacích dotazů.
           Tato zásada je nepovinná. Pokud není nastavena, požadavek na vyhledávání s našeptávačem bude odeslán pomocí metody GET.
@@ -1881,6 +1893,11 @@ Pokud zásadu nastavíte na hodnotu Vždy, Nikdy nebo Pouze Wi-Fi, uživatelé j
 Není-li tato zásada nastavena na konkrétní hodnotu, bude předvídání sítě aktivováno, ale uživatelé budou moci nastavení změnit.</translation>
 <translation id="6658245400435704251">Určí počet sekund, o který může zařízení náhodně zdržet stahování aktualizace od doby, kdy byla poprvé zveřejněna na serveru. Zařízení může čekat určitý čas a pokusit se o určitý počet kontrol aktualizací. Zpoždění je však v každém případě omezeno neměnným maximálním časovým limitem tak, aby zařízení nečekalo na stažení aktualizace donekonečna.</translation>
 <translation id="6665670272107384733">Nastavit, jak často musí uživatel zadat heslo, pokud chce používat rychlé odemknutí</translation>
+<translation id="6681229465468164801">Umožňuje nastavit seznam vzorů adres URL webů, které uživatele nesmějí žádat o přístup k zařízení USB.
+
+          Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultWebUsbGuardSetting (pokud je nastavena), nebo z osobního nastavení uživatele.
+
+          Vzory adres URL v této zásadě by neměly být v konfliktu se vzory nakonfigurovanými pomocí zásady WebUsbAskForUrls. Není jasně dáno, která z těchto dvou zásad má přednost, pokud adresa URL odpovídá oběma.</translation>
 <translation id="6689792153960219308">Nahlásit stav hardwaru</translation>
 <translation id="6698071416141001300">Ochrana hesla – označení účtu jako ohroženého je spouštěno opětovným použitím hesla</translation>
 <translation id="6699880231565102694">Povolit dvoufázové ověření pro hostitele vzdáleného přístupu</translation>
@@ -2035,6 +2052,11 @@ Pokud ji ponecháte nenastavenou, bude hlasová odezva ve výchozím nastavení 
       Pokud je toto nastavení vypnuto nebo není nastaveno, bude se pro všechny zdroje používat výchozí ochrana Bezpečného prohlížení.
       V instancích systému Windows, které nejsou zařazeny do domény <ph name="MS_AD_NAME" />, tato zásada není k dispozici.</translation>
 <translation id="7079519252486108041">Blokovat vyskakovací okna na těchto webech</translation>
+<translation id="7085803328069945025">Umožňuje nastavit seznam vzorů adres URL webů, které uživatele mohou žádat o přístup k zařízení USB.
+
+          Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultWebUsbGuardSetting (pokud je nastavena), nebo z osobního nastavení uživatele.
+
+          Vzory adres URL v této zásadě by neměly být v konfliktu se vzory nakonfigurovanými prostřednictvím zásady WebUsbBlockedForUrls. Není jasně dáno, která z těchto dvou zásad má přednost, pokud adresa URL odpovídá oběma.</translation>
 <translation id="7106631983877564505">Aktivovat zámek, pokud jsou zařízení se systémem <ph name="PRODUCT_OS_NAME" /> nečinná nebo pozastavená.
 
       Pokud toto nastavení aktivujete, uživatelům se po probuzení zařízení z režimu spánku bude zobrazovat výzva k odemknutí zadáním hesla.
@@ -2716,6 +2738,7 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
 <translation id="9096086085182305205">Seznam povolených serverů pro ověřování</translation>
 <translation id="9098553063150791878">Zásady pro ověření v protokolu HTTP</translation>
 <translation id="9105265795073104888">Aplikace Android obdrží pouze část možností konfigurace proxy serveru. Aplikace Android se mohou samy rozhodnout, zda proxy server použijí. Použití proxy serveru u nich nelze vynutit.</translation>
+<translation id="9106865192244721694">Povolit rozhraní WebUSB na těchto webech</translation>
 <translation id="9112727953998243860">Konfigurační soubor podnikových tiskáren</translation>
 <translation id="9112897538922695510">Umožňuje zaregistrovat seznam obslužných nástrojů protokolů. Tato zásada může být pouze doporučena. Vlastnost |protocol| musí být nastavena na schéma jako „mailto“ a vlastnost |url| musí být nastavena na vzorec adresy URL aplikace, která schéma zpracovává. Vzorec může obsahovat specifikátor „%s“, který (bude-li zadán) bude nahrazen zpracovanou adresou URL.
 
@@ -2753,6 +2776,11 @@ Pokud je zásada nastavena na hodnotu true, systémové protokoly budou odesíl�
 <translation id="915194831143859291">Pokud je tato zásada nastavena na hodnotu false nebo není nastavena, systém <ph name="PRODUCT_OS_NAME" /> umožní uživateli vypnout zařízení.
 Pokud je tato zásada nastavena na hodnotu true a uživatel vypne zařízení, spustí systém <ph name="PRODUCT_OS_NAME" /> restart. Systém <ph name="PRODUCT_OS_NAME" /> nahradí všechna tlačítka pro vypnutí v uživatelském rozhraní tlačítky pro restart. Pokud uživatel zařízení vypne pomocí vypínače, zařízení se automaticky restartovat nebude, a to ani v případě, že je tato zásada aktivována.</translation>
 <translation id="9158929520101169054">Povolit v prohlížeči vícenásobné přihlášení</translation>
+<translation id="9165792353046089850">Umožňuje nastavit, zda weby mají povoleno získat přístup k připojeným zařízením USB. Přístup lze zcela zablokovat, nebo je možné uživatele požádat pokaždé, když chce web k připojeným zařízením USB získat přístup.
+
+          Tuto zásadu lze pro konkrétní vzory adres URL přepsat pomocí zásad WebUsbAskForUrls a WebUsbBlockedForUrls.
+
+          Pokud je tato zásada ponechána nenastavená, použije se hodnota „3“ a uživatel ji bude moci změnit.</translation>
 <translation id="9167719789236691545">Zakázat v aplikaci Soubory v systému <ph name="PRODUCT_OS_NAME" /> přístup k Disku</translation>
 <translation id="9187743794267626640">Zakázat připojení externího úložiště</translation>
 <translation id="9197740283131855199">Procento, o které bude prodloužena prodleva ztmavení obrazovky, pokud uživatel po ztmavení provedete nějakou činnost</translation>

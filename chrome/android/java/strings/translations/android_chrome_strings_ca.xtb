@@ -82,10 +82,12 @@
 <translation id="1718835860248848330">Darrera hora</translation>
 <translation id="1729516292547892356">Per veure contingut en realitat virtual, actualitza els Serveis RV de Google</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> (actualitzat <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="1743802530341753419">Pregunta abans de permetre que els llocs web es connectin a un dispositiu (opció recomanada)</translation>
 <translation id="1749561566933687563">Sincronitzeu les adreces d'interès</translation>
 <translation id="17513872634828108">Pestanyes obertes</translation>
 <translation id="1756600373018374892">Toqueu aquest botó per accedir ràpidament a les vostres pestanyes.</translation>
 <translation id="1779089405699405702">Descodificador d'imatges</translation>
+<translation id="1792959175193046959">Canvia la ubicació predeterminada de baixada en qualsevol moment</translation>
 <translation id="1807246157184219062">Clar</translation>
 <translation id="1829244130665387512">Cerca a la pàgina</translation>
 <translation id="1832521218263067499">Incidències de seguretat</translation>
@@ -158,7 +160,6 @@
 <translation id="2450083983707403292">Vols tornar a baixar el fitxer <ph name="FILE_NAME" />?</translation>
 <translation id="2476578072172137802">Configuració del lloc web</translation>
 <translation id="2482878487686419369">Notificacions</translation>
-<translation id="2490674006498621843">Fes lliscar la barra d'eines cap amunt per veure els fitxers i les pàgines que tens a les baixades</translation>
 <translation id="2496180316473517155">Historial de navegació</translation>
 <translation id="2498359688066513246">Ajuda i suggeriments </translation>
 <translation id="2501278716633472235">Enrere</translation>
@@ -648,11 +649,12 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6910211073230771657">Suprimit</translation>
 <translation id="6912998170423641340">Impedeix que els llocs web llegeixin el text i les imatges del porta-retalls</translation>
 <translation id="6914783257214138813">Tothom que pugui veure el fitxer exportat podrà veure també les teves contrasenyes.</translation>
+<translation id="6942665639005891494">Canvia la ubicació predeterminada de baixada en qualsevol moment amb l'opció del menú Configuració</translation>
 <translation id="6945221475159498467">Selecciona</translation>
 <translation id="6963766334940102469">Suprimeix les adreces d'interès</translation>
 <translation id="6965382102122355670">D'acord</translation>
 <translation id="6978479750597523876">Restableix la configuració del Traductor</translation>
-<translation id="6979737339423435258">Sempre</translation>
+<translation id="6979737339423435258">Tot el període</translation>
 <translation id="6981982820502123353">Accessibilitat</translation>
 <translation id="6985347914332179298">Aquí no hi ha cap baixada</translation>
 <translation id="6990079615885386641">Baixeu l'aplicació des de Google Play Store: <ph name="APP_ACTION" /></translation>
@@ -673,6 +675,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7121362699166175603">Esborra l'historial i les complecions automàtiques a la barra d'adreces. A <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />, trobaràs altres maneres d'explorar l'historial del teu compte de Google.</translation>
 <translation id="7128222689758636196">Permet al motor de cerca actual</translation>
 <translation id="7138678301420049075">Altres</translation>
+<translation id="7144878232160441200">Torna-ho a provar</translation>
 <translation id="7149893636342594995">Les darreres 24 hores</translation>
 <translation id="7177466738963138057">Pots canviar aquesta opció més endavant a Configuració</translation>
 <translation id="7180611975245234373">Actualitza</translation>
@@ -788,7 +791,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8200772114523450471">Reprèn</translation>
 <translation id="8209050860603202033">Obre la imatge</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB en baixades</translation>
-<translation id="8249310407154411074">Mou al principi</translation>
+<translation id="8249310407154411074">Mou a la part superior</translation>
 <translation id="8250920743982581267">Documents</translation>
 <translation id="8260126382462817229">Torna a iniciar la sessió</translation>
 <translation id="8261506727792406068">Suprimeix</translation>
@@ -814,6 +817,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8503813439785031346">Nom d'usuari</translation>
 <translation id="8514477925623180633">Exporta les contrasenyes emmagatzemades a Chrome</translation>
 <translation id="8514577642972634246">Entra al mode d'incògnit</translation>
+<translation id="851751545965956758">Impedeix que els llocs web es connectin a dispositius</translation>
 <translation id="8523928698583292556">Suprimeix la contrasenya emmagatzemada</translation>
 <translation id="854522910157234410">Obre aquesta pàgina</translation>
 <translation id="8559990750235505898">Proposa traduir les pàgines en altres idiomes</translation>
