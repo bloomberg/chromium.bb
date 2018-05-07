@@ -285,12 +285,12 @@ CreateOverlayCandidateValidator(
       overlay_manager->SupportsOverlays()) {
     enable_overlay_flag = "single-fullscreen,single-on-top";
   }
-
-  std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates =
-      ozone_platform->GetOverlayManager()->CreateOverlayCandidates(widget);
-
-  validator.reset(new viz::CompositorOverlayCandidateValidatorOzone(
-      std::move(overlay_candidates), enable_overlay_flag));
+  if (!enable_overlay_flag.empty()) {
+    std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates =
+        ozone_platform->GetOverlayManager()->CreateOverlayCandidates(widget);
+    validator.reset(new viz::CompositorOverlayCandidateValidatorOzone(
+        std::move(overlay_candidates), enable_overlay_flag));
+  }
 #elif defined(OS_MACOSX)
   // Overlays are only supported through the remote layer API.
   if (ui::RemoteLayerAPISupported()) {
