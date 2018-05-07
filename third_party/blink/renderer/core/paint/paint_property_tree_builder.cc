@@ -1271,30 +1271,19 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
                 viewport_container.Viewport()));
       }
 
-      bool should_create_overflow_clip = true;
-      if (auto* border_radius_clip = properties_->InnerBorderRadiusClip()) {
-        if (border_radius_clip->ClipRect().Rect() == state.clip_rect.Rect() &&
-            (state.clip_rect_excluding_overlay_scrollbars &&
-             state.clip_rect == *state.clip_rect_excluding_overlay_scrollbars))
-          should_create_overflow_clip = false;
-      }
-      if (should_create_overflow_clip) {
-        const ClipPaintPropertyNode* existing = properties_->OverflowClip();
-        bool equal_ignoring_hit_test_rects =
-            !!existing &&
-            existing->EqualIgnoringHitTestRects(context_.current.clip, state);
-        OnUpdateClip(properties_->UpdateOverflowClip(context_.current.clip,
-                                                     std::move(state)),
-                     equal_ignoring_hit_test_rects);
-      } else {
-        OnClearClip(properties_->ClearOverflowClip());
-      }
+      const ClipPaintPropertyNode* existing = properties_->OverflowClip();
+      bool equal_ignoring_hit_test_rects =
+          !!existing &&
+          existing->EqualIgnoringHitTestRects(context_.current.clip, state);
+      OnUpdateClip(properties_->UpdateOverflowClip(context_.current.clip,
+                                                   std::move(state)),
+                   equal_ignoring_hit_test_rects);
     } else {
       OnClearClip(properties_->ClearOverflowClip());
     }
   }
 
-  if (auto* overflow_clip = OverflowClip(*properties_))
+  if (auto* overflow_clip = properties_->OverflowClip())
     context_.current.clip = overflow_clip;
 }
 
@@ -1778,8 +1767,7 @@ void FragmentPaintPropertyTreeBuilder::SetNeedsPaintPropertyUpdateIfNeeded() {
   const LayoutBox& box = ToLayoutBox(object_);
 
   if (NeedsOverflowClip(box)) {
-    bool had_overflow_clip =
-        properties_ && properties_->OverflowOrInnerBorderRadiusClip();
+    bool had_overflow_clip = properties_ && properties_->OverflowClip();
     if (had_overflow_clip == CanOmitOverflowClip(box))
       box.GetMutableForPainting().SetNeedsPaintPropertyUpdate();
   }
