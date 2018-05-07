@@ -8,8 +8,8 @@
 #include <deque>
 
 #include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler_proxy.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
-#include "third_party/blink/renderer/platform/scheduler/renderer/main_thread_task_queue.h"
 
 namespace blink {
 namespace scheduler {

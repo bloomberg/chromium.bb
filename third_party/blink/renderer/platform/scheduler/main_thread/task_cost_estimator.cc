@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/renderer/task_cost_estimator.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/task_cost_estimator.h"
 
 #include "base/time/default_tick_clock.h"
 
