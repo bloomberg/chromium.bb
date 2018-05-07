@@ -470,8 +470,10 @@ void NetworkQualityEstimator::RecordAccuracyAfterMainFrame(
     return;
 
   base::TimeDelta recent_http_rtt;
-  if (!GetRecentHttpRTT(last_main_frame_request_, &recent_http_rtt))
+  if (!GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_HTTP,
+                    last_main_frame_request_, &recent_http_rtt, nullptr)) {
     recent_http_rtt = nqe::internal::InvalidRTT();
+  }
 
   if (estimated_quality_at_last_main_frame_.http_rtt() !=
           nqe::internal::InvalidRTT() &&
@@ -488,8 +490,8 @@ void NetworkQualityEstimator::RecordAccuracyAfterMainFrame(
   base::TimeDelta recent_transport_rtt;
   if (estimated_quality_at_last_main_frame_.transport_rtt() !=
           nqe::internal::InvalidRTT() &&
-      GetRecentTransportRTT(last_main_frame_request_, &recent_transport_rtt,
-                            nullptr)) {
+      GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_TRANSPORT,
+                   last_main_frame_request_, &recent_transport_rtt, nullptr)) {
     const int estimated_observed_diff_milliseconds =
         estimated_quality_at_last_main_frame_.transport_rtt().InMilliseconds() -
         recent_transport_rtt.InMilliseconds();
@@ -1125,11 +1127,13 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
     return EFFECTIVE_CONNECTION_TYPE_OFFLINE;
   }
 
-  if (!GetRecentHttpRTT(start_time, http_rtt))
+  if (!GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_HTTP, start_time,
+                    http_rtt, nullptr)) {
     *http_rtt = nqe::internal::InvalidRTT();
+  }
 
-  if (!GetRecentTransportRTT(start_time, transport_rtt,
-                             transport_rtt_observation_count)) {
+  if (!GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_TRANSPORT, start_time,
+                    transport_rtt, transport_rtt_observation_count)) {
     *transport_rtt = nqe::internal::InvalidRTT();
   }
 
@@ -1261,23 +1265,14 @@ void NetworkQualityEstimator::RemoveRTTAndThroughputEstimatesObserver(
   rtt_and_throughput_estimates_observer_list_.RemoveObserver(observer);
 }
 
-bool NetworkQualityEstimator::GetRecentHttpRTT(
-    const base::TimeTicks& start_time,
-    base::TimeDelta* rtt) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  *rtt = GetRTTEstimateInternal(
-      start_time, nqe::internal::OBSERVATION_CATEGORY_HTTP, 50, nullptr);
-  return (*rtt != nqe::internal::InvalidRTT());
-}
-
-bool NetworkQualityEstimator::GetRecentTransportRTT(
+bool NetworkQualityEstimator::GetRecentRTT(
+    nqe::internal::ObservationCategory observation_category,
     const base::TimeTicks& start_time,
     base::TimeDelta* rtt,
     size_t* observations_count) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  *rtt = GetRTTEstimateInternal(start_time,
-                                nqe::internal::OBSERVATION_CATEGORY_TRANSPORT,
-                                50, observations_count);
+  *rtt = GetRTTEstimateInternal(start_time, observation_category, 50,
+                                observations_count);
   return (*rtt != nqe::internal::InvalidRTT());
 }
 

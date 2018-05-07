@@ -138,8 +138,10 @@ TestNetworkQualityEstimator::GetRecentEffectiveConnectionTypeAndNetworkQuality(
     int32_t* downstream_throughput_kbps,
     size_t* observations_count) const {
   if (recent_effective_connection_type_) {
-    GetRecentHttpRTT(start_time, http_rtt);
-    GetRecentTransportRTT(start_time, transport_rtt, observations_count);
+    GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_HTTP, start_time, http_rtt,
+                 nullptr);
+    GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_TRANSPORT, start_time,
+                 transport_rtt, observations_count);
     GetRecentDownlinkThroughputKbps(start_time, downstream_throughput_kbps);
     return recent_effective_connection_type_.value();
   }
@@ -149,46 +151,54 @@ TestNetworkQualityEstimator::GetRecentEffectiveConnectionTypeAndNetworkQuality(
           observations_count);
 }
 
-bool TestNetworkQualityEstimator::GetRecentHttpRTT(
-    const base::TimeTicks& start_time,
-    base::TimeDelta* rtt) const {
-  if (start_time.is_null()) {
-    if (start_time_null_http_rtt_) {
-      *rtt = start_time_null_http_rtt_.value();
-      return true;
-    }
-    return NetworkQualityEstimator::GetRecentHttpRTT(start_time, rtt);
-  }
-  if (recent_http_rtt_) {
-    *rtt = recent_http_rtt_.value();
-    return true;
-  }
-  return NetworkQualityEstimator::GetRecentHttpRTT(start_time, rtt);
-}
-
-bool TestNetworkQualityEstimator::GetRecentTransportRTT(
+bool TestNetworkQualityEstimator::GetRecentRTT(
+    nqe::internal::ObservationCategory observation_category,
     const base::TimeTicks& start_time,
     base::TimeDelta* rtt,
     size_t* observations_count) const {
-  if (start_time.is_null()) {
-    if (start_time_null_transport_rtt_) {
-      *rtt = start_time_null_transport_rtt_.value();
-      if (transport_rtt_observation_count_last_ect_computation_) {
-        *observations_count =
-            transport_rtt_observation_count_last_ect_computation_.value();
+  switch (observation_category) {
+    case nqe::internal::OBSERVATION_CATEGORY_HTTP:
+
+      if (start_time.is_null()) {
+        if (start_time_null_http_rtt_) {
+          *rtt = start_time_null_http_rtt_.value();
+          return true;
+        }
+        return NetworkQualityEstimator::GetRecentRTT(
+            observation_category, start_time, rtt, observations_count);
       }
-      return true;
-    }
-    return NetworkQualityEstimator::GetRecentTransportRTT(start_time, rtt,
-                                                          observations_count);
+      if (recent_http_rtt_) {
+        *rtt = recent_http_rtt_.value();
+        return true;
+      }
+      break;
+
+    case nqe::internal::OBSERVATION_CATEGORY_TRANSPORT:
+      if (start_time.is_null()) {
+        if (start_time_null_transport_rtt_) {
+          *rtt = start_time_null_transport_rtt_.value();
+          if (transport_rtt_observation_count_last_ect_computation_) {
+            *observations_count =
+                transport_rtt_observation_count_last_ect_computation_.value();
+          }
+          return true;
+        }
+        return NetworkQualityEstimator::GetRecentRTT(
+            observation_category, start_time, rtt, observations_count);
+      }
+
+      if (recent_transport_rtt_) {
+        *rtt = recent_transport_rtt_.value();
+        return true;
+      }
+      break;
+
+    case nqe::internal::OBSERVATION_CATEGORY_COUNT:
+      NOTREACHED();
   }
 
-  if (recent_transport_rtt_) {
-    *rtt = recent_transport_rtt_.value();
-    return true;
-  }
-  return NetworkQualityEstimator::GetRecentTransportRTT(start_time, rtt,
-                                                        observations_count);
+  return NetworkQualityEstimator::GetRecentRTT(observation_category, start_time,
+                                               rtt, observations_count);
 }
 
 base::Optional<base::TimeDelta> TestNetworkQualityEstimator::GetTransportRTT()

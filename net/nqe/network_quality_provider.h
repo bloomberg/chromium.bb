@@ -44,11 +44,15 @@ class NET_EXPORT NetworkQualityProvider {
       EffectiveConnectionTypeObserver* observer) {}
 
   // Returns the current HTTP RTT estimate. If the estimate is unavailable,
-  // the returned optional value is null.
+  // the returned optional value is null. The RTT at the HTTP layer measures the
+  // time from when the request was sent (this happens after the connection is
+  // established) to the time when the response headers were received.
   virtual base::Optional<base::TimeDelta> GetHttpRTT() const;
 
   // Returns the current transport RTT estimate. If the estimate is
-  // unavailable, the returned optional value is null.
+  // unavailable, the returned optional value is null.  The RTT at the transport
+  // layer provides an aggregate estimate of the transport RTT as computed by
+  // various underlying TCP and QUIC connections.
   virtual base::Optional<base::TimeDelta> GetTransportRTT() const;
 
   // Returns the current downstream throughput estimate (in kilobits per
