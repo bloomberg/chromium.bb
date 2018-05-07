@@ -227,27 +227,16 @@ class NET_EXPORT NetworkQualityEstimator
   void OnConnectionTypeChanged(
       NetworkChangeNotifier::ConnectionType type) override;
 
-  // Returns true if median RTT at the HTTP layer is available and sets |rtt|
-  // to the median of RTT observations since |start_time|.
-  // Virtualized for testing. |rtt| should not be null. The RTT at the HTTP
-  // layer measures the time from when the request was sent (this happens after
-  // the connection is established) to the time when the response headers were
-  // received.
-  // TODO(tbansal): Change it to return HTTP RTT as base::TimeDelta.
-  virtual bool GetRecentHttpRTT(const base::TimeTicks& start_time,
-                                base::TimeDelta* rtt) const WARN_UNUSED_RESULT;
-
-  // Returns true if the median RTT at the transport layer is available and sets
-  // |rtt| to the median of transport layer RTT observations since
-  // |start_time|. |rtt| should not be null. Virtualized for testing.
-  // If |observations_count| is not null, then it is set to the number of
-  // transport RTT observations that are available when computing the RTT
-  // estimate.
-  // TODO(tbansal): Change it to return transport RTT as base::TimeDelta.
-  virtual bool GetRecentTransportRTT(const base::TimeTicks& start_time,
-                                     base::TimeDelta* rtt,
-                                     size_t* observations_count) const
-      WARN_UNUSED_RESULT;
+  // Returns true if median RTT across all samples that belong to
+  // |observation_category| is available and sets |rtt| to the median of RTT
+  // observations since |start_time|. Virtualized for testing. |rtt| should not
+  // be null. If |observations_count| is not null, then it is set to the number
+  // of RTT observations that were used for computing the RTT estimate.
+  virtual bool GetRecentRTT(
+      nqe::internal::ObservationCategory observation_category,
+      const base::TimeTicks& start_time,
+      base::TimeDelta* rtt,
+      size_t* observations_count) const WARN_UNUSED_RESULT;
 
   // Returns true if median downstream throughput is available and sets |kbps|
   // to the median of downstream throughput (in kilobits per second)
