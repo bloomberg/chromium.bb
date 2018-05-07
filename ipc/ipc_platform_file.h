@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "ipc/ipc_message_support_export.h"
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include "base/file_descriptor_posix.h"
 #endif
 
@@ -40,14 +40,14 @@ class IPC_MESSAGE_SUPPORT_EXPORT PlatformFileForTransit {
  private:
   HANDLE handle_;
 };
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 typedef base::FileDescriptor PlatformFileForTransit;
 #endif
 
 inline PlatformFileForTransit InvalidPlatformFileForTransit() {
 #if defined(OS_WIN)
   return PlatformFileForTransit();
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return base::FileDescriptor();
 #endif
 }
@@ -56,7 +56,7 @@ inline base::PlatformFile PlatformFileForTransitToPlatformFile(
     const PlatformFileForTransit& transit) {
 #if defined(OS_WIN)
   return transit.GetHandle();
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return transit.fd;
 #endif
 }
@@ -65,7 +65,7 @@ inline base::File PlatformFileForTransitToFile(
     const PlatformFileForTransit& transit) {
 #if defined(OS_WIN)
   return base::File(transit.GetHandle());
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return base::File(transit.fd);
 #endif
 }

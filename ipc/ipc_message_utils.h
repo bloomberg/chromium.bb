@@ -527,7 +527,7 @@ struct COMPONENT_EXPORT(IPC) ParamTraits<base::DictionaryValue> {
   static void Log(const param_type& p, std::string* l);
 };
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 // FileDescriptors may be serialised over IPC channels on POSIX. On the
 // receiving side, the FileDescriptor is a valid duplicate of the file
 // descriptor which was transmitted: *it is not just a copy of the integer like
@@ -552,7 +552,7 @@ struct COMPONENT_EXPORT(IPC) ParamTraits<base::FileDescriptor> {
                    param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 template <>
 struct COMPONENT_EXPORT(IPC) ParamTraits<base::SharedMemoryHandle> {
