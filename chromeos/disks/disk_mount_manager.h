@@ -250,32 +250,29 @@ class CHROMEOS_EXPORT DiskMountManager {
   typedef base::Callback<void(bool success)> EnsureMountInfoRefreshedCallback;
 
   // Implement this interface to be notified about disk/mount related events.
-  // TODO(agawronska): Make observer methods non-pure virtual, because
-  // subclasses only use small subset of them.
   class Observer {
    public:
     virtual ~Observer() {}
 
     // Called when auto-mountable disk mount status is changed.
-    virtual void OnAutoMountableDiskEvent(DiskEvent event,
-                                          const Disk& disk) = 0;
+    virtual void OnAutoMountableDiskEvent(DiskEvent event, const Disk& disk) {}
     // Called when fixed storage disk status is changed.
-    virtual void OnBootDeviceDiskEvent(DiskEvent event, const Disk& disk) = 0;
+    virtual void OnBootDeviceDiskEvent(DiskEvent event, const Disk& disk) {}
     // Called when device status is changed.
     virtual void OnDeviceEvent(DeviceEvent event,
-                               const std::string& device_path) = 0;
+                               const std::string& device_path) {}
     // Called after a mount point has been mounted or unmounted.
     virtual void OnMountEvent(MountEvent event,
                               MountError error_code,
-                              const MountPointInfo& mount_info) = 0;
+                              const MountPointInfo& mount_info) {}
     // Called on format process events.
     virtual void OnFormatEvent(FormatEvent event,
                                FormatError error_code,
-                               const std::string& device_path) = 0;
+                               const std::string& device_path) {}
     // Called on rename process events.
     virtual void OnRenameEvent(RenameEvent event,
                                RenameError error_code,
-                               const std::string& device_path) = 0;
+                               const std::string& device_path) {}
   };
 
   virtual ~DiskMountManager() {}
