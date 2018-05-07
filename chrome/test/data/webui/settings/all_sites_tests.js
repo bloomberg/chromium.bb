@@ -129,7 +129,8 @@ suite('AllSites', function() {
           testElement.async(resolver.resolve);
           return resolver.promise.then(function() {
             const item = testElement.$.listContainer.children[0];
-            const name = item.querySelector('#displayName');
+            assertEquals('SITE-ENTRY', item.tagName);
+            const name = item.root.querySelector('#displayName');
             assertTrue(!!name);
           });
         });
@@ -177,7 +178,7 @@ suite('AllSites', function() {
 
             // Validate that the sites are shown in UI and can be selected.
             const firstItem = testElement.$.listContainer.children[1];
-            const clickable = firstItem.querySelector('.middle');
+            const clickable = firstItem.root.querySelector('.middle');
             assertNotEquals(undefined, clickable);
             MockInteractions.tap(clickable);
             assertEquals(
@@ -226,7 +227,7 @@ suite('AllSites', function() {
             assertEquals(undefined, testElement.selectedOrigin);
             // Validate that the sites are shown in UI and can be selected.
             const firstItem = testElement.$.listContainer.children[0];
-            const clickable = firstItem.querySelector('.middle');
+            const clickable = firstItem.root.querySelector('.middle');
             assertNotEquals(undefined, clickable);
             MockInteractions.tap(clickable);
             if (testElement.sites.length == 1) {

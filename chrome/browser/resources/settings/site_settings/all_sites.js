@@ -62,17 +62,6 @@ Polymer({
     return Promise.all(promiseList);
   },
 
-  /**
-   * A handler for selecting a site (by clicking on the origin).
-   * @param {!{model: !{item: !SiteException}}} event
-   * @private
-   */
-  onOriginTap_: function(event) {
-    settings.navigateTo(
-        settings.routes.SITE_SETTINGS_SITE_DETAILS,
-        new URLSearchParams('site=' + event.model.item.origin));
-  },
-
   /** @private */
   populateList_: function() {
     this.getAllSitesList_().then(this.processExceptions_.bind(this));
