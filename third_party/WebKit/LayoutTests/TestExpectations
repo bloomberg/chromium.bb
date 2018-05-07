@@ -4275,7 +4275,7 @@ crbug.com/771540 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-answe
 crbug.com/781935 fast/mediastream/MediaStreamTrack-observer-iterate-no-crash.html [ Timeout ]
 crbug.com/781935 fast/mediastream/MediaStreamTrack.html [ Timeout ]
 # DCHECK hit in WebRTC
-crbug.com/webrtc/9141 fast/peerconnection/RTCRtpSender-setParameters-crash.html [ Crash Timeout ]
+crbug.com/webrtc/9141 fast/peerconnection/RTCRtpSender-setParameters-crash.html [ Crash Timeout Pass ]
 
 crbug.com/807191 fast/media/mq-color-gamut-picture.html [ Pass Failure Timeout ]
 
