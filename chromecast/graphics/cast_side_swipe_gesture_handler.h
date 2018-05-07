@@ -7,10 +7,6 @@
 
 #include "base/macros.h"
 
-namespace ui {
-class GestureEvent;
-}  // namespace ui
-
 namespace gfx {
 class Point;
 }  // namespace gfx
@@ -40,19 +36,6 @@ class CastSideSwipeGestureHandlerInterface {
   // Triggered on the completion (finger up) of a swipe from edge.
   virtual void HandleSideSwipeEnd(CastSideSwipeOrigin swipe_origin,
                                   const gfx::Point& touch_location) {}
-
-  // TODO(rdaum): DEPRECATED below, delete after all downstream users are
-  // migrated to the new implementations above.
-
-  // Triggered on the beginning of a swipe.
-  // Note: Consumers of the event should call SetHandled on it to prevent its
-  // further propagation.
-  virtual void OnSideSwipeBegin(CastSideSwipeOrigin swipe_origin,
-                                ui::GestureEvent* gesture_event) {}
-
-  // Triggered on the completion (finger up) of a swipe.
-  virtual void OnSideSwipeEnd(CastSideSwipeOrigin swipe_origin,
-                              ui::GestureEvent* gesture_event) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastSideSwipeGestureHandlerInterface);
