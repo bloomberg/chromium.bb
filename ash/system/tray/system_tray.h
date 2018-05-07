@@ -151,6 +151,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   void CloseBubble() override;
   void ShowBubble(bool show_by_click) override;
   views::TrayBubbleView* GetBubbleView() override;
+  void SetVisible(bool visible) override;
 
   // views::TrayBubbleView::Delegate:
   void BubbleViewDestroyed() override;

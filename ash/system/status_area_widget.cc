@@ -189,6 +189,8 @@ void StatusAreaWidget::SetSystemTrayVisibility(bool visible) {
 TrayBackgroundView* StatusAreaWidget::GetSystemTrayAnchor() const {
   if (overview_button_tray_->visible())
     return overview_button_tray_.get();
+  if (unified_system_tray_)
+    return unified_system_tray_.get();
   return system_tray_.get();
 }
 

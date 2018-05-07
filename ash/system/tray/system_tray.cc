@@ -658,6 +658,14 @@ views::TrayBubbleView* SystemTray::GetBubbleView() {
              : nullptr;
 }
 
+void SystemTray::SetVisible(bool visible) {
+  // TODO(tetsui): Port logic in SystemTrayItems that is unrelated to SystemTray
+  // UI, and stop instantiating SystemTray instead of hiding it when
+  // UnifiedSystemTray is enabled.
+  TrayBackgroundView::SetVisible(!features::IsSystemTrayUnifiedEnabled() &&
+                                 visible);
+}
+
 void SystemTray::BubbleViewDestroyed() {
   if (system_bubble_) {
     system_bubble_->bubble()->BubbleViewDestroyed();
