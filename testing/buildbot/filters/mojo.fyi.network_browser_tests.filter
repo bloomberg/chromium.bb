@@ -20,8 +20,6 @@
 -NewlibPackagedAppTest.SuccessfulLoad
 -PKPModelClientTest.PKPBypass
 -PKPModelClientTest.PKPEnforced
--PlatformAppBrowserTest.AppWindowAdjustBoundsToBeVisibleOnScreen
--PlatformAppBrowserTest.CreateAndCloseAppWindow
 -PolicyTest.DefaultCookiesSetting
 -PrefetchBrowserTestPredictionDisabled.ExperimentDisabled
 -PreviewsOptimizationGuideBrowserTest.NoScriptPreviewsEnabledByWhitelist
