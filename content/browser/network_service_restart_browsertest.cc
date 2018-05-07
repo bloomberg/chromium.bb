@@ -458,7 +458,14 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
 // Make sure the factory info returned from
 // |StoragePartition::GetURLLoaderFactoryForBrowserProcessIOThread()| can be
 // used after crashes.
-IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, BrowserIOFactoryInfo) {
+// Flaky on Windows. https://crbug.com/840127
+#if defined(OS_WIN)
+#define MAYBE_BrowserIOFactoryInfo DISABLED_BrowserIOFactoryInfo
+#else
+#define MAYBE_BrowserIOFactoryInfo BrowserIOFactoryInfo
+#endif
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
+                       MAYBE_BrowserIOFactoryInfo) {
   auto* partition =
       BrowserContext::GetDefaultStoragePartition(browser_context());
   auto shared_url_loader_factory_info =
