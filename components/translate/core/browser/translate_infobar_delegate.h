@@ -205,6 +205,12 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   // Set a observer.
   void SetObserver(Observer* observer);
 
+  // InfoBarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
+  int GetIconId() const override;
+  void InfoBarDismissed() override;
+  TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() override;
+
  protected:
   TranslateInfoBarDelegate(
       const base::WeakPtr<TranslateManager>& translate_manager,
@@ -218,12 +224,6 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
  private:
   friend class TranslationInfoBarTest;
   typedef std::pair<std::string, base::string16> LanguageNamePair;
-
-  // InfoBarDelegate:
-  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
-  int GetIconId() const override;
-  void InfoBarDismissed() override;
-  TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() override;
 
   bool is_off_the_record_;
   translate::TranslateStep step_;
