@@ -151,7 +151,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       is_auth_in_progress_(false),
       unrecoverable_error_reason_(ERROR_REASON_UNSET),
       expect_sync_configuration_aborted_(false),
-      configure_status_(DataTypeManager::UNKNOWN),
       oauth2_token_service_(init_params.oauth2_token_service),
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
       gaia_cookie_manager_service_(init_params.gaia_cookie_manager_service),
@@ -918,7 +917,6 @@ void ProfileSyncService::OnEngineInitialized(
   engine_initialized_ = true;
 
   sync_js_controller_.AttachJsBackend(js_backend);
-  debug_info_listener_ = debug_info_listener;
 
   // Initialize local device info.
   local_device_->Initialize(cache_guid,
@@ -941,7 +939,7 @@ void ProfileSyncService::OnEngineInitialized(
 
   data_type_manager_.reset(
       sync_client_->GetSyncApiComponentFactory()->CreateDataTypeManager(
-          initial_types, debug_info_listener_, &data_type_controllers_, this,
+          initial_types, debug_info_listener, &data_type_controllers_, this,
           engine_.get(), this));
 
   crypto_->SetSyncEngine(engine_.get());
@@ -1208,11 +1206,10 @@ void ProfileSyncService::ClearServerDataForTest(const base::Closure& callback) {
 void ProfileSyncService::OnConfigureDone(
     const DataTypeManager::ConfigureResult& result) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  configure_status_ = result.status;
   data_type_status_table_ = result.data_type_status_table;
 
   if (!sync_configure_start_time_.is_null()) {
-    if (configure_status_ == DataTypeManager::OK) {
+    if (result.status == DataTypeManager::OK) {
       base::Time sync_configure_stop_time = base::Time::Now();
       base::TimeDelta delta =
           sync_configure_stop_time - sync_configure_start_time_;
@@ -1229,7 +1226,7 @@ void ProfileSyncService::OnConfigureDone(
   for (auto& observer : observers_)
     observer.OnSyncConfigurationCompleted(this);
 
-  DVLOG(1) << "PSS OnConfigureDone called with status: " << configure_status_;
+  DVLOG(1) << "PSS OnConfigureDone called with status: " << result.status;
   // The possible status values:
   //    ABORT - Configuration was aborted. This is not an error, if
   //            initiated by user.
@@ -1237,7 +1234,7 @@ void ProfileSyncService::OnConfigureDone(
   //    Everything else is an UnrecoverableError. So treat it as such.
 
   // First handle the abort case.
-  if (configure_status_ == DataTypeManager::ABORTED &&
+  if (result.status == DataTypeManager::ABORTED &&
       expect_sync_configuration_aborted_) {
     DVLOG(0) << "ProfileSyncService::Observe Sync Configure aborted";
     expect_sync_configuration_aborted_ = false;
@@ -1245,7 +1242,7 @@ void ProfileSyncService::OnConfigureDone(
   }
 
   // Handle unrecoverable error.
-  if (configure_status_ != DataTypeManager::OK) {
+  if (result.status != DataTypeManager::OK) {
     if (result.was_catch_up_configure) {
       // Record catchup configuration failure.
       UMA_HISTOGRAM_ENUMERATION("Sync.ClearServerDataEvents",
@@ -1258,7 +1255,7 @@ void ProfileSyncService::OnConfigureDone(
     DCHECK(error.IsSet());
     std::string message =
         "Sync configuration failed with status " +
-        DataTypeManager::ConfigureStatusToString(configure_status_) +
+        DataTypeManager::ConfigureStatusToString(result.status) +
         " caused by " +
         syncer::ModelTypeSetToString(
             data_type_status_table_.GetUnrecoverableErrorTypes()) +
@@ -1269,7 +1266,7 @@ void ProfileSyncService::OnConfigureDone(
     return;
   }
 
-  DCHECK_EQ(DataTypeManager::OK, configure_status_);
+  DCHECK_EQ(DataTypeManager::OK, result.status);
 
   // We should never get in a state where we have no encrypted datatypes
   // enabled, and yet we still think we require a passphrase for decryption.
@@ -1327,14 +1324,8 @@ ProfileSyncService::QuerySyncStatusSummary() {
 
 std::string ProfileSyncService::QuerySyncStatusSummaryString() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  SyncStatusSummary status = QuerySyncStatusSummary();
 
-  std::string config_status_str =
-      configure_status_ != DataTypeManager::UNKNOWN
-          ? DataTypeManager::ConfigureStatusToString(configure_status_)
-          : "";
-
-  switch (status) {
+  switch (QuerySyncStatusSummary()) {
     case UNRECOVERABLE_ERROR:
       return "Unrecoverable error detected";
     case NOT_ENABLED:
