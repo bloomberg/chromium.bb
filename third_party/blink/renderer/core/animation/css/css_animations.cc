@@ -270,12 +270,14 @@ void CSSAnimations::CalculateCompositorAnimationUpdate(
     if (!keyframe_effect)
       continue;
 
-    bool update_compositor_keyframes = false;
     if ((transform_zoom_changed || was_viewport_resized) &&
         (keyframe_effect->Affects(PropertyHandle(GetCSSPropertyTransform())) ||
-         keyframe_effect->Affects(PropertyHandle(GetCSSPropertyTranslate()))) &&
-        keyframe_effect->SnapshotAllCompositorKeyframes(element, style,
-                                                        parent_style)) {
+         keyframe_effect->Affects(PropertyHandle(GetCSSPropertyTranslate()))))
+      keyframe_effect->InvalidateCompositorKeyframesSnapshot();
+
+    bool update_compositor_keyframes = false;
+    if (keyframe_effect->SnapshotAllCompositorKeyframesIfNecessary(
+            element, style, parent_style)) {
       update_compositor_keyframes = true;
     } else if (keyframe_effect->HasSyntheticKeyframes() &&
                keyframe_effect->SnapshotNeutralCompositorKeyframes(
@@ -425,9 +427,10 @@ void CSSAnimations::SnapshotCompositorKeyframes(
                           parent_style](const AnimationEffect* effect) {
     const KeyframeEffectModelBase* keyframe_effect =
         GetKeyframeEffectModelBase(effect);
-    if (keyframe_effect && keyframe_effect->NeedsCompositorKeyframesSnapshot())
-      keyframe_effect->SnapshotAllCompositorKeyframes(element, style,
-                                                      parent_style);
+    if (keyframe_effect) {
+      keyframe_effect->SnapshotAllCompositorKeyframesIfNecessary(element, style,
+                                                                 parent_style);
+    }
   };
 
   ElementAnimations* element_animations = element.GetElementAnimations();

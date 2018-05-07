@@ -137,7 +137,8 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
     // snapshot the effect to make those available.
     // TODO(crbug.com/725385): Remove once compositor uses InterpolationTypes.
     auto style = ComputedStyle::Create();
-    effect.SnapshotAllCompositorKeyframes(*element_.Get(), *style, nullptr);
+    effect.SnapshotAllCompositorKeyframesIfNecessary(*element_.Get(), *style,
+                                                     nullptr);
     return CompositorAnimations::CheckCanStartEffectOnCompositor(
                timing, *element_.Get(), nullptr, effect, 1)
         .Ok();
@@ -290,7 +291,8 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
     // snapshot the effect to make those available.
     // TODO(crbug.com/725385): Remove once compositor uses InterpolationTypes.
     auto style = ComputedStyle::Create();
-    effect.SnapshotAllCompositorKeyframes(*element_.Get(), *style, nullptr);
+    effect.SnapshotAllCompositorKeyframesIfNecessary(*element_.Get(), *style,
+                                                     nullptr);
 
     Vector<std::unique_ptr<CompositorKeyframeModel>> result;
     GetAnimationOnCompositor(timing_, effect, result, animation_playback_rate);
@@ -1201,8 +1203,8 @@ TEST_F(AnimationCompositorAnimationsTest,
       KeyframeEffect::Create(element.Get(), animation_effect1, timing);
   Animation* animation1 = timeline_->Play(keyframe_effect1);
   auto style = ComputedStyle::Create();
-  animation_effect1->SnapshotAllCompositorKeyframes(*element_.Get(), *style,
-                                                    nullptr);
+  animation_effect1->SnapshotAllCompositorKeyframesIfNecessary(*element_.Get(),
+                                                               *style, nullptr);
   EXPECT_TRUE(CompositorAnimations::CheckCanStartEffectOnCompositor(
                   timing, *element.Get(), animation1, *animation_effect1, 1)
                   .Ok());
@@ -1218,8 +1220,8 @@ TEST_F(AnimationCompositorAnimationsTest,
   KeyframeEffect* keyframe_effect2 =
       KeyframeEffect::Create(element.Get(), animation_effect2, timing);
   Animation* animation2 = timeline_->Play(keyframe_effect2);
-  animation_effect2->SnapshotAllCompositorKeyframes(*element_.Get(), *style,
-                                                    nullptr);
+  animation_effect2->SnapshotAllCompositorKeyframesIfNecessary(*element_.Get(),
+                                                               *style, nullptr);
   EXPECT_FALSE(CompositorAnimations::CheckCanStartEffectOnCompositor(
                    timing, *element.Get(), animation2, *animation_effect2, 1)
                    .Ok());

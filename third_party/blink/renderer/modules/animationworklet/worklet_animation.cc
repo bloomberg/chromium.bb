@@ -158,7 +158,7 @@ void StartEffectOnCompositor(CompositorAnimation* animation,
                              KeyframeEffect* effect) {
   DCHECK(effect);
   Element& target = *effect->target();
-  effect->Model()->SnapshotAllCompositorKeyframes(
+  effect->Model()->SnapshotAllCompositorKeyframesIfNecessary(
       target, target.ComputedStyleRef(), target.ParentComputedStyle());
 
   int group = 0;
@@ -349,7 +349,7 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
   // keyframe groups have been created. To ensure this we manually snapshot the
   // frames in the target effect.
   // TODO(smcgruer): This shouldn't be necessary - Animation doesn't do this.
-  GetEffect()->Model()->SnapshotAllCompositorKeyframes(
+  GetEffect()->Model()->SnapshotAllCompositorKeyframesIfNecessary(
       target, target.ComputedStyleRef(), target.ParentComputedStyle());
 
   if (!CheckElementComposited(target)) {

@@ -37,7 +37,9 @@
 #include "third_party/blink/renderer/core/animation/invalidatable_interpolation.h"
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
@@ -577,6 +579,78 @@ TEST_F(AnimationKeyframeEffectModel, ToKeyframeEffectModel) {
 
   EffectModel* base_effect = effect;
   EXPECT_TRUE(ToStringKeyframeEffectModel(base_effect));
+}
+
+TEST_F(AnimationKeyframeEffectModel, CompositorSnapshotUpdateBasic) {
+  StringKeyframeVector keyframes =
+      KeyframesAtZeroAndOne(CSSPropertyOpacity, "0", "1");
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
+
+  auto style = GetDocument().EnsureStyleResolver().StyleForElement(element);
+
+  const AnimatableValue* value;
+
+  // Animatable value should be empty before snapshot
+  value = effect
+              ->GetPropertySpecificKeyframes(
+                  PropertyHandle(GetCSSPropertyOpacity()))[0]
+              ->GetAnimatableValue();
+  EXPECT_FALSE(value);
+
+  // Snapshot should update first time after construction
+  EXPECT_TRUE(effect->SnapshotAllCompositorKeyframesIfNecessary(
+      *element, *style, nullptr));
+  // Snapshot should not update on second call
+  EXPECT_FALSE(effect->SnapshotAllCompositorKeyframesIfNecessary(
+      *element, *style, nullptr));
+  // Snapshot should update after an explicit invalidation
+  effect->InvalidateCompositorKeyframesSnapshot();
+  EXPECT_TRUE(effect->SnapshotAllCompositorKeyframesIfNecessary(
+      *element, *style, nullptr));
+
+  // Animatable value should be available after snapshot
+  value = effect
+              ->GetPropertySpecificKeyframes(
+                  PropertyHandle(GetCSSPropertyOpacity()))[0]
+              ->GetAnimatableValue();
+  EXPECT_TRUE(value);
+  EXPECT_TRUE(value->IsDouble());
+}
+
+TEST_F(AnimationKeyframeEffectModel,
+       CompositorSnapshotUpdateAfterKeyframeChange) {
+  StringKeyframeVector opacity_keyframes =
+      KeyframesAtZeroAndOne(CSSPropertyOpacity, "0", "1");
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(opacity_keyframes);
+
+  auto style = GetDocument().EnsureStyleResolver().StyleForElement(element);
+
+  EXPECT_TRUE(effect->SnapshotAllCompositorKeyframesIfNecessary(
+      *element, *style, nullptr));
+
+  const AnimatableValue* value;
+  value = effect
+              ->GetPropertySpecificKeyframes(
+                  PropertyHandle(GetCSSPropertyOpacity()))[0]
+              ->GetAnimatableValue();
+  EXPECT_TRUE(value);
+  EXPECT_TRUE(value->IsDouble());
+
+  StringKeyframeVector filter_keyframes =
+      KeyframesAtZeroAndOne(CSSPropertyFilter, "blur(1px)", "blur(10px)");
+  effect->SetFrames(filter_keyframes);
+
+  // Snapshot should update after changing keyframes
+  EXPECT_TRUE(effect->SnapshotAllCompositorKeyframesIfNecessary(
+      *element, *style, nullptr));
+  value = effect
+              ->GetPropertySpecificKeyframes(
+                  PropertyHandle(GetCSSPropertyFilter()))[0]
+              ->GetAnimatableValue();
+  EXPECT_TRUE(value);
+  EXPECT_TRUE(value->IsFilterOperations());
 }
 
 }  // namespace blink

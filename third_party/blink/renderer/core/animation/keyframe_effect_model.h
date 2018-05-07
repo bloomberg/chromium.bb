@@ -117,17 +117,20 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
     return has_synthetic_keyframes_;
   }
 
-  bool NeedsCompositorKeyframesSnapshot() const {
-    return needs_compositor_keyframes_snapshot_;
+  void InvalidateCompositorKeyframesSnapshot() const {
+    needs_compositor_keyframes_snapshot_ = true;
   }
+
   bool SnapshotNeutralCompositorKeyframes(
       Element&,
       const ComputedStyle& old_style,
       const ComputedStyle& new_style,
       const ComputedStyle* parent_style) const;
-  bool SnapshotAllCompositorKeyframes(Element&,
-                                      const ComputedStyle& base_style,
-                                      const ComputedStyle* parent_style) const;
+
+  bool SnapshotAllCompositorKeyframesIfNecessary(
+      Element&,
+      const ComputedStyle& base_style,
+      const ComputedStyle* parent_style) const;
 
   template <class K>
   static Vector<double> GetComputedOffsets(const Vector<K>& keyframes);
