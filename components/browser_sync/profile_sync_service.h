@@ -16,6 +16,8 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/threading/thread.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -29,7 +31,9 @@
 #include "components/sync/driver/data_type_manager_observer.h"
 #include "components/sync/driver/data_type_status_table.h"
 #include "components/sync/driver/startup_controller.h"
-#include "components/sync/driver/sync_service_base.h"
+#include "components/sync/driver/sync_client.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_service_crypto.h"
 #include "components/sync/driver/sync_stopped_reporter.h"
 #include "components/sync/engine/events/protocol_event_observer.h"
 #include "components/sync/engine/model_safe_worker.h"
@@ -69,8 +73,9 @@ class BaseTransaction;
 class DeviceInfoSyncBridge;
 class DeviceInfoTracker;
 class LocalDeviceInfoProvider;
+class ModelTypeSyncBridge;
 class NetworkResources;
-class SyncClient;
+class SyncableService;
 class SyncErrorController;
 class SyncTypePreferenceProvider;
 class TypeDebugInfoObserver;
@@ -163,7 +168,8 @@ namespace browser_sync {
 //   Once first setup has completed and there are no outstanding
 //   setup-in-progress handles, CanConfigureDataTypes() will return true and
 //   datatype configuration can begin.
-class ProfileSyncService : public syncer::SyncServiceBase,
+class ProfileSyncService : public syncer::SyncService,
+                           public syncer::SyncEngineHost,
                            public syncer::SyncPrefObserver,
                            public syncer::DataTypeManagerObserver,
                            public syncer::UnrecoverableErrorHandler,
@@ -260,6 +266,9 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   void RequestStart() override;
   syncer::ModelTypeSet GetActiveDataTypes() const override;
   syncer::SyncClient* GetSyncClient() const override;
+  void AddObserver(syncer::SyncServiceObserver* observer) override;
+  void RemoveObserver(syncer::SyncServiceObserver* observer) override;
+  bool HasObserver(const syncer::SyncServiceObserver* observer) const override;
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
   void OnUserChoseDatatypes(bool sync_everything,
                             syncer::ModelTypeSet chosen_types) override;
@@ -310,6 +319,7 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   base::WeakPtr<syncer::JsController> GetJsController() override;
   void GetAllNodes(const base::Callback<void(std::unique_ptr<base::ListValue>)>&
                        callback) override;
+  AccountInfo GetAuthenticatedAccountInfo() const override;
   syncer::GlobalIdMapper* GetGlobalIdMapper() const override;
 
   // Changes only the KeepEverythingSynced value.
@@ -556,16 +566,17 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // to start accounts with a clean slate when performing end to end testing.
   void ClearServerDataForTest(const base::Closure& callback);
 
- protected:
-  // SyncServiceBase implementation.
-  syncer::SyncCredentials GetCredentials() override;
-  syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler() override;
-  syncer::SyncEngine::HttpPostProviderFactoryGetter
-  MakeHttpPostProviderFactoryGetter() override;
-  syncer::WeakHandle<syncer::UnrecoverableErrorHandler>
-  GetUnrecoverableErrorHandler() override;
-
  private:
+  syncer::SyncCredentials GetCredentials();
+  virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler();
+  syncer::SyncEngine::HttpPostProviderFactoryGetter
+  MakeHttpPostProviderFactoryGetter();
+  syncer::WeakHandle<syncer::UnrecoverableErrorHandler>
+  GetUnrecoverableErrorHandler();
+
+  // Destroys the |crypto_| object and creates a new one with fresh state.
+  void ResetCryptoState();
+
   enum UnrecoverableErrorReason {
     ERROR_REASON_UNSET,
     ERROR_REASON_SYNCER,
@@ -637,6 +648,9 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // Sets the last synced time to the current time.
   void UpdateLastSyncedTime();
 
+  // Notify all observers that a change has occurred.
+  void NotifyObservers();
+
   void NotifySyncCycleCompleted();
   void NotifyForeignSessionUpdated();
   void NotifyShutdown();
@@ -647,6 +661,9 @@ class ProfileSyncService : public syncer::SyncServiceBase,
 
   // Starts up the engine sync components.
   virtual void StartUpSlowEngineComponents();
+
+  // Kicks off asynchronous initialization of the SyncEngine.
+  void InitializeEngine();
 
   // Collects preferred sync data types from |preference_providers_|.
   syncer::ModelTypeSet GetDataTypesFromPreferenceProviders() const;
@@ -718,6 +735,46 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // Called when a SetupInProgressHandle issued by this instance is destroyed.
   virtual void OnSetupInProgressHandleDestroyed();
 
+  // This profile's SyncClient, which abstracts away non-Sync dependencies and
+  // the Sync API component factory.
+  const std::unique_ptr<syncer::SyncClient> sync_client_;
+
+  // Encapsulates user signin - used to set/get the user's authenticated
+  // email address.
+  const std::unique_ptr<SigninManagerWrapper> signin_;
+
+  // The product channel of the embedder.
+  const version_info::Channel channel_;
+
+  // The path to the base directory under which sync should store its
+  // information.
+  const base::FilePath base_directory_;
+
+  // An identifier representing this instance for debugging purposes.
+  const std::string debug_identifier_;
+
+  // The class that handles getting, setting, and persisting sync preferences.
+  syncer::SyncPrefs sync_prefs_;
+
+  // A utility object containing logic and state relating to encryption. It is
+  // never null.
+  std::unique_ptr<syncer::SyncServiceCrypto> crypto_;
+
+  // The thread where all the sync operations happen. This thread is kept alive
+  // until browser shutdown and reused if sync is turned off and on again. It is
+  // joined during the shutdown process, but there is an abort mechanism in
+  // place to prevent slow HTTP requests from blocking browser shutdown.
+  std::unique_ptr<base::Thread> sync_thread_;
+
+  // Our asynchronous engine to communicate with sync components living on
+  // other threads.
+  std::unique_ptr<syncer::SyncEngine> engine_;
+
+  // Used to ensure that certain operations are performed on the thread that
+  // this object was created on.
+  // TODO(treib): Use thread checker macros, see thread_checker.h.
+  base::ThreadChecker thread_checker_;
+
   SigninScopedDeviceIdCallback signin_scoped_device_id_callback_;
 
   // This is a cache of the last authentication response we received from the
@@ -774,6 +831,7 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // Manages the start and stop of the data types.
   std::unique_ptr<syncer::DataTypeManager> data_type_manager_;
 
+  base::ObserverList<syncer::SyncServiceObserver> observers_;
   base::ObserverList<syncer::ProtocolEventObserver> protocol_event_observers_;
   base::ObserverList<syncer::TypeDebugInfoObserver> type_debug_info_observers_;
 
@@ -865,8 +923,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };
-
-bool ShouldShowActionOnUI(const syncer::SyncProtocolError& error);
 
 }  // namespace browser_sync
 

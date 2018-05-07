@@ -20,6 +20,7 @@
 #include "components/sync/base/pref_names.h"
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/fake_data_type_controller.h"
+#include "components/sync/driver/signin_manager_wrapper.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service_observer.h"
