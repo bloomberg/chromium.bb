@@ -23,6 +23,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(WritingMode writing_mode,
       parent_writing_mode_(static_cast<unsigned>(writing_mode)),
       is_fixed_size_inline_(false),
       is_fixed_size_block_(false),
+      fixed_size_block_is_definite_(true),
       is_shrink_to_fit_(false),
       is_inline_direction_triggers_scrollbar_(false),
       is_block_direction_triggers_scrollbar_(false),
@@ -92,6 +93,12 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsFixedSizeInline(
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsFixedSizeBlock(
     bool is_fixed_size_block) {
   is_fixed_size_block_ = is_fixed_size_block;
+  return *this;
+}
+
+NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetFixedSizeBlockIsDefinite(
+    bool fixed_size_block_is_definite) {
+  fixed_size_block_is_definite_ = fixed_size_block_is_definite;
   return *this;
 }
 
@@ -222,7 +229,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
         parent_percentage_resolution_size.inline_size,
         initial_containing_block_size_, fragmentainer_block_size_,
         fragmentainer_space_at_bfc_start_, is_fixed_size_inline_,
-        is_fixed_size_block_, is_shrink_to_fit_,
+        is_fixed_size_block_, fixed_size_block_is_definite_, is_shrink_to_fit_,
         is_inline_direction_triggers_scrollbar_,
         is_block_direction_triggers_scrollbar_,
         static_cast<NGFragmentationType>(fragmentation_type_),
@@ -237,7 +244,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
       parent_percentage_resolution_size.inline_size,
       initial_containing_block_size_, fragmentainer_block_size_,
       fragmentainer_space_at_bfc_start_, is_fixed_size_block_,
-      is_fixed_size_inline_, is_shrink_to_fit_,
+      is_fixed_size_inline_, true, is_shrink_to_fit_,
       is_block_direction_triggers_scrollbar_,
       is_inline_direction_triggers_scrollbar_,
       static_cast<NGFragmentationType>(fragmentation_type_),

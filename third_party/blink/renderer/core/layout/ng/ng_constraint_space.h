@@ -139,6 +139,11 @@ class CORE_EXPORT NGConstraintSpace final
 
   bool IsFixedSizeBlock() const { return is_fixed_size_block_; }
 
+  // Whether a fixed block size should be considered definite.
+  bool FixedSizeBlockIsDefinite() const {
+    return fixed_size_block_is_definite_;
+  }
+
   // Whether an auto inline-size should be interpreted as shrink-to-fit
   // (ie. fit-content). This is used for inline-block, floats, etc.
   bool IsShrinkToFit() const { return is_shrink_to_fit_; }
@@ -227,6 +232,7 @@ class CORE_EXPORT NGConstraintSpace final
                     LayoutUnit fragmentainer_space_at_bfc_start,
                     bool is_fixed_size_inline,
                     bool is_fixed_size_block,
+                    bool fixed_size_block_is_definite,
                     bool is_shrink_to_fit,
                     bool is_inline_direction_triggers_scrollbar,
                     bool is_block_direction_triggers_scrollbar,
@@ -253,6 +259,7 @@ class CORE_EXPORT NGConstraintSpace final
 
   unsigned is_fixed_size_inline_ : 1;
   unsigned is_fixed_size_block_ : 1;
+  unsigned fixed_size_block_is_definite_ : 1;
 
   unsigned is_shrink_to_fit_ : 1;
 

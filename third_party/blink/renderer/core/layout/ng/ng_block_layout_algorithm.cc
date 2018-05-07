@@ -290,6 +290,9 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     child_percentage_size_ = ConstraintSpace().PercentageResolutionSize();
   else
     child_percentage_size_ = adjusted_size;
+  if (ConstraintSpace().IsFixedSizeBlock() &&
+      !ConstraintSpace().FixedSizeBlockIsDefinite())
+    child_percentage_size_.block_size = NGSizeIndefinite;
 
   container_builder_.SetInlineSize(size.inline_size);
 

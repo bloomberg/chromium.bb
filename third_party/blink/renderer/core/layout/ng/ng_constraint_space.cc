@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
@@ -39,6 +40,7 @@ NGConstraintSpace::NGConstraintSpace(
     LayoutUnit fragmentainer_space_at_bfc_start,
     bool is_fixed_size_inline,
     bool is_fixed_size_block,
+    bool fixed_size_block_is_definite,
     bool is_shrink_to_fit,
     bool is_inline_direction_triggers_scrollbar,
     bool is_block_direction_triggers_scrollbar,
@@ -63,6 +65,7 @@ NGConstraintSpace::NGConstraintSpace(
       fragmentainer_space_at_bfc_start_(fragmentainer_space_at_bfc_start),
       is_fixed_size_inline_(is_fixed_size_inline),
       is_fixed_size_block_(is_fixed_size_block),
+      fixed_size_block_is_definite_(fixed_size_block_is_definite),
       is_shrink_to_fit_(is_shrink_to_fit),
       is_inline_direction_triggers_scrollbar_(
           is_inline_direction_triggers_scrollbar),
@@ -92,6 +95,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
   bool parallel_containing_block = IsParallelWritingMode(
       box.ContainingBlock()->StyleRef().GetWritingMode(), writing_mode);
   bool fixed_inline = false, fixed_block = false;
+  bool fixed_block_is_definite = true;
 
   LayoutUnit available_logical_width;
   if (parallel_containing_block &&
@@ -142,6 +146,17 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
     available_size.block_size = box.OverrideLogicalHeight();
     fixed_block = true;
   }
+  if (box.IsFlexItem()) {
+    LayoutUnit for_percentage =
+        ToLayoutFlexibleBox(box.Parent())
+            ->ChildLogicalHeightForPercentageResolution(box);
+    fixed_block_is_definite = for_percentage != LayoutUnit(-1);
+    if (fixed_block_is_definite) {
+      DCHECK_EQ(available_size.block_size,
+                for_percentage + box.BorderAndPaddingLogicalHeight() +
+                    box.ScrollbarLogicalHeight());
+    }
+  }
 
   bool is_new_fc = true;
   // TODO(ikilpatrick): This DCHECK needs to be enabled once we've switched
@@ -183,6 +198,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
           box.StyleRef().OverflowBlockDirection() == EOverflow::kAuto)
       .SetIsFixedSizeInline(fixed_inline)
       .SetIsFixedSizeBlock(fixed_block)
+      .SetFixedSizeBlockIsDefinite(fixed_block_is_definite)
       .SetIsShrinkToFit(
           box.SizesLogicalWidthToFitContent(box.StyleRef().LogicalWidth()))
       .SetIsNewFormattingContext(is_new_fc)

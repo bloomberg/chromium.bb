@@ -1543,6 +1543,7 @@ crbug.com/591099 http/tests/devtools/elements/styles-3/styles-change-node-while-
 crbug.com/591099 http/tests/devtools/elements/styles-3/styles-disable-inherited.js [ Failure ]
 crbug.com/591099 http/tests/devtools/elements/styles-4/styles-formatting.js [ Pass Timeout ]
 crbug.com/591099 http/tests/devtools/network/network-datareceived.js [ Failure ]
+crbug.com/591099 http/tests/devtools/persistence/persistence-merge-editor-tabs.js [ Failure ]
 crbug.com/591099 http/tests/devtools/text-autosizing-override.js [ Failure ]
 crbug.com/591099 http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
 crbug.com/591099 http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Failure ]
