@@ -85,16 +85,20 @@ bool MapPathsToLaunchpad(const std::vector<std::string> paths_to_map,
     base::ScopedPlatformFile scoped_fd(dir.TakePlatformFile());
     zx_handle_t handles[FDIO_MAX_HANDLES] = {};
     uint32_t types[FDIO_MAX_HANDLES] = {};
-    status = fdio_transfer_fd(scoped_fd.get(), 0, handles, types);
-    if (status != ZX_OK) {
-      ZX_LOG(ERROR, status) << "fdio_transfer_fd";
+    zx_status_t num_handles =
+        fdio_transfer_fd(scoped_fd.get(), 0, handles, types);
+    // fdio_transfer_fd() returns number of transferred handles, or negative
+    // error.
+    if (num_handles <= 0) {
+      DCHECK_LT(num_handles, 0);
+      ZX_LOG(ERROR, num_handles) << "fdio_transfer_fd";
       return false;
     }
     ScopedZxHandle scoped_handle(handles[0]);
     ignore_result(scoped_fd.release());
 
     // Close the handles that we won't use.
-    for (int i = 1; i < FDIO_MAX_HANDLES; ++i) {
+    for (int i = 1; i < num_handles; ++i) {
       zx_handle_close(handles[i]);
     }
 
