@@ -61,6 +61,21 @@ class SmbService : public KeyedService,
                        int32_t mount_id);
 
  private:
+  // Initializes temp_file_manager_.
+  void InitTempFileManager();
+
+  // Calls InitTempFileManager() and calls Mount.
+  void InitTempFileManagerAndMount(
+      const file_system_provider::MountOptions& options,
+      const base::FilePath& share_path,
+      MountResponse callback);
+
+  // Calls SmbProviderClient::Mount(). temp_file_manager_ must be initialized
+  // before this is called.
+  void CallMount(const file_system_provider::MountOptions& options,
+                 const base::FilePath& share_path,
+                 MountResponse callback);
+
   // Calls file_system_provider::Service::UnmountFileSystem().
   base::File::Error Unmount(
       const std::string& file_system_id,
