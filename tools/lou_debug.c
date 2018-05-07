@@ -280,7 +280,7 @@ print_brailleIndicator(TranslationTableOffset offset, char *opcode) {
 static int
 print_phraseLength(TranslationTableOffset offset, char *opcode) {
 	if (!offset) return 0;
-	printf("%s %d\n", opcode, offset);
+	printf("%s %u\n", opcode, offset);
 	return 1;
 }
 
@@ -332,8 +332,8 @@ pickYN(int a) {
 
 static int
 show_misc(void) {
-	printf("Table size: %d\n", table->tableSize);
-	printf("Bytes used: %d\n", table->bytesUsed);
+	printf("Table size: %u\n", table->tableSize);
+	printf("Bytes used: %u\n", table->bytesUsed);
 	printf("Number of passes: %d\n", table->numPasses);
 	printf("'correct' opcodes: %s\n", pickYN(table->corrections));
 	printf("'syllable' opcodes: %s\n", pickYN(table->syllables));
