@@ -130,8 +130,8 @@ class DataUseMeasurementTest : public testing::Test {
     net::MockRead reads[] = {net::MockRead("HTTP/1.1 200 OK\r\n"
                                            "Content-Length: 12\r\n\r\n"),
                              net::MockRead("Test Content")};
-    net::StaticSocketDataProvider socket_data(reads, arraysize(reads), nullptr,
-                                              0);
+    net::StaticSocketDataProvider socket_data(reads,
+                                              base::span<net::MockWrite>());
     socket_factory_->AddSocketDataProvider(&socket_data);
 
     std::unique_ptr<net::URLRequest> request(

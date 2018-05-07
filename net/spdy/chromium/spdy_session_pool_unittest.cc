@@ -127,7 +127,7 @@ TEST_F(SpdySessionPoolTest, CloseCurrentSessions) {
     MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
 
-  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
@@ -167,7 +167,7 @@ TEST_F(SpdySessionPoolTest, CloseCurrentIdleSessions) {
 
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  StaticSocketDataProvider data1(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data1(reads, base::span<MockWrite>());
   data1.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
@@ -189,8 +189,7 @@ TEST_F(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   ASSERT_TRUE(spdy_stream1);
 
   // Set up session 2
-  StaticSocketDataProvider data2(reads, arraysize(reads), nullptr, 0);
-  data2.set_connect_data(connect_data);
+  StaticSocketDataProvider data2(reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
   const GURL url2("https://mail.example.org");
   HostPortPair test_host_port_pair2(HostPortPair::FromURL(url2));
@@ -203,7 +202,7 @@ TEST_F(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   ASSERT_TRUE(spdy_stream2);
 
   // Set up session 3
-  StaticSocketDataProvider data3(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data3(reads, base::span<MockWrite>());
   data3.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data3);
   const GURL url3("https://mail.example.com");
@@ -295,7 +294,7 @@ TEST_F(SpdySessionPoolTest, CloseAllSessions) {
     MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
 
-  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
@@ -376,7 +375,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
     MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
 
-  StaticSocketDataProvider data1(reads, arraysize(reads), NULL, 0);
+  StaticSocketDataProvider data1(reads, base::span<MockWrite>());
   data1.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
@@ -416,7 +415,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, test_hosts[2].key));
 
   // Create a new session to host 2.
-  StaticSocketDataProvider data2(reads, arraysize(reads), NULL, 0);
+  StaticSocketDataProvider data2(reads, base::span<MockWrite>());
   data2.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
@@ -558,7 +557,7 @@ TEST_F(SpdySessionPoolTest, IPPoolingNetLog) {
   }
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
-  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
 
@@ -638,14 +637,14 @@ TEST_F(SpdySessionPoolTest, IPPoolingDisabled) {
   }
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
-  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   AddSSLSocketData();
 
   MockRead reads1[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
-  StaticSocketDataProvider data1(reads1, arraysize(reads1), nullptr, 0);
+  StaticSocketDataProvider data1(reads1, base::span<MockWrite>());
   MockConnect connect_data1(SYNCHRONOUS, OK);
   data1.set_connect_data(connect_data1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
@@ -700,8 +699,7 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
       spdy_util.ConstructSpdyGet("http://www.example.org", 1, MEDIUM));
   MockWrite writes[] = {CreateMockWrite(req, 1)};
 
-  StaticSocketDataProvider dataA(reads, arraysize(reads), writes,
-                                 arraysize(writes));
+  StaticSocketDataProvider dataA(reads, writes);
   dataA.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&dataA);
 
@@ -734,8 +732,7 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
   EXPECT_FALSE(delegateA.StreamIsClosed());
 
   // Set up session B: Available, with a created stream.
-  StaticSocketDataProvider dataB(reads, arraysize(reads), writes,
-                                 arraysize(writes));
+  StaticSocketDataProvider dataB(reads, writes);
   dataB.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&dataB);
 
@@ -756,8 +753,7 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
   spdy_streamB->SetDelegate(&delegateB);
 
   // Set up session C: Draining.
-  StaticSocketDataProvider dataC(reads, arraysize(reads), writes,
-                                 arraysize(writes));
+  StaticSocketDataProvider dataC(reads, writes);
   dataC.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&dataC);
 
@@ -811,8 +807,7 @@ TEST_F(SpdySessionPoolTest, HandleIPAddressChangeThenShutdown) {
   SpdyTestUtil spdy_util;
   SpdySerializedFrame req(spdy_util.ConstructSpdyGet(kDefaultUrl, 1, MEDIUM));
   MockWrite writes[] = {CreateMockWrite(req, 1)};
-  StaticSocketDataProvider data(reads, arraysize(reads), writes,
-                                arraysize(writes));
+  StaticSocketDataProvider data(reads, writes);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
@@ -867,7 +862,7 @@ TEST_F(SpdySessionPoolTest, HandleGracefulGoawayThenShutdown) {
       MockRead(ASYNC, ERR_IO_PENDING, 3), MockRead(ASYNC, OK, 4)};
   SpdySerializedFrame req(spdy_util.ConstructSpdyGet(kDefaultUrl, 1, MEDIUM));
   MockWrite writes[] = {CreateMockWrite(req, 0)};
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
@@ -929,7 +924,7 @@ TEST_P(SpdySessionMemoryDumpTest, DumpMemoryStats) {
                      ProxyServer::Direct(), PRIVACY_MODE_DISABLED, SocketTag());
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
-  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   data.set_connect_data(MockConnect(SYNCHRONOUS, OK));
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
@@ -1018,7 +1013,7 @@ TEST_F(SpdySessionPoolTest, FindAvailableSessionForWebsocket) {
                       MockRead(ASYNC, ERR_IO_PENDING, 5),
                       MockRead(ASYNC, 0, 6)};
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   AddSSLSocketData();
   CreateNetworkSession();

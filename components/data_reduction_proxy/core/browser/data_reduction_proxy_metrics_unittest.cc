@@ -190,7 +190,7 @@ TEST(ChromeNetworkDailyDataSavingMetricsTest,
         MockRead(net::SYNCHRONOUS, net::OK),
     };
     net::StaticSocketDataProvider socket_data_provider(
-        mock_reads, arraysize(mock_reads), nullptr, 0);
+        mock_reads, base::span<net::MockWrite>());
     mock_socket_factory.AddSocketDataProvider(&socket_data_provider);
 
     net::TestDelegate delegate;

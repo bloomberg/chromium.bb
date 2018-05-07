@@ -201,8 +201,7 @@ class WebSocketHandshakeStreamCreateHelperTest
         MockRead reads[] = {CreateMockRead(response_headers, 1),
                             MockRead(ASYNC, 0, 2)};
 
-        SequencedSocketData data(reads, arraysize(reads), writes,
-                                 arraysize(writes));
+        SequencedSocketData data(reads, writes);
 
         SSLSocketDataProvider ssl(ASYNC, OK);
         ssl.ssl_info.cert =

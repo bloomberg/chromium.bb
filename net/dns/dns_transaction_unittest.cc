@@ -163,8 +163,7 @@ class DnsSocketData {
       reads_.push_back(MockRead(SYNCHRONOUS, ERR_IO_PENDING,
                                 writes_.size() + reads_.size()));
     }
-    provider_.reset(new SequencedSocketData(&reads_[0], reads_.size(),
-                                            &writes_[0], writes_.size()));
+    provider_.reset(new SequencedSocketData(reads_, writes_));
     if (Transport::TCP == transport_ || Transport::HTTPS == transport_) {
       provider_->set_connect_data(MockConnect(reads_[0].mode, OK));
     }

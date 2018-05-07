@@ -119,25 +119,22 @@ class HttpNetworkLayerTest : public PlatformTest {
       MockRead("Bypass message"),
       MockRead(SYNCHRONOUS, OK),
     };
-    TestProxyFallbackWithMockReads(bad_proxy, "", data_reads,
-                                   arraysize(data_reads), 1u);
+    TestProxyFallbackWithMockReads(bad_proxy, "", data_reads, 1u);
   }
 
   void TestProxyFallbackWithMockReads(const std::string& bad_proxy,
                                       const std::string& bad_proxy2,
-                                      MockRead data_reads[],
-                                      int data_reads_size,
+                                      base::span<const MockRead> data_reads,
                                       unsigned int expected_retry_info_size) {
     TestProxyFallbackByMethodWithMockReads(bad_proxy, bad_proxy2, data_reads,
-                                           data_reads_size, "GET", "content",
-                                           true, expected_retry_info_size);
+                                           "GET", "content", true,
+                                           expected_retry_info_size);
   }
 
   void TestProxyFallbackByMethodWithMockReads(
       const std::string& bad_proxy,
       const std::string& bad_proxy2,
-      MockRead data_reads[],
-      int data_reads_size,
+      base::span<const MockRead> data_reads,
       std::string method,
       std::string content,
       bool retry_expected,
@@ -155,8 +152,7 @@ class HttpNetworkLayerTest : public PlatformTest {
       MockWrite(request.c_str()),
     };
 
-    StaticSocketDataProvider data1(data_reads, data_reads_size,
-                                  data_writes, arraysize(data_writes));
+    StaticSocketDataProvider data1(data_reads, data_writes);
     mock_socket_factory_.AddSocketDataProvider(&data1);
 
     // Second data provider returns the expected content.
@@ -171,8 +167,8 @@ class HttpNetworkLayerTest : public PlatformTest {
     MockWrite data_writes2[] = {
       MockWrite(request.c_str()),
     };
-    StaticSocketDataProvider data2(data_reads2, data_reads2_index,
-                                  data_writes2, arraysize(data_writes2));
+    StaticSocketDataProvider data2(
+        base::make_span(data_reads2, data_reads2_index), data_writes2);
     mock_socket_factory_.AddSocketDataProvider(&data2);
 
     // Expect that we get "content" and not "Bypass message", and that there's
@@ -204,8 +200,7 @@ class HttpNetworkLayerTest : public PlatformTest {
                 "Host: www.google.com\r\n"
                 "Proxy-Connection: keep-alive\r\n\r\n"),
     };
-    StaticSocketDataProvider data1(data_reads, arraysize(data_reads),
-                                  data_writes, arraysize(data_writes));
+    StaticSocketDataProvider data1(data_reads, data_writes);
     mock_socket_factory_.AddSocketDataProvider(&data1);
 
     // Second data provider returns the expected content.
@@ -220,8 +215,7 @@ class HttpNetworkLayerTest : public PlatformTest {
                 "Host: www.google.com\r\n"
                 "Connection: keep-alive\r\n\r\n"),
     };
-    StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                   data_writes2, arraysize(data_writes2));
+    StaticSocketDataProvider data2(data_reads2, data_writes2);
     mock_socket_factory_.AddSocketDataProvider(&data2);
 
     // Expect that we get "content" and not "Bypass message", and that there's
@@ -252,10 +246,8 @@ class HttpNetworkLayerTest : public PlatformTest {
                 "Host: www.google.com\r\n"
                 "Proxy-Connection: keep-alive\r\n\r\n"),
     };
-    StaticSocketDataProvider data1(data_reads, arraysize(data_reads),
-                                   data_writes, arraysize(data_writes));
-    StaticSocketDataProvider data2(data_reads, arraysize(data_reads),
-                                   data_writes, arraysize(data_writes));
+    StaticSocketDataProvider data1(data_reads, data_writes);
+    StaticSocketDataProvider data2(data_reads, data_writes);
 
     mock_socket_factory_.AddSocketDataProvider(&data1);
     if (proxy_count > 1)
@@ -320,8 +312,7 @@ TEST_F(HttpNetworkLayerTest, GET) {
               "Connection: keep-alive\r\n"
               "User-Agent: Foo/1.0\r\n\r\n"),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   mock_socket_factory_.AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -361,8 +352,7 @@ TEST_F(HttpNetworkLayerTest, NetworkVerified) {
               "Connection: keep-alive\r\n"
               "User-Agent: Foo/1.0\r\n\r\n"),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   mock_socket_factory_.AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -396,8 +386,7 @@ TEST_F(HttpNetworkLayerTest, NetworkUnVerified) {
               "Connection: keep-alive\r\n"
               "User-Agent: Foo/1.0\r\n\r\n"),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   mock_socket_factory_.AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;

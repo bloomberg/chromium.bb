@@ -131,7 +131,7 @@ TEST_F(HttpNetworkTransactionSSLTest, TokenBinding) {
   mock_socket_factory_.AddSSLSocketDataProvider(&ssl_data);
   MockRead mock_reads[] = {MockRead("HTTP/1.1 200 OK\r\n\r\n"),
                            MockRead(SYNCHRONOUS, OK)};
-  StaticSocketDataProvider data(mock_reads, arraysize(mock_reads), NULL, 0);
+  StaticSocketDataProvider data(mock_reads, base::span<MockWrite>());
   mock_socket_factory_.AddSocketDataProvider(&data);
 
   HttpNetworkSession session(HttpNetworkSession::Params(), session_context_);
@@ -152,7 +152,7 @@ TEST_F(HttpNetworkTransactionSSLTest, TokenBinding) {
   // Send a second request and verify that the token binding header is the same
   // as in the first request.
   mock_socket_factory_.AddSSLSocketDataProvider(&ssl_data);
-  StaticSocketDataProvider data2(mock_reads, arraysize(mock_reads), NULL, 0);
+  StaticSocketDataProvider data2(mock_reads, base::span<MockWrite>());
   mock_socket_factory_.AddSocketDataProvider(&data2);
   HttpNetworkTransaction trans2(DEFAULT_PRIORITY, &session);
 
@@ -180,7 +180,7 @@ TEST_F(HttpNetworkTransactionSSLTest, NoTokenBindingOverHttp) {
   mock_socket_factory_.AddSSLSocketDataProvider(&ssl_data);
   MockRead mock_reads[] = {MockRead("HTTP/1.1 200 OK\r\n\r\n"),
                            MockRead(SYNCHRONOUS, OK)};
-  StaticSocketDataProvider data(mock_reads, arraysize(mock_reads), NULL, 0);
+  StaticSocketDataProvider data(mock_reads, base::span<MockWrite>());
   mock_socket_factory_.AddSocketDataProvider(&data);
 
   HttpNetworkSession session(HttpNetworkSession::Params(), session_context_);
@@ -218,7 +218,7 @@ TEST_F(HttpNetworkTransactionSSLTest, TokenBindingAsync) {
   mock_socket_factory_.AddSSLSocketDataProvider(&ssl_data);
 
   MockRead reads[] = {MockRead(ASYNC, OK, 0)};
-  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   mock_socket_factory_.AddSocketDataProvider(&data);
 
   HttpRequestInfo request_info;

@@ -216,7 +216,7 @@ class DataReductionProxyDelegateTest : public testing::Test {
     net::MockRead reads[] = {net::MockRead(response_headers.c_str()),
                              net::MockRead(response_body.c_str()),
                              net::MockRead(net::SYNCHRONOUS, net::OK)};
-    net::StaticSocketDataProvider socket(reads, arraysize(reads), nullptr, 0);
+    net::StaticSocketDataProvider socket(reads, base::span<net::MockWrite>());
     mock_socket_factory_.AddSocketDataProvider(&socket);
 
     net::TestDelegate delegate;
@@ -802,7 +802,7 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeForWriteError) {
       net::MockWrite("GET http://example.com/path/ HTTP/1.1\r\n"
                      "Host: example.com\r\n"),
       net::MockWrite(net::ASYNC, net::ERR_ABORTED)};
-  net::StaticSocketDataProvider socket(nullptr, 0, writes, arraysize(writes));
+  net::StaticSocketDataProvider socket(base::span<net::MockRead>(), writes);
   mock_socket_factory()->AddSocketDataProvider(&socket);
 
   net::TestDelegate delegate;
@@ -825,7 +825,7 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeForReadError) {
   params()->UseNonSecureProxiesForHttp();
   net::MockRead reads[] = {net::MockRead("HTTP/1.1 "),
                            net::MockRead(net::ASYNC, net::ERR_ABORTED)};
-  net::StaticSocketDataProvider socket(reads, arraysize(reads), nullptr, 0);
+  net::StaticSocketDataProvider socket(reads, base::span<net::MockWrite>());
   mock_socket_factory()->AddSocketDataProvider(&socket);
 
   net::TestDelegate delegate;
@@ -931,7 +931,7 @@ TEST_F(DataReductionProxyDelegateTest, PartialRangeSavings) {
                       test.response_headers.size()),
         net::MockRead(net::ASYNC, response_body.data(), response_body.size()),
         net::MockRead(net::SYNCHRONOUS, net::ERR_ABORTED)};
-    net::StaticSocketDataProvider socket(reads, arraysize(reads), nullptr, 0);
+    net::StaticSocketDataProvider socket(reads, base::span<net::MockWrite>());
     mock_socket_factory()->AddSocketDataProvider(&socket);
 
     net::TestDelegate test_delegate;

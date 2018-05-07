@@ -687,7 +687,7 @@ void DataReductionProxyTestContext::
       net::MockRead(net::SYNCHRONOUS, net::OK),
   };
   net::StaticSocketDataProvider socket_data_provider(
-      mock_reads, arraysize(mock_reads), nullptr, 0);
+      mock_reads, base::span<net::MockWrite>());
   mock_socket_factory_->AddSocketDataProvider(&socket_data_provider);
 
   // Set the pref to cause the secure proxy check to be issued.

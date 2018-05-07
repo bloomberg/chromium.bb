@@ -418,7 +418,7 @@ TEST_F(SpdySessionTest, PendingStreamCancellingAnother) {
 
   MockRead reads[] = {MockRead(ASYNC, 0, 0), };
 
-  SequencedSocketData data(reads, arraysize(reads), nullptr, 0);
+  SequencedSocketData data(reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -467,7 +467,7 @@ TEST_F(SpdySessionTest, GoAwayWithNoActiveStreams) {
   MockRead reads[] = {
       CreateMockRead(goaway, 0),
   };
-  SequencedSocketData data(reads, arraysize(reads), nullptr, 0);
+  SequencedSocketData data(reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -492,7 +492,7 @@ TEST_F(SpdySessionTest, GoAwayImmediatelyWithNoActiveStreams) {
   MockRead reads[] = {
       CreateMockRead(goaway, 0, SYNCHRONOUS), MockRead(ASYNC, 0, 1)  // EOF
   };
-  SequencedSocketData data(reads, arraysize(reads), nullptr, 0);
+  SequencedSocketData data(reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -521,7 +521,7 @@ TEST_F(SpdySessionTest, GoAwayWithActiveStreams) {
   MockWrite writes[] = {
       CreateMockWrite(req1, 0), CreateMockWrite(req2, 1),
   };
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -590,7 +590,7 @@ TEST_F(SpdySessionTest, GoAwayWithActiveAndCreatedStream) {
   MockWrite writes[] = {
       CreateMockWrite(req1, 0),
   };
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -649,7 +649,7 @@ TEST_F(SpdySessionTest, GoAwayTwice) {
   MockWrite writes[] = {
       CreateMockWrite(req1, 0), CreateMockWrite(req2, 1),
   };
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -716,7 +716,7 @@ TEST_F(SpdySessionTest, GoAwayWithActiveStreamsThenClose) {
   MockWrite writes[] = {
       CreateMockWrite(req1, 0), CreateMockWrite(req2, 1),
   };
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -803,7 +803,7 @@ TEST_F(SpdySessionTest, GoAwayWhileDraining) {
       MockRead(ASYNC, 0, 3)  // EOF
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -843,7 +843,7 @@ TEST_F(SpdySessionTest, CreateStreamAfterGoAway) {
   MockWrite writes[] = {
       CreateMockWrite(req, 0),
   };
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -903,7 +903,7 @@ TEST_F(SpdySessionTest, HeadersAfterGoAway) {
   SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(2, ERROR_CODE_REFUSED_STREAM));
   MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(rst, 5)};
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -952,7 +952,7 @@ TEST_F(SpdySessionTest, NetworkChangeWithActiveStreams) {
   MockWrite writes[] = {
       CreateMockWrite(req1, 0),
   };
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -1014,7 +1014,7 @@ TEST_F(SpdySessionTest, ClientPing) {
   MockWrite writes[] = {
       CreateMockWrite(write_ping, 0),
   };
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -1069,8 +1069,7 @@ TEST_F(SpdySessionTest, ServerPing) {
   MockWrite writes[] = {
       CreateMockWrite(write_ping),
   };
-  StaticSocketDataProvider data(
-      reads, arraysize(reads), writes, arraysize(writes));
+  StaticSocketDataProvider data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -1114,7 +1113,7 @@ TEST_F(SpdySessionTest, PingAndWriteLoop) {
 
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -1178,7 +1177,7 @@ TEST_F(SpdySessionTest, StreamIdSpaceExhausted) {
       CreateMockRead(body2, 6),           MockRead(ASYNC, 0, 7)  // EOF
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -1301,7 +1300,7 @@ TEST_F(SpdySessionTest, MaxConcurrentStreamsZero) {
                         CreateMockWrite(settings_ack1, 4),
                         CreateMockWrite(req, 5)};
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -1366,7 +1365,7 @@ TEST_F(SpdySessionTest, UnstallRacesWithStreamCreation) {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
 
-  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -1438,7 +1437,7 @@ TEST_F(SpdySessionTest, CancelPushAfterSessionGoesAway) {
                       MockRead(ASYNC, ERR_IO_PENDING, 4),
                       MockRead(ASYNC, 0, 5)};
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -1504,7 +1503,7 @@ TEST_F(SpdySessionTest, CancelPushAfterExpired) {
                       MockRead(ASYNC, ERR_IO_PENDING, 4),
                       MockRead(ASYNC, 0, 6)};
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -1612,7 +1611,7 @@ TEST_F(SpdySessionTest, ClaimPushedStreamBeforeExpires) {
                       MockRead(ASYNC, ERR_IO_PENDING, 4),
                       MockRead(ASYNC, 0, 5)};
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -1733,7 +1732,7 @@ TEST_F(SpdySessionTest, CancelPushBeforeClaimed) {
                       MockRead(ASYNC, ERR_IO_PENDING, 4),
                       MockRead(ASYNC, 0, 6)};
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -1795,8 +1794,7 @@ TEST_F(SpdySessionTest, FailedPing) {
       0, ERROR_CODE_PROTOCOL_ERROR, "Failed ping."));
   MockWrite writes[] = {CreateMockWrite(write_ping), CreateMockWrite(goaway)};
 
-  StaticSocketDataProvider data(
-      reads, arraysize(reads), writes, arraysize(writes));
+  StaticSocketDataProvider data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -1856,7 +1854,7 @@ TEST_F(SpdySessionTest, WaitingForWrongPing) {
   SpdySerializedFrame write_ping0(spdy_util_.ConstructSpdyPing(1, false));
   MockWrite writes[] = {CreateMockWrite(write_ping0, 0)};
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   AddSSLSocketData();
 
@@ -1946,7 +1944,7 @@ TEST_F(SpdySessionTest, OnSettings) {
   SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
   MockWrite writes[] = {CreateMockWrite(settings_ack, 1)};
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -1994,7 +1992,7 @@ TEST_F(SpdySessionTest, CancelPendingCreateStream) {
     MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
 
-  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -2046,7 +2044,7 @@ TEST_F(SpdySessionTest, Initialize) {
     MockRead(ASYNC, 0, 0)  // EOF
   };
 
-  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -2085,7 +2083,7 @@ TEST_F(SpdySessionTest, NetLogOnSessionGoaway) {
       CreateMockRead(goaway), MockRead(SYNCHRONOUS, 0, 0)  // EOF
   };
 
-  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -2142,7 +2140,7 @@ TEST_F(SpdySessionTest, NetLogOnSessionEOF) {
       MockRead(SYNCHRONOUS, 0, 0)  // EOF
   };
 
-  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -2184,7 +2182,7 @@ TEST_F(SpdySessionTest, HeadersCompressionHistograms) {
   MockRead reads[] = {
       MockRead(ASYNC, ERR_IO_PENDING, 1), MockRead(ASYNC, 0, 2)  // EOF
   };
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -2243,7 +2241,7 @@ TEST_F(SpdySessionTest, OutOfOrderHeaders) {
 
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -2304,7 +2302,7 @@ TEST_F(SpdySessionTest, CancelStream) {
 
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -2365,7 +2363,7 @@ TEST_F(SpdySessionTest, CloseSessionWithTwoCreatedSelfClosingStreams) {
   MockRead reads[] = {
     MockRead(ASYNC, 0, 0)  // EOF
   };
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -2419,7 +2417,7 @@ TEST_F(SpdySessionTest, CloseSessionWithTwoCreatedSelfClosingStreams) {
 TEST_F(SpdySessionTest, CloseSessionWithTwoCreatedMutuallyClosingStreams) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  SequencedSocketData data(nullptr, 0, nullptr, 0);
+  SequencedSocketData data;
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -2485,7 +2483,7 @@ TEST_F(SpdySessionTest, CloseSessionWithTwoActivatedSelfClosingStreams) {
       MockRead(ASYNC, ERR_IO_PENDING, 2), MockRead(ASYNC, 0, 3)  // EOF
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -2556,7 +2554,7 @@ TEST_F(SpdySessionTest, CloseSessionWithTwoActivatedMutuallyClosingStreams) {
       MockRead(ASYNC, ERR_IO_PENDING, 2), MockRead(ASYNC, 0, 3)  // EOF
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -2652,7 +2650,7 @@ TEST_F(SpdySessionTest, CloseActivatedStreamThatClosesSession) {
   MockRead reads[] = {
       MockRead(ASYNC, 0, 2)  // EOF
   };
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -2694,7 +2692,7 @@ TEST_F(SpdySessionTest, CloseActivatedStreamThatClosesSession) {
 TEST_F(SpdySessionTest, VerifyDomainAuthentication) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  SequencedSocketData data(nullptr, 0, nullptr, 0);
+  SequencedSocketData data;
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -2711,7 +2709,7 @@ TEST_F(SpdySessionTest, VerifyDomainAuthentication) {
 TEST_F(SpdySessionTest, ConnectionPooledWithTlsChannelId) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  SequencedSocketData data(nullptr, 0, nullptr, 0);
+  SequencedSocketData data;
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   ssl_.ssl_info.channel_id_sent = true;
@@ -2771,7 +2769,7 @@ TEST_F(SpdySessionTest, CloseTwoStalledCreateStream) {
       MockRead(ASYNC, 0, 12)  // EOF
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -2880,7 +2878,7 @@ TEST_F(SpdySessionTest, CancelTwoStalledCreateStream) {
     MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
 
-  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -2993,7 +2991,7 @@ TEST_F(SpdySessionTest, ReadDataWithoutYielding) {
   };
 
   // Create SpdySession and SpdyStream and send the request.
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -3054,7 +3052,7 @@ TEST_F(SpdySessionTest, TestYieldingSlowReads) {
   };
 
   // Create SpdySession and SpdyStream and send the request.
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -3123,7 +3121,7 @@ TEST_F(SpdySessionTest, TestYieldingSlowSynchronousReads) {
   };
 
   // Create SpdySession and SpdyStream and send the request.
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -3200,7 +3198,7 @@ TEST_F(SpdySessionTest, TestYieldingDuringReadData) {
   };
 
   // Create SpdySession and SpdyStream and send the request.
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -3305,7 +3303,7 @@ TEST_F(SpdySessionTest, TestYieldingDuringAsyncReadData) {
   };
 
   // Create SpdySession and SpdyStream and send the request.
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -3368,7 +3366,7 @@ TEST_F(SpdySessionTest, GoAwayWhileInDoReadLoop) {
   };
 
   // Create SpdySession and SpdyStream and send the request.
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -3411,7 +3409,7 @@ TEST_F(SpdySessionTest, ProtocolNegotiation) {
   MockRead reads[] = {
     MockRead(SYNCHRONOUS, 0, 0)  // EOF
   };
-  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   CreateNetworkSession();
@@ -3433,7 +3431,7 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
   MockRead reads[] = {
     MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
-  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
@@ -3483,7 +3481,7 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   MockRead reads[] = {
     MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
-  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
@@ -3572,15 +3570,13 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
   MockWrite writes[] = {
       CreateMockWrite(req1, 1), CreateMockWrite(cancel1, 1),
   };
-  StaticSocketDataProvider data(reads, arraysize(reads),
-                                writes, arraysize(writes));
+  StaticSocketDataProvider data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   MockRead http_reads[] = {
     MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
-                                     0);
+  StaticSocketDataProvider http_data(http_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&http_data);
 
   AddSSLSocketData();
@@ -3717,7 +3713,7 @@ TEST_F(SpdySessionTest, CreateStreamOnStreamReset) {
       MockRead(ASYNC, ERR_IO_PENDING, 1), CreateMockRead(rst, 2),
       MockRead(ASYNC, ERR_IO_PENDING, 3), MockRead(ASYNC, 0, 4)  // EOF
   };
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -3781,7 +3777,7 @@ TEST_F(SpdySessionTest, UpdateStreamsSendWindowSize) {
 
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -3836,7 +3832,7 @@ TEST_F(SpdySessionTest, AdjustRecvWindowSize) {
   MockWrite writes[] = {
       CreateMockWrite(window_update, 0),
   };
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -3883,7 +3879,7 @@ TEST_F(SpdySessionTest, AdjustSendWindowSize) {
   MockRead reads[] = {
     MockRead(SYNCHRONOUS, 0, 0)  // EOF
   };
-  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   CreateNetworkSession();
@@ -3913,7 +3909,7 @@ TEST_F(SpdySessionTest, SessionFlowControlInactiveStream) {
       CreateMockRead(resp, 0), MockRead(ASYNC, ERR_IO_PENDING, 1),
       MockRead(ASYNC, 0, 2)  // EOF
   };
-  SequencedSocketData data(reads, arraysize(reads), nullptr, 0);
+  SequencedSocketData data(reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -3947,7 +3943,7 @@ TEST_F(SpdySessionTest, SessionFlowControlPadding) {
       CreateMockRead(resp, 0), MockRead(ASYNC, ERR_IO_PENDING, 1),
       MockRead(ASYNC, 0, 2)  // EOF
   };
-  SequencedSocketData data(reads, arraysize(reads), nullptr, 0);
+  SequencedSocketData data(reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -3991,7 +3987,7 @@ TEST_F(SpdySessionTest, StreamFlowControlTooMuchData) {
       MockRead(ASYNC, 0, 6),
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -4066,7 +4062,7 @@ TEST_F(SpdySessionTest, SessionFlowControlTooMuchDataTwoDataFrames) {
       CreateMockRead(first, 0), MockRead(ASYNC, ERR_IO_PENDING, 1),
       CreateMockRead(second, 2), MockRead(ASYNC, 0, 3),
   };
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -4127,7 +4123,7 @@ TEST_F(SpdySessionTest, StreamFlowControlTooMuchDataTwoDataFrames) {
       MockRead(ASYNC, 0, 8),
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -4216,7 +4212,7 @@ TEST_F(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
   };
 
   // Create SpdySession and SpdyStream and send the request.
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.host_resolver->set_synchronous_mode(true);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
@@ -4281,7 +4277,7 @@ TEST_F(SpdySessionTest, SessionFlowControlNoSendLeaks) {
   };
 
   // Create SpdySession and SpdyStream and send the request.
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.host_resolver->set_synchronous_mode(true);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
@@ -4363,7 +4359,7 @@ TEST_F(SpdySessionTest, SessionFlowControlEndToEnd) {
   };
 
   // Create SpdySession and SpdyStream and send the request.
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.host_resolver->set_synchronous_mode(true);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
@@ -4458,7 +4454,7 @@ void SpdySessionTest::RunResumeAfterUnstallTest(
       CreateMockRead(resp, 2), MockRead(ASYNC, 0, 3)  // EOF
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -4584,7 +4580,7 @@ TEST_F(SpdySessionTest, ResumeByPriorityAfterSendWindowSizeIncrease) {
       MockRead(ASYNC, 0, 6)  // EOF
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -4688,7 +4684,7 @@ TEST_F(SpdySessionTest, ResumeSessionWithStalledStream) {
   MockRead reads[] = {CreateMockRead(resp1, 4), CreateMockRead(resp2, 5),
                       MockRead(ASYNC, 0, 6)};
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -4831,7 +4827,7 @@ TEST_F(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
       MockRead(ASYNC, 0, 6)  // EOF
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -4965,7 +4961,7 @@ TEST_F(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
       MockRead(ASYNC, ERR_IO_PENDING, 2), MockRead(ASYNC, 0, 3)  // EOF
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -5057,7 +5053,7 @@ TEST_F(SpdySessionTest, GoAwayOnSessionFlowControlError) {
       CreateMockRead(body, 3),
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -5116,7 +5112,7 @@ TEST_F(SpdySessionTest, PushedStreamShouldNotCountToClientConcurrencyLimit) {
       CreateMockWrite(priority, 5),
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -5201,7 +5197,7 @@ TEST_F(SpdySessionTest, RejectPushedStreamExceedingConcurrencyLimit) {
       CreateMockWrite(priority_b, 6), CreateMockWrite(rst_b, 7),
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -5291,7 +5287,7 @@ TEST_F(SpdySessionTest, TrustedSpdyProxy) {
       CreateMockWrite(rst_https, 6),
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -5369,7 +5365,7 @@ TEST_F(SpdySessionTest, TrustedSpdyProxyNotSet) {
       CreateMockWrite(req, 0), CreateMockWrite(rst, 3),
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -5438,7 +5434,7 @@ TEST_F(SpdySessionTest, IgnoreReservedRemoteStreamsCount) {
       CreateMockWrite(priority_b, 6), CreateMockWrite(rst_b, 9),
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -5527,7 +5523,7 @@ TEST_F(SpdySessionTest, CancelReservedStreamOnHeadersReceived) {
       CreateMockWrite(rst, 6),
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -5630,7 +5626,7 @@ TEST_F(SpdySessionTest, GetPushedStream) {
   MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(priority, 3),
                         CreateMockWrite(rst, 6)};
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -5737,7 +5733,7 @@ TEST_F(SpdySessionTest, RejectInvalidUnknownFrames) {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
 
-  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -5769,7 +5765,7 @@ TEST_F(SpdySessionTest, EnableWebsocket) {
   SpdySerializedFrame ack(spdy_util_.ConstructSpdySettingsAck());
   MockWrite writes[] = {CreateMockWrite(ack, 1)};
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -5804,7 +5800,7 @@ TEST_F(SpdySessionTest, DisableWebsocketDoesNothing) {
   SpdySerializedFrame ack(spdy_util_.ConstructSpdySettingsAck());
   MockWrite writes[] = {CreateMockWrite(ack, 1)};
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -5849,7 +5845,7 @@ TEST_F(SpdySessionTest, EnableWebsocketThenDisableIsProtocolError) {
   MockWrite writes[] = {CreateMockWrite(ack1, 1), CreateMockWrite(ack2, 4),
                         CreateMockWrite(goaway, 5)};
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -5922,7 +5918,7 @@ TEST_P(SpdySessionReadIfReadyTest, ReadIfReady) {
 
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -5964,8 +5960,7 @@ class SendInitialSettingsOnNewSpdySessionTest : public SpdySessionTest {
         CombineFrames({&preface, &settings_frame});
     MockWrite writes[] = {CreateMockWrite(combined_frame, 0)};
 
-    StaticSocketDataProvider data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
+    StaticSocketDataProvider data(reads, writes);
     session_deps_.socket_factory->AddSocketDataProvider(&data);
     AddSSLSocketData();
 
@@ -6053,8 +6048,8 @@ class AltSvcFrameTest : public SpdySessionTest {
     reads_.push_back(CreateMockRead(altsvc_frame_, 0));
     reads_.push_back(MockRead(ASYNC, 0, 1));
 
-    data_ = std::make_unique<SequencedSocketData>(reads_.data(), reads_.size(),
-                                                  nullptr, 0);
+    data_ =
+        std::make_unique<SequencedSocketData>(reads_, base::span<MockWrite>());
     session_deps_.socket_factory->AddSocketDataProvider(data_.get());
   }
 
@@ -6220,7 +6215,7 @@ TEST_F(AltSvcFrameTest, ProcessAltSvcFrameOnActiveStream) {
   MockWrite writes[] = {
       CreateMockWrite(req, 0),
   };
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();
@@ -6274,7 +6269,7 @@ TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameOnStreamWithInsecureOrigin) {
   MockWrite writes[] = {
       CreateMockWrite(req, 0),
   };
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   AddSSLSocketData();

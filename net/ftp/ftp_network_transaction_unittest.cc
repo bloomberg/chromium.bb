@@ -815,8 +815,8 @@ class FtpNetworkTransactionTest
     };
 
     std::unique_ptr<StaticSocketDataProvider> data_socket =
-        std::make_unique<StaticSocketDataProvider>(
-            data_reads, arraysize(data_reads), nullptr, 0);
+        std::make_unique<StaticSocketDataProvider>(data_reads,
+                                                   base::span<MockWrite>());
     mock_socket_factory_->AddSocketDataProvider(data_socket.get());
     FtpRequestInfo request_info = GetRequestInfo(request);
     EXPECT_EQ(LOAD_STATE_IDLE, transaction_->GetLoadState());
@@ -1136,8 +1136,7 @@ TEST_P(FtpNetworkTransactionTest, DownloadTransactionEvilPasvUnsafeHost) {
     MockRead(mock_data.c_str()),
   };
   StaticSocketDataProvider data_socket1;
-  StaticSocketDataProvider data_socket2(data_reads, arraysize(data_reads),
-                                        nullptr, 0);
+  StaticSocketDataProvider data_socket2(data_reads, base::span<MockWrite>());
   mock_socket_factory_->AddSocketDataProvider(&ctrl_socket);
   mock_socket_factory_->AddSocketDataProvider(&data_socket1);
   mock_socket_factory_->AddSocketDataProvider(&data_socket2);
@@ -1354,8 +1353,7 @@ TEST_P(FtpNetworkTransactionTest, EvilRestartUser) {
   MockWrite ctrl_writes[] = {
     MockWrite("QUIT\r\n"),
   };
-  StaticSocketDataProvider ctrl_socket2(ctrl_reads, arraysize(ctrl_reads),
-                                        ctrl_writes, arraysize(ctrl_writes));
+  StaticSocketDataProvider ctrl_socket2(ctrl_reads, ctrl_writes);
   mock_socket_factory_->AddSocketDataProvider(&ctrl_socket2);
   ASSERT_EQ(ERR_IO_PENDING,
             transaction_->RestartWithAuth(
@@ -1390,8 +1388,7 @@ TEST_P(FtpNetworkTransactionTest, EvilRestartPassword) {
     MockWrite("USER innocent\r\n"),
     MockWrite("QUIT\r\n"),
   };
-  StaticSocketDataProvider ctrl_socket2(ctrl_reads, arraysize(ctrl_reads),
-                                        ctrl_writes, arraysize(ctrl_writes));
+  StaticSocketDataProvider ctrl_socket2(ctrl_reads, ctrl_writes);
   mock_socket_factory_->AddSocketDataProvider(&ctrl_socket2);
   ASSERT_EQ(ERR_IO_PENDING,
             transaction_->RestartWithAuth(

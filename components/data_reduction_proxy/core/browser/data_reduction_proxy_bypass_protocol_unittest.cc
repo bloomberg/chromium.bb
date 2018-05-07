@@ -346,11 +346,8 @@ class DataReductionProxyProtocolTest : public testing::Test {
         MockRead(net::SYNCHRONOUS, net_error_code),
     };
 
-    StaticSocketDataProvider data1(data_reads, arraysize(data_reads),
-                                  data_writes, arraysize(data_writes));
-    StaticSocketDataProvider data1_error(data_reads_error,
-                                         arraysize(data_reads_error),
-                                         data_writes, arraysize(data_writes));
+    StaticSocketDataProvider data1(data_reads, data_writes);
+    StaticSocketDataProvider data1_error(data_reads_error, data_writes);
     if (!generate_response_error)
       mock_socket_factory_.AddSocketDataProvider(&data1);
     else
@@ -403,8 +400,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
       MockRead(net::SYNCHRONOUS, net::OK),
     };
 
-    StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                   data_writes2, arraysize(data_writes2));
+    StaticSocketDataProvider data2(data_reads2, data_writes2);
     if (expected_retry) {
       mock_socket_factory_.AddSocketDataProvider(&data2);
     }
@@ -1075,8 +1071,7 @@ TEST_F(DataReductionProxyProtocolTest,
               "User-Agent:\r\n"
               "Accept-Encoding: gzip, deflate\r\n\r\n"),
   };
-  StaticSocketDataProvider data1(data_reads, arraysize(data_reads),
-                                 data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data1(data_reads, data_writes);
   mock_socket_factory_.AddSocketDataProvider(&data1);
 
   TestDelegate d;

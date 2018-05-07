@@ -173,8 +173,7 @@ TEST_P(SocketDataPumpTest, ReadAndWriteMultiple) {
           net::MockWrite(mode, &kTestMsg[i], 1, sequence_number++));
     }
   }
-  net::StaticSocketDataProvider data_provider(reads.data(), reads.size(),
-                                              writes.data(), writes.size());
+  net::StaticSocketDataProvider data_provider(reads, writes);
   Init(&data_provider);
   // Loop kNumIterations times to test that writes can follow reads, and reads
   // can follow writes.
@@ -215,8 +214,7 @@ TEST_P(SocketDataPumpTest, PartialStreamSocketWrite) {
           net::MockWrite(mode, &kTestMsg[i], 1, sequence_number++));
     }
   }
-  net::StaticSocketDataProvider data_provider(reads.data(), reads.size(),
-                                              writes.data(), writes.size());
+  net::StaticSocketDataProvider data_provider(reads, writes);
   Init(&data_provider);
   // Loop kNumIterations times to test that writes can follow reads, and reads
   // can follow writes.
@@ -252,8 +250,7 @@ TEST_P(SocketDataPumpTest, ReadError) {
   const char kTestMsg[] = "hello!";
   net::MockWrite writes[] = {
       net::MockWrite(mode, kTestMsg, strlen(kTestMsg), 0)};
-  net::StaticSocketDataProvider data_provider(reads, arraysize(reads), writes,
-                                              arraysize(writes));
+  net::StaticSocketDataProvider data_provider(reads, writes);
   Init(&data_provider);
   EXPECT_EQ("", Read(&receive_handle_, 1));
   EXPECT_EQ(net::ERR_FAILED, observer()->WaitForReadError());
@@ -274,8 +271,7 @@ TEST_P(SocketDataPumpTest, WriteError) {
   net::MockRead reads[] = {net::MockRead(mode, kTestMsg, strlen(kTestMsg), 0),
                            net::MockRead(mode, net::OK)};
   net::MockWrite writes[] = {net::MockWrite(mode, net::ERR_FAILED)};
-  net::StaticSocketDataProvider data_provider(reads, arraysize(reads), writes,
-                                              arraysize(writes));
+  net::StaticSocketDataProvider data_provider(reads, writes);
   Init(&data_provider);
   uint32_t num_bytes = strlen(kTestMsg);
   EXPECT_EQ(MOJO_RESULT_OK, send_handle_->WriteData(&kTestMsg, &num_bytes,

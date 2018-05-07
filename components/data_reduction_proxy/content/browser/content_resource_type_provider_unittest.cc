@@ -193,7 +193,7 @@ TEST_F(ContentResourceProviderTest, VerifyCorrectProxyUsed) {
         net::MockRead(kBody.c_str()), net::MockRead(net::SYNCHRONOUS, net::OK),
     };
     net::StaticSocketDataProvider socket_data_provider(
-        mock_reads, arraysize(mock_reads), nullptr, 0);
+        mock_reads, base::span<net::MockWrite>());
     mock_socket_factory()->AddSocketDataProvider(&socket_data_provider);
 
     base::HistogramTester histogram_tester;
@@ -270,7 +270,7 @@ TEST_F(ContentResourceProviderTest, SetAndGetContentResourceTypeContent) {
         net::MockRead(kBody.c_str()), net::MockRead(net::SYNCHRONOUS, net::OK),
     };
     net::StaticSocketDataProvider socket_data_provider(
-        mock_reads, arraysize(mock_reads), nullptr, 0);
+        mock_reads, base::span<net::MockWrite>());
     mock_socket_factory()->AddSocketDataProvider(&socket_data_provider);
 
     base::HistogramTester histogram_tester;
@@ -352,7 +352,7 @@ TEST_F(ContentResourceProviderTest, FetchDirect) {
         net::MockRead(kBody.c_str()), net::MockRead(net::SYNCHRONOUS, net::OK),
     };
     net::StaticSocketDataProvider socket_data_provider(
-        mock_reads, arraysize(mock_reads), nullptr, 0);
+        mock_reads, base::span<net::MockWrite>());
     mock_socket_factory()->AddSocketDataProvider(&socket_data_provider);
 
     base::HistogramTester histogram_tester;

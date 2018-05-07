@@ -1282,8 +1282,7 @@ TEST_P(QuicStreamFactoryTest, PoolingWithServerMigration) {
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, settings_packet->data(),
                                   settings_packet->length(), 1)};
 
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
+  SequencedSocketData socket_data(reads, writes);
   socket_factory_->AddSocketDataProvider(&socket_data);
 
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -3583,9 +3582,11 @@ TEST_P(QuicStreamFactoryTest,
   // Add new sockets to use post migration.
   MockConnect connect_result =
       MockConnect(SYNCHRONOUS, ERR_INTERNET_DISCONNECTED);
-  SequencedSocketData socket_data3(connect_result, nullptr, 0, nullptr, 0);
+  SequencedSocketData socket_data3(connect_result, base::span<MockRead>(),
+                                   base::span<MockWrite>());
   socket_factory_->AddSocketDataProvider(&socket_data3);
-  SequencedSocketData socket_data4(connect_result, nullptr, 0, nullptr, 0);
+  SequencedSocketData socket_data4(connect_result, base::span<MockRead>(),
+                                   base::span<MockWrite>());
   socket_factory_->AddSocketDataProvider(&socket_data4);
 
   // Add a new network and cause migration to bad sockets, causing sessions to
@@ -5022,7 +5023,8 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyToBadSocket) {
   // immediately fail.
   MockConnect connect_result =
       MockConnect(SYNCHRONOUS, ERR_INTERNET_DISCONNECTED);
-  SequencedSocketData socket_data1(connect_result, nullptr, 0, nullptr, 0);
+  SequencedSocketData socket_data1(connect_result, base::span<MockRead>(),
+                                   base::span<MockWrite>());
   socket_factory_->AddSocketDataProvider(&socket_data1);
 
   // Trigger early connection migration.
@@ -5909,7 +5911,8 @@ class QuicStreamFactoryWithDestinationTest
 
   void AddHangingSocketData() {
     std::unique_ptr<SequencedSocketData> sequenced_socket_data(
-        new SequencedSocketData(&hanging_read_, 1, nullptr, 0));
+        new SequencedSocketData(base::make_span(&hanging_read_, 1),
+                                base::span<MockWrite>()));
     socket_factory_->AddSocketDataProvider(sequenced_socket_data.get());
     sequenced_socket_data_vector_.push_back(std::move(sequenced_socket_data));
   }
@@ -6005,7 +6008,7 @@ TEST_P(QuicStreamFactoryWithDestinationTest, SharedCertificate) {
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, settings_packet->data(),
                                   settings_packet->length(), 1)};
   std::unique_ptr<SequencedSocketData> sequenced_socket_data(
-      new SequencedSocketData(reads, 1, writes, arraysize(writes)));
+      new SequencedSocketData(reads, writes));
   socket_factory_->AddSocketDataProvider(sequenced_socket_data.get());
   sequenced_socket_data_vector_.push_back(std::move(sequenced_socket_data));
 
@@ -6075,11 +6078,11 @@ TEST_P(QuicStreamFactoryWithDestinationTest, DifferentPrivacyMode) {
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, settings_packet->data(),
                                   settings_packet->length(), 1)};
   std::unique_ptr<SequencedSocketData> sequenced_socket_data(
-      new SequencedSocketData(reads, 1, writes, arraysize(writes)));
+      new SequencedSocketData(reads, writes));
   socket_factory_->AddSocketDataProvider(sequenced_socket_data.get());
   sequenced_socket_data_vector_.push_back(std::move(sequenced_socket_data));
   std::unique_ptr<SequencedSocketData> sequenced_socket_data1(
-      new SequencedSocketData(reads, 1, writes, arraysize(writes)));
+      new SequencedSocketData(reads, writes));
   socket_factory_->AddSocketDataProvider(sequenced_socket_data1.get());
   sequenced_socket_data_vector_.push_back(std::move(sequenced_socket_data1));
 
@@ -6160,11 +6163,11 @@ TEST_P(QuicStreamFactoryWithDestinationTest, DisjointCertificate) {
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, settings_packet->data(),
                                   settings_packet->length(), 1)};
   std::unique_ptr<SequencedSocketData> sequenced_socket_data(
-      new SequencedSocketData(reads, 1, writes, arraysize(writes)));
+      new SequencedSocketData(reads, writes));
   socket_factory_->AddSocketDataProvider(sequenced_socket_data.get());
   sequenced_socket_data_vector_.push_back(std::move(sequenced_socket_data));
   std::unique_ptr<SequencedSocketData> sequenced_socket_data1(
-      new SequencedSocketData(reads, 1, writes, arraysize(writes)));
+      new SequencedSocketData(reads, writes));
   socket_factory_->AddSocketDataProvider(sequenced_socket_data1.get());
   sequenced_socket_data_vector_.push_back(std::move(sequenced_socket_data1));
 

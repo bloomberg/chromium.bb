@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/test_completion_callback.h"
@@ -93,7 +94,8 @@ class QuicChromiumClientSessionTest
                        TlsClientHandshaker::CreateSslCtx()),
         default_read_(new MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)),
         socket_data_(
-            new SequencedSocketData(default_read_.get(), 1, nullptr, 0)),
+            new SequencedSocketData(base::make_span(default_read_.get(), 1),
+                                    base::span<MockWrite>())),
         random_(0),
         helper_(&clock_, &random_),
         session_key_(kServerHostname,
@@ -234,8 +236,7 @@ TEST_P(QuicChromiumClientSessionTest, IsFatalErrorNotSetForNonFatalError) {
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
-  socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
-                                             arraysize(writes)));
+  socket_data_.reset(new SequencedSocketData(reads, writes));
   Initialize();
 
   SSLInfo ssl_info;
@@ -258,8 +259,7 @@ TEST_P(QuicChromiumClientSessionTest, IsFatalErrorSetForFatalError) {
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
-  socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
-                                             arraysize(writes)));
+  socket_data_.reset(new SequencedSocketData(reads, writes));
   Initialize();
 
   SSLInfo ssl_info;
@@ -281,8 +281,7 @@ TEST_P(QuicChromiumClientSessionTest, CryptoConnect) {
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
-  socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
-                                             arraysize(writes)));
+  socket_data_.reset(new SequencedSocketData(reads, writes));
   Initialize();
   CompleteCryptoHandshake();
 }
@@ -730,8 +729,7 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1),
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 2)};
-  socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
-                                             arraysize(writes)));
+  socket_data_.reset(new SequencedSocketData(reads, writes));
 
   Initialize();
   CompleteCryptoHandshake();
@@ -774,8 +772,7 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutNoResponse) {
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1),
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 2)};
-  socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
-                                             arraysize(writes)));
+  socket_data_.reset(new SequencedSocketData(reads, writes));
   Initialize();
 
   ProofVerifyDetailsChromium details;
@@ -824,8 +821,7 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutWithResponse) {
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1),
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 2)};
-  socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
-                                             arraysize(writes)));
+  socket_data_.reset(new SequencedSocketData(reads, writes));
   Initialize();
 
   ProofVerifyDetailsChromium details;
@@ -879,8 +875,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushWhenPendingValidation) {
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1),
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 2)};
-  socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
-                                             arraysize(writes)));
+  socket_data_.reset(new SequencedSocketData(reads, writes));
   Initialize();
 
   ProofVerifyDetailsChromium details;
@@ -934,8 +929,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushBeforeReceivingResponse) {
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1),
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 2)};
-  socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
-                                             arraysize(writes)));
+  socket_data_.reset(new SequencedSocketData(reads, writes));
   Initialize();
 
   ProofVerifyDetailsChromium details;
@@ -985,8 +979,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushAfterReceivingResponse) {
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1),
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 2)};
-  socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
-                                             arraysize(writes)));
+  socket_data_.reset(new SequencedSocketData(reads, writes));
   Initialize();
 
   ProofVerifyDetailsChromium details;
@@ -1042,8 +1035,7 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1),
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 2)};
-  socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
-                                             arraysize(writes)));
+  socket_data_.reset(new SequencedSocketData(reads, writes));
 
   Initialize();
   CompleteCryptoHandshake();
@@ -1083,8 +1075,7 @@ TEST_P(QuicChromiumClientSessionTest, GoAwayReceived) {
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
-  socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
-                                             arraysize(writes)));
+  socket_data_.reset(new SequencedSocketData(reads, writes));
   Initialize();
   CompleteCryptoHandshake();
 
@@ -1102,8 +1093,7 @@ TEST_P(QuicChromiumClientSessionTest, CanPool) {
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
-  socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
-                                             arraysize(writes)));
+  socket_data_.reset(new SequencedSocketData(reads, writes));
   Initialize();
   // Load a cert that is valid for:
   //   www.example.org
@@ -1144,8 +1134,7 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithTlsChannelId) {
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
-  socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
-                                             arraysize(writes)));
+  socket_data_.reset(new SequencedSocketData(reads, writes));
   Initialize();
   // Load a cert that is valid for:
   //   www.example.org
@@ -1178,8 +1167,7 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionNotPooledWithDifferentPin) {
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
-  socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
-                                             arraysize(writes)));
+  socket_data_.reset(new SequencedSocketData(reads, writes));
   Initialize();
 
   uint8_t primary_pin = 1;
@@ -1212,8 +1200,7 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithMatchingPin) {
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
-  socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
-                                             arraysize(writes)));
+  socket_data_.reset(new SequencedSocketData(reads, writes));
   Initialize();
 
   uint8_t primary_pin = 1;
@@ -1245,8 +1232,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite old_writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
-  socket_data_.reset(new SequencedSocketData(
-      old_reads, arraysize(old_reads), old_writes, arraysize(old_writes)));
+  socket_data_.reset(new SequencedSocketData(old_reads, old_writes));
   Initialize();
   CompleteCryptoHandshake();
 
@@ -1265,8 +1251,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
       MockWrite(SYNCHRONOUS, client_ping->data(), client_ping->length(), 2),
       MockWrite(SYNCHRONOUS, ack_and_data_out->data(),
                 ack_and_data_out->length(), 3)};
-  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
-                                       arraysize(writes));
+  StaticSocketDataProvider socket_data(reads, writes);
   socket_factory_.AddSocketDataProvider(&socket_data);
   // Create connected socket.
   std::unique_ptr<DatagramClientSocket> new_socket =
@@ -1311,8 +1296,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketMaxReaders) {
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
   MockWrite old_writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
-  socket_data_.reset(new SequencedSocketData(
-      old_reads, arraysize(old_reads), old_writes, arraysize(old_writes)));
+  socket_data_.reset(new SequencedSocketData(old_reads, old_writes));
   Initialize();
   CompleteCryptoHandshake();
 
@@ -1322,8 +1306,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketMaxReaders) {
         client_maker_.MakePingPacket(i + 2, /*include_version=*/true));
     MockWrite writes[] = {
         MockWrite(SYNCHRONOUS, ping_out->data(), ping_out->length(), i + 2)};
-    StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
-                                         arraysize(writes));
+    StaticSocketDataProvider socket_data(reads, writes);
     socket_factory_.AddSocketDataProvider(&socket_data);
 
     // Create connected socket.
@@ -1372,8 +1355,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
   MockRead old_reads[] = {
       MockRead(ASYNC, ERR_IO_PENDING, 1),  // causes reading to pause.
       MockRead(ASYNC, ERR_NETWORK_CHANGED, 2)};
-  socket_data_.reset(new SequencedSocketData(
-      old_reads, arraysize(old_reads), old_writes, arraysize(old_writes)));
+  socket_data_.reset(new SequencedSocketData(old_reads, old_writes));
   Initialize();
   CompleteCryptoHandshake();
   MockWrite writes[] = {
@@ -1384,8 +1366,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
       MockRead(ASYNC, server_ping->data(), server_ping->length(), 3),
       MockRead(ASYNC, ERR_IO_PENDING, 4),  // pause reading
       MockRead(ASYNC, ERR_NETWORK_CHANGED, 5)};
-  SequencedSocketData new_socket_data(new_reads, arraysize(new_reads), writes,
-                                      arraysize(writes));
+  SequencedSocketData new_socket_data(new_reads, writes);
   socket_factory_.AddSocketDataProvider(&new_socket_data);
 
   // Create connected socket.

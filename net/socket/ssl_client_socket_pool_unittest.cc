@@ -605,8 +605,7 @@ TEST_F(SSLClientSocketPoolTest, HttpProxyBasic) {
   MockRead reads[] = {
       MockRead(SYNCHRONOUS, "HTTP/1.1 200 Connection Established\r\n\r\n"),
   };
-  StaticSocketDataProvider data(reads, arraysize(reads), writes,
-                                arraysize(writes));
+  StaticSocketDataProvider data(reads, writes);
   data.set_connect_data(MockConnect(SYNCHRONOUS, OK));
   socket_factory_.AddSocketDataProvider(&data);
   AddAuthToCache();
@@ -640,8 +639,7 @@ TEST_F(SSLClientSocketPoolTest, SetTransportPriorityOnInitHTTP) {
   MockRead reads[] = {
       MockRead(SYNCHRONOUS, "HTTP/1.1 200 Connection Established\r\n\r\n"),
   };
-  StaticSocketDataProvider data(reads, arraysize(reads), writes,
-                                arraysize(writes));
+  StaticSocketDataProvider data(reads, writes);
   data.set_connect_data(MockConnect(SYNCHRONOUS, OK));
   socket_factory_.AddSocketDataProvider(&data);
   AddAuthToCache();
@@ -671,8 +669,7 @@ TEST_F(SSLClientSocketPoolTest, HttpProxyBasicAsync) {
   MockRead reads[] = {
       MockRead("HTTP/1.1 200 Connection Established\r\n\r\n"),
   };
-  StaticSocketDataProvider data(reads, arraysize(reads), writes,
-                                arraysize(writes));
+  StaticSocketDataProvider data(reads, writes);
   socket_factory_.AddSocketDataProvider(&data);
   AddAuthToCache();
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -709,8 +706,7 @@ TEST_F(SSLClientSocketPoolTest, NeedProxyAuth) {
       MockRead("Content-Length: 10\r\n\r\n"),
       MockRead("0123456789"),
   };
-  StaticSocketDataProvider data(reads, arraysize(reads), writes,
-                                arraysize(writes));
+  StaticSocketDataProvider data(reads, writes);
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl(ASYNC, OK);
   socket_factory_.AddSSLSocketDataProvider(&ssl);
@@ -773,7 +769,7 @@ TEST_F(SSLClientSocketPoolTest, IPPooling) {
   MockRead reads[] = {
       MockRead(ASYNC, ERR_IO_PENDING),
   };
-  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl(ASYNC, OK);
   ssl.ssl_info.cert = X509Certificate::CreateFromBytes(
@@ -833,7 +829,7 @@ void SSLClientSocketPoolTest::TestIPPoolingDisabled(
   MockRead reads[] = {
       MockRead(ASYNC, ERR_IO_PENDING),
   };
-  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   socket_factory_.AddSocketDataProvider(&data);
   socket_factory_.AddSSLSocketDataProvider(ssl);
 

@@ -207,9 +207,7 @@ net::StreamSocket* GCMConnectionHandlerImplTest::BuildSocket(
   mock_reads_ = read_list;
   mock_writes_ = write_list;
   data_provider_.reset(
-      new net::StaticSocketDataProvider(
-          &(mock_reads_[0]), mock_reads_.size(),
-          &(mock_writes_[0]), mock_writes_.size()));
+      new net::StaticSocketDataProvider(mock_reads_, mock_writes_));
   socket_factory_.AddSocketDataProvider(data_provider_.get());
 
   socket_ = socket_factory_.CreateTransportClientSocket(

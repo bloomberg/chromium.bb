@@ -104,7 +104,7 @@ TEST(HttpStreamParser, DataReadErrorSynchronous) {
       MockWrite(SYNCHRONOUS, 1, "Content-Length: 12\r\n\r\n"),
   };
 
-  SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
+  SequencedSocketData data(base::span<MockRead>(), writes);
   std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
@@ -148,7 +148,7 @@ TEST(HttpStreamParser, DataReadErrorSynchronous) {
   EXPECT_EQ(0u, progress.size());
   EXPECT_EQ(0u, progress.position());
 
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+  EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
 }
 
 TEST(HttpStreamParser, DataReadErrorAsynchronous) {
@@ -157,7 +157,7 @@ TEST(HttpStreamParser, DataReadErrorAsynchronous) {
       MockWrite(ASYNC, 1, "Content-Length: 12\r\n\r\n"),
   };
 
-  SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
+  SequencedSocketData data(base::span<MockRead>(), writes);
   std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
@@ -192,7 +192,7 @@ TEST(HttpStreamParser, DataReadErrorAsynchronous) {
 
   EXPECT_THAT(callback.GetResult(result), IsError(ERR_FAILED));
 
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+  EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
 }
 
 class InitAsyncUploadDataStream : public ChunkedUploadDataStream {
@@ -245,7 +245,7 @@ TEST(HttpStreamParser, InitAsynchronousUploadDataStream) {
       MockWrite(ASYNC, 2, "7\r\nChunk 1\r\n"),
   };
 
-  SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
+  SequencedSocketData data(base::span<MockRead>(), writes);
   std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
@@ -427,7 +427,7 @@ TEST(HttpStreamParser, SentBytesNoHeaders) {
       MockWrite(SYNCHRONOUS, 0, "GET / HTTP/1.1\r\n\r\n"),
   };
 
-  SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
+  SequencedSocketData data(base::span<MockRead>(), writes);
   std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
@@ -445,7 +445,7 @@ TEST(HttpStreamParser, SentBytesNoHeaders) {
                                    TRAFFIC_ANNOTATION_FOR_TESTS, &response,
                                    callback.callback()));
 
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+  EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
 }
 
 TEST(HttpStreamParser, SentBytesWithHeaders) {
@@ -456,7 +456,7 @@ TEST(HttpStreamParser, SentBytesWithHeaders) {
                 "Connection: Keep-Alive\r\n\r\n"),
   };
 
-  SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
+  SequencedSocketData data(base::span<MockRead>(), writes);
   std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
@@ -478,7 +478,7 @@ TEST(HttpStreamParser, SentBytesWithHeaders) {
                                    TRAFFIC_ANNOTATION_FOR_TESTS, &response,
                                    callback.callback()));
 
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+  EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
 }
 
 TEST(HttpStreamParser, SentBytesWithHeadersMultiWrite) {
@@ -488,7 +488,7 @@ TEST(HttpStreamParser, SentBytesWithHeadersMultiWrite) {
       MockWrite(SYNCHRONOUS, 2, "Connection: Keep-Alive\r\n\r\n"),
   };
 
-  SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
+  SequencedSocketData data(base::span<MockRead>(), writes);
   std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
@@ -511,7 +511,7 @@ TEST(HttpStreamParser, SentBytesWithHeadersMultiWrite) {
                                    TRAFFIC_ANNOTATION_FOR_TESTS, &response,
                                    callback.callback()));
 
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+  EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
 }
 
 TEST(HttpStreamParser, SentBytesWithErrorWritingHeaders) {
@@ -521,7 +521,7 @@ TEST(HttpStreamParser, SentBytesWithErrorWritingHeaders) {
       MockWrite(SYNCHRONOUS, ERR_CONNECTION_RESET, 2),
   };
 
-  SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
+  SequencedSocketData data(base::span<MockRead>(), writes);
   std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
@@ -544,7 +544,7 @@ TEST(HttpStreamParser, SentBytesWithErrorWritingHeaders) {
                                TRAFFIC_ANNOTATION_FOR_TESTS, &response,
                                callback.callback()));
 
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+  EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
 }
 
 TEST(HttpStreamParser, SentBytesPost) {
@@ -554,7 +554,7 @@ TEST(HttpStreamParser, SentBytesPost) {
       MockWrite(SYNCHRONOUS, 2, "hello world!"),
   };
 
-  SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
+  SequencedSocketData data(base::span<MockRead>(), writes);
   std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
@@ -584,7 +584,7 @@ TEST(HttpStreamParser, SentBytesPost) {
                                    TRAFFIC_ANNOTATION_FOR_TESTS, &response,
                                    callback.callback()));
 
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+  EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
 
   UploadProgress progress = upload_data_stream.GetUploadProgress();
   EXPECT_EQ(12u, progress.size());
@@ -601,7 +601,7 @@ TEST(HttpStreamParser, SentBytesChunkedPostError) {
       MockWrite(SYNCHRONOUS, ERR_FAILED, 3),
   };
 
-  SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
+  SequencedSocketData data(base::span<MockRead>(), writes);
   std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
@@ -636,7 +636,7 @@ TEST(HttpStreamParser, SentBytesChunkedPostError) {
   upload_data_stream.AppendData(kChunk, arraysize(kChunk) - 1, false);
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_FAILED));
 
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+  EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
 
   UploadProgress progress = upload_data_stream.GetUploadProgress();
   EXPECT_EQ(0u, progress.size());
@@ -673,7 +673,7 @@ TEST(HttpStreamParser, AsyncSingleChunkAndAsyncSocket) {
                                  NetLogWithSource()),
               IsOk());
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
@@ -718,8 +718,8 @@ TEST(HttpStreamParser, AsyncSingleChunkAndAsyncSocket) {
                                     callback.callback()));
   ASSERT_EQ(kBodySize, callback.WaitForResult());
 
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)), parser.received_bytes());
+  EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
+  EXPECT_EQ(CountReadBytes(reads), parser.received_bytes());
 }
 
 // Test to ensure the HttpStreamParser state machine does not get confused
@@ -754,7 +754,7 @@ TEST(HttpStreamParser, SyncSingleChunkAndAsyncSocket) {
   // Append the only chunk.
   upload_stream.AppendData(kChunk, arraysize(kChunk) - 1, true);
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
@@ -792,8 +792,8 @@ TEST(HttpStreamParser, SyncSingleChunkAndAsyncSocket) {
                                     callback.callback()));
   ASSERT_EQ(kBodySize, callback.WaitForResult());
 
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)), parser.received_bytes());
+  EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
+  EXPECT_EQ(CountReadBytes(reads), parser.received_bytes());
 }
 
 // Test to ensure the HttpStreamParser state machine does not get confused
@@ -835,7 +835,7 @@ TEST(HttpStreamParser, AsyncChunkAndAsyncSocketWithMultipleChunks) {
                                  NetLogWithSource()),
               IsOk());
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
@@ -889,8 +889,8 @@ TEST(HttpStreamParser, AsyncChunkAndAsyncSocketWithMultipleChunks) {
                                     callback.callback()));
   ASSERT_EQ(kBodySize, callback.WaitForResult());
 
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)), parser.received_bytes());
+  EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
+  EXPECT_EQ(CountReadBytes(reads), parser.received_bytes());
 }
 
 // Test to ensure the HttpStreamParser state machine does not get confused
@@ -920,7 +920,7 @@ TEST(HttpStreamParser, AsyncEmptyChunkedUpload) {
                                  NetLogWithSource()),
               IsOk());
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
@@ -963,8 +963,8 @@ TEST(HttpStreamParser, AsyncEmptyChunkedUpload) {
                                     callback.callback()));
   ASSERT_EQ(kBodySize, callback.WaitForResult());
 
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)), parser.received_bytes());
+  EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
+  EXPECT_EQ(CountReadBytes(reads), parser.received_bytes());
 }
 
 // Test to ensure the HttpStreamParser state machine does not get confused
@@ -996,7 +996,7 @@ TEST(HttpStreamParser, SyncEmptyChunkedUpload) {
   // Append final empty chunk.
   upload_stream.AppendData(nullptr, 0, true);
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
@@ -1036,8 +1036,8 @@ TEST(HttpStreamParser, SyncEmptyChunkedUpload) {
                                     callback.callback()));
   ASSERT_EQ(kBodySize, callback.WaitForResult());
 
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)), parser.received_bytes());
+  EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
+  EXPECT_EQ(CountReadBytes(reads), parser.received_bytes());
 }
 
 TEST(HttpStreamParser, TruncatedHeaders) {
@@ -1071,13 +1071,13 @@ TEST(HttpStreamParser, TruncatedHeaders) {
     MockRead(SYNCHRONOUS, 0, 2),  // EOF
   };
 
-  MockRead* reads[] = {
-    truncated_status_reads,
-    truncated_after_status_reads,
-    truncated_in_header_reads,
-    truncated_after_header_reads,
-    truncated_after_final_newline_reads,
-    not_truncated_reads,
+  base::span<MockRead> reads[] = {
+      truncated_status_reads,
+      truncated_after_status_reads,
+      truncated_in_header_reads,
+      truncated_after_header_reads,
+      truncated_after_final_newline_reads,
+      not_truncated_reads,
   };
 
   MockWrite writes[] = {
@@ -1095,7 +1095,7 @@ TEST(HttpStreamParser, TruncatedHeaders) {
 
     for (size_t i = 0; i < arraysize(reads); i++) {
       SCOPED_TRACE(i);
-      SequencedSocketData data(reads[i], 2, writes, arraysize(writes));
+      SequencedSocketData data(reads[i], writes);
       std::unique_ptr<ClientSocketHandle> socket_handle(
           CreateConnectedSocketHandle(&data));
 
@@ -1120,17 +1120,16 @@ TEST(HttpStreamParser, TruncatedHeaders) {
                                        &response_info, callback.callback()));
 
       int rv = parser.ReadResponseHeaders(callback.callback());
-      EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
-                parser.sent_bytes());
+      EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
       if (i == arraysize(reads) - 1) {
         EXPECT_THAT(rv, IsOk());
         EXPECT_TRUE(response_info.headers.get());
-        EXPECT_EQ(CountReadBytes(reads[i], 2), parser.received_bytes());
+        EXPECT_EQ(CountReadBytes(reads[i]), parser.received_bytes());
       } else {
         if (protocol == HTTP) {
           EXPECT_THAT(rv, IsError(ERR_CONNECTION_CLOSED));
           EXPECT_TRUE(response_info.headers.get());
-          EXPECT_EQ(CountReadBytes(reads[i], 2), parser.received_bytes());
+          EXPECT_EQ(CountReadBytes(reads[i]), parser.received_bytes());
         } else {
           EXPECT_THAT(rv, IsError(ERR_RESPONSE_HEADERS_TRUNCATED));
           EXPECT_FALSE(response_info.headers.get());
@@ -1157,7 +1156,7 @@ TEST(HttpStreamParser, Websocket101Response) {
     MockWrite(SYNCHRONOUS, 0, "GET / HTTP/1.1\r\n\r\n"),
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
@@ -1187,8 +1186,8 @@ TEST(HttpStreamParser, Websocket101Response) {
             base::StringPiece(read_buffer->StartOfBuffer(),
                               read_buffer->capacity()));
 
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)) -
+  EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
+  EXPECT_EQ(CountReadBytes(reads) -
                 static_cast<int64_t>(strlen("a fake websocket frame")),
             parser.received_bytes());
 }
@@ -1234,8 +1233,7 @@ class SimpleGetRunner {
   void SetupParserAndSendRequest() {
     reads_.push_back(MockRead(SYNCHRONOUS, 0, sequence_number_++));  // EOF
 
-    data_.reset(new SequencedSocketData(&reads_.front(), reads_.size(),
-                                        &writes_.front(), writes_.size()));
+    data_.reset(new SequencedSocketData(reads_, writes_));
     socket_handle_ = CreateConnectedSocketHandle(data_.get());
 
     request_info_.method = "GET";
@@ -1676,7 +1674,7 @@ TEST(HttpStreamParser, ReadAfterUnownedObjectsDestroyed) {
       MockRead(SYNCHRONOUS, 0, 5),  // EOF
   };
 
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   std::unique_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
@@ -1707,8 +1705,8 @@ TEST(HttpStreamParser, ReadAfterUnownedObjectsDestroyed) {
   ASSERT_EQ(kBodySize, parser.ReadResponseBody(
       body_buffer.get(), kBodySize, callback.callback()));
 
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)), parser.received_bytes());
+  EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
+  EXPECT_EQ(CountReadBytes(reads), parser.received_bytes());
 }
 
 // Case where one byte is received at a time.
