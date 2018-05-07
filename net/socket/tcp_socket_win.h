@@ -69,6 +69,7 @@ class NET_EXPORT TCPSocketWin : public base::win::ObjectWatcher::Delegate {
   // Full duplex mode (reading and writing at the same time) is supported.
   int Read(IOBuffer* buf, int buf_len, CompletionOnceCallback callback);
   int ReadIfReady(IOBuffer* buf, int buf_len, CompletionOnceCallback callback);
+  int CancelReadIfReady();
   int Write(IOBuffer* buf,
             int buf_len,
             CompletionOnceCallback callback,

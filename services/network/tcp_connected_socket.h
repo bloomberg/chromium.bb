@@ -25,24 +25,38 @@
 #include "services/network/socket_data_pump.h"
 
 namespace net {
-class ClientSocketFactory;
 class NetLog;
 class StreamSocket;
 class ClientSocketFactory;
+class ClientSocketHandle;
 }  // namespace net
 
 namespace network {
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) TCPConnectedSocket
-    : public mojom::TCPConnectedSocket {
+    : public mojom::TCPConnectedSocket,
+      public SocketDataPump::Delegate {
  public:
+  // Interface to handle a mojom::TLSClientSocketRequest.
+  class Delegate {
+   public:
+    // Handles a mojom::TLSClientSocketRequest.
+    virtual void CreateTLSClientSocket(
+        const net::HostPortPair& host_port_pair,
+        mojom::TLSClientSocketRequest request,
+        std::unique_ptr<net::ClientSocketHandle> tcp_socket,
+        mojom::SocketObserverPtr observer,
+        const net::NetworkTrafficAnnotationTag& traffic_annotation,
+        mojom::TCPConnectedSocket::UpgradeToTLSCallback callback) = 0;
+  };
   TCPConnectedSocket(
-      mojom::TCPConnectedSocketObserverPtr observer,
+      mojom::SocketObserverPtr observer,
       net::NetLog* net_log,
+      Delegate* delegate,
       net::ClientSocketFactory* client_socket_factory,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
   TCPConnectedSocket(
-      mojom::TCPConnectedSocketObserverPtr observer,
+      mojom::SocketObserverPtr observer,
       std::unique_ptr<net::StreamSocket> socket,
       mojo::ScopedDataPipeProducerHandle receive_pipe_handle,
       mojo::ScopedDataPipeConsumerHandle send_pipe_handle,
@@ -56,22 +70,37 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPConnectedSocket
   // mojom::TCPConnectedSocket implementation.
   void GetLocalAddress(GetLocalAddressCallback callback) override;
 
+  void UpgradeToTLS(
+      const net::HostPortPair& host_port_pair,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      mojom::TLSClientSocketRequest request,
+      mojom::SocketObserverPtr observer,
+      UpgradeToTLSCallback callback) override;
+
  private:
   // Invoked when net::TCPClientSocket::Connect() completes.
   void OnConnectCompleted(int net_result);
 
-  mojom::TCPConnectedSocketObserverPtr observer_;
+  // SocketDataPump::Delegate implementation.
+  void OnNetworkReadError(int net_error) override;
+  void OnNetworkWriteError(int net_error) override;
+  void OnShutdown() override;
 
-  net::NetLog* net_log_;
-  net::ClientSocketFactory* client_socket_factory_;
+  const mojom::SocketObserverPtr observer_;
+
+  net::NetLog* const net_log_;
+  Delegate* const delegate_;
+  net::ClientSocketFactory* const client_socket_factory_;
 
   std::unique_ptr<net::StreamSocket> socket_;
 
   mojom::NetworkContext::CreateTCPConnectedSocketCallback connect_callback_;
 
+  base::OnceClosure pending_upgrade_to_tls_callback_;
+
   std::unique_ptr<SocketDataPump> socket_data_pump_;
 
-  net::NetworkTrafficAnnotationTag traffic_annotation_;
+  const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPConnectedSocket);
 };

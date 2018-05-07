@@ -16,20 +16,23 @@
 #include "net/log/net_log.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
+#include "services/network/tls_client_socket.h"
 
 namespace network {
 
 SocketDataPump::SocketDataPump(
-    mojom::TCPConnectedSocketObserverPtr observer,
     net::StreamSocket* socket,
+    Delegate* delegate,
     mojo::ScopedDataPipeProducerHandle receive_pipe_handle,
     mojo::ScopedDataPipeConsumerHandle send_pipe_handle,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
-    : observer_(std::move(observer)),
-      socket_(socket),
+    : socket_(socket),
+      delegate_(delegate),
       receive_stream_(std::move(receive_pipe_handle)),
       receive_stream_watcher_(FROM_HERE,
                               mojo::SimpleWatcher::ArmingPolicy::MANUAL),
+      receive_stream_close_watcher_(FROM_HERE,
+                                    mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       send_stream_(std::move(send_pipe_handle)),
       send_stream_watcher_(FROM_HERE,
                            mojo::SimpleWatcher::ArmingPolicy::MANUAL),
@@ -45,6 +48,10 @@ SocketDataPump::SocketDataPump(
       MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
       base::BindRepeating(&SocketDataPump::OnReceiveStreamWritable,
                           base::Unretained(this)));
+  receive_stream_close_watcher_.Watch(
+      receive_stream_.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+      base::BindRepeating(&SocketDataPump::OnReceiveStreamClosed,
+                          base::Unretained(this)));
   ReceiveMore();
   SendMore();
 }
@@ -53,11 +60,11 @@ SocketDataPump::~SocketDataPump() {}
 
 void SocketDataPump::ReceiveMore() {
   DCHECK(receive_stream_.is_valid());
-  DCHECK(!pending_receive_buffer_);
 
   uint32_t num_bytes = 0;
+  scoped_refptr<NetToMojoPendingBuffer> pending_receive_buffer;
   MojoResult result = NetToMojoPendingBuffer::BeginWrite(
-      &receive_stream_, &pending_receive_buffer_, &num_bytes);
+      &receive_stream_, &pending_receive_buffer, &num_bytes);
   if (result == MOJO_RESULT_SHOULD_WAIT) {
     receive_stream_watcher_.ArmOrNotify();
     return;
@@ -66,22 +73,36 @@ void SocketDataPump::ReceiveMore() {
     ShutdownReceive();
     return;
   }
-  DCHECK(pending_receive_buffer_);
+  DCHECK(pending_receive_buffer);
   scoped_refptr<net::IOBuffer> buf =
-      base::MakeRefCounted<NetToMojoIOBuffer>(pending_receive_buffer_.get());
+      base::MakeRefCounted<NetToMojoIOBuffer>(pending_receive_buffer.get());
   // Use WeakPtr here because |this| doesn't outlive |socket_|.
-  int read_result =
-      socket_->Read(buf.get(), base::saturated_cast<int>(num_bytes),
-                    base::BindRepeating(&SocketDataPump::OnNetworkReadCompleted,
-                                        weak_factory_.GetWeakPtr()));
-  if (read_result == net::ERR_IO_PENDING)
+  int read_result = socket_->ReadIfReady(
+      buf.get(), base::saturated_cast<int>(num_bytes),
+      base::BindRepeating(&SocketDataPump::OnNetworkReadIfReadyCompleted,
+                          weak_factory_.GetWeakPtr()));
+  receive_stream_ =
+      pending_receive_buffer->Complete(read_result >= 0 ? read_result : 0);
+  if (read_result == net::ERR_IO_PENDING) {
+    read_if_ready_pending_ = true;
+    receive_stream_close_watcher_.ArmOrNotify();
     return;
-  OnNetworkReadCompleted(read_result);
+  }
+  // Handle EOF.
+  if (read_result == net::OK) {
+    ShutdownReceive();
+    return;
+  }
+  OnNetworkReadIfReadyCompleted(read_result);
+}
+
+void SocketDataPump::OnReceiveStreamClosed(MojoResult result) {
+  ShutdownReceive();
+  return;
 }
 
 void SocketDataPump::OnReceiveStreamWritable(MojoResult result) {
   DCHECK(receive_stream_.is_valid());
-  DCHECK(!pending_receive_buffer_);
 
   if (result != MOJO_RESULT_OK) {
     ShutdownReceive();
@@ -90,17 +111,17 @@ void SocketDataPump::OnReceiveStreamWritable(MojoResult result) {
   ReceiveMore();
 }
 
-void SocketDataPump::OnNetworkReadCompleted(int result) {
-  DCHECK(!receive_stream_.is_valid());
-  DCHECK(pending_receive_buffer_);
+void SocketDataPump::OnNetworkReadIfReadyCompleted(int result) {
+  DCHECK(receive_stream_.is_valid());
+  if (read_if_ready_pending_) {
+    DCHECK_GE(net::OK, result);
+    read_if_ready_pending_ = false;
+  }
 
-  if (result < 0 && observer_)
-    observer_->OnReadError(result);
+  if (result < 0 && delegate_)
+    delegate_->OnNetworkReadError(result);
 
-  receive_stream_ = pending_receive_buffer_->Complete(result >= 0 ? result : 0);
-  pending_receive_buffer_ = nullptr;
-
-  if (result <= 0) {
+  if (result < 0) {
     ShutdownReceive();
     return;
   }
@@ -109,11 +130,16 @@ void SocketDataPump::OnNetworkReadCompleted(int result) {
 
 void SocketDataPump::ShutdownReceive() {
   DCHECK(receive_stream_.is_valid());
-  DCHECK(!pending_receive_buffer_);
 
   receive_stream_watcher_.Cancel();
-  pending_receive_buffer_ = nullptr;
+  receive_stream_close_watcher_.Cancel();
   receive_stream_.reset();
+  if (read_if_ready_pending_) {
+    int result = socket_->CancelReadIfReady();
+    DCHECK_EQ(net::OK, result);
+    read_if_ready_pending_ = false;
+  }
+  MaybeNotifyDelegate();
 }
 
 void SocketDataPump::SendMore() {
@@ -161,8 +187,8 @@ void SocketDataPump::OnNetworkWriteCompleted(int result) {
   DCHECK(pending_send_buffer_);
   DCHECK(!send_stream_.is_valid());
 
-  if (result < 0 && observer_)
-    observer_->OnWriteError(result);
+  if (result < 0 && delegate_)
+    delegate_->OnNetworkWriteError(result);
 
   // Partial write is possible.
   pending_send_buffer_->CompleteRead(result >= 0 ? result : 0);
@@ -183,6 +209,13 @@ void SocketDataPump::ShutdownSend() {
   send_stream_watcher_.Cancel();
   pending_send_buffer_ = nullptr;
   send_stream_.reset();
+  MaybeNotifyDelegate();
+}
+
+void SocketDataPump::MaybeNotifyDelegate() {
+  if (!delegate_ || send_stream_.is_valid() || receive_stream_.is_valid())
+    return;
+  delegate_->OnShutdown();
 }
 
 }  // namespace network

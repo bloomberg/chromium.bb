@@ -111,6 +111,9 @@ class TCPSocketWin::Core : public base::RefCounted<Core> {
   void WatchForRead();
   void WatchForWrite();
 
+  // Stops watching for read.
+  void StopWatchingForRead();
+
   // The TCPSocketWin is going away.
   void Detach();
 
@@ -210,6 +213,12 @@ void TCPSocketWin::Core::WatchForWrite() {
   // Balanced in WriteDelegate::OnObjectSignaled().
   AddRef();
   write_watcher_.StartWatchingOnce(write_overlapped_.hEvent, &writer_);
+}
+
+void TCPSocketWin::Core::StopWatchingForRead() {
+  DCHECK(!socket_->waiting_connect_);
+
+  read_watcher_.StopWatching();
 }
 
 void TCPSocketWin::Core::Detach() {
@@ -526,6 +535,17 @@ int TCPSocketWin::ReadIfReady(IOBuffer* buf,
   read_if_ready_callback_ = std::move(callback);
   core_->WatchForRead();
   return ERR_IO_PENDING;
+}
+
+int TCPSocketWin::CancelReadIfReady() {
+  DCHECK(read_callback_.is_null());
+  DCHECK(!read_if_ready_callback_.is_null());
+  DCHECK(waiting_read_);
+
+  core_->StopWatchingForRead();
+  read_if_ready_callback_.Reset();
+  waiting_read_ = false;
+  return net::OK;
 }
 
 int TCPSocketWin::Write(

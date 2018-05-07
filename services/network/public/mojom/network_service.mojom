@@ -348,7 +348,7 @@ interface NetworkContext {
       net.interfaces.AddressList remote_addr_list,
       MutableNetworkTrafficAnnotationTag traffic_annotation,
       TCPConnectedSocket& socket,
-      TCPConnectedSocketObserver? observer)
+      SocketObserver? observer)
      => (int32 result,
          handle<data_pipe_consumer>? receive_stream,
          handle<data_pipe_producer>? send_stream);
