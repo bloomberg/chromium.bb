@@ -225,8 +225,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   void OnFocusEvent(bool focus_in, int mode, int detail);
 
   // Makes a round trip to the X server to get the enclosing workspace for this
-  // window.  Returns true iff |workspace_| was changed.
-  bool UpdateWorkspace();
+  // window.
+  void UpdateWorkspace();
 
   // Updates |xwindow_|'s minimum and maximum size.
   void UpdateMinAndMaxSize();
@@ -329,8 +329,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // |xwindow_|'s maximum size.
   gfx::Size max_size_in_pixels_;
 
-  // The workspace containing |xwindow_|.
-  std::string workspace_;
+  // The workspace containing |xwindow_|.  This will be base::nullopt when
+  // _NET_WM_DESKTOP is unset.
+  base::Optional<int> workspace_;
 
   // The window manager state bits.
   base::flat_set<::Atom> window_properties_;
