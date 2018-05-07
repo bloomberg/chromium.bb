@@ -44,6 +44,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetIsFixedSizeInline(bool is_fixed_size_inline);
   NGConstraintSpaceBuilder& SetIsFixedSizeBlock(bool is_fixed_size_block);
+  NGConstraintSpaceBuilder& SetFixedSizeBlockIsDefinite(
+      bool fixed_size_block_is_definite);
 
   NGConstraintSpaceBuilder& SetIsShrinkToFit(bool shrink_to_fit);
 
@@ -105,6 +107,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   unsigned parent_writing_mode_ : 3;
   unsigned is_fixed_size_inline_ : 1;
   unsigned is_fixed_size_block_ : 1;
+  unsigned fixed_size_block_is_definite_ : 1;
   unsigned is_shrink_to_fit_ : 1;
   unsigned is_inline_direction_triggers_scrollbar_ : 1;
   unsigned is_block_direction_triggers_scrollbar_ : 1;
