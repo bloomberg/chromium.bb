@@ -97,7 +97,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
   ~ServiceWorkerStorage() override;
 
   static std::unique_ptr<ServiceWorkerStorage> Create(
-      const base::FilePath& path,
+      const base::FilePath& user_data_directory,
       const base::WeakPtr<ServiceWorkerContextCore>& context,
       scoped_refptr<base::SequencedTaskRunner> database_task_runner,
       storage::QuotaManagerProxy* quota_manager_proxy,
@@ -356,7 +356,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
                               ServiceWorkerDatabase::Status status)>;
 
   ServiceWorkerStorage(
-      const base::FilePath& path,
+      const base::FilePath& user_data_directory,
       base::WeakPtr<ServiceWorkerContextCore> context,
       scoped_refptr<base::SequencedTaskRunner> database_task_runner,
       storage::QuotaManagerProxy* quota_manager_proxy,
@@ -583,7 +583,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
   // ... so it's easier to keep track of the case when it will happen.
   bool expecting_done_with_disk_on_disable_;
 
-  base::FilePath path_;
+  base::FilePath user_data_directory_;
 
   // The context should be valid while the storage is alive.
   base::WeakPtr<ServiceWorkerContextCore> context_;

@@ -269,7 +269,7 @@ bool ServiceWorkerContextCore::ProviderHostIterator::
 }
 
 ServiceWorkerContextCore::ServiceWorkerContextCore(
-    const base::FilePath& path,
+    const base::FilePath& user_data_directory,
     scoped_refptr<base::SequencedTaskRunner> database_task_runner,
     storage::QuotaManagerProxy* quota_manager_proxy,
     storage::SpecialStoragePolicy* special_storage_policy,
@@ -290,8 +290,8 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
   // These get a WeakPtr from |weak_factory_|, so must be set after
   // |weak_factory_| is initialized.
   storage_ = ServiceWorkerStorage::Create(
-      path, AsWeakPtr(), std::move(database_task_runner), quota_manager_proxy,
-      special_storage_policy);
+      user_data_directory, AsWeakPtr(), std::move(database_task_runner),
+      quota_manager_proxy, special_storage_policy);
   embedded_worker_registry_ = EmbeddedWorkerRegistry::Create(AsWeakPtr());
   job_coordinator_ = std::make_unique<ServiceWorkerJobCoordinator>(AsWeakPtr());
 }
