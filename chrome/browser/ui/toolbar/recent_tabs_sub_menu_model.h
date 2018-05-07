@@ -41,7 +41,6 @@ class OpenTabsUIDelegate;
 
 namespace syncer {
 class SyncService;
-class SyncServiceBase;
 }  // namespace syncer
 
 namespace ui {
@@ -198,8 +197,7 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   ScopedObserver<sessions::TabRestoreService, RecentTabsSubMenuModel>
       tab_restore_service_observer_;
 
-  ScopedObserver<syncer::SyncServiceBase, RecentTabsSubMenuModel>
-      sync_observer_;
+  ScopedObserver<syncer::SyncService, RecentTabsSubMenuModel> sync_observer_;
 #endif
 
   base::WeakPtrFactory<RecentTabsSubMenuModel> weak_ptr_factory_;

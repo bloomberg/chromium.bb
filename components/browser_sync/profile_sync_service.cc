@@ -23,6 +23,7 @@
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/reading_list/features/reading_list_buildflags.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -46,8 +47,10 @@
 #include "components/sync/driver/user_selectable_sync_type.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/cycle/type_debug_info_observer.h"
+#include "components/sync/engine/engine_components_factory_impl.h"
 #include "components/sync/engine/net/http_bridge_network_resources.h"
 #include "components/sync/engine/net/network_resources.h"
+#include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/js/js_event_details.h"
@@ -66,6 +69,7 @@
 #include "components/version_info/version_info_values.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
 using sync_sessions::SessionsSyncManager;
@@ -75,6 +79,8 @@ using syncer::DataTypeController;
 using syncer::DataTypeManager;
 using syncer::DataTypeStatusTable;
 using syncer::DeviceInfoSyncBridge;
+using syncer::EngineComponentsFactory;
+using syncer::EngineComponentsFactoryImpl;
 using syncer::JsBackend;
 using syncer::JsController;
 using syncer::JsEventHandler;
@@ -83,8 +89,11 @@ using syncer::ModelType;
 using syncer::ModelTypeSet;
 using syncer::ModelTypeStore;
 using syncer::ProtocolEventObserver;
-using syncer::SyncEngine;
+using syncer::SyncBackendRegistrar;
+using syncer::SyncClient;
 using syncer::SyncCredentials;
+using syncer::SyncEngine;
+using syncer::SyncManagerFactory;
 using syncer::SyncProtocolError;
 using syncer::WeakHandle;
 
@@ -92,11 +101,11 @@ namespace browser_sync {
 
 namespace {
 
-const char kSyncOAuthConsumerName[] = "sync";
+constexpr char kSyncOAuthConsumerName[] = "sync";
 
-const char kSyncUnrecoverableErrorHistogram[] = "Sync.UnrecoverableErrors";
+constexpr char kSyncUnrecoverableErrorHistogram[] = "Sync.UnrecoverableErrors";
 
-const net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
+constexpr net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
     // Number of initial errors (in sequence) to ignore before applying
     // exponential back-off rules.
     0,
@@ -124,6 +133,43 @@ const net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
     false,
 };
 
+constexpr base::FilePath::CharType kSyncDataFolderName[] =
+    FILE_PATH_LITERAL("Sync Data");
+
+constexpr base::FilePath::CharType kLevelDBFolderName[] =
+    FILE_PATH_LITERAL("LevelDB");
+
+base::FilePath FormatSyncDataPath(const base::FilePath& base_directory) {
+  return base_directory.Append(base::FilePath(kSyncDataFolderName));
+}
+
+base::FilePath FormatSharedModelTypeStorePath(
+    const base::FilePath& base_directory) {
+  return FormatSyncDataPath(base_directory)
+      .Append(base::FilePath(kLevelDBFolderName));
+}
+
+EngineComponentsFactory::Switches EngineSwitchesFromCommandLine() {
+  EngineComponentsFactory::Switches factory_switches = {
+      EngineComponentsFactory::ENCRYPTION_KEYSTORE,
+      EngineComponentsFactory::BACKOFF_NORMAL};
+
+  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
+  if (cl->HasSwitch(switches::kSyncShortInitialRetryOverride)) {
+    factory_switches.backoff_override =
+        EngineComponentsFactory::BACKOFF_SHORT_INITIAL_RETRY_OVERRIDE;
+  }
+  if (cl->HasSwitch(switches::kSyncEnableGetUpdateAvoidance)) {
+    factory_switches.pre_commit_updates_policy =
+        EngineComponentsFactory::FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE;
+  }
+  if (cl->HasSwitch(switches::kSyncShortNudgeDelayForTest)) {
+    factory_switches.nudge_delay =
+        EngineComponentsFactory::NudgeDelay::SHORT_NUDGE_DELAY;
+  }
+  return factory_switches;
+}
+
 }  // namespace
 
 ProfileSyncService::InitParams::InitParams() = default;
@@ -131,11 +177,12 @@ ProfileSyncService::InitParams::InitParams(InitParams&& other) = default;
 ProfileSyncService::InitParams::~InitParams() = default;
 
 ProfileSyncService::ProfileSyncService(InitParams init_params)
-    : SyncServiceBase(std::move(init_params.sync_client),
-                      std::move(init_params.signin_wrapper),
-                      init_params.channel,
-                      init_params.base_directory,
-                      init_params.debug_identifier),
+    : sync_client_(std::move(init_params.sync_client)),
+      signin_(std::move(init_params.signin_wrapper)),
+      channel_(init_params.channel),
+      base_directory_(init_params.base_directory),
+      debug_identifier_(init_params.debug_identifier),
+      sync_prefs_(sync_client_->GetPrefService()),
       signin_scoped_device_id_callback_(
           init_params.signin_scoped_device_id_callback),
       last_auth_error_(GoogleServiceAuthError::AuthErrorNone()),
@@ -163,6 +210,9 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(signin_scoped_device_id_callback_);
   DCHECK(sync_client_);
+
+  ResetCryptoState();
+
   std::string last_version = sync_prefs_.GetLastRunVersion();
   std::string current_version = PRODUCT_VERSION;
   sync_prefs_.SetLastRunVersion(current_version);
@@ -467,6 +517,15 @@ ProfileSyncService::GetUnrecoverableErrorHandler() {
   return syncer::MakeWeakHandle(sync_enabled_weak_factory_.GetWeakPtr());
 }
 
+void ProfileSyncService::ResetCryptoState() {
+  crypto_ = std::make_unique<syncer::SyncServiceCrypto>(
+      base::BindRepeating(&ProfileSyncService::NotifyObservers,
+                          base::Unretained(this)),
+      base::BindRepeating(&ProfileSyncService::GetPreferredDataTypes,
+                          base::Unretained(this)),
+      &sync_prefs_);
+}
+
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
   if (encryption_pending())
     return true;
@@ -554,6 +613,67 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   UpdateFirstSyncTimePref();
 
   ReportPreviousSessionMemoryWarningCount();
+}
+
+void ProfileSyncService::InitializeEngine() {
+  DCHECK(engine_);
+
+  if (!sync_thread_) {
+    sync_thread_ = std::make_unique<base::Thread>("Chrome_SyncThread");
+    base::Thread::Options options;
+    options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+    bool success = sync_thread_->StartWithOptions(options);
+    DCHECK(success);
+  }
+
+  SyncEngine::InitParams params;
+  params.sync_task_runner = sync_thread_->task_runner();
+  params.host = this;
+  params.registrar = std::make_unique<SyncBackendRegistrar>(
+      debug_identifier_,
+      base::BindRepeating(&SyncClient::CreateModelWorkerForGroup,
+                          base::Unretained(sync_client_.get())));
+  params.encryption_observer_proxy = crypto_->GetEncryptionObserverProxy();
+  params.extensions_activity = sync_client_->GetExtensionsActivity();
+  params.event_handler = GetJsEventHandler();
+  params.service_url = sync_service_url();
+  params.sync_user_agent = GetLocalDeviceInfoProvider()->GetSyncUserAgent();
+  params.http_factory_getter = MakeHttpPostProviderFactoryGetter();
+  params.credentials = GetCredentials();
+  invalidation::InvalidationService* invalidator =
+      sync_client_->GetInvalidationService();
+  params.invalidator_client_id =
+      invalidator ? invalidator->GetInvalidatorClientId() : "",
+  params.sync_manager_factory = std::make_unique<SyncManagerFactory>();
+  // The first time we start up the engine we want to ensure we have a clean
+  // directory, so delete any old one that might be there.
+  params.delete_sync_data_folder = !IsFirstSetupComplete();
+  params.enable_local_sync_backend = sync_prefs_.IsLocalSyncEnabled();
+  params.local_sync_backend_folder = sync_client_->GetLocalSyncBackendFolder();
+  params.restored_key_for_bootstrapping =
+      sync_prefs_.GetEncryptionBootstrapToken();
+  params.restored_keystore_key_for_bootstrapping =
+      sync_prefs_.GetKeystoreEncryptionBootstrapToken();
+  params.engine_components_factory =
+      std::make_unique<EngineComponentsFactoryImpl>(
+          EngineSwitchesFromCommandLine());
+  params.unrecoverable_error_handler = GetUnrecoverableErrorHandler();
+  params.report_unrecoverable_error_function =
+      base::BindRepeating(syncer::ReportUnrecoverableError, channel_);
+  params.saved_nigori_state = crypto_->TakeSavedNigoriState();
+  sync_prefs_.GetInvalidationVersions(&params.invalidation_versions);
+  params.short_poll_interval = sync_prefs_.GetShortPollInterval();
+  if (params.short_poll_interval.is_zero()) {
+    params.short_poll_interval =
+        base::TimeDelta::FromSeconds(syncer::kDefaultShortPollIntervalSeconds);
+  }
+  params.long_poll_interval = sync_prefs_.GetLongPollInterval();
+  if (params.long_poll_interval.is_zero()) {
+    params.long_poll_interval =
+        base::TimeDelta::FromSeconds(syncer::kDefaultLongPollIntervalSeconds);
+  }
+
+  engine_->Initialize(std::move(params));
 }
 
 void ProfileSyncService::AccessTokenFetched(const GoogleServiceAuthError& error,
@@ -797,6 +917,12 @@ bool ProfileSyncService::IsSyncConfirmationNeeded() const {
 
 void ProfileSyncService::UpdateLastSyncedTime() {
   sync_prefs_.SetLastSyncedTime(base::Time::Now());
+}
+
+void ProfileSyncService::NotifyObservers() {
+  for (auto& observer : observers_) {
+    observer.OnStateChanged(this);
+  }
 }
 
 void ProfileSyncService::NotifySyncCycleCompleted() {
@@ -1579,6 +1705,22 @@ syncer::SyncClient* ProfileSyncService::GetSyncClient() const {
   return sync_client_.get();
 }
 
+void ProfileSyncService::AddObserver(syncer::SyncServiceObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  observers_.AddObserver(observer);
+}
+
+void ProfileSyncService::RemoveObserver(syncer::SyncServiceObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  observers_.RemoveObserver(observer);
+}
+
+bool ProfileSyncService::HasObserver(
+    const syncer::SyncServiceObserver* observer) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return observers_.HasObserver(observer);
+}
+
 syncer::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
@@ -2112,6 +2254,12 @@ void ProfileSyncService::GetAllNodes(
               it.Get(), GetUserShare()->directory.get()));
     }
   }
+}
+
+AccountInfo ProfileSyncService::GetAuthenticatedAccountInfo() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return signin_ ? signin_->GetIdentityManager()->GetPrimaryAccountInfo()
+                 : AccountInfo();
 }
 
 syncer::GlobalIdMapper* ProfileSyncService::GetGlobalIdMapper() const {
