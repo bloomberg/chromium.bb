@@ -98,11 +98,13 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
   template <typename DelegateType>
   std::unique_ptr<SchedulerWorkerDelegate> CreateSchedulerWorkerDelegate(
       const std::string& name,
-      int id);
+      int id,
+      SingleThreadTaskRunnerThreadMode thread_mode);
 
   template <typename DelegateType>
   SchedulerWorker* CreateAndRegisterSchedulerWorker(
       const std::string& name,
+      SingleThreadTaskRunnerThreadMode thread_mode,
       ThreadPriority priority_hint);
 
   template <typename DelegateType>
