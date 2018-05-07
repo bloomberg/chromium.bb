@@ -156,6 +156,8 @@ void FillEntryPropertiesValueForDrive(const drive::ResourceEntry& entry_proto,
   properties->available_when_metered.reset(
       new bool(file_specific_info.cache_state().is_present() ||
                file_specific_info.is_hosted_document()));
+  properties->alternate_url.reset(
+      new std::string(file_specific_info.alternate_url()));
 }
 
 // Creates entry definition list for (metadata) search result info list.

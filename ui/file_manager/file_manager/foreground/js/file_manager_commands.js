@@ -1505,6 +1505,41 @@ CommandHandler.COMMANDS_['share'] = /** @type {Command} */ ({
 });
 
 /**
+ * Opens the file in Drive for the user to manage sharing permissions etc.
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['manage-in-drive'] = /** @type {Command} */ ({
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager The file manager instance.
+   */
+  execute: function(event, fileManager) {
+    var actionsModel =
+        fileManager.actionsController.getActionsModelFor(event.target);
+    var action = actionsModel ?
+        actionsModel.getAction(ActionsModel.InternalActionId.MANAGE_IN_DRIVE) :
+        null;
+    if (action)
+      action.execute();
+  },
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  canExecute: function(event, fileManager) {
+    var actionsModel =
+        fileManager.actionsController.getActionsModelFor(event.target);
+    var action = actionsModel ?
+        actionsModel.getAction(ActionsModel.InternalActionId.MANAGE_IN_DRIVE) :
+        null;
+    event.canExecute = action && action.canExecute();
+    if (actionsModel)
+      event.command.setHidden(!action);
+  }
+});
+
+
+/**
  * Creates a shortcut of the selected folder (single only).
  * @type {Command}
  */

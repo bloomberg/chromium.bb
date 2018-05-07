@@ -66,7 +66,7 @@ function MockUI() {
     showHtml: function() {
     }
   };
-};
+}
 
 function setUp() {
   window.chrome = {
@@ -99,6 +99,9 @@ function setUp() {
   ui = new MockUI();
 }
 
+/**
+ * Tests that the correct actions are available for a directory in Google Drive.
+ */
 function testDriveDirectoryEntry(callback) {
   driveFileSystem.entries['/test'] =
       new MockDirectoryEntry(driveFileSystem, '/test', {});
@@ -111,8 +114,9 @@ function testDriveDirectoryEntry(callback) {
   });
   return reportPromise(model.initialize().then(function() {
     var actions = model.getActions();
-    assertEquals(2, Object.keys(actions).length);
+    assertEquals(3, Object.keys(actions).length);
 
+    // 'Share' should be disabled in offline mode.
     var shareAction = actions[ActionsModel.CommonActionId.SHARE];
     assertTrue(!!shareAction);
     volumeManager.driveConnectionState = {
@@ -120,6 +124,13 @@ function testDriveDirectoryEntry(callback) {
     };
     assertFalse(shareAction.canExecute());
 
+    // 'Manage in Drive' should be disabled for directories.
+    var manageInDriveAction =
+        actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
+    assertTrue(!!manageInDriveAction);
+    assertFalse(manageInDriveAction.canExecute());
+
+    // 'Create Shortcut' should be enabled, until it's executed, then disabled.
     var createFolderShortcutAction =
         actions[ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT];
     assertTrue(!!createFolderShortcutAction);
@@ -138,8 +149,12 @@ function testDriveDirectoryEntry(callback) {
     return model.initialize();
   }).then(function() {
     var actions = model.getActions();
-    assertEquals(3, Object.keys(actions).length);
+    assertEquals(4, Object.keys(actions).length);
+    assertTrue(!!actions[ActionsModel.CommonActionId.SHARE]);
+    assertTrue(!!actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE]);
+    assertTrue(!!actions[ActionsModel.InternalActionId.REMOVE_FOLDER_SHORTCUT]);
 
+    // 'Create shortcut' should be disabled.
     var createFolderShortcutAction =
         actions[ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT];
     assertTrue(!!createFolderShortcutAction);
@@ -148,6 +163,9 @@ function testDriveDirectoryEntry(callback) {
   }), callback);
 }
 
+/**
+ * Tests that the correct actions are available for a file in Google Drive.
+ */
 function testDriveFileEntry(callback) {
   driveFileSystem.entries['/test.txt'] =
       new MockFileEntry(driveFileSystem, '/test.txt', {});
@@ -161,13 +179,20 @@ function testDriveFileEntry(callback) {
   };
   return reportPromise(model.initialize().then(function() {
     var actions = model.getActions();
-    assertEquals(2, Object.keys(actions).length);
+    assertEquals(3, Object.keys(actions).length);
     assertTrue(!!actions[ActionsModel.CommonActionId.SHARE]);
 
+    // 'Save for Offline' should be enabled.
     var saveForOfflineAction =
         actions[ActionsModel.CommonActionId.SAVE_FOR_OFFLINE];
     assertTrue(!!saveForOfflineAction);
     assertTrue(saveForOfflineAction.canExecute());
+
+    // 'Manage in Drive' should be enabled.
+    var manageInDriveAction =
+        actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
+    assertTrue(!!manageInDriveAction);
+    assertTrue(manageInDriveAction.canExecute());
 
     chrome.fileManagerPrivate.pinDriveFile = function(entry, pin, callback) {
       metadataModel.properties.pinned = true;
@@ -196,13 +221,20 @@ function testDriveFileEntry(callback) {
     return model.initialize();
   }).then(function() {
     var actions = model.getActions();
-    assertEquals(2, Object.keys(actions).length);
+    assertEquals(3, Object.keys(actions).length);
     assertTrue(!!actions[ActionsModel.CommonActionId.SHARE]);
 
+    // 'Offline not Necessary' should be enabled.
     var offlineNotNecessaryAction =
         actions[ActionsModel.CommonActionId.OFFLINE_NOT_NECESSARY];
     assertTrue(!!offlineNotNecessaryAction);
     assertTrue(offlineNotNecessaryAction.canExecute());
+
+    // 'Manage in Drive' should be enabled.
+    var manageInDriveAction =
+        actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
+    assertTrue(!!manageInDriveAction);
+    assertTrue(manageInDriveAction.canExecute());
 
     chrome.fileManagerPrivate.pinDriveFile = function(entry, pin, callback) {
       metadataModel.properties.pinned = false;
@@ -224,7 +256,10 @@ function testDriveFileEntry(callback) {
   }), callback);
 }
 
-function testTeamDriveEntry(callback) {
+/**
+ * Tests that a Team Drive Root entry has the correct actions available.
+ */
+function testTeamDriveRootEntry(callback) {
   driveFileSystem.entries['/team_drives/ABC Team'] =
       new MockDirectoryEntry(driveFileSystem, '/team_drives/ABC Team', {});
 
@@ -234,16 +269,99 @@ function testTeamDriveEntry(callback) {
   return reportPromise(
       model.initialize().then(function() {
         var actions = model.getActions();
-        assertEquals(1, Object.keys(actions).length);
+        assertEquals(2, Object.keys(actions).length);
 
-        // "share" action is disabled for Team Drive entries.
+        // "share" action is disabled for Team Drive Root entries.
         var shareAction = actions[ActionsModel.CommonActionId.SHARE];
         assertTrue(!!shareAction);
         assertFalse(shareAction.canExecute());
+
+        // "manage in drive" action is disabled for Team Drive Root entries.
+        var manageAction =
+            actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
+        assertTrue(!!manageAction);
+        assertFalse(manageAction.canExecute());
       }),
       callback);
 }
 
+/**
+ * Tests that a Team Drive directory entry has the correct actions available.
+ */
+function testTeamDriveDirectoryEntry(callback) {
+  driveFileSystem.entries['/team_drives/ABC Team/Folder 1'] =
+      new MockDirectoryEntry(
+          driveFileSystem, '/team_drives/ABC Team/Folder 1', {});
+
+  var model = new ActionsModel(
+      volumeManager, metadataModel, shortcutsModel, driveSyncHandler, ui,
+      [driveFileSystem.entries['/team_drives/ABC Team/Folder 1']]);
+  return reportPromise(
+      model.initialize().then(function() {
+        var actions = model.getActions();
+        assertEquals(3, Object.keys(actions).length);
+
+        // "share" action is enabled for Team Drive directories.
+        var shareAction = actions[ActionsModel.CommonActionId.SHARE];
+        assertTrue(!!shareAction);
+        assertTrue(shareAction.canExecute());
+
+        // "manage in drive" action is disabled for Team Drive directories.
+        var manageAction =
+            actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
+        assertTrue(!!manageAction);
+        assertFalse(manageAction.canExecute());
+
+        // 'Create shortcut' should be enabled.
+        var createFolderShortcutAction =
+            actions[ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT];
+        assertTrue(!!createFolderShortcutAction);
+        assertTrue(createFolderShortcutAction.canExecute());
+      }),
+      callback);
+}
+
+/**
+ * Tests that a Team Drive file entry has the correct actions available.
+ */
+function testTeamDriveFileEntry(callback) {
+  driveFileSystem.entries['/team_drives/ABC Team/Folder 1/test.txt'] =
+      new MockFileEntry(
+          driveFileSystem, '/team_drives/ABC Team/Folder 1/test.txt', {});
+
+  var model = new ActionsModel(
+      volumeManager, metadataModel, shortcutsModel, driveSyncHandler, ui,
+      [driveFileSystem.entries['/team_drives/ABC Team/Folder 1/test.txt']]);
+  metadataModel.properties = {hosted: false, pinned: false};
+  return reportPromise(
+      model.initialize().then(function() {
+        var actions = model.getActions();
+        assertEquals(3, Object.keys(actions).length);
+
+        // "save for offline" action is enabled for Team Drive file entries.
+        var saveForOfflineAction =
+            actions[ActionsModel.CommonActionId.SAVE_FOR_OFFLINE];
+        assertTrue(!!saveForOfflineAction);
+        assertTrue(saveForOfflineAction.canExecute());
+
+        // "share" action is enabled for Team Drive file entries.
+        var shareAction = actions[ActionsModel.CommonActionId.SHARE];
+        assertTrue(!!shareAction);
+        assertTrue(shareAction.canExecute());
+
+        // "manage in drive" action is enabled for Team Drive file entries.
+        var manageAction =
+            actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
+        assertTrue(!!manageAction);
+        assertTrue(manageAction.canExecute());
+      }),
+      callback);
+}
+
+/**
+ * Tests that if actions are provided with getCustomActions(), they appear
+ * correctly for the file.
+ */
 function testProvidedEntry(callback) {
   providedFileSystem.entries['/test'] =
       new MockDirectoryEntry(providedFileSystem, '/test', {});
@@ -311,6 +429,9 @@ function testProvidedEntry(callback) {
   }), callback);
 }
 
+/**
+ * Tests that no actions are available when getCustomActions() throws an error.
+ */
 function testProvidedEntryWithError(callback) {
   providedFileSystem.entries['/test'] =
       new MockDirectoryEntry(providedFileSystem, '/test', {});

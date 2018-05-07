@@ -67,6 +67,18 @@ ActionsSubmenu.prototype.setActionsModel = function(actionsModel) {
   }
   util.queryDecoratedElement('#share', cr.ui.Command).canExecuteChange();
 
+  // Then add the Manage in Drive item (if available).
+  var manageInDriveAction =
+      remainingActions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
+  if (manageInDriveAction) {
+    var menuItem = this.addMenuItem_({});
+    menuItem.command = '#manage-in-drive';
+    menuItem.classList.toggle('hide-on-toolbar', true);
+    delete remainingActions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
+  }
+  util.queryDecoratedElement('#manage-in-drive', cr.ui.Command)
+      .canExecuteChange();
+
   // Managing shortcuts is shown just before custom actions.
   var createFolderShortcutAction = remainingActions[
       ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT];
