@@ -749,20 +749,11 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, ExtensionProcessReuse) {
   }
 }
 
-// Time-outs on Win, fails on Mac and Linux (http://crbug.com/806684).
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-#define MAYBE_NestedURLNavigationsToExtensionBlocked \
-  DISABLED_NestedURLNavigationsToExtensionBlocked
-#else
-#define MAYBE_NestedURLNavigationsToExtensionBlocked \
-  NestedURLNavigationsToExtensionBlocked
-#endif
-
 // Test that navigations to blob: and filesystem: URLs with extension origins
 // are disallowed when initiated from non-extension processes.  See
 // https://crbug.com/645028 and https://crbug.com/644426.
 IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
-                       MAYBE_NestedURLNavigationsToExtensionBlocked) {
+                       NestedURLNavigationsToExtensionBlocked) {
   // Disabling web security is necessary to test the browser enforcement;
   // without it, the loads in this test would be blocked by
   // SecurityOrigin::canDisplay() as invalid local resource loads.
@@ -855,10 +846,19 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   // Navigate the popup to each nested URL with extension origin.
   GURL nested_urls[] = {blob_url, filesystem_url};
   for (size_t i = 0; i < arraysize(nested_urls); i++) {
-    content::TestNavigationObserver observer(popup);
     EXPECT_TRUE(ExecuteScript(
         popup, "location.href = '" + nested_urls[i].spec() + "';"));
-    observer.Wait();
+
+    // If a navigation was started, wait for it to finish.  This can't just use
+    // a TestNavigationObserver, since after https://crbug.com/811558 blob: and
+    // filesystem: navigations have different failure modes: blob URLs will be
+    // blocked on the browser side, and filesystem URLs on the renderer side,
+    // without notifying the browser.  Since these navigations are scheduled in
+    // Blink, run a dummy script on the renderer to ensure that the navigation,
+    // if started, has made it to the browser process before we call
+    // WaitForLoadStop().
+    EXPECT_TRUE(ExecuteScript(popup, "true"));
+    EXPECT_TRUE(content::WaitForLoadStop(popup));
 
     // This is a top-level navigation that should be blocked since it
     // originates from a non-extension process.  Ensure that the error page
@@ -871,6 +871,10 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
     EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
     EXPECT_EQ(1u, pm->GetAllFrames().size());
   }
+
+  // Close the popup.  It won't be needed anymore, and bringing the original
+  // page back into foreground makes the remainder of this test a bit faster.
+  popup->Close();
 
   // Navigate second subframe to each nested URL from the main frame (i.e.,
   // from non-extension process).  These should be canceled.
@@ -888,15 +892,66 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
     EXPECT_TRUE(
         content::NavigateIframeToURL(tab, "frame2", GURL(url::kAboutBlankURL)));
   }
+}
 
-  // Check that the URLs still can be downloaded via an HTML anchor tag with
-  // the download attribute (i.e., <a download>) (which starts out as a
-  // top-level navigation).
+// Flaky on Win, Mac and Linux (http://crbug.com/806684).
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#define MAYBE_NestedURLDownloadsToExtensionAllowed \
+  DISABLED_NestedURLDownloadsToExtensionAllowed
+#else
+#define MAYBE_NestedURLDownloadsToExtensionAllowed \
+  NestedURLDownloadsToExtensionAllowed
+#endif
+// Check that browser-side restrictions on extension blob/filesystem URLs allow
+// navigations that will result in downloads.  See https://crbug.com/714373.
+IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
+                       NestedURLDownloadsToExtensionAllowed) {
+  // Disabling web security is necessary to test the browser enforcement;
+  // without it, the loads in this test would be blocked by
+  // SecurityOrigin::CanDisplay() as invalid local resource loads.
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kWebKitWebSecurityEnabled, false);
+
+  // Create a simple extension without a background page.
+  const Extension* extension = CreateExtension("Extension", false);
+  embedded_test_server()->ServeFilesFromDirectory(extension->path());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate main tab to a web page an iframe.  There should be no extension
+  // frames yet.
+  NavigateToURL(embedded_test_server()->GetURL("/blank_iframe.html"));
+  ProcessManager* pm = ProcessManager::Get(profile());
+  EXPECT_EQ(0u, pm->GetAllFrames().size());
+  EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate iframe to an extension URL.
+  const GURL extension_url(extension->url().Resolve("empty.html"));
+  EXPECT_TRUE(content::NavigateIframeToURL(tab, "frame0", extension_url));
+  EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+  EXPECT_EQ(1u, pm->GetAllFrames().size());
+
+  content::RenderFrameHost* main_frame = tab->GetMainFrame();
+  content::RenderFrameHost* extension_frame = ChildFrameAt(main_frame, 0);
+
+  // Create valid blob and filesystem URLs in the extension's origin.
+  url::Origin extension_origin(extension_frame->GetLastCommittedOrigin());
+  GURL blob_url(CreateBlobURL(extension_frame, "foo"));
+  EXPECT_EQ(extension_origin, url::Origin::Create(blob_url));
+  GURL filesystem_url(CreateFileSystemURL(extension_frame, "foo"));
+  EXPECT_EQ(extension_origin, url::Origin::Create(filesystem_url));
+  GURL nested_urls[] = {blob_url, filesystem_url};
+
+  // Check that extension blob/filesystem URLs still can be downloaded via an
+  // HTML anchor tag with the download attribute (i.e., <a download>) (which
+  // starts out as a top-level navigation).
   PermissionRequestManager* permission_request_manager =
-      PermissionRequestManager::FromWebContents(popup);
+      PermissionRequestManager::FromWebContents(tab);
   permission_request_manager->set_auto_response_for_test(
       PermissionRequestManager::ACCEPT_ALL);
-  for (size_t i = 0; i < arraysize(nested_urls); i++) {
+  for (const GURL& nested_url : nested_urls) {
     content::DownloadTestObserverTerminal observer(
         content::BrowserContext::GetDownloadManager(profile()), 1,
         content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
@@ -905,18 +960,18 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
            anchor.href = '%s';
            anchor.download = '';
            anchor.click();)",
-        nested_urls[i].spec().c_str());
-    EXPECT_TRUE(ExecuteScript(popup, script));
+        nested_url.spec().c_str());
+    EXPECT_TRUE(ExecuteScript(tab, script));
     observer.WaitForFinished();
     EXPECT_EQ(
         1u, observer.NumDownloadsSeenInState(download::DownloadItem::COMPLETE));
 
     // This is a top-level navigation that should have resulted in a download.
-    // Ensure that the popup stayed at its original location.
-    EXPECT_NE(nested_urls[i], popup->GetLastCommittedURL());
+    // Ensure that the tab stayed at its original location.
+    EXPECT_NE(nested_url, tab->GetLastCommittedURL());
     EXPECT_FALSE(extension_origin.IsSameOriginWith(
-        popup->GetMainFrame()->GetLastCommittedOrigin()));
-    EXPECT_NE("foo", GetTextContent(popup->GetMainFrame()));
+        main_frame->GetLastCommittedOrigin()));
+    EXPECT_NE("foo", GetTextContent(main_frame));
 
     EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
     EXPECT_EQ(1u, pm->GetAllFrames().size());
