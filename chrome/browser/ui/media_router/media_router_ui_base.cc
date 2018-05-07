@@ -322,7 +322,7 @@ base::Optional<RouteParameters> MediaRouterUIBase::GetRouteParameters(
   CHECK(initiator());
   params.incognito = initiator()->GetBrowserContext()->IsOffTheRecord();
 
-  return params;
+  return base::make_optional(std::move(params));
 }
 
 bool MediaRouterUIBase::CreateRoute(const MediaSink::Id& sink_id,
