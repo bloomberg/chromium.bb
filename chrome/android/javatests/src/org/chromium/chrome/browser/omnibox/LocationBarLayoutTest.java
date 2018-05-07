@@ -52,7 +52,7 @@ public class LocationBarLayoutTest {
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
-    private static final int SEARCH_ICON_RESOURCE = R.drawable.ic_search;
+    private static final int SEARCH_ICON_RESOURCE = R.drawable.omnibox_search;
 
     private static final String SEARCH_TERMS = "machine learning";
     private static final String GOOGLE_SRP_URL = "https://www.google.com/search?q=machine+learning";
