@@ -61,7 +61,9 @@ base::SingleThreadTaskRunner* MainThread::GetTaskRunner() {
 }
 
 base::SingleThreadTaskRunner* MainThread::GetWorkerTaskRunner() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(
+      task_runner_->BelongsToCurrentThread() ||
+      (worker_task_runner_ && worker_task_runner_->BelongsToCurrentThread()));
   if (!worker_task_runner_) {
     CHECK(worker_thread_.Start());
     worker_task_runner_ = worker_thread_.task_runner();
