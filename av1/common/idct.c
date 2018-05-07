@@ -29,23 +29,6 @@ int av1_get_tx_scale(const TX_SIZE tx_size) {
 // NOTE: The implementation of all inverses need to be aware of the fact
 // that input and output could be the same buffer.
 
-static void highbd_inv_idtx_add_c(const tran_low_t *input, uint8_t *dest8,
-                                  int stride, int bsx, int bsy, TX_TYPE tx_type,
-                                  int bd) {
-  const int pels = bsx * bsy;
-  const int shift = 3 - ((pels > 256) + (pels > 1024));
-  uint16_t *dest = CONVERT_TO_SHORTPTR(dest8);
-
-  if (tx_type == IDTX) {
-    for (int r = 0; r < bsy; ++r) {
-      for (int c = 0; c < bsx; ++c)
-        dest[c] = highbd_clip_pixel_add(dest[c], input[c] >> shift, bd);
-      dest += stride;
-      input += bsx;
-    }
-  }
-}
-
 // idct
 static void highbd_iwht4x4_add(const tran_low_t *input, uint8_t *dest,
                                int stride, int eob, int bd) {
@@ -278,42 +261,11 @@ static void highbd_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest,
 
 static void highbd_inv_txfm_add_64x64(const tran_low_t *input, uint8_t *dest,
                                       int stride, const TxfmParam *txfm_param) {
-  int bd = txfm_param->bd;
+  const int bd = txfm_param->bd;
   const TX_TYPE tx_type = txfm_param->tx_type;
   const int32_t *src = cast_to_int32(input);
-  switch (tx_type) {
-    case DCT_DCT:
-      av1_inv_txfm2d_add_64x64(src, CONVERT_TO_SHORTPTR(dest), stride, DCT_DCT,
-                               bd);
-      break;
-    case ADST_DCT:
-    case DCT_ADST:
-    case ADST_ADST:
-    case FLIPADST_DCT:
-    case DCT_FLIPADST:
-    case FLIPADST_FLIPADST:
-    case ADST_FLIPADST:
-    case FLIPADST_ADST:
-    case V_DCT:
-    case H_DCT:
-    case V_ADST:
-    case H_ADST:
-    case V_FLIPADST:
-    case H_FLIPADST:
-      // TODO(sarahparker)
-      // I've deleted the 64x64 implementations that existed in lieu
-      // of adst, flipadst and identity for simplicity but will bring back
-      // in a later change. This shouldn't impact performance since
-      // DCT_DCT is the only extended type currently allowed for 64x64,
-      // as dictated by get_ext_tx_set_type in blockd.h.
-      av1_inv_txfm2d_add_64x64_c(src, CONVERT_TO_SHORTPTR(dest), stride,
-                                 DCT_DCT, bd);
-      break;
-    case IDTX:
-      highbd_inv_idtx_add_c(input, dest, stride, 64, 64, tx_type, bd);
-      break;
-    default: assert(0); break;
-  }
+  assert(tx_type == DCT_DCT);
+  av1_inv_txfm2d_add_64x64(src, CONVERT_TO_SHORTPTR(dest), stride, tx_type, bd);
 }
 
 static void init_txfm_param(const MACROBLOCKD *xd, int plane, TX_SIZE tx_size,
