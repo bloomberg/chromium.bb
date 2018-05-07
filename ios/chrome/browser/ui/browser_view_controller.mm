@@ -320,6 +320,8 @@ void Record(ContextMenuHistogram action, bool is_image, bool is_link) {
 
 // Returns the status bar background color.
 UIColor* StatusBarBackgroundColor() {
+  if (IsUIRefreshPhase1Enabled())
+    return [UIColor colorWithRed:0.11 green:0.11 blue:0.11 alpha:1.0];
   return [UIColor colorWithRed:0.149 green:0.149 blue:0.164 alpha:1];
 }
 

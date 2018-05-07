@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tab_grid_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 
@@ -142,6 +143,18 @@
 
 - (CGSize)intrinsicContentSize {
   return CGSizeMake(UIViewNoIntrinsicMetric, kAdaptiveToolbarHeight);
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  if (IsRegularXRegularSizeClass(self)) {
+    self.backgroundColor =
+        self.buttonFactory.toolbarConfiguration.backgroundColor;
+    self.blur.alpha = 0;
+  } else {
+    self.backgroundColor = [UIColor clearColor];
+    self.blur.alpha = 1;
+  }
 }
 
 #pragma mark - Setup

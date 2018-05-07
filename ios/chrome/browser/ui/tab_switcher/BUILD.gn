@@ -54,6 +54,8 @@ source_set("tab_switcher") {
     "resources:tabswitcher_phone",
     "resources:tabswitcher_recently_closed",
     "resources:tabswitcher_tab_switcher_button",
+    "resources:tabswitcher_tab_switcher_count_button",
+    "resources:tabswitcher_tab_switcher_count_button_pressed",
     "resources:tabswitcher_tablet",
     "//base",
     "//components/browser_sync",

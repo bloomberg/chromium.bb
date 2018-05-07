@@ -71,8 +71,10 @@ const NSTimeInterval kDragAndDropLongPressDuration = 0.4;
 // Tab dimensions.
 const CGFloat kTabOverlap = 26.0;
 const CGFloat kTabOverlapForCompactLayout = 30.0;
+const CGFloat kTabOverlapForRefresh = 48.0;
 
-const CGFloat kNewTabOverlap = 8.0;
+const CGFloat kNewTabOverlap = 30.0;
+const CGFloat kNewTabOverlapLegacy = 8.0;
 const CGFloat kMaxTabWidth = 265.0;
 const CGFloat kMaxTabWidthForCompactLayout = 225.0;
 
@@ -103,7 +105,11 @@ const CGFloat kDimmingViewBottomInsetHighRes = 0.0;
 const CGFloat kDimmingViewBottomInset = 0.0;
 
 // The size of the tab strip view.
-const CGFloat kTabStripHeight = 39.0;
+const CGFloat kTabStripHeight = 54.0;
+const CGFloat kTabStripHeightLegacy = 39.0;
+
+// Shift everything down to account for the tab's top shadow.
+const CGFloat kTopShadowOffset = 15;
 
 // The size of the new tab button.
 const CGFloat kNewTabButtonWidth = 59.9;
@@ -119,10 +125,61 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 
 // Returns the background color.
 UIColor* BackgroundColor() {
+  if (IsUIRefreshPhase1Enabled())
+    return [UIColor colorWithRed:0.11 green:0.11 blue:0.11 alpha:1.0];
   return [UIColor colorWithRed:0.149 green:0.149 blue:0.164 alpha:1];
 }
 
+CGFloat NewTabOverlap() {
+  return IsUIRefreshPhase1Enabled() ? kNewTabOverlap : kNewTabOverlapLegacy;
+}
+
+CGFloat TopShadowOffset() {
+  return IsUIRefreshPhase1Enabled() ? kTopShadowOffset : 0;
+}
+
+// Returns the string to use for a numeric item count.
+NSString* StringForItemCount(long count) {
+  if (count == 0)
+    return @"";
+  if (count > 99)
+    return @":-)";
+  return [NSString stringWithFormat:@"%ld", count];
+}
+
 }  // namespace
+
+// Helper class to display a UIButton with the image and text centered
+// vertically and horizontally.
+@interface TabStripCenteredButton : UIButton {
+}
+@end
+
+@implementation TabStripCenteredButton
+
+- (instancetype)initWithFrame:(CGRect)frame {
+  self = [super initWithFrame:frame];
+  if (self) {
+    [self setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    self.titleLabel.textAlignment = NSTextAlignmentCenter;
+    self.titleLabel.font = [UIFont systemFontOfSize:13 weight:UIFontWeightBold];
+    self.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.titleLabel.minimumScaleFactor = 0.1;
+    self.titleLabel.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
+  }
+  return self;
+}
+
+- (void)layoutSubviews {
+  [super layoutSubviews];
+  CGSize size = self.bounds.size;
+  CGPoint center = CGPointMake(size.width / 2, size.height / 2);
+  self.imageView.center = center;
+  self.imageView.frame = AlignRectToPixel(self.imageView.frame);
+  self.titleLabel.frame = self.bounds;
+}
+
+@end
 
 @interface TabStripController ()<DropAndNavigateDelegate,
                                  TabModelObserver,
@@ -361,7 +418,8 @@ UIColor* BackgroundColor() {
 
     // |self.view| setup.
     CGRect tabStripFrame = [UIApplication sharedApplication].keyWindow.bounds;
-    tabStripFrame.size.height = kTabStripHeight;
+    tabStripFrame.size.height =
+        IsUIRefreshPhase1Enabled() ? kTabStripHeight : kTabStripHeightLegacy;
     _view = [[UIView alloc] initWithFrame:tabStripFrame];
     _view.autoresizingMask = (UIViewAutoresizingFlexibleWidth |
                               UIViewAutoresizingFlexibleBottomMargin);
@@ -381,7 +439,9 @@ UIColor* BackgroundColor() {
 
     // |self.buttonNewTab| setup.
     CGRect buttonNewTabFrame = tabStripFrame;
+    buttonNewTabFrame.origin.y = TopShadowOffset();
     buttonNewTabFrame.size.width = kNewTabButtonWidth;
+    buttonNewTabFrame.size.height -= TopShadowOffset();
     _buttonNewTab = [[UIButton alloc] initWithFrame:buttonNewTabFrame];
     _isIncognito = tabModel && tabModel.browserState->IsOffTheRecord();
     // TODO(crbug.com/600829): Rewrite layout code and convert these masks to
@@ -391,14 +451,29 @@ UIColor* BackgroundColor() {
     _buttonNewTab.imageView.contentMode = UIViewContentModeCenter;
     UIImage* buttonNewTabImage = nil;
     UIImage* buttonNewTabPressedImage = nil;
-    if (_style == INCOGNITO) {
-      buttonNewTabImage = [UIImage imageNamed:@"tabstrip_new_tab_incognito"];
-      buttonNewTabPressedImage =
-          [UIImage imageNamed:@"tabstrip_new_tab_incognito_pressed"];
+
+    if (IsUIRefreshPhase1Enabled()) {
+      if (_style == INCOGNITO) {
+        buttonNewTabImage = [UIImage imageNamed:@"tabstrip_new_tab_incognito"];
+        buttonNewTabPressedImage =
+            [UIImage imageNamed:@"tabstrip_new_tab_incognito_pressed"];
+      } else {
+        buttonNewTabImage = [UIImage imageNamed:@"tabstrip_new_tab"];
+        buttonNewTabPressedImage =
+            [UIImage imageNamed:@"tabstrip_new_tab_pressed"];
+      }
+
     } else {
-      buttonNewTabImage = [UIImage imageNamed:@"tabstrip_new_tab"];
-      buttonNewTabPressedImage =
-          [UIImage imageNamed:@"tabstrip_new_tab_pressed"];
+      if (_style == INCOGNITO) {
+        buttonNewTabImage =
+            [UIImage imageNamed:@"tabstrip_new_tab_incognito_legacy"];
+        buttonNewTabPressedImage =
+            [UIImage imageNamed:@"tabstrip_new_tab_incognito_pressed_legacy"];
+      } else {
+        buttonNewTabImage = [UIImage imageNamed:@"tabstrip_new_tab_legacy"];
+        buttonNewTabPressedImage =
+            [UIImage imageNamed:@"tabstrip_new_tab_pressed_legacy"];
+      }
     }
     [_buttonNewTab setImage:buttonNewTabImage forState:UIControlStateNormal];
     [_buttonNewTab setImage:buttonNewTabPressedImage
@@ -905,7 +980,7 @@ UIColor* BackgroundColor() {
 }
 
 #pragma mark -
-#pragma mark TabStripModelObserver methods
+#pragma mark TabModelObserver methods
 
 // Observer method.
 - (void)tabModel:(TabModel*)model
@@ -1030,31 +1105,54 @@ UIColor* BackgroundColor() {
   [self tabModel:model didChangeTab:newTab];
 }
 
+- (void)tabModelDidChangeTabCount:(TabModel*)model {
+  const NSUInteger tabCount = [_tabArray count] - [_closingTabs count];
+  if (IsUIRefreshPhase1Enabled()) {
+    [_tabSwitcherButton setTitle:StringForItemCount(tabCount)
+                        forState:UIControlStateNormal];
+  }
+}
+
 #pragma mark -
 #pragma mark Views and Layout
 
 - (CGFloat)tabStripVisibleSpace {
   CGFloat availableSpace = CGRectGetWidth([_tabStripView bounds]) -
                            CGRectGetWidth([_buttonNewTab frame]) +
-                           kNewTabOverlap - kNewTabRightPadding -
+                           NewTabOverlap() - kNewTabRightPadding -
                            kTabSwitcherButtonWidth;
   return availableSpace;
 }
 
 - (void)installTabSwitcherButton {
   DCHECK(!_tabSwitcherButton);
-  UIImage* tabSwitcherButtonIcon =
-      [UIImage imageNamed:@"tabswitcher_tab_switcher_button"];
-  tabSwitcherButtonIcon = [tabSwitcherButtonIcon
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  UIImage* tabSwitcherButtonIcon;
+  UIImage* tabSwitcherButtonIconPressed;
+  if (IsUIRefreshPhase1Enabled()) {
+    tabSwitcherButtonIcon =
+        [UIImage imageNamed:@"tabswitcher_tab_switcher_count_button"];
+    tabSwitcherButtonIconPressed =
+        [UIImage imageNamed:@"tabswitcher_tab_switcher_count_button_pressed"];
+  } else {
+    tabSwitcherButtonIcon =
+        [UIImage imageNamed:@"tabswitcher_tab_switcher_button"];
+    tabSwitcherButtonIcon = [tabSwitcherButtonIcon
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  }
+
   int tabSwitcherButtonIdsAccessibilityLabel =
       IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER;
   NSString* tabSwitcherButtonEnglishUiAutomationName = @"Enter Tab Switcher";
-  const CGFloat tabStripHeight = _view.frame.size.height;
+  const CGFloat tabStripHeight = _view.frame.size.height - TopShadowOffset();
   CGRect buttonFrame =
-      CGRectMake(CGRectGetMaxX(_view.frame) - kTabSwitcherButtonWidth, 0.0,
-                 kTabSwitcherButtonWidth, tabStripHeight);
-  _tabSwitcherButton = [UIButton buttonWithType:UIButtonTypeCustom];
+      CGRectMake(CGRectGetMaxX(_view.frame) - kTabSwitcherButtonWidth,
+                 TopShadowOffset(), kTabSwitcherButtonWidth, tabStripHeight);
+  if (IsUIRefreshPhase1Enabled()) {
+    _tabSwitcherButton =
+        [TabStripCenteredButton buttonWithType:UIButtonTypeCustom];
+  } else {
+    _tabSwitcherButton = [UIButton buttonWithType:UIButtonTypeCustom];
+  }
   [_tabSwitcherButton setTintColor:[UIColor whiteColor]];
   [_tabSwitcherButton setFrame:buttonFrame];
   [_tabSwitcherButton setContentMode:UIViewContentModeCenter];
@@ -1063,6 +1161,10 @@ UIColor* BackgroundColor() {
   [_tabSwitcherButton setExclusiveTouch:YES];
   [_tabSwitcherButton setImage:tabSwitcherButtonIcon
                       forState:UIControlStateNormal];
+  if (IsUIRefreshPhase1Enabled()) {
+    [_tabSwitcherButton setImage:tabSwitcherButtonIconPressed
+                        forState:UIControlStateHighlighted];
+  }
   [_tabSwitcherButton addTarget:self.dispatcher
                          action:@selector(displayTabSwitcher)
                forControlEvents:UIControlEventTouchUpInside];
@@ -1105,7 +1207,7 @@ UIColor* BackgroundColor() {
   // desired width, with the standard overlap, plus the new tab button.
   CGSize contentSize = CGSizeMake(
       _currentTabWidth * tabCount - ([self tabOverlap] * (tabCount - 1)) +
-          CGRectGetWidth([_buttonNewTab frame]) - kNewTabOverlap,
+          CGRectGetWidth([_buttonNewTab frame]) - NewTabOverlap(),
       tabHeight);
   if (CGSizeEqualToSize([_tabStripView contentSize], contentSize))
     return;
@@ -1155,7 +1257,11 @@ UIColor* BackgroundColor() {
 }
 
 - (CGFloat)tabOverlap {
-  return IsCompactTablet() ? kTabOverlapForCompactLayout : kTabOverlap;
+  if (IsUIRefreshPhase1Enabled())
+    return kTabOverlapForRefresh;
+  if (!IsCompactTablet())
+    return kTabOverlap;
+  return kTabOverlapForCompactLayout;
 }
 
 - (CGFloat)maxTabWidth {
@@ -1520,7 +1626,8 @@ UIColor* BackgroundColor() {
   CGRect newTabFrame = [_buttonNewTab frame];
   BOOL moveNewTab =
       (newTabFrame.origin.x != virtualMaxX) && !_buttonNewTab.hidden;
-  newTabFrame.origin = CGPointMake(virtualMaxX - kNewTabOverlap, 0);
+  newTabFrame.origin =
+      CGPointMake(virtualMaxX - NewTabOverlap(), TopShadowOffset());
   if (!animate && moveNewTab)
     [_buttonNewTab setFrame:newTabFrame];
 
