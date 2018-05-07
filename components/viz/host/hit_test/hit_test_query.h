@@ -28,6 +28,7 @@ struct Target {
 enum class EventSource {
   MOUSE,
   TOUCH,
+  ANY,
 };
 
 // Finds the target for a given location based on the AggregatedHitTestRegion

@@ -105,7 +105,8 @@ class MockRootRenderWidgetHostView : public TestRenderWidgetHostView {
   bool TransformPointToCoordSpaceForView(
       const gfx::PointF& point,
       RenderWidgetHostViewBase* target_view,
-      gfx::PointF* transformed_point) override {
+      gfx::PointF* transformed_point,
+      viz::EventSource source = viz::EventSource::ANY) override {
     return true;
   }
 

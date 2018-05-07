@@ -82,9 +82,10 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   GetTouchSelectionControllerClientManager() override;
   gfx::PointF TransformPointToRootCoordSpaceF(
       const gfx::PointF& point) override;
-  bool TransformPointToLocalCoordSpace(const gfx::PointF& point,
-                                       const viz::SurfaceId& original_surface,
-                                       gfx::PointF* transformed_point) override;
+  bool TransformPointToLocalCoordSpaceLegacy(
+      const gfx::PointF& point,
+      const viz::SurfaceId& original_surface,
+      gfx::PointF* transformed_point) override;
   gfx::PointF TransformRootPointToViewCoordSpace(
       const gfx::PointF& point) override;
 
@@ -121,6 +122,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void DidStopFlinging() override;
   bool LockMouse() override;
   void UnlockMouse() override;
+  viz::FrameSinkId GetRootFrameSinkId() override;
   viz::LocalSurfaceId GetLocalSurfaceId() const override;
   void DidCreateNewRendererCompositorFrameSink(
       viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink)

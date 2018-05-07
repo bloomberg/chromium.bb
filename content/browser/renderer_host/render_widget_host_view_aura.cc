@@ -1634,7 +1634,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
   event_handler_->OnMouseEvent(event);
 }
 
-bool RenderWidgetHostViewAura::TransformPointToLocalCoordSpace(
+bool RenderWidgetHostViewAura::TransformPointToLocalCoordSpaceLegacy(
     const gfx::PointF& point,
     const viz::SurfaceId& original_surface,
     gfx::PointF* transformed_point) {
@@ -1645,7 +1645,7 @@ bool RenderWidgetHostViewAura::TransformPointToLocalCoordSpace(
   // TODO: this shouldn't be used with aura-mus, so that the null check so
   // go away and become a DCHECK.
   if (delegated_frame_host_ &&
-      !delegated_frame_host_->TransformPointToLocalCoordSpace(
+      !delegated_frame_host_->TransformPointToLocalCoordSpaceLegacy(
           point_in_pixels, original_surface, transformed_point))
     return false;
   *transformed_point =
@@ -1656,7 +1656,8 @@ bool RenderWidgetHostViewAura::TransformPointToLocalCoordSpace(
 bool RenderWidgetHostViewAura::TransformPointToCoordSpaceForView(
     const gfx::PointF& point,
     RenderWidgetHostViewBase* target_view,
-    gfx::PointF* transformed_point) {
+    gfx::PointF* transformed_point,
+    viz::EventSource source) {
   if (target_view == this || !delegated_frame_host_) {
     *transformed_point = point;
     return true;
@@ -1666,7 +1667,7 @@ bool RenderWidgetHostViewAura::TransformPointToCoordSpaceForView(
   // but it is not necessary here because the final target view is responsible
   // for converting before computing the final transform.
   return delegated_frame_host_->TransformPointToCoordSpaceForView(
-      point, target_view, transformed_point);
+      point, target_view, transformed_point, source);
 }
 
 viz::FrameSinkId RenderWidgetHostViewAura::GetRootFrameSinkId() {

@@ -13,8 +13,12 @@ namespace {
 
 // If we want to add new source type here, consider switching to use
 // ui::EventPointerType instead of EventSource.
-bool ShouldUseTouchBounds(EventSource event_source) {
-  return event_source == EventSource::TOUCH;
+bool RegionMatchEventSource(EventSource event_source, uint32_t flags) {
+  if (event_source == EventSource::TOUCH)
+    return (flags & mojom::kHitTestTouch) != 0u;
+  if (event_source == EventSource::MOUSE)
+    return (flags & mojom::kHitTestMouse) != 0u;
+  return (flags & (mojom::kHitTestMouse | mojom::kHitTestTouch)) != 0u;
 }
 
 }  // namespace
@@ -138,11 +142,7 @@ bool HitTestQuery::FindTargetInRegionForLocation(
     child_region = child_region + child_region->child_count + 1;
   }
 
-  bool match_touch_or_mouse_region =
-      ShouldUseTouchBounds(event_source)
-          ? (region->flags & mojom::kHitTestTouch) != 0u
-          : (region->flags & mojom::kHitTestMouse) != 0u;
-  if (!match_touch_or_mouse_region)
+  if (!RegionMatchEventSource(event_source, region->flags))
     return false;
   if (region->flags & (mojom::kHitTestMine | mojom::kHitTestAsk)) {
     target->frame_sink_id = region->frame_sink_id;
@@ -159,12 +159,8 @@ bool HitTestQuery::TransformLocationForTargetRecursively(
     size_t target_ancestor,
     AggregatedHitTestRegion* region,
     gfx::PointF* location_in_target) const {
-  bool match_touch_or_mouse_region =
-      ShouldUseTouchBounds(event_source)
-          ? (region->flags & mojom::kHitTestTouch) != 0u
-          : (region->flags & mojom::kHitTestMouse) != 0u;
   if ((region->flags & mojom::kHitTestChildSurface) == 0u &&
-      !match_touch_or_mouse_region) {
+      !RegionMatchEventSource(event_source, region->flags)) {
     return false;
   }
 

@@ -736,6 +736,18 @@ void RenderWidgetHostViewChildFrame::PreProcessTouchEvent(
   }
 }
 
+viz::FrameSinkId RenderWidgetHostViewChildFrame::GetRootFrameSinkId() {
+  if (frame_connector_) {
+    RenderWidgetHostViewBase* root_view =
+        frame_connector_->GetRootRenderWidgetHostView();
+
+    // The root_view can be null in tests when using a TestWebContents.
+    if (root_view)
+      return root_view->GetRootFrameSinkId();
+  }
+  return viz::FrameSinkId();
+}
+
 viz::SurfaceId RenderWidgetHostViewChildFrame::GetCurrentSurfaceId() const {
   return viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_);
 }
@@ -753,7 +765,7 @@ gfx::PointF RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpaceF(
       point, viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_));
 }
 
-bool RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpace(
+bool RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpaceLegacy(
     const gfx::PointF& point,
     const viz::SurfaceId& original_surface,
     gfx::PointF* transformed_point) {
@@ -761,7 +773,7 @@ bool RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpace(
   if (!frame_connector_ || !last_received_local_surface_id_.is_valid())
     return false;
 
-  return frame_connector_->TransformPointToLocalCoordSpace(
+  return frame_connector_->TransformPointToLocalCoordSpaceLegacy(
       point, original_surface,
       viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_),
       transformed_point);
@@ -770,7 +782,8 @@ bool RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpace(
 bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
     const gfx::PointF& point,
     RenderWidgetHostViewBase* target_view,
-    gfx::PointF* transformed_point) {
+    gfx::PointF* transformed_point,
+    viz::EventSource source) {
   if (!frame_connector_ || !last_received_local_surface_id_.is_valid())
     return false;
 
@@ -782,7 +795,7 @@ bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
   return frame_connector_->TransformPointToCoordSpaceForView(
       point, target_view,
       viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_),
-      transformed_point);
+      transformed_point, source);
 }
 
 gfx::PointF RenderWidgetHostViewChildFrame::TransformRootPointToViewCoordSpace(

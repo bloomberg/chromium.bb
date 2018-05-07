@@ -231,8 +231,8 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
   }
 
   if (needs_transform_point) {
-    if (!TransformPointToTargetCoordSpace(
-            root_view, target, event.PositionInWidget(), &transformed_point,
+    if (!root_view->TransformPointToCoordSpaceForView(
+            event.PositionInWidget(), target, &transformed_point,
             viz::EventSource::MOUSE)) {
       return {nullptr, false, base::nullopt};
     }
@@ -248,8 +248,8 @@ RenderWidgetHostInputEventRouter::FindMouseWheelEventTarget(
   gfx::PointF transformed_point;
   if (root_view->IsMouseLocked()) {
     target = root_view->host()->delegate()->GetMouseLockWidget()->GetView();
-    if (!TransformPointToTargetCoordSpace(
-            root_view, target, event.PositionInWidget(), &transformed_point,
+    if (!root_view->TransformPointToCoordSpaceForView(
+            event.PositionInWidget(), target, &transformed_point,
             viz::EventSource::MOUSE)) {
       return {nullptr, false, base::nullopt};
     }
@@ -693,8 +693,8 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
     // new compositor surface. The SurfaceID for that might not have
     // propagated to its embedding surface, which makes it impossible to
     // compute the transformation for it
-    if (!TransformPointToTargetCoordSpace(
-            root_view, view, event.PositionInWidget(), &transformed_point,
+    if (!root_view->TransformPointToCoordSpaceForView(
+            event.PositionInWidget(), view, &transformed_point,
             viz::EventSource::MOUSE)) {
       transformed_point = gfx::PointF();
     }
@@ -707,9 +707,9 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
   if (common_ancestor && common_ancestor != target) {
     blink::WebMouseEvent mouse_move(event);
     mouse_move.SetType(blink::WebInputEvent::kMouseMove);
-    if (!TransformPointToTargetCoordSpace(
-            root_view, common_ancestor, event.PositionInWidget(),
-            &transformed_point, viz::EventSource::MOUSE)) {
+    if (!root_view->TransformPointToCoordSpaceForView(
+            event.PositionInWidget(), common_ancestor, &transformed_point,
+            viz::EventSource::MOUSE)) {
       transformed_point = gfx::PointF();
     }
     mouse_move.SetPositionInWidget(transformed_point.x(),
@@ -723,8 +723,8 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
       continue;
     blink::WebMouseEvent mouse_enter(event);
     mouse_enter.SetType(blink::WebInputEvent::kMouseMove);
-    if (!TransformPointToTargetCoordSpace(
-            root_view, view, event.PositionInWidget(), &transformed_point,
+    if (!root_view->TransformPointToCoordSpaceForView(
+            event.PositionInWidget(), view, &transformed_point,
             viz::EventSource::MOUSE)) {
       transformed_point = gfx::PointF();
     }
@@ -1308,6 +1308,18 @@ void RenderWidgetHostInputEventRouter::DispatchTouchpadGestureEvent(
   touchpad_gesture_target_.target->ProcessGestureEvent(gesture_event, latency);
 }
 
+RenderWidgetHostViewBase*
+RenderWidgetHostInputEventRouter::FindViewFromFrameSinkId(
+    const viz::FrameSinkId& frame_sink_id) const {
+  // TODO(kenrb): There should be a better way to handle hit tests to surfaces
+  // that are no longer valid for hit testing. See https://crbug.com/790044.
+  auto iter = owner_map_.find(frame_sink_id);
+  // If the point hit a Surface whose namspace is no longer in the map, then
+  // it likely means the RenderWidgetHostView has been destroyed but its
+  // parent frame has not sent a new compositor frame since that happened.
+  return iter == owner_map_.end() ? nullptr : iter->second;
+}
+
 std::vector<RenderWidgetHostView*>
 RenderWidgetHostInputEventRouter::GetRenderWidgetHostViewsForTests() const {
   std::vector<RenderWidgetHostView*> hosts;
@@ -1320,59 +1332,6 @@ RenderWidgetHostInputEventRouter::GetRenderWidgetHostViewsForTests() const {
 RenderWidgetTargeter*
 RenderWidgetHostInputEventRouter::GetRenderWidgetTargeterForTests() {
   return event_targeter_.get();
-}
-
-bool RenderWidgetHostInputEventRouter::TransformPointToTargetCoordSpace(
-    RenderWidgetHostViewBase* root_view,
-    RenderWidgetHostViewBase* target,
-    const gfx::PointF& point,
-    gfx::PointF* transformed_point,
-    viz::EventSource source) const {
-  if (root_view == target) {
-    *transformed_point = point;
-    return true;
-  }
-
-  if (!use_viz_hit_test_) {
-    return root_view->TransformPointToCoordSpaceForView(point, target,
-                                                        transformed_point);
-  }
-
-  viz::HitTestQuery* query = GetHitTestQuery(GetHostFrameSinkManager(),
-                                             root_view->GetRootFrameSinkId());
-  if (!query)
-    return false;
-
-  std::vector<viz::FrameSinkId> target_ancestors;
-  target_ancestors.push_back(target->GetFrameSinkId());
-  RenderWidgetHostViewBase* cur_view = target;
-  while (cur_view->IsRenderWidgetHostViewChildFrame()) {
-    if (cur_view->IsRenderWidgetHostViewGuest()) {
-      cur_view = static_cast<RenderWidgetHostViewGuest*>(cur_view)
-                     ->GetOwnerRenderWidgetHostView();
-    } else {
-      cur_view = static_cast<RenderWidgetHostViewChildFrame*>(cur_view)
-                     ->GetParentView();
-    }
-    if (!cur_view)
-      return false;
-    target_ancestors.push_back(cur_view->GetFrameSinkId());
-  }
-  DCHECK_EQ(cur_view, root_view);
-  target_ancestors.push_back(root_view->GetRootFrameSinkId());
-
-  float device_scale_factor = root_view->GetDeviceScaleFactor();
-  DCHECK_GT(device_scale_factor, 0.0f);
-  gfx::PointF point_in_root_in_pixels =
-      ComputePointInRootInPixels(point, root_view, device_scale_factor);
-  if (!query->TransformLocationForTarget(source, target_ancestors,
-                                         point_in_root_in_pixels,
-                                         transformed_point)) {
-    return false;
-  }
-  *transformed_point =
-      gfx::ConvertPointToDIP(device_scale_factor, *transformed_point);
-  return true;
 }
 
 RenderWidgetTargetResult
@@ -1446,18 +1405,6 @@ void RenderWidgetHostInputEventRouter::DispatchEventToTarget(
     }
   }
   NOTREACHED();
-}
-
-RenderWidgetHostViewBase*
-RenderWidgetHostInputEventRouter::FindViewFromFrameSinkId(
-    const viz::FrameSinkId& frame_sink_id) const {
-  // TODO(kenrb): There should be a better way to handle hit tests to surfaces
-  // that are no longer valid for hit testing. See https://crbug.com/790044.
-  auto iter = owner_map_.find(frame_sink_id);
-  // If the point hit a Surface whose namspace is no longer in the map, then
-  // it likely means the RenderWidgetHostView has been destroyed but its
-  // parent frame has not sent a new compositor frame since that happened.
-  return iter == owner_map_.end() ? nullptr : iter->second;
 }
 
 }  // namespace content

@@ -60,4 +60,7 @@ specific_include_rules = {
   "render_widget_host_input_event_router.cc": [
     "+content/browser/frame_host/render_widget_host_view_guest.h",
   ],
+  "render_widget_host_view_base\.cc": [
+    "+content/browser/frame_host/render_widget_host_view_guest.h",
+  ],
 }

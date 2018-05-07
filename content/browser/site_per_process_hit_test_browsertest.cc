@@ -628,7 +628,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
       parent_iframe_node->current_frame_host()
           ->GetRenderWidgetHost()
           ->GetView(),
-      &nested_in_parent);
+      &nested_in_parent, viz::EventSource::MOUSE);
 
   // Get original scroll position.
   double div_scroll_top_start;
