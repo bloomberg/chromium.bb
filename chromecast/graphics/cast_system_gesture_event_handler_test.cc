@@ -21,6 +21,7 @@ namespace {
 constexpr base::TimeDelta kTimeDelay = base::TimeDelta::FromMilliseconds(100);
 constexpr int kSwipeDistance = 50;
 constexpr int kNumSteps = 5;
+constexpr gfx::Point kZeroPoint{0, 0};
 
 }  // namespace
 
@@ -50,56 +51,61 @@ class TestEventGeneratorDelegate
 class TestSideSwipeGestureHandler
     : public CastSideSwipeGestureHandlerInterface {
  public:
+  TestSideSwipeGestureHandler()
+      : begin_swipe_point_(kZeroPoint), end_swipe_point_(kZeroPoint) {}
+
   ~TestSideSwipeGestureHandler() override = default;
 
-  void OnSideSwipeBegin(CastSideSwipeOrigin swipe_origin,
-                        ui::GestureEvent* gesture_event) override {
+  bool CanHandleSwipe(CastSideSwipeOrigin swipe_origin) override {
+    return handle_swipe_;
+  }
+
+  void HandleSideSwipeBegin(CastSideSwipeOrigin swipe_origin,
+                            const gfx::Point& touch_location) override {
     if (handle_swipe_) {
       begin_swipe_origin_ = swipe_origin;
-      begin_gesture_event_ = gesture_event;
-
-      gesture_event->SetHandled();
+      begin_swipe_point_ = touch_location;
     }
   }
 
-  void OnSideSwipeEnd(CastSideSwipeOrigin swipe_origin,
-                      ui::GestureEvent* gesture_event) override {
+  void HandleSideSwipeEnd(CastSideSwipeOrigin swipe_origin,
+                          const gfx::Point& gesture_event) override {
     end_swipe_origin_ = swipe_origin;
-    end_gesture_event_ = gesture_event;
+    end_swipe_point_ = gesture_event;
   }
 
   void SetHandleSwipe(bool handle_swipe) { handle_swipe_ = handle_swipe; }
 
   CastSideSwipeOrigin begin_swipe_origin() const { return begin_swipe_origin_; }
-  ui::GestureEvent* begin_gesture_event() const { return begin_gesture_event_; }
+  gfx::Point begin_swipe_point() const { return begin_swipe_point_; }
 
   CastSideSwipeOrigin end_swipe_origin() const { return end_swipe_origin_; }
-  ui::GestureEvent* end_gesture_event() const { return end_gesture_event_; }
+  gfx::Point end_swipe_point() const { return end_swipe_point_; }
 
  private:
   bool handle_swipe_ = true;
 
   CastSideSwipeOrigin begin_swipe_origin_ = CastSideSwipeOrigin::NONE;
-  ui::GestureEvent* begin_gesture_event_ = nullptr;
+  gfx::Point begin_swipe_point_;
 
   CastSideSwipeOrigin end_swipe_origin_ = CastSideSwipeOrigin::NONE;
-  ui::GestureEvent* end_gesture_event_ = nullptr;
+  gfx::Point end_swipe_point_;
 };
 
 // Event sink to check for events that get through (or don't get through) after
 // the system gesture handler handles them.
 class TestEventHandler : public ui::EventHandler {
  public:
-  TestEventHandler() : EventHandler(), num_gesture_events_received_(0) {}
+  TestEventHandler() : EventHandler(), num_touch_events_received_(0) {}
 
-  void OnGestureEvent(ui::GestureEvent* event) override {
-    num_gesture_events_received_++;
+  void OnTouchEvent(ui::TouchEvent* event) override {
+    num_touch_events_received_++;
   }
 
-  int NumGestureEventsReceived() const { return num_gesture_events_received_; }
+  int NumTouchEventsReceived() const { return num_touch_events_received_; }
 
  private:
-  int num_gesture_events_received_;
+  int num_touch_events_received_;
 };
 
 class CastSystemGestureEventHandlerTest : public aura::test::AuraTestBase {
@@ -157,11 +163,11 @@ class CastSystemGestureEventHandlerTest : public aura::test::AuraTestBase {
 TEST_F(CastSystemGestureEventHandlerTest, Initialization) {
   EXPECT_EQ(CastSideSwipeOrigin::NONE,
             test_gesture_handler().begin_swipe_origin());
-  EXPECT_EQ(nullptr, test_gesture_handler().begin_gesture_event());
+  EXPECT_EQ(kZeroPoint, test_gesture_handler().begin_swipe_point());
   EXPECT_EQ(CastSideSwipeOrigin::NONE,
             test_gesture_handler().end_swipe_origin());
-  EXPECT_EQ(nullptr, test_gesture_handler().end_gesture_event());
-  EXPECT_EQ(0, test_event_handler().NumGestureEventsReceived());
+  EXPECT_EQ(kZeroPoint, test_gesture_handler().end_swipe_point());
+  EXPECT_EQ(0, test_event_handler().NumTouchEventsReceived());
 }
 
 // A swipe in the middle of the screen should produce no system gesture.
@@ -176,11 +182,11 @@ TEST_F(CastSystemGestureEventHandlerTest, SwipeWithNoSystemGesture) {
 
   EXPECT_EQ(CastSideSwipeOrigin::NONE,
             test_gesture_handler().begin_swipe_origin());
-  EXPECT_EQ(nullptr, test_gesture_handler().begin_gesture_event());
+  EXPECT_EQ(kZeroPoint, test_gesture_handler().begin_swipe_point());
   EXPECT_EQ(CastSideSwipeOrigin::NONE,
             test_gesture_handler().end_swipe_origin());
-  EXPECT_EQ(nullptr, test_gesture_handler().end_gesture_event());
-  EXPECT_NE(0, test_event_handler().NumGestureEventsReceived());
+  EXPECT_EQ(kZeroPoint, test_gesture_handler().end_swipe_point());
+  EXPECT_NE(0, test_event_handler().NumTouchEventsReceived());
 }
 
 TEST_F(CastSystemGestureEventHandlerTest, SwipeFromLeft) {
@@ -193,11 +199,11 @@ TEST_F(CastSystemGestureEventHandlerTest, SwipeFromLeft) {
 
   EXPECT_EQ(CastSideSwipeOrigin::LEFT,
             test_gesture_handler().begin_swipe_origin());
-  EXPECT_NE(nullptr, test_gesture_handler().begin_gesture_event());
+  EXPECT_NE(kZeroPoint, test_gesture_handler().begin_swipe_point());
   EXPECT_EQ(CastSideSwipeOrigin::LEFT,
             test_gesture_handler().end_swipe_origin());
-  EXPECT_NE(nullptr, test_gesture_handler().end_gesture_event());
-  EXPECT_EQ(0, test_event_handler().NumGestureEventsReceived());
+  EXPECT_NE(kZeroPoint, test_gesture_handler().end_swipe_point());
+  EXPECT_EQ(0, test_event_handler().NumTouchEventsReceived());
 }
 
 TEST_F(CastSystemGestureEventHandlerTest, SwipeFromRight) {
@@ -211,11 +217,11 @@ TEST_F(CastSystemGestureEventHandlerTest, SwipeFromRight) {
 
   EXPECT_EQ(CastSideSwipeOrigin::RIGHT,
             test_gesture_handler().begin_swipe_origin());
-  EXPECT_NE(nullptr, test_gesture_handler().begin_gesture_event());
+  EXPECT_NE(kZeroPoint, test_gesture_handler().begin_swipe_point());
   EXPECT_EQ(CastSideSwipeOrigin::RIGHT,
             test_gesture_handler().end_swipe_origin());
-  EXPECT_NE(nullptr, test_gesture_handler().end_gesture_event());
-  EXPECT_EQ(0, test_event_handler().NumGestureEventsReceived());
+  EXPECT_NE(kZeroPoint, test_gesture_handler().end_swipe_point());
+  EXPECT_EQ(0, test_event_handler().NumTouchEventsReceived());
 }
 
 TEST_F(CastSystemGestureEventHandlerTest, SwipeFromTop) {
@@ -228,11 +234,11 @@ TEST_F(CastSystemGestureEventHandlerTest, SwipeFromTop) {
 
   EXPECT_EQ(CastSideSwipeOrigin::TOP,
             test_gesture_handler().begin_swipe_origin());
-  EXPECT_NE(nullptr, test_gesture_handler().begin_gesture_event());
+  EXPECT_NE(kZeroPoint, test_gesture_handler().begin_swipe_point());
   EXPECT_EQ(CastSideSwipeOrigin::TOP,
             test_gesture_handler().end_swipe_origin());
-  EXPECT_NE(nullptr, test_gesture_handler().end_gesture_event());
-  EXPECT_EQ(0, test_event_handler().NumGestureEventsReceived());
+  EXPECT_NE(kZeroPoint, test_gesture_handler().end_swipe_point());
+  EXPECT_EQ(0, test_event_handler().NumTouchEventsReceived());
 }
 
 TEST_F(CastSystemGestureEventHandlerTest, SwipeFromBottom) {
@@ -246,11 +252,11 @@ TEST_F(CastSystemGestureEventHandlerTest, SwipeFromBottom) {
 
   EXPECT_EQ(CastSideSwipeOrigin::BOTTOM,
             test_gesture_handler().begin_swipe_origin());
-  EXPECT_NE(nullptr, test_gesture_handler().begin_gesture_event());
+  EXPECT_NE(kZeroPoint, test_gesture_handler().begin_swipe_point());
   EXPECT_EQ(CastSideSwipeOrigin::BOTTOM,
             test_gesture_handler().end_swipe_origin());
-  EXPECT_NE(nullptr, test_gesture_handler().end_gesture_event());
-  EXPECT_EQ(0, test_event_handler().NumGestureEventsReceived());
+  EXPECT_NE(kZeroPoint, test_gesture_handler().end_swipe_point());
+  EXPECT_EQ(0, test_event_handler().NumTouchEventsReceived());
 }
 
 // Test that ignoring the gesture at its beginning will make it so the swipe
@@ -268,11 +274,11 @@ TEST_F(CastSystemGestureEventHandlerTest, SwipeUnhandledIgnored) {
 
   EXPECT_EQ(CastSideSwipeOrigin::NONE,
             test_gesture_handler().begin_swipe_origin());
-  EXPECT_EQ(nullptr, test_gesture_handler().begin_gesture_event());
+  EXPECT_EQ(kZeroPoint, test_gesture_handler().begin_swipe_point());
   EXPECT_EQ(CastSideSwipeOrigin::NONE,
             test_gesture_handler().end_swipe_origin());
-  EXPECT_EQ(nullptr, test_gesture_handler().end_gesture_event());
-  EXPECT_NE(0, test_event_handler().NumGestureEventsReceived());
+  EXPECT_EQ(kZeroPoint, test_gesture_handler().end_swipe_point());
+  EXPECT_NE(0, test_event_handler().NumTouchEventsReceived());
 }
 
 }  // namespace test

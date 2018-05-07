@@ -41,7 +41,7 @@ class CastSystemGestureEventHandler : public ui::EventHandler {
   CastSideSwipeOrigin GetDragPosition(const gfx::Point& point,
                                       const gfx::Rect& screen_bounds) const;
 
-  void OnEvent(ui::Event* event) override;
+  void OnTouchEvent(ui::TouchEvent* event) override;
 
  private:
   const int gesture_start_width_;
