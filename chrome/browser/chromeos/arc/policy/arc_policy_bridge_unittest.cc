@@ -12,6 +12,8 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/policy/developer_tools_policy_handler.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/arc/arc_bridge_service.h"
@@ -23,6 +25,7 @@
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_service_manager_context.h"
@@ -212,7 +215,7 @@ class ArcPolicyBridgeTestBase {
   FakePolicyInstance* policy_instance() { return policy_instance_.get(); }
   policy::PolicyMap& policy_map() { return policy_map_; }
   base::RunLoop& run_loop() { return run_loop_; }
-  Profile* profile() { return profile_; }
+  TestingProfile* profile() { return profile_; }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -412,11 +415,33 @@ TEST_F(ArcPolicyBridgeTest, CaCertificateTest) {
   GetPoliciesAndVerifyResult("{\"guid\":\"" + instance_guid() + "\"}");
 }
 
-TEST_F(ArcPolicyBridgeTest, DeveloperToolsDisabledTest) {
-  policy_map().Set(policy::key::kDeveloperToolsDisabled,
-                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                   policy::POLICY_SOURCE_CLOUD,
-                   std::make_unique<base::Value>(true), nullptr);
+TEST_F(ArcPolicyBridgeTest, DeveloperToolsPolicyAllowedTest) {
+  profile()->GetTestingPrefService()->SetManagedPref(
+      ::prefs::kDevToolsAvailability,
+      std::make_unique<base::Value>(static_cast<int>(
+          policy::DeveloperToolsPolicyHandler::Availability::kAllowed)));
+  GetPoliciesAndVerifyResult(
+      "{\"debuggingFeaturesDisabled\":false,\"guid\":\"" + instance_guid() +
+      "\"}");
+}
+
+TEST_F(ArcPolicyBridgeTest,
+       DeveloperToolsPolicyDisallowedForForceInstalledExtensionsTest) {
+  profile()->GetTestingPrefService()->SetManagedPref(
+      ::prefs::kDevToolsAvailability,
+      std::make_unique<base::Value>(
+          static_cast<int>(policy::DeveloperToolsPolicyHandler::Availability::
+                               kDisallowedForForceInstalledExtensions)));
+  GetPoliciesAndVerifyResult(
+      "{\"debuggingFeaturesDisabled\":false,\"guid\":\"" + instance_guid() +
+      "\"}");
+}
+
+TEST_F(ArcPolicyBridgeTest, DeveloperToolsPolicyDisallowedTest) {
+  profile()->GetTestingPrefService()->SetManagedPref(
+      ::prefs::kDevToolsAvailability,
+      std::make_unique<base::Value>(static_cast<int>(
+          policy::DeveloperToolsPolicyHandler::Availability::kDisallowed)));
   GetPoliciesAndVerifyResult("{\"debuggingFeaturesDisabled\":true,\"guid\":\"" +
                              instance_guid() + "\"}");
 }

@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/net/disk_cache_dir_policy_handler.h"
 #include "chrome/browser/net/safe_search_util.h"
+#include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/policy/file_selection_dialogs_policy_handler.h"
 #include "chrome/browser/policy/javascript_policy_handler.h"
 #include "chrome/browser/policy/managed_bookmarks_policy_handler.h"
@@ -184,9 +185,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kAllowDeletingBrowserHistory,
     prefs::kAllowDeletingBrowserHistory,
-    base::Value::Type::BOOLEAN },
-  { key::kDeveloperToolsDisabled,
-    prefs::kDevToolsDisabled,
     base::Value::Type::BOOLEAN },
   { key::kBlockThirdPartyCookies,
     prefs::kBlockThirdPartyCookies,
@@ -943,31 +941,6 @@ void GetExtensionAllowedTypesMap(
                             new base::Value(entry.manifest_type))));
   }
 }
-
-// Piggy-back kDeveloperToolsDisabled set to true to also force-disable
-// kExtensionsUIDeveloperMode.
-class DevToolsExtensionsUIPolicyHandler : public TypeCheckingPolicyHandler {
- public:
-  DevToolsExtensionsUIPolicyHandler()
-      : TypeCheckingPolicyHandler(key::kDeveloperToolsDisabled,
-                                  base::Value::Type::BOOLEAN) {}
-  ~DevToolsExtensionsUIPolicyHandler() override {}
-
-  // ConfigurationPolicyHandler implementation:
-  void ApplyPolicySettings(const PolicyMap& policies,
-                           PrefValueMap* prefs) override {
-    const base::Value* value = policies.GetValue(policy_name());
-    bool developerToolsDisabled;
-    if (value && value->GetAsBoolean(&developerToolsDisabled) &&
-        developerToolsDisabled) {
-      prefs->SetValue(prefs::kExtensionsUIDeveloperMode,
-                      std::make_unique<base::Value>(false));
-    }
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DevToolsExtensionsUIPolicyHandler);
-};
 #endif
 
 void GetDeprecatedFeaturesMap(
@@ -1035,6 +1008,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
 
   handlers->AddHandler(std::make_unique<SecureOriginPolicyHandler>());
+  handlers->AddHandler(std::make_unique<DeveloperToolsPolicyHandler>());
 
 #if defined(OS_ANDROID)
   handlers->AddHandler(
@@ -1080,7 +1054,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       std::make_unique<extensions::ExtensionSettingsPolicyHandler>(
           chrome_schema));
-  handlers->AddHandler(std::make_unique<DevToolsExtensionsUIPolicyHandler>());
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)

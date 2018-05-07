@@ -1444,7 +1444,8 @@ const char kNtpShownPage[] = "ntp.shown_page";
 // A private RSA key for ADB handshake.
 const char kDevToolsAdbKey[] = "devtools.adb_key";
 
-const char kDevToolsDisabled[] = "devtools.disabled";
+// Defines administrator-set availability of developer tools.
+const char kDevToolsAvailability[] = "devtools.availability";
 
 // Determines whether devtools should be discovering usb devices for
 // remote debugging at chrome://inspect.

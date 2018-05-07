@@ -145,7 +145,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 442
+#   For your editing convenience: highest ID currently used: 443
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -2975,16 +2975,61 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'example_value': False,
       'id': 36,
       'caption': '''Disable Developer Tools''',
       'tags': [],
-      'desc': '''Disables the Developer Tools and the JavaScript console.
+      'desc': '''This policy is deprecated in M68, please use DeveloperToolsAvailability instead.
+
+      Disables the Developer Tools and the JavaScript console.
 
       If you enable this setting, the Developer Tools can not be accessed and web-site elements can not be inspected anymore. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.
 
       Setting this option to disabled or leaving it not set allows the user to use the Developer Tools and the JavaScript console.''',
       'arc_support': 'This policy also controls access to Android Developer Options. If you set this policy to true, users cannot access Developer Options. If you set this policy to false or leave it unset, users can access Developer Options by tapping seven times on the build number in the Android settings app.',
+    },
+    {
+      'name': 'DeveloperToolsAvailability',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [0, 1, 2],
+      },
+      'items': [
+        {
+          'name': 'DeveloperToolsDisallowedForForceInstalledExtensions',
+          'value': 0,
+          'caption': '''Disallow usage of the Developer Tools on extensions installed by enterprise policy, allow usage of the Developer Tools in other contexts''',
+        },
+        {
+          'name': 'DeveloperToolsAllowed',
+          'value': 1,
+          'caption': '''Allow usage of the Developer Tools''',
+        },
+        {
+          'name': 'DeveloperToolsDisallowed',
+          'value': 2,
+          'caption': '''Disallow usage of the Developer Tools''',
+        },
+      ],
+      'supported_on': ['chrome.*:68-', 'chrome_os:68-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 2,
+      'id': 443,
+      'default_for_enterprise_users': 0,
+      'caption': '''Control where Developer Tools can be used''',
+      'tags': [],
+      'desc': '''Allows you to control where Developer Tools can be used.
+
+      If this policy is set to 'DeveloperToolsDisallowedForForceInstalledExtensions' (value 0, which is the default for enterprise users), the Developer Tools and the JavaScript console can be accessed in general, but they can not be accessed in the context of extensions installed by enterprise policy.
+      If this policy is set to 'DeveloperToolsAllowed' (value 1, which is the default for unmanaged users), the Developer Tools and the JavaScript console can be accessed and used in all contexts, including the context of extensions installed by enterprise policy.
+      If this policy is set to 'DeveloperToolsDisallowed' (value 2), the Developer Tools can not be accessed and web-site elements can not be inspected anymore. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.
+      If the legacy policy DeveloperToolsDisabled is set to true, the value of this policy is ignored and the Developer Tools are disabled.''',
+      'arc_support': '''This policy also controls access to Android Developer Options. If you set this policy to 'DeveloperToolsDisallowed' (value 2), users cannot access Developer Options. If you set this policy to another value or leave it unset, users can access Developer Options by tapping seven times on the build number in the Android settings app.''',
     },
     {
       'name': 'RestoreOnStartup',

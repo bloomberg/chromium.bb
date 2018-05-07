@@ -1045,6 +1045,8 @@ jumbo_split_static_library("browser") {
     "policy/cloud/user_cloud_policy_invalidator_factory.h",
     "policy/configuration_policy_handler_list_factory.cc",
     "policy/configuration_policy_handler_list_factory.h",
+    "policy/developer_tools_policy_handler.cc",
+    "policy/developer_tools_policy_handler.h",
     "policy/device_management_service_configuration.cc",
     "policy/device_management_service_configuration.h",
     "policy/file_selection_dialogs_policy_handler.cc",

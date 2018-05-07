@@ -36,6 +36,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -1906,8 +1907,11 @@ IN_PROC_BROWSER_TEST_F(RemoteDebuggingTest, MAYBE_RemoteDebugger) {
 }
 
 using DevToolsPolicyTest = InProcessBrowserTest;
-IN_PROC_BROWSER_TEST_F(DevToolsPolicyTest, PolicyTrue) {
-  browser()->profile()->GetPrefs()->SetBoolean(prefs::kDevToolsDisabled, true);
+IN_PROC_BROWSER_TEST_F(DevToolsPolicyTest, DevToolsAvailabilityPolicy) {
+  browser()->profile()->GetPrefs()->SetInteger(
+      prefs::kDevToolsAvailability,
+      static_cast<int>(
+          policy::DeveloperToolsPolicyHandler::Availability::kDisallowed));
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(0);

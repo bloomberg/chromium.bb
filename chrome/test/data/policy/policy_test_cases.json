@@ -1028,11 +1028,26 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DeveloperToolsDisabled": true },
     "pref_mappings": [
-      { "pref": "devtools.disabled",
+      { "pref": "devtools.availability",
         "indicator_test_url": "chrome://extensions-frame/",
         "indicator_selector": "#dev-toggle-disabled-by-policy-indicator",
         "indicator_tests": [
-          { "policy": { "DeveloperToolsDisabled": true } }
+          { "policy": { "DeveloperToolsDisabled": true },
+	    "value": 2 }
+        ]
+      }
+    ]
+  },
+
+  "DeveloperToolsAvailability": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "DeveloperToolsAvailability": 2 },
+    "pref_mappings": [
+      { "pref": "devtools.availability",
+        "indicator_test_url": "chrome://extensions-frame/",
+        "indicator_selector": "#dev-toggle-disabled-by-policy-indicator",
+        "indicator_tests": [
+          { "policy": { "DeveloperToolsAvailability": 2 } }
         ]
       }
     ]

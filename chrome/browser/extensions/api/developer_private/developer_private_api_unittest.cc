@@ -1146,7 +1146,7 @@ TEST_F(DeveloperPrivateApiUnitTest, RepairPolicyExtension) {
 }
 
 // Test developerPrivate.updateProfileConfiguration: Try to turn on devMode
-// when DeveloperToolsDisabled policy is active.
+// when DeveloperToolsAvailability policy disallows developer tools.
 TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDevModeDisabledPolicy) {
   testing_pref_service()->SetManagedPref(prefs::kExtensionsUIDeveloperMode,
                                          std::make_unique<base::Value>(false));
@@ -1163,7 +1163,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDevModeDisabledPolicy) {
 }
 
 // Test developerPrivate.updateProfileConfiguration: Try to turn on devMode
-// (without DeveloperToolsDisabled policy).
+// (without DeveloperToolsAvailability policy).
 TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDevMode) {
   UpdateProfileConfigurationDevMode(false);
   EXPECT_FALSE(

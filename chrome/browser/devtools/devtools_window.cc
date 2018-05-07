@@ -20,6 +20,7 @@
 #include "chrome/browser/devtools/devtools_eye_dropper.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -984,16 +985,24 @@ DevToolsWindow* DevToolsWindow::Create(
     const std::string& settings,
     const std::string& panel,
     bool has_other_clients) {
-  if (profile->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
+  using DTPH = policy::DeveloperToolsPolicyHandler;
+  // TODO(pfeldman): Implement handling for
+  // Availability::kDisallowedForForceInstalledExtensions
+  // (https://crbug.com/838146).
+  if (DTPH::GetDevToolsAvailability(profile->GetPrefs()) ==
+          DTPH::Availability::kDisallowed ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode)) {
     return nullptr;
+  }
 
 #if defined(OS_CHROMEOS)
   // Do not create DevTools if it's disabled for primary profile.
   const Profile* primary_profile = ProfileManager::GetPrimaryUserProfile();
   if (primary_profile &&
-      primary_profile->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))
+      DTPH::GetDevToolsAvailability(primary_profile->GetPrefs()) ==
+          DTPH::Availability::kDisallowed) {
     return nullptr;
+  }
 #endif
 
   if (inspected_web_contents) {
