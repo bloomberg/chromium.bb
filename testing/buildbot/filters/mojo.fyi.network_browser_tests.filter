@@ -148,6 +148,8 @@
 -ExtensionWebRequestApiTest.WebRequestTypes
 -ExtensionWebRequestApiTest.WebRequestTestOSDD
 -ExtensionWebRequestApiTest.WebRequestURLFetcherInterception
+# Note WebRequestUnloadImmediately is disabled on Linux
+-ExtensionWebRequestApiTest.WebRequestUnloadImmediately
 
 # https://crbug.com/721400
 # WebSocket with the network service
@@ -257,6 +259,9 @@
 # https://crbug.com/803871
 -CertificateTransparencyBrowserTest.ProfileRequest
 -CertificateTransparencyBrowserTest.SystemRequest
+
+# Fail on Windows only
+-ConditionalCacheCountingHelperBrowserTest.Count
 
 # NOTE: if adding an exclusion for an existing failure (e.g. additional test for
 # feature X that is already not working), please add it beside the existing
