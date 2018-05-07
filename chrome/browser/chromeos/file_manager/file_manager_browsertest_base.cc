@@ -44,23 +44,56 @@
 namespace file_manager {
 namespace {
 
-enum EntryType {
-  FILE,
-  DIRECTORY,
+// During test, the test extensions can send a list of entries (directories
+// or files) to add to a target volume using an AddEntriesMessage command.
+
+enum TargetVolume { LOCAL_VOLUME, DRIVE_VOLUME, USB_VOLUME };
+
+struct AddEntriesMessage {
+  // The volume to add |entries| to.
+  TargetVolume volume;
+
+  // The |entries| to be added.
+  std::vector<std::unique_ptr<struct TestEntryInfo>> entries;
+
+  // Converts |value| to an AddEntriesMessage: true on success.
+  static bool ConvertJSONValue(const base::DictionaryValue& value,
+                               AddEntriesMessage* message) {
+    base::JSONValueConverter<AddEntriesMessage> converter;
+    return converter.Convert(value, message);
+  }
+
+  // Registers AddEntriesMessage member info to the |converter|.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<AddEntriesMessage>* converter) {
+    converter->RegisterCustomField("volume", &AddEntriesMessage::volume,
+                                   &MapStringToTargetVolume);
+    converter->RegisterRepeatedMessage<struct TestEntryInfo>(
+        "entries", &AddEntriesMessage::entries);
+  }
+
+  // Maps |value| to TargetVolume. Returns true on success.
+  static bool MapStringToTargetVolume(base::StringPiece value,
+                                      TargetVolume* volume) {
+    if (value == "drive")
+      *volume = DRIVE_VOLUME;
+    else if (value == "local")
+      *volume = LOCAL_VOLUME;
+    else if (value == "usb")
+      *volume = USB_VOLUME;
+    else
+      return false;
+    return true;
+  }
 };
 
-enum TargetVolume {
-  LOCAL_VOLUME,
-  DRIVE_VOLUME,
-  USB_VOLUME,
-};
+// The AddEntriesMessage contains a vector of TestEntryInfo: the elements of
+// the vector provide the file or directory entry details.
 
-enum SharedOption {
-  NONE,
-  SHARED,
-};
+enum EntryType { FILE, DIRECTORY };
 
-// Test data file or directory entry info.
+enum SharedOption { NONE, SHARED };
+
 struct TestEntryInfo {
   TestEntryInfo() : type(FILE), shared_option(NONE) {}
 
@@ -127,45 +160,6 @@ struct TestEntryInfo {
   // Maps |value| to base::Time. Returns true on success.
   static bool MapStringToTime(base::StringPiece value, base::Time* time) {
     return base::Time::FromString(value.as_string().c_str(), time);
-  }
-};
-
-// Message from JavaScript to add entries.
-struct AddEntriesMessage {
-  // Entries to be added.
-  std::vector<std::unique_ptr<TestEntryInfo>> entries;
-
-  // Target volume to add |entries| to.
-  TargetVolume volume;
-
-  // Converts |value| to an AddEntriesMessage: true on success.
-  static bool ConvertJSONValue(const base::DictionaryValue& value,
-                               AddEntriesMessage* message) {
-    base::JSONValueConverter<AddEntriesMessage> converter;
-    return converter.Convert(value, message);
-  }
-
-  // Registers AddEntriesMessage member info to the |converter|.
-  static void RegisterJSONConverter(
-      base::JSONValueConverter<AddEntriesMessage>* converter) {
-    converter->RegisterCustomField("volume", &AddEntriesMessage::volume,
-                                   &MapStringToTargetVolume);
-    converter->RegisterRepeatedMessage<TestEntryInfo>(
-        "entries", &AddEntriesMessage::entries);
-  }
-
-  // Maps |value| to TargetVolume. Returns true on success.
-  static bool MapStringToTargetVolume(base::StringPiece value,
-                                      TargetVolume* volume) {
-    if (value == "drive")
-      *volume = DRIVE_VOLUME;
-    else if (value == "local")
-      *volume = LOCAL_VOLUME;
-    else if (value == "usb")
-      *volume = USB_VOLUME;
-    else
-      return false;
-    return true;
   }
 };
 
