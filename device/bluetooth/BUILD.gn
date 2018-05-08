@@ -237,6 +237,11 @@ component("bluetooth") {
   }
 
   if (is_win) {
+    sources += [
+      "bluetooth_adapter_winrt.cc",
+      "bluetooth_adapter_winrt.h",
+    ]
+
     libs = [
       # Bthprops must be listed before BluetoothApis or else delay loading
       # crashes.

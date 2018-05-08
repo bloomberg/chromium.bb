@@ -8,8 +8,10 @@
 #include "device/bluetooth/test/bluetooth_test.h"
 
 #include "base/memory/ref_counted.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_pending_task.h"
 #include "base/test/test_simple_task_runner.h"
+#include "device/base/features.h"
 #include "device/bluetooth/bluetooth_classic_win_fake.h"
 #include "device/bluetooth/bluetooth_low_energy_win_fake.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
@@ -102,6 +104,24 @@ class BluetoothTestWin : public BluetoothTestBase,
 
 // Defines common test fixture name. Use TEST_F(BluetoothTest, YourTestName).
 typedef BluetoothTestWin BluetoothTest;
+
+// This test suite represents tests that should run with the new BLE
+// implementation both enabled and disabled. This requires declaring tests
+// in the following way: TEST_P(BluetoothTestWinrt, YourTestName).
+class BluetoothTestWinrt : public BluetoothTestWin,
+                           public ::testing::WithParamInterface<bool> {
+ public:
+  BluetoothTestWinrt() {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(kNewBLEWinImplementation);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(kNewBLEWinImplementation);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
 
 }  // namespace device
 

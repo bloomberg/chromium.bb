@@ -464,13 +464,18 @@ TEST_F(BluetoothTest, MAYBE_ConstructDefaultAdapter) {
 }
 
 // TODO(scheib): Enable BluetoothTest fixture tests on all platforms.
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 #define MAYBE_ConstructWithoutDefaultAdapter ConstructWithoutDefaultAdapter
 #else
 #define MAYBE_ConstructWithoutDefaultAdapter \
   DISABLED_ConstructWithoutDefaultAdapter
 #endif
+
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrt, ConstructWithoutDefaultAdapter) {
+#else
 TEST_F(BluetoothTest, MAYBE_ConstructWithoutDefaultAdapter) {
+#endif  // defined(OS_WIN)
   InitWithoutDefaultAdapter();
   EXPECT_EQ(adapter_->GetAddress(), "");
   EXPECT_EQ(adapter_->GetName(), "");
@@ -1324,5 +1329,12 @@ TEST_F(BluetoothTest, DiscoverConnectedLowEnergyDeviceTwice) {
   EXPECT_EQ(1u, adapter_->GetDevices().size());
 }
 #endif  // defined(OS_MACOSX)
+
+#if defined(OS_WIN)
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    BluetoothTestWinrt,
+    ::testing::Bool());
+#endif  // defined(OS_WIN)
 
 }  // namespace device
