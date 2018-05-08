@@ -735,7 +735,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
 #if defined(OS_ANDROID)
       transfer_resource.is_backed_by_surface_texture =
           video_frame->metadata()->IsTrue(
-              media::VideoFrameMetadata::SURFACE_TEXTURE);
+              media::VideoFrameMetadata::TEXTURE_OWNER);
       transfer_resource.wants_promotion_hint = video_frame->metadata()->IsTrue(
           media::VideoFrameMetadata::WANTS_PROMOTION_HINT);
 #endif

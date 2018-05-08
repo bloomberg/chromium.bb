@@ -167,7 +167,7 @@ class PictureBufferManagerImpl : public PictureBufferManager {
                                              gfx::Size natural_size) override {
     DVLOG(2) << __func__ << "(" << picture.picture_buffer_id() << ")";
     DCHECK(!picture.size_changed());
-    DCHECK(!picture.surface_texture());
+    DCHECK(!picture.texture_owner());
     DCHECK(!picture.wants_promotion_hint());
 
     base::AutoLock lock(picture_buffers_lock_);

@@ -29,59 +29,59 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
  public:
   AVDASharedState(scoped_refptr<AVDASurfaceBundle> surface_bundle);
 
-  GLuint surface_texture_service_id() const {
-    return surface_texture() ? surface_texture()->GetTextureId() : 0;
+  GLuint texture_owner_service_id() const {
+    return texture_owner() ? texture_owner()->GetTextureId() : 0;
   }
 
-  SurfaceTextureGLOwner* surface_texture() const {
-    return surface_bundle_ ? surface_bundle_->surface_texture.get() : nullptr;
+  TextureOwner* texture_owner() const {
+    return surface_bundle_ ? surface_bundle_->texture_owner_.get() : nullptr;
   }
 
   AndroidOverlay* overlay() const {
     return surface_bundle_ ? surface_bundle_->overlay.get() : nullptr;
   }
 
-  // Context and surface that |surface_texture_| is bound to, if
-  // |surface_texture_| is not null.
+  // Context and surface that |texture_owner_| is bound to, if
+  // |texture_owner_| is not null.
   gl::GLContext* context() const {
-    return surface_texture() ? surface_texture()->GetContext() : nullptr;
+    return texture_owner() ? texture_owner()->GetContext() : nullptr;
   }
 
   gl::GLSurface* surface() const {
-    return surface_texture() ? surface_texture()->GetSurface() : nullptr;
+    return texture_owner() ? texture_owner()->GetSurface() : nullptr;
   }
 
   // Helper method for coordinating the interactions between
   // MediaCodec::ReleaseOutputBuffer() and WaitForFrameAvailable() when
-  // rendering to a SurfaceTexture; this method should never be called when
+  // rendering to a TextureOwner; this method should never be called when
   // rendering to a SurfaceView.
   //
-  // The release of the codec buffer to the surface texture is asynchronous, by
+  // The release of the codec buffer to the texture owner is asynchronous, by
   // using this helper we can attempt to let this process complete in a non
-  // blocking fashion before the SurfaceTexture is used.
+  // blocking fashion before the TextureOwner is used.
   //
   // Clients should call this method to release the codec buffer for rendering
-  // and then call WaitForFrameAvailable() before using the SurfaceTexture. In
-  // the ideal case the SurfaceTexture has already been updated, otherwise the
+  // and then call WaitForFrameAvailable() before using the TextureOwner. In
+  // the ideal case the TextureOwner has already been updated, otherwise the
   // method will wait for a pro-rated amount of time based on elapsed time up
   // to a short deadline.
   //
   // Some devices do not reliably notify frame availability, so we use a very
   // short deadline of only a few milliseconds to avoid indefinite stalls.
-  void RenderCodecBufferToSurfaceTexture(MediaCodecBridge* codec,
-                                         int codec_buffer_index);
+  void RenderCodecBufferToTextureOwner(MediaCodecBridge* codec,
+                                       int codec_buffer_index);
 
   void WaitForFrameAvailable();
 
-  // Helper methods for interacting with |surface_texture_|. See
-  // gl::SurfaceTexture for method details.
+  // Helper methods for interacting with |texture_owner_|. See
+  // gl::TextureOwner for method details.
   void UpdateTexImage();
 
   // Returns a matrix that needs to be y flipped in order to match the
   // StreamTextureMatrix contract. See GLStreamTextureImage::YInvertMatrix().
   void GetTransformMatrix(float matrix[16]) const;
 
-  // Resets the last time for RenderCodecBufferToSurfaceTexture(). Should be
+  // Resets the last time for RenderCodecBufferToTextureOwner(). Should be
   // called during codec changes.
   void ClearReleaseTime();
 
@@ -96,7 +96,7 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
  private:
   friend class base::RefCounted<AVDASharedState>;
 
-  // Texture matrix of the front buffer of the surface texture.
+  // Texture matrix of the front buffer of the texture owner.
   float gl_matrix_[16];
 
   scoped_refptr<AVDASurfaceBundle> surface_bundle_;

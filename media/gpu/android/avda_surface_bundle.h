@@ -8,13 +8,13 @@
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "media/base/android/android_overlay.h"
 #include "media/base/surface_manager.h"
-#include "media/gpu/android/surface_texture_gl_owner.h"
+#include "media/gpu/android/texture_owner.h"
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gl/android/scoped_java_surface.h"
 
 namespace media {
 
-// AVDASurfaceBundle is a Java surface, and the SurfaceTexture or Overlay that
+// AVDASurfaceBundle is a Java surface, and the TextureOwner or Overlay that
 // backs it.
 //
 // Once a MediaCodec is configured with an output surface, the corresponding
@@ -29,8 +29,7 @@ struct MEDIA_GPU_EXPORT AVDASurfaceBundle
   // Create an empty bundle to be manually populated.
   explicit AVDASurfaceBundle();
   explicit AVDASurfaceBundle(std::unique_ptr<AndroidOverlay> overlay);
-  explicit AVDASurfaceBundle(
-      scoped_refptr<SurfaceTextureGLOwner> surface_texture_owner);
+  explicit AVDASurfaceBundle(scoped_refptr<TextureOwner> texture_owner);
 
   const base::android::JavaRef<jobject>& GetJavaSurface() const;
 
@@ -39,12 +38,12 @@ struct MEDIA_GPU_EXPORT AVDASurfaceBundle
   // |this|; the cb will do nothing if |this| is destroyed.
   ScheduleLayoutCB GetScheduleLayoutCB();
 
-  // The Overlay or SurfaceTexture.
+  // The Overlay or TextureOwner.
   std::unique_ptr<AndroidOverlay> overlay;
-  scoped_refptr<SurfaceTextureGLOwner> surface_texture;
+  scoped_refptr<TextureOwner> texture_owner_;
 
-  // The Java surface for |surface_texture|.
-  gl::ScopedJavaSurface surface_texture_surface;
+  // The Java surface for |texture_owner_|.
+  gl::ScopedJavaSurface texture_owner_surface;
 
  private:
   ~AVDASurfaceBundle();

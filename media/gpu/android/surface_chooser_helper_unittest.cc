@@ -242,7 +242,7 @@ TEST_F(SurfaceChooserHelperTest, FrameInformationIsCorrectForL3) {
 
   ASSERT_EQ(SurfaceChooserHelper::FrameInformation::OVERLAY_L3,
             helper_->ComputeFrameInformation(true));
-  ASSERT_EQ(SurfaceChooserHelper::FrameInformation::SURFACETEXTURE_L3,
+  ASSERT_EQ(SurfaceChooserHelper::FrameInformation::NON_OVERLAY_L3,
             helper_->ComputeFrameInformation(false));
 }
 
@@ -251,8 +251,8 @@ TEST_F(SurfaceChooserHelperTest, FrameInformationIsCorrectForInsecure) {
   helper_->SetSecureSurfaceMode(
       SurfaceChooserHelper::SecureSurfaceMode::kInsecure);
 
-  // Not using an overlay should be SURFACETEXTURE_INSECURE
-  ASSERT_EQ(SurfaceChooserHelper::FrameInformation::SURFACETEXTURE_INSECURE,
+  // Not using an overlay should be NON_OVERLAY_INSECURE
+  ASSERT_EQ(SurfaceChooserHelper::FrameInformation::NON_OVERLAY_INSECURE,
             helper_->ComputeFrameInformation(false));
 
   // Fullscreen state should affect the result, so that we can tell the

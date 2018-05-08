@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_ANDROID_SURFACE_TEXTURE_GL_OWNER_H_
-#define MEDIA_GPU_ANDROID_SURFACE_TEXTURE_GL_OWNER_H_
+#ifndef MEDIA_GPU_ANDROID_TEXTURE_OWNER_H_
+#define MEDIA_GPU_ANDROID_TEXTURE_OWNER_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
@@ -29,22 +29,22 @@ struct FrameAvailableEvent;
 // exception of CreateJavaSurface(), which can be called on any thread.
 // It's safe to keep and drop refptrs to it on any thread; it will be
 // automatically destructed on the thread it was constructed on.
-// Virtual for testing; see SurfaceTextureGLOwnerImpl.
-class MEDIA_GPU_EXPORT SurfaceTextureGLOwner
-    : public base::RefCountedDeleteOnSequence<SurfaceTextureGLOwner> {
+// Virtual for testing; see SurfaceTextureGLOwner.
+class MEDIA_GPU_EXPORT TextureOwner
+    : public base::RefCountedDeleteOnSequence<TextureOwner> {
  public:
-  SurfaceTextureGLOwner();
+  TextureOwner();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
     return task_runner_;
   }
 
-  // Returns the GL texture id that the SurfaceTexture is attached to.
+  // Returns the GL texture id that the TextureOwner is attached to.
   virtual GLuint GetTextureId() const = 0;
   virtual gl::GLContext* GetContext() const = 0;
   virtual gl::GLSurface* GetSurface() const = 0;
 
-  // Create a java surface for the SurfaceTexture.
+  // Create a java surface for the TextureOwner.
   virtual gl::ScopedJavaSurface CreateJavaSurface() const = 0;
 
   // See gl::SurfaceTexture for the following.
@@ -73,22 +73,21 @@ class MEDIA_GPU_EXPORT SurfaceTextureGLOwner
   virtual void WaitForFrameAvailable() = 0;
 
  protected:
-  friend class base::RefCountedDeleteOnSequence<SurfaceTextureGLOwner>;
-  friend class base::DeleteHelper<SurfaceTextureGLOwner>;
-  virtual ~SurfaceTextureGLOwner();
+  friend class base::RefCountedDeleteOnSequence<TextureOwner>;
+  friend class base::DeleteHelper<TextureOwner>;
+  virtual ~TextureOwner();
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(SurfaceTextureGLOwner);
+  DISALLOW_COPY_AND_ASSIGN(TextureOwner);
 };
 
-class MEDIA_GPU_EXPORT SurfaceTextureGLOwnerImpl
-    : public SurfaceTextureGLOwner {
+class MEDIA_GPU_EXPORT SurfaceTextureGLOwner : public TextureOwner {
  public:
   // Creates a GL texture using the current platform GL context and returns a
-  // new SurfaceTextureGLOwnerImpl attached to it. Returns null on failure.
-  static scoped_refptr<SurfaceTextureGLOwner> Create();
+  // new SurfaceTextureGLOwner attached to it. Returns null on failure.
+  static scoped_refptr<TextureOwner> Create();
 
   GLuint GetTextureId() const override;
   gl::GLContext* GetContext() const override;
@@ -103,8 +102,8 @@ class MEDIA_GPU_EXPORT SurfaceTextureGLOwnerImpl
   void WaitForFrameAvailable() override;
 
  private:
-  SurfaceTextureGLOwnerImpl(GLuint texture_id);
-  ~SurfaceTextureGLOwnerImpl() override;
+  SurfaceTextureGLOwner(GLuint texture_id);
+  ~SurfaceTextureGLOwner() override;
 
   scoped_refptr<gl::SurfaceTexture> surface_texture_;
   GLuint texture_id_;
@@ -121,9 +120,9 @@ class MEDIA_GPU_EXPORT SurfaceTextureGLOwnerImpl
 
   THREAD_CHECKER(thread_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(SurfaceTextureGLOwnerImpl);
+  DISALLOW_COPY_AND_ASSIGN(SurfaceTextureGLOwner);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_ANDROID_SURFACE_TEXTURE_GL_OWNER_H_
+#endif  // MEDIA_GPU_ANDROID_TEXTURE_OWNER_H_

@@ -39,11 +39,11 @@ class MEDIA_GPU_EXPORT SurfaceChooserHelper {
 
   enum class SecureSurfaceMode {
     // The surface should not be secure.  This allows both overlays and
-    // SurfaceTexture surfaces.
+    // TextureOwner surfaces.
     kInsecure,
 
     // It is preferable to have a secure surface, but insecure
-    // (SurfaceTexture) is better than failing.
+    // (TextureOwner) is better than failing.
     kRequested,
 
     // The surface must be a secure surface, and should fail otherwise.
@@ -53,8 +53,8 @@ class MEDIA_GPU_EXPORT SurfaceChooserHelper {
   // Must match AVDAFrameInformation UMA enum.  Please do not remove or re-order
   // values, only append new ones.
   enum class FrameInformation {
-    SURFACETEXTURE_INSECURE = 0,
-    SURFACETEXTURE_L3 = 1,
+    NON_OVERLAY_INSECURE = 0,
+    NON_OVERLAY_L3 = 1,
     OVERLAY_L3 = 2,
     OVERLAY_L1 = 3,
     OVERLAY_INSECURE_PLAYER_ELEMENT_FULLSCREEN = 4,

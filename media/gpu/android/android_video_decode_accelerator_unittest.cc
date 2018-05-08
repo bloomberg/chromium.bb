@@ -168,16 +168,16 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void InitializeAVDAWithSurfaceTexture() {
+  void InitializeAVDAWithTextureOwner() {
     ASSERT_TRUE(InitializeAVDA());
     base::RunLoop().RunUntilIdle();
-    // We do not expect a factory, since we are using SurfaceTexture.
+    // We do not expect a factory, since we are using TextureOwner.
     ASSERT_FALSE(chooser_->factory_);
 
     // Set the expectations first, since ProvideOverlay might cause callbacks.
     EXPECT_CALL(*codec_allocator_,
                 MockCreateMediaCodecAsync(nullptr, NotNull()));
-    chooser_->ProvideSurfaceTexture();
+    chooser_->ProvideTextureOwner();
 
     // Provide the codec so that we can check if it's freed properly.
     EXPECT_CALL(client_, NotifyInitializationComplete(true));
@@ -284,7 +284,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest, FailingToCreateACodecAsyncIsAnError) {
   EXPECT_CALL(client_, NotifyInitializationComplete(false));
 
   ASSERT_TRUE(InitializeAVDA());
-  chooser_->ProvideSurfaceTexture();
+  chooser_->ProvideTextureOwner();
   codec_allocator_->ProvideNullCodecAsync();
 
   // Make sure that codec allocation has happened before destroying the VDA.
@@ -310,22 +310,21 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   InitializeAVDA(force_defer_surface_creation);
 }
 
-TEST_F(AndroidVideoDecodeAcceleratorTest,
-       AsyncInitWithSurfaceTextureAndDelete) {
-  // When configuring with a SurfaceTexture and deferred init, we should be
+TEST_F(AndroidVideoDecodeAcceleratorTest, AsyncInitWithTextureOwnerAndDelete) {
+  // When configuring with a TextureOwner and deferred init, we should be
   // asked for a codec, and be notified of init success if we provide one. When
-  // AVDA is destroyed, it should release the codec and surface texture.
+  // AVDA is destroyed, it should release the codec and texture owner.
   SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
 
-  InitializeAVDAWithSurfaceTexture();
+  InitializeAVDAWithTextureOwner();
 
   // Delete the VDA, and make sure that it tries to free the codec and the right
-  // surface texture.
+  // texture owner.
   EXPECT_CALL(
       *codec_allocator_,
       MockReleaseMediaCodec(codec_allocator_->most_recent_codec,
                             codec_allocator_->most_recent_overlay,
-                            codec_allocator_->most_recent_surface_texture));
+                            codec_allocator_->most_recent_texture_owner));
   codec_allocator_->most_recent_codec_destruction_observer->ExpectDestruction();
   vda_ = nullptr;
   base::RunLoop().RunUntilIdle();
@@ -346,21 +345,21 @@ TEST_F(AndroidVideoDecodeAcceleratorTest, AsyncInitWithSurfaceAndDelete) {
       *codec_allocator_,
       MockReleaseMediaCodec(codec_allocator_->most_recent_codec,
                             codec_allocator_->most_recent_overlay,
-                            codec_allocator_->most_recent_surface_texture));
+                            codec_allocator_->most_recent_texture_owner));
   codec_allocator_->most_recent_codec_destruction_observer->ExpectDestruction();
   vda_ = nullptr;
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(AndroidVideoDecodeAcceleratorTest,
-       SwitchesToSurfaceTextureWhenSurfaceDestroyed) {
+       SwitchesToTextureOwnerWhenSurfaceDestroyed) {
   // Provide a surface, and a codec, then destroy the surface.  AVDA should use
-  // SetSurface to switch to SurfaceTexture.
+  // SetSurface to switch to TextureOwner.
   SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
 
   InitializeAVDAWithOverlay();
 
-  // It would be nice if we knew that this was a surface texture.  As it is, we
+  // It would be nice if we knew that this was a texture owner.  As it is, we
   // just destroy the VDA and expect that we're provided with one.  Hopefully,
   // AVDA is actually calling SetSurface properly.
   EXPECT_CALL(*codec_allocator_->most_recent_codec, SetSurface(_))
@@ -377,9 +376,9 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(AndroidVideoDecodeAcceleratorTest, SwitchesToSurfaceTextureEventually) {
+TEST_F(AndroidVideoDecodeAcceleratorTest, SwitchesToTextureOwnerEventually) {
   // Provide a surface, and a codec, then request that AVDA switches to a
-  // surface texture.  Verify that it does.
+  // texture owner.  Verify that it does.
   SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
 
   InitializeAVDAWithOverlay();
@@ -387,12 +386,12 @@ TEST_F(AndroidVideoDecodeAcceleratorTest, SwitchesToSurfaceTextureEventually) {
   EXPECT_CALL(*codec_allocator_->most_recent_codec, SetSurface(_))
       .WillOnce(Return(true));
 
-  // Note that it's okay if |avda_| switches before ProvideSurfaceTexture
+  // Note that it's okay if |avda_| switches before ProvideTextureOwner
   // returns, since it has no queued output anyway.
-  chooser_->ProvideSurfaceTexture();
+  chooser_->ProvideTextureOwner();
   LetAVDAUpdateSurface();
 
-  // Verify that we're now using some surface texture.
+  // Verify that we're now using some texture owner.
   EXPECT_CALL(*codec_allocator_,
               MockReleaseMediaCodec(codec_allocator_->most_recent_codec,
                                     nullptr, NotNull()));
@@ -404,7 +403,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest, SwitchesToSurfaceTextureEventually) {
 TEST_F(AndroidVideoDecodeAcceleratorTest,
        SetSurfaceFailureDoesntSwitchSurfaces) {
   // Initialize AVDA with a surface, then request that AVDA switches to a
-  // surface texture.  When it tries to UpdateSurface, pretend to fail.  AVDA
+  // texture owner.  When it tries to UpdateSurface, pretend to fail.  AVDA
   // should notify error, and also release the original surface.
   SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
 
@@ -417,7 +416,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
       .Times(1);
   codec_allocator_->most_recent_codec_destruction_observer
       ->VerifyAndClearExpectations();
-  chooser_->ProvideSurfaceTexture();
+  chooser_->ProvideTextureOwner();
   LetAVDAUpdateSurface();
 }
 
@@ -427,7 +426,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   // chance to do the first switch.  It should simply drop the overlay.
   SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
 
-  InitializeAVDAWithSurfaceTexture();
+  InitializeAVDAWithTextureOwner();
 
   // Don't let AVDA switch immediately, else it could choose to SetSurface when
   // it first gets the overlay.
@@ -445,15 +444,15 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   // Now it is expected to drop the overlay.
   observer->ExpectDestruction();
 
-  // While the incoming surface is pending, switch back to SurfaceTexture.
-  chooser_->ProvideSurfaceTexture();
+  // While the incoming surface is pending, switch back to TextureOwner.
+  chooser_->ProvideTextureOwner();
 }
 
 TEST_F(AndroidVideoDecodeAcceleratorTest,
        ChangingOutputSurfaceVoluntarilyWithoutSetSurfaceIsIgnored) {
-  // If we ask AVDA to change to SurfaceTexture should be ignored on platforms
+  // If we ask AVDA to change to TextureOwner should be ignored on platforms
   // that don't support SetSurface (pre-M or blacklisted).  It should also
-  // ignore SurfaceTexture => overlay, but we don't check that.
+  // ignore TextureOwner => overlay, but we don't check that.
   //
   // Also note that there are other probably reasonable things to do (like
   // signal an error), but we want to be sure that it doesn't try to SetSurface.
@@ -469,8 +468,8 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   InitializeAVDAWithOverlay();
   EXPECT_CALL(*codec_allocator_->most_recent_codec, SetSurface(_)).Times(0);
 
-  // This should not switch to SurfaceTexture.
-  chooser_->ProvideSurfaceTexture();
+  // This should not switch to TextureOwner.
+  chooser_->ProvideTextureOwner();
   LetAVDAUpdateSurface();
 }
 
@@ -501,15 +500,15 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
 }
 
 TEST_F(AndroidVideoDecodeAcceleratorTest,
-       MultipleSurfaceTextureCallbacksAreIgnored) {
+       MultipleTextureOwnerCallbacksAreIgnored) {
   // Ask AVDA to switch to ST when it's already using ST, nothing should happen.
   SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
 
-  InitializeAVDAWithSurfaceTexture();
+  InitializeAVDAWithTextureOwner();
 
   // This should do nothing.
   EXPECT_CALL(*codec_allocator_->most_recent_codec, SetSurface(_)).Times(0);
-  chooser_->ProvideSurfaceTexture();
+  chooser_->ProvideTextureOwner();
 
   base::RunLoop().RunUntilIdle();
 }

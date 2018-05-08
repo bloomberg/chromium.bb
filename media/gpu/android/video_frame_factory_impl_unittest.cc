@@ -13,15 +13,15 @@ using testing::NiceMock;
 using testing::Return;
 
 // The dimensions for specifying MockImage behavior.
-enum ImageKind { kSurfaceTexture, kOverlay };
+enum ImageKind { kTextureOwner, kOverlay };
 enum Phase { kInCodec, kInFrontBuffer, kInvalidated };
 enum Expectation { kRenderToFrontBuffer, kRenderToBackBuffer, kNone };
 
 // A mock image with the same interface as CodecImage.
 struct MockImage {
   MockImage(ImageKind kind, Phase phase, Expectation expectation) {
-    ON_CALL(*this, is_surface_texture_backed())
-        .WillByDefault(Return(kind == kSurfaceTexture));
+    ON_CALL(*this, is_texture_owner_backed())
+        .WillByDefault(Return(kind == kTextureOwner));
 
     ON_CALL(*this, was_rendered_to_front_buffer())
         .WillByDefault(Return(phase == kInFrontBuffer));
@@ -34,17 +34,17 @@ struct MockImage {
     }
 
     if (expectation == kRenderToBackBuffer) {
-      EXPECT_CALL(*this, RenderToSurfaceTextureBackBuffer())
+      EXPECT_CALL(*this, RenderToTextureOwnerBackBuffer())
           .WillOnce(Return(phase != kInvalidated));
     } else {
-      EXPECT_CALL(*this, RenderToSurfaceTextureBackBuffer()).Times(0);
+      EXPECT_CALL(*this, RenderToTextureOwnerBackBuffer()).Times(0);
     }
   }
 
   MOCK_METHOD0(was_rendered_to_front_buffer, bool());
-  MOCK_METHOD0(is_surface_texture_backed, bool());
+  MOCK_METHOD0(is_texture_owner_backed, bool());
   MOCK_METHOD0(RenderToFrontBuffer, bool());
-  MOCK_METHOD0(RenderToSurfaceTextureBackBuffer, bool());
+  MOCK_METHOD0(RenderToTextureOwnerBackBuffer, bool());
 };
 
 class MaybeRenderEarlyTest : public testing::Test {
@@ -67,7 +67,7 @@ TEST_F(MaybeRenderEarlyTest, EmptyVector) {
 }
 
 TEST_F(MaybeRenderEarlyTest, SingleUnrenderedSTImageIsRendered) {
-  AddImage(kSurfaceTexture, kInCodec, Expectation::kRenderToFrontBuffer);
+  AddImage(kTextureOwner, kInCodec, Expectation::kRenderToFrontBuffer);
   internal::MaybeRenderEarly(&images_);
 }
 
@@ -77,9 +77,9 @@ TEST_F(MaybeRenderEarlyTest, SingleUnrenderedOverlayImageIsRendered) {
 }
 
 TEST_F(MaybeRenderEarlyTest, InvalidatedImagesAreSkippedOver) {
-  AddImage(kSurfaceTexture, kInvalidated, Expectation::kRenderToFrontBuffer);
-  AddImage(kSurfaceTexture, kInvalidated, Expectation::kRenderToFrontBuffer);
-  AddImage(kSurfaceTexture, kInCodec, Expectation::kRenderToFrontBuffer);
+  AddImage(kTextureOwner, kInvalidated, Expectation::kRenderToFrontBuffer);
+  AddImage(kTextureOwner, kInvalidated, Expectation::kRenderToFrontBuffer);
+  AddImage(kTextureOwner, kInCodec, Expectation::kRenderToFrontBuffer);
   internal::MaybeRenderEarly(&images_);
 }
 
@@ -92,10 +92,10 @@ TEST_F(MaybeRenderEarlyTest, NoFrontBufferRenderingIfAlreadyPopulated) {
 
 TEST_F(MaybeRenderEarlyTest,
        ImageFollowingLatestFrontBufferIsBackBufferRendered) {
-  AddImage(kSurfaceTexture, kInCodec, Expectation::kNone);
-  AddImage(kSurfaceTexture, kInFrontBuffer, Expectation::kNone);
-  AddImage(kSurfaceTexture, kInCodec, Expectation::kRenderToBackBuffer);
-  AddImage(kSurfaceTexture, kInCodec, Expectation::kNone);
+  AddImage(kTextureOwner, kInCodec, Expectation::kNone);
+  AddImage(kTextureOwner, kInFrontBuffer, Expectation::kNone);
+  AddImage(kTextureOwner, kInCodec, Expectation::kRenderToBackBuffer);
+  AddImage(kTextureOwner, kInCodec, Expectation::kNone);
   internal::MaybeRenderEarly(&images_);
 }
 

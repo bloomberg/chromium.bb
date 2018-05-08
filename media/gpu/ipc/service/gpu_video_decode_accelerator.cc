@@ -268,7 +268,7 @@ void GpuVideoDecodeAccelerator::PictureReady(const Picture& picture) {
   params.color_space = picture.color_space();
   params.allow_overlay = picture.allow_overlay();
   params.size_changed = picture.size_changed();
-  params.surface_texture = picture.surface_texture();
+  params.surface_texture = picture.texture_owner();
   params.wants_promotion_hint = picture.wants_promotion_hint();
   if (!Send(new AcceleratedVideoDecoderHostMsg_PictureReady(host_route_id_,
                                                             params))) {

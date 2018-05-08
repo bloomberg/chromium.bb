@@ -49,20 +49,19 @@ AVDAPictureBufferManager::~AVDAPictureBufferManager() {}
 bool AVDAPictureBufferManager::Initialize(
     scoped_refptr<AVDASurfaceBundle> surface_bundle) {
   shared_state_ = nullptr;
-  surface_texture_ = nullptr;
+  texture_owner_ = nullptr;
 
   if (!surface_bundle->overlay) {
-    // Create the surface texture.
-    surface_texture_ = SurfaceTextureGLOwnerImpl::Create();
-    if (!surface_texture_)
+    // Create the texture owner.
+    texture_owner_ = SurfaceTextureGLOwner::Create();
+    if (!texture_owner_)
       return false;
 
-    surface_bundle->surface_texture_surface =
-        surface_texture_->CreateJavaSurface();
-    surface_bundle->surface_texture = surface_texture_;
+    surface_bundle->texture_owner_surface = texture_owner_->CreateJavaSurface();
+    surface_bundle->texture_owner_ = texture_owner_;
   }
 
-  // Only do this once the surface texture is filled in, since the constructor
+  // Only do this once the texture owner is filled in, since the constructor
   // assumes that it will be.
   shared_state_ = new AVDASharedState(surface_bundle);
   shared_state_->SetPromotionHintCB(state_provider_->GetPromotionHintCB());
@@ -77,7 +76,7 @@ void AVDAPictureBufferManager::Destroy(const PictureBufferMap& buffers) {
 
   ReleaseCodecBuffers(buffers);
   CodecChanged(nullptr);
-  surface_texture_ = nullptr;
+  texture_owner_ = nullptr;
 }
 
 void AVDAPictureBufferManager::SetImageForPicture(
@@ -98,8 +97,8 @@ void AVDAPictureBufferManager::SetImageForPicture(
   GLuint stream_texture_service_id = 0;
   if (image) {
     // Override the Texture's service id, so that it will use the one that is
-    // attached to the SurfaceTexture.
-    stream_texture_service_id = shared_state_->surface_texture_service_id();
+    // attached to the TextureOwner
+    stream_texture_service_id = shared_state_->texture_owner_service_id();
 
     // Also set the parameters for the level if we're not clearing the image.
     const gfx::Size size = state_provider_->GetSize();
@@ -110,16 +109,16 @@ void AVDAPictureBufferManager::SetImageForPicture(
     static_cast<AVDACodecImage*>(image)->set_texture(texture_ref->texture());
   }
 
-  // If we're clearing the image, or setting a SurfaceTexture backed image, we
-  // set the state to UNBOUND. For SurfaceTexture images, this ensures that the
+  // If we're clearing the image, or setting a TextureOwner backed image, we
+  // set the state to UNBOUND. For TextureOwner images, this ensures that the
   // implementation will call CopyTexImage, which is where AVDACodecImage
-  // updates the SurfaceTexture to the right frame.
+  // updates the TextureOwner to the right frame.
   auto image_state = gpu::gles2::Texture::UNBOUND;
   // For SurfaceView we set the state to BOUND because ScheduleOverlayPlane
   // requires it. If something tries to sample from this texture it won't work,
   // but there's no way to sample from a SurfaceView anyway, so it doesn't
   // matter.
-  if (image && !surface_texture_)
+  if (image && !texture_owner_)
     image_state = gpu::gles2::Texture::BOUND;
   texture_manager->SetLevelStreamTextureImage(texture_ref, kTextureTarget, 0,
                                               image, image_state,
@@ -144,7 +143,7 @@ void AVDAPictureBufferManager::UseCodecBufferForPictureBuffer(
   // Note that this is not a race, since we do not re-use a PictureBuffer
   // until after the CC is done drawing it.
   pictures_out_for_display_.push_back(picture_buffer.id());
-  avda_image->SetBufferMetadata(codec_buf_index, !!surface_texture_,
+  avda_image->SetBufferMetadata(codec_buf_index, !!texture_owner_,
                                 state_provider_->GetSize());
 
   // If the shared state has changed for this image, retarget its texture.
@@ -157,7 +156,7 @@ void AVDAPictureBufferManager::UseCodecBufferForPictureBuffer(
 void AVDAPictureBufferManager::AssignOnePictureBuffer(
     const PictureBuffer& picture_buffer,
     bool have_context) {
-  // Attach a GLImage to each texture that will use the surface texture.
+  // Attach a GLImage to each texture that will use the texture owner.
   scoped_refptr<gpu::gles2::GLStreamTextureImage> gl_image =
       codec_images_[picture_buffer.id()] =
           new AVDACodecImage(shared_state_, media_codec_);
@@ -222,10 +221,10 @@ void AVDAPictureBufferManager::MaybeRenderEarly() {
         AVDACodecImage::UpdateMode::RENDER_TO_FRONT_BUFFER);
   }
 
-  // Back buffer rendering is only available for surface textures. We'll always
+  // Back buffer rendering is only available for texture owners. We'll always
   // have at least one front buffer, so the next buffer must be the backbuffer.
   size_t backbuffer_index = front_index + 1;
-  if (!surface_texture_ || backbuffer_index >= pictures_out_for_display_.size())
+  if (!texture_owner_ || backbuffer_index >= pictures_out_for_display_.size())
     return;
 
   // See if the back buffer is free. If so, then render the frame adjacent to
@@ -252,7 +251,7 @@ void AVDAPictureBufferManager::CodecChanged(MediaCodecBridge* codec) {
 bool AVDAPictureBufferManager::ArePicturesOverlayable() {
   // SurfaceView frames are always overlayable because that's the only way to
   // display them.
-  return !surface_texture_;
+  return !texture_owner_;
 }
 
 bool AVDAPictureBufferManager::HasUnrenderedPictures() const {

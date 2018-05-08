@@ -12,7 +12,7 @@
 namespace media {
 
 // A mock surface chooser that lets tests choose the surface with
-// ProvideOverlay() and ProvideSurfaceTexture().
+// ProvideOverlay() and ProvideTextureOwner().
 class MockAndroidVideoSurfaceChooser : public AndroidVideoSurfaceChooser {
  public:
   MockAndroidVideoSurfaceChooser();
@@ -27,16 +27,16 @@ class MockAndroidVideoSurfaceChooser : public AndroidVideoSurfaceChooser {
   MOCK_METHOD1(MockReplaceOverlayFactory, void(bool));
 
   void SetClientCallbacks(UseOverlayCB use_overlay_cb,
-                          UseSurfaceTextureCB use_surface_texture_cb) override;
+                          UseTextureOwnerCB use_texture_owner_cb) override;
   void UpdateState(base::Optional<AndroidOverlayFactoryCB> factory,
                    const State& new_state) override;
 
   // Calls the corresponding callback to choose the surface.
   void ProvideOverlay(std::unique_ptr<AndroidOverlay> overlay);
-  void ProvideSurfaceTexture();
+  void ProvideTextureOwner();
 
   UseOverlayCB use_overlay_cb_;
-  UseSurfaceTextureCB use_surface_texture_cb_;
+  UseTextureOwnerCB use_texture_owner_cb_;
   AndroidOverlayFactoryCB factory_;
   State current_state_;
 

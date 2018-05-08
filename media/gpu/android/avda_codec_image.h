@@ -21,7 +21,7 @@ namespace media {
 
 class MediaCodecBridge;
 
-// GLImage that renders MediaCodec buffers to a SurfaceTexture or SurfaceView as
+// GLImage that renders MediaCodec buffers to a TextureOwner or SurfaceView as
 // needed in order to draw them.
 class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
  public:
@@ -61,11 +61,11 @@ class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
     DISCARD_CODEC_BUFFER,
 
     // Renders to back buffer, no UpdateTexImage(); can only be used with a
-    // valid |surface_texture_|.
+    // valid |texture_owner_|.
     RENDER_TO_BACK_BUFFER,
 
     // Renders to the back buffer. When used with a SurfaceView, promotion to
-    // the front buffer is automatic. When using a |surface_texture_|,
+    // the front buffer is automatic. When using a |texture_owner_|,
     // UpdateTexImage() is called to promote the back buffer into the front.
     RENDER_TO_FRONT_BUFFER
   };
@@ -81,10 +81,10 @@ class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
   void set_texture(gpu::gles2::Texture* texture) { texture_ = texture; }
 
   // Sets up the properties necessary for the image to render. |buffer_index| is
-  // supplied to ReleaseOutputBuffer(), |has_surface_texture| controls which
+  // supplied to ReleaseOutputBuffer(), |has_texture_owner| controls which
   // rendering path is used, and |size| is used by the compositor.
   void SetBufferMetadata(int buffer_index,
-                         bool has_surface_texture,
+                         bool has_texture_owner,
                          const gfx::Size& size);
 
   bool SetSharedState(scoped_refptr<AVDASharedState> shared_state);
@@ -105,18 +105,18 @@ class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
   ~AVDACodecImage() override;
 
  private:
-  // Make sure that the surface texture's front buffer is current.  This will
+  // Make sure that the texture owner's front buffer is current.  This will
   // save / restore the current context.  It will optionally restore the texture
-  // bindings in the surface texture's context, based on |mode|.  This is
+  // bindings in the texture owner's context, based on |mode|.  This is
   // intended as a hint if we don't need to change contexts.  If we do need to
   // change contexts, then we'll always preserve the texture bindings in the
   // both contexts.  In other words, the caller is telling us whether it's
   // okay to change the binding in the current context.
   enum RestoreBindingsMode { kDontRestoreBindings, kDoRestoreBindings };
-  void UpdateSurfaceTexture(RestoreBindingsMode mode);
+  void UpdateTextureOwner(RestoreBindingsMode mode);
 
   // Internal helper for UpdateSurface() that allows callers to specify the
-  // RestoreBindingsMode when a SurfaceTexture is already attached prior to
+  // RestoreBindingsMode when a TextureOwner is already attached prior to
   // calling this method.
   void UpdateSurfaceInternal(UpdateMode update_mode,
                              RestoreBindingsMode attached_bindings_mode);
@@ -148,9 +148,9 @@ class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
   // May be null.
   MediaCodecBridge* media_codec_;
 
-  // Indicates if we're rendering to a SurfaceTexture or not. Set during the
+  // Indicates if we're rendering to a TextureOwner or not. Set during the
   // call to SetBufferMetadata().
-  bool has_surface_texture_;
+  bool has_texture_owner_;
 
   // The texture that we're attached to.
   gpu::gles2::Texture* texture_;

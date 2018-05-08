@@ -469,8 +469,8 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
     frame->metadata()->SetBoolean(media::VideoFrameMetadata::ALLOW_OVERLAY,
                                   picture.allow_overlay());
 #if defined(OS_ANDROID)
-    frame->metadata()->SetBoolean(media::VideoFrameMetadata::SURFACE_TEXTURE,
-                                  picture.surface_texture());
+    frame->metadata()->SetBoolean(media::VideoFrameMetadata::TEXTURE_OWNER,
+                                  picture.texture_owner());
     frame->metadata()->SetBoolean(
         media::VideoFrameMetadata::WANTS_PROMOTION_HINT,
         picture.wants_promotion_hint());

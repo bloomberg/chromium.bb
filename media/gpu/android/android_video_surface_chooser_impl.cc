@@ -30,10 +30,10 @@ AndroidVideoSurfaceChooserImpl::~AndroidVideoSurfaceChooserImpl() {}
 
 void AndroidVideoSurfaceChooserImpl::SetClientCallbacks(
     UseOverlayCB use_overlay_cb,
-    UseSurfaceTextureCB use_surface_texture_cb) {
-  DCHECK(use_overlay_cb && use_surface_texture_cb);
+    UseTextureOwnerCB use_texture_owner_cb) {
+  DCHECK(use_overlay_cb && use_texture_owner_cb);
   use_overlay_cb_ = std::move(use_overlay_cb);
-  use_surface_texture_cb_ = std::move(use_surface_texture_cb);
+  use_texture_owner_cb_ = std::move(use_texture_owner_cb);
 }
 
 void AndroidVideoSurfaceChooserImpl::UpdateState(
@@ -53,13 +53,13 @@ void AndroidVideoSurfaceChooserImpl::UpdateState(
       initial_state_received_ = true;
       // Choose here so that Choose() doesn't have to handle non-dynamic.
       // Note that we ignore |is_expecting_relayout| here, since it's transient.
-      // We don't want to pick SurfaceTexture permanently for that.
+      // We don't want to pick TextureOwner permanently for that.
       if (overlay_factory_ &&
           (current_state_.is_fullscreen || current_state_.is_secure ||
            current_state_.is_required)) {
         SwitchToOverlay(false);
       } else {
-        SwitchToSurfaceTexture();
+        SwitchToTextureOwner();
       }
     }
     return;
@@ -87,9 +87,8 @@ void AndroidVideoSurfaceChooserImpl::Choose() {
   DCHECK(allow_dynamic_);
 
   // TODO(liberato): should this depend on resolution?
-  OverlayState new_overlay_state = current_state_.promote_aggressively
-                                       ? kUsingOverlay
-                                       : kUsingSurfaceTexture;
+  OverlayState new_overlay_state =
+      current_state_.promote_aggressively ? kUsingOverlay : kUsingTextureOwner;
   // Do we require a power-efficient overlay?
   bool needs_power_efficient = current_state_.promote_aggressively;
 
@@ -111,7 +110,7 @@ void AndroidVideoSurfaceChooserImpl::Choose() {
 
   // If the compositor won't promote, then don't.
   if (!current_state_.is_compositor_promotable)
-    new_overlay_state = kUsingSurfaceTexture;
+    new_overlay_state = kUsingTextureOwner;
 
   // If we're expecting a relayout, then don't transition to overlay if we're
   // not already in one.  We don't want to transition out, though.  This lets us
@@ -119,7 +118,7 @@ void AndroidVideoSurfaceChooserImpl::Choose() {
   // TODO(liberato): Detect this more directly.
   if (current_state_.is_expecting_relayout &&
       client_overlay_state_ != kUsingOverlay)
-    new_overlay_state = kUsingSurfaceTexture;
+    new_overlay_state = kUsingTextureOwner;
 
   // If we're requesting an overlay, check that we haven't asked too recently
   // since the last failure.  This includes L1.  We don't bother to check for
@@ -129,7 +128,7 @@ void AndroidVideoSurfaceChooserImpl::Choose() {
     base::TimeDelta time_since_last_failure =
         tick_clock_->NowTicks() - most_recent_overlay_failure_;
     if (time_since_last_failure < MinimumDelayAfterFailedOverlay)
-      new_overlay_state = kUsingSurfaceTexture;
+      new_overlay_state = kUsingTextureOwner;
   }
 
   // If an overlay is required, then choose one.  The only way we won't is if we
@@ -142,16 +141,16 @@ void AndroidVideoSurfaceChooserImpl::Choose() {
 
   // If we have no factory, then we definitely don't want to use overlays.
   if (!overlay_factory_)
-    new_overlay_state = kUsingSurfaceTexture;
+    new_overlay_state = kUsingTextureOwner;
 
   // Make sure that we're in |new_overlay_state_|.
-  if (new_overlay_state == kUsingSurfaceTexture)
-    SwitchToSurfaceTexture();
+  if (new_overlay_state == kUsingTextureOwner)
+    SwitchToTextureOwner();
   else
     SwitchToOverlay(needs_power_efficient);
 }
 
-void AndroidVideoSurfaceChooserImpl::SwitchToSurfaceTexture() {
+void AndroidVideoSurfaceChooserImpl::SwitchToTextureOwner() {
   // Invalidate any outstanding deletion callbacks for any overlays that we've
   // provided to the client already.  We assume that it will eventually drop
   // them in response to the callback.  Ready / failed callbacks aren't affected
@@ -164,11 +163,11 @@ void AndroidVideoSurfaceChooserImpl::SwitchToSurfaceTexture() {
     overlay_ = nullptr;
 
   // Notify the client to switch if it's in the wrong state.
-  if (client_overlay_state_ != kUsingSurfaceTexture) {
-    DCHECK(use_surface_texture_cb_);
+  if (client_overlay_state_ != kUsingTextureOwner) {
+    DCHECK(use_texture_owner_cb_);
 
-    client_overlay_state_ = kUsingSurfaceTexture;
-    use_surface_texture_cb_.Run();
+    client_overlay_state_ = kUsingTextureOwner;
+    use_texture_owner_cb_.Run();
   }
 }
 
@@ -218,7 +217,7 @@ void AndroidVideoSurfaceChooserImpl::SwitchToOverlay(
 
   overlay_ = overlay_factory_.Run(std::move(config));
   if (!overlay_)
-    SwitchToSurfaceTexture();
+    SwitchToTextureOwner();
 }
 
 void AndroidVideoSurfaceChooserImpl::OnOverlayReady(AndroidOverlay* overlay) {
@@ -243,18 +242,18 @@ void AndroidVideoSurfaceChooserImpl::OnOverlayFailed(AndroidOverlay* overlay) {
   overlay_ = nullptr;
   most_recent_overlay_failure_ = tick_clock_->NowTicks();
 
-  // If the client isn't already using a SurfaceTexture, then switch to it.
+  // If the client isn't already using a TextureOwner, then switch to it.
   // Note that this covers the case of kUnknown, when we might not have told the
   // client anything yet.  That's important for Initialize, so that a failed
   // overlay request still results in some callback to the client to know what
   // surface to start with.
-  SwitchToSurfaceTexture();
+  SwitchToTextureOwner();
 }
 
 void AndroidVideoSurfaceChooserImpl::OnOverlayDeleted(AndroidOverlay* overlay) {
-  client_overlay_state_ = kUsingSurfaceTexture;
-  // We don't call SwitchToSurfaceTexture since the client dropped the overlay.
-  // It's already using SurfaceTexture.
+  client_overlay_state_ = kUsingTextureOwner;
+  // We don't call SwitchToTextureOwner since the client dropped the overlay.
+  // It's already using TextureOwner.
 }
 
 void AndroidVideoSurfaceChooserImpl::OnPowerEfficientState(
@@ -264,7 +263,7 @@ void AndroidVideoSurfaceChooserImpl::OnPowerEfficientState(
   // callback if it arrives.  Getting a new overlay clears any previous cbs.
   DCHECK(!overlay_);
 
-  // We cannot receive it after switching to SurfaceTexture, since that also
+  // We cannot receive it after switching to TextureOwner, since that also
   // clears all callbacks.
   DCHECK(client_overlay_state_ == kUsingOverlay);
 
@@ -285,7 +284,7 @@ void AndroidVideoSurfaceChooserImpl::OnPowerEfficientState(
   // We don't want to delay transitioning to an overlay if the user re-enters
   // fullscreen.  TODO(liberato): Perhaps we should just clear the failure timer
   // if we detect a transition into fs when we get new state from the client.
-  SwitchToSurfaceTexture();
+  SwitchToTextureOwner();
 }
 
 }  // namespace media

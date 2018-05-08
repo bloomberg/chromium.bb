@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/android/mock_surface_texture_gl_owner.h"
+#include "media/gpu/android/mock_texture_owner.h"
 
 namespace media {
 
 using testing::Invoke;
 using testing::Return;
 
-MockSurfaceTextureGLOwner::MockSurfaceTextureGLOwner(
-    GLuint fake_texture_id,
-    gl::GLContext* fake_context,
-    gl::GLSurface* fake_surface)
+MockTextureOwner::MockTextureOwner(GLuint fake_texture_id,
+                                   gl::GLContext* fake_context,
+                                   gl::GLSurface* fake_surface)
     : fake_texture_id(fake_texture_id),
       fake_context(fake_context),
       fake_surface(fake_surface),
@@ -21,19 +20,17 @@ MockSurfaceTextureGLOwner::MockSurfaceTextureGLOwner(
   ON_CALL(*this, GetContext()).WillByDefault(Return(fake_context));
   ON_CALL(*this, GetSurface()).WillByDefault(Return(fake_surface));
   ON_CALL(*this, SetReleaseTimeToNow())
-      .WillByDefault(
-          Invoke(this, &MockSurfaceTextureGLOwner::FakeSetReleaseTimeToNow));
+      .WillByDefault(Invoke(this, &MockTextureOwner::FakeSetReleaseTimeToNow));
   ON_CALL(*this, IgnorePendingRelease())
-      .WillByDefault(
-          Invoke(this, &MockSurfaceTextureGLOwner::FakeIgnorePendingRelease));
+      .WillByDefault(Invoke(this, &MockTextureOwner::FakeIgnorePendingRelease));
   ON_CALL(*this, IsExpectingFrameAvailable())
-      .WillByDefault(Invoke(
-          this, &MockSurfaceTextureGLOwner::FakeIsExpectingFrameAvailable));
+      .WillByDefault(
+          Invoke(this, &MockTextureOwner::FakeIsExpectingFrameAvailable));
   ON_CALL(*this, WaitForFrameAvailable())
       .WillByDefault(
-          Invoke(this, &MockSurfaceTextureGLOwner::FakeWaitForFrameAvailable));
+          Invoke(this, &MockTextureOwner::FakeWaitForFrameAvailable));
 }
 
-MockSurfaceTextureGLOwner::~MockSurfaceTextureGLOwner() = default;
+MockTextureOwner::~MockTextureOwner() = default;
 
 }  // namespace media

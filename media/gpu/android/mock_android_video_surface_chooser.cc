@@ -11,10 +11,10 @@ MockAndroidVideoSurfaceChooser::~MockAndroidVideoSurfaceChooser() = default;
 
 void MockAndroidVideoSurfaceChooser::SetClientCallbacks(
     UseOverlayCB use_overlay_cb,
-    UseSurfaceTextureCB use_surface_texture_cb) {
+    UseTextureOwnerCB use_texture_owner_cb) {
   MockSetClientCallbacks();
   use_overlay_cb_ = std::move(use_overlay_cb);
-  use_surface_texture_cb_ = std::move(use_surface_texture_cb);
+  use_texture_owner_cb_ = std::move(use_texture_owner_cb);
 }
 
 void MockAndroidVideoSurfaceChooser::UpdateState(
@@ -28,8 +28,8 @@ void MockAndroidVideoSurfaceChooser::UpdateState(
   current_state_ = new_state;
 }
 
-void MockAndroidVideoSurfaceChooser::ProvideSurfaceTexture() {
-  use_surface_texture_cb_.Run();
+void MockAndroidVideoSurfaceChooser::ProvideTextureOwner() {
+  use_texture_owner_cb_.Run();
 }
 
 void MockAndroidVideoSurfaceChooser::ProvideOverlay(

@@ -54,17 +54,16 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooser {
 
   // Notify the client that the most recently provided overlay should be
   // discarded.  The overlay is still valid, but we recommend against
-  // using it soon, in favor of a SurfaceTexture.
-  using UseSurfaceTextureCB = base::RepeatingCallback<void(void)>;
+  // using it soon, in favor of a TextureOwner.
+  using UseTextureOwnerCB = base::RepeatingCallback<void(void)>;
 
   AndroidVideoSurfaceChooser() {}
   virtual ~AndroidVideoSurfaceChooser() {}
 
   // Sets the client callbacks to be called when a new surface choice is made.
   // Must be called before UpdateState();
-  virtual void SetClientCallbacks(
-      UseOverlayCB use_overlay_cb,
-      UseSurfaceTextureCB use_surface_texture_cb) = 0;
+  virtual void SetClientCallbacks(UseOverlayCB use_overlay_cb,
+                                  UseTextureOwnerCB use_texture_owner_cb) = 0;
 
   // Updates the current state and makes a new surface choice with the new
   // state. If |new_factory| is empty, the factory is left as-is. Otherwise,
