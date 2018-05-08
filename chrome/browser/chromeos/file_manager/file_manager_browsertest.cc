@@ -497,13 +497,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "requestMountSourceDevice"),
         TestParameter(NOT_IN_GUEST_MODE, "requestMountSourceFile")));
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_GearMenu DISABLED_GearMenu
-#else
-#define MAYBE_GearMenu GearMenu
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_GearMenu,
+    GearMenu,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "showHiddenFilesOnDownloads"),
