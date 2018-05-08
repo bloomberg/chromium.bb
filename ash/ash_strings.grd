@@ -750,7 +750,7 @@ This file contains the strings for ash.
       </message>
 
       <message name="IDS_AURA_SET_DESKTOP_WALLPAPER" desc="The label used for change wallpaper in context menu">
-        Set wallpaper...
+        Set wallpaper
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_TRACING" desc="The status tray item indicating that performance tracing is running.">
