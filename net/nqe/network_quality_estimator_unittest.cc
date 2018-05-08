@@ -40,6 +40,7 @@
 #include "net/nqe/rtt_throughput_estimates_observer.h"
 #include "net/socket/socket_performance_watcher.h"
 #include "net/socket/socket_performance_watcher_factory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -188,7 +189,9 @@ class TestThroughputObserver
 
 }  // namespace
 
-TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
+using NetworkQualityEstimatorTest = TestWithScopedTaskEnvironment;
+
+TEST_F(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   base::HistogramTester histogram_tester;
   // Enable requests to local host to be used for network quality estimation.
   std::map<std::string, std::string> variation_params;
@@ -338,7 +341,7 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
 
 // Tests that the network quality estimator writes and reads network quality
 // from the cache store correctly.
-TEST(NetworkQualityEstimatorTest, Caching) {
+TEST_F(NetworkQualityEstimatorTest, Caching) {
   for (NetworkChangeNotifier::ConnectionType connection_type :
        {NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI,
         NetworkChangeNotifier::ConnectionType::CONNECTION_ETHERNET}) {
@@ -472,7 +475,7 @@ TEST(NetworkQualityEstimatorTest, Caching) {
 
 // Tests that the network quality estimator does not read the network quality
 // from the cache store when caching is not enabled.
-TEST(NetworkQualityEstimatorTest, CachingDisabled) {
+TEST_F(NetworkQualityEstimatorTest, CachingDisabled) {
   base::HistogramTester histogram_tester;
   std::map<std::string, std::string> variation_params;
   // Do not set |persistent_cache_reading_enabled| variation param.
@@ -546,7 +549,7 @@ TEST(NetworkQualityEstimatorTest, CachingDisabled) {
   EXPECT_EQ(0U, throughput_observer.observations().size());
 }
 
-TEST(NetworkQualityEstimatorTest, QuicObservations) {
+TEST_F(NetworkQualityEstimatorTest, QuicObservations) {
   base::HistogramTester histogram_tester;
   std::map<std::string, std::string> variation_params;
   variation_params["add_default_platform_observations"] = "false";
@@ -564,7 +567,7 @@ TEST(NetworkQualityEstimatorTest, QuicObservations) {
   histogram_tester.ExpectTotalCount("NQE.RTT.ObservationSource", 2);
 }
 
-TEST(NetworkQualityEstimatorTest, StoreObservations) {
+TEST_F(NetworkQualityEstimatorTest, StoreObservations) {
   std::map<std::string, std::string> variation_params;
   variation_params["throughput_min_requests_in_flight"] = "1";
   variation_params["add_default_platform_observations"] = "false";
@@ -607,7 +610,7 @@ TEST(NetworkQualityEstimatorTest, StoreObservations) {
 // This test notifies NetworkQualityEstimator of received data. Next,
 // throughput and RTT percentiles are checked for correctness by doing simple
 // verifications.
-TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
+TEST_F(NetworkQualityEstimatorTest, ComputedPercentiles) {
   std::map<std::string, std::string> variation_params;
   variation_params["throughput_min_requests_in_flight"] = "1";
   variation_params["add_default_platform_observations"] = "false";
@@ -664,7 +667,7 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
 
 // Verifies that the observers receive the notifications when default estimates
 // are added to the observations.
-TEST(NetworkQualityEstimatorTest, DefaultObservations) {
+TEST_F(NetworkQualityEstimatorTest, DefaultObservations) {
   base::HistogramTester histogram_tester;
 
   TestEffectiveConnectionTypeObserver effective_connection_type_observer;
@@ -797,7 +800,7 @@ TEST(NetworkQualityEstimatorTest, DefaultObservations) {
 // Verifies that the default observations are added to the set of observations.
 // If default observations are overridden using field trial parameters, verify
 // that the overriding values are used.
-TEST(NetworkQualityEstimatorTest, DefaultObservationsOverridden) {
+TEST_F(NetworkQualityEstimatorTest, DefaultObservationsOverridden) {
   std::map<std::string, std::string> variation_params;
   variation_params["Unknown.DefaultMedianKbps"] = "100";
   variation_params["WiFi.DefaultMedianKbps"] = "200";
@@ -891,7 +894,7 @@ TEST(NetworkQualityEstimatorTest, DefaultObservationsOverridden) {
 
 // Tests that |GetEffectiveConnectionType| returns
 // EFFECTIVE_CONNECTION_TYPE_OFFLINE when the device is currently offline.
-TEST(NetworkQualityEstimatorTest, Offline) {
+TEST_F(NetworkQualityEstimatorTest, Offline) {
   std::map<std::string, std::string> variation_params;
   variation_params["add_default_platform_observations"] = "false";
   TestNetworkQualityEstimator estimator(variation_params);
@@ -915,7 +918,7 @@ TEST(NetworkQualityEstimatorTest, Offline) {
 
 // Tests that |GetEffectiveConnectionType| returns correct connection type when
 // only RTT thresholds are specified in the variation params.
-TEST(NetworkQualityEstimatorTest, ObtainThresholdsOnlyRTT) {
+TEST_F(NetworkQualityEstimatorTest, ObtainThresholdsOnlyRTT) {
   std::map<std::string, std::string> variation_params;
 
   variation_params["Offline.ThresholdMedianHttpRTTMsec"] = "4000";
@@ -962,7 +965,7 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsOnlyRTT) {
 
 // Tests that default HTTP RTT thresholds for different effective
 // connection types are correctly set.
-TEST(NetworkQualityEstimatorTest, DefaultHttpRTTBasedThresholds) {
+TEST_F(NetworkQualityEstimatorTest, DefaultHttpRTTBasedThresholds) {
   const struct {
     bool override_defaults_using_variation_params;
     int32_t http_rtt_msec;
@@ -1016,7 +1019,7 @@ TEST(NetworkQualityEstimatorTest, DefaultHttpRTTBasedThresholds) {
 // Tests that |GetEffectiveConnectionType| returns correct connection type when
 // both HTTP RTT and throughput thresholds are specified in the variation
 // params.
-TEST(NetworkQualityEstimatorTest, ObtainThresholdsHttpRTTandThroughput) {
+TEST_F(NetworkQualityEstimatorTest, ObtainThresholdsHttpRTTandThroughput) {
   std::map<std::string, std::string> variation_params;
 
   variation_params["Offline.ThresholdMedianHttpRTTMsec"] = "4000";
@@ -1076,7 +1079,7 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsHttpRTTandThroughput) {
   }
 }
 
-TEST(NetworkQualityEstimatorTest, TestGetMetricsSince) {
+TEST_F(NetworkQualityEstimatorTest, TestGetMetricsSince) {
   std::map<std::string, std::string> variation_params;
 
   const base::TimeDelta rtt_threshold_3g =
@@ -1191,7 +1194,7 @@ TEST(NetworkQualityEstimatorTest, TestGetMetricsSince) {
 
 // Tests if the throughput observation is taken correctly when local and network
 // requests do not overlap.
-TEST(NetworkQualityEstimatorTest, TestThroughputNoRequestOverlap) {
+TEST_F(NetworkQualityEstimatorTest, TestThroughputNoRequestOverlap) {
   base::HistogramTester histogram_tester;
   std::map<std::string, std::string> variation_params;
   variation_params["throughput_min_requests_in_flight"] = "1";
@@ -1254,7 +1257,7 @@ TEST(NetworkQualityEstimatorTest, TestThroughputNoRequestOverlap) {
 
 // Tests that the effective connection type is computed at the specified
 // interval, and that the observers are notified of any change.
-TEST(NetworkQualityEstimatorTest, MAYBE_TestEffectiveConnectionTypeObserver) {
+TEST_F(NetworkQualityEstimatorTest, MAYBE_TestEffectiveConnectionTypeObserver) {
   base::HistogramTester histogram_tester;
   base::SimpleTestTickClock tick_clock;
 
@@ -1347,7 +1350,7 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestEffectiveConnectionTypeObserver) {
 }
 
 // Tests that the transport RTT is used for computing the HTTP RTT.
-TEST(NetworkQualityEstimatorTest, TestTransportRttUsedForHttpRttComputation) {
+TEST_F(NetworkQualityEstimatorTest, TestTransportRttUsedForHttpRttComputation) {
   const struct {
     base::TimeDelta http_rtt;
     base::TimeDelta transport_rtt;
@@ -1402,7 +1405,7 @@ TEST(NetworkQualityEstimatorTest, TestTransportRttUsedForHttpRttComputation) {
 
 // Tests that the network quality is computed at the specified interval, and
 // that the network quality observers are notified of any change.
-TEST(NetworkQualityEstimatorTest, TestRTTAndThroughputEstimatesObserver) {
+TEST_F(NetworkQualityEstimatorTest, TestRTTAndThroughputEstimatesObserver) {
   base::HistogramTester histogram_tester;
   base::SimpleTestTickClock tick_clock;
 
@@ -1502,7 +1505,7 @@ TEST(NetworkQualityEstimatorTest, TestRTTAndThroughputEstimatesObserver) {
 
 // Tests that the effective connection type is computed on every RTT
 // observation if the last computed effective connection type was unknown.
-TEST(NetworkQualityEstimatorTest, UnknownEffectiveConnectionType) {
+TEST_F(NetworkQualityEstimatorTest, UnknownEffectiveConnectionType) {
   base::SimpleTestTickClock tick_clock;
 
   TestEffectiveConnectionTypeObserver observer;
@@ -1546,8 +1549,8 @@ TEST(NetworkQualityEstimatorTest, UnknownEffectiveConnectionType) {
 
 // Tests that the effective connection type is computed regularly depending
 // on the number of RTT and bandwidth samples.
-TEST(NetworkQualityEstimatorTest,
-     AdaptiveRecomputationEffectiveConnectionType) {
+TEST_F(NetworkQualityEstimatorTest,
+       AdaptiveRecomputationEffectiveConnectionType) {
   base::HistogramTester histogram_tester;
   base::SimpleTestTickClock tick_clock;
 
@@ -1647,7 +1650,7 @@ TEST(NetworkQualityEstimatorTest,
   }
 }
 
-TEST(NetworkQualityEstimatorTest, TestRttThroughputObservers) {
+TEST_F(NetworkQualityEstimatorTest, TestRttThroughputObservers) {
   TestRTTObserver rtt_observer;
   TestThroughputObserver throughput_observer;
 
@@ -1750,7 +1753,7 @@ TEST(NetworkQualityEstimatorTest, TestRttThroughputObservers) {
                              base::TimeTicks(), &rtt, nullptr));
 }
 
-TEST(NetworkQualityEstimatorTest, TestGlobalSocketWatcherThrottle) {
+TEST_F(NetworkQualityEstimatorTest, TestGlobalSocketWatcherThrottle) {
   base::SimpleTestTickClock tick_clock;
   tick_clock.Advance(base::TimeDelta::FromSeconds(1));
 
@@ -1818,7 +1821,7 @@ TEST(NetworkQualityEstimatorTest, TestGlobalSocketWatcherThrottle) {
 #endif
 // Tests that the TCP socket notifies the Network Quality Estimator of TCP RTTs,
 // which in turn notifies registered RTT observers.
-TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
+TEST_F(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
   base::SimpleTestTickClock tick_clock;
   tick_clock.Advance(base::TimeDelta::FromSeconds(1));
 
@@ -1955,7 +1958,7 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
 #define MAYBE_RecordAccuracy RecordAccuracy
 #endif
 // Tests if the NQE accuracy metrics are recorded properly.
-TEST(NetworkQualityEstimatorTest, MAYBE_RecordAccuracy) {
+TEST_F(NetworkQualityEstimatorTest, MAYBE_RecordAccuracy) {
   const int expected_rtt_msec = 500;
   const int expected_downstream_throughput_kbps = 2000;
 
@@ -2124,7 +2127,7 @@ TEST(NetworkQualityEstimatorTest, MAYBE_RecordAccuracy) {
   }
 }
 
-TEST(NetworkQualityEstimatorTest, TestRecordNetworkIDAvailability) {
+TEST_F(NetworkQualityEstimatorTest, TestRecordNetworkIDAvailability) {
   base::HistogramTester histogram_tester;
   TestNetworkQualityEstimator estimator;
 
@@ -2190,7 +2193,7 @@ class TestNetworkQualitiesCacheObserver
   DISALLOW_COPY_AND_ASSIGN(TestNetworkQualitiesCacheObserver);
 };
 
-TEST(NetworkQualityEstimatorTest, CacheObserver) {
+TEST_F(NetworkQualityEstimatorTest, CacheObserver) {
   TestNetworkQualitiesCacheObserver observer;
   TestNetworkQualityEstimator estimator;
 
@@ -2239,8 +2242,8 @@ TEST(NetworkQualityEstimatorTest, CacheObserver) {
 
 // Tests that the value of the effective connection type can be forced through
 // field trial parameters.
-TEST(NetworkQualityEstimatorTest,
-     ForceEffectiveConnectionTypeThroughFieldTrial) {
+TEST_F(NetworkQualityEstimatorTest,
+       ForceEffectiveConnectionTypeThroughFieldTrial) {
   for (int i = 0; i < EFFECTIVE_CONNECTION_TYPE_LAST; ++i) {
     EffectiveConnectionType ect_type = static_cast<EffectiveConnectionType>(i);
     std::map<std::string, std::string> variation_params;
@@ -2309,7 +2312,7 @@ TEST(NetworkQualityEstimatorTest,
 }
 
 // Test that the typical network qualities are set correctly.
-TEST(NetworkQualityEstimatorTest, TypicalNetworkQualities) {
+TEST_F(NetworkQualityEstimatorTest, TypicalNetworkQualities) {
   TestNetworkQualityEstimator estimator;
   TestDelegate test_delegate;
   TestURLRequestContext context(true);
@@ -2340,7 +2343,7 @@ TEST(NetworkQualityEstimatorTest, TypicalNetworkQualities) {
 }
 
 // Verify that the cached network qualities from the prefs are correctly used.
-TEST(NetworkQualityEstimatorTest, OnPrefsRead) {
+TEST_F(NetworkQualityEstimatorTest, OnPrefsRead) {
   base::HistogramTester histogram_tester;
 
   // Construct the read prefs.
@@ -2450,7 +2453,7 @@ TEST(NetworkQualityEstimatorTest, OnPrefsRead) {
 
 // Verify that the cached network qualities from the prefs are not used if the
 // reading of the network quality prefs is not enabled..
-TEST(NetworkQualityEstimatorTest, OnPrefsReadWithReadingDisabled) {
+TEST_F(NetworkQualityEstimatorTest, OnPrefsReadWithReadingDisabled) {
   base::HistogramTester histogram_tester;
 
   // Construct the read prefs.
@@ -2545,7 +2548,7 @@ TEST(NetworkQualityEstimatorTest, OnPrefsReadWithReadingDisabled) {
 
 // Tests that |ComputeBandwidthDelayProduct| calculates the
 // BDP correctly and records histogram data.
-TEST(NetworkQualityEstimatorTest, TestBDPComputation) {
+TEST_F(NetworkQualityEstimatorTest, TestBDPComputation) {
   TestNetworkQualityEstimator estimator;
   base::HistogramTester histogram_tester;
   base::TimeTicks now = base::TimeTicks::Now();
@@ -2579,8 +2582,8 @@ TEST(NetworkQualityEstimatorTest, TestBDPComputation) {
             (int32_t)(std::pow(2, 2) * std::pow(3, 8) / 1000));
 }
 
-TEST(NetworkQualityEstimatorTest,
-     TestComputeIncreaseInTransportRTTFullHostsOverlap) {
+TEST_F(NetworkQualityEstimatorTest,
+       TestComputeIncreaseInTransportRTTFullHostsOverlap) {
   base::SimpleTestTickClock tick_clock;
   tick_clock.Advance(base::TimeDelta::FromMinutes(1));
 
@@ -2621,8 +2624,8 @@ TEST(NetworkQualityEstimatorTest,
   EXPECT_EQ(10, estimator.ComputeIncreaseInTransportRTTForTests().value_or(0));
 }
 
-TEST(NetworkQualityEstimatorTest,
-     TestComputeIncreaseInTransportRTTPartialHostsOverlap) {
+TEST_F(NetworkQualityEstimatorTest,
+       TestComputeIncreaseInTransportRTTPartialHostsOverlap) {
   base::SimpleTestTickClock tick_clock;
   tick_clock.Advance(base::TimeDelta::FromMinutes(1));
 
@@ -2663,8 +2666,8 @@ TEST(NetworkQualityEstimatorTest,
 // Verifies that when the cached network qualities from the prefs are available,
 // then estimates from the platform or the external estimate provider are not
 // used.
-TEST(NetworkQualityEstimatorTest,
-     ObservationDiscardedIfCachedEstimateAvailable) {
+TEST_F(NetworkQualityEstimatorTest,
+       ObservationDiscardedIfCachedEstimateAvailable) {
   base::HistogramTester histogram_tester;
 
   // Construct the read prefs.
@@ -2788,7 +2791,7 @@ TEST(NetworkQualityEstimatorTest,
 
 // Tests that the ECT is computed when more than N RTT samples have been
 // received.
-TEST(NetworkQualityEstimatorTest, MaybeComputeECTAfterNSamples) {
+TEST_F(NetworkQualityEstimatorTest, MaybeComputeECTAfterNSamples) {
   base::SimpleTestTickClock tick_clock;
   tick_clock.Advance(base::TimeDelta::FromMinutes(1));
 
@@ -2827,7 +2830,7 @@ TEST(NetworkQualityEstimatorTest, MaybeComputeECTAfterNSamples) {
 }
 
 // Tests that the hanging request is correctly detected.
-TEST(NetworkQualityEstimatorTest, HangingRequestUsingHttpOnly) {
+TEST_F(NetworkQualityEstimatorTest, HangingRequestUsingHttpOnly) {
   base::HistogramTester histogram_tester;
 
   std::map<std::string, std::string> variation_params;
@@ -2881,7 +2884,7 @@ TEST(NetworkQualityEstimatorTest, HangingRequestUsingHttpOnly) {
   histogram_tester.ExpectTotalCount("NQE.RTT.HangingRequest", 2);
 }
 
-TEST(NetworkQualityEstimatorTest, HangingRequestUsingTransportAndHttpOnly) {
+TEST_F(NetworkQualityEstimatorTest, HangingRequestUsingTransportAndHttpOnly) {
   base::HistogramTester histogram_tester;
 
   std::map<std::string, std::string> variation_params;

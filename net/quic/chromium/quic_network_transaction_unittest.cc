@@ -70,6 +70,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/third_party/spdy/core/spdy_frame_builder.h"
 #include "net/third_party/spdy/core/spdy_framer.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -248,7 +249,8 @@ class TestSocketPerformanceWatcherFactory
 
 class QuicNetworkTransactionTest : public PlatformTest,
                                    public ::testing::WithParamInterface<
-                                       std::tuple<QuicTransportVersion, bool>> {
+                                       std::tuple<QuicTransportVersion, bool>>,
+                                   public WithScopedTaskEnvironment {
  protected:
   QuicNetworkTransactionTest()
       : version_(std::get<0>(GetParam())),
@@ -5882,7 +5884,8 @@ TEST_P(QuicNetworkTransactionTest, HostNotInWhitelist) {
 
 class QuicNetworkTransactionWithDestinationTest
     : public PlatformTest,
-      public ::testing::WithParamInterface<PoolingTestParams> {
+      public ::testing::WithParamInterface<PoolingTestParams>,
+      public WithScopedTaskEnvironment {
  protected:
   QuicNetworkTransactionWithDestinationTest()
       : version_(GetParam().version),

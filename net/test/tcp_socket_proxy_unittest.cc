@@ -12,6 +12,7 @@
 #include "net/socket/tcp_client_socket.h"
 #include "net/socket/tcp_server_socket.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,7 +21,7 @@ using net::test::IsOk;
 
 namespace net {
 
-class TcpSocketProxyTest : public testing::Test {
+class TcpSocketProxyTest : public TestWithScopedTaskEnvironment {
  public:
   TcpSocketProxyTest() : io_thread_("TcpSocketProxyTest IO Thread") {
     EXPECT_TRUE(io_thread_.StartWithOptions(
@@ -104,6 +105,8 @@ class TcpSocketProxyTest : public testing::Test {
   std::unique_ptr<TCPServerSocket> listen_socket_;
 
   std::unique_ptr<TcpSocketProxy> proxy_;
+
+ private:
   IPEndPoint proxy_address_;
 };
 

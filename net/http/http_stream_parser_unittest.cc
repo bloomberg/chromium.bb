@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/elements_upload_data_stream.h"
@@ -152,6 +153,8 @@ TEST(HttpStreamParser, DataReadErrorSynchronous) {
 }
 
 TEST(HttpStreamParser, DataReadErrorAsynchronous) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   MockWrite writes[] = {
       MockWrite(ASYNC, 0, "POST / HTTP/1.1\r\n"),
       MockWrite(ASYNC, 1, "Content-Length: 12\r\n\r\n"),
@@ -216,6 +219,8 @@ class InitAsyncUploadDataStream : public ChunkedUploadDataStream {
 };
 
 TEST(HttpStreamParser, InitAsynchronousUploadDataStream) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   InitAsyncUploadDataStream upload_data_stream(0);
 
   TestCompletionCallback callback;
@@ -365,6 +370,9 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_ChunkedBody) {
 }
 
 TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_FileBody) {
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+
   // Create an empty temporary file.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -592,6 +600,8 @@ TEST(HttpStreamParser, SentBytesPost) {
 }
 
 TEST(HttpStreamParser, SentBytesChunkedPostError) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   static const char kChunk[] = "Chunk 1";
 
   MockWrite writes[] = {
@@ -647,6 +657,8 @@ TEST(HttpStreamParser, SentBytesChunkedPostError) {
 // when sending a request with a chunked body with only one chunk that becomes
 // available asynchronously.
 TEST(HttpStreamParser, AsyncSingleChunkAndAsyncSocket) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   static const char kChunk[] = "Chunk";
 
   MockWrite writes[] = {
@@ -726,6 +738,8 @@ TEST(HttpStreamParser, AsyncSingleChunkAndAsyncSocket) {
 // when sending a request with a chunked body with only one chunk that is
 // available synchronously.
 TEST(HttpStreamParser, SyncSingleChunkAndAsyncSocket) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   static const char kChunk[] = "Chunk";
 
   MockWrite writes[] = {
@@ -802,6 +816,8 @@ TEST(HttpStreamParser, SyncSingleChunkAndAsyncSocket) {
 // asynchronously.
 // This is a regression test for http://crbug.com/132243
 TEST(HttpStreamParser, AsyncChunkAndAsyncSocketWithMultipleChunks) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   // The chunks that will be written in the request, as reflected in the
   // MockWrites below.
   static const char kChunk1[] = "Chunk 1";
@@ -897,6 +913,8 @@ TEST(HttpStreamParser, AsyncChunkAndAsyncSocketWithMultipleChunks) {
 // when there's only one "chunk" with 0 bytes, and is received from the
 // UploadStream only after sending the request headers successfully.
 TEST(HttpStreamParser, AsyncEmptyChunkedUpload) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   MockWrite writes[] = {
       MockWrite(ASYNC, 0,
                 "GET /one.html HTTP/1.1\r\n"
@@ -971,6 +989,8 @@ TEST(HttpStreamParser, AsyncEmptyChunkedUpload) {
 // when there's only one "chunk" with 0 bytes, which was already appended before
 // the request was started.
 TEST(HttpStreamParser, SyncEmptyChunkedUpload) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   MockWrite writes[] = {
       MockWrite(ASYNC, 0,
                 "GET /one.html HTTP/1.1\r\n"

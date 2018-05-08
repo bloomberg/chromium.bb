@@ -17,6 +17,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -51,7 +52,7 @@ class HungHttpResponse : public test_server::HttpResponse {
   DISALLOW_COPY_AND_ASSIGN(HungHttpResponse);
 };
 
-class NetworkErrorLoggingEndToEndTest : public ::testing::Test {
+class NetworkErrorLoggingEndToEndTest : public TestWithScopedTaskEnvironment {
  protected:
   NetworkErrorLoggingEndToEndTest()
       : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),

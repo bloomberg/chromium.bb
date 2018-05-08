@@ -27,6 +27,7 @@
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
@@ -225,11 +226,18 @@ void ExpectDictionaryContainsProperty(const base::DictionaryValue* dict,
 
 // Used for tests that are common to both bounded and unbounded modes of the
 // the FileNetLogObserver. The param is true if bounded mode is used.
-class FileNetLogObserverTest : public ::testing::TestWithParam<bool> {
+class FileNetLogObserverTest : public ::testing::TestWithParam<bool>,
+                               public WithScopedTaskEnvironment {
  public:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     log_path_ = temp_dir_.GetPath().AppendASCII("net-log.json");
+  }
+
+  void TearDown() override {
+    logger_.reset();
+    // FileNetLogObserver destructor might post to message loop.
+    RunUntilIdle();
   }
 
   bool IsBounded() const { return GetParam(); }
@@ -285,11 +293,18 @@ class FileNetLogObserverTest : public ::testing::TestWithParam<bool> {
 };
 
 // Used for tests that are exclusive to the bounded mode of FileNetLogObserver.
-class FileNetLogObserverBoundedTest : public ::testing::Test {
+class FileNetLogObserverBoundedTest : public ::testing::Test,
+                                      public WithScopedTaskEnvironment {
  public:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     log_path_ = temp_dir_.GetPath().AppendASCII("net-log.json");
+  }
+
+  void TearDown() override {
+    logger_.reset();
+    // FileNetLogObserver destructor might post to message loop.
+    RunUntilIdle();
   }
 
   void CreateAndStartObserving(std::unique_ptr<base::Value> constants,

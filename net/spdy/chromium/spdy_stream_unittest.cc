@@ -33,6 +33,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -59,7 +60,7 @@ base::TimeTicks InstantaneousReads() {
 
 }  // namespace
 
-class SpdyStreamTest : public ::testing::Test {
+class SpdyStreamTest : public TestWithScopedTaskEnvironment {
  protected:
   // A function that takes a SpdyStream and the number of bytes which
   // will unstall the next frame completely.

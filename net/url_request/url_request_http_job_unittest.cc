@@ -35,6 +35,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -119,7 +120,7 @@ class TestURLRequestHttpJob : public URLRequestHttpJob {
   DISALLOW_COPY_AND_ASSIGN(TestURLRequestHttpJob);
 };
 
-class URLRequestHttpJobSetUpSourceTest : public ::testing::Test {
+class URLRequestHttpJobSetUpSourceTest : public TestWithScopedTaskEnvironment {
  public:
   URLRequestHttpJobSetUpSourceTest() : context_(true) {
     test_job_interceptor_ = new TestJobInterceptor();
@@ -186,7 +187,7 @@ TEST_F(URLRequestHttpJobSetUpSourceTest, UnknownEncoding) {
   EXPECT_EQ("Test Content", delegate_.data_received());
 }
 
-class URLRequestHttpJobWithProxy {
+class URLRequestHttpJobWithProxy : public WithScopedTaskEnvironment {
  public:
   explicit URLRequestHttpJobWithProxy(
       std::unique_ptr<ProxyResolutionService> proxy_resolution_service)
@@ -346,7 +347,7 @@ TEST(URLRequestHttpJobWithProxy,
       http_job_with_proxy.network_delegate_.total_network_bytes_received());
 }
 
-class URLRequestHttpJobTest : public ::testing::Test {
+class URLRequestHttpJobTest : public TestWithScopedTaskEnvironment {
  protected:
   URLRequestHttpJobTest() : context_(true) {
     context_.set_http_transaction_factory(&network_layer_);
@@ -376,7 +377,8 @@ class URLRequestHttpJobTest : public ::testing::Test {
   std::unique_ptr<URLRequest> req_;
 };
 
-class URLRequestHttpJobWithMockSocketsTest : public ::testing::Test {
+class URLRequestHttpJobWithMockSocketsTest
+    : public TestWithScopedTaskEnvironment {
  protected:
   URLRequestHttpJobWithMockSocketsTest()
       : context_(new TestURLRequestContext(true)) {
@@ -1328,7 +1330,8 @@ TEST_F(URLRequestHttpJobTest, HSTSInternalRedirectTest) {
   }
 }
 
-class URLRequestHttpJobWithBrotliSupportTest : public ::testing::Test {
+class URLRequestHttpJobWithBrotliSupportTest
+    : public TestWithScopedTaskEnvironment {
  protected:
   URLRequestHttpJobWithBrotliSupportTest()
       : context_(new TestURLRequestContext(true)) {
@@ -1455,7 +1458,7 @@ TEST_F(URLRequestHttpJobTest, AndroidCleartextPermittedTest) {
 
 #if BUILDFLAG(ENABLE_WEBSOCKETS)
 
-class URLRequestHttpJobWebSocketTest : public ::testing::Test {
+class URLRequestHttpJobWebSocketTest : public TestWithScopedTaskEnvironment {
  protected:
   URLRequestHttpJobWebSocketTest() : context_(true) {
     context_.set_network_delegate(&network_delegate_);

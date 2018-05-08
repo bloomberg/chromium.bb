@@ -8,16 +8,14 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
 #include "crypto/scoped_test_nss_db.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/x509_util_nss.h"
 #include "net/test/cert_test_util.h"
-#include "net/test/net_test_suite.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -51,7 +49,7 @@ void SwapCertLists(ScopedCERTCertificateList* destination,
 
 }  // namespace
 
-class NSSCertDatabaseChromeOSTest : public testing::Test,
+class NSSCertDatabaseChromeOSTest : public TestWithScopedTaskEnvironment,
                                     public CertDatabase::Observer {
  public:
   NSSCertDatabaseChromeOSTest()
@@ -173,7 +171,7 @@ TEST_F(NSSCertDatabaseChromeOSTest, ImportCACerts) {
   EXPECT_FALSE(IsCertInCertificateList(certs_2[0].get(), user_1_certlist));
 
   // Run the message loop so the observer notifications get processed.
-  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
+  RunUntilIdle();
   // Should have gotten two OnCertDBChanged notifications.
   ASSERT_EQ(2, db_changed_count_);
 
@@ -185,7 +183,7 @@ TEST_F(NSSCertDatabaseChromeOSTest, ImportCACerts) {
   db_2_->ListCerts(
       base::Bind(&SwapCertLists, base::Unretained(&user_2_certlist_async)));
 
-  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
+  RunUntilIdle();
 
   EXPECT_TRUE(IsCertInCertificateList(certs_1[0].get(), user_1_certlist_async));
   EXPECT_FALSE(
@@ -233,7 +231,7 @@ TEST_F(NSSCertDatabaseChromeOSTest, ImportServerCert) {
   EXPECT_FALSE(IsCertInCertificateList(certs_2[0].get(), user_1_certlist));
 
   // Run the message loop so the observer notifications get processed.
-  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
+  RunUntilIdle();
   // TODO(mattm): ImportServerCert doesn't actually cause any observers to
   // fire. Is that correct?
   EXPECT_EQ(0, db_changed_count_);
@@ -246,7 +244,7 @@ TEST_F(NSSCertDatabaseChromeOSTest, ImportServerCert) {
   db_2_->ListCerts(
       base::Bind(&SwapCertLists, base::Unretained(&user_2_certlist_async)));
 
-  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
+  RunUntilIdle();
 
   EXPECT_TRUE(IsCertInCertificateList(certs_1[0].get(), user_1_certlist_async));
   EXPECT_FALSE(
@@ -266,7 +264,7 @@ TEST_F(NSSCertDatabaseChromeOSTest, NoCrashIfShutdownBeforeDoneOnWorkerPool) {
 
   db_1_.reset();
 
-  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
+  RunUntilIdle();
 
   EXPECT_LT(0U, certlist.size());
 }

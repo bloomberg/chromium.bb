@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_stream_factory_job.h"
 #include "net/http/http_stream_factory_job_controller.h"
@@ -21,6 +22,8 @@ namespace net {
 
 // Make sure that Request passes on its priority updates to its jobs.
 TEST(HttpStreamRequestTest, SetPriority) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   SequencedSocketData data;
   data.set_connect_data(MockConnect(ASYNC, OK));
   auto ssl_data = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);

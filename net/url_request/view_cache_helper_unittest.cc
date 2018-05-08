@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/pickle.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/disk_cache/disk_cache.h"
@@ -114,6 +115,7 @@ void FillCache(URLRequestContext* context) {
 }  // namespace.
 
 TEST(ViewCacheHelper, EmptyCache) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   TestURLRequestContext context;
   ViewCacheHelper helper;
 
@@ -125,6 +127,7 @@ TEST(ViewCacheHelper, EmptyCache) {
 }
 
 TEST(ViewCacheHelper, ListContents) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   TestURLRequestContext context;
   ViewCacheHelper helper;
 
@@ -147,6 +150,7 @@ TEST(ViewCacheHelper, ListContents) {
 }
 
 TEST(ViewCacheHelper, DumpEntry) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   TestURLRequestContext context;
   ViewCacheHelper helper;
 
@@ -172,6 +176,7 @@ TEST(ViewCacheHelper, DumpEntry) {
 
 // Makes sure the links are correct.
 TEST(ViewCacheHelper, Prefix) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   TestURLRequestContext context;
   ViewCacheHelper helper;
 
@@ -191,6 +196,7 @@ TEST(ViewCacheHelper, Prefix) {
 }
 
 TEST(ViewCacheHelper, TruncatedFlag) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   TestURLRequestContext context;
   ViewCacheHelper helper;
 

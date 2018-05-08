@@ -30,6 +30,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
@@ -66,6 +67,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -307,6 +309,8 @@ class FakeSocket : public StreamSocket {
 
 // Verify the correctness of the test helper classes first.
 TEST(FakeSocketTest, DataTransfer) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   // Establish channels between two sockets.
   FakeDataChannel channel_1;
   FakeDataChannel channel_2;
@@ -347,7 +351,8 @@ TEST(FakeSocketTest, DataTransfer) {
   EXPECT_EQ(0, memcmp(kTestData, read_buf->data(), read));
 }
 
-class SSLServerSocketTest : public PlatformTest {
+class SSLServerSocketTest : public PlatformTest,
+                            public WithScopedTaskEnvironment {
  public:
   SSLServerSocketTest()
       : socket_factory_(ClientSocketFactory::GetDefaultFactory()),

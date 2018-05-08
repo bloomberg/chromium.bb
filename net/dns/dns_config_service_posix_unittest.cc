@@ -16,7 +16,6 @@
 #include "net/base/ip_address.h"
 #include "net/dns/dns_config_service_posix.h"
 #include "net/dns/dns_protocol.h"
-#include "net/test/net_test_suite.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -183,6 +182,8 @@ TEST(DnsConfigServicePosixTest, RejectEmptyNameserver) {
 TEST(DnsConfigServicePosixTest, DestroyWhileJobsWorking) {
   // Regression test to verify crash does not occur if DnsConfigServicePosix
   // instance is destroyed while SerialWorker jobs have posted to worker pool.
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   std::unique_ptr<internal::DnsConfigServicePosix> service(
       new internal::DnsConfigServicePosix());
   service->ReadConfig(base::Bind(&DummyConfigCallback));
@@ -295,6 +296,8 @@ class DnsConfigServicePosixTest : public testing::Test {
 };
 
 TEST_F(DnsConfigServicePosixTest, SeenChangeSinceNetworkChange) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   // Verify SeenChangeSince() returns false if no changes
   MockDNSConfig("8.8.8.8");
   StartWatching();
@@ -308,9 +311,11 @@ TEST_F(DnsConfigServicePosixTest, SeenChangeSinceNetworkChange) {
 
 // Regression test for https://crbug.com/704662.
 TEST_F(DnsConfigServicePosixTest, ChangeConfigMultipleTimes) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   service_->WatchConfig(base::Bind(&DnsConfigServicePosixTest::OnConfigChanged,
                                    base::Unretained(this)));
-  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
+  scoped_task_environment.RunUntilIdle();
 
   for (int i = 0; i < 5; i++) {
     service_->OnNetworkChanged(NetworkChangeNotifier::CONNECTION_WIFI);
@@ -318,7 +323,7 @@ TEST_F(DnsConfigServicePosixTest, ChangeConfigMultipleTimes) {
     // called if the new config is different from the old one, so this can't be
     // ExpectChange().
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
-    NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
+    scoped_task_environment.RunUntilIdle();
   }
 
   // There should never be more than 4 nameservers in a real config.

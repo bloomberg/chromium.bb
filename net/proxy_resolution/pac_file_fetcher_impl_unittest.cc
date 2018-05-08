@@ -17,6 +17,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
@@ -39,6 +40,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/simple_connection_listener.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_file_job.h"
@@ -213,7 +215,8 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
   DISALLOW_COPY_AND_ASSIGN(BasicNetworkDelegate);
 };
 
-class PacFileFetcherImplTest : public PlatformTest {
+class PacFileFetcherImplTest : public PlatformTest,
+                               public WithScopedTaskEnvironment {
  public:
   PacFileFetcherImplTest() {
     test_server_.AddDefaultHandlers(base::FilePath(kDocRoot));

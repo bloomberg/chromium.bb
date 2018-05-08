@@ -25,6 +25,7 @@
 #include "net/ssl/ssl_private_key_test_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/ec.h"
@@ -57,7 +58,8 @@ std::string TestKeyToString(const testing::TestParamInfo<TestKey>& params) {
 
 }  // namespace
 
-class SSLPlatformKeyNSSTest : public testing::TestWithParam<TestKey> {};
+class SSLPlatformKeyNSSTest : public testing::TestWithParam<TestKey>,
+                              public WithScopedTaskEnvironment {};
 
 TEST_P(SSLPlatformKeyNSSTest, KeyMatches) {
   const TestKey& test_key = GetParam();

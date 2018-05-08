@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/net_errors.h"
@@ -28,6 +29,7 @@
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_resolver.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -330,7 +332,7 @@ TEST(PacFileDeciderTest, AutodetectSuccess) {
   EXPECT_EQ(rule.url, decider.effective_config().value().pac_url());
 }
 
-class PacFileDeciderQuickCheckTest : public ::testing::Test {
+class PacFileDeciderQuickCheckTest : public TestWithScopedTaskEnvironment {
  public:
   PacFileDeciderQuickCheckTest()
       : rule_(rules_.AddSuccessRule("http://wpad/wpad.dat")),
@@ -614,6 +616,8 @@ TEST(PacFileDeciderTest, AutodetectFailCustomFails2) {
 // a 1 millisecond delay. This means it will now complete asynchronously.
 // Moreover, we test the NetLog to make sure it logged the pause.
 TEST(PacFileDeciderTest, CustomPacFails1_WithPositiveDelay) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   Rules rules;
   RuleBasedPacFileFetcher fetcher(&rules);
   DoNothingDhcpPacFileFetcher dhcp_fetcher;
@@ -812,6 +816,8 @@ TEST(PacFileDeciderTest, DhcpCancelledByDestructor) {
   // http://codereview.chromium.org/7044058/
   // Thus, we don't care much about actual results (hence no EXPECT or ASSERT
   // macros below), just that it doesn't crash.
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   Rules rules;
   RuleBasedPacFileFetcher fetcher(&rules);
 

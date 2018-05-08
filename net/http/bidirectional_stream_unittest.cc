@@ -38,6 +38,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -391,7 +392,7 @@ class MockTimer : public base::MockTimer {
 
 }  // namespace
 
-class BidirectionalStreamTest : public testing::Test {
+class BidirectionalStreamTest : public TestWithScopedTaskEnvironment {
  public:
   BidirectionalStreamTest()
       : default_url_(kDefaultUrl),

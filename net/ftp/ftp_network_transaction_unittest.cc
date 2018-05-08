@@ -16,6 +16,7 @@
 #include "net/ftp/ftp_request_info.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -756,9 +757,9 @@ class FtpSocketDataProviderEvilLogin
   DISALLOW_COPY_AND_ASSIGN(FtpSocketDataProviderEvilLogin);
 };
 
-class FtpNetworkTransactionTest
-    : public PlatformTest,
-      public ::testing::WithParamInterface<int> {
+class FtpNetworkTransactionTest : public PlatformTest,
+                                  public ::testing::WithParamInterface<int>,
+                                  public WithScopedTaskEnvironment {
  public:
   FtpNetworkTransactionTest() : host_resolver_(new MockHostResolver) {
     SetUpTransaction();

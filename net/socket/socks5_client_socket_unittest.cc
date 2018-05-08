@@ -26,6 +26,7 @@
 #include "net/socket/socket_test_util.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,7 +44,8 @@ class NetLog;
 namespace {
 
 // Base class to test SOCKS5ClientSocket
-class SOCKS5ClientSocketTest : public PlatformTest {
+class SOCKS5ClientSocketTest : public PlatformTest,
+                               public WithScopedTaskEnvironment {
  public:
   SOCKS5ClientSocketTest();
   // Create a SOCKSClientSocket on top of a MockSocket.

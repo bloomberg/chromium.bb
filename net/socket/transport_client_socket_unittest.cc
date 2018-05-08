@@ -24,6 +24,7 @@
 #include "net/socket/tcp_client_socket.h"
 #include "net/socket/tcp_server_socket.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,7 +44,8 @@ enum ClientSocketTestTypes { TCP, SCTP };
 }  // namespace
 
 class TransportClientSocketTest
-    : public ::testing::TestWithParam<ClientSocketTestTypes> {
+    : public ::testing::TestWithParam<ClientSocketTestTypes>,
+      public WithScopedTaskEnvironment {
  public:
   TransportClientSocketTest()
       : listen_port_(0),

@@ -20,6 +20,7 @@
 #include "base/environment.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -531,6 +532,8 @@ void SimulateAttack(Server* server,
 }
 
 TEST(URLRequestThrottlerSimulation, HelpsInAttack) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   Server unprotected_server(30, 1.0);
   RequesterResults unprotected_attacker_results;
   RequesterResults unprotected_client_results;
@@ -616,6 +619,8 @@ double SimulateDowntime(const TimeDelta& duration,
 }
 
 TEST(URLRequestThrottlerSimulation, PerceivedDowntimeRatio) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   struct Stats {
     // Expected interval that we expect the ratio of downtime when anti-DDoS
     // is enabled and downtime when anti-DDoS is not enabled to fall within.

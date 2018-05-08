@@ -16,6 +16,7 @@
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_delegate.h"
 #include "net/reporting/reporting_uploader.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class GURL;
@@ -171,7 +172,7 @@ class TestReportingContext : public ReportingContext {
 
 // A unit test base class that provides a TestReportingContext and shorthand
 // getters.
-class ReportingTestBase : public ::testing::Test {
+class ReportingTestBase : public TestWithScopedTaskEnvironment {
  protected:
   ReportingTestBase();
   ~ReportingTestBase() override;

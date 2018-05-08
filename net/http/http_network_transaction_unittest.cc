@@ -26,7 +26,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/auth.h"
@@ -93,8 +92,8 @@
 #include "net/ssl/ssl_private_key.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
-#include "net/test/net_test_suite.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/third_party/spdy/core/spdy_framer.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
@@ -286,7 +285,8 @@ class TestSSLConfigService : public SSLConfigService {
 
 }  // namespace
 
-class HttpNetworkTransactionTest : public PlatformTest {
+class HttpNetworkTransactionTest : public PlatformTest,
+                                   public WithScopedTaskEnvironment {
  public:
   ~HttpNetworkTransactionTest() override {
     // Important to restore the per-pool limit first, since the pool limit must
@@ -17142,7 +17142,7 @@ TEST_F(HttpNetworkTransactionTest, TokenBindingSpdy) {
   EXPECT_EQ(ERR_IO_PENDING,
             trans.Start(&request, callback.callback(), NetLogWithSource()));
 
-  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
+  RunUntilIdle();
 
   EXPECT_TRUE(trans.GetResponseInfo()->was_fetched_via_spdy);
   HttpRequestHeaders headers;

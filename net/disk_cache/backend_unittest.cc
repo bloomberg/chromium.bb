@@ -14,7 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -45,7 +44,6 @@
 #include "net/disk_cache/simple/simple_test_util.h"
 #include "net/disk_cache/simple/simple_util.h"
 #include "net/test/gtest_util.h"
-#include "net/test/net_test_suite.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -4065,7 +4063,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationCorruption) {
   ASSERT_EQ(kSize, ReadData(corrupted_entry, 0, 0, buffer.get(), kSize));
   corrupted_entry->Close();
   // Let all I/O finish so it doesn't race with corrupting the file below.
-  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
+  RunUntilIdle();
 
   std::set<std::string> key_pool;
   ASSERT_TRUE(CreateSetOfRandomEntries(&key_pool));
@@ -4331,7 +4329,7 @@ TEST_F(DiskCacheBackendTest, SimpleFdLimit) {
     entries[i]->Close();
   }
   alt_entry->Close();
-  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
+  RunUntilIdle();
 
   // Closes have to pull things in to write out the footer, but they also
   // free up FDs, so we will only need to kick one more thing out.

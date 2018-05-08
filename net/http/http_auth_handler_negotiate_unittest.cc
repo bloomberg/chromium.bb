@@ -17,6 +17,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -42,7 +43,8 @@ typedef MockSSPILibrary MockAuthLibrary;
 typedef test::MockGSSAPILibrary MockAuthLibrary;
 #endif
 
-class HttpAuthHandlerNegotiateTest : public PlatformTest {
+class HttpAuthHandlerNegotiateTest : public PlatformTest,
+                                     public WithScopedTaskEnvironment {
  public:
   void SetUp() override {
     auth_library_ = new MockAuthLibrary();

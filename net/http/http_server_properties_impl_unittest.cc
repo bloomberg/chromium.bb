@@ -10,6 +10,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/values.h"
@@ -278,6 +279,8 @@ TEST_F(SpdyServerPropertiesTest, SupportsRequestPriorityTest) {
 }
 
 TEST_F(SpdyServerPropertiesTest, Clear) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   // Add www.google.com:443 and mail.google.com:443 as supporting SPDY.
   url::SchemeHostPort spdy_server_google("https", "www.google.com", 443);
   impl_.SetSupportsSpdy(spdy_server_google, true);
@@ -469,6 +472,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, Set) {
 // SetAlternativeServiceServers() should not crash if there is an empty
 // hostname is the mapping.
 TEST_F(AlternateProtocolServerPropertiesTest, SetWithEmptyHostname) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   url::SchemeHostPort server("https", "foo", 443);
   const AlternativeService alternative_service_with_empty_hostname(kProtoHTTP2,
                                                                    "", 1234);
@@ -620,6 +625,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternativeServiceInfos) {
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   url::SchemeHostPort test_server("http", "foo", 80);
   const AlternativeService alternative_service1(kProtoHTTP2, "foo", 443);
   SetAlternativeService(test_server, alternative_service1);
@@ -798,6 +805,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearAlternativeServices) {
 // particular, an alternative service mapped to an origin shadows alternative
 // services of canonical hosts.
 TEST_F(AlternateProtocolServerPropertiesTest, BrokenShadowsCanonical) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   url::SchemeHostPort test_server("https", "foo.c.youtube.com", 443);
   url::SchemeHostPort canonical_server("https", "bar.c.youtube.com", 443);
   AlternativeService canonical_alternative_service(kProtoQUIC,
@@ -823,6 +832,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, BrokenShadowsCanonical) {
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, ClearBroken) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   url::SchemeHostPort test_server("http", "foo", 80);
   const AlternativeService alternative_service(kProtoHTTP2, "foo", 443);
   SetAlternativeService(test_server, alternative_service);
@@ -911,6 +922,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearCanonical) {
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, CanonicalBroken) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   url::SchemeHostPort test_server("https", "foo.c.youtube.com", 443);
   url::SchemeHostPort canonical_server("https", "bar.c.youtube.com", 443);
   AlternativeService canonical_alternative_service(kProtoQUIC,
@@ -1082,6 +1095,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, RemoveExpiredBrokenAltSvc2) {
 
 TEST_F(AlternateProtocolServerPropertiesTest,
        GetAlternativeServiceInfoAsValue) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   base::Time::Exploded now_exploded;
   now_exploded.year = 2018;
   now_exploded.month = 1;

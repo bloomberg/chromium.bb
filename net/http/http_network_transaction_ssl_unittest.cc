@@ -27,6 +27,7 @@
 #include "net/socket/socket_test_util.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,7 +55,7 @@ class TokenBindingSSLConfigService : public SSLConfigService {
 
 }  // namespace
 
-class HttpNetworkTransactionSSLTest : public testing::Test {
+class HttpNetworkTransactionSSLTest : public TestWithScopedTaskEnvironment {
  protected:
   HttpNetworkTransactionSSLTest() = default;
 

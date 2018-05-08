@@ -19,7 +19,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/ip_address.h"
@@ -38,7 +37,7 @@
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
-#include "net/test/net_test_suite.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -709,7 +708,8 @@ class DnsTransactionTestBase : public testing::Test {
   std::unique_ptr<DnsTransactionFactory> transaction_factory_;
 };
 
-class DnsTransactionTest : public DnsTransactionTestBase {
+class DnsTransactionTest : public DnsTransactionTestBase,
+                           public WithScopedTaskEnvironment {
  public:
   DnsTransactionTest() = default;
   ~DnsTransactionTest() override = default;
@@ -820,21 +820,13 @@ class DnsTransactionTest : public DnsTransactionTestBase {
   DohJobMakerCallback doh_job_maker_;
 };
 
-class DnsTransactionTestWithMockTime : public DnsTransactionTestBase {
+class DnsTransactionTestWithMockTime : public DnsTransactionTestBase,
+                                       public WithScopedTaskEnvironment {
  protected:
-  DnsTransactionTestWithMockTime() = default;
+  DnsTransactionTestWithMockTime()
+      : WithScopedTaskEnvironment(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
   ~DnsTransactionTestWithMockTime() override = default;
-
-  void SetUp() override {
-    DnsTransactionTestBase::SetUp();
-    NetTestSuite::SetScopedTaskEnvironment(
-        base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
-  }
-
-  void TearDown() override {
-    NetTestSuite::ResetScopedTaskEnvironment();
-    DnsTransactionTestBase::TearDown();
-  }
 };
 
 TEST_F(DnsTransactionTest, Lookup) {
@@ -990,8 +982,7 @@ TEST_F(DnsTransactionTestWithMockTime, MismatchedResponseFail) {
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_DNS_TIMED_OUT);
   EXPECT_FALSE(helper0.Run(transaction_factory_.get()));
-  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
-      session_->NextTimeout(0, 0));
+  FastForwardBy(session_->NextTimeout(0, 0));
   EXPECT_TRUE(helper0.has_completed());
 }
 
@@ -1040,14 +1031,11 @@ TEST_F(DnsTransactionTestWithMockTime, Timeout) {
 
   // Finish when the third attempt times out.
   EXPECT_FALSE(helper0.Run(transaction_factory_.get()));
-  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
-      session_->NextTimeout(0, 0));
+  FastForwardBy(session_->NextTimeout(0, 0));
   EXPECT_FALSE(helper0.has_completed());
-  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
-      session_->NextTimeout(0, 1));
+  FastForwardBy(session_->NextTimeout(0, 1));
   EXPECT_FALSE(helper0.has_completed());
-  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
-      session_->NextTimeout(0, 2));
+  FastForwardBy(session_->NextTimeout(0, 2));
   EXPECT_TRUE(helper0.has_completed());
 }
 
@@ -1074,7 +1062,7 @@ TEST_F(DnsTransactionTestWithMockTime, ServerFallbackAndRotate) {
   TransactionHelper helper1(kT1HostName, kT1Qtype, ERR_NAME_NOT_RESOLVED);
 
   EXPECT_FALSE(helper0.Run(transaction_factory_.get()));
-  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
+  FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(helper0.has_completed());
   EXPECT_TRUE(helper1.Run(transaction_factory_.get()));
 
@@ -1926,7 +1914,7 @@ TEST_F(DnsTransactionTestWithMockTime, TCPTimeout) {
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_DNS_TIMED_OUT);
   EXPECT_FALSE(helper0.Run(transaction_factory_.get()));
-  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
+  FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(helper0.has_completed());
 }
 

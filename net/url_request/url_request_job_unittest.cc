@@ -12,6 +12,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -245,7 +246,9 @@ const MockTransaction kBrotli_Slow_Transaction = {
 
 }  // namespace
 
-TEST(URLRequestJob, TransactionNoFilter) {
+using URLRequestJobTest = TestWithScopedTaskEnvironment;
+
+TEST_F(URLRequestJobTest, TransactionNoFilter) {
   MockNetworkLayer network_layer;
   TestURLRequestContext context;
   context.set_http_transaction_factory(&network_layer);
@@ -269,7 +272,7 @@ TEST(URLRequestJob, TransactionNoFilter) {
   RemoveMockTransaction(&kNoFilter_Transaction);
 }
 
-TEST(URLRequestJob, TransactionNotifiedWhenDone) {
+TEST_F(URLRequestJobTest, TransactionNotifiedWhenDone) {
   MockNetworkLayer network_layer;
   TestURLRequestContext context;
   context.set_http_transaction_factory(&network_layer);
@@ -294,7 +297,7 @@ TEST(URLRequestJob, TransactionNotifiedWhenDone) {
   RemoveMockTransaction(&kGZip_Transaction);
 }
 
-TEST(URLRequestJob, SyncTransactionNotifiedWhenDone) {
+TEST_F(URLRequestJobTest, SyncTransactionNotifiedWhenDone) {
   MockNetworkLayer network_layer;
   TestURLRequestContext context;
   context.set_http_transaction_factory(&network_layer);
@@ -322,7 +325,7 @@ TEST(URLRequestJob, SyncTransactionNotifiedWhenDone) {
 }
 
 // Tests processing a large gzip header one byte at a time.
-TEST(URLRequestJob, SyncSlowTransaction) {
+TEST_F(URLRequestJobTest, SyncSlowTransaction) {
   MockNetworkLayer network_layer;
   TestURLRequestContext context;
   context.set_http_transaction_factory(&network_layer);
@@ -350,7 +353,7 @@ TEST(URLRequestJob, SyncSlowTransaction) {
   RemoveMockTransaction(&transaction);
 }
 
-TEST(URLRequestJob, RedirectTransactionNotifiedWhenDone) {
+TEST_F(URLRequestJobTest, RedirectTransactionNotifiedWhenDone) {
   MockNetworkLayer network_layer;
   TestURLRequestContext context;
   context.set_http_transaction_factory(&network_layer);
@@ -371,7 +374,7 @@ TEST(URLRequestJob, RedirectTransactionNotifiedWhenDone) {
   RemoveMockTransaction(&kRedirect_Transaction);
 }
 
-TEST(URLRequestJob, RedirectTransactionWithReferrerPolicyHeader) {
+TEST_F(URLRequestJobTest, RedirectTransactionWithReferrerPolicyHeader) {
   struct TestCase {
     const char* original_url;
     const char* original_referrer;
@@ -443,7 +446,7 @@ TEST(URLRequestJob, RedirectTransactionWithReferrerPolicyHeader) {
   }
 }
 
-TEST(URLRequestJob, TransactionNotCachedWhenNetworkDelegateRedirects) {
+TEST_F(URLRequestJobTest, TransactionNotCachedWhenNetworkDelegateRedirects) {
   MockNetworkLayer network_layer;
   TestNetworkDelegate network_delegate;
   network_delegate.set_redirect_on_headers_received_url(GURL("http://foo"));
@@ -470,7 +473,7 @@ TEST(URLRequestJob, TransactionNotCachedWhenNetworkDelegateRedirects) {
 // Makes sure that ReadRawDataComplete correctly updates request status before
 // calling ReadFilteredData.
 // Regression test for crbug.com/553300.
-TEST(URLRequestJob, EmptyBodySkipFilter) {
+TEST_F(URLRequestJobTest, EmptyBodySkipFilter) {
   MockNetworkLayer network_layer;
   TestURLRequestContext context;
   context.set_http_transaction_factory(&network_layer);
@@ -495,7 +498,7 @@ TEST(URLRequestJob, EmptyBodySkipFilter) {
 }
 
 // Regression test for crbug.com/575213.
-TEST(URLRequestJob, InvalidContentGZipTransaction) {
+TEST_F(URLRequestJobTest, InvalidContentGZipTransaction) {
   MockNetworkLayer network_layer;
   TestURLRequestContext context;
   context.set_http_transaction_factory(&network_layer);
@@ -524,7 +527,7 @@ TEST(URLRequestJob, InvalidContentGZipTransaction) {
 }
 
 // Regression test for crbug.com/553300.
-TEST(URLRequestJob, SlowFilterRead) {
+TEST_F(URLRequestJobTest, SlowFilterRead) {
   MockNetworkLayer network_layer;
   TestURLRequestContext context;
   context.set_http_transaction_factory(&network_layer);
@@ -548,7 +551,7 @@ TEST(URLRequestJob, SlowFilterRead) {
   RemoveMockTransaction(&kGzip_Slow_Transaction);
 }
 
-TEST(URLRequestJob, SlowBrotliRead) {
+TEST_F(URLRequestJobTest, SlowBrotliRead) {
   MockNetworkLayer network_layer;
   TestURLRequestContext context;
   context.set_http_transaction_factory(&network_layer);

@@ -26,6 +26,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service_common_unittest.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -404,7 +405,8 @@ class SyncConfigGetter : public ProxyConfigService::Observer {
 // This test fixture is only really needed for the KDEConfigParser test case,
 // but all the test cases with the same prefix ("ProxyConfigServiceLinuxTest")
 // must use the same test fixture class (also "ProxyConfigServiceLinuxTest").
-class ProxyConfigServiceLinuxTest : public PlatformTest {
+class ProxyConfigServiceLinuxTest : public PlatformTest,
+                                    public WithScopedTaskEnvironment {
  protected:
   void SetUp() override {
     PlatformTest::SetUp();

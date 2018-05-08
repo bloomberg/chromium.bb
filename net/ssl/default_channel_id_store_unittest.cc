@@ -20,6 +20,7 @@
 #include "net/base/net_errors.h"
 #include "net/test/channel_id_test_util.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -134,7 +135,9 @@ bool DomainNotEquals(const std::string& domain1, const std::string& domain2) {
 
 }  // namespace
 
-TEST(DefaultChannelIDStoreTest, TestLoading) {
+using DefaultChannelIDStoreTest = TestWithScopedTaskEnvironment;
+
+TEST_F(DefaultChannelIDStoreTest, TestLoading) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
 
   persistent_store->AddChannelID(DefaultChannelIDStore::ChannelID(
@@ -158,7 +161,7 @@ TEST(DefaultChannelIDStoreTest, TestLoading) {
 }
 
 //TODO(mattm): add more tests of without a persistent store?
-TEST(DefaultChannelIDStoreTest, TestSettingAndGetting) {
+TEST_F(DefaultChannelIDStoreTest, TestSettingAndGetting) {
   // No persistent store, all calls will be synchronous.
   DefaultChannelIDStore store(NULL);
   std::unique_ptr<crypto::ECPrivateKey> expected_key(
@@ -178,7 +181,7 @@ TEST(DefaultChannelIDStoreTest, TestSettingAndGetting) {
   EXPECT_TRUE(KeysEqual(expected_key.get(), key.get()));
 }
 
-TEST(DefaultChannelIDStoreTest, TestDuplicateChannelIds) {
+TEST_F(DefaultChannelIDStoreTest, TestDuplicateChannelIds) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   DefaultChannelIDStore store(persistent_store.get());
   std::unique_ptr<crypto::ECPrivateKey> expected_key(
@@ -201,7 +204,7 @@ TEST(DefaultChannelIDStoreTest, TestDuplicateChannelIds) {
   EXPECT_TRUE(KeysEqual(expected_key.get(), key.get()));
 }
 
-TEST(DefaultChannelIDStoreTest, TestAsyncGet) {
+TEST_F(DefaultChannelIDStoreTest, TestAsyncGet) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   std::unique_ptr<crypto::ECPrivateKey> expected_key(
       crypto::ECPrivateKey::Create());
@@ -228,7 +231,7 @@ TEST(DefaultChannelIDStoreTest, TestAsyncGet) {
   EXPECT_TRUE(KeysEqual(expected_key.get(), helper.key_.get()));
 }
 
-TEST(DefaultChannelIDStoreTest, TestDeleteAll) {
+TEST_F(DefaultChannelIDStoreTest, TestDeleteAll) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   DefaultChannelIDStore store(persistent_store.get());
 
@@ -248,7 +251,7 @@ TEST(DefaultChannelIDStoreTest, TestDeleteAll) {
   EXPECT_EQ(0, store.GetChannelIDCount());
 }
 
-TEST(DefaultChannelIDStoreTest, TestDeleteForDomains) {
+TEST_F(DefaultChannelIDStoreTest, TestDeleteForDomains) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   DefaultChannelIDStore store(persistent_store.get());
 
@@ -286,7 +289,7 @@ TEST(DefaultChannelIDStoreTest, TestDeleteForDomains) {
   EXPECT_EQ("google.com", channel_ids.begin()->server_identifier());
 }
 
-TEST(DefaultChannelIDStoreTest, TestAsyncGetAndDeleteAll) {
+TEST_F(DefaultChannelIDStoreTest, TestAsyncGetAndDeleteAll) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   persistent_store->AddChannelID(ChannelIDStore::ChannelID(
       "verisign.com", base::Time(), crypto::ECPrivateKey::Create()));
@@ -310,7 +313,7 @@ TEST(DefaultChannelIDStoreTest, TestAsyncGetAndDeleteAll) {
   EXPECT_EQ(0u, post_channel_ids.size());
 }
 
-TEST(DefaultChannelIDStoreTest, TestDelete) {
+TEST_F(DefaultChannelIDStoreTest, TestDelete) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   DefaultChannelIDStore store(persistent_store.get());
 
@@ -345,7 +348,7 @@ TEST(DefaultChannelIDStoreTest, TestDelete) {
                                base::Bind(&GetChannelIDCallbackNotCalled)));
 }
 
-TEST(DefaultChannelIDStoreTest, TestAsyncDelete) {
+TEST_F(DefaultChannelIDStoreTest, TestAsyncDelete) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   std::unique_ptr<crypto::ECPrivateKey> expected_key(
       crypto::ECPrivateKey::Create());
@@ -390,7 +393,7 @@ TEST(DefaultChannelIDStoreTest, TestAsyncDelete) {
   EXPECT_TRUE(KeysEqual(expected_key.get(), b_helper.key_.get()));
 }
 
-TEST(DefaultChannelIDStoreTest, TestGetAll) {
+TEST_F(DefaultChannelIDStoreTest, TestGetAll) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   DefaultChannelIDStore store(persistent_store.get());
 
@@ -412,7 +415,7 @@ TEST(DefaultChannelIDStoreTest, TestGetAll) {
   EXPECT_EQ(4u, channel_ids.size());
 }
 
-TEST(DefaultChannelIDStoreTest, TestInitializeFrom) {
+TEST_F(DefaultChannelIDStoreTest, TestInitializeFrom) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   DefaultChannelIDStore store(persistent_store.get());
   std::unique_ptr<crypto::ECPrivateKey> preexisting_key(
@@ -457,7 +460,7 @@ TEST(DefaultChannelIDStoreTest, TestInitializeFrom) {
   EXPECT_TRUE(KeysEqual(preexisting_key.get(), channel_id->key()));
 }
 
-TEST(DefaultChannelIDStoreTest, TestAsyncInitializeFrom) {
+TEST_F(DefaultChannelIDStoreTest, TestAsyncInitializeFrom) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   std::unique_ptr<crypto::ECPrivateKey> preexisting_key(
       crypto::ECPrivateKey::Create());

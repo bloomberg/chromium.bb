@@ -29,6 +29,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -61,7 +62,8 @@ class MockSSLConfigService : public SSLConfigService {
 namespace test {
 
 class HttpProxyClientSocketWrapperTest
-    : public ::testing::TestWithParam<std::tuple<QuicTransportVersion, bool>> {
+    : public ::testing::TestWithParam<std::tuple<QuicTransportVersion, bool>>,
+      public WithScopedTaskEnvironment {
  protected:
   static const bool kFin = true;
   static const bool kIncludeVersion = true;

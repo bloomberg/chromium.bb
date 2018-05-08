@@ -26,7 +26,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
@@ -41,7 +40,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/gtest_util.h"
-#include "net/test/net_test_suite.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -331,7 +330,7 @@ class FetcherTestURLRequestContextGetter : public URLRequestContextGetter {
 
 }  // namespace
 
-class URLFetcherTest : public testing::Test {
+class URLFetcherTest : public TestWithScopedTaskEnvironment {
  public:
   URLFetcherTest() : num_upload_streams_created_(0) {}
 
@@ -570,7 +569,7 @@ TEST_F(URLFetcherTest, SequencedTaskTest) {
                             base::Unretained(delegate.get()),
                             test_server_->GetURL(kDefaultResponsePath),
                             URLFetcher::GET, CreateCrossThreadContextGetter()));
-  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
+  RunUntilIdle();
   delegate->StartFetcherAndWait();
 
   EXPECT_TRUE(delegate->fetcher()->GetStatus().is_success());
@@ -580,7 +579,7 @@ TEST_F(URLFetcherTest, SequencedTaskTest) {
   EXPECT_EQ(kDefaultResponseBody, data);
 
   sequenced_task_runner->DeleteSoon(FROM_HERE, delegate.release());
-  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
+  RunUntilIdle();
 }
 
 // Tests to make sure CancelAll() will successfully cancel existing URLFetchers.

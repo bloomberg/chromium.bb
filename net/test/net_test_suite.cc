@@ -11,9 +11,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-base::test::ScopedTaskEnvironment::MainThreadType kDefaultMainThreadType =
-    base::test::ScopedTaskEnvironment::MainThreadType::IO;
-
 NetTestSuite* g_current_net_test_suite = nullptr;
 }  // namespace
 
@@ -34,30 +31,7 @@ void NetTestSuite::Initialize() {
 }
 
 void NetTestSuite::Shutdown() {
-  // We want to destroy this here before the TestSuite continues to tear down
-  // the environment.
-  scoped_task_environment_.reset();
-
   TestSuite::Shutdown();
-}
-
-// static
-base::test::ScopedTaskEnvironment* NetTestSuite::GetScopedTaskEnvironment() {
-  DCHECK(g_current_net_test_suite);
-  return g_current_net_test_suite->scoped_task_environment_.get();
-}
-
-// static
-void NetTestSuite::SetScopedTaskEnvironment(
-    base::test::ScopedTaskEnvironment::MainThreadType type) {
-  g_current_net_test_suite->scoped_task_environment_ = nullptr;
-  g_current_net_test_suite->scoped_task_environment_ =
-      std::make_unique<base::test::ScopedTaskEnvironment>(type);
-}
-
-// static
-void NetTestSuite::ResetScopedTaskEnvironment() {
-  SetScopedTaskEnvironment(kDefaultMainThreadType);
 }
 
 void NetTestSuite::InitializeTestThread() {
@@ -73,8 +47,4 @@ void NetTestSuite::InitializeTestThreadNoNetworkChangeNotifier() {
   // be mapped to localhost.  This prevents DNS queries from being sent in
   // the process of running these unit tests.
   host_resolver_proc_->AddRule("*", "127.0.0.1");
-
-  scoped_task_environment_ =
-      std::make_unique<base::test::ScopedTaskEnvironment>(
-          kDefaultMainThreadType);
 }

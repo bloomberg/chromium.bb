@@ -17,6 +17,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,7 +33,8 @@ namespace net {
 // When the parameter is false, the UploadFileElementReader is passed only a
 // FilePath and needs to open the file itself. When it's true, it's passed an
 // already open base::File.
-class UploadFileElementReaderTest : public testing::TestWithParam<bool> {
+class UploadFileElementReaderTest : public testing::TestWithParam<bool>,
+                                    public WithScopedTaskEnvironment {
  protected:
   void SetUp() override {
     // Some tests (*.ReadPartially) rely on bytes_.size() being even.

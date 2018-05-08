@@ -31,6 +31,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/websockets/websocket_channel.h"
@@ -215,7 +216,7 @@ class TestProxyDelegateWithProxyInfo : public ProxyDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestProxyDelegateWithProxyInfo);
 };
 
-class WebSocketEndToEndTest : public ::testing::Test {
+class WebSocketEndToEndTest : public TestWithScopedTaskEnvironment {
  protected:
   WebSocketEndToEndTest()
       : event_interface_(),

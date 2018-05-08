@@ -22,6 +22,7 @@
 #include "net/dns/mock_mdns_socket_factory.h"
 #include "net/dns/record_rdata.h"
 #include "net/socket/udp_client_socket.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -397,7 +398,7 @@ class MockTimer : public base::MockTimer {
 
 }  // namespace
 
-class MDnsTest : public ::testing::Test {
+class MDnsTest : public TestWithScopedTaskEnvironment {
  public:
   void SetUp() override;
   void DeleteTransaction();
@@ -1124,7 +1125,7 @@ class MockMDnsConnectionDelegate : public MDnsConnection::Delegate {
   MOCK_METHOD1(OnConnectionError, void(int error));
 };
 
-class MDnsConnectionTest : public ::testing::Test {
+class MDnsConnectionTest : public TestWithScopedTaskEnvironment {
  public:
   MDnsConnectionTest() : connection_(&delegate_) {
   }

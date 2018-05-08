@@ -28,6 +28,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -117,13 +118,13 @@ class TestConnectionListener
 
 class EmbeddedTestServerTest
     : public testing::TestWithParam<EmbeddedTestServer::Type>,
-      public URLFetcherDelegate {
+      public URLFetcherDelegate,
+      public WithScopedTaskEnvironment {
  public:
   EmbeddedTestServerTest()
       : num_responses_received_(0),
         num_responses_expected_(0),
-        io_thread_("io_thread") {
-  }
+        io_thread_("io_thread") {}
 
   void SetUp() override {
     base::Thread::Options thread_options;
@@ -499,7 +500,8 @@ INSTANTIATE_TEST_CASE_P(EmbeddedTestServerTestInstantiation,
 typedef std::tuple<bool, bool, EmbeddedTestServer::Type> ThreadingTestParams;
 
 class EmbeddedTestServerThreadingTest
-    : public testing::TestWithParam<ThreadingTestParams> {};
+    : public testing::TestWithParam<ThreadingTestParams>,
+      public WithScopedTaskEnvironment {};
 
 class EmbeddedTestServerThreadingTestDelegate
     : public base::PlatformThread::Delegate,

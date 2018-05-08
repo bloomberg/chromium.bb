@@ -56,6 +56,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/third_party/spdy/core/spdy_test_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -208,7 +209,7 @@ class TestConnectionMigrationSocketFactory : public MockClientSocketFactory {
   DISALLOW_COPY_AND_ASSIGN(TestConnectionMigrationSocketFactory);
 };
 
-class QuicStreamFactoryTestBase {
+class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
  protected:
   QuicStreamFactoryTestBase(QuicTransportVersion version,
                             bool client_headers_include_h2_stream_dependency)

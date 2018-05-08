@@ -8,8 +8,7 @@
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/test/scoped_task_environment.h"
-#include "net/test/net_test_suite.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,7 +18,7 @@ namespace {
 using testing::UnorderedElementsAre;
 using testing::IsEmpty;
 
-class BackendCleanupTrackerTest : public testing::Test {
+class BackendCleanupTrackerTest : public net::TestWithScopedTaskEnvironment {
  protected:
   BackendCleanupTrackerTest() = default;
 
@@ -30,10 +29,6 @@ class BackendCleanupTrackerTest : public testing::Test {
     // Create two unique paths.
     path1_ = tmp_dir_.GetPath().Append(FILE_PATH_LITERAL("a"));
     path2_ = tmp_dir_.GetPath().Append(FILE_PATH_LITERAL("b"));
-  }
-
-  void RunUntilIdle() {
-    NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
   }
 
   void RecordCall(int val) { called_.push_back(val); }

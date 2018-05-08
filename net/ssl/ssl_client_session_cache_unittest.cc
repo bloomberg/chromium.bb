@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_allocator_dump.h"
@@ -356,6 +357,8 @@ TEST_F(SSLClientSessionCacheTest, LookupExpirationCheck) {
 
 // Test that SSL cache is flushed on low memory notifications
 TEST_F(SSLClientSessionCacheTest, TestFlushOnMemoryNotifications) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   // kExpirationCheckCount is set to a suitably large number so the automated
   // pruning never triggers.
   const size_t kExpirationCheckCount = 1000;

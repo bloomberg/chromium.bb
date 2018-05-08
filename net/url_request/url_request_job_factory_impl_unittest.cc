@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/request_priority.h"
 #include "net/test/gtest_util.h"
@@ -60,6 +61,7 @@ class DummyProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
 };
 
 TEST(URLRequestJobFactoryTest, NoProtocolHandler) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   TestDelegate delegate;
   TestURLRequestContext request_context;
   std::unique_ptr<URLRequest> request(
@@ -72,6 +74,7 @@ TEST(URLRequestJobFactoryTest, NoProtocolHandler) {
 }
 
 TEST(URLRequestJobFactoryTest, BasicProtocolHandler) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   TestDelegate delegate;
   URLRequestJobFactoryImpl job_factory;
   TestURLRequestContext request_context;
@@ -88,6 +91,7 @@ TEST(URLRequestJobFactoryTest, BasicProtocolHandler) {
 }
 
 TEST(URLRequestJobFactoryTest, DeleteProtocolHandler) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   URLRequestJobFactoryImpl job_factory;
   TestURLRequestContext request_context;
   request_context.set_job_factory(&job_factory);

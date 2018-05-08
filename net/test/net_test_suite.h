@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "net/dns/mock_host_resolver.h"
@@ -32,20 +31,6 @@ class NetTestSuite : public base::TestSuite {
 
   void Shutdown() override;
 
-  // Returns the base::test::ScopedTaskEnvironment initialized by the current
-  // NetTestSuite.
-  static base::test::ScopedTaskEnvironment* GetScopedTaskEnvironment();
-
-  // Sets the global ScopedTaskEnvironment with a new environment of main thread
-  // type, |type|. For example, one might want to use a MOCK_TIME
-  // ScopedTaskEnvironment.
-  static void SetScopedTaskEnvironment(
-      base::test::ScopedTaskEnvironment::MainThreadType type);
-
-  // Sets the global ScopedTaskEnvironment to a new environment of the default
-  // type used by NetTestSuite.
-  static void ResetScopedTaskEnvironment();
-
  protected:
   // Called from within Initialize(), but separate so that derived classes
   // can initialize the NetTestSuite instance only and not
@@ -61,7 +46,6 @@ class NetTestSuite : public base::TestSuite {
 
  private:
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
   scoped_refptr<net::RuleBasedHostResolverProc> host_resolver_proc_;
   net::ScopedDefaultHostResolverProc scoped_host_resolver_proc_;
 };
