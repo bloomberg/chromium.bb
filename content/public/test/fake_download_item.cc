@@ -183,6 +183,14 @@ bool FakeDownloadItem::IsTransient() const {
   return is_transient_;
 }
 
+void FakeDownloadItem::SetIsParallelDownload(bool is_parallel_download) {
+  is_parallel_download_ = is_parallel_download;
+}
+
+bool FakeDownloadItem::IsParallelDownload() const {
+  return is_parallel_download_;
+}
+
 void FakeDownloadItem::SetIsDone(bool is_done) {
   is_done_ = is_done;
 }

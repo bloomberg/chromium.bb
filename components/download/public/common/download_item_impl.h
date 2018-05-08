@@ -274,6 +274,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   bool GetOpened() const override;
   base::Time GetLastAccessTime() const override;
   bool IsTransient() const override;
+  bool IsParallelDownload() const override;
   void OnContentCheckCompleted(DownloadDangerType danger_type,
                                DownloadInterruptReason reason) override;
   void SetOpenWhenComplete(bool open) override;

@@ -111,7 +111,7 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
       item->GetReceivedBytes(),
       content::DownloadItemUtils::GetBrowserContext(item)->IsOffTheRecord(),
       item->GetState(), item->PercentComplete(), item->IsPaused(),
-      has_user_gesture, item->CanResume(),
+      has_user_gesture, item->CanResume(), item->IsParallelDownload(),
       ConvertUTF8ToJavaString(env, original_url),
       ConvertUTF8ToJavaString(env, item->GetReferrerUrl().spec()),
       time_remaining_known ? time_delta.InMilliseconds()

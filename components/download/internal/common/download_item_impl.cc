@@ -957,6 +957,11 @@ bool DownloadItemImpl::IsTransient() const {
   return transient_;
 }
 
+bool DownloadItemImpl::IsParallelDownload() const {
+  bool is_parallelizable = job_ ? job_->IsParallelizable() : false;
+  return is_parallelizable && download::IsParallelDownloadEnabled();
+}
+
 void DownloadItemImpl::OnContentCheckCompleted(DownloadDangerType danger_type,
                                                DownloadInterruptReason reason) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
