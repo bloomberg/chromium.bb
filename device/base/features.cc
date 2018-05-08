@@ -11,6 +11,8 @@ namespace device {
 #if defined(OS_WIN)
 const base::Feature kNewUsbBackend{"NewUsbBackend",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNewBLEWinImplementation{"NewBLEWinImplementation",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
