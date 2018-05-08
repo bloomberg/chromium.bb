@@ -25,11 +25,11 @@ void GetMatchingHostsByScopeMap(
     const ServiceWorkerDevToolsAgentHost::List& agent_hosts,
     const base::flat_set<GURL>& urls,
     ScopeAgentsMap* scope_agents_map) {
-  base::flat_set<base::StringPiece> host_name_set;
+  base::flat_set<GURL> host_name_set;
   for (const GURL& url : urls)
-    host_name_set.insert(url.host_piece());
+    host_name_set.insert(url.GetOrigin());
   for (const auto& host : agent_hosts) {
-    if (host_name_set.find(host->scope().host_piece()) == host_name_set.end())
+    if (host_name_set.find(host->scope().GetOrigin()) == host_name_set.end())
       continue;
     const auto& it = scope_agents_map->find(host->scope());
     if (it == scope_agents_map->end()) {
