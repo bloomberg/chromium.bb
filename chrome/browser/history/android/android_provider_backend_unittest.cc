@@ -91,11 +91,8 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
   void NotifyURLsModified(const history::URLRows& rows) override {
     modified_details_.reset(new history::URLRows(rows));
   }
-  void NotifyURLsDeleted(const DeletionTimeRange& time_range,
-                         bool expired,
-                         const URLRows& deleted_rows,
-                         const std::set<GURL>& favicon_urls) override {
-    deleted_details_.reset(new history::URLRows(deleted_rows));
+  void NotifyURLsDeleted(DeletionInfo deletion_info) override {
+    deleted_details_.reset(new history::URLRows(deletion_info.deleted_rows()));
   }
   void NotifyKeywordSearchTermUpdated(const URLRow& row,
                                       KeywordID keyword_id,
@@ -140,11 +137,8 @@ class AndroidProviderBackendNotifier : public HistoryBackendNotifier {
   void NotifyURLsModified(const history::URLRows& rows) override {
     modified_details_.reset(new history::URLRows(rows));
   }
-  void NotifyURLsDeleted(const DeletionTimeRange& time_range,
-                         bool expired,
-                         const history::URLRows& rows,
-                         const std::set<GURL>& favicon_urls) override {
-    deleted_details_.reset(new history::URLRows(rows));
+  void NotifyURLsDeleted(DeletionInfo deletion_info) override {
+    deleted_details_.reset(new history::URLRows(deletion_info.deleted_rows()));
   }
 
   history::URLRows* deleted_details() const { return deleted_details_.get(); }

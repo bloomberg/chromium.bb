@@ -382,9 +382,9 @@ void ExpireHistoryBackend::BroadcastNotifications(
     notifier_->NotifyURLsModified(effects->modified_urls);
   }
   if (!effects->deleted_urls.empty() || time_range.IsValid()) {
-    notifier_->NotifyURLsDeleted(time_range, type == DELETION_EXPIRED,
-                                 effects->deleted_urls,
-                                 effects->deleted_favicons);
+    notifier_->NotifyURLsDeleted(DeletionInfo(
+        time_range, type == DELETION_EXPIRED, std::move(effects->deleted_urls),
+        std::move(effects->deleted_favicons)));
   }
 }
 

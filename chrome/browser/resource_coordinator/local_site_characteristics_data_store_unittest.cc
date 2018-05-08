@@ -68,8 +68,7 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, EndToEnd) {
   writer.reset();
   EXPECT_TRUE(data_store_.origin_data_map_for_testing().empty());
 
-  data_store_.OnURLsDeleted(nullptr, history::DeletionTimeRange::AllTime(),
-                            false, history::URLRows(), std::set<GURL>());
+  data_store_.OnURLsDeleted(nullptr, history::DeletionInfo::ForAllHistory());
 }
 
 TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
@@ -115,8 +114,8 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
   history::URLRows urls_to_delete = {
       history::URLRow(GURL(kTestOrigin)),
       history::URLRow(GURL("http://www.url-not-in-map.com"))};
-  data_store_.OnURLsDeleted(nullptr, history::DeletionTimeRange::Invalid(),
-                            false, urls_to_delete, std::set<GURL>());
+  data_store_.OnURLsDeleted(nullptr, history::DeletionInfo::ForUrls(
+                                         urls_to_delete, std::set<GURL>()));
 
   // The information for this site have been reset, so the last loaded time
   // should now be equal to the current time and the title update feature
@@ -133,8 +132,7 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
   test_clock_.Advance(kDelay);
 
   // Delete all the information stored in the data store.
-  data_store_.OnURLsDeleted(nullptr, history::DeletionTimeRange::AllTime(),
-                            false, history::URLRows(), std::set<GURL>());
+  data_store_.OnURLsDeleted(nullptr, history::DeletionInfo::ForAllHistory());
 
   EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader2->UpdatesFaviconInBackground());

@@ -29,12 +29,10 @@ BrowsingDataHistoryObserverService::~BrowsingDataHistoryObserverService() {}
 
 void BrowsingDataHistoryObserverService::OnURLsDeleted(
     history::HistoryService* history_service,
-    const history::DeletionTimeRange& time_range,
-    bool expired,
-    const history::URLRows& deleted_rows,
-    const std::set<GURL>& favicon_urls) {
-  if (!expired)
-    browsing_data::RemoveNavigationEntries(profile_, time_range, deleted_rows);
+    const history::DeletionInfo& deletion_info) {
+  if (!deletion_info.is_from_expiration())
+    browsing_data::RemoveNavigationEntries(profile_, deletion_info.time_range(),
+                                           deletion_info.deleted_rows());
 }
 
 // static

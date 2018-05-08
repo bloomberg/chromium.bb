@@ -47,7 +47,7 @@ class HistoryServiceObserver {
   // |expired| is set to true, if the URL deletion is due to expiration.
   // |deleted_rows| list of the deleted URLs.
   // |favicon_urls| list of favicon URLs that correspond to the deleted URLs.
-  // DEPRECATED, use OnURLsDeleted() with |time_range| parameter.
+  // DEPRECATED, use OnURLsDeleted() with |deletion_info| parameter.
   // TODO(dullweber): Migrate observers to new OnURLsDeleted() method.
   virtual void OnURLsDeleted(HistoryService* history_service,
                              bool all_history,
@@ -57,18 +57,9 @@ class HistoryServiceObserver {
 
   // Called when one or more of URLs are deleted.
   //
-  // |time_range| If time_range.IsValid() is true, all URLs between
-  //              time_range.begin() and time_range.end() have been removed.
-  //              If time_range.IsAllTime() is true, all URLs are deleted and
-  //              |deleted_rows| and |favicon_urls| are undefined.
-  // |expired| is set to true, if the URL deletion is due to expiration.
-  // |deleted_rows| list of the deleted URLs.
-  // |favicon_urls| list of favicon URLs that correspond to the deleted URLs.
+  // |deletion_info| describes the urls that have been removed from history.
   virtual void OnURLsDeleted(HistoryService* history_service,
-                             const DeletionTimeRange& time_range,
-                             bool expired,
-                             const URLRows& deleted_rows,
-                             const std::set<GURL>& favicon_urls) {}
+                             const DeletionInfo& deletion_info) {}
 
   // Is called to notify when |history_service| has finished loading.
   virtual void OnHistoryServiceLoaded(HistoryService* history_service) {}

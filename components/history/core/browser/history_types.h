@@ -622,6 +622,59 @@ class DeletionTimeRange {
   base::Time end_;
 };
 
+// Describes the urls that have been removed due to a history deletion.
+// If |IsAllHistory()| returns true, all urls haven been deleted.
+// In this case, |deleted_rows()| and |favicon_urls()| are undefined.
+// Otherwise |deleted_rows()| contains the urls where all visits have been
+// removed from history.
+// If |expired()| returns true, this deletion is due to a regularly performed
+// history expiration. Otherwise it is an explicit deletion due to a user
+// action.
+class DeletionInfo {
+ public:
+  // Returns a DeletionInfo that covers all history.
+  static DeletionInfo ForAllHistory();
+  // Returns a DeletionInfo with invalid time range for the given urls.
+  static DeletionInfo ForUrls(URLRows deleted_rows,
+                              std::set<GURL> favicon_urls);
+
+  DeletionInfo(const DeletionTimeRange& time_range,
+               bool is_from_expiration,
+               URLRows deleted_rows,
+               std::set<GURL> favicon_urls);
+  ~DeletionInfo();
+  // Move-only because of potentially large containers.
+  DeletionInfo(DeletionInfo&& other) noexcept;
+  DeletionInfo& operator=(DeletionInfo&& rhs) noexcept;
+
+  // If IsAllHistory() returns true, all URLs are deleted and |deleted_rows()|
+  //  and |favicon_urls()| are undefined.
+  bool IsAllHistory() const { return time_range_.IsAllTime(); }
+
+  // If time_range.IsValid() is true, all URLs between time_range.begin()
+  // and time_range.end() have been removed.
+  const DeletionTimeRange& time_range() const { return time_range_; }
+
+  // Returns true, if the URL deletion is due to expiration.
+  bool is_from_expiration() const { return is_from_expiration_; }
+
+  // Returns the list of the deleted URLs.
+  // Undefined if |IsAllHistory()| returns true.
+  const URLRows& deleted_rows() const { return deleted_rows_; }
+
+  // Returns the list of favicon URLs that correspond to the deleted URLs.
+  // Undefined if |IsAllHistory()| returns true.
+  const std::set<GURL>& favicon_urls() const { return favicon_urls_; }
+
+ private:
+  DeletionTimeRange time_range_;
+  bool is_from_expiration_;
+  URLRows deleted_rows_;
+  std::set<GURL> favicon_urls_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeletionInfo);
+};
+
 }  // namespace history
 
 #endif  // COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_TYPES_H_

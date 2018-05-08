@@ -137,10 +137,7 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
                         const RedirectList& redirects,
                         base::Time visit_time) override;
   void NotifyURLsModified(const URLRows& changed_urls) override;
-  void NotifyURLsDeleted(const DeletionTimeRange& time_range,
-                         bool expired,
-                         const URLRows& deleted_rows,
-                         const std::set<GURL>& favicon_urls) override;
+  void NotifyURLsDeleted(DeletionInfo deletion_info) override;
   void NotifyKeywordSearchTermUpdated(const URLRow& row,
                                       KeywordID keyword_id,
                                       const base::string16& term) override;
@@ -228,14 +225,13 @@ class HistoryBackendTestBase : public testing::Test {
     urls_modified_notifications_.push_back(changed_urls);
   }
 
-  void NotifyURLsDeleted(const DeletionTimeRange& time_range,
-                         bool expired,
-                         const URLRows& deleted_rows,
-                         const std::set<GURL>& favicon_urls) {
-    mem_backend_->OnURLsDeleted(nullptr, time_range.IsAllTime(), expired,
-                                deleted_rows, favicon_urls);
-    urls_deleted_notifications_.push_back(
-        std::make_pair(time_range.IsAllTime(), expired));
+  void NotifyURLsDeleted(DeletionInfo deletion_info) {
+    mem_backend_->OnURLsDeleted(nullptr, deletion_info.IsAllHistory(),
+                                deletion_info.is_from_expiration(),
+                                deletion_info.deleted_rows(),
+                                deletion_info.favicon_urls());
+    urls_deleted_notifications_.push_back(std::make_pair(
+        deletion_info.IsAllHistory(), deletion_info.is_from_expiration()));
   }
 
   void NotifyKeywordSearchTermUpdated(const URLRow& row,
@@ -317,12 +313,8 @@ void HistoryBackendTestDelegate::NotifyURLsModified(
   test_->NotifyURLsModified(changed_urls);
 }
 
-void HistoryBackendTestDelegate::NotifyURLsDeleted(
-    const DeletionTimeRange& time_range,
-    bool expired,
-    const URLRows& deleted_rows,
-    const std::set<GURL>& favicon_urls) {
-  test_->NotifyURLsDeleted(time_range, expired, deleted_rows, favicon_urls);
+void HistoryBackendTestDelegate::NotifyURLsDeleted(DeletionInfo deletion_info) {
+  test_->NotifyURLsDeleted(std::move(deletion_info));
 }
 
 void HistoryBackendTestDelegate::NotifyKeywordSearchTermUpdated(
@@ -502,8 +494,7 @@ class InMemoryHistoryBackendTest : public HistoryBackendTestBase {
     if (row2) rows.push_back(*row2);
     if (row3) rows.push_back(*row3);
 
-    NotifyURLsDeleted(DeletionTimeRange::Invalid(), false, rows,
-                      std::set<GURL>());
+    NotifyURLsDeleted(DeletionInfo::ForUrls(rows, std::set<GURL>()));
   }
 
   size_t GetNumberOfMatchingSearchTerms(const int keyword_id,

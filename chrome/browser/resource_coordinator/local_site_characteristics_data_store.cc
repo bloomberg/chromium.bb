@@ -89,19 +89,16 @@ LocalSiteCharacteristicsDataStore::ResetLocalSiteCharacteristicsEntry(
 
 void LocalSiteCharacteristicsDataStore::OnURLsDeleted(
     history::HistoryService* history_service,
-    const history::DeletionTimeRange& time_range,
-    bool expired,
-    const history::URLRows& deleted_rows,
-    const std::set<GURL>& favicon_urls) {
+    const history::DeletionInfo& deletion_info) {
   // TODO(sebmarchand): Removes these entry from the on-disk database once it's
   // implemented.
-  if (time_range.IsAllTime()) {
+  if (deletion_info.IsAllHistory()) {
     for (auto iter = origin_data_map_.begin();
          iter != origin_data_map_.end();) {
       iter = ResetLocalSiteCharacteristicsEntry(iter);
     }
   } else {
-    for (auto deleted_row : deleted_rows) {
+    for (const auto& deleted_row : deletion_info.deleted_rows()) {
       auto map_iter =
           origin_data_map_.find(deleted_row.url().GetOrigin().GetContent());
       if (map_iter != origin_data_map_.end()) {

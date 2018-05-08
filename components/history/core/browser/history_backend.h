@@ -143,10 +143,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     // Notify HistoryService that some or all of the URLs have been deleted.
     // The event will be forwarded to the HistoryServiceObservers in the correct
     // thread.
-    virtual void NotifyURLsDeleted(const DeletionTimeRange& time_range,
-                                   bool expired,
-                                   const URLRows& deleted_rows,
-                                   const std::set<GURL>& favicon_urls) = 0;
+    virtual void NotifyURLsDeleted(DeletionInfo deletion_info) = 0;
 
     // Notify HistoryService that some keyword has been searched using omnibox.
     // The event will be forwarded to the HistoryServiceObservers in the correct
@@ -818,10 +815,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                         const RedirectList& redirects,
                         base::Time visit_time) override;
   void NotifyURLsModified(const URLRows& rows) override;
-  void NotifyURLsDeleted(const DeletionTimeRange& time_range,
-                         bool expired,
-                         const URLRows& rows,
-                         const std::set<GURL>& favicon_urls) override;
+  void NotifyURLsDeleted(DeletionInfo deletion_info) override;
 
   void RecordTopHostsMetrics(const GURL& url);
 

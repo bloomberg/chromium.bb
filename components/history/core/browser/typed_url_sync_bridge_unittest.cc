@@ -178,10 +178,7 @@ class TestHistoryBackendDelegate : public HistoryBackend::Delegate {
                         const RedirectList& redirects,
                         base::Time visit_time) override {}
   void NotifyURLsModified(const URLRows& changed_urls) override {}
-  void NotifyURLsDeleted(const DeletionTimeRange& time_range,
-                         bool expired,
-                         const URLRows& deleted_rows,
-                         const std::set<GURL>& favicon_urls) override {}
+  void NotifyURLsDeleted(DeletionInfo deletion_info) override {}
   void NotifyKeywordSearchTermUpdated(const URLRow& row,
                                       KeywordID keyword_id,
                                       const base::string16& term) override {}
