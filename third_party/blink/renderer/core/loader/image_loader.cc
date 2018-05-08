@@ -633,11 +633,6 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
 
   if (image_content_ && image_content_->HasImage()) {
     Image& image = *image_content_->GetImage();
-    if (IsHTMLImageElement(element_)) {
-      Image::RecordCheckerableImageUMA(image, Image::ImageType::kImg);
-    } else if (IsSVGImageElement(element_)) {
-      Image::RecordCheckerableImageUMA(image, Image::ImageType::kSvg);
-    }
 
     if (image.IsSVGImage()) {
       SVGImage& svg_image = ToSVGImage(image);

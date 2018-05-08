@@ -116,7 +116,6 @@ void StyleFetchedImage::RemoveClient(ImageResourceObserver* observer) {
 void StyleFetchedImage::ImageNotifyFinished(ImageResourceContent*) {
   if (image_ && image_->HasImage()) {
     Image& image = *image_->GetImage();
-    Image::RecordCheckerableImageUMA(image, Image::ImageType::kCss);
 
     if (document_ && image.IsSVGImage())
       ToSVGImage(image).UpdateUseCounters(*document_);
