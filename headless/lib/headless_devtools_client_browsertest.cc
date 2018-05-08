@@ -513,7 +513,6 @@ class TargetDomainCreateAndDeleteBrowserContextTest
 
   void OnDisposeBrowserContextResult(
       std::unique_ptr<target::DisposeBrowserContextResult> result) {
-    EXPECT_TRUE(result->GetSuccess());
     FinishAsynchronousTest();
   }
 
@@ -523,16 +522,27 @@ class TargetDomainCreateAndDeleteBrowserContextTest
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(TargetDomainCreateAndDeleteBrowserContextTest);
 
-class TargetDomainDisposeContextFailsIfInUse
-    : public HeadlessAsyncDevTooledBrowserTest {
+class TargetDomainDisposeContextSucceedsIfInUse
+    : public target::Observer,
+      public HeadlessAsyncDevTooledBrowserTest {
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
-
     EXPECT_EQ(1u, GetAllWebContents(browser()).size());
+
+    devtools_client_->GetTarget()->AddObserver(this);
+    devtools_client_->GetTarget()->SetDiscoverTargets(
+        target::SetDiscoverTargetsParams::Builder().SetDiscover(true).Build(),
+        base::BindOnce(&TargetDomainDisposeContextSucceedsIfInUse::
+                           OnDiscoverTargetsEnabled,
+                       base::Unretained(this)));
+  }
+
+  void OnDiscoverTargetsEnabled(
+      std::unique_ptr<target::SetDiscoverTargetsResult> result) {
     devtools_client_->GetTarget()->GetExperimental()->CreateBrowserContext(
         target::CreateBrowserContextParams::Builder().Build(),
         base::BindOnce(
-            &TargetDomainDisposeContextFailsIfInUse::OnContextCreated,
+            &TargetDomainDisposeContextSucceedsIfInUse::OnContextCreated,
             base::Unretained(this)));
   }
 
@@ -546,7 +556,7 @@ class TargetDomainDisposeContextFailsIfInUse
             .SetBrowserContextId(context_id_)
             .Build(),
         base::BindOnce(
-            &TargetDomainDisposeContextFailsIfInUse::OnCreateTargetResult,
+            &TargetDomainDisposeContextSucceedsIfInUse::OnCreateTargetResult,
             base::Unretained(this)));
   }
 
@@ -554,54 +564,38 @@ class TargetDomainDisposeContextFailsIfInUse
       std::unique_ptr<target::CreateTargetResult> result) {
     page_id_ = result->GetTargetId();
 
+    destroyed_targets_.clear();
     devtools_client_->GetTarget()->GetExperimental()->DisposeBrowserContext(
         target::DisposeBrowserContextParams::Builder()
             .SetBrowserContextId(context_id_)
             .Build(),
-        base::BindOnce(&TargetDomainDisposeContextFailsIfInUse::
+        base::BindOnce(&TargetDomainDisposeContextSucceedsIfInUse::
                            OnDisposeBrowserContextResult,
                        base::Unretained(this)));
   }
 
+  void OnTargetDestroyed(const target::TargetDestroyedParams& params) override {
+    destroyed_targets_.push_back(params.GetTargetId());
+  }
+
   void OnDisposeBrowserContextResult(
       std::unique_ptr<target::DisposeBrowserContextResult> result) {
-    EXPECT_FALSE(result->GetSuccess());
-
-    // Close the page and try again.
-    devtools_client_->GetTarget()->GetExperimental()->CloseTarget(
-        target::CloseTargetParams::Builder().SetTargetId(page_id_).Build(),
-        base::BindOnce(
-            &TargetDomainDisposeContextFailsIfInUse::OnCloseTargetResult,
-            base::Unretained(this)));
-  }
-
-  void OnCloseTargetResult(std::unique_ptr<target::CloseTargetResult> result) {
-    EXPECT_TRUE(result->GetSuccess());
-
-    devtools_client_->GetTarget()->GetExperimental()->DisposeBrowserContext(
-        target::DisposeBrowserContextParams::Builder()
-            .SetBrowserContextId(context_id_)
-            .Build(),
-        base::BindOnce(&TargetDomainDisposeContextFailsIfInUse::
-                           OnDisposeBrowserContextResult2,
-                       base::Unretained(this)));
-  }
-
-  void OnDisposeBrowserContextResult2(
-      std::unique_ptr<target::DisposeBrowserContextResult> result) {
-    EXPECT_TRUE(result->GetSuccess());
+    EXPECT_EQ(destroyed_targets_.size(), 1u);
+    EXPECT_EQ(destroyed_targets_[0], page_id_);
+    devtools_client_->GetTarget()->RemoveObserver(this);
     FinishAsynchronousTest();
   }
 
  private:
+  std::vector<std::string> destroyed_targets_;
   std::string context_id_;
   std::string page_id_;
 };
 
-HEADLESS_ASYNC_DEVTOOLED_TEST_F(TargetDomainDisposeContextFailsIfInUse);
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(TargetDomainDisposeContextSucceedsIfInUse);
 
 class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
-                                      public target::ExperimentalObserver,
+                                      public target::Observer,
                                       public page::Observer {
  public:
   void RunDevTooledTest() override {
@@ -612,7 +606,15 @@ class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
     devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
     run_loop.Run();
 
-    devtools_client_->GetTarget()->GetExperimental()->AddObserver(this);
+    devtools_client_->GetTarget()->AddObserver(this);
+    devtools_client_->GetTarget()->SetDiscoverTargets(
+        target::SetDiscoverTargetsParams::Builder().SetDiscover(true).Build(),
+        base::BindOnce(&TargetDomainCreateTwoContexts::OnDiscoverTargetsEnabled,
+                       base::Unretained(this)));
+  }
+
+  void OnDiscoverTargetsEnabled(
+      std::unique_ptr<target::SetDiscoverTargetsResult> result) {
     devtools_client_->GetTarget()->GetExperimental()->CreateBrowserContext(
         target::CreateBrowserContextParams::Builder().Build(),
         base::BindOnce(&TargetDomainCreateTwoContexts::OnContextOneCreated,
@@ -809,52 +811,34 @@ class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
         EXPECT_EQ("", value_value->GetString())
             << "Page 2 should not share cookies from page one";
 
-        devtools_client_->GetTarget()->GetExperimental()->CloseTarget(
-            target::CloseTargetParams::Builder()
-                .SetTargetId(page_id_one_)
+        devtools_client_->GetTarget()->GetExperimental()->DisposeBrowserContext(
+            target::DisposeBrowserContextParams::Builder()
+                .SetBrowserContextId(context_id_one_)
                 .Build(),
-            base::BindOnce(&TargetDomainCreateTwoContexts::OnCloseTarget,
+            base::BindOnce(&TargetDomainCreateTwoContexts::OnCloseContext,
                            base::Unretained(this)));
 
-        devtools_client_->GetTarget()->GetExperimental()->CloseTarget(
-            target::CloseTargetParams::Builder()
-                .SetTargetId(page_id_two_)
+        devtools_client_->GetTarget()->GetExperimental()->DisposeBrowserContext(
+            target::DisposeBrowserContextParams::Builder()
+                .SetBrowserContextId(context_id_two_)
                 .Build(),
-            base::BindOnce(&TargetDomainCreateTwoContexts::OnCloseTarget,
+            base::BindOnce(&TargetDomainCreateTwoContexts::OnCloseContext,
                            base::Unretained(this)));
-
-        devtools_client_->GetTarget()->GetExperimental()->RemoveObserver(this);
       }
     }
   }
 
-  void OnCloseTarget(std::unique_ptr<target::CloseTargetResult> result) {
-    page_close_count_++;
-
-    if (page_close_count_ < 2)
-      return;
-
-    devtools_client_->GetTarget()->GetExperimental()->DisposeBrowserContext(
-        target::DisposeBrowserContextParams::Builder()
-            .SetBrowserContextId(context_id_one_)
-            .Build(),
-        base::BindOnce(&TargetDomainCreateTwoContexts::OnCloseContext,
-                       base::Unretained(this)));
-
-    devtools_client_->GetTarget()->GetExperimental()->DisposeBrowserContext(
-        target::DisposeBrowserContextParams::Builder()
-            .SetBrowserContextId(context_id_two_)
-            .Build(),
-        base::BindOnce(&TargetDomainCreateTwoContexts::OnCloseContext,
-                       base::Unretained(this)));
+  void OnTargetDestroyed(const target::TargetDestroyedParams& params) override {
+    ++page_close_count_;
   }
 
   void OnCloseContext(
       std::unique_ptr<target::DisposeBrowserContextResult> result) {
-    EXPECT_TRUE(result->GetSuccess());
     if (++context_closed_count_ < 2)
       return;
+    EXPECT_EQ(page_close_count_, 2);
 
+    devtools_client_->GetTarget()->RemoveObserver(this);
     FinishAsynchronousTest();
   }
 

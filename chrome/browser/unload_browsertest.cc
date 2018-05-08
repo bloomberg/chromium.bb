@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/net/url_request_mock_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -957,6 +958,35 @@ IN_PROC_BROWSER_TEST_F(FastUnloadTest,
       base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)),
       true);
   window_observer.Wait();
+  EXPECT_EQ(1, unload_results.get_successes());
+  EXPECT_EQ(0, unload_results.get_aborts());
+}
+
+IN_PROC_BROWSER_TEST_F(FastUnloadTest,
+                       BrowserListForceCloseWithIncognitoProfileCloseProfiles) {
+  Profile* otr_profile = browser()->profile()->GetOffTheRecordProfile();
+  Browser* otr_browser1 = CreateBrowser(otr_profile);
+  Browser* otr_browser2 = CreateBrowser(otr_profile);
+  content::WindowedNotificationObserver otr_browser1_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::Source<Browser>(otr_browser1));
+  content::WindowedNotificationObserver otr_browser2_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::Source<Browser>(otr_browser2));
+  UnloadResults unload_results;
+  BrowserList::CloseAllBrowsersWithIncognitoProfile(
+      otr_profile,
+      base::BindRepeating(&UnloadResults::AddSuccess,
+                          base::Unretained(&unload_results)),
+      base::BindRepeating(&UnloadResults::AddAbort,
+                          base::Unretained(&unload_results)),
+      true);
+  // Incognito browsers should be closed.
+  otr_browser1_observer.Wait();
+  otr_browser2_observer.Wait();
+  // Browser with original profile should not close.
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
   EXPECT_EQ(1, unload_results.get_successes());
   EXPECT_EQ(0, unload_results.get_aborts());
 }
