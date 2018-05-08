@@ -292,9 +292,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     return event_listener_properties_[static_cast<size_t>(event_class)];
   }
 
-  void SetViewportSizeAndScale(const gfx::Size& device_viewport_size,
-                               float device_scale_factor,
-                               const viz::LocalSurfaceId& local_surface_id);
+  void SetViewportSizeAndScale(
+      const gfx::Size& device_viewport_size,
+      float device_scale_factor,
+      const viz::LocalSurfaceId& local_surface_id_from_parent);
 
   void SetViewportVisibleRect(const gfx::Rect& visible_rect);
 
@@ -337,9 +338,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   // If this LayerTreeHost needs a valid viz::LocalSurfaceId then commits will
   // be deferred until a valid viz::LocalSurfaceId is provided.
-  void SetLocalSurfaceId(const viz::LocalSurfaceId& local_surface_id);
-  const viz::LocalSurfaceId& local_surface_id() const {
-    return local_surface_id_;
+  void SetLocalSurfaceIdFromParent(
+      const viz::LocalSurfaceId& local_surface_id_from_parent);
+  const viz::LocalSurfaceId& local_surface_id_from_parent() const {
+    return local_surface_id_from_parent_;
   }
 
   void SetRasterColorSpace(const gfx::ColorSpace& raster_color_space);
@@ -636,9 +638,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   gfx::ColorSpace raster_color_space_;
 
   uint32_t content_source_id_;
-  viz::LocalSurfaceId local_surface_id_;
+  viz::LocalSurfaceId local_surface_id_from_parent_;
   // Used to detect surface invariant violations.
-  bool has_pushed_local_surface_id_ = false;
+  bool has_pushed_local_surface_id_from_parent_ = false;
   bool defer_commits_ = false;
 
   SkColor background_color_ = SK_ColorWHITE;

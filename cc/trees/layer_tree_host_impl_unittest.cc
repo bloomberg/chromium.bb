@@ -180,7 +180,7 @@ class LayerTreeHostImplTest : public testing::Test,
   }
   void DidActivateSyncTree() override {
     // Make sure the active tree always has a valid LocalSurfaceId.
-    host_impl_->active_tree()->SetLocalSurfaceId(
+    host_impl_->active_tree()->SetLocalSurfaceIdFromParent(
         viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
   }
   void WillPrepareTiles() override {}
@@ -242,7 +242,7 @@ class LayerTreeHostImplTest : public testing::Test,
     bool init = host_impl_->InitializeRenderer(layer_tree_frame_sink_.get());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
-    host_impl_->active_tree()->SetLocalSurfaceId(
+    host_impl_->active_tree()->SetLocalSurfaceIdFromParent(
         viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
     // Set the viz::BeginFrameArgs so that methods which use it are able to.
     host_impl_->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
@@ -3532,7 +3532,7 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
     host_impl_->active_tree()->DidBecomeActive();
     host_impl_->active_tree()->HandleScrollbarShowRequestsFromMain();
-    host_impl_->active_tree()->SetLocalSurfaceId(
+    host_impl_->active_tree()->SetLocalSurfaceIdFromParent(
         viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
     DrawFrame();
 
@@ -9081,7 +9081,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   root->test_properties()->AddChild(std::move(child));
   layer_tree_host_impl->active_tree()->SetRootLayerForTesting(std::move(root));
   layer_tree_host_impl->active_tree()->BuildPropertyTreesForTesting();
-  layer_tree_host_impl->active_tree()->SetLocalSurfaceId(
+  layer_tree_host_impl->active_tree()->SetLocalSurfaceIdFromParent(
       viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
 
   TestFrameData frame;

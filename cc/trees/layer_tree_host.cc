@@ -433,7 +433,7 @@ void LayerTreeHost::WillCommit() {
 void LayerTreeHost::UpdateDeferCommitsInternal() {
   proxy_->SetDeferCommits(defer_commits_ ||
                           (settings_.enable_surface_synchronization &&
-                           !local_surface_id_.is_valid()));
+                           !local_surface_id_from_parent_.is_valid()));
 }
 
 bool LayerTreeHost::IsUsingLayerLists() const {
@@ -1052,8 +1052,8 @@ void LayerTreeHost::SetEventListenerProperties(
 void LayerTreeHost::SetViewportSizeAndScale(
     const gfx::Size& device_viewport_size,
     float device_scale_factor,
-    const viz::LocalSurfaceId& local_surface_id) {
-  SetLocalSurfaceId(local_surface_id);
+    const viz::LocalSurfaceId& local_surface_id_from_parent) {
+  SetLocalSurfaceIdFromParent(local_surface_id_from_parent);
 
   bool changed = false;
   if (device_viewport_size_ != device_viewport_size) {
@@ -1080,7 +1080,8 @@ void LayerTreeHost::SetViewportSizeAndScale(
 #if defined(OS_MACOSX)
     // TODO(ccameron): This check is not valid on Aura or Mus yet, but should
     // be.
-    CHECK(!has_pushed_local_surface_id_ || !local_surface_id_.is_valid());
+    CHECK(!has_pushed_local_surface_id_from_parent_ ||
+          !local_surface_id_from_parent_.is_valid());
 #endif
   }
 }
@@ -1177,12 +1178,12 @@ void LayerTreeHost::SetContentSourceId(uint32_t id) {
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetLocalSurfaceId(
-    const viz::LocalSurfaceId& local_surface_id) {
-  if (local_surface_id_ == local_surface_id)
+void LayerTreeHost::SetLocalSurfaceIdFromParent(
+    const viz::LocalSurfaceId& local_surface_id_from_parent) {
+  if (local_surface_id_from_parent_ == local_surface_id_from_parent)
     return;
-  local_surface_id_ = local_surface_id;
-  has_pushed_local_surface_id_ = false;
+  local_surface_id_from_parent_ = local_surface_id_from_parent;
+  has_pushed_local_surface_id_from_parent_ = false;
   UpdateDeferCommitsInternal();
   SetNeedsCommit();
 }
@@ -1372,8 +1373,8 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
 
   tree_impl->set_content_source_id(content_source_id_);
 
-  tree_impl->SetLocalSurfaceId(local_surface_id_);
-  has_pushed_local_surface_id_ = true;
+  tree_impl->SetLocalSurfaceIdFromParent(local_surface_id_from_parent_);
+  has_pushed_local_surface_id_from_parent_ = true;
 
   if (pending_page_scale_animation_) {
     tree_impl->SetPendingPageScaleAnimation(

@@ -871,7 +871,7 @@ void LayerTreeTest::DispatchSetLocalSurfaceId(
     const viz::LocalSurfaceId& local_surface_id) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (layer_tree_host_)
-    layer_tree_host_->SetLocalSurfaceId(local_surface_id);
+    layer_tree_host_->SetLocalSurfaceIdFromParent(local_surface_id);
 }
 
 void LayerTreeTest::DispatchSetDeferCommits(bool defer_commits) {

@@ -279,7 +279,7 @@ void Compositor::RemoveFrameSink(const viz::FrameSinkId& frame_sink_id) {
 
 void Compositor::SetLocalSurfaceId(
     const viz::LocalSurfaceId& local_surface_id) {
-  host_->SetLocalSurfaceId(local_surface_id);
+  host_->SetLocalSurfaceIdFromParent(local_surface_id);
 }
 
 void Compositor::SetLayerTreeFrameSink(
@@ -367,7 +367,7 @@ void Compositor::SetScaleAndSize(float scale,
 
   if (size_ != size_in_pixel && local_surface_id.is_valid()) {
     // A new LocalSurfaceId must be set when the compositor size changes.
-    DCHECK_NE(local_surface_id, host_->local_surface_id());
+    DCHECK_NE(local_surface_id, host_->local_surface_id_from_parent());
   }
 
   if (!size_in_pixel.IsEmpty()) {

@@ -60,7 +60,7 @@ void WebLayerTreeViewImplForTesting::SetViewportSize(
   // TODO(ccameron): This likely causes surface invariant violations.
   layer_tree_host_->SetViewportSizeAndScale(
       gfx_size, layer_tree_host_->device_scale_factor(),
-      layer_tree_host_->local_surface_id());
+      layer_tree_host_->local_surface_id_from_parent());
 }
 
 void WebLayerTreeViewImplForTesting::SetRootLayer(const blink::WebLayer& root) {
