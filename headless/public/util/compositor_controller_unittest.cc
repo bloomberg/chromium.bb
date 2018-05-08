@@ -148,6 +148,7 @@ class CompositorControllerTest : public ::testing::Test {
         mock_host_.get(),
         base::StringPrintf("{\"id\":%d,\"result\":%s}", last_command_id_,
                            result_json.c_str()));
+    task_runner_->RunPendingTasks();
   }
 
   void SendNeedsBeginFramesEvent(bool needs_begin_frames) {
