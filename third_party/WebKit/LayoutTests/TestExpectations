@@ -1162,6 +1162,7 @@ crbug.com/591099 virtual/layout_ng_experimental/printing/fixed-positioned-child-
 crbug.com/591099 virtual/layout_ng_experimental/printing/fixed-positioned-headers-and-footers-clipped.html [ Failure ]
 crbug.com/824918 virtual/layout_ng_experimental/printing/fixed-positioned-headers-and-footers-inside-transform.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/printing/fixed-positioned-headers-and-footers-transformed.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/fixed-positioned-headers-and-footers.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/fixed-positioned.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/forced-break-tree-dump-only.html [ Failure ]

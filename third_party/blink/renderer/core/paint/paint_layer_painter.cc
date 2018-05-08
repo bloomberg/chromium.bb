@@ -520,7 +520,8 @@ PaintResult PaintLayerPainter::PaintLayerContents(
           kIgnorePlatformOverlayScrollbarSize, respect_overflow_clip,
           &offset_from_root, local_painting_info.sub_pixel_accumulation);
       layer_fragments[0].fragment_data = fragment->fragment_data;
-    } else if (paint_layer_.GetLayoutObject()
+    } else if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+               paint_layer_.GetLayoutObject()
                    .IsFixedPositionObjectInPagedMedia()) {
       PaintLayerFragments single_fragment;
       paint_layer_for_fragments->AppendSingleFragmentIgnoringPagination(
@@ -797,6 +798,7 @@ void PaintLayerPainter::RepeatFixedPositionObjectInPages(
     const PaintLayerFragment& single_fragment_ignored_pagination,
     const PaintLayerPaintingInfo& painting_info,
     PaintLayerFragments& layer_fragments) {
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
   DCHECK(paint_layer_.GetLayoutObject().IsFixedPositionObjectInPagedMedia());
 
   LayoutView* view = paint_layer_.GetLayoutObject().View();
@@ -851,6 +853,7 @@ PaintResult PaintLayerPainter::PaintLayerWithAdjustedRoot(
   PaintResult result = kFullyPainted;
   PaintLayerFragments layer_fragments;
   bool is_fixed_position_object_in_paged_media =
+      !RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
       paint_layer_.GetLayoutObject().IsFixedPositionObjectInPagedMedia();
 
   // This works around a bug in squashed-layer painting.
@@ -1187,20 +1190,15 @@ void PaintLayerPainter::PaintFragmentWithPhase(
   base::Optional<ScrollRecorder> scroll_recorder;
   LayoutPoint paint_offset = -paint_layer_.LayoutBoxLocation();
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    if (paint_layer_.GetLayoutObject().IsFixedPositionObjectInPagedMedia()) {
-      // TODO(wangxianzhu): Use full SPv175 path here.
-      paint_offset += ToSize(fragment.layer_bounds.Location());
-    } else {
-      paint_offset += fragment.fragment_data->PaintOffset();
-      // For SPv175+, we paint in the containing transform node's space. Now
-      // |new_cull_rect| is in the pixel-snapped border box space of
-      // |painting_info.root_layer|. Adjust it to the correct space.
-      // |paint_offset| is already in the correct space.
-      new_cull_rect.MoveBy(
-          RoundedIntPoint(painting_info.root_layer->GetLayoutObject()
-                              .FirstFragment()
-                              .PaintOffset()));
-    }
+    paint_offset += fragment.fragment_data->PaintOffset();
+    // For SPv175+, we paint in the containing transform node's space. Now
+    // |new_cull_rect| is in the pixel-snapped border box space of
+    // |painting_info.root_layer|. Adjust it to the correct space.
+    // |paint_offset| is already in the correct space.
+    new_cull_rect.MoveBy(
+        RoundedIntPoint(painting_info.root_layer->GetLayoutObject()
+                            .FirstFragment()
+                            .PaintOffset()));
   } else {
     paint_offset += ToSize(fragment.layer_bounds.Location());
     if (!painting_info.scroll_offset_accumulation.IsZero()) {

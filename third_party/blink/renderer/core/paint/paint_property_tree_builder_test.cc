@@ -5382,4 +5382,121 @@ TEST_P(PaintPropertyTreeBuilderTest, CompositedLayerSkipsFragmentClip) {
                                     .Clip());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, RepeatingFixedPositionInPagedMedia) {
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <div id="fixed" style="position: fixed; top: 20px; left: 20px">
+      <div id="fixed-child" style="position: relative; top: 10px"></div>
+    </div>
+    <div id="normal" style="height: 1000px"></div>
+  )HTML");
+  GetDocument().domWindow()->scrollTo(0, 200);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  const auto* fixed = GetLayoutObjectByElementId("fixed");
+  EXPECT_FALSE(fixed->IsFixedPositionObjectInPagedMedia());
+  EXPECT_EQ(1u, NumFragments(fixed));
+
+  const auto* fixed_child = GetLayoutObjectByElementId("fixed-child");
+  EXPECT_FALSE(fixed_child->IsFixedPositionObjectInPagedMedia());
+  EXPECT_EQ(1u, NumFragments(fixed_child));
+
+  const auto* normal = GetLayoutObjectByElementId("normal");
+  EXPECT_FALSE(normal->IsFixedPositionObjectInPagedMedia());
+  EXPECT_EQ(1u, NumFragments(normal));
+
+  FloatSize page_size(300, 400);
+  GetFrame().StartPrinting(page_size, page_size, 1);
+  GetDocument().View()->UpdateLifecyclePhasesForPrinting();
+
+  // "fixed" should create fragments to repeat in each printed page.
+  EXPECT_TRUE(fixed->IsFixedPositionObjectInPagedMedia());
+  EXPECT_EQ(3u, NumFragments(fixed));
+  for (int i = 0; i < 3; i++) {
+    const auto& fragment = FragmentAt(fixed, i);
+    EXPECT_EQ(LayoutPoint(20, -180 + i * 400), fragment.PaintOffset());
+    EXPECT_EQ(LayoutUnit(400 * i), fragment.LogicalTopInFlowThread());
+  }
+
+  EXPECT_FALSE(fixed_child->IsFixedPositionObjectInPagedMedia());
+  EXPECT_EQ(3u, NumFragments(fixed_child));
+  for (int i = 0; i < 3; i++) {
+    const auto& fragment = FragmentAt(fixed_child, i);
+    EXPECT_EQ(LayoutPoint(20, -170 + i * 400), fragment.PaintOffset());
+    EXPECT_EQ(LayoutUnit(i * 400), fragment.LogicalTopInFlowThread());
+  }
+
+  EXPECT_FALSE(normal->IsFixedPositionObjectInPagedMedia());
+  EXPECT_EQ(1u, NumFragments(normal));
+
+  GetFrame().EndPrinting();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(1u, NumFragments(fixed));
+  EXPECT_FALSE(fixed_child->IsFixedPositionObjectInPagedMedia());
+  EXPECT_EQ(1u, NumFragments(fixed_child));
+  EXPECT_FALSE(normal->IsFixedPositionObjectInPagedMedia());
+  EXPECT_EQ(1u, NumFragments(normal));
+}
+
+TEST_P(PaintPropertyTreeBuilderTest,
+       RepeatingFixedPositionWithTransformInPagedMedia) {
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <div id="fixed" style="position: fixed; top: 20px; left: 20px;
+        transform: translateX(10px)">
+      <div id="fixed-child" style="position: relative; top: 10px"></div>
+    </div>
+    <div id="normal" style="height: 1000px"></div>
+  )HTML");
+  GetDocument().domWindow()->scrollTo(0, 200);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  const auto* fixed = GetLayoutObjectByElementId("fixed");
+  EXPECT_FALSE(fixed->IsFixedPositionObjectInPagedMedia());
+  EXPECT_EQ(1u, NumFragments(fixed));
+
+  const auto* fixed_child = GetLayoutObjectByElementId("fixed-child");
+  EXPECT_FALSE(fixed_child->IsFixedPositionObjectInPagedMedia());
+  EXPECT_EQ(1u, NumFragments(fixed_child));
+
+  FloatSize page_size(300, 400);
+  GetFrame().StartPrinting(page_size, page_size, 1);
+  GetDocument().View()->UpdateLifecyclePhasesForPrinting();
+
+  // "fixed" should create fragments to repeat in each printed page.
+  EXPECT_TRUE(fixed->IsFixedPositionObjectInPagedMedia());
+  EXPECT_EQ(3u, NumFragments(fixed));
+  for (int i = 0; i < 3; i++) {
+    const auto& fragment = FragmentAt(fixed, i);
+    EXPECT_EQ(LayoutPoint(), fragment.PaintOffset());
+    EXPECT_EQ(LayoutUnit(i * 400), fragment.LogicalTopInFlowThread());
+    const auto* properties = fragment.PaintProperties();
+    EXPECT_EQ(TransformationMatrix().Translate(20, -180 + i * 400),
+              properties->PaintOffsetTranslation()->Matrix());
+    EXPECT_EQ(TransformationMatrix().Translate(10, 0),
+              properties->Transform()->Matrix());
+    EXPECT_EQ(properties->PaintOffsetTranslation(),
+              properties->Transform()->Parent());
+  }
+
+  EXPECT_FALSE(fixed_child->IsFixedPositionObjectInPagedMedia());
+  for (int i = 0; i < 3; i++) {
+    const auto& fragment = FragmentAt(fixed_child, i);
+    EXPECT_EQ(LayoutPoint(0, 10), fragment.PaintOffset());
+    EXPECT_EQ(LayoutUnit(i * 400), fragment.LogicalTopInFlowThread());
+    EXPECT_EQ(FragmentAt(fixed, i).PaintProperties()->Transform(),
+              fragment.LocalBorderBoxProperties().Transform());
+  }
+
+  GetFrame().EndPrinting();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(1u, NumFragments(fixed));
+  EXPECT_FALSE(fixed_child->IsFixedPositionObjectInPagedMedia());
+  EXPECT_EQ(1u, NumFragments(fixed_child));
+}
+
 }  // namespace blink

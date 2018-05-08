@@ -39,6 +39,11 @@ bool AdjustPaintOffsetScope::AdjustPaintOffset(const LayoutBox& box) {
     return true;
   }
 
+  if (box.IsFixedPositionObjectInPagedMedia()) {
+    adjusted_paint_offset_ = fragment->PaintOffset();
+    return true;
+  }
+
   if (box.IsTableSection() &&
       (!old_paint_info_.IsPrinting() || box.FirstFragment().NextFragment())) {
     const auto& section = ToLayoutTableSection(box);

@@ -1705,9 +1705,12 @@ void PaintLayer::CollectFragments(
       respect_overflow_clip, sub_pixel_accumulation);
 
   // The inherited offset_from_root does not include any pagination offsets.
-  // In the presence of fragmentation, we cannot use it.
+  // In the presence of fragmentation, we cannot use it. Note that we may also
+  // create fragments when ShouldFragmentCompositedBounds() is false, e.g. for
+  // fixed-position objects in paged media.
   bool offset_from_root_can_be_used =
-      !ShouldFragmentCompositedBounds(root_layer);
+      !ShouldFragmentCompositedBounds(root_layer) &&
+      !GetLayoutObject().FirstFragment().NextFragment();
   for (auto* fragment_data = &GetLayoutObject().FirstFragment(); fragment_data;
        fragment_data = fragment_data->NextFragment()) {
     Clipper(kUseGeometryMapper)
