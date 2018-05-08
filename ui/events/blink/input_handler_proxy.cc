@@ -690,6 +690,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
     const WebGestureEvent& gesture_event) {
+  TRACE_EVENT0("input", "InputHandlerProxy::HandleGestureScrollBegin");
   if (gesture_scroll_on_impl_thread_)
     CancelCurrentFling();
 
@@ -725,9 +726,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
   in_inertial_scrolling_ = false;
   switch (scroll_status.thread) {
     case cc::InputHandler::SCROLL_ON_IMPL_THREAD:
-      TRACE_EVENT_INSTANT0("input",
-                           "InputHandlerProxy::handle_input gesture scroll",
-                           TRACE_EVENT_SCOPE_THREAD);
+      TRACE_EVENT_INSTANT0("input", "Handle On Impl", TRACE_EVENT_SCOPE_THREAD);
       gesture_scroll_on_impl_thread_ = true;
       if (input_handler_->IsCurrentlyScrollingViewport())
         client_->DidStartScrollingViewport();
@@ -739,9 +738,11 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
       break;
     case cc::InputHandler::SCROLL_UNKNOWN:
     case cc::InputHandler::SCROLL_ON_MAIN_THREAD:
+      TRACE_EVENT_INSTANT0("input", "Handle On Main", TRACE_EVENT_SCOPE_THREAD);
       result = DID_NOT_HANDLE;
       break;
     case cc::InputHandler::SCROLL_IGNORED:
+      TRACE_EVENT_INSTANT0("input", "Ignore Scroll", TRACE_EVENT_SCOPE_THREAD);
       scroll_sequence_ignored_ = true;
       result = DROP_EVENT;
       break;
@@ -762,12 +763,14 @@ InputHandlerProxy::HandleGestureScrollUpdate(
 
   gfx::Vector2dF scroll_delta(-gesture_event.data.scroll_update.delta_x,
                               -gesture_event.data.scroll_update.delta_y);
-  TRACE_EVENT_INSTANT2("input", "InputHandlerProxy::HandleGestureScrollUpdate",
-                       TRACE_EVENT_SCOPE_THREAD, "dx", scroll_delta.x(), "dy",
-                       scroll_delta.y());
+  TRACE_EVENT2("input", "InputHandlerProxy::HandleGestureScrollUpdate", "dx",
+               scroll_delta.x(), "dy", scroll_delta.y());
 
-  if (scroll_sequence_ignored_)
+  if (scroll_sequence_ignored_) {
+    TRACE_EVENT_INSTANT0("input", "Scroll Sequence Ignored",
+                         TRACE_EVENT_SCOPE_THREAD);
     return DROP_EVENT;
+  }
 
   if (!gesture_scroll_on_impl_thread_ && !gesture_pinch_on_impl_thread_)
     return DID_NOT_HANDLE;
@@ -788,10 +791,14 @@ InputHandlerProxy::HandleGestureScrollUpdate(
       case cc::InputHandler::SCROLL_ON_IMPL_THREAD:
         return DID_HANDLE;
       case cc::InputHandler::SCROLL_IGNORED:
+        TRACE_EVENT_INSTANT0("input", "Scroll Ignored",
+                             TRACE_EVENT_SCOPE_THREAD);
         return DROP_EVENT;
       case cc::InputHandler::SCROLL_ON_MAIN_THREAD:
       case cc::InputHandler::SCROLL_UNKNOWN:
         if (input_handler_->ScrollingShouldSwitchtoMainThread()) {
+          TRACE_EVENT_INSTANT0("input", "Move Scroll To Main Thread",
+                               TRACE_EVENT_SCOPE_THREAD);
           gesture_scroll_on_impl_thread_ = false;
           client_->GenerateScrollBeginAndSendToMainThread(gesture_event);
         }
@@ -832,6 +839,7 @@ InputHandlerProxy::HandleGestureScrollUpdate(
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
   const WebGestureEvent& gesture_event) {
+  TRACE_EVENT0("input", "InputHandlerProxy::HandleGestureScrollEnd");
 #ifndef NDEBUG
   DCHECK(expect_scroll_update_end_);
   expect_scroll_update_end_ = false;

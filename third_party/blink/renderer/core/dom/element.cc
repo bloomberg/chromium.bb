@@ -150,6 +150,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 #include "third_party/blink/renderer/platform/event_dispatch_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/scroll/smooth_scroll_sequencer.h"
@@ -629,6 +630,7 @@ void Element::NativeDistributeScroll(ScrollState& scroll_state) {
 }
 
 void Element::CallDistributeScroll(ScrollState& scroll_state) {
+  TRACE_EVENT0("input", "Element::CallDistributeScroll");
   ScrollStateCallback* callback =
       GetScrollCustomizationCallbacks().GetDistributeScroll(this);
 
@@ -713,6 +715,7 @@ void Element::NativeApplyScroll(ScrollState& scroll_state) {
 };
 
 void Element::CallApplyScroll(ScrollState& scroll_state) {
+  TRACE_EVENT0("input", "Element::CallApplyScroll");
   // Hits ASSERTs when trying to determine whether we need to scroll on main
   // or CC. http://crbug.com/625676.
   DisableCompositingQueryAsserts disabler;

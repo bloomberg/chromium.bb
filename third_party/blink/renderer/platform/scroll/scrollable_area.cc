@@ -158,6 +158,9 @@ float ScrollableArea::ScrollStep(ScrollGranularity granularity,
 
 ScrollResult ScrollableArea::UserScroll(ScrollGranularity granularity,
                                         const ScrollOffset& delta) {
+  TRACE_EVENT2("input", "ScrollableArea::UserScroll", "x", delta.Width(), "y",
+               delta.Height());
+
   float step_x = ScrollStep(granularity, kHorizontalScrollbar);
   float step_y = ScrollStep(granularity, kVerticalScrollbar);
 
