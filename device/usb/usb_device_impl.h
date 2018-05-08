@@ -84,11 +84,11 @@ class UsbDeviceImpl : public UsbDevice {
               scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   base::ThreadChecker thread_checker_;
-  const ScopedLibusbDeviceRef platform_device_;
   bool visited_ = false;
 
-  // Retain the context so that it will not be released before UsbDevice.
+  // The libusb_context must not be released before the libusb_device.
   const scoped_refptr<UsbContext> context_;
+  const ScopedLibusbDeviceRef platform_device_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceImpl);
 };
