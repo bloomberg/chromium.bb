@@ -60,6 +60,14 @@ class ModelTypeChangeProcessor {
   // change_processor()->Delete() instead.
   virtual void UntrackEntity(const EntityData& entity_data) = 0;
 
+  // Pass the pointer to the processor so that the processor can notify the
+  // bridge that sync is starting.
+  // This is a intermediate hack needed for fixing https://crbug.com/819993.
+  // TODO(jkrcal): Remove this hack (either by removing the bridge pointer from
+  // ModelReadyToSync or, preferrably, by swapping the ownership of the bridge
+  // and the processor).
+  virtual void OnModelStarting(ModelTypeSyncBridge* bridge) = 0;
+
   // The |bridge| is expected to call this exactly once unless it encounters an
   // error. Ideally ModelReadyToSync() is called as soon as possible during
   // initialization, and must be called before invoking either Put() or

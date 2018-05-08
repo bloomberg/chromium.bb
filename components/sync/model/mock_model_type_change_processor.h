@@ -36,6 +36,7 @@ class MockModelTypeChangeProcessor : public ModelTypeChangeProcessor {
                     const std::string& storage_key,
                     MetadataChangeList* metadata_change_list));
   MOCK_METHOD1(UntrackEntity, void(const EntityData& entity_data));
+  MOCK_METHOD1(OnModelStarting, void(ModelTypeSyncBridge* bridge));
   // TODO(crbug.com/729950): Use unique_ptr here directly once move-only
   // arguments are supported in gMock.
   MOCK_METHOD2(DoModelReadyToSync,

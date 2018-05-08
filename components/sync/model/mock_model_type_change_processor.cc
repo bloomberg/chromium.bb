@@ -44,6 +44,10 @@ class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
     other_->UntrackEntity(entity_data);
   }
 
+  void OnModelStarting(ModelTypeSyncBridge* bridge) override {
+    other_->OnModelStarting(bridge);
+  }
+
   void ModelReadyToSync(ModelTypeSyncBridge* bridge,
                         std::unique_ptr<MetadataBatch> batch) override {
     other_->ModelReadyToSync(bridge, std::move(batch));
@@ -117,6 +121,9 @@ void MockModelTypeChangeProcessor::DelegateCallsByDefaultTo(
   ON_CALL(*this, UntrackEntity(_))
       .WillByDefault(
           Invoke(delegate, &ModelTypeChangeProcessor::UntrackEntity));
+  ON_CALL(*this, OnModelStarting(_))
+      .WillByDefault(
+          Invoke(delegate, &ModelTypeChangeProcessor::OnModelStarting));
   ON_CALL(*this, DoModelReadyToSync(_, _))
       .WillByDefault(
           Invoke([delegate](ModelTypeSyncBridge* bridge, MetadataBatch* batch) {

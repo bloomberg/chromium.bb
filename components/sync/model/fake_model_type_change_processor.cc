@@ -44,6 +44,9 @@ void FakeModelTypeChangeProcessor::UpdateStorageKey(
 void FakeModelTypeChangeProcessor::UntrackEntity(
     const EntityData& entity_data) {}
 
+void FakeModelTypeChangeProcessor::OnModelStarting(
+    ModelTypeSyncBridge* bridge) {}
+
 void FakeModelTypeChangeProcessor::ModelReadyToSync(
     ModelTypeSyncBridge* bridge,
     std::unique_ptr<MetadataBatch> batch) {}

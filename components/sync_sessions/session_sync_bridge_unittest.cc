@@ -184,6 +184,11 @@ class SessionSyncBridgeTest : public ::testing::Test {
   ~SessionSyncBridgeTest() override {}
 
   void InitializeBridge() {
+    real_processor_ =
+        std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
+            syncer::SESSIONS, /*dump_stack=*/base::DoNothing(),
+            /*commit_only=*/false);
+    mock_processor_.DelegateCallsByDefaultTo(real_processor_.get());
     // Instantiate the bridge.
     bridge_ = std::make_unique<SessionSyncBridge>(
         &mock_sync_sessions_client_, &mock_sync_prefs_,
@@ -192,11 +197,6 @@ class SessionSyncBridgeTest : public ::testing::Test {
         syncer::ModelTypeStoreTestUtil::FactoryForForwardingStore(store_.get()),
         mock_foreign_sessions_updated_callback_.Get(),
         mock_processor_.CreateForwardingProcessor());
-    real_processor_ =
-        std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-            syncer::SESSIONS, /*dump_stack=*/base::DoNothing(),
-            /*commit_only=*/false);
-    mock_processor_.DelegateCallsByDefaultTo(real_processor_.get());
   }
 
   void ShutdownBridge() {
