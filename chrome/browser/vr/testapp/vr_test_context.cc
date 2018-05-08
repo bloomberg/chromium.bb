@@ -59,6 +59,10 @@ constexpr gfx::Point3F kDefaultLaserOrigin = {0.5f, -0.5f, 0.f};
 constexpr gfx::Vector3dF kLaserLocalOffset = {0.f, -0.0075f, -0.05f};
 constexpr float kControllerScaleFactor = 1.5f;
 constexpr float kTouchpadPositionDelta = 0.05f;
+const float kVerticalScrollScaleFactor =
+    -8.0f / ui::MouseWheelEvent::kWheelDelta;
+const float kHorizontalScrollScaleFactor =
+    60.0f / ui::MouseWheelEvent::kWheelDelta;
 constexpr gfx::PointF kInitialTouchPosition = {0.5f, 0.5f};
 
 void RotateToward(const gfx::Vector3dF& fwd, gfx::Transform* transform) {
@@ -75,15 +79,20 @@ bool LoadPng(int resource_id, std::unique_ptr<SkBitmap>* out_image) {
       out_image->get());
 }
 
-GestureList CreateScrollGestureList(blink::WebInputEvent::Type type,
-                                    const gfx::Vector2dF& delta) {
-  auto event = std::make_unique<blink::WebGestureEvent>();
-  event->SetType(type);
-  event->data.scroll_update.delta_x = delta.x();
-  event->data.scroll_update.delta_y = delta.y();
-  GestureList gesture_list;
-  gesture_list.push_back(std::move(event));
-  return gesture_list;
+GestureList CreateScrollGestureEventList(blink::WebGestureEvent::Type type) {
+  auto gesture = std::make_unique<blink::WebGestureEvent>();
+  gesture->SetType(type);
+  GestureList list;
+  list.push_back(std::move(gesture));
+  return list;
+}
+
+GestureList CreateScrollGestureEventList(blink::WebGestureEvent::Type type,
+                                         const gfx::Vector2dF& delta) {
+  auto list = CreateScrollGestureEventList(type);
+  list.front()->data.scroll_update.delta_x = delta.x();
+  list.front()->data.scroll_update.delta_y = delta.y();
+  return list;
 }
 
 }  // namespace
@@ -260,24 +269,6 @@ void VrTestContext::HandleInput(ui::Event* event) {
       case ui::DomCode::US_L:
         model_->standalone_vr_device = !model_->standalone_vr_device;
         break;
-      case ui::DomCode::ARROW_RIGHT:
-        gesture_lists_.push(CreateScrollGestureList(
-            blink::WebInputEvent::kGestureScrollBegin, gfx::Vector2dF(0, 0)));
-        gesture_lists_.push(
-            CreateScrollGestureList(blink::WebInputEvent::kGestureScrollUpdate,
-                                    gfx::Vector2dF(-100, 0)));
-        gesture_lists_.push(CreateScrollGestureList(
-            blink::WebInputEvent::kGestureScrollEnd, gfx::Vector2dF(0, 0)));
-        break;
-      case ui::DomCode::ARROW_LEFT:
-        gesture_lists_.push(CreateScrollGestureList(
-            blink::WebInputEvent::kGestureScrollBegin, gfx::Vector2dF(0, 0)));
-        gesture_lists_.push(
-            CreateScrollGestureList(blink::WebInputEvent::kGestureScrollUpdate,
-                                    gfx::Vector2dF(100, 0)));
-        gesture_lists_.push(CreateScrollGestureList(
-            blink::WebInputEvent::kGestureScrollEnd, gfx::Vector2dF(0, 0)));
-        break;
       default:
         break;
     }
@@ -288,13 +279,29 @@ void VrTestContext::HandleInput(ui::Event* event) {
     int direction =
         base::ClampToRange(event->AsMouseWheelEvent()->y_offset(), -1, 1);
     if (event->IsControlDown()) {
+      view_scale_factor_ *= (1 + direction * kViewScaleAdjustmentFactor);
+      view_scale_factor_ = base::ClampToRange(
+          view_scale_factor_, kMinViewScaleFactor, kMaxViewScaleFactor);
+    } else if (model_->reposition_window_enabled()) {
       touchpad_touch_position_.set_y(base::ClampToRange(
           touchpad_touch_position_.y() + kTouchpadPositionDelta * direction,
           0.0f, 1.0f));
     } else {
-      view_scale_factor_ *= (1 + direction * kViewScaleAdjustmentFactor);
-      view_scale_factor_ = base::ClampToRange(
-          view_scale_factor_, kMinViewScaleFactor, kMaxViewScaleFactor);
+      gesture_lists_.push(CreateScrollGestureEventList(
+          blink::WebGestureEvent::kGestureScrollBegin));
+
+      auto offset = gfx::Vector2dF(event->AsMouseWheelEvent()->offset());
+      if (event->IsShiftDown()) {
+        offset.Scale(kHorizontalScrollScaleFactor);
+        offset = gfx::Vector2dF(offset.y(), offset.x());
+      } else {
+        offset.Scale(kVerticalScrollScaleFactor);
+      }
+      gesture_lists_.push(CreateScrollGestureEventList(
+          blink::WebGestureEvent::kGestureScrollUpdate, offset));
+
+      gesture_lists_.push(CreateScrollGestureEventList(
+          blink::WebGestureEvent::kGestureScrollEnd));
     }
     return;
   }
@@ -398,7 +405,6 @@ ControllerModel VrTestContext::UpdateController(const RenderInfo& render_info,
   // Hit testing is done in terms of this synthesized controller model.
   if (gesture_lists_.empty()) {
     gesture_lists_.push(GestureList());
-    gesture_lists_.back().push_back(std::make_unique<blink::WebGestureEvent>());
   }
   ReticleModel reticle_model;
   ui_->input_manager()->HandleInput(current_time, render_info, controller_model,
