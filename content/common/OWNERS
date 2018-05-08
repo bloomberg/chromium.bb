@@ -7,10 +7,14 @@ per-file sandbox_init_win.cc=set noparent
 per-file sandbox_init_win.cc=file://sandbox/win/OWNERS
 
 # Mac Sandbox.
-per-file sandbox_init_mac.*=rsesek@chromium.org
-per-file sandbox_mac*=rsesek@chromium.org
+per-file sandbox_init_mac.cc=set noparent
+per-file sandbox_init_mac.cc=file://sandbox/mac/OWNERS
+
+per-file sandbox_mac*=set noparent
+per-file sandbox_mac*=file://sandbox/mac/OWNERS
+
 per-file *.sb=set noparent
-per-file *.sb=rsesek@chromium.org
+per-file *.sb=file://sandbox/mac/OWNERS
 
 per-file pepper*=bauerb@chromium.org
 per-file plugin*=bauerb@chromium.org
