@@ -9,14 +9,20 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/state_store.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_extension_dir.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace extensions {
 namespace {
@@ -158,6 +164,61 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionAPITest, TestNoUnnecessaryIO) {
     // state of the extension action.
     EXPECT_EQ(1, test_state_store_observer.CountForKey(kBrowserActionKey));
   }
+}
+
+// Verify that tab-specific values are cleared on navigation and on tab
+// removal. Regression test for https://crbug.com/834033.
+IN_PROC_BROWSER_TEST_F(ExtensionActionAPITest,
+                       ValuesAreClearedOnNavigationAndTabRemoval) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(
+      R"({
+           "name": "Extension",
+           "description": "An extension",
+           "manifest_version": 2,
+           "version": "0.1",
+           "browser_action": {}
+         })");
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  auto* action_manager = ExtensionActionManager::Get(profile());
+  ExtensionAction* action = action_manager->GetExtensionAction(*extension);
+  ASSERT_TRUE(action);
+
+  GURL initial_url = embedded_test_server()->GetURL("/title1.html");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), initial_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  content::WebContents* web_contents = tab_strip_model->GetActiveWebContents();
+  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
+
+  // There should be no explicit title to start, but should be one if we set
+  // one.
+  EXPECT_FALSE(action->HasTitle(tab_id));
+  action->SetTitle(tab_id, "alpha");
+  EXPECT_TRUE(action->HasTitle(tab_id));
+
+  // Navigating should clear the title.
+  GURL second_url = embedded_test_server()->GetURL("/title2.html");
+  ui_test_utils::NavigateToURL(browser(), second_url);
+
+  EXPECT_EQ(second_url, web_contents->GetLastCommittedURL());
+  EXPECT_FALSE(action->HasTitle(tab_id));
+
+  action->SetTitle(tab_id, "alpha");
+  {
+    content::WebContentsDestroyedWatcher destroyed_watcher(web_contents);
+    tab_strip_model->CloseWebContentsAt(tab_strip_model->active_index(),
+                                        TabStripModel::CLOSE_NONE);
+    destroyed_watcher.Wait();
+  }
+  // The title should have been cleared on tab removal as well.
+  EXPECT_FALSE(action->HasTitle(tab_id));
 }
 
 }  // namespace extensions
