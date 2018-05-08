@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "storage/common/database/database_identifier.h"
@@ -324,7 +325,7 @@ std::string GetFileSystemTypeString(FileSystemType type) {
 std::string FilePathToString(const base::FilePath& file_path) {
 #if defined(OS_WIN)
   return base::UTF16ToUTF8(file_path.value());
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return file_path.value();
 #endif
 }
@@ -332,7 +333,7 @@ std::string FilePathToString(const base::FilePath& file_path) {
 base::FilePath StringToFilePath(const std::string& file_path_string) {
 #if defined(OS_WIN)
   return base::FilePath(base::UTF8ToUTF16(file_path_string));
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return base::FilePath(file_path_string);
 #endif
 }
