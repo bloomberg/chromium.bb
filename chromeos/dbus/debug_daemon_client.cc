@@ -500,23 +500,23 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        error_callback));
   }
 
-  void StartVmConcierge(VmConciergeCallback callback) override {
+  void StartConcierge(ConciergeCallback callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kStartVmConcierge);
     dbus::MessageWriter writer(&method_call);
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnStartVmConcierge,
+        base::BindOnce(&DebugDaemonClientImpl::OnStartConcierge,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void StopVmConcierge(VmConciergeCallback callback) override {
+  void StopConcierge(ConciergeCallback callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kStopVmConcierge);
     dbus::MessageWriter writer(&method_call);
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnStopVmConcierge,
+        base::BindOnce(&DebugDaemonClientImpl::OnStopConcierge,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
@@ -724,8 +724,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     }
   }
 
-  void OnStartVmConcierge(VmConciergeCallback callback,
-                          dbus::Response* response) {
+  void OnStartConcierge(ConciergeCallback callback, dbus::Response* response) {
     bool result = false;
     dbus::MessageReader reader(response);
     if (response) {
@@ -734,8 +733,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     std::move(callback).Run(result);
   }
 
-  void OnStopVmConcierge(VmConciergeCallback callback,
-                         dbus::Response* response) {
+  void OnStopConcierge(ConciergeCallback callback, dbus::Response* response) {
     bool result = false;
     dbus::MessageReader reader(response);
     if (response) {

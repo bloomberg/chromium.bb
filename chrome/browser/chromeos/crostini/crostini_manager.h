@@ -51,11 +51,11 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   using ConciergeClientCallback =
       base::OnceCallback<void(ConciergeClientResult result)>;
 
-  // The type of the callback for CrostiniManager::StartVmConcierge.
-  using StartVmConciergeCallback =
+  // The type of the callback for CrostiniManager::StartConcierge.
+  using StartConciergeCallback =
       base::OnceCallback<void(bool is_service_available)>;
-  // The type of the callback for CrostiniManager::StopVmConcierge.
-  using StopVmConciergeCallback = StartVmConciergeCallback;
+  // The type of the callback for CrostiniManager::StopConcierge.
+  using StopConciergeCallback = StartConciergeCallback;
 
   // The type of the callback for CrostiniManager::StartTerminaVm.
   using StartTerminaVmCallback = ConciergeClientCallback;
@@ -95,11 +95,11 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
 
   // Starts the Concierge service. |callback| is called after the method call
   // finishes.
-  void StartVmConcierge(StartVmConciergeCallback callback);
+  void StartConcierge(StartConciergeCallback callback);
 
   // Stops the Concierge service. |callback| is called after the method call
   // finishes.
-  void StopVmConcierge(StopVmConciergeCallback callback);
+  void StopConcierge(StopConciergeCallback callback);
 
   // Checks the arguments for creating a new Termina VM disk image. Creates a
   // disk image for a Termina VM via ConciergeClient::CreateDiskImage.
@@ -231,13 +231,13 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   void OnStopVm(StopVmCallback callback,
                 base::Optional<vm_tools::concierge::StopVmResponse> response);
 
-  // Callback for CrostiniClient::StartVmConcierge. Called after the
+  // Callback for CrostiniClient::StartConcierge. Called after the
   // DebugDaemon service method finishes.
-  void OnStartVmConcierge(StartVmConciergeCallback callback, bool success);
+  void OnStartConcierge(StartConciergeCallback callback, bool success);
 
-  // Callback for CrostiniClient::StopVmConcierge. Called after the
+  // Callback for CrostiniClient::StopConcierge. Called after the
   // DebugDaemon service method finishes.
-  void OnStopVmConcierge(StopVmConciergeCallback callback, bool success);
+  void OnStopConcierge(StopConciergeCallback callback, bool success);
 
   // Callback for CrostiniManager::StartContainer. Called after the Concierge
   // service finishes.

@@ -141,7 +141,7 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
       UnrefAndRunCallback(client_result);
       return;
     }
-    CrostiniManager::GetInstance()->StartVmConcierge(
+    CrostiniManager::GetInstance()->StartConcierge(
         base::BindOnce(&CrostiniRestarter::ConciergeStarted, this));
   }
 
@@ -256,39 +256,39 @@ bool CrostiniManager::IsCrosTerminaInstalled() {
               .empty();
 }
 
-void CrostiniManager::StartVmConcierge(StartVmConciergeCallback callback) {
-  VLOG(1) << "Starting VmConcierge service";
-  chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->StartVmConcierge(
-      base::BindOnce(&CrostiniManager::OnStartVmConcierge,
+void CrostiniManager::StartConcierge(StartConciergeCallback callback) {
+  VLOG(1) << "Starting Concierge service";
+  chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->StartConcierge(
+      base::BindOnce(&CrostiniManager::OnStartConcierge,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void CrostiniManager::OnStartVmConcierge(StartVmConciergeCallback callback,
-                                         bool success) {
+void CrostiniManager::OnStartConcierge(StartConciergeCallback callback,
+                                       bool success) {
   if (!success) {
     LOG(ERROR) << "Failed to start Concierge service";
     std::move(callback).Run(success);
     return;
   }
-  VLOG(1) << "VmConcierge service started";
-  VLOG(1) << "Waiting for VmConcierge to announce availability.";
+  VLOG(1) << "Concierge service started";
+  VLOG(1) << "Waiting for Concierge to announce availability.";
 
   GetConciergeClient()->WaitForServiceToBeAvailable(std::move(callback));
 }
 
-void CrostiniManager::StopVmConcierge(StopVmConciergeCallback callback) {
-  VLOG(1) << "Stopping VmConcierge service";
-  chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->StopVmConcierge(
-      base::BindOnce(&CrostiniManager::OnStopVmConcierge,
+void CrostiniManager::StopConcierge(StopConciergeCallback callback) {
+  VLOG(1) << "Stopping Concierge service";
+  chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->StopConcierge(
+      base::BindOnce(&CrostiniManager::OnStopConcierge,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void CrostiniManager::OnStopVmConcierge(StopVmConciergeCallback callback,
-                                        bool success) {
+void CrostiniManager::OnStopConcierge(StopConciergeCallback callback,
+                                      bool success) {
   if (!success) {
     LOG(ERROR) << "Failed to stop Concierge service";
   } else {
-    VLOG(1) << "VmConcierge service stopped";
+    VLOG(1) << "Concierge service stopped";
   }
   std::move(callback).Run(success);
 }

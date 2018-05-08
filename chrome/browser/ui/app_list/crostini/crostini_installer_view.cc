@@ -229,7 +229,7 @@ void CrostiniInstallerView::OnConciergeStarted(ConciergeClientResult result) {
         IDS_CROSTINI_INSTALLER_START_CONCIERGE_ERROR));
     return;
   }
-  VLOG(1) << "VmConcierge service started";
+  VLOG(1) << "Concierge service started";
   StepProgress();
 }
 
