@@ -41,6 +41,8 @@ source_set("service") {
     "value_util.h",
     "video_capture_client.cc",
     "video_capture_client.h",
+    "wifi_status_monitor.cc",
+    "wifi_status_monitor.h",
   ]
 
   public_deps = [
@@ -77,6 +79,7 @@ source_set("unittests") {
     "session_unittest.cc",
     "udp_socket_client_unittest.cc",
     "video_capture_client_unittest.cc",
+    "wifi_status_monitor_unittest.cc",
   ]
 
   deps = [
