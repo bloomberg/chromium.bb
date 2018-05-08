@@ -20,8 +20,9 @@ class BrowserContext;
 }  // namespace content
 
 namespace ui {
-struct AXSnapshotNodeAndroid;
-}  // ui
+struct AssistantTree;
+struct AssistantNode;
+}  // namespace ui
 
 namespace arc {
 
@@ -66,8 +67,8 @@ class ArcVoiceInteractionArcHomeService
   void OnVoiceInteractionOobeSetupComplete() override;
 
   static mojom::VoiceInteractionStructurePtr
-  CreateVoiceInteractionStructureForTesting(
-      const ui::AXSnapshotNodeAndroid& view_structure);
+  CreateVoiceInteractionStructureForTesting(const ui::AssistantTree& tree,
+                                            const ui::AssistantNode& node);
 
   void set_assistant_started_timeout_for_testing(
       const base::TimeDelta& timeout) {
