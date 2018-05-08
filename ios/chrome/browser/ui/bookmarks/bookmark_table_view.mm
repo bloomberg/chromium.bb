@@ -74,11 +74,8 @@ using bookmarks::BookmarkNode;
 using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 @interface BookmarkTableView ()<BookmarkModelBridgeObserver,
-                                BookmarkTableCellTitleEditDelegate,
                                 SyncedSessionsObserver,
-                                UIGestureRecognizerDelegate,
-                                UITableViewDataSource,
-                                UITableViewDelegate> {
+                                UIGestureRecognizerDelegate> {
   // Bridge to register for bookmark changes.
   std::unique_ptr<bookmarks::BookmarkModelBridge> _modelBridge;
 
@@ -148,8 +145,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     self.sharedState.tableView =
         [[UITableView alloc] initWithFrame:frame style:UITableViewStylePlain];
     self.sharedState.tableView.accessibilityIdentifier = @"bookmarksTableView";
-    self.sharedState.tableView.dataSource = self;
-    self.sharedState.tableView.delegate = self;
     if (@available(iOS 11.0, *)) {
       self.sharedState.tableView.contentInsetAdjustmentBehavior =
           UIScrollViewContentInsetAdjustmentNever;
@@ -351,179 +346,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   [super traitCollectionDidChange:previousTraitCollection];
   // Stop edit of current bookmark folder name, if any.
   [self.sharedState.editingFolderCell stopEdit];
-}
-
-#pragma mark - UITableViewDataSource
-
-- (NSInteger)numberOfSectionsInTableView:(UITableView*)tableView {
-  return [self.sharedState.tableViewModel numberOfSections];
-}
-
-- (NSInteger)tableView:(UITableView*)tableView
-    numberOfRowsInSection:(NSInteger)section {
-  return [self.sharedState.tableViewModel numberOfItemsInSection:section];
-}
-
-- (UITableViewCell*)tableView:(UITableView*)tableView
-        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
-  TableViewItem* item =
-      [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
-  Class cellClass = [item cellClass];
-  NSString* reuseIdentifier = NSStringFromClass(cellClass);
-  [self.sharedState.tableView registerClass:cellClass
-                     forCellReuseIdentifier:reuseIdentifier];
-  UITableViewCell* cell = [self.sharedState.tableView
-      dequeueReusableCellWithIdentifier:reuseIdentifier
-                           forIndexPath:indexPath];
-  [item configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
-
-  if (item.type == BookmarkHomeItemTypeBookmark) {
-    BookmarkHomeNodeItem* nodeItem =
-        base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
-    BookmarkTableCell* tableCell =
-        base::mac::ObjCCastStrict<BookmarkTableCell>(cell);
-    if (nodeItem.bookmarkNode == self.sharedState.editingFolderNode) {
-      // Delay starting edit, so that the cell is fully created.
-      dispatch_async(dispatch_get_main_queue(), ^{
-        self.sharedState.editingFolderCell = tableCell;
-        [tableCell startEdit];
-        tableCell.textDelegate = self;
-      });
-    }
-
-    // Cancel previous load attempts.
-    [self cancelLoadingFaviconAtIndexPath:indexPath];
-    // Load the favicon from cache.  If not found, try fetching it from a Google
-    // Server.
-    [self loadFaviconAtIndexPath:indexPath continueToGoogleServer:YES];
-  }
-
-  return cell;
-}
-
-- (BOOL)tableView:(UITableView*)tableView
-    canEditRowAtIndexPath:(NSIndexPath*)indexPath {
-  TableViewItem* item =
-      [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
-  if (item.type != BookmarkHomeItemTypeBookmark) {
-    // Can only edit bookmarks.
-    return NO;
-  }
-
-  // Enable the swipe-to-delete gesture and reordering control for nodes of
-  // type URL or Folder, but not the permanent ones.
-  BookmarkHomeNodeItem* nodeItem =
-      base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
-  const BookmarkNode* node = nodeItem.bookmarkNode;
-  return [self isUrlOrFolder:node];
-}
-
-- (void)tableView:(UITableView*)tableView
-    commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
-     forRowAtIndexPath:(NSIndexPath*)indexPath {
-  TableViewItem* item =
-      [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
-  if (item.type != BookmarkHomeItemTypeBookmark) {
-    // Can only commit edits for bookmarks.
-    return;
-  }
-
-  if (editingStyle == UITableViewCellEditingStyleDelete) {
-    BookmarkHomeNodeItem* nodeItem =
-        base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
-    const BookmarkNode* node = nodeItem.bookmarkNode;
-    std::set<const BookmarkNode*> nodes;
-    nodes.insert(node);
-    [self.delegate bookmarkTableView:self selectedNodesForDeletion:nodes];
-  }
-}
-
-- (BOOL)tableView:(UITableView*)tableView
-    canMoveRowAtIndexPath:(NSIndexPath*)indexPath {
-  TableViewItem* item =
-      [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
-  if (item.type != BookmarkHomeItemTypeBookmark) {
-    // Can only move bookmarks.
-    return NO;
-  }
-
-  return YES;
-}
-
-- (void)tableView:(UITableView*)tableView
-    moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
-           toIndexPath:(NSIndexPath*)destinationIndexPath {
-  if (sourceIndexPath.row == destinationIndexPath.row) {
-    return;
-  }
-  const BookmarkNode* node = [self nodeAtIndexPath:sourceIndexPath];
-  // Calculations: Assume we have 3 nodes A B C. Node positions are A(0), B(1),
-  // C(2) respectively. When we move A to after C, we are moving node at index 0
-  // to 3 (position after C is 3, in terms of the existing contents). Hence add
-  // 1 when moving forward. When moving backward, if C(2) is moved to Before B,
-  // we move node at index 2 to index 1 (position before B is 1, in terms of the
-  // existing contents), hence no change in index is necessary. It is required
-  // to make these adjustments because this is how bookmark_model handles move
-  // operations.
-  int newPosition = sourceIndexPath.row < destinationIndexPath.row
-                        ? destinationIndexPath.row + 1
-                        : destinationIndexPath.row;
-  [self.delegate bookmarkTableView:self
-                       didMoveNode:node
-                        toPosition:newPosition];
-}
-
-- (CGFloat)tableView:(UITableView*)tableView
-    heightForRowAtIndexPath:(NSIndexPath*)indexPath {
-  NSInteger sectionIdentifier = [self.sharedState.tableViewModel
-      sectionIdentifierForSection:indexPath.section];
-  if (sectionIdentifier == BookmarkHomeSectionIdentifierBookmarks) {
-    return [BookmarkHomeSharedState cellHeightPt];
-  }
-  return UITableViewAutomaticDimension;
-}
-
-#pragma mark - UITableViewDelegate
-
-- (void)tableView:(UITableView*)tableView
-    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
-  NSInteger sectionIdentifier = [self.sharedState.tableViewModel
-      sectionIdentifierForSection:indexPath.section];
-  if (sectionIdentifier == BookmarkHomeSectionIdentifierBookmarks) {
-    const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
-    DCHECK(node);
-    // If table is in edit mode, record all the nodes added to edit set.
-    if (self.sharedState.currentlyInEditMode) {
-      self.sharedState.editNodes.insert(node);
-      [self.delegate bookmarkTableView:self
-                     selectedEditNodes:self.sharedState.editNodes];
-      return;
-    }
-    [self.sharedState.editingFolderCell stopEdit];
-    if (node->is_folder()) {
-      [self.delegate bookmarkTableView:self selectedFolderForNavigation:node];
-    } else {
-      // Open URL. Pass this to the delegate.
-      [self.delegate bookmarkTableView:self
-              selectedUrlForNavigation:node->url()];
-    }
-  }
-  // Deselect row.
-  [tableView deselectRowAtIndexPath:indexPath animated:YES];
-}
-
-- (void)tableView:(UITableView*)tableView
-    didDeselectRowAtIndexPath:(NSIndexPath*)indexPath {
-  NSInteger sectionIdentifier = [self.sharedState.tableViewModel
-      sectionIdentifierForSection:indexPath.section];
-  if (sectionIdentifier == BookmarkHomeSectionIdentifierBookmarks &&
-      self.sharedState.currentlyInEditMode) {
-    const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
-    DCHECK(node);
-    self.sharedState.editNodes.erase(node);
-    [self.delegate bookmarkTableView:self
-                   selectedEditNodes:self.sharedState.editNodes];
-  }
 }
 
 #pragma mark - BookmarkModelBridgeObserver Callbacks
@@ -1097,52 +919,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     return;
   }
   [self showEmptyOrLoadingSpinnerBackgroundIfNeeded];
-}
-
-#pragma mark - BookmarkTableCellTextFieldDelegate
-
-- (void)textDidChangeTo:(NSString*)newName {
-  DCHECK(self.sharedState.editingFolderNode);
-  self.sharedState.addingNewFolder = NO;
-  if (newName.length > 0) {
-    self.sharedState.bookmarkModel->SetTitle(self.sharedState.editingFolderNode,
-                                             base::SysNSStringToUTF16(newName));
-  }
-  self.sharedState.editingFolderNode = NULL;
-  self.sharedState.editingFolderCell = nil;
-  [self refreshContents];
-}
-
-#pragma mark UIScrollViewDelegate
-
-- (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  if (scrollView == self.sharedState.headerView.trackingScrollView) {
-    [self.sharedState.headerView trackingScrollViewDidScroll];
-  }
-}
-
-- (void)scrollViewDidEndDecelerating:(UIScrollView*)scrollView {
-  if (scrollView == self.sharedState.headerView.trackingScrollView) {
-    [self.sharedState.headerView trackingScrollViewDidEndDecelerating];
-  }
-}
-
-- (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
-                  willDecelerate:(BOOL)decelerate {
-  if (scrollView == self.sharedState.headerView.trackingScrollView) {
-    [self.sharedState.headerView
-        trackingScrollViewDidEndDraggingWillDecelerate:decelerate];
-  }
-}
-
-- (void)scrollViewWillEndDragging:(UIScrollView*)scrollView
-                     withVelocity:(CGPoint)velocity
-              targetContentOffset:(inout CGPoint*)targetContentOffset {
-  if (scrollView == self.sharedState.headerView.trackingScrollView) {
-    [self.sharedState.headerView
-        trackingScrollViewWillEndDraggingWithVelocity:velocity
-                                  targetContentOffset:targetContentOffset];
-  }
 }
 
 @end

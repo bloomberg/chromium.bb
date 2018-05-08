@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
 
+#include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -24,12 +25,17 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_table_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
+#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_node_item.h"
+#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_promo_item.h"
+#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
@@ -76,10 +82,13 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     BookmarkHomeSharedStateObserver,
     BookmarkModelBridgeObserver,
     BookmarkPromoControllerDelegate,
+    BookmarkTableCellTitleEditDelegate,
     BookmarkTableViewDelegate,
     ContextBarDelegate,
     SigninPresenter,
-    UIGestureRecognizerDelegate> {
+    UIGestureRecognizerDelegate,
+    UITableViewDataSource,
+    UITableViewDelegate> {
   // Bridge to register for bookmark changes.
   std::unique_ptr<bookmarks::BookmarkModelBridge> _bridge;
 
@@ -267,6 +276,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                           UIViewAutoresizingFlexibleHeight];
   [self.bookmarksTableView setTranslatesAutoresizingMaskIntoConstraints:NO];
   [self.view addSubview:self.bookmarksTableView];
+
+  // Configure the table view.
+  self.sharedState.tableView.dataSource = self;
+  self.sharedState.tableView.delegate = self;
 
   // After the table view has been added.
   [self setupNavigationBar];
@@ -517,6 +530,20 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (BOOL)isAtTopOfNavigation:(BookmarkTableView*)view {
   return (self.navigationController.topViewController == self);
+}
+
+#pragma mark - BookmarkTableCellTitleEditDelegate
+
+- (void)textDidChangeTo:(NSString*)newName {
+  DCHECK(self.sharedState.editingFolderNode);
+  self.sharedState.addingNewFolder = NO;
+  if (newName.length > 0) {
+    self.sharedState.bookmarkModel->SetTitle(self.sharedState.editingFolderNode,
+                                             base::SysNSStringToUTF16(newName));
+  }
+  self.sharedState.editingFolderNode = nullptr;
+  self.sharedState.editingFolderCell = nil;
+  [self.bookmarksTableView refreshContents];
 }
 
 #pragma mark - BookmarkFolderViewControllerDelegate
@@ -855,6 +882,27 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   self.sharedState.currentlyInEditMode = editing;
   [self setContextBarState:editing ? BookmarksContextBarBeginSelection
                                    : BookmarksContextBarDefault];
+}
+
+// Returns YES if the given node is a url or folder node.
+- (BOOL)isUrlOrFolder:(const BookmarkNode*)node {
+  return node->type() == BookmarkNode::URL ||
+         node->type() == BookmarkNode::FOLDER;
+}
+
+// Returns the bookmark node associated with |indexPath|.
+- (const BookmarkNode*)nodeAtIndexPath:(NSIndexPath*)indexPath {
+  TableViewItem* item =
+      [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
+
+  if (item.type == BookmarkHomeItemTypeBookmark) {
+    BookmarkHomeNodeItem* nodeItem =
+        base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
+    return nodeItem.bookmarkNode;
+  }
+
+  NOTREACHED();
+  return nullptr;
 }
 
 #pragma mark - ContextBarDelegate implementation
@@ -1219,6 +1267,214 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 - (void)sharedStateDidClearEditNodes:(BookmarkHomeSharedState*)sharedState {
   [self bookmarkTableView:self.bookmarksTableView
         selectedEditNodes:sharedState.editNodes];
+}
+
+#pragma mark UIScrollViewDelegate
+
+- (void)scrollViewDidScroll:(UIScrollView*)scrollView {
+  if (scrollView == self.sharedState.headerView.trackingScrollView) {
+    [self.sharedState.headerView trackingScrollViewDidScroll];
+  }
+}
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView*)scrollView {
+  if (scrollView == self.sharedState.headerView.trackingScrollView) {
+    [self.sharedState.headerView trackingScrollViewDidEndDecelerating];
+  }
+}
+
+- (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
+                  willDecelerate:(BOOL)decelerate {
+  if (scrollView == self.sharedState.headerView.trackingScrollView) {
+    [self.sharedState.headerView
+        trackingScrollViewDidEndDraggingWillDecelerate:decelerate];
+  }
+}
+
+- (void)scrollViewWillEndDragging:(UIScrollView*)scrollView
+                     withVelocity:(CGPoint)velocity
+              targetContentOffset:(inout CGPoint*)targetContentOffset {
+  if (scrollView == self.sharedState.headerView.trackingScrollView) {
+    [self.sharedState.headerView
+        trackingScrollViewWillEndDraggingWithVelocity:velocity
+                                  targetContentOffset:targetContentOffset];
+  }
+}
+
+#pragma mark - UITableViewDataSource
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView*)tableView {
+  return [self.sharedState.tableViewModel numberOfSections];
+}
+
+- (NSInteger)tableView:(UITableView*)tableView
+    numberOfRowsInSection:(NSInteger)section {
+  return [self.sharedState.tableViewModel numberOfItemsInSection:section];
+}
+
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  TableViewItem* item =
+      [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
+  Class cellClass = [item cellClass];
+  NSString* reuseIdentifier = NSStringFromClass(cellClass);
+  [self.sharedState.tableView registerClass:cellClass
+                     forCellReuseIdentifier:reuseIdentifier];
+  UITableViewCell* cell = [self.sharedState.tableView
+      dequeueReusableCellWithIdentifier:reuseIdentifier
+                           forIndexPath:indexPath];
+  [item configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
+
+  if (item.type == BookmarkHomeItemTypeBookmark) {
+    BookmarkHomeNodeItem* nodeItem =
+        base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
+    BookmarkTableCell* tableCell =
+        base::mac::ObjCCastStrict<BookmarkTableCell>(cell);
+    if (nodeItem.bookmarkNode == self.sharedState.editingFolderNode) {
+      // Delay starting edit, so that the cell is fully created.
+      dispatch_async(dispatch_get_main_queue(), ^{
+        self.sharedState.editingFolderCell = tableCell;
+        [tableCell startEdit];
+        tableCell.textDelegate = self;
+      });
+    }
+
+    // Cancel previous load attempts.
+    [self.bookmarksTableView cancelLoadingFaviconAtIndexPath:indexPath];
+    // Load the favicon from cache.  If not found, try fetching it from a Google
+    // Server.
+    [self.bookmarksTableView loadFaviconAtIndexPath:indexPath
+                             continueToGoogleServer:YES];
+  }
+
+  return cell;
+}
+
+- (BOOL)tableView:(UITableView*)tableView
+    canEditRowAtIndexPath:(NSIndexPath*)indexPath {
+  TableViewItem* item =
+      [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
+  if (item.type != BookmarkHomeItemTypeBookmark) {
+    // Can only edit bookmarks.
+    return NO;
+  }
+
+  // Enable the swipe-to-delete gesture and reordering control for nodes of
+  // type URL or Folder, but not the permanent ones.
+  BookmarkHomeNodeItem* nodeItem =
+      base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
+  const BookmarkNode* node = nodeItem.bookmarkNode;
+  return [self isUrlOrFolder:node];
+}
+
+- (void)tableView:(UITableView*)tableView
+    commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
+     forRowAtIndexPath:(NSIndexPath*)indexPath {
+  TableViewItem* item =
+      [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
+  if (item.type != BookmarkHomeItemTypeBookmark) {
+    // Can only commit edits for bookmarks.
+    return;
+  }
+
+  if (editingStyle == UITableViewCellEditingStyleDelete) {
+    BookmarkHomeNodeItem* nodeItem =
+        base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
+    const BookmarkNode* node = nodeItem.bookmarkNode;
+    std::set<const BookmarkNode*> nodes;
+    nodes.insert(node);
+    [self bookmarkTableView:self.bookmarksTableView
+        selectedNodesForDeletion:nodes];
+  }
+}
+
+- (BOOL)tableView:(UITableView*)tableView
+    canMoveRowAtIndexPath:(NSIndexPath*)indexPath {
+  TableViewItem* item =
+      [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
+  if (item.type != BookmarkHomeItemTypeBookmark) {
+    // Can only move bookmarks.
+    return NO;
+  }
+
+  return YES;
+}
+
+- (void)tableView:(UITableView*)tableView
+    moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
+           toIndexPath:(NSIndexPath*)destinationIndexPath {
+  if (sourceIndexPath.row == destinationIndexPath.row) {
+    return;
+  }
+  const BookmarkNode* node = [self nodeAtIndexPath:sourceIndexPath];
+  // Calculations: Assume we have 3 nodes A B C. Node positions are A(0), B(1),
+  // C(2) respectively. When we move A to after C, we are moving node at index 0
+  // to 3 (position after C is 3, in terms of the existing contents). Hence add
+  // 1 when moving forward. When moving backward, if C(2) is moved to Before B,
+  // we move node at index 2 to index 1 (position before B is 1, in terms of the
+  // existing contents), hence no change in index is necessary. It is required
+  // to make these adjustments because this is how bookmark_model handles move
+  // operations.
+  int newPosition = sourceIndexPath.row < destinationIndexPath.row
+                        ? destinationIndexPath.row + 1
+                        : destinationIndexPath.row;
+  [self bookmarkTableView:self.bookmarksTableView
+              didMoveNode:node
+               toPosition:newPosition];
+}
+
+#pragma mark - UITableViewDelegate
+
+- (CGFloat)tableView:(UITableView*)tableView
+    heightForRowAtIndexPath:(NSIndexPath*)indexPath {
+  NSInteger sectionIdentifier = [self.sharedState.tableViewModel
+      sectionIdentifierForSection:indexPath.section];
+  if (sectionIdentifier == BookmarkHomeSectionIdentifierBookmarks) {
+    return [BookmarkHomeSharedState cellHeightPt];
+  }
+  return UITableViewAutomaticDimension;
+}
+
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  NSInteger sectionIdentifier = [self.sharedState.tableViewModel
+      sectionIdentifierForSection:indexPath.section];
+  if (sectionIdentifier == BookmarkHomeSectionIdentifierBookmarks) {
+    const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
+    DCHECK(node);
+    // If table is in edit mode, record all the nodes added to edit set.
+    if (self.sharedState.currentlyInEditMode) {
+      self.sharedState.editNodes.insert(node);
+      [self bookmarkTableView:self.bookmarksTableView
+            selectedEditNodes:self.sharedState.editNodes];
+      return;
+    }
+    [self.sharedState.editingFolderCell stopEdit];
+    if (node->is_folder()) {
+      [self bookmarkTableView:self.bookmarksTableView
+          selectedFolderForNavigation:node];
+    } else {
+      // Open URL. Pass this to the delegate.
+      [self bookmarkTableView:self.bookmarksTableView
+          selectedUrlForNavigation:node->url()];
+    }
+  }
+  // Deselect row.
+  [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (void)tableView:(UITableView*)tableView
+    didDeselectRowAtIndexPath:(NSIndexPath*)indexPath {
+  NSInteger sectionIdentifier = [self.sharedState.tableViewModel
+      sectionIdentifierForSection:indexPath.section];
+  if (sectionIdentifier == BookmarkHomeSectionIdentifierBookmarks &&
+      self.sharedState.currentlyInEditMode) {
+    const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
+    DCHECK(node);
+    self.sharedState.editNodes.erase(node);
+    [self bookmarkTableView:self.bookmarksTableView
+          selectedEditNodes:self.sharedState.editNodes];
+  }
 }
 
 @end
