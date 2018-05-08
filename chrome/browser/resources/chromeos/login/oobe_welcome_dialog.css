@@ -24,6 +24,7 @@
 
 .welcome-illustration {
   padding-top: 14px;
+  user-select: none;
 }
 
 oobe-welcome-secondary-button {
