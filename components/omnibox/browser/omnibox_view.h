@@ -116,7 +116,7 @@ class OmniboxView {
   // preserving and selecting the user's text if they already typed in a query.
   virtual void EnterKeywordModeForDefaultSearchProvider() = 0;
 
-  // Returns true if all text is selected or there is no text at all.
+  // Returns true if all text is selected. Returns false if there is no text.
   virtual bool IsSelectAll() const = 0;
 
   // Fills |start| and |end| with the indexes of the current selection's bounds.
