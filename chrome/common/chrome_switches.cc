@@ -645,10 +645,6 @@ const char kStartStackProfiler[]            = "start-stack-profiler";
 // Used for testing.
 const char kSupervisedUserId[]              = "managed-user-id";
 
-// Used to authenticate requests to the Sync service for supervised users.
-// Setting this switch also causes Sync to be set up for a supervised user.
-const char kSupervisedUserSyncToken[]       = "managed-user-sync-token";
-
 // Frequency in Milliseconds for system log uploads. Should only be used for
 // testing purposes.
 const char kSystemLogUploadFrequency[] = "system-log-upload-frequency";
