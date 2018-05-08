@@ -159,7 +159,6 @@ int32_t RTCVideoDecoder::InitDecode(const webrtc::VideoCodec* codecSettings,
 int32_t RTCVideoDecoder::Decode(
     const webrtc::EncodedImage& inputImage,
     bool missingFrames,
-    const webrtc::RTPFragmentationHeader* /*fragmentation*/,
     const webrtc::CodecSpecificInfo* /*codecSpecificInfo*/,
     int64_t /*renderTimeMs*/) {
   DVLOG(3) << "Decode";
