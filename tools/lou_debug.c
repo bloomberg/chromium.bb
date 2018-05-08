@@ -269,7 +269,7 @@ show_backRules(int startHash) {
 }
 
 static int
-print_brailleIndicator(TranslationTableOffset offset, char *opcode) {
+print_brailleIndicator(TranslationTableOffset offset, const char *opcode) {
 	TranslationTableRule *thisRule;
 	if (!offset) return 0;
 	thisRule = (TranslationTableRule *)&table->ruleArea[offset];
@@ -278,7 +278,7 @@ print_brailleIndicator(TranslationTableOffset offset, char *opcode) {
 }
 
 static int
-print_phraseLength(TranslationTableOffset offset, char *opcode) {
+print_phraseLength(TranslationTableOffset offset, const char *opcode) {
 	if (!offset) return 0;
 	printf("%s %u\n", opcode, offset);
 	return 1;
@@ -287,10 +287,10 @@ print_phraseLength(TranslationTableOffset offset, char *opcode) {
 static int
 show_brailleIndicators(void) {
 	char name[BUFSIZE];
-	char *emphNames[] = { "begemphphrase %s", "endemphphrase %s before",
+	const char *emphNames[] = { "begemphphrase %s", "endemphphrase %s before",
 		"endemphphrase %s after", "begemphword %s", "endemphword %s", "emphletter %s",
 		"begemph %s", "endemph %s", NULL };
-	char *capsNames[] = { "firstwordcaps", "lastwordcapsbefore", "lastwordcapsafter",
+	const char *capsNames[] = { "firstwordcaps", "lastwordcapsbefore", "lastwordcapsafter",
 		"begcaps", "endcaps", "capsletter", "capsword", "capswordstop", NULL };
 
 	// FIXME: update to include all UEB opcodes.
@@ -324,7 +324,7 @@ show_brailleIndicators(void) {
 	return 1;
 }
 
-static char *
+static const char *
 pickYN(int a) {
 	if (!a) return "no";
 	return "yes";

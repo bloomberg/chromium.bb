@@ -353,7 +353,7 @@ read_mode(yaml_parser_t *parser) {
 }
 
 int
-parse_number(const char *number, char *name, int file_line) {
+parse_number(const char *number, const char *name, int file_line) {
 	char *tail;
 	errno = 0;
 
