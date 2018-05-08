@@ -1336,6 +1336,12 @@
       name: "WebNFC",
       status: "experimental",
     },
+    {
+      name: "WebRtcVaapiHWVP8Encoding",
+      origin_trial_feature_name: "WebRtcVaapiHWVP8Encoding",
+      origin_trial_os: ["chromeos"],
+      status: "experimental",
+    },
     // WebShare is enabled by default on Android.
     {
       name: "WebShare",
