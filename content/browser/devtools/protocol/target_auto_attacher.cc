@@ -170,7 +170,10 @@ DevToolsAgentHost* TargetAutoAttacher::AutoAttachToFrame(
 
   DCHECK(old_cross_process);
   auto it = auto_attached_hosts_.find(agent_host);
-  DCHECK(it != auto_attached_hosts_.end());
+  // This should not happen in theory, but error pages are sometimes not
+  // picked up. See https://crbug.com/836511 and https://crbug.com/817881.
+  if (it == auto_attached_hosts_.end())
+    return nullptr;
   auto_attached_hosts_.erase(it);
   detach_callback_.Run(agent_host.get());
   return nullptr;
