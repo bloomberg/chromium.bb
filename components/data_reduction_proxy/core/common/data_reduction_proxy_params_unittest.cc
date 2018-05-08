@@ -13,11 +13,13 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_type_info.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/proxy_server.h"
@@ -30,27 +32,8 @@
 #endif
 
 namespace data_reduction_proxy {
-class DataReductionProxyParamsTest : public testing::Test {
- public:
-  void CheckValues(const TestDataReductionProxyParams& params,
-                   const std::string& expected_origin,
-                   const std::string& expected_fallback_origin) {
-    std::vector<net::ProxyServer> expected_proxies;
-    if (!expected_origin.empty()) {
-      expected_proxies.push_back(net::ProxyServer::FromURI(
-          expected_origin, net::ProxyServer::SCHEME_HTTP));
-    }
 
-    if (!expected_fallback_origin.empty()) {
-      expected_proxies.push_back(net::ProxyServer::FromURI(
-          expected_fallback_origin, net::ProxyServer::SCHEME_HTTP));
-    }
-
-    EXPECT_EQ(expected_proxies,
-              DataReductionProxyServer::ConvertToNetProxyServers(
-                  params.proxies_for_http()));
-  }
-};
+class DataReductionProxyParamsTest : public testing::Test {};
 
 TEST_F(DataReductionProxyParamsTest, EverythingDefined) {
   TestDataReductionProxyParams params;
@@ -67,6 +50,24 @@ TEST_F(DataReductionProxyParamsTest, EverythingDefined) {
       ProxyServer::CORE));
 
   EXPECT_EQ(expected_proxies, params.proxies_for_http());
+
+  EXPECT_FALSE(
+      params.FindConfiguredDataReductionProxy(net::ProxyServer::FromURI(
+          "unrelated.proxy.net:80", net::ProxyServer::SCHEME_HTTP)));
+
+  base::Optional<DataReductionProxyTypeInfo> first_info =
+      params.FindConfiguredDataReductionProxy(
+          expected_proxies[0].proxy_server());
+  ASSERT_TRUE(first_info);
+  EXPECT_EQ(expected_proxies, first_info->proxy_servers);
+  EXPECT_EQ(0U, first_info->proxy_index);
+
+  base::Optional<DataReductionProxyTypeInfo> second_info =
+      params.FindConfiguredDataReductionProxy(
+          expected_proxies[1].proxy_server());
+  ASSERT_TRUE(second_info);
+  EXPECT_EQ(expected_proxies, second_info->proxy_servers);
+  EXPECT_EQ(1U, second_info->proxy_index);
 }
 
 TEST_F(DataReductionProxyParamsTest, Flags) {
@@ -75,7 +76,40 @@ TEST_F(DataReductionProxyParamsTest, Flags) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyFallback, "http://ovveride-2.com/");
   TestDataReductionProxyParams params;
-  CheckValues(params, "http://ovveride-1.com/", "http://ovveride-2.com/");
+
+  std::vector<DataReductionProxyServer> expected_proxies;
+  expected_proxies.push_back(DataReductionProxyServer(
+      net::ProxyServer::FromURI("http://ovveride-1.com/",
+                                net::ProxyServer::SCHEME_HTTP),
+      ProxyServer::UNSPECIFIED_TYPE));
+  expected_proxies.push_back(DataReductionProxyServer(
+      net::ProxyServer::FromURI("http://ovveride-2.com/",
+                                net::ProxyServer::SCHEME_HTTP),
+      ProxyServer::UNSPECIFIED_TYPE));
+
+  EXPECT_EQ(expected_proxies, params.proxies_for_http());
+
+  // The default proxies shouldn't be recognized as Data Reduction Proxies.
+  EXPECT_FALSE(
+      params.FindConfiguredDataReductionProxy(net::ProxyServer::FromURI(
+          "https://proxy.googlezip.net:443", net::ProxyServer::SCHEME_HTTP)));
+  EXPECT_FALSE(
+      params.FindConfiguredDataReductionProxy(net::ProxyServer::FromURI(
+          "compress.googlezip.net:80", net::ProxyServer::SCHEME_HTTP)));
+
+  base::Optional<DataReductionProxyTypeInfo> first_info =
+      params.FindConfiguredDataReductionProxy(
+          expected_proxies[0].proxy_server());
+  ASSERT_TRUE(first_info);
+  EXPECT_EQ(expected_proxies, first_info->proxy_servers);
+  EXPECT_EQ(0U, first_info->proxy_index);
+
+  base::Optional<DataReductionProxyTypeInfo> second_info =
+      params.FindConfiguredDataReductionProxy(
+          expected_proxies[1].proxy_server());
+  ASSERT_TRUE(second_info);
+  EXPECT_EQ(expected_proxies, second_info->proxy_servers);
+  EXPECT_EQ(1U, second_info->proxy_index);
 }
 
 TEST_F(DataReductionProxyParamsTest, IsClientConfigEnabled) {

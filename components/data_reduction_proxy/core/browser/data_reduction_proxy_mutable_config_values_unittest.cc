@@ -8,9 +8,11 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/optional.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_type_info.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "net/base/proxy_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,6 +20,15 @@
 namespace data_reduction_proxy {
 
 namespace {
+
+void ExpectTypeInfo(
+    base::Optional<DataReductionProxyTypeInfo> type_info,
+    const std::vector<DataReductionProxyServer>& expected_proxy_servers,
+    size_t expected_proxy_index) {
+  ASSERT_TRUE(type_info);
+  EXPECT_EQ(expected_proxy_servers, type_info->proxy_servers);
+  EXPECT_EQ(expected_proxy_index, type_info->proxy_index);
+}
 
 class DataReductionProxyMutableConfigValuesTest : public testing::Test {
  public:
@@ -54,12 +65,34 @@ TEST_F(DataReductionProxyMutableConfigValuesTest, UpdateValuesAndInvalidate) {
   proxies_for_http.push_back(DataReductionProxyServer(
       second_proxy_server, ProxyServer::UNSPECIFIED_TYPE));
 
+  EXPECT_FALSE(mutable_config_values()->FindConfiguredDataReductionProxy(
+      first_proxy_server));
+  EXPECT_FALSE(mutable_config_values()->FindConfiguredDataReductionProxy(
+      second_proxy_server));
+
   mutable_config_values()->UpdateValues(proxies_for_http);
   EXPECT_EQ(proxies_for_http, mutable_config_values()->proxies_for_http());
+
+  // The configured proxies should be recognized as Data Reduction Proxies.
+  ExpectTypeInfo(mutable_config_values()->FindConfiguredDataReductionProxy(
+                     first_proxy_server),
+                 proxies_for_http, 0U);
+  ExpectTypeInfo(mutable_config_values()->FindConfiguredDataReductionProxy(
+                     second_proxy_server),
+                 proxies_for_http, 1U);
 
   // Invalidation must clear out the list of proxies and their properties.
   mutable_config_values()->Invalidate();
   EXPECT_TRUE(mutable_config_values()->proxies_for_http().empty());
+
+  // The previously configured proxies should still be recognized as Data
+  // Reduction Proxies, even though the config was invalidated.
+  ExpectTypeInfo(mutable_config_values()->FindConfiguredDataReductionProxy(
+                     first_proxy_server),
+                 proxies_for_http, 0U);
+  ExpectTypeInfo(mutable_config_values()->FindConfiguredDataReductionProxy(
+                     second_proxy_server),
+                 proxies_for_http, 1U);
 }
 
 // Tests if HTTP proxies are overridden when |kDataReductionProxyHttpProxies|
@@ -70,18 +103,32 @@ TEST_F(DataReductionProxyMutableConfigValuesTest, OverrideProxiesForHttp) {
       "http://override-first.net;http://override-second.net");
   Init();
 
-  EXPECT_EQ(std::vector<DataReductionProxyServer>(),
-            mutable_config_values()->proxies_for_http());
-
-  std::vector<DataReductionProxyServer> proxies_for_http;
+  net::ProxyServer first_override_proxy_server = net::ProxyServer::FromURI(
+      "http://override-first.net", net::ProxyServer::SCHEME_HTTP);
+  net::ProxyServer second_override_proxy_server = net::ProxyServer::FromURI(
+      "http://override-second.net", net::ProxyServer::SCHEME_HTTP);
 
   net::ProxyServer first_proxy_server(net::ProxyServer::FromURI(
       "http://first.net", net::ProxyServer::SCHEME_HTTP));
-  proxies_for_http.push_back(
-      DataReductionProxyServer(first_proxy_server, ProxyServer::CORE));
-
   net::ProxyServer second_proxy_server = net::ProxyServer::FromURI(
       "http://second.net", net::ProxyServer::SCHEME_HTTP);
+
+  EXPECT_EQ(std::vector<DataReductionProxyServer>(),
+            mutable_config_values()->proxies_for_http());
+
+  // No proxy servers should be recognized as Data Reduction Proxies.
+  EXPECT_FALSE(mutable_config_values()->FindConfiguredDataReductionProxy(
+      first_override_proxy_server));
+  EXPECT_FALSE(mutable_config_values()->FindConfiguredDataReductionProxy(
+      second_override_proxy_server));
+  EXPECT_FALSE(mutable_config_values()->FindConfiguredDataReductionProxy(
+      first_proxy_server));
+  EXPECT_FALSE(mutable_config_values()->FindConfiguredDataReductionProxy(
+      second_proxy_server));
+
+  std::vector<DataReductionProxyServer> proxies_for_http;
+  proxies_for_http.push_back(
+      DataReductionProxyServer(first_proxy_server, ProxyServer::CORE));
   proxies_for_http.push_back(DataReductionProxyServer(
       second_proxy_server, ProxyServer::UNSPECIFIED_TYPE));
 
@@ -89,20 +136,48 @@ TEST_F(DataReductionProxyMutableConfigValuesTest, OverrideProxiesForHttp) {
 
   std::vector<DataReductionProxyServer> expected_override_proxies_for_http;
   expected_override_proxies_for_http.push_back(DataReductionProxyServer(
-      net::ProxyServer::FromURI("http://override-first.net",
-                                net::ProxyServer::SCHEME_HTTP),
-      ProxyServer::UNSPECIFIED_TYPE));
+      first_override_proxy_server, ProxyServer::UNSPECIFIED_TYPE));
   expected_override_proxies_for_http.push_back(DataReductionProxyServer(
-      net::ProxyServer::FromURI("http://override-second.net",
-                                net::ProxyServer::SCHEME_HTTP),
-      ProxyServer::UNSPECIFIED_TYPE));
+      second_override_proxy_server, ProxyServer::UNSPECIFIED_TYPE));
 
   EXPECT_EQ(expected_override_proxies_for_http,
             mutable_config_values()->proxies_for_http());
 
+  // The overriding proxy servers should be recognized as Data Reduction
+  // Proxies.
+  ExpectTypeInfo(mutable_config_values()->FindConfiguredDataReductionProxy(
+                     first_override_proxy_server),
+                 expected_override_proxies_for_http, 0U);
+  ExpectTypeInfo(mutable_config_values()->FindConfiguredDataReductionProxy(
+                     second_override_proxy_server),
+                 expected_override_proxies_for_http, 1U);
+
+  // The proxy servers that were overriden should not be recognized as Data
+  // Reduction Proxies.
+  EXPECT_FALSE(mutable_config_values()->FindConfiguredDataReductionProxy(
+      first_proxy_server));
+  EXPECT_FALSE(mutable_config_values()->FindConfiguredDataReductionProxy(
+      second_proxy_server));
+
   // Invalidation must clear out the list of proxies and their properties.
   mutable_config_values()->Invalidate();
   EXPECT_TRUE(mutable_config_values()->proxies_for_http().empty());
+
+  // The overriding proxy servers should be recognized as Data Reduction
+  // Proxies.
+  ExpectTypeInfo(mutable_config_values()->FindConfiguredDataReductionProxy(
+                     first_override_proxy_server),
+                 expected_override_proxies_for_http, 0U);
+  ExpectTypeInfo(mutable_config_values()->FindConfiguredDataReductionProxy(
+                     second_override_proxy_server),
+                 expected_override_proxies_for_http, 1U);
+
+  // The proxy servers that were overriden should not be recognized as Data
+  // Reduction Proxies.
+  EXPECT_FALSE(mutable_config_values()->FindConfiguredDataReductionProxy(
+      first_proxy_server));
+  EXPECT_FALSE(mutable_config_values()->FindConfiguredDataReductionProxy(
+      second_proxy_server));
 }
 
 // Tests if HTTP proxies are overridden when |kDataReductionProxy| or

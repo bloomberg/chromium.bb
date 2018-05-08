@@ -359,8 +359,8 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
     using_data_reduction_proxy = false;
   } else if (proxy_info.proxy_server().host_port_pair().IsEmpty()) {
     using_data_reduction_proxy = false;
-  } else if (!data_reduction_proxy_config_->IsDataReductionProxy(
-                 proxy_info.proxy_server(), nullptr)) {
+  } else if (!data_reduction_proxy_config_->FindConfiguredDataReductionProxy(
+                 proxy_info.proxy_server())) {
     using_data_reduction_proxy = false;
   }
 
@@ -636,8 +636,8 @@ bool DataReductionProxyNetworkDelegate::WasEligibleWithoutHoldback(
     const net::ProxyRetryInfoMap& proxy_retry_info) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(proxy_info.is_empty() || proxy_info.is_direct() ||
-         !data_reduction_proxy_config_->IsDataReductionProxy(
-             proxy_info.proxy_server(), nullptr));
+         !data_reduction_proxy_config_->FindConfiguredDataReductionProxy(
+             proxy_info.proxy_server()));
   if (!util::EligibleForDataReductionProxy(proxy_info, request.url(),
                                            request.method())) {
     return false;
@@ -658,8 +658,8 @@ void DataReductionProxyNetworkDelegate::MaybeAddBrotliToAcceptEncodingHeader(
 
   // This method should be called only when the resolved proxy was a data
   // saver proxy.
-  DCHECK(data_reduction_proxy_config_->IsDataReductionProxy(
-      proxy_info.proxy_server(), nullptr));
+  DCHECK(data_reduction_proxy_config_->FindConfiguredDataReductionProxy(
+      proxy_info.proxy_server()));
   DCHECK(request.url().is_valid());
   DCHECK(!request.url().SchemeIsCryptographic());
   DCHECK(request.url().SchemeIsHTTPOrHTTPS());

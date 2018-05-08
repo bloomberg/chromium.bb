@@ -47,8 +47,8 @@ enum DataReductionProxyRequestType {
 // Returns DataReductionProxyRequestType for |request|.
 DataReductionProxyRequestType GetDataReductionProxyRequestType(
     const net::URLRequest& request,
-    const net::ProxyConfig& data_reduction_proxy_config,
-    const DataReductionProxyConfig& config);
+    const net::ProxyConfig& proxy_config,
+    const DataReductionProxyConfig& data_reduction_proxy_config);
 
 }  // namespace data_reduction_proxy
 

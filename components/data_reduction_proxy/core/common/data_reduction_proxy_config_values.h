@@ -7,6 +7,13 @@
 
 #include <vector>
 
+#include "base/optional.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_type_info.h"
+
+namespace net {
+class ProxyServer;
+}
+
 namespace data_reduction_proxy {
 
 class DataReductionProxyServer;
@@ -20,6 +27,20 @@ class DataReductionProxyConfigValues {
   // included.
   virtual const std::vector<DataReductionProxyServer>& proxies_for_http()
       const = 0;
+
+  // Determines if the given |proxy_server| matches a currently or recent
+  // previously configured Data Reduction Proxy server, returning information
+  // about where that proxy is in the ordered list of proxies to use. It's up to
+  // the implementation to determine what counts as a recent previously
+  // configured Data Reduction Proxy server, but the idea is to be able to
+  // recognize proxies from requests that use the currently configured
+  // |proxies_for_http()| as well as recognize proxies from requests that are
+  // in-progress when the list of proxy servers to use changes. If
+  // |proxy_server| matches multiple proxies, then the most recent and highest
+  // precedence result is returned.
+  virtual base::Optional<DataReductionProxyTypeInfo>
+  FindConfiguredDataReductionProxy(
+      const net::ProxyServer& proxy_server) const = 0;
 };
 
 }  // namespace data_reduction_proxy

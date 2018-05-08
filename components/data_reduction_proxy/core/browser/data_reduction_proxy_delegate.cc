@@ -77,7 +77,7 @@ void DataReductionProxyDelegate::OnResolveProxy(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(result);
   DCHECK(result->is_empty() || result->is_direct() ||
-         !config_->IsDataReductionProxy(result->proxy_server(), nullptr));
+         !config_->FindConfiguredDataReductionProxy(result->proxy_server()));
 
   if (!params::IsIncludedInQuicFieldTrial())
     RecordQuicProxyStatus(QUIC_PROXY_DISABLED_VIA_FIELD_TRIAL);
@@ -162,7 +162,7 @@ void DataReductionProxyDelegate::OnFallback(const net::ProxyServer& bad_proxy,
                                             int net_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (bad_proxy.is_valid() &&
-      config_->IsDataReductionProxy(bad_proxy, nullptr)) {
+      config_->FindConfiguredDataReductionProxy(bad_proxy)) {
     event_creator_->AddProxyFallbackEvent(net_log_, bad_proxy.ToURI(),
                                           net_error);
   }
@@ -187,7 +187,7 @@ void DataReductionProxyDelegate::GetAlternativeProxy(
 
   net::ProxyServer resolved_proxy_server = result->proxy_server();
   DCHECK(resolved_proxy_server.is_valid());
-  DCHECK(config_->IsDataReductionProxy(resolved_proxy_server, nullptr));
+  DCHECK(config_->FindConfiguredDataReductionProxy(resolved_proxy_server));
 
   if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS() ||
       url.SchemeIsCryptographic()) {

@@ -991,7 +991,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, MultipleAuthFailures) {
                           std::string(kSuccessSessionKey) + ", key=value");
   // Calling ShouldRetryDueToAuthFailure should trigger fetching of remote
   // config.
-  EXPECT_FALSE(config_client()->ShouldRetryDueToAuthFailure(
+  EXPECT_TRUE(config_client()->ShouldRetryDueToAuthFailure(
       request_headers, parsed.get(), origin, load_timing_info));
   EXPECT_EQ(1, config_client()->GetBackoffErrorCount());
   histogram_tester.ExpectBucketCount(
@@ -1014,9 +1014,13 @@ TEST_F(DataReductionProxyConfigServiceClientTest, MultipleAuthFailures) {
   EXPECT_GE(persisted_config_retrieval_time() + base::TimeDelta::FromMinutes(2),
             base::Time::Now());
 
-  histogram_tester.ExpectUniqueSample(
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.ConfigService.AuthExpiredSessionKey",
+      0 /* AUTH_EXPIRED_SESSION_KEY_MISMATCH */, 1);
+  histogram_tester.ExpectBucketCount(
       "DataReductionProxy.ConfigService.AuthExpiredSessionKey",
       1 /* AUTH_EXPIRED_SESSION_KEY_MATCH */, 1);
+
   histogram_tester.ExpectBucketCount(
       "DataReductionProxy.ConfigService.AuthExpired", false, 2);
   histogram_tester.ExpectBucketCount(
