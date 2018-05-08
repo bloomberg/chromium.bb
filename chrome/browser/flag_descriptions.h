@@ -806,9 +806,6 @@ extern const char kPullToRefreshName[];
 extern const char kPullToRefreshDescription[];
 extern const char kPullToRefreshEnabledTouchscreen[];
 
-extern const char kPushApiBackgroundModeName[];
-extern const char kPushApiBackgroundModeDescription[];
-
 extern const char kQueryInOmniboxName[];
 extern const char kQueryInOmniboxDescription[];
 

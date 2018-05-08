@@ -2389,14 +2389,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseWinrtMidiApiDescription, kOsWin,
      FEATURE_VALUE_TYPE(midi::features::kMidiManagerWinrt)},
 #endif  // OS_WIN
-#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
-    {"enable-push-api-background-mode",
-     flag_descriptions::kPushApiBackgroundModeName,
-     flag_descriptions::kPushApiBackgroundModeDescription,
-     kOsMac | kOsWin | kOsLinux,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePushApiBackgroundMode,
-                               switches::kDisablePushApiBackgroundMode)},
-#endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 #if defined(OS_CHROMEOS)
     {"cros-regions-mode", flag_descriptions::kCrosRegionsModeName,
      flag_descriptions::kCrosRegionsModeDescription, kOsCrOS,

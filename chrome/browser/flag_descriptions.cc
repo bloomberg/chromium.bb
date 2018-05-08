@@ -1291,12 +1291,6 @@ const char kPullToRefreshDescription[] =
     "Pull-to-refresh gesture in response to vertical overscroll.";
 const char kPullToRefreshEnabledTouchscreen[] = "Enabled for touchscreen only";
 
-const char kPushApiBackgroundModeName[] = "Enable Push API background mode";
-const char kPushApiBackgroundModeDescription[] =
-    "Enable background mode for the Push API. This allows Chrome to continue "
-    "running after the last window is closed, and to launch at OS startup, if "
-    "the Push API needs it.";
-
 const char kQueryInOmniboxName[] = "Query in Omnibox";
 const char kQueryInOmniboxDescription[] =
     "Only display query terms in the omnibox when viewing a search results "
