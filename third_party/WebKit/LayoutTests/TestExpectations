@@ -4662,4 +4662,4 @@ crbug.com/838254 virtual/video-surface-layer/media/webkit-media-controls-webkit-
 crbug.com/839332 [ Mac ] virtual/video-surface-layer/media/video-no-audio.html [ Pass Failure ]
 
 # Sheriff 2018-05-17
-crbug.com/840792 [ Mac10.12 ] external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ Pass Timeout ]
+crbug.com/840792 [ Mac10.12 Mac10.13 ] external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ Pass Timeout ]
