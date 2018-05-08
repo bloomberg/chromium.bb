@@ -78,8 +78,7 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
       bool is_main_frame,
       const GURL& url,
       bool first_auth_attempt,
-      const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
-          auth_required_callback) override;
+      LoginAuthRequiredCallback auth_required_callback) override;
 
  private:
   // Creates and stores a FakeBluetoothChooser instance.

@@ -55,6 +55,8 @@
 #endif
 
 class GURL;
+using LoginAuthRequiredCallback =
+    base::OnceCallback<void(const base::Optional<net::AuthCredentials>&)>;
 
 namespace base {
 class CommandLine;
@@ -1151,8 +1153,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       bool is_main_frame,
       const GURL& url,
       bool first_auth_attempt,
-      const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
-          auth_required_callback);
+      LoginAuthRequiredCallback auth_required_callback);
 
   // Launches the url for the given tab. Returns true if an attempt to handle
   // the url was made, e.g. by launching an app. Note that this does not

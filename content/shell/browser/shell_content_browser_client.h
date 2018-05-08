@@ -75,8 +75,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       bool is_main_frame,
       const GURL& url,
       bool first_auth_attempt,
-      const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
-          auth_required_callback) override;
+      LoginAuthRequiredCallback auth_required_callback) override;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   void GetAdditionalMappedFilesForChildProcess(

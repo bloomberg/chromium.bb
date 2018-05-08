@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/resource_request_info.h"
@@ -31,7 +32,6 @@ class WebContents;
 
 namespace net {
 class AuthChallengeInfo;
-class AuthCredentials;
 }  // namespace net
 
 // This is the base implementation for the OS-specific classes that route
@@ -59,16 +59,14 @@ class LoginHandler : public content::LoginDelegate,
   LoginHandler(
       net::AuthChallengeInfo* auth_info,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
-          auth_required_callback);
+      LoginAuthRequiredCallback auth_required_callback);
 
   // Builds the platform specific LoginHandler. Used from within
   // CreateLoginPrompt() which creates tasks.
   static scoped_refptr<LoginHandler> Create(
       net::AuthChallengeInfo* auth_info,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
-          auth_required_callback);
+      LoginAuthRequiredCallback auth_required_callback);
 
   void SetInterstitialDelegate(
       const base::WeakPtr<LoginInterstitialDelegate> delegate) {
@@ -150,8 +148,7 @@ class LoginHandler : public content::LoginDelegate,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
       bool is_main_frame,
       const GURL& url,
-      const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
-          auth_required_callback);
+      LoginAuthRequiredCallback auth_required_callback);
   FRIEND_TEST_ALL_PREFIXES(LoginHandlerTest, DialogStringsAndRealm);
 
   // Starts observing notifications from other LoginHandlers.
@@ -251,8 +248,7 @@ class LoginHandler : public content::LoginDelegate,
   // This is only accessed on the UI thread.
   std::unique_ptr<content::NotificationRegistrar> registrar_;
 
-  base::Callback<void(const base::Optional<net::AuthCredentials>&)>
-      auth_required_callback_;
+  LoginAuthRequiredCallback auth_required_callback_;
 
   base::WeakPtr<LoginInterstitialDelegate> interstitial_delegate_;
 
@@ -322,7 +318,6 @@ scoped_refptr<LoginHandler> CreateLoginPrompt(
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
     bool is_main_frame,
     const GURL& url,
-    const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
-        auth_required_callback);
+    LoginAuthRequiredCallback auth_required_callback);
 
 #endif  // CHROME_BROWSER_UI_LOGIN_LOGIN_HANDLER_H_

@@ -32,9 +32,10 @@ class LoginHandlerViews : public LoginHandler, public views::DialogDelegate {
   LoginHandlerViews(
       net::AuthChallengeInfo* auth_info,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
-          auth_required_callback)
-      : LoginHandler(auth_info, web_contents_getter, auth_required_callback),
+      LoginAuthRequiredCallback auth_required_callback)
+      : LoginHandler(auth_info,
+                     web_contents_getter,
+                     std::move(auth_required_callback)),
         login_view_(nullptr),
         dialog_(nullptr) {
     chrome::RecordDialogCreation(chrome::DialogIdentifier::LOGIN_HANDLER);
@@ -163,10 +164,9 @@ namespace chrome {
 scoped_refptr<LoginHandler> CreateLoginHandlerViews(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-    const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
-        auth_required_callback) {
-  return base::MakeRefCounted<LoginHandlerViews>(auth_info, web_contents_getter,
-                                                 auth_required_callback);
+    LoginAuthRequiredCallback auth_required_callback) {
+  return base::MakeRefCounted<LoginHandlerViews>(
+      auth_info, web_contents_getter, std::move(auth_required_callback));
 }
 
 }  // namespace chrome

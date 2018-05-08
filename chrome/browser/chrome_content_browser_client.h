@@ -426,8 +426,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool is_main_frame,
       const GURL& url,
       bool first_auth_attempt,
-      const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
-          auth_required_callback) override;
+      LoginAuthRequiredCallback auth_required_callback) override;
   bool HandleExternalProtocol(
       const GURL& url,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter,

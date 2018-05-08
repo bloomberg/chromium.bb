@@ -93,14 +93,13 @@ LoginHandler::LoginModelData::LoginModelData(
 LoginHandler::LoginHandler(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-    const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
-        auth_required_callback)
+    LoginAuthRequiredCallback auth_required_callback)
     : handled_auth_(false),
       auth_info_(auth_info),
       password_manager_(NULL),
       web_contents_getter_(web_contents_getter),
       login_model_(NULL),
-      auth_required_callback_(auth_required_callback),
+      auth_required_callback_(std::move(auth_required_callback)),
       has_shown_login_handler_(false),
       release_soon_has_been_called_(false) {
   // This constructor is called on the I/O thread, so we cannot load the nib
@@ -677,10 +676,9 @@ scoped_refptr<LoginHandler> CreateLoginPrompt(
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
     bool is_main_frame,
     const GURL& url,
-    const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
-        auth_required_callback) {
+    LoginAuthRequiredCallback auth_required_callback) {
   scoped_refptr<LoginHandler> handler = LoginHandler::Create(
-      auth_info, web_contents_getter, auth_required_callback);
+      auth_info, web_contents_getter, std::move(auth_required_callback));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&LoginHandler::LoginDialogCallback, url,

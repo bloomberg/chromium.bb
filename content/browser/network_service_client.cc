@@ -228,8 +228,8 @@ class LoginHandlerDelegate {
     login_delegate_ = GetContentClient()->browser()->CreateLoginDelegate(
         auth_info_.get(), web_contents_getter_, is_main_frame_, url_,
         first_auth_attempt_,
-        base::Bind(&LoginHandlerDelegate::RunAuthCredentials,
-                   base::Unretained(this)));
+        base::BindOnce(&LoginHandlerDelegate::RunAuthCredentials,
+                       base::Unretained(this)));
 
     if (!login_delegate_) {
       RunAuthCredentials(base::nullopt);

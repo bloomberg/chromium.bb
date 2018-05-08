@@ -24,9 +24,9 @@ AwLoginDelegate::AwLoginDelegate(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
     bool first_auth_attempt,
-    const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
-        auth_required_callback)
-    : auth_info_(auth_info), auth_required_callback_(auth_required_callback) {
+    LoginAuthRequiredCallback auth_required_callback)
+    : auth_info_(auth_info),
+      auth_required_callback_(std::move(auth_required_callback)) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&AwLoginDelegate::HandleHttpAuthRequestOnUIThread, this,
