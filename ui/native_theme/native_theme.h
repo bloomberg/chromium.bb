@@ -311,6 +311,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_ProminentButtonColor,
     kColorId_TextOnProminentButtonColor,
     // MenuItem
+    kColorId_TouchableMenuItemLabelColor,
+    kColorId_ActionableSubmenuVerticalSeparatorColor,
     kColorId_EnabledMenuItemForegroundColor,
     kColorId_DisabledMenuItemForegroundColor,
     kColorId_SelectedMenuItemForegroundColor,

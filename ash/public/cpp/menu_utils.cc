@@ -26,8 +26,10 @@ MenuItemList GetMojoMenuItemsFromModel(ui::MenuModel* model) {
     item->checked = model->IsItemCheckedAt(i);
     item->enabled = model->IsEnabledAt(i);
     item->radio_group_id = model->GetGroupIdAt(i);
-    if (item->type == ui::MenuModel::TYPE_SUBMENU)
+    if (item->type == ui::MenuModel::TYPE_SUBMENU ||
+        item->type == ui::MenuModel::TYPE_ACTIONABLE_SUBMENU) {
       item->submenu = GetMojoMenuItemsFromModel(model->GetSubmenuModelAt(i));
+    }
     gfx::Image icon;
     if (model->GetIconAt(i, &icon))
       item->image = icon.AsImageSkia();
@@ -59,12 +61,18 @@ void PopulateMenuFromMojoMenuItems(ui::SimpleMenuModel* model,
         NOTREACHED() << "TYPE_BUTTON_ITEM is not yet supported.";
         break;
       case ui::MenuModel::TYPE_SUBMENU:
+      case ui::MenuModel::TYPE_ACTIONABLE_SUBMENU:
         if (item->submenu.has_value()) {
           std::unique_ptr<ui::SimpleMenuModel> submenu =
               std::make_unique<ui::SimpleMenuModel>(delegate);
           PopulateMenuFromMojoMenuItems(submenu.get(), delegate,
                                         item->submenu.value(), submenus);
-          model->AddSubMenu(item->command_id, item->label, submenu.get());
+          if (item->type == ui::MenuModel::TYPE_SUBMENU) {
+            model->AddSubMenu(item->command_id, item->label, submenu.get());
+          } else {
+            model->AddActionableSubMenu(item->command_id, item->label,
+                                        submenu.get());
+          }
           submenus->push_back(std::move(submenu));
         }
         break;
@@ -83,7 +91,8 @@ const mojom::MenuItemPtr& GetMenuItemByCommandId(const MenuItemList& items,
   for (const mojom::MenuItemPtr& item : items) {
     if (item->command_id == command_id)
       return item;
-    if (item->type == ui::MenuModel::TYPE_SUBMENU &&
+    if ((item->type == ui::MenuModel::TYPE_SUBMENU ||
+         (item->type == ui::MenuModel::TYPE_ACTIONABLE_SUBMENU)) &&
         item->submenu.has_value()) {
       const mojom::MenuItemPtr& submenu_item =
           GetMenuItemByCommandId(item->submenu.value(), command_id);

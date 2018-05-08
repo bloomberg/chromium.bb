@@ -93,13 +93,20 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
   //   or SPACING. NORMAL separators are silently ignored if the model is empty.
   void AddSeparator(MenuSeparatorType separator_type);
 
-  // These three methods take pointers to various sub-models. These models
-  // should be owned by the same owner of this SimpleMenuModel.
+  // These methods take pointers to various sub-models. These models should be
+  // owned by the same owner of this SimpleMenuModel.
   void AddButtonItem(int command_id, ButtonMenuItemModel* model);
   void AddSubMenu(int command_id,
                   const base::string16& label,
                   MenuModel* model);
   void AddSubMenuWithStringId(int command_id, int string_id, MenuModel* model);
+  void AddActionableSubMenu(int command_id,
+                            const base::string16& label,
+                            MenuModel* model);
+  void AddActionableSubmenuWithStringIdAndIcon(int command_id,
+                                               int string_id,
+                                               MenuModel* model,
+                                               const gfx::ImageSkia& icon);
 
   // Methods for inserting items into the model.
   void InsertItemAt(int index, int command_id, const base::string16& label);

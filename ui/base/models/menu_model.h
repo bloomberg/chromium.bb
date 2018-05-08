@@ -28,12 +28,13 @@ class UI_BASE_EXPORT MenuModel {
  public:
   // The type of item.
   enum ItemType {
-    TYPE_COMMAND,
-    TYPE_CHECK,
-    TYPE_RADIO,
-    TYPE_SEPARATOR,
-    TYPE_BUTTON_ITEM,
-    TYPE_SUBMENU
+    TYPE_COMMAND,      // Performs an action when selected.
+    TYPE_CHECK,        // Can be selected/checked to toggle a boolean state.
+    TYPE_RADIO,        // Can be selected/checked among a group of choices.
+    TYPE_SEPARATOR,    // Shows a horizontal line separator.
+    TYPE_BUTTON_ITEM,  // Shows a row of buttons.
+    TYPE_SUBMENU,      // Presents a submenu within another menu.
+    TYPE_ACTIONABLE_SUBMENU,  // A SUBMENU that is also a COMMAND.
   };
 
   virtual ~MenuModel() {}

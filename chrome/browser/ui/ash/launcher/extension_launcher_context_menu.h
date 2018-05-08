@@ -32,11 +32,21 @@ class ExtensionLauncherContextMenu : public LauncherContextMenu {
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
+  // Creates the actionable submenu for MENU_OPEN_NEW.
+  void CreateOpenNewSubmenu(ui::SimpleMenuModel* menu_model);
+
   void BuildMenu(ui::SimpleMenuModel* menu_model);
 
   // Helpers to get and set the launch type for the extension item.
   extensions::LaunchType GetLaunchType() const;
   void SetLaunchType(extensions::LaunchType launch_type);
+
+  // Helper to get the launch type string id.
+  int GetLaunchTypeStringId() const;
+
+  // The MenuModel used to control MENU_OPEN_NEW's icon, label, and
+  // execution when touchable app context menus are enabled.
+  std::unique_ptr<ui::SimpleMenuModel> open_new_submenu_model_;
 
   std::unique_ptr<extensions::ContextMenuMatcher> extension_items_;
 
