@@ -84,40 +84,15 @@ suite('CrostiniPageTests', function() {
       assertTrue(!!subpage.$$('#remove'));
     });
 
-    function flushAsync() {
-      Polymer.dom.flush();
-      return new Promise(resolve => {
-        crostiniPage.async(resolve);
-      });
-    }
-
     test('Remove', function() {
-      assertFalse(!!subpage.$$('#removeDialog'));
-
-      const remove = subpage.$$('#remove');
-      assertTrue(!!remove);
-
-      subpage.onRemoveTap_();
-
-      flushAsync()
-          .then(function() {
-            const dialog = subpage.$$('#removeDialog');
-            Polymer.dom.flush();
-            assertTrue(!!dialog);
-            assertTrue(dialog.open);
-            subpage.onRemoveDialogAccept_();
-            setCrostiniEnabledValue(
-                crostiniBrowserProxy.prefs.crostini.enabled.value);
-            assertFalse(
-                crostiniPage.prefs.crostini.enabled.value,
-                'enabled.value should be false');
-            dialog.close();
-          })
-          .then(function() {
-            whenPopState().then(function() {
-              assertFalse(!!subpage.$$('#removeDialog'));
-            });
-          });
+      subpage.onRemoveDialogAccept_();
+      setCrostiniEnabledValue(
+          crostiniBrowserProxy.prefs.crostini.enabled.value);
+      assertFalse(crostiniPage.prefs.crostini.enabled.value);
+      return whenPopState().then(function() {
+        assertEquals(settings.getCurrentRoute(), settings.routes.CROSTINI);
+        assertTrue(!!crostiniPage.$$('#enable'));
+      });
     });
 
     test('HideOnDisable', function() {
