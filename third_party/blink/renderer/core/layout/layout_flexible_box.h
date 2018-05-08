@@ -75,9 +75,14 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 
   const OrderIterator& GetOrderIterator() const { return order_iterator_; }
 
-  LayoutUnit CrossSizeForPercentageResolution(const LayoutBox& child);
-  LayoutUnit MainSizeForPercentageResolution(const LayoutBox& child);
-  LayoutUnit ChildLogicalHeightForPercentageResolution(const LayoutBox& child);
+  // These three functions are used when resolving percentages against a
+  // flex item's logical height. In flexbox, sometimes a logical height
+  // should be considered definite even though it normally shouldn't be,
+  // and these functions implement that logic.
+  bool CrossSizeIsDefiniteForPercentageResolution(const LayoutBox& child) const;
+  bool MainSizeIsDefiniteForPercentageResolution(const LayoutBox& child) const;
+  bool UseOverrideLogicalHeightForPerentageResolution(
+      const LayoutBox& child) const;
 
   void ClearCachedMainSizeForChild(const LayoutBox& child);
 
