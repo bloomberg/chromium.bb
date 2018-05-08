@@ -183,13 +183,9 @@ IOSurfaceRef CreateIOSurface(const gfx::Size& size,
     return nullptr;
   }
 
-  // For unknown reasons, triggering this lock on OS X 10.9, on certain GPUs,
-  // causes PDFs to render incorrectly. Hopefully this check can be removed once
-  // pdfium switches to a Skia backend on Mac.
-  // https://crbug.com/594343.
   // IOSurface clearing causes significant performance regression on about half
   // of all devices running Yosemite. https://crbug.com/606850#c22.
-  if (base::mac::IsOS10_9() || base::mac::IsOS10_10())
+  if (base::mac::IsOS10_10())
     should_clear = false;
 
   if (should_clear) {

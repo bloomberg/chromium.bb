@@ -145,11 +145,6 @@ TYPED_TEST_P(GLImageZeroInitializeTest, ZeroInitialize) {
     return;
 
 #if defined(OS_MACOSX)
-  // This functionality is disabled on Mavericks because it breaks PDF
-  // rendering. https://crbug.com/594343.
-  if (base::mac::IsOS10_9())
-    return;
-
   // This functionality is disabled on Yosemite because it is suspected of
   // causing performance regressions on old hardware. https://crbug.com/606850.
   if (base::mac::IsOS10_10())
