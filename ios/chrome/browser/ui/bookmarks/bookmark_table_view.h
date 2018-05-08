@@ -118,6 +118,13 @@ class ChromeBrowserState;
 // Called when back or done button of navigation bar is tapped.
 - (void)navigateAway;
 
+// TODO(crbug.com/840381): Temporarily made public while migrating code
+// out of BookmarkTableView.
+- (void)loadFaviconAtIndexPath:(NSIndexPath*)indexPath
+        continueToGoogleServer:(BOOL)continueToGoogleServer;
+- (void)cancelLoadingFaviconAtIndexPath:(NSIndexPath*)indexPath;
+- (void)refreshContents;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_TABLE_VIEW_H_
