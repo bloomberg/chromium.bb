@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/media_log.h"
+#include "media/mojo/services/mojo_decryptor_service.h"
 #include "media/mojo/services/mojo_media_client.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -167,6 +168,20 @@ void InterfaceFactoryImpl::CreateCdm(
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 }
 
+void InterfaceFactoryImpl::CreateDecryptor(int cdm_id,
+                                           mojom::DecryptorRequest request) {
+  DVLOG(2) << __func__;
+  auto mojo_decryptor_service =
+      MojoDecryptorService::Create(cdm_id, &cdm_service_context_);
+  if (!mojo_decryptor_service) {
+    DLOG(ERROR) << "MojoDecryptorService creation failed.";
+    return;
+  }
+
+  decryptor_bindings_.AddBinding(std::move(mojo_decryptor_service),
+                                 std::move(request));
+}
+
 void InterfaceFactoryImpl::CreateCdmProxy(const std::string& cdm_guid,
                                           mojom::CdmProxyRequest request) {
   DVLOG(2) << __func__;
@@ -223,6 +238,9 @@ bool InterfaceFactoryImpl::IsEmpty() {
     return false;
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
+  if (!decryptor_bindings_.empty())
+    return false;
+
   return true;
 }
 
@@ -252,6 +270,8 @@ void InterfaceFactoryImpl::SetBindingConnectionErrorHandler() {
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   cdm_proxy_bindings_.set_connection_error_handler(connection_error_cb);
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+  decryptor_bindings_.set_connection_error_handler(connection_error_cb);
 }
 
 void InterfaceFactoryImpl::OnBindingConnectionError() {

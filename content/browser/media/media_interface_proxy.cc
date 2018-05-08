@@ -195,6 +195,14 @@ void MediaInterfaceProxy::CreateCdm(
 #endif
 }
 
+void MediaInterfaceProxy::CreateDecryptor(
+    int cdm_id,
+    media::mojom::DecryptorRequest request) {
+  InterfaceFactory* factory = GetMediaInterfaceFactory();
+  if (factory)
+    factory->CreateDecryptor(cdm_id, std::move(request));
+}
+
 void MediaInterfaceProxy::CreateCdmProxy(
     const std::string& cdm_guid,
     media::mojom::CdmProxyRequest request) {

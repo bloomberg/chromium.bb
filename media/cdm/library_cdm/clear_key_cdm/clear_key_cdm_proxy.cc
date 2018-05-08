@@ -4,18 +4,20 @@
 
 #include "media/cdm/library_cdm/clear_key_cdm/clear_key_cdm_proxy.h"
 
+#include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "media/base/content_decryption_module.h"
 #include "media/cdm/library_cdm/clear_key_cdm/cdm_proxy_common.h"
 
 namespace media {
 
-ClearKeyCdmProxy::ClearKeyCdmProxy() {}
+ClearKeyCdmProxy::ClearKeyCdmProxy() : weak_factory_(this) {}
 
 ClearKeyCdmProxy::~ClearKeyCdmProxy() {}
 
-// TODO(xhwang): Returns a non-null pointer and add a test covering this path.
 base::WeakPtr<CdmContext> ClearKeyCdmProxy::GetCdmContext() {
-  return nullptr;
+  DVLOG(1) << __func__;
+  return weak_factory_.GetWeakPtr();
 }
 
 void ClearKeyCdmProxy::Initialize(Client* client, InitializeCB init_cb) {
@@ -31,7 +33,7 @@ void ClearKeyCdmProxy::Process(Function function,
                                const std::vector<uint8_t>& input_data,
                                uint32_t expected_output_data_size,
                                ProcessCB process_cb) {
-  DVLOG(1) << __func__;
+  DVLOG(2) << __func__;
 
   if (crypto_session_id != kClearKeyCdmProxyCryptoSessionId ||
       !std::equal(input_data.begin(), input_data.end(),
@@ -50,7 +52,7 @@ void ClearKeyCdmProxy::Process(Function function,
 void ClearKeyCdmProxy::CreateMediaCryptoSession(
     const std::vector<uint8_t>& input_data,
     CreateMediaCryptoSessionCB create_media_crypto_session_cb) {
-  DVLOG(1) << __func__;
+  DVLOG(2) << __func__;
 
   if (!std::equal(input_data.begin(), input_data.end(),
                   kClearKeyCdmProxyInputData.begin(),
@@ -69,5 +71,17 @@ void ClearKeyCdmProxy::SetKey(uint32_t crypto_session_id,
 
 void ClearKeyCdmProxy::RemoveKey(uint32_t crypto_session_id,
                                  const std::vector<uint8_t>& key_id) {}
+
+Decryptor* ClearKeyCdmProxy::GetDecryptor() {
+  DVLOG(1) << __func__;
+
+  if (!aes_decryptor_) {
+    aes_decryptor_ = base::MakeRefCounted<AesDecryptor>(
+        base::DoNothing(), base::DoNothing(), base::DoNothing(),
+        base::DoNothing());
+  }
+
+  return aes_decryptor_.get();
+}
 
 }  // namespace media

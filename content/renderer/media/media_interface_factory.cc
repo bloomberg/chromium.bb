@@ -82,6 +82,20 @@ void MediaInterfaceFactory::CreateCdm(
   GetMediaInterfaceFactory()->CreateCdm(key_system, std::move(request));
 }
 
+void MediaInterfaceFactory::CreateDecryptor(
+    int cdm_id,
+    media::mojom::DecryptorRequest request) {
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&MediaInterfaceFactory::CreateDecryptor,
+                                  weak_this_, cdm_id, std::move(request)));
+    return;
+  }
+
+  DVLOG(1) << __func__;
+  GetMediaInterfaceFactory()->CreateDecryptor(cdm_id, std::move(request));
+}
+
 void MediaInterfaceFactory::CreateCdmProxy(
     const std::string& cdm_guid,
     media::mojom::CdmProxyRequest request) {

@@ -40,6 +40,7 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
                       mojom::RendererRequest request) final;
   void CreateCdm(const std::string& key_system,
                  mojom::ContentDecryptionModuleRequest request) final;
+  void CreateDecryptor(int cdm_id, mojom::DecryptorRequest request) final;
   void CreateCdmProxy(const std::string& cdm_guid,
                       mojom::CdmProxyRequest request) final;
 
@@ -90,6 +91,8 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   mojo::StrongBindingSet<mojom::CdmProxy> cdm_proxy_bindings_;
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+  mojo::StrongBindingSet<mojom::Decryptor> decryptor_bindings_;
 
   std::unique_ptr<service_manager::ServiceContextRef> connection_ref_;
   MojoMediaClient* mojo_media_client_;

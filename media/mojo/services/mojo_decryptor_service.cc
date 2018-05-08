@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decryptor.h"
 #include "media/base/video_decoder_config.h"
@@ -17,6 +18,7 @@
 #include "media/mojo/common/mojo_decoder_buffer_converter.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "media/mojo/interfaces/demuxer_stream.mojom.h"
+#include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace media {
@@ -44,6 +46,29 @@ class FrameResourceReleaserImpl final : public mojom::FrameResourceReleaser {
 };
 
 }  // namespace
+
+// static
+std::unique_ptr<MojoDecryptorService> MojoDecryptorService::Create(
+    int cdm_id,
+    MojoCdmServiceContext* mojo_cdm_service_context) {
+  auto cdm_context_ref = mojo_cdm_service_context->GetCdmContextRef(cdm_id);
+  if (!cdm_context_ref) {
+    DVLOG(1) << "CdmContextRef not found for CDM ID: " << cdm_id;
+    return nullptr;
+  }
+
+  auto* cdm_context = cdm_context_ref->GetCdmContext();
+  DCHECK(cdm_context);
+
+  auto* decryptor = cdm_context->GetDecryptor();
+  if (!decryptor) {
+    DVLOG(1) << "CdmContext does not support Decryptor";
+    return nullptr;
+  }
+
+  return std::make_unique<MojoDecryptorService>(decryptor,
+                                                std::move(cdm_context_ref));
+}
 
 MojoDecryptorService::MojoDecryptorService(
     media::Decryptor* decryptor,
