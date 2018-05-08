@@ -41,6 +41,8 @@ class TestMenuItemView : public MenuItemView {
 
   void AddEmptyMenus() { MenuItemView::AddEmptyMenus(); }
 
+  void SetHasMnemonics(bool has_mnemonics) { has_mnemonics_ = has_mnemonics; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TestMenuItemView);
 };
@@ -144,6 +146,24 @@ TEST(MenuItemViewUnitTest, TestEmptySubmenuWhenAllChildItemsAreHidden) {
   ASSERT_EQ(MenuItemView::kEmptyMenuItemViewID, empty_item->id());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_APP_MENU_EMPTY_SUBMENU),
             empty_item->title());
+}
+
+TEST(MenuItemViewUnitTest, UseMnemonicOnPlatform) {
+  TestMenuItemView root_menu;
+  views::MenuItemView* item1 =
+      root_menu.AppendMenuItemWithLabel(1, base::ASCIIToUTF16("&Item 1"));
+  views::MenuItemView* item2 =
+      root_menu.AppendMenuItemWithLabel(2, base::ASCIIToUTF16("I&tem 2"));
+
+  root_menu.SetHasMnemonics(true);
+
+  if (MenuConfig::instance().use_mnemonics) {
+    EXPECT_EQ('i', item1->GetMnemonic());
+    EXPECT_EQ('t', item2->GetMnemonic());
+  } else {
+    EXPECT_EQ(0, item1->GetMnemonic());
+    EXPECT_EQ(0, item2->GetMnemonic());
+  }
 }
 
 class MenuItemViewPaintUnitTest : public ViewsTestBase {

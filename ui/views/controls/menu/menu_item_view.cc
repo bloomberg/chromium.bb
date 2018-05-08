@@ -518,8 +518,10 @@ const MenuItemView* MenuItemView::GetRootMenuItem() const {
 }
 
 base::char16 MenuItemView::GetMnemonic() {
-  if (!GetRootMenuItem()->has_mnemonics_)
+  if (!GetRootMenuItem()->has_mnemonics_ ||
+      !MenuConfig::instance().use_mnemonics) {
     return 0;
+  }
 
   size_t index = 0;
   do {

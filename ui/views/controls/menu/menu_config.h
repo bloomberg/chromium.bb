@@ -109,6 +109,9 @@ struct VIEWS_EXPORT MenuConfig {
   // Are mnemonics shown?
   bool show_mnemonics;
 
+  // Are mnemonics used to activate items?
+  bool use_mnemonics;
+
   // Height of the scroll arrow.
   int scroll_arrow_height;
 
