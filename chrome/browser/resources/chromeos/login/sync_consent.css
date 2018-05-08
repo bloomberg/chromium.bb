@@ -33,9 +33,10 @@
   margin-bottom: 4px;
 }
 
-paper-checkbox {
-  --paper-checkbox-label-spacing: 12px;
-  --paper-checkbox-size: 16px;
+cr-checkbox {
+  --cr-checkbox-label-container: {
+    -webkit-padding-start: 12px;
+  };
   -webkit-padding-start: 8px;
   padding-top: 28px; /* 40 to label base line => 40 - 16/2 - 13/3 = 28 */
 }

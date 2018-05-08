@@ -79,10 +79,6 @@
   padding: 0.3em 0;
 }
 
-paper-checkbox {
-  --paper-checkbox-checked-color: #1976D2;
-}
-
 #hangouts-local-present-controls {
   cursor: pointer;
   display: inline-block;
@@ -90,10 +86,6 @@ paper-checkbox {
   padding-top: 10.5px;
   white-space: nowrap;
 }
-
-#hangouts-local-present-checkbox {
-  --paper-checkbox-vertical-align: top;
-};
 
 #hangouts-local-present-checkbox-subtitle {
   display: block;

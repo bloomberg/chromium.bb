@@ -106,7 +106,7 @@ Polymer({
   /**
    * Handler for checking or unchecking a language item.
    * @param {!{model: !{item: !chrome.languageSettingsPrivate.Language},
-   *           target: !PaperCheckboxElement}} e
+   *           target: !Element}} e
    * @private
    */
   onLanguageCheckboxChange_: function(e) {

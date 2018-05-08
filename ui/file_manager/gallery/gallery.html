@@ -15,8 +15,8 @@
   <script src="chrome://resources/js/polymer_config.js"></script>
   <script src="chrome://resources/js/util.js"></script>
 
+  <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
@@ -28,16 +28,18 @@
 
   <script src="js/gallery_scripts.js"></script>
   <style is="custom-style">
-    paper-checkbox {
-      --paper-checkbox-checked-color: white;
-      --paper-checkbox-checked-ink-color: white;
-      --paper-checkbox-checkmark-color: black;
-      --paper-checkbox-ink-size: 38px;
-      --paper-checkbox-label-color: white;
-      --paper-checkbox-label-spacing: 6px;
-      --paper-checkbox-size: 14px;
-      --paper-checkbox-unchecked-color: white;
-      --paper-checkbox-unchecked-ink-color: white;
+    cr-checkbox {
+      --cr-checkbox-checked-box-color: white;
+      --cr-checkbox-label-container: {
+        -webkit-padding-start: 6px;
+        color: white;
+      };
+      --cr-checkbox-mark-color: black;
+      --cr-checkbox-ripple-checked-color: white;
+      --cr-checkbox-ripple-size: 38px;
+      --cr-checkbox-ripple-unchecked-color: white;
+      --cr-checkbox-size: 14px;
+      --cr-checkbox-unchecked-box-color: white;
     }
     paper-input-container {
       --paper-input-container-color: rgba(255, 255, 255, 0.2);
@@ -156,9 +158,9 @@
       </div>
       <div class="edit-mode-toolbar">
         <div class="options">
-          <paper-checkbox class="overwrite-original"
+          <cr-checkbox class="overwrite-original"
                           i18n-content="GALLERY_OVERWRITE_ORIGINAL">
-          </paper-checkbox>
+          </cr-checkbox>
           <div class="saved" i18n-content="GALLERY_SAVED" hidden></div>
         </div>
         <div class="edit-bar-spacer"></div>

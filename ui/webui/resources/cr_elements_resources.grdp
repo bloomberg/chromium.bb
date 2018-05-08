@@ -280,10 +280,6 @@
              file="../../webui/resources/cr_elements/paper_button_style_css.html"
              type="chrome_html"
              compress="gzip" />
-  <structure name="IDR_CR_ELEMENTS_PAPER_CHECKBOX_STYLE_CSS_HTML"
-             file="../../webui/resources/cr_elements/paper_checkbox_style_css.html"
-             type="chrome_html"
-             compress="gzip" />
   <structure name="IDR_CR_ELEMENTS_PAPER_INPUT_STYLE_CSS_HTML"
              file="../../webui/resources/cr_elements/paper_input_style_css.html"
              type="chrome_html"

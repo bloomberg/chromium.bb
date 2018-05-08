@@ -336,7 +336,7 @@ Polymer({
 
   /**
    * Called when the "smooth motion" box for Hangouts is changed by the user.
-   * @param {!{target: !PaperCheckboxElement}} e
+   * @param {!{target: !HTMLElement}} e
    * @private
    */
   onHangoutsLocalPresentChange_: function(e) {

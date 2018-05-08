@@ -1,8 +1,9 @@
-<link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
+<link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/av-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
 <dom-module id="route-controls">
   <link rel="import" type="css" href="../../media_router_common.css">
@@ -70,7 +71,7 @@
           </span>
           <div id="hangouts-local-present-controls"
                hidden="[[!routeStatus.hangoutsExtraData]]">
-            <paper-checkbox
+            <cr-checkbox
                 checked="[[hangoutsLocalPresent_]]"
                 id="hangouts-local-present-checkbox"
                 on-change="onHangoutsLocalPresentChange_"
@@ -81,7 +82,7 @@
               <span id="hangouts-local-present-checkbox-subtitle">
                 [[i18n('hangoutsLocalPresentSubtitle')]]
               </span>
-            </paper-checkbox>
+            </cr-checkbox>
           </div>
         </div>
         <div id="mirroring-fullscreen-video-controls"

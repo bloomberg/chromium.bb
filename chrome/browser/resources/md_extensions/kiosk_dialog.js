@@ -123,26 +123,25 @@ cr.define('extensions', function() {
      * @param {!Event} event
      * @private
      */
-    onBailoutTap_: function(event) {
+    onBailoutChanged_: function(event) {
       event.preventDefault();
-      if (this.bailoutDisabled_) {
-        this.kioskBrowserProxy_.setDisableBailoutShortcut(false);
-        this.bailoutDisabled_ = false;
-        this.$['confirm-dialog'].close();
-      } else {
+      if (this.$.bailout.checked) {
         this.$['confirm-dialog'].showModal();
+      } else {
+        this.kioskBrowserProxy_.setDisableBailoutShortcut(false);
+        this.$['confirm-dialog'].close();
       }
     },
 
     /** @private */
     onBailoutDialogCancelTap_: function() {
+      this.$.bailout.checked = false;
       this.$['confirm-dialog'].cancel();
     },
 
     /** @private */
     onBailoutDialogConfirmTap_: function() {
       this.kioskBrowserProxy_.setDisableBailoutShortcut(true);
-      this.bailoutDisabled_ = true;
       this.$['confirm-dialog'].close();
     },
 

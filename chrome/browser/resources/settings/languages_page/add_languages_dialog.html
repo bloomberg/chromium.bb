@@ -1,9 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="languages.html">
 <link rel="import" href="../settings_page/settings_subpage_search.html">
@@ -33,10 +33,10 @@
         -webkit-padding-start: 20px;
       }
 
-      paper-checkbox {
-        --paper-checkbox-label: {
+      cr-checkbox {
+        --cr-checkbox-label-container: {
           white-space: nowrap;
-        }
+        };
       }
     </style>
     <cr-dialog id="dialog" close-text="$i18n{close}">
@@ -49,12 +49,12 @@
             items="[[getLanguages_(
                 languages.supported, languages.enabled.*, filterValue_)]]">
           <template>
-            <paper-checkbox class="list-item no-outline"
+            <cr-checkbox class="list-item no-outline"
                 checked="[[willAdd_(item.code)]]" tabindex$="[[tabIndex]]"
                 title$="[[item.nativeDisplayName]]"
                 on-change="onLanguageCheckboxChange_">
               [[getDisplayText_(item)]]
-            </paper-checkbox>
+            </cr-checkbox>
           </template>
         </iron-list>
       </div>

@@ -2,9 +2,9 @@
 
 <link rel="import" href="/profile_browser_proxy.html">
 <link rel="import" href="/shared_styles.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_checkbox_style_css.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -13,14 +13,13 @@
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 
 <dom-module id="create-profile">
   <template>
     <style
-        include="shared-styles iron-positioning md-select paper-checkbox-style">
+        include="shared-styles iron-positioning md-select">
       :host {
         align-self: center;
       }
@@ -90,16 +89,8 @@
         width: 300px;
       }
 
-      paper-checkbox {
-        --paper-checkbox-checked-color: var(--google-blue-500);
-        --paper-checkbox-label-spacing: 16px;
-        --paper-checkbox-size: 16px;
-        --paper-checkbox-unchecked-color: var(--paper-grey-600);
+      cr-checkbox {
         margin-top: 24px;
-      }
-
-      paper-checkbox + paper-checkbox {
-        margin-top: 16px;
       }
 
       #actions {
@@ -133,10 +124,10 @@
       <cr-profile-avatar-selector avatars="[[availableIcons_]]"
           selected-avatar="{{selectedAvatar_}}">
       </cr-profile-avatar-selector>
-      <paper-checkbox id="createShortcutCheckbox" checked="{{createShortcut_}}"
+      <cr-checkbox id="createShortcutCheckbox" checked="{{createShortcut_}}"
           hidden="[[!isProfileShortcutsEnabled_]]">
         $i18n{createDesktopShortcutLabel}
-      </paper-checkbox>
+      </cr-checkbox>
       <div id="actions">
         <paper-spinner-lite active="[[isSpinnerActive_(createInProgress_)]]">
         </paper-spinner-lite>

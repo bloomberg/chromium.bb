@@ -139,7 +139,6 @@ js_library("slide_mode") {
     "image_editor:image_util",
     "image_editor:image_view",
     "image_editor:viewport",
-    "//third_party/polymer/v1_0/components-chromium/paper-checkbox:paper-checkbox-extracted",
     "//third_party/polymer/v1_0/components-chromium/paper-progress:paper-progress-extracted",
   ]
   externs_list = [
