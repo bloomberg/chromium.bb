@@ -224,12 +224,6 @@ void Ui::SetOmniboxSuggestions(
   model_->omnibox_suggestions = suggestions->suggestions;
 }
 
-bool Ui::CanSendWebVrVSync() {
-  return model_->web_vr_enabled() &&
-         !model_->web_vr.awaiting_min_splash_screen_duration() &&
-         !model_->web_vr.showing_hosted_ui;
-}
-
 void Ui::ShowSoftInput(bool show) {
   if (model_->needs_keyboard_update) {
     browser_->OnUnsupportedMode(UiUnsupportedMode::kNeedsKeyboardUpdate);
@@ -249,6 +243,35 @@ void Ui::UpdateWebInputIndices(int selection_start,
             *model = new_state;
           },
           base::Unretained(&model_->web_input_text_field_info.current)));
+}
+
+void Ui::AddOrUpdateTab(int id, bool incognito, const base::string16& title) {
+  auto* tabs = incognito ? &model_->incognito_tabs : &model_->regular_tabs;
+  auto tab_iter = FindTab(id, tabs);
+  if (tab_iter == tabs->end()) {
+    tabs->push_back(TabModel(id, title));
+  } else {
+    tab_iter->title = title;
+  }
+}
+
+void Ui::RemoveTab(int id, bool incognito) {
+  auto* tabs = incognito ? &model_->incognito_tabs : &model_->regular_tabs;
+  auto tab_iter = FindTab(id, tabs);
+  if (tab_iter != tabs->end()) {
+    tabs->erase(tab_iter);
+  }
+}
+
+void Ui::RemoveAllTabs() {
+  model_->regular_tabs.clear();
+  model_->incognito_tabs.clear();
+}
+
+bool Ui::CanSendWebVrVSync() {
+  return model_->web_vr_enabled() &&
+         !model_->web_vr.awaiting_min_splash_screen_duration() &&
+         !model_->web_vr.showing_hosted_ui;
 }
 
 void Ui::SetAlertDialogEnabled(bool enabled,
@@ -479,14 +502,6 @@ void Ui::OnAssetsUnavailable() {
   model_->waiting_for_background = false;
 }
 
-void Ui::SetRegularTabsOpen(bool open) {
-  model_->regular_tabs_open = open;
-}
-
-void Ui::SetIncognitoTabsOpen(bool open) {
-  model_->incognito_tabs_open = open;
-}
-
 void Ui::SetOverlayTextureEmpty(bool empty) {
   model_->content_overlay_texture_non_empty = !empty;
 }
@@ -522,6 +537,7 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
   model_->supports_selection = ui_initial_state.supports_selection;
   model_->needs_keyboard_update = ui_initial_state.needs_keyboard_update;
   model_->standalone_vr_device = ui_initial_state.is_standalone_vr_device;
+  model_->create_tabs_view = ui_initial_state.create_tabs_view;
 }
 
 void Ui::AcceptDoffPromptForTesting() {
@@ -583,6 +599,12 @@ void Ui::SetContentUsesQuadLayer(bool uses_quad_layer) {
 
 gfx::Transform Ui::GetContentWorldSpaceTransform() {
   return GetContentElement()->world_space_transform();
+}
+
+std::vector<TabModel>::iterator Ui::FindTab(int id,
+                                            std::vector<TabModel>* tabs) {
+  return std::find_if(tabs->begin(), tabs->end(),
+                      [id](const TabModel& tab) { return tab.id == id; });
 }
 
 }  // namespace vr

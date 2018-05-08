@@ -57,6 +57,7 @@ static const char* g_ui_element_name_strings[] = {
     "kUrlBarHintLayout",
     "kUrlBarHintText",
     "kUrlBarRightSeparator",
+    "kUrlBarTabSeparator",
     "kUrlBarOverflowButton",
     "kOverflowMenuBackplane",
     "kOverflowMenu",

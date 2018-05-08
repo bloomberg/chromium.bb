@@ -16,6 +16,7 @@ bool IsOpaqueUiMode(UiMode mode) {
     case kModeWebVrAutopresented:
     case kModeVoiceSearch:
     case kModeEditingOmnibox:
+    case kModeTabsView:
       return true;
     case kModeRepositionWindow:
     case kModeModalPrompt:

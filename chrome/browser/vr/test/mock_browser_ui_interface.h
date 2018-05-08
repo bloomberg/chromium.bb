@@ -39,12 +39,13 @@ class MockBrowserUiInterface : public BrowserUiInterface {
                       std::unique_ptr<Assets> assets,
                       const base::Version& component_version) override {}
   MOCK_METHOD0(OnAssetsUnavailable, void());
-  MOCK_METHOD1(SetRegularTabsOpen, void(bool));
-  MOCK_METHOD1(SetIncognitoTabsOpen, void(bool));
   MOCK_METHOD1(SetOverlayTextureEmpty, void(bool));
-
   MOCK_METHOD1(ShowSoftInput, void(bool));
   MOCK_METHOD4(UpdateWebInputIndices, void(int, int, int, int));
+  MOCK_METHOD3(AddOrUpdateTab,
+               void(int id, bool incognito, const base::string16& title));
+  MOCK_METHOD2(RemoveTab, void(int id, bool incognito));
+  MOCK_METHOD0(RemoveAllTabs, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBrowserUiInterface);

@@ -56,6 +56,7 @@ enum UiElementName {
   kUrlBarHintLayout,
   kUrlBarHintText,
   kUrlBarRightSeparator,
+  kUrlBarTabSeparator,
   kUrlBarOverflowButton,
   kOverflowMenuBackplane,
   kOverflowMenu,

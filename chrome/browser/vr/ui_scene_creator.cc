@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/i18n/case_conversion.h"
 #include "base/numerics/math_constants.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_target.h"
@@ -35,6 +36,8 @@
 #include "chrome/browser/vr/elements/omnibox_formatting.h"
 #include "chrome/browser/vr/elements/omnibox_text_field.h"
 #include "chrome/browser/vr/elements/oval.h"
+#include "chrome/browser/vr/elements/paged_grid_layout.h"
+#include "chrome/browser/vr/elements/paged_scroll_view.h"
 #include "chrome/browser/vr/elements/prompt.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/repositioner.h"
@@ -55,6 +58,7 @@
 #include "chrome/browser/vr/keyboard_delegate.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/platform_toast.h"
+#include "chrome/browser/vr/model/tab_model.h"
 #include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/target_property.h"
 #include "chrome/browser/vr/ui.h"
@@ -266,6 +270,66 @@ void OnSuggestionModelAdded(UiScene* scene,
 }
 
 void OnSuggestionModelRemoved(UiScene* scene, SuggestionBinding* binding) {
+  scene->RemoveUiElement(binding->view()->id());
+}
+
+typedef VectorBinding<TabModel, Rect> TabSetBinding;
+typedef typename TabSetBinding::ElementBinding TabBinding;
+
+void OnTabModelAdded(UiScene* scene,
+                     Model* model,
+                     bool incognito,
+                     PagedGridLayout* tabs_view,
+                     TabBinding* element_binding) {
+  auto item = Create<Rect>(kNone, kPhaseForeground);
+  item->SetColor(ColorScheme::GetColorScheme(incognito
+                                                 ? ColorScheme::kModeIncognito
+                                                 : ColorScheme::kModeNormal)
+                     .tab_item_background);
+  item->SetSize(kTabItemWidthDMM, kTabItemHeightDMM);
+  item->SetTransitionedProperties({OPACITY});
+  item->set_corner_radius(kTabItemCornerRadiusDMM);
+  item->AddBinding(std::make_unique<Binding<PagedGridLayout::PageState>>(
+      VR_BIND_LAMBDA(
+          [](PagedGridLayout* paged_layout, UiElement* item) {
+            return paged_layout->GetPageState(item);
+          },
+          base::Unretained(tabs_view), base::Unretained(item.get())),
+      VR_BIND_LAMBDA(
+          [](UiElement* item, const PagedGridLayout::PageState& page_state) {
+            switch (page_state) {
+              case PagedGridLayout::kActive:
+                item->SetOpacity(kTabsViewActivePageOpacity);
+                break;
+              case PagedGridLayout::kInactive:
+                item->SetOpacity(kTabsViewInactivePageOpacity);
+                break;
+              default:
+                item->SetOpacity(kTabsViewHiddenPageOpacity);
+                break;
+            }
+          },
+          base::Unretained(item.get()))));
+
+  // TODO(crbug.com/838937): This is just a placeholder text. Replace with
+  // proper tab item.
+  auto text = Create<Text>(kNone, kPhaseForeground, kTabItemTextSizeDMM);
+  text->SetLayoutMode(TextLayoutMode::kSingleLine);
+  element_binding->bindings().push_back(VR_BIND_FUNC(
+      base::string16, TabBinding, element_binding,
+      model->model()->title.empty() ? base::string16()
+                                    : model->model()->title.substr(0, 1),
+      Text, text.get(), SetText));
+  text->SetColor(ColorScheme::GetColorScheme(incognito
+                                                 ? ColorScheme::kModeIncognito
+                                                 : ColorScheme::kModeNormal)
+                     .tab_item_text);
+  item->AddChild(std::move(text));
+
+  scene->AddUiElement(tabs_view, std::move(item));
+}
+
+void OnTabModelRemoved(UiScene* scene, TabBinding* binding) {
   scene->RemoveUiElement(binding->view()->id());
 }
 
@@ -741,6 +805,41 @@ std::unique_ptr<TransientElement> CreateTextToast(
   return parent;
 }
 
+std::unique_ptr<UiElement> CreateTabsView(Model* model,
+                                          UiScene* scene,
+                                          bool incognito) {
+  auto tabs_scroll_view = Create<PagedScrollView>(
+      kNone, kPhaseNone,
+      kTabsViewColumnCount * kTabItemWidthDMM +
+          (kTabsViewColumnCount - 1) * kTabsViewMarginDMM);
+  tabs_scroll_view->set_margin(kTabsViewMarginDMM);
+  tabs_scroll_view->set_scrollable(true);
+  tabs_scroll_view->set_bounds_contain_children(true);
+  tabs_scroll_view->SetTransitionedProperties({SCROLL_OFFSET});
+
+  auto tabs_layout = Create<PagedGridLayout>(
+      kNone, kPhaseNone, kTabsViewRowCount, kTabsViewColumnCount,
+      gfx::SizeF(kTabItemWidthDMM, kTabItemHeightDMM));
+  tabs_layout->set_margin(kTabsViewMarginDMM);
+  tabs_layout->set_hit_testable(true);
+  tabs_layout->set_bounds_contain_children(false);
+  tabs_layout->AddBinding(VR_BIND(
+      size_t, PagedScrollView, tabs_scroll_view.get(), model->current_page(),
+      PagedGridLayout, tabs_layout.get(), view->SetCurrentPage(value)));
+
+  TabSetBinding::ModelAddedCallback added_callback = base::BindRepeating(
+      &OnTabModelAdded, base::Unretained(scene), base::Unretained(model),
+      incognito, base::Unretained(tabs_layout.get()));
+  TabSetBinding::ModelRemovedCallback removed_callback =
+      base::BindRepeating(&OnTabModelRemoved, base::Unretained(scene));
+  tabs_layout->AddBinding(std::make_unique<TabSetBinding>(
+      incognito ? &model->incognito_tabs : &model->regular_tabs, added_callback,
+      removed_callback));
+  tabs_scroll_view->AddScrollingChild(std::move(tabs_layout));
+
+  return tabs_scroll_view;
+}
+
 }  // namespace
 
 UiSceneCreator::UiSceneCreator(UiBrowserInterface* browser,
@@ -782,6 +881,7 @@ void UiSceneCreator::CreateScene() {
   CreateWebVrSubtree();
   CreateKeyboard();
   CreateController();
+  CreateTabsViews();
 }
 
 void UiSceneCreator::Create2dBrowsingHostedUi() {
@@ -1989,6 +2089,48 @@ void UiSceneCreator::CreateUrlBar() {
                 &Rect::SetColor);
   scene_->AddUiElement(kUrlBarLayout, std::move(separator));
 
+  if (model_->create_tabs_view) {
+    auto tabs_button = Create<Button>(
+        kNone, kPhaseForeground,
+        base::BindRepeating(
+            [](Model* model) { model->push_mode(kModeTabsView); },
+            base::Unretained(model_)),
+        audio_delegate_);
+    tabs_button->SetSize(kUrlBarEndButtonWidthDMM, kUrlBarHeightDMM);
+    tabs_button->set_hover_offset(0);
+    VR_BIND_BUTTON_COLORS(model_, tabs_button.get(),
+                          &ColorScheme::url_bar_button,
+                          &Button::SetButtonColors);
+
+    auto tab_count_text =
+        Create<Text>(kNone, kPhaseForeground, kUrlBarFontHeightDMM);
+    tab_count_text->SetLayoutMode(TextLayoutMode::kSingleLine);
+    tab_count_text->AddBinding(std::make_unique<Binding<size_t>>(
+        VR_BIND_LAMBDA(
+            [](Model* model) {
+              return !model->incognito ? model->regular_tabs.size()
+                                       : model->incognito_tabs.size();
+            },
+            base::Unretained(model_)),
+        VR_BIND_LAMBDA(
+            [](Text* tab_count_text, const size_t& tab_count) {
+              tab_count_text->SetText(base::NumberToString16(tab_count));
+            },
+            base::Unretained(tab_count_text.get()))));
+    VR_BIND_COLOR(model_, tab_count_text.get(), &ColorScheme::url_bar_text,
+                  &Text::SetColor);
+    tabs_button->AddChild(std::move(tab_count_text));
+
+    scene_->AddUiElement(kUrlBarLayout, std::move(tabs_button));
+
+    separator = Create<Rect>(kUrlBarTabSeparator, kPhaseForeground);
+    separator->set_hit_testable(true);
+    separator->SetSize(kUrlBarSeparatorWidthDMM, kUrlBarHeightDMM);
+    VR_BIND_COLOR(model_, separator.get(), &ColorScheme::url_bar_separator,
+                  &Rect::SetColor);
+    scene_->AddUiElement(kUrlBarLayout, std::move(separator));
+  }
+
   auto overflow_button = Create<VectorIconButton>(
       kUrlBarOverflowButton, kPhaseForeground,
       base::BindRepeating(
@@ -2227,8 +2369,8 @@ void UiSceneCreator::CreateOverflowMenu() {
             },
             base::Unretained(model_), base::Unretained(browser_)));
         VR_BIND_VISIBILITY(background, model->standalone_vr_device &&
-                                           (model->incognito_tabs_open ||
-                                            model->regular_tabs_open));
+                                           (!model->incognito_tabs.empty() ||
+                                            !model->regular_tabs.empty()));
         break;
       case kOverflowMenuCloseAllIncognitoTabsItem:
         background->set_click_handler(base::BindRepeating(
@@ -2237,7 +2379,7 @@ void UiSceneCreator::CreateOverflowMenu() {
               browser->CloseAllIncognitoTabs();
             },
             base::Unretained(model_), base::Unretained(browser_)));
-        VR_BIND_VISIBILITY(background, model->incognito_tabs_open);
+        VR_BIND_VISIBILITY(background, !model->incognito_tabs.empty());
         break;
       case kOverflowMenuSendFeedbackItem:
         background->set_click_handler(base::BindRepeating(
@@ -2884,6 +3026,54 @@ void UiSceneCreator::CreateToasts() {
           base::Unretained(text_element))));
 
   scene_->AddUiElement(k2dBrowsingContentGroup, std::move(platform_toast));
+}
+
+void UiSceneCreator::CreateTabsViews() {
+  if (!model_->create_tabs_view) {
+    return;
+  }
+
+  auto scaler =
+      Create<ScaledDepthAdjuster>(kNone, kPhaseNone, kTabsViewDistance);
+
+  auto tabs_view_root =
+      Create<LinearLayout>(kNone, kPhaseNone, LinearLayout::kDown);
+  tabs_view_root->SetTranslate(0, kTabsViewVerticalOffsetDMM, 0);
+  tabs_view_root->set_bounds_contain_children(true);
+  tabs_view_root->set_margin(kTabsViewMarginDMM);
+  tabs_view_root->SetVisible(false);
+  VR_BIND_VISIBILITY(tabs_view_root,
+                     model->get_last_opaque_mode() == kModeTabsView);
+
+  auto regular_tabs_view = CreateTabsView(model_, scene_, false);
+  VR_BIND_VISIBILITY(regular_tabs_view, !model->incognito);
+  tabs_view_root->AddChild(std::move(regular_tabs_view));
+
+  auto incognito_tabs_view = CreateTabsView(model_, scene_, true);
+  VR_BIND_VISIBILITY(incognito_tabs_view, model->incognito);
+  tabs_view_root->AddChild(std::move(incognito_tabs_view));
+
+  auto button_scaler = Create<ScaledDepthAdjuster>(
+      kNone, kPhaseNone, kTabsViewCloseButtonDepthOffset);
+
+  auto close_button = Create<DiscButton>(
+      kNone, kPhaseForeground,
+      base::BindRepeating([](Model* model) { model->pop_mode(kModeTabsView); },
+                          base::Unretained(model_)),
+      vector_icons::kBackArrowIcon, audio_delegate_);
+  close_button->SetSize(kButtonDiameterDMM, kButtonDiameterDMM);
+  close_button->SetTranslate(0, kTabsViewCloseButtonVerticalOffsetDMM, 0);
+  close_button->SetRotate(1, 0, 0, atan(kTabsViewCloseButtonVerticalOffsetDMM));
+  close_button->set_hover_offset(kButtonZOffsetHoverDMM);
+  VR_BIND_BUTTON_COLORS(model_, close_button.get(),
+                        &ColorScheme::disc_button_colors,
+                        &DiscButton::SetButtonColors);
+  button_scaler->AddChild(std::move(close_button));
+  tabs_view_root->AddChild(std::move(button_scaler));
+
+  scaler->AddChild(std::move(tabs_view_root));
+
+  scene_->AddUiElement(k2dBrowsingRepositioner, std::move(scaler));
 }
 
 }  // namespace vr

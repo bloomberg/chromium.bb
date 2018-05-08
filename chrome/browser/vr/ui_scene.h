@@ -36,6 +36,7 @@ class UiScene {
   ~UiScene();
 
   void AddUiElement(UiElementName parent, std::unique_ptr<UiElement> element);
+  void AddUiElement(UiElement* parent, std::unique_ptr<UiElement> element);
   void AddParentUiElement(UiElementName child,
                           std::unique_ptr<UiElement> element);
 
