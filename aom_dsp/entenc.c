@@ -130,9 +130,6 @@ void od_ec_enc_init(od_ec_enc *enc, uint32_t size) {
 
 /*Reinitializes the encoder.*/
 void od_ec_enc_reset(od_ec_enc *enc) {
-  enc->end_offs = 0;
-  enc->end_window = 0;
-  enc->nend_bits = 0;
   enc->offs = 0;
   enc->low = 0;
   enc->rng = 0x8000;
@@ -284,8 +281,6 @@ unsigned char *od_ec_enc_done(od_ec_enc *enc, uint32_t *nbytes) {
   uint32_t storage;
   uint16_t *buf;
   uint32_t offs;
-  uint32_t end_offs;
-  int nend_bits;
   od_ec_window m;
   od_ec_window e;
   od_ec_window l;
@@ -336,49 +331,31 @@ unsigned char *od_ec_enc_done(od_ec_enc *enc, uint32_t *nbytes) {
       n >>= 8;
     } while (s > 0);
   }
-  /*Make sure there's enough room for the entropy-coded bits and the raw
-     bits.*/
+  /*Make sure there's enough room for the entropy-coded bits.*/
   out = enc->buf;
   storage = enc->storage;
-  end_offs = enc->end_offs;
-  e = enc->end_window;
-  nend_bits = enc->nend_bits;
-  s = -s;
-  c = OD_MAXI((nend_bits - s + 7) >> 3, 0);
-  if (offs + end_offs + c > storage) {
-    storage = offs + end_offs + c;
+  c = OD_MAXI((s + 7) >> 3, 0);
+  if (offs + c > storage) {
+    storage = offs + c;
     out = (unsigned char *)realloc(out, sizeof(*out) * storage);
     if (out == NULL) {
       enc->error = -1;
       return NULL;
     }
-    OD_MOVE(out + storage - end_offs, out + enc->storage - end_offs, end_offs);
     enc->buf = out;
     enc->storage = storage;
   }
-  /*If we have buffered raw bits, flush them as well.*/
-  while (nend_bits > s) {
-    assert(end_offs < storage);
-    out[storage - ++end_offs] = (unsigned char)e;
-    e >>= 8;
-    nend_bits -= 8;
-  }
-  *nbytes = offs + end_offs;
+  *nbytes = offs;
   /*Perform carry propagation.*/
-  assert(offs + end_offs <= storage);
-  out = out + storage - (offs + end_offs);
+  assert(offs <= storage);
+  out = out + storage - offs;
   c = 0;
-  end_offs = offs;
   while (offs > 0) {
     offs--;
     c = buf[offs] + c;
     out[offs] = (unsigned char)c;
     c >>= 8;
   }
-  /*Add any remaining raw bits to the last byte.
-    There is guaranteed to be enough room, because nend_bits <= s.*/
-  assert(nend_bits <= 0 || end_offs > 0);
-  if (nend_bits > 0) out[end_offs - 1] |= (unsigned char)e;
   /*Note: Unless there's an allocation error, if you keep encoding into the
      current buffer and call this function again later, everything will work
      just fine (you won't get a new packet out, but you will get a single
@@ -400,7 +377,7 @@ unsigned char *od_ec_enc_done(od_ec_enc *enc, uint32_t *nbytes) {
 int od_ec_enc_tell(const od_ec_enc *enc) {
   /*The 10 here counteracts the offset of -9 baked into cnt, and adds 1 extra
      bit, which we reserve for terminating the stream.*/
-  return (enc->cnt + 10 + enc->nend_bits) + (enc->offs + enc->end_offs) * 8;
+  return (enc->cnt + 10) + enc->offs * 8;
 }
 
 /*Returns the number of bits "used" by the encoded symbols so far.
