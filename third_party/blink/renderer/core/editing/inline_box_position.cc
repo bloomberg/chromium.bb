@@ -54,11 +54,11 @@ class LeftEdge {
     return InlineBoxPosition(&inline_box, inline_box.CaretLeftmostOffset());
   }
 
-  static InlineBox* BackwardLeafChild(const InlineBox& inline_box) {
+  static const InlineBox* BackwardLeafChild(const InlineBox& inline_box) {
     return inline_box.PrevLeafChild();
   }
 
-  static InlineBox* BackwardLeafChildIgnoringLineBreak(
+  static const InlineBox* BackwardLeafChildIgnoringLineBreak(
       const InlineBox& inline_box) {
     return inline_box.PrevLeafChildIgnoringLineBreak();
   }
@@ -67,7 +67,7 @@ class LeftEdge {
   // See [1] for details.
   // [1] UNICODE BIDIRECTIONAL ALGORITHM, http://unicode.org/reports/tr9/
   static bool IsStartOfDifferentDirection(const InlineBox& inline_box) {
-    InlineBox* prev_box = inline_box.PrevLeafChild();
+    const InlineBox* prev_box = inline_box.PrevLeafChild();
     if (!prev_box)
       return true;
     if (prev_box->Direction() == inline_box.Direction())
@@ -76,36 +76,36 @@ class LeftEdge {
     return prev_box->BidiLevel() > inline_box.BidiLevel();
   }
 
-  static InlineBox* FindForwardBidiRun(const InlineBox& inline_box,
-                                       unsigned bidi_level) {
+  static const InlineBox* FindForwardBidiRun(const InlineBox& inline_box,
+                                             unsigned bidi_level) {
     return InlineBoxTraversal::FindRightBidiRun(inline_box, bidi_level);
   }
 
   static InlineBoxPosition FindForwardBoundaryOfEntireBidiRunIgnoringLineBreak(
       const InlineBox& inline_box,
       unsigned bidi_level) {
-    const InlineBox* result_box =
+    const InlineBox& result_box =
         InlineBoxTraversal::FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
             inline_box, bidi_level);
-    return InlineBoxPosition(result_box, result_box->CaretRightmostOffset());
+    return InlineBoxPosition(&result_box, result_box.CaretRightmostOffset());
   }
 
   static InlineBoxPosition FindBackwardBoundaryOfEntireBidiRun(
       const InlineBox& inline_box,
       unsigned bidi_level) {
-    const InlineBox* result_box =
+    const InlineBox& result_box =
         InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRun(inline_box,
                                                             bidi_level);
-    return InlineBoxPosition(result_box, result_box->CaretLeftmostOffset());
+    return InlineBoxPosition(&result_box, result_box.CaretLeftmostOffset());
   }
 
   static InlineBoxPosition FindBackwardBoundaryOfBidiRunIgnoringLineBreak(
       const InlineBox& inline_box,
       unsigned bidi_level) {
-    const InlineBox* result_box =
+    const InlineBox& result_box =
         InlineBoxTraversal::FindLeftBoundaryOfBidiRunIgnoringLineBreak(
             inline_box, bidi_level);
-    return InlineBoxPosition(result_box, result_box->CaretLeftmostOffset());
+    return InlineBoxPosition(&result_box, result_box.CaretLeftmostOffset());
   }
 };
 
@@ -118,7 +118,7 @@ class RightEdge {
     return InlineBoxPosition(&inline_box, inline_box.CaretRightmostOffset());
   }
 
-  static InlineBox* BackwardLeafChild(const InlineBox& inline_box) {
+  static const InlineBox* BackwardLeafChild(const InlineBox& inline_box) {
     return inline_box.NextLeafChild();
   }
 
@@ -136,36 +136,36 @@ class RightEdge {
     return next_box->BidiLevel() >= inline_box.BidiLevel();
   }
 
-  static InlineBox* FindForwardBidiRun(const InlineBox& inline_box,
-                                       unsigned bidi_level) {
+  static const InlineBox* FindForwardBidiRun(const InlineBox& inline_box,
+                                             unsigned bidi_level) {
     return InlineBoxTraversal::FindLeftBidiRun(inline_box, bidi_level);
   }
 
   static InlineBoxPosition FindForwardBoundaryOfEntireBidiRunIgnoringLineBreak(
       const InlineBox& inline_box,
       unsigned bidi_level) {
-    const InlineBox* result_box =
+    const InlineBox& result_box =
         InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
             inline_box, bidi_level);
-    return InlineBoxPosition(result_box, result_box->CaretLeftmostOffset());
+    return InlineBoxPosition(&result_box, result_box.CaretLeftmostOffset());
   }
 
   static InlineBoxPosition FindBackwardBoundaryOfEntireBidiRun(
       const InlineBox& inline_box,
       unsigned bidi_level) {
-    const InlineBox* result_box =
+    const InlineBox& result_box =
         InlineBoxTraversal::FindRightBoundaryOfEntireBidiRun(inline_box,
                                                              bidi_level);
-    return InlineBoxPosition(result_box, result_box->CaretRightmostOffset());
+    return InlineBoxPosition(&result_box, result_box.CaretRightmostOffset());
   }
 
   static InlineBoxPosition FindBackwardBoundaryOfBidiRunIgnoringLineBreak(
       const InlineBox& inline_box,
       unsigned bidi_level) {
-    const InlineBox* result_box =
+    const InlineBox& result_box =
         InlineBoxTraversal::FindRightBoundaryOfBidiRunIgnoringLineBreak(
             inline_box, bidi_level);
-    return InlineBoxPosition(result_box, result_box->CaretRightmostOffset());
+    return InlineBoxPosition(&result_box, result_box.CaretRightmostOffset());
   }
 };
 
@@ -238,7 +238,7 @@ InlineBoxPosition AdjustInlineBoxPositionForPrimaryDirection(
     return EdgeSide::UnadjustedInlineBoxPosition(inline_box);
 
   const unsigned level = EdgeSide::BackwardLeafChild(inline_box)->BidiLevel();
-  InlineBox* const forward_box =
+  const InlineBox* const forward_box =
       EdgeSide::FindForwardBidiRun(inline_box, level);
 
   // For example, abc FED 123 ^ CBA when adjusting right edge of 123
