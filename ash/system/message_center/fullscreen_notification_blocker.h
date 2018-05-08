@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_WEB_NOTIFICATION_FULLSCREEN_NOTIFICATION_BLOCKER_H_
-#define ASH_SYSTEM_WEB_NOTIFICATION_FULLSCREEN_NOTIFICATION_BLOCKER_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_FULLSCREEN_NOTIFICATION_BLOCKER_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_FULLSCREEN_NOTIFICATION_BLOCKER_H_
 
 #include "ash/shell_observer.h"
 #include "base/macros.h"
@@ -36,4 +36,4 @@ class FullscreenNotificationBlocker
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_WEB_NOTIFICATION_FULLSCREEN_NOTIFICATION_BLOCKER_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_FULLSCREEN_NOTIFICATION_BLOCKER_H_

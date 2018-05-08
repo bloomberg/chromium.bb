@@ -17,7 +17,7 @@
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/system/web_notification/web_notification_tray.h"
+#include "ash/system/message_center/notification_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
@@ -71,13 +71,13 @@ class PanelLayoutManagerTest : public AshTestBase {
         new ShelfViewTestAPI(GetPrimaryShelf()->GetShelfViewForTesting()));
     shelf_view_test_->SetAnimationDuration(1);
 
-    WebNotificationTray::DisableAnimationsForTest(true);
+    NotificationTray::DisableAnimationsForTest(true);
   }
 
   void TearDown() override {
     AshTestBase::TearDown();
 
-    WebNotificationTray::DisableAnimationsForTest(false);  // Reenable animation
+    NotificationTray::DisableAnimationsForTest(false);  // Reenable animation
   }
 
   aura::Window* CreateNormalWindow(const gfx::Rect& bounds) {

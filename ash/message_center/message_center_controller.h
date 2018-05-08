@@ -7,9 +7,9 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
-#include "ash/system/web_notification/fullscreen_notification_blocker.h"
-#include "ash/system/web_notification/inactive_user_notification_blocker.h"
-#include "ash/system/web_notification/session_state_notification_blocker.h"
+#include "ash/system/message_center/fullscreen_notification_blocker.h"
+#include "ash/system/message_center/inactive_user_notification_blocker.h"
+#include "ash/system/message_center/session_state_notification_blocker.h"
 #include "base/macros.h"
 #include "components/arc/common/notifications.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"

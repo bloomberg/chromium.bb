@@ -11,6 +11,7 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
+#include "ash/system/message_center/notification_tray.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/session/logout_button_tray.h"
@@ -19,7 +20,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_tray.h"
-#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
@@ -47,20 +47,20 @@ TEST_F(StatusAreaWidgetTest, Basics) {
   // Default trays are constructed.
   EXPECT_TRUE(status->overview_button_tray());
   EXPECT_TRUE(status->system_tray());
-  EXPECT_TRUE(status->web_notification_tray());
+  EXPECT_TRUE(status->notification_tray());
   EXPECT_TRUE(status->logout_button_tray_for_testing());
   EXPECT_TRUE(status->ime_menu_tray());
   EXPECT_TRUE(status->virtual_keyboard_tray_for_testing());
   EXPECT_TRUE(status->palette_tray());
 
-  // Needed because WebNotificationTray updates its initial visibility
+  // Needed because NotificationTray updates its initial visibility
   // asynchronously.
   RunAllPendingInMessageLoop();
 
   // Default trays are visible.
   EXPECT_FALSE(status->overview_button_tray()->visible());
   EXPECT_TRUE(status->system_tray()->visible());
-  EXPECT_TRUE(status->web_notification_tray()->visible());
+  EXPECT_TRUE(status->notification_tray()->visible());
   EXPECT_FALSE(status->logout_button_tray_for_testing()->visible());
   EXPECT_FALSE(status->ime_menu_tray()->visible());
   EXPECT_FALSE(status->virtual_keyboard_tray_for_testing()->visible());
@@ -138,19 +138,19 @@ TEST_F(StatusAreaWidgetFocusTest, FocusOutObserver) {
   // Default trays are constructed.
   ASSERT_TRUE(status->overview_button_tray());
   ASSERT_TRUE(status->system_tray());
-  ASSERT_TRUE(status->web_notification_tray());
+  ASSERT_TRUE(status->notification_tray());
   ASSERT_TRUE(status->logout_button_tray_for_testing());
   ASSERT_TRUE(status->ime_menu_tray());
   ASSERT_TRUE(status->virtual_keyboard_tray_for_testing());
 
-  // Needed because WebNotificationTray updates its initial visibility
+  // Needed because NotificationTray updates its initial visibility
   // asynchronously.
   RunAllPendingInMessageLoop();
 
   // Default trays are visible.
   ASSERT_FALSE(status->overview_button_tray()->visible());
   ASSERT_TRUE(status->system_tray()->visible());
-  ASSERT_TRUE(status->web_notification_tray()->visible());
+  ASSERT_TRUE(status->notification_tray()->visible());
   ASSERT_FALSE(status->logout_button_tray_for_testing()->visible());
   ASSERT_FALSE(status->ime_menu_tray()->visible());
   ASSERT_FALSE(status->virtual_keyboard_tray_for_testing()->visible());
@@ -162,7 +162,7 @@ TEST_F(StatusAreaWidgetFocusTest, FocusOutObserver) {
 
   // A tab key event will move focus to web notification tray.
   GenerateTabEvent(false);
-  EXPECT_EQ(status->web_notification_tray(), focus_manager->GetFocusedView());
+  EXPECT_EQ(status->notification_tray(), focus_manager->GetFocusedView());
   EXPECT_EQ(0, test_observer_->focus_out_count());
   EXPECT_EQ(0, test_observer_->reverse_focus_out_count());
 
@@ -176,7 +176,7 @@ TEST_F(StatusAreaWidgetFocusTest, FocusOutObserver) {
   // A reverse tab key event will send reverse FocusOut event, since we are not
   // handling this event, focus will still be moved to web notification tray.
   GenerateTabEvent(true);
-  EXPECT_EQ(status->web_notification_tray(), focus_manager->GetFocusedView());
+  EXPECT_EQ(status->notification_tray(), focus_manager->GetFocusedView());
   EXPECT_EQ(1, test_observer_->focus_out_count());
   EXPECT_EQ(1, test_observer_->reverse_focus_out_count());
 }

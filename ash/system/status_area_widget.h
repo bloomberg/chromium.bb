@@ -30,7 +30,7 @@ class SystemTray;
 class UnifiedSystemTray;
 class TrayBackgroundView;
 class VirtualKeyboardTray;
-class WebNotificationTray;
+class NotificationTray;
 
 // Widget showing the system tray, notification tray, and other tray views in
 // the bottom-right of the screen. Exists separately from ShelfView/ShelfWidget
@@ -71,9 +71,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   UnifiedSystemTray* unified_system_tray() {
     return unified_system_tray_.get();
   }
-  WebNotificationTray* web_notification_tray() {
-    return web_notification_tray_.get();
-  }
+  NotificationTray* notification_tray() { return notification_tray_.get(); }
   DictationButtonTray* dictation_button_tray() {
     return dictation_button_tray_.get();
   }
@@ -129,7 +127,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   std::unique_ptr<DictationButtonTray> dictation_button_tray_;
   std::unique_ptr<SystemTray> system_tray_;
   std::unique_ptr<UnifiedSystemTray> unified_system_tray_;
-  std::unique_ptr<WebNotificationTray> web_notification_tray_;
+  std::unique_ptr<NotificationTray> notification_tray_;
   std::unique_ptr<LogoutButtonTray> logout_button_tray_;
   std::unique_ptr<PaletteTray> palette_tray_;
   std::unique_ptr<VirtualKeyboardTray> virtual_keyboard_tray_;

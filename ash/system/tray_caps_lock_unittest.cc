@@ -4,9 +4,9 @@
 
 #include "ash/system/tray_caps_lock.h"
 
+#include "ash/system/message_center/notification_tray.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_test_api.h"
-#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/ash_test_base.h"
 
 namespace ash {
@@ -18,11 +18,11 @@ class TrayCapsLockTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    WebNotificationTray::DisableAnimationsForTest(true);
+    NotificationTray::DisableAnimationsForTest(true);
   }
 
   void TearDown() override {
-    WebNotificationTray::DisableAnimationsForTest(false);
+    NotificationTray::DisableAnimationsForTest(false);
     AshTestBase::TearDown();
   }
 

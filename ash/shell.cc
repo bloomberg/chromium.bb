@@ -535,10 +535,10 @@ void Shell::UpdateShelfVisibility() {
     Shelf::ForWindow(root)->UpdateVisibilityState();
 }
 
-WebNotificationTray* Shell::GetWebNotificationTray() {
+NotificationTray* Shell::GetNotificationTray() {
   return GetPrimaryRootWindowController()
       ->GetStatusAreaWidget()
-      ->web_notification_tray();
+      ->notification_tray();
 }
 
 bool Shell::HasPrimaryStatusArea() {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/web_notification/ash_popup_alignment_delegate.h"
+#include "ash/system/message_center/ash_popup_alignment_delegate.h"
 
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"

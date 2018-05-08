@@ -182,7 +182,7 @@ class VoiceInteractionController;
 class VpnList;
 class WallpaperController;
 class WaylandServerController;
-class WebNotificationTray;
+class NotificationTray;
 class WindowCycleController;
 class WindowPositioner;
 class WindowSelectorController;
@@ -556,8 +556,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   // TODO(jamescook): Move to Shelf.
   void UpdateShelfVisibility();
 
-  // Returns WebNotificationTray on the primary root window.
-  WebNotificationTray* GetWebNotificationTray();
+  // Returns NotificationTray on the primary root window.
+  NotificationTray* GetNotificationTray();
 
   // Does the primary display have status area?
   bool HasPrimaryStatusArea();
