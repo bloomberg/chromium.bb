@@ -1719,6 +1719,10 @@ bool MenuController::GetMenuPartByScreenCoordinateImpl(
     return true;
   }
 
+  // Return false for points on touchable menu shadows, to search parent menus.
+  if (use_touchable_layout_)
+    return false;
+
   // While the mouse isn't over a menu item or the scroll buttons of menu, it
   // is contained by menu and so we return true. If we didn't return true other
   // menus would be searched, even though they are likely obscured by us.
