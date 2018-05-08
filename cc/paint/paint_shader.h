@@ -16,6 +16,7 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size_f.h"
 
 namespace cc {
@@ -35,6 +36,9 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
     kPaintRecord,
     kShaderCount
   };
+
+  using RecordShaderId = uint32_t;
+  static const RecordShaderId kInvalidRecordShaderId;
 
   // Scaling behavior dictates how a PaintRecord shader will behave. Use
   // RasterAtScale to create a picture shader. Use FixedScale to create an image
@@ -148,6 +152,11 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
   bool operator==(const PaintShader& other) const;
   bool operator!=(const PaintShader& other) const { return !(*this == other); }
 
+  RecordShaderId paint_record_shader_id() const {
+    DCHECK(id_ == kInvalidRecordShaderId || shader_type_ == Type::kPaintRecord);
+    return id_;
+  }
+
  private:
   friend class PaintFlags;
   friend class PaintOpReader;
@@ -156,6 +165,7 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
   friend class ScopedRasterFlags;
   FRIEND_TEST_ALL_PREFIXES(PaintShaderTest, DecodePaintRecord);
   FRIEND_TEST_ALL_PREFIXES(PaintOpBufferTest, PaintRecordShaderSerialization);
+  FRIEND_TEST_ALL_PREFIXES(PaintOpBufferTest, RecordShadersCached);
 
   explicit PaintShader(Type type);
 
@@ -196,6 +206,7 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
 
   PaintImage image_;
   sk_sp<PaintRecord> record_;
+  RecordShaderId id_ = kInvalidRecordShaderId;
 
   // For decoded PaintRecord shaders, specifies the scale at which the record
   // will be rasterized.

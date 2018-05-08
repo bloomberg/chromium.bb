@@ -15,6 +15,7 @@
 #include "cc/paint/paint_shader.h"
 #include "cc/paint/paint_typeface_transfer_cache_entry.h"
 #include "cc/paint/path_transfer_cache_entry.h"
+#include "cc/paint/shader_transfer_cache_entry.h"
 #include "cc/paint/transfer_cache_deserialize_helper.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRRect.h"
@@ -449,8 +450,18 @@ void PaintOpReader::Read(sk_sp<PaintShader>* shader) {
   Read(&ref.image_);
   bool has_record = false;
   ReadSimple(&has_record);
-  if (has_record)
-    Read(&ref.record_);
+  uint32_t shader_id = PaintShader::kInvalidRecordShaderId;
+  size_t shader_size = 0;
+  if (has_record) {
+    Read(&shader_id);
+
+    // Track dependent transfer cache entries to make cached shader size
+    // more realistic.
+    size_t pre_size = options_.transfer_cache->GetTotalEntrySizes();
+    size_t record_size = Read(&ref.record_);
+    size_t post_size = options_.transfer_cache->GetTotalEntrySizes();
+    shader_size = post_size - pre_size + record_size;
+  }
   decltype(ref.colors_)::size_type colors_size = 0;
   ReadSimple(&colors_size);
 
@@ -488,9 +499,40 @@ void PaintOpReader::Read(sk_sp<PaintShader>* shader) {
     SetInvalid();
     return;
   }
-  // TODO(vmpstr): We should have a PaintShader id and cache these shaders
-  // instead of creating every time we deserialize.
-  (*shader)->CreateSkShader();
+
+  if (shader_id == PaintShader::kInvalidRecordShaderId) {
+    // Paint record shaders must have ids.
+    if (shader_type == PaintShader::Type::kPaintRecord) {
+      SetInvalid();
+      return;
+    }
+    (*shader)->CreateSkShader();
+    return;
+  }
+
+  // Record shaders have shader ids.  Attempt to use cached versions of
+  // these so that Skia can cache based on SkPictureShader::fUniqueId.
+  // These shaders are always serialized (and assumed to not be large
+  // records).  Handling this edge case in this roundabout way prevents
+  // transfer cache entries from needing to depend on other transfer cache
+  // entries.
+  auto* entry =
+      options_.transfer_cache->GetEntryAs<ServiceShaderTransferCacheEntry>(
+          shader_id);
+  // Only consider entries that use the same scale and color space.
+  // This limits the service side transfer cache to only having one entry
+  // per shader but this will hit the common case of enabling Skia reuse.
+  if (entry && entry->shader()->tile_ == ref.tile_ &&
+      entry->raster_color_space_id() == options_.raster_color_space_id) {
+    DCHECK(!ref.cached_shader_);
+    ref.cached_shader_ = entry->shader()->GetSkShader();
+  } else {
+    ref.CreateSkShader();
+    std::unique_ptr<ServiceShaderTransferCacheEntry> entry(
+        new ServiceShaderTransferCacheEntry(
+            *shader, options_.raster_color_space_id, shader_size));
+    options_.transfer_cache->CreateLocalEntry(shader_id, std::move(entry));
+  }
 }
 
 void PaintOpReader::Read(SkMatrix* matrix) {
@@ -1149,7 +1191,7 @@ void PaintOpReader::ReadLightingSpotPaintFilter(
       base::OptionalOrNullptr(crop_rect)));
 }
 
-void PaintOpReader::Read(sk_sp<PaintRecord>* record) {
+size_t PaintOpReader::Read(sk_sp<PaintRecord>* record) {
   size_t size_bytes = 0;
   ReadSimple(&size_bytes);
   AlignMemory(PaintOpBuffer::PaintOpAlign);
@@ -1159,16 +1201,16 @@ void PaintOpReader::Read(sk_sp<PaintRecord>* record) {
     // enabled.
     if (size_bytes != 0) {
       SetInvalid();
-      return;
+      return 0;
     }
     *record = sk_make_sp<PaintOpBuffer>();
-    return;
+    return 0;
   }
 
   if (size_bytes > remaining_bytes_)
     SetInvalid();
   if (!valid_)
-    return;
+    return 0;
 
   PaintOp::DeserializeOptions options;
   options.transfer_cache = options_.transfer_cache;
@@ -1176,10 +1218,11 @@ void PaintOpReader::Read(sk_sp<PaintRecord>* record) {
   *record = PaintOpBuffer::MakeFromMemory(memory_, size_bytes, options);
   if (!*record) {
     SetInvalid();
-    return;
+    return 0;
   }
   memory_ += size_bytes;
   remaining_bytes_ -= size_bytes;
+  return size_bytes;
 }
 
 void PaintOpReader::Read(SkRegion* region) {

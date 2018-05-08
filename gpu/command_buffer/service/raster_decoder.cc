@@ -699,6 +699,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   sk_sp<GrContext> gr_context_;
   sk_sp<SkSurface> sk_surface_;
   std::unique_ptr<SkCanvas> raster_canvas_;
+  uint32_t raster_color_space_id_;
 
   base::WeakPtrFactory<DecoderContext> weak_ptr_factory_;
 
@@ -2691,6 +2692,12 @@ class TransferCacheDeserializeHelperImpl final
   }
   ~TransferCacheDeserializeHelperImpl() override = default;
 
+  void CreateLocalEntry(
+      uint32_t id,
+      std::unique_ptr<cc::ServiceTransferCacheEntry> entry) override {
+    transfer_cache_->CreateLocalEntry(id, std::move(entry));
+  }
+
  private:
   cc::ServiceTransferCacheEntry* GetEntryInternal(
       cc::TransferCacheEntryType entry_type,
@@ -2841,6 +2848,7 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
   raster_canvas_ = SkCreateColorSpaceXformCanvas(
       sk_surface_->getCanvas(),
       color_space_entry->color_space().ToSkColorSpace());
+  raster_color_space_id_ = color_space_transfer_cache_id;
 
   // All or nothing clearing, as no way to validate the client's input on what
   // is the "used" part of the texture.
@@ -2910,6 +2918,7 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
   TransferCacheDeserializeHelperImpl impl(transfer_cache_.get());
   options.transfer_cache = &impl;
   options.strike_client = font_manager_.strike_client();
+  options.raster_color_space_id = raster_color_space_id_;
 
   int op_idx = 0;
   size_t paint_buffer_size = raster_shm_size;

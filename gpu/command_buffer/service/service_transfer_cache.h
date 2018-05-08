@@ -34,6 +34,8 @@ class GPU_GLES2_EXPORT ServiceTransferCache {
                          ServiceDiscardableHandle handle,
                          GrContext* context,
                          base::span<uint8_t> data);
+  void CreateLocalEntry(uint32_t entry_id,
+                        std::unique_ptr<cc::ServiceTransferCacheEntry> entry);
   bool UnlockEntry(cc::TransferCacheEntryType entry_type, uint32_t entry_id);
   bool DeleteEntry(cc::TransferCacheEntryType entry_type, uint32_t entry_id);
   cc::ServiceTransferCacheEntry* GetEntry(cc::TransferCacheEntryType entry_type,
@@ -49,12 +51,12 @@ class GPU_GLES2_EXPORT ServiceTransferCache {
   void EnforceLimits();
 
   struct CacheEntryInternal {
-    CacheEntryInternal(ServiceDiscardableHandle handle,
+    CacheEntryInternal(base::Optional<ServiceDiscardableHandle> handle,
                        std::unique_ptr<cc::ServiceTransferCacheEntry> entry);
     CacheEntryInternal(CacheEntryInternal&& other);
     CacheEntryInternal& operator=(CacheEntryInternal&& other);
     ~CacheEntryInternal();
-    ServiceDiscardableHandle handle;
+    base::Optional<ServiceDiscardableHandle> handle;
     std::unique_ptr<cc::ServiceTransferCacheEntry> entry;
   };
   using EntryCache =

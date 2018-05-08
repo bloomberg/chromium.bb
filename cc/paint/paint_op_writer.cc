@@ -327,6 +327,8 @@ void PaintOpWriter::Write(const PaintShader* shader) {
   Write(shader->image_);
   if (shader->record_) {
     Write(true);
+    DCHECK_NE(shader->id_, PaintShader::kInvalidRecordShaderId);
+    Write(shader->id_);
     base::Optional<gfx::Rect> playback_rect;
     base::Optional<gfx::SizeF> post_scale;
     if (shader->tile_scale()) {
@@ -337,6 +339,7 @@ void PaintOpWriter::Write(const PaintShader* shader) {
     Write(shader->record_.get(), std::move(playback_rect),
           std::move(post_scale));
   } else {
+    DCHECK_EQ(shader->id_, PaintShader::kInvalidRecordShaderId);
     Write(false);
   }
   WriteSimple(shader->colors_.size());

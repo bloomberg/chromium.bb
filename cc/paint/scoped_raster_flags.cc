@@ -13,7 +13,7 @@ ScopedRasterFlags::ScopedRasterFlags(const PaintFlags* flags,
                                      ImageProvider* image_provider,
                                      const SkMatrix& ctm,
                                      uint8_t alpha,
-                                     bool create_skia_shader)
+                                     bool is_rasterizing)
     : original_flags_(flags) {
   if (flags->HasDiscardableImages() && image_provider) {
     // TODO(khushalsagar): The decoding of images in PaintFlags here is a bit of
@@ -25,7 +25,7 @@ ScopedRasterFlags::ScopedRasterFlags(const PaintFlags* flags,
     DecodeImageShader(ctm);
     if (decode_failed_)
       return;
-    DecodeRecordShader(ctm, create_skia_shader);
+    DecodeRecordShader(ctm, is_rasterizing);
     if (decode_failed_)
       return;
     DecodeFilter();
@@ -101,16 +101,20 @@ void ScopedRasterFlags::DecodeImageShader(const SkMatrix& ctm) {
 }
 
 void ScopedRasterFlags::DecodeRecordShader(const SkMatrix& ctm,
-                                           bool create_skia_shader) {
+                                           bool is_rasterizing) {
   if (!flags()->HasShader() ||
       flags()->getShader()->shader_type() != PaintShader::Type::kPaintRecord)
     return;
 
-  // TODO(khushalsagar): For OOP, we have to decode everything during
-  // serialization. This will force us to use original sized decodes.
-  if (flags()->getShader()->image_analysis_state() !=
-      ImageAnalysisState::kAnimatedImages)
+  // Only early out here if we are rasterizing and not serializing directly.
+  // In process raster will cache the skia shader by letting Skia handle
+  // the decodes as needed.  Out of process raster should never early out
+  // and should always make sure the fonts and images are processed at the
+  // correct scale.
+  if (is_rasterizing && flags()->getShader()->image_analysis_state() !=
+                            ImageAnalysisState::kAnimatedImages) {
     return;
+  }
 
   auto decoded_shader = flags()->getShader()->CreateDecodedPaintRecord(
       ctm, &*decode_stashing_image_provider_);
@@ -119,7 +123,7 @@ void ScopedRasterFlags::DecodeRecordShader(const SkMatrix& ctm,
     return;
   }
 
-  if (create_skia_shader)
+  if (is_rasterizing)
     decoded_shader->CreateSkShader(&*decode_stashing_image_provider_);
   MutableFlags()->setShader(std::move(decoded_shader));
 }

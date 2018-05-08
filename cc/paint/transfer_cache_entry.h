@@ -25,8 +25,9 @@ enum class TransferCacheEntryType : uint32_t {
   kPaintTypeface,
   kColorSpace,
   kPath,
+  kShader,
   // Add new entries above this line, make sure to update kLast.
-  kLast = kPath,
+  kLast = kShader,
 };
 
 // An interface used on the client to serialize a transfer cache entry

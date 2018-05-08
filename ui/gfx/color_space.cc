@@ -44,6 +44,9 @@ static bool IsAlmostZero(float value) {
 
 }  // namespace
 
+// static
+int ColorSpace::kInvalidId = -1;
+
 ColorSpace::ColorSpace() {}
 
 ColorSpace::ColorSpace(PrimaryID primaries,
