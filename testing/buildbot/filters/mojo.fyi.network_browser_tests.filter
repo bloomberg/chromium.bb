@@ -250,8 +250,19 @@
 -CertificateTransparencyBrowserTest.ProfileRequest
 -CertificateTransparencyBrowserTest.SystemRequest
 
-# Fail on Windows only
--ConditionalCacheCountingHelperBrowserTest.Count
+# SafeBrowsing doesn't yet set up its NetworkContext correctly when the network
+# service is enabled.
+# https://crbug.com/789640
+-SafeBrowsingNetworkContext/NetworkContextConfigurationBrowserTest.DiskCache/0
+-SafeBrowsingNetworkContext/NetworkContextConfigurationBrowserTest.DataURL/0
+-SafeBrowsingNetworkContext/NetworkContextConfigurationBrowserTest.FileURL/0
+-SafeBrowsingNetworkContext/NetworkContextConfigurationBrowserTest.ProxyConfig/0
+-SafeBrowsingNetworkContext/NetworkContextConfigurationDataPacBrowserTest.DataPac/0
+-SafeBrowsingNetworkContext/NetworkContextConfigurationFilePacBrowserTest.FilePac/0
+-SafeBrowsingNetworkContext/NetworkContextConfigurationFtpPacBrowserTest.FtpPac/0
+-SafeBrowsingNetworkContext/NetworkContextConfigurationHttpPacBrowserTest.HttpPac/0
+-SafeBrowsingNetworkContext/NetworkContextConfigurationHttpsStrippingPacBrowserTest.PacHttpsUrlStripping/0
+-SafeBrowsingNetworkContext/NetworkContextConfigurationProxyOnStartBrowserTest.TestInitialProxyConfig/0
 
 # NOTE: if adding an exclusion for an existing failure (e.g. additional test for
 # feature X that is already not working), please add it beside the existing

@@ -156,6 +156,9 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   network::mojom::NetworkContext* GetNetworkContext();
   virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
 
+  // Flushes above two interfaces to avoid races in tests.
+  void FlushNetworkInterfaceForTesting();
+
   // Called to get a SharedURLLoaderFactory that can be used on the IO thread.
   scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactoryOnIOThread();

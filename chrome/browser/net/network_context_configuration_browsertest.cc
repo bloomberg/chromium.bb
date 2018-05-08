@@ -23,6 +23,7 @@
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
@@ -80,6 +81,7 @@ enum class NetworkServiceState {
 
 enum class NetworkContextType {
   kSystem,
+  kSafeBrowsing,
   kProfile,
   kIncognitoProfile,
 };
@@ -171,6 +173,10 @@ class NetworkContextConfigurationBrowserTest
       case NetworkContextType::kSystem:
         return g_browser_process->system_network_context_manager()
             ->GetURLLoaderFactory();
+      case NetworkContextType::kSafeBrowsing:
+        return g_browser_process->safe_browsing_service()
+            ->GetURLLoaderFactory()
+            .get();
       case NetworkContextType::kProfile:
         return content::BrowserContext::GetDefaultStoragePartition(
                    browser()->profile())
@@ -192,6 +198,8 @@ class NetworkContextConfigurationBrowserTest
       case NetworkContextType::kSystem:
         return g_browser_process->system_network_context_manager()
             ->GetContext();
+      case NetworkContextType::kSafeBrowsing:
+        return g_browser_process->safe_browsing_service()->GetNetworkContext();
       case NetworkContextType::kProfile:
         return content::BrowserContext::GetDefaultStoragePartition(
                    browser()->profile())
@@ -209,6 +217,7 @@ class NetworkContextConfigurationBrowserTest
   StorageType GetHttpCacheType() const {
     switch (GetParam().network_context_type) {
       case NetworkContextType::kSystem:
+      case NetworkContextType::kSafeBrowsing:
         return StorageType::kNone;
       case NetworkContextType::kProfile:
         return StorageType::kDisk;
@@ -226,6 +235,7 @@ class NetworkContextConfigurationBrowserTest
     PrefService* pref_service = nullptr;
     switch (GetParam().network_context_type) {
       case NetworkContextType::kSystem:
+      case NetworkContextType::kSafeBrowsing:
         pref_service = g_browser_process->local_state();
         break;
       case NetworkContextType::kProfile:
@@ -247,6 +257,7 @@ class NetworkContextConfigurationBrowserTest
     // requests are sent on a separate pipe from ProxyConfigs.
     switch (GetParam().network_context_type) {
       case NetworkContextType::kSystem:
+      case NetworkContextType::kSafeBrowsing:
         g_browser_process->system_network_context_manager()
             ->FlushProxyConfigMonitorForTesting();
         break;
@@ -332,6 +343,10 @@ class NetworkContextConfigurationBrowserTest
     switch (GetParam().network_context_type) {
       case NetworkContextType::kSystem:
         g_browser_process->system_network_context_manager()
+            ->FlushNetworkInterfaceForTesting();
+        break;
+      case NetworkContextType::kSafeBrowsing:
+        g_browser_process->safe_browsing_service()
             ->FlushNetworkInterfaceForTesting();
         break;
       case NetworkContextType::kProfile:
@@ -604,10 +619,12 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        UserAgentAndLanguagePrefs) {
-  // System network context isn't associated with any profile, so changing the
-  // language settings in the default one doesn't affect what it sends.
+  // The system and SafeBrowsing network contexts aren't associated with any
+  // profile, so changing the language settings for the profile's main network
+  // context won't affect what they send.
   bool system =
-      (GetParam().network_context_type == NetworkContextType::kSystem);
+      (GetParam().network_context_type == NetworkContextType::kSystem ||
+       GetParam().network_context_type == NetworkContextType::kSafeBrowsing);
   const char kDefaultAcceptLanguage[] = "en-us,en";
 
   std::string accept_language, user_agent;
@@ -964,6 +981,11 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
                                   NetworkContextType::kSystem})));         \
                                                                            \
   INSTANTIATE_TEST_CASE_P(                                                 \
+      SafeBrowsingNetworkContext, TestFixture,                             \
+      ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
+                                  NetworkContextType::kSafeBrowsing})));   \
+                                                                           \
+  INSTANTIATE_TEST_CASE_P(                                                 \
       ProfileMainNetworkContext, TestFixture,                              \
       ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
                                   NetworkContextType::kProfile}),          \
@@ -981,6 +1003,9 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
 // Instiates tests with a prefix indicating which NetworkContext is being
 // tested, and a suffix of "/0" if the network service is disabled, "/1" if it's
 // enabled, and "/2" if it's enabled and restarted.
+//
+// TODO(mmenke): Enabled tests for the SafeBrowsing NetworkContext, once it
+// works with the network service enabled.
 #define INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(TestFixture)               \
   INSTANTIATE_TEST_CASE_P(                                                 \
       SystemNetworkContext, TestFixture,                                   \
@@ -990,6 +1015,11 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
                                   NetworkContextType::kSystem}),           \
                         TestCase({NetworkServiceState::kRestarted,         \
                                   NetworkContextType::kSystem})));         \
+                                                                           \
+  INSTANTIATE_TEST_CASE_P(                                                 \
+      SafeBrowsingNetworkContext, TestFixture,                             \
+      ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
+                                  NetworkContextType::kSafeBrowsing})));   \
                                                                            \
   INSTANTIATE_TEST_CASE_P(                                                 \
       ProfileMainNetworkContext, TestFixture,                              \
