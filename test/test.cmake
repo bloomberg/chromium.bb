@@ -92,7 +92,7 @@ set(AOM_UNIT_TEST_ENCODER_SOURCES
 
 if(NOT BUILD_SHARED_LIBS)
   set(AOM_UNIT_TEST_ENCODER_SOURCES ${AOM_UNIT_TEST_ENCODER_SOURCES}
-      "${AOM_ROOT}/test/dct32x32_test.cc" "${AOM_ROOT}/test/sad_test.cc")
+      "${AOM_ROOT}/test/sad_test.cc")
 endif()
 
 set(AOM_DECODE_PERF_TEST_SOURCES "${AOM_ROOT}/test/decode_perf_test.cc")
