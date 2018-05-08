@@ -56,6 +56,7 @@ class IncrementalMarkingScopeBase;
 }  // namespace incremental_marking_test
 
 class AddressCache;
+class ThreadHeapStatsCollector;
 class PagePool;
 class RegionTree;
 
@@ -463,6 +464,10 @@ class PLATFORM_EXPORT ThreadHeap {
   enum SnapshotType { kHeapSnapshot, kFreelistSnapshot };
   void TakeSnapshot(SnapshotType);
 
+  ThreadHeapStatsCollector* stats_collector() const {
+    return heap_stats_collector_.get();
+  }
+
 #if defined(ADDRESS_SANITIZER)
   void PoisonEagerArena();
   void PoisonAllHeaps();
@@ -496,6 +501,7 @@ class PLATFORM_EXPORT ThreadHeap {
 
   ThreadState* thread_state_;
   ThreadHeapStats stats_;
+  std::unique_ptr<ThreadHeapStatsCollector> heap_stats_collector_;
   std::unique_ptr<RegionTree> region_tree_;
   std::unique_ptr<AddressCache> address_cache_;
   std::unique_ptr<PagePool> free_page_pool_;

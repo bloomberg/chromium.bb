@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/platform/heap/address_cache.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/heap_compact.h"
+#include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/heap/marking_verifier.h"
 #include "third_party/blink/renderer/platform/heap/page_memory.h"
 #include "third_party/blink/renderer/platform/heap/page_pool.h"
@@ -265,16 +266,16 @@ Address BaseArena::LazySweep(size_t allocation_size, size_t gc_info_index) {
   if (GetThreadState()->SweepForbidden())
     return nullptr;
 
-  TRACE_EVENT0("blink_gc", "BaseArena::lazySweepPages");
-  ThreadState::SweepForbiddenScope sweep_forbidden(GetThreadState());
-  ScriptForbiddenScope script_forbidden;
-
-  double start_time = WTF::CurrentTimeTicksInMilliseconds();
-  Address result = LazySweepPages(allocation_size, gc_info_index);
-  GetThreadState()->AccumulateSweepingTime(
-      WTF::CurrentTimeTicksInMilliseconds() - start_time);
+  Address result = nullptr;
+  {
+    ThreadHeapStatsCollector::Scope stats_scope(
+        GetThreadState()->Heap().stats_collector(),
+        ThreadHeapStatsCollector::Scope::kLazySweepOnAllocation);
+    ThreadState::SweepForbiddenScope sweep_forbidden(GetThreadState());
+    ScriptForbiddenScope script_forbidden;
+    result = LazySweepPages(allocation_size, gc_info_index);
+  }
   ThreadHeap::ReportMemoryUsageForTracing();
-
   return result;
 }
 
