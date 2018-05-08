@@ -62,6 +62,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -115,6 +116,7 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
+#include "ui/base/ui_base_features.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -2626,6 +2628,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ChangeDisplayMode) {
 // Test to ensure the bounds of popup, devtool, and app windows are properly
 // restored.
 IN_PROC_BROWSER_TEST_F(BrowserTest, TestPopupBounds) {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  // The size computation on popups is wrong in MacViews:
+  // https://crbug.com/834908.
+  if (!views_mode_controller::IsViewsBrowserCocoa())
+    return;
+#endif
   // TODO(tdanderson|pkasting): Change this to verify that the contents bounds
   // set by params.initial_bounds are the same as the contents bounds in the
   // initialized window. See crbug.com/585856.
