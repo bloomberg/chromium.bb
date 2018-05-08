@@ -177,12 +177,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
 
   // TODO(nedwilliamson): attempt connection migration here
-  stream->ReadResponseHeaders(callback.callback());
+  int rv = stream->ReadResponseHeaders(callback.callback());
+  if (rv != OK && rv != ERR_IO_PENDING) {
+    return 0;
+  }
   callback.WaitForResult();
 
   scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(kBufferSize);
-  int rv =
-      stream->ReadResponseBody(buffer.get(), kBufferSize, callback.callback());
+  rv = stream->ReadResponseBody(buffer.get(), kBufferSize, callback.callback());
   if (rv == ERR_IO_PENDING)
     callback.WaitForResult();
 
