@@ -19,7 +19,6 @@
 #include "net/socket/socket_test_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/network/mojo_socket_test_util.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/socket_factory.h"
@@ -29,13 +28,25 @@
 
 namespace network {
 
-// Test delegate to wait on network read/write errors.
-class TestSocketDataPumpDelegate : public SocketDataPump::Delegate {
- public:
-  TestSocketDataPumpDelegate() {}
-  ~TestSocketDataPumpDelegate() {}
+namespace {
 
-  // Waits for read error. Returns the error observed.
+class TestSocketObserver : public mojom::TCPConnectedSocketObserver {
+ public:
+  TestSocketObserver() : binding_(this) {}
+  ~TestSocketObserver() override {
+    EXPECT_EQ(net::OK, read_error_);
+    EXPECT_EQ(net::OK, write_error_);
+  }
+
+  // Returns a mojo pointer. This can only be called once.
+  mojom::TCPConnectedSocketObserverPtr GetObserverPtr() {
+    DCHECK(!binding_);
+    mojom::TCPConnectedSocketObserverPtr ptr;
+    binding_.Bind(mojo::MakeRequest(&ptr));
+    return ptr;
+  }
+
+  // Waits for Read and Write error. Returns the error observed.
   int WaitForReadError() {
     read_loop_.Run();
     int error = read_error_;
@@ -43,7 +54,6 @@ class TestSocketDataPumpDelegate : public SocketDataPump::Delegate {
     return error;
   }
 
-  // Waits for write error. Returns the error observed.
   int WaitForWriteError() {
     write_loop_.Run();
     int error = write_error_;
@@ -51,28 +61,28 @@ class TestSocketDataPumpDelegate : public SocketDataPump::Delegate {
     return error;
   }
 
-  // Waits for shutdown.
-  void WaitForShutdown() { shutdown_loop_.Run(); }
-
  private:
-  void OnNetworkReadError(int error) override {
-    read_error_ = error;
+  // mojom::TCPConnectedSocketObserver implementation.
+  void OnReadError(int net_error) override {
+    read_error_ = net_error;
     read_loop_.Quit();
   }
-  void OnNetworkWriteError(int error) override {
-    write_error_ = error;
+
+  void OnWriteError(int net_error) override {
+    write_error_ = net_error;
     write_loop_.Quit();
   }
-  void OnShutdown() override { shutdown_loop_.Quit(); }
 
   int read_error_ = net::OK;
   int write_error_ = net::OK;
   base::RunLoop read_loop_;
   base::RunLoop write_loop_;
-  base::RunLoop shutdown_loop_;
+  mojo::Binding<mojom::TCPConnectedSocketObserver> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestSocketDataPumpDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestSocketObserver);
 };
+
+}  // namespace
 
 class SocketDataPumpTest : public testing::Test,
                            public ::testing::WithParamInterface<net::IoMode> {
@@ -86,7 +96,6 @@ class SocketDataPumpTest : public testing::Test,
   // to populate the read/write data of the mock socket.
   void Init(net::StaticSocketDataProvider* data_provider) {
     mock_client_socket_factory_.AddSocketDataProvider(data_provider);
-    mock_client_socket_factory_.set_enable_read_if_ready(true);
     mojo::DataPipe send_pipe;
     mojo::DataPipe receive_pipe;
     receive_handle_ = std::move(receive_pipe.consumer_handle);
@@ -100,7 +109,8 @@ class SocketDataPumpTest : public testing::Test,
       result = callback.WaitForResult();
     EXPECT_EQ(net::OK, result);
     data_pump_ = std::make_unique<SocketDataPump>(
-        socket_.get(), delegate(), std::move(receive_pipe.producer_handle),
+        test_observer_.GetObserverPtr(), socket_.get(),
+        std::move(receive_pipe.producer_handle),
         std::move(send_pipe.consumer_handle), TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
@@ -124,7 +134,7 @@ class SocketDataPumpTest : public testing::Test,
     return received_contents;
   }
 
-  TestSocketDataPumpDelegate* delegate() { return &test_delegate_; }
+  TestSocketObserver* observer() { return &test_observer_; }
 
   mojo::ScopedDataPipeConsumerHandle receive_handle_;
   mojo::ScopedDataPipeProducerHandle send_handle_;
@@ -132,7 +142,7 @@ class SocketDataPumpTest : public testing::Test,
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::MockClientSocketFactory mock_client_socket_factory_;
-  TestSocketDataPumpDelegate test_delegate_;
+  TestSocketObserver test_observer_;
   std::unique_ptr<net::StreamSocket> socket_;
   std::unique_ptr<SocketDataPump> data_pump_;
 
@@ -243,7 +253,7 @@ TEST_P(SocketDataPumpTest, ReadError) {
   net::StaticSocketDataProvider data_provider(reads, writes);
   Init(&data_provider);
   EXPECT_EQ("", Read(&receive_handle_, 1));
-  EXPECT_EQ(net::ERR_FAILED, delegate()->WaitForReadError());
+  EXPECT_EQ(net::ERR_FAILED, observer()->WaitForReadError());
   // Writes can proceed even though there is a read error.
   uint32_t num_bytes = strlen(kTestMsg);
   EXPECT_EQ(MOJO_RESULT_OK, send_handle_->WriteData(&kTestMsg, &num_bytes,
@@ -267,24 +277,13 @@ TEST_P(SocketDataPumpTest, WriteError) {
   EXPECT_EQ(MOJO_RESULT_OK, send_handle_->WriteData(&kTestMsg, &num_bytes,
                                                     MOJO_WRITE_DATA_FLAG_NONE));
   EXPECT_EQ(strlen(kTestMsg), num_bytes);
-  EXPECT_EQ(net::ERR_FAILED, delegate()->WaitForWriteError());
+  EXPECT_EQ(net::ERR_FAILED, observer()->WaitForWriteError());
   // Reads can proceed even though there is a read error.
   EXPECT_EQ(kTestMsg, Read(&receive_handle_, strlen(kTestMsg)));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(data_provider.AllReadDataConsumed());
   EXPECT_TRUE(data_provider.AllWriteDataConsumed());
-}
-
-TEST_P(SocketDataPumpTest, PipesShutdown) {
-  net::IoMode mode = GetParam();
-  net::MockRead reads[] = {net::MockRead(mode, net::OK)};
-  net::StaticSocketDataProvider data_provider(reads,
-                                              base::span<net::MockWrite>());
-  Init(&data_provider);
-  send_handle_.reset();
-  receive_handle_.reset();
-  delegate()->WaitForShutdown();
 }
 
 }  // namespace network

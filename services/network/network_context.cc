@@ -755,7 +755,7 @@ void NetworkContext::CreateTCPConnectedSocket(
     const net::AddressList& remote_addr_list,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::TCPConnectedSocketRequest request,
-    mojom::SocketObserverPtr observer,
+    mojom::TCPConnectedSocketObserverPtr observer,
     CreateTCPConnectedSocketCallback callback) {
   socket_factory_->CreateTCPConnectedSocket(
       local_addr, remote_addr_list,

@@ -220,7 +220,6 @@ class SocketDataProvider {
   virtual MockWriteResult OnWrite(const std::string& data) = 0;
   virtual bool AllReadDataConsumed() const = 0;
   virtual bool AllWriteDataConsumed() const = 0;
-  virtual void CancelPendingRead() {}
 
   virtual void OnEnableTCPFastOpenIfSupported();
 
@@ -417,7 +416,6 @@ class SequencedSocketData : public SocketDataProvider {
   bool AllWriteDataConsumed() const override;
   void OnEnableTCPFastOpenIfSupported() override;
   bool IsIdle() const override;
-  void CancelPendingRead() override;
 
   // An ASYNC read event with a return value of ERR_IO_PENDING will cause the
   // socket data to pause at that event, and advance no further, until Resume is
@@ -660,7 +658,6 @@ class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
   int ReadIfReady(IOBuffer* buf,
                   int buf_len,
                   CompletionOnceCallback callback) override;
-  int CancelReadIfReady() override;
   int Write(IOBuffer* buf,
             int buf_len,
             CompletionOnceCallback callback,

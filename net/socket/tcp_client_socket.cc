@@ -298,10 +298,6 @@ int TCPClientSocket::ReadIfReady(IOBuffer* buf,
   return ReadCommon(buf, buf_len, std::move(callback), /*read_if_ready=*/true);
 }
 
-int TCPClientSocket::CancelReadIfReady() {
-  return socket_->CancelReadIfReady();
-}
-
 int TCPClientSocket::Write(
     IOBuffer* buf,
     int buf_len,
