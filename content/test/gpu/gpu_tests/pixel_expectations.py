@@ -95,8 +95,7 @@ class PixelExpectations(GpuTestExpectations):
               ['linux', 'mac', 'win'], bug=744658)
 
     # TODO(rjkroege): temporarily suppress this test.
-    self.Flaky('Pixel_OffscreenCanvas2DResizeOnWorker',
-              ['mac', 'nvidia'], bug=840394)
+    self.Flaky('Pixel_OffscreenCanvas2DResizeOnWorker', ['mac'], bug=840394)
 
     # TODO(kbr): temporary suppression for new test.
     self.Flaky('Pixel_WebGLSadCanvas', ['mac'], bug=575305)
