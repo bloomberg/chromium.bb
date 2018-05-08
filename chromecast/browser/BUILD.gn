@@ -19,6 +19,8 @@ cast_source_set("browser") {
     "application_media_capabilities.h",
     "bluetooth/cast_bluetooth_chooser.cc",
     "bluetooth/cast_bluetooth_chooser.h",
+    "cast_back_gesture_dispatcher.cc",
+    "cast_back_gesture_dispatcher.h",
     "cast_browser_context.cc",
     "cast_browser_context.h",
     "cast_browser_main_parts.cc",
@@ -377,6 +379,7 @@ cast_source_set("test_support") {
 cast_source_set("browsertests") {
   testonly = true
   sources = [
+    "cast_back_gesture_dispatcher_test.cc",
     "cast_media_blocker_browsertest.cc",
     "renderer_prelauncher_test.cc",
     "test/cast_features_browsertest.cc",
