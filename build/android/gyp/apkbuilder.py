@@ -70,6 +70,10 @@ def _ParseArgs(args):
   parser.add_argument('--native-lib-placeholders',
                       help='GYP-list of native library placeholders to add.',
                       default='[]')
+  parser.add_argument('--secondary-native-lib-placeholders',
+                      help='GYP-list of native library placeholders to add '
+                           'for the secondary ABI',
+                      default='[]')
   parser.add_argument('--uncompress-shared-libraries',
                       action='store_true',
                       help='Uncompress shared libraries')
@@ -79,6 +83,8 @@ def _ParseArgs(args):
       options.uncompressed_assets)
   options.native_lib_placeholders = build_utils.ParseGnList(
       options.native_lib_placeholders)
+  options.secondary_native_lib_placeholders = build_utils.ParseGnList(
+      options.secondary_native_lib_placeholders)
   options.java_resources = build_utils.ParseGnList(options.java_resources)
   all_libs = []
   for gyp_list in options.native_libs:
@@ -93,7 +99,8 @@ def _ParseArgs(args):
   if not options.android_abi and (options.native_libs or
                                   options.native_lib_placeholders):
     raise Exception('Must specify --android-abi with --native-libs')
-  if not options.secondary_android_abi and options.secondary_native_libs:
+  if not options.secondary_android_abi and (options.secondary_native_libs or
+      options.secondary_native_lib_placeholders):
     raise Exception('Must specify --secondary-android-abi with'
                     ' --secondary-native-libs')
   return options
@@ -225,6 +232,7 @@ def main(args):
 
   input_strings = [options.android_abi,
                    options.native_lib_placeholders,
+                   options.secondary_native_lib_placeholders,
                    options.uncompress_shared_libraries]
 
   if options.secondary_android_abi:
@@ -302,6 +310,13 @@ def main(args):
           # with stale builds when the only change is adding/removing
           # placeholders).
           apk_path = 'lib/%s/%s' % (options.android_abi, name)
+          build_utils.AddToZipHermetic(out_apk, apk_path, data='')
+
+        for name in sorted(options.secondary_native_lib_placeholders):
+          # Note: Empty libs files are ignored by md5check (can cause issues
+          # with stale builds when the only change is adding/removing
+          # placeholders).
+          apk_path = 'lib/%s/%s' % (options.secondary_android_abi, name)
           build_utils.AddToZipHermetic(out_apk, apk_path, data='')
 
         # 5. Resources
