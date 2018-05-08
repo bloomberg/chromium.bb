@@ -875,7 +875,6 @@ crbug.com/591099 external/wpt/html/syntax/parsing/named-character-references.htm
 crbug.com/591099 external/wpt/html/the-xhtml-syntax/parsing-xhtml-documents/xhtml-mathml-dtd-entity-1.htm [ Pass Timeout ]
 crbug.com/591099 external/wpt/html/the-xhtml-syntax/parsing-xhtml-documents/xhtml-mathml-dtd-entity-4.htm [ Pass Timeout ]
 crbug.com/591099 external/wpt/html/the-xhtml-syntax/parsing-xhtml-documents/xhtml-mathml-dtd-entity-7.htm [ Pass Timeout ]
-crbug.com/591099 external/wpt/http/basic-auth-cache-test.html [ Timeout ]
 crbug.com/591099 external/wpt/longtask-timing/longtask-in-sibling-iframe.html [ Pass Timeout ]
 crbug.com/591099 external/wpt/media-source/URL-createObjectURL-revoke.html [ Failure ]
 crbug.com/591099 external/wpt/media-source/mediasource-getvideoplaybackquality.html [ Timeout ]
