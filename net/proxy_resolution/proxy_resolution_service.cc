@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -383,6 +384,34 @@ GURL SanitizeUrl(const GURL& url,
   }
 
   return url.ReplaceComponents(replacements);
+}
+
+// Do not change the enumerated value as it is relied on by histograms.
+enum class PacUrlSchemeForHistogram {
+  kOther = 0,
+
+  kHttp = 1,
+  kHttps = 2,
+  kFtp = 3,
+  kFile = 4,
+  kData = 5,
+
+  kMaxValue = kData,
+};
+
+PacUrlSchemeForHistogram GetPacUrlScheme(const GURL& pac_url) {
+  if (pac_url.SchemeIs("http"))
+    return PacUrlSchemeForHistogram::kHttp;
+  if (pac_url.SchemeIs("https"))
+    return PacUrlSchemeForHistogram::kHttps;
+  if (pac_url.SchemeIs("data"))
+    return PacUrlSchemeForHistogram::kData;
+  if (pac_url.SchemeIs("ftp"))
+    return PacUrlSchemeForHistogram::kFtp;
+  if (pac_url.SchemeIs("file"))
+    return PacUrlSchemeForHistogram::kFile;
+
+  return PacUrlSchemeForHistogram::kOther;
 }
 
 }  // namespace
@@ -1574,6 +1603,11 @@ void ProxyResolutionService::OnProxyConfigChanged(
     net_log_->AddGlobalEntry(NetLogEventType::PROXY_CONFIG_CHANGED,
                              base::Bind(&NetLogProxyConfigChangedCallback,
                                         &fetched_config_, &effective_config));
+  }
+
+  if (config.value().has_pac_url()) {
+    UMA_HISTOGRAM_ENUMERATION("Net.ProxyResolutionService.PacUrlScheme",
+                              GetPacUrlScheme(config.value().pac_url()));
   }
 
   // Set the new configuration as the most recently fetched one.
