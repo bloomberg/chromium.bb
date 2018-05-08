@@ -52,7 +52,14 @@ class ExtensionAppContextMenu : public AppContextMenu {
   }
 
  private:
+  // Creates the actionable submenu for LAUNCH_NEW.
+  void CreateOpenNewSubmenu(ui::SimpleMenuModel* menu_model);
+
   bool is_platform_app_ = false;
+
+  // The MenuModel used to control LAUNCH_NEW's icon, label, and
+  // execution when touchable app context menus are enabled.
+  std::unique_ptr<ui::SimpleMenuModel> open_new_submenu_model_;
 
   std::unique_ptr<extensions::ContextMenuMatcher> extension_menu_items_;
 
