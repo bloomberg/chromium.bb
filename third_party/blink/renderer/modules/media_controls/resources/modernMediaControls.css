@@ -133,7 +133,7 @@ video::-internal-media-controls-button-panel {
   bottom: auto;
   height: 48px;
   min-width: 48px;
-  line-height: 30px;
+  line-height: 48px;
   padding: 0 10px 0 16px;
   box-sizing: border-box;
 }

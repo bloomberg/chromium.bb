@@ -20,13 +20,13 @@ layer at (57,85) size 240x200 backgroundClip at (57,85) size 240x180 clip at (60
       LayoutBlockFlow {DIV} at (66,0) size 84x84 [bgcolor=#FFFFFFE6]
 layer at (57,193) size 240x72 scrollWidth 258
   LayoutFlexibleBox (relative positioned) {DIV} at (0,108) size 240x72
-    LayoutBlockFlow {DIV} at (24,27) size 42x45 [color=#FFFFFF]
-      LayoutText {#text} at (0,10) size 42x24
-        text run at (0,10) width 42: "0:00"
-    LayoutBlockFlow {DIV} at (72,-18) size 42x90 [color=#FFFFFF]
-      LayoutText {#text} at (0,10) size 42x69
-        text run at (0,10) width 6: "/"
-        text run at (0,55) width 42: "0:06"
+    LayoutBlockFlow {DIV} at (24,0) size 42x72 [color=#FFFFFF]
+      LayoutText {#text} at (0,24) size 42x24
+        text run at (0,24) width 42: "0:00"
+    LayoutBlockFlow {DIV} at (72,-72) size 42x144 [color=#FFFFFF]
+      LayoutText {#text} at (0,24) size 42x96
+        text run at (0,24) width 6: "/"
+        text run at (0,96) width 42: "0:06"
     LayoutBlockFlow {DIV} at (114,72) size 0x0
     LayoutButton {INPUT} at (114,0) size 72x72
     LayoutButton {INPUT} at (186,0) size 72x72
@@ -44,13 +44,13 @@ layer at (57,310) size 240x200 backgroundClip at (43,291) size 268x218 clip at (
       LayoutBlockFlow {DIV} at (66,0) size 84x84 [bgcolor=#FFFFFFE6]
 layer at (57,418) size 240x72 backgroundClip at (43,397) size 249x112 clip at (57,418) size 235x72 scrollWidth 258
   LayoutFlexibleBox (relative positioned) {DIV} at (0,108) size 240x72
-    LayoutBlockFlow {DIV} at (24,27) size 42x45 [color=#FFFFFF]
-      LayoutText {#text} at (0,10) size 42x24
-        text run at (0,10) width 42: "0:00"
-    LayoutBlockFlow {DIV} at (72,-18) size 42x90 [color=#FFFFFF]
-      LayoutText {#text} at (0,10) size 42x69
-        text run at (0,10) width 6: "/"
-        text run at (0,55) width 42: "0:06"
+    LayoutBlockFlow {DIV} at (24,0) size 42x72 [color=#FFFFFF]
+      LayoutText {#text} at (0,24) size 42x24
+        text run at (0,24) width 42: "0:00"
+    LayoutBlockFlow {DIV} at (72,-72) size 42x144 [color=#FFFFFF]
+      LayoutText {#text} at (0,24) size 42x96
+        text run at (0,24) width 6: "/"
+        text run at (0,96) width 42: "0:06"
     LayoutBlockFlow {DIV} at (114,72) size 0x0
     LayoutButton {INPUT} at (114,0) size 72x72
     LayoutButton {INPUT} at (186,0) size 72x72
