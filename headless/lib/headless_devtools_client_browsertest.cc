@@ -642,6 +642,21 @@ class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
     if (context_id_one_.empty() || context_id_two_.empty())
       return;
 
+    devtools_client_->GetTarget()->GetExperimental()->GetBrowserContexts(
+        target::GetBrowserContextsParams::Builder().Build(),
+        base::BindOnce(&TargetDomainCreateTwoContexts::OnGetBrowserContexts,
+                       base::Unretained(this)));
+  }
+
+  void OnGetBrowserContexts(
+      std::unique_ptr<target::GetBrowserContextsResult> result) {
+    const std::vector<std::string>* contexts = result->GetBrowserContextIds();
+    EXPECT_EQ(2u, contexts->size());
+    EXPECT_TRUE(std::find(contexts->begin(), contexts->end(),
+                          context_id_one_) != contexts->end());
+    EXPECT_TRUE(std::find(contexts->begin(), contexts->end(),
+                          context_id_two_) != contexts->end());
+
     devtools_client_->GetTarget()->GetExperimental()->CreateTarget(
         target::CreateTargetParams::Builder()
             .SetUrl("about://blank")
