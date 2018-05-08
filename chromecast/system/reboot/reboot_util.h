@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "chromecast/public/reboot_shlib.h"
 
 namespace chromecast {
@@ -19,7 +20,6 @@ namespace chromecast {
 // prefer to use the RebootUtil interface.
 class RebootUtil {
  public:
-
   static void Initialize(const std::vector<std::string>& argv);
   static void Finalize();
 
@@ -51,6 +51,17 @@ class RebootUtil {
   static RebootShlib::RebootSource GetLastRebootSource();
   // Returns true if successful.
   static bool SetLastRebootSource(RebootShlib::RebootSource reboot_source);
+
+  using RebootCallback =
+      base::RepeatingCallback<bool(RebootShlib::RebootSource)>;
+  // Sets a callback that will be fired when a reboot is requested. This is
+  // used by tests to ensure that in production a reboot will occur. The
+  // callback returns a bool which controls the return value of RebootNow()
+  static void SetRebootCallbackForTest(const RebootCallback& callback);
+
+  // Clears any previously set reboot callbacks. Should be used to clean up
+  // the test after any invocation of SetRebootCallbackForTest
+  static void ClearRebootCallbackForTest();
 };
 
 }  // namespace chromecast
