@@ -17,8 +17,7 @@
 
 using RemoteLocations = std::set<net::HostPortPair>;
 
-class TargetHandler : public protocol::Target::Backend,
-                      public BrowserListObserver {
+class TargetHandler : public protocol::Target::Backend {
  public:
   explicit TargetHandler(protocol::UberDispatcher* dispatcher);
   ~TargetHandler() override;
@@ -42,20 +41,7 @@ class TargetHandler : public protocol::Target::Backend,
       std::unique_ptr<DisposeBrowserContextCallback> callback) override;
 
  private:
-  void OnOriginalProfileDestroyed(Profile* profile);
-
-  void OnBrowserRemoved(Browser* browser) override;
-
-  base::flat_map<
-      std::string,
-      std::unique_ptr<IndependentOTRProfileManager::OTRProfileRegistration>>
-      registrations_;
-  base::flat_map<std::string, std::unique_ptr<DisposeBrowserContextCallback>>
-      pending_context_disposals_;
-
   RemoteLocations remote_locations_;
-
-  base::WeakPtrFactory<TargetHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetHandler);
 };

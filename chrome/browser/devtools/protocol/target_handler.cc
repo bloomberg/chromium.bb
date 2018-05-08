@@ -11,8 +11,119 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "content/public/browser/devtools_agent_host.h"
 
-TargetHandler::TargetHandler(protocol::UberDispatcher* dispatcher)
-    : weak_factory_(this) {
+namespace {
+
+class DevToolsBrowserContextManager : public BrowserListObserver {
+ public:
+  DevToolsBrowserContextManager();
+  protocol::Response CreateBrowserContext(std::string* out_context_id);
+  Profile* GetBrowserContext(const std::string& context_id);
+  void DisposeBrowserContext(
+      const std::string& context_id,
+      std::unique_ptr<TargetHandler::DisposeBrowserContextCallback> callback);
+
+ private:
+  void OnOriginalProfileDestroyed(Profile* profile);
+
+  void OnBrowserRemoved(Browser* browser) override;
+
+  base::flat_map<
+      std::string,
+      std::unique_ptr<IndependentOTRProfileManager::OTRProfileRegistration>>
+      registrations_;
+  base::flat_map<std::string,
+                 std::unique_ptr<TargetHandler::DisposeBrowserContextCallback>>
+      pending_context_disposals_;
+
+  base::WeakPtrFactory<DevToolsBrowserContextManager> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(DevToolsBrowserContextManager);
+};
+
+DevToolsBrowserContextManager::DevToolsBrowserContextManager()
+    : weak_factory_(this) {}
+
+Profile* DevToolsBrowserContextManager::GetBrowserContext(
+    const std::string& context_id) {
+  auto it = registrations_.find(context_id);
+  return it == registrations_.end() ? nullptr : it->second->profile();
+}
+
+protocol::Response DevToolsBrowserContextManager::CreateBrowserContext(
+    std::string* out_context_id) {
+  Profile* original_profile =
+      ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
+
+  auto registration =
+      IndependentOTRProfileManager::GetInstance()->CreateFromOriginalProfile(
+          original_profile,
+          base::BindOnce(
+              &DevToolsBrowserContextManager::OnOriginalProfileDestroyed,
+              weak_factory_.GetWeakPtr()));
+  *out_context_id = registration->profile()->UniqueId();
+  registrations_[*out_context_id] = std::move(registration);
+  return protocol::Response::OK();
+}
+
+void DevToolsBrowserContextManager::DisposeBrowserContext(
+    const std::string& context_id,
+    std::unique_ptr<TargetHandler::DisposeBrowserContextCallback> callback) {
+  if (pending_context_disposals_.find(context_id) !=
+      pending_context_disposals_.end()) {
+    callback->sendFailure(protocol::Response::Error(
+        "Disposal of browser context " + context_id + " is already pending"));
+    return;
+  }
+  auto it = registrations_.find(context_id);
+  if (it == registrations_.end()) {
+    callback->sendFailure(protocol::Response::InvalidParams(
+        "Failed to find browser context with id " + context_id));
+    return;
+  }
+
+  if (pending_context_disposals_.empty())
+    BrowserList::AddObserver(this);
+
+  pending_context_disposals_[context_id] = std::move(callback);
+  Profile* profile = it->second->profile();
+  BrowserList::CloseAllBrowsersWithIncognitoProfile(
+      profile, base::DoNothing(), base::DoNothing(),
+      true /* skip_beforeunload */);
+}
+
+void DevToolsBrowserContextManager::OnOriginalProfileDestroyed(
+    Profile* profile) {
+  base::EraseIf(registrations_, [&profile](const auto& it) {
+    return it.second->profile()->GetOriginalProfile() == profile;
+  });
+}
+
+void DevToolsBrowserContextManager::OnBrowserRemoved(Browser* browser) {
+  std::string context_id = browser->profile()->UniqueId();
+  auto pending_disposal = pending_context_disposals_.find(context_id);
+  if (pending_disposal == pending_context_disposals_.end())
+    return;
+  for (auto* opened_browser : *BrowserList::GetInstance()) {
+    if (opened_browser->profile() == browser->profile())
+      return;
+  }
+  auto it = registrations_.find(context_id);
+  // We cannot delete immediately here: the profile might still be referenced
+  // during the browser tier-down process.
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
+                                                  it->second.release());
+  registrations_.erase(it);
+  pending_disposal->second->sendSuccess();
+  pending_context_disposals_.erase(pending_disposal);
+  if (pending_context_disposals_.empty())
+    BrowserList::RemoveObserver(this);
+}
+
+base::LazyInstance<DevToolsBrowserContextManager>::Leaky
+    g_devtools_browser_context_manager;
+
+}  // namespace
+
+TargetHandler::TargetHandler(protocol::UberDispatcher* dispatcher) {
   protocol::Target::Dispatcher::wire(dispatcher, this);
 }
 
@@ -21,8 +132,6 @@ TargetHandler::~TargetHandler() {
       ChromeDevToolsManagerDelegate::GetInstance();
   if (delegate)
     delegate->UpdateDeviceDiscovery();
-  registrations_.clear();
-  BrowserList::RemoveObserver(this);
 }
 
 protocol::Response TargetHandler::SetRemoteLocations(
@@ -55,12 +164,12 @@ protocol::Response TargetHandler::CreateTarget(
   Profile* profile = ProfileManager::GetActiveUserProfile();
   if (browser_context_id.isJust()) {
     std::string profile_id = browser_context_id.fromJust();
-    auto it = registrations_.find(profile_id);
-    if (it == registrations_.end()) {
+    profile =
+        g_devtools_browser_context_manager.Get().GetBrowserContext(profile_id);
+    if (!profile) {
       return protocol::Response::Error(
           "Failed to find browser context with id " + profile_id);
     }
-    profile = it->second->profile();
   }
 
   NavigateParams params(profile, GURL(url), ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
@@ -93,68 +202,14 @@ protocol::Response TargetHandler::CreateTarget(
 
 protocol::Response TargetHandler::CreateBrowserContext(
     std::string* out_context_id) {
-  Profile* original_profile =
-      ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
-
-  auto registration =
-      IndependentOTRProfileManager::GetInstance()->CreateFromOriginalProfile(
-          original_profile,
-          base::BindOnce(&TargetHandler::OnOriginalProfileDestroyed,
-                         weak_factory_.GetWeakPtr()));
-  *out_context_id = registration->profile()->UniqueId();
-  registrations_[*out_context_id] = std::move(registration);
-  return protocol::Response::OK();
-}
-
-void TargetHandler::OnOriginalProfileDestroyed(Profile* profile) {
-  base::EraseIf(registrations_, [&profile](const auto& it) {
-    return it.second->profile()->GetOriginalProfile() == profile;
-  });
+  return g_devtools_browser_context_manager.Get().CreateBrowserContext(
+      out_context_id);
 }
 
 void TargetHandler::DisposeBrowserContext(
     const std::string& context_id,
     std::unique_ptr<DisposeBrowserContextCallback> callback) {
-  if (pending_context_disposals_.find(context_id) !=
-      pending_context_disposals_.end()) {
-    callback->sendFailure(protocol::Response::Error(
-        "Disposal of browser context " + context_id + " is already pending"));
-    return;
-  }
-  auto it = registrations_.find(context_id);
-  if (it == registrations_.end()) {
-    callback->sendFailure(protocol::Response::Error(
-        "Failed to find browser context with id " + context_id));
-    return;
-  }
-
-  if (pending_context_disposals_.empty())
-    BrowserList::AddObserver(this);
-
-  pending_context_disposals_[context_id] = std::move(callback);
-  Profile* profile = it->second->profile();
-  BrowserList::CloseAllBrowsersWithIncognitoProfile(
-      profile, base::DoNothing(), base::DoNothing(),
-      true /* skip_beforeunload */);
+  g_devtools_browser_context_manager.Get().DisposeBrowserContext(
+      context_id, std::move(callback));
 }
 
-void TargetHandler::OnBrowserRemoved(Browser* browser) {
-  std::string context_id = browser->profile()->UniqueId();
-  auto pending_disposal = pending_context_disposals_.find(context_id);
-  if (pending_disposal == pending_context_disposals_.end())
-    return;
-  for (auto* opened_browser : *BrowserList::GetInstance()) {
-    if (opened_browser->profile() == browser->profile())
-      return;
-  }
-  auto it = registrations_.find(context_id);
-  // We cannot delete immediately here: the profile might still be referenced
-  // during the browser tier-down process.
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
-                                                  it->second.release());
-  registrations_.erase(it);
-  pending_disposal->second->sendSuccess();
-  pending_context_disposals_.erase(pending_disposal);
-  if (pending_context_disposals_.empty())
-    BrowserList::RemoveObserver(this);
-}
