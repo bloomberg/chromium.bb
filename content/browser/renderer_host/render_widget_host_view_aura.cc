@@ -1476,7 +1476,11 @@ void RenderWidgetHostViewAura::SetTextEditCommandForNextKeyEvent(
     ui::TextEditCommand command) {}
 
 const std::string& RenderWidgetHostViewAura::GetClientSourceInfo() const {
-  return GetFocusedFrame()->GetLastCommittedURL().spec();
+  RenderFrameHostImpl* frame = GetFocusedFrame();
+  if (frame) {
+    return frame->GetLastCommittedURL().spec();
+  }
+  return base::EmptyString();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
