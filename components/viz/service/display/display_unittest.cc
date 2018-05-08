@@ -30,8 +30,8 @@
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
+#include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
-#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -107,21 +107,40 @@ class DisplayTest : public testing::Test {
 
   ~DisplayTest() override {}
 
-  void SetUpDisplay(const RendererSettings& settings,
-                    std::unique_ptr<TestWebGraphicsContext3D> context) {
-    begin_frame_source_.reset(new StubBeginFrameSource);
-
+  void SetUpSoftwareDisplay(const RendererSettings& settings) {
     std::unique_ptr<FakeOutputSurface> output_surface;
-    if (context) {
-      auto provider = TestContextProvider::Create(std::move(context));
-      provider->BindToCurrentThread();
-      output_surface = FakeOutputSurface::Create3d(std::move(provider));
-    } else {
-      auto device = std::make_unique<TestSoftwareOutputDevice>();
-      software_output_device_ = device.get();
-      output_surface = FakeOutputSurface::CreateSoftware(std::move(device));
-    }
+    auto device = std::make_unique<TestSoftwareOutputDevice>();
+    software_output_device_ = device.get();
+    output_surface = FakeOutputSurface::CreateSoftware(std::move(device));
     output_surface_ = output_surface.get();
+
+    CreateDisplaySchedulerAndDisplay(settings, kArbitraryFrameSinkId,
+                                     std::move(output_surface));
+  }
+
+  void SetUpGpuDisplay(const RendererSettings& settings,
+                       std::unique_ptr<TestGLES2Interface> context = nullptr) {
+    std::unique_ptr<FakeOutputSurface> output_surface;
+    scoped_refptr<TestContextProvider> provider;
+    if (context) {
+      provider = TestContextProvider::Create(std::move(context));
+
+    } else {
+      provider = TestContextProvider::Create();
+    }
+    provider->BindToCurrentThread();
+    output_surface = FakeOutputSurface::Create3d(std::move(provider));
+    output_surface_ = output_surface.get();
+
+    CreateDisplaySchedulerAndDisplay(settings, kArbitraryFrameSinkId,
+                                     std::move(output_surface));
+  }
+
+  void CreateDisplaySchedulerAndDisplay(
+      const RendererSettings& settings,
+      const FrameSinkId& frame_sink_id,
+      std::unique_ptr<OutputSurface> output_surface) {
+    begin_frame_source_.reset(new StubBeginFrameSource);
     auto scheduler = std::make_unique<TestDisplayScheduler>(
         begin_frame_source_.get(), task_runner_.get());
     scheduler_ = scheduler.get();
@@ -200,7 +219,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
   RendererSettings settings;
   settings.partial_swap_enabled = true;
   settings.finish_rendering_on_resize = true;
-  SetUpDisplay(settings, nullptr);
+  SetUpSoftwareDisplay(settings);
   gfx::ColorSpace color_space_1 = gfx::ColorSpace::CreateXYZD50();
   gfx::ColorSpace color_space_2 = gfx::ColorSpace::CreateSCRGBLinear();
 
@@ -464,7 +483,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 void DisplayTest::LatencyInfoCapTest(bool over_capacity) {
   RendererSettings settings;
   settings.finish_rendering_on_resize = true;
-  SetUpDisplay(settings, nullptr);
+  SetUpSoftwareDisplay(settings);
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -532,9 +551,9 @@ TEST_F(DisplayTest, OverLatencyInfoCap) {
   LatencyInfoCapTest(true);
 }
 
-class MockedContext : public TestWebGraphicsContext3D {
+class MockedGLES2Interface : public TestGLES2Interface {
  public:
-  MOCK_METHOD0(shallowFinishCHROMIUM, void());
+  MOCK_METHOD0(ShallowFinishCHROMIUM, void());
 };
 
 TEST_F(DisplayTest, Finish) {
@@ -545,11 +564,11 @@ TEST_F(DisplayTest, Finish) {
   settings.partial_swap_enabled = true;
   settings.finish_rendering_on_resize = true;
 
-  auto context = std::make_unique<MockedContext>();
-  MockedContext* context_ptr = context.get();
-  EXPECT_CALL(*context_ptr, shallowFinishCHROMIUM()).Times(0);
+  auto gl = std::make_unique<MockedGLES2Interface>();
+  MockedGLES2Interface* gl_ptr = gl.get();
+  EXPECT_CALL(*gl_ptr, ShallowFinishCHROMIUM()).Times(0);
 
-  SetUpDisplay(settings, std::move(context));
+  SetUpGpuDisplay(settings, std::move(gl));
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -572,19 +591,19 @@ TEST_F(DisplayTest, Finish) {
   display_->DrawAndSwap();
 
   // First resize and draw shouldn't finish.
-  testing::Mock::VerifyAndClearExpectations(context_ptr);
+  testing::Mock::VerifyAndClearExpectations(gl_ptr);
 
-  EXPECT_CALL(*context_ptr, shallowFinishCHROMIUM());
+  EXPECT_CALL(*gl_ptr, ShallowFinishCHROMIUM());
   display_->Resize(gfx::Size(150, 150));
-  testing::Mock::VerifyAndClearExpectations(context_ptr);
+  testing::Mock::VerifyAndClearExpectations(gl_ptr);
 
   // Another resize without a swap doesn't need to finish.
-  EXPECT_CALL(*context_ptr, shallowFinishCHROMIUM()).Times(0);
+  EXPECT_CALL(*gl_ptr, ShallowFinishCHROMIUM()).Times(0);
   display_->SetLocalSurfaceId(local_surface_id2, 1.f);
   display_->Resize(gfx::Size(200, 200));
-  testing::Mock::VerifyAndClearExpectations(context_ptr);
+  testing::Mock::VerifyAndClearExpectations(gl_ptr);
 
-  EXPECT_CALL(*context_ptr, shallowFinishCHROMIUM()).Times(0);
+  EXPECT_CALL(*gl_ptr, ShallowFinishCHROMIUM()).Times(0);
   {
     RenderPassList pass_list;
     auto pass = RenderPass::Create();
@@ -598,11 +617,11 @@ TEST_F(DisplayTest, Finish) {
 
   display_->DrawAndSwap();
 
-  testing::Mock::VerifyAndClearExpectations(context_ptr);
+  testing::Mock::VerifyAndClearExpectations(gl_ptr);
 
-  EXPECT_CALL(*context_ptr, shallowFinishCHROMIUM());
+  EXPECT_CALL(*gl_ptr, ShallowFinishCHROMIUM());
   display_->Resize(gfx::Size(250, 250));
-  testing::Mock::VerifyAndClearExpectations(context_ptr);
+  testing::Mock::VerifyAndClearExpectations(gl_ptr);
   TearDownDisplay();
 }
 
@@ -619,7 +638,7 @@ class CountLossDisplayClient : public StubDisplayClient {
 };
 
 TEST_F(DisplayTest, ContextLossInformsClient) {
-  SetUpDisplay(RendererSettings(), TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(RendererSettings());
 
   CountLossDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -641,7 +660,7 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
   LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
 
   // Set up first display.
-  SetUpDisplay(settings, nullptr);
+  SetUpSoftwareDisplay(settings);
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
   display_->SetLocalSurfaceId(local_surface_id, 1.f);
@@ -692,7 +711,7 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
 // Check if draw occlusion does not remove any DrawQuads when no quad is being
 // covered completely.
 TEST_F(DisplayTest, DrawOcclusionWithNonCoveringDrawQuad) {
-  SetUpDisplay(RendererSettings(), TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -913,7 +932,7 @@ TEST_F(DisplayTest, DrawOcclusionWithNonCoveringDrawQuad) {
 TEST_F(DisplayTest, CompositorFrameWithOverlapDrawQuad) {
   RendererSettings settings;
   settings.kMinimumDrawOcclusionSize.set_width(0);
-  SetUpDisplay(settings, TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -1044,7 +1063,7 @@ TEST_F(DisplayTest, CompositorFrameWithOverlapDrawQuad) {
 // skip_rect size, such that DrawQuads that are smaller than the |skip_rect|
 // are drawn on the screen regardless is shown or not.
 TEST_F(DisplayTest, DrawOcclusionWithSkipRect) {
-  SetUpDisplay(RendererSettings(), TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -1168,7 +1187,7 @@ TEST_F(DisplayTest, DrawOcclusionWithSkipRect) {
 // skip_rect size, such that DrawQuads that are smaller than the |skip_rect|
 // cannot occlude other quads behind it.
 TEST_F(DisplayTest, OcclusionIgnoringSkipRect) {
-  SetUpDisplay(RendererSettings(), TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -1230,7 +1249,7 @@ TEST_F(DisplayTest, OcclusionIgnoringSkipRect) {
 TEST_F(DisplayTest, CompositorFrameWithTransformer) {
   RendererSettings settings;
   settings.kMinimumDrawOcclusionSize.set_width(0);
-  SetUpDisplay(settings, TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -1501,7 +1520,7 @@ TEST_F(DisplayTest, CompositorFrameWithTransformer) {
 
 // Check if draw occlusion works with transform at epsilon scale.
 TEST_F(DisplayTest, CompositorFrameWithEpsilonScaleTransform) {
-  SetUpDisplay(RendererSettings(), TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -1613,7 +1632,7 @@ TEST_F(DisplayTest, CompositorFrameWithEpsilonScaleTransform) {
 
 // Check if draw occlusion works with transform at negative scale.
 TEST_F(DisplayTest, CompositorFrameWithNegativeScaleTransform) {
-  SetUpDisplay(RendererSettings(), TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -1738,7 +1757,7 @@ TEST_F(DisplayTest, CompositorFrameWithNegativeScaleTransform) {
 TEST_F(DisplayTest, CompositorFrameWithRotation) {
   RendererSettings settings;
   settings.kMinimumDrawOcclusionSize.set_width(0);
-  SetUpDisplay(settings, TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -1867,7 +1886,7 @@ TEST_F(DisplayTest, CompositorFrameWithRotation) {
 TEST_F(DisplayTest, CompositorFrameWithPerspective) {
   RendererSettings settings;
   settings.kMinimumDrawOcclusionSize.set_width(0);
-  SetUpDisplay(settings, TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -1943,7 +1962,7 @@ TEST_F(DisplayTest, CompositorFrameWithPerspective) {
 TEST_F(DisplayTest, CompositorFrameWithOpacityChange) {
   RendererSettings settings;
   settings.kMinimumDrawOcclusionSize.set_width(0);
-  SetUpDisplay(settings, TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -2010,7 +2029,7 @@ TEST_F(DisplayTest, CompositorFrameWithOpacityChange) {
 TEST_F(DisplayTest, CompositorFrameWithOpaquenessChange) {
   RendererSettings settings;
   settings.kMinimumDrawOcclusionSize.set_width(0);
-  SetUpDisplay(settings, TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -2078,7 +2097,7 @@ TEST_F(DisplayTest, CompositorFrameWithOpaquenessChange) {
 TEST_F(DisplayTest, CompositorFrameZTranslate) {
   RendererSettings settings;
   settings.kMinimumDrawOcclusionSize.set_width(0);
-  SetUpDisplay(settings, TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -2133,7 +2152,7 @@ TEST_F(DisplayTest, CompositorFrameZTranslate) {
 TEST_F(DisplayTest, CompositorFrameWithTranslateTransformer) {
   RendererSettings settings;
   settings.kMinimumDrawOcclusionSize.set_width(0);
-  SetUpDisplay(settings, TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -2254,7 +2273,7 @@ TEST_F(DisplayTest, CompositorFrameWithTranslateTransformer) {
 TEST_F(DisplayTest, CompositorFrameWithCombinedSharedQuadState) {
   RendererSettings settings;
   settings.kMinimumDrawOcclusionSize.set_width(0);
-  SetUpDisplay(settings, TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -2382,7 +2401,7 @@ TEST_F(DisplayTest, CompositorFrameWithCombinedSharedQuadState) {
 TEST_F(DisplayTest, CompositorFrameWithMultipleRenderPass) {
   RendererSettings settings;
   settings.kMinimumDrawOcclusionSize.set_width(0);
-  SetUpDisplay(settings, TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -2456,7 +2475,7 @@ TEST_F(DisplayTest, CompositorFrameWithMultipleRenderPass) {
 }
 
 TEST_F(DisplayTest, CompositorFrameWithCoveredRenderPass) {
-  SetUpDisplay(RendererSettings(), TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -2526,7 +2545,7 @@ TEST_F(DisplayTest, CompositorFrameWithCoveredRenderPass) {
 TEST_F(DisplayTest, CompositorFrameWithClip) {
   RendererSettings settings;
   settings.kMinimumDrawOcclusionSize.set_width(0);
-  SetUpDisplay(settings, TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -2643,7 +2662,7 @@ TEST_F(DisplayTest, CompositorFrameWithClip) {
 TEST_F(DisplayTest, CompositorFrameWithCopyRequest) {
   RendererSettings settings;
   settings.kMinimumDrawOcclusionSize.set_width(0);
-  SetUpDisplay(settings, TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -2691,7 +2710,7 @@ TEST_F(DisplayTest, CompositorFrameWithCopyRequest) {
 TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
   RendererSettings settings;
   settings.kMinimumDrawOcclusionSize.set_width(0);
-  SetUpDisplay(settings, TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -2871,7 +2890,7 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
 TEST_F(DisplayTest, CompositorFrameWithMultipleDrawQuadInSharedQuadState) {
   RendererSettings settings;
   settings.kMinimumDrawOcclusionSize.set_width(0);
-  SetUpDisplay(settings, TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -3048,7 +3067,7 @@ TEST_F(DisplayTest, CompositorFrameWithMultipleDrawQuadInSharedQuadState) {
 TEST_F(DisplayTest, CompositorFrameWithNonInvertibleTransform) {
   RendererSettings settings;
   settings.kMinimumDrawOcclusionSize.set_width(0);
-  SetUpDisplay(settings, TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -3151,7 +3170,7 @@ TEST_F(DisplayTest, CompositorFrameWithNonInvertibleTransform) {
 
 // Check if draw occlusion works with very large DrawQuad. crbug.com/824528.
 TEST_F(DisplayTest, DrawOcclusionWithLargeDrawQuad) {
-  SetUpDisplay(RendererSettings(), TestWebGraphicsContext3D::Create());
+  SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -3196,7 +3215,7 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
   const LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
 
   // Set up first display.
-  SetUpDisplay(settings, nullptr);
+  SetUpSoftwareDisplay(settings);
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
   display_->SetLocalSurfaceId(local_surface_id, 1.f);
