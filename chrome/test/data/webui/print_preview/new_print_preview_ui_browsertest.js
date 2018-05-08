@@ -575,3 +575,55 @@ TEST_F('PrintPreviewCustomMarginsTest', 'ControlsCheck',
        function() {
   this.runMochaTest(custom_margins_test.TestNames.ControlsCheck);
 });
+
+PrintPreviewNewDestinationSearchTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/destination_dialog.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      ROOT_PATH + 'chrome/test/data/webui/settings/test_util.js',
+      ROOT_PATH + 'ui/webui/resources/js/webui_listener_tracker.js',
+      '../test_browser_proxy.js',
+      'native_layer_stub.js',
+      'print_preview_test_utils.js',
+      'destination_search_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return destination_search_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewNewDestinationSearchTest', 'ReceiveSuccessfulSetup',
+       function() {
+  this.runMochaTest(destination_search_test.TestNames.ReceiveSuccessfulSetup);
+});
+
+GEN('#if defined(OS_CHROMEOS)');
+TEST_F('PrintPreviewNewDestinationSearchTest', 'ResolutionFails',
+       function() {
+  this.runMochaTest(destination_search_test.TestNames.ResolutionFails);
+});
+
+TEST_F('PrintPreviewNewDestinationSearchTest', 'ReceiveFailedSetup',
+       function() {
+  this.runMochaTest(destination_search_test.TestNames.ReceiveFailedSetup);
+});
+
+GEN('#else');  // !defined(OS_CHROMEOS)
+TEST_F('PrintPreviewNewDestinationSearchTest', 'GetCapabilitiesFails',
+       function() {
+  this.runMochaTest(destination_search_test.TestNames.GetCapabilitiesFails);
+});
+GEN('#endif');  // defined(OS_CHROMEOS)
+
+TEST_F('PrintPreviewNewDestinationSearchTest', 'CloudKioskPrinter',
+       function() {
+  this.runMochaTest(destination_search_test.TestNames.CloudKioskPrinter);
+});
