@@ -136,12 +136,6 @@ class CORE_EXPORT HTMLImageElement final
   FormAssociated* ToFormAssociatedOrNull() override { return this; };
   void AssociateWith(HTMLFormElement*) override;
 
-  // When an image element violates feature policy optimized image policies, it
-  // should be rendered with inverted color.
-  // https://github.com/WICG/feature-policy/blob/gh-pages/policies/optimized-images.md
-  bool ShouldInvertColor() const;
-  void UpdateShouldInvertColor(bool);
-
  protected:
   // Controls how an image element appears in the layout. See:
   // https://html.spec.whatwg.org/multipage/embedded-content.html#image-request

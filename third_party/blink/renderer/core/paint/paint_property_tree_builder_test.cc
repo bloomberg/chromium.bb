@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder_test.h"
 
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
+#include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_tree_as_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
@@ -5497,6 +5498,72 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_EQ(1u, NumFragments(fixed));
   EXPECT_FALSE(fixed_child->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(1u, NumFragments(fixed_child));
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, ImageWithInvertFilter) {
+  SetBodyInnerHTML(R"HTML(
+    <img id='img' src='x'>
+  )HTML");
+  ToLayoutImage(GetLayoutObjectByElementId("img"))
+      ->UpdateShouldInvertColor(true);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  const auto* filters = PaintPropertiesForElement("img")->Filter();
+  ASSERT_NE(nullptr, filters);
+  CompositorFilterOperations filters_expect;
+  filters_expect.AppendInvertFilter(1.0f);
+  EXPECT_EQ(filters_expect, filters->Filter());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, ImageWithInvertFilterUpdated) {
+  SetBodyInnerHTML(R"HTML(
+    <img id='img' src='x'>
+  )HTML");
+
+  ToLayoutImage(GetLayoutObjectByElementId("img"))
+      ->UpdateShouldInvertColor(true);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  const auto* filters = PaintPropertiesForElement("img")->Filter();
+  ASSERT_NE(nullptr, filters);
+  CompositorFilterOperations filters_expect;
+  filters_expect.AppendInvertFilter(1.0f);
+  EXPECT_EQ(filters_expect, filters->Filter());
+  ToLayoutImage(GetLayoutObjectByElementId("img"))
+      ->UpdateShouldInvertColor(false);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(nullptr, PaintPropertiesForElement("img"));
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, LayeredImageWithInvertFilter) {
+  SetBodyInnerHTML(R"HTML(
+    <img id='img' style='position: relative;' src='x'>
+  )HTML");
+  ToLayoutImage(GetLayoutObjectByElementId("img"))
+      ->UpdateShouldInvertColor(true);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  const auto* filters = PaintPropertiesForElement("img")->Filter();
+  ASSERT_NE(nullptr, filters);
+  CompositorFilterOperations filters_expect;
+  filters_expect.AppendInvertFilter(1.0f);
+  EXPECT_EQ(filters_expect, filters->Filter());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, LayeredImageWithInvertFilterUpdated) {
+  SetBodyInnerHTML(R"HTML(
+    <img id='img' style='position: relative;' src='x'>
+  )HTML");
+
+  ToLayoutImage(GetLayoutObjectByElementId("img"))
+      ->UpdateShouldInvertColor(true);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  const auto* filters = PaintPropertiesForElement("img")->Filter();
+  ASSERT_NE(nullptr, filters);
+  CompositorFilterOperations filters_expect;
+  filters_expect.AppendInvertFilter(1.0f);
+  EXPECT_EQ(filters_expect, filters->Filter());
+  ToLayoutImage(GetLayoutObjectByElementId("img"))
+      ->UpdateShouldInvertColor(false);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(nullptr, PaintPropertiesForElement("img"));
 }
 
 }  // namespace blink

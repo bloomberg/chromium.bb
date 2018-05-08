@@ -87,6 +87,12 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
 
   const char* GetName() const override { return "LayoutImage"; }
 
+  // When an image element violates feature policy optimized image policies, it
+  // should be rendered with inverted color.
+  // https://github.com/WICG/feature-policy/blob/gh-pages/policies/optimized-images.md
+  bool ShouldInvertColor() const;
+  void UpdateShouldInvertColor(bool);
+
  protected:
   bool NeedsPreferredWidthsRecalculation() const final;
   LayoutReplaced* EmbeddedReplacedContent() const;
@@ -147,6 +153,8 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
   // This field stores whether this image is generated with 'content'.
   bool is_generated_content_;
   float image_device_pixel_ratio_;
+
+  bool should_invert_color_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutImage, IsLayoutImage());

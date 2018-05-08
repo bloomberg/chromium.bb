@@ -39,9 +39,39 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/paint/image_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
+#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 
 namespace blink {
+
+namespace {
+
+void CheckForOptimizedImagePolicy(const LocalFrame& frame,
+                                  LayoutImage* layout_image,
+                                  ImageResourceContent* new_image) {
+  // Invert the image if the document does not have the 'legacy-image-formats'
+  // feature enabled, and the image is not one of the allowed formats.
+  if (IsSupportedInFeaturePolicy(
+          mojom::FeaturePolicyFeature::kLegacyImageFormats) &&
+      !frame.IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kLegacyImageFormats)) {
+    if (!new_image->IsAcceptableContentType()) {
+      layout_image->UpdateShouldInvertColor(true);
+      return;
+    }
+  }
+  // Invert the image if the document does not have the image-compression'
+  // feature enabled and the image is not sufficiently-well-compressed.
+  if (IsSupportedInFeaturePolicy(
+          mojom::FeaturePolicyFeature::kImageCompression) &&
+      !frame.IsFeatureEnabled(mojom::FeaturePolicyFeature::kImageCompression)) {
+    if (!new_image->IsAcceptableCompressionRatio())
+      layout_image->UpdateShouldInvertColor(true);
+  }
+}
+
+}  // namespace
 
 using namespace HTMLNames;
 
@@ -49,7 +79,8 @@ LayoutImage::LayoutImage(Element* element)
     : LayoutReplaced(element, LayoutSize()),
       did_increment_visually_non_empty_pixel_count_(false),
       is_generated_content_(false),
-      image_device_pixel_ratio_(1.0f) {}
+      image_device_pixel_ratio_(1.0f),
+      should_invert_color_(false) {}
 
 LayoutImage* LayoutImage::CreateAnonymous(PseudoElement& pseudo) {
   LayoutImage* image = new LayoutImage(nullptr);
@@ -196,6 +227,12 @@ void LayoutImage::ImageNotifyFinished(ImageResourceContent* new_image) {
     return;
 
   InvalidateBackgroundObscurationStatus();
+
+  // Check for optimized image policies.
+  if (View() && View()->GetFrameView()) {
+    CheckForOptimizedImagePolicy(View()->GetFrameView()->GetFrame(), this,
+                                 new_image);
+  }
 
   if (new_image == image_resource_->CachedImage()) {
     // tell any potential compositing layers
@@ -350,6 +387,20 @@ LayoutReplaced* LayoutImage::EmbeddedReplacedContent() const {
   if (!image->IsSVGImage())
     return nullptr;
   return ToSVGImage(image)->EmbeddedReplacedContent();
+}
+
+bool LayoutImage::ShouldInvertColor() const {
+  return should_invert_color_;
+}
+
+void LayoutImage::UpdateShouldInvertColor(bool value) {
+  if (should_invert_color_ != value) {
+    should_invert_color_ = value;
+    SetNeedsPaintPropertyUpdate();
+    // If composited image, update compositing layer.
+    if (Layer())
+      Layer()->SetNeedsCompositingInputsUpdate();
+  }
 }
 
 }  // namespace blink

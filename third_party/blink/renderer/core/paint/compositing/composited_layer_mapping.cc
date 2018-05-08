@@ -318,6 +318,13 @@ void CompositedLayerMapping::UpdateTransform(const ComputedStyle& style) {
 void CompositedLayerMapping::UpdateFilters() {
   CompositorFilterOperations operations;
   OwningLayer().UpdateCompositorFilterOperationsForFilter(operations);
+
+  // If the image violates some feature policy optimized image policies, render
+  // with inverted color.
+  if (GetLayoutObject().IsLayoutImage() &&
+      ToLayoutImage(GetLayoutObject()).ShouldInvertColor())
+    operations.AppendInvertFilter(1.0f);
+
   graphics_layer_->SetFilters(std::move(operations));
 }
 
