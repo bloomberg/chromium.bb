@@ -38,5 +38,6 @@ feed_lib_proto_sources = [
   "src/src/main/proto/search/now/proto/wire/feed/request.proto",
   "src/src/main/proto/search/now/proto/wire/feed/response.proto",
   "src/src/main/proto/search/now/proto/wire/feed/semantic_properties.proto",
+  "src/src/main/proto/search/now/proto/wire/feed/token.proto",
   "src/src/main/proto/search/now/proto/wire/feed/version.proto",
 ]
