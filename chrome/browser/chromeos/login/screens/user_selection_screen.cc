@@ -749,7 +749,10 @@ void UserSelectionScreen::AttemptEasySignin(const AccountId& account_id,
                                             const std::string& key_label) {
   DCHECK_EQ(GetScreenType(), SIGNIN_SCREEN);
 
-  UserContext user_context(account_id);
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+  DCHECK(user);
+  UserContext user_context(*user);
   user_context.SetAuthFlow(UserContext::AUTH_FLOW_EASY_UNLOCK);
   user_context.SetKey(Key(secret));
   user_context.GetKey()->SetLabel(key_label);

@@ -80,7 +80,7 @@ ExtendedAuthenticator* CreateFakeAuthenticator(
     AuthStatusConsumer* auth_status_consumer) {
   const AccountId account_id =
       AccountId::FromUserEmailGaiaId(kTestUserEmail, kTestUserGaiaId);
-  UserContext expected_context(account_id);
+  UserContext expected_context(user_manager::USER_TYPE_REGULAR, account_id);
   expected_context.SetKey(Key(kValidPassword));
 
   ExtendedAuthenticator* authenticator =

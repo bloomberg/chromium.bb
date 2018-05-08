@@ -217,7 +217,7 @@ QuickUnlockPrivateGetAuthTokenFunction::Run() {
   const user_manager::User* const user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(
           chrome_details_.GetProfile());
-  chromeos::UserContext user_context(user->GetAccountId());
+  chromeos::UserContext user_context(*user);
   user_context.SetKey(chromeos::Key(params->account_password));
 
   // Alter |user_context| if the user is supervised.
@@ -554,7 +554,7 @@ void QuickUnlockPrivateSetModesFunction::ModeChangeComplete(
   const user_manager::User* const user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(
           chrome_details_.GetProfile());
-  const chromeos::UserContext user_context(user->GetAccountId());
+  const chromeos::UserContext user_context(*user);
   chromeos::EasyUnlockService::Get(chrome_details_.GetProfile())
       ->HandleUserReauth(user_context);
 

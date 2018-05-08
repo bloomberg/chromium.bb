@@ -243,7 +243,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, PRE_ExistingUserLogin) {
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, DISABLED_ExistingUserLogin) {
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(2);
-  UserContext user_context(gaia_account_id_);
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(gaia_account_id_);
+  UserContext user_context(*user);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(gaia_account_id_.GetUserEmail());
   test::UserSessionManagerTestApi session_manager_test_api(
@@ -290,7 +292,8 @@ void ExistingUserControllerUntrustedTest::SetUpSessionManager() {
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
                        ExistingUserLoginForbidden) {
-  UserContext user_context(gaia_account_id_);
+  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                           gaia_account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(gaia_account_id_.GetUserEmail());
   existing_user_controller()->Login(user_context, SigninSpecifics());
@@ -304,7 +307,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
 #endif
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
                        MAYBE_NewUserLoginForbidden) {
-  UserContext user_context(gaia_account_id_);
+  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                           gaia_account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(gaia_account_id_.GetUserEmail());
   existing_user_controller()->CompleteLogin(user_context);
@@ -319,7 +323,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
                        SupervisedUserLoginForbidden) {
-  UserContext user_context(AccountId::FromUserEmail(kSupervisedUserID));
+  UserContext user_context(user_manager::UserType::USER_TYPE_SUPERVISED,
+                           AccountId::FromUserEmail(kSupervisedUserID));
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(gaia_account_id_.GetUserEmail());
   existing_user_controller()->Login(user_context, SigninSpecifics());
@@ -588,7 +593,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        DISABLED_LoginStopsAutoLogin) {
   // Set up mocks to check login success.
-  UserContext user_context(gaia_account_id_);
+  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                           gaia_account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(user_context.GetAccountId().GetUserEmail());
   ExpectSuccessfulLogin(user_context);
@@ -620,7 +626,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        GuestModeLoginStopsAutoLogin) {
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(2);
-  UserContext user_context(gaia_account_id_);
+  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                           gaia_account_id_);
   user_context.SetKey(Key(kPassword));
   test::UserSessionManagerTestApi session_manager_test_api(
       UserSessionManager::GetInstance());
@@ -649,7 +656,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        CompleteLoginStopsAutoLogin) {
   // Set up mocks to check login success.
-  UserContext user_context(gaia_account_id_);
+  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                           gaia_account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(user_context.GetAccountId().GetUserEmail());
   ExpectSuccessfulLogin(user_context);
@@ -719,7 +727,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 
   // Check that the attempt to start a public session fails with an error.
   ExpectLoginFailure();
-  UserContext user_context(gaia_account_id_);
+  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                           gaia_account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(user_context.GetAccountId().GetUserEmail());
   existing_user_controller()->Login(user_context, SigninSpecifics());
@@ -910,7 +919,8 @@ class ExistingUserControllerActiveDirectoryUserWhitelistTest
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
                        ActiveDirectoryOnlineLogin_Success) {
   ExpectLoginSuccess();
-  UserContext user_context(ad_account_id_);
+  UserContext user_context(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
+                           ad_account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(ad_account_id_.GetUserEmail());
   user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
@@ -930,7 +940,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
                        PolicyChangeTriggersFileUpdate) {
   ExpectLoginSuccess();
-  UserContext user_context(ad_account_id_);
+  UserContext user_context(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
+                           ad_account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(ad_account_id_.GetUserEmail());
   user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
@@ -956,7 +967,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
                        ActiveDirectoryOfflineLogin_Success) {
   ExpectLoginSuccess();
-  UserContext user_context(ad_account_id_);
+  UserContext user_context(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
+                           ad_account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(ad_account_id_.GetUserEmail());
   ASSERT_EQ(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
@@ -975,7 +987,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
                        GAIAAccountLogin_Failure) {
   ExpectLoginFailure();
-  UserContext user_context(gaia_account_id_);
+  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                           gaia_account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(gaia_account_id_.GetUserEmail());
   existing_user_controller()->CompleteLogin(user_context);
@@ -985,7 +998,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryUserWhitelistTest,
                        Success) {
   ExpectLoginSuccess();
-  UserContext user_context(ad_account_id_);
+  UserContext user_context(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
+                           ad_account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(ad_account_id_.GetUserEmail());
   user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
@@ -1005,7 +1019,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryUserWhitelistTest,
   ExpectLoginWhitelistFailure();
   AccountId account_id =
       AccountId::AdFromUserEmailObjGuid(kUserNotMatchingWhitelist, kGaiaID);
-  UserContext user_context(account_id);
+  UserContext user_context(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
+                           account_id);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(account_id.GetUserEmail());
   user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
@@ -1029,7 +1044,8 @@ class ExistingUserControllerSavePasswordHashTest
 // profile prefs.
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerSavePasswordHashTest,
                        GaiaOnlineLoginSavesPasswordHashToPrefs) {
-  UserContext user_context(gaia_account_id_);
+  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                           gaia_account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(gaia_account_id_.GetUserEmail());
   content::WindowedNotificationObserver profile_prepared_observer(
@@ -1052,7 +1068,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerSavePasswordHashTest,
 // prefs.
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerSavePasswordHashTest,
                        OfflineLoginSavesPasswordHashToPrefs) {
-  UserContext user_context(gaia_account_id_);
+  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                           gaia_account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(gaia_account_id_.GetUserEmail());
   content::WindowedNotificationObserver profile_prepared_observer(

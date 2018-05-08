@@ -1215,16 +1215,18 @@ void SigninScreenHandler::HandleAuthenticateUser(const AccountId& account_id,
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(account_id);
   DCHECK(user);
-  user_manager::UserType user_type = user_manager::UserType::USER_TYPE_REGULAR;
+  UserContext user_context;
   if (!user) {
     LOG(ERROR) << "HandleAuthenticateUser: User not found! account type="
                << AccountId::AccountTypeToString(account_id.GetAccountType());
-    if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY)
-      user_type = user_manager::USER_TYPE_ACTIVE_DIRECTORY;
+    const user_manager::UserType user_type =
+        (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY)
+            ? user_manager::USER_TYPE_ACTIVE_DIRECTORY
+            : user_manager::UserType::USER_TYPE_REGULAR;
+    user_context = UserContext(user_type, account_id);
   } else {
-    user_type = user->GetType();
+    user_context = UserContext(*user);
   }
-  UserContext user_context(user_type, account_id);
   user_context.SetKey(Key(password));
   // Only save the password for enterprise users. See https://crbug.com/386606.
   const bool is_enterprise_managed = g_browser_process->platform_part()

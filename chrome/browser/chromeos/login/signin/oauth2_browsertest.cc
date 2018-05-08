@@ -336,7 +336,8 @@ class OAuth2Test : public OobeBaseTest {
       return false;
     }
 
-    UserContext user_context(account_id);
+    UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                             account_id);
     user_context.SetKey(Key(password));
     controller->Login(user_context, SigninSpecifics());
     content::WindowedNotificationObserver(
@@ -657,6 +658,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, SetInvalidTokenStatus) {
   ExistingUserController* const controller =
       ExistingUserController::current_controller();
   UserContext user_context(
+      user_manager::USER_TYPE_REGULAR,
       AccountId::FromUserEmailGaiaId(kTestEmail, kTestGaiaId));
   user_context.SetKey(Key(kTestAccountPassword));
   controller->Login(user_context, SigninSpecifics());

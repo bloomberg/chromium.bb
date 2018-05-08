@@ -95,8 +95,11 @@ void LoadDataForUser(
       UserSessionManager::GetInstance()->GetEasyUnlockKeyManager();
   DCHECK(key_manager);
 
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+  DCHECK(user);
   key_manager->GetDeviceDataList(
-      UserContext(account_id),
+      UserContext(*user),
       base::Bind(&RetryDataLoadOnError, account_id, backoff_ms, callback));
 }
 

@@ -215,7 +215,10 @@ void LoginDisplayHostMojo::HandleAuthenticateUser(
 
   on_authenticated_ = std::move(callback);
 
-  UserContext user_context(account_id);
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+  DCHECK(user);
+  UserContext user_context(*user);
   user_context.SetKey(Key(chromeos::Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
                           std::string(), hashed_password));
   user_context.SetSyncPasswordData(sync_password_data);

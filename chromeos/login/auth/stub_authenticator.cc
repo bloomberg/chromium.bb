@@ -79,7 +79,8 @@ void StubAuthenticator::LoginAsPublicSession(const UserContext& user_context) {
 void StubAuthenticator::LoginAsKioskAccount(
     const AccountId& /* app_account_id */,
     bool use_guest_mount) {
-  UserContext user_context(expected_user_context_.GetAccountId());
+  UserContext user_context(user_manager::UserType::USER_TYPE_KIOSK_APP,
+                           expected_user_context_.GetAccountId());
   user_context.SetIsUsingOAuth(false);
   user_context.SetUserIDHash(
       expected_user_context_.GetAccountId().GetUserEmail() + kUserIdHashSuffix);
@@ -88,7 +89,8 @@ void StubAuthenticator::LoginAsKioskAccount(
 
 void StubAuthenticator::LoginAsArcKioskAccount(
     const AccountId& /* app_account_id */) {
-  UserContext user_context(expected_user_context_.GetAccountId());
+  UserContext user_context(user_manager::USER_TYPE_ARC_KIOSK_APP,
+                           expected_user_context_.GetAccountId());
   user_context.SetIsUsingOAuth(false);
   user_context.SetUserIDHash(
       expected_user_context_.GetAccountId().GetUserEmail() + kUserIdHashSuffix);
