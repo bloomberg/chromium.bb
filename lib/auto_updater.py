@@ -75,8 +75,8 @@ import shutil
 import tempfile
 import time
 
-from chromite.lib import auto_update_util
 from chromite.cli import command
+from chromite.lib import auto_update_util
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -132,6 +132,7 @@ POST_CHECK_SETTLE_SECONDS = 15
 # Number of seconds to delay between post check retries.
 POST_CHECK_RETRY_SECONDS = 5
 
+
 class ChromiumOSUpdateError(Exception):
   """Thrown when there is a general ChromiumOS-specific update error."""
 
@@ -162,6 +163,7 @@ class RebootVerificationError(ChromiumOSUpdateError):
 
 class BaseUpdater(object):
   """The base updater class."""
+
   def __init__(self, device, payload_dir):
     self.device = device
     self.payload_dir = payload_dir
@@ -406,7 +408,6 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     logging.debug('Current root device is %s', rootdev)
     return rootdev
 
-
   def _GetStatefulUpdateScript(self):
     """Returns the path to the stateful_update_bin on the target.
 
@@ -469,14 +470,12 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     if status != UPDATE_STATUS_IDLE:
       raise RootfsUpdateError('Update engine is not idle. Status: %s' % status)
 
-
   def _GetDevicePythonSysPath(self):
     """Get python sys.path of the given |device|."""
     sys_path = self.device.RunCommand(
         ['python', '-c', '"import json, sys; json.dump(sys.path, sys.stdout)"'],
         capture_output=True, log_output=True).output
     return json.loads(sys_path)
-
 
   def _FindDevicePythonPackagesDir(self):
     """Find the python packages directory for the given |device|."""
@@ -494,21 +493,24 @@ class ChromiumOSFlashUpdater(BaseUpdater):
 
     return third_party_host_dir
 
-
-  def _CopyPythonFilesToTemp(self, source_python_dir, dest_temp_dir):
+  def _CopyPythonFilesToTemp(self, source_python_dir, dest_temp_dir,
+                             extra_ignore_patterns=None):
     """Copy filtered python files to tempdir.
 
     Args;
       source_python_dir: The source python directory that is used to copy from.
       dest_temp_dir: The dest temp directory that is used to copy to.
+      extra_ignore_patterns: A list of extra ignore patterns in addition to
+        default patterns.
     """
     logging.debug('Copy from %s to %s', source_python_dir, dest_temp_dir)
+    default_ignore_patterns = ['*.pyc', 'tmp*', '.*', 'static', '*~']
+    if extra_ignore_patterns:
+      default_ignore_patterns.extend(extra_ignore_patterns)
     shutil.copytree(
         source_python_dir, dest_temp_dir,
-        ignore=shutil.ignore_patterns('*.pyc', 'tmp*', '.*', 'static',
-                                      '*~', 'venv'),
+        ignore=shutil.ignore_patterns(*default_ignore_patterns),
         symlinks=True)
-
 
   def _TransferRequiredPackage(self):
     """Transfer third-party packages related to devserver package."""
@@ -563,7 +565,9 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     src_dir = os.path.join(self.tempdir, 'src')
     osutils.RmDir(src_dir, ignore_missing=True)
     # Filter python files from (binary) garbage.
-    self._CopyPythonFilesToTemp(ds_wrapper.DEVSERVER_PKG_DIR, src_dir)
+    # Also filter out directories including symlink to chromite.
+    self._CopyPythonFilesToTemp(ds_wrapper.DEVSERVER_PKG_DIR, src_dir,
+                                extra_ignore_patterns=['venv', 'gs_cache'])
     # Copy update_payload from update_engine repository.
     update_payload_dir = os.path.join(src_dir, 'update_payload')
     self._CopyPythonFilesToTemp(UPDATE_PAYLOAD_DIR, update_payload_dir)
@@ -1208,7 +1212,6 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
       raise RootfsUpdateError(
           'After update and reboot, %s '
           'within %d seconds' % (event, self.KERNEL_UPDATE_TIMEOUT))
-
 
   def _CheckVersionToConfirmInstall(self):
     # In the local_devserver case, we can't know the expected

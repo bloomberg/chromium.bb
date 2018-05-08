@@ -134,6 +134,18 @@ class ChromiumOSUpdateTransferTest(ChromiumOSFlashUpdaterBaseTest):
       self.assertTrue(
           self.transfer_mock.patched['TransferStatefulUpdate'].called)
 
+  def testCopyPythonFilesToTemp(self):
+    """Test copy python files to temp directory."""
+    with mock.patch('shutil.copytree'), \
+        mock.patch('shutil.ignore_patterns') as m, \
+        remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+      CrOS_AU = auto_updater.ChromiumOSFlashUpdater(
+          device, self.payload_dir, do_rootfs_update=False)
+      # pylint: disable=protected-access
+      CrOS_AU._CopyPythonFilesToTemp('dir_src', 'dir_temp',
+                                     extra_ignore_patterns=['bad_thing'])
+      m.assert_called_with('*.pyc', 'tmp*', '.*', 'static', '*~', 'bad_thing')
+
 
 class ChromiumOSUpdatePreCheckTest(ChromiumOSFlashUpdaterBaseTest):
   """Test precheck function."""
