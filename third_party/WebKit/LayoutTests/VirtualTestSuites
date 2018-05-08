@@ -702,5 +702,10 @@
     "base": "media",
     "args": ["--enable-features=UseSurfaceLayerForVideo",
              "--enable-display-compositor-pixel-dump"]
+  },
+  {
+    "prefix": "user-activation-v2",
+    "base": "user-activation-v2",
+    "args": ["--enable-features=UserActivationV2"]
   }
 ]
