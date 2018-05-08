@@ -1898,7 +1898,7 @@
     }
   },
   "Win 10 Perf": {
-    "build189-a9": {
+    "build117-a7": {
       "benchmarks": [
         "blink_perf.dom",
         "blink_perf.paint",
@@ -1916,7 +1916,7 @@
         "v8.runtime_stats.top_25"
       ]
     },
-    "build190-a9": {
+    "build118-a7": {
       "benchmarks": [
         "blink_perf.bindings",
         "blink_perf.canvas",
@@ -1942,7 +1942,7 @@
         "webrtc"
       ]
     },
-    "build191-a9": {
+    "build119-a7": {
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
@@ -1967,7 +1967,7 @@
         "wasm"
       ]
     },
-    "build192-a9": {
+    "build120-a7": {
       "benchmarks": [
         "blink_perf.parser",
         "blink_perf.svg",
@@ -1985,7 +1985,7 @@
         "v8.browsing_desktop"
       ]
     },
-    "build193-a9": {
+    "build121-a7": {
       "benchmarks": [
         "battor.steady_state",
         "blink_perf.css",
