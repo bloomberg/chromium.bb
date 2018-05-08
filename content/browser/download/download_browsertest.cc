@@ -2932,7 +2932,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeServerError) {
 }
 
 // A cross-origin request that fails before it gets a response from the server
-// should result in an network error page.
+// should result in a network error page.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeNetworkError) {
   SetupErrorInjectionDownloads();
   GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
