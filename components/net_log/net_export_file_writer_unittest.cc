@@ -16,19 +16,22 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/net_log/chrome_net_log.h"
 #include "net/base/test_completion_callback.h"
-#include "net/http/http_network_session.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
+#include "net/test/embedded_test_server/default_handlers.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/network_context.h"
+#include "services/network/network_service.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -162,44 +165,6 @@ WARN_UNUSED_RESULT ::testing::AssertionResult ReadCompleteLogFile(
   return ::testing::AssertionSuccess();
 }
 
-void SetUpTestContextGetterWithQuicTimeoutInfo(
-    net::NetLog* net_log,
-    int quic_idle_connection_timeout_seconds,
-    scoped_refptr<net::TestURLRequestContextGetter>* context_getter) {
-  std::unique_ptr<net::TestURLRequestContext> context =
-      std::make_unique<net::TestURLRequestContext>(true);
-  context->set_net_log(net_log);
-
-  std::unique_ptr<net::HttpNetworkSession::Params> params(
-      new net::HttpNetworkSession::Params);
-  params->quic_idle_connection_timeout_seconds =
-      quic_idle_connection_timeout_seconds;
-
-  context->set_http_network_session_params(std::move(params));
-  context->Init();
-
-  *context_getter = new net::TestURLRequestContextGetter(
-      base::ThreadTaskRunnerHandle::Get(), std::move(context));
-}
-
-void SetUpTestContextGetterWithRequest(
-    net::NetLog* net_log,
-    const GURL& url,
-    net::URLRequest::Delegate* delegate,
-    scoped_refptr<net::TestURLRequestContextGetter>* context_getter,
-    std::unique_ptr<net::URLRequest>* request) {
-  auto context = std::make_unique<net::TestURLRequestContext>(true);
-  context->set_net_log(net_log);
-  context->Init();
-
-  *request = context->CreateRequest(url, net::IDLE, delegate,
-                                    TRAFFIC_ANNOTATION_FOR_TESTS);
-  (*request)->Start();
-
-  *context_getter = new net::TestURLRequestContextGetter(
-      base::ThreadTaskRunnerHandle::Get(), std::move(context));
-}
-
 // An implementation of NetExportFileWriter::StateObserver that allows waiting
 // until it's notified of a new state.
 class TestStateObserver : public NetExportFileWriter::StateObserver {
@@ -251,15 +216,23 @@ class TestFilePathCallback {
 
 class NetExportFileWriterTest : public ::testing::Test {
  public:
-  using URLRequestContextGetterList =
-      std::vector<scoped_refptr<net::URLRequestContextGetter>>;
-
   NetExportFileWriterTest()
-      : file_writer_(&net_log_), net_thread_("NetLogFileWriter net thread") {}
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+        network_service_(network::NetworkService::CreateForTesting()) {}
 
   // ::testing::Test implementation
   void SetUp() override {
     ASSERT_TRUE(log_temp_dir_.CreateUniqueTempDir());
+    network::mojom::NetworkContextParamsPtr params =
+        network::mojom::NetworkContextParams::New();
+    // Use a fixed proxy config, to avoid dependencies on local network
+    // configuration.
+    params->initial_proxy_config =
+        net::ProxyConfigWithAnnotation::CreateDirect();
+    network_context_ = std::make_unique<network::NetworkContext>(
+        network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
+        std::move(params));
 
     // Override |file_writer_|'s default-log-base-directory-getter to
     // a getter that returns the temp dir created for the test.
@@ -267,8 +240,6 @@ class NetExportFileWriterTest : public ::testing::Test {
         base::Bind(&SetPathToGivenAndReturnTrue, log_temp_dir_.GetPath()));
 
     default_log_path_ = log_temp_dir_.GetPath().Append(kLogRelativePath);
-
-    ASSERT_TRUE(net_thread_.Start());
 
     file_writer_.AddObserver(&test_state_observer_);
 
@@ -291,7 +262,7 @@ class NetExportFileWriterTest : public ::testing::Test {
   WARN_UNUSED_RESULT ::testing::AssertionResult InitializeThenVerifyNewState(
       bool expected_initialize_success,
       bool expected_log_exists) {
-    file_writer_.Initialize(net_thread_.task_runner());
+    file_writer_.Initialize();
     std::unique_ptr<base::DictionaryValue> state =
         test_state_observer_.WaitForNewState();
     ::testing::AssertionResult result =
@@ -325,10 +296,10 @@ class NetExportFileWriterTest : public ::testing::Test {
       const base::FilePath& custom_log_path,
       net::NetLogCaptureMode capture_mode,
       const std::string& expected_capture_mode_string,
-      const URLRequestContextGetterList& context_getters) {
+      network::mojom::NetworkContext* network_context) {
     file_writer_.StartNetLog(custom_log_path, capture_mode, kMaxLogSizeBytes,
                              base::CommandLine::StringType(), kChannelString,
-                             context_getters);
+                             network_context);
     std::unique_ptr<base::DictionaryValue> state =
         test_state_observer_.WaitForNewState();
     ::testing::AssertionResult result =
@@ -366,9 +337,8 @@ class NetExportFileWriterTest : public ::testing::Test {
   WARN_UNUSED_RESULT ::testing::AssertionResult StopThenVerifyNewStateAndFile(
       const base::FilePath& custom_log_path,
       std::unique_ptr<base::DictionaryValue> polled_data,
-      scoped_refptr<net::URLRequestContextGetter> context_getter,
       const std::string& expected_capture_mode_string) {
-    file_writer_.StopNetLog(std::move(polled_data), context_getter);
+    file_writer_.StopNetLog(std::move(polled_data));
     std::unique_ptr<base::DictionaryValue> state =
         test_state_observer_.WaitForNewState();
     ::testing::AssertionResult result =
@@ -415,7 +385,7 @@ class NetExportFileWriterTest : public ::testing::Test {
     return ::testing::AssertionSuccess();
   }
 
-  ChromeNetLog* net_log() { return &net_log_; }
+  net::NetLog* net_log() { return network_service_->net_log(); }
 
   NetExportFileWriter* file_writer() { return &file_writer_; }
 
@@ -425,25 +395,28 @@ class NetExportFileWriterTest : public ::testing::Test {
 
   const base::FilePath& default_log_path() const { return default_log_path_; }
 
-  base::Thread* net_thread() { return &net_thread_; }
-
   TestStateObserver* test_state_observer() { return &test_state_observer_; }
+
+  network::mojom::NetworkContext* network_context() {
+    return network_context_ptr_.get();
+  }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  std::unique_ptr<network::NetworkService> network_service_;
 
-  ChromeNetLog net_log_;
+  network::mojom::NetworkContextPtr network_context_ptr_;
+  std::unique_ptr<network::NetworkContext> network_context_;
 
-  // |file_writer_| is initialized after |net_log_| so that it can stop
-  // obvserving on destruction.
+  // |file_writer_| is initialized after |network_context_ptr_| since
+  // |file_writer_| destructor can talk to mojo objects owned by
+  // |network_context_|.
   NetExportFileWriter file_writer_;
 
   base::ScopedTempDir log_temp_dir_;
 
   // The default log path that |file_writer_| will use is cached here.
   base::FilePath default_log_path_;
-
-  base::Thread net_thread_;
 
   TestStateObserver test_state_observer_;
 };
@@ -501,41 +474,38 @@ TEST_F(NetExportFileWriterTest, StartAndStopWithAllCaptureModes) {
     // StartNetLog(), should result in state change.
     ASSERT_TRUE(StartThenVerifyNewState(base::FilePath(), capture_modes[i],
                                         capture_mode_strings[i],
-                                        URLRequestContextGetterList()));
+                                        network_context()));
 
     // Calling StartNetLog() again should be a no-op. Try doing StartNetLog()
     // with various capture modes; they should all be ignored and result in no
     // state change.
-    file_writer()->StartNetLog(base::FilePath(), capture_modes[i],
-                               kMaxLogSizeBytes,
-                               base::CommandLine::StringType(), kChannelString,
-                               URLRequestContextGetterList());
-    file_writer()->StartNetLog(base::FilePath(), capture_modes[(i + 1) % 3],
-                               kMaxLogSizeBytes,
-                               base::CommandLine::StringType(), kChannelString,
-                               URLRequestContextGetterList());
-    file_writer()->StartNetLog(base::FilePath(), capture_modes[(i + 2) % 3],
-                               kMaxLogSizeBytes,
-                               base::CommandLine::StringType(), kChannelString,
-                               URLRequestContextGetterList());
+    file_writer()->StartNetLog(
+        base::FilePath(), capture_modes[i], kMaxLogSizeBytes,
+        base::CommandLine::StringType(), kChannelString, network_context());
+    file_writer()->StartNetLog(
+        base::FilePath(), capture_modes[(i + 1) % 3], kMaxLogSizeBytes,
+        base::CommandLine::StringType(), kChannelString, network_context());
+    file_writer()->StartNetLog(
+        base::FilePath(), capture_modes[(i + 2) % 3], kMaxLogSizeBytes,
+        base::CommandLine::StringType(), kChannelString, network_context());
 
     // StopNetLog(), should result in state change. The capture mode should
     // match that of the first StartNetLog() call (called by
     // StartThenVerifyNewState()).
-    ASSERT_TRUE(StopThenVerifyNewStateAndFile(
-        base::FilePath(), nullptr, nullptr, capture_mode_strings[i]));
+    ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr,
+                                              capture_mode_strings[i]));
 
     // Stopping a second time should be a no-op.
-    file_writer()->StopNetLog(nullptr, nullptr);
+    file_writer()->StopNetLog(nullptr);
   }
 
   // Start and stop one more time just to make sure the last StopNetLog() call
   // was properly ignored and left |file_writer_| in a valid state.
   ASSERT_TRUE(StartThenVerifyNewState(base::FilePath(), capture_modes[0],
                                       capture_mode_strings[0],
-                                      URLRequestContextGetterList()));
+                                      network_context()));
 
-  ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr, nullptr,
+  ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr,
                                             capture_mode_strings[0]));
 }
 
@@ -546,9 +516,9 @@ TEST_F(NetExportFileWriterTest, StartClearsFile) {
 
   ASSERT_TRUE(StartThenVerifyNewState(
       base::FilePath(), net::NetLogCaptureMode::Default(),
-      kCaptureModeDefaultString, URLRequestContextGetterList()));
+      kCaptureModeDefaultString, network_context()));
 
-  ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr, nullptr,
+  ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr,
                                             kCaptureModeDefaultString));
 
   int64_t stop_file_size;
@@ -567,9 +537,9 @@ TEST_F(NetExportFileWriterTest, StartClearsFile) {
   // before adding the junk data.
   ASSERT_TRUE(StartThenVerifyNewState(
       base::FilePath(), net::NetLogCaptureMode::Default(),
-      kCaptureModeDefaultString, URLRequestContextGetterList()));
+      kCaptureModeDefaultString, network_context()));
 
-  ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr, nullptr,
+  ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr,
                                             kCaptureModeDefaultString));
 
   int64_t new_stop_file_size;
@@ -585,9 +555,9 @@ TEST_F(NetExportFileWriterTest, AddEvent) {
 
   ASSERT_TRUE(StartThenVerifyNewState(
       base::FilePath(), net::NetLogCaptureMode::Default(),
-      kCaptureModeDefaultString, URLRequestContextGetterList()));
+      kCaptureModeDefaultString, network_context()));
 
-  ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr, nullptr,
+  ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr,
                                             kCaptureModeDefaultString));
 
   // Get file size without the event.
@@ -596,11 +566,11 @@ TEST_F(NetExportFileWriterTest, AddEvent) {
 
   ASSERT_TRUE(StartThenVerifyNewState(
       base::FilePath(), net::NetLogCaptureMode::Default(),
-      kCaptureModeDefaultString, URLRequestContextGetterList()));
+      kCaptureModeDefaultString, network_context()));
 
   net_log()->AddGlobalEntry(net::NetLogEventType::CANCELLED);
 
-  ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr, nullptr,
+  ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr,
                                             kCaptureModeDefaultString));
 
   // Get file size after adding the event and make sure it's larger than before.
@@ -623,9 +593,9 @@ TEST_F(NetExportFileWriterTest, AddEventCustomPath) {
 
   ASSERT_TRUE(StartThenVerifyNewState(
       custom_log_path, net::NetLogCaptureMode::Default(),
-      kCaptureModeDefaultString, URLRequestContextGetterList()));
+      kCaptureModeDefaultString, network_context()));
 
-  ASSERT_TRUE(StopThenVerifyNewStateAndFile(custom_log_path, nullptr, nullptr,
+  ASSERT_TRUE(StopThenVerifyNewStateAndFile(custom_log_path, nullptr,
                                             kCaptureModeDefaultString));
 
   // Get file size without the event.
@@ -634,11 +604,11 @@ TEST_F(NetExportFileWriterTest, AddEventCustomPath) {
 
   ASSERT_TRUE(StartThenVerifyNewState(
       custom_log_path, net::NetLogCaptureMode::Default(),
-      kCaptureModeDefaultString, URLRequestContextGetterList()));
+      kCaptureModeDefaultString, network_context()));
 
   net_log()->AddGlobalEntry(net::NetLogEventType::CANCELLED);
 
-  ASSERT_TRUE(StopThenVerifyNewStateAndFile(custom_log_path, nullptr, nullptr,
+  ASSERT_TRUE(StopThenVerifyNewStateAndFile(custom_log_path, nullptr,
                                             kCaptureModeDefaultString));
 
   // Get file size after adding the event and make sure it's larger than before.
@@ -647,7 +617,7 @@ TEST_F(NetExportFileWriterTest, AddEventCustomPath) {
   EXPECT_GE(new_stop_file_size, stop_file_size);
 }
 
-TEST_F(NetExportFileWriterTest, StopWithPolledDataAndContextGetter) {
+TEST_F(NetExportFileWriterTest, StopWithPolledData) {
   ASSERT_TRUE(InitializeThenVerifyNewState(true, false));
 
   // Create dummy polled data
@@ -657,24 +627,13 @@ TEST_F(NetExportFileWriterTest, StopWithPolledDataAndContextGetter) {
       std::make_unique<base::DictionaryValue>();
   dummy_polled_data->SetString(kDummyPolledDataPath, kDummyPolledDataString);
 
-  // Create test context getter on |net_thread_| and wait for it to finish.
-  scoped_refptr<net::TestURLRequestContextGetter> context_getter;
-  const int kDummyQuicParam = 75;
-  net::TestClosure init_done;
-  net_thread()->task_runner()->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&SetUpTestContextGetterWithQuicTimeoutInfo, net_log(),
-                 kDummyQuicParam, &context_getter),
-      init_done.closure());
-  init_done.WaitForResult();
-
   ASSERT_TRUE(StartThenVerifyNewState(
       base::FilePath(), net::NetLogCaptureMode::Default(),
-      kCaptureModeDefaultString, URLRequestContextGetterList()));
+      kCaptureModeDefaultString, network_context()));
 
-  ASSERT_TRUE(StopThenVerifyNewStateAndFile(
-      base::FilePath(), std::move(dummy_polled_data), context_getter,
-      kCaptureModeDefaultString));
+  ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(),
+                                            std::move(dummy_polled_data),
+                                            kCaptureModeDefaultString));
 
   // Read polledData from log file.
   std::unique_ptr<base::DictionaryValue> root;
@@ -687,44 +646,74 @@ TEST_F(NetExportFileWriterTest, StopWithPolledDataAndContextGetter) {
   ASSERT_TRUE(polled_data->GetString(kDummyPolledDataPath, &dummy_string));
   EXPECT_EQ(kDummyPolledDataString, dummy_string);
 
-  // Check that it also contains the field from the URLRequestContext that was
-  // passed in.
-  base::DictionaryValue* quic_info;
-  ASSERT_TRUE(polled_data->GetDictionary("quicInfo", &quic_info));
-  base::Value* timeout_value = nullptr;
-  int timeout;
-  ASSERT_TRUE(
-      quic_info->Get("idle_connection_timeout_seconds", &timeout_value));
-  ASSERT_TRUE(timeout_value->GetAsInteger(&timeout));
-  EXPECT_EQ(kDummyQuicParam, timeout);
+  // Check that it also contains something from net::GetNetInfo.
+  base::DictionaryValue* http_cache_info;
+  ASSERT_TRUE(polled_data->GetDictionary("httpCacheInfo", &http_cache_info));
 }
 
-TEST_F(NetExportFileWriterTest, StartWithContextGetters) {
+// Test with requests in flight. This is done by going through a sequence of a
+// redirect --- at which point the log is started --- and then a fetch of
+// destination that's blocked on an event in EmbeddedTestServer.
+TEST_F(NetExportFileWriterTest, StartWithNetworkContextActive) {
+  net::EmbeddedTestServer test_server;
+  net::test_server::RegisterDefaultHandlers(&test_server);
+
+  base::WaitableEvent block_fetch(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+
+  test_server.RegisterRequestHandler(base::BindRepeating(
+      [](base::WaitableEvent* block_fetch,
+         const net::test_server::HttpRequest& request)
+          -> std::unique_ptr<net::test_server::HttpResponse> {
+        if (request.relative_url == "/block")
+          block_fetch->Wait();
+        return nullptr;
+      },
+      &block_fetch));
+
+  ASSERT_TRUE(test_server.Start());
+
   ASSERT_TRUE(InitializeThenVerifyNewState(true, false));
 
-  // Create test context getter and request on |net_thread_| and wait for it to
-  // finish.
-  const std::string kDummyUrl = "blah:blah";
-  scoped_refptr<net::TestURLRequestContextGetter> context_getter;
-  std::unique_ptr<net::URLRequest> request;
-  net::TestDelegate delegate;
-  delegate.set_quit_on_complete(false);
+  network::mojom::URLLoaderFactoryPtr url_loader_factory;
+  network_context()->CreateURLLoaderFactory(
+      mojo::MakeRequest(&url_loader_factory), 0);
 
-  net::TestClosure init_done;
-  net_thread()->task_runner()->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&SetUpTestContextGetterWithRequest, net_log(), GURL(kDummyUrl),
-                 &delegate, &context_getter, &request),
-      init_done.closure());
-  init_done.WaitForResult();
+  const char kRedirectURL[] = "/server-redirect?/block";
+  std::unique_ptr<network::ResourceRequest> request =
+      std::make_unique<network::ResourceRequest>();
+  request->url = test_server.GetURL(kRedirectURL);
 
+  std::unique_ptr<network::SimpleURLLoader> simple_loader =
+      network::SimpleURLLoader::Create(std::move(request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+  base::RunLoop run_loop, run_loop2;
+  simple_loader->SetOnRedirectCallback(base::BindRepeating(
+      [](base::RepeatingClosure notify_log,
+         const net::RedirectInfo& redirect_info,
+         const network::ResourceResponseHead& response_head) {
+        notify_log.Run();
+      },
+      run_loop.QuitClosure()));
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory.get(),
+      base::BindOnce(
+          [](base::OnceClosure quit_closure,
+             std::unique_ptr<std::string> response_body) {
+            std::move(quit_closure).Run();
+          },
+          run_loop2.QuitClosure()));
+
+  // Wait for fetch to get some bytes accross. It will not be the entire
+  // thing since the post-redirect URL will get blocked by the custom handler.
+  run_loop.Run();
   ASSERT_TRUE(StartThenVerifyNewState(
       base::FilePath(), net::NetLogCaptureMode::Default(),
-      kCaptureModeDefaultString, {context_getter}));
+      kCaptureModeDefaultString, network_context()));
 
-  ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr, nullptr,
+  ASSERT_TRUE(StopThenVerifyNewStateAndFile(base::FilePath(), nullptr,
                                             kCaptureModeDefaultString));
-
   // Read events from log file.
   std::unique_ptr<base::DictionaryValue> root;
   ASSERT_TRUE(ReadCompleteLogFile(default_log_path(), &root));
@@ -732,7 +721,7 @@ TEST_F(NetExportFileWriterTest, StartWithContextGetters) {
   ASSERT_TRUE(root->GetList("events", &events));
 
   // Check there is at least one event as a result of the ongoing request.
-  EXPECT_GE(events->GetSize(), 1u);
+  ASSERT_GE(events->GetSize(), 1u);
 
   // Check the URL in the params of the first event.
   base::DictionaryValue* event;
@@ -741,24 +730,24 @@ TEST_F(NetExportFileWriterTest, StartWithContextGetters) {
   EXPECT_TRUE(event->GetDictionary("params", &event_params));
   std::string event_url;
   EXPECT_TRUE(event_params->GetString("url", &event_url));
-  EXPECT_EQ(kDummyUrl, event_url);
+  EXPECT_EQ(test_server.GetURL(kRedirectURL), event_url);
 
-  net_thread()->task_runner()->DeleteSoon(FROM_HERE, request.release());
+  block_fetch.Signal();
+  run_loop2.Run();
 }
 
 TEST_F(NetExportFileWriterTest, ReceiveStartWhileInitializing) {
   // Trigger initialization of |file_writer_|.
-  file_writer()->Initialize(net_thread()->task_runner());
+  file_writer()->Initialize();
 
   // Before running the main message loop, tell |file_writer_| to start
   // logging. Not running the main message loop prevents the initialization
   // process from completing, so this ensures that StartNetLog() is received
   // before |file_writer_| finishes initialization, which means this
   // should be a no-op.
-  file_writer()->StartNetLog(base::FilePath(),
-                             net::NetLogCaptureMode::Default(),
-                             kMaxLogSizeBytes, base::CommandLine::StringType(),
-                             kChannelString, URLRequestContextGetterList());
+  file_writer()->StartNetLog(
+      base::FilePath(), net::NetLogCaptureMode::Default(), kMaxLogSizeBytes,
+      base::CommandLine::StringType(), kChannelString, network_context());
 
   // Now run the main message loop. Make sure StartNetLog() was ignored by
   // checking that the next two states are "initializing" followed by
@@ -777,20 +766,19 @@ TEST_F(NetExportFileWriterTest, ReceiveStartWhileStoppingLog) {
   // Call StartNetLog() on |file_writer_| and wait for the state change.
   ASSERT_TRUE(StartThenVerifyNewState(
       base::FilePath(), net::NetLogCaptureMode::IncludeSocketBytes(),
-      kCaptureModeIncludeSocketBytesString, URLRequestContextGetterList()));
+      kCaptureModeIncludeSocketBytesString, network_context()));
 
   // Tell |file_writer_| to stop logging.
-  file_writer()->StopNetLog(nullptr, nullptr);
+  file_writer()->StopNetLog(nullptr);
 
   // Before running the main message loop, tell |file_writer_| to start
   // logging. Not running the main message loop prevents the stopping process
   // from completing, so this ensures StartNetLog() is received before
   // |file_writer_| finishes stopping, which means this should be a
   // no-op.
-  file_writer()->StartNetLog(base::FilePath(),
-                             net::NetLogCaptureMode::Default(),
-                             kMaxLogSizeBytes, base::CommandLine::StringType(),
-                             kChannelString, URLRequestContextGetterList());
+  file_writer()->StartNetLog(
+      base::FilePath(), net::NetLogCaptureMode::Default(), kMaxLogSizeBytes,
+      base::CommandLine::StringType(), kChannelString, network_context());
 
   // Now run the main message loop. Make sure the last StartNetLog() was
   // ignored by checking that the next two states are "stopping-log" followed by

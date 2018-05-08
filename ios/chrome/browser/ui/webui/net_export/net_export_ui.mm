@@ -97,12 +97,11 @@ NetExportMessageHandler::NetExportMessageHandler()
           GetApplicationContext()->GetNetLog()->net_export_file_writer()),
       state_observer_manager_(this),
       weak_ptr_factory_(this) {
-  file_writer_->Initialize(
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::IO));
+  file_writer_->Initialize();
 }
 
 NetExportMessageHandler::~NetExportMessageHandler() {
-  file_writer_->StopNetLog(nullptr, nullptr);
+  file_writer_->StopNetLog(nullptr);
 }
 
 void NetExportMessageHandler::RegisterMessages() {
@@ -156,14 +155,12 @@ void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
   file_writer_->StartNetLog(
       base::FilePath(), capture_mode, max_log_file_size,
       base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
-      GetChannelString(),
-      {GetApplicationContext()->GetSystemURLRequestContext()});
+      GetChannelString(), GetApplicationContext()->GetSystemNetworkContext());
 }
 
 void NetExportMessageHandler::OnStopNetLog(const base::ListValue* list) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  file_writer_->StopNetLog(
-      nullptr, GetApplicationContext()->GetSystemURLRequestContext());
+  file_writer_->StopNetLog(nullptr);
 }
 
 void NetExportMessageHandler::OnSendNetLog(const base::ListValue* list) {

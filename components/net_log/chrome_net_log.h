@@ -56,6 +56,12 @@ class ChromeNetLog : public net::NetLog {
       const base::CommandLine::StringType& command_line_string,
       const std::string& channel_string);
 
+  // Returns only platform-specific constants. This doesn't include the net/
+  // baseline, only Chrome-specific platform information.
+  static std::unique_ptr<base::DictionaryValue> GetPlatformConstants(
+      const base::CommandLine::StringType& command_line_string,
+      const std::string& channel_string);
+
   // Notify the ChromeNetLog that things are shutting-down.
   //
   // If ChromeNetLog does not outlive the TaskScheduler, there is no need to

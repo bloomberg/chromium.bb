@@ -14,20 +14,12 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/net_log/chrome_net_log.h"
-#include "net/log/file_net_log_observer.h"
-#include "net/log/net_log_util.h"
-#include "net/url_request/url_request_context_getter.h"
-
-namespace net {
-class URLRequestContext;
-}
 
 namespace net_log {
 
@@ -61,31 +53,6 @@ NetExportFileWriter::DefaultLogPathResults SetUpDefaultLogPath(
   return results;
 }
 
-// Generates net log entries for ongoing events from |context_getters| and
-// adds them to |observer|.
-void CreateNetLogEntriesForActiveObjects(
-    const NetExportFileWriter::URLRequestContextGetterList& context_getters,
-    net::NetLog::ThreadSafeObserver* observer) {
-  std::set<net::URLRequestContext*> contexts;
-  for (const auto& getter : context_getters) {
-    DCHECK(getter->GetNetworkTaskRunner()->BelongsToCurrentThread());
-    contexts.insert(getter->GetURLRequestContext());
-  }
-  net::CreateNetLogEntriesForActiveObjects(contexts, observer);
-}
-
-// Adds net info from net::GetNetInfo() to |polled_data|.
-std::unique_ptr<base::DictionaryValue> AddNetInfo(
-    scoped_refptr<net::URLRequestContextGetter> context_getter,
-    std::unique_ptr<base::DictionaryValue> polled_data) {
-  DCHECK(context_getter);
-  std::unique_ptr<base::DictionaryValue> net_info = net::GetNetInfo(
-      context_getter->GetURLRequestContext(), net::NET_INFO_ALL_SOURCES);
-  if (polled_data)
-    net_info->MergeDictionary(polled_data.get());
-  return net_info;
-}
-
 // If running on a POSIX OS, this will attempt to set all the permission flags
 // of the file at |path| to 1. Will return |path| on success and the empty path
 // on failure.
@@ -114,18 +81,19 @@ scoped_refptr<base::SequencedTaskRunner> CreateFileTaskRunner() {
 
 }  // namespace
 
-NetExportFileWriter::NetExportFileWriter(ChromeNetLog* chrome_net_log)
+NetExportFileWriter::NetExportFileWriter()
     : state_(STATE_UNINITIALIZED),
       log_exists_(false),
       log_capture_mode_known_(false),
       log_capture_mode_(net::NetLogCaptureMode::Default()),
-      chrome_net_log_(chrome_net_log),
       default_log_base_dir_getter_(base::Bind(&base::GetTempDir)),
       weak_ptr_factory_(this) {}
 
 NetExportFileWriter::~NetExportFileWriter() {
-  if (file_net_log_observer_)
-    file_net_log_observer_->StopObserving(nullptr, base::Closure());
+  if (net_log_exporter_) {
+    net_log_exporter_->Stop(base::Value(base::Value::Type::DICTIONARY),
+                            base::DoNothing());
+  }
 }
 
 void NetExportFileWriter::AddObserver(StateObserver* observer) {
@@ -138,15 +106,10 @@ void NetExportFileWriter::RemoveObserver(StateObserver* observer) {
   state_observer_list_.RemoveObserver(observer);
 }
 
-void NetExportFileWriter::Initialize(
-    scoped_refptr<base::TaskRunner> net_task_runner) {
+void NetExportFileWriter::Initialize() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(net_task_runner);
 
   file_task_runner_ = CreateFileTaskRunner();
-  if (net_task_runner_)
-    DCHECK_EQ(net_task_runner_, net_task_runner);
-  net_task_runner_ = net_task_runner;
 
   if (state_ != STATE_UNINITIALIZED)
     return;
@@ -168,7 +131,7 @@ void NetExportFileWriter::StartNetLog(
     uint64_t max_file_size,
     const base::CommandLine::StringType& command_line_string,
     const std::string& channel_string,
-    const URLRequestContextGetterList& context_getters) {
+    network::mojom::NetworkContext* network_context) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(file_task_runner_);
 
@@ -184,41 +147,70 @@ void NetExportFileWriter::StartNetLog(
 
   NotifyStateObserversAsync();
 
-  std::unique_ptr<base::Value> constants(
-      ChromeNetLog::GetConstants(command_line_string, channel_string));
+  network_context->CreateNetLogExporter(mojo::MakeRequest(&net_log_exporter_));
+  base::Value custom_constants = base::Value::FromUniquePtrValue(
+      ChromeNetLog::GetPlatformConstants(command_line_string, channel_string));
 
-  file_net_log_observer_ = net::FileNetLogObserver::CreateBounded(
-      log_path_, max_file_size, std::move(constants));
-
-  net_task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&CreateNetLogEntriesForActiveObjects, context_getters,
-                 base::Unretained(file_net_log_observer_.get())),
-      base::Bind(
-          &NetExportFileWriter::StartNetLogAfterCreateEntriesForActiveObjects,
-          weak_ptr_factory_.GetWeakPtr(), capture_mode));
+  base::PostTaskAndReplyWithResult(
+      file_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&NetExportFileWriter::CreateOutputFile, log_path_),
+      base::BindOnce(&NetExportFileWriter::StartNetLogAfterCreateFile,
+                     weak_ptr_factory_.GetWeakPtr(), capture_mode,
+                     max_file_size, std::move(custom_constants)));
 }
 
-void NetExportFileWriter::StartNetLogAfterCreateEntriesForActiveObjects(
-    net::NetLogCaptureMode capture_mode) {
+void NetExportFileWriter::StartNetLogAfterCreateFile(
+    net::NetLogCaptureMode capture_mode,
+    uint64_t max_file_size,
+    base::Value custom_constants,
+    base::File output_file) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(STATE_STARTING_LOG, state_);
 
-  state_ = STATE_LOGGING;
-  log_exists_ = true;
-  log_capture_mode_known_ = true;
-  log_capture_mode_ = capture_mode;
+  // TODO(morlovich): Communicate file open trouble better
+  // (https://crbug.com/838977)
+  if (!output_file.IsValid()) {
+    ResetExporterThenSetStateNotLogging();
+    return;
+  }
 
-  NotifyStateObservers();
+  network::mojom::NetLogExporter_CaptureMode rpc_capture_mode =
+      network::mojom::NetLogExporter::CaptureMode::DEFAULT;
+  if (capture_mode.include_socket_bytes()) {
+    rpc_capture_mode =
+        network::mojom::NetLogExporter::CaptureMode::INCLUDE_SOCKET_BYTES;
+  } else if (capture_mode.include_cookies_and_credentials()) {
+    rpc_capture_mode = network::mojom::NetLogExporter::CaptureMode::
+        INCLUDE_COOKIES_AND_CREDENTIALS;
+  }
 
-  file_net_log_observer_->StartObserving(chrome_net_log_, capture_mode);
+  // base::Unretained(this) is safe here since |net_log_exporter_| is owned by
+  // |this| and is a mojo InterfacePtr, which guarantees callback cancellation
+  // upon its destruction.
+  net_log_exporter_->Start(
+      std::move(output_file), std::move(custom_constants), rpc_capture_mode,
+      max_file_size,
+      base::BindOnce(&NetExportFileWriter::OnStartResult,
+                     base::Unretained(this), capture_mode));
+}
+
+void NetExportFileWriter::OnStartResult(net::NetLogCaptureMode capture_mode,
+                                        int result) {
+  if (result == net::OK) {
+    state_ = STATE_LOGGING;
+    log_exists_ = true;
+    log_capture_mode_known_ = true;
+    log_capture_mode_ = capture_mode;
+
+    NotifyStateObservers();
+  } else {
+    ResetExporterThenSetStateNotLogging();
+  }
 }
 
 void NetExportFileWriter::StopNetLog(
-    std::unique_ptr<base::DictionaryValue> polled_data,
-    scoped_refptr<net::URLRequestContextGetter> context_getter) {
+    std::unique_ptr<base::DictionaryValue> polled_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(net_task_runner_);
 
   if (state_ != STATE_LOGGING)
     return;
@@ -227,15 +219,19 @@ void NetExportFileWriter::StopNetLog(
 
   NotifyStateObserversAsync();
 
-  if (context_getter) {
-    base::PostTaskAndReplyWithResult(
-        net_task_runner_.get(), FROM_HERE,
-        base::BindOnce(&AddNetInfo, context_getter, std::move(polled_data)),
-        base::BindOnce(&NetExportFileWriter::StopNetLogAfterAddNetInfo,
-                       weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    StopNetLogAfterAddNetInfo(std::move(polled_data));
-  }
+  base::Value polled_data_value(base::Value::Type::DICTIONARY);
+  if (polled_data)
+    polled_data_value = base::Value::FromUniquePtrValue(std::move(polled_data));
+  // base::Unretained(this) is safe here since |net_log_exporter_| is owned by
+  // |this| and is a mojo InterfacePtr, which guarantees callback cancellation
+  // upon its destruction.
+  net_log_exporter_->Stop(std::move(polled_data_value),
+                          base::BindOnce(&NetExportFileWriter::OnStopResult,
+                                         base::Unretained(this)));
+}
+
+void NetExportFileWriter::OnStopResult(int result) {
+  ResetExporterThenSetStateNotLogging();
 }
 
 std::unique_ptr<base::DictionaryValue> NetExportFileWriter::GetState() const {
@@ -352,23 +348,17 @@ void NetExportFileWriter::SetStateAfterSetUpDefaultLogPath(
   NotifyStateObservers();
 }
 
-void NetExportFileWriter::StopNetLogAfterAddNetInfo(
-    std::unique_ptr<base::DictionaryValue> polled_data) {
+void NetExportFileWriter::ResetExporterThenSetStateNotLogging() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(STATE_STOPPING_LOG, state_);
-
-  file_net_log_observer_->StopObserving(
-      std::move(polled_data),
-      base::Bind(&NetExportFileWriter::ResetObserverThenSetStateNotLogging,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void NetExportFileWriter::ResetObserverThenSetStateNotLogging() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  file_net_log_observer_.reset();
+  net_log_exporter_.reset();
   state_ = STATE_NOT_LOGGING;
 
   NotifyStateObservers();
+}
+
+base::File NetExportFileWriter::CreateOutputFile(base::FilePath path) {
+  return base::File(path,
+                    base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
 }
 
 }  // namespace net_log
