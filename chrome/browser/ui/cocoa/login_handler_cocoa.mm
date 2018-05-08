@@ -41,9 +41,10 @@ class LoginHandlerMac : public LoginHandler,
   LoginHandlerMac(
       net::AuthChallengeInfo* auth_info,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
-          auth_required_callback)
-      : LoginHandler(auth_info, web_contents_getter, auth_required_callback) {}
+      LoginAuthRequiredCallback auth_required_callback)
+      : LoginHandler(auth_info,
+                     web_contents_getter,
+                     std::move(auth_required_callback)) {}
 
   // LoginModelObserver implementation.
   void OnAutofillDataAvailableInternal(
@@ -139,14 +140,13 @@ class LoginHandlerMac : public LoginHandler,
 scoped_refptr<LoginHandler> LoginHandler::Create(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-    const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
-        auth_required_callback) {
+    LoginAuthRequiredCallback auth_required_callback) {
   if (chrome::ShowPilotDialogsWithViewsToolkit()) {
     return chrome::CreateLoginHandlerViews(auth_info, web_contents_getter,
-                                           auth_required_callback);
+                                           std::move(auth_required_callback));
   }
-  return base::MakeRefCounted<LoginHandlerMac>(auth_info, web_contents_getter,
-                                               auth_required_callback);
+  return base::MakeRefCounted<LoginHandlerMac>(
+      auth_info, web_contents_getter, std::move(auth_required_callback));
 }
 
 // ----------------------------------------------------------------------------

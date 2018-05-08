@@ -355,8 +355,7 @@ scoped_refptr<LoginDelegate> ShellContentBrowserClient::CreateLoginDelegate(
     bool is_main_frame,
     const GURL& url,
     bool first_auth_attempt,
-    const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
-        auth_required_callback) {
+    LoginAuthRequiredCallback auth_required_callback) {
   if (!login_request_callback_.is_null()) {
     std::move(login_request_callback_).Run();
     return nullptr;
@@ -366,8 +365,8 @@ scoped_refptr<LoginDelegate> ShellContentBrowserClient::CreateLoginDelegate(
   // TODO: implement ShellLoginDialog for other platforms, drop this #if
   return nullptr;
 #else
-  return base::MakeRefCounted<ShellLoginDialog>(auth_info,
-                                                auth_required_callback);
+  return base::MakeRefCounted<ShellLoginDialog>(
+      auth_info, std::move(auth_required_callback));
 #endif
 }
 

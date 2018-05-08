@@ -17,9 +17,8 @@ namespace content {
 
 ShellLoginDialog::ShellLoginDialog(
     net::AuthChallengeInfo* auth_info,
-    base::Callback<void(const base::Optional<net::AuthCredentials>&)>
-        auth_required_callback)
-    : auth_required_callback_(auth_required_callback) {
+    LoginAuthRequiredCallback auth_required_callback)
+    : auth_required_callback_(std::move(auth_required_callback)) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

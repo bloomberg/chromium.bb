@@ -555,8 +555,8 @@ scoped_refptr<LoginDelegate> ResourceDispatcherHostImpl::CreateLoginDelegate(
       GetContentClient()->browser()->CreateLoginDelegate(
           auth_info, resource_request_info->GetWebContentsGetterForRequest(),
           is_main_frame, url, resource_request_info->first_auth_attempt(),
-          base::Bind(&ResourceDispatcherHostImpl::RunAuthRequiredCallback,
-                     base::Unretained(this), request_id));
+          base::BindOnce(&ResourceDispatcherHostImpl::RunAuthRequiredCallback,
+                         base::Unretained(this), request_id));
 
   resource_request_info->set_first_auth_attempt(false);
 

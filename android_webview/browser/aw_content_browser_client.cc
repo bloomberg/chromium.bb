@@ -696,11 +696,10 @@ AwContentBrowserClient::CreateLoginDelegate(
     bool is_main_frame,
     const GURL& url,
     bool first_auth_attempt,
-    const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
-        auth_required_callback) {
-  return base::MakeRefCounted<AwLoginDelegate>(auth_info, web_contents_getter,
-                                               first_auth_attempt,
-                                               auth_required_callback);
+    LoginAuthRequiredCallback auth_required_callback) {
+  return base::MakeRefCounted<AwLoginDelegate>(
+      auth_info, web_contents_getter, first_auth_attempt,
+      std::move(auth_required_callback));
 }
 
 bool AwContentBrowserClient::HandleExternalProtocol(
