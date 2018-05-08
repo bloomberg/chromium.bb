@@ -98,10 +98,6 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader,
   // gfx::AnimationDelegate override:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
-  // Paints highlight around the edge of the header for inactive restored
-  // windows.
-  void PaintHighlightForInactiveRestoredWindow(gfx::Canvas* canvas);
-
   // Update all the images in the caption buttons.
   void UpdateAllButtonImages();
 
@@ -112,9 +108,6 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader,
   // assumed to be positioned at the top left corner of |view_| and to have the
   // same width as |view_|.
   gfx::Rect GetLocalBounds() const;
-
-  // Returns whether the frame uses custom frame coloring.
-  bool UsesCustomFrameColors() const;
 
   const mojom::WindowStyle window_style_;
   views::Widget* frame_;
