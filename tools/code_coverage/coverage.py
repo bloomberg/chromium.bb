@@ -213,6 +213,8 @@ class _CoverageReportHtmlGenerator(object):
     self._header_template = jinja_env.get_template('header.html')
     self._table_template = jinja_env.get_template('table.html')
     self._footer_template = jinja_env.get_template('footer.html')
+    self._style_overrides = open(
+        os.path.join(template_dir, 'style_overrides.css')).read()
 
   def AddLinkToAnotherReport(self, html_report_path, name, summary):
     """Adds a link to another html report in this report.
@@ -312,7 +314,8 @@ class _CoverageReportHtmlGenerator(object):
         component_view_href=_GetRelativePathToDirectoryOfFile(
             component_view_path, self._output_path),
         file_view_href=_GetRelativePathToDirectoryOfFile(
-            file_view_path, self._output_path))
+            file_view_path, self._output_path),
+        style_overrides=self._style_overrides)
 
     html_table = self._table_template.render(
         entries=self._table_entries,

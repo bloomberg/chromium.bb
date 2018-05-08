@@ -1,34 +1,46 @@
 <table>
-  <tr>
-    <td class="column-entry-bold">{{ table_entry_type }}</td>
-    <td class="column-entry-bold">Line Coverage</td>
-    <td class="column-entry-bold">Function Coverage</td>
-    <td class="column-entry-bold">Region Coverage</td>
-  </tr>
+  <thead>
+    <tr>
+      <th class="column-entry-bold">{{ table_entry_type }}</th>
+      <th class="column-entry-bold" title=
+          "Line coverage is the percentage of code lines which have been executed at least once. Only executable lines within function bodies are considered to be code lines.">
+        Line Coverage</th>
+      <th class="column-entry-bold" title=
+          "Function coverage is the percentage of functions which have been executed at least once. A function is considered to be executed if any of its instantiations are executed.">
+        Function Coverage</th>
+      <th class="column-entry-bold" title=
+          "Region coverage is the percentage of code regions which have been executed at least once. A code region may span multiple lines (e.g in a large function body with no control flow). However, it's also possible for a single line to contain multiple code regions (e.g in 'return x || y &amp;&amp; z').">
+        Region Coverage</th>
+    </tr>
+  </thead>
+  <tbody>
   {% for entry in entries %}
-  <tr class="light-row">
-    <td>
-      {% if entry["is_dir"] == True %}
-        <pre><a href='{{ entry["href"] }}'>{{ entry["name"] }}/</a></pre>
-      {% else %}
-        <pre><a href='{{ entry["href"] }}'>{{ entry["name"] }}</a></pre>
-      {% endif %}
-    </td>
-    {% for feature in ("lines", "functions", "regions") %}
-    <td class='column-entry-{{ entry[feature]["color_class"] }}'>
-      <pre>{{ entry[feature]["percentage"] }}% ({{ entry[feature]["covered"] }}/{{ entry[feature]["total"] }})</pre>
-    </td>
+    <tr class="light-row">
+      <td>
+        {% if entry["is_dir"] == True %}
+          <pre><a href='{{ entry["href"] }}'>{{ entry["name"] }}/</a></pre>
+        {% else %}
+          <pre><a href='{{ entry["href"] }}'>{{ entry["name"] }}</a></pre>
+        {% endif %}
+      </td>
+      {% for feature in ("lines", "functions", "regions") %}
+      <td class='column-entry-{{ entry[feature]["color_class"] }}'>
+        <pre>{{ entry[feature]["percentage"] }}% ({{ entry[feature]["covered"] }}/{{ entry[feature]["total"] }})</pre>
+      </td>
+      {% endfor %}
+    </tr>
     {% endfor %}
-  </tr>
-  {% endfor %}
-  <tr class="light-row-bold">
-    <td>
-      <pre>Totals</pre>
-    </td>
-    {% for feature in ("lines", "functions", "regions") %}
-    <td class='column-entry-{{ total_entry[feature]["color_class"] }}'>
-      <pre>{{ total_entry[feature]["percentage"] }}% ({{ total_entry[feature]["covered"] }}/{{ total_entry[feature]["total"] }})</pre>
-    </td>
-    {% endfor %}
-  </tr>
+  </tbody>
+  <tfoot>
+    <tr class="light-row-bold">
+      <td>
+        <pre>Totals</pre>
+      </td>
+      {% for feature in ("lines", "functions", "regions") %}
+      <td class='column-entry-{{ total_entry[feature]["color_class"] }}'>
+        <pre>{{ total_entry[feature]["percentage"] }}% ({{ total_entry[feature]["covered"] }}/{{ total_entry[feature]["total"] }})</pre>
+      </td>
+      {% endfor %}
+    </tr>
+  </tfoot>
 </table>
