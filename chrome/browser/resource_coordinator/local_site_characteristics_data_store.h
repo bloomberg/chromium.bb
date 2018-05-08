@@ -61,10 +61,7 @@ class LocalSiteCharacteristicsDataStore
 
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,
-                     const history::DeletionTimeRange& time_range,
-                     bool expired,
-                     const history::URLRows& deleted_rows,
-                     const std::set<GURL>& favicon_urls) override;
+                     const history::DeletionInfo& deletion_info) override;
 
   // Reset the observations about a given LocalSiteCharacteristicsMap entry,
   // removes this entry from the map if it's not loaded by any tab.

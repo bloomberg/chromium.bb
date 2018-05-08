@@ -116,18 +116,17 @@ bool IsHistoryAndBookmarkRowValid(const HistoryAndBookmarkRow& row) {
 
 void RunNotifyFaviconChanged(HistoryBackendNotifier* notifier,
                              std::unique_ptr<std::set<GURL>> urls) {
-  notifier->NotifyFaviconsChanged(*(urls.get()), GURL());
+  notifier->NotifyFaviconsChanged(*urls, GURL());
 }
 
 void RunNotifyURLsModified(HistoryBackendNotifier* notifier,
                            std::unique_ptr<URLRows> rows) {
-  notifier->NotifyURLsModified(*(rows.get()));
+  notifier->NotifyURLsModified(*rows);
 }
 
 void RunNotifyURLsDeleted(HistoryBackendNotifier* notifier,
                           std::unique_ptr<URLRows> rows) {
-  notifier->NotifyURLsDeleted(DeletionTimeRange::Invalid(), false /* expired */,
-                              *(rows.get()), std::set<GURL>());
+  notifier->NotifyURLsDeleted(DeletionInfo::ForUrls(*rows, {}));
 }
 
 }  // namespace

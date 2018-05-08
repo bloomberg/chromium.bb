@@ -152,14 +152,10 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
                               history_service_, changed_urls));
   }
 
-  void NotifyURLsDeleted(const DeletionTimeRange& time_range,
-                         bool expired,
-                         const URLRows& deleted_rows,
-                         const std::set<GURL>& favicon_urls) override {
+  void NotifyURLsDeleted(DeletionInfo deletion_info) override {
     service_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&HistoryService::NotifyURLsDeleted, history_service_,
-                   time_range, expired, deleted_rows, favicon_urls));
+        FROM_HERE, base::BindOnce(&HistoryService::NotifyURLsDeleted,
+                                  history_service_, std::move(deletion_info)));
   }
 
   void NotifyKeywordSearchTermUpdated(const URLRow& row,
@@ -1182,12 +1178,8 @@ void HistoryService::NotifyURLsModified(const URLRows& changed_urls) {
     observer.OnURLsModified(this, changed_urls);
 }
 
-void HistoryService::NotifyURLsDeleted(const DeletionTimeRange& time_range,
-                                       bool expired,
-                                       const URLRows& deleted_rows,
-                                       const std::set<GURL>& favicon_urls) {
+void HistoryService::NotifyURLsDeleted(const DeletionInfo& deletion_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!time_range.IsAllTime() || deleted_rows.empty());
   if (!backend_task_runner_)
     return;
 
@@ -1200,22 +1192,22 @@ void HistoryService::NotifyURLsDeleted(const DeletionTimeRange& time_range,
   // respectful of privacy and never tell the user something is gone when it
   // isn't. Therefore, we update the delete URLs after the fact.
   if (visit_delegate_) {
-    if (time_range.IsAllTime()) {
+    if (deletion_info.IsAllHistory()) {
       visit_delegate_->DeleteAllURLs();
     } else {
       std::vector<GURL> urls;
-      urls.reserve(deleted_rows.size());
-      for (const auto& row : deleted_rows)
+      urls.reserve(deletion_info.deleted_rows().size());
+      for (const auto& row : deletion_info.deleted_rows())
         urls.push_back(row.url());
       visit_delegate_->DeleteURLs(urls);
     }
   }
 
   for (HistoryServiceObserver& observer : observers_) {
-    observer.OnURLsDeleted(this, time_range.IsAllTime(), expired, deleted_rows,
-                           favicon_urls);
-    observer.OnURLsDeleted(this, time_range, expired, deleted_rows,
-                           favicon_urls);
+    observer.OnURLsDeleted(
+        this, deletion_info.IsAllHistory(), deletion_info.is_from_expiration(),
+        deletion_info.deleted_rows(), deletion_info.favicon_urls());
+    observer.OnURLsDeleted(this, deletion_info);
   }
 }
 

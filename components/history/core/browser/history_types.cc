@@ -369,4 +369,36 @@ bool DeletionTimeRange::IsAllTime() const {
   return begin_.is_null() && (end_.is_null() || end_.is_max());
 }
 
+// DeletionInfo
+// ----------------------------------------------------------
+
+// static
+DeletionInfo DeletionInfo::ForAllHistory() {
+  return DeletionInfo(DeletionTimeRange::AllTime(), false, {}, {});
+}
+
+// static
+DeletionInfo DeletionInfo::ForUrls(URLRows deleted_rows,
+                                   std::set<GURL> favicon_urls) {
+  return DeletionInfo(DeletionTimeRange::Invalid(), false,
+                      std::move(deleted_rows), std::move(favicon_urls));
+}
+
+DeletionInfo::DeletionInfo(const DeletionTimeRange& time_range,
+                           bool is_from_expiration,
+                           URLRows deleted_rows,
+                           std::set<GURL> favicon_urls)
+    : time_range_(time_range),
+      is_from_expiration_(is_from_expiration),
+      deleted_rows_(std::move(deleted_rows)),
+      favicon_urls_(std::move(favicon_urls)) {
+  DCHECK(!time_range.IsAllTime() || deleted_rows.empty());
+}
+
+DeletionInfo::~DeletionInfo() = default;
+
+DeletionInfo::DeletionInfo(DeletionInfo&& other) noexcept = default;
+
+DeletionInfo& DeletionInfo::operator=(DeletionInfo&& rhs) noexcept = default;
+
 }  // namespace history

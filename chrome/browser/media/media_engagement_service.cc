@@ -197,11 +197,8 @@ void MediaEngagementService::RecordStoredScoresToHistogram() {
 
 void MediaEngagementService::OnURLsDeleted(
     history::HistoryService* history_service,
-    bool all_history,
-    bool expired,
-    const history::URLRows& deleted_rows,
-    const std::set<GURL>& favicon_urls) {
-  if (all_history) {
+    const history::DeletionInfo& deletion_info) {
+  if (deletion_info.IsAllHistory()) {
     RecordClear(MediaEngagementClearReason::kHistoryAll);
 
     HostContentSettingsMapFactory::GetForProfile(profile_)
@@ -211,12 +208,12 @@ void MediaEngagementService::OnURLsDeleted(
 
   // If origins are expired by the history service delete them if they have no
   // more visits.
-  if (expired) {
+  if (deletion_info.is_from_expiration()) {
     DCHECK(history_service);
 
     // Build a set of all origins in |deleted_rows|.
     std::set<GURL> origins;
-    for (const history::URLRow& row : deleted_rows) {
+    for (const history::URLRow& row : deletion_info.deleted_rows()) {
       origins.insert(row.url().GetOrigin());
     }
 
@@ -229,7 +226,7 @@ void MediaEngagementService::OnURLsDeleted(
   }
 
   std::map<GURL, int> origins;
-  for (const history::URLRow& row : deleted_rows) {
+  for (const history::URLRow& row : deletion_info.deleted_rows()) {
     GURL origin = row.url().GetOrigin();
     if (origins.find(origin) == origins.end()) {
       origins[origin] = 0;

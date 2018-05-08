@@ -574,12 +574,9 @@ bool SiteEngagementService::IsLastEngagementStale() const {
 
 void SiteEngagementService::OnURLsDeleted(
     history::HistoryService* history_service,
-    bool all_history,
-    bool expired,
-    const history::URLRows& deleted_rows,
-    const std::set<GURL>& favicon_urls) {
+    const history::DeletionInfo& deletion_info) {
   std::multiset<GURL> origins;
-  for (const history::URLRow& row : deleted_rows)
+  for (const history::URLRow& row : deletion_info.deleted_rows())
     origins.insert(row.url().GetOrigin());
 
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
@@ -588,7 +585,8 @@ void SiteEngagementService::OnURLsDeleted(
       std::set<GURL>(origins.begin(), origins.end()),
       base::Bind(
           &SiteEngagementService::GetCountsAndLastVisitForOriginsComplete,
-          weak_factory_.GetWeakPtr(), hs, origins, expired));
+          weak_factory_.GetWeakPtr(), hs, origins,
+          deletion_info.is_from_expiration()));
 }
 
 SiteEngagementScore SiteEngagementService::CreateEngagementScore(

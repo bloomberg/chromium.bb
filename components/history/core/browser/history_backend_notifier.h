@@ -40,17 +40,9 @@ class HistoryBackendNotifier {
   virtual void NotifyURLsModified(const URLRows& changed_urls) = 0;
 
   // Sends notification that some or the totality of the URLs have been
-  // deleted. If time_range.IsValid() is true, all URLs between
-  // time_range.begin() and time_range.end() have been removed.
-  // If time_range.IsAllTime() is true, then all the URLs in the
-  // history have been deleted, otherwise |deleted_urls| list the deleted URLs.
-  // If the URL deletion is due to expiration, then |expired| is true.
-  // |favicon_urls| is the list of favicon URLs that correspond to the deleted
-  // URLs (empty if |time_range.IsAllTime()| is true).
-  virtual void NotifyURLsDeleted(const DeletionTimeRange& time_range,
-                                 bool expired,
-                                 const URLRows& deleted_urls,
-                                 const std::set<GURL>& favicon_urls) = 0;
+  // deleted.
+  // |deletion_info| describes the urls that have been removed from history.
+  virtual void NotifyURLsDeleted(DeletionInfo deletion_info) = 0;
 };
 
 }  // namespace history
