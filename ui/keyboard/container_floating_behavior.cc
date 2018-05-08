@@ -255,7 +255,6 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
 
         if (current_display.id() == new_display.id()) {
           controller_->MoveKeyboard(new_bounds_in_local);
-          return true;
         } else {
           // Since the keyboard has jumped across screens, cancel the current
           // drag descriptor as though the user has lifted their finger.
@@ -274,8 +273,9 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
               new_display.bounds().origin().OffsetFromOrigin();
           controller_->MoveToDisplayWithTransition(new_display,
                                                    new_bounds_in_local);
-          return true;
         }
+        SavePosition(container->bounds(), new_display.size());
+        return true;
       }
       break;
 
