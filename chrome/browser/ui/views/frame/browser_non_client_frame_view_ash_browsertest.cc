@@ -74,6 +74,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 
@@ -426,25 +427,30 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   ash::FrameCaptionButtonContainerView::TestApi test(
       frame_view->caption_button_container_);
   widget->Maximize();
-  // Restore icon for size button in maximized window state.
-  EXPECT_EQ(&ash::kWindowControlRestoreIcon,
-            test.size_button()->icon_definition_for_test());
+
+  // Restore icon for size button in maximized window state. Compare by name
+  // because the address may not be the same for different build targets in the
+  // component build.
+  EXPECT_EQ(*ash::kWindowControlRestoreIcon.name,
+            *test.size_button()->icon_definition_for_test()->name);
   widget->Minimize();
+
   // When entering tablet mode in minimized window state, size button should not
   // get updated.
   TabletModeClient::Get()->OnTabletModeToggled(true);
-  EXPECT_EQ(&ash::kWindowControlRestoreIcon,
-            test.size_button()->icon_definition_for_test());
+  EXPECT_EQ(*ash::kWindowControlRestoreIcon.name,
+            *test.size_button()->icon_definition_for_test()->name);
   // When leaving tablet mode in minimized window state, size button should not
   // get updated.
   TabletModeClient::Get()->OnTabletModeToggled(false);
-  EXPECT_EQ(&ash::kWindowControlRestoreIcon,
-            test.size_button()->icon_definition_for_test());
+  EXPECT_EQ(*ash::kWindowControlRestoreIcon.name,
+            *test.size_button()->icon_definition_for_test()->name);
+
   // When unminimizing in non-tablet mode, size button should match with
   // maximized window state, which is restore icon.
   ::wm::Unminimize(widget->GetNativeWindow());
-  EXPECT_EQ(&ash::kWindowControlRestoreIcon,
-            test.size_button()->icon_definition_for_test());
+  EXPECT_EQ(*ash::kWindowControlRestoreIcon.name,
+            *test.size_button()->icon_definition_for_test()->name);
 }
 
 // This is a regression test that session restore minimized browser should
