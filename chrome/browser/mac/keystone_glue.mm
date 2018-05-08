@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/file_version_info.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/authorization_util.h"
@@ -22,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/version.h"
 #include "build/build_config.h"
 #import "chrome/browser/mac/keystone_registration.h"
 #include "chrome/common/channel_info.h"
@@ -174,21 +176,13 @@ class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
 - (void)determineUpdateStatus;
 - (void)determineUpdateStatusForVersion:(NSString*)version;
 
-// Returns YES if registration_ is definitely on a user ticket.  If definitely
-// on a system ticket, or uncertain of ticket type (due to an older version
-// of Keystone being used), returns NO.
-- (BOOL)isUserTicket;
+// Returns YES if registration_ is definitely on a system ticket.
+- (BOOL)isSystemTicket;
 
 // Returns YES if Keystone is definitely installed at the system level,
 // determined by the presence of an executable ksadmin program at the expected
 // system location.
 - (BOOL)isSystemKeystone;
-
-// Returns YES if on a system ticket but system Keystone is not present.
-// Returns NO otherwise. The "doomed" condition will result in the
-// registration framework appearing to have registered Chrome, but no updates
-// ever actually taking place.
-- (BOOL)isSystemTicketDoomed;
 
 // Called when ticket promotion completes.
 - (void)promotionComplete:(NSNotification*)notification;
@@ -581,7 +575,7 @@ NSString* const kVersionKey = @"KSVersion";
      [userInfo objectForKey:ksr::KSRegistrationUpdateCheckRawErrorMessagesKey]);
 
   if ([status boolValue]) {
-    if ([self isSystemTicketDoomed]) {
+    if ([self needsPromotion]) {
       [self updateStatus:kAutoupdateNeedsPromotion
                  version:nil
                    error:errorMessages];
@@ -794,9 +788,9 @@ NSString* const kVersionKey = @"KSVersion";
          status == kAutoupdatePromoting;
 }
 
-- (BOOL)isUserTicket {
+- (BOOL)isSystemTicket {
   DCHECK(registration_);
-  return [registration_ ticketType] == ksr::kKSRegistrationUserTicket;
+  return [registration_ ticketType] == ksr::kKSRegistrationSystemTicket;
 }
 
 - (BOOL)isSystemKeystone {
@@ -814,11 +808,6 @@ NSString* const kVersionKey = @"KSVersion";
   return YES;
 }
 
-- (BOOL)isSystemTicketDoomed {
-  BOOL isSystemTicket = ![self isUserTicket];
-  return isSystemTicket && ![self isSystemKeystone];
-}
-
 - (BOOL)isOnReadOnlyFilesystem {
   const char* appPathC = [appPath_ fileSystemRepresentation];
   struct statfs statfsBuf;
@@ -833,7 +822,51 @@ NSString* const kVersionKey = @"KSVersion";
 }
 
 - (BOOL)isAutoupdateEnabledForAllUsers {
-  return [self isSystemKeystone] && ![self isUserTicket];
+  return [self isSystemKeystone] && [self isSystemTicket];
+}
+
+// Compares the version of the installed system Keystone to the version of
+// KeystoneRegistration.framework. The method is a class method, so that
+// tests can pick it up.
++ (BOOL)isValidSystemKeystone:(NSDictionary*)systemKeystonePlistContents
+            comparedToBundled:(NSDictionary*)bundledKeystonePlistContents {
+  NSString* versionKey = base::mac::CFToNSCast(kCFBundleVersionKey);
+
+  // If the bundled version is missing or broken, this question is irrelevant.
+  NSString* bundledKeystoneVersionString =
+      base::mac::ObjCCast<NSString>(bundledKeystonePlistContents[versionKey]);
+  if (!bundledKeystoneVersionString.length)
+    return YES;
+  base::Version bundled_version(
+      std::string(bundledKeystoneVersionString.UTF8String));
+  if (!bundled_version.IsValid())
+    return YES;
+
+  NSString* systemKeystoneVersionString =
+      base::mac::ObjCCast<NSString>(systemKeystonePlistContents[versionKey]);
+  if (!systemKeystoneVersionString.length)
+    return NO;
+
+  // Installed Keystone's version should always be >= than the bundled one.
+  base::Version system_version(
+      std::string(systemKeystoneVersionString.UTF8String));
+  if (!system_version.IsValid() || system_version < bundled_version)
+    return NO;
+
+  return YES;
+}
+
+- (BOOL)isSystemKeystoneBroken {
+  DCHECK([self isSystemKeystone])
+      << "Call this method only for system Keystone.";
+
+  NSDictionary* systemKeystonePlist =
+      [NSDictionary dictionaryWithContentsOfFile:
+                        @"/Library/Google/GoogleSoftwareUpdate/"
+                        @"GoogleSoftwareUpdate.bundle/Contents/Info.plist"];
+  NSBundle* keystoneFramework = [NSBundle bundleForClass:[registration_ class]];
+  return ![[self class] isValidSystemKeystone:systemKeystonePlist
+                            comparedToBundled:keystoneFramework.infoDictionary];
 }
 
 - (BOOL)needsPromotion {
@@ -842,17 +875,16 @@ NSString* const kVersionKey = @"KSVersion";
     return NO;
   }
 
-  // Promotion is required when a system ticket is present but system Keystone
-  // is not.
-  if ([self isSystemTicketDoomed]) {
-    return YES;
+  BOOL isSystemKeystone = [self isSystemKeystone];
+  if (isSystemKeystone) {
+    // We can recover broken user keystone, but not broken system one.
+    if ([self isSystemKeystoneBroken])
+      return YES;
   }
 
-  // If on a system ticket and system Keystone is present, promotion is not
-  // required.
-  if (![self isUserTicket]) {
-    return NO;
-  }
+  // System ticket requires system Keystone for the updates to work.
+  if ([self isSystemTicket])
+    return !isSystemKeystone;
 
   // Check the outermost bundle directory, the main executable path, and the
   // framework directory.  It may be enough to just look at the outermost
@@ -876,7 +908,7 @@ NSString* const kVersionKey = @"KSVersion";
   }
 
   // These are the same unpromotable cases as in -needsPromotion.
-  if ([self isOnReadOnlyFilesystem] || ![self isUserTicket]) {
+  if ([self isOnReadOnlyFilesystem] || [self isSystemTicket]) {
     return NO;
   }
 
