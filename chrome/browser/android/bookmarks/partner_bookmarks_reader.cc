@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/favicon/core/favicon_server_fetcher_params.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon_base/favicon_types.h"
@@ -313,9 +314,10 @@ void PartnerBookmarksReader::OnGetFaviconFromCacheFinished(
         })");
   GetLargeIconService()
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
-          page_url, kPartnerBookmarksMinimumFaviconSizePx,
-          desired_favicon_size_px, false /* may_page_url_be_private */,
-          traffic_annotation,
+          favicon::FaviconServerFetcherParams::CreateForMobile(
+              page_url, kPartnerBookmarksMinimumFaviconSizePx,
+              desired_favicon_size_px),
+          false /* may_page_url_be_private */, traffic_annotation,
           base::Bind(&PartnerBookmarksReader::OnGetFaviconFromServerFinished,
                      base::Unretained(this), page_url, desired_favicon_size_px,
                      base::Passed(std::move(callback))));

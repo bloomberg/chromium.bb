@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/favicon/core/fallback_url_util.h"
+#include "components/favicon/core/favicon_server_fetcher_params.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
 #include "components/favicon_base/favicon_types.h"
@@ -757,7 +758,9 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
       strongSelf.sharedState.faviconDownloadCount++;
       IOSChromeLargeIconServiceFactory::GetForBrowserState(self.browserState)
           ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
-              node->url(), minFaviconSizeInPixel, desiredFaviconSizeInPixel,
+              favicon::FaviconServerFetcherParams::CreateForMobile(
+                  node->url(), minFaviconSizeInPixel,
+                  desiredFaviconSizeInPixel),
               /*may_page_url_be_private=*/true, kTrafficAnnotation,
               base::BindBlockArc(faviconLoadedFromServerBlock));
     }
