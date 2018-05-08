@@ -1141,6 +1141,10 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
 
   bool is_empty_block = IsEmptyBlock(child, layout_result);
   if (is_empty_block) {
+    // The default behaviour for empty blocks is they just pass through the
+    // previous inflow position.
+    child_end_bfc_block_offset = previous_inflow_position.bfc_block_offset;
+
     if (empty_block_affected_by_clearance) {
       // If an empty block was affected by clearance (that is it got pushed
       // down past a float), we need to do something slightly bizarre.
@@ -1152,17 +1156,45 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
       // Another way of thinking about this is that when you *add* back the
       // margin strut, you end up with the same position as you started with.
       //
-      // This behaviour isn't known to be in any CSS specification.
-      child_end_bfc_block_offset = child_bfc_offset.value().block_offset -
-                                   layout_result.EndMarginStrut().Sum();
-      logical_block_offset =
-          logical_offset.block_offset - layout_result.EndMarginStrut().Sum();
-    } else {
-      // The default behaviour for empty blocks is they just pass through the
-      // previous inflow position.
-      child_end_bfc_block_offset = previous_inflow_position.bfc_block_offset;
-      logical_block_offset = previous_inflow_position.logical_block_offset;
+      // This is essentially what the spec refers to as clearance [1], and,
+      // while we normally don't have to calculate it directly, in the case of
+      // an empty cleared child like here, we actually have to.
+      //
+      // We have to calculate clearance for empty cleared children, because we
+      // need the margin that's between the clearance and this block to collapse
+      // correctly with subsequent content. This is something that needs to take
+      // place after the margin strut preceding and following the clearance have
+      // been separated. Clearance may be positive, negative or zero, depending
+      // on what it takes to (hypothetically) place this child just below the
+      // last relevant float. Since the margins before and after the clearance
+      // have been separated, we may have to pull the child back, and that's an
+      // example of negative clearance.
+      //
+      // (In the other case, when a cleared child is non-empty (i.e. when we
+      // don't end up here), we don't need to explicitly calculate clearance,
+      // because then we just place its border edge where it should be and we're
+      // done with it.)
+      //
+      // [1] https://www.w3.org/TR/CSS22/visuren.html#flow-control
+
+      // First move past the margin that is to precede the clearance. It will
+      // not participate in any subsequent margin collapsing.
+      LayoutUnit margin_before_clearance =
+          previous_inflow_position.margin_strut.Sum();
+      child_end_bfc_block_offset += margin_before_clearance;
+
+      // Calculate and apply actual clearance.
+      LayoutUnit clearance = child_bfc_offset.value().block_offset -
+                             layout_result.EndMarginStrut().Sum() -
+                             previous_inflow_position.NextBorderEdge();
+      child_end_bfc_block_offset += clearance;
     }
+
+    // The logical block offset needs to go through exactly the same change as
+    // the BFC block offset here.
+    logical_block_offset = previous_inflow_position.logical_block_offset +
+                           child_end_bfc_block_offset -
+                           previous_inflow_position.bfc_block_offset;
 
     if (!container_builder_.BfcOffset()) {
       DCHECK_EQ(child_end_bfc_block_offset,
