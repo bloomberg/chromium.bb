@@ -148,7 +148,7 @@ class NET_EXPORT_PRIVATE DhcpPacFileAdapterFetcher
   };
 
   // Virtual methods introduced to allow unit testing.
-  virtual PacFileFetcher* ImplCreateScriptFetcher();
+  virtual std::unique_ptr<PacFileFetcher> ImplCreateScriptFetcher();
   virtual DhcpQuery* ImplCreateDhcpQuery();
   virtual base::TimeDelta ImplGetTimeout() const;
 

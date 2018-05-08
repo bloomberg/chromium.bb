@@ -19,6 +19,7 @@
 #include "net/base/request_priority.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 
 // TODO(eroman):
@@ -81,17 +82,15 @@ void ConvertResponseToUTF16(const std::string& charset,
 
 }  // namespace
 
-PacFileFetcherImpl::PacFileFetcherImpl(URLRequestContext* url_request_context)
-    : url_request_context_(url_request_context),
-      buf_(new IOBuffer(kBufSize)),
-      next_id_(0),
-      cur_request_id_(0),
-      result_code_(OK),
-      result_text_(NULL),
-      max_response_bytes_(kDefaultMaxResponseBytes),
-      max_duration_(kDefaultMaxDuration),
-      weak_factory_(this) {
-  DCHECK(url_request_context);
+std::unique_ptr<PacFileFetcherImpl> PacFileFetcherImpl::Create(
+    URLRequestContext* url_request_context) {
+  return base::WrapUnique(new PacFileFetcherImpl(url_request_context, false));
+}
+
+std::unique_ptr<PacFileFetcherImpl>
+PacFileFetcherImpl::CreateWithFileUrlSupport(
+    URLRequestContext* url_request_context) {
+  return base::WrapUnique(new PacFileFetcherImpl(url_request_context, true));
 }
 
 PacFileFetcherImpl::~PacFileFetcherImpl() {
@@ -136,6 +135,9 @@ int PacFileFetcherImpl::Fetch(
 
   if (!url_request_context_)
     return ERR_CONTEXT_SHUT_DOWN;
+
+  if (!IsUrlSchemeAllowed(url))
+    return ERR_DISALLOWED_URL_SCHEME;
 
   // Handle base-64 encoded data-urls that contain custom PAC scripts.
   if (url.SchemeIs("data")) {
@@ -211,6 +213,27 @@ void PacFileFetcherImpl::OnShutdown() {
   }
 }
 
+void PacFileFetcherImpl::OnReceivedRedirect(URLRequest* request,
+                                            const RedirectInfo& redirect_info,
+                                            bool* defer_redirect) {
+  int error = OK;
+
+  // Redirection to file:// is never OK. Ordinarily this is handled lower in the
+  // stack (|FileProtocolHandler::IsSafeRedirectTarget|), but this is reachable
+  // when built without file:// suppport. Return the same error for consistency.
+  if (redirect_info.new_url.SchemeIsFile()) {
+    error = ERR_UNSAFE_REDIRECT;
+  } else if (!IsUrlSchemeAllowed(redirect_info.new_url)) {
+    error = ERR_DISALLOWED_URL_SCHEME;
+  }
+
+  if (error != OK) {
+    // Fail the redirect.
+    request->CancelWithError(error);
+    OnResponseCompleted(request, error);
+  }
+}
+
 void PacFileFetcherImpl::OnAuthRequired(URLRequest* request,
                                         AuthChallengeInfo* auth_info) {
   DCHECK_EQ(request, cur_request_.get());
@@ -278,6 +301,36 @@ void PacFileFetcherImpl::OnReadCompleted(URLRequest* request, int num_bytes) {
     // Keep reading.
     ReadBody(request);
   }
+}
+
+PacFileFetcherImpl::PacFileFetcherImpl(URLRequestContext* url_request_context,
+                                       bool allow_file_url)
+    : url_request_context_(url_request_context),
+      buf_(new IOBuffer(kBufSize)),
+      next_id_(0),
+      cur_request_id_(0),
+      result_code_(OK),
+      result_text_(NULL),
+      max_response_bytes_(kDefaultMaxResponseBytes),
+      max_duration_(kDefaultMaxDuration),
+      allow_file_url_(allow_file_url),
+      weak_factory_(this) {
+  DCHECK(url_request_context);
+}
+
+bool PacFileFetcherImpl::IsUrlSchemeAllowed(const GURL& url) const {
+  // Always allow http://, https://, data:, and ftp://.
+  if (url.SchemeIsHTTPOrHTTPS() || url.SchemeIs("ftp") || url.SchemeIs("data"))
+    return true;
+
+  // Only permit file:// if |allow_file_url_| was set. file:// should not be
+  // allowed for URLs that were auto-detected, or as the result of a server-side
+  // redirect.
+  if (url.SchemeIsFile())
+    return allow_file_url_;
+
+  // Disallow any other URL scheme.
+  return false;
 }
 
 void PacFileFetcherImpl::ReadBody(URLRequest* request) {

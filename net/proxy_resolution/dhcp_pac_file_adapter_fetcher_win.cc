@@ -153,7 +153,7 @@ void DhcpPacFileAdapterFetcher::OnDhcpQueryDone(
     TransitionToFinish();
   } else {
     state_ = STATE_WAIT_URL;
-    script_fetcher_.reset(ImplCreateScriptFetcher());
+    script_fetcher_ = ImplCreateScriptFetcher();
     script_fetcher_->Fetch(pac_url_, &pac_script_,
                            base::Bind(&DhcpPacFileAdapterFetcher::OnFetcherDone,
                                       base::Unretained(this)),
@@ -194,8 +194,9 @@ DhcpPacFileAdapterFetcher::State DhcpPacFileAdapterFetcher::state() const {
   return state_;
 }
 
-PacFileFetcher* DhcpPacFileAdapterFetcher::ImplCreateScriptFetcher() {
-  return new PacFileFetcherImpl(url_request_context_);
+std::unique_ptr<PacFileFetcher>
+DhcpPacFileAdapterFetcher::ImplCreateScriptFetcher() {
+  return PacFileFetcherImpl::Create(url_request_context_);
 }
 
 DhcpPacFileAdapterFetcher::DhcpQuery*

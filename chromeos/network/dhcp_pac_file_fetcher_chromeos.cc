@@ -35,7 +35,7 @@ DhcpPacFileFetcherChromeos::DhcpPacFileFetcherChromeos(
     net::URLRequestContext* url_request_context)
     : weak_ptr_factory_(this) {
   DCHECK(url_request_context);
-  pac_file_fetcher_.reset(new net::PacFileFetcherImpl(url_request_context));
+  pac_file_fetcher_ = net::PacFileFetcherImpl::Create(url_request_context);
   if (NetworkHandler::IsInitialized())
     network_handler_task_runner_ = NetworkHandler::Get()->task_runner();
 }
