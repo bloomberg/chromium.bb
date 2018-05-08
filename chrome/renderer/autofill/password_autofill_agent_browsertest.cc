@@ -2836,14 +2836,6 @@ TEST_F(PasswordAutofillAgentTest,
       "  <INPUT type='submit' />"
       "</FORM>";
 
-  const char kFormWithMultipleAnonymousTextFields[] =
-      "<FORM action='http://www.bidule.com'>"
-      "<INPUT type='text' placeholder='username'/>"
-      "<INPUT type='password' placeholder='password'/>"
-      "<INPUT type='text' placeholder='captcha'/>"
-      "<INPUT type='text' placeholder='fakefield'/>"
-      "</FORM>";
-
   const struct {
     const char* html_form;
     bool is_possible_change_password_form;
@@ -2890,10 +2882,6 @@ TEST_F(PasswordAutofillAgentTest,
       {kChangePasswordFormButNoAutocompleteAttribute, true, true,
        kDummyUsernameField, kDummyPasswordField, kAliceUsername, kAlicePassword,
        true, true},
-
-      // Sign-in form with multiple anonymous text fields.
-      {kFormWithMultipleAnonymousTextFields, false, true, kDummyUsernameField,
-       kDummyPasswordField, kAliceUsername, kAlicePassword, true, true},
   };
 
   for (const auto& test_case : test_cases) {
