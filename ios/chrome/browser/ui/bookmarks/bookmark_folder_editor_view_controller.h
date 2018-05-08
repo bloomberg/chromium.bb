@@ -62,7 +62,7 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
                        folder:(const bookmarks::BookmarkNode*)folder
                  browserState:(ios::ChromeBrowserState*)browserState;
 
-- (instancetype)initWithTableViewStyle:(UICollectionViewLayout*)layout
+- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
                            appBarStyle:(ChromeTableViewControllerStyle)style
     NS_UNAVAILABLE;
 

@@ -6,7 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 @class BookmarkEditViewController;
 @class BookmarkFolderViewController;
@@ -45,7 +45,7 @@ class ChromeBrowserState;
 // This view controller will also monitor bookmark model change events and react
 // accordingly depending on whether the bookmark and folder it is editing
 // changes underneath it.
-@interface BookmarkEditViewController : CollectionViewController
+@interface BookmarkEditViewController : ChromeTableViewController
 
 @property(nonatomic, weak) id<BookmarkEditViewControllerDelegate> delegate;
 
@@ -55,8 +55,8 @@ class ChromeBrowserState;
 - (instancetype)initWithBookmark:(const bookmarks::BookmarkNode*)bookmark
                     browserState:(ios::ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
-                         style:(CollectionViewControllerStyle)style
+- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
+                           appBarStyle:(ChromeTableViewControllerStyle)style
     NS_UNAVAILABLE;
 
 // Closes the edit view as if close button was pressed.

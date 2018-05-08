@@ -97,8 +97,6 @@ source_set("bookmarks") {
     "//ios/chrome/browser/ui/authentication:authentication_ui",
     "//ios/chrome/browser/ui/bookmarks/bars",
     "//ios/chrome/browser/ui/bookmarks/cells",
-    "//ios/chrome/browser/ui/collection_view",
-    "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/icons",

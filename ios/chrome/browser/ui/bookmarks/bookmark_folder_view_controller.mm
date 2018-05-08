@@ -221,6 +221,8 @@ const NSInteger BookmarkFolderSectionCount = 2;
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
+  // Whevener this VC is displayed the bottom toolbar will be hidden.
+  self.navigationController.toolbarHidden = YES;
   [self reloadFolders];
 }
 

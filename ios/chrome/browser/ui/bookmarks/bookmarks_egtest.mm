@@ -215,12 +215,8 @@ id<GREYMatcher> CloseToolsMenuButton() {
   // Clear the bookmark via the UI.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(kStarLitLabel)]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:
-                 grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
-                                IDS_IOS_BOOKMARK_ACTION_DELETE)),
-                            grey_accessibilityTrait(UIAccessibilityTraitButton),
-                            grey_not(grey_accessibilityID(@"Edit_editing_bar")),
-                            nil)] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Delete_action")]
+      performAction:grey_tap()];
 
   // Verify the bookmark is not in the BookmarkModel.
   [BookmarksTestCase assertBookmarksWithTitle:bookmarkTitle expectedCount:0];
