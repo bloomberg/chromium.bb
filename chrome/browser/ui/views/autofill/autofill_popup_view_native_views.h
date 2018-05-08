@@ -9,60 +9,47 @@
 #include "base/optional.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/font_list.h"
 
+#include <memory>
 #include <vector>
-
-namespace views {
-class Label;
-}
 
 namespace autofill {
 
 class AutofillPopupController;
 
-// Child view representing one row (i.e., one suggestion) in the Autofill
-// Popup.
+// Child view representing one row in the Autofill Popup. This could represent
+// a UI control (e.g., a suggestion which can be autofilled), or decoration like
+// separators.
 class AutofillPopupRowView : public views::View {
  public:
-  AutofillPopupRowView(AutofillPopupController* controller, int line_number);
-
-  ~AutofillPopupRowView() override {}
-
-  void AcceptSelection();
+  ~AutofillPopupRowView() override = default;
   void SetSelected(bool is_selected);
-  void RefreshStyle();
 
   // views::View:
-  // TODO(tmartino): Consolidate and deprecate code in AutofillPopupBaseView
-  // where overlap exists with these events.
-  void OnMouseEntered(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
+  // Drags and presses on any row should be a no-op; subclasses instead rely on
+  // entry/release events. Returns true to indicate that those events have been
+  // processed (i.e., intentionally ignored).
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
- private:
-  // views::View:
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void CreateContent();
+ protected:
+  AutofillPopupRowView(AutofillPopupController* controller, int line_number);
+
+  // Init handles initialization tasks which require virtual methods. Subclasses
+  // should have private/protected constructors and implement a static Create
+  // method which calls Init before returning.
+  void Init();
+
+  virtual void CreateContent() = 0;
+  virtual void RefreshStyle() = 0;
+  virtual std::unique_ptr<views::Background> CreateBackground() = 0;
 
   AutofillPopupController* controller_;
   const int line_number_;
-  bool is_separator_ = false;  // overwritten in ctor
-  bool is_warning_ = false;    // overwritten in ctor
+  bool is_warning_ = false;  // overwritten in ctor
   bool is_selected_ = false;
-
-  views::Label* text_label_ = nullptr;
-  views::Label* subtext_label_ = nullptr;
-
-  SkColor text_color_ = gfx::kPlaceholderColor;
-  SkColor text_selected_color_ = gfx::kPlaceholderColor;
-  SkColor subtext_color_ = gfx::kPlaceholderColor;
-  SkColor subtext_selected_color_ = gfx::kPlaceholderColor;
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillPopupRowView);
 };
 
 // Views implementation for the autofill and password suggestion.
@@ -91,9 +78,9 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
   gfx::Size CalculatePreferredSize() const override;
 
   // AutofillPopupBaseView:
-  // TODO(tmartino): Remove these overrides and the corresponding methods in
-  // AutofillPopupBaseView once deprecation of AutofillPopupViewViews is
-  // complete.
+  // TODO(crbug.com/831603): Remove these overrides and the corresponding
+  // methods in AutofillPopupBaseView once deprecation of
+  // AutofillPopupViewViews is complete.
   void OnMouseExited(const ui::MouseEvent& event) override {}
   void OnMouseMoved(const ui::MouseEvent& event) override {}
 
