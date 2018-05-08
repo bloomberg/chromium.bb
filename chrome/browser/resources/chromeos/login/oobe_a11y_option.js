@@ -7,18 +7,14 @@ Polymer({
 
   properties: {
     /**
-     * If paper-toggle-button is checked.
+     * If cr-toggle is checked.
      */
-    checked: {
-      type: Boolean,
-    },
+    checked: Boolean,
 
     /**
      * Chrome message handling this option.
      */
-    chromeMessage: {
-      type: String,
-    },
+    chromeMessage: String,
 
     /**
      * ARIA-label for the button.
