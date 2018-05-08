@@ -143,7 +143,7 @@ HttpNetworkSession::Params::Params()
       enable_channel_id(false),
       http_09_on_non_default_ports_enabled(false),
       disable_idle_sockets_close_on_memory_pressure(false) {
-  quic_supported_versions.push_back(QUIC_VERSION_39);
+  quic_supported_versions.push_back(QUIC_VERSION_43);
 }
 
 HttpNetworkSession::Params::Params(const Params& other) = default;
