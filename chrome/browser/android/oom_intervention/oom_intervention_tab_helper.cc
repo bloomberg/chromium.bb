@@ -132,6 +132,10 @@ void OomInterventionTabHelper::DeclineIntervention() {
   }
 }
 
+void OomInterventionTabHelper::DeclineInterventionSticky() {
+  NOTREACHED();
+}
+
 void OomInterventionTabHelper::WebContentsDestroyed() {
   OutOfMemoryReporter::FromWebContents(web_contents())->RemoveObserver(this);
   StopMonitoring();

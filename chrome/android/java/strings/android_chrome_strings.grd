@@ -134,9 +134,6 @@ CHAR-LIMIT guidelines:
       <message name="IDS_OK_GOT_IT" desc="Label of a button by which the user confirms that they read and understood the information or instructions. Used in multiple contexts. [CHAR-LIMIT=20]">
         OK, got it
       </message>
-      <message name="IDS_GOT_IT" desc="Label of a button by which the user confirms that they read and understood the information or instructions. Used in multiple contexts. [CHAR-LIMIT=20]">
-        Got it
-      </message>
       <message name="IDS_CANCEL" desc="Label for a cancel button. Used in multiple contexts. [CHAR-LIMIT=20]">
         Cancel
       </message>
@@ -798,8 +795,8 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_MEDIA_PERMISSION_TITLE" desc="Title of the menu containing the media permissions [CHAR-LIMIT=32]">
         Media
       </message>
-      <message name="IDS_POPUP_PERMISSION_TITLE" desc="Title of the permission to display pop-up windows [CHAR-LIMIT=32]">
-        Pop-ups
+      <message name="IDS_POPUP_PERMISSION_TITLE" desc="Title of the permission to display pop-up windows and redirects [CHAR-LIMIT=32]">
+        Pop-ups and redirects
       </message>
       <message name="IDS_PUSH_NOTIFICATIONS_PERMISSION_TITLE" desc="Title for the permission for showing push notifications [CHAR-LIMIT=32]">
         Notifications
@@ -933,8 +930,8 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_USB_BLOCKED" desc="Summary text explaining that the USB permission is set to block all requests for access to devices. To be shown in the list of permission categories.">
         Block sites from connecting to devices
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_POPUPS_BLOCKED" desc="Summary text explaining that sites are blocked from showing popups and that it is the recommended setting.">
-        Block sites from showing pop-ups (recommended)
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_POPUPS_REDIRECTS_BLOCKED" desc="Summary text explaining that sites are blocked from showing popups/redirects and that it is the recommended setting.">
+        Block sites from showing pop-ups and redirects (recommended)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ADS_BLOCKED" desc="Summary text explaining that ads are being blocked on some sites.">
         Block ads from sites that tend to show intrusive ads
@@ -3287,10 +3284,13 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 
       <!-- Interventions -->
       <message name="IDS_REDIRECT_BLOCKED_MESSAGE" desc="The message stating that a redirect (noun) was blocked on this page. This will be followed on a separate line with the address the user was being redirected to.">
-         Redirect blocked to site:
+         Redirect blocked:
       </message>
       <message name="IDS_REDIRECT_BLOCKED_SHORT_MESSAGE" desc="The short message stating that a redirect (noun) was blocked on this page.">
          Redirect blocked.
+      </message>
+      <message name="IDS_ALWAYS_ALLOW_REDIRECTS" desc="The infobar button text allowing a user to always allow redirects (noun) after they were blocked on this page.">
+        Always allow
       </message>
       <message name="IDS_NEAR_OOM_INTERVENTION_MESSAGE" desc="The message stating that the browser intervened to stop the page using too much memory.">
          This page uses too much memory, so Chrome paused it.

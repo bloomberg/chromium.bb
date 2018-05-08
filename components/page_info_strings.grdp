@@ -215,6 +215,9 @@
     <message name="IDS_PAGE_INFO_TYPE_POPUPS" desc="The label used for popups permission controls in the Page Info popup.">
       Popups
     </message>
+    <message name="IDS_PAGE_INFO_TYPE_POPUPS_REDIRECTS" desc="The label used for the popup/redirect permission controls in the Page Info popup.">
+      Pop-ups and redirects
+    </message>
     <message name="IDS_PAGE_INFO_TYPE_FLASH" desc="The label used for Flash permissions in the Page Info popup.">
       Flash
     </message>
