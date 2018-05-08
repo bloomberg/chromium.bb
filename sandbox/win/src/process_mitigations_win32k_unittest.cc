@@ -629,12 +629,21 @@ TEST(ProcessMitigationsWin32kTest, CheckWin8LockDownFailure) {
   EXPECT_NE(SBOX_TEST_SUCCEEDED, runner.RunTest(test_policy_command.c_str()));
 }
 
+// Flaky in Debug. https://crbug.com/840335
+#if !defined(NDEBUG)
+#define MAYBE_CheckWin8LockDownSuccess DISABLED_CheckWin8LockDownSuccess
+#define MAYBE_CheckWin8Redirection DISABLED_CheckWin8Redirection
+#else
+#define MAYBE_CheckWin8LockDownSuccess CheckWin8LockDownSuccess
+#define MAYBE_CheckWin8Redirection CheckWin8Redirection
+#endif
+
 // This test validates that setting the MITIGATION_WIN32K_DISABLE mitigation
 // along with the policy to fake user32 and gdi32 initialization successfully
 // launches the target process.
 // The test process itself links against user32/gdi32.
-// Flaky. https://crbug.com/840335
-TEST(ProcessMitigationsWin32kTest, DISABLED_CheckWin8LockDownSuccess) {
+
+TEST(ProcessMitigationsWin32kTest, MAYBE_CheckWin8LockDownSuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
 
@@ -661,7 +670,7 @@ TEST(ProcessMitigationsWin32kTest, DISABLED_CheckWin8LockDownSuccess) {
 // This test validates the even though we're running under win32k lockdown
 // we can use the IPC redirection to enumerate the list of monitors.
 // Flaky. https://crbug.com/840335
-TEST(ProcessMitigationsWin32kTest, DISABLED_CheckWin8Redirection) {
+TEST(ProcessMitigationsWin32kTest, MAYBE_CheckWin8Redirection) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
 
