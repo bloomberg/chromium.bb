@@ -375,6 +375,21 @@ Polymer({
     }
   },
 
+  /** @private
+   * @param {string} languageCode language code
+   * @return {boolean} True if the language is in the list of allowed
+   *   locales (AllowedLocales policy) or if the policy is not set (empty list)
+   * @private
+   */
+  isAllowedLocale_: function(languageCode) {
+    if (!cr.isChromeOS)
+      return true;
+
+    const pref = /** @type {!chrome.settingsPrivate.PrefObject} */ (
+        this.get('intl.allowed_locales', this.prefs));
+    return (pref.value.length == 0 || pref.value.indexOf(languageCode) != -1);
+  },
+
   /**
    * Constructs the languages model.
    * @param {!Array<!chrome.languageSettingsPrivate.Language>}
@@ -396,6 +411,7 @@ Polymer({
       language.supportsUI = !!language.supportsUI;
       language.supportsTranslate = !!language.supportsTranslate;
       language.supportsSpellcheck = !!language.supportsSpellcheck;
+      language.isAllowedLocale = this.isAllowedLocale_(language.code);
       this.supportedLanguageMap_.set(language.code, language);
     }
 
@@ -746,7 +762,6 @@ Polymer({
     } else {
       this.languageSettingsPrivate_.moveLanguage(languageCode, MoveType.DOWN);
     }
-
   },
 
   /**

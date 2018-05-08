@@ -14,6 +14,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -166,6 +167,11 @@ void LocaleChangeGuard::Check() {
     // This conditional branch can occur in cases like:
     // (1) kApplicationLocale preference was modified by synchronization;
     // (2) kApplicationLocale is managed by policy.
+
+    // Ensure that synchronization does not change the locale to a value not
+    // allowed by enterprise policy.
+    if (!chromeos::locale_util::IsAllowedLocale(to_locale, prefs))
+      prefs->SetString(prefs::kApplicationLocale, cur_locale);
     return;
   }
 

@@ -235,6 +235,8 @@ class Profile : public content::BrowserContext {
     APP_LOCALE_CHANGED_VIA_LOGIN,
     // From login to a public session.
     APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN,
+    // From AllowedLocales policy
+    APP_LOCALE_CHANGED_VIA_POLICY,
     // Source unknown.
     APP_LOCALE_CHANGED_VIA_UNKNOWN
   };

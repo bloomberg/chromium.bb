@@ -31,6 +31,10 @@ namespace languageSettingsPrivate {
     // Whether this language has translations for the current target language.
     // Defaults to false.
     boolean? supportsTranslate;
+
+    // Whether this language is in the list of allowed locales (see
+    // 'AllowedLocales' policy). Defaults to false.
+    boolean? isAllowedLocale;
   };
 
   dictionary SpellcheckDictionaryStatus {

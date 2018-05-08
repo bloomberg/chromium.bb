@@ -14,6 +14,7 @@
 #include "content/public/browser/web_ui.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -67,6 +68,14 @@ void LanguagesHandler::HandleSetProspectiveUILanguage(
 
   std::string language_code;
   CHECK(args->GetString(0, &language_code));
+
+#if defined(OS_CHROMEOS)
+  // check if prospectiveUILanguage is allowed by policy (AllowedLocales)
+  if (!chromeos::locale_util::IsAllowedLocale(language_code,
+                                              profile_->GetPrefs())) {
+    return;
+  }
+#endif
 
 #if defined(OS_WIN)
   PrefService* prefs = g_browser_process->local_state();
