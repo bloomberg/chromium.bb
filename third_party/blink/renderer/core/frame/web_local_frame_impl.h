@@ -150,8 +150,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   v8::Local<v8::Context> MainWorldScriptContext() const override;
   v8::Local<v8::Object> GlobalProxy() const override;
   void Reload(WebFrameLoadType) override;
-  void ReloadWithOverrideURL(const WebURL& override_url,
-                             WebFrameLoadType) override;
   void ReloadImage(const WebNode&) override;
   void ReloadLoFiImages() override;
   void LoadRequest(const WebURLRequest&) override;
@@ -263,10 +261,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebFrame* FindFrameByName(const WebString& name) override;
   void SendPings(const WebURL& destination_url) override;
   bool DispatchBeforeUnloadEvent(bool) override;
-  WebURLRequest RequestFromHistoryItem(const WebHistoryItem&,
-                                       mojom::FetchCacheMode) const override;
-  WebURLRequest RequestForReload(WebFrameLoadType,
-                                 const WebURL&) const override;
   void Load(const WebURLRequest&,
             WebFrameLoadType,
             const WebHistoryItem&,
@@ -437,8 +431,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   VisiblePosition VisiblePositionForViewportPoint(const WebPoint&);
 
   void SetFrameWidget(WebFrameWidgetBase*);
-
-  std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override;
 
   // TODO(dcheng): Remove this and make |FrameWidget()| always return something
   // useful.

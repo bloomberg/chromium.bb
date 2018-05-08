@@ -1062,7 +1062,7 @@ WebTextCheckClient* LocalFrameClientImpl::GetTextCheckerClient() const {
 
 std::unique_ptr<blink::WebURLLoaderFactory>
 LocalFrameClientImpl::CreateURLLoaderFactory() {
-  return web_frame_->CreateURLLoaderFactory();
+  return web_frame_->Client()->CreateURLLoaderFactory();
 }
 
 service_manager::InterfaceProvider*

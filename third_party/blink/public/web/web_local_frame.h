@@ -52,7 +52,6 @@ class WebSpellCheckPanelHostClient;
 class WebString;
 class WebTextCheckClient;
 class WebURL;
-class WebURLLoaderFactory;
 class WebView;
 enum class WebTreeScopeType;
 struct WebAssociatedURLLoaderOptions;
@@ -197,16 +196,6 @@ class WebLocalFrame : public WebFrame {
   // by handlers.
   // Note: this may lead to the destruction of the frame.
   virtual bool DispatchBeforeUnloadEvent(bool is_reload) = 0;
-
-  // Returns a WebURLRequest corresponding to the load of the WebHistoryItem.
-  virtual WebURLRequest RequestFromHistoryItem(const WebHistoryItem&,
-                                               mojom::FetchCacheMode) const = 0;
-
-  // Returns a WebURLRequest corresponding to the reload of the current
-  // HistoryItem.
-  virtual WebURLRequest RequestForReload(
-      WebFrameLoadType,
-      const WebURL& override_url = WebURL()) const = 0;
 
   // Load the given URL. For history navigations, a valid WebHistoryItem
   // should be given, as well as a WebHistoryLoadType.
@@ -775,10 +764,6 @@ class WebLocalFrame : public WebFrame {
 
   // Loading ------------------------------------------------------------------
 
-  // Creates and returns a new WebURLLoaderFactory. This function can be called
-  // only when this frame is attached to a document.
-  virtual std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() = 0;
-
   // Returns an AssociatedURLLoader that is associated with this frame.  The
   // loader will, for example, be cancelled when WebFrame::stopLoading is
   // called.
@@ -788,14 +773,9 @@ class WebLocalFrame : public WebFrame {
       const WebAssociatedURLLoaderOptions&) = 0;
 
   // Reload the current document.
-  // Note: reload() and reloadWithOverrideURL() will be deprecated.
+  // Note: reload() will be deprecated.
   // Do not use these APIs any more, but use loadRequest() instead.
   virtual void Reload(WebFrameLoadType) = 0;
-
-  // This is used for situations where we want to reload a different URL because
-  // of a redirect.
-  virtual void ReloadWithOverrideURL(const WebURL& override_url,
-                                     WebFrameLoadType) = 0;
 
   // Load the given URL.
   virtual void LoadRequest(const WebURLRequest&) = 0;

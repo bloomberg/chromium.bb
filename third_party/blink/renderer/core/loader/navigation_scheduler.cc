@@ -259,7 +259,7 @@ class ScheduledReload final : public ScheduledNavigation {
     std::unique_ptr<UserGestureIndicator> gesture_indicator =
         CreateUserGestureIndicator();
     ResourceRequest resource_request = frame->Loader().ResourceRequestForReload(
-        kFrameLoadTypeReload, KURL(), ClientRedirectPolicy::kClientRedirect);
+        kFrameLoadTypeReload, ClientRedirectPolicy::kClientRedirect);
     if (resource_request.IsNull())
       return;
     FrameLoadRequest request = FrameLoadRequest(nullptr, resource_request);

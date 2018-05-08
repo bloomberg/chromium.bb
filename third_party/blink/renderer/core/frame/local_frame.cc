@@ -319,8 +319,8 @@ void LocalFrame::Reload(FrameLoadType load_type,
     if (!loader_.GetDocumentLoader()->GetHistoryItem())
       return;
     FrameLoadRequest request = FrameLoadRequest(
-        nullptr, loader_.ResourceRequestForReload(load_type, NullURL(),
-                                                  client_redirect_policy));
+        nullptr,
+        loader_.ResourceRequestForReload(load_type, client_redirect_policy));
     request.SetClientRedirect(client_redirect_policy);
     loader_.Load(request, load_type);
   } else {
