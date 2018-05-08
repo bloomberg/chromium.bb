@@ -1,4 +1,3 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,8 +19,8 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.search_engines.TemplateUrl;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
@@ -49,7 +48,7 @@ public class DefaultSearchEnginePromoDialogTest {
                 LocaleManager mockManager = new LocaleManager() {
                     @Override
                     public List<TemplateUrl> getSearchEnginesForPromoDialog(int promoType) {
-                        return TemplateUrlService.getInstance().getSearchEngines();
+                        return TemplateUrlService.getInstance().getTemplateUrls();
                     }
                 };
                 LocaleManager.setInstanceForTest(mockManager);

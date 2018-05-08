@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.support.annotation.StringRes;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -36,14 +37,20 @@ import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
 import org.chromium.chrome.browser.preferences.website.NotificationInfo;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
+import org.chromium.chrome.browser.search_engines.TemplateUrl;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
 * A custom adapter for listing search engines.
@@ -56,6 +63,20 @@ public class SearchEngineAdapter extends BaseAdapter
     private static final int VIEW_TYPE_ITEM = 0;
     private static final int VIEW_TYPE_DIVIDER = 1;
     private static final int VIEW_TYPE_COUNT = 2;
+
+    public static final int MAX_RECENT_ENGINE_NUM = 3;
+    public static final long MAX_DISPLAY_TIME_SPAN_MS = TimeUnit.DAYS.toMillis(2);
+
+    /**
+     * Type for source of search engine. This is needed because if a custom search engine is set as
+     * default, it will be moved to the prepopulated list.
+     */
+    @IntDef({TYPE_DEFAULT, TYPE_PREPOPULATED, TYPE_RECENT})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface TemplateUrlSourceType {}
+    public static final int TYPE_DEFAULT = 0;
+    public static final int TYPE_PREPOPULATED = 1;
+    public static final int TYPE_RECENT = 2;
 
     /** The current context. */
     private Context mContext;
@@ -139,7 +160,10 @@ public class SearchEngineAdapter extends BaseAdapter
             return;  // Flow continues in onTemplateUrlServiceLoaded below.
         }
 
-        List<TemplateUrl> templateUrls = templateUrlService.getSearchEngines();
+        List<TemplateUrl> templateUrls = templateUrlService.getTemplateUrls();
+        TemplateUrl defaultSearchEngineTemplateUrl =
+                templateUrlService.getDefaultSearchEngineTemplateUrl();
+        sortAndFilterUnnecessaryTemplateUrl(templateUrls, defaultSearchEngineTemplateUrl);
         boolean forceRefresh = mIsLocationPermissionChanged;
         mIsLocationPermissionChanged = false;
         if (!didSearchEnginesChange(templateUrls)) {
@@ -152,27 +176,24 @@ public class SearchEngineAdapter extends BaseAdapter
 
         for (int i = 0; i < templateUrls.size(); i++) {
             TemplateUrl templateUrl = templateUrls.get(i);
-            if (templateUrl.getType() == TemplateUrlService.TYPE_PREPOPULATED
-                    || templateUrl.getType() == TemplateUrlService.TYPE_DEFAULT) {
-                mPrepopulatedSearchEngines.add(templateUrl);
-            } else {
+            if (getSearchEngineSourceType(templateUrl, defaultSearchEngineTemplateUrl)
+                    == TYPE_RECENT) {
                 mRecentSearchEngines.add(templateUrl);
+            } else {
+                mPrepopulatedSearchEngines.add(templateUrl);
             }
         }
-
-        int defaultSearchEngineIndex =
-                TemplateUrlService.getInstance().getDefaultSearchEngineIndex();
 
         // Convert the TemplateUrl index into an index of mSearchEngines.
         mSelectedSearchEnginePosition = -1;
         for (int i = 0; i < mPrepopulatedSearchEngines.size(); ++i) {
-            if (mPrepopulatedSearchEngines.get(i).getIndex() == defaultSearchEngineIndex) {
+            if (mPrepopulatedSearchEngines.get(i).equals(defaultSearchEngineTemplateUrl)) {
                 mSelectedSearchEnginePosition = i;
             }
         }
 
         for (int i = 0; i < mRecentSearchEngines.size(); ++i) {
-            if (mRecentSearchEngines.get(i).getIndex() == defaultSearchEngineIndex) {
+            if (mRecentSearchEngines.get(i).equals(defaultSearchEngineTemplateUrl)) {
                 // Add one to offset the title for the recent search engine list.
                 mSelectedSearchEnginePosition = i + computeStartIndexForRecentSearchEngines();
             }
@@ -188,11 +209,62 @@ public class SearchEngineAdapter extends BaseAdapter
         notifyDataSetChanged();
     }
 
+    public static void sortAndFilterUnnecessaryTemplateUrl(
+            List<TemplateUrl> templateUrls, TemplateUrl defaultSearchEngine) {
+        Collections.sort(templateUrls, new Comparator<TemplateUrl>() {
+            @Override
+            public int compare(TemplateUrl templateUrl1, TemplateUrl templateUrl2) {
+                if (templateUrl1.getIsPrepopulated() && templateUrl2.getIsPrepopulated()) {
+                    return templateUrl1.getPrepopulatedId() - templateUrl2.getPrepopulatedId();
+                } else if (templateUrl1.getIsPrepopulated()) {
+                    return -1;
+                } else if (templateUrl2.getIsPrepopulated()) {
+                    return 1;
+                } else if (templateUrl1.equals(templateUrl2)) {
+                    return 0;
+                } else if (templateUrl1.equals(defaultSearchEngine)) {
+                    return -1;
+                } else if (templateUrl2.equals(defaultSearchEngine)) {
+                    return 1;
+                } else {
+                    return ApiCompatibilityUtils.compareLong(
+                            templateUrl2.getLastVisitedTime(), templateUrl1.getLastVisitedTime());
+                }
+            }
+        });
+        int recentEngineNum = 0;
+        long displayTime = System.currentTimeMillis() - MAX_DISPLAY_TIME_SPAN_MS;
+        Iterator<TemplateUrl> iterator = templateUrls.iterator();
+        while (iterator.hasNext()) {
+            TemplateUrl templateUrl = iterator.next();
+            if (getSearchEngineSourceType(templateUrl, defaultSearchEngine) != TYPE_RECENT) {
+                continue;
+            }
+            if (recentEngineNum < MAX_RECENT_ENGINE_NUM
+                    && templateUrl.getLastVisitedTime() > displayTime) {
+                recentEngineNum++;
+            } else {
+                iterator.remove();
+            }
+        }
+    }
+
+    private static @TemplateUrlSourceType int getSearchEngineSourceType(
+            TemplateUrl templateUrl, TemplateUrl defaultSearchEngine) {
+        if (templateUrl.getIsPrepopulated()) {
+            return TYPE_PREPOPULATED;
+        } else if (templateUrl.equals(defaultSearchEngine)) {
+            return TYPE_DEFAULT;
+        } else {
+            return TYPE_RECENT;
+        }
+    }
+
     private static boolean containsTemplateUrl(
             List<TemplateUrl> templateUrls, TemplateUrl targetTemplateUrl) {
         for (int i = 0; i < templateUrls.size(); i++) {
             TemplateUrl templateUrl = templateUrls.get(i);
-            // Explicitly excluding TemplateUrlType and Index as they might change if a search
+            // Explicitly excluding TemplateUrlSourceType and Index as they might change if a search
             // engine is set as default.
             if (templateUrl.getIsPrepopulated() == targetTemplateUrl.getIsPrepopulated()
                     && TextUtils.equals(templateUrl.getKeyword(), targetTemplateUrl.getKeyword())

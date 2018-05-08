@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
+import org.chromium.chrome.browser.search_engines.TemplateUrl;
 import org.chromium.chrome.browser.widget.RadioButtonLayout;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
@@ -50,6 +50,34 @@ public class DefaultSearchEngineDialogHelperTest {
         @Override
         protected void onUserSeachEngineChoice(List<String> keywords, String keyword) {
             chosenKeyword = keyword;
+        }
+    }
+
+    private class TestTemplateUrl extends TemplateUrl {
+        private String mShortName;
+        private String mKeyword;
+        public TestTemplateUrl(String shortName, String keyword) {
+            super(0);
+            mShortName = shortName;
+            mKeyword = keyword;
+        }
+
+        @Override
+        public String getShortName() {
+            return mShortName;
+        }
+
+        @Override
+        public String getKeyword() {
+            return mKeyword;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof TemplateUrl)) return false;
+            TestTemplateUrl otherTemplateUrl = (TestTemplateUrl) other;
+            return TextUtils.equals(mKeyword, otherTemplateUrl.mKeyword)
+                    && TextUtils.equals(mShortName, otherTemplateUrl.mShortName);
         }
     }
 
@@ -91,10 +119,10 @@ public class DefaultSearchEngineDialogHelperTest {
         mContext = InstrumentationRegistry.getTargetContext();
 
         mTemplateUrls.clear();
-        mTemplateUrls.add(new TemplateUrl(0, "Google: Search by Google", true, "keyword 1"));
-        mTemplateUrls.add(new TemplateUrl(5, "This", true, "keyword 2"));
-        mTemplateUrls.add(new TemplateUrl(10, "That", true, "keyword 3"));
-        mTemplateUrls.add(new TemplateUrl(15, "The Other Thing", true, "keyword 4"));
+        mTemplateUrls.add(new TestTemplateUrl("Google: Search by Google", "keyword 1"));
+        mTemplateUrls.add(new TestTemplateUrl("This", "keyword 2"));
+        mTemplateUrls.add(new TestTemplateUrl("That", "keyword 3"));
+        mTemplateUrls.add(new TestTemplateUrl("The Other Thing", "keyword 4"));
     }
 
     @Test

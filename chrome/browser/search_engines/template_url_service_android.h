@@ -28,21 +28,9 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& jkeyword);
-
-  jint GetDefaultSearchProviderIndex(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj) const;
-
-  jint GetTemplateUrlCount(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj) const;
   jboolean IsLoaded(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj) const;
-  base::android::ScopedJavaLocalRef<jobject> GetTemplateUrlAt(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      jint index) const;
   jboolean IsDefaultSearchManaged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
@@ -83,9 +71,6 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& jkeyword);
-  void SetFilteringEnabled(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& obj,
-                           jboolean filtering_enabled);
   base::android::ScopedJavaLocalRef<jstring> ExtractSearchTermsFromUrl(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -106,6 +91,18 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& jkeyword);
 
+  // Get all the available search engines and add them to the
+  // |template_url_list_obj| list.
+  void GetTemplateUrls(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& template_url_list_obj);
+
+  // Get current default search engine.
+  base::android::ScopedJavaLocalRef<jobject> GetDefaultSearchEngine(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
  private:
   ~TemplateUrlServiceAndroid() override;
 
@@ -114,23 +111,12 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
   // TemplateUrlServiceObserver:
   void OnTemplateURLServiceChanged() override;
 
-  // Updates |template_urls_| to contain all TemplateURLs.  It sorts this list
-  // with prepopulated engines first, then any default non-prepopulated engine,
-  // then other non-prepopulated engines based on last_visited in descending
-  // order.
-  void LoadTemplateURLs();
-
   JavaObjectWeakGlobalRef weak_java_obj_;
 
   // Pointer to the TemplateUrlService for the main profile.
   TemplateURLService* template_url_service_;
 
   std::unique_ptr<TemplateURLService::Subscription> template_url_subscription_;
-
-  // Caches the up-to-date TemplateURL list so that calls from Android could
-  // directly get data from it.
-  std::vector<TemplateURL*> template_urls_;
-  bool filtering_enabled_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateUrlServiceAndroid);
 };
