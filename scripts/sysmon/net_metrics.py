@@ -12,6 +12,7 @@ import collections
 import socket
 
 import psutil
+from infra_libs import ts_mon
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import metrics
@@ -85,7 +86,7 @@ def _collect_net_io_duplex_counters():
                    fields=dict(direction='up', **fields))
         metric.set(getattr(counters, down_counter_name),
                    fields=dict(direction='down', **fields))
-      except metrics.MonitoringDecreasingValueError as ex:
+      except ts_mon.MonitoringDecreasingValueError as ex:
         # This normally shouldn't happen, but might if the network
         # driver module is reloaded, so log an error and continue
         # instead of raising an exception.
