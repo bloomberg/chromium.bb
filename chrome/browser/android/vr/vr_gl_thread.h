@@ -127,14 +127,17 @@ class VrGLThread : public base::android::JavaHandlerThread,
                       std::unique_ptr<Assets> assets,
                       const base::Version& component_version) override;
   void OnAssetsUnavailable() override;
-  void SetRegularTabsOpen(bool open) override;
-  void SetIncognitoTabsOpen(bool open) override;
   void SetOverlayTextureEmpty(bool empty) override;
   void ShowSoftInput(bool show) override;
   void UpdateWebInputIndices(int selection_start,
                              int selection_end,
                              int composition_start,
                              int composition_end) override;
+  void AddOrUpdateTab(int id,
+                      bool incognito,
+                      const base::string16& title) override;
+  void RemoveTab(int id, bool incognito) override;
+  void RemoveAllTabs() override;
 
   void ReportUiActivityResultForTesting(
       const VrUiTestActivityResult& result) override;

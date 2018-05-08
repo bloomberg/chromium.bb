@@ -75,6 +75,17 @@ bool LoadPng(int resource_id, std::unique_ptr<SkBitmap>* out_image) {
       out_image->get());
 }
 
+GestureList CreateScrollGestureList(blink::WebInputEvent::Type type,
+                                    const gfx::Vector2dF& delta) {
+  auto event = std::make_unique<blink::WebGestureEvent>();
+  event->SetType(type);
+  event->data.scroll_update.delta_x = delta.x();
+  event->data.scroll_update.delta_y = delta.y();
+  GestureList gesture_list;
+  gesture_list.push_back(std::move(event));
+  return gesture_list;
+}
+
 }  // namespace
 
 VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
@@ -119,6 +130,15 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
   ui_->SetCapturingState(capturing_state);
   ui_->input_manager()->set_hit_test_strategy(
       UiInputManager::PROJECT_TO_LASER_ORIGIN_FOR_TEST);
+  for (size_t i = 0; i < 5; i++) {
+    ui_->AddOrUpdateTab(tab_id_++, false,
+                        base::UTF8ToUTF16("Wikipedia, the free encyclopedia"));
+    ui_->AddOrUpdateTab(tab_id_++, false, base::UTF8ToUTF16("New tab"));
+    ui_->AddOrUpdateTab(tab_id_++, false, base::UTF8ToUTF16(""));
+    ui_->AddOrUpdateTab(tab_id_++, true, base::UTF8ToUTF16("Home - YouTube"));
+    ui_->AddOrUpdateTab(tab_id_++, true,
+                        base::UTF8ToUTF16("VR - Google Search"));
+  }
 }
 
 VrTestContext::~VrTestContext() = default;
@@ -238,6 +258,24 @@ void VrTestContext::HandleInput(ui::Event* event) {
       case ui::DomCode::US_L:
         model_->standalone_vr_device = !model_->standalone_vr_device;
         break;
+      case ui::DomCode::ARROW_RIGHT:
+        gesture_lists_.push(CreateScrollGestureList(
+            blink::WebInputEvent::kGestureScrollBegin, gfx::Vector2dF(0, 0)));
+        gesture_lists_.push(
+            CreateScrollGestureList(blink::WebInputEvent::kGestureScrollUpdate,
+                                    gfx::Vector2dF(-100, 0)));
+        gesture_lists_.push(CreateScrollGestureList(
+            blink::WebInputEvent::kGestureScrollEnd, gfx::Vector2dF(0, 0)));
+        break;
+      case ui::DomCode::ARROW_LEFT:
+        gesture_lists_.push(CreateScrollGestureList(
+            blink::WebInputEvent::kGestureScrollBegin, gfx::Vector2dF(0, 0)));
+        gesture_lists_.push(
+            CreateScrollGestureList(blink::WebInputEvent::kGestureScrollUpdate,
+                                    gfx::Vector2dF(100, 0)));
+        gesture_lists_.push(CreateScrollGestureList(
+            blink::WebInputEvent::kGestureScrollEnd, gfx::Vector2dF(0, 0)));
+        break;
       default:
         break;
     }
@@ -356,10 +394,14 @@ ControllerModel VrTestContext::UpdateController(const RenderInfo& render_info,
   RotateToward(controller_model.laser_direction, &controller_model.transform);
 
   // Hit testing is done in terms of this synthesized controller model.
-  GestureList gesture_list;
+  if (gesture_lists_.empty()) {
+    gesture_lists_.push(GestureList());
+    gesture_lists_.back().push_back(std::make_unique<blink::WebGestureEvent>());
+  }
   ReticleModel reticle_model;
   ui_->input_manager()->HandleInput(current_time, render_info, controller_model,
-                                    &reticle_model, &gesture_list);
+                                    &reticle_model, &gesture_lists_.front());
+  gesture_lists_.pop();
 
   // Now that we have accurate hit information, we use this to construct a
   // controller model for display.
@@ -526,7 +568,7 @@ void VrTestContext::ReloadTab() {
 void VrTestContext::OpenNewTab(bool incognito) {
   incognito_ = incognito;
   ui_->SetIncognito(incognito);
-  model_->incognito_tabs_open = model_->incognito_tabs_open || incognito;
+  ui_->AddOrUpdateTab(tab_id_++, incognito, base::UTF8ToUTF16("test"));
 }
 
 void VrTestContext::OpenBookmarks() {}
@@ -539,14 +581,14 @@ void VrTestContext::OpenSettings() {}
 void VrTestContext::CloseAllTabs() {
   incognito_ = false;
   ui_->SetIncognito(false);
-  model_->incognito_tabs_open = false;
-  model_->regular_tabs_open = false;
+  model_->incognito_tabs.clear();
+  model_->regular_tabs.clear();
 }
 
 void VrTestContext::CloseAllIncognitoTabs() {
   incognito_ = false;
   ui_->SetIncognito(false);
-  model_->incognito_tabs_open = false;
+  model_->incognito_tabs.clear();
 }
 
 void VrTestContext::OpenFeedback() {}

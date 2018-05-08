@@ -15,6 +15,7 @@ enum UiMode {
   kModeWebVrAutopresented,
   kModeVoiceSearch,
   kModeEditingOmnibox,
+  kModeTabsView,
 
   // Translucent modes. These modes should NOT hide previous opaque UiMode.
   // This is useful for modal style UiMode which should not hide kModeBrowsing

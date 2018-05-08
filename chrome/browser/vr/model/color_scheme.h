@@ -91,6 +91,9 @@ struct ColorScheme {
   TextSelectionColors omnibox_text_selection;
   SkColor hyperlink;
 
+  SkColor tab_item_background;
+  SkColor tab_item_text;
+
   ButtonColors indicator;
 
   SkColor dimmer_outer;

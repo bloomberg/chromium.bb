@@ -590,24 +590,21 @@ void VrShell::OnTabListCreated(JNIEnv* env,
                                const JavaParamRef<jobject>& obj,
                                jobjectArray tabs,
                                jobjectArray incognito_tabs) {
-  incognito_tab_ids_.clear();
-  regular_tab_ids_.clear();
+  ui_->RemoveAllTabs();
   size_t len = env->GetArrayLength(incognito_tabs);
   for (size_t i = 0; i < len; ++i) {
     ScopedJavaLocalRef<jobject> j_tab(
         env, env->GetObjectArrayElement(incognito_tabs, i));
     TabAndroid* tab = TabAndroid::GetNativeTab(env, j_tab);
-    incognito_tab_ids_.insert(tab->GetAndroidId());
+    ui_->AddOrUpdateTab(tab->GetAndroidId(), true, tab->GetTitle());
   }
 
   len = env->GetArrayLength(tabs);
   for (size_t i = 0; i < len; ++i) {
     ScopedJavaLocalRef<jobject> j_tab(env, env->GetObjectArrayElement(tabs, i));
     TabAndroid* tab = TabAndroid::GetNativeTab(env, j_tab);
-    regular_tab_ids_.insert(tab->GetAndroidId());
+    ui_->AddOrUpdateTab(tab->GetAndroidId(), false, tab->GetTitle());
   }
-  ui_->SetIncognitoTabsOpen(!incognito_tab_ids_.empty());
-  ui_->SetRegularTabsOpen(!regular_tab_ids_.empty());
 }
 
 void VrShell::OnTabUpdated(JNIEnv* env,
@@ -615,26 +612,16 @@ void VrShell::OnTabUpdated(JNIEnv* env,
                            jboolean incognito,
                            jint id,
                            jstring jtitle) {
-  if (incognito) {
-    incognito_tab_ids_.insert(id);
-    ui_->SetIncognitoTabsOpen(!incognito_tab_ids_.empty());
-  } else {
-    regular_tab_ids_.insert(id);
-    ui_->SetRegularTabsOpen(!regular_tab_ids_.empty());
-  }
+  base::string16 title;
+  base::android::ConvertJavaStringToUTF16(env, jtitle, &title);
+  ui_->AddOrUpdateTab(id, incognito, title);
 }
 
 void VrShell::OnTabRemoved(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
                            jboolean incognito,
                            jint id) {
-  if (incognito) {
-    incognito_tab_ids_.erase(id);
-    ui_->SetIncognitoTabsOpen(!incognito_tab_ids_.empty());
-  } else {
-    regular_tab_ids_.erase(id);
-    ui_->SetRegularTabsOpen(!regular_tab_ids_.empty());
-  }
+  ui_->RemoveTab(id, incognito);
 }
 
 void VrShell::SetAlertDialog(JNIEnv* env,

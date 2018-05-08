@@ -13,6 +13,7 @@
 #include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/keyboard_ui_interface.h"
+#include "chrome/browser/vr/model/tab_model.h"
 #include "chrome/browser/vr/platform_controller.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_test_input.h"
@@ -50,6 +51,8 @@ struct UiInitialState {
   bool supports_selection = true;
   bool needs_keyboard_update = false;
   bool is_standalone_vr_device = false;
+  // TODO(crbug.com/838937): Enable tabs.
+  bool create_tabs_view = false;
 };
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.
@@ -102,9 +105,17 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
                       std::unique_ptr<Assets> assets,
                       const base::Version& component_version) override;
   void OnAssetsUnavailable() override;
-  void SetRegularTabsOpen(bool open) override;
-  void SetIncognitoTabsOpen(bool open) override;
   void SetOverlayTextureEmpty(bool empty) override;
+  void ShowSoftInput(bool show) override;
+  void UpdateWebInputIndices(int selection_start,
+                             int selection_end,
+                             int composition_start,
+                             int composition_end) override;
+  void AddOrUpdateTab(int id,
+                      bool incognito,
+                      const base::string16& title) override;
+  void RemoveTab(int id, bool incognito) override;
+  void RemoveAllTabs() override;
 
   // TODO(ymalik): We expose this to stop sending VSync to the WebVR page until
   // the splash screen has been visible for its minimum duration. The visibility
@@ -112,12 +123,6 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   // have to worry about this, and if it were told to hide the splash screen
   // like other WebVR phases (e.g. OnWebVrFrameAvailable below).
   bool CanSendWebVrVSync();
-
-  void ShowSoftInput(bool show) override;
-  void UpdateWebInputIndices(int selection_start,
-                             int selection_end,
-                             int composition_start,
-                             int composition_end) override;
 
   void SetAlertDialogEnabled(bool enabled,
                              ContentInputDelegate* delegate,
@@ -183,6 +188,7 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   void InitializeModel(const UiInitialState& ui_initial_state);
   UiBrowserInterface* browser_;
   ContentElement* GetContentElement();
+  std::vector<TabModel>::iterator FindTab(int id, std::vector<TabModel>* tabs);
 
   // This state may be further abstracted into a SkiaUi object.
   std::unique_ptr<UiScene> scene_;

@@ -374,9 +374,6 @@ class VrShell : device::GvrGamepadDataProvider,
 
   base::Timer waiting_for_assets_component_timer_;
 
-  std::set<int> regular_tab_ids_;
-  std::set<int> incognito_tab_ids_;
-
   base::WeakPtrFactory<VrShell> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VrShell);

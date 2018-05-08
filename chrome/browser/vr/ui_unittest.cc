@@ -1333,7 +1333,11 @@ TEST_F(UiTest, LongPressAppButtonInWebVrMode) {
 }
 
 TEST_F(UiTest, VerifyAllElementNamesAndTypesAreUsed) {
-  CreateScene(kNotInCct, kInWebVr);
+  UiInitialState state;
+  state.in_cct = false;
+  state.in_web_vr = false;
+  state.create_tabs_view = true;
+  CreateScene(state);
 
   // Add an omnibox suggestion (a dynamically-created element).
   model_->omnibox_suggestions.emplace_back(OmniboxSuggestion());

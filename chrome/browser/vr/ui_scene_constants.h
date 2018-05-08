@@ -287,6 +287,21 @@ static constexpr float kOverflowMenuYPadding = 0.012f;
 static constexpr float kOverflowMenuItemHeight = 0.080f;
 static constexpr float kOverflowMenuItemXPadding = 0.024f;
 
+static constexpr float kTabsViewDistance = 2.4f;
+static constexpr size_t kTabsViewRowCount = 2ul;
+static constexpr size_t kTabsViewColumnCount = 3ul;
+static constexpr float kTabsViewMarginDMM = 0.05f;
+static constexpr float kTabItemWidthDMM = 0.2f;
+static constexpr float kTabItemHeightDMM = 0.15f;
+static constexpr float kTabItemCornerRadiusDMM = 0.01f;
+static constexpr float kTabItemTextSizeDMM = 0.07f;
+static constexpr float kTabsViewActivePageOpacity = 1.0f;
+static constexpr float kTabsViewInactivePageOpacity = 0.2f;
+static constexpr float kTabsViewHiddenPageOpacity = 0.0f;
+static constexpr float kTabsViewCloseButtonVerticalOffsetDMM = -0.4f;
+static constexpr float kTabsViewCloseButtonDepthOffset = -0.35f;
+static constexpr float kTabsViewVerticalOffsetDMM = -0.1f;
+
 }  // namespace vr
 
 #endif  // CHROME_BROWSER_VR_UI_SCENE_CONSTANTS_H_
