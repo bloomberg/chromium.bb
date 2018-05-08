@@ -80,6 +80,8 @@ component("network_service") {
     "throttling/throttling_network_transaction_factory.h",
     "throttling/throttling_upload_data_stream.cc",
     "throttling/throttling_upload_data_stream.h",
+    "tls_client_socket.cc",
+    "tls_client_socket.h",
     "udp_socket.cc",
     "udp_socket.h",
     "upload_progress_tracker.cc",
@@ -172,6 +174,7 @@ source_set("tests") {
     "test_chunked_data_pipe_getter.cc",
     "test_chunked_data_pipe_getter.h",
     "throttling/throttling_controller_unittest.cc",
+    "tls_client_socket_unittest.cc",
     "udp_socket_unittest.cc",
     "upload_progress_tracker_unittest.cc",
     "url_loader_unittest.cc",
@@ -205,6 +208,8 @@ source_set("test_support") {
   testonly = true
 
   sources = [
+    "mojo_socket_test_util.cc",
+    "mojo_socket_test_util.h",
     "test/test_data_pipe_getter.cc",
     "test/test_data_pipe_getter.h",
     "test/test_network_context.h",

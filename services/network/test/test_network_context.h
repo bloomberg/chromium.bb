@@ -80,7 +80,7 @@ class TestNetworkContext : public mojom::NetworkContext {
       const net::AddressList& remote_addr_list,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::TCPConnectedSocketRequest socket,
-      mojom::TCPConnectedSocketObserverPtr observer,
+      mojom::SocketObserverPtr observer,
       CreateTCPConnectedSocketCallback callback) override {}
   void CreateWebSocket(mojom::WebSocketRequest request,
                        int32_t process_id,

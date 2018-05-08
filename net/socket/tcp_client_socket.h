@@ -77,6 +77,7 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket {
   int ReadIfReady(IOBuffer* buf,
                   int buf_len,
                   CompletionOnceCallback callback) override;
+  int CancelReadIfReady() override;
   int Write(IOBuffer* buf,
             int buf_len,
             CompletionOnceCallback callback,
