@@ -47,17 +47,7 @@ PictureInPictureWindowControllerImpl::~PictureInPictureWindowControllerImpl() {
   if (initiator_->IsBeingDestroyed())
     return;
 
-  // |this| is torn down when there is a new Picture-in-Picture initiator, such
-  // as when a video in another tab requests to enter Picture-in-Picture. In
-  // cases like this, pause the current video so there is only one video
-  // playing at a time.
-  if (IsPlayerActive()) {
-    media_player_id_->first->Send(new MediaPlayerDelegateMsg_Pause(
-        media_player_id_->first->GetRoutingID(), media_player_id_->second));
-    media_player_id_->first->Send(
-        new MediaPlayerDelegateMsg_EndPictureInPictureMode(
-            media_player_id_->first->GetRoutingID(), media_player_id_->second));
-  }
+  OnLeavingPictureInPicture();
 }
 
 PictureInPictureWindowControllerImpl::PictureInPictureWindowControllerImpl(
@@ -88,11 +78,7 @@ void PictureInPictureWindowControllerImpl::Close() {
 
   surface_id_ = viz::SurfaceId();
 
-  if (IsPlayerActive()) {
-    media_player_id_->first->Send(
-        new MediaPlayerDelegateMsg_EndPictureInPictureMode(
-            media_player_id_->first->GetRoutingID(), media_player_id_->second));
-  }
+  OnLeavingPictureInPicture();
 }
 
 void PictureInPictureWindowControllerImpl::EmbedSurface(
@@ -142,6 +128,17 @@ bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
   media_player_id_->first->Send(new MediaPlayerDelegateMsg_Play(
       media_player_id_->first->GetRoutingID(), media_player_id_->second));
   return true;
+}
+
+void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture() {
+  if (IsPlayerActive()) {
+    // Pause the current video so there is only one video playing at a time.
+    media_player_id_->first->Send(new MediaPlayerDelegateMsg_Pause(
+        media_player_id_->first->GetRoutingID(), media_player_id_->second));
+    media_player_id_->first->Send(
+        new MediaPlayerDelegateMsg_EndPictureInPictureMode(
+            media_player_id_->first->GetRoutingID(), media_player_id_->second));
+  }
 }
 
 }  // namespace content

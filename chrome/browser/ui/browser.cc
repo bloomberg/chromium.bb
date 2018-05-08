@@ -1413,6 +1413,12 @@ void Browser::UpdatePictureInPictureSurfaceId(const viz::SurfaceId& surface_id,
   if (!pip_window_controller_ ||
       pip_window_controller_->GetInitiatorWebContents() !=
           tab_strip_model_->GetActiveWebContents()) {
+    // If there was already a controller, close the existing window before
+    // creating the next one.
+    if (pip_window_controller_)
+      pip_window_controller_->Close();
+
+    // Update |pip_window_controller_| for the current content::WebContents.
     pip_window_controller_ =
         content::PictureInPictureWindowController::GetOrCreateForWebContents(
             tab_strip_model_->GetActiveWebContents());

@@ -52,6 +52,9 @@ class PictureInPictureWindowControllerImpl
   CONTENT_EXPORT explicit PictureInPictureWindowControllerImpl(
       WebContents* initiator);
 
+  // Signal to the media player that |this| is leaving Picture-in-Picture mode.
+  void OnLeavingPictureInPicture();
+
   std::unique_ptr<OverlayWindow> window_;
   std::unique_ptr<OverlaySurfaceEmbedder> embedder_;
   WebContents* const initiator_;
