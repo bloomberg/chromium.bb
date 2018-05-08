@@ -85,7 +85,6 @@ class CORE_EXPORT FrameLoader final {
 
   ResourceRequest ResourceRequestForReload(
       FrameLoadType,
-      const KURL& override_url = KURL(),
       ClientRedirectPolicy = ClientRedirectPolicy::kNotClientRedirect);
 
   ProgressTracker& Progress() const { return *progress_tracker_; }

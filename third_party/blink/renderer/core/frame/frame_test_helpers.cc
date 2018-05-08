@@ -120,10 +120,11 @@ void LoadHistoryItem(WebLocalFrame* frame,
                      const WebHistoryItem& item,
                      WebHistoryLoadType load_type,
                      mojom::FetchCacheMode cache_mode) {
-  WebURLRequest request = frame->RequestFromHistoryItem(item, cache_mode);
-  frame->Load(request, WebFrameLoadType::kBackForward, item,
-              kWebHistoryDifferentDocumentLoad, /*is_client_redirect=*/false,
-              base::UnguessableToken::Create());
+  HistoryItem* history_item = item;
+  frame->Load(
+      WrappedResourceRequest(history_item->GenerateResourceRequest(cache_mode)),
+      WebFrameLoadType::kBackForward, item, kWebHistoryDifferentDocumentLoad,
+      /*is_client_redirect=*/false, base::UnguessableToken::Create());
   PumpPendingRequestsForFrameToLoad(frame);
 }
 

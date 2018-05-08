@@ -143,6 +143,7 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/drag_image.h"
+#include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -4517,47 +4518,25 @@ class ClearScrollStateOnCommitWebFrameClient
   }
 };
 
-TEST_P(ParameterizedWebFrameTest, ReloadWithOverrideURLPreservesState) {
-  const std::string first_url = "200-by-300.html";
-  const std::string second_url = "content-width-1000.html";
-  const std::string third_url = "very_tall_div.html";
+TEST_P(ParameterizedWebFrameTest, ReloadPreservesState) {
+  const std::string url = "200-by-300.html";
   const float kPageScaleFactor = 1.1684f;
   const int kPageWidth = 120;
   const int kPageHeight = 100;
 
-  RegisterMockedHttpURLLoad(first_url);
-  RegisterMockedHttpURLLoad(second_url);
-  RegisterMockedHttpURLLoad(third_url);
+  RegisterMockedHttpURLLoad(url);
 
   ClearScrollStateOnCommitWebFrameClient client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + first_url, &client);
+  web_view_helper.InitializeAndLoad(base_url_ + url, &client);
   web_view_helper.Resize(WebSize(kPageWidth, kPageHeight));
   web_view_helper.LocalMainFrame()->SetScrollOffset(
       WebSize(kPageWidth / 4, kPageHeight / 4));
   web_view_helper.GetWebView()->SetPageScaleFactor(kPageScaleFactor);
 
   // Reload the page and end up at the same url. State should not be propagated.
-  web_view_helper.GetWebView()->MainFrameImpl()->ReloadWithOverrideURL(
-      ToKURL(base_url_ + first_url), WebFrameLoadType::kReload);
-  FrameTestHelpers::PumpPendingRequestsForFrameToLoad(
-      web_view_helper.GetWebView()->MainFrame());
-  EXPECT_EQ(0, web_view_helper.LocalMainFrame()->GetScrollOffset().width);
-  EXPECT_EQ(0, web_view_helper.LocalMainFrame()->GetScrollOffset().height);
-  EXPECT_EQ(1.0f, web_view_helper.GetWebView()->PageScaleFactor());
-
-  // Reload the page using the cache. State should not be propagated.
-  web_view_helper.GetWebView()->MainFrameImpl()->ReloadWithOverrideURL(
-      ToKURL(base_url_ + second_url), WebFrameLoadType::kReload);
-  FrameTestHelpers::PumpPendingRequestsForFrameToLoad(
-      web_view_helper.GetWebView()->MainFrame());
-  EXPECT_EQ(0, web_view_helper.LocalMainFrame()->GetScrollOffset().width);
-  EXPECT_EQ(0, web_view_helper.LocalMainFrame()->GetScrollOffset().height);
-  EXPECT_EQ(1.0f, web_view_helper.GetWebView()->PageScaleFactor());
-
-  // Reload the page while bypassing the cache. State should not be propagated.
-  web_view_helper.GetWebView()->MainFrameImpl()->ReloadWithOverrideURL(
-      ToKURL(base_url_ + third_url), WebFrameLoadType::kReloadBypassingCache);
+  web_view_helper.GetWebView()->MainFrameImpl()->Reload(
+      WebFrameLoadType::kReload);
   FrameTestHelpers::PumpPendingRequestsForFrameToLoad(
       web_view_helper.GetWebView()->MainFrame());
   EXPECT_EQ(0, web_view_helper.LocalMainFrame()->GetScrollOffset().width);
@@ -7692,9 +7671,11 @@ TEST_P(ParameterizedWebFrameTest, BackDuringChildFrameReload) {
   item.Initialize();
   WebURL history_url(ToKURL(base_url_ + "white-1x1.png"));
   item.SetURLString(history_url.GetString());
-  WebURLRequest request =
-      main_frame->RequestFromHistoryItem(item, mojom::FetchCacheMode::kDefault);
-  main_frame->Load(request, WebFrameLoadType::kBackForward, item,
+  HistoryItem* history_item = item;
+  ResourceRequest request =
+      history_item->GenerateResourceRequest(mojom::FetchCacheMode::kDefault);
+  main_frame->Load(WrappedResourceRequest(request),
+                   WebFrameLoadType::kBackForward, item,
                    kWebHistoryDifferentDocumentLoad, false,
                    base::UnguessableToken::Create());
 

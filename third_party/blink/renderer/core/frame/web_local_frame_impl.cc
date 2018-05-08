@@ -914,22 +914,16 @@ bool WebFrame::ScriptCanAccess(WebFrame* target) {
 void WebLocalFrameImpl::Reload(WebFrameLoadType load_type) {
   // TODO(clamy): Remove this function once RenderFrame calls load for all
   // requests.
-  ReloadWithOverrideURL(NullURL(), load_type);
-}
-
-void WebLocalFrameImpl::ReloadWithOverrideURL(const WebURL& override_url,
-                                              WebFrameLoadType load_type) {
-  // TODO(clamy): Remove this function once RenderFrame calls load for all
-  // requests.
   DCHECK(GetFrame());
   DCHECK(IsReloadLoadType(static_cast<FrameLoadType>(load_type)));
-  WebURLRequest request = RequestForReload(load_type, override_url);
+  ResourceRequest request = GetFrame()->Loader().ResourceRequestForReload(
+      static_cast<FrameLoadType>(load_type));
   if (request.IsNull())
     return;
-  request.SetRequestorOrigin(
-      WebSecurityOrigin(GetFrame()->GetDocument()->GetSecurityOrigin()));
-  Load(request, load_type, WebHistoryItem(), kWebHistoryDifferentDocumentLoad,
-       false, base::UnguessableToken::Create());
+  request.SetRequestorOrigin(GetFrame()->GetDocument()->GetSecurityOrigin());
+  Load(WrappedResourceRequest(request), load_type, WebHistoryItem(),
+       kWebHistoryDifferentDocumentLoad, false,
+       base::UnguessableToken::Create());
 }
 
 void WebLocalFrameImpl::ReloadImage(const WebNode& web_node) {
@@ -2043,23 +2037,6 @@ bool WebLocalFrameImpl::DispatchBeforeUnloadEvent(bool is_reload) {
   return GetFrame()->Loader().ShouldClose(is_reload);
 }
 
-WebURLRequest WebLocalFrameImpl::RequestFromHistoryItem(
-    const WebHistoryItem& item,
-    mojom::FetchCacheMode cache_mode) const {
-  HistoryItem* history_item = item;
-  return WrappedResourceRequest(
-      history_item->GenerateResourceRequest(cache_mode));
-}
-
-WebURLRequest WebLocalFrameImpl::RequestForReload(
-    WebFrameLoadType load_type,
-    const WebURL& override_url) const {
-  DCHECK(GetFrame());
-  ResourceRequest request = GetFrame()->Loader().ResourceRequestForReload(
-      static_cast<FrameLoadType>(load_type), override_url);
-  return WrappedResourceRequest(request);
-}
-
 void WebLocalFrameImpl::Load(
     const WebURLRequest& request,
     WebFrameLoadType web_frame_load_type,
@@ -2368,11 +2345,6 @@ void WebLocalFrameImpl::SetFrameWidget(WebFrameWidgetBase* frame_widget) {
 
 WebFrameWidget* WebLocalFrameImpl::FrameWidget() const {
   return frame_widget_;
-}
-
-std::unique_ptr<WebURLLoaderFactory>
-WebLocalFrameImpl::CreateURLLoaderFactory() {
-  return client_->CreateURLLoaderFactory();
 }
 
 void WebLocalFrameImpl::CopyImageAt(const WebPoint& pos_in_viewport) {

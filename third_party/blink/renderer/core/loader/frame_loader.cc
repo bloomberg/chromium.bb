@@ -178,7 +178,6 @@ static SinglePageAppNavigationType CategorizeSinglePageAppNavigation(
 
 ResourceRequest FrameLoader::ResourceRequestForReload(
     FrameLoadType frame_load_type,
-    const KURL& override_url,
     ClientRedirectPolicy client_redirect_policy) {
   DCHECK(IsReloadLoadType(frame_load_type));
   const auto cache_mode = frame_load_type == kFrameLoadTypeReloadBypassingCache
@@ -205,10 +204,6 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
         frame_->GetDocument()->OutgoingReferrer()));
   }
 
-  if (!override_url.IsEmpty()) {
-    request.SetURL(override_url);
-    request.ClearHTTPReferrer();
-  }
   request.SetSkipServiceWorker(frame_load_type ==
                                kFrameLoadTypeReloadBypassingCache);
   return request;
