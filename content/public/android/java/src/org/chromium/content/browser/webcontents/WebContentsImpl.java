@@ -14,6 +14,7 @@ import android.os.Parcel;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.view.Surface;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
@@ -24,6 +25,8 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.AppWebMessagePort;
 import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.content.browser.RenderCoordinatesImpl;
+import org.chromium.content.browser.WindowEventObserver;
+import org.chromium.content.browser.WindowEventObserverManager;
 import org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl;
 import org.chromium.content.browser.framehost.RenderFrameHostDelegate;
 import org.chromium.content.browser.framehost.RenderFrameHostImpl;
@@ -57,7 +60,7 @@ import java.util.UUID;
  * object.
  */
 @JNINamespace("content")
-public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
+public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, WindowEventObserver {
     private static final String TAG = "cr_WebContentsImpl";
 
     private static final String PARCEL_VERSION_KEY = "version";
@@ -189,6 +192,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
 
         mInternalsHolder = new DefaultInternalsHolder();
         mInternalsHolder.set(internals);
+        WindowEventObserverManager.from(this).addObserver(this);
     }
 
     @CalledByNative
@@ -257,6 +261,12 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
     }
 
     @Override
+    public void setTopLevelNativeWindow(WindowAndroid windowAndroid) {
+        nativeSetTopLevelNativeWindow(mNativeWebContentsAndroid, windowAndroid);
+        WindowEventObserverManager.from(this).onWindowAndroidChanged(windowAndroid);
+    }
+
+    @Override
     public ViewAndroidDelegate getViewAndroidDelegate() {
         WebContentsInternals internals = mInternalsHolder.get();
         if (internals == null) return null;
@@ -269,6 +279,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
         WebContentsInternalsImpl impl = (WebContentsInternalsImpl) internals;
         assert impl.viewAndroidDelegate == null;
         impl.viewAndroidDelegate = viewDelegate;
+        nativeSetViewAndroidDelegate(mNativeWebContentsAndroid, viewDelegate);
     }
 
     @Override
@@ -804,12 +815,47 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
         return ((WebContentsInternalsImpl) internals).userDataMap;
     }
 
+    // WindowEventObserver
+
+    @Override
+    public void onRotationChanged(int rotation) {
+        if (mNativeWebContentsAndroid == 0) return;
+        int rotationDegrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0:
+                rotationDegrees = 0;
+                break;
+            case Surface.ROTATION_90:
+                rotationDegrees = 90;
+                break;
+            case Surface.ROTATION_180:
+                rotationDegrees = 180;
+                break;
+            case Surface.ROTATION_270:
+                rotationDegrees = -90;
+                break;
+            default:
+                throw new IllegalStateException(
+                        "Display.getRotation() shouldn't return that value");
+        }
+        nativeSendOrientationChangeEvent(mNativeWebContentsAndroid, rotationDegrees);
+    }
+
+    @Override
+    public void onDIPScaleChanged(float dipScale) {
+        if (mNativeWebContentsAndroid == 0) return;
+        mRenderCoordinates.setDeviceScaleFactor(dipScale);
+        nativeOnScaleFactorChanged(mNativeWebContentsAndroid);
+    }
+
     // This is static to avoid exposing a public destroy method on the native side of this class.
     private static native void nativeDestroyWebContents(long webContentsAndroidPtr);
 
     private static native WebContents nativeFromNativePtr(long webContentsAndroidPtr);
 
     private native WindowAndroid nativeGetTopLevelNativeWindow(long nativeWebContentsAndroid);
+    private native void nativeSetTopLevelNativeWindow(
+            long nativeWebContentsAndroid, WindowAndroid windowAndroid);
     private native RenderFrameHost nativeGetMainFrame(long nativeWebContentsAndroid);
     private native String nativeGetTitle(long nativeWebContentsAndroid);
     private native String nativeGetVisibleURL(long nativeWebContentsAndroid);
@@ -880,4 +926,9 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
     private native EventForwarder nativeGetOrCreateEventForwarder(long nativeWebContentsAndroid);
     private native int nativeGetTopControlsShrinkBlinkHeightPixForTesting(
             long nativeWebContentsAndroid);
+    private native void nativeSetViewAndroidDelegate(
+            long nativeWebContentsAndroid, ViewAndroidDelegate viewDelegate);
+    private native void nativeSendOrientationChangeEvent(
+            long nativeWebContentsAndroid, int orientation);
+    private native void nativeOnScaleFactorChanged(long nativeWebContentsAndroid);
 }

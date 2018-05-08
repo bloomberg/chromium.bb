@@ -4,10 +4,14 @@
 
 package org.chromium.content.browser;
 
+import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
+
 /**
  * Interface to implement if Window-related events are needed.
+ * This also includes an event for {@link WindowAndroid} (not Android window).
  */
-public interface WindowEventObserver {
+public interface WindowEventObserver extends DisplayAndroidObserver {
     /**
      * This is called when the container view is attached to a window.
      */
@@ -22,4 +26,9 @@ public interface WindowEventObserver {
      * @param gainFocus {@code true} if we're gaining focus.
      */
     default void onWindowFocusChanged(boolean gainFocus) {}
+
+    /**
+     * Notifies observer when WindowAndroid is changed.
+     */
+    default void onWindowAndroidChanged(WindowAndroid newWindowAndroid) {}
 }

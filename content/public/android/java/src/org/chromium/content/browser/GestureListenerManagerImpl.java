@@ -72,6 +72,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
         mListeners = new ObserverList<GestureStateListener>();
         mIterator = mListeners.rewindableIterator();
         mViewDelegate = mWebContents.getViewAndroidDelegate();
+        WindowEventObserverManager.from(mWebContents).addObserver(this);
         mNativeGestureListenerManager = nativeInit(mWebContents);
     }
 
@@ -82,7 +83,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
         if (mNativeGestureListenerManager != 0) nativeReset(mNativeGestureListenerManager);
     }
 
-    public void resetGestureDetection() {
+    private void resetGestureDetection() {
         if (mNativeGestureListenerManager != 0) {
             nativeResetGestureDetection(mNativeGestureListenerManager);
         }
@@ -130,6 +131,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
 
     @Override
     public void onWindowFocusChanged(boolean gainFocus) {
+        if (!gainFocus) resetGestureDetection();
         for (mIterator.rewind(); mIterator.hasNext();) {
             mIterator.next().onWindowFocusChanged(gainFocus);
         }

@@ -17,6 +17,7 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
 #include "base/task_scheduler/post_task.h"
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
@@ -254,6 +255,31 @@ WebContentsAndroid::GetTopLevelNativeWindow(JNIEnv* env,
   if (!window_android)
     return nullptr;
   return window_android->GetJavaObject();
+}
+
+void WebContentsAndroid::SetTopLevelNativeWindow(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jwindow_android) {
+  ui::WindowAndroid* window =
+      ui::WindowAndroid::FromJavaWindowAndroid(jwindow_android);
+  auto* old_window = web_contents_->GetTopLevelNativeWindow();
+  if (window == old_window)
+    return;
+
+  auto* view = web_contents_->GetNativeView();
+  if (old_window)
+    view->RemoveFromParent();
+  if (window)
+    window->AddChild(view);
+}
+
+void WebContentsAndroid::SetViewAndroidDelegate(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jview_delegate) {
+  ui::ViewAndroid* view_android = web_contents_->GetView()->GetNativeView();
+  view_android->SetDelegate(jview_delegate);
 }
 
 ScopedJavaLocalRef<jobject> WebContentsAndroid::GetMainFrame(
@@ -791,6 +817,32 @@ void WebContentsAndroid::SetMediaSession(
     const ScopedJavaLocalRef<jobject>& j_media_session) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_WebContentsImpl_setMediaSession(env, obj_, j_media_session);
+}
+
+void WebContentsAndroid::SendOrientationChangeEvent(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint orientation) {
+  base::RecordAction(base::UserMetricsAction("ScreenOrientationChange"));
+  WebContentsViewAndroid* view =
+      static_cast<WebContentsViewAndroid*>(web_contents_->GetView());
+  view->set_device_orientation(orientation);
+  RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
+  if (rwhva)
+    rwhva->UpdateScreenInfo(web_contents_->GetView()->GetNativeView());
+
+  web_contents_->OnScreenOrientationChange();
+}
+
+void WebContentsAndroid::OnScaleFactorChanged(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
+  if (rwhva) {
+    // |SendScreenRects()| indirectly calls GetViewSize() that asks Java layer.
+    web_contents_->SendScreenRects();
+    rwhva->SynchronizeVisualProperties();
+  }
 }
 
 int WebContentsAndroid::GetTopControlsShrinkBlinkHeightPixForTesting(

@@ -1534,7 +1534,8 @@ public class Tab
         // TODO(yusufo): We can't call updateWindowAndroid here and set mWindowAndroid to null
         // because many code paths (including navigation) expect the tab to always be associated
         // with an activity, and will crash. crbug.com/657007
-        if (mContentViewCore != null) mContentViewCore.updateWindowAndroid(null);
+        WebContents webContents = getWebContents();
+        if (webContents != null) webContents.setTopLevelNativeWindow(null);
         attachTabContentManager(null);
 
         for (TabObserver observer : mObservers) {
@@ -1618,7 +1619,8 @@ public class Tab
         // TODO(yusufo): mWindowAndroid can never be null until crbug.com/657007 is fixed.
         assert windowAndroid != null;
         mWindowAndroid = windowAndroid;
-        if (mContentViewCore != null) mContentViewCore.updateWindowAndroid(mWindowAndroid);
+        WebContents webContents = getWebContents();
+        if (webContents != null) webContents.setTopLevelNativeWindow(mWindowAndroid);
     }
 
     /**

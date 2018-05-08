@@ -4,10 +4,6 @@
 
 #include "content/browser/android/content_view_core.h"
 
-#include "base/android/jni_android.h"
-#include "base/macros.h"
-#include "base/metrics/user_metrics.h"
-#include "cc/layers/layer.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -37,14 +33,10 @@ RenderWidgetHostViewAndroid* GetRenderWidgetHostViewFromHost(
 
 ContentViewCore::ContentViewCore(JNIEnv* env,
                                  const JavaRef<jobject>& obj,
-                                 WebContents* web_contents,
-                                 float dpi_scale)
+                                 WebContents* web_contents)
     : WebContentsObserver(web_contents),
       java_ref_(env, obj),
-      web_contents_(static_cast<WebContentsImpl*>(web_contents)),
-      dpi_scale_(dpi_scale),
-      device_orientation_(0) {
-
+      web_contents_(static_cast<WebContentsImpl*>(web_contents)) {
   // Currently, the only use case we have for overriding a user agent involves
   // spoofing a desktop Linux user agent for "Request desktop site".
   // Automatically set it for all WebContents so that it is available when a
@@ -66,23 +58,6 @@ ContentViewCore::~ContentViewCore() {
   }
 }
 
-void ContentViewCore::UpdateWindowAndroid(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& jwindow_android) {
-  ui::WindowAndroid* window =
-      ui::WindowAndroid::FromJavaWindowAndroid(jwindow_android);
-  auto* old_window = GetWindowAndroid();
-  if (window == old_window)
-    return;
-
-  auto* view = GetViewAndroid();
-  if (old_window)
-    view->RemoveFromParent();
-  if (window)
-    window->AddChild(view);
-}
-
 void ContentViewCore::OnJavaContentViewCoreDestroyed(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -94,8 +69,15 @@ void ContentViewCore::OnJavaContentViewCoreDestroyed(
 }
 
 void ContentViewCore::RenderViewReady() {
-  if (device_orientation_ != 0)
-    SendOrientationChangeEventInternal();
+  WebContentsViewAndroid* view =
+      static_cast<WebContentsViewAndroid*>(web_contents_->GetView());
+  if (view->device_orientation() == 0)
+    return;
+  RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
+  if (rwhva)
+    rwhva->UpdateScreenInfo(GetViewAndroid());
+
+  web_contents_->OnScreenOrientationChange();
 }
 
 void ContentViewCore::WebContentsDestroyed() {
@@ -132,19 +114,6 @@ RenderWidgetHostViewAndroid* ContentViewCore::GetRenderWidgetHostViewAndroid()
   return static_cast<RenderWidgetHostViewAndroid*>(rwhv);
 }
 
-void ContentViewCore::SendScreenRectsAndResizeWidget() {
-  RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
-  if (view) {
-    // |SendScreenRects()| indirectly calls GetViewSize() that asks Java layer.
-    web_contents_->SendScreenRects();
-    view->SynchronizeVisualProperties();
-  }
-}
-
-ui::WindowAndroid* ContentViewCore::GetWindowAndroid() const {
-  return GetViewAndroid()->GetWindowAndroid();
-}
-
 ui::ViewAndroid* ContentViewCore::GetViewAndroid() const {
   return web_contents_->GetView()->GetNativeView();
 }
@@ -159,16 +128,6 @@ void ContentViewCore::SetFocus(JNIEnv* env,
   SetFocusInternal(focused);
 }
 
-void ContentViewCore::SetDIPScale(JNIEnv* env,
-                                  const JavaParamRef<jobject>& obj,
-                                  jfloat dpi_scale) {
-  if (dpi_scale_ == dpi_scale)
-    return;
-
-  dpi_scale_ = dpi_scale;
-  SendScreenRectsAndResizeWidget();
-}
-
 void ContentViewCore::SetFocusInternal(bool focused) {
   if (!GetRenderWidgetHostViewAndroid())
     return;
@@ -179,48 +138,16 @@ void ContentViewCore::SetFocusInternal(bool focused) {
     GetRenderWidgetHostViewAndroid()->LostFocus();
 }
 
-void ContentViewCore::SendOrientationChangeEvent(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jint orientation) {
-  if (device_orientation_ != orientation) {
-    base::RecordAction(base::UserMetricsAction("ScreenOrientationChange"));
-    device_orientation_ = orientation;
-    SendOrientationChangeEventInternal();
-  }
-}
-
-void ContentViewCore::SendOrientationChangeEventInternal() {
-  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
-  if (rwhv)
-    rwhv->UpdateScreenInfo(GetViewAndroid());
-
-  static_cast<WebContentsImpl*>(web_contents())->OnScreenOrientationChange();
-}
-
 // This is called for each ContentView.
-jlong JNI_ContentViewCoreImpl_Init(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& jweb_contents,
-    const JavaParamRef<jobject>& jview_android_delegate,
-    const JavaParamRef<jobject>& jwindow_android,
-    jfloat dip_scale) {
+jlong JNI_ContentViewCoreImpl_Init(JNIEnv* env,
+                                   const JavaParamRef<jobject>& obj,
+                                   const JavaParamRef<jobject>& jweb_contents) {
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       WebContents::FromJavaWebContents(jweb_contents));
   CHECK(web_contents)
       << "A ContentViewCore should be created with a valid WebContents.";
-  ui::ViewAndroid* view_android = web_contents->GetView()->GetNativeView();
-  view_android->SetDelegate(jview_android_delegate);
-
-  ui::WindowAndroid* window_android =
-      ui::WindowAndroid::FromJavaWindowAndroid(jwindow_android);
-  DCHECK(window_android);
-  window_android->AddChild(view_android);
-
-  ContentViewCore* view =
-      new ContentViewCore(env, obj, web_contents, dip_scale);
-  return reinterpret_cast<intptr_t>(view);
+  return reinterpret_cast<intptr_t>(
+      new ContentViewCore(env, obj, web_contents));
 }
 
 }  // namespace content

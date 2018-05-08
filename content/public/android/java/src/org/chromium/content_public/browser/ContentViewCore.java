@@ -81,13 +81,6 @@ public interface ContentViewCore {
     }
 
     /**
-     * Updates the native {@link ContentViewCore} with a new window. This moves the NativeView and
-     * attached it to the new NativeWindow linked with the given {@link WindowAndroid}.
-     * @param windowAndroid The new {@link WindowAndroid} for this {@link ContentViewCore}.
-     */
-    void updateWindowAndroid(WindowAndroid windowAndroid);
-
-    /**
      * Set the Container view Internals.
      * @param internalDispatcher Handles dispatching all hidden or super methods to the
      *                           containerView.

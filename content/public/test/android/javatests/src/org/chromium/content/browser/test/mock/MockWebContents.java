@@ -53,6 +53,9 @@ public class MockWebContents implements WebContents {
     }
 
     @Override
+    public void setTopLevelNativeWindow(WindowAndroid windowAndroid) {}
+
+    @Override
     public void destroy() {}
 
     @Override

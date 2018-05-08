@@ -45,8 +45,9 @@ import org.chromium.content.browser.ContentClassFactory;
 import org.chromium.content.browser.GestureListenerManagerImpl;
 import org.chromium.content.browser.PopupController;
 import org.chromium.content.browser.PopupController.HideablePopup;
-import org.chromium.content.browser.WindowAndroidChangedObserver;
 import org.chromium.content.browser.WindowEventObserver;
+import org.chromium.content.browser.WindowEventObserverManager;
+import org.chromium.content.browser.input.ImeAdapterImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.ImeEventObserver;
@@ -69,8 +70,8 @@ import java.util.List;
 @JNINamespace("content")
 @TargetApi(Build.VERSION_CODES.M)
 public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
-        implements ImeEventObserver, SelectionPopupController, WindowEventObserver,
-                   WindowAndroidChangedObserver, HideablePopup, ContainerViewObserver {
+        implements ImeEventObserver, SelectionPopupController, WindowEventObserver, HideablePopup,
+                   ContainerViewObserver {
     private static final String TAG = "SelectionPopupCtlr"; // 20 char limit
 
     /**
@@ -202,6 +203,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                 SelectionPopupControllerImpl.class, UserDataFactoryLazyHolder.INSTANCE);
         assert controller != null && !controller.initialized();
         controller.init(context, window, true);
+        controller.setActionModeCallback(ActionModeCallbackHelper.EMPTY_CALLBACK);
         return controller;
     }
 
@@ -270,6 +272,10 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
             }
         };
 
+        WindowEventObserverManager manager = WindowEventObserverManager.from(mWebContents);
+        if (manager != null) manager.addObserver(this);
+        ImeAdapterImpl imeAdapter = ImeAdapterImpl.fromWebContents(mWebContents);
+        if (imeAdapter != null) imeAdapter.addEventObserver(this);
         mResultCallback = new SmartSelectionCallback();
         mLastSelectedText = "";
         initHandleObserver();
@@ -570,14 +576,6 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         }
     }
 
-    // WindowAndroidChangedObserver
-
-    @Override
-    public void onWindowAndroidChanged(WindowAndroid newWindowAndroid) {
-        mWindowAndroid = newWindowAndroid;
-        initHandleObserver();
-    }
-
     // WindowEventObserver
 
     @Override
@@ -600,6 +598,24 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         // preserve the underlying selection for detachment cases like screen
         // locking and app switching.
         updateTextSelectionUI(false);
+    }
+
+    @Override
+    public void onWindowAndroidChanged(WindowAndroid newWindowAndroid) {
+        mWindowAndroid = newWindowAndroid;
+        initHandleObserver();
+        destroyPastePopup();
+    }
+
+    @Override
+    public void onRotationChanged(int rotation) {
+        // ActionMode#invalidate() won't be able to re-layout the floating
+        // action mode menu items according to the new rotation. So Chrome
+        // has to re-create the action mode.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && isActionModeValid()) {
+            hidePopupsAndPreserveSelection();
+            showActionModeOrClearOnFailure();
+        }
     }
 
     /**

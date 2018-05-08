@@ -39,6 +39,7 @@ import org.chromium.blink_public.web.WebInputEventModifier;
 import org.chromium.blink_public.web.WebInputEventType;
 import org.chromium.blink_public.web.WebTextInputMode;
 import org.chromium.content.browser.WindowEventObserver;
+import org.chromium.content.browser.WindowEventObserverManager;
 import org.chromium.content.browser.picker.InputDialogContainer;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.ImeAdapter;
@@ -251,6 +252,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
             mCursorAnchorInfoController = null;
         }
         mNativeImeAdapterAndroid = nativeInit(mWebContents);
+        WindowEventObserverManager.from(mWebContents).addObserver(this);
     }
 
     @Override
@@ -276,10 +278,6 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
     @Override
     public void addEventObserver(ImeEventObserver eventObserver) {
         mEventObservers.add(eventObserver);
-    }
-
-    public void removeEventObserver(ImeEventObserver eventObserver) {
-        mEventObservers.remove(eventObserver);
     }
 
     private void createInputConnectionFactory() {
@@ -705,6 +703,10 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
         mRestartInputOnNextStateUpdate = false;
         // This will trigger unblocking if necessary.
         hideKeyboard();
+    }
+
+    public void reset() {
+        resetAndHideKeyboard();
     }
 
     @CalledByNative
