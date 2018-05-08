@@ -21,6 +21,7 @@
 #include "components/drive/chromeos/file_system/move_operation.h"
 #include "components/drive/chromeos/file_system/operation_delegate.h"
 #include "components/drive/chromeos/file_system/remove_operation.h"
+#include "components/drive/chromeos/loader_controller.h"
 #include "components/drive/chromeos/resource_metadata.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/event_logger.h"

@@ -17,9 +17,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/drive/chromeos/about_resource_loader.h"
-#include "components/drive/chromeos/change_list_loader.h"
 #include "components/drive/chromeos/change_list_loader_observer.h"
 #include "components/drive/chromeos/change_list_processor.h"
+#include "components/drive/chromeos/loader_controller.h"
 #include "components/drive/chromeos/resource_metadata.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/event_logger.h"
@@ -108,8 +108,7 @@ class DirectoryLoader::FeedFetcher {
         weak_ptr_factory_(this) {
   }
 
-  ~FeedFetcher() {
-  }
+  ~FeedFetcher() = default;
 
   void Run(const FileOperationCallback& callback) {
     DCHECK(thread_checker_.CalledOnValidThread());
@@ -212,8 +211,7 @@ DirectoryLoader::DirectoryLoader(
       weak_ptr_factory_(this) {
 }
 
-DirectoryLoader::~DirectoryLoader() {
-}
+DirectoryLoader::~DirectoryLoader() = default;
 
 void DirectoryLoader::AddObserver(ChangeListLoaderObserver* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());

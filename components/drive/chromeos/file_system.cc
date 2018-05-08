@@ -28,6 +28,7 @@
 #include "components/drive/chromeos/file_system/touch_operation.h"
 #include "components/drive/chromeos/file_system/truncate_operation.h"
 #include "components/drive/chromeos/file_system_observer.h"
+#include "components/drive/chromeos/loader_controller.h"
 #include "components/drive/chromeos/remove_stale_cache_files.h"
 #include "components/drive/chromeos/search_metadata.h"
 #include "components/drive/chromeos/sync_client.h"

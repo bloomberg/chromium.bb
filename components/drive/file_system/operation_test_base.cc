@@ -10,6 +10,7 @@
 #include "components/drive/chromeos/fake_free_disk_space_getter.h"
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/chromeos/file_system/operation_delegate.h"
+#include "components/drive/chromeos/loader_controller.h"
 #include "components/drive/chromeos/resource_metadata.h"
 #include "components/drive/event_logger.h"
 #include "components/drive/file_change.h"
@@ -23,11 +24,9 @@
 namespace drive {
 namespace file_system {
 
-OperationTestBase::LoggingDelegate::LoggingDelegate() {
-}
+OperationTestBase::LoggingDelegate::LoggingDelegate() = default;
 
-OperationTestBase::LoggingDelegate::~LoggingDelegate() {
-}
+OperationTestBase::LoggingDelegate::~LoggingDelegate() = default;
 
 void OperationTestBase::LoggingDelegate::OnFileChangedByOperation(
     const FileChange& changed_files) {
@@ -52,15 +51,13 @@ bool OperationTestBase::LoggingDelegate::WaitForSyncComplete(
       false : wait_for_sync_complete_handler_.Run(local_id, callback);
 }
 
-OperationTestBase::OperationTestBase() {
-}
+OperationTestBase::OperationTestBase() = default;
 
 OperationTestBase::OperationTestBase(int test_thread_bundle_options)
     : thread_bundle_(test_thread_bundle_options) {
 }
 
-OperationTestBase::~OperationTestBase() {
-}
+OperationTestBase::~OperationTestBase() = default;
 
 void OperationTestBase::SetUp() {
   blocking_task_runner_ =
