@@ -8,6 +8,10 @@ blink_modules_sources("keyboard") {
   sources = [
     "keyboard.cc",
     "keyboard.h",
+    "keyboard_layout.cc",
+    "keyboard_layout.h",
+    "keyboard_layout_map.cc",
+    "keyboard_layout_map.h",
     "keyboard_lock.cc",
     "keyboard_lock.h",
     "navigator_keyboard.cc",

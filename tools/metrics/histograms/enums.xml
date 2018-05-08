@@ -18574,6 +18574,7 @@ Called by update_net_error_codes.py.-->
   <int value="2429" label="PerformanceTimeline"/>
   <int value="2430" label="UserTiming"/>
   <int value="2431" label="CSSSelectorPseudoIS"/>
+  <int value="2432" label="KeyboardApiGetLayoutMap"/>
 </enum>
 
 <enum name="FeedbackSource">

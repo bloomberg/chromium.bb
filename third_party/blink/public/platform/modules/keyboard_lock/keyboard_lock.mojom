@@ -11,6 +11,18 @@ enum KeyboardLockRequestResult {
   kChildFrameError = 3
 };
 
+enum GetKeyboardLayoutMapStatus {
+  kSuccess = 0,
+  kFail = 1,
+};
+
+struct GetKeyboardLayoutMapResult {
+  GetKeyboardLayoutMapStatus status;
+
+  // A map of KeyboardEvent code to KeyboardEvent key values.
+  map<string, string> layout_map;
+};
+
 // The browser side service to process navigator.keyboard.lock() and
 // navigator.keyboard.unlock() web APIs. See http://crbug.com/680809.
 interface KeyboardLockService {
@@ -23,4 +35,8 @@ interface KeyboardLockService {
 
   // Removes all reserved keys. This function is expected to never fail.
   CancelKeyboardLock();
+
+  // Requests the keyboard layout mapping for the highest-priority ASCII-capable
+  // installed layout.
+  GetKeyboardLayoutMap() => (GetKeyboardLayoutMapResult result);
 };

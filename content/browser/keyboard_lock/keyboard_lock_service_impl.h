@@ -31,6 +31,7 @@ class CONTENT_EXPORT KeyboardLockServiceImpl
   void RequestKeyboardLock(const std::vector<std::string>& key_codes,
                            RequestKeyboardLockCallback callback) override;
   void CancelKeyboardLock() override;
+  void GetKeyboardLayoutMap(GetKeyboardLayoutMapCallback callback) override;
 
  private:
   RenderFrameHostImpl* const render_frame_host_;

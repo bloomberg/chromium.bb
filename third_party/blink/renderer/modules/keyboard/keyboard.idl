@@ -7,6 +7,7 @@
     RuntimeEnabled=KeyboardLock,
     SecureContext
 ] interface Keyboard {
+    // Keyboard Lock specification: https://w3c.github.io/keyboard-lock/
     [CallWith=ScriptState,
      MeasureAs=KeyboardApiLock
     ] Promise<void> lock(optional sequence<DOMString> keyCodes = []);
@@ -14,4 +15,9 @@
     [CallWith=ScriptState,
      MeasureAs=KeyboardApiUnlock
     ] void unlock();
+
+    // Keyboard Map specification: https://wicg.github.io/keyboard-map/
+    [CallWith=ScriptState,
+     MeasureAs=KeyboardApiGetLayoutMap
+    ] Promise<KeyboardLayoutMap> getLayoutMap();
 };

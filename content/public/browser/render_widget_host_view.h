@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_H_
 #define CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_H_
 
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
@@ -176,6 +177,11 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual void UnlockKeyboard() = 0;
   // Returns true if keyboard lock is active.
   virtual bool IsKeyboardLocked() = 0;
+
+  // Return a mapping dictionary from keyboard code to key values for the
+  // highest-priority ASCII-capable layout in the list of currently installed
+  // keyboard layouts.
+  virtual base::flat_map<std::string, std::string> GetKeyboardLayoutMap() = 0;
 
   // Retrives the size of the viewport for the visible region. May be smaller
   // than the view size if a portion of the view is obstructed (e.g. by a
