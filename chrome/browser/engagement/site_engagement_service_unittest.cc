@@ -1134,6 +1134,7 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
   AssertInRange(5.0, service_->GetScore(origin2));
   AssertInRange(5.0, service_->GetScore(origin3));
   AssertInRange(5.0, service_->GetScore(origin4));
+  EXPECT_EQ(4U, service_->GetAllDetails().size());
 
   {
     SiteEngagementChangeWaiter waiter(profile());
@@ -1154,6 +1155,7 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     AssertInRange(5.0, service_->GetScore(origin3));
     AssertInRange(2.5, service_->GetScore(origin4));
     AssertInRange(9.5, service_->GetTotalEngagementPoints());
+    EXPECT_EQ(3U, service_->GetAllDetails().size());
   }
 
   {
@@ -1177,6 +1179,7 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     AssertInRange(5.0, service_->GetScore(origin3));
     AssertInRange(2.5, service_->GetScore(origin4));
     AssertInRange(8.5, service_->GetTotalEngagementPoints());
+    EXPECT_EQ(3U, service_->GetAllDetails().size());
   }
 
   {
@@ -1199,6 +1202,7 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     AssertInRange(5.0, service_->GetScore(origin3));
     AssertInRange(2.5, service_->GetScore(origin4));
     AssertInRange(7.5, service_->GetTotalEngagementPoints());
+    EXPECT_EQ(2U, service_->GetAllDetails().size());
   }
 }
 
