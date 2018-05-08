@@ -11,6 +11,7 @@ namespace blink {
 
 GlobalScopeCreationParams::GlobalScopeCreationParams(
     const KURL& script_url,
+    ScriptType script_type,
     const String& user_agent,
     const Vector<CSPHeaderAndType>* content_security_policy_parsed_headers,
     ReferrerPolicy referrer_policy,
@@ -27,6 +28,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
         interface_provider_info,
     BeginFrameProviderParams begin_frame_provider_params)
     : script_url(script_url.Copy()),
+      script_type(script_type),
       user_agent(user_agent.IsolatedCopy()),
       referrer_policy(referrer_policy),
       starter_origin(starter_origin ? starter_origin->IsolatedCopy() : nullptr),

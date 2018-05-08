@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -32,7 +33,7 @@ PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
       std::make_unique<MainThreadWorkletReportingProxy>(document);
 
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-      document->Url(), document->UserAgent(),
+      document->Url(), ScriptType::kModule, document->UserAgent(),
       document->GetContentSecurityPolicy()->Headers().get(),
       document->GetReferrerPolicy(), document->GetSecurityOrigin(),
       document->IsSecureContext(), nullptr /* worker_clients */,

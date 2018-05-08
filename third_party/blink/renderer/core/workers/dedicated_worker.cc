@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_messaging_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
@@ -276,8 +277,10 @@ DedicatedWorker::CreateGlobalScopeCreationParams() {
     // TODO(fserb): copies parent/frame sink_id into new worker or reset it.
   }
 
+  ScriptType script_type = (options_.type() == "classic") ? ScriptType::kClassic
+                                                          : ScriptType::kModule;
   return std::make_unique<GlobalScopeCreationParams>(
-      script_url_, GetExecutionContext()->UserAgent(),
+      script_url_, script_type, GetExecutionContext()->UserAgent(),
       GetExecutionContext()->GetContentSecurityPolicy()->Headers().get(),
       kReferrerPolicyDefault, GetExecutionContext()->GetSecurityOrigin(),
       GetExecutionContext()->IsSecureContext(), CreateWorkerClients(),

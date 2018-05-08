@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
@@ -348,8 +349,12 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   std::unique_ptr<Vector<char>> cached_meta_data;
 
   // TODO(nhiroki); Set the coordinator for module fetch.
-  // (https://crbug.com/680046)
+  // (https://crbug.com/824647)
   WorkerOrWorkletModuleFetchCoordinator* module_fetch_coordinator = nullptr;
+
+  // TODO(nhiroki); Set |script_type| to ScriptType::kModule for module fetch.
+  // (https://crbug.com/824647)
+  ScriptType script_type = ScriptType::kClassic;
 
   // |main_script_loader_| isn't created if the InstalledScriptsManager had the
   // script.
@@ -360,7 +365,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         main_script_loader_->ReleaseContentSecurityPolicy(),
         main_script_loader_->GetReferrerPolicy());
     global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
-        worker_start_data_.script_url, worker_start_data_.user_agent,
+        worker_start_data_.script_url, script_type,
+        worker_start_data_.user_agent,
         document->GetContentSecurityPolicy()->Headers().get(),
         document->GetReferrerPolicy(), starter_origin, starter_secure_context,
         worker_clients, main_script_loader_->ResponseAddressSpace(),
@@ -376,11 +382,12 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     // SetContentSecurityPolicyAndReferrerPolicy() before evaluating the main
     // script.
     global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
-        worker_start_data_.script_url, worker_start_data_.user_agent,
-        nullptr /* ContentSecurityPolicy */, kReferrerPolicyDefault,
-        starter_origin, starter_secure_context, worker_clients,
-        worker_start_data_.address_space, nullptr /* OriginTrialTokens */,
-        devtools_worker_token_, std::move(worker_settings),
+        worker_start_data_.script_url, script_type,
+        worker_start_data_.user_agent, nullptr /* ContentSecurityPolicy */,
+        kReferrerPolicyDefault, starter_origin, starter_secure_context,
+        worker_clients, worker_start_data_.address_space,
+        nullptr /* OriginTrialTokens */, devtools_worker_token_,
+        std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
         module_fetch_coordinator, std::move(interface_provider_info_));
   }

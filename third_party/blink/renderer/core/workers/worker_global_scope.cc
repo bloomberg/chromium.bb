@@ -132,10 +132,20 @@ String WorkerGlobalScope::origin() const {
   return GetSecurityOrigin()->ToString();
 }
 
+// Implementation of the "importScripts()" algorithm:
+// https://html.spec.whatwg.org/multipage/workers.html#dom-workerglobalscope-importscripts
 void WorkerGlobalScope::importScripts(const Vector<String>& urls,
                                       ExceptionState& exception_state) {
   DCHECK(GetContentSecurityPolicy());
   DCHECK(GetExecutionContext());
+
+  // Step 1: "If worker global scope's type is "module", throw a TypeError
+  // exception."
+  if (script_type_ == ScriptType::kModule) {
+    exception_state.ThrowTypeError(
+        "Module scripts don't support importScripts().");
+    return;
+  }
 
   ExecutionContext& execution_context = *this->GetExecutionContext();
   Vector<KURL> completed_urls;
@@ -340,6 +350,7 @@ WorkerGlobalScope::WorkerGlobalScope(
                                  creation_params->worker_clients,
                                  thread->GetWorkerReportingProxy()),
       url_(creation_params->script_url),
+      script_type_(creation_params->script_type),
       user_agent_(creation_params->user_agent),
       parent_devtools_token_(creation_params->parent_devtools_token),
       v8_cache_options_(creation_params->v8_cache_options),

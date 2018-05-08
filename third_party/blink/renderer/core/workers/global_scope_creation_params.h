@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_module_fetch_coordinator.h"
 #include "third_party/blink/renderer/core/workers/worker_settings.h"
@@ -36,6 +37,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
  public:
   GlobalScopeCreationParams(
       const KURL& script_url,
+      ScriptType script_type,
       const String& user_agent,
       const Vector<CSPHeaderAndType>* content_security_policy_parsed_headers,
       ReferrerPolicy referrer_policy,
@@ -54,6 +56,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   ~GlobalScopeCreationParams() = default;
 
   KURL script_url;
+  ScriptType script_type;
   String user_agent;
 
   // |content_security_policy_parsed_headers| and

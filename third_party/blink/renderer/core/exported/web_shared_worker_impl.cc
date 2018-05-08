@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_content_settings_proxy.h"
@@ -320,12 +321,16 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
       shadow_page_->GetDocument()->GetFrame()->GetSettings());
 
   // TODO(nhiroki); Set the coordinator for module fetch.
-  // (https://crbug.com/680046)
+  // (https://crbug.com/824646)
   WorkerOrWorkletModuleFetchCoordinator* module_fetch_coordinator = nullptr;
+
+  // TODO(nhiroki); Set |script_type| to ScriptType::kModule for module fetch.
+  // (https://crbug.com/824646)
+  ScriptType script_type = ScriptType::kClassic;
 
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(
-          url_, document->UserAgent(),
+          url_, script_type, document->UserAgent(),
           content_security_policy ? content_security_policy->Headers().get()
                                   : nullptr,
           referrer_policy, starter_origin, starter_secure_context,

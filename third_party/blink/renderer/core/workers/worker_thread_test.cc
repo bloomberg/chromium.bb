@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
+#include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread_test_helper.h"
@@ -304,8 +305,8 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
 
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(
-          KURL("http://fake.url/"), "fake user agent", headers.get(),
-          kReferrerPolicyDefault, security_origin_.get(),
+          KURL("http://fake.url/"), ScriptType::kClassic, "fake user agent",
+          headers.get(), kReferrerPolicyDefault, security_origin_.get(),
           false /* starter_secure_context */, nullptr /* workerClients */,
           mojom::IPAddressSpace::kLocal, nullptr /* originTrialToken */,
           base::UnguessableToken::Create(),

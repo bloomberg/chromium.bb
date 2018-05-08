@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
+#include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_messaging_proxy.h"
@@ -132,7 +133,7 @@ class DedicatedWorkerMessagingProxyForTest
         ToDocument(GetExecutionContext())->GetSettings());
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
-            script_url, "fake user agent", headers.get(),
+            script_url, ScriptType::kClassic, "fake user agent", headers.get(),
             kReferrerPolicyDefault, security_origin_.get(),
             false /* starter_secure_context */, nullptr /* worker_clients */,
             mojom::IPAddressSpace::kLocal, nullptr /* origin_trial_tokens */,
