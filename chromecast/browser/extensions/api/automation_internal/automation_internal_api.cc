@@ -16,6 +16,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromecast/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chromecast/common/extensions_api/automation.h"
 #include "chromecast/common/extensions_api/automation_api_constants.h"
 #include "chromecast/common/extensions_api/automation_internal.h"
@@ -250,11 +251,8 @@ ExtensionFunction::ResponseAction AutomationInternalEnableTabFunction::Run() {
   int ax_tree_id = rfh->GetAXTreeID();
 
   // This gets removed when the extension process dies.
-  // TODO(rmrossi) Put back when event router comes into the picture.
-  //  AutomationEventRouter::GetInstance()->RegisterListenerForOneTree(
-  //      extension_id(),
-  //      source_process_id(),
-  //      ax_tree_id);
+  AutomationEventRouter::GetInstance()->RegisterListenerForOneTree(
+      extension_id(), source_process_id(), ax_tree_id);
 
   return RespondNow(ArgumentList(
       api::automation_internal::EnableTab::Results::Create(ax_tree_id)));
