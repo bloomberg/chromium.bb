@@ -8134,6 +8134,12 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Ctrl + S to read selection"/>
 </enum>
 
+<enum name="CrosSelectToSpeakStateChangeEvent">
+  <int value="0" label="Start selection"/>
+  <int value="1" label="Cancel speech"/>
+  <int value="2" label="Cancel selection"/>
+</enum>
+
 <enum name="CrosShelfClickTarget">
   <obsolete>
     Deprecated as of 12/2013. Default pinned apps trial is finished.
