@@ -380,15 +380,6 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source) {
       {"crostiniPageLabel", IDS_SETTINGS_CROSTINI_LABEL},
       {"crostiniEnable", IDS_SETTINGS_TURN_ON},
       {"crostiniRemove", IDS_SETTINGS_CROSTINI_REMOVE},
-      {"crostiniRemoveDialogTitle", IDS_SETTINGS_CROSTINI_REMOVE_DIALOG_TITLE},
-      {"crostiniRemoveDialogMessageDeleteApps",
-       IDS_SETTINGS_CROSTINI_REMOVE_DIALOG_MESSAGE_DELETE_APPS},
-      {"crostiniRemoveDialogMessageDeleteSharedFiles",
-       IDS_SETTINGS_CROSTINI_REMOVE_DIALOG_MESSAGE_DELETE_SHARED_FILES},
-      {"crostiniRemoveDialogMessageOtherDevicesUnaffected",
-       IDS_SETTINGS_CROSTINI_REMOVE_DIALOG_MESSAGE_OTHER_DEVICES_UNAFFECTED},
-      {"crostiniRemoveDialogAccept",
-       IDS_SETTINGS_CROSTINI_REMOVE_DIALOG_ACCEPT},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

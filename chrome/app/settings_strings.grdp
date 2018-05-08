@@ -413,21 +413,6 @@
     <message name="IDS_SETTINGS_CROSTINI_REMOVE" desc="Label for the row to open a dialog confirming removal of Crostini.">
       Remove Linux Apps for Chromebook
     </message>
-    <message name="IDS_SETTINGS_CROSTINI_REMOVE_DIALOG_TITLE" desc="Title of the confirmation dialog for removal of Crostini.">
-      Remove Linux Apps
-    </message>
-    <message name="IDS_SETTINGS_CROSTINI_REMOVE_DIALOG_MESSAGE_DELETE_APPS" desc="Describes what will happen if the user opts out of Crostini.">
-      Linux apps you've installed will be deleted from this Chromebook.
-    </message>
-    <message name="IDS_SETTINGS_CROSTINI_REMOVE_DIALOG_MESSAGE_DELETE_SHARED_FILES" desc="Describes what will happen if the user opts out of Crostini.">
-      Files shared with Linux apps may also be deleted.
-    </message>
-    <message name="IDS_SETTINGS_CROSTINI_REMOVE_DIALOG_MESSAGE_OTHER_DEVICES_UNAFFECTED" desc="Describes what will happen if the user opts out of Crostini.">
-      This doesn't affect apps or content on other devices.
-    </message>
-    <message name="IDS_SETTINGS_CROSTINI_REMOVE_DIALOG_ACCEPT" desc="Label for confirmation button in the remove Crostini dialog.">
-      Remove Linux Apps
-    </message>
 
     <!-- Android Apps Page -->
     <message name="IDS_SETTINGS_ANDROID_APPS_TITLE" desc="The title of Google Play Store (Arc++ / Android Apps) section.">
