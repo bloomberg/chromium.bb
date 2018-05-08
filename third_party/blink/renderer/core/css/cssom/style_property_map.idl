@@ -8,8 +8,9 @@
     RuntimeEnabled=CSSTypedOM,
     Exposed=(Window)
 ] interface StylePropertyMap : StylePropertyMapReadOnly {
-    [RaisesException, CallWith=ExecutionContext] void set(DOMString property, (CSSStyleValue or DOMString)... values);
-    [RaisesException, CallWith=ExecutionContext] void append(DOMString property, (CSSStyleValue or DOMString)... values);
-    [RaisesException, ImplementedAs=remove] void delete(DOMString property);
+    // TODO(https://crbug.com/838890): DOMString should be CSSOMString
+    [RaisesException, CallWith=ExecutionContext] void set(CSSOMString property, (CSSStyleValue or DOMString)... values);
+    [RaisesException, CallWith=ExecutionContext] void append(CSSOMString property, (CSSStyleValue or DOMString)... values);
+    [RaisesException, ImplementedAs=remove] void delete(CSSOMString property);
     void clear();
 };
