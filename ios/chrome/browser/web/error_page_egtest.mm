@@ -6,11 +6,13 @@
 
 #include <string>
 
+#include "base/feature_list.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/testing/embedded_test_server_handlers.h"
+#include "ios/web/public/features.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -22,9 +24,11 @@
 
 namespace {
 // Returns ERR_INTERNET_DISCONNECTED error message.
-NSString* GetErrorMessage() {
-  return base::SysUTF8ToNSString(
-      net::ErrorToShortString(net::ERR_INTERNET_DISCONNECTED));
+std::string GetErrorMessage() {
+  return net::ErrorToShortString(net::ERR_INTERNET_DISCONNECTED);
+}
+NSString* GetNSErrorMessage() {
+  return base::SysUTF8ToNSString(GetErrorMessage());
 }
 }  // namespace
 
@@ -58,7 +62,11 @@ NSString* GetErrorMessage() {
   // No response leads to ERR_INTERNET_DISCONNECTED error.
   self.serverRespondsWithContent = NO;
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo-query?foo")];
-  [ChromeEarlGrey waitForStaticHTMLViewContainingText:GetErrorMessage()];
+  if (base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
+    [ChromeEarlGrey waitForWebViewContainingText:GetErrorMessage()];
+  } else {
+    [ChromeEarlGrey waitForStaticHTMLViewContainingText:GetNSErrorMessage()];
+  }
 
   // Reload the page, which should load without errors.
   self.serverRespondsWithContent = YES;
@@ -76,7 +84,11 @@ NSString* GetErrorMessage() {
   // Reload the page, no response leads to ERR_INTERNET_DISCONNECTED error.
   self.serverRespondsWithContent = NO;
   [ChromeEarlGrey reload];
-  [ChromeEarlGrey waitForStaticHTMLViewContainingText:GetErrorMessage()];
+  if (base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
+    [ChromeEarlGrey waitForWebViewContainingText:GetErrorMessage()];
+  } else {
+    [ChromeEarlGrey waitForStaticHTMLViewContainingText:GetNSErrorMessage()];
+  }
 }
 
 // Sucessfully loads the page, goes back, stops the server, goes forward and
@@ -105,7 +117,11 @@ NSString* GetErrorMessage() {
 
   // Reload bypasses the cache.
   [ChromeEarlGrey reload];
-  [ChromeEarlGrey waitForStaticHTMLViewContainingText:GetErrorMessage()];
+  if (base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
+    [ChromeEarlGrey waitForWebViewContainingText:GetErrorMessage()];
+  } else {
+    [ChromeEarlGrey waitForStaticHTMLViewContainingText:GetNSErrorMessage()];
+  }
 #endif  // TARGET_IPHONE_SIMULATOR
 }
 
@@ -118,7 +134,11 @@ NSString* GetErrorMessage() {
 
   // Second page fails to load.
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/close-socket")];
-  [ChromeEarlGrey waitForStaticHTMLViewContainingText:GetErrorMessage()];
+  if (base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
+    [ChromeEarlGrey waitForWebViewContainingText:GetErrorMessage()];
+  } else {
+    [ChromeEarlGrey waitForStaticHTMLViewContainingText:GetNSErrorMessage()];
+  }
 
   // Going back should sucessfully load the first page.
   [ChromeEarlGrey goBack];
@@ -131,7 +151,11 @@ NSString* GetErrorMessage() {
   self.serverRespondsWithContent = NO;
   [ChromeEarlGrey
       loadURL:self.testServer->GetURL("/server-redirect?echo-query")];
-  [ChromeEarlGrey waitForStaticHTMLViewContainingText:GetErrorMessage()];
+  if (base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
+    [ChromeEarlGrey waitForWebViewContainingText:GetErrorMessage()];
+  } else {
+    [ChromeEarlGrey waitForStaticHTMLViewContainingText:GetNSErrorMessage()];
+  }
 }
 
 // Loads the page with iframe, and that iframe fails to load. There should be no

@@ -295,8 +295,11 @@ void NavigationItemImpl::SetErrorRetryState(ErrorRetryState state) {
 
   switch (state) {
     case ErrorRetryState::kNoNavigationError:
-      DCHECK_EQ(ErrorRetryState::kRetryFailedNavigationItem,
-                error_retry_state_);
+      DCHECK(ErrorRetryState::kRetryFailedNavigationItem ==
+                 error_retry_state_ ||
+             ErrorRetryState::kDisplayingWebErrorForFailedNavigation ==
+                 error_retry_state_)
+          << "Got unexpected: " << static_cast<int>(error_retry_state_);
       break;
     case ErrorRetryState::kReadyToDisplayErrorForFailedNavigation:
       DCHECK(error_retry_state_ == ErrorRetryState::kNoNavigationError ||
@@ -304,6 +307,7 @@ void NavigationItemImpl::SetErrorRetryState(ErrorRetryState state) {
           << "Got unexpected state: " << static_cast<int>(error_retry_state_);
       break;
     case ErrorRetryState::kDisplayingNativeErrorForFailedNavigation:
+    case ErrorRetryState::kDisplayingWebErrorForFailedNavigation:
       DCHECK_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
                 error_retry_state_);
       break;
