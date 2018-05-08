@@ -188,9 +188,6 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
       ->mus_properties[ui::mojom::WindowManager::kShelfItemType_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int64_t>(ash::TYPE_APP));
-  init_params
-      ->mus_properties[ui::mojom::WindowManager::kWindowTitleShown_Property] =
-      mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int64_t>(false));
 }
 
 void ChromeNativeAppWindowViewsAuraAsh::OnBeforePanelWidgetInit(

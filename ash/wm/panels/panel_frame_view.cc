@@ -40,7 +40,7 @@ void PanelFrameView::SetFrameColors(SkColor active_frame_color,
                                     SkColor inactive_frame_color) {
   frame_header_->SetFrameColors(active_frame_color, inactive_frame_color);
   GetWidgetWindow()->SetProperty(aura::client::kTopViewColor,
-                                 inactive_frame_color);
+                                 frame_header_->GetInactiveFrameColor());
 }
 
 const char* PanelFrameView::GetClassName() const {
@@ -54,12 +54,12 @@ void PanelFrameView::InitFrameHeader() {
   frame_header_ = std::make_unique<DefaultFrameHeader>(
       frame_, this, caption_button_container_);
   GetWidgetWindow()->SetProperty(aura::client::kTopViewColor,
-                                 DefaultFrameHeader::GetDefaultFrameColor());
+                                 frame_header_->GetInactiveFrameColor());
 
   if (frame_->widget_delegate()->ShouldShowWindowIcon()) {
     window_icon_ = new views::ImageView();
     AddChildView(window_icon_);
-    frame_header_->SetLeftHeaderView(window_icon_);
+    frame_header_->set_left_header_view(window_icon_);
   }
 }
 

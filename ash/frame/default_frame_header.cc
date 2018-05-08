@@ -38,6 +38,8 @@ namespace {
 // Color for the window title text.
 const SkColor kTitleTextColor = SkColorSetRGB(40, 40, 40);
 const SkColor kLightTitleTextColor = SK_ColorWHITE;
+// The default color of the frame.
+const SkColor kDefaultFrameColor = SkColorSetRGB(0xFD, 0xFE, 0xFF);
 // Duration of crossfade animation for activating and deactivating frame.
 const int kActivationCrossfadeDurationMs = 200;
 
@@ -71,13 +73,15 @@ namespace ash {
 DefaultFrameHeader::DefaultFrameHeader(
     views::Widget* frame,
     views::View* header_view,
-    FrameCaptionButtonContainerView* caption_button_container)
-    : frame_(frame),
+    FrameCaptionButtonContainerView* caption_button_container,
+    mojom::WindowStyle window_style)
+    : window_style_(window_style),
+      frame_(frame),
       view_(header_view),
       back_button_(nullptr),
       left_header_view_(nullptr),
-      active_frame_color_(GetDefaultFrameColor()),
-      inactive_frame_color_(GetDefaultFrameColor()),
+      active_frame_color_(kDefaultFrameColor),
+      inactive_frame_color_(kDefaultFrameColor),
       caption_button_container_(caption_button_container),
       painted_height_(0),
       mode_(MODE_INACTIVE),
@@ -136,11 +140,24 @@ void DefaultFrameHeader::PaintHeader(gfx::Canvas* canvas, Mode mode) {
       mode_ == MODE_INACTIVE && !UsesCustomFrameColors()) {
     PaintHighlightForInactiveRestoredWindow(canvas);
   }
-  if (frame_->widget_delegate()->ShouldShowWindowTitle() && !GetTitle().empty())
+  if (frame_->widget_delegate()->ShouldShowWindowTitle() && !title_.empty())
     PaintTitleBar(canvas);
 }
 
 void DefaultFrameHeader::LayoutHeader() {
+  // TODO(sky): this needs to reset images as well.
+  if (window_style_ == mojom::WindowStyle::BROWSER) {
+    const bool is_in_tablet_mode = Shell::Get()
+                                       ->tablet_mode_controller()
+                                       ->IsTabletModeWindowManagerEnabled();
+    const bool use_maximized_size =
+        frame_->IsMaximized() || frame_->IsFullscreen() || is_in_tablet_mode;
+    const gfx::Size button_size(GetAshLayoutSize(
+        use_maximized_size ? AshLayoutSize::kBrowserCaptionMaximized
+                           : AshLayoutSize::kBrowserCaptionRestored));
+    caption_button_container_->SetButtonSize(button_size);
+  }
+
   caption_button_container_->SetBackgroundColor(GetCurrentFrameColor());
   caption_button_container_->SetColorMode(button_color_mode_);
   UpdateSizeButtonImages();
@@ -205,18 +222,6 @@ void DefaultFrameHeader::OnShowStateChanged(ui::WindowShowState show_state) {
   LayoutHeader();
 }
 
-void DefaultFrameHeader::SetLeftHeaderView(views::View* left_header_view) {
-  left_header_view_ = left_header_view;
-}
-
-void DefaultFrameHeader::SetBackButton(FrameCaptionButton* back_button) {
-  back_button_ = back_button;
-}
-
-FrameCaptionButton* DefaultFrameHeader::GetBackButton() const {
-  return back_button_;
-}
-
 void DefaultFrameHeader::SetFrameColors(SkColor active_frame_color,
                                         SkColor inactive_frame_color) {
   button_color_mode_ = FrameCaptionButton::ColorMode::kDefault;
@@ -226,6 +231,10 @@ void DefaultFrameHeader::SetFrameColors(SkColor active_frame_color,
 void DefaultFrameHeader::SetThemeColor(SkColor theme_color) {
   button_color_mode_ = FrameCaptionButton::ColorMode::kThemed;
   SetFrameColorsImpl(theme_color, theme_color);
+}
+
+SkColor DefaultFrameHeader::GetCurrentFrameColor() const {
+  return mode_ == MODE_ACTIVE ? active_frame_color_ : inactive_frame_color_;
 }
 
 void DefaultFrameHeader::SetFrameColorsImpl(SkColor active_frame_color,
@@ -246,14 +255,17 @@ void DefaultFrameHeader::SetFrameColorsImpl(SkColor active_frame_color,
   }
 }
 
+SkColor DefaultFrameHeader::GetActiveFrameColor() const {
+  return active_frame_color_;
+}
+
+SkColor DefaultFrameHeader::GetInactiveFrameColor() const {
+  return inactive_frame_color_;
+}
+
 SkColor DefaultFrameHeader::GetTitleColor() const {
   return color_utils::IsDark(GetCurrentFrameColor()) ? kLightTitleTextColor
                                                      : kTitleTextColor;
-}
-
-// static
-SkColor DefaultFrameHeader::GetDefaultFrameColor() {
-  return SkColorSetRGB(0xFD, 0xFE, 0xFF);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -298,7 +310,7 @@ void DefaultFrameHeader::PaintTitleBar(gfx::Canvas* canvas) {
   // The window icon is painted by its own views::View.
   gfx::Rect title_bounds = GetAvailableTitleBounds();
   title_bounds.set_x(view_->GetMirroredXForRect(title_bounds));
-  canvas->DrawStringRect(GetTitle(),
+  canvas->DrawStringRect(title_,
                          views::NativeWidgetAura::GetWindowTitleFontList(),
                          GetTitleColor(), title_bounds);
 }
@@ -359,17 +371,9 @@ gfx::Rect DefaultFrameHeader::GetAvailableTitleBounds() const {
       left_view, caption_button_container_, GetHeaderHeight());
 }
 
-base::string16 DefaultFrameHeader::GetTitle() const {
-  return frame_->widget_delegate()->GetWindowTitle();
-}
-
 bool DefaultFrameHeader::UsesCustomFrameColors() const {
-  return active_frame_color_ != GetDefaultFrameColor() ||
-         inactive_frame_color_ != GetDefaultFrameColor();
-}
-
-SkColor DefaultFrameHeader::GetCurrentFrameColor() const {
-  return mode_ == MODE_ACTIVE ? active_frame_color_ : inactive_frame_color_;
+  return active_frame_color_ != kDefaultFrameColor ||
+         inactive_frame_color_ != kDefaultFrameColor;
 }
 
 }  // namespace ash

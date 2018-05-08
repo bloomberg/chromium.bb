@@ -15,7 +15,6 @@
 #include "ash/frame/detached_title_area_renderer.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
-#include "ash/public/cpp/window_properties.h"
 #include "ash/window_manager.h"
 #include "ash/wm/move_event_handler.h"
 #include "ash/wm/panels/panel_frame_view.h"
@@ -402,7 +401,9 @@ bool NonClientFrameController::CanMinimize() const {
 }
 
 bool NonClientFrameController::ShouldShowWindowTitle() const {
-  return window_ && window_->GetProperty(kWindowTitleShownKey);
+  // Only draw the title if the client hasn't declared any additional client
+  // areas which might conflict with it.
+  return window_ && additional_client_areas_.empty();
 }
 
 views::ClientView* NonClientFrameController::CreateClientView(

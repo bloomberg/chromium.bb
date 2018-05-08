@@ -169,9 +169,6 @@ interface WindowManager {
   // The window's title. Maps to aura::client::kTitleKey. Type: mojom::String
   const string kWindowTitle_Property = "prop:window-title";
 
-  // A boolean determining whether to show the window's title.
-  const string kWindowTitleShown_Property = "prop:window-title-shown";
-
   // End long lived properties. ------------------------------------------------
 
   // Called immediately when the WindowManager is obtained.

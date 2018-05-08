@@ -227,8 +227,6 @@ component("ash") {
     "frame/caption_buttons/frame_size_button.cc",
     "frame/caption_buttons/frame_size_button.h",
     "frame/caption_buttons/frame_size_button_delegate.h",
-    "frame/custom_frame_header.cc",
-    "frame/custom_frame_header.h",
     "frame/custom_frame_view_ash.cc",
     "frame/custom_frame_view_ash.h",
     "frame/default_frame_header.cc",

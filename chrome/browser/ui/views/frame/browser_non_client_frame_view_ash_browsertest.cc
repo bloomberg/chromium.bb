@@ -694,8 +694,8 @@ class HostedAppNonClientFrameViewAshTest
 
 // Tests that a web app's theme color is set.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ThemeColor) {
-  EXPECT_EQ(GetThemeColor(), frame_header_->active_frame_color_for_testing());
-  EXPECT_EQ(GetThemeColor(), frame_header_->inactive_frame_color_for_testing());
+  EXPECT_EQ(GetThemeColor(), frame_header_->GetActiveFrameColor());
+  EXPECT_EQ(GetThemeColor(), frame_header_->GetInactiveFrameColor());
   EXPECT_EQ(SK_ColorWHITE, GetActiveIconColor(hosted_app_button_container_));
 }
 

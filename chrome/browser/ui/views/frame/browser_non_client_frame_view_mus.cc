@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
+#include "chrome/browser/ui/views/frame/browser_frame_header_ash.h"
 #include "chrome/browser/ui/views/frame/browser_frame_mus.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
@@ -38,7 +39,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/ash_layout_constants.h"
-#include "ash/public/cpp/window_properties.h"
 #endif
 
 #if !defined(OS_CHROMEOS)
@@ -102,8 +102,6 @@ void BrowserNonClientFrameViewMus::Init() {
     AddChildView(window_icon_);
     window_icon_->Update();
   }
-
-  OnThemeChanged();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -350,18 +348,6 @@ gfx::Size BrowserNonClientFrameViewMus::GetMinimumSize() const {
                                 GetTabStripRightInset());
   }
   return gfx::Size(min_width, min_client_view_size.height());
-}
-
-void BrowserNonClientFrameViewMus::OnThemeChanged() {
-#if defined(OS_CHROMEOS)
-  gfx::ImageSkia active_frame_image = GetFrameImage(true);
-  if (active_frame_image.isNull()) {
-    frame()->GetNativeWindow()->ClearProperty(ash::kFrameImageActiveKey);
-  } else {
-    frame()->GetNativeWindow()->SetProperty(
-        ash::kFrameImageActiveKey, new gfx::ImageSkia(active_frame_image));
-  }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

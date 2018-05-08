@@ -105,8 +105,11 @@ WideFrameView::WideFrameView(views::Widget* target, views::Widget* widget)
 
   aura::Window* target_window = target->GetNativeWindow();
   target_window->AddObserver(this);
+  SkColor active = target_window->GetProperty(kFrameActiveColorKey);
+  SkColor inactive = target_window->GetProperty(kFrameInactiveColorKey);
   header_view_ = new HeaderView(target);
   AddChildView(header_view_);
+  header_view_->SetFrameColors(active, inactive);
   GetTargetHeaderView()->SetShouldPaintHeader(false);
 }
 
