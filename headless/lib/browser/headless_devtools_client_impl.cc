@@ -143,17 +143,23 @@ void HeadlessDevToolsClientImpl::DispatchProtocolMessage(
     return;
   }
 
-  if (!DispatchMessageReply(*message_dict) &&
-      !DispatchEvent(std::move(message), *message_dict)) {
+  bool success = false;
+  if (message_dict->HasKey("id"))
+    success = DispatchMessageReply(std::move(message), *message_dict);
+  else
+    success = DispatchEvent(std::move(message), *message_dict);
+  if (!success)
     DLOG(ERROR) << "Unhandled protocol message: " << json_message;
-  }
 }
 
 bool HeadlessDevToolsClientImpl::DispatchMessageReply(
+    std::unique_ptr<base::Value> owning_message,
     const base::DictionaryValue& message_dict) {
   const base::Value* id_value = message_dict.FindKey("id");
-  if (!id_value)
+  if (!id_value) {
+    NOTREACHED() << "ID must be specified.";
     return false;
+  }
   auto it = pending_messages_.find(id_value->GetInt());
   if (it == pending_messages_.end()) {
     NOTREACHED() << "Unexpected reply";
@@ -164,19 +170,44 @@ bool HeadlessDevToolsClientImpl::DispatchMessageReply(
   if (!callback.callback_with_result.is_null()) {
     const base::DictionaryValue* result_dict;
     if (message_dict.GetDictionary("result", &result_dict)) {
-      std::move(callback.callback_with_result).Run(*result_dict);
+      browser_main_thread_->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &HeadlessDevToolsClientImpl::DispatchMessageReplyWithResultTask,
+              weak_ptr_factory_.GetWeakPtr(), std::move(owning_message),
+              std::move(callback.callback_with_result), result_dict));
     } else if (message_dict.GetDictionary("error", &result_dict)) {
       auto null_value = std::make_unique<base::Value>();
       DLOG(ERROR) << "Error in method call result: " << *result_dict;
-      std::move(callback.callback_with_result).Run(*null_value);
+      browser_main_thread_->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &HeadlessDevToolsClientImpl::DispatchMessageReplyWithResultTask,
+              weak_ptr_factory_.GetWeakPtr(), std::move(null_value),
+              std::move(callback.callback_with_result), null_value.get()));
     } else {
       NOTREACHED() << "Reply has neither result nor error";
       return false;
     }
   } else if (!callback.callback.is_null()) {
-    std::move(callback.callback).Run();
+    browser_main_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](base::WeakPtr<HeadlessDevToolsClientImpl> self,
+               base::OnceClosure callback) {
+              if (self)
+                std::move(callback).Run();
+            },
+            weak_ptr_factory_.GetWeakPtr(), std::move(callback.callback)));
   }
   return true;
+}
+
+void HeadlessDevToolsClientImpl::DispatchMessageReplyWithResultTask(
+    std::unique_ptr<base::Value> owning_message,
+    base::OnceCallback<void(const base::Value&)> callback,
+    const base::Value* result_dict) {
+  std::move(callback).Run(*result_dict);
 }
 
 bool HeadlessDevToolsClientImpl::DispatchEvent(

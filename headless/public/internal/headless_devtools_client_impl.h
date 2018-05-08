@@ -157,8 +157,12 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
                              std::unique_ptr<base::Value> params,
                              CallbackType callback);
 
-  bool DispatchMessageReply(const base::DictionaryValue& message_dict);
-
+  bool DispatchMessageReply(std::unique_ptr<base::Value> owning_message,
+                            const base::DictionaryValue& message_dict);
+  void DispatchMessageReplyWithResultTask(
+      std::unique_ptr<base::Value> owning_message,
+      base::OnceCallback<void(const base::Value&)> callback,
+      const base::Value* result_dict);
   using EventHandler = base::RepeatingCallback<void(const base::Value&)>;
   using EventHandlerMap = std::unordered_map<std::string, EventHandler>;
 

@@ -135,6 +135,7 @@ TEST_F(VirtualTimeControllerTest, MaxVirtualTimeTaskStarvationCount) {
   client_.DispatchProtocolMessage(mock_host_.get(),
                                   "{\"id\":0,\"result\":{\"virtualTimeBase\":1."
                                   "0,\"virtualTimeTicksBase\":1.0}}");
+  task_runner_->RunPendingTasks();
 
   EXPECT_TRUE(set_up_complete_);
   EXPECT_FALSE(budget_expired_);
@@ -231,6 +232,7 @@ TEST_F(VirtualTimeControllerTest, InterleavesTasksWithVirtualTime) {
   client_.DispatchProtocolMessage(mock_host_.get(),
                                   "{\"id\":0,\"result\":{\"virtualTimeBase\":1."
                                   "0,\"virtualTimeTicksBase\":1.0}}");
+  task_runner_->RunPendingTasks();
 
   EXPECT_TRUE(set_up_complete_);
   EXPECT_FALSE(budget_expired_);
@@ -305,6 +307,7 @@ TEST_F(VirtualTimeControllerTest, CanceledTask) {
   client_.DispatchProtocolMessage(mock_host_.get(),
                                   "{\"id\":0,\"result\":{\"virtualTimeBase\":1."
                                   "0,\"virtualTimeTicksBase\":1.0}}");
+  task_runner_->RunPendingTasks();
 
   EXPECT_TRUE(set_up_complete_);
   EXPECT_FALSE(budget_expired_);
@@ -399,6 +402,7 @@ TEST_F(VirtualTimeControllerTest, MultipleTasks) {
       base::StringPrintf("{\"id\":0,\"result\":{\"virtualTimeBase\":1.0,"
                          "\"virtualTimeTicksBase\":1.0}}"));
 
+  task_runner_->RunPendingTasks();
   EXPECT_TRUE(set_up_complete_);
   EXPECT_FALSE(budget_expired_);
 }
