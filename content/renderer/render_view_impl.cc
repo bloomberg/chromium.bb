@@ -2304,6 +2304,12 @@ unsigned RenderViewImpl::GetLocalSessionHistoryLengthForTesting() const {
 }
 
 void RenderViewImpl::SetFocusAndActivateForTesting(bool enable) {
+  // If the main frame is remote, return immediately. Page level focus
+  // should be set from the browser process, so if needed by tests it should
+  // be properly supported.
+  if (webview()->MainFrame()->IsWebRemoteFrame())
+    return;
+
   if (enable) {
     if (has_focus())
       return;
