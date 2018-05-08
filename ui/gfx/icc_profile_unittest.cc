@@ -67,30 +67,20 @@ TEST(ICCProfile, Equality) {
 }
 
 TEST(ICCProfile, ParametricVersusExactInaccurate) {
-  // This ICC profile has three transfer functions that differ enough that the
-  // parametric color space is considered inaccurate.
+  // This ICC profile has three transfer functions that differ significantly,
+  // but ICCProfiles are always either invalid or considered accurate (and in
+  // this case, each curve is approximated, so the profile is "accurate").
+  // See comments in ICCProfile::Internals::Analyze.
   ICCProfile multi_tr_fn = ICCProfileForTestingNoAnalyticTrFn();
-  EXPECT_FALSE(multi_tr_fn.GetColorSpace().IsParametricAccurate());
+  EXPECT_TRUE(multi_tr_fn.GetColorSpace().IsParametricAccurate());
 
-  // Fails to get parametric color space because the space is not parametric.
   ICCProfile profile;
-  profile = ICCProfile::FromParametricColorSpace(multi_tr_fn.GetColorSpace());
-  EXPECT_FALSE(profile.IsValid());
-
-  // The Mac cache does not find the parametric approximation, because the cache
-  // only has the original.
-  profile = ICCProfile::FromCacheMac(
-      multi_tr_fn.GetColorSpace().GetParametricApproximation());
-  EXPECT_FALSE(profile.IsValid());
-
-  // The Mac cache does find the original.
   profile = ICCProfile::FromCacheMac(multi_tr_fn.GetColorSpace());
   EXPECT_TRUE(profile.IsValid());
   EXPECT_EQ(profile, multi_tr_fn);
 
   // We are capable of generating a parametric approximation.
-  profile = ICCProfile::FromParametricColorSpace(
-      multi_tr_fn.GetColorSpace().GetParametricApproximation());
+  profile = ICCProfile::FromParametricColorSpace(multi_tr_fn.GetColorSpace());
   EXPECT_TRUE(profile.IsValid());
   EXPECT_NE(profile, multi_tr_fn);
 }
@@ -127,13 +117,12 @@ TEST(ICCProfile, ParametricVersusExactAdobe) {
 }
 
 TEST(ICCProfile, ParametricVersusExactA2B) {
-  // This ICC profile has only an A2B representation. We cannot create an
-  // SkColorSpaceXform to A2B only ICC profiles, so this should be marked
-  // as invalid.
+  // This ICC profile has only an A2B representation. We cannot transform to
+  // A2B only ICC profiles, so this should be marked as invalid.
   ICCProfile a2b = ICCProfileForTestingA2BOnly();
   EXPECT_FALSE(a2b.GetColorSpace().IsValid());
 
-  // Even though it is invalid, it should not be equal to the empty constructor.
+  // Even though it is invalid, it should not be equal to the empty constructor
   EXPECT_NE(a2b, gfx::ICCProfile());
 }
 
