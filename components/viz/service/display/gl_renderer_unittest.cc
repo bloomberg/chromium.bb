@@ -1887,19 +1887,28 @@ TEST_F(GLRendererShaderTest, DrawSolidColorShader) {
   TestSolidColorProgramAA();
 }
 
-class OutputSurfaceMockContext : public TestWebGraphicsContext3D {
+class OutputSurfaceMockGLES2Interface : public TestGLES2Interface {
  public:
-  OutputSurfaceMockContext() { test_capabilities_.post_sub_buffer = true; }
+  OutputSurfaceMockGLES2Interface() = default;
+
+  void InitializeTestContext(TestWebGraphicsContext3D* context) override {
+    context->set_have_post_sub_buffer(true);
+  }
 
   // Specifically override methods even if they are unused (used in conjunction
   // with StrictMock). We need to make sure that GLRenderer does not issue
   // framebuffer-related GLuint calls directly. Instead these are supposed to go
   // through the OutputSurface abstraction.
-  MOCK_METHOD2(bindFramebuffer, void(GLenum target, GLuint framebuffer));
-  MOCK_METHOD3(reshapeWithScaleFactor,
-               void(int width, int height, float scale_factor));
-  MOCK_METHOD4(drawElements,
-               void(GLenum mode, GLsizei count, GLenum type, GLintptr offset));
+  MOCK_METHOD2(BindFramebuffer, void(GLenum target, GLuint framebuffer));
+  MOCK_METHOD5(ResizeCHROMIUM,
+               void(GLuint width,
+                    GLuint height,
+                    float device_scale,
+                    GLenum color_space,
+                    GLboolean has_alpha));
+  MOCK_METHOD4(
+      DrawElements,
+      void(GLenum mode, GLsizei count, GLenum type, const void* indices));
 };
 
 class MockOutputSurface : public OutputSurface {
@@ -1935,9 +1944,9 @@ class MockOutputSurface : public OutputSurface {
 class MockOutputSurfaceTest : public GLRendererTest {
  protected:
   void SetUp() override {
-    auto context = std::make_unique<StrictMock<OutputSurfaceMockContext>>();
-    context_ = context.get();
-    auto provider = TestContextProvider::Create(std::move(context));
+    auto gl = std::make_unique<StrictMock<OutputSurfaceMockGLES2Interface>>();
+    gl_ = gl.get();
+    auto provider = TestContextProvider::Create(std::move(gl));
     provider->BindToCurrentThread();
     output_surface_ =
         std::make_unique<StrictMock<MockOutputSurface>>(std::move(provider));
@@ -1982,7 +1991,7 @@ class MockOutputSurfaceTest : public GLRendererTest {
 
     EXPECT_CALL(*output_surface_, BindFramebuffer()).Times(1);
 
-    EXPECT_CALL(*context_, drawElements(_, _, _, _)).Times(1);
+    EXPECT_CALL(*gl_, DrawElements(_, _, _, _)).Times(1);
 
     renderer_->DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order_);
@@ -1992,7 +2001,7 @@ class MockOutputSurfaceTest : public GLRendererTest {
 
   RendererSettings settings_;
   cc::FakeOutputSurfaceClient output_surface_client_;
-  OutputSurfaceMockContext* context_ = nullptr;
+  OutputSurfaceMockGLES2Interface* gl_ = nullptr;
   std::unique_ptr<StrictMock<MockOutputSurface>> output_surface_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<cc::DisplayResourceProvider> resource_provider_;
