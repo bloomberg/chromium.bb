@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/allowed_by_nosniff.h"
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
-#include "third_party/blink/renderer/core/loader/threadable_loader.h"
+#include "third_party/blink/renderer/core/loader/worker_threadable_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -82,8 +82,9 @@ void WorkerClassicScriptLoader::LoadSynchronously(
   resource_loader_options.parser_disposition =
       ParserDisposition::kNotParserInserted;
 
-  ThreadableLoader::LoadResourceSynchronously(execution_context, request, *this,
-                                              options, resource_loader_options);
+  WorkerThreadableLoader::LoadResourceSynchronously(
+      ToWorkerGlobalScope(execution_context), request, *this, options,
+      resource_loader_options);
 }
 
 void WorkerClassicScriptLoader::LoadAsynchronously(
