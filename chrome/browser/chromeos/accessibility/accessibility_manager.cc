@@ -728,6 +728,9 @@ void AccessibilityManager::OnSelectToSpeakStateChanged(
   }
 
   accessibility_controller_->SetSelectToSpeakState(state);
+
+  if (select_to_speak_state_observer_for_test_)
+    select_to_speak_state_observer_for_test_.Run();
 }
 
 void AccessibilityManager::OnSelectToSpeakChanged() {
@@ -1346,6 +1349,11 @@ void AccessibilityManager::FlushForTesting() {
 void AccessibilityManager::SetFocusRingObserverForTest(
     base::RepeatingCallback<void()> observer) {
   focus_ring_observer_for_test_ = observer;
+}
+
+void AccessibilityManager::SetSelectToSpeakStateObserverForTest(
+    base::RepeatingCallback<void()> observer) {
+  select_to_speak_state_observer_for_test_ = observer;
 }
 
 }  // namespace chromeos

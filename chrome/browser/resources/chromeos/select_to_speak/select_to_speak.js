@@ -16,6 +16,11 @@ const START_SPEECH_METHOD_KEYSTROKE = 1;
 // be kept in sync with the enum count in tools/metrics/histograms/enums.xml.
 const START_SPEECH_METHOD_COUNT = 2;
 
+// This must be the same as in ash/system/accessibility/select_to_speak_tray.cc:
+// ash::kSelectToSpeakTrayClassName.
+const SELECT_TO_SPEAK_TRAY_CLASS_NAME =
+    'tray/TrayBackgroundView/SelectToSpeakTray';
+
 // Number of milliseconds to wait after requesting a clipboard read
 // before clipboard change and paste events are ignored.
 const CLIPBOARD_READ_MAX_DELAY_MS = 1000;
@@ -191,7 +196,8 @@ SelectToSpeak.prototype = {
   onMouseDown_: function(evt) {
     // If the user hasn't clicked 'search', or if they are currently
     // trying to highlight a selection, don't track the mouse.
-    if (!this.isSearchKeyDown_ || this.isSelectionKeyDown_)
+    if (this.state_ != SelectToSpeakState.SELECTING &&
+        (!this.isSearchKeyDown_ || this.isSelectionKeyDown_))
       return false;
 
     this.onStateChanged_(SelectToSpeakState.SELECTING);
@@ -239,8 +245,12 @@ SelectToSpeak.prototype = {
       return false;
     this.onMouseMove_(evt);
     this.trackingMouse_ = false;
+    if (!this.keysCurrentlyDown_.has(SelectToSpeak.SEARCH_KEY_CODE)) {
+      // This is only needed to cancel something started with the search key.
+      this.didTrackMouse_ = false;
+    }
 
-    this.clearFocusRingAndNode_();
+    this.onStateChanged_(SelectToSpeakState.INACTIVE);
 
     this.mouseEnd_ = {x: evt.screenX, y: evt.screenY};
     var ctrX = Math.floor((this.mouseStart_.x + this.mouseEnd_.x) / 2);
@@ -311,6 +321,12 @@ SelectToSpeak.prototype = {
       if (!findAllMatching(root, rect, nodes) && focusedNode &&
           focusedNode.root.role != RoleType.DESKTOP) {
         findAllMatching(focusedNode.root, rect, nodes);
+      }
+      if (nodes.length == 1 &&
+          nodes[0].className == SELECT_TO_SPEAK_TRAY_CLASS_NAME) {
+        // Don't read only the Select-to-Speak toggle button in the tray unless
+        // more items are being read.
+        return;
       }
       this.startSpeechQueue_(nodes);
       this.recordStartEvent_(START_SPEECH_METHOD_MOUSE);
@@ -623,10 +639,26 @@ SelectToSpeak.prototype = {
    * Called when Chrome OS is requesting Select-to-Speak to switch states.
    */
   onStateChangeRequested_: function() {
-    // TODO(katie): Switch Select-to-Speak states on request.
+    // Switch Select-to-Speak states on request.
     // We will need to track the current state and toggle from one state to
     // the next when this function is called, and then call
     // accessibilityPrivate.onSelectToSpeakStateChanged with the new state.
+    // TODO(katie): Add metrics for state transition requests.
+    switch (this.state_) {
+      case SelectToSpeakState.INACTIVE:
+        // Start selection.
+        this.trackingMouse_ = true;
+        this.onStateChanged_(SelectToSpeakState.SELECTING);
+        break;
+      case SelectToSpeakState.SPEAKING:
+        // Stop speaking.
+        this.cancelIfSpeaking_(true /* clear the focus ring */);
+        break;
+      case SelectToSpeakState.SELECTING:
+        // Cancelled selection.
+        this.trackingMouse_ = false;
+        this.onStateChanged_(SelectToSpeakState.INACTIVE);
+    }
   },
 
   /**
@@ -1225,5 +1257,12 @@ SelectToSpeak.prototype = {
    */
   fireMockMouseUpEvent: function(event) {
     this.onMouseUp_(event);
+  },
+
+  /**
+   * Fires a mock state change request.
+   */
+  fireMockStateChangeRequest: function() {
+    this.onStateChangeRequested_();
   },
 };
