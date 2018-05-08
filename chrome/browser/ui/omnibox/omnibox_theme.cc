@@ -190,7 +190,7 @@ SkColor GetSecurityChipColor(OmniboxTint tint, OmniboxPartState state) {
 
   switch (state) {
     case OmniboxPartState::CHIP_DEFAULT:
-      return gfx::kGoogleGrey800;
+      return gfx::kChromeIconGrey;
     case OmniboxPartState::CHIP_SECURE:
       return gfx::kGoogleGreen600;
     case OmniboxPartState::CHIP_DANGEROUS:

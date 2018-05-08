@@ -187,7 +187,7 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
   void SetPopupContentsView(OmniboxPopupContentsView* contents) {
     if (LocationBarView::IsRounded()) {
       SetContentsView(new RoundedOmniboxResultsFrame(
-          contents, contents->location_bar_view_->tint()));
+          contents, contents->location_bar_view_->GetTint()));
     } else {
       SetContentsView(contents);
     }
@@ -275,9 +275,10 @@ gfx::Image OmniboxPopupContentsView::GetMatchIcon(
   return icon;
 }
 
-OmniboxTint OmniboxPopupContentsView::GetTint() const {
+OmniboxTint OmniboxPopupContentsView::GetTint() {
   // Use LIGHT in tests.
-  return location_bar_view_ ? location_bar_view_->tint() : OmniboxTint::LIGHT;
+  return location_bar_view_ ? location_bar_view_->GetTint()
+                            : OmniboxTint::LIGHT;
 }
 
 void OmniboxPopupContentsView::SetSelectedLine(size_t index) {

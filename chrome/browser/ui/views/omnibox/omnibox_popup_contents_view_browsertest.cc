@@ -236,7 +236,7 @@ IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest, MAYBE_ThemeIntegration) {
             ->toolbar()
             ->location_bar();
     return GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND,
-                           location_bar->tint(), OmniboxPartState::SELECTED);
+                           location_bar->GetTint(), OmniboxPartState::SELECTED);
   };
 
   // Helper to ensure consistency of colors obtained via the ui::NativeTheme
