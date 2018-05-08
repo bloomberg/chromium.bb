@@ -148,6 +148,7 @@ CONTENT_EXPORT extern const char kWebXrRenderPathParamValueSharedBuffer[];
 
 #if defined(OS_MACOSX)
 CONTENT_EXPORT extern const base::Feature kDeviceMonitorMac;
+CONTENT_EXPORT extern const base::Feature kIOSurfaceCapturer;
 CONTENT_EXPORT extern const base::Feature kMacV2Sandbox;
 #endif  // defined(OS_MACOSX)
 
