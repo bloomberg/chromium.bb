@@ -23,10 +23,11 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -41,35 +42,104 @@ namespace {
 const DWORD kFileShareAll =
     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
 
+// Records a sample in a histogram named
+// "Windows.PostOperationState.|operation|" indicating the state of |path|
+// following the named operation. If |operation_succeeded| is true, the
+// "operation succeeded" sample is recorded. Otherwise, the state of |path| is
+// queried and the most meaningful sample is recorded.
+void RecordPostOperationState(const FilePath& path,
+                              StringPiece operation,
+                              bool operation_succeeded) {
+  // The state of a filesystem item after an operation.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class PostOperationState {
+    kOperationSucceeded = 0,
+    kFileNotFoundAfterFailure = 1,
+    kPathNotFoundAfterFailure = 2,
+    kAccessDeniedAfterFailure = 3,
+    kNoAttributesAfterFailure = 4,
+    kEmptyDirectoryAfterFailure = 5,
+    kNonEmptyDirectoryAfterFailure = 6,
+    kNotDirectoryAfterFailure = 7,
+    kCount
+  } metric = PostOperationState::kOperationSucceeded;
+
+  if (!operation_succeeded) {
+    const DWORD attributes = ::GetFileAttributes(path.value().c_str());
+    if (attributes == INVALID_FILE_ATTRIBUTES) {
+      // On failure to delete, one might expect the file/directory to still be
+      // in place. Slice a failure to get its attributes into a few common error
+      // buckets.
+      const DWORD error_code = ::GetLastError();
+      if (error_code == ERROR_FILE_NOT_FOUND)
+        metric = PostOperationState::kFileNotFoundAfterFailure;
+      else if (error_code == ERROR_PATH_NOT_FOUND)
+        metric = PostOperationState::kPathNotFoundAfterFailure;
+      else if (error_code == ERROR_ACCESS_DENIED)
+        metric = PostOperationState::kAccessDeniedAfterFailure;
+      else
+        metric = PostOperationState::kNoAttributesAfterFailure;
+    } else if (attributes & FILE_ATTRIBUTE_DIRECTORY) {
+      if (IsDirectoryEmpty(path))
+        metric = PostOperationState::kEmptyDirectoryAfterFailure;
+      else
+        metric = PostOperationState::kNonEmptyDirectoryAfterFailure;
+    } else {
+      metric = PostOperationState::kNotDirectoryAfterFailure;
+    }
+  }
+
+  std::string histogram_name = "Windows.PostOperationState.";
+  operation.AppendToString(&histogram_name);
+  UmaHistogramEnumeration(histogram_name, metric, PostOperationState::kCount);
+}
+
+// Records the sample |error| in a histogram named
+// "Windows.FilesystemError.|operation|".
+void RecordFilesystemError(StringPiece operation, DWORD error) {
+  std::string histogram_name = "Windows.FilesystemError.";
+  operation.AppendToString(&histogram_name);
+  UmaHistogramSparse(histogram_name, error);
+}
+
 // Deletes all files and directories in a path.
-// Returns false on the first failure it encounters.
-bool DeleteFileRecursive(const FilePath& path,
-                         const FilePath::StringType& pattern,
-                         bool recursive) {
+// Returns ERROR_SUCCESS on success or the Windows error code corresponding to
+// the first error encountered.
+DWORD DeleteFileRecursive(const FilePath& path,
+                          const FilePath::StringType& pattern,
+                          bool recursive) {
   FileEnumerator traversal(path, false,
                            FileEnumerator::FILES | FileEnumerator::DIRECTORIES,
                            pattern);
-  bool success = true;
+  DWORD result = ERROR_SUCCESS;
   for (FilePath current = traversal.Next(); !current.empty();
        current = traversal.Next()) {
     // Try to clear the read-only bit if we find it.
     FileEnumerator::FileInfo info = traversal.GetInfo();
     if ((info.find_data().dwFileAttributes & FILE_ATTRIBUTE_READONLY) &&
         (recursive || !info.IsDirectory())) {
-      SetFileAttributes(
+      ::SetFileAttributes(
           current.value().c_str(),
           info.find_data().dwFileAttributes & ~FILE_ATTRIBUTE_READONLY);
     }
 
+    DWORD this_result = ERROR_SUCCESS;
     if (info.IsDirectory()) {
-      if (recursive && (!DeleteFileRecursive(current, pattern, true) ||
-                        !RemoveDirectory(current.value().c_str())))
-        success = false;
+      if (recursive) {
+        this_result = DeleteFileRecursive(current, pattern, true);
+        if (this_result == ERROR_SUCCESS &&
+            !::RemoveDirectory(current.value().c_str())) {
+          this_result = ::GetLastError();
+        }
+      }
     } else if (!::DeleteFile(current.value().c_str())) {
-      success = false;
+      this_result = ::GetLastError();
     }
+    if (result == ERROR_SUCCESS)
+      result = this_result;
   }
-  return success;
+  return result;
 }
 
 // Appends |mode_char| to |mode| before the optional character set encoding; see
@@ -203,6 +273,55 @@ bool DoCopyDirectory(const FilePath& from_path,
   return success;
 }
 
+// Returns ERROR_SUCCESS on success, or a Windows error code on failure.
+DWORD DoDeleteFile(const FilePath& path, bool recursive) {
+  AssertBlockingAllowed();
+
+  if (path.empty())
+    return ERROR_SUCCESS;
+
+  if (path.value().length() >= MAX_PATH)
+    return ERROR_BAD_PATHNAME;
+
+  // Handle any path with wildcards.
+  if (path.BaseName().value().find_first_of(L"*?") !=
+      FilePath::StringType::npos) {
+    return DeleteFileRecursive(path.DirName(), path.BaseName().value(),
+                               recursive);
+  }
+
+  // Report success if the file or path does not exist.
+  const DWORD attr = ::GetFileAttributes(path.value().c_str());
+  if (attr == INVALID_FILE_ATTRIBUTES) {
+    const DWORD error_code = ::GetLastError();
+    return (error_code == ERROR_FILE_NOT_FOUND ||
+            error_code == ERROR_PATH_NOT_FOUND)
+               ? ERROR_SUCCESS
+               : error_code;
+  }
+
+  // Clear the read-only bit if it is set.
+  if ((attr & FILE_ATTRIBUTE_READONLY) &&
+      !::SetFileAttributes(path.value().c_str(),
+                           attr & ~FILE_ATTRIBUTE_READONLY)) {
+    return ::GetLastError();
+  }
+
+  // Perform a simple delete on anything that isn't a directory.
+  if (!(attr & FILE_ATTRIBUTE_DIRECTORY)) {
+    return ::DeleteFile(path.value().c_str()) ? ERROR_SUCCESS
+                                              : ::GetLastError();
+  }
+
+  if (recursive) {
+    const DWORD error_code = DeleteFileRecursive(path, L"*", true);
+    if (error_code != ERROR_SUCCESS)
+      return error_code;
+  }
+  return ::RemoveDirectory(path.value().c_str()) ? ERROR_SUCCESS
+                                                 : ::GetLastError();
+}
+
 }  // namespace
 
 FilePath MakeAbsoluteFilePath(const FilePath& input) {
@@ -214,37 +333,22 @@ FilePath MakeAbsoluteFilePath(const FilePath& input) {
 }
 
 bool DeleteFile(const FilePath& path, bool recursive) {
+  static constexpr char kRecursive[] = "DeleteFile.Recursive";
+  static constexpr char kNonRecursive[] = "DeleteFile.NonRecursive";
+  const StringPiece operation(recursive ? kRecursive : kNonRecursive);
+
   AssertBlockingAllowed();
 
-  if (path.empty())
+  // Metrics for delete failures tracked in https://crbug.com/599084. Delete may
+  // fail for a number of reasons. Log some metrics relating to failures in the
+  // current code so that any improvements or regressions resulting from
+  // subsequent code changes can be detected.
+  const DWORD error = DoDeleteFile(path, recursive);
+  RecordPostOperationState(path, operation, error == ERROR_SUCCESS);
+  if (error == ERROR_SUCCESS)
     return true;
 
-  if (path.value().length() >= MAX_PATH)
-    return false;
-
-  // Handle any path with wildcards.
-  if (path.BaseName().value().find_first_of(L"*?") !=
-      FilePath::StringType::npos) {
-    return DeleteFileRecursive(path.DirName(), path.BaseName().value(),
-                               recursive);
-  }
-  DWORD attr = GetFileAttributes(path.value().c_str());
-  // We're done if we can't find the path.
-  if (attr == INVALID_FILE_ATTRIBUTES)
-    return true;
-  // We may need to clear the read-only bit.
-  if ((attr & FILE_ATTRIBUTE_READONLY) &&
-      !SetFileAttributes(path.value().c_str(),
-                          attr & ~FILE_ATTRIBUTE_READONLY)) {
-    return false;
-  }
-  // Directories are handled differently if they're recursive.
-  if (!(attr & FILE_ATTRIBUTE_DIRECTORY))
-    return !!::DeleteFile(path.value().c_str());
-  // Handle a simple, single file delete.
-  if (!recursive || DeleteFileRecursive(path, L"*", true))
-    return !!RemoveDirectory(path.value().c_str());
-
+  RecordFilesystemError(operation, error);
   return false;
 }
 
@@ -394,7 +498,7 @@ bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
   // perform poorly when creating a large number of files with the same prefix.
   // In such cases, it is recommended that you construct unique file names based
   // on GUIDs."
-  // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364991(v=vs.85).aspx
+  // https://msdn.microsoft.com/library/windows/desktop/aa364991.aspx
 
   FilePath temp_name;
   bool create_file_success = false;

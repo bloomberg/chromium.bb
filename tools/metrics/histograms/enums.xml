@@ -36492,6 +36492,33 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="Overflow"/>
 </enum>
 
+<enum name="PostOperationState">
+  <int value="0" label="Succeeded">The operation succeeded</int>
+  <int value="1" label="Failed: file not found">
+    The operation failed and the file operated on is not found.
+  </int>
+  <int value="2" label="Failed: path not found">
+    The operation failed and the path to the file operated on is not found.
+  </int>
+  <int value="3" label="Failed: access denied">
+    The operation failed and the process does not have permission to read the
+    attributes of the path.
+  </int>
+  <int value="4" label="Failed: cannot get attributes">
+    The operation failed as did a subsequent call to GetFileAttributes.
+  </int>
+  <int value="5" label="Failed: empty directory">
+    The operation failed leaving behind an empty directory.
+  </int>
+  <int value="6" label="Failed: non-empty directory">
+    The operation failed leaving behind a non-empty directory.
+  </int>
+  <int value="7" label="Failed: not a directory">
+    The operation failed leaving behind something other than a directory
+    (perhaps a simple file).
+  </int>
+</enum>
+
 <enum name="PostSubmitNavigation">
   <int value="0" label="Same domain"/>
   <int value="1" label="Different domain"/>
