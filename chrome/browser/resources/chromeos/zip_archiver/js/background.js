@@ -5,10 +5,6 @@
 'use strict';
 
 function setupZipArchiver() {
-  // Save the state before suspending the event page, so we can resume it
-  // once new events arrive.
-  chrome.runtime.onSuspend.addListener(unpacker.app.onSuspend);
-
   chrome.fileSystemProvider.onUnmountRequested.addListener(
       unpacker.app.onUnmountRequested);
   chrome.fileSystemProvider.onGetMetadataRequested.addListener(
