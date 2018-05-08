@@ -39,12 +39,6 @@ namespace {
 
 const char kTestProfileName[] = "test-profile-name";
 
-const char kTestGaiaId1[] = "test-gaia-id-1";
-const char kTestEmail1[] = "foo1@bar.com";
-
-const char kTestGaiaId2[] = "test-gaia-id-2";
-const char kTestEmail2[] = "foo2@bar.com";
-
 const char kTestWebUIResponse[] = "cr.webUIListenerCallback";
 
 }  // namespace
@@ -60,25 +54,21 @@ class TestSigninCreateProfileHandler : public SigninCreateProfileHandler {
 
   // Mock this method since it tries to create a profile asynchronously and the
   // test terminates before the callback gets called.
-  MOCK_METHOD5(DoCreateProfile,
+  MOCK_METHOD3(DoCreateProfile,
                void(const base::string16& name,
                     const std::string& icon_url,
-                    bool create_shortcut,
-                    const std::string& supervised_user_id,
-                    Profile* custodian_profile));
+                    bool create_shortcut));
 
   // Creates the profile synchronously, sets the appropriate flag and calls the
   // callback method to resume profile creation flow.
   void RealDoCreateProfile(const base::string16& name,
                            const std::string& icon_url,
-                           bool create_shortcut,
-                           const std::string& supervised_user_id,
-                           Profile* custodian_profile) {
+                           bool create_shortcut) {
     // Create the profile synchronously.
     Profile* profile = profile_manager_->CreateTestingProfile(
         kTestProfileName,
         std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>(), name,
-        0, supervised_user_id, TestingProfile::TestingFactories());
+        0, std::string(), TestingProfile::TestingFactories());
 
     // Set the flag used to track the state of the creation flow.
     profile_path_being_created_ = profile->GetPath();
@@ -86,28 +76,18 @@ class TestSigninCreateProfileHandler : public SigninCreateProfileHandler {
     // Call the callback method to resume profile creation flow.
     SigninCreateProfileHandler::OnProfileCreated(
         create_shortcut,
-        supervised_user_id,
-        custodian_profile,
         profile,
         Profile::CREATE_STATUS_INITIALIZED);
   }
 
   // Mock this method to track when an attempt to open a new browser window for
-  // the newly created/imported profile is made.
+  // the newly created profile is made.
   MOCK_METHOD2(OpenNewWindowForProfile,
                void(Profile* profile, Profile::CreateStatus status));
 
   // Mock this method so that we don't actually open the signin dialog during
   // the test.
   MOCK_METHOD1(OpenSigninDialogForProfile, void(Profile* profile));
-
-  // We don't actually need to register supervised users in the test. Mock this
-  // method to fake the registration part.
-  MOCK_METHOD4(RegisterSupervisedUser,
-               void(bool create_shortcut,
-                    const std::string& supervised_user_id,
-                    Profile* custodian_profile,
-                    Profile* new_profile));
 
  private:
   TestingProfileManager* profile_manager_;
@@ -129,16 +109,6 @@ class SigninCreateProfileHandlerTest : public BrowserWithTestWindowTest {
     TestingProfile::TestingFactories factories;
     factories.push_back(std::make_pair(SigninManagerFactory::GetInstance(),
                                        BuildFakeSigninManagerBase));
-    custodian_ = profile_manager()->CreateTestingProfile(
-        "custodian-profile",
-        std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>(),
-        base::UTF8ToUTF16("custodian-profile"), 0, std::string(), factories);
-
-    // Authenticate the custodian profile.
-    fake_signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
-        SigninManagerFactory::GetForProfile(custodian_));
-    fake_signin_manager_->SetAuthenticatedAccountInfo(kTestGaiaId1,
-                                                      kTestEmail1);
   }
 
   void TearDown() override {
@@ -154,17 +124,12 @@ class SigninCreateProfileHandlerTest : public BrowserWithTestWindowTest {
     return handler_.get();
   }
 
-  TestingProfile* custodian() {
-    return custodian_;
-  }
-
   FakeSigninManagerForTesting* signin_manager() {
     return fake_signin_manager_;
   }
 
  private:
   std::unique_ptr<content::TestWebUI> web_ui_;
-  TestingProfile* custodian_;
   FakeSigninManagerForTesting* fake_signin_manager_;
   std::unique_ptr<TestSigninCreateProfileHandler> handler_;
 };
@@ -200,51 +165,11 @@ TEST_F(SigninCreateProfileHandlerTest, ReturnDefaultProfileNameAndIcons) {
   EXPECT_NE("", profile_name);
 }
 
-TEST_F(SigninCreateProfileHandlerTest, ReturnSignedInProfiles) {
-  // Create two test profiles.
-  Profile* profile_1 = profile_manager()->CreateTestingProfile("profile_1");
-  ASSERT_TRUE(profile_1);
-  Profile* profile_2 = profile_manager()->CreateTestingProfile("profile_2");
-  ASSERT_TRUE(profile_2);
-
-  // Set Auth Info only for profile_2.
-  ProfileAttributesEntry* entry;
-  ASSERT_TRUE(profile_manager()->profile_attributes_storage()->
-      GetProfileAttributesWithPath(profile_2->GetPath(), &entry));
-  entry->SetAuthInfo(kTestGaiaId2, base::UTF8ToUTF16(kTestEmail2));
-
-  // Expect a JS callback with a list containing profile_2.
-  EXPECT_EQ(1U, web_ui()->call_data().size());
-
-  EXPECT_EQ(kTestWebUIResponse, web_ui()->call_data()[0]->function_name());
-
-  std::string callback_name;
-  ASSERT_TRUE(web_ui()->call_data()[0]->arg1()->GetAsString(&callback_name));
-  EXPECT_EQ("signedin-users-received", callback_name);
-
-  const base::ListValue* signed_in_profiles;
-  ASSERT_TRUE(web_ui()->call_data()[0]->arg2()->GetAsList(&signed_in_profiles));
-  EXPECT_EQ(1U, signed_in_profiles->GetSize());
-
-  const base::DictionaryValue* signed_in_profile;
-  ASSERT_TRUE(signed_in_profiles->GetDictionary(0, &signed_in_profile));
-  std::string user_name;
-  ASSERT_TRUE(signed_in_profile->GetString("username", &user_name));
-  EXPECT_EQ(kTestEmail2, user_name);
-  base::string16 profile_path;
-  ASSERT_TRUE(signed_in_profile->GetString("profilePath", &profile_path));
-  EXPECT_EQ(profile_2->GetPath().AsUTF16Unsafe(), profile_path);
-}
-
-
 TEST_F(SigninCreateProfileHandlerTest, CreateProfile) {
   // Expect the call to create the profile.
-  EXPECT_CALL(*handler(), DoCreateProfile(_, _, _, _, _))
+  EXPECT_CALL(*handler(), DoCreateProfile(_, _, _))
       .WillOnce(Invoke(handler(),
                        &TestSigninCreateProfileHandler::RealDoCreateProfile));
-
-  // Expect no calls to register a supervised user.
-  EXPECT_CALL(*handler(), RegisterSupervisedUser(_, _, _, _)).Times(0);
 
   // Expect a new browser window for the new profile to be opened.
   EXPECT_CALL(*handler(), OpenNewWindowForProfile(_, _));
@@ -252,12 +177,11 @@ TEST_F(SigninCreateProfileHandlerTest, CreateProfile) {
   // Expect no signin dialog opened for the new profile.
   EXPECT_CALL(*handler(), OpenSigninDialogForProfile(_)).Times(0);
 
-  // Create a non-supervised profile.
+  // Create a profile.
   base::ListValue list_args;
   list_args.AppendString(kTestProfileName);
   list_args.AppendString(profiles::GetDefaultAvatarIconUrl(0));
   list_args.AppendBoolean(false);  // create_shortcut
-  list_args.AppendBoolean(false);  // is_supervised
   handler()->CreateProfile(&list_args);
 
   // Expect a JS callbacks with the new profile information.
@@ -268,18 +192,6 @@ TEST_F(SigninCreateProfileHandlerTest, CreateProfile) {
   std::string callback_name;
   ASSERT_TRUE(web_ui()->call_data()[0]->arg1()->GetAsString(&callback_name));
   EXPECT_EQ("create-profile-success", callback_name);
-
-  const base::DictionaryValue* profile;
-  ASSERT_TRUE(web_ui()->call_data()[0]->arg2()->GetAsDictionary(&profile));
-  std::string profile_name;
-  ASSERT_TRUE(profile->GetString("name", &profile_name));
-  EXPECT_NE("", profile_name);
-  std::string profile_path;
-  ASSERT_TRUE(profile->GetString("filePath", &profile_path));
-  EXPECT_NE("", profile_path);
-  bool is_supervised;
-  ASSERT_TRUE(profile->GetBoolean("isSupervised", &is_supervised));
-  ASSERT_FALSE(is_supervised);
 }
 
 TEST_F(SigninCreateProfileHandlerTest, CreateProfileWithForceSignin) {
@@ -287,12 +199,9 @@ TEST_F(SigninCreateProfileHandlerTest, CreateProfileWithForceSignin) {
   ASSERT_TRUE(signin_util::IsForceSigninEnabled());
 
   // Expect the call to create the profile.
-  EXPECT_CALL(*handler(), DoCreateProfile(_, _, _, _, _))
+  EXPECT_CALL(*handler(), DoCreateProfile(_, _, _))
       .WillOnce(Invoke(handler(),
                        &TestSigninCreateProfileHandler::RealDoCreateProfile));
-
-  // Expect no calls to register a supervised user.
-  EXPECT_CALL(*handler(), RegisterSupervisedUser(_, _, _, _)).Times(0);
 
   // Expect no new browser window for the new profile.
   EXPECT_CALL(*handler(), OpenNewWindowForProfile(_, _)).Times(0);
@@ -304,7 +213,6 @@ TEST_F(SigninCreateProfileHandlerTest, CreateProfileWithForceSignin) {
   list_args.AppendString(kTestProfileName);
   list_args.AppendString(profiles::GetDefaultAvatarIconUrl(0));
   list_args.AppendBoolean(false);  // create_shortcut
-  list_args.AppendBoolean(false);  // is_supervised
   handler()->CreateProfile(&list_args);
 
   // Expect a JS callbacks with the new profile information.
@@ -316,19 +224,5 @@ TEST_F(SigninCreateProfileHandlerTest, CreateProfileWithForceSignin) {
   ASSERT_TRUE(web_ui()->call_data()[0]->arg1()->GetAsString(&callback_name));
   EXPECT_EQ("create-profile-success", callback_name);
 
-  const base::DictionaryValue* profile;
-  ASSERT_TRUE(web_ui()->call_data()[0]->arg2()->GetAsDictionary(&profile));
-  std::string profile_name;
-  ASSERT_TRUE(profile->GetString("name", &profile_name));
-  EXPECT_NE("", profile_name);
-  std::string profile_path;
-  ASSERT_TRUE(profile->GetString("filePath", &profile_path));
-  EXPECT_NE("", profile_path);
-  bool is_supervised;
-  ASSERT_TRUE(profile->GetBoolean("isSupervised", &is_supervised));
-  ASSERT_FALSE(is_supervised);
-  bool show_confirmation;
-  ASSERT_TRUE(profile->GetBoolean("showConfirmation", &show_confirmation));
-  ASSERT_FALSE(show_confirmation);
   signin_util::SetForceSigninForTesting(false);
 }

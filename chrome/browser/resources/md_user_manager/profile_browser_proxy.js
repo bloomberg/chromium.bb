@@ -7,25 +7,11 @@
  * between JS and C++ for creating/importing profiles in the user-manager page.
  */
 
-/** @typedef {{username: string, profilePath: string}} */
-let SignedInUser;
-
 /**
  * @typedef {{name: string,
- *            filePath: string,
- *            isSupervised: boolean,
- *            custodianUsername: string,
- *            showConfirmation: boolean}}
+ *            filePath: string}}
  */
 let ProfileInfo;
-
-/**
- * @typedef {{id: string,
- *            name: string,
- *            iconURL: string,
- *            onCurrentDevice: boolean}}
- */
-let SupervisedUser;
 
 cr.define('signin', function() {
   /** @interface */
@@ -40,25 +26,9 @@ cr.define('signin', function() {
     },
 
     /**
-     * Gets the current signed-in users.
-     */
-    getSignedInUsers: function() {
-      assertNotReached();
-    },
-
-    /**
      * Launches the guest user.
      */
     launchGuestUser: function() {
-      assertNotReached();
-    },
-
-    /**
-     * @param {string} profilePath Profile Path of the custodian.
-     * @return {!Promise<!Array<!SupervisedUser>>} The list of existing
-     *     supervised users.
-     */
-    getExistingSupervisedUsers: function(profilePath) {
       assertNotReached();
     },
 
@@ -69,29 +39,8 @@ cr.define('signin', function() {
      *     profile.
      * @param {boolean} createShortcut if true a desktop shortcut will be
      *     created.
-     * @param {boolean} isSupervised True if the new profile is supervised.
-     * @param {string} supervisedUserId ID of the supervised user to be
-     *     imported.
-     * @param {string} custodianProfilePath Profile path of the custodian if
-     *     the new profile is supervised.
      */
-    createProfile: function(
-        profileName, profileIconUrl, createShortcut, isSupervised,
-        supervisedUserId, custodianProfilePath) {
-      assertNotReached();
-    },
-
-    /**
-     * Cancels creation of the new profile.
-     */
-    cancelCreateProfile: function() {
-      assertNotReached();
-    },
-
-    /**
-     * Cancels loading supervised users.
-     */
-    cancelLoadingSupervisedUsers: function() {
+    createProfile: function(profileName, profileIconUrl, createShortcut) {
       assertNotReached();
     },
 
@@ -163,38 +112,14 @@ cr.define('signin', function() {
     },
 
     /** @override */
-    getSignedInUsers: function() {
-      chrome.send('requestSignedInProfiles');
-    },
-
-    /** @override */
     launchGuestUser: function() {
       chrome.send('launchGuest');
     },
 
     /** @override */
-    getExistingSupervisedUsers: function(profilePath) {
-      return cr.sendWithPromise('getExistingSupervisedUsers', profilePath);
-    },
-
-    /** @override */
-    createProfile: function(
-        profileName, profileIconUrl, createShortcut, isSupervised,
-        supervisedUserId, custodianProfilePath) {
-      chrome.send('createProfile', [
-        profileName, profileIconUrl, createShortcut, isSupervised,
-        supervisedUserId, custodianProfilePath
-      ]);
-    },
-
-    /** @override */
-    cancelCreateProfile: function() {
-      chrome.send('cancelCreateProfile');
-    },
-
-    /** @override */
-    cancelLoadingSupervisedUsers: function() {
-      chrome.send('cancelLoadingSupervisedUsers');
+    createProfile: function(profileName, profileIconUrl, createShortcut) {
+      chrome.send(
+          'createProfile', [profileName, profileIconUrl, createShortcut]);
     },
 
     /** @override */

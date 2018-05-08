@@ -17,13 +17,6 @@ cr.define('user_manager.create_profile_tests', function() {
     /** @type {?CreateProfileElement} */
     let createProfileElement = null;
 
-    // Helper to select first signed in user from a dropdown menu.
-    const selectFirstSignedInUser = function(dropdownMenu) {
-      const option = dropdownMenu.querySelector('option:not([disabled])');
-      dropdownMenu.value = option.value;
-      dropdownMenu.dispatchEvent(new Event('change'));
-    };
-
     suite('CreateProfileTests', function() {
       setup(function() {
         browserProxy = new TestProfileBrowserProxy();
@@ -33,12 +26,6 @@ cr.define('user_manager.create_profile_tests', function() {
         browserProxy.setDefaultProfileInfo({name: 'profile name'});
         browserProxy.setIcons([{url: 'icon1.png', label: 'icon1'},
                                {url: 'icon2.png', label: 'icon2'}]);
-        browserProxy.setSignedInUsers([{username: 'username',
-                                        profilePath: 'path/to/profile'}]);
-        browserProxy.setExistingSupervisedUsers([{name: 'existing name 1',
-                                                  onCurrentDevice: true},
-                                                 {name: 'existing name 2',
-                                                  onCurrentDevice: false}]);
 
         createProfileElement = createElement();
 
@@ -88,29 +75,6 @@ cr.define('user_manager.create_profile_tests', function() {
           assertEquals('profile name', args.profileName);
           assertEquals('icon1.png', args.profileIconUrl);
           assertFalse(args.createShortcut);
-          assertFalse(args.isSupervised);
-          assertEquals('', args.supervisedUserId);
-          assertEquals('', args.custodianProfilePath);
-        });
-      });
-
-      test('Cancel creating a profile', function() {
-        // Simulate clicking 'Create'.
-        MockInteractions.tap(createProfileElement.$.save);
-
-        return browserProxy.whenCalled('createProfile').then(function(args) {
-          // The 'Save' button is disabled when create is in progress.
-          assertTrue(createProfileElement.createInProgress_);
-          assertTrue(createProfileElement.$.save.disabled);
-
-          // Simulate clicking 'Cancel'.
-          MockInteractions.tap(createProfileElement.$.cancel);
-          return browserProxy.whenCalled('cancelCreateProfile').then(
-              function() {
-                // The 'Save' button is enabled when create is not in progress.
-                assertFalse(createProfileElement.createInProgress_);
-                assertFalse(createProfileElement.$.save.disabled);
-              });
         });
       });
 
@@ -118,9 +82,7 @@ cr.define('user_manager.create_profile_tests', function() {
         return new Promise(function(resolve, reject) {
           // Create is not in progress. We expect to leave the page.
           createProfileElement.addEventListener('change-page', function(event) {
-            // This should not be called if create is not in progress.
-            if (!browserProxy.cancelCreateProfileCalled &&
-                event.detail.page == 'user-pods-page') {
+            if (event.detail.page == 'user-pods-page') {
               resolve();
             }
           });
@@ -146,9 +108,7 @@ cr.define('user_manager.create_profile_tests', function() {
             assertTrue(createProfileElement.createInProgress_);
             assertTrue(createProfileElement.$$('paper-spinner-lite').active);
 
-            cr.webUIListenerCallback('create-profile-success',
-                                     {name: 'profile name',
-                                      filePath: 'path/to/profile'});
+            cr.webUIListenerCallback('create-profile-success');
 
             // The paper-spinner is not active when create is not in progress.
             assertFalse(createProfileElement.createInProgress_);
@@ -260,9 +220,6 @@ cr.define('user_manager.create_profile_tests', function() {
           assertEquals('profile name', args.profileName);
           assertEquals('icon1.png', args.profileIconUrl);
           assertFalse(args.createShortcut);
-          assertFalse(args.isSupervised);
-          assertEquals('', args.supervisedUserId);
-          assertEquals('', args.custodianProfilePath);
         });
       });
 
@@ -282,9 +239,6 @@ cr.define('user_manager.create_profile_tests', function() {
           assertEquals('profile name', args.profileName);
           assertEquals('icon1.png', args.profileIconUrl);
           assertTrue(args.createShortcut);
-          assertFalse(args.isSupervised);
-          assertEquals('', args.supervisedUserId);
-          assertEquals('', args.custodianProfilePath);
         });
       });
     });

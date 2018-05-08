@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/common/buildflags.h"
 #include "content/public/browser/notification_observer.h"
@@ -26,8 +25,7 @@ class ListValue;
 
 // Handler for the 'create profile' page.
 class SigninCreateProfileHandler : public content::WebUIMessageHandler,
-                                   public content::NotificationObserver,
-                                   public ProfileAttributesStorage::Observer {
+                                   public content::NotificationObserver {
  public:
   SigninCreateProfileHandler();
   ~SigninCreateProfileHandler() override;
@@ -52,9 +50,6 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // ProfileAttributesStorage::Observer implementation:
-  void OnProfileAuthInfoChanged(const base::FilePath& profile_path) override;
-
   // Represents the final profile creation status. It is used to map
   // the status to the javascript method to be called.
   enum ProfileCreationStatus {
@@ -78,43 +73,27 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
   // "requestDefaultProfileIcons" is fulfilled.
   void SendNewProfileDefaults();
 
-  // Callback for the "requestSignedInProfiles" message.
-  // Sends the email address of the signed-in user, or an empty string if the
-  // user is not signed in.
-  void RequestSignedInProfiles(const base::ListValue* args);
-
   // Asynchronously creates and initializes a new profile.
   // The arguments are as follows:
   //   0: name (string)
   //   1: icon (string)
   //   2: a flag stating whether we should create a profile desktop shortcut
   //      (optional, boolean)
-  //   3: a flag stating whether the user should be supervised
-  //      (optional, boolean)
-  //   4: a string representing the supervised user ID.
-  //   5: a string representing the custodian profile path.
   void CreateProfile(const base::ListValue* args);
 
   // If a local error occurs during profile creation, then show an appropriate
-  // error message. However, if profile creation succeeded and the
-  // profile being created/imported is a supervised user profile,
-  // then proceed with the registration step. Otherwise, update the UI
-  // as the final task after a new profile has been created.
+  // error message. Otherwise, update the UI as the final task after a new
+  // profile has been created.
   void OnProfileCreated(bool create_shortcut,
-                        const std::string& supervised_user_id,
-                        Profile* custodian_profile,
                         Profile* profile,
                         Profile::CreateStatus status);
 
   void HandleProfileCreationSuccess(bool create_shortcut,
-                                    const std::string& supervised_user_id,
-                                    Profile* custodian_profile,
                                     Profile* profile);
 
   // Creates desktop shortcut and updates the UI to indicate success
   // when creating a profile.
   void CreateShortcutAndShowSuccess(bool create_shortcut,
-                                    Profile* custodian_profile,
                                     Profile* profile);
 
   // Opens a new window for |profile|.
@@ -153,21 +132,7 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
   // Asynchronously creates and initializes a new profile.
   virtual void DoCreateProfile(const base::string16& name,
                                const std::string& icon_url,
-                               bool create_shortcut,
-                               const std::string& supervised_user_id,
-                               Profile* custodian_profile);
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  // Cancels creation of a supervised-user profile currently in progress, as
-  // indicated by profile_path_being_created_, removing the object and files
-  // and canceling supervised-user registration. This is the handler for the
-  // "cancelCreateProfile" message. |args| is not used.
-  void HandleCancelProfileCreation(const base::ListValue* args);
-
-  // Callback for the "switchToProfile" message. Opens a new window for the
-  // profile. The profile file path is passed as a string argument.
-  void SwitchToProfile(const base::ListValue* args);
-#endif
+                               bool create_shortcut);
 
   content::NotificationRegistrar registrar_;
 
