@@ -57,8 +57,6 @@ PictureInPictureWindowControllerImpl::PictureInPictureWindowControllerImpl(
 
   media_web_contents_observer_ = static_cast<WebContentsImpl* const>(initiator_)
                                      ->media_web_contents_observer();
-  media_player_id_ =
-      media_web_contents_observer_->GetPictureInPictureVideoMediaPlayerId();
 
   window_ =
       GetContentClient()->browser()->CreateWindowForPictureInPicture(this);
@@ -87,6 +85,13 @@ void PictureInPictureWindowControllerImpl::EmbedSurface(
   DCHECK(window_);
   DCHECK(surface_id.is_valid());
   surface_id_ = surface_id;
+
+  // Update the media player id in step with the video surface id. If the
+  // surface id was updated for the same video, this is a no-op. This could
+  // be updated for a different video if another media player on the same
+  // |initiator_| enters Picture-in-Picture mode.
+  media_player_id_ =
+      media_web_contents_observer_->GetPictureInPictureVideoMediaPlayerId();
 
   window_->UpdateVideoSize(natural_size);
 
