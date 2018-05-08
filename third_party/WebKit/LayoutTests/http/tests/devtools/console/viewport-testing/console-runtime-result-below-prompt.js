@@ -7,10 +7,10 @@
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
   await ConsoleTestRunner.waitForPendingViewportUpdates();
-
   const consoleView = Console.ConsoleView.instance();
   const prompt = consoleView._prompt;
   const editor = await ConsoleTestRunner.waitUntilConsoleEditorLoaded();
+  Common.settings.moduleSetting('consoleEagerEval').set(true);
 
   TestRunner.runTestSuite([
     async function testUnsafeExpressions(next) {
