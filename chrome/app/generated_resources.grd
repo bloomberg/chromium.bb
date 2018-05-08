@@ -10024,9 +10024,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_BODY" desc="Body text of an auto-generated notification informing the user that the site may have received an update in the background, in case the site did not satisfy the visible notification requirement itself.">
         This site has been updated in the background.
       </message>
-      <message name="IDS_NOTIFICATIONS_BACKGROUND_SERVICE_NAME" desc="The name of the Notifications service that can run in the background">
-        Notifications
-      </message>
 
       <!-- Easy Unlock strings -->
       <!-- Strings for the Easy Unlock promo notification -->

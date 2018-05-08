@@ -243,9 +243,6 @@ const char kDisablePrintPreview[]           = "disable-print-preview";
 // disable that check. This switch is used during automated testing.
 const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
 
-// Enable background mode for the Push API.
-const char kDisablePushApiBackgroundMode[] = "disable-push-api-background-mode";
-
 // Disables showing the search geolocation disclosure UI. Used for perf testing.
 const char kDisableSearchGeolocationDisclosure[] =
     "disable-search-geolocation-disclosure";
@@ -337,9 +334,6 @@ const char kEnablePowerOverlay[]            = "enable-power-overlay";
 // Enables showing unregistered printers in print preview
 const char kEnablePrintPreviewRegisterPromos[] =
     "enable-print-preview-register-promos";
-
-// Enable background mode for the Push API.
-const char kEnablePushApiBackgroundMode[] = "enable-push-api-background-mode";
 
 // Enables user control over muting tab audio from the tab strip.
 const char kEnableTabAudioMuting[]  = "enable-tab-audio-muting";

@@ -15,7 +15,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/background/background_trigger.h"
 #include "chrome/browser/push_messaging/push_messaging_notification_manager.h"
 #include "chrome/common/buildflags.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
@@ -56,7 +55,6 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                                  public gcm::GCMAppHandler,
                                  public content_settings::Observer,
                                  public KeyedService,
-                                 public BackgroundTrigger,
                                  public content::NotificationObserver {
  public:
   // If any Service Workers are using push, starts GCM and adds an app handler.
@@ -119,11 +117,6 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   // KeyedService implementation.
   void Shutdown() override;
-
-  // BackgroundTrigger implementation.
-  base::string16 GetName() override;
-  gfx::ImageSkia* GetIcon() override;
-  void OnMenuClick() override;
 
   // content::NotificationObserver:
   void Observe(int type,
