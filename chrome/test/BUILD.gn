@@ -4350,10 +4350,7 @@ test("unit_tests") {
     ]
   }
   if (enable_supervised_users && !is_android && !is_chromeos) {
-    sources += [
-      "../browser/supervised_user/supervised_user_creation_policy_handler_unittest.cc",
-      "../browser/ui/webui/signin/signin_supervised_user_import_handler_unittest.cc",
-    ]
+    sources += [ "../browser/supervised_user/supervised_user_creation_policy_handler_unittest.cc" ]
   }
   if (safe_browsing_mode == 1 && enable_extensions) {
     sources += [ "../browser/extensions/blacklist_unittest.cc" ]

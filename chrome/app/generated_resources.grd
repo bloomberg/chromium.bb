@@ -7477,9 +7477,6 @@ I don't think this site should be blocked!
       <message name="IDS_PROFILES_DELETE_BUTTON_LABEL" desc="The label that appears on the profile delete button in the options dialog to allow a user to delete their profile.">
         Remove...
       </message>
-      <message name="IDS_PROFILES_LEGACY_SUPERVISED_USER_DASHBOARD_TIP" desc="A message that appears below the Users section on the Settings page when the current user manages legacy supervised users (but no child accounts) on the machine, providing a link to the external management dashboard page.">
-        Manage your supervised users via the <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Supervised Users Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
-      </message>
       <message name="IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL" desc="The label that appears on the profile delete button in the options dialog to allow a user with only one profile to delete it.">
         Delete this person
       </message>
@@ -9264,9 +9261,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_PROFILES_DELETE_MESSAGE" desc="Message explaining to the user what will happen if they delete this profile">
           Are you sure you want to remove "<ph name="PROFILE_NAME">$1<ex>New User</ex></ph>" and all associated Chrome data from this computer? This cannot be undone.
         </message>
-        <message name="IDS_PROFILES_DELETE_LEGACY_SUPERVISED_ADDENDUM" desc="Additional message shown in the same dialog following the IDS_PROFILES_DELETE_MESSAGE, explaining to the user what will happen if they delete the profile of a supervised user.">
-          Settings and browsing history for this supervised user may still be visible by the manager at <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph><ph name="DISPLAY_LINK">$2</ph><ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
-        </message>
         <message name="IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_TITLE" desc="Title of the disconnect managed profile dialog.">
           Disconnect your Google Account
         </message>
@@ -9278,9 +9272,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </message>
         <message name="IDS_PROFILES_LIST_ITEM_CURRENT" desc="Text to display in the multi-profiles list when this profile is the current profile">
           <ph name="PROFILE_NAME">$1<ex>New User</ex></ph> (current)
-        </message>
-        <message name="IDS_PROFILES_LIST_LEGACY_SUPERVISED_USER_LABEL" desc="Text to display in the multi-profiles list next to the profile name when this profile is supervised.">
-          (Supervised)
         </message>
         <message name="IDS_PROFILES_SINGLE_USER_MESSAGE" desc="Text to display in the multi-profiles section when there is only one user">
           You are currently the only <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> user.
@@ -9302,45 +9293,14 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_PROFILES_CREATE_SIGN_IN_ERROR" desc="Message shown when a sign-in error occurs during creation of a new supervised user.">
           The new supervised user couldn't be created. Please make sure you're signed in properly and try again.
         </message>
-        <message name="IDS_PROFILES_CREATE_NO_CUSTODIAN_ACCOUNT_ERROR" desc="Message shown when the user checks the checkbox to create a supervised user, but does not select a custodian account from the dropdown list.">
-          Select an account to manage the supervised user.
-        </message>
-        <message name="IDS_PROFILES_CREATE_LEGACY_SUPERVISED_USER_ERROR_EXISTS_REMOTELY" desc="Message shown when the user enters the name of a supervised user that can be imported.">
-          Looks like you're already managing a user by that name. Did you want to <ph name="BEGIN_LINK">&lt;a is="action-link" id="supervised-user-import-existing"&gt;</ph>import <ph name="PROFILE_NAME">$1<ex>John</ex></ph><ph name="END_LINK">&lt;/a&gt;</ph> to this device?
-        </message>
-        <message name="IDS_PROFILES_CREATE_LEGACY_SUPERVISED_USER_ERROR_EXISTS_LOCALLY" desc="Message shown when the user enters the name of a supervised user that we already have locally.">
-          Looks like you already have a supervised user with this name.
-        </message>
-        <message name="IDS_PROFILES_CREATE_SUPERVISED_SIGNED_IN_LABEL" desc="Label for the 'Supervised user' checkbox in the create-profile dialog when the current user is signed in.">
-          Control and view the websites this person visits from <ph name="CUSTODIAN_EMAIL">$1<ex>user@gmail.com</ex></ph>.
-        </message>
         <message name="IDS_PROFILES_CREATE_DESKTOP_SHORTCUT_LABEL" desc="Label for the checkbox that controls whether a desktop shortcut should be created for the new profile.">
           Create a desktop shortcut for this user
-        </message>
-        <message name="IDS_PROFILES_CREATE_SUPERVISED_MULTI_SIGNED_IN_LABEL" desc="Label for the 'Supervised user' checkbox in the create-profile dialog when user can choose from a list of signed in users.">
-          Supervise this person to control and view the websites they visit from your Google Account.
-        </message>
-        <message name="IDS_PROFILES_CREATE_SUPERVISED_NO_SIGNED_IN_USER_TEXT" desc="Informative text displayed below the 'Supervised user' checkbox in the create-profile dialog when there are no signed in users to choose as the custodian.">
-          To supervise this person, <ph name="BEGIN_LINK">&lt;a id="sign-in-to-chrome" href="https://support.google.com/chrome/answer/185277"&gt;</ph>sign in to Chrome<ph name="END_LINK">&lt;/a&gt;</ph>.
-        </message>
-        <message name="IDS_PROFILES_CREATE_SUPERVISED_SENTINEL_MENU_ITEM_TEXT" desc="Label for the dropdown menu containing signed in users from which the user can choose a custodian account.">
-          Select an account
-        </message>
-        <message name="IDS_PROFILES_CREATE_SUPERVISED_ACCOUNT_DETAILS_OUT_OF_DATE_LABEL" desc="Label for the 'Supervised user' checkbox in the create-profile dialog when the current user is signed in, but their sign-in information is invalid. This will be followed by a 'Sign in again' link.">
-          Control and view the websites this person visits from <ph name="CUSTODIAN_EMAIL">$1<ex>user@gmail.com</ex></ph>.
-    Your account sign-in details are out of date.
         </message>
         <message name="IDS_PROFILES_CREATE_CUSTODIAN_ACCOUNT_DETAILS_OUT_OF_DATE_ERROR" desc="Message shown when the custodian is signed in, but their sign-in information is invalid.">
           Your account details are out of date. <ph name="BEGIN_LINK">&lt;a is="action-link" id="reauth" data-user-email="$1"&gt;</ph>Sign in again<ph name="END_LINK">&lt;/a&gt;</ph>.
         </message>
-        <message name="IDS_PROFILES_CREATE_SUPERVISED_NOT_ALLOWED_BY_POLICY" desc="Error message shown when the policy-controlled preference prohibits creating supervised users.">
-          Your administrator doesn’t allow you to create supervised users.
-        </message>
         <message name="IDS_PROFILES_CREATE_SUPERVISED_JUST_SIGNED_IN" desc="Warning message shown in the create-profile dialog when the custodian signed in recently, sync has not yet finished initializing, and so the creation process is likely to take extra time.">
           Creating your supervised user. This may take a few moments.
-        </message>
-        <message name="IDS_PROFILES_CREATE_SUPERVISED_NOT_SIGNED_IN_HTML" desc="Label for the (disabled) 'Supervised user' checkbox in the create-profile dialog when the current user is not signed in, containing a link to the sign in page.">
-          <ph name="BEGIN_SIGN_IN_LINK">&lt;a is="action-link" id="create-profile-supervised-sign-in-link"&gt;</ph>Sign in<ph name="END_SIGN_IN_LINK">&lt;/a&gt;</ph> to control and view the websites this person visits.
         </message>
         <message name="IDS_PROFILES_CREATE_SHORTCUT_CHECKBOX" desc="Create Shortcut checkbox when creating a new profile">
           Create a desktop shortcut for this user
@@ -9352,34 +9312,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           Remove desktop shortcut
         </message>
 
-        <!-- Legacy supervised-user creation wizard dialogs -->
-        <message name="IDS_LEGACY_SUPERVISED_USER_LEARN_MORE_TITLE" desc="Title for the 'Learn more' dialog for the supervised user feature.">
-          What is a supervised user?
-        </message>
-        <message name="IDS_SUPERVISED_USER_LEARN_MORE_TEXT" desc="Informative text describing the 'supervised user' feature in detail, shown when the 'Learn more' link is clicked in the 'Create User' page of the user manager. The HTML entities at the starts of the lines are a non-breaking space, a bullet, and another non-breaking space.">
-          A supervised user can explore the web with your guidance. As the manager of a supervised user in Chrome, you can:
-
-&#160;&#8226;&#160;allow or prohibit certain websites,
-&#160;&#8226;&#160;review websites the supervised user has visited, and
-&#160;&#8226;&#160;manage other settings.
-
-Creating a supervised user does not create a Google Account, and their bookmarks, browsing history, and other preferences will not follow them to other devices with Chrome Sync. After you create a new supervised user, you can manage their settings at any time, from any device, at <ph name="BEGIN_MANAGE_LINK">&lt;a target="_blank" href="$1"&gt;</ph><ph name="DISPLAY_LINK">$2</ph><ph name="END_MANAGE_LINK">&lt;/a&gt;</ph>.
-
-For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://support.google.com/chrome/?p=ui_supervised_users&amp;hl=[GRITLANGCODE]"&gt;</ph>Help Center<ph name="END_LINK">&lt;/a&gt;</ph>.
-        </message>
-        <message name="IDS_LEGACY_SUPERVISED_USER_LEARN_MORE_DONE_BUTTON" desc="Text for the 'OK' button on the 'Learn more' dialog for the supervised user feature.">
-          OK, got it
-        </message>
-        <message name="IDS_LEGACY_SUPERVISED_USER_CREATED_TITLE" desc="Title for the confirmation dialog that appears after a supervised user has been created.">
-          <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph> is now a supervised user
-        </message>
-        <message name="IDS_LEGACY_SUPERVISED_USER_CREATED_DONE_BUTTON" desc="Text for the button that closes the dialog without making any additional changes, on the supervised user creation confirmation dialog.">
-          OK, got it
-        </message>
-        <message name="IDS_LEGACY_SUPERVISED_USER_CREATED_SWITCH_BUTTON" desc="Text for the button that opens a window for the new supervised user, on the supervised user creation confirmation dialog.">
-          Switch to <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph>
-        </message>
-
         <!-- Import existing supervised user dialog -->
         <message name="IDS_IMPORT_EXISTING_LEGACY_SUPERVISED_USER_TITLE" desc="Title for the dialog used to import existing supervised users. The dialog appears when the custodian clicks on 'Import existing supervised user' during the user creation flow. The dialog displays a list of existing supervised users for the custodian to choose from">
           Import an existing supervised user
@@ -9387,26 +9319,11 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
         <message name="IDS_IMPORT_EXISTING_LEGACY_SUPERVISED_USER_TEXT" desc="Text that instructs the user to choose one of the displayed supervised users to import to this device.">
           Choose a supervised user to add to this device.
         </message>
-        <message name="IDS_IMPORT_NO_EXISTING_SUPERVISED_USER_TEXT" desc="Message shown to the custodian when they open the 'supervised user import' overlay but have no existing supervised users to import.">
-          There are no supervised users to add to this device.
-        </message>
         <message name="IDS_CREATE_NEW_LEGACY_SUPERVISED_USER_LINK" desc="The text for the link button that takes the user back from the dialog for importing an existing supervised user to the user creation dialog.">
           Create a new supervised user
         </message>
         <message name="IDS_IMPORT_EXISTING_LEGACY_SUPERVISED_USER_OK" desc="Text on the button to confirm importing an existing supervised user.">
           Import supervised user
-        </message>
-        <message name="IDS_LEGACY_SUPERVISED_USER_ALREADY_ON_THIS_DEVICE" desc="Text shown in the list of supervised users beside the name of a supervised user that already exists on the current device.">
-          (already on this device)
-        </message>
-        <message name="IDS_LEGACY_SUPERVISED_USER_IMPORT_LOCAL_ERROR" desc="Message shown when a local error (for example, a disk error) occurs during supervised user import.">
-          The supervised user couldn't be imported. Please check your hard drive space and permissions and try again.
-        </message>
-        <message name="IDS_LEGACY_SUPERVISED_USER_IMPORT_REMOTE_ERROR" desc="Message shown when a remote error (for example, a network error) occurs during supervised user import.">
-          The supervised user couldn't be imported. Please check your network connection and try again later.
-        </message>
-        <message name="IDS_LEGACY_SUPERVISED_USER_IMPORT_SIGN_IN_ERROR" desc="Message shown when a sign-in error occurs during supervised user import.">
-          Looks like there's a problem with your credentials. Please make sure you're signed in properly and try again.
         </message>
       </if>
 

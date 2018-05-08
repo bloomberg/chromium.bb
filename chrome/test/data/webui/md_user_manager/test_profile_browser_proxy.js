@@ -10,27 +10,18 @@ class TestProfileBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'getAvailableIcons',
-      'getSignedInUsers',
       'launchGuestUser',
       'createProfile',
-      'cancelCreateProfile',
       'initializeUserManager',
       'launchUser',
-      'getExistingSupervisedUsers',
       'areAllProfilesLocked',
     ]);
 
     /** @private {!Array<!AvatarIcon>} */
     this.icons_ = [];
 
-    /** @private {!Array<SignedInUser>} */
-    this.signedInUsers_ = [];
-
     /** @private {!ProfileInfo} */
     this.defaultProfileInfo_ = {};
-
-    /** @private {!Array<SupervisedUser>} */
-    this.existingSupervisedUsers_ = [];
 
     /** @private {boolean} */
     this.allProfilesLocked_ = false;
@@ -44,24 +35,10 @@ class TestProfileBrowserProxy extends TestBrowserProxy {
   }
 
   /**
-   * @param {!Array<SignedInUser>} signedInUsers
-   */
-  setSignedInUsers(signedInUsers) {
-    this.signedInUsers_ = signedInUsers;
-  }
-
-  /**
    * @param {!ProfileInfo} profileInfo
    */
   setDefaultProfileInfo(profileInfo) {
     this.defaultProfileInfo_ = profileInfo;
-  }
-
-  /**
-   * @param {!Array<SupervisedUser>} supervisedUsers
-   */
-  setExistingSupervisedUsers(supervisedUsers) {
-    this.existingSupervisedUsers_ = supervisedUsers;
   }
 
   /**
@@ -80,48 +57,16 @@ class TestProfileBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  getSignedInUsers() {
-    this.methodCalled('getSignedInUsers');
-    cr.webUIListenerCallback('signedin-users-received', this.signedInUsers_);
-  }
-
-  /** @override */
-  cancelCreateProfile() {
-    /**
-     * Flag used to test whether this method was not called.
-     * @type {boolean}
-     */
-    this.cancelCreateProfileCalled = true;
-    this.methodCalled('cancelCreateProfile');
-  }
-
-  /** @override */
-  createProfile(
-    profileName,
-    profileIconUrl,
-    createShortcut,
-    isSupervised,
-    supervisedUserId,
-    custodianProfilePath
-  ) {
+  createProfile(profileName, profileIconUrl, createShortcut) {
     this.methodCalled('createProfile',
                       {profileName: profileName,
                        profileIconUrl: profileIconUrl,
-                       createShortcut: createShortcut,
-                       isSupervised: isSupervised,
-                       supervisedUserId: supervisedUserId,
-                       custodianProfilePath: custodianProfilePath});
+                       createShortcut: createShortcut});
   }
 
   /** @override */
   launchGuestUser() {
     this.methodCalled('launchGuestUser');
-  }
-
-  /** @override */
-  getExistingSupervisedUsers() {
-    this.methodCalled('getExistingSupervisedUsers');
-    return Promise.resolve(this.existingSupervisedUsers_);
   }
 
   /** @override */
