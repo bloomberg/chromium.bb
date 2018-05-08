@@ -26,11 +26,21 @@ const char kScreenShareNotificationId[] = "chrome://screen/share";
 const char kNotifierScreenCapture[] = "ash.screen-capture";
 const char kNotifierScreenShare[] = "ash.screen-share";
 
-namespace {
+ScreenSecurityNotificationController::ScreenSecurityNotificationController() {
+  Shell::Get()->AddShellObserver(this);
+  Shell::Get()->system_tray_notifier()->AddScreenCaptureObserver(this);
+  Shell::Get()->system_tray_notifier()->AddScreenShareObserver(this);
+}
 
-void CreateNotification(base::OnceClosure stop_callback,
-                        const base::string16& message,
-                        bool is_capture) {
+ScreenSecurityNotificationController::~ScreenSecurityNotificationController() {
+  Shell::Get()->system_tray_notifier()->RemoveScreenShareObserver(this);
+  Shell::Get()->system_tray_notifier()->RemoveScreenCaptureObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
+}
+
+void ScreenSecurityNotificationController::CreateNotification(
+    const base::string16& message,
+    bool is_capture) {
   message_center::RichNotificationData data;
   data.buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
       is_capture ? IDS_ASH_STATUS_TRAY_SCREEN_CAPTURE_STOP
@@ -39,20 +49,20 @@ void CreateNotification(base::OnceClosure stop_callback,
   auto delegate =
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
           base::BindRepeating(
-              [](base::OnceClosure stop_callback, bool is_capture,
-                 base::Optional<int> button_index) {
-                if (!button_index || stop_callback.is_null())
+              [](base::WeakPtr<ScreenSecurityNotificationController> controller,
+                 bool is_capture, base::Optional<int> button_index) {
+                if (!button_index)
                   return;
 
                 DCHECK_EQ(0, *button_index);
 
-                std::move(stop_callback).Run();
+                controller->StopAllSessions(is_capture);
                 if (is_capture) {
                   Shell::Get()->metrics()->RecordUserMetricsAction(
                       UMA_STATUS_AREA_SCREEN_CAPTURE_NOTIFICATION_STOP);
                 }
               },
-              base::Passed(&stop_callback), is_capture));
+              weak_ptr_factory_.GetWeakPtr(), is_capture));
 
   std::unique_ptr<Notification> notification =
       Notification::CreateSystemNotification(
@@ -73,23 +83,25 @@ void CreateNotification(base::OnceClosure stop_callback,
       std::move(notification));
 }
 
-}  // namespace
+void ScreenSecurityNotificationController::StopAllSessions(bool is_capture) {
+  message_center::MessageCenter::Get()->RemoveNotification(
+      is_capture ? kScreenCaptureNotificationId : kScreenShareNotificationId,
+      false /* by_user */);
 
-ScreenSecurityNotificationController::ScreenSecurityNotificationController() {
-  Shell::Get()->AddShellObserver(this);
-  Shell::Get()->system_tray_notifier()->AddScreenCaptureObserver(this);
-  Shell::Get()->system_tray_notifier()->AddScreenShareObserver(this);
-}
-
-ScreenSecurityNotificationController::~ScreenSecurityNotificationController() {
-  Shell::Get()->system_tray_notifier()->RemoveScreenShareObserver(this);
-  Shell::Get()->system_tray_notifier()->RemoveScreenCaptureObserver(this);
-  Shell::Get()->RemoveShellObserver(this);
+  std::vector<base::OnceClosure> callbacks;
+  std::swap(callbacks,
+            is_capture ? capture_stop_callbacks_ : share_stop_callbacks_);
+  for (base::OnceClosure& callback : callbacks) {
+    if (callback)
+      std::move(callback).Run();
+  }
 }
 
 void ScreenSecurityNotificationController::OnScreenCaptureStart(
     const base::Closure& stop_callback,
     const base::string16& screen_capture_status) {
+  capture_stop_callbacks_.emplace_back(std::move(stop_callback));
+
   // We do not want to show the screen capture notification and the chromecast
   // casting tray notification at the same time.
   //
@@ -100,18 +112,18 @@ void ScreenSecurityNotificationController::OnScreenCaptureStart(
   if (is_casting_)
     return;
 
-  CreateNotification(stop_callback, screen_capture_status,
-                     true /* is_capture */);
+  CreateNotification(screen_capture_status, true /* is_capture */);
 }
 
 void ScreenSecurityNotificationController::OnScreenCaptureStop() {
-  message_center::MessageCenter::Get()->RemoveNotification(
-      kScreenCaptureNotificationId, false /* by_user */);
+  StopAllSessions(true /* is_capture */);
 }
 
 void ScreenSecurityNotificationController::OnScreenShareStart(
     const base::Closure& stop_callback,
     const base::string16& helper_name) {
+  share_stop_callbacks_.emplace_back(std::move(stop_callback));
+
   base::string16 help_label_text;
   if (!helper_name.empty()) {
     help_label_text = l10n_util::GetStringFUTF16(
@@ -121,12 +133,11 @@ void ScreenSecurityNotificationController::OnScreenShareStart(
         IDS_ASH_STATUS_TRAY_SCREEN_SHARE_BEING_HELPED);
   }
 
-  CreateNotification(stop_callback, help_label_text, false /* is_capture */);
+  CreateNotification(help_label_text, false /* is_capture */);
 }
 
 void ScreenSecurityNotificationController::OnScreenShareStop() {
-  message_center::MessageCenter::Get()->RemoveNotification(
-      kScreenShareNotificationId, false /* by_user */);
+  StopAllSessions(false /* is_capture */);
 }
 
 void ScreenSecurityNotificationController::OnCastingSessionStartedOrStopped(
