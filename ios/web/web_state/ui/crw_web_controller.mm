@@ -1718,17 +1718,30 @@ registerLoadRequestForURL:(const GURL&)requestURL
     error = web::NetErrorFromError(error);
   }
 
-  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      !base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
     [self removeWebView];
+  } else if (base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
+    item->SetErrorRetryState(
+        web::ErrorRetryState::kDisplayingWebErrorForFailedNavigation);
   } else {
     item->SetErrorRetryState(
         web::ErrorRetryState::kDisplayingNativeErrorForFailedNavigation);
   }
-  id<CRWNativeContent> nativeContent =
-      [_nativeProvider controllerForURL:currentURL
-                              withError:error
-                                 isPost:context->IsPost()];
-  [self setNativeController:nativeContent];
+
+  if (!base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
+    id<CRWNativeContent> nativeContent =
+        [_nativeProvider controllerForURL:currentURL
+                                withError:error
+                                   isPost:context->IsPost()];
+    [self setNativeController:nativeContent];
+  } else {
+    NSString* errorHTML = nil;
+    web::GetWebClient()->PrepareErrorPage(
+        error, context->IsPost(), _webStateImpl->GetBrowserState(), &errorHTML);
+
+    [_webView loadHTMLString:errorHTML baseURL:net::NSURLWithGURL(currentURL)];
+  }
 
   // If |context| has placeholder URL, this is the second part of a native error
   // load for a provisional load failure. Rewrite the context URL to actual URL
@@ -1781,7 +1794,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (web::NavigationContextImpl*)loadPlaceholderInWebViewForURL:
     (const GURL&)originalURL {
-  DCHECK(web::GetWebClient()->IsSlimNavigationManagerEnabled());
+  DCHECK(web::GetWebClient()->IsSlimNavigationManagerEnabled() ||
+         base::FeatureList::IsEnabled(web::features::kWebErrorPages));
 
   GURL placeholderURL = CreatePlaceholderUrlForUrl(originalURL);
   [self ensureWebViewCreated];
@@ -2960,7 +2974,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
 
-  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      !base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
     [self loadErrorPageForNavigationItem:self.currentNavItem
                        navigationContext:navigationContext];
   } else {
@@ -4657,7 +4672,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   // If this is a placeholder navigation for an app-specific URL, finish
   // loading by running the completion handler.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() ||
+      base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
     // Sometimes |didFinishNavigation| callback arrives after |stopLoading| has
     // been called. Abort in this case.
     if ([_navigationStates stateForNavigation:navigation] ==
@@ -4701,11 +4717,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
         item->SetErrorRetryState(
             web::ErrorRetryState::kReadyToDisplayErrorForFailedNavigation);
         [self loadErrorPageForNavigationItem:item navigationContext:context];
-      } else {
+      } else if (!base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
         // This is a back/forward navigation to a native error page.
         DCHECK_EQ(
             web::ErrorRetryState::kDisplayingNativeErrorForFailedNavigation,
             errorRetryState);
+      } else {
+        // This is a back/forward navigation to a web error page.
+        DCHECK_EQ(web::ErrorRetryState::kDisplayingWebErrorForFailedNavigation,
+                  errorRetryState);
       }
     }
 
@@ -4733,11 +4753,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
         case web::ErrorRetryState::kRetryFailedNavigationItem:
           item->SetErrorRetryState(web::ErrorRetryState::kNoNavigationError);
           break;
-        case web::ErrorRetryState::kDisplayingWebErrorForFailedNavigation:
-          NOTREACHED();
-          break;
         case web::ErrorRetryState::kNoNavigationError:
         case web::ErrorRetryState::kReadyToDisplayErrorForFailedNavigation:
+        case web::ErrorRetryState::kDisplayingWebErrorForFailedNavigation:
           break;
       }
     }
@@ -4762,7 +4780,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [self didReceiveWebViewNavigationDelegateCallback];
 
   // This callback should never be triggered for placeholder navigations.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() ||
+      base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
     DCHECK(!IsPlaceholderUrl(net::GURLWithNSURL(webView.URL)));
     // Sometimes |didFailNavigation| callback arrives after |stopLoading| has
     // been called. Abort in this case.
@@ -5320,6 +5339,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [_navigationStates setContext:std::move(navigationContext)
                     forNavigation:navigation];
     [self reportBackForwardNavigationTypeForFastNavigation:NO];
+    if (self.currentNavItem) {
+      self.currentNavItem->SetErrorRetryState(
+          web::ErrorRetryState::kNoNavigationError);
+    }
   };
 
   // When navigating via WKBackForwardListItem to pages created or updated by
@@ -5373,6 +5396,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
                   forNavigation:navigation];
     [_navigationStates setContext:std::move(navigationContext)
                     forNavigation:navigation];
+    if (self.currentNavItem) {
+      self.currentNavItem->SetErrorRetryState(
+          web::ErrorRetryState::kNoNavigationError);
+    }
   };
 
   // If the request is not a form submission or resubmission, or the user
