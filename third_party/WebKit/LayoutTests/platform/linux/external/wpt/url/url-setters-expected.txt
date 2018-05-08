@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 589 tests; 293 PASS, 296 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 592 tests; 296 PASS, 296 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS URL: Setting <a://example.net>.protocol = '' The empty string is not a valid scheme. Setter leaves the URL unchanged.
 PASS <a>: Setting <a://example.net>.protocol = '' The empty string is not a valid scheme. Setter leaves the URL unchanged.
@@ -244,6 +244,9 @@ PASS <area>: Setting <https://example.net>.host = 'example.com:443' Default port
 PASS URL: Setting <https://example.net>.host = 'example.com:80' Default port number is only removed for the relevant scheme
 PASS <a>: Setting <https://example.net>.host = 'example.com:80' Default port number is only removed for the relevant scheme
 PASS <area>: Setting <https://example.net>.host = 'example.com:80' Default port number is only removed for the relevant scheme
+PASS URL: Setting <http://example.net:8080>.host = 'example.com:80' Port number is removed if new port is scheme default and existing URL has a non-default port
+PASS <a>: Setting <http://example.net:8080>.host = 'example.com:80' Port number is removed if new port is scheme default and existing URL has a non-default port
+PASS <area>: Setting <http://example.net:8080>.host = 'example.com:80' Port number is removed if new port is scheme default and existing URL has a non-default port
 FAIL URL: Setting <http://example.net/path>.host = 'example.com/stuff' Stuff after a / delimiter is ignored assert_equals: expected "http://example.com/path" but got "http://example.com%2Fstuff/path"
 FAIL <a>: Setting <http://example.net/path>.host = 'example.com/stuff' Stuff after a / delimiter is ignored assert_equals: expected "http://example.com/path" but got "http://example.com%2Fstuff/path"
 FAIL <area>: Setting <http://example.net/path>.host = 'example.com/stuff' Stuff after a / delimiter is ignored assert_equals: expected "http://example.com/path" but got "http://example.com%2Fstuff/path"
