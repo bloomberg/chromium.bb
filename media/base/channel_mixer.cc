@@ -42,12 +42,20 @@ void ChannelMixer::Initialize(
 ChannelMixer::~ChannelMixer() = default;
 
 void ChannelMixer::Transform(const AudioBus* input, AudioBus* output) {
+  CHECK_EQ(input->frames(), output->frames());
+  TransformPartial(input, input->frames(), output);
+}
+
+void ChannelMixer::TransformPartial(const AudioBus* input,
+                                    int frame_count,
+                                    AudioBus* output) {
   CHECK_EQ(matrix_.size(), static_cast<size_t>(output->channels()));
   CHECK_EQ(matrix_[0].size(), static_cast<size_t>(input->channels()));
-  CHECK_EQ(input->frames(), output->frames());
+  CHECK_LE(frame_count, input->frames());
+  CHECK_LE(frame_count, output->frames());
 
   // Zero initialize |output| so we're accumulating from zero.
-  output->Zero();
+  output->ZeroFrames(frame_count);
 
   // If we're just remapping we can simply copy the correct input to output.
   if (remapping_) {
@@ -57,7 +65,7 @@ void ChannelMixer::Transform(const AudioBus* input, AudioBus* output) {
         if (scale > 0) {
           DCHECK_EQ(scale, 1.0f);
           memcpy(output->channel(output_ch), input->channel(input_ch),
-                 sizeof(*output->channel(output_ch)) * output->frames());
+                 sizeof(*output->channel(output_ch)) * frame_count);
           break;
         }
       }
@@ -71,7 +79,7 @@ void ChannelMixer::Transform(const AudioBus* input, AudioBus* output) {
       // Scale should always be positive.  Don't bother scaling by zero.
       DCHECK_GE(scale, 0);
       if (scale > 0) {
-        vector_math::FMAC(input->channel(input_ch), scale, output->frames(),
+        vector_math::FMAC(input->channel(input_ch), scale, frame_count,
                           output->channel(output_ch));
       }
     }
