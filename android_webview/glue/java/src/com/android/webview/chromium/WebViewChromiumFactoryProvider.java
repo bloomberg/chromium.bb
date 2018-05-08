@@ -12,6 +12,7 @@ import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.StrictMode;
+import android.os.SystemClock;
 import android.os.UserManager;
 import android.provider.Settings;
 import android.util.Log;
@@ -44,6 +45,7 @@ import org.chromium.base.PackageUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.NativeLibraries;
+import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.content.browser.selection.LGEmailActionModeWorkaround;
 
@@ -51,6 +53,7 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Entry point to the WebView. The system framework talks to this class to get instances of the
@@ -163,6 +166,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     @TargetApi(Build.VERSION_CODES.N) // For getSystemService() and isUserUnlocked().
     private void initialize(WebViewDelegate webViewDelegate) {
+        long startTime = SystemClock.elapsedRealtime();
         try (ScopedSysTraceEvent e1 =
                         ScopedSysTraceEvent.scoped("WebViewChromiumFactoryProvider.initialize")) {
             // The package is used to locate the services for copying crash minidumps and requesting
@@ -253,6 +257,11 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                     shouldDisableThreadChecking(ContextUtils.getApplicationContext());
 
             setSingleton(this);
+        } finally {
+            TimesHistogramSample histogram = new TimesHistogramSample(
+                    "Android.WebView.Startup.CreationTime.Stage1.FactoryInit",
+                    TimeUnit.MILLISECONDS);
+            histogram.record(SystemClock.elapsedRealtime() - startTime);
         }
     }
 
