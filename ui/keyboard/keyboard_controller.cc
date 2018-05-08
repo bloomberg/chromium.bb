@@ -825,6 +825,9 @@ void KeyboardController::SetContainerType(
     return;
   }
 
+  UMA_HISTOGRAM_ENUMERATION("InputMethod.VirtualKeyboard.ContainerBehavior",
+                            type, ContainerType::COUNT);
+
   if (state_ == KeyboardControllerState::SHOWN) {
     // Keyboard is already shown. Hiding the keyboard at first then switching
     // container type.

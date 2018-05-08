@@ -8,6 +8,8 @@
 namespace keyboard {
 
 // Enum corresponding to the various container behaviors.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class ContainerType {
 
   // Corresponds to a ContainerFullWidthBehavior.
@@ -18,6 +20,8 @@ enum class ContainerType {
 
   // Corresponds to a ContainerFullscreenBehavior.
   FULLSCREEN = 2,
+
+  COUNT,
 };
 
 }  // namespace keyboard
