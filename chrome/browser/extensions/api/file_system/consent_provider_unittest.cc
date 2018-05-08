@@ -181,10 +181,8 @@ TEST_F(FileSystemApiConsentProviderTest, ForKioskApps) {
   {
     scoped_refptr<Extension> auto_launch_kiosk_app(
         ExtensionBuilder("Test", ExtensionBuilder::Type::PLATFORM_APP)
-            .MergeManifest(DictionaryBuilder()
-                               .Set("kiosk_enabled", true)
-                               .Set("kiosk_only", true)
-                               .Build())
+            .SetManifestKey("kiosk_enabled", true)
+            .SetManifestKey("kiosk_only", true)
             .Build());
     user_manager_->AddKioskAppUser(
         AccountId::FromUserEmail(auto_launch_kiosk_app->id()));
@@ -211,10 +209,8 @@ TEST_F(FileSystemApiConsentProviderTest, ForKioskApps) {
   // receiving approval from the user.
   scoped_refptr<Extension> manual_launch_kiosk_app(
       ExtensionBuilder("Test", ExtensionBuilder::Type::PLATFORM_APP)
-          .MergeManifest(DictionaryBuilder()
-                             .Set("kiosk_enabled", true)
-                             .Set("kiosk_only", true)
-                             .Build())
+          .SetManifestKey("kiosk_enabled", true)
+          .SetManifestKey("kiosk_only", true)
           .Build());
   user_manager::User* const manual_kiosk_app_user =
       user_manager_->AddKioskAppUser(

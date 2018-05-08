@@ -121,8 +121,7 @@ class ExtensionGarbageCollectorChromeOSUnitTest
                                            const std::string& version,
                                            const base::FilePath& path) {
     return ExtensionBuilder("test")
-        .MergeManifest(
-            DictionaryBuilder().Set(manifest_keys::kVersion, version).Build())
+        .SetManifestKey(manifest_keys::kVersion, version)
         .SetID(id)
         .SetPath(path)
         .SetLocation(Manifest::INTERNAL)

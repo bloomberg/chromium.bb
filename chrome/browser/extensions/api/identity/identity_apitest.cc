@@ -1955,14 +1955,11 @@ class GetAuthTokenFunctionPublicSessionTest : public GetAuthTokenFunctionTest {
 
   scoped_refptr<Extension> CreateTestExtension(const std::string& id) {
     return ExtensionBuilder("Test")
-        .MergeManifest(
-            DictionaryBuilder()
-                .Set("oauth2",
-                     DictionaryBuilder()
-                         .Set("client_id", "clientId")
-                         .Set("scopes", ListBuilder().Append("scope1").Build())
-                         .Build())
-                .Build())
+        .SetManifestKey(
+            "oauth2", DictionaryBuilder()
+                          .Set("client_id", "clientId")
+                          .Set("scopes", ListBuilder().Append("scope1").Build())
+                          .Build())
         .SetID(id)
         .Build();
   }

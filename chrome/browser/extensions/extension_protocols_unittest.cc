@@ -122,11 +122,9 @@ scoped_refptr<Extension> CreateWebStoreExtension() {
 }
 
 scoped_refptr<Extension> CreateTestResponseHeaderExtension() {
-  DictionaryBuilder web_accessible_resources;
-  web_accessible_resources.Set("web_accessible_resources",
-                               ListBuilder().Append("test.dat").Build());
   return ExtensionBuilder("An extension with web-accessible resources")
-      .MergeManifest(web_accessible_resources.Build())
+      .SetManifestKey("web_accessible_resources",
+                      ListBuilder().Append("test.dat").Build())
       .SetPath(GetTestPath("response_headers"))
       .Build();
 }

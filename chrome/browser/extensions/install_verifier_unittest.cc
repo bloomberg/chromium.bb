@@ -97,10 +97,8 @@ TEST_F(InstallVerifierTest, TestIsFromStoreAndMustRemainDisabled) {
     ExtensionBuilder extension_builder(test_case.test_name);
     extension_builder.SetLocation(test_case.location);
     if (test_case.update_url) {
-      extension_builder.MergeManifest(
-          DictionaryBuilder()
-              .Set("update_url", test_case.update_url->spec())
-              .Build());
+      extension_builder.SetManifestKey("update_url",
+                                       test_case.update_url->spec());
     }
     scoped_refptr<const Extension> extension = extension_builder.Build();
 

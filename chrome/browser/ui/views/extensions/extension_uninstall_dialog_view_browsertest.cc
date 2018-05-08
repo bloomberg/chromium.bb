@@ -308,10 +308,8 @@ class ExtensionUninstallDialogViewInteractiveBrowserTest
   void ShowUi(const std::string& name) override {
     extensions::ExtensionBuilder extension_builder("ExtensionForRemoval");
     if (extension_origin_ == EXTENSION_FROM_WEBSTORE) {
-      extensions::DictionaryBuilder update_url;
-      update_url.Set("update_url",
-                     extension_urls::GetWebstoreUpdateUrl().spec());
-      extension_builder.MergeManifest(update_url.Build());
+      extension_builder.SetManifestKey(
+          "update_url", extension_urls::GetWebstoreUpdateUrl().spec());
     }
 
     extension_ = extension_builder.Build();

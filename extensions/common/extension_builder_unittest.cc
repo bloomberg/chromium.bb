@@ -167,4 +167,12 @@ TEST(ExtensionBuilderTest, MergeManifestOverridesValues) {
   }
 }
 
+TEST(ExtensionBuilderTest, SetManifestKey) {
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("foo")
+          .SetManifestKey("short_name", "short name")
+          .Build();
+  EXPECT_EQ("short name", extension->short_name());
+}
+
 }  // namespace extensions

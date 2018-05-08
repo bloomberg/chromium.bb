@@ -68,11 +68,9 @@ class IdentityApiTest : public ApiUnitTest {
                            .Append("https://www.googleapis.com/auth/drive")
                            .Build());
     // Create an extension with OAuth2 scopes.
-    set_extension(
-        ExtensionBuilder("Test")
-            .MergeManifest(
-                DictionaryBuilder().Set("oauth2", oauth2.Build()).Build())
-            .Build());
+    set_extension(ExtensionBuilder("Test")
+                      .SetManifestKey("oauth2", oauth2.Build())
+                      .Build());
   }
 };
 

@@ -162,14 +162,9 @@ TEST_F(ExtensionWebUITest, ExtensionURLOverride) {
 TEST_F(ExtensionWebUITest, TestRemovingDuplicateEntriesForHosts) {
   // Test that duplicate entries for a single extension are removed. This could
   // happen because of https://crbug.com/782959.
-  std::unique_ptr<base::DictionaryValue> manifest_overrides =
-      DictionaryBuilder().Set("newtab", "newtab.html").Build();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("extension")
-          .MergeManifest(
-              DictionaryBuilder()
-                  .Set("chrome_url_overrides", std::move(manifest_overrides))
-                  .Build())
+          .SetManifestPath({"chrome_url_overrides", "newtab"}, "newtab.html")
           .Build();
 
   const GURL newtab_url = extension->GetResourceURL("newtab.html");

@@ -104,15 +104,10 @@ TEST_F(RuntimeHooksDelegateTest, RuntimeId) {
   v8::Local<v8::Context> context = MainContext();
 
   {
-    DictionaryBuilder connectable;
-    connectable.Set("matches",
-                    ListBuilder().Append("*://example.com/*").Build());
     scoped_refptr<Extension> connectable_extension =
         ExtensionBuilder("connectable")
-            .MergeManifest(
-                DictionaryBuilder()
-                    .Set("externally_connectable", connectable.Build())
-                    .Build())
+            .SetManifestPath({"externally_connectable", "matches"},
+                             ListBuilder().Append("*://example.com/*").Build())
             .Build();
     RegisterExtension(connectable_extension);
   }
