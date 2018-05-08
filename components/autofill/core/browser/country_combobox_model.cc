@@ -89,7 +89,7 @@ base::string16 CountryComboboxModel::GetItemAt(int index) {
 }
 
 bool CountryComboboxModel::IsItemSeparatorAt(int index) {
-  return !countries_[index].get();
+  return !countries_[index];
 }
 
 std::string CountryComboboxModel::GetDefaultCountryCode() const {

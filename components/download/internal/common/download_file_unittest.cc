@@ -201,7 +201,7 @@ class DownloadFileTest : public testing::Test {
                           bool calculate_hash,
                           const DownloadItem::ReceivedSlices& received_slices) {
     // There can be only one.
-    DCHECK(!download_file_.get());
+    DCHECK(!download_file_);
 
     input_stream_ = new StrictMock<MockInputStream>();
 

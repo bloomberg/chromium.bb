@@ -907,15 +907,15 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
           GURL(kTestURL), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
       fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
       lofi_decider()->SetIsUsingLoFi(config()->ShouldAcceptServerPreview(
-          *fake_request.get(), test_previews_decider));
+          *fake_request, test_previews_decider));
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
 
       VerifyHeaders(is_data_reduction_proxy_enabled[i], true, headers);
-      VerifyDataReductionProxyData(
-          *fake_request, is_data_reduction_proxy_enabled[i],
-          config()->ShouldAcceptServerPreview(*fake_request.get(),
-                                              test_previews_decider));
+      VerifyDataReductionProxyData(*fake_request,
+                                   is_data_reduction_proxy_enabled[i],
+                                   config()->ShouldAcceptServerPreview(
+                                       *fake_request, test_previews_decider));
     }
 
     {
@@ -990,13 +990,13 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
           GURL(kTestURL), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
       fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
       lofi_decider()->SetIsUsingLoFi(config()->ShouldAcceptServerPreview(
-          *fake_request.get(), test_previews_decider));
+          *fake_request, test_previews_decider));
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
-      VerifyDataReductionProxyData(
-          *fake_request, is_data_reduction_proxy_enabled[i],
-          config()->ShouldAcceptServerPreview(*fake_request.get(),
-                                              test_previews_decider));
+      VerifyDataReductionProxyData(*fake_request,
+                                   is_data_reduction_proxy_enabled[i],
+                                   config()->ShouldAcceptServerPreview(
+                                       *fake_request, test_previews_decider));
     }
   }
 }
@@ -1060,8 +1060,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
         &headers);
     network_delegate()->NotifyBeforeSendHeaders(
         request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
-    DataReductionProxyData* data =
-        DataReductionProxyData::GetData(*request.get());
+    DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
     if (!test.used_data_reduction_proxy) {
       EXPECT_FALSE(data);
     } else {
@@ -1120,8 +1119,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
     net::ProxyRetryInfoMap proxy_retry_info;
     network_delegate()->NotifyBeforeSendHeaders(
         request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
-    DataReductionProxyData* data =
-        DataReductionProxyData::GetData(*request.get());
+    DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
     if (!test.data_reduction_proxy_enabled || !test.used_direct) {
       EXPECT_FALSE(data);
     } else {
@@ -1166,8 +1164,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
   network_delegate()->NotifyBeforeSendHeaders(
       request.get(), data_reduction_proxy_info, proxy_retry_info,
       &headers_original);
-  DataReductionProxyData* data =
-      DataReductionProxyData::GetData(*request.get());
+  DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
 
   EXPECT_TRUE(data);
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
@@ -1182,7 +1179,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
   // Simulate a redirect even though the same URL is used. Should clear
   // DataReductionProxyData.
   network_delegate()->NotifyBeforeRedirect(request.get(), GURL(kTestURL));
-  data = DataReductionProxyData::GetData(*request.get());
+  data = DataReductionProxyData::GetData(*request);
   EXPECT_FALSE(data && data->used_data_reduction_proxy());
 
   // Call NotifyBeforeSendHeaders again with different proxy info to check that
@@ -1199,7 +1196,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
   network_delegate()->NotifyBeforeSendHeaders(
       request.get(), data_reduction_proxy_info, proxy_retry_info,
       &headers_redirect);
-  data = DataReductionProxyData::GetData(*request.get());
+  data = DataReductionProxyData::GetData(*request);
   EXPECT_FALSE(data);
 }
 
@@ -1443,8 +1440,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, DetailedNetHistograms) {
           ssl_socket_data_provider());
     }
 
-    std::string via_header = "";
-    std::string ocl_header = "";
+    std::string via_header;
+    std::string ocl_header;
 
     if (test.proxy_config == USE_INSECURE_PROXY) {
       via_header = "Via: 1.1 Chrome-Compression-Proxy\r\n";
@@ -1811,8 +1808,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
       &headers);
   network_delegate()->NotifyBeforeSendHeaders(
       request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
-  DataReductionProxyData* data =
-      DataReductionProxyData::GetData(*request.get());
+  DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
   EXPECT_TRUE(data_reduction_proxy_info.is_http());
   EXPECT_EQ(++page_id, data->page_id().value());
 
@@ -1828,14 +1824,14 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
       &headers);
   network_delegate()->NotifyBeforeSendHeaders(
       request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
-  data = DataReductionProxyData::GetData(*request.get());
+  data = DataReductionProxyData::GetData(*request);
   EXPECT_EQ(++page_id, data->page_id().value());
 
   // Verify that redirects are the same page ID.
   network_delegate()->NotifyBeforeRedirect(request.get(), GURL(kTestURL));
   network_delegate()->NotifyBeforeSendHeaders(
       request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
-  data = DataReductionProxyData::GetData(*request.get());
+  data = DataReductionProxyData::GetData(*request);
   EXPECT_EQ(page_id, data->page_id().value());
 
   network_delegate()->NotifyBeforeRedirect(request.get(), GURL(kTestURL));
@@ -1844,7 +1840,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
   page_id = io_data()->request_options()->GeneratePageId();
   network_delegate()->NotifyBeforeSendHeaders(
       request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
-  data = DataReductionProxyData::GetData(*request.get());
+  data = DataReductionProxyData::GetData(*request);
   EXPECT_EQ(++page_id, data->page_id().value());
 }
 

@@ -418,7 +418,7 @@ DownloadItemImpl::~DownloadItemImpl() {
 
   // Should always have been nuked before now, at worst in
   // DownloadManager shutdown.
-  DCHECK(!download_file_.get());
+  DCHECK(!download_file_);
   CHECK(!is_updating_observers_);
 
   for (auto& observer : observers_)
@@ -1045,7 +1045,7 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
         IsPaused() ? 'T' : 'F', DebugResumeModeString(GetResumeMode()),
         auto_resume_count_, GetDangerType(), AllDataSaved() ? 'T' : 'F',
         GetLastModifiedTime().c_str(), GetETag().c_str(),
-        download_file_.get() ? "true" : "false", url_list.c_str(),
+        download_file_ ? "true" : "false", url_list.c_str(),
         GetFullPath().value().c_str(), GetTargetFilePath().value().c_str(),
         GetReferrerUrl().spec().c_str(), GetSiteUrl().spec().c_str());
   } else {
@@ -1392,7 +1392,7 @@ void DownloadItemImpl::Start(
         url_loader_factory_getter,
     net::URLRequestContextGetter* url_request_context_getter) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!download_file_.get());
+  DCHECK(!download_file_);
   DVLOG(20) << __func__ << "() this=" << DebugString(true);
   RecordDownloadCountWithSource(START_COUNT, download_source_);
 
@@ -1428,7 +1428,7 @@ void DownloadItemImpl::Start(
   // If a resumption attempted failed, or if the download was DOA, then the
   // download should go back to being interrupted.
   if (new_create_info.result != DOWNLOAD_INTERRUPT_REASON_NONE) {
-    DCHECK(!download_file_.get());
+    DCHECK(!download_file_);
 
     // Download requests that are interrupted by Start() should result in a
     // DownloadCreateInfo with an intact DownloadSaveInfo.
@@ -1721,7 +1721,7 @@ void DownloadItemImpl::OnDownloadCompleting() {
   DCHECK(!GetTargetFilePath().empty());
   DCHECK(!IsDangerous());
 
-  DCHECK(download_file_.get());
+  DCHECK(download_file_);
   // Unilaterally rename; even if it already has the right name,
   // we need theannotation.
   DownloadFile::RenameCompletionCallback callback =

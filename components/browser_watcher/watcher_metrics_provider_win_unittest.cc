@@ -84,7 +84,7 @@ TEST_F(WatcherMetricsProviderWinTest, RecordsStabilityHistogram) {
                                      base::FilePath(),
                                      GetExecutableDetailsCallback());
 
-  provider.ProvideStabilityMetrics(NULL);
+  provider.ProvideStabilityMetrics(nullptr);
   histogram_tester_.ExpectBucketCount(
         WatcherMetricsProviderWin::kBrowserExitCodeHistogramName, 0, 11);
   histogram_tester_.ExpectBucketCount(
@@ -108,7 +108,7 @@ TEST_F(WatcherMetricsProviderWinTest, DoesNotReportOwnProcessId) {
                                      base::FilePath(),
                                      GetExecutableDetailsCallback());
 
-  provider.ProvideStabilityMetrics(NULL);
+  provider.ProvideStabilityMetrics(nullptr);
   histogram_tester_.ExpectUniqueSample(
         WatcherMetricsProviderWin::kBrowserExitCodeHistogramName, 0, 11);
 

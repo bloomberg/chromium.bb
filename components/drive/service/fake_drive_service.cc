@@ -1868,8 +1868,7 @@ void FakeDriveService::GetChangeListInternal(
         max_results));
     if (start_changestamp > 0) {
       next_url = net::AppendOrReplaceQueryParameter(
-          next_url, "changestamp",
-          base::Int64ToString(start_changestamp).c_str());
+          next_url, "changestamp", base::Int64ToString(start_changestamp));
     }
     if (!search_query.empty()) {
       next_url = net::AppendOrReplaceQueryParameter(

@@ -41,16 +41,12 @@ void RaiseHardErrorMsg(DWORD nt_status,
     return;
 
   HMODULE ntdll = ::GetModuleHandleA("NTDLL.DLL");
-  wchar_t* msg_template = NULL;
+  wchar_t* msg_template = nullptr;
   size_t count = ::FormatMessage(
       FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS |
-      FORMAT_MESSAGE_FROM_HMODULE,
-      ntdll,
-      nt_status,
-      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-      reinterpret_cast<wchar_t*>(&msg_template),
-      0,
-      NULL);
+          FORMAT_MESSAGE_FROM_HMODULE,
+      ntdll, nt_status, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+      reinterpret_cast<wchar_t*>(&msg_template), 0, nullptr);
 
   if (!count)
     return;
@@ -61,8 +57,7 @@ void RaiseHardErrorMsg(DWORD nt_status,
   // The MB_SERVICE_NOTIFICATION causes this message to be displayed by
   // csrss. This means that we are not creating windows or pumping WM messages
   // in this process.
-  ::MessageBox(NULL, message.c_str(),
-               L"chrome.exe",
+  ::MessageBox(nullptr, message.c_str(), L"chrome.exe",
                MB_OK | MB_SERVICE_NOTIFICATION);
   ::LocalFree(msg_template);
 }

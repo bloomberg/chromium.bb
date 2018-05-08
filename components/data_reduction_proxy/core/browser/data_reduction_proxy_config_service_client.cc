@@ -410,7 +410,7 @@ void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
   request.SerializeToString(&serialized_request);
   std::unique_ptr<net::URLFetcher> fetcher =
       GetURLFetcherForConfig(config_service_url_, serialized_request);
-  if (!fetcher.get()) {
+  if (!fetcher) {
     HandleResponse(std::string(),
                    net::URLRequestStatus::FromError(net::ERR_ABORTED),
                    net::URLFetcher::RESPONSE_CODE_INVALID);

@@ -66,7 +66,7 @@ base::HistogramBase::Sample ToHistogramSample(T t) {
 
 class MockDelegate : public DownloadItemImplDelegate {
  public:
-  MockDelegate() : DownloadItemImplDelegate() { SetDefaultExpectations(); }
+  MockDelegate() { SetDefaultExpectations(); }
 
   MOCK_METHOD2(DetermineDownloadTarget,
                void(DownloadItemImpl*,
@@ -2235,8 +2235,7 @@ class DownloadItemDestinationUpdateRaceTest
       public ::testing::WithParamInterface<EventList> {
  public:
   DownloadItemDestinationUpdateRaceTest()
-      : DownloadItemTest(),
-        item_(CreateDownloadItem()),
+      : item_(CreateDownloadItem()),
         file_(new ::testing::StrictMock<MockDownloadFile>()),
         request_handle_(new ::testing::StrictMock<MockRequestHandle>()) {
     DCHECK_EQ(GetParam().size(), static_cast<unsigned>(kEventCount));

@@ -241,14 +241,14 @@ bool PhoneNumbersMatch(const base::string16& number_a,
 
   // Parse phone numbers based on the region
   ::i18n::phonenumbers::PhoneNumber i18n_number1;
-  if (phone_util->Parse(base::UTF16ToUTF8(number_a), region.c_str(),
-                        &i18n_number1) != PhoneNumberUtil::NO_PARSING_ERROR) {
+  if (phone_util->Parse(base::UTF16ToUTF8(number_a), region, &i18n_number1) !=
+      PhoneNumberUtil::NO_PARSING_ERROR) {
     return false;
   }
 
   ::i18n::phonenumbers::PhoneNumber i18n_number2;
-  if (phone_util->Parse(base::UTF16ToUTF8(number_b), region.c_str(),
-                        &i18n_number2) != PhoneNumberUtil::NO_PARSING_ERROR) {
+  if (phone_util->Parse(base::UTF16ToUTF8(number_b), region, &i18n_number2) !=
+      PhoneNumberUtil::NO_PARSING_ERROR) {
     return false;
   }
 
@@ -379,7 +379,7 @@ PhoneObject& PhoneObject::operator=(const PhoneObject& other) {
 
   region_ = other.region_;
 
-  if (other.i18n_number_.get())
+  if (other.i18n_number_)
     i18n_number_.reset(
         new ::i18n::phonenumbers::PhoneNumber(*other.i18n_number_));
   else

@@ -46,7 +46,7 @@ class CupEcdsaTest : public testing::Test {
     ASSERT_TRUE(cup_.get());
   }
 
-  Ecdsa& CUP() { return *cup_.get(); }
+  Ecdsa& CUP() { return *cup_; }
 
  private:
   std::unique_ptr<Ecdsa> cup_;

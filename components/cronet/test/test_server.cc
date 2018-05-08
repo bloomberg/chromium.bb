@@ -199,13 +199,13 @@ void TestServer::Shutdown() {
 
 /* static */
 int TestServer::GetPort() {
-  DCHECK(g_test_server.get());
+  DCHECK(g_test_server);
   return g_test_server->port();
 }
 
 /* static */
 std::string TestServer::GetHostPort() {
-  DCHECK(g_test_server.get());
+  DCHECK(g_test_server);
   return net::HostPortPair::FromURL(g_test_server->base_url()).ToString();
 }
 

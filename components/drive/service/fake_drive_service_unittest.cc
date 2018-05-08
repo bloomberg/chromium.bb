@@ -1836,7 +1836,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(DRIVE_NO_CONNECTION, response.code);
-  EXPECT_FALSE(entry.get());
+  EXPECT_FALSE(entry);
 }
 
 TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
@@ -1863,7 +1863,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, response.code);
-  EXPECT_FALSE(entry.get());
+  EXPECT_FALSE(entry);
 }
 
 TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
@@ -1907,7 +1907,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
-  EXPECT_FALSE(entry.get());
+  EXPECT_FALSE(entry);
   ASSERT_TRUE(!upload_progress_values.empty());
   EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
   EXPECT_LE(0, upload_progress_values.front().first);
@@ -1972,7 +1972,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
-  EXPECT_FALSE(entry.get());
+  EXPECT_FALSE(entry);
   ASSERT_TRUE(!upload_progress_values.empty());
   EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
   EXPECT_LE(0, upload_progress_values.front().first);

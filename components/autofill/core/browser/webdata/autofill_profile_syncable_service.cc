@@ -95,9 +95,9 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
     std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
     std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!sync_processor_.get());
-  DCHECK(sync_processor.get());
-  DCHECK(sync_error_factory.get());
+  DCHECK(!sync_processor_);
+  DCHECK(sync_processor);
+  DCHECK(sync_error_factory);
   DVLOG(1) << "Associating Autofill: MergeDataAndStartSyncing";
 
   syncer::SyncMergeResult merge_result(type);
@@ -216,7 +216,7 @@ void AutofillProfileSyncableService::StopSyncing(syncer::ModelType type) {
 syncer::SyncDataList AutofillProfileSyncableService::GetAllSyncData(
     syncer::ModelType type) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(sync_processor_.get());
+  DCHECK(sync_processor_);
   DCHECK_EQ(type, syncer::AUTOFILL_PROFILE);
 
   syncer::SyncDataList current_data;
@@ -229,7 +229,7 @@ syncer::SyncError AutofillProfileSyncableService::ProcessSyncChanges(
     const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!sync_processor_.get()) {
+  if (!sync_processor_) {
     syncer::SyncError error(FROM_HERE,
                             syncer::SyncError::DATATYPE_ERROR,
                             "Models not yet associated.",
@@ -279,7 +279,7 @@ void AutofillProfileSyncableService::AutofillProfileChanged(
   // up we are going to process all when MergeData..() is called. If we receive
   // notification after the sync exited, it will be sinced next time Chrome
   // starts.
-  if (sync_processor_.get()) {
+  if (sync_processor_) {
     ActOnChange(change);
   } else if (!flare_.is_null()) {
     flare_.Run(syncer::AUTOFILL_PROFILE);
@@ -579,7 +579,7 @@ void AutofillProfileSyncableService::ActOnChange(
       (change.type() == AutofillProfileChange::REMOVE &&
        !change.data_model()) ||
       (change.type() != AutofillProfileChange::REMOVE && change.data_model()));
-  DCHECK(sync_processor_.get());
+  DCHECK(sync_processor_);
 
   if (change.data_model() &&
       change.data_model()->record_type() != AutofillProfile::LOCAL_PROFILE) {

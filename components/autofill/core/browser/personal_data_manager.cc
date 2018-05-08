@@ -378,7 +378,7 @@ void PersonalDataManager::Init(scoped_refptr<AutofillWebDataService> database,
     AutofillMetrics::LogIsAutofillEnabledAtStartup(IsAutofillEnabled());
 
   // WebDataService may not be available in tests.
-  if (!database_.get())
+  if (!database_)
     return;
 
   LoadProfiles();
@@ -402,7 +402,7 @@ PersonalDataManager::~PersonalDataManager() {
   CancelPendingQuery(&pending_creditcards_query_);
   CancelPendingQuery(&pending_server_creditcards_query_);
 
-  if (database_.get())
+  if (database_)
     database_->RemoveObserver(this);
 }
 
@@ -548,7 +548,7 @@ void PersonalDataManager::MarkObserversInsufficientFormDataForImport() {
 }
 
 void PersonalDataManager::RecordUseOf(const AutofillDataModel& data_model) {
-  if (is_off_the_record_ || !database_.get())
+  if (is_off_the_record_ || !database_)
     return;
 
   CreditCard* credit_card = GetCreditCardByGUID(data_model.guid());
@@ -588,7 +588,7 @@ void PersonalDataManager::AddProfile(const AutofillProfile& profile) {
   if (FindByGUID<AutofillProfile>(web_profiles_, profile.guid()))
     return;
 
-  if (!database_.get())
+  if (!database_)
     return;
 
   // Don't add a duplicate.
@@ -619,7 +619,7 @@ void PersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
     return;
   }
 
-  if (!database_.get())
+  if (!database_)
     return;
 
   // Make the update.
@@ -653,7 +653,7 @@ void PersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
   if (FindByGUID<CreditCard>(local_credit_cards_, credit_card.guid()))
     return;
 
-  if (!database_.get())
+  if (!database_)
     return;
 
   // Don't add a duplicate.
@@ -688,7 +688,7 @@ void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
   // Update the cached version.
   *existing_credit_card = credit_card;
 
-  if (!database_.get())
+  if (!database_)
     return;
 
   // Make the update.
@@ -704,7 +704,7 @@ void PersonalDataManager::AddFullServerCreditCard(
   DCHECK(!credit_card.IsEmpty(app_locale_));
   DCHECK(!credit_card.server_id().empty());
 
-  if (is_off_the_record_ || !database_.get())
+  if (is_off_the_record_ || !database_)
     return;
 
   // Don't add a duplicate.
@@ -723,7 +723,7 @@ void PersonalDataManager::UpdateServerCreditCard(
     const CreditCard& credit_card) {
   DCHECK_NE(CreditCard::LOCAL_CARD, credit_card.record_type());
 
-  if (is_off_the_record_ || !database_.get())
+  if (is_off_the_record_ || !database_)
     return;
 
   // Look up by server id, not GUID.
@@ -752,7 +752,7 @@ void PersonalDataManager::UpdateServerCardMetadata(
     const CreditCard& credit_card) {
   DCHECK_NE(CreditCard::LOCAL_CARD, credit_card.record_type());
 
-  if (is_off_the_record_ || !database_.get())
+  if (is_off_the_record_ || !database_)
     return;
 
   database_->UpdateServerCardMetadata(credit_card);
@@ -842,7 +842,7 @@ void PersonalDataManager::RemoveByGUID(const std::string& guid) {
   if (!is_credit_card && !is_profile)
     return;
 
-  if (!database_.get())
+  if (!database_)
     return;
 
   if (is_credit_card) {
@@ -1348,7 +1348,7 @@ void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
                                  IsEmptyFunctor<AutofillProfile>(app_locale_)),
                   profiles->end());
 
-  if (!database_.get())
+  if (!database_)
     return;
 
   // Any profiles that are not in the new profile list should be removed from
@@ -1391,7 +1391,7 @@ void PersonalDataManager::SetCreditCards(
                                      IsEmptyFunctor<CreditCard>(app_locale_)),
                       credit_cards->end());
 
-  if (!database_.get())
+  if (!database_)
     return;
 
   // Any credit cards that are not in the new credit card list should be
@@ -1424,7 +1424,7 @@ void PersonalDataManager::SetCreditCards(
 }
 
 void PersonalDataManager::LoadProfiles() {
-  if (!database_.get()) {
+  if (!database_) {
     NOTREACHED();
     return;
   }
@@ -1437,7 +1437,7 @@ void PersonalDataManager::LoadProfiles() {
 }
 
 void PersonalDataManager::LoadCreditCards() {
-  if (!database_.get()) {
+  if (!database_) {
     NOTREACHED();
     return;
   }
@@ -1452,7 +1452,7 @@ void PersonalDataManager::LoadCreditCards() {
 void PersonalDataManager::CancelPendingQuery(
     WebDataServiceBase::Handle* handle) {
   if (*handle) {
-    if (!database_.get()) {
+    if (!database_) {
       NOTREACHED();
       return;
     }

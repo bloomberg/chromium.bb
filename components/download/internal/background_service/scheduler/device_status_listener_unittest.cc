@@ -34,8 +34,7 @@ MATCHER_P(BatteryStatusEqual, value, "") {
 class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
  public:
   TestNetworkChangeNotifier()
-      : net::NetworkChangeNotifier(),
-        conn_type_(ConnectionType::CONNECTION_UNKNOWN) {}
+      : conn_type_(ConnectionType::CONNECTION_UNKNOWN) {}
 
   // net::NetworkChangeNotifier implementation.
   ConnectionType GetCurrentConnectionType() const override {
@@ -129,7 +128,7 @@ class DeviceStatusListenerTest : public testing::Test {
   // Simulates a network change call, the event will be sent to client
   // immediately.
   void ChangeNetworkTypeImmediately(ConnectionType type) {
-    DCHECK(listener_.get());
+    DCHECK(listener_);
     static_cast<NetworkStatusListener::Observer*>(listener_.get())
         ->OnNetworkChanged(type);
   }

@@ -216,7 +216,7 @@ void DataReductionProxyIOData::InitializeOnIOThread() {
                                 network_properties_manager_.get());
   bypass_stats_->InitializeOnIOThread();
   proxy_delegate_->InitializeOnIOThread(this);
-  if (config_client_.get())
+  if (config_client_)
     config_client_->InitializeOnIOThread(url_request_context_getter_);
   if (ui_task_runner_->BelongsToCurrentThread()) {
     service_->SetIOData(weak_factory_.GetWeakPtr());

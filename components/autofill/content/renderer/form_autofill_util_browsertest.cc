@@ -131,7 +131,7 @@ const char kDivTableExample6Expected[] = "";
 
 class FormAutofillUtilsTest : public content::RenderViewTest {
  public:
-  FormAutofillUtilsTest() : content::RenderViewTest() {}
+  FormAutofillUtilsTest() {}
   ~FormAutofillUtilsTest() override {}
 };
 

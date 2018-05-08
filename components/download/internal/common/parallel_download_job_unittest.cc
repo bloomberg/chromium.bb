@@ -429,7 +429,7 @@ TEST_F(ParallelDownloadJobTest, EarlyCancelBeforeByteStreamReady) {
   for (auto& worker : job_->workers()) {
     std::unique_ptr<MockDownloadRequestHandle> mock_handle =
         std::make_unique<MockDownloadRequestHandle>();
-    EXPECT_CALL(*mock_handle.get(), CancelRequest(_));
+    EXPECT_CALL(*mock_handle, CancelRequest(_));
     MakeWorkerReady(worker.second.get(), std::move(mock_handle));
   }
 
@@ -451,10 +451,10 @@ TEST_F(ParallelDownloadJobTest, EarlyPauseBeforeByteStreamReady) {
   EXPECT_TRUE(job_->is_paused());
 
   for (auto& worker : job_->workers()) {
-    EXPECT_CALL(*job_.get(), CountOnInputStreamReady());
+    EXPECT_CALL(*job_, CountOnInputStreamReady());
     std::unique_ptr<MockDownloadRequestHandle> mock_handle =
         std::make_unique<MockDownloadRequestHandle>();
-    EXPECT_CALL(*mock_handle.get(), PauseRequest());
+    EXPECT_CALL(*mock_handle, PauseRequest());
     MakeWorkerReady(worker.second.get(), std::move(mock_handle));
   }
 
@@ -517,7 +517,7 @@ TEST_F(ParallelDownloadJobTest, InterruptOnStartup) {
   job_->MakeFileInitialized(callback.Get(), DOWNLOAD_INTERRUPT_REASON_NONE);
 
   // Simulate and inject an error from IO thread after file initialized.
-  EXPECT_CALL(*download_item_.get(), GetState())
+  EXPECT_CALL(*download_item_, GetState())
       .WillRepeatedly(Return(DownloadItem::DownloadState::INTERRUPTED));
 
   // Because of the error, no parallel requests are built.

@@ -250,7 +250,7 @@ bool ComponentInstaller::FindPreinstallation(
 void ComponentInstaller::StartRegistration(
     scoped_refptr<RegistrationInfo> registration_info) {
   VLOG(1) << __func__ << " for " << installer_policy_->GetName();
-  DCHECK(task_runner_.get());
+  DCHECK(task_runner_);
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   base::Version latest_version(kNullVersion);
@@ -353,7 +353,7 @@ void ComponentInstaller::StartRegistration(
 }
 
 void ComponentInstaller::UninstallOnTaskRunner() {
-  DCHECK(task_runner_.get());
+  DCHECK(task_runner_);
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   // Only try to delete any files that are in our user-level install path.

@@ -189,7 +189,7 @@ void CookieSettings::GetCookieSetting(const GURL& url,
       net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES);
 
   // We should always have a value, at least from the default provider.
-  DCHECK(value.get());
+  DCHECK(value);
   ContentSetting setting = ValueToContentSetting(value.get());
   bool block =
       block_third && policy.CanAccessCookies(url, first_party_url) != net::OK;

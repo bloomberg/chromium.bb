@@ -47,7 +47,7 @@ void DBDataOwner::StoreCurrentDataUsageBucket(
     std::unique_ptr<DataUsageBucket> current) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
-  data_usage_->StoreCurrentDataUsageBucket(*current.get());
+  data_usage_->StoreCurrentDataUsageBucket(*current);
 }
 
 void DBDataOwner::DeleteHistoricalDataUsage() {

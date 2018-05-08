@@ -193,7 +193,7 @@ class MonitoredProcessClient {
     *success = message_window_->CreateNamed(
         base::Bind(&MonitoredProcessClient::EmptyMessageCallback,
                    base::Unretained(this)),
-        existing_dir.value().c_str());
+        existing_dir.value());
     created->Signal();
   }
 
@@ -251,7 +251,7 @@ class HangMonitorThread {
         thread_("Hang monitor thread") {}
 
   ~HangMonitorThread() {
-    if (hang_monitor_.get())
+    if (hang_monitor_)
       DestroyWatcher();
   }
 

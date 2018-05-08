@@ -9,7 +9,7 @@
 namespace data_reduction_proxy {
 
 TestDataReductionProxyParams::TestDataReductionProxyParams()
-    : DataReductionProxyParams(), override_non_secure_proxies_(false) {
+    : override_non_secure_proxies_(false) {
   proxies_for_http_.push_back(DataReductionProxyServer(
       net::ProxyServer::FromURI("origin.net:80", net::ProxyServer::SCHEME_HTTP),
       ProxyServer::CORE));

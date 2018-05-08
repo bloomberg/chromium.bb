@@ -357,7 +357,7 @@ class MockCastSocketTest : public CastSocketTestBase {
   MockCastSocketTest() {}
 
   void TearDown() override {
-    if (socket_.get()) {
+    if (socket_) {
       EXPECT_CALL(handler_, OnCloseComplete(net::OK));
       socket_->Close(base::Bind(&CompleteHandler::OnCloseComplete,
                                 base::Unretained(&handler_)));
@@ -396,7 +396,7 @@ class SslCastSocketTest : public CastSocketTestBase {
   SslCastSocketTest() {}
 
   void TearDown() override {
-    if (socket_.get()) {
+    if (socket_) {
       EXPECT_CALL(handler_, OnCloseComplete(net::OK));
       socket_->Close(base::Bind(&CompleteHandler::OnCloseComplete,
                                 base::Unretained(&handler_)));

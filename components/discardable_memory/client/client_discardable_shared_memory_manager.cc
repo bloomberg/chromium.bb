@@ -167,7 +167,7 @@ ClientDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
     // Search free lists for suitable span.
     std::unique_ptr<DiscardableSharedMemoryHeap::Span> free_span =
         heap_->SearchFreeLists(pages, slack);
-    if (!free_span.get())
+    if (!free_span)
       break;
 
     // Attempt to lock |free_span|. Delete span and search free lists again

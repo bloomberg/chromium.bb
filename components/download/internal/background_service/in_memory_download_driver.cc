@@ -131,7 +131,7 @@ base::Optional<DriverEntry> InMemoryDownloadDriver::Find(
   base::Optional<DriverEntry> entry;
   auto it = downloads_.find(guid);
   if (it != downloads_.end())
-    entry = CreateDriverEntry(*it->second.get());
+    entry = CreateDriverEntry(*it->second);
   return entry;
 }
 

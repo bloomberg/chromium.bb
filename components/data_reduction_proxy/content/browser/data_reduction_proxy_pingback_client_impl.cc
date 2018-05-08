@@ -337,7 +337,7 @@ void DataReductionProxyPingbackClientImpl::CreateReport(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   PageloadMetrics* pageload_metrics = metrics_request_.add_pageloads();
   AddDataToPageloadMetrics(request_data, timing, crash_type, pageload_metrics);
-  if (current_fetcher_.get())
+  if (current_fetcher_)
     return;
   DCHECK_EQ(1, metrics_request_.pageloads_size());
   CreateFetcherForDataAndStart();

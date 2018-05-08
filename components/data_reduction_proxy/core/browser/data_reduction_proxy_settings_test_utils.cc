@@ -32,9 +32,7 @@ const char kProxy[] = "proxy";
 
 namespace data_reduction_proxy {
 
-DataReductionProxySettingsTestBase::DataReductionProxySettingsTestBase()
-    : testing::Test() {
-}
+DataReductionProxySettingsTestBase::DataReductionProxySettingsTestBase() {}
 
 DataReductionProxySettingsTestBase::~DataReductionProxySettingsTestBase() {}
 

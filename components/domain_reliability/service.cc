@@ -65,7 +65,7 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
       override {
-    DCHECK(!network_task_runner_.get());
+    DCHECK(!network_task_runner_);
 
     std::unique_ptr<DomainReliabilityMonitor> monitor(
         new DomainReliabilityMonitor(
@@ -86,7 +86,7 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
       DomainReliabilityClearMode clear_mode,
       const base::Callback<bool(const GURL&)>& origin_filter,
       const base::Closure& callback) override {
-    DCHECK(network_task_runner_.get());
+    DCHECK(network_task_runner_);
 
     network_task_runner_->PostTaskAndReply(
         FROM_HERE, base::Bind(&DomainReliabilityMonitor::ClearBrowsingData,
@@ -96,7 +96,7 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
 
   void GetWebUIData(const base::Callback<void(std::unique_ptr<base::Value>)>&
                         callback) const override {
-    DCHECK(network_task_runner_.get());
+    DCHECK(network_task_runner_);
 
     PostTaskAndReplyWithResult(
         network_task_runner_.get(),
@@ -106,7 +106,7 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
   }
 
   void SetDiscardUploadsForTesting(bool discard_uploads) override {
-    DCHECK(network_task_runner_.get());
+    DCHECK(network_task_runner_);
 
     network_task_runner_->PostTask(
         FROM_HERE,
@@ -117,7 +117,7 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
 
   void AddContextForTesting(
       std::unique_ptr<const DomainReliabilityConfig> config) override {
-    DCHECK(network_task_runner_.get());
+    DCHECK(network_task_runner_);
 
     network_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&AddContextForTestingOnNetworkTaskRunner,
@@ -125,7 +125,7 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
   }
 
   void ForceUploadsForTesting() override {
-    DCHECK(network_task_runner_.get());
+    DCHECK(network_task_runner_);
 
     network_task_runner_->PostTask(
         FROM_HERE,

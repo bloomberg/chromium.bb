@@ -36,7 +36,7 @@ CrashKeysWin::CrashKeysWin()
 
 CrashKeysWin::~CrashKeysWin() {
   DCHECK_EQ(this, keeper_);
-  keeper_ = NULL;
+  keeper_ = nullptr;
 }
 
 // Appends the plugin path to |g_custom_entries|.
@@ -167,7 +167,7 @@ void CrashKeysWin::SetCrashKeyValue(
   base::AutoLock lock(lock_);
 
   DynamicEntriesMap::iterator it = dynamic_entries_.find(safe_key);
-  google_breakpad::CustomInfoEntry* entry = NULL;
+  google_breakpad::CustomInfoEntry* entry = nullptr;
   if (it == dynamic_entries_.end()) {
     if (dynamic_entries_.size() >= kMaxDynamicEntries)
       return;
@@ -188,7 +188,7 @@ void CrashKeysWin::ClearCrashKeyValue(const std::wstring& key) {
   if (it == dynamic_entries_.end())
     return;
 
-  it->second->set_value(NULL);
+  it->second->set_value(nullptr);
 }
 
 }  // namespace breakpad

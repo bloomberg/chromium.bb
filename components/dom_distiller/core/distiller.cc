@@ -159,7 +159,7 @@ void DistillerImpl::OnPageDistillationFinished(
     }
   }
 
-  DCHECK(distiller_result.get());
+  DCHECK(distiller_result);
   DistilledPageData* page_data =
       GetPageAtIndex(started_pages_index_[page_num]);
   page_data->distilled_page_proto =
@@ -311,7 +311,7 @@ void DistillerImpl::OnFetchImageDone(int page_num,
                                      const std::string& response) {
   DCHECK(started_pages_index_.find(page_num) != started_pages_index_.end());
   DistilledPageData* page_data = GetPageAtIndex(started_pages_index_[page_num]);
-  DCHECK(page_data->distilled_page_proto.get());
+  DCHECK(page_data->distilled_page_proto);
   DCHECK(url_fetcher);
   auto fetcher_it = std::find_if(
       page_data->image_fetchers_.begin(), page_data->image_fetchers_.end(),

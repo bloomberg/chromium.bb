@@ -49,7 +49,7 @@ void AutofillWebDataBackendImpl::RemoveObserver(
 }
 
 AutofillWebDataBackendImpl::~AutofillWebDataBackendImpl() {
-  DCHECK(!user_data_.get());  // Forgot to call ResetUserData?
+  DCHECK(!user_data_);  // Forgot to call ResetUserData?
 }
 
 WebDatabase* AutofillWebDataBackendImpl::GetDatabase() {

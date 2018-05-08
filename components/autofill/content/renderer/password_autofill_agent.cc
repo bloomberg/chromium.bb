@@ -662,7 +662,6 @@ PasswordAutofillAgent::PasswordAutofillAgent(
     content::RenderFrame* render_frame,
     service_manager::BinderRegistry* registry)
     : content::RenderFrameObserver(render_frame),
-      web_input_to_password_info_(),
       last_supplied_password_info_iter_(web_input_to_password_info_.end()),
       logging_state_active_(false),
       was_username_autofilled_(false),

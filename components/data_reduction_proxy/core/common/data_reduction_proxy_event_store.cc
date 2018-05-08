@@ -269,7 +269,7 @@ std::string DataReductionProxyEventStore::SanitizedLastBypassEvent() const {
   }
 
   std::string json;
-  base::JSONWriter::Write(*last_bypass.get(), &json);
+  base::JSONWriter::Write(*last_bypass, &json);
   return json;
 }
 

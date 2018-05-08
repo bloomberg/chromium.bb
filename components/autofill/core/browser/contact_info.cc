@@ -20,7 +20,7 @@ namespace autofill {
 
 NameInfo::NameInfo() {}
 
-NameInfo::NameInfo(const NameInfo& info) : FormGroup() {
+NameInfo::NameInfo(const NameInfo& info) {
   *this = info;
 }
 
@@ -181,7 +181,7 @@ void NameInfo::SetFullName(const base::string16& full) {
 
 EmailInfo::EmailInfo() {}
 
-EmailInfo::EmailInfo(const EmailInfo& info) : FormGroup() {
+EmailInfo::EmailInfo(const EmailInfo& info) {
   *this = info;
 }
 
@@ -217,7 +217,7 @@ void EmailInfo::SetRawInfo(ServerFieldType type, const base::string16& value) {
 
 CompanyInfo::CompanyInfo() {}
 
-CompanyInfo::CompanyInfo(const CompanyInfo& info) : FormGroup() {
+CompanyInfo::CompanyInfo(const CompanyInfo& info) {
   *this = info;
 }
 
