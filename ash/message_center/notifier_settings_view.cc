@@ -85,7 +85,7 @@ constexpr int kComputedCheckboxSize =
 // A function to create a focus border.
 std::unique_ptr<views::Painter> CreateFocusPainter() {
   return views::Painter::CreateSolidFocusPainter(
-      message_center::kFocusBorderColor, gfx::Insets());
+      message_center::kFocusBorderColor, gfx::Insets(1, 2, 3, 2));
 }
 
 // TODO(tetsui): Give more general names and remove kEntryHeight, etc.

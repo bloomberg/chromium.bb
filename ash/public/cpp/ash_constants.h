@@ -6,6 +6,7 @@
 #define ASH_PUBLIC_CPP_ASH_CONSTANTS_H_
 
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 
 typedef unsigned int SkColor;
 
@@ -27,8 +28,8 @@ constexpr int kResizeInsideBoundsSize = 1;
 constexpr SkColor kChromeOsBootColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
 
 // The border color of keyboard focus for launcher items and system tray.
-constexpr SkColor kFocusBorderColor = SK_ColorTRANSPARENT;
-constexpr int kFocusBorderThickness = 0;
+constexpr SkColor kFocusBorderColor = SkColorSetA(gfx::kGoogleBlue500, 0x99);
+constexpr int kFocusBorderThickness = 2;
 
 constexpr int kDefaultLargeCursorSize = 64;
 
