@@ -40,7 +40,6 @@ class ExtensionAppResult : public AppResult,
 
   // ChromeSearchResult overrides:
   void Open(int event_flags) override;
-  std::unique_ptr<ChromeSearchResult> Duplicate() const override;
   void GetContextMenuModel(GetMenuModelCallback callback) override;
 
  private:

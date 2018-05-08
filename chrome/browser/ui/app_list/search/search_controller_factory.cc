@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/search/settings_shortcut/settings_shortcut_provider.h"
 #include "chrome/browser/ui/app_list/search/webstore/webstore_provider.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/arc/arc_util.h"
 
@@ -89,7 +90,7 @@ std::unique_ptr<SearchController> CreateSearchController(
         webstore_group_id,
         std::make_unique<WebstoreProvider>(profile, list_controller));
   }
-  if (features::IsAnswerCardEnabled()) {
+  if (features::IsAnswerCardEnabled() && !ash_util::IsRunningInMash()) {
     controller->AddProvider(
         answer_card_group_id,
         std::make_unique<AnswerCardSearchProvider>(

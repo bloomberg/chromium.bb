@@ -30,10 +30,10 @@ SettingsShortcutResult::SettingsShortcutResult(
     const SettingsShortcut& settings_shortcut)
     : profile_(profile), settings_shortcut_(settings_shortcut) {
   set_id(settings_shortcut.shortcut_id);
-  set_title(
+  SetTitle(
       l10n_util::GetStringUTF16(settings_shortcut.name_string_resource_id));
   // TODO(wutao): create a new display type kSettingsShortcut.
-  set_display_type(DisplayType::kTile);
+  SetDisplayType(DisplayType::kTile);
   SetIcon(gfx::ImageSkiaOperations::CreateResizedImage(
       gfx::CreateVectorIcon(settings_shortcut.vector_icon, kSettingsColor),
       skia::ImageOperations::RESIZE_BEST,
@@ -42,14 +42,6 @@ SettingsShortcutResult::SettingsShortcutResult(
 
 void SettingsShortcutResult::Open(int event_flags) {
   chrome::ShowSettingsSubPageForProfile(profile_, settings_shortcut_.subpage);
-}
-
-std::unique_ptr<ChromeSearchResult> SettingsShortcutResult::Duplicate() const {
-  auto result =
-      std::make_unique<SettingsShortcutResult>(profile_, settings_shortcut_);
-  result->set_title_tags(title_tags());
-  result->set_relevance(relevance());
-  return result;
 }
 
 void SettingsShortcutResult::GetContextMenuModel(

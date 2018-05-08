@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_CROSTINI_APP_RESULT_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
@@ -28,7 +29,6 @@ class CrostiniAppResult : public AppResult, public AppIconLoaderDelegate {
 
   // ChromeSearchResult overrides:
   void Open(int event_flags) override;
-  std::unique_ptr<ChromeSearchResult> Duplicate() const override;
   void GetContextMenuModel(GetMenuModelCallback callback) override;
   void ExecuteLaunchCommand(int event_flags) override;
 

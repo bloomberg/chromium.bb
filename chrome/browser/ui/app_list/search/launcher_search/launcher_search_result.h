@@ -30,7 +30,7 @@ class LauncherSearchResult : public ChromeSearchResult,
       std::unique_ptr<chromeos::launcher_search_provider::ErrorReporter>
           error_reporter);
   ~LauncherSearchResult() override;
-  std::unique_ptr<ChromeSearchResult> Duplicate() const override;
+  std::unique_ptr<LauncherSearchResult> Duplicate() const;
   void Open(int event_flags) override;
 
   void OnIconImageChanged(LauncherSearchIconImageLoader* image_loader) override;

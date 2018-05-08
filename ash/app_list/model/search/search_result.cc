@@ -21,6 +21,12 @@ SearchResult::~SearchResult() {
     observer.OnResultDestroying();
 }
 
+void SearchResult::SetMetadata(ash::mojom::SearchResultMetadataPtr metadata) {
+  metadata_ = std::move(metadata);
+  for (auto& observer : observers_)
+    observer.OnMetadataChanged();
+}
+
 void SearchResult::SetIcon(const gfx::ImageSkia& icon) {
   metadata_->icon = icon;
   for (auto& observer : observers_)

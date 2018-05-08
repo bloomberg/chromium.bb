@@ -52,13 +52,12 @@ LauncherSearchResult::~LauncherSearchResult() {
     icon_image_loader_->RemoveObserver(this);
 }
 
-std::unique_ptr<ChromeSearchResult> LauncherSearchResult::Duplicate() const {
+std::unique_ptr<LauncherSearchResult> LauncherSearchResult::Duplicate() const {
   LauncherSearchResult* duplicated_result =
       new LauncherSearchResult(item_id_, discrete_value_relevance_, profile_,
                                extension_, icon_image_loader_);
-  duplicated_result->set_title(title());
-  duplicated_result->set_title_tags(title_tags());
   duplicated_result->set_model_updater(model_updater());
+  duplicated_result->SetMetadata(CloneMetadata());
   return base::WrapUnique(duplicated_result);
 }
 
@@ -101,8 +100,8 @@ void LauncherSearchResult::Initialize() {
   set_relevance(static_cast<double>(discrete_value_relevance_) /
                 static_cast<double>(
                     chromeos::launcher_search_provider::kMaxSearchResultScore));
-  set_details(base::UTF8ToUTF16(extension_->name()));
-  set_result_type(ResultType::kLauncher);
+  SetDetails(base::UTF8ToUTF16(extension_->name()));
+  SetResultType(ResultType::kLauncher);
 
   icon_image_loader_->AddObserver(this);
 

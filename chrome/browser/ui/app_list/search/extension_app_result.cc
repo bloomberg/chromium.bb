@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/search/extension_app_result.h"
 
+#include <utility>
+
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/metrics/user_metrics.h"
@@ -76,17 +78,6 @@ void ExtensionAppResult::Open(int event_flags) {
       extension,
       AppListControllerDelegate::LAUNCH_FROM_APP_LIST_SEARCH,
       event_flags);
-}
-
-std::unique_ptr<ChromeSearchResult> ExtensionAppResult::Duplicate() const {
-  std::unique_ptr<ChromeSearchResult> copy =
-      std::make_unique<ExtensionAppResult>(
-          profile(), app_id(), controller(),
-          display_type() == ash::SearchResultDisplayType::kRecommendation);
-  copy->set_title(title());
-  copy->set_title_tags(title_tags());
-  copy->set_relevance(relevance());
-  return copy;
 }
 
 void ExtensionAppResult::GetContextMenuModel(GetMenuModelCallback callback) {

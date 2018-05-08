@@ -18,10 +18,6 @@
 class AppListClientImpl;
 class AppListControllerDelegateImpl;
 
-namespace app_list {
-class SearchModel;
-}  // namespace app_list
-
 namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
@@ -62,10 +58,6 @@ class AppListServiceImpl : public AppListService {
   // Returns a pointer to control the app list views in ash.
   ash::mojom::AppListController* GetAppListController();
   AppListClientImpl* GetAppListClient();
-
-  // TODO(hejq): Search model migration is not done yet. Chrome still accesses
-  //             it directly in non-mus+ash mode.
-  app_list::SearchModel* GetSearchModelFromAsh();
 
  private:
   friend struct base::DefaultSingletonTraits<AppListServiceImpl>;

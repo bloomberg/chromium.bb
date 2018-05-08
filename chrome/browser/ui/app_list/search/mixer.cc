@@ -136,14 +136,12 @@ void Mixer::MixAndPublish(const KnownResults& known_results,
     std::sort(results.begin() + original_size, results.end());
   }
 
-  std::vector<std::unique_ptr<ChromeSearchResult>> new_results;
+  std::vector<ChromeSearchResult*> new_results;
   for (const SortData& sort_data : results) {
-    std::unique_ptr<ChromeSearchResult> new_result =
-        sort_data.result->Duplicate();
-    new_result->set_relevance(sort_data.score);
-    new_results.push_back(std::move(new_result));
+    sort_data.result->SetDisplayScore(sort_data.score);
+    new_results.push_back(sort_data.result);
   }
-  model_updater_->PublishSearchResults(std::move(new_results));
+  model_updater_->PublishSearchResults(new_results);
 }
 
 void Mixer::RemoveDuplicates(SortedResults* results) {

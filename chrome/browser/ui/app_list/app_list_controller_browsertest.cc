@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
   service->FlushForTesting();
 
   // Currently the search box is empty, so we have no result.
-  EXPECT_FALSE(model_updater->GetResultByTitle(title));
+  EXPECT_FALSE(model_updater->GetResultByTitleForTest(title));
 
   // Now a search finds the extension.
   model_updater->UpdateSearchBox(base::ASCIIToUTF16(title),
@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
 
   // Ensure everything is done, from Chrome to Ash and backwards.
   service->FlushForTesting();
-  EXPECT_TRUE(model_updater->GetResultByTitle(title));
+  EXPECT_TRUE(model_updater->GetResultByTitleForTest(title));
 
   // Uninstall the extension.
   UninstallExtension(extension->id());
@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
   service->FlushForTesting();
 
   // We cannot find the extension any more.
-  EXPECT_FALSE(model_updater->GetResultByTitle(title));
+  EXPECT_FALSE(model_updater->GetResultByTitleForTest(title));
 
   service->DismissAppList();
 }

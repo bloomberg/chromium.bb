@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/app_list/model/search/search_result.h"
 #include "ash/public/interfaces/app_list.mojom.h"
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
@@ -65,7 +64,7 @@ class AppListModelUpdater {
   virtual void UpdateSearchBox(const base::string16& text,
                                bool initiated_by_user) {}
   virtual void PublishSearchResults(
-      std::vector<std::unique_ptr<ChromeSearchResult>> results) {}
+      const std::vector<ChromeSearchResult*>& results) {}
 
   // Item field setters only used by ChromeAppListItem and its derived classes.
   virtual void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) {}
@@ -80,8 +79,20 @@ class AppListModelUpdater {
   virtual void SetItemIsInstalling(const std::string& id, bool is_installing) {}
   virtual void SetItemPercentDownloaded(const std::string& id,
                                         int32_t percent_downloaded) {}
-
   virtual void ActivateChromeItem(const std::string& id, int event_flags) {}
+
+  virtual void SetSearchResultMetadata(
+      const std::string& id,
+      ash::mojom::SearchResultMetadataPtr metadata) {}
+  virtual void SetSearchResultIsInstalling(const std::string& id,
+                                           bool is_installing) {}
+  virtual void SetSearchResultPercentDownloaded(const std::string& id,
+                                                int percent_downloaded) {}
+  virtual void SetSearchResultIcon(const std::string& id,
+                                   const gfx::ImageSkia& icon) {}
+  virtual void SetSearchResultBadgeIcon(const std::string& id,
+                                        const gfx::ImageSkia& badge_icon) {}
+  virtual void NotifySearchResultItemInstalled(const std::string& id) {}
 
   // For AppListModel:
   virtual ChromeAppListItem* FindItem(const std::string& id) = 0;
@@ -127,7 +138,8 @@ class AppListModelUpdater {
   virtual bool SearchEngineIsGoogle() = 0;
   virtual ChromeSearchResult* FindSearchResult(
       const std::string& result_id) = 0;
-  virtual ChromeSearchResult* GetResultByTitle(const std::string& title) = 0;
+  virtual ChromeSearchResult* GetResultByTitleForTest(
+      const std::string& title) = 0;
 
   // Methods for handle model updates in ash:
   virtual void OnFolderCreated(ash::mojom::AppListItemMetadataPtr item) = 0;

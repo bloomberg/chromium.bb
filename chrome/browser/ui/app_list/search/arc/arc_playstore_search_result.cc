@@ -63,17 +63,17 @@ ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
       profile_(profile),
       list_controller_(list_controller),
       weak_ptr_factory_(this) {
-  set_title(base::UTF8ToUTF16(label().value()));
+  SetTitle(base::UTF8ToUTF16(label().value()));
   set_id(kPlayAppPrefix +
          crx_file::id_util::GenerateId(install_intent_uri().value()));
-  set_display_type(ash::SearchResultDisplayType::kTile);
+  SetDisplayType(ash::SearchResultDisplayType::kTile);
   SetBadgeIcon(gfx::CreateVectorIcon(
       is_instant_app() ? kIcBadgeInstantIcon : kIcBadgePlayIcon,
       kAppBadgeIconSize, kBadgeColor));
   SetFormattedPrice(base::UTF8ToUTF16(formatted_price().value()));
   SetRating(review_score());
-  set_result_type(is_instant_app() ? ash::SearchResultType::kInstantApp
-                                   : ash::SearchResultType::kPlayStoreApp);
+  SetResultType(is_instant_app() ? ash::SearchResultType::kInstantApp
+                                 : ash::SearchResultType::kPlayStoreApp);
 
   icon_decode_request_ = std::make_unique<arc::IconDecodeRequest>(
       base::BindOnce(&ArcPlayStoreSearchResult::SetIcon,
@@ -83,15 +83,6 @@ ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
 }
 
 ArcPlayStoreSearchResult::~ArcPlayStoreSearchResult() = default;
-
-std::unique_ptr<ChromeSearchResult> ArcPlayStoreSearchResult::Duplicate()
-    const {
-  std::unique_ptr<ArcPlayStoreSearchResult> result =
-      std::make_unique<ArcPlayStoreSearchResult>(data_.Clone(), profile_,
-                                                 list_controller_);
-  result->SetIcon(icon());
-  return result;
-}
 
 void ArcPlayStoreSearchResult::Open(int event_flags) {
   if (!LaunchIntent(install_intent_uri().value(),

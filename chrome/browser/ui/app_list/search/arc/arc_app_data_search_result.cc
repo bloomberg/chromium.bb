@@ -79,17 +79,15 @@ ArcAppDataSearchResult::ArcAppDataSearchResult(
     Profile* profile,
     AppListControllerDelegate* list_controller)
     : data_(std::move(data)),
-      profile_(profile),
       list_controller_(list_controller),
       weak_ptr_factory_(this) {
-  set_title(base::UTF8ToUTF16(data_->label));
+  SetTitle(base::UTF8ToUTF16(data_->label));
   set_id(kAppDataSearchPrefix + launch_intent_uri());
-
   if (data_->type == arc::mojom::AppDataResultType::PERSON) {
-    set_display_type(ash::SearchResultDisplayType::kTile);
+    SetDisplayType(ash::SearchResultDisplayType::kTile);
   } else if (data_->type == arc::mojom::AppDataResultType::NOTE_DOCUMENT) {
-    set_details(base::UTF8ToUTF16(data_->text));
-    set_display_type(ash::SearchResultDisplayType::kList);
+    SetDetails(base::UTF8ToUTF16(data_->text));
+    SetDisplayType(ash::SearchResultDisplayType::kList);
   }
 
   // TODO(warx): set default images when icon_png_data() is not available.
@@ -106,14 +104,6 @@ ArcAppDataSearchResult::ArcAppDataSearchResult(
 }
 
 ArcAppDataSearchResult::~ArcAppDataSearchResult() = default;
-
-std::unique_ptr<ChromeSearchResult> ArcAppDataSearchResult::Duplicate() const {
-  std::unique_ptr<ArcAppDataSearchResult> result =
-      std::make_unique<ArcAppDataSearchResult>(data_.Clone(), profile_,
-                                               list_controller_);
-  result->SetIcon(icon());
-  return result;
-}
 
 void ArcAppDataSearchResult::GetContextMenuModel(
     GetMenuModelCallback callback) {

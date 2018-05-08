@@ -50,7 +50,6 @@ class WebstoreResult : public ChromeSearchResult,
   // ChromeSearchResult overrides:
   void Open(int event_flags) override;
   void InvokeAction(int action_index, int event_flags) override;
-  std::unique_ptr<ChromeSearchResult> Duplicate() const override;
 
  private:
   // Set the initial state and start observing both InstallObserver and

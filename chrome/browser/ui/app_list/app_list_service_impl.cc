@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/model/search/search_model.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/memory/singleton.h"
@@ -47,13 +46,6 @@ void AppListServiceImpl::SetAppListControllerAndClient(
 
 ash::mojom::AppListController* AppListServiceImpl::GetAppListController() {
   return app_list_controller_;
-}
-
-app_list::SearchModel* AppListServiceImpl::GetSearchModelFromAsh() {
-  DCHECK(!ash_util::IsRunningInMash());
-  return ash::Shell::HasInstance()
-             ? ash::Shell::Get()->app_list_controller()->search_model()
-             : nullptr;
 }
 
 AppListClientImpl* AppListServiceImpl::GetAppListClient() {

@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/settings_shortcut/settings_shortcut_metadata.h"
-#include "chrome/browser/ui/app_list/search/settings_shortcut/settings_shortcut_result.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace app_list {
@@ -38,11 +37,6 @@ TEST_F(SettingsShortcutResultTest, Basic) {
     EXPECT_EQ(shortcut.shortcut_id, result->id());
     EXPECT_EQ(l10n_util::GetStringUTF16(shortcut.name_string_resource_id),
               result->title());
-
-    auto result1 = result->Duplicate();
-    EXPECT_EQ(shortcut.shortcut_id, result1->id());
-    EXPECT_EQ(l10n_util::GetStringUTF16(shortcut.name_string_resource_id),
-              result1->title());
   }
 }
 
