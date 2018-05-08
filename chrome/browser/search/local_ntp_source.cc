@@ -125,7 +125,9 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
 
   if (is_google) {
     AddString(translated_strings.get(), "searchboxPlaceholder",
-              IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT);
+              base::FeatureList::IsEnabled(features::kNtpUIMd)
+                  ? IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD
+                  : IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT);
 
     // Voice Search
     AddString(translated_strings.get(), "audioError",
