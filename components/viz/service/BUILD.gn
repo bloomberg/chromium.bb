@@ -257,6 +257,8 @@ viz_component("service") {
       "display_embedder/compositor_overlay_candidate_validator_win.h",
       "display_embedder/gl_output_surface_win.cc",
       "display_embedder/gl_output_surface_win.h",
+      "display_embedder/output_device_backing.cc",
+      "display_embedder/output_device_backing.h",
       "display_embedder/software_output_device_win.cc",
       "display_embedder/software_output_device_win.h",
     ]
@@ -350,6 +352,10 @@ viz_source_set("unit_tests") {
   if (is_mac) {
     sources += [ "display_embedder/software_output_device_mac_unittest.mm" ]
     libs = [ "IOSurface.framework" ]
+  }
+
+  if (is_win) {
+    sources += [ "display_embedder/output_device_backing_unittest.cc" ]
   }
 }
 

@@ -86,6 +86,7 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_win.h"
+#include "components/viz/service/display_embedder/output_device_backing.h"
 #include "components/viz/service/display_embedder/software_output_device_win.h"
 #include "ui/gfx/win/rendering_window_manager.h"
 #elif defined(USE_OZONE)
@@ -242,8 +243,7 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_WIN)
-  return std::make_unique<viz::SoftwareOutputDeviceWin>(software_backing_.get(),
-                                                        widget);
+  return CreateSoftwareOutputDeviceWin(widget, software_backing_.get());
 #elif defined(USE_OZONE)
   ui::SurfaceFactoryOzone* factory =
       ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
