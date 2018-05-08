@@ -18,8 +18,8 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.preferences.SearchEngineAdapter;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.browser.test.ClearAppDataTestRule;
 import org.chromium.content.browser.test.util.Criteria;
@@ -145,37 +145,38 @@ public class TemplateUrlServiceTest {
                 ThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
                     @Override
                     public List<TemplateUrl> call() throws Exception {
-                        return templateUrlService.getSearchEngines();
+                        return templateUrlService.getTemplateUrls();
                     }
                 });
         // Ensure known state of default search index before running test.
-        String searchEngineKeyword =
-                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
+        TemplateUrl defaultSearchEngine =
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<TemplateUrl>() {
                     @Override
-                    public String call() throws Exception {
-                        return templateUrlService.getDefaultSearchEngineTemplateUrl().getKeyword();
+                    public TemplateUrl call() throws Exception {
+                        return templateUrlService.getDefaultSearchEngineTemplateUrl();
                     }
                 });
-        Assert.assertEquals(searchEngines.get(0).getKeyword(), searchEngineKeyword);
+        SearchEngineAdapter.sortAndFilterUnnecessaryTemplateUrl(searchEngines, defaultSearchEngine);
+        Assert.assertEquals(searchEngines.get(0), defaultSearchEngine);
 
         // Set search engine index and verified it stuck.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                List<TemplateUrl> searchEngines = templateUrlService.getSearchEngines();
                 Assert.assertTrue(
                         "There must be more than one search engine to change searchEngines",
                         searchEngines.size() > 1);
                 templateUrlService.setSearchEngine(searchEngines.get(1).getKeyword());
             }
         });
-        searchEngineKeyword = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                return templateUrlService.getDefaultSearchEngineTemplateUrl().getKeyword();
-            }
-        });
-        Assert.assertEquals(searchEngines.get(1).getKeyword(), searchEngineKeyword);
+        defaultSearchEngine =
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<TemplateUrl>() {
+                    @Override
+                    public TemplateUrl call() throws Exception {
+                        return templateUrlService.getDefaultSearchEngineTemplateUrl();
+                    }
+                });
+        Assert.assertEquals(searchEngines.get(1), defaultSearchEngine);
     }
 
     @Test
@@ -187,6 +188,14 @@ public class TemplateUrlServiceTest {
         // Get the number of prepopulated search engine.
         final int prepopulatedEngineNum = getSearchEngineCount(templateUrlService);
 
+        TemplateUrl defaultSearchEngine =
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<TemplateUrl>() {
+                    @Override
+                    public TemplateUrl call() throws Exception {
+                        return templateUrlService.getDefaultSearchEngineTemplateUrl();
+                    }
+                });
+
         // Add custom search engines and verified only engines visited within 2 days are added.
         // Also verified custom engines are sorted correctly.
         List<TemplateUrl> customSearchEngines =
@@ -196,7 +205,9 @@ public class TemplateUrlServiceTest {
                         templateUrlService.addSearchEngineForTesting("keyword1", 0);
                         templateUrlService.addSearchEngineForTesting("keyword2", 0);
                         templateUrlService.addSearchEngineForTesting("keyword3", 3);
-                        List<TemplateUrl> searchEngines = templateUrlService.getSearchEngines();
+                        List<TemplateUrl> searchEngines = templateUrlService.getTemplateUrls();
+                        SearchEngineAdapter.sortAndFilterUnnecessaryTemplateUrl(
+                                searchEngines, defaultSearchEngine);
                         return searchEngines.subList(prepopulatedEngineNum, searchEngines.size());
                     }
                 });
@@ -212,7 +223,9 @@ public class TemplateUrlServiceTest {
                     public List<TemplateUrl> call() throws Exception {
                         templateUrlService.addSearchEngineForTesting("keyword4", 0);
                         templateUrlService.addSearchEngineForTesting("keyword5", 0);
-                        List<TemplateUrl> searchEngines = templateUrlService.getSearchEngines();
+                        List<TemplateUrl> searchEngines = templateUrlService.getTemplateUrls();
+                        SearchEngineAdapter.sortAndFilterUnnecessaryTemplateUrl(
+                                searchEngines, defaultSearchEngine);
                         return searchEngines.subList(prepopulatedEngineNum, searchEngines.size());
                     }
                 });
@@ -227,7 +240,9 @@ public class TemplateUrlServiceTest {
                     @Override
                     public List<TemplateUrl> call() throws Exception {
                         templateUrlService.updateLastVisitedForTesting("keyword3");
-                        List<TemplateUrl> searchEngines = templateUrlService.getSearchEngines();
+                        List<TemplateUrl> searchEngines = templateUrlService.getTemplateUrls();
+                        SearchEngineAdapter.sortAndFilterUnnecessaryTemplateUrl(
+                                searchEngines, defaultSearchEngine);
                         return searchEngines.subList(prepopulatedEngineNum, searchEngines.size());
                     }
                 });
@@ -243,7 +258,11 @@ public class TemplateUrlServiceTest {
                     @Override
                     public List<TemplateUrl> call() throws Exception {
                         templateUrlService.setSearchEngine("keyword4");
-                        List<TemplateUrl> searchEngines = templateUrlService.getSearchEngines();
+                        List<TemplateUrl> searchEngines = templateUrlService.getTemplateUrls();
+                        TemplateUrl newDefaultSearchEngine =
+                                templateUrlService.getDefaultSearchEngineTemplateUrl();
+                        SearchEngineAdapter.sortAndFilterUnnecessaryTemplateUrl(
+                                searchEngines, newDefaultSearchEngine);
                         return searchEngines.subList(prepopulatedEngineNum, searchEngines.size());
                     }
                 });
@@ -254,33 +273,11 @@ public class TemplateUrlServiceTest {
         Assert.assertEquals("keyword2", customSearchEngines.get(3).getKeyword());
     }
 
-    @Test
-    @SmallTest
-    @Feature({"SearchEngines"})
-    public void testDisableFiltering() {
-        final TemplateUrlService templateUrlService = waitForTemplateUrlServiceToLoad();
-
-        // Get the number of prepopulated search engine.
-        final int prepopulatedEngineNum = getSearchEngineCount(templateUrlService);
-
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            for (int i = 0; i < 10; i++) {
-                templateUrlService.addSearchEngineForTesting("keyword" + i, 0);
-            }
-        });
-
-        Assert.assertEquals(prepopulatedEngineNum + 3, getSearchEngineCount(templateUrlService));
-        templateUrlService.setFilteringEnabled(false);
-        Assert.assertEquals(prepopulatedEngineNum + 10, getSearchEngineCount(templateUrlService));
-        templateUrlService.setFilteringEnabled(true);
-        Assert.assertEquals(prepopulatedEngineNum + 3, getSearchEngineCount(templateUrlService));
-    }
-
     private int getSearchEngineCount(final TemplateUrlService templateUrlService) {
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return templateUrlService.getSearchEngines().size();
+                return templateUrlService.getTemplateUrls().size();
             }
         });
     }

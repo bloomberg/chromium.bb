@@ -1,4 +1,3 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,9 +30,9 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
+import org.chromium.chrome.browser.search_engines.TemplateUrl;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
@@ -267,7 +266,7 @@ public class PreferencesTest {
 
     private int indexOfFirstHttpSearchEngine(SearchEnginePreference pref) {
         TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
-        List<TemplateUrl> urls = templateUrlService.getSearchEngines();
+        List<TemplateUrl> urls = templateUrlService.getTemplateUrls();
         int index;
         for (index = 0; index < urls.size(); ++index) {
             String keyword = pref.getKeywordFromIndexForTesting(index);
