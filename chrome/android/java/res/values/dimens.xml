@@ -128,7 +128,7 @@
     <dimen name="keyboard_accessory_height">36dp</dimen>
     <dimen name="keyboard_accessory_padding">4dp</dimen>
     <dimen name="keyboard_accessory_sheet_height">200dp</dimen>
-    <dimen name="keyboard_accessory_text_size">6sp</dimen>
+    <dimen name="keyboard_accessory_text_size">10sp</dimen>
 
     <!-- Password generation popup dimensions -->
     <dimen name="password_generation_divider_height">1dp</dimen>
