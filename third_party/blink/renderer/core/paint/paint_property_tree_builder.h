@@ -125,7 +125,7 @@ struct PaintPropertyTreeBuilderContext {
   // Whether a clip paint property node appeared, disappeared, or changed
   // its clip since this variable was last set to false. This is used
   // to find out whether a clip changed since the last transform update.
-  // Code ouside of this class resets clip_changed to false when transforms
+  // Code outside of this class resets clip_changed to false when transforms
   // change.
   bool clip_changed = false;
 
@@ -138,10 +138,13 @@ struct PaintPropertyTreeBuilderContext {
   PaintLayer* painting_layer = nullptr;
 
   // In a fragmented context, some objects (e.g. repeating table headers and
-  // footers, fixed-position objects in paged media, and their descendants in
-  // paint order) repeatly paint in all fragments after the fragment where the
-  // object first appears.
-  bool is_repeating_in_fragments = false;
+  // footers) and their descendants in paint order) repeatedly paint in all
+  // fragments after the fragment where the object first appears.
+  bool is_repeating_in_flow_thread = false;
+
+  // When printing, fixed-position objects and their descendants need to repeat
+  // in each page.
+  bool is_repeating_fixed_position = false;
 
   // True if the current subtree is underneath a LayoutSVGHiddenContainer
   // ancestor.
@@ -192,11 +195,14 @@ class ObjectPaintPropertyTreeBuilder {
   ALWAYS_INLINE void InitSingleFragmentFromParent(bool needs_paint_properties);
   ALWAYS_INLINE bool ObjectTypeMightNeedPaintProperties() const;
   ALWAYS_INLINE void UpdateCompositedLayerPaginationOffset();
-  ALWAYS_INLINE bool NeedsFragmentation() const;
   ALWAYS_INLINE PaintPropertyTreeBuilderFragmentContext
   ContextForFragment(const base::Optional<LayoutRect>& fragment_clip,
                      LayoutUnit logical_top_in_flow_thread) const;
-  ALWAYS_INLINE void CreateFragmentContexts(bool needs_paint_properties);
+  ALWAYS_INLINE void CreateFragmentContextsInFlowThread(
+      bool needs_paint_properties);
+  ALWAYS_INLINE void CreateFragmentContextsForRepeatingFixedPosition();
+  ALWAYS_INLINE void CreateFragmentDataForRepeatingFixedPosition(
+      bool needs_paint_properties);
   // Returns whether ObjectPaintProperties were allocated or deleted.
   ALWAYS_INLINE bool UpdateFragments();
   ALWAYS_INLINE void UpdatePaintingLayer();
