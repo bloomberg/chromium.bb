@@ -75,7 +75,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
 }
 
 // Tests deleting a deletable omnibox extension suggestion result.
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DeleteOmniboxSuggestionResult) {
+// Flaky on Windows. https://crbug.com/801316
+#if defined(OS_WIN)
+#define MAYBE_DeleteOmniboxSuggestionResult \
+  DISABLED_DeleteOmniboxSuggestionResult
+#else
+#define MAYBE_DeleteOmniboxSuggestionResult DeleteOmniboxSuggestionResult
+#endif
+IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_DeleteOmniboxSuggestionResult) {
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
 
   // The results depend on the TemplateURLService being loaded. Make sure it is
