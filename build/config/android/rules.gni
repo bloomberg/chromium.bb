@@ -249,6 +249,9 @@ if (enable_java_templates) {
       if (enable_profiling) {
         args += [ "--enable_profiling" ]
       }
+      if (defined(invoker.namespace)) {
+        args += [ "-n ${invoker.namespace}" ]
+      }
     }
 
     config("jni_includes_${target_name}") {
