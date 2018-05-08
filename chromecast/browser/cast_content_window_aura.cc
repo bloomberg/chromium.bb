@@ -77,9 +77,9 @@ std::unique_ptr<CastContentWindow> CastContentWindow::Create(
 CastContentWindowAura::CastContentWindowAura(
     CastContentWindow::Delegate* delegate,
     bool is_touch_enabled)
-    : delegate_(delegate), is_touch_enabled_(is_touch_enabled) {
-  DCHECK(delegate_);
-}
+    : back_gesture_dispatcher_(
+          std::make_unique<CastBackGestureDispatcher>(delegate)),
+      is_touch_enabled_(is_touch_enabled) {}
 
 CastContentWindowAura::~CastContentWindowAura() {
   if (window_manager_)
@@ -121,16 +121,20 @@ void CastContentWindowAura::RequestVisibility(
 void CastContentWindowAura::RequestMoveOut(){};
 
 bool CastContentWindowAura::CanHandleSwipe(CastSideSwipeOrigin swipe_origin) {
-  return swipe_origin == CastSideSwipeOrigin::LEFT &&
-         delegate_->CanHandleGesture(GestureType::GO_BACK);
+  return back_gesture_dispatcher_->CanHandleSwipe(swipe_origin);
 }
 
 void CastContentWindowAura::HandleSideSwipeBegin(
     CastSideSwipeOrigin swipe_origin,
     const gfx::Point& touch_location) {
-  if (swipe_origin == CastSideSwipeOrigin::LEFT) {
-    delegate_->ConsumeGesture(GestureType::GO_BACK);
-  }
+  back_gesture_dispatcher_->HandleSideSwipeBegin(swipe_origin, touch_location);
+}
+
+void CastContentWindowAura::HandleSideSwipeContinue(
+    CastSideSwipeOrigin swipe_origin,
+    const gfx::Point& touch_location) {
+  back_gesture_dispatcher_->HandleSideSwipeContinue(swipe_origin,
+                                                    touch_location);
 }
 
 }  // namespace shell

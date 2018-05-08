@@ -149,6 +149,11 @@ const char kSystemGestureStartWidth[] = "system-gesture-start-width";
 // a valid origin for the top or bottom swipe gesture.
 const char kSystemGestureStartHeight[] = "system-gesture-start-height";
 
+// The number of pixels from the start of a left swipe gesture to consider as a
+// 'back' gesture.
+const char kBackGestureHorizontalThreshold[] =
+    "back-gesture-horizontal-threshold";
+
 }  // namespace switches
 
 namespace chromecast {
