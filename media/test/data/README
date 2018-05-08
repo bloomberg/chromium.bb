@@ -137,6 +137,18 @@ bear-640x360-v_frag-cens.mp4
       shaka/packager/tools/pssh/pssh-box.py --widevine-system-id --key-id 30313233343536373839303132333435 --hex
       shaka/packager/tools/pssh/pssh-box.py --common-system-id --key-id 30313233343536373839303132333435 --hex
 
+bear-flac-cenc.mp4
+- Encrypted version of bear-flac.mp4, encrypted by Shaka Packager
+  using key ID [1] and key [2]. Sample encryption information stored in
+  SampleEncryption ('senc') box (in each encrypted fragment).
+  Shaka Packager: https://github.com/google/shaka-packager/releases/tag/v2.1.0
+  Command: packager in=bear-flac.mp4,stream=audio,output=bear-flac-cenc.mp4
+               --enable_raw_key_encryption
+               --clear_lead 0.5
+               --segment_duration 0.5
+               --keys label=:key_id=30313233343536373839303132333435:key=ebdd62f16814d27b68ef122afce4ae3c
+               --pssh 000000327073736800000000EDEF8BA979D64ACEA3C827DCD51D21ED000000121210303132333435363738393031323334350000003470737368010000001077EFECC0B24D02ACE33C1E52E2FB4B000000013031323334353637383930313233343500000000
+
 bear-a_enc-a.webm - bear-320x240-audio-only.webm encrypted using key ID [1] and key [2].
 frame_size_change-av_enc-v.webm - third_party/WebKit/LayoutTests/media/resources/frame_size_change.webm encrypted using key ID [1] and key [2].
 

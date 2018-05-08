@@ -51,6 +51,7 @@ const char kWebMVp8VideoOnly[] = "video/webm; codecs=\"vp8\"";
 const char kWebMVp9VideoOnly[] = "video/webm; codecs=\"vp9\"";
 const char kWebMOpusAudioVp9Video[] = "video/webm; codecs=\"opus, vp9\"";
 const char kWebMVorbisAudioVp8Video[] = "video/webm; codecs=\"vorbis, vp8\"";
+const char kMp4FlacAudioOnly[] = "audio/mp4; codecs=\"flac\"";
 const char kMp4Vp9VideoOnly[] =
     "video/mp4; codecs=\"vp09.00.10.08.01.02.02.02.00\"";
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -143,7 +144,6 @@ class EncryptedMediaTest
                           src_type, media::kEnded);
   }
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   void TestMp4EncryptionPlayback(const std::string& media_file,
                                  const std::string& media_type,
                                  const std::string& expected_title) {
@@ -155,7 +155,6 @@ class EncryptedMediaTest
     RunEncryptedMediaTest(kDefaultEmePlayer, media_file, media_type,
                           CurrentKeySystem(), SrcType::MSE, expected_title);
   }
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
  protected:
   // We want to fail quickly when a test fails because an error is encountered.
@@ -256,6 +255,11 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM_Opus) {
     return;
 #endif
   TestSimplePlayback("bear-320x240-opus-av_enc-v.webm", kWebMOpusAudioVp9Video);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4_FLAC) {
+  TestMp4EncryptionPlayback("bear-flac-cenc.mp4", kMp4FlacAudioOnly,
+                            media::kEnded);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9) {

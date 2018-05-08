@@ -65,6 +65,7 @@ static const NameToCodec kCodecMap[] = {
     {"vp9", EME_CODEC_WEBM_VP9},        // VP9.
     {"vp9.0", EME_CODEC_WEBM_VP9},      // VP9.
     {"vp09", EME_CODEC_COMMON_VP9},     // New multi-part VP9 for WebM and MP4.
+    {"flac", EME_CODEC_MP4_FLAC},       // FLAC.
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
     {"mp4a", EME_CODEC_MP4_AAC},  // AAC.
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
