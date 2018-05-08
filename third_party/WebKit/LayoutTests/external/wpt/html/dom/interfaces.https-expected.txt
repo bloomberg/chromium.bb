@@ -581,16 +581,6 @@ PASS Document interface: document.implementation.createDocument(null, "", null) 
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "oncopy" with the proper type
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "oncut" with the proper type
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onpaste" with the proper type
-PASS SVGElement interface: attribute dataset
-PASS Unscopable handled correctly for dataset property on SVGElement
-PASS SVGElement interface: attribute nonce
-PASS Unscopable handled correctly for nonce property on SVGElement
-PASS SVGElement interface: attribute tabIndex
-PASS Unscopable handled correctly for tabIndex property on SVGElement
-PASS SVGElement interface: operation focus(FocusOptions)
-PASS Unscopable handled correctly for focus(FocusOptions) on SVGElement
-PASS SVGElement interface: operation blur()
-PASS Unscopable handled correctly for blur() on SVGElement
 PASS HTMLAllCollection interface: existence and properties of interface object
 PASS HTMLAllCollection interface object length
 PASS HTMLAllCollection interface object name
