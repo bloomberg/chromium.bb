@@ -52,14 +52,13 @@
 
     <h2>Stored Pages</h2>
     <div>
-      <button id="delete-all-pages">Delete all</button>
       <button id="delete-selected-pages">Delete selected</button>
     </div>
     <table class="stored-pages-table">
       <thead>
         <tr>
           <th>#</th>
-          <th></th>
+          <th><input type="checkbox" id="toggle-all-stored"></th>
           <th>URL</th>
           <th>Namespace</th>
           <th>Size (Kb)</th>
@@ -80,13 +79,12 @@
 
     <h2>Request Queue</h2>
     <div>
-      <button id="delete-all-requests">Delete all</button>
       <button id="delete-selected-requests">Delete selected</button>
     </div>
     <table class="request-queue-table">
       <thead>
         <tr>
-          <th>&nbsp;</th>
+          <th><input type="checkbox" id="toggle-all-requests"></th>
           <th>URL</th>
           <th>Created Timestamp</th>
           <th>Status</th>
