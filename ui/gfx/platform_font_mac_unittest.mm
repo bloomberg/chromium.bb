@@ -151,16 +151,6 @@ TEST(PlatformFontMacTest, FontWeightAPIConsistency) {
   }
 
   ns_font = [NSFont systemFontOfSize:13];
-  if (base::mac::IsOS10_9()) {
-    // On 10.9 the system font doesn't provide finer-grained weights. It's
-    // either bold or it isn't.
-    for (int row = 6; row <= 14; ++row) {
-      SCOPED_TRACE(testing::Message() << "Row: " << row);
-      ns_font = [manager convertWeight:up ofFont:ns_font];
-      EXPECT_EQ(Font::Weight::BOLD, Font(ns_font).GetWeight());
-    }
-    return;
-  }
 
   if (base::mac::IsOS10_11()) {
     // On 10.11 the API jumps to BOLD, but has heavier weights as well.

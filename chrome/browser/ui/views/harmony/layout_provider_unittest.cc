@@ -70,11 +70,7 @@ TEST_F(LayoutProviderTest, DISABLED_LegacyFontSizeConstants) {
 // TODO(tapted): Smoke them out and figure out why.
 
 #if defined(OS_MACOSX)
-  if (base::mac::IsOS10_9()) {
-    EXPECT_EQ(6, label_font.GetExpectedTextWidth(1));
-  } else {
-    EXPECT_EQ(10, label_font.GetExpectedTextWidth(1));
-  }
+  EXPECT_EQ(10, label_font.GetExpectedTextWidth(1));
 #else
   EXPECT_EQ(6, label_font.GetExpectedTextWidth(1));
 // Some Windows bots may say 5.

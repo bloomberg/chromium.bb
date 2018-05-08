@@ -557,15 +557,6 @@ void TestControls(AppWindow* app_window) {
   EXPECT_EQ(can_fullscreen, !!([ns_window collectionBehavior] &
                                NSWindowCollectionBehaviorFullScreenPrimary));
 
-  // In OSX 10.10+, the zoom button performs the zoom action rather than the
-  // fullscreen action. The above check that collectionBehavior does not include
-  // NSWindowCollectionBehaviorFullScreenPrimary is sufficient to determine that
-  // the window can't be fullscreened.
-  if (base::mac::IsOS10_9()) {
-    EXPECT_EQ(can_fullscreen,
-              [[ns_window standardWindowButton:NSWindowZoomButton] isEnabled]);
-  }
-
   // Set a maximum size.
   app_window->SetContentSizeConstraints(gfx::Size(), gfx::Size(200, 201));
   EXPECT_EQ(200, [ns_window contentMaxSize].width);
