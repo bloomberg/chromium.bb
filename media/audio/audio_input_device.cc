@@ -125,8 +125,6 @@ void AudioInputDevice::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT0("audio", "AudioInputDevice::Stop");
 
-  audio_thread_.reset();
-
   UMA_HISTOGRAM_BOOLEAN(
       "Media.Audio.Capture.DetectedMissingCallbacks",
       alive_checker_ ? alive_checker_->DetectedDead() : false);
