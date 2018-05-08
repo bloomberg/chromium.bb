@@ -206,7 +206,10 @@ GpuDisplayProvider::CreateSoftwareOutputDeviceForPlatform(
     return std::make_unique<SoftwareOutputDevice>();
 
 #if defined(OS_WIN)
-  return CreateSoftwareOutputDeviceWin(surface_handle, &output_device_backing_);
+  if (!output_device_backing_)
+    output_device_backing_ = std::make_unique<OutputDeviceBacking>();
+  return std::make_unique<SoftwareOutputDeviceWin>(output_device_backing_.get(),
+                                                   surface_handle);
 #elif defined(OS_MACOSX)
   return std::make_unique<SoftwareOutputDeviceMac>();
 #elif defined(OS_ANDROID)
