@@ -191,8 +191,17 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
       av1_quantize_skip(n_coeffs, qcoeff, dqcoeff, eob);
     }
   }
-  p->txb_entropy_ctx[block] =
-      (uint8_t)av1_get_txb_entropy_context(qcoeff, scan_order, *eob);
+  // NOTE: optimize_b_following is ture means av1_optimze_b will be called
+  // When the condition of doing optimize_b is changed,
+  // this flag need update simultaneously
+  const int optimize_b_following =
+      (xform_quant_idx != AV1_XFORM_QUANT_FP) || (txfm_param.lossless);
+  if (optimize_b_following) {
+    p->txb_entropy_ctx[block] =
+        (uint8_t)av1_get_txb_entropy_context(qcoeff, scan_order, *eob);
+  } else {
+    p->txb_entropy_ctx[block] = 0;
+  }
   return;
 }
 
