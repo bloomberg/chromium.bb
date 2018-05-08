@@ -641,53 +641,40 @@ TEST_F(TrafficAnnotationAuditorTest, CheckAllRequiredFunctionsAreAnnotated) {
                               "net/url_request/url_request_context.cc",
                               "net/url_request/other_file.cc",
                               "somewhere_else.cc", "something_unittest.cc"};
-  std::string function_names[] = {"net::URLFetcher::Create",
-                                  "net::URLRequestContext::CreateRequest",
-                                  "SSLClientSocket", "Something else", ""};
-
   std::vector<CallInstance> calls(1);
   CallInstance& call = calls[0];
 
   for (const std::string& file_path : file_paths) {
-    for (const std::string& function_name : function_names) {
-      for (int annotated = 0; annotated < 2; annotated++) {
-        for (int dependent = 0; dependent < 2; dependent++) {
-          SCOPED_TRACE(
-              base::StringPrintf("Testing (%s, %s, %i, %i).", file_path.c_str(),
-                                 function_name.c_str(), annotated, dependent));
-          call.file_path = file_path;
-          call.function_name = function_name;
-          call.is_annotated = annotated;
-          auditor().SetGnFileForTesting(tests_folder().Append(
-              dependent ? FILE_PATH_LITERAL("gn_list_positive.txt")
-                        : FILE_PATH_LITERAL("gn_list_negative.txt")));
+    for (int annotated = 0; annotated < 2; annotated++) {
+      for (int dependent = 0; dependent < 2; dependent++) {
+        SCOPED_TRACE(base::StringPrintf(
+            "Testing (%s, %i, %i).", file_path.c_str(), annotated, dependent));
+        call.file_path = file_path;
+        call.function_name = "net::URLFetcher::Create";
+        call.is_annotated = annotated;
+        auditor().SetGnFileForTesting(tests_folder().Append(
+            dependent ? FILE_PATH_LITERAL("gn_list_positive.txt")
+                      : FILE_PATH_LITERAL("gn_list_negative.txt")));
 
-          auditor().ClearErrorsForTesting();
-          auditor().SetExtractedCallsForTesting(calls);
-          auditor().ClearCheckedDependenciesForTesting();
-          auditor().CheckAllRequiredFunctionsAreAnnotated();
-          // Error should be issued if all the following is met:
-          //   1- Function is not annotated.
-          //   2- chrome::chrome depends on it.
-          //   3- The filepath is not safelisted.
-          //   4- Function name is either of the two specified ones.
-          bool is_unittest = file_path.find("unittest") != std::string::npos;
-          bool is_safelist =
-              file_path == "net/url_request/url_fetcher.cc" ||
-              file_path == "net/url_request/url_request_context.cc" ||
-              is_unittest;
-          bool monitored_function =
-              function_name == "net::URLFetcher::Create" ||
-              function_name == "net::URLRequestContext::CreateRequest";
-          EXPECT_EQ(auditor().errors().size() == 1, !annotated && dependent &&
-                                                        !is_safelist &&
-                                                        monitored_function)
-              << base::StringPrintf(
-                     "Annotated:%i, Depending:%i, IsUnitTest:%i, "
-                     "IsSafeListed:%i, MonitoredFunction:%i",
-                     annotated, dependent, is_unittest, is_safelist,
-                     monitored_function);
-        }
+        auditor().ClearErrorsForTesting();
+        auditor().SetExtractedCallsForTesting(calls);
+        auditor().ClearCheckedDependenciesForTesting();
+        auditor().CheckAllRequiredFunctionsAreAnnotated();
+        // Error should be issued if all the following is met:
+        //   1- Function is not annotated.
+        //   2- chrome::chrome depends on it.
+        //   3- The filepath is not safelisted.
+        bool is_unittest = file_path.find("unittest") != std::string::npos;
+        bool is_safelist =
+            file_path == "net/url_request/url_fetcher.cc" ||
+            file_path == "net/url_request/url_request_context.cc" ||
+            is_unittest;
+        EXPECT_EQ(auditor().errors().size() == 1,
+                  !annotated && dependent && !is_safelist)
+            << base::StringPrintf(
+                   "Annotated:%i, Depending:%i, IsUnitTest:%i, "
+                   "IsSafeListed:%i",
+                   annotated, dependent, is_unittest, is_safelist);
       }
     }
   }
