@@ -272,5 +272,9 @@
         "example": "20."
       }
     }
+  },
+  "migratePicturesMsg": {
+    "message": "Photos and videos taken with the camera will be moved to the Downloads folder. You can access them in Files.\n\nApps with storage permissions will have access to your photos and videos.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
   }
 }
