@@ -624,6 +624,7 @@ public class NewTabPageTest {
     }
 
     @Test
+    @DisabledTest(message = "crbug.com/829377")
     @SmallTest
     @Feature({"NewTabPage", "RenderTest"})
     @EnableFeatures(ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)
