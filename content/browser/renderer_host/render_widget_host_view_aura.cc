@@ -2500,10 +2500,17 @@ bool RenderWidgetHostViewAura::IsLocalSurfaceIdAllocationSuppressed() const {
 }
 
 void RenderWidgetHostViewAura::DidNavigate() {
-  SynchronizeVisualProperties(cc::DeadlinePolicy::UseExistingDeadline(),
-                              base::nullopt);
+  // The first navigation does not need a new LocalSurfaceID. The renderer can
+  // use the ID that was already provided.
+  if (is_first_navigation_) {
+    SyncSurfaceProperties(cc::DeadlinePolicy::UseExistingDeadline());
+  } else {
+    SynchronizeVisualProperties(cc::DeadlinePolicy::UseExistingDeadline(),
+                                base::nullopt);
+  }
   if (delegated_frame_host_)
     delegated_frame_host_->DidNavigate();
+  is_first_navigation_ = false;
 }
 
 // static

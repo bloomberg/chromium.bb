@@ -529,12 +529,17 @@ ui::Compositor* BrowserCompositorMac::CompositorForTesting() const {
 }
 
 void BrowserCompositorMac::DidNavigate() {
-  const viz::LocalSurfaceId& new_local_surface_id =
-      dfh_local_surface_id_allocator_.GenerateId();
+  // The first navigation does not need a new LocalSurfaceID. The renderer can
+  // use the ID that was already provided.
+  if (!is_first_navigation_) {
+    const viz::LocalSurfaceId& new_local_surface_id =
+        dfh_local_surface_id_allocator_.GenerateId();
+    delegated_frame_host_->SynchronizeVisualProperties(
+        new_local_surface_id, dfh_size_dip_,
+        cc::DeadlinePolicy::UseExistingDeadline());
+  }
+  is_first_navigation_ = false;
   client_->SynchronizeVisualProperties();
-  delegated_frame_host_->SynchronizeVisualProperties(
-      new_local_surface_id, dfh_size_dip_,
-      cc::DeadlinePolicy::UseExistingDeadline());
   delegated_frame_host_->DidNavigate();
 }
 

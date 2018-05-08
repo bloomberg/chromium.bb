@@ -212,6 +212,8 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
 
   uint32_t capture_sequence_number_ = 0;
 
+  bool is_first_navigation_ = true;
+
   base::WeakPtrFactory<BrowserCompositorMac> weak_factory_;
 };
 
