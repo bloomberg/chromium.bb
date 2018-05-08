@@ -41,6 +41,13 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
     return network_context_.get();
   }
 
+  void FlushForTesting() {
+    if (network_context_)
+      network_context_.FlushForTesting();
+    if (url_loader_factory_)
+      url_loader_factory_.FlushForTesting();
+  }
+
  protected:
   // network::URLLoaderFactory implementation:
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
@@ -148,6 +155,11 @@ network::mojom::NetworkContext*
 SafeBrowsingNetworkContext::GetNetworkContext() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   return url_loader_factory_->GetNetworkContext();
+}
+
+void SafeBrowsingNetworkContext::FlushForTesting() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  url_loader_factory_->FlushForTesting();
 }
 
 void SafeBrowsingNetworkContext::ServiceShuttingDown() {

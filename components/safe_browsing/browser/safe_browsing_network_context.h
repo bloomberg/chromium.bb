@@ -39,6 +39,9 @@ class SafeBrowsingNetworkContext {
   // Returns a NetworkContext.
   network::mojom::NetworkContext* GetNetworkContext();
 
+  // Flushes NetworkContext and URLLoaderFactory pipes.
+  void FlushForTesting();
+
   // Called at shutdown to ensure that the URLRequestContextGetter reference is
   // destroyed..
   void ServiceShuttingDown();

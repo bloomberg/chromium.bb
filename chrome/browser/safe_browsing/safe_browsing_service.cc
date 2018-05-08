@@ -240,6 +240,11 @@ SafeBrowsingService::GetURLLoaderFactory() {
   return network_context_->GetURLLoaderFactory();
 }
 
+void SafeBrowsingService::FlushNetworkInterfaceForTesting() {
+  if (network_context_)
+    network_context_->FlushForTesting();
+}
+
 scoped_refptr<network::SharedURLLoaderFactory>
 SafeBrowsingService::GetURLLoaderFactoryOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
