@@ -37,13 +37,14 @@ NGTextFragmentBuilder::NGTextFragmentBuilder(NGInlineNode node,
 
 void NGTextFragmentBuilder::SetItem(
     NGPhysicalTextFragment::NGTextType text_type,
+    const NGInlineItemsData& items_data,
     NGInlineItemResult* item_result,
     LayoutUnit line_height) {
   DCHECK(item_result);
   DCHECK(item_result->item->Style());
 
   text_type_ = text_type;
-  text_ = inline_node_.Text();
+  text_ = items_data.text_content;
   item_index_ = item_result->item_index;
   start_offset_ = item_result->start_offset;
   end_offset_ = item_result->end_offset;

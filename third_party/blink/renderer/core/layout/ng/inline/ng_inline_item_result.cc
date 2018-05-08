@@ -19,14 +19,14 @@ NGInlineItemResult::NGInlineItemResult(const NGInlineItem* item,
     : item(item), item_index(index), start_offset(start), end_offset(end) {}
 
 void NGLineInfo::SetLineStyle(const NGInlineNode& node,
+                              const NGInlineItemsData& items_data,
                               const NGConstraintSpace& constraint_space,
                               bool is_first_line,
+                              bool use_first_line_style,
                               bool is_after_forced_break) {
-  LayoutObject* layout_object = node.GetLayoutObject();
-  use_first_line_style_ =
-      is_first_line &&
-      layout_object->GetDocument().GetStyleEngine().UsesFirstLineRules();
-  line_style_ = layout_object->Style(use_first_line_style_);
+  use_first_line_style_ = use_first_line_style;
+  items_data_ = &items_data;
+  line_style_ = node.GetLayoutObject()->Style(use_first_line_style_);
 
   if (line_style_->ShouldUseTextIndent(is_first_line, is_after_forced_break)) {
     // 'text-indent' applies to block container, and percentage is of its

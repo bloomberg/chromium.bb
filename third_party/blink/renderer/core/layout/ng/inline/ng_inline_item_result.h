@@ -19,6 +19,8 @@ class NGConstraintSpace;
 class NGInlineItem;
 class NGInlineNode;
 
+struct NGInlineItemsData;
+
 // The result of measuring NGInlineItem.
 //
 // This is a transient context object only while building line boxes.
@@ -106,14 +108,21 @@ class CORE_EXPORT NGLineInfo {
   NGLineInfo() = default;
   explicit NGLineInfo(size_t capacity) : results_(capacity) {}
 
+  const NGInlineItemsData& ItemsData() const {
+    DCHECK(items_data_);
+    return *items_data_;
+  }
+
   // The style to use for the line.
   const ComputedStyle& LineStyle() const {
     DCHECK(line_style_);
     return *line_style_;
   }
   void SetLineStyle(const NGInlineNode&,
+                    const NGInlineItemsData&,
                     const NGConstraintSpace&,
-                    bool is_first_line,
+                    bool is_first_formatted_line,
+                    bool use_first_line_style,
                     bool is_after_forced_break);
 
   // Use ::first-line style if true.
@@ -158,6 +167,7 @@ class CORE_EXPORT NGLineInfo {
   void SetLineEndFragment(scoped_refptr<NGPhysicalTextFragment>);
 
  private:
+  const NGInlineItemsData* items_data_ = nullptr;
   const ComputedStyle* line_style_ = nullptr;
   NGInlineItemResults results_;
   scoped_refptr<NGPhysicalTextFragment> line_end_fragment_;

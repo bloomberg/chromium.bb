@@ -65,6 +65,8 @@ class CORE_EXPORT NGLineBreaker {
   struct LineData {
     STACK_ALLOCATED();
 
+    LineData(NGInlineNode node, const NGInlineBreakToken* break_token);
+
     // The current position from inline_start. Unlike NGInlineLayoutAlgorithm
     // that computes position in visual order, this position in logical order.
     LayoutUnit position;
@@ -74,6 +76,12 @@ class CORE_EXPORT NGLineBreaker {
 
     LayoutUnit line_left_bfc_offset;
     LayoutUnit line_right_bfc_offset;
+
+    // True if this line is the "first formatted line".
+    // https://www.w3.org/TR/CSS22/selector.html#first-formatted-line
+    bool is_first_formatted_line;
+
+    bool use_first_line_style;
 
     // We don't create "certain zero-height line boxes".
     // https://drafts.csswg.org/css2/visuren.html#phantom-line-box
@@ -96,7 +104,9 @@ class CORE_EXPORT NGLineBreaker {
     }
   };
 
-  const String& Text() const { return break_iterator_.GetString(); }
+  const String& Text() const { return items_data_.text_content; }
+  const Vector<NGInlineItem>& Items() const { return items_data_.items; }
+
   NGInlineItemResult* AddItem(const NGInlineItem&,
                               unsigned end_offset,
                               NGInlineItemResults*);
@@ -156,12 +166,13 @@ class CORE_EXPORT NGLineBreaker {
   void MoveToNextOf(const NGInlineItem&);
   void MoveToNextOf(const NGInlineItemResult&);
 
-  bool IsFirstFormattedLine() const;
-  void ComputeBaseDirection();
+  void ComputeBaseDirection(const NGLineInfo&);
   bool IsTrailing(const NGInlineItem&, const NGLineInfo&) const;
 
   LineData line_;
   NGInlineNode node_;
+  const NGInlineItemsData& items_data_;
+
   NGLineBreakerMode mode_;
   const NGConstraintSpace& constraint_space_;
   Vector<NGPositionedFloat>* positioned_floats_;
@@ -172,12 +183,12 @@ class CORE_EXPORT NGLineBreaker {
 
   unsigned item_index_ = 0;
   unsigned offset_ = 0;
-  bool previous_line_had_forced_break_ = false;
-  LayoutUnit bfc_line_offset_;
-  LayoutUnit bfc_block_offset_;
   LazyLineBreakIterator break_iterator_;
   HarfBuzzShaper shaper_;
   ShapeResultSpacing<String> spacing_;
+  bool previous_line_had_forced_break_ = false;
+  LayoutUnit bfc_line_offset_;
+  LayoutUnit bfc_block_offset_;
   const Hyphenation* hyphenation_ = nullptr;
 
   // Keep track of handled float items. See HandleFloat().

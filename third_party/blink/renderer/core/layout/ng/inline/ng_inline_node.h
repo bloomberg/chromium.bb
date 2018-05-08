@@ -56,13 +56,9 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // Instruct to re-compute |PrepareLayout| on the next layout.
   void InvalidatePrepareLayoutForTest();
 
-  const String& Text() const { return Data().text_content_; }
-  StringView Text(unsigned start_offset, unsigned end_offset) const {
-    return StringView(Data().text_content_, start_offset,
-                      end_offset - start_offset);
+  const NGInlineItemsData& ItemsData(bool is_first_line) const {
+    return Data().ItemsData(is_first_line);
   }
-
-  const Vector<NGInlineItem>& Items(bool is_first_line = false) const;
 
   // Returns the DOM to text content offset mapping of this block. If it is not
   // computed before, compute and store it in NGInlineNodeData.
@@ -74,8 +70,10 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 
   bool IsEmptyInline() { return EnsureData().is_empty_inline_; }
 
-  void AssertOffset(unsigned index, unsigned offset) const;
-  void AssertEndOffset(unsigned index, unsigned offset) const;
+  // @return if this node can contain the "first formatted line".
+  // https://www.w3.org/TR/CSS22/selector.html#first-formatted-line
+  bool CanContainFirstFormattedLine() const;
+
   void CheckConsistency() const;
 
   String ToString() const;
@@ -90,7 +88,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   void CollectInlines(NGInlineNodeData*,
                       NGInlineNodeData* previous_data = nullptr);
   void SegmentText(NGInlineNodeData*);
-  void ShapeText(NGInlineNodeData*, NGInlineNodeData* previous_data = nullptr);
+  void ShapeText(NGInlineItemsData*,
+                 NGInlineItemsData* previous_data = nullptr);
   void ShapeText(const String& text,
                  Vector<NGInlineItem>*,
                  const String* previous_text);
@@ -104,15 +103,6 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   friend class NGLineBreakerTest;
   friend class NGInlineNodeLegacy;
 };
-
-inline void NGInlineNode::AssertOffset(unsigned index, unsigned offset) const {
-  Data().items_[index].AssertOffset(offset);
-}
-
-inline void NGInlineNode::AssertEndOffset(unsigned index,
-                                          unsigned offset) const {
-  Data().items_[index].AssertEndOffset(offset);
-}
 
 DEFINE_TYPE_CASTS(NGInlineNode,
                   NGLayoutInputNode,
