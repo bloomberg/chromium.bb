@@ -360,9 +360,7 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 }
 
 - (gfx::Size)preferredSize {
-  gfx::Size size = toolbarActionsBar_->GetFullSize();
-  size.Enlarge(kBrowserActionHorizontalPadding * 2, 0);
-  return size;
+  return toolbarActionsBar_->GetFullSize();
 }
 
 - (NSPoint)popupPointForId:(const std::string&)id {
