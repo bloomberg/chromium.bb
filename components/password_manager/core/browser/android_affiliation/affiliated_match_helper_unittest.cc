@@ -185,6 +185,11 @@ class AffiliatedMatchHelperTest : public testing::Test {
         AffiliatedMatchHelper::kInitializationDelayOnStartup);
   }
 
+  void ExpectNoDeferredTasks() {
+    mock_time_task_runner_->RunUntilIdle();
+    ASSERT_FALSE(mock_time_task_runner_->HasPendingTask());
+  }
+
   void RunUntilIdle() {
     // TODO(gab): Add support for base::RunLoop().RunUntilIdle() in scope of
     // ScopedMockTimeMessageLoopTaskRunner and use it instead of this helper
@@ -666,7 +671,7 @@ TEST_F(AffiliatedMatchHelperTest, DestroyBeforeDeferredInitialization) {
   match_helper()->Initialize();
   RunUntilIdle();
   DestroyMatchHelper();
-  ASSERT_NO_FATAL_FAILURE(RunDeferredInitialization());
+  ASSERT_NO_FATAL_FAILURE(ExpectNoDeferredTasks());
 }
 
 }  // namespace password_manager

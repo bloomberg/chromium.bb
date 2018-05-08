@@ -251,27 +251,45 @@ TestMockTimeTaskRunner::TakePendingTasks() {
   while (!tasks_.empty()) {
     // It's safe to remove const and consume |task| here, since |task| is not
     // used for ordering the item.
-    tasks.push_back(
-        std::move(const_cast<TestOrderedPendingTask&>(tasks_.top())));
+    if (!tasks_.top().task.IsCancelled()) {
+      tasks.push_back(
+          std::move(const_cast<TestOrderedPendingTask&>(tasks_.top())));
+    }
     tasks_.pop();
   }
   return tasks;
 }
 
-bool TestMockTimeTaskRunner::HasPendingTask() const {
+bool TestMockTimeTaskRunner::HasPendingTask() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  AutoLock scoped_lock(tasks_lock_);
+  while (!tasks_.empty() && tasks_.top().task.IsCancelled())
+    tasks_.pop();
   return !tasks_.empty();
 }
 
-size_t TestMockTimeTaskRunner::GetPendingTaskCount() const {
+size_t TestMockTimeTaskRunner::GetPendingTaskCount() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  AutoLock scoped_lock(tasks_lock_);
+  TaskPriorityQueue preserved_tasks;
+  while (!tasks_.empty()) {
+    if (!tasks_.top().task.IsCancelled()) {
+      preserved_tasks.push(
+          std::move(const_cast<TestOrderedPendingTask&>(tasks_.top())));
+    }
+    tasks_.pop();
+  }
+  tasks_.swap(preserved_tasks);
   return tasks_.size();
 }
 
-TimeDelta TestMockTimeTaskRunner::NextPendingTaskDelay() const {
+TimeDelta TestMockTimeTaskRunner::NextPendingTaskDelay() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  AutoLock scoped_lock(tasks_lock_);
+  while (!tasks_.empty() && tasks_.top().task.IsCancelled())
+    tasks_.pop();
   return tasks_.empty() ? TimeDelta::Max()
-                        : tasks_.top().GetTimeToRun() - NowTicks();
+                        : tasks_.top().GetTimeToRun() - now_ticks_;
 }
 
 // TODO(gab): Combine |thread_checker_| with a SequenceToken to differentiate
@@ -329,6 +347,8 @@ void TestMockTimeTaskRunner::ProcessAllTasksNoLaterThan(TimeDelta max_delta) {
     TestPendingTask task_info;
     if (!DequeueNextTask(original_now_ticks, max_delta, &task_info))
       break;
+    if (task_info.task.IsCancelled())
+      continue;
     // If tasks were posted with a negative delay, task_info.GetTimeToRun() will
     // be less than |now_ticks_|. ForwardClocksUntilTickTime() takes care of not
     // moving the clock backwards in this case.

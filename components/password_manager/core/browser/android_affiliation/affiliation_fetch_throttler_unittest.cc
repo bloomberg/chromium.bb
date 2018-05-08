@@ -411,7 +411,8 @@ TEST_F(AffiliationFetchThrottlerTest, InstanceDestroyedWhileInBackoff) {
 
   throttler->SignalNetworkRequestNeeded();
   throttler.reset();
-  EXPECT_EQ(1u, GetPendingTaskCount());
+  // We expect the task to be cancelled.
+  EXPECT_EQ(0u, GetPendingTaskCount());
   AssertNoReleaseUntilNoTasksRemain();
 }
 

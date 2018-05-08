@@ -4,6 +4,7 @@
 
 #include "base/test/test_mock_time_task_runner.h"
 
+#include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
@@ -194,6 +195,56 @@ TEST(TestMockTimeTaskRunnerTest, RunLoopQuitFromIdle) {
   quitting_thread.task_runner()->PostDelayedTask(
       FROM_HERE, run_loop.QuitWhenIdleClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
+}
+
+TEST(TestMockTimeTaskRunnerTest, TakePendingTasks) {
+  auto task_runner = MakeRefCounted<TestMockTimeTaskRunner>();
+  task_runner->PostTask(FROM_HERE, Bind([]() {}));
+  EXPECT_TRUE(task_runner->HasPendingTask());
+  EXPECT_EQ(1u, task_runner->TakePendingTasks().size());
+  EXPECT_FALSE(task_runner->HasPendingTask());
+}
+
+TEST(TestMockTimeTaskRunnerTest, CancelPendingTask) {
+  auto task_runner = MakeRefCounted<TestMockTimeTaskRunner>();
+  CancelableClosure task1(Bind([]() {}));
+  task_runner->PostDelayedTask(FROM_HERE, task1.callback(),
+                               TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(task_runner->HasPendingTask());
+  EXPECT_EQ(1u, task_runner->GetPendingTaskCount());
+  EXPECT_EQ(TimeDelta::FromSeconds(1), task_runner->NextPendingTaskDelay());
+  task1.Cancel();
+  EXPECT_FALSE(task_runner->HasPendingTask());
+
+  CancelableClosure task2(Bind([]() {}));
+  task_runner->PostDelayedTask(FROM_HERE, task2.callback(),
+                               TimeDelta::FromSeconds(1));
+  task2.Cancel();
+  EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
+
+  CancelableClosure task3(Bind([]() {}));
+  task_runner->PostDelayedTask(FROM_HERE, task3.callback(),
+                               TimeDelta::FromSeconds(1));
+  task3.Cancel();
+  EXPECT_EQ(TimeDelta::Max(), task_runner->NextPendingTaskDelay());
+
+  CancelableClosure task4(Bind([]() {}));
+  task_runner->PostDelayedTask(FROM_HERE, task4.callback(),
+                               TimeDelta::FromSeconds(1));
+  task4.Cancel();
+  EXPECT_TRUE(task_runner->TakePendingTasks().empty());
+}
+
+TEST(TestMockTimeTaskRunnerTest, NoFastForwardToCancelledTask) {
+  auto task_runner = MakeRefCounted<TestMockTimeTaskRunner>();
+  TimeTicks start_time = task_runner->NowTicks();
+  CancelableClosure task(Bind([]() {}));
+  task_runner->PostDelayedTask(FROM_HERE, task.callback(),
+                               TimeDelta::FromSeconds(1));
+  EXPECT_EQ(TimeDelta::FromSeconds(1), task_runner->NextPendingTaskDelay());
+  task.Cancel();
+  task_runner->FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(start_time, task_runner->NowTicks());
 }
 
 }  // namespace base
