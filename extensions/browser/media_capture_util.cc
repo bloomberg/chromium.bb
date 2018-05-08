@@ -101,11 +101,9 @@ bool CheckMediaAccessPermission(content::MediaStreamType type,
   const PermissionsData* permissions_data = extension->permissions_data();
   if (type == content::MEDIA_DEVICE_AUDIO_CAPTURE) {
     return permissions_data->HasAPIPermission(APIPermission::kAudioCapture);
-  } else {
-    DCHECK(type == content::MEDIA_DEVICE_VIDEO_CAPTURE);
-    return permissions_data->HasAPIPermission(APIPermission::kVideoCapture);
   }
-  return false;
+  DCHECK(type == content::MEDIA_DEVICE_VIDEO_CAPTURE);
+  return permissions_data->HasAPIPermission(APIPermission::kVideoCapture);
 }
 
 }  // namespace media_capture_util

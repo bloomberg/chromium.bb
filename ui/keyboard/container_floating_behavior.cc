@@ -276,7 +276,6 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
                                                    new_bounds_in_local);
           return true;
         }
-        SavePosition(container->bounds(), new_display.size());
       }
       break;
 
