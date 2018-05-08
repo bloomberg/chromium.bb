@@ -805,10 +805,9 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
   shader = content->makeShader(&content_mat);
 
   if (quad->mask_resource_id()) {
-    cc::DisplayResourceProvider::ScopedReadLockSkImage mask_lock(
-        resource_provider_, quad->mask_resource_id());
-    const SkImage* image = mask_lock.sk_image();
-    if (!mask_lock.valid())
+    ScopedSkImageBuilder builder(this, quad->mask_resource_id());
+    const SkImage* image = builder.sk_image();
+    if (!image)
       return;
 
     // Scale normalized uv rect into absolute texel coordinates.
