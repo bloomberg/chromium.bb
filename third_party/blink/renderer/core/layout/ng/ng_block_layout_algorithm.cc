@@ -669,9 +669,6 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
 
     // We reset the block offset here as it may have been affected by clearance.
     child_bfc_offset_estimate = ContainerBfcOffset().block_offset;
-
-    // Position any pending floats since we've just updated our BFC offset.
-    PositionPendingFloats(child_bfc_offset_estimate);
   }
 
   // If the child has a non-zero block-start margin, our initial estimate will
