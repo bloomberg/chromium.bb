@@ -27,8 +27,6 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia_operations.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/public/cpp/notification.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
@@ -38,35 +36,16 @@ using chromeos::NetworkHandler;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
-using message_center::Notification;
 
 namespace ash {
 namespace tray {
 
 namespace {
 
-constexpr char kWifiToggleNotificationId[] = "wifi-toggle";
-constexpr char kNotifierWifiToggle[] = "ash.wifi-toggle";
-
 // Returns the connected, non-virtual (aka VPN), network.
 const NetworkState* GetConnectedNetwork() {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   return handler->ConnectedNetworkByType(NetworkTypePattern::NonVirtual());
-}
-
-std::unique_ptr<Notification> CreateNotification(bool wifi_enabled) {
-  const int string_id = wifi_enabled
-                            ? IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED
-                            : IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED;
-  std::unique_ptr<Notification> notification(new Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, kWifiToggleNotificationId,
-      base::string16(), l10n_util::GetStringUTF16(string_id),
-      gfx::Image(network_icon::GetImageForWiFiEnabledState(wifi_enabled)),
-      base::string16() /* display_source */, GURL(),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
-                                 kNotifierWifiToggle),
-      message_center::RichNotificationData(), nullptr));
-  return notification;
 }
 
 }  // namespace
@@ -237,14 +216,9 @@ TrayNetwork::TrayNetwork(SystemTray* system_tray)
       default_(nullptr),
       detailed_(nullptr) {
   network_state_observer_.reset(new TrayNetworkStateObserver(this));
-  SystemTrayNotifier* notifier = Shell::Get()->system_tray_notifier();
-  notifier->AddNetworkObserver(this);
 }
 
-TrayNetwork::~TrayNetwork() {
-  SystemTrayNotifier* notifier = Shell::Get()->system_tray_notifier();
-  notifier->RemoveNetworkObserver(this);
-}
+TrayNetwork::~TrayNetwork() = default;
 
 views::View* TrayNetwork::CreateTrayView(LoginStatus status) {
   CHECK(tray_ == nullptr);
@@ -285,23 +259,6 @@ void TrayNetwork::OnDefaultViewDestroyed() {
 
 void TrayNetwork::OnDetailedViewDestroyed() {
   detailed_ = nullptr;
-}
-
-void TrayNetwork::RequestToggleWifi() {
-  // This will always be triggered by a user action (e.g. keyboard shortcut)
-  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  bool enabled = handler->IsTechnologyEnabled(NetworkTypePattern::WiFi());
-  Shell::Get()->metrics()->RecordUserMetricsAction(
-      enabled ? UMA_STATUS_AREA_DISABLE_WIFI : UMA_STATUS_AREA_ENABLE_WIFI);
-  handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(), !enabled,
-                                chromeos::network_handler::ErrorCallback());
-  message_center::MessageCenter* message_center =
-      message_center::MessageCenter::Get();
-  if (message_center->FindVisibleNotificationById(
-          tray::kWifiToggleNotificationId)) {
-    message_center->RemoveNotification(tray::kWifiToggleNotificationId, false);
-  }
-  message_center->AddNotification(tray::CreateNotification(!enabled));
 }
 
 void TrayNetwork::NetworkStateChanged(bool notify_a11y) {

@@ -15,9 +15,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "components/prefs/testing_pref_service.h"
-#include "ui/message_center/message_center.h"
-
-using message_center::MessageCenter;
 
 namespace ash {
 namespace {
@@ -77,23 +74,6 @@ TEST_F(TrayNetworkTest, Basics) {
   // Network details view was created.
   ASSERT_TRUE(tray_network->detailed());
   EXPECT_TRUE(tray_network->detailed()->visible());
-}
-
-// Verifies that toggling Wi-Fi (usually via keyboard) shows a notification.
-TEST_F(TrayNetworkTest, ToggleWifi) {
-  TrayNetwork* tray_network =
-      SystemTrayTestApi(GetPrimarySystemTray()).tray_network();
-
-  // No notifications at startup.
-  ASSERT_EQ(0u, MessageCenter::Get()->NotificationCount());
-
-  // Simulate a user action to toggle Wi-Fi.
-  tray_network->RequestToggleWifi();
-
-  // Notification was shown.
-  EXPECT_EQ(1u, MessageCenter::Get()->NotificationCount());
-  EXPECT_TRUE(MessageCenter::Get()->HasPopupNotifications());
-  EXPECT_TRUE(MessageCenter::Get()->FindVisibleNotificationById("wifi-toggle"));
 }
 
 // Open network info bubble and close network detailed view. Confirm that it
