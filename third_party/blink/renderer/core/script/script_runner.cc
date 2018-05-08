@@ -269,7 +269,9 @@ bool ScriptRunner::DoTryStream(ScriptLoader* script_loader) {
   DCHECK(!is_suspended_);
   DCHECK(script_loader);
 
-  // Currently, we support streaming only for async scripts.
+  // Currently, we stream only async scripts in this function.
+  // Note: HTMLParserScriptRunner kicks streaming for deferred or blocking
+  // scripts.
   DCHECK(pending_async_scripts_.find(script_loader) !=
              pending_async_scripts_.end() ||
          std::find(async_scripts_to_execute_soon_.begin(),

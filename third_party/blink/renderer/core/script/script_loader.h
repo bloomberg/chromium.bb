@@ -138,6 +138,10 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
                bool is_evaluated,
                bool created_during_document_write);
 
+  void SetAsyncExecTypeForTesting(ScriptRunner::AsyncExecutionType type) {
+    async_exec_type_ = type;
+  }
+
  private:
   bool IgnoresLoadRequest() const;
   bool IsScriptForEventSupported() const;
