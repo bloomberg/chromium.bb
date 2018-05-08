@@ -107,6 +107,9 @@ void AlignVerticalCenterWith(gfx::Rect* rect, const gfx::Rect& sibling) {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewAsh, public:
 
+const base::TimeDelta BrowserNonClientFrameViewAsh::kTitlebarAnimationDelay =
+    base::TimeDelta::FromMilliseconds(750);
+
 BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
     BrowserFrame* frame,
     BrowserView* browser_view)
