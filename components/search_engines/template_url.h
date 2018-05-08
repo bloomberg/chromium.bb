@@ -230,7 +230,7 @@ class TemplateURLRef {
   // If this TemplateURLRef is valid and contains one search term, this returns
   // the host/path of the URL, otherwise this returns an empty string.
   const std::string& GetHost(const SearchTermsData& search_terms_data) const;
-  std::string GetPath(const SearchTermsData& search_terms_data) const;
+  const std::string& GetPath(const SearchTermsData& search_terms_data) const;
 
   // If this TemplateURLRef is valid and contains one search term
   // in its query or ref, this returns the key of the search term,
@@ -396,18 +396,6 @@ class TemplateURLRef {
   // search_offset_.
   void ParseIfNecessary(const SearchTermsData& search_terms_data) const;
 
-  // Parses a wildcard out of |path|, putting the parsed path in |path_prefix_|
-  // and |path_suffix_| and setting |path_wildcard_present_| to true.
-  // In the absence of a wildcard, the full path will be contained in
-  // |path_prefix_| and |path_wildcard_present_| will be false.
-  void ParsePath(const std::string& path) const;
-
-  // Returns whether the path portion of this template URL is equal to the path
-  // in |url|, checking that URL is prefixed/suffixed by
-  // |path_prefix_|/|path_suffix_| if |path_wildcard_present_| is true, or equal
-  // to |path_prefix_| otherwise.
-  bool PathIsEqual(const GURL& url) const;
-
   // Extracts the query key and host from the url.
   void ParseHostAndSearchTermKey(
       const SearchTermsData& search_terms_data) const;
@@ -466,9 +454,7 @@ class TemplateURLRef {
   // if the url contains one search term.
   mutable std::string host_;
   mutable std::string port_;
-  mutable std::string path_prefix_;
-  mutable std::string path_suffix_;
-  mutable bool path_wildcard_present_;
+  mutable std::string path_;
   mutable std::string search_term_key_;
   mutable url::Parsed::ComponentType search_term_key_location_;
   mutable std::string search_term_value_prefix_;
