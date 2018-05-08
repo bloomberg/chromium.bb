@@ -921,8 +921,6 @@ crbug.com/591099 fast/borders/border-radius-mask-canvas-with-mask.html [ Failure
 crbug.com/591099 fast/borders/border-radius-mask-canvas-with-shadow.html [ Failure ]
 crbug.com/714962 fast/borders/border-styles-split.html [ Failure ]
 crbug.com/591099 fast/borders/inline-mask-overlay-image-outset-vertical-rl.html [ Failure ]
-crbug.com/591099 fast/borders/inline-mask-overlay-image-outset.html [ Failure ]
-crbug.com/591099 fast/borders/inline-mask-overlay-image.html [ Failure ]
 crbug.com/591099 fast/box-decoration-break/box-decoration-break-rendering.html [ Failure ]
 crbug.com/591099 fast/box-shadow/basic-shadows.html [ Failure ]
 crbug.com/591099 fast/box-shadow/box-shadow.html [ Failure ]

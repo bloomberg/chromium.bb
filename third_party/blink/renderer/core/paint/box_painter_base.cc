@@ -700,7 +700,9 @@ void BoxPainterBase::PaintBorder(const ImageResourceObserver& obj,
 void BoxPainterBase::PaintMaskImages(const PaintInfo& paint_info,
                                      const LayoutRect& paint_rect,
                                      const ImageResourceObserver& obj,
-                                     BackgroundImageGeometry& geometry) {
+                                     BackgroundImageGeometry& geometry,
+                                     bool include_logical_left_edge,
+                                     bool include_logical_right_edge) {
   // Figure out if we need to push a transparency layer to render our mask.
   bool push_transparency_layer = false;
   bool all_mask_images_loaded = true;
@@ -728,7 +730,9 @@ void BoxPainterBase::PaintMaskImages(const PaintInfo& paint_info,
     PaintFillLayers(paint_info, Color::kTransparent, style_.MaskLayers(),
                     paint_rect, geometry);
     NinePieceImagePainter::Paint(paint_info.context, obj, *document_, node_,
-                                 paint_rect, style_, style_.MaskBoxImage());
+                                 paint_rect, style_, style_.MaskBoxImage(),
+                                 include_logical_left_edge,
+                                 include_logical_right_edge);
   }
 
   if (push_transparency_layer)

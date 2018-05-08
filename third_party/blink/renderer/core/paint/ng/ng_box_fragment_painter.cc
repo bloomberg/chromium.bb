@@ -386,7 +386,8 @@ void NGBoxFragmentPainter::PaintMask(const PaintInfo& paint_info,
   DrawingRecorder recorder(paint_info.context, box_fragment_, paint_info.phase);
   LayoutRect paint_rect =
       LayoutRect(paint_offset, box_fragment_.Size().ToLayoutSize());
-  PaintMaskImages(paint_info, paint_rect, box_fragment_, geometry);
+  PaintMaskImages(paint_info, paint_rect, box_fragment_, geometry,
+                  border_edges_.line_left, border_edges_.line_right);
 }
 
 void NGBoxFragmentPainter::PaintClippingMask(const PaintInfo&,
