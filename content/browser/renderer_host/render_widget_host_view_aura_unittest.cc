@@ -2820,20 +2820,11 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
 
   view_->EnableAutoResize(gfx::Size(50, 50), gfx::Size(100, 100));
   sink_->ClearMessages();
-  ViewHostMsg_ResizeOrRepaint_ACK_Params params;
-  params.view_size = gfx::Size(75, 75);
-  params.child_allocated_local_surface_id =
-      viz::LocalSurfaceId(local_surface_id1.parent_sequence_number(),
-                          local_surface_id1.child_sequence_number() + 1,
-                          local_surface_id1.embed_token());
-  widget_host_->OnResizeOrRepaintACK(params);
-
-  // RenderWidgetHostImpl has delayed auto-resize processing. Yield here to
-  // let it complete.
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                run_loop.QuitClosure());
-  run_loop.Run();
+  viz::LocalSurfaceId local_surface_id(
+      local_surface_id1.parent_sequence_number(),
+      local_surface_id1.child_sequence_number() + 1,
+      local_surface_id1.embed_token());
+  widget_host_->DidUpdateVisualProperties(gfx::Size(75, 75), local_surface_id);
 
   viz::LocalSurfaceId local_surface_id2;
   ASSERT_EQ(1u, sink_->message_count());
@@ -2887,20 +2878,11 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
 
   view_->EnableAutoResize(gfx::Size(50, 50), gfx::Size(100, 100));
   sink_->ClearMessages();
-  ViewHostMsg_ResizeOrRepaint_ACK_Params params;
-  params.view_size = gfx::Size(75, 75);
-  params.child_allocated_local_surface_id =
-      viz::LocalSurfaceId(local_surface_id1.parent_sequence_number(),
-                          local_surface_id1.child_sequence_number() + 1,
-                          local_surface_id1.embed_token());
-  widget_host_->OnResizeOrRepaintACK(params);
-
-  // RenderWidgetHostImpl has delayed auto-resize processing. Yield here to
-  // let it complete.
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                run_loop.QuitClosure());
-  run_loop.Run();
+  viz::LocalSurfaceId local_surface_id(
+      local_surface_id1.parent_sequence_number(),
+      local_surface_id1.child_sequence_number() + 1,
+      local_surface_id1.embed_token());
+  widget_host_->DidUpdateVisualProperties(gfx::Size(75, 75), local_surface_id);
 
   viz::LocalSurfaceId local_surface_id2;
   ASSERT_EQ(1u, sink_->message_count());
@@ -2955,20 +2937,10 @@ TEST_F(RenderWidgetHostViewAuraTest, ChildAllocationAcceptedInParent) {
   EXPECT_TRUE(local_surface_id1.is_valid());
 
   widget_host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
-  ViewHostMsg_ResizeOrRepaint_ACK_Params params;
-  params.view_size = gfx::Size(75, 75);
   viz::ChildLocalSurfaceIdAllocator child_allocator;
   child_allocator.UpdateFromParent(local_surface_id1);
   viz::LocalSurfaceId local_surface_id2 = child_allocator.GenerateId();
-  params.child_allocated_local_surface_id = local_surface_id2;
-  widget_host_->OnResizeOrRepaintACK(params);
-
-  // RenderWidgetHostImpl has delayed auto-resize processing. Yield here to
-  // let it complete.
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                run_loop.QuitClosure());
-  run_loop.Run();
+  widget_host_->DidUpdateVisualProperties(gfx::Size(75, 75), local_surface_id2);
 
   viz::LocalSurfaceId local_surface_id3(view_->GetLocalSurfaceId());
   EXPECT_NE(local_surface_id1, local_surface_id3);
@@ -2987,25 +2959,15 @@ TEST_F(RenderWidgetHostViewAuraTest, ConflictingAllocationsResolve) {
   EXPECT_TRUE(local_surface_id1.is_valid());
 
   widget_host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
-  ViewHostMsg_ResizeOrRepaint_ACK_Params params;
-  params.view_size = gfx::Size(75, 75);
   viz::ChildLocalSurfaceIdAllocator child_allocator;
   child_allocator.UpdateFromParent(local_surface_id1);
   viz::LocalSurfaceId local_surface_id2 = child_allocator.GenerateId();
-  params.child_allocated_local_surface_id = local_surface_id2;
-  widget_host_->OnResizeOrRepaintACK(params);
+  widget_host_->DidUpdateVisualProperties(gfx::Size(75, 75), local_surface_id2);
 
   // Cause a conflicting viz::LocalSurfaceId allocation
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
   viz::LocalSurfaceId local_surface_id3(view_->GetLocalSurfaceId());
   EXPECT_NE(local_surface_id1, local_surface_id3);
-
-  // RenderWidgetHostImpl has delayed auto-resize processing. Yield here to
-  // let it complete.
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                run_loop.QuitClosure());
-  run_loop.Run();
 
   viz::LocalSurfaceId local_surface_id4(view_->GetLocalSurfaceId());
   EXPECT_NE(local_surface_id1, local_surface_id4);
@@ -3389,10 +3351,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
       id1, MakeDelegatedFrame(1.f, size1, gfx::Rect(size1)), nullptr);
   ui::DrawWaiterForTest::WaitForCommit(
       root_window->GetHost()->compositor());
-  ViewHostMsg_ResizeOrRepaint_ACK_Params update_params;
-  update_params.view_size = size1;
-  widget_host_->OnMessageReceived(ViewHostMsg_ResizeOrRepaint_ACK(
-      widget_host_->GetRoutingID(), update_params));
+  widget_host_->DidUpdateVisualProperties(size1, base::nullopt);
   sink_->ClearMessages();
   // Resize logic is idle (no pending resize, no pending commit).
   EXPECT_EQ(size1.ToString(), view_->GetRequestedRendererSize().ToString());
@@ -3410,9 +3369,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
     EXPECT_EQ(size2.ToString(), std::get<0>(params).new_size.ToString());
   }
   // Send resize ack to observe new Resize messages.
-  update_params.view_size = size2;
-  widget_host_->OnMessageReceived(ViewHostMsg_ResizeOrRepaint_ACK(
-      widget_host_->GetRoutingID(), update_params));
+  widget_host_->DidUpdateVisualProperties(size2, base::nullopt);
   sink_->ClearMessages();
 
   // Resize renderer again, before receiving a frame. Should not produce a
@@ -3470,9 +3427,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
     }
   }
   EXPECT_TRUE(has_resize);
-  update_params.view_size = size3;
-  widget_host_->OnMessageReceived(ViewHostMsg_ResizeOrRepaint_ACK(
-      widget_host_->GetRoutingID(), update_params));
+  widget_host_->DidUpdateVisualProperties(size3, base::nullopt);
   sink_->ClearMessages();
 }
 

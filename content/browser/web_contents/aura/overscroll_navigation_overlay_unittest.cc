@@ -246,12 +246,10 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
 
     // Receive a paint update. This is necessary to make sure the size is set
     // correctly in RenderWidgetHostImpl.
-    ViewHostMsg_ResizeOrRepaint_ACK_Params params;
-    params.view_size = gfx::Size(10, 10);
-    params.child_allocated_local_surface_id =
-        viz::LocalSurfaceId(10, 10, base::UnguessableToken::Create());
-    ViewHostMsg_ResizeOrRepaint_ACK rect(test_rvh()->GetRoutingID(), params);
-    RenderViewHostTester::TestOnMessageReceived(test_rvh(), rect);
+    viz::LocalSurfaceId local_surface_id(10, 10,
+                                         base::UnguessableToken::Create());
+    test_rvh()->GetWidget()->DidUpdateVisualProperties(gfx::Size(10, 10),
+                                                       local_surface_id);
 
     // Reset pending flags for size/paint.
     test_rvh()->GetWidget()->ResetSizeAndRepaintPendingFlags();

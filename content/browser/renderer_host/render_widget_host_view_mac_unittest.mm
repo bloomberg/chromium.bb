@@ -1951,20 +1951,10 @@ TEST_F(RenderWidgetHostViewMacTest, ChildAllocationAcceptedInParent) {
 
   host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
 
-  ViewHostMsg_ResizeOrRepaint_ACK_Params params;
-  params.view_size = gfx::Size(75, 75);
   viz::ChildLocalSurfaceIdAllocator child_allocator;
   child_allocator.UpdateFromParent(local_surface_id1);
   viz::LocalSurfaceId local_surface_id2 = child_allocator.GenerateId();
-  params.child_allocated_local_surface_id = local_surface_id2;
-  host_->OnResizeOrRepaintACK(params);
-
-  // RenderWidgetHostImpl has delayed auto-resize processing. Yield here to
-  // let it complete.
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                run_loop.QuitClosure());
-  run_loop.Run();
+  host_->DidUpdateVisualProperties(gfx::Size(75, 75), local_surface_id2);
 
   viz::LocalSurfaceId local_surface_id3(rwhv_mac_->GetLocalSurfaceId());
   EXPECT_NE(local_surface_id1, local_surface_id3);
@@ -1978,13 +1968,10 @@ TEST_F(RenderWidgetHostViewMacTest, ConflictingAllocationsResolve) {
   EXPECT_TRUE(local_surface_id1.is_valid());
 
   host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
-  ViewHostMsg_ResizeOrRepaint_ACK_Params params;
-  params.view_size = gfx::Size(75, 75);
   viz::ChildLocalSurfaceIdAllocator child_allocator;
   child_allocator.UpdateFromParent(local_surface_id1);
   viz::LocalSurfaceId local_surface_id2 = child_allocator.GenerateId();
-  params.child_allocated_local_surface_id = local_surface_id2;
-  host_->OnResizeOrRepaintACK(params);
+  host_->DidUpdateVisualProperties(gfx::Size(75, 75), local_surface_id2);
 
   // Cause a conflicting viz::LocalSurfaceId allocation
   BrowserCompositorMac* browser_compositor =

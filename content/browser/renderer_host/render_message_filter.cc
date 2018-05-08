@@ -88,23 +88,6 @@ namespace {
 
 const uint32_t kRenderFilteredMessageClasses[] = {ViewMsgStart};
 
-#if defined(OS_MACOSX)
-void ResizeHelperHandleMsgOnUIThread(int render_process_id,
-                                     const IPC::Message& message) {
-  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
-  if (host)
-    host->OnMessageReceived(message);
-}
-
-void ResizeHelperPostMsgToUIThread(int render_process_id,
-                                   const IPC::Message& msg) {
-  ui::WindowResizeHelperMac::Get()->task_runner()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(ResizeHelperHandleMsgOnUIThread, render_process_id, msg),
-      base::TimeDelta());
-}
-#endif
-
 void NoOpCacheStorageErrorCallback(CacheStorageCacheHandle cache_handle,
                                    CacheStorageError error) {}
 
@@ -144,13 +127,6 @@ RenderMessageFilter::~RenderMessageFilter() {
 bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderMessageFilter, message)
-#if defined(OS_MACOSX)
-    // On Mac, ViewHostMsg_ResizeOrRepaint_ACK needs to be handled in a nested
-    // message loop during resize.
-    IPC_MESSAGE_HANDLER_GENERIC(
-        ViewHostMsg_ResizeOrRepaint_ACK,
-        ResizeHelperPostMsgToUIThread(render_process_id_, message))
-#endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaLogEvents, OnMediaLogEvents)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

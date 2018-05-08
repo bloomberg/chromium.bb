@@ -486,8 +486,6 @@ class CONTENT_EXPORT RenderWidget
 
   bool IsSurfaceSynchronizationEnabled() const;
 
-  void DidUpdateVisualProperties();
-
   base::WeakPtr<RenderWidget> AsWeakPtr();
 
  protected:
@@ -625,10 +623,6 @@ class CONTENT_EXPORT RenderWidget
 
   void DidToggleFullscreen();
 
-  bool needs_visual_properties_ack() const {
-    return needs_visual_properties_ack_;
-  }
-
   // Returns a rect that the compositor needs to raster. For a main frame this
   // is always the entire viewprot, but for out-of-process iframes this can be
   // constrained to limit overdraw.
@@ -725,9 +719,6 @@ class CONTENT_EXPORT RenderWidget
 
   // The size of the visible viewport in pixels.
   gfx::Size visible_viewport_size_;
-
-  // Flags for the next ViewHostMsg_ResizeOrRepaint_ACK message.
-  bool needs_visual_properties_ack_ = false;
 
   // Whether the WebWidget is in auto resize mode, which is used for example
   // by extension popups.

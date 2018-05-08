@@ -2582,14 +2582,11 @@ bool TestChildOrGuestAutoresize(bool is_guest,
   current_id = filter->WaitForSurfaceId();
 
   // Fake an auto-resize update.
-  int routing_id = guest_rwh_impl->GetRoutingID();
-  ViewHostMsg_ResizeOrRepaint_ACK_Params params;
-  params.view_size = gfx::Size(75, 75);
-  params.child_allocated_local_surface_id = viz::LocalSurfaceId(
-      current_id.parent_sequence_number(),
-      current_id.child_sequence_number() + 1, current_id.embed_token());
-  guest_rwh_impl->OnMessageReceived(
-      ViewHostMsg_ResizeOrRepaint_ACK(routing_id, params));
+  viz::LocalSurfaceId local_surface_id(current_id.parent_sequence_number(),
+                                       current_id.child_sequence_number() + 1,
+                                       current_id.embed_token());
+  guest_rwh_impl->DidUpdateVisualProperties(gfx::Size(75, 75),
+                                            local_surface_id);
 
   // Auto-resize messages are handled with delayed processing, make sure it's
   // handled now:
@@ -2597,7 +2594,7 @@ bool TestChildOrGuestAutoresize(bool is_guest,
 
   // This won't generate a response, as we short-circuit auto-resizes, so cause
   // an additional update by disabling auto-resize.
-  guest_rwh_impl->GetView()->DisableAutoResize(params.view_size);
+  guest_rwh_impl->GetView()->DisableAutoResize(gfx::Size(75, 75));
 
   // Get the first delivered surface id and ensure it has the surface id which
   // we expect.

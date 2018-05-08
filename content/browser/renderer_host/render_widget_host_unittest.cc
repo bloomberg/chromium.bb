@@ -184,7 +184,6 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
 
   // Allow poking at a few private members.
   using RenderWidgetHostImpl::GetVisualProperties;
-  using RenderWidgetHostImpl::OnResizeOrRepaintACK;
   using RenderWidgetHostImpl::RendererExited;
   using RenderWidgetHostImpl::SetInitialVisualProperties;
   using RenderWidgetHostImpl::old_visual_properties_;
@@ -994,9 +993,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   EXPECT_EQ(original_size.size(), host_->old_visual_properties_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
       ViewMsg_SynchronizeVisualProperties::ID));
-  ViewHostMsg_ResizeOrRepaint_ACK_Params params;
-  params.view_size = original_size.size();
-  host_->OnResizeOrRepaintACK(params);
+  host_->DidUpdateVisualProperties(original_size.size(), base::nullopt);
   EXPECT_FALSE(host_->resize_ack_pending_);
 
   process_->sink().ClearMessages();
@@ -1020,8 +1017,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   // this isn't the second_size, the message handler should immediately send
   // a new resize message for the new size to the renderer.
   process_->sink().ClearMessages();
-  params.view_size = original_size.size();
-  host_->OnResizeOrRepaintACK(params);
+  host_->DidUpdateVisualProperties(original_size.size(), base::nullopt);
   EXPECT_TRUE(host_->resize_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
@@ -1029,8 +1025,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
 
   // Send the resize ack for the latest size.
   process_->sink().ClearMessages();
-  params.view_size = third_size.size();
-  host_->OnResizeOrRepaintACK(params);
+  host_->DidUpdateVisualProperties(third_size.size(), base::nullopt);
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
   EXPECT_FALSE(process_->sink().GetFirstMessageMatching(
@@ -1189,9 +1184,7 @@ TEST_F(RenderWidgetHostTest, HiddenPaint) {
 
   // Send it an update as from the renderer.
   process_->sink().ClearMessages();
-  ViewHostMsg_ResizeOrRepaint_ACK_Params params;
-  params.view_size = gfx::Size(100, 100);
-  host_->OnResizeOrRepaintACK(params);
+  host_->DidUpdateVisualProperties(gfx::Size(100, 100), base::nullopt);
 
   // Now unhide.
   process_->sink().ClearMessages();
@@ -2247,6 +2240,21 @@ TEST_F(RenderWidgetHostInitialSizeTest, InitialSize) {
       ViewMsg_SynchronizeVisualProperties::ID));
   EXPECT_EQ(initial_size_, host_->old_visual_properties_->new_size);
   EXPECT_TRUE(host_->resize_ack_pending_);
+}
+
+TEST_F(RenderWidgetHostTest, HideUnthrottlesResize) {
+  gfx::Size original_size(100, 100);
+  view_->SetBounds(gfx::Rect(original_size));
+  process_->sink().ClearMessages();
+  EXPECT_TRUE(host_->SynchronizeVisualProperties());
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+      ViewMsg_SynchronizeVisualProperties::ID));
+  EXPECT_EQ(original_size, host_->old_visual_properties_->new_size);
+  EXPECT_TRUE(host_->resize_ack_pending_);
+
+  // Hiding the widget should unthrottle resize.
+  host_->WasHidden();
+  EXPECT_FALSE(host_->resize_ack_pending_);
 }
 
 // Tests that event dispatch after the delegate has been detached doesn't cause

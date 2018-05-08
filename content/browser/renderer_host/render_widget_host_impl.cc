@@ -615,7 +615,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnUpdateScreenRectsAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnRequestMove)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnSetTooltipText)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ResizeOrRepaint_ACK, OnResizeOrRepaintACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AutoscrollStart, OnAutoscrollStart)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AutoscrollFling, OnAutoscrollFling)
@@ -667,6 +666,10 @@ void RenderWidgetHostImpl::WasHidden() {
 
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::WasHidden");
   is_hidden_ = true;
+
+  // Unthrottle SynchronizeVisualProperties IPCs so that the first call after
+  // show goes through immediately.
+  resize_ack_pending_ = false;
 
   // Don't bother reporting hung state when we aren't active.
   StopHangMonitorTimeout();
@@ -2145,12 +2148,6 @@ void RenderWidgetHostImpl::DidDeleteSharedBitmap(
   owned_bitmaps_.erase(id);
 }
 
-void RenderWidgetHostImpl::OnResizeOrRepaintACK(
-    const ViewHostMsg_ResizeOrRepaint_ACK_Params& params) {
-  DidUpdateVisualProperties(params.view_size,
-                            params.child_allocated_local_surface_id);
-}
-
 void RenderWidgetHostImpl::DidUpdateVisualProperties(
     const gfx::Size& viewport_size_in_dip,
     const base::Optional<viz::LocalSurfaceId>&
@@ -3108,8 +3105,6 @@ void RenderWidgetHostImpl::OnRenderFrameMetadataChanged() {
 
 void RenderWidgetHostImpl::OnLocalSurfaceIdChanged(
     const cc::RenderFrameMetadata& metadata) {
-  if (!enable_surface_synchronization_)
-    return;
   gfx::Size viewport_size_in_dip = gfx::ScaleToCeiledSize(
       metadata.viewport_size_in_pixels, 1.f / metadata.device_scale_factor);
   DidUpdateVisualProperties(viewport_size_in_dip, metadata.local_surface_id);

@@ -814,11 +814,6 @@ void RenderWidget::OnWasHidden() {
   SetHidden(true);
   for (auto& observer : render_frames_)
     observer.WasHidden();
-
-  // Ack the resize if we have to, so that the next time we're visible we get a
-  // fresh VisualProperties right away; otherwise we'll start painting based on
-  // a stale VisualProperties.
-  DidUpdateVisualProperties();
 }
 
 void RenderWidget::OnWasShown(bool needs_repainting,
@@ -971,7 +966,6 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
 }
 
 void RenderWidget::DidCommitCompositorFrame() {
-  DidUpdateVisualProperties();
 }
 
 void RenderWidget::DidCompletePageScaleAnimation() {}
@@ -1226,7 +1220,6 @@ bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
 // RenderWidgetScreenMetricsDelegate
 
 void RenderWidget::Redraw() {
-  needs_visual_properties_ack_ = true;
   if (compositor_)
     compositor_->SetNeedsRedrawRect(gfx::Rect(size_));
 }
@@ -1250,10 +1243,9 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
   // |current_content_source_id_|, then the given LocalSurfaceId was generated
   // before the navigation. Continue with the resize but don't use the
   // LocalSurfaceId until the right one comes.
-  if (params.local_surface_id &&
-      params.content_source_id == current_content_source_id_) {
+  if (params.local_surface_id) {
     new_local_surface_id = child_local_surface_id_allocator_.UpdateFromParent(
-        params.local_surface_id.value());
+        *params.local_surface_id);
   }
 
   // The content_source_id that the browser sends us should never be larger than
@@ -1312,23 +1304,8 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
   }
   GetWebWidget()->ResizeVisualViewport(visual_viewport_size);
 
-  // When resizing, we want to wait to paint before ACK'ing the resize.  This
-  // ensures that we only resize as fast as we can paint.  We only need to
-  // send an ACK if we are resized to a non-empty rect.
-  if (!params.new_size.IsEmpty() &&
-      !params.compositor_viewport_pixel_size.IsEmpty()) {
-    needs_visual_properties_ack_ = true;
-  }
-
   if (fullscreen_change)
     DidToggleFullscreen();
-
-  // If this resize was initiated before navigation and surface synchronization
-  // is on, it is not expected to be acked.
-  if (compositor_ && compositor_->IsSurfaceSynchronizationEnabled() &&
-      !local_surface_id_.is_valid()) {
-    needs_visual_properties_ack_ = false;
-  }
 }
 
 void RenderWidget::SetScreenMetricsEmulationParameters(
@@ -1360,14 +1337,6 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
       compositor_deps_, screen_info_);
   compositor_->Initialize(std::move(layer_tree_host),
                           std::move(animation_host));
-
-  // We can get into this state if surface synchronization is on and the last
-  // resize was initiated before navigation, in which case we don't have to ack
-  // it.
-  if (compositor_->IsSurfaceSynchronizationEnabled() && !auto_resize_mode_ &&
-      !local_surface_id_.is_valid()) {
-    needs_visual_properties_ack_ = false;
-  }
 
   UpdateSurfaceAndScreenInfo(local_surface_id_, compositor_viewport_pixel_size_,
                              screen_info_);
@@ -2210,9 +2179,6 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
     UpdateSurfaceAndScreenInfo(child_local_surface_id_allocator_.GenerateId(),
                                new_compositor_viewport_pixel_size,
                                screen_info_);
-
-    if (!resizing_mode_selector_->is_synchronous_mode())
-      needs_visual_properties_ack_ = true;
   }
 }
 
@@ -2492,14 +2458,17 @@ void RenderWidget::DidNavigate() {
     return;
   compositor_->SetContentSourceId(current_content_source_id_);
 
-  UpdateSurfaceAndScreenInfo(viz::LocalSurfaceId(),
-                             compositor_viewport_pixel_size_, screen_info_);
-
-  // If surface synchronization is on, navigation implicitly acks any resize
-  // that has happened so far so we can get the next VisualProperties containing
-  // the LocalSurfaceId that should be used after navigation.
-  if (compositor_->IsSurfaceSynchronizationEnabled() && !auto_resize_mode_)
-    needs_visual_properties_ack_ = false;
+  // When surface synchronization is off, an invalid viz::LcoalSurfaceId does
+  // not defer commit. Thus, the invalid ID will be plumbed all the way to draw
+  // time. If a valid viz::LocalSurfaceId is sandwiched by two invalid ones,
+  // then the valid viz::LocalSurfaceId may never makes its way into the
+  // RenderFrameMetadata and be used by the browser. This can cause hangs in
+  // certain cases. Thus, we avoid pushing an invalid viz::LocalSurfaceId
+  // to cc.
+  if (IsSurfaceSynchronizationEnabled()) {
+    UpdateSurfaceAndScreenInfo(viz::LocalSurfaceId(),
+                               compositor_viewport_pixel_size_, screen_info_);
+  }
 }
 
 blink::WebWidget* RenderWidget::GetWebWidget() const {
@@ -2530,23 +2499,6 @@ void RenderWidget::SetWidgetBinding(mojom::WidgetRequest request) {
 
 bool RenderWidget::IsSurfaceSynchronizationEnabled() const {
   return compositor_ && compositor_->IsSurfaceSynchronizationEnabled();
-}
-
-void RenderWidget::DidUpdateVisualProperties() {
-  if (!needs_visual_properties_ack_ || size_.IsEmpty())
-    return;
-
-  if (!IsSurfaceSynchronizationEnabled()) {
-    ViewHostMsg_ResizeOrRepaint_ACK_Params params;
-    params.view_size = size_;
-    const viz::LocalSurfaceId& local_surface_id =
-        child_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
-    if (local_surface_id.is_valid())
-      params.child_allocated_local_surface_id = local_surface_id;
-    Send(new ViewHostMsg_ResizeOrRepaint_ACK(routing_id_, params));
-  }
-
-  needs_visual_properties_ack_ = false;
 }
 
 void RenderWidget::UpdateURLForCompositorUkm() {

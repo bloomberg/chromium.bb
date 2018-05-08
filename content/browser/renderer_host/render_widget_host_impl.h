@@ -76,7 +76,6 @@
 class SkBitmap;
 struct FrameHostMsg_HittestData_Params;
 struct ViewHostMsg_SelectionBounds_Params;
-struct ViewHostMsg_ResizeOrRepaint_ACK_Params;
 
 namespace blink {
 class WebInputEvent;
@@ -747,7 +746,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            DontPostponeHangMonitorTimeout);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, HiddenPaint);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, RendererExitedNoDrag);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, Resize);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            StopAndStartHangMonitorTimeout);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
@@ -755,6 +756,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, AutoResizeWithScale);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            AutoResizeWithBrowserInitiatedResize);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, Resize);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewChildFrameTest,
+                           ChildFrameAutoResizeUpdate);
   FRIEND_TEST_ALL_PREFIXES(DevToolsManagerTest,
                            NoUnresponsiveDialogInInspectedContents);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
@@ -766,7 +770,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewMacTest,
                            ConflictingAllocationsResolve);
   friend class MockRenderWidgetHost;
+  friend class OverscrollNavigationOverlayTest;
   friend class TestRenderViewHost;
+  friend bool TestChildOrGuestAutoresize(bool,
+                                         RenderProcessHost*,
+                                         RenderWidgetHost*);
 
   // Tell this object to destroy itself. If |also_delete| is specified, the
   // destructor is called as well.
@@ -791,8 +799,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnRequestMove(const gfx::Rect& pos);
   void OnSetTooltipText(const base::string16& tooltip_text,
                         blink::WebTextDirection text_direction_hint);
-  void OnResizeOrRepaintACK(
-      const ViewHostMsg_ResizeOrRepaint_ACK_Params& params);
   void OnSetCursor(const WebCursor& cursor);
   void OnAutoscrollStart(const gfx::PointF& position);
   void OnAutoscrollFling(const gfx::Vector2dF& velocity);
