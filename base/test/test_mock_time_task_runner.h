@@ -171,10 +171,11 @@ class TestMockTimeTaskRunner : public SingleThreadTaskRunner,
   std::unique_ptr<TickClock> DeprecatedGetMockTickClock() const;
   const TickClock* GetMockTickClock() const;
 
+  // Cancelled pending tasks get pruned automatically.
   base::circular_deque<TestPendingTask> TakePendingTasks();
-  bool HasPendingTask() const;
-  size_t GetPendingTaskCount() const;
-  TimeDelta NextPendingTaskDelay() const;
+  bool HasPendingTask();
+  size_t GetPendingTaskCount();
+  TimeDelta NextPendingTaskDelay();
 
   // SingleThreadTaskRunner:
   bool RunsTasksInCurrentSequence() const override;

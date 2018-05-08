@@ -137,13 +137,12 @@ TEST_F(IssueManagerTest, IssueAutoDismissNoopsIfAlreadyCleared) {
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&observer));
 
   EXPECT_CALL(observer, OnIssuesCleared()).Times(1);
+  EXPECT_TRUE(task_runner_->HasPendingTask());
   manager_.ClearIssue(issue1.id());
 
   EXPECT_CALL(observer, OnIssuesCleared()).Times(0);
   base::TimeDelta timeout = IssueManager::GetAutoDismissTimeout(issue_info1);
   EXPECT_FALSE(timeout.is_zero());
-  EXPECT_TRUE(task_runner_->HasPendingTask());
-  task_runner_->FastForwardBy(timeout);
   EXPECT_FALSE(task_runner_->HasPendingTask());
 }
 
