@@ -138,6 +138,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
 
   gfx::Size GetPhysicalBackingSize() const;
   gfx::Size GetSize() const;
+  gfx::Rect bounds() const { return bounds_; }
 
   void OnSizeChanged(int width, int height);
   void OnPhysicalBackingSizeChanged(const gfx::Size& size);
@@ -259,7 +260,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
 
   // Basic view layout information. Used to do hit testing deciding whether
   // the passed events should be processed by the view. Unit in DIP.
-  gfx::Rect view_rect_;
+  gfx::Rect bounds_;
   const LayoutType layout_type_;
 
   // In physical pixel.
