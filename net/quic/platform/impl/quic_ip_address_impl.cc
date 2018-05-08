@@ -4,13 +4,14 @@
 
 #include "net/quic/platform/impl/quic_ip_address_impl.h"
 
+#include "build/build_config.h"
 #include "net/base/address_family.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 
 #if defined(OS_WIN)
 #include <winsock2.h>
 #include <ws2bth.h>
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <netinet/in.h>
 #endif
 

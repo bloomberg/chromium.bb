@@ -9,14 +9,14 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_POSIX) && !defined(OS_NACL)
-#include <sys/uio.h>
-#else
+#if defined(OS_WIN) || defined(OS_NACL)
 /* Structure for scatter/gather I/O.  */
 struct iovec {
   void* iov_base;  /* Pointer to data.  */
   size_t iov_len;  /* Length of data.  */
 };
-#endif  // defined(OS_POSIX) && !defined(OS_NACL)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#include <sys/uio.h>
+#endif  // defined(OS_WIN) || defined(OS_NACL)
 
 #endif  // NET_BASE_IOVEC_H_

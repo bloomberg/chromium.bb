@@ -22,7 +22,7 @@
 
 #if defined(OS_WIN)
 #include <ws2tcpip.h>
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>

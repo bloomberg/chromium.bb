@@ -14,12 +14,13 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "net/base/directory_listing.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <sys/stat.h>
 #endif
 
@@ -102,7 +103,7 @@ void URLRequestFileDirJob::OnListFile(
 
 #if defined(OS_WIN)
     const base::string16& title = dir_path_.value();
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     // TODO(jungshik): Add SysNativeMBToUTF16 to sys_string_conversions.
     // On Mac, need to add NFKC->NFC conversion either here or in file_path.
     // On Linux, the file system encoding is not defined, but we assume that
@@ -131,7 +132,7 @@ void URLRequestFileDirJob::OnListFile(
       filename.value() != base::FilePath::kParentDirectory) {
 #if defined(OS_WIN)
     std::string raw_bytes;  // Empty on Windows means UTF-8 encoded name.
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     // TODO(jungshik): The same issue as for the directory name.
     const std::string& raw_bytes = filename.value();
 #endif

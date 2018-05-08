@@ -11,6 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "net/base/escape.h"
 #include "net/base/filename_util_internal.h"
 #include "net/base/net_string_util.h"
@@ -49,7 +50,7 @@ GURL FilePathToFileURL(const base::FilePath& path) {
   base::ReplaceSubstringsAfterOffset(
       &url_string, 0, FILE_PATH_LITERAL("?"), FILE_PATH_LITERAL("%3F"));
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   base::ReplaceSubstringsAfterOffset(
       &url_string, 0, FILE_PATH_LITERAL("\\"), FILE_PATH_LITERAL("%5C"));
 #endif
@@ -165,7 +166,7 @@ bool IsReservedNameOnWindows(const base::FilePath::StringType& filename) {
       "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9", "clock$"};
 #if defined(OS_WIN)
   std::string filename_lower = base::ToLowerASCII(base::WideToUTF8(filename));
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   std::string filename_lower = base::ToLowerASCII(filename);
 #endif
 

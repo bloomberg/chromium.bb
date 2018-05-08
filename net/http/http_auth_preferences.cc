@@ -17,7 +17,7 @@ namespace net {
 HttpAuthPreferences::HttpAuthPreferences()
     : HttpAuthPreferences(std::vector<std::string>()) {}
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
 HttpAuthPreferences::HttpAuthPreferences(
     const std::vector<std::string>& auth_schemes)
     : HttpAuthPreferences(auth_schemes,
@@ -35,7 +35,7 @@ HttpAuthPreferences::HttpAuthPreferences(
 #if defined(OS_CHROMEOS)
     ,
     bool allow_gssapi_library_load
-#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+#elif (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
     ,
     const std::string& gssapi_library_name
 #endif
@@ -48,7 +48,7 @@ HttpAuthPreferences::HttpAuthPreferences(
 #endif
 #if defined(OS_CHROMEOS)
       allow_gssapi_library_load_(allow_gssapi_library_load),
-#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+#elif (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
       gssapi_library_name_(gssapi_library_name),
 #endif
       security_manager_(URLSecurityManager::Create()) {
@@ -68,7 +68,7 @@ bool HttpAuthPreferences::NegotiateEnablePort() const {
   return negotiate_enable_port_;
 }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 bool HttpAuthPreferences::NtlmV2Enabled() const {
   return ntlm_v2_enabled_;
 }
@@ -82,7 +82,7 @@ std::string HttpAuthPreferences::AuthAndroidNegotiateAccountType() const {
 bool HttpAuthPreferences::AllowGssapiLibraryLoad() const {
   return allow_gssapi_library_load_;
 }
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 std::string HttpAuthPreferences::GssapiLibraryName() const {
   return gssapi_library_name_;
 }
