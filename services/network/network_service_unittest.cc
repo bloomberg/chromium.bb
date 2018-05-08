@@ -81,6 +81,17 @@ TEST_F(NetworkServiceTest, DestroyingServiceDestroysContext) {
   run_loop.Run();
 }
 
+TEST_F(NetworkServiceTest, CreateContextWithoutChannelID) {
+  mojom::NetworkContextParamsPtr params = CreateContextParams();
+  params->cookie_path = base::FilePath();
+  mojom::NetworkContextPtr network_context;
+  service()->CreateNetworkContext(mojo::MakeRequest(&network_context),
+                                  std::move(params));
+  network_context.reset();
+  // Make sure the NetworkContext is destroyed.
+  base::RunLoop().RunUntilIdle();
+}
+
 namespace {
 
 class ServiceTestClient : public service_manager::test::ServiceTestClient,
