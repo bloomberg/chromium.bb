@@ -21,6 +21,7 @@
 namespace media {
 
 class DecoderBuffer;
+class MojoCdmServiceContext;
 class MojoDecoderBufferReader;
 class MojoDecoderBufferWriter;
 
@@ -30,6 +31,10 @@ class MEDIA_MOJO_EXPORT MojoDecryptorService : public mojom::Decryptor {
  public:
   using StreamType = media::Decryptor::StreamType;
   using Status = media::Decryptor::Status;
+
+  static std::unique_ptr<MojoDecryptorService> Create(
+      int cdm_id,
+      MojoCdmServiceContext* mojo_cdm_service_context);
 
   // If |cdm_context_ref| is null, caller must ensure that |decryptor| outlives
   // |this|. Otherwise, |decryptor| is guaranteed to be valid as long as
@@ -101,6 +106,9 @@ class MEDIA_MOJO_EXPORT MojoDecryptorService : public mojom::Decryptor {
   std::unique_ptr<MojoDecoderBufferWriter> decrypted_buffer_writer_;
 
   media::Decryptor* decryptor_;
+
+  // Holds the CdmContextRef to keep the CdmContext alive for the lifetime of
+  // the |decryptor_|.
   std::unique_ptr<CdmContextRef> cdm_context_ref_;
 
   base::WeakPtr<MojoDecryptorService> weak_this_;

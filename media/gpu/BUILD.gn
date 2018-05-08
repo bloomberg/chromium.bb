@@ -306,6 +306,8 @@ component("gpu") {
       sources += [
         "windows/d3d11_cdm_proxy.cc",
         "windows/d3d11_cdm_proxy.h",
+        "windows/d3d11_decryptor.cc",
+        "windows/d3d11_decryptor.h",
       ]
     }
   }

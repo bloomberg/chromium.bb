@@ -12,6 +12,7 @@
 #include "media/base/callback_registry.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_proxy_context.h"
+#include "media/gpu/windows/d3d11_decryptor.h"
 
 namespace media {
 
@@ -112,8 +113,17 @@ class D3D11CdmContext : public CdmContext {
   }
   CdmProxyContext* GetCdmProxyContext() override { return &cdm_proxy_context_; }
 
+  Decryptor* GetDecryptor() override {
+    if (!decryptor_)
+      decryptor_.reset(new D3D11Decryptor(&cdm_proxy_context_));
+
+    return decryptor_.get();
+  }
+
  private:
   D3D11CdmProxyContext cdm_proxy_context_;
+
+  std::unique_ptr<D3D11Decryptor> decryptor_;
 
   // TODO(rkuroiwa): Call Notify() when new usable key is available.
   ClosureRegistry new_key_callbacks_;
