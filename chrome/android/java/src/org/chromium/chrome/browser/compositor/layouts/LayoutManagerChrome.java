@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.TitleCache;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
@@ -414,6 +415,7 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeBe
             if (mScrollDirection == ScrollDirection.UNKNOWN) return;
 
             if (mOverviewLayout != null && mScrollDirection == ScrollDirection.DOWN) {
+                RecordUserAction.record("MobileToolbarSwipeOpenStackView");
                 startShowing(mOverviewLayout, true);
             } else if (mToolbarSwipeLayout != null
                     && (mScrollDirection == ScrollDirection.LEFT
