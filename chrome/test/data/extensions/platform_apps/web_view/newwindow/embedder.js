@@ -547,7 +547,7 @@ function testNewWindowWebRequestRemoveElement() {
       newwindow.contentWindow.onload = function(evt) {
         var newwebview =
             newwindow.contentWindow.document.querySelector('webview');
-        newwebview.request.onBeforeRequest.addListener(function(e) {
+        newwebview.request.onCompleted.addListener(function(e) {
           if (!calledWebRequestEvent) {
             calledWebRequestEvent = true;
             newwebview.parentElement.removeChild(newwebview);
