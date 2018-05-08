@@ -82,18 +82,7 @@ network::mojom::CookieManager* ParseStoreCookieManager(
       return nullptr;
     }
   } else {
-    // The store ID was not specified; use the current execution context's
-    // cookie store by default.
-    // GetCurrentBrowser() already takes into account incognito settings.
-    // TODO(rdevlin.cronin): Relying on the current execution context is
-    // almost never the right answer; clean this up.
-    Browser* current_browser =
-        ChromeExtensionFunctionDetails(function).GetCurrentBrowser();
-    if (!current_browser) {
-      function->SetError(keys::kNoCookieStoreFoundError);
-      return nullptr;
-    }
-    store_profile = current_browser->profile();
+    store_profile = function->GetProfile();
     *store_id = cookies_helpers::GetStoreIdFromProfile(store_profile);
   }
 
