@@ -124,7 +124,18 @@ static void loop_filter_data_reset(LFWorkerData *lf_data,
   lf_data->cm = cm;
   lf_data->xd = xd;
   for (int i = 0; i < MAX_MB_PLANE; i++) {
-    memcpy(&lf_data->planes[i].dst, &pd[i].dst, sizeof(lf_data->planes[i].dst));
+    // TODO(yunqing): Copying dst struct by "lf_data->planes[i].dst =
+    // pd[i].dst;" or "memcpy(&lf_data->planes[i].dst, &pd[i].dst,
+    // sizeof(lf_data->planes[i].dst));" would cause a segmentation fault while
+    // using arch=x86-linux-gcc, and -DSANITIZE=integer. It seems that MOVAPS
+    // is used in memcpy(), which requires that the memory operand to be
+    // aligned on a 16-byte boundary. This copy needs to be written efficiently
+    // once Clang fixes this issue.
+    lf_data->planes[i].dst.buf = pd[i].dst.buf;
+    lf_data->planes[i].dst.buf0 = pd[i].dst.buf0;
+    lf_data->planes[i].dst.width = pd[i].dst.width;
+    lf_data->planes[i].dst.height = pd[i].dst.height;
+    lf_data->planes[i].dst.stride = pd[i].dst.stride;
     lf_data->planes[i].subsampling_x = pd[i].subsampling_x;
     lf_data->planes[i].subsampling_y = pd[i].subsampling_y;
   }
