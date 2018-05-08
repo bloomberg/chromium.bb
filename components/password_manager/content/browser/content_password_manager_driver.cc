@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/syslog_logging.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
@@ -329,6 +330,8 @@ bool ContentPasswordManagerDriver::CheckChildProcessSecurityPolicy(
   // about:blank frames as well as data URLs.  If that's not the case, kill the
   // renderer, as it might be exploited.
   if (url.SchemeIs(url::kAboutScheme) || url.SchemeIs(url::kDataScheme)) {
+    SYSLOG(WARNING) << "Killing renderer: illegal password access from about: "
+                    << " or data: URL. Reason: " << static_cast<int>(reason);
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(), reason);
     return false;
   }
@@ -337,6 +340,8 @@ bool ContentPasswordManagerDriver::CheckChildProcessSecurityPolicy(
       content::ChildProcessSecurityPolicy::GetInstance();
   if (!policy->CanAccessDataForOrigin(render_frame_host_->GetProcess()->GetID(),
                                       url)) {
+    SYSLOG(WARNING) << "Killing renderer: illegal password access. Reason: "
+                    << static_cast<int>(reason);
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(), reason);
     return false;
   }
