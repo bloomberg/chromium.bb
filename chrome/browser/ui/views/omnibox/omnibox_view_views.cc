@@ -1141,10 +1141,15 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
               OmniboxPopupModel::TAB_SWITCH) {
         popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB);
       } else {
-        model()->AcceptInput(alt || command
-                                 ? WindowOpenDisposition::NEW_FOREGROUND_TAB
-                                 : WindowOpenDisposition::CURRENT_TAB,
-                             false);
+        if (alt) {
+          model()->AcceptInput(WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                               false);
+        } else if (command) {
+          model()->AcceptInput(WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                               false);
+        } else {
+          model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB, false);
+        }
       }
       return true;
 
