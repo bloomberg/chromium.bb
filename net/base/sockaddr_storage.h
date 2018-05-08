@@ -7,12 +7,12 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_POSIX)
-#include <sys/socket.h>
-#include <sys/types.h>
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#include <sys/socket.h>
+#include <sys/types.h>
 #endif
 
 #include "net/base/net_export.h"

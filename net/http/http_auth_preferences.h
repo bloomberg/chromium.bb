@@ -27,7 +27,7 @@ class NET_EXPORT HttpAuthPreferences {
   // |allow_gssapi_library_load| set to true.
   HttpAuthPreferences();
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
   // Simplified ctor with empty |gssapi_library_name| and
   // |allow_gssapi_library_load| set to true.
   // On platforms where this is not available, the ctor below is already
@@ -39,7 +39,7 @@ class NET_EXPORT HttpAuthPreferences {
 #if defined(OS_CHROMEOS)
                       ,
                       bool allow_gssapi_library_load
-#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+#elif (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
                       ,
                       const std::string& gssapi_library_name
 #endif
@@ -49,14 +49,14 @@ class NET_EXPORT HttpAuthPreferences {
   virtual bool IsSupportedScheme(const std::string& scheme) const;
   virtual bool NegotiateDisableCnameLookup() const;
   virtual bool NegotiateEnablePort() const;
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   virtual bool NtlmV2Enabled() const;
 #endif
 #if defined(OS_ANDROID)
   virtual std::string AuthAndroidNegotiateAccountType() const;
 #elif defined(OS_CHROMEOS)
   virtual bool AllowGssapiLibraryLoad() const;
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   virtual std::string GssapiLibraryName() const;
 #endif
   virtual bool CanUseDefaultCredentials(const GURL& auth_origin) const;
@@ -70,7 +70,7 @@ class NET_EXPORT HttpAuthPreferences {
     negotiate_enable_port_ = negotiate_enable_port;
   }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   void set_ntlm_v2_enabled(bool ntlm_v2_enabled) {
     ntlm_v2_enabled_ = ntlm_v2_enabled;
   }
@@ -94,7 +94,7 @@ class NET_EXPORT HttpAuthPreferences {
   bool negotiate_disable_cname_lookup_;
   bool negotiate_enable_port_;
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   bool ntlm_v2_enabled_;
 #endif
 
@@ -102,7 +102,7 @@ class NET_EXPORT HttpAuthPreferences {
   std::string auth_android_negotiate_account_type_;
 #elif defined(OS_CHROMEOS)
   const bool allow_gssapi_library_load_;
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   // GSSAPI library name cannot change after startup, since changing it
   // requires unloading the existing GSSAPI library, which could cause all
   // sorts of problems for, for example, active Negotiate transactions.

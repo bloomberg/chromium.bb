@@ -6,11 +6,8 @@
 
 #if defined(OS_WIN)
 #include <Winsock2.h>
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <netdb.h>
-#endif
-
-#if defined(OS_POSIX)
 #include <netinet/in.h>
 #if !defined(OS_NACL)
 #include <net/if.h>
@@ -18,7 +15,7 @@
 #include <ifaddrs.h>
 #endif  // !defined(OS_ANDROID)
 #endif  // !defined(OS_NACL)
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_WIN)
 
 #include <cmath>
 #include <memory>
@@ -48,6 +45,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
@@ -124,7 +122,7 @@ const char kOSErrorsForGetAddrinfoHistogramName[] =
     "Net.OSErrorsForGetAddrinfo_Mac";
 #elif defined(OS_LINUX)
     "Net.OSErrorsForGetAddrinfo_Linux";
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     "Net.OSErrorsForGetAddrinfo";
 #endif
 
@@ -133,7 +131,21 @@ const char kOSErrorsForGetAddrinfoHistogramName[] =
 // a histogram.
 std::vector<int> GetAllGetAddrinfoOSErrors() {
   int os_errors[] = {
-#if defined(OS_POSIX)
+#if defined(OS_WIN)
+    // See: http://msdn.microsoft.com/en-us/library/ms738520(VS.85).aspx
+    WSA_NOT_ENOUGH_MEMORY,
+    WSAEAFNOSUPPORT,
+    WSAEINVAL,
+    WSAESOCKTNOSUPPORT,
+    WSAHOST_NOT_FOUND,
+    WSANO_DATA,
+    WSANO_RECOVERY,
+    WSANOTINITIALISED,
+    WSATRY_AGAIN,
+    WSATYPE_NOT_FOUND,
+    // The following are not in doc, but might be to appearing in results :-(.
+    WSA_INVALID_HANDLE,
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #if !defined(OS_FREEBSD)
 #if !defined(OS_ANDROID)
     // EAI_ADDRFAMILY has been declared obsolete in Android's and
@@ -152,20 +164,6 @@ std::vector<int> GetAllGetAddrinfoOSErrors() {
     EAI_SERVICE,
     EAI_SOCKTYPE,
     EAI_SYSTEM,
-#elif defined(OS_WIN)
-    // See: http://msdn.microsoft.com/en-us/library/ms738520(VS.85).aspx
-    WSA_NOT_ENOUGH_MEMORY,
-    WSAEAFNOSUPPORT,
-    WSAEINVAL,
-    WSAESOCKTNOSUPPORT,
-    WSAHOST_NOT_FOUND,
-    WSANO_DATA,
-    WSANO_RECOVERY,
-    WSANOTINITIALISED,
-    WSATRY_AGAIN,
-    WSATYPE_NOT_FOUND,
-    // The following are not in doc, but might be to appearing in results :-(.
-    WSA_INVALID_HANDLE,
 #endif
   };
 
@@ -333,12 +331,16 @@ bool IsAllIPv4Loopback(const AddressList& addresses) {
 // Also returns false if it cannot determine this.
 bool HaveOnlyLoopbackAddresses() {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
-#if defined(OS_ANDROID)
+#if defined(OS_WIN)
+  // TODO(wtc): implement with the GetAdaptersAddresses function.
+  NOTIMPLEMENTED();
+  return false;
+#elif defined(OS_ANDROID)
   return android::HaveOnlyLoopbackAddresses();
 #elif defined(OS_NACL)
   NOTIMPLEMENTED();
   return false;
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   struct ifaddrs* interface_addr = NULL;
   int rv = getifaddrs(&interface_addr);
   if (rv != 0) {
@@ -373,13 +375,6 @@ bool HaveOnlyLoopbackAddresses() {
   }
   freeifaddrs(interface_addr);
   return result;
-#elif defined(OS_WIN)
-  // TODO(wtc): implement with the GetAdaptersAddresses function.
-  NOTIMPLEMENTED();
-  return false;
-#else
-  NOTIMPLEMENTED();
-  return false;
 #endif  // defined(various platforms)
 }
 
@@ -397,9 +392,7 @@ std::unique_ptr<base::Value> NetLogProcTaskFailedCallback(
 
   if (os_error) {
     dict->SetInteger("os_error", os_error);
-#if defined(OS_POSIX)
-    dict->SetString("os_error_string", gai_strerror(os_error));
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
     // Map the error code to a human-readable string.
     LPWSTR error_string = nullptr;
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
@@ -411,6 +404,8 @@ std::unique_ptr<base::Value> NetLogProcTaskFailedCallback(
                   0);  // Arguments (unused).
     dict->SetString("os_error_string", base::WideToUTF8(error_string));
     LocalFree(error_string);
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+    dict->SetString("os_error_string", gai_strerror(os_error));
 #endif
   }
 
@@ -1999,12 +1994,14 @@ HostResolverImpl::HostResolverImpl(const Options& options, NetLog* net_log)
 #if defined(OS_WIN)
   EnsureWinsockInit();
 #endif
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if (defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)) || \
+    defined(OS_FUCHSIA)
   RunLoopbackProbeJob();
 #endif
   NetworkChangeNotifier::AddIPAddressObserver(this);
   NetworkChangeNotifier::AddConnectionTypeObserver(this);
   NetworkChangeNotifier::AddDNSObserver(this);
+// TODO(crbug/836416): Remove OS_FUCHSIA here.
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD) && \
     !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   EnsureDnsReloaderInit();
@@ -2525,7 +2522,8 @@ void HostResolverImpl::OnIPAddressChanged() {
   probe_weak_ptr_factory_.InvalidateWeakPtrs();
   if (cache_.get())
     cache_->OnNetworkChange();
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if (defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)) || \
+    defined(OS_FUCHSIA)
   RunLoopbackProbeJob();
 #endif
   AbortAllInProgressJobs();

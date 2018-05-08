@@ -9,7 +9,7 @@
 
 #if defined(OS_WIN)
 #include "net/socket/udp_socket_win.h"
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include "net/socket/udp_socket_posix.h"
 #endif
 
@@ -37,7 +37,7 @@ namespace net {
 //                             // address.
 #if defined(OS_WIN)
 typedef UDPSocketWin UDPSocket;
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 typedef UDPSocketPosix UDPSocket;
 #endif
 

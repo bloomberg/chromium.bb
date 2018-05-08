@@ -11,6 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "net/base/escape.h"
 #include "net/base/filename_util_internal.h"
 #include "net/base/mime_util.h"
@@ -88,8 +89,10 @@ void SanitizeGeneratedFileName(base::FilePath::StringType* filename,
     filename->resize((pos == std::string::npos) ? 0 : (pos + 1));
 #if defined(OS_WIN)
     base::TrimWhitespace(*filename, base::TRIM_TRAILING, filename);
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     base::TrimWhitespaceASCII(*filename, base::TRIM_TRAILING, filename);
+#else
+#error Unsupported platform
 #endif
 
     if (filename->empty())
@@ -207,7 +210,7 @@ bool FilePathToString16(const base::FilePath& path, base::string16* converted) {
 #if defined(OS_WIN)
   *converted = path.value();
   return true;
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   std::string component8 = path.AsUTF8Unsafe();
   return !component8.empty() &&
          base::UTF8ToUTF16(component8.c_str(), component8.size(), converted);
@@ -265,9 +268,11 @@ base::string16 GetSuggestedFilenameImpl(
   replace_trailing = true;
   result_str = base::UTF8ToUTF16(filename);
   default_name_str = base::UTF8ToUTF16(default_name);
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   result_str = filename;
   default_name_str = default_name;
+#else
+#error Unsupported platform
 #endif
   SanitizeGeneratedFileName(&result_str, replace_trailing);
   if (result_str.find_last_not_of(FILE_PATH_LITERAL("-_")) ==
@@ -312,7 +317,7 @@ base::FilePath GenerateFileNameImpl(
 
 #if defined(OS_WIN)
   base::FilePath generated_name(file_name);
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   base::FilePath generated_name(
       base::SysWideToNativeMB(base::UTF16ToWide(file_name)));
 #endif

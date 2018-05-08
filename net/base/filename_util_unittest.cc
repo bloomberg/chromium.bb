@@ -38,20 +38,22 @@ struct GenerateFilenameCase {
 std::wstring FilePathAsWString(const base::FilePath& path) {
 #if defined(OS_WIN)
   return path.value();
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return base::UTF8ToWide(path.value());
 #endif
 }
 base::FilePath WStringAsFilePath(const std::wstring& str) {
 #if defined(OS_WIN)
   return base::FilePath(str);
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return base::FilePath(base::WideToUTF8(str));
 #endif
 }
 
 std::string GetLocaleWarningString() {
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if defined(OS_WIN) || defined(OS_ANDROID)
+  return "";
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   // The generate filename tests can fail on certain OS_POSIX platforms when
   // LC_CTYPE is not "utf8" or "utf-8" because some of the string conversions
   // fail.
@@ -64,8 +66,6 @@ std::string GetLocaleWarningString() {
   return " this test may have failed because the current LC_CTYPE locale is "
          "not utf8 (currently set to " +
          locale + ")";
-#else
-  return "";
 #endif
 }
 
@@ -108,7 +108,7 @@ constexpr const base::FilePath::CharType* kUnsafePortableBasenames[] = {
     FILE_PATH_LITERAL(" Computer"),
     FILE_PATH_LITERAL("My Computer.{a}"),
     FILE_PATH_LITERAL("My Computer.{20D04FE0-3AEA-1069-A2D8-08002B30309D}"),
-#if !defined(OS_WIN)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
     FILE_PATH_LITERAL("a\\a"),
 #endif
 };
@@ -195,7 +195,7 @@ TEST(FilenameUtilTest, FileURLConversion) {
      "%E9%A1%B5.doc"},
     {L"D:\\plane1\\\xD835\xDC00\xD835\xDC01.txt",  // Math alphabet "AB"
      "file:///D:/plane1/%F0%9D%90%80%F0%9D%90%81.txt"},
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     {L"/foo/bar.txt", "file:///foo/bar.txt"},
     {L"/foo/BAR.txt", "file:///foo/BAR.txt"},
     {L"/C:/foo/bar.txt", "file:///C:/foo/bar.txt"},
@@ -240,7 +240,7 @@ TEST(FilenameUtilTest, FileURLConversion) {
     // %2f ('/') and %5c ('\\') are left alone by both GURL and
     // FileURLToFilePath.
     {L"C:\\foo%2f..%5cbar", "file:///C:\\foo%2f..%5cbar"},
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     {L"/c:/foo/bar.txt", "file:/c:/foo/bar.txt"},
     {L"/c:/foo/bar.txt", "file:///c:/foo/bar.txt"},
     {L"/foo/bar.txt", "file:/foo/bar.txt"},
@@ -317,7 +317,7 @@ TEST(FilenameUtilTest, GenerateSafeFileName) {
     // Dangerous extensions
     {__LINE__, "text/html", "harmless.local", "harmless.download"},
     {__LINE__, "text/html", "harmless.lnk", "harmless.download"},
-#else   // OS_WIN
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     // On Posix, none of the above set is particularly dangerous.
     {__LINE__, "text/html", "con.htm", "con.htm"},
     {__LINE__, "text/html", "lpt1.htm", "lpt1.htm"},
@@ -327,12 +327,12 @@ TEST(FilenameUtilTest, GenerateSafeFileName) {
     {__LINE__, "text/html", "harmless.{mismatched-", "harmless.{mismatched-"},
     {__LINE__, "text/html", "harmless.local", "harmless.local"},
     {__LINE__, "text/html", "harmless.lnk", "harmless.lnk"},
-#endif  // !defined(OS_WIN)
+#endif  // defined(OS_WIN)
   };
 
 #if defined(OS_WIN)
   base::FilePath base_path(L"C:\\foo");
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   base::FilePath base_path("/foo");
 #endif
 
@@ -549,7 +549,7 @@ TEST(FilenameUtilTest, GenerateFileName) {
      L"evil_"},
     {__LINE__, "", "filename=. . . . .", "", "", "binary/octet-stream",
      L"download", L"download"},
-#else  // OS_WIN
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     // Test truncation of trailing dots and spaces (non-Windows)
     {__LINE__, "", "filename=evil.exe ", "", "", "binary/octet-stream",
      L"download", L"evil.exe"},

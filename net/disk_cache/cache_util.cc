@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 
 namespace {
 
@@ -117,11 +118,11 @@ bool DelayedCacheCleanup(const base::FilePath& full_path) {
 
   base::FilePath path = current_path.DirName();
   base::FilePath name = current_path.BaseName();
-#if defined(OS_POSIX)
-  std::string name_str = name.value();
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   // We created this file so it should only contain ASCII.
   std::string name_str = base::UTF16ToASCII(name.value());
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  std::string name_str = name.value();
 #endif
 
   base::FilePath to_delete = GetTempCacheName(path, name_str);

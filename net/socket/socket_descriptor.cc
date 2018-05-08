@@ -4,14 +4,12 @@
 
 #include "net/socket/socket_descriptor.h"
 
-#if defined(OS_POSIX)
-#include <sys/types.h>
-#include <sys/socket.h>
-#endif
-
 #if defined(OS_WIN)
 #include <ws2tcpip.h>
 #include "net/base/winsock_init.h"
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#include <sys/socket.h>
+#include <sys/types.h>
 #endif
 
 #if defined(OS_MACOSX)
@@ -34,7 +32,7 @@ SocketDescriptor CreatePlatformSocket(int family, int type, int protocol) {
     }
   }
   return result;
-#else  // OS_WIN
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   SocketDescriptor result = ::socket(family, type, protocol);
 #if defined(OS_MACOSX)
   // Disable SIGPIPE on this socket. Although Chromium globally disables

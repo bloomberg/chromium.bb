@@ -35,10 +35,11 @@
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
+#include "build/build_config.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/file_stream.h"
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <errno.h>
 #endif
 
@@ -52,7 +53,7 @@ class IOBuffer;
 
 #if defined(OS_WIN)
 class FileStream::Context : public base::MessagePumpForIO::IOHandler {
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 class FileStream::Context {
 #endif
  public:
@@ -65,7 +66,7 @@ class FileStream::Context {
   Context(base::File file, const scoped_refptr<base::TaskRunner>& task_runner);
 #if defined(OS_WIN)
   ~Context() override;
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   ~Context();
 #endif
 
@@ -204,7 +205,7 @@ class FileStream::Context {
   // the ReadFile API.
   void ReadAsyncResult(BOOL read_file_ret, DWORD bytes_read, DWORD os_error);
 
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   // ReadFileImpl() is a simple wrapper around read() that handles EINTR
   // signals and calls RecordAndMapError() to map errno to net error codes.
   IOResult ReadFileImpl(scoped_refptr<IOBuffer> buf, int buf_len);
@@ -213,7 +214,7 @@ class FileStream::Context {
   // signals and calls MapSystemError() to map errno to net error codes.
   // It tries to write to completion.
   IOResult WriteFileImpl(scoped_refptr<IOBuffer> buf, int buf_len);
-#endif
+#endif  // defined(OS_WIN)
 
   base::File file_;
   bool async_in_progress_;
