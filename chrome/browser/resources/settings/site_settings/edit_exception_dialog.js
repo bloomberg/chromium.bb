@@ -13,7 +13,10 @@ Polymer({
     /**
      * @type {!SiteException}
      */
-    model: Object,
+    model: {
+      type: Object,
+      observer: 'modelChanged_',
+    },
 
     /** @private */
     origin_: String,
@@ -71,5 +74,11 @@ Polymer({
     this.browserProxy_.isPatternValid(this.origin_).then(isValid => {
       this.invalid_ = !isValid;
     });
+  },
+
+  /** @private */
+  modelChanged_: function() {
+    if (!this.model)
+      this.$.dialog.cancel();
   },
 });
