@@ -200,6 +200,12 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   return self;
 }
 
+- (void)dealloc {
+  [self removeKeyboardObservers];
+  _sharedState.tableView.dataSource = nil;
+  _sharedState.tableView.delegate = nil;
+}
+
 - (void)setRootNode:(const bookmarks::BookmarkNode*)rootNode {
   _rootNode = rootNode;
 }
@@ -280,6 +286,25 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   // Configure the table view.
   self.sharedState.tableView.dataSource = self;
   self.sharedState.tableView.delegate = self;
+  self.sharedState.tableView.accessibilityIdentifier = @"bookmarksTableView";
+  if (@available(iOS 11.0, *)) {
+    self.sharedState.tableView.contentInsetAdjustmentBehavior =
+        UIScrollViewContentInsetAdjustmentNever;
+  }
+  self.sharedState.tableView.estimatedRowHeight =
+      [BookmarkHomeSharedState cellHeightPt];
+  self.sharedState.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+  self.sharedState.tableView.allowsMultipleSelectionDuringEditing = YES;
+
+  UILongPressGestureRecognizer* longPressRecognizer =
+      [[UILongPressGestureRecognizer alloc]
+          initWithTarget:self
+                  action:@selector(handleLongPress:)];
+  longPressRecognizer.numberOfTouchesRequired = 1;
+  longPressRecognizer.delegate = self;
+  [self.sharedState.tableView addGestureRecognizer:longPressRecognizer];
+
+  [self registerForKeyboardNotifications];
 
   // After the table view has been added.
   [self setupNavigationBar];
@@ -1248,12 +1273,114 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   return alert;
 }
 
-#pragma mark - UIGestureRecognizerDelegate
+#pragma mark - UIGestureRecognizerDelegate and gesture handling
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer {
-  DCHECK(gestureRecognizer ==
-         self.navigationController.interactivePopGestureRecognizer);
-  return self.navigationController.viewControllers.count > 1;
+  if (gestureRecognizer ==
+      self.navigationController.interactivePopGestureRecognizer) {
+    return self.navigationController.viewControllers.count > 1;
+  }
+  return YES;
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
+       shouldReceiveTouch:(UITouch*)touch {
+  // Ignore long press in edit mode.
+  if (self.sharedState.currentlyInEditMode) {
+    return NO;
+  }
+  return YES;
+}
+
+- (void)handleLongPress:(UILongPressGestureRecognizer*)gestureRecognizer {
+  if (self.sharedState.currentlyInEditMode ||
+      gestureRecognizer.state != UIGestureRecognizerStateBegan) {
+    return;
+  }
+  CGPoint touchPoint =
+      [gestureRecognizer locationInView:self.sharedState.tableView];
+  NSIndexPath* indexPath =
+      [self.sharedState.tableView indexPathForRowAtPoint:touchPoint];
+  if (indexPath == nil || [self.sharedState.tableViewModel
+                              sectionIdentifierForSection:indexPath.section] !=
+                              BookmarkHomeSectionIdentifierBookmarks) {
+    return;
+  }
+
+  const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
+  // Disable the long press gesture if it is a permanent node (not an URL or
+  // Folder).
+  if (!node || ![self isUrlOrFolder:node]) {
+    return;
+  }
+
+  [self bookmarkTableView:self.bookmarksTableView showContextMenuForNode:node];
+}
+
+#pragma mark - Keyboard
+
+- (void)registerForKeyboardNotifications {
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(keyboardWasShown:)
+             name:UIKeyboardDidShowNotification
+           object:nil];
+
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(keyboardWillBeHidden:)
+             name:UIKeyboardWillHideNotification
+           object:nil];
+}
+
+- (void)removeKeyboardObservers {
+  NSNotificationCenter* notificationCenter =
+      [NSNotificationCenter defaultCenter];
+  [notificationCenter removeObserver:self
+                                name:UIKeyboardDidShowNotification
+                              object:nil];
+  [notificationCenter removeObserver:self
+                                name:UIKeyboardWillHideNotification
+                              object:nil];
+}
+
+// Called when the UIKeyboardDidShowNotification is sent
+- (void)keyboardWasShown:(NSNotification*)aNotification {
+  if (![self isAtTopOfNavigation:self.bookmarksTableView]) {
+    return;
+  }
+  NSDictionary* info = [aNotification userInfo];
+  CGFloat keyboardTop =
+      [[info objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue].origin.y;
+  CGFloat tableBottom = CGRectGetMaxY([self.bookmarksTableView
+      convertRect:self.sharedState.tableView.frame
+           toView:nil]);
+  CGFloat shiftY =
+      tableBottom - keyboardTop + [BookmarkHomeSharedState keyboardSpacingPt];
+
+  if (shiftY >= 0) {
+    UIEdgeInsets previousContentInsets =
+        self.sharedState.tableView.contentInset;
+    // Shift the content inset to prevent the editing content from being hidden
+    // by the keyboard.
+    UIEdgeInsets contentInsets =
+        UIEdgeInsetsMake(previousContentInsets.top, 0.0, shiftY, 0.0);
+    self.sharedState.tableView.contentInset = contentInsets;
+    self.sharedState.tableView.scrollIndicatorInsets = contentInsets;
+  }
+}
+
+// Called when the UIKeyboardWillHideNotification is sent
+- (void)keyboardWillBeHidden:(NSNotification*)aNotification {
+  if (![self isAtTopOfNavigation:self.bookmarksTableView]) {
+    return;
+  }
+  UIEdgeInsets previousContentInsets = self.sharedState.tableView.contentInset;
+  // Restore the content inset now that the keyboard has been hidden.
+  UIEdgeInsets contentInsets =
+      UIEdgeInsetsMake(previousContentInsets.top, 0, 0, 0);
+  self.sharedState.tableView.contentInset = contentInsets;
+  self.sharedState.tableView.scrollIndicatorInsets = contentInsets;
 }
 
 #pragma mark - SigninPresenter
