@@ -17,9 +17,7 @@ _debugging = False
 
 def _ProcessEntry(entry):
   """Transforms one entry in the compile database to be clang-tool friendly."""
-  # Escape backslashes to prevent shlex from interpreting them.
-  escaped_command = entry['command'].replace('\\', '\\\\')
-  split_command = shlex.split(escaped_command)
+  split_command = shlex.split(entry['command'], posix=False)
   # Drop gomacc.exe from the front, if present.
   if split_command[0].endswith('gomacc.exe'):
     split_command = split_command[1:]
