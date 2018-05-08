@@ -38,7 +38,15 @@
 #include "third_party/blink/renderer/modules/gamepad/gamepad_list.h"
 #include "third_party/blink/renderer/modules/vr/navigator_vr.h"
 
+namespace blink {
+
 namespace {
+
+// A button press must have a value at least this large to qualify as a user
+// activation. The selected value should be greater than 0.5 so that axes
+// incorrectly mapped as triggers do not generate activations in the idle
+// position.
+const double kButtonActivationThreshold = 0.9;
 
 void HasGamepadConnectionChanged(const String& old_id,
                                  const String& new_id,
@@ -55,9 +63,25 @@ void HasGamepadConnectionChanged(const String& old_id,
     *gamepad_lost = id_changed || (old_connected && !new_connected);
 }
 
-}  // namespace
+bool HasUserActivation(GamepadList& gamepads) {
+  // A button press counts as a user activation if the button's value is greater
+  // than the activation threshold. A threshold is used so that analog buttons
+  // or triggers do not generate an activation from a light touch.
+  for (size_t pad_index = 0; pad_index < gamepads.length(); ++pad_index) {
+    Gamepad* pad = gamepads.item(pad_index);
+    if (pad) {
+      const GamepadButtonVector& buttons = pad->buttons();
+      for (size_t i = 0; i < buttons.size(); ++i) {
+        double value = buttons.at(i)->value();
+        if (value > kButtonActivationThreshold)
+          return true;
+      }
+    }
+  }
+  return false;
+}
 
-namespace blink {
+}  // namespace
 
 template <typename T>
 static void SampleGamepad(unsigned index,
@@ -152,6 +176,7 @@ NavigatorGamepad& NavigatorGamepad::From(Navigator& navigator) {
   return *supplement;
 }
 
+// static
 GamepadList* NavigatorGamepad::getGamepads(Navigator& navigator) {
   return NavigatorGamepad::From(navigator).Gamepads();
 }
@@ -167,6 +192,13 @@ GamepadList* NavigatorGamepad::Gamepads() {
   }
 
   SampleAndCheckConnectedGamepads();
+
+  // Allow gamepad button presses to qualify as user activations.
+  if (RuntimeEnabledFeatures::UserActivationV2Enabled() &&
+      GetPage()->IsPageVisible() && HasUserActivation(*gamepads_)) {
+    Frame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
+  }
+
   return gamepads_.Get();
 }
 
