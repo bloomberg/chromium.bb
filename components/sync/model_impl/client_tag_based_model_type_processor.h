@@ -48,10 +48,6 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
                                    bool commit_only);
   ~ClientTagBasedModelTypeProcessor() override;
 
-  // Whether the processor is allowing changes to its model type. If this is
-  // false, the bridge should not allow any changes to its data.
-  bool IsAllowingChanges() const;
-
   // Returns true if the handshake with sync thread is complete.
   bool IsConnected() const;
 
@@ -65,6 +61,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
                         const std::string& storage_key,
                         MetadataChangeList* metadata_change_list) override;
   void UntrackEntity(const EntityData& entity_data) override;
+  void OnModelStarting(ModelTypeSyncBridge* bridge) override;
   void ModelReadyToSync(ModelTypeSyncBridge* bridge,
                         std::unique_ptr<MetadataBatch> batch) override;
   void OnSyncStarting(const ModelErrorHandler& error_handler,
@@ -94,6 +91,10 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
 
   // Returns true if the model is ready or encountered an error.
   bool IsModelReadyOrError() const;
+
+  // Whether the processor is allowing changes to its model type. If this is
+  // false, the bridge should not allow any changes to its data.
+  bool IsAllowingChanges() const;
 
   // If preconditions are met, inform sync that we are ready to connect.
   void ConnectIfReady();
@@ -224,6 +225,10 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // The first model error that occurred, if any. Stored to track model state
   // and so it can be passed to sync if it happened prior to sync being ready.
   base::Optional<ModelError> model_error_;
+
+  // Whether the model has initialized its internal state for sync (and provided
+  // metadata).
+  bool model_ready_to_sync_ = false;
 
   ////////////////
   // Sync state //

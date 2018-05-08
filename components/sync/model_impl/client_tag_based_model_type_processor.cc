@@ -81,14 +81,22 @@ void ClientTagBasedModelTypeProcessor::OnSyncStarting(
   ConnectIfReady();
 }
 
+void ClientTagBasedModelTypeProcessor::OnModelStarting(
+    ModelTypeSyncBridge* bridge) {
+  DCHECK(bridge);
+  bridge_ = bridge;
+}
+
 void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
     ModelTypeSyncBridge* bridge,
     std::unique_ptr<MetadataBatch> batch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(entities_.empty());
-  DCHECK(bridge);
+  DCHECK(!model_ready_to_sync_);
+  // The |bridge| argument is ignored here because it is already stored as
+  // |bridge_| by OnModelStarting().
 
-  bridge_ = bridge;
+  model_ready_to_sync_ = true;
 
   // The model already experienced an error; abort;
   if (model_error_)
@@ -119,7 +127,13 @@ void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
 }
 
 bool ClientTagBasedModelTypeProcessor::IsModelReadyOrError() const {
-  return model_error_ || bridge_;
+  return model_error_ || model_ready_to_sync_;
+}
+
+bool ClientTagBasedModelTypeProcessor::IsAllowingChanges() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Changes can be handled correctly even before pending data is loaded.
+  return model_ready_to_sync_;
 }
 
 void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
@@ -141,12 +155,6 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
   start_callback_.Reset();
 }
 
-bool ClientTagBasedModelTypeProcessor::IsAllowingChanges() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Changes can be handled correctly even before pending data is loaded.
-  return bridge_ != nullptr;
-}
-
 bool ClientTagBasedModelTypeProcessor::IsConnected() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return !!worker_;
@@ -155,7 +163,7 @@ bool ClientTagBasedModelTypeProcessor::IsConnected() const {
 void ClientTagBasedModelTypeProcessor::DisableSync() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Disabling sync for a type never happens before the model is ready to sync.
-  DCHECK(bridge_);
+  DCHECK(model_ready_to_sync_);
 
   std::unique_ptr<MetadataChangeList> change_list =
       bridge_->CreateMetadataChangeList();
@@ -179,7 +187,7 @@ void ClientTagBasedModelTypeProcessor::DisableSync() {
     case ModelTypeSyncBridge::DisableSyncResponse::kModelNoLongerReadyToSync:
       // Model not ready to sync, so wait until the bridge calls
       // ModelReadyToSync().
-      bridge_ = nullptr;
+      model_ready_to_sync_ = false;
       break;
   }
 }
@@ -990,10 +998,10 @@ void ClientTagBasedModelTypeProcessor::RemoveEntity(
 }
 
 void ClientTagBasedModelTypeProcessor::ResetState() {
-  // This should reset all mutable fields (except for |bridge_| while is null
-  // while the bridge is not ready to sync).
+  // This should reset all mutable fields (except for |bridge_|).
   worker_.reset();
   model_error_.reset();
+  model_ready_to_sync_ = false;
   entities_.clear();
   storage_key_to_tag_hash_.clear();
   model_type_state_ = sync_pb::ModelTypeState();

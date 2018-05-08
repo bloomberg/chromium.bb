@@ -15,6 +15,7 @@ ModelTypeSyncBridge::ModelTypeSyncBridge(
     std::unique_ptr<ModelTypeChangeProcessor> change_processor)
     : change_processor_(std::move(change_processor)) {
   DCHECK(change_processor_);
+  change_processor_->OnModelStarting(this);
 }
 
 ModelTypeSyncBridge::~ModelTypeSyncBridge() {}
