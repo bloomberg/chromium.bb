@@ -280,19 +280,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_SelectionBounds_Params)
   IPC_STRUCT_MEMBER(bool, is_anchor_first)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(ViewHostMsg_ResizeOrRepaint_ACK_Params)
-  // The size of the RenderView when this message was generated.  This is
-  // included so the host knows how large the view is from the perspective of
-  // the renderer process.  This is necessary in case a resize operation is in
-  // progress. If auto-resize is enabled, this should update the corresponding
-  // view size.
-  IPC_STRUCT_MEMBER(gfx::Size, view_size)
-
-  // The child-allocated local surface id for the parent to use.
-  IPC_STRUCT_MEMBER(base::Optional<viz::LocalSurfaceId>,
-                    child_allocated_local_surface_id)
-IPC_STRUCT_END()
-
 // Messages sent from the browser to the renderer.
 
 #if defined(OS_ANDROID)
@@ -560,12 +547,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateTargetURL,
 // finished.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DocumentAvailableInMainFrame,
                     bool /* uses_temporary_zoom_level */)
-
-// Sent as an acknowledgement to a previous resize request. This indicates that
-// the compositor has received a frame from the renderer corresponding to the
-// previous reszie request.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_ResizeOrRepaint_ACK,
-                    ViewHostMsg_ResizeOrRepaint_ACK_Params)
 
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Focus)
 

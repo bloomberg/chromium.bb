@@ -373,32 +373,6 @@ TEST_F(RenderWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
       PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED, 1);
 }
 
-// Tests that if a RenderWidget goes invisible while performing a resize, the
-// resize is acked immediately.
-TEST_F(RenderWidgetUnittest, AckResizeOnHide) {
-  // The widget should start off visible.
-  ASSERT_FALSE(widget()->is_hidden());
-
-  // Send a VisualProperties that needs to be acked.
-  constexpr gfx::Size size(200, 200);
-  VisualProperties visual_properties;
-  visual_properties.screen_info = ScreenInfo();
-  visual_properties.new_size = size;
-  visual_properties.compositor_viewport_pixel_size = size;
-  visual_properties.local_surface_id =
-      viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create());
-  visual_properties.visible_viewport_size = size;
-  visual_properties.content_source_id = widget()->GetContentSourceId();
-  widget()->OnMessageReceived(ViewMsg_SynchronizeVisualProperties(
-      widget()->routing_id(), visual_properties));
-
-  // Hide the widget. Make sure the resize is acked.
-  widget()->sink()->ClearMessages();
-  widget()->OnMessageReceived(ViewMsg_WasHidden(widget()->routing_id()));
-  EXPECT_TRUE(widget()->sink()->GetUniqueMessageMatching(
-      ViewHostMsg_ResizeOrRepaint_ACK::ID));
-}
-
 // Tests that if a RenderWidget auto-resizes multiple times and receives an IPC
 // with a LocalSurfaceId, it will drop that LocalSurfaceId if it does not
 // correspond to the latest auto-resize request.
@@ -440,10 +414,6 @@ TEST_F(RenderWidgetUnittest, SurfaceSynchronizationAutoResizeThrottling) {
 // Tests that if a RenderWidget is auto-resized, it allocates its own
 // viz::LocalSurfaceId
 TEST_F(RenderWidgetUnittest, AutoResizeAllocatedLocalSurfaceId) {
-#if !defined(USE_AURA)
-  // Only Aura platforms support child allocation of viz::LocalSurfaceIds
-  return;
-#endif
   viz::LocalSurfaceId fake_parent_local_surface_id(
       1, base::UnguessableToken::Create());
   widget()->UpdateChildLocalSurfaceIdAllocatorForAutoResize(
@@ -452,58 +422,30 @@ TEST_F(RenderWidgetUnittest, AutoResizeAllocatedLocalSurfaceId) {
 
   constexpr gfx::Size size(200, 200);
   widget()->DidAutoResize(size);
-
-  widget()->sink()->ClearMessages();
-  widget()->OnMessageReceived(ViewMsg_WasHidden(widget()->routing_id()));
-  base::Optional<viz::LocalSurfaceId> local_surface_id1;
-  ASSERT_EQ(1u, widget()->sink()->message_count());
-  {
-    const IPC::Message* msg = widget()->sink()->GetMessageAt(0);
-    EXPECT_EQ(static_cast<uint32_t>(ViewHostMsg_ResizeOrRepaint_ACK::ID),
-              msg->type());
-    ViewHostMsg_ResizeOrRepaint_ACK::Param params;
-    EXPECT_TRUE(ViewHostMsg_ResizeOrRepaint_ACK::Read(msg, &params));
-    ViewHostMsg_ResizeOrRepaint_ACK_Params actual_params = std::get<0>(params);
-    local_surface_id1 = actual_params.child_allocated_local_surface_id;
-    EXPECT_TRUE(local_surface_id1.has_value());
-  }
+  viz::LocalSurfaceId local_surface_id1 = widget()->local_surface_id();
 
   constexpr gfx::Size size2(100, 100);
   widget()->DidAutoResize(size2);
-
-  widget()->sink()->ClearMessages();
-  widget()->OnMessageReceived(ViewMsg_WasHidden(widget()->routing_id()));
-  base::Optional<viz::LocalSurfaceId> local_surface_id2;
-  ASSERT_EQ(1u, widget()->sink()->message_count());
-  {
-    const IPC::Message* msg = widget()->sink()->GetMessageAt(0);
-    EXPECT_EQ(static_cast<uint32_t>(ViewHostMsg_ResizeOrRepaint_ACK::ID),
-              msg->type());
-    ViewHostMsg_ResizeOrRepaint_ACK::Param params;
-    EXPECT_TRUE(ViewHostMsg_ResizeOrRepaint_ACK::Read(msg, &params));
-    ViewHostMsg_ResizeOrRepaint_ACK_Params actual_params = std::get<0>(params);
-    local_surface_id2 = actual_params.child_allocated_local_surface_id;
-    EXPECT_TRUE(local_surface_id2.has_value());
-  }
+  viz::LocalSurfaceId local_surface_id2 = widget()->local_surface_id();
 
   // Our first child allocated LSI should match |fake_parent_local_surface_id|
   // with an incremented child sequence number.
   EXPECT_NE(fake_parent_local_surface_id, local_surface_id1);
   EXPECT_EQ(fake_parent_local_surface_id.parent_sequence_number(),
-            local_surface_id1->parent_sequence_number());
+            local_surface_id1.parent_sequence_number());
   EXPECT_EQ(fake_parent_local_surface_id.child_sequence_number() + 1,
-            local_surface_id1->child_sequence_number());
+            local_surface_id1.child_sequence_number());
   EXPECT_EQ(fake_parent_local_surface_id.embed_token(),
-            local_surface_id2->embed_token());
+            local_surface_id2.embed_token());
 
   // Our second child allocated LSI should match the first with an incremented
   // child sequence number.
   EXPECT_NE(local_surface_id1, local_surface_id2);
-  EXPECT_EQ(local_surface_id1->parent_sequence_number(),
-            local_surface_id2->parent_sequence_number());
-  EXPECT_EQ(local_surface_id1->child_sequence_number() + 1,
-            local_surface_id2->child_sequence_number());
-  EXPECT_EQ(local_surface_id1->embed_token(), local_surface_id2->embed_token());
+  EXPECT_EQ(local_surface_id1.parent_sequence_number(),
+            local_surface_id2.parent_sequence_number());
+  EXPECT_EQ(local_surface_id1.child_sequence_number() + 1,
+            local_surface_id2.child_sequence_number());
+  EXPECT_EQ(local_surface_id1.embed_token(), local_surface_id2.embed_token());
 }
 
 class PopupRenderWidget : public RenderWidget {

@@ -188,6 +188,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   viz::LocalSurfaceId GetLocalSurfaceId() const override;
   void OnRenderWidgetInit() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
+  void OnSynchronizedDisplayPropertiesChanged() override;
 
   // ui::EventHandlerAndroid implementation.
   bool OnTouchEvent(const ui::MotionEventAndroid& m) override;

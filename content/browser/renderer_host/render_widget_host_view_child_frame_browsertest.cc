@@ -134,21 +134,10 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest,
       root->child_at(0)->current_frame_host()->GetRenderWidgetHost()->GetView();
 
   // Fake an auto-resize update from the parent renderer.
-  int routing_id =
-      root->current_frame_host()->GetRenderWidgetHost()->GetRoutingID();
-  ViewHostMsg_ResizeOrRepaint_ACK_Params params;
-  params.view_size = gfx::Size(75, 75);
-  params.child_allocated_local_surface_id =
-      viz::LocalSurfaceId(10, 10, base::UnguessableToken::Create());
-  root->current_frame_host()->GetRenderWidgetHost()->OnMessageReceived(
-      ViewHostMsg_ResizeOrRepaint_ACK(routing_id, params));
-
-  // RenderWidgetHostImpl has delayed auto-resize processing. Yield here to
-  // let it complete.
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                run_loop.QuitClosure());
-  run_loop.Run();
+  viz::LocalSurfaceId local_surface_id(10, 10,
+                                       base::UnguessableToken::Create());
+  root->current_frame_host()->GetRenderWidgetHost()->DidUpdateVisualProperties(
+      gfx::Size(75, 75), local_surface_id);
 
   // The child frame's RenderWidgetHostView should now use the auto-resize value
   // for its visible viewport.

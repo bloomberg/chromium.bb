@@ -16,8 +16,6 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
   // important (e.g., ACKs) for keeping the browser and renderer state
   // consistent in case we later return to the same renderer.
   switch (msg->type()) {
-    // Handled by RenderWidgetHost.
-    case ViewHostMsg_ResizeOrRepaint_ACK::ID:
     // Handled by RenderViewHost.
     case FrameHostMsg_RenderProcessGone::ID:
     case ViewHostMsg_ClosePage_ACK::ID:

@@ -2281,4 +2281,8 @@ void RenderWidgetHostViewAndroid::TakeFallbackContentFrom(
   host()->GetContentRenderingTimeoutFrom(view_android->host());
 }
 
+void RenderWidgetHostViewAndroid::OnSynchronizedDisplayPropertiesChanged() {
+  SynchronizeVisualProperties();
+}
+
 }  // namespace content

@@ -34,10 +34,6 @@ class RenderWidgetTest : public RenderViewTest {
     widget()->GetCompositionRange(range);
   }
 
-  bool needs_visual_properties_ack() {
-    return widget()->needs_visual_properties_ack();
-  }
-
   blink::WebInputMethodController* GetInputMethodController() {
     return widget()->GetInputMethodController();
   }
@@ -123,12 +119,6 @@ class RenderWidgetInitialSizeTest : public RenderWidgetTest {
   viz::LocalSurfaceId local_surface_id_;
   viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator_;
 };
-
-TEST_F(RenderWidgetInitialSizeTest, InitialSize) {
-  EXPECT_EQ(initial_size_, widget()->size());
-  EXPECT_EQ(initial_size_, gfx::Size(widget()->GetWebWidget()->Size()));
-  EXPECT_TRUE(needs_visual_properties_ack());
-}
 
 TEST_F(RenderWidgetTest, HitTestAPI) {
   LoadHTML(
