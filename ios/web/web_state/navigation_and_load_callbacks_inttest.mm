@@ -663,15 +663,9 @@ TEST_F(NavigationAndLoadCallbacksTest, WebPageReloadNavigation) {
   // Reload web page.
   NavigationContext* context = nullptr;
   int32_t nav_id = 0;
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    EXPECT_CALL(*decider_, ShouldAllowRequest(_, _, /*from_main_frame=*/true))
-        .WillOnce(Return(true));
-    EXPECT_CALL(observer_, DidStartLoading(web_state()));
-  } else {
-    EXPECT_CALL(observer_, DidStartLoading(web_state()));
-    EXPECT_CALL(*decider_, ShouldAllowRequest(_, _, /*from_main_frame=*/true))
-        .WillOnce(Return(true));
-  }
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _, /*from_main_frame=*/true))
+      .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
       .WillOnce(
           VerifyReloadStartedContext(web_state(), url, &context, &nav_id));

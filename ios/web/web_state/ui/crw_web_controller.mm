@@ -1946,7 +1946,16 @@ registerLoadRequestForURL:(const GURL&)requestURL
         // New navigation manager can delegate directly to WKWebView to reload
         // for non-app-specific URLs. The necessary navigation states will be
         // updated in WKNavigationDelegate callbacks.
-        [_webView reload];
+        WKNavigation* navigation = [_webView reload];
+        [_navigationStates setState:web::WKNavigationState::REQUESTED
+                      forNavigation:navigation];
+        std::unique_ptr<web::NavigationContextImpl> navigationContext = [self
+            registerLoadRequestForURL:URL
+                             referrer:self.currentNavItemReferrer
+                           transition:ui::PageTransition::PAGE_TRANSITION_RELOAD
+               sameDocumentNavigation:NO];
+        [_navigationStates setContext:std::move(navigationContext)
+                        forNavigation:navigation];
       } else {
         [self loadCurrentURL];
       }
