@@ -95,7 +95,7 @@ DrmGpuPlatformSupportHost::DrmGpuPlatformSupportHost(DrmCursor* cursor)
   if (ui_runner_) {
     weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
   } else {
-    DCHECK(!features::IsMusEnabled());
+    DCHECK(!features::IsMashEnabled());
   }
 }
 

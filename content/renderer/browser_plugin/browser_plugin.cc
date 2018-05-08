@@ -315,7 +315,7 @@ void BrowserPlugin::SynchronizeVisualProperties() {
     sent_visual_properties_ = pending_visual_properties_;
 
 #if defined(USE_AURA)
-  if (features::IsMusEnabled() && mus_embedded_frame_) {
+  if (features::IsMashEnabled() && mus_embedded_frame_) {
     mus_embedded_frame_->SetWindowBounds(GetLocalSurfaceId(),
                                          FrameRectInPixels());
   }

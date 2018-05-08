@@ -1714,7 +1714,7 @@ void RenderWidgetHostViewAura::FocusedNodeChanged(
 void RenderWidgetHostViewAura::ScheduleEmbed(
     ui::mojom::WindowTreeClientPtr client,
     base::OnceCallback<void(const base::UnguessableToken&)> callback) {
-  DCHECK(features::IsMusEnabled());
+  DCHECK(features::IsMashEnabled());
   aura::Env::GetInstance()->ScheduleEmbed(std::move(client),
                                           std::move(callback));
 }
@@ -1935,7 +1935,7 @@ void RenderWidgetHostViewAura::CreateAuraWindow(aura::client::WindowType type) {
   if (frame_sink_id_.is_valid())
     window_->SetEmbedFrameSinkId(frame_sink_id_);
 
-  if (!features::IsMusEnabled())
+  if (!features::IsMashEnabled())
     return;
 
   // Embed the renderer into the Window.

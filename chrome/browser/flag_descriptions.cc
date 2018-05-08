@@ -2975,11 +2975,6 @@ const char kUiDevToolsDescription[] =
     "Enables inspection of native UI elements. For local inspection use "
     "chrome://inspect#other";
 
-const char kUseMusName[] = "Mojo UI service (mus)";
-const char kUseMusDescription[] =
-    "Handles input events, display configuration, and windowing in a mojo "
-    "service on a thread in the browser process.";
-
 const char kUseMashName[] = "Out-of-process system UI (mash)";
 const char kUseMashDescription[] =
     "Runs the mojo UI service (mus) and the ash window manager and system UI "

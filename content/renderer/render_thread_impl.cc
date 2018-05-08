@@ -861,7 +861,7 @@ void RenderThreadImpl::Init(
   AddFilter(midi_message_filter_.get());
 
 #if defined(USE_AURA)
-  if (features::IsMusEnabled())
+  if (features::IsMashEnabled())
     CreateRenderWidgetWindowTreeClientFactory(GetServiceManagerConnection());
 #endif
 
@@ -1035,7 +1035,7 @@ void RenderThreadImpl::Init(
   categorized_worker_pool_->Start(num_raster_threads);
 
   discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
-  if (features::IsMusEnabled()) {
+  if (features::IsMashEnabled()) {
 #if defined(USE_AURA)
     GetServiceManagerConnection()->GetConnector()->BindInterface(
         ui::mojom::kServiceName, &manager_ptr);

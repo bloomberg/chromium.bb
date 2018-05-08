@@ -75,6 +75,8 @@ class WindowTreeHostFactory;
 class Service : public service_manager::Service,
                 public ws::WindowServerDelegate {
  public:
+  // TODO(jamescook): Audit these. Some may be unused after the elimination of
+  // "mus" mode.
   struct InitParams {
     InitParams();
     ~InitParams();

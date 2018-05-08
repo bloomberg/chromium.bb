@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/ash_config.h"
 
-#include "services/service_manager/runner/common/client_util.h"
 #include "ui/base/ui_base_features.h"
 
 namespace chromeos {
@@ -12,15 +11,8 @@ namespace chromeos {
 namespace {
 
 ash::Config ComputeAshConfig() {
-  ash::Config config = ash::Config::CLASSIC;
-  if (base::FeatureList::IsEnabled(features::kMash))
-    config = ash::Config::MASH;
-  else if (base::FeatureList::IsEnabled(features::kMus))
-    config = ash::Config::MUS;
-  VLOG_IF(1, config != ash::Config::CLASSIC &&
-                 !service_manager::ServiceManagerIsRemote())
-      << " Running with a simulated ash config (likely for testing).";
-  return config;
+  return base::FeatureList::IsEnabled(features::kMash) ? ash::Config::MASH
+                                                       : ash::Config::CLASSIC;
 }
 
 }  // namespace

@@ -37,15 +37,9 @@ UI_BASE_EXPORT bool IsUsingWMPointerForTouch();
 
 // TODO(sky): rename this to something that better conveys what it means.
 UI_BASE_EXPORT extern const base::Feature kMash;
-// WARNING: generally you should only use this in tests to enable the feature.
-// Outside of tests use IsMusEnabled() to detect if mus is enabled.
-// TODO(sky): rename this to kWindowService.
-UI_BASE_EXPORT extern const base::Feature kMus;
 
-// Returns true if mus (the Window Service) is enabled.
-// NOTE: this returns true if either kMus or kMash is specified.
-// TODO(sky): rename this to IsWindowServiceEnabled().
-UI_BASE_EXPORT bool IsMusEnabled();
+// Returns true if mash (out-of-process ash system UI) is enabled.
+UI_BASE_EXPORT bool IsMashEnabled();
 
 #if defined(OS_MACOSX)
 // Returns true if the NSWindows for apps will be created in the app's process,

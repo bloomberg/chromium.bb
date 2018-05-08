@@ -1151,8 +1151,8 @@ void BrowserMainLoop::GetCompositingModeReporter(
   // CompositingModeReporter.
   return;
 #else
-  if (features::IsMusEnabled()) {
-    // Mus == ChromeOS, which doesn't support software compositing, so no need
+  if (features::IsMashEnabled()) {
+    // Mash == ChromeOS, which doesn't support software compositing, so no need
     // to report compositing mode.
     return;
   }
@@ -1189,7 +1189,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   InitializeMojo();
 
 #if BUILDFLAG(ENABLE_MUS)
-  if (features::IsMusEnabled()) {
+  if (features::IsMashEnabled()) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableSurfaceSynchronization);
   }
@@ -1460,12 +1460,13 @@ bool BrowserMainLoop::InitializeToolkit() {
 
   // Env creates the compositor. Aura widgets need the compositor to be created
   // before they can be initialized by the browser.
-  env_ = aura::Env::CreateInstance(
-      features::IsMusEnabled() ? aura::Env::Mode::MUS : aura::Env::Mode::LOCAL);
+  env_ = aura::Env::CreateInstance(features::IsMashEnabled()
+                                       ? aura::Env::Mode::MUS
+                                       : aura::Env::Mode::LOCAL);
 #endif  // defined(USE_AURA)
 
 #if BUILDFLAG(ENABLE_MUS)
-  if (features::IsMusEnabled())
+  if (features::IsMashEnabled())
     image_cursors_set_ = std::make_unique<ui::ImageCursorsSet>();
 #endif
 

@@ -171,7 +171,7 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
   }
 
 #if defined(USE_AURA)
-  if (features::IsMusEnabled()) {
+  if (features::IsMashEnabled()) {
     frame_connector_->EmbedRendererWindowTreeClientInParent(
         GetWindowTreeClientFromRenderer());
   }

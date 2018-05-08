@@ -66,7 +66,7 @@ std::unique_ptr<service_manager::Service> PdfCompositorService::Create(
 void PdfCompositorService::PrepareToStart() {
   // Set up discardable memory manager.
   discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
-  if (features::IsMusEnabled()) {
+  if (features::IsMashEnabled()) {
 #if defined(USE_AURA)
     context()->connector()->BindInterface(ui::mojom::kServiceName,
                                           &manager_ptr);

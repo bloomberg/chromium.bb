@@ -87,21 +87,12 @@ const base::Feature kPrecisionTouchpadScrollPhase{
     "PrecisionTouchpadScrollPhase", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
-// Used to have ash run in its own process. This implicitly turns on the
-// WindowService. That is, if this is set IsMusEnabled() returns true.
+// Used to have ash (Chrome OS system UI) run in its own process.
+// TODO(jamescook): Make flag only available in Chrome OS.
 const base::Feature kMash = {"Mash", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Used to control the mus service (aka the UI service). This makes mus run in
-// process.
-const base::Feature kMus = {"Mus", base::FEATURE_DISABLED_BY_DEFAULT};
-
-bool IsMusEnabled() {
-#if defined(USE_AURA)
-  return base::FeatureList::IsEnabled(features::kMus) ||
-         base::FeatureList::IsEnabled(features::kMash);
-#else
-  return false;
-#endif
+bool IsMashEnabled() {
+  return base::FeatureList::IsEnabled(features::kMash);
 }
 
 #if defined(OS_MACOSX)

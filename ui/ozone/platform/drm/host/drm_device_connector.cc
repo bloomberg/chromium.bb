@@ -42,9 +42,9 @@ DrmDeviceConnector::DrmDeviceConnector(
       ws_runner_(base::ThreadTaskRunnerHandle::IsSet()
                      ? base::ThreadTaskRunnerHandle::Get()
                      : nullptr) {
-  // Invariant: we only have a runner at startup if executing in mus mode.
-  DCHECK((ws_runner_ && features::IsMusEnabled()) ||
-         (!ws_runner_ && !features::IsMusEnabled()));
+  // Invariant: we only have a runner at startup if executing in mash mode.
+  DCHECK((ws_runner_ && features::IsMashEnabled()) ||
+         (!ws_runner_ && !features::IsMashEnabled()));
 }
 
 DrmDeviceConnector::~DrmDeviceConnector() {}

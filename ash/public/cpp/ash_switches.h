@@ -61,7 +61,6 @@ ASH_PUBLIC_EXPORT extern const char kShowWebUiLock[];
 ASH_PUBLIC_EXPORT extern const char kShowWebUiLogin[];
 ASH_PUBLIC_EXPORT extern const char kSuppressMessageCenterPopups[];
 ASH_PUBLIC_EXPORT extern const char kTouchscreenUsableWhileScreenOff[];
-ASH_PUBLIC_EXPORT extern const char kUseIMEService[];
 
 ASH_PUBLIC_EXPORT bool IsDisplayMoveWindowAccelsEnabled();
 ASH_PUBLIC_EXPORT bool IsNightLightEnabled();

@@ -13,6 +13,8 @@ enum class Config {
   CLASSIC,
 
   // Aura is backed by mus, but chrome and ash are still in the same process.
+  // TODO(jamescook): Remove this mode. We are switching to window service as a
+  // library, https://crbug.com/837684
   MUS,
 
   // Aura is backed by mus and chrome and ash are in separate processes. In this
