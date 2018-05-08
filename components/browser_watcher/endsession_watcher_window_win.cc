@@ -21,16 +21,15 @@ EndSessionWatcherWindow::EndSessionWatcherWindow(
   WNDCLASSEX window_class = {0};
   base::win::InitializeWindowClass(
       kWindowClassName,
-      &base::win::WrappedWindowProc<EndSessionWatcherWindow::WndProcThunk>,
-      0, 0, 0, NULL, NULL, NULL, NULL, NULL,
-      &window_class);
+      &base::win::WrappedWindowProc<EndSessionWatcherWindow::WndProcThunk>, 0,
+      0, 0, nullptr, nullptr, nullptr, nullptr, nullptr, &window_class);
   instance_ = window_class.hInstance;
   ATOM clazz = ::RegisterClassEx(&window_class);
   DCHECK(clazz);
 
   // TODO(siggi): will a message window do here?
-  window_ = ::CreateWindow(kWindowClassName,
-                           0, 0, 0, 0, 0, 0, 0, 0, instance_, 0);
+  window_ = ::CreateWindow(kWindowClassName, nullptr, 0, 0, 0, 0, 0, nullptr,
+                           nullptr, instance_, nullptr);
   ::SetWindowLongPtr(window_, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
   DCHECK_EQ(::GetWindowLongPtr(window_, GWLP_USERDATA),
             reinterpret_cast<LONG_PTR>(this));

@@ -611,7 +611,7 @@ void DataReductionProxyTestContext::InitSettings() {
 void DataReductionProxyTestContext::DestroySettings() {
   // Force destruction of |DBDataOwner|, which lives on DB task runner and is
   // indirectly owned by |settings_|.
-  if (settings_.get()) {
+  if (settings_) {
     settings_.reset();
     storage_delegate_->SetStorageDelegate(nullptr);
     RunUntilIdle();

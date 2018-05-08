@@ -68,7 +68,7 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
     return;
   }
 
-  if (database_.get()) {
+  if (database_) {
     pending_query_handle_ = database_->GetFormValuesForElementName(
         name, prefix, kMaxAutocompleteMenuItems, this);
   }
@@ -108,7 +108,7 @@ void AutocompleteHistoryManager::OnWillSubmitForm(const FormData& form) {
 
 void AutocompleteHistoryManager::OnRemoveAutocompleteEntry(
     const base::string16& name, const base::string16& value) {
-  if (database_.get())
+  if (database_)
     database_->RemoveFormValueForElementName(name, value);
 }
 
@@ -119,7 +119,7 @@ void AutocompleteHistoryManager::SetExternalDelegate(
 
 void AutocompleteHistoryManager::CancelPendingQuery() {
   if (pending_query_handle_) {
-    if (database_.get())
+    if (database_)
       database_->CancelRequest(pending_query_handle_);
     pending_query_handle_ = 0;
   }

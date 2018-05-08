@@ -281,7 +281,7 @@ DriveAPIService::DriveAPIService(
 
 DriveAPIService::~DriveAPIService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (sender_.get())
+  if (sender_)
     sender_->auth_service()->RemoveObserver(this);
 }
 

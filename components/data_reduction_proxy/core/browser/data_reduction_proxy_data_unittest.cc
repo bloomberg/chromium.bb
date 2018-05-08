@@ -83,13 +83,12 @@ TEST_F(DataReductionProxyDataTest, AddToURLRequest) {
   std::unique_ptr<net::URLRequest> fake_request(context->CreateRequest(
       GURL("http://www.google.com"), net::RequestPriority::IDLE, nullptr,
       TRAFFIC_ANNOTATION_FOR_TESTS));
-  DataReductionProxyData* data =
-      DataReductionProxyData::GetData(*fake_request.get());
+  DataReductionProxyData* data = DataReductionProxyData::GetData(*fake_request);
   EXPECT_FALSE(data);
   data =
       DataReductionProxyData::GetDataAndCreateIfNecessary(fake_request.get());
   EXPECT_TRUE(data);
-  data = DataReductionProxyData::GetData(*fake_request.get());
+  data = DataReductionProxyData::GetData(*fake_request);
   EXPECT_TRUE(data);
   DataReductionProxyData* data2 =
       DataReductionProxyData::GetDataAndCreateIfNecessary(fake_request.get());
@@ -150,7 +149,7 @@ TEST_F(DataReductionProxyDataTest, ClearData) {
       DataReductionProxyData::GetDataAndCreateIfNecessary(fake_request.get());
   EXPECT_TRUE(data);
   DataReductionProxyData::ClearData(fake_request.get());
-  data = DataReductionProxyData::GetData(*fake_request.get());
+  data = DataReductionProxyData::GetData(*fake_request);
   EXPECT_FALSE(data);
 }
 

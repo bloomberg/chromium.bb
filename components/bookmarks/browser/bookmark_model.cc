@@ -148,7 +148,7 @@ BookmarkModel::~BookmarkModel() {
   for (BookmarkModelObserver& observer : observers_)
     observer.BookmarkModelBeingDeleted(this);
 
-  if (store_.get()) {
+  if (store_) {
     // The store maintains a reference back to us. We need to tell it we're gone
     // so that it doesn't try and invoke a method back on us again.
     store_->BookmarkModelDeleted();
@@ -261,7 +261,7 @@ void BookmarkModel::RemoveAllUserBookmarks() {
     }
   }
   EndExtensiveChanges();
-  if (store_.get())
+  if (store_)
     store_->ScheduleSave();
 
   for (BookmarkModelObserver& observer : observers_)
@@ -311,7 +311,7 @@ void BookmarkModel::Move(const BookmarkNode* node,
   BookmarkNode* mutable_new_parent = AsMutable(new_parent);
   mutable_new_parent->Add(std::move(owned_node), index);
 
-  if (store_.get())
+  if (store_)
     store_->ScheduleSave();
 
   for (BookmarkModelObserver& observer : observers_)
@@ -339,7 +339,7 @@ void BookmarkModel::Copy(const BookmarkNode* node,
   // don't need to send notifications here.
   CloneBookmarkNode(this, drag_data.elements, new_parent, index, true);
 
-  if (store_.get())
+  if (store_)
     store_->ScheduleSave();
 }
 
@@ -383,7 +383,7 @@ void BookmarkModel::SetTitle(const BookmarkNode* node,
   if (node->is_url())
     index_->Add(node);
 
-  if (store_.get())
+  if (store_)
     store_->ScheduleSave();
 
   for (BookmarkModelObserver& observer : observers_)
@@ -410,7 +410,7 @@ void BookmarkModel::SetURL(const BookmarkNode* node, const GURL& url) {
     AddNodeToInternalMaps(mutable_node);
   }
 
-  if (store_.get())
+  if (store_)
     store_->ScheduleSave();
 
   for (BookmarkModelObserver& observer : observers_)
@@ -446,7 +446,7 @@ void BookmarkModel::SetNodeMetaInfoMap(
     observer.OnWillChangeBookmarkMetaInfo(this, node);
 
   AsMutable(node)->SetMetaInfoMap(meta_info_map);
-  if (store_.get())
+  if (store_)
     store_->ScheduleSave();
 
   for (BookmarkModelObserver& observer : observers_)
@@ -482,7 +482,7 @@ void BookmarkModel::SetNodeSyncTransactionVersion(
     return;
 
   AsMutable(node)->set_sync_transaction_version(sync_transaction_version);
-  if (store_.get())
+  if (store_)
     store_->ScheduleSave();
 }
 
@@ -531,7 +531,7 @@ void BookmarkModel::SetDateAdded(const BookmarkNode* node, Time date_added) {
   if (date_added > node->parent()->date_folder_modified()) {
     // Will trigger store_->ScheduleSave().
     SetDateFolderModified(node->parent(), date_added);
-  } else if (store_.get()) {
+  } else if (store_) {
     store_->ScheduleSave();
   }
 }
@@ -682,7 +682,7 @@ void BookmarkModel::SortChildren(const BookmarkNode* parent) {
             mutable_parent->children().end(),
             SortComparator(collator.get()));
 
-  if (store_.get())
+  if (store_)
     store_->ScheduleSave();
 
   for (BookmarkModelObserver& observer : observers_)
@@ -716,7 +716,7 @@ void BookmarkModel::ReorderChildren(
     }
     mutable_parent->children().swap(new_children);
 
-    if (store_.get())
+    if (store_)
       store_->ScheduleSave();
   }
 
@@ -729,7 +729,7 @@ void BookmarkModel::SetDateFolderModified(const BookmarkNode* parent,
   DCHECK(parent);
   AsMutable(parent)->set_date_folder_modified(time);
 
-  if (store_.get())
+  if (store_)
     store_->ScheduleSave();
 }
 
@@ -888,7 +888,7 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* node_ptr) {
     node = RemoveNodeAndGetRemovedUrls(node_ptr, &removed_urls);
   }
 
-  if (store_.get())
+  if (store_)
     store_->ScheduleSave();
 
   for (BookmarkModelObserver& observer : observers_)
@@ -946,7 +946,7 @@ BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
   BookmarkNode* node_ptr = node.get();
   parent->Add(std::move(node), index);
 
-  if (store_.get())
+  if (store_)
     store_->ScheduleSave();
 
   {

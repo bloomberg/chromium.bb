@@ -91,8 +91,8 @@ const wchar_t kChromePipeName[] = L"\\\\.\\pipe\\ChromeCrashServices";
 // This is the well known SID for the system principal.
 const wchar_t kSystemPrincipalSid[] = L"S-1-5-18";
 
-google_breakpad::ExceptionHandler* g_breakpad = NULL;
-google_breakpad::ExceptionHandler* g_dumphandler_no_crash = NULL;
+google_breakpad::ExceptionHandler* g_breakpad = nullptr;
+google_breakpad::ExceptionHandler* g_dumphandler_no_crash = nullptr;
 
 #if !defined(_WIN64)
 EXCEPTION_POINTERS g_surrogate_exception_pointers = {0};
@@ -102,7 +102,7 @@ CONTEXT g_surrogate_context = {0};
 
 typedef NTSTATUS (WINAPI* NtTerminateProcessPtr)(HANDLE ProcessHandle,
                                                  NTSTATUS ExitStatus);
-char* g_real_terminate_process_stub = NULL;
+char* g_real_terminate_process_stub = nullptr;
 
 }  // namespace
 
@@ -133,8 +133,8 @@ extern "C" HANDLE __declspec(dllexport) __cdecl InjectDumpForHungInput(
     HANDLE process) {
   // |serialized_crash_keys| is not propagated in breakpad but is in crashpad
   // since breakpad is deprecated.
-  return CreateRemoteThread(process, NULL, 0, DumpProcessWithoutCrashThread,
-                            0, 0, NULL);
+  return CreateRemoteThread(process, nullptr, 0, DumpProcessWithoutCrashThread,
+                            nullptr, 0, nullptr);
 }
 
 // Returns a string containing a list of all modifiers for the loaded profile.
@@ -198,8 +198,9 @@ bool DumpDoneCallback(const wchar_t*, const wchar_t*, void*,
   // Now we just start chrome browser with the same command line.
   STARTUPINFOW si = {sizeof(si)};
   PROCESS_INFORMATION pi;
-  if (::CreateProcessW(NULL, ::GetCommandLineW(), NULL, NULL, FALSE,
-                       CREATE_UNICODE_ENVIRONMENT, NULL, NULL, &si, &pi)) {
+  if (::CreateProcessW(nullptr, ::GetCommandLineW(), nullptr, nullptr, FALSE,
+                       CREATE_UNICODE_ENVIRONMENT, nullptr, nullptr, &si,
+                       &pi)) {
     ::CloseHandle(pi.hProcess);
     ::CloseHandle(pi.hThread);
   }
@@ -234,12 +235,12 @@ bool FilterCallback(void*, EXCEPTION_POINTERS*, MDRawAssertionInfo*) {
 
 // Previous unhandled filter. Will be called if not null when we
 // intercept a crash.
-LPTOP_LEVEL_EXCEPTION_FILTER previous_filter = NULL;
+LPTOP_LEVEL_EXCEPTION_FILTER previous_filter = nullptr;
 
 // Exception filter used when breakpad is not enabled. We just display
 // the "Do you want to restart" message and then we call the previous filter.
 long WINAPI ChromeExceptionFilter(EXCEPTION_POINTERS* info) {
-  DumpDoneCallback(NULL, NULL, NULL, info, NULL, false);
+  DumpDoneCallback(nullptr, nullptr, nullptr, info, nullptr, false);
 
   if (previous_filter)
     return previous_filter(info);
@@ -251,7 +252,7 @@ long WINAPI ChromeExceptionFilter(EXCEPTION_POINTERS* info) {
 // not enabled. We just display the "Do you want to restart" message and then
 // die (without calling the previous filter).
 long WINAPI CloudPrintServiceExceptionFilter(EXCEPTION_POINTERS* info) {
-  DumpDoneCallback(NULL, NULL, NULL, info, NULL, false);
+  DumpDoneCallback(nullptr, nullptr, nullptr, info, nullptr, false);
   return EXCEPTION_EXECUTE_HANDLER;
 }
 
@@ -289,7 +290,7 @@ static bool WrapMessageBoxWithSEH(const wchar_t* text, const wchar_t* caption,
   // machines with CursorXP, PeaDict or with FontExplorer installed it crashes
   // uncontrollably here. Being this a best effort deal we better go away.
   __try {
-    *exit_now = (IDOK != ::MessageBoxW(NULL, text, caption, flags));
+    *exit_now = (IDOK != ::MessageBoxW(nullptr, text, caption, flags));
   } __except(EXCEPTION_EXECUTE_HANDLER) {
     // Its not safe to continue executing, exit silently here.
     ::TerminateProcess(::GetCurrentProcess(),
@@ -324,7 +325,7 @@ extern "C" void __declspec(dllexport) TerminateProcessWithoutDump() {
   // Patched stub exists based on conditions (See InitCrashReporter).
   // As a side note this function also gets called from
   // WindowProcExceptionFilter.
-  if (g_real_terminate_process_stub == NULL) {
+  if (g_real_terminate_process_stub == nullptr) {
     ::TerminateProcess(::GetCurrentProcess(), content::RESULT_CODE_KILLED);
   } else {
     NtTerminateProcessPtr real_terminate_proc =
@@ -488,7 +489,7 @@ void InitCrashReporter(const std::string& process_type_switch) {
 
   wchar_t exe_path[MAX_PATH];
   exe_path[0] = 0;
-  GetModuleFileNameW(NULL, exe_path, MAX_PATH);
+  GetModuleFileNameW(nullptr, exe_path, MAX_PATH);
 
   // This is intentionally leaked.
   CrashKeysWin* keeper = new CrashKeysWin();
@@ -498,8 +499,8 @@ void InitCrashReporter(const std::string& process_type_switch) {
                             base::CommandLine::ForCurrentProcess(),
                             GetCrashReporterClient());
 
-  google_breakpad::ExceptionHandler::MinidumpCallback callback = NULL;
-  LPTOP_LEVEL_EXCEPTION_FILTER default_filter = NULL;
+  google_breakpad::ExceptionHandler::MinidumpCallback callback = nullptr;
+  LPTOP_LEVEL_EXCEPTION_FILTER default_filter = nullptr;
   // We install the post-dump callback only for the browser and service
   // processes. It spawns a new browser/service process.
   if (process_type == L"browser") {
@@ -546,21 +547,20 @@ void InitCrashReporter(const std::string& process_type_switch) {
   else if (GetCrashReporterClient()->GetShouldDumpLargerDumps())
     dump_type = kLargerDumpType;
 
-  g_breakpad = new google_breakpad::ExceptionHandler(temp_dir, &FilterCallback,
-                   callback, NULL,
-                   google_breakpad::ExceptionHandler::HANDLER_ALL,
-                   dump_type, pipe_name.c_str(), custom_info);
+  g_breakpad = new google_breakpad::ExceptionHandler(
+      temp_dir, &FilterCallback, callback, nullptr,
+      google_breakpad::ExceptionHandler::HANDLER_ALL, dump_type,
+      pipe_name.c_str(), custom_info);
 
   // Now initialize the non crash dump handler.
-  g_dumphandler_no_crash = new google_breakpad::ExceptionHandler(temp_dir,
-      &FilterCallbackWhenNoCrash,
-      &DumpDoneCallbackWhenNoCrash,
-      NULL,
+  g_dumphandler_no_crash = new google_breakpad::ExceptionHandler(
+      temp_dir, &FilterCallbackWhenNoCrash, &DumpDoneCallbackWhenNoCrash,
+      nullptr,
       // Set the handler to none so this handler would not be added to
       // |handler_stack_| in |ExceptionHandler| which is a list of exception
       // handlers.
-      google_breakpad::ExceptionHandler::HANDLER_NONE,
-      dump_type, pipe_name.c_str(), custom_info);
+      google_breakpad::ExceptionHandler::HANDLER_NONE, dump_type,
+      pipe_name.c_str(), custom_info);
 
   // Set the DumpWithoutCrashingFunction for this instance of base.lib.  Other
   // executable images linked with base should set this again for

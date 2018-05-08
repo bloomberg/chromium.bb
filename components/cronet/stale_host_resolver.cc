@@ -361,10 +361,7 @@ void StaleHostResolver::RequestImpl::RecordCanceledRequest() {
 }
 
 StaleHostResolver::StaleOptions::StaleOptions()
-    : delay(),
-      max_expired_time(),
-      allow_other_network(false),
-      max_stale_uses(0) {}
+    : allow_other_network(false), max_stale_uses(0) {}
 
 StaleHostResolver::StaleHostResolver(
     std::unique_ptr<net::HostResolverImpl> inner_resolver,

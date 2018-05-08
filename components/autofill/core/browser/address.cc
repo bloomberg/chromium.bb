@@ -27,7 +27,7 @@ namespace autofill {
 
 Address::Address() {}
 
-Address::Address(const Address& address) : FormGroup() {
+Address::Address(const Address& address) {
   *this = address;
 }
 

@@ -94,8 +94,7 @@ class DataReductionProxyConfiguratorTest : public testing::Test {
       const std::string& expected_bypass_list) {
     test_context_->RunUntilIdle();
     net::ProxyConfig::ProxyRules rules =
-        config_
-            ->CreateProxyConfig(probe_url_config, *manager_.get(), http_proxies)
+        config_->CreateProxyConfig(probe_url_config, *manager_, http_proxies)
             .proxy_rules();
     ASSERT_EQ(expected_rules_type, rules.type);
     if (net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME ==

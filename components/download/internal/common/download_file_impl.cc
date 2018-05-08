@@ -504,7 +504,7 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
         DCHECK_GE(incoming_data_size, bytes_to_write);
         reason = WriteDataToFile(
             source_stream->offset() + source_stream->bytes_written(),
-            incoming_data.get()->data(), bytes_to_write);
+            incoming_data->data(), bytes_to_write);
         disk_writes_time_ += (base::TimeTicks::Now() - write_start);
         bytes_seen_ += bytes_to_write;
         total_incoming_data_size += bytes_to_write;

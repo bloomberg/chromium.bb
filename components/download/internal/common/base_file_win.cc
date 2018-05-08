@@ -302,7 +302,7 @@ DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
   source.append(1, L'\0');
   target.append(1, L'\0');
 
-  SHFILEOPSTRUCT move_info = {0};
+  SHFILEOPSTRUCT move_info = {nullptr};
   move_info.wFunc = FO_MOVE;
   move_info.pFrom = source.c_str();
   move_info.pTo = target.c_str();

@@ -174,7 +174,7 @@ TEST_F(CastAuthUtilTest, VerifySenderNonceMissing) {
   scoped_feature_list.InitAndEnableFeature(
       base::Feature{"CastNonceEnforced", base::FEATURE_DISABLED_BY_DEFAULT});
   AuthContext context = AuthContext::Create();
-  std::string received_nonce = "";
+  std::string received_nonce;
   EXPECT_FALSE(context.nonce().empty());
   AuthResult result = context.VerifySenderNonce(received_nonce);
   EXPECT_FALSE(result.success());

@@ -30,8 +30,7 @@ MockCastSocketObserver::MockCastSocketObserver() {}
 MockCastSocketObserver::~MockCastSocketObserver() {}
 
 MockCastSocketService::MockCastSocketService(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-    : CastSocketService() {
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   SetTaskRunnerForTest(task_runner);
 }
 MockCastSocketService::~MockCastSocketService() {}

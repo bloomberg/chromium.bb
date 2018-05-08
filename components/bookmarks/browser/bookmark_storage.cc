@@ -69,14 +69,14 @@ void LoadBookmarks(const base::FilePath& path, BookmarkLoadDetails* details) {
     std::unique_ptr<base::Value> root =
         deserializer.Deserialize(nullptr, nullptr);
 
-    if (root.get()) {
+    if (root) {
       // Building the index can take a while, so we do it on the background
       // thread.
       int64_t max_node_id = 0;
       BookmarkCodec codec;
       TimeTicks start_time = TimeTicks::Now();
       codec.Decode(details->bb_node(), details->other_folder_node(),
-                   details->mobile_folder_node(), &max_node_id, *root.get());
+                   details->mobile_folder_node(), &max_node_id, *root);
       details->set_max_id(std::max(max_node_id, details->max_id()));
       details->set_computed_checksum(codec.computed_checksum());
       details->set_stored_checksum(codec.stored_checksum());

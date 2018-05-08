@@ -300,7 +300,7 @@ bool FormDataImporter::ImportCreditCard(
     const FormStructure& form,
     bool should_return_local_card,
     std::unique_ptr<CreditCard>* imported_credit_card) {
-  DCHECK(!imported_credit_card->get());
+  DCHECK(!*imported_credit_card);
 
   // The candidate for credit card import. There are many ways for the candidate
   // to be rejected (see everywhere this function returns false, below).

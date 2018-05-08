@@ -191,7 +191,7 @@ class PasswordFormBuilder {
 
 class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
  public:
-  MAYBE_PasswordFormConversionUtilsTest() : content::RenderViewTest() {}
+  MAYBE_PasswordFormConversionUtilsTest() {}
   ~MAYBE_PasswordFormConversionUtilsTest() override {}
 
  protected:

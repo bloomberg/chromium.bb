@@ -945,7 +945,7 @@ void ProfileSyncService::ClearStaleErrors() {
   ClearUnrecoverableError();
   last_actionable_error_ = SyncProtocolError();
   // Clear the data type errors as well.
-  if (data_type_manager_.get())
+  if (data_type_manager_)
     data_type_manager_->ResetDataTypeErrors();
 }
 

@@ -130,7 +130,7 @@ bool ContentSettingsPref::SetWebsiteSetting(
 
   {
     base::AutoLock auto_lock(lock_);
-    if (value.get()) {
+    if (value) {
       map_to_modify->SetValue(primary_pattern, secondary_pattern, content_type_,
                               resource_identifier, modified_time,
                               value->DeepCopy());

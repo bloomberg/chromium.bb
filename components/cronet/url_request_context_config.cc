@@ -231,8 +231,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
   StaleHostResolver::StaleOptions stale_dns_options;
   std::string host_resolver_rules_string;
 
-  for (base::DictionaryValue::Iterator it(*dict.get()); !it.IsAtEnd();
-       it.Advance()) {
+  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
     if (it.key() == kQuicFieldTrialName) {
       const base::DictionaryValue* quic_args = nullptr;
       if (!it.value().GetAsDictionary(&quic_args)) {

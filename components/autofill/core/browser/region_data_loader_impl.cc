@@ -31,7 +31,7 @@ void RegionDataLoaderImpl::LoadRegionData(
     int64_t timeout_ms) {
   callback_ = callback;
   region_data_supplier_.LoadRules(country_code,
-                                  *region_data_supplier_callback_.get());
+                                  *region_data_supplier_callback_);
 
   timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(timeout_ms),
                base::Bind(&RegionDataLoaderImpl::OnRegionDataLoaded,

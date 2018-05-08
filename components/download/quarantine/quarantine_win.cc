@@ -74,7 +74,8 @@ bool ZoneIdentifierPresentForFile(const base::FilePath& path) {
   std::vector<char> zone_identifier_contents_buffer(32);
   DWORD actual_length = 0;
   if (!ReadFile(file.Get(), &zone_identifier_contents_buffer.front(),
-                zone_identifier_contents_buffer.size(), &actual_length, NULL))
+                zone_identifier_contents_buffer.size(), &actual_length,
+                nullptr))
     return false;
   zone_identifier_contents_buffer.resize(actual_length);
 

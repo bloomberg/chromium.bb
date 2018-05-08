@@ -51,7 +51,7 @@ namespace data_reduction_proxy {
 DataReductionProxySettings::DataReductionProxySettings()
     : unreachable_(false),
       deferred_initialization_(false),
-      data_reduction_proxy_enabled_pref_name_(),
+
       prefs_(nullptr),
       config_(nullptr),
       clock_(base::DefaultClock::GetInstance()) {}
@@ -78,7 +78,7 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
   DCHECK(prefs);
   DCHECK(io_data);
   DCHECK(io_data->config());
-  DCHECK(data_reduction_proxy_service.get());
+  DCHECK(data_reduction_proxy_service);
   data_reduction_proxy_enabled_pref_name_ =
       data_reduction_proxy_enabled_pref_name;
   prefs_ = prefs;

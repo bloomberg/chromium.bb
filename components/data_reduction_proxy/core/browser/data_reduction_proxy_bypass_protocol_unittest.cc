@@ -355,8 +355,8 @@ class DataReductionProxyProtocolTest : public testing::Test {
 
     std::string response2;
     std::string request2;
-    std::string response2_via_header = "";
-    std::string request2_connection_type = "";
+    std::string response2_via_header;
+    std::string request2_connection_type;
     std::string request2_path = "/";
 
     if (expected_bad_proxy_count == 1) {

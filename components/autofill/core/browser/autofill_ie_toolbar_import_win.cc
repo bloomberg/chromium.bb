@@ -79,7 +79,7 @@ base::string16 ReadAndDecryptValue(const RegKey& key,
                                    const wchar_t* value_name) {
   DWORD data_type = REG_BINARY;
   DWORD data_size = 0;
-  LONG result = key.ReadValue(value_name, NULL, &data_size, &data_type);
+  LONG result = key.ReadValue(value_name, nullptr, &data_size, &data_type);
   if ((result != ERROR_SUCCESS) || !data_size || data_type != REG_BINARY)
     return base::string16();
   std::string data;
@@ -284,8 +284,8 @@ bool ImportCurrentUserProfiles(const std::string& app_locale,
       RegKey key(HKEY_CURRENT_USER, key_name.c_str(), KEY_READ);
       CreditCard credit_card;
       credit_card.set_origin(kIEToolbarImportOrigin);
-      if (ImportSingleFormGroup(
-              key, reg_to_field, app_locale, &credit_card, NULL)) {
+      if (ImportSingleFormGroup(key, reg_to_field, app_locale, &credit_card,
+                                nullptr)) {
         base::string16 cc_number = credit_card.GetRawInfo(CREDIT_CARD_NUMBER);
         if (!cc_number.empty())
           credit_cards->push_back(credit_card);

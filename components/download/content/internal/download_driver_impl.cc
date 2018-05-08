@@ -84,7 +84,7 @@ DriverEntry DownloadDriverImpl::CreateDriverEntry(
           : item->GetFullPath();
   entry.completion_time = item->GetEndTime();
   entry.response_headers = item->GetResponseHeaders();
-  if (entry.response_headers.get()) {
+  if (entry.response_headers) {
     entry.can_resume =
         entry.response_headers->HasHeaderValue("Accept-Ranges", "bytes") ||
         (entry.response_headers->HasHeader("Content-Range") &&

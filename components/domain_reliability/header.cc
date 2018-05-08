@@ -278,7 +278,7 @@ DomainReliabilityHeader::ReleaseConfig() {
 }
 
 std::string DomainReliabilityHeader::ToString() const {
-  std::string string = "";
+  std::string string;
   int64_t max_age_s = max_age_.InSeconds();
 
   if (config_->collectors.empty()) {
@@ -314,7 +314,7 @@ DomainReliabilityHeader::DomainReliabilityHeader(
     base::TimeDelta max_age)
     : status_(status), config_(std::move(config)), max_age_(max_age) {
   DCHECK_EQ(PARSE_SET_CONFIG, status_);
-  DCHECK(config_.get());
+  DCHECK(config_);
   DCHECK_NE(0, max_age_.InMicroseconds());
 }
 

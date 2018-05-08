@@ -309,7 +309,7 @@ void DriveUploader::CallUploadServiceAPINewFile(
   if (info_ptr->content_length <= kMaxMultipartUploadSize) {
     DriveServiceBatchOperationsInterface* service;
     // If this is a batched request, calls the API on the request instead.
-    if (batch_request.get()) {
+    if (batch_request) {
       service = batch_request->configurator();
       RecordDriveUploadProtocol(UPLOAD_METHOD_BATCH);
     } else {
@@ -344,7 +344,7 @@ void DriveUploader::CallUploadServiceAPIExistingFile(
   if (info_ptr->content_length <= kMaxMultipartUploadSize) {
     DriveServiceBatchOperationsInterface* service;
     // If this is a batched request, calls the API on the request instead.
-    if (batch_request.get()) {
+    if (batch_request) {
       service = batch_request->configurator();
       RecordDriveUploadProtocol(UPLOAD_METHOD_BATCH);
     } else {

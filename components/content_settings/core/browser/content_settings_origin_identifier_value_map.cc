@@ -41,7 +41,7 @@ class RuleIteratorImpl : public RuleIterator {
     DCHECK(current_rule_->second.value.get());
     Rule to_return(current_rule_->first.primary_pattern,
                    current_rule_->first.secondary_pattern,
-                   current_rule_->second.value.get()->DeepCopy());
+                   current_rule_->second.value->DeepCopy());
     ++current_rule_;
     return to_return;
   }
@@ -83,7 +83,7 @@ bool OriginIdentifierValueMap::PatternPair::operator<(
          std::tie(other.primary_pattern, other.secondary_pattern);
 }
 
-OriginIdentifierValueMap::ValueEntry::ValueEntry() : last_modified(), value(){};
+OriginIdentifierValueMap::ValueEntry::ValueEntry(){};
 
 OriginIdentifierValueMap::ValueEntry::~ValueEntry(){};
 

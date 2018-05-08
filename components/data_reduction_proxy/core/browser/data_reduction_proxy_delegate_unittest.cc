@@ -707,7 +707,7 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor200) {
 
     std::unique_ptr<net::URLRequest> request =
         FetchURLRequest(GURL("http://example.com/path/"), nullptr,
-                        test.DrpResponseHeaders.c_str(), 1000);
+                        test.DrpResponseHeaders, 1000);
 
     EXPECT_EQ(request->GetTotalReceivedBytes(),
               total_received_bytes() - baseline_received_bytes);
@@ -777,9 +777,8 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor304) {
     int64_t baseline_received_bytes = total_received_bytes();
     int64_t baseline_original_received_bytes = total_original_received_bytes();
 
-    std::unique_ptr<net::URLRequest> request =
-        FetchURLRequest(GURL("http://example.com/path/"), nullptr,
-                        test.DrpResponseHeaders.c_str(), 0);
+    std::unique_ptr<net::URLRequest> request = FetchURLRequest(
+        GURL("http://example.com/path/"), nullptr, test.DrpResponseHeaders, 0);
 
     EXPECT_EQ(request->GetTotalReceivedBytes(),
               total_received_bytes() - baseline_received_bytes);

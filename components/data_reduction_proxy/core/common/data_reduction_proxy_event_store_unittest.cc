@@ -284,7 +284,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventFullURL) {
 
   bypass_event->Set("params", std::move(bypass_params));
   std::string sanitized_output;
-  base::JSONWriter::Write(*sanitized_event.get(), &sanitized_output);
+  base::JSONWriter::Write(*sanitized_event, &sanitized_output);
   event_store()->AddAndSetLastBypassEvent(std::move(bypass_event), 0);
   EXPECT_EQ(sanitized_output, event_store()->SanitizedLastBypassEvent());
 }
@@ -323,7 +323,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventHostOnly) {
 
   bypass_event->Set("params", std::move(bypass_params));
   std::string sanitized_output;
-  base::JSONWriter::Write(*sanitized_event.get(), &sanitized_output);
+  base::JSONWriter::Write(*sanitized_event, &sanitized_output);
   event_store()->AddAndSetLastBypassEvent(std::move(bypass_event), 0);
   EXPECT_EQ(sanitized_output, event_store()->SanitizedLastBypassEvent());
 }

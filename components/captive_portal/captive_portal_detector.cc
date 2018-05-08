@@ -159,7 +159,7 @@ base::Time CaptivePortalDetector::GetCurrentTime() const {
 }
 
 bool CaptivePortalDetector::FetchingURL() const {
-  return simple_loader_.get() != nullptr;
+  return simple_loader_ != nullptr;
 }
 
 }  // namespace captive_portal

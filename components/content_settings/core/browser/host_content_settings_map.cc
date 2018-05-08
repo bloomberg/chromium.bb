@@ -850,7 +850,7 @@ HostContentSettingsMap::GetContentSettingValueAndPatterns(
           *primary_pattern = rule.primary_pattern;
         if (secondary_pattern)
           *secondary_pattern = rule.secondary_pattern;
-        return base::WrapUnique(rule.value.get()->DeepCopy());
+        return base::WrapUnique(rule.value->DeepCopy());
       }
     }
   }

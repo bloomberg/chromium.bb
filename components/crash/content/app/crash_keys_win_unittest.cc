@@ -123,8 +123,8 @@ TEST_F(CrashKeysWinTest, OfficialLikeKeys) {
                                &cmd_line,
                                &crash_client_);
 
-  ASSERT_TRUE(info != NULL);
-  ASSERT_TRUE(info->entries != NULL);
+  ASSERT_TRUE(info != nullptr);
+  ASSERT_TRUE(info->entries != nullptr);
 
   // We expect 7 fixed keys and a "freeboard" of 256 keys for dynamic entries.
   EXPECT_EQ(256U + 7U, info->count);

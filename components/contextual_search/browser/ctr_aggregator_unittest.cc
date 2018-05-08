@@ -48,7 +48,7 @@ class CtrAggregatorTest : public testing::Test {
 
   void SetUp() override {
     storage_.reset(new WeeklyActivityStorageStub());
-    aggregator_.reset(new CtrAggregator(*storage_.get(), kTestWeek));
+    aggregator_.reset(new CtrAggregator(*storage_, kTestWeek));
   }
 
   void TearDown() override {}

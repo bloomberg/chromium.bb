@@ -133,8 +133,7 @@ class WebDataServiceTest : public testing::Test {
 class WebDataServiceAutofillTest : public WebDataServiceTest {
  public:
   WebDataServiceAutofillTest()
-      : WebDataServiceTest(),
-        unique_id1_(1),
+      : unique_id1_(1),
         unique_id2_(2),
         test_timeout_(TimeDelta::FromSeconds(kWebDataServiceTimeoutSeconds)),
         done_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,

@@ -261,14 +261,14 @@ void AutofillWebDataService::RemoveOrphanAutofillTableRows() {
 void AutofillWebDataService::AddObserver(
     AutofillWebDataServiceObserverOnDBSequence* observer) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
-  if (autofill_backend_.get())
+  if (autofill_backend_)
     autofill_backend_->AddObserver(observer);
 }
 
 void AutofillWebDataService::RemoveObserver(
     AutofillWebDataServiceObserverOnDBSequence* observer) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
-  if (autofill_backend_.get())
+  if (autofill_backend_)
     autofill_backend_->RemoveObserver(observer);
 }
 
