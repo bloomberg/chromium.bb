@@ -152,6 +152,8 @@ bool IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature feature) {
       return true;
     case mojom::FeaturePolicyFeature::kUnsizedMedia:
     case mojom::FeaturePolicyFeature::kVerticalScroll:
+    case mojom::FeaturePolicyFeature::kLegacyImageFormats:
+    case mojom::FeaturePolicyFeature::kImageCompression:
       return RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled();
     default:
       return false;

@@ -819,17 +819,4 @@ void HTMLImageElement::AssociateWith(HTMLFormElement* form) {
   }
 }
 
-bool HTMLImageElement::ShouldInvertColor() const {
-  return should_invert_color_;
-}
-
-void HTMLImageElement::UpdateShouldInvertColor(bool value) {
-  if (should_invert_color_ != value) {
-    should_invert_color_ = value;
-    SetNeedsStyleRecalc(StyleChangeType::kLocalStyleChange,
-                        StyleChangeReasonForTracing::Create(
-                            StyleChangeReason::kPolicyViolation));
-  }
-}
-
 }  // namespace blink

@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/fragmentainer_iterator.h"
+#include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_table_row.h"
 #include "third_party/blink/renderer/core/layout/layout_table_section.h"
@@ -909,8 +910,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
 
 static bool NeedsFilter(const LayoutObject& object) {
   // TODO(trchen): SVG caches filters in SVGResources. Implement it.
-  return object.IsBoxModelObject() && ToLayoutBoxModelObject(object).Layer() &&
-         (object.StyleRef().HasFilter() || object.HasReflection());
+  if (object.IsBoxModelObject() && ToLayoutBoxModelObject(object).Layer() &&
+      (object.StyleRef().HasFilter() || object.HasReflection()))
+    return true;
+  if (object.IsLayoutImage() && ToLayoutImage(object).ShouldInvertColor())
+    return true;
+  return false;
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
@@ -923,12 +928,24 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
       state.local_transform_space = context_.current.transform;
       state.paint_offset = FloatPoint(context_.current.paint_offset);
 
-      // Try to use the cached filter.
-      if (properties_->Filter())
-        state.filter = properties_->Filter()->Filter();
-      auto& layer = *ToLayoutBoxModelObject(object_).Layer();
-      layer.UpdateCompositorFilterOperationsForFilter(state.filter);
-      layer.ClearFilterOnEffectNodeDirty();
+      auto* layer = ToLayoutBoxModelObject(object_).Layer();
+      if (layer) {
+        // Try to use the cached filter.
+        if (properties_->Filter())
+          state.filter = properties_->Filter()->Filter();
+
+        if (object_.IsLayoutImage() &&
+            ToLayoutImage(object_).ShouldInvertColor())
+          state.filter.AppendInvertFilter(1.0f);
+
+        layer->UpdateCompositorFilterOperationsForFilter(state.filter);
+        layer->ClearFilterOnEffectNodeDirty();
+      } else {
+        DCHECK(object_.IsLayoutImage() &&
+               ToLayoutImage(object_).ShouldInvertColor());
+        state.filter = CompositorFilterOperations();
+        state.filter.AppendInvertFilter(1.0f);
+      }
 
       // The CSS filter spec didn't specify how filters interact with overflow
       // clips. The implementation here mimics the old Blink/WebKit behavior for
@@ -1075,7 +1092,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateLocalBorderBoxContext() {
   if (!NeedsPaintPropertyUpdate())
     return;
 
-  if (!object_.HasLayer() && !NeedsPaintOffsetTranslation(object_)) {
+  if (!object_.HasLayer() && !NeedsPaintOffsetTranslation(object_) &&
+      !NeedsFilter(object_)) {
     fragment_data_.ClearLocalBorderBoxProperties();
   } else {
     PropertyTreeState local_border_box =

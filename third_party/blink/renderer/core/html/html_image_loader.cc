@@ -75,30 +75,10 @@ void HTMLImageLoader::ImageNotifyFinished(ImageResourceContent*) {
 
   bool load_error = cached_image->ErrorOccurred();
   if (auto* image = ToHTMLImageElementOrNull(*element)) {
-    if (load_error) {
+    if (load_error)
       image->EnsureCollapsedOrFallbackContent();
-    } else {
+    else
       image->EnsurePrimaryContent();
-      // Check policies
-      if (auto* frame = image->GetDocument().GetFrame()) {
-        // Invert the image if the document does not have the
-        // 'legacy-image-formats' feature enabled, and the image is not one of
-        // the allowed formats.
-        if (!frame->IsFeatureEnabled(
-                mojom::FeaturePolicyFeature::kLegacyImageFormats)) {
-          if (!cached_image->IsAcceptableContentType())
-            image->UpdateShouldInvertColor(true);
-        }
-        // Invert the image if the document does not have the
-        // 'image-compression' feature enabled and the image is not
-        // sufficiently-well-compressed.
-        if (!frame->IsFeatureEnabled(
-                mojom::FeaturePolicyFeature::kImageCompression)) {
-          if (!cached_image->IsAcceptableCompressionRatio())
-            image->UpdateShouldInvertColor(true);
-        }
-      }
-    }
   }
 
   if (auto* input = ToHTMLInputElementOrNull(*element)) {

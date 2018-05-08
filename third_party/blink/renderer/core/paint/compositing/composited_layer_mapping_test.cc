@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/web_content_layer.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -2685,6 +2686,47 @@ transform'></div>
   // 100px down from squashing's main graphics layer.
   EXPECT_EQ(FloatPoint(0, 100),
             squashed->GraphicsLayerBacking()->GetPosition());
+}
+
+TEST_P(CompositedLayerMappingTest, ImageWithInvertFilterLayer) {
+  SetBodyInnerHTML("<img id='image' style='will-change: transform;' src='x'>");
+  ToLayoutImage(GetLayoutObjectByElementId("image"))
+      ->UpdateShouldInvertColor(true);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  cc::FilterOperations filters;
+  filters.Append(cc::FilterOperation::CreateInvertFilter(1.0f));
+  EXPECT_EQ(filters, ToLayoutBoxModelObject(GetLayoutObjectByElementId("image"))
+                         ->Layer()
+                         ->GraphicsLayerBacking()
+                         ->PlatformLayer()
+                         ->CcLayer()
+                         ->filters());
+}
+
+TEST_P(CompositedLayerMappingTest, ImageWithInvertFilterLayerUpdated) {
+  SetBodyInnerHTML("<img id='image' style='will-change: transform;' src='x'>");
+  ToLayoutImage(GetLayoutObjectByElementId("image"))
+      ->UpdateShouldInvertColor(true);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  cc::FilterOperations filters0, filters1;
+  filters0.Append(cc::FilterOperation::CreateInvertFilter(1.0f));
+  EXPECT_EQ(filters0,
+            ToLayoutBoxModelObject(GetLayoutObjectByElementId("image"))
+                ->Layer()
+                ->GraphicsLayerBacking()
+                ->PlatformLayer()
+                ->CcLayer()
+                ->filters());
+  ToLayoutImage(GetLayoutObjectByElementId("image"))
+      ->UpdateShouldInvertColor(false);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(filters1,
+            ToLayoutBoxModelObject(GetLayoutObjectByElementId("image"))
+                ->Layer()
+                ->GraphicsLayerBacking()
+                ->PlatformLayer()
+                ->CcLayer()
+                ->filters());
 }
 
 }  // namespace blink

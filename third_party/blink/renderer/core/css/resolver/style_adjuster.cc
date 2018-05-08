@@ -89,17 +89,6 @@ bool IsImageOrVideoElement(const Element* element) {
     return true;
   return false;
 }
-
-// Returns true for image elements that violate at least one of the feature
-// policy optimized image policies.
-// https://github.com/WICG/feature-policy/blob/gh-pages/policies/optimized-images.md
-bool ShouldInvertColor(const Element* element) {
-  if (IsHTMLImageElement(element)) {
-    return ToHTMLImageElement(element)->ShouldInvertColor();
-  }
-  return false;
-}
-
 }  // namespace
 
 static EDisplay EquivalentBlockDisplay(EDisplay display) {
@@ -750,16 +739,6 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       if (!style.Height().IsSpecified())
         style.SetLogicalHeight(Length(LayoutReplaced::kDefaultHeight, kFixed));
     }
-  }
-
-  // If an image element violates feature policy optimized image policies,
-  // render it with inverted color.
-  if (ShouldInvertColor(element)) {
-    FilterOperations operations;
-    operations.Operations().push_back(
-        BasicComponentTransferFilterOperation::Create(1,
-                                                      FilterOperation::INVERT));
-    style.SetFilter(operations);
   }
 }
 }  // namespace blink

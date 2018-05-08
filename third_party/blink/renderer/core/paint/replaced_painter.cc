@@ -86,40 +86,56 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info,
     base::Optional<RoundedInnerRectClipper> clipper;
     base::Optional<ScopedPaintChunkProperties> chunk_properties;
     bool completely_clipped_out = false;
-    if (layout_replaced_.Style()->HasBorderRadius()) {
-      if (border_rect.IsEmpty()) {
-        completely_clipped_out = true;
-      } else if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-        if (!layout_replaced_.IsSVGRoot()) {
+
+    if (layout_replaced_.Style()->HasBorderRadius() && border_rect.IsEmpty())
+      completely_clipped_out = true;
+
+    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+      if (!layout_replaced_.IsSVGRoot()) {
+        if (layout_replaced_.Style()->HasBorderRadius()) {
           if (const auto* fragment =
                   paint_info.FragmentToPaint(layout_replaced_)) {
-            const auto* properties = fragment->PaintProperties();
-            DCHECK(properties && properties->InnerBorderRadiusClip());
+            const auto* paint_properties = fragment->PaintProperties();
+            DCHECK(paint_properties &&
+                   paint_properties->InnerBorderRadiusClip());
             chunk_properties.emplace(
                 local_paint_info.context.GetPaintController(),
-                properties->InnerBorderRadiusClip(), layout_replaced_,
+                paint_properties->InnerBorderRadiusClip(), layout_replaced_,
+                DisplayItem::PaintPhaseToDrawingType(local_paint_info.phase));
+          }
+        } else if (!layout_replaced_.HasLayer() ||
+                   !layout_replaced_.Layer()->IsSelfPaintingLayer()) {
+          // The only use case of this is to apply color-inversion filter for
+          // images violating feature policy optimized image policies.
+          if (layout_replaced_.FirstFragment().HasLocalBorderBoxProperties()) {
+            chunk_properties.emplace(
+                local_paint_info.context.GetPaintController(),
+                layout_replaced_.FirstFragment().LocalBorderBoxProperties(),
+                layout_replaced_,
                 DisplayItem::PaintPhaseToDrawingType(local_paint_info.phase));
           }
         }
-      } else if (ShouldApplyViewportClip(layout_replaced_)) {
-        // Push a clip if we have a border radius, since we want to round the
-        // foreground content that gets painted.
-        FloatRoundedRect rounded_inner_rect =
-            layout_replaced_.Style()->GetRoundedInnerBorderFor(
-                border_rect,
-                LayoutRectOutsets(-(layout_replaced_.PaddingTop() +
-                                    layout_replaced_.BorderTop()),
-                                  -(layout_replaced_.PaddingRight() +
-                                    layout_replaced_.BorderRight()),
-                                  -(layout_replaced_.PaddingBottom() +
-                                    layout_replaced_.BorderBottom()),
-                                  -(layout_replaced_.PaddingLeft() +
-                                    layout_replaced_.BorderLeft())),
-                true, true);
-
-        clipper.emplace(layout_replaced_, local_paint_info, border_rect,
-                        rounded_inner_rect, kApplyToDisplayList);
       }
+    } else if (!completely_clipped_out &&
+               layout_replaced_.Style()->HasBorderRadius() &&
+               ShouldApplyViewportClip(layout_replaced_)) {
+      // Push a clip if we have a border radius, since we want to round the
+      // foreground content that gets painted.
+      FloatRoundedRect rounded_inner_rect =
+          layout_replaced_.Style()->GetRoundedInnerBorderFor(
+              border_rect,
+              LayoutRectOutsets(-(layout_replaced_.PaddingTop() +
+                                  layout_replaced_.BorderTop()),
+                                -(layout_replaced_.PaddingRight() +
+                                  layout_replaced_.BorderRight()),
+                                -(layout_replaced_.PaddingBottom() +
+                                  layout_replaced_.BorderBottom()),
+                                -(layout_replaced_.PaddingLeft() +
+                                  layout_replaced_.BorderLeft())),
+              true, true);
+
+      clipper.emplace(layout_replaced_, local_paint_info, border_rect,
+                      rounded_inner_rect, kApplyToDisplayList);
     }
 
     if (!completely_clipped_out) {
