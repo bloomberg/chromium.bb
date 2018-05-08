@@ -102,6 +102,16 @@ class ResourceCoordinatorRenderProcessProbeBrowserTest
   ResourceCoordinatorRenderProcessProbeBrowserTest() = default;
   ~ResourceCoordinatorRenderProcessProbeBrowserTest() override = default;
 
+  static bool AtLeastOneMemoryMeasurementIsNonZero(
+      const mojom::ProcessResourceMeasurementBatchPtr& batch) {
+    for (const auto& measurement : batch->measurements) {
+      if (measurement->private_footprint_kb > 0)
+        return true;
+    }
+
+    return false;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ResourceCoordinatorRenderProcessProbeBrowserTest);
 };
@@ -138,6 +148,11 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
   for (const auto& measurement : probe.last_measurement_batch()->measurements)
     EXPECT_EQ(0.0, measurement->cpu_usage);
 
+  // There is an inherent race in memory measurement that may cause failures
+  // which will result in zero private footprint returns. To work around this,
+  // assert that there is at least one non-zero measurement.
+  AtLeastOneMemoryMeasurementIsNonZero(probe.last_measurement_batch());
+
   // Open a second tab and complete a navigation.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), embedded_test_server()->GetURL("/title1.html"),
@@ -163,9 +178,13 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
 
   size_t info_map_size = info_map.size();
   probe.StartGatherCycleAndWait();
-  // The second and subsequent CPU measurements should return some data.
+  // The second and subsequent CPU measurements should return some data,
+  // although the measurement granularity on some OSen is such that zero returns
+  // are almost certain.
   for (const auto& measurement : probe.last_measurement_batch()->measurements)
     EXPECT_LE(0.0, measurement->cpu_usage);
+
+  AtLeastOneMemoryMeasurementIsNonZero(probe.last_measurement_batch());
 
   EXPECT_EQ(info_map_size, info_map.size());
   for (const auto& entry : probe.render_process_info_map()) {
