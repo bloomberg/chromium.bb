@@ -7,7 +7,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/shell.h"
-#include "ash/system/web_notification/web_notification_tray.h"
+#include "ash/system/message_center/notification_tray.h"
 #include "ash/test/ash_test_base.h"
 
 namespace ash {
@@ -19,11 +19,11 @@ class CapsLockNotificationControllerTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    WebNotificationTray::DisableAnimationsForTest(true);
+    NotificationTray::DisableAnimationsForTest(true);
   }
 
   void TearDown() override {
-    WebNotificationTray::DisableAnimationsForTest(false);
+    NotificationTray::DisableAnimationsForTest(false);
     AshTestBase::TearDown();
   }
 

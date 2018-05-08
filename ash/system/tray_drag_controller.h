@@ -15,7 +15,7 @@ class TrayBackgroundView;
 // The TrayDragController helps to process the swiping events that happened on
 // TrayBackgroundView or TrayBubbleView. Not all the TrayBackgroundView can be
 // dragged currently. Only ImeMenuTray, SystemTray, PaletteTray,
-// WebNotificationTray and their associated tray bubbles can be dragged.
+// NotificationTray and their associated tray bubbles can be dragged.
 class ASH_EXPORT TrayDragController {
  public:
   // The threshold of the velocity of the fling event.

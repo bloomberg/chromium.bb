@@ -7,7 +7,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/shell.h"
-#include "ash/system/web_notification/web_notification_tray.h"
+#include "ash/system/message_center/notification_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/run_loop.h"
@@ -23,7 +23,7 @@ class KeyAccessibilityEnablerTest : public AshTestBase,
   KeyAccessibilityEnablerTest() {}
 
   void SetUp() override {
-    WebNotificationTray::DisableAnimationsForTest(true);
+    NotificationTray::DisableAnimationsForTest(true);
     ui::SetEventTickClockForTesting(&clock_);
     AshTestBase::SetUp();
     Shell::Get()->accessibility_controller()->AddObserver(this);

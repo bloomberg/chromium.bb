@@ -40,6 +40,7 @@
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
+#include "ash/system/message_center/notification_tray.h"
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/palette/palette_utils.h"
 #include "ash/system/power/power_button_controller.h"
@@ -49,7 +50,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/unified/unified_system_tray.h"
-#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
@@ -409,7 +409,7 @@ bool CanHandleToggleMessageCenterBubble() {
   StatusAreaWidget* status_area_widget =
       Shelf::ForWindow(target_root)->shelf_widget()->status_area_widget();
   return status_area_widget &&
-         status_area_widget->web_notification_tray()->visible();
+         status_area_widget->notification_tray()->visible();
 }
 
 void HandleToggleMessageCenterBubble() {
@@ -419,8 +419,7 @@ void HandleToggleMessageCenterBubble() {
       Shelf::ForWindow(target_root)->shelf_widget()->status_area_widget();
   if (!status_area_widget)
     return;
-  WebNotificationTray* notification_tray =
-      status_area_widget->web_notification_tray();
+  NotificationTray* notification_tray = status_area_widget->notification_tray();
   if (!notification_tray->visible())
     return;
   if (notification_tray->IsMessageCenterVisible())

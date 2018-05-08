@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/web_notification/inactive_user_notification_blocker.h"
+#include "ash/system/message_center/inactive_user_notification_blocker.h"
 
 #include "ash/message_center/message_center_controller.h"
 #include "ash/session/test_session_controller_client.h"

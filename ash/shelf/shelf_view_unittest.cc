@@ -34,7 +34,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
-#include "ash/system/web_notification/web_notification_tray.h"
+#include "ash/system/message_center/notification_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
@@ -261,7 +261,7 @@ class ShelfViewTest : public AshTestBase {
     model_ = Shell::Get()->shelf_model();
     shelf_view_ = GetPrimaryShelf()->GetShelfViewForTesting();
 
-    WebNotificationTray::DisableAnimationsForTest(true);
+    NotificationTray::DisableAnimationsForTest(true);
 
     // The bounds should be big enough for 4 buttons + overflow chevron.
     shelf_view_->SetBounds(0, 0, 500, kShelfSize);
@@ -274,7 +274,7 @@ class ShelfViewTest : public AshTestBase {
   }
 
   void TearDown() override {
-    WebNotificationTray::DisableAnimationsForTest(false);  // Reenable animation
+    NotificationTray::DisableAnimationsForTest(false);  // Reenable animation
     test_api_.reset();
     AshTestBase::TearDown();
   }

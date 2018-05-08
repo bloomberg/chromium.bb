@@ -10,9 +10,9 @@
 
 #include "ash/message_center/message_center_view.h"
 #include "ash/shell.h"
+#include "ash/system/message_center/notification_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
-#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -320,7 +320,7 @@ TEST_F(ArcNotificationContentViewTest, CloseButtonInMessageCenterView) {
   // Show MessageCenterView and activate its widget.
   auto* notification_tray =
       ash::StatusAreaWidgetTestHelper::GetStatusAreaWidget()
-          ->web_notification_tray();
+          ->notification_tray();
   notification_tray->ShowBubble(false /* show_by_click */);
   notification_tray->GetBubbleView()
       ->GetWidget()

@@ -15,9 +15,9 @@
 #include "ash/session/session_observer.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
+#include "ash/system/message_center/notification_tray.h"
 #include "ash/system/screen_security/screen_tray_item.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_util.h"
@@ -564,12 +564,12 @@ class CanSwitchUserTest : public AshTestBase {
     capture_item_ = system_tray->GetScreenCaptureItem();
     EXPECT_TRUE(share_item_);
     EXPECT_TRUE(capture_item_);
-    WebNotificationTray::DisableAnimationsForTest(true);
+    NotificationTray::DisableAnimationsForTest(true);
   }
 
   void TearDown() override {
     RunAllPendingInMessageLoop();
-    WebNotificationTray::DisableAnimationsForTest(false);
+    NotificationTray::DisableAnimationsForTest(false);
     AshTestBase::TearDown();
   }
 

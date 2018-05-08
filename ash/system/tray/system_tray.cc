@@ -32,6 +32,7 @@
 #include "ash/system/ime/tray_ime_chromeos.h"
 #include "ash/system/keyboard_brightness/tray_keyboard_brightness.h"
 #include "ash/system/media_security/multi_profile_media_tray_item.h"
+#include "ash/system/message_center/notification_tray.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/tray_network.h"
@@ -58,7 +59,6 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/update/tray_update.h"
 #include "ash/system/user/tray_user.h"
-#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/widget_finder.h"
@@ -236,17 +236,16 @@ SystemTray::~SystemTray() {
     item->OnTrayViewDestroyed();
 }
 
-void SystemTray::InitializeTrayItems(
-    WebNotificationTray* web_notification_tray) {
-  DCHECK(web_notification_tray || features::IsSystemTrayUnifiedEnabled());
-  web_notification_tray_ = web_notification_tray;
+void SystemTray::InitializeTrayItems(NotificationTray* notification_tray) {
+  DCHECK(notification_tray || features::IsSystemTrayUnifiedEnabled());
+  notification_tray_ = notification_tray;
   TrayBackgroundView::Initialize();
   CreateItems();
 }
 
 void SystemTray::Shutdown() {
-  DCHECK(web_notification_tray_ || features::IsSystemTrayUnifiedEnabled());
-  web_notification_tray_ = nullptr;
+  DCHECK(notification_tray_ || features::IsSystemTrayUnifiedEnabled());
+  notification_tray_ = nullptr;
 }
 
 void SystemTray::CreateItems() {
@@ -564,8 +563,8 @@ void SystemTray::UpdateWebNotifications() {
     height =
         std::max(0, work_area.bottom() - bubble_view->GetBoundsInScreen().y());
   }
-  if (web_notification_tray_)
-    web_notification_tray_->SetTrayBubbleHeight(height);
+  if (notification_tray_)
+    notification_tray_->SetTrayBubbleHeight(height);
 }
 
 base::string16 SystemTray::GetAccessibleTimeString(

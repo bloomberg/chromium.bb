@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_WEB_NOTIFICATION_ASH_POPUP_ALIGNMENT_DELEGATE_H_
-#define ASH_SYSTEM_WEB_NOTIFICATION_ASH_POPUP_ALIGNMENT_DELEGATE_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_ASH_POPUP_ALIGNMENT_DELEGATE_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_ASH_POPUP_ALIGNMENT_DELEGATE_H_
 
 #include <stdint.h>
 
@@ -24,7 +24,7 @@ namespace ash {
 
 class AshPopupAlignmentDelegateTest;
 class Shelf;
-class WebNotificationTrayTest;
+class NotificationTrayTest;
 
 // The PopupAlignmentDelegate subclass for Ash. It needs to handle alignment of
 // the shelf and its autohide state.
@@ -61,7 +61,7 @@ class ASH_EXPORT AshPopupAlignmentDelegate
 
  private:
   friend class AshPopupAlignmentDelegateTest;
-  friend class WebNotificationTrayTest;
+  friend class NotificationTrayTest;
 
   // Get the current alignment of the shelf.
   ShelfAlignment GetAlignment() const;
@@ -92,4 +92,4 @@ class ASH_EXPORT AshPopupAlignmentDelegate
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_WEB_NOTIFICATION_ASH_POPUP_ALIGNMENT_DELEGATE_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_ASH_POPUP_ALIGNMENT_DELEGATE_H_

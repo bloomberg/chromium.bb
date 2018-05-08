@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/web_notification/fullscreen_notification_blocker.h"
+#include "ash/system/message_center/fullscreen_notification_blocker.h"
 
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"

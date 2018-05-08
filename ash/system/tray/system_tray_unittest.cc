@@ -18,6 +18,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/system/message_center/notification_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/tray/system_tray_bubble.h"
@@ -25,7 +26,6 @@
 #include "ash/system/tray/test_system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray_drag_controller.h"
-#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/ash_test_views_delegate.h"
@@ -969,9 +969,8 @@ TEST_F(SystemTrayTest, SetVisibleDuringHideAnimation) {
 
 TEST_F(SystemTrayTest, SystemTrayHeightWithBubble) {
   SystemTray* tray = GetPrimarySystemTray();
-  WebNotificationTray* notification_tray =
-      StatusAreaWidgetTestHelper::GetStatusAreaWidget()
-          ->web_notification_tray();
+  NotificationTray* notification_tray =
+      StatusAreaWidgetTestHelper::GetStatusAreaWidget()->notification_tray();
 
   // Ensure the initial tray bubble height is zero.
   EXPECT_EQ(0, notification_tray->tray_bubble_height_for_test());

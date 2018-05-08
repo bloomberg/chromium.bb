@@ -22,6 +22,7 @@
 namespace ash {
 
 enum class LoginStatus;
+class NotificationTray;
 class ScreenTrayItem;
 class SystemBubbleWrapper;
 class SystemTrayItem;
@@ -42,7 +43,6 @@ class TrayTiles;
 class TrayTracing;
 class TrayUpdate;
 class TrayVPN;
-class WebNotificationTray;
 
 // There are different methods for creating bubble views.
 enum BubbleCreationType {
@@ -66,7 +66,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
 
   // Calls TrayBackgroundView::Initialize(), creates the tray items, and
   // adds them to SystemTrayNotifier.
-  void InitializeTrayItems(WebNotificationTray* web_notification_tray);
+  void InitializeTrayItems(NotificationTray* notification_tray);
 
   // Resets internal pointers. This has to be called before deletion.
   void Shutdown();
@@ -210,7 +210,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   void RecordSystemMenuMetrics();
 
   // The web notification tray view that appears adjacent to this view.
-  WebNotificationTray* web_notification_tray_ = nullptr;
+  NotificationTray* notification_tray_ = nullptr;
 
   // Items.
   std::vector<std::unique_ptr<SystemTrayItem>> items_;
