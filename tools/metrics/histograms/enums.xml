@@ -15381,6 +15381,7 @@ Called by update_net_error_codes.py.-->
   <int value="1248" label="ACCESSIBILITY_PRIVATE_ONSELECTTOSPEAKSTATECHANGED"/>
   <int value="1249"
       label="ACCESSIBILITY_PRIVATE_ONSELECTTOSPEAKSTATECHANGEREQUESTED"/>
+  <int value="1250" label="INPUTMETHODPRIVATE_GETCOMPOSITIONBOUNDS"/>
 </enum>
 
 <enum name="ExtensionIconState">

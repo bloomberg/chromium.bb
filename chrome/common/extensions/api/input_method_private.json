@@ -267,6 +267,33 @@
             "description": "ID of the input method to open options for."
           }
         ]
+      }, {
+        "name": "getCompositionBounds",
+        "type": "function",
+        "description": "Gets the composition bounds",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Callback which is called to provide the result",
+            "parameters": [
+              {
+                "name": "boundsList",
+                "type": "array",
+                "description": "List of bounds information.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "x": {"type": "integer"},
+                    "y": {"type": "integer"},
+                    "w": {"type": "integer"},
+                    "h": {"type": "integer"}
+                  }
+                }
+              }
+            ]
+          }
+        ]
       }
     ],
     "events": [

@@ -669,6 +669,26 @@ InputMethodPrivateNotifyImeMenuItemActivatedFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+ExtensionFunction::ResponseAction
+InputMethodPrivateGetCompositionBoundsFunction::Run() {
+  InputMethodEngine* engine = GetActiveEngine(
+      Profile::FromBrowserContext(browser_context()), extension_id());
+  if (!engine)
+    return RespondNow(Error(kErrorEngineNotAvailable));
+
+  auto bounds_list = std::make_unique<base::ListValue>();
+  for (const auto& bounds : engine->composition_bounds()) {
+    auto bounds_value = std::make_unique<base::DictionaryValue>();
+    bounds_value->SetInteger("x", bounds.x());
+    bounds_value->SetInteger("y", bounds.y());
+    bounds_value->SetInteger("w", bounds.width());
+    bounds_value->SetInteger("h", bounds.height());
+    bounds_list->Append(std::move(bounds_value));
+  }
+
+  return RespondNow(OneArgument(std::move(bounds_list)));
+}
+
 void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
                                     const Extension* extension) {
   const std::vector<InputComponentInfo>* input_components =

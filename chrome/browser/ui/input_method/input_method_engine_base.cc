@@ -292,6 +292,7 @@ bool InputMethodEngineBase::DeleteSurroundingText(int context_id,
 
 void InputMethodEngineBase::SetCompositionBounds(
     const std::vector<gfx::Rect>& bounds) {
+  composition_bounds_ = bounds;
   observer_->OnCompositionBoundsChanged(bounds);
 }
 

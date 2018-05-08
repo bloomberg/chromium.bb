@@ -180,6 +180,11 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
       const std::string& component_id,
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data);
 
+  // Get the composition bounds.
+  const std::vector<gfx::Rect>& composition_bounds() const {
+    return composition_bounds_;
+  }
+
  protected:
   // Notifies InputContextHandler that the composition is changed.
   virtual void UpdateComposition(const ui::CompositionText& composition_text,
@@ -230,6 +235,10 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   // The composition text to be set from calling input.ime.setComposition API.
   ui::CompositionText composition_;
   bool composition_changed_;
+
+  // The composition bounds returned by inputMethodPrivate.getCompositionBounds
+  // API.
+  std::vector<gfx::Rect> composition_bounds_;
 
   // The text to be committed from calling input.ime.commitText API.
   std::string text_;
