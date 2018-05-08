@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 #include "ui/gfx/gfx_export.h"
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include "base/file_descriptor_posix.h"
 #endif
 
@@ -35,7 +35,7 @@ struct GFX_EXPORT GpuFenceHandle {
   bool is_null() const { return type == GpuFenceHandleType::kEmpty; }
 
   GpuFenceHandleType type;
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   base::FileDescriptor native_fd;
 #endif
 };

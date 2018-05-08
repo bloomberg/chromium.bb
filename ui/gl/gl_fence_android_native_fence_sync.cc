@@ -13,7 +13,7 @@
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gl/gl_surface_egl.h"
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <unistd.h>
 
 #include "base/posix/eintr_wrapper.h"
