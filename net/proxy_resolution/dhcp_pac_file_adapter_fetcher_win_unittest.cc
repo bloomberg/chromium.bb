@@ -56,7 +56,7 @@ class MockDhcpPacFileAdapterFetcher : public DhcpPacFileAdapterFetcher {
     fetcher_ = NULL;
   }
 
-  PacFileFetcher* ImplCreateScriptFetcher() override {
+  std::unique_ptr<PacFileFetcher> ImplCreateScriptFetcher() override {
     // We don't maintain ownership of the fetcher, it is transferred to
     // the caller.
     fetcher_ = new MockPacFileFetcher();
@@ -65,7 +65,7 @@ class MockDhcpPacFileAdapterFetcher : public DhcpPacFileAdapterFetcher {
           FROM_HERE, base::TimeDelta::FromMilliseconds(fetcher_delay_ms_), this,
           &MockDhcpPacFileAdapterFetcher::OnFetcherTimer);
     }
-    return fetcher_;
+    return base::WrapUnique(fetcher_);
   }
 
   class DelayingDhcpQuery : public DhcpQuery {
@@ -276,9 +276,8 @@ class MockDhcpRealFetchPacFileAdapterFetcher
         url_request_context_(context) {}
 
   // Returns a real PAC file fetcher.
-  PacFileFetcher* ImplCreateScriptFetcher() override {
-    PacFileFetcher* fetcher = new PacFileFetcherImpl(url_request_context_);
-    return fetcher;
+  std::unique_ptr<PacFileFetcher> ImplCreateScriptFetcher() override {
+    return PacFileFetcherImpl::Create(url_request_context_);
   }
 
   URLRequestContext* url_request_context_;

@@ -56,8 +56,8 @@ URLRequestContextBuilderMojo::CreateProxyResolutionService(
   if (mojo_proxy_resolver_factory_) {
     std::unique_ptr<net::DhcpPacFileFetcher> dhcp_pac_file_fetcher =
         dhcp_fetcher_factory_->Create(url_request_context);
-    std::unique_ptr<net::PacFileFetcher> pac_file_fetcher =
-        std::make_unique<net::PacFileFetcherImpl>(url_request_context);
+    auto pac_file_fetcher =
+        net::PacFileFetcherImpl::CreateWithFileUrlSupport(url_request_context);
     return CreateProxyResolutionServiceUsingMojoFactory(
         std::move(mojo_proxy_resolver_factory_),
         std::move(proxy_config_service), std::move(pac_file_fetcher),

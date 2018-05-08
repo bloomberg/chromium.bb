@@ -38,7 +38,23 @@ class NET_EXPORT PacFileFetcherImpl : public PacFileFetcher,
   // Note that while a request is in progress, we will be holding a reference
   // to |url_request_context|. Be careful not to create cycles between the
   // fetcher and the context; you can break such cycles by calling Cancel().
-  explicit PacFileFetcherImpl(URLRequestContext* url_request_context);
+  //
+  // Fetch() supports the following URL schemes, provided the underlying
+  // |url_request_context| also supports them:
+  //
+  //   * http://
+  //   * https://
+  //   * ftp://
+  //   * data:
+  static std::unique_ptr<PacFileFetcherImpl> Create(
+      URLRequestContext* url_request_context);
+
+  // Same as Create(), but additionally allows fetching PAC URLs from file://
+  // URLs (provided the URLRequestContext supports it).
+  //
+  // This should not be used in new code (see https://crbug.com/839566).
+  static std::unique_ptr<PacFileFetcherImpl> CreateWithFileUrlSupport(
+      URLRequestContext* url_request_context);
 
   ~PacFileFetcherImpl() override;
 
@@ -58,6 +74,9 @@ class NET_EXPORT PacFileFetcherImpl : public PacFileFetcher,
   void OnShutdown() override;
 
   // URLRequest::Delegate methods:
+  void OnReceivedRedirect(URLRequest* request,
+                          const RedirectInfo& redirect_info,
+                          bool* defer_redirect) override;
   void OnAuthRequired(URLRequest* request,
                       AuthChallengeInfo* auth_info) override;
   void OnSSLCertificateError(URLRequest* request,
@@ -68,6 +87,13 @@ class NET_EXPORT PacFileFetcherImpl : public PacFileFetcher,
 
  private:
   enum { kBufSize = 4096 };
+
+  PacFileFetcherImpl(URLRequestContext* url_request_context,
+                     bool allow_file_url);
+
+  // Returns true if |url| has an acceptable URL scheme (i.e. http://, https://,
+  // etc).
+  bool IsUrlSchemeAllowed(const GURL& url) const;
 
   // Read more bytes from the response.
   void ReadBody(URLRequest* request);
@@ -128,6 +154,8 @@ class NET_EXPORT PacFileFetcherImpl : public PacFileFetcher,
 
   // The time that the first byte was received.
   base::TimeTicks fetch_time_to_first_byte_;
+
+  const bool allow_file_url_;
 
   // Factory for creating the time-out task. This takes care of revoking
   // outstanding tasks when |this| is deleted.
