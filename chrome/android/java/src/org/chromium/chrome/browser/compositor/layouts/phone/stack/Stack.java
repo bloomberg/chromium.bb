@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackAnimation
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.base.LocalizationUtils;
 
@@ -404,12 +403,10 @@ public class Stack {
      * @param id The id of the new tab to animate.
      */
     public void tabCreated(long time, int id) {
-        if (!FeatureUtilities.isChromeHomeEnabled()) {
-            if (!createTabHelper(id)) return;
-            mIsDying = false;
+        if (!createTabHelper(id)) return;
+        mIsDying = false;
 
-            finishAnimation(time);
-        }
+        finishAnimation(time);
         startAnimation(time, OverviewAnimationType.NEW_TAB_OPENED,
                 TabModelUtils.getTabIndexById(mTabList, id), TabList.INVALID_TAB_INDEX, false);
     }
@@ -2008,7 +2005,7 @@ public class Stack {
                 LayoutTab layoutTab = mLayout.createLayoutTab(tabId, isIncognito,
                         Layout.SHOW_CLOSE_BUTTON, needTitle, maxContentWidth, maxContentHeight);
                 layoutTab.setInsetBorderVertical(true);
-                layoutTab.setShowToolbar(!FeatureUtilities.isChromeHomeEnabled());
+                layoutTab.setShowToolbar(true);
                 layoutTab.setToolbarAlpha(0.f);
                 layoutTab.setAnonymizeToolbar(!mIsStackForCurrentTabList || mTabList.index() != i);
 
@@ -2280,9 +2277,6 @@ public class Stack {
      * @return The maximum height of a layout tab in the tab switcher.
      */
     public float getMaxTabHeight() {
-        if (FeatureUtilities.isChromeHomeEnabled() && mCurrentMode == Orientation.PORTRAIT) {
-            return mLayout.getHeightMinusBrowserControls() - StackLayoutBase.MODERN_TOP_MARGIN_DP;
-        }
         return mLayout.getHeightMinusBrowserControls();
     }
 

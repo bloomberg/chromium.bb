@@ -21,7 +21,6 @@ import static org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTa
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.base.LocalizationUtils;
 
@@ -129,11 +128,8 @@ class StackAnimationLandscape extends StackAnimation {
                         set, tab, SCALE, tab.getScale(), 1.0f, TAB_FOCUSED_ANIMATION_DURATION, 0);
                 addAnimation(set, tab, X_IN_STACK_INFLUENCE, tab.getXInStackInfluence(), 0.0f,
                         TAB_FOCUSED_ANIMATION_DURATION, 0);
-                int tabYInfluenceDuration = FeatureUtilities.isChromeHomeEnabled()
-                        ? TAB_FOCUSED_ANIMATION_DURATION
-                        : TAB_FOCUSED_Y_STACK_DURATION;
                 addAnimation(set, tab, Y_IN_STACK_INFLUENCE, tab.getYInStackInfluence(), 0.0f,
-                        tabYInfluenceDuration, 0);
+                        TAB_FOCUSED_Y_STACK_DURATION, 0);
 
                 addAnimation(set, tab.getLayoutTab(), MAX_CONTENT_HEIGHT,
                         tab.getLayoutTab().getMaxContentHeight(),
