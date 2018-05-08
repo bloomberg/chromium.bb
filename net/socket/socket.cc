@@ -17,8 +17,4 @@ int Socket::ReadIfReady(IOBuffer* buf,
   return ERR_READ_IF_READY_NOT_IMPLEMENTED;
 }
 
-int Socket::CancelReadIfReady() {
-  return ERR_READ_IF_READY_NOT_IMPLEMENTED;
-}
-
 }  // namespace net

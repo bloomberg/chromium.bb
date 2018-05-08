@@ -74,7 +74,6 @@ class NET_EXPORT_PRIVATE SocketPosix
   // reading. This method doesn't hold on to |buf|.
   // See socket.h for more information.
   int ReadIfReady(IOBuffer* buf, int buf_len, CompletionOnceCallback callback);
-  int CancelReadIfReady();
   int Write(IOBuffer* buf,
             int buf_len,
             CompletionOnceCallback callback,

@@ -348,16 +348,6 @@ int SocketPosix::ReadIfReady(IOBuffer* buf,
   return ERR_IO_PENDING;
 }
 
-int SocketPosix::CancelReadIfReady() {
-  DCHECK(read_if_ready_callback_);
-
-  bool ok = read_socket_watcher_.StopWatchingFileDescriptor();
-  DCHECK(ok);
-
-  read_if_ready_callback_.Reset();
-  return net::OK;
-}
-
 int SocketPosix::Write(
     IOBuffer* buf,
     int buf_len,

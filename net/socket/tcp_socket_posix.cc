@@ -396,12 +396,6 @@ int TCPSocketPosix::ReadIfReady(IOBuffer* buf,
   return rv;
 }
 
-int TCPSocketPosix::CancelReadIfReady() {
-  DCHECK(socket_);
-
-  return socket_->CancelReadIfReady();
-}
-
 int TCPSocketPosix::Write(
     IOBuffer* buf,
     int buf_len,

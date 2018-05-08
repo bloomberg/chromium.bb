@@ -24,7 +24,6 @@
 #include "net/socket/socket_test_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/network/mojo_socket_test_util.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/socket_factory.h"
@@ -100,7 +99,6 @@ class MockServerSocket : public net::ServerSocket {
     auto mock_socket = std::make_unique<net::MockTCPClientSocket>(
         net::AddressList(), nullptr /*netlog*/,
         data_providers_[next_data_provider_index_++].get());
-    mock_socket->set_enable_read_if_ready(true);
     EXPECT_EQ(net::OK, mock_socket->Connect(base::DoNothing()));
     return std::move(mock_socket);
   }
@@ -112,6 +110,59 @@ class MockServerSocket : public net::ServerSocket {
   base::RunLoop run_loop_;
   std::vector<std::unique_ptr<net::StaticSocketDataProvider>> data_providers_;
   size_t next_data_provider_index_ = 0;
+};
+
+class TestTCPConnectedSocketObserver
+    : public mojom::TCPConnectedSocketObserver {
+ public:
+  TestTCPConnectedSocketObserver() : binding_(this) {}
+  ~TestTCPConnectedSocketObserver() override {
+    EXPECT_EQ(net::OK, read_error_);
+    EXPECT_EQ(net::OK, write_error_);
+  }
+
+  // Returns a mojo pointer. This can only be called once.
+  mojom::TCPConnectedSocketObserverPtr GetObserverPtr() {
+    DCHECK(!binding_);
+    mojom::TCPConnectedSocketObserverPtr ptr;
+    binding_.Bind(mojo::MakeRequest(&ptr));
+    return ptr;
+  }
+
+  // Waits for Read and Write error. Returns the error observed.
+  int WaitForReadError() {
+    read_loop_.Run();
+    int error = read_error_;
+    read_error_ = net::OK;
+    return error;
+  }
+
+  int WaitForWriteError() {
+    write_loop_.Run();
+    int error = write_error_;
+    write_error_ = net::OK;
+    return error;
+  }
+
+ private:
+  // mojom::TCPConnectedSocketObserver implementation.
+  void OnReadError(int net_error) override {
+    read_error_ = net_error;
+    read_loop_.Quit();
+  }
+
+  void OnWriteError(int net_error) override {
+    write_error_ = net_error;
+    write_loop_.Quit();
+  }
+
+  int read_error_ = net::OK;
+  int write_error_ = net::OK;
+  base::RunLoop read_loop_;
+  base::RunLoop write_loop_;
+  mojo::Binding<mojom::TCPConnectedSocketObserver> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTCPConnectedSocketObserver);
 };
 
 // A server implemented using mojom::TCPServerSocket. It owns the server socket
@@ -292,7 +343,7 @@ class TCPSocketTest : public testing::Test {
 
   int CreateTCPConnectedSocketSync(
       mojom::TCPConnectedSocketRequest request,
-      mojom::SocketObserverPtr observer,
+      mojom::TCPConnectedSocketObserverPtr observer,
       const base::Optional<net::IPEndPoint>& local_addr,
       const net::IPEndPoint& remote_addr,
       mojo::ScopedDataPipeConsumerHandle* receive_pipe_handle_out,
@@ -320,13 +371,13 @@ class TCPSocketTest : public testing::Test {
     return net_error;
   }
 
-  TestSocketObserver* observer() { return &test_observer_; }
+  TestTCPConnectedSocketObserver* observer() { return &test_observer_; }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::TestURLRequestContext url_request_context_;
   std::unique_ptr<SocketFactory> factory_;
-  TestSocketObserver test_observer_;
+  TestTCPConnectedSocketObserver test_observer_;
   mojo::StrongBindingSet<mojom::TCPServerSocket> tcp_server_socket_bindings_;
   mojo::StrongBindingSet<mojom::TCPConnectedSocket>
       tcp_connected_socket_bindings_;
@@ -597,10 +648,7 @@ class TCPSocketWithMockSocketTest
     : public TCPSocketTest,
       public ::testing::WithParamInterface<net::IoMode> {
  public:
-  void SetUp() override {
-    mock_client_socket_factory_.set_enable_read_if_ready(true);
-    Init(&mock_client_socket_factory_);
-  }
+  void SetUp() override { Init(&mock_client_socket_factory_); }
 
   net::MockClientSocketFactory mock_client_socket_factory_;
 };
@@ -681,7 +729,7 @@ TEST_P(TCPSocketWithMockSocketTest,
 }
 
 // Tests that TCPServerSocket::Accept() is used with a non-null
-// SocketObserver and that the observer is invoked when a read error
+// TCPConnectedSocketObserver and that the observer is invoked when a read error
 // occurs.
 TEST_P(TCPSocketWithMockSocketTest, ServerAcceptWithObserverReadError) {
   net::IoMode mode = GetParam();
@@ -733,8 +781,9 @@ TEST_P(TCPSocketWithMockSocketTest, ServerAcceptWithObserverReadError) {
   EXPECT_EQ(net::ERR_TIMED_OUT, observer()->WaitForReadError());
 }
 
-// Tests that TCPServerSocket::Accept() is used with a non-null SocketObserver
-// and that the observer is invoked when a write error occurs.
+// Tests that TCPServerSocket::Accept() is used with a non-null
+// TCPConnectedSocketObserver  and that the observer is invoked when a write
+// error occurs.
 TEST_P(TCPSocketWithMockSocketTest, ServerAcceptWithObserverWriteError) {
   net::IoMode mode = GetParam();
   const net::MockRead kReads[] = {net::MockRead(net::SYNCHRONOUS, net::OK)};
@@ -941,14 +990,10 @@ TEST_P(TCPSocketWithMockSocketTest, WriteError) {
   mojom::TCPConnectedSocketPtr client_socket;
   net::IoMode mode = GetParam();
   const char kTestMsg[] = "hello!";
-  // The first MockRead needs to complete asynchronously because otherwise it
-  // can't be paused to happen after the MockWrite.
-  net::MockRead reads[] = {
-      net::MockRead(net::ASYNC, kTestMsg, strlen(kTestMsg), 1),
-      net::MockRead(mode, net::OK, 2)};
-  net::MockWrite writes[] = {net::MockWrite(mode, net::ERR_FAILED, 0)};
-  net::SequencedSocketData data_provider(reads, writes);
-
+  net::MockRead reads[] = {net::MockRead(mode, kTestMsg, strlen(kTestMsg), 0),
+                           net::MockRead(mode, net::OK)};
+  net::MockWrite writes[] = {net::MockWrite(mode, net::ERR_FAILED)};
+  net::StaticSocketDataProvider data_provider(reads, writes);
   net::IPEndPoint server_addr(net::IPAddress::IPv4Localhost(), 1234);
   data_provider.set_connect_data(
       net::MockConnect(net::SYNCHRONOUS, net::OK, server_addr));
