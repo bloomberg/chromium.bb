@@ -257,6 +257,46 @@ class AppContextMenuTest : public AppListTestBase,
     if (!platform_app) {
       AddToStates(menu, MenuState(app_list::AppContextMenu::LAUNCH_NEW),
                   &states);
+      if (!features::IsTouchableAppContextMenuEnabled()) {
+        AddSeparator(&states);
+
+        if (extensions::util::CanHostedAppsOpenInWindows() &&
+            extensions::util::IsNewBookmarkAppsEnabled()) {
+          bool checked = launch_type == extensions::LAUNCH_TYPE_WINDOW ||
+                         launch_type == extensions::LAUNCH_TYPE_FULLSCREEN;
+          AddToStates(
+              menu,
+              MenuState(app_list::AppContextMenu::USE_LAUNCH_TYPE_WINDOW, true,
+                        checked),
+              &states);
+        } else if (!extensions::util::IsNewBookmarkAppsEnabled()) {
+          bool regular_checked = launch_type == extensions::LAUNCH_TYPE_REGULAR;
+
+          AddToStates(
+              menu,
+              MenuState(app_list::AppContextMenu::USE_LAUNCH_TYPE_REGULAR, true,
+                        regular_checked),
+              &states);
+          AddToStates(
+              menu,
+              MenuState(app_list::AppContextMenu::USE_LAUNCH_TYPE_PINNED, true,
+                        launch_type == extensions::LAUNCH_TYPE_PINNED),
+              &states);
+          if (extensions::util::CanHostedAppsOpenInWindows()) {
+            AddToStates(
+                menu,
+                MenuState(app_list::AppContextMenu::USE_LAUNCH_TYPE_WINDOW,
+                          true, launch_type == extensions::LAUNCH_TYPE_WINDOW),
+                &states);
+          }
+          AddToStates(
+              menu,
+              MenuState(app_list::AppContextMenu::USE_LAUNCH_TYPE_FULLSCREEN,
+                        true,
+                        launch_type == extensions::LAUNCH_TYPE_FULLSCREEN),
+              &states);
+        }
+      }
     }
     if (pinnable != AppListControllerDelegate::NO_PIN) {
       AddSeparator(&states);
@@ -276,44 +316,6 @@ class AppContextMenuTest : public AppListTestBase,
     if (can_show_app_info) {
       AddToStates(menu, MenuState(app_list::AppContextMenu::SHOW_APP_INFO),
                   &states);
-    }
-
-    AddSeparator(&states);
-
-    if (!platform_app) {
-      if (extensions::util::CanHostedAppsOpenInWindows() &&
-          extensions::util::IsNewBookmarkAppsEnabled()) {
-        bool checked = launch_type == extensions::LAUNCH_TYPE_WINDOW ||
-            launch_type == extensions::LAUNCH_TYPE_FULLSCREEN;
-        AddToStates(menu,
-                    MenuState(app_list::AppContextMenu::USE_LAUNCH_TYPE_WINDOW,
-                              true, checked),
-                    &states);
-      } else if (!extensions::util::IsNewBookmarkAppsEnabled()) {
-        bool regular_checked = launch_type == extensions::LAUNCH_TYPE_REGULAR;
-
-        AddToStates(menu,
-                    MenuState(app_list::AppContextMenu::USE_LAUNCH_TYPE_REGULAR,
-                              true, regular_checked),
-                    &states);
-        AddToStates(
-            menu,
-            MenuState(app_list::AppContextMenu::USE_LAUNCH_TYPE_PINNED, true,
-                      launch_type == extensions::LAUNCH_TYPE_PINNED),
-            &states);
-        if (extensions::util::CanHostedAppsOpenInWindows()) {
-          AddToStates(
-              menu,
-              MenuState(app_list::AppContextMenu::USE_LAUNCH_TYPE_WINDOW, true,
-                        launch_type == extensions::LAUNCH_TYPE_WINDOW),
-              &states);
-        }
-        AddToStates(
-            menu,
-            MenuState(app_list::AppContextMenu::USE_LAUNCH_TYPE_FULLSCREEN,
-                      true, launch_type == extensions::LAUNCH_TYPE_FULLSCREEN),
-            &states);
-      }
     }
 
     ValidateMenuState(menu_model.get(), states);
