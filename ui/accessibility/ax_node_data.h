@@ -57,13 +57,14 @@ struct AX_EXPORT AXNodeData {
   // attribute is not present. In addition, strings can be returned as
   // either std::string or base::string16, for convenience.
 
-  bool HasBoolAttribute(ax::mojom::BoolAttribute attr) const;
-  bool GetBoolAttribute(ax::mojom::BoolAttribute attr) const;
-  bool GetBoolAttribute(ax::mojom::BoolAttribute attr, bool* value) const;
+  bool HasBoolAttribute(ax::mojom::BoolAttribute attribute) const;
+  bool GetBoolAttribute(ax::mojom::BoolAttribute attribute) const;
+  bool GetBoolAttribute(ax::mojom::BoolAttribute attribute, bool* value) const;
 
-  bool HasFloatAttribute(ax::mojom::FloatAttribute attr) const;
-  float GetFloatAttribute(ax::mojom::FloatAttribute attr) const;
-  bool GetFloatAttribute(ax::mojom::FloatAttribute attr, float* value) const;
+  bool HasFloatAttribute(ax::mojom::FloatAttribute attribute) const;
+  float GetFloatAttribute(ax::mojom::FloatAttribute attribute) const;
+  bool GetFloatAttribute(ax::mojom::FloatAttribute attribute,
+                         float* value) const;
 
   bool HasIntAttribute(ax::mojom::IntAttribute attribute) const;
   int32_t GetIntAttribute(ax::mojom::IntAttribute attribute) const;
@@ -92,8 +93,8 @@ struct AX_EXPORT AXNodeData {
   bool GetStringListAttribute(ax::mojom::StringListAttribute attribute,
                               std::vector<std::string>* value) const;
 
-  bool GetHtmlAttribute(const char* attr, base::string16* value) const;
-  bool GetHtmlAttribute(const char* attr, std::string* value) const;
+  bool GetHtmlAttribute(const char* attribute, base::string16* value) const;
+  bool GetHtmlAttribute(const char* attribute, std::string* value) const;
 
   // Setting accessibility attributes.
   void AddStringAttribute(ax::mojom::StringAttribute attribute,
@@ -223,7 +224,7 @@ struct AX_EXPORT AXNodeData {
 
   // The id of an ancestor node in the same AXTree that this object's
   // bounding box is relative to, or -1 if there's no offset container.
-  int offset_container_id = -1;
+  int32_t offset_container_id = -1;
 
   // The relative bounding box of this node.
   gfx::RectF location;

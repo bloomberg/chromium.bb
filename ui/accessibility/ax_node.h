@@ -7,14 +7,16 @@
 
 #include <stdint.h>
 
+#include <ostream>
 #include <vector>
 
+#include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_node_data.h"
 
 namespace ui {
 
 // One node in an AXTree.
-class AX_EXPORT AXNode {
+class AX_EXPORT AXNode final {
  public:
   // The constructor requires a parent, id, and index in parent, but
   // the data is not required. After initialization, only index_in_parent
@@ -42,18 +44,18 @@ class AX_EXPORT AXNode {
   // Returns true if the node has any of the text related roles.
   bool IsTextNode() const;
 
-  // Set the node's accessibility data. This may be done during initial
-  // initialization or later when the node data changes.
+  // Set the node's accessibility data. This may be done during initialization
+  // or later when the node data changes.
   void SetData(const AXNodeData& src);
 
-  // Update this node's location. This is separate from SetData just because
+  // Update this node's location. This is separate from |SetData| just because
   // changing only the location is common and should be more efficient than
   // re-copying all of the data.
   //
   // The node's location is stored as a relative bounding box, the ID of
   // the element it's relative to, and an optional transformation matrix.
   // See ax_node_data.h for details.
-  void SetLocation(int offset_container_id,
+  void SetLocation(int32_t offset_container_id,
                    const gfx::RectF& location,
                    gfx::Transform* transform);
 
@@ -78,6 +80,102 @@ class AX_EXPORT AXNode {
   // by computing them and caching the result.
   std::vector<int> GetOrComputeLineStartOffsets();
 
+  // Accessing accessibility attributes.
+  // See |AXNodeData| for more information.
+
+  constexpr bool HasBoolAttribute(ax::mojom::BoolAttribute attribute) const {
+    return data().HasBoolAttribute(attribute);
+  }
+  constexpr bool GetBoolAttribute(ax::mojom::BoolAttribute attribute) const {
+    return data().GetBoolAttribute(attribute);
+  }
+  constexpr bool GetBoolAttribute(ax::mojom::BoolAttribute attribute,
+                                  bool* value) const {
+    return data().GetBoolAttribute(attribute, value);
+  }
+
+  constexpr bool HasFloatAttribute(ax::mojom::FloatAttribute attribute) const {
+    return data().HasFloatAttribute(attribute);
+  }
+  constexpr float GetFloatAttribute(ax::mojom::FloatAttribute attribute) const {
+    return data().GetFloatAttribute(attribute);
+  }
+  constexpr bool GetFloatAttribute(ax::mojom::FloatAttribute attribute,
+                                   float* value) const {
+    return data().GetFloatAttribute(attribute, value);
+  }
+
+  constexpr bool HasIntAttribute(ax::mojom::IntAttribute attribute) const {
+    return data().HasIntAttribute(attribute);
+  }
+  constexpr int32_t GetIntAttribute(ax::mojom::IntAttribute attribute) const {
+    return data().GetIntAttribute(attribute);
+  }
+  constexpr bool GetIntAttribute(ax::mojom::IntAttribute attribute,
+                                 int* value) const {
+    return data().GetIntAttribute(attribute, value);
+  }
+
+  constexpr bool HasStringAttribute(
+      ax::mojom::StringAttribute attribute) const {
+    return data().HasStringAttribute(attribute);
+  }
+  constexpr const std::string& GetStringAttribute(
+      ax::mojom::StringAttribute attribute) const {
+    return data().GetStringAttribute(attribute);
+  }
+  constexpr bool GetStringAttribute(ax::mojom::StringAttribute attribute,
+                                    std::string* value) const {
+    return data().GetStringAttribute(attribute, value);
+  }
+
+  constexpr bool GetString16Attribute(ax::mojom::StringAttribute attribute,
+                                      base::string16* value) const {
+    return data().GetString16Attribute(attribute, value);
+  }
+  // Cannot be constexpr because |base::string16| doesn't have a constexpr
+  // constructor.
+  base::string16 GetString16Attribute(
+      ax::mojom::StringAttribute attribute) const {
+    return data().GetString16Attribute(attribute);
+  }
+
+  constexpr bool HasIntListAttribute(
+      ax::mojom::IntListAttribute attribute) const {
+    return data().HasIntListAttribute(attribute);
+  }
+  constexpr const std::vector<int32_t>& GetIntListAttribute(
+      ax::mojom::IntListAttribute attribute) const {
+    return data().GetIntListAttribute(attribute);
+  }
+  constexpr bool GetIntListAttribute(ax::mojom::IntListAttribute attribute,
+                                     std::vector<int32_t>* value) const {
+    return data().GetIntListAttribute(attribute, value);
+  }
+
+  constexpr bool HasStringListAttribute(
+      ax::mojom::StringListAttribute attribute) const {
+    return data().HasStringListAttribute(attribute);
+  }
+  constexpr const std::vector<std::string>& GetStringListAttribute(
+      ax::mojom::StringListAttribute attribute) const {
+    return data().GetStringListAttribute(attribute);
+  }
+  constexpr bool GetStringListAttribute(
+      ax::mojom::StringListAttribute attribute,
+      std::vector<std::string>* value) const {
+    return data().GetStringListAttribute(attribute, value);
+  }
+
+  constexpr bool GetHtmlAttribute(const char* attribute,
+                                  base::string16* value) const {
+    return data().GetHtmlAttribute(attribute, value);
+  }
+  constexpr bool GetHtmlAttribute(const char* attribute,
+                                  std::string* value) const {
+    return data().GetHtmlAttribute(attribute, value);
+  }
+
   const std::string& GetInheritedStringAttribute(
       ax::mojom::StringAttribute attribute) const;
   base::string16 GetInheritedString16Attribute(
@@ -94,6 +192,8 @@ class AX_EXPORT AXNode {
   std::vector<AXNode*> children_;
   AXNodeData data_;
 };
+
+AX_EXPORT std::ostream& operator<<(std::ostream& stream, const AXNode& node);
 
 }  // namespace ui
 
