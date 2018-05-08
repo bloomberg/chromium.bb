@@ -123,8 +123,8 @@ class LocationBarView : public LocationBar,
   // be called when the receiving instance is attached to a view container.
   bool IsInitialized() const;
 
-  // Helper to get the color for |part| using the current tint().
-  SkColor GetColor(OmniboxPart part) const;
+  // Helper to get the color for |part| using the current profile tint.
+  SkColor GetColor(OmniboxPart part);
 
   // Returns the location bar border color blended with the toolbar color.
   // It's guaranteed to be opaque.
@@ -132,11 +132,7 @@ class LocationBarView : public LocationBar,
 
   // Returns the color to be used for the security chip in the context of
   // |security_level|.
-  SkColor GetSecurityChipColor(
-      security_state::SecurityLevel security_level) const;
-
-  // Returns the theme color tint for the location bar and results.
-  OmniboxTint tint() const { return tint_; }
+  SkColor GetSecurityChipColor(security_state::SecurityLevel security_level);
 
   // Returns the delegate.
   Delegate* delegate() const { return delegate_; }
@@ -229,7 +225,6 @@ class LocationBarView : public LocationBar,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
-  void OnThemeChanged() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // ChromeOmniboxEditController:
@@ -244,6 +239,7 @@ class LocationBarView : public LocationBar,
 
   // BubbleIconView::Delegate:
   content::WebContents* GetWebContentsForBubbleIconView() override;
+  OmniboxTint GetTint() override;
 
   // ZoomEventManagerObserver:
   // Updates the view for the zoom icon when default zoom levels change.
@@ -459,9 +455,6 @@ class LocationBarView : public LocationBar,
   // Whether we're in popup mode. This value also controls whether the location
   // bar is read-only.
   const bool is_popup_mode_;
-
-  // The theme tint. Updated based on the profile and theme settings.
-  OmniboxTint tint_;
 
   // True if we should show a focus rect while the location entry field is
   // focused. Used when the toolbar is in full keyboard accessibility mode.
