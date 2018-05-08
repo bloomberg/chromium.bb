@@ -95,3 +95,7 @@ Current patches:
 
   libavformat/oggparseflac.c
     flac_header(): Free extradata before reallocating. https://crbug.com/789835
+
+  configure
+    Re-added missing quotes to allow inline asm detection that were removed
+    upstream by 8c893aa3cd5 .  https://crbug.com/840959 .
