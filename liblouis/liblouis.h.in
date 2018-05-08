@@ -375,7 +375,7 @@ lou_getTableInfo(const char *table, const char *key);
  */
 LIBLOUIS_API
 const char **EXPORT_CALL
-lou_listTables();
+lou_listTables(void);
 
 /* ====================== END OF BETA API ====================== */
 
