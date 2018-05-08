@@ -2377,8 +2377,6 @@ void RenderThreadImpl::OnPurgeMemory() {
 
   OnTrimMemoryImmediately();
   ReleaseFreeMemory();
-  if (blink_platform_impl_)
-    blink::WebMemoryCoordinator::OnPurgeMemory();
 }
 
 void RenderThreadImpl::RecordPurgeMemory(RendererMemoryMetrics before) {
@@ -2512,6 +2510,7 @@ void RenderThreadImpl::ReleaseFreeMemory() {
     // Purge Skia font cache, resource cache, and image filter.
     SkGraphics::PurgeAllCaches();
     blink::DecommitFreeableMemory();
+    blink::WebMemoryCoordinator::OnPurgeMemory();
   }
 }
 
