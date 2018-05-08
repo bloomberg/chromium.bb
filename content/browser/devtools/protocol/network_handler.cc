@@ -1857,10 +1857,11 @@ bool NetworkHandler::ShouldCancelNavigation(
 bool NetworkHandler::MaybeCreateProxyForInterception(
     const base::UnguessableToken& frame_token,
     int process_id,
+    bool is_download,
     network::mojom::URLLoaderFactoryRequest* target_factory_request) {
   return url_loader_interceptor_ &&
          url_loader_interceptor_->CreateProxyForInterception(
-             frame_token, process_id, target_factory_request);
+             frame_token, process_id, is_download, target_factory_request);
 }
 
 void NetworkHandler::ApplyOverrides(net::HttpRequestHeaders* headers,
