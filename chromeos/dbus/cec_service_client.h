@@ -6,6 +6,7 @@
 #define CHROMEOS_DBUS_CEC_SERVICE_CLIENT_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "chromeos/dbus/dbus_client.h"
@@ -25,6 +26,29 @@ class CHROMEOS_EXPORT CecServiceClient : public DBusClient {
  public:
   ~CecServiceClient() override;
 
+  enum class PowerState {
+    // There was an error when querying the display.
+    kError,
+    // The kernel adapter is not configured (no EDID set).
+    kAdapterNotConfigured,
+    // No response on the CEC bus (the connection was not ACKed).
+    kNoDevice,
+    // The display is on.
+    kOn,
+    // The display is in standby.
+    kStandBy,
+    // The display is transitioning from standby to a powered on state. It's not
+    // guaranteed that any output is visible on the display at this stage.
+    kTransitioningToOn,
+    // The display is transitioning into standby mode.
+    kTransitioningToStandBy,
+    // A power status was read from the display but its value is unknown.
+    kUnknown,
+  };
+
+  using PowerStateCallback =
+      base::OnceCallback<void(const std::vector<PowerState>&)>;
+
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static std::unique_ptr<CecServiceClient> Create(
       DBusClientImplementationType type);
@@ -38,6 +62,11 @@ class CHROMEOS_EXPORT CecServiceClient : public DBusClient {
   // effect of calling this method is on a best effort basis, no guarantees of
   // displays going into stand-by is made.
   virtual void SendWakeUp() = 0;
+
+  // Queries all HDMI CEC capable displays for their current power state. The
+  // effects of calling the methods above should be observable through this
+  // inspection method.
+  virtual void QueryDisplayCecPowerState(PowerStateCallback callback) = 0;
 
  protected:
   CecServiceClient();
