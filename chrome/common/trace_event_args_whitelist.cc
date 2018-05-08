@@ -36,6 +36,7 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {nullptr, nullptr, nullptr}};
 
 const char* kMetadataWhitelist[] = {
+  "chrome-library-name",
   "clock-domain",
   "config",
   "cpu-*",
