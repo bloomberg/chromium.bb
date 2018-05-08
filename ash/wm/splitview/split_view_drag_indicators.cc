@@ -12,12 +12,12 @@
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_highlight_view.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display_observer.h"
 #include "ui/views/controls/label.h"
@@ -30,13 +30,13 @@ namespace ash {
 
 namespace {
 
-// The amount of round applied to the corners of the highlight views.
-constexpr int kHighlightScreenRoundRectRadiusDp = 4;
-
 // When animating, this is the location of the split view label as a ratio of
 // the width or height.
 constexpr double kSplitviewLabelExpandTranslationPrimaryAxisRatio = 0.20;
 constexpr double kSplitviewLabelShrinkTranslationPrimaryAxisRatio = 0.05;
+
+// When a preview is shown, the opposite highlight will shrink to this length.
+constexpr int kOtherHighlightLengthDp = 20;
 
 // Creates the widget responsible for displaying the indicators.
 std::unique_ptr<views::Widget> CreateWidget() {
@@ -185,14 +185,13 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
 // window has entered a snap region to display the bounds of the window, if it
 // were to get snapped.
 class SplitViewDragIndicators::SplitViewDragIndicatorsView
-    : public views::View,
-      public ui::ImplicitAnimationObserver {
+    : public views::View {
  public:
   SplitViewDragIndicatorsView() {
     left_highlight_view_ =
-        new RoundedRectView(kHighlightScreenRoundRectRadiusDp, SK_ColorWHITE);
+        new SplitViewHighlightView(/*is_right_or_bottom=*/false);
     right_highlight_view_ =
-        new RoundedRectView(kHighlightScreenRoundRectRadiusDp, SK_ColorWHITE);
+        new SplitViewHighlightView(/*is_right_or_bottom=*/true);
 
     left_highlight_view_->SetPaintToLayer();
     right_highlight_view_->SetPaintToLayer();
@@ -258,16 +257,16 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
           DoSplitviewOpacityAnimation(view->layer(), animation_type);
         }
 
-        for (RoundedRectView* view : GetHighlightViews()) {
-          view->SetBackgroundColor(
-              indicator_state == IndicatorState::kCannotSnap ? SK_ColorBLACK
-                                                             : SK_ColorWHITE);
+        for (SplitViewHighlightView* view : GetHighlightViews()) {
+          view->SetColor(indicator_state == IndicatorState::kCannotSnap
+                             ? SK_ColorBLACK
+                             : SK_ColorWHITE);
           DoSplitviewOpacityAnimation(
               view->layer(), show ? SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN
                                   : SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT);
         }
 
-        Layout();
+        Layout(previous_indicator_state_ != IndicatorState::kNone);
         return;
       }
       case IndicatorState::kPreviewAreaLeft:
@@ -290,7 +289,7 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
           DoSplitviewOpacityAnimation(right_highlight_view_->layer(),
                                       SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN);
         }
-        Layout();
+        Layout(/*animate=*/true);
         return;
       }
     }
@@ -315,7 +314,13 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
   }
 
   // views::View:
-  void Layout() override {
+  void Layout() override { Layout(/*animate=*/false); }
+
+ private:
+  // Layout the bounds of the highlight views and helper labels. One should
+  // animate when changing states, but not when bounds or orientation is
+  // changed.
+  void Layout(bool animate) {
     const bool landscape = Shell::Get()
                                ->split_view_controller()
                                ->IsCurrentScreenOrientationLandscape();
@@ -337,17 +342,17 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
             ? kHighlightScreenEdgePaddingDp
             : height() - highlight_height - kHighlightScreenEdgePaddingDp);
 
-    // Apply a transform to the left and right highlights if one is to expand to
-    // show a preview area. The expanding window will be transformed by
-    // |main_transform|. The other highlight, which will shrink and fade out,
-    // will be transformed by |other_transform|.
-    gfx::Transform main_transform, other_transform;
+    gfx::Rect left_highlight_bounds, right_highlight_bounds;
+    left_highlight_bounds =
+        gfx::Rect(kHighlightScreenEdgePaddingDp, kHighlightScreenEdgePaddingDp,
+                  highlight_width, highlight_height);
+    right_highlight_bounds =
+        gfx::Rect(right_bottom_origin.x(), right_bottom_origin.y(),
+                  highlight_width, highlight_height);
+
     const bool preview_left =
-        IsPreviewAreaOnLeftTopOfScreen(indicator_state_) ||
-        IsPreviewAreaOnLeftTopOfScreen(previous_indicator_state_);
-    if (IsPreviewAreaState(indicator_state_) ||
-        (indicator_state_ == IndicatorState::kDragArea &&
-         IsPreviewAreaState(previous_indicator_state_))) {
+        (indicator_state_ == IndicatorState::kPreviewAreaLeft);
+    if (IsPreviewAreaState(indicator_state_)) {
       // Get the preview area bounds from the split view controller.
       gfx::Rect preview_area_bounds =
           Shell::Get()->split_view_controller()->GetSnappedWindowBoundsInScreen(
@@ -357,91 +362,41 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
       preview_area_bounds.Inset(kHighlightScreenEdgePaddingDp,
                                 kHighlightScreenEdgePaddingDp);
 
-      // Compute both |main_transform| and |other_transform|. In landscape mode
-      // use x and width values. In portrait mode use y and height values.
+      // Calculate the bounds of the other highlight, which is the one that
+      // shrinks and fades away, while the other one, the preview area, expands
+      // and takes up half the screen.
+      gfx::Rect other_bounds;
       if (landscape) {
-        if (!preview_left) {
-          // |main_transform| corresponds to the right window, which changes x
-          // position as well as scale, so apply a translation.
-          main_transform.Translate(gfx::Vector2dF(
-              -(right_bottom_origin.x() - width() +
-                kHighlightScreenEdgePaddingDp + preview_area_bounds.width()),
-              0.f));
-        }
-        // Apply a scale to scale the width to the width of
-        // |preview_area_bounds|.
-        main_transform.Scale(static_cast<double>(preview_area_bounds.width()) /
-                                 static_cast<double>(highlight_width),
-                             1.0);
-
-        if (preview_left) {
-          // |other_transform| corresponds to the right window, which changes x
-          // position as well as scale, so apply a translation.
-          other_transform.Translate(gfx::Vector2dF(highlight_width, 0.f));
-        }
-        // Scale the other window so that it becomes hidden.
-        other_transform.Scale(1.0 / static_cast<double>(highlight_width), 1.0);
+        other_bounds.set_size(
+            gfx::Size(kOtherHighlightLengthDp,
+                      height() - 2 * kHighlightScreenEdgePaddingDp));
+        other_bounds.set_origin(gfx::Point(
+            width() - kOtherHighlightLengthDp - kHighlightScreenEdgePaddingDp,
+            kHighlightScreenEdgePaddingDp));
       } else {
-        if (!preview_left) {
-          // |main_transform| corresponds to the bottom window, which changes y
-          // position as well as scale, so apply a translation.
-          main_transform.Translate(gfx::Vector2dF(
-              0.f,
-              -(right_bottom_origin.y() - height() +
-                kHighlightScreenEdgePaddingDp + preview_area_bounds.height())));
-        }
-        // Apply a scale to scale the height to the height of
-        // |preview_area_bounds|.
-        main_transform.Scale(1.0,
-                             static_cast<double>(preview_area_bounds.height()) /
-                                 static_cast<double>(highlight_height));
-
-        if (preview_left) {
-          // |other_transform| corresponds to the bottom window, which changes y
-          // position as well as scale, so apply a translation.
-          other_transform.Translate(gfx::Vector2dF(0.f, highlight_height));
-        }
-        // Scale the other window so that it becomes hidden.
-        other_transform.Scale(1.0, 1.0 / static_cast<double>(highlight_height));
+        other_bounds.set_size(
+            gfx::Size(width() - 2 * kHighlightScreenEdgePaddingDp,
+                      kOtherHighlightLengthDp));
+        other_bounds.set_origin(gfx::Point(kHighlightScreenEdgePaddingDp,
+                                           height() - kOtherHighlightLengthDp -
+                                               kHighlightScreenEdgePaddingDp));
       }
 
-      if (IsPreviewAreaState(previous_indicator_state_)) {
-        // If the previous state was a preview state, first apply a transform,
-        // otherwise no animation will happen if we try to transform from
-        // identity to identity. (OnImplicitAnimationsCompleted sets the bounds
-        // and all transforms to identity to preserve rounded edges).
-        left_highlight_view_->layer()->SetTransform(
-            preview_left ? main_transform : other_transform);
-        right_highlight_view_->layer()->SetTransform(
-            preview_left ? other_transform : main_transform);
-        main_transform.MakeIdentity();
-        other_transform.MakeIdentity();
+      if (IsPreviewAreaOnLeftTopOfScreen(indicator_state_)) {
+        left_highlight_bounds = preview_area_bounds;
+        right_highlight_bounds = other_bounds;
+      } else {
+        other_bounds.set_origin(gfx::Point(kHighlightScreenEdgePaddingDp,
+                                           kHighlightScreenEdgePaddingDp));
+        left_highlight_bounds = other_bounds;
+        right_highlight_bounds = preview_area_bounds;
       }
     }
 
-    left_highlight_bounds_ =
-        gfx::Rect(kHighlightScreenEdgePaddingDp, kHighlightScreenEdgePaddingDp,
-                  highlight_width, highlight_height);
-    right_highlight_bounds_ =
-        gfx::Rect(right_bottom_origin.x(), right_bottom_origin.y(),
-                  highlight_width, highlight_height);
-    if (base::i18n::IsRTL() && landscape) {
-      gfx::Rect temp = left_highlight_bounds_;
-      left_highlight_bounds_ = right_highlight_bounds_;
-      right_highlight_bounds_ = temp;
-    }
-
-    DoSplitviewTransformAnimation(
-        left_highlight_view_->layer(),
-        SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT,
-        preview_left ? main_transform : other_transform, this);
-    left_highlight_view_->SetBoundsRect(left_highlight_bounds_);
-
-    DoSplitviewTransformAnimation(
-        right_highlight_view_->layer(),
-        SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT,
-        preview_left ? other_transform : main_transform, nullptr);
-    right_highlight_view_->SetBoundsRect(right_highlight_bounds_);
+    left_highlight_view_->SetBounds(GetMirroredRect(left_highlight_bounds),
+                                    landscape, animate);
+    right_highlight_view_->SetBounds(GetMirroredRect(right_highlight_bounds),
+                                     landscape, animate);
 
     // Calculate the bounds of the views which contain the guidance text and
     // icon. Rotate the two views in landscape mode.
@@ -493,56 +448,17 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
         nullptr);
   }
 
-  // ui::ImplicitAnimationObserver:
-  void OnImplicitAnimationsCompleted() override {
-    // Set the final bounds and the layer transforms to identity, so that the
-    // proper rounding on the rounded rect corners show up.
-    const bool flip =
-        base::i18n::IsRTL() && Shell::Get()
-                                   ->split_view_controller()
-                                   ->IsCurrentScreenOrientationLandscape();
-    const bool left =
-        (indicator_state_ == IndicatorState::kPreviewAreaLeft && !flip) ||
-        (indicator_state_ == IndicatorState::kPreviewAreaRight && flip);
-    gfx::Rect preview_area_bounds =
-        Shell::Get()->split_view_controller()->GetSnappedWindowBoundsInScreen(
-            GetWidget()->GetNativeWindow(),
-            left ? SplitViewController::LEFT : SplitViewController::RIGHT);
-    preview_area_bounds.Inset(kHighlightScreenEdgePaddingDp,
-                              kHighlightScreenEdgePaddingDp);
-
-    constexpr gfx::Rect kEmptyRect;
-    left_highlight_view_->layer()->SetTransform(gfx::Transform());
-    right_highlight_view_->layer()->SetTransform(gfx::Transform());
-    if (IsPreviewAreaOnLeftTopOfScreen(indicator_state_)) {
-      left_highlight_view_->SetBoundsRect(preview_area_bounds);
-      right_highlight_view_->SetBoundsRect(kEmptyRect);
-    } else if (IsPreviewAreaState(indicator_state_)) {
-      left_highlight_view_->SetBoundsRect(kEmptyRect);
-      right_highlight_view_->SetBoundsRect(preview_area_bounds);
-    } else {
-      left_highlight_view_->SetBoundsRect(left_highlight_bounds_);
-      right_highlight_view_->SetBoundsRect(right_highlight_bounds_);
-    }
-  }
-
- private:
-  std::vector<RoundedRectView*> GetHighlightViews() {
+  std::vector<SplitViewHighlightView*> GetHighlightViews() {
     return {left_highlight_view_, right_highlight_view_};
   }
   std::vector<RotatedImageLabelView*> GetTextViews() {
     return {left_rotated_view_, right_rotated_view_};
   }
 
-  RoundedRectView* left_highlight_view_ = nullptr;
-  RoundedRectView* right_highlight_view_ = nullptr;
+  SplitViewHighlightView* left_highlight_view_ = nullptr;
+  SplitViewHighlightView* right_highlight_view_ = nullptr;
   RotatedImageLabelView* left_rotated_view_ = nullptr;
   RotatedImageLabelView* right_rotated_view_ = nullptr;
-
-  // Cache the bounds calculated in Layout(), so that they do not have to be
-  // recalculated when animation is finished.
-  gfx::Rect left_highlight_bounds_;
-  gfx::Rect right_highlight_bounds_;
 
   IndicatorState indicator_state_ = IndicatorState::kNone;
   IndicatorState previous_indicator_state_ = IndicatorState::kNone;
