@@ -614,7 +614,8 @@ void SafeBrowsingService::ProcessResourceRequest(
 
 void SafeBrowsingService::CreateTriggerManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  trigger_manager_ = std::make_unique<TriggerManager>(ui_manager_.get());
+  trigger_manager_ = std::make_unique<TriggerManager>(
+      ui_manager_.get(), navigation_observer_manager_.get());
 }
 
 void SafeBrowsingService::CreateURLLoaderFactoryForIO(

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/safe_browsing/browser/referrer_chain_provider.h"
 #include "components/safe_browsing/triggers/trigger_throttler.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
@@ -84,7 +85,8 @@ enum class TriggerManagerReason {
 // tracking how often triggers fire and throttling them when necessary.
 class TriggerManager {
  public:
-  TriggerManager(BaseUIManager* ui_manager);
+  TriggerManager(BaseUIManager* ui_manager,
+                 ReferrerChainProvider* referrer_chain_provider);
   virtual ~TriggerManager();
 
   // Returns a SBErrorDisplayOptions struct containing user state that is
@@ -172,6 +174,10 @@ class TriggerManager {
   // The UI manager is used to send reports to Google. Not owned.
   // TODO(lpz): we may only need a the PingManager here.
   BaseUIManager* ui_manager_;
+
+  // The Referrer Chain Provider is used to retrieve the referrer chain for
+  // reports that require it. Not owned.
+  ReferrerChainProvider* referrer_chain_provider_;
 
   // Map of the data collectors running on each tabs. New keys are added the
   // first time any trigger tries to collect data on a tab and are removed when

@@ -38,6 +38,7 @@ class SharedURLLoaderFactory;
 namespace safe_browsing {
 
 class BaseUIManager;
+class ReferrerChainProvider;
 
 // Maps a URL to its Resource.
 class ThreatDetailsCacheCollector;
@@ -78,6 +79,7 @@ class ThreatDetails : public base::RefCounted<ThreatDetails>,
       const UnsafeResource& resource,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       history::HistoryService* history_service,
+      ReferrerChainProvider* referrer_chain_provider,
       bool trim_to_ad_tags,
       ThreatDetailsDoneCallback done_callback);
 
@@ -109,6 +111,7 @@ class ThreatDetails : public base::RefCounted<ThreatDetails>,
       const UnsafeResource& resource,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       history::HistoryService* history_service,
+      ReferrerChainProvider* referrer_chain_provider,
       bool trim_to_ad_tags,
       ThreatDetailsDoneCallback done_callback);
 
@@ -176,12 +179,19 @@ class ThreatDetails : public base::RefCounted<ThreatDetails>,
                      const std::vector<mojom::AttributeNameValuePtr> attributes,
                      const ClientSafeBrowsingReportRequest::Resource* resource);
 
+  // Populates the referrer chain data in |report_|. This may be skipped if the
+  // referrer chain provider isn't available, or the type of report doesn't
+  // include the referrer chain.
+  void MaybeFillReferrerChain();
+
   // Called when the report is complete. Runs |done_callback_|.
   void AllDone();
 
   scoped_refptr<BaseUIManager> ui_manager_;
 
   const UnsafeResource resource_;
+
+  ReferrerChainProvider* referrer_chain_provider_;
 
   // For every Url we collect we create a Resource message. We keep
   // them in a map so we can avoid duplicates.
@@ -275,6 +285,7 @@ class ThreatDetailsFactory {
       const security_interstitials::UnsafeResource& unsafe_resource,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       history::HistoryService* history_service,
+      ReferrerChainProvider* referrer_chain_provider,
       bool trim_to_ad_tags,
       ThreatDetailsDoneCallback done_callback) = 0;
 };

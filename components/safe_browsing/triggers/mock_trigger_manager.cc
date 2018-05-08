@@ -6,7 +6,7 @@
 
 namespace safe_browsing {
 
-MockTriggerManager::MockTriggerManager() : TriggerManager(nullptr) {}
+MockTriggerManager::MockTriggerManager() : TriggerManager(nullptr, nullptr) {}
 
 MockTriggerManager::~MockTriggerManager() {}
 
