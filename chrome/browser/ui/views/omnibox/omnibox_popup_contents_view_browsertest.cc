@@ -43,6 +43,10 @@
 #include "ui/views/linux_ui/linux_ui.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/ash_config.h"
+#endif
+
 namespace {
 
 enum PopupType { WIDE, NARROW, ROUNDED };
@@ -319,6 +323,20 @@ IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest, MAYBE_ThemeIntegration) {
         base::FilePath().AppendASCII("theme"));
     loader.LoadExtension(path);
   }
+
+#if defined(OS_CHROMEOS)
+  if (chromeos::GetAshConfig() == ash::Config::MASH) {
+    // http://crbug.com/704942: Incognito frames do not update correctly in
+    // Mash, so the old values remain. Check here so this is revisited when
+    // fixed, and bail out of the rest of the test.
+    if (GetParam() == ROUNDED)
+      EXPECT_EQ(rounded_selection_color_dark, get_selection_color());
+    else
+      EXPECT_EQ(legacy_dark_color, get_selection_color());
+
+    return;
+  }
+#endif
 
   // Check the incognito browser first. Everything should now be light and never
   // GTK.

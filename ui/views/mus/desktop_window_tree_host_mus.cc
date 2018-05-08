@@ -698,9 +698,7 @@ bool DesktopWindowTreeHostMus::ShouldWindowContentsBeTransparent() const {
   return false;
 }
 
-void DesktopWindowTreeHostMus::FrameTypeChanged() {
-  native_widget_delegate_->AsWidget()->ThemeChanged();
-}
+void DesktopWindowTreeHostMus::FrameTypeChanged() {}
 
 void DesktopWindowTreeHostMus::SetFullscreen(bool fullscreen) {
   if (IsFullscreen() == fullscreen)

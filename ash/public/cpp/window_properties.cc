@@ -8,7 +8,6 @@
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/image/image_skia.h"
 
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
                                        ash::mojom::WindowPinType)
@@ -23,9 +22,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(BackdropWindowMode,
                              kBackdropWindowMode,
                              BackdropWindowMode::kAuto);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanConsumeSystemKeysKey, false);
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia,
-                                   kFrameImageActiveKey,
-                                   nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideShelfWhenFullscreenKey, true);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kPanelAttachedKey, true);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect,
@@ -50,6 +46,5 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowPositionManagedTypeKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowStateType,
                              kWindowStateTypeKey,
                              mojom::WindowStateType::DEFAULT);
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowTitleShownKey, true);
 
 }  // namespace ash

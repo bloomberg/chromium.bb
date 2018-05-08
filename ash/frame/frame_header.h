@@ -6,20 +6,13 @@
 #define ASH_FRAME_FRAME_HEADER_H_
 
 #include "ash/ash_export.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 
 namespace gfx {
 class Canvas;
 }
 
-namespace views {
-class View;
-}
-
 namespace ash {
-
-class FrameCaptionButton;
 
 // Helper class for managing the window header.
 class ASH_EXPORT FrameHeader {
@@ -55,15 +48,6 @@ class ASH_EXPORT FrameHeader {
 
   // Called when frame show state is changed.
   virtual void OnShowStateChanged(ui::WindowShowState show_state) = 0;
-
-  virtual void SetLeftHeaderView(views::View* view) = 0;
-  virtual void SetBackButton(FrameCaptionButton* view) = 0;
-  virtual FrameCaptionButton* GetBackButton() const = 0;
-
-  // Sets the active and inactive frame colors. Note the inactive frame color
-  // will have some transparency added when the frame is drawn.
-  virtual void SetFrameColors(SkColor active_frame_color,
-                              SkColor inactive_frame_color) = 0;
 };
 
 }  // namespace ash

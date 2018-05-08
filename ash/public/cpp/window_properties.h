@@ -18,7 +18,6 @@ using WindowProperty = ui::ClassProperty<T>;
 }
 
 namespace gfx {
-class ImageSkia;
 class Rect;
 }
 
@@ -47,10 +46,6 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<BackdropWindowMode>* const
 // If true, will send system keys to the window for dispatch.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kCanConsumeSystemKeysKey;
-
-// The frame's active image. Only set on themed windows.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<gfx::ImageSkia*>* const
-    kFrameImageActiveKey;
 
 // Whether the shelf should be hidden when this window is put into fullscreen.
 // Exposed because some windows want to explicitly opt-out of this.
@@ -111,11 +106,6 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 // A property key to indicate ash's extended window state.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
     mojom::WindowStateType>* const kWindowStateTypeKey;
-
-// Determines whether the window title should be drawn. For example, app and
-// non-tabbed, trusted source windows (such as Settings) will not show a title.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
-    kWindowTitleShownKey;
 
 // Alphabetical sort.
 
