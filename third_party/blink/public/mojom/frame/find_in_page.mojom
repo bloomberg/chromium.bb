@@ -1,0 +1,12 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module blink.mojom;
+
+interface FindInPage {
+  // Notify the frame that it is no longer the active frame in the
+  // current find session, and so it should clear its active find match
+  // (and no longer highlight it with special coloring).
+  ClearActiveFindMatch();
+};

@@ -9,6 +9,7 @@
 #include "base/containers/queue.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/associated_interface_provider_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/guest_mode.h"
 
@@ -337,8 +338,7 @@ void FindRequestManager::OnFindReply(RenderFrameHost* rfh,
         // The new active match is in a different frame than the previous, so
         // the previous active frame needs to be informed (to clear its active
         // match highlighting).
-        active_frame_->Send(new FrameMsg_ClearActiveFindMatch(
-            active_frame_->GetRoutingID()));
+        ClearActiveFindMatch();
       }
       active_frame_ = rfh;
       relative_active_match_ordinal_ = active_match_ordinal;
@@ -433,6 +433,13 @@ void FindRequestManager::RemoveFrame(RenderFrameHost* rfh) {
     pending_find_next_reply_ = nullptr;
     FinalUpdateReceived(current_request_.id, rfh);
   }
+}
+
+void FindRequestManager::ClearActiveFindMatch() {
+  blink::mojom::FindInPageAssociatedPtr active_frame_ptr;
+  active_frame_->GetRemoteAssociatedInterfaces()->GetInterface(
+      &active_frame_ptr);
+  active_frame_ptr->ClearActiveFindMatch();
 }
 
 #if defined(OS_ANDROID)

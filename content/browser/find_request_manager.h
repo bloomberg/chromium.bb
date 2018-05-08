@@ -14,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/stop_find_action.h"
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/web/web_find_options.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -57,6 +58,9 @@ class CONTENT_EXPORT FindRequestManager {
   // Removes a frame from the set of frames being searched. This should be
   // called whenever a frame is discovered to no longer exist.
   void RemoveFrame(RenderFrameHost* rfh);
+
+  // Tells active frame to clear the active match highlighting.
+  void ClearActiveFindMatch();
 
 #if defined(OS_ANDROID)
   // Selects and zooms to the find result nearest to the point (x, y), defined

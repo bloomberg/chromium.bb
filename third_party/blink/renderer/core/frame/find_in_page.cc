@@ -229,11 +229,9 @@ void FindInPage::SetTickmarks(const WebVector<WebRect>& tickmarks) {
   }
 }
 
-void WebLocalFrameImpl::ClearActiveFindMatch() {
-  find_in_page_->ClearActiveFindMatch();
-}
-
 void FindInPage::ClearActiveFindMatch() {
+  // TODO(rakina): Do collapse selection as this currently does nothing.
+  frame_->ExecuteCommand(WebString::FromUTF8("CollapseSelection"));
   EnsureTextFinder().ClearActiveFindMatch();
 }
 
@@ -254,6 +252,15 @@ TextFinder& FindInPage::EnsureTextFinder() {
     text_finder_ = TextFinder::Create(*frame_);
 
   return *text_finder_;
+}
+
+void FindInPage::BindToRequest(
+    mojom::blink::FindInPageAssociatedRequest request) {
+  binding_.Bind(std::move(request));
+}
+
+void FindInPage::Dispose() {
+  binding_.Close();
 }
 
 }  // namespace blink

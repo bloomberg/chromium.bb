@@ -1751,7 +1751,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnGetSerializedHtmlWithLocalLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_SerializeAsMHTML, OnSerializeAsMHTML)
     IPC_MESSAGE_HANDLER(FrameMsg_Find, OnFind)
-    IPC_MESSAGE_HANDLER(FrameMsg_ClearActiveFindMatch, OnClearActiveFindMatch)
     IPC_MESSAGE_HANDLER(FrameMsg_StopFinding, OnStopFinding)
     IPC_MESSAGE_HANDLER(FrameMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(FrameMsg_SuppressFurtherDialogs,
@@ -6165,11 +6164,6 @@ void RenderFrameImpl::OnFind(int request_id,
   }
 
   frame_->RequestFind(request_id, WebString::FromUTF16(search_text), options);
-}
-
-void RenderFrameImpl::OnClearActiveFindMatch() {
-  frame_->ExecuteCommand(WebString::FromUTF8("CollapseSelection"));
-  frame_->ClearActiveFindMatch();
 }
 
 #define STATIC_ASSERT_ENUM(a, b)                            \
