@@ -86,13 +86,17 @@ class TabUnderNavigationThrottle : public content::NavigationThrottle {
 
   // This method is described at the top of this file.
   //
-  // Note: This method should be robust to navigations at any stage.
+  // Note: This method must be called before navigation commit.
   bool IsSuspiciousClientRedirect() const;
 
   content::NavigationThrottle::ThrottleCheckResult MaybeBlockNavigation();
   void ShowUI();
 
   bool HasOpenedPopupSinceLastUserGesture() const;
+
+  // Returns true if tab-unders are allowed due to content settings. Currently,
+  // tab-unders blocking is governed by the same setting as popups.
+  bool TabUndersAllowedBySettings() const;
 
   // content::NavigationThrottle:
   content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
