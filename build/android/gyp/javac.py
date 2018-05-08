@@ -14,6 +14,7 @@ import zipfile
 
 from util import build_utils
 from util import md5_check
+from util import jar_info_utils
 
 import jar
 
@@ -232,44 +233,6 @@ def _CheckPathMatchesClassName(java_file, package_name, class_name):
                     (java_file, expected_path_suffix))
 
 
-def _ParseInfoFile(info_path):
-  info_data = dict()
-  if os.path.exists(info_path):
-    with open(info_path, 'r') as info_file:
-      for line in info_file:
-        line = line.strip()
-        if line:
-          fully_qualified_name, path = line.split(',', 1)
-          info_data[fully_qualified_name] = path
-  return info_data
-
-
-def _WriteInfoFile(info_path, info_data, srcjar_files):
-  with open(info_path, 'w') as info_file:
-    for fully_qualified_name, path in info_data.iteritems():
-      if path in srcjar_files:
-        path = srcjar_files[path]
-      assert not path.startswith('/tmp'), (
-          'Java file path should not be in temp dir: {}'.format(path))
-      info_file.write('{},{}\n'.format(fully_qualified_name, path))
-
-
-def _FullJavaNameFromClassFilePath(path):
-  # Input:  base/android/java/src/org/chromium/Foo.class
-  # Output: base.android.java.src.org.chromium.Foo
-  if not path.endswith('.class'):
-    return ''
-  path = os.path.splitext(path)[0]
-  parts = []
-  while path:
-    # Use split to be platform independent.
-    head, tail = os.path.split(path)
-    path = head
-    parts.append(tail)
-  parts.reverse()  # Package comes first
-  return '.'.join(parts)
-
-
 def _CreateInfoFile(java_files, options, srcjar_files):
   """Writes a .jar.info file.
 
@@ -293,27 +256,8 @@ def _CreateInfoFile(java_files, options, srcjar_files):
         'Chromium java files must only have one class: {}'.format(source))
     if options.chromium_code:
       _CheckPathMatchesClassName(java_file, package_name, class_names[0])
-  _WriteInfoFile(options.jar_path + '.info', info_data, srcjar_files)
-
-  # Collect all the info files for transitive dependencies of the apk.
-  if options.apk_jar_info_path:
-    for jar_path in options.full_classpath:
-      # android_java_prebuilt adds jar files in the src directory (relative to
-      #     the output directory, usually ../../third_party/example.jar).
-      # android_aar_prebuilt collects jar files in the aar file and uses the
-      #     java_prebuilt rule to generate gen/example/classes.jar files.
-      # We scan these prebuilt jars to parse each class path for the FQN. This
-      #     allows us to later map these classes back to their respective src
-      #     directories.
-      if jar_path.startswith('..') or jar_path.endswith('classes.jar'):
-        with zipfile.ZipFile(jar_path) as zip_info:
-          for path in zip_info.namelist():
-            fully_qualified_name = _FullJavaNameFromClassFilePath(path)
-            if fully_qualified_name:
-              info_data[fully_qualified_name] = jar_path
-      else:
-        info_data.update(_ParseInfoFile(jar_path + '.info'))
-    _WriteInfoFile(options.apk_jar_info_path, info_data, srcjar_files)
+  jar_info_utils.WriteJarInfoFile(options.jar_path + '.info', info_data,
+                                  srcjar_files)
 
 
 def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
@@ -519,9 +463,6 @@ def _ParseOptions(argv):
       action='append',
       default=[],
       help='Additional arguments to pass to javac.')
-  parser.add_option(
-      '--apk-jar-info-path',
-      help='Coalesced jar.info files for the apk')
 
   options, args = parser.parse_args(argv)
   build_utils.CheckOptions(options, parser, required=('jar_path',))
@@ -639,8 +580,6 @@ def main(argv):
   ]
   if options.incremental:
     output_paths.append(options.jar_path + '.pdb')
-  if options.apk_jar_info_path:
-    output_paths.append(options.apk_jar_info_path)
 
   # An escape hatch to be able to check if incremental compiles are causing
   # problems.

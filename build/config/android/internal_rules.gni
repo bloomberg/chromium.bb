@@ -1976,6 +1976,43 @@ if (enable_java_templates) {
     }
   }
 
+  # Create an apk.jar.info file by merging several .jar.info files into one.
+  #
+  # Variables:
+  #   apk_build_config: Path to APK's build config file. Used to extract the
+  #       list of input .jar files from its dependencies.
+  #   output: Output file path.
+  #
+  template("create_apk_jar_info") {
+    _output = invoker.output
+    _build_config = invoker.apk_build_config
+    _rebased_build_config = rebase_path(_build_config, root_build_dir)
+    action(target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "testonly",
+                               "deps",
+                             ])
+      script = "//build/android/gyp/merge_jar_info_files.py"
+      inputs = [
+        _build_config,
+      ]
+      outputs = [
+        _output,
+      ]
+      depfile = "$target_gen_dir/$target_name.d"
+      args = [
+        "--depfile",
+        rebase_path(depfile, root_build_dir),
+        "--output",
+        rebase_path(_output, root_build_dir),
+        "--apk-jar-file=@FileArg($_rebased_build_config:deps_info:jar_path)",
+        "--dep-jar-files=@FileArg(" +
+            "$_rebased_build_config:deps_info:javac_full_classpath)",
+      ]
+    }
+  }
+
   # Creates an unsigned .apk.
   #
   # Variables
@@ -2524,15 +2561,6 @@ if (enable_java_templates) {
           "bin/errorprone",
           "--processorpath=$_rebased_errorprone_processorpath",
         ]
-      }
-      if (defined(invoker.apk_name)) {
-        # The supersize tool will search in this directory for each apk.
-        _apk_jar_info_path = "size-info/${invoker.apk_name}.apk.jar.info"
-        args += [
-          "--apk-jar-info-path",
-          _apk_jar_info_path,
-        ]
-        outputs += [ "$root_build_dir/$_apk_jar_info_path" ]
       }
       foreach(e, _provider_configurations) {
         args += [ "--provider-configuration=" + rebase_path(e, root_build_dir) ]
