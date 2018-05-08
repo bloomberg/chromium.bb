@@ -27666,6 +27666,7 @@ from previous Chrome versions.
   <int value="963671232" label="DrawOcclusion:disabled"/>
   <int value="972228058" label="SyncUSSSessions:disabled"/>
   <int value="975104092" label="show-taps"/>
+  <int value="976079108" label="TouchpadOverscrollHistoryNavigation:disabled"/>
   <int value="979445973" label="OmniboxSpareRenderer:enabled"/>
   <int value="980396200" label="enable-new-korean-ime"/>
   <int value="981818901" label="AppBanners:enabled"/>
@@ -27825,6 +27826,7 @@ from previous Chrome versions.
   <int value="1292763218" label="SystemTrayUnified:disabled"/>
   <int value="1294131571" label="disable-winrt-midi-api"/>
   <int value="1296958520" label="hide-active-apps-from-shelf"/>
+  <int value="1298927156" label="TouchpadOverscrollHistoryNavigation:enabled"/>
   <int value="1298981651" label="disable-new-task-manager"/>
   <int value="1300282719" label="OfflinePagesBackgroundLoading:enabled"/>
   <int value="1302421166" label="NativeNotifications:disabled"/>

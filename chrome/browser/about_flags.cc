@@ -3922,6 +3922,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kDisplayCutoutAPI)},
 #endif  // OS_ANDROID
 
+#if defined(USE_AURA)
+    {"touchpad-overscroll-history-navigation",
+     flag_descriptions::kTouchpadOverscrollHistoryNavigationName,
+     flag_descriptions::kTouchpadOverscrollHistoryNavigationDescription,
+     kOsWin | kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kTouchpadOverscrollHistoryNavigation)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
