@@ -215,6 +215,12 @@ class PersonalDataManager : public KeyedService,
       base::Time min_last_used,
       std::vector<AutofillProfile*>* profiles);
 
+  // Remove profiles that whose |type| field is flagged as invalid, if Chrome
+  // is configured to not make suggestions based on invalid data.
+  static void MaybeRemoveInvalidSuggestions(
+      const AutofillType& type,
+      std::vector<AutofillProfile*>* profiles);
+
   // Loads profiles that can suggest data for |type|. |field_contents| is the
   // part the user has already typed. |field_is_autofilled| is true if the field
   // has already been autofilled. |other_field_types| represents the rest of
