@@ -28,6 +28,7 @@ class PrefRegistrySyncable;
 }
 
 namespace autofill {
+struct FormData;
 class FormStructure;
 }
 
@@ -227,6 +228,10 @@ class PasswordManager : public LoginModel {
   // manager for that form. If not, adds a manager for each such form.
   void CreateFormManagers(password_manager::PasswordManagerDriver* driver,
                           const std::vector<autofill::PasswordForm>& forms);
+
+  // Passes |submitted_form| to NewPasswordManager that manages it for using it
+  // after detecting submission success for saving.
+  void ProcessSubmittedForm(const autofill::FormData& submitted_form);
 
   // Returns the best match in |pending_login_managers_| for |form|. May return
   // nullptr if no match exists.
