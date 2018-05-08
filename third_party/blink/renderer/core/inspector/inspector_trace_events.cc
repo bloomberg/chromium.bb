@@ -106,8 +106,6 @@ void InspectorTraceEvents::WillSendRequest(
       "devtools.timeline", "ResourceSendRequest", TRACE_EVENT_SCOPE_THREAD,
       "data",
       InspectorSendRequestEvent::Data(loader, identifier, frame, request));
-  probe::AsyncTaskScheduled(frame ? frame->GetDocument() : nullptr,
-                            "SendRequest", AsyncId(identifier));
 }
 
 void InspectorTraceEvents::DidReceiveResourceResponse(
@@ -120,8 +118,6 @@ void InspectorTraceEvents::DidReceiveResourceResponse(
       "devtools.timeline", "ResourceReceiveResponse", TRACE_EVENT_SCOPE_THREAD,
       "data",
       InspectorReceiveResponseEvent::Data(loader, identifier, frame, response));
-  probe::AsyncTask async_task(frame ? frame->GetDocument() : nullptr,
-                              AsyncId(identifier), "response");
 }
 
 void InspectorTraceEvents::DidReceiveData(unsigned long identifier,
