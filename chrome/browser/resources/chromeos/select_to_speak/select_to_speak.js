@@ -7,14 +7,49 @@ var EventType = chrome.automation.EventType;
 var RoleType = chrome.automation.RoleType;
 var SelectToSpeakState = chrome.accessibilityPrivate.SelectToSpeakState;
 
-// CrosSelectToSpeakStartSpeechMethod enums.
-// These values are persited to logs and should not be renumbered or re-used.
-// See tools/metrics/histograms/enums.xml.
-const START_SPEECH_METHOD_MOUSE = 0;
-const START_SPEECH_METHOD_KEYSTROKE = 1;
-// The number of enum values in CrosSelectToSpeapStartSpeechMethod. This should
-// be kept in sync with the enum count in tools/metrics/histograms/enums.xml.
-const START_SPEECH_METHOD_COUNT = 2;
+/**
+ * CrosSelectToSpeakStartSpeechMethod enums.
+ * These values are persisted to logs and should not be renumbered or re-used.
+ * See tools/metrics/histograms/enums.xml.
+ * @enum {number}
+ */
+const StartSpeechMethod = {
+  MOUSE: 0,
+  KEYSTROKE: 1,
+};
+
+/**
+ * The number of enum values in CrosSelectToSpeakStartSpeechMethod. This should
+ * be kept in sync with the enum count in tools/metrics/histograms/enums.xml.
+ * @type {number}
+ */
+const START_SPEECH_METHOD_COUNT = Object.keys(StartSpeechMethod).length;
+
+/**
+ * CrosSelectToSpeakStateChangeEvent enums.
+ * These values are persisted to logs and should not be renumbered or re-used.
+ * See tools/metrics/histograms/enums.xml.
+ * @enum {number}
+ */
+const StateChangeEvent = {
+  START_SELECTION: 0,
+  CANCEL_SPEECH: 1,
+  CANCEL_SELECTION: 2,
+};
+
+/**
+ * The number of enum values in CrosSelectToSpeakStateChangeEvent. This should
+ * be kept in sync with the enum count in tools/metrics/histograms/enums.xml.
+ * @type {number}
+ */
+const STATE_CHANGE_EVENT_COUNT = Object.keys(StateChangeEvent).length;
+
+/**
+ * The name of the state change request metric.
+ * @type {string}
+ */
+const STATE_CHANGE_EVENT_METRIC_NAME =
+    'Accessibility.CrosSelectToSpeak.SelectToSpeakStateChangeRequested';
 
 // This must be the same as in ash/system/accessibility/select_to_speak_tray.cc:
 // ash::kSelectToSpeakTrayClassName.
@@ -329,7 +364,7 @@ SelectToSpeak.prototype = {
         return;
       }
       this.startSpeechQueue_(nodes);
-      this.recordStartEvent_(START_SPEECH_METHOD_MOUSE);
+      this.recordStartEvent_(StartSpeechMethod.MOUSE);
     }.bind(this));
   },
 
@@ -541,7 +576,7 @@ SelectToSpeak.prototype = {
       return;
     }
     this.initializeScrollingToOffscreenNodes_(focusedNode.root);
-    this.recordStartEvent_(START_SPEECH_METHOD_KEYSTROKE);
+    this.recordStartEvent_(StartSpeechMethod.KEYSTROKE);
   },
 
   /**
@@ -643,21 +678,26 @@ SelectToSpeak.prototype = {
     // We will need to track the current state and toggle from one state to
     // the next when this function is called, and then call
     // accessibilityPrivate.onSelectToSpeakStateChanged with the new state.
-    // TODO(katie): Add metrics for state transition requests.
     switch (this.state_) {
       case SelectToSpeakState.INACTIVE:
         // Start selection.
         this.trackingMouse_ = true;
         this.onStateChanged_(SelectToSpeakState.SELECTING);
+        this.recordSelectToSpeakStateChangeEvent_(
+            StateChangeEvent.START_SELECTION);
         break;
       case SelectToSpeakState.SPEAKING:
         // Stop speaking.
         this.cancelIfSpeaking_(true /* clear the focus ring */);
+        this.recordSelectToSpeakStateChangeEvent_(
+            StateChangeEvent.CANCEL_SPEECH);
         break;
       case SelectToSpeakState.SELECTING:
         // Cancelled selection.
         this.trackingMouse_ = false;
         this.onStateChanged_(SelectToSpeakState.INACTIVE);
+        this.recordSelectToSpeakStateChangeEvent_(
+            StateChangeEvent.CANCEL_SELECTION);
     }
   },
 
@@ -944,6 +984,16 @@ SelectToSpeak.prototype = {
   recordCancelEvent_: function() {
     chrome.metricsPrivate.recordUserAction(
         'Accessibility.CrosSelectToSpeak.CancelSpeech');
+  },
+
+  /**
+   * Records a user-requested state change event from a given state.
+   * @param {number} changeType
+   */
+  recordSelectToSpeakStateChangeEvent_: function(changeType) {
+    chrome.metricsPrivate.recordEnumerationValue(
+        'Accessibility.CrosSelectToSpeak.SelectToSpeakStateChangeRequested',
+        changeType, STATE_CHANGE_EVENT_COUNT);
   },
 
   /**
