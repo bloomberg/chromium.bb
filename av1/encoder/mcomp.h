@@ -118,8 +118,6 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
                              int invert_mask, const MV *center_mv,
                              const uint8_t *second_pred);
 
-struct AV1_COMP;
-
 int av1_full_pixel_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
                           BLOCK_SIZE bsize, MV *mvp_full, int step_param,
                           int error_per_bit, int *cost_list, const MV *ref_mv,
@@ -136,9 +134,6 @@ int av1_find_best_obmc_sub_pixel_tree_up(
     const aom_variance_fn_ptr_t *vfp, int forced_stop, int iters_per_step,
     int *mvjcost, int *mvcost[2], int *distortion, unsigned int *sse1,
     int is_second, int use_accurate_subpel_search);
-#ifdef __cplusplus
-}  // extern "C"
-#endif
 
 unsigned int av1_compute_motion_cost(const struct AV1_COMP *cpi,
                                      MACROBLOCK *const x, BLOCK_SIZE bsize,
@@ -147,4 +142,9 @@ unsigned int av1_refine_warped_mv(const struct AV1_COMP *cpi,
                                   MACROBLOCK *const x, BLOCK_SIZE bsize,
                                   int mi_row, int mi_col, int *pts0,
                                   int *pts_inref0, int total_samples);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
+
 #endif  // AV1_ENCODER_MCOMP_H_
