@@ -27,7 +27,9 @@ class NinePieceImagePainter {
                     Node*,
                     const LayoutRect&,
                     const ComputedStyle&,
-                    const NinePieceImage&);
+                    const NinePieceImage&,
+                    bool include_logical_left_edge = true,
+                    bool include_logical_right_edge = true);
 
  private:
   NinePieceImagePainter() = default;

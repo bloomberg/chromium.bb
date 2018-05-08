@@ -67,7 +67,9 @@ class BoxPainterBase {
   void PaintMaskImages(const PaintInfo&,
                        const LayoutRect&,
                        const ImageResourceObserver&,
-                       BackgroundImageGeometry&);
+                       BackgroundImageGeometry&,
+                       bool include_logical_left_edge,
+                       bool include_logical_right_edge);
 
   static void PaintNormalBoxShadow(const PaintInfo&,
                                    const LayoutRect&,

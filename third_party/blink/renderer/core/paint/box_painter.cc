@@ -245,9 +245,17 @@ void BoxPainter::PaintMask(const PaintInfo& paint_info,
 
 void BoxPainter::PaintMaskImages(const PaintInfo& paint_info,
                                  const LayoutRect& paint_rect) {
+  // For mask images legacy layout painting handles multi-line boxes by giving
+  // the full width of the element, not the current line box, thereby clipping
+  // the offending edges.
+  bool include_logical_left_edge = true;
+  bool include_logical_right_edge = true;
+
   BackgroundImageGeometry geometry(layout_box_);
   BoxModelObjectPainter painter(layout_box_);
-  painter.PaintMaskImages(paint_info, paint_rect, layout_box_, geometry);
+  painter.PaintMaskImages(paint_info, paint_rect, layout_box_, geometry,
+                          include_logical_left_edge,
+                          include_logical_right_edge);
 }
 
 void BoxPainter::PaintClippingMask(const PaintInfo& paint_info,

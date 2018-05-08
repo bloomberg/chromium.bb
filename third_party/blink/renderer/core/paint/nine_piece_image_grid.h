@@ -65,7 +65,9 @@ class CORE_EXPORT NinePieceImageGrid {
   NinePieceImageGrid(const NinePieceImage&,
                      IntSize image_size,
                      IntRect border_image_area,
-                     const IntRectOutsets& border_widths);
+                     const IntRectOutsets& border_widths,
+                     bool include_left_edge = true,
+                     bool include_rigt_edge = true);
 
   struct CORE_EXPORT NinePieceDrawInfo {
     STACK_ALLOCATED();
