@@ -192,11 +192,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
 
     @Override
     public void onSizeChanged(
-            float width, float height, float visibleViewportOffsetY, int orientation) {
-        // If Chrome Home is enabled, a size change means the toolbar is now in a different
-        // location so a render is needed.
-        if (FeatureUtilities.isChromeHomeEnabled()) mRenderHost.requestRender();
-    }
+            float width, float height, float visibleViewportOffsetY, int orientation) {}
 
     @Override
     public void getVirtualViews(List<VirtualView> views) {}
