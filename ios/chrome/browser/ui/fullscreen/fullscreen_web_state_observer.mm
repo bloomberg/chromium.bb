@@ -24,8 +24,12 @@
 namespace {
 // Returns whether fullscreen should be disabled for |web_state|'s SSL status.
 // This will return true if the visible NavigationItem's SSL has a broken
-// security style or is showing mixed content.
+// security style or is showing mixed content.  If the UI refresh is enabled,
+// fullscreen does not need to be disabled for certificate issues, as the
+// omnibox security indicator is never fully hidden in fullscreen mode.
 bool ShouldDisableFullscreenForWebStateSSL(web::WebState* web_state) {
+  if (IsUIRefreshPhase1Enabled())
+    return false;
   if (!web_state)
     return false;
   web::NavigationManager* manager = web_state->GetNavigationManager();
