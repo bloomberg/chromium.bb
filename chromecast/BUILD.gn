@@ -506,11 +506,13 @@ repack("cast_shell_pak") {
 
   if (enable_chromecast_extensions) {
     sources += [
+      "$root_gen_dir/chromecast/renderer/extensions_renderer_resources.pak",
       "$root_gen_dir/extensions/extensions_renderer_resources.pak",
       "$root_gen_dir/extensions/extensions_resources.pak",
       "$root_gen_dir/extensions/shell/app_shell_resources.pak",
     ]
     deps += [
+      "//chromecast/renderer:extensions_resources",
       "//extensions:extensions_resources",
       "//extensions/shell:resources",
     ]
