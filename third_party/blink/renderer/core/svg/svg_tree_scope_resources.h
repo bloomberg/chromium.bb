@@ -13,7 +13,6 @@
 namespace blink {
 
 class LocalSVGResource;
-class SVGElement;
 class TreeScope;
 
 // This class keeps track of SVG resources and pending references to such for a
@@ -28,8 +27,7 @@ class SVGTreeScopeResources
   LocalSVGResource* ResourceForId(const AtomicString& id);
   LocalSVGResource* ExistingResourceForId(const AtomicString& id) const;
 
-  void RemoveUnreferencedResources();
-  void RemoveWatchesForElement(SVGElement&);
+  void UnregisterResource(LocalSVGResource*);
 
   void Trace(blink::Visitor*);
 

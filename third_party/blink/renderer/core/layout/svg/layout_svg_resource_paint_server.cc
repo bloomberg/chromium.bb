@@ -146,7 +146,8 @@ SVGPaintServer SVGPaintServer::RequestForLayoutObject(
   if (!paint_description.resource)
     return SVGPaintServer(paint_description.color);
   SVGPaintServer paint_server = paint_description.resource->PreparePaintServer(
-      layout_object, layout_object.ObjectBoundingBox());
+      *SVGResources::GetClient(layout_object),
+      layout_object.ObjectBoundingBox());
   if (paint_server.IsValid())
     return paint_server;
   if (paint_description.has_fallback)

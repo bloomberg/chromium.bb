@@ -1893,6 +1893,13 @@ CSSValue* ComputedStyleUtils::AdjustSVGPaintForCurrentColor(
   return CSSColorValue::Create(paint.GetColor().Rgb());
 }
 
+CSSValue* ComputedStyleUtils::ValueForSVGResource(
+    const StyleSVGResource* resource) {
+  if (resource)
+    return CSSURIValue::Create(resource->Url());
+  return CSSIdentifierValue::Create(CSSValueNone);
+}
+
 CSSValue* ComputedStyleUtils::ValueForShadowData(const ShadowData& shadow,
                                                  const ComputedStyle& style,
                                                  bool use_spread) {

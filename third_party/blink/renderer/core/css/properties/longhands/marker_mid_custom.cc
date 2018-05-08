@@ -28,12 +28,7 @@ const CSSValue* MarkerMid::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  if (!svg_style.MarkerMidResource().IsEmpty()) {
-    return CSSURIValue::Create(
-        ComputedStyleUtils::SerializeAsFragmentIdentifier(
-            svg_style.MarkerMidResource()));
-  }
-  return CSSIdentifierValue::Create(CSSValueNone);
+  return ComputedStyleUtils::ValueForSVGResource(svg_style.MarkerMidResource());
 }
 
 }  // namespace CSSLonghand

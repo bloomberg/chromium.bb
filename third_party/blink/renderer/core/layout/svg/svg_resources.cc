@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_marker.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_paint_server.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/svg_pattern_element.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
@@ -43,6 +44,10 @@ namespace blink {
 using namespace SVGNames;
 
 SVGResources::SVGResources() : linked_resource_(nullptr) {}
+
+SVGResourceClient* SVGResources::GetClient(const LayoutObject& object) {
+  return ToSVGElement(object.GetNode())->GetSVGResourceClient();
+}
 
 static HashSet<AtomicString>& ClipperFilterMaskerTags() {
   DEFINE_STATIC_LOCAL(
@@ -113,27 +118,23 @@ bool IsResourceOfType<LayoutSVGResourcePaintServer>(
   return container->IsSVGPaintServer();
 }
 
-template <>
-bool IsResourceOfType<LayoutSVGResourceContainer>(
-    LayoutSVGResourceContainer* container) {
-  return true;
-}
-
 template <typename ContainerType>
-ContainerType* AttachToResource(SVGTreeScopeResources& tree_scope_resources,
-                                const AtomicString& id,
-                                SVGElement& element) {
-  LocalSVGResource* resource = tree_scope_resources.ResourceForId(id);
+ContainerType* CastResource(SVGResource* resource) {
   if (!resource)
     return nullptr;
   if (LayoutSVGResourceContainer* container = resource->ResourceContainer()) {
     if (IsResourceOfType<ContainerType>(container))
       return static_cast<ContainerType*>(container);
   }
-  resource->AddWatch(element);
   return nullptr;
 }
+
+template <typename ContainerType>
+ContainerType* CastResource(StyleSVGResource& style_resource) {
+  return CastResource<ContainerType>(style_resource.Resource());
 }
+
+}  // namespace
 
 bool SVGResources::HasResourceData() const {
   return clipper_filter_masker_data_ || marker_data_ || fill_stroke_data_ ||
@@ -160,10 +161,6 @@ std::unique_ptr<SVGResources> SVGResources::BuildResources(
   const AtomicString& tag_name = element.localName();
   DCHECK(!tag_name.IsNull());
 
-  TreeScope& tree_scope = element.TreeScopeForIdResolution();
-  SVGTreeScopeResources& tree_scope_resources =
-      tree_scope.EnsureSVGTreeScopedResources();
-
   const SVGComputedStyle& style = computed_style.SvgStyle();
 
   std::unique_ptr<SVGResources> resources;
@@ -173,11 +170,9 @@ std::unique_ptr<SVGResources> SVGResources::BuildResources(
       if (clip_path_operation->GetType() == ClipPathOperation::REFERENCE) {
         const ReferenceClipPathOperation& clip_path_reference =
             ToReferenceClipPathOperation(*clip_path_operation);
-        AtomicString id = SVGURIReference::FragmentIdentifierFromIRIString(
-            clip_path_reference.Url(), tree_scope);
         EnsureResources(resources).SetClipper(
-            AttachToResource<LayoutSVGResourceClipper>(tree_scope_resources, id,
-                                                       element));
+            CastResource<LayoutSVGResourceClipper>(
+                clip_path_reference.Resource()));
       }
     }
 
@@ -188,78 +183,58 @@ std::unique_ptr<SVGResources> SVGResources::BuildResources(
         if (filter_operation.GetType() == FilterOperation::REFERENCE) {
           const auto& reference_filter_operation =
               ToReferenceFilterOperation(filter_operation);
-          AtomicString id = SVGURIReference::FragmentIdentifierFromIRIString(
-              reference_filter_operation.Url(), tree_scope);
           EnsureResources(resources).SetFilter(
-              AttachToResource<LayoutSVGResourceFilter>(tree_scope_resources,
-                                                        id, element));
+              CastResource<LayoutSVGResourceFilter>(
+                  reference_filter_operation.Resource()));
         }
       }
     }
 
-    if (style.HasMasker()) {
+    if (StyleSVGResource* masker_resource = style.MaskerResource()) {
       EnsureResources(resources).SetMasker(
-          AttachToResource<LayoutSVGResourceMasker>(
-              tree_scope_resources, style.MaskerResource(), element));
+          CastResource<LayoutSVGResourceMasker>(*masker_resource));
     }
   }
 
   if (style.HasMarkers() && SupportsMarkers(element)) {
-    EnsureResources(resources).SetMarkerStart(
-        AttachToResource<LayoutSVGResourceMarker>(
-            tree_scope_resources, style.MarkerStartResource(), element));
-    EnsureResources(resources).SetMarkerMid(
-        AttachToResource<LayoutSVGResourceMarker>(
-            tree_scope_resources, style.MarkerMidResource(), element));
-    EnsureResources(resources).SetMarkerEnd(
-        AttachToResource<LayoutSVGResourceMarker>(
-            tree_scope_resources, style.MarkerEndResource(), element));
+    if (StyleSVGResource* marker_start_resource = style.MarkerStartResource()) {
+      EnsureResources(resources).SetMarkerStart(
+          CastResource<LayoutSVGResourceMarker>(*marker_start_resource));
+    }
+    if (StyleSVGResource* marker_mid_resource = style.MarkerMidResource()) {
+      EnsureResources(resources).SetMarkerMid(
+          CastResource<LayoutSVGResourceMarker>(*marker_mid_resource));
+    }
+    if (StyleSVGResource* marker_end_resource = style.MarkerEndResource()) {
+      EnsureResources(resources).SetMarkerEnd(
+          CastResource<LayoutSVGResourceMarker>(*marker_end_resource));
+    }
   }
 
   if (FillAndStrokeTags().Contains(tag_name)) {
-    if (style.HasFill() && style.FillPaint().HasUrl()) {
-      AtomicString id = SVGURIReference::FragmentIdentifierFromIRIString(
-          style.FillPaint().GetUrl(), tree_scope);
+    if (StyleSVGResource* fill_resource = style.FillPaint().Resource()) {
       EnsureResources(resources).SetFill(
-          AttachToResource<LayoutSVGResourcePaintServer>(tree_scope_resources,
-                                                         id, element));
+          CastResource<LayoutSVGResourcePaintServer>(*fill_resource));
     }
 
-    if (style.HasStroke() && style.StrokePaint().HasUrl()) {
-      AtomicString id = SVGURIReference::FragmentIdentifierFromIRIString(
-          style.StrokePaint().GetUrl(), tree_scope);
+    if (StyleSVGResource* stroke_resource = style.StrokePaint().Resource()) {
       EnsureResources(resources).SetStroke(
-          AttachToResource<LayoutSVGResourcePaintServer>(tree_scope_resources,
-                                                         id, element));
+          CastResource<LayoutSVGResourcePaintServer>(*stroke_resource));
     }
   }
 
   if (auto* pattern = ToSVGPatternElementOrNull(element)) {
-    AtomicString id = SVGURIReference::FragmentIdentifierFromIRIString(
-        pattern->HrefString(), tree_scope);
-    EnsureResources(resources).SetLinkedResource(
-        AttachToResource<LayoutSVGResourceContainer>(tree_scope_resources, id,
-                                                     element));
+    const SVGPatternElement* directly_referenced_pattern =
+        pattern->ReferencedElement();
+    if (directly_referenced_pattern) {
+      EnsureResources(resources).SetLinkedResource(
+          ToLayoutSVGResourceContainerOrNull(
+              directly_referenced_pattern->GetLayoutObject()));
+    }
   }
 
   return (!resources || !resources->HasResourceData()) ? nullptr
                                                        : std::move(resources);
-}
-
-void SVGResources::RemoveUnreferencedResources(const LayoutObject& object) {
-  SVGTreeScopeResources& tree_scope_resources =
-      ToSVGElement(*object.GetNode())
-          .TreeScopeForIdResolution()
-          .EnsureSVGTreeScopedResources();
-  tree_scope_resources.RemoveUnreferencedResources();
-}
-
-void SVGResources::RemoveWatchesForElement(Element& element) {
-  SECURITY_DCHECK(element.IsSVGElement());
-  SVGElement& svg_element = ToSVGElement(element);
-  SVGTreeScopeResources& tree_scope_resources =
-      svg_element.TreeScopeForIdResolution().EnsureSVGTreeScopedResources();
-  tree_scope_resources.RemoveWatchesForElement(svg_element);
 }
 
 void SVGResources::LayoutIfNeeded() {
@@ -294,7 +269,7 @@ void SVGResources::LayoutIfNeeded() {
 }
 
 InvalidationModeMask SVGResources::RemoveClientFromCacheAffectingObjectBounds(
-    LayoutObject& client) const {
+    SVGResourceClient& client) const {
   if (!clipper_filter_masker_data_)
     return 0;
   InvalidationModeMask invalidation_flags = 0;
@@ -310,7 +285,7 @@ InvalidationModeMask SVGResources::RemoveClientFromCacheAffectingObjectBounds(
 }
 
 InvalidationModeMask SVGResources::RemoveClientFromCache(
-    LayoutObject& client) const {
+    SVGResourceClient& client) const {
   if (!HasResourceData())
     return 0;
 
@@ -647,5 +622,150 @@ void SVGResources::Dump(const LayoutObject* object) {
             linked_resource_->GetElement());
 }
 #endif
+
+void SVGResources::UpdateClipPathFilterMask(SVGElement& element,
+                                            const ComputedStyle* old_style,
+                                            const ComputedStyle& style) {
+  const bool had_client = element.GetSVGResourceClient();
+  if (auto* reference_clip =
+          ToReferenceClipPathOperationOrNull(style.ClipPath()))
+    reference_clip->AddClient(element.EnsureSVGResourceClient());
+  if (style.HasFilter())
+    style.Filter().AddClient(element.EnsureSVGResourceClient());
+  if (StyleSVGResource* masker_resource = style.SvgStyle().MaskerResource())
+    masker_resource->AddClient(element.EnsureSVGResourceClient());
+  if (had_client)
+    ClearClipPathFilterMask(element, old_style);
+}
+
+void SVGResources::ClearClipPathFilterMask(SVGElement& element,
+                                           const ComputedStyle* style) {
+  if (!style)
+    return;
+  SVGResourceClient* client = element.GetSVGResourceClient();
+  if (!client)
+    return;
+  if (auto* old_reference_clip =
+          ToReferenceClipPathOperationOrNull(style->ClipPath()))
+    old_reference_clip->RemoveClient(*client);
+  if (style->HasFilter())
+    style->Filter().RemoveClient(*client);
+  if (StyleSVGResource* masker_resource = style->SvgStyle().MaskerResource())
+    masker_resource->RemoveClient(*client);
+}
+
+void SVGResources::UpdatePaints(SVGElement& element,
+                                const ComputedStyle* old_style,
+                                const ComputedStyle& style) {
+  const bool had_client = element.GetSVGResourceClient();
+  const SVGComputedStyle& svg_style = style.SvgStyle();
+  if (StyleSVGResource* paint_resource = svg_style.FillPaint().Resource())
+    paint_resource->AddClient(element.EnsureSVGResourceClient());
+  if (StyleSVGResource* paint_resource = svg_style.StrokePaint().Resource())
+    paint_resource->AddClient(element.EnsureSVGResourceClient());
+  if (had_client)
+    ClearPaints(element, old_style);
+}
+
+void SVGResources::ClearPaints(SVGElement& element,
+                               const ComputedStyle* style) {
+  if (!style)
+    return;
+  SVGResourceClient* client = element.GetSVGResourceClient();
+  if (!client)
+    return;
+  const SVGComputedStyle& old_svg_style = style->SvgStyle();
+  if (StyleSVGResource* paint_resource = old_svg_style.FillPaint().Resource())
+    paint_resource->RemoveClient(*client);
+  if (StyleSVGResource* paint_resource = old_svg_style.StrokePaint().Resource())
+    paint_resource->RemoveClient(*client);
+}
+
+void SVGResources::UpdateMarkers(SVGElement& element,
+                                 const ComputedStyle* old_style,
+                                 const ComputedStyle& style) {
+  const bool had_client = element.GetSVGResourceClient();
+  const SVGComputedStyle& svg_style = style.SvgStyle();
+  if (StyleSVGResource* marker_resource = svg_style.MarkerStartResource())
+    marker_resource->AddClient(element.EnsureSVGResourceClient());
+  if (StyleSVGResource* marker_resource = svg_style.MarkerMidResource())
+    marker_resource->AddClient(element.EnsureSVGResourceClient());
+  if (StyleSVGResource* marker_resource = svg_style.MarkerEndResource())
+    marker_resource->AddClient(element.EnsureSVGResourceClient());
+  if (had_client)
+    ClearMarkers(element, old_style);
+}
+
+void SVGResources::ClearMarkers(SVGElement& element,
+                                const ComputedStyle* style) {
+  if (!style)
+    return;
+  SVGResourceClient* client = element.GetSVGResourceClient();
+  if (!client)
+    return;
+  const SVGComputedStyle& old_svg_style = style->SvgStyle();
+  if (StyleSVGResource* marker_resource = old_svg_style.MarkerStartResource())
+    marker_resource->RemoveClient(*client);
+  if (StyleSVGResource* marker_resource = old_svg_style.MarkerMidResource())
+    marker_resource->RemoveClient(*client);
+  if (StyleSVGResource* marker_resource = old_svg_style.MarkerEndResource())
+    marker_resource->RemoveClient(*client);
+}
+
+SVGElementResourceClient::SVGElementResourceClient(SVGElement* element)
+    : element_(element) {}
+
+void SVGElementResourceClient::ResourceContentChanged(
+    InvalidationModeMask invalidation_mask) {
+  LayoutObject* layout_object = element_->GetLayoutObject();
+  if (!layout_object)
+    return;
+  bool mark_for_invalidation =
+      invalidation_mask & ~SVGResourceClient::kParentOnlyInvalidation;
+  if (layout_object->IsSVGResourceContainer()) {
+    ToLayoutSVGResourceContainer(layout_object)
+        ->RemoveAllClientsFromCache(mark_for_invalidation);
+    return;
+  }
+
+  if (mark_for_invalidation) {
+    LayoutSVGResourceContainer::MarkClientForInvalidation(*layout_object,
+                                                          invalidation_mask);
+  }
+
+  bool needs_layout =
+      invalidation_mask & SVGResourceClient::kLayoutInvalidation;
+  LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
+      *layout_object, needs_layout);
+}
+
+void SVGElementResourceClient::Invalidate(
+    InvalidationModeMask invalidation_mask) {
+  if (LayoutObject* layout_object = element_->GetLayoutObject()) {
+    LayoutSVGResourceContainer::MarkClientForInvalidation(*layout_object,
+                                                          invalidation_mask);
+  }
+}
+
+void SVGElementResourceClient::ResourceElementChanged() {
+  if (LayoutObject* layout_object = element_->GetLayoutObject())
+    SVGResourcesCache::ResourceReferenceChanged(*layout_object);
+}
+
+void SVGElementResourceClient::ResourceDestroyed(
+    LayoutSVGResourceContainer* resource) {
+  LayoutObject* layout_object = element_->GetLayoutObject();
+  if (!layout_object)
+    return;
+  SVGResources* resources =
+      SVGResourcesCache::CachedResourcesForLayoutObject(*layout_object);
+  if (resources)
+    resources->ResourceDestroyed(resource);
+}
+
+void SVGElementResourceClient::Trace(Visitor* visitor) {
+  visitor->Trace(element_);
+  SVGResourceClient::Trace(visitor);
+}
 
 }  // namespace blink

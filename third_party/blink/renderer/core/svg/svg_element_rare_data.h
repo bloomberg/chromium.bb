@@ -29,6 +29,8 @@
 
 namespace blink {
 
+class SVGResourceClient;
+
 class SVGElementRareData
     : public GarbageCollectedFinalized<SVGElementRareData> {
  public:
@@ -93,6 +95,9 @@ class SVGElementRareData
     needs_override_computed_style_update_ = true;
   }
 
+  SVGResourceClient* GetSVGResourceClient() { return resource_client_; }
+  SVGResourceClient& EnsureSVGResourceClient(SVGElement*);
+
   AffineTransform* AnimateMotionTransform();
 
   void Trace(blink::Visitor*);
@@ -102,6 +107,7 @@ class SVGElementRareData
   SVGElementSet incoming_references_;
   HeapHashSet<WeakMember<SVGElement>> element_instances_;
   Member<SVGElement> corresponding_element_;
+  Member<SVGResourceClient> resource_client_;
   bool instances_updates_blocked_ : 1;
   bool use_override_computed_style_ : 1;
   bool needs_override_computed_style_update_ : 1;
