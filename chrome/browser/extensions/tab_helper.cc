@@ -342,6 +342,10 @@ void TabHelper::DidCloneToNewWebContents(WebContents* old_web_contents,
   new_helper->extension_app_icon_ = extension_app_icon_;
 }
 
+void TabHelper::WebContentsDestroyed() {
+  ExtensionActionAPI::Get(profile_)->ClearAllValuesForTab(web_contents());
+}
+
 void TabHelper::OnDidGetWebApplicationInfo(
     chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
     const WebApplicationInfo& info) {
