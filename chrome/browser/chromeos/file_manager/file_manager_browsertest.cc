@@ -465,13 +465,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindowsDriveToUsb"),
         TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindowsUsbToLocal")));
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_ShowGridView DISABLED_ShowGridView
-#else
-#define MAYBE_ShowGridView ShowGridView
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_ShowGridView,
+    ShowGridView,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "showGridViewDownloads"),
                       TestParameter(IN_GUEST_MODE, "showGridViewDownloads"),
