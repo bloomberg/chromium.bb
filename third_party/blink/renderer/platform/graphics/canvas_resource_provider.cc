@@ -11,7 +11,6 @@
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_heuristic_parameters.h"
-#include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -49,13 +48,11 @@ class CanvasResourceProviderTexture : public CanvasResourceProvider {
   GLuint GetBackingTextureHandleForOverwrite() override {
     GrBackendTexture backend_texture = GetSkSurface()->getBackendTexture(
         SkSurface::kDiscardWrite_TextureHandleAccess);
-    if (!backend_texture.isValid()) {
+    if (!backend_texture.isValid())
       return 0;
-    }
     GrGLTextureInfo info;
-    if (!backend_texture.getGLTextureInfo(&info)) {
+    if (!backend_texture.getGLTextureInfo(&info))
       return 0;
-    }
     return info.fID;
   }
 
@@ -115,7 +112,7 @@ class CanvasResourceProviderTexture : public CanvasResourceProvider {
                                        ColorParams().GetSkSurfaceProps());
   }
 
-  unsigned msaa_sample_count_;
+  const unsigned msaa_sample_count_;
 };
 
 // CanvasResourceProviderTextureGpuMemoryBuffer
@@ -141,7 +138,7 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
 
   ~CanvasResourceProviderTextureGpuMemoryBuffer() override = default;
 
- protected:
+ private:
   scoped_refptr<CanvasResource> CreateResource() final {
     return CanvasResourceGpuMemoryBuffer::Create(
         Size(), ColorParams(), ContextProviderWrapper(), CreateWeakPtr(),
@@ -179,6 +176,35 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
 
     return output_resource;
   }
+
+  void RecycleResource(scoped_refptr<CanvasResource> resource) override {
+    DCHECK(resource->HasOneRef());
+    if (resource_recycling_enabled_)
+      recycled_resources_.push_back(std::move(resource));
+  }
+
+  void SetResourceRecyclingEnabled(bool value) override {
+    resource_recycling_enabled_ = value;
+    if (!resource_recycling_enabled_)
+      ClearRecycledResources();
+  }
+
+  void ClearRecycledResources() { recycled_resources_.clear(); }
+
+  scoped_refptr<CanvasResource> NewOrRecycledResource() {
+    if (recycled_resources_.size()) {
+      scoped_refptr<CanvasResource> resource =
+          std::move(recycled_resources_.back());
+      recycled_resources_.pop_back();
+      // Recycling implies releasing the old content
+      resource->WaitSyncTokenBeforeRelease();
+      return resource;
+    }
+    return CreateResource();
+  }
+
+  WTF::Vector<scoped_refptr<CanvasResource>> recycled_resources_;
+  bool resource_recycling_enabled_ = true;
 };
 
 // CanvasResourceProviderBitmap
@@ -212,8 +238,6 @@ class CanvasResourceProviderBitmap final : public CanvasResourceProvider {
         kPremul_SkAlphaType, ColorParams().GetSkColorSpaceForSkSurfaces());
     return SkSurface::MakeRaster(info, ColorParams().GetSkSurfaceProps());
   }
-
-  sk_sp<SkSurface> surface_;
 };
 
 // CanvasResourceProvider base class implementation
@@ -374,9 +398,8 @@ CanvasResourceProvider::~CanvasResourceProvider() {
 }
 
 SkSurface* CanvasResourceProvider::GetSkSurface() const {
-  if (!surface_) {
+  if (!surface_)
     surface_ = CreateSkSurface();
-  }
   return surface_.get();
 }
 
@@ -470,29 +493,9 @@ void CanvasResourceProvider::FlushSkia() const {
   GetSkSurface()->flush();
 }
 
-void CanvasResourceProvider::RecycleResource(
-    scoped_refptr<CanvasResource> resource) {
-  DCHECK(resource->HasOneRef());
-  if (resource_recycling_enabled_)
-    recycled_resources_.push_back(std::move(resource));
-}
-
-void CanvasResourceProvider::SetResourceRecyclingEnabled(bool value) {
-  resource_recycling_enabled_ = value;
-  if (!resource_recycling_enabled_)
-    ClearRecycledResources();
-}
-
-scoped_refptr<CanvasResource> CanvasResourceProvider::NewOrRecycledResource() {
-  if (recycled_resources_.size()) {
-    scoped_refptr<CanvasResource> resource =
-        std::move(recycled_resources_.back());
-    recycled_resources_.pop_back();
-    // Recycling implies releasing the old content
-    resource->WaitSyncTokenBeforeRelease();
-    return resource;
-  }
-  return CreateResource();
+void CanvasResourceProvider::RecycleResource(scoped_refptr<CanvasResource>) {
+  // To be implemented in subclasses that use resource recycling.
+  NOTREACHED();
 }
 
 bool CanvasResourceProvider::IsGpuContextLost() const {
@@ -515,15 +518,10 @@ void CanvasResourceProvider::Clear() {
   // if this wasn't required, but the canvas is currently filled with the magic
   // transparency color. Can we have another way to manage this?
   DCHECK(IsValid());
-  if (color_params_.GetOpacityMode() == kOpaque) {
+  if (color_params_.GetOpacityMode() == kOpaque)
     Canvas()->clear(SK_ColorBLACK);
-  } else {
+  else
     Canvas()->clear(SK_ColorTRANSPARENT);
-  }
-}
-
-void CanvasResourceProvider::ClearRecycledResources() {
-  recycled_resources_.clear();
 }
 
 void CanvasResourceProvider::InvalidateSurface() {
