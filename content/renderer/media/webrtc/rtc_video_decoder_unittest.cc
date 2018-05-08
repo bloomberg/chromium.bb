@@ -208,7 +208,7 @@ TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorWithoutInitDecode) {
   CreateDecoder(webrtc::kVideoCodecVP8);
   webrtc::EncodedImage input_image;
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_UNINITIALIZED,
-            rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
+            rtc_decoder_->Decode(input_image, false, nullptr, 0));
 }
 
 TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorOnIncompleteFrame) {
@@ -217,7 +217,7 @@ TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorOnIncompleteFrame) {
   webrtc::EncodedImage input_image;
   input_image._completeFrame = false;
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
-            rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
+            rtc_decoder_->Decode(input_image, false, nullptr, 0));
 }
 
 TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorOnMissingFrames) {
@@ -228,7 +228,7 @@ TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorOnMissingFrames) {
   bool missingFrames = true;
   EXPECT_EQ(
       WEBRTC_VIDEO_CODEC_ERROR,
-      rtc_decoder_->Decode(input_image, missingFrames, nullptr, nullptr, 0));
+      rtc_decoder_->Decode(input_image, missingFrames, nullptr, 0));
 }
 
 TEST_F(RTCVideoDecoderTest, ReleaseReturnsOk) {
@@ -336,7 +336,7 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForNotifyError) {
   input_image._frameType = webrtc::kVideoFrameDelta;
   input_image._length = kMinResolutionWidth * kMaxResolutionHeight;
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
-            rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
+            rtc_decoder_->Decode(input_image, false, nullptr, 0));
   RunUntilIdle();
 
   // Notify the decoder about a platform error.
@@ -347,13 +347,13 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForNotifyError) {
   // Expect decode call to reset decoder, and set up a new VDA to track it.
   SetUpResetVDA();
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
-            rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
+            rtc_decoder_->Decode(input_image, false, nullptr, 0));
   EXPECT_EQ(1, rtc_decoder_->GetVDAErrorCounterForTesting());
 
   // Decoder expects a frame with size after reset, so drops any other frames.
   // However, we should still increment the error counter.
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
-            rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
+            rtc_decoder_->Decode(input_image, false, nullptr, 0));
   EXPECT_EQ(2, rtc_decoder_->GetVDAErrorCounterForTesting());
 }
 
@@ -379,7 +379,7 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForRunningOutOfPendingBuffers) {
   uint32_t i = 0;
   while (i++ < kMaxNumDecodeRequests) {
     const int32_t result =
-        rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0);
+        rtc_decoder_->Decode(input_image, false, nullptr, 0);
     RunUntilIdle();
     if (result == WEBRTC_VIDEO_CODEC_OK)
       EXPECT_EQ(0, rtc_decoder_->GetVDAErrorCounterForTesting());
@@ -411,7 +411,7 @@ TEST_P(RTCVideoDecoderTest, Reinitialize) {
   input_image._length = sizeof(buffer);
   EXPECT_CALL(*mock_vda_, Decode(_)).Times(1);
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
-            rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
+            rtc_decoder_->Decode(input_image, false, nullptr, 0));
   RunUntilIdle();
 
   // InitDecode and Decode after Release should succeed.
@@ -419,7 +419,7 @@ TEST_P(RTCVideoDecoderTest, Reinitialize) {
   rtc_decoder_->Release();
   Initialize();
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
-            rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
+            rtc_decoder_->Decode(input_image, false, nullptr, 0));
 }
 
 INSTANTIATE_TEST_CASE_P(CodecProfiles,
