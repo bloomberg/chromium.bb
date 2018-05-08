@@ -46569,6 +46569,12 @@ Full version information for the fingerprint enum values:
   <int value="63" label=".mhtml"/>
 </enum>
 
+<enum name="VirtualKeyboardContainerType">
+  <int value="0" label="FULL_WIDTH"/>
+  <int value="1" label="FLOATING"/>
+  <int value="2" label="FULLSCREEN"/>
+</enum>
+
 <enum name="VirtualKeyboardControllerState">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="INITIAL"/>
