@@ -11,39 +11,33 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/in_process_command_buffer.h"
-#include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "third_party/skia/include/core/SkDeferredDisplayListRecorder.h"
-#include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/core/SkSurfaceCharacterization.h"
 
 namespace base {
 class WaitableEvent;
-}
-
-namespace gl {
-class GLSurface;
-}
-
-namespace gpu {
-class SyncPointClientState;
-class TextureBase;
 }
 
 namespace viz {
 
 class GpuServiceImpl;
 class VizProcessContextProvider;
+class SkiaOutputSurfaceImplOnGpu;
 class SyntheticBeginFrameSource;
+
+class YUVResourceMetadata;
 
 // The SkiaOutputSurface implementation. It is the output surface for
 // SkiaRenderer. It lives on the compositor thread, but it will post tasks
-// to the GPU thread for initializing, reshaping and swapping buffers, etc.
-// Currently, SkiaOutputSurfaceImpl sets up SkSurface from the default GL
-// framebuffer, creates SkDeferredDisplayListRecorder and SkCanvas for
-// SkiaRenderer to render into. In SwapBuffers, it detaches a
-// SkDeferredDisplayList from the recorder and plays it back on the framebuffer
-// SkSurface on the GPU thread.
-class SkiaOutputSurfaceImpl : public SkiaOutputSurface,
-                              public gpu::ImageTransportSurfaceDelegate {
+// to the GPU thread for initializing. Currently, SkiaOutputSurfaceImpl
+// create a SkiaOutputSurfaceImplOnGpu on the GPU thread. It will be used
+// for creating a SkSurface from the default framebuffer and providing the
+// SkSurfaceCharacterization for the SkSurface. And then SkiaOutputSurfaceImpl
+// will create SkDeferredDisplayListRecorder and SkCanvas for SkiaRenderer to
+// render into. In SwapBuffers, it detaches a SkDeferredDisplayList from the
+// recorder and plays it back on the framebuffer SkSurface on the GPU thread
+// through SkiaOutputSurfaceImpleOnGpu.
+class SkiaOutputSurfaceImpl : public SkiaOutputSurface {
  public:
   SkiaOutputSurfaceImpl(
       GpuServiceImpl* gpu_service,
@@ -93,80 +87,23 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface,
                                                   bool mipmap) override;
   void RemoveRenderPassResource(std::vector<RenderPassId> ids) override;
 
-  // gpu::ImageTransportSurfaceDelegate implementation:
-  void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params) override;
-  const gpu::gles2::FeatureInfo* GetFeatureInfo() const override;
-  const gpu::GpuPreferences& GetGpuPreferences() const override;
-
-  void SetSnapshotRequestedCallback(const base::Closure& callback) override;
-  void UpdateVSyncParameters(base::TimeTicks timebase,
-                             base::TimeDelta interval) override;
-  void BufferPresented(const gfx::PresentationFeedback& feedback) override;
-
-  void AddFilter(IPC::MessageFilter* message_filter) override;
-  int32_t GetRouteID() const override;
-
  private:
-  class YUVResourceMetadata;
-  void InitializeOnGpuThread(base::WaitableEvent* event);
-  void DestroyOnGpuThread(base::WaitableEvent* event);
-  void ReshapeOnGpuThread(const gfx::Size& size,
-                          float device_scale_factor,
-                          const gfx::ColorSpace& color_space,
-                          bool has_alpha,
-                          bool use_stencil,
-                          SkSurfaceCharacterization* characterization,
-                          base::WaitableEvent* event);
-  void SwapBuffersOnGpuThread(
-      OutputSurfaceFrame frame,
-      std::unique_ptr<SkDeferredDisplayList> ddl,
-      std::vector<YUVResourceMetadata*> yuv_resource_metadatas,
-      uint64_t sync_fence_release);
-  void FinishPaintRenderPassOnGpuThread(
-      RenderPassId id,
-      std::unique_ptr<SkDeferredDisplayList> ddl,
-      std::vector<YUVResourceMetadata*> yuv_resource_metadatas,
-      uint64_t sync_fence_release);
-  void RemoveRenderPassResourceOnGpuThread(std::vector<RenderPassId> ids);
-  void RecreateRecorder();
-  void PreprocessYUVResources(
-      std::vector<YUVResourceMetadata*> yuv_resource_metadatas);
-  void BindOrCopyTextureIfNecessary(gpu::TextureBase* texture_base);
-  void DidSwapBuffersCompleteOnClientThread(
-      gpu::SwapBuffersCompleteParams params);
-  void UpdateVSyncParametersOnClientThread(base::TimeTicks timebase,
-                                           base::TimeDelta interval);
-  void BufferPresentedOnClientThread(uint64_t swap_id,
-                                     const gfx::PresentationFeedback& feedback);
-
   template <class T>
   class PromiseTextureHelper;
-  // Fullfill callback for promise SkImage created from a resource.
-  void OnPromiseTextureFullfill(const ResourceMetadata& metadata,
-                                GrBackendTexture* backend_texture);
-  // Fullfill callback for promise SkImage created from YUV resources.
-  void OnPromiseTextureFullfill(const YUVResourceMetadata& metadata,
-                                GrBackendTexture* backend_texture);
-  // Fullfill callback for promise SkImage created from a render pass.
-  void OnPromiseTextureFullfill(const RenderPassId id,
-                                GrBackendTexture* backend_texture);
+  void InitializeOnGpuThread(base::WaitableEvent* event);
+  void RecreateRecorder();
+  void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params);
+  void UpdateVSyncParameters(base::TimeTicks timebase,
+                             base::TimeDelta interval);
+  void BufferPresented(uint64_t swap_id,
+                       const gfx::PresentationFeedback& feedback);
 
-  // Generage the next swap ID and push it to our pending swap ID queues.
-  void OnSwapBuffers();
-
-  const gpu::CommandBufferId command_buffer_id_;
   uint64_t sync_fence_release_ = 0;
   GpuServiceImpl* const gpu_service_;
   const gpu::SurfaceHandle surface_handle_;
   SyntheticBeginFrameSource* const synthetic_begin_frame_source_;
   OutputSurfaceClient* client_ = nullptr;
 
-  scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
-
-  gpu::GpuPreferences gpu_preferences_;
-  scoped_refptr<gl::GLSurface> surface_;
-
-  sk_sp<SkSurface> sk_surface_;
   SkSurfaceCharacterization characterization_;
   std::unique_ptr<SkDeferredDisplayListRecorder> recorder_;
 
@@ -178,10 +115,6 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface,
   // the GPU thread.
   std::unique_ptr<SkDeferredDisplayListRecorder> offscreen_surface_recorder_;
 
-  // Offscreen surfaces for render passes. It must be accessed on the GPU
-  // thread.
-  base::flat_map<RenderPassId, sk_sp<SkSurface>> offscreen_surfaces_;
-
   // Sync tokens for resources which are used for the current frame.
   std::vector<gpu::SyncToken> resource_sync_tokens_;
 
@@ -191,21 +124,16 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface,
   // directly.
   std::vector<YUVResourceMetadata*> yuv_resource_metadatas_;
 
-  // ID is pushed each time we begin a swap, and popped each time we present or
-  // complete a swap.
-  base::circular_deque<uint64_t> pending_presented_ids_;
-  base::circular_deque<uint64_t> pending_swap_completed_ids_;
-  uint64_t swap_id_ = 0;
-
   // The task runner for running task on the client (compositor) thread.
   scoped_refptr<base::SingleThreadTaskRunner> client_thread_task_runner_;
 
-  THREAD_CHECKER(client_thread_checker_);
-  THREAD_CHECKER(gpu_thread_checker_);
+  // |impl_on_gpu| is created and destroyed on the GPU thread.
+  std::unique_ptr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu_;
 
-  base::WeakPtr<SkiaOutputSurfaceImpl> client_thread_weak_ptr_;
-  base::WeakPtrFactory<SkiaOutputSurfaceImpl> gpu_thread_weak_ptr_factory_;
-  base::WeakPtrFactory<SkiaOutputSurfaceImpl> client_thread_weak_ptr_factory_;
+  THREAD_CHECKER(thread_checker_);
+
+  base::WeakPtr<SkiaOutputSurfaceImpl> weak_ptr_;
+  base::WeakPtrFactory<SkiaOutputSurfaceImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputSurfaceImpl);
 };
