@@ -34,8 +34,10 @@ void FramebustBlockInfoBar::ProcessButton(int action) {
   if (!owner())
     return;  // We're closing; don't call anything, it might access the owner.
 
+  // Tapping the button means that the user wants to bypass the intervention in
+  // a sticky way, e.g. via content settings.
   DCHECK_EQ(action, InfoBarAndroid::ACTION_OK);
-  delegate_->AcceptIntervention();
+  delegate_->DeclineInterventionSticky();
   RemoveSelf();
 }
 

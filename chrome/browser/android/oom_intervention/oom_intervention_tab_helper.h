@@ -43,6 +43,7 @@ class OomInterventionTabHelper
   // InterventionDelegate:
   void AcceptIntervention() override;
   void DeclineIntervention() override;
+  void DeclineInterventionSticky() override;
 
  private:
   explicit OomInterventionTabHelper(content::WebContents* web_contents);
