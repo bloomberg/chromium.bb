@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
@@ -18,6 +19,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/policy_constants.h"
@@ -270,4 +274,51 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
 
   EXPECT_TRUE(tab_under_observer.last_navigation_succeeded());
   EXPECT_FALSE(IsUiShownForUrl(opener, cross_origin_url));
+}
+
+IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest, ControlledBySetting) {
+  // Allow tab-unders via popup/redirect blocker settings, should disable
+  // tab-under blocking.
+  const GURL top_level_url = embedded_test_server()->GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), top_level_url);
+  content::WebContents* opener =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::TestNavigationObserver navigation_observer(nullptr, 1);
+  navigation_observer.StartWatchingNewWebContents();
+  EXPECT_TRUE(content::ExecuteScript(opener, "window.open('/title1.html')"));
+  navigation_observer.Wait();
+
+  // First tab-under attempt should be blocked.
+  {
+    content::TestNavigationObserver tab_under_observer(opener, 1);
+    const GURL cross_origin_url =
+        embedded_test_server()->GetURL("b.com", "/title1.html");
+    EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
+        opener, base::StringPrintf("window.location = '%s';",
+                                   cross_origin_url.spec().c_str())));
+    tab_under_observer.Wait();
+
+    EXPECT_FALSE(tab_under_observer.last_navigation_succeeded());
+    EXPECT_TRUE(IsUiShownForUrl(opener, cross_origin_url));
+  }
+
+  // Allow tab-unders via settings, should be allowed.
+  {
+    HostContentSettingsMap* settings_map =
+        HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+    settings_map->SetContentSettingDefaultScope(
+        top_level_url, GURL(), CONTENT_SETTINGS_TYPE_POPUPS, std::string(),
+        CONTENT_SETTING_ALLOW);
+    content::TestNavigationObserver tab_under_observer(opener, 1);
+    const GURL cross_origin_url =
+        embedded_test_server()->GetURL("a.com", "/title1.html");
+    EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
+        opener, base::StringPrintf("window.location = '%s';",
+                                   cross_origin_url.spec().c_str())));
+    tab_under_observer.Wait();
+
+    EXPECT_TRUE(tab_under_observer.last_navigation_succeeded());
+    EXPECT_FALSE(IsUiShownForUrl(opener, cross_origin_url));
+  }
 }

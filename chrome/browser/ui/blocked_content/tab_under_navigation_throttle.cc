@@ -17,12 +17,16 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/list_item_position.h"
 #include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
 #include "chrome/common/pref_names.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -150,6 +154,7 @@ TabUnderNavigationThrottle::TabUnderNavigationThrottle(
                              content::Visibility::VISIBLE) {}
 
 bool TabUnderNavigationThrottle::IsSuspiciousClientRedirect() const {
+  DCHECK(!navigation_handle()->HasCommitted());
   // Some browser initiated navigations have HasUserGesture set to false. This
   // should eventually be fixed in crbug.com/617904. In the meantime, just dont
   // block browser initiated ones.
@@ -163,10 +168,7 @@ bool TabUnderNavigationThrottle::IsSuspiciousClientRedirect() const {
   // out because we're primarily interested in sites which navigate themselves
   // away while in the background.
   content::WebContents* contents = navigation_handle()->GetWebContents();
-  const GURL& previous_main_frame_url =
-      navigation_handle()->HasCommitted()
-          ? navigation_handle()->GetPreviousURL()
-          : contents->GetLastCommittedURL();
+  const GURL& previous_main_frame_url = contents->GetLastCommittedURL();
   if (previous_main_frame_url.is_empty())
     return false;
 
@@ -217,7 +219,7 @@ TabUnderNavigationThrottle::MaybeBlockNavigation() {
 
   LogTabUnderAttempt(navigation_handle(), off_the_record_);
 
-  if (block_) {
+  if (block_ && !TabUndersAllowedBySettings()) {
     const std::string error =
         base::StringPrintf(kBlockTabUnderFormatMessage,
                            navigation_handle()->GetURL().spec().c_str());
@@ -253,6 +255,18 @@ bool TabUnderNavigationThrottle::HasOpenedPopupSinceLastUserGesture() const {
   auto* popup_opener = PopupOpenerTabHelper::FromWebContents(contents);
   return popup_opener &&
          popup_opener->has_opened_popup_since_last_user_gesture();
+}
+
+bool TabUnderNavigationThrottle::TabUndersAllowedBySettings() const {
+  content::WebContents* contents = navigation_handle()->GetWebContents();
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(
+          Profile::FromBrowserContext(contents->GetBrowserContext()));
+  DCHECK(settings_map);
+  return settings_map->GetContentSetting(contents->GetLastCommittedURL(),
+                                         GURL(), CONTENT_SETTINGS_TYPE_POPUPS,
+                                         std::string()) ==
+         CONTENT_SETTING_ALLOW;
 }
 
 content::NavigationThrottle::ThrottleCheckResult
