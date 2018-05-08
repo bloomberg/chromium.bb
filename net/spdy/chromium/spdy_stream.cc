@@ -207,6 +207,15 @@ void SpdyStream::DetachDelegate() {
   Cancel();
 }
 
+void SpdyStream::SetPriority(RequestPriority priority) {
+  if (priority_ == priority) {
+    return;
+  }
+  priority_ = priority;
+  if (session_ && stream_id_ != 0)
+    session_->UpdateStreamPriority(stream_id_, priority_);
+}
+
 bool SpdyStream::AdjustSendWindowSize(int32_t delta_window_size) {
   if (IsClosed())
     return true;

@@ -230,7 +230,7 @@ void WebSocketHttp2HandshakeStream::Drain(HttpNetworkSession* session) {
 void WebSocketHttp2HandshakeStream::SetPriority(RequestPriority priority) {
   priority_ = priority;
   if (stream_)
-    stream_->set_priority(priority_);
+    stream_->SetPriority(priority_);
 }
 
 HttpStream* WebSocketHttp2HandshakeStream::RenewStreamForAuth() {

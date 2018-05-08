@@ -363,6 +363,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                                                int len,
                                                SpdyDataFlags flags);
 
+  // Send PRIORITY frames according to the new priority of an existing stream.
+  void UpdateStreamPriority(SpdyStreamId stream_id, RequestPriority priority);
+
   // Close the stream with the given ID, which must exist and be
   // active. Note that that stream may hold the last reference to the
   // session.

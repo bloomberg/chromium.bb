@@ -632,6 +632,75 @@ TEST_F(SpdyNetworkTransactionTest, SetPriority) {
   }
 }
 
+// Test that changing the request priority of an existing stream triggers
+// sending a PRIORITY frame in case there are multiple open streams and their
+// relative priorities change.
+TEST_F(SpdyNetworkTransactionTest, SetPriorityOnExistingStream) {
+  const char* kUrl2 = "https://www.example.org/bar";
+
+  SpdySerializedFrame req1(spdy_util_.ConstructSpdyGet(nullptr, 0, 1, HIGHEST));
+  SpdySerializedFrame req2(spdy_util_.ConstructSpdyGet(kUrl2, 3, MEDIUM));
+  SpdySerializedFrame priority1(
+      spdy_util_.ConstructSpdyPriority(3, 0, MEDIUM, true));
+  SpdySerializedFrame priority2(
+      spdy_util_.ConstructSpdyPriority(1, 3, LOWEST, true));
+  MockWrite writes[] = {CreateMockWrite(req1, 0), CreateMockWrite(req2, 2),
+                        CreateMockWrite(priority1, 4),
+                        CreateMockWrite(priority2, 5)};
+
+  SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 3));
+  SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
+  SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, true));
+  MockRead reads[] = {CreateMockRead(resp1, 1), CreateMockRead(resp2, 3),
+                      CreateMockRead(body1, 6), CreateMockRead(body2, 7),
+                      MockRead(ASYNC, 0, 8)};
+
+  SequencedSocketData data(reads, writes);
+  NormalSpdyTransactionHelper helper(request_, HIGHEST, log_, nullptr);
+  helper.RunPreTestSetup();
+  helper.AddData(&data);
+  EXPECT_TRUE(helper.StartDefaultTest());
+
+  // Open HTTP/2 connection and create first stream.
+  base::RunLoop().RunUntilIdle();
+
+  HttpNetworkTransaction trans2(MEDIUM, helper.session());
+  HttpRequestInfo request2;
+  request2.url = GURL(kUrl2);
+  request2.method = "GET";
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  TestCompletionCallback callback2;
+  int rv = trans2.Start(&request2, callback2.callback(), log_);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Create second stream.
+  base::RunLoop().RunUntilIdle();
+
+  // First request has HIGHEST priority, second request has MEDIUM priority.
+  // Changing the priority of the first request to LOWEST changes their order,
+  // and therefore triggers sending PRIORITY frames.
+  helper.trans()->SetPriority(LOWEST);
+
+  helper.FinishDefaultTest();
+  helper.VerifyDataConsumed();
+
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsOk());
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
+
+  rv = callback2.WaitForResult();
+  ASSERT_THAT(rv, IsOk());
+  const HttpResponseInfo* response2 = trans2.GetResponseInfo();
+  ASSERT_TRUE(response2);
+  ASSERT_TRUE(response2->headers);
+  EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP2,
+            response2->connection_info);
+  EXPECT_EQ("HTTP/1.1 200", response2->headers->GetStatusLine());
+}
+
 TEST_F(SpdyNetworkTransactionTest, GetAtEachPriority) {
   for (RequestPriority p = MINIMUM_PRIORITY; p <= MAXIMUM_PRIORITY;
        p = RequestPriority(p + 1)) {
@@ -7205,12 +7274,11 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketOpensNewConnection) {
 TEST_F(SpdyNetworkTransactionTest, WebSocketOverHTTP2) {
   auto session_deps = std::make_unique<SpdySessionDependencies>();
   session_deps->enable_websocket_over_http2 = true;
-  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+  NormalSpdyTransactionHelper helper(request_, HIGHEST, log_,
                                      std::move(session_deps));
   helper.RunPreTestSetup();
 
-  SpdySerializedFrame req(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, DEFAULT_PRIORITY));
+  SpdySerializedFrame req(spdy_util_.ConstructSpdyGet(nullptr, 0, 1, HIGHEST));
   SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
 
   SpdyHeaderBlock websocket_request_headers;
@@ -7223,15 +7291,18 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketOverHTTP2) {
   websocket_request_headers["sec-websocket-version"] = "13";
   websocket_request_headers["sec-websocket-extensions"] =
       "permessage-deflate; client_max_window_bits";
-
-  spdy_util_.UpdateWithStreamDestruction(1);
   SpdySerializedFrame websocket_request(spdy_util_.ConstructSpdyHeaders(
-      3, std::move(websocket_request_headers), DEFAULT_PRIORITY, false));
+      3, std::move(websocket_request_headers), MEDIUM, false));
+
+  SpdySerializedFrame priority1(
+      spdy_util_.ConstructSpdyPriority(3, 0, MEDIUM, true));
+  SpdySerializedFrame priority2(
+      spdy_util_.ConstructSpdyPriority(1, 3, LOWEST, true));
 
   MockWrite writes[] = {
       CreateMockWrite(req, 0), CreateMockWrite(settings_ack, 2),
-      CreateMockWrite(websocket_request, 5),
-  };
+      CreateMockWrite(websocket_request, 4), CreateMockWrite(priority1, 5),
+      CreateMockWrite(priority2, 6)};
 
   SettingsMap settings;
   settings[SETTINGS_ENABLE_CONNECT_PROTOCOL] = 1;
@@ -7241,33 +7312,20 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketOverHTTP2) {
   SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
   SpdySerializedFrame websocket_response(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 3));
-  MockRead reads[] = {
-      CreateMockRead(settings_frame, 1),
-      CreateMockRead(resp1, 3),
-      CreateMockRead(body1, 4),
-      CreateMockRead(websocket_response, 6),
-      MockRead(ASYNC, 0, 7),
-  };
+  MockRead reads[] = {CreateMockRead(settings_frame, 1),
+                      CreateMockRead(resp1, 3), CreateMockRead(body1, 7),
+                      CreateMockRead(websocket_response, 8),
+                      MockRead(ASYNC, 0, 9)};
 
   SequencedSocketData data(reads, writes);
   helper.AddData(&data);
 
   TestCompletionCallback callback1;
-  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session());
-  int rv = trans1.Start(&request_, callback1.callback(), log_);
+  int rv = helper.trans()->Start(&request_, callback1.callback(), log_);
   ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
-  rv = callback1.WaitForResult();
-  ASSERT_THAT(rv, IsOk());
 
-  const HttpResponseInfo* response = trans1.GetResponseInfo();
-  ASSERT_TRUE(response->headers);
-  EXPECT_TRUE(response->was_fetched_via_spdy);
-  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
-
-  std::string response_data;
-  rv = ReadTransaction(&trans1, &response_data);
-  EXPECT_THAT(rv, IsOk());
-  EXPECT_EQ("hello!", response_data);
+  // Create HTTP/2 connection.
+  base::RunLoop().RunUntilIdle();
 
   SpdySessionKey key(HostPortPair::FromURL(request_.url), ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED, SocketTag());
@@ -7293,19 +7351,39 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketOverHTTP2) {
 
   TestWebSocketHandshakeStreamCreateHelper websocket_stream_create_helper;
 
-  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+  HttpNetworkTransaction trans2(MEDIUM, helper.session());
   trans2.SetWebSocketHandshakeStreamCreateHelper(
       &websocket_stream_create_helper);
 
   TestCompletionCallback callback2;
   rv = trans2.Start(&request2, callback2.callback(), log_);
   ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Create WebSocket stream.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(spdy_session);
+
+  // First request has HIGHEST priority, WebSocket request has MEDIUM priority.
+  // Changing the priority of the first request to LOWEST changes their order,
+  // and therefore triggers sending PRIORITY frames.
+  helper.trans()->SetPriority(LOWEST);
+
+  rv = callback1.WaitForResult();
+  ASSERT_THAT(rv, IsOk());
+
+  const HttpResponseInfo* response = helper.trans()->GetResponseInfo();
+  ASSERT_TRUE(response->headers);
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+
+  std::string response_data;
+  rv = ReadTransaction(helper.trans(), &response_data);
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_EQ("hello!", response_data);
+
   rv = callback2.WaitForResult();
   ASSERT_THAT(rv, IsOk());
 
-  ASSERT_TRUE(spdy_session);
-
-  base::RunLoop().RunUntilIdle();
   helper.VerifyDataConsumed();
 }
 
