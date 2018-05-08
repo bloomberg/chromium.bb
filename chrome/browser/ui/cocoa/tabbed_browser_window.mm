@@ -23,9 +23,6 @@ constexpr CGFloat kWindowGradientHeight = 24.0;
 // window buttons (zoom, close, miniaturize).
 constexpr NSInteger kWindowButtonsOffsetFromBottom = 9;
 constexpr NSInteger kWindowButtonsOffsetFromLeft = 11;
-
-// Offset from the top/right of the window to the Mavericks full screen button.
-constexpr NSInteger kFullScreenButtonOffset = 9;
 }  // namespace
 
 @interface TabbedBrowserWindow ()
@@ -115,30 +112,6 @@ WEAK_IMPORT_ATTRIBUTE
 
 @end
 
-@interface MavericksTabbedBrowserWindowFrame : FullSizeTabbedBrowserWindowFrame
-@end
-
-@implementation MavericksTabbedBrowserWindowFrame
-
-// 10.10+ has no separate fullscreen button.
-- (NSPoint)_fullScreenButtonOrigin
-    __attribute__((availability(macos, obsoleted = 10.10))) {
-  CGFloat xAdjustment = [static_cast<TabbedBrowserWindow*>(self.window)
-      fullScreenButtonOriginAdjustment];
-  NSSize fullScreenButtonSize = [self fullScreenButton].frame.size;
-  return NSMakePoint(NSMaxX(self.bounds) - fullScreenButtonSize.width -
-                         kFullScreenButtonOffset - xAdjustment,
-                     NSMaxY(self.bounds) - fullScreenButtonSize.height -
-                         kFullScreenButtonOffset);
-}
-
-// 10.10+ adds the content view below the window controls by default.
-- (void)_setContentView:(NSView*)contentView {
-  [self addSubview:contentView positioned:NSWindowBelow relativeTo:nil];
-}
-
-@end
-
 @implementation TabbedBrowserWindow
 
 // FramedBrowserWindow overrides.
@@ -158,12 +131,9 @@ WEAK_IMPORT_ATTRIBUTE
   // Because NSThemeFrame is imported weakly, if it's not present at runtime
   // then it and its subclasses will be nil.
   if ([TabbedBrowserWindowFrame class]) {
-    if (@available(macOS 10.10, *)) {
-      return chrome::ShouldUseFullSizeContentView()
-                 ? [TabbedBrowserWindowFrame class]
-                 : [FullSizeTabbedBrowserWindowFrame class];
-    }
-    return [MavericksTabbedBrowserWindowFrame class];
+    return chrome::ShouldUseFullSizeContentView()
+               ? [TabbedBrowserWindowFrame class]
+               : [FullSizeTabbedBrowserWindowFrame class];
   }
   return [super frameViewClassForStyleMask:windowStyle];
 }
