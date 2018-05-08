@@ -21,7 +21,8 @@ WebViewWebStatePolicyDecider::WebViewWebStatePolicyDecider(
 
 bool WebViewWebStatePolicyDecider::ShouldAllowRequest(
     NSURLRequest* request,
-    ui::PageTransition transition) {
+    ui::PageTransition transition,
+    bool from_main_frame) {
   id<CWVNavigationDelegate> delegate = web_view_.navigationDelegate;
   if ([delegate respondsToSelector:@selector
                 (webView:shouldStartLoadWithRequest:navigationType:)]) {

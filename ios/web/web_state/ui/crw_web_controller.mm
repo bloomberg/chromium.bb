@@ -4204,8 +4204,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   ui::PageTransition transition =
       [self pageTransitionFromNavigationType:action.navigationType];
-  BOOL allowLoad =
-      self.webStateImpl->ShouldAllowRequest(action.request, transition);
+  BOOL allowLoad = self.webStateImpl->ShouldAllowRequest(
+      action.request, transition, [self isMainFrameNavigationAction:action]);
   if (!allowLoad && action.targetFrame.mainFrame) {
     [_pendingNavigationInfo setCancelled:YES];
   }

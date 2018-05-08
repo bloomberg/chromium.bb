@@ -70,7 +70,7 @@ class ITunesLinksHandlerTabHelperTest : public PlatformTest {
 
     return web_state_.ShouldAllowRequest(
         [NSURLRequest requestWithURL:[NSURL URLWithString:url_string]],
-        ui::PageTransition::PAGE_TRANSITION_LINK);
+        ui::PageTransition::PAGE_TRANSITION_LINK, /*from_main_frame=*/true);
   }
 
   // Checks that given the pending item URL & the request URL if
