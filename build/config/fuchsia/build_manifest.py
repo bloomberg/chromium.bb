@@ -24,11 +24,11 @@ import sys
 import tempfile
 
 
-def ReadDynamicLibDeps(path):
+def ReadDynamicLibDeps(paths):
   """Returns a list of NEEDED libraries read from a binary's ELF header."""
 
   LIBRARY_RE = re.compile(r'.*\(NEEDED\)\s+Shared library: \[(?P<lib>.*)\]')
-  elfinfo = subprocess.check_output(['readelf', '-d', path],
+  elfinfo = subprocess.check_output(['readelf', '-d'] + paths,
                                     stderr=open(os.devnull, 'w'))
   libs = []
   for line in elfinfo.split('\n'):
@@ -56,16 +56,15 @@ def ComputeTransitiveLibDeps(executable_path, available_libs):
   # The computed set of visited transitive dependencies.
   deps = set()
 
-  while len(to_visit) > 0:
-    cur_path = to_visit.pop()
-    deps.add(cur_path)
+  while to_visit:
+    deps = deps.union(to_visit)
 
     # Resolve the full paths for all of |cur_path|'s NEEDED libraries.
     dep_paths = {available_libs[dep]
-                 for dep in ReadDynamicLibDeps(cur_path)}
+                 for dep in ReadDynamicLibDeps(list(to_visit))}
 
     # Add newly discovered dependencies to the pending traversal stack.
-    to_visit += dep_paths.difference(deps)
+    to_visit = dep_paths.difference(deps)
 
   return deps
 
@@ -222,7 +221,6 @@ def BuildManifest(root_dir, out_dir, app_name, app_filename,
         "%s: %s" % (os.path.relpath(output_path, out_dir),
                     " ".join([os.path.relpath(f, out_dir)
                               for f in expanded_files])))
-
   return 0
 
 
