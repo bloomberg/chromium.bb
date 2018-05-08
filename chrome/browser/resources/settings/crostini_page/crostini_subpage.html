@@ -2,7 +2,6 @@
 
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="crostini_browser_proxy.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../prefs/prefs_behavior.html">
@@ -10,11 +9,7 @@
 
 <dom-module id="settings-crostini-subpage">
   <template>
-    <style include="settings-shared">
-      paper-spinner-lite {
-        margin: 0 8px;
-      }
-    </style>
+    <style include="settings-shared"></style>
     <div id="remove" class="settings-box first"
         actionable on-click="onRemoveTap_">
       <div class="start">$i18n{crostiniRemove}</div>
@@ -22,35 +17,6 @@
         <button aria-label="$i18n{crostiniRemove}"></button>
       </paper-icon-button-light>
     </div>
-
-    <!-- Confirm remove Crostini dialog -->
-    <template is="dom-if" if="[[showRemoveDialog_]]" restamp>
-      <cr-dialog id="removeDialog" close-text="$i18n{close}"
-          on-cancel="onRemoveDialogCancel_"
-          on-close="onRemoveDialogClose_">
-        <div slot="title">$i18n{crostiniRemoveDialogTitle}</div>
-        <div slot="body">
-          <p>$i18n{crostiniRemoveDialogMessageDeleteApps}</p>
-          <p>$i18n{crostiniRemoveDialogMessageDeleteSharedFiles}</p>
-          <div>$i18n{crostiniRemoveDialogMessageOtherDevicesUnaffected}</div>
-        </div>
-        <div slot="button-container">
-          <paper-spinner-lite id="removeSpinner"
-              hidden="[[!removingInProgress_]]"
-              active="[[removingInProgress_]]">
-          </paper-spinner-lite>
-          <paper-button id="cancelButton" class="cancel-button"
-              on-click="onRemoveDialogCancel_">
-            [[cancelButtonText_]]
-          </paper-button>
-          <paper-button class="action-button" disabled="[[removingInProgress_]]"
-              on-click="onRemoveDialogAccept_">
-            $i18n{crostiniRemoveDialogAccept}
-          </paper-button>
-        </div>
-      </cr-dialog>
-    </template>
-
   </template>
   <script src="crostini_subpage.js"></script>
 </dom-module>

@@ -38,10 +38,7 @@ void CrostiniHandler::HandleRequestCrostiniInstallerView(
 
 void CrostiniHandler::HandleRequestRemoveCrostini(const base::ListValue* args) {
   AllowJavascript();
-  // TODO(nverne): change this to use CrostiniUninstallerView::Show
-  crostini::CrostiniManager::GetInstance()->RemoveCrostini(
-      Profile::FromWebUI(web_ui()), kCrostiniDefaultVmName,
-      kCrostiniDefaultContainerName, base::DoNothing());
+  CrostiniUninstallerView::Show(Profile::FromWebUI(web_ui()));
 }
 
 }  // namespace settings

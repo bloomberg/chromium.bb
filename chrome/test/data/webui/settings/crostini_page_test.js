@@ -85,7 +85,8 @@ suite('CrostiniPageTests', function() {
     });
 
     test('Remove', function() {
-      subpage.onRemoveDialogAccept_();
+      assertTrue(!!subpage.$$('.subpage-arrow'));
+      MockInteractions.tap(subpage.$$('.subpage-arrow'));
       setCrostiniEnabledValue(
           crostiniBrowserProxy.prefs.crostini.enabled.value);
       assertFalse(crostiniPage.prefs.crostini.enabled.value);
