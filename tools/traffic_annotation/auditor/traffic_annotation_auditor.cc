@@ -561,14 +561,6 @@ void TrafficAnnotationAuditor::CheckAllRequiredFunctionsAreAnnotated() {
 
 bool TrafficAnnotationAuditor::CheckIfCallCanBeUnannotated(
     const CallInstance& call) {
-  // At this stage we do not enforce annotation on native network requests,
-  // hence all calls except those to 'net::URLRequestContext::CreateRequest' and
-  // 'net::URLFetcher::Create' are ignored.
-  if (call.function_name != "net::URLFetcher::Create" &&
-      call.function_name != "net::URLRequestContext::CreateRequest") {
-    return true;
-  }
-
   if (IsSafeListed(call.file_path, AuditorException::ExceptionType::MISSING))
     return true;
 
