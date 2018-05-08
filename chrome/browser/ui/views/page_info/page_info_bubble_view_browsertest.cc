@@ -6,7 +6,6 @@
 
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -134,7 +133,6 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     constexpr char kMalware[] = "Malware";
     constexpr char kDeceptive[] = "Deceptive";
     constexpr char kUnwantedSoftware[] = "UnwantedSoftware";
-    constexpr char kPasswordReuseSoft[] = "PasswordReuseSoft";
     constexpr char kPasswordReuse[] = "PasswordReuse";
     constexpr char kMixedContentForm[] = "MixedContentForm";
     constexpr char kMixedContent[] = "MixedContent";
@@ -187,15 +185,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     } else if (name == kUnwantedSoftware) {
       identity.identity_status =
           PageInfo::SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE;
-    } else if (name == kPasswordReuseSoft) {
-      softer_warning_feature_.InitAndEnableFeatureWithParameters(
-          safe_browsing::kGoogleBrandedPhishingWarning,
-          {{"softer_warning", "true"}});
-      identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_PASSWORD_REUSE;
     } else if (name == kPasswordReuse) {
-      softer_warning_feature_.InitAndEnableFeatureWithParameters(
-          safe_browsing::kGoogleBrandedPhishingWarning,
-          {{"softer_warning", "false"}});
       identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_PASSWORD_REUSE;
     } else if (name == kMixedContentForm) {
       identity.identity_status =
@@ -265,7 +255,6 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
   }
 
  private:
-  base::test::ScopedFeatureList softer_warning_feature_;
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewBrowserTest);
 };
@@ -368,9 +357,6 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   histograms.ExpectTotalCount(kSyncPasswordPageInfoHistogramName, 0);
   ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL("/"));
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      safe_browsing::kGoogleBrandedPhishingWarning);
   // Update security state of the current page to match
   // SB_THREAT_TYPE_PASSWORD_REUSE.
   safe_browsing::ChromePasswordProtectionService* service =
@@ -459,13 +445,6 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeUi_Deceptive) {
 // software by Safe Browsing.
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
                        InvokeUi_UnwantedSoftware) {
-  ShowAndVerifyUi();
-}
-
-// Shows the Page Info bubble Safe Browsing soft warning after detecting the
-// user has re-used an existing password on a site, e.g. due to phishing.
-IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
-                       InvokeUi_PasswordReuseSoft) {
   ShowAndVerifyUi();
 }
 

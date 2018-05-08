@@ -38,13 +38,6 @@ const base::Feature kCheckByURLLoaderThrottle{
     "S13nSafeBrowsingCheckByURLLoaderThrottle",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kGaiaPasswordReuseReporting{
-    "SyncPasswordReuseEvent", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kGoogleBrandedPhishingWarning{
-    "PasswordProtectionGoogleBrandedPhishingWarning",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kThreatDomDetailsTagAndAttributeFeature{
     "ThreatDomDetailsTagAttributes", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -55,12 +48,6 @@ const base::Feature kSuspiciousSiteTriggerQuotaFeature{
 const base::Feature kTriggerThrottlerDailyQuotaFeature{
     "SafeBrowsingTriggerThrottlerDailyQuota",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kDispatchSafetyNetCheckOffThread{
-    "DispatchSafetyNetCheckOffThread", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kAppendRecentNavigationEvents{
-    "AppendRecentNavigationEvents", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kInspectDownloadedRarFiles{
     "InspectDownloadedRarFiles", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -82,13 +69,9 @@ constexpr struct {
 } kExperimentalFeatures[]{
     {&kAdSamplerCollectButDontSendFeature, false},
     {&kAdSamplerTriggerFeature, false},
-    {&kAppendRecentNavigationEvents, true},
     {&kCheckByURLLoaderThrottle, true},
-    {&kDispatchSafetyNetCheckOffThread, false},
     {&kEnterprisePasswordProtectionV1, true},
     {&kForceEnableResetPasswordWebUI, false},
-    {&kGaiaPasswordReuseReporting, true},
-    {&kGoogleBrandedPhishingWarning, false},
     {&kInspectDownloadedRarFiles, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},

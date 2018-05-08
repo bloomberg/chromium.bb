@@ -88,10 +88,9 @@ class WebstoreStandaloneInstaller
   // Template Method's hooks to be implemented by subclasses.
 
   // Gives subclasses an opportunity to provide extra post data in the form of
-  // serialized JSON or proto based on |upload_content_type| to the webstore
-  // data request before sending. The default implementation returns an empty
-  // string.
-  virtual std::string GetPostData(const std::string& upload_content_type);
+  // serialized proto to the webstore data request before sending. The default
+  // implementation returns an empty string.
+  virtual std::string GetPostData();
 
   // Called at certain check points of the workflow to decide whether it makes
   // sense to proceed with installation. A requestor can be a website that

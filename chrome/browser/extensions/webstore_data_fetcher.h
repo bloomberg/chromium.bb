@@ -46,8 +46,6 @@ class WebstoreDataFetcher : public base::SupportsWeakPtr<WebstoreDataFetcher> {
     max_auto_retries_ = max_retries;
   }
 
-  std::string upload_content_type() const { return upload_content_type_; }
-
  private:
   void OnJsonParseSuccess(std::unique_ptr<base::Value> parsed_json);
   void OnJsonParseFailure(const std::string& error);
@@ -57,7 +55,6 @@ class WebstoreDataFetcher : public base::SupportsWeakPtr<WebstoreDataFetcher> {
   GURL referrer_url_;
   std::string id_;
   std::string post_data_;
-  std::string upload_content_type_;
 
   // For fetching webstore JSON data.
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;

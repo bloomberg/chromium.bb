@@ -2849,27 +2849,6 @@
             ]
         }
     ],
-    "ReferrerChainDiagnose": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Append5RecentNavigations",
-                    "params": {
-                        "recent_navigation_count": "5"
-                    },
-                    "enable_features": [
-                        "AppendRecentNavigationEvents"
-                    ]
-                }
-            ]
-        }
-    ],
     "RefreshTokenDeviceId": [
         {
             "platforms": [
@@ -3161,23 +3140,6 @@
                 },
                 {
                     "name": "Control"
-                }
-            ]
-        }
-    ],
-    "SafeBrowsingAtRiskAccountFlagging": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_Launch",
-                    "enable_features": [
-                        "SyncPasswordReuseEvent"
-                    ]
                 }
             ]
         }

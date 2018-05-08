@@ -119,24 +119,42 @@ bool WebstoreInlineInstaller::SafeBrowsingNavigationEventsEnabled() const {
   return SafeBrowsingNavigationObserverManager::IsEnabledAndReady(profile());
 }
 
-std::string WebstoreInlineInstaller::GetPostData(
-    const std::string& upload_content_type) {
-  DCHECK(upload_content_type == "application/octet-stream" ||
-         upload_content_type == "application/json");
+std::string WebstoreInlineInstaller::GetPostData() {
   // web_contents() might return null during tab destruction. This object would
   // also be destroyed shortly thereafter but check to be on the safe side.
   if (!web_contents())
     return std::string();
 
-  // Report extra data only when SafeBrowsing is enabled for the current
-  // profile.
-  if (!profile()->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled))
+  // Report extra data only when SafeBrowsing is enabled and SB navigation
+  // observer is enabled for the current profile.
+  if (!profile()->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled) ||
+      !SafeBrowsingNavigationEventsEnabled()) {
     return std::string();
+  }
 
-  if (upload_content_type == "application/json")
-    return GetJsonPostData();
-  else
-    return GetProtoPostData();
+  scoped_refptr<SafeBrowsingNavigationObserverManager>
+      navigation_observer_manager = g_browser_process->safe_browsing_service()
+                                        ->navigation_observer_manager();
+
+  ReferrerChain referrer_chain;
+  SafeBrowsingNavigationObserverManager::AttributionResult result =
+      navigation_observer_manager->IdentifyReferrerChainByWebContents(
+          web_contents(), kExtensionReferrerUserGestureLimit, &referrer_chain);
+
+  // If the referrer chain is incomplete we'll append most recent navigations
+  // to referrer chain for diagnose purpose. This only happens if user is not
+  // in incognito mode and has opted into extended reporting to Scout reporting.
+  int recent_navigations_to_collect =
+      SafeBrowsingNavigationObserverManager::CountOfRecentNavigationsToAppend(
+          *profile(), result);
+  navigation_observer_manager->AppendRecentNavigations(
+      recent_navigations_to_collect, &referrer_chain);
+  safe_browsing::ExtensionWebStoreInstallRequest request;
+  request.mutable_referrer_chain()->Swap(&referrer_chain);
+  request.mutable_referrer_chain_options()->set_recent_navigations_to_collect(
+      recent_navigations_to_collect);
+
+  return request.SerializeAsString();
 }
 
 bool WebstoreInlineInstaller::CheckRequestorAlive() const {
@@ -245,91 +263,6 @@ void WebstoreInlineInstaller::DidFinishNavigation(
 
 void WebstoreInlineInstaller::WebContentsDestroyed() {
   AbortInstall();
-}
-
-std::string WebstoreInlineInstaller::GetJsonPostData() {
-  auto redirect_chain = std::make_unique<base::ListValue>();
-
-  if (SafeBrowsingNavigationEventsEnabled()) {
-    scoped_refptr<SafeBrowsingNavigationObserverManager>
-        navigation_observer_manager = g_browser_process->safe_browsing_service()
-                                          ->navigation_observer_manager();
-
-    ReferrerChain referrer_chain;
-    SafeBrowsingNavigationObserverManager::AttributionResult result =
-        navigation_observer_manager->IdentifyReferrerChainByWebContents(
-            web_contents(), kExtensionReferrerUserGestureLimit,
-            &referrer_chain);
-    if (result !=
-        SafeBrowsingNavigationObserverManager::NAVIGATION_EVENT_NOT_FOUND) {
-      for (const auto& referrer_chain_entry : referrer_chain) {
-        // Referrer chain entries are a list of URLs in reverse chronological
-        // order, so the final URL is the last thing in the list and the initial
-        // landing page is the first thing in the list.
-        // Furthermore each entry may contain a series of server redirects
-        // stored in the same order.
-        redirect_chain->AppendString(referrer_chain_entry.url());
-        for (const auto& server_side_redirect :
-             referrer_chain_entry.server_redirect_chain()) {
-          redirect_chain->AppendString(server_side_redirect.url());
-        }
-      }
-    }
-  } else {
-    content::NavigationController& navigation_controller =
-        web_contents()->GetController();
-    content::NavigationEntry* navigation_entry =
-        navigation_controller.GetLastCommittedEntry();
-    if (navigation_entry) {
-      const std::vector<GURL>& redirect_urls =
-          navigation_entry->GetRedirectChain();
-      for (const GURL& url : redirect_urls) {
-        redirect_chain->AppendString(url.spec());
-      }
-    }
-  }
-
-  if (!redirect_chain->empty()) {
-    base::DictionaryValue dictionary;
-    dictionary.SetString("id", id());
-    dictionary.SetString("referrer", requestor_url_.spec());
-    dictionary.Set("redirect_chain", std::move(redirect_chain));
-
-    std::string json;
-    base::JSONWriter::Write(dictionary, &json);
-    return json;
-  }
-
-  return std::string();
-}
-
-std::string WebstoreInlineInstaller::GetProtoPostData() {
-  if (!SafeBrowsingNavigationEventsEnabled())
-    return std::string();
-
-  scoped_refptr<SafeBrowsingNavigationObserverManager>
-      navigation_observer_manager = g_browser_process->safe_browsing_service()
-                                        ->navigation_observer_manager();
-
-  ReferrerChain referrer_chain;
-  SafeBrowsingNavigationObserverManager::AttributionResult result =
-      navigation_observer_manager->IdentifyReferrerChainByWebContents(
-          web_contents(), kExtensionReferrerUserGestureLimit, &referrer_chain);
-
-  // If the referrer chain is incomplete we'll append most recent navigations
-  // to referrer chain for diagnose purpose. This only happens if user is not
-  // in incognito mode and has opted into extended reporting to Scout reporting.
-  int recent_navigations_to_collect =
-      SafeBrowsingNavigationObserverManager::CountOfRecentNavigationsToAppend(
-          *profile(), result);
-  navigation_observer_manager->AppendRecentNavigations(
-      recent_navigations_to_collect, &referrer_chain);
-  safe_browsing::ExtensionWebStoreInstallRequest request;
-  request.mutable_referrer_chain()->Swap(&referrer_chain);
-  request.mutable_referrer_chain_options()->set_recent_navigations_to_collect(
-      recent_navigations_to_collect);
-
-  return request.SerializeAsString();
 }
 
 // static

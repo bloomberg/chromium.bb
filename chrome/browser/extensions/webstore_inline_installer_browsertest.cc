@@ -413,21 +413,13 @@ class WebstoreInlineInstallerRedirectTest
     if (request.content.empty())
       return;
 
-    if (request.content.find("redirect_chain") != std::string::npos) {
-      std::unique_ptr<base::Value> contents =
-          base::JSONReader::Read(request.content);
-      ASSERT_EQ(base::Value::Type::DICTIONARY, contents->type());
-      cws_request_json_data_ = base::DictionaryValue::From(std::move(contents));
-    } else {
-      cws_request_proto_ =
-          std::make_unique<safe_browsing::ExtensionWebStoreInstallRequest>();
-      if (!cws_request_proto_->ParseFromString(request.content))
-        cws_request_proto_.reset();
-    }
+    cws_request_proto_ =
+        std::make_unique<safe_browsing::ExtensionWebStoreInstallRequest>();
+    if (!cws_request_proto_->ParseFromString(request.content))
+      cws_request_proto_.reset();
   }
 
   bool cws_request_received_;
-  std::unique_ptr<base::DictionaryValue> cws_request_json_data_;
   std::unique_ptr<safe_browsing::ExtensionWebStoreInstallRequest>
       cws_request_proto_;
 };
@@ -435,75 +427,7 @@ class WebstoreInlineInstallerRedirectTest
 // Test that an install from a page arrived at via redirects includes the
 // redirect information in the webstore request.
 IN_PROC_BROWSER_TEST_P(WebstoreInlineInstallerRedirectTest,
-                       IncludesRedirectJsonData) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      safe_browsing::kAppendRecentNavigationEvents);
-  const bool using_safe_browsing_tracker = GetParam();
-  WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  TabHelper* tab_helper = TabHelper::FromWebContents(web_contents);
-  WebstoreInlineInstallerForTestFactory* factory =
-      new WebstoreInlineInstallerForTestFactory(using_safe_browsing_tracker);
-  tab_helper->SetWebstoreInlineInstallerFactoryForTests(factory);
-
-  // Hand craft a url that will cause the test server to issue redirects.
-  const std::vector<std::string> redirects = {kRedirect1Domain,
-                                              kRedirect2Domain};
-  net::HostPortPair host_port = embedded_test_server()->host_port_pair();
-  std::string redirect_chain;
-  for (const auto& redirect : redirects) {
-    std::string redirect_url = base::StringPrintf(
-        "http://%s:%d/server-redirect?", redirect.c_str(), host_port.port());
-    redirect_chain += redirect_url;
-  }
-  const GURL install_url =
-      GURL(redirect_chain +
-           GenerateTestServerUrl(kAppDomain, "install.html").spec());
-
-  AutoAcceptInstall();
-  ui_test_utils::NavigateToURL(browser(), install_url);
-
-  RunTestAsync("runTest");
-  while (!ProgrammableInstallPrompt::Ready())
-    base::RunLoop().RunUntilIdle();
-  web_contents->Close();
-
-  EXPECT_TRUE(cws_request_received_);
-  ASSERT_NE(nullptr, cws_request_json_data_);
-  ASSERT_EQ(nullptr, cws_request_proto_);
-
-  base::ListValue* redirect_list = nullptr;
-  cws_request_json_data_->GetList("redirect_chain", &redirect_list);
-  ASSERT_NE(nullptr, redirect_list);
-
-  // Check that the expected domains are in the redirect list.
-  const std::set<std::string> expected_redirect_domains = {
-      kRedirect1Domain, kRedirect2Domain, kAppDomain};
-
-  // The SafeBrowsing tracker has a much more liberal definition of "redirect"
-  // and it may (based on timing) pick up additional navigations that occur
-  // shortly before the navigation we mainly care about here. Be somewhat
-  // permissive in what we accept as redirect results.
-  ASSERT_LE(expected_redirect_domains.size(), redirect_list->GetSize());
-
-  for (const auto& value : *redirect_list) {
-    std::string value_string;
-    ASSERT_TRUE(value.GetAsString(&value_string));
-    GURL redirect_url(value_string);
-    EXPECT_TRUE(expected_redirect_domains.find(redirect_url.host()) !=
-                expected_redirect_domains.end());
-  }
-}
-
-// Test that an install from a page arrived at via redirects includes the
-// redirect information in the webstore request.
-IN_PROC_BROWSER_TEST_P(WebstoreInlineInstallerRedirectTest,
                        IncludesRedirectProtoData) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      safe_browsing::kAppendRecentNavigationEvents,
-      {{"recent_navigation_count", "3"}});
   const bool using_safe_browsing_tracker = GetParam();
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -531,12 +455,10 @@ IN_PROC_BROWSER_TEST_P(WebstoreInlineInstallerRedirectTest,
   web_contents->Close();
 
   EXPECT_TRUE(cws_request_received_);
-  ASSERT_EQ(nullptr, cws_request_json_data_);
   if (!using_safe_browsing_tracker) {
     ASSERT_EQ(nullptr, cws_request_proto_);
     return;
   }
-
   ASSERT_NE(nullptr, cws_request_proto_);
   ASSERT_EQ(1, cws_request_proto_->referrer_chain_size());
 
@@ -587,7 +509,6 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerRedirectTest,
   RunTest("runTest");
 
   EXPECT_TRUE(cws_request_received_);
-  ASSERT_EQ(nullptr, cws_request_json_data_);
   ASSERT_EQ(nullptr, cws_request_proto_);
 }
 

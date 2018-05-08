@@ -53,7 +53,7 @@ class WebstoreInlineInstaller : public WebstoreStandaloneInstaller,
   virtual bool SafeBrowsingNavigationEventsEnabled() const;
 
   // Implementations WebstoreStandaloneInstaller Template Method's hooks.
-  std::string GetPostData(const std::string& upload_content_type) override;
+  std::string GetPostData() override;
   bool CheckRequestorAlive() const override;
   const GURL& GetRequestorURL() const override;
   bool ShouldShowPostInstallUI() const override;
@@ -71,11 +71,6 @@ class WebstoreInlineInstaller : public WebstoreStandaloneInstaller,
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void WebContentsDestroyed() override;
-
-  // Get Json string that contains extension install referrer chain info.
-  std::string GetJsonPostData();
-  // Get serialized ExtensionWebStoreInstallRequest protobuf.
-  std::string GetProtoPostData();
 
   // Checks whether the install is initiated by a page in a verified site
   // (which is at least a domain, but can also have a port or a path).

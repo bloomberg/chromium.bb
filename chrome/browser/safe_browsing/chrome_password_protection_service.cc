@@ -874,8 +874,6 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
 
 std::unique_ptr<PasswordProtectionNavigationThrottle>
 MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle) {
-  if (!base::FeatureList::IsEnabled(kGoogleBrandedPhishingWarning))
-    return nullptr;
   Profile* profile = Profile::FromBrowserContext(
       navigation_handle->GetWebContents()->GetBrowserContext());
   ChromePasswordProtectionService* service =

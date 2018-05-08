@@ -31,6 +31,8 @@ namespace safe_browsing {
 
 namespace {
 
+constexpr size_t kMaxNumberOfNavigationsToAppend = 5;
+
 // Given when an event happened and its TTL, determine if it is already expired.
 // Note, if for some reason this event's timestamp is in the future, this
 // event's timestamp is invalid, hence we treat it as expired.
@@ -489,12 +491,10 @@ size_t SafeBrowsingNavigationObserverManager::CountOfRecentNavigationsToAppend(
     const Profile& profile,
     AttributionResult result) {
   if (!IsExtendedReportingEnabled(*profile.GetPrefs()) ||
-      profile.IsOffTheRecord() || result == SUCCESS_LANDING_REFERRER ||
-      !base::FeatureList::IsEnabled(kAppendRecentNavigationEvents)) {
+      profile.IsOffTheRecord() || result == SUCCESS_LANDING_REFERRER) {
     return 0u;
   }
-  return static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
-      kAppendRecentNavigationEvents, "recent_navigation_count", 0));
+  return kMaxNumberOfNavigationsToAppend;
 }
 
 void SafeBrowsingNavigationObserverManager::AppendRecentNavigations(
