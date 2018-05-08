@@ -1544,6 +1544,8 @@ COMMON_GTESTS = {
       {
         'names': [
           'Linux FYI Ozone (Intel)',
+          'Android FYI 32 Vk Release (Nexus 5X)',
+          'Android FYI 64 Vk Release (Nexus 5X)',
           # On Android, these are already run on the main waterfall.
           # Run them on the one-off Android FYI bots, though.
           'Android Release (Nexus 5X)',
@@ -1580,6 +1582,8 @@ COMMON_GTESTS = {
       {
         'names': [
           'Linux FYI Ozone (Intel)',
+          'Android FYI 32 Vk Release (Nexus 5X)',
+          'Android FYI 64 Vk Release (Nexus 5X)',
           # On Android, these are already run on the main waterfall.
           # Run them on the one-off Android FYI bots, though.
           'Android Release (Nexus 5X)',
@@ -1607,6 +1611,8 @@ COMMON_GTESTS = {
       {
         'names': [
           'Linux FYI Ozone (Intel)',
+          'Android FYI 32 Vk Release (Nexus 5X)',
+          'Android FYI 64 Vk Release (Nexus 5X)',
         ],
       },
     ],
@@ -1898,6 +1904,8 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       {
         'names': [
           'Linux FYI Ozone (Intel)',
+          'Android FYI 32 Vk Release (Nexus 5X)',
+          'Android FYI 64 Vk Release (Nexus 5X)',
         ],
       },
     ],
@@ -1913,6 +1921,8 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       {
         'names': [
           'Linux FYI Ozone (Intel)',
+          'Android FYI 32 Vk Release (Nexus 5X)',
+          'Android FYI 64 Vk Release (Nexus 5X)',
         ],
       },
     ],
@@ -1929,6 +1939,8 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       {
         'names': [
           'Linux FYI Ozone (Intel)',
+          'Android FYI 32 Vk Release (Nexus 5X)',
+          'Android FYI 64 Vk Release (Nexus 5X)',
         ],
       },
     ],
@@ -1944,6 +1956,8 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       {
         'names': [
           'Linux FYI Ozone (Intel)',
+          'Android FYI 32 Vk Release (Nexus 5X)',
+          'Android FYI 64 Vk Release (Nexus 5X)',
         ],
       },
     ],
@@ -1966,6 +1980,8 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       {
         'names': [
           'Linux FYI Ozone (Intel)',
+          'Android FYI 32 Vk Release (Nexus 5X)',
+          'Android FYI 64 Vk Release (Nexus 5X)',
 
           # The Mac ASAN swarming runs on two different GPU types so we can't
           # have one expected vendor ID / device ID
@@ -1995,6 +2011,8 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       {
         'names': [
           'Linux FYI Ozone (Intel)',
+          'Android FYI 32 Vk Release (Nexus 5X)',
+          'Android FYI 64 Vk Release (Nexus 5X)',
         ],
       },
     ],
@@ -2037,6 +2055,8 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       {
         'names': [
           'Linux FYI Ozone (Intel)',
+          'Android FYI 32 Vk Release (Nexus 5X)',
+          'Android FYI 64 Vk Release (Nexus 5X)',
         ],
       },
     ],
@@ -2055,6 +2075,8 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       {
         'names': [
           'Linux FYI Ozone (Intel)',
+          'Android FYI 32 Vk Release (Nexus 5X)',
+          'Android FYI 64 Vk Release (Nexus 5X)',
         ],
       },
     ],
@@ -2070,6 +2092,8 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       {
         'names': [
           'Linux FYI Ozone (Intel)',
+          'Android FYI 32 Vk Release (Nexus 5X)',
+          'Android FYI 64 Vk Release (Nexus 5X)',
         ],
       },
     ],
@@ -2085,6 +2109,8 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       {
         'names': [
           'Linux FYI Ozone (Intel)',
+          'Android FYI 32 Vk Release (Nexus 5X)',
+          'Android FYI 64 Vk Release (Nexus 5X)',
         ],
       },
     ],
