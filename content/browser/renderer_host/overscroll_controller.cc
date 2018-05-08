@@ -29,6 +29,16 @@ bool IsGestureEventFromTouchpad(const blink::WebInputEvent& event) {
   return gesture.SourceDevice() == blink::kWebGestureDeviceTouchpad;
 }
 
+bool IsGestureScrollUpdateInertialEvent(const blink::WebInputEvent& event) {
+  if (event.GetType() != blink::WebInputEvent::kGestureScrollUpdate)
+    return false;
+
+  const blink::WebGestureEvent& gesture =
+      static_cast<const blink::WebGestureEvent&>(event);
+  return gesture.data.scroll_update.inertial_phase ==
+         blink::WebGestureEvent::kMomentumPhase;
+}
+
 float ClampAbsoluteValue(float value, float max_abs) {
   DCHECK_LT(0.f, max_abs);
   return std::max(-max_abs, std::min(value, max_abs));
@@ -86,16 +96,9 @@ bool OverscrollController::ShouldProcessEvent(
 
 bool OverscrollController::ShouldIgnoreInertialEvent(
     const blink::WebInputEvent& event) const {
-  if (!ignore_following_inertial_events_ ||
-      event.GetType() != blink::WebInputEvent::kGestureScrollUpdate) {
-    return false;
+  return ignore_following_inertial_events_ &&
+         IsGestureScrollUpdateInertialEvent(event);
   }
-
-  const blink::WebGestureEvent& gesture =
-      static_cast<const blink::WebGestureEvent&>(event);
-  return gesture.data.scroll_update.inertial_phase ==
-         blink::WebGestureEvent::kMomentumPhase;
-}
 
 bool OverscrollController::WillHandleEvent(const blink::WebInputEvent& event) {
   if (!ShouldProcessEvent(event))
@@ -108,6 +111,7 @@ bool OverscrollController::WillHandleEvent(const blink::WebInputEvent& event) {
 
   if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
     ignore_following_inertial_events_ = false;
+    first_inertial_event_time_.reset();
     time_since_last_ignored_scroll_ =
         event.TimeStamp() - last_ignored_scroll_time_;
     // Will handle events when processing ACKs to ensure the correct order.
@@ -379,10 +383,29 @@ bool OverscrollController::ProcessEventForOverscroll(
     case blink::WebInputEvent::kGestureScrollUpdate: {
       const blink::WebGestureEvent& gesture =
           static_cast<const blink::WebGestureEvent&>(event);
+      bool is_gesture_scroll_update_inertial_event =
+          IsGestureScrollUpdateInertialEvent(event);
       event_processed = ProcessOverscroll(
           gesture.data.scroll_update.delta_x,
           gesture.data.scroll_update.delta_y,
-          gesture.SourceDevice() == blink::kWebGestureDeviceTouchpad);
+          gesture.SourceDevice() == blink::kWebGestureDeviceTouchpad,
+          is_gesture_scroll_update_inertial_event);
+      if (is_gesture_scroll_update_inertial_event) {
+        // Record the timestamp of first inertial event.
+        if (!first_inertial_event_time_) {
+          first_inertial_event_time_ = event.TimeStamp();
+          break;
+        }
+        base::TimeDelta inertial_event_interval =
+            event.TimeStamp() - first_inertial_event_time_.value();
+        if (inertial_event_interval >=
+            OverscrollConfig::MaxInertialEventsBeforeOverscrollCancellation()) {
+          ignore_following_inertial_events_ = true;
+          // Reset overscroll state if fling didn't complete the overscroll
+          // gesture within the first 20 inertial events.
+          Cancel();
+        }
+      }
       break;
     }
     case blink::WebInputEvent::kGestureFlingStart: {
@@ -422,8 +445,13 @@ bool OverscrollController::ProcessEventForOverscroll(
 
 bool OverscrollController::ProcessOverscroll(float delta_x,
                                              float delta_y,
-                                             bool is_touchpad) {
+                                             bool is_touchpad,
+                                             bool is_inertial) {
   if (scroll_state_ == ScrollState::CONTENT_CONSUMING)
+    return false;
+
+  // Do not start overscroll for inertial events.
+  if (overscroll_mode_ == OVERSCROLL_NONE && is_inertial)
     return false;
 
   overscroll_delta_x_ += delta_x;

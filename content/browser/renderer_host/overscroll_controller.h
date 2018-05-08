@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "cc/input/overscroll_behavior.h"
 #include "content/common/content_export.h"
@@ -112,7 +113,10 @@ class CONTENT_EXPORT OverscrollController {
   // and the over scroll amount (i.e. |overscroll_mode_|, |overscroll_delta_x_|
   // and |overscroll_delta_y_|). Returns true if overscroll was handled by the
   // delegate.
-  bool ProcessOverscroll(float delta_x, float delta_y, bool is_touchpad);
+  bool ProcessOverscroll(float delta_x,
+                         float delta_y,
+                         bool is_touchpad,
+                         bool is_inertial);
 
   // Completes the desired action from the current gesture.
   void CompleteAction();
@@ -162,8 +166,9 @@ class CONTENT_EXPORT OverscrollController {
   bool wheel_scroll_latching_enabled_;
 
   // A inertial scroll (fling) event may complete an overscroll gesture and
-  // navigate to a new page, but the inertial scroll can continue to generate
-  // scroll-update events. These events need to be ignored.
+  // navigate to a new page or cancel the overscroll animation. In both cases
+  // inertial scroll can continue to generate scroll-update events. These events
+  // need to be ignored.
   bool ignore_following_inertial_events_ = false;
 
   // Specifies whether last overscroll was ignored, either due to a command line
@@ -176,6 +181,14 @@ class CONTENT_EXPORT OverscrollController {
   // Time between the end of the last ignored scroll sequence and the beginning
   // of the current one.
   base::TimeDelta time_since_last_ignored_scroll_;
+
+  // On Windows, we don't generate the inertial events (fling) but receive them
+  // from Win API. In some cases, we get a long tail of inertial events for a
+  // couple of seconds. The overscroll animation feels like stuck in these
+  // cases. So we only process 0.3 second inertial events then cancel the
+  // overscroll if it is not completed yet.
+  // Timestamp for the first inertial event (fling) in current stream.
+  base::Optional<base::TimeTicks> first_inertial_event_time_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollController);
 };

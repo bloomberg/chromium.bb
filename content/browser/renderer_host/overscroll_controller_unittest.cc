@@ -201,6 +201,75 @@ TEST_F(OverscrollControllerTest,
       100, 0, blink::kWebGestureDeviceTouchpad, timestamp, true));
 }
 
+// Ensure inertial gesture scroll update can not start overscroll.
+TEST_F(OverscrollControllerTest, InertialGSUsDoNotStartOverscroll) {
+  base::TimeTicks timestamp =
+      blink::WebInputEvent::GetStaticTimeStampForTests();
+  // Inertial update event complete the overscroll action.
+  EXPECT_FALSE(SimulateGestureScrollUpdate(
+      100, 0, blink::kWebGestureDeviceTouchpad, timestamp, true));
+  SimulateAck(false);
+  EXPECT_EQ(OVERSCROLL_NONE, controller_mode());
+  EXPECT_EQ(OverscrollSource::NONE, controller_source());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
+}
+
+// After 300ms inertial gesture scroll updates, overscroll must get cancelled
+// if not completed.
+TEST_F(OverscrollControllerTest, OnlyProcessLimitedInertialGSUEvents) {
+  base::TimeTicks timestamp =
+      blink::WebInputEvent::GetStaticTimeStampForTests();
+
+  EXPECT_FALSE(SimulateGestureEvent(blink::WebInputEvent::kGestureScrollBegin,
+                                    blink::kWebGestureDeviceTouchpad,
+                                    timestamp));
+  SimulateAck(false);
+
+  EXPECT_FALSE(SimulateGestureScrollUpdate(
+      61, 0, blink::kWebGestureDeviceTouchpad, timestamp, false));
+  SimulateAck(false);
+  EXPECT_EQ(OVERSCROLL_EAST, controller_mode());
+  EXPECT_EQ(OverscrollSource::TOUCHPAD, controller_source());
+  EXPECT_EQ(OVERSCROLL_EAST, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
+
+  // First inertial.
+  timestamp += base::TimeDelta::FromSeconds(1);
+  EXPECT_TRUE(SimulateGestureScrollUpdate(
+      1, 0, blink::kWebGestureDeviceTouchpad, timestamp, true));
+  SimulateAck(true);
+  EXPECT_EQ(OVERSCROLL_EAST, controller_mode());
+  EXPECT_EQ(OverscrollSource::TOUCHPAD, controller_source());
+  EXPECT_EQ(OVERSCROLL_EAST, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
+
+  // Not cancel in 10ms.
+  timestamp += base::TimeDelta::FromMilliseconds(10);
+  EXPECT_TRUE(SimulateGestureScrollUpdate(
+      1, 0, blink::kWebGestureDeviceTouchpad, timestamp, true));
+  SimulateAck(true);
+  EXPECT_EQ(OVERSCROLL_EAST, controller_mode());
+  EXPECT_EQ(OverscrollSource::TOUCHPAD, controller_source());
+  EXPECT_EQ(OVERSCROLL_EAST, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
+
+  // Cancel after 300ms.
+  timestamp += base::TimeDelta::FromMilliseconds(291);
+  EXPECT_TRUE(SimulateGestureScrollUpdate(
+      1, 0, blink::kWebGestureDeviceTouchpad, timestamp, true));
+  SimulateAck(true);
+  EXPECT_EQ(OVERSCROLL_NONE, controller_mode());
+  EXPECT_EQ(OverscrollSource::NONE, controller_source());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
+
+  // Next event should be ignored.
+  timestamp += base::TimeDelta::FromMilliseconds(100);
+  EXPECT_TRUE(SimulateGestureScrollUpdate(
+      1, 0, blink::kWebGestureDeviceTouchpad, timestamp, true));
+}
+
 // Verifies that when pull-to-refresh is disabled, it is not triggered for
 // neither touchpad nor touchscreen.
 TEST_F(OverscrollControllerTest, PullToRefreshDisabled) {

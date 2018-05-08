@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_OVERSCROLL_CONFIGURATION_H_
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -61,6 +62,8 @@ class CONTENT_EXPORT OverscrollConfig {
   static float GetThreshold(Threshold threshold);
 
   static bool TouchpadOverscrollHistoryNavigationEnabled();
+
+  static base::TimeDelta MaxInertialEventsBeforeOverscrollCancellation();
 
  private:
   friend class ScopedHistoryNavigationMode;
