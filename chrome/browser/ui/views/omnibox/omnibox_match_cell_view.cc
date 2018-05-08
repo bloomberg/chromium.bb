@@ -24,18 +24,22 @@ namespace {
 
 // The minimum vertical margin that should be used above and below each
 // suggestion.
-static const int kMinVerticalMargin = 1;
+static constexpr int kMinVerticalMargin = 1;
 
 // The vertical padding to provide each RenderText in addition to the height of
 // the font. Where possible, RenderText uses this additional space to vertically
 // center the cap height of the font instead of centering the entire font.
-static const int kVerticalPadding = 4;
+static constexpr int kVerticalPadding = 4;
 
 // TODO(dschuyler): Perhaps this should be based on the font size
 // instead of hardcoded to 2 dp (e.g. by adding a space in an
 // appropriate font to the beginning of the description, then reducing
 // the additional padding here to zero).
-static const int kAnswerIconToTextPadding = 2;
+static constexpr int kAnswerIconToTextPadding = 2;
+
+// The edge length of the rich suggestions images.
+static constexpr int kRichImageSize = 32;
+static constexpr int kRichImageCornerRadius = 4;
 
 // Returns the horizontal offset that ensures icons align vertically with the
 // Omnibox icon.
@@ -127,7 +131,9 @@ void PlaceholderImageSource::Draw(gfx::Canvas* canvas) {
   flags.setAntiAlias(true);
   flags.setStyle(cc::PaintFlags::kStrokeAndFill_Style);
   flags.setColor(color_);
-  canvas->sk_canvas()->drawOval(gfx::RectToSkRect(gfx::Rect(size_)), flags);
+  canvas->sk_canvas()->drawRoundRect(gfx::RectToSkRect(gfx::Rect(size_)),
+                                     kRichImageCornerRadius,
+                                     kRichImageCornerRadius, flags);
 }
 
 }  // namespace
@@ -208,10 +214,9 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
     extensions::image_util::ParseHexColorString(match.image_dominant_color,
                                                 &color);
     color = SkColorSetA(color, 0x40);  // 25% transparency (arbitrary).
-    int image_edge_length = description_view_->GetLineHeight();
     image_view_->SetImage(
         gfx::CanvasImageSource::MakeImageSkia<PlaceholderImageSource>(
-            gfx::Size(image_edge_length, image_edge_length), color));
+            gfx::Size(kRichImageSize, kRichImageSize), color));
   } else {
     // Single-line layout doesn't use the image.
     image_view_->SetSize(gfx::Size());
@@ -267,10 +272,10 @@ void OmniboxMatchCellView::LayoutOldStyleAnswer() {
 void OmniboxMatchCellView::LayoutRichSuggestion() {
   int x = GetIconAlignmentOffset() + HorizontalPadding();
   int y = GetVerticalInsets(text_height_, /*is_old_style_answer=*/false).top();
-  int image_edge_length = text_height_ * 2;
-  image_view_->SetImageSize(gfx::Size(image_edge_length, image_edge_length));
-  image_view_->SetBounds(x, y, image_edge_length, image_edge_length);
-  x += image_edge_length + HorizontalPadding();
+  image_view_->SetImageSize(gfx::Size(kRichImageSize, kRichImageSize));
+  image_view_->SetBounds(x, y + (text_height_ * 2 - kRichImageSize) / 2,
+                         kRichImageSize, kRichImageSize);
+  x += kRichImageSize + HorizontalPadding();
   content_view_->SetBounds(x, y, width() - x, text_height_);
   y += text_height_;
   description_view_->SetBounds(x, y, width() - x, text_height_);
