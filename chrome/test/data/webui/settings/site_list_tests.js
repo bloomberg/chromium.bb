@@ -291,7 +291,7 @@ suite('SiteList', function() {
   function openActionMenu(index) {
     const item = testElement.$.listContainer.children[index];
     const dots = item.querySelector('#actionMenuButton');
-    MockInteractions.tap(dots);
+    dots.click();
     Polymer.dom.flush();
   }
 
@@ -569,7 +569,7 @@ suite('SiteList', function() {
           // Select 'Remove' from menu.
           const remove = testElement.$.reset;
           assertTrue(!!remove);
-          MockInteractions.tap(remove);
+          remove.click();
           return browserProxy.whenCalled('resetCategoryPermissionForPattern');
         })
         .then(function(args) {
@@ -607,7 +607,7 @@ suite('SiteList', function() {
           openActionMenu(1);
           const remove = testElement.$.reset;
           assertTrue(!!remove);
-          MockInteractions.tap(remove);
+          remove.click();
           return browserProxy.whenCalled('resetCategoryPermissionForPattern');
         })
         .then(function(args) {
@@ -649,7 +649,7 @@ suite('SiteList', function() {
           assertTrue(!!resetButton);
           assertFalse(resetButton.hidden);
 
-          MockInteractions.tap(resetButton.querySelector('button'));
+          resetButton.querySelector('button').click();
           return browserProxy.whenCalled('resetCategoryPermissionForPattern');
         })
         .then(function(args) {
@@ -673,12 +673,36 @@ suite('SiteList', function() {
       assertTrue(menu.open);
       const edit = testElement.$.edit;
       assertTrue(!!edit);
-      MockInteractions.tap(edit);
+      edit.click();
       Polymer.dom.flush();
       assertFalse(menu.open);
 
       assertTrue(!!testElement.$$('settings-edit-exception-dialog'));
     });
+  });
+
+  test('edit dialog closes when incognito status changes', function() {
+    setUpCategory(
+        settings.ContentSettingsTypes.COOKIES, settings.ContentSetting.BLOCK,
+        prefsSessionOnly);
+
+    return browserProxy.whenCalled('getExceptionList')
+        .then(function() {
+          Polymer.dom.flush();  // Populates action menu.
+
+          openActionMenu(0);
+          testElement.$.edit.click();
+          Polymer.dom.flush();
+
+          const dialog = testElement.$$('settings-edit-exception-dialog');
+          assertTrue(!!dialog);
+          const closeEventPromise = test_util.eventToPromise('close', dialog);
+          browserProxy.setIncognito(true);
+          return closeEventPromise;
+        })
+        .then(() => {
+          assertFalse(!!testElement.$$('settings-edit-exception-dialog'));
+        });
   });
 
   test('list items shown and clickable when data is present', function() {
@@ -705,7 +729,7 @@ suite('SiteList', function() {
           const firstItem = testElement.$.listContainer.children[0];
           const clickable = firstItem.querySelector('.middle');
           assertTrue(!!clickable);
-          MockInteractions.tap(clickable);
+          clickable.click();
           assertEquals(
               prefsGeolocation.exceptions[contentType][0].origin,
               settings.getQueryParameters().get('site'));
@@ -831,7 +855,7 @@ suite('SiteList', function() {
           openActionMenu(0);
           const allow = testElement.$.allow;
           assertTrue(!!allow);
-          MockInteractions.tap(allow);
+          allow.click();
           return browserProxy.whenCalled('setCategoryPermissionForPattern');
         });
   });
@@ -848,7 +872,7 @@ suite('SiteList', function() {
 
           const allow = testElement.$.allow;
           assertTrue(!!allow);
-          MockInteractions.tap(allow);
+          allow.click();
           return browserProxy.whenCalled('setCategoryPermissionForPattern');
         })
         .then(function(args) {
@@ -933,7 +957,7 @@ suite('EditExceptionDialog', function() {
     assertTrue(!!actionButton);
     assertFalse(actionButton.disabled);
 
-    MockInteractions.tap(actionButton);
+    actionButton.click();
     return browserProxy.whenCalled('resetCategoryPermissionForPattern')
         .then(function(args) {
           assertEquals(cookieException.origin, args[0]);

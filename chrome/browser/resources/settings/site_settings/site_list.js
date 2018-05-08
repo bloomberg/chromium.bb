@@ -370,8 +370,10 @@ Polymer({
   onEditExceptionDialogClosed_: function() {
     this.showEditExceptionDialog_ = false;
     this.actionMenuSite_ = null;
-    this.activeDialogAnchor_.focus();
-    this.activeDialogAnchor_ = null;
+    if (this.activeDialogAnchor_) {
+      this.activeDialogAnchor_.focus();
+      this.activeDialogAnchor_ = null;
+    }
   },
 
   /** @private */
