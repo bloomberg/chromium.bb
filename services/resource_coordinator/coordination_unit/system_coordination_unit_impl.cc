@@ -29,7 +29,8 @@ void SystemCoordinationUnitImpl::DistributeMeasurementBatch(
       ProcessCoordinationUnitImpl::GetAllProcessCoordinationUnits();
 
   for (const auto& measurement : measurement_batch->measurements) {
-    for (ProcessCoordinationUnitImpl* process : processes) {
+    for (auto it = processes.begin(); it != processes.end(); ++it) {
+      ProcessCoordinationUnitImpl* process = *it;
       int64_t process_pid;
       // TODO(siggi): This seems pretty silly - we're going O(N^2) in processes
       //     here, and going through a relatively expensive accessor for the
@@ -37,10 +38,19 @@ void SystemCoordinationUnitImpl::DistributeMeasurementBatch(
       if (process->GetProperty(mojom::PropertyType::kPID, &process_pid) &&
           static_cast<base::ProcessId>(process_pid) == measurement->pid) {
         process->SetCPUUsage(measurement->cpu_usage);
+        process->set_private_footprint_kb(measurement->private_footprint_kb);
 
+        // Remove found processes.
+        processes.erase(it);
         break;
       }
     }
+  }
+
+  // Clear processes we didn't get data for.
+  for (ProcessCoordinationUnitImpl* process : processes) {
+    process->SetCPUUsage(0.0);
+    process->set_private_footprint_kb(0);
   }
 
   // Fire the end update signal.

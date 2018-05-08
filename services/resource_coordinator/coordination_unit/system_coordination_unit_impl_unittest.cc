@@ -110,10 +110,34 @@ TEST_F(SystemCoordinationUnitImplTest, DistributeMeasurementBatch) {
   EXPECT_TRUE(cu_graph.process->GetProperty(mojom::PropertyType::kCPUUsage,
                                             &cpu_usage));
   EXPECT_EQ(1000, cpu_usage);
+  EXPECT_EQ(1u, cu_graph.process->private_footprint_kb());
 
   EXPECT_TRUE(cu_graph.other_process->GetProperty(
       mojom::PropertyType::kCPUUsage, &cpu_usage));
   EXPECT_EQ(2000, cpu_usage);
+  EXPECT_EQ(2u, cu_graph.other_process->private_footprint_kb());
+
+  // Now test that a measurement batch that leaves out a process clears the
+  // properties of that process.
+  batch = mojom::ProcessResourceMeasurementBatch::New();
+  mojom::ProcessResourceMeasurementPtr measurement =
+      mojom::ProcessResourceMeasurement::New();
+  measurement->pid = 1;
+  measurement->cpu_usage = 30.0;
+  measurement->private_footprint_kb = 30u;
+  batch->measurements.push_back(std::move(measurement));
+
+  cu_graph.system->DistributeMeasurementBatch(std::move(batch));
+
+  EXPECT_TRUE(cu_graph.process->GetProperty(mojom::PropertyType::kCPUUsage,
+                                            &cpu_usage));
+  EXPECT_EQ(30000, cpu_usage);
+  EXPECT_EQ(30u, cu_graph.process->private_footprint_kb());
+
+  EXPECT_TRUE(cu_graph.other_process->GetProperty(
+      mojom::PropertyType::kCPUUsage, &cpu_usage));
+  EXPECT_EQ(0, cpu_usage);
+  EXPECT_EQ(0u, cu_graph.other_process->private_footprint_kb());
 }
 
 }  // namespace resource_coordinator
