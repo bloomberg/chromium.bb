@@ -3187,9 +3187,15 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   scroll_status.main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;
   if (!scrolling_node) {
-    scroll_status.thread = SCROLL_IGNORED;
-    if (settings_.is_layer_tree_for_subframe)
+    if (settings_.is_layer_tree_for_subframe) {
+      TRACE_EVENT_INSTANT0("cc", "Ignored - No ScrollNode (OOPIF)",
+                           TRACE_EVENT_SCOPE_THREAD);
       scroll_status.thread = SCROLL_UNKNOWN;
+    } else {
+      TRACE_EVENT_INSTANT0("cc", "Ignroed - No ScrollNode",
+                           TRACE_EVENT_SCOPE_THREAD);
+      scroll_status.thread = SCROLL_IGNORED;
+    }
     scroll_status.main_thread_scrolling_reasons =
         MainThreadScrollingReason::kNoScrollingLayer;
     return scroll_status;
@@ -3211,6 +3217,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   // If the CurrentlyScrollingNode doesn't exist after distributing scroll
   // delta, no scroller can scroll in the given delta hint direction(s).
   if (!active_tree_->CurrentlyScrollingNode()) {
+    TRACE_EVENT_INSTANT0("cc", "Ignored - Didnt Scroll",
+                         TRACE_EVENT_SCOPE_THREAD);
     scroll_status.thread = InputHandler::SCROLL_IGNORED;
     scroll_status.main_thread_scrolling_reasons =
         MainThreadScrollingReason::kNotScrollingOnMain;
@@ -3270,6 +3278,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
 
     if (layer_impl) {
       if (!IsInitialScrollHitTestReliable(layer_impl, device_viewport_point)) {
+        TRACE_EVENT_INSTANT0("cc", "Failed Hit Test", TRACE_EVENT_SCOPE_THREAD);
         scroll_status.thread = SCROLL_UNKNOWN;
         scroll_status.main_thread_scrolling_reasons =
             MainThreadScrollingReason::kFailedHitTest;
@@ -3336,6 +3345,7 @@ bool LayerTreeHostImpl::IsInitialScrollHitTestReliable(
 
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
     ScrollState* scroll_state) {
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollAnimatedBegin");
   InputHandler::ScrollStatus scroll_status;
   scroll_status.main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;
@@ -3347,6 +3357,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
     if (ScrollAnimationUpdateTarget(scroll_node, delta, base::TimeDelta())) {
       scroll_status.thread = SCROLL_ON_IMPL_THREAD;
     } else {
+      TRACE_EVENT_INSTANT0("cc", "Failed to create animation",
+                           TRACE_EVENT_SCOPE_THREAD);
       scroll_status.thread = SCROLL_IGNORED;
       scroll_status.main_thread_scrolling_reasons =
           MainThreadScrollingReason::kNotScrollable;
@@ -3436,6 +3448,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     const gfx::Point& viewport_point,
     const gfx::Vector2dF& scroll_delta,
     base::TimeDelta delayed_by) {
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollAnimated");
   InputHandler::ScrollStatus scroll_status;
   scroll_status.main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;
@@ -3462,6 +3475,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     if (ScrollAnimationUpdateTarget(scroll_node, delta, delayed_by)) {
       scroll_status.thread = SCROLL_ON_IMPL_THREAD;
     } else {
+      TRACE_EVENT_INSTANT0("cc", "Failed to update animation",
+                           TRACE_EVENT_SCOPE_THREAD);
       scroll_status.thread = SCROLL_IGNORED;
       scroll_status.main_thread_scrolling_reasons =
           MainThreadScrollingReason::kNotScrollable;
@@ -3991,6 +4006,9 @@ void LayerTreeHostImpl::RequestUpdateForSynchronousInputHandler() {
 
 void LayerTreeHostImpl::SetSynchronousInputHandlerRootScrollOffset(
     const gfx::ScrollOffset& root_offset) {
+  TRACE_EVENT2("cc",
+               "LayerTreeHostImpl::SetSynchronousInputHandlerRootScrollOffset",
+               "offset_x", root_offset.x(), "offset_y", root_offset.y());
   bool changed = active_tree_->DistributeRootScrollOffset(root_offset);
   if (!changed)
     return;

@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_customization.h"
 
 namespace blink {
@@ -282,6 +283,7 @@ bool ScrollManager::BubblingScroll(ScrollDirection direction,
 }
 
 void ScrollManager::CustomizedScroll(ScrollState& scroll_state) {
+  TRACE_EVENT0("input", "ScrollManager::CustomizedScroll");
   if (scroll_state.FullyConsumed())
     return;
 
@@ -356,6 +358,7 @@ void ScrollManager::RecordScrollRelatedMetrics(const WebGestureDevice device) {
 
 WebInputEventResult ScrollManager::HandleGestureScrollBegin(
     const WebGestureEvent& gesture_event) {
+  TRACE_EVENT0("input", "ScrollManager::handleGestureScrollBegin");
   Document* document = frame_->GetDocument();
 
   if (!document->GetLayoutView())
@@ -373,8 +376,11 @@ WebInputEventResult ScrollManager::HandleGestureScrollBegin(
     scroll_gesture_handling_node_ = frame_->GetDocument()->documentElement();
 
   if (!scroll_gesture_handling_node_ ||
-      !scroll_gesture_handling_node_->GetLayoutObject())
+      !scroll_gesture_handling_node_->GetLayoutObject()) {
+    TRACE_EVENT_INSTANT0("input", "Dropping: No LayoutObject",
+                         TRACE_EVENT_SCOPE_THREAD);
     return WebInputEventResult::kNotHandled;
+  }
 
   WebInputEventResult child_result = PassScrollGestureEvent(
       gesture_event, scroll_gesture_handling_node_->GetLayoutObject());
@@ -399,6 +405,10 @@ WebInputEventResult ScrollManager::HandleGestureScrollBegin(
   RecomputeScrollChain(*scroll_gesture_handling_node_.Get(), *scroll_state,
                        current_scroll_chain_);
 
+  TRACE_EVENT_INSTANT1("input", "Computed Scroll Chain",
+                       TRACE_EVENT_SCOPE_THREAD, "length",
+                       current_scroll_chain_.size());
+
   if (current_scroll_chain_.empty()) {
     // If a child has a non-empty scroll chain, we need to consider that instead
     // of simply returning WebInputEventResult::kNotHandled.
@@ -419,10 +429,13 @@ WebInputEventResult ScrollManager::HandleGestureScrollBegin(
 
 WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
     const WebGestureEvent& gesture_event) {
+  TRACE_EVENT0("input", "ScrollManager::handleGestureScrollUpdate");
   DCHECK_EQ(gesture_event.GetType(), WebInputEvent::kGestureScrollUpdate);
 
   Node* node = scroll_gesture_handling_node_.Get();
   if (!node || !node->GetLayoutObject()) {
+    TRACE_EVENT_INSTANT0("input", "Lost scroll_gesture_handling_node",
+                         TRACE_EVENT_SCOPE_THREAD);
     if (previous_gesture_scrolled_element_) {
       // When the scroll_gesture_handling_node_ gets deleted in the middle of
       // scrolling call HandleGestureScrollEvent to start scrolling a new node
@@ -432,9 +445,14 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
           SynthesizeGestureScrollBegin(gesture_event);
       HandleGestureScrollEvent(scroll_begin);
       node = scroll_gesture_handling_node_.Get();
-      if (!node || !node->GetLayoutObject())
+      if (!node || !node->GetLayoutObject()) {
+        TRACE_EVENT_INSTANT0("input", "Failed to find new node",
+                             TRACE_EVENT_SCOPE_THREAD);
         return WebInputEventResult::kNotHandled;
+      }
     } else {
+      TRACE_EVENT_INSTANT0("input", "No previously scrolled node",
+                           TRACE_EVENT_SCOPE_THREAD);
       return WebInputEventResult::kNotHandled;
     }
   }
@@ -463,8 +481,11 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
     return result;
   }
 
-  if (current_scroll_chain_.empty())
+  if (current_scroll_chain_.empty()) {
+    TRACE_EVENT_INSTANT0("input", "Empty Scroll Chain",
+                         TRACE_EVENT_SCOPE_THREAD);
     return WebInputEventResult::kNotHandled;
+  }
 
   std::unique_ptr<ScrollStateData> scroll_state_data =
       std::make_unique<ScrollStateData>();
@@ -538,6 +559,7 @@ void ScrollManager::SnapAtGestureScrollEnd() {
 
 WebInputEventResult ScrollManager::HandleGestureScrollEnd(
     const WebGestureEvent& gesture_event) {
+  TRACE_EVENT0("input", "ScrollManager::handleGestureScrollEnd");
   Node* node = scroll_gesture_handling_node_;
 
   if (node && node->GetLayoutObject()) {
@@ -607,6 +629,8 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
   if (!frame_->View())
     return WebInputEventResult::kNotHandled;
 
+  TRACE_EVENT0("input", "ScrollManager::handleGestureScrollEvent");
+
   Node* event_target = nullptr;
   Scrollbar* scrollbar = nullptr;
   if (gesture_event.GetType() != WebInputEvent::kGestureScrollBegin) {
@@ -618,6 +642,9 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
     Document* document = frame_->GetDocument();
     if (!document->GetLayoutView())
       return WebInputEventResult::kNotHandled;
+
+    TRACE_EVENT_INSTANT0("input", "Retargeting Scroll",
+                         TRACE_EVENT_SCOPE_THREAD);
 
     LocalFrameView* view = frame_->View();
     LayoutPoint view_point = view->RootFrameToContents(
