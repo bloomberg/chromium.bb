@@ -156,6 +156,14 @@ scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
   // The checks above should be enough to bail if layout is incomplete, but
   // let's verify:
   DCHECK(IsBlockLayoutComplete(*cached_constraint_space_, *cached_result_));
+  // If we used to contain abspos items, we can't reuse the fragment, because
+  // we can't be sure that the list of items hasn't changed (as we bubble them
+  // up during layout). In the case of newly-added abspos items to this
+  // containing block, we will handle those by the NeedsLayout check above for
+  // now.
+  // TODO(layout-ng): Come up with a better solution for this
+  if (cached_result_->OutOfFlowPositionedDescendants().size())
+    return nullptr;
   return cached_result_->CloneWithoutOffset();
 }
 
