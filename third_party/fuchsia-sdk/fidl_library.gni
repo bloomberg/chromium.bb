@@ -4,6 +4,18 @@
 
 assert(is_fuchsia)
 
+# Template for FIDL libraries. Following parameters can be passed when
+# instantiating these templates:
+#   sources   - List of .fidl files.
+#   name      - (optional) Name of the library. Must match the name specified
+#               in the .fidl files. target_name is used if name is not specified
+#               explicitly.
+#   deps      - (optional) List of other fild_library() targets that this FIDL
+#               library depends on.
+#   namespace - (optional) Namespace for generated code. All classes in the
+#               generated code are placed under <namespace>::<name>:: namespace.
+#               'fuchsia' namespace is used by default.
+#
 template("fidl_library") {
   pkg_name = target_name
 
@@ -12,10 +24,16 @@ template("fidl_library") {
     pkg_name = invoker.name
   }
 
+  namespace = "fuchsia"
+  if (defined(invoker.namespace)) {
+    namespace = invoker.namespace
+  }
+
   response_file = "$target_gen_dir/$target_name.rsp"
   json_representation = "$target_gen_dir/$pkg_name.fidl.json"
   output_gen_base = "$target_gen_dir/fidl"
   output_gen_dir = "$output_gen_base/fuchsia/cpp"
+  output_gen_dir_no_ns = "$output_gen_base/no_ns/fuchsia/cpp"
   tables_file = "$output_gen_base/$pkg_name.fidl-tables.cc"
 
   action("${target_name}_response_file") {
@@ -97,7 +115,7 @@ template("fidl_library") {
   }
 
   action("${target_name}_cpp_gen") {
-    visibility = [ ":${invoker.target_name}" ]
+    visibility = [ ":${invoker.target_name}_update_namespace" ]
 
     deps = [
       ":${invoker.target_name}_compile",
@@ -108,8 +126,8 @@ template("fidl_library") {
     ]
 
     outputs = [
-      "$output_gen_dir/$pkg_name.h",
-      "$output_gen_dir/$pkg_name.cc",
+      "${output_gen_dir_no_ns}/${pkg_name}.h",
+      "${output_gen_dir_no_ns}/${pkg_name}.cc",
     ]
 
     script = "//build/gn_run_binary.py"
@@ -121,9 +139,37 @@ template("fidl_library") {
       "-json",
       rebase_path("$json_representation"),
       "-include-base",
-      rebase_path("$output_gen_base"),
+      rebase_path("$output_gen_base/no_ns"),
       "-output-base",
-      rebase_path("$output_gen_dir/$pkg_name"),
+      rebase_path("${output_gen_dir_no_ns}/${pkg_name}"),
+    ]
+  }
+
+  # Move generated code to a different namespace to avoid conflicts with
+  # existing code in chromium.
+  # TODO(sergeyu): Remove this once FIDL-160 is resolved in Fuchsia.
+  action_foreach("${target_name}_update_namespace") {
+    visibility = [ ":${invoker.target_name}" ]
+
+    deps = [
+      ":${invoker.target_name}_cpp_gen",
+    ]
+
+    sources = [
+      "${output_gen_dir_no_ns}/${pkg_name}.cc",
+      "${output_gen_dir_no_ns}/${pkg_name}.h",
+    ]
+
+    outputs = [
+      "${output_gen_dir}/{{source_file_part}}",
+    ]
+
+    script = "//third_party/fuchsia-sdk/update_namespace.py"
+    args = [
+      namespace,
+      pkg_name,
+      "{{source}}",
+      rebase_path("${output_gen_dir}/{{source_file_part}}"),
     ]
   }
 
@@ -152,7 +198,7 @@ template("fidl_library") {
     }
     deps += [
       ":${invoker.target_name}_compile",
-      ":${invoker.target_name}_cpp_gen",
+      ":${invoker.target_name}_update_namespace",
     ]
 
     if (!defined(public_deps)) {
