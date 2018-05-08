@@ -4000,6 +4000,24 @@
             ]
         }
     ],
+    "V8CacheInlineScriptCode": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "CacheInlineScriptCode",
+                    "enable_features": [
+                        "CacheInlineScriptCode"
+                    ]
+                }
+            ]
+        }
+    ],
     "V8ContextSnapshot": [
         {
             "platforms": [
