@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
+#include "ui/display/display.h"
 
 namespace blink {
 
@@ -271,13 +272,10 @@ void XRFrameProvider::ScheduleNonExclusiveFrame() {
              << ar_requested_transfer_size_.Width() << "x"
              << ar_requested_transfer_size_.Height()
              << " angle=" << ar_requested_transfer_angle_;
-    // GetFrameData takes a rotation like display::Display::Rotation,
-    // so it needs to be divided by 90 degrees to get into 0-3 space.
-    DCHECK_LE(ar_requested_transfer_angle_, 270);
-    DCHECK_EQ(ar_requested_transfer_angle_ % 90, 0);
-    int rotation = ar_requested_transfer_angle_ / 90;
+    DCHECK(display::Display::IsValidRotation(ar_requested_transfer_angle_));
     device_->xrMagicWindowProviderPtr()->GetFrameData(
-        ar_requested_transfer_size_, rotation,
+        ar_requested_transfer_size_,
+        display::Display::DegreesToRotation(ar_requested_transfer_angle_),
         WTF::Bind(&XRFrameProvider::OnNonExclusiveFrameData,
                   WrapWeakPersistent(this)));
   } else {

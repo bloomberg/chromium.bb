@@ -272,7 +272,7 @@ mojom::DisplayUnitInfoPtr GetDisplayUnitInfo(const display::Display& display,
   info->dpi_y = device_dpi * display.size().height() /
                 display_info.bounds_in_native().height();
 
-  info->rotation = display::mojom::Rotation(display.rotation());
+  info->rotation = display.rotation();
   info->bounds = display.bounds();
   info->overscan = display_manager->GetOverscanInsets(display.id());
   info->work_area = display.work_area();

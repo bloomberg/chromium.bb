@@ -90,7 +90,7 @@ void VRDisplayImpl::GetPose(GetPoseCallback callback) {
 
 // Gets frame image data for AR magic window sessions.
 void VRDisplayImpl::GetFrameData(const gfx::Size& frame_size,
-                                 int16_t display_rotation,
+                                 display::Display::Rotation rotation,
                                  GetFrameDataCallback callback) {
   if (!device_->IsAccessAllowed(this)) {
     std::move(callback).Run(nullptr);
@@ -106,27 +106,7 @@ void VRDisplayImpl::GetFrameData(const gfx::Size& frame_size,
     return;
   }
 
-  display::Display::Rotation display_rotation_enum;
-  switch (display_rotation) {
-    case 0:
-      display_rotation_enum = display::Display::Rotation::ROTATE_0;
-      break;
-    case 1:
-      display_rotation_enum = display::Display::Rotation::ROTATE_90;
-      break;
-    case 2:
-      display_rotation_enum = display::Display::Rotation::ROTATE_180;
-      break;
-    case 3:
-      display_rotation_enum = display::Display::Rotation::ROTATE_270;
-      break;
-    default:
-      LOG(ERROR) << "Invalid frame_rotation value: " << display_rotation;
-      std::move(callback).Run(nullptr);
-      return;
-  }
-  device_->GetMagicWindowFrameData(frame_size, display_rotation_enum,
-                                   std::move(callback));
+  device_->GetMagicWindowFrameData(frame_size, rotation, std::move(callback));
 }
 
 void VRDisplayImpl::SetListeningForActivate(bool listening) {

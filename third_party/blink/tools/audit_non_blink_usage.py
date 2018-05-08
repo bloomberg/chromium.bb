@@ -197,10 +197,12 @@ _CONFIG = [
             'third_party/blink/renderer/modules/webgl/',
             'third_party/blink/renderer/modules/xr/',
         ],
-        # These modules need access to GL drawing.
+        # The modules listed above need access to the following GL drawing and
+        # display-related types.
         'allowed': [
             'gpu::gles2::GLES2Interface',
             'gpu::MailboxHolder',
+            'display::Display',
         ],
     },
     {

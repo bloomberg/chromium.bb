@@ -334,7 +334,7 @@ TEST_F(CrosDisplayConfigTest, GetDisplayUnitInfoListBasic) {
   EXPECT_FALSE(info_0.has_accelerometer_support);
   EXPECT_EQ(96, info_0.dpi_x);
   EXPECT_EQ(96, info_0.dpi_y);
-  EXPECT_EQ(display::mojom::Rotation::VALUE_0, info_0.rotation);
+  EXPECT_EQ(display::Display::ROTATE_0, info_0.rotation);
   EXPECT_EQ("0,0 500x600", info_0.bounds.ToString());
   EXPECT_EQ("0,0,0,0", info_0.overscan.ToString());
 
@@ -345,7 +345,7 @@ TEST_F(CrosDisplayConfigTest, GetDisplayUnitInfoListBasic) {
   // Second display is left of the primary display whose width 500.
   EXPECT_EQ("500,0 400x520", info_1.bounds.ToString());
   EXPECT_EQ("0,0,0,0", info_1.overscan.ToString());
-  EXPECT_EQ(display::mojom::Rotation::VALUE_0, info_1.rotation);
+  EXPECT_EQ(display::Display::ROTATE_0, info_1.rotation);
   EXPECT_FALSE(info_1.is_primary);
   EXPECT_FALSE(info_1.is_internal);
   EXPECT_TRUE(info_1.is_enabled);
@@ -450,7 +450,7 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesRotation) {
 
   auto properties = mojom::DisplayConfigProperties::New();
   properties->rotation =
-      mojom::DisplayRotation::New(display::mojom::Rotation::VALUE_90);
+      mojom::DisplayRotation::New(display::Display::ROTATE_90);
   result = SetDisplayProperties(base::Int64ToString(secondary.id()),
                                 std::move(properties));
   EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
@@ -459,7 +459,7 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesRotation) {
 
   properties = mojom::DisplayConfigProperties::New();
   properties->rotation =
-      mojom::DisplayRotation::New(display::mojom::Rotation::VALUE_270);
+      mojom::DisplayRotation::New(display::Display::ROTATE_270);
   result = SetDisplayProperties(base::Int64ToString(secondary.id()),
                                 std::move(properties));
   EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
@@ -470,7 +470,7 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesRotation) {
   properties = mojom::DisplayConfigProperties::New();
   properties->set_primary = true;
   properties->rotation =
-      mojom::DisplayRotation::New(display::mojom::Rotation::VALUE_180);
+      mojom::DisplayRotation::New(display::Display::ROTATE_180);
   result = SetDisplayProperties(base::Int64ToString(secondary.id()),
                                 std::move(properties));
   EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
