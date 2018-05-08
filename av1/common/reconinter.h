@@ -134,6 +134,28 @@ typedef struct {
 
 extern const wedge_params_type wedge_params_lookup[BLOCK_SIZES_ALL];
 
+typedef struct SubpelParams {
+  int xs;
+  int ys;
+  int subpel_x;
+  int subpel_y;
+} SubpelParams;
+
+struct build_prediction_ctxt {
+  const AV1_COMMON *cm;
+  int mi_row;
+  int mi_col;
+  uint8_t **tmp_buf;
+  int *tmp_width;
+  int *tmp_height;
+  int *tmp_stride;
+  int mb_to_far_edge;
+};
+
+void av1_modify_neighbor_predictor_for_obmc(MB_MODE_INFO *mbmi);
+int av1_skip_u4x4_pred_in_obmc(BLOCK_SIZE bsize,
+                               const struct macroblockd_plane *pd, int dir);
+
 static INLINE int is_interinter_compound_used(COMPOUND_TYPE type,
                                               BLOCK_SIZE sb_type) {
   const int comp_allowed = is_comp_ref_allowed(sb_type);
@@ -336,7 +358,15 @@ static INLINE int av1_is_interp_search_needed(const MACROBLOCKD *const xd) {
   }
   return 0;
 }
-
+void av1_setup_build_prediction_by_above_pred(
+    MACROBLOCKD *xd, int rel_mi_col, uint8_t above_mi_width,
+    MB_MODE_INFO *above_mbmi, struct build_prediction_ctxt *ctxt,
+    const int num_planes);
+void av1_setup_build_prediction_by_left_pred(MACROBLOCKD *xd, int rel_mi_row,
+                                             uint8_t left_mi_height,
+                                             MB_MODE_INFO *left_mbmi,
+                                             struct build_prediction_ctxt *ctxt,
+                                             const int num_planes);
 void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                          int mi_row, int mi_col,
                                          uint8_t *tmp_buf[MAX_MB_PLANE],
