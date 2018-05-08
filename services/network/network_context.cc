@@ -342,7 +342,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   // have to figure out which of the latter needs to move to the network
   // process). TODO: http://crbug.com/789644
   if (network_context_params->cookie_path) {
-    DCHECK(network_context_params->channel_id_path);
     net::CookieCryptoDelegate* crypto_delegate = nullptr;
 
     scoped_refptr<base::SequencedTaskRunner> client_task_runner =
@@ -352,13 +351,15 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
             {base::MayBlock(), base::TaskPriority::BACKGROUND,
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
-    scoped_refptr<net::SQLiteChannelIDStore> channel_id_db =
-        new net::SQLiteChannelIDStore(
-            network_context_params->channel_id_path.value(),
-            background_task_runner);
-    std::unique_ptr<net::ChannelIDService> channel_id_service(
-        std::make_unique<net::ChannelIDService>(
-            new net::DefaultChannelIDStore(channel_id_db.get())));
+    std::unique_ptr<net::ChannelIDService> channel_id_service;
+    if (network_context_params->channel_id_path) {
+      scoped_refptr<net::SQLiteChannelIDStore> channel_id_db =
+          new net::SQLiteChannelIDStore(
+              network_context_params->channel_id_path.value(),
+              background_task_runner);
+      channel_id_service = std::make_unique<net::ChannelIDService>(
+          new net::DefaultChannelIDStore(channel_id_db.get()));
+    }
 
     scoped_refptr<net::SQLitePersistentCookieStore> sqlite_store(
         new net::SQLitePersistentCookieStore(
@@ -373,7 +374,9 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
     if (network_context_params->persist_session_cookies)
       cookie_store->SetPersistSessionCookies(true);
 
-    cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
+    if (channel_id_service) {
+      cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
+    }
     builder.SetCookieAndChannelIdStores(std::move(cookie_store),
                                         std::move(channel_id_service));
   } else {

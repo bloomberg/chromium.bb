@@ -462,17 +462,18 @@ void ProfileImplIOData::InitializeInternal(
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
     // Set up server bound cert service.
-    DCHECK(!profile_params->main_network_context_params->channel_id_path.value()
-                .empty());
-    scoped_refptr<QuotaPolicyChannelIDStore> channel_id_db =
-        new QuotaPolicyChannelIDStore(
-            profile_params->main_network_context_params->channel_id_path
-                .value(),
-            cookie_background_task_runner,
-            lazy_params_->special_storage_policy.get());
-    std::unique_ptr<net::ChannelIDService> channel_id_service(
-        std::make_unique<net::ChannelIDService>(
-            new net::DefaultChannelIDStore(channel_id_db.get())));
+    std::unique_ptr<net::ChannelIDService> channel_id_service;
+    if (profile_params->main_network_context_params->channel_id_path
+            .has_value()) {
+      scoped_refptr<QuotaPolicyChannelIDStore> channel_id_db =
+          new QuotaPolicyChannelIDStore(
+              profile_params->main_network_context_params->channel_id_path
+                  .value(),
+              cookie_background_task_runner,
+              lazy_params_->special_storage_policy.get());
+      channel_id_service = std::make_unique<net::ChannelIDService>(
+          new net::DefaultChannelIDStore(channel_id_db.get()));
+    }
 
     // Set up cookie store.
     content::CookieStoreConfig cookie_config(
@@ -487,7 +488,9 @@ void ProfileImplIOData::InitializeInternal(
     std::unique_ptr<net::CookieStore> cookie_store(
         content::CreateCookieStore(cookie_config));
 
-    cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
+    if (channel_id_service) {
+      cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
+    }
 
     builder->SetCookieAndChannelIdStores(std::move(cookie_store),
                                          std::move(channel_id_service));
