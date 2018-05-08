@@ -48,6 +48,7 @@ public final class DownloadInfo {
     private final ContentId mContentId;
     private final boolean mIsOpenable;
     private final boolean mIsTransient;
+    private final boolean mIsParallelDownload;
     private final Bitmap mIcon;
     @PendingState
     private final int mPendingState;
@@ -83,6 +84,7 @@ public final class DownloadInfo {
         }
         mIsOpenable = builder.mIsOpenable;
         mIsTransient = builder.mIsTransient;
+        mIsParallelDownload = builder.mIsParallelDownload;
         mIcon = builder.mIcon;
         mPendingState = builder.mPendingState;
     }
@@ -190,6 +192,10 @@ public final class DownloadInfo {
         return mIsTransient;
     }
 
+    public boolean getIsParallelDownload() {
+        return mIsParallelDownload;
+    }
+
     public Bitmap getIcon() {
         return mIcon;
     }
@@ -276,6 +282,7 @@ public final class DownloadInfo {
         private ContentId mContentId;
         private boolean mIsOpenable = true;
         private boolean mIsTransient;
+        private boolean mIsParallelDownload;
         private Bitmap mIcon;
         @PendingState
         private int mPendingState;
@@ -405,6 +412,11 @@ public final class DownloadInfo {
             return this;
         }
 
+        public Builder setIsParallelDownload(boolean isParallelDownload) {
+            mIsParallelDownload = isParallelDownload;
+            return this;
+        }
+
         public Builder setIcon(Bitmap icon) {
             mIcon = icon;
             return this;
@@ -448,6 +460,8 @@ public final class DownloadInfo {
                     .setIsOfflinePage(downloadInfo.isOfflinePage())
                     .setState(downloadInfo.state())
                     .setLastAccessTime(downloadInfo.getLastAccessTime())
+                    .setIsTransient(downloadInfo.getIsTransient())
+                    .setIsParallelDownload(downloadInfo.getIsParallelDownload())
                     .setIcon(downloadInfo.getIcon())
                     .setPendingState(downloadInfo.getPendingState());
             return builder;
@@ -458,8 +472,8 @@ public final class DownloadInfo {
     private static DownloadInfo createDownloadInfo(String downloadGuid, String fileName,
             String filePath, String url, String mimeType, long bytesReceived, boolean isIncognito,
             int state, int percentCompleted, boolean isPaused, boolean hasUserGesture,
-            boolean isResumable, String originalUrl, String referrerUrl, long timeRemainingInMs,
-            long lastAccessTime) {
+            boolean isResumable, boolean isParallelDownload, String originalUrl, String referrerUrl,
+            long timeRemainingInMs, long lastAccessTime) {
         String remappedMimeType = ChromeDownloadDelegate.remapGenericMimeType(
                 mimeType, url, fileName);
 
@@ -482,6 +496,7 @@ public final class DownloadInfo {
                 .setIsOffTheRecord(isIncognito)
                 .setIsPaused(isPaused)
                 .setIsResumable(isResumable)
+                .setIsParallelDownload(isParallelDownload)
                 .setMimeType(remappedMimeType)
                 .setOriginalUrl(originalUrl)
                 .setProgress(progress)
