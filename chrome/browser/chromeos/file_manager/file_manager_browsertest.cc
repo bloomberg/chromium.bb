@@ -384,14 +384,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                                     "tabindexFocusDownloads"),
                       TestParameter(IN_GUEST_MODE, "tabindexFocusDownloads")));
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_TabindexFocusDirectorySelected \
-  DISABLED_TabindexFocusDirectorySelected
-#else
-#define MAYBE_TabindexFocusDirectorySelected TabindexFocusDirectorySelected
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_TabindexFocusDirectorySelected,
+    TabindexFocusDirectorySelected,
     FileManagerBrowserTestWithLegacyEventDispatch,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "tabindexFocusDirectorySelected")));
