@@ -68,7 +68,9 @@ class RoundRectBackground : public views::Background {
 // DialogPlate -----------------------------------------------------------------
 
 DialogPlate::DialogPlate(AshAssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller), icon_(new views::View()) {
+    : assistant_controller_(assistant_controller),
+      textfield_(new views::Textfield()),
+      icon_(new views::View()) {
   InitLayout();
 
   // The Assistant controller indirectly owns the view hierarchy to which
@@ -93,18 +95,17 @@ void DialogPlate::InitLayout() {
       views::Textfield::GetDefaultFontList().DeriveWithSizeDelta(4);
 
   // Textfield.
-  views::Textfield* textfield = new views::Textfield();
-  textfield->SetBackgroundColor(SK_ColorTRANSPARENT);
-  textfield->SetBorder(views::NullBorder());
-  textfield->set_controller(this);
-  textfield->SetFontList(font_list);
-  textfield->set_placeholder_font_list(font_list);
-  textfield->set_placeholder_text(base::UTF8ToUTF16(kHint));
-  textfield->set_placeholder_text_color(kTextColorHint);
-  textfield->SetTextColor(kTextColorPrimary);
-  AddChildView(textfield);
+  textfield_->SetBackgroundColor(SK_ColorTRANSPARENT);
+  textfield_->SetBorder(views::NullBorder());
+  textfield_->set_controller(this);
+  textfield_->SetFontList(font_list);
+  textfield_->set_placeholder_font_list(font_list);
+  textfield_->set_placeholder_text(base::UTF8ToUTF16(kHint));
+  textfield_->set_placeholder_text_color(kTextColorHint);
+  textfield_->SetTextColor(kTextColorPrimary);
+  AddChildView(textfield_);
 
-  layout->SetFlexForView(textfield, 1);
+  layout->SetFlexForView(textfield_, 1);
 
   // TODO(dmblack): Replace w/ stateful icon.
   // Icon.
@@ -184,6 +185,10 @@ void DialogPlate::UpdateIcon() {
   }
 
   SchedulePaint();
+}
+
+void DialogPlate::RequestFocus() {
+  textfield_->RequestFocus();
 }
 
 }  // namespace ash

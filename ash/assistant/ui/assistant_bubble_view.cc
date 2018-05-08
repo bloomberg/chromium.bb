@@ -360,6 +360,7 @@ AssistantBubbleView::AssistantBubbleView(
           new InteractionContainer(assistant_controller->interaction_model())),
       ui_element_container_(new UiElementContainer()),
       suggestions_container_(new SuggestionsContainer(this)),
+      dialog_plate_(new DialogPlate(assistant_controller)),
       render_request_weak_factory_(this) {
   InitLayout();
 
@@ -404,7 +405,7 @@ void AssistantBubbleView::InitLayout() {
   AddChildView(suggestions_container_);
 
   // Dialog plate.
-  AddChildView(new DialogPlate(assistant_controller_));
+  AddChildView(dialog_plate_);
 }
 
 void AssistantBubbleView::SetProcessingUiElement(bool is_processing) {
@@ -551,6 +552,10 @@ void AssistantBubbleView::OnTextAdded(
 
   ui_element_container_->AddText(text_element->GetText());
   ui_element_container_->SetVisible(true);
+}
+
+void AssistantBubbleView::RequestFocus() {
+  dialog_plate_->RequestFocus();
 }
 
 }  // namespace ash

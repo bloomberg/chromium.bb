@@ -21,6 +21,7 @@ class AshAssistantController;
 class AssistantCardElement;
 class AssistantTextElement;
 class AssistantUiElement;
+class DialogPlate;
 
 namespace {
 class InteractionContainer;
@@ -39,6 +40,7 @@ class AssistantBubbleView : public views::View,
   gfx::Size CalculatePreferredSize() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
+  void RequestFocus() override;
 
   // AssistantInteractionModelObserver:
   void OnInputModalityChanged(InputModality input_modality) override;
@@ -73,6 +75,7 @@ class AssistantBubbleView : public views::View,
   InteractionContainer* interaction_container_;  // Owned by view hierarchy.
   UiElementContainer* ui_element_container_;     // Owned by view hierarchy.
   SuggestionsContainer* suggestions_container_;  // Owned by view hierarchy.
+  DialogPlate* dialog_plate_;                    // Owned by view hierarchy.
 
   // Uniquely identifies cards owned by AssistantCardRenderer.
   std::vector<base::UnguessableToken> id_token_list_;

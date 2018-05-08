@@ -21,6 +21,9 @@ class DialogPlate : public views::View,
   explicit DialogPlate(AshAssistantController* assistant_controller);
   ~DialogPlate() override;
 
+  // views::View:
+  void RequestFocus() override;
+
   // AssistantInteractionModelObserver:
   void OnInputModalityChanged(InputModality input_modality) override;
   void OnMicStateChanged(MicState mic_state) override;
@@ -36,6 +39,7 @@ class DialogPlate : public views::View,
   void UpdateIcon();
 
   AshAssistantController* const assistant_controller_;  // Owned by Shell.
+  views::Textfield* textfield_;  // Owned by view hierarchy.
   views::View* icon_;  // Owned by view hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(DialogPlate);
