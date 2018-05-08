@@ -198,7 +198,7 @@ class HWTestList(object):
     # hwtest times and shows flakes clearer.
     default_dict = dict(pool=constants.HWTEST_PFQ_POOL, file_bugs=True,
                         priority=constants.HWTEST_PFQ_PRIORITY,
-                        retry=False, max_retries=None, minimum_duts=4)
+                        retry=False, max_retries=None, minimum_duts=1)
     # Allows kwargs overrides to default_dict for pfq.
     default_dict.update(kwargs)
     suite_list = self.DefaultListNonCanary(**default_dict)
