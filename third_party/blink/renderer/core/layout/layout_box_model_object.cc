@@ -306,10 +306,11 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     }
   }
 
-  if (old_style && (old_style->CanContainFixedPositionObjects() !=
-                        StyleRef().CanContainFixedPositionObjects() ||
-                    old_style->GetPosition() != StyleRef().GetPosition() ||
-                    had_layer != HasLayer())) {
+  if (old_style &&
+      (old_style->CanContainFixedPositionObjects(IsDocumentElement()) !=
+           StyleRef().CanContainFixedPositionObjects(IsDocumentElement()) ||
+       old_style->GetPosition() != StyleRef().GetPosition() ||
+       had_layer != HasLayer())) {
     // This may affect paint properties of the current object, and descendants
     // even if paint properties of the current object won't change. E.g. the
     // stacking context and/or containing block of descendants may change.

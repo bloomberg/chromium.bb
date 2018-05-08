@@ -140,7 +140,8 @@ LayoutBlock* FindContainingBlock(LayoutObject* container,
   // LayoutObject::Container() method can actually be used to obtain the inline
   // directly.
   if (container && container->IsInline() && !container->IsAtomicInlineLevel()) {
-    DCHECK(container->Style()->HasInFlowPosition());
+    DCHECK(container->Style()->HasInFlowPosition() ||
+           container->Style()->HasFilter());
     container = container->ContainingBlock(skip_info);
   }
 

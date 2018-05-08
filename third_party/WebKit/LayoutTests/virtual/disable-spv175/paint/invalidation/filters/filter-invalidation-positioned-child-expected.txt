@@ -24,7 +24,7 @@
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='positioned'",
-          "rect": [400, 400, 380, 180],
+          "rect": [408, 408, 380, 180],
           "reason": "subtree"
         }
       ]
