@@ -172,8 +172,7 @@ public class ContentViewCoreImpl implements ContentViewCore {
     }
 
     private void hidePopupsAndClearSelection() {
-        getSelectionPopupController().destroyActionModeAndUnselect();
-        mWebContents.dismissTextHandles();
+        getSelectionPopupController().clearSelection();
         PopupController.hideAll(mWebContents);
     }
 
@@ -266,10 +265,6 @@ public class ContentViewCoreImpl implements ContentViewCore {
                 hidePopupsAndPreserveSelection();
             } else {
                 hidePopupsAndClearSelection();
-                // Clear the selection. The selection is cleared on destroying IME
-                // and also here since we may receive destroy first, for example
-                // when focus is lost in webview.
-                controller.clearSelection();
             }
         }
         if (mNativeContentViewCore != 0) nativeSetFocus(mNativeContentViewCore, mHasInputFocus);
