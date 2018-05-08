@@ -38,6 +38,13 @@ class NewPasswordFormManager : public FormFetcher::Consumer {
   // same.
   bool DoesManage(const autofill::FormData& form) const;
 
+  // If |submitted_form| is managed by *this (i.e. DoesManage returns
+  // true) then saves |submitted_form| to |submitted_form_| field, sets
+  // |is_submitted| = true and returns true. Otherwise returns false.
+  bool SetSubmittedFormIfIsManaged(const autofill::FormData& submitted_form);
+  bool is_submitted() { return is_submitted_; }
+  void set_not_submitted() { is_submitted_ = false; }
+
  protected:
   // FormFetcher::Consumer:
   void ProcessMatches(
@@ -60,6 +67,11 @@ class NewPasswordFormManager : public FormFetcher::Consumer {
 
   // FormFetcher instance which owns the login data from PasswordStore.
   FormFetcher* form_fetcher_;
+
+  // |is_submitted_| = true means that a submission of the managed form was seen
+  // and then |submitted_form_| contains the submitted form.
+  bool is_submitted_ = false;
+  autofill::FormData submitted_form_;
 
   DISALLOW_COPY_AND_ASSIGN(NewPasswordFormManager);
 };

@@ -125,4 +125,13 @@ void NewPasswordFormManager::ProcessMatches(
       preferred_match, metrics_recorder_.get());
 }
 
+bool NewPasswordFormManager::SetSubmittedFormIfIsManaged(
+    const autofill::FormData& submitted_form) {
+  if (!DoesManage(submitted_form))
+    return false;
+  submitted_form_ = submitted_form;
+  is_submitted_ = true;
+  return true;
+}
+
 }  // namespace password_manager

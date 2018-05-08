@@ -43,6 +43,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #endif
 
+using autofill::FormData;
 using autofill::PasswordForm;
 
 namespace password_manager {
@@ -466,6 +467,9 @@ void PasswordManager::DidNavigateMainFrame() {
 void PasswordManager::OnPasswordFormSubmitted(
     password_manager::PasswordManagerDriver* driver,
     const PasswordForm& password_form) {
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kNewPasswordFormParsing))
+    ProcessSubmittedForm(password_form.form_data);
   ProvisionallySavePassword(password_form, driver);
   pending_login_managers_.clear();
 }
@@ -478,6 +482,9 @@ void PasswordManager::OnPasswordFormSubmittedNoChecks(
     logger.LogMessage(Logger::STRING_ON_SAME_DOCUMENT_NAVIGATION);
   }
 
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kNewPasswordFormParsing))
+    ProcessSubmittedForm(password_form.form_data);
   ProvisionallySavePassword(password_form, driver);
 
   if (CanProvisionalManagerSave())
@@ -655,7 +662,7 @@ void PasswordManager::CreateFormManagers(
     password_manager::PasswordManagerDriver* driver,
     const std::vector<autofill::PasswordForm>& forms) {
   // Find new forms.
-  std::vector<const autofill::FormData*> new_forms;
+  std::vector<const FormData*> new_forms;
   for (const autofill::PasswordForm& form : forms) {
     bool form_manager_exists =
         std::any_of(form_managers_.begin(), form_managers_.end(),
@@ -667,11 +674,32 @@ void PasswordManager::CreateFormManagers(
   }
 
   // Create form manager for new forms.
-  for (const autofill::FormData* new_form : new_forms) {
+  for (const FormData* new_form : new_forms) {
     form_managers_.push_back(std::make_unique<NewPasswordFormManager>(
         client_,
         driver ? driver->AsWeakPtr() : base::WeakPtr<PasswordManagerDriver>(),
         *new_form, nullptr));
+  }
+}
+
+void PasswordManager::ProcessSubmittedForm(const FormData& submitted_form) {
+  NewPasswordFormManager* matching_form_manager = nullptr;
+  for (const auto& manager : form_managers_) {
+    if (manager->SetSubmittedFormIfIsManaged(submitted_form)) {
+      matching_form_manager = manager.get();
+      break;
+    }
+  }
+  if (!matching_form_manager) {
+    // TODO(https://crbug.com/831123). Add metrics and implement more robust
+    // handling when |matching_form_manager| is not found.
+    return;
+  }
+
+  // Set all other form managers to no submission state.
+  for (const auto& manager : form_managers_) {
+    if (manager.get() != matching_form_manager)
+      matching_form_manager->set_not_submitted();
   }
 }
 
@@ -963,8 +991,7 @@ void PasswordManager::ProcessAutofillPredictions(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
 
   // Leave only forms that contain fields that are useful for password manager.
-  std::map<autofill::FormData, autofill::PasswordFormFieldPredictionMap>
-      predictions;
+  std::map<FormData, autofill::PasswordFormFieldPredictionMap> predictions;
   for (const autofill::FormStructure* form : forms) {
     if (logger)
       logger->LogFormStructure(Logger::STRING_SERVER_PREDICTIONS, *form);

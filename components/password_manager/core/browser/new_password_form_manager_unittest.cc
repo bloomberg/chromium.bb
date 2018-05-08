@@ -107,4 +107,22 @@ TEST_F(NewPasswordFormManagerTest, Autofill) {
   EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
 }
 
+TEST_F(NewPasswordFormManagerTest, SetSubmitted) {
+  FakeFormFetcher fetcher;
+  fetcher.Fetch();
+  NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
+                                      observed_form_, &fetcher);
+  EXPECT_FALSE(form_manager.is_submitted());
+  EXPECT_TRUE(form_manager.SetSubmittedFormIfIsManaged(observed_form_));
+  EXPECT_TRUE(form_manager.is_submitted());
+
+  FormData another_form = observed_form_;
+  another_form.name += ASCIIToUTF16("1");
+  EXPECT_FALSE(form_manager.SetSubmittedFormIfIsManaged(another_form));
+  EXPECT_TRUE(form_manager.is_submitted());
+
+  form_manager.set_not_submitted();
+  EXPECT_FALSE(form_manager.is_submitted());
+}
+
 }  // namespace  password_manager
