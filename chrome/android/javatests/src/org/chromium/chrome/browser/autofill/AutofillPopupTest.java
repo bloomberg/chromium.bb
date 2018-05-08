@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content.browser.input.ChromiumBaseInputConnection;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -143,8 +142,7 @@ public class AutofillPopupTest {
         );
     }
 
-    private void loadAndFillForm(
-            final String formDataUrl, final String inputText)
+    private void loadAndFillForm(final String formDataUrl, final String inputText)
             throws InterruptedException, ExecutionException, TimeoutException {
         mActivityTestRule.startMainActivityWithURL(formDataUrl);
         mHelper = new AutofillTestHelper();
@@ -173,9 +171,7 @@ public class AutofillPopupTest {
 
         waitForKeyboardShowRequest(immw, 1);
 
-        final ChromiumBaseInputConnection inputConnection =
-                (ChromiumBaseInputConnection) imeAdapter.getInputConnectionForTest();
-        inputConnection.getHandler().post(() -> inputConnection.setComposingText(inputText, 1));
+        imeAdapter.setComposingTextForTest(inputText, 1);
 
         waitForAnchorViewAdd(view);
         View anchorView = view.findViewById(R.id.dropdown_popup_window);
