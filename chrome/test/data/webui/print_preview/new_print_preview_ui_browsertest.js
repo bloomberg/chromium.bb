@@ -174,6 +174,37 @@ TEST_F('PrintPreviewSettingsSelectTest', 'CustomMediaNames',
   this.runMochaTest(settings_select_test.TestNames.CustomMediaNames);
 });
 
+PrintPreviewPagesSettingsTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/pages_settings.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      ROOT_PATH + 'chrome/test/data/webui/settings/test_util.js',
+      'print_preview_test_utils.js',
+      'pages_settings_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return pages_settings_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewPagesSettingsTest', 'ValidPageRanges',
+       function() {
+  this.runMochaTest(pages_settings_test.TestNames.ValidPageRanges);
+});
+
+TEST_F('PrintPreviewPagesSettingsTest', 'InvalidPageRanges',
+       function() {
+  this.runMochaTest(pages_settings_test.TestNames.InvalidPageRanges);
+});
+
 PrintPreviewRestoreStateTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {

@@ -68,6 +68,14 @@ Polymer({
       type: Array,
       computed: 'computeRangesToPrint_(pagesToPrint_, allPagesArray_)',
     },
+
+    /** @private {string} */
+    inputPattern_: {
+      type: String,
+      notify: true,
+      value:
+          '([0-9]*(-)?[0-9]*(,|\u3001)( )?)*([0-9]*(-)?[0-9]*(,|\u3001)?( )?)?',
+    },
   },
 
   observers: [
@@ -129,16 +137,18 @@ Polymer({
 
     const pages = [];
     const added = {};
-    const ranges = this.inputString_.split(',');
+    const ranges = this.inputString_.split(/,|\u3001/);
     const maxPage = this.allPagesArray_.length;
     for (let range of ranges) {
       range = range.trim();
-      if (range == '')
-        continue;
+      if (range == '') {
+        this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
+        return this.pagesToPrint_;
+      }
       const limits = range.split('-');
       let min = parseInt(limits[0], 10);
       if (min < 1) {
-        this.errorState_ = PagesInputErrorState.OUT_OF_BOUNDS;
+        this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
         return this.pagesToPrint_;
       }
       if (limits.length == 1) {
