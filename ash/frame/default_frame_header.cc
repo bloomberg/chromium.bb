@@ -10,14 +10,12 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/frame_header_util.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"  // DCHECK
 #include "third_party/skia/include/core/SkPath.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -136,10 +134,6 @@ void DefaultFrameHeader::PaintHeader(gfx::Canvas* canvas, Mode mode) {
   flags.setAntiAlias(true);
   TileRoundRect(canvas, flags, GetLocalBounds(), corner_radius);
 
-  if (!frame_->IsMaximized() && !frame_->IsFullscreen() &&
-      mode_ == MODE_INACTIVE && !UsesCustomFrameColors()) {
-    PaintHighlightForInactiveRestoredWindow(canvas);
-  }
   if (frame_->widget_delegate()->ShouldShowWindowTitle() && !title_.empty())
     PaintTitleBar(canvas);
 }
@@ -278,34 +272,6 @@ void DefaultFrameHeader::AnimationProgressed(const gfx::Animation* animation) {
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultFrameHeader, private:
 
-void DefaultFrameHeader::PaintHighlightForInactiveRestoredWindow(
-    gfx::Canvas* canvas) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia top_edge =
-      *rb.GetImageSkiaNamed(IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_TOP);
-  gfx::ImageSkia left_edge =
-      *rb.GetImageSkiaNamed(IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_LEFT);
-  gfx::ImageSkia right_edge =
-      *rb.GetImageSkiaNamed(IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_RIGHT);
-  gfx::ImageSkia bottom_edge =
-      *rb.GetImageSkiaNamed(IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_BOTTOM);
-
-  int left_edge_width = left_edge.width();
-  int right_edge_width = right_edge.width();
-  canvas->DrawImageInt(left_edge, 0, 0);
-  canvas->DrawImageInt(right_edge, view_->width() - right_edge_width, 0);
-  canvas->TileImageInt(top_edge, left_edge_width, 0,
-                       view_->width() - left_edge_width - right_edge_width,
-                       top_edge.height());
-
-  DCHECK_EQ(left_edge.height(), right_edge.height());
-  int bottom = left_edge.height();
-  int bottom_height = bottom_edge.height();
-  canvas->TileImageInt(bottom_edge, left_edge_width, bottom - bottom_height,
-                       view_->width() - left_edge_width - right_edge_width,
-                       bottom_height);
-}
-
 void DefaultFrameHeader::PaintTitleBar(gfx::Canvas* canvas) {
   // The window icon is painted by its own views::View.
   gfx::Rect title_bounds = GetAvailableTitleBounds();
@@ -369,11 +335,6 @@ gfx::Rect DefaultFrameHeader::GetAvailableTitleBounds() const {
   views::View* left_view = left_header_view_ ? left_header_view_ : back_button_;
   return FrameHeaderUtil::GetAvailableTitleBounds(
       left_view, caption_button_container_, GetHeaderHeight());
-}
-
-bool DefaultFrameHeader::UsesCustomFrameColors() const {
-  return active_frame_color_ != kDefaultFrameColor ||
-         inactive_frame_color_ != kDefaultFrameColor;
 }
 
 }  // namespace ash
