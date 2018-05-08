@@ -21,7 +21,6 @@ template("fuchsia_sdk_pkg") {
       name = pkg_name
       forward_variables_from(invoker,
                              [
-                               "deps",
                                "public_deps",
                                "testonly",
                                "visibility",
@@ -30,6 +29,13 @@ template("fuchsia_sdk_pkg") {
       sources = []
       foreach(file, invoker.fidl_files) {
         sources += [ "sdk/fidl/${pkg_name}/${file}" ]
+      }
+
+      if (defined(invoker.fidl_deps)) {
+        deps = []
+        foreach(fidl_dep, invoker.fidl_deps) {
+          deps += [ "${fidl_dep}_fidl" ]
+        }
       }
     }
   }
