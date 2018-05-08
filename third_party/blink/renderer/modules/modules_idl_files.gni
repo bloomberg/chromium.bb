@@ -174,6 +174,7 @@ modules_idl_files =
           "indexeddb/idb_version_change_event.idl",
           "installedapp/related_application.idl",
           "keyboard/keyboard.idl",
+          "keyboard/keyboard_layout_map.idl",
           "locks/lock.idl",
           "locks/lock_manager.idl",
           "media_capabilities/media_capabilities.idl",

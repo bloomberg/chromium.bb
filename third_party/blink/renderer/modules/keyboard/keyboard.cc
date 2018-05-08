@@ -5,13 +5,15 @@
 #include "third_party/blink/renderer/modules/keyboard/keyboard.h"
 
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/keyboard/keyboard_layout.h"
 #include "third_party/blink/renderer/modules/keyboard/keyboard_lock.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 
 Keyboard::Keyboard(ExecutionContext* context)
-    : keyboard_lock_(new KeyboardLock(context)) {}
+    : keyboard_lock_(new KeyboardLock(context)),
+      keyboard_layout_(new KeyboardLayout(context)) {}
 
 Keyboard::~Keyboard() = default;
 
@@ -24,8 +26,13 @@ void Keyboard::unlock(ScriptState* state) {
   keyboard_lock_->unlock(state);
 }
 
+ScriptPromise Keyboard::getLayoutMap(ScriptState* state) {
+  return keyboard_layout_->GetKeyboardLayoutMap(state);
+}
+
 void Keyboard::Trace(blink::Visitor* visitor) {
   visitor->Trace(keyboard_lock_);
+  visitor->Trace(keyboard_layout_);
   ScriptWrappable::Trace(visitor);
 }
 

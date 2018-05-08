@@ -21,6 +21,7 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
+using blink::mojom::GetKeyboardLayoutMapResult;
 using blink::mojom::KeyboardLockRequestResult;
 
 namespace content {
@@ -117,6 +118,25 @@ void KeyboardLockServiceImpl::CancelKeyboardLock() {
 
   if (base::FeatureList::IsEnabled(features::kKeyboardLockAPI))
     render_frame_host_->GetRenderWidgetHost()->CancelKeyboardLock();
+}
+
+void KeyboardLockServiceImpl::GetKeyboardLayoutMap(
+    GetKeyboardLayoutMapCallback callback) {
+  auto response = GetKeyboardLayoutMapResult::New();
+
+  response->status = blink::mojom::GetKeyboardLayoutMapStatus::kSuccess;
+
+  // TODO(garykac): Call platform specific APIs to populate the layout map
+  // correctly.
+  // E.g., render_frame_host_->GetRenderWidgetHost()->GetKeyboardLayoutMap()
+  response->layout_map.emplace("KeyC", "c");
+  response->layout_map.emplace("KeyH", "h");
+  response->layout_map.emplace("KeyR", "r");
+  response->layout_map.emplace("KeyO", "o");
+  response->layout_map.emplace("KeyM", "m");
+  response->layout_map.emplace("KeyE", "e");
+
+  std::move(callback).Run(std::move(response));
 }
 
 }  // namespace content

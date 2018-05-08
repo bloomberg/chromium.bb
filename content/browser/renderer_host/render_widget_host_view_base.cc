@@ -236,6 +236,12 @@ bool RenderWidgetHostViewBase::IsKeyboardLocked() {
   return keyboard_locked_;
 }
 
+base::flat_map<std::string, std::string>
+RenderWidgetHostViewBase::GetKeyboardLayoutMap() {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return base::flat_map<std::string, std::string>();
+}
+
 InputEventAckState RenderWidgetHostViewBase::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
   // By default, input events are simply forwarded to the renderer.
