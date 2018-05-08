@@ -34,7 +34,7 @@ class MODULES_EXPORT ImageBitmapRenderingContextBase
   bool isContextLost() const override { return false; }
   void SetImage(ImageBitmap*);
   scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) const final;
-  void SetUV(const FloatPoint left_top, const FloatPoint right_bottom);
+  void SetUV(const FloatPoint& left_top, const FloatPoint& right_bottom);
   bool IsComposited() const final { return true; }
   bool IsAccelerated() const final;
 

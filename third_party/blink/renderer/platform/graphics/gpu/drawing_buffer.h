@@ -64,7 +64,6 @@ namespace blink {
 class CanvasColorParams;
 class Extensions3DUtil;
 class StaticBitmapImage;
-class WebExternalTextureLayer;
 class WebGraphicsContext3DProvider;
 class WebGraphicsContext3DProviderWrapper;
 class WebLayer;
@@ -563,7 +562,8 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   bool is_hidden_ = false;
   SkFilterQuality filter_quality_ = kLow_SkFilterQuality;
 
-  std::unique_ptr<WebExternalTextureLayer> layer_;
+  scoped_refptr<cc::TextureLayer> layer_;
+  std::unique_ptr<WebLayer> web_layer_;  // Wrapper for |layer_|.
 
   // Mailboxes that were released by the compositor can be used again by this
   // DrawingBuffer.

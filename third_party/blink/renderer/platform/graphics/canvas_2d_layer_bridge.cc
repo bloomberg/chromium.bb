@@ -30,10 +30,12 @@
 
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "cc/layers/texture_layer.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_compositor_support.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_heuristic_parameters.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_metrics.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
@@ -98,7 +100,11 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
 Canvas2DLayerBridge::~Canvas2DLayerBridge() {
   BeginDestruction();
   DCHECK(destruction_in_progress_);
-  layer_.reset();
+  if (layer_) {
+    web_layer_ = nullptr;
+    layer_->ClearClient();
+    layer_ = nullptr;
+  }
 }
 
 void Canvas2DLayerBridge::StartRecording() {
@@ -298,13 +304,15 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
   }
 
   if (resource_provider_ && resource_provider_->IsAccelerated() && !layer_) {
-    layer_ =
-        Platform::Current()->CompositorSupport()->CreateExternalTextureLayer(
-            this);
-    layer_->SetOpaque(ColorParams().GetOpacityMode() == kOpaque);
+    layer_ = cc::TextureLayer::CreateForMailbox(this);
+    layer_->SetIsDrawable(true);
+    layer_->SetContentsOpaque(ColorParams().GetOpacityMode() == kOpaque);
     layer_->SetBlendBackgroundColor(ColorParams().GetOpacityMode() != kOpaque);
-    GraphicsLayer::RegisterContentsLayer(layer_->Layer());
     layer_->SetNearestNeighbor(filter_quality_ == kNone_SkFilterQuality);
+    web_layer_ =
+        Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
+            layer_.get());
+    GraphicsLayer::RegisterContentsLayer(web_layer_.get());
   }
 
   if (resource_provider_ && IsHibernating()) {
@@ -396,12 +404,12 @@ void Canvas2DLayerBridge::BeginDestruction() {
   ResetResourceProvider();
 
   if (layer_ && acceleration_mode_ != kDisableAcceleration) {
-    GraphicsLayer::UnregisterContentsLayer(layer_->Layer());
+    GraphicsLayer::UnregisterContentsLayer(web_layer_.get());
     layer_->ClearTexture();
     // Orphaning the layer is required to trigger the recration of a new layer
     // in the case where destruction is caused by a canvas resize. Test:
     // virtual/gpu/fast/canvas/canvas-resize-after-paint-without-layout.html
-    layer_->Layer()->RemoveFromParent();
+    layer_->RemoveFromParent();
   }
 
   DCHECK(!bytes_allocated_);
@@ -654,7 +662,7 @@ WebLayer* Canvas2DLayerBridge::Layer() {
   DCHECK(!destruction_in_progress_);
   // Trigger lazy layer creation
   GetOrCreateResourceProvider(kPreferAcceleration);
-  return layer_ ? layer_->Layer() : nullptr;
+  return web_layer_.get();
 }
 
 void Canvas2DLayerBridge::DidDraw(const FloatRect& rect) {
@@ -712,7 +720,7 @@ void Canvas2DLayerBridge::FinalizeFrame() {
 void Canvas2DLayerBridge::DoPaintInvalidation(const FloatRect& dirty_rect) {
   DCHECK(!destruction_in_progress_);
   if (layer_ && acceleration_mode_ != kDisableAcceleration)
-    layer_->Layer()->InvalidateRect(EnclosingIntRect(dirty_rect));
+    layer_->SetNeedsDisplayRect(EnclosingIntRect(dirty_rect));
 }
 
 scoped_refptr<StaticBitmapImage> Canvas2DLayerBridge::NewImageSnapshot(

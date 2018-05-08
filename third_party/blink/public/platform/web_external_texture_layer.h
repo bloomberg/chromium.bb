@@ -27,9 +27,11 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_EXTERNAL_TEXTURE_LAYER_H_
 
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_float_point.h"
-#include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_layer.h"
+
+namespace gfx {
+class PointF;
+}
 
 namespace blink {
 
@@ -68,8 +70,8 @@ class WebExternalTextureLayer {
   virtual void SetNearestNeighbor(bool) = 0;
 
   // Sets a UV transform to be used at draw time. Defaults to (0, 0) and (1, 1).
-  virtual void SetUV(const WebFloatPoint left_top,
-                     const WebFloatPoint right_bottom) = 0;
+  virtual void SetUV(const gfx::PointF& left_top,
+                     const gfx::PointF& right_bottom) = 0;
 };
 
 }  // namespace blink
