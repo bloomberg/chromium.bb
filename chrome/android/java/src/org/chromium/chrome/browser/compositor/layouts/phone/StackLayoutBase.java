@@ -11,7 +11,6 @@ import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
 import org.chromium.base.VisibleForTesting;
@@ -39,10 +38,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.base.LocalizationUtils;
-import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.resources.ResourceManager;
 
 import java.io.Serializable;
@@ -90,9 +87,6 @@ public abstract class StackLayoutBase
     private static final int FLING_MIN_DURATION = 100; // ms
 
     private static final float THRESHOLD_TO_SWITCH_STACK = 0.4f;
-    private static final int NEW_TAB_ANIMATION_DURATION_MS = 300;
-
-    public static final int MODERN_TOP_MARGIN_DP = 16;
 
     /**
      * The delta time applied on the velocity from the fling. This is to compute the kick to help
@@ -177,15 +171,6 @@ public abstract class StackLayoutBase
     private final TabListSceneLayer mSceneLayer;
 
     private StackLayoutGestureHandler mGestureHandler;
-
-    /** A {@link LayoutTab} used for new tab animations. */
-    private LayoutTab mNewTabLayoutTab;
-
-    /**
-     * Whether or not the new layout tab has been properly initialized (a frame can occur between
-     * creation and initialization).
-     */
-    private boolean mIsNewTabInitialized;
 
     private class StackLayoutGestureHandler implements GestureHandler {
         @Override
@@ -561,21 +546,7 @@ public abstract class StackLayoutBase
         startHiding(id, false);
         mStacks.get(getTabStackIndex(id)).tabCreated(time, id);
 
-        if (FeatureUtilities.isChromeHomeEnabled()) {
-            mNewTabLayoutTab = createLayoutTab(id, newIsIncognito, NO_CLOSE_BUTTON, NO_TITLE);
-            mNewTabLayoutTab.setScale(1.f);
-            mNewTabLayoutTab.setBorderScale(1.f);
-            mNewTabLayoutTab.setDecorationAlpha(0.f);
-            mNewTabLayoutTab.setY(getHeight() / 2);
-
-            mIsNewTabInitialized = true;
-
-            Interpolator interpolator = BakedBezierInterpolator.TRANSFORM_CURVE;
-            addToAnimation(mNewTabLayoutTab, LayoutTab.Property.Y, mNewTabLayoutTab.getY(), 0.f,
-                    NEW_TAB_ANIMATION_DURATION_MS, 0, false, interpolator);
-        } else {
-            startMarginAnimation(false);
-        }
+        startMarginAnimation(false);
     }
 
     // This method is called if the following sequence of operations occurs:
@@ -624,10 +595,6 @@ public abstract class StackLayoutBase
     @Override
     protected void onAnimationFinished() {
         if (mStackAnimationCount == 0) super.onAnimationFinished();
-        if (mNewTabLayoutTab != null) {
-            mIsNewTabInitialized = false;
-            mNewTabLayoutTab = null;
-        }
     }
 
     /**
@@ -988,7 +955,6 @@ public abstract class StackLayoutBase
         }
 
         float getTopHeightOffset() {
-            if (FeatureUtilities.isChromeHomeEnabled()) return MODERN_TOP_MARGIN_DP;
             return getTopBrowserControlsHeight() * mStackOffsetYPercent;
         }
     }
@@ -1193,12 +1159,10 @@ public abstract class StackLayoutBase
             tabVisibleCount += mStacks.get(i).getVisibleCount();
         }
 
-        int layoutTabCount = tabVisibleCount + (mNewTabLayoutTab == null ? 0 : 1);
-
-        if (layoutTabCount == 0) {
+        if (tabVisibleCount == 0) {
             mLayoutTabs = null;
-        } else if (mLayoutTabs == null || mLayoutTabs.length != layoutTabCount) {
-            mLayoutTabs = new LayoutTab[layoutTabCount];
+        } else if (mLayoutTabs == null || mLayoutTabs.length != tabVisibleCount) {
+            mLayoutTabs = new LayoutTab[tabVisibleCount];
         }
 
         int index = 0;
@@ -1213,11 +1177,6 @@ public abstract class StackLayoutBase
         // Update tab snapping
         for (int i = 0; i < tabVisibleCount; i++) {
             if (mLayoutTabs[i].updateSnap(dt)) needUpdate = true;
-        }
-
-        if (mNewTabLayoutTab != null && mIsNewTabInitialized) {
-            mLayoutTabs[mLayoutTabs.length - 1] = mNewTabLayoutTab;
-            if (mNewTabLayoutTab.updateSnap(dt)) needUpdate = true;
         }
 
         if (needUpdate) requestUpdate();
