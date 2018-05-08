@@ -32,35 +32,30 @@
 
 {#--- Fuzzing #}
 {%- if generate_fuzzing %}
+{%-   from "fuzzing.tmpl" import generate_or_mutate %}
   {{struct.name}}.generate = function(generator_) {
     var generated = new {{struct.name}};
 {%-   for field in struct.fields %}
-{%-     if not field.kind|is_any_handle_or_interface_kind %}
-{%- from "fuzzing.tmpl" import generate_or_mutate %}
     generated.{{field.name}} = {{generate_or_mutate('generator_', 'generate', field.kind)|indent(4)}};
-{%-     endif %}
 {%-   endfor %}
     return generated;
   };
 
   {{struct.name}}.prototype.mutate = function(mutator_) {
 {%-   for field in struct.fields %}
-{%-     if not field.kind|is_any_handle_or_interface_kind %}
     if (mutator_.chooseMutateField()) {
-{%- from "fuzzing.tmpl" import generate_or_mutate %}
       this.{{field.name}} = {{generate_or_mutate('mutator_', 'mutate', field.kind, 'this.' ~ field.name)|indent(6)}};
     }
-{%-     endif %}
 {%-   endfor %}
     return this;
   };
 
+{%-   from "fuzzing.tmpl" import get_handle_deps %}
   {{struct.name}}.prototype.getHandleDeps = function() {
     var handles = [];
 {%-   for field in struct.fields %}
 {%-     if field.kind|contains_handles_or_interfaces %}
     if (this.{{field.name}} !== null) {
-{%- from "fuzzing.tmpl" import get_handle_deps %}
       Array.prototype.push.apply(handles, {{get_handle_deps(field.kind, 'this.' ~ field.name)|indent(6)}});
     }
 {%-     endif %}
@@ -72,10 +67,10 @@
     this.setHandlesInternal_(arguments, 0);
   };
 
+{%-   from "fuzzing.tmpl" import set_handles %}
   {{struct.name}}.prototype.setHandlesInternal_ = function(handles, idx) {
 {%-   for field in struct.fields %}
 {%-     if field.kind|contains_handles_or_interfaces %}
-{%- from "fuzzing.tmpl" import set_handles %}
     {{set_handles(field.kind, 'this.' ~ field.name)|indent(4)}};
 {%-     endif %}
 {%-   endfor %}
