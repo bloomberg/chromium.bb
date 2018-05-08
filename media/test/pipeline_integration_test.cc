@@ -147,7 +147,20 @@ const int kVP8AWebMFileDurationMs = 2734;
 static const char kSfxLosslessHash[] = "3.03,2.86,2.99,3.31,3.57,4.06,";
 
 #if defined(OPUS_FIXED_POINT)
-// NOTE: Hashes are specific to ARM devices. x86 will not match.
+// NOTE: These hashes are specific to ARM devices, which use fixed-point Opus
+// implementation. x86 uses floating-point Opus, so x86 hashes won't match
+#if defined(ARCH_CPU_ARM64)
+static const char kOpusEndTrimmingHash_1[] =
+    "-4.57,-5.66,-6.52,-6.29,-4.37,-3.60,";
+static const char kOpusEndTrimmingHash_2[] =
+    "-11.90,-11.10,-8.26,-7.12,-7.85,-9.99,";
+static const char kOpusEndTrimmingHash_3[] =
+    "-13.30,-14.37,-13.70,-11.69,-10.20,-10.48,";
+static const char kOpusSmallCodecDelayHash_1[] =
+    "-0.48,-0.09,1.27,1.06,1.54,-0.22,";
+static const char kOpusSmallCodecDelayHash_2[] =
+    "0.29,0.15,-0.19,0.25,0.68,0.83,";
+#else
 static const char kOpusEndTrimmingHash_1[] =
     "-4.57,-5.66,-6.52,-6.30,-4.37,-3.61,";
 static const char kOpusEndTrimmingHash_2[] =
@@ -158,6 +171,8 @@ static const char kOpusSmallCodecDelayHash_1[] =
     "-0.48,-0.09,1.27,1.06,1.54,-0.22,";
 static const char kOpusSmallCodecDelayHash_2[] =
     "0.29,0.14,-0.20,0.24,0.68,0.83,";
+#endif  // defined(ARCH_CPU_ARM64)
+
 #else
 // Hash for a full playthrough of "opus-trimming-test.(webm|ogg)".
 static const char kOpusEndTrimmingHash_1[] =
