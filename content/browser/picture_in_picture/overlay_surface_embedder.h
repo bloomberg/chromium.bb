@@ -37,6 +37,7 @@ class OverlaySurfaceEmbedder {
 
   // Owned by the OverlayWindow implementation.
   ui::Layer* video_layer_ = nullptr;
+  ui::Layer* controls_background_layer_ = nullptr;
   ui::Layer* close_controls_layer_ = nullptr;
   ui::Layer* play_pause_controls_layer_ = nullptr;
 
