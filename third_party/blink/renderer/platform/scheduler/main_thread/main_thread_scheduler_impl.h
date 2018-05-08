@@ -26,12 +26,12 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/deadline_task_runner.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/idle_time_estimator.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_metrics_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/queueing_time_estimator.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/render_widget_signals.h"
-#include "third_party/blink/renderer/platform/scheduler/main_thread/renderer_metrics_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/task_cost_estimator.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/use_case.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/user_model.h"
@@ -302,9 +302,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
  private:
   friend class WebRenderWidgetSchedulingState;
-  friend class RendererMetricsHelper;
+  friend class MainThreadMetricsHelper;
 
-  friend class RendererMetricsHelperTest;
+  friend class MainThreadMetricsHelperTest;
   friend class main_thread_scheduler_impl_unittest::
       MainThreadSchedulerImplForTest;
   friend class main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest;
@@ -713,7 +713,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     std::set<PageSchedulerImpl*> page_schedulers;  // Not owned.
     RAILModeObserver* rail_mode_observer;          // Not owned.
     WakeUpBudgetPool* wake_up_budget_pool;         // Not owned.
-    RendererMetricsHelper metrics_helper;
+    MainThreadMetricsHelper metrics_helper;
     TraceableState<RendererProcessType, kTracingCategoryNameTopLevel>
         process_type;
     TraceableState<base::Optional<TaskDescriptionForTracing>,
