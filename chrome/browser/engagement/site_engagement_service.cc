@@ -641,6 +641,9 @@ void SiteEngagementService::GetCountsAndLastVisitForOriginsComplete(
   base::Time four_weeks_ago =
       now - base::TimeDelta::FromDays(FOUR_WEEKS_IN_DAYS);
 
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
+
   for (const auto& origin_to_count : remaining_origins) {
     GURL origin = origin_to_count.first;
     // It appears that the history service occasionally sends bad URLs to us.
@@ -656,6 +659,14 @@ void SiteEngagementService::GetCountsAndLastVisitForOriginsComplete(
     // URL still has entries in history.
     if ((expired && remaining != 0) || deleted == 0)
       continue;
+
+    // Remove origins that have no urls left.
+    if (remaining == 0) {
+      settings_map->SetWebsiteSettingDefaultScope(
+          origin, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+          content_settings::ResourceIdentifier(), nullptr);
+      continue;
+    }
 
     // Remove engagement proportional to the urls expired from the origin's
     // entire history.
