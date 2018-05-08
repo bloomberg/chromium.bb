@@ -73,6 +73,7 @@ class PrintersSyncBridge::StoreProxy {
     store_->CommitWriteBatch(
         std::move(batch),
         base::BindOnce(&StoreProxy::OnCommit, weak_ptr_factory_.GetWeakPtr()));
+    owner_->NotifyPrintersUpdated();
   }
 
  private:

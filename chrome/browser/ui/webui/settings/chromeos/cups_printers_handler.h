@@ -126,6 +126,9 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
       const std::string& manufacturer,
       const std::string& model);
 
+  // Emits the updated discovered printer list after new printers are received.
+  void UpdateDiscoveredPrinters();
+
   // Attempt to add a discovered printer.
   void HandleAddDiscoveredPrinter(const base::ListValue* args);
 
