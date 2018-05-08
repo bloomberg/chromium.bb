@@ -12,7 +12,6 @@
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/cpu_surface_provider.h"
 #include "chrome/browser/vr/elements/content_element.h"
-#include "chrome/browser/vr/elements/prompt.h"
 #include "chrome/browser/vr/elements/text_input.h"
 #include "chrome/browser/vr/ganesh_surface_provider.h"
 #include "chrome/browser/vr/keyboard_delegate.h"
@@ -542,14 +541,14 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
 
 void Ui::AcceptDoffPromptForTesting() {
   DCHECK(model_->active_modal_prompt_type != kModalPromptTypeNone);
-  if (model_->active_modal_prompt_type ==
-      kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission) {
-    static_cast<Prompt*>(scene_->GetUiElementByName(kAudioPermissionPrompt))
-        ->ClickPrimaryButtonForTesting();
-  } else {
-    static_cast<Prompt*>(scene_->GetUiElementByName(kExitPrompt))
-        ->ClickSecondaryButtonForTesting();
-  }
+  auto* prompt = scene_->GetUiElementByName(kExitPrompt);
+  DCHECK(prompt);
+  auto* button = prompt->GetDescendantByType(kTypePromptSecondaryButton);
+  DCHECK(button);
+  button->OnHoverEnter({0.5f, 0.5f});
+  button->OnButtonDown({0.5f, 0.5f});
+  button->OnButtonUp({0.5f, 0.5f});
+  button->OnHoverLeave();
 }
 
 void Ui::PerformUiActionForTesting(UiTestInput test_input) {

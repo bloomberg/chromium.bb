@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "cc/test/geometry_test_utils.h"
 #include "chrome/browser/vr/content_input_delegate.h"
-#include "chrome/browser/vr/elements/prompt.h"
+#include "chrome/browser/vr/elements/invisible_hit_target.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/model/model.h"
@@ -449,8 +449,8 @@ TEST_F(UiInputManagerContentTest, AudioPermissionPromptHitTesting) {
   // Even if the reticle is over the URL bar, the backplane should be in front
   // and should be hit.
   ASSERT_NE(0, reticle_model.target_element_id);
-  auto* backplane = scene_->GetUiElementByName(kAudioPermissionPromptBackplane);
-  EXPECT_EQ(backplane->type(), kTypePromptBackplane);
+  auto* prompt = scene_->GetUiElementByName(kExitPrompt);
+  auto* backplane = prompt->GetDescendantByType(kTypePromptBackplane);
   EXPECT_EQ(backplane->id(), reticle_model.target_element_id);
 }
 

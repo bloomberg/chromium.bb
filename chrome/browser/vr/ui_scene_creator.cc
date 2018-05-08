@@ -38,7 +38,6 @@
 #include "chrome/browser/vr/elements/oval.h"
 #include "chrome/browser/vr/elements/paged_grid_layout.h"
 #include "chrome/browser/vr/elements/paged_scroll_view.h"
-#include "chrome/browser/vr/elements/prompt.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/repositioner.h"
 #include "chrome/browser/vr/elements/resizer.h"
@@ -46,6 +45,7 @@
 #include "chrome/browser/vr/elements/scaled_depth_adjuster.h"
 #include "chrome/browser/vr/elements/spinner.h"
 #include "chrome/browser/vr/elements/text.h"
+#include "chrome/browser/vr/elements/text_button.h"
 #include "chrome/browser/vr/elements/text_input.h"
 #include "chrome/browser/vr/elements/throbber.h"
 #include "chrome/browser/vr/elements/transient_element.h"
@@ -352,58 +352,108 @@ std::unique_ptr<UiElement> CreateSpacer(float width, float height) {
   return spacer;
 }
 
-std::pair<std::unique_ptr<UiElement>, Prompt*> CreatePrompt(
-    UiElementName name,
-    UiElementName backplane_name,
-    Model* model,
-    int content_message_id,
-    const gfx::VectorIcon& icon,
-    int primary_button_message_id,
-    int secondary_button_message_id,
-    const Prompt::PromptCallback& result_callback) {
-  auto prompt = Create<Prompt>(name, kPhaseForeground, 1024, content_message_id,
-                               icon, primary_button_message_id,
-                               secondary_button_message_id, result_callback);
-  auto* prompt_ptr = prompt.get();
-  prompt->SetDrawPhase(kPhaseForeground);
-  prompt->SetTranslate(0, 0, kPromptShadowOffsetDMM);
-  prompt->SetSize(kPromptWidthDMM, kPromptHeightDMM);
-  prompt->set_hit_testable(true);
-  VR_BIND_BUTTON_COLORS(model, prompt.get(),
+std::unique_ptr<UiElement> CreatePrompt(Model* model) {
+  auto primary_button = Create<TextButton>(kNone, kPhaseForeground,
+                                           kPromptButtonTextSize, nullptr);
+  primary_button->SetType(kTypePromptPrimaryButton);
+  primary_button->set_corner_radius(kPromptButtonCornerRadius);
+  VR_BIND_BUTTON_COLORS(model, primary_button.get(),
                         &ColorScheme::modal_prompt_primary_button_colors,
-                        &Prompt::SetPrimaryButtonColors);
-  VR_BIND_BUTTON_COLORS(model, prompt.get(),
-                        &ColorScheme::modal_prompt_secondary_button_colors,
-                        &Prompt::SetSecondaryButtonColors);
-  VR_BIND_COLOR(model, prompt.get(), &ColorScheme::modal_prompt_icon_foreground,
-                &Prompt::SetIconColor);
-  VR_BIND_COLOR(model, prompt.get(), &ColorScheme::modal_prompt_background,
-                &TexturedElement::SetBackgroundColor);
-  VR_BIND_COLOR(model, prompt.get(), &ColorScheme::modal_prompt_foreground,
-                &TexturedElement::SetForegroundColor);
+                        &Button::SetButtonColors);
 
-  // Place an invisible but hittable plane behind the exit prompt, to keep the
-  // reticle roughly planar with the content if near content.
-  auto backplane = Create<InvisibleHitTarget>(backplane_name, kPhaseForeground);
-  backplane->SetType(kTypePromptBackplane);
-  backplane->SetSize(kBackplaneSize, kBackplaneSize);
-  backplane->SetTranslate(0, kPromptVerticalOffsetDMM, 0);
-  backplane->SetTransitionedProperties({OPACITY});
-  EventHandlers event_handlers;
-  event_handlers.button_up = base::BindRepeating(
-      [](Prompt* prompt) { prompt->Cancel(); }, base::Unretained(prompt.get()));
-  backplane->set_event_handlers(event_handlers);
+  auto secondary_button = Create<TextButton>(kNone, kPhaseForeground,
+                                             kPromptButtonTextSize, nullptr);
+  secondary_button->SetType(kTypePromptSecondaryButton);
+  secondary_button->set_corner_radius(kPromptButtonCornerRadius);
+  VR_BIND_BUTTON_COLORS(model, secondary_button.get(),
+                        &ColorScheme::modal_prompt_secondary_button_colors,
+                        &Button::SetButtonColors);
+
+  auto button_layout =
+      Create<LinearLayout>(kNone, kPhaseNone, LinearLayout::kLeft);
+  button_layout->AddChild(std::move(primary_button));
+  button_layout->AddChild(std::move(secondary_button));
+  button_layout->set_margin(kPromptButtonGap);
+  button_layout->set_x_anchoring(RIGHT);
+
+  auto icon = Create<VectorIcon>(kNone, kPhaseForeground, 100);
+  icon->SetType(kTypePromptIcon);
+  icon->SetSize(kPromptIconSize, kPromptIconSize);
+  icon->set_y_anchoring(TOP);
+  VR_BIND_COLOR(model, icon.get(), &ColorScheme::modal_prompt_icon_foreground,
+                &VectorIcon::SetColor);
+
+  auto text = Create<Text>(kNone, kPhaseForeground, kPromptFontSize);
+  text->SetType(kTypePromptText);
+  text->SetLayoutMode(kMultiLineFixedWidth);
+  text->SetAlignment(UiTexture::kTextAlignmentLeft);
+  text->SetFieldWidth(kPromptTextWidth);
+  VR_BIND_COLOR(model, text.get(), &ColorScheme::modal_prompt_foreground,
+                &Text::SetColor);
+
+  // This spacer's padding ensures that the top line of text is aligned with the
+  // icon even in the multi-line case.
+  auto text_spacer = CreateSpacer(0, 0);
+  text_spacer->set_bounds_contain_children(true);
+  text_spacer->set_padding(0, (kPromptIconSize - kPromptFontSize) / 2, 0, 0);
+  text_spacer->set_y_anchoring(TOP);
+  text_spacer->AddChild(std::move(text));
+
+  auto message_layout =
+      Create<LinearLayout>(kNone, kPhaseNone, LinearLayout::kRight);
+  message_layout->set_margin(kPromptIconTextGap);
+  message_layout->AddChild(std::move(icon));
+  message_layout->AddChild(std::move(text_spacer));
+
+  auto prompt_layout =
+      Create<LinearLayout>(kNone, kPhaseNone, LinearLayout::kDown);
+  prompt_layout->set_margin(kPromptMessageButtonGap);
+  prompt_layout->AddChild(std::move(message_layout));
+  prompt_layout->AddChild(std::move(button_layout));
+
+  auto background = Create<Rect>(kNone, kPhaseForeground);
+  background->SetType(kTypePromptBackground);
+  background->set_bounds_contain_children(true);
+  background->set_padding(kPromptPadding, kPromptPadding);
+  background->SetTranslate(0, 0, kPromptShadowOffsetDMM);
+  background->set_corner_radius(kPromptCornerRadius);
+  background->AddChild(std::move(prompt_layout));
+  VR_BIND_COLOR(model, background.get(), &ColorScheme::modal_prompt_background,
+                &Rect::SetColor);
 
   auto shadow = Create<Shadow>(kNone, kPhaseForeground);
   shadow->SetType(kTypePromptShadow);
-  shadow->AddChild(std::move(prompt));
+  shadow->AddChild(std::move(background));
+
+  // Place an invisible but hittable plane behind the exit prompt, to keep the
+  // reticle roughly planar with the content if near content.
+  auto backplane = Create<InvisibleHitTarget>(kNone, kPhaseForeground);
+  backplane->SetType(kTypePromptBackplane);
+  backplane->SetTranslate(0, kPromptVerticalOffsetDMM, 0);
+  backplane->SetSize(kBackplaneSize, kBackplaneSize);
+  backplane->SetTransitionedProperties({OPACITY});
   backplane->AddChild(std::move(shadow));
 
   auto scaler = Create<ScaledDepthAdjuster>(kNone, kPhaseNone, kPromptDistance);
   scaler->SetType(kTypeScaledDepthAdjuster);
   scaler->AddChild(std::move(backplane));
   scaler->set_contributes_to_parent_bounds(false);
-  return {std::move(scaler), prompt_ptr};
+  return scaler;
+}
+
+base::RepeatingCallback<void()> CreatePromptCallback(
+    UiUnsupportedMode mode,
+    ExitVrPromptChoice choice,
+    Model* model,
+    UiBrowserInterface* browser) {
+  return base::BindRepeating(
+      [](UiUnsupportedMode mode, ExitVrPromptChoice choice, Model* m,
+         UiBrowserInterface* b) {
+        b->OnExitVrPromptResult(choice, mode);
+        m->active_modal_prompt_type = kModalPromptTypeNone;
+        m->pop_mode(kModeModalPrompt);
+      },
+      mode, choice, base::Unretained(model), base::Unretained(browser));
 }
 
 std::unique_ptr<UiElement> CreateControllerLabel(UiElementName name,
@@ -2722,102 +2772,103 @@ void UiSceneCreator::CreateCloseButton() {
 }
 
 void UiSceneCreator::CreatePrompts() {
-  auto prompt_callback = base::BindRepeating(
-      [](Model* model, UiBrowserInterface* browser, Prompt::Button button,
-         UiUnsupportedMode mode) {
-        ExitVrPromptChoice choice = CHOICE_NONE;
-        switch (button) {
-          case Prompt::NONE:
-            choice = CHOICE_NONE;
-            break;
-          case Prompt::PRIMARY:
-            choice = CHOICE_EXIT;
-            break;
-          case Prompt::SECONDARY:
-            choice = CHOICE_STAY;
-            break;
-        }
-        browser->OnExitVrPromptResult(choice, mode);
-        model->active_modal_prompt_type = kModalPromptTypeNone;
-        model->pop_mode(kModeModalPrompt);
-      },
-      base::Unretained(model_), base::Unretained(browser_));
-  // Create audio permission prompt.
-  auto prompt = CreatePrompt(
-      kAudioPermissionPrompt, kAudioPermissionPromptBackplane, model_,
-      IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_DESCRIPTION, vector_icons::kMicIcon,
-      IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_CONTINUE_BUTTON,
-      IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_ABORT_BUTTON, prompt_callback);
-  prompt.second->set_reason(
-      UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission);
-  VR_BIND_VISIBILITY(
-      prompt.first,
-      model->active_modal_prompt_type ==
-          kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission);
-  scene_->AddUiElement(k2dBrowsingRepositioner, std::move(prompt.first));
-
-  // Create keyboard update prompt. Note that we re-use the same button texts as
-  // the audio permission prompt.
-  prompt = CreatePrompt(
-      kUpdateKeyboardPrompt, kNone, model_, IDS_VR_UPDATE_KEYBOARD_PROMPT,
-      vector_icons::kInfoOutlineIcon,
-      IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_CONTINUE_BUTTON,
-      IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_ABORT_BUTTON, prompt_callback);
-  prompt.second->set_reason(UiUnsupportedMode::kNeedsKeyboardUpdate);
-  VR_BIND_VISIBILITY(prompt.first, model->active_modal_prompt_type ==
-                                       kModalPromptTypeUpdateKeyboard);
-  scene_->AddUiElement(k2dBrowsingRepositioner, std::move(prompt.first));
-
-  // Create generic unsupported UI exit prompt.
-  prompt_callback = base::BindRepeating(
-      [](Model* model, UiBrowserInterface* browser, Prompt::Button button,
-         UiUnsupportedMode mode) {
-        ExitVrPromptChoice choice = CHOICE_NONE;
-        switch (button) {
-          case Prompt::NONE:
-            choice = CHOICE_NONE;
-            break;
-          case Prompt::PRIMARY:
-            choice = CHOICE_STAY;
-            break;
-          case Prompt::SECONDARY:
-            choice = CHOICE_EXIT;
-            break;
-        }
-        browser->OnExitVrPromptResult(choice, mode);
-        model->active_modal_prompt_type = kModalPromptTypeNone;
-        model->pop_mode(kModeModalPrompt);
-      },
-      base::Unretained(model_), base::Unretained(browser_));
-  prompt = CreatePrompt(
-      kExitPrompt, kNone, model_, IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION,
-      vector_icons::kInfoOutlineIcon, IDS_OK,
-      IDS_VR_SHELL_EXIT_PROMPT_EXIT_VR_BUTTON, prompt_callback);
-  VR_BIND_VISIBILITY(
-      prompt.first,
-      model->active_modal_prompt_type != kModalPromptTypeNone &&
-          model->active_modal_prompt_type !=
-              kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission &&
-          model->active_modal_prompt_type != kModalPromptTypeUpdateKeyboard);
-  prompt.second->AddBinding(std::make_unique<Binding<ModalPromptType>>(
+  auto prompt = CreatePrompt(model_);
+  prompt->SetName(kExitPrompt);
+  VR_BIND_VISIBILITY(prompt,
+                     model->active_modal_prompt_type != kModalPromptTypeNone);
+  prompt->AddBinding(std::make_unique<Binding<ModalPromptType>>(
       VR_BIND_LAMBDA([](Model* m) { return m->active_modal_prompt_type; },
                      base::Unretained(model_)),
       VR_BIND_LAMBDA(
-          [](Prompt* e, const ModalPromptType& p) {
-            e->set_reason(GetReasonForPrompt(p));
-            switch (p) {
-              case kModalPromptTypeExitVRForSiteInfo:
-                e->SetContentMessageId(
-                    IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION_SITE_INFO);
+          [](UiElement* e, Model* model, UiBrowserInterface* browser,
+             const ModalPromptType& type) {
+            if (type == kModalPromptTypeNone)
+              return;
+
+            int message_id = 0;
+            const gfx::VectorIcon* icon = nullptr;
+            int primary_button_text_id = 0;
+            int secondary_button_text_id = 0;
+            ExitVrPromptChoice primary_choice = CHOICE_NONE;
+            ExitVrPromptChoice secondary_choice = CHOICE_NONE;
+            UiUnsupportedMode reason = GetReasonForPrompt(type);
+
+            switch (type) {
+              case kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission:
+                message_id = IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_DESCRIPTION;
+                icon = &vector_icons::kMicIcon;
+                primary_button_text_id =
+                    IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_CONTINUE_BUTTON;
+                secondary_button_text_id =
+                    IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_ABORT_BUTTON;
+                primary_choice = CHOICE_EXIT;
+                secondary_choice = CHOICE_STAY;
                 break;
-              case kModalPromptTypeGenericUnsupportedFeature:  // Fall through.
-              default:
-                e->SetContentMessageId(IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION);
+              case kModalPromptTypeUpdateKeyboard:
+                message_id = IDS_VR_UPDATE_KEYBOARD_PROMPT;
+                icon = &vector_icons::kInfoOutlineIcon;
+                primary_button_text_id =
+                    IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_CONTINUE_BUTTON;
+                secondary_button_text_id =
+                    IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_ABORT_BUTTON;
+                primary_choice = CHOICE_EXIT;
+                secondary_choice = CHOICE_STAY;
+                break;
+              case kModalPromptTypeExitVRForSiteInfo:
+                message_id = IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION_SITE_INFO;
+                icon = &vector_icons::kInfoOutlineIcon;
+                primary_button_text_id = IDS_OK;
+                secondary_button_text_id =
+                    IDS_VR_SHELL_EXIT_PROMPT_EXIT_VR_BUTTON;
+                primary_choice = CHOICE_STAY;
+                secondary_choice = CHOICE_EXIT;
+                break;
+              case kModalPromptTypeExitVRForConnectionInfo:
+              case kModalPromptTypeGenericUnsupportedFeature:
+                message_id = IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION;
+                icon = &vector_icons::kInfoOutlineIcon;
+                primary_button_text_id = IDS_OK;
+                secondary_button_text_id =
+                    IDS_VR_SHELL_EXIT_PROMPT_EXIT_VR_BUTTON;
+                primary_choice = CHOICE_STAY;
+                secondary_choice = CHOICE_EXIT;
+                break;
+              case kNumModalPromptTypes:
+              case kModalPromptTypeNone:
+                NOTREACHED();
                 break;
             }
+            Text* text_element =
+                static_cast<Text*>(e->GetDescendantByType(kTypePromptText));
+            text_element->SetText(l10n_util::GetStringUTF16(message_id));
+            VectorIcon* icon_element = static_cast<VectorIcon*>(
+                e->GetDescendantByType(kTypePromptIcon));
+            icon_element->SetIcon(icon);
+            TextButton* primary_button = static_cast<TextButton*>(
+                e->GetDescendantByType(kTypePromptPrimaryButton));
+            // TODO(crbug.com/787654): Uppercasing should be conditional.
+            primary_button->SetText(base::i18n::ToUpper(
+                l10n_util::GetStringUTF16(primary_button_text_id)));
+            primary_button->set_click_handler(
+                CreatePromptCallback(reason, primary_choice, model, browser));
+            TextButton* secondary_button = static_cast<TextButton*>(
+                e->GetDescendantByType(kTypePromptSecondaryButton));
+            // TODO(crbug.com/787654): Uppercasing should be conditional.
+            secondary_button->SetText(base::i18n::ToUpper(
+                l10n_util::GetStringUTF16(secondary_button_text_id)));
+            secondary_button->set_click_handler(
+                CreatePromptCallback(reason, secondary_choice, model, browser));
+            InvisibleHitTarget* backplane = static_cast<InvisibleHitTarget*>(
+                e->GetDescendantByType(kTypePromptBackplane));
+            EventHandlers event_handlers;
+            event_handlers.button_up =
+                CreatePromptCallback(reason, CHOICE_NONE, model, browser);
+            backplane->set_event_handlers(event_handlers);
+
           },
-          base::Unretained(prompt.second))));
-  scene_->AddUiElement(k2dBrowsingRepositioner, std::move(prompt.first));
+          base::Unretained(prompt.get()), base::Unretained(model_),
+          base::Unretained(browser_))));
+  scene_->AddUiElement(k2dBrowsingRepositioner, std::move(prompt));
 }
 
 void UiSceneCreator::CreateWebVrOverlayElements() {

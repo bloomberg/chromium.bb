@@ -252,4 +252,11 @@ void UiTest::GetBackgroundColor(SkColor* background_color) const {
   *background_color = color;
 }
 
+void UiTest::ClickElement(UiElement* element) {
+  element->OnHoverEnter({0.5f, 0.5f});
+  element->OnButtonDown({0.5f, 0.5f});
+  element->OnButtonUp({0.5f, 0.5f});
+  element->OnHoverLeave();
+}
+
 }  // namespace vr
