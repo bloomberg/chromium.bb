@@ -93,6 +93,7 @@ NSString* GetNSErrorMessage() {
 
 // Sucessfully loads the page, goes back, stops the server, goes forward and
 // reloads.
+// TODO(crbug.com/840489): Remove this test.
 - (void)testGoForwardAfterServerIsDownAndReload {
   // First page loads sucessfully.
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
@@ -127,6 +128,7 @@ NSString* GetNSErrorMessage() {
 
 // Sucessfully loads the page, then loads the URL which fails to load, then
 // sucessfully goes back to the first page.
+// TODO(crbug.com/840489): Remove this test.
 - (void)testGoBackFromErrorPage {
   // First page loads sucessfully.
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
@@ -146,6 +148,7 @@ NSString* GetNSErrorMessage() {
 }
 
 // Loads the URL which redirects to unresponsive server.
+// TODO(crbug.com/840489): Remove this test.
 - (void)testRedirectToFailingURL {
   // No response leads to ERR_INTERNET_DISCONNECTED error.
   self.serverRespondsWithContent = NO;
@@ -160,6 +163,7 @@ NSString* GetNSErrorMessage() {
 
 // Loads the page with iframe, and that iframe fails to load. There should be no
 // error page if the main frame has sucessfully loaded.
+// TODO(crbug.com/840489): Remove this test.
 - (void)testErrorPageInIFrame {
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/iframe?echo-query")];
   [ChromeEarlGrey

@@ -543,6 +543,7 @@ test("ios_web_inttests") {
   deps = [
     ":web",
     "//base/test:test_support",
+    "//ios/testing:embedded_test_server_support",
     "//ios/testing:http_server_bundle_data",
     "//ios/testing:ios_test_support",
     "//ios/web:resources_grit",
@@ -570,6 +571,7 @@ test("ios_web_inttests") {
     "public/test/http_server_inttest.mm",
     "test/run_all_unittests.cc",
     "url_loader_inttest.mm",
+    "web_state/error_page_inttest.mm",
     "web_state/favicon_callbacks_inttest.mm",
     "web_state/http_auth_inttest.mm",
     "web_state/navigation_and_load_callbacks_inttest.mm",
