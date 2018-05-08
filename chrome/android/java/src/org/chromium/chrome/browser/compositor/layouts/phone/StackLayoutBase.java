@@ -15,6 +15,7 @@ import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
@@ -98,6 +99,12 @@ public abstract class StackLayoutBase
      * switching the stack.
      */
     private static final float SWITCH_STACK_FLING_DT = 1.0f / 30.0f;
+
+    /**
+     * True if this is currently the active layout and startHiding() has not yet been called, false
+     * otherwise.
+     */
+    protected boolean mIsActiveLayout;
 
     /** The list of potentially visible stacks. */
     protected final ArrayList<Stack> mStacks;
@@ -552,6 +559,11 @@ public abstract class StackLayoutBase
         }
     }
 
+    // This method is called if the following sequence of operations occurs:
+    // 1. Enter multi-window mode
+    // 2. Create a second Chrome instance by moving a tab to the other window
+    // 3. In the top window, enter the tab switcher
+    // 4. Expand the top window to full screen.
     @Override
     public void onTabRestored(long time, int tabId) {
         super.onTabRestored(time, tabId);
@@ -692,6 +704,19 @@ public abstract class StackLayoutBase
     @Override
     public void show(long time, boolean animate) {
         super.show(time, animate);
+
+        if (!mIsActiveLayout) {
+            // The mIsActiveLayout check is necessary because there are certain edge cases where
+            // show() is called (e.g. to refresh the Stacks) while the tab switcher is already
+            // showing.
+
+            // Note: there are some edge cases (e.g. the last open tab is closed somehow while the
+            // tab switcher is not open) that can also cause this event to be logged without a
+            // toolbar interaction. The event name contains "Toolbar" for historical reasons; the
+            // current intent is to log whenever the tab switcher is entered.
+            RecordUserAction.record("MobileToolbarShowStackView");
+        }
+        mIsActiveLayout = true;
 
         Tab tab = mTabModelSelector.getCurrentTab();
         if (tab != null && tab.isNativePage()) mTabContentManager.cacheTabThumbnail(tab);
@@ -1216,6 +1241,15 @@ public abstract class StackLayoutBase
         }
 
         return distance - 2 * getViewportParameters().getInnerMargin();
+    }
+
+    @Override
+    public void startHiding(int nextTabId, boolean hintAtTabSelection) {
+        // Reset mIsActiveLayout here instead of in doneHiding() so if a user hits the tab switcher
+        // button on the toolbar to re-open it while we're still in the process of hiding the tab
+        // switcher, we don't skip the logging.
+        super.startHiding(nextTabId, hintAtTabSelection);
+        mIsActiveLayout = false;
     }
 
     @Override

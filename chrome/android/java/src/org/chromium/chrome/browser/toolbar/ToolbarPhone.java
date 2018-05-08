@@ -592,7 +592,6 @@ public class ToolbarPhone extends ToolbarLayout
             dismissTabSwitcherCallout();
             cancelAppMenuUpdateBadgeAnimation();
             mTabSwitcherListener.onClick(mToggleTabStackButton);
-            RecordUserAction.record("MobileToolbarShowStackView");
         }
     }
 
@@ -2701,4 +2700,3 @@ public class ToolbarPhone extends ToolbarLayout
         }
     }
 }
-
