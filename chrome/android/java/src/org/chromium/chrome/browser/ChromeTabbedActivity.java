@@ -25,7 +25,6 @@ import android.text.TextUtils;
 import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.KeyboardShortcutGroup;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -1499,23 +1498,6 @@ public class ChromeTabbedActivity
 
             @Override
             public View getHeaderView() {
-                // Return early if Chrome Home is not enabled.
-                if (getBottomSheet() == null) return null;
-
-                boolean isPageMenu = getAppMenuPropertiesDelegate().shouldShowPageMenu();
-
-                // Return early if the conditions aren't right to show the Chrome Home IPH menu
-                // header.
-                if (mControlContainer.getVisibility() != View.VISIBLE
-                        || getBottomSheet().isSheetOpen() || !isPageMenu
-                        || AppMenuPropertiesDelegate.shouldShowNavMenuItems()) {
-                    return null;
-                }
-
-                LayoutInflater inflater = LayoutInflater.from(ChromeTabbedActivity.this);
-                Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-
-                // Default is no header.
                 return null;
             }
 

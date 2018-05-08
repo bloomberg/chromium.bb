@@ -1937,13 +1937,6 @@ const char kChromeHomeInactivitySheetExpansionDescription[] =
     "Expand bottom sheet on startup in Chrome Home after a period of"
     " inactivity.";
 
-const char kChromeHomeMenuItemsName[] =
-    "Show bookmarks, downloads, and history menu items in Chrome Home";
-const char kChromeHomeMenuItemsDescription[] =
-    "Shows bookmarks, downloads, and history menu items in the overflow menu"
-    " when Chrome Home is enabled. These items will open the bottom sheet to"
-    " show the desired content.";
-
 const char kChromeHomePersistentIphName[] = "Chrome Home Persistent Iph";
 const char kChromeHomePersistentIphDescription[] =
     "Wait to dismiss the Chrome Home IPH until the user inteacts with the "

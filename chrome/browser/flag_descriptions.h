@@ -1184,9 +1184,6 @@ extern const char kChromeHomeEnableSurveyDescription[];
 extern const char kChromeHomeInactivitySheetExpansionName[];
 extern const char kChromeHomeInactivitySheetExpansionDescription[];
 
-extern const char kChromeHomeMenuItemsName[];
-extern const char kChromeHomeMenuItemsDescription[];
-
 extern const char kChromeHomePersistentIphName[];
 extern const char kChromeHomePersistentIphDescription[];
 

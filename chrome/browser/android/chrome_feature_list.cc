@@ -71,7 +71,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTRedirectPreconnect,
     &kChromeDuplexFeature,
     &kChromeHomeInactivitySheetExpansion,
-    &kChromeHomeMenuItemsExpandSheet,
     &kChromeHomePersistentIph,
     &kChromeHomePullToRefreshIphAtTop,
     &kChromeHomeSwipeLogic,
@@ -204,9 +203,6 @@ const base::Feature kChromeDuplexFeature{"ChromeDuplex",
 
 const base::Feature kChromeHomeInactivitySheetExpansion{
     "ChromeHomeInactivitySheetExpansion", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kChromeHomeMenuItemsExpandSheet{
-    "ChromeHomeMenuItemsExpandSheet", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeHomePersistentIph{"ChromeHomePersistentIph",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
