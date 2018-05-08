@@ -155,9 +155,23 @@ void ReportPrintSettingHistogram(PrintSettingsBuckets setting) {
                             PRINT_SETTINGS_BUCKET_BOUNDARY);
 }
 
-void ReportPrintDocumentTypeHistogram(PrintDocumentTypeBuckets doctype) {
+void ReportPrintDocumentTypeAndSizeHistograms(PrintDocumentTypeBuckets doctype,
+                                              size_t average_page_size_in_kb) {
   UMA_HISTOGRAM_ENUMERATION("PrintPreview.PrintDocumentType", doctype,
                             PRINT_DOCUMENT_TYPE_BUCKET_BOUNDARY);
+  switch (doctype) {
+    case HTML_DOCUMENT:
+      UMA_HISTOGRAM_MEMORY_KB("PrintPreview.PrintDocumentSize.HTML",
+                              average_page_size_in_kb);
+      break;
+    case PDF_DOCUMENT:
+      UMA_HISTOGRAM_MEMORY_KB("PrintPreview.PrintDocumentSize.PDF",
+                              average_page_size_in_kb);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 bool ReportPageCountHistogram(UserActionBuckets user_action, int page_count) {
@@ -764,9 +778,14 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
 
   // After validating |settings|, record metrics.
   ReportPrintSettingsStats(*settings);
-  ReportPrintDocumentTypeHistogram(print_preview_ui()->source_is_modifiable()
-                                       ? HTML_DOCUMENT
-                                       : PDF_DOCUMENT);
+  {
+    PrintDocumentTypeBuckets doc_type =
+        print_preview_ui()->source_is_modifiable() ? HTML_DOCUMENT
+                                                   : PDF_DOCUMENT;
+    size_t average_page_size_in_kb = data->size() / page_count;
+    average_page_size_in_kb /= 1024;
+    ReportPrintDocumentTypeAndSizeHistograms(doc_type, average_page_size_in_kb);
+  }
   ReportUserActionHistogram(user_action);
   if (!ReportPageCountHistogram(user_action, page_count)) {
     NOTREACHED();
