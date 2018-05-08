@@ -72,13 +72,10 @@
       }
 
       paper-ripple {
-        color: var(--cr-controls-background-grey);
+        --paper-ripple-opacity: 0.1;
+        color: var(--google-grey-900);
         height: 40px;
         left: -12px;
-        /* TODO(scottchen): this depends on opacity: 0.4 to compound with
-           paper-ripple's internal opacity: 0.25 to become 0.1. Use custom
-           property instead once paper-ripple supports it. */
-        opacity: 0.4;
         pointer-events: none;
         top: -12px;
         transition: color linear 80ms;
