@@ -34,6 +34,7 @@ class VMTest(object):
     self.board = opts.board
     self.results_dir = opts.results_dir
     self.start_vm = opts.start_vm
+    self.cache_dir = opts.cache_dir
 
     self._vm = cros_vm.VM(opts)
 
@@ -81,12 +82,18 @@ class VMTest(object):
     Args:
       build_dir: Build directory.
     """
-    cros_build_lib.RunCommand(['deploy_chrome', '--force',
-                               '--build-dir', build_dir,
-                               '--process-timeout', '180',
-                               '--to', 'localhost',
-                               '--port', str(self._vm.ssh_port)],
-                              log_output=True)
+    deploy_cmd = [
+        'deploy_chrome', '--force',
+        '--build-dir', build_dir,
+        '--process-timeout', '180',
+        '--to', 'localhost',
+        '--port', str(self._vm.ssh_port),
+    ]
+    if self.board:
+      deploy_cmd += ['--board', self.board]
+    if self.cache_dir:
+      deploy_cmd += ['--cache-dir', self.cache_dir]
+    cros_build_lib.RunCommand(deploy_cmd, log_output=True)
     self._vm.WaitForBoot()
 
   def _RunCatapultTests(self):
