@@ -18,11 +18,11 @@ source_set("libarcore_sdk") {
 }
 
 copy("libarcore_library") {
-  if (target_cpu == "arm") {
+  if (current_cpu == "arm") {
     sources = [
       "libraries/android_arm/libarcore_sdk_c_minimal.so",
     ]
-  } else if (target_cpu == "arm64") {
+  } else if (current_cpu == "arm64") {
     sources = [
       "libraries/android_arm64/libarcore_sdk_c_minimal.so",
     ]
