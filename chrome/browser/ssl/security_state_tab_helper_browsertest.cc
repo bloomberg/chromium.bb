@@ -986,9 +986,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
 
 // Tests the security level and malicious content status for password reuse
 // threat type.
-IN_PROC_BROWSER_TEST_F(
-    SecurityStateTabHelperTest,
-    VerifyPasswordReuseMaliciousContentAndSecurityLevelWhenFeatureEnabled) {
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
+                       VerifyPasswordReuseMaliciousContentAndSecurityLevel) {
   // Setup https server. This makes sure that the DANGEROUS security level is
   // not caused by any certificate error rather than the password reuse SB
   // threat type.
@@ -996,10 +995,6 @@ IN_PROC_BROWSER_TEST_F(
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      safe_browsing::kGoogleBrandedPhishingWarning);
 
   SecurityStyleTestObserver observer(contents);
 
@@ -1030,44 +1025,6 @@ IN_PROC_BROWSER_TEST_F(
   helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
   EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING,
-            security_info.malicious_content_status);
-}
-
-IN_PROC_BROWSER_TEST_F(
-    SecurityStateTabHelperTest,
-    VerifyPasswordReuseMaliciousContentAndSecurityLevelWhenFeatureDisabled) {
-  // Setup https server. This makes sure that the DANGEROUS security level is
-  // not caused by any certificate error.
-  SetUpMockCertVerifierForHttpsServer(0, net::OK);
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(contents);
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      safe_browsing::kGoogleBrandedPhishingWarning);
-
-  SecurityStyleTestObserver observer(contents);
-
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
-  ASSERT_TRUE(helper);
-
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/google.html"));
-  // Update security state of the current page to match
-  // SB_THREAT_TYPE_PASSWORD_REUSE.
-  safe_browsing::PasswordProtectionService* service =
-      safe_browsing::ChromePasswordProtectionService::
-          GetPasswordProtectionService(browser()->profile());
-  service->UpdateSecurityState(safe_browsing::SB_THREAT_TYPE_PASSWORD_REUSE,
-                               contents);
-  observer.WaitForDidChangeVisibleSecurityState();
-
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SECURE, security_info.security_level);
-  EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
             security_info.malicious_content_status);
 }
 

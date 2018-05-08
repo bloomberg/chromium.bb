@@ -955,161 +955,106 @@ TEST_P(PasswordProtectionServiceTest,
 }
 
 TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
-  {
-    base::test::ScopedFeatureList scoped_feature_list1;
-    scoped_feature_list1.InitAndDisableFeature(
-        safe_browsing::kGoogleBrandedPhishingWarning);
-    // Don't show modal warning if feature is disabled.
-    EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
-        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-        /*matches_sync_password=*/true,
-        LoginReputationClientResponse::PHISHING));
-  }
+  EXPECT_CALL(*password_protection_service_.get(), GetSyncAccountType())
+      .WillRepeatedly(
+          Return(LoginReputationClientRequest::PasswordReuseEvent::GMAIL));
+  EXPECT_CALL(*password_protection_service_.get(),
+              GetPasswordProtectionTriggerPref(_))
+      .WillRepeatedly(Return(PHISHING_REUSE));
 
-  {
-    base::test::ScopedFeatureList scoped_feature_list2;
-    scoped_feature_list2.InitAndEnableFeatureWithParameters(
-        safe_browsing::kGoogleBrandedPhishingWarning,
-        {{"softer_warning", "true"}, {"warn_on_low_reputation", "false"}});
-    EXPECT_CALL(*password_protection_service_.get(), GetSyncAccountType())
-        .WillRepeatedly(
-            Return(LoginReputationClientRequest::PasswordReuseEvent::GMAIL));
-    EXPECT_CALL(*password_protection_service_.get(),
-                GetPasswordProtectionTriggerPref(_))
-        .WillRepeatedly(Return(PHISHING_REUSE));
+  // Don't show modal warning if it is not a password reuse ping.
+  EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
+      /*matches_sync_password=*/true, LoginReputationClientResponse::PHISHING));
 
-    // Don't show modal warning if it is not a password reuse ping.
-    EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
-        LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-        /*matches_sync_password=*/true,
-        LoginReputationClientResponse::PHISHING));
+  // Don't show modal warning if it is not a sync password reuse.
+  EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      /*matches_sync_password=*/false,
+      LoginReputationClientResponse::PHISHING));
 
-    // Don't show modal warning if it is not a sync password reuse.
-    EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
-        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-        /*matches_sync_password=*/false,
-        LoginReputationClientResponse::PHISHING));
+  // Show modal warning otherwise
+  EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      /*matches_sync_password=*/true, LoginReputationClientResponse::PHISHING));
 
-    // Show modal warning otherwise
-    EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
-        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-        /*matches_sync_password=*/true,
-        LoginReputationClientResponse::PHISHING));
+  // For a GSUITE account, don't show warning if password protection is off.
+  EXPECT_CALL(*password_protection_service_.get(), GetSyncAccountType())
+      .WillRepeatedly(
+          Return(LoginReputationClientRequest::PasswordReuseEvent::GSUITE));
+  EXPECT_CALL(*password_protection_service_.get(),
+              GetPasswordProtectionTriggerPref(_))
+      .WillRepeatedly(Return(PASSWORD_PROTECTION_OFF));
+  EXPECT_EQ(PASSWORD_PROTECTION_OFF,
+            password_protection_service_->GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionWarningTrigger));
+  EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      /*matches_sync_password=*/true, LoginReputationClientResponse::PHISHING));
 
-    // For a GSUITE account, don't show warning if password protection is off.
-    EXPECT_CALL(*password_protection_service_.get(), GetSyncAccountType())
-        .WillRepeatedly(
-            Return(LoginReputationClientRequest::PasswordReuseEvent::GSUITE));
-    EXPECT_CALL(*password_protection_service_.get(),
-                GetPasswordProtectionTriggerPref(_))
-        .WillRepeatedly(Return(PASSWORD_PROTECTION_OFF));
-    EXPECT_EQ(PASSWORD_PROTECTION_OFF,
-              password_protection_service_->GetPasswordProtectionTriggerPref(
-                  prefs::kPasswordProtectionWarningTrigger));
-    EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
-        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-        /*matches_sync_password=*/true,
-        LoginReputationClientResponse::PHISHING));
+  // For a GSUITE account, show warning if password protection is set to
+  // PHISHING_REUSE.
+  EXPECT_CALL(*password_protection_service_.get(),
+              GetPasswordProtectionTriggerPref(_))
+      .WillRepeatedly(Return(PHISHING_REUSE));
+  EXPECT_EQ(PHISHING_REUSE,
+            password_protection_service_->GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionWarningTrigger));
+  EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      /*matches_sync_password=*/true, LoginReputationClientResponse::PHISHING));
 
-    // For a GSUITE account, show warning if password protection is set to
-    // PHISHING_REUSE.
-    EXPECT_CALL(*password_protection_service_.get(),
-                GetPasswordProtectionTriggerPref(_))
-        .WillRepeatedly(Return(PHISHING_REUSE));
-    EXPECT_EQ(PHISHING_REUSE,
-              password_protection_service_->GetPasswordProtectionTriggerPref(
-                  prefs::kPasswordProtectionWarningTrigger));
-    EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
-        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-        /*matches_sync_password=*/true,
-        LoginReputationClientResponse::PHISHING));
-
-    // When "warn_on_low_reputation" is set to false, don't show modal warning
-    // on LOW_REPUTATION verdict, only show on PHISHING verdict.
-    EXPECT_CALL(*password_protection_service_.get(), GetSyncAccountType())
-        .WillRepeatedly(
-            Return(LoginReputationClientRequest::PasswordReuseEvent::GMAIL));
-    EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
-        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-        /*matches_sync_password=*/true,
-        LoginReputationClientResponse::LOW_REPUTATION));
-    EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
-        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-        /*matches_sync_password=*/true,
-        LoginReputationClientResponse::PHISHING));
-  }
-  {
-    base::test::ScopedFeatureList scoped_feature_list3;
-    // When "warn_on_low_reputation" is set to true, show modal warning on both
-    // LOW_REPUTATION and PHISHING verdict.
-    scoped_feature_list3.InitAndEnableFeatureWithParameters(
-        safe_browsing::kGoogleBrandedPhishingWarning,
-        {{"softer_warning", "true"}, {"warn_on_low_reputation", "true"}});
-    EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
-        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-        /*matches_sync_password=*/true,
-        LoginReputationClientResponse::LOW_REPUTATION));
-    EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
-        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-        /*matches_sync_password=*/true,
-        LoginReputationClientResponse::PHISHING));
-  }
+  // Modal dialog warning is also shown on LOW_REPUTATION verdict.
+  EXPECT_CALL(*password_protection_service_.get(), GetSyncAccountType())
+      .WillRepeatedly(
+          Return(LoginReputationClientRequest::PasswordReuseEvent::GMAIL));
+  EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      /*matches_sync_password=*/true,
+      LoginReputationClientResponse::LOW_REPUTATION));
 }
 
 TEST_P(PasswordProtectionServiceTest, VerifyIsEventLoggingEnabled) {
-  {
-    // Event logging should be disabled if feature is disabled.
-    base::test::ScopedFeatureList scoped_feature_list1;
-    scoped_feature_list1.InitAndDisableFeature(kGaiaPasswordReuseReporting);
-    EXPECT_FALSE(password_protection_service_->IsEventLoggingEnabled());
-  }
+  // For user who is not signed-in, event logging should be disabled.
+  EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN,
+            password_protection_service_->GetSyncAccountType());
+  EXPECT_FALSE(password_protection_service_->IsEventLoggingEnabled());
 
-  {
-    base::test::ScopedFeatureList scoped_feature_list2;
-    scoped_feature_list2.InitAndEnableFeature(
-        safe_browsing::kGaiaPasswordReuseReporting);
+  // Event logging should be enable for all signed-in users, if
+  // password protection trigger is set to PHISHING_REUSE.
+  EXPECT_CALL(*password_protection_service_.get(), GetSyncAccountType())
+      .WillRepeatedly(
+          Return(LoginReputationClientRequest::PasswordReuseEvent::GMAIL));
+  EXPECT_CALL(*password_protection_service_.get(),
+              GetPasswordProtectionTriggerPref(_))
+      .WillRepeatedly(Return(PHISHING_REUSE));
+  EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::GMAIL,
+            password_protection_service_->GetSyncAccountType());
+  EXPECT_TRUE(password_protection_service_->IsEventLoggingEnabled());
 
-    // For user who is not signed-in, event logging should be disabled.
-    EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN,
-              password_protection_service_->GetSyncAccountType());
-    EXPECT_FALSE(password_protection_service_->IsEventLoggingEnabled());
+  EXPECT_CALL(*password_protection_service_.get(), GetSyncAccountType())
+      .WillRepeatedly(
+          Return(LoginReputationClientRequest::PasswordReuseEvent::GSUITE));
+  EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::GSUITE,
+            password_protection_service_->GetSyncAccountType());
+  EXPECT_TRUE(password_protection_service_->IsEventLoggingEnabled());
 
-    // Event logging should be enable for all signed-in users, if
-    // password protection trigger is set to PHISHING_REUSE.
-    EXPECT_CALL(*password_protection_service_.get(), GetSyncAccountType())
-        .WillRepeatedly(
-            Return(LoginReputationClientRequest::PasswordReuseEvent::GMAIL));
-    EXPECT_CALL(*password_protection_service_.get(),
-                GetPasswordProtectionTriggerPref(_))
-        .WillRepeatedly(Return(PHISHING_REUSE));
-    EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::GMAIL,
-              password_protection_service_->GetSyncAccountType());
-    EXPECT_TRUE(password_protection_service_->IsEventLoggingEnabled());
+  // If password protection trigger is sent to off, then event logging
+  // should be disabled.
+  EXPECT_CALL(*password_protection_service_.get(),
+              GetPasswordProtectionTriggerPref(_))
+      .WillRepeatedly(Return(PASSWORD_PROTECTION_OFF));
+  EXPECT_EQ(PASSWORD_PROTECTION_OFF,
+            password_protection_service_->GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionRiskTrigger));
+  EXPECT_FALSE(password_protection_service_->IsEventLoggingEnabled());
+  EXPECT_CALL(*password_protection_service_.get(), GetSyncAccountType())
+      .WillRepeatedly(
+          Return(LoginReputationClientRequest::PasswordReuseEvent::GMAIL));
+  EXPECT_FALSE(password_protection_service_->IsEventLoggingEnabled());
 
-    EXPECT_CALL(*password_protection_service_.get(), GetSyncAccountType())
-        .WillRepeatedly(
-            Return(LoginReputationClientRequest::PasswordReuseEvent::GSUITE));
-    EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::GSUITE,
-              password_protection_service_->GetSyncAccountType());
-    EXPECT_TRUE(password_protection_service_->IsEventLoggingEnabled());
-
-    // If password protection trigger is sent to off, then event logging
-    // should be disabled.
-    EXPECT_CALL(*password_protection_service_.get(),
-                GetPasswordProtectionTriggerPref(_))
-        .WillRepeatedly(Return(PASSWORD_PROTECTION_OFF));
-    EXPECT_EQ(PASSWORD_PROTECTION_OFF,
-              password_protection_service_->GetPasswordProtectionTriggerPref(
-                  prefs::kPasswordProtectionRiskTrigger));
-    EXPECT_FALSE(password_protection_service_->IsEventLoggingEnabled());
-    EXPECT_CALL(*password_protection_service_.get(), GetSyncAccountType())
-        .WillRepeatedly(
-            Return(LoginReputationClientRequest::PasswordReuseEvent::GMAIL));
-    EXPECT_FALSE(password_protection_service_->IsEventLoggingEnabled());
-
-    // TODO(jialiul): update test when we start to introduce PASSWORD_REUSE
-    // trigger.
-  }
+  // TODO(jialiul): update test when we start to introduce PASSWORD_REUSE
+  // trigger.
 }
 
 INSTANTIATE_TEST_CASE_P(

@@ -50,7 +50,6 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
 
   void SetUp() override {
     ASSERT_TRUE(embedded_test_server()->Start());
-    scoped_feature_list_.InitAndEnableFeature(kGoogleBrandedPhishingWarning);
     InProcessBrowserTest::SetUp();
   }
 
@@ -144,7 +143,6 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::HistogramTester histograms_;
   std::unique_ptr<
       base::CallbackList<void(content::BrowserContext*)>::Subscription>

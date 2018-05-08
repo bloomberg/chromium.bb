@@ -162,10 +162,8 @@ SafeBrowsingApiHandlerBridge::~SafeBrowsingApiHandlerBridge() {
 void SafeBrowsingApiHandlerBridge::Initialize() {
   DCHECK(!core_);
   core_ = std::make_unique<Core>();
-  if (base::FeatureList::IsEnabled(kDispatchSafetyNetCheckOffThread)) {
-    api_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
-  }
+  api_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 }
 
 void SafeBrowsingApiHandlerBridge::StartURLCheck(

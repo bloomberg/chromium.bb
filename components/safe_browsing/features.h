@@ -22,9 +22,6 @@ namespace safe_browsing {
 extern const base::Feature kAdSamplerCollectButDontSendFeature;
 extern const base::Feature kAdSamplerTriggerFeature;
 extern const base::Feature kCheckByURLLoaderThrottle;
-// Gates logging of GaiaPasswordReuse user events.
-extern const base::Feature kGaiaPasswordReuseReporting;
-extern const base::Feature kGoogleBrandedPhishingWarning;
 
 // Specifies which non-resource HTML Elements to collect based on their tag and
 // attributes. It's a single param containing a comma-separated list of pairs.
@@ -46,14 +43,6 @@ extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 // Having a single shared feature makes it impossible to run multiple trigger
 // trials simultaneously.
 extern const base::Feature kTriggerThrottlerDailyQuotaFeature;
-
-// Controls whether to dispatch the SafetyNet check on a worker thread. Android
-// only.
-extern const base::Feature kDispatchSafetyNetCheckOffThread;
-
-// Controls whether to add recent navigation events to referrer chain for SBER
-// users if referrer chain is incomplete.
-extern const base::Feature kAppendRecentNavigationEvents;
 
 // Controls whether .rar files downloaded by the user are inspected for being
 // unsafe.

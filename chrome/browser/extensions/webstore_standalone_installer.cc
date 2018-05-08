@@ -66,8 +66,7 @@ void WebstoreStandaloneInstaller::BeginInstall() {
   webstore_data_fetcher_.reset(
       new WebstoreDataFetcher(this, GetRequestorURL(), id_));
 
-  webstore_data_fetcher_->SetPostData(
-      GetPostData(webstore_data_fetcher_->upload_content_type()));
+  webstore_data_fetcher_->SetPostData(GetPostData());
 
   webstore_data_fetcher_->Start(
       content::BrowserContext::GetDefaultStoragePartition(profile_)
@@ -156,8 +155,7 @@ WebstoreStandaloneInstaller::GetLocalizedExtensionForDisplay() {
   return localized_extension_for_display_.get();
 }
 
-std::string WebstoreStandaloneInstaller::GetPostData(
-    const std::string& upload_content_type_unused) {
+std::string WebstoreStandaloneInstaller::GetPostData() {
   return std::string();
 }
 

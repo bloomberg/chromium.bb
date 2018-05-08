@@ -33,19 +33,13 @@ const char kInvalidWebstoreResponseError[] = "Invalid Chrome Web Store reponse";
 
 namespace extensions {
 
-WebstoreDataFetcher::WebstoreDataFetcher(
-    WebstoreDataFetcherDelegate* delegate,
-    const GURL& referrer_url,
-    const std::string webstore_item_id)
+WebstoreDataFetcher::WebstoreDataFetcher(WebstoreDataFetcherDelegate* delegate,
+                                         const GURL& referrer_url,
+                                         const std::string webstore_item_id)
     : delegate_(delegate),
       referrer_url_(referrer_url),
       id_(webstore_item_id),
-      max_auto_retries_(0) {
-  upload_content_type_ =
-      base::FeatureList::IsEnabled(safe_browsing::kAppendRecentNavigationEvents)
-          ? "application/octet-stream"
-          : "application/json";
-}
+      max_auto_retries_(0) {}
 
 WebstoreDataFetcher::~WebstoreDataFetcher() {}
 
@@ -97,7 +91,8 @@ void WebstoreDataFetcher::Start(
       std::move(resource_request), traffic_annotation);
 
   if (!post_data_.empty())
-    simple_url_loader_->AttachStringForUpload(post_data_, upload_content_type_);
+    simple_url_loader_->AttachStringForUpload(post_data_,
+                                              "application/octet-stream");
 
   if (max_auto_retries_ > 0) {
     simple_url_loader_->SetRetryOptions(

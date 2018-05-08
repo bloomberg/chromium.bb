@@ -163,10 +163,7 @@ bool PasswordProtectionService::ShouldShowModalWarning(
   }
 
   return (verdict_type == LoginReputationClientResponse::PHISHING ||
-          (verdict_type == LoginReputationClientResponse::LOW_REPUTATION &&
-           base::GetFieldTrialParamByFeatureAsBool(
-               kGoogleBrandedPhishingWarning, "warn_on_low_reputation",
-               false))) &&
+          verdict_type == LoginReputationClientResponse::LOW_REPUTATION) &&
          IsWarningEnabled();
 }
 
@@ -846,14 +843,12 @@ bool PasswordProtectionService::IsModalWarningShowingInWebContents(
 }
 
 bool PasswordProtectionService::IsWarningEnabled() {
-  return base::FeatureList::IsEnabled(kGoogleBrandedPhishingWarning) &&
-         GetPasswordProtectionTriggerPref(
+  return GetPasswordProtectionTriggerPref(
              prefs::kPasswordProtectionWarningTrigger) == PHISHING_REUSE;
 }
 
 bool PasswordProtectionService::IsEventLoggingEnabled() {
-  return base::FeatureList::IsEnabled(kGaiaPasswordReuseReporting) &&
-         GetPasswordProtectionTriggerPref(
+  return GetPasswordProtectionTriggerPref(
              prefs::kPasswordProtectionRiskTrigger) == PHISHING_REUSE;
 }
 

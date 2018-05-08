@@ -225,10 +225,6 @@ class ChromePasswordProtectionServiceTest
     return builder.Build().release();
   }
 
-  void EnableGaiaPasswordReuseReporting() {
-    scoped_feature_list_.InitAndEnableFeature(kGaiaPasswordReuseReporting);
-  }
-
   syncer::FakeUserEventService* GetUserEventService() {
     return fake_user_event_service_;
   }
@@ -302,7 +298,6 @@ class ChromePasswordProtectionServiceTest
   }
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
   sync_preferences::TestingPrefServiceSyncable test_pref_service_;
   scoped_refptr<HostContentSettingsMap> content_setting_map_;
   std::unique_ptr<MockChromePasswordProtectionService> service_;
@@ -525,7 +520,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordReuseDetectedUserEventRecorded) {
-  EnableGaiaPasswordReuseReporting();
   // Configure sync account type to GMAIL.
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile());
@@ -561,8 +555,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordReuseLookupUserEventRecorded) {
-  EnableGaiaPasswordReuseReporting();
-
   // Configure sync account type to GMAIL.
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile());
