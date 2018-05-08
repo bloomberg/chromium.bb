@@ -577,6 +577,15 @@ _BANNED_CPP_FUNCTIONS = (
       False,
       (),
     ),
+    (
+      r'std::random_shuffle',
+      (
+        'std::random_shuffle is deprecated in C++14, and removed in C++17. Use',
+        'base::RandomShuffle instead.'
+      ),
+      True,
+      (),
+    ),
 )
 
 

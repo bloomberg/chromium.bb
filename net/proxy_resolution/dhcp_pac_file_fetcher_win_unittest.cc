@@ -662,9 +662,7 @@ TEST(DhcpPacFileFetcherWin, ReuseFetcher) {
   test_functions.push_back(TestShortCircuitLessPreferredAdapters);
   test_functions.push_back(TestImmediateCancel);
 
-  std::random_shuffle(test_functions.begin(),
-                      test_functions.end(),
-                      base::RandGenerator);
+  base::RandomShuffle(test_functions.begin(), test_functions.end());
   for (TestVector::const_iterator it = test_functions.begin();
        it != test_functions.end();
        ++it) {

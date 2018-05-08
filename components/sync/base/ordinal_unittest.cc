@@ -7,6 +7,7 @@
 #include <cctype>
 #include <vector>
 
+#include "base/rand_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -350,7 +351,7 @@ TEST(Ordinal, Sort) {
   sorted_ordinals.push_back(ordinal4);
 
   std::vector<LongOrdinal> ordinals = sorted_ordinals;
-  std::random_shuffle(ordinals.begin(), ordinals.end());
+  base::RandomShuffle(ordinals.begin(), ordinals.end());
   std::sort(ordinals.begin(), ordinals.end(), LongOrdinal::LessThanFn());
   EXPECT_TRUE(std::equal(ordinals.begin(), ordinals.end(),
                          sorted_ordinals.begin(), LongOrdinal::EqualsFn()));

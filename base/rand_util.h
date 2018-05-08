@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <string>
 
 #include "base/base_export.h"
@@ -22,10 +23,6 @@ BASE_EXPORT uint64_t RandUint64();
 BASE_EXPORT int RandInt(int min, int max);
 
 // Returns a random number in range [0, range).  Thread-safe.
-//
-// Note that this can be used as an adapter for std::random_shuffle():
-// Given a pre-populated |std::vector<int> myvector|, shuffle it as
-//   std::random_shuffle(myvector.begin(), myvector.end(), base::RandGenerator);
 BASE_EXPORT uint64_t RandGenerator(uint64_t range);
 
 // Returns a random double in range [0, 1). Thread-safe.
@@ -52,6 +49,25 @@ BASE_EXPORT void RandBytes(void* output, size_t output_length);
 // random number source, code outside of base/ that relies on this should use
 // crypto::RandBytes instead to ensure the requirement is easily discoverable.
 BASE_EXPORT std::string RandBytesAsString(size_t length);
+
+// An STL UniformRandomBitGenerator backed by RandUint64.
+// TODO(tzik): Consider replacing this with a faster implementation.
+class RandomBitGenerator {
+ public:
+  using result_type = uint64_t;
+  static constexpr result_type min() { return 0; }
+  static constexpr result_type max() { return UINT64_MAX; }
+  result_type operator()() const { return RandUint64(); }
+
+  RandomBitGenerator() = default;
+  ~RandomBitGenerator() = default;
+};
+
+// Shuffles [first, last) randomly. Thread-safe.
+template <typename Itr>
+void RandomShuffle(Itr first, Itr last) {
+  std::shuffle(first, last, RandomBitGenerator());
+}
 
 #if defined(OS_POSIX) && !defined(OS_FUCHSIA)
 BASE_EXPORT int GetUrandomFD();

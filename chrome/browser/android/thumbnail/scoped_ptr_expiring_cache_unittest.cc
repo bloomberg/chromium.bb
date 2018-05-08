@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/rand_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -154,7 +155,7 @@ TEST_F(ScopedPtrExpiringCacheTest, Iterator) {
   for (unsigned int i = 0; i < MAX_CACHE_SIZE; i++) {
     test_keys.push_back(i);
   }
-  std::random_shuffle(test_keys.begin(), test_keys.end());
+  base::RandomShuffle(test_keys.begin(), test_keys.end());
 
   for (unsigned int i = 0; i < MAX_CACHE_SIZE; i++) {
     cache.Put(test_keys[i], MockObject::Create(test_keys[i]));

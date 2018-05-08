@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
+#include "base/rand_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -927,7 +928,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RedirectPriority) {
 
   // Shuffle the rules to ensure that the order in which rules are added has no
   // effect on the test.
-  std::random_shuffle(rules.begin(), rules.end());
+  base::RandomShuffle(rules.begin(), rules.end());
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(rules));
 
   for (size_t i = 0; i <= kNumPatternTypes + 1; ++i) {

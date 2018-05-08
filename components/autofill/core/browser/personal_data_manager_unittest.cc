@@ -19,6 +19,7 @@
 #include "base/guid.h"
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop/message_loop.h"
+#include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -5302,7 +5303,7 @@ TEST_F(PersonalDataManagerTest, RemoveProfilesNotUsedSinceTimestamp) {
 
     // Created a shuffled master copy of the profile pointers.
     std::vector<AutofillProfile*> shuffled_profiles(all_profile_ptrs);
-    std::random_shuffle(shuffled_profiles.begin(), shuffled_profiles.end());
+    base::RandomShuffle(shuffled_profiles.begin(), shuffled_profiles.end());
 
     // Copy the shuffled profile pointer collections to use as the working set.
     std::vector<AutofillProfile*> profiles(shuffled_profiles);
@@ -5531,7 +5532,7 @@ TEST_F(PersonalDataManagerTest, RemoveExpiredCreditCardsNotUsedSinceTimestamp) {
 
     // Created a shuffled master copy of the card pointers.
     std::vector<CreditCard*> shuffled_cards(all_card_ptrs);
-    std::random_shuffle(shuffled_cards.begin(), shuffled_cards.end());
+    base::RandomShuffle(shuffled_cards.begin(), shuffled_cards.end());
 
     // Copy the shuffled card pointer collections to use as the working
     // set.
