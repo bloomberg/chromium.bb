@@ -55,11 +55,13 @@ class OverlayWindowFrameView : public views::NonClientFrameView {
       return HTNOWHERE;
 
     // Allow dragging the border of the window to resize. Within the bounds of
-    // the window, allow dragging to reposition the window.
+    // the window, allow interaction with the media controls on the window.
+    // TODO(apacible): Return correct hit test value to enable drag.
+    // http://crbug.com/840540
     int window_component = GetHTComponentForFrame(
         point, kBorderThickness, kBorderThickness, kResizeAreaCornerSize,
         kResizeAreaCornerSize, GetWidget()->widget_delegate()->CanResize());
-    return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
+    return window_component;
   }
   void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {}
   void ResetWindowControls() override {}
