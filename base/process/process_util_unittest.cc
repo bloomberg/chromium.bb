@@ -86,7 +86,7 @@ const char kTestHelper[] = "test_child_process";
 const char kSignalFileTerm[] = "TerminatedChildProcess.die";
 
 #if defined(OS_FUCHSIA)
-const char kSignalFileClone[] = "/tmp/ClonedTmpDir.die";
+const char kSignalFileClone[] = "ClonedTmpDir.die";
 #endif
 #endif  // defined(OS_POSIX)
 
@@ -158,13 +158,13 @@ class ProcessUtilTest : public MultiProcessTest {
 };
 
 std::string ProcessUtilTest::GetSignalFilePath(const char* filename) {
-#if !defined(OS_ANDROID)
-  return filename;
-#else
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
   FilePath tmp_dir;
-  PathService::Get(DIR_CACHE, &tmp_dir);
+  PathService::Get(DIR_TEMP, &tmp_dir);
   tmp_dir = tmp_dir.Append(filename);
   return tmp_dir.value();
+#else
+  return filename;
 #endif
 }
 
@@ -932,30 +932,6 @@ TEST_F(ProcessUtilTest, LaunchWithHandleTransfer) {
   EXPECT_EQ(0, exit_code);
 }
 
-MULTIPROCESS_TEST_MAIN(ProcessUtilsVerifyNamespace) {
-  CHECK(PathExists(FilePath("/data")));
-  CHECK(!PathExists(FilePath("/svc")));
-  return 0;
-}
-
-TEST_F(ProcessUtilTest, LaunchNamespaceMap) {
-  LaunchOptions options;
-  options.clone_flags &= ~LP_CLONE_FDIO_NAMESPACE;
-  options.paths_to_map.push_back("/data");
-
-  // gtest uses /tmp to pass flags to the launched process, so it needs to be
-  // mapped as well.
-  options.paths_to_map.push_back("/tmp");
-
-  Process process =
-      SpawnChildWithOptions("ProcessUtilsVerifyNamespace", options);
-  ASSERT_TRUE(process.IsValid());
-
-  int exit_code;
-  ASSERT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
-                                             &exit_code));
-  EXPECT_EQ(0, exit_code);
-}
 #endif  // defined(OS_FUCHSIA)
 
 namespace {
