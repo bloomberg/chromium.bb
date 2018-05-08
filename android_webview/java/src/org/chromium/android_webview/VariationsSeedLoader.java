@@ -76,6 +76,10 @@ public class VariationsSeedLoader {
     // is exceeded, proceed with variations disabled.
     private static final long SEED_LOAD_TIMEOUT_MILLIS = 20;
 
+    // If false, then variations will be enabled if either the CMD flag or the AGSA experiment file
+    // is present. If true, then variations will be enabled regardless of flag or experiment file.
+    private static boolean sVariationsAlwaysEnabled = false;
+
     private static void recordLoadSeedResult(int result) {
         EnumeratedHistogramSample histogram = new EnumeratedHistogramSample(
                 "Variations.SeedLoadResult", LoadSeedResult.ENUM_SIZE);
@@ -208,7 +212,7 @@ public class VariationsSeedLoader {
         // mEnabledByExperiment is set in mLoadTask, so isVariationsEnabled() should only be called
         // after run() returns.
         public boolean isVariationsEnabled() {
-            return mEnabledByCmd || mEnabledByExperiment;
+            return sVariationsAlwaysEnabled || mEnabledByCmd || mEnabledByExperiment;
         }
     }
 

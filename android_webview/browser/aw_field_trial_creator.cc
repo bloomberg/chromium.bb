@@ -38,15 +38,6 @@ CreateLowEntropyProvider() {
           android_webview::AwMetricsServiceClient::GetClientId()));
 }
 
-// Synchronous read of variations data is permitted as it is fast
-// enough to have minimal impact on startup time, and is behind the
-// webview-enable-finch flag.
-bool ReadVariationsSeedDataFromFile(PrefService* local_state) {
-  // TODO(kmilka): The data read is being moved to java and the data will be
-  // passed in via JNI.
-  return false;
-}
-
 }  // anonymous namespace
 
 AwFieldTrialCreator::AwFieldTrialCreator()
@@ -89,9 +80,6 @@ void AwFieldTrialCreator::SetUpFieldTrials() {
       std::make_unique<base::FieldTrialList>(CreateLowEntropyProvider());
 
   std::unique_ptr<PrefService> local_state = CreateLocalState();
-
-  if (!ReadVariationsSeedDataFromFile(local_state.get()))
-    return;
 
   variations::UIStringOverrider ui_string_overrider;
   client_ = std::make_unique<AwVariationsServiceClient>();
