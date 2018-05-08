@@ -67,24 +67,26 @@ struct TraversalLeft {
     return box.CaretLeftmostOffset();
   }
 
-  static InlineBox* FindBackwardBidiRun(const InlineBox& box,
-                                        unsigned bidi_level) {
+  static const InlineBox* FindBackwardBidiRun(const InlineBox& box,
+                                              unsigned bidi_level) {
     return InlineBoxTraversal::FindRightBidiRun(box, bidi_level);
   }
 
-  static InlineBox* FindBackwardBoundaryOfEntireBidiRun(const InlineBox& box,
-                                                        unsigned bidi_level) {
+  static const InlineBox& FindBackwardBoundaryOfEntireBidiRun(
+      const InlineBox& box,
+      unsigned bidi_level) {
     return InlineBoxTraversal::FindRightBoundaryOfEntireBidiRun(box,
                                                                 bidi_level);
   }
 
-  static InlineBox* FindForwardBidiRun(const InlineBox& box,
-                                       unsigned bidi_level) {
+  static const InlineBox* FindForwardBidiRun(const InlineBox& box,
+                                             unsigned bidi_level) {
     return InlineBoxTraversal::FindLeftBidiRun(box, bidi_level);
   }
 
-  static InlineBox* FindForwardBoundaryOfEntireBidiRun(const InlineBox& box,
-                                                       unsigned bidi_level) {
+  static const InlineBox& FindForwardBoundaryOfEntireBidiRun(
+      const InlineBox& box,
+      unsigned bidi_level) {
     return InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRun(box, bidi_level);
   }
 
@@ -96,11 +98,12 @@ struct TraversalLeft {
     return NextGraphemeBoundaryOf(node, offset);
   }
 
-  static InlineBox* ForwardLeafChildOf(const InlineBox& box) {
+  static const InlineBox* ForwardLeafChildOf(const InlineBox& box) {
     return box.PrevLeafChild();
   }
 
-  static InlineBox* ForwardLeafChildIgnoringLineBreakOf(const InlineBox& box) {
+  static const InlineBox* ForwardLeafChildIgnoringLineBreakOf(
+      const InlineBox& box) {
     return box.PrevLeafChildIgnoringLineBreak();
   }
 
@@ -144,7 +147,7 @@ template <typename Strategy>
 struct TraversalRight {
   STATIC_ONLY(TraversalRight);
 
-  static InlineBox* BackwardLeafChildOf(const InlineBox& box) {
+  static const InlineBox* BackwardLeafChildOf(const InlineBox& box) {
     return box.PrevLeafChild();
   }
 
@@ -162,23 +165,25 @@ struct TraversalRight {
     return box.CaretRightmostOffset();
   }
 
-  static InlineBox* FindBackwardBidiRun(const InlineBox& box,
-                                        unsigned bidi_level) {
+  static const InlineBox* FindBackwardBidiRun(const InlineBox& box,
+                                              unsigned bidi_level) {
     return InlineBoxTraversal::FindLeftBidiRun(box, bidi_level);
   }
 
-  static InlineBox* FindBackwardBoundaryOfEntireBidiRun(const InlineBox& box,
-                                                        unsigned bidi_level) {
+  static const InlineBox& FindBackwardBoundaryOfEntireBidiRun(
+      const InlineBox& box,
+      unsigned bidi_level) {
     return InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRun(box, bidi_level);
   }
 
-  static InlineBox* FindForwardBidiRun(const InlineBox& box,
-                                       unsigned bidi_level) {
+  static const InlineBox* FindForwardBidiRun(const InlineBox& box,
+                                             unsigned bidi_level) {
     return InlineBoxTraversal::FindRightBidiRun(box, bidi_level);
   }
 
-  static InlineBox* FindForwardBoundaryOfEntireBidiRun(const InlineBox& box,
-                                                       unsigned bidi_level) {
+  static const InlineBox& FindForwardBoundaryOfEntireBidiRun(
+      const InlineBox& box,
+      unsigned bidi_level) {
     return InlineBoxTraversal::FindRightBoundaryOfEntireBidiRun(box,
                                                                 bidi_level);
   }
@@ -191,11 +196,12 @@ struct TraversalRight {
     return PreviousGraphemeBoundaryOf(node, offset);
   }
 
-  static InlineBox* ForwardLeafChildOf(const InlineBox& box) {
+  static const InlineBox* ForwardLeafChildOf(const InlineBox& box) {
     return box.NextLeafChild();
   }
 
-  static InlineBox* ForwardLeafChildIgnoringLineBreakOf(const InlineBox& box) {
+  static const InlineBox* ForwardLeafChildIgnoringLineBreakOf(
+      const InlineBox& box) {
     return box.NextLeafChildIgnoringLineBreak();
   }
 
@@ -247,21 +253,21 @@ template <typename Traversal>
 const InlineBox* LeadingBoxOfEntireSecondaryRun(const InlineBox* box) {
   const InlineBox* runner = box;
   while (true) {
-    const InlineBox* const backward_box =
+    const InlineBox& backward_box =
         Traversal::FindBackwardBoundaryOfEntireBidiRun(*runner,
                                                        runner->BidiLevel());
-    if (backward_box->BidiLevel() == runner->BidiLevel())
-      return backward_box;
-    DCHECK_GT(backward_box->BidiLevel(), runner->BidiLevel());
-    runner = backward_box;
+    if (backward_box.BidiLevel() == runner->BidiLevel())
+      return &backward_box;
+    DCHECK_GT(backward_box.BidiLevel(), runner->BidiLevel());
+    runner = &backward_box;
 
-    const InlineBox* const forward_box =
+    const InlineBox& forward_box =
         Traversal::FindForwardBoundaryOfEntireBidiRun(*runner,
                                                       runner->BidiLevel());
-    if (forward_box->BidiLevel() == runner->BidiLevel())
-      return forward_box;
-    DCHECK_GT(forward_box->BidiLevel(), runner->BidiLevel());
-    runner = forward_box;
+    if (forward_box.BidiLevel() == runner->BidiLevel())
+      return &forward_box;
+    DCHECK_GT(forward_box.BidiLevel(), runner->BidiLevel());
+    runner = &forward_box;
   }
 }
 
@@ -320,7 +326,7 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
 
       if (Traversal::IsOvershot(offset, *box)) {
         // Overshot forwardly.
-        InlineBox* const forward_box =
+        const InlineBox* const forward_box =
             Traversal::ForwardLeafChildIgnoringLineBreakOf(*box);
         if (!forward_box) {
           const PositionTemplate<Strategy>& forward_position =
@@ -349,7 +355,7 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
       DCHECK_EQ(offset, Traversal::CaretStartOffsetOf(*box));
 
       unsigned char level = box->BidiLevel();
-      InlineBox* forward_box = Traversal::ForwardLeafChildOf(*box);
+      const InlineBox* forward_box = Traversal::ForwardLeafChildOf(*box);
 
       if (box->Direction() == primary_direction) {
         if (!forward_box) {
@@ -366,7 +372,7 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
 
         level = forward_box->BidiLevel();
 
-        InlineBox* const backward_box =
+        const InlineBox* const backward_box =
             Traversal::FindBackwardBidiRun(*box, level);
         if (backward_box && backward_box->BidiLevel() == level)
           break;

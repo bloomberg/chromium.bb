@@ -113,10 +113,10 @@ RenderedPosition RenderedPosition::LeftBoundaryOfBidiRun(
   if (!inline_box_ || bidi_level_of_run > inline_box_->BidiLevel())
     return RenderedPosition();
 
-  const InlineBox* const box =
+  const InlineBox& box =
       InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
           *inline_box_, bidi_level_of_run);
-  return RenderedPosition(box, box->CaretLeftmostOffset());
+  return RenderedPosition(&box, box.CaretLeftmostOffset());
 }
 
 RenderedPosition RenderedPosition::RightBoundaryOfBidiRun(
@@ -124,10 +124,10 @@ RenderedPosition RenderedPosition::RightBoundaryOfBidiRun(
   if (!inline_box_ || bidi_level_of_run > inline_box_->BidiLevel())
     return RenderedPosition();
 
-  const InlineBox* const box =
+  const InlineBox& box =
       InlineBoxTraversal::FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
           *inline_box_, bidi_level_of_run);
-  return RenderedPosition(box, box->CaretRightmostOffset());
+  return RenderedPosition(&box, box.CaretRightmostOffset());
 }
 
 bool RenderedPosition::AtLeftBoundaryOfBidiRun(
