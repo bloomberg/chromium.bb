@@ -43,7 +43,7 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
                           SkColor vector_icon_color) const;
 
   // Returns the theme color tint (e.g. dark or light).
-  OmniboxTint GetTint();
+  OmniboxTint GetTint() const;
 
   // Sets the line specified by |index| as selected.
   virtual void SetSelectedLine(size_t index);

@@ -16,9 +16,8 @@
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/size.h"
 
-ZoomView::ZoomView(LocationBarView::Delegate* location_bar_delegate,
-                   BubbleIconView::Delegate* delegate)
-    : BubbleIconView(nullptr, 0, delegate),
+ZoomView::ZoomView(LocationBarView::Delegate* location_bar_delegate)
+    : BubbleIconView(nullptr, 0),
       location_bar_delegate_(location_bar_delegate),
       icon_(&kZoomMinusIcon) {
   Update(nullptr);

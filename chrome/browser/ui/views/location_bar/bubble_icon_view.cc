@@ -175,10 +175,6 @@ void BubbleIconView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   UpdateIcon();
 }
 
-void BubbleIconView::OnThemeChanged() {
-  UpdateIcon();
-}
-
 void BubbleIconView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   image_->SetPaintToLayer();
   image_->layer()->SetFillsBoundsOpaquely(false);
@@ -258,11 +254,10 @@ void BubbleIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 void BubbleIconView::UpdateIcon() {
   const ui::NativeTheme* theme = GetNativeTheme();
   SkColor icon_color =
-      active_ ? theme->GetSystemColor(
-                    ui::NativeTheme::kColorId_ProminentButtonColor)
-              : GetOmniboxColor(OmniboxPart::LOCATION_BAR_SECURITY_CHIP,
-                                delegate_->GetTint(),
-                                OmniboxPartState::CHIP_DEFAULT);
+      active_
+          ? theme->GetSystemColor(
+              ui::NativeTheme::kColorId_ProminentButtonColor)
+          : GetInkDropBaseColor();
   image_->SetImage(gfx::CreateVectorIcon(
       GetVectorIcon(), GetLayoutConstant(LOCATION_BAR_ICON_SIZE), icon_color));
 }

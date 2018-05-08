@@ -160,16 +160,14 @@ base::Optional<SkColor> MaybeGetDefaultColorForNewerMaterialUi(int id,
 
     case ThemeProperties::COLOR_TAB_TEXT:
     case ThemeProperties::COLOR_BOOKMARK_TEXT:
-      return incognito ? gfx::kGoogleGrey100 : gfx::kGoogleGrey800;
-
     case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_ACTIVE:
     case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
-      return incognito ? gfx::kGoogleGrey100 : gfx::kChromeIconGrey;
+      return incognito ? gfx::kGoogleGrey100 : gfx::kGoogleGrey800;
 
     case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT:
     case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_INACTIVE:
     case ThemeProperties::COLOR_TAB_ALERT_AUDIO:
-      return incognito ? gfx::kGoogleGrey400 : gfx::kChromeIconGrey;
+      return incognito ? gfx::kGoogleGrey400 : gfx::kGoogleGrey700;
 
     case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_HOVER:
       return incognito ? gfx::kGoogleGrey700 : gfx::kGoogleGrey200;

@@ -19,9 +19,8 @@ namespace content {
 class WebContents;
 }
 
-IntentPickerView::IntentPickerView(Browser* browser,
-                                   BubbleIconView::Delegate* delegate)
-    : BubbleIconView(nullptr, 0, delegate), browser_(browser) {
+IntentPickerView::IntentPickerView(Browser* browser)
+    : BubbleIconView(nullptr, 0), browser_(browser) {
   if (browser_) {
     intent_picker_controller_ =
         std::make_unique<arc::IntentPickerController>(browser_);

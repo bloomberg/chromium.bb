@@ -11,7 +11,7 @@
 // The find icon to show when the find bar is visible.
 class FindBarIcon : public BubbleIconView {
  public:
-  explicit FindBarIcon(BubbleIconView::Delegate* delegate);
+  FindBarIcon();
   ~FindBarIcon() override;
 
   void SetActive(bool activate, bool should_animate);
