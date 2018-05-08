@@ -14,9 +14,9 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
-#include "chrome/browser/ui/omnibox/favicon_cache.h"
 #include "chrome/common/search/instant_types.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/omnibox/browser/favicon_cache.h"
 #include "components/omnibox/browser/omnibox_client.h"
 
 class ChromeOmniboxEditController;

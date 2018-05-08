@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_OMNIBOX_FAVICON_CACHE_H_
-#define CHROME_BROWSER_UI_OMNIBOX_FAVICON_CACHE_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_FAVICON_CACHE_H_
+#define COMPONENTS_OMNIBOX_BROWSER_FAVICON_CACHE_H_
 
 #include <list>
 #include <map>
@@ -33,8 +33,10 @@ class GURL;
 typedef base::OnceCallback<void(const gfx::Image& favicon)>
     FaviconFetchedCallback;
 
-// We cache a very small number of favicons so we can synchronously deliver
-// them to prevent flicker as the user types.
+// This caches favicons for pages. We cache a small number of them so we can
+// synchronously deliver them to the UI to prevent flicker as the user types.
+// It also stores and times out null results from when we cannot fetch a favicon
+// from the history database.
 class FaviconCache : public history::HistoryServiceObserver {
  public:
   FaviconCache(favicon::FaviconService* favicon_service,
@@ -92,4 +94,4 @@ class FaviconCache : public history::HistoryServiceObserver {
   DISALLOW_COPY_AND_ASSIGN(FaviconCache);
 };
 
-#endif  // CHROME_BROWSER_UI_OMNIBOX_FAVICON_CACHE_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_FAVICON_CACHE_H_

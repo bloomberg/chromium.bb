@@ -1389,8 +1389,6 @@ split_static_library("ui") {
       "omnibox/chrome_omnibox_navigation_observer.h",
       "omnibox/clipboard_utils.cc",
       "omnibox/clipboard_utils.h",
-      "omnibox/favicon_cache.cc",
-      "omnibox/favicon_cache.h",
       "omnibox/omnibox_theme.cc",
       "omnibox/omnibox_theme.h",
       "page_info/page_info_dialog.cc",

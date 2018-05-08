@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/omnibox/favicon_cache.h"
+#include "components/omnibox/browser/favicon_cache.h"
 
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
