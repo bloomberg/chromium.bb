@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "media/audio/audio_input_sync_writer.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/audio_parameters.h"
@@ -45,7 +46,7 @@ InputStream::InputStream(CreatedCallback created_callback,
       writer_(media::AudioInputSyncWriter::Create(
           log_ ? base::BindRepeating(&media::mojom::AudioLog::OnLogMessage,
                                      base::Unretained(log_->get()))
-               : base::RepeatingCallback<void(const std::string&)>(),
+               : base::DoNothing(),
           shared_memory_count,
           params,
           &foreign_socket_)),
