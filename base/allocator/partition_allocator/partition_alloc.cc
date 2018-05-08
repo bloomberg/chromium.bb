@@ -257,38 +257,46 @@ bool PartitionReallocDirectMappedInPlace(PartitionRootGeneric* root,
   return true;
 }
 
-void* PartitionRootGeneric::Realloc(void* ptr,
-                                    size_t new_size,
-                                    const char* type_name) {
+void* PartitionReallocGenericFlags(PartitionRootGeneric* root,
+                                   int flags,
+                                   void* ptr,
+                                   size_t new_size,
+                                   const char* type_name) {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
-  return realloc(ptr, new_size);
+  void* result = realloc(ptr, new_size);
+  CHECK(result || flags & PartitionAllocReturnNull);
+  return result;
 #else
   if (UNLIKELY(!ptr))
-    return this->Alloc(new_size, type_name);
+    return PartitionAllocGenericFlags(root, flags, new_size, type_name);
   if (UNLIKELY(!new_size)) {
-    this->Free(ptr);
+    root->Free(ptr);
     return nullptr;
   }
 
-  if (new_size > kGenericMaxDirectMapped)
-    internal::PartitionExcessiveAllocationSize();
+  if (new_size > kGenericMaxDirectMapped) {
+    if (flags & PartitionAllocReturnNull)
+      return nullptr;
+    else
+      internal::PartitionExcessiveAllocationSize();
+  }
 
   internal::PartitionPage* page = internal::PartitionPage::FromPointer(
       internal::PartitionCookieFreePointerAdjust(ptr));
   // TODO(palmer): See if we can afford to make this a CHECK.
-  DCHECK(IsValidPage(page));
+  DCHECK(root->IsValidPage(page));
 
   if (UNLIKELY(page->bucket->is_direct_mapped())) {
     // We may be able to perform the realloc in place by changing the
     // accessibility of memory pages and, if reducing the size, decommitting
     // them.
-    if (PartitionReallocDirectMappedInPlace(this, page, new_size)) {
+    if (PartitionReallocDirectMappedInPlace(root, page, new_size)) {
       PartitionAllocHooks::ReallocHookIfEnabled(ptr, ptr, new_size, type_name);
       return ptr;
     }
   }
 
-  size_t actual_new_size = this->ActualSize(new_size);
+  size_t actual_new_size = root->ActualSize(new_size);
   size_t actual_old_size = PartitionAllocGetSize(ptr);
 
   // TODO: note that tcmalloc will "ignore" a downsizing realloc() unless the
@@ -309,15 +317,28 @@ void* PartitionRootGeneric::Realloc(void* ptr,
   }
 
   // This realloc cannot be resized in-place. Sadness.
-  void* ret = this->Alloc(new_size, type_name);
+  void* ret = PartitionAllocGenericFlags(root, flags, new_size, type_name);
+  if (!ret) {
+    if (flags & PartitionAllocReturnNull)
+      return nullptr;
+    else
+      internal::PartitionExcessiveAllocationSize();
+  }
+
   size_t copy_size = actual_old_size;
   if (new_size < copy_size)
     copy_size = new_size;
 
   memcpy(ret, ptr, copy_size);
-  this->Free(ptr);
+  root->Free(ptr);
   return ret;
 #endif
+}
+
+void* PartitionRootGeneric::Realloc(void* ptr,
+                                    size_t new_size,
+                                    const char* type_name) {
+  return PartitionReallocGenericFlags(this, 0, ptr, new_size, type_name);
 }
 
 static size_t PartitionPurgePage(internal::PartitionPage* page, bool discard) {

@@ -182,7 +182,7 @@ class PartitionAllocTest : public testing::Test {
     }
   }
 
-  void DoReturnNullTest(size_t allocSize) {
+  void DoReturnNullTest(size_t allocSize, bool use_realloc) {
     // TODO(crbug.com/678782): Where necessary and possible, disable the
     // platform's OOM-killing behavior. OOM-killing makes this test flaky on
     // low-memory devices.
@@ -202,9 +202,17 @@ class PartitionAllocTest : public testing::Test {
     int i;
 
     for (i = 0; i < numAllocations; ++i) {
-      ptrs[i] = PartitionAllocGenericFlags(generic_allocator.root(),
-                                           PartitionAllocReturnNull, allocSize,
-                                           type_name);
+      if (use_realloc) {
+        ptrs[i] = PartitionAllocGenericFlags(
+            generic_allocator.root(), PartitionAllocReturnNull, 1, type_name);
+        ptrs[i] = PartitionReallocGenericFlags(generic_allocator.root(),
+                                               PartitionAllocReturnNull,
+                                               ptrs[i], allocSize, type_name);
+      } else {
+        ptrs[i] = PartitionAllocGenericFlags(generic_allocator.root(),
+                                             PartitionAllocReturnNull,
+                                             allocSize, type_name);
+      }
       if (!i)
         EXPECT_TRUE(ptrs[0]);
       if (!ptrs[i]) {
@@ -1302,14 +1310,26 @@ class PartitionAllocReturnNullTest : public PartitionAllocTest {};
 // sufficient unreserved virtual memory around for the later one(s).
 TEST_F(PartitionAllocReturnNullTest, RepeatedReturnNullDirect) {
   // A direct-mapped allocation size.
-  DoReturnNullTest(32 * 1024 * 1024);
+  DoReturnNullTest(32 * 1024 * 1024, false);
 }
 
 // Test "return null" with a 512 kB block size.
 TEST_F(PartitionAllocReturnNullTest, RepeatedReturnNull) {
   // A single-slot but non-direct-mapped allocation size.
-  DoReturnNullTest(512 * 1024);
+  DoReturnNullTest(512 * 1024, false);
 }
+
+// Repeating the above tests using Realloc instead of Alloc.
+class PartitionReallocReturnNullTest : public PartitionAllocTest {};
+
+TEST_F(PartitionReallocReturnNullTest, RepeatedReturnNullDirect) {
+  DoReturnNullTest(32 * 1024 * 1024, true);
+}
+
+TEST_F(PartitionReallocReturnNullTest, RepeatedReturnNull) {
+  DoReturnNullTest(512 * 1024, true);
+}
+
 #endif  // !defined(ARCH_CPU_64_BITS) || (defined(OS_POSIX) &&
         // !(defined(OS_FUCHSIA) || defined(OS_MACOSX) || defined(OS_ANDROID)))
 
