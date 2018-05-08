@@ -14,7 +14,7 @@ namespace gfx {
 constexpr SkColor kPlaceholderColor = SK_ColorRED;
 
 // The number refers to the shade of darkness. Each color in the MD
-// palette ranges from 50-900.
+// palette ranges from 050-900.
 constexpr SkColor kGoogleBlue300 = SkColorSetRGB(0x8A, 0xB4, 0xF8);
 constexpr SkColor kGoogleBlue500 = SkColorSetRGB(0x42, 0x85, 0xF4);
 constexpr SkColor kGoogleBlue600 = SkColorSetRGB(0x1A, 0x73, 0xE8);
@@ -34,7 +34,7 @@ constexpr SkColor kGoogleGreenDark600 = SkColorSetRGB(0x28, 0x99, 0x4F);
 constexpr SkColor kGoogleYellow300 = SkColorSetRGB(0xFD, 0xD6, 0x63);
 constexpr SkColor kGoogleYellow700 = SkColorSetRGB(0xF2, 0x99, 0x00);
 constexpr SkColor kGoogleYellow900 = SkColorSetRGB(0xE3, 0x74, 0x00);
-constexpr SkColor kGoogleGrey50 = SkColorSetRGB(0xF8, 0xF9, 0xFA);
+constexpr SkColor kGoogleGrey050 = SkColorSetRGB(0xF8, 0xF9, 0xFA);
 constexpr SkColor kGoogleGrey100 = SkColorSetRGB(0xF1, 0xF3, 0xF4);
 constexpr SkColor kGoogleGrey200 = SkColorSetRGB(0xE8, 0xEA, 0xED);
 constexpr SkColor kGoogleGrey300 = SkColorSetRGB(0xDA, 0xDC, 0xE0);
