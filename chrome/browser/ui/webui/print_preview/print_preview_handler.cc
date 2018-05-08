@@ -107,6 +107,7 @@ enum UserActionBuckets {
   PRINT_WITH_CLOUD_PRINT,
   PRINT_WITH_PRIVET,
   PRINT_WITH_EXTENSION,
+  OPEN_IN_MAC_PREVIEW,
   USERACTION_BUCKET_BOUNDARY
 };
 
@@ -673,7 +674,14 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     return;
   }
 
-  if (print_with_privet) {
+  if (open_pdf_in_preview) {
+    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.OpenInMacPreview", page_count);
+    ReportUserActionHistogram(OPEN_IN_MAC_PREVIEW);
+  } else if (is_cloud_printer) {
+    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToCloudPrint",
+                         page_count);
+    ReportUserActionHistogram(PRINT_WITH_CLOUD_PRINT);
+  } else if (print_with_privet) {
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
     UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintWithPrivet", page_count);
     ReportUserActionHistogram(PRINT_WITH_PRIVET);
@@ -688,13 +696,9 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   } else if (show_system_dialog) {
     UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.SystemDialog", page_count);
     ReportUserActionHistogram(FALLBACK_TO_ADVANCED_SETTINGS_DIALOG);
-  } else if (!open_pdf_in_preview) {
+  } else {
     UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPrinter", page_count);
     ReportUserActionHistogram(PRINT_TO_PRINTER);
-  } else if (is_cloud_printer) {
-    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToCloudPrint",
-                         page_count);
-    ReportUserActionHistogram(PRINT_WITH_CLOUD_PRINT);
   }
 
   scoped_refptr<base::RefCountedMemory> data;

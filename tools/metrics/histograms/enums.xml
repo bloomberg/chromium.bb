@@ -37285,6 +37285,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="PRINT_WITH_CLOUD_PRINT"/>
   <int value="9" label="PRINT_WITH_PRIVET"/>
   <int value="10" label="PRINT_WITH_EXTENSION"/>
+  <int value="11" label="OPEN_IN_MAC_PREVIEW"/>
 </enum>
 
 <enum name="PrintSettings">
