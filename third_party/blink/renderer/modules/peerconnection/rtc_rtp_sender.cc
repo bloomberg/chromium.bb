@@ -49,6 +49,30 @@ class ReplaceTrackRequest : public RTCVoidRequest {
   Member<ScriptPromiseResolver> resolver_;
 };
 
+class SetParametersRequest : public RTCVoidRequestScriptPromiseResolverImpl {
+ public:
+  SetParametersRequest(ScriptPromiseResolver* resolver, RTCRtpSender* sender)
+      : RTCVoidRequestScriptPromiseResolverImpl(resolver), sender_(sender) {}
+
+  void RequestSucceeded() override {
+    sender_->ClearLastReturnedParameters();
+    RTCVoidRequestScriptPromiseResolverImpl::RequestSucceeded();
+  }
+
+  void RequestFailed(const webrtc::RTCError& error) override {
+    sender_->ClearLastReturnedParameters();
+    RTCVoidRequestScriptPromiseResolverImpl::RequestFailed(error);
+  }
+
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(sender_);
+    RTCVoidRequestScriptPromiseResolverImpl::Trace(visitor);
+  }
+
+ private:
+  Member<RTCRtpSender> sender_;
+};
+
 bool HasInvalidModification(const RTCRtpParameters& parameters,
                             const RTCRtpParameters& new_parameters) {
   if (parameters.hasTransactionId() != new_parameters.hasTransactionId() ||
@@ -296,10 +320,10 @@ ScriptPromise RTCRtpSender::setParameters(ScriptState* script_state,
         "getParameters() needs to be called before setParameters()."));
     return promise;
   }
-  // The specification mentions that some fields in the dictionnary should not
+  // The specification mentions that some fields in the dictionary should not
   // be modified. Some of those checks are done in the lower WebRTC layer, but
   // there is no perfect 1-1 mapping between the Javascript layer and native.
-  // So we save the last returned dictionnary and enforce the check at this
+  // So we save the last returned dictionary and enforce the check at this
   // level instead.
   if (HasInvalidModification(last_returned_parameters_.value(), parameters)) {
     resolver->Reject(
@@ -321,10 +345,14 @@ ScriptPromise RTCRtpSender::setParameters(ScriptState* script_state,
     degradation_preference = blink::WebRTCDegradationPreference::Balanced;
   }
 
-  auto* request = RTCVoidRequestScriptPromiseResolverImpl::Create(resolver);
+  auto* request = new SetParametersRequest(resolver, this);
   sender_->SetParameters(std::move(encodings), degradation_preference.value(),
                          request);
   return promise;
+}
+
+void RTCRtpSender::ClearLastReturnedParameters() {
+  last_returned_parameters_.reset();
 }
 
 ScriptPromise RTCRtpSender::getStats(ScriptState* script_state) {

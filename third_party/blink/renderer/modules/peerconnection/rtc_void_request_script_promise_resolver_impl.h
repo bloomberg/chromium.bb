@@ -12,7 +12,7 @@ namespace blink {
 
 class ScriptPromiseResolver;
 
-class RTCVoidRequestScriptPromiseResolverImpl final : public RTCVoidRequest {
+class RTCVoidRequestScriptPromiseResolverImpl : public RTCVoidRequest {
  public:
   static RTCVoidRequestScriptPromiseResolverImpl* Create(
       ScriptPromiseResolver*);
@@ -24,7 +24,7 @@ class RTCVoidRequestScriptPromiseResolverImpl final : public RTCVoidRequest {
 
   void Trace(blink::Visitor*) override;
 
- private:
+ protected:
   RTCVoidRequestScriptPromiseResolverImpl(ScriptPromiseResolver*);
 
   Member<ScriptPromiseResolver> resolver_;
