@@ -43,7 +43,7 @@ promise_test(async () => {
   assert_equals(videoParameters.encodings[0].maxBitrate, 0xFFFFFFFF);
 }, 'setParameters() with large maxBitrate changes getParameters() returned values');
 
-promise_test(async () => {
+promise_test(async (t) => {
   let pc1 = new RTCPeerConnection();
   let pc2 = new RTCPeerConnection();
 
@@ -60,14 +60,13 @@ promise_test(async () => {
   videoParameters.encodings[0].active = true;
   videoParameters.encodings[0].priority = 'low';
   videoParameters.encodings[0].maxBitrate = 1337001;
-  await videoSender.setParameters(videoParameters);
-
-  videoParameters = videoSender.getParameters();
-  assert_equals(videoParameters.encodings[0].active, true);
-  assert_equals(videoParameters.encodings[0].priority, 'low');
-  assert_equals(videoParameters.encodings[0].maxBitrate, 1337001);
-
-}, 'setParameters() with multiple calls');
+  return promise_rejects(
+    t,
+    new DOMException(
+      "getParameters() needs to be called before setParameters().",
+      "InvalidStateError"),
+    videoSender.setParameters(videoParameters));
+}, 'setParameters() with multiple calls after single getParameters()');
 
 promise_test(async (t) => {
   let pc1 = new RTCPeerConnection();

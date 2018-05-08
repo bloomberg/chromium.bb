@@ -45,6 +45,7 @@ class RTCRtpSender final : public ScriptWrappable {
   // Sets the track. This must be called when the |WebRTCRtpSender| has its
   // track updated, and the |track| must match the |WebRTCRtpSender::Track|.
   void SetTrack(MediaStreamTrack*);
+  void ClearLastReturnedParameters();
   MediaStreamVector streams() const;
 
   void Trace(blink::Visitor*) override;
