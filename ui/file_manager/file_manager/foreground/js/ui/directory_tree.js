@@ -61,6 +61,15 @@ DirectoryItemTreeBaseMethods.searchAndSelectByEntry = function(entry) {
     var item = this.items[i];
     if (!item.entry)
       continue;
+
+    // Team drives are descendants of the Drive root volume item "Google Drive".
+    // When we looking for an item in team drives, recursively search inside the
+    // "Google Drive" root item.
+    if (util.isTeamDriveEntry(entry) && item instanceof DriveVolumeItem) {
+      item.selectByEntry(entry);
+      return true;
+    }
+
     if (util.isDescendantEntry(item.entry, entry) ||
         util.isSameEntry(item.entry, entry)) {
       item.selectByEntry(entry);
@@ -880,7 +889,7 @@ DriveVolumeItem.prototype.updateItemByEntry = function(changedDirectoryEntry) {
  * @override
  */
 DriveVolumeItem.prototype.selectByEntry = function(entry) {
-  // Find the item to be selected amang children.
+  // Find the item to be selected among children.
   this.searchAndSelectByEntry(entry);
 };
 
