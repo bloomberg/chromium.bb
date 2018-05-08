@@ -396,6 +396,11 @@ Response TargetHandler::DisposeBrowserContext(const std::string& context_id) {
   return Response::Error("Not supported");
 }
 
+Response TargetHandler::GetBrowserContexts(
+    std::unique_ptr<protocol::Array<String>>* browser_context_ids) {
+  return Response::Error("Not supported");
+}
+
 Response TargetHandler::CreateTarget(const std::string& url,
                                      Maybe<int> width,
                                      Maybe<int> height,

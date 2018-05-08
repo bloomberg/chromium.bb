@@ -36,6 +36,9 @@ class TargetHandler : public protocol::Target::Backend {
       protocol::Maybe<std::string> browser_context_id,
       protocol::Maybe<bool> enable_begin_frame_control,
       std::string* out_target_id) override;
+  protocol::Response GetBrowserContexts(
+      std::unique_ptr<protocol::Array<protocol::String>>* browser_context_ids)
+      override;
   void DisposeBrowserContext(
       const std::string& context_id,
       std::unique_ptr<DisposeBrowserContextCallback> callback) override;

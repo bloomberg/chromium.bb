@@ -17,6 +17,8 @@ class DevToolsBrowserContextManager : public BrowserListObserver {
  public:
   DevToolsBrowserContextManager();
   protocol::Response CreateBrowserContext(std::string* out_context_id);
+  protocol::Response GetBrowserContexts(
+      std::unique_ptr<protocol::Array<protocol::String>>* browser_context_ids);
   Profile* GetBrowserContext(const std::string& context_id);
   void DisposeBrowserContext(
       const std::string& context_id,
@@ -61,6 +63,16 @@ protocol::Response DevToolsBrowserContextManager::CreateBrowserContext(
               weak_factory_.GetWeakPtr()));
   *out_context_id = registration->profile()->UniqueId();
   registrations_[*out_context_id] = std::move(registration);
+  return protocol::Response::OK();
+}
+
+protocol::Response DevToolsBrowserContextManager::GetBrowserContexts(
+    std::unique_ptr<protocol::Array<protocol::String>>* browser_context_ids) {
+  *browser_context_ids = std::make_unique<protocol::Array<protocol::String>>();
+  for (const auto& registration_pair : registrations_) {
+    (*browser_context_ids)
+        ->addItem(registration_pair.second->profile()->UniqueId());
+  }
   return protocol::Response::OK();
 }
 
@@ -204,6 +216,12 @@ protocol::Response TargetHandler::CreateBrowserContext(
     std::string* out_context_id) {
   return g_devtools_browser_context_manager.Get().CreateBrowserContext(
       out_context_id);
+}
+
+protocol::Response TargetHandler::GetBrowserContexts(
+    std::unique_ptr<protocol::Array<protocol::String>>* browser_context_ids) {
+  return g_devtools_browser_context_manager.Get().GetBrowserContexts(
+      browser_context_ids);
 }
 
 void TargetHandler::DisposeBrowserContext(

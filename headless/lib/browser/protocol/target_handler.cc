@@ -101,5 +101,15 @@ Response TargetHandler::DisposeBrowserContext(const std::string& context_id) {
   return Response::OK();
 }
 
+Response TargetHandler::GetBrowserContexts(
+    std::unique_ptr<protocol::Array<protocol::String>>* browser_context_ids) {
+  *browser_context_ids = std::make_unique<protocol::Array<protocol::String>>();
+  for (auto* context : browser()->GetAllBrowserContexts()) {
+    if (context != browser()->GetDefaultBrowserContext())
+      (*browser_context_ids)->addItem(context->Id());
+  }
+  return Response::OK();
+}
+
 }  // namespace protocol
 }  // namespace headless
