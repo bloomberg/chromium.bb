@@ -6,12 +6,14 @@
 
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/test_pending_task.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_adapter_win.h"
+#include "device/bluetooth/bluetooth_adapter_winrt.h"
 #include "device/bluetooth/bluetooth_low_energy_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_win.h"
@@ -95,6 +97,11 @@ void BluetoothTestWin::InitWithDefaultAdapter() {
 }
 
 void BluetoothTestWin::InitWithoutDefaultAdapter() {
+  if (base::FeatureList::IsEnabled(kNewBLEWinImplementation)) {
+    adapter_ = base::WrapRefCounted(new BluetoothAdapterWinrt());
+    return;
+  }
+
   adapter_ = new BluetoothAdapterWin(base::Bind(
       &BluetoothTestWin::AdapterInitCallback, base::Unretained(this)));
   adapter_win_ = static_cast<BluetoothAdapterWin*>(adapter_.get());
