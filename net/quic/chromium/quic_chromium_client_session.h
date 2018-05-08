@@ -718,6 +718,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void LogMetricsOnNetworkMadeDefault();
   void LogConnectionMigrationResultToHistogram(
       QuicConnectionMigrationStatus status);
+  void LogHandshakeStatusOnConnectionMigrationSignal() const;
   void HistogramAndLogMigrationFailure(const NetLogWithSource& net_log,
                                        QuicConnectionMigrationStatus status,
                                        QuicConnectionId connection_id,
