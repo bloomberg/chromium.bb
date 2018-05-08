@@ -34,7 +34,7 @@ class ShellSystemLogsFetcherTest : public ExtensionsTest {
                                           const std::string& version,
                                           const std::string& id) {
     return ExtensionBuilder(name)
-        .MergeManifest(DictionaryBuilder().Set("version", version).Build())
+        .SetManifestKey("version", version)
         .SetID(id)
         .Build();
   }

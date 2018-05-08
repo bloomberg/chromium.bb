@@ -7215,16 +7215,10 @@ TEST_F(ExtensionServiceTest, CannotEnableBlacklistedExtension) {
 // Test that calls to disable Shared Modules do not work.
 TEST_F(ExtensionServiceTest, CannotDisableSharedModules) {
   InitializeEmptyExtensionService();
-  std::unique_ptr<base::DictionaryValue> export_dict =
-      extensions::DictionaryBuilder()
-          .Set("resources", extensions::ListBuilder().Append("foo.js").Build())
-          .Build();
-
   scoped_refptr<Extension> extension =
       ExtensionBuilder("Shared Module")
-          .MergeManifest(extensions::DictionaryBuilder()
-                             .Set("export", std::move(export_dict))
-                             .Build())
+          .SetManifestPath({"export", "resources"},
+                           extensions::ListBuilder().Append("foo.js").Build())
           .AddFlags(Extension::FROM_WEBSTORE)
           .Build();
 

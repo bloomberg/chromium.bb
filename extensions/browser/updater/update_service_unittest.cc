@@ -395,17 +395,11 @@ TEST_F(UpdateServiceTest, UninstallPings) {
 
   // Build 3 extensions.
   scoped_refptr<Extension> extension1 =
-      ExtensionBuilder("1")
-          .MergeManifest(DictionaryBuilder().Set("version", "1.2").Build())
-          .Build();
+      ExtensionBuilder("1").SetManifestKey("version", "1.2").Build();
   scoped_refptr<Extension> extension2 =
-      ExtensionBuilder("2")
-          .MergeManifest(DictionaryBuilder().Set("version", "2.3").Build())
-          .Build();
+      ExtensionBuilder("2").SetManifestKey("version", "2.3").Build();
   scoped_refptr<Extension> extension3 =
-      ExtensionBuilder("3")
-          .MergeManifest(DictionaryBuilder().Set("version", "3.4").Build())
-          .Build();
+      ExtensionBuilder("3").SetManifestKey("version", "3.4").Build();
   EXPECT_TRUE(extension1->id() != extension2->id() &&
               extension1->id() != extension3->id() &&
               extension2->id() != extension3->id());
