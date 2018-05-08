@@ -208,6 +208,11 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
   [self updateSaveButtonState];
+  if (self.editingExistingFolder) {
+    self.navigationController.toolbarHidden = NO;
+  } else {
+    self.navigationController.toolbarHidden = YES;
+  }
 }
 
 #pragma mark - Accessibility
