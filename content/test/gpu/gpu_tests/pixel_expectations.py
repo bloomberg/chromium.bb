@@ -100,4 +100,5 @@ class PixelExpectations(GpuTestExpectations):
 
     # TODO(kbr): temporary suppression for new test.
     self.Flaky('Pixel_WebGLSadCanvas', ['mac'], bug=575305)
+    self.Flaky('Pixel_WebGLSadCanvas', ['win', 'intel'], bug=575305)
     self.Fail('Pixel_WebGLSadCanvas', ['android', 'nvidia'], bug=575305)
