@@ -45,7 +45,7 @@ class ScalabilityTest
                      AOM_EFLAG_NO_REF_BWD | AOM_EFLAG_NO_REF_ARF2 |
                      AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
                      AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_ENTROPY;
-      encoder->Control(AOME_SET_ENHANCEMENT_LAYER_ID, 1);
+      encoder->Control(AOME_SET_SPATIAL_LAYER_ID, 1);
       encoder->Control(AOME_SET_CQ_LEVEL, kEnhancementLayerQp);
     } else {
       frame_flags_ = AOM_EFLAG_NO_REF_LAST2 | AOM_EFLAG_NO_REF_LAST3 |
@@ -53,7 +53,7 @@ class ScalabilityTest
                      AOM_EFLAG_NO_REF_BWD | AOM_EFLAG_NO_REF_ARF2 |
                      AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF |
                      AOM_EFLAG_NO_UPD_ENTROPY;
-      encoder->Control(AOME_SET_ENHANCEMENT_LAYER_ID, 0);
+      encoder->Control(AOME_SET_SPATIAL_LAYER_ID, 0);
       encoder->Control(AOME_SET_CQ_LEVEL, kBaseLayerQp);
     }
   }

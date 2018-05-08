@@ -961,7 +961,7 @@ void av1_add_film_grain(aom_film_grain_t *params, aom_image_t *src,
   dst->y_chroma_shift = src->y_chroma_shift;
 
   dst->temporal_id = src->temporal_id;
-  dst->enhancement_id = src->enhancement_id;
+  dst->spatial_id = src->spatial_id;
 
   width = src->d_w % 2 ? src->d_w + 1 : src->d_w;
   height = src->d_h % 2 ? src->d_h + 1 : src->d_h;

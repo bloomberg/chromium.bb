@@ -3100,7 +3100,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
               cm->temporal_layer_id) &
                  0x1 &&
              (cm->op_params[op_num].decoder_model_operating_point_idc >>
-              (cm->enhancement_layer_id + 8)) &
+              (cm->spatial_layer_id + 8)) &
                  0x1) ||
             cm->op_params[op_num].decoder_model_operating_point_idc == 0) {
           aom_wb_write_literal(
@@ -3539,7 +3539,7 @@ static void write_bitstream_level(BitstreamLevel bl,
 }
 
 static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst,
-                                          uint8_t enhancement_layers_cnt) {
+                                          uint8_t number_spatial_layers) {
   AV1_COMMON *const cm = &cpi->common;
   struct aom_write_bit_buffer wb = { dst, 0 };
   uint32_t size = 0;
@@ -3556,7 +3556,8 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst,
   if (cm->seq_params.reduced_still_picture_hdr) {
     write_bitstream_level(cm->seq_params.level[0], &wb);
   } else {
-    uint8_t operating_points_minus1_cnt = enhancement_layers_cnt;
+    uint8_t operating_points_minus1_cnt =
+        number_spatial_layers > 1 ? number_spatial_layers - 1 : 0;
     aom_wb_write_literal(&wb, operating_points_minus1_cnt,
                          OP_POINTS_MINUS1_BITS);
     int i;
@@ -4009,9 +4010,9 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
   uint32_t obu_header_size = 0;
   uint32_t obu_payload_size = 0;
   FrameHeaderInfo fh_info = { NULL, 0, 0 };
-  const uint8_t enhancement_layers_cnt = cm->enhancement_layers_cnt;
+  const uint8_t number_spatial_layers = cm->number_spatial_layers;
   const uint8_t obu_extension_header =
-      cm->temporal_layer_id << 5 | cm->enhancement_layer_id << 3 | 0;
+      cm->temporal_layer_id << 5 | cm->spatial_layer_id << 3 | 0;
 
 #if CONFIG_BITSTREAM_DEBUG
   bitstream_queue_reset_write();
@@ -4024,7 +4025,7 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
     obu_header_size = write_obu_header(OBU_SEQUENCE_HEADER, 0, data);
 
     obu_payload_size = write_sequence_header_obu(cpi, data + obu_header_size,
-                                                 enhancement_layers_cnt);
+                                                 number_spatial_layers);
     const size_t length_field_size =
         obu_memmove(obu_header_size, obu_payload_size, data);
     if (write_uleb_obu_size(obu_header_size, obu_payload_size, data) !=

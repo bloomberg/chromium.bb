@@ -25,7 +25,7 @@
 #include "aom_ports/mem_ops.h"
 
 #define MAG_SIZE (4)
-#define MAX_NUM_ENHANCEMENT_LAYERS 128
+#define MAX_NUM_ENHANCEMENT_LAYERS 3
 
 struct av1_extracfg {
   int cpu_used;  // available cpu percentage in 1/16
@@ -1337,7 +1337,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
         if (ctx->pending_cx_data == 0) ctx->pending_cx_data = cx_data;
 
         const int write_temporal_delimiter =
-            !cpi->common.enhancement_layer_id && !ctx->pending_frame_count;
+            !cpi->common.spatial_layer_id && !ctx->pending_frame_count;
 
         if (write_temporal_delimiter) {
           uint32_t obu_header_size = 1;
@@ -1587,12 +1587,12 @@ static aom_codec_err_t ctrl_set_scale_mode(aom_codec_alg_priv_t *ctx,
   }
 }
 
-static aom_codec_err_t ctrl_set_enhancement_layer_id(aom_codec_alg_priv_t *ctx,
-                                                     va_list args) {
-  const int enhancement_layer_id = va_arg(args, int);
-  if (enhancement_layer_id > MAX_NUM_ENHANCEMENT_LAYERS)
+static aom_codec_err_t ctrl_set_spatial_layer_id(aom_codec_alg_priv_t *ctx,
+                                                 va_list args) {
+  const int spatial_layer_id = va_arg(args, int);
+  if (spatial_layer_id > MAX_NUM_ENHANCEMENT_LAYERS)
     return AOM_CODEC_INVALID_PARAM;
-  ctx->cpi->common.enhancement_layer_id = enhancement_layer_id;
+  ctx->cpi->common.spatial_layer_id = spatial_layer_id;
   return AOM_CODEC_OK;
 }
 
@@ -1601,7 +1601,7 @@ static aom_codec_err_t ctrl_set_number_spatial_layers(aom_codec_alg_priv_t *ctx,
   const int number_spatial_layers = va_arg(args, int);
   if (number_spatial_layers > MAX_NUM_ENHANCEMENT_LAYERS)
     return AOM_CODEC_INVALID_PARAM;
-  ctx->cpi->common.enhancement_layers_cnt = number_spatial_layers - 1;
+  ctx->cpi->common.number_spatial_layers = number_spatial_layers;
   return AOM_CODEC_OK;
 }
 
@@ -1682,7 +1682,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AOME_SET_ROI_MAP, ctrl_set_roi_map },
   { AOME_SET_ACTIVEMAP, ctrl_set_active_map },
   { AOME_SET_SCALEMODE, ctrl_set_scale_mode },
-  { AOME_SET_ENHANCEMENT_LAYER_ID, ctrl_set_enhancement_layer_id },
+  { AOME_SET_SPATIAL_LAYER_ID, ctrl_set_spatial_layer_id },
   { AOME_SET_CPUUSED, ctrl_set_cpuused },
   { AOME_SET_DEVSF, ctrl_set_devsf },
   { AOME_SET_ENABLEAUTOALTREF, ctrl_set_enable_auto_alt_ref },

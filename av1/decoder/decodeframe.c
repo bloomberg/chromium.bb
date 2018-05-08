@@ -3438,7 +3438,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                cm->temporal_layer_id) &
               0x1) &&
              ((cm->op_params[op_num].decoder_model_operating_point_idc >>
-               (cm->enhancement_layer_id + 8)) &
+               (cm->spatial_layer_id + 8)) &
               0x1)) ||
             cm->op_params[op_num].decoder_model_operating_point_idc == 0) {
           cm->op_frame_timing[op_num].buffer_removal_delay =

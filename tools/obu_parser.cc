@@ -101,7 +101,7 @@ bool ParseObuExtensionHeader(uint8_t ext_header_byte, ObuHeader *obu_header) {
   obu_header->temporal_layer_id =
       (ext_header_byte >> kObuExtTemporalIdBitsShift) &
       kObuExtTemporalIdBitsMask;
-  obu_header->enhancement_layer_id =
+  obu_header->spatial_layer_id =
       (ext_header_byte >> kObuExtSpatialIdBitsShift) & kObuExtSpatialIdBitsMask;
 
   return true;

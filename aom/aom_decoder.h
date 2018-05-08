@@ -84,7 +84,8 @@ typedef struct aom_codec_stream_info {
   unsigned int w;                      /**< Width (or 0 for unknown/default) */
   unsigned int h;                      /**< Height (or 0 for unknown/default) */
   unsigned int is_kf;                  /**< Current frame is a keyframe */
-  unsigned int enhancement_layers_cnt; /**< Enhancement layers */
+  unsigned int number_spatial_layers;  /**< Number of spatial layers */
+  unsigned int number_temporal_layers; /**< Number of temporal layers */
   unsigned int is_annexb;              /**< Is Bitstream in Annex-B format */
 } aom_codec_stream_info_t;
 
