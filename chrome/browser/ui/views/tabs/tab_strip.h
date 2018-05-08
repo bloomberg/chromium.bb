@@ -684,6 +684,10 @@ class TabStrip : public views::View,
   // tab close comes from a touch device.
   base::OneShotTimer resize_layout_timer_;
 
+  // The last tab over which the mouse was hovered which may still have a hover
+  // animation in progress.
+  Tab* last_hovered_tab_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };
 

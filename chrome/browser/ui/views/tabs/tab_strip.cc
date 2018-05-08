@@ -1102,7 +1102,8 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   // ordering). Additionally we need to paint the tabs that are closing in
   // |tabs_closing_map_|.
   bool is_dragging = false;
-  Tab* active_tab = NULL;
+  Tab* active_tab = nullptr;
+  Tab* hovered_tab = nullptr;
   Tabs tabs_dragging;
   Tabs selected_tabs;
 
@@ -1128,8 +1129,15 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
         }
       } else if (!tab->IsActive()) {
         if (!tab->IsSelected()) {
-          if (!stacked_layout_)
-            tab->Paint(paint_info);
+          if (!stacked_layout_) {
+            // In Refresh mode, defer the painting of the hovered tab to below.
+            if (MD::GetMode() == MD::MATERIAL_REFRESH &&
+                tab->IsMouseHovered()) {
+              hovered_tab = tab;
+            } else {
+              tab->Paint(paint_info);
+            }
+          }
         } else {
           selected_tabs.push_back(tab);
         }
@@ -1158,6 +1166,23 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   // frame, so they're painted after initial pass.
   for (size_t i = 0; i < selected_tabs.size(); ++i)
     selected_tabs[i]->Paint(paint_info);
+
+  // If the last hovered tab is still animating and there is no currently
+  // hovered tab, make sure it still paints in the right order while it's
+  // animating.
+  if (!hovered_tab && last_hovered_tab_ &&
+      last_hovered_tab_->hover_controller()->ShouldDraw())
+    hovered_tab = last_hovered_tab_;
+
+  // The currently hovered tab or the last tab that was hovered should be
+  // painted right before the active tab to ensure the highlighted tab shape
+  // looks reasonable.
+  if (hovered_tab && !is_dragging)
+    hovered_tab->Paint(paint_info);
+
+  // Keep track of the last tab that was hovered to that it continues to be
+  // painted right before the active tab while the animation is running.
+  last_hovered_tab_ = hovered_tab;
 
   // Next comes the active tab.
   if (active_tab && !is_dragging)
