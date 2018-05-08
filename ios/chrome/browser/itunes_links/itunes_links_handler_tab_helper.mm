@@ -18,7 +18,6 @@
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
-#import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "net/base/filename_util.h"
 #import "net/base/mac/url_conversions.h"
@@ -78,67 +77,29 @@ NSDictionary* ExtractITunesProductParameters(const GURL& url) {
   return params_dictionary;
 }
 
-// This class handles requests & responses that involve iTunes product links.
-class ITunesLinksHandlerWebStatePolicyDecider
-    : public web::WebStatePolicyDecider {
- public:
-  explicit ITunesLinksHandlerWebStatePolicyDecider(web::WebState* web_state)
-      : web::WebStatePolicyDecider(web_state) {}
-
-  // web::WebStatePolicyDecider implementation
-  bool ShouldAllowResponse(NSURLResponse* response,
-                           bool for_main_frame) override {
-    // Don't allow rendering responses from URLs that can be handled by
-    // iTunesLinksHandler unless it's on iframe or the browsing mode is off the
-    // record.
-    return web_state()->GetBrowserState()->IsOffTheRecord() ||
-           !for_main_frame || !CanHandleUrl(net::GURLWithNSURL(response.URL));
-  }
-
-  bool ShouldAllowRequest(NSURLRequest* request,
-                          ui::PageTransition transition,
-                          bool from_main_frame) override {
-    // Only consider blocking the request if it's not of the record mode.
-    if (web_state()->GetBrowserState()->IsOffTheRecord())
-      return true;
-    web::NavigationItem* pending_item =
-        web_state()->GetNavigationManager()->GetPendingItem();
-
-    if (!pending_item)
-      return true;
-    // If the pending item URL is http iTunes URL that can be handled, but the
-    // request URL is not http URL, then there was a redirect to an external
-    // application and request should be blocked to be able to show the store
-    // kit later.
-    GURL pending_item_url = pending_item->GetURL();
-    GURL request_url = net::GURLWithNSURL(request.URL);
-    return !CanHandleUrl(pending_item_url) || request_url.SchemeIsHTTPOrHTTPS();
-  }
-
-  // Returns true, if iTunesLinksHandler can handle the given |url|.
-  static bool CanHandleUrl(const GURL& url) {
-    if (!IsITunesProductUrl(url))
-      return false;
-    // Valid iTunes URL structure:
-    // DOMAIN/OPTIONAL_REGION_CODE/MEDIA_TYPE/MEDIA_NAME/ID?PARAMETERS
-    // Check the URL media type, to determine if it is supported.
-    base::FilePath path;
-    if (!net::FileURLToFilePath(url, &path))
-      return false;
-    std::vector<base::FilePath::StringType> path_components;
-    path.GetComponents(&path_components);
-    // GetComponents considers "/" as the first component.
-    if (path_components.size() < kITunesUrlPathMinComponentsCount)
-      return false;
-    size_t media_type_index = kITunesUrlMediaTypeComponentDefaultIndex;
-    DCHECK(media_type_index > 0);
-    // If there is no reigon code in the URL then media type has to appear
-    // earlier in the URL.
-    if (path_components[kITunesUrlRegionComponentDefaultIndex].size() != 2)
-      media_type_index--;
-    return path_components[media_type_index] == kITunesAppPathIdentifier;
-  }
-};
+// Returns true, if ITunesLinksHandlerTabHelper can handle the given |url|.
+bool CanHandleUrl(const GURL& url) {
+  if (!IsITunesProductUrl(url))
+    return false;
+  // Valid iTunes URL structure:
+  // DOMAIN/OPTIONAL_REGION_CODE/MEDIA_TYPE/MEDIA_NAME/ID?PARAMETERS
+  // Check the URL media type, to determine if it is supported.
+  base::FilePath path;
+  if (!net::FileURLToFilePath(url, &path))
+    return false;
+  std::vector<base::FilePath::StringType> path_components;
+  path.GetComponents(&path_components);
+  // GetComponents considers "/" as the first component.
+  if (path_components.size() < kITunesUrlPathMinComponentsCount)
+    return false;
+  size_t media_type_index = kITunesUrlMediaTypeComponentDefaultIndex;
+  DCHECK(media_type_index > 0);
+  // If there is no reigon code in the URL then media type has to appear
+  // earlier in the URL.
+  if (path_components[kITunesUrlRegionComponentDefaultIndex].size() != 2)
+    media_type_index--;
+  return path_components[media_type_index] == kITunesAppPathIdentifier;
+}
 
 }  // namespace
 
@@ -146,39 +107,37 @@ ITunesLinksHandlerTabHelper::~ITunesLinksHandlerTabHelper() = default;
 
 ITunesLinksHandlerTabHelper::ITunesLinksHandlerTabHelper(
     web::WebState* web_state)
-    : policy_decider_(std::make_unique<ITunesLinksHandlerWebStatePolicyDecider>(
-          web_state)) {
-  web_state->AddObserver(this);
+    : web::WebStatePolicyDecider(web_state) {}
+
+bool ITunesLinksHandlerTabHelper::ShouldAllowRequest(
+    NSURLRequest* request,
+    ui::PageTransition transition,
+    bool from_main_frame) {
+  // Don't Handle URLS in Off The record mode as this will open StoreKit with
+  // Users' iTunes account. Also don't Handle requests from iframe because they
+  // may be spam, and they will be handled by other policy deciders.
+  if (web_state()->GetBrowserState()->IsOffTheRecord() || !from_main_frame)
+    return true;
+
+  GURL request_url = net::GURLWithNSURL(request.URL);
+  if (!CanHandleUrl(request_url))
+    return true;
+
+  HandleITunesUrl(request_url);
+  return false;
 }
 
-// WebStateObserver
-void ITunesLinksHandlerTabHelper::DidFinishNavigation(
-    web::WebState* web_state,
-    web::NavigationContext* navigation_context) {
-  // Don't handle iTunse URL in off the record mode.
-  if (web_state->GetBrowserState()->IsOffTheRecord())
-    return;
-
-  GURL url = navigation_context->GetUrl();
-  // Whenever a navigation to iTunes product url is finished, launch StoreKit.
-  if (ITunesLinksHandlerWebStatePolicyDecider::CanHandleUrl(url)) {
-    ITunesUrlsStoreKitHandlingResult handling_result =
-        ITunesUrlsStoreKitHandlingResult::kSingleAppUrlHandled;
-    // If the url is iTunes product url, then this navigation should not be
-    // committed, as the policy decider's ShouldAllowResponse will return false.
-    DCHECK(!navigation_context->HasCommitted());
-    StoreKitTabHelper* tab_helper = StoreKitTabHelper::FromWebState(web_state);
-    if (tab_helper) {
-      base::RecordAction(
-          base::UserMetricsAction("ITunesLinksHandler_StoreKitLaunched"));
-      tab_helper->OpenAppStore(ExtractITunesProductParameters(url));
-    } else {
-      handling_result = ITunesUrlsStoreKitHandlingResult::kUrlHandlingFailed;
-    }
-    RecordStoreKitHandlingResult(handling_result);
+// private
+void ITunesLinksHandlerTabHelper::HandleITunesUrl(const GURL& url) {
+  ITunesUrlsStoreKitHandlingResult handling_result =
+      ITunesUrlsStoreKitHandlingResult::kSingleAppUrlHandled;
+  StoreKitTabHelper* tab_helper = StoreKitTabHelper::FromWebState(web_state());
+  if (tab_helper) {
+    base::RecordAction(
+        base::UserMetricsAction("ITunesLinksHandler_StoreKitLaunched"));
+    tab_helper->OpenAppStore(ExtractITunesProductParameters(url));
+  } else {
+    handling_result = ITunesUrlsStoreKitHandlingResult::kUrlHandlingFailed;
   }
-}
-
-void ITunesLinksHandlerTabHelper::WebStateDestroyed(web::WebState* web_state) {
-  web_state->RemoveObserver(this);
+  RecordStoreKitHandlingResult(handling_result);
 }
