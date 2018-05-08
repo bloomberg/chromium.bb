@@ -34,6 +34,7 @@ class CORE_EXPORT ModuleTreeLinkerRegistry
   }
 
   ModuleTreeLinker* Fetch(const KURL&,
+                          const KURL& base_url,
                           const ScriptFetchOptions&,
                           Modulator*,
                           ModuleTreeClient*);

@@ -92,9 +92,9 @@ KURL Modulator::ResolveModuleSpecifier(const String& module_request,
     // href="https://github.com/drufball/layered-apis/blob/master/spec.md#resolve-a-module-specifier"
     // step="1">Let parsed be the result of applying the URL parser to
     // specifier. If parsed is not failure, then return the layered API fetching
-    // URL for parsed.</spec>
+    // URL given parsed and script's base URL.</spec>
     if (RuntimeEnabledFeatures::LayeredAPIEnabled())
-      return blink::layered_api::ResolveFetchingURL(url);
+      return blink::layered_api::ResolveFetchingURL(url, base_url);
 
     return url;
   }
