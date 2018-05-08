@@ -237,9 +237,11 @@ Polymer({
         .then(
             response => {
               this.destinationInConfiguring_ = null;
-              destination.capabilities = response.capabilities;
-              listItem.onConfigureComplete(true);
-              this.selectDestination_(destination);
+              listItem.onConfigureComplete(response.success);
+              if (response.success) {
+                destination.capabilities = response.capabilities;
+                this.selectDestination_(destination);
+              }
             },
             () => {
               this.destinationInConfiguring_ = null;
