@@ -3,8 +3,8 @@
 [Qt Creator](https://www.qt.io/ide/)
 ([Wiki](https://en.wikipedia.org/wiki/Qt_Creator)) is a cross-platform C++ IDE.
 
-You can use Qt Creator as a daily IDE or just as a GDB frontend (which does
-not require project configuration).
+You can use Qt Creator as a daily IDE on Linux or Mac, or just as a GDB/LLDB
+frontend (which does not require project configuration).
 
 [TOC]
 
@@ -13,10 +13,10 @@ not require project configuration).
 ### Workflow features
 
 * Built-in code completion.
-* Navigate to classes, files, or symbols with `ctrl+k`.
+* Navigate to classes, files, or symbols with `ctrl+k` or `cmd+k` (macOS).
 * Switch between declaration and definition with `F2`.
-* Build with `ctrl+shift+b`.
-* Build and run with `ctrl+r`, or debug with `F5`.
+* Build with `ctrl+shift+b` or `shift+cmd+b` (macOS).
+* Build and run with `ctrl+r` or `cmd+r` (macOS), or debug with `F5`.
 * Switch between the header file and cpp file with `F4`.
 
 ### Setup
@@ -26,17 +26,20 @@ not require project configuration).
 3. Start it with `qtcreator out/Default/qtcreator_project/all.creator`.
 4. Help - Plugins - check ClangCodeModel to enable std completion.
 
-It takes 3 minutes to parse all of chrome's C++ files on my workstation!!! And
+It takes 3 minutes to parse all of chromium's C++ files on my workstation!!! And
 it does not block while parsing.
 
 #### Code Style
 
-1. Help - About Plugins, enable Beautifier.
-2. Tools - Options - Beautifier - Clang Format,
-   change the Clang format command to: `$depot_tools_dir/clang-format`, and
+1. Help - About Plugins (or app menu on macOS), enable Beautifier.
+2. Tools - Options (Preferences on macOS) - Beautifier
+   Make sure to tick - Enable auto format on file save"
+   Select ClangFormat as the tool
+   Go to Clang Format tab
+   Change the Clang format command to: `$chromium_checkout_dir/src/buildtools/$os/clang-format`, and
    set `Use predefined style: file`. You can also set a keyboard shortcut
    for it.
-3. Tools - Options - Code Style, import this xml file.
+3. Tools - Options - C++ - Code Style, import this xml file.
 
 ```
 <?xml version="1.0" encoding="UTF-8"?>
@@ -100,18 +103,24 @@ it does not block while parsing.
 ## Debugger
 
 **You can skip the project settings and use QtCreator as a single file
-standalone GDB frontend.**
+standalone GDB or LLDB (macOS) frontend.**
 
+For macOS :
+1. Open the file you want to debug.
+2. Debug - Start Debugging - Attach to running Application, you may need to
+   open chromium's task manager to find the process id.
+
+For Linux :
 1. Tools - Options - Build & Run - Debuggers, make sure GDB is set.
 2. Tools - Options - Kits, change the Desktop kit to GDB (LLDB doesn't work on
    Linux).
 3. Open the file you want to debug.
 4. Debug - Start Debugging - Attach to running Application, you may need to
-   open chrome's task manager to find the process id.
+   open chromium's task manager to find the process id.
 
 ### Tips, tricks, and troubleshooting
 
-#### The debugger exits immediately
+#### [Linux] The debugger exits immediately
 
 Ensure yama allows you to attach to another process:
 
@@ -120,11 +129,15 @@ $ echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
 ```
 
 
-#### The debugger does not stop on breakpoints
+#### [Linux] The debugger does not stop on breakpoints
 
 Ensure you are using GDB on Linux, not LLDB.
 
 #### More
 
+Linux :
 See
 https://chromium.googlesource.com/chromium/src/+/master/docs/linux_debugging.md
+
+macOS :
+https://dev.chromium.org/developers/how-tos/debugging-on-os-x
