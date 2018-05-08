@@ -361,14 +361,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "traverseFolderShortcuts"),
         TestParameter(NOT_IN_GUEST_MODE, "addRemoveFolderShortcuts")));
 
-// Fails on official build. http://crbug.com/429294
-#if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
-#define MAYBE_SortColumns DISABLED_SortColumns
-#else
-#define MAYBE_SortColumns SortColumns
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_SortColumns,
+    SortColumns,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "sortColumns"),
                       TestParameter(IN_GUEST_MODE, "sortColumns")));
