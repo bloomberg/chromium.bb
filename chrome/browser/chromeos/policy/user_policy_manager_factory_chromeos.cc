@@ -244,7 +244,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
   // must be false.
   const bool cannot_tell_if_policy_required =
       (requires_policy_user_property == ProfileRequiresPolicy::kUnknown) &&
-      !is_stub_user &&
+      !is_stub_user && !is_active_directory &&
       !command_line->HasSwitch(chromeos::switches::kProfileRequiresPolicy) &&
       !command_line->HasSwitch(
           chromeos::switches::kAllowFailedPolicyFetchForTest);
@@ -275,12 +275,13 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
   // command-line flag (required for ephemeral users who are not persisted
   // in the known_user database).
   const bool policy_required =
-      !command_line->HasSwitch(
-          chromeos::switches::kAllowFailedPolicyFetchForTest) &&
-      ((requires_policy_user_property ==
-        ProfileRequiresPolicy::kPolicyRequired) ||
-       (command_line->GetSwitchValueASCII(
-            chromeos::switches::kProfileRequiresPolicy) == "true"));
+      is_active_directory ||
+      (!command_line->HasSwitch(
+           chromeos::switches::kAllowFailedPolicyFetchForTest) &&
+       ((requires_policy_user_property ==
+         ProfileRequiresPolicy::kPolicyRequired) ||
+        (command_line->GetSwitchValueASCII(
+             chromeos::switches::kProfileRequiresPolicy) == "true")));
 
   DCHECK(!(cannot_tell_if_policy_required && policy_required));
 
