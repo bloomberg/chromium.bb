@@ -200,10 +200,6 @@ class RasterImplementationTest : public testing::Test {
 
   QueryTracker* GetQueryTracker() { return gl_->query_tracker_.get(); }
 
-  ClientDiscardableTextureManager* discardable_texture_manager() {
-    return &gl_->discardable_texture_manager_;
-  }
-
   void* MapRasterCHROMIUM(GLsizeiptr size) {
     return gl_->MapRasterCHROMIUM(size);
   }
@@ -904,85 +900,6 @@ TEST_F(RasterImplementationManualInitTest, FailInitOnTransferBufferFail) {
   init_options.transfer_buffer_initialize_fail = true;
   EXPECT_FALSE(Initialize(init_options));
 }
-
-TEST_F(RasterImplementationTest, DiscardableMemoryDelete) {
-  const GLuint texture_id = 1;
-  EXPECT_FALSE(discardable_texture_manager()->TextureIsValid(texture_id));
-  gl_->InitializeDiscardableTextureCHROMIUM(texture_id);
-  EXPECT_TRUE(discardable_texture_manager()->TextureIsValid(texture_id));
-
-  // Deleting a texture should clear its discardable entry.
-  gl_->DeleteTextures(1, &texture_id);
-  EXPECT_FALSE(discardable_texture_manager()->TextureIsValid(texture_id));
-}
-
-TEST_F(RasterImplementationTest, DiscardableTextureLockFail) {
-  const GLuint texture_id = 1;
-  gl_->InitializeDiscardableTextureCHROMIUM(texture_id);
-  EXPECT_TRUE(discardable_texture_manager()->TextureIsValid(texture_id));
-
-  // Unlock the handle on the client side.
-  gl_->UnlockDiscardableTextureCHROMIUM(texture_id);
-
-  // Unlock and delete the handle on the service side.
-  ClientDiscardableHandle client_handle =
-      discardable_texture_manager()->GetHandleForTesting(texture_id);
-  ServiceDiscardableHandle service_handle(client_handle.BufferForTesting(),
-                                          client_handle.byte_offset(),
-                                          client_handle.shm_id());
-  service_handle.Unlock();
-  EXPECT_TRUE(service_handle.Delete());
-
-  // Trying to re-lock the texture via GL should fail and delete the entry.
-  EXPECT_FALSE(gl_->LockDiscardableTextureCHROMIUM(texture_id));
-  EXPECT_FALSE(discardable_texture_manager()->TextureIsValid(texture_id));
-}
-
-TEST_F(RasterImplementationTest, DiscardableTextureDoubleInitError) {
-  const GLuint texture_id = 1;
-  gl_->InitializeDiscardableTextureCHROMIUM(texture_id);
-  EXPECT_EQ(GL_NO_ERROR, CheckError());
-  gl_->InitializeDiscardableTextureCHROMIUM(texture_id);
-  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
-}
-
-TEST_F(RasterImplementationTest, DiscardableTextureLockError) {
-  const GLuint texture_id = 1;
-  EXPECT_FALSE(gl_->LockDiscardableTextureCHROMIUM(texture_id));
-  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
-}
-
-/*
-TODO(vmiura): Update use of BindTexture.
-TEST_F(RasterImplementationTest, DiscardableTextureLockCounting) {
-  const GLint texture_id = 1;
-  gl_->InitializeDiscardableTextureCHROMIUM(texture_id);
-  EXPECT_TRUE(discardable_texture_manager()->TextureIsValid(texture_id));
-
-  // Bind the texture.
-  gl_->BindTexture(GL_TEXTURE_2D, texture_id);
-  GLint bound_texture_id = 0;
-  gl_->GetIntegerv(GL_TEXTURE_BINDING_2D, &bound_texture_id);
-  EXPECT_EQ(texture_id, bound_texture_id);
-
-  // Lock the texture 3 more times (for 4 locks total).
-  for (int i = 0; i < 3; ++i) {
-    gl_->LockDiscardableTextureCHROMIUM(texture_id);
-  }
-
-  // Unlock 4 times. Only after the last unlock should the texture be unbound.
-  for (int i = 0; i < 4; ++i) {
-    gl_->UnlockDiscardableTextureCHROMIUM(texture_id);
-    bound_texture_id = 0;
-    gl_->GetIntegerv(GL_TEXTURE_BINDING_2D, &bound_texture_id);
-    if (i < 3) {
-      EXPECT_EQ(texture_id, bound_texture_id);
-    } else {
-      EXPECT_EQ(0, bound_texture_id);
-    }
-  }
-}
-*/
 
 #include "base/macros.h"
 #include "gpu/command_buffer/client/raster_implementation_unittest_autogen.h"

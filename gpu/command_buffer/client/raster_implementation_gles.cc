@@ -2,9 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <cstddef>
-
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
+
+#include <algorithm>
+#include <cstddef>
+#include <limits>
+#include <set>
+#include <utility>
+#include <vector>
 
 #include "base/logging.h"
 #include "cc/paint/color_space_transfer_cache_entry.h"
@@ -286,7 +291,7 @@ GLuint RasterImplementationGLES::CreateTexture(bool use_buffer,
 
 void RasterImplementationGLES::DeleteTextures(GLsizei n,
                                               const GLuint* textures) {
-  DCHECK(n > 0);
+  DCHECK_GT(n, 0);
   for (GLsizei i = 0; i < n; i++) {
     auto texture_iter = texture_info_.find(textures[i]);
     DCHECK(texture_iter != texture_info_.end());
@@ -298,7 +303,7 @@ void RasterImplementationGLES::DeleteTextures(GLsizei n,
   }
 
   gl_->DeleteTextures(n, textures);
-};
+}
 
 void RasterImplementationGLES::SetColorSpaceMetadata(GLuint texture_id,
                                                      GLColorSpace color_space) {
@@ -372,7 +377,7 @@ void RasterImplementationGLES::TexStorage2D(GLuint texture_id,
 
   if (texture->use_buffer) {
     DCHECK(use_texture_storage_image_);
-    DCHECK(levels == 1);
+    DCHECK_EQ(levels, 1);
     gl_->TexStorage2DImageCHROMIUM(texture->target,
                                    viz::TextureStorageFormat(texture->format),
                                    GL_SCANOUT_CHROMIUM, width, height);
@@ -381,7 +386,7 @@ void RasterImplementationGLES::TexStorage2D(GLuint texture_id,
                          viz::TextureStorageFormat(texture->format), width,
                          height);
   } else {
-    DCHECK(levels == 1);
+    DCHECK_EQ(levels, 1);
     // TODO(vmiura): Support more than one texture level.
     gl_->TexImage2D(texture->target, 0, viz::GLInternalFormat(texture->format),
                     width, height, 0, viz::GLDataFormat(texture->format),
@@ -427,24 +432,6 @@ void RasterImplementationGLES::UnpremultiplyAndDitherCopyCHROMIUM(
                                           height);
 }
 
-void RasterImplementationGLES::InitializeDiscardableTextureCHROMIUM(
-    GLuint texture_id) {
-  Texture* texture = GetTexture(texture_id);
-  gl_->InitializeDiscardableTextureCHROMIUM(texture->id);
-}
-
-void RasterImplementationGLES::UnlockDiscardableTextureCHROMIUM(
-    GLuint texture_id) {
-  Texture* texture = GetTexture(texture_id);
-  gl_->UnlockDiscardableTextureCHROMIUM(texture->id);
-}
-
-bool RasterImplementationGLES::LockDiscardableTextureCHROMIUM(
-    GLuint texture_id) {
-  Texture* texture = GetTexture(texture_id);
-  return gl_->LockDiscardableTextureCHROMIUM(texture->id);
-}
-
 void RasterImplementationGLES::BeginRasterCHROMIUM(
     GLuint texture_id,
     GLuint sk_color,
@@ -473,7 +460,7 @@ void RasterImplementationGLES::BeginRasterCHROMIUM(
 
   raster_properties_.emplace(sk_color, can_use_lcd_text,
                              raster_color_space.color_space.ToSkColorSpace());
-};
+}
 
 void RasterImplementationGLES::RasterCHROMIUM(
     const cc::DisplayItemList* list,

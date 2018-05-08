@@ -8,6 +8,9 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 #include <GLES3/gl3.h>
+#include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "cc/paint/color_space_transfer_cache_entry.h"
@@ -134,11 +137,6 @@ class RasterMockGLES2Interface : public gles2::GLES2InterfaceStub {
                     GLenum bufferUsage,
                     GLsizei width,
                     GLsizei height));
-
-  // Discardable textures.
-  MOCK_METHOD1(InitializeDiscardableTextureCHROMIUM, void(GLuint texture_id));
-  MOCK_METHOD1(UnlockDiscardableTextureCHROMIUM, void(GLuint texture_id));
-  MOCK_METHOD1(LockDiscardableTextureCHROMIUM, bool(GLuint texture_id));
 
   // OOP-Raster
   MOCK_METHOD6(BeginRasterCHROMIUM,
@@ -636,41 +634,6 @@ TEST_F(RasterImplementationGLESTest, TexStorage2DOverlayNative) {
         .Times(1);
     ri_->TexStorage2D(kTextureId, 1, kWidth, kHeight);
   }
-}
-
-TEST_F(RasterImplementationGLESTest, InitializeDiscardableTextureCHROMIUM) {
-  const GLuint kTextureId = 23;
-
-  AllocTextureId(false, gfx::BufferUsage::GPU_READ, viz::RGBA_8888, kTextureId);
-
-  EXPECT_CALL(*gl_, InitializeDiscardableTextureCHROMIUM(kTextureId)).Times(1);
-  ri_->InitializeDiscardableTextureCHROMIUM(kTextureId);
-}
-
-TEST_F(RasterImplementationGLESTest, UnlockDiscardableTextureCHROMIUM) {
-  const GLuint kTextureId = 23;
-
-  AllocTextureId(false, gfx::BufferUsage::GPU_READ, viz::RGBA_8888, kTextureId);
-
-  EXPECT_CALL(*gl_, UnlockDiscardableTextureCHROMIUM(kTextureId)).Times(1);
-  ri_->UnlockDiscardableTextureCHROMIUM(kTextureId);
-}
-
-TEST_F(RasterImplementationGLESTest, LockDiscardableTextureCHROMIUM) {
-  const GLuint kTextureId = 23;
-  bool ret = false;
-
-  AllocTextureId(false, gfx::BufferUsage::GPU_READ, viz::RGBA_8888, kTextureId);
-
-  EXPECT_CALL(*gl_, LockDiscardableTextureCHROMIUM(kTextureId))
-      .WillOnce(Return(true));
-  ret = ri_->LockDiscardableTextureCHROMIUM(kTextureId);
-  EXPECT_EQ(true, ret);
-
-  EXPECT_CALL(*gl_, LockDiscardableTextureCHROMIUM(kTextureId))
-      .WillOnce(Return(false));
-  ret = ri_->LockDiscardableTextureCHROMIUM(kTextureId);
-  EXPECT_EQ(false, ret);
 }
 
 TEST_F(RasterImplementationGLESTest, RasterCHROMIUM) {

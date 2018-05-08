@@ -207,45 +207,6 @@ TEST_F(RasterFormatTest, UnpremultiplyAndDitherCopyCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(RasterFormatTest, InitializeDiscardableTextureCHROMIUM) {
-  cmds::InitializeDiscardableTextureCHROMIUM& cmd =
-      *GetBufferAs<cmds::InitializeDiscardableTextureCHROMIUM>();
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<uint32_t>(12),
-              static_cast<uint32_t>(13));
-  EXPECT_EQ(
-      static_cast<uint32_t>(cmds::InitializeDiscardableTextureCHROMIUM::kCmdId),
-      cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.texture_id);
-  EXPECT_EQ(static_cast<uint32_t>(12), cmd.shm_id);
-  EXPECT_EQ(static_cast<uint32_t>(13), cmd.shm_offset);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(RasterFormatTest, UnlockDiscardableTextureCHROMIUM) {
-  cmds::UnlockDiscardableTextureCHROMIUM& cmd =
-      *GetBufferAs<cmds::UnlockDiscardableTextureCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11));
-  EXPECT_EQ(
-      static_cast<uint32_t>(cmds::UnlockDiscardableTextureCHROMIUM::kCmdId),
-      cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.texture_id);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(RasterFormatTest, LockDiscardableTextureCHROMIUM) {
-  cmds::LockDiscardableTextureCHROMIUM& cmd =
-      *GetBufferAs<cmds::LockDiscardableTextureCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::LockDiscardableTextureCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.texture_id);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
 TEST_F(RasterFormatTest, BeginRasterCHROMIUM) {
   cmds::BeginRasterCHROMIUM& cmd = *GetBufferAs<cmds::BeginRasterCHROMIUM>();
   void* next_cmd =

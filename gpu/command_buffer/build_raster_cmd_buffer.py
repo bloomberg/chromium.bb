@@ -462,38 +462,24 @@ def main(argv):
 
   os.chdir(base_dir)
 
-  # TODO(backer): Uncomment once the output looks good.
   gen.WriteCommandIds("gpu/command_buffer/common/raster_cmd_ids_autogen.h")
   gen.WriteFormat("gpu/command_buffer/common/raster_cmd_format_autogen.h")
   gen.WriteFormatTest(
     "gpu/command_buffer/common/raster_cmd_format_test_autogen.h")
   gen.WriteGLES2InterfaceHeader(
     "gpu/command_buffer/client/raster_interface_autogen.h")
-  # gen.WriteGLES2InterfaceStub(
-  #   "gpu/command_buffer/client/raster_interface_stub_autogen.h")
-  # gen.WriteGLES2InterfaceStubImpl(
-  #     "gpu/command_buffer/client/raster_interface_stub_impl_autogen.h")
   gen.WriteGLES2ImplementationHeader(
     "gpu/command_buffer/client/raster_implementation_autogen.h")
   gen.WriteGLES2Implementation(
     "gpu/command_buffer/client/raster_implementation_impl_autogen.h")
   gen.WriteGLES2ImplementationUnitTests(
     "gpu/command_buffer/client/raster_implementation_unittest_autogen.h")
-  # gen.WriteGLES2TraceImplementationHeader(
-  #     "gpu/command_buffer/client/raster_trace_implementation_autogen.h")
-  # gen.WriteGLES2TraceImplementation(
-  #     "gpu/command_buffer/client/raster_trace_implementation_impl_autogen.h")
-  # gen.WriteGLES2CLibImplementation(
-  #   "gpu/command_buffer/client/raster_c_lib_autogen.h")
   gen.WriteCmdHelperHeader(
      "gpu/command_buffer/client/raster_cmd_helper_autogen.h")
   gen.WriteServiceImplementation(
     "gpu/command_buffer/service/raster_decoder_autogen.h")
   gen.WriteServiceUnitTests(
     "gpu/command_buffer/service/raster_decoder_unittest_%d_autogen.h")
-  # gen.WriteServiceUnitTestsForExtensions(
-  #   "gpu/command_buffer/service/"
-  #   "raster_cmd_decoder_unittest_extensions_autogen.h")
   gen.WriteServiceUtilsHeader(
     "gpu/command_buffer/service/raster_cmd_validation_autogen.h")
   gen.WriteServiceUtilsImplementation(
