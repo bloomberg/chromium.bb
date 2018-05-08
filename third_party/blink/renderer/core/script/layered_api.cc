@@ -58,7 +58,7 @@ bool IsImplemented(const String& name) {
 }  // namespace
 
 // https://github.com/drufball/layered-apis/blob/master/spec.md#user-content-layered-api-fetching-url
-KURL ResolveFetchingURL(const KURL& url) {
+KURL ResolveFetchingURL(const KURL& url, const KURL& base_url) {
   // <spec step="1">If url's scheme is not "std", return url.</spec>
   if (!url.ProtocolIs(kStdScheme))
     return url;
@@ -96,8 +96,9 @@ KURL ResolveFetchingURL(const KURL& url) {
   if (fallback.IsNull())
     return NullURL();
 
-  // <spec step="7">Return the result of parsing fallback.</spec>
-  return KURL(NullURL(), fallback);
+  // <spec step="7">Return the result of parsing fallback with the base URL
+  // baseURLForFallback.</spec>
+  return KURL(base_url, fallback);
 }
 
 KURL GetInternalURL(const KURL& url) {

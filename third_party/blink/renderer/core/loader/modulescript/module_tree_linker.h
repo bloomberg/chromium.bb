@@ -35,7 +35,11 @@ class ModuleTreeLinkerRegistry;
 class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
  public:
   // https://html.spec.whatwg.org/#fetch-a-module-script-tree
+  //
+  // TODO(hiroshige): |base_url| is used only for Layered APIs and will be
+  // removed soon once an upcoming spec change lands.
   static ModuleTreeLinker* Fetch(const KURL&,
+                                 const KURL& base_url,
                                  const ScriptFetchOptions&,
                                  Modulator*,
                                  ModuleTreeLinkerRegistry*,
@@ -75,7 +79,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
 #endif
   void AdvanceState(State);
 
-  void FetchRoot(const KURL&, const ScriptFetchOptions&);
+  void FetchRoot(const KURL&, const KURL& base_url, const ScriptFetchOptions&);
   void FetchRootInline(ModuleScript*);
 
   // Steps 1--2 of [IMSGF].

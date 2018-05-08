@@ -21,7 +21,7 @@ namespace layered_api {
 // href="https://github.com/drufball/layered-apis/blob/master/spec.md#user-content-layered-api-fetching-url">
 // This operation maps URLs of the form std:x|y to either std:x or y
 // URLs.</spec>
-CORE_EXPORT KURL ResolveFetchingURL(const KURL&);
+CORE_EXPORT KURL ResolveFetchingURL(const KURL&, const KURL& base_url);
 
 // Returns std-internal://x/index.js if the URL is Layered API, or null URL
 // otherwise (not specced).

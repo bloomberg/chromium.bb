@@ -13,18 +13,33 @@ namespace layered_api {
 namespace {
 
 TEST(LayeredAPITest, ResolveFetchingURL) {
-  EXPECT_EQ(ResolveFetchingURL(KURL("https://example.com/")),
+  KURL base_url("https://example.com/base/path/");
+
+  EXPECT_EQ(ResolveFetchingURL(KURL("https://example.com/"), base_url),
             KURL("https://example.com/"));
-  EXPECT_EQ(ResolveFetchingURL(KURL("std:blank")), KURL("std:blank"));
-  EXPECT_EQ(ResolveFetchingURL(KURL("std:blank|https://fallback.example.com/")),
+
+  EXPECT_EQ(ResolveFetchingURL(KURL("std:blank"), base_url), KURL("std:blank"));
+  EXPECT_EQ(ResolveFetchingURL(KURL("std:blank|https://fallback.example.com/"),
+                               base_url),
             KURL("std:blank"));
-  EXPECT_EQ(ResolveFetchingURL(KURL("std:blank|https://:invalid-url")),
-            KURL("std:blank"));
-  EXPECT_EQ(ResolveFetchingURL(KURL("std:none")), NullURL());
-  EXPECT_EQ(ResolveFetchingURL(KURL("std:none|https://fallback.example.com/")),
+  EXPECT_EQ(
+      ResolveFetchingURL(KURL("std:blank|https://:invalid-url"), base_url),
+      KURL("std:blank"));
+
+  EXPECT_EQ(ResolveFetchingURL(KURL("std:none"), base_url), NullURL());
+  EXPECT_EQ(ResolveFetchingURL(KURL("std:none|https://fallback.example.com/"),
+                               base_url),
             KURL("https://fallback.example.com/"));
   EXPECT_FALSE(
-      ResolveFetchingURL(KURL("std:none|https://:invalid-url")).IsValid());
+      ResolveFetchingURL(KURL("std:none|https://:invalid-url"), base_url)
+          .IsValid());
+
+  EXPECT_EQ(ResolveFetchingURL(KURL("std:none|fallback.js"), base_url),
+            KURL("https://example.com/base/path/fallback.js"));
+  EXPECT_EQ(ResolveFetchingURL(KURL("std:none|./fallback.js"), base_url),
+            KURL("https://example.com/base/path/fallback.js"));
+  EXPECT_EQ(ResolveFetchingURL(KURL("std:none|/fallback.js"), base_url),
+            KURL("https://example.com/fallback.js"));
 }
 
 TEST(LayeredAPITest, GetInternalURL) {

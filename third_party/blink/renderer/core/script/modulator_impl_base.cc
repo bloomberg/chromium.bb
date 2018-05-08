@@ -67,7 +67,8 @@ void ModulatorImplBase::FetchTree(const KURL& url,
   // of this algorithm specified custom perform the fetch steps, pass those
   // along as well.</spec>
 
-  tree_linker_registry_->Fetch(url, options, this, client);
+  tree_linker_registry_->Fetch(url, GetExecutionContext()->BaseURL(), options,
+                               this, client);
 
   // <spec label="fetch-a-module-script-tree" step="3">When the internal module
   // script graph fetching procedure asynchronously completes with result,
