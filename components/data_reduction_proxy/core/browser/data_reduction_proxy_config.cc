@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -33,6 +32,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_type_info.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/previews/core/previews_decider.h"
 #include "components/variations/variations_associated_data.h"
@@ -247,73 +247,11 @@ void DataReductionProxyConfig::ReloadConfig() {
   }
 }
 
-bool DataReductionProxyConfig::WasDataReductionProxyUsed(
-    const net::URLRequest* request,
-    DataReductionProxyTypeInfo* proxy_info) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(request);
-  return IsDataReductionProxy(request->proxy_server(), proxy_info);
-}
-
-bool DataReductionProxyConfig::IsDataReductionProxyServerCore(
+base::Optional<DataReductionProxyTypeInfo>
+DataReductionProxyConfig::FindConfiguredDataReductionProxy(
     const net::ProxyServer& proxy_server) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(IsDataReductionProxy(proxy_server, nullptr /* proxy_info */));
-
-  const net::HostPortPair& host_port_pair = proxy_server.host_port_pair();
-
-  const std::vector<DataReductionProxyServer>& data_reduction_proxy_servers =
-      config_values_->proxies_for_http();
-
-  const auto proxy_it = std::find_if(
-      data_reduction_proxy_servers.begin(), data_reduction_proxy_servers.end(),
-      [&host_port_pair](const DataReductionProxyServer& proxy) {
-        return proxy.proxy_server().is_valid() &&
-               proxy.proxy_server().host_port_pair().Equals(host_port_pair);
-      });
-
-  return proxy_it->IsCoreProxy();
-}
-
-bool DataReductionProxyConfig::IsDataReductionProxy(
-    const net::ProxyServer& proxy_server,
-    DataReductionProxyTypeInfo* proxy_info) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!proxy_server.is_valid() || proxy_server.is_direct())
-    return false;
-
-  // Only compare the host port pair of the |proxy_server| since the proxy
-  // scheme of the stored data reduction proxy may be different than the proxy
-  // scheme of |proxy_server|. This may happen even when the |proxy_server| is a
-  // valid data reduction proxy. As an example, the stored data reduction proxy
-  // may have a proxy scheme of HTTPS while |proxy_server| may have QUIC as the
-  // proxy scheme.
-  const net::HostPortPair& host_port_pair = proxy_server.host_port_pair();
-
-  const std::vector<DataReductionProxyServer>& data_reduction_proxy_servers =
-      config_values_->proxies_for_http();
-
-  const auto proxy_it = std::find_if(
-      data_reduction_proxy_servers.begin(), data_reduction_proxy_servers.end(),
-      [&host_port_pair](const DataReductionProxyServer& proxy) {
-        return proxy.proxy_server().is_valid() &&
-               proxy.proxy_server().host_port_pair().Equals(host_port_pair);
-      });
-
-  if (proxy_it == data_reduction_proxy_servers.end())
-    return false;
-
-  if (!proxy_info)
-    return true;
-
-  proxy_info->proxy_servers =
-      DataReductionProxyServer::ConvertToNetProxyServers(
-          std::vector<DataReductionProxyServer>(
-              proxy_it, data_reduction_proxy_servers.end()));
-  proxy_info->proxy_index =
-      static_cast<size_t>(proxy_it - data_reduction_proxy_servers.begin());
-  return true;
+  return config_values_->FindConfiguredDataReductionProxy(proxy_server);
 }
 
 bool DataReductionProxyConfig::IsBypassedByDataReductionProxyLocalRules(
@@ -329,7 +267,7 @@ bool DataReductionProxyConfig::IsBypassedByDataReductionProxyLocalRules(
     return true;
   if (result.proxy_server().is_direct())
     return true;
-  return !IsDataReductionProxy(result.proxy_server(), nullptr);
+  return !FindConfiguredDataReductionProxy(result.proxy_server());
 }
 
 bool DataReductionProxyConfig::AreDataReductionProxiesBypassed(
@@ -374,7 +312,7 @@ bool DataReductionProxyConfig::AreProxiesBypassed(
       continue;
 
     base::TimeDelta delay;
-    if (IsDataReductionProxy(proxy, nullptr)) {
+    if (FindConfiguredDataReductionProxy(proxy)) {
       if (!IsProxyBypassed(retry_map, proxy, &delay))
         return false;
       if (delay < min_delay)
@@ -418,7 +356,7 @@ bool DataReductionProxyConfig::ContainsDataReductionProxy(
       proxy_rules.MapUrlSchemeToProxyList("http");
   if (http_proxy_list && !http_proxy_list->IsEmpty() &&
       // Sufficient to check only the first proxy.
-      IsDataReductionProxy(http_proxy_list->Get(), nullptr)) {
+      FindConfiguredDataReductionProxy(http_proxy_list->Get())) {
     return true;
   }
 
@@ -501,7 +439,7 @@ DataReductionProxyConfig::GetProxyConnectionToProbe() const {
   const std::vector<DataReductionProxyServer>& proxies =
       DataReductionProxyConfig::GetProxiesForHttp();
 
-  for (const auto proxy_server : proxies) {
+  for (const DataReductionProxyServer& proxy_server : proxies) {
     // First find a proxy server that has never been probed before. Proxies that
     // have been probed before successfully do not need to be probed. On the
     // other hand, proxies that have been probed before unsuccessfully are
@@ -516,7 +454,7 @@ DataReductionProxyConfig::GetProxyConnectionToProbe() const {
     }
   }
 
-  for (const auto proxy_server : proxies) {
+  for (const DataReductionProxyServer& proxy_server : proxies) {
     // Now find any proxy server that can be probed. This would return proxies
     // that were probed before, the result was unsuccessful, but they have not
     // yet hit the maximum probe retry limit.
@@ -544,9 +482,11 @@ void DataReductionProxyConfig::HandleWarmupFetcherResponse(
       (success_response == WarmupURLFetcher::FetchResult::kTimedOut &&
        !proxy_server.is_valid());
 
+  base::Optional<DataReductionProxyTypeInfo> proxy_type_info =
+      FindConfiguredDataReductionProxy(proxy_server);
+
   // Check the proxy server used.
-  if (!timed_out_with_no_proxy_data &&
-      !IsDataReductionProxy(proxy_server, nullptr)) {
+  if (!timed_out_with_no_proxy_data && !proxy_type_info) {
     // No need to do anything here since the warmup fetch did not go through
     // the data saver proxy.
     return;
@@ -557,7 +497,11 @@ void DataReductionProxyConfig::HandleWarmupFetcherResponse(
 
   if (!timed_out_with_no_proxy_data) {
     is_secure_proxy = proxy_server.is_https() || proxy_server.is_quic();
-    is_core_proxy = IsDataReductionProxyServerCore(proxy_server);
+
+    DCHECK(proxy_type_info);
+    is_core_proxy = proxy_type_info->proxy_servers[proxy_type_info->proxy_index]
+                        .IsCoreProxy();
+
     // The proxy server through which the warmup URL was fetched should match
     // the proxy server for which the warmup URL is in-flight.
     DCHECK(GetInFlightWarmupProxyDetails());

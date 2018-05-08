@@ -12,6 +12,7 @@
 #include "base/time/tick_clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_type_info.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -75,34 +76,6 @@ base::TimeTicks TestDataReductionProxyConfig::GetTicksNow() const {
   if (tick_clock_)
     return tick_clock_->NowTicks();
   return DataReductionProxyConfig::GetTicksNow();
-}
-
-bool TestDataReductionProxyConfig::WasDataReductionProxyUsed(
-    const net::URLRequest* request,
-    DataReductionProxyTypeInfo* proxy_info) const {
-  if (was_data_reduction_proxy_used_ &&
-      !was_data_reduction_proxy_used_.value()) {
-    return false;
-  }
-  bool was_data_reduction_proxy_used =
-      DataReductionProxyConfig::WasDataReductionProxyUsed(request, proxy_info);
-  if (proxy_info && was_data_reduction_proxy_used && proxy_index_)
-    proxy_info->proxy_index = proxy_index_.value();
-  return was_data_reduction_proxy_used;
-}
-
-void TestDataReductionProxyConfig::SetWasDataReductionProxyNotUsed() {
-  was_data_reduction_proxy_used_ = false;
-}
-
-void TestDataReductionProxyConfig::SetWasDataReductionProxyUsedProxyIndex(
-    int proxy_index) {
-  proxy_index_ = proxy_index;
-}
-
-void TestDataReductionProxyConfig::ResetWasDataReductionProxyUsed() {
-  was_data_reduction_proxy_used_.reset();
-  proxy_index_.reset();
 }
 
 void TestDataReductionProxyConfig::SetIsCaptivePortal(bool is_captive_portal) {

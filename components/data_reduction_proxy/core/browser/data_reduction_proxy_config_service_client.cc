@@ -275,69 +275,66 @@ bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
     const net::LoadTimingInfo& load_timing_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(response_headers);
-  if (config_->IsDataReductionProxy(proxy_server, nullptr)) {
-    if (response_headers->response_code() ==
-        net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
-      std::string session_key =
-          request_options_->GetSessionKeyFromRequestHeaders(request_headers);
 
-      std::string current_session_key = request_options_->GetSecureSession();
+  if (!config_->FindConfiguredDataReductionProxy(proxy_server))
+    return false;
 
-      // If the session key used in the request is different from the current
-      // session key, then the current session key does not need to be
-      // invalidated.
-      if (session_key != current_session_key) {
-        RecordAuthExpiredSessionKey(false);
-        return true;
-      }
-      RecordAuthExpiredSessionKey(true);
-
-      // The default backoff logic is to increment the failure count (and
-      // increase the backoff time) with each response failure to the remote
-      // config service, and to decrement the failure count (and decrease the
-      // backoff time) with each response success. In the case where the
-      // config service returns a success response (decrementing the failure
-      // count) but the session key is continually invalid (as a response from
-      // the Data Reduction Proxy and not the config service), the previous
-      // response should be considered a failure in order to ensure the backoff
-      // time continues to increase.
-      if (previous_request_failed_authentication_)
-        GetBackoffEntry()->InformOfRequest(false);
-
-      // Record that a request resulted in an authentication failure.
-      RecordAuthExpiredHistogram(true);
-      previous_request_failed_authentication_ = true;
-      InvalidateConfig();
-      DCHECK(!config_->IsDataReductionProxy(proxy_server, nullptr));
-
-      if (fetch_in_progress_) {
-        // If a client config fetch is already in progress, then do not start
-        // another fetch since starting a new fetch will cause extra data
-        // usage, and also cancel the ongoing fetch.
-        return true;
-      }
-
-      RetrieveConfig();
-
-      if (!load_timing_info.send_start.is_null() &&
-          !load_timing_info.request_start.is_null() &&
-          net::NetworkChangeNotifier::GetConnectionType() !=
-              net::NetworkChangeNotifier::CONNECTION_NONE &&
-          last_ip_address_change_ < load_timing_info.request_start) {
-        // Record only if there was no change in the IP address since the
-        // request started.
-        UMA_HISTOGRAM_TIMES(
-            "DataReductionProxy.ConfigService.AuthFailure.LatencyPenalty",
-            base::TimeTicks::Now() - load_timing_info.request_start);
-      }
-
-      return true;
-    }
-
+  if (response_headers->response_code() !=
+      net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
     previous_request_failed_authentication_ = false;
+    return false;
   }
 
-  return false;
+  // If the session key used in the request is different from the current
+  // session key, then the current session key does not need to be
+  // invalidated.
+  if (request_options_->GetSessionKeyFromRequestHeaders(request_headers) !=
+      request_options_->GetSecureSession()) {
+    RecordAuthExpiredSessionKey(false);
+    return true;
+  }
+  RecordAuthExpiredSessionKey(true);
+
+  // The default backoff logic is to increment the failure count (and
+  // increase the backoff time) with each response failure to the remote
+  // config service, and to decrement the failure count (and decrease the
+  // backoff time) with each response success. In the case where the
+  // config service returns a success response (decrementing the failure
+  // count) but the session key is continually invalid (as a response from
+  // the Data Reduction Proxy and not the config service), the previous
+  // response should be considered a failure in order to ensure the backoff
+  // time continues to increase.
+  if (previous_request_failed_authentication_)
+    GetBackoffEntry()->InformOfRequest(false);
+
+  // Record that a request resulted in an authentication failure.
+  RecordAuthExpiredHistogram(true);
+  previous_request_failed_authentication_ = true;
+  InvalidateConfig();
+  DCHECK(config_->GetProxiesForHttp().empty());
+
+  if (fetch_in_progress_) {
+    // If a client config fetch is already in progress, then do not start
+    // another fetch since starting a new fetch will cause extra data
+    // usage, and also cancel the ongoing fetch.
+    return true;
+  }
+
+  RetrieveConfig();
+
+  if (!load_timing_info.send_start.is_null() &&
+      !load_timing_info.request_start.is_null() &&
+      net::NetworkChangeNotifier::GetConnectionType() !=
+          net::NetworkChangeNotifier::CONNECTION_NONE &&
+      last_ip_address_change_ < load_timing_info.request_start) {
+    // Record only if there was no change in the IP address since the
+    // request started.
+    UMA_HISTOGRAM_TIMES(
+        "DataReductionProxy.ConfigService.AuthFailure.LatencyPenalty",
+        base::TimeTicks::Now() - load_timing_info.request_start);
+  }
+
+  return true;
 }
 
 net::BackoffEntry* DataReductionProxyConfigServiceClient::GetBackoffEntry() {

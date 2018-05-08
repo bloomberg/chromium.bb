@@ -31,6 +31,7 @@ template("common_tmpl") {
       "data_reduction_proxy_server.h",
       "data_reduction_proxy_switches.cc",
       "data_reduction_proxy_switches.h",
+      "data_reduction_proxy_type_info.h",
       "lofi_decider.h",
       "lofi_ui_service.h",
       "resource_type_provider.h",

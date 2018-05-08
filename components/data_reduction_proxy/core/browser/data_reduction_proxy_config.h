@@ -16,11 +16,13 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/secure_proxy_checker.h"
 #include "components/data_reduction_proxy/core/browser/warmup_url_fetcher.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_type_info.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/previews/core/previews_experiments.h"
 #include "net/base/network_change_notifier.h"
@@ -119,27 +121,11 @@ class DataReductionProxyConfig
   // InitDataReductionProxySettings.
   void SetProxyConfig(bool enabled, bool at_startup);
 
-  // Returns true if a Data Reduction Proxy was used for the given |request|.
-  // If true, |proxy_info.proxy_servers.front()| will contain the name of the
-  // proxy that was used. Subsequent entries in |proxy_info.proxy_servers| will
-  // contain the names of the Data Reduction Proxy servers that would be used if
-  // |proxy_info.proxy_servers.front()| is bypassed, if any exist. In addition,
-  // |proxy_info| will note if the proxy used was a fallback. |proxy_info| can
-  // be NULL if the caller isn't interested in its values. Virtualized for
-  // testing.
-  virtual bool WasDataReductionProxyUsed(
-      const net::URLRequest* request,
-      DataReductionProxyTypeInfo* proxy_info) const;
-
-  // Returns true if the specified |proxy_server| matches a Data Reduction
-  // Proxy. If true, |proxy_info.proxy_servers.front()| will contain the name of
-  // the proxy that matches. Subsequent entries in |proxy_info.proxy_servers|
-  // will contain the name of the Data Reduction Proxy servers that would be
-  // used if |proxy_info.proxy_servers.front()| is bypassed, if any exist. In
-  // addition, |proxy_info| will note if the proxy was a fallback. |proxy_info|
-  // can be NULL if the caller isn't interested in its values.
-  bool IsDataReductionProxy(const net::ProxyServer& proxy_server,
-                            DataReductionProxyTypeInfo* proxy_info) const;
+  // If the specified |proxy_server| matches a Data Reduction Proxy, returns the
+  // DataReductionProxyTypeInfo showing where that proxy is in the list of
+  // configured proxies, otherwise returns an empty optional value.
+  base::Optional<DataReductionProxyTypeInfo> FindConfiguredDataReductionProxy(
+      const net::ProxyServer& proxy_server) const;
 
   // Returns true if this request would be bypassed by the Data Reduction Proxy
   // based on applying the |data_reduction_proxy_config| param rules to the
@@ -326,12 +312,6 @@ class DataReductionProxyConfig
 
   // Fetches the warmup URL.
   void FetchWarmupProbeURL();
-
-  // Returns true if |proxy_server| is a core data reduction proxy server.
-  // Should be called only if |proxy_server| is a valid data reduction proxy
-  // server.
-  bool IsDataReductionProxyServerCore(
-      const net::ProxyServer& proxy_server) const;
 
   // URL fetcher used for performing the secure proxy check.
   std::unique_ptr<SecureProxyChecker> secure_proxy_checker_;

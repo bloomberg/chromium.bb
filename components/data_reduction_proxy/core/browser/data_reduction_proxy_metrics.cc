@@ -20,8 +20,8 @@ namespace data_reduction_proxy {
 
 DataReductionProxyRequestType GetDataReductionProxyRequestType(
     const net::URLRequest& request,
-    const net::ProxyConfig& data_reduction_proxy_config,
-    const DataReductionProxyConfig& config) {
+    const net::ProxyConfig& proxy_config,
+    const DataReductionProxyConfig& data_reduction_proxy_config) {
   if (request.url().SchemeIs(url::kHttpsScheme))
     return HTTPS;
   if (!request.url().SchemeIs(url::kHttpScheme)) {
@@ -41,9 +41,10 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
   if ((request.load_flags() & net::LOAD_BYPASS_PROXY) ||
       (request.proxy_server().is_valid() &&
        !request.proxy_server().is_direct() &&
-       !config.IsDataReductionProxy(request.proxy_server(), nullptr)) ||
-      config.IsBypassedByDataReductionProxyLocalRules(
-          request, data_reduction_proxy_config)) {
+       !data_reduction_proxy_config.FindConfiguredDataReductionProxy(
+           request.proxy_server())) ||
+      data_reduction_proxy_config.IsBypassedByDataReductionProxyLocalRules(
+          request, proxy_config)) {
     return SHORT_BYPASS;
   }
 
@@ -53,8 +54,8 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
   }
 
   base::TimeDelta bypass_delay;
-  if (config.AreDataReductionProxiesBypassed(
-          request, data_reduction_proxy_config, &bypass_delay)) {
+  if (data_reduction_proxy_config.AreDataReductionProxiesBypassed(
+          request, proxy_config, &bypass_delay)) {
     if (bypass_delay > base::TimeDelta::FromSeconds(kLongBypassDelayInSeconds))
       return LONG_BYPASS;
     return SHORT_BYPASS;
@@ -68,7 +69,8 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
   // if they came through the Data Reduction Proxy.
   if (request.response_headers() &&
       request.response_headers()->response_code() == net::HTTP_NOT_MODIFIED &&
-      config.WasDataReductionProxyUsed(&request, nullptr)) {
+      data_reduction_proxy_config.FindConfiguredDataReductionProxy(
+          request.proxy_server())) {
     return VIA_DATA_REDUCTION_PROXY;
   }
 

@@ -40,6 +40,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/log/test_net_log.h"
 #include "net/socket/socket_test_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
@@ -374,38 +375,6 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
   }
 
   net::TestDelegate* delegate() { return &delegate_; }
-
-  // Marks a data reduction proxy as bypassed if
-  // |bypassed_proxy_server_is_data_reduction_proxy| is true. Then, runs a
-  // request via data reduction proxy if |is_data_reduction_proxy| is true,
-  // and verifies that proxy is unreachable only if |is_unreachable| is true.
-  void VerifyProxyReachablity(
-      bool bypassed_proxy_server_is_data_reduction_proxy,
-      bool is_data_reduction_proxy,
-      bool is_unreachable) {
-    InitializeContext();
-
-    std::string proxy = bypassed_proxy_server_is_data_reduction_proxy
-                            ? "origin.net:80"
-                            : "foo.net:80";
-    net::ProxyServer fallback_proxy_server =
-        net::ProxyServer::FromURI(proxy, net::ProxyServer::SCHEME_HTTP);
-
-    bypass_stats()->OnProxyFallback(fallback_proxy_server,
-                                    net::ERR_PROXY_CONNECTION_FAILED);
-    drp_test_context()->RunUntilIdle();
-
-    if (!is_data_reduction_proxy)
-      config()->SetWasDataReductionProxyNotUsed();
-
-    CreateAndExecuteRequest(GURL("http://bar.com"), net::LOAD_NORMAL, net::OK,
-                            "HTTP/1.1 200 OK\r\n"
-                            "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-                            kNextBody.c_str(), nullptr, nullptr);
-
-    drp_test_context()->RunUntilIdle();
-    EXPECT_EQ(is_unreachable, IsUnreachable());
-  }
 
  private:
   base::MessageLoopForIO message_loop_;
@@ -746,26 +715,6 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest,
 }
 
 TEST_F(DataReductionProxyBypassStatsEndToEndTest,
-       IsDataReductionProxyUnreachable_Unreachable) {
-  VerifyProxyReachablity(true, false, true);
-}
-
-TEST_F(DataReductionProxyBypassStatsEndToEndTest,
-       IsDataReductionProxyUnreachable_Unreachable_Then_Reachable) {
-  VerifyProxyReachablity(true, true, false);
-}
-
-TEST_F(DataReductionProxyBypassStatsEndToEndTest,
-       IsDataReductionProxyUnreachable_Not_A_data_reduction_proxy_1) {
-  VerifyProxyReachablity(false, true, false);
-}
-
-TEST_F(DataReductionProxyBypassStatsEndToEndTest,
-       IsDataReductionProxyUnreachableNot_A_data_reduction_proxy_2) {
-  VerifyProxyReachablity(false, false, false);
-}
-
-TEST_F(DataReductionProxyBypassStatsEndToEndTest,
        ProxyUnreachableThenReachable) {
   net::ProxyServer fallback_proxy_server =
       net::ProxyServer::FromURI("origin.net:80", net::ProxyServer::SCHEME_HTTP);
@@ -867,72 +816,124 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest,
   }
 }
 
-TEST_F(DataReductionProxyBypassStatsEndToEndTest, SuccessfulRequestCompletion) {
-  const std::string kPrimaryHistogramName =
+TEST_F(DataReductionProxyBypassStatsEndToEndTest,
+       SuccessfulPrimaryProxyRequestCompletion) {
+  const std::string kHistogramName =
       "DataReductionProxy.SuccessfulRequestCompletionCounts";
-  const std::string kPrimaryMainFrameHistogramName =
+  const std::string kMainFrameHistogramName =
       "DataReductionProxy.SuccessfulRequestCompletionCounts.MainFrame";
 
   InitializeContext();
+
   const struct {
-    bool was_proxy_used;
-    bool is_load_bypass_proxy;
-    size_t proxy_index;
-    bool is_main_frame;
+    int load_flags;
     net::Error net_error;
-  } tests[] = {{false, true, 0, true, net::OK},
-               {false, true, 0, false, net::ERR_TOO_MANY_REDIRECTS},
-               {false, false, 0, true, net::OK},
-               {false, false, 0, false, net::ERR_TOO_MANY_REDIRECTS},
-               {true, false, 0, true, net::OK},
-               {true, false, 0, true, net::ERR_TOO_MANY_REDIRECTS},
-               {true, false, 0, false, net::OK},
-               {true, false, 0, false, net::ERR_TOO_MANY_REDIRECTS},
-               {true, false, 1, true, net::OK},
-               {true, false, 1, true, net::ERR_TOO_MANY_REDIRECTS},
-               {true, false, 1, false, net::OK},
-               {true, false, 1, false, net::ERR_TOO_MANY_REDIRECTS}};
+    bool expect_histogram_sample;
+    bool expect_main_frame_histogram_sample;
+  } tests[] = {
+      {net::LOAD_BYPASS_PROXY | net::LOAD_MAIN_FRAME_DEPRECATED, net::OK, false,
+       false},
+      {net::LOAD_BYPASS_PROXY | net::LOAD_MAIN_FRAME_DEPRECATED,
+       net::ERR_TOO_MANY_REDIRECTS, false, false},
+      {net::LOAD_BYPASS_PROXY, net::OK, false, false},
+      {net::LOAD_BYPASS_PROXY, net::ERR_TOO_MANY_REDIRECTS, false, false},
+      {net::LOAD_MAIN_FRAME_DEPRECATED, net::OK, true, true},
+      {net::LOAD_MAIN_FRAME_DEPRECATED, net::ERR_TOO_MANY_REDIRECTS, false,
+       false},
+      {0, net::OK, true, false},
+      {0, net::ERR_TOO_MANY_REDIRECTS, false, false},
+  };
 
   for (const auto& test : tests) {
-    config()->ResetWasDataReductionProxyUsed();
     base::HistogramTester histogram_tester;
-
-    // Proxy succeeds.
-    int load_flags = net::LOAD_NORMAL;
-    if (test.is_load_bypass_proxy) {
-      load_flags |= net::LOAD_BYPASS_PROXY;
-    }
-    if (test.is_main_frame) {
-      load_flags |= net::LOAD_MAIN_FRAME_DEPRECATED;
-    }
-
-    if (!test.was_proxy_used)
-      config()->SetWasDataReductionProxyNotUsed();
-    else {
-      config()->SetWasDataReductionProxyUsedProxyIndex(test.proxy_index);
-    }
-
-    CreateAndExecuteRequest(GURL("http://bar.com"), load_flags, test.net_error,
+    CreateAndExecuteRequest(GURL("http://foo.com"), test.load_flags,
+                            test.net_error,
                             "HTTP/1.1 200 OK\r\n"
                             "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
                             kNextBody.c_str(), nullptr, nullptr);
     drp_test_context()->RunUntilIdle();
 
-    if (test.was_proxy_used && !test.is_load_bypass_proxy &&
-        test.net_error == net::OK) {
-      histogram_tester.ExpectUniqueSample(kPrimaryHistogramName,
-                                          test.proxy_index, 1);
-    } else {
-      histogram_tester.ExpectTotalCount(kPrimaryHistogramName, 0);
-    }
+    if (test.expect_histogram_sample)
+      histogram_tester.ExpectUniqueSample(kHistogramName, 0, 1);
+    else
+      histogram_tester.ExpectTotalCount(kHistogramName, 0);
 
-    if (test.was_proxy_used && !test.is_load_bypass_proxy &&
-        test.is_main_frame && test.net_error == net::OK) {
-      histogram_tester.ExpectUniqueSample(kPrimaryMainFrameHistogramName,
-                                          test.proxy_index, 1);
-    } else {
-      histogram_tester.ExpectTotalCount(kPrimaryMainFrameHistogramName, 0);
-    }
+    if (test.expect_main_frame_histogram_sample)
+      histogram_tester.ExpectUniqueSample(kMainFrameHistogramName, 0, 1);
+    else
+      histogram_tester.ExpectTotalCount(kMainFrameHistogramName, 0);
+  }
+}
+
+TEST_F(DataReductionProxyBypassStatsEndToEndTest,
+       SuccessfulFallbackProxyRequestCompletion) {
+  const std::string kHistogramName =
+      "DataReductionProxy.SuccessfulRequestCompletionCounts";
+  const std::string kMainFrameHistogramName =
+      "DataReductionProxy.SuccessfulRequestCompletionCounts.MainFrame";
+
+  // Explicitly set primary and fallback Data Reduction Proxies to use.
+  config()->test_params()->SetProxiesForHttp(
+      std::vector<DataReductionProxyServer>(
+          {DataReductionProxyServer(
+               net::ProxyServer::FromURI("http://origin.net",
+                                         net::ProxyServer::SCHEME_HTTP),
+               ProxyServer::CORE),
+           DataReductionProxyServer(
+               net::ProxyServer::FromURI("http://fallback.net",
+                                         net::ProxyServer::SCHEME_HTTP),
+               ProxyServer::CORE)}));
+
+  // Make the first Data Reduction Proxy host in the list of Data Reduction
+  // Proxies to use fail to resolve, so that the tests below will use the
+  // fallback proxy.
+  std::unique_ptr<net::MockHostResolver> host_resolver(
+      new net::MockHostResolver());
+  const DataReductionProxyServer& primary_proxy =
+      config()->test_params()->proxies_for_http().front();
+  host_resolver->rules()->AddSimulatedFailure(
+      primary_proxy.proxy_server().host_port_pair().host());
+
+  set_host_resolver(host_resolver.get());
+  InitializeContext();
+
+  const struct {
+    int load_flags;
+    net::Error net_error;
+    bool expect_histogram_sample;
+    bool expect_main_frame_histogram_sample;
+  } tests[] = {
+      {net::LOAD_BYPASS_PROXY | net::LOAD_MAIN_FRAME_DEPRECATED, net::OK, false,
+       false},
+      {net::LOAD_BYPASS_PROXY | net::LOAD_MAIN_FRAME_DEPRECATED,
+       net::ERR_TOO_MANY_REDIRECTS, false, false},
+      {net::LOAD_BYPASS_PROXY, net::OK, false, false},
+      {net::LOAD_BYPASS_PROXY, net::ERR_TOO_MANY_REDIRECTS, false, false},
+      {net::LOAD_MAIN_FRAME_DEPRECATED, net::OK, true, true},
+      {net::LOAD_MAIN_FRAME_DEPRECATED, net::ERR_TOO_MANY_REDIRECTS, false,
+       false},
+      {0, net::OK, true, false},
+      {0, net::ERR_TOO_MANY_REDIRECTS, false, false},
+  };
+
+  for (const auto& test : tests) {
+    base::HistogramTester histogram_tester;
+    CreateAndExecuteRequest(GURL("http://foo.com"), test.load_flags,
+                            test.net_error,
+                            "HTTP/1.1 200 OK\r\n"
+                            "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+                            kNextBody.c_str(), nullptr, nullptr);
+    drp_test_context()->RunUntilIdle();
+
+    if (test.expect_histogram_sample)
+      histogram_tester.ExpectUniqueSample(kHistogramName, 1, 1);
+    else
+      histogram_tester.ExpectTotalCount(kHistogramName, 0);
+
+    if (test.expect_main_frame_histogram_sample)
+      histogram_tester.ExpectUniqueSample(kMainFrameHistogramName, 1, 1);
+    else
+      histogram_tester.ExpectTotalCount(kMainFrameHistogramName, 0);
   }
 }
 

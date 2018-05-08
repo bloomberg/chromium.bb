@@ -16,7 +16,6 @@ class URLRequest;
 namespace data_reduction_proxy {
 
 class DataReductionProxyConfig;
-struct DataReductionProxyTypeInfo;
 
 // Class responsible for determining when a response should or should not cause
 // the data reduction proxy to be bypassed, and to what degree. Owned by the
@@ -48,7 +47,6 @@ class DataReductionProxyBypassProtocol {
   bool HandleInvalidResponseHeadersCase(
       const net::URLRequest& request,
       DataReductionProxyInfo* data_reduction_proxy_info,
-      DataReductionProxyTypeInfo* data_reduction_proxy_type_info,
       DataReductionProxyBypassType* bypass_type) const;
 
   // Decides whether to mark the data reduction proxy as temporarily bad and
@@ -59,7 +57,6 @@ class DataReductionProxyBypassProtocol {
       const net::URLRequest& request,
       DataReductionProxyBypassType* proxy_bypass_type,
       DataReductionProxyInfo* data_reduction_proxy_info,
-      DataReductionProxyTypeInfo* data_reduction_proxy_type_info,
       DataReductionProxyBypassType* bypass_type) const;
 
   // Must outlive |this|.
