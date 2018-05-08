@@ -41,8 +41,8 @@ UsbDeviceImpl::UsbDeviceImpl(scoped_refptr<UsbContext> context,
                 base::string16(),
                 base::string16(),
                 base::string16()),
-      platform_device_(std::move(platform_device)),
-      context_(std::move(context)) {
+      context_(std::move(context)),
+      platform_device_(std::move(platform_device)) {
   CHECK(platform_device_.is_valid()) << "platform_device must be valid";
   ReadAllConfigurations();
   RefreshActiveConfiguration();
