@@ -512,6 +512,8 @@ typedef struct InterModeRdData {
   MV_REFERENCE_FRAME ref[2];
   int mv_mode[2];
   int_mv mv[2];
+  int ref_mv_count;
+  int ref_mv_idx;
   int64_t sse;
   int64_t dist;
   int mode_cost;
@@ -526,15 +528,17 @@ typedef struct InterModeRdVector {
   int mi_row;
   int mi_col;
   BLOCK_SIZE bsize;
+  int rdmult;
 } InterModeRdVector;
 
 static void inter_mode_rd_vector_init(InterModeRdVector *inter_mode_rd_vector,
-                                      int mi_row, int mi_col,
-                                      BLOCK_SIZE bsize) {
+                                      int mi_row, int mi_col, BLOCK_SIZE bsize,
+                                      int rdmult) {
   inter_mode_rd_vector->idx = 0;
   inter_mode_rd_vector->mi_row = mi_row;
   inter_mode_rd_vector->mi_col = mi_col;
   inter_mode_rd_vector->bsize = bsize;
+  inter_mode_rd_vector->rdmult = rdmult;
 }
 
 static int get_mv_mode(int single_mode, int ref_mv_idx) {
@@ -569,6 +573,7 @@ static INLINE int get_comp_mode(const MB_MODE_INFO *mbmi) {
 
 static void inter_mode_rd_vector_push(InterModeRdVector *inter_mode_rd_vector,
                                       int this_mode, const MB_MODE_INFO *mbmi,
+                                      const MB_MODE_INFO_EXT *mbmi_ext,
                                       int64_t sse, int64_t dist, int mode_cost,
                                       int ref_cost, int mv_cost,
                                       int residue_cost) {
@@ -589,6 +594,9 @@ static void inter_mode_rd_vector_push(InterModeRdVector *inter_mode_rd_vector,
     data->mv_mode[ref_idx] = get_mv_mode(single_mode, mbmi->ref_mv_idx);
     data->mv[ref_idx] = mbmi->mv[ref_idx];
   }
+  const uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+  data->ref_mv_count = mbmi_ext->ref_mv_count[ref_frame_type];
+  data->ref_mv_idx = mbmi->ref_mv_idx;
   data->sse = sse;
   data->dist = dist;
   data->mode_cost = mode_cost;
@@ -606,6 +614,7 @@ static void inter_mode_rd_vector_dump(
     printf("mi_row %d\n", inter_mode_rd_vector->mi_row);
     printf("mi_col %d\n", inter_mode_rd_vector->mi_col);
     printf("bsize %d\n", inter_mode_rd_vector->bsize);
+    printf("rdmult %d\n", inter_mode_rd_vector->rdmult);
     for (int i = 0; i < inter_mode_rd_vector->idx; ++i) {
       const InterModeRdData *data = &inter_mode_rd_vector->data[i];
       printf("=\n");
@@ -616,6 +625,8 @@ static void inter_mode_rd_vector_dump(
       printf("mv_mode %d %d\n", data->mv_mode[0], data->mv_mode[1]);
       printf("mv %d %d %d %d\n", data->mv[0].as_mv.row, data->mv[0].as_mv.col,
              data->mv[1].as_mv.row, data->mv[1].as_mv.col);
+      printf("ref_mv_count %d\n", data->ref_mv_count);
+      printf("ref_mv_idx %d\n", data->ref_mv_idx);
       printf("sse %" PRId64 "\n", data->sse);
       printf("dist %" PRId64 "\n", data->dist);
       printf("mode_cost %d\n", data->mode_cost);
@@ -8414,7 +8425,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
         const int mv_cost = ref_mv_cost + rate_mv;
         inter_mode_rd_vector_push(
-            inter_mode_rd_vector, this_mode, mbmi, rd_stats->sse,
+            inter_mode_rd_vector, this_mode, mbmi, mbmi_ext, rd_stats->sse,
             rd_stats->dist, args->single_comp_cost + compmode_interinter_cost,
             args->ref_frame_cost, mv_cost,
             rd_stats_y->rate + rd_stats_uv->rate);
@@ -8450,7 +8461,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       if (ret_val != INT64_MAX) {
         const int mv_cost = ref_mv_cost + rate_mv;
         inter_mode_rd_vector_push(
-            inter_mode_rd_vector, this_mode, mbmi, rd_stats->sse,
+            inter_mode_rd_vector, this_mode, mbmi, mbmi_ext, rd_stats->sse,
             rd_stats->dist, args->single_comp_cost + compmode_interinter_cost,
             args->ref_frame_cost, mv_cost,
             rd_stats_y->rate + rd_stats_uv->rate);
@@ -9553,7 +9564,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
   InterModeRdVector inter_mode_rd_vector;
-  inter_mode_rd_vector_init(&inter_mode_rd_vector, mi_row, mi_col, bsize);
+  inter_mode_rd_vector_init(&inter_mode_rd_vector, mi_row, mi_col, bsize,
+                            x->rdmult);
 #endif
 
   for (int midx = 0; midx < MAX_MODES; ++midx) {
