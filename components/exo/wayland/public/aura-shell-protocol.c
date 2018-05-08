@@ -50,7 +50,7 @@ static const struct wl_message zaura_shell_requests[] = {
 };
 
 WL_EXPORT const struct wl_interface zaura_shell_interface = {
-	"zaura_shell", 5,
+	"zaura_shell", 6,
 	2, zaura_shell_requests,
 	0, NULL,
 };
@@ -76,7 +76,7 @@ static const struct wl_message zaura_output_events[] = {
 };
 
 WL_EXPORT const struct wl_interface zaura_output_interface = {
-	"zaura_output", 5,
+	"zaura_output", 6,
 	0, NULL,
 	3, zaura_output_events,
 };

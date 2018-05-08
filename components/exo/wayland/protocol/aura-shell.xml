@@ -24,7 +24,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zaura_shell" version="5">
+  <interface name="zaura_shell" version="6">
     <description summary="aura_shell">
       The global interface exposing aura shell capabilities is used to
       instantiate an interface extension for a wl_surface object.
@@ -131,7 +131,7 @@
     </request>
   </interface>
 
-  <interface name="zaura_output" version="5">
+  <interface name="zaura_output" version="6">
     <description summary="aura shell interface to a wl_output">
       An additional interface to a wl_output object, which allows the
       client to access aura shell specific functionality for output.
