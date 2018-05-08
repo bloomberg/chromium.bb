@@ -58,6 +58,7 @@ AudioInputSyncWriter::AudioInputSyncWriter(
       creation_time_(base::TimeTicks::Now()),
       audio_bus_memory_size_(AudioBus::CalculateMemorySize(params)) {
   // We use CHECKs since this class is used for IPC.
+  DCHECK(log_callback_);
   CHECK(socket_);
   CHECK(shared_memory_);
   CHECK_EQ(shared_memory_segment_size_ * shared_memory_segment_count,
