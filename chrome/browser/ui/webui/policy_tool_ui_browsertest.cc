@@ -679,12 +679,19 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, RenameSession) {
 IN_PROC_BROWSER_TEST_F(PolicyToolUITest, RenameSessionWithExistingSessionName) {
   CreateMultipleSessionFiles(3);
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
+  content::RunAllTasksUntilIdle();
+  // Make sure the current session is '2'.
   EXPECT_EQ("2", ExtractSinglePolicyValue("SessionId"));
 
   // Check that a session can not be renamed with a name of another existing
   // session.
   RenameSession("2", "1");
+  // Wait until the posted tasks are done. After check that name already exist
+  // the tool displays an error message in the UI.
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(IsSessionRenameErrorMessageDisplayed());
+
+  // Check the names that appear in the session list didn't change.
   base::ListValue expected;
   expected.GetList().push_back(base::Value("2"));
   expected.GetList().push_back(base::Value("1"));
