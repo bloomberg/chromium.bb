@@ -41,15 +41,19 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#endif
-
-#if defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <pthread.h>
 #endif
 
 namespace WTF {
 
-#if defined(OS_POSIX)
+#if defined(OS_WIN)
+struct PlatformMutex {
+  CRITICAL_SECTION internal_mutex_;
+  size_t recursion_count_;
+};
+typedef CONDITION_VARIABLE PlatformCondition;
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 struct PlatformMutex {
   pthread_mutex_t internal_mutex_;
 #if DCHECK_IS_ON()
@@ -57,15 +61,6 @@ struct PlatformMutex {
 #endif
 };
 typedef pthread_cond_t PlatformCondition;
-#elif defined(OS_WIN)
-struct PlatformMutex {
-  CRITICAL_SECTION internal_mutex_;
-  size_t recursion_count_;
-};
-typedef CONDITION_VARIABLE PlatformCondition;
-#else
-typedef void* PlatformMutex;
-typedef void* PlatformCondition;
 #endif
 
 class WTF_EXPORT MutexBase {

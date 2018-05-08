@@ -10,7 +10,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <unistd.h>
 #endif
 
@@ -36,7 +36,7 @@ WebThreadCreationParams& WebThreadCreationParams::SetFrameScheduler(
 #if defined(OS_WIN)
 static_assert(sizeof(blink::PlatformThreadId) >= sizeof(DWORD),
               "size of platform thread id is too small");
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 static_assert(sizeof(blink::PlatformThreadId) >= sizeof(pid_t),
               "size of platform thread id is too small");
 #else

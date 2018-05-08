@@ -32,7 +32,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 #include <errno.h>
 #include <limits.h>
@@ -270,4 +270,4 @@ void WillCreateThread() {
 
 }  // namespace WTF
 
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
