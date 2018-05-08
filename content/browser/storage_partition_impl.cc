@@ -17,6 +17,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/syslog_logging.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -831,6 +832,7 @@ void StoragePartitionImpl::OpenLocalStorage(
   int process_id = bindings_.dispatch_context();
   if (!ChildProcessSecurityPolicy::GetInstance()->CanAccessDataForOrigin(
           process_id, origin.GetURL())) {
+    SYSLOG(WARNING) << "Killing renderer: illegal localStorage request.";
     bindings_.ReportBadMessage("Access denied for localStorage request");
     return;
   }

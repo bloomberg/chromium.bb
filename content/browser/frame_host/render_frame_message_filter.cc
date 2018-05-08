@@ -13,6 +13,7 @@
 #include "base/debug/alias.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
+#include "base/syslog_logging.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_url_parameters.h"
@@ -490,8 +491,11 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   if (!policy->CanAccessDataForOrigin(render_process_id_, url)) {
-    bad_message::ReceivedBadMessage(this,
-                                    bad_message::RFMF_SET_COOKIE_BAD_ORIGIN);
+    bad_message::BadMessageReason reason =
+        bad_message::RFMF_SET_COOKIE_BAD_ORIGIN;
+    SYSLOG(WARNING) << "Killing renderer: illegal cookie write. Reason: "
+                    << reason;
+    bad_message::ReceivedBadMessage(this, reason);
     return;
   }
 
@@ -531,8 +535,11 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   if (!policy->CanAccessDataForOrigin(render_process_id_, url)) {
-    bad_message::ReceivedBadMessage(this,
-                                    bad_message::RFMF_GET_COOKIES_BAD_ORIGIN);
+    bad_message::BadMessageReason reason =
+        bad_message::RFMF_GET_COOKIES_BAD_ORIGIN;
+    SYSLOG(WARNING) << "Killing renderer: illegal cookie read. Reason: "
+                    << reason;
+    bad_message::ReceivedBadMessage(this, reason);
     std::move(callback).Run(std::string());
     return;
   }
