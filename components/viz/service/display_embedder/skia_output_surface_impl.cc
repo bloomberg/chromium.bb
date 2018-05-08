@@ -4,7 +4,6 @@
 
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 
-#include "base/atomic_sequence_num.h"
 #include "base/callback_helpers.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -13,62 +12,35 @@
 #include "components/viz/common/resources/resource_metadata.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
+#include "components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.h"
 #include "components/viz/service/display_embedder/viz_process_context_provider.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
-#include "gpu/command_buffer/service/gpu_preferences.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/scheduler.h"
-#include "gpu/command_buffer/service/sync_point_manager.h"
-#include "gpu/command_buffer/service/texture_base.h"
-#include "gpu/command_buffer/service/texture_manager.h"
-#include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
-#include "ui/gl/gl_surface.h"
-#include "ui/gl/gl_switches_util.h"
-#include "ui/gl/gl_version_info.h"
 
 namespace viz {
+
 namespace {
 
-base::AtomicSequenceNumber g_next_command_buffer_id;
+template <typename... Args>
+void PostAsyncTask(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    const base::RepeatingCallback<void(Args...)>& callback,
+    Args... args) {
+  task_runner->PostTask(FROM_HERE, base::BindOnce(callback, args...));
+}
+
+template <typename... Args>
+base::RepeatingCallback<void(Args...)> CreateSafeCallback(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    const base::RepeatingCallback<void(Args...)>& callback) {
+  return base::BindRepeating(&PostAsyncTask<Args...>, task_runner, callback);
+}
 
 }  // namespace
-
-// Metadata for YUV promise SkImage.
-class SkiaOutputSurfaceImpl::YUVResourceMetadata {
- public:
-  YUVResourceMetadata(std::vector<ResourceMetadata> metadatas,
-                      SkYUVColorSpace yuv_color_space)
-      : metadatas_(std::move(metadatas)), yuv_color_space_(yuv_color_space) {
-    DCHECK(metadatas_.size() == 2 || metadatas_.size() == 3);
-  }
-  YUVResourceMetadata(YUVResourceMetadata&& other) = default;
-  ~YUVResourceMetadata() = default;
-  YUVResourceMetadata& operator=(YUVResourceMetadata&& other) = default;
-
-  const std::vector<ResourceMetadata>& metadatas() const { return metadatas_; }
-  SkYUVColorSpace yuv_color_space() const { return yuv_color_space_; }
-  const sk_sp<SkImage> image() const { return image_; }
-  void set_image(sk_sp<SkImage> image) { image_ = image; }
-  const gfx::Size size() const { return metadatas_[0].size; }
-
- private:
-  // Resource metadatas for YUV planes.
-  std::vector<ResourceMetadata> metadatas_;
-
-  SkYUVColorSpace yuv_color_space_;
-
-  // The image copied from YUV textures, it is for fullfilling the promise
-  // image.
-  // TODO(penghuang): Remove it when Skia supports drawing YUV textures
-  // directly.
-  sk_sp<SkImage> image_;
-
-  DISALLOW_COPY_AND_ASSIGN(YUVResourceMetadata);
-};
 
 // A helper class for fullfilling promise image on the GPU thread.
 template <class FullfillContextType>
@@ -76,8 +48,9 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
  public:
   using HelperType = PromiseTextureHelper<FullfillContextType>;
 
-  PromiseTextureHelper(SkiaOutputSurfaceImpl* impl, FullfillContextType context)
-      : impl_(impl), context_(std::move(context)) {}
+  PromiseTextureHelper(base::WeakPtr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu,
+                       FullfillContextType context)
+      : impl_on_gpu_(impl_on_gpu), context_(std::move(context)) {}
   ~PromiseTextureHelper() = default;
 
   static sk_sp<SkImage> MakePromiseSkImage(
@@ -91,8 +64,9 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
       SkAlphaType alpha_type,
       sk_sp<SkColorSpace> color_space,
       FullfillContextType context) {
-    DCHECK_CALLED_ON_VALID_THREAD(impl->client_thread_checker_);
-    auto helper = std::make_unique<HelperType>(impl, std::move(context));
+    DCHECK_CALLED_ON_VALID_THREAD(impl->thread_checker_);
+    auto helper = std::make_unique<HelperType>(impl->impl_on_gpu_->weak_ptr(),
+                                               std::move(context));
     auto image = recorder->makePromiseTexture(
         backend_format, size.width(), size.height(), mip_mapped, origin,
         color_type, alpha_type, color_space, HelperType::Fullfill,
@@ -111,8 +85,12 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
                        GrBackendTexture* backend_texture) {
     DCHECK(texture_context);
     auto* helper = static_cast<HelperType*>(texture_context);
-    DCHECK_CALLED_ON_VALID_THREAD(helper->impl_->gpu_thread_checker_);
-    helper->impl_->OnPromiseTextureFullfill(helper->context_, backend_texture);
+    // The fullfill is always called by SkiaOutputSurfaceImplOnGpu::SwapBuffers
+    // or SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass, so impl_on_gpu_
+    // should be always valid.
+    DCHECK(helper->impl_on_gpu_);
+    helper->impl_on_gpu_->FullfillPromiseTexture(helper->context_,
+                                                 backend_texture);
   }
 
   static void Release(void* texture_context) { DCHECK(texture_context); }
@@ -123,7 +101,7 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
         static_cast<HelperType*>(texture_context));
   }
 
-  SkiaOutputSurfaceImpl* const impl_;
+  base::WeakPtr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu_;
 
   // The data for calling the fullfill methods in SkiaOutputSurfaceImpl.
   FullfillContextType context_;
@@ -141,9 +119,8 @@ void SkiaOutputSurfaceImpl::PromiseTextureHelper<T>::Init(
 // TODO(penghuang): Remove this hack when Skia supports drawing YUV textures
 // directly.
 template <>
-void SkiaOutputSurfaceImpl::PromiseTextureHelper<
-    SkiaOutputSurfaceImpl::YUVResourceMetadata>::Init(SkiaOutputSurfaceImpl*
-                                                          impl) {
+void SkiaOutputSurfaceImpl::PromiseTextureHelper<YUVResourceMetadata>::Init(
+    SkiaOutputSurfaceImpl* impl) {
   impl->yuv_resource_metadatas_.push_back(&context_);
 }
 
@@ -153,41 +130,37 @@ SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
     scoped_refptr<VizProcessContextProvider> context_provider,
     SyntheticBeginFrameSource* synthetic_begin_frame_source)
     : SkiaOutputSurface(context_provider),
-      command_buffer_id_(gpu::CommandBufferId::FromUnsafeValue(
-          g_next_command_buffer_id.GetNext() + 1)),
       gpu_service_(gpu_service),
       surface_handle_(surface_handle),
       synthetic_begin_frame_source_(synthetic_begin_frame_source),
-      gpu_thread_weak_ptr_factory_(this),
-      client_thread_weak_ptr_factory_(this) {
-  DETACH_FROM_THREAD(client_thread_checker_);
-  DETACH_FROM_THREAD(gpu_thread_checker_);
+      weak_ptr_factory_(this) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   recorder_ = nullptr;
-  // TODO(penghuang): avoid blocking compositor thread.
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  // Use GPU scheduler to release impl_on_gpu_ on the GPU thread, so all
+  // scheduled tasks for the impl_on_gpu_ will be executed, before releasing
+  // it. The GPU thread is the main thread of the viz process. It outlives the
+  // compositor thread. We don't need worry about it for now.
   auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
-  auto callback = base::BindOnce(&SkiaOutputSurfaceImpl::DestroyOnGpuThread,
-                                 base::Unretained(this), &event);
+  auto callback =
+      base::BindOnce([](std::unique_ptr<SkiaOutputSurfaceImplOnGpu>) {},
+                     std::move(impl_on_gpu_));
   gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
       sequence_id, std::move(callback), std::vector<gpu::SyncToken>()));
-  event.Wait();
 }
 
 void SkiaOutputSurfaceImpl::BindToClient(OutputSurfaceClient* client) {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(client);
   DCHECK(!client_);
 
   client_ = client;
-  client_thread_weak_ptr_ = client_thread_weak_ptr_factory_.GetWeakPtr();
+  weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
   client_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
-  // TODO(penghuang): avoid blocking compositor thread.
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
@@ -199,12 +172,12 @@ void SkiaOutputSurfaceImpl::BindToClient(OutputSurfaceClient* client) {
 }
 
 void SkiaOutputSurfaceImpl::EnsureBackbuffer() {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NOTIMPLEMENTED();
 }
 
 void SkiaOutputSurfaceImpl::DiscardBackbuffer() {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NOTIMPLEMENTED();
 }
 
@@ -213,7 +186,7 @@ void SkiaOutputSurfaceImpl::BindFramebuffer() {
 }
 
 void SkiaOutputSurfaceImpl::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NOTIMPLEMENTED();
 }
 
@@ -222,7 +195,7 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
                                     const gfx::ColorSpace& color_space,
                                     bool has_alpha,
                                     bool use_stencil) {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   recorder_ = nullptr;
   SkSurfaceCharacterization* characterization = nullptr;
@@ -241,8 +214,10 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
   }
 
   auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
-  auto callback = base::BindOnce(&SkiaOutputSurfaceImpl::ReshapeOnGpuThread,
-                                 base::Unretained(this), size,
+  // impl_on_gpu_ is released on the GPU thread by a posted task from
+  // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
+  auto callback = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::Reshape,
+                                 base::Unretained(impl_on_gpu_.get()), size,
                                  device_scale_factor, color_space, has_alpha,
                                  use_stencil, characterization, event.get());
   gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
@@ -258,14 +233,14 @@ void SkiaOutputSurfaceImpl::SwapBuffers(OutputSurfaceFrame frame) {
 }
 
 uint32_t SkiaOutputSurfaceImpl::GetFramebufferCopyTextureFormat() {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   return GL_RGB;
 }
 
 OverlayCandidateValidator* SkiaOutputSurfaceImpl::GetOverlayCandidateValidator()
     const {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return nullptr;
 }
 
@@ -274,35 +249,35 @@ bool SkiaOutputSurfaceImpl::IsDisplayedAsOverlayPlane() const {
 }
 
 unsigned SkiaOutputSurfaceImpl::GetOverlayTextureId() const {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return 0;
 }
 
 gfx::BufferFormat SkiaOutputSurfaceImpl::GetOverlayBufferFormat() const {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return gfx::BufferFormat::RGBX_8888;
 }
 
 bool SkiaOutputSurfaceImpl::HasExternalStencilTest() const {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   return false;
 }
 
 void SkiaOutputSurfaceImpl::ApplyExternalStencil() {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 #if BUILDFLAG(ENABLE_VULKAN)
 gpu::VulkanSurface* SkiaOutputSurfaceImpl::GetVulkanSurface() {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   return nullptr;
 }
 #endif
 
 SkCanvas* SkiaOutputSurfaceImpl::GetSkCanvasForCurrentFrame() {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(recorder_);
   DCHECK_EQ(current_render_pass_id_, 0u);
 
@@ -311,7 +286,7 @@ SkCanvas* SkiaOutputSurfaceImpl::GetSkCanvasForCurrentFrame() {
 
 sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImage(
     ResourceMetadata metadata) {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(recorder_);
 
   // Convert internal format from GLES2 to platform GL.
@@ -333,7 +308,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImage(
 sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
     std::vector<ResourceMetadata> metadatas,
     SkYUVColorSpace yuv_color_space) {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(recorder_);
 
   DCHECK(metadatas.size() == 2 || metadatas.size() == 3);
@@ -355,21 +330,24 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
 
 gpu::SyncToken SkiaOutputSurfaceImpl::SkiaSwapBuffers(
     OutputSurfaceFrame frame) {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(recorder_);
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::VIZ_OUTPUT_SURFACE,
-                            command_buffer_id_, ++sync_fence_release_);
+                            impl_on_gpu_->command_buffer_id(),
+                            ++sync_fence_release_);
   sync_token.SetVerifyFlush();
 
   auto ddl = recorder_->detach();
   DCHECK(ddl);
   RecreateRecorder();
   auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
-  auto callback =
-      base::BindOnce(&SkiaOutputSurfaceImpl::SwapBuffersOnGpuThread,
-                     base::Unretained(this), std::move(frame), std::move(ddl),
-                     std::move(yuv_resource_metadatas_), sync_fence_release_);
+  // impl_on_gpu_ is released on the GPU thread by a posted task from
+  // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
+  auto callback = base::BindOnce(
+      &SkiaOutputSurfaceImplOnGpu::SwapBuffers,
+      base::Unretained(impl_on_gpu_.get()), std::move(frame), std::move(ddl),
+      std::move(yuv_resource_metadatas_), sync_fence_release_);
   gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
       sequence_id, std::move(callback), std::move(resource_sync_tokens_)));
   return sync_token;
@@ -380,7 +358,7 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
     const gfx::Size& surface_size,
     ResourceFormat format,
     bool mipmap) {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(gpu_service_->gr_context());
   DCHECK(!current_render_pass_id_);
   DCHECK(!offscreen_surface_recorder_);
@@ -416,27 +394,30 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
 }
 
 gpu::SyncToken SkiaOutputSurfaceImpl::FinishPaintRenderPass() {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(gpu_service_->gr_context());
   DCHECK(current_render_pass_id_);
   DCHECK(offscreen_surface_recorder_);
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::VIZ_OUTPUT_SURFACE,
-                            command_buffer_id_, ++sync_fence_release_);
+                            impl_on_gpu_->command_buffer_id(),
+                            ++sync_fence_release_);
+  sync_token.SetVerifyFlush();
 
   auto ddl = offscreen_surface_recorder_->detach();
   offscreen_surface_recorder_ = nullptr;
   DCHECK(ddl);
 
   auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
+  // impl_on_gpu_ is released on the GPU thread by a posted task from
+  // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
   auto callback = base::BindOnce(
-      &SkiaOutputSurfaceImpl::FinishPaintRenderPassOnGpuThread,
-      base::Unretained(this), current_render_pass_id_, std::move(ddl),
-      std::move(yuv_resource_metadatas_), sync_fence_release_);
+      &SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass,
+      base::Unretained(impl_on_gpu_.get()), current_render_pass_id_,
+      std::move(ddl), std::move(yuv_resource_metadatas_), sync_fence_release_);
   gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
       sequence_id, std::move(callback), std::move(resource_sync_tokens_)));
   current_render_pass_id_ = 0;
-  sync_token.SetVerifyFlush();
   return sync_token;
 }
 
@@ -445,7 +426,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromRenderPass(
     const gfx::Size& size,
     ResourceFormat format,
     bool mipmap) {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(recorder_);
 
   // Convert internal format from GLES2 to platform GL.
@@ -466,264 +447,37 @@ void SkiaOutputSurfaceImpl::RemoveRenderPassResource(
     std::vector<RenderPassId> ids) {
   DCHECK(!ids.empty());
   auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
-  auto callback = base::BindOnce(
-      &SkiaOutputSurfaceImpl::RemoveRenderPassResourceOnGpuThread,
-      base::Unretained(this), std::move(ids));
+  // impl_on_gpu_ is released on the GPU thread by a posted task from
+  // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
+  auto callback =
+      base::BindOnce(&SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource,
+                     base::Unretained(impl_on_gpu_.get()), std::move(ids));
   gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
       sequence_id, std::move(callback), std::vector<gpu::SyncToken>()));
 }
 
-void SkiaOutputSurfaceImpl::DidSwapBuffersComplete(
-    gpu::SwapBuffersCompleteParams params) {
-  DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
-  params.swap_response.swap_id = pending_swap_completed_ids_.front();
-  pending_swap_completed_ids_.pop_front();
-
-  client_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &SkiaOutputSurfaceImpl::DidSwapBuffersCompleteOnClientThread,
-          client_thread_weak_ptr_, params));
-}
-
-const gpu::gles2::FeatureInfo* SkiaOutputSurfaceImpl::GetFeatureInfo() const {
-  DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-const gpu::GpuPreferences& SkiaOutputSurfaceImpl::GetGpuPreferences() const {
-  DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
-  NOTIMPLEMENTED();
-  return gpu_preferences_;
-}
-
-void SkiaOutputSurfaceImpl::SetSnapshotRequestedCallback(
-    const base::Closure& callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
-  NOTIMPLEMENTED();
-}
-
-void SkiaOutputSurfaceImpl::UpdateVSyncParameters(base::TimeTicks timebase,
-                                                  base::TimeDelta interval) {
-  DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
-  DCHECK(!gl::IsPresentationCallbackEnabled());
-
-  client_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &SkiaOutputSurfaceImpl::UpdateVSyncParametersOnClientThread,
-          client_thread_weak_ptr_, timebase, interval));
-}
-
-void SkiaOutputSurfaceImpl::BufferPresented(
-    const gfx::PresentationFeedback& feedback) {
-  DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
-  DCHECK(gl::IsPresentationCallbackEnabled());
-  uint64_t swap_id = pending_presented_ids_.front();
-  pending_presented_ids_.pop_front();
-
-  client_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SkiaOutputSurfaceImpl::BufferPresentedOnClientThread,
-                     client_thread_weak_ptr_, swap_id, feedback));
-}
-
-void SkiaOutputSurfaceImpl::AddFilter(IPC::MessageFilter* message_filter) {
-  DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
-  NOTIMPLEMENTED();
-}
-
-int32_t SkiaOutputSurfaceImpl::GetRouteID() const {
-  DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
-  NOTIMPLEMENTED();
-  return 0;
-}
-
 void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event) {
-  DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
-
   base::ScopedClosureRunner scoped_runner(
       base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(event)));
-
-  sync_point_client_state_ =
-      gpu_service_->sync_point_manager()->CreateSyncPointClientState(
-          gpu::CommandBufferNamespace::VIZ_OUTPUT_SURFACE, command_buffer_id_,
-          gpu_service_->skia_output_surface_sequence_id());
-
-  surface_ = gpu::ImageTransportSurface::CreateNativeSurface(
-      gpu_thread_weak_ptr_factory_.GetWeakPtr(), surface_handle_,
-      gl::GLSurfaceFormat());
-  DCHECK(surface_);
-
-  if (!gpu_service_->CreateGrContextIfNecessary(surface_.get())) {
-    LOG(FATAL) << "Failed to create GrContext";
-    // TODO(penghuang): handle the failure.
-  }
-
-  DCHECK(gpu_service_->context_for_skia());
-  DCHECK(gpu_service_->gr_context());
-
-  if (!gpu_service_->context_for_skia()->MakeCurrent(surface_.get())) {
-    LOG(FATAL) << "Failed to make current.";
-    // TODO(penghuang): Handle the failure.
-  }
-
-  capabilities_.flipped_output_surface = surface_->FlipsVertically();
-
-  // Get stencil bits from the default frame buffer.
-  auto* current_gl = gpu_service_->context_for_skia()->GetCurrentGL();
-  const auto* version = current_gl->Version;
-  auto* api = current_gl->Api;
-  GLint stencil_bits = 0;
-  if (version->is_desktop_core_profile) {
-    api->glGetFramebufferAttachmentParameterivEXTFn(
-        GL_FRAMEBUFFER, GL_STENCIL, GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE,
-        &stencil_bits);
-  } else {
-    api->glGetIntegervFn(GL_STENCIL_BITS, &stencil_bits);
-  }
-
-  capabilities_.supports_stencil = stencil_bits > 0;
-}
-
-void SkiaOutputSurfaceImpl::DestroyOnGpuThread(base::WaitableEvent* event) {
-  DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
-
-  base::ScopedClosureRunner scoped_runner(
-      base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(event)));
-  gpu_thread_weak_ptr_factory_.InvalidateWeakPtrs();
-
-  // Destroy the surface with the context current, some surface destructors
-  // make GL calls.
-  if (!gpu_service_->context_for_skia()->MakeCurrent(surface_.get())) {
-    LOG(FATAL) << "Failed to make current.";
-    // TODO(penghuang): Handle the failure.
-  }
-  surface_ = nullptr;
-  sync_point_client_state_ = nullptr;
-}
-
-void SkiaOutputSurfaceImpl::ReshapeOnGpuThread(
-    const gfx::Size& size,
-    float device_scale_factor,
-    const gfx::ColorSpace& color_space,
-    bool has_alpha,
-    bool use_stencil,
-    SkSurfaceCharacterization* characterization,
-    base::WaitableEvent* event) {
-  DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
-
-  std::unique_ptr<base::ScopedClosureRunner> scoped_runner;
-  if (event) {
-    scoped_runner = std::make_unique<base::ScopedClosureRunner>(
-        base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(event)));
-  }
-
-  if (!gpu_service_->context_for_skia()->MakeCurrent(surface_.get())) {
-    LOG(FATAL) << "Failed to make current.";
-    // TODO(penghuang): Handle the failure.
-  }
-  gl::GLSurface::ColorSpace surface_color_space =
-      color_space == gfx::ColorSpace::CreateSCRGBLinear()
-          ? gl::GLSurface::ColorSpace::SCRGB_LINEAR
-          : gl::GLSurface::ColorSpace::UNSPECIFIED;
-  if (!surface_->Resize(size, device_scale_factor, surface_color_space,
-                        has_alpha)) {
-    LOG(FATAL) << "Failed to resize.";
-    // TODO(penghuang): Handle the failure.
-  }
-  DCHECK(gpu_service_->context_for_skia()->IsCurrent(surface_.get()));
-  DCHECK(gpu_service_->gr_context());
-
-  SkSurfaceProps surface_props =
-      SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
-
-  GrGLFramebufferInfo framebuffer_info;
-  framebuffer_info.fFBOID = 0;
-  const auto* version_info = gpu_service_->context_for_skia()->GetVersionInfo();
-  framebuffer_info.fFormat = version_info->is_es ? GL_BGRA8_EXT : GL_RGBA8;
-
-  GrBackendRenderTarget render_target(size.width(), size.height(), 0, 8,
-                                      framebuffer_info);
-
-  sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
-      gpu_service_->gr_context(), render_target, kBottomLeft_GrSurfaceOrigin,
-      kBGRA_8888_SkColorType, nullptr, &surface_props);
-  DCHECK(sk_surface_);
-
-  if (characterization) {
-    sk_surface_->characterize(characterization);
-    DCHECK(characterization->isValid());
-  }
-}
-
-void SkiaOutputSurfaceImpl::SwapBuffersOnGpuThread(
-    OutputSurfaceFrame frame,
-    std::unique_ptr<SkDeferredDisplayList> ddl,
-    std::vector<YUVResourceMetadata*> yuv_resource_metadatas,
-    uint64_t sync_fence_release) {
-  DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
-  DCHECK(ddl);
-  DCHECK(sk_surface_);
-
-  if (!gpu_service_->context_for_skia()->MakeCurrent(surface_.get())) {
-    LOG(FATAL) << "Failed to make current.";
-    // TODO(penghuang): Handle the failure.
-  }
-
-  PreprocessYUVResources(std::move(yuv_resource_metadatas));
-
-  sk_surface_->draw(ddl.get());
-  gpu_service_->gr_context()->flush();
-  OnSwapBuffers();
-  surface_->SwapBuffers(
-      base::BindRepeating([](const gfx::PresentationFeedback&) {}));
-  sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
-}
-
-void SkiaOutputSurfaceImpl::FinishPaintRenderPassOnGpuThread(
-    RenderPassId id,
-    std::unique_ptr<SkDeferredDisplayList> ddl,
-    std::vector<YUVResourceMetadata*> yuv_resource_metadatas,
-    uint64_t sync_fence_release) {
-  DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
-  DCHECK(ddl);
-
-  if (!gpu_service_->context_for_skia()->MakeCurrent(surface_.get())) {
-    LOG(FATAL) << "Failed to make current.";
-    // TODO(penghuang): Handle resize failure.
-  }
-
-  PreprocessYUVResources(std::move(yuv_resource_metadatas));
-
-  auto& surface = offscreen_surfaces_[id];
-  SkSurfaceCharacterization characterization;
-  // TODO(penghuang): Using characterization != ddl->characterization(), when
-  // the SkSurfaceCharacterization::operator!= is implemented in Skia.
-  if (!surface || !surface->characterize(&characterization) ||
-      characterization != ddl->characterization()) {
-    surface = SkSurface::MakeRenderTarget(
-        gpu_service_->gr_context(), ddl->characterization(), SkBudgeted::kNo);
-    DCHECK(surface);
-  }
-  surface->draw(ddl.get());
-  surface->flush();
-  sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
-}
-
-void SkiaOutputSurfaceImpl::RemoveRenderPassResourceOnGpuThread(
-    std::vector<RenderPassId> ids) {
-  DCHECK(!ids.empty());
-  for (const auto& id : ids) {
-    auto it = offscreen_surfaces_.find(id);
-    DCHECK(it != offscreen_surfaces_.end());
-    offscreen_surfaces_.erase(it);
-  }
+  auto did_swap_buffer_complete_callback = base::BindRepeating(
+      &SkiaOutputSurfaceImpl::DidSwapBuffersComplete, weak_ptr_);
+  auto update_vsync_parameters_callback = base::BindRepeating(
+      &SkiaOutputSurfaceImpl::UpdateVSyncParameters, weak_ptr_);
+  auto buffer_presented_callback =
+      base::BindRepeating(&SkiaOutputSurfaceImpl::BufferPresented, weak_ptr_);
+  impl_on_gpu_ = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
+      gpu_service_, surface_handle_,
+      CreateSafeCallback(client_thread_task_runner_,
+                         did_swap_buffer_complete_callback),
+      CreateSafeCallback(client_thread_task_runner_,
+                         update_vsync_parameters_callback),
+      CreateSafeCallback(client_thread_task_runner_,
+                         buffer_presented_callback));
+  capabilities_ = impl_on_gpu_->capabilities();
 }
 
 void SkiaOutputSurfaceImpl::RecreateRecorder() {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(characterization_.isValid());
   recorder_ =
       std::make_unique<SkDeferredDisplayListRecorder>(characterization_);
@@ -732,83 +486,9 @@ void SkiaOutputSurfaceImpl::RecreateRecorder() {
   recorder_->getCanvas();
 }
 
-void SkiaOutputSurfaceImpl::PreprocessYUVResources(
-    std::vector<YUVResourceMetadata*> yuv_resource_metadatas) {
-  DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
-
-  // Create SkImage for fullfilling YUV promise image, before drawing the ddl.
-  // TODO(penghuang): Remove the extra step when Skia supports drawing YUV
-  // textures directly.
-  auto* mailbox_manager = gpu_service_->mailbox_manager();
-  for (auto* yuv_metadata : yuv_resource_metadatas) {
-    const auto& metadatas = yuv_metadata->metadatas();
-    DCHECK(metadatas.size() == 2 || metadatas.size() == 3);
-    GrBackendTexture backend_textures[3];
-    size_t i = 0;
-    for (const auto& metadata : metadatas) {
-      auto* texture_base = mailbox_manager->ConsumeTexture(metadata.mailbox);
-      if (!texture_base)
-        break;
-      BindOrCopyTextureIfNecessary(texture_base);
-      GrGLTextureInfo texture_info;
-      texture_info.fTarget = texture_base->target();
-      texture_info.fID = texture_base->service_id();
-      texture_info.fFormat = *metadata.backend_format.getGLFormat();
-      backend_textures[i++] =
-          GrBackendTexture(metadata.size.width(), metadata.size.height(),
-                           GrMipMapped::kNo, texture_info);
-    }
-
-    if (i != metadatas.size())
-      continue;
-
-    sk_sp<SkImage> image;
-    if (metadatas.size() == 2) {
-      image = SkImage::MakeFromNV12TexturesCopy(
-          gpu_service_->gr_context(), yuv_metadata->yuv_color_space(),
-          backend_textures, kTopLeft_GrSurfaceOrigin,
-          nullptr /* image_color_space */);
-      DCHECK(image);
-    } else {
-      image = SkImage::MakeFromYUVTexturesCopy(
-          gpu_service_->gr_context(), yuv_metadata->yuv_color_space(),
-          backend_textures, kTopLeft_GrSurfaceOrigin,
-          nullptr /* image_color_space */);
-      DCHECK(image);
-    }
-    yuv_metadata->set_image(std::move(image));
-  }
-}
-
-void SkiaOutputSurfaceImpl::BindOrCopyTextureIfNecessary(
-    gpu::TextureBase* texture_base) {
-  DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
-  if (gpu_service_->gpu_preferences().use_passthrough_cmd_decoder)
-    return;
-
-  // If a texture created with non-passthrough command buffer and bind with
-  // an image, the Chrome will defer copying the image to the texture until
-  // the texture is used. It is for implementing low latency drawing and
-  // avoiding unnecessary texture copy. So we need check the texture image
-  // state, and bind or copy the image to the texture if necessary.
-  auto* texture = static_cast<gpu::gles2::Texture*>(texture_base);
-  gpu::gles2::Texture::ImageState image_state;
-  auto* image = texture->GetLevelImage(GL_TEXTURE_2D, 0, &image_state);
-  if (image && image_state == gpu::gles2::Texture::UNBOUND) {
-    glBindTexture(texture_base->target(), texture_base->service_id());
-    if (image->BindTexImage(texture_base->target())) {
-    } else {
-      texture->SetLevelImageState(texture_base->target(), 0,
-                                  gpu::gles2::Texture::COPIED);
-      if (!image->CopyTexImage(texture_base->target()))
-        LOG(ERROR) << "Failed to copy a gl image to texture.";
-    }
-  }
-}
-
-void SkiaOutputSurfaceImpl::DidSwapBuffersCompleteOnClientThread(
+void SkiaOutputSurfaceImpl::DidSwapBuffersComplete(
     gpu::SwapBuffersCompleteParams params) {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(client_);
 
   if (!params.texture_in_use_responses.empty())
@@ -818,10 +498,9 @@ void SkiaOutputSurfaceImpl::DidSwapBuffersCompleteOnClientThread(
   client_->DidReceiveSwapBuffersAck(params.swap_response.swap_id);
 }
 
-void SkiaOutputSurfaceImpl::UpdateVSyncParametersOnClientThread(
-    base::TimeTicks timebase,
-    base::TimeDelta interval) {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+void SkiaOutputSurfaceImpl::UpdateVSyncParameters(base::TimeTicks timebase,
+                                                  base::TimeDelta interval) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (synthetic_begin_frame_source_) {
     // TODO(brianderson): We should not be receiving 0 intervals.
@@ -831,67 +510,13 @@ void SkiaOutputSurfaceImpl::UpdateVSyncParametersOnClientThread(
   }
 }
 
-void SkiaOutputSurfaceImpl::BufferPresentedOnClientThread(
+void SkiaOutputSurfaceImpl::BufferPresented(
     uint64_t swap_id,
     const gfx::PresentationFeedback& feedback) {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(client_);
 
   client_->DidReceivePresentationFeedback(swap_id, feedback);
-}
-
-void SkiaOutputSurfaceImpl::OnPromiseTextureFullfill(
-    const ResourceMetadata& metadata,
-    GrBackendTexture* backend_texture) {
-  DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
-  auto* mailbox_manager = gpu_service_->mailbox_manager();
-  auto* texture_base = mailbox_manager->ConsumeTexture(metadata.mailbox);
-  if (!texture_base) {
-    DLOG(ERROR) << "Failed to full fill the promise texture.";
-    return;
-  }
-  BindOrCopyTextureIfNecessary(texture_base);
-  GrGLTextureInfo texture_info;
-  texture_info.fTarget = texture_base->target();
-  texture_info.fID = texture_base->service_id();
-  texture_info.fFormat = *metadata.backend_format.getGLFormat();
-  *backend_texture =
-      GrBackendTexture(metadata.size.width(), metadata.size.height(),
-                       metadata.mip_mapped, texture_info);
-}
-
-void SkiaOutputSurfaceImpl::OnPromiseTextureFullfill(
-    const YUVResourceMetadata& yuv_metadata,
-    GrBackendTexture* backend_texture) {
-  DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
-
-  if (yuv_metadata.image())
-    *backend_texture = yuv_metadata.image()->getBackendTexture(true);
-  DLOG_IF(ERROR, !backend_texture->isValid())
-      << "Failed to full fill the promise texture from yuv resources.";
-}
-
-void SkiaOutputSurfaceImpl::OnPromiseTextureFullfill(
-    const RenderPassId id,
-    GrBackendTexture* backend_texture) {
-  auto it = offscreen_surfaces_.find(id);
-  DCHECK(it != offscreen_surfaces_.end());
-  sk_sp<SkSurface>& surface = it->second;
-  *backend_texture =
-      surface->getBackendTexture(SkSurface::kFlushRead_BackendHandleAccess);
-  DLOG_IF(ERROR, !backend_texture->isValid())
-      << "Failed to full fill the promise texture created from RenderPassId:"
-      << id;
-}
-
-void SkiaOutputSurfaceImpl::OnSwapBuffers() {
-  uint64_t swap_id = swap_id_++;
-  pending_swap_completed_ids_.push_back(swap_id);
-
-  // Only push to |pending_presented_ids_| if presentation callbacks
-  // are enabled, otherwise these will never be popped.
-  if (gl::IsPresentationCallbackEnabled())
-    pending_presented_ids_.push_back(swap_id);
 }
 
 }  // namespace viz

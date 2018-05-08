@@ -105,6 +105,8 @@ viz_component("service") {
     "display_embedder/server_shared_bitmap_manager.h",
     "display_embedder/skia_output_surface_impl.cc",
     "display_embedder/skia_output_surface_impl.h",
+    "display_embedder/skia_output_surface_impl_on_gpu.cc",
+    "display_embedder/skia_output_surface_impl_on_gpu.h",
     "display_embedder/software_output_surface.cc",
     "display_embedder/software_output_surface.h",
     "display_embedder/viz_process_context_provider.cc",
