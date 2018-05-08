@@ -250,11 +250,13 @@ void VrTestContext::HandleInput(ui::Event* event) {
       case ui::DomCode::US_T:
         touching_touchpad_ = !touching_touchpad_;
         break;
-      case ui::DomCode::US_Q:
+      case ui::DomCode::US_Q: {
+        auto mode = model_->active_modal_prompt_type;
         model_->active_modal_prompt_type =
-            kModalPromptTypeGenericUnsupportedFeature;
+            static_cast<ModalPromptType>((mode + 1) % kNumModalPromptTypes);
         model_->push_mode(kModeModalPrompt);
         break;
+      }
       case ui::DomCode::US_L:
         model_->standalone_vr_device = !model_->standalone_vr_device;
         break;

@@ -140,7 +140,6 @@ static constexpr float kTimeoutMessageLayoutGapDMM = 0.024f;
 static constexpr float kTimeoutMessageIconWidthDMM = 0.056f;
 static constexpr float kTimeoutMessageIconHeightDMM = 0.056f;
 static constexpr float kTimeoutMessageTextFontHeightDMM = 0.022f;
-static constexpr float kTimeoutMessageTextHeightDMM = 0.056f;
 static constexpr float kTimeoutMessageTextWidthDMM = 0.4f;
 
 static constexpr float kTimeoutButtonDepthOffset = -0.1f;
@@ -148,7 +147,6 @@ static constexpr float kTimeoutButtonRotationRad = kUrlBarRotationRad;
 static constexpr float kWebVrTimeoutMessageButtonDiameterDMM = 0.096f;
 
 static constexpr float kTimeoutButtonTextWidthDMM = 0.058f;
-static constexpr float kTimeoutButtonTextHeightDMM = 0.024f;
 static constexpr float kTimeoutButtonTextVerticalOffsetDMM = 0.024f;
 
 static constexpr float kHostedUiHeightRatio = 0.6f;
@@ -210,15 +208,6 @@ static constexpr float kKeyboardDistance = 2.2f;
 static constexpr float kKeyboardVerticalOffsetDMM = -0.45f;
 static constexpr float kKeyboardWebInputOffset = 1.2f;
 
-static constexpr float kSnackbarDistance = 1.5f;
-static constexpr float kSnackbarAngle = -gfx::DegToRad(34.0f);
-static constexpr float kSnackbarPaddingDMM = 0.032f;
-static constexpr float kSnackbarIconWidthDMM = 0.034f;
-static constexpr float kSnackbarFontHeightDMM = 0.024f;
-static constexpr float kSnackbarHeightDMM = 0.08f;
-static constexpr float kSnackbarMoveInAngle = -base::kPiFloat / 10;
-static constexpr int kSnackbarTransitionDurationMs = 300;
-
 static constexpr float kControllerLabelSpacerSize = 0.025f;
 static constexpr float kControllerLabelLayoutMargin = -0.005f;
 static constexpr float kControllerLabelCalloutWidth = 0.02f;
@@ -262,11 +251,19 @@ static constexpr float kWebVrPermissionOffsetFinal = 0.0f;
 static constexpr int kWebVrPermissionOffsetMs = 250;
 static constexpr int kWebVrPermissionAnimationDurationMs = 750;
 
-static constexpr float kPromptWidthDMM = 0.63f;
-static constexpr float kPromptHeightDMM = 0.218f;
 static constexpr float kPromptVerticalOffsetDMM = -0.1f;
 static constexpr float kPromptShadowOffsetDMM = 0.1f;
 static constexpr float kPromptDistance = 2.4f;
+static constexpr float kPromptPadding = 0.028f;
+static constexpr float kPromptCornerRadius = 0.006f;
+static constexpr float kPromptTextWidth = 0.522f;
+static constexpr float kPromptFontSize = 0.028f;
+static constexpr float kPromptIconSize = 0.042f;
+static constexpr float kPromptButtonCornerRadius = 0.0035f;
+static constexpr float kPromptIconTextGap = 0.010f;
+static constexpr float kPromptMessageButtonGap = 0.056f;
+static constexpr float kPromptButtonTextSize = 0.024f;
+static constexpr float kPromptButtonGap = 0.014f;
 
 static constexpr float kRepositionCursorBackgroundSize = 1.85f;
 static constexpr float kRepositionCursorSize = 1.5f;

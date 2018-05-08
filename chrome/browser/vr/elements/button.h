@@ -76,6 +76,8 @@ class Button : public UiElement {
   void HandleButtonDown();
   void HandleButtonUp();
 
+  virtual void OnSetColors(const ButtonColors& colors);
+
   const Sounds& GetSounds() const override;
 
   bool down_ = false;

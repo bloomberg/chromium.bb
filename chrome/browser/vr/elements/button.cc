@@ -108,9 +108,13 @@ void Button::HandleButtonUp() {
     click_handler_.Run();
 }
 
+void Button::OnSetColors(const ButtonColors& colors) {}
+
 void Button::OnStateUpdated() {
   pressed_ = hovered_ ? down_ : false;
   background_->SetColor(colors_.GetBackgroundColor(hovered_, pressed_));
+
+  OnSetColors(colors_);
 
   if (hover_offset_ == 0.0f)
     return;
@@ -136,7 +140,9 @@ void Button::OnSetName() {
 }
 
 void Button::OnSetSize(const gfx::SizeF& size) {
-  background_->SetSize(size.width(), size.height());
+  if (!background_->contributes_to_parent_bounds()) {
+    background_->SetSize(size.width(), size.height());
+  }
   hit_plane_->SetSize(size.width(), size.height());
 }
 

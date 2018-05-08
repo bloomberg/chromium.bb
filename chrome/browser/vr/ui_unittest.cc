@@ -13,7 +13,6 @@
 #include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/disc_button.h"
 #include "chrome/browser/vr/elements/indicator_spec.h"
-#include "chrome/browser/vr/elements/prompt.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/repositioner.h"
 #include "chrome/browser/vr/elements/ui_element.h"
@@ -545,13 +544,12 @@ TEST_F(UiTest, ClickingOmniboxTriggersUnsupportedMode) {
   auto* omnibox = scene_->GetUiElementByName(kUrlBarOriginRegion);
   EXPECT_CALL(*browser_,
               OnUnsupportedMode(UiUnsupportedMode::kNeedsKeyboardUpdate));
-  omnibox->OnHoverEnter({0.5, 0.5});
-  omnibox->OnButtonUp({0.5, 0.5});
+  ClickElement(omnibox);
   ui_->ShowExitVrPrompt(UiUnsupportedMode::kNeedsKeyboardUpdate);
   OnBeginFrame();
   EXPECT_EQ(model_->active_modal_prompt_type,
             ModalPromptType::kModalPromptTypeUpdateKeyboard);
-  EXPECT_TRUE(scene_->GetUiElementByName(kUpdateKeyboardPrompt)->IsVisible());
+  EXPECT_TRUE(scene_->GetUiElementByName(kExitPrompt)->IsVisible());
 }
 
 TEST_F(UiTest, WebInputEditingTriggersUnsupportedMode) {
@@ -568,7 +566,7 @@ TEST_F(UiTest, WebInputEditingTriggersUnsupportedMode) {
   OnBeginFrame();
   EXPECT_EQ(model_->active_modal_prompt_type,
             ModalPromptType::kModalPromptTypeUpdateKeyboard);
-  EXPECT_TRUE(scene_->GetUiElementByName(kUpdateKeyboardPrompt)->IsVisible());
+  EXPECT_TRUE(scene_->GetUiElementByName(kExitPrompt)->IsVisible());
 }
 
 TEST_F(UiTest, ExitWebInputEditingOnAppButtonClick) {
@@ -609,8 +607,9 @@ TEST_F(UiTest, PrimaryButtonClickTriggersOnExitPrompt) {
   EXPECT_CALL(*browser_,
               OnExitVrPromptResult(ExitVrPromptChoice::CHOICE_STAY,
                                    UiUnsupportedMode::kUnhandledPageInfo));
-  static_cast<Prompt*>(scene_->GetUiElementByName(kExitPrompt))
-      ->ClickPrimaryButtonForTesting();
+  auto* prompt = scene_->GetUiElementByName(kExitPrompt);
+  auto* button = prompt->GetDescendantByType(kTypePromptPrimaryButton);
+  ClickElement(button);
   VerifyOnlyElementsVisible("Prompt cleared", kElementsVisibleInBrowsing);
 }
 
@@ -627,8 +626,9 @@ TEST_F(UiTest, SecondaryButtonClickTriggersOnExitPrompt) {
               OnExitVrPromptResult(ExitVrPromptChoice::CHOICE_EXIT,
                                    UiUnsupportedMode::kUnhandledPageInfo));
 
-  static_cast<Prompt*>(scene_->GetUiElementByName(kExitPrompt))
-      ->ClickSecondaryButtonForTesting();
+  auto* prompt = scene_->GetUiElementByName(kExitPrompt);
+  auto* button = prompt->GetDescendantByType(kTypePromptSecondaryButton);
+  ClickElement(button);
   VerifyOnlyElementsVisible("Prompt cleared", kElementsVisibleInBrowsing);
 }
 
@@ -971,9 +971,7 @@ TEST_F(UiTest, OmniboxSuggestionNavigates) {
   EXPECT_CALL(*browser_,
               Navigate(gurl, NavigationMethod::kOmniboxSuggestionSelected))
       .Times(1);
-  suggestion->OnHoverEnter({0, 0});
-  suggestion->OnButtonDown({0, 0});
-  suggestion->OnButtonUp({0, 0});
+  ClickElement(suggestion);
 }
 
 TEST_F(UiTest, ControllerQuiescence) {

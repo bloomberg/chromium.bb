@@ -22,6 +22,8 @@ UiUnsupportedMode GetReasonForPrompt(ModalPromptType prompt) {
       return UiUnsupportedMode::kNeedsKeyboardUpdate;
     case kModalPromptTypeNone:
       return UiUnsupportedMode::kCount;
+    case kNumModalPromptTypes:
+      break;
   }
   NOTREACHED();
   return UiUnsupportedMode::kCount;

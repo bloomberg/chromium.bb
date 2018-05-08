@@ -106,6 +106,8 @@ class UiTest : public testing::Test {
 
   void GetBackgroundColor(SkColor* background_color) const;
 
+  void ClickElement(UiElement* element);
+
   std::unique_ptr<Ui> ui_;
   std::unique_ptr<MockUiBrowserInterface> browser_;
   MockContentInputDelegate* content_input_delegate_ = nullptr;
