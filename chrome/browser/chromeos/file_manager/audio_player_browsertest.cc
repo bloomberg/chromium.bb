@@ -4,11 +4,22 @@
 
 #include "chrome/browser/chromeos/file_manager/file_manager_browsertest_base.h"
 
+#include "media/base/media_switches.h"
+
 namespace file_manager {
+
+static constexpr bool kUseFakeAudioLayer = true;
 
 template <GuestMode MODE>
 class AudioPlayerBrowserTestBase : public FileManagerBrowserTestBase {
  public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    if (kUseFakeAudioLayer)
+      command_line->AppendSwitch(switches::kDisableAudioOutput);
+
+    FileManagerBrowserTestBase::SetUpCommandLine(command_line);
+  }
+
   GuestMode GetGuestMode() const override { return MODE; }
 
   const char* GetTestCaseName() const override {
