@@ -358,9 +358,8 @@ class ArcBluetoothBridge
   void OnGattConnected(
       mojom::BluetoothAddressPtr addr,
       std::unique_ptr<device::BluetoothGattConnection> connection);
-  void OnGattConnectError(
-      mojom::BluetoothAddressPtr addr,
-      device::BluetoothDevice::ConnectErrorCode error_code) const;
+  void OnGattConnectError(mojom::BluetoothAddressPtr addr,
+                          device::BluetoothDevice::ConnectErrorCode error_code);
   void OnGattDisconnected(mojom::BluetoothAddressPtr addr);
 
   void OnStartLEListenDone(GattStatusCallback callback,
@@ -528,14 +527,25 @@ class ArcBluetoothBridge
   std::unordered_map<int32_t, int32_t> last_characteristic_;
   // Monotonically increasing value to use as handle to give to Android side.
   int32_t gatt_server_attribute_next_handle_ = 0;
-  // Keeps track of all devices which initiated a GATT connection to us.
-  std::unordered_set<std::string> gatt_connection_cache_;
-  // Map of device address to GATT connection objects for connections we
-  // have made. We need to hang on to these as long as the connection is
-  // active since their destructors will drop the connections otherwise.
-  std::unordered_map<std::string,
-                     std::unique_ptr<device::BluetoothGattConnection>>
-      gatt_connections_;
+
+  // For established connection from remote device, this is { CONNECTED, null }.
+  // For ongoing connection to remote device, this is { CONNECTING, null }.
+  // For established connection to remote device, this is { CONNECTED, ptr }.
+  struct GattConnection {
+    enum class ConnectionState { CONNECTING, CONNECTED } state;
+    std::unique_ptr<device::BluetoothGattConnection> connection;
+    GattConnection(ConnectionState state,
+                   std::unique_ptr<device::BluetoothGattConnection> connection);
+    GattConnection();
+    ~GattConnection();
+    GattConnection(GattConnection&&);
+    GattConnection& operator=(GattConnection&&);
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(GattConnection);
+  };
+  std::unordered_map<std::string, GattConnection> gatt_connections_;
+
   // Timer to turn discovery off.
   base::OneShotTimer discovery_off_timer_;
   // Timer to turn adapter discoverable off.
