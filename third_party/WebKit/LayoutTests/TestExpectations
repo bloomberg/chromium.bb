@@ -4609,6 +4609,7 @@ crbug.com/828866 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConn
 
 # WebRTC codec tests - software H.264 not present on webkit bot family
 crbug.com/840659 [ Win Linux Mac10.10 Mac10.11 ] external/wpt/webrtc/protocol/video-codecs.html [ Pass Failure ]
+crbug.com/840659 [ Win Linux Mac10.10 Mac10.11 ] virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/protocol/video-codecs.html [ Pass Failure ]
 
 # Sheriff 2018-04-06
 crbug.com/829921 external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Pass Timeout ]
