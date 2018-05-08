@@ -351,6 +351,7 @@ jumbo_source_set("unit_tests") {
     "frame_caret_test.cc",
     "frame_selection_test.cc",
     "granularity_strategy_test.cc",
+    "hit_testing_bidi_test.cc",
     "ime/ime_text_span_test.cc",
     "ime/input_method_controller_test.cc",
     "inline_box_position_test.cc",
