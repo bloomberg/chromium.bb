@@ -145,19 +145,75 @@ enum PrintDocumentTypeBuckets {
   PRINT_DOCUMENT_TYPE_BUCKET_BOUNDARY
 };
 
-void ReportUserActionHistogram(enum UserActionBuckets event) {
+void ReportUserActionHistogram(UserActionBuckets event) {
   UMA_HISTOGRAM_ENUMERATION("PrintPreview.UserAction", event,
                             USERACTION_BUCKET_BOUNDARY);
 }
 
-void ReportPrintSettingHistogram(enum PrintSettingsBuckets setting) {
+void ReportPrintSettingHistogram(PrintSettingsBuckets setting) {
   UMA_HISTOGRAM_ENUMERATION("PrintPreview.PrintSettings", setting,
                             PRINT_SETTINGS_BUCKET_BOUNDARY);
 }
 
-void ReportPrintDocumentTypeHistogram(enum PrintDocumentTypeBuckets doctype) {
+void ReportPrintDocumentTypeHistogram(PrintDocumentTypeBuckets doctype) {
   UMA_HISTOGRAM_ENUMERATION("PrintPreview.PrintDocumentType", doctype,
                             PRINT_DOCUMENT_TYPE_BUCKET_BOUNDARY);
+}
+
+bool ReportPageCountHistogram(UserActionBuckets user_action, int page_count) {
+  switch (user_action) {
+    case PRINT_TO_PRINTER:
+      UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPrinter", page_count);
+      return true;
+    case PRINT_TO_PDF:
+      UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPDF", page_count);
+      return true;
+    case FALLBACK_TO_ADVANCED_SETTINGS_DIALOG:
+      UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.SystemDialog", page_count);
+      return true;
+    case PRINT_WITH_CLOUD_PRINT:
+      UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToCloudPrint",
+                           page_count);
+      return true;
+    case PRINT_WITH_PRIVET:
+      UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintWithPrivet",
+                           page_count);
+      return true;
+    case PRINT_WITH_EXTENSION:
+      UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintWithExtension",
+                           page_count);
+      return true;
+    case OPEN_IN_MAC_PREVIEW:
+      UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.OpenInMacPreview",
+                           page_count);
+      return true;
+    default:
+      return false;
+  }
+}
+
+PrinterType GetPrinterTypeForUserAction(UserActionBuckets user_action) {
+  switch (user_action) {
+    case PRINT_WITH_PRIVET:
+      return PrinterType::kPrivetPrinter;
+    case PRINT_WITH_EXTENSION:
+      return PrinterType::kExtensionPrinter;
+    case PRINT_TO_PDF:
+      return PrinterType::kPdfPrinter;
+    case PRINT_TO_PRINTER:
+    case FALLBACK_TO_ADVANCED_SETTINGS_DIALOG:
+    case OPEN_IN_MAC_PREVIEW:
+      return PrinterType::kLocalPrinter;
+    default:
+      NOTREACHED();
+      return PrinterType::kLocalPrinter;
+  }
+}
+
+base::Value GetErrorValue(UserActionBuckets user_action,
+                          base::StringPiece description) {
+  return user_action == PRINT_WITH_PRIVET ? base::Value(-1)
+                                          : base::Value(description);
 }
 
 // Dictionary Fields for Print Preview initial settings. Keep in sync with
@@ -298,6 +354,30 @@ void ReportPrintSettingsStats(const base::DictionaryValue& settings) {
                           &rasterize) && rasterize) {
     ReportPrintSettingHistogram(PRINT_AS_IMAGE);
   }
+}
+
+UserActionBuckets DetermineUserAction(const base::DictionaryValue& settings) {
+  bool value = false;
+#if defined(OS_MACOSX)
+  value = settings.HasKey(printing::kSettingOpenPDFInPreview);
+#endif
+  if (value)
+    return OPEN_IN_MAC_PREVIEW;
+  if (settings.HasKey(printing::kSettingCloudPrintId))
+    return PRINT_WITH_CLOUD_PRINT;
+  settings.GetBoolean(printing::kSettingPrintWithPrivet, &value);
+  if (value)
+    return PRINT_WITH_PRIVET;
+  settings.GetBoolean(printing::kSettingPrintWithExtension, &value);
+  if (value)
+    return PRINT_WITH_EXTENSION;
+  settings.GetBoolean(printing::kSettingPrintToPDF, &value);
+  if (value)
+    return PRINT_TO_PDF;
+  settings.GetBoolean(printing::kSettingShowSystemDialog, &value);
+  if (value)
+    return FALLBACK_TO_ADVANCED_SETTINGS_DIALOG;
+  return PRINT_TO_PRINTER;
 }
 
 base::LazyInstance<printing::StickySettings>::DestructorAtExit
@@ -641,64 +721,14 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     return;
   }
 
-  ReportPrintSettingsStats(*settings);
-
-  // Report whether the user printed a PDF or an HTML document.
-  ReportPrintDocumentTypeHistogram(print_preview_ui()->source_is_modifiable() ?
-                                   HTML_DOCUMENT : PDF_DOCUMENT);
-
-  bool print_to_pdf = false;
-  bool is_cloud_printer = false;
-  bool print_with_privet = false;
-  bool print_with_extension = false;
-  bool show_system_dialog = false;
-  bool open_pdf_in_preview = false;
-#if defined(OS_MACOSX)
-  open_pdf_in_preview = settings->HasKey(printing::kSettingOpenPDFInPreview);
-#endif
-
-  if (!open_pdf_in_preview) {
-    settings->GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf);
-    settings->GetBoolean(printing::kSettingPrintWithPrivet, &print_with_privet);
-    settings->GetBoolean(printing::kSettingPrintWithExtension,
-                         &print_with_extension);
-    settings->GetBoolean(printing::kSettingShowSystemDialog,
-                         &show_system_dialog);
-    is_cloud_printer = settings->HasKey(printing::kSettingCloudPrintId);
-  }
+  const UserActionBuckets user_action = DetermineUserAction(*settings);
 
   int page_count = 0;
   if (!settings->GetInteger(printing::kSettingPreviewPageCount, &page_count) ||
       page_count <= 0) {
-    RejectJavascriptCallback(base::Value(callback_id), base::Value(-1));
+    RejectJavascriptCallback(base::Value(callback_id),
+                             GetErrorValue(user_action, "NO_PAGE_COUNT"));
     return;
-  }
-
-  if (open_pdf_in_preview) {
-    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.OpenInMacPreview", page_count);
-    ReportUserActionHistogram(OPEN_IN_MAC_PREVIEW);
-  } else if (is_cloud_printer) {
-    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToCloudPrint",
-                         page_count);
-    ReportUserActionHistogram(PRINT_WITH_CLOUD_PRINT);
-  } else if (print_with_privet) {
-#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintWithPrivet", page_count);
-    ReportUserActionHistogram(PRINT_WITH_PRIVET);
-#endif
-  } else if (print_with_extension) {
-    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintWithExtension",
-                         page_count);
-    ReportUserActionHistogram(PRINT_WITH_EXTENSION);
-  } else if (print_to_pdf) {
-    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPDF", page_count);
-    ReportUserActionHistogram(PRINT_TO_PDF);
-  } else if (show_system_dialog) {
-    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.SystemDialog", page_count);
-    ReportUserActionHistogram(FALLBACK_TO_ADVANCED_SETTINGS_DIALOG);
-  } else {
-    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPrinter", page_count);
-    ReportUserActionHistogram(PRINT_TO_PRINTER);
   }
 
   scoped_refptr<base::RefCountedMemory> data;
@@ -706,47 +736,51 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
   if (!data) {
     // Nothing to print, no preview available.
-    RejectJavascriptCallback(
-        base::Value(callback_id),
-        print_with_privet ? base::Value(-1) : base::Value("NO_DATA"));
+    RejectJavascriptCallback(base::Value(callback_id),
+                             GetErrorValue(user_action, "NO_DATA"));
     return;
   }
   DCHECK(data->size());
   DCHECK(data->front());
-
-  if (is_cloud_printer) {
-    // Does not send the title like the other printer handler types below,
-    // because JS already has the document title from the initial settings.
-    SendCloudPrintJob(callback_id, data.get());
-    return;
-  }
 
   std::string destination_id;
   std::string print_ticket;
   std::string capabilities;
   int width = 0;
   int height = 0;
-  if ((print_with_privet || print_with_extension) &&
-      (!settings->GetString(printing::kSettingDeviceName, &destination_id) ||
-       !settings->GetString(printing::kSettingTicket, &print_ticket) ||
-       !settings->GetString(printing::kSettingCapabilities, &capabilities) ||
-       !settings->GetInteger(printing::kSettingPageWidth, &width) ||
-       !settings->GetInteger(printing::kSettingPageHeight, &height) ||
-       width <= 0 || height <= 0)) {
+  if (user_action == PRINT_WITH_PRIVET || user_action == PRINT_WITH_EXTENSION) {
+    if (!settings->GetString(printing::kSettingDeviceName, &destination_id) ||
+        !settings->GetString(printing::kSettingTicket, &print_ticket) ||
+        !settings->GetString(printing::kSettingCapabilities, &capabilities) ||
+        !settings->GetInteger(printing::kSettingPageWidth, &width) ||
+        !settings->GetInteger(printing::kSettingPageHeight, &height) ||
+        width <= 0 || height <= 0) {
+      NOTREACHED();
+      RejectJavascriptCallback(base::Value(callback_id),
+                               GetErrorValue(user_action, "FAILED"));
+      return;
+    }
+  }
+
+  // After validating |settings|, record metrics.
+  ReportPrintSettingsStats(*settings);
+  ReportPrintDocumentTypeHistogram(print_preview_ui()->source_is_modifiable()
+                                       ? HTML_DOCUMENT
+                                       : PDF_DOCUMENT);
+  ReportUserActionHistogram(user_action);
+  if (!ReportPageCountHistogram(user_action, page_count)) {
     NOTREACHED();
-    RejectJavascriptCallback(
-        base::Value(callback_id),
-        print_with_privet ? base::Value(-1) : base::Value("FAILED"));
     return;
   }
 
-  PrinterType type = PrinterType::kLocalPrinter;
-  if (print_with_extension)
-    type = PrinterType::kExtensionPrinter;
-  else if (print_with_privet)
-    type = PrinterType::kPrivetPrinter;
-  else if (print_to_pdf)
-    type = PrinterType::kPdfPrinter;
+  if (user_action == PRINT_WITH_CLOUD_PRINT) {
+    // Does not send the title like the other printer handler types below,
+    // because JS already has the document title from the initial settings.
+    SendCloudPrintJob(callback_id, data.get());
+    return;
+  }
+
+  PrinterType type = GetPrinterTypeForUserAction(user_action);
   PrinterHandler* handler = GetPrinterHandler(type);
   handler->StartPrint(
       destination_id, capabilities, print_preview_ui()->initiator_title(),
