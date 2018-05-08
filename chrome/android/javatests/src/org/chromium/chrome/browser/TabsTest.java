@@ -36,11 +36,11 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChromePhone;
-import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
@@ -50,13 +50,14 @@ import org.chromium.chrome.browser.compositor.layouts.phone.stack.Stack;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 import org.chromium.chrome.browser.toolbar.ToolbarPhone;
@@ -155,7 +156,7 @@ public class TabsTest {
                 || mActivityTestRule.getName().equals("testIncognitoTabsNotRestoredAfterSwipe")) {
             return;
         }
-        mActivityTestRule.startMainActivityOnBlankPage();
+        mActivityTestRule.startMainActivityFromLauncher();
     }
 
 
@@ -1555,8 +1556,8 @@ public class TabsTest {
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
     public void testToolbarSwipeNextThenPrevTab() throws InterruptedException, TimeoutException {
-        ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), ContentUrlConstants.ABOUT_BLANK_URL, false);
+        ChromeTabUtils.newTabFromMenu(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
 
@@ -1577,10 +1578,8 @@ public class TabsTest {
     @RetryOnFailure
     public void testToolbarSwipeNextThenPrevTabIncognito()
             throws InterruptedException, TimeoutException {
-        ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), ContentUrlConstants.ABOUT_BLANK_URL, true);
-        ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), ContentUrlConstants.ABOUT_BLANK_URL, true);
+        mActivityTestRule.newIncognitoTabFromMenu();
+        mActivityTestRule.newIncognitoTabFromMenu();
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
 
@@ -1597,41 +1596,40 @@ public class TabsTest {
     private void runToolbarSideSwipeTestOnCurrentModel(ScrollDirection direction, int finalIndex,
             boolean expectsSelection) throws InterruptedException, TimeoutException {
         final CallbackHelper selectCallback = new CallbackHelper();
-        final ChromeTabbedActivity activity = mActivityTestRule.getActivity();
-        final int id = activity.getCurrentTabModel().getTabAt(finalIndex).getId();
-        final TabModelSelectorTabModelObserver observer = new TabModelSelectorTabModelObserver(
-                activity.getTabModelSelector()) {
+        final int id =
+                mActivityTestRule.getActivity().getCurrentTabModel().getTabAt(finalIndex).getId();
+        final TabModelObserver observer = new EmptyTabModelObserver() {
             @Override
             public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
                 if (tab.getId() == id) selectCallback.notifyCalled();
             }
         };
 
-        // Listen for changes in the layout to indicate the swipe has completed.
-        final CallbackHelper staticLayoutCallbackHelper = new CallbackHelper();
-        activity.getCompositorViewHolder().getLayoutManager().addSceneChangeObserver(
-                new SceneChangeObserver() {
-                    @Override
-                    public void onTabSelectionHinted(int tabId) {}
+        if (expectsSelection) {
+            ThreadUtils.runOnUiThreadBlocking(() -> {
+                TabModelSelector selector = mActivityTestRule.getActivity().getTabModelSelector();
+                for (TabModel tabModel : selector.getModels()) {
+                    tabModel.addObserver(observer);
+                }
+            });
+        }
 
-                    @Override
-                    public void onSceneChange(Layout layout) {
-                        if (layout instanceof StaticLayout) {
-                            staticLayoutCallbackHelper.notifyCalled();
-                        }
-                    }
-                });
-
-        int callCount = staticLayoutCallbackHelper.getCallCount();
         performToolbarSideSwipe(direction);
-        staticLayoutCallbackHelper.waitForCallback(callCount, 1);
-
-        if (expectsSelection) selectCallback.waitForCallback(0);
-        ThreadUtils.runOnUiThreadBlocking(() -> observer.destroy());
-
+        waitForStaticLayout();
         Assert.assertEquals("Index after toolbar side swipe is incorrect", finalIndex,
-                activity.getCurrentTabModel().index());
+                mActivityTestRule.getActivity().getCurrentTabModel().index());
+
+        if (expectsSelection) {
+            selectCallback.waitForCallback(0);
+            ThreadUtils.runOnUiThreadBlocking(() -> {
+                TabModelSelector selector = mActivityTestRule.getActivity().getTabModelSelector();
+                for (TabModel tabModel : selector.getModels()) {
+                    tabModel.removeObserver(observer);
+                }
+            });
+        }
     }
+
 
     private void performToolbarSideSwipe(ScrollDirection direction) {
         Assert.assertTrue("Unexpected direction for side swipe " + direction,
@@ -1651,6 +1649,21 @@ public class TabsTest {
         TouchCommon.dragStart(mActivityTestRule.getActivity(), fromX, y, downTime);
         TouchCommon.dragTo(mActivityTestRule.getActivity(), fromX, toX, y, y, stepCount, downTime);
         TouchCommon.dragEnd(mActivityTestRule.getActivity(), toX, y, downTime);
+    }
+
+    private void waitForStaticLayout() throws InterruptedException {
+        CriteriaHelper.pollUiThread(
+                new Criteria("Static Layout never selected after side swipe") {
+                    @Override
+                    public boolean isSatisfied() {
+                        CompositorViewHolder compositorViewHolder =
+                                (CompositorViewHolder) mActivityTestRule.getActivity().findViewById(
+                                        R.id.compositor_view_holder);
+                        LayoutManager layoutManager = compositorViewHolder.getLayoutManager();
+
+                        return layoutManager.getActiveLayout() instanceof StaticLayout;
+                    }
+                });
     }
 
     /**
