@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/safe_browsing/base_ui_manager.h"
+#include "components/safe_browsing/browser/referrer_chain_provider.h"
 #include "components/safe_browsing/browser/threat_details_cache.h"
 #include "components/safe_browsing/browser/threat_details_history.h"
 #include "components/safe_browsing/db/hit_report.h"
@@ -50,6 +51,9 @@ namespace {
 
 // An element ID indicating that an HTML Element has no parent.
 const int kElementIdNoParent = -1;
+
+// The number of user gestures to trace back for the referrer chain.
+const int kThreatDetailsUserGestureLimit = 2;
 
 typedef std::unordered_set<std::string> StringSet;
 // A set of HTTPS headers that are allowed to be collected. Contains both
@@ -272,11 +276,13 @@ class ThreatDetailsFactoryImpl : public ThreatDetailsFactory {
       const security_interstitials::UnsafeResource& unsafe_resource,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       history::HistoryService* history_service,
+      ReferrerChainProvider* referrer_chain_provider,
       bool trim_to_ad_tags,
       ThreatDetailsDoneCallback done_callback) override {
     return new ThreatDetails(ui_manager, web_contents, unsafe_resource,
                              url_loader_factory, history_service,
-                             trim_to_ad_tags, done_callback);
+                             referrer_chain_provider, trim_to_ad_tags,
+                             done_callback);
   }
 
  private:
@@ -298,15 +304,16 @@ ThreatDetails* ThreatDetails::NewThreatDetails(
     const UnsafeResource& resource,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     history::HistoryService* history_service,
+    ReferrerChainProvider* referrer_chain_provider,
     bool trim_to_ad_tags,
     ThreatDetailsDoneCallback done_callback) {
   // Set up the factory if this has not been done already (tests do that
   // before this method is called).
   if (!factory_)
     factory_ = g_threat_details_factory_impl.Pointer();
-  return factory_->CreateThreatDetails(ui_manager, web_contents, resource,
-                                       url_loader_factory, history_service,
-                                       trim_to_ad_tags, done_callback);
+  return factory_->CreateThreatDetails(
+      ui_manager, web_contents, resource, url_loader_factory, history_service,
+      referrer_chain_provider, trim_to_ad_tags, done_callback);
 }
 
 // Create a ThreatDetails for the given tab. Runs in the UI thread.
@@ -316,12 +323,14 @@ ThreatDetails::ThreatDetails(
     const UnsafeResource& resource,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     history::HistoryService* history_service,
+    ReferrerChainProvider* referrer_chain_provider,
     bool trim_to_ad_tags,
     ThreatDetailsDoneCallback done_callback)
     : content::WebContentsObserver(web_contents),
       url_loader_factory_(url_loader_factory),
       ui_manager_(ui_manager),
       resource_(resource),
+      referrer_chain_provider_(referrer_chain_provider),
       cache_result_(false),
       did_proceed_(false),
       num_visits_(0),
@@ -753,6 +762,9 @@ void ThreatDetails::OnCacheCollectionReady() {
   report_->mutable_client_properties()->set_url_api_type(
       GetUrlApiTypeForThreatSource(resource_.threat_source));
 
+  // Fill the referrer chain if applicable.
+  MaybeFillReferrerChain();
+
   // Send the report, using the SafeBrowsingService.
   std::string serialized;
   if (!report_->SerializeToString(&serialized)) {
@@ -778,6 +790,20 @@ void ThreatDetails::OnCacheCollectionReady() {
   ui_manager_->SendSerializedThreatDetails(serialized);
 
   AllDone();
+}
+
+void ThreatDetails::MaybeFillReferrerChain() {
+  if (!referrer_chain_provider_)
+    return;
+
+  if (!report_ ||
+      report_->type() != ClientSafeBrowsingReportRequest::URL_SUSPICIOUS) {
+    return;
+  }
+
+  referrer_chain_provider_->IdentifyReferrerChainByWebContents(
+      web_contents(), kThreatDetailsUserGestureLimit,
+      report_->mutable_referrer_chain());
 }
 
 void ThreatDetails::AllDone() {

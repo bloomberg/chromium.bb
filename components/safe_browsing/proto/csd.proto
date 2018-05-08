@@ -974,7 +974,7 @@ message DownloadMetadata {
 // A Detailed Safebrowsing Report from clients. Chrome safebrowsing reports are
 // only sent by Chrome users who have opted into extended Safe Browsing.
 // This proto is replacing ClientMalwareReportRequest.
-// Next tag: 19
+// Next tag: 24
 message ClientSafeBrowsingReportRequest {
   // Note: A lot of the "optional" fields would make sense to be
   // "required" instead.  However, having them as optional allows the
@@ -1109,6 +1109,12 @@ message ClientSafeBrowsingReportRequest {
   // False means user directly executed this download via download shelf or
   // other download UIs.
   optional bool show_download_in_folder = 18;
+
+  // If we can find the complete referrer chain, this field will contains URLs
+  // transitions from landing referrer to event in reverse chronological
+  // order, i.e. event url comes first in this list, and landing referrer
+  // comes last.
+  repeated ReferrerChainEntry referrer_chain = 23;
 }
 
 // An HTML Element on the page (eg: iframe, div, script, etc).

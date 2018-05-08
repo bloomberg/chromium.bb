@@ -93,8 +93,10 @@ bool CanSendReport(const SBErrorOptions& error_display_options,
 DataCollectorsContainer::DataCollectorsContainer() {}
 DataCollectorsContainer::~DataCollectorsContainer() {}
 
-TriggerManager::TriggerManager(BaseUIManager* ui_manager)
+TriggerManager::TriggerManager(BaseUIManager* ui_manager,
+                               ReferrerChainProvider* referrer_chain_provider)
     : ui_manager_(ui_manager),
+      referrer_chain_provider_(referrer_chain_provider),
       trigger_throttler_(new TriggerThrottler()),
       weak_factory_(this) {}
 
@@ -205,7 +207,7 @@ bool TriggerManager::StartCollectingThreatDetailsWithReason(
   collectors->threat_details =
       scoped_refptr<ThreatDetails>(ThreatDetails::NewThreatDetails(
           ui_manager_, web_contents, resource, url_loader_factory,
-          history_service, should_trim_threat_details,
+          history_service, referrer_chain_provider_, should_trim_threat_details,
           base::Bind(&TriggerManager::ThreatDetailsDone,
                      weak_factory_.GetWeakPtr())));
   return true;

@@ -253,11 +253,13 @@ class TestThreatDetailsFactory : public ThreatDetailsFactory {
       const security_interstitials::UnsafeResource& unsafe_resource,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       history::HistoryService* history_service,
+      ReferrerChainProvider* referrer_chain_provider,
       bool trim_to_ad_tags,
       ThreatDetailsDoneCallback done_callback) override {
     details_ = new ThreatDetails(delegate, web_contents, unsafe_resource,
                                  url_loader_factory, history_service,
-                                 trim_to_ad_tags, done_callback);
+                                 referrer_chain_provider, trim_to_ad_tags,
+                                 done_callback);
     return details_;
   }
 
