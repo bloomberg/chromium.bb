@@ -179,7 +179,7 @@ _lou_backTranslateWithTracing(const char *tableList, const widechar *inbuf, int 
 		cursorPosition = -1;
 	cursorStatus = 0;
 	mode = modex;
-	if (!(passbuf1 = _lou_allocMem(alloc_passbuf1, srcmax, destmax))) return 0;
+	if (!(passbuf1 = _lou_allocMem(alloc_passbuf, 0, srcmax, destmax))) return 0;
 	if (typebuf != NULL) memset(typebuf, '0', destmax);
 	if (spacebuf != NULL) memset(spacebuf, '*', destmax);
 	for (k = 0; k < srcmax; k++)
@@ -188,11 +188,11 @@ _lou_backTranslateWithTracing(const char *tableList, const widechar *inbuf, int 
 		else
 			passbuf1[k] = _lou_getDotsForChar(inbuf[k]);
 	passbuf1[srcmax] = _lou_getDotsForChar(' ');
-	if (!(srcMapping = _lou_allocMem(alloc_posMapping1, srcmax, destmax))) return 0;
+	if (!(srcMapping = _lou_allocMem(alloc_posMapping1, 0, srcmax, destmax))) return 0;
 	for (k = 0; k <= srcmax; k++) srcMapping[k] = k;
 	srcMapping[srcmax] = srcmax;
 	if (table->numPasses > 1 || table->corrections) {
-		if (!(passbuf2 = _lou_allocMem(alloc_passbuf2, srcmax, destmax))) return 0;
+		if (!(passbuf2 = _lou_allocMem(alloc_passbuf, 1, srcmax, destmax))) return 0;
 	}
 	appliedRulesCount = 0;
 	if (rules != NULL && rulesLen != NULL) {

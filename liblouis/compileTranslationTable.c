@@ -4730,13 +4730,10 @@ static unsigned char *destSpacing = NULL;
 static int sizeDestSpacing = 0;
 static formtype *typebuf = NULL;
 static unsigned int *wordBuffer = NULL;
-static unsigned int *emphasisBuffer = NULL;
-static unsigned int *transNoteBuffer = NULL;
+static EmphasisInfo *emphasisBuffer = NULL;
 static int sizeTypebuf = 0;
-static widechar *passbuf1 = NULL;
-static int sizePassbuf1 = 0;
-static widechar *passbuf2 = NULL;
-static int sizePassbuf2 = 0;
+static widechar *passbuf[MAXPASSBUF] = { NULL };
+static int sizePassbuf[MAXPASSBUF] = { 0 };
 static int *posMapping1 = NULL;
 static int sizePosMapping1 = 0;
 static int *posMapping2 = NULL;
@@ -4744,7 +4741,7 @@ static int sizePosMapping2 = 0;
 static int *posMapping3 = NULL;
 static int sizePosMapping3 = 0;
 void *EXPORT_CALL
-_lou_allocMem(AllocBuf buffer, int srcmax, int destmax) {
+_lou_allocMem(AllocBuf buffer, int index, int srcmax, int destmax) {
 	if (srcmax < 1024) srcmax = 1024;
 	if (destmax < 1024) destmax = 1024;
 	switch (buffer) {
@@ -4768,16 +4765,9 @@ _lou_allocMem(AllocBuf buffer, int srcmax, int destmax) {
 	case alloc_emphasisBuffer:
 
 		if (emphasisBuffer != NULL) free(emphasisBuffer);
-		emphasisBuffer = malloc((srcmax + 4) * sizeof(unsigned int));
+		emphasisBuffer = malloc((srcmax + 4) * sizeof(EmphasisInfo));
 		if (!emphasisBuffer) _lou_outOfMemory();
 		return emphasisBuffer;
-
-	case alloc_transNoteBuffer:
-
-		if (transNoteBuffer != NULL) free(transNoteBuffer);
-		transNoteBuffer = malloc((srcmax + 4) * sizeof(unsigned int));
-		if (!transNoteBuffer) _lou_outOfMemory();
-		return transNoteBuffer;
 
 	case alloc_destSpacing:
 		if (destmax > sizeDestSpacing) {
@@ -4787,22 +4777,18 @@ _lou_allocMem(AllocBuf buffer, int srcmax, int destmax) {
 			sizeDestSpacing = destmax;
 		}
 		return destSpacing;
-	case alloc_passbuf1:
-		if (destmax > sizePassbuf1) {
-			if (passbuf1 != NULL) free(passbuf1);
-			passbuf1 = malloc((destmax + 4) * CHARSIZE);
-			if (!passbuf1) _lou_outOfMemory();
-			sizePassbuf1 = destmax;
+	case alloc_passbuf:
+		if (index < 0 || index >= MAXPASSBUF) {
+			_lou_logMessage(LOG_FATAL, "Index out of bounds: %d\n", index);
+			exit(3);
 		}
-		return passbuf1;
-	case alloc_passbuf2:
-		if (destmax > sizePassbuf2) {
-			if (passbuf2 != NULL) free(passbuf2);
-			passbuf2 = malloc((destmax + 4) * CHARSIZE);
-			if (!passbuf2) _lou_outOfMemory();
-			sizePassbuf2 = destmax;
+		if (destmax > sizePassbuf[index]) {
+			if (passbuf[index] != NULL) free(passbuf[index]);
+			passbuf[index] = malloc((destmax + 4) * CHARSIZE);
+			if (!passbuf[index]) _lou_outOfMemory();
+			sizePassbuf[index] = destmax;
 		}
-		return passbuf2;
+		return passbuf[index];
 	case alloc_posMapping1: {
 		int mapSize;
 		if (srcmax >= destmax)
@@ -4875,18 +4861,18 @@ lou_free(void) {
 	wordBuffer = NULL;
 	if (emphasisBuffer != NULL) free(emphasisBuffer);
 	emphasisBuffer = NULL;
-	if (transNoteBuffer != NULL) free(transNoteBuffer);
-	transNoteBuffer = NULL;
 	sizeTypebuf = 0;
 	if (destSpacing != NULL) free(destSpacing);
 	destSpacing = NULL;
 	sizeDestSpacing = 0;
-	if (passbuf1 != NULL) free(passbuf1);
-	passbuf1 = NULL;
-	sizePassbuf1 = 0;
-	if (passbuf2 != NULL) free(passbuf2);
-	passbuf2 = NULL;
-	sizePassbuf2 = 0;
+	{
+		int k;
+		for (k = 0; k < MAXPASSBUF; k++) {
+			if (passbuf[k] != NULL) free(passbuf[k]);
+			passbuf[k] = NULL;
+			sizePassbuf[k] = 0;
+		}
+	}
 	if (posMapping1 != NULL) free(posMapping1);
 	posMapping1 = NULL;
 	sizePosMapping1 = 0;

@@ -118,7 +118,6 @@ yaml_error(yaml_event_type_t expected, yaml_event_t *event) {
 char *
 read_table_query(yaml_parser_t *parser, const char **table_file_name_check) {
 	yaml_event_t event;
-	int parse_error = 1;
 	char *query_as_string = malloc(sizeof(char) * MAXSTRING);
 	char *p = query_as_string;
 	query_as_string[0] = '\0';
