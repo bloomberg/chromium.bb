@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <memory>
 
+#include "base/debug/elf_reader_linux.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/format_macros.h"
@@ -14,6 +15,9 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/os_metrics.h"
+
+// Symbol with virtual address of the start of ELF header of the current binary.
+extern char __ehdr_start;
 
 namespace memory_instrumentation {
 
@@ -64,8 +68,9 @@ bool ParseSmapsHeader(const char* header_line, VmRegion* region) {
 
   if (sscanf(header_line, "%" SCNx64 "-%" SCNx64 " %4c %*s %*s %*s%4095[^\n]\n",
              &region->start_address, &end_addr, protection_flags,
-             mapped_file) != 4)
+             mapped_file) != 4) {
     return false;
+  }
 
   if (end_addr > region->start_address) {
     region->size_in_bytes = end_addr - region->start_address;
@@ -92,6 +97,19 @@ bool ParseSmapsHeader(const char* header_line, VmRegion* region) {
   region->mapped_file = mapped_file;
   base::TrimWhitespaceASCII(region->mapped_file, base::TRIM_ALL,
                             &region->mapped_file);
+
+  // Build ID is needed to symbolize heap profiles, and is generated only on
+  // official builds. Build ID is only added for the current library (chrome)
+  // since it is racy to read other libraries which can be unmapped any time.
+#if defined(OFFICIAL_BUILD)
+  uintptr_t addr = reinterpret_cast<uintptr_t>(&ParseSmapsHeader);
+  if (addr >= region->start_address && addr < end_addr) {
+    base::Optional<std::string> buildid =
+        base::debug::ReadElfBuildId(&__ehdr_start);
+    if (buildid)
+      region->module_debugid = buildid.value();
+  }
+#endif  // defined(OFFICIAL_BUILD)
 
   return res;
 }
