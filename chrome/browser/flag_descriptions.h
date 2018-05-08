@@ -1023,6 +1023,9 @@ extern const char kTouchDragDropDescription[];
 extern const char kTouchEventsName[];
 extern const char kTouchEventsDescription[];
 
+extern const char kTouchpadOverscrollHistoryNavigationName[];
+extern const char kTouchpadOverscrollHistoryNavigationDescription[];
+
 extern const char kTouchSelectionStrategyName[];
 extern const char kTouchSelectionStrategyDescription[];
 extern const char kTouchSelectionStrategyCharacter[];
