@@ -17,8 +17,8 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "ui/accessibility/ax_assistant_structure.h"
 #include "ui/accessibility/ax_tree_update.h"
-#include "ui/accessibility/platform/ax_snapshot_node_android_platform.h"
 
 namespace arc {
 
@@ -63,9 +63,11 @@ class ArcVoiceInteractionArcHomeServiceTest : public InProcessBrowserTest {
                        base::Unretained(&waiter)),
         ui::kAXModeComplete);
     waiter.Wait();
-    auto node = ui::AXSnapshotNodeAndroid::Create(waiter.snapshot(), false);
+    std::unique_ptr<ui::AssistantTree> tree =
+        ui::CreateAssistantTree(waiter.snapshot(), false);
+
     return ArcVoiceInteractionArcHomeService::
-        CreateVoiceInteractionStructureForTesting(*node);
+        CreateVoiceInteractionStructureForTesting(*tree, *tree->nodes.front());
   }
 
  private:

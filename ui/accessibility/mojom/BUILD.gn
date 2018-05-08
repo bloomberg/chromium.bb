@@ -6,6 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
   sources = [
+    "ax_assistant_structure.mojom",
     "ax_node_data.mojom",
     "ax_tree_data.mojom",
     "ax_tree_update.mojom",
@@ -16,5 +17,6 @@ mojom("mojom") {
     "//ui/accessibility:ax_enums_mojo",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
+    "//ui/gfx/range/mojo",
   ]
 }
