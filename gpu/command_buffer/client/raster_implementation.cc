@@ -377,18 +377,19 @@ void RasterImplementation::SetSnapshotRequested() {
 
 bool RasterImplementation::ThreadSafeShallowLockDiscardableTexture(
     uint32_t texture_id) {
-  return discardable_texture_manager_.TextureIsValid(texture_id) &&
-         discardable_texture_manager_.LockTexture(texture_id);
+  NOTREACHED();
+  return false;
 }
 
 void RasterImplementation::CompleteLockDiscardableTexureOnContextThread(
     uint32_t texture_id) {
-  helper_->LockDiscardableTextureCHROMIUM(texture_id);
+  NOTREACHED();
 }
 
 bool RasterImplementation::ThreadsafeDiscardableTextureIsDeletedForTracing(
     uint32_t texture_id) {
-  return discardable_texture_manager_.TextureIsDeletedForTracing(texture_id);
+  NOTREACHED();
+  return false;
 }
 
 const std::string& RasterImplementation::GetLogPrefix() const {
@@ -671,7 +672,6 @@ void RasterImplementation::DeleteTexturesHelper(GLsizei n,
   helper_->DeleteTexturesImmediate(n, textures);
   for (GLsizei ii = 0; ii < n; ++ii) {
     texture_id_allocator_.FreeID(textures[ii]);
-    discardable_texture_manager_.FreeTexture(textures[ii]);
   }
   UnbindTexturesHelper(n, textures);
 }
@@ -955,57 +955,6 @@ void RasterImplementation::DestroyImageCHROMIUM(GLuint image_id) {
   CheckGLError();
 }
 
-void RasterImplementation::InitializeDiscardableTextureCHROMIUM(
-    GLuint texture_id) {
-  if (discardable_texture_manager_.TextureIsValid(texture_id)) {
-    SetGLError(GL_INVALID_VALUE, "glInitializeDiscardableTextureCHROMIUM",
-               "Texture ID already initialized");
-    return;
-  }
-  ClientDiscardableHandle handle =
-      discardable_texture_manager_.InitializeTexture(helper_->command_buffer(),
-                                                     texture_id);
-  if (!handle.IsValid())
-    return;
-
-  helper_->InitializeDiscardableTextureCHROMIUM(texture_id, handle.shm_id(),
-                                                handle.byte_offset());
-}
-
-void RasterImplementation::UnlockDiscardableTextureCHROMIUM(GLuint texture_id) {
-  if (!discardable_texture_manager_.TextureIsValid(texture_id)) {
-    SetGLError(GL_INVALID_VALUE, "glUnlockDiscardableTextureCHROMIUM",
-               "Texture ID not initialized");
-    return;
-  }
-
-  // |should_unbind_texture| will be set to true if the texture has been fully
-  // unlocked. In this case, ensure the texture is unbound.
-  bool should_unbind_texture = false;
-  discardable_texture_manager_.UnlockTexture(texture_id,
-                                             &should_unbind_texture);
-  if (should_unbind_texture)
-    UnbindTexturesHelper(1, &texture_id);
-
-  helper_->UnlockDiscardableTextureCHROMIUM(texture_id);
-}
-
-bool RasterImplementation::LockDiscardableTextureCHROMIUM(GLuint texture_id) {
-  if (!discardable_texture_manager_.TextureIsValid(texture_id)) {
-    SetGLError(GL_INVALID_VALUE, "glLockDiscardableTextureCHROMIUM",
-               "Texture ID not initialized");
-    return false;
-  }
-  if (!discardable_texture_manager_.LockTexture(texture_id)) {
-    // Failure to lock means that this texture has been deleted on the service
-    // side. Delete it here as well.
-    DeleteTexturesHelper(1, &texture_id);
-    return false;
-  }
-  helper_->LockDiscardableTextureCHROMIUM(texture_id);
-  return true;
-}
-
 void* RasterImplementation::MapRasterCHROMIUM(GLsizeiptr size) {
   if (size < 0) {
     SetGLError(GL_INVALID_VALUE, "glMapRasterCHROMIUM", "negative size");
@@ -1247,10 +1196,10 @@ void RasterImplementation::EndRasterCHROMIUM() {
 }
 
 void RasterImplementation::BeginGpuRaster() {
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 void RasterImplementation::EndGpuRaster() {
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 
 RasterImplementation::RasterProperties::RasterProperties(

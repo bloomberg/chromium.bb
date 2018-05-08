@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/trace_event/memory_dump_provider.h"
-#include "gpu/command_buffer/client/client_discardable_texture_manager.h"
 #include "gpu/command_buffer/client/client_font_manager.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gpu_control_client.h"
@@ -278,7 +277,6 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   IdAllocator query_id_allocator_;
 
   ClientFontManager font_manager_;
-  ClientDiscardableTextureManager discardable_texture_manager_;
 
   mutable base::Lock lost_lock_;
   bool lost_;

@@ -134,32 +134,6 @@ void UnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
   }
 }
 
-void InitializeDiscardableTextureCHROMIUM(GLuint texture_id,
-                                          uint32_t shm_id,
-                                          uint32_t shm_offset) {
-  raster::cmds::InitializeDiscardableTextureCHROMIUM* c =
-      GetCmdSpace<raster::cmds::InitializeDiscardableTextureCHROMIUM>();
-  if (c) {
-    c->Init(texture_id, shm_id, shm_offset);
-  }
-}
-
-void UnlockDiscardableTextureCHROMIUM(GLuint texture_id) {
-  raster::cmds::UnlockDiscardableTextureCHROMIUM* c =
-      GetCmdSpace<raster::cmds::UnlockDiscardableTextureCHROMIUM>();
-  if (c) {
-    c->Init(texture_id);
-  }
-}
-
-void LockDiscardableTextureCHROMIUM(GLuint texture_id) {
-  raster::cmds::LockDiscardableTextureCHROMIUM* c =
-      GetCmdSpace<raster::cmds::LockDiscardableTextureCHROMIUM>();
-  if (c) {
-    c->Init(texture_id);
-  }
-}
-
 void BeginRasterCHROMIUM(GLuint texture_id,
                          GLuint sk_color,
                          GLuint msaa_sample_count,

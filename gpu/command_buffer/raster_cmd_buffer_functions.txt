@@ -32,11 +32,6 @@ GL_APICALL void         GL_APIENTRY glUnpremultiplyAndDitherCopyCHROMIUM (GLuint
 // Extension KHR_robustness
 GL_APICALL GLenum	GL_APIENTRY glGetGraphicsResetStatusKHR (void);
 
-// Extension CHROMIUM_discardable_textures
-GL_APICALL void         GL_APIENTRY glInitializeDiscardableTextureCHROMIUM (GLuint texture_id);
-GL_APICALL void         GL_APIENTRY glUnlockDiscardableTextureCHROMIUM (GLuint texture_id);
-GL_APICALL bool         GL_APIENTRY glLockDiscardableTextureCHROMIUM (GLuint texture_id);
-
 // Extension CHROMIUM_raster_transport
 GL_APICALL void         GL_APIENTRY glBeginRasterCHROMIUM (GLuint texture_id, GLuint sk_color, GLuint msaa_sample_count, GLboolean can_use_lcd_text, GLint color_type, GLuint color_space_transfer_cache_id);
 GL_APICALL void         GL_APIENTRY glRasterCHROMIUM (GLuint raster_shm_id, GLuint raster_shm_offset, GLsizeiptr raster_shm_size, GLuint font_shm_id, GLuint font_shm_offset, GLsizeiptr font_shm_size);

@@ -110,11 +110,6 @@ class RASTER_EXPORT RasterImplementationGLES
                                           GLsizei width,
                                           GLsizei height) override;
 
-  // Discardable textures.
-  void InitializeDiscardableTextureCHROMIUM(GLuint texture_id) override;
-  void UnlockDiscardableTextureCHROMIUM(GLuint texture_id) override;
-  bool LockDiscardableTextureCHROMIUM(GLuint texture_id) override;
-
   // OOP-Raster
   void BeginRasterCHROMIUM(
       GLuint texture_id,

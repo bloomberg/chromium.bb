@@ -44,9 +44,6 @@ virtual void UnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
                                                 GLsizei width,
                                                 GLsizei height) = 0;
 virtual GLenum GetGraphicsResetStatusKHR() = 0;
-virtual void InitializeDiscardableTextureCHROMIUM(GLuint texture_id) = 0;
-virtual void UnlockDiscardableTextureCHROMIUM(GLuint texture_id) = 0;
-virtual bool LockDiscardableTextureCHROMIUM(GLuint texture_id) = 0;
 virtual void EndRasterCHROMIUM() = 0;
 virtual GLuint CreateTexture(bool use_buffer,
                              gfx::BufferUsage buffer_usage,

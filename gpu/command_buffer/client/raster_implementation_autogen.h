@@ -65,12 +65,6 @@ void UnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
 
 GLenum GetGraphicsResetStatusKHR() override;
 
-void InitializeDiscardableTextureCHROMIUM(GLuint texture_id) override;
-
-void UnlockDiscardableTextureCHROMIUM(GLuint texture_id) override;
-
-bool LockDiscardableTextureCHROMIUM(GLuint texture_id) override;
-
 void EndRasterCHROMIUM() override;
 
 GLuint CreateTexture(bool use_buffer,
