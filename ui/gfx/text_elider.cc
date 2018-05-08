@@ -156,7 +156,7 @@ base::string16 ElideFilename(const base::FilePath& filename,
   base::string16 filename_utf16 = filename.value();
   base::string16 extension = filename.Extension();
   base::string16 rootname = filename.BaseName().RemoveExtension().value();
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   base::string16 filename_utf16 = WideToUTF16(base::SysNativeMBToWide(
       filename.value()));
   base::string16 extension = WideToUTF16(base::SysNativeMBToWide(
