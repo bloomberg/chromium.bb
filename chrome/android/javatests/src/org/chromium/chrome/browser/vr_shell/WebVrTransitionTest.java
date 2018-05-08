@@ -37,6 +37,7 @@ import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -363,6 +364,7 @@ public class WebVrTransitionTest {
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/840638")
     public void testControlsVisibleAfterExitingVr() throws InterruptedException {
         controlsVisibleAfterExitingVrImpl(
                 VrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"), mVrTestFramework);
@@ -506,6 +508,7 @@ public class WebVrTransitionTest {
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/840638")
     @CommandLineFlags.Remove({"enable-webvr"})
     @CommandLineFlags.Add({"enable-features=WebXR"})
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
