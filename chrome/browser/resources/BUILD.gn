@@ -22,6 +22,7 @@ if (closure_compile) {
         "md_user_manager:closure_compile",
         "media_router:closure_compile",
         "offline_pages:closure_compile",
+        "pdf:closure_compile",
         "settings:closure_compile",
         "signin/dice_sync_confirmation:closure_compile",
         "webapks:closure_compile",
