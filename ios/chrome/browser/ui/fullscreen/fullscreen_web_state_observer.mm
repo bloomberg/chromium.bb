@@ -129,12 +129,12 @@ void FullscreenWebStateObserver::SetDisableFullscreenForSSL(bool disable) {
 }
 
 void FullscreenWebStateObserver::SetIsLoading(bool loading) {
-  if (IsUIRefreshPhase1Enabled())
-    return;
-
-  if (!!loading_disabler_.get() == loading)
-    return;
-  loading_disabler_ =
-      loading ? std::make_unique<ScopedFullscreenDisabler>(controller_)
-              : nullptr;
+  if (IsUIRefreshPhase1Enabled()) {
+    if (loading)
+      controller_->ResetModel();
+  } else {
+    loading_disabler_ =
+        loading ? std::make_unique<ScopedFullscreenDisabler>(controller_)
+                : nullptr;
+  }
 }
