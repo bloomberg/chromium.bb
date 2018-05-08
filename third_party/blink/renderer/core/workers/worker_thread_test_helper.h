@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
@@ -101,8 +102,9 @@ class WorkerThreadForTest : public WorkerThread {
     headers->push_back(header_and_type);
 
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-        script_url, "fake user agent", headers.get(), kReferrerPolicyDefault,
-        security_origin, false /* starter_secure_context */, worker_clients,
+        script_url, ScriptType::kClassic, "fake user agent", headers.get(),
+        kReferrerPolicyDefault, security_origin,
+        false /* starter_secure_context */, worker_clients,
         mojom::IPAddressSpace::kLocal, nullptr,
         base::UnguessableToken::Create(),
         std::make_unique<WorkerSettings>(Settings::Create().get()),
