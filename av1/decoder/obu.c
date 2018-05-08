@@ -318,10 +318,10 @@ static uint32_t read_one_tile_group_obu(
   return header_size + tg_payload_size;
 }
 
-static void read_metadata_private_data(const uint8_t *data, size_t sz) {
+static void read_metadata_itut_t35(const uint8_t *data, size_t sz) {
+  struct aom_read_bit_buffer rb = { data, data + sz, 0, NULL, NULL };
   for (size_t i = 0; i < sz; i++) {
-    mem_get_le16(data);
-    data += 2;
+    aom_rb_read_literal(&rb, 8);
   }
 }
 
@@ -421,19 +421,23 @@ static void read_metadata_timecode(const uint8_t *data, size_t sz) {
 }
 
 static size_t read_metadata(const uint8_t *data, size_t sz) {
-  if (sz < 2) return sz;  // Invalid data size.
-  const OBU_METADATA_TYPE metadata_type = (OBU_METADATA_TYPE)mem_get_le16(data);
-
-  if (metadata_type == OBU_METADATA_TYPE_PRIVATE_DATA) {
-    read_metadata_private_data(data + 2, sz - 2);
+  size_t type_length;
+  uint64_t type_value;
+  OBU_METADATA_TYPE metadata_type;
+  if (aom_uleb_decode(data, sz, &type_value, &type_length) < 0) {
+    return sz;
+  }
+  metadata_type = (OBU_METADATA_TYPE)type_value;
+  if (metadata_type == OBU_METADATA_TYPE_ITUT_T35) {
+    read_metadata_itut_t35(data + type_length, sz - type_length);
   } else if (metadata_type == OBU_METADATA_TYPE_HDR_CLL) {
-    read_metadata_hdr_cll(data + 2, sz - 2);
+    read_metadata_hdr_cll(data + type_length, sz - type_length);
   } else if (metadata_type == OBU_METADATA_TYPE_HDR_MDCV) {
-    read_metadata_hdr_mdcv(data + 2, sz - 2);
+    read_metadata_hdr_mdcv(data + type_length, sz - type_length);
   } else if (metadata_type == OBU_METADATA_TYPE_SCALABILITY) {
-    read_metadata_scalability(data + 2, sz - 2);
+    read_metadata_scalability(data + type_length, sz - type_length);
   } else if (metadata_type == OBU_METADATA_TYPE_TIMECODE) {
-    read_metadata_timecode(data + 2, sz - 2);
+    read_metadata_timecode(data + type_length, sz - type_length);
   }
 
   return sz;
