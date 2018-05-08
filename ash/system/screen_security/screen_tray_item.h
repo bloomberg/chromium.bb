@@ -101,10 +101,7 @@ class ASH_EXPORT ScreenTrayItem : public SystemTrayItem {
   void OnDefaultViewDestroyed() override;
 
  private:
-  // There can be multiple cast sessions at the same time. If the user hits the
-  // stop button, stop all sessions since there is not a good UI to distinguish
-  // between the different sessions.
-  std::vector<base::OnceClosure> stop_callbacks_;
+  base::OnceClosure stop_callback_;
   tray::ScreenTrayView* tray_view_;
   tray::ScreenStatusView* default_view_;
   bool is_started_;

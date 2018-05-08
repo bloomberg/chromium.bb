@@ -9,6 +9,7 @@
 #include "ash/system/screen_security/screen_capture_observer.h"
 #include "ash/system/screen_security/screen_share_observer.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 
 namespace ash {
 
@@ -27,6 +28,12 @@ class ASH_EXPORT ScreenSecurityNotificationController
   ~ScreenSecurityNotificationController() override;
 
  private:
+  void CreateNotification(const base::string16& message, bool is_capture);
+  // Remove the notification and call all the callbacks in
+  // |capture_stop_callbacks_| or |share_stop_callbacks_|, depending on
+  // |is_capture| argument.
+  void StopAllSessions(bool is_capture);
+
   // ScreenCaptureObserver:
   void OnScreenCaptureStart(
       const base::Closure& stop_callback,
@@ -42,6 +49,15 @@ class ASH_EXPORT ScreenSecurityNotificationController
   void OnCastingSessionStartedOrStopped(bool started) override;
 
   bool is_casting_ = false;
+
+  // There can be multiple cast sessions at the same time. If the user hits the
+  // stop button, stop all sessions since there is not a good UI to distinguish
+  // between the different sessions.
+  std::vector<base::OnceClosure> capture_stop_callbacks_;
+  std::vector<base::OnceClosure> share_stop_callbacks_;
+
+  base::WeakPtrFactory<ScreenSecurityNotificationController> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ScreenSecurityNotificationController);
 };

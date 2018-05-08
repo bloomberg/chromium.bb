@@ -133,12 +133,10 @@ void TestNotificationStartAndStop(
     EXPECT_TRUE(tray_item->is_started());
   }
 
-  // The stop callback is called even if the notification fires. There is a
-  // non-test ScreenTrayItem which is also called which is why the stop callback
-  // hit count is 2x the expected value.
+  // The stop callback is called even if the notification fires.
   stop_function.Run();
   EXPECT_FALSE(tray_item->is_started());
-  EXPECT_EQ(static_cast<int>(start_functions.size()) * 2,
+  EXPECT_EQ(static_cast<int>(start_functions.size()),
             test->stop_callback_hit_count());
 }
 
