@@ -1279,7 +1279,11 @@ const SadMxNx4Param x4d_sse2_tests[] = {
   make_tuple(4, 4, &aom_highbd_sad4x4x4d_sse2, 12),
 };
 INSTANTIATE_TEST_CASE_P(SSE2, SADx4Test, ::testing::ValuesIn(x4d_sse2_tests));
+#endif  // HAVE_SSE2
 
+#if HAVE_SSSE3
+// Note: These are named sse2, but part of ssse3 file and only built and linked
+// when ssse3 is enabled.
 const JntSadMxhParam jnt_sad_sse2_tests[] = {
   make_tuple(4, 4, &aom_sad4xh_sse2, -1),
   make_tuple(4, 8, &aom_sad4xh_sse2, -1),
@@ -1307,7 +1311,7 @@ const JntSadMxhParam jnt_sad_sse2_tests[] = {
 INSTANTIATE_TEST_CASE_P(SSE2, JntSADTest,
                         ::testing::ValuesIn(jnt_sad_sse2_tests));
 
-#endif  // HAVE_SSE2
+#endif  // HAVE_SSSE3
 
 #if HAVE_SSE3
 // Only functions are x3, which do not have tests.
