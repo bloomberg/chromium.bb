@@ -9,15 +9,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
-import android.support.v7.app.AppCompatActivity;
 
-import org.chromium.base.Log;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.SynchronousInitializationActivity;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -31,7 +28,7 @@ import java.lang.annotation.RetentionPolicy;
  * An Activity displayed from the MainPreferences to allow the user to pick an account to
  * sign in to. The AccountSigninView.Delegate interface is fulfilled by the AppCompatActivity.
  */
-public class AccountSigninActivity extends AppCompatActivity
+public class AccountSigninActivity extends SynchronousInitializationActivity
         implements AccountSigninView.Listener, AccountSigninView.Delegate {
     private static final String TAG = "AccountSigninActivity";
     private static final String INTENT_IS_FROM_PERSONALIZED_PROMO =
@@ -144,17 +141,6 @@ public class AccountSigninActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // The browser process must be started here because this activity may be started from the
-        // recent apps list and it relies on other activities and the native library to be loaded.
-        try {
-            ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Failed to start browser process.", e);
-            // Since the library failed to initialize nothing in the application
-            // can work, so kill the whole application not just the activity
-            System.exit(-1);
-        }
-
         // We don't trust android to restore the saved state correctly, so pass null.
         super.onCreate(null);
 
