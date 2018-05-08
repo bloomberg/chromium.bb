@@ -1015,21 +1015,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Brotli",
+                    "name": "NoTransform",
                     "params": {
-                        "exp": "allow_brotli"
-                    }
-                },
-                {
-                    "name": "Control1",
-                    "params": {
-                        "exp": "finch_control1"
-                    }
-                },
-                {
-                    "name": "Control2",
-                    "params": {
-                        "exp": "finch_control2"
+                        "exp": "holdback"
                     }
                 }
             ]
