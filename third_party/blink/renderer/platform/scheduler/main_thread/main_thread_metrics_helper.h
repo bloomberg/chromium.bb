@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_RENDERER_METRICS_HELPER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_RENDERER_METRICS_HELPER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_METRICS_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_METRICS_HELPER_H_
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -45,15 +45,15 @@ enum class BackgroundedRendererTransition {
 
 // Helper class to take care of metrics on behalf of MainThreadScheduler.
 // This class should be used only on the main thread.
-class PLATFORM_EXPORT RendererMetricsHelper : public MetricsHelper {
+class PLATFORM_EXPORT MainThreadMetricsHelper : public MetricsHelper {
  public:
   static void RecordBackgroundedTransition(
       BackgroundedRendererTransition transition);
 
-  RendererMetricsHelper(MainThreadSchedulerImpl* main_thread_scheduler,
-                        base::TimeTicks now,
-                        bool renderer_backgrounded);
-  ~RendererMetricsHelper();
+  MainThreadMetricsHelper(MainThreadSchedulerImpl* main_thread_scheduler,
+                          base::TimeTicks now,
+                          bool renderer_backgrounded);
+  ~MainThreadMetricsHelper();
 
   void RecordTaskMetrics(MainThreadTaskQueue* queue,
                          const TaskQueue::Task& task,
@@ -135,10 +135,10 @@ class PLATFORM_EXPORT RendererMetricsHelper : public MetricsHelper {
 
   MainThreadTaskLoadState main_thread_task_load_state_;
 
-  DISALLOW_COPY_AND_ASSIGN(RendererMetricsHelper);
+  DISALLOW_COPY_AND_ASSIGN(MainThreadMetricsHelper);
 };
 
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_RENDERER_METRICS_HELPER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_METRICS_HELPER_H_

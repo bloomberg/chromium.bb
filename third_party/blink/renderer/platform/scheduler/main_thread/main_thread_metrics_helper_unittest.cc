@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/main_thread/renderer_metrics_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_metrics_helper.h"
 
 #include <memory>
 #include "base/macros.h"
@@ -39,10 +39,10 @@ using base::Bucket;
 using testing::ElementsAre;
 using testing::UnorderedElementsAre;
 
-class RendererMetricsHelperTest : public testing::Test {
+class MainThreadMetricsHelperTest : public testing::Test {
  public:
-  RendererMetricsHelperTest() = default;
-  ~RendererMetricsHelperTest() override = default;
+  MainThreadMetricsHelperTest() = default;
+  ~MainThreadMetricsHelperTest() override = default;
 
   void SetUp() override {
     histogram_tester_.reset(new base::HistogramTester());
@@ -224,17 +224,17 @@ class RendererMetricsHelperTest : public testing::Test {
   base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   std::unique_ptr<MainThreadSchedulerImplForTest> scheduler_;
-  RendererMetricsHelper* metrics_helper_;  // NOT OWNED
+  MainThreadMetricsHelper* metrics_helper_;  // NOT OWNED
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   std::unique_ptr<FakePageScheduler> playing_view_ =
       FakePageScheduler::Builder().SetIsAudioPlaying(true).Build();
   std::unique_ptr<FakePageScheduler> throtting_exempt_view_ =
       FakePageScheduler::Builder().SetIsThrottlingExempt(true).Build();
 
-  DISALLOW_COPY_AND_ASSIGN(RendererMetricsHelperTest);
+  DISALLOW_COPY_AND_ASSIGN(MainThreadMetricsHelperTest);
 };
 
-TEST_F(RendererMetricsHelperTest, Metrics_PerQueueType) {
+TEST_F(MainThreadMetricsHelperTest, Metrics_PerQueueType) {
   // QueueType::kDefault is checking sub-millisecond task aggregation,
   // FRAME_* tasks are checking normal task aggregation and other
   // queue types have a single task.
@@ -332,7 +332,7 @@ TEST_F(RendererMetricsHelperTest, Metrics_PerQueueType) {
                   Bucket(static_cast<int>(QueueType::kDetached), 150)));
 }
 
-TEST_F(RendererMetricsHelperTest, Metrics_PerUseCase) {
+TEST_F(MainThreadMetricsHelperTest, Metrics_PerUseCase) {
   RunTask(UseCase::kNone, Milliseconds(500),
           base::TimeDelta::FromMilliseconds(4000));
 
@@ -372,7 +372,7 @@ TEST_F(RendererMetricsHelperTest, Metrics_PerUseCase) {
           Bucket(static_cast<int>(UseCase::kMainThreadGesture), 60)));
 }
 
-TEST_F(RendererMetricsHelperTest, GetFrameStatusTest) {
+TEST_F(MainThreadMetricsHelperTest, GetFrameStatusTest) {
   DCHECK_EQ(GetFrameStatus(nullptr), FrameStatus::kNone);
 
   FrameStatus frame_statuses_tested[] = {
@@ -391,7 +391,7 @@ TEST_F(RendererMetricsHelperTest, GetFrameStatusTest) {
   }
 }
 
-TEST_F(RendererMetricsHelperTest, BackgroundedRendererTransition) {
+TEST_F(MainThreadMetricsHelperTest, BackgroundedRendererTransition) {
   scheduler_->SetFreezingWhenBackgroundedEnabled(true);
   typedef BackgroundedRendererTransition Transition;
 
@@ -466,7 +466,7 @@ TEST_F(RendererMetricsHelperTest, BackgroundedRendererTransition) {
                   Bucket(static_cast<int>(Transition::kResumed), 1)));
 }
 
-TEST_F(RendererMetricsHelperTest, TaskCountPerFrameStatus) {
+TEST_F(MainThreadMetricsHelperTest, TaskCountPerFrameStatus) {
   int task_count = 0;
   struct CountPerFrameStatus {
     FrameStatus frame_status;
@@ -511,7 +511,7 @@ TEST_F(RendererMetricsHelperTest, TaskCountPerFrameStatus) {
           Bucket(static_cast<int>(FrameStatus::kCrossOriginHiddenService), 7)));
 }
 
-TEST_F(RendererMetricsHelperTest, TaskCountPerFrameTypeLongerThan) {
+TEST_F(MainThreadMetricsHelperTest, TaskCountPerFrameTypeLongerThan) {
   int total_duration = 0;
   struct TasksPerFrameStatus {
     FrameStatus frame_status;

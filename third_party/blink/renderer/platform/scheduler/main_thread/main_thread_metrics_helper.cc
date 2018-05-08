@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/main_thread/renderer_metrics_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_metrics_helper.h"
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
@@ -41,7 +41,7 @@ constexpr base::TimeDelta kLongIdlePeriodDiscardingThreshold =
 
 }  // namespace
 
-RendererMetricsHelper::PerQueueTypeDurationReporters::
+MainThreadMetricsHelper::PerQueueTypeDurationReporters::
     PerQueueTypeDurationReporters()
     : overall(DURATION_PER_QUEUE_TYPE_METRIC_NAME),
       foreground(DURATION_PER_QUEUE_TYPE_METRIC_NAME ".Foreground"),
@@ -73,7 +73,7 @@ RendererMetricsHelper::PerQueueTypeDurationReporters::
       visible(DURATION_PER_QUEUE_TYPE_METRIC_NAME ".Visible"),
       hidden_music(DURATION_PER_QUEUE_TYPE_METRIC_NAME ".HiddenMusic") {}
 
-RendererMetricsHelper::RendererMetricsHelper(
+MainThreadMetricsHelper::MainThreadMetricsHelper(
     MainThreadSchedulerImpl* main_thread_scheduler,
     base::TimeTicks now,
     bool renderer_backgrounded)
@@ -81,19 +81,20 @@ RendererMetricsHelper::RendererMetricsHelper(
       main_thread_scheduler_(main_thread_scheduler),
       main_thread_load_tracker_(
           now,
-          base::BindRepeating(&RendererMetricsHelper::RecordMainThreadTaskLoad,
-                              base::Unretained(this)),
+          base::BindRepeating(
+              &MainThreadMetricsHelper::RecordMainThreadTaskLoad,
+              base::Unretained(this)),
           kThreadLoadTrackerReportingInterval),
       background_main_thread_load_tracker_(
           now,
           base::BindRepeating(
-              &RendererMetricsHelper::RecordBackgroundMainThreadTaskLoad,
+              &MainThreadMetricsHelper::RecordBackgroundMainThreadTaskLoad,
               base::Unretained(this)),
           kThreadLoadTrackerReportingInterval),
       foreground_main_thread_load_tracker_(
           now,
           base::BindRepeating(
-              &RendererMetricsHelper::RecordForegroundMainThreadTaskLoad,
+              &MainThreadMetricsHelper::RecordForegroundMainThreadTaskLoad,
               base::Unretained(this)),
           kThreadLoadTrackerReportingInterval),
       per_frame_status_duration_reporter_(DURATION_PER_FRAME_TYPE_METRIC_NAME),
@@ -118,42 +119,42 @@ RendererMetricsHelper::RendererMetricsHelper(
   }
 }
 
-RendererMetricsHelper::~RendererMetricsHelper() = default;
+MainThreadMetricsHelper::~MainThreadMetricsHelper() = default;
 
-void RendererMetricsHelper::OnRendererForegrounded(base::TimeTicks now) {
+void MainThreadMetricsHelper::OnRendererForegrounded(base::TimeTicks now) {
   foreground_main_thread_load_tracker_.Resume(now);
   background_main_thread_load_tracker_.Pause(now);
 }
 
-void RendererMetricsHelper::OnRendererBackgrounded(base::TimeTicks now) {
+void MainThreadMetricsHelper::OnRendererBackgrounded(base::TimeTicks now) {
   foreground_main_thread_load_tracker_.Pause(now);
   background_main_thread_load_tracker_.Resume(now);
 }
 
-void RendererMetricsHelper::OnRendererShutdown(base::TimeTicks now) {
+void MainThreadMetricsHelper::OnRendererShutdown(base::TimeTicks now) {
   foreground_main_thread_load_tracker_.RecordIdle(now);
   background_main_thread_load_tracker_.RecordIdle(now);
   main_thread_load_tracker_.RecordIdle(now);
 }
 
-void RendererMetricsHelper::ResetForTest(base::TimeTicks now) {
+void MainThreadMetricsHelper::ResetForTest(base::TimeTicks now) {
   main_thread_load_tracker_ = ThreadLoadTracker(
       now,
-      base::BindRepeating(&RendererMetricsHelper::RecordMainThreadTaskLoad,
+      base::BindRepeating(&MainThreadMetricsHelper::RecordMainThreadTaskLoad,
                           base::Unretained(this)),
       kThreadLoadTrackerReportingInterval);
 
   background_main_thread_load_tracker_ = ThreadLoadTracker(
       now,
       base::BindRepeating(
-          &RendererMetricsHelper::RecordBackgroundMainThreadTaskLoad,
+          &MainThreadMetricsHelper::RecordBackgroundMainThreadTaskLoad,
           base::Unretained(this)),
       kThreadLoadTrackerReportingInterval);
 
   foreground_main_thread_load_tracker_ = ThreadLoadTracker(
       now,
       base::BindRepeating(
-          &RendererMetricsHelper::RecordForegroundMainThreadTaskLoad,
+          &MainThreadMetricsHelper::RecordForegroundMainThreadTaskLoad,
           base::Unretained(this)),
       kThreadLoadTrackerReportingInterval);
 }
@@ -173,7 +174,7 @@ base::TimeDelta DurationOfIntervalOverlap(base::TimeTicks start1,
 
 }  // namespace
 
-void RendererMetricsHelper::RecordTaskMetrics(
+void MainThreadMetricsHelper::RecordTaskMetrics(
     MainThreadTaskQueue* queue,
     const TaskQueue::Task& task,
     base::TimeTicks start_time,
@@ -395,8 +396,8 @@ void RendererMetricsHelper::RecordTaskMetrics(
   }
 }
 
-void RendererMetricsHelper::RecordMainThreadTaskLoad(base::TimeTicks time,
-                                                     double load) {
+void MainThreadMetricsHelper::RecordMainThreadTaskLoad(base::TimeTicks time,
+                                                       double load) {
   int load_percentage = static_cast<int>(load * 100);
   DCHECK_LE(load_percentage, 100);
 
@@ -428,7 +429,7 @@ void RendererMetricsHelper::RecordMainThreadTaskLoad(base::TimeTicks time,
                  "MainThreadScheduler.RendererMainThreadLoad", load_percentage);
 }
 
-void RendererMetricsHelper::RecordForegroundMainThreadTaskLoad(
+void MainThreadMetricsHelper::RecordForegroundMainThreadTaskLoad(
     base::TimeTicks time,
     double load) {
   int load_percentage = static_cast<int>(load * 100);
@@ -459,7 +460,7 @@ void RendererMetricsHelper::RecordForegroundMainThreadTaskLoad(
                  load_percentage);
 }
 
-void RendererMetricsHelper::RecordBackgroundMainThreadTaskLoad(
+void MainThreadMetricsHelper::RecordBackgroundMainThreadTaskLoad(
     base::TimeTicks time,
     double load) {
   int load_percentage = static_cast<int>(load * 100);
@@ -491,7 +492,7 @@ void RendererMetricsHelper::RecordBackgroundMainThreadTaskLoad(
 }
 
 // static
-void RendererMetricsHelper::RecordBackgroundedTransition(
+void MainThreadMetricsHelper::RecordBackgroundedTransition(
     BackgroundedRendererTransition transition) {
   UMA_HISTOGRAM_ENUMERATION("RendererScheduler.BackgroundedRendererTransition",
                             transition, BackgroundedRendererTransition::kCount);

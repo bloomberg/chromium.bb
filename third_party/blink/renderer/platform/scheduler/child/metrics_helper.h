@@ -21,7 +21,7 @@ class TaskQueue;
 // task metrics.
 //
 // Each thread-specific scheduler should have its own subclass of MetricsHelper
-// (RendererMetricsHelper, WorkerMetricsHelper, etc) and should call
+// (MainThreadMetricsHelper, WorkerMetricsHelper, etc) and should call
 // RecordCommonTaskMetrics manually.
 // Note that this is code reuse, not data reuse -- each thread should have its
 // own instantiation of this class.

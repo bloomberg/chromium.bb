@@ -931,12 +931,12 @@ void MainThreadSchedulerImpl::SetRendererBackgrounded(bool backgrounded) {
   if (backgrounded) {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "MainThreadSchedulerImpl::OnRendererBackgrounded");
-    RendererMetricsHelper::RecordBackgroundedTransition(
+    MainThreadMetricsHelper::RecordBackgroundedTransition(
         BackgroundedRendererTransition::kBackgrounded);
   } else {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "MainThreadSchedulerImpl::OnRendererForegrounded");
-    RendererMetricsHelper::RecordBackgroundedTransition(
+    MainThreadMetricsHelper::RecordBackgroundedTransition(
         BackgroundedRendererTransition::kForegrounded);
   }
 
@@ -1599,7 +1599,7 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     if (main_thread_only().frozen_when_backgrounded !=
         previously_frozen_when_backgrounded) {
       SetFrozenInBackground(main_thread_only().frozen_when_backgrounded);
-      RendererMetricsHelper::RecordBackgroundedTransition(
+      MainThreadMetricsHelper::RecordBackgroundedTransition(
           main_thread_only().frozen_when_backgrounded
               ? BackgroundedRendererTransition::kFrozenAfterDelay
               : BackgroundedRendererTransition::kResumed);
