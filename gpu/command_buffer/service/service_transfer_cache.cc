@@ -19,7 +19,7 @@ size_t CacheSizeLimit() {
 }  // namespace
 
 ServiceTransferCache::CacheEntryInternal::CacheEntryInternal(
-    ServiceDiscardableHandle handle,
+    base::Optional<ServiceDiscardableHandle> handle,
     std::unique_ptr<cc::ServiceTransferCacheEntry> entry)
     : handle(handle), entry(std::move(entry)) {}
 
@@ -63,6 +63,21 @@ bool ServiceTransferCache::CreateLockedEntry(
   return true;
 }
 
+void ServiceTransferCache::CreateLocalEntry(
+    uint32_t entry_id,
+    std::unique_ptr<cc::ServiceTransferCacheEntry> entry) {
+  if (!entry)
+    return;
+
+  DeleteEntry(entry->Type(), entry_id);
+
+  total_size_ += entry->CachedSize();
+
+  auto key = std::make_pair(entry->Type(), entry_id);
+  entries_.Put(key, CacheEntryInternal(base::nullopt, std::move(entry)));
+  EnforceLimits();
+}
+
 bool ServiceTransferCache::UnlockEntry(cc::TransferCacheEntryType entry_type,
                                        uint32_t entry_id) {
   auto key = std::make_pair(entry_type, entry_id);
@@ -70,7 +85,9 @@ bool ServiceTransferCache::UnlockEntry(cc::TransferCacheEntryType entry_type,
   if (found == entries_.end())
     return false;
 
-  found->second.handle.Unlock();
+  if (!found->second.handle)
+    return false;
+  found->second.handle->Unlock();
   return true;
 }
 
@@ -81,7 +98,8 @@ bool ServiceTransferCache::DeleteEntry(cc::TransferCacheEntryType entry_type,
   if (found == entries_.end())
     return false;
 
-  found->second.handle.ForceDelete();
+  if (found->second.handle)
+    found->second.handle->ForceDelete();
   total_size_ -= found->second.entry->CachedSize();
   entries_.Erase(found);
   return true;
@@ -102,7 +120,7 @@ void ServiceTransferCache::EnforceLimits() {
     if (total_size_ <= cache_size_limit_) {
       return;
     }
-    if (!it->second.handle.Delete()) {
+    if (it->second.handle && !it->second.handle->Delete()) {
       ++it;
       continue;
     }

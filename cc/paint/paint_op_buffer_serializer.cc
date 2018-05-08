@@ -272,11 +272,11 @@ bool PaintOpBufferSerializer::SerializeOpWithFlags(
     uint8_t alpha) {
   // We don't need the skia backing for decoded shaders during serialization,
   // since those are created on the service side where the record is rasterized.
-  const bool create_skia_shaders = false;
+  const bool is_rasterizing = false;
 
   const ScopedRasterFlags scoped_flags(
       &flags_op->flags, options->image_provider,
-      options->canvas->getTotalMatrix(), alpha, create_skia_shaders);
+      options->canvas->getTotalMatrix(), alpha, is_rasterizing);
   const PaintFlags* flags_to_serialize = scoped_flags.flags();
   if (!flags_to_serialize)
     return true;

@@ -158,6 +158,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
 
   // Generates a process global unique ID that can be used to key a color space.
   static int GetNextId();
+  static int kInvalidId;
 
   bool operator==(const ColorSpace& other) const;
   bool operator!=(const ColorSpace& other) const;

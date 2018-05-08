@@ -39,6 +39,10 @@ class TransferCacheTestHelper : public TransferCacheDeserializeHelper,
 
   const EntryKey& GetLastAddedEntry() const { return last_added_entry_; }
 
+  void CreateLocalEntry(
+      uint32_t id,
+      std::unique_ptr<ServiceTransferCacheEntry> entry) override;
+
  protected:
   // Serialization helpers.
   bool LockEntryInternal(const EntryKey& key) override;
@@ -50,6 +54,7 @@ class TransferCacheTestHelper : public TransferCacheDeserializeHelper,
   void EnforceLimits();
 
   std::map<EntryKey, std::unique_ptr<ServiceTransferCacheEntry>> entries_;
+  std::set<EntryKey> local_entries_;
   std::set<EntryKey> locked_entries_;
   EntryKey last_added_entry_ = {TransferCacheEntryType::kRawMemory, ~0};
 

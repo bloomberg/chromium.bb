@@ -12,6 +12,7 @@
 #include "cc/paint/paint_op_buffer_serializer.h"
 #include "cc/paint/paint_op_reader.h"
 #include "cc/paint/paint_op_writer.h"
+#include "cc/paint/shader_transfer_cache_entry.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/paint_op_helper.h"
 #include "cc/test/skia_common.h"
@@ -3087,6 +3088,176 @@ TEST(PaintOpBufferTest, RecordShadersSerializeScaledImages) {
   auto scale = options_provider.decoded_images().at(0).scale();
   EXPECT_EQ(scale.width(), 0.5f);
   EXPECT_EQ(scale.height(), 0.8f);
+}
+
+TEST(PaintOpBufferTest, RecordShadersCached) {
+  auto record_buffer = sk_make_sp<PaintOpBuffer>();
+  record_buffer->push<DrawImageOp>(
+      CreateDiscardablePaintImage(gfx::Size(10, 10)), 0.f, 0.f, nullptr);
+  auto shader = PaintShader::MakePaintRecord(
+      record_buffer, SkRect::MakeWH(10.f, 10.f),
+      SkShader::TileMode::kRepeat_TileMode,
+      SkShader::TileMode::kRepeat_TileMode, nullptr);
+  shader->set_has_animated_images(false);
+  auto shader_id = shader->paint_record_shader_id();
+  TestOptionsProvider options_provider;
+  auto* transfer_cache = options_provider.transfer_cache_helper();
+
+  // Generate serialized |memory|.
+  std::unique_ptr<char, base::AlignedFreeDeleter> memory(
+      static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
+                                            PaintOpBuffer::PaintOpAlign)));
+  size_t memory_written = 0;
+  {
+    auto buffer = sk_make_sp<PaintOpBuffer>();
+    PaintFlags flags;
+    flags.setShader(shader);
+    buffer->push<DrawRectOp>(SkRect::MakeWH(10.f, 10.f), flags);
+
+    SimpleBufferSerializer serializer(
+        memory.get(), PaintOpBuffer::kInitialBufferSize,
+        options_provider.image_provider(), transfer_cache,
+        options_provider.strike_server(), options_provider.color_space(),
+        options_provider.can_use_lcd_text());
+    serializer.Serialize(buffer.get());
+    memory_written = serializer.written();
+  }
+
+  // Generate serialized |memory_scaled|, which is the same pob, but with
+  // a scale factor.
+  std::unique_ptr<char, base::AlignedFreeDeleter> memory_scaled(
+      static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
+                                            PaintOpBuffer::PaintOpAlign)));
+  size_t memory_scaled_written = 0;
+  {
+    auto buffer = sk_make_sp<PaintOpBuffer>();
+    PaintFlags flags;
+    flags.setShader(shader);
+    // This buffer has an additional scale op.
+    buffer->push<ScaleOp>(2.0f, 3.7f);
+    buffer->push<DrawRectOp>(SkRect::MakeWH(10.f, 10.f), flags);
+
+    SimpleBufferSerializer serializer(
+        memory_scaled.get(), PaintOpBuffer::kInitialBufferSize,
+        options_provider.image_provider(), transfer_cache,
+        options_provider.strike_server(), options_provider.color_space(),
+        options_provider.can_use_lcd_text());
+    serializer.Serialize(buffer.get());
+    memory_scaled_written = serializer.written();
+  }
+
+  // Hold onto records so PaintShader pointer comparisons are valid.
+  sk_sp<PaintRecord> records[5];
+  const SkShader* last_shader = nullptr;
+  PaintOp::DeserializeOptions deserialize_options(
+      transfer_cache, options_provider.strike_client());
+
+  // Several deserialization test cases:
+  // (0) deserialize once, verify cached is the same as deserialized version
+  // (1) deserialize again, verify shader gets reused
+  // (2) change color space, verify shader is new
+  // (3) change scale, verify shader is new
+  // (4) sanity check, same new scale + same new colorspace, shader is reused.
+  for (size_t i = 0; i < 5; ++i) {
+    if (i < 2) {
+      // arbitrary color space ids
+      deserialize_options.raster_color_space_id = 23;
+    } else {
+      deserialize_options.raster_color_space_id = 34;
+    }
+
+    if (i < 3) {
+      records[i] = PaintOpBuffer::MakeFromMemory(memory.get(), memory_written,
+                                                 deserialize_options);
+    } else {
+      records[i] = PaintOpBuffer::MakeFromMemory(
+          memory_scaled.get(), memory_scaled_written, deserialize_options);
+    }
+
+    auto* entry =
+        transfer_cache->GetEntryAs<ServiceShaderTransferCacheEntry>(shader_id);
+    ASSERT_TRUE(entry);
+    EXPECT_EQ(entry->raster_color_space_id(),
+              deserialize_options.raster_color_space_id);
+    if (i < 3)
+      EXPECT_EQ(records[i]->size(), 1u);
+    else
+      EXPECT_EQ(records[i]->size(), 2u);
+
+    for (auto* base_op : PaintOpBuffer::Iterator(records[i].get())) {
+      if (base_op->GetType() != PaintOpType::DrawRect)
+        continue;
+      auto* op = static_cast<const DrawRectOp*>(base_op);
+
+      // In every case, the shader in the op should get cached for future
+      // use.
+      auto* op_skshader = op->flags.getShader()->GetSkShader().get();
+      EXPECT_EQ(op_skshader, entry->shader()->GetSkShader().get());
+      switch (i) {
+        case 0:
+          // Nothing to check.
+          break;
+        case 1:
+          EXPECT_EQ(op_skshader, last_shader);
+          break;
+        case 2:
+          EXPECT_NE(op_skshader, last_shader);
+          break;
+        case 3:
+          EXPECT_NE(op_skshader, last_shader);
+          break;
+        case 4:
+          EXPECT_EQ(op_skshader, last_shader);
+          break;
+      }
+      last_shader = op_skshader;
+    }
+  }
+}
+
+TEST(PaintOpBufferTest, RecordShadersCachedSize) {
+  auto record_buffer = sk_make_sp<PaintOpBuffer>();
+  size_t estimated_image_size = 30 * 30 * 4;
+  auto image = CreateBitmapImage(gfx::Size(30, 30));
+  record_buffer->push<DrawImageOp>(image, 0.f, 0.f, nullptr);
+  auto shader = PaintShader::MakePaintRecord(
+      record_buffer, SkRect::MakeWH(10.f, 10.f),
+      SkShader::TileMode::kRepeat_TileMode,
+      SkShader::TileMode::kRepeat_TileMode, nullptr);
+  shader->set_has_animated_images(false);
+  auto shader_id = shader->paint_record_shader_id();
+  TestOptionsProvider options_provider;
+  auto* transfer_cache = options_provider.transfer_cache_helper();
+
+  // Generate serialized |memory|.
+  std::unique_ptr<char, base::AlignedFreeDeleter> memory(
+      static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
+                                            PaintOpBuffer::PaintOpAlign)));
+  auto buffer = sk_make_sp<PaintOpBuffer>();
+  PaintFlags flags;
+  flags.setShader(shader);
+  buffer->push<DrawRectOp>(SkRect::MakeWH(10.f, 10.f), flags);
+
+  SimpleBufferSerializer serializer(
+      memory.get(), PaintOpBuffer::kInitialBufferSize,
+      options_provider.image_provider(), transfer_cache,
+      options_provider.strike_server(), options_provider.color_space(),
+      options_provider.can_use_lcd_text());
+  serializer.Serialize(buffer.get());
+
+  PaintOp::DeserializeOptions deserialize_options(
+      transfer_cache, options_provider.strike_client());
+  auto record = PaintOpBuffer::MakeFromMemory(
+      memory.get(), serializer.written(), deserialize_options);
+  auto* shader_entry =
+      transfer_cache->GetEntryAs<ServiceShaderTransferCacheEntry>(shader_id);
+  ASSERT_TRUE(shader_entry);
+
+  // The size of the shader in the cache should be bigger than both the record
+  // and the image.  Exact numbers not used here to not overfit this test.
+  size_t shader_size = shader_entry->CachedSize();
+  EXPECT_GT(estimated_image_size, serializer.written());
+  EXPECT_GT(shader_size, estimated_image_size);
 }
 
 TEST(PaintOpBufferTest, TotalOpCount) {

@@ -183,7 +183,9 @@ class CC_PAINT_EXPORT PaintOpReader {
       sk_sp<PaintFilter>* filter,
       const base::Optional<PaintFilter::CropRect>& crop_rect);
 
-  void Read(sk_sp<PaintRecord>* record);
+  // Returns the size of the read record, 0 if error.
+  size_t Read(sk_sp<PaintRecord>* record);
+
   void Read(SkRegion* region);
 
   const volatile char* memory_ = nullptr;

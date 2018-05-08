@@ -4,6 +4,7 @@
 
 #include "cc/paint/paint_shader.h"
 
+#include "base/atomic_sequence_num.h"
 #include "cc/paint/paint_op_writer.h"
 #include "cc/paint/paint_record.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
@@ -11,6 +12,7 @@
 
 namespace cc {
 namespace {
+base::AtomicSequenceNumber g_next_id_;
 
 sk_sp<SkPicture> ToSkPicture(sk_sp<PaintRecord> record,
                              const SkRect& bounds,
@@ -25,6 +27,8 @@ sk_sp<SkPicture> ToSkPicture(sk_sp<PaintRecord> record,
 }
 
 }  // namespace
+
+const PaintShader::RecordShaderId PaintShader::kInvalidRecordShaderId = -1;
 
 sk_sp<PaintShader> PaintShader::MakeColor(SkColor color) {
   sk_sp<PaintShader> shader(new PaintShader(Type::kColor));
@@ -151,6 +155,7 @@ sk_sp<PaintShader> PaintShader::MakePaintRecord(
   sk_sp<PaintShader> shader(new PaintShader(Type::kPaintRecord));
 
   shader->record_ = std::move(record);
+  shader->id_ = g_next_id_.GetNext();
   shader->tile_ = tile;
   shader->scaling_behavior_ = scaling_behavior;
   shader->SetMatrixAndTiling(local_matrix, tx, ty);
@@ -175,6 +180,7 @@ size_t PaintShader::GetSerializedSize(const PaintShader* shader) {
          sizeof(shader->end_degrees_) +
          PaintOpWriter::GetImageSize(shader->image_) +
          PaintOpWriter::GetImageSize(shader->image_) + bool_size +
+         sizeof(shader->id_) +
          PaintOpWriter::GetRecordSize(shader->record_.get()) +
          sizeof(shader->colors_.size()) +
          shader->colors_.size() * sizeof(SkColor) +
@@ -258,6 +264,7 @@ sk_sp<PaintShader> PaintShader::CreateDecodedPaintRecord(
 
   sk_sp<PaintShader> shader(new PaintShader(Type::kPaintRecord));
   shader->record_ = record_;
+  shader->id_ = id_;
   shader->tile_ = tile_rect;
   // Use a fixed scale since we have already scaled the tile rect and fixed the
   // raster scale.

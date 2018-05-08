@@ -32,16 +32,28 @@ class CC_PAINT_EXPORT TransferCacheDeserializeHelper {
     if (entry == nullptr) {
       return nullptr;
     }
+
+    total_size_ += entry->CachedSize();
+
     // The service side entry is created using T::kType, so the class created is
     // guaranteed to make the entry type.
     DCHECK_EQ(entry->Type(), entry_type);
     return static_cast<T*>(entry);
   }
 
+  // Creates an entry directly.  If an entry exists, it will be clobbered.
+  virtual void CreateLocalEntry(
+      uint32_t id,
+      std::unique_ptr<ServiceTransferCacheEntry> entry) = 0;
+
+  size_t GetTotalEntrySizes() const { return total_size_; }
+
  private:
   virtual ServiceTransferCacheEntry* GetEntryInternal(
       TransferCacheEntryType entry_type,
       uint32_t entry_id) = 0;
+
+  size_t total_size_ = 0;
 };
 
 };  // namespace cc

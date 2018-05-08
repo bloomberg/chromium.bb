@@ -44,6 +44,18 @@ void TransferCacheTestHelper::CreateEntryDirect(const EntryKey& key,
   EnforceLimits();
 }
 
+void TransferCacheTestHelper::CreateLocalEntry(
+    uint32_t id,
+    std::unique_ptr<ServiceTransferCacheEntry> entry) {
+  auto key = std::make_pair(entry->Type(), id);
+
+  DeleteEntryDirect(key);
+
+  entries_[key] = std::move(entry);
+  local_entries_.insert(key);
+  last_added_entry_ = key;
+}
+
 void TransferCacheTestHelper::UnlockEntriesDirect(
     const std::vector<EntryKey>& keys) {
   for (const auto& key : keys) {
@@ -54,6 +66,7 @@ void TransferCacheTestHelper::UnlockEntriesDirect(
 
 void TransferCacheTestHelper::DeleteEntryDirect(const EntryKey& key) {
   locked_entries_.erase(key);
+  local_entries_.erase(key);
   entries_.erase(key);
 }
 
@@ -70,15 +83,17 @@ ServiceTransferCacheEntry* TransferCacheTestHelper::GetEntryInternal(
     TransferCacheEntryType type,
     uint32_t id) {
   auto key = std::make_pair(type, id);
-  if (locked_entries_.count(key) == 0)
+  if (locked_entries_.count(key) + local_entries_.count(key) == 0)
     return nullptr;
-  DCHECK(entries_.find(key) != entries_.end());
+  if (entries_.find(key) == entries_.end())
+    return nullptr;
   return entries_[key].get();
 }
 
 bool TransferCacheTestHelper::LockEntryInternal(const EntryKey& key) {
   if (entries_.find(key) == entries_.end())
     return false;
+
   locked_entries_.insert(key);
   EnforceLimits();
   return true;

@@ -28,6 +28,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
+#include "ui/gfx/color_space.h"
 
 class SkColorSpace;
 class SkStrikeClient;
@@ -168,6 +169,7 @@ class CC_PAINT_EXPORT PaintOp {
     DeserializeOptions(TransferCacheDeserializeHelper* transfer_cache,
                        SkStrikeClient* strike_client);
     TransferCacheDeserializeHelper* transfer_cache = nullptr;
+    uint32_t raster_color_space_id = gfx::ColorSpace::kInvalidId;
     SkStrikeClient* strike_client = nullptr;
   };
 

@@ -12,6 +12,7 @@
 #include "cc/paint/paint_typeface_transfer_cache_entry.h"
 #include "cc/paint/path_transfer_cache_entry.h"
 #include "cc/paint/raw_memory_transfer_cache_entry.h"
+#include "cc/paint/shader_transfer_cache_entry.h"
 
 namespace cc {
 
@@ -28,6 +29,10 @@ std::unique_ptr<ServiceTransferCacheEntry> ServiceTransferCacheEntry::Create(
       return std::make_unique<ServiceColorSpaceTransferCacheEntry>();
     case TransferCacheEntryType::kPath:
       return std::make_unique<ServicePathTransferCacheEntry>();
+    case TransferCacheEntryType::kShader:
+      // ServiceShaderTransferCache is only created via CreateLocalEntry
+      // and is never serialized/deserialized.
+      return nullptr;
   }
 
   return nullptr;

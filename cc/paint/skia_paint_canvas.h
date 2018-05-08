@@ -143,7 +143,7 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
 
  private:
   // We always need skia shaders since the ops will be played on an SkCanvas.
-  static const bool kCreateSkiaShaders;
+  static const bool kIsRasterizing;
 
   void WrapCanvasInColorSpaceXformCanvas(
       sk_sp<SkColorSpace> target_color_space);

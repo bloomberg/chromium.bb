@@ -20183,6 +20183,12 @@ class TransferCacheDeserializeHelperImpl
   }
   ~TransferCacheDeserializeHelperImpl() override = default;
 
+  void CreateLocalEntry(
+      uint32_t id,
+      std::unique_ptr<cc::ServiceTransferCacheEntry> entry) override {
+    transfer_cache_->CreateLocalEntry(id, std::move(entry));
+  }
+
  private:
   cc::ServiceTransferCacheEntry* GetEntryInternal(
       cc::TransferCacheEntryType entry_type,
