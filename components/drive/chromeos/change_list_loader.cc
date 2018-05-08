@@ -20,6 +20,7 @@
 #include "components/drive/chromeos/about_resource_loader.h"
 #include "components/drive/chromeos/change_list_loader_observer.h"
 #include "components/drive/chromeos/change_list_processor.h"
+#include "components/drive/chromeos/loader_controller.h"
 #include "components/drive/chromeos/resource_metadata.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/event_logger.h"
@@ -224,47 +225,6 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
 };
 
 }  // namespace
-
-LoaderController::LoaderController()
-    : lock_count_(0),
-      weak_ptr_factory_(this) {
-}
-
-LoaderController::~LoaderController() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-}
-
-std::unique_ptr<base::ScopedClosureRunner> LoaderController::GetLock() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  ++lock_count_;
-  return std::make_unique<base::ScopedClosureRunner>(
-      base::Bind(&LoaderController::Unlock, weak_ptr_factory_.GetWeakPtr()));
-}
-
-void LoaderController::ScheduleRun(const base::Closure& task) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!task.is_null());
-
-  if (lock_count_ > 0) {
-    pending_tasks_.push_back(task);
-  } else {
-    task.Run();
-  }
-}
-
-void LoaderController::Unlock() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_LT(0, lock_count_);
-
-  if (--lock_count_ > 0)
-    return;
-
-  std::vector<base::Closure> tasks;
-  tasks.swap(pending_tasks_);
-  for (size_t i = 0; i < tasks.size(); ++i)
-    tasks[i].Run();
-}
 
 
 ChangeListLoader::ChangeListLoader(

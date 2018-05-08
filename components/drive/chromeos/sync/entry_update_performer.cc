@@ -10,9 +10,9 @@
 
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
-#include "components/drive/chromeos/change_list_loader.h"
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/chromeos/file_system/operation_delegate.h"
+#include "components/drive/chromeos/loader_controller.h"
 #include "components/drive/chromeos/resource_metadata.h"
 #include "components/drive/chromeos/sync/entry_revert_performer.h"
 #include "components/drive/chromeos/sync/remove_performer.h"

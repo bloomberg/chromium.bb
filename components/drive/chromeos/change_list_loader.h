@@ -22,7 +22,6 @@
 
 namespace base {
 class CancellationFlag;
-class ScopedClosureRunner;
 class SequencedTaskRunner;
 class Time;
 }  // namespace base
@@ -42,38 +41,8 @@ class AboutResourceLoader;
 class ChangeList;
 class ChangeListLoaderObserver;
 class ChangeListProcessor;
+class LoaderController;
 class ResourceMetadata;
-
-// Delays execution of tasks as long as more than one lock is alive.
-// Used to ensure that ChangeListLoader does not cause race condition by adding
-// new entries created by sync tasks before they do.
-// All code which may add entries found on the server to the local metadata
-// should use this class.
-class LoaderController {
- public:
-  LoaderController();
-  ~LoaderController();
-
-  // Increments the lock count and returns an object which decrements the count
-  // on its destruction.
-  // While the lock count is positive, tasks will be pending.
-  std::unique_ptr<base::ScopedClosureRunner> GetLock();
-
-  // Runs the task if the lock count is 0, otherwise it will be pending.
-  void ScheduleRun(const base::Closure& task);
-
- private:
-  // Decrements the lock count.
-  void Unlock();
-
-  int lock_count_;
-  std::vector<base::Closure> pending_tasks_;
-
-  base::ThreadChecker thread_checker_;
-
-  base::WeakPtrFactory<LoaderController> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(LoaderController);
-};
 
 // ChangeListLoader is used to load the change list, the full resource list,
 // and directory contents, from Google Drive API.  The class also updates the

@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/callback_helpers.h"
-#include "components/drive/chromeos/change_list_loader.h"
+#include "components/drive/chromeos/loader_controller.h"
 #include "components/drive/file_system/operation_test_base.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "content/public/test/test_utils.h"

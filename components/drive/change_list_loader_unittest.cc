@@ -19,6 +19,7 @@
 #include "components/drive/chromeos/change_list_loader_observer.h"
 #include "components/drive/chromeos/drive_test_util.h"
 #include "components/drive/chromeos/file_cache.h"
+#include "components/drive/chromeos/loader_controller.h"
 #include "components/drive/chromeos/resource_metadata.h"
 #include "components/drive/event_logger.h"
 #include "components/drive/file_change.h"

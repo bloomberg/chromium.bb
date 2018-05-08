@@ -140,6 +140,8 @@ if (is_chromeos) {
       "chromeos/file_system_interface.cc",
       "chromeos/file_system_interface.h",
       "chromeos/file_system_observer.h",
+      "chromeos/loader_controller.cc",
+      "chromeos/loader_controller.h",
       "chromeos/remove_stale_cache_files.cc",
       "chromeos/remove_stale_cache_files.h",
       "chromeos/resource_metadata.cc",
