@@ -927,12 +927,13 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   // to our parent.
   if (layout_result->Status() == NGLayoutResult::kBfcOffsetResolved &&
       !container_builder_.BfcOffset()) {
+    // There's no need to do anything apart from resolving the BFC offset here,
+    // so make sure that it aborts before trying to position floats or anything
+    // like that, which would just be waste of time. This is simply propagating
+    // an abort up to a node which is able to restart the layout (a node that
+    // has resolved its BFC offset).
+    abort_when_bfc_offset_updated_ = true;
     ResolveBfcOffset(previous_inflow_position, child_bfc_offset->block_offset);
-
-    // NOTE: Unlike other aborts, we don't try check if we *should* abort with
-    // NeedsAbortOnBfcOffsetChange(), this is simply propagating an abort up to
-    // a node which is able to restart the layout (a node that has resolved its
-    // BFC offset).
     return false;
   }
 
