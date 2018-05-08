@@ -458,7 +458,12 @@ BENCHMARKS_TO_OUTPUT_HISTOGRAMS = [
     'blink_perf.parser',
     'blink_perf.shadow_dom',
     'blink_perf.svg',
-    'memory.top_10_mobile'
+    'memory.top_10_mobile',
+    'system_health.common_desktop',
+    'system_health.common_mobile',
+    'system_health.memory_desktop',
+    'system_health.memory_mobile',
+    'system_health.webview_startup',
 ]
 
 
