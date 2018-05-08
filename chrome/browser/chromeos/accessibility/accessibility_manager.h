@@ -310,6 +310,8 @@ class AccessibilityManager
       extensions::api::braille_display_private::BrailleController* controller);
   void FlushForTesting();
   void SetFocusRingObserverForTest(base::RepeatingCallback<void()> observer);
+  void SetSelectToSpeakStateObserverForTest(
+      base::RepeatingCallback<void()> observer);
 
  protected:
   AccessibilityManager();
@@ -432,6 +434,8 @@ class AccessibilityManager
   std::unique_ptr<DictationChromeos> dictation_;
 
   base::RepeatingCallback<void()> focus_ring_observer_for_test_;
+
+  base::RepeatingCallback<void()> select_to_speak_state_observer_for_test_;
 
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
 

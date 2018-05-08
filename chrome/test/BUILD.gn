@@ -4889,6 +4889,7 @@ if (!is_android) {
       deps += [
         "//ash:interactive_ui_test_support",
         "//ash/app_list/presenter:test_support",
+        "//ash/public/interfaces:test_interfaces",
         "//ash/resources",
         "//chrome/browser/media/router:test_support",
         "//chromeos",

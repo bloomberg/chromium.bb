@@ -44,6 +44,7 @@
         "test": [
           "ash::mojom::ShelfTestApi",
           "ash::mojom::ShellTestApi",
+          "ash::mojom::StatusAreaWidgetTestApi",
           "ash::mojom::SystemTrayTestApi",
           "ash::mojom::TimeToFirstPresentRecorderTestApi"
         ],
