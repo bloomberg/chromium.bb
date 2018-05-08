@@ -28,7 +28,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGRect rect id='rect'",
-      "reason": "style change"
+      "reason": "SVG resource change"
     }
   ]
 }

@@ -60,6 +60,7 @@ class ScaleTransformOperation;
 class StyleAutoColor;
 class StylePath;
 class StyleResolverState;
+class StyleSVGResource;
 class TextSizeAdjust;
 class TranslateTransformOperation;
 class UnzoomedLength;
@@ -91,8 +92,6 @@ class StyleBuilderConverter {
  public:
   static scoped_refptr<StyleReflection> ConvertBoxReflect(StyleResolverState&,
                                                           const CSSValue&);
-  static AtomicString ConvertFragmentIdentifier(StyleResolverState&,
-                                                const CSSValue&);
   static Color ConvertColor(StyleResolverState&,
                             const CSSValue&,
                             bool for_visited_link = false);
@@ -101,6 +100,9 @@ class StyleBuilderConverter {
   static LengthBox ConvertClip(StyleResolverState&, const CSSValue&);
   static scoped_refptr<ClipPathOperation> ConvertClipPath(StyleResolverState&,
                                                           const CSSValue&);
+  static scoped_refptr<StyleSVGResource> ConvertElementReference(
+      StyleResolverState&,
+      const CSSValue&);
   static FilterOperations ConvertFilterOperations(StyleResolverState&,
                                                   const CSSValue&);
   static FilterOperations ConvertOffscreenFilterOperations(const CSSValue&);

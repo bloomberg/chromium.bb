@@ -33,7 +33,8 @@
 namespace blink {
 
 bool SVGPaint::operator==(const SVGPaint& other) const {
-  return type == other.type && color == other.color && url == other.url;
+  return type == other.type && color == other.color &&
+         resource == other.resource;
 }
 
 StyleFillData::StyleFillData()

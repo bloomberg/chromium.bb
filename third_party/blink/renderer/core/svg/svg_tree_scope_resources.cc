@@ -33,39 +33,13 @@ LocalSVGResource* SVGTreeScopeResources::ExistingResourceForId(
   return resources_.at(id);
 }
 
-void SVGTreeScopeResources::RemoveUnreferencedResources() {
-  if (resources_.IsEmpty())
-    return;
-  // Remove resources that are no longer referenced.
-  Vector<AtomicString> to_be_removed;
+void SVGTreeScopeResources::UnregisterResource(LocalSVGResource* resource) {
   for (const auto& entry : resources_) {
-    LocalSVGResource* resource = entry.value.Get();
-    DCHECK(resource);
-    if (resource->IsEmpty()) {
-      resource->Unregister();
-      to_be_removed.push_back(entry.key);
+    if (resource == entry.value) {
+      resources_.erase(entry.key);
+      return;
     }
   }
-  resources_.RemoveAll(to_be_removed);
-}
-
-void SVGTreeScopeResources::RemoveWatchesForElement(SVGElement& element) {
-  if (resources_.IsEmpty() || !element.HasPendingResources())
-    return;
-  // Remove the element from pending resources.
-  Vector<AtomicString> to_be_removed;
-  for (const auto& entry : resources_) {
-    LocalSVGResource* resource = entry.value.Get();
-    DCHECK(resource);
-    resource->RemoveWatch(element);
-    if (resource->IsEmpty()) {
-      resource->Unregister();
-      to_be_removed.push_back(entry.key);
-    }
-  }
-  resources_.RemoveAll(to_be_removed);
-
-  element.ClearHasPendingResources();
 }
 
 void SVGTreeScopeResources::Trace(blink::Visitor* visitor) {

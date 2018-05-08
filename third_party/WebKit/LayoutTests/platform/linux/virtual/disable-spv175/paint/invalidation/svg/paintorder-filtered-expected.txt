@@ -18,23 +18,53 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGContainer use",
-          "rect": [451, 160, 140, 140],
-          "reason": "SVG resource change"
+          "object": "LayoutSVGPath polygon",
+          "rect": [168, 150, 164, 163],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='poly'",
+          "rect": [168, 150, 164, 163],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGPath polygon",
+          "rect": [441, 150, 163, 163],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGPath polygon id='t3'",
+          "rect": [305, 150, 163, 163],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGPath polygon",
+          "rect": [32, 150, 163, 163],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='poly'",
+          "rect": [32, 150, 163, 163],
+          "reason": "style change"
         },
         {
           "object": "LayoutSVGContainer use id='t2'",
-          "rect": [179, 160, 140, 140],
+          "rect": [181, 163, 138, 137],
           "reason": "SVG resource change"
         },
         {
-          "object": "LayoutSVGContainer use id='t1'",
-          "rect": [42, 160, 140, 140],
+          "object": "LayoutSVGContainer use",
+          "rect": [454, 163, 137, 137],
           "reason": "SVG resource change"
         },
         {
           "object": "LayoutSVGViewportContainer svg",
           "rect": [318, 163, 137, 137],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='t1'",
+          "rect": [45, 163, 137, 137],
           "reason": "SVG resource change"
         }
       ]

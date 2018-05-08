@@ -107,6 +107,17 @@ static void WriteNameValuePair(TextStream& ts,
   ts << " [" << name << "=" << value << "]";
 }
 
+static void WriteSVGResourceIfNotNull(TextStream& ts,
+                                      const char* name,
+                                      const StyleSVGResource* value,
+                                      TreeScope& tree_scope) {
+  if (!value)
+    return;
+  AtomicString id = SVGURIReference::FragmentIdentifierFromIRIString(
+      value->Url(), tree_scope);
+  WriteNameValuePair(ts, name, id);
+}
+
 template <typename ValueType>
 static void WriteNameAndQuotedValue(TextStream& ts,
                                     const char* name,
@@ -114,11 +125,14 @@ static void WriteNameAndQuotedValue(TextStream& ts,
   ts << " [" << name << "=\"" << value << "\"]";
 }
 
-static void WriteIfNotEmpty(TextStream& ts,
-                            const char* name,
-                            const String& value) {
-  if (!value.IsEmpty())
-    WriteNameValuePair(ts, name, value);
+static void WriteQuotedSVGResource(TextStream& ts,
+                                   const char* name,
+                                   const StyleSVGResource* value,
+                                   TreeScope& tree_scope) {
+  DCHECK(value);
+  AtomicString id = SVGURIReference::FragmentIdentifierFromIRIString(
+      value->Url(), tree_scope);
+  WriteNameAndQuotedValue(ts, name, id);
 }
 
 template <typename ValueType>
@@ -326,9 +340,13 @@ static void WriteStyle(TextStream& ts, const LayoutObject& object) {
     WriteIfNotDefault(ts, "clip rule", svg_style.ClipRule(), RULE_NONZERO);
   }
 
-  WriteIfNotEmpty(ts, "start marker", svg_style.MarkerStartResource());
-  WriteIfNotEmpty(ts, "middle marker", svg_style.MarkerMidResource());
-  WriteIfNotEmpty(ts, "end marker", svg_style.MarkerEndResource());
+  TreeScope& tree_scope = object.GetDocument();
+  WriteSVGResourceIfNotNull(ts, "start marker", svg_style.MarkerStartResource(),
+                            tree_scope);
+  WriteSVGResourceIfNotNull(ts, "middle marker", svg_style.MarkerMidResource(),
+                            tree_scope);
+  WriteSVGResourceIfNotNull(ts, "end marker", svg_style.MarkerEndResource(),
+                            tree_scope);
 }
 
 static TextStream& WritePositionAndStyle(TextStream& ts,
@@ -721,7 +739,8 @@ void WriteResources(TextStream& ts, const LayoutObject& object, int indent) {
   if (LayoutSVGResourceMasker* masker = resources->Masker()) {
     WriteIndent(ts, indent);
     ts << " ";
-    WriteNameAndQuotedValue(ts, "masker", style.SvgStyle().MaskerResource());
+    WriteQuotedSVGResource(ts, "masker", style.SvgStyle().MaskerResource(),
+                           tree_scope);
     ts << " ";
     WriteStandardPrefix(ts, *masker, 0);
     ts << " " << masker->ResourceBoundingBox(&object) << "\n";

@@ -50,7 +50,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
+#include "third_party/blink/renderer/core/style/style_svg_resource.h"
 
 namespace blink {
 
@@ -109,13 +109,16 @@ Color StyleBuilderConverter::ConvertColor(StyleResolverState& state,
       value, state.Style()->GetColor(), for_visited_link);
 }
 
-AtomicString StyleBuilderConverter::ConvertFragmentIdentifier(
+scoped_refptr<StyleSVGResource> StyleBuilderConverter::ConvertElementReference(
     StyleResolverState& state,
     const CSSValue& value) {
-  if (value.IsURIValue())
-    return SVGURIReference::FragmentIdentifierFromIRIString(
-        ToCSSURIValue(value).Value(), state.GetElement()->GetTreeScope());
-  return g_null_atom;
+  if (!value.IsURIValue())
+    return nullptr;
+  const CSSURIValue& url_value = ToCSSURIValue(value);
+  SVGResource* resource =
+      state.GetElementStyleResources().GetSVGResourceFromValue(
+          state.GetTreeScope(), url_value);
+  return StyleSVGResource::Create(resource, AtomicString(url_value.Value()));
 }
 
 LengthBox StyleBuilderConverter::ConvertClip(StyleResolverState& state,
@@ -1403,27 +1406,26 @@ SVGPaint StyleBuilderConverter::ConvertSVGPaint(StyleResolverState& state,
   if (value.IsValueList()) {
     const CSSValueList& list = ToCSSValueList(value);
     DCHECK_EQ(list.length(), 2u);
-    paint.url = ToCSSURIValue(list.Item(0)).Value();
+    paint.resource = ConvertElementReference(state, list.Item(0));
     local_value = &list.Item(1);
   }
 
   if (local_value->IsURIValue()) {
     paint.type = SVG_PAINTTYPE_URI;
-    paint.url = ToCSSURIValue(local_value)->Value();
+    paint.resource = ConvertElementReference(state, *local_value);
   } else if (local_value->IsIdentifierValue() &&
              ToCSSIdentifierValue(local_value)->GetValueID() == CSSValueNone) {
-    paint.type =
-        paint.url.IsEmpty() ? SVG_PAINTTYPE_NONE : SVG_PAINTTYPE_URI_NONE;
+    paint.type = !paint.resource ? SVG_PAINTTYPE_NONE : SVG_PAINTTYPE_URI_NONE;
   } else if (local_value->IsIdentifierValue() &&
              ToCSSIdentifierValue(local_value)->GetValueID() ==
                  CSSValueCurrentcolor) {
     paint.color = state.Style()->GetColor();
-    paint.type = paint.url.IsEmpty() ? SVG_PAINTTYPE_CURRENTCOLOR
-                                     : SVG_PAINTTYPE_URI_CURRENTCOLOR;
+    paint.type = !paint.resource ? SVG_PAINTTYPE_CURRENTCOLOR
+                                 : SVG_PAINTTYPE_URI_CURRENTCOLOR;
   } else {
     paint.color = ConvertColor(state, *local_value);
-    paint.type = paint.url.IsEmpty() ? SVG_PAINTTYPE_RGBCOLOR
-                                     : SVG_PAINTTYPE_URI_RGBCOLOR;
+    paint.type =
+        !paint.resource ? SVG_PAINTTYPE_RGBCOLOR : SVG_PAINTTYPE_URI_RGBCOLOR;
   }
   return paint;
 }
