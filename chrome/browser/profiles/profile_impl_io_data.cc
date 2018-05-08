@@ -66,8 +66,6 @@
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_server_properties.h"
-#include "net/http/http_server_properties_manager.h"
 #include "net/net_buildflags.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/url_request/url_request_context_builder.h"
