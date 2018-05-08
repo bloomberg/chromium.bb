@@ -195,8 +195,8 @@ int Mutate(base::CommandLine* cmd, Fuzzer* fuzzer) {
   }
 
   if (permute) {
-    std::random_shuffle(message_vector.begin(), message_vector.end(),
-                        RandInRange);
+    std::shuffle(message_vector.begin(), message_vector.end(),
+                 *g_mersenne_twister);
   }
 
   if (!MessageFile::Write(base::FilePath(output_file_name), message_vector))

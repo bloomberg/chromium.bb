@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/rand_util.h"
 #include "base/strings/string_piece.h"
 #include "components/url_pattern_index/url_pattern.h"
 #include "components/url_pattern_index/url_rule_test_support.h"
@@ -748,7 +749,7 @@ TEST_F(UrlPatternIndexTest, FindMatchHighestPriority) {
     // Create a shuffled vector of priorities from 1 to |i|.
     std::vector<uint32_t> priorities(i);
     std::iota(priorities.begin(), priorities.end(), 1);
-    std::random_shuffle(priorities.begin(), priorities.end());
+    base::RandomShuffle(priorities.begin(), priorities.end());
 
     for (size_t j = 0; j < i; j++) {
       AddSimpleUrlRule(pattern, id, priorities[j]);

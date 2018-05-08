@@ -37,3 +37,5 @@ $ git am --3way --message-id -p4 /tmp/patchdir
 Local Modifications:
  - codereview.settings has been excluded.
  - thread_log_messages.cc (using ThreadLocalStorage::Slot instead of StaticSlot)
+ - Replaced std::random_shuffle with base::RandomShuffle in
+   prune_crash_reports_test.cc
