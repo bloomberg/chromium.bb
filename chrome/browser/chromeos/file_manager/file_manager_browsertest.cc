@@ -188,13 +188,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 //                      TestParameter(NOT_IN_GUEST_MODE,
 //                                    "openQuickViewForFoldersAfterClose")
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_DirectoryTreeContextMenu DISABLED_DirectoryTreeContextMenu
-#else
-#define MAYBE_DirectoryTreeContextMenu DirectoryTreeContextMenu
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_DirectoryTreeContextMenu,
+    DirectoryTreeContextMenu,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE,
