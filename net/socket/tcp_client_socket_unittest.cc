@@ -10,6 +10,7 @@
 
 #include <stddef.h>
 
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -40,6 +41,9 @@ namespace {
 // Try binding a socket to loopback interface and verify that we can
 // still connect to a server on the same interface.
 TEST(TCPClientSocketTest, BindLoopbackToLoopback) {
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+
   IPAddress lo_address = IPAddress::IPv4Localhost();
 
   TCPServerSocket server(nullptr, NetLogSource());
@@ -77,6 +81,9 @@ TEST(TCPClientSocketTest, BindLoopbackToLoopback) {
 // Try to bind socket to the loopback interface and connect to an
 // external address, verify that connection fails.
 TEST(TCPClientSocketTest, BindLoopbackToExternal) {
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+
   IPAddress external_ip(72, 14, 213, 105);
   TCPClientSocket socket(AddressList::CreateFromIPAddress(external_ip, 80),
                          NULL, NULL, NetLogSource());
@@ -172,6 +179,9 @@ TEST(TCPClientSocketTest, MAYBE_TestSocketPerformanceWatcher) {
 // TCPClientSocket::Tag works as expected.
 #if defined(OS_ANDROID)
 TEST(TCPClientSocketTest, Tag) {
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+
   // Start test server.
   EmbeddedTestServer test_server;
   test_server.AddDefaultHandlers(base::FilePath());
@@ -223,6 +233,9 @@ TEST(TCPClientSocketTest, Tag) {
 }
 
 TEST(TCPClientSocketTest, TagAfterConnect) {
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+
   // Start test server.
   EmbeddedTestServer test_server;
   test_server.AddDefaultHandlers(base::FilePath());

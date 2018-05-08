@@ -12,6 +12,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
 
@@ -56,7 +57,8 @@ TEST_F(URLFetcherStringWriterTest, Basic) {
   EXPECT_TRUE(writer_->data().empty());
 }
 
-class URLFetcherFileWriterTest : public PlatformTest {
+class URLFetcherFileWriterTest : public PlatformTest,
+                                 public WithScopedTaskEnvironment {
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -204,7 +206,8 @@ TEST_F(URLFetcherFileWriterTest, DisownFile) {
   EXPECT_TRUE(base::PathExists(file_path_));
 }
 
-class URLFetcherFileWriterTemporaryFileTest : public PlatformTest {
+class URLFetcherFileWriterTemporaryFileTest : public PlatformTest,
+                                              public WithScopedTaskEnvironment {
  protected:
   void SetUp() override {
     writer_.reset(new URLFetcherFileWriter(base::ThreadTaskRunnerHandle::Get(),

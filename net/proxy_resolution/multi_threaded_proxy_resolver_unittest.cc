@@ -27,6 +27,7 @@
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolver_factory.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -209,7 +210,7 @@ class SingleShotMultiThreadedProxyResolverFactory
   std::unique_ptr<ProxyResolverFactory> factory_;
 };
 
-class MultiThreadedProxyResolverTest : public testing::Test {
+class MultiThreadedProxyResolverTest : public TestWithScopedTaskEnvironment {
  public:
   void Init(size_t num_threads) {
     std::unique_ptr<BlockableProxyResolverFactory> factory_owner(

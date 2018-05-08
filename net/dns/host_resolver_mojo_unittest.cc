@@ -17,6 +17,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -148,7 +149,7 @@ void MockMojoHostResolver::ResolveDns(
 
 }  // namespace
 
-class HostResolverMojoTest : public testing::Test {
+class HostResolverMojoTest : public TestWithScopedTaskEnvironment {
  protected:
   enum class ConnectionErrorSource {
     REQUEST,

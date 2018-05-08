@@ -14,6 +14,7 @@
 #include "net/proxy_resolution/pac_file_data.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -101,7 +102,7 @@ class MockJSBindings : public ProxyResolverV8::JSBindings {
   bool should_terminate;
 };
 
-class ProxyResolverV8Test : public testing::Test {
+class ProxyResolverV8Test : public TestWithScopedTaskEnvironment {
  public:
   // Creates a ProxyResolverV8 using the PAC script contained in |filename|. If
   // called more than once, the previous ProxyResolverV8 is deleted.

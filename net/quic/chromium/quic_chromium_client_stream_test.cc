@@ -22,6 +22,7 @@
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -153,7 +154,8 @@ MockQuicClientSessionBase::MockQuicClientSessionBase(
 MockQuicClientSessionBase::~MockQuicClientSessionBase() {}
 
 class QuicChromiumClientStreamTest
-    : public ::testing::TestWithParam<QuicTransportVersion> {
+    : public ::testing::TestWithParam<QuicTransportVersion>,
+      public WithScopedTaskEnvironment {
  public:
   QuicChromiumClientStreamTest()
       : crypto_config_(crypto_test_utils::ProofVerifierForTesting(),

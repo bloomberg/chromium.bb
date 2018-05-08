@@ -7,6 +7,7 @@
 #include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,8 +15,8 @@
 namespace net {
 
 class URLRequestContextMemoryDumpTest
-    : public testing::TestWithParam<
-          base::trace_event::MemoryDumpLevelOfDetail> {};
+    : public testing::TestWithParam<base::trace_event::MemoryDumpLevelOfDetail>,
+      public WithScopedTaskEnvironment {};
 
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,

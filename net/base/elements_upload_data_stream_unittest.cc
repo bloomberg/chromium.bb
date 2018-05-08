@@ -27,6 +27,7 @@
 #include "net/base/upload_file_element_reader.h"
 #include "net/log/net_log_with_source.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -139,7 +140,8 @@ class MockUploadElementReader : public UploadElementReader {
 
 }  // namespace
 
-class ElementsUploadDataStreamTest : public PlatformTest {
+class ElementsUploadDataStreamTest : public PlatformTest,
+                                     public WithScopedTaskEnvironment {
  public:
   void SetUp() override {
     PlatformTest::SetUp();

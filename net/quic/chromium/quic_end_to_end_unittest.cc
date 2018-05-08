@@ -37,6 +37,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/tools/quic/quic_http_response_cache.h"
 #include "net/tools/quic/quic_simple_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -96,7 +97,8 @@ std::vector<TestParams> GetTestParams() {
 
 }  // namespace
 
-class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
+class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
+                         public WithScopedTaskEnvironment {
  protected:
   QuicEndToEndTest()
       : host_resolver_impl_(CreateResolverImpl()),

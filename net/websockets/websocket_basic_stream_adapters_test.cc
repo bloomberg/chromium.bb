@@ -34,6 +34,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/websockets/websocket_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -49,7 +50,8 @@ namespace test {
 
 const char* const kGroupName = "ssl/www.example.org:443";
 
-class WebSocketClientSocketHandleAdapterTest : public Test {
+class WebSocketClientSocketHandleAdapterTest
+    : public TestWithScopedTaskEnvironment {
  protected:
   WebSocketClientSocketHandleAdapterTest()
       : host_port_pair_("www.example.org", 443),
@@ -292,7 +294,7 @@ class MockDelegate : public WebSocketSpdyStreamAdapter::Delegate {
   MOCK_METHOD1(OnClose, void(int));
 };
 
-class WebSocketSpdyStreamAdapterTest : public Test {
+class WebSocketSpdyStreamAdapterTest : public TestWithScopedTaskEnvironment {
  protected:
   WebSocketSpdyStreamAdapterTest()
       : url_("wss://www.example.org/"),

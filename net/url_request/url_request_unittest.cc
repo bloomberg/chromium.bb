@@ -108,6 +108,7 @@
 #include "net/test/gtest_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/data_protocol_handler.h"
@@ -768,7 +769,7 @@ class OCSPErrorTestDelegate : public TestDelegate {
 }  // namespace
 
 // Inherit PlatformTest since we require the autorelease pool on Mac OS X.
-class URLRequestTest : public PlatformTest {
+class URLRequestTest : public PlatformTest, public WithScopedTaskEnvironment {
  public:
   URLRequestTest() : default_context_(true) {
     default_context_.set_network_delegate(&default_network_delegate_);
@@ -9714,7 +9715,7 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPSToHTTP) {
   VerifyReferrerAfterRedirect(URLRequest::NO_REFERRER, GURL(), GURL());
 }
 
-class HTTPSRequestTest : public testing::Test {
+class HTTPSRequestTest : public TestWithScopedTaskEnvironment {
  public:
   HTTPSRequestTest() : default_context_(true) {
     default_context_.set_network_delegate(&default_network_delegate_);
@@ -10567,7 +10568,7 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   }
 }
 
-class HTTPSFallbackTest : public testing::Test {
+class HTTPSFallbackTest : public TestWithScopedTaskEnvironment {
  public:
   HTTPSFallbackTest() : context_(true) {
     ssl_config_service_ = new TestSSLConfigService(
@@ -10666,7 +10667,7 @@ TEST_F(HTTPSFallbackTest, TLSv1_3InterferenceDisableVersion) {
   ExpectConnection(SSL_CONNECTION_VERSION_TLS1_2);
 }
 
-class HTTPSSessionTest : public testing::Test {
+class HTTPSSessionTest : public TestWithScopedTaskEnvironment {
  public:
   HTTPSSessionTest() : default_context_(true) {
     cert_verifier_.set_default_result(OK);

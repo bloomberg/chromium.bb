@@ -30,6 +30,7 @@
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/nqe/network_quality_estimator_util.h"
 #include "net/nqe/network_quality_provider.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -116,7 +117,9 @@ class TestThroughputAnalyzer : public internal::ThroughputAnalyzer {
   DISALLOW_COPY_AND_ASSIGN(TestThroughputAnalyzer);
 };
 
-TEST(ThroughputAnalyzerTest, MaximumRequests) {
+using ThroughputAnalyzerTest = TestWithScopedTaskEnvironment;
+
+TEST_F(ThroughputAnalyzerTest, MaximumRequests) {
   const struct {
     bool use_local_requests;
   } tests[] = {{
@@ -168,7 +171,7 @@ TEST(ThroughputAnalyzerTest, MaximumRequests) {
 
 // Tests that the throughput observation is taken only if there are sufficient
 // number of requests in-flight.
-TEST(ThroughputAnalyzerTest, TestMinRequestsForThroughputSample) {
+TEST_F(ThroughputAnalyzerTest, TestMinRequestsForThroughputSample) {
   const base::TickClock* tick_clock = base::DefaultTickClock::GetInstance();
   TestNetworkQualityProvider network_quality_provider;
   std::map<std::string, std::string> variation_params;
@@ -223,7 +226,7 @@ TEST(ThroughputAnalyzerTest, TestMinRequestsForThroughputSample) {
 
 // Tests that the hanging requests are dropped from the |requests_|, and
 // throughput observation window is ended.
-TEST(ThroughputAnalyzerTest, TestHangingRequests) {
+TEST_F(ThroughputAnalyzerTest, TestHangingRequests) {
   static const struct {
     int hanging_request_duration_http_rtt_multiplier;
     base::TimeDelta http_rtt;
@@ -380,7 +383,7 @@ TEST(ThroughputAnalyzerTest, TestHangingRequests) {
 }
 
 // Tests that the check for hanging requests is done at most once per second.
-TEST(ThroughputAnalyzerTest, TestHangingRequestsCheckedOnlyPeriodically) {
+TEST_F(ThroughputAnalyzerTest, TestHangingRequestsCheckedOnlyPeriodically) {
   base::SimpleTestTickClock tick_clock;
 
   TestNetworkQualityProvider network_quality_provider;
@@ -453,7 +456,7 @@ TEST(ThroughputAnalyzerTest, TestHangingRequestsCheckedOnlyPeriodically) {
 
 // Tests that the last received time for a request is updated when data is
 // received for that request.
-TEST(ThroughputAnalyzerTest, TestLastReceivedTimeIsUpdated) {
+TEST_F(ThroughputAnalyzerTest, TestLastReceivedTimeIsUpdated) {
   base::SimpleTestTickClock tick_clock;
 
   TestNetworkQualityProvider network_quality_provider;
@@ -507,7 +510,7 @@ TEST(ThroughputAnalyzerTest, TestLastReceivedTimeIsUpdated) {
 // Test that a request that has been hanging for a long time is deleted
 // immediately when EraseHangingRequests is called even if the last hanging
 // request check was done recently.
-TEST(ThroughputAnalyzerTest, TestRequestDeletedImmediately) {
+TEST_F(ThroughputAnalyzerTest, TestRequestDeletedImmediately) {
   base::SimpleTestTickClock tick_clock;
 
   TestNetworkQualityProvider network_quality_provider;
@@ -551,7 +554,7 @@ TEST(ThroughputAnalyzerTest, TestRequestDeletedImmediately) {
 
 // Tests if the throughput observation is taken correctly when local and network
 // requests overlap.
-TEST(ThroughputAnalyzerTest, TestThroughputWithMultipleRequestsOverlap) {
+TEST_F(ThroughputAnalyzerTest, TestThroughputWithMultipleRequestsOverlap) {
   static const struct {
     bool start_local_request;
     bool local_request_completes_first;
@@ -644,7 +647,7 @@ TEST(ThroughputAnalyzerTest, TestThroughputWithMultipleRequestsOverlap) {
 
 // Tests if the throughput observation is taken correctly when two network
 // requests overlap.
-TEST(ThroughputAnalyzerTest, TestThroughputWithNetworkRequestsOverlap) {
+TEST_F(ThroughputAnalyzerTest, TestThroughputWithNetworkRequestsOverlap) {
   static const struct {
     size_t throughput_min_requests_in_flight;
     size_t number_requests_in_flight;
@@ -735,7 +738,7 @@ TEST(ThroughputAnalyzerTest, TestThroughputWithNetworkRequestsOverlap) {
 // Tests if the throughput observation is taken correctly when the start and end
 // of network requests overlap, and the minimum number of in flight requests
 // when taking an observation is more than 1.
-TEST(ThroughputAnalyzerTest, TestThroughputWithMultipleNetworkRequests) {
+TEST_F(ThroughputAnalyzerTest, TestThroughputWithMultipleNetworkRequests) {
   const base::TickClock* tick_clock = base::DefaultTickClock::GetInstance();
   TestNetworkQualityProvider network_quality_provider;
   std::map<std::string, std::string> variation_params;
@@ -809,7 +812,7 @@ TEST(ThroughputAnalyzerTest, TestThroughputWithMultipleNetworkRequests) {
   EXPECT_EQ(1, throughput_analyzer.throughput_observations_received());
 }
 
-TEST(ThroughputAnalyzerTest, TestHangingWindow) {
+TEST_F(ThroughputAnalyzerTest, TestHangingWindow) {
   static constexpr size_t kCwndSizeKilobytes = 10 * 1.5;
   static constexpr size_t kCwndSizeBits = kCwndSizeKilobytes * 1000 * 8;
 

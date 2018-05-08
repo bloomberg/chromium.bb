@@ -26,6 +26,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_test_job.h"
@@ -76,7 +77,7 @@ class AiaResponseHandler : public URLRequestInterceptor {
 
 }  // namespace
 
-class NssHttpTest : public ::testing::Test {
+class NssHttpTest : public TestWithScopedTaskEnvironment {
  public:
   NssHttpTest()
       : context_(false),

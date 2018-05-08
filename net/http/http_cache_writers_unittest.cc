@@ -19,6 +19,7 @@
 #include "net/http/mock_http_cache.h"
 #include "net/http/partial_data.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,7 +69,7 @@ class TestHttpCache : public HttpCache {
   size_t make_readers_size_ = 0u;
 };
 
-class WritersTest : public testing::Test {
+class WritersTest : public TestWithScopedTaskEnvironment {
  public:
   enum class DeleteTransactionType { NONE, ACTIVE, WAITING, IDLE };
   WritersTest()

@@ -20,6 +20,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/channel_id_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,7 +29,7 @@ namespace net {
 const base::FilePath::CharType kTestChannelIDFilename[] =
     FILE_PATH_LITERAL("ChannelID");
 
-class SQLiteChannelIDStoreTest : public testing::Test {
+class SQLiteChannelIDStoreTest : public TestWithScopedTaskEnvironment {
  public:
   void Load(std::vector<std::unique_ptr<DefaultChannelIDStore::ChannelID>>*
                 channel_ids) {

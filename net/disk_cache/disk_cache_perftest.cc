@@ -18,7 +18,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/test/perf_time_logger.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -71,9 +70,7 @@ enum class WhatToRead {
 
 class DiskCachePerfTest : public DiskCacheTestWithCache {
  public:
-  DiskCachePerfTest()
-      : DiskCacheTestWithCache(&scoped_task_environment_),
-        saved_fd_limit_(base::GetMaxFds()) {
+  DiskCachePerfTest() : saved_fd_limit_(base::GetMaxFds()) {
     if (saved_fd_limit_ < kFdLimitForCacheTests)
       MaybeSetFdLimit(kFdLimitForCacheTests);
   }
@@ -110,7 +107,6 @@ class DiskCachePerfTest : public DiskCacheTestWithCache {
 
  private:
   const size_t saved_fd_limit_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 class WriteHandler {

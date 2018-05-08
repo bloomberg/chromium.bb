@@ -38,6 +38,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -506,7 +507,7 @@ void TestIPv6LoopbackOnly(const std::string& host) {
 
 }  // namespace
 
-class HostResolverImplTest : public testing::Test {
+class HostResolverImplTest : public TestWithScopedTaskEnvironment {
  public:
   static const int kDefaultPort = 80;
 

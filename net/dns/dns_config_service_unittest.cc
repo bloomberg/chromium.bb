@@ -16,13 +16,14 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/dns/dns_protocol.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 
 namespace {
 
-class DnsConfigServiceTest : public testing::Test {
+class DnsConfigServiceTest : public TestWithScopedTaskEnvironment {
  public:
   void OnConfigChanged(const DnsConfig& config) {
     last_config_ = config;

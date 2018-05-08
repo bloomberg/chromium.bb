@@ -5,6 +5,7 @@
 #include "net/android/traffic_stats.h"
 
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,6 +16,9 @@ namespace net {
 namespace {
 
 TEST(TrafficStatsAndroidTest, BasicsTest) {
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+
   EmbeddedTestServer embedded_test_server;
   embedded_test_server.ServeFilesFromDirectory(
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
@@ -48,6 +52,9 @@ TEST(TrafficStatsAndroidTest, BasicsTest) {
 }
 
 TEST(TrafficStatsAndroidTest, UIDBasicsTest) {
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+
   EmbeddedTestServer embedded_test_server;
   embedded_test_server.ServeFilesFromDirectory(
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));

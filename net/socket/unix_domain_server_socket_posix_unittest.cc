@@ -12,6 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -86,6 +87,9 @@ TEST_F(UnixDomainServerSocketTest, ListenAgainAfterFailureWithInvalidPath) {
 }
 
 TEST_F(UnixDomainServerSocketTest, AcceptWithForbiddenUser) {
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+
   const bool kUseAbstractNamespace = false;
 
   UnixDomainServerSocket server_socket(CreateAuthCallback(false),

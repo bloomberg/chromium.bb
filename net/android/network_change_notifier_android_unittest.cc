@@ -4,16 +4,18 @@
 
 // See network_change_notifier_android.h for design explanations.
 
+#include "net/android/network_change_notifier_android.h"
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
-#include "net/android/network_change_notifier_android.h"
 #include "net/android/network_change_notifier_delegate_android.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/dns_config_service.h"
 #include "net/dns/dns_protocol.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -177,7 +179,8 @@ class TestNetworkObserver : public NetworkChangeNotifier::NetworkObserver {
 
 }  // namespace
 
-class BaseNetworkChangeNotifierAndroidTest : public testing::Test {
+class BaseNetworkChangeNotifierAndroidTest
+    : public TestWithScopedTaskEnvironment {
  protected:
   typedef NetworkChangeNotifier::ConnectionType ConnectionType;
   typedef NetworkChangeNotifier::ConnectionSubtype ConnectionSubtype;

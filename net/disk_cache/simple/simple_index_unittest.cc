@@ -29,6 +29,7 @@
 #include "net/disk_cache/simple/simple_index_file.h"
 #include "net/disk_cache/simple/simple_test_util.h"
 #include "net/disk_cache/simple/simple_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace disk_cache {
@@ -107,7 +108,8 @@ class MockSimpleIndexFile : public SimpleIndexFile,
   SimpleIndex::EntrySet disk_write_entry_set_;
 };
 
-class SimpleIndexTest  : public testing::Test, public SimpleIndexDelegate {
+class SimpleIndexTest : public net::TestWithScopedTaskEnvironment,
+                        public SimpleIndexDelegate {
  protected:
   SimpleIndexTest()
       : hashes_(base::Bind(&HashesInitializer)),

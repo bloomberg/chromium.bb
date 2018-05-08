@@ -13,13 +13,14 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 
 namespace {
 
-class SerialWorkerTest : public testing::Test {
+class SerialWorkerTest : public TestWithScopedTaskEnvironment {
  public:
   // The class under test
   class TestSerialWorker : public SerialWorker {

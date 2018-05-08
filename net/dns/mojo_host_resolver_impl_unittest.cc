@@ -16,6 +16,7 @@
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -126,7 +127,7 @@ int CallbackMockHostResolver::Resolve(const RequestInfo& info,
 
 }  // namespace
 
-class MojoHostResolverImplTest : public testing::Test {
+class MojoHostResolverImplTest : public TestWithScopedTaskEnvironment {
  protected:
   void SetUp() override {
     mock_host_resolver_.rules()->AddRule("example.com", "1.2.3.4");

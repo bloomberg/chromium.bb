@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_cache_lookup_manager.h"
@@ -83,6 +84,7 @@ void PopulateCacheEntry(HttpCache* cache, const GURL& request_url) {
 }  // namespace
 
 TEST(HttpCacheLookupManagerTest, ServerPushMissCache) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   MockHttpCache mock_cache;
   HttpCacheLookupManager push_delegate(mock_cache.http_cache());
   GURL request_url("http://www.example.com/pushed.jpg");
@@ -103,6 +105,7 @@ TEST(HttpCacheLookupManagerTest, ServerPushMissCache) {
 }
 
 TEST(HttpCacheLookupManagerTest, ServerPushDoNotCreateCacheEntry) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   MockHttpCache mock_cache;
   HttpCacheLookupManager push_delegate(mock_cache.http_cache());
   GURL request_url("http://www.example.com/pushed.jpg");
@@ -132,6 +135,7 @@ TEST(HttpCacheLookupManagerTest, ServerPushDoNotCreateCacheEntry) {
 }
 
 TEST(HttpCacheLookupManagerTest, ServerPushHitCache) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   MockHttpCache mock_cache;
   HttpCacheLookupManager push_delegate(mock_cache.http_cache());
   GURL request_url("http://www.example.com/pushed.jpg");
@@ -169,6 +173,7 @@ TEST(HttpCacheLookupManagerTest, ServerPushHitCache) {
 // pending lookup transaction for the same URL, the new server push will not
 // send a new lookup transaction and should not be canceled.
 TEST(HttpCacheLookupManagerTest, ServerPushPendingLookup) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   MockHttpCache mock_cache;
   HttpCacheLookupManager push_delegate(mock_cache.http_cache());
   GURL request_url("http://www.example.com/pushed.jpg");
@@ -213,6 +218,7 @@ TEST(HttpCacheLookupManagerTest, ServerPushPendingLookup) {
 
 // Test the server push lookup is based on the full url.
 TEST(HttpCacheLookupManagerTest, ServerPushLookupOnUrl) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   MockHttpCache mock_cache;
   HttpCacheLookupManager push_delegate(mock_cache.http_cache());
   GURL request_url("http://www.example.com/pushed.jpg?u=0");

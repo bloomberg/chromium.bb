@@ -46,6 +46,7 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -706,7 +707,7 @@ class TestConnectJobDelegate : public ConnectJob::Delegate {
   int result_;
 };
 
-class ClientSocketPoolBaseTest : public testing::Test {
+class ClientSocketPoolBaseTest : public TestWithScopedTaskEnvironment {
  protected:
   ClientSocketPoolBaseTest() : params_(new TestSocketParams()) {
     connect_backup_jobs_enabled_ =

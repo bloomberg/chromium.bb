@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/run_loop.h"
-#include "net/android/dummy_spnego_authenticator.h"
 #include "net/android/http_auth_negotiate_android.h"
+
+#include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
+#include "net/android/dummy_spnego_authenticator.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
@@ -15,6 +17,8 @@ namespace net {
 namespace android {
 
 TEST(HttpAuthNegotiateAndroidTest, GenerateAuthToken) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   DummySpnegoAuthenticator::EnsureTestAccountExists();
 
   std::string auth_token;

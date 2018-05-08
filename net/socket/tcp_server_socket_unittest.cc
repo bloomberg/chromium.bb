@@ -19,6 +19,7 @@
 #include "net/log/net_log_source.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +33,8 @@ namespace net {
 namespace {
 const int kListenBacklog = 5;
 
-class TCPServerSocketTest : public PlatformTest {
+class TCPServerSocketTest : public PlatformTest,
+                            public WithScopedTaskEnvironment {
  protected:
   TCPServerSocketTest() : socket_(nullptr, NetLogSource()) {}
 

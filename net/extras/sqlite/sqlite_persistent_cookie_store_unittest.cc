@@ -20,8 +20,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
@@ -30,7 +30,7 @@
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_store_test_callbacks.h"
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
-#include "net/test/net_test_suite.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -90,7 +90,7 @@ bool CookieCryptor::DecryptString(const std::string& ciphertext,
 
 typedef std::vector<std::unique_ptr<CanonicalCookie>> CanonicalCookieVector;
 
-class SQLitePersistentCookieStoreTest : public testing::Test {
+class SQLitePersistentCookieStoreTest : public TestWithScopedTaskEnvironment {
  public:
   SQLitePersistentCookieStoreTest()
       : loaded_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -128,7 +128,7 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
     store_ = nullptr;
     // Make sure we wait until the destructor has run by running all
     // ScopedTaskEnvironment tasks.
-    NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
+    RunUntilIdle();
   }
 
   void Create(bool crypt_cookies,
@@ -415,7 +415,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
 
   db_thread_event_.Signal();
 
-  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
+  RunUntilIdle();
   EXPECT_TRUE(loaded_event_.IsSignaled());
 
   for (CanonicalCookieVector::const_iterator it = cookies_.begin();
@@ -450,7 +450,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestBeforeFlushCallback) {
     AddCookie(base::StringPrintf("%d", i), "foo", "example.com", "/", t);
   }
 
-  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
+  RunUntilIdle();
   EXPECT_GT(counter.count, 0);
 
   DestroyStore();

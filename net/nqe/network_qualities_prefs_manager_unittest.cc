@@ -19,6 +19,7 @@
 #include "net/nqe/network_id.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/nqe/network_quality_store.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -74,7 +75,9 @@ class TestPrefDelegate : public NetworkQualitiesPrefsManager::PrefDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestPrefDelegate);
 };
 
-TEST(NetworkQualitiesPrefManager, Write) {
+using NetworkQualitiesPrefManager = TestWithScopedTaskEnvironment;
+
+TEST_F(NetworkQualitiesPrefManager, Write) {
   // Force set the ECT to Slow 2G so that the ECT does not match the default
   // ECT for the current connection type. This forces the prefs to be written
   // for the current connection.
@@ -119,7 +122,7 @@ TEST(NetworkQualitiesPrefManager, Write) {
   manager.ShutdownOnPrefSequence();
 }
 
-TEST(NetworkQualitiesPrefManager, WriteWhenMatchingExpectedECT) {
+TEST_F(NetworkQualitiesPrefManager, WriteWhenMatchingExpectedECT) {
   // Force set the ECT to Slow 2G so that the ECT does not match the default
   // ECT for the current connection type. This forces the prefs to be written
   // for the current connection.
@@ -182,7 +185,7 @@ TEST(NetworkQualitiesPrefManager, WriteWhenMatchingExpectedECT) {
   manager.ShutdownOnPrefSequence();
 }
 
-TEST(NetworkQualitiesPrefManager, WriteAndReadWithMultipleNetworkIDs) {
+TEST_F(NetworkQualitiesPrefManager, WriteAndReadWithMultipleNetworkIDs) {
   static const size_t kMaxCacheSize = 20u;
 
   // Force set the ECT to Slow 2G so that the ECT does not match the default
@@ -259,7 +262,7 @@ TEST(NetworkQualitiesPrefManager, WriteAndReadWithMultipleNetworkIDs) {
 }
 
 // Verifies that the prefs are cleared correctly.
-TEST(NetworkQualitiesPrefManager, ClearPrefs) {
+TEST_F(NetworkQualitiesPrefManager, ClearPrefs) {
   // Force set the ECT to Slow 2G so that the ECT does not match the default
   // ECT for the current connection type. This forces the prefs to be written
   // for the current connection.

@@ -50,6 +50,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/third_party/spdy/core/spdy_test_utils.h"
 #include "net/third_party/spdy/platform/api/spdy_string.h"
@@ -78,7 +79,7 @@ const int32_t kBufferSize = SpdyHttpStream::kRequestBodyBufferSize;
 
 const char kPushedUrl[] = "https://www.example.org/foo.dat";
 
-class SpdyNetworkTransactionTest : public ::testing::Test {
+class SpdyNetworkTransactionTest : public TestWithScopedTaskEnvironment {
  protected:
   SpdyNetworkTransactionTest()
       : default_url_(kDefaultUrl),

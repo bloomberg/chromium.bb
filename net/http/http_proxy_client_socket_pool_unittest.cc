@@ -31,6 +31,7 @@
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/chromium/spdy_test_util_common.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -62,7 +63,8 @@ const char kHttpsProxyHost[] = "httpsproxy.example.com";
 }  // namespace
 
 class HttpProxyClientSocketPoolTest
-    : public ::testing::TestWithParam<HttpProxyType> {
+    : public ::testing::TestWithParam<HttpProxyType>,
+      public WithScopedTaskEnvironment {
  protected:
   HttpProxyClientSocketPoolTest()
       : transport_socket_pool_(kMaxSockets,

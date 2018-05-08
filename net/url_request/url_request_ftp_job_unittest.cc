@@ -20,6 +20,7 @@
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/ftp_protocol_handler.h"
 #include "net/url_request/url_request.h"
@@ -158,7 +159,7 @@ class TestURLRequestFtpJob : public URLRequestFtpJob {
 
 // Fixture for priority-related tests. Priority matters when there is
 // an HTTP proxy.
-class URLRequestFtpJobPriorityTest : public testing::Test {
+class URLRequestFtpJobPriorityTest : public TestWithScopedTaskEnvironment {
  protected:
   URLRequestFtpJobPriorityTest()
       : proxy_resolution_service_(std::make_unique<SimpleProxyConfigService>(),
@@ -250,7 +251,7 @@ TEST_F(URLRequestFtpJobPriorityTest, SetSubsequentTransactionPriority) {
   EXPECT_EQ(LOW, network_layer_.last_transaction()->priority());
 }
 
-class URLRequestFtpJobTest : public testing::Test {
+class URLRequestFtpJobTest : public TestWithScopedTaskEnvironment {
  public:
   URLRequestFtpJobTest()
       : request_context_(&socket_factory_,

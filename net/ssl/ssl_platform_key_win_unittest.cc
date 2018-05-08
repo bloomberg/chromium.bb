@@ -9,12 +9,14 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "crypto/scoped_capi_types.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/ssl/ssl_private_key_test_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/bn.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
@@ -220,7 +222,8 @@ bool PKCS8ToBLOBForCNG(const std::string& pkcs8,
 
 }  // namespace
 
-class SSLPlatformKeyCNGTest : public testing::TestWithParam<TestKey> {};
+class SSLPlatformKeyCNGTest : public testing::TestWithParam<TestKey>,
+                              public WithScopedTaskEnvironment {};
 
 TEST_P(SSLPlatformKeyCNGTest, KeyMatches) {
   const TestKey& test_key = GetParam();
@@ -271,6 +274,8 @@ INSTANTIATE_TEST_CASE_P(,
                         TestKeyToString);
 
 TEST(SSLPlatformKeyCAPITest, KeyMatches) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   // Load test data.
   scoped_refptr<X509Certificate> cert =
       ImportCertFromFile(GetTestCertsDirectory(), "client_1.pem");

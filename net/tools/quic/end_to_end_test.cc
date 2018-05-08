@@ -49,6 +49,7 @@
 #include "net/quic/test_tools/quic_stream_sequencer_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/platform/impl/quic_socket_utils.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
@@ -268,7 +269,8 @@ class ClientDelegate : public PacketDroppingTestWriter::Delegate {
   QuicClient* client_;
 };
 
-class EndToEndTest : public QuicTestWithParam<TestParams> {
+class EndToEndTest : public QuicTestWithParam<TestParams>,
+                     public WithScopedTaskEnvironment {
  protected:
   EndToEndTest()
       : initialized_(false),

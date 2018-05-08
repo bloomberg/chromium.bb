@@ -63,6 +63,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 
 // This file can be included from net/http even though
@@ -503,9 +504,7 @@ CapturePreconnectsSSLSocketPool::CapturePreconnectsSocketPool(
                           nullptr),  // net_log
       last_num_streams_(-1) {}
 
-class HttpStreamFactoryTest : public ::testing::Test,
-                              public ::testing::WithParamInterface<NextProto> {
-};
+using HttpStreamFactoryTest = TestWithScopedTaskEnvironment;
 
 TEST_F(HttpStreamFactoryTest, PreconnectDirect) {
   for (size_t i = 0; i < arraysize(kTests); ++i) {
@@ -2359,7 +2358,7 @@ TEST_F(HttpStreamFactoryTest, RequestBidirectionalStreamImpl) {
 }
 
 class HttpStreamFactoryBidirectionalQuicTest
-    : public ::testing::Test,
+    : public TestWithScopedTaskEnvironment,
       public ::testing::WithParamInterface<
           std::tuple<QuicTransportVersion, bool>> {
  protected:

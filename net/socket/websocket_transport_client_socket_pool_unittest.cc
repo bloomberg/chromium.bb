@@ -30,6 +30,7 @@
 #include "net/socket/transport_client_socket_pool_test_util.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,7 +54,8 @@ void RunLoopForTimePeriod(base::TimeDelta period) {
   run_loop.Run();
 }
 
-class WebSocketTransportClientSocketPoolTest : public ::testing::Test {
+class WebSocketTransportClientSocketPoolTest
+    : public TestWithScopedTaskEnvironment {
  protected:
   WebSocketTransportClientSocketPoolTest()
       : params_(new TransportSocketParams(

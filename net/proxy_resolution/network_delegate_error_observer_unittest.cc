@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
@@ -84,6 +85,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
 // Check that the OnPACScriptError method can be called from an arbitrary
 // thread.
 TEST(NetworkDelegateErrorObserverTest, CallOnThread) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   base::Thread thread("test_thread");
   thread.Start();
   TestNetworkDelegate network_delegate;
@@ -99,6 +101,7 @@ TEST(NetworkDelegateErrorObserverTest, CallOnThread) {
 
 // Check that passing a NULL network delegate works.
 TEST(NetworkDelegateErrorObserverTest, NoDelegate) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   base::Thread thread("test_thread");
   thread.Start();
   NetworkDelegateErrorObserver observer(

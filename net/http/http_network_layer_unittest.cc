@@ -21,6 +21,7 @@
 #include "net/spdy/chromium/spdy_session_pool.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,7 +34,8 @@ namespace net {
 
 namespace {
 
-class HttpNetworkLayerTest : public PlatformTest {
+class HttpNetworkLayerTest : public PlatformTest,
+                             public WithScopedTaskEnvironment {
  protected:
   HttpNetworkLayerTest() : ssl_config_service_(new SSLConfigServiceDefaults) {}
 
@@ -270,6 +272,8 @@ class HttpNetworkLayerTest : public PlatformTest {
   const scoped_refptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<HttpNetworkSession> network_session_;
   std::unique_ptr<HttpNetworkLayer> factory_;
+
+ private:
   HttpServerPropertiesImpl http_server_properties_;
 };
 
