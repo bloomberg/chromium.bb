@@ -34324,6 +34324,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="FAIL_DIFFERENT_PROXY_LIST"/>
 </enum>
 
+<enum name="PacUrlScheme">
+  <int value="0" label="Other"/>
+  <int value="1" label="Http"/>
+  <int value="2" label="Https"/>
+  <int value="3" label="Ftp"/>
+  <int value="4" label="File"/>
+  <int value="5" label="Data"/>
+</enum>
+
 <enum name="PageEndReason">
   <int value="0" label="END_NONE">
     Page lifetime has not yet ended (page is still active)
