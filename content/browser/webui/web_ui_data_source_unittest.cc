@@ -212,4 +212,24 @@ TEST_F(WebUIDataSourceTest, MimeType) {
   EXPECT_EQ(GetMimeType("foo.js?abc?abc"), js);
 }
 
+TEST_F(WebUIDataSourceTest, IsGzipped) {
+  EXPECT_FALSE(source()->IsGzipped("foobar"));
+
+  source()->AddResourcePath("foobar", kDummyResourceId);
+  source()->SetDefaultResource(kDummyDefaultResourceId);
+  source()->SetJsonPath("strings.js");
+  source()->UseGzip({"json/special/path"});
+
+  EXPECT_TRUE(source()->IsGzipped("foobar"));
+  EXPECT_TRUE(source()->IsGzipped("foobar?query"));
+
+  EXPECT_TRUE(source()->IsGzipped("unknown_path"));
+  EXPECT_TRUE(source()->IsGzipped("unknown_path?query"));
+
+  EXPECT_FALSE(source()->IsGzipped("json/special/path"));
+  EXPECT_FALSE(source()->IsGzipped("json/special/path?query"));
+  EXPECT_FALSE(source()->IsGzipped("strings.js"));
+  EXPECT_FALSE(source()->IsGzipped("strings.js?query"));
+}
+
 }  // namespace content
