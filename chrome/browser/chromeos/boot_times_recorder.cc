@@ -341,7 +341,7 @@ void BootTimesRecorder::LoginDone(bool is_user_new) {
                       content::NotificationService::AllSources());
     registrar_.Remove(
         this,
-        content::NOTIFICATION_RENDER_WIDGET_HOST_DID_COMPLETE_RESIZE_OR_REPAINT,
+        content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES,
         content::NotificationService::AllSources());
   }
   // Don't swamp the background thread right away.
@@ -442,7 +442,7 @@ void BootTimesRecorder::RecordLoginAttempted() {
                    content::NotificationService::AllSources());
     registrar_.Add(
         this,
-        content::NOTIFICATION_RENDER_WIDGET_HOST_DID_COMPLETE_RESIZE_OR_REPAINT,
+        content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES,
         content::NotificationService::AllSources());
   }
 }
@@ -511,7 +511,7 @@ void BootTimesRecorder::Observe(int type,
       break;
     }
     case content::
-        NOTIFICATION_RENDER_WIDGET_HOST_DID_COMPLETE_RESIZE_OR_REPAINT: {
+        NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES: {
       RenderWidgetHost* rwh = content::Source<RenderWidgetHost>(source).ptr();
       if (render_widget_hosts_loading_.find(rwh) !=
           render_widget_hosts_loading_.end()) {

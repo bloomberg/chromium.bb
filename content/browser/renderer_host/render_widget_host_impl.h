@@ -363,7 +363,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void PauseForPendingResizeOrRepaints();
 #endif
 
-  bool resize_ack_pending_for_testing() { return resize_ack_pending_; }
+  bool visual_properties_ack_pending_for_testing() {
+    return visual_properties_ack_pending_;
+  }
 
   // Requests the generation of a new CompositorFrame from the renderer.
   // It will return false if the renderer is not ready (e.g. there's an
@@ -938,8 +940,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   ChildProcessImportance importance_ = ChildProcessImportance::NORMAL;
 #endif
 
-  // True when waiting for RESIZE_ACK.
-  bool resize_ack_pending_;
+  // True when waiting for visual_properties_ack.
+  bool visual_properties_ack_pending_;
 
   // The current size of the RenderWidget.
   gfx::Size current_size_;

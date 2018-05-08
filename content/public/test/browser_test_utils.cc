@@ -651,7 +651,7 @@ bool IsResizeComplete(aura::test::WindowEventDispatcherTestApi* dispatcher_test,
                       RenderWidgetHostImpl* widget_host) {
   dispatcher_test->WaitUntilPointerMovesDispatched();
   widget_host->SynchronizeVisualProperties();
-  return !widget_host->resize_ack_pending_for_testing();
+  return !widget_host->visual_properties_ack_pending_for_testing();
 }
 
 void WaitForResizeComplete(WebContents* web_contents) {
@@ -666,14 +666,14 @@ void WaitForResizeComplete(WebContents* web_contents) {
       web_contents->GetRenderViewHost()->GetWidget());
   if (!IsResizeComplete(&dispatcher_test, widget_host)) {
     WindowedNotificationObserver resize_observer(
-        NOTIFICATION_RENDER_WIDGET_HOST_DID_COMPLETE_RESIZE_OR_REPAINT,
+        NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES,
         base::Bind(IsResizeComplete, &dispatcher_test, widget_host));
     resize_observer.Wait();
   }
 }
 #elif defined(OS_ANDROID)
 bool IsResizeComplete(RenderWidgetHostImpl* widget_host) {
-  return !widget_host->resize_ack_pending_for_testing();
+  return !widget_host->visual_properties_ack_pending_for_testing();
 }
 
 void WaitForResizeComplete(WebContents* web_contents) {
@@ -681,7 +681,7 @@ void WaitForResizeComplete(WebContents* web_contents) {
       web_contents->GetRenderViewHost()->GetWidget());
   if (!IsResizeComplete(widget_host)) {
     WindowedNotificationObserver resize_observer(
-        NOTIFICATION_RENDER_WIDGET_HOST_DID_COMPLETE_RESIZE_OR_REPAINT,
+        NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES,
         base::Bind(IsResizeComplete, widget_host));
     resize_observer.Wait();
   }

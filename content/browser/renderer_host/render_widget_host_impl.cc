@@ -139,7 +139,7 @@ using blink::WebTextDirection;
 namespace content {
 namespace {
 
-bool g_check_for_pending_resize_ack = true;
+bool g_check_for_pending_visual_properties_ack = true;
 
 // <process id, routing id>
 using RenderWidgetHostID = std::pair<int32_t, int32_t>;
@@ -340,7 +340,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       clock_(base::DefaultTickClock::GetInstance()),
       is_loading_(false),
       is_hidden_(hidden),
-      resize_ack_pending_(false),
+      visual_properties_ack_pending_(false),
       auto_resize_enabled_(false),
       waiting_for_screen_rects_ack_(false),
       needs_repainting_on_restore_(false),
@@ -519,7 +519,7 @@ const viz::FrameSinkId& RenderWidgetHostImpl::GetFrameSinkId() const {
 }
 
 void RenderWidgetHostImpl::ResetSizeAndRepaintPendingFlags() {
-  resize_ack_pending_ = false;
+  visual_properties_ack_pending_ = false;
   if (old_visual_properties_)
     old_visual_properties_->new_size = gfx::Size();
 }
@@ -669,7 +669,7 @@ void RenderWidgetHostImpl::WasHidden() {
 
   // Unthrottle SynchronizeVisualProperties IPCs so that the first call after
   // show goes through immediately.
-  resize_ack_pending_ = false;
+  visual_properties_ack_pending_ = false;
 
   // Don't bother reporting hung state when we aren't active.
   StopHangMonitorTimeout();
@@ -848,7 +848,7 @@ bool RenderWidgetHostImpl::GetVisualProperties(
   // the rate of commit. This ensures we don't overwhelm the renderer with
   // visual updates faster than it can keep up.  |needs_ack| corresponds to
   // cases where a commit is expected.
-  *needs_ack = g_check_for_pending_resize_ack &&
+  *needs_ack = g_check_for_pending_visual_properties_ack &&
                !visual_properties->auto_resize_enabled &&
                !visual_properties->new_size.IsEmpty() &&
                !visual_properties->compositor_viewport_pixel_size.IsEmpty() &&
@@ -860,7 +860,7 @@ bool RenderWidgetHostImpl::GetVisualProperties(
 void RenderWidgetHostImpl::SetInitialVisualProperties(
     const VisualProperties& visual_properties,
     bool needs_ack) {
-  resize_ack_pending_ = needs_ack;
+  visual_properties_ack_pending_ = needs_ack;
   old_visual_properties_ =
       std::make_unique<VisualProperties>(visual_properties);
 }
@@ -873,7 +873,7 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
     bool scroll_focused_node_into_view) {
   // Skip if the |delegate_| has already been detached because
   // it's web contents is being deleted.
-  if (resize_ack_pending_ || !process_->HasConnection() || !view_ ||
+  if (visual_properties_ack_pending_ || !process_->HasConnection() || !view_ ||
       !view_->HasSize() || !renderer_initialized_ || !delegate_) {
     return false;
   }
@@ -892,7 +892,7 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   bool sent_visual_properties = false;
   if (Send(new ViewMsg_SynchronizeVisualProperties(routing_id_,
                                                    *visual_properties))) {
-    resize_ack_pending_ = needs_ack;
+    visual_properties_ack_pending_ = needs_ack;
     old_visual_properties_.swap(visual_properties);
     sent_visual_properties = true;
   }
@@ -1006,7 +1006,7 @@ void RenderWidgetHostImpl::PauseForPendingResizeOrRepaints() {
     return;
 
   // Do not pause if there is not a paint or resize already coming.
-  if (!resize_ack_pending_)
+  if (!visual_properties_ack_pending_)
     return;
 
   // OnResizeOrRepaintACK posts a task to the default TaskRunner in auto-resize,
@@ -1114,9 +1114,9 @@ void RenderWidgetHostImpl::DidNavigate(uint32_t next_source_id) {
 
   if (enable_surface_synchronization_) {
     // Resize messages before navigation are not acked, so reset
-    // |resize_ack_pending_| and make sure the next resize will be acked if the
-    // last resize before navigation was supposed to be acked.
-    resize_ack_pending_ = false;
+    // |visual_properties_ack_pending_| and make sure the next resize will be
+    // acked if the last resize before navigation was supposed to be acked.
+    visual_properties_ack_pending_ = false;
     if (view_)
       view_->DidNavigate();
   } else {
@@ -1511,7 +1511,7 @@ int64_t RenderWidgetHostImpl::GetLatencyComponentId() const {
 
 // static
 void RenderWidgetHostImpl::DisableResizeAckCheckForTesting() {
-  g_check_for_pending_resize_ack = false;
+  g_check_for_pending_visual_properties_ack = false;
 }
 
 void RenderWidgetHostImpl::AddKeyPressEventCallback(
@@ -2161,10 +2161,10 @@ void RenderWidgetHostImpl::DidUpdateVisualProperties(
   // to DIP is concerning. This could result in invariants violations.
   current_size_ = viewport_size_in_dip;
 
-  resize_ack_pending_ = false;
+  visual_properties_ack_pending_ = false;
 
   NotificationService::current()->Notify(
-      NOTIFICATION_RENDER_WIDGET_HOST_DID_COMPLETE_RESIZE_OR_REPAINT,
+      NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES,
       Source<RenderWidgetHost>(this), NotificationService::NoDetails());
 
   // If we got an ack, then perhaps we have another change of visual properties

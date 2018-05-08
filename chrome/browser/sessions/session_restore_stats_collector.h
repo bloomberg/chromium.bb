@@ -91,7 +91,7 @@ class SessionRestoreStatsCollector
     base::TimeDelta foreground_tab_first_loaded;
 
     // The time elapsed between |restore_started| and reception of the first
-    // NOTIFICATION_RENDER_WIDGET_HOST_DID_COMPLETE_RESIZE_OR_REPAINT event for
+    // NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES event for
     // any of the tabs involved in the session restore. If this is zero it is
     // because it has not been recorded (all visible tabs were closed or
     // switched away from before they were painted). Corresponds to
