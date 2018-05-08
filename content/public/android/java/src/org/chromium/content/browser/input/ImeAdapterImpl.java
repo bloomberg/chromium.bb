@@ -389,6 +389,13 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
         return mInputConnection;
     }
 
+    @VisibleForTesting
+    @Override
+    public void setComposingTextForTest(final CharSequence text, final int newCursorPosition) {
+        mInputConnection.getHandler().post(
+                () -> mInputConnection.setComposingText(text, newCursorPosition));
+    }
+
     private static int getModifiers(int metaState) {
         int modifiers = 0;
         if ((metaState & KeyEvent.META_SHIFT_ON) != 0) {
