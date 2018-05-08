@@ -34,6 +34,7 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   gfx::Rect GetBounds() const override;
   void UpdateVideoSize(const gfx::Size& natural_size) override;
   ui::Layer* GetVideoLayer() override;
+  ui::Layer* GetControlsBackgroundLayer() override;
   ui::Layer* GetCloseControlsLayer() override;
   ui::Layer* GetPlayPauseControlsLayer() override;
   gfx::Rect GetCloseControlsBounds() override;
@@ -77,6 +78,7 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
 
   // Views to be shown.
   std::unique_ptr<views::View> video_view_;
+  std::unique_ptr<views::View> controls_background_view_;
   std::unique_ptr<views::ImageButton> close_controls_view_;
   std::unique_ptr<views::ToggleImageButton> play_pause_controls_view_;
 

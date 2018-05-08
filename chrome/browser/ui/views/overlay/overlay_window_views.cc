@@ -110,6 +110,7 @@ OverlayWindowViews::OverlayWindowViews(
     content::PictureInPictureWindowController* controller)
     : controller_(controller),
       video_view_(new views::View()),
+      controls_background_view_(new views::View()),
       close_controls_view_(new views::ImageButton(nullptr)),
       play_pause_controls_view_(new views::ToggleImageButton(nullptr)) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
@@ -173,6 +174,14 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateBounds() {
 }
 
 void OverlayWindowViews::SetUpViews() {
+  // Set up views::View that slightly darkens the video so the media controls
+  // appear more prominently. This is especially important in cases with a
+  // very light background.
+  controls_background_view_->SetSize(GetBounds().size());
+  controls_background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+  GetControlsBackgroundLayer()->SetColor(SK_ColorBLACK);
+  GetControlsBackgroundLayer()->SetOpacity(0.2f);
+
   // Set up views::View that closes the window.
   close_controls_view_->SetSize(kCloseIconSize);
   close_controls_view_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
@@ -202,6 +211,7 @@ void OverlayWindowViews::SetUpViews() {
   play_pause_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
 
   // Don't show the controls until the mouse hovers over the window.
+  GetControlsBackgroundLayer()->SetVisible(false);
   GetCloseControlsLayer()->SetVisible(false);
   GetPlayPauseControlsLayer()->SetVisible(false);
 }
@@ -250,6 +260,10 @@ ui::Layer* OverlayWindowViews::GetVideoLayer() {
   return video_view_->layer();
 }
 
+ui::Layer* OverlayWindowViews::GetControlsBackgroundLayer() {
+  return controls_background_view_->layer();
+}
+
 ui::Layer* OverlayWindowViews::GetCloseControlsLayer() {
   return close_controls_view_->layer();
 }
@@ -292,11 +306,13 @@ void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
     // Only show the media controls when the mouse is hovering over the window.
     case ui::ET_MOUSE_ENTERED:
+      GetControlsBackgroundLayer()->SetVisible(true);
       GetCloseControlsLayer()->SetVisible(true);
       GetPlayPauseControlsLayer()->SetVisible(true);
       break;
 
     case ui::ET_MOUSE_EXITED:
+      GetControlsBackgroundLayer()->SetVisible(false);
       GetCloseControlsLayer()->SetVisible(false);
       GetPlayPauseControlsLayer()->SetVisible(false);
       break;

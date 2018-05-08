@@ -48,6 +48,7 @@ class OverlayWindow {
 
   // Retrieve the ui::Layers corresponding to the video and controls.
   virtual ui::Layer* GetVideoLayer() = 0;
+  virtual ui::Layer* GetControlsBackgroundLayer() = 0;
   virtual ui::Layer* GetCloseControlsLayer() = 0;
   virtual ui::Layer* GetPlayPauseControlsLayer() = 0;
 
