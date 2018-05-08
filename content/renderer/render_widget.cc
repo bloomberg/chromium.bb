@@ -425,7 +425,7 @@ RenderWidget::RenderWidget(
   }
 #if defined(USE_AURA)
   RendererWindowTreeClient::CreateIfNecessary(routing_id_);
-  if (features::IsMusEnabled())
+  if (features::IsMashEnabled())
     RendererWindowTreeClient::Get(routing_id_)->SetVisible(!is_hidden_);
 #endif
 }
@@ -2040,7 +2040,7 @@ void RenderWidget::SetHidden(bool hidden) {
   is_hidden_ = hidden;
 
 #if defined(USE_AURA)
-  if (features::IsMusEnabled())
+  if (features::IsMashEnabled())
     RendererWindowTreeClient::Get(routing_id_)->SetVisible(!hidden);
 #endif
 

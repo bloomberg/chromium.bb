@@ -60,14 +60,12 @@ void AshTestSuite::Initialize() {
         ash_test_resources_200, ui::SCALE_FACTOR_200P);
   }
 
-  const bool is_mus = features::IsMusEnabled();
   const bool is_mash = base::FeatureList::IsEnabled(features::kMash);
-  AshTestHelper::config_ =
-      is_mash ? Config::MASH : is_mus ? Config::MUS : Config::CLASSIC;
+  AshTestHelper::config_ = is_mash ? Config::MASH : Config::CLASSIC;
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
-  env_ = aura::Env::CreateInstance(is_mus ? aura::Env::Mode::MUS
-                                          : aura::Env::Mode::LOCAL);
+  env_ = aura::Env::CreateInstance(is_mash ? aura::Env::Mode::MUS
+                                           : aura::Env::Mode::LOCAL);
 
   if (is_mash) {
     context_factory_ = std::make_unique<aura::test::AuraTestContextFactory>();

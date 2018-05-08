@@ -243,7 +243,7 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
       render_widget_->GetOriginalScreenInfo();
 
 #if defined(USE_AURA)
-  if (features::IsMusEnabled()) {
+  if (features::IsMashEnabled()) {
     RendererWindowTreeClient* renderer_window_tree_client =
         RendererWindowTreeClient::Get(render_widget_->routing_id());
     // It's possible a MusEmbeddedFrame has already been scheduled for creation

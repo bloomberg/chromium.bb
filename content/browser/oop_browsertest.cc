@@ -35,7 +35,7 @@ class OOPBrowserTest : public ContentBrowserTest {
     command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
     command_line->AppendSwitch(switches::kEnableOOPRasterization);
 
-    const bool use_gpu_in_tests = !features::IsMusEnabled();
+    const bool use_gpu_in_tests = !features::IsMashEnabled();
     if (use_gpu_in_tests)
       command_line->AppendSwitch(switches::kUseGpuInTests);
   }

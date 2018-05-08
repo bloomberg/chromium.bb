@@ -91,14 +91,6 @@
 #include "ui/aura/env.h"
 #endif
 
-#if BUILDFLAG(ENABLE_MUS)
-#include "components/discardable_memory/service/discardable_shared_memory_manager.h"
-#include "content/public/browser/discardable_shared_memory_manager.h"
-#include "services/ui/common/image_cursors_set.h"
-#include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/service.h"
-#endif
-
 namespace content {
 
 namespace {
@@ -281,44 +273,6 @@ bool ShouldEnableVizService() {
   return false;
 #endif
 }
-
-#if BUILDFLAG(ENABLE_MUS)
-std::unique_ptr<service_manager::Service> CreateEmbeddedUIService(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    base::WeakPtr<ui::ImageCursorsSet> image_cursors_set_weak_ptr,
-    discardable_memory::DiscardableSharedMemoryManager* memory_manager) {
-  ui::Service::InitParams params;
-  params.running_standalone = false;
-  params.resource_runner = task_runner;
-  params.image_cursors_set_weak_ptr = image_cursors_set_weak_ptr;
-  params.memory_manager = memory_manager;
-  params.should_host_viz = base::FeatureList::IsEnabled(features::kMash);
-  return std::make_unique<ui::Service>(params);
-}
-
-void RegisterUIServiceInProcessIfNecessary(
-    ServiceManagerConnection* connection) {
-  // Some tests don't create BrowserMainLoop.
-  if (!BrowserMainLoop::GetInstance())
-    return;
-  // Do not embed the UI service when running in mash.
-  if (base::FeatureList::IsEnabled(features::kMash))
-    return;
-  // Do not embed the UI service if not running with mus.
-  if (!features::IsMusEnabled())
-    return;
-
-  service_manager::EmbeddedServiceInfo info;
-  info.factory = base::Bind(
-      &CreateEmbeddedUIService, base::ThreadTaskRunnerHandle::Get(),
-      BrowserMainLoop::GetInstance()->image_cursors_set()->GetWeakPtr(),
-      GetDiscardableSharedMemoryManager());
-  info.use_own_thread = true;
-  info.message_loop_type = base::MessageLoop::TYPE_UI;
-  info.thread_priority = base::ThreadPriority::DISPLAY;
-  connection->AddEmbeddedService(ui::mojom::kServiceName, info);
-}
-#endif
 
 std::unique_ptr<service_manager::Service> CreateNetworkService() {
   // The test interface doesn't need to be implemented in the in-process case.
@@ -547,10 +501,6 @@ ServiceManagerContext::ServiceManagerContext() {
     packaged_services_connection_->AddEmbeddedService(entry.first,
                                                       entry.second);
   }
-
-#if BUILDFLAG(ENABLE_MUS)
-  RegisterUIServiceInProcessIfNecessary(packaged_services_connection_.get());
-#endif
 
   // This is safe to assign directly from any thread, because
   // ServiceManagerContext must be constructed before anyone can call

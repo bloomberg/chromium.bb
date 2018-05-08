@@ -41,7 +41,7 @@ AuraTestSuiteSetup::AuraTestSuiteSetup() {
   DCHECK(!Env::GetInstanceDontCreate());
 #if BUILDFLAG(ENABLE_MUS)
   const Env::Mode env_mode =
-      features::IsMusEnabled() ? Env::Mode::MUS : Env::Mode::LOCAL;
+      features::IsMashEnabled() ? Env::Mode::MUS : Env::Mode::LOCAL;
   env_ = Env::CreateInstance(env_mode);
   if (env_mode == Env::Mode::MUS)
     ConfigureMus();

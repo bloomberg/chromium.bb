@@ -399,10 +399,7 @@ Config Shell::GetAshConfig() {
 
 // static
 bool Shell::ShouldUseIMEService() {
-  return Shell::GetAshConfig() == Config::MASH ||
-         (Shell::GetAshConfig() == Config::MUS &&
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kUseIMEService));
+  return Shell::GetAshConfig() == Config::MASH;
 }
 
 // static

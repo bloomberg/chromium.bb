@@ -154,10 +154,6 @@ const char kTouchscreenUsableWhileScreenOff[] =
 // Hides all Message Center notification popups (toasts). Used for testing.
 const char kSuppressMessageCenterPopups[] = "suppress-message-center-popups";
 
-// By default we use classic IME (i.e. InputMethodChromeOS) in kMus. This flag
-// enables the IME service (i.e. InputMethodMus) instead.
-const char kUseIMEService[] = "use-ime-service";
-
 bool IsNightLightEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kAshEnableNightLight);
