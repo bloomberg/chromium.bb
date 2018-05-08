@@ -40,6 +40,7 @@ class MockWebRTCPeerConnectionHandlerClient
   }
   MOCK_METHOD1(DidAddRemoteDataChannel, void(blink::WebRTCDataChannelHandler*));
   MOCK_METHOD0(ReleasePeerConnectionHandler, void());
+  MOCK_METHOD0(GetOriginTrials, WebRTCOriginTrials());
 
   // Move-only arguments do not play nicely with MOCK, the workaround is to
   // EXPECT_CALL with these instead.
