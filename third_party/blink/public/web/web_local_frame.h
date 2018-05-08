@@ -715,9 +715,6 @@ class WebLocalFrame : public WebFrame {
   // default behavior will be restored.
   virtual void SetTickmarks(const WebVector<WebRect>&) = 0;
 
-  // Clears the active find match in the frame, if one exists.
-  virtual void ClearActiveFindMatch() = 0;
-
   // Context menu -----------------------------------------------------------
 
   // Returns the node that the context menu opened over.

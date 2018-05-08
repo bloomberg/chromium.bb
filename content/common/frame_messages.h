@@ -1095,11 +1095,6 @@ IPC_MESSAGE_ROUTED3(FrameMsg_Find,
                     base::string16 /* search_text */,
                     blink::WebFindOptions)
 
-// This message notifies the frame that it is no longer the active frame in the
-// current find session, and so it should clear its active find match (and no
-// longer highlight it with special coloring).
-IPC_MESSAGE_ROUTED0(FrameMsg_ClearActiveFindMatch)
-
 // This message notifies the frame that the user has closed the find-in-page
 // window (and what action to take regarding the selection).
 IPC_MESSAGE_ROUTED1(FrameMsg_StopFinding, content::StopFindAction /* action */)

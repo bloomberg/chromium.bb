@@ -1754,7 +1754,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(
       client_(client),
       local_frame_client_(LocalFrameClientImpl::Create(this)),
       autofill_client_(nullptr),
-      find_in_page_(FindInPage::Create(*this)),
+      find_in_page_(FindInPage::Create(*this, interface_registry)),
       input_events_scale_factor_for_emulation_(1),
       interface_registry_(interface_registry),
       input_method_controller_(*this),

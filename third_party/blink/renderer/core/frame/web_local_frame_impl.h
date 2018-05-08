@@ -326,7 +326,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   void CopyImageAt(const WebPoint&) override;
   void SaveImageAt(const WebPoint&) override;
   void SetEngagementLevel(mojom::EngagementLevel) override;
-  void ClearActiveFindMatch() override;
   void UsageCountChromeLoadTimes(const WebString& metric) override;
   FrameScheduler* Scheduler() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;

@@ -5,8 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FIND_IN_PAGE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FIND_IN_PAGE_H_
 
+#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
+#include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -16,10 +20,14 @@ class WebString;
 struct WebFindOptions;
 struct WebFloatRect;
 
-class FindInPage : public GarbageCollected<FindInPage> {
+class FindInPage final : public GarbageCollectedFinalized<FindInPage>,
+                         public mojom::blink::FindInPage {
+  USING_PRE_FINALIZER(FindInPage, Dispose);
+
  public:
-  static FindInPage* Create(WebLocalFrameImpl& frame) {
-    return new FindInPage(frame);
+  static FindInPage* Create(WebLocalFrameImpl& frame,
+                            InterfaceRegistry* interface_registry) {
+    return new FindInPage(frame, interface_registry);
   }
 
   void RequestFind(int identifier,
@@ -48,7 +56,8 @@ class FindInPage : public GarbageCollected<FindInPage> {
 
   void SetTickmarks(const WebVector<WebRect>&);
 
-  void ClearActiveFindMatch();
+  // Clears the active find match in the frame, if one exists.
+  void ClearActiveFindMatch() override;
 
   TextFinder* GetTextFinder() const;
 
@@ -56,18 +65,30 @@ class FindInPage : public GarbageCollected<FindInPage> {
   // Otherwise creates it and then returns.
   TextFinder& EnsureTextFinder();
 
+  void BindToRequest(mojom::blink::FindInPageAssociatedRequest request);
+
+  void Dispose();
+
   void Trace(blink::Visitor* visitor) {
     visitor->Trace(text_finder_);
     visitor->Trace(frame_);
   }
 
  private:
-  FindInPage(WebLocalFrameImpl& frame) : frame_(&frame) {}
+  FindInPage(WebLocalFrameImpl& frame, InterfaceRegistry* interface_registry)
+      : frame_(&frame), binding_(this) {
+    if (!interface_registry)
+      return;
+    interface_registry->AddAssociatedInterface(WTF::BindRepeating(
+        &FindInPage::BindToRequest, WrapWeakPersistent(this)));
+  }
 
   // Will be initialized after first call to ensureTextFinder().
   Member<TextFinder> text_finder_;
 
   const Member<WebLocalFrameImpl> frame_;
+
+  mojo::AssociatedBinding<mojom::blink::FindInPage> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(FindInPage);
 };
