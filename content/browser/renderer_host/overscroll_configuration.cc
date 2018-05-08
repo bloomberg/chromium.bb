@@ -29,6 +29,10 @@ const float kThresholdStartTouchscreen = 50.f;
 bool g_is_touchpad_overscroll_history_navigation_enabled_initialized = false;
 bool g_touchpad_overscroll_history_navigation_enabled = false;
 
+// On Windows, we only process 0.3 second inertial events then cancel the
+// overscroll if it is not completed yet.
+int g_max_inertial_events_before_overscroll_cancellation_in_ms = 300;
+
 float GetStartThresholdMultiplier() {
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   if (!cmd->HasSwitch(switches::kOverscrollStartThreshold))
@@ -146,6 +150,13 @@ bool OverscrollConfig::TouchpadOverscrollHistoryNavigationEnabled() {
 // static
 void OverscrollConfig::ResetTouchpadOverscrollHistoryNavigationEnabled() {
   g_is_touchpad_overscroll_history_navigation_enabled_initialized = false;
+}
+
+// static
+base::TimeDelta
+OverscrollConfig::MaxInertialEventsBeforeOverscrollCancellation() {
+  return base::TimeDelta::FromMilliseconds(
+      g_max_inertial_events_before_overscroll_cancellation_in_ms);
 }
 
 }  // namespace content
