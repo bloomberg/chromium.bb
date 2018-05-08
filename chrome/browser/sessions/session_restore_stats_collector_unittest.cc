@@ -315,7 +315,7 @@ class SessionRestoreStatsCollectorTest : public testing::Test {
     content::RenderWidgetHost* host =
         contents->GetRenderWidgetHostView()->GetRenderWidgetHost();
     stats_collector_->Observe(
-        content::NOTIFICATION_RENDER_WIDGET_HOST_DID_COMPLETE_RESIZE_OR_REPAINT,
+        content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES,
         content::Source<content::RenderWidgetHost>(host),
         content::NotificationService::NoDetails());
   }
