@@ -17,13 +17,14 @@ _debugging = False
 
 def _ProcessEntry(entry):
   """Transforms one entry in the compile database to be clang-tool friendly."""
-  split_command = shlex.split(entry['command'], posix=False)
+  split_command = shlex.split(entry['command'])
+
   # Drop gomacc.exe from the front, if present.
   if split_command[0].endswith('gomacc.exe'):
     split_command = split_command[1:]
   # Insert --driver-mode=cl as the first argument.
   split_command = split_command[:1] + ['--driver-mode=cl'] + split_command[1:]
-  entry['command'] = ' '.join(split_command)
+  entry['command'] = subprocess.list2cmdline(split_command)
 
   # Expand the contents of the response file, if any.
   # http://llvm.org/bugs/show_bug.cgi?id=21634
