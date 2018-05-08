@@ -13,7 +13,8 @@
   width: inherit;
 }
 
-paper-toggle-button {
+cr-toggle {
+  align-self: center;
   width: 36px;
 }
 
