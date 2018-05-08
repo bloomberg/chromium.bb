@@ -71,13 +71,7 @@ Polymer({
      * @type {?Element}
      * @private
      */
-    passwordElement: {
-      type: Object,
-      value: function() {
-        return this.$.pinInput.inputElement;
-      },
-      observer: 'onPasswordElementAttached_',
-    },
+    passwordElement: Object,
 
     /**
      * The intervalID used for the backspace button set/clear interval.
@@ -98,15 +92,6 @@ Polymer({
     },
 
     /**
-     * Whether or not to show the default pin input.
-     * @private
-     */
-    showPinInput_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
      * The value stored in the keyboard's input element.
      * @private
      */
@@ -119,32 +104,12 @@ Polymer({
   },
 
   /**
-   * Called when a password element is attached to the pin keyboard.
-   * @param {HTMLInputElement} inputElement The PIN keyboard's input element.
-   * @private
-   */
-  onPasswordElementAttached_: function(inputElement) {
-    this.showPinInput_ = inputElement == this.$.pinInput.inputElement;
-    inputElement.addEventListener('input', this.handleInputChanged_.bind(this));
-  },
-
-  /**
-   * Called when the user uses the keyboard to enter a value into the input
-   * element.
-   * @param {Event} event The event object.
-   * @private
-   */
-  handleInputChanged_: function(event) {
-    this.value = event.target.value;
-  },
-
-  /**
    * Gets the selection start of the input field.
    * @type {number}
    * @private
    */
   get selectionStart_() {
-    return this.passwordElement.selectionStart;
+    return this.passwordElement_().selectionStart;
   },
 
   /**
@@ -153,7 +118,7 @@ Polymer({
    * @private
    */
   get selectionEnd_() {
-    return this.passwordElement.selectionEnd;
+    return this.passwordElement_().selectionEnd;
   },
 
   /**
@@ -162,7 +127,7 @@ Polymer({
    * @private
    */
   set selectionStart_(start) {
-    this.passwordElement.selectionStart = start;
+    this.passwordElement_().selectionStart = start;
   },
 
   /**
@@ -171,14 +136,14 @@ Polymer({
    * @private
    */
   set selectionEnd_(end) {
-    this.passwordElement.selectionEnd = end;
+    this.passwordElement_().selectionEnd = end;
   },
 
   /**
    * Transfers blur to the input element.
    */
   blur: function() {
-    this.passwordElement.blur();
+    this.passwordElement_().blur();
   },
 
   /**
@@ -190,7 +155,7 @@ Polymer({
    */
   focus: function(opt_selectionStart, opt_selectionEnd) {
     setTimeout(function() {
-      this.passwordElement.focus();
+      this.passwordElement_().focus();
       this.selectionStart_ = opt_selectionStart || 0;
       this.selectionEnd_ = opt_selectionEnd || 0;
     }.bind(this), 0);
@@ -242,10 +207,9 @@ Polymer({
    * @param {string} previous
    */
   onPinValueChange_: function(value, previous) {
-    if (value != previous) {
-      this.passwordElement.value = this.value;
-      this.fire('pin-change', {pin: value});
-    }
+    if (this.passwordElement)
+      this.passwordElement.value = value;
+    this.fire('pin-change', {pin: value});
   },
 
   /**
@@ -422,6 +386,16 @@ Polymer({
   onContextMenu_: function(e) {
     e.preventDefault();
     e.stopPropagation();
+  },
+
+  /**
+   * @return {!HTMLElement} Returns the native input element of |pinInput|.
+   * @private
+   */
+  passwordElement_: function() {
+    // |passwordElement| is null by default. It can be set to override the
+    // input field that will be populated with the keypad.
+    return this.passwordElement || this.$.pinInput.inputElement;
   },
 });
 })();
