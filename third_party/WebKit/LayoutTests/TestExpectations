@@ -2789,6 +2789,9 @@ crbug.com/832071 external/wpt/service-workers/service-worker/worker-client-id.ht
 crbug.com/832071 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
+crbug.com/626703 external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
+crbug.com/626703 [ Linux Mac10.13 ] external/wpt/pointerevents/pointerevent_touch-action-button-test_touch-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-fonts/font-feature-settings-descriptor-01.html [ Failure ]
 crbug.com/626703 [ Linux Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
 crbug.com/626703 [ Linux Win10 ] virtual/outofblink-cors/external/wpt/fetch/api/redirect/redirect-count.any.html [ Timeout ]
@@ -3177,7 +3180,6 @@ crbug.com/626703 external/wpt/html/semantics/grouping-content/the-li-element/gro
 crbug.com/626703 external/wpt/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/async_007.htm [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/async_010.htm [ Timeout ]
-crbug.com/626703 external/wpt/http/basic-auth-cache-test.html [ Timeout ]
 crbug.com/626703 external/wpt/IndexedDB/request-abort-ordering.html [ Pass Failure ]
 crbug.com/626703 external/wpt/media-source/mediasource-avtracks.html [ Failure Crash ]
 crbug.com/626703 external/wpt/media-source/mediasource-getvideoplaybackquality.html [ Timeout Failure ]
