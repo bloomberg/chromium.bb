@@ -139,9 +139,9 @@ void ViewAndroid::AddChild(ViewAndroid* child) {
 
   // Empty view size also need not propagating down in order to prevent
   // spurious events with empty size from being sent down.
-  if (child->match_parent() && !view_rect_.IsEmpty() &&
-      child->GetSize() != view_rect_.size()) {
-    child->OnSizeChangedInternal(view_rect_.size());
+  if (child->match_parent() && !bounds_.IsEmpty() &&
+      child->GetSize() != bounds_.size()) {
+    child->OnSizeChangedInternal(bounds_.size());
     child->DispatchOnSizeChanged();
   }
 
@@ -428,7 +428,7 @@ void ViewAndroid::OnSizeChanged(int width, int height) {
 
   float scale = GetDipScale();
   gfx::Size size(std::ceil(width / scale), std::ceil(height / scale));
-  if (view_rect_.size() == size)
+  if (bounds_.size() == size)
     return;
 
   OnSizeChangedInternal(size);
@@ -438,10 +438,10 @@ void ViewAndroid::OnSizeChanged(int width, int height) {
 }
 
 void ViewAndroid::OnSizeChangedInternal(const gfx::Size& size) {
-  if (view_rect_.size() == size)
+  if (bounds_.size() == size)
     return;
 
-  view_rect_.set_size(size);
+  bounds_.set_size(size);
   for (auto* child : children_) {
     if (child->match_parent())
       child->OnSizeChangedInternal(size);
@@ -473,7 +473,7 @@ gfx::Size ViewAndroid::GetPhysicalBackingSize() const {
 }
 
 gfx::Size ViewAndroid::GetSize() const {
-  return view_rect_.size();
+  return bounds_.size();
 }
 
 bool ViewAndroid::OnDragEvent(const DragEventAndroid& event) {
@@ -593,7 +593,7 @@ bool ViewAndroid::HitTest(EventHandlerCallback<E> handler_callback,
                           const E& event,
                           const gfx::PointF& point) {
   if (event_handler_) {
-    if (view_rect_.origin().IsOrigin()) {  // (x, y) == (0, 0)
+    if (bounds_.origin().IsOrigin()) {  // (x, y) == (0, 0)
       if (handler_callback.Run(event_handler_, event))
         return true;
     } else {
@@ -605,14 +605,14 @@ bool ViewAndroid::HitTest(EventHandlerCallback<E> handler_callback,
 
   if (!children_.empty()) {
     gfx::PointF offset_point(point);
-    offset_point.Offset(-view_rect_.x(), -view_rect_.y());
+    offset_point.Offset(-bounds_.x(), -bounds_.y());
     gfx::Point int_point = gfx::ToFlooredPoint(offset_point);
 
     // Match from back to front for hit testing.
     for (auto* child : base::Reversed(children_)) {
       bool matched = child->match_parent();
       if (!matched)
-        matched = child->view_rect_.Contains(int_point);
+        matched = child->bounds_.Contains(int_point);
       if (matched && child->HitTest(handler_callback, event, offset_point))
         return true;
     }
@@ -621,7 +621,7 @@ bool ViewAndroid::HitTest(EventHandlerCallback<E> handler_callback,
 }
 
 void ViewAndroid::SetLayoutForTesting(int x, int y, int width, int height) {
-  view_rect_.SetRect(x, y, width, height);
+  bounds_.SetRect(x, y, width, height);
 }
 
 }  // namespace ui
