@@ -5,7 +5,10 @@
 #ifndef UI_ACCESSIBILITY_AX_RELATIVE_BOUNDS_H_
 #define UI_ACCESSIBILITY_AX_RELATIVE_BOUNDS_H_
 
+#include <stdint.h>
+
 #include <memory>
+#include <ostream>
 
 #include "ui/accessibility/ax_export.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -30,7 +33,7 @@ namespace ui {
 // Otherwise, for a node other than the root, the bounds are relative to
 // the root of the tree, and for the root of a tree, the bounds are relative
 // to its immediate containing node.
-struct AX_EXPORT AXRelativeBounds {
+struct AX_EXPORT AXRelativeBounds final {
   AXRelativeBounds();
   virtual ~AXRelativeBounds();
 
@@ -43,7 +46,7 @@ struct AX_EXPORT AXRelativeBounds {
 
   // The id of an ancestor node in the same AXTree that this object's
   // bounding box is relative to, or -1 if there's no offset container.
-  int offset_container_id;
+  int32_t offset_container_id;
 
   // The relative bounding box of this node.
   gfx::RectF bounds;
@@ -55,6 +58,9 @@ struct AX_EXPORT AXRelativeBounds {
   // like a member than a pointer.
   std::unique_ptr<gfx::Transform> transform;
 };
+
+AX_EXPORT std::ostream& operator<<(std::ostream& stream,
+                                   const AXRelativeBounds& bounds);
 
 }  // namespace ui
 

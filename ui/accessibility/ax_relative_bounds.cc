@@ -66,4 +66,8 @@ std::string AXRelativeBounds::ToString() const {
   return result;
 }
 
+std::ostream& operator<<(std::ostream& stream, const AXRelativeBounds& bounds) {
+  return stream << bounds.ToString();
+}
+
 }  // namespace ui
