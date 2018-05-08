@@ -191,12 +191,11 @@ void PopulateSheetHeaderView(bool show_back_arrow,
   views::GridLayout* layout = container->SetLayoutManager(
       std::make_unique<views::GridLayout>(container));
 
-  constexpr int kHeaderTopVerticalInset = 14;
-  constexpr int kHeaderBottomVerticalInset = 8;
+  constexpr int kVerticalInset = 14;
   constexpr int kHeaderHorizontalInset = 16;
-  container->SetBorder(views::CreateEmptyBorder(
-      kHeaderTopVerticalInset, kHeaderHorizontalInset,
-      kHeaderBottomVerticalInset, kHeaderHorizontalInset));
+  container->SetBorder(
+      views::CreateEmptyBorder(kVerticalInset, kHeaderHorizontalInset,
+                               kVerticalInset, kHeaderHorizontalInset));
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
   // A column for the optional back arrow.
