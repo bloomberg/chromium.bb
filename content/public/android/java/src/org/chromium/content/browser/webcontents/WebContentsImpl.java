@@ -429,12 +429,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
-    public void showInterstitialPage(
-            String url, long interstitialPageDelegateAndroid) {
-        nativeShowInterstitialPage(mNativeWebContentsAndroid, url, interstitialPageDelegateAndroid);
-    }
-
-    @Override
     public boolean isShowingInterstitialPage() {
         return nativeIsShowingInterstitialPage(mNativeWebContentsAndroid);
     }
@@ -876,8 +870,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     private native void nativeSuspendAllMediaPlayers(long nativeWebContentsAndroid);
     private native void nativeSetAudioMuted(long nativeWebContentsAndroid, boolean mute);
     private native int nativeGetBackgroundColor(long nativeWebContentsAndroid);
-    private native void nativeShowInterstitialPage(long nativeWebContentsAndroid,
-            String url, long nativeInterstitialPageDelegateAndroid);
     private native boolean nativeIsShowingInterstitialPage(long nativeWebContentsAndroid);
     private native boolean nativeFocusLocationBarByDefault(long nativeWebContentsAndroid);
     private native boolean nativeIsRenderWidgetHostViewReady(long nativeWebContentsAndroid);

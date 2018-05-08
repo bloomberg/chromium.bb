@@ -22,7 +22,6 @@
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/content_view_core.h"
-#include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/java/gin_java_bridge_dispatcher_host.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
@@ -419,19 +418,6 @@ void WebContentsAndroid::SetAudioMuted(JNIEnv* env,
                                        const JavaParamRef<jobject>& jobj,
                                        jboolean mute) {
   web_contents_->SetAudioMuted(mute);
-}
-
-void WebContentsAndroid::ShowInterstitialPage(JNIEnv* env,
-                                              const JavaParamRef<jobject>& obj,
-                                              const JavaParamRef<jstring>& jurl,
-                                              jlong delegate_ptr) {
-  GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
-  InterstitialPageDelegateAndroid* delegate =
-      reinterpret_cast<InterstitialPageDelegateAndroid*>(delegate_ptr);
-  InterstitialPage* interstitial = InterstitialPage::Create(
-      web_contents_, false, url, delegate);
-  delegate->set_interstitial_page(interstitial);
-  interstitial->Show();
 }
 
 jboolean WebContentsAndroid::IsShowingInterstitialPage(
