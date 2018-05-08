@@ -12,6 +12,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
@@ -29,6 +30,7 @@
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/menu_separator.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -171,6 +173,7 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
   switch (GetType()) {
     case SUBMENU:
+    case ACTIONABLE_SUBMENU:
       node_data->SetHasPopup(ax::mojom::HasPopup::kMenu);
       break;
     case CHECKBOX:
@@ -267,7 +270,7 @@ MenuItemView* MenuItemView::AddMenuItemAt(
   item->SetMinorIcon(minor_icon);
   if (!icon.isNull())
     item->SetIcon(icon);
-  if (type == SUBMENU)
+  if (type == SUBMENU || type == ACTIONABLE_SUBMENU)
     item->CreateSubmenu();
   if (GetDelegate() && !GetDelegate()->IsCommandVisible(item_id))
     item->SetVisible(false);
@@ -398,6 +401,19 @@ void MenuItemView::SetSelected(bool selected) {
   SchedulePaint();
 }
 
+void MenuItemView::SetSelectionOfActionableSubmenu(
+    bool submenu_area_of_actionable_submenu_selected) {
+  DCHECK_EQ(ACTIONABLE_SUBMENU, type_);
+  if (submenu_area_of_actionable_submenu_selected_ ==
+      submenu_area_of_actionable_submenu_selected) {
+    return;
+  }
+
+  submenu_area_of_actionable_submenu_selected_ =
+      submenu_area_of_actionable_submenu_selected;
+  SchedulePaint();
+}
+
 void MenuItemView::SetTooltip(const base::string16& tooltip, int item_id) {
   MenuItemView* item = GetMenuItemByID(item_id);
   DCHECK(item);
@@ -456,6 +472,13 @@ int MenuItemView::GetHeightForWidth(int width) const {
   height += GetBottomMargin() + GetTopMargin();
 
   return height;
+}
+
+gfx::Rect MenuItemView::GetSubmenuAreaOfActionableSubmenu() const {
+  DCHECK_EQ(ACTIONABLE_SUBMENU, type_);
+  const MenuConfig& config = MenuConfig::instance();
+  return gfx::Rect(gfx::Point(vertical_separator_->bounds().right(), 0),
+                   gfx::Size(config.actionable_submenu_width, height()));
 }
 
 const MenuItemView::MenuItemDimensions& MenuItemView::GetDimensions() const {
@@ -580,6 +603,8 @@ void MenuItemView::Layout() {
         continue;
       if (submenu_arrow_image_view_ == child)
         continue;
+      if (vertical_separator_ == child)
+        continue;
       int width = child->GetPreferredSize().width();
       child->SetBounds(x - width, 0, width, height());
       x -= width + kChildXPadding;
@@ -611,12 +636,24 @@ void MenuItemView::Layout() {
     }
 
     if (submenu_arrow_image_view_) {
-      int x = width() - config.arrow_width - config.arrow_to_edge_padding;
+      int x = width() - config.arrow_width -
+              (type_ == ACTIONABLE_SUBMENU
+                   ? config.actionable_submenu_arrow_to_edge_padding
+                   : config.arrow_to_edge_padding);
       int y =
           (height() + GetTopMargin() - GetBottomMargin() - kSubmenuArrowSize) /
           2;
       submenu_arrow_image_view_->SetBounds(x, y, config.arrow_width,
                                            kSubmenuArrowSize);
+    }
+
+    if (vertical_separator_) {
+      const gfx::Size preferred_size = vertical_separator_->GetPreferredSize();
+      int x = width() - config.actionable_submenu_width -
+              config.actionable_submenu_vertical_separator_width;
+      int y = (height() - preferred_size.height()) / 2;
+      vertical_separator_->SetBoundsRect(
+          gfx::Rect(gfx::Point(x, y), preferred_size));
     }
   }
 }
@@ -705,15 +742,16 @@ void MenuItemView::Init(MenuItemView* parent,
                         MenuItemView::Type type,
                         MenuDelegate* delegate) {
   delegate_ = delegate;
-  controller_ = NULL;
+  controller_ = nullptr;
   canceled_ = false;
   parent_menu_item_ = parent;
   type_ = type;
   selected_ = false;
   command_ = command;
-  submenu_ = NULL;
+  submenu_ = nullptr;
   radio_check_image_view_ = nullptr;
   submenu_arrow_image_view_ = nullptr;
+  vertical_separator_ = nullptr;
   show_mnemonics_ = false;
   // Assign our ID, this allows SubmenuItemView to find MenuItemViews.
   set_id(kMenuItemViewID);
@@ -727,6 +765,20 @@ void MenuItemView::Init(MenuItemView* parent,
     radio_check_image_view_->SetVisible(show_check_radio_icon);
     radio_check_image_view_->set_can_process_events_within_subtree(false);
     AddChildView(radio_check_image_view_);
+  }
+
+  if (type_ == ACTIONABLE_SUBMENU) {
+    vertical_separator_ = new Separator();
+    vertical_separator_->SetVisible(true);
+    vertical_separator_->SetFocusBehavior(FocusBehavior::NEVER);
+    const MenuConfig& config = MenuConfig::instance();
+    vertical_separator_->SetColor(GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_ActionableSubmenuVerticalSeparatorColor));
+    vertical_separator_->SetPreferredSize(
+        gfx::Size(config.actionable_submenu_vertical_separator_width,
+                  config.actionable_submenu_vertical_separator_height));
+    vertical_separator_->set_can_process_events_within_subtree(false);
+    AddChildView(vertical_separator_);
   }
 
   if (submenu_arrow_image_view_)
@@ -844,6 +896,15 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   ui::NativeTheme* native_theme = GetNativeTheme();
   if (render_selection) {
     gfx::Rect item_bounds(0, 0, width(), height());
+    if (type_ == ACTIONABLE_SUBMENU) {
+      if (submenu_area_of_actionable_submenu_selected_) {
+        item_bounds = GetSubmenuAreaOfActionableSubmenu();
+      } else {
+        item_bounds = gfx::Rect(gfx::Size(
+            width() - MenuConfig::instance().actionable_submenu_width - 1,
+            height()));
+      }
+    }
     AdjustBoundsForRTLUI(&item_bounds);
 
     native_theme->Paint(canvas->sk_canvas(),
@@ -962,6 +1023,10 @@ SkColor MenuItemView::GetTextColor(bool minor,
     if (!emphasized)
       color_id = ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor;
   }
+
+  if (GetMenuController() && GetMenuController()->use_touchable_layout())
+    color_id = ui::NativeTheme::kColorId_TouchableMenuItemLabelColor;
+
   return GetNativeTheme()->GetSystemColor(color_id);
 }
 
@@ -1011,6 +1076,8 @@ gfx::Size MenuItemView::GetChildPreferredSize() const {
     if (radio_check_image_view_ == child)
       continue;
     if (submenu_arrow_image_view_ == child)
+      continue;
+    if (vertical_separator_ == child)
       continue;
     if (i)
       width += kChildXPadding;
@@ -1153,7 +1220,7 @@ int MenuItemView::NonIconChildViewsCount() const {
   // not the number of menu items.
   return child_count() - (icon_view_ ? 1 : 0) -
          (radio_check_image_view_ ? 1 : 0) -
-         (submenu_arrow_image_view_ ? 1 : 0);
+         (submenu_arrow_image_view_ ? 1 : 0) - (vertical_separator_ ? 1 : 0);
 }
 
 int MenuItemView::GetMaxIconViewWidth() const {

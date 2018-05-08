@@ -89,6 +89,10 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   static const SkColor kBlueButtonTextColor = SK_ColorWHITE;
   static const SkColor kBlueButtonShadowColor = SkColorSetRGB(0x53, 0x8C, 0xEA);
   // MenuItem:
+  static const SkColor kTouchableMenuItemLabelColor =
+      SkColorSetRGB(0x20, 0x21, 0x24);
+  static const SkColor kActionableSubmenuVerticalSeparatorColor =
+      SkColorSetARGB(0x24, 0x20, 0x21, 0x24);
   static const SkColor kMenuBackgroundColor = SK_ColorWHITE;
   static const SkColor kMenuHighlightBackgroundColor =
       SkColorSetA(SK_ColorBLACK, 0x14);
@@ -187,6 +191,10 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return kDisabledTextColor;
 
     // MenuItem
+    case NativeTheme::kColorId_TouchableMenuItemLabelColor:
+      return kTouchableMenuItemLabelColor;
+    case NativeTheme::kColorId_ActionableSubmenuVerticalSeparatorColor:
+      return kActionableSubmenuVerticalSeparatorColor;
     case NativeTheme::kColorId_SelectedMenuItemForegroundColor:
       return kSelectedMenuItemForegroundColor;
     case NativeTheme::kColorId_MenuBorderColor:

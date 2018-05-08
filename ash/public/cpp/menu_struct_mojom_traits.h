@@ -28,6 +28,8 @@ struct EnumTraits<ash::mojom::MenuItemType, ui::MenuModel::ItemType> {
         return ash::mojom::MenuItemType::COMMAND;
       case ui::MenuModel::TYPE_SUBMENU:
         return ash::mojom::MenuItemType::SUBMENU;
+      case ui::MenuModel::TYPE_ACTIONABLE_SUBMENU:
+        return ash::mojom::MenuItemType::ACTIONABLE_SUBMENU;
     }
     NOTREACHED();
     return ash::mojom::MenuItemType::COMMAND;
@@ -50,6 +52,9 @@ struct EnumTraits<ash::mojom::MenuItemType, ui::MenuModel::ItemType> {
         return true;
       case ash::mojom::MenuItemType::SUBMENU:
         *out = ui::MenuModel::TYPE_SUBMENU;
+        return true;
+      case ash::mojom::MenuItemType::ACTIONABLE_SUBMENU:
+        *out = ui::MenuModel::TYPE_ACTIONABLE_SUBMENU;
         return true;
     }
     NOTREACHED();

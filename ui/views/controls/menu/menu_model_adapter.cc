@@ -80,6 +80,9 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
     case ui::MenuModel::TYPE_SUBMENU:
       type = MenuItemView::SUBMENU;
       break;
+    case ui::MenuModel::TYPE_ACTIONABLE_SUBMENU:
+      type = MenuItemView::ACTIONABLE_SUBMENU;
+      break;
   }
 
   if (*type == MenuItemView::SEPARATOR) {
@@ -267,9 +270,11 @@ void MenuModelAdapter::BuildMenuImpl(MenuItemView* menu, ui::MenuModel* model) {
   for (int i = 0; i < item_count; ++i) {
     MenuItemView* item = AppendMenuItem(menu, model, i);
 
-    if (model->GetTypeAt(i) == ui::MenuModel::TYPE_SUBMENU) {
+    if (model->GetTypeAt(i) == ui::MenuModel::TYPE_SUBMENU ||
+        model->GetTypeAt(i) == ui::MenuModel::TYPE_ACTIONABLE_SUBMENU) {
       DCHECK(item);
-      DCHECK_EQ(MenuItemView::SUBMENU, item->GetType());
+      DCHECK(item->GetType() == MenuItemView::SUBMENU ||
+             item->GetType() == MenuItemView::ACTIONABLE_SUBMENU);
       ui::MenuModel* submodel = model->GetSubmenuModelAt(i);
       DCHECK(submodel);
       BuildMenuImpl(item, submodel);

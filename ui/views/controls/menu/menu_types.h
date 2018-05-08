@@ -9,8 +9,7 @@ namespace views {
 
 // Where a popup menu should be anchored to for non-RTL languages. The opposite
 // position will be used if base::i18n:IsRTL() is true. The BUBBLE flags are
-// used when the menu should get enclosed by a bubble. Note that BUBBLE flags
-// should only be used with menus which have no children. The Fixed flags are
+// used when the menu should get enclosed by a bubble. The Fixed flags are
 // used for the menus that have a fixed anchor position.
 enum MenuAnchorPosition {
   MENU_ANCHOR_TOPLEFT,

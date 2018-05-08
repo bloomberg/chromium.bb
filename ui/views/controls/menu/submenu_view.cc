@@ -182,8 +182,9 @@ gfx::Size SubmenuView::CalculatePreferredSize() const {
                                 minimum_preferred_width_ - 2 * insets.width()));
 
   if (GetMenuItem()->GetMenuController() &&
-      GetMenuItem()->GetMenuController()->use_touchable_layout())
+      GetMenuItem()->GetMenuController()->use_touchable_layout()) {
     width = std::max(touchable_minimum_width, width);
+  }
 
   // Then, the height for that width.
   int height = 0;

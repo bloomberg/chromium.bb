@@ -171,7 +171,7 @@ void LauncherContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
                               menu_config.touchable_icon_color));
     return;
   }
-  // If the MenuType is a Check item.
+  // If the MenuType is a check item.
   if (type == LAUNCH_TYPE_REGULAR_TAB || type == LAUNCH_TYPE_PINNED_TAB ||
       type == LAUNCH_TYPE_WINDOW || type == LAUNCH_TYPE_FULLSCREEN) {
     menu_model->AddCheckItemWithStringId(type, string_id);

@@ -294,13 +294,11 @@ class VIEWS_EXPORT MenuController
       SCROLL_DOWN
     };
 
-    MenuPart() : type(NONE), menu(NULL), parent(NULL), submenu(NULL) {}
-
     // Convenience for testing type == SCROLL_DOWN or type == SCROLL_UP.
     bool is_scroll() const { return type == SCROLL_DOWN || type == SCROLL_UP; }
 
     // Type of part.
-    Type type;
+    Type type = NONE;
 
     // If type is MENU_ITEM, this is the menu item the mouse is over, otherwise
     // this is NULL.
@@ -308,14 +306,17 @@ class VIEWS_EXPORT MenuController
     //       but is over a menu (for example, the mouse is over a separator or
     //       empty menu), this is NULL and parent is the menu the mouse was
     //       clicked on.
-    MenuItemView* menu;
+    MenuItemView* menu = nullptr;
 
     // If type is MENU_ITEM but the mouse is not over a menu item this is the
     // parent of the menu item the user clicked on. Otherwise this is NULL.
-    MenuItemView* parent;
+    MenuItemView* parent = nullptr;
 
     // This is the submenu the mouse is over.
-    SubmenuView* submenu;
+    SubmenuView* submenu = nullptr;
+
+    // Whether the controller should apply SELECTION_OPEN_SUBMENU to this item.
+    bool should_submenu_show = false;
   };
 
   // Sets the selection to |menu_item|. A value of NULL unselects
@@ -418,6 +419,11 @@ class VIEWS_EXPORT MenuController
   // NOT included the scroll buttons, only the submenu view.
   bool DoesSubmenuContainLocation(SubmenuView* submenu,
                                   const gfx::Point& screen_loc);
+
+  // Returns whether the location is over the ACTIONABLE_SUBMENU's submenu area.
+  bool IsLocationOverSubmenuAreaOfActionableSubmenu(
+      MenuItemView* item,
+      const gfx::Point& screen_loc) const;
 
   // Opens/Closes the necessary menus such that state_ matches that of
   // pending_state_. This is invoked if submenus are not opened immediately,

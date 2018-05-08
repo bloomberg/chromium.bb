@@ -119,6 +119,18 @@ struct VIEWS_EXPORT MenuConfig {
   // Minimum height of menu item.
   int item_min_height;
 
+  // Edge padding for an actionable submenu arrow.
+  int actionable_submenu_arrow_to_edge_padding;
+
+  // Width of the submenu in an actionable submenu.
+  int actionable_submenu_width;
+
+  // The height of the vertical separator used in an actionable submenu.
+  int actionable_submenu_vertical_separator_height;
+
+  // The width of the vertical separator used in an actionable submenu.
+  int actionable_submenu_vertical_separator_width;
+
   // Whether the keyboard accelerators are visible.
   bool show_accelerators;
 

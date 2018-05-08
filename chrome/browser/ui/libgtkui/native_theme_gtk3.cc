@@ -133,6 +133,9 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
             "GtkMenu#menu GtkSeparator#separator.horizontal");
       }
       return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem.separator");
+    case ui::NativeTheme::kColorId_TouchableMenuItemLabelColor:
+    case ui::NativeTheme::kColorId_ActionableSubmenuVerticalSeparatorColor:
+      return kInvalidColorIdColor;
 
     // Label
     case ui::NativeTheme::kColorId_LabelEnabledColor:
