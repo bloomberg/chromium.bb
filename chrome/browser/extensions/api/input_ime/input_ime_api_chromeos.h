@@ -133,6 +133,19 @@ class InputMethodPrivateNotifyImeMenuItemActivatedFunction
       InputMethodPrivateNotifyImeMenuItemActivatedFunction);
 };
 
+class InputMethodPrivateGetCompositionBoundsFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getCompositionBounds",
+                             INPUTMETHODPRIVATE_GETCOMPOSITIONBOUNDS)
+
+ protected:
+  ~InputMethodPrivateGetCompositionBoundsFunction() override {}
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+};
+
 class InputImeEventRouter : public InputImeEventRouterBase {
  public:
   explicit InputImeEventRouter(Profile* profile);
