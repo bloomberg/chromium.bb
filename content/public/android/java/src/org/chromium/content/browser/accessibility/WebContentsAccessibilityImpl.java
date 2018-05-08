@@ -32,6 +32,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.WindowEventObserver;
+import org.chromium.content.browser.WindowEventObserverManager;
 import org.chromium.content.browser.accessibility.captioning.CaptioningController;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
@@ -163,6 +164,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         mAccessibilityManager =
                 (AccessibilityManager) mContext.getSystemService(Context.ACCESSIBILITY_SERVICE);
         mCaptioningController = new CaptioningController(mWebContents, mContext);
+        WindowEventObserverManager.from(mWebContents).addObserver(this);
 
         mInitialized = true;
         // Native is initialized lazily, when node provider is actually requested.

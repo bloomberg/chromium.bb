@@ -9,7 +9,6 @@ import android.content.res.Configuration;
 
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.ContentViewCore.InternalAccessDelegate;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * A dummy {@link ContentViewCore} implementation that can be overriden by tests
@@ -17,9 +16,6 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class TestContentViewCore implements ContentViewCore {
     public TestContentViewCore(Context context, String productVersion) {}
-
-    @Override
-    public void updateWindowAndroid(WindowAndroid windowAndroid) {}
 
     @Override
     public void setContainerViewInternals(InternalAccessDelegate internalDispatcher) {}

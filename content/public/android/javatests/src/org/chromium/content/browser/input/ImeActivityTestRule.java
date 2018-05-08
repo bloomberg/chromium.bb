@@ -553,8 +553,8 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     }
 
     void attachPhysicalKeyboard() {
-        Configuration hardKeyboardConfig = new Configuration(
-                getContentViewCore().getContext().getResources().getConfiguration());
+        Configuration hardKeyboardConfig =
+                new Configuration(getActivity().getResources().getConfiguration());
         hardKeyboardConfig.keyboard = Configuration.KEYBOARD_QWERTY;
         hardKeyboardConfig.keyboardHidden = Configuration.KEYBOARDHIDDEN_YES;
         hardKeyboardConfig.hardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_NO;
@@ -562,8 +562,8 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     }
 
     void detachPhysicalKeyboard() {
-        Configuration softKeyboardConfig = new Configuration(
-                getContentViewCore().getContext().getResources().getConfiguration());
+        Configuration softKeyboardConfig =
+                new Configuration(getActivity().getResources().getConfiguration());
         softKeyboardConfig.keyboard = Configuration.KEYBOARD_NOKEYS;
         softKeyboardConfig.keyboardHidden = Configuration.KEYBOARDHIDDEN_NO;
         softKeyboardConfig.hardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_YES;

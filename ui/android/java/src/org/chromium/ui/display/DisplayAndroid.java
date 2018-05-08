@@ -28,14 +28,14 @@ public class DisplayAndroid {
          *
          * @param rotation One of Surface.ROTATION_* values.
          */
-        void onRotationChanged(int rotation);
+        default void onRotationChanged(int rotation) {}
 
         /**
          * Called whenever the screen density changes.
          *
          * @param dipScale Density Independent Pixel scale.
          */
-        void onDIPScaleChanged(float dipScale);
+        default void onDIPScaleChanged(float dipScale) {}
     }
 
     private static final DisplayAndroidObserver[] EMPTY_OBSERVER_ARRAY =

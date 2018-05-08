@@ -14,6 +14,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.PopupZoomer.OnTapListener;
 import org.chromium.content.browser.PopupZoomer.OnVisibilityChangedListener;
+import org.chromium.content.browser.input.ImeAdapterImpl;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContents.UserDataFactory;
@@ -99,6 +100,7 @@ public class TapDisambiguator implements ImeEventObserver, PopupController.Hidea
         };
         mPopupView = new PopupZoomer(context, containerView, visibilityListener, tapListener);
         mNativeTapDisambiguator = nativeInit(mWebContents);
+        ImeAdapterImpl.fromWebContents(mWebContents).addEventObserver(this);
         PopupController.register(mWebContents, this);
         mInitialized = true;
     }

@@ -98,6 +98,14 @@ public interface WebContents extends Parcelable {
      */
     WindowAndroid getTopLevelNativeWindow();
 
+    /*
+     * Updates the native {@link WebContents} with a new window. This moves the NativeView and
+     * attached it to the new NativeWindow linked with the given {@link WindowAndroid}.
+     * TODO(jinsukkim): This should happen through view android tree instead.
+     * @param windowAndroid The new {@link WindowAndroid} for this {@link WebContents}.
+     */
+    void setTopLevelNativeWindow(WindowAndroid windowAndroid);
+
     /**
      * @return The {@link ViewAndroidDelegate} from which to get the container view.
      *         This can be null.

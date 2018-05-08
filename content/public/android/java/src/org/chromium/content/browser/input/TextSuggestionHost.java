@@ -11,8 +11,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.PopupController;
 import org.chromium.content.browser.PopupController.HideablePopup;
-import org.chromium.content.browser.WindowAndroidChangedObserver;
 import org.chromium.content.browser.WindowEventObserver;
+import org.chromium.content.browser.WindowEventObserverManager;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContents.UserDataFactory;
@@ -25,8 +25,7 @@ import org.chromium.ui.base.WindowAndroid;
  * the commands in that menu (by calling back to the C++ class).
  */
 @JNINamespace("content")
-public class TextSuggestionHost
-        implements WindowEventObserver, WindowAndroidChangedObserver, HideablePopup {
+public class TextSuggestionHost implements WindowEventObserver, HideablePopup {
     private long mNativeTextSuggestionHost;
     private final WebContentsImpl mWebContents;
 
@@ -86,6 +85,7 @@ public class TextSuggestionHost
         assert mViewDelegate != null;
         mNativeTextSuggestionHost = nativeInit(mWebContents);
         PopupController.register(mWebContents, this);
+        WindowEventObserverManager.from(mWebContents).addObserver(this);
         mInitialized = true;
     }
 
@@ -97,7 +97,7 @@ public class TextSuggestionHost
         return mWebContents.getRenderCoordinates().getContentOffsetYPix();
     }
 
-    // WindowAndroidChangedObserver
+    // WindowEventObserver
 
     @Override
     public void onWindowAndroidChanged(WindowAndroid newWindowAndroid) {
@@ -110,8 +110,6 @@ public class TextSuggestionHost
         }
     }
 
-    // WindowEventObserver
-
     @Override
     public void onAttachedToWindow() {
         mIsAttachedToWindow = true;
@@ -120,6 +118,11 @@ public class TextSuggestionHost
     @Override
     public void onDetachedFromWindow() {
         mIsAttachedToWindow = false;
+    }
+
+    @Override
+    public void onRotationChanged(int rotation) {
+        hidePopups();
     }
 
     // HieablePopup

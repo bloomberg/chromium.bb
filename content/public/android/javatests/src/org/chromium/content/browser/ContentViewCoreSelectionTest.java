@@ -467,7 +467,7 @@ public class ContentViewCoreSelectionTest {
         Assert.assertTrue(mSelectionPopupController.hasSelection());
         Assert.assertTrue(mSelectionPopupController.isActionModeValid());
         selectActionBarCopy();
-        waitForClipboardContents(mContentViewCore.getContext(), "SamplePlainTextOne");
+        waitForClipboardContents("SamplePlainTextOne");
     }
 
     @Test
@@ -479,7 +479,7 @@ public class ContentViewCoreSelectionTest {
         Assert.assertTrue(mSelectionPopupController.hasSelection());
         Assert.assertTrue(mSelectionPopupController.isActionModeValid());
         selectActionBarCopy();
-        waitForClipboardContents(mContentViewCore.getContext(), "SampleInputText");
+        waitForClipboardContents("SampleInputText");
     }
 
     @Test
@@ -491,7 +491,7 @@ public class ContentViewCoreSelectionTest {
         Assert.assertTrue(mSelectionPopupController.hasSelection());
         Assert.assertTrue(mSelectionPopupController.isActionModeValid());
         selectActionBarCopy();
-        waitForClipboardContents(mContentViewCore.getContext(), "SamplePlainTextOne");
+        waitForClipboardContents("SamplePlainTextOne");
         DOMUtils.longPressNode(mWebContents, "password");
         waitForSelectActionBarVisible(true);
         Assert.assertTrue(mSelectionPopupController.hasSelection());
@@ -499,7 +499,7 @@ public class ContentViewCoreSelectionTest {
         selectActionBarCopy();
         // Copy option won't be there for Password, hence no change in Clipboard
         // Validating with previous Clipboard content
-        waitForClipboardContents(mContentViewCore.getContext(), "SamplePlainTextOne");
+        waitForClipboardContents("SamplePlainTextOne");
     }
 
     @Test
@@ -511,7 +511,7 @@ public class ContentViewCoreSelectionTest {
         Assert.assertTrue(mSelectionPopupController.hasSelection());
         Assert.assertTrue(mSelectionPopupController.isActionModeValid());
         selectActionBarCopy();
-        waitForClipboardContents(mContentViewCore.getContext(), "SampleTextArea");
+        waitForClipboardContents("SampleTextArea");
     }
 
     @Test
@@ -529,7 +529,7 @@ public class ContentViewCoreSelectionTest {
         Assert.assertTrue(mSelectionPopupController.hasSelection());
         // Cut option won't be available for plain text.
         // Hence validating previous Clipboard content.
-        waitForClipboardContents(mContentViewCore.getContext(), "SampleTextToCopy");
+        waitForClipboardContents("SampleTextToCopy");
     }
 
     @Test
@@ -544,7 +544,7 @@ public class ContentViewCoreSelectionTest {
         selectActionBarCut();
         waitForSelectActionBarVisible(false);
         Assert.assertFalse(mSelectionPopupController.hasSelection());
-        waitForClipboardContents(mContentViewCore.getContext(), "SampleInputText");
+        waitForClipboardContents("SampleInputText");
         Assert.assertEquals(mSelectionPopupController.getSelectedText(), "");
     }
 
@@ -562,7 +562,7 @@ public class ContentViewCoreSelectionTest {
         Assert.assertTrue(mSelectionPopupController.hasSelection());
         // Cut option won't be there for Password, hence no change in Clipboard
         // Validating with previous Clipboard content
-        waitForClipboardContents(mContentViewCore.getContext(), "SampleTextToCopy");
+        waitForClipboardContents("SampleTextToCopy");
     }
 
     @Test
@@ -577,7 +577,7 @@ public class ContentViewCoreSelectionTest {
         selectActionBarCut();
         waitForSelectActionBarVisible(false);
         Assert.assertFalse(mSelectionPopupController.hasSelection());
-        waitForClipboardContents(mContentViewCore.getContext(), "SampleTextArea");
+        waitForClipboardContents("SampleTextArea");
         Assert.assertEquals(mSelectionPopupController.getSelectedText(), "");
     }
 
@@ -840,10 +840,11 @@ public class ContentViewCoreSelectionTest {
         });
     }
 
-    private void waitForClipboardContents(final Context context, final String expectedContents) {
+    private void waitForClipboardContents(final String expectedContents) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
+                Context context = mActivityTestRule.getActivity();
                 ClipboardManager clipboardManager =
                         (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
                 ClipData clip = clipboardManager.getPrimaryClip();

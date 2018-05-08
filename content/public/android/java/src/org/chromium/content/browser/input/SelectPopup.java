@@ -13,6 +13,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.PopupController;
 import org.chromium.content.browser.PopupController.HideablePopup;
+import org.chromium.content.browser.WindowEventObserver;
+import org.chromium.content.browser.WindowEventObserverManager;
 import org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.WebContents;
@@ -28,7 +30,8 @@ import java.util.List;
  * Handles the popup UI for the lt&;select&gt; HTML tag support.
  */
 @JNINamespace("content")
-public class SelectPopup implements HideablePopup, ViewAndroidDelegate.ContainerViewObserver {
+public class SelectPopup
+        implements HideablePopup, ViewAndroidDelegate.ContainerViewObserver, WindowEventObserver {
     /** UI for Select popup. */
     public interface Ui {
         /**
@@ -94,6 +97,7 @@ public class SelectPopup implements HideablePopup, ViewAndroidDelegate.Container
         viewDelegate.addObserver(this);
         mNativeSelectPopup = nativeInit(mWebContents);
         PopupController.register(mWebContents, this);
+        WindowEventObserverManager.from(mWebContents).addObserver(this);
         mInitialized = true;
     }
 
@@ -122,6 +126,13 @@ public class SelectPopup implements HideablePopup, ViewAndroidDelegate.Container
     public void onUpdateContainerView(ViewGroup view) {
         mContainerView = view;
         hide();
+    }
+
+    // WindowEventObserver
+
+    @Override
+    public void onWindowAndroidChanged(WindowAndroid windowAndroid) {
+        close();
     }
 
     /**

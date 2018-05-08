@@ -122,6 +122,11 @@ class WebContentsViewAndroid : public WebContentsView,
   void OnSizeChanged() override;
   void OnPhysicalBackingSizeChanged() override;
 
+  void set_device_orientation(int orientation) {
+    device_orientation_ = orientation;
+  }
+  int device_orientation() { return device_orientation_; }
+
  private:
   void OnDragEntered(const std::vector<DropData::Metadata>& metadata,
                      const gfx::PointF& location,
@@ -154,6 +159,8 @@ class WebContentsViewAndroid : public WebContentsView,
   SynchronousCompositorClient* synchronous_compositor_client_;
 
   SelectionPopupController* selection_popup_controller_ = nullptr;
+
+  int device_orientation_ = 0;
 
   // Show/hide popup UI for <select> tag.
   std::unique_ptr<SelectPopup> select_popup_;
