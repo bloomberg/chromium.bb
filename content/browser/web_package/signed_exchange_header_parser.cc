@@ -238,7 +238,7 @@ SignedExchangeHeaderParser::ParseSignature(
           "'certUrl' parameter is not a valid URL.");
       return base::nullopt;
     }
-    const std::string cert_sha256_string = value.params["certSha256"];
+    const std::string cert_sha256_string = value.params[kCertSha256Key];
     if (cert_sha256_string.size() != crypto::kSHA256Length) {
       // TODO(https://crbug.com/819467) : When we will support "ed25519Key", the
       // params may not have "certSha256".
@@ -252,7 +252,7 @@ SignedExchangeHeaderParser::ParseSignature(
     sig.cert_sha256 = std::move(cert_sha256);
     // TODO(https://crbug.com/819467): Support ed25519key.
     // sig.ed25519_key = value.params["ed25519Key"];
-    sig.validity_url = GURL(value.params["validityUrl"]);
+    sig.validity_url = GURL(value.params[kValidityUrlKey]);
     if (!sig.validity_url.is_valid()) {
       signed_exchange_utils::ReportErrorAndEndTraceEvent(
           devtools_proxy, "SignedExchangeHeaderParser::ParseSignature",
@@ -265,13 +265,13 @@ SignedExchangeHeaderParser::ParseSignature(
           "'validityUrl' parameter can't have a fragment.");
       return base::nullopt;
     }
-    if (!base::StringToUint64(value.params["date"], &sig.date)) {
+    if (!base::StringToUint64(value.params[kDateKey], &sig.date)) {
       signed_exchange_utils::ReportErrorAndEndTraceEvent(
           devtools_proxy, "SignedExchangeHeaderParser::ParseSignature",
           "'date' parameter is not a number.");
       return base::nullopt;
     }
-    if (!base::StringToUint64(value.params["expires"], &sig.expires)) {
+    if (!base::StringToUint64(value.params[kExpiresKey], &sig.expires)) {
       signed_exchange_utils::ReportErrorAndEndTraceEvent(
           devtools_proxy, "SignedExchangeHeaderParser::ParseSignature",
           "'expires' parameter is not a number.");
