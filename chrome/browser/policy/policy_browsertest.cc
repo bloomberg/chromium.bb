@@ -235,6 +235,8 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
+#include "chrome/browser/chromeos/policy/login_policy_test_base.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
@@ -996,6 +998,45 @@ IN_PROC_BROWSER_TEST_F(LocalePolicyTest, ApplicationLocaleValue) {
   base::string16 french_title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
   base::string16 title;
   EXPECT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &title));
+  EXPECT_EQ(french_title, title);
+
+  // Make sure this is really French and differs from the English title.
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  std::string loaded =
+      ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources("en-US");
+  EXPECT_EQ("en-US", loaded);
+  base::string16 english_title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
+  EXPECT_NE(french_title, english_title);
+}
+#endif
+
+#if defined(OS_CHROMEOS)
+class AllowedLocalesPolicyTest : public LoginPolicyTestBase {
+ protected:
+  void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
+    base::ListValue allowed_locales;
+    allowed_locales.AppendString("fr");
+    policy->SetKey(key::kAllowedLocales, std::move(allowed_locales));
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(AllowedLocalesPolicyTest, AllowedLocales) {
+  SkipToLoginScreen();
+  LogIn(kAccountId, kAccountPassword, kEmptyServices);
+
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  Profile* const profile =
+      chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+
+  // Verifies that the default locale has been overridden by policy
+  // (see |GetMandatoryPoliciesValue|)
+  Browser* browser = CreateBrowser(profile);
+  EXPECT_EQ("fr", profile->GetPrefs()->GetString(prefs::kApplicationLocale));
+  ui_test_utils::NavigateToURL(browser, GURL(chrome::kChromeUINewTabURL));
+  base::string16 french_title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
+  base::string16 title;
+  EXPECT_TRUE(ui_test_utils::GetCurrentTabTitle(browser, &title));
   EXPECT_EQ(french_title, title);
 
   // Make sure this is really French and differs from the English title.

@@ -1268,6 +1268,12 @@ void ProfileImpl::ChangeAppLocale(
       }
       break;
     }
+    case APP_LOCALE_CHANGED_VIA_POLICY: {
+      // If the locale change has been triggered by policy, the original locale
+      // is not allowed and can't be switched back to.
+      GetPrefs()->SetString(prefs::kApplicationLocaleBackup, new_locale);
+      break;
+    }
     case APP_LOCALE_CHANGED_VIA_UNKNOWN:
     default: {
       NOTREACHED();

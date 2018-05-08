@@ -34,7 +34,8 @@ chrome.languageSettingsPrivate.MoveType = {
  *   nativeDisplayName: string,
  *   supportsUI: (boolean|undefined),
  *   supportsSpellcheck: (boolean|undefined),
- *   supportsTranslate: (boolean|undefined)
+ *   supportsTranslate: (boolean|undefined),
+ *   isAllowedLocale: (boolean|undefined)
  * }}
  * @see https://developer.chrome.com/extensions/languageSettingsPrivate#type-Language
  */

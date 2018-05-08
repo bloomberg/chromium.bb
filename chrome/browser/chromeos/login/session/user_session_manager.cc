@@ -789,7 +789,8 @@ bool UserSessionManager::RespectLocalePreference(
     pref_locale = pref_bkup_locale;
 
   const std::string* account_locale = NULL;
-  if (pref_locale.empty() && user->has_gaia_account()) {
+  if (pref_locale.empty() && user->has_gaia_account() &&
+      prefs->GetList(prefs::kAllowedLocales)->GetList().empty()) {
     if (user->GetAccountLocale() == NULL)
       return false;  // wait until Account profile is loaded.
     account_locale = user->GetAccountLocale();
@@ -808,10 +809,19 @@ bool UserSessionManager::RespectLocalePreference(
                      "'. ")
                   : (std::string("account_locale - unused. ")))
           << " Selected '" << pref_locale << "'";
-  profile->ChangeAppLocale(
-      pref_locale, user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT
-                       ? Profile::APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN
-                       : Profile::APP_LOCALE_CHANGED_VIA_LOGIN);
+
+  Profile::AppLocaleChangedVia app_locale_changed_via =
+      user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT
+          ? Profile::APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN
+          : Profile::APP_LOCALE_CHANGED_VIA_LOGIN;
+
+  // check if pref_locale is allowed by policy (AllowedLocales)
+  if (!chromeos::locale_util::IsAllowedLocale(pref_locale, prefs)) {
+    pref_locale = chromeos::locale_util::GetAllowedFallbackLocale(prefs);
+    app_locale_changed_via = Profile::APP_LOCALE_CHANGED_VIA_POLICY;
+  }
+
+  profile->ChangeAppLocale(pref_locale, app_locale_changed_via);
 
   // Here we don't enable keyboard layouts for normal users. Input methods
   // are set up when the user first logs in. Then the user may customize the

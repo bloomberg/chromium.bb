@@ -79,6 +79,15 @@
         background-color: transparent;
       }
 
+      #uiLanguageItem span {
+        line-height: 20px;
+      }
+
+      #uiLanguageItem cr-policy-indicator {
+        float: right;
+        margin-left: 20px;
+      }
+
       .name-with-error-list {
         padding: 14px 0;
       }
@@ -317,7 +326,11 @@
                   on-change="onUILanguageChange_"
                   disabled="[[disableUILanguageCheckbox_(
                       detailLanguage_, languages.prospectiveUILanguage)]]">
-                  $i18n{displayInThisLanguage}
+                      <span>$i18n{displayInThisLanguage}</span>
+                      <cr-policy-indicator indicator-type="[[
+                      getPolicyIndicatorStatus_(
+                        detailLanguage_.language)]]">
+                      </cr-policy-indicator>
               </paper-checkbox>
 </if>
               <paper-checkbox id="offerTranslations" slot="item"

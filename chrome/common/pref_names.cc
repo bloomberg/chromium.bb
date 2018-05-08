@@ -229,6 +229,9 @@ const char kApplicationLocaleAccepted[] = "intl.app_locale_accepted";
 // Sync                                B        A       -
 // Revert                              A        A       -
 const char kApplicationLocaleBackup[] = "intl.app_locale_backup";
+
+// List of allowed locales
+const char kAllowedLocales[] = "intl.allowed_locales";
 #endif
 
 // The default character encoding to assume for a web page in the

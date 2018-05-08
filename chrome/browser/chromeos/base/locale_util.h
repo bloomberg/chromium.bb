@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 
 class Profile;
+class PrefService;
 
 namespace chromeos {
 namespace locale_util {
@@ -50,6 +51,18 @@ void SwitchLanguage(const std::string& locale,
                     const bool login_layouts_only,
                     const SwitchLanguageCallback& callback,
                     Profile* profile);
+
+// This function checks if the given locale is allowed according to the list of
+// allowed locales (stored in |prefs|, managed by 'AllowedLocales' policy).
+// If the list is empty, every locale is allowed.
+bool IsAllowedLocale(const std::string& locale_code, const PrefService* prefs);
+
+// This function returns an allowed locale based on the list of allowed locales
+// (stored in |prefs|, managed by 'AllowedLocales' policy). If none of the
+// user's preferred languages is allowed, the function returns the first valid
+// entry in the allowed locales list. If the list contains no valid entries,
+// the default fallback will be 'en-US' (kAllowedLocalesFallbackLocale);
+std::string GetAllowedFallbackLocale(const PrefService* prefs);
 
 }  // namespace locale_util
 }  // namespace chromeos

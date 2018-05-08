@@ -3744,5 +3744,8 @@
   },
 
   "SkipMetadataCheck": {
+  },
+
+  "AllowedLocales": {
   }
 }

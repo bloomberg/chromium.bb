@@ -11,9 +11,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/platform_font_linux.h"
 
@@ -104,6 +107,8 @@ void FinishSwitchLanguage(std::unique_ptr<SwitchLanguageData> data) {
 
 namespace locale_util {
 
+constexpr const char* kAllowedLocalesFallbackLocale = "en-US";
+
 LanguageSwitchResult::LanguageSwitchResult(const std::string& requested_locale,
                                            const std::string& loaded_locale,
                                            bool success)
@@ -126,6 +131,45 @@ void SwitchLanguage(const std::string& locale,
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND}, reloader,
       base::Bind(&FinishSwitchLanguage, base::Passed(std::move(data))));
+}
+
+bool IsAllowedLocale(const std::string& locale_code, const PrefService* prefs) {
+  const base::Value::ListStorage& allowed_locales =
+      prefs->GetList(prefs::kAllowedLocales)->GetList();
+
+  // Empty list means all locales are allowed.
+  if (allowed_locales.empty())
+    return true;
+
+  // Check if locale is in list of allowed locales.
+  return base::ContainsValue(allowed_locales, base::Value(locale_code));
+}
+
+std::string GetAllowedFallbackLocale(const PrefService* prefs) {
+  // Check the user's preferred languages if one of them is allowed.
+  std::string preferred_languages_string =
+      prefs->GetString(prefs::kLanguagePreferredLanguages);
+  std::vector<std::string> preferred_languages =
+      base::SplitString(preferred_languages_string, ",", base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+  for (const std::string& language : preferred_languages) {
+    if (IsAllowedLocale(language, prefs))
+      return language;
+  }
+
+  // Check the allowed languages and return the first valid entry.
+  const base::Value::ListStorage& allowed_locales =
+      prefs->GetList(prefs::kAllowedLocales)->GetList();
+  const std::vector<std::string>& available_locales =
+      l10n_util::GetAvailableLocales();
+  for (const base::Value& value : allowed_locales) {
+    const std::string& locale = value.GetString();
+    if (base::ContainsValue(available_locales, locale))
+      return locale;
+  }
+
+  // default fallback
+  return kAllowedLocalesFallbackLocale;
 }
 
 }  // namespace locale_util
