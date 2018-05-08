@@ -290,8 +290,9 @@ show_brailleIndicators(void) {
 	const char *emphNames[] = { "begemphphrase %s", "endemphphrase %s before",
 		"endemphphrase %s after", "begemphword %s", "endemphword %s", "emphletter %s",
 		"begemph %s", "endemph %s", NULL };
-	const char *capsNames[] = { "firstwordcaps", "lastwordcapsbefore", "lastwordcapsafter",
-		"begcaps", "endcaps", "capsletter", "capsword", "capswordstop", NULL };
+	const char *capsNames[] = { "firstwordcaps", "lastwordcapsbefore",
+		"lastwordcapsafter", "begcaps", "endcaps", "capsletter", "capsword",
+		"capswordstop", NULL };
 
 	// FIXME: update to include all UEB opcodes.
 
