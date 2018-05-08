@@ -8,8 +8,7 @@
 #include "components/toolbar/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 
-FindBarIcon::FindBarIcon(BubbleIconView::Delegate* delegate)
-    : BubbleIconView(nullptr, 0, delegate) {}
+FindBarIcon::FindBarIcon() : BubbleIconView(nullptr, 0) {}
 
 FindBarIcon::~FindBarIcon() {}
 

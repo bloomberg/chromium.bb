@@ -19,7 +19,7 @@ class Browser;
 // The entry point for the intent picker.
 class IntentPickerView : public BubbleIconView {
  public:
-  IntentPickerView(Browser* browser, BubbleIconView::Delegate* delegate);
+  explicit IntentPickerView(Browser* browser);
   ~IntentPickerView() override;
 
   // BubbleIconView:

@@ -123,6 +123,23 @@ bool InTouchableMode() {
   return ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
 }
 
+OmniboxTint GetTintForProfile(Profile* profile) {
+  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile);
+  if (theme_service->UsingDefaultTheme()) {
+    return profile->GetProfileType() == Profile::INCOGNITO_PROFILE
+               ? OmniboxTint::DARK
+               : OmniboxTint::LIGHT;
+  }
+
+  // Check for GTK on Desktop Linux.
+  if (theme_service->IsSystemThemeDistinctFromDefaultTheme() &&
+      theme_service->UsingSystemTheme())
+    return OmniboxTint::NATIVE;
+
+  // TODO(tapted): Infer a tint from theme colors?
+  return OmniboxTint::LIGHT;
+}
+
 // Returns true when a views::FocusRing should be used.
 bool ShouldUseFocusRingView(bool show_focus_ring) {
   return (show_focus_ring && LocationBarView::IsRounded()) ||
@@ -169,7 +186,8 @@ LocationBarView::LocationBarView(Browser* browser,
       ChromeOmniboxEditController(command_updater),
       browser_(browser),
       delegate_(delegate),
-      is_popup_mode_(is_popup_mode) {
+      is_popup_mode_(is_popup_mode),
+      tint_(GetTintForProfile(profile)) {
   edit_bookmarks_enabled_.Init(
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
       base::Bind(&LocationBarView::UpdateWithoutTabRestore,
@@ -229,7 +247,7 @@ void LocationBarView::Init() {
   selected_keyword_view_ = new SelectedKeywordView(this, font_list, profile());
   AddChildView(selected_keyword_view_);
 
-  keyword_hint_view_ = new KeywordHintView(this, profile(), GetTint());
+  keyword_hint_view_ = new KeywordHintView(this, profile(), tint());
   AddChildView(keyword_hint_view_);
 
   std::vector<std::unique_ptr<ContentSettingImageModel>> models =
@@ -242,7 +260,7 @@ void LocationBarView::Init() {
     AddChildView(image_view);
   }
 
-  zoom_view_ = new ZoomView(delegate_, this);
+  zoom_view_ = new ZoomView(delegate_);
   bubble_icons_.push_back(zoom_view_);
   manage_passwords_icon_view_ =
       new ManagePasswordsIconViews(command_updater(), this);
@@ -259,13 +277,12 @@ void LocationBarView::Init() {
 #if defined(OS_CHROMEOS)
   if (browser_)
     bubble_icons_.push_back(intent_picker_view_ =
-                                new IntentPickerView(browser_, this));
+                                new IntentPickerView(browser_));
 #endif
-  bubble_icons_.push_back(find_bar_icon_ = new FindBarIcon(this));
-  if (browser_) {
-    bubble_icons_.push_back(
-        star_view_ = new StarView(command_updater(), browser_, this));
-  }
+  bubble_icons_.push_back(find_bar_icon_ = new FindBarIcon());
+  if (browser_)
+    bubble_icons_.push_back(star_view_ =
+                                new StarView(command_updater(), browser_));
 
   std::for_each(bubble_icons_.begin(), bubble_icons_.end(),
                 [this](BubbleIconView* icon_view) -> void {
@@ -291,8 +308,8 @@ bool LocationBarView::IsInitialized() const {
   return omnibox_view_ != nullptr;
 }
 
-SkColor LocationBarView::GetColor(OmniboxPart part) {
-  return GetOmniboxColor(part, GetTint());
+SkColor LocationBarView::GetColor(OmniboxPart part) const {
+  return GetOmniboxColor(part, tint());
 }
 
 SkColor LocationBarView::GetOpaqueBorderColor(bool incognito) const {
@@ -318,7 +335,7 @@ float LocationBarView::GetBorderRadius() {
 }
 
 SkColor LocationBarView::GetSecurityChipColor(
-    security_state::SecurityLevel security_level) {
+    security_state::SecurityLevel security_level) const {
   // Only used in ChromeOS.
   if (security_level == security_state::SECURE_WITH_POLICY_INSTALLED_CERT)
     return GetColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
@@ -331,7 +348,7 @@ SkColor LocationBarView::GetSecurityChipColor(
     state = OmniboxPartState::CHIP_DANGEROUS;
   }
 
-  return GetOmniboxColor(OmniboxPart::LOCATION_BAR_SECURITY_CHIP, GetTint(),
+  return GetOmniboxColor(OmniboxPart::LOCATION_BAR_SECURITY_CHIP, tint(),
                          state);
 }
 
@@ -574,7 +591,7 @@ void LocationBarView::Layout() {
                                        0, item_padding, item_padding,
                                        keyword_hint_view_);
     keyword_hint_view_->SetKeyword(keyword, GetOmniboxPopupView()->IsOpen(),
-                                   GetTint());
+                                   tint());
   }
 
   add_trailing_decoration(clear_all_button_);
@@ -623,6 +640,10 @@ void LocationBarView::Layout() {
         std::min(width, entry_width), location_bounds.height());
   }
   omnibox_view_->SetBoundsRect(location_bounds);
+}
+
+void LocationBarView::OnThemeChanged() {
+  tint_ = GetTintForProfile(profile());
 }
 
 void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
@@ -716,23 +737,6 @@ LocationBarView::GetContentSettingBubbleModelDelegate() {
 // LocationBarView, public BubbleIconView::Delegate implementation:
 WebContents* LocationBarView::GetWebContentsForBubbleIconView() {
   return GetWebContents();
-}
-
-OmniboxTint LocationBarView::GetTint() {
-  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile());
-  if (theme_service->UsingDefaultTheme()) {
-    return profile()->GetProfileType() == Profile::INCOGNITO_PROFILE
-               ? OmniboxTint::DARK
-               : OmniboxTint::LIGHT;
-  }
-
-  // Check for GTK on Desktop Linux.
-  if (theme_service->IsSystemThemeDistinctFromDefaultTheme() &&
-      theme_service->UsingSystemTheme())
-    return OmniboxTint::NATIVE;
-
-  // TODO(tapted): Infer a tint from theme colors?
-  return OmniboxTint::LIGHT;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

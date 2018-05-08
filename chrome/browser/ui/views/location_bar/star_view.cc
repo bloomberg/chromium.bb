@@ -20,10 +20,8 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/widget/widget_observer.h"
 
-StarView::StarView(CommandUpdater* command_updater,
-                   Browser* browser,
-                   BubbleIconView::Delegate* delegate)
-    : BubbleIconView(command_updater, IDC_BOOKMARK_PAGE, delegate),
+StarView::StarView(CommandUpdater* command_updater, Browser* browser)
+    : BubbleIconView(command_updater, IDC_BOOKMARK_PAGE),
       browser_(browser),
       bookmark_promo_observer_(this) {
   set_id(VIEW_ID_STAR_BUTTON);
