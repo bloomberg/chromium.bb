@@ -400,6 +400,16 @@ void CookiesSetFunction::GetCookieListCallback(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(SET_COMPLETED, state_);
   state_ = GET_COMPLETED;
+
+  if (!success_) {
+    std::string name = parsed_args_->details.name.get()
+                           ? *parsed_args_->details.name
+                           : std::string();
+    error_ = ErrorUtils::FormatErrorMessage(keys::kCookieSetFailedError, name);
+    SendResponse(false);
+    return;
+  }
+
   for (const net::CanonicalCookie& cookie : cookie_list) {
     // Return the first matching cookie. Relies on the fact that the
     // CookieMonster returns them in canonical order (longest path, then
@@ -415,15 +425,7 @@ void CookiesSetFunction::GetCookieListCallback(
     }
   }
 
-  if (!success_) {
-    std::string name =
-        parsed_args_->details.name.get() ? *parsed_args_->details.name
-                                         : std::string();
-    // TODO(rdevlin.cronin): Avoid setting both error_ and results_ in the
-    // same call.
-    error_ = ErrorUtils::FormatErrorMessage(keys::kCookieSetFailedError, name);
-  }
-  SendResponse(success_);
+  SendResponse(true);
 }
 
 CookiesRemoveFunction::CookiesRemoveFunction() {
