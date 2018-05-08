@@ -2213,7 +2213,6 @@ if (enable_java_templates) {
     java_library_impl(_java_target) {
       forward_variables_from(invoker,
                              [
-                               "apk_name",
                                "android_manifest",
                                "android_manifest_dep",
                                "apk_under_test",
@@ -2446,6 +2445,20 @@ if (enable_java_templates) {
 
     if (defined(invoker.loadable_modules) && invoker.loadable_modules != []) {
       _extra_native_libs_even_when_incremental += invoker.loadable_modules
+    }
+
+    # Generate .apk.jar.info files if needed.
+    if (defined(invoker.apk_name)) {
+      _apk_jar_info_target = "${target_name}__apk_jar_info"
+      create_apk_jar_info(_apk_jar_info_target) {
+        output = "$root_build_dir/size-info/${invoker.apk_name}.apk.jar.info"
+        apk_build_config = _build_config
+        deps = [
+          ":$_build_config_target",
+          ":$_java_target",
+        ]
+      }
+      _deps += [ ":$_apk_jar_info_target" ]
     }
 
     _final_deps += [ ":${_template_name}__create" ]
