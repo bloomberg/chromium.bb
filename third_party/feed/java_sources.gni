@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 feed_lib_java_sources = [
+  "src/src/main/java/com/google/android/libraries/feed/api/actionmanager/ActionManager.java",
   "src/src/main/java/com/google/android/libraries/feed/api/actionparser/ActionParser.java",
   "src/src/main/java/com/google/android/libraries/feed/api/common/MutationContext.java",
   "src/src/main/java/com/google/android/libraries/feed/api/common/PayloadWithId.java",
@@ -49,7 +50,6 @@ feed_lib_java_sources = [
   "src/src/main/java/com/google/android/libraries/feed/basicstream/internal/piet/PietAssetProvider.java",
   "src/src/main/java/com/google/android/libraries/feed/basicstream/internal/piet/PietCustomElementProvider.java",
   "src/src/main/java/com/google/android/libraries/feed/basicstream/internal/piet/PietHostBindingProvider.java",
-  "src/src/main/java/com/google/android/libraries/feed/basicstream/internal/util/TokenHandler.java",
   "src/src/main/java/com/google/android/libraries/feed/basicstream/internal/viewholders/ContinuationViewHolder.java",
   "src/src/main/java/com/google/android/libraries/feed/basicstream/internal/viewholders/PietViewHolder.java",
   "src/src/main/java/com/google/android/libraries/feed/basicstream/internal/viewholders/ViewHolderType.java",
@@ -70,6 +70,7 @@ feed_lib_java_sources = [
   "src/src/main/java/com/google/android/libraries/feed/common/time/Clock.java",
   "src/src/main/java/com/google/android/libraries/feed/common/time/SystemClockImpl.java",
   "src/src/main/java/com/google/android/libraries/feed/common/time/TimingUtils.java",
+  "src/src/main/java/com/google/android/libraries/feed/feedactionmanager/FeedActionManagerImpl.java",
   "src/src/main/java/com/google/android/libraries/feed/feedactionparser/FeedActionParser.java",
   "src/src/main/java/com/google/android/libraries/feed/feedactionparser/internal/PietFeedActionPaylaodRetriever.java",
   "src/src/main/java/com/google/android/libraries/feed/feedapplifecyclelistener/FeedAppLifecycleListener.java",
