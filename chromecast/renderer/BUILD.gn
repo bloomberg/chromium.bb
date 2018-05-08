@@ -61,12 +61,18 @@ cast_source_set("renderer") {
     sources += [
       "cast_extensions_renderer_client.cc",
       "cast_extensions_renderer_client.h",
+      "extensions/automation_ax_tree_wrapper.cc",
+      "extensions/automation_ax_tree_wrapper.h",
+      "extensions/automation_internal_custom_bindings.cc",
+      "extensions/automation_internal_custom_bindings.h",
     ]
 
     deps += [
+      "//chromecast/common/extensions_api:api",
       "//chromecast/common",
       "//extensions/common",
       "//extensions/renderer",
+      "//gin:gin",
     ]
   }
 }
