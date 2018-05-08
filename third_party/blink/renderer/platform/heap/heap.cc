@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/platform/heap/address_cache.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/heap_compact.h"
+#include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/page_memory.h"
 #include "third_party/blink/renderer/platform/heap/page_pool.h"
@@ -128,6 +129,7 @@ double ThreadHeapStats::LiveObjectRateSinceLastGC() const {
 
 ThreadHeap::ThreadHeap(ThreadState* thread_state)
     : thread_state_(thread_state),
+      heap_stats_collector_(std::make_unique<ThreadHeapStatsCollector>()),
       region_tree_(std::make_unique<RegionTree>()),
       address_cache_(std::make_unique<AddressCache>()),
       free_page_pool_(std::make_unique<PagePool>()),

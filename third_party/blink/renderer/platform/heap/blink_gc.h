@@ -97,14 +97,15 @@ class PLATFORM_EXPORT BlinkGC final {
   };
 
   enum GCReason {
-    kIdleGC,
-    kPreciseGC,
-    kConservativeGC,
-    kForcedGC,
-    kMemoryPressureGC,
-    kPageNavigationGC,
-    kThreadTerminationGC,
-    kLastGCReason = kThreadTerminationGC,
+    kIdleGC = 0,
+    kPreciseGC = 1,
+    kConservativeGC = 2,
+    kForcedGC = 3,
+    kMemoryPressureGC = 4,
+    kPageNavigationGC = 5,
+    kThreadTerminationGC = 6,
+    kTesting = 7,
+    kLastGCReason = kTesting,
   };
 
   enum ArenaIndices {

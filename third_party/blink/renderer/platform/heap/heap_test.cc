@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_linked_stack.h"
+#include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/heap/heap_terminated_array_builder.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
@@ -365,6 +366,7 @@ class TestGCMarkingScope : public TestGCCollectGarbageScope {
       : TestGCCollectGarbageScope(state),
         atomic_pause_scope_(ThreadState::Current()),
         persistent_lock_(ProcessHeap::CrossThreadPersistentMutex()) {
+    ThreadState::Current()->Heap().stats_collector()->Start(BlinkGC::kTesting);
     ThreadState::Current()->MarkPhasePrologue(state, BlinkGC::kAtomicMarking,
                                               BlinkGC::kPreciseGC);
   }

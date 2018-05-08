@@ -530,10 +530,6 @@ class PLATFORM_EXPORT ThreadState {
     }
   }
 
-  void AccumulateSweepingTime(double time) {
-    accumulated_sweeping_time_ += time;
-  }
-
   void FreePersistentNode(PersistentRegion*, PersistentNode*);
 
   using PersistentClearCallback = void (*)(void*);
@@ -700,7 +696,6 @@ class PLATFORM_EXPORT ThreadState {
   size_t no_allocation_count_;
   size_t gc_forbidden_count_;
   size_t mixins_being_constructed_count_;
-  double accumulated_sweeping_time_;
   bool object_resurrection_forbidden_;
   bool in_atomic_pause_;
 
