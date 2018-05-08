@@ -318,13 +318,11 @@ size_t TemplateURLRef::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(replacements_);
   res += base::trace_event::EstimateMemoryUsage(host_);
   res += base::trace_event::EstimateMemoryUsage(port_);
-  res += base::trace_event::EstimateMemoryUsage(path_prefix_);
-  res += base::trace_event::EstimateMemoryUsage(path_suffix_);
+  res += base::trace_event::EstimateMemoryUsage(path_);
   res += base::trace_event::EstimateMemoryUsage(search_term_key_);
   res += base::trace_event::EstimateMemoryUsage(search_term_value_prefix_);
   res += base::trace_event::EstimateMemoryUsage(search_term_value_suffix_);
   res += base::trace_event::EstimateMemoryUsage(post_params_);
-  res += sizeof(path_wildcard_present_);
 
   return res;
 }
@@ -447,10 +445,10 @@ const std::string& TemplateURLRef::GetHost(
   return host_;
 }
 
-std::string TemplateURLRef::GetPath(
+const std::string& TemplateURLRef::GetPath(
     const SearchTermsData& search_terms_data) const {
   ParseIfNecessary(search_terms_data);
-  return path_prefix_ + path_suffix_;
+  return path_;
 }
 
 const std::string& TemplateURLRef::GetSearchTermKey(
@@ -536,8 +534,10 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
     return false;
 
   // Host, port, and path must match.
-  if ((url.host() != host_) || (url.port() != port_) ||
-      (!PathIsEqual(url) && (search_term_key_location_ != url::Parsed::PATH))) {
+  if ((url.host() != host_) ||
+      (url.port() != port_) ||
+      ((url.path() != path_) &&
+          (search_term_key_location_ != url::Parsed::PATH))) {
     return false;
   }
 
@@ -609,8 +609,7 @@ void TemplateURLRef::InvalidateCachedValues() const {
   supports_replacements_ = valid_ = parsed_ = false;
   host_.clear();
   port_.clear();
-  path_prefix_.clear();
-  path_suffix_.clear();
+  path_.clear();
   search_term_key_.clear();
   search_term_key_location_ = url::Parsed::QUERY;
   search_term_value_prefix_.clear();
@@ -689,8 +688,6 @@ bool TemplateURLRef::ParseParameter(size_t start,
                                         start));
   } else if (parameter == "google:pageClassification") {
     replacements->push_back(Replacement(GOOGLE_PAGE_CLASSIFICATION, start));
-  } else if (parameter == "google:pathWildcard") {
-    // Do nothing, we just want the path wildcard removed from the URL.
   } else if (parameter == "google:prefetchQuery") {
     replacements->push_back(Replacement(GOOGLE_PREFETCH_QUERY, start));
   } else if (parameter == "google:RLZ") {
@@ -840,28 +837,6 @@ void TemplateURLRef::ParseIfNecessary(
   }
 }
 
-void TemplateURLRef::ParsePath(const std::string& path) const {
-  // Wildcard string used when matching URLs.
-  const std::string wildcard_escaped = "%7Bgoogle:pathWildcard%7D";
-
-  // We only search for the escaped wildcard because we're only replacing it in
-  // the path, and GURL's constructor escapes { and }.
-  size_t wildcard_start = path.find(wildcard_escaped);
-  path_wildcard_present_ = wildcard_start != std::string::npos;
-  path_prefix_ = path.substr(0, wildcard_start);
-  path_suffix_ = path_wildcard_present_
-                     ? path.substr(wildcard_start + wildcard_escaped.length())
-                     : std::string();
-}
-
-bool TemplateURLRef::PathIsEqual(const GURL& url) const {
-  base::StringPiece path = url.path_piece();
-  if (!path_wildcard_present_)
-    return path == path_prefix_;
-  return ((path.length() >= path_prefix_.length() + path_suffix_.length()) &&
-          path.starts_with(path_prefix_) && path.ends_with(path_suffix_));
-}
-
 void TemplateURLRef::ParseHostAndSearchTermKey(
     const SearchTermsData& search_terms_data) const {
   std::string url_string(GetURL());
@@ -894,13 +869,13 @@ void TemplateURLRef::ParseHostAndSearchTermKey(
     search_term_key_ = query_result.key();
     search_term_value_prefix_ = query_result.value_prefix();
     search_term_value_suffix_ = query_result.value_suffix();
-    ParsePath(url.path());
+    path_ = url.path();
   } else if (in_ref) {
     search_term_key_location_ = url::Parsed::REF;
     search_term_key_ = ref_result.key();
     search_term_value_prefix_ = ref_result.value_prefix();
     search_term_value_suffix_ = ref_result.value_suffix();
-    ParsePath(url.path());
+    path_ = url.path();
   } else {
     DCHECK(in_path);
     search_term_key_location_ = url::Parsed::PATH;
