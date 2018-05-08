@@ -6088,16 +6088,31 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   if (base::FeatureList::IsEnabled(features::kMash))
     return;
 
+  constexpr base::TimeDelta kTimeout = base::TimeDelta::FromMicroseconds(10);
+
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
 
-  viz::LocalSurfaceId id1 = view_->GetLocalSurfaceId();
-  EXPECT_TRUE(id1.is_valid());
+  widget_host_->set_new_content_rendering_delay_for_testing(kTimeout);
 
-  widget_host_->set_new_content_rendering_delay_for_testing(
-      base::TimeDelta::FromMicroseconds(10));
+  viz::LocalSurfaceId id0 = view_->GetLocalSurfaceId();
+  EXPECT_TRUE(id0.is_valid());
+
+  // No new LocalSurfaceId should be allocated for the first navigation but the
+  // timer should fire.
+  widget_host_->DidNavigate(1);
+  viz::LocalSurfaceId id1 = view_->GetLocalSurfaceId();
+  EXPECT_EQ(id0, id1);
+  {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), 2 * kTimeout);
+    run_loop.Run();
+  }
+  EXPECT_TRUE(widget_host_->new_content_rendering_timeout_fired());
+  widget_host_->reset_new_content_rendering_timeout_fired();
 
   // Start the timer. Verify that a new LocalSurfaceId is allocated.
   widget_host_->DidNavigate(5);
@@ -6113,8 +6128,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromMicroseconds(20));
+        FROM_HERE, run_loop.QuitClosure(), 2 * kTimeout);
     run_loop.Run();
   }
   EXPECT_TRUE(widget_host_->new_content_rendering_timeout_fired());
@@ -6131,8 +6145,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromMicroseconds(20));
+        FROM_HERE, run_loop.QuitClosure(), 2 * kTimeout);
     run_loop.Run();
   }
   EXPECT_FALSE(widget_host_->new_content_rendering_timeout_fired());
