@@ -69,10 +69,17 @@ class AssistantContainerView : public views::BubbleDialogDelegateView {
 
   int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
 
+  void RequestFocus() override {
+    if (assistant_bubble_view_)
+      assistant_bubble_view_->RequestFocus();
+  }
+
  private:
   void InitLayout() {
     SetLayoutManager(std::make_unique<views::FillLayout>());
-    AddChildView(new AssistantBubbleView(assistant_controller_));
+
+    assistant_bubble_view_ = new AssistantBubbleView(assistant_controller_);
+    AddChildView(assistant_bubble_view_);
   }
 
   void SetAnchor() {
@@ -89,7 +96,10 @@ class AssistantContainerView : public views::BubbleDialogDelegateView {
     SetAnchorRect(anchor);
   }
 
-  AshAssistantController* assistant_controller_;  // Owned by Shell.
+  AshAssistantController* const assistant_controller_;  // Owned by Shell.
+
+  // Owned by view hierarchy.
+  AssistantBubbleView* assistant_bubble_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantContainerView);
 };
@@ -110,8 +120,14 @@ AssistantBubble::~AssistantBubble() {
     container_view_->GetWidget()->RemoveObserver(this);
 }
 
+void AssistantBubble::OnWidgetActivationChanged(views::Widget* widget,
+                                                bool active) {
+  if (active)
+    container_view_->RequestFocus();
+}
+
 void AssistantBubble::OnWidgetClosing(views::Widget* widget) {
-  widget->RemoveObserver(this);
+  container_view_->GetWidget()->RemoveObserver(this);
   container_view_ = nullptr;
 }
 
@@ -128,11 +144,11 @@ void AssistantBubble::OnInteractionStateChanged(
 }
 
 void AssistantBubble::Show() {
-  if (!container_view_)
+  if (!container_view_) {
     container_view_ = new AssistantContainerView(assistant_controller_);
-
-  container_view_->GetWidget()->AddObserver(this);
-  container_view_->GetWidget()->ShowInactive();
+    container_view_->GetWidget()->AddObserver(this);
+  }
+  container_view_->GetWidget()->Show();
 }
 
 void AssistantBubble::Dismiss() {

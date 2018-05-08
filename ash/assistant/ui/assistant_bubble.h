@@ -28,6 +28,7 @@ class AssistantBubble : public views::WidgetObserver,
   ~AssistantBubble() override;
 
   // views::WidgetObserver:
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
   void OnWidgetClosing(views::Widget* widget) override;
 
   // AssistantInteractionModelObserver:
