@@ -729,8 +729,10 @@ void PasswordAutofillAgent::PasswordValueGatekeeper::Reset() {
 
 void PasswordAutofillAgent::PasswordValueGatekeeper::ShowValue(
     blink::WebInputElement* element) {
-  if (!element->IsNull() && !element->SuggestedValue().IsEmpty())
+  if (!element->IsNull() && !element->SuggestedValue().IsEmpty()) {
     element->SetAutofillValue(element->SuggestedValue());
+    element->SetAutofilled(true);
+  }
 }
 
 bool PasswordAutofillAgent::TextDidChangeInTextField(
