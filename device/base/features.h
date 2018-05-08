@@ -13,6 +13,7 @@ namespace device {
 
 #if defined(OS_WIN)
 DEVICE_BASE_EXPORT extern const base::Feature kNewUsbBackend;
+DEVICE_BASE_EXPORT extern const base::Feature kNewBLEWinImplementation;
 #endif  // defined(OS_WIN)
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
