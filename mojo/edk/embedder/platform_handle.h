@@ -12,11 +12,11 @@
 #include <windows.h>
 
 #include "base/process/process_handle.h"
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
-#include <mach/mach.h>
 #elif defined(OS_FUCHSIA)
 #include <fdio/limits.h>
 #include <zircon/syscalls.h>
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#include <mach/mach.h>
 #endif
 
 #include "base/logging.h"
@@ -24,7 +24,29 @@
 namespace mojo {
 namespace edk {
 
-#if defined(OS_FUCHSIA)
+#if defined(OS_WIN)
+struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
+  PlatformHandle() : PlatformHandle(INVALID_HANDLE_VALUE) {}
+  explicit PlatformHandle(HANDLE handle)
+      : handle(handle), owning_process(base::GetCurrentProcessHandle()) {}
+
+  void CloseIfNecessary();
+
+  bool is_valid() const { return handle != INVALID_HANDLE_VALUE; }
+
+  HANDLE handle;
+
+  // A Windows HANDLE may be duplicated to another process but not yet sent to
+  // that process. This tracks the handle's owning process and this process
+  // handle (if not null, i.e., the current process) is *owned* by this
+  // PlatformHandle.
+  base::ProcessHandle owning_process;
+
+  // A Windows HANDLE may be an unconnected named pipe. In this case, we need to
+  // wait for a connection before communicating on the pipe.
+  bool needs_connection = false;
+};
+#elif defined(OS_FUCHSIA)
 // TODO(fuchsia): Find a clean way to share this with the POSIX version.
 // |zx_handle_t| is a typedef of |int|, so we only allow PlatformHandle to be
 // created via explicit For<type>() creator functions.
@@ -93,28 +115,6 @@ struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   mach_port_t port = MACH_PORT_NULL;
 #endif
-};
-#elif defined(OS_WIN)
-struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
-  PlatformHandle() : PlatformHandle(INVALID_HANDLE_VALUE) {}
-  explicit PlatformHandle(HANDLE handle)
-      : handle(handle), owning_process(base::GetCurrentProcessHandle()) {}
-
-  void CloseIfNecessary();
-
-  bool is_valid() const { return handle != INVALID_HANDLE_VALUE; }
-
-  HANDLE handle;
-
-  // A Windows HANDLE may be duplicated to another process but not yet sent to
-  // that process. This tracks the handle's owning process and this process
-  // handle (if not null, i.e., the current process) is *owned* by this
-  // PlatformHandle.
-  base::ProcessHandle owning_process;
-
-  // A Windows HANDLE may be an unconnected named pipe. In this case, we need to
-  // wait for a connection before communicating on the pipe.
-  bool needs_connection = false;
 };
 #else
 #error "Platform not yet supported."

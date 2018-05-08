@@ -22,6 +22,7 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/process/process_handle.h"
+#include "build/build_config.h"
 #include "mojo/public/c/system/platform_handle.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/handle.h"
@@ -33,28 +34,32 @@
 
 namespace mojo {
 
-#if defined(OS_POSIX)
+#if defined(OS_WIN)
+const MojoPlatformHandleType kPlatformFileHandleType =
+    MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE;
+
+const MojoPlatformHandleType kPlatformSharedBufferHandleType =
+    MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE;
+
+#elif defined(OS_FUCHSIA)
+const MojoPlatformHandleType kPlatformFileHandleType =
+    MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR;
+const MojoPlatformHandleType kPlatformSharedBufferHandleType =
+    MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE;
+
+#elif defined(OS_POSIX)
 const MojoPlatformHandleType kPlatformFileHandleType =
     MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 const MojoPlatformHandleType kPlatformSharedBufferHandleType =
     MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT;
-#elif defined(OS_FUCHSIA)
-const MojoPlatformHandleType kPlatformSharedBufferHandleType =
-    MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE;
 #else
 const MojoPlatformHandleType kPlatformSharedBufferHandleType =
     MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR;
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
-#elif defined(OS_WIN)
-const MojoPlatformHandleType kPlatformFileHandleType =
-    MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE;
-
-const MojoPlatformHandleType kPlatformSharedBufferHandleType =
-    MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE;
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_WIN)
 
 // Used to specify the protection status of a base::SharedMemoryHandle memory
 // handle wrapped or unwrapped by mojo::WrapSharedMemoryHandle or

@@ -87,6 +87,12 @@ template("core_impl_source_set") {
       "system/user_message_impl.h",
     ]
 
+    if (is_win) {
+      public += [ "embedder/named_platform_handle_win.h" ]
+    } else if (is_posix || is_fuchsia) {
+      public += [ "embedder/named_platform_handle_posix.h" ]
+    }
+
     sources = [
       "embedder/connection_params.cc",
       "embedder/entrypoints.cc",

@@ -5,16 +5,15 @@
 #include "mojo/edk/embedder/platform_handle.h"
 
 #include "build/build_config.h"
-#if defined(OS_FUCHSIA)
+
+#if defined(OS_WIN)
+#include <windows.h>
+#elif defined(OS_FUCHSIA)
+#include <unistd.h>
 #include <zircon/status.h>
 #include <zircon/syscalls.h>
-#endif
-#if defined(OS_POSIX)
+#elif defined(OS_POSIX)
 #include <unistd.h>
-#elif defined(OS_WIN)
-#include <windows.h>
-#else
-#error "Platform not yet supported."
 #endif
 
 #include "base/logging.h"
@@ -26,32 +25,7 @@ void PlatformHandle::CloseIfNecessary() {
   if (!is_valid())
     return;
 
-#if defined(OS_FUCHSIA)
-  if (handle != ZX_HANDLE_INVALID) {
-    zx_status_t result = zx_handle_close(handle);
-    DCHECK_EQ(ZX_OK, result) << "CloseIfNecessary(zx_handle_close): "
-                             << zx_status_get_string(result);
-    handle = ZX_HANDLE_INVALID;
-  }
-  if (fd >= 0) {
-    bool success = (close(fd) == 0);
-    DPCHECK(success);
-    fd = -1;
-  }
-#elif defined(OS_POSIX)
-  if (type == Type::POSIX) {
-    bool success = (close(handle) == 0);
-    DPCHECK(success);
-    handle = -1;
-  }
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  else if (type == Type::MACH) {
-    kern_return_t rv = mach_port_deallocate(mach_task_self(), port);
-    DPCHECK(rv == KERN_SUCCESS);
-    port = MACH_PORT_NULL;
-  }
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   if (owning_process != base::GetCurrentProcessHandle()) {
     // This handle may have been duplicated to a new target process but not yet
     // sent there. In this case CloseHandle should NOT be called. From MSDN
@@ -84,9 +58,34 @@ void PlatformHandle::CloseIfNecessary() {
   bool success = !!CloseHandle(handle);
   DPCHECK(success);
   handle = INVALID_HANDLE_VALUE;
+#elif defined(OS_FUCHSIA)
+  if (handle != ZX_HANDLE_INVALID) {
+    zx_status_t result = zx_handle_close(handle);
+    DCHECK_EQ(ZX_OK, result) << "CloseIfNecessary(zx_handle_close): "
+                             << zx_status_get_string(result);
+    handle = ZX_HANDLE_INVALID;
+  }
+  if (fd >= 0) {
+    bool success = (close(fd) == 0);
+    DPCHECK(success);
+    fd = -1;
+  }
+#elif defined(OS_POSIX)
+  if (type == Type::POSIX) {
+    bool success = (close(handle) == 0);
+    DPCHECK(success);
+    handle = -1;
+  }
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  else if (type == Type::MACH) {
+    kern_return_t rv = mach_port_deallocate(mach_task_self(), port);
+    DPCHECK(rv == KERN_SUCCESS);
+    port = MACH_PORT_NULL;
+  }
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 #else
 #error "Platform not yet supported."
-#endif
+#endif  // defined(OS_WIN)
 }
 
 }  // namespace edk
