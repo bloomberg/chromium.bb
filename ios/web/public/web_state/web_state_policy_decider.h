@@ -22,13 +22,15 @@ class WebStatePolicyDecider {
   virtual ~WebStatePolicyDecider();
 
   // Asks the decider whether the navigation corresponding to |request| should
-  // be allowed to continue. Defaults to true if not overriden. Called before
-  // WebStateObserver::DidStartNavigation.
+  // be allowed to continue. Defaults to true if not overriden.
+  // |from_main_frame| indicates whether the request is originating from the
+  // main frame. Called before WebStateObserver::DidStartNavigation.
   // Never called in the following cases:
   //  - same-document back-forward and state change navigations
   //  - CRWNativeContent navigations
   virtual bool ShouldAllowRequest(NSURLRequest* request,
-                                  ui::PageTransition transition);
+                                  ui::PageTransition transition,
+                                  bool from_main_frame);
 
   // Asks the decider whether the navigation corresponding to |response| should
   // be allowed to continue. Defaults to true if not overriden.

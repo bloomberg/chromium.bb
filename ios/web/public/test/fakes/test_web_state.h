@@ -107,7 +107,9 @@ class TestWebState : public WebState {
   CRWContentView* GetTransientContentView();
   // Uses |policy_deciders| to return whether the navigation corresponding to
   // |request| should be allowed. Defaults to true.
-  bool ShouldAllowRequest(NSURLRequest* request, ui::PageTransition transition);
+  bool ShouldAllowRequest(NSURLRequest* request,
+                          ui::PageTransition transition,
+                          bool from_main_frame);
   // Uses |policy_deciders| to return whether the navigation corresponding to
   // |response| should be allowed. Defaults to true.
   bool ShouldAllowResponse(NSURLResponse* response, bool for_main_frame);

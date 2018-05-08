@@ -96,7 +96,8 @@ class ITunesLinksHandlerWebStatePolicyDecider
   }
 
   bool ShouldAllowRequest(NSURLRequest* request,
-                          ui::PageTransition transition) override {
+                          ui::PageTransition transition,
+                          bool from_main_frame) override {
     // Only consider blocking the request if it's not of the record mode.
     if (web_state()->GetBrowserState()->IsOffTheRecord())
       return true;

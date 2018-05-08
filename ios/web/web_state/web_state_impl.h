@@ -165,7 +165,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // Returns whether the navigation corresponding to |request| should be allowed
   // to continue by asking its policy deciders. Defaults to true.
-  bool ShouldAllowRequest(NSURLRequest* request, ui::PageTransition transition);
+  bool ShouldAllowRequest(NSURLRequest* request,
+                          ui::PageTransition transition,
+                          bool from_main_frame);
   // Returns whether the navigation corresponding to |response| should be
   // allowed to continue by asking its policy deciders. Defaults to true.
   bool ShouldAllowResponse(NSURLResponse* response, bool for_main_frame);
