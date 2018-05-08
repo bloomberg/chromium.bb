@@ -85,9 +85,6 @@ const char *encoding_names[] = { "YAML_ANY_ENCODING", "YAML_UTF8_ENCODING",
 
 const char *inline_table_prefix = "checkyaml_inline_";
 
-yaml_parser_t parser;
-yaml_event_t event;
-
 char *file_name;
 
 int errors = 0;
