@@ -4,13 +4,14 @@
     <meta name='viewport' content='width=device-width,initial-scale=1'>
     <meta charset='UTF-8'>
     <link rel='stylesheet' type='text/css' href='{{ css_path }}'>
+    <!-- Custom style overrides -->
+    <style>
+      {{ style_overrides }}
+    </style>
   </head>
   <body>
     <h2>Coverage Report</h2>
     <p>
-      Click <a href='http://clang.llvm.org/docs/SourceBasedCodeCoverage.html#interpreting-reports'>here</a> for information about interpreting this report.
-    </p>
-    <p>
-      View results by: <a href='{{ directory_view_href }}'>Directories</a> | <a href='{{ component_view_href }}'>Components</a> | <a href='{{ file_view_href }}'>Files</a>
+      View results by: <a href='{{ component_view_href }}'>Components</a> | <a href='{{ directory_view_href }}'>Directories</a> | <a href='{{ file_view_href }}'>Files</a>
     </p>
     <div class='centered'>
