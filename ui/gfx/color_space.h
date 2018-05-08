@@ -186,6 +186,11 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // stripped off.
   ColorSpace GetAsFullRangeRGB() const;
 
+  // Return a color space where all values are bigger/smaller by the given
+  // factor. If you convert colors from SRGB to SRGB.GetScaledColorSpace(2.0)
+  // everything will be half as bright in linear lumens.
+  ColorSpace GetScaledColorSpace(float factor) const;
+
   // If |this| is the final output color space, return the color space that
   // would be appropriate for rasterization.
   ColorSpace GetRasterColorSpace() const;

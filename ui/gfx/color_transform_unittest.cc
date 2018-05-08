@@ -14,6 +14,9 @@
 
 namespace gfx {
 
+// Allowed error in most test.
+const float kEpsilon = 1.5f / 255.f;
+
 // Internal functions, exposted for testing.
 GFX_EXPORT Transform GetTransferMatrix(ColorSpace::MatrixID id);
 
@@ -320,7 +323,6 @@ TEST(SimpleColorSpace, GetColorSpace) {
   ICCProfile srgb_icc = ICCProfileForTestingSRGB();
   ColorSpace sRGB = srgb_icc.GetColorSpace();
   ColorSpace sRGB2 = sRGB;
-  const float kEpsilon = 1.5f / 255.f;
 
   // Prevent sRGB2 from using a cached ICC profile.
   sRGB2.icc_profile_id_ = 0;
@@ -352,6 +354,19 @@ TEST(SimpleColorSpace, GetColorSpace) {
   EXPECT_NEAR(tmp.y(), 0.0f, kEpsilon);
   EXPECT_NEAR(tmp.z(), 1.0f, kEpsilon);
 }
+
+TEST(SimpleColorSpace, Scale) {
+  ColorSpace srgb = ColorSpace::CreateSRGB();
+  ColorSpace srgb_scaled = srgb.GetScaledColorSpace(2.0f);
+  std::unique_ptr<ColorTransform> t(ColorTransform::NewColorTransform(
+      srgb, srgb_scaled, ColorTransform::Intent::INTENT_PERCEPTUAL));
+
+  ColorTransform::TriStim tmp(1.0f, 1.0f, 1.0f);
+  t->Transform(&tmp, 1);
+  EXPECT_NEAR(tmp.x(), 0.735356983052449f, kEpsilon);
+  EXPECT_NEAR(tmp.y(), 0.735356983052449f, kEpsilon);
+  EXPECT_NEAR(tmp.z(), 0.735356983052449f, kEpsilon);
+};
 
 TEST(SimpleColorSpace, ToUndefined) {
   ColorSpace null;

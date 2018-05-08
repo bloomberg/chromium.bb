@@ -430,6 +430,19 @@ ColorSpace ColorSpace::GetAsRGB() const {
   return result;
 }
 
+ColorSpace ColorSpace::GetScaledColorSpace(float factor) const {
+  ColorSpace result(*this);
+  SkMatrix44 to_XYZD50;
+  GetPrimaryMatrix(&to_XYZD50);
+  for (int row = 0; row < 3; ++row) {
+    for (int col = 0; col < 3; ++col) {
+      to_XYZD50.set(row, col, to_XYZD50.get(row, col) * factor);
+    }
+  }
+  result.SetCustomPrimaries(to_XYZD50);
+  return result;
+}
+
 ColorSpace ColorSpace::GetRasterColorSpace() const {
   // Rasterization can only be done into parametric color spaces.
   if (icc_profile_id_)
