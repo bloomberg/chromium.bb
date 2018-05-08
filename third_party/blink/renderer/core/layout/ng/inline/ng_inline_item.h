@@ -6,6 +6,7 @@
 #define NGInlineItem_h
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
 #include "third_party/blink/renderer/platform/fonts/font_fallback_priority.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
@@ -171,6 +172,25 @@ inline void NGInlineItem::AssertEndOffset(unsigned offset) const {
   DCHECK_GE(offset, start_offset_);
   DCHECK_LE(offset, end_offset_);
 }
+
+// Represents a text content with a list of NGInlineItem. A node may have an
+// additional NGInlineItemsData for ::first-line pseudo element.
+struct CORE_EXPORT NGInlineItemsData {
+  // Text content for all inline items represented by a single NGInlineNode.
+  // Encoded either as UTF-16 or latin-1 depending on the content.
+  String text_content;
+  Vector<NGInlineItem> items;
+
+  // The DOM to text content offset mapping of this inline node.
+  std::unique_ptr<NGOffsetMapping> offset_mapping;
+
+  void AssertOffset(unsigned index, unsigned offset) const {
+    items[index].AssertOffset(offset);
+  }
+  void AssertEndOffset(unsigned index, unsigned offset) const {
+    items[index].AssertEndOffset(offset);
+  }
+};
 
 }  // namespace blink
 

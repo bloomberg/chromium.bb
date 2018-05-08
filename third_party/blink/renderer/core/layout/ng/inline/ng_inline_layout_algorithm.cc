@@ -127,7 +127,7 @@ void NGInlineLayoutAlgorithm::PrepareBoxStates(
   DCHECK(break_token->UseFirstLineStyle());
 
   // Compute which tags are not closed at the beginning of this line.
-  const Vector<NGInlineItem>& items = Node().Items();
+  const Vector<NGInlineItem>& items = line_info.ItemsData().items;
   Vector<const NGInlineItem*, 16> open_items;
   for (unsigned i = 0; i < break_token->ItemIndex(); i++) {
     const NGInlineItem& item = items[i];
@@ -191,12 +191,13 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
                                  baseline_type_);
       }
 
-      text_builder.SetItem(NGPhysicalTextFragment::kNormalText, &item_result,
+      text_builder.SetItem(NGPhysicalTextFragment::kNormalText,
+                           line_info->ItemsData(), &item_result,
                            box->text_height);
       line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
                          item_result.inline_size, item.BidiLevel());
     } else if (item.Type() == NGInlineItem::kControl) {
-      PlaceControlItem(item, &item_result, box);
+      PlaceControlItem(item, *line_info, &item_result, box);
     } else if (item.Type() == NGInlineItem::kOpenTag) {
       box = HandleOpenTag(item, item_result);
     } else if (item.Type() == NGInlineItem::kCloseTag) {
@@ -301,12 +302,13 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
 }
 
 void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
+                                               const NGLineInfo& line_info,
                                                NGInlineItemResult* item_result,
                                                NGInlineBoxState* box) {
   DCHECK_EQ(item.Type(), NGInlineItem::kControl);
   DCHECK_EQ(item.Length(), 1u);
   DCHECK(!item.TextShapeResult());
-  UChar character = Node().Text()[item.StartOffset()];
+  UChar character = line_info.ItemsData().text_content[item.StartOffset()];
   NGPhysicalTextFragment::NGTextType type;
   switch (character) {
     case kNewlineCharacter:
@@ -334,7 +336,8 @@ void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
 
   NGTextFragmentBuilder text_builder(Node(),
                                      ConstraintSpace().GetWritingMode());
-  text_builder.SetItem(type, item_result, box->text_height);
+  text_builder.SetItem(type, line_info.ItemsData(), item_result,
+                       box->text_height);
   line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
                      item_result->inline_size, item.BidiLevel());
 }
@@ -463,7 +466,9 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(NGLineInfo* line_info) {
 
   // Construct the line text to compute spacing for.
   String line_text =
-      Node().Text(line_info->StartOffset(), align.end_offset).ToString();
+      StringView(line_info->ItemsData().text_content, line_info->StartOffset(),
+                 align.end_offset - line_info->StartOffset())
+          .ToString();
 
   // Append a hyphen if the last word is hyphenated. The hyphen is in
   // |ShapeResult|, but not in text. |ShapeResultSpacing| needs the text that
@@ -575,7 +580,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   // If we are an empty inline, we don't have to run the full algorithm, we can
   // return now as we should have positioned all of our floats.
   if (is_empty_inline) {
-    DCHECK_EQ(handled_item_index, Node().Items().size());
+    DCHECK_EQ(handled_item_index, Node().ItemsData(false).items.size());
 
     container_builder_.SwapPositionedFloats(&positioned_floats_);
     container_builder_.SetEndMarginStrut(ConstraintSpace().MarginStrut());
@@ -685,7 +690,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 // TODO(ikilpatrick): Do we need to always add the OOFs here?
 unsigned NGInlineLayoutAlgorithm::PositionLeadingItems(
     NGExclusionSpace* exclusion_space) {
-  const Vector<NGInlineItem>& items = Node().Items();
+  const Vector<NGInlineItem>& items = Node().ItemsData(false).items;
   bool is_empty_inline = Node().IsEmptyInline();
   LayoutUnit bfc_line_offset = ConstraintSpace().BfcOffset().line_offset;
 

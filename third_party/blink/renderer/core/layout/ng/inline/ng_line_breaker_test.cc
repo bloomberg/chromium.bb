@@ -70,8 +70,11 @@ namespace {
 
 String ToString(NGInlineItemResults line, NGInlineNode node) {
   StringBuilder builder;
+  const String& text = node.ItemsData(false).text_content;
   for (const auto& item_result : line) {
-    builder.Append(node.Text(item_result.start_offset, item_result.end_offset));
+    builder.Append(
+        StringView(text, item_result.start_offset,
+                   item_result.end_offset - item_result.start_offset));
   }
   return builder.ToString();
 }
@@ -182,7 +185,7 @@ TEST_F(NGLineBreakerTest, OverflowMargin) {
     </style>
     <div id=container><span>123 456</span> 789</div>
   )HTML");
-  const Vector<NGInlineItem>& items = node.Items();
+  const Vector<NGInlineItem>& items = node.ItemsData(false).items;
 
   // While "123 456" can fit in a line, "456" has a right margin that cannot
   // fit. Since "456" and its right margin is not breakable, "456" should be on

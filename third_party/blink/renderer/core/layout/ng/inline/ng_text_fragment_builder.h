@@ -26,6 +26,7 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGBaseFragmentBuilder {
 
   // NOTE: Takes ownership of the shape result within the item result.
   void SetItem(NGPhysicalTextFragment::NGTextType,
+               const NGInlineItemsData&,
                NGInlineItemResult*,
                LayoutUnit line_height);
   void SetText(LayoutObject*,

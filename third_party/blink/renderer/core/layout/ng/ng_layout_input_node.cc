@@ -42,7 +42,8 @@ void AppendNodeToString(NGLayoutInputNode node,
   }
 
   if (node.IsInline()) {
-    for (const NGInlineItem& inline_item : ToNGInlineNode(node).Items()) {
+    const auto& items = ToNGInlineNode(node).ItemsData(false).items;
+    for (const NGInlineItem& inline_item : items) {
       string_builder->Append(indent_builder.ToString());
       string_builder->Append(inline_item.ToString());
       string_builder->Append("\n");

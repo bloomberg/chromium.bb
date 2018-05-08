@@ -35,6 +35,17 @@ inline bool CanBreakAfterLast(const NGInlineItemResults& item_results) {
 
 }  // namespace
 
+NGLineBreaker::LineData::LineData(NGInlineNode node,
+                                  const NGInlineBreakToken* break_token) {
+  is_first_formatted_line = (!break_token || (!break_token->ItemIndex() &&
+                                              !break_token->TextOffset())) &&
+                            node.CanContainFirstFormattedLine();
+  use_first_line_style = is_first_formatted_line && node.GetLayoutObject()
+                                                        ->GetDocument()
+                                                        .GetStyleEngine()
+                                                        .UsesFirstLineRules();
+}
+
 NGLineBreaker::NGLineBreaker(
     NGInlineNode node,
     NGLineBreakerMode mode,
@@ -45,16 +56,19 @@ NGLineBreaker::NGLineBreaker(
     NGExclusionSpace* exclusion_space,
     unsigned handled_float_index,
     const NGInlineBreakToken* break_token)
-    : node_(node),
+    : line_(node, break_token),
+      node_(node),
+      items_data_(node.ItemsData(line_.use_first_line_style)),
       mode_(mode),
       constraint_space_(space),
       positioned_floats_(positioned_floats),
       unpositioned_floats_(unpositioned_floats),
       container_builder_(container_builder),
       exclusion_space_(exclusion_space),
-      break_iterator_(node.Text()),
-      shaper_(node.Text().Characters16(), node.Text().length()),
-      spacing_(node.Text()),
+      break_iterator_(items_data_.text_content),
+      shaper_(items_data_.text_content.Characters16(),
+              items_data_.text_content.length()),
+      spacing_(items_data_.text_content),
       handled_floats_end_item_index_(handled_float_index),
       base_direction_(node_.BaseDirection()),
       in_line_height_quirks_mode_(node.InLineHeightQuirksMode()) {
@@ -65,7 +79,7 @@ NGLineBreaker::NGLineBreaker(
     item_index_ = break_token->ItemIndex();
     offset_ = break_token->TextOffset();
     previous_line_had_forced_break_ = break_token->IsForcedBreak();
-    node.AssertOffset(item_index_, offset_);
+    items_data_.AssertOffset(item_index_, offset_);
     ignore_floats_ = break_token->IgnoreFloats();
   }
 }
@@ -112,8 +126,7 @@ inline void NGLineBreaker::ComputeCanBreakAfter(
 // whitespace collapsing.
 bool NGLineBreaker::IsTrailing(const NGInlineItem& item,
                                const NGLineInfo& line_info) const {
-  const Vector<NGInlineItem>& items =
-      node_.Items(line_info.UseFirstLineStyle());
+  const Vector<NGInlineItem>& items = line_info.ItemsData().items;
   for (const NGInlineItem* it = &item; it != items.end(); ++it) {
     if (it->EndCollapseType() != NGInlineItem::kOpaqueToCollapsing)
       return false;
@@ -121,42 +134,22 @@ bool NGLineBreaker::IsTrailing(const NGInlineItem& item,
   return true;
 }
 
-// @return if this is the "first formatted line".
-// https://www.w3.org/TR/CSS22/selector.html#first-formatted-line
-bool NGLineBreaker::IsFirstFormattedLine() const {
-  if (item_index_ || offset_)
-    return false;
-
-  // TODO(kojii): In LayoutNG, leading OOF creates an anonymous block box,
-  // and that |CanContainFirstFormattedLine()| does not work.
-  // crbug.com/734554
-  // return node_.GetLayoutBlockFlow()->CanContainFirstFormattedLine();
-  LayoutObject* layout_object = node_.GetLayoutBlockFlow();
-  if (!layout_object->IsAnonymousBlock())
-    return true;
-  for (;;) {
-    layout_object = layout_object->PreviousSibling();
-    if (!layout_object)
-      return true;
-    if (!layout_object->IsFloatingOrOutOfFlowPositioned())
-      return false;
-  }
-}
-
 // Compute the base direction for bidi algorithm for this line.
-void NGLineBreaker::ComputeBaseDirection() {
+void NGLineBreaker::ComputeBaseDirection(const NGLineInfo& line_info) {
   // If 'unicode-bidi' is not 'plaintext', use the base direction of the block.
   if (!previous_line_had_forced_break_ ||
       node_.Style().GetUnicodeBidi() != UnicodeBidi::kPlaintext)
     return;
   // If 'unicode-bidi: plaintext', compute the base direction for each paragraph
   // (separated by forced break.)
-  const String& text = node_.Text();
+  const String& text = line_info.ItemsData().text_content;
   if (text.Is8Bit())
     return;
   size_t end_offset = text.find(kNewlineCharacter, offset_);
-  base_direction_ = NGBidiParagraph::BaseDirectionForString(node_.Text(
-      offset_, end_offset == kNotFound ? text.length() : end_offset));
+  base_direction_ = NGBidiParagraph::BaseDirectionForString(
+      end_offset == kNotFound
+          ? StringView(text, offset_)
+          : StringView(text, offset_, end_offset - offset_));
 }
 
 // Initialize internal states for the next line.
@@ -165,15 +158,16 @@ void NGLineBreaker::PrepareNextLine(const NGLayoutOpportunity& opportunity,
   NGInlineItemResults* item_results = &line_info->Results();
   item_results->clear();
   line_info->SetStartOffset(offset_);
-  line_info->SetLineStyle(node_, constraint_space_, IsFirstFormattedLine(),
-                          previous_line_had_forced_break_);
+  line_info->SetLineStyle(
+      node_, items_data_, constraint_space_, line_.is_first_formatted_line,
+      line_.use_first_line_style, previous_line_had_forced_break_);
   // Set the initial style of this line from the break token. Example:
   //   <p>...<span>....</span></p>
   // When the line wraps in <span>, the 2nd line needs to start with the style
   // of the <span>.
   override_break_anywhere_ = false;
   SetCurrentStyle(current_style_ ? *current_style_ : line_info->LineStyle());
-  ComputeBaseDirection();
+  ComputeBaseDirection(*line_info);
   line_info->SetBaseDirection(base_direction_);
 
   line_.is_after_forced_break = false;
@@ -209,8 +203,7 @@ bool NGLineBreaker::NextLine(const NGLayoutOpportunity& opportunity,
 
 void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
   NGInlineItemResults* item_results = &line_info->Results();
-  const Vector<NGInlineItem>& items =
-      node_.Items(line_info->UseFirstLineStyle());
+  const Vector<NGInlineItem>& items = line_info->ItemsData().items;
   LineBreakState state = LineBreakState::kContinue;
   while (state != LineBreakState::kDone) {
     // Check overflow even if |item_index_| is at the end of the block, because
@@ -841,7 +834,7 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item,
       // be a break opportunity after the space. The break_iterator cannot
       // compute this because it considers break opportunities are before a run
       // of spaces.
-      const String& text = node_.Text();
+      const String& text = Text();
       if (offset_ < text.length() && IsBreakableSpace(text[offset_])) {
         item_result->can_break_after = true;
         return;
@@ -916,7 +909,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleOverflow(
 #endif
           item_index_ = item_result->item_index;
           offset_ = item_result->end_offset;
-          node_.AssertOffset(item_index_, offset_);
+          items_data_.AssertOffset(item_index_, offset_);
         } else {
           Rewind(line_info, i + 1);
         }
@@ -976,8 +969,7 @@ void NGLineBreaker::Rewind(NGLineInfo* line_info, unsigned new_end) {
 // paint invalidations, hit testing, etc.
 LayoutObject* NGLineBreaker::CurrentLayoutObject(
     const NGLineInfo& line_info) const {
-  const Vector<NGInlineItem>& items =
-      node_.Items(line_info.UseFirstLineStyle());
+  const Vector<NGInlineItem>& items = line_info.ItemsData().items;
   DCHECK_LE(item_index_, items.size());
   // Find the next item that has LayoutObject. Some items such as bidi controls
   // do not have LayoutObject.
@@ -1049,7 +1041,7 @@ void NGLineBreaker::MoveToNextOf(const NGInlineItemResult& item_result) {
 scoped_refptr<NGInlineBreakToken> NGLineBreaker::CreateBreakToken(
     const NGLineInfo& line_info,
     std::unique_ptr<const NGInlineLayoutStateStack> state_stack) const {
-  const Vector<NGInlineItem>& items = node_.Items();
+  const Vector<NGInlineItem>& items = Items();
   if (item_index_ >= items.size())
     return NGInlineBreakToken::Create(node_);
   return NGInlineBreakToken::Create(
