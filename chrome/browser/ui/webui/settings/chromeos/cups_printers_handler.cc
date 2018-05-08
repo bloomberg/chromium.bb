@@ -112,6 +112,21 @@ void QueryAutoconf(const std::string& printer_uri,
                   callback);
 }
 
+// Returns the list of |printers| formatted as a CupsPrintersList.
+base::Value BuildCupsPrintersList(const std::vector<Printer>& printers) {
+  base::Value printers_list(base::Value::Type::LIST);
+  for (const Printer& printer : printers) {
+    // Some of these printers could be invalid but we want to allow the user
+    // to edit them. crbug.com/778383
+    printers_list.GetList().push_back(
+        base::Value::FromUniquePtrValue(GetCupsPrinterInfo(printer)));
+  }
+
+  base::Value response(base::Value::Type::DICTIONARY);
+  response.SetKey("printerList", std::move(printers_list));
+  return response;
+}
+
 // Extracts a sanitized value of printerQueue from |printer_dict|.  Returns an
 // empty string if the value was not present in the dictionary.
 std::string GetPrinterQueue(const base::DictionaryValue& printer_dict) {
@@ -275,16 +290,8 @@ void CupsPrintersHandler::HandleGetCupsPrintersList(
   std::vector<Printer> printers =
       printers_manager_->GetPrinters(CupsPrintersManager::kConfigured);
 
-  auto printers_list = std::make_unique<base::ListValue>();
-  for (const Printer& printer : printers) {
-    // Some of these printers could be invalid but we want to allow the user
-    // to edit them. crbug.com/778383
-    printers_list->Append(GetCupsPrinterInfo(printer));
-  }
-
-  auto response = std::make_unique<base::DictionaryValue>();
-  response->Set("printerList", std::move(printers_list));
-  ResolveJavascriptCallback(base::Value(callback_id), *response);
+  auto response = BuildCupsPrintersList(printers);
+  ResolveJavascriptCallback(base::Value(callback_id), response);
 }
 
 void CupsPrintersHandler::HandleUpdateCupsPrinter(const base::ListValue* args) {
@@ -753,6 +760,8 @@ void CupsPrintersHandler::HandleStartDiscovery(const base::ListValue* args) {
   UMA_HISTOGRAM_COUNTS_100(
       "Printing.CUPS.PrintersDiscovered",
       discovered_printers_.size() + automatic_printers_.size());
+  // Scan completes immediately right now.  Emit done.
+  FireWebUIListener("on-printer-discovery-done");
 }
 
 void CupsPrintersHandler::HandleStopDiscovery(const base::ListValue* args) {
@@ -780,20 +789,32 @@ void CupsPrintersHandler::HandleSetUpCancel(const base::ListValue* args) {
 void CupsPrintersHandler::OnPrintersChanged(
     CupsPrintersManager::PrinterClass printer_class,
     const std::vector<Printer>& printers) {
-  if (!discovery_active_) {
-    return;
-  }
   switch (printer_class) {
     case CupsPrintersManager::kAutomatic:
       automatic_printers_ = printers;
+      UpdateDiscoveredPrinters();
       break;
     case CupsPrintersManager::kDiscovered:
       discovered_printers_ = printers;
+      UpdateDiscoveredPrinters();
       break;
-    default:
-      // It's a class we don't care about.
+    case CupsPrintersManager::kConfigured: {
+      auto printers_list = BuildCupsPrintersList(printers);
+      FireWebUIListener("on-printers-changed", printers_list);
+      break;
+    }
+    case CupsPrintersManager::kEnterprise:
+    case CupsPrintersManager::kNumPrinterClasses:
+      // These classes are not shown.
       return;
   }
+}
+
+void CupsPrintersHandler::UpdateDiscoveredPrinters() {
+  if (!discovery_active_) {
+    return;
+  }
+
   std::unique_ptr<base::ListValue> printers_list =
       std::make_unique<base::ListValue>();
   for (const Printer& printer : automatic_printers_) {
@@ -804,7 +825,6 @@ void CupsPrintersHandler::OnPrintersChanged(
   }
 
   FireWebUIListener("on-printer-discovered", *printers_list);
-  FireWebUIListener("on-printer-discovery-done");
 }
 
 void CupsPrintersHandler::HandleAddDiscoveredPrinter(

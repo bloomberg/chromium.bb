@@ -59,6 +59,8 @@ Polymer({
   /** @override */
   attached: function() {
     this.addWebUIListener('on-add-cups-printer', this.onAddPrinter_.bind(this));
+    this.addWebUIListener(
+        'on-printers-changed', this.printersChanged_.bind(this));
     this.networksChangedListener_ = this.refreshNetworks_.bind(this);
     chrome.networkingPrivate.onNetworksChanged.addListener(
         this.networksChangedListener_);
