@@ -36,6 +36,12 @@ class ProcessCoordinationUnitImpl
   void SetMainThreadTaskLoadIsLow(bool main_thread_task_load_is_low) override;
   void SetPID(int64_t pid) override;
 
+  // Private implementation properties.
+  void set_private_footprint_kb(uint64_t private_footprint_kb) {
+    private_footprint_kb_ = private_footprint_kb;
+  }
+  uint64_t private_footprint_kb() const { return private_footprint_kb_; }
+
   std::set<FrameCoordinationUnitImpl*> GetFrameCoordinationUnits() const;
   std::set<PageCoordinationUnitImpl*> GetAssociatedPageCoordinationUnits()
       const;
@@ -49,6 +55,8 @@ class ProcessCoordinationUnitImpl
 
   bool AddFrame(FrameCoordinationUnitImpl* frame_cu);
   bool RemoveFrame(FrameCoordinationUnitImpl* frame_cu);
+
+  uint64_t private_footprint_kb_ = 0u;
 
   std::set<FrameCoordinationUnitImpl*> frame_coordination_units_;
 
