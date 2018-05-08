@@ -52,6 +52,11 @@ class NET_EXPORT Socket {
                           int buf_len,
                           CompletionOnceCallback callback);
 
+  // Cancels a pending ReadIfReady(). May only be called when a ReadIfReady() is
+  // pending. Returns net::OK or an error code. ERR_READ_IF_READY_NOT_SUPPORTED
+  // is returned if ReadIfReady() is not supported.
+  virtual int CancelReadIfReady();
+
   // Writes data, up to |buf_len| bytes, to the socket.  Note: data may be
   // written partially.  The number of bytes written is returned, or an error
   // is returned upon failure.  ERR_SOCKET_NOT_CONNECTED should be returned if
