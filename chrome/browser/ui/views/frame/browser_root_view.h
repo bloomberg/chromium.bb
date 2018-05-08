@@ -23,7 +23,7 @@ class BrowserRootView : public views::internal::RootView {
   struct DropIndex {
     // The index within the tabstrip to drop on/before (see
     // |insert_before_index| below).
-    size_t value = 0;
+    int value = 0;
 
     // If true, the dropped item should be inserted before |tab_index|.
     // If false, the dropped item should replace the tab at |tab_index|.
