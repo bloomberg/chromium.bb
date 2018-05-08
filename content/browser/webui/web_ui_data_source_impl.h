@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "content/browser/webui/url_data_manager.h"
@@ -69,6 +70,8 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   friend class WebUIDataSource;
   friend class WebUIDataSourceTest;
 
+  FRIEND_TEST_ALL_PREFIXES(WebUIDataSourceTest, IsGzipped);
+
   explicit WebUIDataSourceImpl(const std::string& source_name);
 
   // Methods that match URLDataSource which are called by
@@ -84,6 +87,8 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   void disable_load_time_data_defaults_for_testing() {
     add_load_time_data_defaults_ = false;
   }
+
+  bool IsGzipped(const std::string& path) const;
 
   // The name of this source.
   // E.g., for favicons, this could be "favicon", which results in paths for
