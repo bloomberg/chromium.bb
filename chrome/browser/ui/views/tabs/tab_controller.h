@@ -29,17 +29,22 @@ class View;
 // Controller for tabs.
 class TabController {
  public:
+  // Used in GetAdjacentTab to indicate which adjacent tab to retrieve. FORWARD
+  // will return the adjacent tab to the right. BACKWARD will return the
+  // adjacent tab to the left of the given tab.
+  enum Direction { FORWARD, BACKWARD };
+
   virtual const ui::ListSelectionModel& GetSelectionModel() const = 0;
 
   // Returns true if multiple selection is supported.
   virtual bool SupportsMultipleSelection() = 0;
 
-  // Returns true if we should force the close buttons of the inactive tabs
-  // to be hidden.
+  // Returns true if the close buttons of the inactive tabs are forced to be
+  // hidden.
   virtual bool ShouldHideCloseButtonForInactiveTabs() = 0;
 
-  // Returns true if we should show the close button an inactive tab on mouse
-  // hover. This is predicated on ShouldHideCloseButtonForInactiveTabs()
+  // Returns true if the close button on an inactive tab should be shown on
+  // mouse hover. This is predicated on ShouldHideCloseButtonForInactiveTabs()
   // returning true.
   virtual bool ShouldShowCloseButtonOnHover() = 0;
 
@@ -99,6 +104,10 @@ class TabController {
   // or NULL if there is no tab that contains the specified point.
   virtual Tab* GetTabAt(Tab* tab,
                         const gfx::Point& tab_in_tab_coordinates) = 0;
+
+  // Returns the next/previous tab in the model order. Returns nullptr if there
+  // isn't an adjacent tab in the given direction.
+  virtual Tab* GetAdjacentTab(Tab* tab, Direction direction) = 0;
 
   // Invoked when a mouse event occurs on |source|.
   virtual void OnMouseEventInTab(views::View* source,

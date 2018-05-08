@@ -971,6 +971,15 @@ Tab* TabStrip::GetTabAt(Tab* tab, const gfx::Point& tab_in_tab_coordinates) {
   return view && view->id() == VIEW_ID_TAB ? static_cast<Tab*>(view) : NULL;
 }
 
+Tab* TabStrip::GetAdjacentTab(Tab* tab, TabController::Direction direction) {
+  const int index = GetModelIndexOfTab(tab);
+  if (index < 0)
+    return nullptr;
+  const int new_index = index + (direction == TabController::FORWARD ? 1 : -1);
+  return new_index < 0 || new_index >= tab_count() ? nullptr
+                                                   : tab_at(new_index);
+}
+
 void TabStrip::OnMouseEventInTab(views::View* source,
                                  const ui::MouseEvent& event) {
   UpdateStackedLayoutFromMouseEvent(source, event);

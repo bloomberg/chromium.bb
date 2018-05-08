@@ -248,6 +248,7 @@ class TabStrip : public views::View,
   void ContinueDrag(views::View* view, const ui::LocatedEvent& event) override;
   bool EndDrag(EndDragReason reason) override;
   Tab* GetTabAt(Tab* tab, const gfx::Point& tab_in_tab_coordinates) override;
+  Tab* GetAdjacentTab(Tab* tab, TabController::Direction direction) override;
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override;
   bool ShouldPaintTab(

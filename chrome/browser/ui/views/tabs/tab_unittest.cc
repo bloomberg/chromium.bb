@@ -64,7 +64,10 @@ class FakeTabController : public TabController {
   }
   bool EndDrag(EndDragReason reason) override { return false; }
   Tab* GetTabAt(Tab* tab, const gfx::Point& tab_in_tab_coordinates) override {
-    return NULL;
+    return nullptr;
+  }
+  Tab* GetAdjacentTab(Tab* tab, TabController::Direction direction) override {
+    return nullptr;
   }
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override {}

@@ -216,6 +216,9 @@ class Tab : public gfx::AnimationDelegate,
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
+  // Forces the tab to the right of this tab to repaint.
+  void RepaintSubsequentTab();
+
   // Invoked from Layout to adjust the position of the favicon or alert
   // indicator for pinned tabs. The visual_width parameter is how wide the
   // icon looks (rather than how wide the bounds are).
@@ -251,6 +254,10 @@ class Tab : public gfx::AnimationDelegate,
                                 const gfx::Path& stroke_path,
                                 bool active,
                                 SkColor color);
+
+  // Paints the separator line on the left edge of the tab if in material
+  // refresh mode. The painted color is derived from the inactive tab color.
+  void PaintSeparator(gfx::Canvas* canvas, SkColor inactive_color);
 
   // Computes which icons are visible in the tab. Should be called everytime
   // before layout is performed.

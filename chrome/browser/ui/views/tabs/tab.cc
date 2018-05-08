@@ -49,6 +49,7 @@
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -434,6 +435,8 @@ void Tab::ActiveStateChanged() {
   }
   OnButtonColorMaybeChanged();
   alert_indicator_button_->UpdateEnabledForMuteToggle();
+  if (MD::GetMode() == MD::MATERIAL_REFRESH)
+    RepaintSubsequentTab();
   Layout();
 }
 
@@ -931,6 +934,8 @@ void Tab::OnMouseCaptureLost() {
 
 void Tab::OnMouseEntered(const ui::MouseEvent& event) {
   hover_controller_.Show(views::GlowHoverController::SUBTLE);
+  if (MD::GetMode() == MD::MATERIAL_REFRESH)
+    RepaintSubsequentTab();
   Layout();
 }
 
@@ -941,6 +946,8 @@ void Tab::OnMouseMoved(const ui::MouseEvent& event) {
 
 void Tab::OnMouseExited(const ui::MouseEvent& event) {
   hover_controller_.Hide();
+  if (MD::GetMode() == MD::MATERIAL_REFRESH)
+    RepaintSubsequentTab();
   Layout();
 }
 
@@ -990,6 +997,12 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Tab, private
+
+void Tab::RepaintSubsequentTab() {
+  Tab* adjacent_tab = controller_->GetAdjacentTab(this, TabController::FORWARD);
+  if (adjacent_tab)
+    adjacent_tab->SchedulePaint();
+}
 
 void Tab::MaybeAdjustLeftForPinnedTab(gfx::Rect* bounds,
                                       int visual_width) const {
@@ -1129,6 +1142,9 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
       canvas->sk_canvas()->clipPath(*clip, SkClipOp::kDifference, true);
     canvas->sk_canvas()->drawPicture(cache.stroke_record);
   }
+
+  if (!active)
+    PaintSeparator(canvas, inactive_color);
 }
 
 void Tab::PaintTabBackgroundFill(gfx::Canvas* canvas,
@@ -1186,6 +1202,29 @@ void Tab::PaintTabBackgroundStroke(gfx::Canvas* canvas,
   SkPath path;
   Op(stroke_path, fill_path, kDifference_SkPathOp, &path);
   canvas->DrawPath(path, flags);
+}
+
+void Tab::PaintSeparator(gfx::Canvas* canvas, SkColor inactive_color) {
+  if (MD::GetMode() != MD::MATERIAL_REFRESH || IsMouseHovered())
+    return;
+
+  // If the tab to the left is either active or the mouse is hovered over it,
+  // the separator on this tab should not be painted.
+  Tab* previous_tab =
+      controller_->GetAdjacentTab(this, TabController::BACKWARD);
+  if (previous_tab &&
+      (previous_tab->IsActive() || previous_tab->IsMouseHovered()))
+    return;
+
+  const int tab_height = GetContentsBounds().height();
+  gfx::RectF separator_bounds;
+  separator_bounds.set_size(gfx::SizeF(1, 16));
+  separator_bounds.set_origin(gfx::PointF(
+      (tab_height - separator_bounds.height()) / 2, GetTabEndcapWidth() / 2));
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setColor(color_utils::BlendTowardOppositeLuma(inactive_color, 0x5a));
+  canvas->DrawRect(separator_bounds, flags);
 }
 
 void Tab::UpdateIconVisibility() {
@@ -1324,10 +1363,11 @@ void Tab::OnButtonColorMaybeChanged() {
     button_color_ = new_button_color;
     title_->SetEnabledColor(title_color);
     alert_indicator_button_->OnParentTabButtonColorChanged();
-    if (!MD::IsTouchOptimizedUiEnabled())
+    if (!MD::IsTouchOptimizedUiEnabled()) {
       close_button_->SetTabColor(button_color_,
                                  color_utils::IsDark(theme_provider->GetColor(
                                      ThemeProperties::COLOR_TOOLBAR)));
+    }
   }
   if (MD::IsTouchOptimizedUiEnabled())
     close_button_->ActiveStateChanged(this);
