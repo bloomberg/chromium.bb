@@ -254,14 +254,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "clickFirstSearchResult"),
         TestParameter(NOT_IN_GUEST_MODE, "pressEnterToSearch")));
 
-// Fails on official build. http://crbug.com/429294
-#if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
-#define MAYBE_Transfer DISABLED_Transfer
-#else
-#define MAYBE_Transfer Transfer
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_Transfer,
+    Transfer,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "transferFromDriveToDownloads"),
