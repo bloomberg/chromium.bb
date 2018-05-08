@@ -406,6 +406,10 @@
     "includes": [28750],
   },
 
+  "chromecast/renderer/resources/extensions_renderer_resources.grd": {
+    "includes": [28900],
+  },
+
   # END "everything else" section.
   # Everything but chrome/, components/, content/, and ios/
 

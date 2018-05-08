@@ -3,6 +3,26 @@
 # found in the LICENSE file.
 
 import("//chromecast/chromecast.gni")
+import("//tools/grit/grit_rule.gni")
+
+grit("extensions_resources") {
+  source = "resources/extensions_renderer_resources.grd"
+  output_dir = "$root_gen_dir/chromecast/renderer"
+  output_name = "extensions_renderer_resources"
+  outputs = [
+    "grit/extensions_renderer_resources.h",
+    "extensions_renderer_resources.pak",
+  ]
+  grit_flags = [
+    "-E",
+    "mojom_root=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+  deps = [
+    "//net/interfaces:interfaces_js",
+    "//url/mojom:url_mojom_gurl_js",
+    "//url/mojom:url_mojom_origin_js",
+  ]
+}
 
 cast_source_set("renderer") {
   sources = [
