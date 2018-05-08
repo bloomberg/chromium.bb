@@ -37,6 +37,7 @@ enum EmeCodec : uint32_t {
   EME_CODEC_MP4_AC3 = 1 << 10,
   EME_CODEC_MP4_EAC3 = 1 << 11,
   EME_CODEC_MP4_MPEG_H_AUDIO = 1 << 12,
+  EME_CODEC_MP4_FLAC = 1 << 13,
 };
 
 // *_ALL values should only be used for masking, do not use them to specify
@@ -45,7 +46,7 @@ enum EmeCodec : uint32_t {
 using SupportedCodecs = uint32_t;
 
 constexpr SupportedCodecs GetMp4AudioCodecs() {
-  SupportedCodecs codecs = EME_CODEC_NONE;
+  SupportedCodecs codecs = EME_CODEC_MP4_FLAC;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   codecs |= EME_CODEC_MP4_AAC;
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)

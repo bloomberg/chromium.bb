@@ -81,6 +81,7 @@ const char kWebMVorbisAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
 const char kWebMVorbisAudioVp8Video[] = "video/webm; codecs=\"vorbis, vp8\"";
 const char kWebMOpusAudioVp9Video[] = "video/webm; codecs=\"opus, vp9\"";
 const char kWebMVp9VideoOnly[] = "video/webm; codecs=\"vp9\"";
+const char kMp4FlacAudioOnly[] = "audio/mp4; codecs=\"flac\"";
 const char kMp4Vp9VideoOnly[] =
     "video/mp4; codecs=\"vp09.00.10.08.01.02.02.02.00\"";
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -587,6 +588,15 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
     return;
   }
   TestMultiplePlayback("bear-320x240-av_enc-av.webm", kWebMVorbisAudioVp8Video);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4_FLAC) {
+  // MP4 without MSE is not support yet, http://crbug.com/170793.
+  if (CurrentSourceType() != SrcType::MSE) {
+    DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
+    return;
+  }
+  TestSimplePlayback("bear-flac-cenc.mp4", kMp4FlacAudioOnly);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9) {

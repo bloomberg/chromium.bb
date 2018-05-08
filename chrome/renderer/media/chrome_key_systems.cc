@@ -211,6 +211,7 @@ static void AddWidevine(
   // as those may offer a higher level of protection.
   supported_codecs |= media::EME_CODEC_WEBM_OPUS;
   supported_codecs |= media::EME_CODEC_WEBM_VORBIS;
+  supported_codecs |= media::EME_CODEC_MP4_FLAC;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   supported_codecs |= media::EME_CODEC_MP4_AAC;
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
