@@ -604,7 +604,10 @@ class AutofillManager : public AutofillHandler,
 
   friend class AutofillManagerTest;
   friend class FormStructureBrowserTest;
+  friend class GetMatchingTypesTest;
   friend class SaveCardBubbleViewsBrowserTestBase;
+  FRIEND_TEST_ALL_PREFIXES(ProfileMatchingTypesTest,
+                           DeterminePossibleFieldTypesForUpload);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            DeterminePossibleFieldTypesForUpload);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
