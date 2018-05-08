@@ -602,8 +602,8 @@ void SpdyHttpStream::PopulateNetErrorDetails(NetErrorDetails* details) {
 }
 
 void SpdyHttpStream::SetPriority(RequestPriority priority) {
-  // TODO(akalin): Plumb this through to |stream_request_| and
-  // |stream_|.
+  if (stream_)
+    stream_->SetPriority(priority);
 }
 
 }  // namespace net

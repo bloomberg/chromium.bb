@@ -152,7 +152,9 @@ class NET_EXPORT_PRIVATE SpdyStream {
   const GURL& url() const { return url_; }
 
   RequestPriority priority() const { return priority_; }
-  void set_priority(RequestPriority p) { priority_ = p; }
+
+  // Update priority and send PRIORITY frames on the wire if necessary.
+  void SetPriority(RequestPriority priority);
 
   int32_t send_window_size() const { return send_window_size_; }
 
