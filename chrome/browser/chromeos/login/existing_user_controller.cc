@@ -983,8 +983,9 @@ void ExistingUserController::OnProfilePrepared(Profile* profile,
   // Inform |auth_status_consumer_| about successful login.
   // TODO(nkostylev): Pass UserContext back crbug.com/424550
   if (auth_status_consumer_) {
-    auth_status_consumer_->OnAuthSuccess(
-        UserContext(last_login_attempt_account_id_));
+    const user_manager::User* const user =
+        chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+    auth_status_consumer_->OnAuthSuccess(UserContext(*user));
   }
 }
 

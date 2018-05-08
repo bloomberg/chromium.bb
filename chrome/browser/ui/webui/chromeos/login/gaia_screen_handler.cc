@@ -243,6 +243,16 @@ user_manager::UserType GetUsertypeFromServicesString(
   return is_child ? user_manager::USER_TYPE_CHILD
                   : user_manager::USER_TYPE_REGULAR;
 }
+
+user_manager::UserType CalculateUserType(const AccountId& account_id) {
+  if (user_manager::UserManager::Get()->IsSupervisedAccountId(account_id))
+    return user_manager::USER_TYPE_SUPERVISED;
+
+  if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY)
+    return user_manager::USER_TYPE_ACTIVE_DIRECTORY;
+
+  return user_manager::USER_TYPE_REGULAR;
+}
 }  // namespace
 
 // A class that's used to specify the way how Gaia should be loaded.
@@ -659,7 +669,8 @@ void GaiaScreenHandler::DoAdAuth(
           username, account_info.account_id(), AccountType::ACTIVE_DIRECTORY));
       LoginDisplayHost::default_host()->SetDisplayAndGivenName(
           account_info.display_name(), account_info.given_name());
-      UserContext user_context(account_id);
+      UserContext user_context(
+          user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY, account_id);
       user_context.SetKey(key);
       user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
       user_context.SetIsUsingOAuth(false);
@@ -840,8 +851,14 @@ void GaiaScreenHandler::DoCompleteLogin(const std::string& gaia_id,
   DCHECK(!gaia_id.empty());
   const std::string sanitized_email = gaia::SanitizeEmail(typed_email);
   LoginDisplayHost::default_host()->SetDisplayEmail(sanitized_email);
-  UserContext user_context(
-      GetAccountId(typed_email, gaia_id, AccountType::GOOGLE));
+  const AccountId account_id =
+      GetAccountId(typed_email, gaia_id, AccountType::GOOGLE);
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+
+  UserContext user_context =
+      user ? UserContext(*user)
+           : UserContext(CalculateUserType(account_id), account_id);
   user_context.SetKey(Key(password));
   user_context.SetAuthFlow(using_saml
                                ? UserContext::AUTH_FLOW_GAIA_WITH_SAML

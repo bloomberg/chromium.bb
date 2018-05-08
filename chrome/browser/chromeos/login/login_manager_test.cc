@@ -52,7 +52,8 @@ constexpr char kTestUserinfoToken2[] = "fake-userinfo-token-2";
 constexpr char kTestRefreshToken2[] = "fake-refresh-token-2";
 
 UserContext CreateUserContext(const AccountId& account_id) {
-  UserContext user_context(account_id);
+  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                           account_id);
   user_context.SetKey(Key("password"));
   if (account_id.GetUserEmail() == LoginManagerTest::kEnterpriseUser1) {
     user_context.SetRefreshToken(kTestRefreshToken1);

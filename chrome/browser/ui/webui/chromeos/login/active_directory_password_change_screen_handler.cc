@@ -107,7 +107,8 @@ void ActiveDirectoryPasswordChangeScreenHandler::OnAuthFinished(
       DCHECK(LoginDisplayHost::default_host());
       LoginDisplayHost::default_host()->SetDisplayAndGivenName(
           account_info.display_name(), account_info.given_name());
-      UserContext user_context(account_id);
+      UserContext user_context(
+          user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY, account_id);
       user_context.SetKey(key);
       user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
       user_context.SetIsUsingOAuth(false);

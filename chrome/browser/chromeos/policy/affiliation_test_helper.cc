@@ -117,7 +117,8 @@ void LoginUser(const AccountId& account_id) {
       chromeos::UserSessionManager::GetInstance());
   session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
 
-  chromeos::UserContext user_context(account_id);
+  chromeos::UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                                     account_id);
   user_context.SetKey(chromeos::Key("password"));
   if (account_id.GetUserEmail() == kEnterpriseUserEmail) {
     user_context.SetRefreshToken(kFakeRefreshToken);

@@ -172,7 +172,10 @@ void ViewsScreenLocker::HandleAuthenticateUser(
          quick_unlock_storage->IsPinAuthenticationAvailable() ||
          !authenticated_by_pin);
 
-  UserContext user_context(account_id);
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+  DCHECK(user);
+  UserContext user_context(*user);
   Key::KeyType key_type =
       authenticated_by_pin ? chromeos::Key::KEY_TYPE_SALTED_PBKDF2_AES256_1234
                            : chromeos::Key::KEY_TYPE_SALTED_SHA256_TOP_HALF;

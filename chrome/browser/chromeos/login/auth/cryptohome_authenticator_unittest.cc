@@ -192,7 +192,8 @@ class TestCryptohomeClient : public ::chromeos::FakeCryptohomeClient {
 class CryptohomeAuthenticatorTest : public testing::Test {
  public:
   CryptohomeAuthenticatorTest()
-      : user_context_(AccountId::FromUserEmail("me@nowhere.org")),
+      : user_context_(user_manager::USER_TYPE_REGULAR,
+                      AccountId::FromUserEmail("me@nowhere.org")),
         user_manager_(new chromeos::FakeChromeUserManager()),
         user_manager_enabler_(base::WrapUnique(user_manager_)),
         mock_caller_(NULL),

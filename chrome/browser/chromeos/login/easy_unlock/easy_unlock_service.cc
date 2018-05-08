@@ -476,8 +476,11 @@ void EasyUnlockService::CheckCryptohomeKeysAndMaybeHardlock() {
       UserSessionManager::GetInstance()->GetEasyUnlockKeyManager();
   DCHECK(key_manager);
 
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+  DCHECK(user);
   key_manager->GetDeviceDataList(
-      UserContext(account_id),
+      UserContext(*user),
       base::Bind(&EasyUnlockService::OnCryptohomeKeysFetchedForChecking,
                  weak_ptr_factory_.GetWeakPtr(), account_id, paired_devices));
 }

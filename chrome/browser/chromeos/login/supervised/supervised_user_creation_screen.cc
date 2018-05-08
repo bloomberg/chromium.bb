@@ -205,7 +205,14 @@ void SupervisedUserCreationScreen::AuthenticateManager(
 
   controller_.reset(new SupervisedUserCreationControllerNew(this, manager_id));
 
-  UserContext user_context(manager_id);
+  const user_manager::User* const manager =
+      user_manager::UserManager::Get()->FindUser(manager_id);
+  // Tests depend on the ability to create users on-demand, so we cannot
+  // require manager to exist here.
+  UserContext user_context =
+      manager
+          ? UserContext(*manager)
+          : UserContext(user_manager::UserType::USER_TYPE_REGULAR, manager_id);
   user_context.SetKey(Key(manager_password));
   ExistingUserController::current_controller()->Login(user_context,
                                                       SigninSpecifics());

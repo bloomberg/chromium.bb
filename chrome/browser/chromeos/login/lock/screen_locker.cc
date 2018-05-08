@@ -693,7 +693,7 @@ void ScreenLocker::OnAuthScanDone(
     return;
   }
 
-  UserContext user_context(active_user->GetType(), active_user->GetAccountId());
+  UserContext user_context(*active_user);
   if (!base::ContainsKey(matches, active_user->username_hash())) {
     OnFingerprintAuthFailure(*active_user);
     return;

@@ -169,7 +169,8 @@ IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, TestBasic) {
   EXPECT_GT(lock_bounds.width(), 10);
   EXPECT_GT(lock_bounds.height(), 10);
 
-  UserContext user_context(user_manager::StubAccountId());
+  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                           user_manager::StubAccountId());
   user_context.SetKey(Key("pass"));
   tester->InjectStubUserContext(user_context);
   EXPECT_TRUE(tester->IsLocked());
@@ -227,7 +228,8 @@ IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, TestFullscreenExit) {
     EXPECT_FALSE(window_state->GetHideShelfWhenFullscreen());
     EXPECT_TRUE(tester->IsLocked());
   }
-  UserContext user_context(user_manager::StubAccountId());
+  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                           user_manager::StubAccountId());
   user_context.SetKey(Key("pass"));
   tester->InjectStubUserContext(user_context);
   tester->EnterPassword("pass");

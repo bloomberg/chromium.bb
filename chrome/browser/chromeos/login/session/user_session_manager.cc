@@ -1737,6 +1737,11 @@ void UserSessionManager::RestorePendingUserSessions() {
   pending_user_sessions_.erase(account_id);
 
   // Check that this user is not logged in yet.
+
+  // TODO(alemate): Investigate whether this could be simplified by enforcing
+  // session restore to existing users only. Currently this breakes some tests
+  // (namely CrashRestoreComplexTest.RestoreSessionForThreeUsers), but
+  // it may be test-specific and could probably be changed.
   user_manager::UserList logged_in_users =
       user_manager::UserManager::Get()->GetLoggedInUsers();
   bool user_already_logged_in = false;
@@ -1751,7 +1756,12 @@ void UserSessionManager::RestorePendingUserSessions() {
   DCHECK(!user_already_logged_in);
 
   if (!user_already_logged_in) {
-    UserContext user_context(account_id);
+    const user_manager::User* const user =
+        user_manager::UserManager::Get()->FindUser(account_id);
+    UserContext user_context =
+        user ? UserContext(*user)
+             : UserContext(user_manager::UserType::USER_TYPE_REGULAR,
+                           account_id);
     user_context.SetUserIDHash(user_id_hash);
     user_context.SetIsUsingOAuth(false);
 

@@ -17,6 +17,10 @@
 
 class AccountId;
 
+namespace user_manager {
+class User;
+}
+
 namespace chromeos {
 
 // Information that is passed around while authentication is in progress. The
@@ -42,7 +46,7 @@ class CHROMEOS_EXPORT UserContext {
 
   UserContext();
   UserContext(const UserContext& other);
-  explicit UserContext(const AccountId& account_id);
+  explicit UserContext(const user_manager::User& user);
   UserContext(user_manager::UserType user_type, const AccountId& account_id);
   ~UserContext();
 
