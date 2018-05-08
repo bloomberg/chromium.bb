@@ -251,7 +251,8 @@ base::FilePath GetTemporaryDownloadDirectory() {
 
 scoped_refptr<download::DownloadURLLoaderFactoryGetter>
 CreateDownloadURLLoaderFactoryGetter(StoragePartitionImpl* storage_partition,
-                                     RenderFrameHost* rfh) {
+                                     RenderFrameHost* rfh,
+                                     bool is_download) {
   network::mojom::URLLoaderFactoryPtrInfo proxy_factory_ptr_info;
   network::mojom::URLLoaderFactoryRequest proxy_factory_request;
   if (rfh) {
@@ -259,7 +260,7 @@ CreateDownloadURLLoaderFactoryGetter(StoragePartitionImpl* storage_partition,
     network::mojom::URLLoaderFactoryRequest devtools_factory_request =
         MakeRequest(&devtools_factory_ptr_info);
     if (RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
-            static_cast<RenderFrameHostImpl*>(rfh), true,
+            static_cast<RenderFrameHostImpl*>(rfh), true, is_download,
             &devtools_factory_request)) {
       proxy_factory_ptr_info = std::move(devtools_factory_ptr_info);
       proxy_factory_request = std::move(devtools_factory_request);
@@ -1010,8 +1011,8 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
       std::move(resource_request), render_process_id, render_frame_id, site_url,
       tab_url, tab_referrer_url, std::move(url_chain), std::move(response),
       std::move(cert_status), std::move(url_loader_client_endpoints),
-      CreateDownloadURLLoaderFactoryGetter(storage_partition,
-                                           render_frame_host));
+      CreateDownloadURLLoaderFactoryGetter(storage_partition, render_frame_host,
+                                           false));
 }
 
 void DownloadManagerImpl::BeginDownloadInternal(
@@ -1057,7 +1058,7 @@ void DownloadManagerImpl::BeginDownloadInternal(
               params->url(), std::move(blob_data_handle));
     } else {
       url_loader_factory_getter =
-          CreateDownloadURLLoaderFactoryGetter(storage_partition, rfh);
+          CreateDownloadURLLoaderFactoryGetter(storage_partition, rfh, true);
     }
 
     in_progress_manager_->BeginDownload(

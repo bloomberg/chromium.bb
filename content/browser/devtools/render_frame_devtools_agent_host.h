@@ -73,6 +73,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   static bool WillCreateURLLoaderFactory(
       RenderFrameHostImpl* rfh,
       bool is_navigation,
+      bool is_download,
       network::mojom::URLLoaderFactoryRequest* loader_factory_request);
 
   static void OnNavigationRequestWillBeSent(

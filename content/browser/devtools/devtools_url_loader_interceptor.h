@@ -53,6 +53,7 @@ class DevToolsURLLoaderInterceptor {
   bool CreateProxyForInterception(
       const base::UnguessableToken frame_token,
       int process_id,  // 0 for navigation
+      bool is_download,
       network::mojom::URLLoaderFactoryRequest* request) const;
 
  private:

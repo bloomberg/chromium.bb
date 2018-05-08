@@ -172,6 +172,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
                   const base::UnguessableToken& frame_token,
                   int32_t process_id,
                   std::unique_ptr<CreateLoaderParameters> create_loader_params,
+                  bool is_download,
                   network::mojom::URLLoaderRequest loader_request,
                   network::mojom::URLLoaderClientPtr client,
                   network::mojom::URLLoaderFactoryPtr target_factory);
@@ -263,6 +264,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   InterceptionStage stage_;
 
   std::unique_ptr<CreateLoaderParameters> create_loader_params_;
+  const bool is_download_;
 
   mojo::Binding<network::mojom::URLLoaderClient> client_binding_;
   mojo::Binding<network::mojom::URLLoader> loader_binding_;
@@ -308,6 +310,7 @@ class DevToolsURLLoaderInterceptor::Impl
 
   void CreateJob(const base::UnguessableToken& frame_token,
                  int32_t process_id,
+                 bool is_download,
                  std::unique_ptr<CreateLoaderParameters> create_params,
                  network::mojom::URLLoaderRequest loader_request,
                  network::mojom::URLLoaderClientPtr client,
@@ -317,10 +320,10 @@ class DevToolsURLLoaderInterceptor::Impl
     static int last_id = 0;
 
     std::string id = base::StringPrintf("interception-job-%d", ++last_id);
-    InterceptionJob* job =
-        new InterceptionJob(this, id, frame_token, process_id,
-                            std::move(create_params), std::move(loader_request),
-                            std::move(client), std::move(target_factory));
+    InterceptionJob* job = new InterceptionJob(
+        this, id, frame_token, process_id, std::move(create_params),
+        is_download, std::move(loader_request), std::move(client),
+        std::move(target_factory));
     jobs_.emplace(std::move(id), job);
   }
 
@@ -400,6 +403,7 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
   DevToolsURLLoaderFactoryProxy(
       const base::UnguessableToken& frame_token,
       int32_t process_id,
+      bool is_download,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
       base::WeakPtr<DevToolsURLLoaderInterceptor::Impl> interceptor);
@@ -424,6 +428,7 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
 
   const base::UnguessableToken frame_token_;
   const int32_t process_id_;
+  const bool is_download_;
 
   network::mojom::URLLoaderFactoryPtr target_factory_;
   base::WeakPtr<DevToolsURLLoaderInterceptor::Impl> interceptor_;
@@ -435,11 +440,13 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
 DevToolsURLLoaderFactoryProxy::DevToolsURLLoaderFactoryProxy(
     const base::UnguessableToken& frame_token,
     int32_t process_id,
+    bool is_download,
     network::mojom::URLLoaderFactoryRequest loader_request,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
     base::WeakPtr<DevToolsURLLoaderInterceptor::Impl> interceptor)
     : frame_token_(frame_token),
       process_id_(process_id),
+      is_download_(is_download),
       interceptor_(std::move(interceptor)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   BrowserThread::PostTask(
@@ -472,9 +479,9 @@ void DevToolsURLLoaderFactoryProxy::CreateLoaderAndStart(
       routing_id, request_id, options, request, traffic_annotation);
   network::mojom::URLLoaderFactoryPtr factory_clone;
   target_factory_->Clone(MakeRequest(&factory_clone));
-  interceptor->CreateJob(frame_token_, process_id_, std::move(creation_params),
-                         std::move(loader), std::move(client),
-                         std::move(factory_clone));
+  interceptor->CreateJob(frame_token_, process_id_, is_download_,
+                         std::move(creation_params), std::move(loader),
+                         std::move(client), std::move(factory_clone));
 }
 
 void DevToolsURLLoaderFactoryProxy::StartOnIO(
@@ -593,6 +600,7 @@ void DevToolsURLLoaderInterceptor::ContinueInterceptedRequest(
 bool DevToolsURLLoaderInterceptor::CreateProxyForInterception(
     const base::UnguessableToken frame_token,
     int process_id,
+    bool is_download,
     network::mojom::URLLoaderFactoryRequest* request) const {
   if (!enabled_)
     return false;
@@ -601,7 +609,7 @@ bool DevToolsURLLoaderInterceptor::CreateProxyForInterception(
   network::mojom::URLLoaderFactoryPtrInfo target_ptr_info;
   *request = MakeRequest(&target_ptr_info);
 
-  new DevToolsURLLoaderFactoryProxy(frame_token, process_id,
+  new DevToolsURLLoaderFactoryProxy(frame_token, process_id, is_download,
                                     std::move(original_request),
                                     std::move(target_ptr_info), weak_impl_);
   return true;
@@ -613,6 +621,7 @@ InterceptionJob::InterceptionJob(
     const base::UnguessableToken& frame_token,
     int process_id,
     std::unique_ptr<CreateLoaderParameters> create_loader_params,
+    bool is_download,
     network::mojom::URLLoaderRequest loader_request,
     network::mojom::URLLoaderClientPtr client,
     network::mojom::URLLoaderFactoryPtr target_factory)
@@ -627,6 +636,7 @@ InterceptionJob::InterceptionJob(
       report_upload_(!!create_loader_params->request.request_body),
       interceptor_(interceptor),
       create_loader_params_(std::move(create_loader_params)),
+      is_download_(is_download),
       client_binding_(this),
       loader_binding_(this),
       client_(std::move(client)),
@@ -1132,8 +1142,8 @@ void InterceptionJob::OnReceiveResponse(
   const network::ResourceRequest& request = create_loader_params_->request;
   request_info->is_download =
       request_info->is_navigation && request.allow_download &&
-      navigation_loader_util::IsDownload(request.url, head.headers.get(),
-                                         head.mime_type);
+      (is_download_ || navigation_loader_util::IsDownload(
+                           request.url, head.headers.get(), head.mime_type));
   NotifyClient(std::move(request_info));
 }
 
