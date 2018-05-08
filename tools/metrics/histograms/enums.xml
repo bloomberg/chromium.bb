@@ -3659,6 +3659,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Completed"/>
 </enum>
 
+<enum name="BooleanConfirmed">
+  <int value="0" label="Not Confirmed"/>
+  <int value="1" label="Confirmed"/>
+</enum>
+
 <enum name="BooleanConnected">
   <int value="0" label="Not Connected"/>
   <int value="1" label="Connected"/>

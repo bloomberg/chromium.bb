@@ -1658,6 +1658,8 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(int error_code) {
 
   MigrationResult result = MigrationResult::FAILURE;
   if (stream_factory_ != nullptr) {
+    LogHandshakeStatusOnConnectionMigrationSignal();
+
     const NetLogWithSource migration_net_log = NetLogWithSource::Make(
         net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
     migration_net_log.BeginEvent(
@@ -1823,6 +1825,8 @@ void QuicChromiumClientSession::OnNetworkConnected(
 
   current_connection_migration_cause_ = ON_NETWORK_CONNECTED;
   if (migrate_session_on_network_change_v2_) {
+    LogHandshakeStatusOnConnectionMigrationSignal();
+
     if (migration_pending_) {
       // |migration_pending_| is true, there was no working network previously.
       // |network| is now the only possible candidate, migrate immediately.
@@ -1885,6 +1889,8 @@ void QuicChromiumClientSession::OnNetworkDisconnectedV2(
     return;
   }
 
+  LogHandshakeStatusOnConnectionMigrationSignal();
+
   // Current network is being disconnected, migrate immediately to the
   // alternative network.
   MigrateImmediately(new_network);
@@ -1923,6 +1929,8 @@ void QuicChromiumClientSession::OnNetworkMadeDefault(
         "Already migrated on the new network");
     return;
   }
+
+  LogHandshakeStatusOnConnectionMigrationSignal();
 
   // Stay on the current network. Try to migrate back to default network
   // without any delay, which will start probing the new default network and
@@ -2003,6 +2011,8 @@ void QuicChromiumClientSession::OnPathDegrading() {
               connection_id(),
               "Exceeds maximum number of migrations on path degrading");
         } else {
+          LogHandshakeStatusOnConnectionMigrationSignal();
+
           // Probe alternative network, session will migrate to the probed
           // network and decide whether it wants to migrate back to the default
           // network on success.
@@ -2430,6 +2440,12 @@ void QuicChromiumClientSession::LogConnectionMigrationResultToHistogram(
       ConnectionMigrationCauseToString(current_connection_migration_cause_);
   base::UmaHistogramEnumeration(histogram_name, status, MIGRATION_STATUS_MAX);
   current_connection_migration_cause_ = UNKNOWN;
+}
+
+void QuicChromiumClientSession::LogHandshakeStatusOnConnectionMigrationSignal()
+    const {
+  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.HandshakeStatusOnConnectionMigration",
+                        IsCryptoHandshakeConfirmed());
 }
 
 void QuicChromiumClientSession::HistogramAndLogMigrationFailure(
