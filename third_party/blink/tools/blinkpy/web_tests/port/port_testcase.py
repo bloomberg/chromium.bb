@@ -75,8 +75,7 @@ class PortTestCase(LoggingTestCase):
         port = self.make_port()
 
         # Here we override methods to make it appear as though the build
-        # requirements are all met and the driver is found. We get a warning
-        # about PrettyPatch, bu the exit code is still OK.
+        # requirements are all met and the driver is found.
         port._check_file_exists = lambda path, desc: True
         if port._dump_reader:
             port._dump_reader.check_is_functional = lambda: True
@@ -87,7 +86,6 @@ class PortTestCase(LoggingTestCase):
             port.check_build(needs_http=True, printer=FakePrinter()),
             exit_codes.OK_EXIT_STATUS)
         logs = ''.join(self.logMessages())
-        self.assertIn('pretty patches', logs)
         self.assertNotIn('build requirements', logs)
 
         # And here, after changing it so that the driver binary is not found,

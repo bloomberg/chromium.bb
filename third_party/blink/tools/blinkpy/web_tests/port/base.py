@@ -207,10 +207,6 @@ class Port(object):
         self._http_lock = None  # FIXME: Why does this live on the port object?
         self._dump_reader = None
 
-        # FIXME: prettypatch.py knows this path; it should not be copied here.
-        self._pretty_patch_path = self._path_finder.path_from_blink_tools('blinkruby', 'prettify.rb')
-        self._pretty_patch_available = None
-
         if not hasattr(options, 'configuration') or not options.configuration:
             self.set_option_default('configuration', self.default_configuration())
         if not hasattr(options, 'target') or not options.target:
@@ -277,11 +273,6 @@ class Port(object):
         # We want to wait for at least 3 seconds, but if we are really slow, we
         # want to be slow on cleanup as well (for things like ASAN, Valgrind, etc.)
         return 3.0 * float(self.get_option('time_out_ms', '0')) / self.default_timeout_ms()
-
-    def pretty_patch_available(self):
-        if self._pretty_patch_available is None:
-            self._pretty_patch_available = self.check_pretty_patch(more_logging=False)
-        return self._pretty_patch_available
 
     def default_batch_size(self):
         """Returns the default batch size to use for this port."""
@@ -373,9 +364,6 @@ class Port(object):
         if self.get_option('pixel_tests') and not self.check_image_diff():
             return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
-        # It's okay if pretty patch isn't available, but we will at least log messages.
-        self._pretty_patch_available = self.check_pretty_patch()
-
         if self._dump_reader and not self._dump_reader.check_is_functional():
             return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
@@ -433,25 +421,6 @@ class Port(object):
         if not self._filesystem.exists(image_diff_path):
             _log.error('image_diff was not found at %s', image_diff_path)
             return False
-        return True
-
-    def check_pretty_patch(self, more_logging=True):
-        """Checks whether we can use the PrettyPatch ruby script."""
-        try:
-            _ = self._executive.run_command(['ruby', '--version'])
-        except OSError as error:
-            if error.errno in [errno.ENOENT, errno.EACCES, errno.ECHILD]:
-                if more_logging:
-                    _log.warning("Ruby is not installed; can't generate pretty patches.")
-                    _log.warning('')
-                return False
-
-        if not self._filesystem.exists(self._pretty_patch_path):
-            if more_logging:
-                _log.warning("Unable to find %s; can't generate pretty patches.", self._pretty_patch_path)
-                _log.warning('')
-            return False
-
         return True
 
     def check_httpd(self):
@@ -1490,32 +1459,6 @@ class Port(object):
     def repository_path(self):
         """Returns the repository path for the chromium code base."""
         return self._path_from_chromium_base('build')
-
-    # This is a class variable so we can test error output easily.
-    _pretty_patch_error_html = 'Failed to run PrettyPatch, see error log.'
-
-    def pretty_patch_text(self, diff_path):
-        if self._pretty_patch_available is None:
-            self._pretty_patch_available = self.check_pretty_patch(more_logging=False)
-        if not self._pretty_patch_available:
-            return self._pretty_patch_error_html
-        command = ('ruby', '-I', self._filesystem.dirname(self._pretty_patch_path),
-                   self._pretty_patch_path, diff_path)
-        try:
-            # Diffs are treated as binary (we pass decode_output=False) as they
-            # may contain multiple files of conflicting encodings.
-            return self._executive.run_command(command, decode_output=False)
-        except OSError as error:
-            # If the system is missing ruby log the error and stop trying.
-            self._pretty_patch_available = False
-            _log.error('Failed to run PrettyPatch (%s): %s', command, error)
-            return self._pretty_patch_error_html
-        except ScriptError as error:
-            # If ruby failed to run for some reason, log the command
-            # output and stop trying.
-            self._pretty_patch_available = False
-            _log.error('Failed to run PrettyPatch (%s):\n%s', command, error.message_with_output())
-            return self._pretty_patch_error_html
 
     def default_configuration(self):
         return 'Release'
