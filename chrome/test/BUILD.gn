@@ -2996,7 +2996,6 @@ test("unit_tests") {
       "../browser/ui/global_error/global_error_service_unittest.cc",
       "../browser/ui/omnibox/chrome_omnibox_navigation_observer_unittest.cc",
       "../browser/ui/omnibox/clipboard_utils_unittest.cc",
-      "../browser/ui/omnibox/favicon_cache_unittest.cc",
       "../browser/ui/page_info/permission_menu_model_unittest.cc",
       "../browser/ui/passwords/manage_passwords_bubble_model_unittest.cc",
       "../browser/ui/passwords/password_dialog_controller_impl_unittest.cc",
@@ -3078,7 +3077,6 @@ test("unit_tests") {
 
     deps += [
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
-      "//components/favicon/core/test:test_support",
       "//components/signin/core/browser:signin_buildflags",
       "//services/metrics/public/cpp:ukm_builders",
       "//third_party/libaddressinput",
