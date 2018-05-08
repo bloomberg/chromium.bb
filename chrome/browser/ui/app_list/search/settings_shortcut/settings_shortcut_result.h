@@ -26,7 +26,6 @@ class SettingsShortcutResult : public ChromeSearchResult {
 
   // SearchResult overrides:
   void Open(int event_flags) override;
-  std::unique_ptr<ChromeSearchResult> Duplicate() const override;
   void GetContextMenuModel(GetMenuModelCallback callback) override;
 
  private:

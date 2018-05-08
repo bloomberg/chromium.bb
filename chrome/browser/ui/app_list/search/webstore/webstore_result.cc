@@ -52,7 +52,7 @@ WebstoreResult::WebstoreResult(Profile* profile,
       extension_registry_(NULL),
       weak_factory_(this) {
   set_id(GetResultIdFromExtensionId(app_id));
-  set_result_type(ash::SearchResultType::kWebStoreSearch);
+  SetResultType(ash::SearchResultType::kWebStoreSearch);
   SetDefaultDetails();
 
   InitAndStartObserving();
@@ -102,15 +102,6 @@ void WebstoreResult::InvokeAction(int action_index, int event_flags) {
   StartInstall();
 }
 
-std::unique_ptr<ChromeSearchResult> WebstoreResult::Duplicate() const {
-  std::unique_ptr<ChromeSearchResult> copy(new WebstoreResult(
-      profile_, app_id_, icon_url_, is_paid_, item_type_, controller_));
-  copy->set_title(title());
-  copy->set_title_tags(title_tags());
-  copy->set_relevance(relevance());
-  return copy;
-}
-
 void WebstoreResult::InitAndStartObserving() {
   DCHECK(!install_tracker_ && !extension_registry_);
 
@@ -152,8 +143,8 @@ void WebstoreResult::SetDefaultDetails() {
   Tags details_tags;
   details_tags.push_back(Tag(ash::SearchResultTag::DIM, 0, details.length()));
 
-  set_details(details);
-  set_details_tags(details_tags);
+  SetDetails(details);
+  SetDetailsTags(details_tags);
 }
 
 void WebstoreResult::OnIconLoaded() {

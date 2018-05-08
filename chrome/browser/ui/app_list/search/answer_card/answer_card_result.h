@@ -31,9 +31,6 @@ class AnswerCardResult : public ChromeSearchResult {
 
   void OnContentsDestroying();
 
-  // ChromeSearchResult overrides:
-  std::unique_ptr<ChromeSearchResult> Duplicate() const override;
-
   void Open(int event_flags) override;
 
  private:

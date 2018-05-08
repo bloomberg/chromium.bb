@@ -133,21 +133,21 @@ void FakeAppListModelUpdater::GetSearchResultContextMenuModel(
 
 ChromeSearchResult* FakeAppListModelUpdater::FindSearchResult(
     const std::string& result_id) {
-  for (auto& result : search_results_) {
+  for (auto*& result : search_results_) {
     if (result->id() == result_id)
-      return result.get();
+      return result;
   }
   return nullptr;
 }
 
-ChromeSearchResult* FakeAppListModelUpdater::GetResultByTitle(
+ChromeSearchResult* FakeAppListModelUpdater::GetResultByTitleForTest(
     const std::string& title) {
   return nullptr;
 }
 
 void FakeAppListModelUpdater::PublishSearchResults(
-    std::vector<std::unique_ptr<ChromeSearchResult>> results) {
-  search_results_ = std::move(results);
+    const std::vector<ChromeSearchResult*>& results) {
+  search_results_ = results;
 }
 
 ash::mojom::AppListItemMetadataPtr

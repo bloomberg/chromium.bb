@@ -24,7 +24,7 @@ InternalAppResult::InternalAppResult(Profile* profile,
                                      bool is_recommendation)
     : AppResult(profile, app_id, controller, is_recommendation) {
   set_id(app_id);
-  set_result_type(ResultType::kInternalApp);
+  SetResultType(ResultType::kInternalApp);
   SetIcon(
       GetIconForResourceId(GetIconResourceIdByAppId(app_id), kTileIconSize));
 }
@@ -41,16 +41,6 @@ void InternalAppResult::Open(int event_flags) {
     RecordHistogram(APP_SEARCH_RESULT);
 
   OpenInternalApp(id(), profile());
-}
-
-std::unique_ptr<ChromeSearchResult> InternalAppResult::Duplicate() const {
-  auto copy = std::make_unique<InternalAppResult>(
-      profile(), app_id(), controller(),
-      display_type() == DisplayType::kRecommendation);
-  copy->set_title(title());
-  copy->set_title_tags(title_tags());
-  copy->set_relevance(relevance());
-  return copy;
 }
 
 void InternalAppResult::GetContextMenuModel(GetMenuModelCallback callback) {

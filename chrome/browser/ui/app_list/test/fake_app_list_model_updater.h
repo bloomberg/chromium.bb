@@ -41,7 +41,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   // For SearchModel:
   void SetSearchEngineIsGoogle(bool is_google) override;
   void PublishSearchResults(
-      std::vector<std::unique_ptr<ChromeSearchResult>> results) override;
+      const std::vector<ChromeSearchResult*>& results) override;
 
   void ActivateChromeItem(const std::string& id, int event_flags) override;
 
@@ -60,9 +60,9 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   void GetSearchResultContextMenuModel(const std::string& result_id,
                                        GetMenuModelCallback callback) override;
   ChromeSearchResult* FindSearchResult(const std::string& result_id) override;
-  ChromeSearchResult* GetResultByTitle(const std::string& title) override;
-  const std::vector<std::unique_ptr<ChromeSearchResult>>& search_results()
-      const {
+  ChromeSearchResult* GetResultByTitleForTest(
+      const std::string& title) override;
+  const std::vector<ChromeSearchResult*>& search_results() const {
     return search_results_;
   }
 
@@ -75,7 +75,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
  private:
   bool search_engine_is_google_ = false;
   std::vector<std::unique_ptr<ChromeAppListItem>> items_;
-  std::vector<std::unique_ptr<ChromeSearchResult>> search_results_;
+  std::vector<ChromeSearchResult*> search_results_;
   AppListModelUpdaterDelegate* delegate_ = nullptr;
 
   ash::mojom::AppListItemMetadataPtr FindOrCreateOemFolder(

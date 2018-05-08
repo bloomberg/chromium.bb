@@ -31,7 +31,6 @@ class ArcAppDataSearchResult : public ChromeSearchResult {
   ~ArcAppDataSearchResult() override;
 
   // ChromeSearchResult:
-  std::unique_ptr<ChromeSearchResult> Duplicate() const override;
   void GetContextMenuModel(GetMenuModelCallback callback) override;
   void Open(int event_flags) override;
 
@@ -49,8 +48,6 @@ class ArcAppDataSearchResult : public ChromeSearchResult {
   arc::mojom::AppDataResultPtr data_;
   std::unique_ptr<arc::IconDecodeRequest> icon_decode_request_;
 
-  // |profile_| is owned by ProfileInfo.
-  Profile* const profile_;
   // |list_controller_| is owned by AppListServiceAsh and lives until the
   // service finishes.
   AppListControllerDelegate* const list_controller_;

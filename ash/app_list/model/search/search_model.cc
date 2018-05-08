@@ -10,18 +10,6 @@
 
 namespace app_list {
 
-namespace {
-
-void UpdateResult(SearchResult* source, SearchResult* target) {
-  target->set_display_type(source->display_type());
-  target->set_title(source->title());
-  target->set_title_tags(source->title_tags());
-  target->set_details(source->details());
-  target->set_details_tags(source->details_tags());
-}
-
-}  // namespace
-
 SearchModel::SearchModel()
     : search_box_(std::make_unique<SearchBoxModel>()),
       results_(std::make_unique<SearchResults>()) {}
@@ -77,9 +65,7 @@ void SearchModel::PublishResults(
             ui_result_it->second->answer_card_contents_token()) {
       // Update and use the old result if it exists.
       std::unique_ptr<SearchResult> ui_result = std::move(ui_result_it->second);
-      UpdateResult(new_result.get(), ui_result.get());
-      ui_result->set_display_score(new_result->display_score());
-
+      ui_result->SetMetadata(new_result->CloneMetadata());
       results_->Add(std::move(ui_result));
 
       // Remove the item from the map so that it ends up only with unused

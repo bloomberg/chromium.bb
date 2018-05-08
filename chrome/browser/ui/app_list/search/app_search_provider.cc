@@ -486,7 +486,7 @@ void AppSearchProvider::UpdateRecommendedResults(
 
     std::unique_ptr<AppResult> result =
         app->data_source()->CreateResult(app->id(), list_controller_, true);
-    result->set_title(app->name());
+    result->SetTitle(app->name());
 
     // Use the app list order to tiebreak apps that have never been
     // launched. The apps that have been installed or launched recently

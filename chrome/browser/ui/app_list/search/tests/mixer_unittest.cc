@@ -36,7 +36,7 @@ class TestSearchResult : public ChromeSearchResult {
   TestSearchResult(const std::string& id, double relevance)
       : instance_id_(instantiation_count++) {
     set_id(id);
-    set_title(base::UTF8ToUTF16(id));
+    SetTitle(base::UTF8ToUTF16(id));
     set_relevance(relevance);
   }
   ~TestSearchResult() override {}
@@ -44,9 +44,6 @@ class TestSearchResult : public ChromeSearchResult {
   // ChromeSearchResult overrides:
   void Open(int event_flags) override {}
   void InvokeAction(int action_index, int event_flags) override {}
-  std::unique_ptr<ChromeSearchResult> Duplicate() const override {
-    return std::make_unique<TestSearchResult>(id(), relevance());
-  }
 
   // For reference equality testing. (Addresses cannot be used to test reference
   // equality because it is possible that an object will be allocated at the
@@ -85,13 +82,13 @@ class TestSearchProvider : public SearchProvider {
       if (bad_relevance_range_)
         relevance = 10.0 - i * 10;
       TestSearchResult* result = new TestSearchResult(id, relevance);
-      result->set_display_type(display_type_);
+      result->SetDisplayType(display_type_);
       Add(std::unique_ptr<ChromeSearchResult>(result));
     }
   }
 
   void set_prefix(const std::string& prefix) { prefix_ = prefix; }
-  void set_display_type(ChromeSearchResult::DisplayType display_type) {
+  void SetDisplayType(ChromeSearchResult::DisplayType display_type) {
     display_type_ = display_type;
   }
   void set_count(size_t count) { count_ = count; }
@@ -250,7 +247,7 @@ TEST_F(MixerTest, RemoveDuplicates) {
 TEST_F(MixerTest, KnownResultsIgnoredForRecommendations) {
   // This gives omnibox 0 -- 5.
   omnibox_provider()->set_count(6);
-  omnibox_provider()->set_display_type(
+  omnibox_provider()->SetDisplayType(
       ash::SearchResultDisplayType::kRecommendation);
 
   // omnibox 1 -- 4 are "known results".

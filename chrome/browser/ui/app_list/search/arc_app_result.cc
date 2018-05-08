@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/search/arc_app_result.h"
 
+#include <utility>
+
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -57,16 +59,6 @@ void ArcAppResult::Open(int event_flags) {
   // and current view remains active. Do not close app list for home launcher.
   if (!controller()->IsHomeLauncherEnabledInTabletMode())
     controller()->DismissView();
-}
-
-std::unique_ptr<ChromeSearchResult> ArcAppResult::Duplicate() const {
-  auto copy = std::make_unique<ArcAppResult>(
-      profile(), app_id(), controller(),
-      display_type() == ash::SearchResultDisplayType::kRecommendation);
-  copy->set_title(title());
-  copy->set_title_tags(title_tags());
-  copy->set_relevance(relevance());
-  return copy;
 }
 
 void ArcAppResult::GetContextMenuModel(GetMenuModelCallback callback) {

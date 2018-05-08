@@ -123,8 +123,9 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   // Invokes a custom action on the result. It does nothing by default.
   virtual void InvokeAction(int action_index, int event_flags);
 
-  void SetMetadata(ash::mojom::SearchResultMetadataPtr metadata) {
-    metadata_ = std::move(metadata);
+  void SetMetadata(ash::mojom::SearchResultMetadataPtr metadata);
+  ash::mojom::SearchResultMetadataPtr CloneMetadata() const {
+    return metadata_.Clone();
   }
 
  protected:

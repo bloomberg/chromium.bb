@@ -27,7 +27,6 @@ class SearchWebstoreResult : public ChromeSearchResult {
 
   // ChromeSearchResult overrides:
   void Open(int event_flags) override;
-  std::unique_ptr<ChromeSearchResult> Duplicate() const override;
 
  private:
   Profile* profile_;
