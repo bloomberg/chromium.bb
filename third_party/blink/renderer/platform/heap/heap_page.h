@@ -954,11 +954,9 @@ inline uint32_t GetRandomMagic() {
 #if defined(OS_WIN)
   static const uintptr_t random2 =
       ~(RotateLeft16(reinterpret_cast<uintptr_t>(::ReadFile)));
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   static const uintptr_t random2 =
       ~(RotateLeft16(reinterpret_cast<uintptr_t>(::read)));
-#else
-#error OS not supported
 #endif
 
 #if defined(ARCH_CPU_64_BITS)
