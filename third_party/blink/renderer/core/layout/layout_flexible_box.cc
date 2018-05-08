@@ -1119,17 +1119,17 @@ MinMaxSize LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
   return sizes;
 }
 
-LayoutUnit LayoutFlexibleBox::CrossSizeForPercentageResolution(
-    const LayoutBox& child) {
+bool LayoutFlexibleBox::CrossSizeIsDefiniteForPercentageResolution(
+    const LayoutBox& child) const {
   if (FlexLayoutAlgorithm::AlignmentForChild(StyleRef(), child.StyleRef()) !=
       ItemPosition::kStretch)
-    return LayoutUnit(-1);
+    return false;
 
   // Here we implement https://drafts.csswg.org/css-flexbox/#algo-stretch
   if (HasOrthogonalFlow(child) && child.HasOverrideLogicalWidth())
-    return child.OverrideContentLogicalWidth();
+    return true;
   if (!HasOrthogonalFlow(child) && child.HasOverrideLogicalHeight())
-    return child.OverrideContentLogicalHeight();
+    return true;
 
   // We don't currently implement the optimization from
   // https://drafts.csswg.org/css-flexbox/#definite-sizes case 1. While that
@@ -1137,39 +1137,36 @@ LayoutUnit LayoutFlexibleBox::CrossSizeForPercentageResolution(
   // definite size, which itself is not cheap. We can consider implementing it
   // at a later time. (The correctness is ensured by redoing layout in
   // applyStretchAlignmentToChild)
-  return LayoutUnit(-1);
+  return false;
 }
 
-LayoutUnit LayoutFlexibleBox::MainSizeForPercentageResolution(
-    const LayoutBox& child) {
+bool LayoutFlexibleBox::MainSizeIsDefiniteForPercentageResolution(
+    const LayoutBox& child) const {
   // This function implements section 9.8. Definite and Indefinite Sizes, case
   // 2) of the flexbox spec.
   // We need to check for the flexbox to have a definite main size, and for the
   // flex item to have a definite flex basis.
   const Length& flex_basis = FlexBasisForChild(child);
   if (!MainAxisLengthIsDefinite(child, flex_basis))
-    return LayoutUnit(-1);
+    return false;
   if (!flex_basis.IsPercentOrCalc()) {
     // If flex basis had a percentage, our size is guaranteed to be definite or
     // the flex item's size could not be definite. Otherwise, we make up a
     // percentage to check whether we have a definite size.
     if (!MainAxisLengthIsDefinite(child, Length(0, kPercent)))
-      return LayoutUnit(-1);
+      return false;
   }
 
   if (HasOrthogonalFlow(child))
-    return child.HasOverrideLogicalHeight()
-               ? child.OverrideContentLogicalHeight()
-               : LayoutUnit(-1);
-  return child.HasOverrideLogicalWidth() ? child.OverrideContentLogicalWidth()
-                                         : LayoutUnit(-1);
+    return child.HasOverrideLogicalHeight();
+  return child.HasOverrideLogicalWidth();
 }
 
-LayoutUnit LayoutFlexibleBox::ChildLogicalHeightForPercentageResolution(
-    const LayoutBox& child) {
+bool LayoutFlexibleBox::UseOverrideLogicalHeightForPerentageResolution(
+    const LayoutBox& child) const {
   if (!HasOrthogonalFlow(child))
-    return CrossSizeForPercentageResolution(child);
-  return MainSizeForPercentageResolution(child);
+    return CrossSizeIsDefiniteForPercentageResolution(child);
+  return MainSizeIsDefiniteForPercentageResolution(child);
 }
 
 LayoutUnit LayoutFlexibleBox::AdjustChildSizeForAspectRatioCrossAxisMinAndMax(

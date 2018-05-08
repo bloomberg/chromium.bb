@@ -2148,11 +2148,11 @@ LayoutUnit LayoutBlock::AvailableLogicalHeightForPercentageComputation() const {
        (!style.LogicalTop().IsAuto() && !style.LogicalBottom().IsAuto()));
 
   LayoutUnit stretched_flex_height(-1);
-  if (IsFlexItem())
-    stretched_flex_height =
-        ToLayoutFlexibleBox(Parent())
-            ->ChildLogicalHeightForPercentageResolution(*this);
-
+  if (IsFlexItem()) {
+    const LayoutFlexibleBox* flex_box = ToLayoutFlexibleBox(Parent());
+    if (flex_box->UseOverrideLogicalHeightForPerentageResolution(*this))
+      stretched_flex_height = OverrideContentLogicalHeight();
+  }
   if (stretched_flex_height != LayoutUnit(-1)) {
     available_height = stretched_flex_height;
   } else if (IsGridItem() && HasOverrideLogicalHeight()) {

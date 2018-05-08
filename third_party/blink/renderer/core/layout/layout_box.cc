@@ -3633,9 +3633,10 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
         LayoutBlock* block = ToLayoutBlock(cb);
         block->AddPercentHeightDescendant(const_cast<LayoutBox*>(this));
         if (block->IsFlexItem()) {
-          stretched_height =
-              ToLayoutFlexibleBox(block->Parent())
-                  ->ChildLogicalHeightForPercentageResolution(*block);
+          const LayoutFlexibleBox* flex_box =
+              ToLayoutFlexibleBox(block->Parent());
+          if (flex_box->UseOverrideLogicalHeightForPerentageResolution(*block))
+            stretched_height = block->OverrideContentLogicalHeight();
         } else if (block->IsGridItem() && block->HasOverrideLogicalHeight() &&
                    !has_perpendicular_containing_block) {
           stretched_height = block->OverrideContentLogicalHeight();
@@ -3740,11 +3741,9 @@ LayoutUnit LayoutBox::AvailableLogicalHeightUsing(
   }
 
   if (IsFlexItem()) {
-    LayoutFlexibleBox& flex_box = ToLayoutFlexibleBox(*Parent());
-    LayoutUnit stretched_height =
-        flex_box.ChildLogicalHeightForPercentageResolution(*this);
-    if (stretched_height != LayoutUnit(-1))
-      return stretched_height;
+    const LayoutFlexibleBox& flex_box = ToLayoutFlexibleBox(*Parent());
+    if (flex_box.UseOverrideLogicalHeightForPerentageResolution(*this))
+      return OverrideContentLogicalHeight();
   }
 
   if (h.IsPercentOrCalc() && IsOutOfFlowPositioned()) {

@@ -678,9 +678,8 @@ bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight()
   if (logical_height_length.IsPercentOrCalc() && cb && IsBox())
     cb->AddPercentHeightDescendant(const_cast<LayoutBox*>(ToLayoutBox(this)));
   if (this_box && this_box->IsFlexItem()) {
-    LayoutFlexibleBox& flex_box = ToLayoutFlexibleBox(*Parent());
-    if (flex_box.ChildLogicalHeightForPercentageResolution(*this_box) !=
-        LayoutUnit(-1))
+    const LayoutFlexibleBox& flex_box = ToLayoutFlexibleBox(*Parent());
+    if (flex_box.UseOverrideLogicalHeightForPerentageResolution(*this_box))
       return false;
   }
   if (this_box && this_box->IsGridItem() &&

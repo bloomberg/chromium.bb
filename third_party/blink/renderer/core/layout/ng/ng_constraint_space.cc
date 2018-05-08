@@ -146,16 +146,10 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
     available_size.block_size = box.OverrideLogicalHeight();
     fixed_block = true;
   }
-  if (box.IsFlexItem()) {
-    LayoutUnit for_percentage =
+  if (box.IsFlexItem() && fixed_block) {
+    fixed_block_is_definite =
         ToLayoutFlexibleBox(box.Parent())
-            ->ChildLogicalHeightForPercentageResolution(box);
-    fixed_block_is_definite = for_percentage != LayoutUnit(-1);
-    if (fixed_block_is_definite) {
-      DCHECK_EQ(available_size.block_size,
-                for_percentage + box.BorderAndPaddingLogicalHeight() +
-                    box.ScrollbarLogicalHeight());
-    }
+            ->UseOverrideLogicalHeightForPerentageResolution(box);
   }
 
   bool is_new_fc = true;
