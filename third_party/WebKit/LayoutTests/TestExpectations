@@ -2789,6 +2789,8 @@ crbug.com/832071 external/wpt/service-workers/service-worker/worker-client-id.ht
 crbug.com/832071 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Retina ] external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ Skip ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/pointerevents/pointerevent_touch-action-button-test_touch-manual.html [ Skip ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/pointerevents/pointerevent_touch-action-svg-test_touch-manual.html [ Skip ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
 crbug.com/626703 external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
