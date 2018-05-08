@@ -5,5 +5,6 @@ include_rules = [
     "+gpu/command_buffer/client/gles2_interface.h",
     "+gpu/command_buffer/common/mailbox_holder.h",
     "+services/metrics/public/cpp/ukm_builders.h",
+    "+ui/display/display.h",
     "+ui/gfx/geometry",
 ]

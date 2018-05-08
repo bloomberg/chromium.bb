@@ -149,6 +149,41 @@ bool Display::HasEnsureForcedColorProfile() {
   return has_ensure_forced_color_profile;
 }
 
+// static
+display::Display::Rotation Display::DegreesToRotation(int degrees) {
+  if (degrees == 0)
+    return display::Display::ROTATE_0;
+  if (degrees == 90)
+    return display::Display::ROTATE_90;
+  if (degrees == 180)
+    return display::Display::ROTATE_180;
+  if (degrees == 270)
+    return display::Display::ROTATE_270;
+  NOTREACHED();
+  return display::Display::ROTATE_0;
+}
+
+// static
+int Display::RotationToDegrees(display::Display::Rotation rotation) {
+  switch (rotation) {
+    case display::Display::ROTATE_0:
+      return 0;
+    case display::Display::ROTATE_90:
+      return 90;
+    case display::Display::ROTATE_180:
+      return 180;
+    case display::Display::ROTATE_270:
+      return 270;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+// static
+bool Display::IsValidRotation(int degrees) {
+  return degrees == 0 || degrees == 90 || degrees == 180 || degrees == 270;
+}
+
 Display::Display() : Display(kInvalidDisplayId) {}
 
 Display::Display(int64_t id) : Display(id, gfx::Rect()) {}

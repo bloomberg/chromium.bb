@@ -107,6 +107,21 @@ class DISPLAY_EXPORT Display final {
   // Resets the cache and sets a new force device scale factor.
   static void SetForceDeviceScaleFactor(double dsf);
 
+  // Converts the given angle to its corresponding Rotation. The angle is in
+  // degrees, and the only valid values are 0, 90, 180, and 270.
+  // TODO(crbug.com/840189): we should never need to convert degrees to a
+  // Rotation if we were to Rotations internally and only converted to numeric
+  // values when required.
+  static Rotation DegreesToRotation(int degrees);
+
+  // This is the analog to DegreesToRotation and converts a Rotation to a
+  // numeric representation.
+  static int RotationToDegrees(Rotation rotation);
+
+  // Returns true if |degrees| is compatible with DegreesToRotation. I.e., that
+  // it is 0, 90, 180, or 270.
+  static bool IsValidRotation(int degrees);
+
   // Sets/Gets unique identifier associated with the display.
   // -1 means invalid display and it doesn't not exit.
   int64_t id() const { return id_; }

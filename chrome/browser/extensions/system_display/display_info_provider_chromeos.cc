@@ -77,35 +77,6 @@ gfx::Insets GetInsets(const system_display::Insets& insets) {
   return gfx::Insets(insets.top, insets.left, insets.bottom, insets.right);
 }
 
-bool IsValidRotationValue(int rotation) {
-  return rotation == 0 || rotation == 90 || rotation == 180 || rotation == 270;
-}
-
-display::mojom::Rotation GetRotation(int degrees) {
-  if (degrees == 90)
-    return display::mojom::Rotation::VALUE_90;
-  if (degrees == 180)
-    return display::mojom::Rotation::VALUE_180;
-  if (degrees == 270)
-    return display::mojom::Rotation::VALUE_270;
-  return display::mojom::Rotation::VALUE_0;
-}
-
-int RotationToDegrees(display::mojom::Rotation rotation) {
-  switch (rotation) {
-    case display::mojom::Rotation::VALUE_0:
-      return 0;
-    case display::mojom::Rotation::VALUE_90:
-      return 90;
-    case display::mojom::Rotation::VALUE_180:
-      return 180;
-    case display::mojom::Rotation::VALUE_270:
-      return 270;
-  }
-  NOTREACHED();
-  return 0;
-}
-
 // Validates the DisplayProperties input. Does not perform any tests with
 // DisplayManager dependencies. Returns an error string on failure or nullopt
 // on success.
@@ -145,7 +116,7 @@ base::Optional<std::string> ValidateDisplayPropertiesInput(
   }
 
   // Verify the rotation value is valid.
-  if (info.rotation && !IsValidRotationValue(*info.rotation))
+  if (info.rotation && !display::Display::IsValidRotation(*info.rotation))
     return "Invalid rotation.";
 
   return base::nullopt;
@@ -182,7 +153,7 @@ system_display::DisplayUnitInfo GetDisplayUnitInfoFromMojo(
   info.is_tablet_mode = std::make_unique<bool>(mojo_info.is_tablet_mode);
   info.dpi_x = mojo_info.dpi_x;
   info.dpi_y = mojo_info.dpi_y;
-  info.rotation = RotationToDegrees(mojo_info.rotation);
+  info.rotation = display::Display::RotationToDegrees(mojo_info.rotation);
   const gfx::Rect& bounds = mojo_info.bounds;
   info.bounds.left = bounds.x();
   info.bounds.top = bounds.y();
@@ -362,8 +333,8 @@ void DisplayInfoProviderChromeOS::SetDisplayProperties(
   if (properties.overscan)
     config_properties->overscan = GetInsets(*properties.overscan);
   if (properties.rotation) {
-    config_properties->rotation =
-        ash::mojom::DisplayRotation::New(GetRotation(*properties.rotation));
+    config_properties->rotation = ash::mojom::DisplayRotation::New(
+        display::Display::DegreesToRotation(*properties.rotation));
   }
   if (properties.bounds_origin_x || properties.bounds_origin_y) {
     gfx::Point bounds_origin;

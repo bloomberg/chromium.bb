@@ -7,6 +7,7 @@ module device.mojom;
 import "mojo/public/mojom/base/time.mojom";
 import "gpu/ipc/common/mailbox_holder.mojom";
 import "gpu/ipc/common/sync_token.mojom";
+import "ui/display/mojo/display.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/gpu_fence_handle.mojom";
 import "ui/gfx/mojo/transform.mojom";
@@ -264,14 +265,12 @@ interface VRDisplayHost {
 interface VRMagicWindowProvider {
   GetPose() => (VRPose? pose);
 
-  // rotation is analogous to display::Display::Rotation and must be
-  // 0, 1, 2, or 3 representing increments of 90 degrees.
   // Different devices can have different native orientations - 0
   // is the native orientation, and then increments of 90 degrees
   // from there.
-  // TODO(https://crbug.com/836948): use Rotation from display mojom.
   // TODO(https://crbug.com/837944): frame_data should not be optional.
-  GetFrameData(gfx.mojom.Size frame_size, int16 display_rotation) =>
+  GetFrameData(gfx.mojom.Size frame_size,
+      display.mojom.Rotation display_rotation) =>
       (VRMagicWindowFrameData? frame_data);
 };
 

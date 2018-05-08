@@ -421,7 +421,8 @@ void XRSession::UpdateCanvasDimensions(Element* element) {
   output_width_ = element->OffsetWidth() * devicePixelRatio;
   output_height_ = element->OffsetHeight() * devicePixelRatio;
 
-  // TODO(https://crbug.com/836948): handle square canvases.
+  // TODO(crbug.com/836948): handle square canvases.
+  // TODO(crbug.com/840346): we should not need to use ScreenOrientation here.
   ScreenOrientation* orientation = ScreenOrientation::Create(frame);
   if (orientation) {
     output_angle_ = orientation->angle();

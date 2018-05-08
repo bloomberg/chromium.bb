@@ -12,6 +12,7 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/display/display.h"
 
 namespace device {
 
@@ -56,7 +57,7 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider {
   // mojom::VRMagicWindowProvider
   void GetPose(GetPoseCallback callback) override;
   void GetFrameData(const gfx::Size& frame_size,
-                    int16_t display_rotation,
+                    display::Display::Rotation rotation,
                     GetFrameDataCallback callback) override;
 
   mojo::Binding<mojom::VRMagicWindowProvider> binding_;
