@@ -77,6 +77,8 @@
   Even relatively modest values like 100 would work fine.*/
 #define OD_EC_LOTS_OF_BITS (0x4000)
 
+/*The return value of od_ec_dec_tell does not change across an od_ec_dec_refill
+   call.*/
 static void od_ec_dec_refill(od_ec_dec *dec) {
   int s;
   od_ec_window dif;
@@ -129,9 +131,6 @@ static int od_ec_dec_normalize(od_ec_dec *dec, od_ec_window dif, unsigned rng,
 void od_ec_dec_init(od_ec_dec *dec, const unsigned char *buf,
                     uint32_t storage) {
   dec->buf = buf;
-  dec->eptr = buf + storage;
-  dec->end_window = 0;
-  dec->nend_bits = 0;
   dec->tell_offs = 10 - (OD_EC_WINDOW_SIZE - 8);
   dec->end = buf + storage;
   dec->bptr = buf;
@@ -219,8 +218,7 @@ int od_ec_decode_cdf_q15(od_ec_dec *dec, const uint16_t *icdf, int nsyms) {
           This will always be slightly larger than the exact value (e.g., all
            rounding error is in the positive direction).*/
 int od_ec_dec_tell(const od_ec_dec *dec) {
-  return (int)(((dec->end - dec->eptr) + (dec->bptr - dec->buf)) * 8 -
-               dec->cnt - dec->nend_bits + dec->tell_offs);
+  return (int)((dec->bptr - dec->buf) * 8 - dec->cnt + dec->tell_offs);
 }
 
 /*Returns the number of bits "used" by the decoded symbols so far.
