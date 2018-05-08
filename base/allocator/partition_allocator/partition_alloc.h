@@ -359,6 +359,12 @@ ALWAYS_INLINE void PartitionRootGeneric::Free(void* ptr) {
 #endif
 }
 
+BASE_EXPORT void* PartitionReallocGenericFlags(PartitionRootGeneric* root,
+                                               int flags,
+                                               void* ptr,
+                                               size_t new_size,
+                                               const char* type_name);
+
 ALWAYS_INLINE size_t PartitionRootGeneric::ActualSize(size_t size) {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
   return size;
