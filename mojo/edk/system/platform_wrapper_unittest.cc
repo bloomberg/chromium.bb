@@ -23,25 +23,25 @@
 #include <windows.h>
 #endif
 
-#if defined(OS_POSIX)
-#define SIMPLE_PLATFORM_HANDLE_TYPE MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 #define SIMPLE_PLATFORM_HANDLE_TYPE MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#define SIMPLE_PLATFORM_HANDLE_TYPE MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-#define SHARED_BUFFER_PLATFORM_HANDLE_TYPE MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT
-#elif defined(OS_FUCHSIA)
+#if defined(OS_FUCHSIA)
 #define SHARED_BUFFER_PLATFORM_HANDLE_TYPE \
   MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE
-#else
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#define SHARED_BUFFER_PLATFORM_HANDLE_TYPE MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT
+#elif defined(OS_WIN) || defined(OS_POSIX)
 #define SHARED_BUFFER_PLATFORM_HANDLE_TYPE SIMPLE_PLATFORM_HANDLE_TYPE
 #endif
 
 uint64_t PlatformHandleValueFromPlatformFile(base::PlatformFile file) {
 #if defined(OS_WIN)
   return reinterpret_cast<uint64_t>(file);
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return static_cast<uint64_t>(file);
 #endif
 }
@@ -49,7 +49,7 @@ uint64_t PlatformHandleValueFromPlatformFile(base::PlatformFile file) {
 base::PlatformFile PlatformFileFromPlatformHandleValue(uint64_t value) {
 #if defined(OS_WIN)
   return reinterpret_cast<base::PlatformFile>(value);
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return static_cast<base::PlatformFile>(value);
 #endif
 }
@@ -126,12 +126,14 @@ TEST_F(PlatformWrapperTest, WrapPlatformSharedBufferHandle) {
     MojoPlatformHandle os_buffer;
     os_buffer.struct_size = sizeof(MojoPlatformHandle);
     os_buffer.type = SHARED_BUFFER_PLATFORM_HANDLE_TYPE;
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-    os_buffer.value = static_cast<uint64_t>(memory_handle.GetMemoryObject());
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
     os_buffer.value = reinterpret_cast<uint64_t>(memory_handle.GetHandle());
-#else
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+    os_buffer.value = static_cast<uint64_t>(memory_handle.GetMemoryObject());
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     os_buffer.value = static_cast<uint64_t>(memory_handle.GetHandle());
+#else
+#error Unsupported platform
 #endif
 
     MojoSharedBufferGuid mojo_guid;
@@ -179,23 +181,23 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadPlatformSharedBuffer,
 
   base::UnguessableToken guid =
       base::UnguessableToken::Deserialize(mojo_guid.high, mojo_guid.low);
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT, os_buffer.type);
+#if defined(OS_WIN)
+  ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE, os_buffer.type);
   base::SharedMemoryHandle memory_handle(
-      static_cast<mach_port_t>(os_buffer.value), size, guid);
+      reinterpret_cast<HANDLE>(os_buffer.value), size, guid);
 #elif defined(OS_FUCHSIA)
   ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE, os_buffer.type);
   base::SharedMemoryHandle memory_handle(
       static_cast<zx_handle_t>(os_buffer.value), size, guid);
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT, os_buffer.type);
+  base::SharedMemoryHandle memory_handle(
+      static_cast<mach_port_t>(os_buffer.value), size, guid);
 #elif defined(OS_POSIX)
   ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR, os_buffer.type);
   base::SharedMemoryHandle memory_handle(
       base::FileDescriptor(static_cast<int>(os_buffer.value), false), size,
       guid);
-#elif defined(OS_WIN)
-  ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE, os_buffer.type);
-  base::SharedMemoryHandle memory_handle(
-      reinterpret_cast<HANDLE>(os_buffer.value), size, guid);
 #endif
 
   base::SharedMemory memory(memory_handle, read_only);
