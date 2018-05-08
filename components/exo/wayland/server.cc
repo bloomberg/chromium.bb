@@ -3027,7 +3027,7 @@ void aura_shell_get_aura_output(wl_client* client,
 const struct zaura_shell_interface aura_shell_implementation = {
     aura_shell_get_aura_surface, aura_shell_get_aura_output};
 
-const uint32_t aura_shell_version = 5;
+const uint32_t aura_shell_version = 6;
 
 void bind_aura_shell(wl_client* client,
                      void* data,
