@@ -30,7 +30,7 @@ void FakeCodecAllocator::StopThread(AVDACodecAllocatorClient* client) {}
 std::unique_ptr<MediaCodecBridge> FakeCodecAllocator::CreateMediaCodecSync(
     scoped_refptr<CodecConfig> config) {
   CopyCodecConfig(config);
-  MockCreateMediaCodecSync(most_recent_overlay, most_recent_surface_texture);
+  MockCreateMediaCodecSync(most_recent_overlay, most_recent_texture_owner);
 
   std::unique_ptr<MockMediaCodecBridge> codec;
   if (allow_sync_creation) {
@@ -57,14 +57,14 @@ void FakeCodecAllocator::CreateMediaCodecAsync(
   client_ = client;
   codec_creation_pending_ = true;
 
-  MockCreateMediaCodecAsync(most_recent_overlay, most_recent_surface_texture);
+  MockCreateMediaCodecAsync(most_recent_overlay, most_recent_texture_owner);
 }
 
 void FakeCodecAllocator::ReleaseMediaCodec(
     std::unique_ptr<MediaCodecBridge> media_codec,
     scoped_refptr<AVDASurfaceBundle> surface_bundle) {
   MockReleaseMediaCodec(media_codec.get(), surface_bundle->overlay.get(),
-                        surface_bundle->surface_texture.get());
+                        surface_bundle->texture_owner_.get());
 }
 
 MockMediaCodecBridge* FakeCodecAllocator::ProvideMockCodecAsync(
@@ -97,7 +97,7 @@ void FakeCodecAllocator::ProvideNullCodecAsync() {
 void FakeCodecAllocator::CopyCodecConfig(scoped_refptr<CodecConfig> config) {
   // CodecConfig isn't copyable, since it has unique_ptrs and such.
   most_recent_overlay = config->surface_bundle->overlay.get();
-  most_recent_surface_texture = config->surface_bundle->surface_texture.get();
+  most_recent_texture_owner = config->surface_bundle->texture_owner_.get();
   most_recent_config->media_crypto =
       config->media_crypto
           ? std::make_unique<base::android::ScopedJavaGlobalRef<jobject>>(

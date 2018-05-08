@@ -396,7 +396,7 @@ void AndroidVideoDecodeAccelerator::StartSurfaceChooser() {
       base::Bind(&AndroidVideoDecodeAccelerator::OnSurfaceTransition,
                  weak_this_factory_.GetWeakPtr(), nullptr));
 
-  // Handle the sync path, which must use SurfaceTexture anyway.  Note that we
+  // Handle the sync path, which must use TextureOwner anyway.  Note that we
   // check both |during_initialize_| and |deferred_initialization_pending_|,
   // since we might get here during deferred surface creation.  In that case,
   // Decode will call us (after clearing |defer_surface_creation_|), but
@@ -414,7 +414,7 @@ void AndroidVideoDecodeAccelerator::StartSurfaceChooser() {
     DCHECK(!config_.overlay_info.HasValidSurfaceId());
     DCHECK(!config_.overlay_info.HasValidRoutingToken());
     // Note that we might still send feedback to |surface_chooser_|, which might
-    // call us back.  However, it will only ever tell us to use SurfaceTexture,
+    // call us back.  However, it will only ever tell us to use TextureOwner,
     // since we have no overlay factory anyway.
     OnSurfaceTransition(nullptr);
     return;
@@ -436,7 +436,7 @@ void AndroidVideoDecodeAccelerator::StartSurfaceChooser() {
   // Notify |surface_chooser_| that we've started.  This guarantees that we'll
   // get a callback.  It might not be a synchronous callback, but we're not in
   // the synchronous case.  It will be soon, though.  For pre-M, we rely on the
-  // fact that |surface_chooser_| won't tell us to use a SurfaceTexture while
+  // fact that |surface_chooser_| won't tell us to use a TextureOwner while
   // waiting for an overlay to become ready, for example.
   surface_chooser_helper_.UpdateChooserState(std::move(factory));
 }
@@ -466,9 +466,9 @@ void AndroidVideoDecodeAccelerator::OnSurfaceTransition(
   if (!device_info_->IsSetOutputSurfaceSupported())
     return;
 
-  // If we're using a SurfaceTexture and are told to switch to one, then just
+  // If we're using a TextureOwner and are told to switch to one, then just
   // do nothing.  |surface_chooser_| doesn't really know if we've switched to
-  // SurfaceTexture or not.  Note that it can't ask us to switch to the same
+  // TextureOwner or not.  Note that it can't ask us to switch to the same
   // overlay we're using, since it's unique_ptr.
   if (!overlay && codec_config_->surface_bundle &&
       !codec_config_->surface_bundle->overlay) {
@@ -495,10 +495,10 @@ void AndroidVideoDecodeAccelerator::InitializePictureBufferManager() {
   // incoming bundle properly, since we don't want to accidentally overwrite
   // |surface_bundle| for a codec that's being released elsewhere.
   // TODO(liberato): it doesn't make sense anymore for the PictureBufferManager
-  // to create the surface texture.  We can probably make an overlay impl out
-  // of it, and provide the surface texture to |picture_buffer_manager_|.
+  // to create the texture owner.  We can probably make an overlay impl out
+  // of it, and provide the texture owner to |picture_buffer_manager_|.
   if (!picture_buffer_manager_.Initialize(incoming_bundle_)) {
-    NOTIFY_ERROR(PLATFORM_FAILURE, "Could not allocate surface texture");
+    NOTIFY_ERROR(PLATFORM_FAILURE, "Could not allocate texture owner");
     incoming_bundle_ = nullptr;
     return;
   }
@@ -927,7 +927,7 @@ void AndroidVideoDecodeAccelerator::SendDecodedFrameToClient(
   if (want_promotion_hint) {
     picture.set_wants_promotion_hint(true);
     // This will prevent it from actually being promoted if it shouldn't be.
-    picture.set_surface_texture(!allow_overlay);
+    picture.set_texture_owner(!allow_overlay);
   }
 
   // Notify picture ready before calling UseCodecBufferForPictureBuffer() since
@@ -1370,7 +1370,7 @@ void AndroidVideoDecodeAccelerator::OnStopUsingOverlayImmediately(
   // We cannot get here if we're before surface allocation, since we transition
   // to WAITING_FOR_CODEC (or NO_ERROR, if sync) when we get the surface without
   // posting.  If we do ever lose the surface before starting codec allocation,
-  // then we could just update the config to use a SurfaceTexture and return
+  // then we could just update the config to use a TextureOwner and return
   // without changing state.
   DCHECK_NE(state_, BEFORE_OVERLAY_INIT);
 
@@ -1393,7 +1393,7 @@ void AndroidVideoDecodeAccelerator::OnStopUsingOverlayImmediately(
   // overlay that was destroyed.
   if (state_ == WAITING_FOR_CODEC) {
     // What we should do here is to set |incoming_overlay_| to nullptr, to start
-    // a transistion to SurfaceTexture.  OnCodecConfigured could notice that
+    // a transistion to TextureOwner.  OnCodecConfigured could notice that
     // there's an incoming overlay, and then immediately transition the codec /
     // drop and re-allocate the codec using it.  However, for CVV, that won't
     // work, since CVV-based overlays block the main thread waiting for the
@@ -1417,16 +1417,16 @@ void AndroidVideoDecodeAccelerator::OnStopUsingOverlayImmediately(
     picture_buffer_manager_.ReleaseCodecBuffers(output_picture_buffers_);
 
     // If we aren't transitioning to some other surface, then transition to a
-    // SurfaceTexture.  Remember that, if |incoming_overlay_| is an overlay,
+    // TextureOwner.  Remember that, if |incoming_overlay_| is an overlay,
     // then it's already ready and can be transitioned to immediately.  We were
     // just waiting for codec buffers to come back, but we just dropped them.
     // Note that we want |incoming_overlay_| to has_value(), but that value
-    // should be a nullptr to indicate that we should switch to SurfaceTexture.
+    // should be a nullptr to indicate that we should switch to TextureOwner.
     if (!incoming_overlay_)
       incoming_overlay_ = std::unique_ptr<AndroidOverlay>();
 
     UpdateSurface();
-    // Switching to a SurfaceTexture should never need to wait.  If it does,
+    // Switching to a TextureOwner should never need to wait.  If it does,
     // then the codec might still be using the destroyed surface, which is bad.
     return;
   }
@@ -1513,7 +1513,7 @@ void AndroidVideoDecodeAccelerator::OnMediaCryptoReady(
   codec_config_->media_crypto = std::move(media_crypto);
   codec_config_->requires_secure_codec = requires_secure_video_codec;
   // Request a secure surface in all cases.  For L3, it's okay if we fall back
-  // to SurfaceTexture rather than fail composition.  For L1, it's required.
+  // to TextureOwner rather than fail composition.  For L1, it's required.
   // It's also required if the command line says so.
   surface_chooser_helper_.SetSecureSurfaceMode(
       requires_secure_video_codec
@@ -1746,7 +1746,7 @@ bool AndroidVideoDecodeAccelerator::UpdateSurface() {
     // wouldn't be necessarily true anymore.
     // Also note that we might not have switched surfaces yet, which is also bad
     // for OnSurfaceDestroyed, because of BEFORE_OVERLAY_INIT.  Shouldn't
-    // happen with SurfaceTexture, and OnSurfaceDestroyed checks for it.  In
+    // happen with TextureOwner, and OnSurfaceDestroyed checks for it.  In
     // either case, we definitely should not still have an incoming bundle; it
     // should have been dropped.
     DCHECK(!incoming_bundle_);

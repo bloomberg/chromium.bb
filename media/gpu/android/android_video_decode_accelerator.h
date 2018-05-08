@@ -120,7 +120,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // |surface_chooser_| with our initial factory from VDA::Config.
   void StartSurfaceChooser();
 
-  // Start a transition to an overlay, or, if |!overlay|, SurfaceTexture.  The
+  // Start a transition to an overlay, or, if |!overlay|, TextureOwner.  The
   // transition doesn't have to be immediate; we'll favor not dropping frames.
   void OnSurfaceTransition(std::unique_ptr<AndroidOverlay> overlay);
 
@@ -386,7 +386,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   scoped_refptr<AVDASurfaceBundle> incoming_bundle_;
 
   // If we have been given an overlay to use, then this is it.  If we've been
-  // told to move to SurfaceTexture, then this will be value() == nullptr.
+  // told to move to TextureOwner, then this will be value() == nullptr.
   base::Optional<std::unique_ptr<AndroidOverlay>> incoming_overlay_;
 
   SurfaceChooserHelper surface_chooser_helper_;
@@ -406,7 +406,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // Most recently cached frame information, so that we can dispatch it without
   // recomputing it on every frame.  It changes very rarely.
   SurfaceChooserHelper::FrameInformation cached_frame_information_ =
-      SurfaceChooserHelper::FrameInformation::SURFACETEXTURE_INSECURE;
+      SurfaceChooserHelper::FrameInformation::NON_OVERLAY_INSECURE;
 
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<AndroidVideoDecodeAccelerator> weak_this_factory_;

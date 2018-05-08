@@ -44,7 +44,7 @@ struct PendingDecode {
 // first Decode() (see StartLazyInit()). We do this because there are cases in
 // our media pipeline where we'll initialize a decoder but never use it
 // (e.g., MSE with no media data appended), and if we eagerly allocator decoder
-// resources, like MediaCodecs and SurfaceTextures, we will block other
+// resources, like MediaCodecs and TextureOwners, we will block other
 // playbacks that need them.
 // TODO: Lazy initialization should be handled at a higher layer of the media
 // stack for both simplicity and cross platform support.
@@ -120,7 +120,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // Finishes initialization.
   void StartLazyInit();
   void OnVideoFrameFactoryInitialized(
-      scoped_refptr<SurfaceTextureGLOwner> surface_texture);
+      scoped_refptr<TextureOwner> texture_owner);
 
   // Resets |waiting_for_key_| to false, indicating that MediaCodec might now
   // accept buffers.
@@ -242,9 +242,9 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // non-null from the first surface choice.
   scoped_refptr<AVDASurfaceBundle> target_surface_bundle_;
 
-  // A SurfaceTexture bundle that is kept for the lifetime of MCVD so that if we
+  // A TextureOwner bundle that is kept for the lifetime of MCVD so that if we
   // have to synchronously switch surfaces we always have one available.
-  scoped_refptr<AVDASurfaceBundle> surface_texture_bundle_;
+  scoped_refptr<AVDASurfaceBundle> texture_owner_bundle_;
 
   // A callback for requesting overlay info updates.
   RequestOverlayInfoCB request_overlay_info_cb_;
@@ -267,7 +267,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // Most recently cached frame information, so that we can dispatch it without
   // recomputing it on every frame.  It changes very rarely.
   SurfaceChooserHelper::FrameInformation cached_frame_information_ =
-      SurfaceChooserHelper::FrameInformation::SURFACETEXTURE_INSECURE;
+      SurfaceChooserHelper::FrameInformation::NON_OVERLAY_INSECURE;
 
   // CDM related stuff.
 

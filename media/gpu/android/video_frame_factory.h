@@ -23,7 +23,7 @@ namespace media {
 
 struct AVDASurfaceBundle;
 class CodecOutputBuffer;
-class SurfaceTextureGLOwner;
+class TextureOwner;
 class VideoFrame;
 
 // VideoFrameFactory creates CodecOutputBuffer backed VideoFrames. Not thread
@@ -31,13 +31,13 @@ class VideoFrame;
 class MEDIA_GPU_EXPORT VideoFrameFactory {
  public:
   using GetStubCb = base::Callback<gpu::CommandBufferStub*()>;
-  using InitCb = base::Callback<void(scoped_refptr<SurfaceTextureGLOwner>)>;
+  using InitCb = base::RepeatingCallback<void(scoped_refptr<TextureOwner>)>;
 
   VideoFrameFactory() = default;
   virtual ~VideoFrameFactory() = default;
 
   // Initializes the factory and runs |init_cb| on the current thread when it's
-  // complete. If initialization fails, the returned surface texture will be
+  // complete. If initialization fails, the returned texture owner will be
   // null.  |wants_promotion_hint| tells us whether to mark VideoFrames for
   // compositor overlay promotion hints or not.
   virtual void Initialize(bool wants_promotion_hint, InitCb init_cb) = 0;
@@ -47,8 +47,8 @@ class MEDIA_GPU_EXPORT VideoFrameFactory {
   virtual void SetSurfaceBundle(
       scoped_refptr<AVDASurfaceBundle> surface_bundle) = 0;
 
-  // Creates a new VideoFrame backed by |output_buffer| and |surface_texture|.
-  // |surface_texture| may be null if the buffer is backed by an overlay
+  // Creates a new VideoFrame backed by |output_buffer| and |texture_owner|.
+  // |texture_owner| may be null if the buffer is backed by an overlay
   // instead. Runs |output_cb| on the calling sequence to return the frame.
   // TODO(liberato): update the comment.
   virtual void CreateVideoFrame(

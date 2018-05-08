@@ -253,7 +253,7 @@ void MediaCodecVideoDecoder::OnMediaCryptoReady(
   requires_secure_codec_ = requires_secure_video_codec;
 
   // Request a secure surface in all cases.  For L3, it's okay if we fall back
-  // to SurfaceTexture rather than fail composition.  For L1, it's required.
+  // to TextureOwner rather than fail composition.  For L1, it's required.
   surface_chooser_helper_.SetSecureSurfaceMode(
       requires_secure_video_codec
           ? SurfaceChooserHelper::SecureSurfaceMode::kRequired
@@ -286,13 +286,13 @@ void MediaCodecVideoDecoder::StartLazyInit() {
 }
 
 void MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized(
-    scoped_refptr<SurfaceTextureGLOwner> surface_texture) {
+    scoped_refptr<TextureOwner> texture_owner) {
   DVLOG(2) << __func__;
-  if (!surface_texture) {
+  if (!texture_owner) {
     EnterTerminalState(State::kError);
     return;
   }
-  surface_texture_bundle_ = new AVDASurfaceBundle(std::move(surface_texture));
+  texture_owner_bundle_ = new AVDASurfaceBundle(std::move(texture_owner));
 
   // Overlays are disabled when |enable_threaded_texture_mailboxes| is true
   // (http://crbug.com/582170).
@@ -338,7 +338,7 @@ void MediaCodecVideoDecoder::OnSurfaceChosen(
                    weak_factory_.GetWeakPtr()));
     target_surface_bundle_ = new AVDASurfaceBundle(std::move(overlay));
   } else {
-    target_surface_bundle_ = surface_texture_bundle_;
+    target_surface_bundle_ = texture_owner_bundle_;
   }
 
   // If we were waiting for our first surface during initialization, then
@@ -367,7 +367,7 @@ void MediaCodecVideoDecoder::OnSurfaceDestroyed(AndroidOverlay* overlay) {
   // Reset the target bundle if it is the one being destroyed.
   if (target_surface_bundle_ &&
       target_surface_bundle_->overlay.get() == overlay) {
-    target_surface_bundle_ = surface_texture_bundle_;
+    target_surface_bundle_ = texture_owner_bundle_;
   }
 
   // Transition the codec away from the overlay if necessary.
@@ -747,7 +747,7 @@ void MediaCodecVideoDecoder::EnterTerminalState(State state) {
   pump_codec_timer_.Stop();
   ReleaseCodec();
   target_surface_bundle_ = nullptr;
-  surface_texture_bundle_ = nullptr;
+  texture_owner_bundle_ = nullptr;
   if (state == State::kError)
     CancelPendingDecodes(DecodeStatus::DECODE_ERROR);
   if (drain_type_)

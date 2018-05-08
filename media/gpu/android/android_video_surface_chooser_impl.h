@@ -30,20 +30,20 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooserImpl
 
   // AndroidVideoSurfaceChooser
   void SetClientCallbacks(UseOverlayCB use_overlay_cb,
-                          UseSurfaceTextureCB use_surface_texture_cb) override;
+                          UseTextureOwnerCB use_texture_owner_cb) override;
   void UpdateState(base::Optional<AndroidOverlayFactoryCB> new_factory,
                    const State& new_state) override;
 
  private:
-  // Choose whether we should be using a SurfaceTexture or overlay, and issue
+  // Choose whether we should be using a TextureOwner or overlay, and issue
   // the right callbacks if we're changing between them.  This should only be
   // called if |allow_dynamic_|.
   void Choose();
 
-  // Start switching to SurfaceTexture or overlay, as needed.  These will call
+  // Start switching to TextureOwner or overlay, as needed.  These will call
   // the client callbacks if we're changing state, though those callbacks might
   // happen after this returns.
-  void SwitchToSurfaceTexture();
+  void SwitchToTextureOwner();
   // If |overlay_| has an in-flight request, then this will do nothing.  If
   // |power_efficient|, then we will require a power-efficient overlay, and
   // cancel it if it becomes not power efficient.
@@ -57,7 +57,7 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooserImpl
 
   // Client callbacks.
   UseOverlayCB use_overlay_cb_;
-  UseSurfaceTextureCB use_surface_texture_cb_;
+  UseTextureOwnerCB use_texture_owner_cb_;
 
   // Current overlay that we've constructed but haven't received ready / failed
   // callbacks yet.  Will be nullptr if we haven't constructed one, or if we
@@ -72,7 +72,7 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooserImpl
 
   enum OverlayState {
     kUnknown,
-    kUsingSurfaceTexture,
+    kUsingTextureOwner,
     kUsingOverlay,
   };
 

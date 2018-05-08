@@ -33,23 +33,22 @@ AVDASharedState::AVDASharedState(
 
 AVDASharedState::~AVDASharedState() = default;
 
-void AVDASharedState::RenderCodecBufferToSurfaceTexture(
-    MediaCodecBridge* codec,
-    int codec_buffer_index) {
-  if (surface_texture()->IsExpectingFrameAvailable())
-    surface_texture()->WaitForFrameAvailable();
+void AVDASharedState::RenderCodecBufferToTextureOwner(MediaCodecBridge* codec,
+                                                      int codec_buffer_index) {
+  if (texture_owner()->IsExpectingFrameAvailable())
+    texture_owner()->WaitForFrameAvailable();
   codec->ReleaseOutputBuffer(codec_buffer_index, true);
-  surface_texture()->SetReleaseTimeToNow();
+  texture_owner()->SetReleaseTimeToNow();
 }
 
 void AVDASharedState::WaitForFrameAvailable() {
-  surface_texture()->WaitForFrameAvailable();
+  texture_owner()->WaitForFrameAvailable();
 }
 
 void AVDASharedState::UpdateTexImage() {
-  surface_texture()->UpdateTexImage();
+  texture_owner()->UpdateTexImage();
   // Helpfully, this is already column major.
-  surface_texture()->GetTransformMatrix(gl_matrix_);
+  texture_owner()->GetTransformMatrix(gl_matrix_);
 }
 
 void AVDASharedState::GetTransformMatrix(float matrix[16]) const {
@@ -57,8 +56,8 @@ void AVDASharedState::GetTransformMatrix(float matrix[16]) const {
 }
 
 void AVDASharedState::ClearReleaseTime() {
-  if (surface_texture())
-    surface_texture()->IgnorePendingRelease();
+  if (texture_owner())
+    texture_owner()->IgnorePendingRelease();
 }
 
 void AVDASharedState::ClearOverlay(AndroidOverlay* overlay_raw) {

@@ -109,7 +109,7 @@ class MEDIA_EXPORT VideoFrameMetadata {
     // if ALLOW_OVERLAY is set.  However, it allows us to process the overlay
     // to see if it would have been promoted, if it were backed by a SurfaceView
     // instead.  This lets us figure out when SurfaceViews are appropriate.
-    SURFACE_TEXTURE,
+    TEXTURE_OWNER,
 
     // Android only: if set, then this frame's resource would like to be
     // notified about its promotability to an overlay.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/android/surface_texture_gl_owner.h"
+#include "media/gpu/android/texture_owner.h"
 
 #include <stdint.h>
 
@@ -43,7 +43,7 @@ class SurfaceTextureGLOwnerTest : public testing::Test {
     context_->Initialize(surface_.get(), gl::GLContextAttribs());
     ASSERT_TRUE(context_->MakeCurrent(surface_.get()));
 
-    surface_texture_ = SurfaceTextureGLOwnerImpl::Create();
+    surface_texture_ = SurfaceTextureGLOwner::Create();
     texture_id_ = surface_texture_->GetTextureId();
     // Bind and un-bind the texture, since that's required for glIsTexture to
     // return true.
@@ -60,7 +60,7 @@ class SurfaceTextureGLOwnerTest : public testing::Test {
     gl::init::ShutdownGL(false);
   }
 
-  scoped_refptr<SurfaceTextureGLOwner> surface_texture_;
+  scoped_refptr<TextureOwner> surface_texture_;
   GLuint texture_id_ = 0;
 
   scoped_refptr<gl::GLContext> context_;

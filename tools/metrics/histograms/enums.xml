@@ -2780,8 +2780,8 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="AVDAFrameInformation">
-  <int value="0" label="SurfaceTexture Insecure"/>
-  <int value="1" label="SurfaceTexture L3"/>
+  <int value="0" label="Non Overlay Insecure"/>
+  <int value="1" label="Non Overlay L3"/>
   <int value="2" label="Overlay L3"/>
   <int value="3" label="Overlay L1"/>
   <int value="4" label="Overlay Insecure Player-element Fullscreen"/>

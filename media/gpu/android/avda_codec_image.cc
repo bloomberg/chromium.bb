@@ -23,7 +23,7 @@ AVDACodecImage::AVDACodecImage(
     : shared_state_(shared_state),
       codec_buffer_index_(kInvalidCodecBufferIndex),
       media_codec_(codec),
-      has_surface_texture_(false),
+      has_texture_owner_(false),
       texture_(0) {}
 
 AVDACodecImage::~AVDACodecImage() {}
@@ -43,25 +43,25 @@ bool AVDACodecImage::BindTexImage(unsigned target) {
 void AVDACodecImage::ReleaseTexImage(unsigned target) {}
 
 bool AVDACodecImage::CopyTexImage(unsigned target) {
-  if (!has_surface_texture_ || target != GL_TEXTURE_EXTERNAL_OES)
+  if (!has_texture_owner_ || target != GL_TEXTURE_EXTERNAL_OES)
     return false;
 
   GLint bound_service_id = 0;
   glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &bound_service_id);
   // We insist that the currently bound texture is the right one.
   if (bound_service_id !=
-      static_cast<GLint>(shared_state_->surface_texture_service_id())) {
+      static_cast<GLint>(shared_state_->texture_owner_service_id())) {
     return false;
   }
 
   // Make sure that we have the right image in the front buffer.  Note that the
-  // bound_service_id is guaranteed to be equal to the surface texture's client
+  // bound_service_id is guaranteed to be equal to the texture owner's client
   // texture id, so we can skip preserving it if the right context is current.
   UpdateSurfaceInternal(UpdateMode::RENDER_TO_FRONT_BUFFER,
                         kDontRestoreBindings);
 
   // By setting image state to UNBOUND instead of COPIED we ensure that
-  // CopyTexImage() is called each time the surface texture is used for drawing.
+  // CopyTexImage() is called each time the texture owner is used for drawing.
   // It would be nice if we could do this via asking for the currently bound
   // Texture, but the active unit never seems to change.
   texture_->SetLevelImageState(GL_TEXTURE_EXTERNAL_OES, 0,
@@ -83,9 +83,9 @@ bool AVDACodecImage::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                           const gfx::RectF& crop_rect,
                                           bool enable_blend) {
   // This should only be called when we're rendering to a SurfaceView.
-  if (has_surface_texture_) {
+  if (has_texture_owner_) {
     DVLOG(1) << "Invalid call to ScheduleOverlayPlane; this image is "
-                "SurfaceTexture backed.";
+                "TextureOwner backed.";
     return false;
   }
 
@@ -103,8 +103,8 @@ void AVDACodecImage::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                                   uint64_t process_tracing_id,
                                   const std::string& dump_name) {}
 
-void AVDACodecImage::UpdateSurfaceTexture(RestoreBindingsMode mode) {
-  DCHECK(has_surface_texture_);
+void AVDACodecImage::UpdateTextureOwner(RestoreBindingsMode mode) {
+  DCHECK(has_texture_owner_);
   DCHECK_EQ(codec_buffer_index_, kUpdateOnly);
   codec_buffer_index_ = kRendered;
 
@@ -137,9 +137,9 @@ void AVDACodecImage::CodecChanged(MediaCodecBridge* codec) {
 }
 
 void AVDACodecImage::SetBufferMetadata(int buffer_index,
-                                       bool has_surface_texture,
+                                       bool has_texture_owner,
                                        const gfx::Size& size) {
-  has_surface_texture_ = has_surface_texture;
+  has_texture_owner_ = has_texture_owner;
   codec_buffer_index_ = buffer_index;
   size_ = size;
 }
@@ -162,7 +162,7 @@ void AVDACodecImage::UpdateSurfaceInternal(
   ReleaseOutputBuffer(update_mode);
 
   // SurfaceViews are updated implicitly, so no further steps are necessary.
-  if (!has_surface_texture_) {
+  if (!has_texture_owner_) {
     DCHECK(update_mode != UpdateMode::RENDER_TO_BACK_BUFFER);
     return;
   }
@@ -171,7 +171,7 @@ void AVDACodecImage::UpdateSurfaceInternal(
   if (update_mode != UpdateMode::RENDER_TO_FRONT_BUFFER)
     return;
 
-  UpdateSurfaceTexture(attached_bindings_mode);
+  UpdateTextureOwner(attached_bindings_mode);
 }
 
 void AVDACodecImage::ReleaseOutputBuffer(UpdateMode update_mode) {
@@ -191,7 +191,7 @@ void AVDACodecImage::ReleaseOutputBuffer(UpdateMode update_mode) {
   DCHECK(update_mode == UpdateMode::RENDER_TO_BACK_BUFFER ||
          update_mode == UpdateMode::RENDER_TO_FRONT_BUFFER);
 
-  if (!has_surface_texture_) {
+  if (!has_texture_owner_) {
     DCHECK(update_mode == UpdateMode::RENDER_TO_FRONT_BUFFER);
     DCHECK_GE(codec_buffer_index_, 0);
     media_codec_->ReleaseOutputBuffer(codec_buffer_index_, true);
@@ -202,14 +202,14 @@ void AVDACodecImage::ReleaseOutputBuffer(UpdateMode update_mode) {
   // If we've already released to the back buffer, there's nothing left to do,
   // but wait for the previously released buffer if necessary.
   if (codec_buffer_index_ != kUpdateOnly) {
-    DCHECK(has_surface_texture_);
+    DCHECK(has_texture_owner_);
     DCHECK_GE(codec_buffer_index_, 0);
-    shared_state_->RenderCodecBufferToSurfaceTexture(media_codec_,
-                                                     codec_buffer_index_);
+    shared_state_->RenderCodecBufferToTextureOwner(media_codec_,
+                                                   codec_buffer_index_);
     codec_buffer_index_ = kUpdateOnly;
   }
 
-  // Only wait for the SurfaceTexture update if we're rendering to the front.
+  // Only wait for the TextureOwner update if we're rendering to the front.
   if (update_mode == UpdateMode::RENDER_TO_FRONT_BUFFER)
     shared_state_->WaitForFrameAvailable();
 }
@@ -227,7 +227,7 @@ std::unique_ptr<ui::ScopedMakeCurrent> AVDACodecImage::MakeCurrentIfNeeded() {
 
 void AVDACodecImage::GetTextureMatrix(float matrix[16]) {
   // Our current matrix may be stale.  Update it if possible.
-  if (has_surface_texture_)
+  if (has_texture_owner_)
     UpdateSurface(UpdateMode::RENDER_TO_FRONT_BUFFER);
   shared_state_->GetTransformMatrix(matrix);
   YInvertMatrix(matrix);

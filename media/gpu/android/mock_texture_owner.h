@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_ANDROID_MOCK_SURFACE_TEXTURE_GL_OWNER_H_
-#define MEDIA_GPU_ANDROID_MOCK_SURFACE_TEXTURE_GL_OWNER_H_
+#ifndef MEDIA_GPU_ANDROID_MOCK_TEXTURE_OWNER_H_
+#define MEDIA_GPU_ANDROID_MOCK_TEXTURE_OWNER_H_
 
-#include "media/gpu/android/surface_texture_gl_owner.h"
+#include "media/gpu/android/texture_owner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_bindings.h"
@@ -15,11 +15,11 @@
 namespace media {
 
 // This is a mock with a small amount of fake functionality too.
-class MockSurfaceTextureGLOwner : public SurfaceTextureGLOwner {
+class MockTextureOwner : public TextureOwner {
  public:
-  MockSurfaceTextureGLOwner(GLuint fake_texture_id,
-                            gl::GLContext* fake_context,
-                            gl::GLSurface* fake_surface);
+  MockTextureOwner(GLuint fake_texture_id,
+                   gl::GLContext* fake_context,
+                   gl::GLSurface* fake_surface);
 
   MOCK_CONST_METHOD0(GetTextureId, GLuint());
   MOCK_CONST_METHOD0(GetContext, gl::GLContext*());
@@ -45,9 +45,9 @@ class MockSurfaceTextureGLOwner : public SurfaceTextureGLOwner {
   bool expecting_frame_available;
 
  protected:
-  ~MockSurfaceTextureGLOwner();
+  ~MockTextureOwner();
 };
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_ANDROID_MOCK_SURFACE_TEXTURE_GL_OWNER_H_
+#endif  // MEDIA_GPU_ANDROID_MOCK_TEXTURE_OWNER_H_

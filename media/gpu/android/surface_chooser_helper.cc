@@ -143,8 +143,8 @@ SurfaceChooserHelper::ComputeFrameInformation(bool is_using_overlay) {
   if (!is_using_overlay) {
     // Not an overlay.
     return surface_chooser_state_.is_secure
-               ? FrameInformation::SURFACETEXTURE_L3
-               : FrameInformation::SURFACETEXTURE_INSECURE;
+               ? FrameInformation::NON_OVERLAY_L3
+               : FrameInformation::NON_OVERLAY_INSECURE;
   }
 
   // Overlay.

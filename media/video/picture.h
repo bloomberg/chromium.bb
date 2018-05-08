@@ -116,11 +116,9 @@ class MEDIA_EXPORT Picture {
 
   void set_size_changed(bool size_changed) { size_changed_ = size_changed; }
 
-  bool surface_texture() const { return surface_texture_; }
+  bool texture_owner() const { return texture_owner_; }
 
-  void set_surface_texture(bool surface_texture) {
-    surface_texture_ = surface_texture;
-  }
+  void set_texture_owner(bool texture_owner) { texture_owner_ = texture_owner; }
 
   bool wants_promotion_hint() const { return wants_promotion_hint_; }
 
@@ -135,7 +133,7 @@ class MEDIA_EXPORT Picture {
   gfx::ColorSpace color_space_;
   bool allow_overlay_;
   bool size_changed_;
-  bool surface_texture_;
+  bool texture_owner_;
   bool wants_promotion_hint_;
 };
 

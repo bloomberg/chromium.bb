@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/android/surface_texture_gl_owner.h"
+#include "media/gpu/android/texture_owner.h"
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -30,14 +30,14 @@ struct FrameAvailableEvent
   ~FrameAvailableEvent() = default;
 };
 
-SurfaceTextureGLOwner::SurfaceTextureGLOwner()
-    : base::RefCountedDeleteOnSequence<SurfaceTextureGLOwner>(
+TextureOwner::TextureOwner()
+    : base::RefCountedDeleteOnSequence<TextureOwner>(
           base::ThreadTaskRunnerHandle::Get()),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
-SurfaceTextureGLOwner::~SurfaceTextureGLOwner() = default;
+TextureOwner::~TextureOwner() = default;
 
-scoped_refptr<SurfaceTextureGLOwner> SurfaceTextureGLOwnerImpl::Create() {
+scoped_refptr<TextureOwner> SurfaceTextureGLOwner::Create() {
   GLuint texture_id;
   glGenTextures(1, &texture_id);
   if (!texture_id)
@@ -52,10 +52,10 @@ scoped_refptr<SurfaceTextureGLOwner> SurfaceTextureGLOwnerImpl::Create() {
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
-  return new SurfaceTextureGLOwnerImpl(texture_id);
+  return new SurfaceTextureGLOwner(texture_id);
 }
 
-SurfaceTextureGLOwnerImpl::SurfaceTextureGLOwnerImpl(GLuint texture_id)
+SurfaceTextureGLOwner::SurfaceTextureGLOwner(GLuint texture_id)
     : surface_texture_(gl::SurfaceTexture::Create(texture_id)),
       texture_id_(texture_id),
       context_(gl::GLContext::GetCurrent()),
@@ -63,11 +63,11 @@ SurfaceTextureGLOwnerImpl::SurfaceTextureGLOwnerImpl(GLuint texture_id)
       frame_available_event_(new FrameAvailableEvent()) {
   DCHECK(context_);
   DCHECK(surface_);
-  surface_texture_->SetFrameAvailableCallbackOnAnyThread(
-      base::Bind(&FrameAvailableEvent::Signal, frame_available_event_));
+  surface_texture_->SetFrameAvailableCallbackOnAnyThread(base::BindRepeating(
+      &FrameAvailableEvent::Signal, frame_available_event_));
 }
 
-SurfaceTextureGLOwnerImpl::~SurfaceTextureGLOwnerImpl() {
+SurfaceTextureGLOwner::~SurfaceTextureGLOwner() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Make sure that the SurfaceTexture isn't using the GL objects.
@@ -80,56 +80,56 @@ SurfaceTextureGLOwnerImpl::~SurfaceTextureGLOwnerImpl() {
   }
 }
 
-GLuint SurfaceTextureGLOwnerImpl::GetTextureId() const {
+GLuint SurfaceTextureGLOwner::GetTextureId() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return texture_id_;
 }
 
-gl::ScopedJavaSurface SurfaceTextureGLOwnerImpl::CreateJavaSurface() const {
+gl::ScopedJavaSurface SurfaceTextureGLOwner::CreateJavaSurface() const {
   return gl::ScopedJavaSurface(surface_texture_.get());
 }
 
-void SurfaceTextureGLOwnerImpl::UpdateTexImage() {
+void SurfaceTextureGLOwner::UpdateTexImage() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   surface_texture_->UpdateTexImage();
 }
 
-void SurfaceTextureGLOwnerImpl::GetTransformMatrix(float mtx[]) {
+void SurfaceTextureGLOwner::GetTransformMatrix(float mtx[]) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   surface_texture_->GetTransformMatrix(mtx);
 }
 
-void SurfaceTextureGLOwnerImpl::ReleaseBackBuffers() {
+void SurfaceTextureGLOwner::ReleaseBackBuffers() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   surface_texture_->ReleaseBackBuffers();
 }
 
-gl::GLContext* SurfaceTextureGLOwnerImpl::GetContext() const {
+gl::GLContext* SurfaceTextureGLOwner::GetContext() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return context_.get();
 }
 
-gl::GLSurface* SurfaceTextureGLOwnerImpl::GetSurface() const {
+gl::GLSurface* SurfaceTextureGLOwner::GetSurface() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return surface_.get();
 }
 
-void SurfaceTextureGLOwnerImpl::SetReleaseTimeToNow() {
+void SurfaceTextureGLOwner::SetReleaseTimeToNow() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   release_time_ = base::TimeTicks::Now();
 }
 
-void SurfaceTextureGLOwnerImpl::IgnorePendingRelease() {
+void SurfaceTextureGLOwner::IgnorePendingRelease() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   release_time_ = base::TimeTicks();
 }
 
-bool SurfaceTextureGLOwnerImpl::IsExpectingFrameAvailable() {
+bool SurfaceTextureGLOwner::IsExpectingFrameAvailable() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return !release_time_.is_null();
 }
 
-void SurfaceTextureGLOwnerImpl::WaitForFrameAvailable() {
+void SurfaceTextureGLOwner::WaitForFrameAvailable() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!release_time_.is_null());
 

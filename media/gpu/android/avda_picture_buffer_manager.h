@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "media/gpu/android/avda_state_provider.h"
 #include "media/gpu/android/avda_surface_bundle.h"
-#include "media/gpu/android/surface_texture_gl_owner.h"
+#include "media/gpu/android/texture_owner.h"
 #include "media/gpu/media_gpu_export.h"
 
 namespace gpu {
@@ -28,7 +28,7 @@ class MediaCodecBridge;
 // AVDAPictureBufferManager is used by AVDA to associate its PictureBuffers with
 // MediaCodec output buffers. It attaches AVDACodecImages to the PictureBuffer
 // textures so that when they're used to draw the AVDACodecImage can release the
-// MediaCodec buffer to the backing Surface. If the Surface is a SurfaceTexture,
+// MediaCodec buffer to the backing Surface. If the Surface is a TextureOwner,
 // the front buffer can then be used to draw without needing to copy the pixels.
 // If the Surface is a SurfaceView, the release causes the frame to be displayed
 // immediately.
@@ -46,7 +46,7 @@ class MEDIA_GPU_EXPORT AVDAPictureBufferManager {
   // (e.g., SurfaceFlinger).  We will ensure that any reference to the bundle
   // is dropped if the overlay sends OnSurfaceDestroyed.
   //
-  // Without an overlay, we will create a SurfaceTexture and add it (and its
+  // Without an overlay, we will create a TextureOwner and add it (and its
   // surface) to |surface_bundle|.  We will arrange to consume the buffers at
   // the right time, in addition to releasing the codec buffers for rendering.
   //
@@ -111,9 +111,9 @@ class MEDIA_GPU_EXPORT AVDAPictureBufferManager {
 
   AVDAStateProvider* const state_provider_;
 
-  // The SurfaceTexture to render to. Non-null after Initialize() if
+  // The texture owner to render to. Non-null after Initialize() if
   // we're not rendering to a SurfaceView.
-  scoped_refptr<SurfaceTextureGLOwner> surface_texture_;
+  scoped_refptr<TextureOwner> texture_owner_;
 
   MediaCodecBridge* media_codec_;
 

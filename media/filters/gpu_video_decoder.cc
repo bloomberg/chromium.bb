@@ -664,8 +664,8 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   frame->set_color_space(picture.color_space());
   if (picture.allow_overlay())
     frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
-  if (picture.surface_texture())
-    frame->metadata()->SetBoolean(VideoFrameMetadata::SURFACE_TEXTURE, true);
+  if (picture.texture_owner())
+    frame->metadata()->SetBoolean(VideoFrameMetadata::TEXTURE_OWNER, true);
   if (picture.wants_promotion_hint()) {
     frame->metadata()->SetBoolean(VideoFrameMetadata::WANTS_PROMOTION_HINT,
                                   true);
