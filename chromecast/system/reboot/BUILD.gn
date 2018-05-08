@@ -42,6 +42,8 @@ test("cast_reboot_unittests") {
   deps = [
     ":reboot_util",
     "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }
