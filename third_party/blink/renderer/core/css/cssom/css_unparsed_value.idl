@@ -16,4 +16,5 @@
     [RaisesException] setter CSSUnparsedSegment (unsigned long index, CSSUnparsedSegment val);
 };
 
+// TODO(https://crbug.com/838890): DOMString should be CSSOMString
 typedef (DOMString or CSSVariableReferenceValue) CSSUnparsedSegment;

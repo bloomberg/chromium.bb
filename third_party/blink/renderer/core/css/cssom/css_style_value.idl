@@ -11,6 +11,6 @@
 ] interface CSSStyleValue {
   stringifier;
   // Putting Exposed=Window in the next line makes |parse| not exposed to Worklets.
-  [RaisesException, Exposed=Window, CallWith=ExecutionContext] static CSSStyleValue parse(DOMString property, DOMString cssText);
-  [RaisesException, Exposed=Window, CallWith=ExecutionContext] static sequence<CSSStyleValue> parseAll(DOMString property, DOMString cssText);
+  [RaisesException, Exposed=Window, CallWith=ExecutionContext] static CSSStyleValue parse(CSSOMString property, CSSOMString cssText);
+  [RaisesException, Exposed=Window, CallWith=ExecutionContext] static sequence<CSSStyleValue> parseAll(CSSOMString property, CSSOMString cssText);
 };
