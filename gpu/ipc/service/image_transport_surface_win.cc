@@ -40,8 +40,7 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
   DCHECK_NE(surface_handle, kNullSurfaceHandle);
 
   scoped_refptr<gl::GLSurface> surface;
-  MultiWindowSwapInterval multi_window_swap_interval =
-      kMultiWindowSwapIntervalDefault;
+  bool override_vsync_for_multi_window_swap = false;
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2) {
     std::unique_ptr<gfx::VSyncProvider> vsync_provider;
 
@@ -60,12 +59,12 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
     } else {
       surface = gl::init::CreateNativeViewGLSurfaceEGL(
           surface_handle, std::move(vsync_provider));
+      if (!surface)
+        return nullptr;
       // This is unnecessary with DirectComposition because that doesn't block
       // swaps, but instead blocks the first draw into a surface during the next
       // frame.
-      multi_window_swap_interval = kMultiWindowSwapIntervalForceZero;
-      if (!surface)
-        return nullptr;
+      override_vsync_for_multi_window_swap = true;
     }
   } else {
     surface = gl::init::CreateViewGLSurface(surface_handle);
@@ -74,7 +73,7 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
   }
 
   return scoped_refptr<gl::GLSurface>(new PassThroughImageTransportSurface(
-      delegate, surface.get(), multi_window_swap_interval));
+      delegate, surface.get(), override_vsync_for_multi_window_swap));
 }
 
 }  // namespace gpu

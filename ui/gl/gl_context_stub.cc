@@ -41,9 +41,6 @@ void* GLContextStub::GetHandle() {
   return nullptr;
 }
 
-void GLContextStub::OnSetSwapInterval(int interval) {
-}
-
 std::string GLContextStub::GetGLVersion() {
   return version_str_;
 }

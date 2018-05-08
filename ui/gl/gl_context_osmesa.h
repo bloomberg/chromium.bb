@@ -29,7 +29,6 @@ class GL_EXPORT GLContextOSMesa : public GLContextReal {
   void ReleaseCurrent(GLSurface* surface) override;
   bool IsCurrent(GLSurface* surface) override;
   void* GetHandle() override;
-  void OnSetSwapInterval(int interval) override;
 
  protected:
   ~GLContextOSMesa() override;

@@ -38,7 +38,6 @@ class GLNonOwnedContext : public GLContextReal {
   void ReleaseCurrent(GLSurface* surface) override {}
   bool IsCurrent(GLSurface* surface) override { return true; }
   void* GetHandle() override { return nullptr; }
-  void OnSetSwapInterval(int interval) override {}
 
  protected:
   ~GLNonOwnedContext() override {}

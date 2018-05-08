@@ -281,20 +281,6 @@ void GLContext::SetGLStateRestorer(GLStateRestorer* state_restorer) {
   state_restorer_ = base::WrapUnique(state_restorer);
 }
 
-void GLContext::SetSwapInterval(int interval) {
-  if (swap_interval_ == interval)
-    return;
-  swap_interval_ = interval;
-  OnSetSwapInterval(force_swap_interval_zero_ ? 0 : swap_interval_);
-}
-
-void GLContext::ForceSwapIntervalZero(bool force) {
-  if (force_swap_interval_zero_ == force)
-    return;
-  force_swap_interval_zero_ = force;
-  OnSetSwapInterval(force_swap_interval_zero_ ? 0 : swap_interval_);
-}
-
 bool GLContext::WasAllocatedUsingRobustnessExtension() {
   return false;
 }

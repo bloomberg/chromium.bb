@@ -357,20 +357,6 @@ void* GLContextEGL::GetHandle() {
   return context_;
 }
 
-void GLContextEGL::OnSetSwapInterval(int interval) {
-  DCHECK(IsCurrent(nullptr) && GLSurface::GetCurrent());
-
-  // This is a surfaceless context. eglSwapInterval doesn't take any effect in
-  // this case and will just return EGL_BAD_SURFACE.
-  if (GLSurface::GetCurrent()->IsSurfaceless())
-    return;
-
-  if (!eglSwapInterval(display_, interval)) {
-    LOG(ERROR) << "eglSwapInterval failed with error "
-               << GetLastEGLErrorString();
-  }
-}
-
 bool GLContextEGL::WasAllocatedUsingRobustnessExtension() {
   return GLSurfaceEGL::IsCreateContextRobustnessSupported();
 }

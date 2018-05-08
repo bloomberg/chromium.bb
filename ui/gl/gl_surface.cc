@@ -153,6 +153,8 @@ gfx::VSyncProvider* GLSurface::GetVSyncProvider() {
   return NULL;
 }
 
+void GLSurface::SetVSyncEnabled(bool enabled) {}
+
 bool GLSurface::ScheduleOverlayPlane(int z_order,
                                      gfx::OverlayTransform transform,
                                      GLImage* image,
@@ -399,6 +401,10 @@ GLSurfaceFormat GLSurfaceAdapter::GetFormat() {
 
 gfx::VSyncProvider* GLSurfaceAdapter::GetVSyncProvider() {
   return surface_->GetVSyncProvider();
+}
+
+void GLSurfaceAdapter::SetVSyncEnabled(bool enabled) {
+  surface_->SetVSyncEnabled(enabled);
 }
 
 bool GLSurfaceAdapter::ScheduleOverlayPlane(int z_order,

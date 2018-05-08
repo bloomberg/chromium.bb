@@ -52,6 +52,7 @@ class GL_EXPORT NativeViewGLSurfaceWGL : public GLSurfaceWGL {
   void* GetHandle() override;
   GLSurfaceFormat GetFormat() override;
   bool SupportsPresentationCallback() override;
+  void SetVSyncEnabled(bool enabled) override;
 
  private:
   ~NativeViewGLSurfaceWGL() override;

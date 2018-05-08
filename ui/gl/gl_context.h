@@ -128,13 +128,6 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // Sets the GLStateRestorer for the context (takes ownership).
   void SetGLStateRestorer(GLStateRestorer* state_restorer);
 
-  // Set swap interval. This context must be current.
-  void SetSwapInterval(int interval);
-
-  // Forces the swap interval to zero (no vsync) regardless of any future values
-  // passed to SetSwapInterval.
-  void ForceSwapIntervalZero(bool force);
-
   // Returns set of extensions. The context must be current.
   virtual const ExtensionSet& GetExtensions() = 0;
 
@@ -234,7 +227,6 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // Returns the last real (non-virtual) GLContext made current.
   static GLContext* GetRealCurrent();
 
-  virtual void OnSetSwapInterval(int interval) = 0;
   virtual void ResetExtensions() = 0;
 
   GLApi* gl_api() { return gl_api_.get(); }
@@ -272,10 +264,6 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   bool state_dirtied_externally_ = false;
   std::unique_ptr<GLStateRestorer> state_restorer_;
   std::unique_ptr<GLVersionInfo> version_info_;
-
-  // Start with an invalid value so that the first SetSwapInterval isn't a nop.
-  int swap_interval_ = -1;
-  bool force_swap_interval_zero_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GLContext);
 };

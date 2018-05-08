@@ -151,17 +151,6 @@ void* GLContextWGL::GetHandle() {
   return context_;
 }
 
-void GLContextWGL::OnSetSwapInterval(int interval) {
-  DCHECK(IsCurrent(nullptr));
-  if (g_driver_wgl.ext.b_WGL_EXT_swap_control) {
-    wglSwapIntervalEXT(interval);
-  } else {
-      LOG(WARNING) <<
-          "Could not disable vsync: driver does not "
-          "support WGL_EXT_swap_control";
-  }
-}
-
 GLContextWGL::~GLContextWGL() {
   Destroy();
 }

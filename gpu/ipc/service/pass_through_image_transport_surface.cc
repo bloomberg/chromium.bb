@@ -34,12 +34,13 @@ bool HasSwitch(const char switch_constant[]) {
 PassThroughImageTransportSurface::PassThroughImageTransportSurface(
     base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
     gl::GLSurface* surface,
-    MultiWindowSwapInterval multi_window_swap_interval)
+    bool override_vsync_for_multi_window_swap)
     : GLSurfaceAdapter(surface),
       is_gpu_vsync_disabled_(HasSwitch(switches::kDisableGpuVsync)),
+      is_multi_window_swap_vsync_override_enabled_(
+          override_vsync_for_multi_window_swap),
       is_presentation_callback_enabled_(gl::IsPresentationCallbackEnabled()),
       delegate_(delegate),
-      multi_window_swap_interval_(multi_window_swap_interval),
       weak_ptr_factory_(this) {}
 
 PassThroughImageTransportSurface::~PassThroughImageTransportSurface() {
@@ -47,8 +48,7 @@ PassThroughImageTransportSurface::~PassThroughImageTransportSurface() {
     delegate_->SetSnapshotRequestedCallback(base::Closure());
 }
 
-bool PassThroughImageTransportSurface::Initialize(
-    gl::GLSurfaceFormat format) {
+bool PassThroughImageTransportSurface::Initialize(gl::GLSurfaceFormat format) {
   DCHECK(!is_presentation_callback_enabled_ ||
          gl::GLSurfaceAdapter::SupportsPresentationCallback());
   // The surface is assumed to have already been initialized.
@@ -56,10 +56,6 @@ bool PassThroughImageTransportSurface::Initialize(
       base::Bind(&PassThroughImageTransportSurface::SetSnapshotRequested,
                  base::Unretained(this)));
   return true;
-}
-
-void PassThroughImageTransportSurface::Destroy() {
-  GLSurfaceAdapter::Destroy();
 }
 
 gfx::SwapResult PassThroughImageTransportSurface::SwapBuffers(
@@ -166,6 +162,13 @@ void PassThroughImageTransportSurface::CommitOverlayPlanesAsync(
                  weak_ptr_factory_.GetWeakPtr(), presentation_callback));
 }
 
+void PassThroughImageTransportSurface::SetVSyncEnabled(bool enabled) {
+  if (vsync_enabled_ == enabled)
+    return;
+  vsync_enabled_ = enabled;
+  GLSurfaceAdapter::SetVSyncEnabled(enabled);
+}
+
 void PassThroughImageTransportSurface::SetSnapshotRequested() {
   snapshot_requested_ = true;
 }
@@ -189,15 +192,14 @@ void PassThroughImageTransportSurface::SendVSyncUpdateIfAvailable() {
   }
 }
 
-void PassThroughImageTransportSurface::UpdateSwapInterval() {
+void PassThroughImageTransportSurface::UpdateVSyncEnabled() {
   if (is_gpu_vsync_disabled_) {
-    gl::GLContext::GetCurrent()->ForceSwapIntervalZero(true);
+    SetVSyncEnabled(false);
     return;
   }
 
-  gl::GLContext::GetCurrent()->SetSwapInterval(1);
-
-  if (multi_window_swap_interval_ == kMultiWindowSwapIntervalForceZero) {
+  bool should_override_vsync = false;
+  if (is_multi_window_swap_vsync_override_enabled_) {
     // This code is a simple way of enforcing that we only vsync if one surface
     // is swapping per frame. This provides single window cases a stable refresh
     // while allowing multi-window cases to not slow down due to multiple syncs
@@ -215,12 +217,12 @@ void PassThroughImageTransportSurface::UpdateSwapInterval() {
     swap_generation_ = g_current_swap_generation_;
     g_num_swaps_in_current_swap_generation_++;
 
-    bool should_override_vsync =
+    should_override_vsync =
         (g_num_swaps_in_current_swap_generation_ > 1) ||
         (g_current_swap_generation_ - g_last_multi_window_swap_generation_ <
          kMultiWindowSwapEnableVSyncDelay);
-    gl::GLContext::GetCurrent()->ForceSwapIntervalZero(should_override_vsync);
   }
+  SetVSyncEnabled(!should_override_vsync);
 }
 
 void PassThroughImageTransportSurface::StartSwapBuffers(
@@ -228,7 +230,7 @@ void PassThroughImageTransportSurface::StartSwapBuffers(
   // GetVsyncValues before SwapBuffers to work around Mali driver bug:
   // crbug.com/223558.
   SendVSyncUpdateIfAvailable();
-  UpdateSwapInterval();
+  UpdateVSyncEnabled();
 
   // Populated later in the DecoderClient, before passing to client.
   response->swap_id = 0;

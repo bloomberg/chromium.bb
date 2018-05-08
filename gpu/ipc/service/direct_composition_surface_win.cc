@@ -1327,6 +1327,12 @@ gfx::VSyncProvider* DirectCompositionSurfaceWin::GetVSyncProvider() {
   return vsync_provider_.get();
 }
 
+void DirectCompositionSurfaceWin::SetVSyncEnabled(bool enabled) {
+  vsync_enabled_ = enabled;
+  if (root_surface_)
+    root_surface_->SetVSyncEnabled(enabled);
+}
+
 bool DirectCompositionSurfaceWin::ScheduleDCLayer(
     const ui::DCRendererLayerParams& params) {
   return layer_tree_->ScheduleDCLayer(params);
@@ -1387,7 +1393,10 @@ void DirectCompositionSurfaceWin::WaitForSnapshotRendering() {
 bool DirectCompositionSurfaceWin::RecreateRootSurface() {
   root_surface_ = new DirectCompositionChildSurfaceWin(
       size_, is_hdr_, has_alpha_, enable_dc_layers_);
-  return root_surface_->Initialize();
+  bool initialized = root_surface_->Initialize();
+  if (initialized)
+    root_surface_->SetVSyncEnabled(vsync_enabled_);
+  return initialized;
 }
 
 const Microsoft::WRL::ComPtr<IDCompositionSurface>

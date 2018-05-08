@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_surface_test_support.h"
@@ -73,8 +74,13 @@ TEST(GLSurfaceEGLTest, FixedSizeExtension) {
 
   scoped_refptr<GLSurface> surface =
       init::CreateNativeViewGLSurfaceEGL(window.hwnd(), nullptr);
-  ASSERT_TRUE(!!surface);
+  ASSERT_TRUE(surface);
   EXPECT_EQ(window_size, surface->GetSize());
+
+  scoped_refptr<GLContext> context = init::CreateGLContext(
+      nullptr /* share_group */, surface.get(), GLContextAttribs());
+  ASSERT_TRUE(context);
+  EXPECT_TRUE(context->MakeCurrent(surface.get()));
 
   gfx::Size resize_size(200, 300);
   surface->Resize(resize_size, 1.0, GLSurface::ColorSpace::UNSPECIFIED, false);

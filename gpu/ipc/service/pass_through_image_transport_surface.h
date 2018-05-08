@@ -18,14 +18,6 @@
 
 namespace gpu {
 
-enum MultiWindowSwapInterval {
-  // Use the default swap interval of 1 even if multiple windows are swapping.
-  // This can reduce frame rate if the swap buffers calls block.
-  kMultiWindowSwapIntervalDefault,
-  // Force swap interval to 0 when multiple windows are swapping.
-  kMultiWindowSwapIntervalForceZero
-};
-
 // An implementation of ImageTransportSurface that implements GLSurface through
 // GLSurfaceAdapter, thereby forwarding GLSurface methods through to it.
 class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
@@ -33,11 +25,10 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
   PassThroughImageTransportSurface(
       base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
       gl::GLSurface* surface,
-      MultiWindowSwapInterval multi_window_swap_interval);
+      bool override_vsync_for_multi_window_swap);
 
   // GLSurface implementation.
   bool Initialize(gl::GLSurfaceFormat format) override;
-  void Destroy() override;
   gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
   void SwapBuffersAsync(
       const SwapCompletionCallback& completion_callback,
@@ -62,6 +53,7 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
   void CommitOverlayPlanesAsync(
       const SwapCompletionCallback& completion_callback,
       const PresentationCallback& presentation_callback) override;
+  void SetVSyncEnabled(bool enabled) override;
 
  private:
   ~PassThroughImageTransportSurface() override;
@@ -72,8 +64,7 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
   // If updated vsync parameters can be determined, send this information to
   // the browser.
   void SendVSyncUpdateIfAvailable();
-
-  void UpdateSwapInterval();
+  void UpdateVSyncEnabled();
 
   void StartSwapBuffers(gfx::SwapResponse* response);
   void FinishSwapBuffers(bool snapshot_requested, gfx::SwapResponse response);
@@ -86,12 +77,12 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
                        const gfx::PresentationFeedback& feedback);
 
   const bool is_gpu_vsync_disabled_;
+  const bool is_multi_window_swap_vsync_override_enabled_;
   const bool is_presentation_callback_enabled_;
   base::WeakPtr<ImageTransportSurfaceDelegate> delegate_;
   bool snapshot_requested_ = false;
-  MultiWindowSwapInterval multi_window_swap_interval_ =
-      kMultiWindowSwapIntervalDefault;
   int swap_generation_ = 0;
+  bool vsync_enabled_ = true;
 
   base::WeakPtrFactory<PassThroughImageTransportSurface> weak_ptr_factory_;
 
