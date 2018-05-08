@@ -5,7 +5,6 @@
 package org.chromium.content.browser;
 
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
-import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content.browser.webcontents.WebContentsUserData;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContents.UserDataFactory;
@@ -57,7 +56,6 @@ public class PopupController {
         SelectionPopupControllerImpl controller =
                 SelectionPopupControllerImpl.fromWebContents(webContents);
         if (controller != null) controller.destroyActionModeAndUnselect();
-        ((WebContentsImpl) webContents).dismissTextHandles();
         PopupController.hideAll(webContents);
     }
 

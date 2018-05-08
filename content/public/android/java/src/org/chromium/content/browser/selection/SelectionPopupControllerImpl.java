@@ -921,7 +921,6 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     public void onDestroyActionMode() {
         mActionMode = null;
         if (mUnselectAllOnDismiss) {
-            mWebContents.dismissTextHandles();
             clearSelection();
         }
     }
