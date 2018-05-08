@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_wgl_api_implementation.h"
 
@@ -342,6 +343,16 @@ GLSurfaceFormat NativeViewGLSurfaceWGL::GetFormat() {
 
 bool NativeViewGLSurfaceWGL::SupportsPresentationCallback() {
   return true;
+}
+
+void NativeViewGLSurfaceWGL::SetVSyncEnabled(bool enabled) {
+  DCHECK(GLContext::GetCurrent() && GLContext::GetCurrent()->IsCurrent(this));
+  if (g_driver_wgl.ext.b_WGL_EXT_swap_control) {
+    wglSwapIntervalEXT(enabled ? 1 : 0);
+  } else {
+    LOG(WARNING) << "Could not disable vsync: driver does not "
+                    "support WGL_EXT_swap_control";
+  }
 }
 
 PbufferGLSurfaceWGL::PbufferGLSurfaceWGL(const gfx::Size& size)

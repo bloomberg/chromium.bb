@@ -205,6 +205,10 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // of screen refresh. If unavailable, returns NULL.
   virtual gfx::VSyncProvider* GetVSyncProvider();
 
+  // Set vsync to enabled or disabled. If supported, vsync is enabled by
+  // default. Does nothing if vsync cannot be changed.
+  virtual void SetVSyncEnabled(bool enabled);
+
   // Schedule an overlay plane to be shown at swap time, or on the next
   // CommitOverlayPlanes call.
   // |z_order| specifies the stacking order of the plane relative to the
@@ -346,6 +350,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   unsigned long GetCompatibilityKey() override;
   GLSurfaceFormat GetFormat() override;
   gfx::VSyncProvider* GetVSyncProvider() override;
+  void SetVSyncEnabled(bool enabled) override;
   bool ScheduleOverlayPlane(int z_order,
                             gfx::OverlayTransform transform,
                             GLImage* image,

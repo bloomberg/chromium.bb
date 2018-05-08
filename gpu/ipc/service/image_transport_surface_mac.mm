@@ -72,8 +72,7 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
       if (!surface.get() || !surface->Initialize(format))
         return surface;
       return base::WrapRefCounted<gl::GLSurface>(
-          new PassThroughImageTransportSurface(
-              delegate, surface.get(), kMultiWindowSwapIntervalDefault));
+          new PassThroughImageTransportSurface(delegate, surface.get(), false));
   }
 }
 

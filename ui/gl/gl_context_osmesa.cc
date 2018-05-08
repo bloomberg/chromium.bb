@@ -145,10 +145,6 @@ void* GLContextOSMesa::GetHandle() {
   return context_;
 }
 
-void GLContextOSMesa::OnSetSwapInterval(int interval) {
-  DCHECK(IsCurrent(nullptr));
-}
-
 GLContextOSMesa::~GLContextOSMesa() {
   Destroy();
 }

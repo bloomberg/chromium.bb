@@ -37,6 +37,7 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionChildSurfaceWin
   bool SupportsDCLayers() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
   gfx::Vector2d GetDrawOffset() const override;
+  void SetVSyncEnabled(bool enabled) override;
 
   const Microsoft::WRL::ComPtr<IDCompositionSurface>& dcomp_surface() const {
     return dcomp_surface_;
@@ -71,9 +72,9 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionChildSurfaceWin
   const bool is_hdr_;
   const bool has_alpha_;
   const bool enable_dc_layers_;
-  const bool disable_vsync_;
   gfx::Rect swap_rect_;
   gfx::Vector2d draw_offset_;
+  bool vsync_enabled_ = true;
 
   // This is a number that increments once for every EndDraw on a surface, and
   // is used to determine when the contents have changed so Commit() needs to

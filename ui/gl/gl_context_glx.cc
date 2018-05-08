@@ -278,18 +278,6 @@ void* GLContextGLX::GetHandle() {
   return context_;
 }
 
-void GLContextGLX::OnSetSwapInterval(int interval) {
-  DCHECK(IsCurrent(nullptr));
-  if (GLSurfaceGLX::IsEXTSwapControlSupported()) {
-    glXSwapIntervalEXT(display_, glXGetCurrentDrawable(), interval);
-  } else if (GLSurfaceGLX::IsMESASwapControlSupported()) {
-    glXSwapIntervalMESA(interval);
-  } else if (interval == 0) {
-    LOG(WARNING)
-        << "Could not disable vsync: driver does not support swap control";
-  }
-}
-
 bool GLContextGLX::WasAllocatedUsingRobustnessExtension() {
   return GLSurfaceGLX::IsCreateContextRobustnessSupported();
 }

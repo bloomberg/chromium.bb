@@ -17,7 +17,6 @@
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
-#include "ui/gl/gl_switches.h"
 #include "ui/gl/scoped_make_current.h"
 
 #ifndef EGL_ANGLE_flexible_surface_compatibility
@@ -48,9 +47,7 @@ DirectCompositionChildSurfaceWin::DirectCompositionChildSurfaceWin(
       size_(size),
       is_hdr_(is_hdr),
       has_alpha_(has_alpha),
-      enable_dc_layers_(enable_dc_layers),
-      disable_vsync_(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableGpuVsync)) {}
+      enable_dc_layers_(enable_dc_layers) {}
 
 DirectCompositionChildSurfaceWin::~DirectCompositionChildSurfaceWin() {
   Destroy();
@@ -148,7 +145,7 @@ void DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
       RECT dirty_rect = swap_rect_.ToRECT();
       params.DirtyRectsCount = 1;
       params.pDirtyRects = &dirty_rect;
-      swap_chain_->Present1(first_swap_ || disable_vsync_ ? 0 : 1, 0, &params);
+      swap_chain_->Present1(vsync_enabled_ && !first_swap_ ? 1 : 0, 0, &params);
       if (first_swap_) {
         // Wait for the GPU to finish executing its commands before
         // committing the DirectComposition tree, or else the swapchain
@@ -321,6 +318,10 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
 
 gfx::Vector2d DirectCompositionChildSurfaceWin::GetDrawOffset() const {
   return draw_offset_;
+}
+
+void DirectCompositionChildSurfaceWin::SetVSyncEnabled(bool enabled) {
+  vsync_enabled_ = enabled;
 }
 
 }  // namespace gpu

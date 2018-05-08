@@ -309,14 +309,9 @@ void* GLContextCGL::GetHandle() {
   return context_;
 }
 
-void GLContextCGL::OnSetSwapInterval(int interval) {
-  DCHECK(IsCurrent(nullptr));
-}
-
 void GLContextCGL::SetSafeToForceGpuSwitch() {
   safe_to_force_gpu_switch_ = true;
 }
-
 
 GLContextCGL::~GLContextCGL() {
   Destroy();

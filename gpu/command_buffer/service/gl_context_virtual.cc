@@ -65,10 +65,6 @@ scoped_refptr<gl::GPUTimingClient> GLContextVirtual::CreateGPUTimingClient() {
   return shared_context_->CreateGPUTimingClient();
 }
 
-void GLContextVirtual::OnSetSwapInterval(int interval) {
-  shared_context_->SetSwapInterval(interval);
-}
-
 std::string GLContextVirtual::GetGLVersion() {
   return shared_context_->GetGLVersion();
 }

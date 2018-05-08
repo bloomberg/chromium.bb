@@ -25,6 +25,7 @@
 #include "ui/gfx/x/x11_connection.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_presentation_helper.h"
 #include "ui/gl/gl_visual_picker_glx.h"
@@ -733,6 +734,19 @@ bool NativeViewGLSurfaceGLX::OnMakeCurrent(GLContext* context) {
 
 gfx::VSyncProvider* NativeViewGLSurfaceGLX::GetVSyncProvider() {
   return vsync_provider_.get();
+}
+
+void NativeViewGLSurfaceGLX::SetVSyncEnabled(bool enabled) {
+  DCHECK(GLContext::GetCurrent() && GLContext::GetCurrent()->IsCurrent(this));
+  int interval = enabled ? 1 : 0;
+  if (GLSurfaceGLX::IsEXTSwapControlSupported()) {
+    glXSwapIntervalEXT(gfx::GetXDisplay(), glx_window_, interval);
+  } else if (GLSurfaceGLX::IsMESASwapControlSupported()) {
+    glXSwapIntervalMESA(interval);
+  } else if (interval == 0) {
+    LOG(WARNING)
+        << "Could not disable vsync: driver does not support swap control";
+  }
 }
 
 NativeViewGLSurfaceGLX::~NativeViewGLSurfaceGLX() {

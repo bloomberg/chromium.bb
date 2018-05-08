@@ -33,7 +33,6 @@ class GL_EXPORT GLContextEGL : public GLContextReal {
   void ReleaseCurrent(GLSurface* surface) override;
   bool IsCurrent(GLSurface* surface) override;
   void* GetHandle() override;
-  void OnSetSwapInterval(int interval) override;
   bool WasAllocatedUsingRobustnessExtension() override;
   void SetUnbindFboOnMakeCurrent() override;
   YUVToRGBConverter* GetYUVToRGBConverter(

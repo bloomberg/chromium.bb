@@ -28,7 +28,6 @@ class GL_EXPORT GLContextWGL : public GLContextReal {
   void ReleaseCurrent(GLSurface* surface) override;
   bool IsCurrent(GLSurface* surface) override;
   void* GetHandle() override;
-  void OnSetSwapInterval(int interval) override;
 
  private:
   ~GLContextWGL() override;

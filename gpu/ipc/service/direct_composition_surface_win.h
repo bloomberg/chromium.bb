@@ -64,6 +64,7 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
                                 int height,
                                 const PresentationCallback& callback) override;
   gfx::VSyncProvider* GetVSyncProvider() override;
+  void SetVSyncEnabled(bool enabled) override;
   bool SetEnableDCLayers(bool enable) override;
   bool FlipsVertically() const override;
   bool SupportsPresentationCallback() override;
@@ -113,6 +114,7 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   bool enable_dc_layers_ = false;
   bool is_hdr_ = false;
   bool has_alpha_ = true;
+  bool vsync_enabled_ = true;
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
   std::unique_ptr<gl::GLSurfacePresentationHelper> presentation_helper_;
   scoped_refptr<DirectCompositionChildSurfaceWin> root_surface_;

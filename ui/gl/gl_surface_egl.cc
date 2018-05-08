@@ -876,15 +876,7 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
 NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(
     EGLNativeWindowType window,
     std::unique_ptr<gfx::VSyncProvider> vsync_provider)
-    : window_(window),
-      size_(1, 1),
-      enable_fixed_size_angle_(true),
-      surface_(NULL),
-      supports_post_sub_buffer_(false),
-      supports_swap_buffer_with_damage_(false),
-      flips_vertically_(false),
-      vsync_provider_external_(std::move(vsync_provider)),
-      use_egl_timestamps_(false) {
+    : window_(window), vsync_provider_external_(std::move(vsync_provider)) {
 #if defined(OS_ANDROID)
   if (window)
     ANativeWindow_acquire(window);
@@ -1249,15 +1241,7 @@ bool NativeViewGLSurfaceEGL::Resize(const gfx::Size& size,
 
   size_ = size;
 
-  std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current;
-  GLContext* current_context = GLContext::GetCurrent();
-  bool was_current =
-      current_context && current_context->IsCurrent(this);
-  if (was_current) {
-    scoped_make_current.reset(
-        new ui::ScopedMakeCurrent(current_context, this));
-    current_context->ReleaseCurrent(this);
-  }
+  ui::ScopedReleaseCurrent release_current;
 
   Destroy();
 
@@ -1266,15 +1250,33 @@ bool NativeViewGLSurfaceEGL::Resize(const gfx::Size& size,
     return false;
   }
 
+  if (!release_current.Restore()) {
+    LOG(ERROR) << "Could not MakeCurrent after Resize";
+    return false;
+  }
+
+  SetVSyncEnabled(vsync_enabled_);
+
   return true;
 }
 
 bool NativeViewGLSurfaceEGL::Recreate() {
+  ui::ScopedReleaseCurrent release_current;
+
   Destroy();
+
   if (!Initialize(format_)) {
     LOG(ERROR) << "Failed to create surface.";
     return false;
   }
+
+  if (!release_current.Restore()) {
+    LOG(ERROR) << "Failed to MakeCurrent after Recreate";
+    return false;
+  }
+
+  SetVSyncEnabled(vsync_enabled_);
+
   return true;
 }
 
@@ -1373,6 +1375,15 @@ bool NativeViewGLSurfaceEGL::OnMakeCurrent(GLContext* context) {
 gfx::VSyncProvider* NativeViewGLSurfaceEGL::GetVSyncProvider() {
   return vsync_provider_external_ ? vsync_provider_external_.get()
                                   : vsync_provider_internal_.get();
+}
+
+void NativeViewGLSurfaceEGL::SetVSyncEnabled(bool enabled) {
+  DCHECK(GLContext::GetCurrent() && GLContext::GetCurrent()->IsCurrent(this));
+  vsync_enabled_ = enabled;
+  if (!eglSwapInterval(GetDisplay(), enabled ? 1 : 0)) {
+    LOG(ERROR) << "eglSwapInterval failed with error "
+               << GetLastEGLErrorString();
+  }
 }
 
 bool NativeViewGLSurfaceEGL::ScheduleOverlayPlane(
@@ -1508,19 +1519,17 @@ bool PbufferGLSurfaceEGL::Resize(const gfx::Size& size,
   if (size == size_)
     return true;
 
-  std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current;
-  GLContext* current_context = GLContext::GetCurrent();
-  bool was_current =
-      current_context && current_context->IsCurrent(this);
-  if (was_current) {
-    scoped_make_current.reset(
-        new ui::ScopedMakeCurrent(current_context, this));
-  }
-
   size_ = size;
+
+  ui::ScopedReleaseCurrent release_current;
 
   if (!Initialize(format_)) {
     LOG(ERROR) << "Failed to resize pbuffer.";
+    return false;
+  }
+
+  if (!release_current.Restore()) {
+    LOG(ERROR) << "Failed to MakeCurrent after Resize";
     return false;
   }
 

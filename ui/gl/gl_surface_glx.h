@@ -93,6 +93,7 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
                                 const PresentationCallback& callback) override;
   bool OnMakeCurrent(GLContext* context) override;
   gfx::VSyncProvider* GetVSyncProvider() override;
+  void SetVSyncEnabled(bool enabled) override;
 
   VisualID GetVisualID() const { return visual_id_; }
 

@@ -26,7 +26,6 @@ class GL_EXPORT GLContextStub : public GLContextReal {
   void ReleaseCurrent(GLSurface* surface) override;
   bool IsCurrent(GLSurface* surface) override;
   void* GetHandle() override;
-  void OnSetSwapInterval(int interval) override;
   std::string GetGLVersion() override;
   std::string GetGLRenderer() override;
   bool WasAllocatedUsingRobustnessExtension() override;

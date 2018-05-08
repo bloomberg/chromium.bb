@@ -131,6 +131,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
       const PresentationCallback& callback) override;
   bool OnMakeCurrent(GLContext* context) override;
   gfx::VSyncProvider* GetVSyncProvider() override;
+  void SetVSyncEnabled(bool enabled) override;
   bool ScheduleOverlayPlane(int z_order,
                             gfx::OverlayTransform transform,
                             GLImage* image,
@@ -146,9 +147,9 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
  protected:
   ~NativeViewGLSurfaceEGL() override;
 
-  EGLNativeWindowType window_;
-  gfx::Size size_;
-  bool enable_fixed_size_angle_;
+  EGLNativeWindowType window_ = 0;
+  gfx::Size size_ = gfx::Size(1, 1);
+  bool enable_fixed_size_angle_ = true;
 
   gfx::SwapResult SwapBuffersWithDamage(const std::vector<int>& rects,
                                         const PresentationCallback& callback);
@@ -166,10 +167,10 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   void UpdateSwapEvents(EGLuint64KHR newFrameId, bool newFrameIdIsValid);
   void TraceSwapEvents(EGLuint64KHR oldFrameId);
 
-  EGLSurface surface_;
-  bool supports_post_sub_buffer_;
-  bool supports_swap_buffer_with_damage_;
-  bool flips_vertically_;
+  EGLSurface surface_ = nullptr;
+  bool supports_post_sub_buffer_ = false;
+  bool supports_swap_buffer_with_damage_ = false;
+  bool flips_vertically_ = false;
 
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_external_;
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_internal_;
@@ -178,12 +179,13 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
 
   // Stored in separate vectors so we can pass the egl timestamps
   // directly to the EGL functions.
-  bool use_egl_timestamps_;
+  bool use_egl_timestamps_ = false;
   std::vector<EGLint> supported_egl_timestamps_;
   std::vector<const char*> supported_event_names_;
 
   base::queue<SwapInfo> swap_info_queue_;
 
+  bool vsync_enabled_ = true;
   std::unique_ptr<GLSurfacePresentationHelper> presentation_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceEGL);
