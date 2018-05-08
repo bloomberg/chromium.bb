@@ -158,6 +158,9 @@ public abstract class StackLayoutBase
     private static final int LAYOUTTAB_ASYNCHRONOUS_INITIALIZATION_BATCH_SIZE = 4;
     private boolean mDelayedLayoutTabInitRequired;
 
+    /** Which model (normal or incognito) was active when StackLayout was shown. */
+    private int mModelIndexWhenOpened;
+
     /**
      * Temporarily stores the index of the selected tab stack. This is used to set the currently
      * selected stack in TabModelSelector once the stack-switching animation finishes.
@@ -448,6 +451,22 @@ public abstract class StackLayoutBase
 
     @Override
     public void onTabSelecting(long time, int tabId) {
+        // We update TabModelSelector's current model when incognito mode is toggled in the tab
+        // switcher. So the "current model index" is already the one that we're leaving active when
+        // the tab switcher is closed.
+        final int newModelIndex = mTabModelSelector.getCurrentModelIndex();
+        if (newModelIndex != mModelIndexWhenOpened) {
+            final int indexInNewModel = mTabModelSelector.getCurrentModel().index();
+            if (indexInNewModel == mTabModelSelector.getCurrentModel().index()) {
+                // TabModelImpl logs this action when we switch to a different index within a
+                // TabModelImpl. If we switch between TabModelImpls (i.e. switch between normal and
+                // incognito mode), but leave the index the same (i.e. switch back to the most
+                // recently active tab in that stack), TabModelImpl doesn't catch that case, so we
+                // log it here.
+                RecordUserAction.record("MobileTabSwitched");
+            }
+        }
+
         commitOutstandingModelState(time);
         if (tabId == Tab.INVALID_TAB_ID) tabId = mTabModelSelector.getCurrentTabId();
         super.onTabSelecting(time, tabId);
@@ -715,6 +734,8 @@ public abstract class StackLayoutBase
             // toolbar interaction. The event name contains "Toolbar" for historical reasons; the
             // current intent is to log whenever the tab switcher is entered.
             RecordUserAction.record("MobileToolbarShowStackView");
+
+            mModelIndexWhenOpened = mTabModelSelector.getCurrentModelIndex();
         }
         mIsActiveLayout = true;
 
