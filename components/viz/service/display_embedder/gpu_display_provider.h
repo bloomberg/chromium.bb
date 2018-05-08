@@ -18,10 +18,6 @@
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 
-#if defined(OS_WIN)
-#include "components/viz/service/display_embedder/output_device_backing.h"
-#endif
-
 namespace gpu {
 class GpuChannelManager;
 class GpuChannelManagerDelegate;
@@ -32,6 +28,7 @@ namespace viz {
 class Display;
 class ExternalBeginFrameControllerImpl;
 class GpuServiceImpl;
+class OutputDeviceBacking;
 class SoftwareOutputDevice;
 
 // In-process implementation of DisplayProvider.
@@ -69,7 +66,7 @@ class VIZ_SERVICE_EXPORT GpuDisplayProvider : public DisplayProvider {
 
 #if defined(OS_WIN)
   // Used for software compositing output on Windows.
-  OutputDeviceBacking output_device_backing_;
+  std::unique_ptr<OutputDeviceBacking> output_device_backing_;
 #endif
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
