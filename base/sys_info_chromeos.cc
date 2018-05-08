@@ -131,16 +131,13 @@ class ChromeOSVersionInfo {
     }
     StringTokenizer tokenizer(version, ".");
     if (tokenizer.GetNext()) {
-      StringToInt(StringPiece(tokenizer.token_begin(), tokenizer.token_end()),
-                  &major_version_);
+      StringToInt(tokenizer.token_piece(), &major_version_);
     }
     if (tokenizer.GetNext()) {
-      StringToInt(StringPiece(tokenizer.token_begin(), tokenizer.token_end()),
-                  &minor_version_);
+      StringToInt(tokenizer.token_piece(), &minor_version_);
     }
     if (tokenizer.GetNext()) {
-      StringToInt(StringPiece(tokenizer.token_begin(), tokenizer.token_end()),
-                  &bugfix_version_);
+      StringToInt(tokenizer.token_piece(), &bugfix_version_);
     }
 
     // Check release name for Chrome OS.
