@@ -104,7 +104,7 @@ cr.define('extension_kiosk_mode_tests', function() {
             expectTrue(items[1].querySelector('paper-button').hidden);
             // Bailout checkbox should be hidden when auto-launch editing
             // disabled.
-            expectTrue(dialog.$$('paper-checkbox').hidden);
+            expectTrue(dialog.$$('cr-checkbox').hidden);
 
             MockInteractions.tap(
                 items[0].querySelector('.icon-delete-gray button'));
@@ -156,14 +156,14 @@ cr.define('extension_kiosk_mode_tests', function() {
       let bailoutCheckbox;
       return initPage()
           .then(() => {
-            bailoutCheckbox = dialog.$$('paper-checkbox');
+            bailoutCheckbox = dialog.$$('cr-checkbox');
             // Bailout checkbox should be usable when auto-launching.
             expectFalse(bailoutCheckbox.hidden);
             expectFalse(bailoutCheckbox.disabled);
             expectFalse(bailoutCheckbox.checked);
 
             // Making sure canceling doesn't change anything.
-            bailoutCheckbox.dispatchEvent(new PointerEvent('pointerdown'));
+            bailoutCheckbox.click();
             Polymer.dom.flush();
             expectTrue(dialog.$['confirm-dialog'].open);
 
@@ -175,7 +175,7 @@ cr.define('extension_kiosk_mode_tests', function() {
             expectTrue(dialog.$.dialog.open);
 
             // Accepting confirmation dialog should trigger browserProxy call.
-            bailoutCheckbox.dispatchEvent(new PointerEvent('pointerdown'));
+            bailoutCheckbox.click();
             Polymer.dom.flush();
             expectTrue(dialog.$['confirm-dialog'].open);
 
@@ -192,7 +192,7 @@ cr.define('extension_kiosk_mode_tests', function() {
 
             // Test clicking on checkbox again should simply re-enable bailout.
             browserProxy.reset();
-            bailoutCheckbox.dispatchEvent(new PointerEvent('pointerdown'));
+            bailoutCheckbox.click();
             expectFalse(bailoutCheckbox.checked);
             expectFalse(dialog.$['confirm-dialog'].open);
             return browserProxy.whenCalled('setDisableBailoutShortcut');

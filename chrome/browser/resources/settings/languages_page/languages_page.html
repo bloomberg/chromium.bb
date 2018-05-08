@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
@@ -9,7 +10,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
@@ -64,7 +64,8 @@
         margin: 6px 0 0 0;
       }
 
-      paper-checkbox.dropdown-item {
+      cr-checkbox.dropdown-item {
+        --cr-action-menu-disabled-item-opacity: 0.38;
         -webkit-margin-start: 0;
       }
 
@@ -318,7 +319,7 @@
             <cr-action-menu
                 class$="[[getMenuClass_(prefs.translate.enabled.value)]]">
 <if expr="chromeos or is_win">
-              <paper-checkbox id="uiLanguageItem" slot="item"
+              <cr-checkbox id="uiLanguageItem" slot="item"
                   class="dropdown-item"
                   checked="[[isProspectiveUILanguage_(
                       detailLanguage_.language.code,
@@ -326,14 +327,14 @@
                   on-change="onUILanguageChange_"
                   disabled="[[disableUILanguageCheckbox_(
                       detailLanguage_, languages.prospectiveUILanguage)]]">
-                      <span>$i18n{displayInThisLanguage}</span>
-                      <cr-policy-indicator indicator-type="[[
-                      getPolicyIndicatorStatus_(
-                        detailLanguage_.language)]]">
-                      </cr-policy-indicator>
-              </paper-checkbox>
+                <span>$i18n{displayInThisLanguage}</span>
+                <cr-policy-indicator indicator-type="[[
+                getPolicyIndicatorStatus_(
+                  detailLanguage_.language)]]">
+                </cr-policy-indicator>
+              </cr-checkbox>
 </if>
-              <paper-checkbox id="offerTranslations" slot="item"
+              <cr-checkbox id="offerTranslations" slot="item"
                   class="dropdown-item"
                   checked="[[detailLanguage_.translateEnabled]]"
                   on-change="onTranslateCheckboxChange_"
@@ -341,7 +342,7 @@
                   disabled="[[disableTranslateCheckbox_(
                       detailLanguage_.language, languages.translateTarget)]]">
                 $i18n{offerToTranslateInThisLanguage}
-              </paper-checkbox>
+              </cr-checkbox>
               <hr slot="item">
               <button slot="item" class="dropdown-item" role="menuitem"
                   on-click="onMoveToTopTap_"

@@ -8,9 +8,9 @@
   <link rel="stylesheet" href="chrome://resources/css/controlled_indicator.css">
   <link rel="stylesheet" href="chrome://resources/css/overlay.css">
   <link rel="import" href="chrome://resources/html/polymer.html">
+  <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
   <style is="custom-style" include="iron-flex iron-flex-alignment">
     paper-button {
       border-radius: 4px;
@@ -48,13 +48,6 @@
     paper-button.blue .container {
       background-color: rgb(66, 133, 244); /* #4285f4 */
       color: white;
-    }
-    paper-checkbox {
-      --paper-checkbox-size: 12px;
-      --paper-checkbox-checked-color: rgb(66, 133, 244); /* #4285f4 */
-      --paper-checkbox-ink-size: 36px;
-      --paper-checkbox-label-spacing: 20px;
-      --paper-checkbox-vertical-align: top;
     }
   </style>
   <link rel="stylesheet" href="main.css">
@@ -108,26 +101,26 @@
           </div>
           <div id="metrics-preference">
             <label class="layout horizontal section-checkbox-container">
-              <paper-checkbox class="checkbox-option">
+              <cr-checkbox class="checkbox-option">
                 <p class="checkbox-text"></p>
-              </paper-checkbox>
+              </cr-checkbox>
               <p class="content-text"></p>
             </label>
           </div>
           <div id="backup-restore-preference">
             <label class="layout horizontal section-checkbox-container">
-              <paper-checkbox class="checkbox-option">
+              <cr-checkbox class="checkbox-option">
                 <p class="checkbox-text"
                     i18n-values=".innerHTML:textBackupRestore"></p>
-              </paper-checkbox>
+              </cr-checkbox>
             </label>
           </div>
           <div id="location-service-preference">
             <label class="layout horizontal section-checkbox-container">
-              <paper-checkbox class="checkbox-option">
+              <cr-checkbox class="checkbox-option">
                 <p class="checkbox-text"
                     i18n-values=".innerHTML:textLocationService"></p>
-              </paper-checkbox>
+              </cr-checkbox>
             </label>
           </div>
           <div id="pai-service-descirption">

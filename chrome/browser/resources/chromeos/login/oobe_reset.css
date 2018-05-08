@@ -36,8 +36,6 @@ a {
 }
 
 #tpmFirmwareUpdateCheckbox {
-  --paper-checkbox-size: 16px;
-  --paper-checkbox-checked-color: var(--google-blue-500);
   margin-top: 2px;
   size: 16px;
 }

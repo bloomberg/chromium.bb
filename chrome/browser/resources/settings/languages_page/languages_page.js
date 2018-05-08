@@ -323,7 +323,7 @@ Polymer({
 
   /**
    * Handler for changes to the UI language checkbox.
-   * @param {!{target: !PaperCheckboxElement}} e
+   * @param {!{target: !Element}} e
    * @private
    */
   onUILanguageChange_: function(e) {
@@ -353,7 +353,7 @@ Polymer({
 
   /**
    * Handler for changes to the translate checkbox.
-   * @param {!{target: !PaperCheckboxElement}} e
+   * @param {!{target: !Element}} e
    * @private
    */
   onTranslateCheckboxChange_: function(e) {

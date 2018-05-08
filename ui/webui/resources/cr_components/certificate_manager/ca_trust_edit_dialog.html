@@ -1,23 +1,18 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_checkbox_style_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="certificate_shared_css.html">
 <link rel="import" href="certificates_browser_proxy.html">
 
 <dom-module id="ca-trust-edit-dialog">
   <template>
-    <style include="certificate-shared paper-button-style paper-checkbox-style">
-      paper-checkbox {
-        display: block;
-      }
-
-      paper-checkbox,
+    <style include="certificate-shared paper-button-style">
+      cr-checkbox,
       #description {
         margin: 15px 0;
       }
@@ -32,15 +27,15 @@
         <div id="description">
           [[i18n('certificateManagerCaTrustEditDialogDescription')]]
         </div>
-        <paper-checkbox id="ssl" checked="[[trustInfo_.ssl]]">
+        <cr-checkbox id="ssl" checked="[[trustInfo_.ssl]]">
           [[i18n('certificateManagerCaTrustEditDialogSsl')]]
-        </paper-checkbox>
-        <paper-checkbox id="email" checked="[[trustInfo_.email]]">
+        </cr-checkbox>
+        <cr-checkbox id="email" checked="[[trustInfo_.email]]">
           [[i18n('certificateManagerCaTrustEditDialogEmail')]]
-        </paper-checkbox>
-        <paper-checkbox id="objSign" checked="[[trustInfo_.objSign]]">
+        </cr-checkbox>
+        <cr-checkbox id="objSign" checked="[[trustInfo_.objSign]]">
           [[i18n('certificateManagerCaTrustEditDialogObjSign')]]
-        </paper-checkbox>
+        </cr-checkbox>
       </div>
       <div slot="button-container">
         <paper-spinner-lite id="spinner"></paper-spinner-lite>

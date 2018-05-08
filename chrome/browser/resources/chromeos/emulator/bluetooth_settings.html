@@ -1,10 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
@@ -38,13 +39,13 @@
           </div>
           <div class="form-field-section">
             <span class="toggle-button-label">Trusted</span>
-            <paper-checkbox
-                checked="{{currentEditableObject.isTrusted}}"></paper-checkbox>
+            <cr-checkbox
+                checked="{{currentEditableObject.isTrusted}}"></cr-checkbox>
           </div>
           <div class="form-field-section">
             <span class="toggle-button-label">Incoming Connnection</span>
-            <paper-checkbox
-                checked="{{currentEditableObject.incoming}}"></paper-checkbox>
+            <cr-checkbox
+                checked="{{currentEditableObject.incoming}}"></cr-checkbox>
           </div>
           <div class="form-field-section">
             <div class="form-label">Class</div>
@@ -126,13 +127,13 @@
                 </paper-icon-button>
               </td>
               <td class="control-cell">
-                <paper-checkbox checked="{{item.discoverable}}"
+                <cr-checkbox checked="{{item.discoverable}}"
                     data-predefined="true"
-                    on-change="discoverDevice"></paper-checkbox>
+                    on-change="discoverDevice"></cr-checkbox>
               </td>
               <td class="control-cell">
-                <paper-checkbox on-change="pairDevice" data-predefined="true"
-                    checked="{{item.paired}}"></paper-checkbox>
+                <cr-checkbox on-change="pairDevice" data-predefined="true"
+                    checked="{{item.paired}}"></cr-checkbox>
               </td>
             </tr>
           </template>
@@ -156,14 +157,14 @@
                 </paper-icon-button>
               </td>
               <td class="control-cell">
-                <paper-checkbox checked="{{item.discoverable}}"
+                <cr-checkbox checked="{{item.discoverable}}"
                     data-predefined="false"
-                    on-change="discoverDevice"></paper-checkbox>
+                    on-change="discoverDevice"></cr-checkbox>
               </td>
               <td class="control-cell">
-                <paper-checkbox checked="{{item.paired}}"
+                <cr-checkbox checked="{{item.paired}}"
                     data-predefined="false"
-                    on-change="pairDevice"></paper-checkbox>
+                    on-change="pairDevice"></cr-checkbox>
               </td>
             </tr>
           </template>

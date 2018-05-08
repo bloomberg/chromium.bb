@@ -117,11 +117,10 @@
   text-align: center;
 }
 
-paper-checkbox {
-  --paper-checkbox-checked-color: white;
-  --paper-checkbox-checkmark-color: var(--paper-blue-700);
-  --paper-checkbox-ink-size: 35px;
-  --paper-checkbox-unchecked-color: white;
+cr-checkbox {
+  --cr-checkbox-checked-box-color: white;
+  --cr-checkbox-unchecked-box-color: white;
+  --cr-checkbox-mark-color: var(--paper-blue-700);
 }
 
 paper-item {

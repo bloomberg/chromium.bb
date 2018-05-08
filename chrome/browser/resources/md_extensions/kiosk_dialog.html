@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
@@ -9,7 +10,6 @@
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="item_behavior.html">
@@ -120,11 +120,11 @@
             $i18n{add}
           </paper-button>
         </div>
-        <paper-checkbox disabled="[[!canEditBailout_]]"
-            on-pointerdown="onBailoutTap_" checked="[[bailoutDisabled_]]"
+        <cr-checkbox disabled="[[!canEditBailout_]]" id="bailout"
+            on-change="onBailoutChanged_" checked="[[bailoutDisabled_]]"
             hidden="[[!canEditAutoLaunch_]]">
           $i18n{kioskDisableBailout}
-        </paper-checkbox>
+        </cr-checkbox>
       </div>
       <div slot="button-container">
         <paper-button class="action-button" on-click="onDoneTap_">

@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
@@ -13,7 +14,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="sync_page.html">
@@ -407,10 +407,10 @@
         <template is="dom-if" if="[[!syncStatus.domain]]">
           <div id="wideFooter" slot="footer">
             <div class="settings-box first">
-              <paper-checkbox id="deleteProfile" class="start"
+              <cr-checkbox id="deleteProfile" class="start"
                   checked="{{deleteProfile_}}">
                 $i18n{syncDisconnectDeleteProfile}
-              </paper-checkbox>
+              </cr-checkbox>
               <cr-expand-button expanded="{{deleteProfileWarningVisible_}}"
                   alt="$i18n{deleteProfileWarningExpandA11yLabel}">
               </cr-expand-button>

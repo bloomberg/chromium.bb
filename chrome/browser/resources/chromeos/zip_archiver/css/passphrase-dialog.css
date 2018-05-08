@@ -3,8 +3,7 @@
  * found in the LICENSE file. */
 
 input,
-paper-button,
-paper-checkbox {
+paper-button {
   -webkit-app-region: no-drag;
 }
 
@@ -27,11 +26,6 @@ paper-checkbox {
   font-size: 13px;
   font-weight: inherit;
   line-height: inherit;
-}
-
-#remember {
-  --paper-checkbox-checked-color: rgb(51, 103, 214);
-  font-size: 13px;
 }
 
 #title {
@@ -59,10 +53,6 @@ paper-checkbox {
 
 #buttons paper-button:focus:not(:active) {
   box-shadow: 0 0 0 2px rgba(51, 103, 214, 0.5);
-}
-
-paper-checkbox {
-  --paper-checkbox-ink-size: 38px;
 }
 
 paper-input-container {

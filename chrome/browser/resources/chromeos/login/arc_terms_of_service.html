@@ -2,10 +2,9 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
-
 
 <dom-module id="arc-tos-root">
   <template>
@@ -31,15 +30,15 @@
           <p id="arc-text-metrics"></p>
         </div>
         <div class="parameter-section arc-tos-content">
-          <paper-checkbox id="arc-enable-backup-restore">
+          <cr-checkbox id="arc-enable-backup-restore">
             <p i18n-values=".innerHTML:arcTextBackupRestore"></p>
-          </paper-checkbox>
+          </cr-checkbox>
         </div>
         <div id= "arc-location-service"
             class="parameter-section arc-tos-content">
-          <paper-checkbox id="arc-enable-location-service">
+          <cr-checkbox id="arc-enable-location-service">
             <p i18n-values=".innerHTML:arcTextLocationService"></p>
-          </paper-checkbox>
+          </cr-checkbox>
         </div>
         <div id="arc-pai-service" class="parameter-section arc-tos-content">
           <p i18n-values=".innerHTML:arcTextPaiService"></p>

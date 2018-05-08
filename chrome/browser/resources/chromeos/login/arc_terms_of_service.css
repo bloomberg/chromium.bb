@@ -54,14 +54,6 @@ p {
   padding: 0 20px 16px 20px;
 }
 
-#arc-enable-backup-restore,
-#arc-enable-location-service {
-  --paper-checkbox-size: 12px;
-  --paper-checkbox-checked-color: rgb(66, 133, 244); /* #4285f4 */
-  --paper-checkbox-label-spacing: 20px;
-  --paper-checkbox-vertical-align: top;
-}
-
 #arc-policy-link {
   margin: 0;
   padding: 16px 0 16px 20px;
@@ -70,7 +62,6 @@ p {
 #arc-tos-skip-button {
   color: rgba(0, 0, 0, 0.54);
 }
-
 
 #google-service-confirmation-text {
   font-weight: 600;

@@ -57,7 +57,7 @@ Polymer({
   /**
    * Handler for an input method checkbox.
    * @param {!{model: !{item: chrome.languageSettingsPrivate.InputMethod},
-   *           target: !PaperCheckboxElement}} e
+   *           target: !Element}} e
    * @private
    */
   onCheckboxChange_: function(e) {

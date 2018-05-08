@@ -259,10 +259,10 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
   this.savedLabel_ = queryRequiredElement('.saved', this.options_);
 
   /**
-   * @private {!PaperCheckboxElement}
+   * @private {!Element}
    * @const
    */
-  this.overwriteOriginalCheckbox_ = /** @type {!PaperCheckboxElement} */
+  this.overwriteOriginalCheckbox_ = /** @type {!Element} */
       (queryRequiredElement('.overwrite-original', this.options_));
   this.overwriteOriginalCheckbox_.addEventListener('change',
       this.onOverwriteOriginalCheckboxChanged_.bind(this));
