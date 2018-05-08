@@ -1123,6 +1123,10 @@ void HTMLInputElement::setValue(const String& value,
   // update.
   TextControlElement::SetSuggestedValue(String());
 
+  // Set autofilled to false, as the value might have been set by the website.
+  // If the field was autofilled, it'll be set to true from that method.
+  SetAutofilled(false);
+
   EventQueueScope scope;
   String sanitized_value = SanitizeValue(value);
   bool value_changed = sanitized_value != this->value();
