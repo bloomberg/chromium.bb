@@ -285,14 +285,15 @@ void OmniboxMatchCellView::LayoutSplit() {
   x += icon_view_->width() + HorizontalPadding();
   int content_width = content_view_->CalculatePreferredSize().width();
   int description_width = description_view_->CalculatePreferredSize().width();
+  gfx::Size separator_size = separator_view_->CalculatePreferredSize();
   OmniboxPopupModel::ComputeMatchMaxWidths(
-      content_width, separator_view_->width(), description_width, width() - x,
+      content_width, separator_size.width(), description_width, width() - x,
       /*description_on_separate_line=*/false, !is_search_type_, &content_width,
       &description_width);
   content_view_->SetBounds(x, y, content_width, text_height_);
   if (description_width != 0) {
     x += content_view_->width();
-    separator_view_->SetSize(separator_view_->CalculatePreferredSize());
+    separator_view_->SetSize(separator_size);
     separator_view_->SetBounds(x, y, separator_view_->width(), text_height_);
     x += separator_view_->width();
     description_view_->SetBounds(x, y, description_width, text_height_);
