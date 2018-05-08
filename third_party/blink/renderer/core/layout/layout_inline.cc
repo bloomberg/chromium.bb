@@ -242,6 +242,9 @@ void LayoutInline::StyleDidChange(StyleDifference diff,
   }
 
   PropagateStyleToAnonymousChildren();
+
+  // Only filtered inlines can contain fixed position elements.
+  SetCanContainFixedPositionObjects(new_style.HasFilter());
 }
 
 void LayoutInline::UpdateAlwaysCreateLineBoxes(bool full_layout) {
@@ -1467,8 +1470,8 @@ LayoutSize LayoutInline::OffsetForInFlowPositionedInline(
     const LayoutBox& child) const {
   // FIXME: This function isn't right with mixed writing modes.
 
-  DCHECK(IsInFlowPositioned());
-  if (!IsInFlowPositioned())
+  DCHECK(IsInFlowPositioned() || StyleRef().HasFilter());
+  if (!IsInFlowPositioned() && !StyleRef().HasFilter())
     return LayoutSize();
 
   // When we have an enclosing relpositioned inline, we need to add in the

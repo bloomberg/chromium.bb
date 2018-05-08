@@ -4256,18 +4256,9 @@ TEST_P(PaintPropertyTreeBuilderTest, FilterReparentClips) {
   EXPECT_TRUE(filter_properties->Filter()->Parent()->IsRoot());
   EXPECT_EQ(clip_properties->OverflowClip(),
             filter_properties->Filter()->OutputClip());
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_EQ(FrameScrollTranslation(),
-              filter_properties->Filter()->LocalTransformSpace());
-    EXPECT_EQ(FloatPoint(8, 8), filter_properties->Filter()->PaintOffset());
-  } else {
-    // For SPv1*, |filter| is composited so we created PaintOffsetTranslation.
-    EXPECT_EQ(filter_properties->PaintOffsetTranslation(),
-              filter_properties->Filter()->LocalTransformSpace());
-    EXPECT_EQ(TransformationMatrix().Translate(8, 8),
-              filter_properties->PaintOffsetTranslation()->Matrix());
-    EXPECT_EQ(FloatPoint(), filter_properties->Filter()->PaintOffset());
-  }
+  EXPECT_EQ(FrameScrollTranslation(),
+            filter_properties->Filter()->LocalTransformSpace());
+  EXPECT_EQ(FloatPoint(8, 8), filter_properties->Filter()->PaintOffset());
 
   const PropertyTreeState& child_paint_state =
       GetLayoutObjectByElementId("child")
@@ -4841,114 +4832,6 @@ TEST_P(PaintPropertyTreeBuilderTest, ScrollBoundsOffset) {
             scroll_properties->PaintOffsetTranslation()->Matrix());
 }
 
-TEST_P(PaintPropertyTreeBuilderTest, FilterContainingBlockUseCounterRelPos) {
-  SetBodyInnerHTML(
-      "<div style='filter:blur(2px)'>"
-      "  <div id=target style='position:relative'></div>"
-      "</div>");
-
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kFilterAsContainingBlockMayChangeOutput));
-}
-
-TEST_P(PaintPropertyTreeBuilderTest, FilterContainingBlockUseCounterAbsPos) {
-  SetBodyInnerHTML(
-      "<div style='filter:blur(2px)'>"
-      "  <div id=target style='position:absolute'></div>"
-      "</div>");
-
-  EXPECT_TRUE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kFilterAsContainingBlockMayChangeOutput));
-}
-
-TEST_P(PaintPropertyTreeBuilderTest, FilterContainingBlockUseCounterStickyPos) {
-  SetBodyInnerHTML(
-      "<div style='filter:blur(2px)'>"
-      "  <div id=target style='position:sticky'></div>"
-      "</div>");
-
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kFilterAsContainingBlockMayChangeOutput));
-}
-
-TEST_P(PaintPropertyTreeBuilderTest, FilterContainingBlockUseCounterFixedPos) {
-  SetBodyInnerHTML(
-      "<div style='filter:blur(2px)'>"
-      "  <div id=target style='position:fixed'></div>"
-      "</div>");
-
-  EXPECT_TRUE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kFilterAsContainingBlockMayChangeOutput));
-}
-
-TEST_P(PaintPropertyTreeBuilderTest,
-       FilterContainingBlockUseCounterAbsPosAbsPos) {
-  SetBodyInnerHTML(
-      "<div style='filter:blur(2px); position:absolute'>"
-      "  <div id=target style='position:absolute'></div>"
-      "</div>");
-
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kFilterAsContainingBlockMayChangeOutput));
-}
-
-TEST_P(PaintPropertyTreeBuilderTest,
-       FilterContainingBlockUseCounterAbsPosFixedPos) {
-  SetBodyInnerHTML(
-      "<div style='filter:blur(2px); position:absolute'>"
-      "  <div id=target style='position:fixed'></div>"
-      "</div>"
-      "<div style='width: 10px; height: 1000px'></div>");
-
-  EXPECT_TRUE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kFilterAsContainingBlockMayChangeOutput));
-}
-
-TEST_P(PaintPropertyTreeBuilderTest,
-       FilterContainingBlockUseCounterFixedPosFixedPos) {
-  SetBodyInnerHTML(
-      "<div style='filter:blur(2px); position:fixed'>"
-      "  <div id=target style='position:fixed'></div>"
-      "</div>");
-
-  EXPECT_TRUE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kFilterAsContainingBlockMayChangeOutput));
-}
-
-TEST_P(PaintPropertyTreeBuilderTest,
-       FilterContainingBlockUseCounterFixedPosTransform) {
-  SetBodyInnerHTML(
-      "<div style='filter:blur(2px); transform: translateX(0)'>"
-      "  <div id=target style='position:fixed'></div>"
-      "</div>");
-
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kFilterAsContainingBlockMayChangeOutput));
-}
-
-// The body and html elements are special and won't affect change of
-// containing block for filter.
-TEST_P(PaintPropertyTreeBuilderTest,
-       FilterContainingBlockUseCounterFixedPosUnderFilteredBody) {
-  SetBodyInnerHTML(
-      "<body style='filter:blur(2px);'>"
-      "  <div id=target style='position:fixed'></div>"
-      "</body>");
-
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kFilterAsContainingBlockMayChangeOutput));
-}
-
-TEST_P(PaintPropertyTreeBuilderTest,
-       FilterContainingBlockUseCounterFixedPosUnderFilteredHTML) {
-  SetBodyInnerHTML(
-      "<html style='filter:blur(2px);'>"
-      "  <div id=target style='position:fixed'></div>"
-      "</html>");
-
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kFilterAsContainingBlockMayChangeOutput));
-}
 
 TEST_P(PaintPropertyTreeBuilderTest, BackfaceHidden) {
   SetBodyInnerHTML(R"HTML(

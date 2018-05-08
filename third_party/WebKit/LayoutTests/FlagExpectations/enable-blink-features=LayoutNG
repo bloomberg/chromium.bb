@@ -2052,3 +2052,5 @@ crbug.com/591099 webexposed/element-instance-property-listing.html [ Timeout ]
 crbug.com/591099 webexposed/global-interface-listing-dedicated-worker.html [ Timeout ]
 crbug.com/591099 webexposed/global-interface-listing-shared-worker.html [ Timeout ]
 crbug.com/591099 webexposed/global-interface-listing.html [ Timeout ]
+
+crbug.com/795549 external/wpt/css/css-filter/filtered-inline-is-container.html [ Crash ]

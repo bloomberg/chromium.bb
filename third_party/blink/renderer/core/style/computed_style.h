@@ -2082,8 +2082,11 @@ class ComputedStyle : public ComputedStyleBase,
   bool CanContainAbsolutePositionObjects() const {
     return GetPosition() != EPosition::kStatic;
   }
-  bool CanContainFixedPositionObjects() const {
-    return HasTransformRelatedProperty() || ContainsPaint();
+  bool CanContainFixedPositionObjects(bool is_document_element) const {
+    return HasTransformRelatedProperty() || ContainsPaint() ||
+           // Filter establishes containing block for non-document elements:
+           // https://drafts.fxtf.org/filter-effects-1/#FilterProperty
+           (!is_document_element && HasFilter());
   }
 
   // Whitespace utility functions.
