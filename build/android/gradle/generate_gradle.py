@@ -854,16 +854,15 @@ def main():
   project_entries = []
   # When only one entry will be generated we want it to have a valid
   # build.gradle file with its own AndroidManifest.
-  add_all_module = not args.split_projects and len(entries) > 1
   for entry in entries:
     data = _GenerateGradleFile(
         entry, generator, build_vars, source_properties, jinja_processor)
-    if data and add_all_module:
+    if data and not args.all:
         project_entries.append((entry.ProjectName(), entry.GradleSubdir()))
         _WriteFile(
             os.path.join(generator.EntryOutputDir(entry), _GRADLE_BUILD_FILE),
             data)
-  if add_all_module:
+  if args.all:
     project_entries.append((_MODULE_ALL, _MODULE_ALL))
     _GenerateModuleAll(
         _gradle_output_dir, generator, build_vars, source_properties,
