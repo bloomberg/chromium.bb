@@ -78,7 +78,7 @@ void CrostiniRemover::DestroyDiskImageFinished(ConciergeClientResult result) {
     return;
   }
   // Only set kCrostiniEnabled to false once cleanup is completely finished.
-  CrostiniManager::GetInstance()->StopVmConcierge(
+  CrostiniManager::GetInstance()->StopConcierge(
       base::BindOnce(&CrostiniRemover::StopConciergeFinished, this));
 }
 
