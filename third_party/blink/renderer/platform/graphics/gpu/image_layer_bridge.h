@@ -14,16 +14,18 @@
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace cc {
 class CrossThreadSharedBitmap;
+class TextureLayer;
+}
+
+namespace gfx {
+class Size;
 }
 
 namespace blink {
-
 class WebLayer;
-class WebExternalTextureLayer;
 
 class PLATFORM_EXPORT ImageLayerBridge
     : public GarbageCollectedFinalized<ImageLayerBridge>,
@@ -51,7 +53,7 @@ class PLATFORM_EXPORT ImageLayerBridge
   void SetFilterQuality(SkFilterQuality filter_quality) {
     filter_quality_ = filter_quality;
   }
-  void SetUV(const FloatPoint left_top, const FloatPoint right_bottom);
+  void SetUV(const FloatPoint& left_top, const FloatPoint& right_bottom);
 
   bool IsAccelerated() { return image_->IsTextureBacked(); }
 
@@ -85,7 +87,8 @@ class PLATFORM_EXPORT ImageLayerBridge
                                 bool lost_resource);
 
   scoped_refptr<StaticBitmapImage> image_;
-  std::unique_ptr<WebExternalTextureLayer> layer_;
+  scoped_refptr<cc::TextureLayer> layer_;
+  std::unique_ptr<WebLayer> web_layer_;  // Wrapper for |layer_|.
   SkFilterQuality filter_quality_ = kLow_SkFilterQuality;
 
   // SharedMemory bitmaps that can be recycled.

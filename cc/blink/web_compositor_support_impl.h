@@ -27,8 +27,6 @@ class CC_BLINK_EXPORT WebCompositorSupportImpl
   std::unique_ptr<blink::WebLayer> CreateLayerFromCCLayer(cc::Layer*) override;
   std::unique_ptr<blink::WebContentLayer> CreateContentLayer(
       cc::ContentLayerClient* client) override;
-  std::unique_ptr<blink::WebExternalTextureLayer> CreateExternalTextureLayer(
-      cc::TextureLayerClient* client) override;
   std::unique_ptr<blink::WebImageLayer> CreateImageLayer() override;
   std::unique_ptr<blink::WebScrollbarLayer> CreateScrollbarLayer(
       std::unique_ptr<blink::WebScrollbar> scrollbar,

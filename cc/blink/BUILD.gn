@@ -15,8 +15,6 @@ cc_component("blink") {
     "web_compositor_support_impl.h",
     "web_content_layer_impl.cc",
     "web_content_layer_impl.h",
-    "web_external_texture_layer_impl.cc",
-    "web_external_texture_layer_impl.h",
     "web_image_layer_impl.cc",
     "web_image_layer_impl.h",
     "web_layer_impl.cc",

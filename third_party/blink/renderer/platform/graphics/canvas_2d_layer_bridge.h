@@ -32,7 +32,7 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "cc/layers/texture_layer_client.h"
-#include "third_party/blink/public/platform/web_external_texture_layer.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_host.h"
@@ -50,12 +50,17 @@
 
 struct SkImageInfo;
 
+namespace cc {
+class TextureLayer;
+}
+
 namespace blink {
 
 class Canvas2DLayerBridgeTest;
 class CanvasResourceProvider;
 class SharedContextRateLimiter;
 class StaticBitmapImage;
+class WebLayer;
 
 #if defined(OS_MACOSX)
 // Canvas hibernation is currently disabled on MacOS X due to a bug that causes
@@ -181,7 +186,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   std::unique_ptr<CanvasResourceProvider> resource_provider_;
   std::unique_ptr<PaintRecorder> recorder_;
   sk_sp<SkImage> hibernation_image_;
-  std::unique_ptr<WebExternalTextureLayer> layer_;
+  std::unique_ptr<WebLayer> web_layer_;  // Wrapper for |layer_|.
+  scoped_refptr<cc::TextureLayer> layer_;
   std::unique_ptr<SharedContextRateLimiter> rate_limiter_;
   std::unique_ptr<Logger> logger_;
   int msaa_sample_count_;

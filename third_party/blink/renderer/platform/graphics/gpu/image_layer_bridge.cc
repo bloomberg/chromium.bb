@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/gpu/image_layer_bridge.h"
 
+#include "cc/layers/texture_layer.h"
 #include "cc/resources/cross_thread_shared_bitmap.h"
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
@@ -11,25 +12,28 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_compositor_support.h"
-#include "third_party/blink/public/platform/web_external_texture_layer.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/color_behavior.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace blink {
 
 ImageLayerBridge::ImageLayerBridge(OpacityMode opacity_mode)
     : opacity_mode_(opacity_mode) {
-  layer_ = Platform::Current()->CompositorSupport()->CreateExternalTextureLayer(
-      this);
-  GraphicsLayer::RegisterContentsLayer(layer_->Layer());
+  layer_ = cc::TextureLayer::CreateForMailbox(this);
+  layer_->SetIsDrawable(true);
   layer_->SetNearestNeighbor(filter_quality_ == kNone_SkFilterQuality);
   if (opacity_mode_ == kOpaque) {
-    layer_->SetOpaque(true);
+    layer_->SetContentsOpaque(true);
     layer_->SetBlendBackgroundColor(false);
   }
+  web_layer_ = Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
+      layer_.get());
+  GraphicsLayer::RegisterContentsLayer(web_layer_.get());
 }
 
 ImageLayerBridge::~ImageLayerBridge() {
@@ -44,7 +48,7 @@ void ImageLayerBridge::SetImage(scoped_refptr<StaticBitmapImage> image) {
   image_ = std::move(image);
   if (image_) {
     if (opacity_mode_ == kNonOpaque) {
-      layer_->SetOpaque(image_->CurrentFrameKnownToBeOpaque());
+      layer_->SetContentsOpaque(image_->CurrentFrameKnownToBeOpaque());
       layer_->SetBlendBackgroundColor(!image_->CurrentFrameKnownToBeOpaque());
     }
   }
@@ -61,20 +65,20 @@ void ImageLayerBridge::SetImage(scoped_refptr<StaticBitmapImage> image) {
   has_presented_since_last_set_image_ = false;
 }
 
-void ImageLayerBridge::SetUV(const FloatPoint left_top,
-                             const FloatPoint right_bottom) {
+void ImageLayerBridge::SetUV(const FloatPoint& left_top,
+                             const FloatPoint& right_bottom) {
   if (disposed_)
     return;
 
-  layer_->SetUV(WebFloatPoint(left_top.X(), left_top.Y()),
-                WebFloatPoint(right_bottom.X(), right_bottom.Y()));
+  layer_->SetUV(left_top, right_bottom);
 }
 
 void ImageLayerBridge::Dispose() {
   if (layer_) {
-    GraphicsLayer::UnregisterContentsLayer(layer_->Layer());
+    GraphicsLayer::UnregisterContentsLayer(web_layer_.get());
     layer_->ClearTexture();
-    layer_.reset();
+    web_layer_ = nullptr;
+    layer_ = nullptr;
   }
   image_ = nullptr;
   disposed_ = true;
@@ -216,7 +220,7 @@ void ImageLayerBridge::ResourceReleasedSoftware(
 }
 
 WebLayer* ImageLayerBridge::PlatformLayer() const {
-  return layer_->Layer();
+  return web_layer_.get();
 }
 
 ImageLayerBridge::RegisteredBitmap::RegisteredBitmap() = default;

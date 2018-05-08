@@ -48,7 +48,7 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_compositor_support.h"
-#include "third_party/blink/public/platform/web_external_texture_layer.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -190,8 +190,12 @@ DrawingBuffer::DrawingBuffer(
 DrawingBuffer::~DrawingBuffer() {
   DCHECK(destruction_in_progress_);
   SwapPreviousFrameCallback(nullptr);
-  layer_.reset();
-  context_provider_.reset();
+  if (layer_) {
+    web_layer_ = nullptr;
+    layer_->ClearClient();
+    layer_ = nullptr;
+  }
+  context_provider_ = nullptr;
 }
 
 bool DrawingBuffer::MarkContentsChanged() {
@@ -865,11 +869,10 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
 
 WebLayer* DrawingBuffer::PlatformLayer() {
   if (!layer_) {
-    layer_ =
-        Platform::Current()->CompositorSupport()->CreateExternalTextureLayer(
-            this);
+    layer_ = cc::TextureLayer::CreateForMailbox(this);
 
-    layer_->SetOpaque(!want_alpha_channel_);
+    layer_->SetIsDrawable(true);
+    layer_->SetContentsOpaque(!want_alpha_channel_);
     layer_->SetBlendBackgroundColor(want_alpha_channel_);
     // If premultiplied_alpha_false_texture_ exists, then premultiplied_alpha_
     // has already been handled via CopySubTextureCHROMIUM -- the alpha channel
@@ -884,10 +887,14 @@ WebLayer* DrawingBuffer::PlatformLayer() {
     layer_->SetPremultipliedAlpha(premultiplied_alpha_ ||
                                   premultiplied_alpha_false_texture_);
     layer_->SetNearestNeighbor(filter_quality_ == kNone_SkFilterQuality);
-    GraphicsLayer::RegisterContentsLayer(layer_->Layer());
+
+    web_layer_ =
+        Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
+            layer_.get());
+    GraphicsLayer::RegisterContentsLayer(web_layer_.get());
   }
 
-  return layer_->Layer();
+  return web_layer_.get();
 }
 
 void DrawingBuffer::ClearPlatformLayer() {
@@ -932,7 +939,7 @@ void DrawingBuffer::BeginDestruction() {
   fbo_ = 0;
 
   if (layer_)
-    GraphicsLayer::UnregisterContentsLayer(layer_->Layer());
+    GraphicsLayer::UnregisterContentsLayer(web_layer_.get());
 
   client_ = nullptr;
 }

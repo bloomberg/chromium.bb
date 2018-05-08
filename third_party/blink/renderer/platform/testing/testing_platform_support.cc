@@ -103,10 +103,6 @@ std::unique_ptr<WebContentLayer> TestingCompositorSupport::CreateContentLayer(
     cc::ContentLayerClient*) {
   return nullptr;
 }
-std::unique_ptr<WebExternalTextureLayer>
-TestingCompositorSupport::CreateExternalTextureLayer(cc::TextureLayerClient*) {
-  return nullptr;
-}
 
 std::unique_ptr<WebImageLayer> TestingCompositorSupport::CreateImageLayer() {
   return nullptr;

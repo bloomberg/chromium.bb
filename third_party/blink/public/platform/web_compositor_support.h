@@ -37,13 +37,11 @@
 namespace cc {
 class ContentLayerClient;
 class Layer;
-class TextureLayerClient;
 }
 
 namespace blink {
 
 class WebContentLayer;
-class WebExternalTextureLayer;
 class WebImageLayer;
 class WebLayer;
 class WebScrollbarLayer;
@@ -59,9 +57,6 @@ class WebCompositorSupport {
 
   virtual std::unique_ptr<WebContentLayer> CreateContentLayer(
       cc::ContentLayerClient*) = 0;
-
-  virtual std::unique_ptr<WebExternalTextureLayer> CreateExternalTextureLayer(
-      cc::TextureLayerClient*) = 0;
 
   virtual std::unique_ptr<WebImageLayer> CreateImageLayer() = 0;
 
