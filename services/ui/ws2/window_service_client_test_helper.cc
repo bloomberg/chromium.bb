@@ -34,5 +34,15 @@ void WindowServiceClientTestHelper::SetWindowBounds(aura::Window* window,
       local_surface_id);
 }
 
+void WindowServiceClientTestHelper::SetWindowProperty(
+    aura::Window* window,
+    const std::string& name,
+    const std::vector<uint8_t>& value,
+    uint32_t change_id) {
+  window_service_client_->SetWindowProperty(
+      change_id, window_service_client_->TransportIdForWindow(window), name,
+      value);
+}
+
 }  // namespace ws2
 }  // namespace ui

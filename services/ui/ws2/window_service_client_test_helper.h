@@ -32,6 +32,10 @@ class WindowServiceClientTestHelper {
   void SetWindowBounds(aura::Window* window,
                        const gfx::Rect& bounds,
                        uint32_t change_id = 1);
+  void SetWindowProperty(aura::Window* window,
+                         const std::string& name,
+                         const std::vector<uint8_t>& value,
+                         uint32_t change_id = 1);
 
  private:
   WindowServiceClient* window_service_client_;

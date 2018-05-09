@@ -7,6 +7,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/run_loop.h"
 
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/transient_window_client.h"

@@ -172,6 +172,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
                      const ClientWindowId& child_id);
   bool RemoveWindowFromParentImpl(const ClientWindowId& client_window_id);
   bool SetWindowVisibilityImpl(const ClientWindowId& window_id, bool visible);
+  bool SetWindowPropertyImpl(const ClientWindowId& window_id,
+                             const std::string& name,
+                             const base::Optional<std::vector<uint8_t>>& value);
   bool EmbedImpl(const ClientWindowId& window_id,
                  mojom::WindowTreeClientPtr window_tree_client,
                  uint32_t flags);

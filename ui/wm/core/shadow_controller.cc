@@ -189,9 +189,8 @@ void ShadowController::Impl::OnWindowInitialized(aura::Window* window) {
 void ShadowController::Impl::OnWindowPropertyChanged(aura::Window* window,
                                                      const void* key,
                                                      intptr_t old) {
-  bool shadow_will_change = false;
-  if (key == kShadowElevationKey)
-    shadow_will_change = window->GetProperty(kShadowElevationKey) != old;
+  bool shadow_will_change = key == kShadowElevationKey &&
+                            window->GetProperty(kShadowElevationKey) != old;
 
   if (key == aura::client::kShowStateKey) {
     shadow_will_change = window->GetProperty(aura::client::kShowStateKey) !=

@@ -13,6 +13,7 @@
 #include "ui/base/class_property.h"
 
 namespace aura {
+class PropertyConverter;
 template <typename T>
 using WindowProperty = ui::ClassProperty<T>;
 }
@@ -34,6 +35,11 @@ enum class BackdropWindowMode {
   kDisabled,  // The window should never have a backdrop.
   kAuto,  // The window manager decides if the window should have a backdrop.
 };
+
+// Registers Ash's properties with the given PropertyConverter. This allows Ash
+// and other services (eg. Chrome) to exchange Ash window property values.
+ASH_PUBLIC_EXPORT void RegisterWindowProperties(
+    aura::PropertyConverter* property_converter);
 
 // Shell-specific window property keys for use by ash and its clients.
 
@@ -60,6 +66,10 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 // If true (and the window is a panel), it's attached to its shelf item.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kPanelAttachedKey;
+
+// Maps to ui::mojom::WindowManager::kRenderParentTitleArea_Property.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kRenderTitleAreaProperty;
 
 // A property key which stores the bounds to restore a window to. These take
 // preference over the current bounds. This is used by e.g. the tablet mode
