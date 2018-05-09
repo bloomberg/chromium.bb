@@ -180,7 +180,7 @@ static void voidMethodNullableCallbackFunctionInArgMethod(const v8::FunctionCall
   V8VoidCallbackFunction* voidCallbackFunctionArg;
   if (info[0]->IsFunction()) {
     voidCallbackFunctionArg = V8VoidCallbackFunction::Create(info[0].As<v8::Function>());
-  } else if (0 < info.Length() && info[0]->IsNullOrUndefined()) {
+  } else if (info[0]->IsNullOrUndefined()) {
     voidCallbackFunctionArg = nullptr;
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNullableCallbackFunctionInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));

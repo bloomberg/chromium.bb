@@ -25,7 +25,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_ITERATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_ITERATOR_H_
 
-#include "third_party/blink/renderer/core/dom/node_filter.h"
 #include "third_party/blink/renderer/core/dom/node_iterator_base.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -41,7 +40,7 @@ class NodeIterator final : public ScriptWrappable, public NodeIteratorBase {
  public:
   static NodeIterator* Create(Node* root_node,
                               unsigned what_to_show,
-                              V8NodeFilterCondition* filter) {
+                              V8NodeFilter* filter) {
     return new NodeIterator(root_node, what_to_show, filter);
   }
 
@@ -62,7 +61,7 @@ class NodeIterator final : public ScriptWrappable, public NodeIteratorBase {
   void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  private:
-  NodeIterator(Node*, unsigned what_to_show, V8NodeFilterCondition*);
+  NodeIterator(Node*, unsigned what_to_show, V8NodeFilter*);
 
   class NodePointer {
     DISALLOW_NEW();

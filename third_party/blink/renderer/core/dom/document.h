@@ -184,7 +184,7 @@ class Touch;
 class TouchList;
 class TransformSource;
 class TreeWalker;
-class V8NodeFilterCondition;
+class V8NodeFilter;
 class VisitedLinkState;
 class WebMouseEvent;
 struct AnnotatedRegionValue;
@@ -510,10 +510,10 @@ class CORE_EXPORT Document : public ContainerNode,
 
   NodeIterator* createNodeIterator(Node* root,
                                    unsigned what_to_show,
-                                   V8NodeFilterCondition*);
+                                   V8NodeFilter*);
   TreeWalker* createTreeWalker(Node* root,
                                unsigned what_to_show,
-                               V8NodeFilterCondition*);
+                               V8NodeFilter*);
 
   // Special support for editing
   Text* CreateEditingTextNode(const String&);

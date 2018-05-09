@@ -21,8 +21,6 @@ code_generator_template_files =
                     "interface.cpp.tmpl",
                     "interface.h.tmpl",
                     "interface_base.cpp.tmpl",
-                    "legacy_callback_interface.cpp.tmpl",
-                    "legacy_callback_interface.h.tmpl",
                     "methods.cpp.tmpl",
                     "partial_interface.cpp.tmpl",
                     "partial_interface.h.tmpl",

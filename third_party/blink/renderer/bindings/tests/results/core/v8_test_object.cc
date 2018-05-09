@@ -39,7 +39,7 @@
 #include "bindings/core/v8/v8_int32_array.h"
 #include "bindings/core/v8/v8_iterator.h"
 #include "bindings/core/v8/v8_node.h"
-#include "bindings/core/v8/v8_node_filter_condition.h"
+#include "bindings/core/v8/v8_node_filter.h"
 #include "bindings/core/v8/v8_shadow_root.h"
 #include "bindings/core/v8/v8_test_callback_interface.h"
 #include "bindings/core/v8/v8_test_dictionary.h"
@@ -840,21 +840,6 @@ static void nodeFilterAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   V8SetReturnValue(info, ToV8(WTF::GetPtr(impl->nodeFilterAttribute()), info.Holder(), info.GetIsolate()));
-}
-
-static void nodeFilterAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Isolate* isolate = info.GetIsolate();
-  ALLOW_UNUSED_LOCAL(isolate);
-
-  v8::Local<v8::Object> holder = info.Holder();
-  ALLOW_UNUSED_LOCAL(holder);
-
-  TestObject* impl = V8TestObject::ToImpl(holder);
-
-  // Prepare the value to be set.
-  V8NodeFilterCondition* cppValue = V8NodeFilter::ToImplWithTypeCheck(info.GetIsolate(), v8Value);
-
-  impl->setNodeFilterAttribute(cppValue);
 }
 
 static void serializedScriptValueAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -5618,7 +5603,7 @@ static void voidMethodTestCallbackInterfaceOrNullArgMethod(const v8::FunctionCal
   V8TestCallbackInterface* testCallbackInterfaceArg;
   if (info[0]->IsObject()) {
     testCallbackInterfaceArg = V8TestCallbackInterface::Create(info[0].As<v8::Object>());
-  } else if (0 < info.Length() && info[0]->IsNullOrUndefined()) {
+  } else if (info[0]->IsNullOrUndefined()) {
     testCallbackInterfaceArg = nullptr;
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTestCallbackInterfaceOrNullArg", "TestObject", "The callback provided as parameter 1 is not an object."));
@@ -5876,8 +5861,13 @@ static void voidMethodNodeFilterArgMethod(const v8::FunctionCallbackInfo<v8::Val
     return;
   }
 
-  V8NodeFilterCondition* nodeFilterArg;
-  nodeFilterArg = V8NodeFilterCondition::CreateOrNull(info[0], ScriptState::Current(info.GetIsolate()));
+  V8NodeFilter* nodeFilterArg;
+  if (info[0]->IsObject()) {
+    nodeFilterArg = V8NodeFilter::Create(info[0].As<v8::Object>());
+  } else {
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNodeFilterArg", "TestObject", "The callback provided as parameter 1 is not an object."));
+    return;
+  }
 
   impl->voidMethodNodeFilterArg(nodeFilterArg);
 }
@@ -9821,14 +9811,6 @@ void V8TestObject::nodeFilterAttributeAttributeGetterCallback(const v8::Function
   TestObjectV8Internal::nodeFilterAttributeAttributeGetter(info);
 }
 
-void V8TestObject::nodeFilterAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_nodeFilterAttribute_Setter");
-
-  v8::Local<v8::Value> v8Value = info[0];
-
-  TestObjectV8Internal::nodeFilterAttributeAttributeSetter(v8Value, info);
-}
-
 void V8TestObject::serializedScriptValueAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_serializedScriptValueAttribute_Getter");
 
@@ -13233,7 +13215,7 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestObjectAccessors[] =
     { "imeAttribute", V8TestObject::imeAttributeAttributeGetterCallback, V8TestObject::imeAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
     { "svgAttribute", V8TestObject::svgAttributeAttributeGetterCallback, V8TestObject::svgAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
     { "xmlAttribute", V8TestObject::xmlAttributeAttributeGetterCallback, V8TestObject::xmlAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
-    { "nodeFilterAttribute", V8TestObject::nodeFilterAttributeAttributeGetterCallback, V8TestObject::nodeFilterAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
+    { "nodeFilterAttribute", V8TestObject::nodeFilterAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
     { "serializedScriptValueAttribute", V8TestObject::serializedScriptValueAttributeAttributeGetterCallback, V8TestObject::serializedScriptValueAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
     { "anyAttribute", V8TestObject::anyAttributeAttributeGetterCallback, V8TestObject::anyAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
     { "promiseAttribute", V8TestObject::promiseAttributeAttributeGetterCallback, V8TestObject::promiseAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kDoNotCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },

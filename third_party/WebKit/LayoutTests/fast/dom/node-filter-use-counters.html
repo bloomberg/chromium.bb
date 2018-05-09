@@ -10,13 +10,13 @@ test(function() {
 
   var filterCalled = false;
   var filter = function() {
-    assert_true(internals.isUseCounted(document, NodeFilterIsFunction));
     filter.called = true;
   };
 
   var iterator = document.createNodeIterator(document, NodeFilter.SHOW_ALL, filter);
   iterator.nextNode();
   assert_true(filter.called);
+  assert_true(internals.isUseCounted(document, NodeFilterIsFunction));
 }, 'NodeFilter UseCounter for callback function');
 
 test(function() {
@@ -25,9 +25,7 @@ test(function() {
   assert_false(internals.isUseCounted(document, NodeFilterIsObject));
 
   var filter = {
-    acceptNodeCalled: false,
     acceptNode: function() {
-      assert_true(internals.isUseCounted(document, NodeFilterIsObject));
       filter.called = true;
     }
   };
@@ -35,5 +33,6 @@ test(function() {
   var iterator = document.createNodeIterator(document, NodeFilter.SHOW_ALL, filter);
   iterator.nextNode();
   assert_true(filter.called);
+  assert_true(internals.isUseCounted(document, NodeFilterIsObject));
 }, 'NodeFilter UseCounter for callback function');
 </script>

@@ -101,7 +101,6 @@
 #include "third_party/blink/renderer/core/dom/ng/slot_assignment_engine.h"
 #include "third_party/blink/renderer/core/dom/node_child_removal_tracker.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
-#include "third_party/blink/renderer/core/dom/node_filter.h"
 #include "third_party/blink/renderer/core/dom/node_iterator.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
@@ -1779,14 +1778,14 @@ Range* Document::createRange() {
 
 NodeIterator* Document::createNodeIterator(Node* root,
                                            unsigned what_to_show,
-                                           V8NodeFilterCondition* filter) {
+                                           V8NodeFilter* filter) {
   DCHECK(root);
   return NodeIterator::Create(root, what_to_show, filter);
 }
 
 TreeWalker* Document::createTreeWalker(Node* root,
                                        unsigned what_to_show,
-                                       V8NodeFilterCondition* filter) {
+                                       V8NodeFilter* filter) {
   DCHECK(root);
   return TreeWalker::Create(root, what_to_show, filter);
 }

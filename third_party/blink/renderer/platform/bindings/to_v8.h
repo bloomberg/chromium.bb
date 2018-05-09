@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/optional.h"
+#include "third_party/blink/renderer/platform/bindings/callback_interface_base.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -35,6 +36,20 @@ inline v8::Local<v8::Value> ToV8(ScriptWrappable* impl,
   wrapper = impl->Wrap(isolate, creation_context);
   DCHECK(!wrapper.IsEmpty());
   return wrapper;
+}
+
+// Callback interface
+
+inline v8::Local<v8::Value> ToV8(CallbackInterfaceBase* callback,
+                                 v8::Local<v8::Object> creation_context,
+                                 v8::Isolate* isolate) {
+  // |creation_context| is intentionally ignored. Callback interface objects
+  // are not wrappers nor clonable. ToV8 on a callback interface object must
+  // be used only when it's the same origin-domain in the same world.
+  DCHECK(!callback || (callback->CallbackRelevantScriptState()->GetContext() ==
+                       creation_context->CreationContext()));
+  return callback ? callback->CallbackObject().As<v8::Value>()
+                  : v8::Null(isolate).As<v8::Value>();
 }
 
 // Primitives

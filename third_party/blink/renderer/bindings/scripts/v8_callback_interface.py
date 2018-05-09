@@ -51,7 +51,6 @@ LEGACY_CALLBACK_INTERFACE_H_INCLUDES = frozenset([
     'platform/bindings/dom_wrapper_world.h',
 ])
 LEGACY_CALLBACK_INTERFACE_CPP_INCLUDES = frozenset([
-    'bindings/core/v8/v8_binding_for_core.h',
     'bindings/core/v8/v8_dom_configuration.h',
 ])
 
@@ -75,8 +74,16 @@ IdlTypeBase.callback_cpp_type = property(cpp_type)
 
 
 def callback_interface_context(callback_interface, _):
+    is_legacy_callback_interface = len(callback_interface.constants) > 0
+
     includes.clear()
     includes.update(CALLBACK_INTERFACE_CPP_INCLUDES)
+    if is_legacy_callback_interface:
+        includes.update(LEGACY_CALLBACK_INTERFACE_CPP_INCLUDES)
+
+    header_includes = set(CALLBACK_INTERFACE_H_INCLUDES)
+    if is_legacy_callback_interface:
+        header_includes.update(LEGACY_CALLBACK_INTERFACE_H_INCLUDES)
 
     # https://heycam.github.io/webidl/#dfn-single-operation-callback-interface
     is_single_operation = True
@@ -93,26 +100,17 @@ def callback_interface_context(callback_interface, _):
                 break
 
     return {
-        'cpp_class': callback_interface.name,
-        'forward_declarations': sorted(forward_declarations(callback_interface)),
-        'header_includes': set(CALLBACK_INTERFACE_H_INCLUDES),
-        'is_single_operation_callback_interface': is_single_operation,
-        'methods': [method_context(operation)
-                    for operation in callback_interface.operations],
-        'v8_class': v8_utilities.v8_class_name(callback_interface),
-    }
-
-
-def legacy_callback_interface_context(callback_interface, _):
-    includes.clear()
-    includes.update(LEGACY_CALLBACK_INTERFACE_CPP_INCLUDES)
-    return {
-        # TODO(bashi): Fix crbug.com/630986, and add 'methods'.
         'constants': [constant_context(constant, callback_interface)
                       for constant in callback_interface.constants],
         'cpp_class': callback_interface.name,
-        'header_includes': set(LEGACY_CALLBACK_INTERFACE_H_INCLUDES),
+        'do_not_check_constants': 'DoNotCheckConstants' in callback_interface.extended_attributes,
+        'forward_declarations': sorted(forward_declarations(callback_interface)),
+        'header_includes': header_includes,
         'interface_name': callback_interface.name,
+        'is_legacy_callback_interface': is_legacy_callback_interface,
+        'is_single_operation_callback_interface': is_single_operation,
+        'methods': [method_context(operation)
+                    for operation in callback_interface.operations],
         'v8_class': v8_utilities.v8_class_name(callback_interface),
     }
 
@@ -144,13 +142,25 @@ def method_context(operation):
     extended_attributes = operation.extended_attributes
     idl_type = operation.idl_type
     idl_type_str = str(idl_type)
-    if idl_type_str not in ['boolean', 'void']:
-        raise Exception('We only support callbacks that return boolean or void values.')
+
+    # TODO(yukishiino,peria,rakuco): We should have this mapping as part of the
+    # bindings generator's infrastructure.
+    native_value_traits_tag_map = {
+        'boolean': 'IDLBoolean',
+        'unsigned short': 'IDLUnsignedShort',
+        'void': None,
+    }
+    if idl_type_str in native_value_traits_tag_map:
+        native_value_traits_tag_name = native_value_traits_tag_map[idl_type_str]
+    else:
+        raise Exception("Callback that returns type `%s' is not supported." % idl_type_str)
+
     add_includes_for_operation(operation)
     context = {
         'cpp_type': idl_type.callback_cpp_type,
         'idl_type': idl_type_str,
         'name': operation.name,
+        'native_value_traits_tag': native_value_traits_tag_name,
     }
     context.update(arguments_context(operation.arguments))
     return context

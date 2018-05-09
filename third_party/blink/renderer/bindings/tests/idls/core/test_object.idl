@@ -80,7 +80,7 @@ interface TestObject {
     attribute long svgAttribute;
     attribute long xmlAttribute;
     // Non-wrapper types
-    attribute NodeFilter nodeFilterAttribute;
+    readonly attribute NodeFilter nodeFilterAttribute;
     attribute SerializedScriptValue serializedScriptValueAttribute;
     attribute any anyAttribute;
     // Custom type conversions
