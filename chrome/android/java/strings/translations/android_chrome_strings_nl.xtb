@@ -111,7 +111,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> wil koppelen</translation>
 <translation id="1994173015038366702">Site-URL</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB voor andere apps</translation>
-<translation id="2015632741368427174">Omleiding geblokkeerd naar site:</translation>
 <translation id="2017836877785168846">Wist de geschiedenis en automatische aanvullingen in de adresbalk.</translation>
 <translation id="2021896219286479412">Siteopties op volledig scherm</translation>
 <translation id="2038563949887743358">'Desktopsite aanvragen' inschakelen</translation>
@@ -183,7 +182,6 @@
 <translation id="2650751991977523696">Bestand opnieuw downloaden?</translation>
 <translation id="2653659639078652383">Verzenden</translation>
 <translation id="2677748264148917807">Verlaten</translation>
-<translation id="2693813674743028984">Opslag verbergen</translation>
 <translation id="2704606927547763573">Gekopieerd</translation>
 <translation id="2707726405694321444">Pagina vernieuwen</translation>
 <translation id="2709516037105925701">Automatisch aanvullen</translation>
@@ -209,7 +207,6 @@
 <translation id="2956410042958133412">Dit account wordt beheerd door <ph name="PARENT_NAME_1" /> en <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Alle rechten voorbehouden.</translation>
 <translation id="2962095958535813455">Overgeschakeld naar incognitotabbladen</translation>
-<translation id="2965945119655563012">Opslag weergeven</translation>
 <translation id="2968755619301702150">Certificaatviewer</translation>
 <translation id="2979025552038692506">Geselecteerd incognitotabblad</translation>
 <translation id="2989523299700148168">Onlangs bezocht</translation>
@@ -527,7 +524,6 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="5817918615728894473">Koppelen</translation>
 <translation id="583281660410589416">Onbekend</translation>
 <translation id="5833984609253377421">Link delen</translation>
-<translation id="583891442612896534">Chrome kan de Google-servers niet bereiken voor gegevenscompressie. De besparing op je gegevensgebruik is mogelijk beperkt.</translation>
 <translation id="5854790677617711513">Ouder dan 30 dagen</translation>
 <translation id="5858741533101922242">Chrome kan de Bluetooth-adapter niet inschakelen</translation>
 <translation id="5860033963881614850">Uit</translation>
@@ -589,7 +585,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Bladwijzer bewerken</translation>
 <translation id="6406506848690869874">Synchronisatie</translation>
-<translation id="6409731863280057959">Pop-ups</translation>
 <translation id="641643625718530986">Afdrukken…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB gedownload</translation>
 <translation id="6433501201775827830">Je zoekmachine kiezen</translation>
@@ -840,7 +835,6 @@ Maak verbinding met internet en speel je gedownloade content af om nieuwe licent
 <translation id="8676374126336081632">Invoer wissen</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signaalsterkte: # streepje}other{Signaalsterkte: # streepjes}}</translation>
 <translation id="869891660844655955">Vervaldatum</translation>
-<translation id="8712637175834984815">Begrepen</translation>
 <translation id="8719023831149562936">Kan huidig tabblad niet beamen</translation>
 <translation id="8725066075913043281">Opnieuw proberen</translation>
 <translation id="8728487861892616501">Door deze app te gebruiken, ga je akkoord met de <ph name="BEGIN_LINK1" />Servicevoorwaarden<ph name="END_LINK1" /> en het <ph name="BEGIN_LINK2" />Privacybeleid<ph name="END_LINK2" /> van Chrome en het <ph name="BEGIN_LINK3" />Privacybeleid voor Google-accounts die worden beheerd met Family Link<ph name="END_LINK3" />.</translation>
@@ -850,7 +844,6 @@ Maak verbinding met internet en speel je gedownloade content af om nieuwe licent
 <translation id="8812260976093120287">Op sommige websites kun je betalen met de bovenstaande ondersteunde betaal-apps op je apparaat.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> wordt geopend in Chrome. Als je doorgaat, ga je akkoord met de <ph name="BEGIN_LINK1" />Servicevoorwaarden<ph name="END_LINK1" /> en het <ph name="BEGIN_LINK2" />Privacybeleid<ph name="END_LINK2" /> van Chrome en het <ph name="BEGIN_LINK3" />Privacybeleid voor Google-accounts die worden beheerd met Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Bladwijzers</translation>
-<translation id="883635517171802338">Sites niet toestaan pop-ups weer te geven (aanbevolen)</translation>
 <translation id="883806473910249246">Er is een fout opgetreden tijdens het downloaden van de content.</translation>
 <translation id="8840953339110955557">Deze pagina kan afwijken van de online versie.</translation>
 <translation id="8847988622838149491">USB</translation>

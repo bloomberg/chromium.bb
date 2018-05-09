@@ -266,7 +266,6 @@
 <translation id="698231206551913481">Sve datoteke i lokalni podaci povezani s ovim korisnikom trajno će se izbrisati nakon uklanjanja korisnika.</translation>
 <translation id="7029814467594812963">Izlazak iz sesije</translation>
 <translation id="7034339000180558234">Emitiranje kartice <ph name="TAB_NAME" /> na <ph name="RECEIVER_NAME" /></translation>
-<translation id="7052914147756339792">Postavljanje pozadinske slike...</translation>
 <translation id="7066646422045619941">Tu mrežu onemogućio je vaš administrator.</translation>
 <translation id="7067196344162293536">Automatski izmjenjuj</translation>
 <translation id="7098389117866926363">USB-C uređaj (lijevi priključak sa stražnje strane)</translation>
@@ -355,6 +354,7 @@
 <translation id="9194617393863864469">Prijavljivanje drugog korisnika...</translation>
 <translation id="9201131092683066720">Baterija je <ph name="PERCENTAGE" />% puna.</translation>
 <translation id="9210037371811586452">Izlaz iz načina jedinstvene radne površine</translation>
+<translation id="9215934040295798075">Postavi pozadinu</translation>
 <translation id="923686485342484400">Pritisnite Ctrl, Shift i Q dvaput da biste se odjavili.</translation>
 <translation id="945522503751344254">Slanje povratnih informacija</translation>
 <translation id="98515147261107953">Pejzaž</translation>

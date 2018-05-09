@@ -990,11 +990,6 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
       Jika kebijakan ini tidak disetel, SPDY akan tersedia.</translation>
 <translation id="3890999316834333174">Kebijakan buka kunci cepat</translation>
 <translation id="3891357445869647828">Mengaktifkan JavaScript</translation>
-<translation id="3891953007921334498">Menonaktifkan Fitur Developer dan konsol JavaScript.
-
-      Jika Anda mengaktifkan setelan ini, Fitur Developer tidak dapat diakses dan elemen situs web tidak dapat diperiksa lagi. Setiap pintasan dan menu atau entri konteks menu untuk membuka Fitur Developer atau Konsol JavaScript akan dinonaktifkan.
-
-      Menonaktifkan opsi ini atau membiarkannya tidak disetel akan memungkinkan pengguna menggunakan Fitur Developer dan konsol JavaScript.</translation>
 <translation id="3895557476567727016">Mengonfigurasi direktori default yang akan digunakan <ph name="PRODUCT_NAME" /> untuk mendownload file.
 
       Jika diatur, setelan ini akan mengubah direktori default tempat <ph name="PRODUCT_NAME" /> mendownload file. Kebijakan ini tidak bersifat wajib, sehingga pengguna akan dapat mengubah direktori tersebut.

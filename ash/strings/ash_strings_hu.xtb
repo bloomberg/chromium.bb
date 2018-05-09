@@ -266,7 +266,6 @@
 <translation id="698231206551913481">A felhasználó eltávolításakor az összes hozzá tartozó fájl és helyi adat is véglegesen törlődik.</translation>
 <translation id="7029814467594812963">Kilépés a munkamenetből</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> átküldése ide: <ph name="RECEIVER_NAME" /></translation>
-<translation id="7052914147756339792">Háttérkép beállítása...</translation>
 <translation id="7066646422045619941">Ezt a hálózatot letiltotta a rendszergazda.</translation>
 <translation id="7067196344162293536">Automatikus forgatás</translation>
 <translation id="7098389117866926363">C típusú USB-vel kompatibilis eszköz (bal hátsó port)</translation>
@@ -355,6 +354,7 @@
 <translation id="9194617393863864469">Bejelentkezés másik felhasználóként…</translation>
 <translation id="9201131092683066720">Az akkumulátor töltöttsége: <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Kilépés az Egységes asztali módból</translation>
+<translation id="9215934040295798075">Háttérkép beállítása</translation>
 <translation id="923686485342484400">Nyomja meg a Ctrl Shift Q billentyűkombinációt kétszer a kijelentkezéshez.</translation>
 <translation id="945522503751344254">Visszajelzés küldése</translation>
 <translation id="98515147261107953">Fekvő</translation>

@@ -42,7 +42,6 @@
 <translation id="1056898198331236512">Amaran</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1062407476771304334">Gantikan</translation>
-<translation id="1062866675591297858">Urus pengguna di bawah seliaan anda melalui <ph name="BEGIN_LINK" />Papan Pemuka Pengguna Di Bawah Seliaan<ph name="END_LINK" />.</translation>
 <translation id="1064835277883315402">Sertai rangkaian persendirian</translation>
 <translation id="1064912851688322329">Putuskan sambungan Akaun Google anda</translation>
 <translation id="1067048845568873861">Dibuat</translation>
@@ -65,7 +64,6 @@
 <translation id="1091767800771861448">Tekan ESCAPE untuk melangkau (Binaan tidak rasmi sahaja).</translation>
 <translation id="1093457606523402488">Rangkaian Kelihatan:</translation>
 <translation id="1094607894174825014">Pengendalian baca atau tulis diminta dengan ofset tidak sah pada: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Log masuk<ph name="END_SIGN_IN_LINK" /> untuk mengawal dan melihat laman web yang dilawati oleh orang ini.</translation>
 <translation id="109758035718544977">Nyahredam Tapak</translation>
 <translation id="1097658378307015415">Sebelum log masuk, sila masuk sebagai Tetamu untuk mengaktifkan rangkaian <ph name="NETWORK_ID" /></translation>
 <translation id="1103523840287552314">Sentiasa terjemahkan <ph name="LANGUAGE" /></translation>
@@ -244,7 +242,6 @@
 <translation id="1361655923249334273">Tidak digunakan</translation>
 <translation id="1363028406613469049">Penjejakan</translation>
 <translation id="1367951781824006909">Pilih fail</translation>
-<translation id="136802136832547685">Tiada pengguna di bawah seliaan untuk ditambahkan pada peranti ini.</translation>
 <translation id="1368265273904755308">Laporkan isu</translation>
 <translation id="1370646789215800222">Alih keluar orang?</translation>
 <translation id="1372681413396468867">{NUM_ITEMS,plural, =1{1 item untuk dialih keluar}other{# item untuk dialih keluar}}</translation>
@@ -472,7 +469,6 @@
 <translation id="1692799361700686467">Kuki daripada berbilang tapak dibenarkan.</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698122934742150150">Sesi inkognito semasa sahaja</translation>
-<translation id="1700199471143028312">Pentadbir anda tidak membenarkan anda membuat pengguna di bawah seliaan.</translation>
 <translation id="1701062906490865540">Alih keluar orang ini</translation>
 <translation id="1706586824377653884">Ditambahkan oleh pentadbir anda</translation>
 <translation id="1706625117072057435">Tahap zum</translation>
@@ -1042,7 +1038,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="2604255671529671813">Ralat sambungan rangkaian</translation>
 <translation id="2606246518223360146">Pautkan Data</translation>
 <translation id="2607101320794533334">Maklumat Penting Subjek Awam</translation>
-<translation id="2607459012323956820">Tetapan dan sejarah penyemakan imbas untuk pengguna di bawah seliaan ini masih boleh dilihat oleh pengurus di <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" />.</translation>
 <translation id="2608770217409477136">Gunakan tetapan lalai</translation>
 <translation id="2609896558069604090">Buat Pintasan...</translation>
 <translation id="2610157865375787051">Tidur</translation>
@@ -1285,7 +1280,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="2951247061394563839">Tetingkap tengah</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> kuki</translation>
 <translation id="2958721676848865875">Amaran sambungan pek</translation>
-<translation id="2961043351165706615">Apl Linux yang telah anda pasang akan dipadamkan daripada Chromebook ini.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (sambungan disediakan)</translation>
 <translation id="2961695502793809356">Klik untuk ke hadapan, tahan untuk melihat sejarah</translation>
 <translation id="2963151496262057773">Pemalam berikut tidak responsif: <ph name="PLUGIN_NAME" />Adakah anda ingin menghentikannya?</translation>
@@ -1337,15 +1331,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="3022978424994383087">Tidak faham.</translation>
 <translation id="3024374909719388945">Gunakan jam 24 jam</translation>
 <translation id="302781076327338683">Muat semula cache yang memintas</translation>
-<translation id="3030243755303701754">Pengguna di bawah seliaan boleh meneroka web dengan bimbingan anda. Sebagai pengurus pengguna di bawah seliaan dalam Chrome, anda boleh:
-
- • membenarkan atau melarang tapak web tertentu,
- • menyemak tapak web yang telah dilawati oleh pengguna di bawah seliaan dan
- • mengurus tetapan lain.
-
-Apabila anda membuat pengguna di bawah seliaan, anda tidak membuat Akaun Google dan penanda halaman, sejarah penyemakan imbas serta pilihan mereka yang lain tidak akan dibawa bersama mereka ke peranti lain dengan Penyegerakan Chrome. Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetapan mereka pada bila-bila masa, daripada mana-mana peranti di <ph name="BEGIN_MANAGE_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_MANAGE_LINK" />.
-
-Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<ph name="END_LINK" /> kami.</translation>
 <translation id="3031417829280473749">Ejen X</translation>
 <translation id="3031557471081358569">Pilih item untuk mengimport:</translation>
 <translation id="3031601332414921114">Sambung semula pencetakan</translation>
@@ -1386,7 +1371,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="3085412380278336437">Tapak boleh menggunakan kamera anda</translation>
 <translation id="3085752524577180175">Hos SOCKS</translation>
 <translation id="3088325635286126843">&amp;Namakan semula...</translation>
-<translation id="3089231390674410424">Nampaknya ada masalah dengan bukti kelayakan anda. Sila pastikan anda telah dilog masuk dengan betul dan cuba lagi.</translation>
 <translation id="3090193911106258841">Mengakses input audio dan video</translation>
 <translation id="3090819949319990166">Tidak dapat menyalin fail crx luar ke <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" digandingkan</translation>
@@ -1401,7 +1385,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="3121793941267913344">Tetapkan semula peranti <ph name="IDS_SHORT_PRODUCT_NAME" /> ini</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3122496702278727796">Gagal Untuk Mencipta Direktori Data</translation>
-<translation id="3123569374670379335">(Diselia)</translation>
 <translation id="3124111068741548686">Pemegang USER</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Tindakan ini akan memadamkan mana-mana data yang disimpan pada peranti anda untuk semua tapak yang ditunjukkan. Anda ingin teruskan?</translation>
@@ -1436,8 +1419,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (disokong perkakasan)</translation>
 <translation id="316125635462764134">Alih keluar apl</translation>
 <translation id="3161522574479303604">Semua bahasa</translation>
-<translation id="316307797510303346">Kawal dan lihat tapak web yang dilawati oleh orang ini dari <ph name="CUSTODIAN_EMAIL" />.
-    Butiran log masuk akaun anda sudah lapuk.</translation>
 <translation id="3165390001037658081">Sesetengah pembawa mungkin menyekat ciri ini.</translation>
 <translation id="316854673539778496">Log masuk dan hidupkan penyegerakan untuk mendapatkan semua sambungan pada semua peranti anda.</translation>
 <translation id="3170072451822350649">Anda juga boleh melangkau log masuk dan <ph name="LINK_START" />menyemak imbas sebagai tetamu<ph name="LINK_END" />.</translation>
@@ -1470,7 +1451,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="3229922550070982305">main / jeda</translation>
 <translation id="3232318083971127729">Nilai:</translation>
 <translation id="3236289833370040187">Pemilikan akan dipindahkan ke <ph name="DESTINATION_DOMAIN" />.</translation>
-<translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> kini menjadi pengguna di bawah seliaan</translation>
 <translation id="323803881985677942">Buka pilihan sambungan</translation>
 <translation id="3241680850019875542">Pilih direktori akar bagi sambungan untuk pek. Untuk mengemas kini sambungan, pilih kunci persendirian untuk gunakan semula juga.</translation>
 <translation id="3242765319725186192">Kekunci prakongsi:</translation>
@@ -1702,7 +1682,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="3584169441612580296">Baca dan ubah foto, muzik dan media lain daripada komputer anda</translation>
 <translation id="3587482841069643663">Semua</translation>
 <translation id="358796204584394954">Taip kod ini pada "<ph name="DEVICE_NAME" />" untuk digandingkan:</translation>
-<translation id="3589532742556016615">Tindakan ini tidak menjejaskan apl atau kandungan pada peranti lain.</translation>
 <translation id="3589766037099229847">Kandungan tidak selamat disekat</translation>
 <translation id="3590194807845837023">Buka Profil dan Lancarkan Semula</translation>
 <translation id="3592260987370335752">&amp;Ketahui lebih lanjut</translation>
@@ -1836,7 +1815,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="3778152852029592020">Muat turun telah dibatalkan.</translation>
 <translation id="3778740492972734840">&amp;Alat pembangun</translation>
 <translation id="3778868487658107119">Tanya soalan dan berikannya tugas. Peranti ini ialah Google peribadi anda yang sentiasa bersedia untuk membantu.</translation>
-<translation id="3780663724044634171">Pilih akaun untuk mengurus pengguna di bawah seliaan.</translation>
 <translation id="378312418865624974">Baca pengecam unik untuk komputer ini</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Paparkan Pintasan Apl</translation>
@@ -2564,7 +2542,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="4964455510556214366">Susunan</translation>
 <translation id="4964673849688379040">Menyemak...</translation>
 <translation id="4965808351167763748">Adakah anda pasti ingin menyediakan peranti ini untuk menjalankan Hangout Meet?</translation>
-<translation id="4967749818080339523">Pilih akaun</translation>
 <translation id="496888482094675990">Apl Fail memberikan akses pantas kepada fail yang telah anda simpan di Google Drive, storan luaran atau peranti OS Chrome anda.</translation>
 <translation id="4969785127455456148">Album</translation>
 <translation id="4971412780836297815">Buka apabila selesai</translation>
@@ -2751,7 +2728,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
     Tidak kira apa yang berlaku kepada peranti anda, fail anda disimpan dengan selamat dalam Google Drive.<ph name="MARKUP_6" />
     <ph name="MARKUP_7" />Kongsi, buat dan bekerjasama<ph name="MARKUP_8" />
     pada fail dengan orang lain, semuanya pada satu tempat.<ph name="MARKUP_9" /></translation>
-<translation id="5262401745672360397">Fail yang dikongsi dengan apl Linux mungkin turut dipadamkan.</translation>
 <translation id="5264148714798105376">Proses ini mungkin mengambil masa seminit atau lebih.</translation>
 <translation id="5264252276333215551">Sila sambung ke Internet untuk melancarkan apl anda dalam mod kios.</translation>
 <translation id="5265562206369321422">Di luar talian selama lebih seminggu</translation>
@@ -3403,7 +3379,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="6241530762627360640">Akses maklumat mengenai peranti Bluetooth yang dipasangkan dengan sistem anda dan temui peranti Bluetooth berhampiran.</translation>
 <translation id="6243280677745499710">Ditetapkan pada masa ini</translation>
 <translation id="6243774244933267674">Pelayan tidak tersedia</translation>
-<translation id="6246413617632217567">Pengguna di bawah seliaan tidak dapat diimport. Sila semak ruang pemacu keras dan kebenaran anda, kemudian cuba lagi.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6247802389331535091">Sistem: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">Kemaskini bersedia</translation>
@@ -3602,7 +3577,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Perhatian:<ph name="END_BOLD" /> Dayakan hanya jika anda pasti akan perkara yang anda lakukan atau jika anda telah diminta melakukan sedemikian, kerana pengumpulan data boleh mengurangkan prestasi.</translation>
 <translation id="654233263479157500">Gunakan perkhidmatan web untuk membantu menyelesaikan ralat navigasi</translation>
 <translation id="6544215763872433504">Penyemak imbas web oleh Google, untuk anda</translation>
-<translation id="6545325945815270297">Urus peranti dan data anda yang disegerakkan pada <ph name="BEGIN_LINK" />Papan Pemuka Chrome<ph name="END_LINK" />.</translation>
 <translation id="6545665334409411530">Kadar pengulangan</translation>
 <translation id="6545834809683560467">Gunakan perkhidmatan ramalan untuk membantu menyelesaikan carian dan URL yang ditaip dalam bar alamat atau kotak carian pelancar apl</translation>
 <translation id="6546686722964485737">Sertai rangkaian WIMAX</translation>
@@ -3617,7 +3591,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="6555810572223193255">Pembersihan tidak tersedia pada masa ini</translation>
 <translation id="6556866813142980365">Buat semula</translation>
 <translation id="6558280019477628686">Ralat berlaku. Sesetengah item mungkin tidak dipadamkan.</translation>
-<translation id="6559580823502247193">(sudah ada pada peranti ini)</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Laluan atau nama fail terlalu panjang. Sila simpan dengan nama yang lebih pendek atau ke lokasi lain.</translation>
 <translation id="656398493051028875">Memadamkan "<ph name="FILENAME" />"...</translation>
@@ -3814,7 +3787,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="6862635236584086457">Semua fail yang disimpan di dalam folder ini disokong dalam talian secara automatik</translation>
 <translation id="6865313869410766144">Autolengkap data borang</translation>
 <translation id="686664946474413495">Suhu warna</translation>
-<translation id="6867678160199975333">Beralih kepada <ph name="NEW_PROFILE_NAME" /></translation>
 <translation id="6870888490422746447">Pilih apl untuk berkongsi ke:</translation>
 <translation id="6871644448911473373">Pengulas OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Kata laluan yang anda masukkan telah ditolak oleh pelayan.</translation>
@@ -3908,7 +3880,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="7018275672629230621">Baca dan ubah sejarah penyemakan imbas anda</translation>
 <translation id="7019805045859631636">Cepat</translation>
 <translation id="7022562585984256452">Halaman utama anda telah ditetapkan.</translation>
-<translation id="7025036625303002400">Nampaknya anda sudah mempunyai pengguna di bawah seliaan dengan nama ini.</translation>
 <translation id="7025190659207909717">Pengurusan perkhidmatan data mudah alih</translation>
 <translation id="7025325401470358758">Anak tetingkap seterusnya</translation>
 <translation id="7027125358315426638">Nama pangkalan data:</translation>
@@ -3957,7 +3928,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="7092106376816104">Pengecualian pop timbul</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Bertukar data dengan peranti yang bernama: <ph name="HOSTNAMES" /></translation>
-<translation id="7096108453481049031">Pengguna di bawah seliaan tidak dapat diimport. Sila semak sambungan rangkaian anda dan cuba sebentar lagi.</translation>
 <translation id="7096406577040705016">Togo Penggadang Skrin Penuh</translation>
 <translation id="7098447629416471489">Enjin carian lain yang disimpan akan kelihatan di sini</translation>
 <translation id="7099337801055912064">Tidak dapat memuatkan PPD bersaiz besar. Saiz maksimum ialah 250 KB.</translation>
@@ -4005,7 +3975,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="7168109975831002660">Saiz fon minimum</translation>
 <translation id="7170041865419449892">Di luar lingkungan</translation>
 <translation id="7171559745792467651">Pasang apl daripada peranti anda yang lain</translation>
-<translation id="7173917244679555">Nampaknya anda sudah pun mengurus pengguna yang menggunakan nama itu. Adakah anda ingin <ph name="BEGIN_LINK" />mengimport <ph name="PROFILE_NAME" /><ph name="END_LINK" /> ke peranti ini?</translation>
 <translation id="7175037578838465313">Konfigurasikan <ph name="NAME" /></translation>
 <translation id="7175353351958621980">Dimuatkan daripada:</translation>
 <translation id="7180611975245234373">Muat semula</translation>
@@ -4176,7 +4145,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="7444726222535375658">Teruskan ke Hangout Meet</translation>
 <translation id="7444983668544353857">Lumpuhkan <ph name="NETWORKDEVICE" /></translation>
 <translation id="7445682342344043969">Tetingkap timbul disekat</translation>
-<translation id="744859430125590922">Kawal dan lihat laman web yang dilawati oleh orang ini dari <ph name="CUSTODIAN_EMAIL" /> .</translation>
 <translation id="7453008956351770337">Dengan memilih pencetak ini, anda memberi sambungan berikut kebenaran untuk mengakses pencetak anda:</translation>
 <translation id="7453467225369441013">Mengelog anda keluar daripada kebanyakan tapak. Anda tidak akan dilog keluar daripada Akaun Google anda.</translation>
 <translation id="7456142309650173560">Pembangunan</translation>
@@ -4350,7 +4318,6 @@ Langkah memasang <ph name="APP_NAME" /> akan memuat turun <ph name="DOWNLOAD_SIZ
 <translation id="7717845620320228976">Semak kemas kini</translation>
 <translation id="7719367874908701697">Zum halaman</translation>
 <translation id="771953673318695590">S&amp;J</translation>
-<translation id="7720375555307821262">Untuk menyelia orang ini, <ph name="BEGIN_LINK" />log masuk ke Chrome<ph name="END_LINK" />.</translation>
 <translation id="7721179060400456005">Benarkan tetingkap mengembangkan paparan</translation>
 <translation id="7722040605881499779">Diperlukan untuk mengemas kini: <ph name="NECESSARY_SPACE" /></translation>
 <translation id="7724603315864178912">Potong</translation>
@@ -5206,7 +5173,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9024331582947483881">skrin penuh</translation>
 <translation id="9025098623496448965">OK, Bawa saya kembali ke skrin log masuk</translation>
 <translation id="9026731007018893674">muat turun</translation>
-<translation id="9027146684281895941">Selia orang ini untuk mengawal dan melihat tapak web yang mereka lawati daripada Akaun Google anda.</translation>
 <translation id="9027459031423301635">Buka Pautan dalam Tab &amp;Baharu</translation>
 <translation id="9027603907212475920">Sediakan segerak...</translation>
 <translation id="9030515284705930323">Organisasi anda belum mendayakan Gedung Google Play untuk akaun anda. Hubungi pentadbir anda untuk mendapatkan maklumat lanjut.</translation>
@@ -5366,7 +5332,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="98515147261107953">Lanskap</translation>
 <translation id="987897973846887088">Tiada imej tersedia</translation>
 <translation id="988978206646512040">Ungkapan laluan yang dikosongkan tidak dibenarkan</translation>
-<translation id="990310048453480215">Alih keluar Apl Linux</translation>
 <translation id="992032470292211616">Sambungan, apl dan tema boleh mengancam peranti anda. Adakah anda pasti mahu meneruskan?</translation>
 <translation id="992592832486024913">Lumpuhkan ChromeVox (maklum balas dituturkan)</translation>
 <translation id="994289308992179865">&amp;Gelung</translation>

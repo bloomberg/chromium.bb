@@ -42,7 +42,6 @@
 <translation id="1056898198331236512">אזהרה</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1062407476771304334">החלף</translation>
-<translation id="1062866675591297858">נהל את המשתמשים שבפיקוח באמצעות <ph name="BEGIN_LINK" />לוח הבקרה למשתמשים בפיקוח<ph name="END_LINK" />.</translation>
 <translation id="1064835277883315402">הצטרף לרשת פרטית</translation>
 <translation id="1064912851688322329">‏נתק את חשבון Google שלך</translation>
 <translation id="1067048845568873861">נוצר</translation>
@@ -65,7 +64,6 @@
 <translation id="1091767800771861448">‏הקש ESCAPE כדי לדלג (גרסאות לא רשמיות בלבד).</translation>
 <translation id="1093457606523402488">רשתות גלויות:</translation>
 <translation id="1094607894174825014">פעולת קריאה או כתיבה התבקשה עם היסט לא חוקי במכשיר: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />היכנס<ph name="END_SIGN_IN_LINK" /> כדי להציג את האתרים שבהם משתמש זה ביקר ולשלוט בהם.</translation>
 <translation id="109758035718544977">בטל השתקת אתרים</translation>
 <translation id="1097658378307015415">לפני הכניסה לחשבון, היכנס כאורח כדי להפעיל את הרשת <ph name="NETWORK_ID" /></translation>
 <translation id="1103523840287552314">תרגם <ph name="LANGUAGE" /> תמיד</translation>
@@ -244,7 +242,6 @@
 <translation id="1361655923249334273">לא בשימוש</translation>
 <translation id="1363028406613469049">רצועה</translation>
 <translation id="1367951781824006909">בחר קובץ</translation>
-<translation id="136802136832547685">לא נמצאו משתמשים בפיקוח שניתן להוסיף למכשיר זה.</translation>
 <translation id="1368265273904755308">דיווח על בעיה</translation>
 <translation id="1370646789215800222">האם להסיר את המשתמש?</translation>
 <translation id="1372681413396468867">{NUM_ITEMS,plural, =1{פריט אחד להסרה}two{# פריטים להסרה}many{# פריטים להסרה}other{# פריטים להסרה}}</translation>
@@ -469,7 +466,6 @@
 <translation id="1692799361700686467">‏קובצי Cookie מאתרים מרובים מותרים.</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698122934742150150">הפעלה נוכחית בלבד במצב גלישה בסתר</translation>
-<translation id="1700199471143028312">אין לך הרשאה ממנהל המערכת שלך ליצור משתמשים בפיקוח.</translation>
 <translation id="1701062906490865540">הסר משתמש זה</translation>
 <translation id="1706586824377653884">נוסף על ידי מנהל המערכת שלך</translation>
 <translation id="1706625117072057435">רמות מרחק מתצוגה</translation>
@@ -1038,7 +1034,6 @@
 <translation id="2604255671529671813">שגיאת חיבור רשת</translation>
 <translation id="2606246518223360146">קישור נתונים</translation>
 <translation id="2607101320794533334">פרטי מפתח ציבורי של נושא</translation>
-<translation id="2607459012323956820">המנהל עדיין יכול להציג את ההגדרות ואת היסטוריית הגלישה של משתמש מבוקר זה בכתובת <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" />.</translation>
 <translation id="2608770217409477136">השתמש בהגדרות ברירת המחדל</translation>
 <translation id="2609896558069604090">יצירת קיצורי דרך...</translation>
 <translation id="2610157865375787051">שינה</translation>
@@ -1281,7 +1276,6 @@
 <translation id="2951247061394563839">מרכז את החלון</translation>
 <translation id="2956763290572484660">‏<ph name="COOKIES" /> קובצי Cookie</translation>
 <translation id="2958721676848865875">אזהרת 'ארוז תוסף'</translation>
-<translation id="2961043351165706615">‏אפליקציות Linux שהתקנת יימחקו מה-Chromebook הזה.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (ניתנה הארכה)</translation>
 <translation id="2961695502793809356">לחץ כדי לעבור קדימה, לחץ והחזק כדי לראות את ההיסטוריה</translation>
 <translation id="2963151496262057773">הפלאגין הבא אינו מגיב: <ph name="PLUGIN_NAME" /> האם ברצונך לכבות אותו?</translation>
@@ -1333,15 +1327,6 @@
 <translation id="3022978424994383087">ההודעה שלך לא ברורה.</translation>
 <translation id="3024374909719388945">השתמש בשעון של 24 שעות</translation>
 <translation id="302781076327338683">טען מחדש מטמון עוקף</translation>
-<translation id="3030243755303701754">‏משתמש בפיקוח יכול לגלוש באינטרנט בהשגחתך. כמנהל של משתמש בפיקוח ב-Chrome תוכל:
-
- • להתיר או לחסום אתרים
- • להציג את האתרים שבהם ביקר המשתמש בפיקוח
- • לנהל הגדרות נוספות
-
-יצירה של משתמש בפיקוח אינה יוצרת חשבון Google, והסימניות, היסטוריית הגלישה וההעדפות האחרות שלו לא יהיו זמינות לו במכשירים אחרים בעזרת סינכרון Chrome. לאחר שתיצור משתמש חדש בפיקוח, תוכל לנהל את ההגדרות שלו תמיד ומכל מכשיר בכתובת <ph name="BEGIN_MANAGE_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_MANAGE_LINK" />.
-
-תוכל למצוא מידע נוסף <ph name="BEGIN_LINK" />במרכז העזרה<ph name="END_LINK" /> שלנו.</translation>
 <translation id="3031417829280473749">‏סוכנת X</translation>
 <translation id="3031557471081358569">בחר פריטים לייבוא:</translation>
 <translation id="3031601332414921114">המשך בהדפסה</translation>
@@ -1382,7 +1367,6 @@
 <translation id="3085412380278336437">האתר רשאי להשתמש במצלמה</translation>
 <translation id="3085752524577180175">‏מארח SOCKS</translation>
 <translation id="3088325635286126843">&amp;שנה שם...</translation>
-<translation id="3089231390674410424">נראה שישנה בעיה עם פרטי הכניסה שלך. ודא שאתה מחובר למערכת כהלכה ונסה שוב.</translation>
 <translation id="3090193911106258841">גישה לקלט אודיו ווידאו</translation>
 <translation id="3090819949319990166">‏לא ניתן להעתיק קובץ crx חיצוני ל-<ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" מותאם</translation>
@@ -1397,7 +1381,6 @@
 <translation id="3121793941267913344">אפס את מכשיר <ph name="IDS_SHORT_PRODUCT_NAME" /> זה</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3122496702278727796">יצירת ספריית נתונים נכשלה</translation>
-<translation id="3123569374670379335">(בפיקוח)</translation>
 <translation id="3124111068741548686">מזהים ייחודיים של משתמש</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">פעולה זו תמחק את כל הנתונים שנשמרו במכשיר עבור כל האתרים המוצגים. האם אתה רוצה להמשיך?</translation>
@@ -1432,7 +1415,6 @@
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (בגיבוי חומרה)</translation>
 <translation id="316125635462764134">הסר יישום</translation>
 <translation id="3161522574479303604">כל השפות</translation>
-<translation id="316307797510303346">הצג את האתרים שבהם משתמש זה מבקר מתוך <ph name="CUSTODIAN_EMAIL" /> ושלוט בהם. פרטי הכניסה שלך אינם עדכניים.</translation>
 <translation id="3165390001037658081">ייתכן שספקים מסוימים חוסמים את התכונה הזו.</translation>
 <translation id="316854673539778496">כדי שכל התוספים שלך יהיו זמינים בכל המכשירים שברשותך, צריך להיכנס ולהפעיל את הסינכרון.</translation>
 <translation id="3170072451822350649">ניתן גם לדלג על הכניסה ו<ph name="LINK_START" />לגלוש כאורח<ph name="LINK_END" />.</translation>
@@ -1465,7 +1447,6 @@
 <translation id="3229922550070982305">הפעל / השהה</translation>
 <translation id="3232318083971127729">ערך:</translation>
 <translation id="3236289833370040187">הבעלות תועבר אל <ph name="DESTINATION_DOMAIN" />.</translation>
-<translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> הוא כעת משתמש בפיקוח</translation>
 <translation id="323803881985677942">פתח אפשרויות תוסף</translation>
 <translation id="3241680850019875542">בחר את ספריית הבסיס של התוסף שיש לארוז. כדי לעדכן תוסף, בחר גם את קובץ המפתח הפרטי שבו ניתן להשתמש שוב.</translation>
 <translation id="3242765319725186192">מפתח משותף מראש:</translation>
@@ -1697,7 +1678,6 @@
 <translation id="3584169441612580296">לקרוא ולשנות קובצי תמונות, מוזיקה ומדיה מסוגים נוספים מהמחשב שלך</translation>
 <translation id="3587482841069643663">הכל</translation>
 <translation id="358796204584394954">הקלד את הקוד הזה ב-"<ph name="DEVICE_NAME" />" כדי לבצע התאמה:</translation>
-<translation id="3589532742556016615">פעולה זו לא משפיעה על אפליקציות או תוכן במכשירים אחרים.</translation>
 <translation id="3589766037099229847">תוכן לא מאובטח נחסם</translation>
 <translation id="3590194807845837023">בטל נעילת פרופיל והפעל מחדש</translation>
 <translation id="3592260987370335752">למידע נוסף</translation>
@@ -1831,7 +1811,6 @@
 <translation id="3778152852029592020">ההורדה בוטלה.</translation>
 <translation id="3778740492972734840">&amp;כלים עבור מפתחים</translation>
 <translation id="3778868487658107119">‏אפשר לשאול אותו שאלות ולומר לו לבצע פעולות. העוזר הפרטי של Google מוכן תמיד לסייע לך.</translation>
-<translation id="3780663724044634171">בחר חשבון לניהול המשתמש בפיקוח.</translation>
 <translation id="378312418865624974">קריאה של מזהה ייחודי עבור מחשב זה</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">הצג קיצור דרך אל יישומים</translation>
@@ -2559,7 +2538,6 @@
 <translation id="4964455510556214366">סידור</translation>
 <translation id="4964673849688379040">בודק...</translation>
 <translation id="4965808351167763748">‏בחרת להגדיר שהמכשיר הזה יפעיל את Hangouts Meet. להמשיך?</translation>
-<translation id="4967749818080339523">בחר חשבון</translation>
 <translation id="496888482094675990">‏היישום 'קבצים' מספק גישה מהירה לקבצים ששמרת ב-Google Drive, באחסון חיצוני או במכשיר שלך עם מערכת הפעלה של Chrome.</translation>
 <translation id="4969785127455456148">אלבום</translation>
 <translation id="4971412780836297815">פתח בסיום</translation>
@@ -2747,7 +2725,6 @@
 ב-Google Drive‏.<ph name="MARKUP_6" />
     <ph name="MARKUP_7" />שתף, צור ועבוד במשותף<ph name="MARKUP_8" />
     על קבצים עם אנשים נוספים - הכל במקום אחד.<ph name="MARKUP_9" /></translation>
-<translation id="5262401745672360397">‏ייתכן שיימחקו גם קבצים ששותפו עם אפליציות Linux.</translation>
 <translation id="5264148714798105376">הפעולה יכולה להימשך כדקה.</translation>
 <translation id="5264252276333215551">התחבר לאינטרנט כדי להפעיל את היישום במצב קיוסק.</translation>
 <translation id="5265562206369321422">לא מקוונת במשך יותר משבוע</translation>
@@ -3399,7 +3376,6 @@
 <translation id="6241530762627360640">‏פרטי גישה של מכשירי Bluetooth המותאמים למערכת שלך ומגלים מכשירי Bluetooth קרובים.</translation>
 <translation id="6243280677745499710">מוגדר עכשיו</translation>
 <translation id="6243774244933267674">השרת אינו זמין</translation>
-<translation id="6246413617632217567">לא ניתן לייבא את המשתמש בפיקוח. ודא שיש שטח אחסון פנוי בכונן הקשיח, בדוק את ההרשאות שלך ונסה שוב.</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE" /></translation>
 <translation id="6247802389331535091">מערכת: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">העדכון מוכן</translation>
@@ -3598,7 +3574,6 @@
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />הערה:<ph name="END_BOLD" /> הפעל אפשרות זו רק אם אתה בטוח בכך, או אם התבקשת לעשות זאת, משום שאיסוף נתונים עלול לפגוע בביצועים.</translation>
 <translation id="654233263479157500">השתמש בשירות אינטרנט כדי לפתור שגיאות ניווט</translation>
 <translation id="6544215763872433504">‏דפדפן האינטרנט של Google, במיוחד בשבילך</translation>
-<translation id="6545325945815270297">‏נהל את הנתונים והמכשירים המסונכרנים ב<ph name="BEGIN_LINK" />מרכז השליטה של Chrome<ph name="END_LINK" />.</translation>
 <translation id="6545665334409411530">שיעור חזרה</translation>
 <translation id="6545834809683560467">השתמש בשירות חיזויים כדי להשלים חיפושים וכתובות אתרים שאתה מזין בסרגל הכתובות או בתיבת החיפוש של מפעיל היישומים</translation>
 <translation id="6546686722964485737">‏הצטרפות לרשת WiMAX</translation>
@@ -3613,7 +3588,6 @@
 <translation id="6555810572223193255">הניקוי לא זמין עכשיו</translation>
 <translation id="6556866813142980365">בצע מחדש</translation>
 <translation id="6558280019477628686">אירעה שגיאה. ייתכן שפריטים מסוימים לא נמחקו.</translation>
-<translation id="6559580823502247193">(כבר מוגדר במכשיר זה)</translation>
 <translation id="6561726789132298588">Enter</translation>
 <translation id="656293578423618167">הנתיב או שם הקובץ ארוך מדי. שמור בשם קצר יותר או למיקום אחר.</translation>
 <translation id="656398493051028875">מוחק את "<ph name="FILENAME" />"...</translation>
@@ -3810,7 +3784,6 @@
 <translation id="6862635236584086457">כל הקבצים השמורים בתיקיה זו מגובים באופן אוטומטי באינטרנט</translation>
 <translation id="6865313869410766144">נתוני טפסים למילוי אוטומטי</translation>
 <translation id="686664946474413495">טמפרטורת צבע</translation>
-<translation id="6867678160199975333">עבור אל <ph name="NEW_PROFILE_NAME" /></translation>
 <translation id="6870888490422746447">בחר אפליקציה לשיתוף:</translation>
 <translation id="6871644448911473373">‏מגיב OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">השרת דחה את הסיסמה שהזנת.</translation>
@@ -3904,7 +3877,6 @@
 <translation id="7018275672629230621">לקרוא ולשנות את היסטוריית הגלישה שלך</translation>
 <translation id="7019805045859631636">מהיר</translation>
 <translation id="7022562585984256452">דף הבית שלך הוגדר.</translation>
-<translation id="7025036625303002400">נראה שיש לך כבר משתמש בפיקוח בשם זה.</translation>
 <translation id="7025190659207909717">ניהול שירות של נתונים סלולריים</translation>
 <translation id="7025325401470358758">החלונית הבאה</translation>
 <translation id="7027125358315426638">שם מסד נתונים:</translation>
@@ -3953,7 +3925,6 @@
 <translation id="7092106376816104">חריגים של חלונות קופצים</translation>
 <translation id="7093434536568905704">GTK+‎</translation>
 <translation id="7093866338626856921">החלפת נתונים עם המכשירים ששמותיהם: <ph name="HOSTNAMES" /></translation>
-<translation id="7096108453481049031">לא ניתן לייבא את המשתמש בפיקוח. בדוק את החיבור לרשת ונסה שוב מאוחר יותר.</translation>
 <translation id="7096406577040705016">החלפת המצב של הזכוכית המגדלת במסך מלא</translation>
 <translation id="7098447629416471489">כאן יופיעו מנועי חיפוש אחרים ששמרת</translation>
 <translation id="7099337801055912064">‏לא ניתן לטעון קובץ PPD גדול. הגודל המקסימלי הוא ‎250 kB.</translation>
@@ -4001,7 +3972,6 @@
 <translation id="7168109975831002660">גודל גופן מינימלי</translation>
 <translation id="7170041865419449892">מחוץ לטווח</translation>
 <translation id="7171559745792467651">התקנת אפליקציות ממכשירים אחרים שברשותך</translation>
-<translation id="7173917244679555">נראה שאתה כבר מנהל משתמש עם השם הזה. האם רצית <ph name="BEGIN_LINK" />לייבא את <ph name="PROFILE_NAME" /> אל המכשיר הזה<ph name="END_LINK" />?</translation>
 <translation id="7175037578838465313">הגדרה של <ph name="NAME" /></translation>
 <translation id="7175353351958621980">נטען מתוך:</translation>
 <translation id="7180611975245234373">רענן</translation>
@@ -4167,7 +4137,6 @@
 <translation id="7444726222535375658">‏כניסה אל Hangouts Meet</translation>
 <translation id="7444983668544353857">השבת <ph name="NETWORKDEVICE" /></translation>
 <translation id="7445682342344043969">חלונות קופצים חסומים</translation>
-<translation id="744859430125590922">הצג את האתרים שבהם משתמש זה מבקר מחשבון <ph name="CUSTODIAN_EMAIL" /> ושלוט בהם.</translation>
 <translation id="7453008956351770337">על ידי בחירת מדפסת זו, אתה מעניק לתוסף הבא את ההרשאה לגשת למדפסת:</translation>
 <translation id="7453467225369441013">‏תבוצע יציאה שלך מרוב האתרים. לא תבוצע יציאה מחשבון Google שלך.</translation>
 <translation id="7456142309650173560">מפתח</translation>
@@ -4339,7 +4308,6 @@
 <translation id="7717845620320228976">חפש עדכונים</translation>
 <translation id="7719367874908701697">מרחק מתצוגה בדף</translation>
 <translation id="771953673318695590">QA</translation>
-<translation id="7720375555307821262">‏כדי לפקח על אדם זה, <ph name="BEGIN_LINK" />היכנס ל-Chrome<ph name="END_LINK" />.</translation>
 <translation id="7721179060400456005">חלונות יכולים לסובב את התצוגות</translation>
 <translation id="7722040605881499779">השטח שנדרש כדי לעדכן: <ph name="NECESSARY_SPACE" /></translation>
 <translation id="7724603315864178912">חתוך</translation>
@@ -5193,7 +5161,6 @@
 <translation id="9024331582947483881">מסך מלא</translation>
 <translation id="9025098623496448965">בסדר, החזר אותי למסך הכניסה</translation>
 <translation id="9026731007018893674">הורד</translation>
-<translation id="9027146684281895941">‏השתמש בחשבון Google שלך לפיקוח על המשתמש הזה, שליטה באתרים שבהם הוא מבקר והצגתם.</translation>
 <translation id="9027459031423301635">פתח קישור בכרטיסייה &amp;חדשה</translation>
 <translation id="9027603907212475920">הגדר סנכרון...</translation>
 <translation id="9030515284705930323">‏הארגון שלך לא הפעיל את חנות Google Play בחשבון שלך. למידע נוסף, פנה למנהל המערכת.</translation>
@@ -5353,7 +5320,6 @@
 <translation id="98515147261107953">לרוחב</translation>
 <translation id="987897973846887088">אין תמונות זמינות</translation>
 <translation id="988978206646512040">השדה של ביטוי הסיסמה לא יכול להישאר ריק</translation>
-<translation id="990310048453480215">‏הסרת אפליקציות Linux</translation>
 <translation id="992032470292211616">תוספים, אפליקציות ועיצובים יכולים לפגוע במכשיר שלך. האם אתה בטוח שברצונך להמשיך?</translation>
 <translation id="992592832486024913">‏השבת את ChromeVox (משוב קולי)</translation>
 <translation id="994289308992179865">הפעל ב&amp;רצף</translation>

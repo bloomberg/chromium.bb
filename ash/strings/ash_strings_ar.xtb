@@ -267,7 +267,6 @@
 <translation id="698231206551913481">سيتم حذف جميع الملفات والبيانات المحلية المرتبطة بهذا المستخدم نهائيًا بمجرد إزالة هذا المستخدم.</translation>
 <translation id="7029814467594812963">إنهاء الجلسة</translation>
 <translation id="7034339000180558234">إرسال <ph name="TAB_NAME" /> إلى <ph name="RECEIVER_NAME" />.</translation>
-<translation id="7052914147756339792">تعيين خلفية...</translation>
 <translation id="7066646422045619941">تم إيقاف هذه الشبكة من قِبل مشرفك.</translation>
 <translation id="7067196344162293536">تدوير تلقائي</translation>
 <translation id="7098389117866926363">‏جهاز USB-C (المنفذ الأيسر في الخلف)</translation>
@@ -356,6 +355,7 @@
 <translation id="9194617393863864469">تسجيل دخول مستخدم آخر...</translation>
 <translation id="9201131092683066720">اكتمل شحن <ph name="PERCENTAGE" />% من البطارية.</translation>
 <translation id="9210037371811586452">جارٍ الخروج من وضع سطح المكتب الموحد</translation>
+<translation id="9215934040295798075">تعيين خلفية</translation>
 <translation id="923686485342484400">‏للخروج اضغط على Ctrl Shift Q مرتين.</translation>
 <translation id="945522503751344254">إرسال تعليقات</translation>
 <translation id="98515147261107953">أفقي</translation>

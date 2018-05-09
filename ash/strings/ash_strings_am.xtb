@@ -266,7 +266,6 @@
 <translation id="698231206551913481">አንዴ ይህ ተጠቃሚ ከተወገደ በኋላ ከዚህ ተጠቃሚ ጋር የተጎዳኙ ሁሉም ፋይሎች እና አካባቢያዊ ውሂብ በቋሚነት ይሰረዛሉ።</translation>
 <translation id="7029814467594812963">ከክፍለ-ጊዜ ውጣ</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" />ን ወደ <ph name="RECEIVER_NAME" /> Cast በማድረግ ላይ</translation>
-<translation id="7052914147756339792">ልጣፍ አዘጋጅ...</translation>
 <translation id="7066646422045619941">ይህ አውታረ መረብ በአስተዳዳሪዎ ነው የተሰናከለው።</translation>
 <translation id="7067196344162293536">በራስ-አሽከርክር</translation>
 <translation id="7098389117866926363">USB-C መሣሪያ (የግራ ወደብ ከኋላ በኩል)</translation>
@@ -355,6 +354,7 @@
 <translation id="9194617393863864469">ሌላ ተጠቃሚ በመለያ አስገባ...</translation>
 <translation id="9201131092683066720">ባትሪው <ph name="PERCENTAGE" />% ሙሉ ነው።</translation>
 <translation id="9210037371811586452">ከተዋሃደ የዴስክቶፕ ሁነታ በመውጣት ላይ</translation>
+<translation id="9215934040295798075">ልጣፍ ያዘጋጁ</translation>
 <translation id="923686485342484400">ዘግተው ለመውጣት Ctrl Shift Qን ሁለቴ ይጫኑ።</translation>
 <translation id="945522503751344254">ግብረ መልስ ላክ</translation>
 <translation id="98515147261107953">በወርድ</translation>

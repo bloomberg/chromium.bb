@@ -413,6 +413,20 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Aún así, la revisión ortográfica se puede llevar a cabo utilizando un diccionario descargado, puesto que esta política solo controla el uso del servicio en línea.
 
       Si esta opción no se configura, los usuarios pueden elegir utilizar o no el servicio de revisión ortográfica.</translation>
+<translation id="2294283832646774959">Configura una lista de impresoras.
+
+      Esta política permite que los administradores proporcionen configuraciones de impresoras para sus usuarios.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> y <ph name="PRINTER_DESCRIPTION" /> son strings con formato libre que pueden personalizarse para facilitar la selección de impresoras. <ph name="PRINTER_MANUFACTURER" /> y <ph name="PRINTER_MODEL" /> sirven para que los usuarios finales puedan identificar las impresoras fácilmente y representan al fabricante y el modelo de la impresora. <ph name="PRINTER_URI" /> debe ser una dirección que se pueda contactar desde la computadora cliente, que incluya <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> y <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> es opcional. Si se proporciona, se usa para ayudar con la anulación de las impresoras <ph name="ZEROCONF_DISCOVERY" /> duplicadas.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> debe coincidir con uno de los strings que representan una impresora compatible con <ph name="PRODUCT_NAME" />. El string se usará para identificar e instalar el PPD correspondiente para la impresora. Para obtener más información, visita https://support.google.com/chrome?p=noncloudprint.
+
+      La configuración de la impresora se completa cuando se usa por primera vez. Los PPD no se descargan hasta que se usa la impresora. Luego, los PPD que se usan con mayor frecuencia se almacenan en caché.
+
+      Esta política no afecta la capacidad del usuario para configurar impresoras en dispositivos individuales. Su objetivo es complementar la configuración de impresoras a cargo de usuarios individuales.
+
+      Para los dispositivos administrados con Active Directory, esta política es compatible con la expansión de <ph name="MACHINE_NAME_VARIABLE" /> al nombre de la máquina de Active Directory o un substring de él. Por ejemplo, si el nombre de la máquina es <ph name="MACHINE_NAME_EXAMPLE" />, entonces <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> se reemplazará con los 4 caracteres a partir de la sexta posición, es decir, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Ten en cuenta que esta posición incluye el cero.
+      </translation>
 <translation id="2294382669900758280">No se tiene en cuenta la reproducción de video en las apps de Android, incluso si esta política se establece como <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Configura la página predeterminada Nueva pestaña en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Especificar una lista de complementos habilitados</translation>
@@ -979,11 +993,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si esta política se deja sin configurar, SPDY estará disponible.</translation>
 <translation id="3890999316834333174">Políticas de desbloqueo rápido</translation>
 <translation id="3891357445869647828">Habilitar JavaScript</translation>
-<translation id="3891953007921334498">Inhabilita las herramientas del programador y la consola de JavaScript.
-
-      Si se habilita esta configuración, no se podrá acceder a las herramientas del programador, y los elementos del sitio web ya no se podrán inspeccionar. Se inhabilitarán las combinaciones de teclas y entradas de menú o de menú contextual para abrir las herramientas del programador o la consola de JavaScript.
-
-      Si se inhabilita o no se configura esta opción, el usuario podrá usar las herramientas del programador y la consola de JavaScript.</translation>
 <translation id="3895557476567727016">Configura el directorio predeterminado que usará <ph name="PRODUCT_NAME" /> para descargar archivos.
 
       Si se establece esta política, cambiará el directorio predeterminado en el que <ph name="PRODUCT_NAME" /> descarga archivos. Esta política no es obligatoria, por lo que el usuario podrá cambiar el directorio.
@@ -1172,6 +1181,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4508686775017063528">Si se establece esta política como verdadera o no se establece, se habilitará <ph name="PRODUCT_NAME" /> y los usuarios podrán ejecutarla desde el menú de la app, los menús contextuales de la página, los controles multimedia en los sitios web compatibles con Cast y (si se muestra) el ícono de la barra de herramientas de Cast.
 
           Si se establece esta política como falsa, <ph name="PRODUCT_NAME" /> se inhabilitará.</translation>
+<translation id="4515404363392014383">Habilita la Navegación segura para las fuentes de confianza</translation>
 <translation id="4518251772179446575">Preguntar siempre si un sitio quiere rastrear la ubicación física de los usuarios.</translation>
 <translation id="4519046672992331730">Habilita las sugerencias de búsqueda en el cuadro multifunción de <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien esta configuración.    
 
@@ -1292,6 +1302,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Si esta política se establece en Falso, las solicitudes de bloqueo de activación de pantalla se ignorarán.</translation>
 <translation id="487460824085252184">Migra automáticamente y no solicita el consentimiento del usuario.</translation>
+<translation id="4874982543810021567">Bloquea WebUSB en estos sitios</translation>
 <translation id="4876805738539874299">Versión de SSL máxima habilitada</translation>
 <translation id="4897928009230106190">Especifica los parámetros utilizados al realizar una búsqueda de sugerencias con POST. Se compone de pares de nombre/valor separados por coma. Si un valor es un parámetro de plantilla, como {searchTerms} en el ejemplo anterior, se reemplazará por datos de términos de búsqueda reales.
 
@@ -1819,6 +1830,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si no se establece esta política, la predicción de red se habilitará, pero el usuario podrá cambiarla.</translation>
 <translation id="6658245400435704251">Especifica la cantidad máxima de segundos que un dispositivo puede retrasar aleatoriamente la descarga de una actualización desde el momento en el que la descarga se envío al servidor por primera vez. El dispositivo puede dedicar una parte de este tiempo al proceso de actualización y el resto a realizar las comprobaciones necesarias. En cualquier caso, el límite superior de la dispersión es un período de tiempo constante, para que el dispositivo no se quede bloqueado mientras espera descargar una actualización.</translation>
 <translation id="6665670272107384733">Establecer la frecuencia con la que el usuario debe ingresar la contraseña para usar el desbloqueo rápido</translation>
+<translation id="6681229465468164801">Te permite establecer una lista de patrones de URL que especifica los sitios que no pueden solicitarle al usuario acceso a un dispositivo USB.
+
+          Si no se establece esta política, el valor predeterminado global se usará para todos los sitios, ya sea desde la política "DefaultWebUsbGuardSetting" (si se establece) o desde otro tipo de configuración personal del usuario.
+
+          Los patrones de URL en esta política no deben entrar en conflicto con los que se configuren a través de WebUsbAskForUrls. No se especifica cuál de las dos políticas tiene prioridad si una URL coincide con ambas.</translation>
 <translation id="6689792153960219308">Informar estado de hardware</translation>
 <translation id="6698071416141001300">La marca de la protección de la contraseña que indica que la cuenta está en riesgo se activa cuando se vuelve a usar la contraseña</translation>
 <translation id="6699880231565102694">Habilitar autenticación de dos factores para los hosts de acceso remoto.</translation>
@@ -1976,6 +1992,11 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si se inhabilita o no se establece, la protección de Navegación segura se aplicará a todos los recursos.
       Esta política no está disponible en instancias de Windows que no estén unidas a un dominio de <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Bloquear ventanas emergentes en estos sitios</translation>
+<translation id="7085803328069945025">Te permite establecer una lista de patrones de URL que especifican los sitios que pueden solicitarle al usuario acceso a un dispositivo USB.
+
+          Si no se establece esta política, se usará el valor predeterminado global para todos los sitios, ya sea desde la política "DefaultWebUsbGuardSetting" (si se establece) o desde otro tipo de configuración personal del usuario.
+
+          Los patrones de URL en esta política no deben entrar en conflicto con los que se configuren a través de WebUsbAskForUrls. No se especifica cuál de las dos políticas tiene prioridad si una URL coincide con ambas.</translation>
 <translation id="7106631983877564505">Habilitar el bloqueo cuando los dispositivos <ph name="PRODUCT_OS_NAME" /> están inactivos o suspendidos
 
       Si habilitas esta configuración, los usuarios deberán ingresar una contraseña para que los dispositivos salgan del modo de suspensión.
@@ -2663,6 +2684,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="9096086085182305205">Lista blanca del servidor de autenticación</translation>
 <translation id="9098553063150791878">Políticas para la autenticación HTTP</translation>
 <translation id="9105265795073104888">Las apps de Android tienen a su disposición solo un subgrupo de opciones de configuración de proxy. Dichas apps pueden elegir usar el proxy de forma voluntaria, pero no puedes forzarlas a que lo usen.</translation>
+<translation id="9106865192244721694">Permite WebUSB en estos sitios</translation>
 <translation id="9112727953998243860">Archivo de configuración de impresoras empresariales</translation>
 <translation id="9112897538922695510">Te permite registrar una lista de controladores de protocolo. Esto solo puede ser una política recomendada. La propiedad |protocol| se debe establecer para el esquema (por ejemplo, "mailto") de la URL, y la propiedad |url| se debe establecer para el patrón de la URL de la aplicación que controla el esquema. El patrón puede incluir una especificación "%s" que, si está presente, se reemplazará por la URL controlada.
 
@@ -2695,6 +2717,11 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="915194831143859291">Si esta política se establece en false o no se configura, <ph name="PRODUCT_OS_NAME" /> permitirá que el usuario apague el dispositivo.
       Si esta política se establece en true, <ph name="PRODUCT_OS_NAME" /> desencadenará un reinicio cuando el usuario apague el dispositivo. <ph name="PRODUCT_OS_NAME" /> reemplaza todos los botones de apagado de la UI por botones de reinicio. Si el usuario apaga el dispositivo con el botón de encendido, no se reiniciará automáticamente aunque la política esté habilitada.</translation>
 <translation id="9158929520101169054">Permitir el acceso múltiple en el navegador</translation>
+<translation id="9165792353046089850">Te permite establecer si los sitios web pueden acceder a dispositivos USB conectados. El acceso se puede bloquear por completo, o se puede preguntar al usuario cada vez que un sitio web desee acceder a dispositivos USB conectados.
+
+          Las políticas "WebUsbAskForUrls" y "WebUsbBlockedForUrls" pueden anular esta política para patrones de URL específicos.
+
+          Si no se establece esta política, se usará el valor "3", y el usuario podrá cambiarlo.</translation>
 <translation id="9167719789236691545">Inhabilitar Drive en la app de Archivos de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="9187743794267626640">Inhabilitar la activación del almacenamiento externo</translation>
 <translation id="9197740283131855199">Indica el porcentaje en el que debe ajustarse el tiempo de espera de inactividad de la pantalla si el usuario vuelve a estar activo después de la inactividad.</translation>

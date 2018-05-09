@@ -266,7 +266,6 @@
 <translation id="698231206551913481">Vse datoteke in lokalni podatki, povezani s tem uporabnikom, bodo trajno izbrisani, ko odstranite uporabnika.</translation>
 <translation id="7029814467594812963">Zapusti sejo</translation>
 <translation id="7034339000180558234">Predvajanje zavihka v <ph name="TAB_NAME" /> sprejemniku <ph name="RECEIVER_NAME" /></translation>
-<translation id="7052914147756339792">Nastavi sliko za ozadje ...</translation>
 <translation id="7066646422045619941">To omrežje je onemogočil skrbnik.</translation>
 <translation id="7067196344162293536">Samodejno sukanje</translation>
 <translation id="7098389117866926363">Naprava USB-C (vrata levo zadaj)</translation>
@@ -355,6 +354,7 @@
 <translation id="9194617393863864469">Prijava drugega uporabnika ...</translation>
 <translation id="9201131092683066720">Napolnjenost akumulatorja: <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Izhod iz načina enotnega namizja</translation>
+<translation id="9215934040295798075">Nastavi sliko za ozadje</translation>
 <translation id="923686485342484400">Dvakrat pritisnite Control Shift Q, če se želite odjaviti.</translation>
 <translation id="945522503751344254">Pošlji povratne informacije</translation>
 <translation id="98515147261107953">Ležeče</translation>

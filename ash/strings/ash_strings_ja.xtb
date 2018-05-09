@@ -266,7 +266,6 @@
 <translation id="698231206551913481">このユーザーを削除すると、このユーザーに関連付けられているファイルとローカルデータもすべて完全に削除されます。</translation>
 <translation id="7029814467594812963">セッションを終了</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> を <ph name="RECEIVER_NAME" /> にキャスト中</translation>
-<translation id="7052914147756339792">壁紙を設定...</translation>
 <translation id="7066646422045619941">このネットワークは管理者によって無効にされています。</translation>
 <translation id="7067196344162293536">自動回転</translation>
 <translation id="7098389117866926363">USB-C デバイス（背面左のポート）</translation>
@@ -356,6 +355,7 @@
 <translation id="9194617393863864469">別のユーザーとしてログイン...</translation>
 <translation id="9201131092683066720">バッテリー残量: <ph name="PERCENTAGE" />%。</translation>
 <translation id="9210037371811586452">デスクトップ統合モードの終了中</translation>
+<translation id="9215934040295798075">壁紙を設定</translation>
 <translation id="923686485342484400">ログアウトするには、Ctrl Shift Q を 2 回押します。</translation>
 <translation id="945522503751344254">フィードバックを送信</translation>
 <translation id="98515147261107953">横</translation>

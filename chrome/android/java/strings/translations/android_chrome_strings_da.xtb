@@ -111,7 +111,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> vil gerne parre</translation>
 <translation id="1994173015038366702">Webadresse</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB af andre apps</translation>
-<translation id="2015632741368427174">Omdirigering er blokeret på dette website:</translation>
 <translation id="2017836877785168846">Nulstiller historikken og autofuldførelser i adresselinjen.</translation>
 <translation id="2021896219286479412">Kontrolelementer på website i fuld skærm</translation>
 <translation id="2038563949887743358">Slå computerversionen af websitet til</translation>
@@ -183,7 +182,6 @@
 <translation id="2650751991977523696">Vil du downloade filen igen?</translation>
 <translation id="2653659639078652383">Indsend</translation>
 <translation id="2677748264148917807">Forlad</translation>
-<translation id="2693813674743028984">Skjul lageroplysninger</translation>
 <translation id="2704606927547763573">Kopieret</translation>
 <translation id="2707726405694321444">Opdater siden</translation>
 <translation id="2709516037105925701">AutoFyld</translation>
@@ -209,7 +207,6 @@
 <translation id="2956410042958133412">Denne konto administreres af <ph name="PARENT_NAME_1" /> og <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Alle rettigheder forbeholdes.</translation>
 <translation id="2962095958535813455">Skiftet til inkognitofaner</translation>
-<translation id="2965945119655563012">Vis lageroplysninger</translation>
 <translation id="2968755619301702150">Certifikatfremviser</translation>
 <translation id="2979025552038692506">Valgt inkognitofane</translation>
 <translation id="2989523299700148168">Besøgt for nylig</translation>
@@ -527,7 +524,6 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="5817918615728894473">Start parring</translation>
 <translation id="583281660410589416">Ukendt</translation>
 <translation id="5833984609253377421">Del link</translation>
-<translation id="583891442612896534">Chrome kan ikke komme i kontakt med Googles servere i forbindelse med datakomprimering. Dine sparede data kan være begrænsede.</translation>
 <translation id="5854790677617711513">Ældre end 30 dage</translation>
 <translation id="5858741533101922242">Chrome kan ikke slå Bluetooth-adapteren til</translation>
 <translation id="5860033963881614850">Fra</translation>
@@ -589,7 +585,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Rediger bogmærke</translation>
 <translation id="6406506848690869874">Synkronisering</translation>
-<translation id="6409731863280057959">Pop op-vinduer</translation>
 <translation id="641643625718530986">Udskriv…</translation>
 <translation id="6416782512398055893">Der er downloadet <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Vælg en søgemaskine</translation>
@@ -840,7 +835,6 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="8676374126336081632">Ryd indtastning</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstyrkeniveau: # søjle}one{Signalstyrkeniveau: # søjle}other{Signalstyrkeniveau: # søjler}}</translation>
 <translation id="869891660844655955">Udløbsdato</translation>
-<translation id="8712637175834984815">Forstået</translation>
 <translation id="8719023831149562936">Den aktuelle fane kan ikke overføres</translation>
 <translation id="8725066075913043281">Forsøg igen</translation>
 <translation id="8728487861892616501">Når du bruger denne app, accepterer du Chromes <ph name="BEGIN_LINK1" />servicevilkår<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />erklæring om privatliv<ph name="END_LINK2" /> samt <ph name="BEGIN_LINK3" />erklæringen om privatliv for Google-konti, der administreres med Family Link<ph name="END_LINK3" />.</translation>
@@ -850,7 +844,6 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="8812260976093120287">På nogle websites kan du betale med ovenstående understøttede betalingsapps på din enhed.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> åbnes i Chrome. Når du fortsætter, accepterer du Chromes <ph name="BEGIN_LINK1" />servicevilkår<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />erklæring om privatliv<ph name="END_LINK2" /> samt <ph name="BEGIN_LINK3" />erklæringen om privatliv for Google-konti, der administreres med Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Bogmærker</translation>
-<translation id="883635517171802338">Bloker visning af pop up-vinduer på websites (anbefales)</translation>
 <translation id="883806473910249246">Der opstod en fejl under download af indholdet.</translation>
 <translation id="8840953339110955557">Denne side kan afvige fra onlineversionen.</translation>
 <translation id="8847988622838149491">USB</translation>

@@ -264,7 +264,6 @@
 <translation id="698231206551913481">इस उपयोगकर्ता को निकाल दिए जाने पर, इस उपयोगकर्ता से संबद्ध सभी फ़ाइलों और स्थानीय डेटा को स्थायी रूप से हटा दिया जाएगा.</translation>
 <translation id="7029814467594812963">सत्र से बाहर निकलें</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> को <ph name="RECEIVER_NAME" /> पर कास्‍ट किया जा रहा है</translation>
-<translation id="7052914147756339792">वॉलपेपर सेट करें...</translation>
 <translation id="7066646422045619941">यह नेटवर्क आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>
 <translation id="7067196344162293536">स्वत: घुमाएं</translation>
 <translation id="7098389117866926363">USB-C डिवाइस (पीछे बायां पोर्ट)</translation>
@@ -350,6 +349,7 @@
 <translation id="9194617393863864469">किसी अन्‍य उपयोगकर्ता में प्रवेश करें...</translation>
 <translation id="9201131092683066720">बैटरी <ph name="PERCENTAGE" />% भरी हुई है.</translation>
 <translation id="9210037371811586452">संयुक्त डेस्कटॉप मोड से बाहर निकाला जा रहा है</translation>
+<translation id="9215934040295798075">वॉलपेपर सेट करें</translation>
 <translation id="923686485342484400">प्रस्थान करने के लिए दो बार Control Shift Q दबाएं.</translation>
 <translation id="945522503751344254">सुझाव भेजें</translation>
 <translation id="98515147261107953">भू-दृश्य</translation>

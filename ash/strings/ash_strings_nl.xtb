@@ -266,7 +266,6 @@
 <translation id="698231206551913481">Alle bestanden en lokale gegevens die zijn gekoppeld aan deze gebruiker, worden definitief verwijderd zodra deze gebruiker is verwijderd.</translation>
 <translation id="7029814467594812963">Sessie sluiten</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> wordt gecast naar <ph name="RECEIVER_NAME" /></translation>
-<translation id="7052914147756339792">Achtergrond instellen...</translation>
 <translation id="7066646422045619941">Dit netwerk is uitgeschakeld door je beheerder.</translation>
 <translation id="7067196344162293536">Automatisch draaien</translation>
 <translation id="7098389117866926363">USB-C-apparaat (poort links aan de achterkant)</translation>
@@ -355,6 +354,7 @@
 <translation id="9194617393863864469">Een andere gebruiker inloggen...</translation>
 <translation id="9201131092683066720">De batterij is <ph name="PERCENTAGE" />% vol.</translation>
 <translation id="9210037371811586452">Samengestelde desktopmodus wordt gesloten</translation>
+<translation id="9215934040295798075">Achtergrond instellen</translation>
 <translation id="923686485342484400">Druk twee keer op Control+Shift+Q om uit te loggen.</translation>
 <translation id="945522503751344254">Feedback verzenden</translation>
 <translation id="98515147261107953">Liggend</translation>

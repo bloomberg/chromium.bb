@@ -42,7 +42,6 @@
 <translation id="1056898198331236512">Varning</translation>
 <translation id="1058262162121953039">PUK-kod</translation>
 <translation id="1062407476771304334">Ersätt</translation>
-<translation id="1062866675591297858">Hantera dina kontrollerade användare via <ph name="BEGIN_LINK" />översikten för kontrollerade användare<ph name="END_LINK" />.</translation>
 <translation id="1064835277883315402">Anslut till privat nätverk</translation>
 <translation id="1064912851688322329">Koppla bort Google-kontot</translation>
 <translation id="1067048845568873861">Skapad</translation>
@@ -65,7 +64,6 @@
 <translation id="1091767800771861448">Tryck på Esc om du vill hoppa över (endast versioner som inte är officiella).</translation>
 <translation id="1093457606523402488">Synliga nätverk:</translation>
 <translation id="1094607894174825014">Läs- eller skrivåtgärden begärdes med en ogiltig offset på: <ph name="DEVICE_NAME" />.</translation>
-<translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Logga in<ph name="END_SIGN_IN_LINK" /> om du vill styra och visa vilka webbplatser den här personen besöker.</translation>
 <translation id="109758035718544977">Ta fram dolda webbplatser</translation>
 <translation id="1097658378307015415">Aktivera nätverket <ph name="NETWORK_ID" /> genom att logga in som gäst innan du loggar in</translation>
 <translation id="1103523840287552314">Översätt alltid <ph name="LANGUAGE" /></translation>
@@ -244,7 +242,6 @@
 <translation id="1361655923249334273">Oanvänd</translation>
 <translation id="1363028406613469049">Spår</translation>
 <translation id="1367951781824006909">Välj fil</translation>
-<translation id="136802136832547685">Det finns inga kontrollerade användare att lägga till på enheten.</translation>
 <translation id="1368265273904755308">Rapportera problem</translation>
 <translation id="1370646789215800222">Vill du ta bort personen?</translation>
 <translation id="1372681413396468867">{NUM_ITEMS,plural, =1{1 objekt som ska tas bort}other{# objekt som ska tas bort}}</translation>
@@ -471,7 +468,6 @@
 <translation id="1692799361700686467">Cookies från flera webbplatser tillåts.</translation>
 <translation id="169515659049020177">Skift</translation>
 <translation id="1698122934742150150">Endast nuvarande inkognitosession</translation>
-<translation id="1700199471143028312">Administratören tillåter inte att du skapar kontrollerade användare.</translation>
 <translation id="1701062906490865540">Ta bort personen</translation>
 <translation id="1706586824377653884">Lades till av administratören</translation>
 <translation id="1706625117072057435">Zoomnivåer</translation>
@@ -1040,7 +1036,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="2604255671529671813">Fel vid nätverksanslutning</translation>
 <translation id="2606246518223360146">Länka Data</translation>
 <translation id="2607101320794533334">Information om mottagarens publika nyckel</translation>
-<translation id="2607459012323956820">Den som hanterar användaren kan fortfarande se vilka webbplatser som har besökts och användarens inställningar på <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" />.</translation>
 <translation id="2608770217409477136">Använd standardinställningar</translation>
 <translation id="2609896558069604090">Skapa genvägar ...</translation>
 <translation id="2610157865375787051">Viloläge</translation>
@@ -1283,7 +1278,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="2951247061394563839">Centrera fönster</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> cookies</translation>
 <translation id="2958721676848865875">Varning vid paketering av tillägg</translation>
-<translation id="2961043351165706615">Linux-appar som du har installerat raderas från denna Chromebook.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (tillägg har angetts)</translation>
 <translation id="2961695502793809356">Klicka för att fortsätta, håll ned för att se historik</translation>
 <translation id="2963151496262057773">Följande pluginprogram svarar inte: <ph name="PLUGIN_NAME" />. Vill du stoppa det?</translation>
@@ -1335,15 +1329,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="3022978424994383087">Jag hörde inte.</translation>
 <translation id="3024374909719388945">Använd 24-timmars klocka</translation>
 <translation id="302781076327338683">Läs in igen och förbigå cacheminnet</translation>
-<translation id="3030243755303701754">En kontrollerad användare kan utforska webben under ditt överinseende. Som ansvarig för en kontrollerad användare i Chrome kan du
-
- • tillåta eller förbjuda webbplatser
- • se vilka webbplatser den kontrollerade användaren har besökt
- • hantera andra inställningar.
-
-Att skapa en kontrollerad användare innebär inte att ett Google-konto skapas. Den kontrollerade användarens bokmärken, webbhistorik och övriga inställningar följer inte med till andra enheter vid synkronisering i Chrome. När du har skapat en ny kontrollerad användare kan du hantera inställningarna för den när som helst och med vilken enhet som helst på <ph name="BEGIN_MANAGE_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_MANAGE_LINK" />.
-
-Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vill ha mer information.</translation>
 <translation id="3031417829280473749">Agent X</translation>
 <translation id="3031557471081358569">Välj objekt att importera:</translation>
 <translation id="3031601332414921114">Återuppta utskriften</translation>
@@ -1384,7 +1369,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="3085412380278336437">Webbplatsen har åtkomst till kameran</translation>
 <translation id="3085752524577180175">SOCKS-värd</translation>
 <translation id="3088325635286126843">&amp;Byt namn ...</translation>
-<translation id="3089231390674410424">Det verkar vara problem med användaruppgifterna. Kontrollera att inloggningen är rätt och försök igen.</translation>
 <translation id="3090193911106258841">Får åtkomst till ljud- och videoindata</translation>
 <translation id="3090819949319990166">Det går inte att kopiera den externa CRX-filen till <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558"><ph name="DEVICE_NAME" /> har kopplats</translation>
@@ -1399,7 +1383,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="3121793941267913344">Återställ den här <ph name="IDS_SHORT_PRODUCT_NAME" />-enheten</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3122496702278727796">Kunde inte skapa datakatalog</translation>
-<translation id="3123569374670379335">(Kontrollerad)</translation>
 <translation id="3124111068741548686">USER-handtag</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Det här raderar all data som lagrats på enheten av alla webbplatser som visas. Vill du fortsätta?</translation>
@@ -1434,8 +1417,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (med maskinvarustöd)</translation>
 <translation id="316125635462764134">Ta bort app</translation>
 <translation id="3161522574479303604">Alla språk</translation>
-<translation id="316307797510303346">Styr och visa vilka webbplatser den här personen besöker från <ph name="CUSTODIAN_EMAIL" />.
-  Dina inloggningsuppgifter för kontot är inaktuella.</translation>
 <translation id="3165390001037658081">Vissa operatörer kanske blockerar den här funktionen.</translation>
 <translation id="316854673539778496">Logga in och aktivera synkronisering om du vill ha samma tillägg tillgängliga oavsett vilken enhet du använder.</translation>
 <translation id="3170072451822350649">Du kan även hoppa över inloggningen och <ph name="LINK_START" />surfa som gäst<ph name="LINK_END" />.</translation>
@@ -1468,7 +1449,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="3229922550070982305">spela upp/pausa</translation>
 <translation id="3232318083971127729">Värde:</translation>
 <translation id="3236289833370040187"><ph name="DESTINATION_DOMAIN" /> blir den nya ägaren efter överföringen.</translation>
-<translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> är nu en kontrollerad användare</translation>
 <translation id="323803881985677942">Öppna tilläggsalternativ</translation>
 <translation id="3241680850019875542">Välj rotkatalogen för tillägget som ska paketeras. Om du vill uppdatera ett tillägg väljer du också den privata nyckel som ska återanvändas.</translation>
 <translation id="3242765319725186192">I förväg delad nyckel:</translation>
@@ -1700,7 +1680,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="3584169441612580296">Läsa och ändra foton, musik och andra media från datorn</translation>
 <translation id="3587482841069643663">Alla</translation>
 <translation id="358796204584394954">Genomför kopplingen genom att skriva den här koden på <ph name="DEVICE_NAME" />:</translation>
-<translation id="3589532742556016615">Appar eller innehåll på andra enheter påverkas inte.</translation>
 <translation id="3589766037099229847">Osäkert innehåll har blockerats</translation>
 <translation id="3590194807845837023">Lås upp profil och starta om</translation>
 <translation id="3592260987370335752">&amp;Läs mer</translation>
@@ -1834,7 +1813,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="3778152852029592020">Nedladdnningen avbröts.</translation>
 <translation id="3778740492972734840">&amp;Verktyg för programmerare</translation>
 <translation id="3778868487658107119">Ställ frågor. Be den att göra saker. Det är Google anpassat just för dig, alltid redo att hjälpa dig.</translation>
-<translation id="3780663724044634171">Välj ett konto som ska hantera den kontrollerade användaren.</translation>
 <translation id="378312418865624974">Läsa en unik identifierare för den här datorn</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Visa genväg för appar</translation>
@@ -2562,7 +2540,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="4964455510556214366">Ordning</translation>
 <translation id="4964673849688379040">Kontrollerar …</translation>
 <translation id="4965808351167763748">Vill du konfigurera den här enheten för Hangouts Meet?</translation>
-<translation id="4967749818080339523">Välj ett konto</translation>
 <translation id="496888482094675990">Med appen Filer kommer du snabbt åt filer som du har sparat på Google Drive, externa lagringsenheter eller din Chrome OS-enhet.</translation>
 <translation id="4969785127455456148">Album</translation>
 <translation id="4971412780836297815">Öppna när nedladdningen är klar</translation>
@@ -2749,7 +2726,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
     Oavsett vad som händer med din enhet förvaras filerna säkert i Google Drive.<ph name="MARKUP_6" />
     <ph name="MARKUP_7" />Dela, skapa och jobba<ph name="MARKUP_8" />
     med filer tillsammans med andra på ett och samma ställe.<ph name="MARKUP_9" /></translation>
-<translation id="5262401745672360397">Även filer som delats med Linux-appar kan raderas.</translation>
 <translation id="5264148714798105376">Det här kan ta en liten stund.</translation>
 <translation id="5264252276333215551">Anslut till internet för att starta appen i kioskläge.</translation>
 <translation id="5265562206369321422">Offline i mer än en vecka</translation>
@@ -3401,7 +3377,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="6241530762627360640">Få åtkomst till information om Bluetooth-enheter som är kopplade till ditt system och upptäck Bluetooth-enheter i närheten.</translation>
 <translation id="6243280677745499710">Nuvarande</translation>
 <translation id="6243774244933267674">Servern är inte tillgänglig</translation>
-<translation id="6246413617632217567">Det gick inte att importera den hanterade användaren. Kontrollera hårddiskutrymmet och dina behörigheter och försök igen.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6247802389331535091">System: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">Uppdateringen är klar</translation>
@@ -3600,7 +3575,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Obs!<ph name="END_BOLD" /> Aktivera endast om du vet vad du gör eller om du har blivit ombedd att göra det eftersom insamling av data kan försämra resultatet.</translation>
 <translation id="654233263479157500">Åtgärda navigeringsfel med hjälp av en webbtjänst</translation>
 <translation id="6544215763872433504">En webbläsare till dig från Google</translation>
-<translation id="6545325945815270297">Hantera synkroniserade data och enheter i <ph name="BEGIN_LINK" />Google Översikt<ph name="END_LINK" />.</translation>
 <translation id="6545665334409411530">Upprepningsintervall</translation>
 <translation id="6545834809683560467">Använd en förslagstjänst om du vill ha hjälp att slutföra sökningar och fylla i webbadresser i adressfältet eller i sökrutan i startprogrammet för appar</translation>
 <translation id="6546686722964485737">Anslut till WiMAX-nätverk</translation>
@@ -3615,7 +3589,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="6555810572223193255">Rensning är inte tillgängligt för tillfället</translation>
 <translation id="6556866813142980365">Upprepa</translation>
 <translation id="6558280019477628686">Ett fel uppstod. Vissa objekt kanske inte har raderats.</translation>
-<translation id="6559580823502247193">(finns redan på enheten)</translation>
 <translation id="6561726789132298588">retur</translation>
 <translation id="656293578423618167">För lång sökväg eller för långt filnamn. Spara med ett kortare namn eller på en annan plats.</translation>
 <translation id="656398493051028875"><ph name="FILENAME" /> tas bort ...</translation>
@@ -3812,7 +3785,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="6862635236584086457">Alla filer som sparas i den här mappen säkerhetskopieras online automatiskt</translation>
 <translation id="6865313869410766144">Formuläruppgifter för Autofyll</translation>
 <translation id="686664946474413495">Färgtemperatur</translation>
-<translation id="6867678160199975333">Växla till <ph name="NEW_PROFILE_NAME" /></translation>
 <translation id="6870888490422746447">Välj en app som du vill dela till:</translation>
 <translation id="6871644448911473373">OCSP-svarare: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Det angivna lösenordet avvisades av servern.</translation>
@@ -3906,7 +3878,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="7018275672629230621">Läsa och ändra din webbhistorik</translation>
 <translation id="7019805045859631636">Snabb</translation>
 <translation id="7022562585984256452">Startsidan har ställts in.</translation>
-<translation id="7025036625303002400">Det verkar som om du redan har lagt till en kontrollerad användare med det här namnet.</translation>
 <translation id="7025190659207909717">Hantering av mobil datatjänst</translation>
 <translation id="7025325401470358758">Nästa ruta</translation>
 <translation id="7027125358315426638">Databasnamn:</translation>
@@ -3955,7 +3926,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="7092106376816104">Undantag för popup-fönster</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Utväxla data med enheterna <ph name="HOSTNAMES" /></translation>
-<translation id="7096108453481049031">Det gick inte att importera den hanterade användaren. Kontrollera nätverksanslutningen och försök igen senare.</translation>
 <translation id="7096406577040705016">Aktivera och inaktivera helskärmsförstoring</translation>
 <translation id="7098447629416471489">Andra sparade sökmotorer visas här</translation>
 <translation id="7099337801055912064">PPD-filen var för stor att läsa in. Storleksgränsen är 250 kB.</translation>
@@ -4003,7 +3973,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="7168109975831002660">Minsta teckenstorlek</translation>
 <translation id="7170041865419449892">Utanför intervallet</translation>
 <translation id="7171559745792467651">Installera appar från dina andra enheter</translation>
-<translation id="7173917244679555">Det verkar som om du redan hanterar en användare med det namnet. Vill du <ph name="BEGIN_LINK" />importera <ph name="PROFILE_NAME" /><ph name="END_LINK" /> till den här enheten?</translation>
 <translation id="7175037578838465313">Konfigurera <ph name="NAME" /></translation>
 <translation id="7175353351958621980">Överförd från:</translation>
 <translation id="7180611975245234373">Uppdatera</translation>
@@ -4174,7 +4143,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="7444726222535375658">Fortsätt till Hangouts Meet</translation>
 <translation id="7444983668544353857">Inaktivera <ph name="NETWORKDEVICE" /></translation>
 <translation id="7445682342344043969">Popupfönster har blockerats</translation>
-<translation id="744859430125590922">Styr och visa vilka webbplatser den här personen besöker från <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="7453008956351770337">Genom att välja den här skrivaren ger du följande tillägg behörighet att komma åt skrivaren:</translation>
 <translation id="7453467225369441013">Du loggas ut från de flesta webbplatser. Du loggas inte ut från Google-kontot.</translation>
 <translation id="7456142309650173560">utvecklare</translation>
@@ -4348,7 +4316,6 @@ När du installerar <ph name="APP_NAME" /> laddas <ph name="DOWNLOAD_SIZE" /> da
 <translation id="7717845620320228976">Sök efter uppdateringar</translation>
 <translation id="7719367874908701697">Sidzoom</translation>
 <translation id="771953673318695590">Kvalitetssäkring</translation>
-<translation id="7720375555307821262">Om du vill bevaka personen <ph name="BEGIN_LINK" />loggar du in i Chrome<ph name="END_LINK" />.</translation>
 <translation id="7721179060400456005">Tillåt att fönster visas över flera skärmar.</translation>
 <translation id="7722040605881499779">Uppdateringen kräver: <ph name="NECESSARY_SPACE" /></translation>
 <translation id="7724603315864178912">Klipp ut</translation>
@@ -5203,7 +5170,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="9024331582947483881">helskärm</translation>
 <translation id="9025098623496448965">OK, ta mig till inloggningssidan igen</translation>
 <translation id="9026731007018893674">ladda ned</translation>
-<translation id="9027146684281895941">Kontrollera den här personen för att styra och visa webbplatserna de besöker via ditt Google-konto.</translation>
 <translation id="9027459031423301635">Öppna länk i ny &amp;flik</translation>
 <translation id="9027603907212475920">Konfigurera synkronisering...</translation>
 <translation id="9030515284705930323">Organisationen har inte aktiverat Google Play Butik för ditt konto. Kontakta administratören om du vill veta mer.</translation>
@@ -5363,7 +5329,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="98515147261107953">Liggande</translation>
 <translation id="987897973846887088">Det finns inga bilder</translation>
 <translation id="988978206646512040">Lösenfrasen får inte vara tom</translation>
-<translation id="990310048453480215">Ta bort Linux-appar</translation>
 <translation id="992032470292211616">Tillägg, appar och teman kan skada enheten. Vill du fortsätta?</translation>
 <translation id="992592832486024913">Inaktivera ChromeVox (talad feedback)</translation>
 <translation id="994289308992179865">&amp;Repetera</translation>

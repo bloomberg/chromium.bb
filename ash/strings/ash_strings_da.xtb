@@ -267,7 +267,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="698231206551913481">Alle filer og lokale data, der er knyttet til denne bruger, slettes permanent, når brugeren fjernes.</translation>
 <translation id="7029814467594812963">Afslut session</translation>
 <translation id="7034339000180558234">Caster <ph name="TAB_NAME" /> til <ph name="RECEIVER_NAME" /></translation>
-<translation id="7052914147756339792">Vælg baggrund...</translation>
 <translation id="7066646422045619941">Din administrator har deaktiveret dette netværk.</translation>
 <translation id="7067196344162293536">Automatisk rotering</translation>
 <translation id="7098389117866926363">USB-C-enhed (porten bagpå i venstre side)</translation>
@@ -356,6 +355,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="9194617393863864469">Log ind med en anden bruger...</translation>
 <translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE" /> % opladet.</translation>
 <translation id="9210037371811586452">Lukker tilstanden Kombineret skrivebord</translation>
+<translation id="9215934040295798075">Vælg baggrund</translation>
 <translation id="923686485342484400">Tryk på Control+Shift+Q to gange for at logge ud.</translation>
 <translation id="945522503751344254">Send feedback</translation>
 <translation id="98515147261107953">Liggende</translation>

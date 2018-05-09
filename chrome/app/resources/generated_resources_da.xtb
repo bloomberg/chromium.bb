@@ -42,7 +42,6 @@
 <translation id="1056898198331236512">Advarsel</translation>
 <translation id="1058262162121953039">PUK-kode</translation>
 <translation id="1062407476771304334">Erstat</translation>
-<translation id="1062866675591297858">Administrer dine brugere via <ph name="BEGIN_LINK" />Betjeningspanelet for administrerede brugere<ph name="END_LINK" />.</translation>
 <translation id="1064835277883315402">Deltag i et privat netværk</translation>
 <translation id="1064912851688322329">Afbryd din Google-konto</translation>
 <translation id="1067048845568873861">Oprettet</translation>
@@ -65,7 +64,6 @@
 <translation id="1091767800771861448">Tryk på ESC for at springe over (kun uofficielle builds).</translation>
 <translation id="1093457606523402488">Synlige netværk:</translation>
 <translation id="1094607894174825014">Der blev anmodet om en læse- eller skrivehandling med en ugyldig forskydning på: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Log på<ph name="END_SIGN_IN_LINK" /> for at kontrollere og se, hvilke websites denne person besøger.</translation>
 <translation id="109758035718544977">Slå lyden til på websites</translation>
 <translation id="1097658378307015415">Før du logger ind, skal du logge ind som gæst for at aktivere netværket <ph name="NETWORK_ID" /></translation>
 <translation id="1103523840287552314">Oversæt altid <ph name="LANGUAGE" /></translation>
@@ -244,7 +242,6 @@
 <translation id="1361655923249334273">Ikke brugt</translation>
 <translation id="1363028406613469049">Spor</translation>
 <translation id="1367951781824006909">Vælg en fil</translation>
-<translation id="136802136832547685">Der er ingen administrerede brugere at føje til denne enhed.</translation>
 <translation id="1368265273904755308">Rapportér problem</translation>
 <translation id="1370646789215800222">Vil du fjerne personen?</translation>
 <translation id="1372681413396468867">{NUM_ITEMS,plural, =1{1 element fjernes}one{# element fjernes}other{# elementer fjernes}}</translation>
@@ -469,7 +466,6 @@
 <translation id="1692799361700686467">Cookies fra flere websites er tilladt.</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698122934742150150">Kun for den aktuelle inkognitosession</translation>
-<translation id="1700199471143028312">Din administrator tillader ikke, at du opretter administrerede brugere.</translation>
 <translation id="1701062906490865540">Fjern denne person</translation>
 <translation id="1706586824377653884">Tilføjet af din administrator</translation>
 <translation id="1706625117072057435">Zoomniveauer</translation>
@@ -1039,7 +1035,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="2604255671529671813">Fejl i netværksforbindelsen</translation>
 <translation id="2606246518223360146">Tilknyt data</translation>
 <translation id="2607101320794533334">Oplysninger om emnets offentlige nøgle</translation>
-<translation id="2607459012323956820">Indstillinger og browserhistorik for denne overvågede bruger kan muligvis stadig ses af administratoren for <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" /></translation>
 <translation id="2608770217409477136">Anvend standardindstillinger</translation>
 <translation id="2609896558069604090">Opret genveje...</translation>
 <translation id="2610157865375787051">Dvale</translation>
@@ -1282,7 +1277,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="2951247061394563839">Midtervindue</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> cookies</translation>
 <translation id="2958721676848865875">Advarsel om pakkeudvidelse</translation>
-<translation id="2961043351165706615">Dine installerede Linux-apps slettes fra denne Chromebook.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (forlængelse givet)</translation>
 <translation id="2961695502793809356">Klik for at gå frem. Hold knappen inde for at se historikken.</translation>
 <translation id="2963151496262057773">Følgende plugins svarer ikke: <ph name="PLUGIN_NAME" />Vil du stoppe det?</translation>
@@ -1334,17 +1328,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="3022978424994383087">Det er ikke forstået.</translation>
 <translation id="3024374909719388945">Brug 24-timers ur</translation>
 <translation id="302781076327338683">Genindlæs med omgåelse af cachen</translation>
-<translation id="3030243755303701754">En administreret bruger kan udforske internettet med din vejledning. Som administrator af en administreret bruger i Chrome kan du:
-
-
-
- • Tillade eller forbyde bestemte websites.
- • Gennemse de websites, den administrerede bruger har besøgt.
- • Administrere andre indstillinger.
-
-Når du opretter en administreret bruger, oprettes der ikke nogen Google-konto, og brugerens bogmærker, browserhistorik og andre indstillinger følger ikke med vedkommende til andre enheder med Chrome-synkronisering. Når du har oprettet en ny administreret bruger, kan du administrere vedkommendes indstillinger når som helst og fra enhver enhed på <ph name="BEGIN_MANAGE_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_MANAGE_LINK" />.
-
-Få flere oplysninger i <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</translation>
 <translation id="3031417829280473749">Scully</translation>
 <translation id="3031557471081358569">Vælg at importere følgende:</translation>
 <translation id="3031601332414921114">Genoptag udskrivning</translation>
@@ -1385,7 +1368,6 @@ Få flere oplysninger i <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</t
 <translation id="3085412380278336437">Websitet kan anvende dit kamera</translation>
 <translation id="3085752524577180175">SOCKS-host</translation>
 <translation id="3088325635286126843">&amp;Omdøb...</translation>
-<translation id="3089231390674410424">Det ser ud til, at der er et problem med dine loginoplysninger. Sørg for, at du er logget ind på korrekt vis, og prøv igen.</translation>
 <translation id="3090193911106258841">Åbner lyd- og videoinput</translation>
 <translation id="3090819949319990166">Ekstern crx-fil kan ikke kopieres til <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" er parret</translation>
@@ -1400,7 +1382,6 @@ Få flere oplysninger i <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</t
 <translation id="3121793941267913344">Nulstil denne <ph name="IDS_SHORT_PRODUCT_NAME" />-enhed</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3122496702278727796">Oprettelsen af datamappe mislykkedes</translation>
-<translation id="3123569374670379335">(Administreret)</translation>
 <translation id="3124111068741548686">BRUGER-håndtag</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Dette sletter data, der er gemt på din enhed, for alle de viste websites. Vil du fortsætte?</translation>
@@ -1435,8 +1416,6 @@ Få flere oplysninger i <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</t
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (hardwarebaserede)</translation>
 <translation id="316125635462764134">Fjern appen</translation>
 <translation id="3161522574479303604">Alle sprog</translation>
-<translation id="316307797510303346">Kontrollér og se de websites, som denne person besøger via <ph name="CUSTODIAN_EMAIL" />.
-    Loginoplysningerne for din konto er forældede.</translation>
 <translation id="3165390001037658081">Nogle mobilselskaber blokerer muligvis denne funktion.</translation>
 <translation id="316854673539778496">Log ind, og aktivér synkronisering for at få alle dine udvidelser på alle dine enheder.</translation>
 <translation id="3170072451822350649">Du kan også springe login over og <ph name="LINK_START" />anvende som gæst<ph name="LINK_END" />.</translation>
@@ -1469,7 +1448,6 @@ Få flere oplysninger i <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</t
 <translation id="3229922550070982305">afspil/sæt på pause</translation>
 <translation id="3232318083971127729">Værdi:</translation>
 <translation id="3236289833370040187">Ejerskabet overføres til <ph name="DESTINATION_DOMAIN" />.</translation>
-<translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> er nu en administreret bruger</translation>
 <translation id="323803881985677942">Åbn valgmuligheder for udvidelser</translation>
 <translation id="3241680850019875542">Vælg rodmappen for udvidelsen, der skal pakkes. Opdater en udvidelse ved også at vælge den private nøglefil til genbrug.</translation>
 <translation id="3242765319725186192">Foruddelt nøgle:</translation>
@@ -1701,7 +1679,6 @@ Få flere oplysninger i <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</t
 <translation id="3584169441612580296">Læs og rediger billeder, musik og andre medier på din computer</translation>
 <translation id="3587482841069643663">Alle</translation>
 <translation id="358796204584394954">Angiv denne kode på enheden "<ph name="DEVICE_NAME" />" for at parre:</translation>
-<translation id="3589532742556016615">Dette påvirker ikke apps eller indhold på andre enheder.</translation>
 <translation id="3589766037099229847">Usikkert indhold er blokeret</translation>
 <translation id="3590194807845837023">Lås profilen op, og genstart</translation>
 <translation id="3592260987370335752">&amp;Få flere oplysninger</translation>
@@ -1835,7 +1812,6 @@ Få flere oplysninger i <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</t
 <translation id="3778152852029592020">Download blev annulleret.</translation>
 <translation id="3778740492972734840">&amp;Udviklerværktøjer</translation>
 <translation id="3778868487658107119">Stil den spørgsmål. Giv den opgaver. Den er dit personlige Google, der altid er parat til at hjælpe dig.</translation>
-<translation id="3780663724044634171">Vælg en konto til administration af den administrerede bruger.</translation>
 <translation id="378312418865624974">Læs et unikt id for denne computer</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Vis genveje for Apps</translation>
@@ -2537,7 +2513,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4917385247580444890">Stærk</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> ønsker at kommunikere med udvidelsen "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">Accepter</translation>
-<translation id="4920350943031252905">Køre Linux-værktøjer, -redigeringsværktøjer og -IDE'er på din Chromebook.</translation>
+<translation id="4920350943031252905">Kør Linux-værktøjer, -redigeringsværktøjer og -IDE'er på din Chromebook.</translation>
 <translation id="4920887663447894854">Følgende websites kan ikke spore din placering på denne side:</translation>
 <translation id="492299503953721473">Fjern Android-apps</translation>
 <translation id="4923279099980110923">Ja. Jeg vil gerne hjælpe</translation>
@@ -2563,7 +2539,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4964455510556214366">Opstilling</translation>
 <translation id="4964673849688379040">Kontrollerer...</translation>
 <translation id="4965808351167763748">Er du sikker på, at du vil konfigurere denne enhed til at køre Hangouts Meet?</translation>
-<translation id="4967749818080339523">Vælg en konto</translation>
 <translation id="496888482094675990">Appen Filer giver hurtig adgang til filer, som du har gemt i Google Drev, på et eksternt lager eller på din Chrome OS-enhed.</translation>
 <translation id="4969785127455456148">Album</translation>
 <translation id="4971412780836297815">Åbn, når den er gennemført</translation>
@@ -2750,7 +2725,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
         Uanset hvad der sker på din enhed, er dine filer gemt sikkert i Google Drev.<ph name="MARKUP_6" />
         <ph name="MARKUP_7" />Del, opret og samarbejd<ph name="MARKUP_8" />
         om filer med andre på ét sted.<ph name="MARKUP_9" /></translation>
-<translation id="5262401745672360397">Filer, der er delt med Linux-apps, slettes muligvis også.</translation>
 <translation id="5264148714798105376">Dette kan tage et øjeblik.</translation>
 <translation id="5264252276333215551">Opret forbindelse til internettet for at starte din app i terminaltilstand.</translation>
 <translation id="5265562206369321422">Offline i mere end en uge</translation>
@@ -2967,7 +2941,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="555746285996217175">Lås/tænd</translation>
 <translation id="5557991081552967863">Behold Wi-Fi slået til under dvale</translation>
 <translation id="5558129378926964177">Zoom &amp;ind</translation>
-<translation id="5558446705802335921">Tjekker websites, du besøger, og filer, du downloader, for skadelig adfærd eller indhold, f.eks. phishing og malware</translation>
+<translation id="5558446705802335921">Tjekker websites, du besøger, og filer, du downloader, for adfærd eller indhold, der er skadeligt, f.eks. phishing og malware</translation>
 <translation id="5559719557406102971">Starter Termina VM.</translation>
 <translation id="55601339223879446">Tilpas grænserne for dit skrivebord inden for skærmvisningen</translation>
 <translation id="5562781907504170924">Denne fane er tilsluttet en Bluetooth-enhed.</translation>
@@ -3403,7 +3377,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6241530762627360640">Få adgang til oplysninger om Bluetooth-enheder, der er parret med dit system, og registrér Bluetooth-enheder i nærheden.</translation>
 <translation id="6243280677745499710">Nuværende</translation>
 <translation id="6243774244933267674">Serveren er utilgængelig</translation>
-<translation id="6246413617632217567">Den administrerede bruger kunne ikke importeres. Kontrollér, om der er ledig plads på din harddisk, og at du har de rette tilladelser, og prøv igen.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6247802389331535091">System: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">Opdateringen er klar</translation>
@@ -3602,7 +3575,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Bemærk:<ph name="END_BOLD" /> Aktivér kun, hvis du ved hvad du gør, eller hvis du er blevet bedt om at gøre det, eftersom dataregistrering kan reducere ydeevnen.</translation>
 <translation id="654233263479157500">Brug en webtjeneste til at hjælpe med at løse navigationsfejl</translation>
 <translation id="6544215763872433504">Googles webbrowser til dig</translation>
-<translation id="6545325945815270297">Administrer dine synkroniserede data og enheder i <ph name="BEGIN_LINK" />Chrome Betjeningspanel<ph name="END_LINK" />.</translation>
 <translation id="6545665334409411530">Gentagelseshastighed</translation>
 <translation id="6545834809683560467">Brug en forslagstjeneste til at færdiggøre søgninger og webadresser, der indtastes i adresselinjen eller søgefeltet i applisten</translation>
 <translation id="6546686722964485737">Opret forbindelse til WiMAX-netværk</translation>
@@ -3617,7 +3589,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6555810572223193255">Det er i øjeblikket ikke muligt at rydde indhold</translation>
 <translation id="6556866813142980365">Gør det igen</translation>
 <translation id="6558280019477628686">Der opstod en fejl. Nogle elementer blev muligvis ikke slettet.</translation>
-<translation id="6559580823502247193">(findes allerede på denne enhed)</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Filstien eller -navnet er for langt. Gem med et kortere navn eller på en anden placering.</translation>
 <translation id="656398493051028875">Slettter "<ph name="FILENAME" />"...</translation>
@@ -3814,7 +3785,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6862635236584086457">Alle de filer, der er gemt i denne mappe, sikkerhedskopieres automatisk online</translation>
 <translation id="6865313869410766144">Formulardata for AutoFyld</translation>
 <translation id="686664946474413495">Farvetemperatur</translation>
-<translation id="6867678160199975333">Skift til <ph name="NEW_PROFILE_NAME" /></translation>
 <translation id="6870888490422746447">Vælg en app, du vil dele med:</translation>
 <translation id="6871644448911473373">OCSP-responder: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Den angivne adgangskode blev afvist af serveren.</translation>
@@ -3908,7 +3878,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7018275672629230621">Læs og rediger din browserhistorik</translation>
 <translation id="7019805045859631636">Hurtig</translation>
 <translation id="7022562585984256452">Din startside er blevet konfigureret.</translation>
-<translation id="7025036625303002400">Det ser ud til, at du allerede har en administreret bruger med dette navn.</translation>
 <translation id="7025190659207909717">Administration af mobildatatjeneste</translation>
 <translation id="7025325401470358758">Næste rude</translation>
 <translation id="7027125358315426638">Databasenavn:</translation>
@@ -3957,7 +3926,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7092106376816104">Undtagelser for pop op-vinduer</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Udveksle data med enhederne ved navn: <ph name="HOSTNAMES" /></translation>
-<translation id="7096108453481049031">Den overvågede bruger kunne ikke importeres. Kontrollér din netværksforbindelse, og prøv igen senere.</translation>
 <translation id="7096406577040705016">Slå forstørrelse af fuld skærm til/fra</translation>
 <translation id="7098447629416471489">Andre gemte søgemaskiner vises her</translation>
 <translation id="7099337801055912064">Den store PPD-fil kan ikke indlæses. Filen må ikke fylde mere end 250 kB.</translation>
@@ -4005,7 +3973,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7168109975831002660">Mindste skriftstørrelse</translation>
 <translation id="7170041865419449892">Intet signal</translation>
 <translation id="7171559745792467651">Installer apps fra dine andre enheder</translation>
-<translation id="7173917244679555">Det lader til, at du allerede administrerer en bruger med det navn. Ville du <ph name="BEGIN_LINK" />importere <ph name="PROFILE_NAME" /><ph name="END_LINK" /> til denne enhed?</translation>
 <translation id="7175037578838465313">Konfigurer <ph name="NAME" /></translation>
 <translation id="7175353351958621980">Indlæst fra:</translation>
 <translation id="7180611975245234373">Opdater</translation>
@@ -4177,7 +4144,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7444726222535375658">Fortsæt til Hangouts Meet</translation>
 <translation id="7444983668544353857">Deaktiver <ph name="NETWORKDEVICE" /></translation>
 <translation id="7445682342344043969">Pop op-vinduer er blokeret</translation>
-<translation id="744859430125590922">Bestem og se, hvilke websites denne person besøger via <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="7453008956351770337">Ved at vælge denne printer giver du følgende udvidelser adgang til din printer:</translation>
 <translation id="7453467225369441013">Logger dig ud af de fleste websites. Du bliver ikke logget ud af din Google-konto.</translation>
 <translation id="7456142309650173560">dev</translation>
@@ -4351,7 +4317,6 @@ Installationen af <ph name="APP_NAME" /> downloader <ph name="DOWNLOAD_SIZE" /> 
 <translation id="7717845620320228976">Søg efter opdateringer</translation>
 <translation id="7719367874908701697">Sidezoom</translation>
 <translation id="771953673318695590">QA</translation>
-<translation id="7720375555307821262"><ph name="BEGIN_LINK" />Log ind på Chrome<ph name="END_LINK" /> for at administrere denne person.</translation>
 <translation id="7721179060400456005">Tillad, at vinduer kan dække flere skærme</translation>
 <translation id="7722040605881499779">Opdateringen kræver: <ph name="NECESSARY_SPACE" /></translation>
 <translation id="7724603315864178912">Klip</translation>
@@ -5206,7 +5171,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="9024331582947483881">fuld skærm</translation>
 <translation id="9025098623496448965">OK. Før mig tilbage til loginskærmen</translation>
 <translation id="9026731007018893674">download</translation>
-<translation id="9027146684281895941">Administrer denne person for at kontrollere og få vist de websites, vedkommende besøger via din Google-konto.</translation>
 <translation id="9027459031423301635">Åbn link på ny &amp;fane</translation>
 <translation id="9027603907212475920">Konfigurer synkronisering...</translation>
 <translation id="9030515284705930323">Din organisation har ikke aktiveret Google Play Butik for din konto. Kontakt din administrator for at få yderligere oplysninger.</translation>
@@ -5366,7 +5330,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="98515147261107953">Liggende</translation>
 <translation id="987897973846887088">Der er ingen tilgængelige billeder</translation>
 <translation id="988978206646512040">Tomme adgangssætninger er ikke tilladt</translation>
-<translation id="990310048453480215">Fjern Linux-apps</translation>
 <translation id="992032470292211616">Udvidelser, apps og temaer kan skade din enhed. Er du sikker på, at du vil fortsætte?</translation>
 <translation id="992592832486024913">Deaktiver ChromeVox (talefeedback)</translation>
 <translation id="994289308992179865">&amp;Sløjfe</translation>

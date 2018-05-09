@@ -1042,11 +1042,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če pravilnik ni nastavljen, bo protokol SPDY na voljo.</translation>
 <translation id="3890999316834333174">Pravilniki o hitrem odklepanju</translation>
 <translation id="3891357445869647828">Omogoči JavaScript</translation>
-<translation id="3891953007921334498">Onemogoči orodja za razvijalce in konzolo JavaScript.
-
-      Če to nastavitev omogočite, dostop do orodij za razvijalcev ne bo mogoč in elementov na spletnih mestih ne bo več mogoče pregledovati. Vse bližnjične tipke in vnosi v meniju ali kontekstnem meniju za odpiranje orodij za razvijalce in konzole JavaScript bodo onemogočeni.
-
-      Če to možnost onemogočite ali je ne nastavite, lahko uporabnik uporablja orodja za razvijalce in konzolo JavaScript.</translation>
 <translation id="3895557476567727016">Konfigurira privzeti imenik, ki ga <ph name="PRODUCT_NAME" /> uporabi za prenos datotek.
 
       Če nastavite ta pravilnik, bo spremenil privzeti imenik, v katerega <ph name="PRODUCT_NAME" /> prenese datoteke. Ta pravilnik ni obvezen, tako da lahko uporabnik spremeni imenik.

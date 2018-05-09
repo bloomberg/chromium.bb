@@ -1042,11 +1042,6 @@
       Nenustačius šios politikos, SPDY bus pasiekiamas.</translation>
 <translation id="3890999316834333174">Sparčiojo atrakinimo politika</translation>
 <translation id="3891357445869647828">Įgalinti „JavaScript“</translation>
-<translation id="3891953007921334498">Išjungiami kūrėjo įrankiai ir „JavaScript“ pultas.
-
-      Jei įgalinsite šį nustatymą, nebebus galima pasiekti kūrėjo įrankių ir patikrinti svetainės elementų. Bus išjungti visi spartieji klavišai ir meniu ar kontekstinių meniu įrašai, skirti kūrėjo įrankiams ar „JavaScript“ pultui atidaryti.
-
-      Išjungus šią parinktį ar jos nenustačius naudotojai galės naudoti kūrėjo įrankius ir „JavaScript“ pultą.</translation>
 <translation id="3895557476567727016">Konfigūruojamas numatytasis katalogas, kurį „<ph name="PRODUCT_NAME" />“ naudos failams atsisiųsti.
 
       Nustačius šią politiką, bus pakeistas numatytasis katalogas, į kurį „<ph name="PRODUCT_NAME" />“ atsisiunčia failus. Ši politika nėra būtina, todėl naudotojas galės pakeisti katalogą.

@@ -111,7 +111,6 @@
 <translation id="1993768208584545658">Ο ιστότοπος <ph name="SITE" /> επιθυμεί σύζευξη</translation>
 <translation id="1994173015038366702">URL ιστότοπου</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB από άλλες εφαρμογές</translation>
-<translation id="2015632741368427174">Η ανακατεύθυνση αποκλείστηκε προς τον ιστότοπο:</translation>
 <translation id="2017836877785168846">Διαγράφει το ιστορικό και τις αυτόματες συμπληρώσεις στη γραμμή διευθύνσεων.</translation>
 <translation id="2021896219286479412">Στοιχ. ελέγ. σε πλήρη οθόνη</translation>
 <translation id="2038563949887743358">Ενεργοποίηση αιτήματος ιστότοπου για υπολογιστές</translation>
@@ -183,7 +182,6 @@
 <translation id="2650751991977523696">Επανάληψη λήψης αρχείου;</translation>
 <translation id="2653659639078652383">Υποβολή</translation>
 <translation id="2677748264148917807">Αποχώρηση</translation>
-<translation id="2693813674743028984">Απόκρυψη αποθηκευτικού χώρου</translation>
 <translation id="2704606927547763573">Αντιγράφ.</translation>
 <translation id="2707726405694321444">Ανανέωση σελίδας</translation>
 <translation id="2709516037105925701">Αυτόματη συμπλήρωση</translation>
@@ -209,7 +207,6 @@
 <translation id="2956410042958133412">Αυτός ο λογαριασμός τελεί υπό τη διαχείριση των γονέων <ph name="PARENT_NAME_1" /> και <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Πνευματικά δικαιώματα <ph name="YEAR" /> Google Inc. Με επιφύλαξη παντός δικαιώματος.</translation>
 <translation id="2962095958535813455">Έγινε εναλλαγή σε καρτέλες ανώνυμης περιήγησης</translation>
-<translation id="2965945119655563012">Εμφάνιση αποθηκευτικού χώρου</translation>
 <translation id="2968755619301702150">Πρόγρ. προβολής πιστοποιητικού</translation>
 <translation id="2979025552038692506">Επιλεγμένη καρτέλα ανώνυμης περιήγησης</translation>
 <translation id="2989523299700148168">Πραγματοποιήθηκε επίσκεψη πρόσφατα</translation>
@@ -527,7 +524,6 @@
 <translation id="5817918615728894473">Σύζευξη</translation>
 <translation id="583281660410589416">Άγνωστο</translation>
 <translation id="5833984609253377421">Κοινοποίηση συνδέσμου</translation>
-<translation id="583891442612896534">Το Chrome δεν είναι δυνατό να επικοινωνήσει με τους διακομιστές της Google για συμπίεση δεδομένων. Η εξοικονόμηση δεδομένων πιθανώς να είναι περιορισμένη.</translation>
 <translation id="5854790677617711513">Παλαιότερο από 30 ημέρες</translation>
 <translation id="5858741533101922242">Το Chrome δεν είναι δυνατό να ενεργοποιήσει τον προσαρμογέα Bluetooth</translation>
 <translation id="5860033963881614850">Απενεργοποιημένη</translation>
@@ -589,7 +585,6 @@
 <translation id="6395288395575013217">ΣΥΝΔΕΣΜΟΣ</translation>
 <translation id="6404511346730675251">Επεξεργασία σελιδοδείκτη</translation>
 <translation id="6406506848690869874">Συγχρονισμός</translation>
-<translation id="6409731863280057959">Αναδυόμενα παράθυρα</translation>
 <translation id="641643625718530986">Εκτύπωση…</translation>
 <translation id="6416782512398055893">Έγινε λήψη <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Επιλέξτε τη μηχανή αναζήτησής σας</translation>
@@ -840,7 +835,6 @@
 <translation id="8676374126336081632">Διαγραφή καταχώρισης</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Επίπεδο ισχύος σήματος: # γραμμή}other{Επίπεδο ισχύος σήματος: # γραμμές}}</translation>
 <translation id="869891660844655955">Ημερομηνία λήξης</translation>
-<translation id="8712637175834984815">Κατάλαβα!</translation>
 <translation id="8719023831149562936">Δεν είναι δυνατή η ζεύξη της τρέχουσας καρτέλας</translation>
 <translation id="8725066075913043281">Προσπαθήστε ξανά</translation>
 <translation id="8728487861892616501">Χρησιμοποιώντας αυτήν την εφαρμογή, συμφωνείτε με τους <ph name="BEGIN_LINK1" />Όρους Παροχής Υπηρεσιών<ph name="END_LINK1" /> και τη <ph name="BEGIN_LINK2" />Σημείωση απορρήτου<ph name="END_LINK2" /> του Chrome, καθώς και με τη <ph name="BEGIN_LINK3" />Σημείωση απορρήτου για Λογαριασμούς Google, των οποίων η διαχείριση γίνεται μέσω του Family Link<ph name="END_LINK3" />.</translation>
@@ -850,7 +844,6 @@
 <translation id="8812260976093120287">Σε ορισμένους ιστοτόπους, μπορείτε να πληρώσετε χρησιμοποιώντας τις παραπάνω υποστηριζόμενες εφαρμογές πληρωμών στη συσκευή σας.</translation>
 <translation id="8816439037877937734">Η εφαρμογή <ph name="APP_NAME" /> θα ανοίξει στο Chrome. Εάν συνεχίσετε, συμφωνείτε με τους <ph name="BEGIN_LINK1" />Όρους Παροχής Υπηρεσιών<ph name="END_LINK1" /> και τη <ph name="BEGIN_LINK2" />Σημείωση απορρήτου<ph name="END_LINK2" /> του Chrome, καθώς και με τη <ph name="BEGIN_LINK3" />Σημείωση απορρήτου για Λογαριασμούς Google των οποίων η διαχείριση γίνεται μέσω του Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Σελιδοδείκτες</translation>
-<translation id="883635517171802338">Αποκλεισμός ιστοτόπων από την εμφάνιση αναδυόμενων παραθύρων (συνιστάται)</translation>
 <translation id="883806473910249246">Παρουσιάστηκε σφάλμα κατά τη λήψη του περιεχομένου.</translation>
 <translation id="8840953339110955557">Αυτή η σελίδα μπορεί να διαφέρει από την έκδοση στο διαδίκτυο.</translation>
 <translation id="8847988622838149491">USB</translation>

@@ -111,7 +111,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> がペア設定を要求しています</translation>
 <translation id="1994173015038366702">サイトの URL</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB を他のアプリで使用中</translation>
-<translation id="2015632741368427174">次のサイトへのリダイレクトがブロックされました。</translation>
 <translation id="2017836877785168846">アドレスバーの履歴とオートコンプリート データを削除します。</translation>
 <translation id="2021896219286479412">全画面表示時のサイトの操作項目</translation>
 <translation id="2038563949887743358">[PC 版サイトを見る] をオンにします</translation>
@@ -183,7 +182,6 @@
 <translation id="2650751991977523696">ファイルをもう一度ダウンロードしますか？</translation>
 <translation id="2653659639078652383">送信</translation>
 <translation id="2677748264148917807">このページを離れる</translation>
-<translation id="2693813674743028984">ストレージ情報を表示しない</translation>
 <translation id="2704606927547763573">コピーしました</translation>
 <translation id="2707726405694321444">ページを更新</translation>
 <translation id="2709516037105925701">自動入力</translation>
@@ -209,7 +207,6 @@
 <translation id="2956410042958133412">このアカウントは <ph name="PARENT_NAME_1" /> と <ph name="PARENT_NAME_2" /> によって管理されています。</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2962095958535813455">シークレット タブに切り替えました</translation>
-<translation id="2965945119655563012">ストレージ情報を表示</translation>
 <translation id="2968755619301702150">証明書ビューア</translation>
 <translation id="2979025552038692506">選択したシークレット タブ</translation>
 <translation id="2989523299700148168">最近のアクセス</translation>
@@ -527,7 +524,6 @@
 <translation id="5817918615728894473">ペア設定</translation>
 <translation id="583281660410589416">不明</translation>
 <translation id="5833984609253377421">リンクを共有</translation>
-<translation id="583891442612896534">データ圧縮のために Chrome から Google サーバーにアクセスすることができません。データ使用量をあまり削減できない可能性があります。</translation>
 <translation id="5854790677617711513">30 日以上経過</translation>
 <translation id="5858741533101922242">Chrome から Bluetooth アダプタをオンにできません</translation>
 <translation id="5860033963881614850">オフ</translation>
@@ -589,7 +585,6 @@
 <translation id="6395288395575013217">リンク</translation>
 <translation id="6404511346730675251">ブックマークを編集</translation>
 <translation id="6406506848690869874">同期</translation>
-<translation id="6409731863280057959">ポップアップ</translation>
 <translation id="641643625718530986">印刷...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB をダウンロード済み</translation>
 <translation id="6433501201775827830">検索エンジンを選択</translation>
@@ -840,7 +835,6 @@
 <translation id="8676374126336081632">入力内容を消去</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{電波強度: レベル #}other{電波強度: レベル #}}</translation>
 <translation id="869891660844655955">有効期限</translation>
-<translation id="8712637175834984815">閉じる</translation>
 <translation id="8719023831149562936">現在のタブはビームできません</translation>
 <translation id="8725066075913043281">やり直し</translation>
 <translation id="8728487861892616501">このアプリケーションを使用すると、Chrome の<ph name="BEGIN_LINK1" />利用規約<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />プライバシーに関するお知らせ<ph name="END_LINK2" />、および <ph name="BEGIN_LINK3" />ファミリー リンクで管理する Google アカウントのプライバシーに関するお知らせ<ph name="END_LINK3" />に同意したことになります。</translation>
@@ -850,7 +844,6 @@
 <translation id="8812260976093120287">一部のウェブサイトでは、端末でサポートされている上記のお支払いアプリを使って支払いができます。</translation>
 <translation id="8816439037877937734">Chrome で <ph name="APP_NAME" /> を開きます。続行すると、Chrome の<ph name="BEGIN_LINK1" />利用規約<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />プライバシーに関するお知らせ<ph name="END_LINK2" />、および <ph name="BEGIN_LINK3" />ファミリー リンクで作成された Google アカウントのプライバシーに関するお知らせ<ph name="END_LINK3" />に同意したことになります。</translation>
 <translation id="8820817407110198400">ブックマーク</translation>
-<translation id="883635517171802338">サイトでのポップアップ表示をブロックする（推奨）</translation>
 <translation id="883806473910249246">コンテンツのダウンロード中にエラーが発生しました。</translation>
 <translation id="8840953339110955557">このページはオンライン版とは異なる可能性があります。</translation>
 <translation id="8847988622838149491">USB</translation>

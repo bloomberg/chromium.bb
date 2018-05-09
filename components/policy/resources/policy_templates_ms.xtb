@@ -1040,11 +1040,6 @@
       Jika dasar ini dibiarkan tanpa ditetapkan, SPDY akan tersedia.</translation>
 <translation id="3890999316834333174">Dasar buka kunci pantas</translation>
 <translation id="3891357445869647828">Dayakan JavaScript</translation>
-<translation id="3891953007921334498">Melumpuhkan Alat Pembangun dan konsol JavaScript.
-
-      Jika anda mendayakan tetapan ini, Alat Pembangun tidak boleh diakses dan elemen tapak web tidak boleh disemak lagi. Sebarang pintasan papan kekunci dan mana-mana menu atau masukan menu konteks untuk membuka Alat Pembangun atau Konsol JavaScript akan dilumpuhkan.
-
-      Menetapkan pilihan ini kepada dilumpuhkan atau membiarkannya tanpa ditetapkan membolehkan pengguna menggunakan Alat Pembangun dan konsol JavaScript.</translation>
 <translation id="3895557476567727016">Mengkonfigurasi direktori lalai yang akan digunakan oleh <ph name="PRODUCT_NAME" /> untuk memuat turun fail.
 
       Jika anda menetapkan dasar ini, dasar ini akan menukar direktori lalai tempat <ph name="PRODUCT_NAME" /> menyimpan fail yang dimuat turun. Dasar ini tidak wajib, jadi pengguna akan dapat menukar direktori ini.

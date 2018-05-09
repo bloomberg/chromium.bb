@@ -404,9 +404,9 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 
           Bei Windows-Instanzen, die nicht Teil einer <ph name="MS_AD_NAME" />-Domain sind, bleibt die erzwungene Installation auf die im Chrome Web Store aufgeführten Apps und Erweiterungen beschränkt.
 
-          Beachten Sie, dass der Quellcode jeder Erweiterung mithilfe der Entwicklertools von den Nutzern geändert werden kann und die Erweiterung nach erfolgten Änderungen eventuell nicht mehr funktioniert. Präventiv können Sie hierbei die Richtlinie "<ph name="DEVELOPER_TOOLS_POLICY_NAME" />" festlegen.
+          Beachten Sie, dass der Quellcode jeder Erweiterung mithilfe der Entwicklertools von den Nutzern geändert werden kann und die Erweiterung nach erfolgten Änderungen eventuell nicht mehr funktioniert. Wenn Sie dies verhindern möchten, können Sie die Richtlinie "<ph name="DEVELOPER_TOOLS_POLICY_NAME" />" festlegen.
 
-          Jedes Listenelement der Richtlinie ist ein String mit einer Erweiterungs-ID und einer optionalen Update-URL, die durch einen Strichpunkt (<ph name="SEMICOLON" />) getrennt wird. Die Erweiterungs-ID ist der String mit 32 Buchstaben, den Sie u. a. in <ph name="CHROME_EXTENSIONS_LINK" /> im Entwicklermodus sehen. Die Update-URL sollte, sofern festgelegt, auf ein Update-Manifest-XML-Dokument verweisen, wie in <ph name="LINK_TO_EXTENSION_DOC1" /> beschrieben. Standardmäßig kommt die Update-URL des Chrome Web Store zum Einsatz, die derzeit "https://clients2.google.com/service/update2/crx" lautet. Beachten Sie, dass die in dieser Richtlinie festgelegte Update-URL nur für die erste Installation verwendet wird. In nachfolgenden Updates der Erweiterung kommt die Update-URL, die im Manifest der Erweiterung angegeben wurde, zum Einsatz. Beachten Sie außerdem, dass die explizite Festlegung der Update-URL in <ph name="PRODUCT_NAME" />-Versionen bis einschließlich Version 67 obligatorisch war.
+          Jedes Listenelement der Richtlinie ist ein String mit einer Erweiterungs-ID und einer optionalen Update-URL, die durch ein Semikolon (<ph name="SEMICOLON" />) getrennt wird. Die Erweiterungs-ID ist der String mit 32 Buchstaben, den Sie u. a. in <ph name="CHROME_EXTENSIONS_LINK" /> im Entwicklermodus sehen. Die Update-URL sollte, sofern festgelegt, auf ein Update-Manifest-XML-Dokument verweisen, wie in <ph name="LINK_TO_EXTENSION_DOC1" /> beschrieben. Standardmäßig kommt die Update-URL des Chrome Web Store zum Einsatz, die derzeit "https://clients2.google.com/service/update2/crx" lautet. Beachten Sie, dass die in dieser Richtlinie festgelegte Update-URL nur für die erste Installation verwendet wird. In nachfolgenden Updates der Erweiterung kommt die Update-URL, die im Manifest der Erweiterung angegeben wurde, zum Einsatz. Beachten Sie außerdem, dass die explizite Festlegung der Update-URL in <ph name="PRODUCT_NAME" />-Versionen bis einschließlich Version 67 obligatorisch war.
 
           Beispiel: <ph name="EXTENSION_POLICY_EXAMPLE" /> installiert die App "<ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />" über die standardmäßige Update-URL aus dem Chrome Web Store. Weitere Informationen zum Hosting von Erweiterungen finden Sie unter <ph name="LINK_TO_EXTENSION_DOC2" />.
 
@@ -990,11 +990,6 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
       Ist die Richtlinie nicht konfiguriert, steht SPDY zur Verfügung.</translation>
 <translation id="3890999316834333174">Richtlinien zum schnellen Entsperren</translation>
 <translation id="3891357445869647828">JavaScript aktivieren</translation>
-<translation id="3891953007921334498">Deaktiviert die Entwicklertools und die JavaScript-Konsole.
-
-      Wenn Sie diese Einstellung aktivieren, besteht kein Zugriff mehr auf die Entwicklertools, sodass Websiteelemente nicht mehr überprüft werden können. Jegliche Tastenkombinationen und Menü- und Kontextmenüeinträge zum Öffnen der Entwicklertools oder der JavaScript-Konsole werden deaktiviert.
-
-      Ist diese Option deaktiviert oder nicht konfiguriert, können die Entwicklertools und die JavaScript-Konsole verwendet werden.</translation>
 <translation id="3895557476567727016">Konfiguriert das Standardverzeichnis, in dem über <ph name="PRODUCT_NAME" /> heruntergeladene Dateien gespeichert werden.
 
       Wenn Sie diese Richtlinie festlegen, wird ein anderes Standard-Downloadverzeichnis für <ph name="PRODUCT_NAME" /> festgelegt. Diese Richtlinie ist nicht verbindlich, daher kann ein Nutzer das Verzeichnis ändern.
@@ -1901,7 +1896,7 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
       Dadurch werden auch durch Subdomains benannte Ursprünge isoliert; wenn
       Sie z. B. https://example.com/ angeben, wird auch https://foo.example.com/ als Teil
       der Website https://example.com/ isoliert.
-      Wenn die Richtlinie deaktiviert ist, findet keine Website-Isolierung statt und Feldtests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "SitePerProcess" weiterhin manuell aktivieren.
+      Wenn die Richtlinie deaktiviert ist, findet keine Website-Isolierung statt und Feldtests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "IsolateOrigins" weiterhin manuell aktivieren.
       Wenn die Richtlinie nicht konfiguriert ist, werden die standardmäßigen Website-Isolierungseinstellungen der Plattform für die Anmeldeseite verwendet.
       </translation>
 <translation id="6894178810167845842">URL für "Neuer Tab"-Seite</translation>
@@ -2525,9 +2520,9 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="8667812577403206506">Mit dieser Richtlinie können Sie festlegen, ob virtuelle Maschinen unter Chrome OS ausgeführt werden dürfen.
 
       Wenn die Richtlinie auf "true" festgelegt ist, dürfen virtuelle Maschinen auf dem Gerät ausgeführt werden.
-      Wird die Richtlinie auf "false" festgelegt, dürfen keine virtuellen Maschinen auf dem Gerät ausgeführt werden.
-      Falls diese Richtlinie auf "false" geändert wird, gilt sie für den Start neuer virtueller Maschinen. Virtuelle Maschinen, die bereits laufen, werden davon nicht beendet.
-      Wenn diese Richtlinie auf einem verwalteten Gerät nicht konfiguriert ist, darf das Gerät virtuelle Maschinen nicht ausführen.
+      Wenn die Richtlinie auf "false" festgelegt ist, dürfen keine virtuellen Maschinen auf dem Gerät ausgeführt werden.
+      Wird diese Richtlinie auf "false" geändert, wirkt sich dies nur auf den Start neuer virtueller Maschinen aus. Virtuelle Maschinen, die bereits laufen, werden davon nicht beendet.
+      Ist diese Richtlinie auf einem verwalteten Gerät nicht konfiguriert, darf das Gerät virtuelle Maschinen nicht ausführen.
       Auf nicht verwalteten Geräten dürfen virtuelle Maschinen ausgeführt werden.</translation>
 <translation id="8672321184841719703">Automatische Aktualisierung auf Zielversion</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
@@ -2656,7 +2651,7 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
       ausgeführt. Dadurch werden auch durch Subdomains benannte Ursprünge isoliert;
       wenn Sie z. B. https://example.com/ angeben, wird auch https://foo.example.com/
       als Teil der Website https://example.com/ isoliert.
-      Wenn die Richtlinie deaktiviert ist, findet keine explizite Website-Isolierung statt und Feldtests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "SitePerProcess" weiterhin manuell aktivieren.
+      Wenn die Richtlinie deaktiviert ist, findet keine explizite Website-Isolierung statt und Feldtests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "IsolateOrigins" weiterhin manuell aktivieren.
       Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
       Es wird empfohlen, unter <ph name="PRODUCT_OS_NAME" /> die Geräterichtlinie "<ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />" auf denselben Wert zu setzen. Wenn die von den beiden Richtlinien angegebenen Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
       </translation>
@@ -2713,11 +2708,11 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="9200828125069750521">Parameter für URL der Bildsuche, die POST verwendet</translation>
 <translation id="9210953373038593554">Hiermit wird der Typ der Authentifizierung für SAML-Anmeldungen konfiguriert.
 
-      Wenn diese Richtlinie nicht konfiguriert oder auf dem Standardwert (Wert 0) belassen wird, wird das Verhalten bei SAML-Anmeldungen vom Browser festgelegt, abhängig von anderen Faktoren. Im einfachsten Fall basiert die Nutzerauthentifizierung und der Schutz der im Cache gespeicherten Nutzerdaten auf Passwörtern, die von den Nutzern manuell eingegeben werden.
+      Wenn diese Richtlinie nicht konfiguriert oder auf dem Standardwert (Wert 0) belassen wird, wird das Verhalten bei SAML-Anmeldungen abhängig von anderen Faktoren vom Browser festgelegt. Im einfachsten Fall basieren die Nutzerauthentifizierung und der Schutz der im Cache gespeicherten Nutzerdaten auf Passwörtern, die von den Nutzern manuell eingegeben werden.
 
       Wenn diese Richtlinie auf "ClientCertificate" (Wert 1) festgelegt ist, kommt für neu hinzugefügte Nutzer, die sich über SAML anmelden, die Authentifizierung mit Clientzertifikat zum Einsatz. Für solche Nutzer werden keine Passwörter verwendet und ihre im Cache gespeicherten lokalen Daten werden durch entsprechende kryptografische Schlüssel geschützt. Diese Einstellung ermöglicht z. B. die Konfiguration einer Nutzerauthentifizierung auf Grundlage von Smartcards. Hinweis: In diesem Fall ist die Installation von Smartcard-Middleware-Apps über die Richtlinie "DeviceLoginScreenAppInstallList" erforderlich.
 
-      Diese Richtlinie betrifft nur Nutzer, die sich über SAML authentifizieren.</translation>
+      Diese Richtlinie wirkt sich nur auf Nutzer aus, die sich über SAML authentifizieren.</translation>
 <translation id="9213347477683611358">Hiermit kann das Hintergrundbild auf Geräteebene konfiguriert werden, das auf dem Anmeldebildschirm angezeigt wird, wenn sich noch kein Nutzer auf dem Gerät angemeldet hat. Die Richtlinie wird konfiguriert, indem die URL, über die das Chrome OS-Gerät das Hintergrundbild herunterladen kann, und ein kryptografischer Hash, mit dem die Integrität des Downloads überprüft wird, festgelegt werden. Das Bild muss das JPEG-Format aufweisen und darf eine Dateigröße von 16 MB nicht überschreiten. Die URL muss ohne Authentifizierung zugänglich sein. Das Hintergrundbild wird heruntergeladen und im Cache gespeichert. Es wird jedes Mal neu heruntergeladen, wenn sich die URL oder der Hash ändert.
 
       Die Richtlinie sollte als String angegeben werden, der die URL und den Hash im JSON-Format ausgibt, z. B.:

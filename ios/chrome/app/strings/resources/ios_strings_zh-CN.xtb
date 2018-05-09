@@ -81,6 +81,7 @@
 <translation id="2381405137052800939">基本</translation>
 <translation id="2386793615875593361">已选择 1 张</translation>
 <translation id="2435457462613246316">显示密码</translation>
+<translation id="2481538920734869610">添加帐号</translation>
 <translation id="2523363575747517183">该网站屡次尝试打开其他应用。</translation>
 <translation id="2529021024822217800">全部打开</translation>
 <translation id="2572712655377361602">设备政策已禁用对您的照片的访问权限</translation>
@@ -344,6 +345,7 @@
 <translation id="7203585745079012652">说出答案</translation>
 <translation id="722055596168483966">对 Google 服务进行个性化设置</translation>
 <translation id="7272437679830969316">无法验证您的身份。未复制密码。</translation>
+<translation id="7285236536143823449">立即启用</translation>
 <translation id="7291368939935408496">正在准备密码…</translation>
 <translation id="7336264872878993241">已下载<ph name="PERCENT" />%</translation>
 <translation id="7346909386216857016">知道了</translation>

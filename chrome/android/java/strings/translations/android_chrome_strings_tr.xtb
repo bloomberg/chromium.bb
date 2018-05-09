@@ -111,7 +111,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> eşlenmek istiyor</translation>
 <translation id="1994173015038366702">Site URL'si</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB diğer uygulamalar</translation>
-<translation id="2015632741368427174">Şu web sitesine yönlendirme engellendi:</translation>
 <translation id="2017836877785168846">Geçmişi ve adres çubuğundaki otomatik tamamlama bilgilerini temizler.</translation>
 <translation id="2021896219286479412">Tam ekran site kontrolleri</translation>
 <translation id="2038563949887743358">Masaüstü sitesi iste işlevini etkinleştir</translation>
@@ -183,7 +182,6 @@
 <translation id="2650751991977523696">Dosya tekrar indirilsin mi?</translation>
 <translation id="2653659639078652383">Gönder</translation>
 <translation id="2677748264148917807">Çık</translation>
-<translation id="2693813674743028984">Depolama alanını gizle</translation>
 <translation id="2704606927547763573">Kopyalandı</translation>
 <translation id="2707726405694321444">Sayfayı yenile</translation>
 <translation id="2709516037105925701">Otomatik doldurma</translation>
@@ -209,7 +207,6 @@
 <translation id="2956410042958133412">Bu hesap <ph name="PARENT_NAME_1" /> ve <ph name="PARENT_NAME_2" /> tarafından yönetiliyor.</translation>
 <translation id="2960796085439532066">Telif Hakkı <ph name="YEAR" /> Google Inc. Tüm hakları saklıdır.</translation>
 <translation id="2962095958535813455">Gizli mod sekmelerine geçildi</translation>
-<translation id="2965945119655563012">Depolama alanını göster</translation>
 <translation id="2968755619301702150">Sertifika görüntüleyici</translation>
 <translation id="2979025552038692506">Seçili Gizli Sekme</translation>
 <translation id="2989523299700148168">Son ziyaret edilenler</translation>
@@ -527,7 +524,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="5817918615728894473">Eşle</translation>
 <translation id="583281660410589416">Bilinmiyor</translation>
 <translation id="5833984609253377421">Bağlantıyı paylaş</translation>
-<translation id="583891442612896534">Chrome, veri sıkıştırma için Google sunucularına erişemiyor. Veri tasarrufunuz sınırlı olabilir.</translation>
 <translation id="5854790677617711513">30 günden daha eski</translation>
 <translation id="5858741533101922242">Chrome, Bluetooth adaptörünü açamıyor</translation>
 <translation id="5860033963881614850">Kapalı</translation>
@@ -589,7 +585,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6395288395575013217">BAĞLANTI</translation>
 <translation id="6404511346730675251">Yer işaretini düzenle</translation>
 <translation id="6406506848690869874">Senkronizasyon</translation>
-<translation id="6409731863280057959">Pop-up'lar</translation>
 <translation id="641643625718530986">Yazdır…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB indirildi</translation>
 <translation id="6433501201775827830">Arama motorunuzu seçin</translation>
@@ -840,7 +835,6 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="8676374126336081632">Girişi temizle</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Sinyal Gücü Düzeyi: # çubuk}other{Sinyal Gücü Düzeyi: # çubuk}}</translation>
 <translation id="869891660844655955">Son kullanma tarihi</translation>
-<translation id="8712637175834984815">Anlaşıldı</translation>
 <translation id="8719023831149562936">Geçerli sekme ışınlanamıyor</translation>
 <translation id="8725066075913043281">Yeniden dene</translation>
 <translation id="8728487861892616501">Bu uygulamayı kullanarak Chrome’un <ph name="BEGIN_LINK1" />Hizmet Şartları<ph name="END_LINK1" /> ve <ph name="BEGIN_LINK2" />Gizlilik Bildirimi<ph name="END_LINK2" /> ile <ph name="BEGIN_LINK3" />Family Link ile Yönetilen Google Hesapları için Gizlilik Bildirimi<ph name="END_LINK3" />'ni kabul etmiş olursunuz.</translation>
@@ -850,7 +844,6 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="8812260976093120287">Bazı web sitelerinde, yukarıdaki desteklenen ödeme uygulamalarıyla cihazınızdan ödeme yapabilirsiniz.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> Chrome'da açılacak. Devam ederek Chrome'un <ph name="BEGIN_LINK1" />Hizmet Şartları<ph name="END_LINK1" />'nı, <ph name="BEGIN_LINK2" />Gizlilik Uyarısı<ph name="END_LINK2" />'nı ve <ph name="BEGIN_LINK3" />Family Link ile Yönetilen Google Hesapları için Gizlilik Uyarısı<ph name="END_LINK3" />'nı kabul etmiş olursunuz.</translation>
 <translation id="8820817407110198400">Favoriler</translation>
-<translation id="883635517171802338">Sitelerin pop-up göstermesini engelle (önerilir)</translation>
 <translation id="883806473910249246">İçerik indirilirken bir hata oluştu.</translation>
 <translation id="8840953339110955557">Bu sayfa, web'deki sürümden farklı olabilir.</translation>
 <translation id="8847988622838149491">USB</translation>

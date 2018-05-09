@@ -406,12 +406,11 @@
           Reegli väärtus tuleb määrata millisekundites. Väärtus peab olema tegevusetuse viivitusest väiksem või sellega võrdne.</translation>
 <translation id="2289578386193672044">Määrab loendi rakendustest ja laiendustest, mis installitakse vaikimisi
           ning kasutajaga suhtlemata ja mida kasutaja ei saa desinstallida ega
-          keelata. Kõik rakenduste/laienduste taotletud load antakse vaikimisi
+          keelata. Kõik rakenduste/laienduste taotletud load (sh kõik lisaload, mida            rakenduse/laienduse tulevased versioonid taotlevad) antakse vaikimisi
 
-          ning kasutajaga suhtlemata (sh kõik lisaload, mida rakenduse/laienduse
-          tulevased versioonid taotlevad). Load antakse ka laienduste API-dele
+          ning kasutajaga suhtlemata. Load antakse ka laienduste API-dele
           enterprise.deviceAttributes ja enterprise.platformKeys. (Need kaks
-          API-tpole saadaval rakendustele/laiendustele, mis pole sundinstallitud.)
+          API-t pole saadaval rakendustele/laiendustele, mis pole sundinstallitud.)
 
           See reegel seatakse ettepoole potentsiaalselt konfliktsest reeglist <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Kui rakendus või laiendus, mis varem sundinstalliti, sellest loendist eemaldatakse, siis desinstallib teenus <ph name="PRODUCT_NAME" /> selle automaatselt.
 
@@ -420,7 +419,7 @@
           Pange tähele, et arendaja tööriistadega saavad kasutajad muuta iga laienduse lähtekoodi (mis võib põhjustada laienduse väärtalitlust). Kui see on probleem, tuleb määrata reegel <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
 
           
-Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja „värskenduse” URL-i, mis on eraldatud semikooloniga (<ph name="SEMICOLON" />). Laienduse ID on 32-täheline string, mis kuvatakse näiteks arendajarežiimis teenuses <ph name="CHROME_EXTENSIONS_LINK" />. „Värskenduse” URL peab viitama XML-dokumendi värskendusmanifestile, nagu on kirjeldatud jaotises <ph name="LINK_TO_EXTENSION_DOC1" />. Vaikimisi kasutatakse Chrome'i veebipoe värskenduse URL-i (praegune URL on „https://clients2.google.com/service/update2/crx”) Pange tähele, et reeglis määratud „värskenduse” URL-i kasutatakse vaid algsel installimisel ja laienduse tulevased värskendused kasutavad laienduse manifestis märgitud värskenduse URL-i. Samuti pange tähele, et konkreetse värskenduse URL-i määramine oli kuni teenuse <ph name="PRODUCT_NAME" /> 67. versioonini (kaasa arvatud) kohustuslik.
+Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt ka „värskenduse” URL-i, mis on eraldatud semikooloniga (<ph name="SEMICOLON" />). Laienduse ID on 32-täheline string, mis kuvatakse näiteks arendajarežiimis teenuses <ph name="CHROME_EXTENSIONS_LINK" />. „Värskenduse” URL peab viitama XML-dokumendi värskendusmanifestile, nagu on kirjeldatud jaotises <ph name="LINK_TO_EXTENSION_DOC1" />. Vaikimisi kasutatakse Chrome'i veebipoe värskenduse URL-i (praegune URL on „https://clients2.google.com/service/update2/crx”). Pange tähele, et reeglis määratud „värskenduse” URL-i kasutatakse vaid algsel installimisel ja laienduse tulevased värskendused kasutavad laienduse manifestis märgitud värskenduse URL-i. Konkreetse värskenduse URL-i määramine oli kohustuslik kuni teenuse <ph name="PRODUCT_NAME" /> 67. versioonini (kaasa arvatud).
 
           Näiteks reegel <ph name="EXTENSION_POLICY_EXAMPLE" /> installib laienduse <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> rakenduse standardselt Chrome’i veebipoe „värskenduse” URL-ilt. Lisateavet hostimise laienduste kohta leiate siit: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
@@ -430,6 +429,21 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja „värskendus
       Õigekirjakontrolli saab siiski teha, kasutades selleks allalaaditud sõnastikku. Reegel haldab ainult veebiteenuse kasutamist.
 
       Kui seade pole seadistatud, siis saavad kasutajad valida, kas kasutada õigekirjakontrolli teenust või mitte.</translation>
+<translation id="2294283832646774959">Seadistab printerite loendi.
+
+      See reegel võimaldab administraatoritel kasutajatele printerite seadistusi
+      pakkuda.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> ja <ph name="PRINTER_DESCRIPTION" /> on vabas vormis stringid, mida saab printeri valimise hõlbustamiseks kohandada. <ph name="PRINTER_MANUFACTURER" /> ja <ph name="PRINTER_MODEL" /> lihtsustavad printeri tuvastamist lõppkasutajatele. Need näitavad printeri tootjat ja mudelit. <ph name="PRINTER_URI" /> peab olema aadress, mida saab külastada klientarvutist, sh <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> ja <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> on valikuline. Selle olemasolul aitab see seadistus printerite <ph name="ZEROCONF_DISCOVERY" /> duplikaate eemaldada.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> peab ühtima mõne stringiga, mis esindab teenuses <ph name="PRODUCT_NAME" /> toetatud printerit. Stringi kasutatakse printeri vastava PPD tuvastamiseks ja installimiseks. Lisateavet leiate aadressilt https://support.google.com/chrome?p=noncloudprint.
+
+      Printeri seadistus viiakse lõpule printeri esimesel kasutuskorral. PPD-sid ei laadita alla enne, kui printerit kasutatakse. Pärast seda salvestatakse sageli kasutatud PPD-d vahemällu.
+
+      Reegel ei mõjuta seda, kas kasutajad saavad individuaalsetes seadmetes printereid seadistada. See on mõeldud individuaalsete kasutajate printerite seadistusi täiendama.
+
+      Active Directory hallatavate seadmete puhul toetab see reegel seadme <ph name="MACHINE_NAME_VARIABLE" /> laiendamist Active Directory seadme nimele või selle alamstringile. Näiteks kui seadme nimi on <ph name="MACHINE_NAME_EXAMPLE" />, siis asendatakse <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> nelja tähemärgiga, mis algab pärast kuuendat märki (nt <ph name="MACHINE_NAME_PART_EXAMPLE" />). Pange tähele, et loendamist alustatakse nullist.
+      </translation>
 <translation id="2294382669900758280">Video esitamist Androidi rakendustes ei arvestata, isegi kui reegli väärtuseks on määratud <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Seadistab uue vaikevahelehe teenuses <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Lubatud pistikprogrammide loendi määramine</translation>
@@ -1016,11 +1030,6 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja „värskendus
       Kui jätate selle reegli määramata, on SPDY saadaval.</translation>
 <translation id="3890999316834333174">Kiiravamise reeglid</translation>
 <translation id="3891357445869647828">Luba JavaScript</translation>
-<translation id="3891953007921334498">Keelab arendaja tööriistad ja JavaScripti konsooli.
-
-      Seade lubamisel ei saa arendaja tööriistu kasutada ega veebisaitide elemente uurida. Kõik klaviatuuri otseteed ning arendaja tööriistade ja JavaScripti konsooli avamise käsud menüüdes ning kontekstimenüüdes keelatakse.
-
-      Kui keelate valiku või jätate selle määramata, saab kasutaja arendaja tööriistu ja JavaScripti konsooli kasutada.</translation>
 <translation id="3895557476567727016">Seadistab vaikekataloogi, mida brauser <ph name="PRODUCT_NAME" /> kasutab failide allalaadimiseks.
 
       Selle reegli määramisel muudetakse vaikekataloogi, kuhu brauser <ph name="PRODUCT_NAME" /> failid alla laadib. See reegel ei ole kohustuslik, seega saab kasutaja kataloogi muuta.
@@ -1218,6 +1227,7 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja „värskendus
 <translation id="4508686775017063528">Kui reegli väärtuseks on määratud Tõene või see on määramata, on teenus <ph name="PRODUCT_NAME" /> lubatud ning kasutajad saavad selle käivitada rakenduse menüüst, lehe kontekstimenüüdest, meedia juhtelementidelt Cast'i toega veebisaitidel ja Cast'i tööriistariba ikoonil (kui see on kuvatud).
 
           Kui reegli väärtuseks on määratud Väär, siis on teenus <ph name="PRODUCT_NAME" /> keelatud.</translation>
+<translation id="4515404363392014383">Ohutu sirvimise lubamine usaldusväärsete allikate puhul</translation>
 <translation id="4518251772179446575">Küsi iga kord, kui sait tahab jälgida kasutajate füüsilist asukohta</translation>
 <translation id="4519046672992331730">Lubab otsingusoovitused rakenduse <ph name="PRODUCT_NAME" /> omnikastikeses ja takistab kasutajatel seade muutmist.
 
@@ -1340,6 +1350,7 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja „värskendus
 
           Kui reegli väärtuseks on seatud Väär, siis ekraani aktiveerimise lukustamise taotlust eiratakse.</translation>
 <translation id="487460824085252184">Üleviimine toimub automaatselt, kasutaja nõusolekut ei küsita.</translation>
+<translation id="4874982543810021567">Reegli WebUSB blokeerimine nendel saitidel</translation>
 <translation id="4876805738539874299">Maksimaalne lubatud SSL-i versioon</translation>
 <translation id="4897928009230106190">Täpsustab parameetri, mida kasutatakse POST-meetodiga soovituse otsingu tegemisel. See koosneb komaga eraldatud nime/väärtuse paaridest. Kui väärtus on malliparameeter, nt {searchTerms} ülalolevas näites, siis asendatakse see otsingutermini andmetega.
 
@@ -1912,6 +1923,11 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja „värskendus
       Kui see reegel jäetakse määramata, on võrguprognoosid lubatud, kuid kasutaja saab seda muuta.</translation>
 <translation id="6658245400435704251">Määrab sekundite arvu pärast värskenduse serverist väljalaskmist, mille jooksul võib seade värskenduse allalaadimist juhuslikult viivitada. Seade võib oodata osa ajast reaalajas ja ülejäänud aja sõltuvalt värskenduste otsimiste arvust. Igal juhul on hajutatuse ülempiir seotud ajalise konstandiga, et seade ei jääks värskenduse allalaadimist igaveseks ootama.</translation>
 <translation id="6665670272107384733">Kiire avamise puhul parooli sisestamise sageduse määramine</translation>
+<translation id="6681229465468164801">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel ei ole lubatud küsida kasutajalt luba USB-seadmele juurdepääsemiseks.
+
+          Kui jätate selle reegli määramata, kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultWebUsbGuardSetting” (kui see on määratud) või kasutaja isiklikust seadistusest.
+
+          Selles reeglis olevad URL-i mustrid ei tohi olla vastuolus reeglitega, mis on seadistatud reegliga WebUsbAskForUrls. Määramata on see, millist kahest reeglist eelistatakse, kui URL ühtib mõlemaga.</translation>
 <translation id="6689792153960219308">Riistvara oleku aruanne</translation>
 <translation id="6698071416141001300">Ohus olevate paroolikaitse kontode märgistamise käivitab parooli uuesti kasutamine</translation>
 <translation id="6699880231565102694">Kahetasandilise autentimise lubamine kaugjuurdepääsu hostidele</translation>
@@ -1941,7 +1957,7 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja „värskendus
 
       <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: kui see on määratud väärtusele <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, saavad kasutajad teenuse <ph name="TPM_FIRMWARE_UPDATE_TPM" /> püsivaravärskenduse installimiseks käivitada Powerwashi voo.
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: kui see on määratud väärtusele <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, saavad kasutajad käivitada teenuse <ph name="TPM_FIRMWARE_UPDATE_TPM" /> püsivara värskendusvoo, mis säilitab kogu seadme oleku  (sh ettevõtte registreerimise), ent eemaldab kasutajate andmed. See värskendusvoog on saadaval alates 68. versioonist.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: kui see on määratud väärtusele <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, saavad kasutajad käivitada teenuse <ph name="TPM_FIRMWARE_UPDATE_TPM" /> püsivara värskendusvoo, mis säilitab kogu seadme oleku (sh ettevõtte registreerimise), ent eemaldab kasutajate andmed. See värskendusvoog on saadaval alates 68. versioonist.
 
       Kui reegel on määramata, ei ole teenuse <ph name="TPM_FIRMWARE_UPDATE_TPM" /> püsivaravärskenduse funktsioon saadaval.</translation>
 <translation id="6757438632136860443">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud pistikprogrammi <ph name="FLASH_PLUGIN_NAME" /> käitada.
@@ -1965,7 +1981,7 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja „värskendus
       on kvantifitseeritud ja värskenduste määra piiratakse turvakaalutlustel.
       Reaalajas täpsete andmete hankimiseks kasutage sellist tööriista nagu            telemeetria.</translation>
 <translation id="6870914592443697993">
-      See reegel kehtib sisselogimisekraanil. Vaadake ka reeglit <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, mis kehtib kasutajaseansi puhul. Soovitatav on mõlemale reeglile määrata sama väärtus. Kui väärtused ei ühti, võib kasutajareegliga määratud väärtuse rakendamisel esineda kasutajaseanssi sisenemisel viivitusi.
+      See reegel kehtib sisselogimiskuval. Vaadake ka reeglit <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, mis kehtib kasutajaseansi puhul. Soovitatav on mõlemale reeglile määrata sama väärtus. Kui väärtused ei ühti, võib kasutajareegliga määratud väärtuse rakendamisel esineda kasutajaseanssi sisenemisel viivitusi.
       Kui reegel on lubatud, käitab iga komadega eraldatud loendis
       nimetatud lähtekoht oma protsesse. See isoleerib ka
       alamdomeenide nimetatud lähtekohad; nt aadressi https://example.com/
@@ -1973,7 +1989,7 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja „värskendus
       aadress https://foo.example.com/.
       Kui reegel on keelatud, ei toimu selget saidi isoleerimist ning reeglite
 IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli IsolateOrigins siiski käsitsi lubada.
-      Kui reegel on seadistamata, kasutatakse sisselogimisekraanil platvormi saitide isoleerimise vaikeseadeid.
+      Kui reegel on seadistamata, kasutatakse sisselogimiskuval platvormi saitide isoleerimise vaikeseadeid.
       </translation>
 <translation id="6894178810167845842">Uue vahelehe URL</translation>
 <translation id="6899705656741990703">Tuvasta puhverserveri seaded automaatselt</translation>
@@ -2083,6 +2099,11 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Kui see seade on keelatud või seadistamata, siis rakendatakse ohutu sirvimise funktsiooni vaikekaitse kõikidele allikatele.
       See reegel ei ole saadaval Windowsi eksemplarides, mis pole domeeniga <ph name="MS_AD_NAME" /> liitunud.</translation>
 <translation id="7079519252486108041">Blokeeri hüpikaknad nendel saitidel</translation>
+<translation id="7085803328069945025">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud küsida kasutajalt luba USB-seadmele juurdepääsemiseks.
+
+          Kui jätate selle reegli määramata, kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultWebUsbGuardSetting” (kui see on määratud) või kasutaja isiklikust seadistusest.
+
+          Selles reeglis olevad URL-i mustrid ei tohi olla vastuolus reeglitega, mis on seadistatud reegliga WebUsbBlockedForUrls. Määramata on see, millist kahest reeglist eelistatakse, kui URL ühtib mõlemaga.</translation>
 <translation id="7106631983877564505">Lubage operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete lukustamine, kui need on peatatud või tegevusetud.
 
       Kui lubate seade, küsitakse kasutajatelt unerežiimis seadme avamiseks parooli.
@@ -2781,6 +2802,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="9096086085182305205">Autentimisserveri lubatud nimekiri</translation>
 <translation id="9098553063150791878">HTTP autentimise reeglid</translation>
 <translation id="9105265795073104888">Androidi rakendustele muudetakse kättesaadavaks ainult puhverserveri seadistuse valikute alamkomplekt. Androidi rakenduste jaoks on puhverserveri kasutamine vabatahtlik. Te ei saa puhverserveri kasutamist sundida.</translation>
+<translation id="9106865192244721694">Reegli WebUSB lubamine nendel saitidel</translation>
 <translation id="9112727953998243860">Ettevõtte printerite konfiguratsioonifail</translation>
 <translation id="9112897538922695510">Lubab teil registreerida protokollitöötlejate loendi. See saab olla ainult soovitatud reegel. Atribuut |protocol| tuleb määrata skeemile (nagu „mailto”) ja atribuut |url| tuleb määrata skeemi käsitleva rakenduse URL-i mustrile. Muster võib sisaldada märgendit „%s”, mis asendatakse sellisel juhul käsitletava URL-iga.
 
@@ -2820,6 +2842,11 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="915194831143859291">Kui reegel on määramata või seatud väärtusele Väär, lubab <ph name="PRODUCT_OS_NAME" /> kasutajal seadme välja lülitada.
       Kui reegel on seatud väärtusele Tõene ja kasutaja lülitab seadme välja, taaskäivitab <ph name="PRODUCT_OS_NAME" /> seadme. <ph name="PRODUCT_OS_NAME" /> asendab kasutajaliidese kõik väljalülitamisnupud taaskäivitusnuppudega. Kui kasutaja lülitab seadme toitenupuga välja, ei taaskäivitata seda automaatselt, isegi kui reegel on lubatud.</translation>
 <translation id="9158929520101169054">Brauseris mitmele kontole sisselogimise lubamine</translation>
+<translation id="9165792353046089850">Võimaldab määrata, kas veebisaitidel on juurdepääs ühendatud USB-seadmetele. Juurdepääsu saab täielikult blokeerida või küsida kasutaja käest iga kord luba, kui veebisait soovib juurdepääsu ühendatud USB-seadmetele.
+
+          Selle reegli saab teatud URL-i mustrite puhul alistada, kasutades reegleid „WebUsbAskForUrls” ja „WebUsbBlockedForUrls”.
+
+          Kui reegel jäetakse määramata, kasutatakse väärtust „3” ja kasutaja saab seda muuta.</translation>
 <translation id="9167719789236691545">Drive'i keelamine operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> rakenduses Failid</translation>
 <translation id="9187743794267626640">Keela välismäluseadmete ühendamine</translation>
 <translation id="9197740283131855199">Ekraani tumenduse viivituse skaleerimise määr protsentides, kui kasutaja muutub pärast tumendamist aktiivseks.</translation>

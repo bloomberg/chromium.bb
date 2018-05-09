@@ -430,6 +430,21 @@
       맞춤법 검사는 다운로드한 사전을 사용하여 계속 시행할 수 있으며, 이 정책은 온라인 서비스의 사용 여부만 제어합니다.
 
       이 설정을 구성하지 않으면 사용자는 맞춤법 검사 사용 여부를 선택할 수 있습니다.</translation>
+<translation id="2294283832646774959">프린터 목록을 설정합니다.
+
+      관리자는 이 정책을 통해 사용자에게 프린터 설정을
+      제공할 수 있습니다.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> 및 <ph name="PRINTER_DESCRIPTION" />은(는) 프린터를 쉽게 선택하도록 맞춤설정할 수 있는 자유 형식 문자열입니다. <ph name="PRINTER_MANUFACTURER" /> 및 <ph name="PRINTER_MODEL" />은(는) 최종 사용자가 프린터를 쉽게 확인하도록 돕기 위해 제공되며 프린터 제조업체 및 모델을 나타냅니다. <ph name="PRINTER_URI" />은(는) <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, <ph name="URI_QUEUE" />을(를) 포함한 클라이언트 컴퓨터에서 연결할 수 있는 주소여야 합니다. <ph name="PRINTER_UUID" />은(는) 선택사항이며, 제공된 경우 <ph name="ZEROCONF_DISCOVERY" /> 프린터의 중복을 삭제하는 데 사용됩니다.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" />은(는) <ph name="PRODUCT_NAME" /> 지원 프린터를 나타내는 문자열 중 하나와 일치해야 합니다. 이 문자열은 프린터의 적절한 PPD를 확인하고 설치하는 데 사용됩니다. 자세한 정보는 https://support.google.com/chrome?p=noncloudprint에서 확인할 수 있습니다.
+
+      프린터 설정은 프린터를 처음 사용할 때 완료됩니다. PPD는 프린터가 사용될 때까지 다운로드되지 않습니다. 그 이후 자주 사용되는 PPD가 캐시됩니다.
+
+      이 정책은 사용자가 개별 기기에 프린터를 설정할 수 있는지 여부에 영향을 미치지 않습니다. 이 정책은 개별 사용자의 프린터 설정을 보완하기 위한 것입니다.
+
+      Active Directory 관리 대상 기기에서는 이 정책을 통해 <ph name="MACHINE_NAME_VARIABLE" />을(를) Active Directory 컴퓨터 이름 또는 관련 하위 문자열로 확장할 수 있습니다. 예를 들어, 컴퓨터 이름이 <ph name="MACHINE_NAME_EXAMPLE" />(이)라면 <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />이(가) 6번째 위치 이후에 시작되는 4자로 대체되어 <ph name="MACHINE_NAME_PART_EXAMPLE" />이(가) 됩니다. 이 위치는 0을 기준으로 합니다.
+      </translation>
 <translation id="2294382669900758280">이 정책이 <ph name="TRUE" />로 설정되더라도 Android 앱에서 재생되는 동영상은 고려 대상에 포함되지 않습니다.</translation>
 <translation id="2298647742290373702"><ph name="PRODUCT_NAME" />의 기본 새 탭 페이지를 설정합니다.</translation>
 <translation id="2299220924812062390">사용 설정한 플러그인 목록 지정</translation>
@@ -1019,11 +1034,6 @@
       이 정책을 설정하지 않으면 SPDY를 사용할 수 있습니다.</translation>
 <translation id="3890999316834333174">빠른 잠금 해제 정책</translation>
 <translation id="3891357445869647828">자바스크립트 사용</translation>
-<translation id="3891953007921334498">개발자 도구 및 자바스크립트 콘솔의 사용을 중지합니다.
-
-      이 설정을 사용하면 개발자 도구에 액세스할 수 없으며 더 이상 웹사이트 요소를 검사할 수 없습니다. 개발자 도구나 자바스크립트 콘솔을 열기 위한 모든 단축키와 메뉴, 컨텍스트 메뉴 항목이 사용 중지됩니다.
-
-      이 옵션을 사용하지 않도록 설정하거나 설정하지 않은 채로 두면 사용자가 개발자 도구와 자바스크립트 콘솔을 사용할 수 있습니다.</translation>
 <translation id="3895557476567727016"><ph name="PRODUCT_NAME" />에서 파일을 다운로드할 때 사용하는 기본 디렉토리를 설정합니다.
 
       이 정책을 설정하면 <ph name="PRODUCT_NAME" />에서 파일을 다운로드하는 기본 디렉토리를 변경합니다. 이 정책은 필수가 아니므로 사용자가 디렉토리를 변경할 수 있습니다. 
@@ -1221,6 +1231,7 @@
 <translation id="4508686775017063528">이 정책을 'true'로 설정하거나 설정하지 않으면 <ph name="PRODUCT_NAME" />이(가) 사용 설정되어 사용자가 앱 메뉴, 페이지 컨텍스트 메뉴, Cast 지원 웹사이트의 미디어 컨트롤, Cast 툴바 아이콘(표시된 경우)을 통해 실행할 수 있습니다.
 
           이 정책을 'false'로 설정하면 <ph name="PRODUCT_NAME" />이(가) 사용 중지됩니다.</translation>
+<translation id="4515404363392014383">신뢰할 수 있는 소스에서 세이프 브라우징을 사용할 수 있도록 허용</translation>
 <translation id="4518251772179446575">사이트에서 사용자의 실제 위치를 추적할 때마다 확인</translation>
 <translation id="4519046672992331730"><ph name="PRODUCT_NAME" />의 검색주소창에서 추천 검색어를 사용하도록 설정하고 사용자가 이 설정을 변경하지 못하게 합니다.
 
@@ -1343,6 +1354,7 @@
 
           정책이 False로 설정된 경우, 잠금 요청이 무시됩니다.</translation>
 <translation id="487460824085252184">사용자의 동의를 구하지 않고 자동으로 이전합니다.</translation>
+<translation id="4874982543810021567">이 사이트에서 WebUSB 차단</translation>
 <translation id="4876805738539874299">최대 SSL 버전 사용 설정됨</translation>
 <translation id="4897928009230106190">POST로 추천 검색을 할 때 사용할 매개변수를 지정합니다. 매개변수는 쉼표로 구분된 이름/값 쌍으로 구성되어 있습니다. 값이 위의 예에 있는 {searchTerms}와 같은 템플릿 매개변수인 경우 실제 검색어 데이터로 대체됩니다.
 
@@ -1914,6 +1926,11 @@
       이 정책이 설정되지 않으면 네트워크 예측이 사용 설정되지만, 사용자가 변경할 수 있습니다.</translation>
 <translation id="6658245400435704251">업데이트를 처음 서버로 푸시한 시점부터 기기가 몇 초까지 임의로 업데이트의 다운로드를 지연시킬 수 있는지 지정합니다. 기기가 이 시간의 일부를 일반 시계 시간 기준으로, 그리고 나머지 시간을 업데이트 확인 횟수 기준으로 지연시킵니다. 모든 경우, 기기가 고착되어 업데이트 다운로드를 계속 기다리지 않도록 분산의 상한이 일정 시간으로 제한되어 있습니다.</translation>
 <translation id="6665670272107384733">빠른 잠금 해제를 사용하기 위해 사용자가 비밀번호를 얼마나 자주 입력해야 하는지 설정</translation>
+<translation id="6681229465468164801">사용자에게 USB 기기 액세스 권한 허용을 요청하지 못하도록 차단된 사이트를 지정하는 URL 패턴 목록을 설정하도록 허용합니다.
+
+          이 정책을 설정하지 않으면 'DefaultWebUsbGuardSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
+
+          이 정책의 URL 패턴은 WebUsbAskForUrls를 통해 구성된 패턴과 충돌해서는 안 됩니다. URL이 두 정책과 모두 일치할 때 어떤 정책이 우선 적용되는지 지정되어 있지 않습니다.</translation>
 <translation id="6689792153960219308">하드웨어 상태 보고</translation>
 <translation id="6698071416141001300">비밀번호가 재사용되어 위험 계정에 관한 비밀번호 보호 경고가 실행됨</translation>
 <translation id="6699880231565102694">원격 액세스 호스트를 위한 2단계 인증 사용</translation>
@@ -2083,6 +2100,11 @@
       이 설정을 사용 중지하거나 설정하지 않으면 모든 리소스에 기본 세이프 브라우징 보호가 적용됩니다.
       <ph name="MS_AD_NAME" /> 도메인에 가입되지 않은 Windows 인스턴스에서는 이 정책을 사용할 수 없습니다.</translation>
 <translation id="7079519252486108041">이 사이트에서 팝업 차단</translation>
+<translation id="7085803328069945025">사용자에게 USB 기기 액세스 권한 허용을 요청할 수 있도록 허용된 사이트를 지정하는 URL 패턴 목록을 설정하도록 허용합니다.
+
+          이 정책을 설정하지 않으면 'DefaultWebUsbGuardSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
+
+          이 정책의 URL 패턴은 WebUsbBlockedForUrls를 통해 구성된 패턴과 충돌해서는 안 됩니다. URL이 두 정책과 모두 일치할 때 어떤 정책이 우선 적용되는지 지정되어 있지 않습니다.</translation>
 <translation id="7106631983877564505"><ph name="PRODUCT_OS_NAME" /> 기기가 유휴 상태이거나 일시 중지되었을 때 잠금을 사용하도록 설정합니다.
 
       이 설정을 사용하면 절전 모드인 기기를 잠금 해제할 때 사용자에게 비밀번호를 묻습니다.
@@ -2779,6 +2801,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="9096086085182305205">인증 서버 허용목록</translation>
 <translation id="9098553063150791878">HTTP 인증 정책</translation>
 <translation id="9105265795073104888">프록시 설정 옵션 중 일부만 Android 앱에서 사용할 수 있습니다. Android 앱에서는 자발적으로 프록시를 사용하도록 선택할 수 있습니다. 강제로 Android 앱에서 프록시를 사용하도록 할 수 없습니다.</translation>
+<translation id="9106865192244721694">이 사이트에서 WebUSB 허용</translation>
 <translation id="9112727953998243860">엔터프라이즈 프린터 설정 파일</translation>
 <translation id="9112897538922695510">프로토콜 핸들러 목록을 등록할 수 있도록 허용합니다. 추천 정책만 될 수 있습니다. |protocol| 속성은 'mailto'와 같은 스키마로 설정해야 하며 |url| 속성은 스키마를 처리하는 애플리케이션의 URL 패턴으로 설정해야 합니다. 패턴에 '%s'를 포함할 수 있으며, 포함할 경우 이 기호는 처리된 URL로 교체됩니다.
 
@@ -2818,6 +2841,11 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="915194831143859291">이 정책을 false로 설정하거나 설정하지 않으면 <ph name="PRODUCT_OS_NAME" />에서 사용자가 기기를 종료할 수 있도록 허용합니다.
       이 정책을 true로 설정하면 사용자가 기기를 종료할 때 <ph name="PRODUCT_OS_NAME" />에서 재부팅을 시작하며 <ph name="PRODUCT_OS_NAME" />에서 UI의 종료 버튼을 모두 재부팅 버튼으로 바꿉니다. 정책을 사용하도록 설정해도 사용자가 전원 버튼을 사용하여 기기를 종료하면 자동으로 재부팅하지 않습니다.</translation>
 <translation id="9158929520101169054">브라우저 내 멀티 로그인 허용</translation>
+<translation id="9165792353046089850">연결된 USB 기기에 관한 웹사이트의 액세스 허용 여부를 설정할 수 있습니다. 액세스를 완전히 차단하거나 웹사이트에서 연결된 USB 기기에 액세스하려고 할 때마다 사용자에게 확인을 요청할 수 있습니다.
+
+          'WebUsbAskForUrls' 및 'WebUsbBlockedForUrls' 정책을 사용하는 특정 URL 패턴은 이 정책보다 우선 적용됩니다.
+
+          이 정책을 설정하지 않으면 '3'으로 설정되며 사용자가 변경할 수 있습니다.</translation>
 <translation id="9167719789236691545"><ph name="PRODUCT_OS_NAME" /> 파일 앱에서 드라이브 사용 중지</translation>
 <translation id="9187743794267626640">외부 저장소 마운트 사용 중지</translation>
 <translation id="9197740283131855199">화면이 어두워진 후 사용자의 활동이 감지될 때 화면 어둡게 하기 지연 시간이 조정되는 비율</translation>

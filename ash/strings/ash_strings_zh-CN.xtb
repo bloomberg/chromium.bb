@@ -164,6 +164,7 @@
 <translation id="4379531060876907730">这些是您的触控笔工具</translation>
 <translation id="4421231901400348175">正在通过远程协助与<ph name="HELPER_NAME" />共享您屏幕的控制权限。</translation>
 <translation id="4430019312045809116">音量</translation>
+<translation id="4450893287417543264">不再显示</translation>
 <translation id="4479639480957787382">以太网</translation>
 <translation id="4481530544597605423">未配对的设备</translation>
 <translation id="4508225577814909926"><ph name="NAME" />：正在连接...</translation>
@@ -196,6 +197,7 @@
 <translation id="54609108002486618">托管</translation>
 <translation id="553675580533261935">退出会话</translation>
 <translation id="5548285847212963613">扩展程序“<ph name="EXTENSION_NAME" />”可帮助连接到此网络。</translation>
+<translation id="554893713779400387">开启/关闭语音输入</translation>
 <translation id="5571066253365925590">蓝牙已启用</translation>
 <translation id="5597451508971090205"><ph name="DATE" /><ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">按 Ctrl + Alt + Z 即可停用语音反馈。</translation>
@@ -265,7 +267,6 @@
 <translation id="698231206551913481">移除该用户后，与其关联的所有文件和本地数据都会被永久删除。</translation>
 <translation id="7029814467594812963">退出会话</translation>
 <translation id="7034339000180558234">正在将“<ph name="TAB_NAME" />”投射到“<ph name="RECEIVER_NAME" />”</translation>
-<translation id="7052914147756339792">设置壁纸...</translation>
 <translation id="7066646422045619941">您的管理员已禁用此网络。</translation>
 <translation id="7067196344162293536">自动旋转</translation>
 <translation id="7098389117866926363">USB-C 设备（背面左侧端口）</translation>
@@ -284,6 +285,7 @@
 <translation id="7536035074519304529">IP 地址：<ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />不支持<ph name="SPECIFIED_RESOLUTION" />。分辨率已改为<ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">表情符号面板</translation>
+<translation id="7564874036684306347">将窗口移至另一桌面可能会导致出现意外行为 - 后续的通知、窗口和对话框可能会被拆分到不同的桌面中。</translation>
 <translation id="7569509451529460200">已启用盲文和 ChromeVox</translation>
 <translation id="7593891976182323525">搜索键或 Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />（所有者）</translation>
@@ -296,6 +298,7 @@
 <translation id="7798302898096527229">按搜索键或按 Shift 键可取消。</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">信号较强</translation>
+<translation id="7842569679327885685">警告：实验性功能</translation>
 <translation id="7904094684485781019">此帐号的管理员已停用多帐号登录。</translation>
 <translation id="7933084174919150729">Google 智能助理仅适用于主要个人资料。</translation>
 <translation id="79341161159229895">该帐号由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 管理</translation>
@@ -348,9 +351,11 @@
 <translation id="9091626656156419976">已移除显示器“<ph name="DISPLAY_NAME" />”</translation>
 <translation id="9111102763498581341">解锁</translation>
 <translation id="9151726767154816831">重新启动并通过 Powerwash 来进行更新</translation>
+<translation id="9179259655489829027">借助此功能，您无需使用密码即可快速访问任何已登录的用户。请仅对您信任的帐号使用此功能。</translation>
 <translation id="9194617393863864469">登录其他用户帐号…</translation>
 <translation id="9201131092683066720">电池电量为<ph name="PERCENTAGE" />%。</translation>
 <translation id="9210037371811586452">正在退出统一桌面模式</translation>
+<translation id="9215934040295798075">设置壁纸</translation>
 <translation id="923686485342484400">连按两次Ctrl+Shift+Q即可退出。</translation>
 <translation id="945522503751344254">发送反馈</translation>
 <translation id="98515147261107953">横向</translation>

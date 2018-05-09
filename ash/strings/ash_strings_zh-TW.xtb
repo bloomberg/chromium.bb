@@ -163,6 +163,7 @@
 <translation id="4379531060876907730">這些是可用的觸控筆工具</translation>
 <translation id="4421231901400348175">透過遠端協助與<ph name="HELPER_NAME" />分享螢幕控制功能。</translation>
 <translation id="4430019312045809116">音量</translation>
+<translation id="4450893287417543264">不要再顯示</translation>
 <translation id="4479639480957787382">乙太網路</translation>
 <translation id="4481530544597605423">解除配對的裝置</translation>
 <translation id="4508225577814909926"><ph name="NAME" />：正在連線...</translation>
@@ -195,6 +196,7 @@
 <translation id="54609108002486618">管理</translation>
 <translation id="553675580533261935">結束工作階段</translation>
 <translation id="5548285847212963613">「<ph name="EXTENSION_NAME" />」擴充功能可協助連線至這個網路。</translation>
+<translation id="554893713779400387">切換語音輸入</translation>
 <translation id="5571066253365925590">藍牙已啟用</translation>
 <translation id="5597451508971090205"><ph name="DATE" /><ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">按下 Ctrl + Alt + Z 鍵即可停用互動朗讀功能。</translation>
@@ -264,7 +266,6 @@
 <translation id="698231206551913481">將這位使用者移除後，與這位使用者相關聯的所有檔案和本機資料都會遭到永久刪除。</translation>
 <translation id="7029814467594812963">結束工作階段</translation>
 <translation id="7034339000180558234">正在將「<ph name="TAB_NAME" />」畫面投放到「<ph name="RECEIVER_NAME" />」</translation>
-<translation id="7052914147756339792">設定桌布...</translation>
 <translation id="7066646422045619941">您的管理員已停用這個網路。</translation>
 <translation id="7067196344162293536">自動旋轉</translation>
 <translation id="7098389117866926363">USB-C 裝置 (背面左側連接埠)</translation>
@@ -283,6 +284,7 @@
 <translation id="7536035074519304529">IP 位址：<ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> 不支援 <ph name="SPECIFIED_RESOLUTION" />，解析度已變更為 <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">表情符號面板</translation>
+<translation id="7564874036684306347">將視窗移至其他桌面可能會導致未預期的行為。後續的通知、視窗和對話方塊可能會分開顯示在不同桌面上。</translation>
 <translation id="7569509451529460200">點字模式和 ChromeVox 已啟用</translation>
 <translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (擁有者)</translation>
@@ -295,6 +297,7 @@
 <translation id="7798302898096527229">按下搜尋鍵或 Shift 鍵即可取消。</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> 小時 <ph name="MINUTE" /> 分鐘</translation>
 <translation id="7829386189513694949">訊號穩定</translation>
+<translation id="7842569679327885685">警告：實驗功能</translation>
 <translation id="7904094684485781019">這個帳戶的管理員已禁止多重登入。</translation>
 <translation id="7933084174919150729">Google 助理僅適用於主要設定檔。</translation>
 <translation id="79341161159229895">這個帳戶是由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 管理</translation>
@@ -347,9 +350,11 @@
 <translation id="9091626656156419976">「<ph name="DISPLAY_NAME" />」螢幕已移除</translation>
 <translation id="9111102763498581341">解除鎖定</translation>
 <translation id="9151726767154816831">重新啟動並執行 Powerwash 即可更新</translation>
+<translation id="9179259655489829027">這項功能可讓你快速存取任何已登入的使用者帳戶，不需提供密碼。使用這項功能時，請務必只存取你信任的帳戶。</translation>
 <translation id="9194617393863864469">登入其他使用者帳戶...</translation>
 <translation id="9201131092683066720">電池電量為 <ph name="PERCENTAGE" />%。</translation>
 <translation id="9210037371811586452">退出整合桌面模式</translation>
+<translation id="9215934040295798075">設定桌布</translation>
 <translation id="923686485342484400">按兩下 Ctrl+Shift+Q 鍵即可登出。</translation>
 <translation id="945522503751344254">提供意見</translation>
 <translation id="98515147261107953">橫向</translation>

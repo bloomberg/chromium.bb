@@ -1028,11 +1028,6 @@
       Als dit beleid niet wordt ingesteld, is het SPDY-protocol beschikbaar.</translation>
 <translation id="3890999316834333174">Beleid ten aanzien van snel ontgrendelen</translation>
 <translation id="3891357445869647828">JavaScript inschakelen</translation>
-<translation id="3891953007921334498">Hiermee worden de ontwikkelaarstools en de JavaScript-console uitgeschakeld.
-
-      Als je deze instelling inschakelt, kunnen de ontwikkelaarstools niet meer worden geopend en kunnen website-elementen niet meer worden geïnspecteerd. Alle sneltoetsen en menu- en contextmenu-opties voor het openen van de ontwikkelaarstools of de JavaScript-console worden uitgeschakeld.
-
-      Als je deze optie uitschakelt of niet instelt, kan de gebruiker de ontwikkelaarstools en de JavaScript-console gebruiken.</translation>
 <translation id="3895557476567727016">Hiermee wordt de standaardmap geconfigureerd die <ph name="PRODUCT_NAME" /> gebruikt voor gedownloade bestanden.
 
       Als je dit beleid instelt, wijzigt dit de standaardmap waarin <ph name="PRODUCT_NAME" /> bestanden downloadt. Dit beleid is niet verplicht. De gebruiker kan de map wijzigen.

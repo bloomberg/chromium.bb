@@ -111,7 +111,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> иска да се сдвои</translation>
 <translation id="1994173015038366702">URL адрес на сайт</translation>
 <translation id="200815880754187296">Други приложения: <ph name="KILOBYTES" /> КБ</translation>
-<translation id="2015632741368427174">Пренасочването към следния сайт бе блокирано:</translation>
 <translation id="2017836877785168846">Изчиства историята и автоматичните довършвания в адресната лента.</translation>
 <translation id="2021896219286479412">Контроли за сайтове на цял екран</translation>
 <translation id="2038563949887743358">Включване на функцията за заявяване на настолни сайтове</translation>
@@ -183,7 +182,6 @@
 <translation id="2650751991977523696">Да се изтегли ли отново файлът?</translation>
 <translation id="2653659639078652383">Изпращане</translation>
 <translation id="2677748264148917807">Излизане</translation>
-<translation id="2693813674743028984">Скриване на данните за хранилището</translation>
 <translation id="2704606927547763573">Копирано</translation>
 <translation id="2707726405694321444">Опресняване на страницата</translation>
 <translation id="2709516037105925701">Автоматично попълване</translation>
@@ -209,7 +207,6 @@
 <translation id="2956410042958133412">Този профил се управлява от <ph name="PARENT_NAME_1" /> и <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Авторски права <ph name="YEAR" /> Google Inc. Всички права запазени.</translation>
 <translation id="2962095958535813455">Превключихте към разделите в режим „инкогнито“</translation>
-<translation id="2965945119655563012">Показване на данните за хранилището</translation>
 <translation id="2968755619301702150">Визуализатор на сертификатите</translation>
 <translation id="2979025552038692506">Избран раздел в режим „инкогнито“</translation>
 <translation id="2989523299700148168">Наскоро посетени</translation>
@@ -527,7 +524,6 @@
 <translation id="5817918615728894473">Сдвояване</translation>
 <translation id="583281660410589416">Неизвестно</translation>
 <translation id="5833984609253377421">Споделяне на връзката</translation>
-<translation id="583891442612896534">Chrome не може да установи връзка с компресиращите сървъри на Google. Икономията на данни може да е ограничена.</translation>
 <translation id="5854790677617711513">По-стари от 30 дни</translation>
 <translation id="5858741533101922242">Chrome не може да включи адаптера за Bluetooth</translation>
 <translation id="5860033963881614850">Изключено</translation>
@@ -589,7 +585,6 @@
 <translation id="6395288395575013217">ВРЪЗКА</translation>
 <translation id="6404511346730675251">Редактиране на отметката</translation>
 <translation id="6406506848690869874">Синхронизиранe</translation>
-<translation id="6409731863280057959">Изскачащи прозорци</translation>
 <translation id="641643625718530986">Печат…</translation>
 <translation id="6416782512398055893">Изтеглено: <ph name="MBS" /> МБ</translation>
 <translation id="6433501201775827830">Изберете машина за търсене</translation>
@@ -840,7 +835,6 @@
 <translation id="8676374126336081632">Изчистване на въведеното</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Сила на сигнала: # чертичка}other{Сила на сигнала: # чертички}}</translation>
 <translation id="869891660844655955">Дата на валидност</translation>
-<translation id="8712637175834984815">Разбрах</translation>
 <translation id="8719023831149562936">Текущият раздел не може да се излъчи</translation>
 <translation id="8725066075913043281">Опитайте отново</translation>
 <translation id="8728487861892616501">С използването на това приложение приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на Chrome, както и <ph name="BEGIN_LINK3" />Съобщението за поверителност за профили в Google, управлявани чрез Family Link<ph name="END_LINK3" />.</translation>
@@ -850,7 +844,6 @@
 <translation id="8812260976093120287">На някои уебсайтове можете да извършвате плащания чрез посочените по-горе поддържани приложения за плащане на устройството ви.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> ще се отвори в Chrome. С продължаването си приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на браузъра, както и <ph name="BEGIN_LINK3" />Съобщението за поверителност за профили в Google, управлявани чрез Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Отметки</translation>
-<translation id="883635517171802338">Блокиране на показването на изскачащи прозорци от сайтовете (препоръчително)</translation>
 <translation id="883806473910249246">При изтеглянето на съдържанието възникна грешка.</translation>
 <translation id="8840953339110955557">Тази страница може да се различава от онлайн версията.</translation>
 <translation id="8847988622838149491">USB</translation>

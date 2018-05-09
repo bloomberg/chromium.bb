@@ -1009,11 +1009,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política não for definida, o protocolo SPDY está disponível.</translation>
 <translation id="3890999316834333174">Políticas de desbloqueio rápido</translation>
 <translation id="3891357445869647828">Ativar JavaScript</translation>
-<translation id="3891953007921334498">Desativa as Ferramentas do programador e a Consola de JavaScript.
-
-Se ativar esta definição, não será possível aceder às Ferramentas do programador e os elementos de Web sites deixarão de ser inspecionados. Todos os atalhos de teclado e entradas de menu ou de menu de contexto para abrir as Ferramentas do programador ou a Consola de JavaScript serão desativados.
-
-Se desativar ou não definir esta opção, permite que o utilizador use as Ferramentas do programador e a Consola de JavaScript.</translation>
 <translation id="3895557476567727016">Configura o diretório predefinido que o <ph name="PRODUCT_NAME" /> vai utilizar para a transferência de ficheiros.
 
       Se definir esta política, altera o diretório predefinido para onde o <ph name="PRODUCT_NAME" /> transfere ficheiros. Esta política não é obrigatória, pelo que o utilizador pode alterar o diretório.

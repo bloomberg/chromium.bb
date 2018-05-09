@@ -266,7 +266,6 @@
 <translation id="698231206551913481">Якщо видалити цього користувача, усі файли та локальні дані, зв’язані з ним, буде видалено назавжди.</translation>
 <translation id="7029814467594812963">Завершити сеанс</translation>
 <translation id="7034339000180558234">Вкладка "<ph name="TAB_NAME" />" транслюється на пристрій "<ph name="RECEIVER_NAME" />"</translation>
-<translation id="7052914147756339792">Установити фоновий малюнок...</translation>
 <translation id="7066646422045619941">Ваш адміністратор вимкнув цю мережу.</translation>
 <translation id="7067196344162293536">Автоматичне обертання</translation>
 <translation id="7098389117866926363">Пристрій, під’єднаний до порту USB-C (ліворуч на задній панелі)</translation>
@@ -355,6 +354,7 @@
 <translation id="9194617393863864469">Увійти як інший користувач…</translation>
 <translation id="9201131092683066720">Акумулятор заряджений на <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Вихід з уніфікованого режиму робочого стола</translation>
+<translation id="9215934040295798075">Вибрати фоновий малюнок</translation>
 <translation id="923686485342484400">Щоб вийти, двічі натисніть Control Shift Q.</translation>
 <translation id="945522503751344254">Надіслати відгук</translation>
 <translation id="98515147261107953">Альбомна</translation>

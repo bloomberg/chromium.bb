@@ -49,7 +49,7 @@
     &lt;li&gt;Sjekk at Internett-tilkoblingen din fungerer som den skal.&lt;/li&gt;
     &lt;li&gt;Kontakt eieren av nettstedet.&lt;/li&gt;
     &lt;/ol&gt;</translation>
-<translation id="1257286744552378071">Du har skrevet inn passordet ditt på et nettsted som ikke administreres av organisasjonen din. For å beskytte kontoen din må du ikke bruke det samme passordet i andre apper og på andre nettsteder.</translation>
+<translation id="1257286744552378071">Du har skrevet inn passordet ditt på et nettsted som ikke administreres av organisasjonen din. For å beskytte kontoen din må du ikke bruke det samme passordet i andre apper eller på andre nettsteder.</translation>
 <translation id="1263231323834454256">Leseliste</translation>
 <translation id="1264126396475825575">Programstopprapport fra <ph name="CRASH_TIME" /> (ignorert eller ikke lastet opp ennå)</translation>
 <translation id="1270502636509132238">Hentemåte</translation>
@@ -677,7 +677,7 @@
 <translation id="5710435578057952990">Identiteten til dette nettstedet er ikke verifisert.</translation>
 <translation id="5719499550583120431">Forhåndsbetalte kort godtas.</translation>
 <translation id="5720705177508910913">Gjeldende bruker</translation>
-<translation id="5730040223043577876">Chrome anbefaler at du tilbakestiller passordet ditt for hvis du også har brukt det på andre nettsteder.</translation>
+<translation id="5730040223043577876">Chrome anbefaler at du tilbakestiller passordet ditt hvis du også har brukt det på andre nettsteder.</translation>
 <translation id="5732392974455271431">Foreldrene dine kan oppheve blokkeringen for deg</translation>
 <translation id="5763042198335101085">Angi en gyldig e-postadresse</translation>
 <translation id="5765072501007116331">For å se leveringsmetoder og -krav, velg en adresse</translation>

@@ -111,7 +111,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> chce się sparować</translation>
 <translation id="1994173015038366702">URL strony</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB innych aplikacji</translation>
-<translation id="2015632741368427174">Zablokowano przekierowanie na stronę:</translation>
 <translation id="2017836877785168846">Usuwa historię i wpisy autouzupełniania w pasku adresu.</translation>
 <translation id="2021896219286479412">Elementy sterowania stroną na pełnym ekranie</translation>
 <translation id="2038563949887743358">Włącz opcję „Wersja na komputer”</translation>
@@ -183,7 +182,6 @@
 <translation id="2650751991977523696">Czy pobrać plik ponownie?</translation>
 <translation id="2653659639078652383">Prześlij</translation>
 <translation id="2677748264148917807">Wyjdź</translation>
-<translation id="2693813674743028984">Ukryj miejsce na pliki</translation>
 <translation id="2704606927547763573">Skopiowane</translation>
 <translation id="2707726405694321444">Odśwież stronę</translation>
 <translation id="2709516037105925701">Autouzupełnianie</translation>
@@ -209,7 +207,6 @@
 <translation id="2956410042958133412">Tym kontem zarządzają <ph name="PARENT_NAME_1" /> i <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Wszelkie prawa zastrzeżone.</translation>
 <translation id="2962095958535813455">Przełączono na karty incognito</translation>
-<translation id="2965945119655563012">Pokaż miejsce na pliki</translation>
 <translation id="2968755619301702150">Przeglądarka certyfikatów</translation>
 <translation id="2979025552038692506">Wybrana karta incognito</translation>
 <translation id="2989523299700148168">Ostatnio odwiedzone</translation>
@@ -527,7 +524,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="5817918615728894473">Sparuj</translation>
 <translation id="583281660410589416">Nieznany</translation>
 <translation id="5833984609253377421">Udostępnij link</translation>
-<translation id="583891442612896534">Chrome nie może połączyć się z serwerami Google kompresującymi dane. Oszczędność użycia danych może być ograniczona.</translation>
 <translation id="5854790677617711513">Sprzed ponad 30 dni</translation>
 <translation id="5858741533101922242">Chrome nie może włączyć adaptera Bluetooth</translation>
 <translation id="5860033963881614850">Wyłączone</translation>
@@ -589,7 +585,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Edytuj zakładkę</translation>
 <translation id="6406506848690869874">Synchronizacja</translation>
-<translation id="6409731863280057959">Wyskakujące okienka</translation>
 <translation id="641643625718530986">Drukuj…</translation>
 <translation id="6416782512398055893">Pobrano <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Wybierz wyszukiwarkę</translation>
@@ -840,7 +835,6 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="8676374126336081632">Wyczyść wpisany tekst</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Poziom siły sygnału: # słupek}few{Poziom siły sygnału: # słupki}many{Poziom siły sygnału: # słupków}other{Poziom siły sygnału: # słupka}}</translation>
 <translation id="869891660844655955">Data wygaśnięcia</translation>
-<translation id="8712637175834984815">Rozumiem</translation>
 <translation id="8719023831149562936">Nie można przesłać bieżącej karty</translation>
 <translation id="8725066075913043281">Spróbuj ponownie</translation>
 <translation id="8728487861892616501">Używając tej aplikacji, akceptujesz <ph name="BEGIN_LINK1" />Warunki korzystania z usługi<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />Politykę prywatności<ph name="END_LINK2" /> Chrome oraz <ph name="BEGIN_LINK3" />Informacje na temat ochrony prywatności dotyczące kont Google zarządzanych przez Family Link<ph name="END_LINK3" />.</translation>
@@ -850,7 +844,6 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="8812260976093120287">Używając swojego urządzenia, na niektórych stronach możesz płacić za pomocą powyższych obsługiwanych aplikacji do płatności.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> otworzy się w Chrome. Przechodząc dalej, akceptujesz <ph name="BEGIN_LINK1" />Warunki korzystania z usługi<ph name="END_LINK1" /> Chrome, <ph name="BEGIN_LINK2" />Informacje na temat ochrony prywatności<ph name="END_LINK2" /> i <ph name="BEGIN_LINK3" />Informacje na temat ochrony prywatności dotyczące kont Google zarządzanych przez Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Zakładki</translation>
-<translation id="883635517171802338">Blokuj próby pokazywania wyskakujących okienek na stronach (zalecane)</translation>
 <translation id="883806473910249246">Podczas pobierania treści wystąpił błąd.</translation>
 <translation id="8840953339110955557">Ta strona może różnić się od wersji online.</translation>
 <translation id="8847988622838149491">USB</translation>

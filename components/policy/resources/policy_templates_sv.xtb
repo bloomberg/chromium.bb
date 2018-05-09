@@ -1043,11 +1043,6 @@
       Om den här principen inte anges kommer SPDY att bli tillgängligt.</translation>
 <translation id="3890999316834333174">Principer för snabb upplåsning</translation>
 <translation id="3891357445869647828">Aktivera JavaScript</translation>
-<translation id="3891953007921334498">Principen inaktiverar utvecklarverktygen och JavaScript-konsolen.
-
-      Om du aktiverar inställningen går det inte att använda utvecklarverktygen och det går inte att inspektera webbplatselement. Kortkommandon och alternativ för att öppna utvecklarverktygen eller JavaScript-konsolen på menyer och snabbmenyer inaktiveras.
-
-      Om det här alternativet inaktiveras eller inte anges kan utvecklarverktygen och JavaScript-konsolen användas.</translation>
 <translation id="3895557476567727016">Konfigurerar standardkatalogen som används för att ladda ned filer med <ph name="PRODUCT_NAME" />.
 
       Om du ändrar denna princip ändras standardkatalogen som används när du laddar ned filer med <ph name="PRODUCT_NAME" />. Den här principen är inte obligatorisk, och användaren kan därför ändra katalogen.

@@ -266,7 +266,6 @@
 <translation id="698231206551913481">Tots els fitxers i les dades locals associats amb aquest usuari se suprimiran definitivament quan aquest usuari se suprimeixi.</translation>
 <translation id="7029814467594812963">Tanca la sessió</translation>
 <translation id="7034339000180558234">S'està emetent <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
-<translation id="7052914147756339792">Estableix fons de pantalla...</translation>
 <translation id="7066646422045619941">L'administrador ha desactivat aquesta xarxa.</translation>
 <translation id="7067196344162293536">Rotació automàtica</translation>
 <translation id="7098389117866926363">Dispositiu USB-C (port posterior esquerre)</translation>
@@ -355,6 +354,7 @@
 <translation id="9194617393863864469">Inicia la sessió amb un altre usuari...</translation>
 <translation id="9201131092683066720">La bateria està carregada fins al <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">S'està sortint del mode d'escriptori unificat</translation>
+<translation id="9215934040295798075">Estableix fons de pantalla</translation>
 <translation id="923686485342484400">Premeu Control+Maj+Q dues vegades per tancar la sessió.</translation>
 <translation id="945522503751344254">Envia suggeriments</translation>
 <translation id="98515147261107953">Horitzontal</translation>

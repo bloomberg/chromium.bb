@@ -111,7 +111,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> vil koble til</translation>
 <translation id="1994173015038366702">Nettadressen til nettstedet</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> kB andre apper</translation>
-<translation id="2015632741368427174">Viderekobling er blokkert til dette nettstedet:</translation>
 <translation id="2017836877785168846">Tømmer loggen og fjerner automatiske fullføringer fra adressefeltet.</translation>
 <translation id="2021896219286479412">Navigering i full skjerm</translation>
 <translation id="2038563949887743358">Slå på Bruk skrivebordsversjon</translation>
@@ -183,7 +182,6 @@
 <translation id="2650751991977523696">Vil du laste ned filen på nytt?</translation>
 <translation id="2653659639078652383">Send</translation>
 <translation id="2677748264148917807">Gå ut</translation>
-<translation id="2693813674743028984">Skjul lagring</translation>
 <translation id="2704606927547763573">Kopiert</translation>
 <translation id="2707726405694321444">Last inn siden på nytt</translation>
 <translation id="2709516037105925701">Autofyll</translation>
@@ -209,7 +207,6 @@
 <translation id="2956410042958133412">Denne kontoen er administrert av <ph name="PARENT_NAME_1" /> og <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Med enerett.</translation>
 <translation id="2962095958535813455">Byttet til inkognitofaner</translation>
-<translation id="2965945119655563012">Vis lagring</translation>
 <translation id="2968755619301702150">Visningsprogram for sertifikater</translation>
 <translation id="2979025552038692506">Valgt inkognitofane</translation>
 <translation id="2989523299700148168">Nylig besøkte</translation>
@@ -527,7 +524,6 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="5817918615728894473">Koble sammen</translation>
 <translation id="583281660410589416">Ukjent</translation>
 <translation id="5833984609253377421">Del en link</translation>
-<translation id="583891442612896534">Chrome kunne ikke kontakte Google-tjenerne for datakomprimering. Det kan hende at du bare oppnår begrenset datasparing.</translation>
 <translation id="5854790677617711513">Eldre enn 30 dager</translation>
 <translation id="5858741533101922242">Chrome kan ikke slå på Bluetooth-adapteren</translation>
 <translation id="5860033963881614850">Av</translation>
@@ -589,7 +585,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Rediger bokmerket</translation>
 <translation id="6406506848690869874">Synkroniser</translation>
-<translation id="6409731863280057959">Forgrunnsvinduer</translation>
 <translation id="641643625718530986">Skriv ut</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB er lastet ned</translation>
 <translation id="6433501201775827830">Velg søkemotor</translation>
@@ -705,7 +700,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7455923816558154057">Trykk for å se</translation>
 <translation id="7473891865547856676">Nei takk</translation>
 <translation id="7475192538862203634">Hvis du ser dette ofte, kan du prøve disse <ph name="BEGIN_LINK" />forslagene<ph name="END_LINK" />.</translation>
-<translation id="7475688122056506577">Finner ikke noe SD-kort. Noen av filene dine kan mangle.</translation>
+<translation id="7475688122056506577">Finner ikke SD-kort. Noen av filene dine kan mangle.</translation>
 <translation id="748127970106343339">Bekreft sletting av enhetslegitimasjon</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (oppdatert <ph name="TIME_SINCE_UPDATE" />)</translation>
@@ -769,7 +764,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8026334261755873520">Slett nettlesingsdata</translation>
 <translation id="8035133914807600019">Ny mappe</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dager igjen</translation>
-<translation id="804335162455518893">Finner ikke noe SD-kort</translation>
+<translation id="804335162455518893">Finner ikke SD-kort</translation>
 <translation id="805047784848435650">Basert på nettlesingsloggen din</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB tilgjengelig</translation>
 <translation id="8058746566562539958">Åpne i en ny Chrome-fane</translation>
@@ -840,7 +835,6 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="8676374126336081632">Slett teksten</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstyrkenivå: # stolpe}other{Signalstyrkenivå: # stolper}}</translation>
 <translation id="869891660844655955">Utløpsdato</translation>
-<translation id="8712637175834984815">Skjønner</translation>
 <translation id="8719023831149562936">Kan ikke beame gjeldende fane</translation>
 <translation id="8725066075913043281">Prøv igjen</translation>
 <translation id="8728487861892616501">Når du bruker denne appen, godtar du <ph name="BEGIN_LINK1" />vilkårene for bruk<ph name="END_LINK1" /> av Chrome, <ph name="BEGIN_LINK2" />merknaden om personvern<ph name="END_LINK2" /> og <ph name="BEGIN_LINK3" />merknaden om personvern for Google-kontoer som administreres med Family Link<ph name="END_LINK3" />.</translation>
@@ -850,7 +844,6 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="8812260976093120287">På noen nettsteder kan du betale med de støttede betalingsappene ovenfor på enheten din.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> åpnes i Chrome. Ved å fortsette godtar du <ph name="BEGIN_LINK1" />vilkårene for bruk<ph name="END_LINK1" /> av Chrome og <ph name="BEGIN_LINK2" />merknaden om personvern<ph name="END_LINK2" /> samt <ph name="BEGIN_LINK3" />merknaden om personvern for Google-kontoer som administreres med Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Bokmerker</translation>
-<translation id="883635517171802338">Blokkér nettsteder fra å vise forgrunnsvinduer (anbefales)</translation>
 <translation id="883806473910249246">Det oppsto en feil under nedlastingen av innholdet.</translation>
 <translation id="8840953339110955557">Denne siden kan avvike fra nettversjonen.</translation>
 <translation id="8847988622838149491">USB</translation>

@@ -1030,11 +1030,6 @@ Bu politika yanlış seçeneğine ayarlanırsa kiosk oturum bilgileri rapor edil
       Bu politika ayarlanmamış şekilde bırakılırsa SPDY kullanılabilir durumda olur.</translation>
 <translation id="3890999316834333174">Hızlı kilit açma politikaları</translation>
 <translation id="3891357445869647828">JavaScript’i Etkinleştir</translation>
-<translation id="3891953007921334498">Geliştirici Araçları'nı ve JavaScript konsolunu devre dışı bırakır.
-
-      Bu ayarı etkinleştirirseniz, Geliştirici Araçları'na erişilemez ve web sitesi öğeleri bundan sonra incelenemez. Geliştirici Araçları veya JavaScript Konsolu'nu açmak için kullanılan klavye kısayolları ve menüler veya bağlam menüsü girişleri devre dışı bırakılır.
-
-      Bu seçeneğin devre dışı olarak ayarlanması veya ayarlanmadan bırakılması, kullanıcının Geliştirici Araçları ve JavaScript konsolunu kullanmasına izin verir.</translation>
 <translation id="3895557476567727016"><ph name="PRODUCT_NAME" /> ürününün dosya indirmek için kullanacağı varsayılan dizini yapılandırır.
 
       Bu politikanın ayarlanması, <ph name="PRODUCT_NAME" /> ürününün dosyaları indirdiği varsayılan dizini değiştirir. Bu politika zorunlu olmadığı için kullanıcı dizini değiştirebilir.

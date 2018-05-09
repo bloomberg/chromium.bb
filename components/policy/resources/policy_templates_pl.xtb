@@ -995,11 +995,6 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
       Jeśli jest nieskonfigurowana, protokół SPDY jest dostępny.</translation>
 <translation id="3890999316834333174">Zasady szybkiego odblokowania</translation>
 <translation id="3891357445869647828">Włącz obsługę języka JavaScript</translation>
-<translation id="3891953007921334498">Wyłącza narzędzia dla programistów i konsolę JavaScript.
-
-      Jeśli włączysz to ustawienie, niemożliwe będzie uzyskanie dostępu do narzędzi dla programistów i dokonanie przeglądu elementów witryny. Wszelkie skróty klawiszowe oraz pozycje w menu aplikacji i menu kontekstowym umożliwiające otwarcie narzędzi dla programistów lub konsoli JavaScript będą nieaktywne.
-
-      Wyłączenie lub nieskonfigurowanie tej opcji umożliwi korzystanie z narzędzi dla programistów i konsoli JavaScript.</translation>
 <translation id="3895557476567727016">Konfiguruje domyślny katalog, do którego <ph name="PRODUCT_NAME" /> będzie pobierać pliki.
 
       Jeśli ustawisz tę zasadę, zmieni ona domyślny katalog, do którego <ph name="PRODUCT_NAME" /> pobiera pliki. Zasada nie jest obowiązkowa, dlatego użytkownik będzie mógł zmienić katalog.

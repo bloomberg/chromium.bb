@@ -163,6 +163,7 @@
 <translation id="4379531060876907730">스타일러스 도구입니다</translation>
 <translation id="4421231901400348175">원격 지원을 통해 <ph name="HELPER_NAME" />와(과) 화면 제어 공유</translation>
 <translation id="4430019312045809116">볼륨</translation>
+<translation id="4450893287417543264">다시 표시하지 않음</translation>
 <translation id="4479639480957787382">이더넷</translation>
 <translation id="4481530544597605423">페어링 해제된 기기</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: 연결하는 중...</translation>
@@ -195,6 +196,7 @@
 <translation id="54609108002486618">관리</translation>
 <translation id="553675580533261935">세션 종료</translation>
 <translation id="5548285847212963613">확장 프로그램('<ph name="EXTENSION_NAME" />')을 사용하여 이 네트워크에 연결할 수 있습니다.</translation>
+<translation id="554893713779400387">음성기록 전환</translation>
 <translation id="5571066253365925590">블루투스를 사용함</translation>
 <translation id="5597451508971090205"><ph name="DATE" /> <ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">음성 피드백을 사용 중지하려면 Ctrl + Alt + Z를 누르세요.</translation>
@@ -264,7 +266,6 @@
 <translation id="698231206551913481">이 사용자를 제거하면 해당 사용자와 연결되어 있는 모든 파일 및 로컬 데이터가 영구적으로 삭제됩니다.</translation>
 <translation id="7029814467594812963">세션 종료</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" />을(를) <ph name="RECEIVER_NAME" />(으)로 전송 중</translation>
-<translation id="7052914147756339792">배경화면 설정...</translation>
 <translation id="7066646422045619941">관리자가 사용 중지한 네트워크입니다.</translation>
 <translation id="7067196344162293536">자동 회전</translation>
 <translation id="7098389117866926363">USB-C 기기(좌측 후면 포트)</translation>
@@ -283,6 +284,7 @@
 <translation id="7536035074519304529">IP 주소: <ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />에서 <ph name="SPECIFIED_RESOLUTION" />을(를) 지원하지 않습니다. 해상도가 <ph name="FALLBACK_RESOLUTION" />(으)로 변경되었습니다.</translation>
 <translation id="7562368315689366235">그림 이모티콘 팔레트</translation>
+<translation id="7564874036684306347">창을 다른 데스크톱으로 이동하면 예기치 못한 동작이 나타날 수 있습니다. 이후의 알림, 창, 대화상자가 데스크톱 간에 분할될 수 있습니다.</translation>
 <translation id="7569509451529460200">점자와 ChromeVox가 사용 설정되었습니다.</translation>
 <translation id="7593891976182323525">검색 또는 Shift 키</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />(소유자)</translation>
@@ -295,6 +297,7 @@
 <translation id="7798302898096527229">취소하려면 검색 또는 Shift 키를 누르세요.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" />시간 <ph name="MINUTE" />분</translation>
 <translation id="7829386189513694949">신호 강함</translation>
+<translation id="7842569679327885685">경고: 실험 기능</translation>
 <translation id="7904094684485781019">이 계정의 관리자가 멀티 로그인을 허용하지 않습니다.</translation>
 <translation id="7933084174919150729">Google 어시스턴트는 기본 프로필에서만 사용할 수 있습니다.</translation>
 <translation id="79341161159229895">계정 관리자: <ph name="FIRST_PARENT_EMAIL" /> 및 <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -347,9 +350,11 @@
 <translation id="9091626656156419976">디스플레이 <ph name="DISPLAY_NAME" /> 제거됨</translation>
 <translation id="9111102763498581341">잠금 해제</translation>
 <translation id="9151726767154816831">업데이트하려면 다시 시작하고 Powerwash하세요.</translation>
+<translation id="9179259655489829027">이 기능을 사용하면 로그인한 모든 사용자에게 비밀번호 없이 액세스할 수 있습니다. 이 기능은 신뢰할 수 있는 계정에만 사용하시기 바랍니다.</translation>
 <translation id="9194617393863864469">다른 사용자로 로그인...</translation>
 <translation id="9201131092683066720">배터리가 <ph name="PERCENTAGE" />% 남았습니다.</translation>
 <translation id="9210037371811586452">통합 바탕화면 모드 종료 중</translation>
+<translation id="9215934040295798075">배경화면 설정</translation>
 <translation id="923686485342484400">로그아웃하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
 <translation id="945522503751344254">의견 보내기</translation>
 <translation id="98515147261107953">가로 방향</translation>

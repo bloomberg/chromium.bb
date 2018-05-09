@@ -111,7 +111,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> vill kopplas</translation>
 <translation id="1994173015038366702">Webbadress</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> kB används av övriga appar</translation>
-<translation id="2015632741368427174">Omdirigering till den här sidan blockerades:</translation>
 <translation id="2017836877785168846">Rensar historik och autoslutföranden i adressfältet.</translation>
 <translation id="2021896219286479412">Helskärmskontroller på webbsidan</translation>
 <translation id="2038563949887743358">Aktivera begäran av skrivbordsversion</translation>
@@ -183,7 +182,6 @@
 <translation id="2650751991977523696">Vill du ladda ned filen igen?</translation>
 <translation id="2653659639078652383">Skicka</translation>
 <translation id="2677748264148917807">Lämna</translation>
-<translation id="2693813674743028984">Dölj lagringsutrymme</translation>
 <translation id="2704606927547763573">Kopierat</translation>
 <translation id="2707726405694321444">Uppdatera sidan</translation>
 <translation id="2709516037105925701">Autofyll</translation>
@@ -209,7 +207,6 @@
 <translation id="2956410042958133412">Det här kontot hanteras av <ph name="PARENT_NAME_1" /> och <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Upphovsrätt <ph name="YEAR" /> Google Inc. Med ensamrätt.</translation>
 <translation id="2962095958535813455">Byter till inkognitoflikar</translation>
-<translation id="2965945119655563012">Visa lagringsutrymme</translation>
 <translation id="2968755619301702150">Certifikatvisare</translation>
 <translation id="2979025552038692506">Vald inkognitoflik</translation>
 <translation id="2989523299700148168">Nyligen besökta</translation>
@@ -527,7 +524,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5817918615728894473">Koppla</translation>
 <translation id="583281660410589416">Okänd</translation>
 <translation id="5833984609253377421">Dela länk</translation>
-<translation id="583891442612896534">Chrome kan inte nå Googles servrar för datakomprimeringen. Du kanske inte sparar data i någon större utsträckning.</translation>
 <translation id="5854790677617711513">Äldre än 30 dagar</translation>
 <translation id="5858741533101922242">Det gick inte att aktivera Bluetooth-adaptern i Chrome</translation>
 <translation id="5860033963881614850">Av</translation>
@@ -589,7 +585,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6395288395575013217">LÄNK</translation>
 <translation id="6404511346730675251">Redigera bokmärke</translation>
 <translation id="6406506848690869874">Synkronisera</translation>
-<translation id="6409731863280057959">Popup-fönster</translation>
 <translation id="641643625718530986">Skriv ut …</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB har laddats ned</translation>
 <translation id="6433501201775827830">Välj sökmotor</translation>
@@ -840,7 +835,6 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8676374126336081632">Radera inmatning</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstyrka: # streck}other{Signalstyrka: # streck}}</translation>
 <translation id="869891660844655955">Utgångsdatum</translation>
-<translation id="8712637175834984815">Uppfattat</translation>
 <translation id="8719023831149562936">Den aktuella fliken kan inte överföras</translation>
 <translation id="8725066075913043281">Försök igen</translation>
 <translation id="8728487861892616501">Genom att fortsätta att använda programmet godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />sekretessmeddelande<ph name="END_LINK2" /> och <ph name="BEGIN_LINK3" />sekretessmeddelandet för Google-konton som hanteras via Family Link<ph name="END_LINK3" />.</translation>
@@ -850,7 +844,6 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8812260976093120287">På vissa webbplatser kan du betala med ovanstående betalningsappar som stöds på enheten.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> öppnas i Chrome. Genom att fortsätta godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretesspolicy<ph name="END_LINK2" /> samt <ph name="BEGIN_LINK3" />sekretessmeddelandet för  Google-konton som hanteras via Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Bokmärken</translation>
-<translation id="883635517171802338">Blockera webbplatser från att visa popup-fönster (rekommenderas)</translation>
 <translation id="883806473910249246">Ett fel uppstod när innehållet skulle laddas ned.</translation>
 <translation id="8840953339110955557">Sidan kan skilja sig från onlineversionen.</translation>
 <translation id="8847988622838149491">USB</translation>

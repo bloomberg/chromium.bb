@@ -89,6 +89,7 @@
 <translation id="1810107444790159527">列表框</translation>
 <translation id="1828385960365606039">5月</translation>
 <translation id="1834891354138622109">列</translation>
+<translation id="1845944666972354496">连续点按两次即可激活</translation>
 <translation id="1865601187525349519">文本末尾</translation>
 <translation id="1876229593313240038">文档</translation>
 <translation id="188130072164734898">说出当前的日期和时间。</translation>
@@ -119,6 +120,7 @@
 <translation id="2179452035581866348">ChromeVox 会使用提示音为您提供基本信息和其他信息。您只需先了解一下每种提示音有何含义，即可使用这些提示音更快速地进行浏览。待熟练掌握这些提示音之后，您便可关闭语音提示中的详细说明，改为依靠这些提示音获取有关相应网页的基本信息。下面是各种提示音及其含义的完整列表。</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{1个右圆括号}other{#个右圆括号}}</translation>
 <translation id="2199994615414171367">上一个数学元素</translation>
+<translation id="2203046366315513658">将值减小</translation>
 <translation id="2220529011494928058">报告问题</translation>
 <translation id="2223693656926968778">对当前项执行操作</translation>
 <translation id="225732394367814946">加快语速</translation>
@@ -157,6 +159,7 @@
 <translation id="2637227747952042642">数学对象</translation>
 <translation id="2639750663247012216">ChromeVox辅助键</translation>
 <translation id="2644542693584024604">拼写错误</translation>
+<translation id="2673280813984708147">正在修改</translation>
 <translation id="267442004702508783">刷新</translation>
 <translation id="2684412629217766642">关闭 ChromeVox 教程</translation>
 <translation id="2697408785920771974">autoinl</translation>
@@ -208,6 +211,7 @@
 <translation id="3060756054951570867">已打开“<ph name="TITLE" />”菜单</translation>
 <translation id="3078345202707391975">下一个2级标题</translation>
 <translation id="3078740164268491126">表格</translation>
+<translation id="3082249673510793544">向后滚动</translation>
 <translation id="3082557070674409251">已点击</translation>
 <translation id="3084806535845658316">无输入回显</translation>
 <translation id="3086746722712840547">备注</translation>
@@ -395,6 +399,7 @@
 <translation id="4372705107434148843">关闭语音</translation>
 <translation id="4373197658375206385">不存在上一个非链接项。</translation>
 <translation id="4376316291247992553">以盲文的形式查看图形</translation>
+<translation id="4378308539633073595">向前滚动</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">重置</translation>
 <translation id="4457472090507035117">请选择当前的声音：</translation>
@@ -402,6 +407,7 @@
 <translation id="4476183483923481720">换行</translation>
 <translation id="4482330759234983253">上一个表格</translation>
 <translation id="4491109536499578614">图片</translation>
+<translation id="4517854969512651305">将值增大</translation>
 <translation id="4529987814483543472">传统键映射</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{1个斜线符号}other{#个斜线符号}}</translation>
 <translation id="4547556996012970016">下一个5级标题</translation>
@@ -417,6 +423,7 @@
 <translation id="461613135510474570">逐句</translation>
 <translation id="463135993322337640">按 ChromeVox 的 O 键、N 键，即可了解最新功能</translation>
 <translation id="4647836961514597010">颜色选择器</translation>
+<translation id="4652110509054054146">您可以使用搜索键 + 向左箭头或搜索键 + 向右箭头来代替 Home 键或 End 键，使用搜索键 + Ctrl + 向左箭头或搜索键 + Ctrl + 向右箭头来代替 Ctrl + Home 或 Ctrl + End，使用搜索键 + 向上箭头或搜索键 + 向下箭头来代替 PageUp 键或 PageDown 键。</translation>
 <translation id="4660783501463101648">移除了 Classic。现已无法再通过键盘切换回 ChromeVox Classic。</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>

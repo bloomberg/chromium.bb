@@ -425,7 +425,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Denne politik giver administratorer mulighed for at angive printerkonfigurationer
       for deres brugere.
 
-      <ph name="PRINTER_DISPLAY_NAME" /> og <ph name="PRINTER_DESCRIPTION" /> er strenge i frit format, der kan tilpasses, så valg af printer bliver nemmere. <ph name="PRINTER_MANUFACTURER" /> og <ph name="PRINTER_MODEL" /> gør det nemmere for slutbrugerne at identificere printere. De repræsenterer printerproducenten og -model. <ph name="PRINTER_URI" /> skal være en adresse, der er tilgængelig fra en klientcomputer, bl.a. <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> og <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> er valgfri. Hvis den angives, bruges den som en hjælp til at deduplikere <ph name="ZEROCONF_DISCOVERY" />-printere.
+      <ph name="PRINTER_DISPLAY_NAME" /> og <ph name="PRINTER_DESCRIPTION" /> er strenge i frit format, der kan tilpasses, så valg af printer bliver nemmere. <ph name="PRINTER_MANUFACTURER" /> og <ph name="PRINTER_MODEL" /> gør det nemmere for slutbrugerne at identificere printere. De repræsenterer printerproducenten og -modellen. <ph name="PRINTER_URI" /> skal være en adresse, der er tilgængelig fra en klientcomputer, bl.a. <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> og <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> er valgfri. Hvis den angives, bruges den som en hjælp til at deduplikere <ph name="ZEROCONF_DISCOVERY" />-printere.
 
       <ph name="PRINTER_EFFECTIVE_MODEL" /> skal stemme overens med en af de strenge, der repræsenterer en <ph name="PRODUCT_NAME" />-understøttet printer. Strengen bruges til at identificere og installere den relevante PPD-fil til printeren. Du kan finde flere oplysninger på https://support.google.com/chrome?p=noncloudprint.
 
@@ -1008,11 +1008,6 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
       Hvis denne politik ikke angives, vil SPDY være tilgængelig.</translation>
 <translation id="3890999316834333174">Politikker for hurtig oplåsning</translation>
 <translation id="3891357445869647828">Aktiver JavaScript</translation>
-<translation id="3891953007921334498">Deaktiverer udviklerværktøjerne og JavaScript-konsollen.
-
-      Hvis du aktiverer denne indstilling, kan der ikke opnås adgang til udviklerværktøjerne, og elementer på websites kan ikke længere inspiceres. Alle tastaturgenveje og alle angivelser i menuer eller genvejsmenuer, der bruges til at åbne udviklerværktøjerne eller JavaScript-konsollen, bliver deaktiveret.
-
-      Hvis du deaktiverer denne indstilling eller ikke angiver den, kan brugeren benytte udviklerværktøjerne og JavaScript-konsollen.</translation>
 <translation id="3895557476567727016">Konfigurerer standardmappen, som <ph name="PRODUCT_NAME" /> bruger til download af filer.
 
       Hvis du angiver denne politik, ændrer det standardmappen, som <ph name="PRODUCT_NAME" /> downloader filer til. Denne politik er ikke obligatorisk, så brugeren kan ændre mappen.

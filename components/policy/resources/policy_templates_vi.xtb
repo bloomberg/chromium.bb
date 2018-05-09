@@ -408,20 +408,20 @@
 <translation id="2289578386193672044">Chỉ định danh sách các ứng dụng và tiện ích được cài đặt tự động
           mà không có sự tương tác của người dùng và người dùng không thể gỡ cài đặt hoặc
            vô hiệu hóa. Tất cả các quyền
-          ứng dụng/tiện ích yêu cầu được cấp ngấm ngầm mà không có sự tương tác của người dùng,
+          do ứng dụng/tiện ích yêu cầu được cấp trực tiếp mà không có sự tương tác của người dùng,
           kể cả mọi quyền bổ sung mà các phiên bản trong tương lai của
-          ứng dụng/tiện ích yêu cầu. Ngoài ra, các quyền được cấp cho các API tiện ích
-          enterprise.deviceAttributes and enterprise.platformKeys.
-          (Hai API này chỉ dành cho các ứng dụng/tiện ích
-          buộc cài đặt.)
+          ứng dụng/tiện ích đó yêu cầu. Ngoài ra, các quyền được cấp cho các API tiện ích
+          enterprise.deviceAttributes và enterprise.platformKeys.
+          (Hai API này không áp dụng cho các ứng dụng/tiện ích
+          không buộc cài đặt.)
 
-          Chính sách này được ưu tiên hơn trong trường hợp xung đột với chính sách <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Nếu một ứng dụng hoặc tiện ích trước đây bị buộc cài đặt hiện đã được xóa khỏi danh sách này, thì <ph name="PRODUCT_NAME" /> sẽ tự động gỡ cài đặt ứng dụng hoặc tiện ích đó.
+          Chính sách này được ưu tiên hơn trong trường hợp xung đột với chính sách <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Nếu một ứng dụng hoặc tiện ích mà trước đây bị buộc cài đặt hiện đã được xóa khỏi danh sách này, thì <ph name="PRODUCT_NAME" /> sẽ tự động gỡ cài đặt ứng dụng hoặc tiện ích đó.
 
           Đối với các phiên bản Windows không tham gia miền <ph name="MS_AD_NAME" /> thì cài đặt bắt buộc sẽ bị giới hạn ở các ứng dụng và tiện ích trong Cửa hàng Chrome trực tuyến.
 
-          Lưu ý rằng người dùng có thể thay đổi mã nguồn của bất cứ tiện ích nào thông qua Công cụ dành cho nhà phát triển (có thể hiển thị tiện ích không hoạt động bình thường). Nếu điều này gây ra lo ngại thì cần phải đặt chính sách <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+          Lưu ý rằng người dùng có thể thay đổi mã nguồn của bất cứ tiện ích nào thông qua Công cụ dành cho nhà phát triển (điều này có thể khiến tiện ích hoạt động không chính xác). Nếu bạn lo ngại về điều này thì cần phải đặt chính sách <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
 
-          Mỗi mục danh sách của chính sách là một chuỗi chứa ID tiện ích và một URL "cập nhật" (không bắt buộc) được phân tách bằng dấu chấm phẩy (<ph name="SEMICOLON" />). ID tiện ích là chuỗi gồm 32 chữ cái được tìm thấy trên <ph name="CHROME_EXTENSIONS_LINK" /> chẳng hạn khi ở chế độ nhà phát triển. URL "cập nhật", nếu được chỉ định, sẽ trỏ tới tài liệu XML của tệp kê khai cập nhật như mô tả tại <ph name="LINK_TO_EXTENSION_DOC1" />. Theo mặc định, URL cập nhật của Cửa hàng Chrome trực tuyến sẽ được sử dụng (hiện là "https://clients2.google.com/service/update2/crx"). Lưu ý rằng URL "cập nhật" được đặt trong chính sách này chỉ dùng cho tùy chọn cài đặt ban đầu; các lần cập nhật tiện ích tiếp theo sẽ sử dụng URL cập nhật nêu trong tệp kê khai của tiện ích. Ngoài ra, xin lưu ý rằng việc chỉ định URL "cập nhật" rõ ràng là bắt buộc trong các phiên bản <ph name="PRODUCT_NAME" />, bao gồm cả phiên bản 67.
+          Mỗi mục danh sách của chính sách là một chuỗi chứa một ID tiện ích và một URL "cập nhật" (không bắt buộc) được phân tách bằng dấu chấm phẩy (<ph name="SEMICOLON" />). ID tiện ích là chuỗi gồm 32 chữ cái được tìm thấy, chẳng hạn như, trên <ph name="CHROME_EXTENSIONS_LINK" /> khi ở chế độ nhà phát triển. URL "cập nhật", nếu được chỉ định, sẽ trỏ tới tài liệu XML của tệp kê khai cập nhật như mô tả tại <ph name="LINK_TO_EXTENSION_DOC1" />. Theo mặc định, URL cập nhật của Cửa hàng Chrome trực tuyến sẽ được sử dụng (hiện là "https://clients2.google.com/service/update2/crx"). Lưu ý rằng URL "cập nhật" được đặt trong chính sách này chỉ dùng cho lần cài đặt ban đầu; các lần cập nhật tiện ích tiếp theo sẽ sử dụng URL cập nhật nêu trong tệp kê khai của tiện ích. Ngoài ra, xin lưu ý rằng việc chỉ định URL "cập nhật" một cách rõ ràng là bắt buộc trong các phiên bản <ph name="PRODUCT_NAME" />, bao gồm cả phiên bản 67.
 
           Ví dụ: <ph name="EXTENSION_POLICY_EXAMPLE" /> cài đặt ứng dụng <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> từ URL "cập nhật" tiêu chuẩn của Cửa hàng Chrome trực tuyến. Để biết thêm thông tin về việc lưu trữ tiện ích, hãy xem: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
@@ -1034,11 +1034,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này chưa được đặt, SPDY sẽ khả dụng.</translation>
 <translation id="3890999316834333174">Chính sách mở khóa nhanh</translation>
 <translation id="3891357445869647828">Bật JavaScript</translation>
-<translation id="3891953007921334498">Tắt Công cụ dành cho nhà phát triển và Bảng điều khiển JavaScript.
-
-      Nếu bật cài đặt này, bạn sẽ không thể truy cập Công cụ dành cho nhà phát triển cũng như không thể kiểm tra các phần tử của trang web được nữa. Mọi phím tắt và mọi menu hoặc các mục nhập menu ngữ cảnh để mở Công cụ dành cho nhà phát triển hoặc Bảng điều khiển JavaScript đều bị tắt.
-
-      Đặt thành tắt hoặc không đặt tùy chọn này sẽ cho phép người dùng sử dụng Công cụ dành cho nhà phát triển và Bảng điều khiển JavaScript.</translation>
 <translation id="3895557476567727016">Định cấu hình thư mục mặc định mà <ph name="PRODUCT_NAME" /> sẽ sử dụng để tải các tệp xuống.
 
       Nếu bạn đặt chính sách này, chính sách sẽ thay đổi thư mục mặc định mà <ph name="PRODUCT_NAME" /> tải các tệp xuống. Chính sách này không bắt buộc, vì vậy, người dùng sẽ có thể thay đổi thư mục đó.
@@ -1988,7 +1983,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6870914592443697993">
       Chính sách này áp dụng cho màn hình đăng nhập. Vui lòng xem thêm chính sách <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> áp dụng cho phiên người dùng. Bạn nên đặt cả hai chính sách về cùng một giá trị. Nếu các giá trị không khớp nhau thì có thể xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi áp dụng giá trị mà chính sách người dùng chỉ định.
       Nếu bạn bật chính sách này, mỗi nguồn gốc có tên trong
-      danh sách phân tách bằng dấu phẩy sẽ chạy theo quy trình riêng. Tùy chọn cài đặt này cũng sẽ cô lập
+      danh sách phân tách bằng dấu phẩy sẽ chạy theo quy trình riêng. Việc này cũng sẽ cô lập
       các nguồn gốc được đặt tên theo miền phụ; chẳng hạn như việc chỉ định https://example.com/ cũng sẽ
       khiến cho https://foo.example.com/ bị cô lập vì là một phần của
       trang web https://example.com/.
@@ -2438,7 +2433,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       SitePerProcess sẽ cô lập mọi trang web.
       Nếu bạn bật chính sách này, mỗi trang web sẽ chạy theo quy trình riêng.
       Nếu bạn tắt chính sách này, sẽ không có sự Cô lập trang web rõ ràng nào xảy ra và các phiên bản dùng thử tại chỗ của IsolateOrigins và SitePerProcess sẽ bị tắt. Người dùng sẽ vẫn có thể bật SitePerProcess theo cách thủ công.
-      Nếu bạn không định cấu hình chính sách, người dùng sẽ có thể thay đổi tùy chọn cài đặt này.
+      Nếu bạn không định cấu hình chính sách này, người dùng sẽ có thể thay đổi tùy chọn cài đặt này.
       Trên <ph name="PRODUCT_OS_NAME" />, bạn cũng nên đặt chính sách thiết bị <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> thành cùng một giá trị. Nếu các giá trị mà hai chính sách này chỉ định không khớp nhau, thì có thể xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi áp dụng giá trị mà chính sách người dùng chỉ định.
       </translation>
 <translation id="7980227303582973781">Không có hạn chế đặc biệt</translation>
@@ -2778,7 +2773,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8992176907758534924">Không cho phép bất kỳ trang web nào hiển thị hình ảnh</translation>
 <translation id="9034729899149506577">
       Nếu bạn bật chính sách này, mỗi nguồn gốc có tên trong
-      danh sách phân tách bằng dấu phẩy sẽ chạy theo quy trình riêng. Tùy chọn cài đặt này cũng sẽ cô lập
+      danh sách phân tách bằng dấu phẩy sẽ chạy theo quy trình riêng. Việc này cũng sẽ cô lập
       các nguồn gốc được đặt tên theo miền phụ; chẳng hạn như việc chỉ định https://example.com/
       cũng sẽ khiến cho https://foo.example.com/ bị cô lập vì là một phần của
       trang web https://example.com/.
@@ -2845,7 +2840,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="9200828125069750521">Tham số cho URL hình ảnh sử dụng POST</translation>
 <translation id="9210953373038593554">Định cấu hình loại xác thực cho đăng nhập SAML.
 
-      Khi bạn đặt hoặc không đặt chính sách này thành Default (giá trị 0), hành vi đăng nhập SAML sẽ do trình duyệt xác định tùy theo các yếu tố khác. Trong trường hợp cơ bản nhất, tính năng xác thực người dùng và bảo vệ dữ liệu người dùng đã lưu vào bộ nhớ đệm được dựa trên mật khẩu mà người dùng nhập theo cách thủ công.
+      Khi bạn đặt hoặc không đặt chính sách này thành Default (giá trị 0), hành vi đăng nhập SAML sẽ do trình duyệt xác định dựa trên các yếu tố khác. Trong tình huống cơ bản nhất, tính năng xác thực người dùng và bảo vệ dữ liệu người dùng đã lưu vào bộ nhớ đệm được dựa trên mật khẩu mà người dùng nhập theo cách thủ công.
 
       Khi bạn đặt chính sách này thành ClientCertificate (giá trị 1), tính năng xác thực chứng chỉ ứng dụng khách được dùng cho người dùng mới thêm đăng nhập qua SAML. Không có mật khẩu nào dùng cho những người dùng đó và dữ liệu đã lưu vào bộ nhớ đệm trên máy được bảo vệ bằng cách sử dụng các khóa mật mã tương ứng. Ví dụ: tùy chọn cài đặt này cho phép định cấu hình thẻ thông minh dựa trên tính năng xác thực người dùng (xin lưu ý rằng bạn phải cài đặt ứng dụng trung gian của thẻ thông minh thông qua chính sách DeviceLoginScreenAppInstallList).
 

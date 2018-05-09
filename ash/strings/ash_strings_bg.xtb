@@ -266,7 +266,6 @@
 <translation id="698231206551913481">След като този потребител бъде премахнат, всички свързани с него файлове и локални данни ще се изтрият за постоянно.</translation>
 <translation id="7029814467594812963">Изход от сесията</translation>
 <translation id="7034339000180558234">„<ph name="TAB_NAME" />“ се предава към „<ph name="RECEIVER_NAME" />“</translation>
-<translation id="7052914147756339792">Задаване на тапет...</translation>
 <translation id="7066646422045619941">Тази мрежа е деактивирана от администратора ви.</translation>
 <translation id="7067196344162293536">Автоматично завъртане</translation>
 <translation id="7098389117866926363">Устройство с USB-C (левият порт на гърба)</translation>
@@ -355,6 +354,7 @@
 <translation id="9194617393863864469">Влизане в профила на друг потребител...</translation>
 <translation id="9201131092683066720">Батерията е <ph name="PERCENTAGE" />% пълна.</translation>
 <translation id="9210037371811586452">Излиза се от режима на обединен работен плот</translation>
+<translation id="9215934040295798075">Задаване на тапета</translation>
 <translation id="923686485342484400">Натиснете два пъти „Control+Shift+Q“ за изход.</translation>
 <translation id="945522503751344254">Изпращане на отзиви</translation>
 <translation id="98515147261107953">Хоризонтално</translation>

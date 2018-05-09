@@ -268,7 +268,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="698231206551913481">Todos os arquivos e dados locais associados a este usuário serão excluídos permanentemente quando o usuário for removido.</translation>
 <translation id="7029814467594812963">Sair da sessão</translation>
 <translation id="7034339000180558234">Transmitindo <ph name="TAB_NAME" /> para <ph name="RECEIVER_NAME" /></translation>
-<translation id="7052914147756339792">Definir plano de fundo...</translation>
 <translation id="7066646422045619941">Esta rede foi desativada pelo seu administrador.</translation>
 <translation id="7067196344162293536">Rotação automática</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porta traseira da esquerda)</translation>
@@ -357,6 +356,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="9194617393863864469">Fazer login com outro usuário...</translation>
 <translation id="9201131092683066720">A bateria está <ph name="PERCENTAGE" />% carregada.</translation>
 <translation id="9210037371811586452">Saindo do modo de área de trabalho unificada</translation>
+<translation id="9215934040295798075">Definir plano de fundo</translation>
 <translation id="923686485342484400">Pressione Control+Shift+Q duas vezes para sair.</translation>
 <translation id="945522503751344254">Enviar comentários</translation>
 <translation id="98515147261107953">Paisagem</translation>

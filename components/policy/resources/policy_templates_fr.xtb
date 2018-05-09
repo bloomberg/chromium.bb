@@ -1050,11 +1050,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle n'est pas définie, le protocole SPDY est disponible.</translation>
 <translation id="3890999316834333174">Règles relatives au déverrouillage rapide</translation>
 <translation id="3891357445869647828">Activer JavaScript</translation>
-<translation id="3891953007921334498">Désactive les outils de développement et la console JavaScript.
-
-      Si vous activez ce paramètre, les outils de développement ne sont plus accessibles et les éléments du site Web ne peuvent plus être inspectés. Tous les raccourcis clavier et toutes les entrées de menu ou de menu contextuel permettant d'ouvrir les outils de développement ou la console JavaScript sont désactivés.
-
-      Si vous désactivez cette option ou si vous ne la configurez pas, l'utilisateur a accès aux outils de développement et à la console JavaScript.</translation>
 <translation id="3895557476567727016">Configure le répertoire par défaut utilisé par <ph name="PRODUCT_NAME" /> pour le téléchargement de fichiers.
 
       Si vous définissez cette règle, le répertoire de téléchargement par défaut utilisé par <ph name="PRODUCT_NAME" /> est donc différent du répertoire habituel. Toutefois, cette règle n'étant pas obligatoire, l'utilisateur peut changer de répertoire.

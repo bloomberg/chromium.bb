@@ -49,7 +49,7 @@
     &lt;li&gt;Prüfen Sie, ob Ihre Internetverbindung richtig funktioniert.&lt;/li&gt;
     &lt;li&gt;Wenden Sie sich an den Websiteinhaber.&lt;/li&gt;
     &lt;/ol&gt;</translation>
-<translation id="1257286744552378071">Sie haben Ihr Passwort auf einer Website eingegeben, die nicht von Ihrer Organisation verwaltet wird. Um Ihr Konto zu schützen, sollten Sie das Passwort nicht für andere Apps und Websites verwenden.</translation>
+<translation id="1257286744552378071">Sie haben Ihr Passwort auf einer Website eingegeben, die nicht von Ihrer Organisation verwaltet wird. Zum Schutz Ihres Kontos sollten Sie das Passwort nicht für andere Apps und Websites verwenden.</translation>
 <translation id="1263231323834454256">Leseliste</translation>
 <translation id="1264126396475825575">Absturzbericht erfasst am <ph name="CRASH_TIME" />, wurde noch nicht hochgeladen oder wurde ignoriert</translation>
 <translation id="1270502636509132238">Abholoption</translation>
@@ -784,7 +784,7 @@
 <translation id="6628463337424475685"><ph name="ENGINE" />-Suche</translation>
 <translation id="6630809736994426279">Zurzeit auf <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> befindliche Hacker könnten versuchen, gefährliche Programme auf Ihrem Mac zu installieren, um Daten wie Fotos, Passwörter, Nachrichten und Kreditkartendaten zu stehlen oder zu löschen. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6644283850729428850">Diese Richtlinie ist veraltet.</translation>
-<translation id="6646269444027925224">{COUNT,plural, =0{Keine}=1{Eine Website (Anmeldung in Google-Konto bleibt erhalten)}other{# Websites (Anmeldung in Google-Konto bleibt erhalten)}}</translation>
+<translation id="6646269444027925224">{COUNT,plural, =0{Keine}=1{1 Website (Anmeldung in Google-Konto bleibt erhalten)}other{# Websites (Anmeldung in Google-Konto bleibt erhalten)}}</translation>
 <translation id="6657585470893396449">Passwort</translation>
 <translation id="6671697161687535275">Vorschlag für das Formular aus Chromium entfernen?</translation>
 <translation id="6685834062052613830">Abmelden und Einrichtung abschließen</translation>

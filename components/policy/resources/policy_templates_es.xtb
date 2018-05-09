@@ -1037,11 +1037,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si esta política no se configura, el protocolo SPDY estará disponible.</translation>
 <translation id="3890999316834333174">Políticas del desbloqueo rápido</translation>
 <translation id="3891357445869647828">Habilitar JavaScript</translation>
-<translation id="3891953007921334498">Permite inhabilitar las Herramientas para Desarrolladores y la consola de JavaScript.
-
-      Si habilitas esta opción, no se podrá acceder a las Herramientas para Desarrolladores ni se podrán inspeccionar los elementos de los sitios web. También se inhabilitarán las combinaciones de teclas y las entradas de menús o de menús contextuales que permiten abrir las Herramientas para Desarrolladores o la consola de JavaScript.
-
-      Si se inhabilita esta opción o si no se establece, se podrán usar las Herramientas para Desarrolladores y la consola de JavaScript.</translation>
 <translation id="3895557476567727016">Configura el directorio que <ph name="PRODUCT_NAME" /> utilizará para descargar archivos.
 
      Si estableces esta política, cambiará el directorio predeterminado en el que <ph name="PRODUCT_NAME" /> descarga los archivos. Esta política no es obligatoria, por lo que el usuario podrá cambiar el directorio.

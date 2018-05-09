@@ -993,11 +993,6 @@
       Se essa política for deixada sem definição, o SPDY ficará disponível.</translation>
 <translation id="3890999316834333174">Políticas de desbloqueio rápido</translation>
 <translation id="3891357445869647828">Ativar o JavaScript</translation>
-<translation id="3891953007921334498">Desativa as Ferramentas do desenvolvedor e o console JavaScript.
-
-      Se você ativar esta configuração, as Ferramentas do desenvolvedor não poderão ser acessadas, e elementos de websites não poderão mais ser inspecionados. Todos os atalhos de teclado e todas as entradas de menu ou menu de contexto para abrir as Ferramentas do desenvolvedor ou o Console de JavaScript serão desativados.
-
-      Definir esta opção como desativada ou deixá-la sem definição permitirá a utilização das Ferramentas do desenvolvedor e do console JavaScript.</translation>
 <translation id="3895557476567727016">Configura o diretório que o <ph name="PRODUCT_NAME" /> usará para armazenar dados do usuário.
 
       Se você definir esta política, o diretório padrão usado para os downloads do <ph name="PRODUCT_NAME" /> será alterado. Ela não é obrigatória, sendo que o usuário poderá alterar o diretório posteriormente.

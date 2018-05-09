@@ -996,11 +996,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha nem állítja be ezt az irányelvet, akkor a SPDY rendelkezésre áll.</translation>
 <translation id="3890999316834333174">Gyorsfeloldási házirendek</translation>
 <translation id="3891357445869647828">JavaScript engedélyezése</translation>
-<translation id="3891953007921334498">Letiltja a fejlesztői eszközöket és a JavaScript-konzolt.
-
-      Ha engedélyezi ezt a beállítást, akkor a fejlesztői eszközökhöz nem férhet hozzá, illetve a webhelyek elemeit nem ellenőrizheti a jövőben. Bármely billentyűparancs, menü vagy helyi menüpont le lesz tiltva, amely megnyitná a fejlesztői eszközöket vagy a JavaScript-konzolt.
-
-      Ha letiltja ezt a beállítást, vagy konfigurálatlanul hagyja, akkor a felhasználó használhatja a fejlesztői eszközöket és a JavaScript-konzolt.</translation>
 <translation id="3895557476567727016">Konfigurálja az alapértelmezett könyvtárat, amelybe a <ph name="PRODUCT_NAME" /> letölti a fájlokat.
 
       Ha beállítja a házirendet, módosítja a <ph name="PRODUCT_NAME" /> által a fájlok letöltési helyeként használt könyvtárat. Ez a házirend nem kötelező érvényű, azaz a felhasználó módosíthatja a könyvtárat.
