@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_LOADER_NAVIGATION_URL_LOADER_NETWORK_SERVICE_H_
-#define CONTENT_BROWSER_LOADER_NAVIGATION_URL_LOADER_NETWORK_SERVICE_H_
+#ifndef CONTENT_BROWSER_LOADER_NAVIGATION_URL_LOADER_IMPL_H_
+#define CONTENT_BROWSER_LOADER_NAVIGATION_URL_LOADER_IMPL_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -27,14 +27,11 @@ class StoragePartition;
 class NavigationLoaderInterceptor;
 struct GlobalRequestID;
 
-// This is an implementation of NavigationURLLoader used when
-// --enable-features=NetworkService is used.
-class CONTENT_EXPORT NavigationURLLoaderNetworkService
-    : public NavigationURLLoader {
+class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
  public:
   // The caller is responsible for ensuring that |delegate| outlives the loader.
   // Note |initial_interceptors| is there for test purposes only.
-  NavigationURLLoaderNetworkService(
+  NavigationURLLoaderImpl(
       ResourceContext* resource_context,
       StoragePartition* storage_partition,
       std::unique_ptr<NavigationRequestInfo> request_info,
@@ -44,7 +41,7 @@ class CONTENT_EXPORT NavigationURLLoaderNetworkService
       NavigationURLLoaderDelegate* delegate,
       std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
           initial_interceptors);
-  ~NavigationURLLoaderNetworkService() override;
+  ~NavigationURLLoaderImpl() override;
 
   // NavigationURLLoader implementation:
   void FollowRedirect() override;
@@ -99,11 +96,11 @@ class CONTENT_EXPORT NavigationURLLoaderNetworkService
   ContentBrowserClient::NonNetworkURLLoaderFactoryMap
       non_network_url_loader_factories_;
 
-  base::WeakPtrFactory<NavigationURLLoaderNetworkService> weak_factory_;
+  base::WeakPtrFactory<NavigationURLLoaderImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(NavigationURLLoaderNetworkService);
+  DISALLOW_COPY_AND_ASSIGN(NavigationURLLoaderImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_LOADER_NAVIGATION_URL_LOADER_NETWORK_SERVICE_H_
+#endif  // CONTENT_BROWSER_LOADER_NAVIGATION_URL_LOADER_IMPL_H_

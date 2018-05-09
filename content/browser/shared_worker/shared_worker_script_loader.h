@@ -21,7 +21,7 @@ class URLLoaderFactoryGetter;
 // The URLLoader for loading a shared worker script. Only used for the main
 // script request.
 //
-// This acts much like NavigationURLLoaderNetworkService. It allows a
+// This acts much like NavigationURLLoaderImpl. It allows a
 // NavigationLoaderInterceptor to intercept the request with its own loader, and
 // goes to the network loader otherwise. Once a loader is started, this class
 // acts as the URLLoaderClient for it, forwarding messages to the outer client.
@@ -76,8 +76,7 @@ class SharedWorkerScriptLoader : public network::mojom::URLLoader,
       SingleRequestURLLoaderFactory::RequestHandler single_request_handler);
   void LoadFromNetwork();
 
-  // TODO(falken): Add other interceptors like in
-  // NavigationURLLoaderNetworkService.
+  // TODO(falken): Add other interceptors like in NavigationURLLoaderImpl.
   std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor_;
 
   const int32_t routing_id_;

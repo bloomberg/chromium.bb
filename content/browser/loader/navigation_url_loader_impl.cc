@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/navigation_url_loader_network_service.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 
 #include <memory>
 
@@ -76,8 +76,7 @@ namespace content {
 namespace {
 
 // Only used on the IO thread.
-base::LazyInstance<
-    NavigationURLLoaderNetworkService::BeginNavigationInterceptor>::Leaky
+base::LazyInstance<NavigationURLLoaderImpl::BeginNavigationInterceptor>::Leaky
     g_interceptor = LAZY_INSTANCE_INITIALIZER;
 
 // Returns true if interception by NavigationLoaderInterceptors is enabled.
@@ -271,7 +270,7 @@ void UnknownSchemeCallback(bool handled_externally,
 // on each until the request is successfully handled. The same sequence
 // may be performed multiple times when redirects happen.
 // TODO(michaeln): Expose this class and add more unittests.
-class NavigationURLLoaderNetworkService::URLLoaderRequestController
+class NavigationURLLoaderImpl::URLLoaderRequestController
     : public network::mojom::URLLoaderClient {
  public:
   URLLoaderRequestController(
@@ -284,7 +283,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       network::mojom::URLLoaderFactoryRequest proxied_factory_request,
       network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info,
       std::set<std::string> known_schemes,
-      const base::WeakPtr<NavigationURLLoaderNetworkService>& owner)
+      const base::WeakPtr<NavigationURLLoaderImpl>& owner)
       : interceptors_(std::move(initial_interceptors)),
         resource_request_(std::move(resource_request)),
         resource_context_(resource_context),
@@ -390,8 +389,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     // create a URLLoader. When it doesn't, do not send OnRequestStarted().
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&NavigationURLLoaderNetworkService::OnRequestStarted,
-                       owner_, base::TimeTicks::Now()));
+        base::BindOnce(&NavigationURLLoaderImpl::OnRequestStarted, owner_,
+                       base::TimeTicks::Now()));
   }
 
   // TODO(arthursonzogni): See if this could eventually be unified with Start().
@@ -685,7 +684,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
         if (!non_network_factory.is_bound()) {
           BrowserThread::PostTask(
               BrowserThread::UI, FROM_HERE,
-              base::BindOnce(&NavigationURLLoaderNetworkService ::
+              base::BindOnce(&NavigationURLLoaderImpl ::
                                  BindNonNetworkURLLoaderFactoryRequest,
                              owner_, frame_tree_node_id_,
                              resource_request_->url,
@@ -925,8 +924,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     // response. https://crbug.com/416050
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&NavigationURLLoaderNetworkService::OnReceiveResponse,
-                       owner_, response->DeepCopy(),
+        base::BindOnce(&NavigationURLLoaderImpl::OnReceiveResponse, owner_,
+                       response->DeepCopy(),
                        std::move(url_loader_client_endpoints),
                        std::move(cloned_navigation_data), global_request_id_,
                        is_download, is_stream, std::move(downloaded_file)));
@@ -957,8 +956,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     // response. https://crbug.com/416050
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&NavigationURLLoaderNetworkService::OnReceiveRedirect,
-                       owner_, redirect_info, response->DeepCopy()));
+        base::BindOnce(&NavigationURLLoaderImpl::OnReceiveRedirect, owner_,
+                       redirect_info, response->DeepCopy()));
   }
 
   void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override {}
@@ -995,8 +994,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&NavigationURLLoaderNetworkService::OnComplete, owner_,
-                       status));
+        base::BindOnce(&NavigationURLLoaderImpl::OnComplete, owner_, status));
   }
 
   // Returns true if an interceptor wants to handle the response, i.e. return a
@@ -1081,7 +1079,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   base::Optional<SubresourceLoaderParams> subresource_loader_params_;
 
   // This is referenced only on the UI thread.
-  base::WeakPtr<NavigationURLLoaderNetworkService> owner_;
+  base::WeakPtr<NavigationURLLoaderImpl> owner_;
 
   // Set to true if the default URLLoader (network service) was used for the
   // current navigation.
@@ -1141,7 +1139,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
 // TODO(https://crbug.com/790734): pass |navigation_ui_data| along with the
 // request so that it could be modified.
-NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
+NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     ResourceContext* resource_context,
     StoragePartition* storage_partition,
     std::unique_ptr<NavigationRequestInfo> request_info,
@@ -1270,21 +1268,21 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
           ServiceManagerConnection::GetForProcess()->GetConnector()->Clone()));
 }
 
-NavigationURLLoaderNetworkService::~NavigationURLLoaderNetworkService() {
+NavigationURLLoaderImpl::~NavigationURLLoaderImpl() {
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
                             request_controller_.release());
 }
 
-void NavigationURLLoaderNetworkService::FollowRedirect() {
+void NavigationURLLoaderImpl::FollowRedirect() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&URLLoaderRequestController::FollowRedirect,
                      base::Unretained(request_controller_.get())));
 }
 
-void NavigationURLLoaderNetworkService::ProceedWithResponse() {}
+void NavigationURLLoaderImpl::ProceedWithResponse() {}
 
-void NavigationURLLoaderNetworkService::OnReceiveResponse(
+void NavigationURLLoaderImpl::OnReceiveResponse(
     scoped_refptr<network::ResourceResponse> response,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<NavigationData> navigation_data,
@@ -1293,8 +1291,7 @@ void NavigationURLLoaderNetworkService::OnReceiveResponse(
     bool is_stream,
     network::mojom::DownloadedTempFilePtr downloaded_file) {
   TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,
-                         "&NavigationURLLoaderNetworkService", this, "success",
-                         true);
+                         "&NavigationURLLoaderImpl", this, "success", true);
 
   // TODO(scottmg): This needs to do more of what
   // NavigationResourceHandler::OnResponseStarted() does.
@@ -1306,27 +1303,26 @@ void NavigationURLLoaderNetworkService::OnReceiveResponse(
       request_controller_->TakeSubresourceLoaderParams());
 }
 
-void NavigationURLLoaderNetworkService::OnReceiveRedirect(
+void NavigationURLLoaderImpl::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     scoped_refptr<network::ResourceResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   delegate_->OnRequestRedirected(redirect_info, std::move(response));
 }
 
-void NavigationURLLoaderNetworkService::OnComplete(
+void NavigationURLLoaderImpl::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
   if (status.error_code == net::OK)
     return;
 
   TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,
-                         "&NavigationURLLoaderNetworkService", this, "success",
-                         false);
+                         "&NavigationURLLoaderImpl", this, "success", false);
 
   delegate_->OnRequestFailed(status.exists_in_cache, status.error_code,
                              status.ssl_info);
 }
 
-void NavigationURLLoaderNetworkService::SetBeginNavigationInterceptorForTesting(
+void NavigationURLLoaderImpl::SetBeginNavigationInterceptorForTesting(
     const BeginNavigationInterceptor& interceptor) {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::IO) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -1334,13 +1330,12 @@ void NavigationURLLoaderNetworkService::SetBeginNavigationInterceptorForTesting(
   g_interceptor.Get() = interceptor;
 }
 
-void NavigationURLLoaderNetworkService::OnRequestStarted(
-    base::TimeTicks timestamp) {
+void NavigationURLLoaderImpl::OnRequestStarted(base::TimeTicks timestamp) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   delegate_->OnRequestStarted(timestamp);
 }
 
-void NavigationURLLoaderNetworkService::BindNonNetworkURLLoaderFactoryRequest(
+void NavigationURLLoaderImpl::BindNonNetworkURLLoaderFactoryRequest(
     int frame_tree_node_id,
     const GURL& url,
     network::mojom::URLLoaderFactoryRequest factory) {

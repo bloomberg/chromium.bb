@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/navigation_url_loader_network_service.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
@@ -110,9 +110,9 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
 
 }  // namespace
 
-class NavigationURLLoaderNetworkServiceTest : public testing::Test {
+class NavigationURLLoaderImplTest : public testing::Test {
  public:
-  NavigationURLLoaderNetworkServiceTest()
+  NavigationURLLoaderImplTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
     feature_list_.InitAndEnableFeature(network::features::kNetworkService);
 
@@ -135,7 +135,7 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
 #endif
   }
 
-  ~NavigationURLLoaderNetworkServiceTest() override {
+  ~NavigationURLLoaderImplTest() override {
     ServiceManagerConnection::DestroyForProcess();
   }
 
@@ -173,7 +173,7 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
     interceptors.push_back(std::make_unique<TestNavigationLoaderInterceptor>(
         &most_recent_resource_request_));
 
-    return std::make_unique<NavigationURLLoaderNetworkService>(
+    return std::make_unique<NavigationURLLoaderImpl>(
         browser_context_->GetResourceContext(),
         BrowserContext::GetDefaultStoragePartition(browser_context_.get()),
         std::move(request_info), nullptr /* navigation_ui_data */,
@@ -255,7 +255,7 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
   base::Optional<network::ResourceRequest> most_recent_resource_request_;
 };
 
-TEST_F(NavigationURLLoaderNetworkServiceTest, RequestPriority) {
+TEST_F(NavigationURLLoaderImplTest, RequestPriority) {
   ASSERT_TRUE(http_test_server_.Start());
   const GURL url = http_test_server_.GetURL("/redirect301-to-echo");
 
@@ -265,7 +265,7 @@ TEST_F(NavigationURLLoaderNetworkServiceTest, RequestPriority) {
             NavigateAndReturnRequestPriority(url, false /* is_main_frame */));
 }
 
-TEST_F(NavigationURLLoaderNetworkServiceTest, Redirect301Tests) {
+TEST_F(NavigationURLLoaderImplTest, Redirect301Tests) {
   ASSERT_TRUE(http_test_server_.Start());
 
   const GURL url = http_test_server_.GetURL("/redirect301-to-echo");
@@ -279,7 +279,7 @@ TEST_F(NavigationURLLoaderNetworkServiceTest, Redirect301Tests) {
                                true);
 }
 
-TEST_F(NavigationURLLoaderNetworkServiceTest, Redirect302Tests) {
+TEST_F(NavigationURLLoaderImplTest, Redirect302Tests) {
   ASSERT_TRUE(http_test_server_.Start());
 
   const GURL url = http_test_server_.GetURL("/redirect302-to-echo");
@@ -293,7 +293,7 @@ TEST_F(NavigationURLLoaderNetworkServiceTest, Redirect302Tests) {
                                true);
 }
 
-TEST_F(NavigationURLLoaderNetworkServiceTest, Redirect303Tests) {
+TEST_F(NavigationURLLoaderImplTest, Redirect303Tests) {
   ASSERT_TRUE(http_test_server_.Start());
 
   const GURL url = http_test_server_.GetURL("/redirect303-to-echo");
@@ -307,7 +307,7 @@ TEST_F(NavigationURLLoaderNetworkServiceTest, Redirect303Tests) {
                                true);
 }
 
-TEST_F(NavigationURLLoaderNetworkServiceTest, Redirect307Tests) {
+TEST_F(NavigationURLLoaderImplTest, Redirect307Tests) {
   ASSERT_TRUE(http_test_server_.Start());
 
   const GURL url = http_test_server_.GetURL("/redirect307-to-echo");
@@ -321,7 +321,7 @@ TEST_F(NavigationURLLoaderNetworkServiceTest, Redirect307Tests) {
                                true);
 }
 
-TEST_F(NavigationURLLoaderNetworkServiceTest, Redirect308Tests) {
+TEST_F(NavigationURLLoaderImplTest, Redirect308Tests) {
   ASSERT_TRUE(http_test_server_.Start());
 
   const GURL url = http_test_server_.GetURL("/redirect308-to-echo");
