@@ -7,6 +7,8 @@
 
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 
 namespace blink {
 
@@ -77,6 +79,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
     explicit QueueCreationParams(QueueType queue_type)
         : queue_type(queue_type),
           spec(NameForQueueType(queue_type)),
+          frame_scheduler(nullptr),
           can_be_deferred(false),
           can_be_throttled(false),
           can_be_paused(false),
@@ -122,6 +125,10 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
 
     // Forwarded calls to |spec|.
 
+    QueueCreationParams SetFrameScheduler(FrameSchedulerImpl* scheduler) {
+      frame_scheduler = scheduler;
+      return *this;
+    }
     QueueCreationParams SetShouldMonitorQuiescence(bool should_monitor) {
       spec = spec.SetShouldMonitorQuiescence(should_monitor);
       return *this;
@@ -140,7 +147,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
     QueueType queue_type;
     TaskQueue::Spec spec;
     base::Optional<TaskQueue::QueuePriority> fixed_priority;
-    FrameScheduler* frame_;
+    FrameScheduler* frame_scheduler;
     bool can_be_deferred;
     bool can_be_throttled;
     bool can_be_paused;
@@ -184,9 +191,11 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
   void ShutdownTaskQueue() override;
 
   FrameScheduler* GetFrameScheduler() const;
-  void SetFrameScheduler(FrameScheduler* frame);
+  void DetachFromFrameScheduler();
 
  protected:
+  void SetFrameSchedulerForTest(FrameScheduler* frame);
+
   MainThreadTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
                       const Spec& spec,
                       const QueueCreationParams& params,

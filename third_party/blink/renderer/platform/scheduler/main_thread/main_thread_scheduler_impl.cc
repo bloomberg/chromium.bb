@@ -719,7 +719,8 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTaskQueue(
 }
 
 scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewLoadingTaskQueue(
-    MainThreadTaskQueue::QueueType queue_type) {
+    MainThreadTaskQueue::QueueType queue_type,
+    FrameSchedulerImpl* frame_scheduler) {
   DCHECK_EQ(MainThreadTaskQueue::QueueClassForQueueType(queue_type),
             MainThreadTaskQueue::QueueClass::kLoading);
   return NewTaskQueue(
@@ -730,18 +731,21 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewLoadingTaskQueue(
           .SetCanBeDeferred(true)
           .SetUsedForImportantTasks(
               queue_type ==
-              MainThreadTaskQueue::QueueType::kFrameLoadingControl));
+              MainThreadTaskQueue::QueueType::kFrameLoadingControl)
+          .SetFrameScheduler(frame_scheduler));
 }
 
 scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTimerTaskQueue(
-    MainThreadTaskQueue::QueueType queue_type) {
+    MainThreadTaskQueue::QueueType queue_type,
+    FrameSchedulerImpl* frame_scheduler) {
   DCHECK_EQ(MainThreadTaskQueue::QueueClassForQueueType(queue_type),
             MainThreadTaskQueue::QueueClass::kTimer);
   return NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(queue_type)
                           .SetCanBePaused(true)
                           .SetCanBeFrozen(true)
                           .SetCanBeDeferred(true)
-                          .SetCanBeThrottled(true));
+                          .SetCanBeThrottled(true)
+                          .SetFrameScheduler(frame_scheduler));
 }
 
 std::unique_ptr<WebRenderWidgetSchedulingState>
@@ -1562,8 +1566,7 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     new_policy.timer_queue_policy().use_virtual_time = true;
   }
 
-  new_policy.should_disable_throttling() =
-      main_thread_only().use_virtual_time;
+  new_policy.should_disable_throttling() = main_thread_only().use_virtual_time;
 
   // Tracing is done before the early out check, because it's quite possible we
   // will otherwise miss this information in traces.

@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/task_cost_estimator.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/use_case.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/user_model.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
 
 namespace base {
@@ -170,11 +171,13 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // to resource dispatch, foreground HTML parsing, etc...
   // Note: Tasks posted to kFrameLoadingControl queues must execute quickly.
   scoped_refptr<MainThreadTaskQueue> NewLoadingTaskQueue(
-      MainThreadTaskQueue::QueueType queue_type);
+      MainThreadTaskQueue::QueueType queue_type,
+      FrameSchedulerImpl* frame_scheduler);
 
   // Returns a new timer task queue. This queue is intended for DOM Timers.
   scoped_refptr<MainThreadTaskQueue> NewTimerTaskQueue(
-      MainThreadTaskQueue::QueueType queue_type);
+      MainThreadTaskQueue::QueueType queue_type,
+      FrameSchedulerImpl* frame_scheduler);
 
   // Returns a task queue where tasks run at the highest possible priority.
   scoped_refptr<MainThreadTaskQueue> ControlTaskQueue();

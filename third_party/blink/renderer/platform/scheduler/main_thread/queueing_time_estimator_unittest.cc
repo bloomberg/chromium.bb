@@ -857,7 +857,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
       FakeFrameScheduler::Builder()
           .SetFrameType(FrameScheduler::FrameType::kMainFrame)
           .Build();
-  queue1->SetFrameScheduler(frame1.get());
+  queue1->SetFrameSchedulerForTest(frame1.get());
   estimator.OnTopLevelTaskStarted(time, queue1.get());
   time += base::TimeDelta::FromMilliseconds(3000);
   estimator.OnTopLevelTaskCompleted(time);
@@ -871,14 +871,14 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
           .SetIsPageVisible(true)
           .SetIsFrameVisible(true)
           .Build();
-  queue1->SetFrameScheduler(frame2.get());
+  queue1->SetFrameSchedulerForTest(frame2.get());
   estimator.OnTopLevelTaskStarted(time, queue1.get());
   time += base::TimeDelta::FromMilliseconds(2000);
   estimator.OnTopLevelTaskCompleted(time);
 
   scoped_refptr<MainThreadTaskQueueForTest> queue2(
       new MainThreadTaskQueueForTest(QueueType::kTest));
-  queue2->SetFrameScheduler(frame2.get());
+  queue2->SetFrameSchedulerForTest(frame2.get());
   time += base::TimeDelta::FromMilliseconds(1000);
   estimator.OnTopLevelTaskStarted(time, queue2.get());
   time += base::TimeDelta::FromMilliseconds(2000);
@@ -893,7 +893,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
           .SetIsFrameVisible(true)
           .SetIsExemptFromThrottling(true)
           .Build();
-  queue1->SetFrameScheduler(frame3.get());
+  queue1->SetFrameSchedulerForTest(frame3.get());
   estimator.OnTopLevelTaskStarted(time, queue1.get());
   time += base::TimeDelta::FromMilliseconds(3000);
   estimator.OnTopLevelTaskCompleted(time);
@@ -905,7 +905,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
           .SetIsFrameVisible(true)
           .SetIsExemptFromThrottling(true)
           .Build();
-  queue1->SetFrameScheduler(frame4.get());
+  queue1->SetFrameSchedulerForTest(frame4.get());
   estimator.OnTopLevelTaskStarted(time, queue1.get());
   time += base::TimeDelta::FromMilliseconds(3000);
   // 1000 ms after beginning of window 4.
@@ -936,7 +936,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
   FakeFrameScheduler* schedulers_for_thousand[] = {frame5.get(), frame6.get(),
                                                    frame7.get()};
   for (auto* scheduler : schedulers_for_thousand) {
-    queue1->SetFrameScheduler(scheduler);
+    queue1->SetFrameSchedulerForTest(scheduler);
     estimator.OnTopLevelTaskStarted(time, queue1.get());
     time += base::TimeDelta::FromMilliseconds(1000);
     estimator.OnTopLevelTaskCompleted(time);
@@ -972,7 +972,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
       frame2.get(), frame1.get(), frame8.get(),  frame5.get(), frame6.get(),
       frame9.get(), frame7.get(), frame10.get(), frame11.get()};
   for (auto* scheduler : schedulers_for_four_hundred) {
-    queue1->SetFrameScheduler(scheduler);
+    queue1->SetFrameSchedulerForTest(scheduler);
     estimator.OnTopLevelTaskStarted(time, queue1.get());
     time += base::TimeDelta::FromMilliseconds(400);
     estimator.OnTopLevelTaskCompleted(time);
@@ -983,7 +983,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
   time += base::TimeDelta::FromMilliseconds(300);
   estimator.OnTopLevelTaskCompleted(time);
 
-  queue1->SetFrameScheduler(nullptr);
+  queue1->DetachFromFrameScheduler();
   estimator.OnTopLevelTaskStarted(time, queue1.get());
   time += base::TimeDelta::FromMilliseconds(300);
   estimator.OnTopLevelTaskCompleted(time);

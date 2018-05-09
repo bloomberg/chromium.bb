@@ -84,7 +84,7 @@ class MainThreadMetricsHelperTest : public testing::Test {
     clock_.SetNowTicks(start + duration);
     scoped_refptr<MainThreadTaskQueueForTest> queue(
         new MainThreadTaskQueueForTest(QueueType::kDefault));
-    queue->SetFrameScheduler(scheduler);
+    queue->SetFrameSchedulerForTest(scheduler);
     // Pass an empty task for recording.
     TaskQueue::PostedTask posted_task(base::OnceClosure(), FROM_HERE);
     TaskQueue::Task task(std::move(posted_task), base::TimeTicks());
