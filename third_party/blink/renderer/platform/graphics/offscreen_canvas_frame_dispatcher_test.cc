@@ -19,7 +19,7 @@ class MockOffscreenCanvasFrameDispatcher
     : public OffscreenCanvasFrameDispatcher {
  public:
   MockOffscreenCanvasFrameDispatcher()
-      : OffscreenCanvasFrameDispatcher(nullptr, 0, 0, 0, 10, 10) {}
+      : OffscreenCanvasFrameDispatcher(nullptr, 0, 0, 0, {10, 10}) {}
 
   MOCK_METHOD2(PostImageToPlaceholder,
                void(scoped_refptr<StaticBitmapImage>, unsigned resource_id));

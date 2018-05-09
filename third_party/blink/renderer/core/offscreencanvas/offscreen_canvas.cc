@@ -76,7 +76,7 @@ void OffscreenCanvas::SetSize(const IntSize& size) {
   }
   size_ = size;
   if (frame_dispatcher_) {
-    frame_dispatcher_->Reshape(size_.Width(), size_.Height());
+    frame_dispatcher_->Reshape(size_);
   }
   current_frame_damage_rect_ = SkIRect::MakeWH(size_.Width(), size_.Height());
 }
@@ -222,8 +222,7 @@ OffscreenCanvasFrameDispatcher* OffscreenCanvas::GetOrCreateFrameDispatcher() {
     // (either main or worker) to the browser process and remains unchanged
     // throughout the lifetime of this OffscreenCanvas.
     frame_dispatcher_ = std::make_unique<OffscreenCanvasFrameDispatcher>(
-        this, client_id_, sink_id_, placeholder_canvas_id_, size_.Width(),
-        size_.Height());
+        this, client_id_, sink_id_, placeholder_canvas_id_, size_);
   }
   return frame_dispatcher_.get();
 }
