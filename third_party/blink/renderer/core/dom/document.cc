@@ -457,7 +457,7 @@ template <typename CharType>
 static inline bool IsValidElementNamePerHTMLParser(const CharType* characters,
                                                    unsigned length) {
   CharType c = characters[0] | 0x20;
-  if (!('a' <= c && c < 'z'))
+  if (!('a' <= c && c <= 'z'))
     return false;
 
   for (unsigned i = 1; i < length; ++i) {
