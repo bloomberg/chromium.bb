@@ -2485,6 +2485,16 @@ void HTMLMediaElement::RequestRemotePlaybackStop() {
     GetWebMediaPlayer()->RequestRemotePlaybackStop();
 }
 
+void HTMLMediaElement::FlingingStarted() {
+  if (GetWebMediaPlayer())
+    GetWebMediaPlayer()->FlingingStarted();
+}
+
+void HTMLMediaElement::FlingingStopped() {
+  if (GetWebMediaPlayer())
+    GetWebMediaPlayer()->FlingingStopped();
+}
+
 void HTMLMediaElement::CloseMediaSource() {
   if (!media_source_)
     return;

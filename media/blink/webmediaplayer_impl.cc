@@ -2124,6 +2124,29 @@ void WebMediaPlayerImpl::OnRemotePlaybackEnded() {
   client_->TimeChanged();
 }
 
+void WebMediaPlayerImpl::FlingingStarted() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK(!disable_pipeline_auto_suspend_);
+  disable_pipeline_auto_suspend_ = true;
+
+  // Capabilities reporting should only be performed for local playbacks.
+  video_decode_stats_reporter_.reset();
+
+  // Requests to restart media pipeline. A flinging renderer will be created via
+  // the |renderer_factory_selector_|.
+  ScheduleRestart();
+}
+
+void WebMediaPlayerImpl::FlingingStopped() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK(disable_pipeline_auto_suspend_);
+  disable_pipeline_auto_suspend_ = false;
+
+  CreateVideoDecodeStatsReporter();
+
+  ScheduleRestart();
+}
+
 void WebMediaPlayerImpl::OnDisconnectedFromRemoteDevice(double t) {
   DoSeek(base::TimeDelta::FromSecondsD(t), false);
 
@@ -3061,6 +3084,7 @@ void WebMediaPlayerImpl::ReportTimeFromForegroundToFirstFrame(
 void WebMediaPlayerImpl::SwitchToRemoteRenderer(
     const std::string& remote_device_friendly_name) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK(!disable_pipeline_auto_suspend_);
   disable_pipeline_auto_suspend_ = true;
 
   // Capabilities reporting should only be performed for local playbacks.
@@ -3078,6 +3102,7 @@ void WebMediaPlayerImpl::SwitchToRemoteRenderer(
 void WebMediaPlayerImpl::SwitchToLocalRenderer(
     MediaObserverClient::ReasonToSwitchToLocal reason) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK(disable_pipeline_auto_suspend_);
   disable_pipeline_auto_suspend_ = false;
 
   // Capabilities reporting may resume now that playback is local.
