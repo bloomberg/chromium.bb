@@ -1367,11 +1367,39 @@ void DesktopWindowTreeHostX11::OnFullscreenStateChanged() {}
 
 void DesktopWindowTreeHostX11::InitX11Window(
     const Widget::InitParams& params) {
-  unsigned long attribute_mask = CWBackPixmap | CWBitGravity;
+  unsigned long attribute_mask = CWBackPixel | CWBitGravity;
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = x11::None;
   swa.bit_gravity = NorthWestGravity;
+
+  // Set the background color on startup to make the initial flickering
+  // happening between the XWindow is mapped and the first expose event
+  // is completely handled less annoying. If possible, we use the content
+  // window's background color, otherwise we fallback to white.
+  int background_color;
+
+  const views::LinuxUI* linux_ui = views::LinuxUI::instance();
+  if (linux_ui && content_window()) {
+    ui::NativeTheme::ColorId target_color;
+    switch (params.type) {
+      case Widget::InitParams::TYPE_BUBBLE:
+        target_color = ui::NativeTheme::kColorId_BubbleBackground;
+        break;
+      case Widget::InitParams::TYPE_TOOLTIP:
+        target_color = ui::NativeTheme::kColorId_TooltipBackground;
+        break;
+      default:
+        target_color = ui::NativeTheme::kColorId_WindowBackground;
+        break;
+    }
+
+    ui::NativeTheme* theme = linux_ui->GetNativeTheme(content_window());
+    background_color = theme->GetSystemColor(target_color);
+  } else {
+    background_color = WhitePixel(xdisplay_, DefaultScreen(xdisplay_));
+  }
+  swa.background_pixel = background_color;
 
   ::Atom window_type;
   switch (params.type) {

@@ -571,7 +571,8 @@ NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX(gfx::AcceleratedWidget window)
       window_(0),
       glx_window_(0),
       config_(nullptr),
-      visual_id_(CopyFromParent) {}
+      visual_id_(CopyFromParent),
+      has_swapped_buffers_(false) {}
 
 bool NativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
   XWindowAttributes attributes;
@@ -678,7 +679,19 @@ gfx::SwapResult NativeViewGLSurfaceGLX::SwapBuffers(
                GetSize().width(), "height", GetSize().height());
   GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
       presentation_helper_.get(), callback);
-  glXSwapBuffers(gfx::GetXDisplay(), GetDrawableHandle());
+
+  XDisplay* display = gfx::GetXDisplay();
+  glXSwapBuffers(display, GetDrawableHandle());
+
+  // We need to restore the background pixel that we set to WhitePixel on
+  // views::DesktopWindowTreeHostX11::InitX11Window back to None for the
+  // XWindow associated to this surface after the first SwapBuffers has
+  // happened, to avoid showing a weird white background while resizing.
+  if (!has_swapped_buffers_) {
+    XSetWindowBackgroundPixmap(display, parent_window_, 0);
+    has_swapped_buffers_ = true;
+  }
+
   return scoped_swap_buffers.result();
 }
 
