@@ -575,12 +575,16 @@ TEST_F(TCPSocketTest, CancelPendingReadIfReady) {
   const int msg_size = strlen(kMsg);
   ASSERT_EQ(msg_size, write_result);
 
-  // Try reading again. ReadIfReady() should still succeed.
   TestCompletionCallback read_callback2;
   int read_result = connecting_socket->ReadIfReady(
       read_buffer.get(), read_buffer->size(), read_callback2.callback());
+  if (read_result == ERR_IO_PENDING) {
+    ASSERT_EQ(OK, read_callback2.GetResult(read_result));
+    read_result = connecting_socket->ReadIfReady(
+        read_buffer.get(), read_buffer->size(), read_callback2.callback());
+  }
 
-  ASSERT_EQ(msg_size, read_callback2.GetResult(read_result));
+  ASSERT_EQ(msg_size, read_result);
   ASSERT_EQ(0, memcmp(&kMsg, read_buffer->data(), msg_size));
 }
 
