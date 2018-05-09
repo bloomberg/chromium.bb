@@ -929,14 +929,13 @@ bool LayerTreeHostImpl::HasDamage() const {
 
   // If we have a new LocalSurfaceId, we must always submit a CompositorFrame
   // because the parent is blocking on us.
-  bool local_surface_id_from_parent_changed =
+  bool local_surface_id_changed =
       last_draw_local_surface_id_ !=
-      active_tree->local_surface_id_from_parent();
+      child_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
 
   return root_surface_has_visible_damage ||
          active_tree_->property_trees()->effect_tree.HasCopyRequests() ||
-         must_always_swap || hud_wants_to_draw_ ||
-         local_surface_id_from_parent_changed;
+         must_always_swap || hud_wants_to_draw_ || local_surface_id_changed;
 }
 
 DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
@@ -1897,8 +1896,10 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata() {
   metadata.device_scale_factor = active_tree_->painted_device_scale_factor() *
                                  active_tree_->device_scale_factor();
   metadata.viewport_size_in_pixels = device_viewport_size();
-  if (active_tree()->local_surface_id_from_parent().is_valid())
-    metadata.local_surface_id = active_tree()->local_surface_id_from_parent();
+  const viz::LocalSurfaceId& local_surface_id =
+      child_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+  if (local_surface_id.is_valid())
+    metadata.local_surface_id = local_surface_id;
 
   active_tree_->GetViewportSelection(&metadata.selection);
   metadata.is_mobile_optimized = IsMobileOptimized(active_tree_.get());
@@ -2032,9 +2033,10 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
     CHECK(!settings_.single_thread_proxy_scheduler ||
           active_tree()->local_surface_id_from_parent().is_valid());
     layer_tree_frame_sink_->SetLocalSurfaceId(
-        active_tree()->local_surface_id_from_parent());
+        child_local_surface_id_allocator_.GetCurrentLocalSurfaceId());
   }
-  last_draw_local_surface_id_ = active_tree()->local_surface_id_from_parent();
+  last_draw_local_surface_id_ =
+      child_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
   if (const char* client_name = GetClientNameForMetrics()) {
     size_t total_quad_count = 0;
     for (const auto& pass : compositor_frame.render_pass_list)
@@ -2560,6 +2562,14 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   // Activation can change the root scroll offset, so inform the synchronous
   // input handler.
   UpdateRootLayerStateForSynchronousInputHandler();
+
+  // Update the child's LocalSurfaceId.
+  if (active_tree()->local_surface_id_from_parent().is_valid()) {
+    child_local_surface_id_allocator_.UpdateFromParent(
+        active_tree()->local_surface_id_from_parent());
+    if (active_tree()->TakeNewLocalSurfaceIdRequest())
+      child_local_surface_id_allocator_.GenerateId();
+  }
 }
 
 void LayerTreeHostImpl::ActivateStateForImages() {

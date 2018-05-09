@@ -46,6 +46,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "ui/gfx/geometry/rect.h"
@@ -1055,6 +1056,7 @@ class CC_EXPORT LayerTreeHostImpl
   uint32_t last_presentation_token_ = 0u;
 
   viz::LocalSurfaceId last_draw_local_surface_id_;
+  viz::ChildLocalSurfaceIdAllocator child_local_surface_id_allocator_;
 
   const int default_color_space_id_;
   const gfx::ColorSpace default_color_space_;

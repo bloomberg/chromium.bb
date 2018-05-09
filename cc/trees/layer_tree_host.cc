@@ -1188,6 +1188,20 @@ void LayerTreeHost::SetLocalSurfaceIdFromParent(
   SetNeedsCommit();
 }
 
+void LayerTreeHost::RequestNewLocalSurfaceId() {
+  DCHECK(local_surface_id_from_parent_.is_valid());
+  if (new_local_surface_id_request_)
+    return;
+  new_local_surface_id_request_ = true;
+  SetNeedsCommit();
+}
+
+bool LayerTreeHost::TakeNewLocalSurfaceIdRequest() {
+  bool new_local_surface_id_request = new_local_surface_id_request_;
+  new_local_surface_id_request_ = false;
+  return new_local_surface_id_request;
+}
+
 void LayerTreeHost::RegisterLayer(Layer* layer) {
   DCHECK(!LayerById(layer->id()));
   DCHECK(!in_paint_layer_contents_);
@@ -1372,6 +1386,9 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
   tree_impl->SetRasterColorSpace(raster_color_space_id_, raster_color_space_);
 
   tree_impl->set_content_source_id(content_source_id_);
+
+  if (TakeNewLocalSurfaceIdRequest())
+    tree_impl->RequestNewLocalSurfaceId();
 
   tree_impl->SetLocalSurfaceIdFromParent(local_surface_id_from_parent_);
   has_pushed_local_surface_id_from_parent_ = true;
