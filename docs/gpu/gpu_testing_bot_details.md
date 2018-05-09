@@ -340,11 +340,22 @@ Builder].
 
 1. After the Chromium-side CL lands it will take some time for all of
    the configuration changes to be picked up by the system. The bot
-   will be in a red or purple state, claiming that it can't find its
-   configuration.
+   will probably be in a red or purple state, claiming that it can't
+   find its configuration. (It might also be in an "empty" state, not
+   running any jobs at all.)
 
-1. *After* the Chromium-side CL lands and the bot is on the console, but purple,
-   create a CL in the [`tools/build`][tools/build] workspace which does the
+1. (Temporary step only, during the Buildbot -> LUCI migration.) Once the bot is
+   on the console, go to the [LUCI migration
+   app](https://luci-migration.appspot.com/), log in with your @google.com
+   account (sorry, Googlers only), find the new machine on the appropriate
+   waterfall and flip the "LUCI is Prod" bit to true, pointing out that this is
+   a LUCI-only bot. Link the automatically-generated LUCI migration bug in that
+   page to your existing bug. If the automatically-generated bug isn't
+   auto-closed in a reasonable timeframe, close it as Fixed and point out that
+   your new bot was LUCI-only from the start.
+
+1. *After* the Chromium-side CL lands and the bot is on the console, create a CL
+   in the [`tools/build`][tools/build] workspace which does the
    following. Here's an [example
    CL](https://chromium-review.googlesource.com/1041145).
     1.  Adds the new VMs to [`chromium_gpu_fyi.py`][chromium_gpu_fyi.py] in
@@ -362,11 +373,11 @@ Builder].
         appear to be necessary any more, but it's something to watch out for if
         your CL fails presubmit for some reason.
 
-1. Note that it is crucial that the bot be deployed (and be red/purple) before
-   hooking it up in the tools/build workspace. In the new LUCI world, if the
-   parent builder can't find its child testers to trigger, that's a hard error
-   on the parent. You can and should prepare the tools/build CL in advance, but
-   make sure it doesn't land until the bot's on the console.
+1. Note that it is crucial that the bot be deployed before hooking it up in the
+   tools/build workspace. In the new LUCI world, if the parent builder can't
+   find its child testers to trigger, that's a hard error on the parent. This
+   will cause the builders to fail. You can and should prepare the tools/build
+   CL in advance, but make sure it doesn't land until the bot's on the console.
 
 [bots.cfg]:            https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/bots.cfg
 [infradata/config]:    https://chrome-internal.googlesource.com/infradata/config/
