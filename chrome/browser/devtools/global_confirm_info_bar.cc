@@ -28,6 +28,7 @@ class GlobalConfirmInfoBar::DelegateProxy : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate overrides
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   base::string16 GetMessageText() const override;
+  gfx::ElideBehavior GetMessageElideBehavior() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
@@ -61,6 +62,13 @@ GlobalConfirmInfoBar::DelegateProxy::GetIdentifier() const {
 base::string16 GlobalConfirmInfoBar::DelegateProxy::GetMessageText() const {
   return global_info_bar_ ? global_info_bar_->delegate_->GetMessageText()
                           : base::string16();
+}
+
+gfx::ElideBehavior
+GlobalConfirmInfoBar::DelegateProxy::GetMessageElideBehavior() const {
+  return global_info_bar_
+             ? global_info_bar_->delegate_->GetMessageElideBehavior()
+             : ConfirmInfoBarDelegate::GetMessageElideBehavior();
 }
 
 int GlobalConfirmInfoBar::DelegateProxy::GetButtons() const {
