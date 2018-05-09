@@ -31,7 +31,7 @@ bool DecoderStreamTraits<DemuxerStream::AUDIO>::NeedsBitstreamConversion(
 
 // static
 scoped_refptr<DecoderStreamTraits<DemuxerStream::AUDIO>::OutputType>
-    DecoderStreamTraits<DemuxerStream::AUDIO>::CreateEOSOutput() {
+DecoderStreamTraits<DemuxerStream::AUDIO>::CreateEOSOutput() {
   return OutputType::CreateEOSBuffer();
 }
 
@@ -156,6 +156,7 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::InitializeDecoder(
         waiting_for_decryption_key_cb) {
   DCHECK(config.IsValidConfig());
   stats_.video_decoder_name = decoder->GetDisplayName();
+  DVLOG(2) << stats_.video_decoder_name;
   decoder->Initialize(config, low_delay, cdm_context, init_cb, output_cb,
                       waiting_for_decryption_key_cb);
 }
