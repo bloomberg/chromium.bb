@@ -232,7 +232,7 @@ void DocumentMarkerController::RemoveMarkers(
 
     int start_offset = marked_text.StartOffsetInCurrentContainer();
     int end_offset = marked_text.EndOffsetInCurrentContainer();
-    RemoveMarkersInternal(&marked_text.CurrentContainer(), start_offset,
+    RemoveMarkersInternal(marked_text.CurrentContainer(), start_offset,
                           end_offset - start_offset, marker_types);
   }
 }
@@ -342,7 +342,7 @@ void DocumentMarkerController::MoveMarkers(const Node* src_node,
 }
 
 void DocumentMarkerController::RemoveMarkersInternal(
-    const Node* node,
+    const Node& node,
     unsigned start_offset,
     int length,
     DocumentMarker::MarkerTypes marker_types) {
@@ -353,7 +353,7 @@ void DocumentMarkerController::RemoveMarkersInternal(
     return;
   DCHECK(!(markers_.IsEmpty()));
 
-  MarkerLists* markers = markers_.at(node);
+  MarkerLists* const markers = markers_.at(&node);
   if (!markers)
     return;
 
@@ -380,7 +380,7 @@ void DocumentMarkerController::RemoveMarkersInternal(
   }
 
   if (empty_lists_count == DocumentMarker::kMarkerTypeIndexesCount) {
-    markers_.erase(node);
+    markers_.erase(&node);
     if (markers_.IsEmpty()) {
       possibly_existing_marker_types_ = 0;
       SetContext(nullptr);
@@ -390,7 +390,7 @@ void DocumentMarkerController::RemoveMarkersInternal(
   if (!doc_dirty)
     return;
 
-  InvalidatePaintForNode(*node);
+  InvalidatePaintForNode(node);
 }
 
 DocumentMarker* DocumentMarkerController::FirstMarkerIntersectingOffsetRange(
