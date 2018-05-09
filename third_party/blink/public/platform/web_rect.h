@@ -32,13 +32,13 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RECT_H_
 
 #include "third_party/blink/public/platform/web_common.h"
+#include "ui/gfx/geometry/rect.h"
 
 #if INSIDE_BLINK
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #else
 #include <algorithm>
 #include <cmath>
-#include <ui/gfx/geometry/rect.h>
 #endif
 
 namespace blink {
@@ -69,6 +69,12 @@ struct WebRect {
   }
 
   operator IntRect() const { return IntRect(x, y, width, height); }
+
+  explicit WebRect(const gfx::Rect& r)
+      : x(r.x()), y(r.y()), width(r.width()), height(r.height()) {}
+
+  // Note that this conversion clamps the size to be non-negative.
+  explicit operator gfx::Rect() const { return gfx::Rect(x, y, width, height); }
 #else
   WebRect(const gfx::Rect& r)
       : x(r.x()), y(r.y()), width(r.width()), height(r.height()) {}
@@ -81,9 +87,8 @@ struct WebRect {
     return *this;
   }
 
-  operator gfx::Rect() const {
-    return gfx::Rect(x, y, std::max(0, width), std::max(0, height));
-  }
+  // Note that this conversion clamps the size to be non-negative.
+  operator gfx::Rect() const { return gfx::Rect(x, y, width, height); }
 #endif
 };
 

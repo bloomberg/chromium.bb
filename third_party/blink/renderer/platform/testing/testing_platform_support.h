@@ -59,19 +59,6 @@ class TestingCompositorSupport : public WebCompositorSupport {
   std::unique_ptr<WebContentLayer> CreateContentLayer(
       cc::ContentLayerClient*) override;
   std::unique_ptr<WebImageLayer> CreateImageLayer() override;
-  std::unique_ptr<WebScrollbarLayer> CreateScrollbarLayer(
-      std::unique_ptr<WebScrollbar>,
-      WebScrollbarThemePainter,
-      std::unique_ptr<WebScrollbarThemeGeometry>) override;
-  std::unique_ptr<WebScrollbarLayer> CreateOverlayScrollbarLayer(
-      std::unique_ptr<WebScrollbar>,
-      WebScrollbarThemePainter,
-      std::unique_ptr<WebScrollbarThemeGeometry>) override;
-  std::unique_ptr<WebScrollbarLayer> CreateSolidColorScrollbarLayer(
-      WebScrollbar::Orientation,
-      int thumb_thickness,
-      int track_start,
-      bool is_left_side_vertical_scrollbar) override;
 };
 
 // A base class to override Platform methods for testing.  You can override the

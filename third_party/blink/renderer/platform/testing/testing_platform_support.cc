@@ -45,7 +45,6 @@
 #include "third_party/blink/public/platform/web_external_texture_layer.h"
 #include "third_party/blink/public/platform/web_image_layer.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
-#include "third_party/blink/public/platform/web_scrollbar_layer.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/blink_resource_coordinator_base.h"
@@ -105,31 +104,6 @@ std::unique_ptr<WebContentLayer> TestingCompositorSupport::CreateContentLayer(
 }
 
 std::unique_ptr<WebImageLayer> TestingCompositorSupport::CreateImageLayer() {
-  return nullptr;
-}
-
-std::unique_ptr<WebScrollbarLayer>
-TestingCompositorSupport::CreateScrollbarLayer(
-    std::unique_ptr<WebScrollbar>,
-    WebScrollbarThemePainter,
-    std::unique_ptr<WebScrollbarThemeGeometry>) {
-  return nullptr;
-}
-
-std::unique_ptr<WebScrollbarLayer>
-TestingCompositorSupport::CreateOverlayScrollbarLayer(
-    std::unique_ptr<WebScrollbar>,
-    WebScrollbarThemePainter,
-    std::unique_ptr<WebScrollbarThemeGeometry>) {
-  return nullptr;
-}
-
-std::unique_ptr<WebScrollbarLayer>
-TestingCompositorSupport::CreateSolidColorScrollbarLayer(
-    WebScrollbar::Orientation,
-    int thumb_thickness,
-    int track_start,
-    bool is_left_side_vertical_scrollbar) {
   return nullptr;
 }
 

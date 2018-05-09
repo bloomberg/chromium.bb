@@ -885,7 +885,7 @@ TEST_P(ScrollingCoordinatorTest, setupScrollbarLayerShouldNotCrash) {
 }
 
 TEST_P(ScrollingCoordinatorTest,
-       scrollbarsForceMainThreadOrHaveWebScrollbarLayer) {
+       ScrollbarsForceMainThreadOrHaveCompositorScrollbarLayer) {
   RegisterMockedHttpURLLoad("trivial-scroller.html");
   NavigateTo(base_url_ + "trivial-scroller.html");
   ForceFullCompositingUpdate();

@@ -32,21 +32,19 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_VISUAL_VIEWPORT_H_
 
 #include <memory>
+
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_scrollbar.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
-
-namespace blink {
-class WebScrollbarLayer;
-}
 
 namespace blink {
 
@@ -286,10 +284,13 @@ class CORE_EXPORT VisualViewport final
   std::unique_ptr<GraphicsLayer> page_scale_layer_;
   std::unique_ptr<GraphicsLayer> inner_viewport_scroll_layer_;
 
-  // The layers of the WebScrollbarLayers are referenced from the GraphicsLayers
-  // so the GraphicsLayers must be destructed first (declared after).
-  std::unique_ptr<WebScrollbarLayer> web_overlay_scrollbar_horizontal_;
-  std::unique_ptr<WebScrollbarLayer> web_overlay_scrollbar_vertical_;
+  // The layers of the ScrollbarLayerGroups are referenced from the
+  // GraphicsLayers, so the GraphicsLayers must be destructed first (declared
+  // after).
+  std::unique_ptr<ScrollingCoordinator::ScrollbarLayerGroup>
+      scrollbar_layer_group_horizontal_;
+  std::unique_ptr<ScrollingCoordinator::ScrollbarLayerGroup>
+      scrollbar_layer_group_vertical_;
   std::unique_ptr<GraphicsLayer> overlay_scrollbar_horizontal_;
   std::unique_ptr<GraphicsLayer> overlay_scrollbar_vertical_;
 

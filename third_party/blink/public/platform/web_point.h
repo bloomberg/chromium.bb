@@ -32,11 +32,10 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_POINT_H_
 
 #include "third_party/blink/public/platform/web_common.h"
+#include "ui/gfx/geometry/point.h"
 
 #if INSIDE_BLINK
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
-#else
-#include <ui/gfx/geometry/point.h>
 #endif
 
 namespace blink {
@@ -59,6 +58,10 @@ struct WebPoint {
   }
 
   operator IntPoint() const { return IntPoint(x, y); }
+
+  explicit WebPoint(const gfx::Point& p) : x(p.x()), y(p.y()) {}
+
+  explicit operator gfx::Point() const { return gfx::Point(x, y); }
 #else
   WebPoint(const gfx::Point& p) : x(p.x()), y(p.y()) {}
 

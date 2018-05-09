@@ -9,8 +9,6 @@ cc_component("blink") {
 
   sources = [
     "cc_blink_export.h",
-    "scrollbar_impl.cc",
-    "scrollbar_impl.h",
     "web_compositor_support_impl.cc",
     "web_compositor_support_impl.h",
     "web_content_layer_impl.cc",
@@ -21,8 +19,6 @@ cc_component("blink") {
     "web_layer_impl.h",
     "web_layer_impl_fixed_bounds.cc",
     "web_layer_impl_fixed_bounds.h",
-    "web_scrollbar_layer_impl.cc",
-    "web_scrollbar_layer_impl.h",
   ]
 
   defines = [ "CC_BLINK_IMPLEMENTATION" ]
