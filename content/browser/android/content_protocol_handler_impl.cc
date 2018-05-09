@@ -4,7 +4,8 @@
 
 #include "content/browser/android/content_protocol_handler_impl.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/task_runner.h"
 #include "content/browser/android/url_request_content_job.h"
 #include "net/base/net_errors.h"
@@ -16,7 +17,7 @@ namespace content {
 // static
 std::unique_ptr<ContentProtocolHandler> ContentProtocolHandler::Create(
     const scoped_refptr<base::TaskRunner>& content_task_runner) {
-  return base::WrapUnique(new ContentProtocolHandlerImpl(content_task_runner));
+  return std::make_unique<ContentProtocolHandlerImpl>(content_task_runner);
 }
 
 ContentProtocolHandlerImpl::ContentProtocolHandlerImpl(
