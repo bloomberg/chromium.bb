@@ -10,12 +10,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
 #include "chrome/common/search/instant_types.h"
-#include "components/favicon_base/favicon_types.h"
 #include "components/omnibox/browser/favicon_cache.h"
 #include "components/omnibox/browser/omnibox_client.h"
 
@@ -93,19 +90,11 @@ class ChromeOmniboxClient : public OmniboxClient {
                        int result_index,
                        const SkBitmap& bitmap);
 
-  void OnDefaultSearchProviderFaviconFetched(
-      const favicon_base::FaviconImageResult& result);
-
   ChromeOmniboxEditController* controller_;
   Profile* profile_;
   ChromeAutocompleteSchemeClassifier scheme_classifier_;
   std::vector<BitmapFetcherService::RequestId> request_ids_;
   FaviconCache favicon_cache_;
-
-  base::CancelableTaskTracker default_search_provider_favicon_task_tracker_;
-  FaviconFetchedCallback pending_default_search_provider_favicon_callback_;
-
-  base::WeakPtrFactory<ChromeOmniboxClient> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOmniboxClient);
 };

@@ -355,22 +355,8 @@ gfx::Image ChromeOmniboxClient::GetFaviconForDefaultSearchProvider(
     FaviconFetchedCallback on_favicon_fetched) {
   const GURL& favicon_url =
       GetTemplateURLService()->GetDefaultSearchProvider()->favicon_url();
-  if (!favicon_url.is_valid())
-    return gfx::Image();
-
-  auto* favicon_service = FaviconServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
-  pending_default_search_provider_favicon_callback_ =
-      std::move(on_favicon_fetched);
-  favicon_service->GetFaviconImage(
-      favicon_url,
-      base::BindRepeating(
-          &ChromeOmniboxClient::OnDefaultSearchProviderFaviconFetched,
-          weak_factory_.GetWeakPtr()),
-      &default_search_provider_favicon_task_tracker_);
-
-  // TODO(tommycli): Implement a synchronous caching layer to prevent flicker.
-  return gfx::Image();
+  return favicon_cache_.GetFaviconForIconUrl(favicon_url,
+                                             std::move(on_favicon_fetched));
 }
 
 void ChromeOmniboxClient::OnCurrentMatchChanged(
@@ -498,14 +484,4 @@ void ChromeOmniboxClient::OnBitmapFetched(const BitmapFetchedCallback& callback,
                                           int result_index,
                                           const SkBitmap& bitmap) {
   callback.Run(result_index, bitmap);
-}
-
-void ChromeOmniboxClient::OnDefaultSearchProviderFaviconFetched(
-    const favicon_base::FaviconImageResult& result) {
-  if (pending_default_search_provider_favicon_callback_.is_null() ||
-      result.image.IsEmpty()) {
-    return;
-  }
-  std::move(pending_default_search_provider_favicon_callback_)
-      .Run(result.image);
 }

@@ -130,7 +130,7 @@ class OmniboxClient {
   // embedders do. These methods return the favicon synchronously if possible.
   // Otherwise, they return an empty gfx::Image and |on_favicon_fetched| may or
   // may not be called asynchronously later. |on_favicon_fetched| will never be
-  // run synchronously.
+  // run synchronously, and will never be run with an empty result.
   virtual gfx::Image GetFaviconForPageUrl(
       const GURL& page_url,
       FaviconFetchedCallback on_favicon_fetched);
