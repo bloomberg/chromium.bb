@@ -6,7 +6,7 @@
 
 #include "base/test/bind_test_util.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/loader/navigation_url_loader_network_service.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/url_loader_factory_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -367,7 +367,7 @@ void URLLoaderInterceptor::InitializeOnIOThread(base::OnceClosure closure) {
         base::BindRepeating(&URLLoaderInterceptor::GetNetworkFactoryCallback,
                             base::Unretained(this)));
   } else {
-    NavigationURLLoaderNetworkService::SetBeginNavigationInterceptorForTesting(
+    NavigationURLLoaderImpl::SetBeginNavigationInterceptorForTesting(
         base::BindRepeating(&URLLoaderInterceptor::BeginNavigationCallback,
                             base::Unretained(this)));
   }
@@ -398,8 +398,8 @@ void URLLoaderInterceptor::ShutdownOnIOThread(base::OnceClosure closure) {
     URLLoaderFactoryGetter::SetGetNetworkFactoryCallbackForTesting(
         URLLoaderFactoryGetter::GetNetworkFactoryCallback());
   } else {
-    NavigationURLLoaderNetworkService::SetBeginNavigationInterceptorForTesting(
-        NavigationURLLoaderNetworkService::BeginNavigationInterceptor());
+    NavigationURLLoaderImpl::SetBeginNavigationInterceptorForTesting(
+        NavigationURLLoaderImpl::BeginNavigationInterceptor());
   }
 
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {

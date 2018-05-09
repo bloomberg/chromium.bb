@@ -70,7 +70,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // NetworkService loading
 
   // NavigationLoaderInterceptor overrides - main resource loading.
-  // These methods are used by the NavigationURLLoaderNetworkService.
+  // These methods are used by the NavigationURLLoaderImpl.
   // Internally they use same methods used by the network library based impl,
   // MaybeLoadResource and MaybeLoadFallbackForResponse.
   // Eventually one of the Deliver*Response() methods is called and the
