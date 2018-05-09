@@ -112,6 +112,10 @@ interface LoginScreen {
   SetPublicSessionKeyboardLayouts(signin.mojom.AccountId account_id,
                                   string locale,
                                   array<InputMethodItem> keyboard_layouts);
+
+  // Set the fingerprint unlock state for user with |account_id|.
+  SetFingerprintUnlockState(signin.mojom.AccountId account_id,
+                            FingerprintUnlockState state);
 };
 
 // Allows ash lock screen to control a client (e.g. Chrome browser). Requests

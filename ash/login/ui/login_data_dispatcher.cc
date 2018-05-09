@@ -52,6 +52,10 @@ void LoginDataDispatcher::Observer::OnPublicSessionKeyboardLayoutsChanged(
 void LoginDataDispatcher::Observer::OnDetachableBasePairingStatusChanged(
     DetachableBasePairingStatus pairing_status) {}
 
+void LoginDataDispatcher::Observer::OnFingerprintUnlockStateChanged(
+    const AccountId& account_id,
+    mojom::FingerprintUnlockState state) {}
+
 LoginDataDispatcher::LoginDataDispatcher() = default;
 
 LoginDataDispatcher::~LoginDataDispatcher() = default;
@@ -141,6 +145,13 @@ void LoginDataDispatcher::SetDetachableBasePairingStatus(
     DetachableBasePairingStatus pairing_status) {
   for (auto& observer : observers_)
     observer.OnDetachableBasePairingStatusChanged(pairing_status);
+}
+
+void LoginDataDispatcher::SetFingerprintUnlockState(
+    const AccountId& account_id,
+    mojom::FingerprintUnlockState state) {
+  for (auto& observer : observers_)
+    observer.OnFingerprintUnlockStateChanged(account_id, state);
 }
 
 }  // namespace ash

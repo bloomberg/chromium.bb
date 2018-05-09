@@ -96,6 +96,11 @@ class ASH_EXPORT LoginDataDispatcher {
     // base is attached or detached.
     virtual void OnDetachableBasePairingStatusChanged(
         DetachableBasePairingStatus pairing_status);
+
+    // Called when fingerprint unlock state changes for user with |account_id|.
+    virtual void OnFingerprintUnlockStateChanged(
+        const AccountId& account_id,
+        mojom::FingerprintUnlockState state);
   };
 
   LoginDataDispatcher();
@@ -126,6 +131,8 @@ class ASH_EXPORT LoginDataDispatcher {
       const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts);
   void SetDetachableBasePairingStatus(
       DetachableBasePairingStatus pairing_status);
+  void SetFingerprintUnlockState(const AccountId& account_id,
+                                 mojom::FingerprintUnlockState state);
 
  private:
   base::ObserverList<Observer> observers_;
