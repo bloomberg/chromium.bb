@@ -5,6 +5,9 @@
 #include "android_webview/browser/aw_field_trial_creator.h"
 
 #include <memory>
+#include <set>
+#include <string>
+#include <vector>
 
 #include "android_webview/browser/aw_metrics_service_client.h"
 #include "base/base_switches.h"
@@ -27,15 +30,11 @@ namespace {
 // TODO(kmilka): Update to work properly in environments both with and without
 // UMA enabled.
 std::unique_ptr<const base::FieldTrial::EntropyProvider>
-CreateLowEntropyProvider() {
+CreateLowEntropyProvider(const std::string& client_id) {
   return std::unique_ptr<const base::FieldTrial::EntropyProvider>(
       // Since variations are only enabled for users opted in to UMA, it is
       // acceptable to use the SHA1EntropyProvider for randomization.
-      new variations::SHA1EntropyProvider(
-          // Synchronous read of the client id is permitted as it is fast
-          // enough to have minimal impact on startup time, and is behind the
-          // webview-enable-finch flag.
-          android_webview::AwMetricsServiceClient::GetClientId()));
+      new variations::SHA1EntropyProvider(client_id));
 }
 
 }  // anonymous namespace
@@ -72,12 +71,16 @@ std::unique_ptr<PrefService> AwFieldTrialCreator::CreateLocalState() {
 }
 
 void AwFieldTrialCreator::SetUpFieldTrials() {
-  AwMetricsServiceClient::LoadOrCreateClientId();
+  // If the client ID isn't available yet, don't delay startup by creating it.
+  // Instead, variations will be disabled for this run.
+  std::string client_id;
+  if (!AwMetricsServiceClient::GetPreloadedClientId(&client_id))
+    return;
 
   DCHECK(!field_trial_list_);
   // Set the FieldTrialList singleton.
-  field_trial_list_ =
-      std::make_unique<base::FieldTrialList>(CreateLowEntropyProvider());
+  field_trial_list_ = std::make_unique<base::FieldTrialList>(
+      CreateLowEntropyProvider(client_id));
 
   std::unique_ptr<PrefService> local_state = CreateLocalState();
 
@@ -102,7 +105,7 @@ void AwFieldTrialCreator::SetUpFieldTrials() {
   variations_field_trial_creator_->SetupFieldTrials(
       cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
       switches::kDisableFeatures, unforceable_field_trials,
-      std::vector<std::string>(), CreateLowEntropyProvider(),
+      std::vector<std::string>(), CreateLowEntropyProvider(client_id),
       std::make_unique<base::FeatureList>(), aw_field_trials_.get(),
       &ignored_safe_seed_manager);
 }
