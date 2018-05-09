@@ -108,11 +108,11 @@ void VerifyDeveloperEngagementUkm(
 }
 
 MATCHER(CompareMetricsIgnoringMillisecondsSinceFormParsed, "") {
-  const ukm::mojom::UkmMetric* lhs = ::testing::get<0>(arg).get();
+  const auto& lhs = ::testing::get<0>(arg);
   const std::pair<const char*, int64_t>& rhs = ::testing::get<1>(arg);
-  return lhs->metric_hash == base::HashMetricName(rhs.first) &&
-         (lhs->value == rhs.second ||
-          (lhs->value > 0 &&
+  return lhs.first == base::HashMetricName(rhs.first) &&
+         (lhs.second == rhs.second ||
+          (lhs.second > 0 &&
            rhs.first ==
                UkmSuggestionFilledType::kMillisecondsSinceFormParsedName));
 }

@@ -23,7 +23,7 @@ UkmEntryBuilderBase::~UkmEntryBuilderBase() = default;
 
 void UkmEntryBuilderBase::SetMetricInternal(uint64_t metric_hash,
                                             int64_t value) {
-  entry_->metrics.emplace_back(mojom::UkmMetric::New(metric_hash, value));
+  entry_->metrics.emplace(metric_hash, value);
 }
 
 void UkmEntryBuilderBase::Record(UkmRecorder* recorder) {

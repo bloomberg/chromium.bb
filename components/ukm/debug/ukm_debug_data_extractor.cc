@@ -90,7 +90,7 @@ std::string UkmDebugDataExtractor::GetHTMLData(UkmService* ukm_service) {
         for (const auto& metric : entry->metrics) {
           output.append(base::StringPrintf(
               "<h5>Metric:%s Value:%" PRId64 "</h5>",
-              GetName(it->second, metric->metric_hash).c_str(), metric->value));
+              GetName(it->second, metric.first).c_str(), metric.second));
         }
       }
     }
