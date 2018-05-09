@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
@@ -9,13 +10,7 @@
 
 <dom-module id="network-choose-mobile">
   <template>
-    <style include="network-shared md-select iron-flex">
-      paper-button {
-        margin: 0;
-      }
-      paper-button[disabled] {
-        background: none;
-      }
+    <style include="network-shared md-select iron-flex paper-button-style">
       /* Align select with button and scan messages */
       select {
         margin-top: 4px;

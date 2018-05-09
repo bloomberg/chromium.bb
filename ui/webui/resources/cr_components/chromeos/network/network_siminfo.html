@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
@@ -16,7 +17,7 @@
 
 <dom-module id="network-siminfo">
   <template>
-    <style include="network-shared iron-flex">
+    <style include="network-shared iron-flex paper-button-style">
       :host {
         cursor: default
       }
@@ -132,7 +133,8 @@
         </div>
       </div>
       <div slot="button-container">
-        <paper-button on-tap="sendChangePin_" disabled="[[inProgress_]]">
+        <paper-button class="action-button" on-tap="sendChangePin_"
+            disabled="[[inProgress_]]">
           [[i18n('networkSimChange')]]
         </paper-button>
       </div>
