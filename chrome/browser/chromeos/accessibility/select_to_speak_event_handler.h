@@ -112,6 +112,8 @@ class SelectToSpeakEventHandler : public ui::EventHandler {
 
   ui::PointerId touch_id_ = ui::PointerDetails::kUnknownPointerId;
 
+  ui::EventPointerType touch_type_ = ui::EventPointerType::POINTER_TYPE_UNKNOWN;
+
   SelectToSpeakEventDelegateForTesting* event_delegate_for_testing_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SelectToSpeakEventHandler);
