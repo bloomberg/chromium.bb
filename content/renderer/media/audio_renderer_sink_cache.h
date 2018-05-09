@@ -17,17 +17,22 @@ class AudioRendererSink;
 }
 
 namespace content {
+class RenderFrame;
 
 // Caches AudioRendererSink instances, provides them to the clients for usage,
 // tracks their used/unused state, reuses them to obtain output device
 // information, garbage-collects unused sinks.
-// Thread safe.
+// Must live on the main render thread. Thread safe.
 class CONTENT_EXPORT AudioRendererSinkCache {
  public:
   virtual ~AudioRendererSinkCache() {}
 
   // Creates default cache, to be used by AudioRendererMixerManager.
   static std::unique_ptr<AudioRendererSinkCache> Create();
+
+  // If called, the cache will drop sinks belonging to the specified frame on
+  // navigation.
+  static void ObserveFrame(RenderFrame* frame);
 
   // Returns output device information for a specified sink.
   virtual media::OutputDeviceInfo GetSinkInfo(int source_render_frame_id,
@@ -49,6 +54,7 @@ class CONTENT_EXPORT AudioRendererSinkCache {
  protected:
   AudioRendererSinkCache() {}
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(AudioRendererSinkCache);
 };
 

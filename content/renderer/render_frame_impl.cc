@@ -120,6 +120,7 @@
 #include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/audio_output_ipc_factory.h"
+#include "content/renderer/media/audio_renderer_sink_cache.h"
 #include "content/renderer/media/media_permission_dispatcher.h"
 #include "content/renderer/media/stream/media_stream_device_observer.h"
 #include "content/renderer/media/stream/user_media_client_impl.h"
@@ -1439,6 +1440,8 @@ void RenderFrameImpl::Initialize() {
   // AudioOutputIPCFactory may be null in tests.
   if (auto* factory = AudioOutputIPCFactory::get())
     factory->RegisterRemoteFactory(GetRoutingID(), GetRemoteInterfaces());
+
+  AudioRendererSinkCache::ObserveFrame(this);
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
