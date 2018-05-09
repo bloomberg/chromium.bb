@@ -99,8 +99,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       const NGLayoutInputNode& child,
       const NGConstraintSpace& child_space,
       const NGInflowChildData& child_data,
-      const NGLayoutResult&,
-      bool* has_clearance) const;
+      const NGLayoutResult&) const;
 
   void HandleOutOfFlowPositioned(const NGPreviousInflowPosition&, NGBlockNode);
   void HandleFloat(const NGPreviousInflowPosition&,

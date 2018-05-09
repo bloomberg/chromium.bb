@@ -175,6 +175,7 @@ class CORE_EXPORT NGConstraintSpace final
   //   - block_start border or padding in the current layout.
   //   - Text content, atomic inlines, (see NGLineBreaker).
   //   - The current layout having a block_size.
+  //   - Clearance before a child.
   NGBfcOffset BfcOffset() const { return bfc_offset_; }
 
   // If present, and the current layout hasn't resolved its BFC offset yet (see
