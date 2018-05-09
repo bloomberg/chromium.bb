@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 
+#include "cc/layers/picture_layer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_content_layer.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
@@ -2357,7 +2357,7 @@ TEST_P(CompositedLayerMappingTest,
         target_layer ? target_layer->GraphicsLayerBacking() : nullptr;
     ASSERT_TRUE(target_graphics_layer);
     EXPECT_FALSE(target_graphics_layer->ContentLayer()
-                     ->TransformedRasterizationAllowed());
+                     ->transformed_rasterization_allowed());
   }
   {
     LayoutObject* target = GetLayoutObjectByElementId("target2");
@@ -2367,7 +2367,7 @@ TEST_P(CompositedLayerMappingTest,
         target_layer ? target_layer->GraphicsLayerBacking() : nullptr;
     ASSERT_TRUE(target_graphics_layer);
     EXPECT_FALSE(target_graphics_layer->ContentLayer()
-                     ->TransformedRasterizationAllowed());
+                     ->transformed_rasterization_allowed());
   }
   {
     LayoutObject* target = GetLayoutObjectByElementId("target3");
@@ -2377,7 +2377,7 @@ TEST_P(CompositedLayerMappingTest,
         target_layer ? target_layer->GraphicsLayerBacking() : nullptr;
     ASSERT_TRUE(target_graphics_layer);
     EXPECT_FALSE(target_graphics_layer->ContentLayer()
-                     ->TransformedRasterizationAllowed());
+                     ->transformed_rasterization_allowed());
   }
 }
 
@@ -2399,8 +2399,8 @@ TEST_P(CompositedLayerMappingTest, TransformedRasterizationForInlineTransform) {
   GraphicsLayer* target_graphics_layer =
       target_layer ? target_layer->GraphicsLayerBacking() : nullptr;
   ASSERT_TRUE(target_graphics_layer);
-  EXPECT_TRUE(
-      target_graphics_layer->ContentLayer()->TransformedRasterizationAllowed());
+  EXPECT_TRUE(target_graphics_layer->ContentLayer()
+                  ->transformed_rasterization_allowed());
 }
 
 // This tests that when the scroller becomes no longer scrollable if a sticky

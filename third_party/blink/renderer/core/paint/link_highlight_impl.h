@@ -29,7 +29,6 @@
 #include <memory>
 
 #include "cc/layers/content_layer_client.h"
-#include "third_party/blink/public/platform/web_content_layer.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
@@ -40,12 +39,15 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
+namespace cc {
+class PictureLayer;
+}
+
 namespace blink {
 
 class GraphicsLayer;
 class LayoutBoxModelObject;
 class Node;
-class WebContentLayer;
 class WebLayer;
 class WebViewImpl;
 
@@ -57,7 +59,7 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
   static std::unique_ptr<LinkHighlightImpl> Create(Node*, WebViewImpl*);
   ~LinkHighlightImpl() override;
 
-  WebContentLayer* ContentLayer();
+  cc::PictureLayer* ContentLayer();
   WebLayer* ClipLayer();
   void StartHighlightAnimationIfNeeded();
   void UpdateGeometry();
@@ -99,7 +101,8 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
   // changed size since the last call to this function.
   bool ComputeHighlightLayerPathAndPosition(const LayoutBoxModelObject&);
 
-  std::unique_ptr<WebContentLayer> content_layer_;
+  scoped_refptr<cc::PictureLayer> content_layer_;
+  std::unique_ptr<WebLayer> web_content_layer_;  // Wraps |content_layer_|.
   std::unique_ptr<WebLayer> clip_layer_;
   Path path_;
 

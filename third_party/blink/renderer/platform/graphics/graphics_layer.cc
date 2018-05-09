@@ -33,6 +33,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/picture_layer.h"
 #include "cc/paint/display_item_list.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_compositor_support.h"
@@ -113,15 +114,17 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
 #if DCHECK_IS_ON()
   client.VerifyNotPainting();
 #endif
-  layer_ = Platform::Current()->CompositorSupport()->CreateContentLayer(this);
-  layer_->Layer()->SetDrawsContent(draws_content_ && contents_visible_);
-  layer_->Layer()->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
+  layer_ = cc::PictureLayer::Create(this);
+  web_layer_ = Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
+      layer_.get());
+  layer_->SetIsDrawable(draws_content_ && contents_visible_);
+  layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
 
   UpdateTrackingRasterInvalidations();
 }
 
 GraphicsLayer::~GraphicsLayer() {
-  layer_->Layer()->SetLayerClient(nullptr);
+  layer_->SetLayerClient(nullptr);
   SetContentsLayer(nullptr);
   for (size_t i = 0; i < link_highlights_.size(); ++i)
     link_highlights_[i]->ClearCurrentGraphicsLayer();
@@ -149,17 +152,17 @@ LayoutRect GraphicsLayer::VisualRect() const {
 
 void GraphicsLayer::SetHasWillChangeTransformHint(
     bool has_will_change_transform) {
-  layer_->Layer()->SetHasWillChangeTransformHint(has_will_change_transform);
+  layer_->SetHasWillChangeTransformHint(has_will_change_transform);
 }
 
 void GraphicsLayer::SetOverscrollBehavior(
     const cc::OverscrollBehavior& behavior) {
-  layer_->Layer()->SetOverscrollBehavior(behavior);
+  layer_->SetOverscrollBehavior(behavior);
 }
 
 void GraphicsLayer::SetSnapContainerData(
     base::Optional<SnapContainerData> data) {
-  layer_->Layer()->SetSnapContainerData(std::move(data));
+  layer_->SetSnapContainerData(std::move(data));
 }
 
 void GraphicsLayer::SetIsResizedByBrowserControls(
@@ -371,7 +374,7 @@ bool GraphicsLayer::Paint(const IntRect* interest_rect,
           *this, std::move(record),
           layer_state_ ? &layer_state_->state : nullptr);
       // Ensure the compositor will raster the under-invalidation overlay.
-      layer_->Layer()->Invalidate();
+      layer_->SetNeedsDisplay();
     }
   }
 
@@ -418,7 +421,7 @@ bool GraphicsLayer::PaintWithoutCommit(
 }
 
 void GraphicsLayer::UpdateChildList() {
-  WebLayer* child_host = layer_->Layer();
+  WebLayer* child_host = web_layer_.get();
   child_host->RemoveAllChildren();
 
   ClearContentsLayerIfUnregistered();
@@ -445,12 +448,12 @@ void GraphicsLayer::UpdateLayerIsDrawable() {
   // shouldn't receive the drawsContent flag, so it is only given
   // contentsVisible.
 
-  layer_->Layer()->SetDrawsContent(draws_content_ && contents_visible_);
+  layer_->SetIsDrawable(draws_content_ && contents_visible_);
   if (WebLayer* contents_layer = ContentsLayerIfRegistered())
     contents_layer->SetDrawsContent(contents_visible_);
 
   if (draws_content_) {
-    layer_->Layer()->Invalidate();
+    layer_->SetNeedsDisplay();
     for (size_t i = 0; i < link_highlights_.size(); ++i)
       link_highlights_[i]->Invalidate();
   }
@@ -533,7 +536,7 @@ void GraphicsLayer::SetupContentsLayer(WebLayer* contents_layer) {
 
   // Insert the content layer first. Video elements require this, because they
   // have shadow content that must display in front of the video.
-  layer_->Layer()->InsertChild(contents_layer_, 0);
+  layer_->InsertChild(contents_layer_->CcLayer(), 0);
   WebLayer* border_web_layer =
       contents_clipping_mask_layer_
           ? contents_clipping_mask_layer_->PlatformLayer()
@@ -970,7 +973,7 @@ String GraphicsLayer::DebugName(cc::Layer* layer) const {
     }
   }
 
-  if (layer == CcLayerForWebLayer(layer_->Layer()))
+  if (layer == layer_.get())
     return client_.DebugName(this);
 
   NOTREACHED();
@@ -1012,7 +1015,7 @@ void GraphicsLayer::SetSize(const FloatSize& size) {
   // Invalidate the layer as a DisplayItemClient.
   SetDisplayItemsUncached();
 
-  layer_->Layer()->SetBounds(static_cast<gfx::Size>(FlooredIntSize(size_)));
+  layer_->SetBounds(static_cast<gfx::Size>(FlooredIntSize(size_)));
   // Note that we don't resize m_contentsLayer. It's up the caller to do that.
 }
 
@@ -1033,7 +1036,7 @@ void GraphicsLayer::SetShouldFlattenTransform(bool should_flatten) {
 
   should_flatten_transform_ = should_flatten;
 
-  layer_->Layer()->SetShouldFlattenTransform(should_flatten);
+  layer_->SetShouldFlattenTransform(should_flatten);
 }
 
 void GraphicsLayer::SetRenderingContext(int context) {
@@ -1041,18 +1044,18 @@ void GraphicsLayer::SetRenderingContext(int context) {
     return;
 
   rendering_context3d_ = context;
-  layer_->Layer()->SetRenderingContext(context);
+  layer_->Set3dSortingContextId(context);
 
   if (contents_layer_)
     contents_layer_->SetRenderingContext(rendering_context3d_);
 }
 
 bool GraphicsLayer::MasksToBounds() const {
-  return layer_->Layer()->MasksToBounds();
+  return layer_->masks_to_bounds();
 }
 
 void GraphicsLayer::SetMasksToBounds(bool masks_to_bounds) {
-  layer_->Layer()->SetMasksToBounds(masks_to_bounds);
+  layer_->SetMasksToBounds(masks_to_bounds);
 }
 
 void GraphicsLayer::SetDrawsContent(bool draws_content) {
@@ -1084,12 +1087,12 @@ void GraphicsLayer::SetContentsVisible(bool contents_visible) {
 
 void GraphicsLayer::SetClipParent(WebLayer* parent) {
   has_clip_parent_ = !!parent;
-  layer_->Layer()->SetClipParent(parent);
+  layer_->SetClipParent(parent ? parent->CcLayer() : nullptr);
 }
 
 void GraphicsLayer::SetScrollParent(WebLayer* parent) {
   has_scroll_parent_ = !!parent;
-  layer_->Layer()->SetScrollParent(parent);
+  layer_->SetScrollParent(parent ? parent->CcLayer() : nullptr);
 }
 
 void GraphicsLayer::SetBackgroundColor(const Color& color) {
@@ -1097,12 +1100,12 @@ void GraphicsLayer::SetBackgroundColor(const Color& color) {
     return;
 
   background_color_ = color;
-  layer_->Layer()->SetBackgroundColor(background_color_.Rgb());
+  layer_->SetBackgroundColor(background_color_.Rgb());
 }
 
 void GraphicsLayer::SetContentsOpaque(bool opaque) {
   contents_opaque_ = opaque;
-  layer_->Layer()->SetOpaque(contents_opaque_);
+  layer_->SetContentsOpaque(contents_opaque_);
   ClearContentsLayerIfUnregistered();
   if (contents_layer_ && !prevent_contents_opaque_changes_)
     contents_layer_->SetOpaque(opaque);
@@ -1113,9 +1116,8 @@ void GraphicsLayer::SetMaskLayer(GraphicsLayer* mask_layer) {
     return;
 
   mask_layer_ = mask_layer;
-  WebLayer* mask_web_layer =
-      mask_layer_ ? mask_layer_->PlatformLayer() : nullptr;
-  layer_->Layer()->SetMaskLayer(mask_web_layer);
+  layer_->SetMaskLayer(mask_layer_ ? mask_layer_->PlatformLayer()->CcLayer()
+                                   : nullptr);
 }
 
 void GraphicsLayer::SetContentsClippingMaskLayer(
@@ -1181,7 +1183,7 @@ void GraphicsLayer::SetNeedsDisplay() {
 
   // TODO(chrishtr): Stop invalidating the rects once
   // FrameView::paintRecursively() does so.
-  layer_->Layer()->Invalidate();
+  layer_->SetNeedsDisplay();
   for (size_t i = 0; i < link_highlights_.size(); ++i)
     link_highlights_[i]->Invalidate();
   GetPaintController().InvalidateAll();
@@ -1208,7 +1210,7 @@ void GraphicsLayer::SetNeedsDisplayInRect(
 void GraphicsLayer::SetNeedsDisplayInRectInternal(const IntRect& rect) {
   DCHECK(DrawsContent());
 
-  layer_->Layer()->InvalidateRect(rect);
+  layer_->SetNeedsDisplayRect(rect);
   for (auto* link_highlight : link_highlights_)
     link_highlight->Invalidate();
 }
@@ -1267,7 +1269,7 @@ void GraphicsLayer::SetContentsToImage(
 }
 
 WebLayer* GraphicsLayer::PlatformLayer() const {
-  return layer_->Layer();
+  return web_layer_.get();
 }
 
 void GraphicsLayer::SetFilters(CompositorFilterOperations filters) {
@@ -1280,7 +1282,7 @@ void GraphicsLayer::SetBackdropFilters(CompositorFilterOperations filters) {
 
 void GraphicsLayer::SetStickyPositionConstraint(
     const cc::LayerStickyPositionConstraint& sticky_constraint) {
-  layer_->Layer()->SetStickyPositionConstraint(sticky_constraint);
+  layer_->SetStickyPositionConstraint(sticky_constraint);
 }
 
 void GraphicsLayer::SetFilterQuality(SkFilterQuality filter_quality) {

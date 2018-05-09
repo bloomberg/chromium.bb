@@ -29,10 +29,10 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "cc/layers/picture_layer.h"
 #include "cc/paint/display_item_list.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_compositor_support.h"
-#include "third_party/blink/public/platform/web_content_layer.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -90,10 +90,12 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owning_web_view)
   WebCompositorSupport* compositor_support =
       Platform::Current()->CompositorSupport();
   DCHECK(compositor_support);
-  content_layer_ = compositor_support->CreateContentLayer(this);
+  content_layer_ = cc::PictureLayer::Create(this);
+  web_content_layer_ =
+      compositor_support->CreateLayerFromCCLayer(content_layer_.get());
   clip_layer_ = compositor_support->CreateLayer();
   clip_layer_->SetTransformOrigin(FloatPoint3D());
-  clip_layer_->AddChild(content_layer_->Layer());
+  clip_layer_->AddChild(web_content_layer_.get());
 
   compositor_animation_ = CompositorAnimation::Create();
   DCHECK(compositor_animation_);
@@ -104,9 +106,9 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owning_web_view)
   CompositorElementId element_id =
       CompositorElementIdFromUniqueObjectId(unique_id_);
   compositor_animation_->AttachElement(element_id);
-  content_layer_->Layer()->SetDrawsContent(true);
-  content_layer_->Layer()->SetOpacity(1);
-  content_layer_->Layer()->SetElementId(element_id);
+  content_layer_->SetIsDrawable(true);
+  content_layer_->SetOpacity(1);
+  content_layer_->SetElementId(element_id);
   geometry_needs_update_ = true;
 }
 
@@ -122,7 +124,7 @@ LinkHighlightImpl::~LinkHighlightImpl() {
   ReleaseResources();
 }
 
-WebContentLayer* LinkHighlightImpl::ContentLayer() {
+cc::PictureLayer* LinkHighlightImpl::ContentLayer() {
   return content_layer_.get();
 }
 
@@ -260,17 +262,17 @@ bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
   bool path_has_changed = !(new_path == path_);
   if (path_has_changed) {
     path_ = new_path;
-    content_layer_->Layer()->SetBounds(
+    content_layer_->SetBounds(
         static_cast<gfx::Size>(EnclosingIntRect(bounding_rect).Size()));
   }
 
-  content_layer_->Layer()->SetPosition(bounding_rect.Location());
+  content_layer_->SetPosition(bounding_rect.Location());
 
   return path_has_changed;
 }
 
 gfx::Rect LinkHighlightImpl::PaintableRegion() {
-  return gfx::Rect(ContentLayer()->Layer()->Bounds());
+  return gfx::Rect(content_layer_->bounds());
 }
 
 scoped_refptr<cc::DisplayItemList>
@@ -311,7 +313,7 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
   const float kFadeDuration = 0.1f;
   const float kMinPreFadeDuration = 0.1f;
 
-  content_layer_->Layer()->SetOpacity(kStartOpacity);
+  content_layer_->SetOpacity(kStartOpacity);
 
   std::unique_ptr<CompositorFloatAnimationCurve> curve =
       CompositorFloatAnimationCurve::Create();
@@ -340,7 +342,7 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
       CompositorKeyframeModel::Create(*curve, CompositorTargetProperty::OPACITY,
                                       0, 0);
 
-  content_layer_->Layer()->SetDrawsContent(true);
+  content_layer_->SetIsDrawable(true);
   compositor_animation_->AddKeyframeModel(std::move(keyframe_model));
 
   Invalidate();
@@ -385,7 +387,7 @@ void LinkHighlightImpl::UpdateGeometry() {
       // We only need to invalidate the layer if the highlight size has changed,
       // otherwise we can just re-position the layer without needing to
       // repaint.
-      content_layer_->Layer()->Invalidate();
+      content_layer_->SetNeedsDisplay();
 
       if (current_graphics_layer_) {
         gfx::Rect rect = gfx::ToEnclosingRect(

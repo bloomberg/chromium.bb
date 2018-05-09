@@ -41,7 +41,6 @@
 #include "cc/blink/web_compositor_support_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/web_content_layer.h"
 #include "third_party/blink/public/platform/web_external_texture_layer.h"
 #include "third_party/blink/public/platform/web_image_layer.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
@@ -95,11 +94,6 @@ std::unique_ptr<WebLayer> TestingCompositorSupport::CreateLayer() {
 
 std::unique_ptr<WebLayer> TestingCompositorSupport::CreateLayerFromCCLayer(
     cc::Layer*) {
-  return nullptr;
-}
-
-std::unique_ptr<WebContentLayer> TestingCompositorSupport::CreateContentLayer(
-    cc::ContentLayerClient*) {
   return nullptr;
 }
 

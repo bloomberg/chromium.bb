@@ -189,6 +189,7 @@ _CONFIG = [
             'cc::ContentLayerClient',
             'cc::DisplayItemList',
             'cc::DrawRecordOp',
+            'cc::PictureLayer',
         ],
     },
     {

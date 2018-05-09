@@ -6,12 +6,10 @@
 
 #include <utility>
 
-#include "cc/blink/web_content_layer_impl.h"
 #include "cc/blink/web_image_layer_impl.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/layer.h"
 
-using blink::WebContentLayer;
 using blink::WebImageLayer;
 using blink::WebLayer;
 
@@ -28,11 +26,6 @@ std::unique_ptr<WebLayer> WebCompositorSupportImpl::CreateLayer() {
 std::unique_ptr<WebLayer> WebCompositorSupportImpl::CreateLayerFromCCLayer(
     cc::Layer* layer) {
   return std::make_unique<WebLayerImpl>(layer);
-}
-
-std::unique_ptr<WebContentLayer> WebCompositorSupportImpl::CreateContentLayer(
-    cc::ContentLayerClient* client) {
-  return std::make_unique<WebContentLayerImpl>(client);
 }
 
 std::unique_ptr<blink::WebImageLayer>

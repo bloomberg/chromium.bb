@@ -28,6 +28,7 @@
 #include <memory>
 
 #include "cc/input/overscroll_behavior.h"
+#include "cc/layers/picture_layer.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"

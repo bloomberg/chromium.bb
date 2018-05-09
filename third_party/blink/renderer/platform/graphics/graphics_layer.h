@@ -33,7 +33,6 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer_client.h"
-#include "third_party/blink/public/platform/web_content_layer.h"
 #include "third_party/blink/public/platform/web_image_layer.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
@@ -55,6 +54,10 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkFilterQuality.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+
+namespace cc {
+class PictureLayer;
+}
 
 namespace blink {
 
@@ -259,7 +262,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   void ScrollableAreaDisposed();
 
-  WebContentLayer* ContentLayer() const { return layer_.get(); }
+  cc::PictureLayer* ContentLayer() const { return layer_.get(); }
 
   static void RegisterContentsLayer(WebLayer*);
   static void UnregisterContentsLayer(WebLayer*);
@@ -417,7 +420,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   int paint_count_;
 
-  std::unique_ptr<WebContentLayer> layer_;
+  scoped_refptr<cc::PictureLayer> layer_;
+  std::unique_ptr<WebLayer> web_layer_;  // Wraps |layer_|.
   std::unique_ptr<WebImageLayer> image_layer_;
   WebLayer* contents_layer_;
   // We don't have ownership of contents_layer_, but we do want to know if a
