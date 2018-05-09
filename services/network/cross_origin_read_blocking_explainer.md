@@ -262,16 +262,28 @@ are [part of the JavaScript syntax](https://www.ecma-international.org/ecma-262/
   [normal HTML sniffing](https://mimesniff.spec.whatwg.org/#identifying-a-resource-with-an-unknown-mime-type))
   presence of "`<!--`" string doesn't immediately confirm that the sniffed resource is a
   HTML document - the HTML comment still has to be followed by a valid HTML tag.
-* Additionally if the HTML-style comment contains Javascript-style comments
-  (i.e. either "`/*`" or "`//`" substrings),
-  then CORB conservatively assumes that the resource is not a HTML document.
-  This helps avoid blocking html/javascript polyglots which have been observed
-  in use on real websites - see the example below:
+* Additionally, after the end of a HTML comment, the CORB sniffer will skip all
+  characters until a line terminating character.  This helps accomodate the
+  [`SingleLineHTMLCloseComment`](https://www.ecma-international.org/ecma-262/8.0/index.html#prod-annexB-SingleLineHTMLCloseComment)
+  rule which can consume
+  [`SingleLineCommentChars`](https://www.ecma-international.org/ecma-262/8.0/index.html#prod-SingleLineCommentChars)
+  _after_ the "`-->`" characters.
+
+Examples of html/javascript polyglots which have been observed
+in use on real websites:
 ```js
 <!--/*--><html><body><script type="text/javascript"><!--//*/
 var x = "This is both valid html and valid javascript";
 //--></script></body></html>
 ```
+
+```js
+<!-- comment --> <script type='text/javascript'>
+//<![CDATA[
+var x = "This is both valid html and valid javascript";
+//]]>--></script>
+```
+
 
 ### Protecting XML
 

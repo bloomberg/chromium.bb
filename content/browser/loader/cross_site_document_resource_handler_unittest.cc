@@ -850,10 +850,10 @@ const TestScenario kScenarios[] = {
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
         AccessControlAllowOriginHeader::kOmit,  // cors_response
-        {"    <!--", "\t -", "-", "->", "<", "s", "c", "r", "i", "p",
+        {"    <!--", "\t -", "-", "->", "\n", "<", "s", "c", "r", "i", "p",
          "t"},            // packets
         Verdict::kBlock,  // verdict
-        10,               // verdict_packet
+        11,               // verdict_packet
     },
     {
         "Blocked: slow-arriving html with commented-out xml tag",
@@ -867,8 +867,8 @@ const TestScenario kScenarios[] = {
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
         AccessControlAllowOriginHeader::kOmit,  // cors_response
-        {"    <!--", " <?xml ", "-->", "<", "h", "e", "a", "d"},  // packets
-        Verdict::kBlock,                                          // verdict
+        {"    <!--", " <?xml ", "-->\n", "<", "h", "e", "a", "d"},  // packets
+        Verdict::kBlock,                                            // verdict
         7,  // verdict_packet
     },
     {
