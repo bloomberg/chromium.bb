@@ -76,9 +76,8 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   base::scoped_nsobject<MenuControllerCocoa> contextMenuController_;
 
   enum AttentionType : int {
-    kPinnedTabTitleChange = 1 << 0,     // The title of a pinned tab changed.
-    kBlockedWebContents = 1 << 1,       // The WebContents is marked as blocked.
-    kTabWantsAttentionStatus = 1 << 2,  // SetTabNeedsAttention() was called.
+    kBlockedWebContents = 1 << 0,       // The WebContents is marked as blocked.
+    kTabWantsAttentionStatus = 1 << 1,  // SetTabNeedsAttention() was called.
   };
 }
 
@@ -261,12 +260,11 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
 // a re-draw.
 - (void)internalSetSelected:(BOOL)selected {
   TabView* tabView = [self tabView];
-  if ([self active]) {
+  if ([self active])
     [tabView setState:NSOnState];
-    self.currentAttentionTypes &= ~AttentionType::kPinnedTabTitleChange;
-  } else {
+  else
     [tabView setState:selected ? NSMixedState : NSOffState];
-  }
+
   // The attention indicator must always be updated, as it needs to disappear
   // if a tab is blocked and is brought forward. It is updated at the end of
   // -updateVisibility.
@@ -544,11 +542,6 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
     self.currentAttentionTypes |= AttentionType::kBlockedWebContents;
   else
     self.currentAttentionTypes &= ~AttentionType::kBlockedWebContents;
-}
-
-- (void)titleChangedNotLoading {
-  if ([self pinned] && ![self active])
-    self.currentAttentionTypes |= AttentionType::kPinnedTabTitleChange;
 }
 
 - (void)setNeedsAttention:(bool)attention {

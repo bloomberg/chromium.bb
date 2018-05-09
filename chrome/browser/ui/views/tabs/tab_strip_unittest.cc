@@ -613,29 +613,6 @@ TEST_P(TabStripTest, NewTabButtonStaysVisible) {
   EXPECT_LE(tab_strip_->new_tab_button_bounds().right(), kTabStripWidth);
 }
 
-TEST_P(TabStripTest, AttentionIndicatorHidesOnSelect) {
-  for (int i = 0; i < 2; ++i)
-    controller_->AddTab(i, (i == 0));
-
-  // Two tabs, both pinned.
-  TabRendererData pinned_data;
-  pinned_data.pinned = true;
-  tab_strip_->SetTabData(0, pinned_data);
-  tab_strip_->SetTabData(1, pinned_data);
-
-  EXPECT_FALSE(IsShowingAttentionIndicator(0));
-  EXPECT_FALSE(IsShowingAttentionIndicator(1));
-
-  // Change the title of the second tab (first tab is selected).
-  tab_strip_->TabTitleChangedNotLoading(1);
-  // Indicator should be shown.
-  EXPECT_TRUE(IsShowingAttentionIndicator(1));
-  // Select the second tab.
-  controller_->SelectTab(1);
-  // Indicator should hide.
-  EXPECT_FALSE(IsShowingAttentionIndicator(1));
-}
-
 // The active tab should always be at least as wide as its minimum width.
 // http://crbug.com/587688
 TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {

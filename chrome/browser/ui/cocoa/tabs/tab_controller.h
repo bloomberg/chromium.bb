@@ -86,9 +86,6 @@ enum TabLoadingState {
 // Sets the current tab alert state and updates the views.
 - (void)setAlertState:(TabAlertState)alertState;
 
-// Notifies the tab that its title changed outside of loading.
-- (void)titleChangedNotLoading;
-
 // Sets the tab to display that it needs attention from the user.
 - (void)setNeedsAttention:(bool)attention;
 

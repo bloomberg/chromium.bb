@@ -1649,12 +1649,6 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 
   TabController* tabController = [tabArray_ objectAtIndex:index];
 
-  if (change == TabChangeType::kTitleNotLoading) {
-    [tabController titleChangedNotLoading];
-    // We'll receive another notification of the change asynchronously.
-    return;
-  }
-
   if (change != TabChangeType::kLoadingOnly)
     [self setTabTitle:tabController withContents:contents];
 

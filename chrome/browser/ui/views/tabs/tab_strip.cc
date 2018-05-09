@@ -709,10 +709,6 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& old_selection,
       ->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
 }
 
-void TabStrip::TabTitleChangedNotLoading(int model_index) {
-  tab_at(model_index)->TabTitleChangedNotLoading();
-}
-
 void TabStrip::SetTabNeedsAttention(int model_index, bool attention) {
   tab_at(model_index)->SetTabNeedsAttention(attention);
 }

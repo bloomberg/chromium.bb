@@ -2242,16 +2242,6 @@ void Browser::ScheduleUIUpdate(WebContents* source,
     // changed_flags.
   }
 
-  if (changed_flags & content::INVALIDATE_TYPE_TITLE && !source->IsLoading()) {
-    // To correctly calculate whether the title changed while not loading
-    // we need to process the update synchronously. This state only matters for
-    // the TabStripModel, so we notify the TabStripModel now and notify others
-    // asynchronously.
-    tab_strip_model_->UpdateWebContentsStateAt(
-        tab_strip_model_->GetIndexOfWebContents(source),
-        TabChangeType::kTitleNotLoading);
-  }
-
   // If the only updates were synchronously handled above, we're done.
   if (changed_flags == 0)
     return;

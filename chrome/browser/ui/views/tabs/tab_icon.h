@@ -28,9 +28,8 @@ class TabIcon : public views::View {
   // representation, but the state of each of these is tracked separately and
   // the indicator is shown as long as one is enabled.
   enum class AttentionType {
-    kPinnedTabTitleChange = 1 << 0,     // The title of a pinned tab changed.
-    kBlockedWebContents = 1 << 1,       // The WebContents is marked as blocked.
-    kTabWantsAttentionStatus = 1 << 2,  // Tab::SetTabNeedsAttention() called.
+    kBlockedWebContents = 1 << 0,       // The WebContents is marked as blocked.
+    kTabWantsAttentionStatus = 1 << 1,  // Tab::SetTabNeedsAttention() called.
   };
 
   TabIcon();

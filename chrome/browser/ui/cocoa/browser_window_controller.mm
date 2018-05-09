@@ -1480,15 +1480,11 @@ bool IsTabDetachingInFullscreenEnabled() {
   if (change != TabChangeType::kLoadingOnly)
     windowShim_->UpdateTitleBar();
 
-  // Update the bookmark bar if this is the currently selected tab and if it
-  // isn't just the title which changed. This for transitions between the NTP
-  // (showing its floating bookmark bar) and normal web pages (showing no
-  // bookmark bar).
+  // Update the bookmark bar if this is the currently selected tab. This for
+  // transitions between the NTP (showing its floating bookmark bar) and normal
+  // web pages (showing no bookmark bar).
   // TODO(viettrungluu): perhaps update to not terminate running animations?
-  if (change != TabChangeType::kTitleNotLoading) {
-    windowShim_->BookmarkBarStateChanged(
-        BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
-  }
+  windowShim_->BookmarkBarStateChanged(BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 }
 
 - (void)onTabDetachedWithContents:(WebContents*)contents {
