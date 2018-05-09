@@ -50,7 +50,8 @@ testcase.togglePlayState = function() {
 };
 
 /**
- * Confirms that the default volume is 50 and volume button mutes/unmutes audio.
+ * Confirms that the AudioPlayer default volume is 50 and that clicking the
+ * volume button mutes / unmutes the volume label.
  * @return {Promise} Promise to be fulfilled with on success.
  */
 testcase.changeVolumeLevel = function() {
@@ -59,11 +60,11 @@ testcase.changeVolumeLevel = function() {
   return openAudio.then(function(args) {
     appId = args[0];
   }).then(function() {
-    // The default volume level should be 50.
+    // The Audio Player default volume level should be 50.
     return remoteCallAudioPlayer.waitForElement(
         appId, ['control-panel[volume="50"]']);
   }).then(function() {
-    // Clicking volume button should mute the player.
+    // Clicking the volume button should mute the player.
     return remoteCallAudioPlayer.callRemoteTestUtil(
         'fakeMouseClick', appId, ['#volumeButton']);
   }).then(function() {
@@ -74,7 +75,7 @@ testcase.changeVolumeLevel = function() {
           appId, ['#volumeButton[aria-label="Unmute"]'])
     ]);
   }).then(function() {
-    // Clicking volume button again should restore volume.
+    // Clicking it again should unmute and restore the volume.
     return remoteCallAudioPlayer.callRemoteTestUtil(
         'fakeMouseClick', appId, ['#volumeButton']);
   }).then(function() {
