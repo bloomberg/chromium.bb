@@ -21,9 +21,9 @@ import org.chromium.ui.base.WindowAndroid;
  * callback to trigger when selecting them.
  */
 class KeyboardAccessoryMediator
-        implements KeyboardAccessoryData.ActionListObserver,
-                   WindowAndroid.KeyboardVisibilityListener, ListObservable.ListObserver,
-                   PropertyObservable.PropertyObserver<KeyboardAccessoryModel.PropertyKey> {
+        implements WindowAndroid.KeyboardVisibilityListener, ListObservable.ListObserver,
+                   PropertyObservable.PropertyObserver<KeyboardAccessoryModel.PropertyKey>,
+                   KeyboardAccessoryData.Observer<KeyboardAccessoryData.Action> {
     private final KeyboardAccessoryModel mModel;
     private final WindowAndroid mWindowAndroid;
 
@@ -48,7 +48,7 @@ class KeyboardAccessoryMediator
     }
 
     @Override
-    public void onActionsAvailable(KeyboardAccessoryData.Action[] actions) {
+    public void onItemsAvailable(KeyboardAccessoryData.Action[] actions) {
         mModel.setActions(actions);
     }
 

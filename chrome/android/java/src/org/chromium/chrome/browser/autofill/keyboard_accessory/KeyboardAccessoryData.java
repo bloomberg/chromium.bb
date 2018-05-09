@@ -4,33 +4,39 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Interfaces in this class are used to pass data into keyboard accessory component.
  */
 public class KeyboardAccessoryData {
     /**
-     * A provider notifies all registered {@link ActionListObserver} if the list of actions
+     * A provider notifies all registered {@link Observer} if the list of actions
      * changes.
+     * TODO(fhorschig): Replace with android.databinding.ObservableField if available.
+     * @param <T> Either an {@link Action} or a {@link Tab} that this instance provides.
      */
-    public interface ActionListProvider {
+    public interface Provider<T> {
         /**
-         * Every observer added by this need to be notified whenever the list of action changes
+         * Every observer added by this need to be notified whenever the list of items changes.
          * @param observer The observer to be notified.
          */
-        void addObserver(ActionListObserver observer);
+        void addObserver(Observer<T> observer);
     }
 
     /**
-     * An observer receives notifications from an {@link ActionListProvider} it is subscribed to.
+     * An observer receives notifications from an {@link Provider} it is subscribed to.
+     * @param <T> Either an {@link Action} or a {@link Tab} that this instance observes.
      */
-    public interface ActionListObserver {
+    public interface Observer<T> {
         /**
-         * A provider calls this function with a list of actions that should be available in the
+         * A provider calls this function with a list of items that should be available in the
          * keyboard accessory.
          * @param actions The actions to be displayed in the Accessory. It's a native array as the
          *                provider is typically a bridge called via JNI which prefers native types.
          */
-        void onActionsAvailable(Action[] actions);
+        void onItemsAvailable(T[] actions);
     }
 
     /**
@@ -58,6 +64,30 @@ public class KeyboardAccessoryData {
         }
         String getCaption();
         Delegate getDelegate();
+    }
+
+    /**
+     * A simple class that holds a list of {@link Observer}s which can be notified about new data by
+     * directly passing that data into {@link PropertyProvider#notifyObservers(T[])}.
+     * @param <T> Either {@link Action}s or {@link Tab}s provided by this class.
+     */
+    public static class PropertyProvider<T> implements Provider<T> {
+        private final List<Observer<T>> mObservers = new ArrayList<>();
+
+        @Override
+        public void addObserver(Observer<T> observer) {
+            mObservers.add(observer);
+        }
+
+        /**
+         * Passes the given items to all subscribed {@link Observer}s.
+         * @param items The array of items to be passed to the {@link Observer}s.
+         */
+        public void notifyObservers(T[] items) {
+            for (Observer<T> observer : mObservers) {
+                observer.onItemsAvailable(items);
+            }
+        }
     }
 
     private KeyboardAccessoryData() {}
