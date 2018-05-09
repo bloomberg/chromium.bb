@@ -26,6 +26,8 @@ source_set("unified_consent_ui") {
   sources = [
     "identity_picker_view.h",
     "identity_picker_view.mm",
+    "identity_view.h",
+    "identity_view.mm",
     "unified_consent_view_controller.h",
     "unified_consent_view_controller.mm",
   ]
