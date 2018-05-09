@@ -4,6 +4,7 @@
 
 
 from telemetry import story as story_module
+from telemetry.core import platform as p_module
 
 
 class SharedBrowserlessStory(story_module.SharedState):
@@ -18,7 +19,7 @@ class SharedBrowserlessStory(story_module.SharedState):
 
   @property
   def platform(self):
-    return None
+    p_module.GetHostPlatform()
 
   def WillRunStory(self, unused_page):
     return
