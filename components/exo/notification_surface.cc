@@ -5,6 +5,7 @@
 #include "components/exo/notification_surface.h"
 
 #include "components/exo/notification_surface_manager.h"
+#include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
@@ -31,6 +32,11 @@ NotificationSurface::~NotificationSurface() {
 
 const gfx::Size& NotificationSurface::GetContentSize() const {
   return root_surface()->content_size();
+}
+
+void NotificationSurface::SetApplicationId(const char* application_id) {
+  exo::ShellSurface::SetApplicationId(host_window(),
+                                      base::make_optional(application_id));
 }
 
 void NotificationSurface::OnSurfaceCommit() {
