@@ -987,6 +987,32 @@ TEST_P(CompositedLayerMappingTest, InterestRectOfIframeWithFixedContents) {
   EXPECT_EQ(IntRect(1000, 0, 4400, 300), RecomputeInterestRect(graphics_layer));
 }
 
+TEST_P(CompositedLayerMappingTest, ScrolledFixedPositionInterestRect) {
+  GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
+      true);
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin:0; } ::-webkit-scrollbar { display:none; }</style>
+    <div id="fixed" style="position: fixed;">
+      <div style="background: blue; width: 30px; height: 30px;"></div>
+      <div style="position: absolute; transform: translateY(-4500px);
+          top: 0; left: 0; width: 100px; height: 100px;"></div>
+    </div>
+    <div id="forcescroll" style="height: 2000px;"></div>
+  )HTML");
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  auto* fixed = GetDocument().getElementById("fixed")->GetLayoutObject();
+  auto* graphics_layer = fixed->EnclosingLayer()->GraphicsLayerBacking(fixed);
+  EXPECT_EQ(IntRect(0, 500, 100, 4030), RecomputeInterestRect(graphics_layer));
+
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0.0, 200.0), kProgrammaticScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // Because the fixed element does not scroll, the interest rect is unchanged.
+  EXPECT_EQ(IntRect(0, 500, 100, 4030), RecomputeInterestRect(graphics_layer));
+}
+
 TEST_P(CompositedLayerMappingTest,
        ScrollingContentsAndForegroundLayerPaintingPhase) {
   GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
