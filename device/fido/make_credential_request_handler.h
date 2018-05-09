@@ -24,8 +24,7 @@ class Connector;
 
 namespace device {
 
-class FidoDevice;
-class FidoTask;
+class FidoAuthenticator;
 class AuthenticatorMakeCredentialResponse;
 
 using RegisterResponseCallback = base::OnceCallback<
@@ -44,7 +43,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
 
  private:
   // FidoRequestHandlerBase:
-  std::unique_ptr<FidoTask> CreateTaskForNewDevice(FidoDevice* device) final;
+  void DispatchRequest(FidoAuthenticator* authenticator) final;
 
   CtapMakeCredentialRequest request_parameter_;
   AuthenticatorSelectionCriteria authenticator_selection_criteria_;

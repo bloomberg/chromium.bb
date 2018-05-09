@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "device/fido/fake_fido_discovery.h"
@@ -83,6 +84,16 @@ class FakeFidoTask : public FidoTask {
   base::WeakPtrFactory<FakeFidoTask> weak_factory_;
 };
 
+class FakeFidoAuthenticator : public FidoDeviceAuthenticator {
+ public:
+  FakeFidoAuthenticator(FidoDevice* device) : FidoDeviceAuthenticator(device) {}
+
+  void RunFakeTask(FakeTaskCallback callback) {
+    SetTaskForTesting(
+        std::make_unique<FakeFidoTask>(device(), std::move(callback)));
+  }
+};
+
 class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
  public:
   FakeFidoRequestHandler(const base::flat_set<FidoTransportProtocol>& protocols,
@@ -95,15 +106,19 @@ class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
   }
   ~FakeFidoRequestHandler() override = default;
 
-  std::unique_ptr<FidoTask> CreateTaskForNewDevice(
+  void DispatchRequest(FidoAuthenticator* authenticator) override {
+    static_cast<FakeFidoAuthenticator*>(authenticator)
+        ->RunFakeTask(
+            base::BindOnce(&FakeFidoRequestHandler::OnAuthenticatorResponse,
+                           weak_factory_.GetWeakPtr(), authenticator));
+  }
+
+  std::unique_ptr<FidoDeviceAuthenticator> CreateAuthenticatorFromDevice(
       FidoDevice* device) override {
-    return std::make_unique<FakeFidoTask>(
-        device, base::BindOnce(&FakeFidoRequestHandler::OnDeviceResponse,
-                               weak_factory_.GetWeakPtr(), device));
+    return std::make_unique<FakeFidoAuthenticator>(device);
   }
 
  private:
-  FakeHandlerCallback callback_;
   base::WeakPtrFactory<FakeFidoRequestHandler> weak_factory_;
 };
 

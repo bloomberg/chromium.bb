@@ -22,8 +22,7 @@ class Connector;
 
 namespace device {
 
-class FidoDevice;
-class FidoTask;
+class FidoAuthenticator;
 class AuthenticatorGetAssertionResponse;
 
 using SignResponseCallback =
@@ -42,7 +41,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
 
  private:
   // FidoRequestHandlerBase:
-  std::unique_ptr<FidoTask> CreateTaskForNewDevice(FidoDevice* device) override;
+  void DispatchRequest(FidoAuthenticator* authenticator) override;
 
   CtapGetAssertionRequest request_;
   base::WeakPtrFactory<GetAssertionRequestHandler> weak_factory_;
