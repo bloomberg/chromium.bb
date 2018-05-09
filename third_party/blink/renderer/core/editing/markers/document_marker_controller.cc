@@ -273,17 +273,17 @@ void DocumentMarkerController::AddMarkerInternal(
 
     DocumentMarker* const new_marker = create_marker_from_offsets(
         start_offset_in_current_container, end_offset_in_current_container);
-    AddMarkerToNode(&node, new_marker);
+    AddMarkerToNode(node, new_marker);
   }
 }
 
-void DocumentMarkerController::AddMarkerToNode(const Node* node,
+void DocumentMarkerController::AddMarkerToNode(const Node& node,
                                                DocumentMarker* new_marker) {
   possibly_existing_marker_types_.Add(new_marker->GetType());
   SetContext(document_);
 
   Member<MarkerLists>& markers =
-      markers_.insert(node, nullptr).stored_value->value;
+      markers_.insert(&node, nullptr).stored_value->value;
   if (!markers) {
     markers = new MarkerLists;
     markers->Grow(DocumentMarker::kMarkerTypeIndexesCount);
@@ -296,7 +296,7 @@ void DocumentMarkerController::AddMarkerToNode(const Node* node,
   DocumentMarkerList* const list = ListForType(markers, new_marker_type);
   list->Add(new_marker);
 
-  InvalidatePaintForNode(*node);
+  InvalidatePaintForNode(node);
 }
 
 // Moves markers from src_node to dst_node. Markers are moved if their start
