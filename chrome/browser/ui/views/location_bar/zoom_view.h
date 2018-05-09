@@ -20,7 +20,8 @@ class ZoomView : public BubbleIconView {
   // WebContents. Because the current WebContents changes as the user switches
   // tabs, a LocationBarView::Delegate is supplied to queried for the current
   // WebContents when needed.
-  explicit ZoomView(LocationBarView::Delegate* location_bar_delegate);
+  ZoomView(LocationBarView::Delegate* location_bar_delegate,
+           BubbleIconView::Delegate* delegate);
   ~ZoomView() override;
 
   // Updates the image and its tooltip appropriately, hiding or showing the icon

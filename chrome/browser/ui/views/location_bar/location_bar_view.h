@@ -242,9 +242,6 @@ class LocationBarView : public LocationBar,
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
 
-  // BubbleIconView::Delegate:
-  content::WebContents* GetWebContentsForBubbleIconView() override;
-
   // ZoomEventManagerObserver:
   // Updates the view for the zoom icon when default zoom levels change.
   void OnDefaultZoomLevelChanged() override;
@@ -373,6 +370,10 @@ class LocationBarView : public LocationBar,
   bool CanStartDragForView(View* sender,
                            const gfx::Point& press_pt,
                            const gfx::Point& p) override;
+
+  // BubbleIconView::Delegate:
+  content::WebContents* GetWebContentsForBubbleIconView() override;
+  OmniboxTint GetTint() override;
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;

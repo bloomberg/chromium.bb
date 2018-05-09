@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/controls/image_view.h"
@@ -35,6 +36,7 @@ class BubbleIconView : public views::InkDropHostView {
   class Delegate {
    public:
     virtual content::WebContents* GetWebContentsForBubbleIconView() = 0;
+    virtual OmniboxTint GetTint() = 0;
   };
 
   void Init();
@@ -59,7 +61,7 @@ class BubbleIconView : public views::InkDropHostView {
 
   BubbleIconView(CommandUpdater* command_updater,
                  int command_id,
-                 Delegate* delegate = nullptr);
+                 Delegate* delegate);
   ~BubbleIconView() override;
 
   // Returns true if a related bubble is showing.
@@ -98,6 +100,7 @@ class BubbleIconView : public views::InkDropHostView {
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
