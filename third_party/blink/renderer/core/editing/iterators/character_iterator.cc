@@ -63,8 +63,8 @@ const Document& CharacterIteratorAlgorithm<Strategy>::OwnerDocument() const {
 }
 
 template <typename Strategy>
-const Node* CharacterIteratorAlgorithm<Strategy>::CurrentContainer() const {
-  return &text_iterator_.CurrentContainer();
+const Node& CharacterIteratorAlgorithm<Strategy>::CurrentContainer() const {
+  return text_iterator_.CurrentContainer();
 }
 
 template <typename Strategy>
