@@ -148,8 +148,12 @@ void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
 
   // Determine the max file size.
   uint64_t max_log_file_size = net_log::NetExportFileWriter::kNoLimit;
-  if (params.size() > 1 && params[1].is_int() && params[1].GetInt() > 0) {
-    max_log_file_size = params[1].GetInt();
+  // Unlike in desktop/Android net_export_ui, the size limit here is encoded
+  // into a base::Value as a double; this is a behavior difference between
+  // ValueResultFromWKResult and V8ValueConverter[Impl]::FromV8Value[Impl].
+  if (params.size() > 1 && (params[1].is_int() || params[1].is_double()) &&
+      params[1].GetDouble() > 0.0) {
+    max_log_file_size = params[1].GetDouble();
   }
 
   file_writer_->StartNetLog(
