@@ -206,9 +206,6 @@ class LockManager::OriginState {
   }
 
   void ProcessRequests(LockManager* lock_manager, const url::Origin& origin) {
-    if (requested_.empty())
-      return;
-
     shared_.clear();
     exclusive_.clear();
     for (const auto& id_lock_pair : held_) {
