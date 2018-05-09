@@ -304,7 +304,8 @@ function testTeamDriveDirectoryEntry(callback) {
         // "share" action is enabled for Team Drive directories.
         var shareAction = actions[ActionsModel.CommonActionId.SHARE];
         assertTrue(!!shareAction);
-        assertTrue(shareAction.canExecute());
+        // TODO(sashab): Re-enable when 'Manage' works for directories.
+        assertFalse(shareAction.canExecute());
 
         // "manage in drive" action is disabled for Team Drive directories.
         var manageAction =

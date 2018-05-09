@@ -71,13 +71,20 @@ function DriveShareAction(entry, volumeManager, ui) {
  * @param {!Array<!Entry>} entries
  * @param {!ActionModelUI} ui
  * @param {!VolumeManagerWrapper} volumeManager
- * @return {DriveShareAction}
+ * @return {DriveShareAction|DriveManageAction}
  */
 DriveShareAction.create = function(entries, volumeManager, ui) {
   if (entries.length !== 1)
     return null;
 
-  return new DriveShareAction(entries[0], volumeManager, ui);
+  // The share URL for Team Drives currently does not support embedding. For
+  // Team Drives entries, instead point the user to the 'Manage' action.
+  var entry = entries[0];
+  if (util.isTeamDriveEntry(entry)) {
+    return new DriveManageAction(entry, volumeManager, ui);
+  }
+
+  return new DriveShareAction(entry, volumeManager, ui);
 };
 
 /**
