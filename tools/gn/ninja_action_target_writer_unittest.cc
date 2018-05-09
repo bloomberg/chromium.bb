@@ -409,3 +409,77 @@ TEST(NinjaActionTargetWriter, ForEachWithPool) {
       "build obj/foo/bar.stamp: stamp input1.out\n";
   EXPECT_EQ(expected_linux, out.str());
 }
+
+TEST(NinjaActionTargetWriter, NoTransitiveHardDeps) {
+  Err err;
+  TestWithScope setup;
+
+  setup.build_settings()->set_python_path(
+      base::FilePath(FILE_PATH_LITERAL("/usr/bin/python")));
+
+  Target dep(setup.settings(), Label(SourceDir("//foo/"), "dep"));
+  dep.set_output_type(Target::ACTION);
+  dep.visibility().SetPublic();
+  dep.SetToolchain(setup.toolchain());
+  ASSERT_TRUE(dep.OnResolved(&err));
+
+  Target foo(setup.settings(), Label(SourceDir("//foo/"), "foo"));
+  foo.set_output_type(Target::ACTION);
+  foo.visibility().SetPublic();
+  foo.sources().push_back(SourceFile("//foo/input1.txt"));
+  foo.action_values().set_script(SourceFile("//foo/script.py"));
+  foo.private_deps().push_back(LabelTargetPair(&dep));
+  foo.SetToolchain(setup.toolchain());
+  foo.action_values().outputs() =
+      SubstitutionList::MakeForTest("//out/Debug/foo.out");
+  ASSERT_TRUE(foo.OnResolved(&err));
+
+  {
+    std::ostringstream out;
+    NinjaActionTargetWriter writer(&foo, out);
+    writer.Run();
+
+    const char expected_linux[] =
+        "rule __foo_foo___rule\n"
+        // These come from the args.
+        "  command = /usr/bin/python ../../foo/script.py\n"
+        "  description = ACTION //foo:foo()\n"
+        "  restat = 1\n"
+        "\n"
+        "build foo.out: __foo_foo___rule | ../../foo/script.py"
+        " ../../foo/input1.txt obj/foo/dep.stamp\n"
+        "\n"
+        "build obj/foo/foo.stamp: stamp foo.out\n";
+    EXPECT_EQ(expected_linux, out.str());
+  }
+
+  Target bar(setup.settings(), Label(SourceDir("//bar/"), "bar"));
+  bar.set_output_type(Target::ACTION);
+  bar.sources().push_back(SourceFile("//bar/input1.txt"));
+  bar.action_values().set_script(SourceFile("//bar/script.py"));
+  bar.private_deps().push_back(LabelTargetPair(&foo));
+  bar.SetToolchain(setup.toolchain());
+  bar.action_values().outputs() =
+      SubstitutionList::MakeForTest("//out/Debug/bar.out");
+  ASSERT_TRUE(bar.OnResolved(&err)) << err.message();
+
+  {
+    std::ostringstream out;
+    NinjaActionTargetWriter writer(&bar, out);
+    writer.Run();
+
+    const char expected_linux[] =
+        "rule __bar_bar___rule\n"
+        // These come from the args.
+        "  command = /usr/bin/python ../../bar/script.py\n"
+        "  description = ACTION //bar:bar()\n"
+        "  restat = 1\n"
+        "\n"
+        // Do not have obj/foo/dep.stamp as dependency.
+        "build bar.out: __bar_bar___rule | ../../bar/script.py"
+        " ../../bar/input1.txt obj/foo/foo.stamp\n"
+        "\n"
+        "build obj/bar/bar.stamp: stamp bar.out\n";
+    EXPECT_EQ(expected_linux, out.str());
+  }
+}
