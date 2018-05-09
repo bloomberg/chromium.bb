@@ -1106,9 +1106,8 @@ NSString* StringForItemCount(long count) {
 }
 
 - (void)tabModelDidChangeTabCount:(TabModel*)model {
-  const NSUInteger tabCount = [_tabArray count] - [_closingTabs count];
   if (IsUIRefreshPhase1Enabled()) {
-    [_tabSwitcherButton setTitle:StringForItemCount(tabCount)
+    [_tabSwitcherButton setTitle:StringForItemCount(model.count)
                         forState:UIControlStateNormal];
   }
 }
@@ -1171,6 +1170,7 @@ NSString* StringForItemCount(long count) {
   [_tabSwitcherButton addTarget:self
                          action:@selector(recordUserMetrics:)
                forControlEvents:UIControlEventTouchUpInside];
+  [self tabModelDidChangeTabCount:_tabModel];
 
   SetA11yLabelAndUiAutomationName(_tabSwitcherButton,
                                   tabSwitcherButtonIdsAccessibilityLabel,
