@@ -63,6 +63,8 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tag_name,
       validity_is_dirty_(false),
       blocks_form_submission_(false) {
   SetHasCustomStyleCallbacks();
+  static unsigned next_free_unique_id = 0;
+  unique_renderer_form_control_id_ = next_free_unique_id++;
 }
 
 HTMLFormControlElement::~HTMLFormControlElement() = default;

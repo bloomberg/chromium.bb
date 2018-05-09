@@ -75,7 +75,10 @@ HTMLFormElement::HTMLFormElement(Document& document)
       has_elements_associated_by_form_attribute_(false),
       did_finish_parsing_children_(false),
       is_in_reset_function_(false),
-      was_demoted_(false) {}
+      was_demoted_(false) {
+  static unsigned next_nique_renderer_form_id = 0;
+  unique_renderer_form_id_ = next_nique_renderer_form_id++;
+}
 
 HTMLFormElement* HTMLFormElement::Create(Document& document) {
   UseCounter::Count(document, WebFeature::kFormElement);

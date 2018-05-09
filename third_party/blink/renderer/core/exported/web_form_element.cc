@@ -58,6 +58,10 @@ WebString WebFormElement::Method() const {
   return ConstUnwrap<HTMLFormElement>()->method();
 }
 
+unsigned WebFormElement::UniqueRendererFormId() const {
+  return ConstUnwrap<HTMLFormElement>()->UniqueRendererFormId();
+}
+
 void WebFormElement::GetFormControlElements(
     WebVector<WebFormControlElement>& result) const {
   const HTMLFormElement* form = ConstUnwrap<HTMLFormElement>();

@@ -112,6 +112,8 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   void ConstructFormDataSet(HTMLFormControlElement* submit_button,
                             FormData& form_data);
 
+  unsigned UniqueRendererFormId() const { return unique_renderer_form_id_; }
+
  private:
   explicit HTMLFormElement(Document&);
 
@@ -172,6 +174,8 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   // Unlike the specification, we use this only for web-exposed submit()
   // function in 'submit' event handler.
   Member<FormSubmission> planned_navigation_;
+
+  unsigned unique_renderer_form_id_;
 
   bool is_submitting_ = false;
   bool in_user_js_submit_event_ = false;
