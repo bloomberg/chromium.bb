@@ -4,15 +4,20 @@
 
 #include "chrome/browser/vr/elements/text.h"
 
+#include "base/i18n/char_iterator.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/vr/elements/render_text_wrapper.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
+#include "chrome/browser/vr/font_fallback.h"
+#include "third_party/icu/source/common/unicode/uscript.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/render_text.h"
+#include "ui/gfx/shadow_value.h"
+#include "ui/gfx/text_elider.h"
 
 namespace vr {
 
@@ -21,6 +26,7 @@ namespace {
 constexpr float kCursorWidthRatio = 0.07f;
 constexpr int kTextPixelPerDmm = 1100;
 constexpr float kTextShadowScaleFactor = 1000.0f;
+constexpr char kDefaultFontFamily[] = "sans-serif";
 
 int DmmToPixel(float dmm) {
   return static_cast<int>(dmm * kTextPixelPerDmm);
@@ -32,6 +38,160 @@ float PixelToDmm(int pixel) {
 
 bool IsFixedWidthLayout(TextLayoutMode mode) {
   return mode == kSingleLineFixedWidth || mode == kMultiLineFixedWidth;
+}
+
+std::unique_ptr<gfx::RenderText> CreateRenderText(
+    const base::string16& text,
+    const gfx::FontList& font_list,
+    SkColor color,
+    TextAlignment text_alignment,
+    bool shadows_enabled,
+    SkColor shadow_color,
+    float shadow_size) {
+  auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
+
+  // Disable the cursor to avoid reserving width for a trailing caret.
+  render_text->SetCursorEnabled(false);
+
+  // Subpixel rendering is counterproductive when drawing VR textures.
+  render_text->set_subpixel_rendering_suppressed(true);
+
+  render_text->SetText(text);
+  render_text->SetFontList(font_list);
+  render_text->SetColor(color);
+  if (shadows_enabled) {
+    render_text->set_shadows(
+        {gfx::ShadowValue({0, 0}, shadow_size, shadow_color)});
+  }
+
+  switch (text_alignment) {
+    case kTextAlignmentNone:
+      break;
+    case kTextAlignmentLeft:
+      render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+      break;
+    case kTextAlignmentRight:
+      render_text->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+      break;
+    case kTextAlignmentCenter:
+      render_text->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+      break;
+  }
+
+  const int font_style = font_list.GetFontStyle();
+  render_text->SetStyle(gfx::ITALIC, (font_style & gfx::Font::ITALIC) != 0);
+  render_text->SetStyle(gfx::UNDERLINE,
+                        (font_style & gfx::Font::UNDERLINE) != 0);
+  render_text->SetWeight(font_list.GetFontWeight());
+
+  return render_text;
+}
+
+std::set<UChar32> CollectDifferentChars(base::string16 text) {
+  std::set<UChar32> characters;
+  for (base::i18n::UTF16CharIterator it(&text); !it.end(); it.Advance()) {
+    characters.insert(it.get());
+  }
+  return characters;
+}
+
+bool GetFontList(const std::string& preferred_font_name,
+                 int font_size,
+                 base::string16 text,
+                 gfx::FontList* font_list) {
+  gfx::Font preferred_font(preferred_font_name, font_size);
+  std::vector<gfx::Font> fonts{preferred_font};
+
+  std::set<std::string> names;
+  // TODO(acondor): Query BrowserProcess to obtain the application locale.
+  for (UChar32 c : CollectDifferentChars(text)) {
+    std::string name;
+    bool found_name = GetFallbackFontNameForChar(preferred_font, c, "", &name);
+    if (!found_name)
+      return false;
+    if (!name.empty())
+      names.insert(name);
+  }
+  for (const auto& name : names) {
+    DCHECK(!name.empty());
+    fonts.push_back(gfx::Font(name, font_size));
+  }
+  *font_list = gfx::FontList(fonts);
+  return true;
+}
+
+std::vector<std::unique_ptr<gfx::RenderText>> PrepareDrawStringRect(
+    const base::string16& text,
+    const gfx::FontList& font_list,
+    gfx::Rect* bounds,
+    const TextRenderParameters& parameters) {
+  DCHECK(bounds);
+
+  std::vector<std::unique_ptr<gfx::RenderText>> lines;
+
+  if (parameters.wrapping_behavior == kWrappingBehaviorWrap) {
+    DCHECK(!parameters.cursor_enabled);
+
+    gfx::Rect rect(*bounds);
+    std::vector<base::string16> strings;
+    gfx::ElideRectangleText(text, font_list, bounds->width(),
+                            bounds->height() ? bounds->height() : INT_MAX,
+                            gfx::WRAP_LONG_WORDS, &strings);
+
+    int height = 0;
+    int line_height = 0;
+    for (size_t i = 0; i < strings.size(); i++) {
+      std::unique_ptr<gfx::RenderText> render_text = CreateRenderText(
+          strings[i], font_list, parameters.color, parameters.text_alignment,
+          parameters.shadows_enabled, parameters.shadow_color,
+          parameters.shadow_size);
+
+      if (i == 0) {
+        // Measure line and center text vertically.
+        line_height = render_text->GetStringSize().height();
+        rect.set_height(line_height);
+        if (bounds->height()) {
+          const int text_height = strings.size() * line_height;
+          rect += gfx::Vector2d(0, (bounds->height() - text_height) / 2);
+        }
+      }
+
+      render_text->SetDisplayRect(rect);
+      height += line_height;
+      rect += gfx::Vector2d(0, line_height);
+      lines.push_back(std::move(render_text));
+    }
+
+    // Set calculated height.
+    if (bounds->height() == 0)
+      bounds->set_height(height);
+  } else {
+    std::unique_ptr<gfx::RenderText> render_text =
+        CreateRenderText(text, font_list, parameters.color,
+                         parameters.text_alignment, parameters.shadows_enabled,
+                         parameters.shadow_color, parameters.shadow_size);
+    if (bounds->width() != 0 && !parameters.cursor_enabled)
+      render_text->SetElideBehavior(gfx::TRUNCATE);
+    if (parameters.cursor_enabled) {
+      render_text->SetCursorEnabled(true);
+      render_text->SetCursorPosition(parameters.cursor_position);
+    }
+
+    if (bounds->width() == 0)
+      bounds->set_width(render_text->GetStringSize().width());
+    if (bounds->height() == 0)
+      bounds->set_height(render_text->GetStringSize().height());
+
+    render_text->SetDisplayRect(*bounds);
+    lines.push_back(std::move(render_text));
+  }
+
+  if (parameters.shadows_enabled) {
+    bounds->Inset(-parameters.shadow_size, -parameters.shadow_size);
+    bounds->Offset(parameters.shadow_size, parameters.shadow_size);
+  }
+
+  return lines;
 }
 
 }  // namespace
@@ -235,7 +395,7 @@ void Text::SetFormatting(const TextFormatting& formatting) {
   texture_->SetFormatting(formatting);
 }
 
-void Text::SetAlignment(UiTexture::TextAlignment alignment) {
+void Text::SetAlignment(TextAlignment alignment) {
   texture_->SetAlignment(alignment);
 }
 
@@ -338,7 +498,7 @@ gfx::Size TextTexture::LayOutText() {
   }
 
   gfx::FontList fonts;
-  if (!GetDefaultFontList(pixel_font_height, text_, &fonts) ||
+  if (!GetFontList(kDefaultFontFamily, pixel_font_height, text_, &fonts) ||
       unsupported_code_point_for_test_) {
     if (unhandled_codepoint_callback_)
       unhandled_codepoint_callback_.Run();
@@ -355,10 +515,7 @@ gfx::Size TextTexture::LayOutText() {
   parameters.shadows_enabled = shadows_enabled_;
   parameters.shadow_size = kTextShadowScaleFactor * font_height_dmms_;
 
-  lines_ =
-      // TODO(vollick): if this subsumes all text, then we should probably move
-      // this function into this class.
-      PrepareDrawStringRect(text_, fonts, &text_bounds, parameters);
+  lines_ = PrepareDrawStringRect(text_, fonts, &text_bounds, parameters);
 
   if (cursor_enabled_) {
     DCHECK_EQ(lines_.size(), 1u);

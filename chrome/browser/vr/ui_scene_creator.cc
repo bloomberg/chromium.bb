@@ -166,7 +166,7 @@ void OnSuggestionModelAdded(UiScene* scene,
   content_text->SetType(kTypeOmniboxSuggestionContentText);
   content_text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
   content_text->SetFieldWidth(kSuggestionTextFieldWidthDMM);
-  content_text->SetAlignment(UiTexture::kTextAlignmentLeft);
+  content_text->SetAlignment(kTextAlignmentLeft);
   Text* p_content_text = content_text.get();
 
   auto description_text =
@@ -175,7 +175,7 @@ void OnSuggestionModelAdded(UiScene* scene,
   description_text->SetType(kTypeOmniboxSuggestionDescriptionText);
   description_text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
   description_text->SetFieldWidth(kSuggestionTextFieldWidthDMM);
-  description_text->SetAlignment(UiTexture::kTextAlignmentLeft);
+  description_text->SetAlignment(kTextAlignmentLeft);
   Text* p_description_text = description_text.get();
 
   auto text_layout = std::make_unique<LinearLayout>(LinearLayout::kDown);
@@ -386,7 +386,7 @@ std::unique_ptr<UiElement> CreatePrompt(Model* model) {
   auto text = Create<Text>(kNone, kPhaseForeground, kPromptFontSize);
   text->SetType(kTypePromptText);
   text->SetLayoutMode(kMultiLineFixedWidth);
-  text->SetAlignment(UiTexture::kTextAlignmentLeft);
+  text->SetAlignment(kTextAlignmentLeft);
   text->SetFieldWidth(kPromptTextWidth);
   VR_BIND_COLOR(model, text.get(), &ColorScheme::modal_prompt_foreground,
                 &Text::SetColor);
@@ -493,7 +493,7 @@ std::unique_ptr<UiElement> CreateControllerLabel(UiElementName name,
   label->SetText(text);
   label->SetColor(model->color_scheme().controller_label_callout);
   label->SetVisible(true);
-  label->SetAlignment(UiTexture::kTextAlignmentRight);
+  label->SetAlignment(kTextAlignmentRight);
   label->SetLayoutMode(kSingleLine);
   label->SetRotate(1, 0, 0, -base::kPiFloat / 2);
   label->SetShadowsEnabled(true);
@@ -660,7 +660,7 @@ std::unique_ptr<UiElement> CreateWebVrIndicator(Model* model,
     auto text_element = Create<Text>(kNone, kPhaseOverlayForeground,
                                      kWebVrPermissionFontHeight);
     text_element->SetLayoutMode(kMultiLineFixedWidth);
-    text_element->SetAlignment(UiTexture::kTextAlignmentLeft);
+    text_element->SetAlignment(kTextAlignmentLeft);
     text_element->SetColor(SK_ColorWHITE);
     text_element->SetFieldWidth(kWebVrPermissionTextWidth);
     if (spec.signal)
@@ -1476,7 +1476,7 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
       l10n_util::GetStringUTF16(IDS_VR_WEB_VR_TIMEOUT_MESSAGE));
   timeout_text->SetColor(
       model_->color_scheme().web_vr_timeout_message_foreground);
-  timeout_text->SetAlignment(UiTexture::kTextAlignmentLeft);
+  timeout_text->SetAlignment(kTextAlignmentLeft);
   timeout_text->SetFieldWidth(kTimeoutMessageTextWidthDMM);
   timeout_text->set_hit_testable(true);
 
@@ -1668,7 +1668,7 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   speech_result->SetDrawPhase(kPhaseForeground);
   speech_result->SetTranslate(0.f, kSpeechRecognitionResultTextYOffset, 0.f);
   speech_result->SetFieldWidth(kVoiceSearchRecognitionResultTextWidth);
-  speech_result->SetAlignment(UiTexture::kTextAlignmentCenter);
+  speech_result->SetAlignment(kTextAlignmentCenter);
   VR_BIND_COLOR(model_, speech_result.get(), &ColorScheme::prompt_foreground,
                 &Text::SetColor);
   speech_result->AddBinding(VR_BIND_FUNC(base::string16, Model, model_,
@@ -2127,7 +2127,7 @@ void UiSceneCreator::CreateUrlBar() {
   hint_text->SetFieldWidth(kUrlBarOriginRegionWidthDMM -
                            kUrlBarOriginContentOffsetDMM);
   hint_text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
-  hint_text->SetAlignment(UiTexture::kTextAlignmentLeft);
+  hint_text->SetAlignment(kTextAlignmentLeft);
   hint_text->SetText(l10n_util::GetStringUTF16(IDS_SEARCH_OR_TYPE_WEB_ADDRESS));
   VR_BIND_COLOR(model_, hint_text.get(), &ColorScheme::url_bar_hint_text,
                 &Text::SetColor);
@@ -2319,7 +2319,7 @@ void UiSceneCreator::CreateOverflowMenu() {
     text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
     text->SetFieldWidth(kOverflowMenuMinimumWidth -
                         2 * kOverflowMenuItemXPadding);
-    text->SetAlignment(UiTexture::kTextAlignmentLeft);
+    text->SetAlignment(kTextAlignmentLeft);
     text->AddBinding(VR_BIND_FUNC(
         SkColor, Model, model_, model->color_scheme().url_bar_button.foreground,
         Text, text.get(), SetColor));
