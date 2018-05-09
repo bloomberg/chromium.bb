@@ -74,3 +74,16 @@ TEST_F(MainContentUIStateUpdaterTest, IgnorePixelAligntment) {
   EXPECT_FALSE(state().scrolling);
   EXPECT_FALSE(state().dragging);
 }
+
+// Tests resetting state for interrupted scrolls.
+TEST_F(MainContentUIStateUpdaterTest, ScrollInterruption) {
+  UIPanGestureRecognizer* pan = [[UIPanGestureRecognizer alloc] init];
+  ASSERT_FALSE(state().scrolling);
+  ASSERT_FALSE(state().dragging);
+  [updater() scrollViewWillBeginDraggingWithGesture:pan];
+  EXPECT_TRUE(state().scrolling);
+  EXPECT_TRUE(state().dragging);
+  [updater() scrollWasInterrupted];
+  ASSERT_FALSE(state().scrolling);
+  ASSERT_FALSE(state().dragging);
+}
