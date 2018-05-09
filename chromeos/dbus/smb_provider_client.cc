@@ -259,6 +259,16 @@ class SmbProviderClientImpl : public SmbProviderClient {
                &callback);
   }
 
+  void SetupKerberos(const std::string& account_id,
+                     SetupKerberosCallback callback) override {
+    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
+                                 smbprovider::kSetupKerberosMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(account_id);
+    CallMethod(&method_call,
+               &SmbProviderClientImpl::HandleSetupKerberosCallback, &callback);
+  }
+
  protected:
   // DBusClient override.
   void Init(dbus::Bus* bus) override {
@@ -417,6 +427,19 @@ class SmbProviderClientImpl : public SmbProviderClient {
     }
 
     std::move(callback).Run(smbprovider::ERROR_OK, delete_list);
+  }
+
+  // Handles D-Bus callback for SetupKerberos.
+  void HandleSetupKerberosCallback(SetupKerberosCallback callback,
+                                   dbus::Response* response) {
+    dbus::MessageReader reader(response);
+    bool result;
+    if (!reader.PopBool(&result)) {
+      LOG(ERROR) << "SetupKerberos: parse failure.";
+      std::move(callback).Run(false /* success */);
+    }
+
+    std::move(callback).Run(result);
   }
 
   // Default callback handler for D-Bus calls.

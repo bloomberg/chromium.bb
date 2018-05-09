@@ -158,4 +158,10 @@ void FakeSmbProviderClient::GetShares(const base::FilePath& server_url,
       base::BindOnce(std::move(callback), smbprovider::ERROR_OK, entry_list));
 }
 
+void FakeSmbProviderClient::SetupKerberos(const std::string& account_id,
+                                          SetupKerberosCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true /* success */));
+}
+
 }  // namespace chromeos

@@ -40,6 +40,7 @@ class CHROMEOS_EXPORT SmbProviderClient
   using GetDeleteListCallback =
       base::OnceCallback<void(smbprovider::ErrorType error,
                               const smbprovider::DeleteListProto& delete_list)>;
+  using SetupKerberosCallback = base::OnceCallback<void(bool success)>;
 
   ~SmbProviderClient() override;
 
@@ -172,6 +173,12 @@ class CHROMEOS_EXPORT SmbProviderClient
   // no entries if there are no shares found.
   virtual void GetShares(const base::FilePath& server_url,
                          ReadDirectoryCallback callback) = 0;
+
+  // Calls SetupKerberos. This sets up Kerberos for the user |account_id|,
+  // fetching the user's Kerberos files from AuthPolicy. The user must be
+  // ChromAD enrolled.
+  virtual void SetupKerberos(const std::string& account_id,
+                             SetupKerberosCallback callback) = 0;
 
  protected:
   // Create() should be used instead.
