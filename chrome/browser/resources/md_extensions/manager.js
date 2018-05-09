@@ -242,11 +242,18 @@ cr.define('extensions', function() {
         case EventType.ERRORS_REMOVED:
         case EventType.PREFS_CHANGED:
         case EventType.WARNINGS_CHANGED:
+        case EventType.COMMAND_ADDED:
+        case EventType.COMMAND_REMOVED:
           // |extensionInfo| can be undefined in the case of an extension
           // being unloaded right before uninstallation. There's nothing to do
           // here.
           if (!eventData.extensionInfo)
             break;
+
+          if (this.delegate.shouldIgnoreUpdate(
+                  eventData.extensionInfo.id, eventData.event_type)) {
+            break;
+          }
 
           const listId = this.getListId_(eventData.extensionInfo);
           const currentIndex = this[listId].findIndex(

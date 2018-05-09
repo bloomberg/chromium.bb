@@ -357,7 +357,9 @@ namespace developerPrivate {
     ERROR_ADDED,
     ERRORS_REMOVED,
     PREFS_CHANGED,
-    WARNINGS_CHANGED
+    WARNINGS_CHANGED,
+    COMMAND_ADDED,
+    COMMAND_REMOVED
   };
 
   dictionary PackDirectoryResponse {
