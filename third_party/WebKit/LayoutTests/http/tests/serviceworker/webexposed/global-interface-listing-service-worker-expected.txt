@@ -2599,6 +2599,7 @@ interface WorkerNavigator
     getter platform
     getter product
     getter storage
+    getter usb
     getter userAgent
     method constructor
 interface WritableStream

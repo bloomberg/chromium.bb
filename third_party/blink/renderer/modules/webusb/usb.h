@@ -11,12 +11,12 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
-class LocalFrame;
 class ScriptPromiseResolver;
 class ScriptState;
 class USBDevice;
@@ -30,7 +30,7 @@ class USB final : public EventTargetWithInlineData,
   USING_PRE_FINALIZER(USB, Dispose);
 
  public:
-  static USB* Create(LocalFrame& frame) { return new USB(frame); }
+  static USB* Create(ExecutionContext& context) { return new USB(context); }
 
   ~USB() override;
 
@@ -75,7 +75,7 @@ class USB final : public EventTargetWithInlineData,
                           RegisteredEventListener&) override;
 
  private:
-  explicit USB(LocalFrame& frame);
+  explicit USB(ExecutionContext&);
 
   void EnsureDeviceManagerConnection();
 
