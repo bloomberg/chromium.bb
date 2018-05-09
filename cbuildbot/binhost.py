@@ -273,13 +273,6 @@ def CalculateCompatId(board, extra_useflags):
       cmd, print_cmd=False, capture_output=True).output.rstrip()
   arch, cflags = arch_cflags.split('\n', 1)
   cflags_split = cflags.split()
-
-  # We will add -clang-syntax to falco and nyan board. So we need to
-  # filter out -clang-syntax to make the flags from PFQ are the same as
-  # the release-board. See crbug.com/499115
-  # TODO(yunlian): Remove this when all the boards are build with -clang-syntax
-  if '-clang-syntax' in cflags_split:
-    cflags_split.remove('-clang-syntax')
   return CompatId(arch, useflags, cflags_split)
 
 
