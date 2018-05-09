@@ -38,6 +38,7 @@
 #include "chrome/browser/vr/elements/oval.h"
 #include "chrome/browser/vr/elements/paged_grid_layout.h"
 #include "chrome/browser/vr/elements/paged_scroll_view.h"
+#include "chrome/browser/vr/elements/platform_ui_element.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/repositioner.h"
 #include "chrome/browser/vr/elements/resizer.h"
@@ -706,11 +707,10 @@ std::unique_ptr<UiElement> CreateHostedUi(
     UiBrowserInterface* browser,
     ContentInputDelegate* content_input_delegate,
     UiElementName name,
-    UiElementName content_name,
+    UiElementName element_name,
     float distance) {
-  auto hosted_ui =
-      Create<ContentElement>(content_name, kPhaseForeground,
-                             content_input_delegate, base::DoNothing());
+  auto hosted_ui = Create<PlatformUiElement>(element_name, kPhaseForeground,
+                                             content_input_delegate);
   hosted_ui->SetSize(kContentWidth * kHostedUiWidthRatio,
                      kContentHeight * kHostedUiHeightRatio);
   // The hosted UI doesn't steal focus so that clikcing on an autofill
@@ -722,16 +722,16 @@ std::unique_ptr<UiElement> CreateHostedUi(
   hosted_ui->SetTranslate(0, 0, kHostedUiShadowOffset);
   hosted_ui->AddBinding(VR_BIND_FUNC(
       ContentInputDelegatePtr, Model, model, model->hosted_platform_ui.delegate,
-      ContentElement, hosted_ui.get(), SetDelegate));
+      PlatformUiElement, hosted_ui.get(), SetDelegate));
   hosted_ui->AddBinding(VR_BIND_FUNC(
       unsigned int, Model, model, model->hosted_platform_ui.texture_id,
-      ContentElement, hosted_ui.get(), SetTextureId));
+      PlatformUiElement, hosted_ui.get(), SetTextureId));
   hosted_ui->AddBinding(std::make_unique<Binding<bool>>(
       VR_BIND_LAMBDA(
           [](Model* m) { return m->hosted_platform_ui.hosted_ui_enabled; },
           base::Unretained(model)),
       VR_BIND_LAMBDA(
-          [](ContentElement* dialog, const bool& enabled) {
+          [](PlatformUiElement* dialog, const bool& enabled) {
             dialog->set_requires_layout(enabled);
             dialog->set_hit_testable(enabled);
           },
@@ -750,7 +750,8 @@ std::unique_ptr<UiElement> CreateHostedUi(
           },
           base::Unretained(model)),
       base::BindRepeating(
-          [](ContentElement* dialog, const std::pair<bool, gfx::SizeF>& value) {
+          [](PlatformUiElement* dialog,
+             const std::pair<bool, gfx::SizeF>& value) {
             if (!value.first && value.second.width() > 0) {
               float ratio = static_cast<float>(value.second.height()) /
                             value.second.width();

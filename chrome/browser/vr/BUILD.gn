@@ -77,6 +77,8 @@ static_library("vr_common") {
     "elements/paged_grid_layout.h",
     "elements/paged_scroll_view.cc",
     "elements/paged_scroll_view.h",
+    "elements/platform_ui_element.cc",
+    "elements/platform_ui_element.h",
     "elements/rect.cc",
     "elements/rect.h",
     "elements/render_text_wrapper.cc",
