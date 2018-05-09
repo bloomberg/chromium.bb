@@ -29,9 +29,10 @@
 import logging
 import optparse
 import sys
+import tempfile
 import urllib
 
-from blinkpy.common.prettypatch import PrettyPatch
+from blinkpy.common.pretty_diff import prettify_diff
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.tool.commands.command import Command
 
@@ -66,9 +67,8 @@ class PrettyDiff(Command):
         if not self._tool.user.can_open_url():
             return None
         try:
-            pretty_patch = PrettyPatch(self._tool.executive)
             patch = self._diff(options)
-            pretty_diff_file = pretty_patch.pretty_diff_file(patch)
+            pretty_diff_file = PrettyDiff._pretty_diff_file(patch)
             self._open_pretty_diff(pretty_diff_file.name)
             # We return the pretty_diff_file here because we need to keep the
             # file alive until the user has had a chance to confirm the diff.
@@ -84,6 +84,16 @@ class PrettyDiff(Command):
         changed_files = self._tool.git().changed_files(options.git_commit)
         return self._tool.git().create_patch(options.git_commit,
                                              changed_files=changed_files)
+
+    @staticmethod
+    def _pretty_diff_file(diff):
+        # Diffs can contain multiple text files of different encodings
+        # so we always deal with them as byte arrays, not unicode strings.
+        assert isinstance(diff, str)
+        diff_file = tempfile.NamedTemporaryFile(suffix='.html')
+        diff_file.write(prettify_diff(diff))
+        diff_file.flush()
+        return diff_file
 
     def _open_pretty_diff(self, file_path):
         url = 'file://%s' % urllib.quote(file_path)
