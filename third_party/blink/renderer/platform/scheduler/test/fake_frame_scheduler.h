@@ -16,6 +16,8 @@ namespace scheduler {
 
 class MainThreadTaskQueueForTest : public MainThreadTaskQueue {
  public:
+  using MainThreadTaskQueue::SetFrameSchedulerForTest;
+
   MainThreadTaskQueueForTest(QueueType queue_type)
       : MainThreadTaskQueue(nullptr,
                             Spec(MainThreadTaskQueue::NameForQueueType(

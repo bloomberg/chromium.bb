@@ -137,8 +137,7 @@ FrameSchedulerImpl::FrameSchedulerImpl(
                              this,
                              &tracing_controller_,
                              YesNoStateToString),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 namespace {
 
@@ -146,7 +145,7 @@ void CleanUpQueue(MainThreadTaskQueue* queue) {
   if (!queue)
     return;
   queue->DetachFromMainThreadScheduler();
-  queue->SetFrameScheduler(nullptr);
+  queue->DetachFromFrameScheduler();
   queue->SetBlameContext(nullptr);
   queue->SetQueuePriority(TaskQueue::QueuePriority::kLowPriority);
 }
@@ -324,9 +323,8 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::LoadingTaskQueue() {
   if (!loading_task_queue_) {
     // TODO(panicker): Avoid adding this queue in RS task_runners_.
     loading_task_queue_ = main_thread_scheduler_->NewLoadingTaskQueue(
-        MainThreadTaskQueue::QueueType::kFrameLoading);
+        MainThreadTaskQueue::QueueType::kFrameLoading, this);
     loading_task_queue_->SetBlameContext(blame_context_);
-    loading_task_queue_->SetFrameScheduler(this);
     loading_queue_enabled_voter_ =
         loading_task_queue_->CreateQueueEnabledVoter();
     loading_queue_enabled_voter_->SetQueueEnabled(!frame_paused_);
@@ -338,9 +336,8 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::LoadingControlTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!loading_control_task_queue_) {
     loading_control_task_queue_ = main_thread_scheduler_->NewLoadingTaskQueue(
-        MainThreadTaskQueue::QueueType::kFrameLoadingControl);
+        MainThreadTaskQueue::QueueType::kFrameLoadingControl, this);
     loading_control_task_queue_->SetBlameContext(blame_context_);
-    loading_control_task_queue_->SetFrameScheduler(this);
     loading_control_queue_enabled_voter_ =
         loading_control_task_queue_->CreateQueueEnabledVoter();
     loading_control_queue_enabled_voter_->SetQueueEnabled(!frame_paused_);
@@ -359,9 +356,9 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::ThrottleableTaskQueue() {
             .SetCanBeFrozen(true)
             .SetFreezeWhenKeepActive(true)
             .SetCanBeDeferred(true)
-            .SetCanBePaused(true));
+            .SetCanBePaused(true)
+            .SetFrameScheduler(this));
     throttleable_task_queue_->SetBlameContext(blame_context_);
-    throttleable_task_queue_->SetFrameScheduler(this);
     throttleable_queue_enabled_voter_ =
         throttleable_task_queue_->CreateQueueEnabledVoter();
     throttleable_queue_enabled_voter_->SetQueueEnabled(!frame_paused_);
@@ -387,9 +384,9 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::DeferrableTaskQueue() {
             .SetCanBeDeferred(true)
             .SetCanBeFrozen(
                 RuntimeEnabledFeatures::StopNonTimersInBackgroundEnabled())
-            .SetCanBePaused(true));
+            .SetCanBePaused(true)
+            .SetFrameScheduler(this));
     deferrable_task_queue_->SetBlameContext(blame_context_);
-    deferrable_task_queue_->SetFrameScheduler(this);
     deferrable_queue_enabled_voter_ =
         deferrable_task_queue_->CreateQueueEnabledVoter();
     deferrable_queue_enabled_voter_->SetQueueEnabled(!frame_paused_);
@@ -405,9 +402,9 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::PausableTaskQueue() {
             MainThreadTaskQueue::QueueType::kFramePausable)
             .SetCanBeFrozen(
                 RuntimeEnabledFeatures::StopNonTimersInBackgroundEnabled())
-            .SetCanBePaused(true));
+            .SetCanBePaused(true)
+            .SetFrameScheduler(this));
     pausable_task_queue_->SetBlameContext(blame_context_);
-    pausable_task_queue_->SetFrameScheduler(this);
     pausable_queue_enabled_voter_ =
         pausable_task_queue_->CreateQueueEnabledVoter();
     pausable_queue_enabled_voter_->SetQueueEnabled(!frame_paused_);
@@ -420,9 +417,9 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::UnpausableTaskQueue() {
   if (!unpausable_task_queue_) {
     unpausable_task_queue_ = main_thread_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
-            MainThreadTaskQueue::QueueType::kFrameUnpausable));
+            MainThreadTaskQueue::QueueType::kFrameUnpausable)
+            .SetFrameScheduler(this));
     unpausable_task_queue_->SetBlameContext(blame_context_);
-    unpausable_task_queue_->SetFrameScheduler(this);
   }
   return unpausable_task_queue_;
 }

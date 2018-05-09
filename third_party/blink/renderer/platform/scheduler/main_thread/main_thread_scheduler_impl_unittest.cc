@@ -310,15 +310,15 @@ class MainThreadSchedulerImplTest : public testing::Test {
     compositor_task_runner_ = scheduler_->CompositorTaskQueue();
     input_task_runner_ = scheduler_->InputTaskQueue();
     loading_task_runner_ = scheduler_->NewLoadingTaskQueue(
-        MainThreadTaskQueue::QueueType::kFrameLoading);
+        MainThreadTaskQueue::QueueType::kFrameLoading, nullptr);
     loading_control_task_runner_ = scheduler_->NewLoadingTaskQueue(
-        MainThreadTaskQueue::QueueType::kFrameLoadingControl);
+        MainThreadTaskQueue::QueueType::kFrameLoadingControl, nullptr);
     idle_task_runner_ = scheduler_->IdleTaskRunner();
     timer_task_runner_ = scheduler_->NewTimerTaskQueue(
-        MainThreadTaskQueue::QueueType::kFrameThrottleable);
+        MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr);
     v8_task_runner_ = scheduler_->V8TaskQueue();
     fake_queue_ = scheduler_->NewLoadingTaskQueue(
-        MainThreadTaskQueue::QueueType::kFrameLoading);
+        MainThreadTaskQueue::QueueType::kFrameLoading, nullptr);
   }
 
   void TearDown() override {
@@ -3610,7 +3610,7 @@ TEST_F(MainThreadSchedulerImplTest,
   scheduler_->SetVirtualTimePolicy(
       PageSchedulerImpl::VirtualTimePolicy::kPause);
   scoped_refptr<MainThreadTaskQueue> timer_tq = scheduler_->NewTimerTaskQueue(
-      MainThreadTaskQueue::QueueType::kFrameThrottleable);
+      MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr);
   EXPECT_FALSE(timer_tq->HasActiveFence());
 }
 
@@ -3621,11 +3621,11 @@ TEST_F(MainThreadSchedulerImplTest, EnableVirtualTime) {
   EXPECT_TRUE(scheduler_->IsVirtualTimeEnabled());
   scoped_refptr<MainThreadTaskQueue> loading_tq =
       scheduler_->NewLoadingTaskQueue(
-          MainThreadTaskQueue::QueueType::kFrameLoading);
+          MainThreadTaskQueue::QueueType::kFrameLoading, nullptr);
   scoped_refptr<TaskQueue> loading_control_tq = scheduler_->NewLoadingTaskQueue(
-      MainThreadTaskQueue::QueueType::kFrameLoadingControl);
+      MainThreadTaskQueue::QueueType::kFrameLoadingControl, nullptr);
   scoped_refptr<MainThreadTaskQueue> timer_tq = scheduler_->NewTimerTaskQueue(
-      MainThreadTaskQueue::QueueType::kFrameThrottleable);
+      MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr);
   scoped_refptr<MainThreadTaskQueue> unthrottled_tq =
       scheduler_->NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
           MainThreadTaskQueue::QueueType::kUnthrottled));
@@ -3654,14 +3654,14 @@ TEST_F(MainThreadSchedulerImplTest, EnableVirtualTime) {
   EXPECT_EQ(unthrottled_tq->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
 
-  EXPECT_EQ(
-      scheduler_
-          ->NewLoadingTaskQueue(MainThreadTaskQueue::QueueType::kFrameLoading)
-          ->GetTimeDomain(),
-      scheduler_->GetVirtualTimeDomain());
+  EXPECT_EQ(scheduler_
+                ->NewLoadingTaskQueue(
+                    MainThreadTaskQueue::QueueType::kFrameLoading, nullptr)
+                ->GetTimeDomain(),
+            scheduler_->GetVirtualTimeDomain());
   EXPECT_EQ(scheduler_
                 ->NewTimerTaskQueue(
-                    MainThreadTaskQueue::QueueType::kFrameThrottleable)
+                    MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr)
                 ->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
   EXPECT_EQ(scheduler_
@@ -3703,7 +3703,7 @@ TEST_F(MainThreadSchedulerImplTest, DisableVirtualTimeForTesting) {
       MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
 
   scoped_refptr<MainThreadTaskQueue> timer_tq = scheduler_->NewTimerTaskQueue(
-      MainThreadTaskQueue::QueueType::kFrameThrottleable);
+      MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr);
   scoped_refptr<MainThreadTaskQueue> unthrottled_tq =
       scheduler_->NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
           MainThreadTaskQueue::QueueType::kUnthrottled));

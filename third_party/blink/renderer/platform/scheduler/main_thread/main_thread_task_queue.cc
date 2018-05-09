@@ -104,7 +104,7 @@ MainThreadTaskQueue::MainThreadTaskQueue(
       freeze_when_keep_active_(params.freeze_when_keep_active),
       used_for_important_tasks_(params.used_for_important_tasks),
       main_thread_scheduler_(main_thread_scheduler),
-      frame_scheduler_(nullptr) {
+      frame_scheduler_(params.frame_scheduler) {
   if (GetTaskQueueImpl()) {
     // TaskQueueImpl may be null for tests.
     // TODO(scheduler-dev): Consider mapping directly to
@@ -170,8 +170,13 @@ FrameScheduler* MainThreadTaskQueue::GetFrameScheduler() const {
   return frame_scheduler_;
 }
 
-void MainThreadTaskQueue::SetFrameScheduler(FrameScheduler* frame) {
-  frame_scheduler_ = frame;
+void MainThreadTaskQueue::DetachFromFrameScheduler() {
+  frame_scheduler_ = nullptr;
+}
+
+void MainThreadTaskQueue::SetFrameSchedulerForTest(
+    FrameScheduler* frame_scheduler) {
+  frame_scheduler_ = frame_scheduler;
 }
 
 }  // namespace scheduler
