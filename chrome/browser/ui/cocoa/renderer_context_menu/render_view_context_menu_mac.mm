@@ -23,7 +23,6 @@
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -197,42 +196,24 @@ RenderViewContextMenuMac::~RenderViewContextMenuMac() {
 }
 
 void RenderViewContextMenuMac::ExecuteCommand(int command_id, int event_flags) {
-  switch (command_id) {
-    case IDC_CONTENT_CONTEXT_EMOJI:
-      [NSApp orderFrontCharacterPalette:nil];
-      RenderViewContextMenu::RecordUsedItem(command_id);
-      break;
-
-    case IDC_CONTENT_CONTEXT_LOOK_UP:
-      LookUpInDictionary();
-      break;
-
-    default:
-      RenderViewContextMenu::ExecuteCommand(command_id, event_flags);
-      break;
-  }
+  if (command_id == IDC_CONTENT_CONTEXT_LOOK_UP)
+    LookUpInDictionary();
+  else
+    RenderViewContextMenu::ExecuteCommand(command_id, event_flags);
 }
 
 bool RenderViewContextMenuMac::IsCommandIdChecked(int command_id) const {
-  if (command_id == IDC_CONTENT_CONTEXT_EMOJI ||
-      command_id == IDC_CONTENT_CONTEXT_LOOK_UP) {
+  if (command_id == IDC_CONTENT_CONTEXT_LOOK_UP)
     return false;
-  }
 
   return RenderViewContextMenu::IsCommandIdChecked(command_id);
 }
 
 bool RenderViewContextMenuMac::IsCommandIdEnabled(int command_id) const {
-  switch (command_id) {
-    case IDC_CONTENT_CONTEXT_EMOJI:
-      return params_.is_editable;
+  if (command_id == IDC_CONTENT_CONTEXT_LOOK_UP)
+    return true;
 
-    case IDC_CONTENT_CONTEXT_LOOK_UP:
-      return true;
-
-    default:
-      return RenderViewContextMenu::IsCommandIdEnabled(command_id);
-  }
+  return RenderViewContextMenu::IsCommandIdEnabled(command_id);
 }
 
 void RenderViewContextMenuMac::Show() {
@@ -320,16 +301,17 @@ void RenderViewContextMenuMac::AppendPlatformEditableItems() {
 }
 
 void RenderViewContextMenuMac::InitToolkitMenu() {
-  if (params_.input_field_type ==
-      blink::WebContextMenuData::kInputFieldTypePassword)
+  if (params_.selection_text.empty() ||
+      params_.input_field_type ==
+          blink::WebContextMenuData::kInputFieldTypePassword)
     return;
 
-  int index = 0;
-  if (!params_.selection_text.empty() && params_.link_url.is_empty()) {
+  if (params_.link_url.is_empty()) {
     // In case the user has selected a word that triggers spelling suggestions,
     // show the dictionary lookup under the group that contains the command to
     // “Add to Dictionary.”
-    index = menu_model_.GetIndexOfCommandId(IDC_SPELLCHECK_ADD_TO_DICTIONARY);
+    int index =
+        menu_model_.GetIndexOfCommandId(IDC_SPELLCHECK_ADD_TO_DICTIONARY);
     if (index < 0) {
       index = 0;
     } else {
@@ -345,17 +327,6 @@ void RenderViewContextMenuMac::InitToolkitMenu() {
         index++, IDC_CONTENT_CONTEXT_LOOK_UP,
         l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_LOOK_UP,
                                    printable_selection_text));
-    menu_model_.InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
-  }
-
-  // The Emoji menu item is available for editable text fields, unless the
-  // selected text is a misspelling.
-  if (params_.is_editable && params_.misspelled_word.empty() &&
-      base::FeatureList::IsEnabled(features::kEnableEmojiContextMenu)) {
-    // The "Emoji" item is available near the top of the context menu, after
-    // any "Look Up" of selected text.
-    menu_model_.InsertItemWithStringIdAt(index++, IDC_CONTENT_CONTEXT_EMOJI,
-                                         IDS_CONTENT_CONTEXT_EMOJI);
     menu_model_.InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
   }
 

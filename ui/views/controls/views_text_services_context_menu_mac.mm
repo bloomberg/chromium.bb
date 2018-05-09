@@ -8,6 +8,7 @@
 
 #include "base/feature_list.h"
 #include "ui/base/cocoa/text_services_context_menu.h"
+#include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -43,7 +44,9 @@ class ViewsTextServicesContextMenuMac
           l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_LOOK_UP, text));
       menu->InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
     }
-    if (base::FeatureList::IsEnabled(features::kEnableEmojiContextMenu)) {
+    // TODO(crbug.com/827404): Move this to the cross-platform context menu
+    // code.
+    if (ui::IsEmojiPanelSupported()) {
       menu->InsertItemWithStringIdAt(index++, IDS_CONTENT_CONTEXT_EMOJI,
                                      IDS_CONTENT_CONTEXT_EMOJI);
       menu->InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
@@ -85,7 +88,7 @@ class ViewsTextServicesContextMenuMac
   void ExecuteCommand(int command_id) override {
     switch (command_id) {
       case IDS_CONTENT_CONTEXT_EMOJI:
-        [NSApp orderFrontCharacterPalette:nil];
+        ui::ShowEmojiPanel();
         break;
 
       case IDS_CONTENT_CONTEXT_LOOK_UP:
