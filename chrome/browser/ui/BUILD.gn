@@ -3938,6 +3938,8 @@ static_library("test_support") {
   if (toolkit_views) {
     deps += [ "//ui/views:test_support" ]
     sources += [
+      "../../test/views/scoped_macviews_browser_mode.cc",
+      "../../test/views/scoped_macviews_browser_mode.h",
       "extensions/browser_action_test_util.h",
       "views/payments/test_chrome_payment_request_delegate.cc",
       "views/payments/test_chrome_payment_request_delegate.h",
