@@ -263,8 +263,8 @@ class CORE_EXPORT HTMLMediaElement
   using HTMLElement::GetExecutionContext;
 
   bool HasSingleSecurityOrigin() const {
-    return GetWebMediaPlayer() &&
-           GetWebMediaPlayer()->HasSingleSecurityOrigin();
+    return GetWebMediaPlayer() ? GetWebMediaPlayer()->HasSingleSecurityOrigin()
+                               : true;
   }
 
   bool IsFullscreen() const;
@@ -346,6 +346,11 @@ class CORE_EXPORT HTMLMediaElement
 
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;
   void RemovedFrom(ContainerNode*) override;
+
+  // Return true if media is cross origin from the current document
+  // and has not passed a cors check, meaning that we should return
+  // as little information as possible about it.
+  bool MediaShouldBeOpaque() const;
 
   void DidMoveToNewDocument(Document& old_document) override;
   virtual KURL PosterImageURL() const { return KURL(); }
