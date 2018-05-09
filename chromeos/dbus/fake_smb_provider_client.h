@@ -91,6 +91,9 @@ class CHROMEOS_EXPORT FakeSmbProviderClient : public SmbProviderClient {
   void GetShares(const base::FilePath& server_url,
                  ReadDirectoryCallback callback) override;
 
+  void SetupKerberos(const std::string& account_id,
+                     SetupKerberosCallback callback) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeSmbProviderClient);
 };
