@@ -3400,25 +3400,36 @@ static void CollectDrawableLayersForLayerListRecursively(
   if (!layer || layer->Client().ShouldThrottleRendering())
     return;
 
-  if (layer->DrawsContent()) {
-    // TODO(trchen): Currently the GraphicsLayer hierarchy is still built
-    // during CompositingUpdate, and we have to clear them here to ensure no
-    // extraneous layers are still attached. In future we will disable all
-    // those layer hierarchy code so we won't need this line.
-    layer->PlatformLayer()->RemoveAllChildren();
-
+  WebLayer* contents_layer = layer->ContentsLayer();
+  if (layer->DrawsContent() || contents_layer) {
     ScopedPaintChunkProperties scope(context.GetPaintController(),
                                      layer->GetPropertyTreeState(), *layer,
                                      DisplayItem::kForeignLayerWrapper);
-    RecordForeignLayer(context, *layer, DisplayItem::kForeignLayerWrapper,
-                       layer->PlatformLayer(),
-                       layer->GetOffsetFromTransformNode(),
-                       RoundedIntSize(layer->Size()));
+
+    if (layer->DrawsContent()) {
+      // TODO(trchen): Currently the GraphicsLayer hierarchy is still built
+      // during CompositingUpdate, and we have to clear them here to ensure no
+      // extraneous layers are still attached. In future we will disable all
+      // those layer hierarchy code so we won't need this line.
+      layer->PlatformLayer()->RemoveAllChildren();
+      RecordForeignLayer(context, *layer, DisplayItem::kForeignLayerWrapper,
+                         layer->PlatformLayer(),
+                         layer->GetOffsetFromTransformNode(),
+                         RoundedIntSize(layer->Size()));
+    }
+    if (contents_layer) {
+      auto position = contents_layer->GetPosition();
+      auto size = contents_layer->Bounds();
+      RecordForeignLayer(context, *layer,
+                         DisplayItem::kForeignLayerContentsWrapper,
+                         contents_layer,
+                         layer->GetOffsetFromTransformNode() +
+                             FloatSize(position.x(), position.y()),
+                         IntSize(size.width(), size.height()));
+    }
   }
 
-  // TODO(trchen): layer->ContentLayer() should be collected too,
-  // but how do we derive their state?
-
+  DCHECK(!layer->ContentsClippingMaskLayer());
   for (const auto* child : layer->Children())
     CollectDrawableLayersForLayerListRecursively(context, child);
   CollectDrawableLayersForLayerListRecursively(context, layer->MaskLayer());

@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_PAINT_TEST_CONFIGURATIONS_H_
 
 #include <gtest/gtest.h>
+#include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
@@ -33,6 +34,10 @@ class PaintTestConfigurations
         ScopedSlimmingPaintV2ForTest(GetParam() & kSlimmingPaintV2),
         ScopedPaintUnderInvalidationCheckingForTest(
             GetParam() & kUnderInvalidationChecking) {}
+  ~PaintTestConfigurations() {
+    // Must destruct all objects before toggling back feature flags.
+    WebHeap::CollectAllGarbageForTesting();
+  }
 };
 
 static constexpr unsigned kAllSlimmingPaintTestConfigurations[] = {
