@@ -381,6 +381,7 @@ void TabManagerDelegate::OnFocusTabScoreAdjustmentTimeout() {
           << " for focused tab " << pid;
   std::map<int, int> dict;
   dict[pid] = chrome::kLowestRendererOomScore;
+  DCHECK(GetDebugDaemonClient());
   GetDebugDaemonClient()->SetOomScoreAdj(dict, base::Bind(&OnSetOomScoreAdj));
 }
 
