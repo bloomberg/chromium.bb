@@ -43,6 +43,11 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
 
   ~ForwardingAudioStreamFactory() final;
 
+  // Returns the ForwardingAudioStreamFactory which takes care of stream
+  // creation for |frame|. Returns null if |frame| is null or if the frame
+  // doesn't belong to a WebContents.
+  static ForwardingAudioStreamFactory* ForFrame(RenderFrameHost* frame);
+
   const base::UnguessableToken& group_id() { return group_id_; }
 
   // TODO(https://crbug.com/803102): Add loopback and muting streams.
