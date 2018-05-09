@@ -18597,6 +18597,7 @@ Called by update_net_error_codes.py.-->
   <int value="2431" label="CSSSelectorPseudoIS"/>
   <int value="2432" label="KeyboardApiGetLayoutMap"/>
   <int value="2433" label="WebRtcVaapiHWVP8Encoding"/>
+  <int value="2434" label="PerformanceResourceTimingInitiatorType"/>
 </enum>
 
 <enum name="FeedbackSource">
