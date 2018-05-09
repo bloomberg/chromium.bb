@@ -733,6 +733,75 @@
       "features": [
         "test_feature_1"
       ]
+    },
+    {
+      "id": 61,
+      "description": "GpuControlListEntryTest.GpuSeries",
+      "gpu_series": [
+        "intel_skylake",
+        "intel_kabylake"
+      ],
+      "features": [
+        "test_feature_0"
+      ]
+    },
+    {
+      "id": 62,
+      "description": "GpuControlListEntryTest.GpuSeriesActive",
+      "gpu_series": [
+        "intel_kabylake"
+      ],
+      "multi_gpu_category": "active",
+      "features": [
+        "test_feature_0"
+      ]
+    },
+    {
+      "id": 63,
+      "description": "GpuControlListEntryTest.GpuSeriesAny",
+      "gpu_series": [
+        "intel_kabylake"
+      ],
+      "multi_gpu_category": "any",
+      "features": [
+        "test_feature_0"
+      ]
+    },
+    {
+      "id": 64,
+      "description": "GpuControlListEntryTest.GpuSeriesPrimary",
+      "gpu_series": [
+        "intel_kabylake"
+      ],
+      "multi_gpu_category": "primary",
+      "features": [
+        "test_feature_0"
+      ]
+    },
+    {
+      "id": 65,
+      "description": "GpuControlListEntryTest.GpuSeriesSecondary",
+      "gpu_series": [
+        "intel_kabylake"
+      ],
+      "multi_gpu_category": "secondary",
+      "features": [
+        "test_feature_0"
+      ]
+    },
+    {
+      "id": 66,
+      "description": "GpuControlListEntryTest.GpuSeriesInException",
+      "exceptions": [
+        {
+          "gpu_series": [
+            "intel_kabylake"
+          ]
+        }
+      ],
+      "features": [
+        "test_feature_0"
+      ]
     }
   ]
 }

@@ -25,6 +25,8 @@ const GpuControlList::Conditions kExceptionsForEntry5[1] = {
         nullptr,                                // driver info
         &kGLStringsForEntry5Exception0,         // GL strings
         nullptr,                                // machine model info
+        0,                                      // gpu_series size
+        nullptr,                                // gpu_series
         nullptr,                                // more conditions
     },
 };

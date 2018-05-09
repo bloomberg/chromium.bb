@@ -1935,12 +1935,8 @@
           "value": "10.13.2"
         }
       },
-      "vendor_id": "0x8086",
-      "device_id" : [
-        "0x1902", "0x1906", "0x190A", "0x190B", "0x190E", "0x1912", "0x1913", "0x1915",
-        "0x1916", "0x1917", "0x191A", "0x191B", "0x191D", "0x191E", "0x1921", "0x1923",
-        "0x1926", "0x1927", "0x192A", "0x192B", "0x192D", "0x1932", "0x193A", "0x193B",
-        "0x193D"
+      "gpu_series" : [
+        "intel_skylake"
       ],
       "features" : [
         "emulate_isnan_on_float"
@@ -2367,17 +2363,11 @@
       "os": {
         "type": "win"
       },
-      "vendor_id": "0x8086",
-      "device_id": ["0x1602", "0x1606", "0x160a", "0x160b", "0x160d",
-                    "0x160e", "0x1612", "0x1616", "0x161a", "0x161b",
-                    "0x161d", "0x161e", "0x1622", "0x1626", "0x162a",
-                    "0x162b", "0x162d", "0x162e", "0x22b0", "0x22b1",
-                    "0x22b2", "0x22b3", "0x1902", "0x1906", "0x190a",
-                    "0x190b", "0x190e", "0x1912", "0x1913", "0x1915",
-                    "0x1916", "0x1917", "0x191a", "0x191b", "0x191d",
-                    "0x191e", "0x1921", "0x1923", "0x1926", "0x1927",
-                    "0x192a", "0x192b", "0x192d", "0x1932", "0x193a",
-                    "0x193b", "0x193d"],
+      "gpu_series": [
+        "intel_broadwell",
+        "intel_skylake",
+        "intel_cherryview"
+      ],
       "features": [
         "disable_accelerated_vpx_decode"
       ]
@@ -2608,10 +2598,11 @@
       "os": {
         "type": "macosx"
       },
-      "vendor_id": "0x8086",
-      "device_id": ["0x1927", "0x1926", "0x191e", "0x1916", "0x1912", "0x1912",
-                    "0x191b", "0x193b", "0x591e", "0x5926", "0x5927", "0x5912",
-                    "0x5916", "0x591b", "0x3e92"],
+      "gpu_series": [
+        "intel_skylake",
+        "intel_kabylake",
+        "intel_coffeelake"
+      ],
       "multi_gpu_category": "any",
       "features": [
         "flush_on_framebuffer_change"

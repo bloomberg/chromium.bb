@@ -665,4 +665,185 @@ TEST_F(GpuControlListEntryTest, DirectRendering) {
   EXPECT_TRUE(entry.Contains(kOsLinux, "7.0", gpu_info));
 }
 
+TEST_F(GpuControlListEntryTest, GpuSeries) {
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_GpuSeries);
+  GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x8086;
+  // Intel KabyLake
+  gpu_info.gpu.device_id = 0x5916;
+  EXPECT_TRUE(entry.Contains(kOsWin, "10.0", gpu_info));
+  // Intel SandyBridge
+  gpu_info.gpu.device_id = 0x0116;
+  EXPECT_FALSE(entry.Contains(kOsWin, "10.0", gpu_info));
+  // Intel SkyLake
+  gpu_info.gpu.device_id = 0x1916;
+  EXPECT_TRUE(entry.Contains(kOsWin, "10.0", gpu_info));
+  // Non-Intel GPU
+  gpu_info.gpu.vendor_id = 0x10de;
+  gpu_info.gpu.device_id = 0x0df8;
+  EXPECT_FALSE(entry.Contains(kOsWin, "10.0", gpu_info));
+}
+
+TEST_F(GpuControlListEntryTest, GpuSeriesActive) {
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_GpuSeriesActive);
+
+  GPUInfo::GPUDevice intel_gpu;
+  intel_gpu.vendor_id = 0x8086;
+  intel_gpu.device_id = 0x5916;
+  GPUInfo::GPUDevice nvidia_gpu;
+  nvidia_gpu.vendor_id = 0x10de;
+  nvidia_gpu.device_id = 0x0df8;
+
+  {  // Single GPU
+    GPUInfo gpu_info;
+    gpu_info.gpu = intel_gpu;
+    EXPECT_TRUE(entry.Contains(kOsWin, "10.0", gpu_info));
+  }
+
+  {  // Dual GPU, Intel is primary and active
+    GPUInfo gpu_info;
+    gpu_info.gpu = intel_gpu;
+    gpu_info.gpu.active = true;
+    gpu_info.secondary_gpus.push_back(nvidia_gpu);
+    EXPECT_TRUE(entry.Contains(kOsWin, "10.0", gpu_info));
+  }
+
+  {  // Dual GPU, Intel is secondary and active
+    GPUInfo gpu_info;
+    gpu_info.gpu = nvidia_gpu;
+    gpu_info.secondary_gpus.push_back(intel_gpu);
+    gpu_info.secondary_gpus[0].active = true;
+    EXPECT_TRUE(entry.Contains(kOsWin, "10.0", gpu_info));
+  }
+
+  {  // Dual GPU, NVidia is primary and active
+    GPUInfo gpu_info;
+    gpu_info.gpu = nvidia_gpu;
+    gpu_info.gpu.active = true;
+    gpu_info.secondary_gpus.push_back(intel_gpu);
+    EXPECT_FALSE(entry.Contains(kOsWin, "10.0", gpu_info));
+  }
+
+  {  // Dual GPU, NVidia is secondary and active
+    GPUInfo gpu_info;
+    gpu_info.gpu = intel_gpu;
+    gpu_info.secondary_gpus.push_back(nvidia_gpu);
+    gpu_info.secondary_gpus[0].active = true;
+    EXPECT_FALSE(entry.Contains(kOsWin, "10.0", gpu_info));
+  }
+}
+
+TEST_F(GpuControlListEntryTest, GpuSeriesAny) {
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_GpuSeriesAny);
+
+  GPUInfo::GPUDevice intel_gpu;
+  intel_gpu.vendor_id = 0x8086;
+  intel_gpu.device_id = 0x5916;
+  GPUInfo::GPUDevice nvidia_gpu;
+  nvidia_gpu.vendor_id = 0x10de;
+  nvidia_gpu.device_id = 0x0df8;
+
+  {  // Single GPU Intel
+    GPUInfo gpu_info;
+    gpu_info.gpu = intel_gpu;
+    EXPECT_TRUE(entry.Contains(kOsWin, "10.0", gpu_info));
+  }
+
+  {  // Single GPU NVidia
+    GPUInfo gpu_info;
+    gpu_info.gpu = nvidia_gpu;
+    EXPECT_FALSE(entry.Contains(kOsWin, "10.0", gpu_info));
+  }
+
+  {  // Dual GPU, Intel is primary
+    GPUInfo gpu_info;
+    gpu_info.gpu = intel_gpu;
+    gpu_info.secondary_gpus.push_back(nvidia_gpu);
+    EXPECT_TRUE(entry.Contains(kOsWin, "10.0", gpu_info));
+  }
+
+  {  // Dual GPU, Intel is secondary
+    GPUInfo gpu_info;
+    gpu_info.gpu = nvidia_gpu;
+    gpu_info.secondary_gpus.push_back(intel_gpu);
+    EXPECT_TRUE(entry.Contains(kOsWin, "10.0", gpu_info));
+  }
+}
+
+TEST_F(GpuControlListEntryTest, GpuSeriesPrimary) {
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_GpuSeriesPrimary);
+
+  GPUInfo::GPUDevice intel_gpu;
+  intel_gpu.vendor_id = 0x8086;
+  intel_gpu.device_id = 0x5916;
+  GPUInfo::GPUDevice nvidia_gpu;
+  nvidia_gpu.vendor_id = 0x10de;
+  nvidia_gpu.device_id = 0x0df8;
+
+  {  // Single GPU
+    GPUInfo gpu_info;
+    gpu_info.gpu = intel_gpu;
+    EXPECT_TRUE(entry.Contains(kOsWin, "10.0", gpu_info));
+  }
+
+  {  // Dual GPU, Intel is primary
+    GPUInfo gpu_info;
+    gpu_info.gpu = intel_gpu;
+    gpu_info.secondary_gpus.push_back(nvidia_gpu);
+    EXPECT_TRUE(entry.Contains(kOsWin, "10.0", gpu_info));
+  }
+
+  {  // Dual GPU, Intel is secondary
+    GPUInfo gpu_info;
+    gpu_info.gpu = nvidia_gpu;
+    gpu_info.secondary_gpus.push_back(intel_gpu);
+    EXPECT_FALSE(entry.Contains(kOsWin, "10.0", gpu_info));
+  }
+}
+
+TEST_F(GpuControlListEntryTest, GpuSeriesSecondary) {
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_GpuSeriesSecondary);
+
+  GPUInfo::GPUDevice intel_gpu;
+  intel_gpu.vendor_id = 0x8086;
+  intel_gpu.device_id = 0x5916;
+  GPUInfo::GPUDevice nvidia_gpu;
+  nvidia_gpu.vendor_id = 0x10de;
+  nvidia_gpu.device_id = 0x0df8;
+
+  {  // Single GPU
+    GPUInfo gpu_info;
+    gpu_info.gpu = intel_gpu;
+    EXPECT_FALSE(entry.Contains(kOsWin, "10.0", gpu_info));
+  }
+
+  {  // Dual GPU, Intel is primary
+    GPUInfo gpu_info;
+    gpu_info.gpu = intel_gpu;
+    gpu_info.secondary_gpus.push_back(nvidia_gpu);
+    EXPECT_FALSE(entry.Contains(kOsWin, "10.0", gpu_info));
+  }
+
+  {  // Dual GPU, Intel is secondary
+    GPUInfo gpu_info;
+    gpu_info.gpu = nvidia_gpu;
+    gpu_info.secondary_gpus.push_back(intel_gpu);
+    EXPECT_TRUE(entry.Contains(kOsWin, "10.0", gpu_info));
+  }
+}
+
+TEST_F(GpuControlListEntryTest, GpuSeriesInException) {
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_GpuSeriesInException);
+
+  GPUInfo gpu_info;
+  // Intel KabyLake
+  gpu_info.gpu.vendor_id = 0x8086;
+  gpu_info.gpu.device_id = 0x5916;
+  EXPECT_FALSE(entry.Contains(kOsWin, "10.0", gpu_info));
+  // Intel SandyBridge
+  gpu_info.gpu.vendor_id = 0x8086;
+  gpu_info.gpu.device_id = 0x0116;
+  EXPECT_TRUE(entry.Contains(kOsWin, "10.0", gpu_info));
+}
+
 }  // namespace gpu
