@@ -8080,7 +8080,8 @@
           "dimension_sets": [
             {
               "kvm": "1",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-CrOS-VM"
             }
           ]
         },
@@ -8092,7 +8093,8 @@
           "dimension_sets": [
             {
               "kvm": "1",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-CrOS-VM"
             }
           ]
         },
@@ -8104,7 +8106,8 @@
           "dimension_sets": [
             {
               "kvm": "1",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-CrOS-VM"
             }
           ],
           "shards": 2
@@ -8117,7 +8120,8 @@
           "dimension_sets": [
             {
               "kvm": "1",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-CrOS-VM"
             }
           ]
         },
@@ -8129,7 +8133,8 @@
           "dimension_sets": [
             {
               "kvm": "1",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-CrOS-VM"
             }
           ]
         },
@@ -8141,7 +8146,8 @@
           "dimension_sets": [
             {
               "kvm": "1",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-CrOS-VM"
             }
           ]
         },
@@ -8153,7 +8159,8 @@
           "dimension_sets": [
             {
               "kvm": "1",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-CrOS-VM"
             }
           ]
         },
@@ -8176,7 +8183,8 @@
           "dimension_sets": [
             {
               "kvm": "1",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-CrOS-VM"
             }
           ],
           "hard_timeout": 960,
