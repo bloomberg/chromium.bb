@@ -2003,6 +2003,7 @@ jumbo_source_set("unit_tests") {
     "paint/compositing/compositing_layer_assigner_test.cc",
     "paint/compositing/compositing_layer_property_updater_test.cc",
     "paint/compositing/compositing_reason_finder_test.cc",
+    "paint/compositing/compositing_requirements_updater_test.cc",
     "paint/compositing/paint_layer_compositor_test.cc",
     "paint/css_mask_painter_test.cc",
     "paint/first_meaningful_paint_detector_test.cc",

@@ -114,17 +114,40 @@ TEST_P(CompositingInputsUpdaterTest, UnclippedAndClippedRectsUnderScroll) {
       ->Layer()
       ->SetNeedsCompositingInputsUpdate();
   GetDocument().View()->UpdateAllLifecyclePhases();
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    EXPECT_EQ(IntRect(8, -17, 200, 200),
-              target->Layer()->ClippedAbsoluteBoundingBox());
-    EXPECT_EQ(IntRect(8, -17, 200, 200),
-              target->Layer()->UnclippedAbsoluteBoundingBox());
-  } else {
-    EXPECT_EQ(IntRect(8, 8, 200, 200),
-              target->Layer()->ClippedAbsoluteBoundingBox());
-    EXPECT_EQ(IntRect(8, 8, 200, 200),
-              target->Layer()->UnclippedAbsoluteBoundingBox());
-  }
+  EXPECT_EQ(IntRect(8, 8, 200, 200),
+            target->Layer()->ClippedAbsoluteBoundingBox());
+  EXPECT_EQ(IntRect(8, 8, 200, 200),
+            target->Layer()->UnclippedAbsoluteBoundingBox());
+}
+
+TEST_P(CompositingInputsUpdaterTest,
+       UnclippedAndClippedRectsUnderScrollFixedPos) {
+  // Non-RLS is not supported and the code will be delete shortly.
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    return;
+  SetBodyInnerHTML(R"HTML(
+    <div id=clip style="position: fixed; overflow: hidden;">
+      <div id=target style=" transform: translateZ(0); width: 200px; height: 200px; background: lightgray"></div>
+     </div>
+     <div style="position: relative; width: 20px; height: 3000px"></div>
+  )HTML");
+
+  LayoutBoxModelObject* target =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"));
+
+  GetDocument().View()->LayoutViewportScrollableArea()->ScrollBy(
+      ScrollOffset(0, 25), kUserScroll);
+  GetDocument()
+      .View()
+      ->GetLayoutView()
+      ->Layer()
+      ->SetNeedsCompositingInputsUpdate();
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(IntRect(8, 8, 200, 200),
+            target->Layer()->ClippedAbsoluteBoundingBox());
+  EXPECT_EQ(IntRect(8, 8, 200, 200),
+            target->Layer()->UnclippedAbsoluteBoundingBox());
 }
 
 TEST_P(CompositingInputsUpdaterTest, ClipPathAncestor) {

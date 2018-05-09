@@ -222,9 +222,21 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
   LayoutBoxModelObject& layout_object = layer->GetLayoutObject();
 
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    // The final value for |unclipped_absolute_bounding_box| needs to be
+    // in absolute, unscrolled space, without any scroll applied.
     properties.unclipped_absolute_bounding_box =
         EnclosingIntRect(geometry_map_.AbsoluteRect(
             FloatRect(layer->BoundingBoxForCompositingOverlapTest())));
+
+    bool affected_by_scroll = root_layer_->GetScrollableArea() &&
+                              layer->IsAffectedByScrollOf(root_layer_);
+
+    // At ths point, |unclipped_absolute_bounding_box| is in viewport space.
+    // To convert to absolute space, add scroll offset for non-fixed layers.
+    if (affected_by_scroll) {
+      properties.unclipped_absolute_bounding_box.Move(
+          RoundedIntSize(root_layer_->GetScrollableArea()->GetScrollOffset()));
+    }
 
     ClipRect clip_rect;
     layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
@@ -234,15 +246,15 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
                              kIgnorePlatformOverlayScrollbarSize,
                              kIgnoreOverflowClipAndScroll),
             clip_rect);
-    // Scroll offset is not included in the clip rect returned above
-    // (see kIgnoreOverflowClipAndScroll), so we need to add it in
-    // now. Scroll offset is excluded so that we do not need to invalidate
-    // the clip rect cache on scroll.
-    if (root_layer_->GetScrollableArea()) {
-      clip_rect.Move(
-          LayoutSize(-root_layer_->GetScrollableArea()->GetScrollOffset()));
-    }
     IntRect snapped_clip_rect = PixelSnappedIntRect(clip_rect.Rect());
+    // |snapped_clip_rect| is in absolute space space, but with scroll applied.
+    // To convert to absolute, unscrolled space, subtract scroll offsets for
+    // fixed layers.
+    if (root_layer_->GetScrollableArea() && !affected_by_scroll) {
+      snapped_clip_rect.Move(
+          RoundedIntSize(-root_layer_->GetScrollableArea()->GetScrollOffset()));
+    }
+
     properties.clipped_absolute_bounding_box =
         properties.unclipped_absolute_bounding_box;
     properties.clipped_absolute_bounding_box.Intersect(snapped_clip_rect);

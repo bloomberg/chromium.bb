@@ -379,9 +379,21 @@ void CompositingRequirementsUpdater::UpdateRecursive(
     }
   }
 
-  const IntRect& abs_bounds = use_clipped_bounding_rect
-                                  ? layer->ClippedAbsoluteBoundingBox()
-                                  : layer->UnclippedAbsoluteBoundingBox();
+  IntRect abs_bounds = use_clipped_bounding_rect
+                           ? layer->ClippedAbsoluteBoundingBox()
+                           : layer->UnclippedAbsoluteBoundingBox();
+  PaintLayer* root_layer = layout_view_.Layer();
+  // |abs_bounds| does not include root scroller offset. For the purposes
+  // of overlap, this only matters for fixed-position objects, and their
+  // relative position to other elements. Therefore, it's still correct to,
+  // instead of adding scroll to all non-fixed elements, add a reverse scroll
+  // to ones that are fixed.
+  if (root_layer->GetScrollableArea() &&
+      !layer->IsAffectedByScrollOf(root_layer)) {
+    abs_bounds.Move(
+        RoundedIntSize(root_layer->GetScrollableArea()->GetScrollOffset()));
+  }
+
   absolute_descendant_bounding_box = abs_bounds;
   if (current_recursion_data.testing_overlap_ &&
       !RequiresCompositingOrSquashing(direct_reasons)) {

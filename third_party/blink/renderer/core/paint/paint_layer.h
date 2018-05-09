@@ -731,8 +731,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     // clipping logic.
     const PaintLayer* clip_parent = nullptr;
 
+    // These two boxes do not include any applicable scroll offset of the
+    // root PaintLayer.
     IntRect clipped_absolute_bounding_box;
     IntRect unclipped_absolute_bounding_box;
+
     const LayoutBoxModelObject* clipping_container = nullptr;
   };
 
@@ -756,6 +759,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     DCHECK(!needs_ancestor_dependent_compositing_inputs_update_);
     return EnsureAncestorDependentCompositingInputs();
   }
+
+  // These two  do not include any applicable scroll offset of the
+  // root PaintLayer.
   const IntRect& ClippedAbsoluteBoundingBox() const {
     return GetAncestorDependentCompositingInputs()
         .clipped_absolute_bounding_box;
@@ -764,6 +770,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return GetAncestorDependentCompositingInputs()
         .unclipped_absolute_bounding_box;
   }
+
   const PaintLayer* OpacityAncestor() const {
     return GetAncestorDependentCompositingInputs().opacity_ancestor;
   }
