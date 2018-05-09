@@ -21,6 +21,27 @@ class MockCreateDeviceProxyCallback {
 // TODO(rockot/chfremer): Consider just renaming the type.
 using FakeVideoCaptureDeviceDescriptorTest = FakeDeviceDescriptorTest;
 
+// Tests that when a client calls CreateDevice() but releases the message pipe
+// passed in as |device_request| before the corresponding callback arrives,
+// nothing bad happens and the callback still does arrive at some point after.
+TEST_F(FakeVideoCaptureDeviceDescriptorTest,
+       ClientReleasesDeviceHandleBeforeCreateCallbackHasArrived) {
+  mojom::DevicePtr device_proxy;
+  MockCreateDeviceProxyCallback create_device_proxy_callback;
+  factory_->CreateDevice(
+      fake_device_info_.descriptor.device_id, mojo::MakeRequest(&device_proxy),
+      base::BindOnce(&MockCreateDeviceProxyCallback::Run,
+                     base::Unretained(&create_device_proxy_callback)));
+
+  base::RunLoop wait_loop;
+  EXPECT_CALL(create_device_proxy_callback,
+              Run(mojom::DeviceAccessResultCode::SUCCESS))
+      .WillOnce(InvokeWithoutArgs([&wait_loop]() { wait_loop.Quit(); }));
+
+  device_proxy.reset();
+  wait_loop.Run();
+}
+
 // Tests that when requesting a second proxy for a device without closing the
 // first one, the service revokes access to the first one by closing the
 // connection.
