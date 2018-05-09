@@ -58,6 +58,7 @@ class CORE_TEMPLATE_CLASS_EXPORT LayoutNGMixin : public Base {
   scoped_refptr<NGLayoutResult> CachedLayoutResult(
       const NGConstraintSpace&,
       NGBreakToken*) const override;
+  const NGConstraintSpace* CachedConstraintSpace() const override;
 
   void SetCachedLayoutResult(const NGConstraintSpace&,
                              NGBreakToken*,

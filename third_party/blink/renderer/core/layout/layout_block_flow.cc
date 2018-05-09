@@ -2514,6 +2514,10 @@ scoped_refptr<NGLayoutResult> LayoutBlockFlow::CachedLayoutResult(
   return nullptr;
 }
 
+const NGConstraintSpace* LayoutBlockFlow::CachedConstraintSpace() const {
+  return nullptr;
+}
+
 scoped_refptr<NGLayoutResult> LayoutBlockFlow::CachedLayoutResultForTesting() {
   return nullptr;
 }
