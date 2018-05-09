@@ -50,6 +50,16 @@ class MockRect : public Rect {
   MOCK_METHOD1(OnMove, void(const gfx::PointF& position));
   MOCK_METHOD1(OnButtonDown, void(const gfx::PointF& position));
   MOCK_METHOD1(OnButtonUp, void(const gfx::PointF& position));
+  MOCK_METHOD2(OnScrollBegin,
+               void(std::unique_ptr<blink::WebGestureEvent>,
+                    const gfx::PointF&));
+  MOCK_METHOD2(OnScrollUpdate,
+               void(std::unique_ptr<blink::WebGestureEvent>,
+                    const gfx::PointF&));
+  MOCK_METHOD2(OnScrollEnd,
+               void(std::unique_ptr<blink::WebGestureEvent>,
+                    const gfx::PointF&));
+  MOCK_METHOD0(MockedOnScrollBegin, void());
   MOCK_METHOD1(OnFocusChanged, void(bool));
   MOCK_METHOD1(OnInputEdited, void(const EditedText&));
   MOCK_METHOD1(OnInputCommitted, void(const EditedText&));
@@ -78,6 +88,8 @@ class UiInputManagerTest : public testing::Test {
     scene_ = std::make_unique<UiScene>();
     input_manager_ = std::make_unique<UiInputManager>(scene_.get());
   }
+
+  void TearDown() override { gesture_list_.clear(); }
 
   StrictMock<MockRect>* CreateAndAddMockElement(float z_position) {
     auto element = std::make_unique<StrictMock<MockRect>>();
@@ -114,6 +126,12 @@ class UiInputManagerTest : public testing::Test {
     controller_model_.touchpad_button_state = button_state;
     input_manager_->HandleInput(MsToTicks(1), render_info, controller_model_,
                                 &reticle_model_, &gesture_list_);
+  }
+
+  void AddGesture(blink::WebGestureEvent::Type type) {
+    auto gesture = std::make_unique<blink::WebGestureEvent>();
+    gesture->SetType(type);
+    gesture_list_.push_back(std::move(gesture));
   }
 
  protected:
@@ -331,6 +349,65 @@ TEST_F(UiInputManagerTest, ReleaseButtonOnAnotherElement) {
   EXPECT_CALL(*p_back_element, OnHoverLeave());
   EXPECT_CALL(*p_front_element, OnHoverEnter(_));
   HandleInput(kForwardVector, kUp);
+}
+
+// Test scrolling while on an element, moving to another element, and stopping
+// scrolling. Upon stop, the former element should have received the scrolling
+// events, and the new element should receive the new scrolling events.
+TEST_F(UiInputManagerTest, ScrollEndOnAnotherElement) {
+  StrictMock<MockRect>* p_front_element = CreateAndAddMockElement(-5.0f);
+  p_front_element->set_scrollable(true);
+  StrictMock<MockRect>* p_back_element = CreateAndAddMockElement(5.0f);
+  p_back_element->set_scrollable(true);
+
+  // Scroll on an element.
+  AddGesture(blink::WebGestureEvent::kGestureScrollBegin);
+  EXPECT_CALL(*p_front_element, OnScrollBegin(_, _));
+  HandleInput(kForwardVector, kUp);
+  EXPECT_TRUE(gesture_list_.empty());
+  AddGesture(blink::WebGestureEvent::kGestureScrollUpdate);
+  EXPECT_CALL(*p_front_element, OnScrollUpdate(_, _));
+  HandleInput(kForwardVector, kUp);
+  EXPECT_TRUE(gesture_list_.empty());
+
+  // Move away.
+  AddGesture(blink::WebGestureEvent::kGestureScrollUpdate);
+  EXPECT_CALL(*p_front_element, OnScrollUpdate(_, _));
+  HandleInput(kBackwardVector, kUp);
+  EXPECT_TRUE(gesture_list_.empty());
+
+  // Release scroll.
+  AddGesture(blink::WebGestureEvent::kGestureScrollEnd);
+  EXPECT_CALL(*p_front_element, OnScrollEnd(_, _));
+  EXPECT_CALL(*p_back_element, OnHoverEnter(_));
+  HandleInput(kBackwardVector, kUp);
+  EXPECT_TRUE(gesture_list_.empty());
+
+  // Start scrolling on a new element.
+  AddGesture(blink::WebGestureEvent::kGestureScrollBegin);
+  EXPECT_CALL(*p_back_element, OnScrollBegin(_, _));
+  HandleInput(kBackwardVector, kUp);
+  EXPECT_TRUE(gesture_list_.empty());
+}
+
+// Test that scrolling events are transfered to the parent if the child is not
+// scrollable.
+TEST_F(UiInputManagerTest, ScrollBeginOnChild) {
+  StrictMock<MockRect>* p_element = CreateAndAddMockElement(-5.0f);
+  p_element->set_scrollable(true);
+  auto child = std::make_unique<StrictMock<MockRect>>();
+  auto* p_child = child.get();
+  child->SetTranslate(0.0f, 0.0f, -5.0f);
+  child->set_hit_testable(true);
+  child->set_focusable(true);
+  p_element->AddChild(std::move(child));
+
+  AddGesture(blink::WebGestureEvent::kGestureScrollBegin);
+  EXPECT_CALL(*p_element, OnScrollBegin(_, _));
+  EXPECT_CALL(*p_child, OnScrollBegin(_, _)).Times(0);
+  HandleInput(kForwardVector, kUp);
+  ASSERT_EQ(p_child->id(), reticle_model_.target_element_id);
+  EXPECT_TRUE(gesture_list_.empty());
 }
 
 // Test that input is tolerant of disappearing elements.
