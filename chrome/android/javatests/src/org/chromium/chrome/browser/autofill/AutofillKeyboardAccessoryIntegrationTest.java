@@ -127,7 +127,6 @@ public class AutofillKeyboardAccessoryIntegrationTest {
     @Test
     @MediumTest
     @Feature({"keyboard-accessory"})
-    @DisabledTest(message = "crbug.com/838922")
     public void testTapInputFieldShowsKeyboardAccessory()
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(false);
