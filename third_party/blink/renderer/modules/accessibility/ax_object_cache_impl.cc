@@ -108,7 +108,7 @@ AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
       modification_count_(0),
       relation_cache_(new AXRelationCache(this)),
       notification_post_timer_(
-          document.GetTaskRunner(TaskType::kInternalAccessibility),
+          document.GetTaskRunner(TaskType::kInternalDefault),
           this,
           &AXObjectCacheImpl::NotificationPostTimerFired),
       accessibility_event_permission_(mojom::PermissionStatus::ASK),

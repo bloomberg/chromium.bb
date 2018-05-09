@@ -334,7 +334,7 @@ void RenderAccessibilityImpl::HandleAXEvent(const blink::WebAXObject& obj,
     // When no accessibility events are in-flight post a task to send
     // the events to the browser. We use PostTask so that we can queue
     // up additional events.
-    render_frame_->GetTaskRunner(blink::TaskType::kInternalAccessibility)
+    render_frame_->GetTaskRunner(blink::TaskType::kInternalDefault)
         ->PostTask(FROM_HERE,
                    base::BindOnce(
                        &RenderAccessibilityImpl::SendPendingAccessibilityEvents,

@@ -180,8 +180,6 @@ const char* TaskTypeToString(TaskType task_type) {
       return "InternalInspector";
     case TaskType::kInternalAnimation:
       return "InternalAnimation";
-    case TaskType::kInternalAccessibility:
-      return "InternalAccessibility";
     case TaskType::kCount:
       return "Count";
   }
