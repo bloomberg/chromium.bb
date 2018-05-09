@@ -54,7 +54,20 @@ class TabLifecycleUnitSource : public BrowserListObserver,
 
  private:
   friend class TabLifecycleUnitTest;
-
+  friend class TabManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(TabLifecycleUnitSourceTest,
+                           TabProactiveDiscardedByFrozenCallback);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerWasDiscarded);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
+                           TabManagerWasDiscardedCrossSiteSubFrame);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
+                           ProactiveFastShutdownSingleTabProcess);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
+                           ProactiveFastShutdownSharedTabProcess);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
+                           ProactiveFastShutdownWithUnloadHandler);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
+                           ProactiveFastShutdownWithBeforeunloadHandler);
   class TabLifecycleUnit;
 
   // Returns the TabLifecycleUnit instance associated with |web_contents|, or
