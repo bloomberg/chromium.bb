@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/material_components/app_bar_presenting.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_consumer.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 
 @class ChromeTableViewStyler;
@@ -19,7 +20,8 @@ typedef NS_ENUM(NSInteger, ChromeTableViewControllerStyle) {
 };
 
 // Chrome-specific TableViewController.
-@interface ChromeTableViewController : UITableViewController<AppBarPresenting>
+@interface ChromeTableViewController
+    : UITableViewController<AppBarPresenting, ChromeTableViewConsumer>
 
 // The model of this controller.
 @property(nonatomic, readonly, strong)
@@ -45,9 +47,8 @@ typedef NS_ENUM(NSInteger, ChromeTableViewControllerStyle) {
 // override this method in order to get a clean tableViewModel.
 - (void)loadModel NS_REQUIRES_SUPER;
 
-// Reconfigures the cells corresponding to the given |items| by calling
-// |configureCell:| on each cell.
-- (void)reconfigureCellsForItems:(NSArray*)items;
+// Methods for reconfiguring and reloading the table view are provided by
+// ChromeTableViewConsumer.
 
 #pragma mark UIScrollViewDelegate
 

@@ -5,6 +5,7 @@
 source_set("table_view") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "chrome_table_view_consumer.h",
     "chrome_table_view_controller.h",
     "chrome_table_view_controller.mm",
     "table_view_model.h",
