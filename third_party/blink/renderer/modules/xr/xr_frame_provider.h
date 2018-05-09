@@ -62,8 +62,7 @@ class XRFrameProvider final
       device::mojom::blink::VRDisplayFrameTransportOptionsPtr);
   void OnPresentationProviderConnectionError();
   void ProcessScheduledFrame(
-      base::Optional<device::mojom::blink::VRMagicWindowFrameDataPtr>
-          frame_data,
+      device::mojom::blink::VRMagicWindowFrameDataPtr frame_data,
       double timestamp);
 
   void RenderBackgroundImage(

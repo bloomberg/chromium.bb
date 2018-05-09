@@ -320,9 +320,9 @@ void XRFrameProvider::OnExclusiveVSync(
   // execution context caused extreme input delay due to processing
   // multiple frames without yielding, see crbug.com/701444.
   Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
-      FROM_HERE, WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
-                           WrapWeakPersistent(this), base::nullopt,
-                           time_delta.InSecondsF()));
+      FROM_HERE,
+      WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
+                WrapWeakPersistent(this), nullptr, time_delta.InSecondsF()));
 }
 
 void XRFrameProvider::OnNonExclusiveVSync(double timestamp) {
@@ -337,7 +337,7 @@ void XRFrameProvider::OnNonExclusiveVSync(double timestamp) {
 
   Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
       FROM_HERE, WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
-                           WrapWeakPersistent(this), base::nullopt, timestamp));
+                           WrapWeakPersistent(this), nullptr, timestamp));
 }
 
 void XRFrameProvider::OnNonExclusivePose(device::mojom::blink::VRPosePtr pose) {
@@ -396,7 +396,7 @@ void XRFrameProvider::RenderBackgroundImage(
 }
 
 void XRFrameProvider::ProcessScheduledFrame(
-    base::Optional<device::mojom::blink::VRMagicWindowFrameDataPtr> frame_data,
+    device::mojom::blink::VRMagicWindowFrameDataPtr frame_data,
     double timestamp) {
   DVLOG(2) << __FUNCTION__;
 
@@ -441,7 +441,7 @@ void XRFrameProvider::ProcessScheduledFrame(
       if (frame_data) {
         // TODO(https://crbug.com/837883): only render background for
         // sessions that are using AR.
-        RenderBackgroundImage(frame_data.value(), session);
+        RenderBackgroundImage(frame_data, session);
       }
 
       if (frame_pose_ && frame_pose_->input_state.has_value()) {
@@ -450,8 +450,7 @@ void XRFrameProvider::ProcessScheduledFrame(
       }
 
       if (frame_data) {
-        session->SetNonExclusiveProjectionMatrix(
-            frame_data.value()->projection_matrix);
+        session->SetNonExclusiveProjectionMatrix(frame_data->projection_matrix);
       }
 
       std::unique_ptr<TransformationMatrix> pose_matrix =
