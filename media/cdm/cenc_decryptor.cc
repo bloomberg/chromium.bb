@@ -48,6 +48,15 @@ void CopySubsamples(const std::vector<SubsampleEntry>& subsamples,
   }
 }
 
+// TODO(crbug.com/840983): This should be done in DecoderBuffer so that
+// additional fields are more easily handled.
+void CopyExtraSettings(const DecoderBuffer& input, DecoderBuffer* output) {
+  output->set_timestamp(input.timestamp());
+  output->set_duration(input.duration());
+  output->set_is_key_frame(input.is_key_frame());
+  output->CopySideDataFrom(input.side_data(), input.side_data_size());
+}
+
 }  // namespace
 
 scoped_refptr<DecoderBuffer> DecryptCencBuffer(
@@ -85,31 +94,30 @@ scoped_refptr<DecoderBuffer> DecryptCencBuffer(
     }
 
     // TODO(xhwang): Find a way to avoid this data copy.
-    return DecoderBuffer::CopyFrom(
+    auto output = DecoderBuffer::CopyFrom(
         reinterpret_cast<const uint8_t*>(decrypted_text.data()),
         decrypted_text.size());
+    CopyExtraSettings(input, output.get());
+    return output;
   }
 
-  // Verify the entries in |subsamples|.
-  size_t total_clear_size = 0;
-  size_t total_encrypted_size = 0;
-  for (size_t i = 0; i < subsamples.size(); i++) {
-    total_clear_size += subsamples[i].clear_bytes;
-    total_encrypted_size += subsamples[i].cypher_bytes;
-    // Check for overflow. This check is valid because *_size is unsigned.
-    DCHECK(total_clear_size >= subsamples[i].clear_bytes);
-    if (total_encrypted_size < subsamples[i].cypher_bytes)
-      return nullptr;
-  }
-  size_t total_size = total_clear_size + total_encrypted_size;
-  if (total_size < total_clear_size || total_size != sample_size) {
+  if (!VerifySubsamplesMatchSize(subsamples, sample_size)) {
     DVLOG(1) << "Subsample sizes do not equal input size";
     return nullptr;
   }
 
+  // Compute the size of the encrypted portion. Overflow, etc. checked by
+  // the call to VerifySubsamplesMatchSize().
+  size_t total_encrypted_size = 0;
+  for (const auto& subsample : subsamples)
+    total_encrypted_size += subsample.cypher_bytes;
+
   // No need to decrypt if there is no encrypted data.
-  if (total_encrypted_size == 0)
-    return DecoderBuffer::CopyFrom(input.data(), sample_size);
+  if (total_encrypted_size == 0) {
+    auto output = DecoderBuffer::CopyFrom(input.data(), sample_size);
+    CopyExtraSettings(input, output.get());
+    return output;
+  }
 
   // The encrypted portions of all subsamples must form a contiguous block,
   // such that an encrypted subsample that ends away from a block boundary is
@@ -137,6 +145,7 @@ scoped_refptr<DecoderBuffer> DecryptCencBuffer(
   CopySubsamples(subsamples, kDstContainsClearBytes,
                  reinterpret_cast<const uint8_t*>(decrypted_text.data()),
                  output->writable_data());
+  CopyExtraSettings(input, output.get());
   return output;
 }
 

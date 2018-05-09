@@ -23,6 +23,7 @@
 #include "media/base/limits.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
+#include "media/cdm/cbcs_decryptor.h"
 #include "media/cdm/cenc_decryptor.h"
 #include "media/cdm/cenc_utils.h"
 #include "media/cdm/json_web_key.h"
@@ -157,8 +158,10 @@ static scoped_refptr<DecoderBuffer> DecryptData(
   if (input.decrypt_config()->encryption_mode() == EncryptionMode::kCenc)
     return DecryptCencBuffer(input, key);
 
-  // TODO(crbug.com/658026): Add support for 'cbcs'.
-  DVLOG(1) << "Only 'cenc' mode supported.";
+  if (input.decrypt_config()->encryption_mode() == EncryptionMode::kCbcs)
+    return DecryptCbcsBuffer(input, key);
+
+  DVLOG(1) << "Only 'cenc' and 'cbcs' modes supported.";
   return nullptr;
 }
 
@@ -495,7 +498,7 @@ void AesDecryptor::Decrypt(StreamType stream_type,
   DecryptionKey* key = GetKey_Locked(key_id);
   if (!key) {
     DVLOG(1) << "Could not find a matching key for the given key ID.";
-    decrypt_cb.Run(kNoKey, NULL);
+    decrypt_cb.Run(kNoKey, nullptr);
     return;
   }
 
@@ -503,12 +506,12 @@ void AesDecryptor::Decrypt(StreamType stream_type,
       DecryptData(*encrypted.get(), *key->decryption_key());
   if (!decrypted) {
     DVLOG(1) << "Decryption failed.";
-    decrypt_cb.Run(kError, NULL);
+    decrypt_cb.Run(kError, nullptr);
     return;
   }
 
-  decrypted->set_timestamp(encrypted->timestamp());
-  decrypted->set_duration(encrypted->duration());
+  DCHECK_EQ(decrypted->timestamp(), encrypted->timestamp());
+  DCHECK_EQ(decrypted->duration(), encrypted->duration());
   decrypt_cb.Run(kSuccess, std::move(decrypted));
 }
 

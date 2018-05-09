@@ -317,8 +317,10 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_Encryption_CENS) {
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_Encryption_CBCS) {
+  std::string expected_result =
+      BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME) ? media::kEnded : media::kError;
   TestMp4EncryptionPlayback("bear-640x360-v_frag-cbcs.mp4", kMp4Avc1VideoOnly,
-                            media::kError);
+                            expected_result);
 }
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 

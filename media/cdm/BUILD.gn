@@ -26,8 +26,12 @@ source_set("cdm") {
   ]
 
   sources = [
+    "aes_cbc_crypto.cc",
+    "aes_cbc_crypto.h",
     "aes_decryptor.cc",
     "aes_decryptor.h",
+    "cbcs_decryptor.cc",
+    "cbcs_decryptor.h",
     "cdm_context_ref_impl.cc",
     "cdm_context_ref_impl.h",
     "cenc_decryptor.cc",
@@ -54,6 +58,7 @@ source_set("cdm") {
     "//crypto",
     "//media/base",
     "//media/formats",
+    "//third_party/boringssl",
     "//ui/gfx/geometry",
     "//url",
   ]
@@ -141,7 +146,9 @@ static_library("cdm_paths") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "aes_cbc_crypto_unittest.cc",
     "aes_decryptor_unittest.cc",
+    "cbcs_decryptor_unittest.cc",
     "cenc_decryptor_unittest.cc",
     "json_web_key_unittest.cc",
   ]
@@ -152,6 +159,7 @@ source_set("unit_tests") {
     "//media:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/boringssl",
     "//ui/gfx:test_support",
     "//url",
   ]
