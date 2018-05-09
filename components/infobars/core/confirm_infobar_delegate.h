@@ -9,6 +9,7 @@
 #include "base/strings/string16.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "ui/gfx/text_constants.h"
 #include "url/gurl.h"
 
 namespace infobars {
@@ -32,6 +33,10 @@ class ConfirmInfoBarDelegate : public infobars::InfoBarDelegate {
 
   // Returns the message string to be displayed for the InfoBar.
   virtual base::string16 GetMessageText() const = 0;
+
+  // Returns the elide behavior for the message string.
+  // Not supported on Android.
+  virtual gfx::ElideBehavior GetMessageElideBehavior() const;
 
   // Returns the buttons to be shown for this InfoBar.
   virtual int GetButtons() const;

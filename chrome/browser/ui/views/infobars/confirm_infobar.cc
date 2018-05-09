@@ -39,6 +39,7 @@ ConfirmInfoBar::ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate)
     : InfoBarView(std::move(delegate)) {
   auto* delegate_ptr = GetDelegate();
   label_ = CreateLabel(delegate_ptr->GetMessageText());
+  label_->SetElideBehavior(delegate_ptr->GetMessageElideBehavior());
   AddChildView(label_);
 
   const auto buttons = delegate_ptr->GetButtons();
