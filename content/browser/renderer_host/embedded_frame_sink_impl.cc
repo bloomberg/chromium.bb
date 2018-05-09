@@ -41,18 +41,17 @@ EmbeddedFrameSinkImpl::~EmbeddedFrameSinkImpl() {
 void EmbeddedFrameSinkImpl::CreateCompositorFrameSink(
     viz::mojom::CompositorFrameSinkClientPtr client,
     viz::mojom::CompositorFrameSinkRequest request) {
-  if (has_created_compositor_frame_sink_) {
-    DLOG(ERROR) << "CreateCompositorFrameSink() called more than once.";
-    return;
-  }
-
-  // The request to create an embedded frame sink and the lifetime of the parent
-  // are controlled by different IPC channels. It's possible the parent
-  // FrameSinkId has been invalidated by the time this request has arrived. In
-  // that case, drop the request since there is no embedder.
-  if (!host_frame_sink_manager_->RegisterFrameSinkHierarchy(
-          parent_frame_sink_id_, frame_sink_id_)) {
-    return;
+  // We might recreate the CompositorFrameSink on context loss or GPU crash.
+  // Only register frame sink hierarchy the first time.
+  if (!has_created_compositor_frame_sink_) {
+    // The request to create an embedded frame sink and the lifetime of the
+    // parent are controlled by different IPC channels. It's possible the parent
+    // FrameSinkId has been invalidated by the time this request has arrived. In
+    // that case, drop the request since there is no embedder.
+    if (!host_frame_sink_manager_->RegisterFrameSinkHierarchy(
+            parent_frame_sink_id_, frame_sink_id_)) {
+      return;
+    }
   }
 
   host_frame_sink_manager_->CreateCompositorFrameSink(
