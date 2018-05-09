@@ -375,8 +375,9 @@ public class WebVrTransitionTest {
      */
     @Test
     @MediumTest
-    @CommandLineFlags.Remove({"enable-webvr"})
-    @CommandLineFlags.Add({"enable-features=WebXR"})
+    @DisabledTest(message = "crbug.com/841103")
+    //@CommandLineFlags.Remove({"enable-webvr"})
+    //@CommandLineFlags.Add({"enable-features=WebXR"})
     public void testControlsVisibleAfterExitingVr_WebXr() throws InterruptedException {
         controlsVisibleAfterExitingVrImpl(
                 XrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"), mXrTestFramework);
