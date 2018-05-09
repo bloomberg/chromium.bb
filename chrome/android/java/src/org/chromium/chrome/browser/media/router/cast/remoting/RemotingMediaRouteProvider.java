@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.media.router.MediaRouteProvider;
 import org.chromium.chrome.browser.media.router.MediaSink;
 import org.chromium.chrome.browser.media.router.MediaSource;
 import org.chromium.chrome.browser.media.router.cast.BaseMediaRouteProvider;
+import org.chromium.chrome.browser.media.router.cast.CastSession;
 import org.chromium.chrome.browser.media.router.cast.ChromeCastSessionManager;
 import org.chromium.chrome.browser.media.router.cast.CreateRouteRequest;
 
@@ -25,6 +26,9 @@ import javax.annotation.Nullable;
  */
 public class RemotingMediaRouteProvider extends BaseMediaRouteProvider {
     private static final String TAG = "MediaRemoting";
+
+    private int mPendingNativeRequestId;
+    private MediaRoute mPendingMediaRoute;
 
     /**
      * @return Initialized {@link RemotingMediaRouteProvider} object.
@@ -103,11 +107,41 @@ public class RemotingMediaRouteProvider extends BaseMediaRouteProvider {
         MediaSink sink = request.getSink();
         MediaSource source = request.getSource();
 
-        MediaRoute route =
+        // Calling mManager.onRouteCreated() too early causes some issues. If we call it here
+        // directly, getMediaController() might be called before onSessionStarted(), which causes
+        // the FlingingRenderer's creation to fail. Instead, save the route and request ID, and only
+        // signal the route as having been created when onSessionStarted() is called.
+        mPendingMediaRoute =
                 new MediaRoute(sink.getId(), source.getSourceId(), request.getPresentationId());
-        mRoutes.put(route.id, route);
-        mManager.onRouteCreated(route.id, route.sinkId, request.getNativeRequestId(), this, true);
+        mPendingNativeRequestId = request.getNativeRequestId();
     }
+
+    private void clearPendingRoute() {
+        mPendingMediaRoute = null;
+        mPendingNativeRequestId = 0;
+    }
+
+    @Override
+    public void onSessionStarted(CastSession session) {
+        super.onSessionStarted(session);
+
+        // Continued from onSessionStarting()
+        mRoutes.put(mPendingMediaRoute.id, mPendingMediaRoute);
+        mManager.onRouteCreated(mPendingMediaRoute.id, mPendingMediaRoute.sinkId,
+                mPendingNativeRequestId, this, true);
+
+        clearPendingRoute();
+    }
+
+    @Override
+    public void onSessionStartFailed() {
+        super.onSessionStartFailed();
+
+        mManager.onRouteRequestError(
+                "Failure to start RemotingCastSession", mPendingNativeRequestId);
+
+        clearPendingRoute();
+    };
 
     @Override
     @Nullable
