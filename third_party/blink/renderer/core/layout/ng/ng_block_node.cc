@@ -269,18 +269,17 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
 
 NGBoxStrut NGBlockNode::GetScrollbarSizes() const {
   NGPhysicalBoxStrut sizes;
-  const ComputedStyle* style = GetLayoutObject()->Style();
-  if (!style->IsOverflowVisible()) {
-    const LayoutBox* box = ToLayoutBox(GetLayoutObject());
-    LayoutUnit vertical = LayoutUnit(box->VerticalScrollbarWidth());
-    LayoutUnit horizontal = LayoutUnit(box->HorizontalScrollbarHeight());
+  const ComputedStyle& style = box_->StyleRef();
+  if (!style.IsOverflowVisible()) {
+    LayoutUnit vertical = LayoutUnit(box_->VerticalScrollbarWidth());
+    LayoutUnit horizontal = LayoutUnit(box_->HorizontalScrollbarHeight());
     sizes.bottom = horizontal;
-    if (box->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+    if (box_->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
       sizes.left = vertical;
     else
       sizes.right = vertical;
   }
-  return sizes.ConvertToLogical(style->GetWritingMode(), style->Direction());
+  return sizes.ConvertToLogical(style.GetWritingMode(), style.Direction());
 }
 
 NGLayoutInputNode NGBlockNode::NextSibling() const {
