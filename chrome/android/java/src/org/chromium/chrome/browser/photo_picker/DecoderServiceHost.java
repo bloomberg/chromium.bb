@@ -42,8 +42,11 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
     // The number of successful decodes, per batch.
     private int mSuccessfulDecodes = 0;
 
-    // The number of failed decodes, per batch.
-    private int mFailedDecodes = 0;
+    // The number of runtime failures during decoding, per batch.
+    private int mFailedDecodesRuntime = 0;
+
+    // The number of out of memory failures during decoding, per batch.
+    private int mFailedDecodesMemory = 0;
 
     // A callback to use for testing to see if decoder is ready.
     static ServiceReadyCallback sReadyCallbackForTesting;
@@ -181,13 +184,19 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
             params.mTimestamp = SystemClock.elapsedRealtime();
             dispatchDecodeImageRequest(params.mFilePath, params.mSize);
         } else {
-            int totalRequests = mSuccessfulDecodes + mFailedDecodes;
+            int totalRequests = mSuccessfulDecodes + mFailedDecodesRuntime + mFailedDecodesMemory;
             if (totalRequests > 0) {
-                int successPercentage = 100 * mSuccessfulDecodes / totalRequests;
+                int runtimeFailures = 100 * mFailedDecodesRuntime / totalRequests;
                 RecordHistogram.recordPercentageHistogram(
-                        "Android.PhotoPicker.DecoderHostSuccess", successPercentage);
+                        "Android.PhotoPicker.DecoderHostFailureRuntime", runtimeFailures);
+
+                int memoryFailures = 100 * mFailedDecodesMemory / totalRequests;
+                RecordHistogram.recordPercentageHistogram(
+                        "Android.PhotoPicker.DecoderHostFailureOutOfMemory", memoryFailures);
+
                 mSuccessfulDecodes = 0;
-                mFailedDecodes = 0;
+                mFailedDecodesRuntime = 0;
+                mFailedDecodesMemory = 0;
             }
         }
     }
@@ -211,7 +220,9 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
                     mSuccessfulDecodes++;
                     closeRequest(filePath, bitmap, decodeTime);
                 } catch (RuntimeException e) {
-                    mFailedDecodes++;
+                    mFailedDecodesRuntime++;
+                } catch (OutOfMemoryError e) {
+                    mFailedDecodesMemory++;
                 }
             }
         });
