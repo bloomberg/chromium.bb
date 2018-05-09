@@ -6,6 +6,7 @@
 
 #include <objc/runtime.h>
 
+#include "base/lazy_instance.h"
 #include "base/strings/sys_string_conversions.h"
 
 @implementation CronetTransactionMetrics
@@ -91,6 +92,17 @@
 namespace {
 
 using Metrics = net::MetricsDelegate::Metrics;
+
+// Synchronizes access to |gTaskMetricsMap|.
+base::LazyInstance<base::Lock>::Leaky gTaskMetricsMapLock =
+    LAZY_INSTANCE_INITIALIZER;
+
+// A global map that contains metrics information for pending URLSessionTasks.
+// The map has to be "leaky"; otherwise, it will be destroyed on the main thread
+// when the client app terminates. When the client app terminates, the network
+// thread may still be finishing some work that requires access to the map.
+base::LazyInstance<std::map<NSURLSessionTask*, std::unique_ptr<Metrics>>>::Leaky
+    gTaskMetricsMap = LAZY_INSTANCE_INITIALIZER;
 
 // Helper method that converts the ticks data found in LoadTimingInfo to an
 // NSDate value to be used in client-side data.
@@ -272,7 +284,7 @@ CronetTransactionMetrics* NativeToIOSMetrics(Metrics& metrics)
   // Regardless whether the underlying session delegate handles
   // URLSession:task:didFinishCollectingMetrics: or not, always
   // return 'YES' for that selector. Otherwise, the method may
-  // not be called, causing unbounded growth of |task_metrics_map_|.
+  // not be called, causing unbounded growth of |gTaskMetricsMap|.
   if (aSelector == @selector(URLSession:task:didFinishCollectingMetrics:)) {
     return YES;
   }
@@ -301,52 +313,42 @@ hookSessionWithConfiguration:(NSURLSessionConfiguration*)configuration
 
 namespace cronet {
 
-// static
-NSObject* CronetMetricsDelegate::task_metrics_map_lock_ =
-    [[NSObject alloc] init];
-std::map<NSURLSessionTask*, std::unique_ptr<Metrics>>
-    CronetMetricsDelegate::task_metrics_map_;
-
 std::unique_ptr<Metrics> CronetMetricsDelegate::MetricsForTask(
     NSURLSessionTask* task) {
-  @synchronized(task_metrics_map_lock_) {
-    auto metrics_search = task_metrics_map_.find(task);
-    if (metrics_search == task_metrics_map_.end()) {
-      return nullptr;
-    }
-
-    std::unique_ptr<Metrics> metrics = std::move(metrics_search->second);
-    // Remove the entry to free memory.
-    task_metrics_map_.erase(metrics_search);
-
-    return metrics;
+  base::AutoLock auto_lock(gTaskMetricsMapLock.Get());
+  auto metrics_search = gTaskMetricsMap.Get().find(task);
+  if (metrics_search == gTaskMetricsMap.Get().end()) {
+    return nullptr;
   }
+
+  std::unique_ptr<Metrics> metrics = std::move(metrics_search->second);
+  // Remove the entry to free memory.
+  gTaskMetricsMap.Get().erase(metrics_search);
+
+  return metrics;
 }
 
 void CronetMetricsDelegate::OnStartNetRequest(NSURLSessionTask* task) {
   if (@available(iOS 10, *)) {
-    @synchronized(task_metrics_map_lock_) {
-      if ([task state] == NSURLSessionTaskStateRunning) {
-        task_metrics_map_[task] = nullptr;
-      }
+    base::AutoLock auto_lock(gTaskMetricsMapLock.Get());
+    if ([task state] == NSURLSessionTaskStateRunning) {
+      gTaskMetricsMap.Get()[task] = nullptr;
     }
   }
 }
 
 void CronetMetricsDelegate::OnStopNetRequest(std::unique_ptr<Metrics> metrics) {
   if (@available(iOS 10, *)) {
-    @synchronized(task_metrics_map_lock_) {
-      auto metrics_search = task_metrics_map_.find(metrics->task);
-      if (metrics_search != task_metrics_map_.end())
-        metrics_search->second = std::move(metrics);
-    }
+    base::AutoLock auto_lock(gTaskMetricsMapLock.Get());
+    auto metrics_search = gTaskMetricsMap.Get().find(metrics->task);
+    if (metrics_search != gTaskMetricsMap.Get().end())
+      metrics_search->second = std::move(metrics);
   }
 }
 
 size_t CronetMetricsDelegate::GetMetricsMapSize() {
-  @synchronized(task_metrics_map_lock_) {
-    return task_metrics_map_.size();
-  }
+  base::AutoLock auto_lock(gTaskMetricsMapLock.Get());
+  return gTaskMetricsMap.Get().size();
 }
 
 #pragma mark - Swizzle

@@ -97,13 +97,8 @@ class CronetMetricsDelegate : public net::MetricsDelegate {
   // nullptr.
   static std::unique_ptr<Metrics> MetricsForTask(NSURLSessionTask* task);
 
-  // Used by tests to query the size of the |task_metrics_map_| map.
+  // Used by tests to query the size of the |gTaskMetricsMap| map.
   static size_t GetMetricsMapSize();
-
- private:
-  static NSObject* task_metrics_map_lock_;
-  static std::map<NSURLSessionTask*, std::unique_ptr<Metrics>>
-      task_metrics_map_;
 };
 
 // This is the swizzling function that Cronet (in its startInternal
