@@ -33,14 +33,17 @@ class IntersectionObservation final
 
  private:
   void SetLastThresholdIndex(unsigned index) { last_threshold_index_ = index; }
+  void SetWasVisible(bool last_is_visible) {
+    last_is_visible_ = last_is_visible ? 1 : 0;
+  }
 
   Member<IntersectionObserver> observer_;
   WeakMember<Element> target_;
 
   unsigned should_report_root_bounds_ : 1;
-
-  unsigned last_threshold_index_ : 30;
-  static const unsigned kMaxThresholdIndex = (unsigned)0x40000000;
+  unsigned last_is_visible_ : 1;
+  unsigned last_threshold_index_ : 29;
+  static const unsigned kMaxThresholdIndex = (unsigned)0x20000000;
 };
 
 }  // namespace blink

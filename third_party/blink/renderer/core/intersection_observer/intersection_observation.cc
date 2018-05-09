@@ -18,6 +18,7 @@ IntersectionObservation::IntersectionObservation(IntersectionObserver& observer,
       // Note that the spec says the initial value of m_lastThresholdIndex
       // should be -1, but since m_lastThresholdIndex is unsigned, we use a
       // different sentinel value.
+      last_is_visible_(false),
       last_threshold_index_(kMaxThresholdIndex - 1) {
   UpdateShouldReportRootBoundsAfterDomChange();
 }
@@ -72,16 +73,24 @@ void IntersectionObservation::ComputeIntersectionObservations(
   // TODO(tkent): We can't use CHECK_LT due to a compile error.
   CHECK(new_threshold_index < kMaxThresholdIndex);
 
-  if (last_threshold_index_ != new_threshold_index) {
+  bool is_visible = false;
+  if (RuntimeEnabledFeatures::IntersectionObserverV2Enabled() &&
+      Observer()->trackVisibility()) {
+    // TODO(szager): Determine visibility.
+  }
+
+  if (last_threshold_index_ != new_threshold_index ||
+      last_is_visible_ != is_visible) {
     FloatRect snapped_root_bounds(geometry.RootRect());
     FloatRect* root_bounds_pointer =
         should_report_root_bounds_ ? &snapped_root_bounds : nullptr;
     IntersectionObserverEntry* new_entry = new IntersectionObserverEntry(
         timestamp, new_visible_ratio, FloatRect(geometry.TargetRect()),
         root_bounds_pointer, FloatRect(geometry.IntersectionRect()),
-        geometry.DoesIntersect(), Target());
+        geometry.DoesIntersect(), is_visible, Target());
     Observer()->EnqueueIntersectionObserverEntry(*new_entry);
     SetLastThresholdIndex(new_threshold_index);
+    SetWasVisible(is_visible);
   }
 }
 

@@ -25,6 +25,7 @@ class IntersectionObserverEntry final : public ScriptWrappable {
                             const FloatRect* root_bounds,
                             const FloatRect& intersection_rect,
                             bool is_intersecting,
+                            bool is_visible,
                             Element*);
 
   double time() const { return time_; }
@@ -33,6 +34,7 @@ class IntersectionObserverEntry final : public ScriptWrappable {
   DOMRectReadOnly* rootBounds() const { return root_bounds_; }
   DOMRectReadOnly* intersectionRect() const { return intersection_rect_; }
   bool isIntersecting() const { return is_intersecting_; }
+  bool isVisible() const { return is_visible_; }
   Element* target() const { return target_.Get(); }
 
   void Trace(blink::Visitor*) override;
@@ -45,6 +47,7 @@ class IntersectionObserverEntry final : public ScriptWrappable {
   Member<DOMRectReadOnly> intersection_rect_;
   Member<Element> target_;
   bool is_intersecting_;
+  bool is_visible_;
 };
 
 }  // namespace blink
