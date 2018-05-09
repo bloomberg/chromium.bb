@@ -59,6 +59,8 @@ class AssistantManagerServiceImpl
       UpdateSettingsUiResponseCallback callback) override;
 
   // mojom::Assistant overrides:
+  void StartVoiceInteraction() override;
+  void StopActiveInteraction() override;
   void SendTextQuery(const std::string& query) override;
   void AddAssistantEventSubscriber(
       mojom::AssistantEventSubscriberPtr subscriber) override;

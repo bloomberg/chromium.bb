@@ -15,7 +15,6 @@
 #include "ash/public/interfaces/ash_assistant_controller.mojom.h"
 #include "ash/public/interfaces/assistant_card_renderer.mojom.h"
 #include "base/macros.h"
-#include "base/timer/timer.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -121,7 +120,6 @@ class AshAssistantController
   mojom::AssistantCardRendererPtr assistant_card_renderer_;
 
   std::unique_ptr<AssistantBubble> assistant_bubble_;
-  base::OneShotTimer assistant_bubble_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AshAssistantController);
 };
