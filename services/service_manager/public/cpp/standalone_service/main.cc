@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/process/launch.h"
 #include "base/task_scheduler/task_scheduler.h"
+#include "build/build_config.h"
 #include "services/service_manager/public/cpp/standalone_service/standalone_service.h"
 #include "services/service_manager/public/cpp/standalone_service/switches.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -40,7 +41,7 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
 
-#if !defined(OFFICIAL_BIULD) && defined(OS_WIN)
+#if !defined(OFFICIAL_BUILD) && defined(OS_WIN)
   base::RouteStdioToConsole(false);
 #endif
 
