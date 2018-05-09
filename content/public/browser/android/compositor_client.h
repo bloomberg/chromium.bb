@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace content {
 
@@ -21,7 +22,7 @@ class CONTENT_EXPORT CompositorClient {
   virtual void DidSwapFrame(int pending_frames) {}
 
   // This is called on all swap buffers, regardless of cause.
-  virtual void DidSwapBuffers() {}
+  virtual void DidSwapBuffers(const gfx::Size& swap_size) {}
 
  protected:
   CompositorClient() {}

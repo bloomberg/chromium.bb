@@ -257,7 +257,7 @@ class AndroidOutputSurface : public viz::OutputSurface {
  public:
   AndroidOutputSurface(
       scoped_refptr<ui::ContextProviderCommandBuffer> context_provider,
-      base::Closure swap_buffers_callback)
+      base::RepeatingCallback<void(gfx::Size)> swap_buffers_callback)
       : viz::OutputSurface(std::move(context_provider)),
         swap_buffers_callback_(std::move(swap_buffers_callback)),
         overlay_candidate_validator_(
@@ -272,9 +272,10 @@ class AndroidOutputSurface : public viz::OutputSurface {
     if (LatencyInfoHasSnapshotRequest(frame.latency_info))
       GetCommandBufferProxy()->SetSnapshotRequested();
 
-    auto callback = base::BindOnce(
-        &AndroidOutputSurface::OnSwapBuffersCompleted,
-        weak_ptr_factory_.GetWeakPtr(), std::move(frame.latency_info));
+    auto callback =
+        base::BindOnce(&AndroidOutputSurface::OnSwapBuffersCompleted,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(frame.latency_info), frame.size);
     uint32_t flags = 0;
     if (frame.need_presentation_feedback)
       flags |= gpu::SwapBuffersFlags::kPresentationFeedback;
@@ -347,9 +348,10 @@ class AndroidOutputSurface : public viz::OutputSurface {
   }
 
   void OnSwapBuffersCompleted(std::vector<ui::LatencyInfo> latency_info,
+                              gfx::Size swap_size,
                               const gpu::SwapBuffersCompleteParams& params) {
     client_->DidReceiveSwapBuffersAck(params.swap_response.swap_id);
-    swap_buffers_callback_.Run();
+    swap_buffers_callback_.Run(swap_size);
     UpdateLatencyInfoOnSwap(params.swap_response, &latency_info);
     RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(latency_info);
     latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
@@ -362,7 +364,7 @@ class AndroidOutputSurface : public viz::OutputSurface {
 
  private:
   viz::OutputSurfaceClient* client_ = nullptr;
-  base::Closure swap_buffers_callback_;
+  base::RepeatingCallback<void(gfx::Size)> swap_buffers_callback_;
   std::unique_ptr<viz::OverlayCandidateValidator> overlay_candidate_validator_;
   ui::LatencyTracker latency_tracker_;
 
@@ -852,6 +854,7 @@ void CompositorImpl::InitializeDisplay(
   viz::RendererSettings renderer_settings;
   renderer_settings.allow_antialiasing = false;
   renderer_settings.highp_threshold_min = 2048;
+  renderer_settings.auto_resize_output_surface = false;
   auto* gpu_memory_buffer_manager = BrowserMainLoop::GetInstance()
                                         ->gpu_channel_establish_factory()
                                         ->GetGpuMemoryBufferManager();
@@ -880,8 +883,8 @@ void CompositorImpl::InitializeDisplay(
   host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }
 
-void CompositorImpl::DidSwapBuffers() {
-  client_->DidSwapBuffers();
+void CompositorImpl::DidSwapBuffers(gfx::Size swap_size) {
+  client_->DidSwapBuffers(swap_size);
 }
 
 cc::UIResourceId CompositorImpl::CreateUIResource(

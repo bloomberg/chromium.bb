@@ -264,8 +264,15 @@ void RenderWidgetHostViewAndroid::InitAsFullscreen(
 }
 
 bool RenderWidgetHostViewAndroid::SynchronizeVisualProperties() {
-  if (delegated_frame_host_)
+  if (delegated_frame_host_) {
     delegated_frame_host_->SynchronizeVisualProperties();
+
+    // TODO(ericrk): This can be removed once surface synchronization is
+    // enabled. https://crbug.com/835102
+    delegated_frame_host_->PixelSizeWillChange(
+        GetCompositorViewportPixelSize());
+  }
+
   return host()->SynchronizeVisualProperties();
 }
 

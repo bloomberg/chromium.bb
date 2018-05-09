@@ -4,6 +4,7 @@
 
 #include "ui/android/delegated_frame_host_android.h"
 
+#include "base/android/build_info.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "cc/layers/solid_color_layer.h"
@@ -24,6 +25,16 @@
 namespace ui {
 
 namespace {
+
+// Wait up to 5 seconds for the first frame to be produced. Having Android
+// display a placeholder for a longer period of time is preferable to drawing
+// nothing, and the first frame can take a while on low-end systems.
+static const int64_t kFirstFrameTimeoutSeconds = 5;
+
+// Wait up to 1 second for a frame of the correct size to be produced. Android
+// OS will only wait 4 seconds, so we limit this to 1 second to make sure we
+// have always produced a frame before the OS stops waiting.
+static const int64_t kResizeTimeoutSeconds = 1;
 
 constexpr viz::LocalSurfaceId kInvalidLocalSurfaceId;
 
@@ -99,7 +110,12 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                     std::move(hit_test_region_list));
   }
+
   compositor_attach_until_frame_lock_.reset();
+
+  DCHECK(content_layer_);
+  if (content_layer_->bounds() == expected_pixel_size_)
+    compositor_pending_resize_lock_.reset();
 }
 
 void DelegatedFrameHostAndroid::DidNotProduceFrame(
@@ -196,8 +212,8 @@ void DelegatedFrameHostAndroid::AttachToCompositor(
   // frame from being produced. If we already have delegated content, no need
   // to take the lock.
   if (compositor->IsDrawingFirstVisibleFrame() && !HasDelegatedContent()) {
-    compositor_attach_until_frame_lock_ =
-        compositor->GetCompositorLock(this, base::TimeDelta::FromSeconds(5));
+    compositor_attach_until_frame_lock_ = compositor->GetCompositorLock(
+        this, base::TimeDelta::FromSeconds(kFirstFrameTimeoutSeconds));
   }
   compositor->AddChildFrameSink(frame_sink_id_);
   client_->SetBeginFrameSource(&begin_frame_source_);
@@ -208,6 +224,7 @@ void DelegatedFrameHostAndroid::DetachFromCompositor() {
   if (!registered_parent_compositor_)
     return;
   compositor_attach_until_frame_lock_.reset();
+  compositor_pending_resize_lock_.reset();
   client_->SetBeginFrameSource(nullptr);
   support_->SetNeedsBeginFrame(false);
   registered_parent_compositor_->RemoveChildFrameSink(frame_sink_id_);
@@ -219,6 +236,26 @@ void DelegatedFrameHostAndroid::SynchronizeVisualProperties() {
   // TODO(ericrk): We should handle updating our surface layer with the new
   // ID if surface synchronization is enabled. See similar behavior in
   // delegated_frame_host.cc. https://crbug.com/801350
+}
+
+void DelegatedFrameHostAndroid::PixelSizeWillChange(
+    const gfx::Size& pixel_size) {
+  // We never take the resize lock unless we're on O+, as previous versions of
+  // Android won't wait for us to produce the correct sized frame and will end
+  // up looking worse.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_OREO) {
+    return;
+  }
+
+  expected_pixel_size_ = pixel_size;
+  if (registered_parent_compositor_) {
+    if (!content_layer_ || content_layer_->bounds() != expected_pixel_size_) {
+      compositor_pending_resize_lock_ =
+          registered_parent_compositor_->GetCompositorLock(
+              this, base::TimeDelta::FromSeconds(kResizeTimeoutSeconds));
+    }
+  }
 }
 
 void DelegatedFrameHostAndroid::DidReceiveCompositorFrameAck(

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/android/delegated_frame_host_android.h"
+#include "base/android/build_info.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
@@ -90,15 +91,29 @@ class DelegatedFrameHostAndroidTest : public testing::Test {
     return lock_manager_.GetCompositorLock(client, time_delta).release();
   }
 
-  void SubmitCompositorFrame() {
+  void SubmitCompositorFrame(const gfx::Size& frame_size = gfx::Size(10, 10)) {
     viz::CompositorFrame frame;
     auto render_pass = viz::RenderPass::Create();
-    render_pass->output_rect = gfx::Rect(10, 10);
+    render_pass->output_rect = gfx::Rect(frame_size);
     frame.render_pass_list.push_back(std::move(render_pass));
     frame.metadata.begin_frame_ack.sequence_number = 1;
     frame.metadata.device_scale_factor = 1;
     frame_host_->SubmitCompositorFrame(GetFakeId(), std::move(frame),
                                        viz::mojom::HitTestRegionList::New());
+  }
+
+  void SetUpValidFrame(const gfx::Size& frame_size) {
+    EXPECT_CALL(compositor_, IsDrawingFirstVisibleFrame())
+        .WillOnce(Return(true));
+    EXPECT_CALL(compositor_, DoGetCompositorLock(frame_host_.get(), _))
+        .WillOnce(Invoke(this, &DelegatedFrameHostAndroidTest::GetLock));
+    EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(true))
+        .Times(1);
+    frame_host_->AttachToCompositor(&compositor_);
+
+    EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(false))
+        .Times(1);
+    SubmitCompositorFrame(frame_size);
   }
 
  protected:
@@ -161,6 +176,98 @@ TEST_F(DelegatedFrameHostAndroidTest, CompositorLockReleasedWithDetach) {
   EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(false))
       .Times(1);
   frame_host_->DetachFromCompositor();
+}
+
+TEST_F(DelegatedFrameHostAndroidTest, ResizeLockBasic) {
+  // Resize lock is only enabled on O+.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_OREO) {
+    return;
+  }
+
+  SetUpValidFrame(gfx::Size(10, 10));
+
+  // Tell the frame host to resize, it should take a lock.
+  EXPECT_CALL(compositor_, DoGetCompositorLock(frame_host_.get(), _))
+      .WillOnce(Invoke(this, &DelegatedFrameHostAndroidTest::GetLock));
+  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(true))
+      .Times(1);
+  frame_host_->PixelSizeWillChange(gfx::Size(50, 50));
+
+  // Submit a frame of the wrong size, nothing should change.
+  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(false))
+      .Times(0);
+  SubmitCompositorFrame(gfx::Size(20, 20));
+
+  // Submit a frame with the right size, the lock should release.
+  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(false))
+      .Times(1);
+  SubmitCompositorFrame(gfx::Size(50, 50));
+}
+
+TEST_F(DelegatedFrameHostAndroidTest, ResizeLockNotTakenIfNoSizeChange) {
+  // Resize lock is only enabled on O+.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_OREO) {
+    return;
+  }
+
+  SetUpValidFrame(gfx::Size(10, 10));
+
+  // Tell the frame host to resize to the existing size, nothing should happen.
+  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(true))
+      .Times(0);
+  frame_host_->PixelSizeWillChange(gfx::Size(10, 10));
+}
+
+TEST_F(DelegatedFrameHostAndroidTest, ResizeLockReleasedWithDetach) {
+  // Resize lock is only enabled on O+.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_OREO) {
+    return;
+  }
+
+  SetUpValidFrame(gfx::Size(10, 10));
+
+  // Tell the frame host to resize, it should take a lock.
+  EXPECT_CALL(compositor_, DoGetCompositorLock(frame_host_.get(), _))
+      .WillOnce(Invoke(this, &DelegatedFrameHostAndroidTest::GetLock));
+  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(true))
+      .Times(1);
+  frame_host_->PixelSizeWillChange(gfx::Size(50, 50));
+
+  // Lock should be released when we detach.
+  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(false))
+      .Times(1);
+  frame_host_->DetachFromCompositor();
+}
+
+TEST_F(DelegatedFrameHostAndroidTest, TestBothCompositorLocks) {
+  // Resize lock is only enabled on O+.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_OREO) {
+    return;
+  }
+
+  // Attach during the first frame, first lock will be taken.
+  EXPECT_CALL(compositor_, IsDrawingFirstVisibleFrame()).WillOnce(Return(true));
+  EXPECT_CALL(compositor_, DoGetCompositorLock(frame_host_.get(), _))
+      .WillOnce(Invoke(this, &DelegatedFrameHostAndroidTest::GetLock));
+  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(true))
+      .Times(1);
+  frame_host_->AttachToCompositor(&compositor_);
+
+  // Tell the frame host to resize, it should take a second lock.
+  EXPECT_CALL(compositor_, DoGetCompositorLock(frame_host_.get(), _))
+      .WillOnce(Invoke(this, &DelegatedFrameHostAndroidTest::GetLock));
+  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(true))
+      .Times(0);
+  frame_host_->PixelSizeWillChange(gfx::Size(50, 50));
+
+  // Submit a compositor frame of the right size, both locks should release.
+  EXPECT_CALL(lock_manager_client_, OnCompositorLockStateChanged(false))
+      .Times(1);
+  SubmitCompositorFrame(gfx::Size(50, 50));
 }
 
 }  // namespace

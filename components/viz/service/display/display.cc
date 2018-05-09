@@ -315,7 +315,8 @@ bool Display::DrawAndSwap() {
   gfx::Size surface_size;
   bool have_damage = false;
   auto& last_render_pass = *frame.render_pass_list.back();
-  if (last_render_pass.output_rect.size() != current_surface_size_ &&
+  if (settings_.auto_resize_output_surface &&
+      last_render_pass.output_rect.size() != current_surface_size_ &&
       last_render_pass.damage_rect == last_render_pass.output_rect &&
       !current_surface_size_.IsEmpty()) {
     // Resize the output rect to the current surface size so that we won't
