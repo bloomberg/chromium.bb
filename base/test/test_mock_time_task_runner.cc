@@ -196,6 +196,10 @@ void TestMockTimeTaskRunner::FastForwardBy(TimeDelta delta) {
   ForwardClocksUntilTickTime(original_now_ticks + delta);
 }
 
+void TestMockTimeTaskRunner::AdvanceMockTickClock(TimeDelta delta) {
+  ForwardClocksUntilTickTime(NowTicks() + delta);
+}
+
 void TestMockTimeTaskRunner::RunUntilIdle() {
   DCHECK(thread_checker_.CalledOnValidThread());
   ProcessAllTasksNoLaterThan(TimeDelta());
