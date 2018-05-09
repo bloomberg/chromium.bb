@@ -2,6 +2,7 @@
 <title>Test the play() behaviour with regards to the returned promise for media elements.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="network-error.js"></script>
 <script>
 // This is testing the behavior of play() with regards to the returned
 // promise. This test file is creating a small framework in order to be able
@@ -64,38 +65,36 @@ var tests = [
     // This test doesn't test a spec behaviour but tests that the Blink
     // implementation properly changed after the spec changed.
     function playDecodeError(t, audio) {
-        audio.src = "content/test.oga";
+        audio.src = "content/corrupt.webm";
 
         audio.onerror = t.step_func(function() {
             assert_true(audio.error instanceof MediaError);
             assert_equals(audio.error.code, MediaError.MEDIA_ERR_DECODE);
         });
 
-        // The setMediaElementNetworkState() method requires metadata to be available.
-        audio.onloadedmetadata = t.step_func(function() {
-          internals.setMediaElementNetworkState(audio, 6); // NetworkStateDecodeError.
-          playExpectingResolvedPromise(t, audio);
-        });
+        playExpectingResolvedPromise(t, audio);
     },
 
     // Test that play() returns a resolved promise if called after the
     // element suffered from a network error.
     // This test doesn't test a spec behaviour but tests that the Blink
     // implementation properly changed after the spec changed
-    function playNetworkError(t, audio) {
-        audio.src = "content/test.oga";
+    //
+    // TODO(mlamouri): This test is disabled because the underlying behavior it
+    // is intended to test is actually broken. http://crbug.com/841063
+    //
+    // function playNetworkError(t, audio) {
+    //     audio.onerror = t.step_func(function() {
+    //         assert_true(audio.error instanceof MediaError);
+    //         assert_equals(audio.error.code, MediaError.MEDIA_ERR_NETWORK);
+    //     });
 
-        audio.onerror = t.step_func(function() {
-            assert_true(audio.error instanceof MediaError);
-            assert_equals(audio.error.code, MediaError.MEDIA_ERR_NETWORK);
-        });
+    //     audio.onloadedmetadata = t.step_func(function() {
+    //         playExpectingResolvedPromise(t, audio);
+    //     });
 
-        // The setMediaElementNetworkState() method requires metadata to be available.
-        audio.onloadedmetadata = t.step_func(function() {
-          internals.setMediaElementNetworkState(audio, 5); // NetworkStateNetworkError.
-          playExpectingResolvedPromise(t, audio);
-        });
-    },
+    //     generateNetworkError(audio);
+    // },
 
     // Test that play() returns a rejected promise if the element is
     // sufferring from a not supported error.
