@@ -97,11 +97,9 @@
         outline: none;
       }
 
-      paper-input-container {
-        --paper-input-container-input: {
-          font: inherit;
-        };
-        --paper-input-container-input-color: inherit;
+      #search input[type='search'] {
+        @apply --paper-input-container-shared-input-style;
+        font: inherit;
       }
     </style>
   </template>

@@ -78,7 +78,7 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.updateActionButtonState_();
+    this.async(this.updateActionButtonState_.bind(this));
     this.browserProxy_.searchEngineEditStarted(
         this.model ? this.model.modelIndex : this.DEFAULT_MODEL_INDEX);
     this.$.dialog.showModal();

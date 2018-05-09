@@ -85,6 +85,7 @@ cr.define('settings_startup_urls_page', function() {
 
     test('Initialization_Add', function() {
       document.body.appendChild(dialog);
+      Polymer.dom.flush();
       assertTrue(dialog.$.dialog.open);
 
       // Assert that the "Add" button is disabled.

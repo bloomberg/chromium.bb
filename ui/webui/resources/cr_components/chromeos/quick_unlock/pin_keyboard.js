@@ -395,7 +395,7 @@ Polymer({
   passwordElement_: function() {
     // |passwordElement| is null by default. It can be set to override the
     // input field that will be populated with the keypad.
-    return this.passwordElement || this.$.pinInput.inputElement;
+    return this.passwordElement || this.$.pinInput.inputElement.inputElement;
   },
 });
 })();

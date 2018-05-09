@@ -112,13 +112,16 @@ cr.define('settings_search_engines_page', function() {
               Promise.resolve();
         };
 
-        assertEquals('', dialog.$.searchEngine.value);
-        assertEquals('', dialog.$.keyword.value);
-        assertEquals('', dialog.$.queryUrl.value);
         const actionButton = dialog.$.actionButton;
-        assertTrue(actionButton.disabled);
 
-        return inputAndValidate('searchEngine')
+        return browserProxy.whenCalled('searchEngineEditStarted')
+            .then(() => {
+              assertEquals('', dialog.$.searchEngine.value);
+              assertEquals('', dialog.$.keyword.value);
+              assertEquals('', dialog.$.queryUrl.value);
+              assertTrue(actionButton.disabled);
+            })
+            .then(() => inputAndValidate('searchEngine'))
             .then(() => inputAndValidate('keyword'))
             .then(() => inputAndValidate('queryUrl'))
             .then(() => {

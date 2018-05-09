@@ -265,7 +265,7 @@ Polymer({
       listenOnce(document, 'show-container', () => {
         const input = /** @type {!PaperInputElement} */ (
             this.$$('#existingPassphraseInput'));
-        input.inputElement.focus();
+        input.focus();
       });
     }
   },
