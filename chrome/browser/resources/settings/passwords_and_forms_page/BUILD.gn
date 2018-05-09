@@ -82,6 +82,7 @@ js_library("passwords_section") {
     ":password_list_item",
     ":password_manager_proxy",
     "..:global_scroll_target_behavior",
+    "..:list_property_update_behavior",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/cr_elements/cr_toast:cr_toast",
     "//ui/webui/resources/js:assert",

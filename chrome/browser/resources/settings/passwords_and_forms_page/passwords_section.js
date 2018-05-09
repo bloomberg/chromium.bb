@@ -8,7 +8,7 @@
  * save any passwords.
  */
 
-/** @typedef {!{model: !{item: !chrome.passwordsPrivate.PasswordUiEntry}}} */
+/** @typedef {!{model: !{item: !PasswordManagerProxy.UiEntryWithPassword}}} */
 let PasswordUiEntryEvent;
 
 /** @typedef {!{model: !{item: !chrome.passwordsPrivate.ExceptionEntry}}} */
@@ -22,6 +22,7 @@ Polymer({
 
   behaviors: [
     I18nBehavior,
+    ListPropertyUpdateBehavior,
     Polymer.IronA11yKeysBehavior,
     settings.GlobalScrollTargetBehavior,
   ],
@@ -35,15 +36,21 @@ Polymer({
 
     /**
      * An array of passwords to display.
-     * @type {!Array<!PasswordManagerProxy.PasswordUiEntry>}
+     * @type {!Array<!PasswordManagerProxy.UiEntryWithPassword>}
      */
-    savedPasswords: Array,
+    savedPasswords: {
+      type: Array,
+      value: [],
+    },
 
     /**
      * An array of sites to display.
      * @type {!Array<!PasswordManagerProxy.ExceptionEntry>}
      */
-    passwordExceptions: Array,
+    passwordExceptions: {
+      type: Array,
+      value: [],
+    },
 
     /**
      * Duration of the undo toast in ms
@@ -76,7 +83,7 @@ Polymer({
     /** @private */
     showExportPasswords_: {
       type: Boolean,
-      computed: 'showExportPasswordsAndReady_(savedPasswords)'
+      computed: 'showExportPasswordsAndReady_(savedPasswords.splices)'
     },
 
     /** @private */
@@ -97,7 +104,7 @@ Polymer({
       value: '',
     },
 
-    /** @private {!PasswordManagerProxy.PasswordUiEntry} */
+    /** @private {!PasswordManagerProxy.UiEntryWithPassword} */
     lastFocused_: Object,
   },
 
@@ -144,14 +151,13 @@ Polymer({
   /** @override */
   attached: function() {
     // Create listener functions.
-    const setSavedPasswordsListener = list => {
-      this.savedPasswords = list.map(entry => {
-        return {
-          entry: entry,
-          password: '',
-        };
-      });
-    };
+    const setSavedPasswordsListener = list => this.updateList(
+        'savedPasswords',
+        item => `${item.entry.index}_${item.entry.loginPair.urls.shown}`,
+        list.map(entry => ({
+                   entry: entry,
+                   password: '',
+                 })));
 
     const setPasswordExceptionsListener = list => {
       this.passwordExceptions = list;
@@ -218,19 +224,17 @@ Polymer({
   },
 
   /**
-   * @param {!Array<!PasswordManagerProxy.UiEntryWithPassword>} savedPasswords
    * @param {string} filter
    * @return {!Array<!PasswordManagerProxy.UiEntryWithPassword>}
    * @private
    */
-  getFilteredPasswords_: function(savedPasswords, filter) {
+  getFilteredPasswords_: function(filter) {
     if (!filter)
-      return savedPasswords;
+      return this.savedPasswords.slice();
 
-    return savedPasswords.filter(p => {
-      return [p.entry.loginPair.urls.shown, p.entry.loginPair.username].some(
-          term => term.toLowerCase().includes(filter.toLowerCase()));
-    });
+    return this.savedPasswords.filter(
+        p => [p.entry.loginPair.urls.shown, p.entry.loginPair.username].some(
+            term => term.toLowerCase().includes(filter.toLowerCase())));
   },
 
   /**
@@ -239,9 +243,8 @@ Polymer({
    * @private
    */
   passwordExceptionFilter_: function(filter) {
-    return function(exception) {
-      return exception.urls.shown.toLowerCase().includes(filter.toLowerCase());
-    };
+    return exception => exception.urls.shown.toLowerCase().includes(
+               filter.toLowerCase());
   },
 
   /**
@@ -365,14 +368,11 @@ Polymer({
     return toggleValue ? this.i18n('toggleOn') : this.i18n('toggleOff');
   },
 
-  /**
-   * @private
-   * @param {!Array<!PasswordManagerProxy.PasswordUiEntry>} savedPasswords
-   */
-  showExportPasswordsAndReady_: function(savedPasswords) {
+  /** @private */
+  showExportPasswordsAndReady_: function() {
     return loadTimeData.valueExists('showExportPasswords') &&
         loadTimeData.getBoolean('showExportPasswords') &&
-        savedPasswords.length > 0;
+        this.savedPasswords.length > 0;
   },
 
   /**
