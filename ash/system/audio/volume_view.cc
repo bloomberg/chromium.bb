@@ -17,6 +17,8 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -256,6 +258,12 @@ void VolumeView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (sender == icon_) {
     CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
     bool mute_on = !audio_handler->IsOutputMuted();
+
+    if (mute_on)
+      base::RecordAction(base::UserMetricsAction("StatusArea_Audio_Muted"));
+    else
+      base::RecordAction(base::UserMetricsAction("StatusArea_Audio_Unmuted"));
+
     audio_handler->SetOutputMute(mute_on);
     if (!mute_on)
       audio_handler->AdjustOutputVolumeToAudibleLevel();
