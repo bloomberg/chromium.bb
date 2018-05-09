@@ -58,18 +58,18 @@ TEST(CrossOriginReadBlockingTest, SniffForHTML) {
 
   // HTML comment followed by whitespace and valid HTML tags.
   EXPECT_EQ(SniffingResult::kYes,
-            CORB::SniffForHTML(" <!-- this is comment --> <html><body>"));
+            CORB::SniffForHTML(" <!-- this is comment -->\n<html><body>"));
 
   // HTML comment, whitespace, more HTML comments, HTML tags.
   EXPECT_EQ(
       SniffingResult::kYes,
       CORB::SniffForHTML(
-          "<!-- this is comment -->\n<!-- this is comment --><html><body>"));
+          "<!-- this is comment -->\n<!-- this is comment -->\n<html><body>"));
 
   // HTML comment followed by valid HTML tag.
   EXPECT_EQ(
       SniffingResult::kYes,
-      CORB::SniffForHTML("<!-- this is comment <!-- --><script></script>"));
+      CORB::SniffForHTML("<!-- this is comment <!-- -->\n<script></script>"));
 
   // Whitespace followed by valid Javascript.
   EXPECT_EQ(SniffingResult::kNo,
@@ -79,7 +79,7 @@ TEST(CrossOriginReadBlockingTest, SniffForHTML) {
   EXPECT_EQ(
       SniffingResult::kNo,
       CORB::SniffForHTML(
-          " <!-- this is comment\n document.write(1);\n// -->window.open()"));
+          " <!-- this is comment\n document.write(1);\n// -->\nwindow.open()"));
 
   // HTML/Javascript polyglot should return kNo.
   EXPECT_EQ(SniffingResult::kNo,
@@ -88,15 +88,25 @@ TEST(CrossOriginReadBlockingTest, SniffForHTML) {
                 "var blah = 123;\n"
                 "//--></script></body></html>"));
 
-  // Tests to cover more of the state machine inside MaybeSkipHtmlComment.
-  EXPECT_EQ(SniffingResult::kNo, CORB::SniffForHTML("<!-- -/* --><html>"));
-  EXPECT_EQ(SniffingResult::kNo, CORB::SniffForHTML("<!-- --/* --><html>"));
-  EXPECT_EQ(SniffingResult::kYes, CORB::SniffForHTML("<!----><html>"));
+  // Tests to cover more of MaybeSkipHtmlComment.
+  EXPECT_EQ(SniffingResult::kMaybe, CORB::SniffForHTML("<!-- -/* --><html>"));
+  EXPECT_EQ(SniffingResult::kMaybe, CORB::SniffForHTML("<!-- --/* --><html>"));
+  EXPECT_EQ(SniffingResult::kYes, CORB::SniffForHTML("<!-- -/* -->\n<html>"));
+  EXPECT_EQ(SniffingResult::kYes, CORB::SniffForHTML("<!-- --/* -->\n<html>"));
+  EXPECT_EQ(SniffingResult::kMaybe, CORB::SniffForHTML("<!----> <html>"));
+  EXPECT_EQ(SniffingResult::kYes, CORB::SniffForHTML("<!---->\n<html>"));
+  EXPECT_EQ(SniffingResult::kYes, CORB::SniffForHTML("<!---->\r<html>"));
   EXPECT_EQ(SniffingResult::kYes,
-            CORB::SniffForHTML("<!-- ---/--> <html><body>"));
+            CORB::SniffForHTML("<!-- ---/-->\n<html><body>"));
+
+  // HTML spec only allows *ASCII* whitespace before the first html element.
+  // See also https://html.spec.whatwg.org/multipage/syntax.html and
+  // https://infra.spec.whatwg.org/#ascii-whitespace.
+  EXPECT_EQ(SniffingResult::kNo, CORB::SniffForHTML("<!---->\u2028<html>"));
+  EXPECT_EQ(SniffingResult::kNo, CORB::SniffForHTML("<!---->\u2029<html>"));
 
   // Commented out html tag followed by non-html (" x").
-  StringPiece commented_out_html_tag_data("<!-- <html> <?xml> \n<html>--> x");
+  StringPiece commented_out_html_tag_data("<!-- <html> <?xml> \n<html>-->\nx");
   EXPECT_EQ(SniffingResult::kNo,
             CrossOriginReadBlocking::SniffForHTML(commented_out_html_tag_data));
 
@@ -115,7 +125,8 @@ TEST(CrossOriginReadBlockingTest, SniffForHTML) {
   EXPECT_EQ(SniffingResult::kMaybe, CORB::SniffForHTML(""));
   EXPECT_EQ(SniffingResult::kMaybe, CORB::SniffForHTML("<!"));
   EXPECT_EQ(SniffingResult::kMaybe, CORB::SniffForHTML("<!-- unterminated..."));
-  EXPECT_EQ(SniffingResult::kNo, CORB::SniffForHTML("<!-- /* js "));
+  EXPECT_EQ(SniffingResult::kMaybe,
+            CORB::SniffForHTML("<!-- blah --> <html> no newline yet"));
 }
 
 TEST(CrossOriginReadBlockingTest, SniffForXML) {

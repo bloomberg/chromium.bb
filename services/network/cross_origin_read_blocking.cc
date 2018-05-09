@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <string>
 #include <unordered_set>
 
@@ -92,79 +93,45 @@ SniffingResult MatchesSignature(StringPiece* data,
 //   kMaybe.
 // - Returns kNo otherwise.
 //
-// Mutates |data| to advance past the comment when returning kYes.
-//
-// Additionally, if the body of the HTML comment (e.g. normally the kYes and
-// kMaybe cases) contains javascript-like comments (e.g. |data| == "<!--/*-->"),
-// then kNo will be returned (and |data| won't be mutated).  This helps avoid
-// CORB blocking of the html/js polyglots identified in
-// https://crbug.com/839425.
+// Mutates |data| to advance past the comment when returning kYes.  Note that
+// SingleLineHTMLCloseComment ECMAscript rule is taken into account which means
+// that characters following an HTML comment are consumed up to the nearest line
+// terminating character.
 SniffingResult MaybeSkipHtmlComment(StringPiece* data) {
-  static const StringPiece kBeginCommentSignature = "<!--";
-  if (!data->starts_with(kBeginCommentSignature)) {
-    if (kBeginCommentSignature.starts_with(*data))
+  constexpr StringPiece kStartString = "<!--";
+  if (!data->starts_with(kStartString)) {
+    if (kStartString.starts_with(*data))
       return CrossOriginReadBlocking::kMaybe;
     return CrossOriginReadBlocking::kNo;
   }
 
-  enum State {
-    kNothingSpecial,
-    kAfterDash,
-    kAfterDashDash,
-    kAfterSlash,
-  } state = kNothingSpecial;
-  for (size_t i = kBeginCommentSignature.length(); i < data->length(); i++) {
-    char c = (*data)[i];
-    switch (state) {
-      case kNothingSpecial:
-        if (c == '-')
-          state = kAfterDash;
-        else if (c == '/')
-          state = kAfterSlash;
-        else
-          DCHECK_EQ(kNothingSpecial, state);
-        break;
+  constexpr StringPiece kEndString = "-->";
+  size_t end_of_html_comment = data->find(kEndString, kStartString.length());
+  if (end_of_html_comment == StringPiece::npos)
+    return CrossOriginReadBlocking::kMaybe;
+  end_of_html_comment += kEndString.length();
 
-      case kAfterDash:
-        if (c == '-')
-          state = kAfterDashDash;
-        else if (c == '/')
-          state = kAfterSlash;
-        else
-          state = kNothingSpecial;
-        break;
+  // Skipping until the first line terminating character.  See
+  // https://crbug.com/839945 for the motivation behind this.
+  //
+  // https://www.ecma-international.org/ecma-262/8.0/index.html#sec-line-terminators
+  // defines <LF>, <CR>, <LS> ::= "\u2028", <PS> ::= "\u2029".
+  // https://www.ecma-international.org/ecma-262/8.0/index.html#prod-LineTerminator
+  // defines LineTerminator ::= <LF> | <CR> | <LS> | <PS>.
+  DCHECK_LT(data->length(), base::StringPiece::npos);
+  size_t end_of_line = base::StringPiece::npos;
+  end_of_line =
+      std::min(end_of_line, data->find_first_of("\r\n", end_of_html_comment));
+  end_of_line =
+      std::min(end_of_line, data->find("\u2028", end_of_html_comment));
+  end_of_line =
+      std::min(end_of_line, data->find("\u2029", end_of_html_comment));
+  if (end_of_line == base::StringPiece::npos)
+    return CrossOriginReadBlocking::kMaybe;
 
-      case kAfterDashDash:
-        if (c == '>') {
-          // Found the end of the HTML comment.
-          data->remove_prefix(i + 1);  // Advance past the comment.
-          return CrossOriginReadBlocking::kYes;
-        } else if (c == '-') {
-          state = kAfterDashDash;
-        } else if (c == '/') {
-          state = kAfterSlash;
-        } else {
-          state = kNothingSpecial;
-        }
-        break;
-
-      case kAfterSlash:
-        if (c == '/' || c == '*') {
-          // html/js polyglot - let's report that this is not HTML, to avoid
-          // blocking what may be a valid Javascript.
-          return CrossOriginReadBlocking::kNo;
-        }
-        if (c == '/')
-          state = kAfterSlash;
-        else if (c == '-')
-          state = kAfterDash;
-        else
-          state = kNothingSpecial;
-        break;
-    }
-  }
-
-  return CrossOriginReadBlocking::kMaybe;
+  // Found real end of the combined HTML/JS comment.
+  data->remove_prefix(end_of_line);
+  return CrossOriginReadBlocking::kYes;
 }
 
 // Headers from

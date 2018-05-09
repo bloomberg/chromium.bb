@@ -433,7 +433,8 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockDocuments) {
                                            "valid.js",
                                            "json-list.js",
                                            "nosniff.json-list.js",
-                                           "js-html-polyglot.html"};
+                                           "js-html-polyglot.html",
+                                           "js-html-polyglot2.html"};
   for (const char* resource : sniff_allowed_resources) {
     SCOPED_TRACE(base::StringPrintf("... while testing page: %s", resource));
     base::HistogramTester histograms;
