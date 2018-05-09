@@ -633,6 +633,7 @@ jumbo_component("views") {
       "widget/desktop_aura/desktop_focus_rules.cc",
       "widget/desktop_aura/desktop_native_cursor_manager.cc",
       "widget/desktop_aura/desktop_native_widget_aura.cc",
+      "widget/desktop_aura/desktop_screen.cc",
       "widget/desktop_aura/desktop_screen_position_client.cc",
       "widget/focus_manager_event_handler.cc",
       "widget/native_widget_aura.cc",
@@ -690,7 +691,8 @@ jumbo_component("views") {
           "widget/desktop_aura/desktop_window_tree_host_win.h",
         ]
       } else if (use_ozone) {
-        sources += [ "widget/desktop_aura/desktop_window_tree_host_ozone.cc" ]
+        public += [ "widget/desktop_aura/desktop_screen_ozone.h" ]
+        sources += [ "widget/desktop_aura/desktop_screen_ozone.cc" ]
       }
       if (is_linux) {
         sources += [
@@ -698,13 +700,14 @@ jumbo_component("views") {
           "widget/desktop_aura/window_event_filter.cc",
           "widget/desktop_aura/window_event_filter.h",
         ]
+        if (!use_x11) {
+          public +=
+              [ "widget/desktop_aura/desktop_window_tree_host_platform.h" ]
+          sources +=
+              [ "widget/desktop_aura/desktop_window_tree_host_platform.cc" ]
+        }
       }
     }
-  }
-
-  if (is_linux) {
-    sources += [ "widget/desktop_aura/desktop_window_tree_host_platform.cc" ]
-    public += [ "widget/desktop_aura/desktop_window_tree_host_platform.h" ]
   }
 
   if (is_mac) {

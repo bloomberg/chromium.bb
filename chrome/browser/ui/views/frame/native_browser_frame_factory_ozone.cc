@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 
 #include "chrome/browser/ui/views/frame/browser_frame_mus.h"
+#include "chrome/browser/ui/views/frame/desktop_browser_frame_aura.h"
 #include "ui/aura/env.h"
 
 NativeBrowserFrame* NativeBrowserFrameFactory::Create(
@@ -12,7 +13,5 @@ NativeBrowserFrame* NativeBrowserFrameFactory::Create(
     BrowserView* browser_view) {
   if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
     return new BrowserFrameMus(browser_frame, browser_view);
-
-  NOTREACHED() << "For Ozone builds, only mash launch is supported for now.";
-  return nullptr;
+  return new DesktopBrowserFrameAura(browser_frame, browser_view);
 }
