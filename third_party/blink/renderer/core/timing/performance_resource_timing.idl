@@ -32,7 +32,7 @@
 
 [Exposed=(Window,Worker)]
 interface PerformanceResourceTiming : PerformanceEntry {
-    readonly attribute DOMString initiatorType;
+    [MeasureAs=PerformanceResourceTimingInitiatorType] readonly attribute DOMString initiatorType;
     readonly attribute DOMString nextHopProtocol;
     readonly attribute DOMHighResTimeStamp workerStart;
     readonly attribute DOMHighResTimeStamp redirectStart;
