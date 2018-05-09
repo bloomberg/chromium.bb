@@ -153,7 +153,7 @@ class CORE_EXPORT DocumentMarkerController final
   bool PossiblyHasMarkers(DocumentMarker::MarkerTypes);
   void RemoveMarkersFromList(MarkerMap::iterator, DocumentMarker::MarkerTypes);
   void RemoveMarkers(TextIterator&, DocumentMarker::MarkerTypes);
-  void RemoveMarkersInternal(const Node*,
+  void RemoveMarkersInternal(const Node&,
                              unsigned start_offset,
                              int length,
                              DocumentMarker::MarkerTypes);
