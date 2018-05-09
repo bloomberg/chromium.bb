@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
@@ -31,6 +32,7 @@ class MockGLES2InterfaceWithMailboxSupport : public FakeGLES2Interface {
   MOCK_METHOD1(GenUnverifiedSyncTokenCHROMIUM, void(GLbyte*));
   MOCK_METHOD4(CreateImageCHROMIUM,
                GLuint(ClientBuffer, GLsizei, GLsizei, GLenum));
+  MOCK_METHOD2(BindTexture, void(GLenum, GLuint));
 };
 
 class FakeCanvasResourcePlatformSupport : public TestingPlatformSupport {
@@ -80,6 +82,7 @@ gpu::SyncToken GenTestSyncToken(int id) {
 }
 
 TEST_F(CanvasResourceTest, SkiaResourceNoMailboxLeak) {
+  testing::InSequence s;
   SkImageInfo image_info =
       SkImageInfo::MakeN32(10, 10, kPremul_SkAlphaType, nullptr);
   sk_sp<SkSurface> surface =
@@ -100,6 +103,9 @@ TEST_F(CanvasResourceTest, SkiaResourceNoMailboxLeak) {
   EXPECT_CALL(gl_, GenMailboxCHROMIUM(_))
       .WillOnce(SetArrayArgument<0>(
           test_mailbox.name, test_mailbox.name + GL_MAILBOX_SIZE_CHROMIUM));
+  EXPECT_CALL(gl_, BindTexture(GL_TEXTURE_2D, _)).Times(2);
+  EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(_, _));
+  EXPECT_CALL(gl_, GenUnverifiedSyncTokenCHROMIUM(_));
   resource->GetOrCreateGpuMailbox();
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
@@ -124,10 +130,12 @@ TEST_F(CanvasResourceTest, SkiaResourceNoMailboxLeak) {
 }
 
 TEST_F(CanvasResourceTest, GpuMemoryBufferSyncTokenRefresh) {
+  testing::InSequence s;
   ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
 
   constexpr GLuint image_id = 1;
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id));
+  EXPECT_CALL(gl_, BindTexture(gpu::GetPlatformSpecificTextureTarget(), _));
   scoped_refptr<CanvasResource> resource =
       CanvasResourceGpuMemoryBuffer::Create(
           IntSize(10, 10), CanvasColorParams(),
@@ -144,6 +152,7 @@ TEST_F(CanvasResourceTest, GpuMemoryBufferSyncTokenRefresh) {
   EXPECT_CALL(gl_, GenMailboxCHROMIUM(_))
       .WillOnce(SetArrayArgument<0>(
           test_mailbox.name, test_mailbox.name + GL_MAILBOX_SIZE_CHROMIUM));
+  EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(_, _));
   resource->GetOrCreateGpuMailbox();
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
