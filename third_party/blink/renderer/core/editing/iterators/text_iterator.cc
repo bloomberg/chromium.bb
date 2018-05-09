@@ -844,10 +844,10 @@ const Document& TextIteratorAlgorithm<Strategy>::OwnerDocument() const {
 
 template <typename Strategy>
 const Node* TextIteratorAlgorithm<Strategy>::GetNode() const {
-  const Node* node = CurrentContainer();
-  if (node->IsCharacterDataNode())
-    return node;
-  return Strategy::ChildAt(*node, StartOffsetInCurrentContainer());
+  const Node& node = CurrentContainer();
+  if (node.IsCharacterDataNode())
+    return &node;
+  return Strategy::ChildAt(node, StartOffsetInCurrentContainer());
 }
 
 template <typename Strategy>
@@ -867,11 +867,11 @@ int TextIteratorAlgorithm<Strategy>::EndOffsetInCurrentContainer() const {
 }
 
 template <typename Strategy>
-const Node* TextIteratorAlgorithm<Strategy>::CurrentContainer() const {
+const Node& TextIteratorAlgorithm<Strategy>::CurrentContainer() const {
   if (!text_state_.PositionNode())
-    return end_container_;
+    return *end_container_;
   EnsurePositionContainer();
-  return text_state_.PositionContainerNode();
+  return *text_state_.PositionContainerNode();
 }
 
 template <typename Strategy>
@@ -947,14 +947,14 @@ template <typename Strategy>
 PositionTemplate<Strategy>
 TextIteratorAlgorithm<Strategy>::StartPositionInCurrentContainer() const {
   return PositionTemplate<Strategy>::EditingPositionOf(
-      CurrentContainer(), StartOffsetInCurrentContainer());
+      &CurrentContainer(), StartOffsetInCurrentContainer());
 }
 
 template <typename Strategy>
 PositionTemplate<Strategy>
 TextIteratorAlgorithm<Strategy>::EndPositionInCurrentContainer() const {
   return PositionTemplate<Strategy>::EditingPositionOf(
-      CurrentContainer(), EndOffsetInCurrentContainer());
+      &CurrentContainer(), EndOffsetInCurrentContainer());
 }
 
 template <typename Strategy>

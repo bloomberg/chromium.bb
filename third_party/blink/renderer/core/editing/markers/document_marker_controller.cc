@@ -232,7 +232,7 @@ void DocumentMarkerController::RemoveMarkers(
 
     int start_offset = marked_text.StartOffsetInCurrentContainer();
     int end_offset = marked_text.EndOffsetInCurrentContainer();
-    RemoveMarkersInternal(marked_text.CurrentContainer(), start_offset,
+    RemoveMarkersInternal(&marked_text.CurrentContainer(), start_offset,
                           end_offset - start_offset, marker_types);
   }
 }
@@ -267,13 +267,13 @@ void DocumentMarkerController::AddMarkerInternal(
 
     // Ignore text emitted by TextIterator for non-text nodes (e.g. implicit
     // newlines)
-    const Node* const node = marked_text.CurrentContainer();
-    if (!node->IsTextNode())
+    const Node& node = marked_text.CurrentContainer();
+    if (!node.IsTextNode())
       continue;
 
     DocumentMarker* const new_marker = create_marker_from_offsets(
         start_offset_in_current_container, end_offset_in_current_container);
-    AddMarkerToNode(node, new_marker);
+    AddMarkerToNode(&node, new_marker);
   }
 }
 
