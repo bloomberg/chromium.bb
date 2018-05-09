@@ -370,34 +370,17 @@ LibraryView* LibraryList::LoadLibrary(const char* lib_name,
   // Find the full library path.
   String full_path;
 
-  if (!strchr(lib_name, '/')) {
-    LOG("Looking through the search path list");
-    const char* path = search_path_list->FindFile(lib_name);
-    if (!path) {
-      error->Format("Can't find library file %s", lib_name);
-      return NULL;
-    }
-    full_path = path;
-  } else {
-    if (lib_name[0] != '/') {
-      // Need to transform this into a full path.
-      full_path = GetCurrentDirectory();
-      if (full_path.size() && full_path[full_path.size() - 1] != '/')
-        full_path += '/';
-      full_path += lib_name;
-    } else {
-      // Absolute path. Easy.
-      full_path = lib_name;
-    }
-    LOG("Full library path: %s", full_path.c_str());
-    if (!PathIsFile(full_path.c_str())) {
-      error->Format("Library file doesn't exist: %s", full_path.c_str());
-      return NULL;
-    }
+  LOG("Looking through the search path list");
+  SearchPathList::Result probe = search_path_list->FindFile(lib_name);
+  if (!probe.IsValid()) {
+    error->Format("Can't find library file %s", lib_name);
+    return NULL;
   }
+  LOG("Found library: path %s @ 0x%x", probe.path.c_str(), probe.offset);
 
   // Load the library
-  if (!lib->Load(full_path.c_str(), load_address, file_offset, error))
+  if (!lib->Load(probe.path.c_str(), load_address, file_offset + probe.offset,
+                 error))
     return NULL;
 
   // Load all dependendent libraries.

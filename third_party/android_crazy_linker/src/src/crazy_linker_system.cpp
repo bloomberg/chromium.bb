@@ -18,6 +18,41 @@
 
 // Note: unit-testing support files are in crazy_linker_files_mock.cpp
 
+namespace crazy {
+
+String MakeDirectoryPath(const char* parent) {
+  return MakeDirectoryPath(parent, ::strlen(parent));
+}
+
+String MakeDirectoryPath(const char* parent, size_t parent_len) {
+  if (parent_len == 0) {
+    // Special case for empty inputs.
+    return String("./");
+  }
+  String result(parent);
+  if (parent_len > 0 && parent[parent_len - 1] != '/') {
+    result += '/';
+  }
+  return result;
+}
+
+String MakeAbsolutePathFrom(const char* path) {
+  return MakeAbsolutePathFrom(path, ::strlen(path));
+}
+
+String MakeAbsolutePathFrom(const char* path, size_t path_len) {
+  if (path[0] == '/') {
+    return String(path, path_len);
+  } else {
+    String cur_dir = GetCurrentDirectory();
+    String result = MakeDirectoryPath(cur_dir.c_str(), cur_dir.size());
+    result.Append(path, path_len);
+    return result;
+  }
+}
+
+}  // namespace crazy
+
 #ifndef UNIT_TESTS
 
 namespace crazy {
