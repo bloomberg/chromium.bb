@@ -94,6 +94,12 @@ public class NewTabPageView
      */
     private static final int PARAM_DEFAULT_VALUE_CONDENSED_LAYOUT_LOGO_HEIGHT_DP = 100;
 
+    /**
+     * Parameter for the simplified NTP ablation experiment arm which removes the additional
+     * suggestions sections without replacing them with shortcut buttons.
+     */
+    private static final String PARAM_SIMPLIFIED_NTP_ABLATION = "simplified_ntp_ablation";
+
     private NewTabPageRecyclerView mRecyclerView;
 
     private NewTabPageLayout mNewTabPageLayout;
@@ -103,6 +109,7 @@ public class NewTabPageView
     private SiteSectionViewHolder mSiteSectionViewHolder;
     private View mTileGridPlaceholder;
     private View mNoSearchLogoSpacer;
+    private ViewGroup mShortcutsView;
 
     private OnSearchBoxScrollListener mSearchBoxScrollListener;
 
@@ -299,6 +306,7 @@ public class NewTabPageView
         mSnapScrollRunnable = new SnapScrollRunnable();
         mUpdateSearchBoxOnScrollRunnable = new UpdateSearchBoxOnScrollRunnable();
 
+        initializeShortcuts();
         initializeSearchBoxTextView();
         initializeVoiceSearchButton();
         initializeLayoutChangeListeners();
@@ -357,8 +365,6 @@ public class NewTabPageView
                 NewTabPageView.this.onDestroy();
             }
         });
-
-        initializeShortcuts();
 
         mInitialized = true;
 
@@ -683,6 +689,7 @@ public class NewTabPageView
         int childCount = mNewTabPageLayout.getChildCount();
         for (int i = 0; i < childCount; i++) {
             View child = mNewTabPageLayout.getChildAt(i);
+            if (mShortcutsView != null && child == mShortcutsView) break;
             if (child == mSiteSectionViewHolder.itemView) break;
 
             // Don't change the visibility of a ViewStub as that will automagically inflate it.
@@ -711,13 +718,20 @@ public class NewTabPageView
      * Updates the padding for the tile grid based on what is shown above it.
      */
     private void updateTileGridPadding() {
-        int paddingWithLogoId = SuggestionsConfig.useModernLayout()
-                ? R.dimen.tile_grid_layout_modern_padding_top
-                : R.dimen.tile_grid_layout_padding_top;
-        // Set a bit more top padding on the tile grid if there is no logo.
-        final int paddingTop = getResources().getDimensionPixelSize(shouldShowLogo()
-                        ? paddingWithLogoId
-                        : R.dimen.tile_grid_layout_no_logo_padding_top);
+        int paddingTop;
+        if (mShortcutsView != null) {
+            // If the shortcuts view is visible, padding will be built into that view.
+            paddingTop = 0;
+        } else {
+            int paddingWithLogoId = SuggestionsConfig.useModernLayout()
+                    ? R.dimen.tile_grid_layout_modern_padding_top
+                    : R.dimen.tile_grid_layout_padding_top;
+            // Set a bit more top padding on the tile grid if there is no logo.
+            paddingTop = getResources().getDimensionPixelSize(shouldShowLogo()
+                            ? paddingWithLogoId
+                            : R.dimen.tile_grid_layout_no_logo_padding_top);
+        }
+
         mSiteSectionViewHolder.itemView.setPadding(
                 0, paddingTop, 0, mSiteSectionViewHolder.itemView.getPaddingBottom());
     }
@@ -1064,16 +1078,21 @@ public class NewTabPageView
     }
 
     private void initializeShortcuts() {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SHORTCUTS)) return;
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SIMPLIFIED_NTP)
+                || ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                           ChromeFeatureList.SIMPLIFIED_NTP, PARAM_SIMPLIFIED_NTP_ABLATION,
+                           false)) {
+            return;
+        }
 
-        ViewGroup shortcuts =
-                (ViewGroup) mRecyclerView.getAboveTheFoldView().findViewById(R.id.shortcuts);
-        shortcuts.setVisibility(View.VISIBLE);
+        ViewStub shortcutsStub =
+                mRecyclerView.getAboveTheFoldView().findViewById(R.id.shortcuts_stub);
+        mShortcutsView = (ViewGroup) shortcutsStub.inflate();
 
-        shortcuts.findViewById(R.id.bookmarks_button)
+        mShortcutsView.findViewById(R.id.bookmarks_button)
                 .setOnClickListener(view -> mManager.getNavigationDelegate().navigateToBookmarks());
 
-        shortcuts.findViewById(R.id.downloads_button)
+        mShortcutsView.findViewById(R.id.downloads_button)
                 .setOnClickListener(
                         view -> mManager.getNavigationDelegate().navigateToDownloadManager());
     }

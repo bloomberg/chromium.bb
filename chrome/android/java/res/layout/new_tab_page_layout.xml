@@ -99,6 +99,13 @@
             android:src="@drawable/btn_mic" />
     </view>
 
+    <ViewStub
+        android:id="@+id/shortcuts_stub"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inflatedId="@+id/shortcuts"
+        android:layout="@layout/ntp_shortcuts" />
+
     <!-- Middle spacer -->
     <View
         android:id="@+id/ntp_middle_spacer"
@@ -133,28 +140,4 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:visibility="gone" />
-
-    <LinearLayout
-        android:id="@+id/shortcuts"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:visibility="gone" >
-
-        <Button
-            style="@style/SuggestionCardAction"
-            android:id="@+id/bookmarks_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingEnd="16dp"
-            android:text="@string/menu_bookmarks" />
-
-        <Button
-            style="@style/SuggestionCardAction"
-            android:id="@+id/downloads_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/menu_downloads" />
-    </LinearLayout>
 </org.chromium.chrome.browser.ntp.NewTabPageLayout>

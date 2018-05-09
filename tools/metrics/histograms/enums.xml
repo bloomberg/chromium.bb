@@ -26405,6 +26405,7 @@ from previous Chrome versions.
   <int value="-1964261747" label="WebVrVsyncAlign:disabled"/>
   <int value="-1963427770" label="EmojiHandwritingVoiceInput:disabled"/>
   <int value="-1963402827" label="enable-topchrome-md"/>
+  <int value="-1962749353" label="SimplifiedNTP:enabled"/>
   <int value="-1962588488" label="SpeculativePreconnect:disabled"/>
   <int value="-1961931929" label="ContextualSuggestionsBottomSheet:enabled"/>
   <int value="-1961648833" label="show_summary"/>
@@ -27977,6 +27978,7 @@ from previous Chrome versions.
   <int value="1589341623" label="disable-easy-unlock"/>
   <int value="1591653786" label="SpeculativePreconnect:enabled"/>
   <int value="1593720927" label="GamepadVibration:disabled"/>
+  <int value="1593917165" label="SimplifiedNTP:disabled"/>
   <int value="1594247626" label="ContentSuggestionsSettings:enabled"/>
   <int value="1594664550" label="NTPModernLayout:enabled"/>
   <int value="1600926040" label="TranslateCompactUI:enabled"/>

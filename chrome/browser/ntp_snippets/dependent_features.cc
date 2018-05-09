@@ -16,23 +16,23 @@
 
 namespace ntp_snippets {
 
-// All platforms proxy for whether NTP shortcuts are enabled.
-bool AreNtpShortcutsEnabled() {
+// All platforms proxy for whether the simplified NTP is enabled.
+bool IsSimplifiedNtpEnabled() {
 #if defined(OS_ANDROID)
-  return base::FeatureList::IsEnabled(chrome::android::kNTPShortcuts);
+  return base::FeatureList::IsEnabled(chrome::android::kSimplifiedNTP);
 #else
   return false;
 #endif  // OS_ANDROID
 }
 
 bool AreAssetDownloadsEnabled() {
-  return !AreNtpShortcutsEnabled() &&
+  return !IsSimplifiedNtpEnabled() &&
          base::FeatureList::IsEnabled(
              features::kAssetDownloadSuggestionsFeature);
 }
 
 bool AreOfflinePageDownloadsEnabled() {
-  return !AreNtpShortcutsEnabled() &&
+  return !IsSimplifiedNtpEnabled() &&
          base::FeatureList::IsEnabled(
              features::kOfflinePageDownloadSuggestionsFeature);
 }
@@ -41,13 +41,13 @@ bool IsDownloadsProviderEnabled() {
 }
 
 bool IsBookmarkProviderEnabled() {
-  return !AreNtpShortcutsEnabled() &&
+  return !IsSimplifiedNtpEnabled() &&
          base::FeatureList::IsEnabled(
              ntp_snippets::kBookmarkSuggestionsFeature);
 }
 
 bool IsForeignSessionsProviderEnabled() {
-  return !AreNtpShortcutsEnabled() &&
+  return !IsSimplifiedNtpEnabled() &&
          base::FeatureList::IsEnabled(
              ntp_snippets::kForeignSessionsSuggestionsFeature);
 }

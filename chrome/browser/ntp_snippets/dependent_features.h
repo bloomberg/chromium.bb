@@ -9,7 +9,7 @@
 
 namespace ntp_snippets {
 
-bool AreNtpShortcutsEnabled();
+bool IsSimplifiedNtpEnabled();
 
 bool AreAssetDownloadsEnabled();
 bool AreOfflinePageDownloadsEnabled();

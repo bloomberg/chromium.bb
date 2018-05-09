@@ -227,7 +227,6 @@ public abstract class ChromeFeatureList {
     public static final String NTP_FOREIGN_SESSIONS_SUGGESTIONS = "NTPForeignSessionsSuggestions";
     public static final String NTP_LAUNCH_AFTER_INACTIVITY = "NTPLaunchAfterInactivity";
     public static final String NTP_MODERN_LAYOUT = "NTPModernLayout";
-    public static final String NTP_SHORTCUTS = "NTPShortcuts";
     public static final String NTP_SHOW_GOOGLE_G_IN_OMNIBOX = "NTPShowGoogleGInOmnibox";
     public static final String NTP_SNIPPETS_INCREASED_VISIBILITY = "NTPSnippetsIncreasedVisibility";
     public static final String OFFLINE_PAGES_DESCRIPTIVE_FAIL_STATUS =
@@ -249,6 +248,7 @@ public abstract class ChromeFeatureList {
     public static final String REMOVE_NAVIGATION_HISTORY = "RemoveNavigationHistory";
     public static final String SERVICE_WORKER_PAYMENT_APPS = "ServiceWorkerPaymentApps";
     public static final String SHOW_TRUSTED_PUBLISHER_URL = "ShowTrustedPublisherURL";
+    public static final String SIMPLIFIED_NTP = "SimplifiedNTP";
     public static final String SITE_NOTIFICATION_CHANNELS = "SiteNotificationChannels";
     public static final String SOLE_INTEGRATION = "SoleIntegration";
     public static final String SOUND_CONTENT_SETTING = "SoundContentSetting";

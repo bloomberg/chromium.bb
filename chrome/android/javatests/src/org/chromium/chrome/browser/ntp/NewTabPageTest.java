@@ -220,6 +220,17 @@ public class NewTabPageTest {
 
     @Test
     @MediumTest
+    @Feature({"NewTabPage", "RenderTest"})
+    @EnableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
+    @ParameterAnnotations.UseMethodParameter(ModernParams.class)
+    public void testRender_Simplified(boolean modern) throws IOException {
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        RenderTestRule.sanitize(mNtp.getView());
+        mRenderTestRule.render(mNtp.getView().getRootView(), "simplified_new_tab_page");
+    }
+
+    @Test
+    @MediumTest
     @Feature({"NewTabPage"})
     public void testThumbnailInvalidations() throws Throwable {
         mActivityTestRule.runOnUiThread(new Runnable() {

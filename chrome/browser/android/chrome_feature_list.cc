@@ -105,7 +105,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNTPCondensedTileLayoutFeature,
     &kNTPLaunchAfterInactivity,
     &kNTPModernLayoutFeature,
-    &kNTPShortcuts,
+    &kSimplifiedNTP,
     &kNTPShowGoogleGInOmniboxFeature,
     &kOmniboxSpareRenderer,
     &kOmniboxVoiceSearchAlwaysVisible,
@@ -322,9 +322,6 @@ const base::Feature kNTPModernLayoutFeature{"NTPModernLayout",
 const base::Feature kNTPLaunchAfterInactivity{
     "NTPLaunchAfterInactivity", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kNTPShortcuts{"NTPShortcuts",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kNTPShowGoogleGInOmniboxFeature{
     "NTPShowGoogleGInOmnibox", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -357,6 +354,9 @@ const base::Feature kQueryInOmnibox{"QueryInOmnibox",
 
 const base::Feature kReaderModeInCCT{"ReaderModeInCCT",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSimplifiedNTP{"SimplifiedNTP",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSoleIntegration{"SoleIntegration",
                                      base::FEATURE_ENABLED_BY_DEFAULT};

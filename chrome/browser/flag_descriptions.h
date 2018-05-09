@@ -1351,12 +1351,6 @@ extern const char kNtpCondensedTileLayoutDescription[];
 extern const char kNtpModernLayoutName[];
 extern const char kNtpModernLayoutDescription[];
 
-extern const char kNtpShortcutsName[];
-extern const char kNtpShortcutsDescription[];
-
-extern const char kSiteExplorationUiName[];
-extern const char kSiteExplorationUiDescription[];
-
 extern const char kNtpGoogleGInOmniboxName[];
 extern const char kNtpGoogleGInOmniboxDescription[];
 
@@ -1438,6 +1432,12 @@ extern const char kReaderModeInCCTDescription[];
 
 extern const char kSetMarketUrlForTestingName[];
 extern const char kSetMarketUrlForTestingDescription[];
+
+extern const char kSimplifiedNtpName[];
+extern const char kSimplifiedNtpDescription[];
+
+extern const char kSiteExplorationUiName[];
+extern const char kSiteExplorationUiDescription[];
 
 extern const char kSpannableInlineAutocompleteName[];
 extern const char kSpannableInlineAutocompleteDescription[];
