@@ -162,6 +162,9 @@ class AppListSyncableService : public syncer::SyncableService,
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
+  // KeyedService
+  void Shutdown() override;
+
  private:
   class ModelUpdaterDelegate;
 

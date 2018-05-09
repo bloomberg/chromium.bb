@@ -903,6 +903,13 @@ syncer::SyncError AppListSyncableService::ProcessSyncChanges(
   return syncer::SyncError();
 }
 
+void AppListSyncableService::Shutdown() {
+  internal_apps_builder_.reset();
+  crostini_apps_builder_.reset();
+  arc_apps_builder_.reset();
+  apps_builder_.reset();
+}
+
 // AppListSyncableService private
 
 bool AppListSyncableService::ProcessSyncItemSpecifics(
