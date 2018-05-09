@@ -141,7 +141,9 @@ class ShellAddedObserver {
 class RenderWidgetHostViewCocoaObserver {
  public:
   // The method name for 'didAddSubview'.
-  static const char* kDidAddSubview;
+  static constexpr char kDidAddSubview[] = "didAddSubview:";
+  static constexpr char kShowDefinitionForAttributedString[] =
+      "showDefinitionForAttributedString:atPoint:";
 
   // Returns the method swizzler for the given |method_name|. This is useful
   // when the original implementation of the method is needed.
@@ -162,6 +164,10 @@ class RenderWidgetHostViewCocoaObserver {
   // coordinates. The view will be dismissed shortly after this call.
   virtual void DidAddSubviewWillBeDismissed(
       const gfx::Rect& rect_in_root_view) {}
+  // Called when RenderWidgeHostViewCocoa is asked to show definition of
+  // |for_word| using Mac's dictionary popup.
+  virtual void OnShowDefinitionForAttributedString(
+      const std::string& for_word) {}
 
   WebContents* web_contents() const { return web_contents_; }
 
