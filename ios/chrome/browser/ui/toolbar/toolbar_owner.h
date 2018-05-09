@@ -20,10 +20,6 @@
 @property(nonatomic, strong, readonly) id<ToolbarSnapshotProviding>
     toolbarSnapshotProvider;
 
-@optional
-// Returns the height of the toolbar owned by the implementing class.
-- (CGFloat)toolbarHeight;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_OWNER_H_

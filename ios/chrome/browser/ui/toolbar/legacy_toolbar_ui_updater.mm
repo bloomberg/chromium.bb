@@ -27,7 +27,8 @@
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
 }
 // The ToolbarOwner passed on initialization.
-@property(nonatomic, readonly, strong) id<ToolbarOwner> owner;
+@property(nonatomic, readonly, strong) id<ToolbarHeightProviderForFullscreen>
+    owner;
 // The WebStateList whose navigations are driving this updater.
 @property(nonatomic, readonly) WebStateList* webStateList;
 // The active WebState in |webStateList|.
@@ -44,9 +45,10 @@
 @synthesize webStateList = _webStateList;
 @synthesize webState = _webState;
 
-- (nullable instancetype)initWithToolbarUI:(nonnull ToolbarUIState*)toolbarUI
-                              toolbarOwner:(nonnull id<ToolbarOwner>)owner
-                              webStateList:(nonnull WebStateList*)webStateList {
+- (nullable instancetype)
+initWithToolbarUI:(nonnull ToolbarUIState*)toolbarUI
+     toolbarOwner:(nonnull id<ToolbarHeightProviderForFullscreen>)owner
+     webStateList:(nonnull WebStateList*)webStateList {
   if (self = [super init]) {
     _toolbarUI = toolbarUI;
     DCHECK(_toolbarUI);
@@ -136,7 +138,7 @@
 #pragma mark Private
 
 - (void)updateState {
-  self.toolbarUI.toolbarHeight = [self.owner toolbarHeight];
+  self.toolbarUI.toolbarHeight = [self.owner nonFullscreenToolbarHeight];
 }
 
 @end
