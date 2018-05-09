@@ -215,6 +215,10 @@ WebFormElement WebFormControlElement::Form() const {
   return WebFormElement(ConstUnwrap<HTMLFormControlElement>()->Form());
 }
 
+unsigned WebFormControlElement::UniqueRendererFormControlId() const {
+  return ConstUnwrap<HTMLFormControlElement>()->UniqueRendererFormControlId();
+}
+
 WebFormControlElement::WebFormControlElement(HTMLFormControlElement* elem)
     : WebElement(elem) {}
 

@@ -142,6 +142,10 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   bool BlocksFormSubmission() const { return blocks_form_submission_; }
   void SetBlocksFormSubmission(bool value) { blocks_form_submission_ = value; }
 
+  unsigned UniqueRendererFormControlId() const {
+    return unique_renderer_form_control_id_;
+  }
+
  protected:
   HTMLFormControlElement(const QualifiedName& tag_name, Document&);
 
@@ -189,6 +193,8 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   void FormOwnerSetNeedsValidityCheck();
   // Requests validity recalc for all ancestor fieldsets, if exist.
   void FieldSetAncestorsSetNeedsValidityCheck(Node*);
+
+  unsigned unique_renderer_form_control_id_;
 
   enum AncestorDisabledState {
     kAncestorDisabledStateUnknown,
