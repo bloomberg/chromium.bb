@@ -39,6 +39,7 @@ class TestPrefetchDispatcher : public PrefetchDispatcher {
       const std::set<std::string>& outstanding_download_ids,
       const std::map<std::string, std::pair<base::FilePath, int64_t>>&
           success_downloads) override;
+  void GeneratePageBundleRequested(std::unique_ptr<IdsVector> ids) override;
   void DownloadCompleted(
       const PrefetchDownloadResult& download_result) override;
   void ItemDownloaded(int64_t offline_id, const ClientId& client_id) override;
@@ -51,6 +52,7 @@ class TestPrefetchDispatcher : public PrefetchDispatcher {
   std::vector<PrefetchDownloadResult> download_results;
   std::vector<std::pair<int64_t, ClientId>> item_downloaded_results;
   std::vector<std::pair<int64_t, bool>> import_results;
+  std::unique_ptr<IdsVector> ids_from_generate_page_bundle_requested;
 
   int cleanup_downloads_count = 0;
   int new_suggestions_count = 0;
@@ -58,6 +60,7 @@ class TestPrefetchDispatcher : public PrefetchDispatcher {
   int remove_all_suggestions_count = 0;
   int remove_by_client_id_count = 0;
   int task_schedule_count = 0;
+  int generate_page_bundle_requested = 0;
 };
 
 }  // namespace offline_pages

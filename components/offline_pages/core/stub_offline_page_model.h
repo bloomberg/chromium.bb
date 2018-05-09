@@ -74,6 +74,9 @@ class StubOfflinePageModel : public OfflinePageModel {
   void StoreThumbnail(const OfflinePageThumbnail& thumb) override;
   void GetThumbnailByOfflineId(int64_t offline_id,
                                GetThumbnailCallback callback) override;
+  void HasThumbnailForOfflineId(
+      int64_t offline_id,
+      base::OnceCallback<void(bool)> callback) override;
   void PublishInternalArchive(
       const OfflinePageItem& offline_page,
       std::unique_ptr<OfflinePageArchiver> archiver,

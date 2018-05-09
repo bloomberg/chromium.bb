@@ -162,20 +162,6 @@ class OfflinePageModelTaskifiedTest : public testing::Test,
     return model_->last_maintenance_tasks_schedule_time_;
   }
 
-  std::unique_ptr<OfflinePageThumbnail> GetThumbnailSync(int64_t offline_id) {
-    bool called = false;
-    std::unique_ptr<OfflinePageThumbnail> result;
-    auto callback = base::BindLambdaForTesting(
-        [&](std::unique_ptr<OfflinePageThumbnail> thumbnail) {
-          called = true;
-          result = std::move(thumbnail);
-        });
-    model_->GetThumbnailByOfflineId(offline_id, callback);
-    PumpLoop();
-    EXPECT_TRUE(called);
-    return result;
-  }
-
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
@@ -1666,7 +1652,8 @@ TEST_F(OfflinePageModelTaskifiedTest, MaintenanceTasksAreDisabled) {
                                        0);
 }
 
-TEST_F(OfflinePageModelTaskifiedTest, StoreAndGetThumbnail) {
+TEST_F(OfflinePageModelTaskifiedTest, StoreAndCheckThumbnail) {
+  // Store a thumbnail.
   OfflinePageThumbnail thumb;
   thumb.offline_id = 1;
   thumb.expiration = base::Time::Now();
@@ -1675,12 +1662,21 @@ TEST_F(OfflinePageModelTaskifiedTest, StoreAndGetThumbnail) {
   EXPECT_CALL(*this, ThumbnailAdded(_, thumb));
   PumpLoop();
 
+  // Check it exists
+  bool thumbnail_exists = false;
+  auto exists_callback = base::BindLambdaForTesting(
+      [&](bool exists) { thumbnail_exists = exists; });
+  model()->HasThumbnailForOfflineId(thumb.offline_id, exists_callback);
+  PumpLoop();
+  EXPECT_TRUE(thumbnail_exists);
+
+  // Obtain its data.
   std::unique_ptr<OfflinePageThumbnail> result_thumbnail;
-  auto callback = base::BindLambdaForTesting(
+  auto data_callback = base::BindLambdaForTesting(
       [&](std::unique_ptr<OfflinePageThumbnail> result) {
         result_thumbnail = std::move(result);
       });
-  model()->GetThumbnailByOfflineId(thumb.offline_id, callback);
+  model()->GetThumbnailByOfflineId(thumb.offline_id, data_callback);
   PumpLoop();
   EXPECT_EQ(thumb, *result_thumbnail);
 }

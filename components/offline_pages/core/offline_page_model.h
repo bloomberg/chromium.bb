@@ -231,6 +231,12 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
   virtual void GetThumbnailByOfflineId(int64_t offline_id,
                                        GetThumbnailCallback callback) = 0;
 
+  // Checks if a thumbnail for a specific |offline_id| exists in the
+  // page_thumbnails table. Calls callback with the bool result.
+  virtual void HasThumbnailForOfflineId(
+      int64_t offline_id,
+      base::OnceCallback<void(bool)> callback) = 0;
+
   // Publishes an offline page from the internal offline page directory.  This
   // includes putting it in a public directory, updating the system download
   // manager, if any, and updating the offline page model database.

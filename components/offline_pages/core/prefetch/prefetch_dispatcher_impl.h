@@ -45,6 +45,7 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher,
       const std::set<std::string>& outstanding_download_ids,
       const std::map<std::string, std::pair<base::FilePath, int64_t>>&
           success_downloads) override;
+  void GeneratePageBundleRequested(std::unique_ptr<IdsVector> ids) override;
   void DownloadCompleted(
       const PrefetchDownloadResult& download_result) override;
   void ItemDownloaded(int64_t offline_id, const ClientId& client_id) override;
@@ -81,6 +82,23 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher,
   // wakeup (when BeginBackgroundTask() is called) or any time TaskQueue
   // becomes idle and any task called SchedulePipelineProcessing() before.
   void QueueActionTasks();
+
+  // The methods below control the  downloading of thumbnails for the provided
+  // prefetch items IDs. They are called multiple times for the same article,
+  // when they reach different points in the pipeline to increase the likeliness
+  // of the thumbnail to be available. The existence of the thumbnail is
+  // verified to avoid re-downloads.
+  // Also, even though unlikely, concurrent calls to these methods are
+  // supported. They will generate simultaneous download attempts but there will
+  // be no impact in the consistency of stored data.
+  void FetchThumbnails(std::unique_ptr<IdsVector> remaining_ids);
+  void ThumbnailExistenceChecked(const int64_t offline_id,
+                                 ClientId client_id,
+                                 std::unique_ptr<IdsVector> remaining_ids,
+                                 bool thumbnail_exists);
+  void ThumbnailFetchComplete(const int64_t offline_id,
+                              std::unique_ptr<IdsVector> remaining_ids,
+                              const std::string& image_data);
 
   PrefetchService* service_;
   TaskQueue task_queue_;

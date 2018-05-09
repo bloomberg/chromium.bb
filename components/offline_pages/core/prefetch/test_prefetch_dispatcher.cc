@@ -59,6 +59,12 @@ void TestPrefetchDispatcher::CleanupDownloads(
   cleanup_downloads_count++;
 }
 
+void TestPrefetchDispatcher::GeneratePageBundleRequested(
+    std::unique_ptr<IdsVector> ids) {
+  generate_page_bundle_requested++;
+  ids_from_generate_page_bundle_requested = std::move(ids);
+}
+
 void TestPrefetchDispatcher::DownloadCompleted(
     const PrefetchDownloadResult& download_result) {
   download_results.push_back(download_result);

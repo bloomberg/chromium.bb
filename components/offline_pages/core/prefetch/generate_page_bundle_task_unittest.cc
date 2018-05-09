@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/core/prefetch/generate_page_bundle_task.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/test/mock_callback.h"
 #include "base/test/simple_test_clock.h"
@@ -14,6 +16,7 @@
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_utils.h"
+#include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_gcm_handler.h"
 #include "components/offline_pages/core/task.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,8 +38,11 @@ class GeneratePageBundleTaskTest : public PrefetchTaskTestBase {
 
   TestPrefetchGCMHandler* gcm_handler() { return &gcm_handler_; }
 
+  TestPrefetchDispatcher* dispatcher() { return &dispatcher_; }
+
  private:
   TestPrefetchGCMHandler gcm_handler_;
+  TestPrefetchDispatcher dispatcher_;
 };
 
 TEST_F(GeneratePageBundleTaskTest, StoreFailure) {
@@ -44,17 +50,21 @@ TEST_F(GeneratePageBundleTaskTest, StoreFailure) {
 
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
   RunTask(std::make_unique<GeneratePageBundleTask>(
-      store(), gcm_handler(), prefetch_request_factory(), callback.Get()));
+      dispatcher(), store(), gcm_handler(), prefetch_request_factory(),
+      callback.Get()));
+  EXPECT_EQ(0, dispatcher()->generate_page_bundle_requested);
 }
 
 TEST_F(GeneratePageBundleTaskTest, EmptyTask) {
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
   RunTask(std::make_unique<GeneratePageBundleTask>(
-      store(), gcm_handler(), prefetch_request_factory(), callback.Get()));
+      dispatcher(), store(), gcm_handler(), prefetch_request_factory(),
+      callback.Get()));
 
   EXPECT_FALSE(prefetch_request_factory()->HasOutstandingRequests());
   auto requested_urls = prefetch_request_factory()->GetAllUrlsRequested();
   EXPECT_TRUE(requested_urls->empty());
+  EXPECT_EQ(0, dispatcher()->generate_page_bundle_requested);
 }
 
 TEST_F(GeneratePageBundleTaskTest, TaskMakesNetworkRequest) {
@@ -62,6 +72,7 @@ TEST_F(GeneratePageBundleTaskTest, TaskMakesNetworkRequest) {
 
   base::SimpleTestClock clock;
 
+  // This item will be sent with the bundle request.
   PrefetchItem item1 =
       item_generator()->CreateItem(PrefetchItemState::NEW_REQUEST);
   item1.freshness_time = clock.Now();
@@ -70,6 +81,8 @@ TEST_F(GeneratePageBundleTaskTest, TaskMakesNetworkRequest) {
 
   clock.Advance(base::TimeDelta::FromSeconds(1));
 
+  // This item will also be sent with the bundle request but being the freshest
+  // it will come first in the list.
   PrefetchItem item2 =
       item_generator()->CreateItem(PrefetchItemState::NEW_REQUEST);
   item1.freshness_time = clock.Now();
@@ -82,18 +95,33 @@ TEST_F(GeneratePageBundleTaskTest, TaskMakesNetworkRequest) {
   PrefetchItem item3 =
       item_generator()->CreateItem(PrefetchItemState::FINISHED);
   EXPECT_TRUE(store_util()->InsertPrefetchItem(item3));
+  EXPECT_NE(item3.offline_id, item1.offline_id);
+  EXPECT_NE(item3.offline_id, item2.offline_id);
 
   EXPECT_EQ(3, store_util()->CountPrefetchItems());
 
   clock.Advance(base::TimeDelta::FromHours(1));
 
-  GeneratePageBundleTask task(store(), gcm_handler(),
+  GeneratePageBundleTask task(dispatcher(), store(), gcm_handler(),
                               prefetch_request_factory(),
                               request_callback.Get());
   task.SetClockForTesting(&clock);
   RunTask(&task);
 
-  auto requested_urls = prefetch_request_factory()->GetAllUrlsRequested();
+  // Note: even though the requested URLs checked further below are in undefined
+  // order (due to use of std::set) their order of requesting is known: latest
+  // creation dates should come first. But as these ids are stored in a
+  // std::vector we can rely on the order being correct.
+  EXPECT_EQ(1, dispatcher()->generate_page_bundle_requested);
+  EXPECT_EQ(2u, dispatcher()->ids_from_generate_page_bundle_requested->size());
+  EXPECT_EQ(std::make_pair(item1.offline_id, item1.client_id),
+            dispatcher()->ids_from_generate_page_bundle_requested->at(1));
+  EXPECT_EQ(std::make_pair(item2.offline_id, item2.client_id),
+            dispatcher()->ids_from_generate_page_bundle_requested->at(0));
+
+  std::unique_ptr<std::set<std::string>> requested_urls =
+      prefetch_request_factory()->GetAllUrlsRequested();
+  EXPECT_EQ(2u, requested_urls->size());
   EXPECT_THAT(*requested_urls, Contains(item1.url.spec()));
   EXPECT_THAT(*requested_urls, Contains(item2.url.spec()));
   EXPECT_THAT(*requested_urls, Not(Contains(item3.url.spec())));
