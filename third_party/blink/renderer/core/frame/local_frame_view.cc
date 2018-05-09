@@ -5963,7 +5963,7 @@ UkmTimeAggregator& LocalFrameView::EnsureUkmTimeAggregator() {
         // requires changing the UkmMetricNames enum.
         {"Compositing", "IntersectionObservation", "Paint", "PrePaint",
          "StyleAndLayout"},
-        TimeDelta::FromSeconds(1)));
+        TimeDelta::FromSeconds(30)));
   }
   return *ukm_time_aggregator_;
 }
