@@ -5,7 +5,6 @@
 #include "ash/system/power/battery_notification.h"
 
 #include "ash/public/cpp/power_utils.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/power/power_status.h"
