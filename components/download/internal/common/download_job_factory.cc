@@ -44,10 +44,12 @@ bool IsParallelizableDownload(const DownloadCreateInfo& create_info,
                                  net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
   bool http_get_method =
       create_info.method == "GET" && create_info.url().SchemeIsHTTPOrHTTPS();
-
+  bool partial_response_success =
+      download_item->GetReceivedSlices().empty() || create_info.offset != 0;
   bool is_parallelizable = has_strong_validator && create_info.accept_range &&
                            has_content_length && satisfy_min_file_size &&
-                           satisfy_connection_type && http_get_method;
+                           satisfy_connection_type && http_get_method &&
+                           partial_response_success;
 
   if (!IsParallelDownloadEnabled())
     return is_parallelizable;
