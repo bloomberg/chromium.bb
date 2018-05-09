@@ -16,7 +16,6 @@
 #include "content/common/content_export.h"
 
 class GURL;
-class SkBitmap;
 
 namespace gfx {
 class Size;
@@ -27,13 +26,10 @@ class HttpRequestHeaders;
 struct NetworkTrafficAnnotationTag;
 }  // namespace net
 
-namespace url {
-class Origin;
-}  // namespace url
-
 namespace content {
 struct BackgroundFetchResponse;
 struct BackgroundFetchResult;
+struct BackgroundFetchDescription;
 
 // Interface for launching background fetches. Implementing classes would
 // generally interface with the DownloadService or DownloadManager.
@@ -92,13 +88,7 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
   // contain the GUIDs of in progress downloads, while completed downloads are
   // recorded in |completed_parts|.
   virtual void CreateDownloadJob(
-      const std::string& job_unique_id,
-      const std::string& title,
-      const url::Origin& origin,
-      const SkBitmap& icon,
-      int completed_parts,
-      int total_parts,
-      const std::vector<std::string>& current_guids) = 0;
+      std::unique_ptr<BackgroundFetchDescription> fetch_description) = 0;
 
   // Creates a new download identified by |download_guid| in the download job
   // identified by |job_unique_id|.

@@ -16,10 +16,9 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/public/browser/background_fetch_delegate.h"
+#include "content/public/browser/background_fetch_description.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
-
-class SkBitmap;
 
 namespace content {
 
@@ -59,22 +58,19 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   void GetIconDisplaySize(
       BackgroundFetchDelegate::GetIconDisplaySizeCallback callback);
 
-  // Creates a new download grouping identified by |job_unique_id|. Further
-  // downloads started by StartRequest will also use this |job_unique_id| so
-  // that a notification can be updated with the current status. If the download
-  // was already started in a previous browser session, then |current_guids|
-  // should contain the GUIDs of in progress downloads, while completed
-  // downloads are recorded in |completed_parts|.
-  // Should only be called from the Controller (on the IO
-  // thread).
-  void CreateDownloadJob(const std::string& job_unique_id,
-                         const std::string& title,
-                         const url::Origin& origin,
-                         const SkBitmap& icon,
-                         base::WeakPtr<Controller> controller,
-                         int completed_parts,
-                         int total_parts,
-                         const std::vector<std::string>& current_guids);
+  // Creates a new download grouping described by |fetch_description|. Further
+  // downloads started by StartRequest will also use
+  // |fetch_description.job_unique_id| so that a notification can be updated
+  // with the current status. If the download was already started in a previous
+  // browser session, then |fetch_description.current_guids| should contain the
+  // GUIDs of in progress downloads, while completed downloads are recorded in
+  // |fetch_description.completed_parts|. The size of the completed parts is
+  // recorded in |fetch_description.completed_parts_size| and total download
+  // size is stored in |fetch_description.total_parts_size|. Should only be
+  // called from the Controller (on the IO thread).
+  void CreateDownloadJob(
+      base::WeakPtr<Controller> controller,
+      std::unique_ptr<BackgroundFetchDescription> fetch_description);
 
   // Requests that the download manager start fetching |request|.
   // Should only be called from the Controller (on the IO
