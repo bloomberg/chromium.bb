@@ -9,8 +9,8 @@
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/download/download_controller.h"
 #import "ios/web/public/download/download_task.h"
-#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/test/fakes/fake_download_controller_delegate.h"
+#import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -74,9 +74,7 @@ TEST_F(DownloadTest, SucessfullDownload) {
   // Load download URL.
   ASSERT_TRUE(server_.Start());
   GURL url(server_.GetURL("/"));
-  web::NavigationManager::WebLoadParams params(url);
-  params.transition_type = ui::PageTransition::PAGE_TRANSITION_TYPED;
-  web_state()->GetNavigationManager()->LoadURLWithParams(params);
+  test::LoadUrl(web_state(), url);
 
   // Wait until download task is created.
   ASSERT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForDownloadTimeout, ^{
