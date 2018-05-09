@@ -1532,13 +1532,16 @@ void HTMLMediaElement::WaitForSourceChange() {
     GetLayoutObject()->UpdateFromElement();
 }
 
-void HTMLMediaElement::NoneSupported(const String& message) {
-  BLINK_MEDIA_LOG << "NoneSupported(" << (void*)this << ", message='" << message
-                  << "')";
+void HTMLMediaElement::NoneSupported(const String& input_message) {
+  BLINK_MEDIA_LOG << "NoneSupported(" << (void*)this << ", message='"
+                  << input_message << "')";
 
   StopPeriodicTimers();
   load_state_ = kWaitingForSource;
   current_source_node_ = nullptr;
+
+  String empty_string;
+  const String& message = MediaShouldBeOpaque() ? empty_string : input_message;
 
   // 4.8.12.5
   // The dedicated media source failure steps are the following steps:
@@ -1615,10 +1618,16 @@ void HTMLMediaElement::NetworkStateChanged() {
 }
 
 void HTMLMediaElement::MediaLoadingFailed(WebMediaPlayer::NetworkState error,
-                                          const String& message) {
+                                          const String& input_message) {
   BLINK_MEDIA_LOG << "MediaLoadingFailed(" << (void*)this << ", "
-                  << static_cast<int>(error) << ", message='" << message
+                  << static_cast<int>(error) << ", message='" << input_message
                   << "')";
+
+  bool should_be_opaque = MediaShouldBeOpaque();
+  if (should_be_opaque)
+    error = WebMediaPlayer::kNetworkStateNetworkError;
+  String empty_string;
+  const String& message = should_be_opaque ? empty_string : input_message;
 
   StopPeriodicTimers();
 
@@ -1722,12 +1731,14 @@ void HTMLMediaElement::SetNetworkState(WebMediaPlayer::NetworkState state) {
 void HTMLMediaElement::ChangeNetworkStateFromLoadingToIdle() {
   progress_event_timer_.Stop();
 
-  // Schedule one last progress event so we guarantee that at least one is fired
-  // for files that load very quickly.
-  if (GetWebMediaPlayer() && GetWebMediaPlayer()->DidLoadingProgress())
-    ScheduleEvent(EventTypeNames::progress);
-  ScheduleEvent(EventTypeNames::suspend);
-  SetNetworkState(kNetworkIdle);
+  if (!MediaShouldBeOpaque()) {
+    // Schedule one last progress event so we guarantee that at least one is
+    // fired for files that load very quickly.
+    if (GetWebMediaPlayer() && GetWebMediaPlayer()->DidLoadingProgress())
+      ScheduleEvent(EventTypeNames::progress);
+    ScheduleEvent(EventTypeNames::suspend);
+    SetNetworkState(kNetworkIdle);
+  }
 }
 
 void HTMLMediaElement::ReadyStateChanged() {
@@ -1893,6 +1904,13 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
 
 void HTMLMediaElement::ProgressEventTimerFired(TimerBase*) {
   if (network_state_ != kNetworkLoading)
+    return;
+
+  // If this is an cross-origin request, and we haven't discovered whether
+  // the media is actually playable yet, don't fire any progress events as
+  // those may let the page know information about the resource that it's
+  // not supposed to know.
+  if (MediaShouldBeOpaque())
     return;
 
   double time = WTF::CurrentTime();
@@ -4237,6 +4255,11 @@ gfx::ColorSpace HTMLMediaElement::TargetColorSpace() {
 
 bool HTMLMediaElement::WasAutoplayInitiated() {
   return autoplay_policy_->WasAutoplayInitiated();
+}
+
+bool HTMLMediaElement::MediaShouldBeOpaque() const {
+  return !IsMediaDataCORSSameOrigin(GetDocument().GetSecurityOrigin()) &&
+         ready_state_ < kHaveMetadata && !FastGetAttribute(srcAttr).IsEmpty();
 }
 
 void HTMLMediaElement::CheckViewportIntersectionTimerFired(TimerBase*) {
