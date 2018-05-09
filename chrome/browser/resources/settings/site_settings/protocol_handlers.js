@@ -110,6 +110,11 @@ Polymer({
   },
   // </if>
 
+  /** @private */
+  categoryLabelClicked_: function() {
+    this.$.toggle.click();
+  },
+
   /**
    * Obtains the description for the main toggle.
    * @return {string} The description to use.

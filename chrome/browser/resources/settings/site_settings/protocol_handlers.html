@@ -24,7 +24,8 @@
       }
     </style>
     <div class="settings-box first two-line">
-      <div id="categoryLabel" class="start">
+      <div id="categoryLabel" class="start" on-click="categoryLabelClicked_"
+          actionable>
         [[computeHandlersDescription_(categoryEnabled)]]
       </div>
       <cr-toggle id="toggle" checked="{{categoryEnabled}}"
