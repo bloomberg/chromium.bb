@@ -1954,7 +1954,7 @@ void WebContentsImpl::RenderWidgetDeleted(
   if (render_widget_host == mouse_lock_widget_)
     LostMouseLock(mouse_lock_widget_);
 
-  CancelKeyboardLock(keyboard_lock_widget_);
+  CancelKeyboardLock(render_widget_host);
 }
 
 void WebContentsImpl::RenderWidgetGotFocus(
@@ -3906,6 +3906,9 @@ void WebContentsImpl::DidNavigateMainFramePreCommit(
   if (IsFullscreenForCurrentTab())
     ExitFullscreen(false);
   DCHECK(!IsFullscreenForCurrentTab());
+
+  // Clean up keyboard lock state when navigating.
+  CancelKeyboardLock(keyboard_lock_widget_);
 }
 
 void WebContentsImpl::DidNavigateMainFramePostCommit(

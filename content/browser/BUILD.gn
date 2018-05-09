@@ -955,6 +955,7 @@ jumbo_source_set("browser") {
     "interface_provider_filtering.h",
     "isolated_origin_util.cc",
     "isolated_origin_util.h",
+    "keyboard_lock/keyboard_lock_metrics.h",
     "keyboard_lock/keyboard_lock_service_impl.cc",
     "keyboard_lock/keyboard_lock_service_impl.h",
     "leveldb_wrapper_impl.cc",
