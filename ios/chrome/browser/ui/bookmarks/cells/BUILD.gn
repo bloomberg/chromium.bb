@@ -4,6 +4,8 @@
 
 source_set("cells") {
   sources = [
+    "bookmark_folder_item.h",
+    "bookmark_folder_item.mm",
     "bookmark_home_node_item.h",
     "bookmark_home_node_item.mm",
     "bookmark_home_promo_item.h",
