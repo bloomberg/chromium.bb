@@ -12,7 +12,7 @@
 
 namespace cc {
 namespace {
-base::AtomicSequenceNumber g_next_id_;
+base::AtomicSequenceNumber g_next_shader_id;
 
 sk_sp<SkPicture> ToSkPicture(sk_sp<PaintRecord> record,
                              const SkRect& bounds,
@@ -155,7 +155,7 @@ sk_sp<PaintShader> PaintShader::MakePaintRecord(
   sk_sp<PaintShader> shader(new PaintShader(Type::kPaintRecord));
 
   shader->record_ = std::move(record);
-  shader->id_ = g_next_id_.GetNext();
+  shader->id_ = g_next_shader_id.GetNext();
   shader->tile_ = tile;
   shader->scaling_behavior_ = scaling_behavior;
   shader->SetMatrixAndTiling(local_matrix, tx, ty);
