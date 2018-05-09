@@ -247,4 +247,16 @@ TEST(TestMockTimeTaskRunnerTest, NoFastForwardToCancelledTask) {
   EXPECT_EQ(start_time, task_runner->NowTicks());
 }
 
+TEST(TestMockTimeTaskRunnerTest, AdvanceMockTickClockDoesNotRunTasks) {
+  auto task_runner = MakeRefCounted<TestMockTimeTaskRunner>();
+  TimeTicks start_time = task_runner->NowTicks();
+  task_runner->PostTask(FROM_HERE, BindOnce([]() { ADD_FAILURE(); }));
+  task_runner->PostDelayedTask(FROM_HERE, BindOnce([]() { ADD_FAILURE(); }),
+                               TimeDelta::FromSeconds(1));
+
+  task_runner->AdvanceMockTickClock(TimeDelta::FromSeconds(3));
+  EXPECT_EQ(start_time + TimeDelta::FromSeconds(3), task_runner->NowTicks());
+  EXPECT_EQ(2u, task_runner->GetPendingTaskCount());
+}
+
 }  // namespace base

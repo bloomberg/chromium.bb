@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "components/viz/test/ordered_simple_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
