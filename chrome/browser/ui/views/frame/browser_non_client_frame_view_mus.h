@@ -57,6 +57,7 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   const char* GetClassName() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size GetMinimumSize() const override;
+  void OnThemeChanged() override;
 
   // TabIconViewModel:
   bool ShouldTabIconViewAnimate() const override;

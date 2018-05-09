@@ -10,7 +10,6 @@
 #include "ash/ash_export.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/frame_header.h"
-#include "ash/public/interfaces/window_style.mojom.h"
 #include "base/compiler_specific.h"  // override
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -37,11 +36,9 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader,
                                       public gfx::AnimationDelegate {
  public:
   // DefaultFrameHeader does not take ownership of any of the parameters.
-  DefaultFrameHeader(
-      views::Widget* frame,
-      views::View* header_view,
-      FrameCaptionButtonContainerView* caption_button_container,
-      mojom::WindowStyle window_style = mojom::WindowStyle::DEFAULT);
+  DefaultFrameHeader(views::Widget* frame,
+                     views::View* header_view,
+                     FrameCaptionButtonContainerView* caption_button_container);
   ~DefaultFrameHeader() override;
 
   // FrameHeader overrides:
@@ -54,28 +51,22 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader,
   void SchedulePaintForTitle() override;
   void SetPaintAsActive(bool paint_as_active) override;
   void OnShowStateChanged(ui::WindowShowState show_state) override;
+  void SetLeftHeaderView(views::View* left_header_view) override;
+  void SetBackButton(FrameCaptionButton* back_button) override;
+  FrameCaptionButton* GetBackButton() const override;
+  void SetFrameColors(SkColor active_frame_color,
+                      SkColor inactive_frame_color) override;
 
-  void set_left_header_view(views::View* left_header_view) {
-    left_header_view_ = left_header_view;
-  }
-
-  void set_back_button(FrameCaptionButton* back_button) {
-    back_button_ = back_button;
-  }
-  FrameCaptionButton* back_button() { return back_button_; }
-
-  void set_title(const base::string16& title) { title_ = title; }
-
-  // Sets the active and inactive frame colors. Note the inactive frame color
-  // will have some transparency added when the frame is drawn.
-  void SetFrameColors(SkColor active_frame_color, SkColor inactive_frame_color);
   void SetThemeColor(SkColor theme_color);
-  SkColor GetActiveFrameColor() const;
-  SkColor GetInactiveFrameColor() const;
-  SkColor GetCurrentFrameColor() const;
 
   // Gets the color of the title text.
   SkColor GetTitleColor() const;
+
+  // The default frame color for both active and inactive.
+  static SkColor GetDefaultFrameColor();
+
+  SkColor active_frame_color_for_testing() { return active_frame_color_; }
+  SkColor inactive_frame_color_for_testing() { return inactive_frame_color_; }
 
  protected:
   // Updates the frame colors and ensures buttons are up to date.
@@ -109,7 +100,10 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader,
   // same width as |view_|.
   gfx::Rect GetLocalBounds() const;
 
-  const mojom::WindowStyle window_style_;
+  base::string16 GetTitle() const;
+
+  SkColor GetCurrentFrameColor() const;
+
   views::Widget* frame_;
   views::View* view_;
   FrameCaptionButton* back_button_;  // May be nullptr.
@@ -119,7 +113,6 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader,
   SkColor active_frame_color_;
   SkColor inactive_frame_color_;
   FrameCaptionButtonContainerView* caption_button_container_;
-  base::string16 title_;
 
   // The height of the header to paint.
   int painted_height_;
