@@ -859,9 +859,12 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarredRestricted) {
   ASSERT_EQ(1U, visits.size());
 
   // This should delete the last two visits.
-  std::set<GURL> restrict_urls;
-  restrict_urls.insert(url_row1.url());
+  std::set<GURL> restrict_urls = {url_row1.url()};
   expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2], base::Time());
+  EXPECT_EQ(GetLastDeletionInfo()->time_range().begin(), visit_times[2]);
+  EXPECT_EQ(GetLastDeletionInfo()->time_range().end(), base::Time());
+  EXPECT_EQ(GetLastDeletionInfo()->deleted_rows().size(), 0U);
+  EXPECT_EQ(GetLastDeletionInfo()->restrict_urls()->size(), 1U);
 
   // Verify that the middle URL had its last visit deleted only.
   visits.clear();

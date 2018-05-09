@@ -716,9 +716,9 @@ TEST_F(MediaEngagementServiceTest, HistoryExpirationIsNoOp) {
         profile(), ServiceAccessType::IMPLICIT_ACCESS);
 
     service()->OnURLsDeleted(
-        history,
-        history::DeletionInfo(history::DeletionTimeRange::Invalid(), true,
-                              history::URLRows(), std::set<GURL>()));
+        history, history::DeletionInfo(history::DeletionTimeRange::Invalid(),
+                                       true, history::URLRows(),
+                                       std::set<GURL>(), base::nullopt));
 
     // Same as above, nothing should have changed.
     ExpectScores(origin1, 7.0 / 11.0,

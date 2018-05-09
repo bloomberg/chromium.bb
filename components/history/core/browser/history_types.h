@@ -17,6 +17,7 @@
 #include "base/containers/stack_container.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/favicon_base/favicon_types.h"
@@ -641,7 +642,9 @@ class DeletionInfo {
   DeletionInfo(const DeletionTimeRange& time_range,
                bool is_from_expiration,
                URLRows deleted_rows,
-               std::set<GURL> favicon_urls);
+               std::set<GURL> favicon_urls,
+               base::Optional<std::set<GURL>> restrict_urls);
+
   ~DeletionInfo();
   // Move-only because of potentially large containers.
   DeletionInfo(DeletionInfo&& other) noexcept;
@@ -651,9 +654,14 @@ class DeletionInfo {
   //  and |favicon_urls()| are undefined.
   bool IsAllHistory() const { return time_range_.IsAllTime(); }
 
-  // If time_range.IsValid() is true, all URLs between time_range.begin()
-  // and time_range.end() have been removed.
+  // If time_range.IsValid() is true, |restrict_urls| (or all URLs if empty)
+  // between time_range.begin() and time_range.end() have been removed.
   const DeletionTimeRange& time_range() const { return time_range_; }
+
+  // Restricts deletions within |time_range()|.
+  const base::Optional<std::set<GURL>>& restrict_urls() const {
+    return restrict_urls_;
+  }
 
   // Returns true, if the URL deletion is due to expiration.
   bool is_from_expiration() const { return is_from_expiration_; }
@@ -685,6 +693,7 @@ class DeletionInfo {
   bool is_from_expiration_;
   URLRows deleted_rows_;
   std::set<GURL> favicon_urls_;
+  base::Optional<std::set<GURL>> restrict_urls_;
   OriginCountAndLastVisitMap deleted_urls_origin_map_;
 
   DISALLOW_COPY_AND_ASSIGN(DeletionInfo);

@@ -31,8 +31,7 @@ void BrowsingDataHistoryObserverService::OnURLsDeleted(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
   if (!deletion_info.is_from_expiration())
-    browsing_data::RemoveNavigationEntries(profile_, deletion_info.time_range(),
-                                           deletion_info.deleted_rows());
+    browsing_data::RemoveNavigationEntries(profile_, deletion_info);
 }
 
 // static

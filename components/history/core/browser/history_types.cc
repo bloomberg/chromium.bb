@@ -374,26 +374,34 @@ bool DeletionTimeRange::IsAllTime() const {
 
 // static
 DeletionInfo DeletionInfo::ForAllHistory() {
-  return DeletionInfo(DeletionTimeRange::AllTime(), false, {}, {});
+  return DeletionInfo(DeletionTimeRange::AllTime(), false, {}, {},
+                      base::nullopt);
 }
 
 // static
 DeletionInfo DeletionInfo::ForUrls(URLRows deleted_rows,
                                    std::set<GURL> favicon_urls) {
   return DeletionInfo(DeletionTimeRange::Invalid(), false,
-                      std::move(deleted_rows), std::move(favicon_urls));
+                      std::move(deleted_rows), std::move(favicon_urls),
+                      base::nullopt);
 }
 
 DeletionInfo::DeletionInfo(const DeletionTimeRange& time_range,
                            bool is_from_expiration,
                            URLRows deleted_rows,
-                           std::set<GURL> favicon_urls)
+                           std::set<GURL> favicon_urls,
+                           base::Optional<std::set<GURL>> restrict_urls)
     : time_range_(time_range),
       is_from_expiration_(is_from_expiration),
       deleted_rows_(std::move(deleted_rows)),
-      favicon_urls_(std::move(favicon_urls)) {
-  DCHECK(!time_range.IsAllTime() || deleted_rows.empty());
-}
+      favicon_urls_(std::move(favicon_urls)),
+      restrict_urls_(std::move(restrict_urls)) {
+  // If time_range is all time or invalid, restrict_urls should be empty.
+  DCHECK(!time_range_.IsAllTime() || !restrict_urls_.has_value());
+  DCHECK(time_range_.IsValid() || !restrict_urls_.has_value());
+  // If restrict_urls_ is defined, it should be non-empty.
+  DCHECK(!restrict_urls_.has_value() || !restrict_urls_->empty());
+};
 
 DeletionInfo::~DeletionInfo() = default;
 
