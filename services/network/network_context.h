@@ -134,6 +134,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void ClearReportingCacheClients(
       mojom::ClearDataFilterPtr filter,
       ClearReportingCacheClientsCallback callback) override;
+  void ClearNetworkErrorLogging(
+      mojom::ClearDataFilterPtr filter,
+      ClearNetworkErrorLoggingCallback callback) override;
   void SetNetworkConditions(const std::string& profile_id,
                             mojom::NetworkConditionsPtr conditions) override;
   void SetAcceptLanguage(const std::string& new_accept_language) override;

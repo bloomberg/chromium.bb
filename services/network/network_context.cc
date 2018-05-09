@@ -77,6 +77,7 @@
 
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_browsing_data_remover.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
@@ -762,6 +763,22 @@ void NetworkContext::ClearReportingCacheClients(
 
   std::move(callback).Run();
 }
+
+void NetworkContext::ClearNetworkErrorLogging(
+    mojom::ClearDataFilterPtr filter,
+    ClearNetworkErrorLoggingCallback callback) {
+  net::NetworkErrorLoggingService* logging_service =
+      url_request_context_->network_error_logging_service();
+  if (logging_service) {
+    if (filter) {
+      logging_service->RemoveBrowsingData(BuildUrlFilter(std::move(filter)));
+    } else {
+      logging_service->RemoveAllBrowsingData();
+    }
+  }
+
+  std::move(callback).Run();
+}
 #else   // BUILDFLAG(ENABLE_REPORTING)
 void NetworkContext::ClearReportingCacheReports(
     mojom::ClearDataFilterPtr filter,
@@ -772,6 +789,12 @@ void NetworkContext::ClearReportingCacheReports(
 void NetworkContext::ClearReportingCacheClients(
     mojom::ClearDataFilterPtr filter,
     ClearReportingCacheClientsCallback callback) {
+  NOTREACHED();
+}
+
+void NetworkContext::ClearNetworkErrorLogging(
+    mojom::ClearDataFilterPtr filter,
+    ClearNetworkErrorLoggingCallback callback) {
   NOTREACHED();
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)

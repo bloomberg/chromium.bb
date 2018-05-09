@@ -7608,6 +7608,8 @@ class TestNetworkErrorLoggingService : public NetworkErrorLoggingService {
     NOTREACHED();
   }
 
+  void RemoveAllBrowsingData() override { NOTREACHED(); }
+
  private:
   std::vector<Header> headers_;
   std::vector<RequestDetails> errors_;

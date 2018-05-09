@@ -276,12 +276,6 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
 
   void RemoveBrowsingData(const base::RepeatingCallback<bool(const GURL&)>&
                               origin_filter) override {
-    if (origin_filter.is_null()) {
-      wildcard_policies_.clear();
-      policies_.clear();
-      return;
-    }
-
     std::vector<url::Origin> origins_to_remove;
 
     for (auto it = policies_.begin(); it != policies_.end(); ++it) {
@@ -294,6 +288,11 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
       MaybeRemoveWildcardPolicy(*it, &policies_[*it]);
       policies_.erase(*it);
     }
+  }
+
+  void RemoveAllBrowsingData() override {
+    wildcard_policies_.clear();
+    policies_.clear();
   }
 
   base::Value StatusAsValue() const override {
@@ -319,6 +318,14 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     }
     dict.SetKey("originPolicies", base::Value(std::move(policy_list)));
     return dict;
+  }
+
+  std::set<url::Origin> GetPolicyOriginsForTesting() override {
+    std::set<url::Origin> origins;
+    for (const auto& entry : policies_) {
+      origins.insert(entry.first);
+    }
+    return origins;
   }
 
  private:
@@ -590,6 +597,11 @@ void NetworkErrorLoggingService::SetTickClockForTesting(
 base::Value NetworkErrorLoggingService::StatusAsValue() const {
   NOTIMPLEMENTED();
   return base::Value();
+}
+
+std::set<url::Origin> NetworkErrorLoggingService::GetPolicyOriginsForTesting() {
+  NOTIMPLEMENTED();
+  return std::set<url::Origin>();
 }
 
 NetworkErrorLoggingService::NetworkErrorLoggingService()

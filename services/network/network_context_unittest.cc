@@ -76,6 +76,7 @@
 #include "url/url_constants.h"
 
 #if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_report.h"
 #include "net/reporting/reporting_service.h"
@@ -1265,6 +1266,98 @@ TEST_F(NetworkContextTest, ClearReportingCacheClientsWithNoService) {
   base::RunLoop run_loop;
   network_context->ClearReportingCacheClients(nullptr /* filter */,
                                               run_loop.QuitClosure());
+  run_loop.Run();
+}
+
+TEST_F(NetworkContextTest, ClearNetworkErrorLogging) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(features::kNetworkErrorLogging);
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  net::NetworkErrorLoggingService* logging_service =
+      network_context->url_request_context()->network_error_logging_service();
+  ASSERT_TRUE(logging_service);
+
+  GURL domain("https://google.com");
+  logging_service->OnHeader(url::Origin::Create(domain),
+                            "{\"report-to\":\"group\",\"max-age\":86400}");
+
+  ASSERT_EQ(1u, logging_service->GetPolicyOriginsForTesting().size());
+
+  base::RunLoop run_loop;
+  network_context->ClearNetworkErrorLogging(nullptr /* filter */,
+                                            run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_TRUE(logging_service->GetPolicyOriginsForTesting().empty());
+}
+
+TEST_F(NetworkContextTest, ClearNetworkErrorLoggingWithFilter) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(features::kNetworkErrorLogging);
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  net::NetworkErrorLoggingService* logging_service =
+      network_context->url_request_context()->network_error_logging_service();
+  ASSERT_TRUE(logging_service);
+
+  GURL domain1("https://google.com");
+  logging_service->OnHeader(url::Origin::Create(domain1),
+                            "{\"report-to\":\"group\",\"max-age\":86400}");
+  GURL domain2("https://chromium.org");
+  logging_service->OnHeader(url::Origin::Create(domain2),
+                            "{\"report-to\":\"group\",\"max-age\":86400}");
+
+  ASSERT_EQ(2u, logging_service->GetPolicyOriginsForTesting().size());
+
+  mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
+  filter->type = mojom::ClearDataFilter_Type::KEEP_MATCHES;
+  filter->domains.push_back("chromium.org");
+
+  base::RunLoop run_loop;
+  network_context->ClearNetworkErrorLogging(std::move(filter),
+                                            run_loop.QuitClosure());
+  run_loop.Run();
+
+  std::set<url::Origin> policy_origins =
+      logging_service->GetPolicyOriginsForTesting();
+  EXPECT_EQ(1u, policy_origins.size());
+  EXPECT_NE(policy_origins.end(),
+            policy_origins.find(url::Origin::Create(domain2)));
+}
+
+TEST_F(NetworkContextTest, ClearEmptyNetworkErrorLogging) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(features::kNetworkErrorLogging);
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  net::NetworkErrorLoggingService* logging_service =
+      network_context->url_request_context()->network_error_logging_service();
+  ASSERT_TRUE(logging_service);
+
+  ASSERT_TRUE(logging_service->GetPolicyOriginsForTesting().empty());
+
+  base::RunLoop run_loop;
+  network_context->ClearNetworkErrorLogging(nullptr /* filter */,
+                                            run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_TRUE(logging_service->GetPolicyOriginsForTesting().empty());
+}
+
+TEST_F(NetworkContextTest, ClearEmptyNetworkErrorLoggingWithNoService) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  ASSERT_FALSE(
+      network_context->url_request_context()->network_error_logging_service());
+
+  base::RunLoop run_loop;
+  network_context->ClearNetworkErrorLogging(nullptr /* filter */,
+                                            run_loop.QuitClosure());
   run_loop.Run();
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
