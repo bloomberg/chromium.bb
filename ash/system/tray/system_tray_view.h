@@ -43,6 +43,7 @@ class SystemTrayView : public views::View {
   std::map<SystemTrayItem::UmaType, views::View*> tray_item_view_map_;
 
   std::unique_ptr<ui::EventHandler> time_to_click_recorder_;
+  std::unique_ptr<ui::EventHandler> interacted_by_tap_recorder_;
 
   std::vector<ash::SystemTrayItem*> items_;
 
