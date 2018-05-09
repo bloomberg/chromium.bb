@@ -5,8 +5,10 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_page_control.h"
 
 #import <CoreGraphics/CoreGraphics.h>
+#include <algorithm>
 
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -65,7 +67,8 @@ const CGFloat kSegmentWidth = 64.0;
 
 // Points that the slider overhangs a segment on each side, or 0 if the slider
 // is narrower than a segment.
-const CGFloat kSliderOverhang = MAX((kSliderWidth - kSegmentWidth) / 2.0, 0.0);
+const CGFloat kSliderOverhang =
+    std::max((kSliderWidth - kSegmentWidth) / 2.0, 0.0);
 
 // Width of the separator bars between segments.
 const CGFloat kSeparatorWidth = 1.0;
@@ -75,7 +78,7 @@ const CGFloat kBackgroundWidth = 3 * kSegmentWidth + 2 * kSeparatorWidth;
 
 // Overall height of the control -- the larger of the slider and segment
 // heights.
-const CGFloat kOverallHeight = MAX(kSliderHeight, kSegmentHeight);
+const CGFloat kOverallHeight = std::max(kSliderHeight, kSegmentHeight);
 // Overall width of the control -- the background width plusand twice
 // the slider overhang.
 const CGFloat kOverallWidth = kBackgroundWidth + 2 * kSliderOverhang;
@@ -191,7 +194,7 @@ NSString* StringForItemCount(long count) {
 
 - (void)setSliderPosition:(CGFloat)sliderPosition {
   // Clamp |selectionOffset| to (0.0 - 1.0).
-  sliderPosition = MIN(MAX(0.0, sliderPosition), 1.0);
+  sliderPosition = base::ClampToRange<CGFloat>(sliderPosition, 0.0, 1.0);
   CGPoint center = self.sliderView.center;
   center.x = self.sliderOrigin + self.sliderRange * sliderPosition;
   self.sliderView.center = center;
@@ -248,7 +251,7 @@ NSString* StringForItemCount(long count) {
     // is moving across two segments.
     CGFloat offsetDelta = abs(newPosition - self.sliderPosition);
     NSTimeInterval duration = offsetDelta * kSliderMoveDuration;
-    [UIView animateWithDuration:MIN(duration, kSliderMoveDuration)
+    [UIView animateWithDuration:std::min(duration, kSliderMoveDuration)
                      animations:^{
                        self.sliderPosition = newPosition;
                      }];
