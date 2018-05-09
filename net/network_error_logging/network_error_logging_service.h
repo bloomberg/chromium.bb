@@ -109,10 +109,13 @@ class NET_EXPORT NetworkErrorLoggingService {
   virtual void OnRequest(const RequestDetails& details) = 0;
 
   // Removes browsing data (origin policies) associated with any origin for
-  // which |origin_filter| returns true, or for all origins if
-  // |origin_filter.is_null()|.
+  // which |origin_filter| returns true.
   virtual void RemoveBrowsingData(
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter) = 0;
+
+  // Removes browsing data (origin policies) for all origins. Allows slight
+  // optimization over passing an always-true filter to RemoveBrowsingData.
+  virtual void RemoveAllBrowsingData() = 0;
 
   // Sets the ReportingService that will be used to queue network error reports.
   // If |nullptr| is passed, reports will be queued locally or discarded.
@@ -125,6 +128,8 @@ class NET_EXPORT NetworkErrorLoggingService {
   void SetTickClockForTesting(const base::TickClock* tick_clock);
 
   virtual base::Value StatusAsValue() const;
+
+  virtual std::set<url::Origin> GetPolicyOriginsForTesting();
 
  protected:
   NetworkErrorLoggingService();

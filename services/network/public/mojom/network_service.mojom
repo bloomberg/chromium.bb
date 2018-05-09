@@ -304,6 +304,13 @@ interface NetworkContext {
   // filter.
   ClearReportingCacheClients(ClearDataFilter? filter) => ();
 
+  // Clears policy entries from the NetworkErrorLoggingService. Should not be
+  // called if the ENABLE_REPORTING build flag is false.
+  //
+  // If a non-null |filter| is specified, will clear only entries matching the
+  // filter.
+  ClearNetworkErrorLogging(ClearDataFilter? filter) => ();
+
   // Configures network conditions for the specified throttling profile.
   // The throttling will be applied only to requests that have
   // X-DevTools-Emulate-Network-Conditions-Client-Id: <profile_id>

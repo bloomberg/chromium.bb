@@ -494,7 +494,7 @@ TEST_F(NetworkErrorLoggingServiceTest,
 TEST_F(NetworkErrorLoggingServiceTest, RemoveAllBrowsingData) {
   service()->OnHeader(kOrigin_, kHeader_);
 
-  service()->RemoveBrowsingData(base::RepeatingCallback<bool(const GURL&)>());
+  service()->RemoveAllBrowsingData();
 
   service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED));
 

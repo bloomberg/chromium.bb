@@ -1090,6 +1090,11 @@ class MockNetworkErrorLoggingService : public net::NetworkErrorLoggingService {
     last_origin_filter_ = origin_filter;
   }
 
+  void RemoveAllBrowsingData() override {
+    ++remove_calls_;
+    last_origin_filter_ = base::RepeatingCallback<bool(const GURL&)>();
+  }
+
   int remove_calls() const { return remove_calls_; }
   const base::RepeatingCallback<bool(const GURL&)>& last_origin_filter() const {
     return last_origin_filter_;
