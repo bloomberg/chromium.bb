@@ -105,9 +105,10 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
   // |expired|, or manually deleted.
   void EnsureURLInfoGone(const URLRow& row, bool expired);
 
-  const DeletionInfo& GetLastDeletionInfo() {
-    EXPECT_FALSE(urls_deleted_notifications_.empty());
-    return urls_deleted_notifications_.back();
+  const DeletionInfo* GetLastDeletionInfo() {
+    if (urls_deleted_notifications_.empty())
+      return nullptr;
+    return &urls_deleted_notifications_.back();
   }
 
   // Returns whether HistoryBackendNotifier::NotifyURLsModified was
@@ -618,8 +619,8 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarred) {
   // This should delete the last two visits.
   std::set<GURL> restrict_urls;
   expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2], base::Time());
-  EXPECT_EQ(GetLastDeletionInfo().time_range().begin(), visit_times[2]);
-  EXPECT_EQ(GetLastDeletionInfo().time_range().end(), base::Time());
+  EXPECT_EQ(GetLastDeletionInfo()->time_range().begin(), visit_times[2]);
+  EXPECT_EQ(GetLastDeletionInfo()->time_range().end(), base::Time());
 
   // Verify that the middle URL had its last visit deleted only.
   visits.clear();
@@ -809,7 +810,7 @@ TEST_F(ExpireHistoryTest, FlushURLsForTimes) {
   times.push_back(visit_times[3]);
   times.push_back(visit_times[2]);
   expirer_.ExpireHistoryForTimes(times);
-  EXPECT_FALSE(GetLastDeletionInfo().time_range().IsValid());
+  EXPECT_FALSE(GetLastDeletionInfo()->time_range().IsValid());
 
   // Verify that the middle URL had its last visit deleted only.
   visits.clear();
@@ -1027,19 +1028,19 @@ TEST_F(ExpireHistoryTest, ExpireSomeOldHistory) {
   // Deleting a time range with no URLs should return false (nothing found).
   EXPECT_FALSE(expirer_.ExpireSomeOldHistory(
       visit_times[0] - base::TimeDelta::FromDays(100), reader, 1));
-  EXPECT_EQ(GetLastDeletionInfo().time_range().begin(), base::Time());
-  EXPECT_EQ(GetLastDeletionInfo().time_range().end(),
-            visit_times[0] - base::TimeDelta::FromDays(100));
+  EXPECT_EQ(nullptr, GetLastDeletionInfo());
 
   // Deleting a time range with not up the the max results should also return
   // false (there will only be one visit deleted in this range).
   EXPECT_FALSE(expirer_.ExpireSomeOldHistory(visit_times[0], reader, 2));
-  EXPECT_EQ(GetLastDeletionInfo().time_range().begin(), base::Time());
-  EXPECT_EQ(GetLastDeletionInfo().time_range().end(), visit_times[0]);
+  EXPECT_EQ(1U, GetLastDeletionInfo()->deleted_rows().size());
+  EXPECT_FALSE(GetLastDeletionInfo()->time_range().IsValid());
+  ClearLastNotifications();
 
   // Deleting a time range with the max number of results should return true
   // (max deleted).
   EXPECT_TRUE(expirer_.ExpireSomeOldHistory(visit_times[2], reader, 1));
+  EXPECT_EQ(nullptr, GetLastDeletionInfo());
 }
 
 TEST_F(ExpireHistoryTest, ExpiringVisitsReader) {

@@ -289,7 +289,7 @@ BOOL IsTypedUrlPresentOnClient(const GURL& url,
   __block bool history_service_callback_called = false;
   __block int count = 0;
   using history::OriginCountAndLastVisitMap;
-  history_service->GetCountsAndLastVisitForOrigins(
+  history_service->GetCountsAndLastVisitForOriginsForTesting(
       origins, base::BindBlockArc(^(const OriginCountAndLastVisitMap& result) {
         auto iter = result.find(block_safe_url);
         if (iter != result.end())

@@ -634,10 +634,9 @@ bool ExpireHistoryBackend::ExpireSomeOldHistory(
   DeleteVisitRelatedInfo(deleted_visits, &deleted_effects);
   ExpireURLsForVisits(deleted_visits, &deleted_effects);
   DeleteFaviconsIfPossible(&deleted_effects);
-  DeletionTimeRange time_range =
-      more_to_expire ? DeletionTimeRange::Invalid()
-                     : DeletionTimeRange(base::Time(), end_time);
-  BroadcastNotifications(&deleted_effects, DELETION_EXPIRED, time_range);
+
+  BroadcastNotifications(&deleted_effects, DELETION_EXPIRED,
+                         DeletionTimeRange::Invalid());
 
   return more_to_expire;
 }

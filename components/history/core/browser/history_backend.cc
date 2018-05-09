@@ -413,6 +413,8 @@ OriginCountAndLastVisitMap HistoryBackend::GetCountsAndLastVisitForOrigins(
     const std::set<GURL>& origins) const {
   if (!db_)
     return OriginCountAndLastVisitMap();
+  if (origins.empty())
+    return OriginCountAndLastVisitMap();
 
   URLDatabase::URLEnumerator it;
   if (!db_->InitURLEnumeratorForEverything(&it))
@@ -2636,11 +2638,17 @@ void HistoryBackend::NotifyURLsModified(const URLRows& rows) {
 }
 
 void HistoryBackend::NotifyURLsDeleted(DeletionInfo deletion_info) {
-  URLRows copied_rows(deletion_info.deleted_rows());
+  std::set<GURL> origins;
+  for (const history::URLRow& row : deletion_info.deleted_rows())
+    origins.insert(row.url().GetOrigin());
+
+  deletion_info.set_deleted_urls_origin_map(
+      GetCountsAndLastVisitForOrigins(origins));
+
   for (HistoryBackendObserver& observer : observers_) {
-    observer.OnURLsDeleted(this, deletion_info.IsAllHistory(),
-                           deletion_info.is_from_expiration(), copied_rows,
-                           deletion_info.favicon_urls());
+    observer.OnURLsDeleted(
+        this, deletion_info.IsAllHistory(), deletion_info.is_from_expiration(),
+        deletion_info.deleted_rows(), deletion_info.favicon_urls());
   }
 
   if (delegate_)

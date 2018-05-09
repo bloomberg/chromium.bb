@@ -666,11 +666,26 @@ class DeletionInfo {
   // Undefined if |IsAllHistory()| returns true.
   const std::set<GURL>& favicon_urls() const { return favicon_urls_; }
 
+  // Returns a map from origins with deleted urls to a count of remaining URLs
+  // and the last visited time.
+  const OriginCountAndLastVisitMap& deleted_urls_origin_map() const {
+    // The map should only be accessed after it has been populated.
+    DCHECK(deleted_rows_.empty() || !deleted_urls_origin_map_.empty());
+    return deleted_urls_origin_map_;
+  }
+
+  // Populates deleted_urls_origin_map.
+  void set_deleted_urls_origin_map(OriginCountAndLastVisitMap origin_map) {
+    DCHECK(deleted_urls_origin_map_.empty());
+    deleted_urls_origin_map_ = std::move(origin_map);
+  }
+
  private:
   DeletionTimeRange time_range_;
   bool is_from_expiration_;
   URLRows deleted_rows_;
   std::set<GURL> favicon_urls_;
+  OriginCountAndLastVisitMap deleted_urls_origin_map_;
 
   DISALLOW_COPY_AND_ASSIGN(DeletionInfo);
 };

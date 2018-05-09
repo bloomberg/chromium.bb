@@ -579,14 +579,8 @@ void SiteEngagementService::OnURLsDeleted(
   for (const history::URLRow& row : deletion_info.deleted_rows())
     origins.insert(row.url().GetOrigin());
 
-  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
-  hs->GetCountsAndLastVisitForOrigins(
-      std::set<GURL>(origins.begin(), origins.end()),
-      base::Bind(
-          &SiteEngagementService::GetCountsAndLastVisitForOriginsComplete,
-          weak_factory_.GetWeakPtr(), hs, origins,
-          deletion_info.is_from_expiration()));
+  UpdateEngagementScores(origins, deletion_info.is_from_expiration(),
+                         deletion_info.deleted_urls_origin_map());
 }
 
 SiteEngagementScore SiteEngagementService::CreateEngagementScore(
@@ -627,8 +621,7 @@ int SiteEngagementService::OriginsWithMaxEngagement(
   return total_origins;
 }
 
-void SiteEngagementService::GetCountsAndLastVisitForOriginsComplete(
-    history::HistoryService* history_service,
+void SiteEngagementService::UpdateEngagementScores(
     const std::multiset<GURL>& deleted_origins,
     bool expired,
     const history::OriginCountAndLastVisitMap& remaining_origins) {

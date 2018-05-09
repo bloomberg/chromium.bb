@@ -305,10 +305,8 @@ class SiteEngagementService : public KeyedService,
   int OriginsWithMaxEngagement(
       const std::vector<mojom::SiteEngagementDetails>& details) const;
 
-  // Callback for the history service when it is asked for a map of origins to
-  // how many URLs corresponding to that origin remain in history.
-  void GetCountsAndLastVisitForOriginsComplete(
-      history::HistoryService* history_service,
+  // Update site engagement scores after a history deletion.
+  void UpdateEngagementScores(
       const std::multiset<GURL>& deleted_url_origins,
       bool expired,
       const history::OriginCountAndLastVisitMap& remaining_origin_counts);
