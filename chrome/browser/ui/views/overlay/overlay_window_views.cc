@@ -157,8 +157,7 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateBounds() {
   // Determine the window size by fitting |natural_size_| within
   // |current_size_|, keeping to |natural_size_|'s aspect ratio.
   if (!natural_size_.IsEmpty())
-    current_size_ =
-        media::ScaleSizeToFitWithinTarget(natural_size_, current_size_);
+    UpdateCurrentSizeWithAspectRatio(current_size_);
 
   // The initial positioning is on the bottom right quadrant
   // of the primary display work area.
@@ -214,6 +213,35 @@ void OverlayWindowViews::SetUpViews() {
   GetControlsBackgroundLayer()->SetVisible(false);
   GetCloseControlsLayer()->SetVisible(false);
   GetPlayPauseControlsLayer()->SetVisible(false);
+}
+
+void OverlayWindowViews::UpdateCurrentSizeWithAspectRatio(gfx::Size new_size) {
+  // This function will only be called once when this is true -- when the
+  // window is initially created.
+  if (current_size_.IsEmpty())
+    return;
+
+  // Check whether or not the new size and the video's natural size have the
+  // same orientation (landscape vs. portrait). Otherwise, the usage of the
+  // area checks below will flip the orientation of the video.
+  bool is_natural_size_landscape =
+      natural_size_.width() > natural_size_.height();
+  bool is_new_size_landscape = new_size.width() > new_size.height();
+
+  // TODO(apacible): Make resizing more strict. Currently, the window may
+  // resize to not adhere to the aspect ratio while the bounds are being
+  // dragged. When there is no more drag motion (e.g. mouse lifts), the window
+  // snaps to adhere to the aspect ratio. Ideally, the window will always
+  // adhere to the aspect ratio while in drag motion. http://crbug/829677.
+  if (is_new_size_landscape == is_natural_size_landscape) {
+    if (natural_size_.GetArea() > new_size.GetArea()) {
+      current_size_ =
+          media::ScaleSizeToEncompassTarget(natural_size_, new_size);
+    } else {
+      current_size_ =
+          media::ScaleSizeToFitWithinTarget(natural_size_, new_size);
+    }
+  }
 }
 
 bool OverlayWindowViews::IsActive() const {
@@ -347,5 +375,7 @@ void OverlayWindowViews::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
   if (controller_)
     controller_->UpdateLayerBounds();
 
-  views::Widget::OnNativeWidgetSizeChanged(new_size);
+  UpdateCurrentSizeWithAspectRatio(new_size);
+  SetBounds(gfx::Rect(GetBounds().origin(), current_size_));
+  views::Widget::OnNativeWidgetSizeChanged(current_size_);
 }
