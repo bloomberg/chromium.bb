@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/common/message_port/string_message_codec.h"
+#include "content/browser/android/string_message_codec.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
-namespace blink {
+namespace content {
 namespace {
 
 base::string16 DecodeWithV8(const std::vector<uint8_t>& encoded) {
@@ -59,9 +59,10 @@ std::vector<uint8_t> EncodeWithV8(const base::string16& message) {
     v8::Local<v8::Context> context = v8::Context::New(isolate);
 
     v8::Local<v8::String> message_as_value =
-        v8::String::NewFromTwoByte(isolate, message.data(),
-                                   v8::NewStringType::kNormal, message.size())
-            .ToLocalChecked();
+        v8::String::NewFromTwoByte(isolate,
+                                   message.data(),
+                                   v8::NewStringType::kNormal,
+                                   message.size()).ToLocalChecked();
 
     v8::ValueSerializer serializer(isolate);
     serializer.WriteHeader();
@@ -135,4 +136,4 @@ TEST(StringMessageCodecTest, V8ToSelfTest_NonASCIILongEnoughToForcePadding) {
 }
 
 }  // namespace
-}  // namespace blink
+}  // namespace content
