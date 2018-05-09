@@ -856,7 +856,6 @@ void LocationBarView::RefreshLocationIcon() {
 
 void LocationBarView::OnLocationIconFetched(const gfx::Image& image) {
   location_icon_view_->SetImage(image.AsImageSkia());
-  location_icon_view_->Update();
 }
 
 bool LocationBarView::RefreshContentSettingViews() {
