@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "content/browser/media/capture/audio_mirroring_manager.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -32,6 +33,17 @@ ForwardingAudioStreamFactory::ForwardingAudioStreamFactory(
 
 ForwardingAudioStreamFactory::~ForwardingAudioStreamFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
+// static
+ForwardingAudioStreamFactory* ForwardingAudioStreamFactory::ForFrame(
+    RenderFrameHost* frame) {
+  auto* contents =
+      static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(frame));
+  if (!contents)
+    return nullptr;
+
+  return contents->GetAudioStreamFactory();
 }
 
 void ForwardingAudioStreamFactory::CreateInputStream(

@@ -60,6 +60,7 @@
 #include "content/browser/loader/loader_io_thread_notifier.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/manifest/manifest_manager_host.h"
+#include "content/browser/media/audio_stream_broker.h"
 #include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/media/capture/web_contents_audio_muter.h"
 #include "content/browser/media/media_web_contents_observer.h"
@@ -6156,6 +6157,19 @@ void WebContentsImpl::ClearDeviceEmulationSize() {
   }
   device_emulation_size_ = gfx::Size();
   view_size_before_emulation_ = gfx::Size();
+}
+
+ForwardingAudioStreamFactory* WebContentsImpl::GetAudioStreamFactory() {
+  if (!audio_stream_factory_) {
+    audio_stream_factory_.emplace(
+        this,
+        content::ServiceManagerConnection::GetForProcess()
+            ->GetConnector()
+            ->Clone(),
+        AudioStreamBrokerFactory::CreateImpl());
+  }
+
+  return &*audio_stream_factory_;
 }
 
 void WebContentsImpl::MediaStartedPlaying(

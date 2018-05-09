@@ -19,6 +19,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/process/process.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -33,6 +34,7 @@
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/media/audio_stream_monitor.h"
+#include "content/browser/media/forwarding_audio_stream_factory.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -871,6 +873,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
     return &audio_stream_monitor_;
   }
 
+  ForwardingAudioStreamFactory* GetAudioStreamFactory();
+
   // Called by MediaWebContentsObserver when playback starts or stops.  See the
   // WebContentsObserver function stubs for more details.
   void MediaStartedPlaying(
@@ -1648,6 +1652,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Monitors power levels for audio streams associated with this WebContents.
   AudioStreamMonitor audio_stream_monitor_;
+
+  // Coordinates all the audio streams for this WebContents. Lazily initialized.
+  base::Optional<ForwardingAudioStreamFactory> audio_stream_factory_;
 
   // Created on-demand to mute all audio output from this WebContents.
   std::unique_ptr<WebContentsAudioMuter> audio_muter_;
