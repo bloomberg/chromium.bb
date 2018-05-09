@@ -575,11 +575,11 @@ TEST_F(SessionStoreTest, ShouldReturnForeignUnmappedTabs) {
                            /*urls=*/_)))));
 }
 
-TEST_F(SessionStoreTest, ShouldReturnForeignOrphanTabs) {
+TEST_F(SessionStoreTest, ShouldIgnoreForeignOrphanTabs) {
   const std::string kForeignSessionTag = "SomeForeignTag";
   const int kWindowId = 5;
   const int kTabId = 7;
-  // Both tab nodes point to the same tab ID.
+  // Both tab nodes point to the same tab ID, so the second one should prevail.
   const int kTabNodeId1 = 2;
   const int kTabNodeId2 = 3;
 
@@ -587,8 +587,6 @@ TEST_F(SessionStoreTest, ShouldReturnForeignOrphanTabs) {
       SessionStore::GetHeaderStorageKey(kLocalSessionTag);
   const std::string foreign_header_storage_key =
       SessionStore::GetHeaderStorageKey(kForeignSessionTag);
-  const std::string foreign_tab_storage_key1 =
-      SessionStore::GetTabStorageKey(kForeignSessionTag, kTabNodeId1);
   const std::string foreign_tab_storage_key2 =
       SessionStore::GetTabStorageKey(kForeignSessionTag, kTabNodeId2);
 
@@ -610,6 +608,7 @@ TEST_F(SessionStoreTest, ShouldReturnForeignOrphanTabs) {
   tab2.mutable_tab()->set_tab_id(kTabId);
   ASSERT_TRUE(SessionStore::AreValidSpecifics(tab2));
 
+  // Store the two foreign tabs, in order.
   std::unique_ptr<SessionStore::WriteBatch> batch =
       session_store()->CreateWriteBatch(/*error_handler=*/base::DoNothing());
   ASSERT_THAT(batch, NotNull());
@@ -617,6 +616,8 @@ TEST_F(SessionStoreTest, ShouldReturnForeignOrphanTabs) {
   batch->PutAndUpdateTracker(tab2, base::Time::Now());
   SessionStore::WriteBatch::Commit(std::move(batch));
 
+  // The first foreign tab should have been overwritten by the second one,
+  // because they shared a tab ID.
   EXPECT_THAT(BatchToEntityDataMap(session_store()->GetAllSessionData()),
               UnorderedElementsAre(
                   Pair(local_header_storage_key, _),
@@ -624,11 +625,6 @@ TEST_F(SessionStoreTest, ShouldReturnForeignOrphanTabs) {
                        EntityDataHasSpecifics(MatchesHeader(kForeignSessionTag,
                                                             /*window_ids=*/{},
                                                             /*tab_ids=*/{}))),
-                  Pair(foreign_tab_storage_key1,
-                       EntityDataHasSpecifics(
-                           MatchesTab(kForeignSessionTag, /*window_id=*/0,
-                                      /*tab_id=*/-1, kTabNodeId1,
-                                      /*urls=*/_))),
                   Pair(foreign_tab_storage_key2,
                        EntityDataHasSpecifics(MatchesTab(
                            kForeignSessionTag, kWindowId, kTabId, kTabNodeId2,

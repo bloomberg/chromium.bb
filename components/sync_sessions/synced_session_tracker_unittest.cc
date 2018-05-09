@@ -1018,10 +1018,6 @@ TEST_F(SyncedSessionTrackerTest, SerializeTrackerToSpecifics) {
       callback,
       Run(kSessionName, Pointee(MatchesTab(kTag, Ne(kWindow1.id()), kTab3.id(),
                                            kTabNode3, /*urls=*/_))));
-  EXPECT_CALL(
-      callback,
-      Run(kSessionName, Pointee(MatchesTab(kTag, /*window_id=*/0, /*tab_id=*/-1,
-                                           kTabNode4, /*urls=*/_))));
 
   SerializeTrackerToSpecifics(*GetTracker(), callback.Get());
   EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(&callback));
