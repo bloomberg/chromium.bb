@@ -123,23 +123,6 @@ bool InTouchableMode() {
   return ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
 }
 
-OmniboxTint GetTintForProfile(Profile* profile) {
-  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile);
-  if (theme_service->UsingDefaultTheme()) {
-    return profile->GetProfileType() == Profile::INCOGNITO_PROFILE
-               ? OmniboxTint::DARK
-               : OmniboxTint::LIGHT;
-  }
-
-  // Check for GTK on Desktop Linux.
-  if (theme_service->IsSystemThemeDistinctFromDefaultTheme() &&
-      theme_service->UsingSystemTheme())
-    return OmniboxTint::NATIVE;
-
-  // TODO(tapted): Infer a tint from theme colors?
-  return OmniboxTint::LIGHT;
-}
-
 // Returns true when a views::FocusRing should be used.
 bool ShouldUseFocusRingView(bool show_focus_ring) {
   return (show_focus_ring && LocationBarView::IsRounded()) ||
@@ -187,7 +170,7 @@ LocationBarView::LocationBarView(Browser* browser,
       browser_(browser),
       delegate_(delegate),
       is_popup_mode_(is_popup_mode),
-      tint_(GetTintForProfile(profile)) {
+      tint_(GetTint()) {
   edit_bookmarks_enabled_.Init(
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
       base::Bind(&LocationBarView::UpdateWithoutTabRestore,
@@ -260,7 +243,7 @@ void LocationBarView::Init() {
     AddChildView(image_view);
   }
 
-  zoom_view_ = new ZoomView(delegate_);
+  zoom_view_ = new ZoomView(delegate_, this);
   bubble_icons_.push_back(zoom_view_);
   manage_passwords_icon_view_ =
       new ManagePasswordsIconViews(command_updater(), this);
@@ -277,12 +260,13 @@ void LocationBarView::Init() {
 #if defined(OS_CHROMEOS)
   if (browser_)
     bubble_icons_.push_back(intent_picker_view_ =
-                                new IntentPickerView(browser_));
+                                new IntentPickerView(browser_, this));
 #endif
-  bubble_icons_.push_back(find_bar_icon_ = new FindBarIcon());
-  if (browser_)
-    bubble_icons_.push_back(star_view_ =
-                                new StarView(command_updater(), browser_));
+  bubble_icons_.push_back(find_bar_icon_ = new FindBarIcon(this));
+  if (browser_) {
+    bubble_icons_.push_back(
+        star_view_ = new StarView(command_updater(), browser_, this));
+  }
 
   std::for_each(bubble_icons_.begin(), bubble_icons_.end(),
                 [this](BubbleIconView* icon_view) -> void {
@@ -643,7 +627,7 @@ void LocationBarView::Layout() {
 }
 
 void LocationBarView::OnThemeChanged() {
-  tint_ = GetTintForProfile(profile());
+  tint_ = GetTint();
 }
 
 void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
@@ -737,6 +721,23 @@ LocationBarView::GetContentSettingBubbleModelDelegate() {
 // LocationBarView, public BubbleIconView::Delegate implementation:
 WebContents* LocationBarView::GetWebContentsForBubbleIconView() {
   return GetWebContents();
+}
+
+OmniboxTint LocationBarView::GetTint() {
+  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile());
+  if (theme_service->UsingDefaultTheme()) {
+    return profile()->GetProfileType() == Profile::INCOGNITO_PROFILE
+               ? OmniboxTint::DARK
+               : OmniboxTint::LIGHT;
+  }
+
+  // Check for GTK on Desktop Linux.
+  if (theme_service->IsSystemThemeDistinctFromDefaultTheme() &&
+      theme_service->UsingSystemTheme())
+    return OmniboxTint::NATIVE;
+
+  // TODO(tapted): Infer a tint from theme colors?
+  return OmniboxTint::LIGHT;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
