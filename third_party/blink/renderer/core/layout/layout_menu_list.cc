@@ -181,7 +181,7 @@ void LayoutMenuList::UpdateOptionsWidth() const {
     String text = option->TextIndentedToRespectGroupLabel();
     const ComputedStyle* item_style =
         option->GetComputedStyle() ? option->GetComputedStyle() : Style();
-    ApplyTextTransform(item_style, text, ' ');
+    item_style->ApplyTextTransform(&text);
     // We apply SELECT's style, not OPTION's style because m_optionsWidth is
     // used to determine intrinsic width of the menulist box.
     TextRun text_run = ConstructTextRun(Style()->GetFont(), text, *Style());

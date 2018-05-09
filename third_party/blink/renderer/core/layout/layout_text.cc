@@ -60,7 +60,6 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/text/bidi_resolver.h"
-#include "third_party/blink/renderer/platform/text/capitalize.h"
 #include "third_party/blink/renderer/platform/text/character.h"
 #include "third_party/blink/renderer/platform/text/hyphenation.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
@@ -1663,37 +1662,16 @@ void LayoutText::AddLayerHitTestRects(
   // Text nodes aren't event targets, so don't descend any further.
 }
 
-void ApplyTextTransform(const ComputedStyle* style,
-                        String& text,
-                        UChar previous_character) {
-  if (!style)
-    return;
-
-  switch (style->TextTransform()) {
-    case ETextTransform::kNone:
-      break;
-    case ETextTransform::kCapitalize:
-      text = Capitalize(text, previous_character);
-      break;
-    case ETextTransform::kUppercase:
-      text = text.UpperUnicode(style->Locale());
-      break;
-    case ETextTransform::kLowercase:
-      text = text.LowerUnicode(style->Locale());
-      break;
-  }
-}
-
 void LayoutText::SetTextInternal(scoped_refptr<StringImpl> text) {
   DCHECK(text);
   text_ = String(std::move(text));
 
-  if (Style()) {
-    ApplyTextTransform(Style(), text_, PreviousCharacter());
+  if (const ComputedStyle* style = Style()) {
+    style->ApplyTextTransform(&text_, PreviousCharacter());
 
     // We use the same characters here as for list markers.
     // See the listMarkerText function in LayoutListMarker.cpp.
-    switch (Style()->TextSecurity()) {
+    switch (style->TextSecurity()) {
       case ETextSecurity::kNone:
         break;
       case ETextSecurity::kCircle:

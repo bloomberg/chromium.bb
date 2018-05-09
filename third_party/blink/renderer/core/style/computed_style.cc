@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/text/capitalize.h"
 #include "third_party/blink/renderer/platform/transforms/rotate_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/scale_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/translate_transform_operation.h"
@@ -1397,6 +1398,24 @@ bool ComputedStyle::ShouldUseTextIndent(bool is_first_line,
                         GetTextIndentLine() != TextIndentLine::kFirstLine);
   return GetTextIndentType() == TextIndentType::kNormal ? should_use
                                                         : !should_use;
+}
+
+void ComputedStyle::ApplyTextTransform(String* text,
+                                       UChar previous_character) const {
+  switch (TextTransform()) {
+    case ETextTransform::kNone:
+      return;
+    case ETextTransform::kCapitalize:
+      *text = Capitalize(*text, previous_character);
+      return;
+    case ETextTransform::kUppercase:
+      *text = text->UpperUnicode(Locale());
+      return;
+    case ETextTransform::kLowercase:
+      *text = text->LowerUnicode(Locale());
+      return;
+  }
+  NOTREACHED();
 }
 
 const AtomicString& ComputedStyle::TextEmphasisMarkString() const {
