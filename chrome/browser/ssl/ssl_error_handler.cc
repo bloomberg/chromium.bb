@@ -532,7 +532,7 @@ void SSLErrorHandlerDelegateImpl::ShowCaptivePortalInterstitial(
   // Show captive portal blocking page. The interstitial owns the blocking page.
   OnBlockingPageReady(new CaptivePortalBlockingPage(
       web_contents_, request_url_, landing_url, std::move(ssl_cert_reporter_),
-      ssl_info_, decision_callback_));
+      ssl_info_, cert_error_, decision_callback_));
 }
 
 void SSLErrorHandlerDelegateImpl::ShowMITMSoftwareInterstitial(

@@ -77,6 +77,8 @@ void IOSCaptivePortalBlockingPage::PopulateInterstitialStrings(
   load_time_data->SetString("closeDetails", base::string16());
   load_time_data->SetString("explanationParagraph", base::string16());
   load_time_data->SetString("finalParagraph", base::string16());
+  load_time_data->SetString("recurrentErrorParagraph", base::string16());
+  load_time_data->SetBoolean("show_recurrent_error_paragraph", false);
 }
 
 void IOSCaptivePortalBlockingPage::AfterShow() {}

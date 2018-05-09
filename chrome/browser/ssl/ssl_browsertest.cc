@@ -409,6 +409,30 @@ void WaitForInterstitial(content::WebContents* tab) {
   }
 }
 
+void ExpectInterstitialElementHidden(content::WebContents* tab,
+                                     const std::string& element_id,
+                                     bool expect_hidden) {
+  if (!AreCommittedInterstitialsEnabled()) {
+    ASSERT_TRUE(tab->GetInterstitialPage());
+  }
+  content::RenderFrameHost* frame =
+      AreCommittedInterstitialsEnabled()
+          ? tab->GetMainFrame()
+          : tab->GetInterstitialPage()->GetMainFrame();
+  // Send CMD_TEXT_FOUND to indicate that the 'hidden' class is found, and
+  // CMD_TEXT_NOT_FOUND if not.
+  std::string command = base::StringPrintf(
+      "window.domAutomationController.send($('%s').classList.contains('hidden')"
+      " ? %d : %d);",
+      element_id.c_str(), security_interstitials::CMD_TEXT_FOUND,
+      security_interstitials::CMD_TEXT_NOT_FOUND);
+  int result = 0;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(frame, command, &result));
+  EXPECT_EQ(expect_hidden ? security_interstitials::CMD_TEXT_FOUND
+                          : security_interstitials::CMD_TEXT_NOT_FOUND,
+            result);
+}
+
 void ExpectInterstitialHeading(content::WebContents* tab,
                                const std::string& expected_heading) {
   if (!AreCommittedInterstitialsEnabled()) {
@@ -7486,6 +7510,60 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest,
     EXPECT_NE(CaptivePortalBlockingPage::kTypeForTesting,
               interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
   }
+}
+
+class RecurrentInterstitialBrowserTest
+    : public CertVerifierBrowserTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  RecurrentInterstitialBrowserTest() : CertVerifierBrowserTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    CertVerifierBrowserTest::SetUpCommandLine(command_line);
+    if (GetParam()) {
+      command_line->AppendSwitch(switches::kCommittedInterstitials);
+    }
+    feature_list_.InitAndEnableFeatureWithParameters(
+        kRecurrentInterstitialFeature, {{"threshold", "2"}});
+  }
+
+  void SetUpOnMainThread() override {
+    CertVerifierBrowserTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
+  void TearDownOnMainThread() override {
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                     base::BindOnce(&CleanUpOnIOThread));
+    CertVerifierBrowserTest::TearDownOnMainThread();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_CASE_P(,
+                        RecurrentInterstitialBrowserTest,
+                        ::testing::Values(false, true));
+
+// Tests that a message is added to the interstitial when an error code recurs
+// multiple times.
+IN_PROC_BROWSER_TEST_P(RecurrentInterstitialBrowserTest,
+                       RecurrentInterstitial) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  ASSERT_TRUE(https_server.Start());
+  mock_cert_verifier()->set_default_result(
+      net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
+  ui_test_utils::NavigateToURL(browser(), https_server.GetURL("/"));
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  WaitForInterstitial(tab);
+  ExpectInterstitialElementHidden(tab, "recurrent-error-message",
+                                  true /* expect_hidden */);
+
+  ui_test_utils::NavigateToURL(browser(), https_server.GetURL("/"));
+  WaitForInterstitial(tab);
+  ExpectInterstitialElementHidden(tab, "recurrent-error-message",
+                                  false /* expect_hidden */);
 }
 
 // TODO(jcampan): more tests to do below.

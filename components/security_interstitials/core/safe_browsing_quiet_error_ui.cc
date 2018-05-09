@@ -81,6 +81,10 @@ void SafeBrowsingQuietErrorUI::PopulateStringsForHtml(
   } else {
     NOTREACHED();
   }
+
+  // Not used by this interstitial.
+  load_time_data->SetString("recurrentErrorParagraph", base::string16());
+  load_time_data->SetBoolean("show_recurrent_error_paragraph", false);
 }
 
 void SafeBrowsingQuietErrorUI::SetGiantWebViewForTesting(

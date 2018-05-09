@@ -68,6 +68,10 @@ void ControllerClient::OpenURL(bool open_links_in_new_tab, const GURL& url) {
   }
 }
 
+bool ControllerClient::HasSeenRecurrentError() {
+  return false;
+}
+
 GURL ControllerClient::GetBaseHelpCenterUrl() const {
   return help_center_url_;
 }

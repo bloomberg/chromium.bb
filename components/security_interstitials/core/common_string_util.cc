@@ -31,6 +31,10 @@ void PopulateSSLLayoutStrings(int cert_error,
       "openDetails", l10n_util::GetStringUTF16(IDS_SSL_OPEN_DETAILS_BUTTON));
   load_time_data->SetString(
       "closeDetails", l10n_util::GetStringUTF16(IDS_SSL_CLOSE_DETAILS_BUTTON));
+  // Not used by most interstitials; can be overridden by individual
+  // interstitials as needed.
+  load_time_data->SetString("recurrentErrorParagraph", "");
+  load_time_data->SetBoolean("show_recurrent_error_paragraph", false);
 }
 
 void PopulateSSLDebuggingStrings(const net::SSLInfo ssl_info,

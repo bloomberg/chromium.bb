@@ -45,6 +45,7 @@ class CaptivePortalBlockingPage : public SSLBlockingPageBase {
       const GURL& login_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
       const net::SSLInfo& ssl_info,
+      int cert_error,
       const base::Callback<void(content::CertificateRequestResultType)>&
           callback);
   ~CaptivePortalBlockingPage() override;

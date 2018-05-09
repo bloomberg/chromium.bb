@@ -14,6 +14,7 @@
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
+#include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -133,6 +134,7 @@ bool AreCommittedInterstitialsEnabled() {
 SSLErrorControllerClient::SSLErrorControllerClient(
     content::WebContents* web_contents,
     const net::SSLInfo& ssl_info,
+    int cert_error,
     const GURL& request_url,
     std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper)
     : SecurityInterstitialControllerClient(
@@ -143,7 +145,8 @@ SSLErrorControllerClient::SSLErrorControllerClient(
           g_browser_process->GetApplicationLocale(),
           GURL(chrome::kChromeUINewTabURL)),
       ssl_info_(ssl_info),
-      request_url_(request_url) {}
+      request_url_(request_url),
+      cert_error_(cert_error) {}
 
 SSLErrorControllerClient::~SSLErrorControllerClient() {}
 
@@ -203,4 +206,11 @@ void SSLErrorControllerClient::LaunchDateAndTimeSettings() {
                            {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
                            base::BindOnce(&LaunchDateAndTimeSettingsImpl));
 #endif
+}
+
+bool SSLErrorControllerClient::HasSeenRecurrentError() {
+  ChromeSSLHostStateDelegate* state =
+      ChromeSSLHostStateDelegateFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+  return state->HasSeenRecurrentErrors(cert_error_);
 }

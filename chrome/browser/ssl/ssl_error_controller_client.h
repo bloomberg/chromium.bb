@@ -20,6 +20,7 @@ class SSLErrorControllerClient
   SSLErrorControllerClient(
       content::WebContents* web_contents,
       const net::SSLInfo& ssl_info,
+      int cert_error,
       const GURL& request_url,
       std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper);
   ~SSLErrorControllerClient() override;
@@ -29,10 +30,12 @@ class SSLErrorControllerClient
   void Proceed() override;
   bool CanLaunchDateAndTimeSettings() override;
   void LaunchDateAndTimeSettings() override;
+  bool HasSeenRecurrentError() override;
 
  private:
   const net::SSLInfo ssl_info_;
   const GURL request_url_;
+  const int cert_error_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLErrorControllerClient);
 };

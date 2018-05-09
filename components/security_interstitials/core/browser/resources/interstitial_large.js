@@ -69,6 +69,8 @@ function setupEvents() {
   var captivePortal = interstitialType == 'CAPTIVE_PORTAL';
   var badClock = ssl && loadTimeData.getBoolean('bad_clock');
   var hidePrimaryButton = loadTimeData.getBoolean('hide_primary_button');
+  var showRecurrentErrorParagraph = loadTimeData.getBoolean(
+    'show_recurrent_error_paragraph');
 
   if (ssl) {
     $('body').classList.add(badClock ? 'bad-clock' : 'ssl');
@@ -124,6 +126,10 @@ function setupEvents() {
 
   if (ssl && overridable) {
     $('proceed-link').classList.add('small-link');
+  }
+
+  if (!ssl || !showRecurrentErrorParagraph) {
+    $('recurrent-error-message').classList.add(HIDDEN_CLASS);
   }
 
   if ($('diagnostic-link')) {

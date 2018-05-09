@@ -59,6 +59,8 @@ void SuperfishErrorUI::PopulateStringsForHTML(
   load_time_data->SetString("finalParagraph", std::string());
   load_time_data->SetString("openDetails", base::string16());
   load_time_data->SetString("closeDetails", base::string16());
+  load_time_data->SetString("recurrentErrorParagraph", base::string16());
+  load_time_data->SetBoolean("show_recurrent_error_paragraph", false);
 }
 
 void SuperfishErrorUI::HandleCommand(SecurityInterstitialCommand command) {
