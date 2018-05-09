@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download.ui;
 import android.content.Context;
 import android.support.v7.widget.AppCompatSpinner;
 import android.util.AttributeSet;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Spinner;
 
@@ -97,9 +98,8 @@ public class DownloadManagerToolbar extends SelectableListToolbar<DownloadHistor
     @Override
     protected void onDataChanged(int numItems) {
         super.onDataChanged(numItems);
-        getMenu()
-                .findItem(mInfoMenuItemId)
-                .setVisible(!mIsSearching && !mIsSelectionEnabled && numItems > 0);
+        MenuItem item = getMenu().findItem(mInfoMenuItemId);
+        if (item != null) item.setVisible(!mIsSearching && !mIsSelectionEnabled && numItems > 0);
     }
 
     @Override

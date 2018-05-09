@@ -29,28 +29,17 @@
     <group android:id="@+id/with_settings_normal_menu_group"
         android:visible="false" >
         <item
+            android:id="@+id/settings_menu_id"
+            android:icon="@drawable/btn_settings"
+            android:title="@string/preferences"
+            android:visible="false"
+            chrome:showAsAction="ifRoom" />
+        <item
             android:id="@+id/with_settings_search_menu_id"
             android:icon="@drawable/ic_search"
             android:title="@string/search"
             android:visible="false"
             chrome:showAsAction="ifRoom" />
-        <item
-            android:id="@+id/extra_menu_id"
-            android:icon="@drawable/ic_more_vert_black_24dp"
-            android:title=""
-            chrome:showAsAction="ifRoom" >
-            <menu>
-                <item
-                    android:id="@+id/with_settings_info_menu_id"
-                    android:title="@string/download_manager_ui_show_storage"
-                    android:visible="false"
-                    chrome:showAsAction="never" />
-                <item
-                    android:id="@+id/settings_menu_id"
-                    android:title="@string/preferences"
-                    chrome:showAsAction="never" />
-            </menu>
-        </item>
         <item
             android:id="@+id/with_settings_close_menu_id"
             android:icon="@drawable/btn_close"

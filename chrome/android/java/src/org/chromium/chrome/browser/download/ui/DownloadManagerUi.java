@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.download.ui;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.annotation.IntDef;
@@ -20,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.DiscardableReferencePool;
@@ -222,7 +225,7 @@ public class DownloadManagerUi
      *                           activity than the main Chrome activity.
      * @param snackbarManager The {@link SnackbarManager} used to display snackbars.
      */
-    @SuppressWarnings("unchecked") // mSelectableListLayout
+    @SuppressWarnings({"unchecked"}) // mSelectableListLayout
     public DownloadManagerUi(Activity activity, boolean isOffTheRecord,
             ComponentName parentComponent, boolean isSeparateActivity,
             SnackbarManager snackbarManager) {
@@ -266,7 +269,7 @@ public class DownloadManagerUi
         int normalGroupId =
                 isLocationEnabled ? R.id.with_settings_normal_menu_group : R.id.normal_menu_group;
         mSearchMenuId = isLocationEnabled ? R.id.with_settings_search_menu_id : R.id.search_menu_id;
-        mInfoMenuId = isLocationEnabled ? R.id.with_settings_info_menu_id : R.id.info_menu_id;
+        mInfoMenuId = isLocationEnabled ? 0 : R.id.info_menu_id;
 
         mToolbar = (DownloadManagerToolbar) mSelectableListLayout.initializeToolbar(
                 R.layout.download_manager_toolbar, mBackendProvider.getSelectionDelegate(), 0, null,
@@ -282,10 +285,11 @@ public class DownloadManagerUi
         addObserver(mToolbar);
 
         if (isLocationEnabled) {
-            mToolbar.setExtraMenuItem(R.id.extra_menu_id);
-            mToolbar.setInfoButtonText(R.string.download_manager_ui_show_storage,
-                    R.string.download_manager_ui_hide_storage);
-            mToolbar.setShowInfoIcon(false);
+            // TODO(xingliu): Use the new settings icon with better alpha value.
+            Drawable settingIcon = mToolbar.getMenu().findItem(R.id.settings_menu_id).getIcon();
+            settingIcon.setColorFilter(ApiCompatibilityUtils.getColor(getActivity().getResources(),
+                                               R.color.black_alpha_65),
+                    PorterDuff.Mode.SRC_IN);
             final Tracker tracker =
                     TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
             tracker.addOnInitializedCallback(
@@ -568,7 +572,7 @@ public class DownloadManagerUi
         if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_SETTINGS_FEATURE)) return;
 
         // Build and show text bubble.
-        View anchorView = mToolbar.findViewById(R.id.extra_menu_id);
+        View anchorView = mToolbar.findViewById(R.id.settings_menu_id);
         TextBubble textBubble =
                 new TextBubble(mActivity, (View) mToolbar, R.string.iph_download_settings_text,
                         R.string.iph_download_settings_accessibility_text,
@@ -583,7 +587,7 @@ public class DownloadManagerUi
     }
 
     private void toggleHighlightForDownloadSettingsTextBubble(boolean shouldHighlight) {
-        View view = mToolbar.findViewById(R.id.extra_menu_id);
+        View view = mToolbar.findViewById(R.id.settings_menu_id);
 
         if (shouldHighlight) {
             ViewHighlighter.turnOnHighlight(view, true);
