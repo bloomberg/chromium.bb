@@ -617,8 +617,21 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
   if (pointer_event->type() == EventTypeNames::pointerup ||
       pointer_event->type() == EventTypeNames::pointercancel) {
     ReleasePointerCapture(pointer_event->pointerId());
+
     // Send got/lostpointercapture rightaway if necessary.
-    ProcessPendingPointerCapture(pointer_event);
+    if (pointer_event->type() == EventTypeNames::pointerup) {
+      // If pointerup releases the capture we also send boundary events
+      // rightaway when the pointer that supports hover. The following function
+      // does nothing when there was no capture to begin with in the first
+      // place.
+      ProcessCaptureAndPositionOfPointerEvent(pointer_event, target,
+                                              canvas_region_id, &mouse_event);
+    } else {
+      // Don't send out/leave events in this case as it is a little tricky.
+      // This case happens for the drag operation and currently we don't
+      // let the page know that the pointer left the page while dragging.
+      ProcessPendingPointerCapture(pointer_event);
+    }
 
     if (pointer_event->isPrimary()) {
       prevent_mouse_event_for_pointer_type_[ToPointerTypeIndex(

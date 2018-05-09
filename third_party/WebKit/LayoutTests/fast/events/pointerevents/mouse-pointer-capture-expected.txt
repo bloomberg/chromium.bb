@@ -41,7 +41,6 @@ green received pointerup
 green received mouseup
 green received lostpointercapture
 Capture pointer event attributes are correct!
-    **** Jiggle in blue box ***** 
 green received pointerout
 green received pointerleave
 grey received pointerleave
@@ -52,6 +51,7 @@ green received mouseleave
 grey received mouseleave
 blue received mouseover
 blue received mouseenter
+    **** Jiggle in blue box ***** 
 blue received pointermove
 blue received mousemove
     **** Move to (0,0) ***** 
