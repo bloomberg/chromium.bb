@@ -1226,44 +1226,65 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 // the ctor). Therefore, we put the test here to use ChromeContentBrowserClient
 // which does not have the same singleton constraint.
 #if defined(OS_MACOSX)
-// An observer of number of open windows.
-class WindowCountObserver {
+class ShowDefinitionForWordObserver
+    : content::RenderWidgetHostViewCocoaObserver {
  public:
-  explicit WindowCountObserver(size_t lower_limit) : limit_(lower_limit) {}
-  ~WindowCountObserver() {}
+  explicit ShowDefinitionForWordObserver(content::WebContents* web_contents)
+      : content::RenderWidgetHostViewCocoaObserver(web_contents) {}
 
-  // Keep polling the count of open windows until the number exceeds |limit_|.
-  void WaitForLimitOrMore() {
-    size_t current_count = content::GetOpenNSWindowsCount();
-    if (current_count >= limit_)
-      return;
+  ~ShowDefinitionForWordObserver() override {}
 
-    message_loop_runner_ = new content::MessageLoopRunner();
-    message_loop_runner_->Run();
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&WindowCountObserver::CheckWindowCount,
-                   base::Unretained(this)));
+  const std::string& WaitForWordLookUp() {
+    if (did_receive_string_)
+      return word_;
+
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
+    return word_;
   }
 
  private:
-  void CheckWindowCount() {
-    size_t current_count = content::GetOpenNSWindowsCount();
-    if (current_count >= limit_) {
-      message_loop_runner_->Quit();
-      return;
-    }
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&WindowCountObserver::CheckWindowCount,
-                   base::Unretained(this)));
+  void OnShowDefinitionForAttributedString(
+      const std::string& for_word) override {
+    did_receive_string_ = true;
+    word_ = for_word;
+    if (run_loop_)
+      run_loop_->Quit();
   }
 
-  size_t limit_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  bool did_receive_string_ = false;
+  std::string word_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowCountObserver);
+  DISALLOW_COPY_AND_ASSIGN(ShowDefinitionForWordObserver);
 };
+
+// This test verifies that requests for dictionary lookup based on selection
+// range are routed to the focused RenderWidgetHost.
+IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
+                       LookUpStringForRangeRoutesToFocusedWidget) {
+  CreateIframePage("a(b)");
+  std::vector<content::RenderFrameHost*> frames{GetFrame(IndexVector{}),
+                                                GetFrame(IndexVector{0})};
+  std::string expected_words[] = {"word1", "word2"};
+
+  // For each frame, add <input>, set its value to expected word, select it, ask
+  // for dictionary and verify the word returned from renderer matches.
+  for (size_t i = 0; i < frames.size(); ++i) {
+    AddInputFieldToFrame(frames[i], "text", expected_words[i].c_str(), true);
+    // Focusing the <input> automatically selects the text.
+    ASSERT_TRUE(
+        ExecuteScript(frames[i], "document.querySelector('input').focus();"));
+    ShowDefinitionForWordObserver word_lookup_observer(active_contents());
+    // Request for the dictionary lookup and intercept the word on its way back.
+    // The request is always on the tab's view which is a
+    // RenderWidgetHostViewMac.
+    content::AskForLookUpDictionaryForRange(
+        active_contents()->GetRenderWidgetHostView(),
+        gfx::Range(0, expected_words[i].size()));
+    EXPECT_EQ(expected_words[i], word_lookup_observer.WaitForWordLookUp());
+  }
+}
 
 // The original TextInputClientMessageFilter is added during the initialization
 // phase of RenderProcessHost. The only chance we have to add the test filter
@@ -1343,85 +1364,6 @@ class SitePerProcessCustomTextInputManagerFilteringTest
 
   DISALLOW_COPY_AND_ASSIGN(SitePerProcessCustomTextInputManagerFilteringTest);
 };
-
-// This test verifies that requests for dictionary lookup based on selection
-// range are routed to the focused RenderWidgetHost.
-// Test is flaky: http://crbug.com/710842
-IN_PROC_BROWSER_TEST_F(SitePerProcessCustomTextInputManagerFilteringTest,
-                       DISABLED_LookUpStringForRangeRoutesToFocusedWidget) {
-  std::unique_ptr<content::WebContents> new_contents =
-      content::WebContents::Create(content::WebContents::CreateParams(
-          active_contents()->GetBrowserContext(), nullptr));
-  content::WebContents* raw_new_contents = new_contents.get();
-  browser()->tab_strip_model()->InsertWebContentsAt(1, std::move(new_contents),
-                                                    TabStripModel::ADD_ACTIVE);
-  EXPECT_EQ(active_contents(), raw_new_contents);
-
-  // Starting the test body.
-  CreateIframePage("a(b)");
-  std::vector<content::RenderFrameHost*> frames{GetFrame(IndexVector{}),
-                                                GetFrame(IndexVector{0})};
-  std::vector<content::RenderWidgetHostView*> views;
-  for (auto* frame : frames)
-    views.push_back(frame->GetView());
-  std::vector<std::string> values{"main frame", "child frame"};
-
-  // Adding some field with text to each frame so that we can later query for
-  // dictionary lookup.
-  for (size_t i = 0; i < frames.size(); ++i)
-    AddInputFieldToFrame(frames[i], "text", values[i], true);
-
-  std::string result;
-  // Recording window count now so that our WindowCountObserver will detect the
-  // popup window.
-  size_t current_window_count = content::GetOpenNSWindowsCount();
-
-  // Ensure we have both focus and selected text inside the main frame.
-  EXPECT_TRUE(
-      ExecuteScript(frames[0], "document.querySelector('input').focus();"));
-
-  // Request for the dictionary lookup and intercept the word on its way back.
-  // The request is always on the tab's view which is a RenderWidgetHostViewMac.
-  content::AskForLookUpDictionaryForRange(views[0], gfx::Range(0, 4));
-
-  // Wait until the result comes back.
-  auto root_filter =
-      GetTextInputClientMessageFilterForProcess(frames[0]->GetProcess());
-  EXPECT_TRUE(root_filter);
-  root_filter->WaitForStringFromRange();
-
-  EXPECT_EQ("main", root_filter->string_from_range());
-
-  // Wait for the popup to appear to make sure TextInputClientMac has consumed
-  // the reply handler for the previous request.
-  WindowCountObserver(current_window_count).WaitForLimitOrMore();
-
-  // Ensure we have both focus and selected text inside the child frame.
-  EXPECT_TRUE(
-      ExecuteScript(frames[1], "document.querySelector('input').focus();"));
-
-  // Record window count again for the popup observer.
-  current_window_count = content::GetOpenNSWindowsCount();
-
-  // Make another request.
-  content::AskForLookUpDictionaryForRange(views[0], gfx::Range(0, 5));
-
-  // Wait until the result comes back.
-  auto child_filter =
-      GetTextInputClientMessageFilterForProcess(frames[1]->GetProcess());
-  child_filter->WaitForStringFromRange();
-
-  EXPECT_EQ("child", child_filter->string_from_range());
-
-  // Wait for the popup to appear to make sure TextInputClientMac has consumed
-  // the reply handler for the previous request.
-  WindowCountObserver(current_window_count).WaitForLimitOrMore();
-  // Test ends here. The rest is cleanup.
-
-  // Closing this WebContents while we still hold on to our TestBrowserClient.
-  EXPECT_TRUE(browser()->tab_strip_model()->CloseWebContentsAt(
-      1, TabStripModel::CLOSE_USER_GESTURE));
-}
 
 // This test verifies that when a word lookup result comes from the renderer
 // after the target RenderWidgetHost has been deleted, the browser will not

@@ -28,6 +28,8 @@
 // RenderWidgetHostViewCocoa methods for tests.
 @interface RenderWidgetHostViewCocoaSwizzler : NSObject
 - (void)didAddSubview:(NSView*)view;
+- (void)showDefinitionForAttributedString:(NSAttributedString*)attrString
+                                  atPoint:(NSPoint)textBaselineOrigin;
 @end
 
 namespace content {
@@ -35,7 +37,9 @@ namespace content {
 using base::mac::ScopedObjCClassSwizzler;
 
 // static
-const char* RenderWidgetHostViewCocoaObserver::kDidAddSubview = "didAddSubview";
+constexpr char RenderWidgetHostViewCocoaObserver::kDidAddSubview[];
+constexpr char
+    RenderWidgetHostViewCocoaObserver::kShowDefinitionForAttributedString[];
 
 // static
 std::map<std::string, std::unique_ptr<base::mac::ScopedObjCClassSwizzler>>
@@ -97,20 +101,25 @@ void RenderWidgetHostViewCocoaObserver::SetUpSwizzlers() {
     return;
 
   // [RenderWidgetHostViewCocoa didAddSubview:NSView*].
-  SEL selector = NSSelectorFromString([NSString
-      stringWithUTF8String:base::StringPrintf("%s:", kDidAddSubview).c_str()]);
   rwhvcocoa_swizzlers_[kDidAddSubview] =
       std::make_unique<ScopedObjCClassSwizzler>(
           GetRenderWidgetHostViewCocoaClassForTesting(),
-          [RenderWidgetHostViewCocoaSwizzler class], selector);
+          [RenderWidgetHostViewCocoaSwizzler class],
+          NSSelectorFromString(@(kDidAddSubview)));
+
+  // [RenderWidgetHostViewCocoa showDefinitionForAttributedString:atPoint].
+  rwhvcocoa_swizzlers_[kShowDefinitionForAttributedString] =
+      std::make_unique<ScopedObjCClassSwizzler>(
+          GetRenderWidgetHostViewCocoaClassForTesting(),
+          [RenderWidgetHostViewCocoaSwizzler class],
+          NSSelectorFromString(@(kShowDefinitionForAttributedString)));
 }
 
 void SetWindowBounds(gfx::NativeWindow window, const gfx::Rect& bounds) {
   NSRect new_bounds = NSRectFromCGRect(bounds.ToCGRect());
   if ([[NSScreen screens] count] > 0) {
-    new_bounds.origin.y =
-        [[[NSScreen screens] firstObject] frame].size.height -
-        new_bounds.origin.y - new_bounds.size.height;
+    new_bounds.origin.y = [[[NSScreen screens] firstObject] frame].size.height -
+                          new_bounds.origin.y - new_bounds.size.height;
   }
 
   [window setFrame:new_bounds display:NO];
@@ -190,5 +199,23 @@ void GetStringFromRangeForRenderWidget(
                        clickCount:1
                          pressure:1.0];
   [[NSApplication sharedApplication] postEvent:dismissal_event atStart:false];
+}
+
+- (void)showDefinitionForAttributedString:(NSAttributedString*)attrString
+                                  atPoint:(NSPoint)textBaselineOrigin {
+  content::RenderWidgetHostViewCocoaObserver::GetSwizzler(
+      content::RenderWidgetHostViewCocoaObserver::
+          kShowDefinitionForAttributedString)
+      ->GetOriginalImplementation()(self, _cmd, attrString, textBaselineOrigin);
+
+  auto* rwhv_mac = content::GetRenderWidgetHostViewMac(self);
+
+  auto* observer = content::RenderWidgetHostViewCocoaObserver::GetObserver(
+      rwhv_mac->GetWebContents());
+
+  if (!observer)
+    return;
+  observer->OnShowDefinitionForAttributedString(
+      base::SysNSStringToUTF8([attrString string]));
 }
 @end
