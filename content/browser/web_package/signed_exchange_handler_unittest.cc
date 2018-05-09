@@ -64,7 +64,8 @@ class MockSignedExchangeCertFetcherFactory
       SignedExchangeDevToolsProxy* devtools_proxy) override {
     EXPECT_EQ(cert_url, expected_cert_url_);
 
-    auto cert_chain = SignedExchangeCertificateChain::Parse(cert_str_);
+    auto cert_chain = SignedExchangeCertificateChain::Parse(
+        base::as_bytes(base::make_span(cert_str_)));
     EXPECT_TRUE(cert_chain);
 
     base::SequencedTaskRunnerHandle::Get()->PostTask(

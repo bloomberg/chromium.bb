@@ -170,7 +170,8 @@ void SignedExchangeCertFetcher::OnDataComplete() {
   handle_watcher_ = nullptr;
 
   std::unique_ptr<SignedExchangeCertificateChain> cert_chain =
-      SignedExchangeCertificateChain::Parse(body_string_);
+      SignedExchangeCertificateChain::Parse(
+          base::as_bytes(base::make_span(body_string_)));
   body_string_.clear();
   if (!cert_chain) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(

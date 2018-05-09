@@ -15,30 +15,27 @@ namespace content {
 
 namespace {
 
-bool ConsumeByte(base::StringPiece* data, uint8_t* out) {
+bool ConsumeByte(base::span<const uint8_t>* data, uint8_t* out) {
   if (data->empty())
     return false;
   *out = (*data)[0];
-  data->remove_prefix(1);
+  *data = data->subspan(1);
   return true;
 }
 
-bool Consume2Bytes(base::StringPiece* data, uint16_t* out) {
+bool Consume2Bytes(base::span<const uint8_t>* data, uint16_t* out) {
   if (data->size() < 2)
     return false;
-  *out = (static_cast<uint8_t>((*data)[0]) << 8) |
-         static_cast<uint8_t>((*data)[1]);
-  data->remove_prefix(2);
+  *out = ((*data)[0] << 8) | (*data)[1];
+  *data = data->subspan(2);
   return true;
 }
 
-bool Consume3Bytes(base::StringPiece* data, uint32_t* out) {
+bool Consume3Bytes(base::span<const uint8_t>* data, uint32_t* out) {
   if (data->size() < 3)
     return false;
-  *out = (static_cast<uint8_t>((*data)[0]) << 16) |
-         (static_cast<uint8_t>((*data)[1]) << 8) |
-         static_cast<uint8_t>((*data)[2]);
-  data->remove_prefix(3);
+  *out = ((*data)[0] << 16) | ((*data)[1] << 8) | (*data)[2];
+  *data = data->subspan(3);
   return true;
 }
 
@@ -46,7 +43,8 @@ bool Consume3Bytes(base::StringPiece* data, uint32_t* out) {
 
 // static
 std::unique_ptr<SignedExchangeCertificateChain>
-SignedExchangeCertificateChain::Parse(base::StringPiece cert_response_body) {
+SignedExchangeCertificateChain::Parse(
+    base::span<const uint8_t> cert_response_body) {
   base::Optional<std::vector<base::StringPiece>> der_certs =
       GetCertChainFromMessage(cert_response_body);
   if (!der_certs)
@@ -62,7 +60,7 @@ SignedExchangeCertificateChain::Parse(base::StringPiece cert_response_body) {
 // static
 base::Optional<std::vector<base::StringPiece>>
 SignedExchangeCertificateChain::GetCertChainFromMessage(
-    base::StringPiece message) {
+    base::span<const uint8_t> message) {
   uint8_t cert_request_context_size = 0;
   if (!ConsumeByte(&message, &cert_request_context_size)) {
     DVLOG(1) << "Can't read certificate request request context size.";
@@ -79,9 +77,9 @@ SignedExchangeCertificateChain::GetCertChainFromMessage(
     return base::nullopt;
   }
 
-  if (cert_list_size != message.length()) {
+  if (cert_list_size != message.size()) {
     DVLOG(1) << "Certificate list size error: cert_list_size=" << cert_list_size
-             << " remaining=" << message.length();
+             << " remaining=" << message.size();
     return base::nullopt;
   }
 
@@ -92,25 +90,26 @@ SignedExchangeCertificateChain::GetCertChainFromMessage(
       DVLOG(1) << "Can't read certificate data size.";
       return base::nullopt;
     }
-    if (message.length() < cert_data_size) {
+    if (message.size() < cert_data_size) {
       DVLOG(1) << "Certificate data size error: cert_data_size="
-               << cert_data_size << " remaining=" << message.length();
+               << cert_data_size << " remaining=" << message.size();
       return base::nullopt;
     }
-    certs.emplace_back(message.substr(0, cert_data_size));
-    message.remove_prefix(cert_data_size);
+    certs.emplace_back(base::StringPiece(
+        reinterpret_cast<const char*>(message.data()), cert_data_size));
+    message = message.subspan(cert_data_size);
 
     uint16_t extensions_size = 0;
     if (!Consume2Bytes(&message, &extensions_size)) {
       DVLOG(1) << "Can't read extensions size.";
       return base::nullopt;
     }
-    if (message.length() < extensions_size) {
+    if (message.size() < extensions_size) {
       DVLOG(1) << "Extensions size error: extensions_size=" << extensions_size
-               << " remaining=" << message.length();
+               << " remaining=" << message.size();
       return base::nullopt;
     }
-    message.remove_prefix(extensions_size);
+    message = message.subspan(extensions_size);
   }
   return certs;
 }

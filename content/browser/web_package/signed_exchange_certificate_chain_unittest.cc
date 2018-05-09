@@ -17,7 +17,7 @@ base::Optional<std::vector<base::StringPiece>> GetCertChain(
     const uint8_t* input,
     size_t input_size) {
   return SignedExchangeCertificateChain::GetCertChainFromMessage(
-      base::StringPiece(reinterpret_cast<const char*>(input), input_size));
+      base::make_span(input, input_size));
 }
 
 }  // namespace
