@@ -2803,20 +2803,6 @@
             ]
         }
     ],
-    "RefreshTokenDeviceId": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
-                }
-            ]
-        }
-    ],
     "RemoveNavigationHistory": [
         {
             "platforms": [
