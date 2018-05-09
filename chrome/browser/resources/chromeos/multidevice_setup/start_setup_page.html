@@ -2,22 +2,26 @@
 
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
+<link rel="import" href="multidevice_setup_shared_css.html">
 <link rel="import" href="ui_page.html">
 <link rel="import" href="ui_page_container_behavior.html">
 
 <dom-module id="start-setup-page">
   <template>
-    <style include="md-select"></style>
+    <style include="md-select multidevice-setup-shared"></style>
     <ui-page header-text="[[headerText]]" icon-name="google-g">
       <span slot="message" inner-h-t-m-l="[[messageHtml]]"></span>
       <div slot="additional-content">
-        <p>[[getDeviceSelectionHeader_(devices)]]</p>
+        <p class="page-content-text">
+          [[getDeviceSelectionHeader_(devices)]]
+        </p>
         <div hidden$="[[!doesDeviceListHaveOneElement_(devices)]]">
-          <p>[[getFirstDeviceNameInList_(devices)]]</p>
+          <p class="page-content-text">
+            [[getFirstDeviceNameInList_(devices)]]
+          </p>
         </div>
         <div hidden$="[[!doesDeviceListHaveMultipleElements_(devices)]]">
-          <select
-              id="deviceDropdown"
+          <select id="deviceDropdown"
               class="md-select"
               on-change="onDeviceDropdownSelectionChanged_">
             <template is="dom-repeat" items="[[devices]]">
@@ -27,7 +31,7 @@
             </template>
           </select>
         </div>
-      </div>
+      </span>
     </ui-page>
   </template>
   <script src="start_setup_page.js"></script>
