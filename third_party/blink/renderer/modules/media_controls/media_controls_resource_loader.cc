@@ -30,16 +30,6 @@ MediaControlsResourceLoader::MediaControlsResourceLoader()
 
 MediaControlsResourceLoader::~MediaControlsResourceLoader() = default;
 
-// Official Android builds that have enable_resource_whitelist_generation
-// turned on will fail to compile due to an unknown-pragmas warning. In
-// Chromium this is expected, but in Blink the compiler treats warnings as
-// errors and so will fail to compile.
-#if defined(OS_WIN)
-#pragma warning(disable : 4068)
-#else
-#pragma GCC diagnostic push
-#pragma GCC diagnostic warning "-Wunknown-pragmas"
-#endif
 String MediaControlsResourceLoader::GetMediaControlsCSS() const {
   return ResourceBundleHelper::UncompressResourceAsString(
       RuntimeEnabledFeatures::ModernMediaControlsEnabled()
@@ -101,13 +91,6 @@ String MediaControlsResourceLoader::GetMediaInterstitialsStyleSheet() {
   return ResourceBundleHelper::UncompressResourceAsString(
       IDR_UASTYLE_MEDIA_INTERSTITIALS_CSS);
 };
-
-// Re-enable the warnings.
-#if defined(OS_WIN)
-#pragma warning(default : 4068)
-#else
-#pragma GCC diagnostic pop
-#endif
 
 String MediaControlsResourceLoader::GetUAStyleSheet() {
   if (ShouldLoadAndroidCSS()) {
