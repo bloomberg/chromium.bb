@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/text/bidi_resolver.h"
+#include "third_party/blink/renderer/platform/text/capitalize.h"
 #include "third_party/blink/renderer/platform/text/character.h"
 #include "third_party/blink/renderer/platform/text/hyphenation.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
@@ -111,51 +112,6 @@ class SecureTextTimer final : public TimerBase {
   LayoutText* layout_text_;
   int last_typed_character_offset_;
 };
-
-static void MakeCapitalized(String* string, UChar previous) {
-  if (string->IsNull())
-    return;
-
-  unsigned length = string->length();
-  const StringImpl& input = *string->Impl();
-
-  CHECK_LT(length, std::numeric_limits<unsigned>::max());
-  StringBuffer<UChar> string_with_previous(length + 1);
-  string_with_previous[0] =
-      previous == kNoBreakSpaceCharacter ? kSpaceCharacter : previous;
-  for (unsigned i = 1; i < length + 1; i++) {
-    // Replace &nbsp with a real space since ICU no longer treats &nbsp as a
-    // word separator.
-    if (input[i - 1] == kNoBreakSpaceCharacter)
-      string_with_previous[i] = kSpaceCharacter;
-    else
-      string_with_previous[i] = input[i - 1];
-  }
-
-  TextBreakIterator* boundary =
-      WordBreakIterator(string_with_previous.Characters(), length + 1);
-  if (!boundary)
-    return;
-
-  StringBuilder result;
-  result.ReserveCapacity(length);
-
-  int32_t end_of_word;
-  int32_t start_of_word = boundary->first();
-  for (end_of_word = boundary->next(); end_of_word != kTextBreakDone;
-       start_of_word = end_of_word, end_of_word = boundary->next()) {
-    if (start_of_word) {  // Ignore first char of previous string
-      result.Append(
-          input[start_of_word - 1] == kNoBreakSpaceCharacter
-              ? kNoBreakSpaceCharacter
-              : WTF::Unicode::ToTitleCase(string_with_previous[start_of_word]));
-    }
-    for (int i = start_of_word + 1; i < end_of_word; i++)
-      result.Append(input[i - 1]);
-  }
-
-  *string = result.ToString();
-}
 
 LayoutText::LayoutText(Node* node, scoped_refptr<StringImpl> str)
     : LayoutObject(node),
@@ -1717,7 +1673,7 @@ void ApplyTextTransform(const ComputedStyle* style,
     case ETextTransform::kNone:
       break;
     case ETextTransform::kCapitalize:
-      MakeCapitalized(&text, previous_character);
+      text = Capitalize(text, previous_character);
       break;
     case ETextTransform::kUppercase:
       text = text.UpperUnicode(style->Locale());
