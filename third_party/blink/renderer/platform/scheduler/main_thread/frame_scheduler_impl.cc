@@ -286,7 +286,6 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
     case TaskType::kIdleTask:
     case TaskType::kInternalDefault:
     case TaskType::kMiscPlatformAPI:
-    case TaskType::kInternalAccessibility:
       // TODO(altimin): Move appropriate tasks to throttleable task queue.
       return TaskRunnerImpl::Create(DeferrableTaskQueue(), type);
     // PostedMessage can be used for navigation, so we shouldn't defer it

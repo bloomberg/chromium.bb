@@ -11,6 +11,8 @@ namespace blink {
 // This enum is used for a histogram and it should not be re-numbered.
 //
 // For the task type usage guideline, see https://bit.ly/2vMAsQ4
+//
+// When a new task type is created, use kCount value as a new value.
 enum class TaskType : unsigned {
   ///////////////////////////////////////
   // Speced tasks should use one of the following task types
@@ -162,11 +164,6 @@ enum class TaskType : unsigned {
 
   // Tasks related to animation like blinking caret or CSS animation.
   kInternalAnimation = 34,
-
-  // Tasks related to accessbility. Tasks with this type are mainly posted by:
-  // * //content/renderer/accessibility
-  // * //third_party/blink/renderer/modules/accessibility
-  kInternalAccessibility = 35,
 
   ///////////////////////////////////////
   // The following task types are DEPRECATED! Use kInternal* instead.
