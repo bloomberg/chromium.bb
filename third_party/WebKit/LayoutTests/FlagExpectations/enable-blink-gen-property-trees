@@ -181,6 +181,7 @@ crbug.com/836912 compositing/scrollbars/nested-overlay-scrollbars.html [ Failure
 crbug.com/836912 compositing/squashing/vertical-writing-mode-squashed.html [ Failure ]
 crbug.com/836912 scrollbars/scrollbar-added-during-drag.html [ Crash ]
 crbug.com/836912 scrollbars/scrollbar-removed-by-viewport-crash.html [ Crash ]
+crbug.com/841342 scrollbars/border-box-rect-clips-scrollbars.html [ Failure ]
 
 # These visual viewport tests should pass.
 Bug(none) external/wpt/visual-viewport [ Pass ]
