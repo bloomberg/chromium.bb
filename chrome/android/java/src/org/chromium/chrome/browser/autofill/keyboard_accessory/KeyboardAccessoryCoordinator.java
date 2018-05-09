@@ -71,11 +71,12 @@ public class KeyboardAccessoryCoordinator {
     }
 
     /**
-     * Allows any {@link KeyboardAccessoryData.ActionListProvider} to communicate with the
+     * Allows any {@link KeyboardAccessoryData.Provider} to communicate with the
      * {@link KeyboardAccessoryMediator} of this component.
      * @param provider The object providing action lists to observers in this component.
      */
-    public void registerActionListProvider(KeyboardAccessoryData.ActionListProvider provider) {
+    public void registerActionListProvider(
+            KeyboardAccessoryData.Provider<KeyboardAccessoryData.Action> provider) {
         provider.addObserver(mMediator);
     }
 

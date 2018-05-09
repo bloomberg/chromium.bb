@@ -13,19 +13,32 @@ import android.widget.PopupWindow;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryCoordinator;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.base.WindowAndroid;
+
+import javax.annotation.Nullable;
 
 /**
  * JNI call glue for password generation between native and Java objects.
  */
 @JNINamespace("autofill")
-public class PasswordGenerationPopupBridge implements AdapterView.OnItemClickListener,
-        PopupWindow.OnDismissListener, PasswordGenerationAdapter.Delegate {
+public class PasswordGenerationPopupBridge
+        implements AdapterView.OnItemClickListener, PopupWindow.OnDismissListener,
+                   PasswordGenerationAdapter.Delegate, Action.Delegate {
     private final long mNativePasswordGenerationPopupViewAndroid;
     private final Context mContext;
     private final DropdownPopupWindow mPopup;
     private final View mAnchorView;
+    private final KeyboardAccessoryData.PropertyProvider<Action> mActionProvider =
+            new KeyboardAccessoryData.PropertyProvider<>();
+    private @Nullable Action mKeyboardAccessoryAction;
+    private final @Nullable KeyboardAccessoryCoordinator mKeyboardAccessory;
+
     /**
      * A convenience method for the constructor to be invoked from the native counterpart.
      * @param anchorView View anchored for popup.
@@ -52,10 +65,17 @@ public class PasswordGenerationPopupBridge implements AdapterView.OnItemClickLis
         // mContext could've been garbage collected.
         if (mContext == null) {
             mPopup = null;
+            mKeyboardAccessory = null;
             // Prevent destroying the native counterpart when it's about to derefence its own
             // members in UpdateBoundsAndRedrawPopup().
-            new Handler().post(() -> onDismiss());
+            new Handler().post(this::onDismiss);
         } else {
+            if (mContext instanceof ChromeActivity) {
+                mKeyboardAccessory = ((ChromeActivity) mContext).getKeyboardAccessory();
+                mKeyboardAccessory.registerActionListProvider(mActionProvider);
+            } else {
+                mKeyboardAccessory = null;
+            }
             mPopup = new DropdownPopupWindow(mContext, anchorView);
             mPopup.setOnItemClickListener(this);
             mPopup.setOnDismissListener(this);
@@ -109,6 +129,13 @@ public class PasswordGenerationPopupBridge implements AdapterView.OnItemClickLis
             String suggestionTitle, String explanationText, int explanationTextLinkRangeStart,
             int explanationTextLinkRangeEnd) {
         if (mPopup != null) {
+            // If an action can be shown in the popup, provide the same in the accessory or sheet.
+            if (providesGenerationAction()) {
+                // TODO(ioanap): Move these lines to a new native call or even a separate bridge.
+                createGeneratePasswordAction(suggestionTitle, this);
+                mActionProvider.notifyObservers(new Action[] {mKeyboardAccessoryAction});
+                // Don't return for now. We want to have both mechanisms in place initially.
+            }
             float anchorWidth = mAnchorView.getLayoutParams().width;
             assert anchorWidth > 0;
             PasswordGenerationAdapter adapter = new PasswordGenerationAdapter(mContext, this,
@@ -137,5 +164,33 @@ public class PasswordGenerationPopupBridge implements AdapterView.OnItemClickLis
     @CalledByNative
     private void hide() {
         if (mPopup != null) mPopup.dismiss();
+    }
+
+    @Override
+    public void onActionTriggered(Action action) {
+        assert action == mKeyboardAccessoryAction;
+        nativePasswordSelected(mNativePasswordGenerationPopupViewAndroid);
+        // TODO(ioanap): Create and use this call instead to start the ModalDialog flow:
+        // nativePasswordGenerationRequested(mNativePasswordGenerationPopupViewAndroid);
+    }
+
+    private boolean providesGenerationAction() {
+        return mKeyboardAccessory != null && ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY);
+    }
+
+    private void createGeneratePasswordAction(String caption, Action.Delegate delegate) {
+        assert mKeyboardAccessoryAction == null : "Accessory Action should only be created once!";
+        mKeyboardAccessoryAction = new Action() {
+            @Override
+            public String getCaption() {
+                return caption;
+            }
+
+            @Override
+            public Delegate getDelegate() {
+                return delegate;
+            }
+        };
     }
 }

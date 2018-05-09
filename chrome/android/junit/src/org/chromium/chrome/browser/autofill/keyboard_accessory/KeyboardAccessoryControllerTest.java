@@ -28,13 +28,11 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.autofill.AutofillKeyboardSuggestions;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
 import org.chromium.chrome.browser.modelutil.ListObservable;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.PropertyObservable.PropertyObserver;
 import org.chromium.ui.base.WindowAndroid;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Controller tests for the keyboard accessory component.
@@ -54,27 +52,9 @@ public class KeyboardAccessoryControllerTest {
     private ViewStub mMockViewStub;
     @Mock
     private KeyboardAccessoryView mMockView;
-    @Mock
-    private PropertyModelChangeProcessor<KeyboardAccessoryModel, KeyboardAccessoryView,
-            KeyboardAccessoryModel.PropertyKey> mMockModelChangeProcessor;
-
-    private class TestActionListProvider implements KeyboardAccessoryData.ActionListProvider {
-        private final List<KeyboardAccessoryData.ActionListObserver> mObservers = new ArrayList<>();
-
-        @Override
-        public void addObserver(KeyboardAccessoryData.ActionListObserver observer) {
-            mObservers.add(observer);
-        }
-
-        public void sendActionsToReceivers(KeyboardAccessoryData.Action[] actions) {
-            for (KeyboardAccessoryData.ActionListObserver observer : mObservers) {
-                observer.onActionsAvailable(actions);
-            }
-        }
-    }
 
     private static class FakeTab implements KeyboardAccessoryData.Tab {}
-    private static class FakeAction implements KeyboardAccessoryData.Action {
+    private static class FakeAction implements Action {
         @Override
         public String getCaption() {
             return null;
@@ -151,32 +131,32 @@ public class KeyboardAccessoryControllerTest {
     @SmallTest
     @Feature({"keyboard-accessory"})
     public void testModelNotifiesAboutActionsChangedByProvider() {
-        final TestActionListProvider testProvider = new TestActionListProvider();
+        final PropertyProvider<Action> testProvider = new PropertyProvider<>();
         final FakeAction testAction = new FakeAction();
 
         mModel.addActionListObserver(mMockActionListObserver);
         mCoordinator.registerActionListProvider(testProvider);
 
         // If the coordinator receives an initial actions, the model should report an insertion.
-        testProvider.sendActionsToReceivers(new KeyboardAccessoryData.Action[] {testAction});
+        testProvider.notifyObservers(new Action[] {testAction});
         verify(mMockActionListObserver).onItemRangeInserted(mModel.getActionList(), 0, 1);
         assertThat(mModel.getActionList().getItemCount(), is(1));
         assertThat(mModel.getActionList().get(0), is(equalTo(testAction)));
 
         // If the coordinator receives a new set of actions, the model should report a change.
-        testProvider.sendActionsToReceivers(new KeyboardAccessoryData.Action[] {testAction});
+        testProvider.notifyObservers(new Action[] {testAction});
         verify(mMockActionListObserver)
                 .onItemRangeChanged(mModel.getActionList(), 0, 1, mModel.getActionList());
         assertThat(mModel.getActionList().getItemCount(), is(1));
         assertThat(mModel.getActionList().get(0), is(equalTo(testAction)));
 
         // If the coordinator receives an empty set of actions, the model should report a deletion.
-        testProvider.sendActionsToReceivers(new KeyboardAccessoryData.Action[] {});
+        testProvider.notifyObservers(new Action[] {});
         verify(mMockActionListObserver).onItemRangeRemoved(mModel.getActionList(), 0, 1);
         assertThat(mModel.getActionList().getItemCount(), is(0));
 
         // There should be no notification if no actions are reported repeatedly.
-        testProvider.sendActionsToReceivers(new KeyboardAccessoryData.Action[] {});
+        testProvider.notifyObservers(new Action[] {});
         verifyNoMoreInteractions(mMockActionListObserver);
     }
 
