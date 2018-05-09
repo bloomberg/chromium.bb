@@ -100,12 +100,9 @@ void CastSystemGestureEventHandler::OnTouchEvent(ui::TouchEvent* event) {
       return;
     }
 
-    // All touch or gesture events inside the margins have to be consumed, or we
-    // risk a state issue later when the touch ends (b/78461207)
-    event->StopPropagation();
-
     // Detect the beginning of a system gesture swipe.
     if (event->type() == ui::ET_TOUCH_PRESSED) {
+      event->StopPropagation();
       current_swipe_ = side_swipe_origin;
       for (auto* side_swipe_handler : swipe_gesture_handlers_) {
         // Let the subscriber know about the gesture begin.
