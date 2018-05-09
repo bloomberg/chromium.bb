@@ -2,8 +2,9 @@
 
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -11,7 +12,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="network_config_input.html">
 <link rel="import" href="network_shared_css.html">
 
@@ -46,9 +46,8 @@
         height: calc(var(--cr-section-min-height) - 9px);
       }
 
-      paper-toggle-button {
+      cr-toggle {
         -webkit-margin-start: var(--cr-button-edge-spacing);
-        @apply --cr-actionable;
       }
     </style>
 
@@ -84,10 +83,10 @@
           hidden$="[[!networkProperties.Cellular.SIMLockStatus.LockEnabled]]">
         [[i18n('networkSimChangePin')]]
       </paper-button>
-      <paper-toggle-button id="simLockButton"
+      <cr-toggle id="simLockButton"
           on-change="onSimLockEnabledChange_" checked="{{lockEnabled_}}"
           aria-labelledby="simLockToggleLabel">
-      </paper-toggle-button>
+      </cr-toggle>
     </div>
 
     <!-- Enter PIN dialog -->
