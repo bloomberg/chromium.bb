@@ -349,16 +349,6 @@ int main(int argc, char* argv[]) {
   if (tool_path.empty())
     tool_path = command_line.GetProgram().DirName();
 
-  // If source path is not provided, guess it using build path or current
-  // directory.
-  if (source_path.empty()) {
-    if (build_path.empty())
-      base::GetCurrentDirectory(&source_path);
-    else
-      source_path = build_path.Append(base::FilePath::kParentDirectory)
-                        .Append(base::FilePath::kParentDirectory);
-  }
-
   // Get build directory, if it is empty issue an error.
   if (build_path.empty()) {
     LOG(ERROR)
@@ -366,6 +356,12 @@ int main(int argc, char* argv[]) {
 
     // This error is always enforced, as it is a commandline switch.
     return 1;
+  }
+
+  // If source path is not provided, guess it using build path.
+  if (source_path.empty()) {
+    source_path = build_path.Append(base::FilePath::kParentDirectory)
+                      .Append(base::FilePath::kParentDirectory);
   }
 
   TrafficAnnotationAuditor auditor(source_path, build_path, tool_path);
