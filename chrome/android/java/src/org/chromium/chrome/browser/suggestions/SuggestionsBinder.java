@@ -6,19 +6,16 @@ package org.chromium.chrome.browser.suggestions;
 
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
-import android.content.res.Resources.Theme;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.media.ThumbnailUtils;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.annotation.DimenRes;
 import android.support.annotation.Nullable;
-import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.text.BidiFormatter;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
@@ -215,7 +212,8 @@ public class SuggestionsBinder {
         // Temporarily set placeholder and then fetch the thumbnail from a provider.
         mThumbnailView.setBackground(null);
         if (mIsContextual) {
-            mThumbnailView.setImageDrawable(createContextualSuggestionPlaceholder());
+            mThumbnailView.setImageResource(
+                    R.drawable.contextual_suggestions_placeholder_thumbnail_background);
         } else if (SuggestionsConfig.useModernLayout()
                 && ChromeFeatureList.isEnabled(
                            ChromeFeatureList.CONTENT_SUGGESTIONS_THUMBNAIL_DOMINANT_COLOR)) {
@@ -440,16 +438,6 @@ public class SuggestionsBinder {
     private void verifyBitmap(Bitmap bitmap) {
         assert !bitmap.isRecycled();
         assert bitmap.getWidth() <= mThumbnailSize || bitmap.getHeight() <= mThumbnailSize;
-    }
-
-    private Drawable createContextualSuggestionPlaceholder() {
-        Resources res = mThumbnailView.getResources();
-        Theme theme = mThumbnailView.getContext().getTheme();
-        Drawable drawable = VectorDrawableCompat.create(
-                res, R.drawable.contextual_suggestions_placeholder, theme);
-        Drawable background = ApiCompatibilityUtils.getDrawable(
-                res, R.drawable.contextual_suggestions_placeholder_thumbnail_background);
-        return new LayerDrawable(new Drawable[] {background, drawable});
     }
 
     private static int getThumbnailSize(Resources resources) {
