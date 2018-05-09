@@ -37,8 +37,7 @@ LINUX_QUADRO_P400_STABLE_DRIVER = '10de:1cb3-384.90'
 # Intel HD 630 (both Windows and Linux).
 INTEL_HD_630 = '8086:5912'
 WIN10_INTEL_HD_630_STABLE_DRIVER = '8086:5912-23.20.16.4877'
-# TODO(zmo): Add the following bot.
-# WIN10_INTEL_HD_630_EXPERIMENTAL_DRIVER = '8086:5912-24.20.100.6025'
+WIN10_INTEL_HD_630_EXPERIMENTAL_DRIVER = '8086:5912-24.20.100.6025'
 
 # "Types" of waterfalls and bots. A bot's type is the union of its own
 # type and the type of its waterfall. Predicates can apply to these
@@ -392,6 +391,18 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'win',
       'type': Types.DEQP,
+    },
+    'Win10 FYI Exp Release (Intel HD 630)': {
+      'swarming_dimensions': [
+        {
+          'gpu': WIN10_INTEL_HD_630_EXPERIMENTAL_DRIVER,
+          'os': 'Windows-10',
+          'pool': 'Chrome-GPU',
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'win',
     },
     'Win10 FYI Release (Intel HD 630)': {
       'swarming_dimensions': [
@@ -1818,6 +1829,7 @@ COMMON_GTESTS = {
       {
         'names': [
           'Win10 FYI Release (Intel HD 630)',
+          'Win10 FYI Exp Release (Intel HD 630)',
         ],
       },
     ],
