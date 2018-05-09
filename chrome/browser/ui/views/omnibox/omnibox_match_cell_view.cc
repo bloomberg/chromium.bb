@@ -243,8 +243,7 @@ void OmniboxMatchCellView::Layout() {
 }
 
 void OmniboxMatchCellView::LayoutOldStyleAnswer() {
-  const int start_x = GetIconAlignmentOffset() + HorizontalPadding();
-  int x = start_x;
+  int x = GetIconAlignmentOffset() + HorizontalPadding();
   int y = GetVerticalInsets(text_height_, /*is_old_style_answer=*/true).top();
   icon_view_->SetSize(icon_view_->CalculatePreferredSize());
   icon_view_->SetPosition(
@@ -256,8 +255,7 @@ void OmniboxMatchCellView::LayoutOldStyleAnswer() {
     // The description may be multi-line. Using the view height results in
     // an image that's too large, so we use the line height here instead.
     int image_edge_length = description_view_->GetLineHeight();
-    image_view_->SetBounds(start_x + icon_view_->width() + HorizontalPadding(),
-                           y + (kVerticalPadding / 2), image_edge_length,
+    image_view_->SetBounds(x, y + (kVerticalPadding / 2), image_edge_length,
                            image_edge_length);
     image_view_->SetImageSize(gfx::Size(image_edge_length, image_edge_length));
     x += image_view_->width() + kAnswerIconToTextPadding;
