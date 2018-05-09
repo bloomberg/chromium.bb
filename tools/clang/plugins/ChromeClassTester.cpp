@@ -154,11 +154,7 @@ bool ChromeClassTester::InImplementationFile(SourceLocation record_location) {
       break;
     }
     record_location =
-#if defined(LLVM_FORCE_HEAD_REVISION)
         source_manager.getImmediateExpansionRange(record_location).getBegin();
-#else
-        source_manager.getImmediateExpansionRange(record_location).first;
-#endif
   }
 
   return false;
