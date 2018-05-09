@@ -112,8 +112,7 @@ void* WrapDlopen(const char* path, int mode) {
     return NULL;
   }
 
-  LibraryView* wrap_lib = new LibraryView();
-  wrap_lib->SetSystem(system_lib, path ? path : "<executable>");
+  auto* wrap_lib = new LibraryView(system_lib, path ? path : "<executable>");
   globals->libraries()->AddLibrary(wrap_lib);
   globals->valid_handles()->Add(wrap_lib);
   return wrap_lib;

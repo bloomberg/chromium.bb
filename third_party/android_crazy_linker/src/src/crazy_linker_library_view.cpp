@@ -11,6 +11,9 @@
 
 namespace crazy {
 
+LibraryView::LibraryView(SharedLibrary* crazy_lib)
+    : type_(TYPE_CRAZY), crazy_(crazy_lib), name_(crazy_lib->soname()) {}
+
 LibraryView::~LibraryView() {
   LOG("Destroying %s", name_.c_str());
   if (type_ == TYPE_SYSTEM) {
