@@ -143,8 +143,11 @@ void SaveSessionStateOnIOThread(
     AppCacheServiceImpl* appcache_service) {
   net::URLRequestContext* context = context_getter->GetURLRequestContext();
   context->cookie_store()->SetForceKeepSessionState();
-  context->channel_id_service()->GetChannelIDStore()->
-      SetForceKeepSessionState();
+  if (context->channel_id_service()) {
+    context->channel_id_service()
+        ->GetChannelIDStore()
+        ->SetForceKeepSessionState();
+  }
   appcache_service->set_force_keep_session_state();
 }
 
