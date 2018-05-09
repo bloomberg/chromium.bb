@@ -15,8 +15,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/login_delegate.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/ssl/client_cert_store.h"
 
@@ -297,11 +297,8 @@ void NetworkServiceClient::OnAuthRequired(
     return;
   }
 
-  RenderFrameHost* rfh =
-      process_id
-          ? RenderFrameHost::FromID(process_id, routing_id)
-          : FrameTreeNode::GloballyFindByID(routing_id)->current_frame_host();
-  bool is_main_frame = !rfh->GetParent();
+  bool is_main_frame =
+      static_cast<ResourceType>(resource_type) == RESOURCE_TYPE_MAIN_FRAME;
   new LoginHandlerDelegate(
       std::move(auth_challenge_responder), std::move(web_contents_getter),
       auth_info, is_main_frame, process_id, routing_id, request_id, url,
