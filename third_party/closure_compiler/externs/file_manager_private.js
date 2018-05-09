@@ -728,6 +728,17 @@ chrome.fileManagerPrivate.getRecentFiles = function(restriction, callback) {};
 chrome.fileManagerPrivate.executeCustomAction = function(
     entries, actionId, callback) {};
 
+/**
+ * Returns true if crostini is enabled.
+ * @param {function(!boolean)} callback
+ */
+chrome.fileManagerPrivate.isCrostiniEnabled = function(callback) {};
+
+/**
+ * Starts and mounts crostini container.
+ */
+chrome.fileManagerPrivate.mountCrostiniContainer = function() {};
+
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;
 

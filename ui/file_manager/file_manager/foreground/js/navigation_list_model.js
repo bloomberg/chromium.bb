@@ -10,6 +10,7 @@ var NavigationModelItemType = {
   VOLUME: 'volume',
   MENU: 'menu',
   RECENT: 'recent',
+  SFTP_MOUNT: 'sftp_mount',
 };
 
 /**
@@ -131,6 +132,38 @@ NavigationModelRecentItem.prototype = /** @struct */ {
 };
 
 /**
+ * Item of NavigationListModel for an SFTP Mount as used by Linux files.
+ *
+ * @param {string} label Label on the item.
+ * @param {!FakeEntry} entry Fake entry for the SFTP Mount root folder.
+ * @param {string} icon CSS icon.
+ * @constructor
+ * @extends {NavigationModelItem}
+ * @struct
+ */
+function NavigationModelSFTPMountItem(label, entry, icon) {
+  NavigationModelItem.call(this, label, NavigationModelItemType.SFTP_MOUNT);
+  this.entry_ = entry;
+  this.icon_ = icon;
+}
+
+NavigationModelSFTPMountItem.prototype = /** @struct */ {
+  __proto__: NavigationModelItem.prototype,
+  get entry() {
+    return this.entry_;
+  },
+  get icon() {
+    return this.icon_;
+  },
+  /**
+   * Start crostini container and mount it.
+   */
+  mount: function() {
+    chrome.fileManagerPrivate.mountCrostiniContainer();
+  },
+};
+
+/**
  * A navigation list model. This model combines multiple models.
  * @param {!VolumeManagerWrapper} volumeManager VolumeManagerWrapper instance.
  * @param {(!cr.ui.ArrayDataModel|!FolderShortcutsDataModel)} shortcutListModel
@@ -163,11 +196,18 @@ function NavigationListModel(
   this.recentModelItem_ = recentModelItem;
 
   /**
+   * Root folder for crostini Linux Files.
+   * This field will be set asynchronously after calling
+   * chrome.fileManagerPrivate.isCrostiniEnabled.
+   * @private {NavigationModelSFTPMountItem}
+   */
+  this.linuxFilesItem_ = null;
+
+  /**
    * @private {NavigationModelMenuItem}
    * @const
    */
   this.addNewServicesItem_ = addNewServicesItem;
-
 
   /**
    * All root navigation items in display order.
@@ -210,7 +250,25 @@ function NavigationListModel(
     this.shortcutList_.push(entryToModelItem(shortcutEntry));
   }
 
-  // Reorder volumes, shortcuts, and optional items.
+  // Check if crostini is enabled to create linuxFilesItem_.
+  chrome.fileManagerPrivate.isCrostiniEnabled((enabled) => {
+    if (!enabled)
+      return;
+
+    this.linuxFilesItem_ = new NavigationModelSFTPMountItem(
+        str('LINUX_FILES_ROOT_LABEL'), {
+          isDirectory: true,
+          rootType: VolumeManagerCommon.RootType.SFTP_MOUNT,
+          toURL: function() {
+            return 'fake-entry://linux-files';
+          },
+        },
+        'linux-files');
+    // Reorder items to ensure Linux Files is shown.
+    this.reorderNavigationItems_();
+  });
+
+  // Reorder volumes, shortcuts, and optional items for initial display.
   this.reorderNavigationItems_();
 
   // Generates a combined 'permuted' event from an event of either volumeList or
@@ -333,14 +391,30 @@ NavigationListModel.prototype = {
  *  1. Volumes.
  *  2. If Downloads exists, then immediately after Downloads should be:
  *  2a. Recent if it exists.
+ *  2b. Linux Files if it exists and is not mounted.
+ *      When mounted, it will be located in Volumes at this position.
  *  3. Shortcuts.
  *  4. Add new services if it exists.
  * @private
  */
 NavigationListModel.prototype.reorderNavigationItems_ = function() {
+  // Check if Linux files already mounted.
+  let linuxFilesMounted = false;
+  for (let i = 0; i < this.volumeList_.length; i++) {
+    if (VolumeManagerCommon.getProvidedFileSystemIdFromVolumeId(
+            this.volumeList_[i].volumeInfo.volumeId) ===
+        VolumeManagerCommon.ProvidedFileSystem.CROSTINI) {
+      linuxFilesMounted = true;
+      break;
+    }
+  }
+
   // Items as per required order.
   this.navigationItems_ = this.volumeList_.slice();
   var downloadsVolumeIndex = this.findDownloadsVolumeIndex_();
+  if (this.linuxFilesItem_ && !linuxFilesMounted && downloadsVolumeIndex >= 0)
+    this.navigationItems_.splice(
+        downloadsVolumeIndex + 1, 0, this.linuxFilesItem_);
   if (this.recentModelItem_ && downloadsVolumeIndex >= 0)
     this.navigationItems_.splice(
         downloadsVolumeIndex + 1, 0, this.recentModelItem_);

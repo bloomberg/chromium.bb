@@ -11,11 +11,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
@@ -41,6 +43,7 @@
 #include "chrome/common/extensions/api/manifest_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/services/file_util/public/cpp/zip_file_creator.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/account_id/account_id.h"
 #include "components/drive/drive_pref_names.h"
@@ -638,6 +641,25 @@ void FileManagerPrivateConfigureVolumeFunction::OnCompleted(
   }
 
   Respond(NoArguments());
+}
+
+bool IsCrostiniEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             chromeos::switches::kCrostiniFiles) &&
+         crostini::CrostiniManager::IsCrosTerminaInstalled();
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateIsCrostiniEnabledFunction::Run() {
+  return RespondNow(
+      OneArgument(std::make_unique<base::Value>(IsCrostiniEnabled())));
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateMountCrostiniContainerFunction::Run() {
+  // TOOD(https://crbug.com/832509): implement MountCrostiniContainer.
+  DCHECK(IsCrostiniEnabled());
+  return RespondNow(NoArguments());
 }
 
 FileManagerPrivateInternalGetCustomActionsFunction::

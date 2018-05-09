@@ -234,7 +234,8 @@ tree .tree-item[selected] > .tree-row > .shared[file-type-icon='folder'] {
       url(../images/volumes/2x/service_drive_active.png) 2x);
 }
 
-[volume-type-icon='team_drives_grand_root'],[volume-type-icon='team_drive'] {
+[volume-type-icon='team_drives_grand_root'],
+[volume-type-icon='team_drive'] {
   background-image: -webkit-image-set(
       url(../images/volumes/team_drive.png) 1x,
       url(../images/volumes/2x/team_drive.png) 2x);
@@ -416,3 +417,20 @@ cr-menu-item[command='#install-new-extension'] .icon.start {
       url(../images/volumes/recent_active.png) 1x,
       url(../images/volumes/2x/recent_active.png) 2x);
 }
+
+[sftp-mount-icon='linux-files'],
+[volume-subtype='crostini'] {
+  /* Need !important to override inline style applied to provided volumes. */
+  background-image: -webkit-image-set(
+      url(../images/volumes/linux_files.png) 1x,
+      url(../images/volumes/2x/linux_files.png) 2x) !important;
+}
+
+.tree-row[selected] [sftp-mount-icon='linux-files'],
+.tree-row[selected] [volume-subtype='crostini'] {
+  /* Need !important to override inline style applied to provided volumes. */
+  background-image: -webkit-image-set(
+      url(../images/volumes/linux_files_active.png) 1x,
+      url(../images/volumes/2x/linux_files_active.png) 2x) !important;
+}
+

@@ -53,6 +53,7 @@ loadTimeData.data = new Proxy(
           'utm_campaign=gsg',
       IMAGE_FILE_TYPE: '$1 image',
       INSTALL_NEW_EXTENSION_LABEL: 'Install new from the webstore',
+      LINUX_FILES_ROOT_LABEL: 'Linux Files',
       MANY_ENTRIES_SELECTED: '$1 items selected',
       MANY_FILES_SELECTED: '$1 files selected',
       METADATA_BOX_ALBUM_TITLE: 'Album',
@@ -68,6 +69,8 @@ loadTimeData.data = new Proxy(
       OPEN_LABEL: 'Open',
       PLAIN_TEXT_FILE_TYPE: 'Plain text',
       PREPARING_LABEL: 'Preparing',
+      SEE_MENU_FOR_ACTIONS: 'More options available on the action bar. ' +
+          'Press Alt + A to focus the action bar.',
       SIZE_COLUMN_LABEL: 'Size',
       SPACE_AVAILABLE: '$1 available',
       STATUS_COLUMN_LABEL: 'Status',
