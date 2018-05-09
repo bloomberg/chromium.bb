@@ -87,8 +87,8 @@ NSAttributedString* AttributedSubstringFromRange(const EphemeralRange& range,
     if (!num_characters)
       continue;
 
-    const Node* container = it.CurrentContainer();
-    LayoutObject* layout_object = container->GetLayoutObject();
+    const Node& container = it.CurrentContainer();
+    LayoutObject* layout_object = container.GetLayoutObject();
     DCHECK(layout_object);
     if (!layout_object)
       continue;

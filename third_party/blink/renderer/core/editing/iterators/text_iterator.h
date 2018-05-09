@@ -75,7 +75,7 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   const Node* GetNode() const;
 
   const Document& OwnerDocument() const;
-  const Node* CurrentContainer() const;
+  const Node& CurrentContainer() const;
   int StartOffsetInCurrentContainer() const;
   int EndOffsetInCurrentContainer() const;
   PositionTemplate<Strategy> StartPositionInCurrentContainer() const;
