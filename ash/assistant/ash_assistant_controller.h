@@ -11,6 +11,7 @@
 
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/highlighter/highlighter_controller.h"
 #include "ash/public/interfaces/ash_assistant_controller.mojom.h"
 #include "ash/public/interfaces/assistant_card_renderer.mojom.h"
 #include "base/macros.h"
@@ -30,7 +31,8 @@ class AssistantInteractionModelObserver;
 class AshAssistantController
     : public mojom::AshAssistantController,
       public chromeos::assistant::mojom::AssistantEventSubscriber,
-      public AssistantInteractionModelObserver {
+      public AssistantInteractionModelObserver,
+      public HighlighterController::Observer {
  public:
   AshAssistantController();
   ~AshAssistantController() override;
@@ -80,6 +82,9 @@ class AshAssistantController
 
   // AssistantInteractionModelObserver:
   void OnInteractionStateChanged(InteractionState interaction_state) override;
+
+  // HighlighterController::Observer:
+  void OnHighlighterEnabledChanged(bool enabled) override;
 
   // chromeos::assistant::mojom::AssistantEventSubscriber:
   void OnInteractionStarted() override;

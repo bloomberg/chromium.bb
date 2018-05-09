@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_CHROMEOS_SWITCHES_H_
 #define CHROMEOS_CHROMEOS_SWITCHES_H_
 
+#include "base/feature_list.h"
 #include "base/memory/memory_pressure_monitor_chromeos.h"
 #include "chromeos/chromeos_export.h"
 
@@ -158,6 +159,9 @@ CHROMEOS_EXPORT extern const char kTetherStub[];
 CHROMEOS_EXPORT extern const char kVoiceInteractionLocales[];
 CHROMEOS_EXPORT extern const char kWaitForInitialPolicyFetchForTest[];
 CHROMEOS_EXPORT extern const char kWakeOnWifiPacket[];
+
+// Controls whether enable Google Assistant feature.
+CHROMEOS_EXPORT extern const base::Feature kAssistantFeature;
 
 // Returns true if the system should wake in response to wifi traffic.
 CHROMEOS_EXPORT bool WakeOnWifiEnabled();

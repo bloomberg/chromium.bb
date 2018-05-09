@@ -25,9 +25,11 @@ AshAssistantController::AshAssistantController()
       assistant_event_subscriber_binding_(this),
       assistant_bubble_(std::make_unique<AssistantBubble>(this)) {
   AddInteractionModelObserver(this);
+  Shell::Get()->highlighter_controller()->AddObserver(this);
 }
 
 AshAssistantController::~AshAssistantController() {
+  Shell::Get()->highlighter_controller()->RemoveObserver(this);
   RemoveInteractionModelObserver(this);
 
   assistant_controller_binding_.Close();
@@ -131,6 +133,15 @@ void AshAssistantController::OnInteractionStateChanged(
     // preferred input modality.
     assistant_interaction_model_.SetInputModality(InputModality::kVoice);
   }
+}
+
+void AshAssistantController::OnHighlighterEnabledChanged(bool enabled) {
+  // TODO(warx): add a reason enum to distinguish the case of deselecting the
+  // tool and done with a stylus selection.
+  assistant_bubble_timer_.Stop();
+  assistant_interaction_model_.SetInputModality(InputModality::kStylus);
+  assistant_interaction_model_.SetInteractionState(
+      enabled ? InteractionState::kActive : InteractionState::kInactive);
 }
 
 void AshAssistantController::OnInteractionStarted() {
