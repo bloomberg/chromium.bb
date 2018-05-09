@@ -26,6 +26,10 @@ template("generate_vm_runner_script") {
       invoker.generated_script,
       "//build/chromeos/",
       "//build/cros_cache/chrome-sdk/misc/",
+
+      # The LKGM file controls what version of the VM image to download. Add it
+      # as data here so that changes to it will trigger analyze.
+      "//chromeos/CHROMEOS_LKGM",
       "//third_party/chromite/",
       _vm_image_path,
       _qemu_dir,
