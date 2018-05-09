@@ -292,8 +292,10 @@ mojom::DisplayUnitInfoPtr GetDisplayUnitInfo(const display::Display& display,
 
   info->display_zoom_factor = display_info.zoom_factor();
   if (has_active_mode) {
-    info->available_display_zoom_factors =
-        display::GetDisplayZoomFactors(active_mode);
+    const auto zoom_levels = display::GetDisplayZoomFactors(active_mode);
+    info->available_display_zoom_factors.assign(zoom_levels.begin(),
+                                                zoom_levels.end());
+
   } else {
     info->available_display_zoom_factors.push_back(display_info.zoom_factor());
   }

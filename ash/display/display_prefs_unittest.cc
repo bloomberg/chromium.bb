@@ -467,7 +467,7 @@ TEST_F(DisplayPrefsTest, BasicStores) {
                                    1.0 /* ui_scale */,
                                    1.25f /* device_scale_factor */);
   display_manager()->SetDisplayMode(id2, mode);
-  float zoom_factor_1 = 1.75f;
+  float zoom_factor_1 = 1.f / 2.25f;
   float zoom_factor_2 = 1.60f;
   display_manager()->UpdateZoomFactor(id1, zoom_factor_1);
   display_manager()->UpdateZoomFactor(id2, zoom_factor_2);
@@ -483,9 +483,9 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   EXPECT_FALSE(property->GetInteger("width", &width));
   EXPECT_FALSE(property->GetInteger("height", &height));
 
-  int display_zoom_1;
-  EXPECT_TRUE(property->GetInteger("display_zoom", &display_zoom_1));
-  EXPECT_EQ(display_zoom_1, static_cast<int>(zoom_factor_1 * 100));
+  double display_zoom_1;
+  EXPECT_TRUE(property->GetDouble("display_zoom_factor", &display_zoom_1));
+  EXPECT_NEAR(display_zoom_1, zoom_factor_1, 0.0001);
 
   // External display's resolution must be stored this time because
   // it's not best.
@@ -499,9 +499,9 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   EXPECT_EQ(200, height);
   EXPECT_EQ(1250, device_scale_factor);
 
-  int display_zoom_2;
-  EXPECT_TRUE(property->GetInteger("display_zoom", &display_zoom_2));
-  EXPECT_EQ(display_zoom_2, static_cast<int>(zoom_factor_2 * 100));
+  double display_zoom_2;
+  EXPECT_TRUE(property->GetDouble("display_zoom_factor", &display_zoom_2));
+  EXPECT_NEAR(display_zoom_2, zoom_factor_2, 0.0001);
 
   // The layout is swapped.
   EXPECT_TRUE(displays->GetDictionary(key, &layout_value));

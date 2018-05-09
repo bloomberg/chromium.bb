@@ -1403,7 +1403,7 @@ TEST_F(DisplayManagerTest, ZoomDisplay) {
   display_manager()->UpdateDisplays();
 
   // Enumerate the zoom factors for display.
-  const std::vector<double> zoom_factors_1 =
+  const std::vector<float> zoom_factors_1 =
       display::GetDisplayZoomFactors(modes_1[0]);
 
   // Set the zoom factor to one of the enumerated zoom factors for the said
@@ -1413,36 +1413,36 @@ TEST_F(DisplayManagerTest, ZoomDisplay) {
                                       zoom_factors_1[zoom_factor_idx_1]);
 
   // Make sure the chage was successful.
-  EXPECT_NEAR(display_manager()->GetDisplayInfo(info_1.id()).zoom_factor(),
-              zoom_factors_1[zoom_factor_idx_1], 0.001f);
+  EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info_1.id()).zoom_factor(),
+                  zoom_factors_1[zoom_factor_idx_1]);
 
   // Zoom out the display. This should have no effect, since the display is
   // already at the minimum zoom level.
   display_manager()->ZoomDisplay(info_1.id(), true /* up */);
-  EXPECT_NEAR(display_manager()->GetDisplayInfo(info_1.id()).zoom_factor(),
-              zoom_factors_1[zoom_factor_idx_1], 0.001f);
+  EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info_1.id()).zoom_factor(),
+                  zoom_factors_1[zoom_factor_idx_1]);
 
   // Ensure that this call did not modify the zoom value for the other display.
-  EXPECT_NEAR(display_manager()->GetDisplayInfo(info_2.id()).zoom_factor(), 1.f,
-              0.001f);
+  EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info_2.id()).zoom_factor(),
+                  1.f);
 
   // Zoom in the display.
   display_manager()->ZoomDisplay(info_1.id(), false /* up */);
 
   // The zoom factor for the display should be set to the next zoom factor in
   // list.
-  EXPECT_NEAR(display_manager()->GetDisplayInfo(info_1.id()).zoom_factor(),
-              zoom_factors_1[zoom_factor_idx_1 + 1], 0.001f);
+  EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info_1.id()).zoom_factor(),
+                  zoom_factors_1[zoom_factor_idx_1 + 1]);
 
   // Zoom out the display.
   display_manager()->ZoomDisplay(info_1.id(), true /* up */);
 
   // The zoom level should decrease from the previous level.
-  EXPECT_NEAR(display_manager()->GetDisplayInfo(info_1.id()).zoom_factor(),
-              zoom_factors_1[zoom_factor_idx_1], 0.001f);
+  EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info_1.id()).zoom_factor(),
+                  zoom_factors_1[zoom_factor_idx_1]);
 
   // Enumerate the zoom factors for display.
-  const std::vector<double> zoom_factors_2 =
+  const std::vector<float> zoom_factors_2 =
       display::GetDisplayZoomFactors(modes_2[0]);
 
   // Set the zoom factor to one of the enumerated zoom factors for the said
@@ -1452,38 +1452,38 @@ TEST_F(DisplayManagerTest, ZoomDisplay) {
                                       zoom_factors_2[zoom_factor_idx_2]);
 
   // Make sure the chage was successful.
-  EXPECT_NEAR(display_manager()->GetDisplayInfo(info_2.id()).zoom_factor(),
-              zoom_factors_2[zoom_factor_idx_2], 0.001f);
+  EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info_2.id()).zoom_factor(),
+                  zoom_factors_2[zoom_factor_idx_2]);
 
   // Zoom in the display. This should have no effect since we are already at
   // maximum zoom.
   display_manager()->ZoomDisplay(info_2.id(), false /* up */);
-  EXPECT_NEAR(display_manager()->GetDisplayInfo(info_2.id()).zoom_factor(),
-              zoom_factors_2[zoom_factor_idx_2], 0.001f);
+  EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info_2.id()).zoom_factor(),
+                  zoom_factors_2[zoom_factor_idx_2]);
 
   // Zoom out the display
   display_manager()->ZoomDisplay(info_2.id(), true /* up */);
-  EXPECT_NEAR(display_manager()->GetDisplayInfo(info_2.id()).zoom_factor(),
-              zoom_factors_2[zoom_factor_idx_2 - 1], 0.001f);
+  EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info_2.id()).zoom_factor(),
+                  zoom_factors_2[zoom_factor_idx_2 - 1]);
 
   // Ensure that this call did not modify the zoom value for the other display.
-  EXPECT_NEAR(display_manager()->GetDisplayInfo(info_1.id()).zoom_factor(),
-              zoom_factors_1[zoom_factor_idx_1], 0.001f);
+  EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info_1.id()).zoom_factor(),
+                  zoom_factors_1[zoom_factor_idx_1]);
 
   // Reset the zoom value for displays.
   display_manager()->ResetDisplayZoom(info_1.id());
-  EXPECT_NEAR(display_manager()->GetDisplayInfo(info_1.id()).zoom_factor(), 1.f,
-              0.001f);
+  EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info_1.id()).zoom_factor(),
+                  1.f);
   // Resetting the zoom level of one display should not effect the other display
-  EXPECT_NEAR(display_manager()->GetDisplayInfo(info_2.id()).zoom_factor(),
-              zoom_factors_2[zoom_factor_idx_2 - 1], 0.001f);
+  EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info_2.id()).zoom_factor(),
+                  zoom_factors_2[zoom_factor_idx_2 - 1]);
 
   // Now reset the zoom value for other display.
   display_manager()->ResetDisplayZoom(info_2.id());
-  EXPECT_NEAR(display_manager()->GetDisplayInfo(info_2.id()).zoom_factor(), 1.f,
-              0.001f);
-  EXPECT_NEAR(display_manager()->GetDisplayInfo(info_1.id()).zoom_factor(), 1.f,
-              0.001f);
+  EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info_2.id()).zoom_factor(),
+                  1.f);
+  EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info_1.id()).zoom_factor(),
+                  1.f);
 }
 
 TEST_F(DisplayManagerTest, TestDeviceScaleOnlyChange) {
