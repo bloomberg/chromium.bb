@@ -5,7 +5,8 @@
 'use strict';
 
 /**
- * Confirms that the play button toggles play state and it's labels.
+ * Confirms that clicking the play button changes the audio player state and
+ * updates the play button's label.
  * @return {Promise} Promise to be fulfilled with on success.
  */
 testcase.togglePlayState = function() {
@@ -14,24 +15,37 @@ testcase.togglePlayState = function() {
   return openAudio.then(function(args) {
     appId = args[0];
   }).then(function() {
-    // Audio player should start playing automatically.
+    // Audio player should start playing automatically,
     return remoteCallAudioPlayer.waitForElement(
         appId, 'audio-player[playing]');
   }).then(function() {
-    // While playing, the play/pause button should have 'Pause' label.
+    // .. and the play button label should be 'Pause'.
     return remoteCallAudioPlayer.waitForElement(
         appId, ['#play[aria-label="Pause"]']);
   }).then(function() {
-    // Clicking the pause button should change the playback state to pause.
+    // Clicking on the play button should
     return remoteCallAudioPlayer.callRemoteTestUtil(
         'fakeMouseClick', appId, ['#play']);
   }).then(function() {
+    // ... change the audio playback state to pause,
     return remoteCallAudioPlayer.waitForElement(
         appId, 'audio-player:not([playing])');
   }).then(function() {
-    // ... and the play/pause button should have 'Play' label.
+    // ... and the play button label should be 'Play'.
     return remoteCallAudioPlayer.waitForElement(
         appId, ['#play[aria-label="Play"]']);
+  }).then(function() {
+    // Clicking on the play button again should
+    return remoteCallAudioPlayer.callRemoteTestUtil(
+        'fakeMouseClick', appId, ['#play']);
+  }).then(function() {
+    // ... change the audio playback state to playing,
+    return remoteCallAudioPlayer.waitForElement(
+        appId, 'audio-player[playing]');
+  }).then(function() {
+    // ... and the play button label should be 'Pause'.
+    return remoteCallAudioPlayer.waitForElement(
+        appId, ['#play[aria-label="Pause"]']);
   });
 };
 
