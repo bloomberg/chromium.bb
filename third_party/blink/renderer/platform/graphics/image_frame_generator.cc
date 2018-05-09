@@ -151,6 +151,9 @@ bool ImageFrameGenerator::DecodeAndScale(
   TRACE_EVENT1("blink", "ImageFrameGenerator::decodeAndScale", "frame index",
                static_cast<int>(index));
 
+  // Lock the mutex, so only one thread can use the decoder at once.
+  MutexLocker lock(decode_mutex_);
+
   // This implementation does not support arbitrary scaling so check the
   // requested size.
   SkISize scaled_size = SkISize::Make(info.width(), info.height());
@@ -226,13 +229,14 @@ SkBitmap ImageFrameGenerator::TryToResumeDecode(
     const SkISize& scaled_size,
     SkBitmap::Allocator& allocator,
     ImageDecoder::AlphaOption alpha_option) {
+#if DCHECK_IS_ON()
+  DCHECK(decode_mutex_.Locked());
+#endif
+
   TRACE_EVENT1("blink", "ImageFrameGenerator::tryToResumeDecode", "frame index",
                static_cast<int>(index));
 
   ImageDecoder* decoder = nullptr;
-
-  // Lock the mutex, so only one thread can use the decoder at once.
-  MutexLocker lock(decode_mutex_);
   const bool resume_decoding = ImageDecodingStore::Instance().LockDecoder(
       this, scaled_size, alpha_option, &decoder);
   DCHECK(!resume_decoding || decoder);
