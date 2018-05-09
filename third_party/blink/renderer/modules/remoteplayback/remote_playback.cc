@@ -343,10 +343,12 @@ void RemotePlayback::StateChanged(WebRemotePlaybackState state) {
   switch (state_) {
     case WebRemotePlaybackState::kConnecting:
       DispatchEvent(Event::Create(EventTypeNames::connecting));
-      if (RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled() &&
-          media_element_->IsHTMLVideoElement()) {
-        // TODO(xjz): Pass the remote device name.
-        ToHTMLVideoElement(media_element_)->MediaRemotingStarted(WebString());
+      if (RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled()) {
+        if (media_element_->IsHTMLVideoElement()) {
+          // TODO(xjz): Pass the remote device name.
+          ToHTMLVideoElement(media_element_)->MediaRemotingStarted(WebString());
+        }
+        media_element_->FlingingStarted();
       }
       break;
     case WebRemotePlaybackState::kConnected:
@@ -354,11 +356,14 @@ void RemotePlayback::StateChanged(WebRemotePlaybackState state) {
       break;
     case WebRemotePlaybackState::kDisconnected:
       DispatchEvent(Event::Create(EventTypeNames::disconnect));
-      if (RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled() &&
-          media_element_->IsHTMLVideoElement()) {
-        ToHTMLVideoElement(media_element_)
-            ->MediaRemotingStopped(
-                WebLocalizedString::kMediaRemotingStopNoText);
+      if (RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled()) {
+        if (media_element_->IsHTMLVideoElement()) {
+          ToHTMLVideoElement(media_element_)
+              ->MediaRemotingStopped(
+                  WebLocalizedString::kMediaRemotingStopNoText);
+        }
+        presentation_id_ = "";
+        media_element_->FlingingStopped();
       }
       break;
   }

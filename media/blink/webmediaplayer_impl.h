@@ -243,10 +243,15 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   void RequestRemotePlaybackDisabled(bool disabled) override;
 #if defined(OS_ANDROID)  // WMPI_CAST
+  // TODO(https://crbug.com/839651): Rename Flinging[Started/Stopped] to
+  // RemotePlayback[Started/Stopped] once the other RemotePlayback methods have
+  // been removed
   bool IsRemote() const override;
   void RequestRemotePlayback() override;
   void RequestRemotePlaybackControl() override;
   void RequestRemotePlaybackStop() override;
+  void FlingingStarted() override;
+  void FlingingStopped() override;
 
   void SetMediaPlayerManager(
       RendererMediaPlayerManagerInterface* media_player_manager);
