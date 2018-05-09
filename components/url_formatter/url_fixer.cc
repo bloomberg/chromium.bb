@@ -22,7 +22,7 @@
 #include "url/url_file.h"
 #include "url/url_util.h"
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include "base/path_service.h"
 #endif
 
@@ -101,8 +101,10 @@ void PrepareStringForFileOps(const base::FilePath& text,
 #if defined(OS_WIN)
   base::TrimWhitespace(text.value(), base::TRIM_ALL, output);
   replace(output->begin(), output->end(), '/', '\\');
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   TrimWhitespaceUTF8(text.value(), base::TRIM_ALL, output);
+#else
+#error Unsupported platform
 #endif
 }
 
@@ -122,7 +124,7 @@ bool ValidPathForFile(const base::FilePath::StringType& text,
   return true;
 }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 // Given a path that starts with ~, return a path that starts with an
 // expanded-out /user/foobar directory.
 std::string FixupHomedir(const std::string& text) {
@@ -176,7 +178,7 @@ std::string FixupPath(const std::string& text) {
   // Fixup Windows-style drive letters, where "C:" gets rewritten to "C|".
   if (filename.length() > 1 && filename[1] == '|')
     filename[1] = ':';
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   base::FilePath input_path(text);
   PrepareStringForFileOps(input_path, &filename);
   if (filename.length() > 0 && filename[0] == '~')
@@ -407,7 +409,7 @@ std::string SegmentURLInternal(std::string* text, url::Parsed* parts) {
   if (url::DoesBeginWindowsDriveSpec(trimmed.data(), 0, trimmed_length) ||
       url::DoesBeginUNCPath(trimmed.data(), 0, trimmed_length, true))
     return url::kFileScheme;
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   if (base::FilePath::IsSeparator(trimmed.data()[0]) ||
       trimmed.data()[0] == '~')
     return url::kFileScheme;
@@ -623,7 +625,7 @@ GURL FixupRelativeFile(const base::FilePath& base_dir,
         base::WideToUTF8(trimmed),
         net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
             net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS));
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     std::string unescaped = net::UnescapeURLComponent(
         trimmed,
         net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
@@ -650,7 +652,7 @@ GURL FixupRelativeFile(const base::FilePath& base_dir,
 // Fall back on regular fixup for this input.
 #if defined(OS_WIN)
   std::string text_utf8 = base::WideToUTF8(text.value());
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   std::string text_utf8 = text.value();
 #endif
   return FixupURL(text_utf8, std::string());
