@@ -27,9 +27,9 @@
     return treeElement;
   }
 
-  async function search(label, isRegex, ignoreCase) {
+  async function search(label, isRegex, ignoreCase, query = 'd.search') {
     TestRunner.addResult(label);
-    const view = await Network.SearchNetworkView.openSearch('d.search');
+    const view = await Network.SearchNetworkView.openSearch(query);
     view._matchCaseButton.setToggled(!ignoreCase);
     view._regexButton.setToggled(isRegex);
     const promise = TestRunner.addSnifferPromise(view, '_searchFinished');
@@ -72,6 +72,7 @@
       ConsoleTestRunner.addConsoleSniffer(step2);
       return;
     }
+    await search('URL search', true, true, '8000/devtools');
     await search('Ignore case, regexp', true, true);
     await search('Ignore case, No regexp', false, true);
     const lastResult = await search('Case sensitive, regexp', true, false);
