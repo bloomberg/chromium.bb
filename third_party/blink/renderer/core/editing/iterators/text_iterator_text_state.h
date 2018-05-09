@@ -91,6 +91,21 @@ class CORE_EXPORT TextIteratorTextState {
   unsigned PositionEndOffset() const;
   const Node* PositionNode() const { return position_node_; }
   const Node* PositionContainerNode() const { return position_container_node_; }
+  bool IsAfterPositionNode() const {
+    return position_node_type_ == PositionNodeType::kAfterNode;
+  }
+  bool IsBeforePositionNode() const {
+    return position_node_type_ == PositionNodeType::kBeforeNode;
+  }
+  bool IsBeforeCharacter() const {
+    return position_node_type_ == PositionNodeType::kBeforeCharacter;
+  }
+  bool IsBeforeChildren() const {
+    return position_node_type_ == PositionNodeType::kBeforeChildren;
+  }
+  bool IsInTextNode() const {
+    return position_node_type_ == PositionNodeType::kInText;
+  }
 
   bool HasEmitted() const { return has_emitted_; }
   UChar LastCharacter() const { return last_character_; }
@@ -106,6 +121,7 @@ class CORE_EXPORT TextIteratorTextState {
     kAfterNode,
     kAltText,
     kAsNode,
+    kBeforeCharacter,
     kBeforeChildren,
     kBeforeNode,
     kInText,

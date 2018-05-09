@@ -886,6 +886,64 @@ void TextIteratorAlgorithm<Strategy>::EnsurePositionContainer() const {
 }
 
 template <typename Strategy>
+PositionTemplate<Strategy> TextIteratorAlgorithm<Strategy>::GetPositionBefore(
+    int char16_offset) const {
+  if (AtEnd()) {
+    DCHECK_EQ(char16_offset, 0);
+    return PositionTemplate<Strategy>(CurrentContainer(),
+                                      StartOffsetInCurrentContainer());
+  }
+  DCHECK_GE(char16_offset, 0);
+  DCHECK_LT(char16_offset, length());
+  DCHECK_GE(length(), 1);
+  const Node& node = *text_state_.PositionNode();
+  if (text_state_.IsInTextNode() || text_state_.IsBeforeCharacter()) {
+    return PositionTemplate<Strategy>(
+        node, text_state_.PositionStartOffset() + char16_offset);
+  }
+  if (node.IsTextNode()) {
+    if (text_state_.IsAfterPositionNode())
+      return PositionTemplate<Strategy>(node, ToText(node).length());
+    return PositionTemplate<Strategy>(node, 0);
+  }
+  if (text_state_.IsAfterPositionNode())
+    return PositionTemplate<Strategy>::AfterNode(node);
+  DCHECK(!text_state_.IsBeforeChildren());
+  return PositionTemplate<Strategy>::BeforeNode(node);
+}
+
+template <typename Strategy>
+PositionTemplate<Strategy> TextIteratorAlgorithm<Strategy>::GetPositionAfter(
+    int char16_offset) const {
+  if (AtEnd()) {
+    DCHECK_EQ(char16_offset, 0);
+    return PositionTemplate<Strategy>(CurrentContainer(),
+                                      EndOffsetInCurrentContainer());
+  }
+  DCHECK_GE(char16_offset, 0);
+  DCHECK_LT(char16_offset, length());
+  DCHECK_GE(length(), 1);
+  const Node& node = *text_state_.PositionNode();
+  if (text_state_.IsBeforeCharacter()) {
+    return PositionTemplate<Strategy>(
+        node, text_state_.PositionStartOffset() + char16_offset);
+  }
+  if (text_state_.IsInTextNode()) {
+    return PositionTemplate<Strategy>(
+        node, text_state_.PositionStartOffset() + char16_offset + 1);
+  }
+  if (node.IsTextNode()) {
+    if (text_state_.IsBeforePositionNode())
+      return PositionTemplate<Strategy>(node, 0);
+    return PositionTemplate<Strategy>(node, ToText(node).length());
+  }
+  if (text_state_.IsBeforePositionNode())
+    return PositionTemplate<Strategy>::BeforeNode(node);
+  DCHECK(!text_state_.IsBeforeChildren());
+  return PositionTemplate<Strategy>::AfterNode(node);
+}
+
+template <typename Strategy>
 PositionTemplate<Strategy>
 TextIteratorAlgorithm<Strategy>::StartPositionInCurrentContainer() const {
   return PositionTemplate<Strategy>::EditingPositionOf(

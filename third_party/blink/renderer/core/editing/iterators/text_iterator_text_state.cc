@@ -144,6 +144,7 @@ void TextIteratorTextState::UpdatePositionOffsets(
       position_start_offset_ = node_index;
       position_end_offset_ = node_index;
       return;
+    case PositionNodeType::kBeforeCharacter:
     case PositionNodeType::kBeforeChildren:
     case PositionNodeType::kInText:
     case PositionNodeType::kNone:
@@ -191,7 +192,14 @@ void TextIteratorTextState::EmitChar16BeforeNode(UChar code_unit,
 void TextIteratorTextState::EmitChar16Before(UChar code_unit,
                                              const Text& text_node,
                                              unsigned offset) {
-  SetTextNodePosition(text_node, offset, offset);
+  // TODO(editing-dev): text-transform:uppercase can make text longer, e.g.
+  // "U+00DF" to "SS". See "fast/css/case-transform.html"
+  // DCHECK_LE(offset, text_node.length());
+  position_node_type_ = PositionNodeType::kBeforeCharacter;
+  position_container_node_ = &text_node;
+  position_node_ = &text_node;
+  position_start_offset_ = offset;
+  position_end_offset_ = offset;
   PopulateStringBufferFromChar16(code_unit);
 }
 
@@ -253,7 +261,7 @@ void TextIteratorTextState::PopulateStringBuffer(const String& text,
 void TextIteratorTextState::SetTextNodePosition(const Text& text_node,
                                                 unsigned position_start_offset,
                                                 unsigned position_end_offset) {
-  DCHECK_LE(position_start_offset, position_end_offset);
+  DCHECK_LT(position_start_offset, position_end_offset);
   // TODO(editing-dev): text-transform:uppercase can make text longer, e.g.
   // "U+00DF" to "SS". See "fast/css/case-transform.html"
   // DCHECK_LE(position_end_offset, text_node.length());
