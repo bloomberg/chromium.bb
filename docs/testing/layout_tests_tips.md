@@ -107,7 +107,7 @@ valid markup (no parsing errors).
 
 Tests should provide as much relevant information as possible when failing.
 `testharness.js` tests should prefer
-[rich assert_ functions](https://github.com/w3c/testharness.js/blob/master/docs/api.md#list-of-assertions)
+[rich assert_ functions](https://github.com/w3c/web-platform-tests/blob/master/docs/_writing-tests/testharness-api.md#list-of-assertions)
 to combining `assert_true()` with a boolean operator. Using appropriate
 `assert_` functions results in better diagnostic output when the assertion
 fails.

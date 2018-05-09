@@ -224,9 +224,9 @@ other tests that use it, or reading its source code.
 
 For example, the most popular Blink-specific API is `testRunner`, which is
 implemented in
-[components/test_runner/test_runner.h](../../components/test_runner/test_runner.h)
+[content/shell/test_runner/test_runner.h](../../content/shell/test_runner/test_runner.h)
 and
-[components/test_runner/test_runner.cc](../../components/test_runner/test_runner.cc).
+[content/shell/test_runner/test_runner.cc](../../content/shell/test_runner/test_runner.cc).
 By skimming the `TestRunnerBindings::Install` method, we learn that the
 testRunner API is presented by the `window.testRunner` and
 `window.layoutTestsController` objects, which are synonyms. Reading the
@@ -248,12 +248,12 @@ by tests that stick to Web Platform APIs. The `testharnessreport.js` file in
 and uses the `testRunner` API.
 ***
 
-See the [components/test_runner/](../../components/test_runner/) directory and
+See the [content/shell/test_runner/](../../content/shell/test_runner/) directory and
 [WebKit's LayoutTests guide](https://trac.webkit.org/wiki/Writing%20Layout%20Tests%20for%20DumpRenderTree)
 for other useful APIs. For example, `window.eventSender`
-([components/test_runner/event_sender.h](../../components/test_runner/event_sender.h)
+([content/shell/test_runner/event_sender.h](../../content/shell/test_runner/event_sender.h)
 and
-[components/test_runner/event_sender.cc](../../components/test_runner/event_sender.cc))
+[content/shell/test_runner/event_sender.cc](../../content/shell/test_runner/event_sender.cc))
 has methods that simulate events input such as keyboard / mouse input and
 drag-and-drop.
 
