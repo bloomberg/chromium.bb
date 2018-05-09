@@ -1,7 +1,7 @@
 Tests how fragment works.
 
 f1.outerHTML:
-<div-a attr="val" class=""><div-c class="my-class-1 my-class-2" foo="bar">Some text here And more text</div-c>
+<div-a attr="val" class=""><div-b foo1="bar1" s-state1-attr="val-state1" class="" foo2="bar2"></div-b><div-c class="my-class-1 my-class-2" foo="bar">Some text here And more text</div-c>
       <div></div></div-a>
 () => diva === f1.element()
   true
@@ -11,13 +11,9 @@ f1.outerHTML:
   true
 () => divc.tagName === 'DIV-C'
   true
-() => shadow.nodeType === Node.DOCUMENT_FRAGMENT_NODE
-  true
-() => shadow.parentElementOrShadowHost() === diva
-  true
 () => divc.parentNode === diva
   true
-() => divb.parentElementOrShadowHost() === diva
+() => divb.parentNode === diva
   true
 () => diva.lastChild === inner
   true
@@ -39,31 +35,15 @@ f1.outerHTML:
   true
 () => divb.getAttribute('attr') === null
   true
-() => diva.getAttribute('attr') === 'val-state1'
-  true
-() => divb.getAttribute('attr') === 'val-state1'
-  true
-() => diva.getAttribute('attr') === 'val-state1'
-  true
-() => divb.getAttribute('attr') === 'val-state1'
-  true
-() => diva.getAttribute('attr') === 'val'
-  true
-() => divb.getAttribute('attr') === null
-  true
-() => diva.getAttribute('attr') === 'val-state2'
-  true
-() => divb.getAttribute('attr') === null
-  true
 
 f2.outerHTML:
-<div><div-a attr="val-state2" class=""><div-c class="my-class-1 my-class-2" foo="bar">Some text here And more text</div-c>
+<div><div-a attr="val" class=""><div-b foo1="bar1" s-state1-attr="val-state1" class="" foo2="bar2"></div-b><div-c class="my-class-1 my-class-2" foo="bar">Some text here And more text</div-c>
       <div></div></div-a></div>
 () => f2.element().firstChild === f1.element()
   true
 
 f3.outerHTML:
-<div><div><div-a attr="val-state2" class=""><div-c class="my-class-1 my-class-2" foo="bar">Some text here And more text</div-c>
+<div><div><div-a attr="val" class=""><div-b foo1="bar1" s-state1-attr="val-state1" class="" foo2="bar2"></div-b><div-c class="my-class-1 my-class-2" foo="bar">Some text here And more text</div-c>
       <div></div></div-a></div></div>
 () => f3.element().firstChild === f2.element()
   true
