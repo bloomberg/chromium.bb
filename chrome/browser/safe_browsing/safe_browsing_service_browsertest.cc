@@ -1826,8 +1826,8 @@ class SafeBrowsingServiceJsRequestTest
  public:
   void SetUp() override {
     JsRequestTestParam param = GetParam();
-    if (param.request_type == JsRequestType::kOffMainThreadWebSocket) {
-      scoped_feature_list_.InitAndEnableFeature(
+    if (param.request_type == JsRequestType::kWebSocket) {
+      scoped_feature_list_.InitAndDisableFeature(
           features::kOffMainThreadWebSocket);
     }
     SafeBrowsingServiceTest::SetUp();
