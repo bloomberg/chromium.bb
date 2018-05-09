@@ -3850,6 +3850,14 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'useflags': append_useflags(['cfi']),
       },
 
+      'elm-release': {
+          'useflags': append_useflags(['thinlto']),
+      },
+
+      'veyron_jaq-release': {
+          'useflags': append_useflags(['thinlto']),
+      },
+
       'chell-chrome-pfq': {
           'afdo_generate': True,
           'archive_build_debug': True,
