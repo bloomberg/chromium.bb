@@ -555,11 +555,10 @@ bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
   if (!config.has_proxy_config())
     return false;
 
+  // An empty proxy config is OK, and allows the server to effectively turn off
+  // DataSaver if needed. See http://crbug.com/840978.
   std::vector<DataReductionProxyServer> proxies =
       GetProxiesForHTTP(config.proxy_config());
-
-  if (proxies.empty())
-    return false;
 
   request_options_->SetSecureSession(config.session_key());
   config_values_->UpdateValues(proxies);

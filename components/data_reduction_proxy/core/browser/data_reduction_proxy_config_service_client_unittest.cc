@@ -229,6 +229,13 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     half_reporting_fraction_encoded_config_ =
         EncodeConfig(half_reporting_fraction_config);
 
+    ClientConfig no_proxies_config;
+    no_proxies_config.set_session_key(kSuccessSessionKey);
+    no_proxies_config.mutable_refresh_duration()->set_seconds(
+        kConfigRefreshDurationSeconds);
+    no_proxies_config.mutable_refresh_duration()->set_nanos(0);
+    no_proxies_config_ = EncodeConfig(no_proxies_config);
+
     success_reads_[0] = net::MockRead("HTTP/1.1 200 OK\r\n\r\n");
     success_reads_[1] =
         net::MockRead(net::ASYNC, config_.c_str(), config_.length());
@@ -447,6 +454,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
   const std::string& half_reporting_fraction_encoded_config() const {
     return half_reporting_fraction_encoded_config_;
   }
+  const std::string& no_proxies_config() const { return no_proxies_config_; }
 
   const std::string& loaded_config() const { return loaded_config_; }
 
@@ -489,6 +497,9 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
 
   // A configuration where the pingback reporting fraction is set to 0.5f.
   std::string half_reporting_fraction_encoded_config_;
+
+  // A configuration where no proxies are configured.
+  std::string no_proxies_config_;
 
   // Mock socket data.
   std::vector<std::unique_ptr<net::SocketDataProvider>> socket_data_providers_;
@@ -1357,6 +1368,16 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   config_client()->ApplySerializedConfig(
       half_reporting_fraction_encoded_config());
   EXPECT_EQ(0.5f, pingback_reporting_fraction());
+}
+
+TEST_F(DataReductionProxyConfigServiceClientTest, EmptyConfigDisablesDRP) {
+  Init(true);
+  SetDataReductionProxyEnabled(true, true);
+  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
+
+  config_client()->ApplySerializedConfig(no_proxies_config());
+  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
+  EXPECT_TRUE(configurator()->GetProxyConfig().proxy_rules().empty());
 }
 
 #if defined(OS_ANDROID)
