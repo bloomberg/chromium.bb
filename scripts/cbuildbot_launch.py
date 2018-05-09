@@ -424,58 +424,61 @@ def _main(argv):
       'tryjob': options.remote_trybot,
   }
 
-  # Does the entire build pass or fail.
-  with metrics.Presence(METRIC_ACTIVE, metrics_fields), \
-       metrics.SuccessCounter(METRIC_COMPLETED, metrics_fields) as s_fields:
+  with ts_mon_config.SetupTsMonGlobalState(
+      'cbuildbot_launch', indirect=True,
+      job_name=metrics_fields['build_config']):
+    # Does the entire build pass or fail.
+    with metrics.Presence(METRIC_ACTIVE, metrics_fields), \
+         metrics.SuccessCounter(METRIC_COMPLETED, metrics_fields) as s_fields:
 
-    # Preliminary set, mostly command line parsing.
-    with metrics.SuccessCounter(METRIC_INVOKED, metrics_fields):
-      if options.enable_buildbot_tags:
-        logging.EnableBuildbotMarkers()
-      ConfigureGlobalEnvironment()
+      # Preliminary set, mostly command line parsing.
+      with metrics.SuccessCounter(METRIC_INVOKED, metrics_fields):
+        if options.enable_buildbot_tags:
+          logging.EnableBuildbotMarkers()
+        ConfigureGlobalEnvironment()
 
-    # Prepare the buildroot with source for the build.
-    with metrics.SuccessCounter(METRIC_PREP, metrics_fields):
-      site_config = config_lib.GetConfig()
-      manifest_url = site_config.params['MANIFEST_INT_URL']
-      repo = repository.RepoRepository(manifest_url, buildroot,
-                                       branch=branchname,
-                                       git_cache_dir=options.git_cache_dir)
-      previous_build_state = GetLastBuildState(root)
+      # Prepare the buildroot with source for the build.
+      with metrics.SuccessCounter(METRIC_PREP, metrics_fields):
+        site_config = config_lib.GetConfig()
+        manifest_url = site_config.params['MANIFEST_INT_URL']
+        repo = repository.RepoRepository(manifest_url, buildroot,
+                                         branch=branchname,
+                                         git_cache_dir=options.git_cache_dir)
+        previous_build_state = GetLastBuildState(root)
 
-      # Clean up the buildroot to a safe state.
-      with metrics.SecondsTimer(METRIC_CLEAN, fields=metrics_fields):
-        build_state = GetCurrentBuildState(options, branchname)
-        CleanBuildRoot(root, repo, metrics_fields, build_state)
+        # Clean up the buildroot to a safe state.
+        with metrics.SecondsTimer(METRIC_CLEAN, fields=metrics_fields):
+          build_state = GetCurrentBuildState(options, branchname)
+          CleanBuildRoot(root, repo, metrics_fields, build_state)
 
-      # Get a checkout close enough to the branch that cbuildbot can handle it.
-      if options.sync:
-        with metrics.SecondsTimer(METRIC_INITIAL, fields=metrics_fields):
-          InitialCheckout(repo)
+        # Get a checkout close enough to the branch that cbuildbot can
+        # handle it.
+        if options.sync:
+          with metrics.SecondsTimer(METRIC_INITIAL, fields=metrics_fields):
+            InitialCheckout(repo)
 
-      # Get a checkout close enough to the branch that cbuildbot can handle it.
-      with metrics.SecondsTimer(METRIC_DEPOT_TOOLS, fields=metrics_fields):
-        DepotToolsEnsureBootstrap(depot_tools_path)
+        # Get a checkout close enough to the branch that cbuildbot can
+        # handle it.
+        with metrics.SecondsTimer(METRIC_DEPOT_TOOLS, fields=metrics_fields):
+          DepotToolsEnsureBootstrap(depot_tools_path)
 
-    # Run cbuildbot inside the full ChromeOS checkout, on the specified branch.
-    with metrics.SecondsTimer(METRIC_CBUILDBOT, fields=metrics_fields):
-      if previous_build_state.is_valid():
-        argv.append('--previous-build-state')
-        argv.append(base64.b64encode(previous_build_state.to_json()))
+      # Run cbuildbot inside the full ChromeOS checkout, on the
+      # specified branch.
+      with metrics.SecondsTimer(METRIC_CBUILDBOT, fields=metrics_fields):
+        if previous_build_state.is_valid():
+          argv.append('--previous-build-state')
+          argv.append(base64.b64encode(previous_build_state.to_json()))
 
-      result = Cbuildbot(buildroot, depot_tools_path, argv)
-      s_fields['success'] = (result == 0)
+        result = Cbuildbot(buildroot, depot_tools_path, argv)
+        s_fields['success'] = (result == 0)
 
-      build_state.status = (
-          constants.BUILDER_STATUS_PASSED
-          if result == 0 else constants.BUILDER_STATUS_FAILED)
-      SetLastBuildState(root, build_state)
+        build_state.status = (
+            constants.BUILDER_STATUS_PASSED
+            if result == 0 else constants.BUILDER_STATUS_FAILED)
+        SetLastBuildState(root, build_state)
 
-      CleanupChroot(buildroot)
-      return result
-
+        CleanupChroot(buildroot)
+        return result
 
 def main(argv):
-  # Enable Monarch metrics gathering.
-  with ts_mon_config.SetupTsMonGlobalState('cbuildbot_launch', indirect=True):
-    return _main(argv)
+  return _main(argv)

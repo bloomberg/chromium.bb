@@ -45,7 +45,8 @@ def SetupTsMonGlobalState(service_name,
                           short_lived=False,
                           auto_flush=True,
                           debug_file=None,
-                          task_num=0):
+                          task_num=0,
+                          job_name=None):
   """Uses a dummy argument parser to get the default behavior from ts-mon.
 
   Args:
@@ -61,6 +62,8 @@ def SetupTsMonGlobalState(service_name,
                 minute.
     debug_file: If non-none, send metrics to this path instead of to PubSub.
     task_num: (Default 0) The task_num target field of the metrics to emit.
+    job_name: (Default service_name) The job_name target field of the
+              metrics to emit.
   """
   if not config:
     return TrivialContextManager()
@@ -71,7 +74,8 @@ def SetupTsMonGlobalState(service_name,
 
   # google-api-client has too much noisey logging.
   options = _GenerateTsMonArgparseOptions(
-      service_name, short_lived, auto_flush, debug_file, task_num)
+      service_name, short_lived, auto_flush, debug_file,
+      task_num, job_name=job_name)
 
   if indirect:
     return _CreateTsMonFlushingProcess(options)
@@ -102,7 +106,8 @@ def _SetupTsMonFromOptions(options, suppress_exception):
 
 
 def _GenerateTsMonArgparseOptions(service_name, short_lived,
-                                  auto_flush, debug_file, task_num):
+                                  auto_flush, debug_file, task_num,
+                                  job_name=None):
   """Generates an arg list for ts-mon to consume.
 
   Args:
@@ -113,14 +118,19 @@ def _GenerateTsMonArgparseOptions(service_name, short_lived,
                 minute.
     debug_file: If non-none, send metrics to this path instead of to PubSub.
     task_num: Override the default task num of 0.
+    job_name: (Default service_name) The job_name target field of the
+              metrics to emit.
   """
   parser = argparse.ArgumentParser()
   config.add_argparse_options(parser)
 
+  if not job_name:
+    job_name = service_name
+
   args = [
       '--ts-mon-target-type', 'task',
       '--ts-mon-task-service-name', service_name,
-      '--ts-mon-task-job-name', service_name,
+      '--ts-mon-task-job-name', job_name,
   ]
 
   if debug_file:
