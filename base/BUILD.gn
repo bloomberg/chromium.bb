@@ -1394,17 +1394,21 @@ jumbo_component("base") {
       "trace_event/heap_profiler_allocation_register_posix.cc",
     ]
 
-    public_deps += [ "//third_party/fuchsia-sdk:async" ]
+    # These only need to be public deps because of includes of their headers
+    # by public //base headers, which requires they be on the include path.
+    # TODO(https://crbug.com/841171): Move these back to |deps|.
+    public_deps += [
+      "//third_party/fuchsia-sdk:async",
+      "//third_party/fuchsia-sdk:fdio",
+      "//third_party/fuchsia-sdk:launchpad",
+    ]
+
     deps += [
       "//third_party/fuchsia-sdk:async_default",
-      "//third_party/fuchsia-sdk:fdio",
       "//third_party/fuchsia-sdk:fidl",
       "//third_party/fuchsia-sdk:svc",
       "//third_party/fuchsia-sdk:zx",
     ]
-
-    # TODO(fuchsia): Remove launchpad.h dependencies from process/launch.h
-    public_deps += [ "//third_party/fuchsia-sdk:launchpad" ]
   } else {
     sources += [
       "message_loop/message_pump_libevent.cc",
