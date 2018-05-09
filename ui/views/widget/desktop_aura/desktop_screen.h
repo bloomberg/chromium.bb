@@ -17,6 +17,8 @@ namespace views {
 // a WindowTreeHost. Caller owns the result.
 VIEWS_EXPORT display::Screen* CreateDesktopScreen();
 
+VIEWS_EXPORT void InstallDesktopScreenIfNecessary();
+
 }  // namespace views
 
 #endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_SCREEN_H_

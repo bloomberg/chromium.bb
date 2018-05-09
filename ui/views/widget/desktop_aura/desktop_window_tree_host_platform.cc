@@ -17,6 +17,9 @@
 
 namespace views {
 
+////////////////////////////////////////////////////////////////////////////////
+// DesktopWindowTreeHostPlatform:
+
 DesktopWindowTreeHostPlatform::DesktopWindowTreeHostPlatform(
     internal::NativeWidgetDelegate* native_widget_delegate,
     DesktopNativeWidgetAura* desktop_native_widget_aura)
@@ -422,6 +425,17 @@ void DesktopWindowTreeHostPlatform::OnActivationChanged(bool active) {
 
 Widget* DesktopWindowTreeHostPlatform::GetWidget() {
   return native_widget_delegate_->AsWidget();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DesktopWindowTreeHost:
+
+// static
+DesktopWindowTreeHost* DesktopWindowTreeHost::Create(
+    internal::NativeWidgetDelegate* native_widget_delegate,
+    DesktopNativeWidgetAura* desktop_native_widget_aura) {
+  return new DesktopWindowTreeHostPlatform(native_widget_delegate,
+                                           desktop_native_widget_aura);
 }
 
 }  // namespace views
