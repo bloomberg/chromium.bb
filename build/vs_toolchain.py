@@ -332,9 +332,11 @@ def _CopyDebugger(target_dir, target_cpu):
       if is_optional:
         continue
       else:
+        # TODO(crbug.com/773476): remove version requirement.
         raise Exception('%s not found in "%s"\r\nYou must install the '
                         '"Debugging Tools for Windows" feature from the Windows'
-                        ' 10 SDK.' % (debug_file, full_path))
+                        ' 10 SDK. You must use v10.0.15063.468. of the SDK'
+                        % (debug_file, full_path))
     target_path = os.path.join(target_dir, debug_file)
     _CopyRuntimeImpl(target_path, full_path)
 
