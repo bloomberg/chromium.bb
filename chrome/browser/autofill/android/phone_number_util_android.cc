@@ -16,19 +16,18 @@ using ::base::android::ConvertJavaStringToUTF8;
 using ::base::android::ConvertUTF8ToJavaString;
 using ::base::android::JavaParamRef;
 using ::base::android::ScopedJavaLocalRef;
-using ::i18n::phonenumbers::PhoneNumber;
-using ::i18n::phonenumbers::PhoneNumberUtil;
 
 // Formats the |phone_number| to the specified |format| for the given country
 // |country_code|. Returns the original number if the operation is not possible.
 std::string FormatPhoneNumberWithCountryCode(
     const std::string& phone_number,
     const std::string& country_code,
-    PhoneNumberUtil::PhoneNumberFormat format) {
-  PhoneNumber parsed_number;
-  PhoneNumberUtil* phone_number_util = PhoneNumberUtil::GetInstance();
+    i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat format) {
+  i18n::phonenumbers::PhoneNumber parsed_number;
+  i18n::phonenumbers::PhoneNumberUtil* phone_number_util =
+      i18n::phonenumbers::PhoneNumberUtil::GetInstance();
   if (phone_number_util->Parse(phone_number, country_code, &parsed_number) !=
-      PhoneNumberUtil::NO_PARSING_ERROR) {
+      i18n::phonenumbers::PhoneNumberUtil::NO_PARSING_ERROR) {
     return phone_number;
   }
 
@@ -40,8 +39,9 @@ std::string FormatPhoneNumberWithCountryCode(
 // Formats the |phone_number| to the specified |format|. Use application locale
 // to determine country code. Returns the original number if the operation is
 // not possible.
-std::string FormatPhoneNumber(const std::string& phone_number,
-                              PhoneNumberUtil::PhoneNumberFormat format) {
+std::string FormatPhoneNumber(
+    const std::string& phone_number,
+    i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat format) {
   return FormatPhoneNumberWithCountryCode(
       phone_number,
       autofill::AutofillCountry::CountryCodeForLocale(
@@ -61,14 +61,15 @@ ScopedJavaLocalRef<jstring> JNI_PhoneNumberUtil_FormatForDisplay(
     const JavaParamRef<jstring>& jphone_number,
     const JavaParamRef<jstring>& jcountry_code) {
   return ConvertUTF8ToJavaString(
-      env,
-      jcountry_code.is_null()
-          ? FormatPhoneNumber(ConvertJavaStringToUTF8(env, jphone_number),
-                              PhoneNumberUtil::PhoneNumberFormat::INTERNATIONAL)
-          : FormatPhoneNumberWithCountryCode(
-                ConvertJavaStringToUTF8(env, jphone_number),
-                ConvertJavaStringToUTF8(env, jcountry_code),
-                PhoneNumberUtil::PhoneNumberFormat::INTERNATIONAL));
+      env, jcountry_code.is_null()
+               ? FormatPhoneNumber(ConvertJavaStringToUTF8(env, jphone_number),
+                                   i18n::phonenumbers::PhoneNumberUtil::
+                                       PhoneNumberFormat::INTERNATIONAL)
+               : FormatPhoneNumberWithCountryCode(
+                     ConvertJavaStringToUTF8(env, jphone_number),
+                     ConvertJavaStringToUTF8(env, jcountry_code),
+                     i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat::
+                         INTERNATIONAL));
 }
 
 // Formats the given number |jphone_number| to
@@ -81,8 +82,9 @@ ScopedJavaLocalRef<jstring> JNI_PhoneNumberUtil_FormatForResponse(
     const base::android::JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jstring>& jphone_number) {
   return ConvertUTF8ToJavaString(
-      env, FormatPhoneNumber(ConvertJavaStringToUTF8(env, jphone_number),
-                             PhoneNumberUtil::PhoneNumberFormat::E164));
+      env, FormatPhoneNumber(
+               ConvertJavaStringToUTF8(env, jphone_number),
+               i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat::E164));
 }
 
 // Checks whether the given number |jphone_number| is a possible number for a
@@ -99,8 +101,8 @@ jboolean JNI_PhoneNumberUtil_IsPossibleNumber(
                                     g_browser_process->GetApplicationLocale())
                               : ConvertJavaStringToUTF8(env, jcountry_code);
 
-  return PhoneNumberUtil::GetInstance()->IsPossibleNumberForString(
-      phone_number, country_code);
+  return i18n::phonenumbers::PhoneNumberUtil::GetInstance()
+      ->IsPossibleNumberForString(phone_number, country_code);
 }
 
 }  // namespace autofill
