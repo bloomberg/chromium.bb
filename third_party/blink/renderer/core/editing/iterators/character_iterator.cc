@@ -90,37 +90,13 @@ int CharacterIteratorAlgorithm<Strategy>::EndOffset() const {
 template <typename Strategy>
 PositionTemplate<Strategy>
 CharacterIteratorAlgorithm<Strategy>::GetPositionBefore() const {
-  if (text_iterator_.AtEnd()) {
-    DCHECK_EQ(run_offset_, 0);
-    return PositionTemplate<Strategy>(
-        text_iterator_.CurrentContainer(),
-        text_iterator_.StartOffsetInCurrentContainer());
-  }
-  const Node& node = *text_iterator_.GetNode();
-  DCHECK_GE(text_iterator_.length(), 1);
-  if (node.IsTextNode()) {
-    const int offset = text_iterator_.StartOffsetInCurrentContainer();
-    return PositionTemplate<Strategy>(node, offset + run_offset_);
-  }
-  return PositionTemplate<Strategy>::BeforeNode(node);
+  return text_iterator_.GetPositionBefore(run_offset_);
 }
 
 template <typename Strategy>
 PositionTemplate<Strategy>
 CharacterIteratorAlgorithm<Strategy>::GetPositionAfter() const {
-  if (text_iterator_.AtEnd()) {
-    DCHECK_EQ(run_offset_, 0);
-    return PositionTemplate<Strategy>(
-        text_iterator_.CurrentContainer(),
-        text_iterator_.EndOffsetInCurrentContainer());
-  }
-  DCHECK_GE(text_iterator_.length(), 1);
-  const Node& node = *text_iterator_.GetNode();
-  if (node.IsTextNode()) {
-    const int offset = text_iterator_.StartOffsetInCurrentContainer();
-    return PositionTemplate<Strategy>(node, offset + run_offset_ + 1);
-  }
-  return PositionTemplate<Strategy>::AfterNode(node);
+  return text_iterator_.GetPositionAfter(run_offset_);
 }
 
 template <typename Strategy>

@@ -72,6 +72,107 @@ TEST_F(CharacterIteratorTest, CollapsedSubrange) {
   EXPECT_EQ(Position(text_node, 3), result.EndPosition());
 }
 
+TEST_F(CharacterIteratorTest, GetPositionWithBlock) {
+  SetBodyContent("a<div>b</div>c");
+
+  const Element& body = *GetDocument().body();
+  CharacterIterator it(EphemeralRange::RangeOfContents(body));
+
+  const Node& text_a = *body.firstChild();
+  const Node& div = *text_a.nextSibling();
+  const Node& text_b = *div.firstChild();
+  const Node& text_c = *body.lastChild();
+
+  EXPECT_EQ(Position(text_a, 0), it.GetPositionBefore());
+  EXPECT_EQ(Position(text_a, 1), it.GetPositionAfter());
+  EXPECT_EQ(Position(text_a, 0), it.StartPosition());
+  EXPECT_EQ(Position(text_a, 1), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position::BeforeNode(div), it.GetPositionBefore());
+  EXPECT_EQ(Position::BeforeNode(div), it.GetPositionAfter());
+  EXPECT_EQ(Position(body, 1), it.StartPosition());
+  EXPECT_EQ(Position(body, 1), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position(text_b, 0), it.GetPositionBefore());
+  EXPECT_EQ(Position(text_b, 1), it.GetPositionAfter());
+  EXPECT_EQ(Position(text_b, 0), it.StartPosition());
+  EXPECT_EQ(Position(text_b, 1), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position(text_b, 1), it.GetPositionBefore());
+  EXPECT_EQ(Position(text_b, 1), it.GetPositionAfter());
+  EXPECT_EQ(Position(div, 1), it.StartPosition());
+  EXPECT_EQ(Position(div, 1), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position(text_c, 0), it.GetPositionBefore());
+  EXPECT_EQ(Position(text_c, 1), it.GetPositionAfter());
+  EXPECT_EQ(Position(text_c, 0), it.StartPosition());
+  EXPECT_EQ(Position(text_c, 1), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position(body, 3), it.GetPositionBefore());
+  EXPECT_EQ(Position(body, 3), it.GetPositionAfter());
+  EXPECT_EQ(Position(body, 3), it.StartPosition());
+  EXPECT_EQ(Position(body, 3), it.EndPosition());
+
+  EXPECT_TRUE(it.AtEnd());
+}
+
+TEST_F(CharacterIteratorTest, GetPositionWithBlocks) {
+  SetBodyContent("<p id=a>b</p><p id=c>d</p>");
+
+  const Element& body = *GetDocument().body();
+  CharacterIterator it(EphemeralRange::RangeOfContents(body));
+
+  const Node& element_p_a = *GetDocument().getElementById("a");
+  const Node& text_b = *element_p_a.firstChild();
+  const Node& element_p_c = *GetDocument().getElementById("c");
+  const Node& text_d = *element_p_c.firstChild();
+
+  EXPECT_EQ(Position(text_b, 0), it.GetPositionBefore());
+  EXPECT_EQ(Position(text_b, 1), it.GetPositionAfter());
+  EXPECT_EQ(Position(text_b, 0), it.StartPosition());
+  EXPECT_EQ(Position(text_b, 1), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position(text_b, 1), it.GetPositionBefore());
+  EXPECT_EQ(Position(text_b, 1), it.GetPositionAfter());
+  EXPECT_EQ(Position(element_p_a, 1), it.StartPosition());
+  EXPECT_EQ(Position(element_p_a, 1), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position(text_b, 1), it.GetPositionBefore());
+  EXPECT_EQ(Position(text_b, 1), it.GetPositionAfter());
+  EXPECT_EQ(Position(element_p_a, 1), it.StartPosition());
+  EXPECT_EQ(Position(element_p_a, 1), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position(text_d, 0), it.GetPositionBefore());
+  EXPECT_EQ(Position(text_d, 1), it.GetPositionAfter());
+  EXPECT_EQ(Position(text_d, 0), it.StartPosition());
+  EXPECT_EQ(Position(text_d, 1), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position(body, 2), it.GetPositionBefore());
+  EXPECT_EQ(Position(body, 2), it.GetPositionAfter());
+  EXPECT_EQ(Position(body, 2), it.StartPosition());
+  EXPECT_EQ(Position(body, 2), it.EndPosition());
+
+  EXPECT_TRUE(it.AtEnd());
+}
+
 TEST_F(CharacterIteratorTest, GetPositionWithBR) {
   SetBodyContent("a<br>b");
 
@@ -107,6 +208,117 @@ TEST_F(CharacterIteratorTest, GetPositionWithBR) {
   EXPECT_EQ(Position(body, 3), it.GetPositionAfter());
   EXPECT_EQ(Position(body, 3), it.StartPosition());
   EXPECT_EQ(Position(body, 3), it.EndPosition());
+
+  EXPECT_TRUE(it.AtEnd());
+}
+
+TEST_F(CharacterIteratorTest, GetPositionWithCollapsedWhitespaces) {
+  SetBodyContent("a <div> b </div> c");
+
+  const Element& body = *GetDocument().body();
+  CharacterIterator it(EphemeralRange::RangeOfContents(body));
+
+  const Node& text_a = *body.firstChild();
+  const Node& div = *text_a.nextSibling();
+  const Node& text_b = *div.firstChild();
+  const Node& text_c = *body.lastChild();
+
+  EXPECT_EQ(Position(text_a, 0), it.GetPositionBefore());
+  EXPECT_EQ(Position(text_a, 1), it.GetPositionAfter());
+  EXPECT_EQ(Position(text_a, 0), it.StartPosition());
+  EXPECT_EQ(Position(text_a, 1), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position::BeforeNode(div), it.GetPositionBefore());
+  EXPECT_EQ(Position::BeforeNode(div), it.GetPositionAfter());
+  EXPECT_EQ(Position(body, 1), it.StartPosition());
+  EXPECT_EQ(Position(body, 1), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position(text_b, 1), it.GetPositionBefore());
+  EXPECT_EQ(Position(text_b, 2), it.GetPositionAfter());
+  EXPECT_EQ(Position(text_b, 1), it.StartPosition());
+  EXPECT_EQ(Position(text_b, 2), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position(text_b, 3), it.GetPositionBefore());
+  EXPECT_EQ(Position(text_b, 3), it.GetPositionAfter());
+  EXPECT_EQ(Position(div, 1), it.StartPosition());
+  EXPECT_EQ(Position(div, 1), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position(text_c, 1), it.GetPositionBefore());
+  EXPECT_EQ(Position(text_c, 2), it.GetPositionAfter());
+  EXPECT_EQ(Position(text_c, 1), it.StartPosition());
+  EXPECT_EQ(Position(text_c, 2), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position(body, 3), it.GetPositionBefore());
+  EXPECT_EQ(Position(body, 3), it.GetPositionAfter());
+  EXPECT_EQ(Position(body, 3), it.StartPosition());
+  EXPECT_EQ(Position(body, 3), it.EndPosition());
+
+  EXPECT_TRUE(it.AtEnd());
+}
+
+TEST_F(CharacterIteratorTest, GetPositionWithEmitChar16Before) {
+  InsertStyleElement("b { white-space: pre; }");
+  SetBodyContent("a   <b> c</b>");
+
+  const Element& body = *GetDocument().body();
+  CharacterIterator it(EphemeralRange::RangeOfContents(body));
+
+  const Node& text_a = *body.firstChild();
+  const Node& element_b = *text_a.nextSibling();
+  const Node& text_c = *element_b.firstChild();
+
+  EXPECT_EQ(Position(text_a, 0), it.GetPositionBefore());
+  EXPECT_EQ(Position(text_a, 1), it.GetPositionAfter());
+  EXPECT_EQ(Position(text_a, 0), it.StartPosition());
+  EXPECT_EQ(Position(text_a, 1), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position(text_a, 1), it.GetPositionBefore());
+  EXPECT_EQ(Position(text_a, 2), it.GetPositionAfter());
+  EXPECT_EQ(Position(text_a, 1), it.StartPosition());
+  EXPECT_EQ(Position(text_a, 2), it.EndPosition());
+
+  // TODO(editing-dev): We should know why we emit a space character for
+  // "white-space: pre" element after trailing whitespace.
+  // A space character emitted by |EmitChar16Before()|.
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position(text_c, 0), it.GetPositionBefore());
+  EXPECT_EQ(Position(text_c, 0), it.GetPositionAfter());
+  EXPECT_EQ(Position(text_c, 0), it.StartPosition());
+  EXPECT_EQ(Position(text_c, 0), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position(text_c, 0), it.GetPositionBefore());
+  EXPECT_EQ(Position(text_c, 1), it.GetPositionAfter());
+  EXPECT_EQ(Position(text_c, 0), it.StartPosition());
+  EXPECT_EQ(Position(text_c, 1), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position(text_c, 1), it.GetPositionBefore());
+  EXPECT_EQ(Position(text_c, 2), it.GetPositionAfter());
+  EXPECT_EQ(Position(text_c, 1), it.StartPosition());
+  EXPECT_EQ(Position(text_c, 2), it.EndPosition());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance(1);
+  EXPECT_EQ(Position(body, 2), it.GetPositionBefore());
+  EXPECT_EQ(Position(body, 2), it.GetPositionAfter());
+  EXPECT_EQ(Position(body, 2), it.StartPosition());
+  EXPECT_EQ(Position(body, 2), it.EndPosition());
 
   EXPECT_TRUE(it.AtEnd());
 }

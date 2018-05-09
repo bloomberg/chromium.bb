@@ -81,6 +81,12 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   PositionTemplate<Strategy> StartPositionInCurrentContainer() const;
   PositionTemplate<Strategy> EndPositionInCurrentContainer() const;
 
+  // Returns the position before |char16_offset| in current text run.
+  PositionTemplate<Strategy> GetPositionBefore(int char16_offset) const;
+
+  // Returns the position after |char16_offset| in current text run.
+  PositionTemplate<Strategy> GetPositionAfter(int char16_offset) const;
+
   const TextIteratorTextState& GetText() const { return text_state_; }
   int length() const { return text_state_.length(); }
   UChar CharacterAt(unsigned index) const {
