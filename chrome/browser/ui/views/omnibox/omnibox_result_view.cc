@@ -97,9 +97,8 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
   CHECK_GE(model_index, 0);
 
   AddChildView(suggestion_view_ =
-                   new OmniboxMatchCellView(this, font_list, GetTextHeight()));
-  AddChildView(keyword_view_ =
-                   new OmniboxMatchCellView(this, font_list, GetTextHeight()));
+                   new OmniboxMatchCellView(this, GetTextHeight()));
+  AddChildView(keyword_view_ = new OmniboxMatchCellView(this, GetTextHeight()));
 
   keyword_view_->icon()->EnableCanvasFlippingForRTLUI(true);
   keyword_view_->icon()->SetImage(gfx::CreateVectorIcon(

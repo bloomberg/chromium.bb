@@ -26,8 +26,7 @@ class RenderText;
 // as selection) and more specific features (such as suggestion answer styling).
 class OmniboxTextView : public views::View {
  public:
-  explicit OmniboxTextView(OmniboxResultView* result_view,
-                           const gfx::FontList& font_list);
+  explicit OmniboxTextView(OmniboxResultView* result_view);
   ~OmniboxTextView() override;
 
   // views::View.
@@ -81,6 +80,8 @@ class OmniboxTextView : public views::View {
                         const base::string16& text,
                         int text_type,
                         bool is_bold) const;
+
+  void UpdateLineHeight();
 
   // To get color values.
   OmniboxResultView* result_view_;
