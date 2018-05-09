@@ -181,6 +181,8 @@ TabDragController::TabDragData::TabDragData()
 TabDragController::TabDragData::~TabDragData() {
 }
 
+TabDragController::TabDragData::TabDragData(TabDragData&&) = default;
+
 ///////////////////////////////////////////////////////////////////////////////
 // TabDragController, public:
 
@@ -325,7 +327,7 @@ void TabDragController::SetMoveBehavior(MoveBehavior behavior) {
 }
 
 bool TabDragController::IsDraggingTab(content::WebContents* contents) {
-  for (auto drag_data : drag_data_) {
+  for (auto& drag_data : drag_data_) {
     if (drag_data.contents == contents)
       return true;
   }
@@ -916,7 +918,7 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
         add_types |= TabStripModel::ADD_PINNED;
       GetModel(attached_tabstrip_)
           ->InsertWebContentsAt(
-              index + i, base::WrapUnique(drag_data_[i].contents), add_types);
+              index + i, std::move(drag_data_[i].owned_contents), add_types);
 
       // If a sad tab is showing, the SadTabView needs to be updated.
       SadTabHelper* sad_tab_helper =
@@ -983,10 +985,7 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
     // Hide the tab so that the user doesn't see it animate closed.
     drag_data_[i].attached_tab->SetVisible(false);
     drag_data_[i].attached_tab->set_detached();
-
-    // TODO(erikchen): Fix ownership semantics for this class once all
-    // TabStripModel APIs have been migrated to use proper ownership semantics.
-    attached_model->DetachWebContentsAt(index).release();
+    drag_data_[i].owned_contents = attached_model->DetachWebContentsAt(index);
 
     // Detaching may end up deleting the tab, drop references to it.
     drag_data_[i].attached_tab = NULL;
@@ -1480,7 +1479,7 @@ void TabDragController::RevertDragAt(size_t drag_index) {
     // source TabStrip.
     GetModel(source_tabstrip_)
         ->InsertWebContentsAt(data->source_model_index,
-                              base::WrapUnique(data->contents),
+                              std::move(data->owned_contents),
                               (data->pinned ? TabStripModel::ADD_PINNED : 0));
   }
 }
@@ -1516,15 +1515,17 @@ void TabDragController::CompleteDrag() {
     std::vector<TabStripModelDelegate::NewStripContents> contentses;
     for (size_t i = 0; i < drag_data_.size(); ++i) {
       TabStripModelDelegate::NewStripContents item;
-      item.web_contents = drag_data_[i].contents;
+      item.web_contents = std::move(drag_data_[i].owned_contents);
       item.add_types = drag_data_[i].pinned ? TabStripModel::ADD_PINNED
                                             : TabStripModel::ADD_NONE;
-      contentses.push_back(item);
+      contentses.push_back(std::move(item));
     }
 
     Browser* new_browser =
-        GetModel(source_tabstrip_)->delegate()->CreateNewStripWithContents(
-            contentses, window_bounds, widget->IsMaximized());
+        GetModel(source_tabstrip_)
+            ->delegate()
+            ->CreateNewStripWithContents(std::move(contentses), window_bounds,
+                                         widget->IsMaximized());
     ResetSelection(new_browser->tab_strip_model());
     new_browser->window()->Show();
   }

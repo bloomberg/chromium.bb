@@ -50,7 +50,7 @@ void BrowserTabStripModelDelegate::AddTabAt(const GURL& url,
 }
 
 Browser* BrowserTabStripModelDelegate::CreateNewStripWithContents(
-    const std::vector<NewStripContents>& contentses,
+    std::vector<NewStripContents> contentses,
     const gfx::Rect& window_bounds,
     bool maximize) {
   DCHECK(browser_->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP));
@@ -64,21 +64,21 @@ Browser* BrowserTabStripModelDelegate::CreateNewStripWithContents(
   TabStripModel* new_model = browser->tab_strip_model();
 
   for (size_t i = 0; i < contentses.size(); ++i) {
-    NewStripContents item = contentses[i];
+    NewStripContents item = std::move(contentses[i]);
 
     // Enforce that there is an active tab in the strip at all times by forcing
     // the first web contents to be marked as active.
     if (i == 0)
       item.add_types |= TabStripModel::ADD_ACTIVE;
 
-    new_model->InsertWebContentsAt(static_cast<int>(i),
-                                   base::WrapUnique(item.web_contents),
-                                   item.add_types);
+    content::WebContents* raw_web_contents = item.web_contents.get();
+    new_model->InsertWebContentsAt(
+        static_cast<int>(i), std::move(item.web_contents), item.add_types);
     // Make sure the loading state is updated correctly, otherwise the throbber
     // won't start if the page is loading.
     // TODO(beng): find a better way of doing this.
-    static_cast<content::WebContentsDelegate*>(browser)->
-        LoadingStateChanged(item.web_contents, true);
+    static_cast<content::WebContentsDelegate*>(browser)->LoadingStateChanged(
+        raw_web_contents, true);
   }
 
   return browser;
