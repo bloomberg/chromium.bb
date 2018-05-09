@@ -8,4 +8,5 @@ dictionary IntersectionObserverInit {
     Element? root = null;
     DOMString rootMargin = "0px";
     (double or sequence<double>) threshold = 0;
+    [RuntimeEnabled=IntersectionObserverV2] boolean trackVisibility = false;
 };

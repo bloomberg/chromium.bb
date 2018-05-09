@@ -150,7 +150,12 @@ IntersectionObserver* IntersectionObserver::Create(
   if (exception_state.HadException())
     return nullptr;
 
-  return new IntersectionObserver(delegate, root, root_margin, thresholds);
+  bool track_visibility = false;
+  if (RuntimeEnabledFeatures::IntersectionObserverV2Enabled())
+    track_visibility = observer_init.trackVisibility();
+
+  return new IntersectionObserver(delegate, root, root_margin, thresholds,
+                                  track_visibility);
 }
 
 IntersectionObserver* IntersectionObserver::Create(
@@ -168,18 +173,20 @@ IntersectionObserver* IntersectionObserver::Create(
     const Vector<float>& thresholds,
     Document* document,
     EventCallback callback,
+    bool track_visibility,
     ExceptionState& exception_state) {
   IntersectionObserverDelegateImpl* intersection_observer_delegate =
       new IntersectionObserverDelegateImpl(document, std::move(callback));
   return new IntersectionObserver(*intersection_observer_delegate, nullptr,
-                                  root_margin, thresholds);
+                                  root_margin, thresholds, track_visibility);
 }
 
 IntersectionObserver::IntersectionObserver(
     IntersectionObserverDelegate& delegate,
     Element* root,
     const Vector<Length>& root_margin,
-    const Vector<float>& thresholds)
+    const Vector<float>& thresholds,
+    bool track_visibility)
     : ContextClient(delegate.GetExecutionContext()),
       delegate_(&delegate),
       root_(root),
@@ -188,7 +195,8 @@ IntersectionObserver::IntersectionObserver(
       right_margin_(kFixed),
       bottom_margin_(kFixed),
       left_margin_(kFixed),
-      root_is_implicit_(root ? 0 : 1) {
+      root_is_implicit_(root ? 0 : 1),
+      track_visibility_(track_visibility ? 1 : 0) {
   switch (root_margin.size()) {
     case 0:
       break;

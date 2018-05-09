@@ -50,6 +50,7 @@ class CORE_EXPORT IntersectionObserver final
                                       const Vector<float>& thresholds,
                                       Document*,
                                       EventCallback,
+                                      bool track_visbility = false,
                                       ExceptionState& = ASSERT_NO_EXCEPTION);
   static void ResumeSuspendedObservers();
 
@@ -63,6 +64,7 @@ class CORE_EXPORT IntersectionObserver final
   Element* root() const { return root_.Get(); }
   String rootMargin() const;
   const Vector<float>& thresholds() const { return thresholds_; }
+  bool trackVisibility() const { return track_visibility_; }
 
   // An observer can either track intersections with an explicit root Element,
   // or with the the top-level frame's viewport (the "implicit root").  When
@@ -100,7 +102,8 @@ class CORE_EXPORT IntersectionObserver final
   explicit IntersectionObserver(IntersectionObserverDelegate&,
                                 Element*,
                                 const Vector<Length>& root_margin,
-                                const Vector<float>& thresholds);
+                                const Vector<float>& thresholds,
+                                bool track_visibility);
   void ClearWeakMembers(Visitor*);
 
   // Returns false if this observer has an explicit root element which has been
@@ -117,6 +120,7 @@ class CORE_EXPORT IntersectionObserver final
   Length bottom_margin_;
   Length left_margin_;
   unsigned root_is_implicit_ : 1;
+  unsigned track_visibility_ : 1;
 };
 
 }  // namespace blink

@@ -616,6 +616,9 @@
       status: "experimental",
     },
     {
+      name: "IntersectionObserverV2",
+    },
+    {
       name: "JSImageDecode",
       status: "stable",
     },

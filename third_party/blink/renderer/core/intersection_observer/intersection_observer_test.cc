@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -232,6 +233,21 @@ TEST_F(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
   test::RunPendingTasks();
   ASSERT_EQ(observer_delegate->CallCount(), 3);
   EXPECT_TRUE(observer_delegate->LastIntersectionRect().IsEmpty());
+}
+
+TEST_F(IntersectionObserverTest, TrackVisibilityInit) {
+  ScopedIntersectionObserverV2ForTest iov2_enabled(true);
+  IntersectionObserverInit observer_init;
+  DummyExceptionStateForTesting exception_state;
+  TestIntersectionObserverDelegate* observer_delegate =
+      new TestIntersectionObserverDelegate(GetDocument());
+  IntersectionObserver* observer = IntersectionObserver::Create(
+      observer_init, *observer_delegate, exception_state);
+  EXPECT_FALSE(observer->trackVisibility());
+  observer_init.setTrackVisibility(true);
+  observer = IntersectionObserver::Create(observer_init, *observer_delegate,
+                                          exception_state);
+  EXPECT_TRUE(observer->trackVisibility());
 }
 
 }  // namespace blink

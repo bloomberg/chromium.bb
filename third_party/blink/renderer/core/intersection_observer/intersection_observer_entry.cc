@@ -15,6 +15,7 @@ IntersectionObserverEntry::IntersectionObserverEntry(
     const FloatRect* root_bounds,
     const FloatRect& intersection_rect,
     bool is_intersecting,
+    bool is_visible,
     Element* target)
     : time_(time),
       intersection_ratio_(intersection_ratio),
@@ -24,7 +25,8 @@ IntersectionObserverEntry::IntersectionObserverEntry(
                                : nullptr),
       intersection_rect_(DOMRectReadOnly::FromFloatRect(intersection_rect)),
       target_(target),
-      is_intersecting_(is_intersecting)
+      is_intersecting_(is_intersecting),
+      is_visible_(is_visible)
 
 {}
 
