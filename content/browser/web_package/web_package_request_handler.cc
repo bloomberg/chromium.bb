@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/web_package_loader.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/content_features.h"
@@ -29,14 +30,20 @@ bool WebPackageRequestHandler::IsSupportedMimeType(
 
 WebPackageRequestHandler::WebPackageRequestHandler(
     url::Origin request_initiator,
+    const GURL& url,
     uint32_t url_loader_options,
     int frame_tree_node_id,
+    const base::UnguessableToken& devtools_navigation_token,
+    bool report_raw_headers,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter)
     : request_initiator_(std::move(request_initiator)),
+      url_(url),
       url_loader_options_(url_loader_options),
       frame_tree_node_id_(frame_tree_node_id),
+      devtools_navigation_token_(devtools_navigation_token),
+      report_raw_headers_(report_raw_headers),
       url_loader_factory_(url_loader_factory),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
       request_context_getter_(std::move(request_context_getter)),
@@ -84,7 +91,10 @@ bool WebPackageRequestHandler::MaybeCreateLoaderForResponse(
   web_package_loader_ = std::make_unique<WebPackageLoader>(
       response, std::move(client), url_loader->Unbind(),
       std::move(request_initiator_), url_loader_options_,
-      base::BindRepeating([](int id) { return id; }, frame_tree_node_id_),
+      std::make_unique<SignedExchangeDevToolsProxy>(
+          std::move(url_), response,
+          base::BindRepeating([](int id) { return id; }, frame_tree_node_id_),
+          std::move(devtools_navigation_token_), report_raw_headers_),
       std::move(url_loader_factory_), std::move(url_loader_throttles_getter_),
       std::move(request_context_getter_));
   return true;

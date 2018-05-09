@@ -157,6 +157,11 @@ class NetworkHandler : public DevToolsDomainHandler,
       const char* resource_type,
       const network::URLLoaderCompletionStatus& completion_status);
 
+  void OnSignedExchangeReceived(
+      base::Optional<const base::UnguessableToken> devtools_navigation_token,
+      const GURL& outer_request_url,
+      const network::ResourceResponseHead& outer_response);
+
   bool enabled() const { return enabled_; }
 
   Network::Frontend* frontend() const { return frontend_.get(); }

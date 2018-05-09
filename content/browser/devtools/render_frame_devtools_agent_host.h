@@ -12,6 +12,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/common/content_export.h"
@@ -25,6 +26,10 @@
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "ui/android/view_android.h"
 #endif  // OS_ANDROID
+
+namespace base {
+class UnguessableToken;
+}
 
 namespace network {
 struct ResourceResponse;
@@ -83,6 +88,12 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       const network::ResourceResponse& response);
   static void OnNavigationRequestFailed(const NavigationRequest& nav_request,
                                         int error_code);
+
+  static void OnSignedExchangeReceived(
+      FrameTreeNode* frame_tree_node,
+      base::Optional<const base::UnguessableToken> devtools_navigation_token,
+      const GURL& outer_request_url,
+      const network::ResourceResponseHead& outer_response);
 
   static std::vector<std::unique_ptr<NavigationThrottle>>
   CreateNavigationThrottles(NavigationHandleImpl* navigation_handle);

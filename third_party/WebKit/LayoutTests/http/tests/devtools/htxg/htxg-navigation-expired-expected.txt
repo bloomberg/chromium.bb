@@ -4,5 +4,5 @@ inspected-page.html:1 Invalid timestamp. creation_time: 1522540800, expires_time
 inspected-page.html:1 Failed to verify the signed exchange header.
 * http://127.0.0.1:8000/loading/htxg/resources/htxg-location.htxg
   failed: true
-  statusCode: 0
+  statusCode: 200
 

@@ -2,7 +2,7 @@ Tests the signed exchange information are available when the prefetch succeeded.
 
 * http://127.0.0.1:8000/loading/htxg/resources/htxg-location.htxg
   failed: false
-  statusCode: 302
+  statusCode: 200
 * https://www.127.0.0.1/test.html
   failed: false
   statusCode: 200
