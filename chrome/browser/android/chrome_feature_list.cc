@@ -90,6 +90,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCustomContextMenu,
     &kCustomFeedbackUi,
     &kDontPrefetchLibraries,
+    &kDownloadProgressInfoBar,
     &kDownloadHomeShowStorageInfo,
     &data_reduction_proxy::features::kDataReductionMainMenu,
     &kFullscreenActivity,
@@ -267,7 +268,10 @@ const base::Feature kDontPrefetchLibraries{"DontPrefetchLibraries",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDownloadAutoResumptionThrottling{
-    "DownloadAutoResumptionThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
+    "DownloadAutoResumptionThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDownloadProgressInfoBar{"DownloadProgressInfoBar",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDownloadHomeShowStorageInfo{
     "DownloadHomeShowStorageInfo", base::FEATURE_DISABLED_BY_DEFAULT};
