@@ -98,10 +98,10 @@ base::File::Error ValidatePath(const std::string& raw_path,
   if (!base::IsStringUTF8(raw_path))
     return base::File::Error::FILE_ERROR_INVALID_OPERATION;
 
-#if defined(OS_POSIX)
-  base::FilePath::StringType path = raw_path;
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   base::FilePath::StringType path = base::UTF8ToUTF16(raw_path);
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  base::FilePath::StringType path = raw_path;
 #endif
 
   // TODO(erg): This isn't really what we want. FilePath::AppendRelativePath()
