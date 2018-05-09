@@ -67,6 +67,7 @@ class AuditorResult {
   Type type() const { return type_; };
 
   std::string file_path() const { return file_path_; }
+  void set_file_path(const std::string& file_path) { file_path_ = file_path; }
 
   // Formats the error message into one line of text.
   std::string ToText() const;
