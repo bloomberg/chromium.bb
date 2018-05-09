@@ -116,6 +116,7 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
                       const base::string16& title) override;
   void RemoveTab(int id, bool incognito) override;
   void RemoveAllTabs() override;
+  void OnTabSelected(int id, bool incognito) override;
 
   // TODO(ymalik): We expose this to stop sending VSync to the WebVR page until
   // the splash screen has been visible for its minimum duration. The visibility

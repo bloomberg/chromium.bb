@@ -249,6 +249,13 @@ void VrGLThread::OpenNewTab(bool incognito) {
       base::BindOnce(&VrShell::OpenNewTab, weak_vr_shell_, incognito));
 }
 
+void VrGLThread::SelectTab(int id, bool incognito) {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VrShell::SelectTab, weak_vr_shell_, id, incognito));
+}
+
 void VrGLThread::OpenBookmarks() {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
@@ -537,6 +544,13 @@ void VrGLThread::RemoveAllTabs() {
   task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&BrowserUiInterface::RemoveAllTabs, weak_browser_ui_));
+}
+
+void VrGLThread::OnTabSelected(int id, bool incognito) {
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(FROM_HERE,
+                          base::BindOnce(&BrowserUiInterface::OnTabSelected,
+                                         weak_browser_ui_, id, incognito));
 }
 
 void VrGLThread::ReportUiActivityResultForTesting(

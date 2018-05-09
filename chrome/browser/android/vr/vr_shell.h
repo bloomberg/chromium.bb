@@ -129,12 +129,17 @@ class VrShell : device::GvrGamepadDataProvider,
                     const base::android::JavaParamRef<jobject>& obj,
                     jboolean incognito,
                     jint id);
+  void OnTabSelected(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj,
+                     jboolean incognito,
+                     jint id);
   void OnContentPaused(bool paused);
   void Navigate(GURL url, NavigationMethod method);
   void NavigateBack();
   void NavigateForward();
   void ReloadTab();
   void OpenNewTab(bool incognito);
+  void SelectTab(int id, bool incognito);
   void OpenBookmarks();
   void OpenRecentTabs();
   void OpenHistory();

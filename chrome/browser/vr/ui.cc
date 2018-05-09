@@ -267,6 +267,10 @@ void Ui::RemoveAllTabs() {
   model_->incognito_tabs.clear();
 }
 
+void Ui::OnTabSelected(int id, bool incognito) {
+  model_->pop_mode(kModeTabsView);
+}
+
 bool Ui::CanSendWebVrVSync() {
   return model_->web_vr_enabled() &&
          !model_->web_vr.awaiting_min_splash_screen_duration() &&

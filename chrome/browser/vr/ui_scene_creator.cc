@@ -280,12 +280,15 @@ void OnTabModelAdded(UiScene* scene,
                      Model* model,
                      bool incognito,
                      PagedGridLayout* tabs_view,
+                     AudioDelegate* audio_delegate,
+                     UiBrowserInterface* browser,
                      TabBinding* element_binding) {
-  auto item = Create<Rect>(kNone, kPhaseForeground);
-  item->SetColor(ColorScheme::GetColorScheme(incognito
-                                                 ? ColorScheme::kModeIncognito
-                                                 : ColorScheme::kModeNormal)
-                     .tab_item_background);
+  auto item = Create<Button>(kNone, kPhaseForeground, base::RepeatingClosure(),
+                             audio_delegate);
+  item->SetButtonColors(
+      ColorScheme::GetColorScheme(incognito ? ColorScheme::kModeIncognito
+                                            : ColorScheme::kModeNormal)
+          .disc_button_colors);
   item->SetSize(kTabItemWidthDMM, kTabItemHeightDMM);
   item->SetTransitionedProperties({OPACITY});
   item->set_corner_radius(kTabItemCornerRadiusDMM);
@@ -296,20 +299,39 @@ void OnTabModelAdded(UiScene* scene,
           },
           base::Unretained(tabs_view), base::Unretained(item.get())),
       VR_BIND_LAMBDA(
-          [](UiElement* item, const PagedGridLayout::PageState& page_state) {
+          [](Button* item, const PagedGridLayout::PageState& page_state) {
             switch (page_state) {
               case PagedGridLayout::kActive:
                 item->SetOpacity(kTabsViewActivePageOpacity);
+                item->SetEnabled(true);
                 break;
               case PagedGridLayout::kInactive:
                 item->SetOpacity(kTabsViewInactivePageOpacity);
+                item->SetEnabled(false);
                 break;
               default:
                 item->SetOpacity(kTabsViewHiddenPageOpacity);
+                item->SetEnabled(false);
                 break;
             }
           },
           base::Unretained(item.get()))));
+  element_binding->bindings().push_back(std::make_unique<Binding<int>>(
+      VR_BIND_LAMBDA(
+          [](TabBinding* element_binding) {
+            return element_binding->model()->id;
+          },
+          base::Unretained(element_binding)),
+      VR_BIND_LAMBDA(
+          [](Button* item, UiBrowserInterface* browser, bool incognito,
+             const int& id) {
+            item->set_click_handler(base::BindRepeating(
+                [](UiBrowserInterface* browser, int id, bool incognito) {
+                  browser->SelectTab(id, incognito);
+                },
+                base::Unretained(browser), id, incognito));
+          },
+          base::Unretained(item.get()), base::Unretained(browser), incognito)));
 
   // TODO(crbug.com/838937): This is just a placeholder text. Replace with
   // proper tab item.
@@ -324,7 +346,7 @@ void OnTabModelAdded(UiScene* scene,
                                                  ? ColorScheme::kModeIncognito
                                                  : ColorScheme::kModeNormal)
                      .tab_item_text);
-  item->AddChild(std::move(text));
+  item->background()->AddChild(std::move(text));
 
   scene->AddUiElement(tabs_view, std::move(item));
 }
@@ -858,6 +880,8 @@ std::unique_ptr<TransientElement> CreateTextToast(
 
 std::unique_ptr<UiElement> CreateTabsView(Model* model,
                                           UiScene* scene,
+                                          AudioDelegate* audio_delegate,
+                                          UiBrowserInterface* browser,
                                           bool incognito) {
   auto tabs_scroll_view = Create<PagedScrollView>(
       kNone, kPhaseNone,
@@ -880,7 +904,8 @@ std::unique_ptr<UiElement> CreateTabsView(Model* model,
 
   TabSetBinding::ModelAddedCallback added_callback = base::BindRepeating(
       &OnTabModelAdded, base::Unretained(scene), base::Unretained(model),
-      incognito, base::Unretained(tabs_layout.get()));
+      incognito, base::Unretained(tabs_layout.get()),
+      base::Unretained(audio_delegate), base::Unretained(browser));
   TabSetBinding::ModelRemovedCallback removed_callback =
       base::BindRepeating(&OnTabModelRemoved, base::Unretained(scene));
   tabs_layout->AddBinding(std::make_unique<TabSetBinding>(
@@ -3097,11 +3122,13 @@ void UiSceneCreator::CreateTabsViews() {
   VR_BIND_VISIBILITY(tabs_view_root,
                      model->get_last_opaque_mode() == kModeTabsView);
 
-  auto regular_tabs_view = CreateTabsView(model_, scene_, false);
+  auto regular_tabs_view =
+      CreateTabsView(model_, scene_, audio_delegate_, browser_, false);
   VR_BIND_VISIBILITY(regular_tabs_view, !model->incognito);
   tabs_view_root->AddChild(std::move(regular_tabs_view));
 
-  auto incognito_tabs_view = CreateTabsView(model_, scene_, true);
+  auto incognito_tabs_view =
+      CreateTabsView(model_, scene_, audio_delegate_, browser_, true);
   VR_BIND_VISIBILITY(incognito_tabs_view, model->incognito);
   tabs_view_root->AddChild(std::move(incognito_tabs_view));
 

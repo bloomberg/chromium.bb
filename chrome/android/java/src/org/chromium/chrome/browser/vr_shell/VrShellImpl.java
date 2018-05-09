@@ -47,9 +47,12 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.vr_shell.keyboard.VrInputMethodManagerWrapper;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.newtab.NewTabButton;
@@ -85,6 +88,7 @@ public class VrShellImpl
     private final boolean mVrBrowsingEnabled;
 
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
+    private TabModelSelectorTabModelObserver mTabModelSelectorTabModelObserver;
 
     private long mNativeVrShell;
 
@@ -373,7 +377,8 @@ public class VrShellImpl
         swapToTab(tab);
         createTabList();
         mActivity.getTabModelSelector().addObserver(mTabModelSelectorObserver);
-        createTabModelSelectorTabObserver();
+        attachTabModelSelectorTabObserver();
+        attachTabModelSelectorTabModelObserver();
         updateHistoryButtonsVisibility();
 
         mPresentationView.setOnTouchListener(mTouchListener);
@@ -705,6 +710,7 @@ public class VrShellImpl
         }
         mTabModelSelector.removeObserver(mTabModelSelectorObserver);
         mTabModelSelectorTabObserver.destroy();
+        mTabModelSelectorTabModelObserver.destroy();
         if (mTab != null) {
             mTab.removeObserver(mTabObserver);
             restoreTabFromVR();
@@ -903,7 +909,8 @@ public class VrShellImpl
         if (mNativeVrShell != 0) nativeSetSurface(mNativeVrShell, null);
     }
 
-    private void createTabModelSelectorTabObserver() {
+    /** Creates and attaches a TabModelSelectorTabObserver to the tab model selector. */
+    private void attachTabModelSelectorTabObserver() {
         assert mTabModelSelectorTabObserver == null;
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelector) {
             @Override
@@ -929,6 +936,18 @@ public class VrShellImpl
                 nativeOnTabRemoved(mNativeVrShell, tab.isIncognito(), tab.getId());
             }
         };
+    }
+
+    /** Creates and attaches a TabModelSelectorTabModelObserver to the tab model selector. */
+    private void attachTabModelSelectorTabModelObserver() {
+        assert mTabModelSelectorTabModelObserver == null;
+        mTabModelSelectorTabModelObserver =
+                new TabModelSelectorTabModelObserver(mTabModelSelector) {
+                    @Override
+                    public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
+                        nativeOnTabSelected(mNativeVrShell, tab.isIncognito(), tab.getId());
+                    }
+                };
     }
 
     @CalledByNative
@@ -997,6 +1016,15 @@ public class VrShellImpl
     @CalledByNative
     public void openNewTab(boolean incognito) {
         mActivity.getTabCreator(incognito).launchNTP();
+    }
+
+    @CalledByNative
+    public void selectTab(int id, boolean incognito) {
+        TabModel tabModel = mTabModelSelector.getModel(incognito);
+        int index = TabModelUtils.getTabIndexById(tabModel, id);
+        if (index != TabModel.INVALID_TAB_INDEX) {
+            tabModel.setIndex(index, TabSelectionType.FROM_USER);
+        }
     }
 
     @CalledByNative
@@ -1228,6 +1256,7 @@ public class VrShellImpl
     private native void nativeOnTabUpdated(long nativeVrShell, boolean incognito, int id,
             String title);
     private native void nativeOnTabRemoved(long nativeVrShell, boolean incognito, int id);
+    private native void nativeOnTabSelected(long nativeVrShell, boolean incognito, int id);
     private native void nativeCloseAlertDialog(long nativeVrShell);
     private native void nativeSetAlertDialog(long nativeVrShell, float width, float height);
     private native void nativeSetDialogBufferSize(long nativeVrShell, float width, float height);

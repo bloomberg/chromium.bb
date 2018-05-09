@@ -372,6 +372,11 @@ void VrShell::OpenNewTab(bool incognito) {
   Java_VrShellImpl_openNewTab(env, j_vr_shell_, incognito);
 }
 
+void VrShell::SelectTab(int id, bool incognito) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_VrShellImpl_selectTab(env, j_vr_shell_, id, incognito);
+}
+
 void VrShell::OpenBookmarks() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_VrShellImpl_openBookmarks(env, j_vr_shell_);
@@ -622,6 +627,13 @@ void VrShell::OnTabRemoved(JNIEnv* env,
                            jboolean incognito,
                            jint id) {
   ui_->RemoveTab(id, incognito);
+}
+
+void VrShell::OnTabSelected(JNIEnv* env,
+                            const JavaParamRef<jobject>& obj,
+                            jboolean incognito,
+                            jint id) {
+  ui_->OnTabSelected(id, incognito);
 }
 
 void VrShell::SetAlertDialog(JNIEnv* env,
