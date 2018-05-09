@@ -63,12 +63,13 @@ class FaviconCacheTest : public testing::Test {
  protected:
   const GURL kUrlA = GURL("http://www.a.com/");
   const GURL kUrlB = GURL("http://www.b.com/");
+  const GURL kIconUrl = GURL("http://a.com/favicon.ico");
 
   FaviconCacheTest() : cache_(&favicon_service_) {}
 
   testing::NiceMock<favicon::MockFaviconService> favicon_service_;
 
-  void ExpectFaviconServiceCalls(int a_site_calls, int b_site_calls) {
+  void ExpectFaviconServiceForPageUrlCalls(int a_site_calls, int b_site_calls) {
     if (a_site_calls > 0) {
       EXPECT_CALL(
           favicon_service_,
@@ -90,6 +91,12 @@ class FaviconCacheTest : public testing::Test {
     }
   }
 
+  void ExpectFaviconServiceForIconUrlCalls(int calls) {
+    EXPECT_CALL(favicon_service_,
+                GetFaviconImage(kIconUrl, _ /* callback */, _ /* tracker */))
+        .Times(calls);
+  }
+
   favicon_base::FaviconImageCallback favicon_service_a_site_response_;
   favicon_base::FaviconImageCallback favicon_service_b_site_response_;
 
@@ -97,7 +104,8 @@ class FaviconCacheTest : public testing::Test {
 };
 
 TEST_F(FaviconCacheTest, Basic) {
-  ExpectFaviconServiceCalls(1, 0);
+  ExpectFaviconServiceForPageUrlCalls(1, 0);
+  ExpectFaviconServiceForIconUrlCalls(0);
 
   int response_count = 0;
   gfx::Image result = cache_.GetFaviconForPageUrl(
@@ -117,8 +125,20 @@ TEST_F(FaviconCacheTest, Basic) {
   EXPECT_EQ(1, response_count);
 }
 
+TEST_F(FaviconCacheTest, GetFaviconForIconUrl) {
+  // Verify that the service receives a request by the icon URL.
+  ExpectFaviconServiceForPageUrlCalls(0, 0);
+  ExpectFaviconServiceForIconUrlCalls(1);
+
+  // Since the other tests are comprehensive, we don't simulate or verify the
+  // actual result.
+  gfx::Image result =
+      cache_.GetFaviconForIconUrl(kIconUrl, base::BindOnce(&Fail));
+  EXPECT_TRUE(result.IsEmpty());
+}
+
 TEST_F(FaviconCacheTest, MultipleRequestsAreCoalesced) {
-  ExpectFaviconServiceCalls(1, 0);
+  ExpectFaviconServiceForPageUrlCalls(1, 0);
 
   int response_count = 0;
   for (int i = 0; i < 10; ++i) {
@@ -132,7 +152,7 @@ TEST_F(FaviconCacheTest, MultipleRequestsAreCoalesced) {
 }
 
 TEST_F(FaviconCacheTest, SeparateOriginsAreCachedSeparately) {
-  ExpectFaviconServiceCalls(1, 1);
+  ExpectFaviconServiceForPageUrlCalls(1, 1);
 
   int a_site_response_count = 0;
   int b_site_response_count = 0;
@@ -177,7 +197,7 @@ TEST_F(FaviconCacheTest, SeparateOriginsAreCachedSeparately) {
 }
 
 TEST_F(FaviconCacheTest, ClearIconsWithHistoryDeletions) {
-  ExpectFaviconServiceCalls(3, 2);
+  ExpectFaviconServiceForPageUrlCalls(3, 2);
 
   EXPECT_TRUE(
       cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&VerifyFetchedFavicon))
@@ -222,7 +242,7 @@ TEST_F(FaviconCacheTest, ClearIconsWithHistoryDeletions) {
 }
 
 TEST_F(FaviconCacheTest, CacheNullFavicons) {
-  ExpectFaviconServiceCalls(1, 0);
+  ExpectFaviconServiceForPageUrlCalls(1, 0);
 
   EXPECT_TRUE(
       cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&Fail)).IsEmpty());
@@ -235,7 +255,7 @@ TEST_F(FaviconCacheTest, CacheNullFavicons) {
 }
 
 TEST_F(FaviconCacheTest, ExpireNullFaviconsByHistory) {
-  ExpectFaviconServiceCalls(2, 0);
+  ExpectFaviconServiceForPageUrlCalls(2, 0);
 
   EXPECT_TRUE(
       cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&Fail)).IsEmpty());
@@ -256,7 +276,7 @@ TEST_F(FaviconCacheTest, ExpireNullFaviconsByHistory) {
 }
 
 TEST_F(FaviconCacheTest, ExpireNullFaviconsByTime) {
-  ExpectFaviconServiceCalls(2, 1);
+  ExpectFaviconServiceForPageUrlCalls(2, 1);
 
   EXPECT_TRUE(
       cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&Fail)).IsEmpty());
@@ -285,7 +305,7 @@ TEST_F(FaviconCacheTest, ExpireNullFaviconsByTime) {
   EXPECT_TRUE(
       cache_.GetFaviconForPageUrl(kUrlB, base::BindOnce(&Fail)).IsEmpty());
 
-  // Our call to |ExpectFaviconServiceCalls(expected A calls, expected B calls)|
-  // above should verify that we re-request the icon for kUrlA only (because
-  // the empty result has been aged out).
+  // Our call to |ExpectFaviconServiceForPageUrlCalls(expected A calls, expected
+  // B calls)| above should verify that we re-request the icon for kUrlA only
+  // (because the empty result has been aged out).
 }

@@ -33,17 +33,41 @@ class GURL;
 typedef base::OnceCallback<void(const gfx::Image& favicon)>
     FaviconFetchedCallback;
 
-// This caches favicons for pages. We cache a small number of them so we can
-// synchronously deliver them to the UI to prevent flicker as the user types.
+// This caches favicons by both page URL and icon URL. We cache a small number
+// of them so we can synchronously deliver them to the UI to prevent flicker as
+// the user types.
+//
 // It also stores and times out null results from when we cannot fetch a favicon
-// from the history database.
+// from the history database. Null results timeout after a while.
 class FaviconCache : public history::HistoryServiceObserver {
  public:
   FaviconCache(favicon::FaviconService* favicon_service,
                history::HistoryService* history_service);
   ~FaviconCache() override;
 
+  // These methods fetch favicons by the |page_url| or |icon_url| respectively.
+  // If the correct favicon is already cached, these methods return the image
+  // synchronously.
+  //
+  // If the correct favicon is not cached, we return an empty gfx::Image and
+  // forward the request to FaviconService. |on_favicon_fetched| is stored in a
+  // pending callback list, and subsequent identical requests are added to the
+  // same pending list without issuing duplicate calls to FaviconService.
+  //
+  // If FaviconService responds with a non-empty image, we fulfill all the
+  // matching |on_favicon_fetched| callbacks in the pending list, and cache the
+  // result so that future matching requests can be fulfilled synchronously.
+  //
+  // If FaviconService responds with an empty image (because the correct favicon
+  // isn't in our database), we simply erase all the pending callbacks, and also
+  // cache the result.
+  //
+  // Therefore, |on_favicon_fetched| may or may not be called asynchrously
+  // later, but will never be called with an empty result. It will also never
+  // be called synchronously.
   gfx::Image GetFaviconForPageUrl(const GURL& page_url,
+                                  FaviconFetchedCallback on_favicon_fetched);
+  gfx::Image GetFaviconForIconUrl(const GURL& icon_url,
                                   FaviconFetchedCallback on_favicon_fetched);
 
  private:
@@ -51,10 +75,29 @@ class FaviconCache : public history::HistoryServiceObserver {
   FRIEND_TEST_ALL_PREFIXES(FaviconCacheTest, ExpireNullFaviconsByHistory);
   FRIEND_TEST_ALL_PREFIXES(FaviconCacheTest, ExpireNullFaviconsByTime);
 
+  enum class RequestType {
+    BY_PAGE_URL,
+    BY_ICON_URL,
+  };
+
+  struct Request {
+    RequestType type;
+    GURL url;
+
+    // This operator is defined to support using Request as a key of std::map.
+    bool operator<(const Request& rhs) const;
+  };
+
   // Chosen arbitrarily. Declared in the class for testing.
   static const int kEmptyFaviconCacheLifetimeInSeconds;
 
-  void OnFaviconFetched(const GURL& page_url,
+  // Internal method backing GetFaviconForPageUrl and GetFaviconForIconUrl.
+  gfx::Image GetFaviconInternal(const Request& request,
+                                FaviconFetchedCallback on_favicon_fetched);
+
+  // This is the callback passed to the underyling FaviconService. When this
+  // is called, all the pending requests that match |request| will be called.
+  void OnFaviconFetched(const Request& request,
                         const favicon_base::FaviconImageResult& result);
 
   void AgeOutOldCachedEmptyFavicons();
@@ -80,14 +123,14 @@ class FaviconCache : public history::HistoryServiceObserver {
   ScopedObserver<history::HistoryService, FaviconCache> history_observer_;
 
   base::CancelableTaskTracker task_tracker_;
-  std::map<GURL, std::list<FaviconFetchedCallback>> pending_requests_;
+  std::map<Request, std::list<FaviconFetchedCallback>> pending_requests_;
 
-  base::MRUCache<GURL, gfx::Image> mru_cache_;
+  base::MRUCache<Request, gfx::Image> mru_cache_;
 
-  // Keep pages with empty favicons in a separate list, to prevent a page with
-  // an empty favicon from ever evicting an existing favicon. The value is used
-  // to age out entries that are too old.
-  base::MRUCache<GURL, base::TimeTicks> pages_without_favicons_;
+  // Keep responses with empty favicons in a separate list, to prevent a
+  // response with an empty favicon from ever evicting an existing favicon.
+  // The value is used to age out entries that are too old.
+  base::MRUCache<Request, base::TimeTicks> responses_without_favicons_;
 
   base::WeakPtrFactory<FaviconCache> weak_factory_;
 
