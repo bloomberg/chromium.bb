@@ -136,6 +136,9 @@ class AvSettings {
 
     // This event should be fired when an HDMI error occurs.
     HDMI_ERROR = 102,
+
+    // This event should be fired when the display brightness is changed.
+    DISPLAY_BRIGHTNESS_CHANGED = 200,
   };
 
   // Delegate to inform the caller events. As a subclass of TaskRunner,
