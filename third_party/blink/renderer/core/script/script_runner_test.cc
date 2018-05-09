@@ -104,7 +104,7 @@ class MockScriptLoader final : public ScriptLoader {
 
   void Trace(blink::Visitor*) override;
 
-  PendingScript* GetPendingScriptIfScriptIsAsync() override {
+  PendingScript* GetPendingScriptIfScriptOfAsyncScript() override {
     return mock_pending_script_if_script_is_async_.Get();
   }
   MockPendingScript* GetMockPendingScript() {
