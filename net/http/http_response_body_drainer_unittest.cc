@@ -265,7 +265,7 @@ class HttpResponseBodyDrainerTest : public TestWithScopedTaskEnvironment {
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
   MultiLogCTVerifier ct_verifier_;
-  CTPolicyEnforcer ct_policy_enforcer_;
+  DefaultCTPolicyEnforcer ct_policy_enforcer_;
   const std::unique_ptr<HttpNetworkSession> session_;
   CloseResultWaiter result_waiter_;
   MockHttpStream* const mock_stream_;  // Owned by |drainer_|.

@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
 #include "chrome/common/channel_info.h"
@@ -67,6 +68,10 @@ network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
       local_state->GetBoolean(prefs::kQuickCheckEnabled);
   network_context_params->dangerously_allow_pac_access_to_secure_urls =
       !local_state->GetBoolean(prefs::kPacHttpsUrlStrippingEnabled);
+
+#if !defined(OS_ANDROID)
+  network_context_params->enforce_chrome_ct_policy = true;
+#endif
 
   bool http_09_on_non_default_ports_enabled = false;
   const base::Value* value =

@@ -93,7 +93,7 @@ class MockCTPolicyEnforcer : public CTPolicyEnforcer {
   ~MockCTPolicyEnforcer() override = default;
   ct::CTPolicyCompliance CheckCompliance(
       X509Certificate* cert,
-      const SCTList& verified_scts,
+      const ct::SCTList& verified_scts,
       const NetLogWithSource& net_log) override {
     return ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
   }

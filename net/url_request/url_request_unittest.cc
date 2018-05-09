@@ -7216,7 +7216,7 @@ class MockCTPolicyEnforcer : public CTPolicyEnforcer {
 
   ct::CTPolicyCompliance CheckCompliance(
       X509Certificate* cert,
-      const SCTList& verified_scts,
+      const ct::SCTList& verified_scts,
       const NetLogWithSource& net_log) override {
     return default_result_;
   }
@@ -10779,8 +10779,7 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
   }
 
   void SetUp() override {
-    context_.SetCTPolicyEnforcer(
-        std::make_unique<AllowAnyCertCTPolicyEnforcer>());
+    context_.SetCTPolicyEnforcer(std::make_unique<DefaultCTPolicyEnforcer>());
     SetupContext();
     context_.Init();
 
@@ -10847,18 +10846,6 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
   }
 
  protected:
-  class AllowAnyCertCTPolicyEnforcer : public CTPolicyEnforcer {
-   public:
-    AllowAnyCertCTPolicyEnforcer() = default;
-    ~AllowAnyCertCTPolicyEnforcer() override = default;
-
-    ct::CTPolicyCompliance CheckCompliance(
-        X509Certificate* cert,
-        const SCTList& verified_scts,
-        const NetLogWithSource& net_log) override {
-      return ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
-    }
-  };
   // SetupContext configures the URLRequestContext that will be used for making
   // connetions to testserver. This can be overridden in test subclasses for
   // different behaviour.

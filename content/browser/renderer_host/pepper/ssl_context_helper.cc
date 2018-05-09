@@ -35,7 +35,7 @@ net::CTVerifier* SSLContextHelper::GetCertTransparencyVerifier() {
 
 net::CTPolicyEnforcer* SSLContextHelper::GetCTPolicyEnforcer() {
   if (!ct_policy_enforcer_)
-    ct_policy_enforcer_.reset(new net::CTPolicyEnforcer());
+    ct_policy_enforcer_.reset(new net::DefaultCTPolicyEnforcer());
   return ct_policy_enforcer_.get();
 }
 

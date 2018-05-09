@@ -320,7 +320,7 @@ void IOSIOThread::Init() {
   // Add built-in logs
   ct_verifier->AddLogs(ct_logs);
 
-  globals_->ct_policy_enforcer.reset(new net::CTPolicyEnforcer());
+  globals_->ct_policy_enforcer.reset(new net::DefaultCTPolicyEnforcer());
 
   globals_->ssl_config_service = new net::SSLConfigServiceDefaults();
 

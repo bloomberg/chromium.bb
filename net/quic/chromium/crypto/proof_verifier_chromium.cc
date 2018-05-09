@@ -391,7 +391,7 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
   if (enforce_policy_checking_ &&
       (result == OK ||
        (IsCertificateError(result) && IsCertStatusMinorError(cert_status)))) {
-    SCTList verified_scts = ct::SCTsMatchingStatus(
+    ct::SCTList verified_scts = ct::SCTsMatchingStatus(
         verify_details_->ct_verify_result.scts, ct::SCT_STATUS_OK);
 
     verify_details_->ct_verify_result.policy_compliance =
@@ -399,7 +399,9 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
             cert_verify_result.verified_cert.get(), verified_scts, net_log_);
     if (verify_details_->cert_verify_result.cert_status & CERT_STATUS_IS_EV) {
       if (verify_details_->ct_verify_result.policy_compliance !=
-          ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS) {
+              ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS &&
+          verify_details_->ct_verify_result.policy_compliance !=
+              ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY) {
         verify_details_->cert_verify_result.cert_status |=
             CERT_STATUS_CT_COMPLIANCE_FAILED;
         verify_details_->cert_verify_result.cert_status &= ~CERT_STATUS_IS_EV;

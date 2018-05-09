@@ -383,7 +383,7 @@ void MCSProbe::InitializeNetworkState() {
 
   transport_security_state_ = std::make_unique<net::TransportSecurityState>();
   cert_transparency_verifier_ = std::make_unique<net::MultiLogCTVerifier>();
-  ct_policy_enforcer_ = std::make_unique<net::CTPolicyEnforcer>();
+  ct_policy_enforcer_ = std::make_unique<net::DefaultCTPolicyEnforcer>();
   http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
       &http_auth_preferences_, host_resolver_.get());
   http_server_properties_ = std::make_unique<net::HttpServerPropertiesImpl>();

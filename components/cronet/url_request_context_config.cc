@@ -126,20 +126,6 @@ const char kDisableIPv6OnWifi[] = "disable_ipv6_on_wifi";
 
 const char kSSLKeyLogFile[] = "ssl_key_log_file";
 
-// A CTPolicyEnforcer that accepts all certificates.
-class DoNothingCTPolicyEnforcer : public net::CTPolicyEnforcer {
- public:
-  DoNothingCTPolicyEnforcer() = default;
-  ~DoNothingCTPolicyEnforcer() override = default;
-
-  net::ct::CTPolicyCompliance CheckCompliance(
-      net::X509Certificate* cert,
-      const net::SCTList& verified_scts,
-      const net::NetLogWithSource& net_log) override {
-    return net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
-  }
-};
-
 }  // namespace
 
 URLRequestContextConfig::QuicHint::QuicHint(const std::string& host,
@@ -590,7 +576,7 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
   context_builder->set_ct_verifier(
       std::make_unique<net::DoNothingCTVerifier>());
   context_builder->set_ct_policy_enforcer(
-      std::make_unique<DoNothingCTPolicyEnforcer>());
+      std::make_unique<net::DefaultCTPolicyEnforcer>());
   // TODO(mef): Use |config| to set cookies.
 }
 

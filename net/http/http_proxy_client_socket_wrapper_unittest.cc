@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "build/build_config.h"
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
@@ -210,7 +211,7 @@ class HttpProxyClientSocketWrapperTest
   MockTaggingClientSocketFactory socket_factory_;
   HttpServerPropertiesImpl http_server_properties_;
   std::unique_ptr<MockCertVerifier> cert_verifier_;
-  CTPolicyEnforcer ct_policy_enforcer_;
+  DefaultCTPolicyEnforcer ct_policy_enforcer_;
   std::unique_ptr<ChannelIDService> channel_id_service_;
   TransportSecurityState transport_security_state_;
   std::unique_ptr<DoNothingCTVerifier> cert_transparency_verifier_;

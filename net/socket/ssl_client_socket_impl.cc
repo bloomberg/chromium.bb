@@ -1501,14 +1501,16 @@ int SSLClientSocketImpl::VerifyCT() {
       host_and_port().host(), server_cert_verify_result_.verified_cert.get(),
       ocsp_response, sct_list, &ct_verify_result_.scts, net_log_);
 
-  SCTList verified_scts =
+  ct::SCTList verified_scts =
       ct::SCTsMatchingStatus(ct_verify_result_.scts, ct::SCT_STATUS_OK);
 
   ct_verify_result_.policy_compliance = policy_enforcer_->CheckCompliance(
       server_cert_verify_result_.verified_cert.get(), verified_scts, net_log_);
   if (server_cert_verify_result_.cert_status & CERT_STATUS_IS_EV) {
     if (ct_verify_result_.policy_compliance !=
-        ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS) {
+            ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS &&
+        ct_verify_result_.policy_compliance !=
+            ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY) {
       server_cert_verify_result_.cert_status |=
           CERT_STATUS_CT_COMPLIANCE_FAILED;
       server_cert_verify_result_.cert_status &= ~CERT_STATUS_IS_EV;

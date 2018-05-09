@@ -99,7 +99,7 @@ class HttpNetworkTransactionSSLTest : public TestWithScopedTaskEnvironment {
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
   MultiLogCTVerifier ct_verifier_;
-  CTPolicyEnforcer ct_policy_enforcer_;
+  DefaultCTPolicyEnforcer ct_policy_enforcer_;
   HttpNetworkSession::Context session_context_;
   std::vector<std::unique_ptr<HttpRequestInfo>> request_info_vector_;
 };

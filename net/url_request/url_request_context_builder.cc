@@ -496,7 +496,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   if (ct_policy_enforcer_) {
     storage->set_ct_policy_enforcer(std::move(ct_policy_enforcer_));
   } else {
-    storage->set_ct_policy_enforcer(std::make_unique<CTPolicyEnforcer>());
+    storage->set_ct_policy_enforcer(
+        std::make_unique<DefaultCTPolicyEnforcer>());
   }
 
   if (throttling_enabled_) {

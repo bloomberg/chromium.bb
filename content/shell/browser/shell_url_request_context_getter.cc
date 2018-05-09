@@ -49,25 +49,6 @@
 
 namespace content {
 
-namespace {
-
-// TODO(rsleevi): Embedders should see https://crbug.com/700973 before using
-// this pattern.
-class IgnoresCTPolicyEnforcer : public net::CTPolicyEnforcer {
- public:
-  IgnoresCTPolicyEnforcer() = default;
-  ~IgnoresCTPolicyEnforcer() override = default;
-
-  net::ct::CTPolicyCompliance CheckCompliance(
-      net::X509Certificate* cert,
-      const net::SCTList& verified_scts,
-      const net::NetLogWithSource& net_log) override {
-    return net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
-  }
-};
-
-}  // namespace
-
 ShellURLRequestContextGetter::ShellURLRequestContextGetter(
     bool ignore_certificate_errors,
     bool off_the_record,
@@ -151,7 +132,6 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 
     builder.SetCertVerifier(GetCertVerifier());
     builder.set_ct_verifier(std::make_unique<net::DoNothingCTVerifier>());
-    builder.set_ct_policy_enforcer(std::make_unique<IgnoresCTPolicyEnforcer>());
 
     std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service =
         GetProxyService();

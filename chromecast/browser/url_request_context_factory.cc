@@ -61,20 +61,6 @@ namespace {
 
 const char kCookieStoreFile[] = "Cookies";
 
-// A CTPolicyEnforcer that accepts all certificates.
-class IgnoresCTPolicyEnforcer : public net::CTPolicyEnforcer {
- public:
-  IgnoresCTPolicyEnforcer() = default;
-  ~IgnoresCTPolicyEnforcer() override = default;
-
-  net::ct::CTPolicyCompliance CheckCompliance(
-      net::X509Certificate* cert,
-      const net::SCTList& verified_scts,
-      const net::NetLogWithSource& net_log) override {
-    return net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
-  }
-};
-
 bool IgnoreCertificateErrors() {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   return cmd_line->HasSwitch(switches::kIgnoreCertificateErrors);
@@ -247,7 +233,7 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
   transport_security_state_.reset(new net::TransportSecurityState());
   // Certificate transparency is current disabled for Chromecast.
   cert_transparency_verifier_.reset(new net::DoNothingCTVerifier());
-  ct_policy_enforcer_.reset(new IgnoresCTPolicyEnforcer());
+  ct_policy_enforcer_.reset(new net::DefaultCTPolicyEnforcer());
 
   http_auth_handler_factory_ =
       net::HttpAuthHandlerFactory::CreateDefault(host_resolver_.get());
