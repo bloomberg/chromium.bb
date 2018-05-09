@@ -19,7 +19,7 @@ if (params.get('__is_android__') == 'true') {
 } else if (params.get('__oneUA__') == 'true') {
   presentationUrl = "presentation_receiver.html";
 } else if (params.get('__oneUANoReceiver__') == 'true') {
-  presentationUrl = "https://www.google.com";
+  presentationUrl = "no_presentation_receiver.html";
 } else {
   presentationUrl = "test://test";
 }

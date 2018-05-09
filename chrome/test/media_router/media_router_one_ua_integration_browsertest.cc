@@ -37,8 +37,7 @@ class MediaRouterIntegrationOneUABrowserTest
   }
 
   GURL GetTestPageUrl(const base::FilePath& full_path) override {
-    GURL url = embedded_test_server()->GetURL("/basic_test.html");
-    return GURL(url.spec() + "?__oneUA__=true");
+    return embedded_test_server()->GetURL("/basic_test.html?__oneUA__=true");
   }
 };
 
@@ -80,11 +79,11 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
 }
 
 class MediaRouterIntegrationOneUANoReceiverBrowserTest
-    : public MediaRouterIntegrationBrowserTest {
+    : public MediaRouterIntegrationOneUABrowserTest {
  public:
   GURL GetTestPageUrl(const base::FilePath& full_path) override {
-    GURL url = MediaRouterIntegrationBrowserTest::GetTestPageUrl(full_path);
-    return GURL(url.spec() + "?__oneUANoReceiver__=true");
+    return embedded_test_server()->GetURL(
+        "/basic_test.html?__oneUANoReceiver__=true");
   }
 };
 
