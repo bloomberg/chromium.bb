@@ -586,12 +586,10 @@ DOMWebSocket::State DOMWebSocket::readyState() const {
   return state_;
 }
 
-unsigned DOMWebSocket::bufferedAmount() const {
-  uint64_t sum = buffered_amount_after_close_ + buffered_amount_;
-
-  if (sum > std::numeric_limits<unsigned>::max())
-    return std::numeric_limits<unsigned>::max();
-  return sum;
+uint64_t DOMWebSocket::bufferedAmount() const {
+  // TODO(ricea): Check for overflow once machines with exabytes of RAM become
+  // commonplace.
+  return buffered_amount_after_close_ + buffered_amount_;
 }
 
 String DOMWebSocket::protocol() const {
