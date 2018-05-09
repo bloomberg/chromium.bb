@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -182,6 +183,7 @@ public class TemplateUrlServiceTest {
     @Test
     @SmallTest
     @Feature({"SearchEngines"})
+    @DisabledTest(message = "crbug.com/841098")
     public void testSortandGetCustomSearchEngine() {
         final TemplateUrlService templateUrlService = waitForTemplateUrlServiceToLoad();
 
