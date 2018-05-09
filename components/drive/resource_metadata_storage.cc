@@ -23,6 +23,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
+#include "components/drive/file_system_core_util.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
@@ -438,6 +439,60 @@ bool UpgradeOldDBVersion14(leveldb::DB* resource_map) {
   return resource_map->Write(leveldb::WriteOptions(), &batch).ok();
 }
 
+bool UpgradeOldDBVersion15(leveldb::DB* resource_map) {
+  leveldb::ReadOptions read_options;
+  read_options.verify_checksums = true;
+  leveldb::WriteBatch batch;
+
+  std::unique_ptr<leveldb::Iterator> it(
+      resource_map->NewIterator(read_options));
+
+  it->SeekToFirst();
+  ResourceMetadataHeader header;
+
+  if (!it->Valid() || it->key() != GetHeaderDBKey()) {
+    DLOG(ERROR) << "Header not detected.";
+    return false;
+  }
+
+  if (!header.ParseFromArray(it->value().data(), it->value().size())) {
+    DLOG(ERROR) << "Could not parse header.";
+    return false;
+  }
+
+  header.set_version(ResourceMetadataStorage::kDBVersion);
+  header.set_start_page_token(drive::util::ConvertChangestampToStartPageToken(
+      header.largest_changestamp()));
+  std::string serialized_header;
+  header.SerializeToString(&serialized_header);
+  batch.Put(GetHeaderDBKey(), serialized_header);
+
+  for (it->Next(); it->Valid(); it->Next()) {
+    if (IsIdEntryKey(it->key()))
+      continue;
+
+    ResourceEntry entry;
+    if (!entry.ParseFromArray(it->value().data(), it->value().size()))
+      return false;
+
+    if (entry.has_directory_specific_info()) {
+      int64_t changestamp = entry.directory_specific_info().changestamp();
+      entry.mutable_directory_specific_info()->set_start_page_token(
+          drive::util::ConvertChangestampToStartPageToken(changestamp));
+
+      std::string serialized_entry;
+      if (!entry.SerializeToString(&serialized_entry)) {
+        DLOG(ERROR) << "Failed to serialize the entry";
+        return false;
+      }
+
+      batch.Put(entry.local_id(), serialized_entry);
+    }
+  }
+
+  return resource_map->Write(leveldb::WriteOptions(), &batch).ok();
+}
+
 }  // namespace
 
 ResourceMetadataStorage::Iterator::Iterator(
@@ -554,9 +609,11 @@ bool ResourceMetadataStorage::UpgradeOldDB(
       return UpgradeOldDBVersion13(resource_map.get());
     case 14:
       return UpgradeOldDBVersion14(resource_map.get());
+    case 15:
+      return UpgradeOldDBVersion15(resource_map.get());
     case kDBVersion:
       static_assert(
-          kDBVersion == 15,
+          kDBVersion == 16,
           "database version and this function must be updated together");
       return true;
     default:
