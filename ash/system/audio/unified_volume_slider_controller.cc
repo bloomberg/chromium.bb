@@ -4,7 +4,12 @@
 
 #include "ash/system/audio/unified_volume_slider_controller.h"
 
+#include "ash/metrics/user_metrics_action.h"
+#include "ash/metrics/user_metrics_recorder.h"
+#include "ash/shell.h"
 #include "ash/system/audio/unified_volume_view.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 
 using chromeos::CrasAudioHandler;
 
@@ -21,8 +26,12 @@ views::View* UnifiedVolumeSliderController::CreateView() {
 
 void UnifiedVolumeSliderController::ButtonPressed(views::Button* sender,
                                                   const ui::Event& event) {
-  CrasAudioHandler::Get()->SetOutputMute(
-      !CrasAudioHandler::Get()->IsOutputMuted());
+  bool mute_on = !CrasAudioHandler::Get()->IsOutputMuted();
+  if (mute_on)
+    base::RecordAction(base::UserMetricsAction("StatusArea_Audio_Muted"));
+  else
+    base::RecordAction(base::UserMetricsAction("StatusArea_Audio_Unmuted"));
+  CrasAudioHandler::Get()->SetOutputMute(mute_on);
 }
 
 void UnifiedVolumeSliderController::SliderValueChanged(
@@ -34,6 +43,11 @@ void UnifiedVolumeSliderController::SliderValueChanged(
     return;
 
   const int level = value * 100;
+
+  if (level != CrasAudioHandler::Get()->GetOutputVolumePercent()) {
+    Shell::Get()->metrics()->RecordUserMetricsAction(
+        UMA_STATUS_AREA_CHANGED_VOLUME_MENU);
+  }
 
   CrasAudioHandler::Get()->SetOutputVolumePercent(level);
 

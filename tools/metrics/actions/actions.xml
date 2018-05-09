@@ -18043,6 +18043,12 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="StatusArea_Audio_Muted">
+  <owner>shihuis@chromium.org</owner>
+  <owner>tetsui@chromium.org</owner>
+  <description>User muted audio from the button in SystemTray.</description>
+</action>
+
 <action name="StatusArea_Audio_SwitchInputDevice">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -18051,6 +18057,12 @@ should be able to be added at any place in this file.
 <action name="StatusArea_Audio_SwitchOutputDevice">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="StatusArea_Audio_Unmuted">
+  <owner>shihuis@chromium.org</owner>
+  <owner>tetsui@chromium.org</owner>
+  <description>User unmuted audio from the button in SystemTray.</description>
 </action>
 
 <action name="StatusArea_AutoClickDisabled">
