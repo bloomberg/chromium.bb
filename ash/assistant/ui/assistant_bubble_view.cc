@@ -385,13 +385,26 @@ void AssistantBubbleView::ChildPreferredSizeChanged(views::View* child) {
 }
 
 void AssistantBubbleView::ChildVisibilityChanged(views::View* child) {
+  // When toggling the visibility of the dialog plate, we also need to update
+  // the bottom padding of the layout.
+  if (child == dialog_plate_) {
+    const int padding_bottom_dip = dialog_plate_->visible() ? 0 : kPaddingDip;
+    layout_manager_->set_inside_border_insets(
+        gfx::Insets(kPaddingDip, 0, padding_bottom_dip, 0));
+  }
   PreferredSizeChanged();
 }
 
 void AssistantBubbleView::InitLayout() {
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
+  // Dialog plate is not visible when using the stylus input modality.
+  const bool show_dialog_plate =
+      assistant_controller_->interaction_model()->input_modality() !=
+      InputModality::kStylus;
+
+  layout_manager_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
-      gfx::Insets(kPaddingDip, 0, 0, 0), kSpacingDip));
+      gfx::Insets(kPaddingDip, 0, show_dialog_plate ? 0 : kPaddingDip, 0),
+      kSpacingDip));
 
   // Interaction container.
   AddChildView(interaction_container_);
@@ -405,6 +418,7 @@ void AssistantBubbleView::InitLayout() {
   AddChildView(suggestions_container_);
 
   // Dialog plate.
+  dialog_plate_->SetVisible(show_dialog_plate);
   AddChildView(dialog_plate_);
 }
 
@@ -430,6 +444,9 @@ void AssistantBubbleView::ProcessPendingUiElements() {
 }
 
 void AssistantBubbleView::OnInputModalityChanged(InputModality input_modality) {
+  // Dialog plate is not visible when using stylus input modality.
+  dialog_plate_->SetVisible(input_modality != InputModality::kStylus);
+
   // If the query for the interaction is empty, we may need to update the prompt
   // to reflect the current input modality.
   if (assistant_controller_->interaction_model()->query().empty()) {

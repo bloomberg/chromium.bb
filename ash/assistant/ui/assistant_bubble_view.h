@@ -15,6 +15,10 @@
 #include "ui/app_list/views/suggestion_chip_view.h"
 #include "ui/views/view.h"
 
+namespace views {
+class BoxLayout;
+}  // namespace views
+
 namespace ash {
 
 class AshAssistantController;
@@ -76,6 +80,8 @@ class AssistantBubbleView : public views::View,
   UiElementContainer* ui_element_container_;     // Owned by view hierarchy.
   SuggestionsContainer* suggestions_container_;  // Owned by view hierarchy.
   DialogPlate* dialog_plate_;                    // Owned by view hierarchy.
+
+  views::BoxLayout* layout_manager_ = nullptr;  // Owned by view hierarchy.
 
   // Uniquely identifies cards owned by AssistantCardRenderer.
   std::vector<base::UnguessableToken> id_token_list_;
