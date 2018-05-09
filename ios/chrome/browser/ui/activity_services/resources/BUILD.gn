@@ -14,11 +14,29 @@ imageset("activity_services_print") {
   ]
 }
 
-imageset("activity_services_reading_list") {
+imageset("activity_services_add_bookmark") {
   sources = [
-    "activity_services_reading_list.imageset/Contents.json",
-    "activity_services_reading_list.imageset/activity_services_reading_list.png",
-    "activity_services_reading_list.imageset/activity_services_reading_list@2x.png",
-    "activity_services_reading_list.imageset/activity_services_reading_list@3x.png",
+    "activity_services_add_bookmark.imageset/Contents.json",
+    "activity_services_add_bookmark.imageset/activity_services_add_bookmark_60@2x.png",
+    "activity_services_add_bookmark.imageset/activity_services_add_bookmark_60@3x.png",
+    "activity_services_add_bookmark.imageset/activity_services_add_bookmark_76@2x.png",
+  ]
+}
+
+imageset("activity_services_edit_bookmark") {
+  sources = [
+    "activity_services_edit_bookmark.imageset/Contents.json",
+    "activity_services_edit_bookmark.imageset/activity_services_edit_bookmark_60@2x.png",
+    "activity_services_edit_bookmark.imageset/activity_services_edit_bookmark_60@3x.png",
+    "activity_services_edit_bookmark.imageset/activity_services_edit_bookmark_76@2x.png",
+  ]
+}
+
+imageset("activity_services_read_later") {
+  sources = [
+    "activity_services_read_later.imageset/Contents.json",
+    "activity_services_read_later.imageset/activity_services_read_later_60@2x.png",
+    "activity_services_read_later.imageset/activity_services_read_later_60@3x.png",
+    "activity_services_read_later.imageset/activity_services_read_later_76@2x.png",
   ]
 }
