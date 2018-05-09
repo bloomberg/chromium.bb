@@ -79,7 +79,12 @@ message DirectorySpecificInfo {
   // changestamp of ResourceMetadata, if this directory was
   // "fast-fetched". See crbug.com/178348 for details about the "fast-fetch"
   // feature.
+  // TODO(slangley): Deprecate and remove changestamp.
   optional int64 changestamp = 1;
+
+  // The start page token of this directory. This value may not match the
+  // start_page_token of ResourceMetadata if the directory was "fast-fetched".
+  optional string start_page_token = 2;
 }
 
 // Represents metadata of a resource (file or directory) on Drive.
@@ -162,11 +167,16 @@ message ResourceMetadataHeader {
   // incompatible change is made to the DB format. kDBVersion in
   // drive_resource_metadata_storage.h defines the current version.
   optional int32 version = 1;
+
+  // TODO(slangley): Deprecate and remove changestamp.
   optional int64 largest_changestamp = 2;
 
   // The argument with ID 3 (starred_property_initialized) had been used, but
   // got deleted.
   reserved 3;
+
+  // The start_page_token for the users default corpus changelist.
+  optional string start_page_token = 4;
 }
 
 // Message to store information of an existing cache file.

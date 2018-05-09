@@ -62,6 +62,12 @@ class ResourceMetadata {
   // Sets the largest changestamp.
   FileError SetLargestChangestamp(int64_t value);
 
+  // Returns the start page token for the users default corpus.
+  FileError GetStartPageToken(std::string* out_value);
+
+  // Sets the start page token for the users default corpus.
+  FileError SetStartPageToken(const std::string& value);
+
   // Adds |entry| to the metadata tree based on its parent_local_id.
   FileError AddEntry(const ResourceEntry& entry, std::string* out_id);
 
