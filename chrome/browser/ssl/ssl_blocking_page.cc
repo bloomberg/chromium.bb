@@ -18,6 +18,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
+#include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
+#include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ssl/ssl_error_controller_client.h"
 #include "chrome/common/chrome_switches.h"
@@ -84,6 +86,11 @@ SSLBlockingPage* SSLBlockingPage::Create(
       CreateSslProblemMetricsHelper(web_contents, cert_error, request_url,
                                     overridable, is_superfish));
   metrics_helper.get()->StartRecordingCaptivePortalMetrics(overridable);
+
+  ChromeSSLHostStateDelegate* state =
+      ChromeSSLHostStateDelegateFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  state->DidDisplayErrorPage(cert_error);
 
   return new SSLBlockingPage(web_contents, cert_error, ssl_info, request_url,
                              options_mask, time_triggered, support_url,

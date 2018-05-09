@@ -17,6 +17,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -37,6 +38,9 @@
 #include "url/gurl.h"
 
 namespace {
+
+const char kRecurrentInterstitialThresholdParam[] = "threshold";
+const int kRecurrentInterstitialDefaultThreshold = 3;
 
 // The default expiration is one week, unless overidden by a field trial group.
 // See https://crbug.com/487270.
@@ -153,6 +157,9 @@ bool HostFilterToPatternFilter(
 }
 
 }  // namespace
+
+const base::Feature kRecurrentInterstitialFeature{
+    "RecurrentInterstitialFeature", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // This helper function gets the dictionary of certificate fingerprints to
 // errors of certificates that have been accepted by the user from the content
@@ -488,6 +495,39 @@ bool ChromeSSLHostStateDelegate::DidHostRunInsecureContent(
   NOTREACHED();
   return false;
 }
+
 void ChromeSSLHostStateDelegate::SetClock(std::unique_ptr<base::Clock> clock) {
   clock_ = std::move(clock);
+}
+
+void ChromeSSLHostStateDelegate::DidDisplayErrorPage(int error) {
+  if (error != net::ERR_CERT_SYMANTEC_LEGACY &&
+      error != net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED) {
+    return;
+  }
+  const auto count_it = recurrent_errors_.find(error);
+  if (count_it == recurrent_errors_.end()) {
+    recurrent_errors_[error] = 1;
+    return;
+  }
+  if (count_it->second >= base::GetFieldTrialParamByFeatureAsInt(
+                              kRecurrentInterstitialFeature,
+                              kRecurrentInterstitialThresholdParam,
+                              kRecurrentInterstitialDefaultThreshold)) {
+    return;
+  }
+  recurrent_errors_[error] = count_it->second + 1;
+}
+
+bool ChromeSSLHostStateDelegate::HasSeenRecurrentErrors(int error) const {
+  if (!base::FeatureList::IsEnabled(kRecurrentInterstitialFeature)) {
+    return false;
+  }
+  const auto count = recurrent_errors_.find(error);
+  if (count == recurrent_errors_.end())
+    return false;
+  return count->second >= base::GetFieldTrialParamByFeatureAsInt(
+                              kRecurrentInterstitialFeature,
+                              kRecurrentInterstitialThresholdParam,
+                              kRecurrentInterstitialDefaultThreshold);
 }
