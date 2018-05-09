@@ -26,6 +26,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
+#include "net/cert/ct_known_logs.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
@@ -70,7 +71,16 @@ network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
       !local_state->GetBoolean(prefs::kPacHttpsUrlStrippingEnabled);
 
 #if !defined(OS_ANDROID)
+  // CT is only enabled on Desktop platforms for now.
   network_context_params->enforce_chrome_ct_policy = true;
+  for (const auto& ct_log : net::ct::GetKnownLogs()) {
+    // TODO(rsleevi): https://crbug.com/702062 - Remove this duplication.
+    network::mojom::CTLogInfoPtr log_info = network::mojom::CTLogInfo::New();
+    log_info->public_key = std::string(ct_log.log_key, ct_log.log_key_length);
+    log_info->name = ct_log.log_name;
+    log_info->dns_api_endpoint = ct_log.log_dns_domain;
+    network_context_params->ct_logs.push_back(std::move(log_info));
+  }
 #endif
 
   bool http_09_on_non_default_ports_enabled = false;

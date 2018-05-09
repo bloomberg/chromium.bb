@@ -113,21 +113,6 @@ void CheckEffectiveConnectionType(IOThread* io_thread,
                           ->GetEffectiveConnectionType());
 }
 
-void CheckSCTsAreSentToTreeTracker(IOThread* io_thread) {
-  EXPECT_NE(io_thread->ct_tree_tracker(), nullptr);
-  EXPECT_EQ(io_thread->ct_tree_tracker(),
-            io_thread->globals()
-                ->system_request_context->cert_transparency_verifier()
-                ->GetObserver());
-}
-
-void CheckSCTsAreNotSentToTreeTracker(IOThread* io_thread) {
-  EXPECT_EQ(io_thread->globals()
-                ->system_request_context->cert_transparency_verifier()
-                ->GetObserver(),
-            nullptr);
-}
-
 class IOThreadBrowserTest : public InProcessBrowserTest {
  public:
   IOThreadBrowserTest() {}
@@ -210,48 +195,6 @@ IN_PROC_BROWSER_TEST_F(IOThreadBrowserTest, UpdateDelegateWhitelist) {
   RunOnIOThreadBlocking(
       base::Bind(&CheckCanDelegate,
                  base::Unretained(g_browser_process->io_thread()), true, url));
-}
-
-class IOThreadCTBrowserTest : public IOThreadBrowserTest {
- public:
-  IOThreadCTBrowserTest() {}
-  ~IOThreadCTBrowserTest() override {}
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        certificate_transparency::kCTLogAuditing);
-    IOThreadBrowserTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(IOThreadCTBrowserTest, SCTsAreSentToTreeTracker) {
-  RunOnIOThreadBlocking(
-      base::BindOnce(&CheckSCTsAreSentToTreeTracker,
-                     base::Unretained(g_browser_process->io_thread())));
-}
-
-class IOThreadNoCTBrowserTest : public IOThreadBrowserTest {
- public:
-  IOThreadNoCTBrowserTest() {}
-  ~IOThreadNoCTBrowserTest() override {}
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndDisableFeature(
-        certificate_transparency::kCTLogAuditing);
-    IOThreadBrowserTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(IOThreadNoCTBrowserTest, SCTsAreNotSentToTreeTracker) {
-  RunOnIOThreadBlocking(
-      base::BindOnce(&CheckSCTsAreNotSentToTreeTracker,
-                     base::Unretained(g_browser_process->io_thread())));
 }
 
 class IOThreadEctCommandLineBrowserTest : public IOThreadBrowserTest {

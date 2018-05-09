@@ -37,15 +37,10 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/browser/net/proxy_service_factory.h"
-#include "chrome/browser/net/sth_distributor_provider.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/certificate_transparency/features.h"
-#include "components/certificate_transparency/sth_distributor.h"
-#include "components/certificate_transparency/sth_observer.h"
-#include "components/certificate_transparency/tree_state_tracker.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/data_usage/core/data_use_amortizer.h"
@@ -72,8 +67,6 @@
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/ct_known_logs.h"
 #include "net/cert/ct_log_verifier.h"
-#include "net/cert/ct_verifier.h"
-#include "net/cert/multi_log_ct_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
@@ -419,9 +412,6 @@ IOThread::IOThread(
   ntlm_v2_enabled_.MoveToThread(io_thread_proxy);
 #endif
 
-  chrome_browser_net::SetGlobalSTHDistributor(
-      std::make_unique<certificate_transparency::STHDistributor>());
-
   BrowserThread::SetIOThreadDelegate(this);
 
   system_network_context_manager->SetUp(&network_context_request_,
@@ -435,10 +425,6 @@ IOThread::~IOThread() {
   BrowserThread::SetIOThreadDelegate(nullptr);
 
   DCHECK(!globals_);
-
-  // Destroy the old distributor to check that the observers list it holds is
-  // empty.
-  chrome_browser_net::SetGlobalSTHDistributor(nullptr);
 }
 
 IOThread::Globals* IOThread::globals() {
@@ -544,34 +530,12 @@ void IOThread::Init() {
 
   UpdateDnsClientEnabled();
 
-  if (base::FeatureList::IsEnabled(certificate_transparency::kCTLogAuditing)) {
-    ct_tree_tracker_ =
-        std::make_unique<certificate_transparency::TreeStateTracker>(
-            globals_->ct_logs,
-            globals_->system_request_context->host_resolver(), net_log_);
-    // Register the ct_tree_tracker_ as observer for new STHs.
-    RegisterSTHObserver(ct_tree_tracker_.get());
-    // Register the ct_tree_tracker_ as observer for verified SCTs.
-    globals_->system_request_context->cert_transparency_verifier()->SetObserver(
-        ct_tree_tracker_.get());
-  }
 }
 
 void IOThread::CleanUp() {
   base::debug::LeakTracker<SafeBrowsingURLRequestContext>::CheckForLeaks();
 
   system_url_request_context_getter_ = nullptr;
-
-  if (ct_tree_tracker_) {
-    // Unlink the ct_tree_tracker_ from the global cert_transparency_verifier
-    // and unregister it from new STH notifications so it will take no actions
-    // on anything observed during CleanUp process.
-    globals()
-        ->system_request_context->cert_transparency_verifier()
-        ->SetObserver(nullptr);
-    UnregisterSTHObserver(ct_tree_tracker_.get());
-    ct_tree_tracker_.reset();
-  }
 
   globals_->system_request_context->proxy_resolution_service()->OnShutdown();
 
@@ -734,26 +698,12 @@ void IOThread::UpdateDnsClientEnabled() {
   }
 }
 
-void IOThread::RegisterSTHObserver(
-    certificate_transparency::STHObserver* observer) {
-  chrome_browser_net::GetGlobalSTHDistributor()->RegisterObserver(observer);
-}
-
-void IOThread::UnregisterSTHObserver(
-    certificate_transparency::STHObserver* observer) {
-  chrome_browser_net::GetGlobalSTHDistributor()->UnregisterObserver(observer);
-}
-
 void IOThread::SetUpProxyService(
     network::URLRequestContextBuilderMojo* builder) const {
 #if defined(OS_CHROMEOS)
   builder->SetDhcpFetcherFactory(
       std::make_unique<chromeos::DhcpPacFileFetcherFactoryChromeos>());
 #endif
-}
-
-certificate_transparency::TreeStateTracker* IOThread::ct_tree_tracker() const {
-  return ct_tree_tracker_.get();
 }
 
 void IOThread::ConstructSystemRequestContext() {
@@ -804,12 +754,6 @@ void IOThread::ConstructSystemRequestContext() {
       "Net.Certificate.IgnoreCertificateErrorsSPKIListPresent",
       command_line.HasSwitch(
           network::switches::kIgnoreCertificateErrorsSPKIList));
-
-  std::unique_ptr<net::MultiLogCTVerifier> ct_verifier =
-      std::make_unique<net::MultiLogCTVerifier>();
-  // Add built-in logs
-  ct_verifier->AddLogs(globals_->ct_logs);
-  builder->set_ct_verifier(std::move(ct_verifier));
 
   SetUpProxyService(builder.get());
 

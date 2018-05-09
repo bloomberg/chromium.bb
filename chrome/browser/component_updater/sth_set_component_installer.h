@@ -15,15 +15,17 @@
 #include "base/memory/weak_ptr.h"
 #include "components/component_updater/component_installer.h"
 
-namespace certificate_transparency {
-class STHObserver;
-}  // namespace certificate_transparency
-
 namespace net {
 namespace ct {
 struct SignedTreeHead;
 }  // namespace ct
 }  // namespace net
+
+namespace network {
+namespace mojom {
+class NetworkService;
+}  // namespace mojom
+}  // namespace network
 
 namespace component_updater {
 
@@ -41,15 +43,16 @@ class ComponentUpdateService;
 // persistence.
 class STHSetComponentInstallerPolicy : public ComponentInstallerPolicy {
  public:
-  // The |sth_observer| will be notified each time a new STH is observed.
-  explicit STHSetComponentInstallerPolicy(
-      std::unique_ptr<certificate_transparency::STHObserver> sth_observer);
+  STHSetComponentInstallerPolicy();
   ~STHSetComponentInstallerPolicy() override;
 
  private:
   friend class STHSetComponentInstallerTest;
+  void SetNetworkServiceForTesting(
+      network::mojom::NetworkService* network_service);
 
-  void NewSTHObserved(const net::ct::SignedTreeHead& sth);
+  // Indicates that a new STH has been loaded.
+  void OnSTHLoaded(const net::ct::SignedTreeHead& sth);
 
   // ComponentInstallerPolicy implementation.
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
@@ -69,7 +72,7 @@ class STHSetComponentInstallerPolicy : public ComponentInstallerPolicy {
   update_client::InstallerAttributes GetInstallerAttributes() const override;
   std::vector<std::string> GetMimeTypes() const override;
 
-  std::unique_ptr<certificate_transparency::STHObserver> sth_observer_;
+  network::mojom::NetworkService* network_service_for_testing_ = nullptr;
 
   base::WeakPtrFactory<STHSetComponentInstallerPolicy> weak_ptr_factory_;
 

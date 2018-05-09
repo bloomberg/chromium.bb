@@ -182,6 +182,7 @@ source_set("tests") {
 
   if (!is_ios) {
     sources += [
+      "network_context_cert_transparency_unittest.cc",
       "proxy_resolver_factory_mojo_unittest.cc",
       "websocket_throttler_unittest.cc",
     ]
@@ -191,6 +192,7 @@ source_set("tests") {
     ":network_service",
     ":test_support",
     "//base",
+    "//components/certificate_transparency",
     "//components/network_session_configurator/browser",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",

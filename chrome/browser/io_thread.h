@@ -258,8 +258,6 @@ class IOThread : public content::BrowserThreadDelegate {
 
   Globals* globals_;
 
-  std::unique_ptr<certificate_transparency::TreeStateTracker> ct_tree_tracker_;
-
   BooleanPrefMember system_enable_referrers_;
 
   BooleanPrefMember dns_client_enabled_;

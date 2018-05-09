@@ -9,14 +9,20 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
+#include "build/build_config.h"
 #include "components/certificate_transparency/chrome_ct_policy_enforcer.h"
 #include "components/certificate_transparency/ct_policy_manager.h"
+#include "components/certificate_transparency/features.h"
+#include "components/certificate_transparency/sth_distributor.h"
+#include "components/certificate_transparency/sth_reporter.h"
+#include "components/certificate_transparency/tree_state_tracker.h"
 #include "components/cookie_config/cookie_store_util.h"
 #include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -25,6 +31,9 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/cert/cert_verifier.h"
+#include "net/cert/ct_log_verifier.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
@@ -211,8 +220,15 @@ NetworkContext::NetworkContext(
   url_request_context_owner_ = ApplyContextParamsToBuilder(
       builder.get(), params_.get(), network_service->quic_disabled(),
       network_service->net_log(), network_service->network_quality_estimator(),
+      network_service_->sth_reporter(), &ct_tree_tracker_,
       &user_agent_settings_);
   url_request_context_ = url_request_context_owner_.url_request_context.get();
+  if (ct_tree_tracker_ && network_service_->sth_reporter()) {
+    url_request_context_->cert_transparency_verifier()->SetObserver(
+        ct_tree_tracker_.get());
+    network_service_->sth_reporter()->RegisterObserver(ct_tree_tracker_.get());
+  }
+
   network_service_->RegisterNetworkContext(this);
   cookie_manager_ =
       std::make_unique<CookieManager>(url_request_context_->cookie_store());
@@ -249,6 +265,17 @@ NetworkContext::~NetworkContext() {
       url_request_context_->transport_security_state()) {
     url_request_context_->transport_security_state()->SetRequireCTDelegate(
         nullptr);
+  }
+
+  if (url_request_context_ &&
+      url_request_context_->cert_transparency_verifier()) {
+    url_request_context_->cert_transparency_verifier()->SetObserver(nullptr);
+  }
+
+  if (network_service_ && network_service_->sth_reporter() &&
+      ct_tree_tracker_) {
+    network_service_->sth_reporter()->UnregisterObserver(
+        ct_tree_tracker_.get());
   }
 }
 
@@ -416,13 +443,23 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   }
 
   // |network_service_| may be nullptr in tests.
-  return ApplyContextParamsToBuilder(
+  auto result = ApplyContextParamsToBuilder(
       &builder, network_context_params,
       network_service_ ? network_service_->quic_disabled() : false,
       network_service_ ? network_service_->net_log() : nullptr,
       network_service_ ? network_service_->network_quality_estimator()
                        : nullptr,
-      &user_agent_settings_);
+      network_service_ ? network_service_->sth_reporter() : nullptr,
+      &ct_tree_tracker_, &user_agent_settings_);
+
+  if (ct_tree_tracker_ && network_service_ &&
+      network_service_->sth_reporter()) {
+    result.url_request_context->cert_transparency_verifier()->SetObserver(
+        ct_tree_tracker_.get());
+    network_service_->sth_reporter()->RegisterObserver(ct_tree_tracker_.get());
+  }
+
+  return result;
 }
 
 URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
@@ -431,6 +468,9 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     bool quic_disabled,
     net::NetLog* net_log,
     net::NetworkQualityEstimator* network_quality_estimator,
+    certificate_transparency::STHReporter* sth_reporter,
+    std::unique_ptr<certificate_transparency::TreeStateTracker>*
+        out_ct_tree_tracker,
     net::StaticHttpUserAgentSettings** out_http_user_agent_settings) {
   if (net_log)
     builder->set_net_log(net_log);
@@ -559,7 +599,38 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
                          -> std::unique_ptr<net::HttpTransactionFactory> {
         return std::make_unique<ThrottlingNetworkTransactionFactory>(session);
       }));
-  return URLRequestContextOwner(std::move(pref_service), builder->Build());
+
+  std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs;
+  if (!network_context_params->ct_logs.empty()) {
+    for (const auto& log : network_context_params->ct_logs) {
+      scoped_refptr<const net::CTLogVerifier> log_verifier =
+          net::CTLogVerifier::Create(log->public_key, log->name,
+                                     log->dns_api_endpoint);
+      if (!log_verifier) {
+        // TODO: Signal bad configuration (such as bad key).
+        continue;
+      }
+      ct_logs.push_back(std::move(log_verifier));
+    }
+    auto ct_verifier = std::make_unique<net::MultiLogCTVerifier>();
+    ct_verifier->AddLogs(ct_logs);
+    builder->set_ct_verifier(std::move(ct_verifier));
+  }
+
+  auto result =
+      URLRequestContextOwner(std::move(pref_service), builder->Build());
+
+#if !defined(OS_IOS)
+  if (base::FeatureList::IsEnabled(certificate_transparency::kCTLogAuditing) &&
+      out_ct_tree_tracker && sth_reporter && !ct_logs.empty()) {
+    net::URLRequestContext* context = result.url_request_context.get();
+    *out_ct_tree_tracker =
+        std::make_unique<certificate_transparency::TreeStateTracker>(
+            ct_logs, context->host_resolver(), net_log);
+  }
+#endif
+
+  return result;
 }
 
 void NetworkContext::DestroyURLLoaderFactory(
@@ -809,6 +880,7 @@ void NetworkContext::SetFailingHttpTransactionForTesting(
   // Throw away old version; since this is a a browser test, we don't
   // need to restore the old state.
   cache->SetHttpNetworkTransactionFactoryForTesting(std::move(factory));
+
   std::move(callback).Run();
 }
 

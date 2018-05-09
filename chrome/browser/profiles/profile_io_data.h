@@ -53,10 +53,6 @@ namespace chrome_browser_net {
 class LoadingPredictorObserver;
 }
 
-namespace certificate_transparency {
-class TreeStateTracker;
-}
-
 namespace content_settings {
 class CookieSettings;
 }
@@ -645,10 +641,6 @@ class ProfileIOData {
   mutable std::unique_ptr<extensions::ExtensionThrottleManager>
       extension_throttle_manager_;
 #endif
-
-  mutable std::unique_ptr<certificate_transparency::TreeStateTracker>
-      ct_tree_tracker_;
-  mutable base::Closure ct_tree_tracker_unregistration_;
 
   // Owned by the ChromeNetworkDelegate, which is owned (possibly with one or
   // more layers of LayeredNetworkDelegate) by the URLRequestContext, which is
