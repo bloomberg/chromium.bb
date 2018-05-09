@@ -58,8 +58,8 @@ UsbDeviceFilterPtr ConvertDeviceFilter(const USBDeviceFilter& filter) {
 
 }  // namespace
 
-USB::USB(LocalFrame& frame)
-    : ContextLifecycleObserver(frame.GetDocument()), client_binding_(this) {}
+USB::USB(ExecutionContext& context)
+    : ContextLifecycleObserver(&context), client_binding_(this) {}
 
 USB::~USB() {
   // |m_deviceManager| and |m_chooserService| may still be valid but there

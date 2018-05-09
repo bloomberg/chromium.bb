@@ -28,6 +28,8 @@ blink_modules_sources("webusb") {
     "usb_isochronous_out_transfer_packet.h",
     "usb_isochronous_out_transfer_result.h",
     "usb_out_transfer_result.h",
+    "worker_navigator_usb.cc",
+    "worker_navigator_usb.h",
   ]
 
   deps = [
