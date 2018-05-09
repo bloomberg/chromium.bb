@@ -372,7 +372,13 @@ bool Target::OnResolved(Err* err) {
 
   PullRecursiveBundleData();
   PullDependentTargetLibs();
-  PullRecursiveHardDeps();
+
+  if (!hard_dep()) {
+    // If this target is not hard_dep type, we need to pull hard dependency from
+    // dependent target, because it may not transitive for compiling tasks.
+    PullRecursiveHardDeps();
+  }
+
   if (!ResolvePrecompiledHeaders(err))
     return false;
 
