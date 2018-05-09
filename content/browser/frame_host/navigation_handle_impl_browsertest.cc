@@ -13,6 +13,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/bindings_policy.h"
@@ -1690,13 +1691,18 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
     navigation_observer.Wait();
     EXPECT_TRUE(observer.has_committed());
     EXPECT_TRUE(observer.is_error());
-    EXPECT_NE(site_instance,
-              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
-    EXPECT_EQ(kUnreachableWebDataURL, shell()
-                                          ->web_contents()
-                                          ->GetMainFrame()
-                                          ->GetSiteInstance()
-                                          ->GetSiteURL());
+    if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(true)) {
+      EXPECT_NE(site_instance,
+                shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+      EXPECT_EQ(kUnreachableWebDataURL, shell()
+                                            ->web_contents()
+                                            ->GetMainFrame()
+                                            ->GetSiteInstance()
+                                            ->GetSiteURL());
+    } else {
+      EXPECT_EQ(site_instance,
+                shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+    }
   }
 
   {
@@ -1711,13 +1717,21 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
     navigation_observer.Wait();
     EXPECT_TRUE(observer.has_committed());
     EXPECT_TRUE(observer.is_error());
-    EXPECT_EQ(kUnreachableWebDataURL, shell()
-                                          ->web_contents()
-                                          ->GetMainFrame()
-                                          ->GetSiteInstance()
-                                          ->GetSiteURL());
-    EXPECT_EQ(process_id,
-              shell()->web_contents()->GetMainFrame()->GetProcess()->GetID());
+    if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(true)) {
+      EXPECT_EQ(kUnreachableWebDataURL, shell()
+                                            ->web_contents()
+                                            ->GetMainFrame()
+                                            ->GetSiteInstance()
+                                            ->GetSiteURL());
+      EXPECT_EQ(process_id,
+                shell()->web_contents()->GetMainFrame()->GetProcess()->GetID());
+    } else if (AreAllSitesIsolatedForTesting()) {
+      EXPECT_NE(site_instance,
+                shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+    } else {
+      EXPECT_EQ(site_instance,
+                shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+    }
   }
 
   installer.reset();
@@ -1754,11 +1768,13 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
     EXPECT_TRUE(observer.is_error());
     EXPECT_NE(site_instance,
               shell()->web_contents()->GetMainFrame()->GetSiteInstance());
-    EXPECT_EQ(kUnreachableWebDataURL, shell()
-                                          ->web_contents()
-                                          ->GetMainFrame()
-                                          ->GetSiteInstance()
-                                          ->GetSiteURL());
+    if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(true)) {
+      EXPECT_EQ(kUnreachableWebDataURL, shell()
+                                            ->web_contents()
+                                            ->GetMainFrame()
+                                            ->GetSiteInstance()
+                                            ->GetSiteURL());
+    }
   }
 
   installer.reset();
@@ -1828,11 +1844,13 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
     EXPECT_TRUE(observer.is_error());
     EXPECT_NE(site_instance,
               shell()->web_contents()->GetMainFrame()->GetSiteInstance());
-    EXPECT_EQ(kUnreachableWebDataURL, shell()
-                                          ->web_contents()
-                                          ->GetMainFrame()
-                                          ->GetSiteInstance()
-                                          ->GetSiteURL());
+    if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(true)) {
+      EXPECT_EQ(kUnreachableWebDataURL, shell()
+                                            ->web_contents()
+                                            ->GetMainFrame()
+                                            ->GetSiteInstance()
+                                            ->GetSiteURL());
+    }
   }
 }
 

@@ -34,6 +34,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -4004,6 +4005,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 // page, properly commit the error page in its own dedicated process.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        ErrorPageNavigationInMainFrame) {
+  // This test is only valid if error page isolation is enabled.
+  if (!SiteIsolationPolicy::IsErrorPageIsolationEnabled(true))
+    return;
+
   StartEmbeddedServer();
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   GURL error_url(embedded_test_server()->GetURL("/empty.html"));
@@ -4108,6 +4113,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 // the one for the destination site.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        ErrorPageNavigationInNewWindow) {
+  // This test is only valid if error page isolation is enabled.
+  if (!SiteIsolationPolicy::IsErrorPageIsolationEnabled(true))
+    return;
+
   StartEmbeddedServer();
   GURL error_url(embedded_test_server()->GetURL("/empty.html"));
   std::unique_ptr<URLLoaderInterceptor> url_interceptor =
@@ -4137,6 +4146,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 // their SiteInstances are not related.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        ErrorPageNavigationInUnrelatedWindows) {
+  // This test is only valid if error page isolation is enabled.
+  if (!SiteIsolationPolicy::IsErrorPageIsolationEnabled(true))
+    return;
+
   StartEmbeddedServer();
   GURL error_url(embedded_test_server()->GetURL("/empty.html"));
   std::unique_ptr<URLLoaderInterceptor> url_interceptor =

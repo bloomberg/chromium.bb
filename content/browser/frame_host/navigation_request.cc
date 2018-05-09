@@ -39,6 +39,7 @@
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -1040,7 +1041,8 @@ void NavigationRequest::OnRequestFailedInternal(
   }
 
   RenderFrameHostImpl* render_frame_host = nullptr;
-  if (frame_tree_node_->IsMainFrame()) {
+  if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(
+          frame_tree_node_->IsMainFrame())) {
     // Main frame error pages must be isolated from the source or destination
     // process.
     //

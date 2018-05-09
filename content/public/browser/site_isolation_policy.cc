@@ -100,7 +100,11 @@ bool SiteIsolationPolicy::AreIsolatedOriginsEnabled() {
 }
 
 // static
+bool SiteIsolationPolicy::IsErrorPageIsolationEnabled(bool in_main_frame) {
+  return GetContentClient()->browser()->ShouldIsolateErrorPage(in_main_frame);
+}
 
+// static
 bool SiteIsolationPolicy::ShouldPdfCompositorBeEnabledForOopifs() {
   // TODO(weili): We only create pdf compositor client and use pdf compositor
   // service when site-per-process or isolate-origins flag/feature is enabled,

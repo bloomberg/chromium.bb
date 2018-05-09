@@ -1643,7 +1643,9 @@ bool ChromeContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
 bool ChromeContentBrowserClient::ShouldIsolateErrorPage(bool in_main_frame) {
   // TODO(nasko): Consider supporting error page isolation in subframes if
   // Site Isolation is enabled.
-  return in_main_frame;
+  // Note: It is temporarily disabled to investigate functional regression
+  // and process terminations. See https://crbug.com/838161.
+  return false;
 }
 
 bool ChromeContentBrowserClient::ShouldAssignSiteForURL(const GURL& url) {

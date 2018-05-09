@@ -43,6 +43,9 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // Returns true if isolated origins feature is enabled.
   static bool AreIsolatedOriginsEnabled();
 
+  // Returns true if error page isolation is enabled.
+  static bool IsErrorPageIsolationEnabled(bool in_main_frame);
+
   // Returns true if the PDF compositor should be enabled to allow out-of-
   // process iframes (OOPIF's) to print properly.
   static bool ShouldPdfCompositorBeEnabledForOopifs();
