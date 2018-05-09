@@ -414,30 +414,14 @@ void HostFrameSinkManager::OnFirstSurfaceActivation(
 
 void HostFrameSinkManager::OnAggregatedHitTestRegionListUpdated(
     const FrameSinkId& frame_sink_id,
-    mojo::ScopedSharedBufferHandle active_handle,
-    uint32_t active_handle_size,
-    mojo::ScopedSharedBufferHandle idle_handle,
-    uint32_t idle_handle_size) {
+    const std::vector<AggregatedHitTestRegion>& hit_test_data) {
   auto iter = display_hit_test_query_.find(frame_sink_id);
   // The corresponding HitTestQuery has already been deleted, so drop the
   // in-flight hit-test data.
   if (iter == display_hit_test_query_.end())
     return;
 
-  iter->second->OnAggregatedHitTestRegionListUpdated(
-      std::move(active_handle), active_handle_size, std::move(idle_handle),
-      idle_handle_size);
-}
-
-void HostFrameSinkManager::SwitchActiveAggregatedHitTestRegionList(
-    const FrameSinkId& frame_sink_id,
-    uint8_t active_handle_index) {
-  auto iter = display_hit_test_query_.find(frame_sink_id);
-  // The corresponding HitTestQuery has already been deleted, so drop the
-  // in-flight hit-test data.
-  if (iter == display_hit_test_query_.end())
-    return;
-  iter->second->SwitchActiveAggregatedHitTestRegionList(active_handle_index);
+  iter->second->OnAggregatedHitTestRegionListUpdated(hit_test_data);
 }
 
 HostFrameSinkManager::FrameSinkData::FrameSinkData() = default;

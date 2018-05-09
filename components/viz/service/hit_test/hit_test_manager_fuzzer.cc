@@ -14,7 +14,6 @@
 #include "components/viz/service/hit_test/hit_test_manager.h"
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/test_latest_local_surface_id_lookup_delegate.h"
-#include "mojo/edk/embedder/embedder.h"
 
 namespace {
 
@@ -127,22 +126,9 @@ void SubmitHitTestRegionList(
       fuzz->ConsumeBool() ? std::move(hit_test_region_list) : nullptr);
 }
 
-class Environment {
- public:
-  Environment() {
-    // Initialize environment so that we can create the mojo shared memory
-    // handles.
-    base::CommandLine::Init(0, nullptr);
-    mojo::edk::Init();
-  }
-};
-
 }  // namespace
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t num_bytes) {
-  // Initialize the environment only once.
-  static Environment environment;
-
   base::FuzzedDataProvider fuzz(data, num_bytes);
   viz::FrameSinkManagerImpl frame_sink_manager;
   viz::TestLatestLocalSurfaceIdLookupDelegate delegate;

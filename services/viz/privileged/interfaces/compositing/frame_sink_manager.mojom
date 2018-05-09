@@ -16,6 +16,7 @@ import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
 import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
 import "services/viz/public/interfaces/compositing/surface_id.mojom";
 import "services/viz/public/interfaces/compositing/surface_info.mojom";
+import "services/viz/public/interfaces/hit_test/aggregated_hit_test_region.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "services/viz/public/interfaces/compositing/video_detector_observer.mojom";
 
@@ -147,17 +148,9 @@ interface FrameSinkManagerClient {
   // SurfaceId activates for the first time.
   OnFirstSurfaceActivation(SurfaceInfo surface_info);
 
-  // Sends |active_handle| and |idle_handle| along with their sizes to the
-  // client when they are allocated or resized.
-  OnAggregatedHitTestRegionListUpdated(FrameSinkId frame_sink_id,
-                                       handle<shared_buffer> active_handle,
-                                       uint32 active_handle_size,
-                                       handle<shared_buffer> idle_handle,
-                                       uint32 idle_handle_size);
-
-  // Tells the client to update the currently active handle.
-  SwitchActiveAggregatedHitTestRegionList(FrameSinkId frame_sink_id,
-                                          uint8 active_handle_index);
+  // Sends new |hit_test_data| to the client.
+  OnAggregatedHitTestRegionListUpdated(
+      FrameSinkId frame_sink_id, array<AggregatedHitTestRegion> hit_test_data);
 
   // Sends |frame_sink_id| and |frame_token| to the client when a surface
   // of the provided |frame_sink_id| activates.

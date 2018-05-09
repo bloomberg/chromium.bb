@@ -17,32 +17,17 @@ class HitTestQueryTest : public testing::Test {
   HitTestQueryTest() = default;
   ~HitTestQueryTest() override = default;
 
+  void SendHitTestData() {
+    hit_test_query_.OnAggregatedHitTestRegionListUpdated(active_data_);
+  }
+
  protected:
   HitTestQuery& hit_test_query() { return hit_test_query_; }
-  AggregatedHitTestRegion* aggregated_hit_test_region() {
-    return static_cast<AggregatedHitTestRegion*>(active_buffer_.get());
-  }
+
+  std::vector<AggregatedHitTestRegion> active_data_;
 
  private:
-  // testing::Test:
-  void SetUp() override {
-    uint32_t handle_size = 100;
-    size_t num_bytes = handle_size * sizeof(AggregatedHitTestRegion);
-    mojo::ScopedSharedBufferHandle active_handle =
-        mojo::SharedBufferHandle::Create(num_bytes);
-    mojo::ScopedSharedBufferHandle idle_handle =
-        mojo::SharedBufferHandle::Create(num_bytes);
-    active_buffer_ = active_handle->Map(num_bytes);
-    hit_test_query_.OnAggregatedHitTestRegionListUpdated(
-        active_handle->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY),
-        handle_size,
-        idle_handle->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY),
-        handle_size);
-  }
-  void TearDown() override {}
-
   HitTestQuery hit_test_query_;
-  mojo::ScopedSharedBufferMapping active_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(HitTestQueryTest);
 };
@@ -59,11 +44,10 @@ TEST_F(HitTestQueryTest, OneSurface) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   gfx::Rect e_bounds = gfx::Rect(0, 0, 600, 600);
   gfx::Transform transform_e_to_e;
-  AggregatedHitTestRegion* aggregated_hit_test_region_list =
-      aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] =
+  active_data_.push_back(
       AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              e_bounds, transform_e_to_e, 0);  // e
+                              e_bounds, transform_e_to_e, 0));  // e
+  SendHitTestData();
 
   // All points are in e's coordinate system when we reach this case.
   gfx::PointF point1(1, 1);
@@ -110,17 +94,16 @@ TEST_F(HitTestQueryTest, OneEmbedderTwoChildren) {
   gfx::Transform transform_e_to_e, transform_e_to_c1, transform_e_to_c2;
   transform_e_to_c1.Translate(-100, -100);
   transform_e_to_c2.Translate(-300, -300);
-  AggregatedHitTestRegion* aggregated_hit_test_region_list =
-      aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] =
+  active_data_.push_back(
       AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              e_bounds_in_e, transform_e_to_e, 2);  // e
-  aggregated_hit_test_region_list[1] =
+                              e_bounds_in_e, transform_e_to_e, 2));  // e
+  active_data_.push_back(
       AggregatedHitTestRegion(c1_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              c1_bounds_in_e, transform_e_to_c1, 0);  // c1
-  aggregated_hit_test_region_list[2] =
+                              c1_bounds_in_e, transform_e_to_c1, 0));  // c1
+  active_data_.push_back(
       AggregatedHitTestRegion(c2_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              c2_bounds_in_e, transform_e_to_c2, 0);  // c2
+                              c2_bounds_in_e, transform_e_to_c2, 0));  // c2
+  SendHitTestData();
 
   // All points are in e's coordinate system when we reach this case.
   gfx::PointF point1(99, 200);
@@ -163,14 +146,13 @@ TEST_F(HitTestQueryTest, OneEmbedderRotatedChild) {
   transform_e_to_c.Translate(-100, -100);
   transform_e_to_c.Skew(2, 3);
   transform_e_to_c.Scale(.5f, .7f);
-  AggregatedHitTestRegion* aggregated_hit_test_region_list =
-      aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] =
+  active_data_.push_back(
       AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              e_bounds_in_e, transform_e_to_e, 1);  // e
-  aggregated_hit_test_region_list[1] =
+                              e_bounds_in_e, transform_e_to_e, 1));  // e
+  active_data_.push_back(
       AggregatedHitTestRegion(c_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              c_bounds_in_e, transform_e_to_c, 0);  // c
+                              c_bounds_in_e, transform_e_to_c, 0));  // c
+  SendHitTestData();
 
   // All points are in e's coordinate system when we reach this case.
   gfx::PointF point1(150, 120);  // Point(-22.07, -12.07) after transform.
@@ -214,20 +196,19 @@ TEST_F(HitTestQueryTest, ClippedChildWithTabAndTransparentBackground) {
       transform_c_to_b;
   transform_e_to_c.Translate(-200, -100);
   transform_c_to_b.Translate(0, -100);
-  AggregatedHitTestRegion* aggregated_hit_test_region_list =
-      aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] =
+  active_data_.push_back(
       AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              e_bounds_in_e, transform_e_to_e, 3);  // e
-  aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
+                              e_bounds_in_e, transform_e_to_e, 3));  // e
+  active_data_.push_back(AggregatedHitTestRegion(
       c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
-      transform_e_to_c, 2);  // c
-  aggregated_hit_test_region_list[2] =
+      transform_e_to_c, 2));  // c
+  active_data_.push_back(
       AggregatedHitTestRegion(a_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              a_bounds_in_c, transform_c_to_a, 0);  // a
-  aggregated_hit_test_region_list[3] =
+                              a_bounds_in_c, transform_c_to_a, 0));  // a
+  active_data_.push_back(
       AggregatedHitTestRegion(b_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              b_bounds_in_c, transform_c_to_b, 0);  // b
+                              b_bounds_in_c, transform_c_to_b, 0));  // b
+  SendHitTestData();
 
   // All points are in e's coordinate system when we reach this case.
   gfx::PointF point1(1, 1);
@@ -289,23 +270,22 @@ TEST_F(HitTestQueryTest, ClippedChildWithChildUnderneath) {
   transform_e_to_c.Translate(-200, -100);
   transform_c_to_b.Translate(0, -100);
   transform_e_to_d.Translate(-400, -50);
-  AggregatedHitTestRegion* aggregated_hit_test_region_list =
-      aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] =
+  active_data_.push_back(
       AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              e_bounds_in_e, transform_e_to_e, 4);  // e
-  aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
+                              e_bounds_in_e, transform_e_to_e, 4));  // e
+  active_data_.push_back(AggregatedHitTestRegion(
       c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
-      transform_e_to_c, 2);  // c
-  aggregated_hit_test_region_list[2] =
+      transform_e_to_c, 2));  // c
+  active_data_.push_back(
       AggregatedHitTestRegion(a_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              a_bounds_in_c, transform_c_to_a, 0);  // a
-  aggregated_hit_test_region_list[3] =
+                              a_bounds_in_c, transform_c_to_a, 0));  // a
+  active_data_.push_back(
       AggregatedHitTestRegion(b_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              b_bounds_in_c, transform_c_to_b, 0);  // b
-  aggregated_hit_test_region_list[4] =
+                              b_bounds_in_c, transform_c_to_b, 0));  // b
+  active_data_.push_back(
       AggregatedHitTestRegion(d_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              d_bounds_in_e, transform_e_to_d, 0);  // d
+                              d_bounds_in_e, transform_e_to_d, 0));  // d
+  SendHitTestData();
 
   // All points are in e's coordinate system when we reach this case.
   gfx::PointF point1(1, 1);
@@ -355,23 +335,22 @@ TEST_F(HitTestQueryTest, ClippedChildWithChildUnderneathTransform) {
       transform_c_to_b, transform_e_to_d;
   transform_e_to_c.Translate(-200, -100);
   transform_e_to_d.Translate(-400, -50);
-  AggregatedHitTestRegion* aggregated_hit_test_region_list =
-      aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] =
+  active_data_.push_back(
       AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              e_bounds_in_e, transform_e_to_e, 4);  // e
-  aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
+                              e_bounds_in_e, transform_e_to_e, 4));  // e
+  active_data_.push_back(AggregatedHitTestRegion(
       c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
-      transform_e_to_c, 2);  // c
-  aggregated_hit_test_region_list[2] =
+      transform_e_to_c, 2));  // c
+  active_data_.push_back(
       AggregatedHitTestRegion(a_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              a_bounds_in_c, transform_c_to_a, 0);  // a
-  aggregated_hit_test_region_list[3] =
+                              a_bounds_in_c, transform_c_to_a, 0));  // a
+  active_data_.push_back(
       AggregatedHitTestRegion(b_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              b_bounds_in_c, transform_c_to_b, 0);  // b
-  aggregated_hit_test_region_list[4] =
+                              b_bounds_in_c, transform_c_to_b, 0));  // b
+  active_data_.push_back(
       AggregatedHitTestRegion(d_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              d_bounds_in_e, transform_e_to_d, 0);  // d
+                              d_bounds_in_e, transform_e_to_d, 0));  // d
+  SendHitTestData();
 
   // All points are in e's coordinate system when we reach this case.
   gfx::PointF point1(1, 1);
@@ -438,29 +417,28 @@ TEST_F(HitTestQueryTest, ClippedChildrenWithTabAndTransparentBackground) {
   transform_c1_to_b.Translate(0, -100);
   transform_e_to_c2.Translate(-200, -700);
   transform_c2_to_h.Translate(0, -100);
-  AggregatedHitTestRegion* aggregated_hit_test_region_list =
-      aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] =
+  active_data_.push_back(
       AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              e_bounds_in_e, transform_e_to_e, 6);  // e
-  aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
+                              e_bounds_in_e, transform_e_to_e, 6));  // e
+  active_data_.push_back(AggregatedHitTestRegion(
       c1_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
-      c1_bounds_in_e, transform_e_to_c1, 2);  // c1
-  aggregated_hit_test_region_list[2] =
+      c1_bounds_in_e, transform_e_to_c1, 2));  // c1
+  active_data_.push_back(
       AggregatedHitTestRegion(a_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              a_bounds_in_c1, transform_c1_to_a, 0);  // a
-  aggregated_hit_test_region_list[3] =
+                              a_bounds_in_c1, transform_c1_to_a, 0));  // a
+  active_data_.push_back(
       AggregatedHitTestRegion(b_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              b_bounds_in_c1, transform_c1_to_b, 0);  // b
-  aggregated_hit_test_region_list[4] = AggregatedHitTestRegion(
+                              b_bounds_in_c1, transform_c1_to_b, 0));  // b
+  active_data_.push_back(AggregatedHitTestRegion(
       c2_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
-      c2_bounds_in_e, transform_e_to_c2, 2);  // c2
-  aggregated_hit_test_region_list[5] =
+      c2_bounds_in_e, transform_e_to_c2, 2));  // c2
+  active_data_.push_back(
       AggregatedHitTestRegion(g_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              g_bounds_in_c2, transform_c2_to_g, 0);  // g
-  aggregated_hit_test_region_list[6] =
+                              g_bounds_in_c2, transform_c2_to_g, 0));  // g
+  active_data_.push_back(
       AggregatedHitTestRegion(h_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              h_bounds_in_c2, transform_c2_to_h, 0);  // h
+                              h_bounds_in_c2, transform_c2_to_h, 0));  // h
+  SendHitTestData();
 
   // All points are in e's coordinate system when we reach this case.
   gfx::PointF point1(1, 1);
@@ -540,29 +518,28 @@ TEST_F(HitTestQueryTest,
   transform_c1_to_b.Translate(0, -100);
   transform_e_to_c2.Translate(-200, -700);
   transform_c2_to_h.Translate(0, -100);
-  AggregatedHitTestRegion* aggregated_hit_test_region_list =
-      aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] =
+  active_data_.push_back(
       AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              e_bounds_in_e, transform_e_to_e, 6);  // e
-  aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
+                              e_bounds_in_e, transform_e_to_e, 6));  // e
+  active_data_.push_back(AggregatedHitTestRegion(
       c1_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
-      c1_bounds_in_e, transform_e_to_c1, 2);  // c1
-  aggregated_hit_test_region_list[2] =
+      c1_bounds_in_e, transform_e_to_c1, 2));  // c1
+  active_data_.push_back(
       AggregatedHitTestRegion(a_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              a_bounds_in_c1, transform_c1_to_a, 0);  // a
-  aggregated_hit_test_region_list[3] =
+                              a_bounds_in_c1, transform_c1_to_a, 0));  // a
+  active_data_.push_back(
       AggregatedHitTestRegion(b_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              b_bounds_in_c1, transform_c1_to_b, 0);  // b
-  aggregated_hit_test_region_list[4] = AggregatedHitTestRegion(
+                              b_bounds_in_c1, transform_c1_to_b, 0));  // b
+  active_data_.push_back(AggregatedHitTestRegion(
       c2_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
-      c2_bounds_in_e, transform_e_to_c2, 2);  // c2
-  aggregated_hit_test_region_list[5] =
+      c2_bounds_in_e, transform_e_to_c2, 2));  // c2
+  active_data_.push_back(
       AggregatedHitTestRegion(g_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              g_bounds_in_c2, transform_c2_to_g, 0);  // g
-  aggregated_hit_test_region_list[6] =
+                              g_bounds_in_c2, transform_c2_to_g, 0));  // g
+  active_data_.push_back(
       AggregatedHitTestRegion(h_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              h_bounds_in_c2, transform_c2_to_h, 0);  // h
+                              h_bounds_in_c2, transform_c2_to_h, 0));  // h
+  SendHitTestData();
 
   // All points are in e's coordinate system when we reach this case.
   gfx::PointF point1(1, 1);
@@ -636,26 +613,25 @@ TEST_F(HitTestQueryTest, MultipleLayerChild) {
   transform_a_to_b.Translate(-50, -30);
   transform_b_to_g.Translate(-150, -200);
   transform_e_to_c2.Translate(-400, -50);
-  AggregatedHitTestRegion* aggregated_hit_test_region_list =
-      aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] =
+  active_data_.push_back(
       AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              e_bounds_in_e, transform_e_to_e, 5),  // e
-      aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
-          c1_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
-          c1_bounds_in_e, transform_e_to_c1, 3);  // c1
-  aggregated_hit_test_region_list[2] =
+                              e_bounds_in_e, transform_e_to_e, 5));  // e
+  active_data_.push_back(AggregatedHitTestRegion(
+      c1_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
+      c1_bounds_in_e, transform_e_to_c1, 3));  // c1
+  active_data_.push_back(
       AggregatedHitTestRegion(a_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              a_bounds_in_c1, transform_c1_to_a, 2);  // a
-  aggregated_hit_test_region_list[3] =
+                              a_bounds_in_c1, transform_c1_to_a, 2));  // a
+  active_data_.push_back(
       AggregatedHitTestRegion(b_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              b_bounds_in_a, transform_a_to_b, 1);  // b
-  aggregated_hit_test_region_list[4] =
+                              b_bounds_in_a, transform_a_to_b, 1));  // b
+  active_data_.push_back(
       AggregatedHitTestRegion(g_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              g_bounds_in_b, transform_b_to_g, 0);  // g
-  aggregated_hit_test_region_list[5] =
+                              g_bounds_in_b, transform_b_to_g, 0));  // g
+  active_data_.push_back(
       AggregatedHitTestRegion(c2_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              c2_bounds_in_e, transform_e_to_c2, 0);  // c2
+                              c2_bounds_in_e, transform_e_to_c2, 0));  // c2
+  SendHitTestData();
 
   // All points are in e's coordinate system when we reach this case.
   gfx::PointF point1(1, 1);
@@ -722,26 +698,25 @@ TEST_F(HitTestQueryTest, MultipleLayerTransparentChild) {
   transform_a_to_b.Translate(-50, -30);
   transform_b_to_g.Translate(-150, -200);
   transform_e_to_c2.Translate(-400, -50);
-  AggregatedHitTestRegion* aggregated_hit_test_region_list =
-      aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] =
+  active_data_.push_back(
       AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              e_bounds_in_e, transform_e_to_e, 5);  // e
-  aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
+                              e_bounds_in_e, transform_e_to_e, 5));  // e
+  active_data_.push_back(AggregatedHitTestRegion(
       c1_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
-      c1_bounds_in_e, transform_e_to_c1, 3);  // c1
-  aggregated_hit_test_region_list[2] = AggregatedHitTestRegion(
+      c1_bounds_in_e, transform_e_to_c1, 3));  // c1
+  active_data_.push_back(AggregatedHitTestRegion(
       a_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, a_bounds_in_c1,
-      transform_c1_to_a, 2);  // a
-  aggregated_hit_test_region_list[3] = AggregatedHitTestRegion(
+      transform_c1_to_a, 2));  // a
+  active_data_.push_back(AggregatedHitTestRegion(
       b_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, b_bounds_in_a,
-      transform_a_to_b, 1);  // b
-  aggregated_hit_test_region_list[4] = AggregatedHitTestRegion(
+      transform_a_to_b, 1));  // b
+  active_data_.push_back(AggregatedHitTestRegion(
       g_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, g_bounds_in_b,
-      transform_b_to_g, 0);  // g
-  aggregated_hit_test_region_list[5] =
+      transform_b_to_g, 0));  // g
+  active_data_.push_back(
       AggregatedHitTestRegion(c2_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              c2_bounds_in_e, transform_e_to_c2, 0);  // c2
+                              c2_bounds_in_e, transform_e_to_c2, 0));  // c2
+  SendHitTestData();
 
   // All points are in e's coordinate system when we reach this case.
   gfx::PointF point1(1, 1);
@@ -787,20 +762,19 @@ TEST_F(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
       transform_c_to_b;
   transform_e_to_c.Translate(-200, -100);
   transform_c_to_b.Translate(0, -100);
-  AggregatedHitTestRegion* aggregated_hit_test_region_list_min =
-      aggregated_hit_test_region();
-  aggregated_hit_test_region_list_min[0] =
+  active_data_.push_back(
       AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              e_bounds_in_e, transform_e_to_e, 3);  // e
-  aggregated_hit_test_region_list_min[1] = AggregatedHitTestRegion(
+                              e_bounds_in_e, transform_e_to_e, 3));  // e
+  active_data_.push_back(AggregatedHitTestRegion(
       c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
-      transform_e_to_c, INT32_MIN);  // c
-  aggregated_hit_test_region_list_min[2] =
+      transform_e_to_c, INT32_MIN));  // c
+  active_data_.push_back(
       AggregatedHitTestRegion(a_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              a_bounds_in_c, transform_c_to_a, 0);  // a
-  aggregated_hit_test_region_list_min[3] =
+                              a_bounds_in_c, transform_c_to_a, 0));  // a
+  active_data_.push_back(
       AggregatedHitTestRegion(b_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              b_bounds_in_c, transform_c_to_b, 0);  // b
+                              b_bounds_in_c, transform_c_to_b, 0));  // b
+  SendHitTestData();
 
   // All points are in e's coordinate system when we reach this case.
   gfx::PointF point1(1, 1);
@@ -820,20 +794,20 @@ TEST_F(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
   EXPECT_EQ(target2.location_in_target, gfx::PointF());
   EXPECT_FALSE(target2.flags);
 
-  AggregatedHitTestRegion* aggregated_hit_test_region_list_max =
-      aggregated_hit_test_region();
-  aggregated_hit_test_region_list_max[0] =
-      AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              e_bounds_in_e, transform_e_to_e, INT32_MAX);  // e
-  aggregated_hit_test_region_list_max[1] = AggregatedHitTestRegion(
+  active_data_.clear();
+  active_data_.push_back(AggregatedHitTestRegion(
+      e_id, mojom::kHitTestMine | mojom::kHitTestMouse, e_bounds_in_e,
+      transform_e_to_e, INT32_MAX));  // e
+  active_data_.push_back(AggregatedHitTestRegion(
       c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
-      transform_e_to_c, 2);  // c
-  aggregated_hit_test_region_list_max[2] =
+      transform_e_to_c, 2));  // c
+  active_data_.push_back(
       AggregatedHitTestRegion(a_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              a_bounds_in_c, transform_c_to_a, 0);  // a
-  aggregated_hit_test_region_list_max[3] =
+                              a_bounds_in_c, transform_c_to_a, 0));  // a
+  active_data_.push_back(
       AggregatedHitTestRegion(b_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              b_bounds_in_c, transform_c_to_b, 0);  // b
+                              b_bounds_in_c, transform_c_to_b, 0));  // b
+  SendHitTestData();
 
   Target target3 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
@@ -841,20 +815,20 @@ TEST_F(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
   EXPECT_EQ(target3.location_in_target, gfx::PointF());
   EXPECT_FALSE(target3.flags);
 
-  AggregatedHitTestRegion* aggregated_hit_test_region_list_bigger =
-      aggregated_hit_test_region();
-  aggregated_hit_test_region_list_bigger[0] =
+  active_data_.clear();
+  active_data_.push_back(
       AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              e_bounds_in_e, transform_e_to_e, 3);  // e
-  aggregated_hit_test_region_list_bigger[1] = AggregatedHitTestRegion(
+                              e_bounds_in_e, transform_e_to_e, 3));  // e
+  active_data_.push_back(AggregatedHitTestRegion(
       c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
-      transform_e_to_c, 3);  // c
-  aggregated_hit_test_region_list_bigger[2] =
+      transform_e_to_c, 3));  // c
+  active_data_.push_back(
       AggregatedHitTestRegion(a_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              a_bounds_in_c, transform_c_to_a, 0);  // a
-  aggregated_hit_test_region_list_bigger[3] =
+                              a_bounds_in_c, transform_c_to_a, 0));  // a
+  active_data_.push_back(
       AggregatedHitTestRegion(b_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              b_bounds_in_c, transform_c_to_b, 0);  // b
+                              b_bounds_in_c, transform_c_to_b, 0));  // b
+  SendHitTestData();
 
   Target target4 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
@@ -874,17 +848,16 @@ TEST_F(HitTestQueryTest, MouseTouchFlags) {
   gfx::Transform transform_e_to_e, transform_e_to_c1, transform_e_to_c2;
   transform_e_to_c1.Translate(-100, -100);
   transform_e_to_c2.Translate(-75, -75);
-  AggregatedHitTestRegion* aggregated_hit_test_region_list =
-      aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] = AggregatedHitTestRegion(
+  active_data_.push_back(AggregatedHitTestRegion(
       e_id, mojom::kHitTestMine | mojom::kHitTestMouse | mojom::kHitTestTouch,
-      e_bounds_in_e, transform_e_to_e, 2);  // e
-  aggregated_hit_test_region_list[1] =
+      e_bounds_in_e, transform_e_to_e, 2));  // e
+  active_data_.push_back(
       AggregatedHitTestRegion(c1_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              c1_bounds_in_e, transform_e_to_c1, 0);  // c1
-  aggregated_hit_test_region_list[2] =
+                              c1_bounds_in_e, transform_e_to_c1, 0));  // c1
+  active_data_.push_back(
       AggregatedHitTestRegion(c2_id, mojom::kHitTestMine | mojom::kHitTestTouch,
-                              c2_bounds_in_e, transform_e_to_c2, 0);  // c2
+                              c2_bounds_in_e, transform_e_to_c2, 0));  // c2
+  SendHitTestData();
 
   // All points are in e's coordinate system when we reach this case.
   gfx::PointF point1(80, 80);
@@ -920,11 +893,10 @@ TEST_F(HitTestQueryTest, RootHitTestAskFlag) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   gfx::Rect e_bounds = gfx::Rect(0, 0, 600, 600);
   gfx::Transform transform_e_to_e;
-  AggregatedHitTestRegion* aggregated_hit_test_region_list =
-      aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] =
+  active_data_.push_back(
       AggregatedHitTestRegion(e_id, mojom::kHitTestAsk | mojom::kHitTestMouse,
-                              e_bounds, transform_e_to_e, 0);  // e
+                              e_bounds, transform_e_to_e, 0));  // e
+  SendHitTestData();
 
   // All points are in e's coordinate system when we reach this case.
   gfx::PointF point1(1, 1);
@@ -964,17 +936,16 @@ TEST_F(HitTestQueryTest, ChildHitTestAskFlag) {
   gfx::Transform transform_e_to_e, transform_e_to_c1, transform_e_to_c2;
   transform_e_to_c1.Translate(-100, -100);
   transform_e_to_c2.Translate(-300, -300);
-  AggregatedHitTestRegion* aggregated_hit_test_region_list =
-      aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] =
+  active_data_.push_back(
       AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              e_bounds_in_e, transform_e_to_e, 2);  // e
-  aggregated_hit_test_region_list[1] =
+                              e_bounds_in_e, transform_e_to_e, 2));  // e
+  active_data_.push_back(
       AggregatedHitTestRegion(c1_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              c1_bounds_in_e, transform_e_to_c1, 0);  // c1
-  aggregated_hit_test_region_list[2] =
+                              c1_bounds_in_e, transform_e_to_c1, 0));  // c1
+  active_data_.push_back(
       AggregatedHitTestRegion(c2_id, mojom::kHitTestAsk | mojom::kHitTestMouse,
-                              c2_bounds_in_e, transform_e_to_c2, 0);  // c2
+                              c2_bounds_in_e, transform_e_to_c2, 0));  // c2
+  SendHitTestData();
 
   // All points are in e's coordinate system when we reach this case.
   gfx::PointF point1(99, 200);
@@ -1020,23 +991,22 @@ TEST_F(HitTestQueryTest, GetTransformToTarget) {
   transform_e_to_d.Translate(-400, -50);
   transform_c_to_b.Skew(2, 3);
   transform_c_to_b.Scale(.5f, .7f);
-  AggregatedHitTestRegion* aggregated_hit_test_region_list =
-      aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] =
+  active_data_.push_back(
       AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              e_bounds_in_e, transform_e_to_e, 4);  // e
-  aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
+                              e_bounds_in_e, transform_e_to_e, 4));  // e
+  active_data_.push_back(AggregatedHitTestRegion(
       c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
-      transform_e_to_c, 2);  // c
-  aggregated_hit_test_region_list[2] =
+      transform_e_to_c, 2));  // c
+  active_data_.push_back(
       AggregatedHitTestRegion(a_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              a_bounds_in_c, transform_c_to_a, 0);  // a
-  aggregated_hit_test_region_list[3] =
+                              a_bounds_in_c, transform_c_to_a, 0));  // a
+  active_data_.push_back(
       AggregatedHitTestRegion(b_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              b_bounds_in_c, transform_c_to_b, 0);  // b
-  aggregated_hit_test_region_list[4] =
+                              b_bounds_in_c, transform_c_to_b, 0));  // b
+  active_data_.push_back(
       AggregatedHitTestRegion(d_id, mojom::kHitTestMine | mojom::kHitTestMouse,
-                              d_bounds_in_e, transform_e_to_d, 0);  // d
+                              d_bounds_in_e, transform_e_to_d, 0));  // d
+  SendHitTestData();
 
   // Check that we can get the correct transform to all regions.
   gfx::Transform transform_to_e;

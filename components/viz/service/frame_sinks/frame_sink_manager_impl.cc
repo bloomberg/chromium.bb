@@ -352,25 +352,10 @@ void FrameSinkManagerImpl::OnSurfaceDamageExpected(const SurfaceId& surface_id,
 
 void FrameSinkManagerImpl::OnAggregatedHitTestRegionListUpdated(
     const FrameSinkId& frame_sink_id,
-    mojo::ScopedSharedBufferHandle active_handle,
-    uint32_t active_handle_size,
-    mojo::ScopedSharedBufferHandle idle_handle,
-    uint32_t idle_handle_size) {
+    const std::vector<AggregatedHitTestRegion>& hit_test_data) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (client_) {
-    client_->OnAggregatedHitTestRegionListUpdated(
-        frame_sink_id, std::move(active_handle), active_handle_size,
-        std::move(idle_handle), idle_handle_size);
-  }
-}
-
-void FrameSinkManagerImpl::SwitchActiveAggregatedHitTestRegionList(
-    const FrameSinkId& frame_sink_id,
-    uint8_t active_handle_index) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (client_) {
-    client_->SwitchActiveAggregatedHitTestRegionList(frame_sink_id,
-                                                     active_handle_index);
+    client_->OnAggregatedHitTestRegionListUpdated(frame_sink_id, hit_test_data);
   }
 }
 
