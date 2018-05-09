@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 
@@ -28,10 +27,6 @@ const char kTestCrosGaiaIdMigration[] = "test-cros-gaia-id-migration";
 // all stored user keys will be converted to GaiaId)
 const char kTestCrosGaiaIdMigrationStarted[] = "started";
 
-// Controls whether enable Google Assistant feature.
-const base::Feature kAssistantFeature{"ChromeOSAssistant",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls whether enable assistant for locale.
 const base::Feature kAssistantFeatureForLocale{
     "ChromeOSAssistantForLocale", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -47,6 +42,10 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
     base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace
+
+// Controls whether enable Google Assistant feature.
+const base::Feature kAssistantFeature{"ChromeOSAssistant",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Please keep the order of these switches synchronized with the header file
 // (i.e. in alphabetical order).

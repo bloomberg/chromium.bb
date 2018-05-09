@@ -12,6 +12,7 @@
 #include "ash/public/interfaces/highlighter_controller.mojom.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace base {
@@ -30,8 +31,23 @@ class ASH_EXPORT HighlighterController
     : public fast_ink::FastInkPointerController,
       public mojom::HighlighterController {
  public:
+  // Interface for classes that wish to be notified with highlighter status.
+  class Observer {
+   public:
+    // Called when highlighter enabled status changes.
+    // TODO(warx): add a reason enum to distinguish the case of deselecting the
+    // tool and done with a stylus selection.
+    virtual void OnHighlighterEnabledChanged(bool enabled) {}
+
+   protected:
+    virtual ~Observer() = default;
+  };
+
   HighlighterController();
   ~HighlighterController() override;
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Set the callback to exit the highlighter mode. If |require_success| is
   // true, the callback will be called only after a successful gesture
@@ -114,6 +130,8 @@ class ASH_EXPORT HighlighterController
 
   // Interface to highlighter controller client (chrome).
   mojom::HighlighterControllerClientPtr client_;
+
+  base::ObserverList<Observer> observers_;
 
   base::WeakPtrFactory<HighlighterController> weak_factory_;
 

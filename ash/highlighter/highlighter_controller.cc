@@ -64,6 +64,16 @@ HighlighterController::~HighlighterController() {
   Shell::Get()->RemovePreTargetHandler(this);
 }
 
+void HighlighterController::AddObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.AddObserver(observer);
+}
+
+void HighlighterController::RemoveObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.RemoveObserver(observer);
+}
+
 void HighlighterController::SetExitCallback(base::OnceClosure exit_callback,
                                             bool require_success) {
   exit_callback_ = std::move(exit_callback);
@@ -89,6 +99,9 @@ void HighlighterController::SetEnabled(bool enabled) {
     if (highlighter_view_ && !highlighter_view_->animating())
       DestroyPointerView();
   }
+  for (auto& observer : observers_)
+    observer.OnHighlighterEnabledChanged(enabled);
+
   if (client_)
     client_->HandleEnabledStateChange(enabled);
 }

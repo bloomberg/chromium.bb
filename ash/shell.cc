@@ -1088,10 +1088,6 @@ void Shell::Init(ui::ContextFactory* context_factory,
   app_list_controller_ = std::make_unique<AppListControllerImpl>();
   shelf_controller_ = std::make_unique<ShelfController>();
 
-  ash_assistant_controller_ = chromeos::switches::IsAssistantEnabled()
-                                  ? std::make_unique<AshAssistantController>()
-                                  : nullptr;
-
   magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler();
   AddPreTargetHandler(magnifier_key_scroll_handler_.get());
   speech_feedback_handler_ = SpokenFeedbackToggler::CreateHandler();
@@ -1177,6 +1173,10 @@ void Shell::Init(ui::ContextFactory* context_factory,
   highlighter_controller_.reset(new HighlighterController());
   voice_interaction_controller_ =
       std::make_unique<VoiceInteractionController>();
+
+  ash_assistant_controller_ = chromeos::switches::IsAssistantEnabled()
+                                  ? std::make_unique<AshAssistantController>()
+                                  : nullptr;
 
   magnification_controller_ = std::make_unique<MagnificationController>();
   mru_window_tracker_ = std::make_unique<MruWindowTracker>();

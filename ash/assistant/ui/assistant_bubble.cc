@@ -126,7 +126,7 @@ void AssistantBubble::OnWidgetActivationChanged(views::Widget* widget,
     container_view_->RequestFocus();
 }
 
-void AssistantBubble::OnWidgetClosing(views::Widget* widget) {
+void AssistantBubble::OnWidgetDestroying(views::Widget* widget) {
   container_view_->GetWidget()->RemoveObserver(this);
   container_view_ = nullptr;
 }
@@ -153,7 +153,7 @@ void AssistantBubble::Show() {
 
 void AssistantBubble::Dismiss() {
   if (container_view_)
-    container_view_->GetWidget()->Close();
+    container_view_->GetWidget()->Hide();
 }
 
 }  // namespace ash
