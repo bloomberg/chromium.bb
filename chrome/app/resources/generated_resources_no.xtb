@@ -42,7 +42,6 @@
 <translation id="1056898198331236512">Advarsel</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1062407476771304334">Erstatt</translation>
-<translation id="1062866675591297858">Administrer de administrerte brukerne dine via <ph name="BEGIN_LINK" />oversikten for administrerte brukere<ph name="END_LINK" />.</translation>
 <translation id="1064835277883315402">Tilkobling til privat nettverk</translation>
 <translation id="1064912851688322329">Frakobling av Google-kontoen din</translation>
 <translation id="1067048845568873861">Opprettet</translation>
@@ -65,7 +64,6 @@
 <translation id="1091767800771861448">Trykk på ESC for å hoppe over denne (bare uoffisielle delversjoner).</translation>
 <translation id="1093457606523402488">Synlige nettverk:</translation>
 <translation id="1094607894174825014">Det ble bedt om en lese- eller skriveoperasjon med en ugyldig forskyvning på: «<ph name="DEVICE_NAME" />».</translation>
-<translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Logg på<ph name="END_SIGN_IN_LINK" /> for å kontrollere og se nettstedene denne personen besøker.</translation>
 <translation id="109758035718544977">Slå på lyden for nettsteder</translation>
 <translation id="1097658378307015415">Gå inn som gjest for å aktivere nettverket <ph name="NETWORK_ID" /> før du logger deg på.</translation>
 <translation id="1103523840287552314">Oversett alltid <ph name="LANGUAGE" /></translation>
@@ -244,7 +242,6 @@
 <translation id="1361655923249334273">Ubrukt</translation>
 <translation id="1363028406613469049">Spor</translation>
 <translation id="1367951781824006909">Velg en fil</translation>
-<translation id="136802136832547685">Det finnes ingen administrerte brukere som kan legges til på denne enheten.</translation>
 <translation id="1368265273904755308">Rapportér problem</translation>
 <translation id="1370646789215800222">Vil du fjerne personen?</translation>
 <translation id="1372681413396468867">{NUM_ITEMS,plural, =1{1 element som skal fjernes}other{# elementer som skal fjernes}}</translation>
@@ -469,7 +466,6 @@
 <translation id="1692799361700686467">Informasjonskapsler fra flere nettsteder tillates.</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698122934742150150">Bare denne inkognitoøkten</translation>
-<translation id="1700199471143028312">Administratoren tillater deg ikke å opprette administrerte brukere.</translation>
 <translation id="1701062906490865540">Fjern denne personen</translation>
 <translation id="1706586824377653884">Lagt til av administratoren din</translation>
 <translation id="1706625117072057435">Zoomnivåer</translation>
@@ -1008,7 +1004,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2562685439590298522">Google Dokumenter</translation>
 <translation id="2562743677925229011">Ikke logget på <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Gratulerer! <ph name="NAME" />-datatjenesten din er aktivert og klar til bruk.</translation>
-<translation id="2564520396658920462">Kjøring av JavaScript gjennom AppleScript er slått av. For å slå det på, i menylinjen, går du til Visning &gt; Utvikler &gt; Tillat JavaScript fra Apple Events. For mer informasjon, se: https://support.google.com/chrome/?p=applescript</translation>
+<translation id="2564520396658920462">Kjøring av JavaScript gjennom AppleScript er slått av. For å slå det på, gå til menylinjen og velg Vis &gt; Utvikler &gt; Tillat JavaScript fra Apple Events. For mer informasjon, se: https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2566124945717127842">Kjør Powerwash for å tilbakestille <ph name="IDS_SHORT_PRODUCT_NAME" />-enheten så den blir som ny.</translation>
 <translation id="2567257616420533738">Passordet er lagret. Se og administrer lagrede passord på <ph name="SAVED_PASSWORDS_LINK" /></translation>
 <translation id="2568774940984945469">Beholder for inforad</translation>
@@ -1037,7 +1033,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2604255671529671813">Feil i nettverkstilkobling</translation>
 <translation id="2606246518223360146">Knytt sammen dataene</translation>
 <translation id="2607101320794533334">Informasjon om enhetens offentlige nøkkel</translation>
-<translation id="2607459012323956820">Det kan hende at innstillingene og nettleserloggen til denne administrerte brukeren fortsatt kan ses av administratoren, på <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" />.</translation>
 <translation id="2608770217409477136">Bruk standardinnstillinger</translation>
 <translation id="2609896558069604090">Opprett snarveier</translation>
 <translation id="2610157865375787051">Hvilemodus</translation>
@@ -1280,7 +1275,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2951247061394563839">Sentrér vinduet</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> informasjonskapsler</translation>
 <translation id="2958721676848865875">Advarsel om pakkeutvidelse</translation>
-<translation id="2961043351165706615">Linux-apper du har installert, slettes fra Chromebook.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (fra utvidelse)</translation>
 <translation id="2961695502793809356">Klikk for å gå fremover – hold for å se logg</translation>
 <translation id="2963151496262057773">Følgende programtillegg svarer ikke: <ph name="PLUGIN_NAME" />Vil du stoppe det?</translation>
@@ -1332,15 +1326,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="3022978424994383087">Det skjønte jeg ikke.</translation>
 <translation id="3024374909719388945">Bruk 24-timersklokke</translation>
 <translation id="302781076327338683">Last inn omgåelsesbufferen på nytt</translation>
-<translation id="3030243755303701754">Administrerte brukere kan surfe på nettet med veiledning fra deg. Som administrator for administrerte brukere i Chrome kan du:
-
- • tillate eller forby spesifikke nettsteder,
- • gå gjennom nettstedene de administrerte brukerne har besøkt, og
- • administrere andre innstillinger.
-
-Det opprettes ikke noen Google-kontoer når du oppretter administrerte brukere, og bokmerkene, nettlesingsloggen og de andre preferansene til disse brukerne blir ikke overført til andre enheter med Chrome-synkroniseringen. Når du har opprettet en ny administrert bruker, kan du når som helst administrere vedkommendes innstillinger – fra alle slags enheter – ved å gå til <ph name="BEGIN_MANAGE_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_MANAGE_LINK" />.
-
-Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_LINK" />.</translation>
 <translation id="3031417829280473749">Agent X</translation>
 <translation id="3031557471081358569">Velg elementer som skal importeres:</translation>
 <translation id="3031601332414921114">Gjenoppta utskriftsjobben</translation>
@@ -1381,7 +1366,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3085412380278336437">Nettstedet kan bruke kameraet ditt</translation>
 <translation id="3085752524577180175">SOCKS-vert</translation>
 <translation id="3088325635286126843">&amp;Gi nytt navn</translation>
-<translation id="3089231390674410424">Det ser ut til å være et problem med legitimasjonen din. Sjekk at du er logget på riktig, og prøv på nytt.</translation>
 <translation id="3090193911106258841">Åpner lyd- og videoinngang</translation>
 <translation id="3090819949319990166">Kunne ikke kopiere den eksterne crx-filen til <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">«<ph name="DEVICE_NAME" />» er tilkoblet</translation>
@@ -1396,7 +1380,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3121793941267913344">Tilbakestill denne <ph name="IDS_SHORT_PRODUCT_NAME" />-enheten</translation>
 <translation id="3122464029669770682">Prosessor</translation>
 <translation id="3122496702278727796">Kan ikke opprette datakatalog</translation>
-<translation id="3123569374670379335">(administrert)</translation>
 <translation id="3124111068741548686">BRUKEREN håndterer</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Dette fører til at alle data de viste nettstedene har lagret på enheten din, blir slettet. Vil du fortsette?</translation>
@@ -1431,8 +1414,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (maskinvarestøttet)</translation>
 <translation id="316125635462764134">Fjern appen</translation>
 <translation id="3161522574479303604">Alle språk</translation>
-<translation id="316307797510303346">Kontrollér og se nettstedene denne personen besøker fra <ph name="CUSTODIAN_EMAIL" />. 
-    Påloggingsinformasjonen for kontoen din er utdatert.</translation>
 <translation id="3165390001037658081">Det kan hende at enkelte operatører blokkerer denne funksjonen.</translation>
 <translation id="316854673539778496">For å få alle utvidelsene dine på alle enhetene du bruker, logg på og slå på synkronisering.</translation>
 <translation id="3170072451822350649">Du kan også hoppe over påloggingen og <ph name="LINK_START" />surfe som gjest<ph name="LINK_END" />.</translation>
@@ -1465,7 +1446,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3229922550070982305">spill av / pause</translation>
 <translation id="3232318083971127729">Verdi:</translation>
 <translation id="3236289833370040187">Eierskapet overføres til <ph name="DESTINATION_DOMAIN" />.</translation>
-<translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> er nå en administrert bruker</translation>
 <translation id="323803881985677942">Åpne utvidelsesalternativer</translation>
 <translation id="3241680850019875542">Velg rotkatalogen til utvidelsen som skal pakkes. Hvis du vil oppdatere en utvidelse, velger du også den private nøkkelfilen.</translation>
 <translation id="3242765319725186192">Forhåndsdelt nøkkel:</translation>
@@ -1696,7 +1676,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3584169441612580296">lese og endre bilder, musikk og andre medier fra datamaskinen din</translation>
 <translation id="3587482841069643663">Alle</translation>
 <translation id="358796204584394954">Skriv inn denne koden på «<ph name="DEVICE_NAME" />» for å koble til:</translation>
-<translation id="3589532742556016615">Dette påvirker ikke apper eller innhold på andre enheter.</translation>
 <translation id="3589766037099229847">Usikkert innhold er blokkert</translation>
 <translation id="3590194807845837023">Lås opp profilen og start på nytt</translation>
 <translation id="3592260987370335752">&amp;Les mer</translation>
@@ -1830,7 +1809,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3778152852029592020">Nedlastingen ble avbrutt.</translation>
 <translation id="3778740492972734840">&amp;Utviklerverktøy</translation>
 <translation id="3778868487658107119">Still den spørsmål. Be den gjøre ting. Den er din personlige Google – alltid klar til å hjelpe.</translation>
-<translation id="3780663724044634171">Velg en konto du vil bruke for å administrere den administrerte brukeren.</translation>
 <translation id="378312418865624974">lese en unik identifikator for denne datamaskinen</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Vis appsnarveien</translation>
@@ -2556,7 +2534,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="4964455510556214366">Oppsett</translation>
 <translation id="4964673849688379040">Kontrollerer …</translation>
 <translation id="4965808351167763748">Er du sikker på at du vil konfigurere Hangouts Meet på denne enheten?</translation>
-<translation id="4967749818080339523">Velg en konto</translation>
 <translation id="496888482094675990">Med Filer-appen får du rask tilgang til filer du har lagret på Google Disk, eksterne langringsenheter eller Chrome OS-enheten din.</translation>
 <translation id="4969785127455456148">Album</translation>
 <translation id="4971412780836297815">Åpne når ferdig</translation>
@@ -2742,7 +2719,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
         Uansett hva som skjer med enheten din, er filene dine trygt lagret i Google Disk.<ph name="MARKUP_6" />
         <ph name="MARKUP_7" />Del, skap og samarbeid<ph name="MARKUP_8" />
         med andre om filer – alt på ett sted.<ph name="MARKUP_9" /></translation>
-<translation id="5262401745672360397">Filer som er delt med Linux-apper kan også bli slettet.</translation>
 <translation id="5264148714798105376">Dette kan ta omtrent ett minutt.</translation>
 <translation id="5264252276333215551">Koble til Internett for å starte appen din i kioskmodus.</translation>
 <translation id="5265562206369321422">Frakoblet i mer enn én uke</translation>
@@ -3394,7 +3370,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="6241530762627360640">bruke informasjon om Bluetooth-enheter tilkoblet systemet ditt og oppdage Bluetooth-enheter i nærheten.</translation>
 <translation id="6243280677745499710">Nåværende bakgrunn</translation>
 <translation id="6243774244933267674">Tjeneren er ikke tilgjengelig</translation>
-<translation id="6246413617632217567">Den administrerte brukeren kunne ikke importeres. Sjekk hvor mye plass du har på harddisken, og hvilke tillatelser som er aktive, og prøv på nytt.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6247802389331535091">System: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">Oppdateringen er klar</translation>
@@ -3592,7 +3567,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Merk:<ph name="END_BOLD" /> Ettersom innsamling av data kan redusere ytelsen bør du bare aktivere dette hvis du vet hva du gjør eller har blitt bedt om å gjøre dette.</translation>
 <translation id="654233263479157500">Bruk en nettjeneste til å løse problemer med navigeringsfeil</translation>
 <translation id="6544215763872433504">Nettleseren fra Google – til deg</translation>
-<translation id="6545325945815270297">Administrer de synkroniserte dataene og enhetene dine i <ph name="BEGIN_LINK" />Chrome-oversikten<ph name="END_LINK" />.</translation>
 <translation id="6545665334409411530">Gjentakelsesfrekvens</translation>
 <translation id="6545834809683560467">Bruk en forslagstjeneste for å fullføre søk og nettadresser som skrives inn i adressefeltet eller søkefeltet i appvelgeren</translation>
 <translation id="6546686722964485737">Bli med i et WiMAX-nettverk</translation>
@@ -3607,7 +3581,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="6555810572223193255">Opprydning er utilgjengelig for øyeblikket</translation>
 <translation id="6556866813142980365">Gjør om</translation>
 <translation id="6558280019477628686">Det oppsto en feil. Enkelte elementer ble muligens ikke slettet.</translation>
-<translation id="6559580823502247193">(er allerede på denne enheten)</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Filbanen- eller -navnet er for langt. Lagre med et annet navn eller på et annet sted.</translation>
 <translation id="656398493051028875">Sletter «<ph name="FILENAME" />» ...</translation>
@@ -3804,7 +3777,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="6862635236584086457">Alle filene som lagres i denne mappen, blir automatisk sikkerhetskopiert på nettet</translation>
 <translation id="6865313869410766144">Skjemadata lagret med autofyll</translation>
 <translation id="686664946474413495">Fargetemperatur</translation>
-<translation id="6867678160199975333">Bytt til <ph name="NEW_PROFILE_NAME" /></translation>
 <translation id="6870888490422746447">Velg en app du vil dele med:</translation>
 <translation id="6871644448911473373">OCSP-svarer: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Passordet du skrev inn, ble avvist av tjeneren.</translation>
@@ -3898,7 +3870,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="7018275672629230621">lese og endre leserloggen din</translation>
 <translation id="7019805045859631636">Høy</translation>
 <translation id="7022562585984256452">Startsiden din er angitt.</translation>
-<translation id="7025036625303002400">Det ser ut som du allerede har en administrert bruker med dette navnet.</translation>
 <translation id="7025190659207909717">Administrering av tjenester for mobildata</translation>
 <translation id="7025325401470358758">Neste rute</translation>
 <translation id="7027125358315426638">Databasenavn:</translation>
@@ -3947,7 +3918,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="7092106376816104">Unntak for forgrunnsvinduer</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Utveksle data med enhetene <ph name="HOSTNAMES" /></translation>
-<translation id="7096108453481049031">Den administrerte brukeren kunne ikke importeres. Kontrollér nettverkstilkoblingen din, og prøv igjen senere.</translation>
 <translation id="7096406577040705016">Slå av/på lupe for hele skjermen</translation>
 <translation id="7098447629416471489">Andre lagrede søkemotorer vises her</translation>
 <translation id="7099337801055912064">Kan ikke laste inn stor PPD. Maksimal størrelse er 250 kB.</translation>
@@ -3995,7 +3965,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="7168109975831002660">Minste skriftstørrelse</translation>
 <translation id="7170041865419449892">Utenfor rekkevidde</translation>
 <translation id="7171559745792467651">Installer apper fra de andre enhetene du bruker</translation>
-<translation id="7173917244679555">Det ser ut som om du allerede administrerer en bruker med det navnet. Ville du <ph name="BEGIN_LINK" />importere <ph name="PROFILE_NAME" /> til denne enheten<ph name="END_LINK" />?</translation>
 <translation id="7175037578838465313">Konfigurer <ph name="NAME" /></translation>
 <translation id="7175353351958621980">Lastet fra:</translation>
 <translation id="7180611975245234373">Last inn på nytt</translation>
@@ -4161,7 +4130,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="7444726222535375658">Fortsett til Hangouts Meet</translation>
 <translation id="7444983668544353857">Slå av <ph name="NETWORKDEVICE" /></translation>
 <translation id="7445682342344043969">Forgrunnsvinduer er blokkert</translation>
-<translation id="744859430125590922">Kontrollér og se nettstedene denne personen besøker fra <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="7453008956351770337">Ved å velge denne skriveren gir du følgende utvidelse tillatelse til å bruke skriveren din:</translation>
 <translation id="7453467225369441013">Logger deg av de fleste nettsteder. Du blir ikke logget av Google-kontoen din.</translation>
 <translation id="7456142309650173560">dev</translation>
@@ -4333,7 +4301,6 @@ Når du installerer <ph name="APP_NAME" />, blir det lastet ned <ph name="DOWNLO
 <translation id="7717845620320228976">Se etter oppdateringer</translation>
 <translation id="7719367874908701697">Sidezoom</translation>
 <translation id="771953673318695590">Kvalitetssikring</translation>
-<translation id="7720375555307821262">For å administrere denne personen, <ph name="BEGIN_LINK" />logg på Chrome<ph name="END_LINK" />.</translation>
 <translation id="7721179060400456005">Tillat at vinduer vises over flere skjermer</translation>
 <translation id="7722040605881499779">Trengs for å oppdatere: <ph name="NECESSARY_SPACE" /></translation>
 <translation id="7724603315864178912">Klipp ut</translation>
@@ -5188,7 +5155,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="9024331582947483881">full skjerm</translation>
 <translation id="9025098623496448965">OK, ta meg tilbake til påloggingsskjermen</translation>
 <translation id="9026731007018893674">last ned</translation>
-<translation id="9027146684281895941">Administrer denne personen for å kontrollere og se hvilke nettsteder vedkommende besøker fra Google-kontoen din.</translation>
 <translation id="9027459031423301635">Åpne link i ny &amp;fane</translation>
 <translation id="9027603907212475920">Konfigurer synkronisering</translation>
 <translation id="9030515284705930323">Organisasjonen din har ikke slått på Google Play-butikken for kontoen din. Kontakt administratoren din for å få mer informasjon.</translation>
@@ -5348,7 +5314,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="98515147261107953">Liggende</translation>
 <translation id="987897973846887088">Ingen bilder er tilgjengelige</translation>
 <translation id="988978206646512040">Tomme passordfraser er ikke tillatt</translation>
-<translation id="990310048453480215">Fjern Linux-apper</translation>
 <translation id="992032470292211616">Utvidelser, apper og temaer kan skade enheten din. Er du sikker på at du vil fortsette?</translation>
 <translation id="992592832486024913">Slå av ChromeVox (taletilbakemelding)</translation>
 <translation id="994289308992179865">&amp;Gjenta</translation>

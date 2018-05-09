@@ -111,7 +111,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> tente de s'associer</translation>
 <translation id="1994173015038366702">URL du site</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> Ko par d'autres applis</translation>
-<translation id="2015632741368427174">Redirection bloquée pour le site suivant :</translation>
 <translation id="2017836877785168846">Efface l'historique et les saisies semi-automatiques dans la barre d'adresse.</translation>
 <translation id="2021896219286479412">Commandes du site en plein écran</translation>
 <translation id="2038563949887743358">Activer "Voir version ordinateur"</translation>
@@ -183,7 +182,6 @@
 <translation id="2650751991977523696">Télécharger de nouveau le fichier ?</translation>
 <translation id="2653659639078652383">Valider</translation>
 <translation id="2677748264148917807">Quitter</translation>
-<translation id="2693813674743028984">Masquer les informations de stockage</translation>
 <translation id="2704606927547763573">Copié</translation>
 <translation id="2707726405694321444">Actualiser la page</translation>
 <translation id="2709516037105925701">Saisie automatique</translation>
@@ -209,7 +207,6 @@
 <translation id="2956410042958133412">Ce compte est géré par <ph name="PARENT_NAME_1" /> et <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright Google Inc. <ph name="YEAR" />. Tous droits réservés.</translation>
 <translation id="2962095958535813455">Onglets de navigation privée sélectionnés</translation>
-<translation id="2965945119655563012">Afficher les informations de stockage</translation>
 <translation id="2968755619301702150">Lecteur de certificat</translation>
 <translation id="2979025552038692506">Onglet de navigation privée sélectionné</translation>
 <translation id="2989523299700148168">Consultations récentes</translation>
@@ -527,7 +524,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="5817918615728894473">Associer</translation>
 <translation id="583281660410589416">Inconnu</translation>
 <translation id="5833984609253377421">Partager le lien</translation>
-<translation id="583891442612896534">Impossible de se connecter aux serveurs de Google dans Chrome pour la compression de données. Les sauvegardes de données peuvent être limitées.</translation>
 <translation id="5854790677617711513">Datant de plus de 30 jours</translation>
 <translation id="5858741533101922242">Impossible d'activer l'adaptateur Bluetooth dans Chrome</translation>
 <translation id="5860033963881614850">Désactivé</translation>
@@ -589,7 +585,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6395288395575013217">LIEN</translation>
 <translation id="6404511346730675251">Modifier le favori</translation>
 <translation id="6406506848690869874">Synchronisation</translation>
-<translation id="6409731863280057959">Fenêtres pop-up</translation>
 <translation id="641643625718530986">Imprimer…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> Mo téléchargé(s)</translation>
 <translation id="6433501201775827830">Sélectionner votre moteur de recherche</translation>
@@ -840,7 +835,6 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="8676374126336081632">Effacer la saisie</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Intensité du signal : # barre}one{Intensité du signal : # barre}other{Intensité du signal : # barres}}</translation>
 <translation id="869891660844655955">Date d'expiration</translation>
-<translation id="8712637175834984815">OK</translation>
 <translation id="8719023831149562936">Impossible de partager l'onglet actuel.</translation>
 <translation id="8725066075913043281">Réessayer</translation>
 <translation id="8728487861892616501">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK1" />Conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />Avis de confidentialité<ph name="END_LINK2" /> de Chrome, ainsi que l'<ph name="BEGIN_LINK3" />Avis de confidentialité relatif aux comptes Google gérés dans Family Link<ph name="END_LINK3" />.</translation>
@@ -850,7 +844,6 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="8812260976093120287">Sur certains sites Web, vous pouvez payer depuis votre appareil avec les applications de paiement compatibles indiquées ci-dessus.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> va s'ouvrir dans Chrome. En continuant, vous acceptez les <ph name="BEGIN_LINK1" />Conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />Avis de confidentialité<ph name="END_LINK2" /> de Chrome, ainsi que l'<ph name="BEGIN_LINK3" />Avis de confidentialité relatif aux comptes Google gérés dans Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Favoris</translation>
-<translation id="883635517171802338">Bloquer l'affichage de fenêtres pop-up par les sites (recommandé)</translation>
 <translation id="883806473910249246">Une erreur s'est produite lors du téléchargement du contenu.</translation>
 <translation id="8840953339110955557">Cette page peut différer de la version en ligne.</translation>
 <translation id="8847988622838149491">USB</translation>

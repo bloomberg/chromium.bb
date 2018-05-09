@@ -42,7 +42,6 @@
 <translation id="1056898198331236512">चेतावणी</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1062407476771304334">पुनर्स्थित करा</translation>
-<translation id="1062866675591297858">आपले पर्यवेक्षित वापरकर्ते <ph name="BEGIN_LINK" />पर्यवेक्षित वापरकर्ते डॅशबोर्ड<ph name="END_LINK" /> द्वारे व्‍यवस्‍थापित करा.</translation>
 <translation id="1064835277883315402">खाजगी नेटवर्कवर रुजू व्हा</translation>
 <translation id="1064912851688322329">आपले Google खाते डिसकनेक्‍ट करा</translation>
 <translation id="1067048845568873861">तयार केले</translation>
@@ -63,7 +62,6 @@
 <translation id="1091767800771861448">वगळण्यासाठी ESCAPE दाबा (केवळ अनाधिकृत बिल्डसाठी).</translation>
 <translation id="1093457606523402488">दृश्यमान नेटवर्क:</translation>
 <translation id="1094607894174825014">अवैध ऑफसेटसह वाचा किंवा लिहा ऑपरेशनची यावर विनंती केली: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="1097507499312291972">ही व्यक्ती भेट देते त्या वेबसाइट नियंत्रित करण्यासाठी आणि पाहण्यासाठी <ph name="BEGIN_SIGN_IN_LINK" />साइन इन करा<ph name="END_SIGN_IN_LINK" />.</translation>
 <translation id="109758035718544977">साइट सशब्द करा</translation>
 <translation id="1097658378307015415">साइन इन करण्‍यापूर्वी, <ph name="NETWORK_ID" /> नेटवर्क सक्रिय करण्‍यासाठी कृपया अतिथी म्हणून प्रवेश करा.</translation>
 <translation id="1103523840287552314">नेहमी भाषांतर करा <ph name="LANGUAGE" /></translation>
@@ -241,7 +239,6 @@
 <translation id="1361655923249334273">न वापरलेले</translation>
 <translation id="1363028406613469049">ट्रॅक</translation>
 <translation id="1367951781824006909">फाइल निवडा</translation>
-<translation id="136802136832547685">या डिव्हाइसमध्ये जोडण्यासाठी कोणतेही पर्यवेक्ष‍ी वापरकर्ते नाहीत.</translation>
 <translation id="1368265273904755308">समस्येचा अहवाल द्या</translation>
 <translation id="1370646789215800222">व्यक्तीस काढायचे?</translation>
 <translation id="1372681413396468867">{NUM_ITEMS,plural, =1{काढण्यासाठी 1 आयटम}one{काढण्यासाठी # आयटम}other{काढण्यासाठी # आयटम}}</translation>
@@ -468,7 +465,6 @@
 <translation id="1692799361700686467">एकाधिक साइटवरील कुकीजला परवानगी मिळाली. </translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698122934742150150">केवळ वर्तमान गुप्त सत्र</translation>
-<translation id="1700199471143028312">आपला प्रशासक आपल्याला पर्यवेक्षी वापरकर्ते तयार करण्याची अनुमती देत नाही.</translation>
 <translation id="1701062906490865540">या व्यक्तीस काढा</translation>
 <translation id="1706586824377653884">आपल्या प्रशासकाने जोडले</translation>
 <translation id="1706625117072057435">झूम स्तर</translation>
@@ -1034,7 +1030,6 @@
 <translation id="2604255671529671813">नेटवर्क कनेक्शन एरर</translation>
 <translation id="2606246518223360146">डेटा लिंक करा</translation>
 <translation id="2607101320794533334">विषय सार्वजनिक की माहिती</translation>
-<translation id="2607459012323956820">या पर्यवेक्षी वापरकर्त्यासाठी असलेला सेटिंग्ज आणि ब्राउझिंग इतिहास अद्याप व्यवस्थापकास <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" /> वर दृश्यमान असू शकतो.</translation>
 <translation id="2608770217409477136">डीफॉल्ट सेटिंग्ज वापरा</translation>
 <translation id="2609896558069604090">शॉर्टकट तयार करा...</translation>
 <translation id="2610157865375787051">स्लीप</translation>
@@ -1327,11 +1322,6 @@
 <translation id="3022978424994383087">ते समजू शकले नाही.</translation>
 <translation id="3024374909719388945">24-तासांचे घड्याळ वापरा</translation>
 <translation id="302781076327338683">कॅश   बायपास करणे रीलोड करा</translation>
-<translation id="3030243755303701754">एक पर्यवेक्षी वापरकर्ता आपल्या मार्गदर्शनाने वेब एक्सप्लोर करू शकतो. Chrome मधील पर्यवेक्षी वापरकर्त्याचा व्यवस्थापक म्हणून, आपण हे करू शकता:
-• विशिष्ट वेबसाइटना अनुमती देणे किंवा प्रतिबंधित करणे
-• पर्यवेक्षी वापरकर्त्याने भेट दिलेल्या वेबसाइटचे पुनरावलोकन करणे आणि
-• अन्य सेटिंग्ज व्यवस्थापित करणे.
-पर्यवेक्षी वापरकर्ता तयार केल्यामुळे Google खाते तयार होत नाही आणि त्यांचे बुकमार्क, ब्राउझिंग इतिहास आणि अन्य प्राधान्ये Chrome संकालन असलेल्या इतर डिव्हाइसेसवर त्यांचे फॉलो करणार नाही. आपण एक नवीन पर्यवेक्षी वापरकर्ता तयार केल्यानंतर, आपण त्यांच्या सेटिंग्ज कधीही, कोणत्याही डिव्हाइस वरून, <ph name="BEGIN_MANAGE_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_MANAGE_LINK" /> येथे व्यवस्थापित करू शकता. अधिक माहितीसाठी, आमच्या <ph name="BEGIN_LINK" /> मदत केंद्रास<ph name="END_LINK" /> भेट द्या.</translation>
 <translation id="3031417829280473749">एजंट X</translation>
 <translation id="3031557471081358569">आयात करण्यासाठी आयटम निवडा:</translation>
 <translation id="3031601332414921114">प्रिंट पुन्हा सुरू करा</translation>
@@ -1372,7 +1362,6 @@
 <translation id="3085412380278336437">साइट तुमचा कॅमेरा वापरू शकते</translation>
 <translation id="3085752524577180175">SOCKS होस्ट</translation>
 <translation id="3088325635286126843">&amp;पुनर्नामित करा...</translation>
-<translation id="3089231390674410424">आपल्या क्रेडेन्शियलसह समस्या असल्यासारखे दिसते आहे. कृपया आपण योग्यरितीने साइन इन केले असल्याची खात्री करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="3090193911106258841">ऑडिओ आणि व्हिडिओ इनपुटमध्‍ये प्रवेश करत आहे</translation>
 <translation id="3090819949319990166">बाह्य crx फाईल <ph name="TEMP_CRX_FILE" /> वर कॉपी करू शकत नाही.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" जोडले</translation>
@@ -1387,7 +1376,6 @@
 <translation id="3121793941267913344">हा <ph name="IDS_SHORT_PRODUCT_NAME" /> डिव्हाइस रीसेट करा</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3122496702278727796">डेटा निर्देशिका तयार करण्यात अयशस्वी</translation>
-<translation id="3123569374670379335">(पर्यवेक्षित)</translation>
 <translation id="3124111068741548686">वापरकर्ता हँडल</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">दर्शविलेल्या सर्व साइटसाठी आपल्या डिव्हाइसवर संचयित केलेल्या कोणत्याही डेटास हे हटवेल. आपण सुरु ठेवू इच्छिता?</translation>
@@ -1422,8 +1410,6 @@
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (हार्डवेअर-बॅक्ड)</translation>
 <translation id="316125635462764134">अॅप काढा</translation>
 <translation id="3161522574479303604">सर्व भाषा</translation>
-<translation id="316307797510303346">ही व्यक्ती <ph name="CUSTODIAN_EMAIL" /> वरून भेट देते त्या वेबसाइट नियंत्रित करा आणि पहा
-    आपले खाते साइन इन तपशील कालबाह्य आहेत.</translation>
 <translation id="3165390001037658081">काही वाहक हे वैशिष्ट्य अवरोधित शकतात.</translation>
 <translation id="316854673539778496">तुमच्या सर्व डिव्हाइसवर तुमचे सर्व एक्स्टेंशन मिळवण्यासाठी, साइन इन करा आणि सिंंक करणे चालू करा.</translation>
 <translation id="3170072451822350649">आपण साइन इन वगळुन <ph name="LINK_START" />अतिथी म्हणून ब्राउझ<ph name="LINK_END" /> देखील करू शकता.</translation>
@@ -1455,7 +1441,6 @@
 <translation id="3229922550070982305">प्ले करा/थांबवा</translation>
 <translation id="3232318083971127729">मूल्य:</translation>
 <translation id="3236289833370040187">मालकी <ph name="DESTINATION_DOMAIN" /> कडे हस्तांतरित केली जाईल.</translation>
-<translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> आता पर्यवेक्षी वापरकर्ता आहे</translation>
 <translation id="323803881985677942">विस्तार पर्याय उघडा</translation>
 <translation id="3241680850019875542">पॅक करण्यासाठी विस्ताराची मूळ निर्देशिका निवडा. एक विस्तार अपडेट करण्याकरिता, पुनर्वापरासाठी खाजगी की फाइल देखील निवडा.</translation>
 <translation id="3242765319725186192">पूर्व-सामायिक की:</translation>
@@ -1819,7 +1804,6 @@
 <translation id="3778152852029592020">डाउनलोड रद्द झाले.</translation>
 <translation id="3778740492972734840">&amp;विकसक साधने</translation>
 <translation id="3778868487658107119">त्याला प्रश्न विचारा. त्याला गोष्टी करण्यास सांगा. ते खास तुमचे Google आहे, मदतीसाठी सदैव तत्पर.</translation>
-<translation id="3780663724044634171">पर्यवेक्षी वापरकर्ता व्यवस्थापित करण्यासाठी एक खाते निवडा.</translation>
 <translation id="378312418865624974">या संगणकासाठी एक अद्वितीय अभिज्ञापक वाचा</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">अ‍ॅप्स शॉर्टकट दर्शवा</translation>
@@ -2536,7 +2520,6 @@
 <translation id="4964455510556214366">व्यवस्था</translation>
 <translation id="4964673849688379040">तपासत आहे...</translation>
 <translation id="4965808351167763748">तुम्हाला हे डिव्हाइस Hangouts Meet वापरण्यासाठी खरोखर सेट अप करायचे आहे का?</translation>
-<translation id="4967749818080339523">एक खाते निवडा</translation>
 <translation id="496888482094675990">फायली अॅप आपण Google ड्राइव्हवर, बाह्य संचयनावर किंवा आपल्या Chrome OS डिव्हाइसेसवर जतन केलेल्या फायलींना द्रुत प्रवेश प्रदान करतो.</translation>
 <translation id="4969785127455456148">अल्बम</translation>
 <translation id="4971412780836297815">पूर्ण झाल्यानंतर उघडा</translation>
@@ -3368,7 +3351,6 @@
 <translation id="6241530762627360640">आपल्या सिस्टीमशी जोडलेल्या Bluetooth डिव्हाइसविषयीच्या माहितीवर प्रवेश करा आणि जवळपासचे Bluetooth डिव्हाइसेस शोधा.</translation>
 <translation id="6243280677745499710">सध्या सेट केला आहे</translation>
 <translation id="6243774244933267674">सर्व्हर अनुपलब्ध</translation>
-<translation id="6246413617632217567">पर्यवेक्षी वापरकर्ता आयात केला जाऊ शकला नाही. कृपया आपली हार्ड ड्राइव्ह जागा आणि परवानग्या तपासा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6247802389331535091">सिस्टम: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">अपडेट तयार</translation>
@@ -3568,7 +3550,6 @@
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />टीप:<ph name="END_BOLD" /> डेटाचे संकलन कार्यप्रदर्शन कमी करू शकत असल्यामुळे, आपण काय करत आहात हे केवळ आपल्याला माहिती असल्यास किंवा असे करण्यास आपल्याला सांगितले गेले असल्यास सक्षम करा.</translation>
 <translation id="654233263479157500">नेव्हिगेशन त्रुटींच्या निराकरणात मदतीसाठी वेब सेवा वापरा</translation>
 <translation id="6544215763872433504">तुमच्यासाठी, Google द्वारे वेब ब्राउझर</translation>
-<translation id="6545325945815270297"><ph name="BEGIN_LINK" />Chrome डॅशबोर्ड<ph name="END_LINK" /> वर आपला संकालित डेटा आणि डिव्हाइस व्यवस्थाापित करा.</translation>
 <translation id="6545665334409411530">पुनरावृत्ती दर</translation>
 <translation id="6545834809683560467">अ‍ॅड्रेस बारमध्ये किंवा अ‍ॅप लाँचरमध्ये टाइप केलेले शोध आणि URL पूर्ण करण्यात मदतीसाठी पूर्वानुमान सेवा वापरा</translation>
 <translation id="6546686722964485737">WiMAX नेटवर्कमध्ये सामील व्हा</translation>
@@ -3583,7 +3564,6 @@
 <translation id="6555810572223193255">क्लीनअप सध्या अनुपलब्ध आहे</translation>
 <translation id="6556866813142980365">पुन्हा करा</translation>
 <translation id="6558280019477628686">एक एरर आली. काही आयटम हटवता आले नाहीत.</translation>
-<translation id="6559580823502247193">(आधीपासून या डिव्हाइसवर)</translation>
 <translation id="6561726789132298588">प्रविष्‍ट करा</translation>
 <translation id="656293578423618167">फाइल पथ किंवा नाव खूप मोठे आहे. कृपया एका छोट्या नावाने किंवा दुसर्‍या स्‍थानावर सेव्ह करा. </translation>
 <translation id="656398493051028875">"<ph name="FILENAME" />" हटवत आहे...</translation>
@@ -3778,7 +3758,6 @@
 <translation id="6862635236584086457">या फोल्डरमध्ये जतन केलेल्या सर्व फायलींचा स्वयंचलितपणे ऑनलाइन बॅक अप घेतला जातो</translation>
 <translation id="6865313869410766144">स्वयं-भरण फॉर्म डेटा</translation>
 <translation id="686664946474413495">रंगाचे तापमान</translation>
-<translation id="6867678160199975333"><ph name="NEW_PROFILE_NAME" /> वर स्विच करा</translation>
 <translation id="6870888490422746447">यासह सामायिक करण्‍यासाठी एक अॅप निवडा:</translation>
 <translation id="6871644448911473373">OCSP प्रतिसादकर्ता: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">तुम्ही टाकलेला पासवर्ड सर्व्हरने नाकारला होता.</translation>
@@ -3872,7 +3851,6 @@
 <translation id="7018275672629230621">आपला ब्राउझिंग इतिहास वाचा आणि बदला</translation>
 <translation id="7019805045859631636">जलद</translation>
 <translation id="7022562585984256452">आपले मुख्यपृष्‍ठ सेट केले गेले आहे.</translation>
-<translation id="7025036625303002400">आपल्‍याकडे आधीपासून या नावाचा पर्यवेक्षी वापरकर्ता आहे.</translation>
 <translation id="7025190659207909717">मोबाइल डेटा सेवा व्यवस्थापन</translation>
 <translation id="7025325401470358758">पुढील उपखंड</translation>
 <translation id="7027125358315426638">डेटाबेस नाव:</translation>
@@ -3921,7 +3899,6 @@
 <translation id="7092106376816104">पॉप-अप अपवाद</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">या नावाच्या डिव्हाइसेससह डेटा अदलाबदल करा: <ph name="HOSTNAMES" /></translation>
-<translation id="7096108453481049031">पर्यवेक्षी वापरकर्ता आयात केला जाऊ शकला नाही. कृपया आपले नेटवर्क कनेक्शन तपासा आणि नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="7098447629416471489">इतर जतन शोध इंजिन येथे दिसून येतील</translation>
 <translation id="7099337801055912064">मोठ्या PPD लोड करू शकत नाही. कमाल आकार 250kB आहे.</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> आयटम निवडले</translation>
@@ -3968,7 +3945,6 @@
 <translation id="7168109975831002660">किमान फॉन्ट आकार</translation>
 <translation id="7170041865419449892">परिक्षेत्राबाहेर</translation>
 <translation id="7171559745792467651">तुमच्या इतर डिव्हाइसवरून अॅप्स इंस्टॉल करा</translation>
-<translation id="7173917244679555">आपण त्या नावाने आधीपासून एका वापरकर्त्यास व्यवस्थापित करत असल्याचे दिसते. आपल्याला या डिव्हाइसवर <ph name="BEGIN_LINK" />आयात <ph name="PROFILE_NAME" /><ph name="END_LINK" /> करावयाचे होते?</translation>
 <translation id="7175037578838465313"><ph name="NAME" /> कॉन्फिगर करा</translation>
 <translation id="7175353351958621980">येथून लोड केले:</translation>
 <translation id="7180611975245234373">रिफ्रेश करा</translation>
@@ -4140,7 +4116,6 @@
 <translation id="7444726222535375658">Hangouts Meet सुरू ठेवा</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> अक्षम करा</translation>
 <translation id="7445682342344043969">पॉप-अप ब्लॉक केले</translation>
-<translation id="744859430125590922">ही व्यक्ती <ph name="CUSTODIAN_EMAIL" /> वरून भेट देते त्या वेबसाइट नियंत्रित करा आणि पहा.</translation>
 <translation id="7453008956351770337">हा प्रिंटर निवडून, आपण खालील विस्तारास आपल्‍या प्रिंटरमध्‍ये प्रवेश करण्‍याची परवानगी देत आहात:</translation>
 <translation id="7453467225369441013">तुम्हाला बहुतांश साइटमधून साइन आउट करते. तुम्हाला तुमच्या Google खात्यामधून साइन आउट केले जाणार नाही.</translation>
 <translation id="7456142309650173560">dev</translation>
@@ -4313,7 +4288,6 @@
 <translation id="7717845620320228976">अपडेट तपासा</translation>
 <translation id="7719367874908701697">पृष्ठ झूम करा</translation>
 <translation id="771953673318695590">QA</translation>
-<translation id="7720375555307821262">या व्यक्तीचे पर्यवेक्षण करण्‍यासाठी, <ph name="BEGIN_LINK" />Chrome मध्ये साइन इन करा<ph name="END_LINK" />.</translation>
 <translation id="7721179060400456005">विंडोला दृश्ये स्पॅन करण्याची अनुमती द्या</translation>
 <translation id="7722040605881499779">अपडेटसाठी आवश्यक: <ph name="NECESSARY_SPACE" /></translation>
 <translation id="7724603315864178912">कट करा</translation>
@@ -5142,7 +5116,6 @@
 <translation id="9024331582947483881">पूर्ण स्क्रीन</translation>
 <translation id="9025098623496448965">ठीक, मला परत साइन इन स्क्रीनवर न्या</translation>
 <translation id="9026731007018893674">डाउनलोड करा</translation>
-<translation id="9027146684281895941">आपल्या Google खात्यामधून ते ज्या वेबसाइटना भेट देतात त्या नियंत्रित करण्यासाठी आणि पाहण्यासाठी या व्यक्तीचे पर्यवेक्षण करा.</translation>
 <translation id="9027459031423301635">नवीन &amp;टॅबमध्ये दुवा उघडा</translation>
 <translation id="9027603907212475920">sync सेट अप करा...</translation>
 <translation id="9030515284705930323">आपल्या संस्थेने आपल्या खात्यासाठी Google Play स्टोअर सक्षम केले नाही. अधिक माहितीसाठी आपल्या प्रशासकाशी संपर्क साधा.</translation>

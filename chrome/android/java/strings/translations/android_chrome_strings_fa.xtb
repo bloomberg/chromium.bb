@@ -111,7 +111,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> می‌خواهد مرتبط شود</translation>
 <translation id="1994173015038366702">نشانی وب سایت</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> کیلوبایت توسط سایر برنامه‌ها</translation>
-<translation id="2015632741368427174">هدایت کردن به‌سمت سایت مسدود شده است:</translation>
 <translation id="2017836877785168846">سابقه و تکمیل خودکار را در نوار نشانی پاک می‌کند.</translation>
 <translation id="2021896219286479412">کنترل‌های سایت تمام‌صفحه</translation>
 <translation id="2038563949887743358">روشن کردن درخواست سایت رایانه‌ای</translation>
@@ -183,7 +182,6 @@
 <translation id="2650751991977523696">فایل دوباره بارگیری شود؟</translation>
 <translation id="2653659639078652383">ارائه</translation>
 <translation id="2677748264148917807">خروج</translation>
-<translation id="2693813674743028984">پنهان کردن فضای ذخیره‌سازی</translation>
 <translation id="2704606927547763573">کپی شد</translation>
 <translation id="2707726405694321444">بازخوانی صفحه</translation>
 <translation id="2709516037105925701">تکمیل خودکار</translation>
@@ -209,7 +207,6 @@
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" /> و <ph name="PARENT_NAME_2" /> این حساب را مدیریت می‌کنند.</translation>
 <translation id="2960796085439532066">‏حق نسخه‌برداری ‪<ph name="YEAR" /> Google Inc.‬. کلیه حقوق محفوظ است.</translation>
 <translation id="2962095958535813455">به برگه‌های ناشناس تغییر یافت</translation>
-<translation id="2965945119655563012">نشان دادن فضای ذخیره‌سازی</translation>
 <translation id="2968755619301702150">بیننده گواهی</translation>
 <translation id="2979025552038692506">برگه ناشناس انتخاب‌شده</translation>
 <translation id="2989523299700148168">اخیراً دیده‌شده</translation>
@@ -526,7 +523,6 @@
 <translation id="5817918615728894473">مرتبط‌سازی</translation>
 <translation id="583281660410589416">ناشناس</translation>
 <translation id="5833984609253377421">اشتراک‌گذاری پیوند</translation>
-<translation id="583891442612896534">‏Chrome نمی‌تواند برای فشرده کردن داده‌ها به سرورهای Google دسترسی پیدا کند. شاید ذخیره داده‌هایتان محدود باشد.</translation>
 <translation id="5854790677617711513">قدیمی‌تر از ۳۰ روز</translation>
 <translation id="5858741533101922242">‏Chrome قادر به روشن کردن آداپتور بلوتوث نیست</translation>
 <translation id="5860033963881614850">خاموش</translation>
@@ -588,7 +584,6 @@
 <translation id="6395288395575013217">پیوند</translation>
 <translation id="6404511346730675251">ویرایش نشانک</translation>
 <translation id="6406506848690869874">همگام‌سازی</translation>
-<translation id="6409731863280057959">پنجره‌های بازشو</translation>
 <translation id="641643625718530986">چاپ...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> مگابایت بارگیری شد</translation>
 <translation id="6433501201775827830">انتخاب موتور جستجو</translation>
@@ -839,7 +834,6 @@
 <translation id="8676374126336081632">پاک کردن ورودی</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{سطح قدرت سیگنال: # نوار}one{سطح قدرت سیگنال: # نوار}other{سطح قدرت سیگنال: # نوار}}</translation>
 <translation id="869891660844655955">تاریخ انقضا</translation>
-<translation id="8712637175834984815">متوجه شدم</translation>
 <translation id="8719023831149562936">انتقال برگه کنونی با پرتو ممکن نیست</translation>
 <translation id="8725066075913043281">سعی مجدد</translation>
 <translation id="8728487861892616501">‏درصورت استفاده از این برنامه، با <ph name="BEGIN_LINK1" />شرایط خدمات<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />اعلان حریم خصوصی<ph name="END_LINK2" /> و <ph name="BEGIN_LINK3" />اعلان حریم خصوصی برای حساب‌های Google مدیریت‌شده با Family Link<ph name="END_LINK3" /> مربوط به Chrome موافقت می‌کنید.</translation>
@@ -849,7 +843,6 @@
 <translation id="8812260976093120287">در بعضی از وب‌سایت‌ها، می‌توانید با برنامه‌های پرداخت پشتیبانی‌شده بالا در دستگاهتان پرداخت کنید.</translation>
 <translation id="8816439037877937734">‏<ph name="APP_NAME" /> در Chrome باز خواهد شد. درصورت ادامه دادن، با <ph name="BEGIN_LINK1" />شرایط خدمات<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />اعلان حریم خصوصی<ph name="END_LINK2" /> Chrome و <ph name="BEGIN_LINK3" />اعلان حریم خصوصی برای حساب‌های Google مدیریت‌شده با Family<ph name="END_LINK3" /> موافقت می‌کنید.</translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>
-<translation id="883635517171802338">مسدود کردن نمایش پنجره‌های بازشو در سایت‌ها (توصیه می‌شود)</translation>
 <translation id="883806473910249246">هنگام بارگیری محتوا خطایی روی داد.</translation>
 <translation id="8840953339110955557">ممکن است این صفحه با نسخه آنلاین متفاوت باشد.</translation>
 <translation id="8847988622838149491">USB</translation>

@@ -81,6 +81,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="2381405137052800939">Opzioni di base</translation>
 <translation id="2386793615875593361">Una selezionata</translation>
 <translation id="2435457462613246316">Mostra password</translation>
+<translation id="2481538920734869610">AGGIUNGI ACCOUNT</translation>
 <translation id="2523363575747517183">Questo sito web sta cercando ripetutamente di aprire un'altra applicazione.</translation>
 <translation id="2529021024822217800">Apri tutto</translation>
 <translation id="2572712655377361602">Una norma relativa ai dispositivi ha impedito l'accesso alle tue foto</translation>
@@ -344,6 +345,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7203585745079012652">Pronuncia le risposte</translation>
 <translation id="722055596168483966">Personalizza i servizi Google</translation>
 <translation id="7272437679830969316">Impossibile verificare la tua identità. Password non copiata.</translation>
+<translation id="7285236536143823449">ACCETTO</translation>
 <translation id="7291368939935408496">Preparazione delle password...</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />% scaricato</translation>
 <translation id="7346909386216857016">OK</translation>
@@ -386,7 +388,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="8073670137947914548">Download terminato</translation>
 <translation id="8076014560081431679">Le impostazioni del sito salvate non verranno eliminate e potrebbero rispecchiare le tue abitudini di navigazione. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Chiudi tutte le schede</translation>
-<translation id="8114753159095730575">Puoi scaricare il file. Le opzioni sono disponibile nella parte inferiore della schermata.</translation>
+<translation id="8114753159095730575">È possibile il download dei file. Le opzioni sono disponibili nella parte inferiore della schermata.</translation>
 <translation id="8205564605687841303">Annulla</translation>
 <translation id="8225985093977202398">Immagini e file memorizzati nella cache</translation>
 <translation id="8261506727792406068">Elimina</translation>

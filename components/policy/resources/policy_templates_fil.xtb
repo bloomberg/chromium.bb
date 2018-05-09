@@ -1031,11 +1031,6 @@
       Kung hindi itinakda ang patakarang ito, magiging available ang SPDY.</translation>
 <translation id="3890999316834333174">Mga patakaran sa mabilisang pag-unlock</translation>
 <translation id="3891357445869647828">Paganahin ang JavaScript</translation>
-<translation id="3891953007921334498">Dini-disable ang Mga Tool ng Developer at ang JavaScript console.
-
-      Kung ie-enable mo ang setting na ito, hindi maa-access ang Mga Tool ng Developer at hindi na maaaring siyasatin ang mga elemento ng web-site. Idi-disable ang anumang mga keyboard shortcut at anumang mga entry ng menu o menu ng konteksto upang mabuksan ang Mga Tool ng Developer o ang JavaScript Console.
-
-      Kapag itinakda ang opsyong ito sa naka-disable o kapag iniwan itong hindi nakatakda, bibigyang-daan ang user na gamitin ang Mga Tool ng Developer at ang JavaScript console.</translation>
 <translation id="3895557476567727016">Nagko-configure sa default na directory na gagamitin ng <ph name="PRODUCT_NAME" /> para sa pag-download ng mga file.
 
       Kung itatakda mo ang patakarang ito, babaguhin nito ang default na directory kung saan nagda-download ng mga file ang <ph name="PRODUCT_NAME" />. Hindi mandatoryo ang patakarang ito, kaya mapapalitan ng user ang directory.

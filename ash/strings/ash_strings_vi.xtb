@@ -267,7 +267,6 @@
 <translation id="698231206551913481">Tất cả các tệp và dữ liệu cục bộ liên quan tới người dùng này sẽ bị xóa vĩnh viễn sau khi người dùng này bị xóa.</translation>
 <translation id="7029814467594812963">Thoát khỏi phiên</translation>
 <translation id="7034339000180558234">Đang truyền <ph name="TAB_NAME" /> tới <ph name="RECEIVER_NAME" /></translation>
-<translation id="7052914147756339792">Đặt hình nền...</translation>
 <translation id="7066646422045619941">Mạng này bị quản trị viên của bạn tắt.</translation>
 <translation id="7067196344162293536">Tự động xoay</translation>
 <translation id="7098389117866926363">Thiết bị USB-C (cổng bên trái ở phía sau)</translation>
@@ -356,6 +355,7 @@
 <translation id="9194617393863864469">Đăng nhập người dùng khác...</translation>
 <translation id="9201131092683066720">Pin đầy <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Đang thoát chế độ màn hình hợp nhất</translation>
+<translation id="9215934040295798075">Đặt hình nền</translation>
 <translation id="923686485342484400">Nhấn Control Shift Q hai lần để đăng xuất.</translation>
 <translation id="945522503751344254">Gửi phản hồi</translation>
 <translation id="98515147261107953">Khổ ngang</translation>

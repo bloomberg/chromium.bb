@@ -42,7 +42,6 @@
 <translation id="1056898198331236512">Peringatan</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1062407476771304334">Ganti</translation>
-<translation id="1062866675591297858">Mengelola pengguna yang dilindungi milik Anda menggunakan <ph name="BEGIN_LINK" />Dasbor Pengguna yang Dilindungi<ph name="END_LINK" />.</translation>
 <translation id="1064835277883315402">Bergabung dengan jaringan pribadi</translation>
 <translation id="1064912851688322329">Putuskan kaitan Akun Google Anda</translation>
 <translation id="1067048845568873861">Dibuat</translation>
@@ -65,7 +64,6 @@
 <translation id="1091767800771861448">Tekan ESCAPE untuk melewati (Khusus bentukan tidak resmi).</translation>
 <translation id="1093457606523402488">Jaringan yang Terlihat:</translation>
 <translation id="1094607894174825014">Operasi baca atau tulis diminta dengan offset yang tidak valid di: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Masuk<ph name="END_SIGN_IN_LINK" /> untuk mengontrol dan melihat situs web yang dikunjungi orang ini.</translation>
 <translation id="109758035718544977">Nyalakan Notifikasi Situs</translation>
 <translation id="1097658378307015415">Sebelum masuk, masuklah sebagai Tamu untuk mengaktifkan jaringan <ph name="NETWORK_ID" /></translation>
 <translation id="1103523840287552314">Selalu terjemahkan <ph name="LANGUAGE" /></translation>
@@ -244,7 +242,6 @@
 <translation id="1361655923249334273">Tidak digunakan</translation>
 <translation id="1363028406613469049">Lacak</translation>
 <translation id="1367951781824006909">Pilih file</translation>
-<translation id="136802136832547685">Tidak ada pengguna yang dilindungi untuk ditambahkan ke perangkat ini.</translation>
 <translation id="1368265273904755308">Laporkan masalah</translation>
 <translation id="1370646789215800222">Hapus orang?</translation>
 <translation id="1372681413396468867">{NUM_ITEMS,plural, =1{1 item yang akan dihapus}other{# item yang akan dihapus}}</translation>
@@ -472,7 +469,6 @@
 <translation id="1692799361700686467">Cookie dari berbagai situs diizinkan.</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698122934742150150">Sesi penyamaran saat ini saja</translation>
-<translation id="1700199471143028312">Administrator tidak mengizinkan Anda membuat pengguna yang dilindungi.</translation>
 <translation id="1701062906490865540">Hapus orang ini</translation>
 <translation id="1706586824377653884">Ditambahkan oleh administrator Anda</translation>
 <translation id="1706625117072057435">Tingkat perbesar/perkecil</translation>
@@ -1041,7 +1037,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="2604255671529671813">Error koneksi jaringan</translation>
 <translation id="2606246518223360146">Tautkan Data</translation>
 <translation id="2607101320794533334">Info Kunci Publik Subjek</translation>
-<translation id="2607459012323956820">Setelan dan histori penjelajahan untuk pengguna yang dilindungi ini tetap dapat dilihat oleh pengelola di <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" />.</translation>
 <translation id="2608770217409477136">Gunakan setelan default</translation>
 <translation id="2609896558069604090">Buat Pintasan...</translation>
 <translation id="2610157865375787051">Tidur</translation>
@@ -1284,7 +1279,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="2951247061394563839">Memusatkan jendela</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> cookie</translation>
 <translation id="2958721676848865875">Peringatan ekstensi pack</translation>
-<translation id="2961043351165706615">Aplikasi Linux yang telah Anda instal akan dihapus dari Chromebook ini.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (ekstensi tersedia)</translation>
 <translation id="2961695502793809356">Klik untuk maju, tahan untuk melihat histori</translation>
 <translation id="2963151496262057773">Plugin berikut tidak merespons: <ph name="PLUGIN_NAME" />Ingin menghentikannya?</translation>
@@ -1336,15 +1330,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="3022978424994383087">Tidak mengerti.</translation>
 <translation id="3024374909719388945">Gunakan model waktu 24 jam</translation>
 <translation id="302781076327338683">Muat ulang cache yang terlewati</translation>
-<translation id="3030243755303701754">Pengguna yang dilindungi dapat menjelajahi web dengan panduan Anda. Sebagai pengelola pengguna yang dilindungi di Chrome, Anda dapat:
-
- • mengizinkan atau melarang situs web tertentu,
- • memeriksa situs web yang telah dikunjungi pengguna yang dilindungi, dan
- • mengelola setelan lainnya.
-
-Membuat pengguna yang dilindungi tidak akan membuat Akun Google, dan bookmark, histori penjelajahan, serta preferensi lainnya tidak akan ditampilkan di perangkat lainnya dengan Sinkronisasi Chrome. Setelah membuat pengguna baru yang dilindungi, Anda dapat mengelola setelannya kapan saja, dari perangkat apa saja, di <ph name="BEGIN_MANAGE_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_MANAGE_LINK" />.
-
-Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph name="END_LINK" />.</translation>
 <translation id="3031417829280473749">Agen X</translation>
 <translation id="3031557471081358569">Pilih item yang akan diimpor:</translation>
 <translation id="3031601332414921114">Lanjutkan pencetakan</translation>
@@ -1385,7 +1370,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="3085412380278336437">Situs dapat menggunakan kamera Anda</translation>
 <translation id="3085752524577180175">Host SOCKS</translation>
 <translation id="3088325635286126843">&amp;Ubah nama...</translation>
-<translation id="3089231390674410424">Sepertinya ada masalah dengan kredensial Anda. Pastikan Anda masuk dengan benar lalu coba lagi.</translation>
 <translation id="3090193911106258841">Mengakses masukan audio dan video</translation>
 <translation id="3090819949319990166">Tidak dapat menyalin file crx eksternal ke <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" disandingkan</translation>
@@ -1400,7 +1384,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="3121793941267913344">Setel ulang perangkat <ph name="IDS_SHORT_PRODUCT_NAME" /> ini</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3122496702278727796">Gagal Membuat Direktori Data</translation>
-<translation id="3123569374670379335">(Dilindungi)</translation>
 <translation id="3124111068741548686">Penanganan PENGGUNA</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Tindakan ini akan menghapus semua data yang disimpan di perangkat untuk semua situs yang ditampilkan. Ingin melanjutkan?</translation>
@@ -1435,8 +1418,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (dilindungi hardware)</translation>
 <translation id="316125635462764134">Buang aplikasi</translation>
 <translation id="3161522574479303604">Semua bahasa</translation>
-<translation id="316307797510303346">Kontrol dan lihat situs web yang dikunjungi orang ini dari  <ph name="CUSTODIAN_EMAIL" />.
-    Masa berlaku informasi masuk akun Anda telah berakhir.</translation>
 <translation id="3165390001037658081">Beberapa operator mungkin memblokir fitur ini.</translation>
 <translation id="316854673539778496">Untuk mendapatkan semua ekstensi di semua perangkat, login dan aktifkan sinkronisasi.</translation>
 <translation id="3170072451822350649">Anda juga dapat melewati proses masuk dan <ph name="LINK_START" />menjelajah sebagai tamu<ph name="LINK_END" />.</translation>
@@ -1469,7 +1450,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="3229922550070982305">putar/jeda</translation>
 <translation id="3232318083971127729">Nilai:</translation>
 <translation id="3236289833370040187">Kepemilikan akan ditransfer ke <ph name="DESTINATION_DOMAIN" />.</translation>
-<translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> sekarang adalah pengguna yang dilindungi</translation>
 <translation id="323803881985677942">Buka opsi ekstensi</translation>
 <translation id="3241680850019875542">Pilih direktori akar ekstensi untuk dipaket. Untuk memperbarui ekstensi, pilih juga file kunci pribadi untuk dipakai ulang.</translation>
 <translation id="3242765319725186192">Kunci yang dibagikan sebelumnya:</translation>
@@ -1701,7 +1681,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="3584169441612580296">Membaca dan mengubah foto, musik, serta media lain dari komputer Anda</translation>
 <translation id="3587482841069643663">Semua</translation>
 <translation id="358796204584394954">Ketik kode ini di "<ph name="DEVICE_NAME" />" untuk menyandingkan:</translation>
-<translation id="3589532742556016615">Tindakan ini tidak memengaruhi aplikasi atau konten di perangkat lain.</translation>
 <translation id="3589766037099229847">Konten tidak aman diblokir</translation>
 <translation id="3590194807845837023">Buka Kunci Profil dan Luncurkan Lagi</translation>
 <translation id="3592260987370335752">&amp;Pelajari lebih lanjut</translation>
@@ -1835,7 +1814,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="3778152852029592020">Download dibatalkan.</translation>
 <translation id="3778740492972734840">Alat &amp;pengembang</translation>
 <translation id="3778868487658107119">Ajukan pertanyaan. Minta untuk melakukan berbagai hal. Ini adalah Google pribadi Anda yang selalu siap membantu.</translation>
-<translation id="3780663724044634171">Pilih akun untuk mengelola pengguna yang dilindungi.</translation>
 <translation id="378312418865624974">Membaca pengenal unik untuk komputer ini</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Tampilkan Pintasan Aplikasi</translation>
@@ -2563,7 +2541,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="4964455510556214366">Pengaturan</translation>
 <translation id="4964673849688379040">Memeriksa...</translation>
 <translation id="4965808351167763748">Yakin ingin menyiapkan perangkat ini untuk menjalankan Hangouts Meet?</translation>
-<translation id="4967749818080339523">Pilih akun</translation>
 <translation id="496888482094675990">Aplikasi File memberikan akses cepat ke file yang telah Anda simpan di Google Drive, perangkat eksternal, atau perangkat Chrome OS.</translation>
 <translation id="4969785127455456148">Album</translation>
 <translation id="4971412780836297815">Buka setelah selesai</translation>
@@ -2750,7 +2727,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
     Apa pun yang terjadi pada perangkat, file Anda tersimpan dengan aman di Google Drive.<ph name="MARKUP_6" />
     <ph name="MARKUP_7" />Berbagi, membuat, dan berkolaborasi<ph name="MARKUP_8" />
     dalam file bersama orang lain, semuanya di satu tempat.<ph name="MARKUP_9" /></translation>
-<translation id="5262401745672360397">File yang dibagikan ke aplikasi Linux juga dapat dihapus.</translation>
 <translation id="5264148714798105376">Tindakan ini perlu waktu beberapa menit.</translation>
 <translation id="5264252276333215551">Sambungkan ke internet untuk meluncurkan aplikasi Anda dalam mode kios.</translation>
 <translation id="5265562206369321422">Offline selama lebih dari satu minggu</translation>
@@ -3402,7 +3378,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="6241530762627360640">Mengakses informasi tentang perangkat Bluetooth yang disandingkan dengan sistem Anda dan menemukan perangkat Bluetooth di sekitarnya.</translation>
 <translation id="6243280677745499710">Yang disetel saat ini</translation>
 <translation id="6243774244933267674">Server tidak tersedia</translation>
-<translation id="6246413617632217567">Pengguna yang dilindungi tersebut tidak dapat diimpor. Periksa izin dan ruang hard drive Anda, lalu coba lagi.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6247802389331535091">Sistem: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">Pembaruan siap</translation>
@@ -3601,7 +3576,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Catatan:<ph name="END_BOLD" /> Hanya aktif jika Anda tahu sedang melakukan apa atau jika ditanyai untuk melakukan hal tersebut, karena koleksi data dapat mengurangi kinerja.</translation>
 <translation id="654233263479157500">Gunakan layanan web untuk membantu mengatasi kesalahan navigasi</translation>
 <translation id="6544215763872433504">Browser web dari Google, untuk Anda</translation>
-<translation id="6545325945815270297">Kelola data dan perangkat yang disinkronkan di <ph name="BEGIN_LINK" />Dasbor Chrome<ph name="END_LINK" />.</translation>
 <translation id="6545665334409411530">Tingkat pengulangan</translation>
 <translation id="6545834809683560467">Gunakan layanan prediksi untuk membantu melengkapi penelusuran dan URL yang diketik di kolom URL atau kotak penelusuran peluncur aplikasi</translation>
 <translation id="6546686722964485737">Gabung dengan jaringan WiMAX</translation>
@@ -3616,7 +3590,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="6555810572223193255">Pembersihan saat ini tidak tersedia</translation>
 <translation id="6556866813142980365">Urungkan</translation>
 <translation id="6558280019477628686">Terjadi error. Beberapa item mungkin belum dihapus.</translation>
-<translation id="6559580823502247193">(sudah ada di perangkat ini)</translation>
 <translation id="6561726789132298588">masuk</translation>
 <translation id="656293578423618167">Jalur atau nama file terlalu panjang. Simpan dengan nama yang lebih pendek atau ke lokasi lain.</translation>
 <translation id="656398493051028875">Menghapus "<ph name="FILENAME" />"...</translation>
@@ -3813,7 +3786,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="6862635236584086457">Semua file yang disimpan dalam folder ini otomatis dicadangkan secara online</translation>
 <translation id="6865313869410766144">Data formulir isi-otomatis</translation>
 <translation id="686664946474413495">Suhu warna</translation>
-<translation id="6867678160199975333">Beralih ke <ph name="NEW_PROFILE_NAME" /></translation>
 <translation id="6870888490422746447">Pilih aplikasi untuk membagikan:</translation>
 <translation id="6871644448911473373">Penanggap OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Sandi yang Anda masukkan ditolak oleh server.</translation>
@@ -3907,7 +3879,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="7018275672629230621">Membaca dan mengubah histori penjelajahan Anda</translation>
 <translation id="7019805045859631636">Cepat</translation>
 <translation id="7022562585984256452">Beranda Anda telah disetel.</translation>
-<translation id="7025036625303002400">Tampaknya Anda sudah memiliki pengguna yang dilindungi dengan nama ini.</translation>
 <translation id="7025190659207909717">Pengelolaan layanan data seluler</translation>
 <translation id="7025325401470358758">Panel berikutnya</translation>
 <translation id="7027125358315426638">Nama basis data:</translation>
@@ -3956,7 +3927,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="7092106376816104">Pengecualian pop-up</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Menukar data dengan perangkat yang bernama: <ph name="HOSTNAMES" /></translation>
-<translation id="7096108453481049031">Pengguna baru yang dilindungi tersebut tidak dapat diimpor. Periksa sambungan jaringan Anda dan coba lagi.</translation>
 <translation id="7096406577040705016">Aktifkan Kaca Pembesar Layar Penuh</translation>
 <translation id="7098447629416471489">Mesin telusur lain yang disimpan akan muncul di sini</translation>
 <translation id="7099337801055912064">Tidak dapat memuat PPD yang besar. Ukuran maksimumnya adalah 250 kB.</translation>
@@ -4004,7 +3974,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="7168109975831002660">Ukuran font minimal</translation>
 <translation id="7170041865419449892">Di luar jangkauan</translation>
 <translation id="7171559745792467651">Instal aplikasi dari perangkat lainnya</translation>
-<translation id="7173917244679555">Tampaknya Anda sudah mengelola pengguna dengan nama tersebut. Apakah Anda ingin <ph name="BEGIN_LINK" />mengimpor <ph name="PROFILE_NAME" /><ph name="END_LINK" /> ke perangkat ini?</translation>
 <translation id="7175037578838465313">Konfigurasi <ph name="NAME" /></translation>
 <translation id="7175353351958621980">Dimuat dari:</translation>
 <translation id="7180611975245234373">Segarkan</translation>
@@ -4176,7 +4145,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="7444726222535375658">Lanjutkan ke Hangouts Meet</translation>
 <translation id="7444983668544353857">Nonaktifkan <ph name="NETWORKDEVICE" /></translation>
 <translation id="7445682342344043969">Pop-up diblokir</translation>
-<translation id="744859430125590922">Mengontrol dan melihat situs web yang dikunjungi orang ini dari <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="7453008956351770337">Dengan memilih printer ini, Anda memberikan izin untuk mengakses printer Anda kepada ekstensi berikut:</translation>
 <translation id="7453467225369441013">Membuat Anda logout dari sebagian besar situs. Anda tidak akan logout dari Akun Google.</translation>
 <translation id="7456142309650173560">dev</translation>
@@ -4350,7 +4318,6 @@ Menginstal <ph name="APP_NAME" /> akan mendownload <ph name="DOWNLOAD_SIZE" /> d
 <translation id="7717845620320228976">Periksa pembaruan</translation>
 <translation id="7719367874908701697">Perkecil/perbesar halaman</translation>
 <translation id="771953673318695590">QA</translation>
-<translation id="7720375555307821262">Untuk melindungi orang ini, <ph name="BEGIN_LINK" />masuk ke Chrome<ph name="END_LINK" />.</translation>
 <translation id="7721179060400456005">Izinkan jendela untuk meluaskan tampilan</translation>
 <translation id="7722040605881499779">Perlu mengupdate: <ph name="NECESSARY_SPACE" /></translation>
 <translation id="7724603315864178912">Potong</translation>
@@ -5205,7 +5172,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="9024331582947483881">layar penuh</translation>
 <translation id="9025098623496448965">Oke, Bawa saya kembali ke layar proses masuk</translation>
 <translation id="9026731007018893674">download</translation>
-<translation id="9027146684281895941">Lindungi orang ini untuk mengontrol dan melihat situs web yang dikunjunginya dari Akun Google Anda.</translation>
 <translation id="9027459031423301635">Buka Tautan di &amp;Tab Baru</translation>
 <translation id="9027603907212475920">Siapkan sinkronisasi...</translation>
 <translation id="9030515284705930323">Organisasi belum mengaktifkan Google Play Store untuk akun Anda. Hubungi administrator untuk informasi selengkapnya.</translation>
@@ -5365,7 +5331,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="98515147261107953">Lanskap</translation>
 <translation id="987897973846887088">Tidak ada gambar yang tersedia</translation>
 <translation id="988978206646512040">Frasa sandi tidak boleh kosong</translation>
-<translation id="990310048453480215">Hapus Aplikasi Linux</translation>
 <translation id="992032470292211616">Ekstensi, aplikasi, dan tema dapat membahayakan perangkat Anda. Yakin ingin melanjutkan?</translation>
 <translation id="992592832486024913">Nonaktifkan ChromeVox (masukan lisan)</translation>
 <translation id="994289308992179865">&amp;Putaran</translation>

@@ -1017,11 +1017,6 @@ Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom
       Ak toto pravidlo ponecháte nenastavené, protokol SPDY bude k dispozícii.</translation>
 <translation id="3890999316834333174">Pravidlá rýchleho odomknutia</translation>
 <translation id="3891357445869647828">Povoliť kód JavaScript</translation>
-<translation id="3891953007921334498">Zakáže Nástroje pre vývojárov a konzolu JavaScript.
-
-      Ak toto nastavenie povolíte, nebude možné pristupovať k nástrojom pre vývojárov ani kontrolovať prvky webov. Zakázané budú tiež všetky klávesové skratky a položky klasických či kontextových ponúk, pomocou ktorých je možné otvoriť nástroje pre vývojárov alebo konzolu JavaScript.
-
-      Ak túto možnosť nastavíte ako zakázanú alebo ju ponecháte nenastavenú, umožní to používateľovi použiť Nástroje pre vývojárov a konzolu JavaScript.</translation>
 <translation id="3895557476567727016">Umožňuje nakonfigurovať adresár, ktorý <ph name="PRODUCT_NAME" /> použije na ukladanie súborov.
 
       Ak nastavíte toto pravidlo, zmení sa predvolený adresár, do ktorého <ph name="PRODUCT_NAME" /> sťahuje súbory. Toto pravidlo nie je povinné, takže používateľ bude môcť priečinok zmeniť.

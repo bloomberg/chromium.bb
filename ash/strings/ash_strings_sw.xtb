@@ -266,7 +266,6 @@
 <translation id="698231206551913481">Faili na data zote zilizo kwenye kifaa zinazohusishwa na mtumiaji zitafutwa kabisa pindi tu mtumiaji huyu atakapoondolewa.</translation>
 <translation id="7029814467594812963">Toka kwenye kipindi</translation>
 <translation id="7034339000180558234">Inatuma <ph name="TAB_NAME" /> kwenye <ph name="RECEIVER_NAME" /></translation>
-<translation id="7052914147756339792">Weka Mandhari...</translation>
 <translation id="7066646422045619941">Mtandao huu umezimwa na msimamizi wako.</translation>
 <translation id="7067196344162293536">Zungusha kiotomatiki</translation>
 <translation id="7098389117866926363">Kifaa cha USB-C (mlango wa kushoto nyuma)</translation>
@@ -356,6 +355,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="9194617393863864469">Ongeza akaunti nyingine...</translation>
 <translation id="9201131092683066720">Betri imejaa <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Mfumo unaondoka kwenye hali ya eneo-kazi lililounganishwa</translation>
+<translation id="9215934040295798075">Weka mandhari</translation>
 <translation id="923686485342484400">Bonyeza Control Shift Q mara mbili ili kuondoka katika akaunti.</translation>
 <translation id="945522503751344254">Tuma maoni</translation>
 <translation id="98515147261107953">Mlalo</translation>

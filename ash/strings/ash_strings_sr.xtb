@@ -266,7 +266,6 @@
 <translation id="698231206551913481">Све датотеке и локални подаци повезани са овим корисником ће бити трајно избрисани када уклоните овог корисника.</translation>
 <translation id="7029814467594812963">Изађи из сесије</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> се пребацује на <ph name="RECEIVER_NAME" /></translation>
-<translation id="7052914147756339792">Подеси позадину...</translation>
 <translation id="7066646422045619941">Ову мрежу је онемогућио администратор.</translation>
 <translation id="7067196344162293536">Аутоматски ротирај</translation>
 <translation id="7098389117866926363">Уређај са USB прикључком типа C (леви задњи порт)</translation>
@@ -355,6 +354,7 @@
 <translation id="9194617393863864469">Пријавите још једног корисника...</translation>
 <translation id="9201131092683066720">Батерија је <ph name="PERCENTAGE" />% пуна.</translation>
 <translation id="9210037371811586452">Излазак из режима спојених радних површина</translation>
+<translation id="9215934040295798075">Подеси позадину</translation>
 <translation id="923686485342484400">Двапут притисните Control Shift Q да бисте се одјавили.</translation>
 <translation id="945522503751344254">Пошаљи повратне информације</translation>
 <translation id="98515147261107953">Хоризонтално</translation>

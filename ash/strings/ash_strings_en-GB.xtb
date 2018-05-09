@@ -266,7 +266,6 @@
 <translation id="698231206551913481">All files and local data associated with this user will be permanently deleted once this user is removed.</translation>
 <translation id="7029814467594812963">Exit session</translation>
 <translation id="7034339000180558234">Casting <ph name="TAB_NAME" /> to <ph name="RECEIVER_NAME" /></translation>
-<translation id="7052914147756339792">Set wallpaper...</translation>
 <translation id="7066646422045619941">This network is disabled by your administrator.</translation>
 <translation id="7067196344162293536">Auto rotate</translation>
 <translation id="7098389117866926363">USB-C device (left port in the back)</translation>
@@ -355,6 +354,7 @@
 <translation id="9194617393863864469">Sign in another user...</translation>
 <translation id="9201131092683066720">Battery is <ph name="PERCENTAGE" />% full.</translation>
 <translation id="9210037371811586452">Exiting unified desktop mode</translation>
+<translation id="9215934040295798075">Set wallpaper</translation>
 <translation id="923686485342484400">Press Control Shift Q twice to sign out.</translation>
 <translation id="945522503751344254">Send feedback</translation>
 <translation id="98515147261107953">Landscape</translation>

@@ -42,7 +42,6 @@
 <translation id="1056898198331236512">चेतावनी</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1062407476771304334">प्रतिस्थापित करें</translation>
-<translation id="1062866675591297858">अपने पर्यवेक्षित उपयोगकर्ताओं को <ph name="BEGIN_LINK" />पर्यवेक्षित उपयोगकर्ता डैशबोर्ड<ph name="END_LINK" /> द्वारा प्रबंधित करें.</translation>
 <translation id="1064835277883315402">निजी नेटवर्क से जुड़ें</translation>
 <translation id="1064912851688322329">अपना Google खाता डिस्‍कनेक्‍ट करें</translation>
 <translation id="1067048845568873861">निर्मित</translation>
@@ -63,7 +62,6 @@
 <translation id="1091767800771861448">छोड़ने के लिए ESCAPE दबाएं (केवल गैर-आधिकारिक बिल्ड).</translation>
 <translation id="1093457606523402488">दृश्‍यमान नेटवर्क:</translation>
 <translation id="1094607894174825014">पढ़ें या लिखें संचालन का अनुरोध किसी अमान्य ऑफ़सेट के साथ इस पर किया गया था: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="1097507499312291972">इस व्यक्ति द्वारा देखी जाने वाली वेबसाइटें नियंत्रित करने और देखने के लिए <ph name="BEGIN_SIGN_IN_LINK" />प्रवेश करें<ph name="END_SIGN_IN_LINK" />.</translation>
 <translation id="109758035718544977">साइटें अनम्यूट करें</translation>
 <translation id="1097658378307015415">प्रवेश करने से पहले, कृपया <ph name="NETWORK_ID" /> नेटवर्क सक्रिय करने के लिए अतिथि के रूप में प्रविष्ट हों</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> का हमेशा अनुवाद करें</translation>
@@ -241,7 +239,6 @@
 <translation id="1361655923249334273">अप्रयुक्त</translation>
 <translation id="1363028406613469049">ट्रैक</translation>
 <translation id="1367951781824006909">कोई फ़ाइल चुनें</translation>
-<translation id="136802136832547685">इस डिवाइस में जोड़ने के लिए कोई पर्यवेक्षित उपयोगकर्ता नहीं है.</translation>
 <translation id="1368265273904755308">समस्‍या की रिपोर्ट करें</translation>
 <translation id="1370646789215800222">व्यक्ति को निकालें?</translation>
 <translation id="1372681413396468867">{NUM_ITEMS,plural, =1{1 आइटम हटाया जाने वाला है}one{# आइटम हटाए जाने वाले हैं}other{# आइटम हटाए जाने वाले हैं}}</translation>
@@ -469,7 +466,6 @@
 <translation id="1692799361700686467">एकाधिक साइटों से कुकी की अनुमति है.</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698122934742150150">केवल वर्तमान गुप्त सत्र</translation>
-<translation id="1700199471143028312">आपका व्यवस्थापक आपको पर्यवेक्षित उपयोगकर्ता बनाने की अनुमति नहीं देता.</translation>
 <translation id="1701062906490865540">इस व्यक्ति को निकालें</translation>
 <translation id="1706586824377653884">आपके व्यवस्थापक ने जोड़ा</translation>
 <translation id="1706625117072057435">ज़ूम स्तर</translation>
@@ -1035,7 +1031,6 @@
 <translation id="2604255671529671813">नेटवर्क कनेक्शन गड़बड़ी</translation>
 <translation id="2606246518223360146">डेटा लिंक करें</translation>
 <translation id="2607101320794533334">विषय सार्वजनिक कुंजी जानकारी</translation>
-<translation id="2607459012323956820">इस निगरानी में रखे गए उपयोगकर्ता की सेटिंग और ब्राउज़िंग इतिहास प्रबंधक द्वारा अभी भी <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" /> पर देखा जा सकता है.</translation>
 <translation id="2608770217409477136">डिफ़ॉल्‍ट सेटिंग का उपयोग करें</translation>
 <translation id="2609896558069604090">शॉर्टकट बनाए...</translation>
 <translation id="2610157865375787051">निष्क्रिय</translation>
@@ -1328,15 +1323,6 @@
 <translation id="3022978424994383087">समझ नहीं आया.</translation>
 <translation id="3024374909719388945">24-घंटे की घड़ी का उपयोग करें</translation>
 <translation id="302781076327338683">कैश को बाइपास कर फिर लोड करें</translation>
-<translation id="3030243755303701754">निगरानी में रखा गया उपयोगकर्ता, आपके मार्गदर्शन में वेब को एक्सप्लोर कर सकता है. Chrome में निगरानी में रखे गए उपयोगकर्ता के प्रबंधक के रूप में, आप:
-
- • कुछ वेबसाइट को अनुमति दे सकते हैं या प्रतिबंधित कर सकते हैं,
- • निगरानी में रखे गए उपयोगकर्ताद्वारा देखी गई वेबसाइट की समीक्षा कर सकते हैं, और
- • अन्य सेटिंग प्रबंधित कर सकते हैं.
-
-निगरानी में रखा गया उपयोगकर्ता बनाने से Google खाता नहीं बनता और उसके बुकमार्क, ब्राउज़िंग इतिहास और अन्य प्राथमिकताएं Chrome सिंक के साथ अन्य डिवाइस पर उसका अनुसरण नहीं करेंगी. आपके द्वारा नया निगरानी में रखा गया उपयोगकर्ता बनाए जाने के बाद, आप <ph name="BEGIN_MANAGE_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_MANAGE_LINK" /> पर कभी भी किसी भी डिवाइस से सेटिंग प्रबंधित कर सकते हैं.
-
-अधिक जानकारी के लिए, हमारे <ph name="BEGIN_LINK" />सहायता केंद्र<ph name="END_LINK" /> पर जाएं.</translation>
 <translation id="3031417829280473749">एजेंट X</translation>
 <translation id="3031557471081358569">आयात करने के लिए आइटम को चुनें:</translation>
 <translation id="3031601332414921114">प्रिंटिंग फिर से शुरू करें</translation>
@@ -1377,7 +1363,6 @@
 <translation id="3085412380278336437">साइट आपके कैमरे का इस्तेमाल कर सकती है</translation>
 <translation id="3085752524577180175">SOCKS होस्ट</translation>
 <translation id="3088325635286126843">&amp;नाम बदलें...</translation>
-<translation id="3089231390674410424">ऐसा लगता है कि आपके क्रेडेंशियल में कोई समस्या है. कृपया सुनिश्चित करें कि आपने ठीक तरह से प्रवेश किया हुआ है और पुनः प्रयास करें.</translation>
 <translation id="3090193911106258841">ऑडियो और वीडियो इनपुट ऐक्सेस हो रहा है</translation>
 <translation id="3090819949319990166">बाहरी crx फ़ाइल की <ph name="TEMP_CRX_FILE" /> में कॉपी नहीं बनाई जा सकती.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" युग्मित किया गया</translation>
@@ -1392,7 +1377,6 @@
 <translation id="3121793941267913344">इस <ph name="IDS_SHORT_PRODUCT_NAME" /> डिवाइस को रीसेट करें</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3122496702278727796">डेटा निर्देशिका बनाने में विफल</translation>
-<translation id="3123569374670379335">(पर्यवेक्षित)</translation>
 <translation id="3124111068741548686">उपयोगकर्ता हैंडल</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">यह ऐसे किसी भी डेटा को हटा देगा जिसे दिखाई गईं सभी साइटों के लिए आपके डिवाइस पर संग्रहित किया गया है. क्या आप जारी रखना चाहते हैं?</translation>
@@ -1427,8 +1411,6 @@
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (हार्डवेयर समर्थित)</translation>
 <translation id="316125635462764134">ऐप्स निकालें</translation>
 <translation id="3161522574479303604">सभी भाषाएं</translation>
-<translation id="316307797510303346">इस व्‍यक्‍ति द्वारा <ph name="CUSTODIAN_EMAIL" /> से देखी जाने वाली वेबसाइटों को नियंत्रित करें और देखें.
-    आपके खाता प्रवेश विवरण पुराने हो चुके हैं.</translation>
 <translation id="3165390001037658081">कुछ वाहक इस सुविधा को बंद कर सकते हैं.</translation>
 <translation id="316854673539778496">अपने सभी डिवाइस पर अपने सारे एक्सटेंशन पाने के लिए, साइन इन करें और सिंक चालू करें.</translation>
 <translation id="3170072451822350649">आप प्रवेश करना छोड़ भी सकते हैं और <ph name="LINK_START" />अतिथि के रूप में ब्राउज़<ph name="LINK_END" /> कर सकते हैं.</translation>
@@ -1460,7 +1442,6 @@
 <translation id="3229922550070982305">चलाएं / रोकें</translation>
 <translation id="3232318083971127729">मान:</translation>
 <translation id="3236289833370040187">स्वामित्व <ph name="DESTINATION_DOMAIN" /> को स्थानांतरित कर दिया जाएगा.</translation>
-<translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> अब एक निगरानी में रखा गया उपयोगकर्ता है</translation>
 <translation id="323803881985677942">एक्सटेंशन के विकल्प खोलें</translation>
 <translation id="3241680850019875542">पैक के एक्सटेंशनकी मूल निर्देशिका को चुनें. किसी एक्स्टेंशन को अपडेट करने के लिए, पुन: उपयोग के लिए निजी कुंजी फ़ाइल का भी चुनें.</translation>
 <translation id="3242765319725186192">पहले से साझा की गई कुंजी:</translation>
@@ -1823,7 +1804,6 @@
 <translation id="3778152852029592020">डाउनलोड रद्द कर दिया गया था.</translation>
 <translation id="3778740492972734840">&amp;डेवलपर टूल</translation>
 <translation id="3778868487658107119">इससे प्रश्न पूछें. इसे कुछ काम करने को कहें. यह आपका व्यक्तिगत Google है, जो हमेशा सहायता के लिए तैयार रहता है.</translation>
-<translation id="3780663724044634171">निगरानी में रखे गए उपयोगकर्ता को प्रबंधित करने के लिए कोई खाता चुनें.</translation>
 <translation id="378312418865624974">इस कंप्यूटर का अद्वितीय पहचानकर्ता पढ़ें</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">ऐप्स  शॉर्टकट दिखाएं</translation>
@@ -2540,7 +2520,6 @@
 <translation id="4964455510556214366">व्यवस्था</translation>
 <translation id="4964673849688379040">जाँच कर रहा है...</translation>
 <translation id="4965808351167763748">क्या आप वाकई Hangouts Meet चलाने के लिए इस डिवाइस को सेट अप करना चाहते हैं?</translation>
-<translation id="4967749818080339523">कोई खाता चुनें</translation>
 <translation id="496888482094675990">फ़ाइलें ऐप्स उन फ़ाइलों की त्वरित एक्सेस प्रदान करता है जिन्हें आपने Google डिस्क पर, बाहरी मेमोरी पर या अपने Chrome OS डिवाइस पर सहेजा है.</translation>
 <translation id="4969785127455456148">एल्‍बम</translation>
 <translation id="4971412780836297815">पू्र्ण होने पर खोलें</translation>
@@ -3371,7 +3350,6 @@
 <translation id="6241530762627360640">अपने सिस्टम के साथ युग्मित ब्लूटूथ डिवाइस से संबंधित जानकारी एक्सेस करें और आस-पास के ब्लूटूथ डिवाइस की खोज करें.</translation>
 <translation id="6243280677745499710">इस समय सेट है</translation>
 <translation id="6243774244933267674">सर्वर अनुपलब्‍ध है</translation>
-<translation id="6246413617632217567">निगरानी में रखे गए उपयोगकर्ता को आयात नहीं किया जा सका. कृपया अपने हार्ड ड्राइव का स्थान और अनुमतियां जाँचें तथा पुनः प्रयास करें.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6247802389331535091">सिस्टम: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">अपडेट तैयार है</translation>
@@ -3570,7 +3548,6 @@
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />ध्यान दें:<ph name="END_BOLD" /> केवल तभी सक्षम करें जबकि आपको पता हो कि आप क्या कर रहे हैं या यदि आपसे ऐसा करने के लिए कहा गया हो, क्योंकि डेटा के संकलन से निष्पादन में कमी आ सकती है.</translation>
 <translation id="654233263479157500">मार्गदर्शक त्रुटियों के समाधान में सहायता के लिए किसी वेब सेवा का उपयोग करें</translation>
 <translation id="6544215763872433504">Google का वेब ब्राउज़र, आपके लिए</translation>
-<translation id="6545325945815270297"><ph name="BEGIN_LINK" />Chrome डैशबोर्ड<ph name="END_LINK" /> पर अपना सिंक किया हुआ डेटा और डिवाइस प्रबंधित करें.</translation>
 <translation id="6545665334409411530">दोहराने की दर</translation>
 <translation id="6545834809683560467">ऐप चलाने के साधन के खोज बॉक्स या पता में लिखे गए URL और खोजों को पूर्ण करने में सहायता के लिए पूर्वानुमान सेवा उपयोग करें</translation>
 <translation id="6546686722964485737">Wimax नेटवर्क में शामिल हों</translation>
@@ -3585,7 +3562,6 @@
 <translation id="6555810572223193255">क्‍लीनअप अभी उपलब्ध नहीं है</translation>
 <translation id="6556866813142980365">पुन: करें</translation>
 <translation id="6558280019477628686">कोई गड़बड़ी हुई है. शायद कुछ आइटम नहीं हटाए गए हैं.</translation>
-<translation id="6559580823502247193">(पहले से ही इस डिवाइस पर)</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">फ़ाइल पथ या नाम बहुत बड़ा है.  कृपया छोटे नाम के साथ या किसी अन्‍य स्‍थान पर सहेजें.</translation>
 <translation id="656398493051028875">"<ph name="FILENAME" />" हटा रहा है...</translation>
@@ -3780,7 +3756,6 @@
 <translation id="6862635236584086457">इस फ़ोल्डर में सहेजी गई सभी फ़ाइलों का अपने आप ऑनलाइन बैकअप लिया जाता है</translation>
 <translation id="6865313869410766144">ऑटोमैटिक भरने वाला फ़ॉर्म डेटा</translation>
 <translation id="686664946474413495">रंग का चटकीलापन</translation>
-<translation id="6867678160199975333"><ph name="NEW_PROFILE_NAME" /> पर स्विच करें</translation>
 <translation id="6870888490422746447">साझा करने के लिए कोई ऐप चुनें:</translation>
 <translation id="6871644448911473373">OCSP प्रतिसादी: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">आपने जो पासवर्ड डाला है उसे सर्वर ने अस्‍वीकार कर दिया है.</translation>
@@ -3874,7 +3849,6 @@
 <translation id="7018275672629230621">अपना ब्राउज़र इतिहास पढ़ें और बदलें</translation>
 <translation id="7019805045859631636">तेज़</translation>
 <translation id="7022562585984256452">आपका मुख पेज सेट कर दिया गया है.</translation>
-<translation id="7025036625303002400">ऐसा लगता है कि आपके पास इस नाम वाला निगरानी में रखा गया उपयोगकर्ता पहले से है.</translation>
 <translation id="7025190659207909717">मोबाइल डेटा सेवा प्रबंधन</translation>
 <translation id="7025325401470358758">अगला फलक</translation>
 <translation id="7027125358315426638">डेटाबेस नाम:</translation>
@@ -3923,7 +3897,6 @@
 <translation id="7092106376816104">पॉप-अप अपवाद</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921"><ph name="HOSTNAMES" /> नामक डिवाइस से डेटा का आदान-प्रदान करें</translation>
-<translation id="7096108453481049031">निगरानी में रखे गए उपयोगकर्ता आयात नहीं किया जा सकता. कृपया अपना नेटवर्क कनेक्शन जाँचें और बाद में पुनः प्रयास करें.</translation>
 <translation id="7098447629416471489">सहेजे गए दूसरे खोज इंजन यहां दिखाई देंगे</translation>
 <translation id="7099337801055912064">बड़ा PPD लोड नहीं किया जा सका. अधिकतम आकार 250 केबी है.</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> आइटम चयनित</translation>
@@ -3970,7 +3943,6 @@
 <translation id="7168109975831002660">न्यूनतम अक्षरों का आकार</translation>
 <translation id="7170041865419449892">सीमा से बाहर</translation>
 <translation id="7171559745792467651">अपने दूसरे डिवाइस से ऐप्लिकेशन इंस्टॉल करें</translation>
-<translation id="7173917244679555">ऐसा लगता है कि आप पहले से ही उस नाम से किसी उपयोगकर्ता को प्रबंधित कर रहे हैं. क्या आप <ph name="BEGIN_LINK" /><ph name="PROFILE_NAME" /> को <ph name="END_LINK" /> इस डिवाइस में निर्यात करना चाहते हैं?</translation>
 <translation id="7175037578838465313"><ph name="NAME" /> को कॉन्फ़िगर करें</translation>
 <translation id="7175353351958621980">यहां से लोड किया गया:</translation>
 <translation id="7180611975245234373">रीफ्रेश करें</translation>
@@ -4142,7 +4114,6 @@
 <translation id="7444726222535375658">Hangouts Meet में जारी रखें</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> अक्षम करें </translation>
 <translation id="7445682342344043969">पॉप-अप ब्लॉक किए गए हैं</translation>
-<translation id="744859430125590922">इस व्यक्ति द्वारा <ph name="CUSTODIAN_EMAIL" /> से देखी जाने वाली वेबसाइटें नियंत्रित करें और देखें.</translation>
 <translation id="7453008956351770337">इस प्रिंटर को चुनकर, आप निम्नलिखित एक्सटेंशन को अपने प्रिंटर के लिए ऐक्सेस की अनुमति दे रहे हैं:</translation>
 <translation id="7453467225369441013">आपको ज़्यादातर साइटों से साइन आउट कर देता है. आप अपने Google खाते से साइन आउट नहीं होंगे.</translation>
 <translation id="7456142309650173560">डेव</translation>
@@ -4316,7 +4287,6 @@
 <translation id="7717845620320228976">अपडेट के लिए देखें</translation>
 <translation id="7719367874908701697">पृष्‍ठ ज़ूम</translation>
 <translation id="771953673318695590">QA</translation>
-<translation id="7720375555307821262">इस व्यक्ति का निरीक्षण करने के लिए, <ph name="BEGIN_LINK" />Chrome में प्रवेश करें<ph name="END_LINK" />.</translation>
 <translation id="7721179060400456005">विंडो को प्रदर्शन फैलाने दें</translation>
 <translation id="7722040605881499779">अपडेट करना ज़रूरी है: <ph name="NECESSARY_SPACE" /></translation>
 <translation id="7724603315864178912">काटें</translation>
@@ -5146,7 +5116,6 @@
 <translation id="9024331582947483881">पूर्ण स्क्रीन</translation>
 <translation id="9025098623496448965">ठीक है, मुझे साइन-इन स्क्रीन पर वापस ले जाएं</translation>
 <translation id="9026731007018893674">डाउनलोड करें</translation>
-<translation id="9027146684281895941">यह व्यक्ति आपके Google खाते से जिन वेबसाइट पर जाता है, उन्हें नियंत्रित करने और देखने के लिए इस व्यक्ति का निरीक्षण करें.</translation>
 <translation id="9027459031423301635">नए &amp;टैब में लिंक खोलें</translation>
 <translation id="9027603907212475920">समन्वयन सेट अप करें...</translation>
 <translation id="9030515284705930323">आपके संगठन ने आपके खाते के लिए Google Play स्टोर को सक्षम नहीं किया है. अधिक जानकारी के लिए अपने व्यवस्थापक से संपर्क करें.</translation>

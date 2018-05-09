@@ -1038,11 +1038,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šī politika nav iestatīta, SPDY būs pieejams.</translation>
 <translation id="3890999316834333174">Ātrās atbloķēšanas politikas</translation>
 <translation id="3891357445869647828">Iespējo JavaScript</translation>
-<translation id="3891953007921334498">Atspējo izstrādātāju rīkus un JavaScript konsoli.
-
-      Ja šis iestatījums ir iespējots, nevar piekļūt izstrādātāju rīkiem un vairs nevar pārbaudīt vietņu elementus. Tiks atspējoti visi īsinājumtaustiņi un visi izvēļņu vai kontekstizvēlņu ieraksti, ar kuriem tiek atvērti izstrādātāju rīki vai JavaScript konsole.
-
-      Ja šis iestatījums ir atspējots vai nav iestatīts, lietotājs var lietot izstrādātāju rīkus un JavaScript konsoli.</translation>
 <translation id="3895557476567727016">Konfigurē noklusējuma direktoriju, kurš produktā <ph name="PRODUCT_NAME" /> tiks izmantots failu lejupielādei.
 
       Ja iestatīsiet šo politiku, tiks mainīts noklusējuma direktorijs failu lejupielādei produktā <ph name="PRODUCT_NAME" />. Šī politika nav obligāta; lietotājs varēs mainīt direktoriju.

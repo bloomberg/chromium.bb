@@ -89,6 +89,7 @@
 <translation id="1810107444790159527">목록 상자</translation>
 <translation id="1828385960365606039">5월</translation>
 <translation id="1834891354138622109">열</translation>
+<translation id="1845944666972354496">활성화하려면 두 번 탭하세요.</translation>
 <translation id="1865601187525349519">텍스트의 끝</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">현재 날짜와 시간을 말합니다.</translation>
@@ -120,6 +121,7 @@
 <translation id="2179452035581866348">ChromeVox는 사운드를 사용하여 필수 및 부가 정보를 제공합니다. 각 사운드가 무엇을 의미하는지 배우면 이러한 사운드를 사용하여 더 신속하게 탐색할 수 있습니다. 더 익숙해지면 상세한 음성 설명을 사용 중지하고 사운드로 페이지의 필수 정보를 파악할 수 있습니다. 다음은 사운드 전체 목록과 그 의미입니다.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{닫는 괄호}other{닫는 괄호 #개}}</translation>
 <translation id="2199994615414171367">이전 수식</translation>
+<translation id="2203046366315513658">값 줄이기</translation>
 <translation id="2220529011494928058">문제 신고</translation>
 <translation id="2223693656926968778">현재 항목에서 작업 수행</translation>
 <translation id="225732394367814946">말하기 속도 증가</translation>
@@ -158,6 +160,7 @@
 <translation id="2637227747952042642">Math</translation>
 <translation id="2639750663247012216">ChromeVox 특수키</translation>
 <translation id="2644542693584024604">misspelled</translation>
+<translation id="2673280813984708147">수정 중</translation>
 <translation id="267442004702508783">새로고침</translation>
 <translation id="2684412629217766642">ChromeVox 가이드 종료</translation>
 <translation id="2697408785920771974">autoinl</translation>
@@ -209,6 +212,7 @@
 <translation id="3060756054951570867"><ph name="TITLE" /> 메뉴 열림</translation>
 <translation id="3078345202707391975">다음 수준 2 제목</translation>
 <translation id="3078740164268491126">표</translation>
+<translation id="3082249673510793544">뒤로 스크롤</translation>
 <translation id="3082557070674409251">클릭함</translation>
 <translation id="3084806535845658316">입력 에코 없음</translation>
 <translation id="3086746722712840547">note</translation>
@@ -396,6 +400,7 @@
 <translation id="4372705107434148843">음성 중지</translation>
 <translation id="4373197658375206385">링크가 아닌 이전 항목이 없습니다.</translation>
 <translation id="4376316291247992553">그래픽을 점자로 인식하기</translation>
+<translation id="4378308539633073595">앞으로 스크롤</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">reset</translation>
 <translation id="4457472090507035117">현재 음성 선택:</translation>
@@ -403,6 +408,7 @@
 <translation id="4476183483923481720">새로운 행</translation>
 <translation id="4482330759234983253">이전 표</translation>
 <translation id="4491109536499578614">이미지</translation>
+<translation id="4517854969512651305">값 늘리기</translation>
 <translation id="4529987814483543472">기본 키맵</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{슬래시}other{슬래시 #개}}</translation>
 <translation id="4547556996012970016">다음 수준 5 제목</translation>
@@ -418,6 +424,7 @@
 <translation id="461613135510474570">문장</translation>
 <translation id="463135993322337640">ChromeVox o, n을 눌러 새로운 기능을 살펴보세요</translation>
 <translation id="4647836961514597010">색상선택 도구</translation>
+<translation id="4652110509054054146">Search와 왼쪽 또는 오른쪽 키가 Home 또는 End 키, Search와 Control 왼쪽 또는 오른쪽 키가 Control Home 또는 End 키, Search와 위쪽 또는 아래쪽 키가 Page Up 또는 Down 키 역할을 합니다.</translation>
 <translation id="4660783501463101648">기본 버전이 삭제되었습니다. ChromeVox 기본 버전으로 다시 전환하기 위한 키보드 토글이 삭제되었습니다.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>

@@ -1001,11 +1001,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Jos käytäntöä ei ole määritetty, SDPY on käytettävissä.</translation>
 <translation id="3890999316834333174">Lukituksen pika-avaamisen käytännöt</translation>
 <translation id="3891357445869647828">Ota JavaScript käyttöön</translation>
-<translation id="3891953007921334498">Poistaa käytöstä kehittäjän työkalut sekä JavaScript-konsolin.
-
-      Jos otat asetuksen käyttöön, kehittäjän työkaluja ei voi käyttää eikä verkkosivustojen elementtejä enää voi tarkastaa. Kehittäjän työkalut tai JavaScript-konsolin avaavat pikanäppäimet ja valikkokohteet poistetaan käytöstä.
-
-      Jos poistat asetuksen käytöstä tai et määritä sitä, kehittäjän työkaluja ja JavaScript-konsolia voi käyttää.</translation>
 <translation id="3895557476567727016">Määrittää oletushakemiston, jota <ph name="PRODUCT_NAME" /> käyttää tiedostojen lataamiseen
 
      Jos otat tämän käytännön käyttöön, se muuttaa oletushakemistoa, johon <ph name="PRODUCT_NAME" /> lataa tiedostot. Tämä käytäntö ei ole pakollinen, eli käyttäjä voi vaihtaa hakemistoa.

@@ -1001,11 +1001,6 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
       Pokud tuto zásadu ponecháte nenastavenou, bude protokol SPDY k dispozici.</translation>
 <translation id="3890999316834333174">Zásady související s rychlým odemknutím</translation>
 <translation id="3891357445869647828">Povolit JavaScript</translation>
-<translation id="3891953007921334498">Deaktivuje nástroje pro vývojáře a konzoli JavaScriptu.
-
-      Pokud toto nastavení aktivujete, nebude možné přistupovat k nástrojům pro vývojáře ani kontrolovat prvky webových stránek. Deaktivovány budou také veškeré klávesové zkratky a položky klasických či kontextových nabídek, pomocí kterých lze nástroje pro vývojáře nebo konzoli JavaScriptu otevřít.
-
-      Pokud tuto možnost deaktivujete nebo nenastavíte, umožníte uživatelům používat nástroje pro vývojáře nebo konzoli JavaScriptu.</translation>
 <translation id="3895557476567727016">Konfiguruje výchozí adresář, do kterého bude <ph name="PRODUCT_NAME" /> stahovat soubory.
 
       Pokud tuto zásadu nastavíte, změní výchozí adresář, do kterého bude <ph name="PRODUCT_NAME" /> stahovat soubory. Tato zásada není závazná. Uživatel adresář bude moci změnit.

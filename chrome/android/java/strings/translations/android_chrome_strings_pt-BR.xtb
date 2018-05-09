@@ -111,7 +111,6 @@
 <translation id="1993768208584545658">O <ph name="SITE" /> deseja realizar o pareamento</translation>
 <translation id="1994173015038366702">URL do site</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB de outros apps</translation>
-<translation id="2015632741368427174">Redirecionamento bloqueado para este site:</translation>
 <translation id="2017836877785168846">Limpa o histórico e o preenchimento automático na barra de endereço.</translation>
 <translation id="2021896219286479412">Controles de site em tela cheia</translation>
 <translation id="2038563949887743358">Ativar "Ver versão para Web"</translation>
@@ -183,7 +182,6 @@
 <translation id="2650751991977523696">Fazer o download do arquivo novamente?</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2677748264148917807">Sair</translation>
-<translation id="2693813674743028984">Ocultar armazenamento</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2707726405694321444">Atualizar página</translation>
 <translation id="2709516037105925701">Preenchimento automático</translation>
@@ -209,7 +207,6 @@
 <translation id="2956410042958133412">Esta conta é gerenciada por <ph name="PARENT_NAME_1" /> e <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Todos os direitos reservados.</translation>
 <translation id="2962095958535813455">Alternada para guias anônimas</translation>
-<translation id="2965945119655563012">Mostrar armazenamento</translation>
 <translation id="2968755619301702150">Leitor de certificados</translation>
 <translation id="2979025552038692506">Guia anônima selecionada</translation>
 <translation id="2989523299700148168">Visitados recentemente</translation>
@@ -526,7 +523,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="5817918615728894473">Parear</translation>
 <translation id="583281660410589416">Desconhecido</translation>
 <translation id="5833984609253377421">Compartilhar link</translation>
-<translation id="583891442612896534">Não foi possível acessar os servidores do Google para realizar a compactação de dados a partir do Google Chrome. Seu espaço para salvar dados pode estar limitado.</translation>
 <translation id="5854790677617711513">Com mais de 30 dias</translation>
 <translation id="5858741533101922242">O Chrome não pôde ativar o adaptador Bluetooth</translation>
 <translation id="5860033963881614850">Desativado</translation>
@@ -588,7 +584,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Editar favorito</translation>
 <translation id="6406506848690869874">Sincronizar</translation>
-<translation id="6409731863280057959">Pop-ups</translation>
 <translation id="641643625718530986">Imprimir...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB transferido(s) por download</translation>
 <translation id="6433501201775827830">Escolha seu mecanismo de pesquisa</translation>
@@ -838,7 +833,6 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="8676374126336081632">Limpar entrada</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Nível de intensidade do sinal: de # barra}one{Nível de intensidade do sinal: de # barra}other{Nível de intensidade do sinal: de # barras}}</translation>
 <translation id="869891660844655955">Validade</translation>
-<translation id="8712637175834984815">Entendi</translation>
 <translation id="8719023831149562936">Não é possível enviar a guia atual</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8728487861892616501">Ao usar este aplicativo, você concorda com os <ph name="BEGIN_LINK1" />Termos de Serviço<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome, bem como o <ph name="BEGIN_LINK3" />Aviso de Privacidade de Contas do Google gerenciadas com o Family Link<ph name="END_LINK3" />.</translation>
@@ -848,7 +842,6 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="8812260976093120287">Em alguns websites, é possível pagar no seu dispositivo com os apps de pagamento compatíveis acima.</translation>
 <translation id="8816439037877937734">O app <ph name="APP_NAME" /> será aberto no Chrome. Ao continuar, você concorda com os <ph name="BEGIN_LINK1" />Termos de Serviço<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade do Chrome<ph name="END_LINK2" />, assim como o <ph name="BEGIN_LINK3" />Aviso de Privacidade de Contas do Google gerenciadas com o Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Favoritos</translation>
-<translation id="883635517171802338">Impedir que sites exibam pop-ups (recomendado)</translation>
 <translation id="883806473910249246">Ocorreu um erro durante o download do conteúdo.</translation>
 <translation id="8840953339110955557">Esta página pode ser diferente da versão on-line.</translation>
 <translation id="8847988622838149491">USB</translation>

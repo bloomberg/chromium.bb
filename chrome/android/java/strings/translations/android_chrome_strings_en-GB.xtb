@@ -111,7 +111,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> wants to pair</translation>
 <translation id="1994173015038366702">Site URL</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB other apps</translation>
-<translation id="2015632741368427174">Redirect blocked to site:</translation>
 <translation id="2017836877785168846">Clears history and autocompletions in the address bar.</translation>
 <translation id="2021896219286479412">Full screen site controls</translation>
 <translation id="2038563949887743358">Turn on Request desktop site</translation>
@@ -183,7 +182,6 @@
 <translation id="2650751991977523696">Download file again?</translation>
 <translation id="2653659639078652383">Submit</translation>
 <translation id="2677748264148917807">Leave</translation>
-<translation id="2693813674743028984">Hide storage</translation>
 <translation id="2704606927547763573">Copied</translation>
 <translation id="2707726405694321444">Refresh page</translation>
 <translation id="2709516037105925701">Auto-fill</translation>
@@ -209,7 +207,6 @@
 <translation id="2956410042958133412">This account is managed by <ph name="PARENT_NAME_1" /> and <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2962095958535813455">Switched to incognito tabs</translation>
-<translation id="2965945119655563012">Show storage</translation>
 <translation id="2968755619301702150">Certificate viewer</translation>
 <translation id="2979025552038692506">Selected Incognito Tab</translation>
 <translation id="2989523299700148168">Recently Visited</translation>
@@ -527,7 +524,6 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="5817918615728894473">Pair</translation>
 <translation id="583281660410589416">Unknown</translation>
 <translation id="5833984609253377421">Share link</translation>
-<translation id="583891442612896534">Chrome is unable to reach Google servers for data compression. Your data savings may be limited.</translation>
 <translation id="5854790677617711513">Older than 30 days</translation>
 <translation id="5858741533101922242">Chrome is unable to turn on Bluetooth adaptor</translation>
 <translation id="5860033963881614850">Off</translation>
@@ -589,7 +585,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Edit bookmark</translation>
 <translation id="6406506848690869874">Sync</translation>
-<translation id="6409731863280057959">Pop-ups</translation>
 <translation id="641643625718530986">Print…</translation>
 <translation id="6416782512398055893">Downloaded <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Choose your search engine</translation>
@@ -838,7 +833,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8676374126336081632">Clear input</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signal Strength Level: # bar}other{Signal Strength Level: # bars}}</translation>
 <translation id="869891660844655955">Expiry date</translation>
-<translation id="8712637175834984815">Got it</translation>
 <translation id="8719023831149562936">Can’t beam current tab</translation>
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8728487861892616501">By using this application, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />, and the <ph name="BEGIN_LINK3" />Privacy Notice for Google Accounts Managed with Family Link<ph name="END_LINK3" />.</translation>
@@ -848,7 +842,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8812260976093120287">On some websites, you can pay with above supported payment apps on your device.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> will open in Chrome. By continuing, you agree to Chrome's <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />, and the <ph name="BEGIN_LINK3" />Privacy Notice for Google Accounts Managed with Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
-<translation id="883635517171802338">Block sites from showing pop-ups (recommended)</translation>
 <translation id="883806473910249246">An error occurred while downloading the content.</translation>
 <translation id="8840953339110955557">This page may differ from the online version.</translation>
 <translation id="8847988622838149491">USB</translation>

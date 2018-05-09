@@ -111,7 +111,6 @@
 <translation id="1993768208584545658">Web <ph name="SITE" /> žádá o spárování</translation>
 <translation id="1994173015038366702">Adresa URL webu</translation>
 <translation id="200815880754187296">Ostatní aplikace: <ph name="KILOBYTES" /> kB</translation>
-<translation id="2015632741368427174">Bylo zablokováno přesměrování na tento web:</translation>
 <translation id="2017836877785168846">Vymaže historii a automatická dokončení v adresním řádku.</translation>
 <translation id="2021896219286479412">Ovládání webu na celé obrazovce</translation>
 <translation id="2038563949887743358">Zapnout funkci Verze webu pro PC</translation>
@@ -183,7 +182,6 @@
 <translation id="2650751991977523696">Stáhnout soubor znovu?</translation>
 <translation id="2653659639078652383">Odeslat</translation>
 <translation id="2677748264148917807">Odejít</translation>
-<translation id="2693813674743028984">Skrýt úložiště</translation>
 <translation id="2704606927547763573">Zkopírováno</translation>
 <translation id="2707726405694321444">Obnovit stránku</translation>
 <translation id="2709516037105925701">Automatické vyplňování</translation>
@@ -209,7 +207,6 @@
 <translation id="2956410042958133412">Tento účet spravují uživatelé <ph name="PARENT_NAME_1" /> a <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Všechna práva vyhrazena.</translation>
 <translation id="2962095958535813455">Přepnuto na anonymní karty</translation>
-<translation id="2965945119655563012">Zobrazit úložiště</translation>
 <translation id="2968755619301702150">Prohlížeč certifikátů</translation>
 <translation id="2979025552038692506">Vybraná anonymní karta</translation>
 <translation id="2989523299700148168">Nedávno navštívené</translation>
@@ -527,7 +524,6 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="5817918615728894473">Spárovat</translation>
 <translation id="583281660410589416">Neznámé</translation>
 <translation id="5833984609253377421">Sdílet odkaz</translation>
-<translation id="583891442612896534">Chrome se nemůže připojit k serverům společnosti Google pro kompresi dat. Úspora dat může být omezena.</translation>
 <translation id="5854790677617711513">Starší než 30 dnů</translation>
 <translation id="5858741533101922242">Chrome nemůže zapnout adaptér Bluetooth</translation>
 <translation id="5860033963881614850">Vypnuto</translation>
@@ -589,7 +585,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6395288395575013217">ODKAZ</translation>
 <translation id="6404511346730675251">Upravit záložku</translation>
 <translation id="6406506848690869874">Synchronizace</translation>
-<translation id="6409731863280057959">Vyskakovací okna</translation>
 <translation id="641643625718530986">Tisk…</translation>
 <translation id="6416782512398055893">Staženo: <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Vyberte vyhledávač</translation>
@@ -840,7 +835,6 @@ Chcete-li získat nové licence, připojte se k internetu a přehrajte stažen
 <translation id="8676374126336081632">Vymazat vstup</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Síla signálu: # čárka}few{Síla signálu: # čárky}many{Síla signálu: # čárky}other{Síla signálu: # čárek}}</translation>
 <translation id="869891660844655955">Datum vypršení platnosti</translation>
-<translation id="8712637175834984815">Hotovo</translation>
 <translation id="8719023831149562936">Aktuální kartu nelze přenést</translation>
 <translation id="8725066075913043281">Zkusit znovu</translation>
 <translation id="8728487861892616501">Používáním této aplikace vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozorněním ve věci ochrany soukromí<ph name="END_LINK2" /> prohlížeče Chrome a <ph name="BEGIN_LINK3" />upozorněním ve věci ochrany soukromí pro účty Google spravované prostřednictvím služby Family Link<ph name="END_LINK3" />.</translation>
@@ -850,7 +844,6 @@ Chcete-li získat nové licence, připojte se k internetu a přehrajte stažen
 <translation id="8812260976093120287">Na některých webech můžete platit pomocí výše uvedených podporovaných platebních aplikací v zařízení.</translation>
 <translation id="8816439037877937734">Aplikace <ph name="APP_NAME" /> se otevře v Chromu. Pokračováním vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozorněním ve věci ochrany soukromí<ph name="END_LINK2" /> prohlížeče Chrome a <ph name="BEGIN_LINK3" />upozorněním ve věci ochrany soukromí pro účty Google spravované prostřednictvím služby Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Záložky</translation>
-<translation id="883635517171802338">Bránit webům v zobrazování vyskakovacích oken (doporučeno)</translation>
 <translation id="883806473910249246">Při stahování obsahu došlo k chybě.</translation>
 <translation id="8840953339110955557">Tato stránka se může od online verze lišit.</translation>
 <translation id="8847988622838149491">USB</translation>

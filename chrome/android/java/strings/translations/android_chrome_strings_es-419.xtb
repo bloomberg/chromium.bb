@@ -82,10 +82,12 @@
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1729516292547892356">Para ver contenido de realidad virtual, actualiza los servicios de RV de Google</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Actualizado hace <ph name="TIME_SINCE_UPDATE" /></translation>
+<translation id="1743802530341753419">Preguntar antes de permitir que los sitios se conecten a un dispositivo (recomendado)</translation>
 <translation id="1749561566933687563">Sincroniza tus favoritos</translation>
 <translation id="17513872634828108">Pestañas abiertas</translation>
 <translation id="1756600373018374892">Presiona este botón para acceder de forma rápida a tus pestañas.</translation>
 <translation id="1779089405699405702">Decodificador de imágenes</translation>
+<translation id="1792959175193046959">Cambia la ubicación predeterminada de las descargas en cualquier momento</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1829244130665387512">Buscar en la página</translation>
 <translation id="1832521218263067499">Incidentes de seguridad</translation>
@@ -109,7 +111,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> desea sincronizarse</translation>
 <translation id="1994173015038366702">URL del sitio</translation>
 <translation id="200815880754187296">Otras apps: <ph name="KILOBYTES" /> kilobytes</translation>
-<translation id="2015632741368427174">Se bloqueó el redireccionamiento al siguiente sitio:</translation>
 <translation id="2017836877785168846">Borra el historial y las opciones de autocompletado en la barra de direcciones.</translation>
 <translation id="2021896219286479412">Controles en pantalla completa</translation>
 <translation id="2038563949887743358">Activar la opción para solicitar versión de escritorio</translation>
@@ -181,7 +182,6 @@
 <translation id="2650751991977523696">¿Deseas volver a descargar el archivo?</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2677748264148917807">Abandonar</translation>
-<translation id="2693813674743028984">Ocultar almacenamiento</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2707726405694321444">Actualizar página</translation>
 <translation id="2709516037105925701">Autocompletar</translation>
@@ -207,7 +207,6 @@
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" /> y <ph name="PARENT_NAME_2" /> administran esta cuenta.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Todos los derechos reservados.</translation>
 <translation id="2962095958535813455">Se seleccionaron las pestañas en modo de navegación de incógnito</translation>
-<translation id="2965945119655563012">Mostrar almacenamiento</translation>
 <translation id="2968755619301702150">Visualizador de certificados</translation>
 <translation id="2979025552038692506">Pestaña de incógnito seleccionada</translation>
 <translation id="2989523299700148168">Visitados recientemente</translation>
@@ -525,7 +524,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="5817918615728894473">Sincronizar</translation>
 <translation id="583281660410589416">Desconocido</translation>
 <translation id="5833984609253377421">Compartir vínculo</translation>
-<translation id="583891442612896534">Chrome no puede acceder a los servidores de Google para la compresión de datos. Es posible que el ahorro de datos esté reducido.</translation>
 <translation id="5854790677617711513">Hace más de 30 días</translation>
 <translation id="5858741533101922242">Chrome no puede activar el adaptador Bluetooth</translation>
 <translation id="5860033963881614850">Desactivado</translation>
@@ -587,7 +585,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6395288395575013217">VÍNCULO</translation>
 <translation id="6404511346730675251">Editar marcador</translation>
 <translation id="6406506848690869874">Sincronización</translation>
-<translation id="6409731863280057959">Ventanas emergentes</translation>
 <translation id="641643625718530986">Imprimir…</translation>
 <translation id="6416782512398055893">Se descargaron <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Selecciona el motor de búsqueda</translation>
@@ -647,6 +644,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6910211073230771657">Eliminado</translation>
 <translation id="6912998170423641340">Impedir que los sitios lean el texto y las imágenes del portapapeles</translation>
 <translation id="6914783257214138813">Las personas que tengan acceso al archivo exportado podrán ver tus contraseñas.</translation>
+<translation id="6942665639005891494">Cambia la ubicación predeterminada de las descargas en cualquier momento en la opción de menú de Configuración</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6963766334940102469">Borrar favoritos</translation>
 <translation id="6965382102122355670">Aceptar</translation>
@@ -814,6 +812,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8503813439785031346">Nombre de usuario</translation>
 <translation id="8514477925623180633">Exportar las contraseñas almacenadas con Chrome</translation>
 <translation id="8514577642972634246">Acceder al modo de navegación de incógnito</translation>
+<translation id="851751545965956758">Impedir que los sitios se conecten a los dispositivos</translation>
 <translation id="8523928698583292556">Borrar contraseña almacenada</translation>
 <translation id="854522910157234410">Abrir esta página</translation>
 <translation id="8559990750235505898">Ofrecer la traducción de páginas en otros idiomas</translation>
@@ -836,7 +835,6 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8676374126336081632">Borrar entrada</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Nivel de potencia de la señal: # barra}other{Nivel de potencia de la señal: # barras}}</translation>
 <translation id="869891660844655955">Fecha de vencimiento</translation>
-<translation id="8712637175834984815">Entendido</translation>
 <translation id="8719023831149562936">Esta pestaña no se puede transmitir.</translation>
 <translation id="8725066075913043281">Intentar nuevamente</translation>
 <translation id="8728487861892616501">Al usar esta app, aceptas las <ph name="BEGIN_LINK1" />Condiciones del servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />Aviso de privacidad<ph name="END_LINK2" /> de Chrome, y el <ph name="BEGIN_LINK3" />Aviso de privacidad para las cuentas de Google administradas con Family Link<ph name="END_LINK3" />.</translation>
@@ -846,7 +844,6 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8812260976093120287">En algunos sitios web, puedes usar las apps compatibles que se enumeran anteriormente para hacer pagos en tu dispositivo.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> se abrirá en Chrome. Al continuar, aceptas las <ph name="BEGIN_LINK1" />Condiciones del servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />Aviso de privacidad<ph name="END_LINK2" /> de Chrome, y el <ph name="BEGIN_LINK3" />Aviso de privacidad para las cuentas de Google administradas con Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Favoritos</translation>
-<translation id="883635517171802338">Bloquear las ventanas emergentes en los sitios (recomendado)</translation>
 <translation id="883806473910249246">Se produjo un error al descargar el contenido.</translation>
 <translation id="8840953339110955557">Es posible que esta página sea diferente con respecto a la versión en línea.</translation>
 <translation id="8847988622838149491">USB</translation>

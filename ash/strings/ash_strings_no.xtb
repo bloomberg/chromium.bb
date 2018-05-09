@@ -266,7 +266,6 @@
 <translation id="698231206551913481">Alle filer og lokale data som er tilknyttet denne brukeren, slettes permanent når brukeren fjernes.</translation>
 <translation id="7029814467594812963">Avslutt økten</translation>
 <translation id="7034339000180558234">Caster <ph name="TAB_NAME" /> til <ph name="RECEIVER_NAME" /></translation>
-<translation id="7052914147756339792">Angi bakgrunn</translation>
 <translation id="7066646422045619941">Administratoren din har slått av dette nettverket.</translation>
 <translation id="7067196344162293536">Automatisk retning</translation>
 <translation id="7098389117866926363">USB-C-enhet (venstre port på baksiden)</translation>
@@ -355,6 +354,7 @@
 <translation id="9194617393863864469">Logg på en annen bruker</translation>
 <translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE" /> % fullt</translation>
 <translation id="9210037371811586452">Avslutter enhetlig skrivebordsmodus</translation>
+<translation id="9215934040295798075">Velg bakgrunn</translation>
 <translation id="923686485342484400">Trykk på Control+Shift+Q to ganger for å logge av.</translation>
 <translation id="945522503751344254">Gi tilbakemelding</translation>
 <translation id="98515147261107953">Liggende</translation>

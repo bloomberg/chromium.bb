@@ -111,7 +111,6 @@
 <translation id="1993768208584545658">A(z) <ph name="SITE" /> párosítást szeretne végrehajtani</translation>
 <translation id="1994173015038366702">Webhely URL-je</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB más alkalmazások által</translation>
-<translation id="2015632741368427174">Átirányítás letiltva ennél a webhelynél:</translation>
 <translation id="2017836877785168846">Törli a címsávban található előzményeket és automatikus kiegészítéseket.</translation>
 <translation id="2021896219286479412">Teljes képernyős oldal vezérlői</translation>
 <translation id="2038563949887743358">Kapcsolja be az Asztali webhely kérése funkciót</translation>
@@ -183,7 +182,6 @@
 <translation id="2650751991977523696">Letölti újra a fájlt?</translation>
 <translation id="2653659639078652383">Elküldés</translation>
 <translation id="2677748264148917807">Lap elhagyása</translation>
-<translation id="2693813674743028984">Tárhely elrejtése</translation>
 <translation id="2704606927547763573">Másolt</translation>
 <translation id="2707726405694321444">Oldal frissítése</translation>
 <translation id="2709516037105925701">Automatikus kitöltés</translation>
@@ -209,7 +207,6 @@
 <translation id="2956410042958133412">A fiók kezelői: <ph name="PARENT_NAME_1" /> és <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Minden jog fenntartva.</translation>
 <translation id="2962095958535813455">Átváltva az inkognitómódban használt lapokra</translation>
-<translation id="2965945119655563012">Tárhely megjelenítése</translation>
 <translation id="2968755619301702150">Tanúsítványmegtekintő</translation>
 <translation id="2979025552038692506">Kiválasztott inkognitólap</translation>
 <translation id="2989523299700148168">Legutóbb látogatott</translation>
@@ -527,7 +524,6 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="5817918615728894473">Párosítás</translation>
 <translation id="583281660410589416">Ismeretlen</translation>
 <translation id="5833984609253377421">Link megosztása</translation>
-<translation id="583891442612896534">A Chrome nem tudja elérni a Google szervereit az adatok tömörítése céljából. Az adatforgalmi megtakarítás korlátozva lehet.</translation>
 <translation id="5854790677617711513">30 napnál régebbi</translation>
 <translation id="5858741533101922242">A Chrome nem tudja bekapcsolni a Bluetooth-adaptert</translation>
 <translation id="5860033963881614850">Kikapcsolva</translation>
@@ -589,7 +585,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Könyvjelző szerkesztése</translation>
 <translation id="6406506848690869874">Szinkronizálás</translation>
-<translation id="6409731863280057959">Előugró ablakok</translation>
 <translation id="641643625718530986">Nyomtatás…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB letöltve</translation>
 <translation id="6433501201775827830">Keresőmotor kiválasztása</translation>
@@ -840,7 +835,6 @@ Az új engedélyek beszerzéséhez kapcsolódjon az internethez, és játssza le
 <translation id="8676374126336081632">Beírt szöveg törlése</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Jelerősség szintje: # sáv}other{Jelerősség szintje: # sáv}}</translation>
 <translation id="869891660844655955">Lejárati dátum</translation>
-<translation id="8712637175834984815">Sikerült</translation>
 <translation id="8719023831149562936">Nem lehet átsugározni a jelenlegi lapot</translation>
 <translation id="8725066075913043281">Újrapróbálás</translation>
 <translation id="8728487861892616501">Az alkalmazás használatával elfogadja a Chrome <ph name="BEGIN_LINK1" />általános szerződési feltételeit<ph name="END_LINK1" /> és <ph name="BEGIN_LINK2" />adatvédelmi közleményét<ph name="END_LINK2" />, valamint <ph name="BEGIN_LINK3" />a Family Link szolgáltatással kezelt Google-fiókokra vonatkozó adatvédelmi közleményt<ph name="END_LINK3" />.</translation>
@@ -850,7 +844,6 @@ Az új engedélyek beszerzéséhez kapcsolódjon az internethez, és játssza le
 <translation id="8812260976093120287">Bizonyos webhelyeken fizethet eszközén a fenti támogatott fizetési alkalmazásokkal.</translation>
 <translation id="8816439037877937734">A(z) <ph name="APP_NAME" /> a Chrome-ban nyílik meg. A folytatással elfogadja a Chrome <ph name="BEGIN_LINK1" />Általános Szerződési Feltételeit<ph name="END_LINK1" /> és <ph name="BEGIN_LINK2" />Adatvédelmi közleményét<ph name="END_LINK2" />, valamint <ph name="BEGIN_LINK3" />A Family Link szolgáltatással kezelt Google-fiókokra vonatkozó Adatvédelmi közleményt<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Könyvjelzők</translation>
-<translation id="883635517171802338">Előugró ablakok megjelenítésének letiltása a webhelyeken (ajánlott)</translation>
 <translation id="883806473910249246">Hiba történt a tartalom letöltésekor.</translation>
 <translation id="8840953339110955557">Az oldal eltérhet az online változattól.</translation>
 <translation id="8847988622838149491">USB</translation>

@@ -266,7 +266,6 @@
 <translation id="698231206551913481">Όλα τα αρχεία και τα τοπικά δεδομένα που σχετίζονται με τον χρήστη θα διαγραφούν οριστικά μόλις καταργηθεί ο χρήστης.</translation>
 <translation id="7029814467594812963">Έξοδος από συνεδρία</translation>
 <translation id="7034339000180558234">Μετάδοση <ph name="TAB_NAME" /> σε <ph name="RECEIVER_NAME" /></translation>
-<translation id="7052914147756339792">Ορισμός ταπετσαρίας...</translation>
 <translation id="7066646422045619941">Το δίκτυο αυτό έχει απενεργοποιηθεί από το διαχειριστή σας.</translation>
 <translation id="7067196344162293536">Αυτόματη περιστροφή</translation>
 <translation id="7098389117866926363">Συσκευή USB-C (πίσω αριστερή θύρα)</translation>
@@ -355,6 +354,7 @@
 <translation id="9194617393863864469">Σύνδεση με άλλον χρήστη...</translation>
 <translation id="9201131092683066720">Η μπαταρία είναι πλήρης <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Έξοδος από λειτουργία ενοποιημένης επιφάνειας εργασίας</translation>
+<translation id="9215934040295798075">Ορισμός ταπετσαρίας</translation>
 <translation id="923686485342484400">Πατήστε Ctrl + Shift + Q δύο φορές για να αποσυνδεθείτε.</translation>
 <translation id="945522503751344254">Αποστολή σχολίων</translation>
 <translation id="98515147261107953">Οριζόντια</translation>

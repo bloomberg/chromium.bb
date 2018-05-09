@@ -267,7 +267,6 @@
 <translation id="698231206551913481">ระบบจะลบไฟล์ทั้งหมดและข้อมูลในเครื่องที่เชื่อมโยงกับผู้ใช้รายนี้ออกอย่างถาวรหลังจากนำผู้ใช้รายนี้ออกแล้ว</translation>
 <translation id="7029814467594812963">ออกจากเซสชัน</translation>
 <translation id="7034339000180558234">กำลังแคสต์ <ph name="TAB_NAME" /> ไปยัง <ph name="RECEIVER_NAME" /></translation>
-<translation id="7052914147756339792">ตั้งค่าวอลเปเปอร์...</translation>
 <translation id="7066646422045619941">ผู้ดูแลระบบปิดใช้เครือข่ายนี้</translation>
 <translation id="7067196344162293536">หมุนอัตโนมัติ</translation>
 <translation id="7098389117866926363">อุปกรณ์ USB-C (พอร์ตด้านหลังซ้าย)</translation>
@@ -356,6 +355,7 @@
 <translation id="9194617393863864469">ลงชื่อเข้าใช้ด้วยชื่อผู้ใช้อื่น...</translation>
 <translation id="9201131092683066720">มีแบตเตอรี่ <ph name="PERCENTAGE" />%</translation>
 <translation id="9210037371811586452">กำลังออกจากโหมดเดสก์ท็อปแบบรวมหลายหน้าจอ</translation>
+<translation id="9215934040295798075">ตั้งค่าวอลเปเปอร์</translation>
 <translation id="923686485342484400">กด Control Shift Q 2 ครั้งเพื่อออกจากระบบ</translation>
 <translation id="945522503751344254">ส่งความคิดเห็น</translation>
 <translation id="98515147261107953">แนวนอน</translation>

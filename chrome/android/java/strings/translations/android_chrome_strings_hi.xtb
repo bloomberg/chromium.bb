@@ -109,7 +109,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> युग्मित करना चाहता है</translation>
 <translation id="1994173015038366702">साइट URL</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB अन्य ऐप्लिकेशन</translation>
-<translation id="2015632741368427174">इस साइट पर रीडायरेक्ट ब्लॉक किया गया है:</translation>
 <translation id="2017836877785168846">इतिहास साफ़ करता है और पता बार में स्वत: पूर्णता को साफ़ करता है.</translation>
 <translation id="2021896219286479412">पूरी स्क्रीन के साइट नियंत्रण</translation>
 <translation id="2038563949887743358">अनुरोध डेस्कटॉप साइट चालू करें</translation>
@@ -181,7 +180,6 @@
 <translation id="2650751991977523696">फ़ाइल दोबारा डाउनलोड करें?</translation>
 <translation id="2653659639078652383">सबमिट करें</translation>
 <translation id="2677748264148917807">छोड़ें</translation>
-<translation id="2693813674743028984">मेमोरी छिपाएं</translation>
 <translation id="2704606927547763573">कॉपी किया गया</translation>
 <translation id="2707726405694321444">पेज रीफ्रेश करें</translation>
 <translation id="2709516037105925701">ऑटोमैटिक भरना</translation>
@@ -207,7 +205,6 @@
 <translation id="2956410042958133412">यह खाता <ph name="PARENT_NAME_1" /> और <ph name="PARENT_NAME_2" /> के द्वारा प्रबंधित है.</translation>
 <translation id="2960796085439532066">कॉपीराइट <ph name="YEAR" /> Google Inc. सर्वाधिकार सुरक्षित.</translation>
 <translation id="2962095958535813455">गुप्त टैब पर स्विच कर दिया गया</translation>
-<translation id="2965945119655563012">मेमोरी दिखाएं</translation>
 <translation id="2968755619301702150">प्रमाणपत्र व्यूअर</translation>
 <translation id="2979025552038692506">चयनित गुप्त टैब</translation>
 <translation id="2989523299700148168">हाल ही में देखे गए</translation>
@@ -525,7 +522,6 @@
 <translation id="5817918615728894473">युग्‍मित करें</translation>
 <translation id="583281660410589416">अज्ञात</translation>
 <translation id="5833984609253377421">लिंक साझा करें</translation>
-<translation id="583891442612896534">Chrome डेटा संपीड़न के लिए Google के सर्वर तक नहीं पहुंच पा रहा है. आपकी डेटा की बचत सीमित हो सकती हैं.</translation>
 <translation id="5854790677617711513">30 दिनों से ज़्यादा पुराना</translation>
 <translation id="5858741533101922242">Chrome, ब्लूटूथ एडाप्टर को चालू नहीं कर सका</translation>
 <translation id="5860033963881614850">बंद</translation>
@@ -587,7 +583,6 @@
 <translation id="6395288395575013217">लिंक</translation>
 <translation id="6404511346730675251">बुकमार्क संपादित करें</translation>
 <translation id="6406506848690869874">समन्वय</translation>
-<translation id="6409731863280057959">पॉप-अप</translation>
 <translation id="641643625718530986">प्रिंट करें…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> एमबी डाउनलोड किया गया</translation>
 <translation id="6433501201775827830">अपना खोज इंजन चुनें</translation>
@@ -836,7 +831,6 @@
 <translation id="8676374126336081632">इनपुट साफ़ करें</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{सिग्नल सशक्तता का स्तर: # बार}one{सिग्नल सशक्तता का स्तर: # बार}other{सिग्नल सशक्तता का स्तर: # बार}}</translation>
 <translation id="869891660844655955">समय समाप्ति दिनांक</translation>
-<translation id="8712637175834984815">समझ लिया</translation>
 <translation id="8719023831149562936">वर्तमान टैब को बीम नहीं किया जा सकता</translation>
 <translation id="8725066075913043281">पुन: प्रयास करें</translation>
 <translation id="8728487861892616501">इस ऐप्लिकेशन का उपयोग करके, आप Chrome की <ph name="BEGIN_LINK1" />सेवा की शर्तों<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />निजता सूचना<ph name="END_LINK2" /> और <ph name="BEGIN_LINK3" />Family Link से प्रबंधित होने वाले Google खातों के लिए निजता सूचना<ph name="END_LINK3" /> से सहमत होते हैं.</translation>
@@ -846,7 +840,6 @@
 <translation id="8812260976093120287">कुछ वेबसाइटों पर, आप ऊपर समर्थित भुगतान ऐप्लिकेशन के ज़रिए अपने डिवाइस पर भुगतान कर सकते हैं.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> Chrome में खुलेगा. जारी रखकर, आप Chrome की <ph name="BEGIN_LINK1" />सेवा की शर्तों<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />निजता सूचना<ph name="END_LINK2" /> और <ph name="BEGIN_LINK3" />Family Link से प्रबंधित होने वाले Google खातों के लिए निजता सूचना<ph name="END_LINK3" /> से सहमत होते हैं.</translation>
 <translation id="8820817407110198400">बुकमार्क</translation>
-<translation id="883635517171802338">साइट को पॉप-अप दिखाने से अवरुद्ध करें (अनुशंसित)</translation>
 <translation id="883806473910249246">सामग्री डाउनलोड करते समय कोई गड़बड़ी हुई.</translation>
 <translation id="8840953339110955557">यह पेज ऑनलाइन वर्शन से अलग हो सकता है.</translation>
 <translation id="8847988622838149491">USB</translation>

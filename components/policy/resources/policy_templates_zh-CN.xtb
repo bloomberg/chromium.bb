@@ -393,6 +393,20 @@
       使用已下载的字典，仍然可以进行拼写检查，此策略仅控制在线服务的使用情况。
 
       如果未配置此设置，那么用户可以选择是否使用拼写检查服务。</translation>
+<translation id="2294283832646774959">配置打印机列表。
+
+      通过此政策，管理员可为他们的用户提供打印机配置。
+
+      “<ph name="PRINTER_DISPLAY_NAME" />”和“<ph name="PRINTER_DESCRIPTION" />”均是自由格式的字符串，且均可被自定义以便于选择打印机。“<ph name="PRINTER_MANUFACTURER" />”和“<ph name="PRINTER_MODEL" />”则可帮助最终用户轻松地识别打印机。它们分别代表打印机的制造商和型号。“<ph name="PRINTER_URI" />”应是可通过客户端计算机访问的地址，包括“<ph name="URI_SCHEME" />”、“<ph name="URI_PORT" />”和“<ph name="URI_QUEUE" />”。“<ph name="PRINTER_UUID" />”是可选项。如果提供的话，该项可用于帮助删除重复的“<ph name="ZEROCONF_DISCOVERY" />”打印机。
+
+      “<ph name="PRINTER_EFFECTIVE_MODEL" />”必须与代表 <ph name="PRODUCT_NAME" />所支持打印机的某个字符串匹配。该字符串将会被用来识别和为打印机安装相应的 PPD。如需了解详情，请访问 https://support.google.com/chrome?p=noncloudprint。
+
+      打印机设置会在用户首次使用打印机时完成。在用户开始使用打印机之前，系统不会下载 PPD。在用户开始使用打印机之后，系统则会缓存经常使用的 PPD。
+
+      此政策对用户能否在各台设备上配置打印机没有影响。它旨在对各用户的打印机配置进行补充。
+
+      对于由 Active Directory 托管的设备，此政策支持将“<ph name="MACHINE_NAME_VARIABLE" />”扩展为 Active Directory 机器名称或其子字符串。例如，如果机器名称是“<ph name="MACHINE_NAME_EXAMPLE" />”，则“<ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />”将被替换为第 6 个位置后面的 4 个字符（即 <ph name="MACHINE_NAME_PART_EXAMPLE" />）。请注意，位置序数从 0 起算。
+      </translation>
 <translation id="2294382669900758280">即使此政策设为 <ph name="TRUE" />，系统也不会考虑在 Android 应用中播放视频。</translation>
 <translation id="2298647742290373702">在 <ph name="PRODUCT_NAME" /> 中配置默认的“打开新的标签页”页面。</translation>
 <translation id="2299220924812062390">指定已启用插件的列表</translation>
@@ -947,11 +961,6 @@
       如果未设置此政策，将可以使用 SPDY 协议。</translation>
 <translation id="3890999316834333174">快速解锁政策</translation>
 <translation id="3891357445869647828">启用 JavaScript</translation>
-<translation id="3891953007921334498">停用开发者工具和 JavaScript 控制台。
-
-      如果您启用此设置，用户就无法再访问开发者工具和查看网站元素了。用于开启开发者工具或 JavaScript 控制台的任何键盘快捷键以及任何菜单或上下文菜单条目都会停用。
-
-      如果将此选项设为停用或未设置此选项，用户即可使用开发者工具和 JavaScript 控制台。</translation>
 <translation id="3895557476567727016">配置供 <ph name="PRODUCT_NAME" /> 用于下载文件的默认目录。
 
       如果您设置了此政策，它便会更改供 <ph name="PRODUCT_NAME" /> 用于下载文件的默认目录，此政策不是强制性的，因此用户将能够更改该目录。
@@ -1138,6 +1147,7 @@
 <translation id="4508686775017063528">如果此政策设为 true 或未设置，系统将会启用 <ph name="PRODUCT_NAME" />，且用户将能通过以下途径启动这项功能：应用菜单、页面上下文菜单、支持 Cast 的网站上的媒体控件，以及（如果显示的话）Cast 工具栏图标。
 
           如果此政策设为 false，系统将会停用 <ph name="PRODUCT_NAME" />。</translation>
+<translation id="4515404363392014383">针对可信来源启用安全浏览功能</translation>
 <translation id="4518251772179446575">每次网站尝试跟踪用户的地理位置时都询问我</translation>
 <translation id="4519046672992331730">在 <ph name="PRODUCT_NAME" /> 的多功能框中启用搜索建议功能，并禁止用户更改此设置。
 
@@ -1257,6 +1267,7 @@
 
           如果将此政策设为 false，系统就会忽略屏幕唤醒锁定请求。</translation>
 <translation id="487460824085252184">自动迁移，不询问用户是否同意。</translation>
+<translation id="4874982543810021567">禁止这些网站访问 WebUSB</translation>
 <translation id="4876805738539874299">启用最高 SSL 版本</translation>
 <translation id="4897928009230106190">指定通过 POST 提供搜索建议时使用的参数。该参数由以英文逗号分隔的名称/值对组成。如果值为模板参数（例如上例中的 {searchTerms}），那么系统会将其替换成真正的搜索字词数据。
 
@@ -1783,6 +1794,11 @@
       如果此政策未设置，系统将启用网络联想查询功能，但用户可以自行更改。</translation>
 <translation id="6658245400435704251">指定一个时间（以秒为单位），即从更新首次推送到服务器起设备随机延迟更新下载的最大时间。设备的这一等待时间一部分会按照实际时间计算，而剩下的部分则取决于更新检查的次数。在任何情况下，分配的时间上限都是固定的，因此设备绝不会一直等待下载某个更新。</translation>
 <translation id="6665670272107384733">指定用户必须按什么样的频率输入密码才能使用快速解锁功能</translation>
+<translation id="6681229465468164801">让您能够设置一系列网址格式，以用于指定禁止哪些网站请求用户授权其访问 USB 设备。
+
+          如果未设置此政策，系统将会对所有网站使用“DefaultWebUsbGuardSetting”政策中的全局默认值（倘若已设置“DefaultWebUsbGuardSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultWebUsbGuardSetting”政策）。
+
+          此政策中的网址格式不应与通过 WebUsbAskForUrls 配置的网址格式冲突，因为无从指定当某个网址与这两项政策都相符时应以哪项政策为准。</translation>
 <translation id="6689792153960219308">报告硬件状态</translation>
 <translation id="6698071416141001300">重复使用密码可触发“密码保护服务举报面临风险的帐号”功能</translation>
 <translation id="6699880231565102694">为远程访问主机启用双重身份验证</translation>
@@ -1925,6 +1941,11 @@
       如果停用了或未设定此设置，系统则会将默认的安全浏览保护功能应用于所有资源。
       此政策不适用于未加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例。</translation>
 <translation id="7079519252486108041">在这些网站上阻止弹出式窗口</translation>
+<translation id="7085803328069945025">让您能够设置一系列网址格式，以用于指定允许哪些网站请求用户授权其访问 USB 设备。
+
+          如果未设置此政策，系统将会对所有网站使用“DefaultWebUsbGuardSetting”政策中的全局默认值（倘若已设置“DefaultWebUsbGuardSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultWebUsbGuardSetting”政策）。
+
+          此政策中的网址格式不应与通过 WebUsbBlockedForUrls 配置的网址格式冲突，因为无从指定当某个网址与这两项政策都相符时应以哪项政策为准。</translation>
 <translation id="7106631983877564505"><ph name="PRODUCT_OS_NAME" />设备进入待机或暂停状态时，启用锁定功能。
 
       如果您启用了此设置，用户需要提供密码，才能将处于睡眠状态的设备解锁。
@@ -2580,6 +2601,7 @@
 <translation id="9096086085182305205">身份验证服务器白名单</translation>
 <translation id="9098553063150791878">HTTP 身份验证政策</translation>
 <translation id="9105265795073104888">仅一小部分代理配置选项已可供 Android 应用使用。Android 应用可能会主动选择使用相应代理。您无法强制此类应用使用该代理。</translation>
+<translation id="9106865192244721694">允许这些网站访问 WebUSB</translation>
 <translation id="9112727953998243860">企业打印机配置文件</translation>
 <translation id="9112897538922695510">可让您注册一个协议处理程序列表。此政策只能是推荐的政策。属性|protocol|应设为“mailto”等协议，属性|url|应设为处理该协议的应用采用的网址格式。该格式中可以包含“%s”（如果有，将被替换为所处理的网址）。
 
@@ -2610,6 +2632,11 @@
 <translation id="915194831143859291">如果此政策设为 false 或未配置，<ph name="PRODUCT_OS_NAME" />将允许用户关闭设备。
       如果此政策设为 true，<ph name="PRODUCT_OS_NAME" />会在用户关闭设备时触发重新启动操作。<ph name="PRODUCT_OS_NAME" />会将界面中的所有关机按钮替换为重新启动按钮。如果用户通过电源按钮关闭设备，设备将不会自动重新启动，即使启用了此政策也是如此。</translation>
 <translation id="9158929520101169054">允许在同一浏览器中登录多个帐号</translation>
+<translation id="9165792353046089850">让您能够设置是否允许网站访问所连接的 USB 设备。您可以完全禁止所有网站访问此类设备，也可以要求所有网站必须征得用户同意才能访问此类设备。
+
+          您可以使用“WebUsbAskForUrls”和“WebUsbBlockedForUrls”政策为特定网址格式替换此政策。
+
+          如果未设置此政策，系统将会使用“3”，并且用户将能够更改此设置。</translation>
 <translation id="9167719789236691545">在 <ph name="PRODUCT_OS_NAME" />的“文件”应用中停用 Google 云端硬盘</translation>
 <translation id="9187743794267626640">禁止装载外部存储设备</translation>
 <translation id="9197740283131855199">系统在屏幕变暗后察觉到用户活动时，屏幕变暗延迟时间的调整幅度（百分比）</translation>

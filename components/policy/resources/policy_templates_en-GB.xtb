@@ -1042,11 +1042,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is left unset, SPDY will be available.</translation>
 <translation id="3890999316834333174">Quick unlock policies</translation>
 <translation id="3891357445869647828">Enable JavaScript</translation>
-<translation id="3891953007921334498">Disables the Developer Tools and the JavaScript console.
-
-      If you enable this setting, the Developer Tools can not be accessed and web-site elements can not be inspected any more. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.
-
-      Setting this option to disabled or leaving it not set allows the user to use the Developer Tools and the JavaScript console.</translation>
 <translation id="3895557476567727016">Configures the default directory that <ph name="PRODUCT_NAME" /> will use for downloading files.
 
       If you set this policy, it will change the default directory that <ph name="PRODUCT_NAME" /> downloads files to. This policy is not mandatory, so the user will be able to change the directory.

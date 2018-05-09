@@ -266,7 +266,6 @@
 <translation id="698231206551913481">Durch das Entfernen des Nutzers werden alle mit ihm verknüpften Dateien und lokalen Daten endgültig gelöscht.</translation>
 <translation id="7029814467594812963">Sitzung beenden</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> wird an <ph name="RECEIVER_NAME" /> gestreamt</translation>
-<translation id="7052914147756339792">Hintergrund ändern</translation>
 <translation id="7066646422045619941">Dieses Netzwerk wurde von Ihrem Administrator deaktiviert.</translation>
 <translation id="7067196344162293536">Automatisch drehen</translation>
 <translation id="7098389117866926363">USB-C-Gerät (linker Port hinten)</translation>
@@ -355,6 +354,7 @@
 <translation id="9194617393863864469">Anderen Nutzer anmelden...</translation>
 <translation id="9201131092683066720">Akku ist zu <ph name="PERCENTAGE" /> % geladen.</translation>
 <translation id="9210037371811586452">Unified Desktop-Modus wird beendet</translation>
+<translation id="9215934040295798075">Hintergrund festlegen</translation>
 <translation id="923686485342484400">Drücken Sie zum Abmelden zweimal Steuerung - Umschalttaste - Q.</translation>
 <translation id="945522503751344254">Feedback geben</translation>
 <translation id="98515147261107953">Querformat</translation>

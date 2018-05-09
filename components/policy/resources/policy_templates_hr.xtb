@@ -999,11 +999,6 @@
       Ako se to pravilo ne postavi, SPDY će biti dostupan.</translation>
 <translation id="3890999316834333174">Pravila o brzom otključavanju</translation>
 <translation id="3891357445869647828">Omogući JavaScript</translation>
-<translation id="3891953007921334498">Onemogućuje Alate za razvojne programere i konzolu JavaScripta.
-
-      Ako omogućite tu postavku, više neće biti moguće pristupiti Alatima za razvojne programere i više se neće moći provjeravati elementi web-lokacija. Bit će onemogućeni svi tipkovni prečaci i stavke izbornika ili kontekstnih izbornika za otvaranje Alata za razvojne programere ili konzole JavaScripta.
-
-      Ako se ta opcija onemogući ili ne postavi, korisnik može upotrebljavati Alate za razvojne programere i konzole JavaScripta.</translation>
 <translation id="3895557476567727016">Konfigurira zadani direktorij koji će <ph name="PRODUCT_NAME" /> upotrebljavati za preuzimanje datoteka.
 
       Ako postavite to pravilo, ono će promijeniti zadani direktorij u koji <ph name="PRODUCT_NAME" /> preuzima datoteke. To pravilo nije obavezno, pa će korisnik moći promijeniti direktorij.

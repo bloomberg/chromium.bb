@@ -42,7 +42,6 @@
 <translation id="1056898198331236512">اخطار</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1062407476771304334">جایگزینی</translation>
-<translation id="1062866675591297858">کاربران نظارت‌شده‌تان را از طریق <ph name="BEGIN_LINK" />داشبورد کاربران نظارت‌شده<ph name="END_LINK" /> مدیریت کنید.</translation>
 <translation id="1064835277883315402">پیوستن به شبکه خصوصی</translation>
 <translation id="1064912851688322329">‏قطع ارتباط حساب Google شما</translation>
 <translation id="1067048845568873861">ایجاد شد</translation>
@@ -65,7 +64,6 @@
 <translation id="1091767800771861448">‏برای رد شدن، ESCAPE را فشار دهید (فقط ساخت‌های غیررسمی).</translation>
 <translation id="1093457606523402488">شبکه‌های قابل مشاهده:</translation>
 <translation id="1094607894174825014">عملیات خواندن یا نوشتن با فاصله نامعتبری در این دستگاه درخواست شد: «<ph name="DEVICE_NAME" />».</translation>
-<translation id="1097507499312291972">برای کنترل و مشاهده وب‌سایت‌هایی که این شخص بازدید می‌کند، <ph name="BEGIN_SIGN_IN_LINK" />وارد سیستم شوید<ph name="END_SIGN_IN_LINK" />.</translation>
 <translation id="109758035718544977">باصدا کردن سایت‌ها</translation>
 <translation id="1097658378307015415">قبل از ورود به سیستم، لطفاً جهت فعال کردن شبکه <ph name="NETWORK_ID" />، به‌عنوان مهمان وارد شوید</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> همیشه ترجمه شود</translation>
@@ -244,7 +242,6 @@
 <translation id="1361655923249334273">استفاده نشده</translation>
 <translation id="1363028406613469049">تراک</translation>
 <translation id="1367951781824006909">انتخاب یک فایل</translation>
-<translation id="136802136832547685">کاربر تحت‌نظارتی برای افزودن به این دستگاه وجود ندارد.</translation>
 <translation id="1368265273904755308">گزارش مشکل</translation>
 <translation id="1370646789215800222">شخص حذف شود؟</translation>
 <translation id="1372681413396468867">{NUM_ITEMS,plural, =1{۱ مورد برای برداشتن}one{# مورد برای برداشتن}other{# مورد برای برداشتن}}</translation>
@@ -469,7 +466,6 @@
 <translation id="1692799361700686467">کوکی‌های چند سایت مجاز است.</translation>
 <translation id="169515659049020177">تبدیل</translation>
 <translation id="1698122934742150150">فقط جلسه ناشناس کنونی</translation>
-<translation id="1700199471143028312">سرپرست سیستم به شما اجازه ایجاد کاربران تحت نظارت را نمی‌دهد.</translation>
 <translation id="1701062906490865540">حذف این شخص</translation>
 <translation id="1706586824377653884">افزوده‌شده توسط سرپرست سیستم</translation>
 <translation id="1706625117072057435">سطوح بزرگ‌نمایی</translation>
@@ -1037,7 +1033,6 @@
 <translation id="2604255671529671813">خطای اتصال شبکه</translation>
 <translation id="2606246518223360146">داده‌های پیوند</translation>
 <translation id="2607101320794533334">اطلاعات کلید عمومی موضوع</translation>
-<translation id="2607459012323956820">تنظیمات و سابقه مرور این کاربر تحت نظارت ممکن است همچنان برای مدیر در نشانی <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" /> قابل‌مشاهده باشد.</translation>
 <translation id="2608770217409477136">استفاده از تنظیمات پیش‌فرض</translation>
 <translation id="2609896558069604090">ایجاد میان‌برها...</translation>
 <translation id="2610157865375787051">خواب</translation>
@@ -1280,7 +1275,6 @@
 <translation id="2951247061394563839">پنجره مرکزی</translation>
 <translation id="2956763290572484660">کوکی‌های <ph name="COOKIES" /></translation>
 <translation id="2958721676848865875">هشدار در مورد بسته‌بندی افزونه</translation>
-<translation id="2961043351165706615">‏برنامه‌های Linux که نصب کرده‌اید از این Chromebook حذف می‌شود.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (تمدید امکان‌پذیر است)</translation>
 <translation id="2961695502793809356">برای رفتن به جلو کلیک کنید، برای دیدن سابقه نگه دارید</translation>
 <translation id="2963151496262057773">این افزایه جواب نمی‌دهد: <ph name="PLUGIN_NAME" />آیا می‌خواهید متوقف شود؟</translation>
@@ -1332,15 +1326,6 @@
 <translation id="3022978424994383087">متوجه نشدم.</translation>
 <translation id="3024374909719388945">استفاده از ساعت ۲۴ ساعته</translation>
 <translation id="302781076327338683">تازه‌سازی دور زدن حافظه پنهان</translation>
-<translation id="3030243755303701754">‏کاربر تحت نظارت می‌تواند تحت هدایت شما وب را مرور کنند. به‌عنوان مدیر کاربر تحت نظارت در Chrome، می‌توانید:
-
- • وب‌سایت‌های خاصی را مجاز کنید یا آن‌ها را منع کنید، 
- • وب‌سایت‌هایی را که کاربر تحت نظارت دیدن کرده است مرور کنید و
- • تنظیمات دیگر را مدیریت کنید.
-
-با ایجاد کاربر تحت نظارت، حساب Google ایجاد نمی‌شود و با «همگام‌سازی Chrome» نشانک‌ها، سابقه مرور و سایر تنظیمات ترجیحی آن کاربر به دستگاه‌های دیگر منتقل نمی‌شود. بعد از ایجاد کاربر تحت نظارت جدید، می‌توانید در <ph name="BEGIN_MANAGE_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_MANAGE_LINK" />، تنظیمات او را در هر زمانی و از هر دستگاهی مدیریت کنید.
-
-برای اطلاعات بیشتر، از <ph name="BEGIN_LINK" />مرکز راهنمایی<ph name="END_LINK" /> دیدن کنید.</translation>
 <translation id="3031417829280473749">‏مأمور X</translation>
 <translation id="3031557471081358569">مواردی را برای وارد کردن انتخاب کنید:</translation>
 <translation id="3031601332414921114">ازسرگیری چاپ</translation>
@@ -1381,7 +1366,6 @@
 <translation id="3085412380278336437">سایت می‌تواند از دوربینتان استفاده کند</translation>
 <translation id="3085752524577180175">‏میزبان SOCKS</translation>
 <translation id="3088325635286126843">&amp;تغییر‌نام...</translation>
-<translation id="3089231390674410424">اوه! به‌نظر می‌رسد مشکلی در اعتبارنامه شما وجود دارد. لطفاً مطمئن شوید به‌درستی به سیستم وارد شده‌اید و دوباره امتحان کنید.</translation>
 <translation id="3090193911106258841">در حال دسترسی به ورودی صوتی و ویدئویی</translation>
 <translation id="3090819949319990166">‏فایل خارجی crx در <ph name="TEMP_CRX_FILE" /> کپی نمی‌شود.</translation>
 <translation id="3090871774332213558">«<ph name="DEVICE_NAME" />» مرتبط شد</translation>
@@ -1396,7 +1380,6 @@
 <translation id="3121793941267913344">این دستگاه <ph name="IDS_SHORT_PRODUCT_NAME" /> بازنشانی شود</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3122496702278727796">ایجاد دایرکتوری داده ناموفق بود</translation>
-<translation id="3123569374670379335">(نظارت شده)</translation>
 <translation id="3124111068741548686">کنترل‌های کاربر</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">این کار باعث حذف داده‌های ذخیره‌شده روی دستگاهتان برای همه سایت‌های نشان‌داده‌شده می‌شود. می‌خواهید ادامه دهید؟</translation>
@@ -1431,8 +1414,6 @@
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (پشتیبان‌گیری‌شده در سخت‌افزار)</translation>
 <translation id="316125635462764134">حذف برنامه</translation>
 <translation id="3161522574479303604">همه زبان‌ها</translation>
-<translation id="316307797510303346">وب‌سایت‌هایی را که این شخص بازدید می‌کند از <ph name="CUSTODIAN_EMAIL" /> کنترل و مشاهده کنید.
-  جزئیات ورود به سیستم حسابتان قدیمی است.</translation>
 <translation id="3165390001037658081">برخی شرکت‌های مخابراتی ممکن است این قابلیت را مسدود کنند.</translation>
 <translation id="316854673539778496">برای اینکه همه افزونه‌هایتان را در همه دستگاه‌ها دریافت کنید، به سیستم وارد شوید و همگام‌سازی را روشن کنید.</translation>
 <translation id="3170072451822350649">همچنین می‌توانید از ورود به سیستم صرف‌نظر کرده، <ph name="LINK_START" />به عنوان مهمان مرور کنید<ph name="LINK_END" />.</translation>
@@ -1465,7 +1446,6 @@
 <translation id="3229922550070982305">پخش / مکث</translation>
 <translation id="3232318083971127729">مقدار:</translation>
 <translation id="3236289833370040187">مالکیت به <ph name="DESTINATION_DOMAIN" /> منتقل می‌شود.</translation>
-<translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> اکنون یک کاربر تحت نظارت است</translation>
 <translation id="323803881985677942">باز کردن گزینه‌های افزونه</translation>
 <translation id="3241680850019875542">دایرکتوری ریشه برنامهٔ افزودنی را برای فشرده کردن انتخاب کنید. همچنین برای به‌روزرسانی برنامهٔ افزودنی، فایل کلید خصوصی را برای استفاده مجدد انتخاب کنید.</translation>
 <translation id="3242765319725186192">کلید از قبل مشترک شده:</translation>
@@ -1697,7 +1677,6 @@
 <translation id="3584169441612580296">خواندن و تغییر عکس‌ها، موسیقی، و رسانه‌های دیگر از رایانه‌تان</translation>
 <translation id="3587482841069643663">همه</translation>
 <translation id="358796204584394954">برای مرتبط کردن، این کد را در «<ph name="DEVICE_NAME" />» تایپ کنید:</translation>
-<translation id="3589532742556016615">این کار برنامه‌ها یا محتوای موجود در دستگاه‌های دیگر را تحت تأثیر قرار نمی‌دهد.</translation>
 <translation id="3589766037099229847">محتوای ناامن مسدود شد</translation>
 <translation id="3590194807845837023">باز کردن قفل نمایه و راه‌اندازی مجدد</translation>
 <translation id="3592260987370335752">&amp;بیشتر بیاموزید</translation>
@@ -1831,7 +1810,6 @@
 <translation id="3778152852029592020">بارگیری لغو شد.</translation>
 <translation id="3778740492972734840">ابزارهای &amp;برنامه نویس</translation>
 <translation id="3778868487658107119">‏از آن سؤال بپرسید. بگویید کاری انجام دهد. این Google شخصی شما است و همیشه برای کمک آماده است.</translation>
-<translation id="3780663724044634171">حسابی برای مدیریت کاربر تحت نظارت انتخاب کنید.</translation>
 <translation id="378312418865624974">خواندن شناسه بی‌نظیر در این رایانه</translation>
 <translation id="3783640748446814672">دگرساز</translation>
 <translation id="3785308913036335955">نمایش میان‌بر «برنامه‌ها»</translation>
@@ -2559,7 +2537,6 @@
 <translation id="4964455510556214366">ترتیب</translation>
 <translation id="4964673849688379040">درحال بررسی...</translation>
 <translation id="4965808351167763748">‏مطمئن هستید می‌خواهید این دستگاه را برای اجرای Hangouts Meet راه‌اندازی کنید؟</translation>
-<translation id="4967749818080339523">انتخاب حساب</translation>
 <translation id="496888482094675990">‏برنامه Files دسترسی سریع به فایل‌هایی را فراهم می‌کند که در Google Drive، فضای ذخیره خارجی یا دستگاه Chrome OS خودتان ذخیره کرده‌اید.</translation>
 <translation id="4969785127455456148">آلبوم</translation>
 <translation id="4971412780836297815">بعد از اتمام باز شود</translation>
@@ -2746,7 +2723,6 @@
         مهم نیست برای دستگاه شما چه اتفاقی می‌افتد، فایل‌های شما در Google Drive به‌صورت امن ذخیره می‌شوند.<ph name="MARKUP_6" />
        فایل‌ها را با دیگران <ph name="MARKUP_7" />اشتراک‌گذاری، ایجاد و مشارکت<ph name="MARKUP_8" />
        کنید، همه این کارها را در یک مکان انجام دهید.<ph name="MARKUP_9" /></translation>
-<translation id="5262401745672360397">‏ممکن است فایل‌های هم‌رسانی‌شده با برنامه‌های Linux نیز حذف شود.</translation>
 <translation id="5264148714798105376">ممکن است یک دقیقه یا بیشتر طول بکشد.</translation>
 <translation id="5264252276333215551">برای راه‌اندازی برنامه‌تان در حالت کیوسک لطفاً به اینترنت متصل شوید.</translation>
 <translation id="5265562206369321422">آفلاین برای مدت بیش از یک هفته</translation>
@@ -3398,7 +3374,6 @@
 <translation id="6241530762627360640">دسترسی به اطلاعات دستگاه‌های بلوتوث مرتبط شده با سیستم شما و کشف دستگاه‌های بلوتوث در این نزدیکی.</translation>
 <translation id="6243280677745499710">درحال حاضر تنظیم‌ شده است</translation>
 <translation id="6243774244933267674">سرور در دسترس نیست</translation>
-<translation id="6246413617632217567">کاربر تحت‌نظارت وارد نشد. لطفاً فضای دیسک سخت و مجوزهایتان را بررسی کرده، دوباره امتحان کنید.</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE" /></translation>
 <translation id="6247802389331535091">سیستم: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">به‌روزرسانی آماده است</translation>
@@ -3597,7 +3572,6 @@
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />توجه:<ph name="END_BOLD" /> فقط درصورتی آن را فعال کنید که اطلاع دارید چه کاری انجام می‌دهید یا از شما خواسته شده باشد این کار را انجام دهید، زیرا جمع‌آوری داده‌ها ممکن است عملکرد را کاهش دهد.</translation>
 <translation id="654233263479157500">از یک سرویس وب برای کمک به برطرف کردن خطاهای پیمایش استفاده شود</translation>
 <translation id="6544215763872433504">‏مرورگر وب از Google، برای شما</translation>
-<translation id="6545325945815270297">‏داده‌ها و دستگاه‌های همگام‌سازی‌شده خود را در <ph name="BEGIN_LINK" />داشبورد Chrome<ph name="END_LINK" /> مدیریت کنید.</translation>
 <translation id="6545665334409411530">سرعت تکرار</translation>
 <translation id="6545834809683560467">استفاده از یک سرویس پیش‌بینی برای کمک به تکمیل جستجوها و نشانی‌های وب تایپ شده در نوار آدرس یا کادر جستجوی راه‌انداز برنامه</translation>
 <translation id="6546686722964485737">‏پیوستن به شبکه Wimax</translation>
@@ -3612,7 +3586,6 @@
 <translation id="6555810572223193255">پاک‌سازی فعلاً در دسترس نیست</translation>
 <translation id="6556866813142980365">انجام مجدد</translation>
 <translation id="6558280019477628686">خطایی روی داد. ممکن است بعضی از موارد حذف نشده باشند.</translation>
-<translation id="6559580823502247193">(از قبل در این دستگاه وجود دارد)</translation>
 <translation id="6561726789132298588">Enter</translation>
 <translation id="656293578423618167">مسیر یا نام فایل خیلی طولانی است. لطفاً با یک نام کوتاه‌تر یا در محل دیگری ذخیره کنید.</translation>
 <translation id="656398493051028875">در حال حذف «<ph name="FILENAME" />»...</translation>
@@ -3809,7 +3782,6 @@
 <translation id="6862635236584086457">از همه فایل‌های ذخیره شده در این پوشه به‌صورت خودکار و آنلاین نسخهٔ پشتیبان تهیه می‌شود</translation>
 <translation id="6865313869410766144">تکمیل خودکار داده‌های فرم</translation>
 <translation id="686664946474413495">دمای رنگ</translation>
-<translation id="6867678160199975333">تغییر به <ph name="NEW_PROFILE_NAME" /></translation>
 <translation id="6870888490422746447">انتخاب برنامه‌ای برای اشتراک‌گذاری در:</translation>
 <translation id="6871644448911473373">‏پاسخگوی OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">سرور گذرواژه‌ای را که وارد کردید نپذیرفته است.</translation>
@@ -3903,7 +3875,6 @@
 <translation id="7018275672629230621">خواندن و تغییر سابقه مرورگرتان</translation>
 <translation id="7019805045859631636">سریع</translation>
 <translation id="7022562585984256452">صفحه اصلی شما تنظیم شد.</translation>
-<translation id="7025036625303002400">به نظر می‌رسد از قبل کاربر تحت نظارتی به این نام دارید.</translation>
 <translation id="7025190659207909717">مدیریت خدمات داده‌های تلفن همراه</translation>
 <translation id="7025325401470358758">چارچوب بعدی</translation>
 <translation id="7027125358315426638">نام پایگاه داده:</translation>
@@ -3952,7 +3923,6 @@
 <translation id="7092106376816104">موارد استثنای پنجره بازشو</translation>
 <translation id="7093434536568905704">GTK+‎</translation>
 <translation id="7093866338626856921">تبادل داده با دستگاه‌هایی با نام‌های: <ph name="HOSTNAMES" /></translation>
-<translation id="7096108453481049031">کاربر تحت‌نظارت وارد نشد. لطفاً اتصال شبکه‌تان را بررسی کرده، بعداً دوباره امتحان کنید.</translation>
 <translation id="7096406577040705016">روشن/خاموش کردن «ذره‌بین تمام‌صفحه»</translation>
 <translation id="7098447629416471489">سایر موتورهای جستجوی ذخیره‌شده در اینجا نشان داده خواهند شد</translation>
 <translation id="7099337801055912064">‏فایل PPD بزرگ است و بار نمی‌شود. حداکثر اندازه ۲۵۰ کیلوبایت است.</translation>
@@ -4000,7 +3970,6 @@
 <translation id="7168109975831002660">حداقل اندازه قلم</translation>
 <translation id="7170041865419449892">خارج از محدوده</translation>
 <translation id="7171559745792467651">نصب برنامه‌ها از دستگاه‌های دیگرتان</translation>
-<translation id="7173917244679555">ظاهراً درحال حاضر کاربری با این نام را مدیریت می‌کنید. می‌خواستید <ph name="BEGIN_LINK" /><ph name="PROFILE_NAME" /> را به این دستگاه وارد کنید<ph name="END_LINK" />؟</translation>
 <translation id="7175037578838465313">پیکربندی <ph name="NAME" /></translation>
 <translation id="7175353351958621980">بارگیری شده از:</translation>
 <translation id="7180611975245234373">بازخوانی</translation>
@@ -4174,7 +4143,6 @@
 <translation id="7444726222535375658">‏در ادامه، به Hangouts Meet بروید</translation>
 <translation id="7444983668544353857">غیر فعال کردن <ph name="NETWORKDEVICE" /></translation>
 <translation id="7445682342344043969">پنجره‌های بازشو مسدود هستند</translation>
-<translation id="744859430125590922">وب‌سایت‌هایی را کنترل و مشاهده کنید که این شخص از <ph name="CUSTODIAN_EMAIL" /> بازدید می‌کند.</translation>
 <translation id="7453008956351770337">با انتخاب این چاپگر، به افزونه زیر اجازه دسترسی به چاپگرتان را می‌دهید:</translation>
 <translation id="7453467225369441013">‏شما را از سیستم اکثر سایت‌ها خارج می‌‌کند. از سیستم حساب Google خارج نمی‌شوید.</translation>
 <translation id="7456142309650173560">‏برنامه‌نویسان (dev)</translation>
@@ -4348,7 +4316,6 @@
 <translation id="7717845620320228976">بررسی به‌روزرسانی‌ها</translation>
 <translation id="7719367874908701697">بزرگ‌نمایی صفحه</translation>
 <translation id="771953673318695590">QA</translation>
-<translation id="7720375555307821262">‏برای نظارت بر این شخص، <ph name="BEGIN_LINK" />به سیستم Chrome وارد شوید<ph name="END_LINK" />.</translation>
 <translation id="7721179060400456005">اجازه دادن به پنجره‌ها برای پوشاندن کل نمایشگر</translation>
 <translation id="7722040605881499779">فضای لازم برای به‌روزرسانی: <ph name="NECESSARY_SPACE" /></translation>
 <translation id="7724603315864178912">برش</translation>
@@ -4421,7 +4388,7 @@
 <translation id="782590969421016895">استفاده از صفحات فعلی</translation>
 <translation id="7826790948326204519">‏<ph name="BEGIN_H3" />ویژگی‌های رفع اشکال<ph name="END_H3" />
 <ph name="BR" />
-    می‌توانید برای نصب و آزمایش کد سفارسی در دستگاهتان، ویژگی‌های رفع اشکال را در دستگاه دارای سیستم‌عامل Chrome فعال کنید. با این کار می‌توانید:<ph name="BR" />
+    می‌توانید برای نصب و آزمایش کد سفارشی در دستگاهتان، ویژگی‌های رفع اشکال را در دستگاه دارای سیستم‌عامل Chrome فعال کنید. با این کار می‌توانید:<ph name="BR" />
 <ph name="BEGIN_LIST" />
       <ph name="LIST_ITEM" />تأیید rootfs را بردارید تا بتوانید فایل‌های سیستم‌عامل را تغییر دهید
       <ph name="LIST_ITEM" />دسترسی SSH را به دستگاهی که از کلیدهای آزمایشی استاندارد استفاده می‌کند فعال کنید تا بتوانید از ابزارهایی مانند <ph name="BEGIN_CODE" />cros flash<ph name="END_CODE" /> برای دسترسی به دستگاه استفاده کنید
@@ -5203,7 +5170,6 @@
 <translation id="9024331582947483881">تمام‌صفحه</translation>
 <translation id="9025098623496448965">بسیار خوب، به صفحه ورود به سیستم بازگردانده شوم</translation>
 <translation id="9026731007018893674">بارگیری</translation>
-<translation id="9027146684281895941">‏با نظارت بر این شخص، وب‌سایت‌هایی را که از حساب Google شما بازدید می‌کند، کنترل و مشاهده کنید.</translation>
 <translation id="9027459031423301635">باز کردن پیوند در &amp;برگه جدید</translation>
 <translation id="9027603907212475920">راه‌اندازی همگام‌سازی...</translation>
 <translation id="9030515284705930323">‏سازمان شما فروشگاه Google Play را برای حسابتان فعال نکرده است. برای اطلاعات بیشتر با سرپرستتان تماس بگیرید.</translation>
@@ -5363,7 +5329,6 @@
 <translation id="98515147261107953">افقی</translation>
 <translation id="987897973846887088">تصویری دردسترس نیست</translation>
 <translation id="988978206646512040">عبارت عبور خالی مجاز نیست</translation>
-<translation id="990310048453480215">‏حذف برنامه‌های Linux</translation>
 <translation id="992032470292211616">افزودنی‌ها، برنامه‌ها و طرح‌های زمینه می‌توانند به دستگاه شما آسیب برسانند. آیا مطمئن هستید که می‌خواهید ادامه دهید؟</translation>
 <translation id="992592832486024913">‏غیرفعال کردن ChromeVox (بازخورد گفتاری)</translation>
 <translation id="994289308992179865">&amp;حلقه</translation>

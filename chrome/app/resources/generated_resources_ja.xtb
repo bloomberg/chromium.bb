@@ -42,7 +42,6 @@
 <translation id="1056898198331236512">警告</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1062407476771304334">置換</translation>
-<translation id="1062866675591297858">監視対象ユーザーを管理するには<ph name="BEGIN_LINK" />監視対象ユーザーのダッシュボード<ph name="END_LINK" />を使用します。</translation>
 <translation id="1064835277883315402">プライベート ネットワークに参加</translation>
 <translation id="1064912851688322329">Google アカウントを切断</translation>
 <translation id="1067048845568873861">作成日</translation>
@@ -65,7 +64,6 @@
 <translation id="1091767800771861448">Esc キーを押すとスキップできます（非公式のビルドのみ）。</translation>
 <translation id="1093457606523402488">検出されたネットワーク:</translation>
 <translation id="1094607894174825014">「<ph name="DEVICE_NAME" />」で、無効なオフセットでの読み取りまたは書き込み操作がリクエストされました。</translation>
-<translation id="1097507499312291972">このユーザーがアクセスするウェブサイトを管理、表示するには、<ph name="BEGIN_SIGN_IN_LINK" />ログイン<ph name="END_SIGN_IN_LINK" />します。</translation>
 <translation id="109758035718544977">複数のサイトのミュートを解除</translation>
 <translation id="1097658378307015415">ログインする前に、ゲスト セッションを開始して <ph name="NETWORK_ID" /> ネットワークを有効にしてください</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" />を常に翻訳</translation>
@@ -244,7 +242,6 @@
 <translation id="1361655923249334273">使用されていない</translation>
 <translation id="1363028406613469049">トラック</translation>
 <translation id="1367951781824006909">ファイルを選択</translation>
-<translation id="136802136832547685">この端末に追加する監視対象ユーザーは存在しません。</translation>
 <translation id="1368265273904755308">問題を報告</translation>
 <translation id="1370646789215800222">ユーザーを削除しますか？</translation>
 <translation id="1372681413396468867">{NUM_ITEMS,plural, =1{1 件の項目を削除}other{# 件の項目を削除}}</translation>
@@ -473,7 +470,6 @@
 <translation id="1692799361700686467">複数サイトからの Cookie が許可されました。</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698122934742150150">現在のシークレット モード セッションのみ</translation>
-<translation id="1700199471143028312">管理者が監視対象ユーザーの作成を許可していません。</translation>
 <translation id="1701062906490865540">このユーザーを削除</translation>
 <translation id="1706586824377653884">管理者により追加</translation>
 <translation id="1706625117072057435">ズームレベル</translation>
@@ -1042,7 +1038,6 @@
 <translation id="2604255671529671813">ネットワーク接続エラー</translation>
 <translation id="2606246518223360146">データをリンク</translation>
 <translation id="2607101320794533334">サブジェクトの公開鍵情報</translation>
-<translation id="2607459012323956820">管理者は引き続き <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" /> でこの監視対象ユーザーの設定や閲覧履を確認できる可能性があります。</translation>
 <translation id="2608770217409477136">デフォルト設定を使用する</translation>
 <translation id="2609896558069604090">ショートカットの作成...</translation>
 <translation id="2610157865375787051">スリープモードにする</translation>
@@ -1285,7 +1280,6 @@
 <translation id="2951247061394563839">ウィンドウを中央に配置</translation>
 <translation id="2956763290572484660">Cookie: <ph name="COOKIES" /></translation>
 <translation id="2958721676848865875">拡張機能のパッケージ化に関する警告</translation>
-<translation id="2961043351165706615">インストールした Linux アプリは、この Chromebook から削除されます。</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" />（期限延長済み）</translation>
 <translation id="2961695502793809356">クリックすると次に進みます。押したまま待つと履歴が表示されます。</translation>
 <translation id="2963151496262057773">プラグイン（<ph name="PLUGIN_NAME" />）は応答していません。強制終了しますか？</translation>
@@ -1337,15 +1331,6 @@
 <translation id="3022978424994383087">聞き取れませんでした。</translation>
 <translation id="3024374909719388945">24 時間形式を使用する</translation>
 <translation id="302781076327338683">キャッシュを回避して再読み込み</translation>
-<translation id="3030243755303701754">監視対象ユーザーは管理者の監視のもとでウェブを利用できます。Chrome の監視対象ユーザーの管理者ができることは次のとおりです。
-
- • 特定のウェブサイトへのアクセスを許可または禁止する
- • 監視対象ユーザーがアクセスしたウェブサイトを確認する
- • その他の設定を管理する
-
-監視対象ユーザーを作成しても Google アカウントが作成されるわけではありません。監視対象ユーザーのブックマーク、閲覧履歴などの設定は、Chrome 同期機能によって他の端末にコピーされることはありません。新しい監視対象ユーザーを作成した後は、いつでも任意の端末から <ph name="BEGIN_MANAGE_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_MANAGE_LINK" /> にアクセスして監視対象ユーザーの設定を管理できます。
-
-詳しくは、<ph name="BEGIN_LINK" />ヘルプセンター<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="3031417829280473749">エージェント X</translation>
 <translation id="3031557471081358569">インポートするデータを選択:</translation>
 <translation id="3031601332414921114">印刷を再開</translation>
@@ -1386,7 +1371,6 @@
 <translation id="3085412380278336437">サイトにカメラの使用が許可されています</translation>
 <translation id="3085752524577180175">SOCKS ホスト</translation>
 <translation id="3088325635286126843">名前を変更(&amp;R)...</translation>
-<translation id="3089231390674410424">認証情報に問題があるようです。正しくログインしていることを確認し、もう一度お試しください。</translation>
 <translation id="3090193911106258841">音声 / ビデオ入力にアクセスしています</translation>
 <translation id="3090819949319990166">外部の crx ファイルは <ph name="TEMP_CRX_FILE" /> にコピーできません。</translation>
 <translation id="3090871774332213558">「<ph name="DEVICE_NAME" />」がペア設定されました</translation>
@@ -1401,7 +1385,6 @@
 <translation id="3121793941267913344">この <ph name="IDS_SHORT_PRODUCT_NAME" /> 搭載デバイスをリセットします</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3122496702278727796">データ ディレクトリの作成に失敗しました</translation>
-<translation id="3123569374670379335">（監視対象）</translation>
 <translation id="3124111068741548686">USER ハンドル</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">表示されているすべてのサイトについて、端末に保存されているデータを削除します。続行しますか？</translation>
@@ -1436,8 +1419,6 @@
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]（ハードウェアにより保護を強化）</translation>
 <translation id="316125635462764134">アプリを削除</translation>
 <translation id="3161522574479303604">すべての言語</translation>
-<translation id="316307797510303346">このユーザーが <ph name="CUSTODIAN_EMAIL" /> からアクセスするウェブサイトを制御、閲覧する。
-    アカウントのログイン情報が古くなっています。</translation>
 <translation id="3165390001037658081">携帯通信会社によってはこの機能を利用できない場合があります。</translation>
 <translation id="316854673539778496">お使いのどの端末でも同じ拡張機能を使用するには、ログインして同期を有効にします。</translation>
 <translation id="3170072451822350649">ログインせずに<ph name="LINK_START" />ゲストとしてブラウジング<ph name="LINK_END" />することもできます。</translation>
@@ -1470,7 +1451,6 @@
 <translation id="3229922550070982305">再生 / 一時停止</translation>
 <translation id="3232318083971127729">値:</translation>
 <translation id="3236289833370040187">所有権が <ph name="DESTINATION_DOMAIN" /> に移ります。</translation>
-<translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> が監視対象ユーザーとなりました</translation>
 <translation id="323803881985677942">拡張機能のオプションを開きます</translation>
 <translation id="3241680850019875542">パッケージ化する拡張機能のルート ディレクトリを選択します。拡張機能を更新するには、再使用する秘密鍵ファイルも選択してください。</translation>
 <translation id="3242765319725186192">事前共有キー:</translation>
@@ -1702,7 +1682,6 @@
 <translation id="3584169441612580296">パソコンからの写真、音楽、その他のメディアの読み取りと変更</translation>
 <translation id="3587482841069643663">すべて</translation>
 <translation id="358796204584394954">ペア設定するには「<ph name="DEVICE_NAME" />」で次のコードを入力してください:</translation>
-<translation id="3589532742556016615">この操作は他の端末のアプリやコンテンツには影響しません。</translation>
 <translation id="3589766037099229847">安全でないコンテンツがブロックされました</translation>
 <translation id="3590194807845837023">プロフィールのロックを解除して再起動</translation>
 <translation id="3592260987370335752">詳細(&amp;L)</translation>
@@ -1836,7 +1815,6 @@
 <translation id="3778152852029592020">ダウンロードがキャンセルされました。</translation>
 <translation id="3778740492972734840">デベロッパー ツール(&amp;D)</translation>
 <translation id="3778868487658107119">あなただけの Google が、知りたいこと、やりたいことをサポートします。なんでも話してみてください。</translation>
-<translation id="3780663724044634171">監視対象ユーザーを管理するアカウントを選択してください。</translation>
 <translation id="378312418865624974">このパソコンの一意の識別子の読み取り</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">アプリのショートカットを表示</translation>
@@ -2564,7 +2542,6 @@
 <translation id="4964455510556214366">配置</translation>
 <translation id="4964673849688379040">確認しています...</translation>
 <translation id="4965808351167763748">このデバイスでハングアウト Meet を実行するように設定してもよろしいですか？</translation>
-<translation id="4967749818080339523">アカウントを選択してください</translation>
 <translation id="496888482094675990">ファイル アプリを使えば、Google ドライブ、外部ストレージ、Chrome OS デバイスに保存したファイルにすぐにアクセスできます。</translation>
 <translation id="4969785127455456148">アルバム</translation>
 <translation id="4971412780836297815">完了後に開く</translation>
@@ -2751,7 +2728,6 @@
         端末に問題が生じても、ファイルは Google ドライブで安全に保存されます。<ph name="MARKUP_6" />
         <ph name="MARKUP_7" />ファイルの作成、共有、共同作業<ph name="MARKUP_8" />
         他のユーザーとの作業をすべて 1 か所で行うことができます。<ph name="MARKUP_9" /></translation>
-<translation id="5262401745672360397">Linux アプリとの共有ファイルも削除される可能性があります。</translation>
 <translation id="5264148714798105376">これには 1 分ほどかかる場合があります。</translation>
 <translation id="5264252276333215551">キオスク モードでアプリを起動するにはインターネットに接続してください。</translation>
 <translation id="5265562206369321422">1 週間以上オフライン</translation>
@@ -3403,7 +3379,6 @@
 <translation id="6241530762627360640">システムでペア設定されている Bluetooth デバイスの情報へのアクセスと、近くにある Bluetooth デバイスの検出。</translation>
 <translation id="6243280677745499710">現在設定されている壁紙</translation>
 <translation id="6243774244933267674">サーバーを使用できません</translation>
-<translation id="6246413617632217567">監視対象ユーザーをインポートできませんでした。ハードドライブの空き容量と権限を確認し、もう一度お試しください。</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6247802389331535091">システム: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">アップデート準備完了</translation>
@@ -3602,7 +3577,6 @@
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />注:<ph name="END_BOLD" /> データの収集によりパフォーマンスが低下する場合があるため、意図的に行う場合、または指示された場合のみ有効にしてください。</translation>
 <translation id="654233263479157500">ウェブ サービスを使用してナビゲーション エラーの解決を支援する</translation>
 <translation id="6544215763872433504">Google によるあなたのウェブブラウザ</translation>
-<translation id="6545325945815270297">同期するデータと端末は <ph name="BEGIN_LINK" />Chrome ダッシュボード<ph name="END_LINK" />で管理できます。</translation>
 <translation id="6545665334409411530">リピート回数 / 秒</translation>
 <translation id="6545834809683560467">予測サービスを使用して、アドレスバーまたはアプリ ランチャーの検索ボックスに入力した検索キーワードや URL を補完する</translation>
 <translation id="6546686722964485737">WiMAX ネットワークへの接続</translation>
@@ -3617,7 +3591,6 @@
 <translation id="6555810572223193255">現在、クリーンアップ ツールをご利用いただけません</translation>
 <translation id="6556866813142980365">やり直す</translation>
 <translation id="6558280019477628686">エラーが発生しました。一部の項目が削除されていない可能性があります。</translation>
-<translation id="6559580823502247193">（このデバイスの既存ユーザー）</translation>
 <translation id="6561726789132298588">Enter</translation>
 <translation id="656293578423618167">ファイルのパスまたは名前が長すぎます。名前を短くするか、別の場所に保存してください。</translation>
 <translation id="656398493051028875">「<ph name="FILENAME" />」を削除しています...</translation>
@@ -3814,7 +3787,6 @@
 <translation id="6862635236584086457">このフォルダに保存されているすべてのファイルが自動的にオンラインにバックアップされます。</translation>
 <translation id="6865313869410766144">自動入力フォームのデータ</translation>
 <translation id="686664946474413495">色温度</translation>
-<translation id="6867678160199975333"><ph name="NEW_PROFILE_NAME" /> に切り替える</translation>
 <translation id="6870888490422746447">共有するアプリを選択してください:</translation>
 <translation id="6871644448911473373">OCSP レスポンダ: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">入力したパスワードはサーバーによって拒否されました。</translation>
@@ -3908,7 +3880,6 @@
 <translation id="7018275672629230621">閲覧履歴の読み取りと変更</translation>
 <translation id="7019805045859631636">速い</translation>
 <translation id="7022562585984256452">ホームページが設定されました。</translation>
-<translation id="7025036625303002400">この名前の監視対象ユーザーは既に存在するようです。</translation>
 <translation id="7025190659207909717">モバイル データ サービスの管理</translation>
 <translation id="7025325401470358758">次のウィンドウ</translation>
 <translation id="7027125358315426638">データベース名:</translation>
@@ -3957,7 +3928,6 @@
 <translation id="7092106376816104">ポップアップの例外</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">デバイス <ph name="HOSTNAMES" /> とのデータ交換</translation>
-<translation id="7096108453481049031">監視対象ユーザーをインポートできませんでした。ネットワーク接続を確認し、しばらくしてからもう一度お試しください。</translation>
 <translation id="7096406577040705016">拡大鏡（全画面）を切り替え</translation>
 <translation id="7098447629416471489">保存したその他の検索エンジンがここに表示されます</translation>
 <translation id="7099337801055912064">サイズの大きい PPD は読み込めません。最大サイズは 250 KB です。</translation>
@@ -4005,7 +3975,6 @@
 <translation id="7168109975831002660">最小フォント サイズ</translation>
 <translation id="7170041865419449892">圏外</translation>
 <translation id="7171559745792467651">他の端末でインストールしたアプリ</translation>
-<translation id="7173917244679555">この名前のユーザーを既に管理しているようです。この端末に <ph name="BEGIN_LINK" /><ph name="PROFILE_NAME" /> をインポート<ph name="END_LINK" />しますか？</translation>
 <translation id="7175037578838465313"><ph name="NAME" /> の設定</translation>
 <translation id="7175353351958621980">ロード元:</translation>
 <translation id="7180611975245234373">更新</translation>
@@ -4179,7 +4148,6 @@
 <translation id="7444726222535375658">ハングアウト Meet に進む</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> を無効にする</translation>
 <translation id="7445682342344043969">ポップアップがブロックされました</translation>
-<translation id="744859430125590922">このユーザーが <ph name="CUSTODIAN_EMAIL" /> からアクセスするウェブサイトを管理、表示する。</translation>
 <translation id="7453008956351770337">このプリンタを選択すると、次の拡張機能にプリンタへのアクセスを許可することになります。</translation>
 <translation id="7453467225369441013">ほとんどのサイトからログアウトします。Google アカウントへのログイン状態は維持されます。</translation>
 <translation id="7456142309650173560">Dev</translation>
@@ -4353,7 +4321,6 @@
 <translation id="7717845620320228976">アップデートを確認</translation>
 <translation id="7719367874908701697">ページのズーム</translation>
 <translation id="771953673318695590">QA</translation>
-<translation id="7720375555307821262">このユーザーを監視するには、<ph name="BEGIN_LINK" />Chrome にログイン<ph name="END_LINK" />します。</translation>
 <translation id="7721179060400456005">ウィンドウを複数のディスプレイで表示できるようにする</translation>
 <translation id="7722040605881499779">更新に必要な空き容量: <ph name="NECESSARY_SPACE" /></translation>
 <translation id="7724603315864178912">切り取り</translation>
@@ -5208,7 +5175,6 @@
 <translation id="9024331582947483881">全画面表示</translation>
 <translation id="9025098623496448965">ログイン画面に戻る</translation>
 <translation id="9026731007018893674">ダウンロード</translation>
-<translation id="9027146684281895941">このユーザーを監視し、ユーザーがアクセスするウェブサイトを自分の Google アカウントから管理、表示できるようにする。</translation>
 <translation id="9027459031423301635">新しいタブで開く(&amp;T)</translation>
 <translation id="9027603907212475920">同期の設定...</translation>
 <translation id="9030515284705930323">組織の設定により、アカウントで Google Play ストアをご利用いただくことができません。詳しくは管理者にお尋ねください。</translation>
@@ -5368,7 +5334,6 @@
 <translation id="98515147261107953">横</translation>
 <translation id="987897973846887088">使用できる画像がありません</translation>
 <translation id="988978206646512040">パスフレーズは必ず指定してください</translation>
-<translation id="990310048453480215">Linux アプリを削除</translation>
 <translation id="992032470292211616">拡張機能、アプリ、テーマはお使いの端末に悪影響を与える可能性があります。続行してもよろしいですか？</translation>
 <translation id="992592832486024913">ChromeVox（音声フィードバック）を無効にする</translation>
 <translation id="994289308992179865">ループ(&amp;L)</translation>

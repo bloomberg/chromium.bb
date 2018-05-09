@@ -111,7 +111,6 @@
 <translation id="1993768208584545658">Сайт <ph name="SITE" /> хоче підключитися до пристрою</translation>
 <translation id="1994173015038366702">URL-адреса сайту</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> КБ використовується іншими додатками</translation>
-<translation id="2015632741368427174">Заблоковано переспрямування на сайт:</translation>
 <translation id="2017836877785168846">Очищує історію й автозавершення в адресному рядку.</translation>
 <translation id="2021896219286479412">Керування повноекранним режимом</translation>
 <translation id="2038563949887743358">Увімкнути опцію "Запитувати версію сайту для комп’ютера"</translation>
@@ -183,7 +182,6 @@
 <translation id="2650751991977523696">Завантажити файл ще раз?</translation>
 <translation id="2653659639078652383">Надіслати</translation>
 <translation id="2677748264148917807">Вийти</translation>
-<translation id="2693813674743028984">Сховати дані про обсяг пам’яті</translation>
 <translation id="2704606927547763573">Скопійов.</translation>
 <translation id="2707726405694321444">Оновити сторінку</translation>
 <translation id="2709516037105925701">Автозаповнення</translation>
@@ -209,7 +207,6 @@
 <translation id="2956410042958133412">Цим обліковим записом керують <ph name="PARENT_NAME_1" /> і <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Авторське право <ph name="YEAR" /> Google Inc. Усі права захищено.</translation>
 <translation id="2962095958535813455">Ви перейшли на анонімні вкладки</translation>
-<translation id="2965945119655563012">Показати дані про обсяг пам’яті</translation>
 <translation id="2968755619301702150">Перегляд сертифікатів</translation>
 <translation id="2979025552038692506">Вибрана анонімна вкладка</translation>
 <translation id="2989523299700148168">Нещодавно відвідані</translation>
@@ -527,7 +524,6 @@
 <translation id="5817918615728894473">Підключити</translation>
 <translation id="583281660410589416">Невідомий</translation>
 <translation id="5833984609253377421">Поділитися посиланням</translation>
-<translation id="583891442612896534">Chrome не може зв’язатись із серверами Google для стиснення даних. Можливо, у вас обмежене заощадження даних.</translation>
 <translation id="5854790677617711513">Понад 30 днів тому</translation>
 <translation id="5858741533101922242">Chrome не може ввімкнути адаптер Bluetooth</translation>
 <translation id="5860033963881614850">Вимк.</translation>
@@ -589,7 +585,6 @@
 <translation id="6395288395575013217">ПОСИЛАННЯ</translation>
 <translation id="6404511346730675251">Редагувати закладку</translation>
 <translation id="6406506848690869874">Синхронізація</translation>
-<translation id="6409731863280057959">Спливаючі вікна</translation>
 <translation id="641643625718530986">Друк…</translation>
 <translation id="6416782512398055893">Завантажено <ph name="MBS" /> МБ</translation>
 <translation id="6433501201775827830">Виберіть пошукову систему</translation>
@@ -840,7 +835,6 @@
 <translation id="8676374126336081632">Видалити введений текст</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Рівень сигналу: # поділка}one{Рівень сигналу: # поділка}few{Рівень сигналу: # поділки}many{Рівень сигналу: # поділок}other{Рівень сигналу: # поділки}}</translation>
 <translation id="869891660844655955">Діє до</translation>
-<translation id="8712637175834984815">Виконано</translation>
 <translation id="8719023831149562936">Неможливо передати дані поточної вкладки</translation>
 <translation id="8725066075913043281">Повторити спробу</translation>
 <translation id="8728487861892616501">Користуючись цим додатком, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome, а також <ph name="BEGIN_LINK3" />Примітку про конфіденційність для облікових записів Google, якими можна керувати у Family Link<ph name="END_LINK3" />.</translation>
@@ -850,7 +844,6 @@
 <translation id="8812260976093120287">На деяких веб-сайтах ви можна оплачувати за допомогою перелічених вище підтримуваних додатків для платежів на вашому пристрої.</translation>
 <translation id="8816439037877937734">Додаток <ph name="APP_NAME" /> відкриватиметься в Chrome. Продовжуючи, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome, а також <ph name="BEGIN_LINK3" />Примітку про конфіденційність для облікових записів Google, якими можна керувати у Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Закладки</translation>
-<translation id="883635517171802338">Блокувати спливаючі вікна на сайтах (рекомендується)</translation>
 <translation id="883806473910249246">Не вдалося завантажити вміст.</translation>
 <translation id="8840953339110955557">Ця сторінка може відрізнятися від онлайн-версії.</translation>
 <translation id="8847988622838149491">Сповіщення щодо USB</translation>

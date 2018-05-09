@@ -111,7 +111,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> inataka kuoanisha</translation>
 <translation id="1994173015038366702">URL ya Tovuti</translation>
 <translation id="200815880754187296">Programu nyingine za KB <ph name="KILOBYTES" /></translation>
-<translation id="2015632741368427174">URL ya kuelekeza kwingine imezuiwa katika tovuti:</translation>
 <translation id="2017836877785168846">Hufuta historia na ujazaji kiotomatiki katika sehemu ya anwani.</translation>
 <translation id="2021896219286479412">Vidhibiti vya tovuti vya skrini nzima</translation>
 <translation id="2038563949887743358">Washa Omba Tovuti ya Eneo-kazi</translation>
@@ -183,7 +182,6 @@
 <translation id="2650751991977523696">Ungependa kupakua faili tena?</translation>
 <translation id="2653659639078652383">Wasilisha</translation>
 <translation id="2677748264148917807">Ondoka</translation>
-<translation id="2693813674743028984">Ficha hifadhi</translation>
 <translation id="2704606927547763573">Imenakiliwa</translation>
 <translation id="2707726405694321444">Onyesha upya ukurasa</translation>
 <translation id="2709516037105925701">Kujaza Kiotomatiki</translation>
@@ -209,7 +207,6 @@
 <translation id="2956410042958133412">Akaunti hii inadhibitiwa na <ph name="PARENT_NAME_1" /> na <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Hakimiliki <ph name="YEAR" /> Google Inc. Haki zote zimehifadhiwa.</translation>
 <translation id="2962095958535813455">Inabadilisha kwenda vichupo fiche</translation>
-<translation id="2965945119655563012">Onyesha hifadhi</translation>
 <translation id="2968755619301702150">Kitazamaji vyeti</translation>
 <translation id="2979025552038692506">Kichupo Fiche Kilichochaguliwa</translation>
 <translation id="2989523299700148168">Ulizotembelea hivi karibuni</translation>
@@ -527,7 +524,6 @@ Hata hivyo, huonekani. Kuvinjari katika hali fiche hakufichi kuvinjari kwako kus
 <translation id="5817918615728894473">Oanisha</translation>
 <translation id="583281660410589416">Haijulikani</translation>
 <translation id="5833984609253377421">Shiriki kiungo</translation>
-<translation id="583891442612896534">Chrome haiwezi kufikia seva za Google ili kushindilia data. Hifadhi zako za data zinaweza kuwa chache.</translation>
 <translation id="5854790677617711513">Iliyohifadhiwa kwa zaidi ya siku 30</translation>
 <translation id="5858741533101922242">Chrome imeshindwa kuwasha adapta ya Bluetooth</translation>
 <translation id="5860033963881614850">Kimezimwa</translation>
@@ -589,7 +585,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6395288395575013217">KIUNGO</translation>
 <translation id="6404511346730675251">Badilisha alamisho</translation>
 <translation id="6406506848690869874">Sawazisha</translation>
-<translation id="6409731863280057959">Madirisha ibukizi</translation>
 <translation id="641643625718530986">Chapisha...</translation>
 <translation id="6416782512398055893">Umepakua MB <ph name="MBS" /></translation>
 <translation id="6433501201775827830">Chagua mtambo wako wa kutafuta</translation>
@@ -840,7 +835,6 @@ Ili kupata leseni mpya, unganisha kwenye intaneti na ucheze maudhui yako yaliyop
 <translation id="8676374126336081632">Futa uingizaji wa maandishi</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Kiwango cha Udhibiti wa Mawimbi: upau #}other{Kiwango cha Udhibiti wa Mawimbi: pau #}}</translation>
 <translation id="869891660844655955">Muda wake unakwisha tarehe</translation>
-<translation id="8712637175834984815">Nimeelewa</translation>
 <translation id="8719023831149562936">Haiwezi kusambaza kichupo cha sasa</translation>
 <translation id="8725066075913043281">Jaribu tena</translation>
 <translation id="8728487861892616501">Kwa kutumia programu hii, unakubaliana na <ph name="BEGIN_LINK1" />Sheria na Masharti<ph name="END_LINK1" /> na <ph name="BEGIN_LINK2" />Ilani ya Faragha<ph name="END_LINK2" /> ya Chrome na <ph name="BEGIN_LINK3" />Ilani ya Faragha ya Akaunti za Google Zinazodhibitiwa na Family Link<ph name="END_LINK3" />.</translation>
@@ -850,7 +844,6 @@ Ili kupata leseni mpya, unganisha kwenye intaneti na ucheze maudhui yako yaliyop
 <translation id="8812260976093120287">Kwenye baadhi ya tovuti, unaweza kulipa kwa programu za malipo zinazotumika zilizo hapo juu kwenye kifaa chako.</translation>
 <translation id="8816439037877937734">Itafungua <ph name="APP_NAME" /> katika Chrome. Kwa kuendelea, unakubali <ph name="BEGIN_LINK1" />Sheria na Masharti<ph name="END_LINK1" /> na <ph name="BEGIN_LINK2" />Ilani ya Faragha<ph name="END_LINK2" />, na <ph name="BEGIN_LINK3" />Ilani ya Faragha ya Akaunti za Google Zinazodhibitiwa na Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Alamisho</translation>
-<translation id="883635517171802338">Zuia tovuti zisionyeshe madirisha ibukizi (inapendekezwa)</translation>
 <translation id="883806473910249246">Hitilafu imetokea wakati wa kupakua maudhui.</translation>
 <translation id="8840953339110955557">Ukurasa huu huenda ukatofautiana na toleo la mtandaoni.</translation>
 <translation id="8847988622838149491">USB</translation>

@@ -111,7 +111,6 @@
 <translation id="1993768208584545658"><ph name="SITE" /> haluaa muodostaa laiteparin</translation>
 <translation id="1994173015038366702">Sivuston URL-osoite</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> kt muita sovelluksia</translation>
-<translation id="2015632741368427174">Uudelleenohjaus estetty sivustolle:</translation>
 <translation id="2017836877785168846">Tyhjentää historian ja osoitepalkin automaattiset täydennykset.</translation>
 <translation id="2021896219286479412">Ohjaimet koko näytön tilassa</translation>
 <translation id="2038563949887743358">Ota käyttöön Käytä tietokoneversiota</translation>
@@ -183,7 +182,6 @@
 <translation id="2650751991977523696">Ladataanko tiedosto uudelleen?</translation>
 <translation id="2653659639078652383">Lähetä</translation>
 <translation id="2677748264148917807">Poistu</translation>
-<translation id="2693813674743028984">Piilota tallennustilan tiedot</translation>
 <translation id="2704606927547763573">Kopioitu</translation>
 <translation id="2707726405694321444">Päivitä sivu</translation>
 <translation id="2709516037105925701">Automaattinen täyttö</translation>
@@ -209,7 +207,6 @@
 <translation id="2956410042958133412">Tätä tiliä hallinnoivat <ph name="PARENT_NAME_1" /> ja <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Kaikki oikeudet pidätetään.</translation>
 <translation id="2962095958535813455">Vaihdettiin näkyviin incognito-välilehdet.</translation>
-<translation id="2965945119655563012">Näytä tallennustilan tiedot</translation>
 <translation id="2968755619301702150">Varmennetiedot</translation>
 <translation id="2979025552038692506">Valittu incognito-välilehti</translation>
 <translation id="2989523299700148168">Viimeksi käytetyt</translation>
@@ -527,7 +524,6 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="5817918615728894473">Muodosta laitepari</translation>
 <translation id="583281660410589416">Tuntematon</translation>
 <translation id="5833984609253377421">Jaa linkki</translation>
-<translation id="583891442612896534">Chrome ei saa yhteyttä Googlen palvelimiin tietojen pakkausta varten. Tietojen tallentaminen voi olla rajoitettua.</translation>
 <translation id="5854790677617711513">Yli 30 päivää vanhat</translation>
 <translation id="5858741533101922242">Chrome ei voi ottaa käyttöön Bluetooth-sovitinta.</translation>
 <translation id="5860033963881614850">Pois käytöstä</translation>
@@ -589,7 +585,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6395288395575013217">LINKITÄ</translation>
 <translation id="6404511346730675251">Muokkaa kirjanmerkkiä</translation>
 <translation id="6406506848690869874">Synkronointi</translation>
-<translation id="6409731863280057959">Ponnahdusikkunat</translation>
 <translation id="641643625718530986">Tulosta…</translation>
 <translation id="6416782512398055893">Ladattu: <ph name="MBS" /> Mt</translation>
 <translation id="6433501201775827830">Valitse hakukone</translation>
@@ -840,7 +835,6 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="8676374126336081632">Tyhjennä teksti</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signaalin voimakkuus: # palkki}other{Signaalin voimakkuus: # palkkia}}</translation>
 <translation id="869891660844655955">Vanhenemispäivämäärä</translation>
-<translation id="8712637175834984815">Ymmärretty</translation>
 <translation id="8719023831149562936">Nykyistä välilehteä ei voi jakaa</translation>
 <translation id="8725066075913043281">Yritä uudelleen</translation>
 <translation id="8728487861892616501">Käyttämällä tätä sovellusta hyväksyt Chromen <ph name="BEGIN_LINK1" />käyttöehdot<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />tietosuojailmoituksen<ph name="END_LINK2" /> sekä <ph name="BEGIN_LINK3" />Family Linkin kautta hallittavia Google-tilejä koskevan tietosuojailmoituksen<ph name="END_LINK3" />.</translation>
@@ -850,7 +844,6 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="8812260976093120287">Tietyt sivustot tukevat yllä mainittuja laitteesi yhteensopivia maksusovelluksia.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> avautuu Chromessa. Jatkamalla hyväksyt Chromen <ph name="BEGIN_LINK1" />käyttöehdot<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />tietosuojailmoituksen<ph name="END_LINK2" /> sekä <ph name="BEGIN_LINK3" />Family Linkin kautta hallittavia Google-tilejä koskevan tietosuojailmoituksen<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Kirjanmerkit</translation>
-<translation id="883635517171802338">Estä ponnahdusikkunoiden näyttäminen sivustoilla (suositus).</translation>
 <translation id="883806473910249246">Sisältöä ladattaessa tapahtui virhe.</translation>
 <translation id="8840953339110955557">Tämä sivu saattaa poiketa verkossa olevasta versiosta.</translation>
 <translation id="8847988622838149491">USB</translation>

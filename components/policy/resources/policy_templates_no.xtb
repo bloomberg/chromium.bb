@@ -410,13 +410,13 @@
           (Disse to API-ene er ikke tilgjengelige for apper/utvidelser som
           ikke tvangsinstalleres.)
 
-          Denne regelen kommer foran en <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> -regel som kan være i konflikt med den. Hvis en app eller utvidelse som tidligere ble tvangsinstallert, fjernes fra denne listen, avinstalleres den automatisk av <ph name="PRODUCT_NAME" />.
+          Denne regelen kommer foran en <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />-regel som kan være i konflikt med den. Hvis en app eller utvidelse som tidligere ble tvangsinstallert, fjernes fra denne listen, avinstalleres den automatisk av <ph name="PRODUCT_NAME" />.
 
           For Windows-forekomster som ikke er koblet til et <ph name="MS_AD_NAME" />-domene, er tvungen installasjon begrenset til apper og utvidelser oppført i Chrome Nettmarked.
 
           Merk at kildekoden for alle utvidelser kan endres av brukere via utviklerverktøyene (noe som potensielt kan ødelegge funksjonaliteten for utvidelsen). Hvis dette er noe som skaper bekymring, er det best å angi <ph name="DEVELOPER_TOOLS_POLICY_NAME" />-regelen.
 
-          Listeelementene i regelen er strenger som inneholder en utvidelses-ID og en nettadresse for oppdatering atskilt med semikolon (<ph name="SEMICOLON" />). Utvidelses-ID-en er strengen på 32 tegn du for eksempel finner i <ph name="CHROME_EXTENSIONS_LINK" /> når du er i utviklermodus. Nettadressen for oppdatering skal peke til oppdateringsmanifestet i XML-format som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />. Som standard brukes nettadressen for oppdatering av Chrome Nettmarked (som nå er «https://clients2.google.com/service/update2/crx»). Merk at nettadressen for oppdatering som er angitt i denne regelen, bare brukes for første installasjon – senere oppdateringer av utvidelsen bruker nettadressen for oppdatering som er oppgitt i utvidelsens manifest. Merk også at angivelse av nettadressen for oppdatering var obligatorisk i <ph name="PRODUCT_NAME" />-versjoner til og med 67.
+          Listeelementene i regelen er strenger som inneholder en utvidelses-ID og en nettadresse for oppdatering, atskilt med semikolon (<ph name="SEMICOLON" />). Utvidelses-ID-en er strengen på 32 tegn du for eksempel finner i <ph name="CHROME_EXTENSIONS_LINK" /> når du er i utviklermodus. Nettadressen for oppdatering skal peke til oppdateringsmanifestet i XML-format som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />. Som standard brukes nettadressen for oppdatering av Chrome Nettmarked (som nå er «https://clients2.google.com/service/update2/crx»). Merk at nettadressen for oppdatering som er angitt i denne regelen, bare brukes for første installasjon – senere oppdateringer av utvidelsen bruker nettadressen for oppdatering som er oppgitt i utvidelsens manifest. Merk også at angivelse av nettadressen for oppdatering var obligatorisk i <ph name="PRODUCT_NAME" />-versjoner til og med 67.
 
           <ph name="EXTENSION_POLICY_EXAMPLE" /> installerer for eksempel <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />-appen fra standardnettadressen for oppdatering for Chrome Nettmarked. Hvis du vil ha mer informasjon om verter for utvidelser, kan du se: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
@@ -1013,11 +1013,6 @@
       Hvis denne regelen ikke er spesifisert, er SPDY tilgjengelig.</translation>
 <translation id="3890999316834333174">Retningslinjer for hurtigopplåsing</translation>
 <translation id="3891357445869647828">Aktiver JavaScript</translation>
-<translation id="3891953007921334498">Slår av utviklerverktøyene og JavaScript-konsollen.
-
-      Hvis du slår på denne innstillingen, fjernes tilgangen til utviklerverktøyene, og nettstedelementene kan ikke inspiseres lenger. Alle hurtigtaster og eventuelle oppføringer i menyer eller kontekstmenyer som kan åpne utviklerverktøyene eller JavaScript-konsollen, blir slått av.
-
-      Hvis dette alternativet slås av eller ikke angis, kan utviklerverktøyene og JavaScript-konsollen brukes.</translation>
 <translation id="3895557476567727016">Konfigurerer standardkatalogen som <ph name="PRODUCT_NAME" /> skal bruke til å laste ned filer.
 
       Hvis du angir denne regelen, endres standardkatalogen som <ph name="PRODUCT_NAME" /> laster ned filer til. Denne regelen er ikke obligatorisk, så brukeren kan endre hvilken katalog som skal brukes.
@@ -1961,13 +1956,13 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 
 Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alternativet, men de rapporterte størrelsene blir kvantisert, og oppdateringsfrekvensen er av sikkerhetsgrunner begrenset. Hvis du vil ha data med sanntidspresisjon, må du bruke verktøy som telemetri (fjernmåling).</translation>
 <translation id="6870914592443697993">
-      Denne regelen gjelder for påloggingsskjermen. Se også  <ph name="ISOLATE_ORIGINS_POLICY_NAME" />-regelen, som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis verdiene ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
+      Denne regelen gjelder for påloggingsskjermen. Se også <ph name="ISOLATE_ORIGINS_POLICY_NAME" />-regelen, som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis verdiene ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
       Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i
       kommadelte lister i egne prosesser. Da isoleres også opprinnelser som har
       navn basert på underdomener. Hvis for eksempel https://example.com/
       angis, isoleres også https://foo.example.com/ som en del av nettstedet
       https://example.com/.
-     Hvis regelen er deaktivert, er det ingen nettstedsisolering, feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere IsolateOrigins manuelt.
+     Hvis regelen er deaktivert, skjer det ingen eksplisitt nettstedsisolering, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere IsolateOrigins manuelt.
       Hvis regelen ikke er konfigurert, brukes plattformens standardinnstillinger for nettstedsisolering for påloggingsskjermen.
       </translation>
 <translation id="6894178810167845842">Nettadresse for Ny fane-siden</translation>
@@ -2412,7 +2407,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       å bruke IsolateOrigins sammen med en liste over nettstedene du vil isolere.
       Denne innstillingen (SitePerProcess) isolerer alle nettsteder.
       Hvis regelen er aktivert, kjøres alle nettsteder i sine egne prosesser.
-      Hvis regelen er deaktivert, er det ingen nettstedsisolering, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere SitePerProcess manuelt.
+      Hvis regelen er deaktivert, skjer det ingen eksplisitt nettstedsisolering, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere SitePerProcess manuelt.
       Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
       I <ph name="PRODUCT_OS_NAME" /> bør du også angi samme verdi for enhetsinnstillingene <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
       </translation>
@@ -2754,7 +2749,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
       navn basert på underdomener. Hvis for eksempel https://example.com/
       angis, isoleres også https://foo.example.com/ som en del av nettstedet
       https://example.com/.
-      Hvis regelen er deaktivert, er det ingen nettstedsisolering, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere IsolateOrigins manuelt.
+      Hvis regelen er deaktivert, skjer det ingen eksplisitt nettstedsisolering, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere IsolateOrigins manuelt.
       Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
       I <ph name="PRODUCT_OS_NAME" /> bør du også angi samme verdi for enhetsinnstillingene <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
       </translation>
@@ -2817,9 +2812,9 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="9200828125069750521">Parametere for bildenettadresser som bruker POST</translation>
 <translation id="9210953373038593554">Konfigurerer autentiseringstypen for SAML-pålogging.
 
-      Når denne regelen ikke er spesifisert eller er satt til standard (verdi 0), bestemmes atferden for SAML pålogging av nettleseren avhengig av andre faktorer. I det mest grunnleggende scenarioet baseres brukerautentisering og beskyttelse av bufret brukerdata på passord som skrives inn manuelt av brukerne.
+      Når denne regelen ikke er spesifisert eller er satt til standard (verdi 0), bestemmes atferden for SAML pålogging av nettleseren avhengig av andre faktorer. I det mest grunnleggende scenarioet baseres brukerautentisering og beskyttelse av bufrede brukerdata på passord som skrives inn manuelt av brukerne.
 
-      Når denne regelen er satt til klientsertifikat (verdi 1), brukes autentisering av klientsertifikat for brukere som nylig er lagt til, og som logger inn via SAML. Ingen passord brukes for slike brukere, og bufret lokal data beskyttes med tilhørende kryptografiske nøkler. Denne innstillingen tillater for eksempel konfigurering av smartkortbasert brukerautentisering (merk at mellomvareapper for smartkort må installeres via DeviceLoginScreenAppInstallList-regelen).
+      Når denne regelen er satt til klientsertifikat (verdi 1), brukes autentisering av klientsertifikat for brukere som nylig er lagt til, og som logger inn via SAML. Ingen passord brukes for slike brukere, og bufrede lokale data beskyttes med tilhørende kryptografiske nøkler. Denne innstillingen tillater for eksempel konfigurering av smartkortbasert brukerautentisering (merk at mellomvareapper for smartkort må installeres via DeviceLoginScreenAppInstallList-regelen).
 
       Denne regelen påvirker bare brukere som autentiserer via SAML.</translation>
 <translation id="9213347477683611358">Konfigurer bakgrunnsbildet som vises på påloggingsskjermen, på enhentsnivå hvis ingen brukere har logget på enheten ennå. Regelen angis ved å spesifisere nettadressen hvor Chrome OS-enheten kan laste ned bakgrunnsbildet, og dessuten en kryptografisk hash-verdi som brukes til bekrefte nedlastingens integritet. Bildet må være i JPEG-format, og filstørrelsen kan ikke overskride 16 MB. Nettadressen må være tilgjengelig uten autentisering. Bakgrunnsbildet lastes ned og bufres. Det lastes ned på nytt hvis nettadressen eller hash-verdien endres.

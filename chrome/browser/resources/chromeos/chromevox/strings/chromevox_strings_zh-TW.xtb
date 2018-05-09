@@ -89,6 +89,7 @@
 <translation id="1810107444790159527">清單方塊</translation>
 <translation id="1828385960365606039">5 月</translation>
 <translation id="1834891354138622109">欄</translation>
+<translation id="1845944666972354496">輕觸兩下即可啟用</translation>
 <translation id="1865601187525349519">文字結束</translation>
 <translation id="1876229593313240038">文件</translation>
 <translation id="188130072164734898">說出目前的時間和日期。</translation>
@@ -120,6 +121,7 @@
 <translation id="2179452035581866348">ChromeVox 會使用音效提供必要資訊和額外資訊。只要瞭解各種音效所代表的意義，即可善用這些音效加快瀏覽速度。熟悉這種操作模式後，你可以選擇關閉詳細語音說明，完全靠音效就能掌握關於網頁的各項必要資訊。完整的音效及其意義清單如下。</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{右括弧}other{# 個右括弧}}</translation>
 <translation id="2199994615414171367">上一個數學元素</translation>
+<translation id="2203046366315513658">調降值</translation>
 <translation id="2220529011494928058">回報問題</translation>
 <translation id="2223693656926968778">對目前的項目進行操作</translation>
 <translation id="225732394367814946">加快說話速度</translation>
@@ -158,6 +160,7 @@
 <translation id="2637227747952042642">數學</translation>
 <translation id="2639750663247012216">ChromeVox 輔助鍵</translation>
 <translation id="2644542693584024604">拼字錯誤</translation>
+<translation id="2673280813984708147">正在編輯</translation>
 <translation id="267442004702508783">重新整理</translation>
 <translation id="2684412629217766642">關閉 ChromeVox 教學課程</translation>
 <translation id="2697408785920771974">autoinl</translation>
@@ -209,6 +212,7 @@
 <translation id="3060756054951570867">「<ph name="TITLE" />」選單已開啟</translation>
 <translation id="3078345202707391975">下一個第 2 階標題</translation>
 <translation id="3078740164268491126">表格</translation>
+<translation id="3082249673510793544">向後捲動</translation>
 <translation id="3082557070674409251">按了一下</translation>
 <translation id="3084806535845658316">無輸入語音回應</translation>
 <translation id="3086746722712840547">附註</translation>
@@ -396,6 +400,7 @@
 <translation id="4372705107434148843">停止語音</translation>
 <translation id="4373197658375206385">沒有上一個非連結項目。</translation>
 <translation id="4376316291247992553">以點字模式檢視圖形</translation>
+<translation id="4378308539633073595">向前捲動</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">重設</translation>
 <translation id="4457472090507035117">選取目前的語音：</translation>
@@ -403,6 +408,7 @@
 <translation id="4476183483923481720">換行</translation>
 <translation id="4482330759234983253">上一個表格</translation>
 <translation id="4491109536499578614">圖片</translation>
+<translation id="4517854969512651305">調升值</translation>
 <translation id="4529987814483543472">傳統按鍵對應配置</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{斜線}other{# 個斜線}}</translation>
 <translation id="4547556996012970016">下一個第 5 階標題</translation>
@@ -418,6 +424,7 @@
 <translation id="461613135510474570">句子</translation>
 <translation id="463135993322337640">按下 ChromeVox 的 O 鍵、N 鍵，即可瞭解最新功能</translation>
 <translation id="4647836961514597010">顏色選擇器</translation>
+<translation id="4652110509054054146">使用搜尋鍵加向左鍵或向右鍵取代 Home 鍵或 End 鍵，使用搜尋鍵加 Control 鍵加向左鍵或向右鍵取代 Control 鍵加 Home 鍵或 End 鍵，使用搜尋鍵加向上鍵或向下鍵取代 Page Up 鍵或 Page Down 鍵。</translation>
 <translation id="4660783501463101648">移除 ChromeVox 傳統模式切換功能：現已無法透過鍵盤切換回 ChromeVox 傳統模式。</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">，</translation>

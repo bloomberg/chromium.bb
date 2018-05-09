@@ -111,7 +111,6 @@
 <translation id="1993768208584545658">يريد <ph name="SITE" /> الاقتران</translation>
 <translation id="1994173015038366702">‏عنوان URL للموقع</translation>
 <translation id="200815880754187296">تطبيقات أخرى بحجم <ph name="KILOBYTES" /> كيلوبايت</translation>
-<translation id="2015632741368427174">تم حظر إعادة التوجيه إلى الموقع:</translation>
 <translation id="2017836877785168846">مسح السجل وعمليات الإكمال التلقائي في شريط العناوين.</translation>
 <translation id="2021896219286479412">عناصر التحكم لموقع في وضع ملء الشاشة</translation>
 <translation id="2038563949887743358">تشغيل طلب موقع الويب لسطح المكتب</translation>
@@ -183,7 +182,6 @@
 <translation id="2650751991977523696">هل تريد تنزيل الملف مرة أخرى؟</translation>
 <translation id="2653659639078652383">إرسال</translation>
 <translation id="2677748264148917807">الخروج</translation>
-<translation id="2693813674743028984">إخفاء سعة التخزين</translation>
 <translation id="2704606927547763573">تم النسخ</translation>
 <translation id="2707726405694321444">تحديث الصفحة</translation>
 <translation id="2709516037105925701">الملء التلقائي</translation>
@@ -209,7 +207,6 @@
 <translation id="2956410042958133412">تتم إدارة هذا الحساب بواسطة <ph name="PARENT_NAME_1" /> و <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لصالح شركة .Google Inc. جميع الحقوق محفوظة.</translation>
 <translation id="2962095958535813455">تم التبديل إلى علامات تبويب التصفح المتخفي</translation>
-<translation id="2965945119655563012">عرض سعة التخزين</translation>
 <translation id="2968755619301702150">عارض الشهادات</translation>
 <translation id="2979025552038692506">علامة تبويب محددة للتصفح المتخفي</translation>
 <translation id="2989523299700148168">تم الانتقال إليها مؤخرًا</translation>
@@ -528,7 +525,6 @@
 <translation id="5817918615728894473">إقران</translation>
 <translation id="583281660410589416">غير معروف</translation>
 <translation id="5833984609253377421">مشاركة الرابط</translation>
-<translation id="583891442612896534">‏لا يمكن لمتصفح Chrome الوصول إلى خوادم Google لضغط البيانات. قد تكون خيارات توفير البيانات محدودة.</translation>
 <translation id="5854790677617711513">مرّ عليها أكثر من 30 يومًا</translation>
 <translation id="5858741533101922242">‏يتعذر على Chrome تشغيل محوّل البلوتوث</translation>
 <translation id="5860033963881614850">إيقاف</translation>
@@ -590,7 +586,6 @@
 <translation id="6395288395575013217">رابط</translation>
 <translation id="6404511346730675251">تعديل إشارة مرجعية</translation>
 <translation id="6406506848690869874">المزامنة</translation>
-<translation id="6409731863280057959">النوافذ المنبثقة</translation>
 <translation id="641643625718530986">طباعة…</translation>
 <translation id="6416782512398055893">تم التنزيل بحجم <ph name="MBS" /> ميغابايت</translation>
 <translation id="6433501201775827830">اختيار محرك البحث</translation>
@@ -841,7 +836,6 @@
 <translation id="8676374126336081632">محو الإرسال</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{مستوى قوة الإشارة: شريط واحد (#)}zero{مستوى قوة الإشارة: # شريط}two{مستوى قوة الإشارة: شريطان (#)}few{مستوى قوة الإشارة: # أشرطة}many{مستوى قوة الإشارة: # شريطًا}other{مستوى قوة الإشارة: # شريط}}</translation>
 <translation id="869891660844655955">تاريخ انتهاء الصلاحية</translation>
-<translation id="8712637175834984815">تم</translation>
 <translation id="8719023831149562936">تعذر إرسال علامة التبويب الحالية باستخدام الشعاع</translation>
 <translation id="8725066075913043281">أعد المحاولة</translation>
 <translation id="8728487861892616501">‏باستخدامك لهذا التطبيق، أنت توافق على <ph name="BEGIN_LINK1" />بنود الخدمة في Chrome<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" /> و<ph name="BEGIN_LINK3" />إشعار الخصوصية لحسابات Google المُدارة من خلال Family Link<ph name="END_LINK3" />.</translation>
@@ -851,7 +845,6 @@
 <translation id="8812260976093120287">يمكنك على مواقع ويب معيّنة الدفع باستخدام تطبيقات الدفع المتوافقة أعلاه على جهازك.</translation>
 <translation id="8816439037877937734">‏سيتم فتح <ph name="APP_NAME" /> في Chrome. بالمتابعة، أنت توافق على <ph name="BEGIN_LINK1" />بنود الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" /> في Chrome، و<ph name="BEGIN_LINK3" />إشعار الخصوصية لحسابات Google المُدارة من خلال Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">إشارات</translation>
-<translation id="883635517171802338">منع مواقع الويب من عرض النوافذ المنبثقة (موصى به)</translation>
 <translation id="883806473910249246">حدث خطأ أثناء تنزيل المحتوى.</translation>
 <translation id="8840953339110955557">قد تختلف هذه الصفحة عن الإصدار الوارد على الإنترنت.</translation>
 <translation id="8847988622838149491">USB</translation>
