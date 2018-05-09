@@ -2237,12 +2237,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_MANAGER_LIST_ITEM_DESCRIPTION" desc="Text containing the download list item description.">
         <ph name="FILE_SIZE">%1$s<ex>1.56 MB</ex></ph> - <ph name="DESCRIPTION">%2$s<ex>www.example.com</ex></ph>
       </message>
-      <message name="IDS_DOWNLOAD_MANAGER_UI_SHOW_STORAGE" desc="Text that tells the user to show the storage information in downloads home.">
-        Show storage
-      </message>
-      <message name="IDS_DOWNLOAD_MANAGER_UI_HIDE_STORAGE" desc="Text that tells the user to hide the storage information in downloads home.">
-        Hide storage
-      </message>
 
       <!-- Browsing History UI -->
       <message name="IDS_HISTORY_MANAGER_EMPTY" desc="Indicates that there are no browsing history items.">
