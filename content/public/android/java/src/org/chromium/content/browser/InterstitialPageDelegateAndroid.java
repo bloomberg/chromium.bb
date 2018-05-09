@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser.test;
+package org.chromium.content.browser;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content_public.browser.WebContents;
 
 /**
  * Allows the specification and handling of Interstitial pages in java.
  */
 @JNINamespace("content")
 public class InterstitialPageDelegateAndroid {
+
     private long mNativePtr;
 
     /**
@@ -27,16 +27,26 @@ public class InterstitialPageDelegateAndroid {
     }
 
     /**
+     * @return The pointer to the underlying native counterpart.
+     */
+    @VisibleForTesting
+    public long getNative() {
+        return mNativePtr;
+    }
+
+    /**
      * Called when "proceed" is triggered on the interstitial.
      */
     @CalledByNative
-    protected void onProceed() {}
+    protected void onProceed() {
+    }
 
     /**
      * Called when "dont' proceed" is triggered on the interstitial.
      */
     @CalledByNative
-    protected void onDontProceed() {}
+    protected void onDontProceed() {
+    }
 
     /**
      * Called when a command has been received from the interstitial.
@@ -44,7 +54,8 @@ public class InterstitialPageDelegateAndroid {
      * @param command The command that was received.
      */
     @CalledByNative
-    protected void commandReceived(String command) {}
+    protected void commandReceived(String command) {
+    }
 
     @CalledByNative
     private void onNativeDestroyed() {
@@ -65,19 +76,7 @@ public class InterstitialPageDelegateAndroid {
         if (mNativePtr != 0) nativeDontProceed(mNativePtr);
     }
 
-    /**
-     * Shows an interstitial page driven by this delegate.
-     *
-     * @param url The URL being blocked by the interstitial.
-     * @param webContents The {@link WebContents} the interstitial to show on.
-     */
-    public void showInterstitialPage(String url, WebContents webContents) {
-        if (mNativePtr != 0) nativeShowInterstitialPage(mNativePtr, url, webContents);
-    }
-
     private native long nativeInit(String htmlContent);
     private native void nativeProceed(long nativeInterstitialPageDelegateAndroid);
     private native void nativeDontProceed(long nativeInterstitialPageDelegateAndroid);
-    private native void nativeShowInterstitialPage(
-            long nativeInterstitialPageDelegateAndroid, String url, WebContents webContents);
 }

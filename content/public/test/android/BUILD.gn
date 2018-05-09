@@ -33,7 +33,6 @@ android_library("content_java_test_support") {
     "javatests/src/org/chromium/content/browser/test/ChildProcessAllocatorSettings.java",
     "javatests/src/org/chromium/content/browser/test/ChildProcessAllocatorSettingsHook.java",
     "javatests/src/org/chromium/content/browser/test/ContentJUnit4ClassRunner.java",
-    "javatests/src/org/chromium/content/browser/test/InterstitialPageDelegateAndroid.java",
     "javatests/src/org/chromium/content/browser/test/NativeLibraryTestRule.java",
     "javatests/src/org/chromium/content/browser/test/mock/MockRenderFrameHost.java",
     "javatests/src/org/chromium/content/browser/test/mock/MockWebContents.java",
@@ -55,28 +54,5 @@ android_library("content_java_test_support") {
     "javatests/src/org/chromium/content/browser/test/util/TestWebContentsObserver.java",
     "javatests/src/org/chromium/content/browser/test/util/TouchCommon.java",
     "javatests/src/org/chromium/content/browser/test/util/UiUtils.java",
-  ]
-}
-
-generate_jni("content_test_jni") {
-  testonly = true
-  jni_package = "content/public/test"
-  sources = [
-    "javatests/src/org/chromium/content/browser/test/InterstitialPageDelegateAndroid.java",
-  ]
-}
-
-static_library("content_native_test_support") {
-  testonly = true
-  sources = [
-    "interstitial_page_delegate_android.cc",
-    "interstitial_page_delegate_android.h",
-  ]
-  deps = [
-    ":content_test_jni",
-    "//base",
-    "//content/public/browser",
-    "//device/gamepad",
-    "//media/midi",
   ]
 }

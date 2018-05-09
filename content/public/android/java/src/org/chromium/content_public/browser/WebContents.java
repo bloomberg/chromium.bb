@@ -211,6 +211,16 @@ public interface WebContents extends Parcelable {
     int getBackgroundColor();
 
     /**
+     * Shows an interstitial page driven by the passed in delegate.
+     *
+     * @param url The URL being blocked by the interstitial.
+     * @param interstitialPageDelegateAndroid The delegate handling the interstitial.
+     */
+    @VisibleForTesting
+    void showInterstitialPage(
+            String url, long interstitialPageDelegateAndroid);
+
+    /**
      * @return Whether the page is currently showing an interstitial, such as a bad HTTPS page.
      */
     boolean isShowingInterstitialPage();
