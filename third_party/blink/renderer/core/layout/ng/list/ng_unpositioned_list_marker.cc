@@ -55,6 +55,10 @@ bool NGUnpositionedListMarker::AddToBox(
     const NGPhysicalFragment& content,
     NGLogicalOffset* content_offset,
     NGFragmentBuilder* container_builder) const {
+  // Baselines from two different writing-mode cannot be aligned.
+  if (UNLIKELY(space.GetWritingMode() != content.Style().GetWritingMode()))
+    return false;
+
   // Compute the baseline of the child content.
   FontBaseline baseline_type = IsHorizontalWritingMode(space.GetWritingMode())
                                    ? kAlphabeticBaseline
@@ -66,7 +70,7 @@ bool NGUnpositionedListMarker::AddToBox(
     NGBoxFragment content_fragment(space.GetWritingMode(),
                                    ToNGPhysicalBoxFragment(content));
     content_metrics = content_fragment.BaselineMetricsWithoutSynthesize(
-        {NGBaselineAlgorithmType::kFirstLine, baseline_type}, space);
+        {NGBaselineAlgorithmType::kFirstLine, baseline_type});
 
     // If this child content does not have any line boxes, the list marker
     // should be aligned to the first line box of next child.

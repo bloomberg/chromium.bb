@@ -89,9 +89,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
       const NGPhysicalOffset& additional_offset = NGPhysicalOffset());
 
   void CopyBaselinesFromOldLayout(const NGConstraintSpace&, NGFragmentBuilder*);
-  void AddAtomicInlineBaselineFromOldLayout(const NGBaselineRequest&,
-                                            bool,
-                                            NGFragmentBuilder*);
+  LayoutUnit AtomicInlineBaselineFromOldLayout(const NGBaselineRequest&,
+                                               const NGConstraintSpace&);
 };
 
 DEFINE_TYPE_CASTS(NGBlockNode,
