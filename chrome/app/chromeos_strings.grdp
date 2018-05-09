@@ -215,6 +215,9 @@
   <message name="IDS_FILE_BROWSER_DOWNLOADS_DIRECTORY_LABEL" desc="Downloads local directory label.">
     Downloads
   </message>
+  <message name="IDS_FILE_BROWSER_LINUX_FILES_ROOT_LABEL" desc="A label for the 'Linux Files' root which shows crostini files.">
+    Linux Files
+  </message>
   <message name="IDS_FILE_BROWSER_MEDIA_VIEW_IMAGES_ROOT_LABEL" desc="A label for the 'Images' root of media views.">
     Images
   </message>

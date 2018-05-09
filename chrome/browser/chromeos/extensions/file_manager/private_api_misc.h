@@ -261,6 +261,34 @@ class FileManagerPrivateConfigureVolumeFunction
   DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateConfigureVolumeFunction);
 };
 
+// Implements the chrome.fileManagerPrivate.isCrostiniEnabled method.
+// Gets crostini sftp mount params.
+class FileManagerPrivateIsCrostiniEnabledFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.isCrostiniEnabled",
+                             FILEMANAGERPRIVATE_ISCROSTINIENABLED)
+
+ protected:
+  ~FileManagerPrivateIsCrostiniEnabledFunction() override {}
+
+  ResponseAction Run() override;
+};
+
+// Implements the chrome.fileManagerPrivate.mountCrostiniContainer method.
+// Starts and mounts crostini container.
+class FileManagerPrivateMountCrostiniContainerFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.mountCrostiniContainer",
+                             FILEMANAGERPRIVATE_MOUNTCROSTINICONTAINER)
+
+ protected:
+  ~FileManagerPrivateMountCrostiniContainerFunction() override {}
+
+  ResponseAction Run() override;
+};
+
 // Implements the chrome.fileManagerPrivate.getCustomActions method.
 class FileManagerPrivateInternalGetCustomActionsFunction
     : public UIThreadExtensionFunction {

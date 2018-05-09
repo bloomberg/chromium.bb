@@ -102,6 +102,9 @@ VolumeManagerCommon.RootType = {
 
   // 'Add new services' menu item.
   ADD_NEW_SERVICES_MENU: 'add_new_services_menu',
+
+  // Fake root for SFTP Mount such as Linux Files.
+  SFTP_MOUNT: 'sftp_mount',
 };
 Object.freeze(VolumeManagerCommon.RootType);
 
@@ -131,6 +134,7 @@ VolumeManagerCommon.RootTypesForUMA = [
   VolumeManagerCommon.RootType.RECENT,
   VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT,
   VolumeManagerCommon.RootType.ADD_NEW_SERVICES_MENU,
+  VolumeManagerCommon.RootType.SFTP_MOUNT,
 ];
 console.assert(
     Object.keys(VolumeManagerCommon.RootType).length ===
@@ -319,6 +323,26 @@ Object.freeze(VolumeManagerCommon.MediaViewRootType);
 VolumeManagerCommon.getMediaViewRootTypeFromVolumeId = function(volumeId) {
   return /** @type {VolumeManagerCommon.MediaViewRootType} */ (
       volumeId.split(':', 2)[1]);
+};
+
+
+/**
+ * List of known FSP-provided fileSystemId values.
+ *
+ * @enum {string}
+ * @const
+ */
+VolumeManagerCommon.ProvidedFileSystem = {
+  CROSTINI: 'crostini',
+};
+
+/**
+ * Obtains fileSystemId from volumeId of FSP-provided mount.
+ * @param {string} volumeId Volume ID.
+ * @return {string|undefined}
+ */
+VolumeManagerCommon.getProvidedFileSystemIdFromVolumeId = function(volumeId) {
+  return volumeId ? volumeId.split(':', 3)[2] : undefined;
 };
 
 /**

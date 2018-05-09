@@ -1072,6 +1072,13 @@ interface Functions {
   [nocompile]
   static void getRecentFiles(SourceRestriction restriction,
                              GetRecentFilesCallback callback);
+
+  // Returns true if crostini is enabled.
+  // |callback|
+  static void isCrostiniEnabled(BooleanCallback callback);
+
+  // Starts and mounts crostini container.
+  static void mountCrostiniContainer();
 };
 
 interface Events {

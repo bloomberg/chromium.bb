@@ -492,20 +492,26 @@ FileBrowserBackgroundImpl.prototype.onMountCompletedInternal_ = function(
     event) {
   // If there is no focused window, then create a new one opened on the
   // mounted FSP volume.
-  this.findFocusedWindow_().then(function(key) {
-    if (key === null &&
-        event.eventType === 'mount' &&
-        (event.status === 'success' ||
-         event.status === 'error_path_already_mounted') &&
-        event.volumeMetadata.mountContext === 'user' &&
-        event.volumeMetadata.volumeType ===
-            VolumeManagerCommon.VolumeType.PROVIDED &&
-        event.volumeMetadata.source === VolumeManagerCommon.Source.FILE) {
-      this.navigateToVolumeWhenReady_(event.volumeMetadata.volumeId);
-    }
-  }.bind(this)).catch(function(error) {
-    console.error(error.stack || error);
-  });
+  this.findFocusedWindow_()
+      .then(function(key) {
+        let statusOK = event.status === 'success' ||
+            event.status === 'error_path_already_mounted';
+        let volumeTypeOK =
+            event.volumeMetadata.source === VolumeManagerCommon.Source.FILE ||
+            VolumeManagerCommon.getProvidedFileSystemIdFromVolumeId(
+                event.volumeId) ===
+                VolumeManagerCommon.ProvidedFileSystem.CROSTINI;
+        if (key === null && event.eventType === 'mount' && statusOK &&
+            event.volumeMetadata.mountContext === 'user' &&
+            event.volumeMetadata.volumeType ===
+                VolumeManagerCommon.VolumeType.PROVIDED &&
+            volumeTypeOK) {
+          this.navigateToVolumeWhenReady_(event.volumeMetadata.volumeId);
+        }
+      }.bind(this))
+      .catch(function(error) {
+        console.error(error.stack || error);
+      });
 };
 
 /**
