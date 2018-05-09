@@ -10,19 +10,27 @@
 
 <dom-module id="multidevice-setup">
   <template>
-    <iron-pages
-        attr-for-selected="is"
+    <style>
+      :host {
+        @apply(--layout-vertical);
+        @apply(--layout-start-justified);
+        padding: 60px 64px 32px 64px;
+      }
+
+      button-bar {
+        margin-top: 50px;
+      }
+    </style>
+    <iron-pages attr-for-selected="is"
         selected="[[visiblePageName_]]"
         selected-item="{{visiblePage_}}">
       <setup-failed-page></setup-failed-page>
       <setup-succeeded-page></setup-succeeded-page>
-      <start-setup-page
-          devices="[[devices_]]"
+      <start-setup-page devices="[[devices_]]"
           selected-device-id="{{selectedDeviceId_}}">
       </start-setup-page>
     </iron-pages>
-    <button-bar
-        forward-button-text="[[visiblePage_.forwardButtonText]]"
+    <button-bar forward-button-text="[[visiblePage_.forwardButtonText]]"
         backward-button-text="[[visiblePage_.backwardButtonText]]">
     </button-bar>
   </template>
