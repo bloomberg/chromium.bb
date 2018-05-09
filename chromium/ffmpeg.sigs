@@ -54,6 +54,7 @@ void av_free(void *ptr);
 void av_log_set_level(int level);
 int av_dict_set(AVDictionary **pm, const char *key, const char *value, int flags);
 void av_dict_free(AVDictionary **m);
+int av_dict_count(const AVDictionary *m);
 AVDictionaryEntry *av_dict_get(const AVDictionary *m, const char *key, const AVDictionaryEntry *prev, int flags);
 int av_samples_get_buffer_size(int *linesize, int nb_channels, int nb_samples, enum AVSampleFormat sample_fmt, int align);
 int av_image_check_size(unsigned int w, unsigned int h, int log_offset, void *log_ctx);
