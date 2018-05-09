@@ -1460,6 +1460,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // |ancestor| itself if |ancestor| scrolls overflow.
   // The output rect is suitable for purposes such as paint invalidation.
   //
+  // The ancestor can be nullptr which, if |this| is not the root view, will map
+  // the rect to the main frame's space which includes the root view's scroll
+  // and clip. This is even true if the main frame is remote.
+  //
   // If visualRectFlags has the EdgeInclusive bit set, clipping operations will
   // use/ LayoutRect::inclusiveIntersect, and the return value of
   // inclusiveIntersect will be propagated to the return value of this method.

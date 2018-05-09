@@ -3376,27 +3376,19 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
   LayoutRect graphics_layer_bounds_in_root_view_space(
       graphics_layer_bounds_in_object_space);
 
+  // MapToVisualRectInAncestorSpace is exclusive of the scroll and clip on the
+  // ancestor, so we map to nullptr instead of |root_view| to include these.
   anchor_layout_object->MapToVisualRectInAncestorSpace(
-      root_view, graphics_layer_bounds_in_root_view_space);
+      nullptr, graphics_layer_bounds_in_root_view_space);
 
-  // In RLS, the root_view is scrolled. However, MapToVisualRectInAncestorSpace
-  // doesn't account for this scroll, since it earlies out as soon as we reach
-  // this ancestor. That is, it only maps to the space of the root_view, not
-  // accounting for the fact that the root_view itself can be scrolled. If the
-  // root_view is our anchor_layout_object, then this extra offset is counted in
-  // offset_from_anchor_layout_object. In other cases, we need to account for it
-  // here. Otherwise, the paint clip below might clip the whole (visible) rect
-  // out.
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-      root_view != anchor_layout_object) {
-    if (auto* scrollable_area = root_view->GetScrollableArea()) {
-      graphics_layer_bounds_in_root_view_space.MoveBy(
-          -scrollable_area->VisibleContentRect().Location());
-    }
-  }
-
+  // MapToVisualRectInAncestorSpace will not clip if the anchor is the root
+  // view, because the rect is assumed to already be in the clipped space of
+  // the root view. We need to manually apply the root view's clip in this case.
   FloatRect visible_content_rect(graphics_layer_bounds_in_root_view_space);
-  root_view->GetFrameView()->ClipPaintRect(&visible_content_rect);
+  if (anchor_layout_object == root_view ||
+      !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    root_view->GetFrameView()->ClipPaintRect(&visible_content_rect);
+  }
 
   FloatRect enclosing_graphics_layer_bounds(
       EnclosingIntRect(graphics_layer_bounds));

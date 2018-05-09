@@ -440,6 +440,13 @@ void LayoutView::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
     transform_state.Move(OffsetForFixedPosition());
 }
 
+bool LayoutView::ShouldClipOverflow() const {
+  bool is_main_frame = GetFrameView()->GetFrame().IsMainFrame();
+  if (is_main_frame && !GetDocument().GetSettings()->GetMainFrameClipsContent())
+    return false;
+  return LayoutBox::ShouldClipOverflow();
+}
+
 void LayoutView::ComputeSelfHitTestRects(Vector<LayoutRect>& rects,
                                          const LayoutPoint&) const {
   // Record the entire size of the contents of the frame. Note that we don't
