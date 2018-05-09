@@ -54,6 +54,7 @@ class WindowServiceTestHelper {
   }
 
   ~WindowServiceTestHelper() {
+    service_.reset();
     aura_test_helper_.TearDown();
     ui::TerminateContextFactoryForTests();
   }

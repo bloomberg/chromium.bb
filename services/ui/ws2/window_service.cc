@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "services/ui/ws2/client_window.h"
+#include "services/ui/ws2/display_manager_mus.h"
 #include "services/ui/ws2/gpu_support.h"
 #include "services/ui/ws2/window_service_client.h"
 #include "services/ui/ws2/window_service_delegate.h"
@@ -18,7 +19,9 @@ namespace ws2 {
 
 WindowService::WindowService(WindowServiceDelegate* delegate,
                              std::unique_ptr<GpuSupport> gpu_support)
-    : delegate_(delegate), gpu_support_(std::move(gpu_support)) {
+    : delegate_(delegate),
+      gpu_support_(std::move(gpu_support)),
+      display_manager_mus_(std::make_unique<DisplayManagerMus>()) {
   // MouseLocationManager is necessary for providing the shared memory with the
   // location of the mouse to clients.
   aura::Env::GetInstance()->CreateMouseLocationManager();
@@ -87,8 +90,7 @@ void WindowService::BindClipboardRequest(mojom::ClipboardRequest request) {
 
 void WindowService::BindDisplayManagerRequest(
     mojom::DisplayManagerRequest request) {
-  // TODO: https://crbug.com/839592.
-  NOTIMPLEMENTED();
+  display_manager_mus_->AddBinding(std::move(request));
 }
 
 void WindowService::BindImeDriverRequest(mojom::IMEDriverRequest request) {
