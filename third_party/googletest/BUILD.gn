@@ -92,9 +92,7 @@ source_set("gtest") {
 
   defines = []
   if (is_nacl || !build_with_chromium) {
-    defines += [
-      "GTEST_DISABLE_PRINT_STACK_TRACE"
-    ]
+    defines += [ "GTEST_DISABLE_PRINT_STACK_TRACE" ]
     sources -= [
       "custom/gtest/internal/custom/stack_trace_getter.cc",
       "custom/gtest/internal/custom/stack_trace_getter.h",
@@ -103,6 +101,9 @@ source_set("gtest") {
     deps = [
       "//base",
     ]
+    if (is_fuchsia) {
+      deps += [ "//third_party/fuchsia-sdk:launchpad" ]
+    }
   }
 }
 
