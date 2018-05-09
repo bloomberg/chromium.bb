@@ -164,9 +164,7 @@ class CORE_EXPORT StyleInvalidator {
           invalidates_slotted_(data->invalidates_slotted_),
           data_(data) {}
     ~RecursionCheckpoint() {
-      data_->invalidation_sets_.EraseAt(
-          prev_invalidation_sets_size_,
-          data_->invalidation_sets_.size() - prev_invalidation_sets_size_);
+      data_->invalidation_sets_.Shrink(prev_invalidation_sets_size_);
       data_->invalidate_custom_pseudo_ = prev_invalidate_custom_pseudo_;
       data_->whole_subtree_invalid_ = prev_whole_subtree_invalid_;
       data_->tree_boundary_crossing_ = tree_boundary_crossing_;
