@@ -65,14 +65,9 @@ class CORE_EXPORT ScriptSourceCode final {
   ~ScriptSourceCode();
   void Trace(blink::Visitor*);
 
-  // The null value represents a missing script, created by the nullary
-  // constructor, and differs from the empty script.
-  bool IsNull() const { return source_.IsNull(); }
-
   const String& Source() const { return source_; }
   SingleCachedMetadataHandler* CacheHandler() const { return cache_handler_; }
   const KURL& Url() const { return url_; }
-  int StartLine() const { return start_position_.line_.OneBasedInt(); }
   const TextPosition& StartPosition() const { return start_position_; }
   ScriptSourceLocationType SourceLocationType() const {
     return source_location_type_;
