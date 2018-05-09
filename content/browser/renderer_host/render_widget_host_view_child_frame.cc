@@ -912,7 +912,7 @@ void RenderWidgetHostViewChildFrame::ReclaimResources(
 
 void RenderWidgetHostViewChildFrame::OnBeginFrame(
     const viz::BeginFrameArgs& args) {
-  host_->ProgressFling(args.frame_time);
+  host_->ProgressFlingIfNeeded(args.frame_time);
   if (renderer_compositor_frame_sink_)
     renderer_compositor_frame_sink_->OnBeginFrame(args);
 }

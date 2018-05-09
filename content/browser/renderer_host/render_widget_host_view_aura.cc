@@ -581,7 +581,7 @@ void RenderWidgetHostViewAura::SetWantsAnimateOnlyBeginFrames() {
 }
 
 void RenderWidgetHostViewAura::OnBeginFrame(base::TimeTicks frame_time) {
-  host()->ProgressFling(frame_time);
+  host()->ProgressFlingIfNeeded(frame_time);
   UpdateNeedsBeginFramesInternal();
 }
 

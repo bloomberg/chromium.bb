@@ -65,8 +65,6 @@ void MockInputRouterClient::DidStopFlinging() {
 
 void MockInputRouterClient::DidStartScrollingViewport() {}
 
-void MockInputRouterClient::SetNeedsBeginFrameForFlingProgress() {}
-
 void MockInputRouterClient::ForwardGestureEventWithLatencyInfo(
     const blink::WebGestureEvent& gesture_event,
     const ui::LatencyInfo& latency_info) {

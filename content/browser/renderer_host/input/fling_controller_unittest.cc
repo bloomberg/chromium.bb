@@ -22,10 +22,13 @@ namespace content {
 class FakeFlingController : public FlingController {
  public:
   FakeFlingController(GestureEventQueue* gesture_event_queue,
-                      FlingControllerClient* fling_client,
+
+                      FlingControllerEventSenderClient* event_sender_client,
+                      FlingControllerSchedulerClient* scheduler_client,
                       const Config& config)
       : FlingController(gesture_event_queue,
-                        fling_client,
+                        event_sender_client,
+                        scheduler_client,
                         config) {}
 
   bool FlingBoosted() const { return fling_booster_->fling_boosted(); }
@@ -33,7 +36,8 @@ class FakeFlingController : public FlingController {
 
 class FlingControllerTest : public testing::Test,
                             public GestureEventQueueClient,
-                            public FlingControllerClient {
+                            public FlingControllerEventSenderClient,
+                            public FlingControllerSchedulerClient {
  public:
   // testing::Test
   FlingControllerTest()
@@ -43,12 +47,12 @@ class FlingControllerTest : public testing::Test,
   ~FlingControllerTest() override {}
 
   void SetUp() override {
-    queue_ = std::make_unique<GestureEventQueue>(this, this,
+    queue_ = std::make_unique<GestureEventQueue>(this, this, this,
                                                  GestureEventQueue::Config());
     FlingController::Config config;
     config.touchscreen_tap_suppression_config.enabled = true;
     fling_controller_ =
-        std::make_unique<FakeFlingController>(queue_.get(), this, config);
+        std::make_unique<FakeFlingController>(queue_.get(), this, this, config);
     feature_list_.InitFromCommandLine(
         features::kTouchpadAndWheelScrollLatching.name, "");
   }
@@ -60,7 +64,7 @@ class FlingControllerTest : public testing::Test,
                          InputEventAckSource ack_source,
                          InputEventAckState ack_result) override {}
 
-  // FlingControllerClient
+  // FlingControllerEventSenderClient
   void SendGeneratedWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) override {
     last_sent_wheel_ = wheel_event.event;
@@ -69,11 +73,15 @@ class FlingControllerTest : public testing::Test,
       const GestureEventWithLatencyInfo& gesture_event) override {
     last_sent_gesture_ = gesture_event.event;
   }
-  void SetNeedsBeginFrameForFlingProgress() override {
+
+  // FlingControllerSchedulerClient
+  void ScheduleFlingProgress(
+      base::WeakPtr<FlingController> fling_controller) override {
     DCHECK(!scheduled_next_fling_progress_);
     scheduled_next_fling_progress_ = true;
   }
-  void DidStopFlingingOnBrowser() override {
+  void DidStopFlingingOnBrowser(
+      base::WeakPtr<FlingController> fling_controller) override {
     notified_client_after_fling_stop_ = true;
   }
 

@@ -273,7 +273,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Delegated frame management and compositor interface.
   std::unique_ptr<BrowserCompositorMac> browser_compositor_;
-  BrowserCompositorMac* BrowserCompositorForTesting() const {
+  BrowserCompositorMac* BrowserCompositor() const {
     return browser_compositor_.get();
   }
 

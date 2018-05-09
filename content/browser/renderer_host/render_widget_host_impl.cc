@@ -49,6 +49,7 @@
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
+#include "content/browser/renderer_host/input/fling_scheduler.h"
 #include "content/browser/renderer_host/input/input_router_config_helper.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
@@ -118,6 +119,7 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "content/browser/renderer_host/input/fling_scheduler_mac.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
@@ -379,6 +381,12 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       frame_sink_id_(base::checked_cast<uint32_t>(process_->GetID()),
                      base::checked_cast<uint32_t>(routing_id_)),
       weak_factory_(this) {
+#if defined(OS_MACOSX)
+  auto fling_scheduler = std::make_unique<FlingSchedulerMac>(this);
+  fling_scheduler_ = std::move(fling_scheduler);
+#else
+  fling_scheduler_ = std::make_unique<FlingScheduler>(this);
+#endif
   CHECK(delegate_);
   CHECK_NE(MSG_ROUTING_NONE, routing_id_);
   DCHECK(base::TaskScheduler::GetInstance())
@@ -2960,8 +2968,8 @@ void RenderWidgetHostImpl::SetupInputRouter() {
   associated_widget_input_handler_ = nullptr;
   widget_input_handler_ = nullptr;
 
-  input_router_.reset(
-      new InputRouterImpl(this, this, GetInputRouterConfigForPlatform()));
+  input_router_.reset(new InputRouterImpl(this, this, fling_scheduler_.get(),
+                                          GetInputRouterConfigForPlatform()));
 
   // input_router_ recreated, need to update the force_enable_zoom_ state.
   input_router_->SetForceEnableZoom(force_enable_zoom_);
@@ -3003,10 +3011,9 @@ void RenderWidgetHostImpl::SetWidget(mojom::WidgetPtr widget) {
   }
 }
 
-void RenderWidgetHostImpl::ProgressFling(TimeTicks current_time) {
+void RenderWidgetHostImpl::ProgressFlingIfNeeded(TimeTicks current_time) {
   browser_fling_needs_begin_frame_ = false;
-  if (input_router_)
-    input_router_->ProgressFling(current_time);
+  fling_scheduler_->ProgressFlingOnBeginFrameIfneeded(current_time);
 }
 
 void RenderWidgetHostImpl::DidReceiveFirstFrameAfterNavigation() {

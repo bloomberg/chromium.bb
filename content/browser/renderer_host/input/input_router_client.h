@@ -70,10 +70,6 @@ class CONTENT_EXPORT InputRouterClient {
   virtual void ForwardWheelEventWithLatencyInfo(
       const blink::WebMouseWheelEvent& wheel_event,
       const ui::LatencyInfo& latency_info) = 0;
-
-  // Called when the input router needs a begin frame to advance an active
-  // fling.
-  virtual void SetNeedsBeginFrameForFlingProgress() = 0;
 };
 
 } // namespace content

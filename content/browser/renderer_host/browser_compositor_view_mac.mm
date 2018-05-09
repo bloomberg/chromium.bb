@@ -522,7 +522,7 @@ void BrowserCompositorMac::OnFrameTokenChanged(uint32_t frame_token) {
   client_->OnFrameTokenChanged(frame_token);
 }
 
-ui::Compositor* BrowserCompositorMac::CompositorForTesting() const {
+ui::Compositor* BrowserCompositorMac::Compositor() const {
   if (recyclable_compositor_)
     return recyclable_compositor_->compositor();
   return nullptr;

@@ -8,12 +8,14 @@
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/browser/renderer_host/input/touchscreen_tap_suppression_controller.h"
 #include "content/public/common/input_event_ack_state.h"
+#include "ui/compositor/compositor_animation_observer.h"
 
 namespace blink {
 class WebGestureCurve;
 }
 
 namespace ui {
+class Compositor;
 class FlingBooster;
 }
 
@@ -21,24 +23,34 @@ namespace content {
 
 class GestureEventQueue;
 
+class FlingController;
+
 // Interface with which the FlingController can forward generated fling progress
 // events.
-class CONTENT_EXPORT FlingControllerClient {
+class CONTENT_EXPORT FlingControllerEventSenderClient {
  public:
-  virtual ~FlingControllerClient() {}
+  virtual ~FlingControllerEventSenderClient() {}
 
   virtual void SendGeneratedWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) = 0;
 
   virtual void SendGeneratedGestureScrollEvents(
       const GestureEventWithLatencyInfo& gesture_event) = 0;
-
-  virtual void SetNeedsBeginFrameForFlingProgress() = 0;
-
-  virtual void DidStopFlingingOnBrowser() = 0;
 };
 
-class CONTENT_EXPORT FlingController {
+// Interface with which the fling progress gets scheduled.
+class CONTENT_EXPORT FlingControllerSchedulerClient {
+ public:
+  virtual ~FlingControllerSchedulerClient() {}
+
+  virtual void ScheduleFlingProgress(
+      base::WeakPtr<FlingController> fling_controller) = 0;
+
+  virtual void DidStopFlingingOnBrowser(
+      base::WeakPtr<FlingController> fling_controller) = 0;
+};
+
+class CONTENT_EXPORT FlingController : public ui::CompositorAnimationObserver {
  public:
   struct CONTENT_EXPORT Config {
     Config();
@@ -62,14 +74,14 @@ class CONTENT_EXPORT FlingController {
   };
 
   FlingController(GestureEventQueue* gesture_event_queue,
-                  FlingControllerClient* fling_client,
+                  FlingControllerEventSenderClient* event_sender_client,
+                  FlingControllerSchedulerClient* scheduler_client,
                   const Config& config);
 
-  ~FlingController();
+  ~FlingController() override;
 
-  // Used to progress an active fling on every begin frame and return the
-  // current fling velocity.
-  gfx::Vector2dF ProgressFling(base::TimeTicks current_time);
+  // Used to progress an active fling on every begin frame.
+  void ProgressFling(base::TimeTicks current_time);
 
   // Used to halt an active fling progress whenever needed.
   void StopFling();
@@ -87,12 +99,22 @@ class CONTENT_EXPORT FlingController {
 
   bool fling_in_progress() const { return fling_in_progress_; }
 
+  ui::Compositor* compositor() const { return compositor_; }
+
   bool FlingCancellationIsDeferred() const;
 
   bool TouchscreenFlingInProgress() const;
 
+  gfx::Vector2dF CurrentFlingVelocity() const;
+
   // Returns the |TouchpadTapSuppressionController| instance.
   TouchpadTapSuppressionController* GetTouchpadTapSuppressionController();
+
+  // ui::CompositorAnimationObserver
+  void OnAnimationStep(base::TimeTicks timestamp) override;
+  void OnCompositingShuttingDown(ui::Compositor* compositor) override;
+
+  void SetCompositor(ui::Compositor* compositor);
 
  protected:
   std::unique_ptr<ui::FlingBooster> fling_booster_;
@@ -140,7 +162,9 @@ class CONTENT_EXPORT FlingController {
 
   GestureEventQueue* gesture_event_queue_;
 
-  FlingControllerClient* client_;
+  FlingControllerEventSenderClient* event_sender_client_;
+
+  FlingControllerSchedulerClient* scheduler_client_;
 
   // An object tracking the state of touchpad on the delivery of mouse events to
   // the renderer to filter mouse immediately after a touchpad fling canceling
@@ -165,6 +189,10 @@ class CONTENT_EXPORT FlingController {
   bool has_fling_animation_started_;
 
   bool send_wheel_events_nonblocking_;
+
+  ui::Compositor* compositor_ = nullptr;
+
+  base::WeakPtrFactory<FlingController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FlingController);
 };

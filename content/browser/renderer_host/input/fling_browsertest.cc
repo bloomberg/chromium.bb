@@ -85,6 +85,70 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(BrowserSideFlingBrowserTest);
 };
 
+IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, TouchscreenFling) {
+  LoadURL(kBrowserFlingDataURL);
+
+  // Send a GSB to start scrolling sequence.
+  blink::WebGestureEvent gesture_scroll_begin(
+      blink::WebGestureEvent::kGestureScrollBegin,
+      blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
+  gesture_scroll_begin.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
+  gesture_scroll_begin.data.scroll_begin.delta_hint_units =
+      blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+  gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
+  gesture_scroll_begin.data.scroll_begin.delta_y_hint = -5.f;
+  GetWidgetHost()->ForwardGestureEvent(gesture_scroll_begin);
+
+  //  Send a GFS and wait for the page to scroll making sure that fling progress
+  //  has started.
+  blink::WebGestureEvent gesture_fling_start(
+      blink::WebGestureEvent::kGestureFlingStart,
+      blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
+  gesture_fling_start.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
+  gesture_fling_start.data.fling_start.velocity_x = 0.f;
+  gesture_fling_start.data.fling_start.velocity_y = -2000.f;
+  GetWidgetHost()->ForwardGestureEvent(gesture_fling_start);
+  RenderFrameSubmissionObserver observer(
+      GetWidgetHost()->render_frame_metadata_provider());
+  gfx::Vector2dF default_scroll_offset;
+  while (observer.LastRenderFrameMetadata()
+             .root_scroll_offset.value_or(default_scroll_offset)
+             .y() <= 0) {
+    observer.WaitForMetadataChange();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, TouchpadFling) {
+  LoadURL(kBrowserFlingDataURL);
+
+  // Send a wheel event to start scrolling sequence.
+  auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
+      GetWidgetHost(), blink::WebInputEvent::kMouseWheel);
+  blink::WebMouseWheelEvent wheel_event =
+      SyntheticWebMouseWheelEventBuilder::Build(10, 10, 0, -53, 0, true);
+  wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
+  GetWidgetHost()->ForwardWheelEvent(wheel_event);
+  input_msg_watcher->WaitForAck();
+
+  //  Send a GFS and wait for the page to scroll more than 60 pixels making sure
+  //  that fling progress has started.
+  blink::WebGestureEvent gesture_fling_start(
+      blink::WebGestureEvent::kGestureFlingStart,
+      blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
+  gesture_fling_start.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
+  gesture_fling_start.data.fling_start.velocity_x = 0.f;
+  gesture_fling_start.data.fling_start.velocity_y = -2000.f;
+  GetWidgetHost()->ForwardGestureEvent(gesture_fling_start);
+  RenderFrameSubmissionObserver observer(
+      GetWidgetHost()->render_frame_metadata_provider());
+  gfx::Vector2dF default_scroll_offset;
+  while (observer.LastRenderFrameMetadata()
+             .root_scroll_offset.value_or(default_scroll_offset)
+             .y() <= 60) {
+    observer.WaitForMetadataChange();
+  }
+}
+
 // TODO(sahel): This test is flaking on OS_CHROMEOS https://crbug.com/838769
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 #define MAYBE_AutoscrollFling DISABLED_AutoscrollFling

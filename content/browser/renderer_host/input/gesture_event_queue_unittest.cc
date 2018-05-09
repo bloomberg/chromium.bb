@@ -36,7 +36,8 @@ namespace content {
 
 class GestureEventQueueTest : public testing::Test,
                               public GestureEventQueueClient,
-                              public FlingControllerClient {
+                              public FlingControllerEventSenderClient,
+                              public FlingControllerSchedulerClient {
  public:
   GestureEventQueueTest() : GestureEventQueueTest(false) {}
 
@@ -55,7 +56,7 @@ class GestureEventQueueTest : public testing::Test,
 
   // testing::Test
   void SetUp() override {
-    queue_.reset(new GestureEventQueue(this, this, DefaultConfig()));
+    queue_.reset(new GestureEventQueue(this, this, this, DefaultConfig()));
   }
 
   void TearDown() override {
@@ -71,7 +72,7 @@ class GestureEventQueueTest : public testing::Test,
     gesture_config.fling_config.touchscreen_tap_suppression_config
         .max_cancel_to_down_time =
         base::TimeDelta::FromMilliseconds(max_cancel_to_down_time_ms);
-    queue_.reset(new GestureEventQueue(this, this, gesture_config));
+    queue_.reset(new GestureEventQueue(this, this, this, gesture_config));
   }
 
   // GestureEventQueueClient
@@ -96,13 +97,17 @@ class GestureEventQueueTest : public testing::Test,
     }
   }
 
-  // FlingControllerClient
+  // FlingControllerEventSenderClient
   void SendGeneratedWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) override {}
   void SendGeneratedGestureScrollEvents(
       const GestureEventWithLatencyInfo& gesture_event) override {}
-  void SetNeedsBeginFrameForFlingProgress() override {}
-  void DidStopFlingingOnBrowser() override {}
+
+  // FlingControllerSchedulerClient
+  void ScheduleFlingProgress(
+      base::WeakPtr<FlingController> fling_controller) override {}
+  void DidStopFlingingOnBrowser(
+      base::WeakPtr<FlingController> fling_controller) override {}
 
  protected:
   static GestureEventQueue::Config DefaultConfig() {
