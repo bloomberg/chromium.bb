@@ -36,13 +36,16 @@
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "components/ssl_errors/error_classification.h"
 #include "components/ssl_errors/error_info.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -508,10 +511,11 @@ bool SSLErrorHandlerDelegateImpl::GetSuggestedUrl(
 void SSLErrorHandlerDelegateImpl::CheckSuggestedUrl(
     const GURL& suggested_url,
     const CommonNameMismatchHandler::CheckUrlCallback& callback) {
-  scoped_refptr<net::URLRequestContextGetter> request_context(
-      profile_->GetRequestContext());
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory(
+      content::BrowserContext::GetDefaultStoragePartition(profile_)
+          ->GetURLLoaderFactoryForBrowserProcess());
   common_name_mismatch_handler_.reset(
-      new CommonNameMismatchHandler(request_url_, request_context));
+      new CommonNameMismatchHandler(request_url_, url_loader_factory));
 
   common_name_mismatch_handler_->CheckSuggestedUrl(suggested_url, callback);
 }
