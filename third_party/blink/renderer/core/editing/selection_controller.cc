@@ -788,8 +788,7 @@ static SelectionInFlatTree AdjustEndpointsAtBidiBoundary(
             extent.LeftBoundaryOfBidiRun(base.BidiLevelOnRight()))) {
       return SelectionInFlatTree::Builder()
           .SetBaseAndExtent(
-              CreateVisiblePosition(
-                  ToPositionInFlatTree(base.PositionAtLeftBoundaryOfBiDiRun()))
+              CreateVisiblePosition(base.PositionAtLeftBoundaryOfBiDiRun())
                   .DeepEquivalent(),
               visible_extent.DeepEquivalent())
           .Build();
@@ -803,8 +802,7 @@ static SelectionInFlatTree AdjustEndpointsAtBidiBoundary(
             extent.RightBoundaryOfBidiRun(base.BidiLevelOnLeft()))) {
       return SelectionInFlatTree::Builder()
           .SetBaseAndExtent(
-              CreateVisiblePosition(
-                  ToPositionInFlatTree(base.PositionAtRightBoundaryOfBiDiRun()))
+              CreateVisiblePosition(base.PositionAtRightBoundaryOfBiDiRun())
                   .DeepEquivalent(),
               visible_extent.DeepEquivalent())
           .Build();
@@ -818,8 +816,7 @@ static SelectionInFlatTree AdjustEndpointsAtBidiBoundary(
     return SelectionInFlatTree::Builder()
         .SetBaseAndExtent(
             visible_base.DeepEquivalent(),
-            CreateVisiblePosition(
-                ToPositionInFlatTree(extent.PositionAtLeftBoundaryOfBiDiRun()))
+            CreateVisiblePosition(extent.PositionAtLeftBoundaryOfBiDiRun())
                 .DeepEquivalent())
         .Build();
   }
@@ -830,8 +827,7 @@ static SelectionInFlatTree AdjustEndpointsAtBidiBoundary(
     return SelectionInFlatTree::Builder()
         .SetBaseAndExtent(
             visible_base.DeepEquivalent(),
-            CreateVisiblePosition(
-                ToPositionInFlatTree(extent.PositionAtRightBoundaryOfBiDiRun()))
+            CreateVisiblePosition(extent.PositionAtRightBoundaryOfBiDiRun())
                 .DeepEquivalent())
         .Build();
   }

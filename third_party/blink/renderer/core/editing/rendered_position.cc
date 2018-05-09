@@ -46,32 +46,12 @@
 
 namespace blink {
 
-RenderedPosition::RenderedPosition(const VisiblePosition& position)
-    : RenderedPosition(position.DeepEquivalent(), position.Affinity()) {}
-
 RenderedPosition::RenderedPosition(const VisiblePositionInFlatTree& position)
-    : RenderedPosition(position.DeepEquivalent(), position.Affinity()) {}
-
-// TODO(editing-dev): Stop duplicating code in the two constructors
-
-RenderedPosition::RenderedPosition(const Position& position,
-                                   TextAffinity affinity)
     : inline_box_(nullptr), offset_(0) {
   if (position.IsNull())
     return;
   InlineBoxPosition box_position =
-      ComputeInlineBoxPosition(PositionWithAffinity(position, affinity));
-  inline_box_ = box_position.inline_box;
-  offset_ = box_position.offset_in_box;
-}
-
-RenderedPosition::RenderedPosition(const PositionInFlatTree& position,
-                                   TextAffinity affinity)
-    : inline_box_(nullptr), offset_(0) {
-  if (position.IsNull())
-    return;
-  InlineBoxPosition box_position = ComputeInlineBoxPosition(
-      PositionInFlatTreeWithAffinity(position, affinity));
+      ComputeInlineBoxPosition(position.ToPositionWithAffinity());
   inline_box_ = box_position.inline_box;
   offset_ = box_position.offset_in_box;
 }
@@ -182,28 +162,28 @@ bool RenderedPosition::AtRightBoundaryOfBidiRun(
   return false;
 }
 
-Position RenderedPosition::PositionAtLeftBoundaryOfBiDiRun() const {
+PositionInFlatTree RenderedPosition::PositionAtLeftBoundaryOfBiDiRun() const {
   DCHECK(AtLeftBoundaryOfBidiRun());
 
   if (AtLeftmostOffsetInBox()) {
-    return Position::EditingPositionOf(
+    return PositionInFlatTree::EditingPositionOf(
         inline_box_->GetLineLayoutItem().GetNode(), offset_);
   }
 
-  return Position::EditingPositionOf(
+  return PositionInFlatTree::EditingPositionOf(
       NextLeafChild()->GetLineLayoutItem().GetNode(),
       NextLeafChild()->CaretLeftmostOffset());
 }
 
-Position RenderedPosition::PositionAtRightBoundaryOfBiDiRun() const {
+PositionInFlatTree RenderedPosition::PositionAtRightBoundaryOfBiDiRun() const {
   DCHECK(AtRightBoundaryOfBidiRun());
 
   if (AtRightmostOffsetInBox()) {
-    return Position::EditingPositionOf(
+    return PositionInFlatTree::EditingPositionOf(
         inline_box_->GetLineLayoutItem().GetNode(), offset_);
   }
 
-  return Position::EditingPositionOf(
+  return PositionInFlatTree::EditingPositionOf(
       PrevLeafChild()->GetLineLayoutItem().GetNode(),
       PrevLeafChild()->CaretRightmostOffset());
 }

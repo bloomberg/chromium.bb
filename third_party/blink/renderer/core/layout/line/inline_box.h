@@ -202,9 +202,6 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   InlineBox* PrevLeafChild() const;
 
   // Helper functions for editing and hit-testing code.
-  // FIXME: These two functions should be moved to RenderedPosition once the
-  // code to convert between Position and inline box, offset pair is moved to
-  // RenderedPosition.
   InlineBox* NextLeafChildIgnoringLineBreak() const;
   InlineBox* PrevLeafChildIgnoringLineBreak() const;
 
