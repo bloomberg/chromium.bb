@@ -57,6 +57,7 @@ fd_pipe_new2(struct fd_device *dev, enum fd_pipe_id id, uint32_t prio)
 
 	pipe->dev = dev;
 	pipe->id = id;
+	atomic_set(&pipe->refcnt, 1);
 
 	fd_pipe_get_param(pipe, FD_GPU_ID, &val);
 	pipe->gpu_id = val;
@@ -70,8 +71,16 @@ fd_pipe_new(struct fd_device *dev, enum fd_pipe_id id)
 	return fd_pipe_new2(dev, id, 1);
 }
 
+struct fd_pipe * fd_pipe_ref(struct fd_pipe *pipe)
+{
+	atomic_inc(&pipe->refcnt);
+	return pipe;
+}
+
 void fd_pipe_del(struct fd_pipe *pipe)
 {
+	if (!atomic_dec_and_test(&pipe->refcnt))
+		return;
 	pipe->funcs->destroy(pipe);
 }
 
