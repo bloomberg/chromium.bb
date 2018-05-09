@@ -594,44 +594,53 @@ void NGBlockNode::CopyBaselinesFromOldLayout(
   if (requests.IsEmpty())
     return;
 
+  if (UNLIKELY(constraint_space.GetWritingMode() != Style().GetWritingMode()))
+    return;
+
   for (const auto& request : requests) {
     switch (request.algorithm_type) {
-      case NGBaselineAlgorithmType::kAtomicInline:
-        AddAtomicInlineBaselineFromOldLayout(
-            request, constraint_space.UseFirstLineStyle(), builder);
+      case NGBaselineAlgorithmType::kAtomicInline: {
+        LayoutUnit position =
+            AtomicInlineBaselineFromOldLayout(request, constraint_space);
+        if (position != -1)
+          builder->AddBaseline(request, position);
         break;
+      }
       case NGBaselineAlgorithmType::kFirstLine: {
         LayoutUnit position = box_->FirstLineBoxBaseline();
-        if (position != -1) {
+        if (position != -1)
           builder->AddBaseline(request, position);
-        }
         break;
       }
     }
   }
 }
 
-void NGBlockNode::AddAtomicInlineBaselineFromOldLayout(
+LayoutUnit NGBlockNode::AtomicInlineBaselineFromOldLayout(
     const NGBaselineRequest& request,
-    bool is_first_line,
-    NGFragmentBuilder* builder) {
-  // Block-level boxes do not have atomic inline baseline.
-  // This includes form controls when 'display:block' is applied.
-  if (box_->IsLayoutBlock() && !box_->IsInline())
-    return;
+    const NGConstraintSpace& constraint_space) {
+  LineDirectionMode line_direction = box_->IsHorizontalWritingMode()
+                                         ? LineDirectionMode::kHorizontalLine
+                                         : LineDirectionMode::kVerticalLine;
 
-  LineDirectionMode line_direction =
-      IsHorizontalWritingMode(builder->GetWritingMode())
-          ? LineDirectionMode::kHorizontalLine
-          : LineDirectionMode::kVerticalLine;
-  LayoutUnit position = LayoutUnit(box_->BaselinePosition(
-      request.baseline_type, is_first_line, line_direction));
+  // If this is an inline box, use |BaselinePosition()|. Some LayoutObject
+  // classes override it assuming inline layout calls |BaselinePosition()|.
+  if (box_->IsInline()) {
+    LayoutUnit position = LayoutUnit(box_->BaselinePosition(
+        request.baseline_type, constraint_space.UseFirstLineStyle(),
+        line_direction, kPositionOnContainingLine));
 
-  // BaselinePosition() uses margin edge for atomic inlines.
-  if (box_->IsAtomicInlineLevel())
-    position -= box_->MarginOver();
+    // BaselinePosition() uses margin edge for atomic inlines. Subtract
+    // margin-over so that the position is relative to the border box.
+    if (box_->IsAtomicInlineLevel())
+      position -= box_->MarginOver();
 
-  builder->AddBaseline(request, position);
+    return position;
+  }
+
+  // If this is a block box, use |InlineBlockBaseline()|. When an inline block
+  // has block children, their inline block baselines need to be propagated.
+  return box_->InlineBlockBaseline(line_direction);
 }
 
 void NGBlockNode::UseOldOutOfFlowPositioning() {

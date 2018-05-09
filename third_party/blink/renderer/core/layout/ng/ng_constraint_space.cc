@@ -15,19 +15,6 @@
 
 namespace blink {
 
-namespace {
-
-bool ShouldComputeBaseline(const LayoutBox& box) {
-  if (box.IsLayoutBlock() &&
-      ToLayoutBlock(box).UseLogicalBottomMarginEdgeForInlineBlockBaseline())
-    return false;
-  if (box.IsWritingModeRoot())
-    return false;
-  return true;
-}
-
-}  // namespace
-
 NGConstraintSpace::NGConstraintSpace(
     WritingMode writing_mode,
     bool is_orthogonal_writing_mode_root,
@@ -172,16 +159,20 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
 
   NGConstraintSpaceBuilder builder(writing_mode, initial_containing_block_size);
 
-  if (ShouldComputeBaseline(box)) {
+  if (!box.IsWritingModeRoot()) {
     FontBaseline baseline_type = IsHorizontalWritingMode(writing_mode)
                                      ? kAlphabeticBaseline
                                      : kIdeographicBaseline;
     // Add all types because we don't know which baselines will be requested.
-    builder
-        .AddBaselineRequest(
-            {NGBaselineAlgorithmType::kAtomicInline, baseline_type})
-        .AddBaselineRequest(
-            {NGBaselineAlgorithmType::kFirstLine, baseline_type});
+    bool synthesize_inline_block_baseline =
+        box.IsLayoutBlock() &&
+        ToLayoutBlock(box).UseLogicalBottomMarginEdgeForInlineBlockBaseline();
+    if (!synthesize_inline_block_baseline) {
+      builder.AddBaselineRequest(
+          {NGBaselineAlgorithmType::kAtomicInline, baseline_type});
+    }
+    builder.AddBaselineRequest(
+        {NGBaselineAlgorithmType::kFirstLine, baseline_type});
   }
 
   return builder.SetAvailableSize(available_size)

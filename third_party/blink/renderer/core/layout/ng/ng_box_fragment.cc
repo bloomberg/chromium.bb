@@ -14,29 +14,36 @@
 namespace blink {
 
 NGLineHeightMetrics NGBoxFragment::BaselineMetricsWithoutSynthesize(
-    const NGBaselineRequest& request,
-    const NGConstraintSpace& constraint_space) const {
+    const NGBaselineRequest& request) const {
+  // For "leaf" theme objects, let the theme decide what the baseline position
+  // is. The theme baseline wins over the propagated baselines.
   const auto& physical_fragment = ToNGPhysicalBoxFragment(physical_fragment_);
-  bool is_parallel_writing_mode =
-      IsParallelWritingMode(constraint_space.GetWritingMode(),
-                            physical_fragment.Style().GetWritingMode());
-  if (is_parallel_writing_mode) {
-    // Find the baseline from the computed results.
-    if (const NGBaseline* baseline = physical_fragment.Baseline(request)) {
-      LayoutUnit ascent = baseline->offset;
-      LayoutUnit descent = BlockSize() - ascent;
+  DCHECK(physical_fragment_.GetLayoutObject());
+  const LayoutBox& layout_box =
+      ToLayoutBox(*physical_fragment_.GetLayoutObject());
+  const ComputedStyle& style = physical_fragment.Style();
+  if (style.HasAppearance() &&
+      !LayoutTheme::GetTheme().IsControlContainer(style.Appearance())) {
+    return NGLineHeightMetrics(
+        BlockSize() + layout_box.MarginOver() +
+            LayoutTheme::GetTheme().BaselinePositionAdjustment(style),
+        layout_box.MarginUnder());
+  }
 
-      // For replaced elements, inline-block elements, and inline-table
-      // elements, the height is the height of their margin box.
-      // https://drafts.csswg.org/css2/visudet.html#line-height
-      LayoutBox* layout_box = ToLayoutBox(physical_fragment_.GetLayoutObject());
-      if (layout_box->IsAtomicInlineLevel()) {
-        ascent += layout_box->MarginOver();
-        descent += layout_box->MarginUnder();
-      }
+  // Check if we have a propagated baseline.
+  if (const NGBaseline* baseline = physical_fragment.Baseline(request)) {
+    LayoutUnit ascent = baseline->offset;
+    LayoutUnit descent = BlockSize() - ascent;
 
-      return NGLineHeightMetrics(ascent, descent);
+    // For replaced elements, inline-block elements, and inline-table
+    // elements, the height is the height of their margin box.
+    // https://drafts.csswg.org/css2/visudet.html#line-height
+    if (layout_box.IsAtomicInlineLevel()) {
+      ascent += layout_box.MarginOver();
+      descent += layout_box.MarginUnder();
     }
+
+    return NGLineHeightMetrics(ascent, descent);
   }
 
   return NGLineHeightMetrics();
@@ -45,36 +52,31 @@ NGLineHeightMetrics NGBoxFragment::BaselineMetricsWithoutSynthesize(
 NGLineHeightMetrics NGBoxFragment::BaselineMetrics(
     const NGBaselineRequest& request,
     const NGConstraintSpace& constraint_space) const {
-  NGLineHeightMetrics metrics =
-      BaselineMetricsWithoutSynthesize(request, constraint_space);
-  if (!metrics.IsEmpty())
-    return metrics;
+  // Try to compute the baseline if the writing-modes are the same.
+  if (constraint_space.GetWritingMode() == GetWritingMode()) {
+    NGLineHeightMetrics metrics = BaselineMetricsWithoutSynthesize(request);
+    if (!metrics.IsEmpty())
+      return metrics;
+  }
 
   // The baseline type was not found. This is either this box should synthesize
   // box-baseline without propagating from children, or caller forgot to add
   // baseline requests to constraint space when it called Layout().
   LayoutUnit block_size = BlockSize();
 
-  const auto& physical_fragment = ToNGPhysicalBoxFragment(physical_fragment_);
-  const ComputedStyle& style = physical_fragment.Style();
-  LayoutBox* layout_box = ToLayoutBox(physical_fragment_.GetLayoutObject());
-  if (style.HasAppearance() &&
-      !LayoutTheme::GetTheme().IsControlContainer(style.Appearance())) {
-    return NGLineHeightMetrics(
-        block_size + layout_box->MarginOver() +
-            LayoutTheme::GetTheme().BaselinePositionAdjustment(style),
-        layout_box->MarginUnder());
-  }
-
   // If atomic inline, use the margin box. See above.
-  if (layout_box->IsAtomicInlineLevel()) {
+  const auto& physical_fragment = ToNGPhysicalBoxFragment(physical_fragment_);
+  DCHECK(physical_fragment_.GetLayoutObject());
+  const LayoutBox& layout_box =
+      ToLayoutBox(*physical_fragment_.GetLayoutObject());
+  if (layout_box.IsAtomicInlineLevel()) {
     bool is_parallel_writing_mode =
         IsParallelWritingMode(constraint_space.GetWritingMode(),
                               physical_fragment.Style().GetWritingMode());
     if (is_parallel_writing_mode)
-      block_size += layout_box->MarginLogicalHeight();
+      block_size += layout_box.MarginLogicalHeight();
     else
-      block_size += layout_box->MarginLogicalWidth();
+      block_size += layout_box.MarginLogicalWidth();
   }
 
   if (request.baseline_type == kAlphabeticBaseline)

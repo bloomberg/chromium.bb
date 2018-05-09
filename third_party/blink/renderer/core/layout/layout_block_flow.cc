@@ -51,7 +51,9 @@
 #include "third_party/blink/renderer/core/layout/line/inline_iterator.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/line/line_width.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
@@ -2658,6 +2660,20 @@ LayoutUnit LayoutBlockFlow::FirstLineBoxBaseline() const {
     }
     return FirstLineBox()->LogicalTop() +
            font_data->GetFontMetrics().Ascent(FirstRootBox()->BaselineType());
+  }
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    if (const NGPaintFragment* paint_fragment = PaintFragment()) {
+      NGBoxFragment box_fragment(
+          StyleRef().GetWritingMode(),
+          ToNGPhysicalBoxFragment(paint_fragment->PhysicalFragment()));
+      NGLineHeightMetrics metrics =
+          box_fragment.BaselineMetricsWithoutSynthesize(
+              {NGBaselineAlgorithmType::kFirstLine,
+               IsHorizontalWritingMode() ? kAlphabeticBaseline
+                                         : kIdeographicBaseline});
+      if (!metrics.IsEmpty())
+        return metrics.ascent;
+    }
   }
   return LayoutUnit(-1);
 }
