@@ -72,8 +72,12 @@ void SelectToSpeakEventHandler::SetSelectToSpeakStateSelecting(
     // work that needs to be done.
     state_ = SELECTION_REQUESTED;
   } else if (!is_selecting) {
-    state_ = INACTIVE;
+    // If we were using search + mouse, continue to wait for the search key
+    // up event by not resetting the state to INACTIVE.
+    if (state_ != MOUSE_RELEASED)
+      state_ = INACTIVE;
     touch_id_ = ui::PointerDetails::kUnknownPointerId;
+    touch_type_ = ui::EventPointerType::POINTER_TYPE_UNKNOWN;
   }
 }
 
@@ -216,9 +220,11 @@ void SelectToSpeakEventHandler::OnTouchEvent(ui::TouchEvent* event) {
       touch_id_ == ui::PointerDetails::kUnknownPointerId) {
     state_ = CAPTURING_TOUCH_ONLY;
     touch_id_ = event->pointer_details().id;
+    touch_type_ = event->pointer_details().pointer_type;
   }
 
-  if (touch_id_ != event->pointer_details().id) {
+  if (touch_id_ != event->pointer_details().id ||
+      touch_type_ != event->pointer_details().pointer_type) {
     // If this was a different pointer, cancel the event and return early.
     // We only want to track one touch pointer at a time.
     CancelEvent(event);
@@ -231,6 +237,7 @@ void SelectToSpeakEventHandler::OnTouchEvent(ui::TouchEvent* event) {
       state_ == CAPTURING_TOUCH_ONLY) {
     state_ = INACTIVE;
     touch_id_ = ui::PointerDetails::kUnknownPointerId;
+    touch_type_ = ui::EventPointerType::POINTER_TYPE_UNKNOWN;
   }
 
   // Create a mouse event to send to the extension, describing the touch.

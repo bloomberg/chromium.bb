@@ -436,6 +436,30 @@ TEST_F(SelectToSpeakEventHandlerTest, DoesntStartSelectionModeIfNotInactive) {
   EXPECT_FALSE(event_capturer_.last_key_event());
 }
 
+TEST_F(SelectToSpeakEventHandlerTest,
+       CancelSearchKeyUpAfterEarlyInactiveStateChange) {
+  generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+  gfx::Point click_location = gfx::Point(100, 12);
+  generator_->set_current_location(click_location);
+  generator_->PressLeftButton();
+  EXPECT_FALSE(event_capturer_.last_mouse_event());
+  EXPECT_TRUE(mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_PRESSED));
+  generator_->ReleaseLeftButton();
+  EXPECT_FALSE(event_capturer_.last_mouse_event());
+  EXPECT_TRUE(mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_RELEASED));
+
+  // Set the state to inactive.
+  // This is realistic because Select-to-Speak will set the state to inactive
+  // after the hittest / search for the focused node callbacks, which may occur
+  // before the user actually releases the search key.
+  select_to_speak_event_handler_->SetSelectToSpeakStateSelecting(false);
+
+  // The search key release should still be captured.
+  event_capturer_.Reset();
+  generator_->ReleaseKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+  EXPECT_FALSE(event_capturer_.last_key_event());
+}
+
 TEST_F(SelectToSpeakEventHandlerTest, SelectionRequestedWorksWithMouse) {
   gfx::Point click_location = gfx::Point(100, 12);
   generator_->set_current_location(click_location);
@@ -575,6 +599,14 @@ TEST_F(SelectToSpeakEventHandlerTest, TrackingTouchIgnoresOtherTouchPointers) {
   EXPECT_FALSE(event_capturer_.last_touch_event());
   EXPECT_FALSE(
       mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_RELEASED));
+
+  // A pointer type event will not be sent either, as we are tracking touch,
+  // even if the ID is the same.
+  generator_->EnterPenPointerMode();
+  generator_->PressTouchId(1);
+  EXPECT_FALSE(event_capturer_.last_touch_event());
+  EXPECT_FALSE(mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_PRESSED));
+  generator_->ExitPenPointerMode();
 
   // The first pointer is still tracked.
   generator_->MoveTouchId(drag_location, 1);
