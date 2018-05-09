@@ -202,6 +202,95 @@ static const uint8_t even_mask[16] = { 0, 2,  2,  4,  4,  6,  6,  8,
 static const uint8_t odd_mask[16] = { 1, 3,  3,  5,  5,  7,  7,  9,
                                       9, 11, 11, 13, 13, 15, 15, 0 };
 
+static INLINE void horizontal_filter(__m128i src, __m128i *tmp, int sx,
+                                     int alpha, int k,
+                                     const int offset_bits_horiz,
+                                     const int reduce_bits_horiz) {
+  const __m128i src_even =
+      _mm_shuffle_epi8(src, _mm_loadu_si128((__m128i *)even_mask));
+  const __m128i src_odd =
+      _mm_shuffle_epi8(src, _mm_loadu_si128((__m128i *)odd_mask));
+
+  // Filter even-index pixels
+  const __m128i tmp_0 = _mm_loadl_epi64(
+      (__m128i *)&filter_8bit[(sx + 0 * alpha) >> WARPEDDIFF_PREC_BITS]);
+  const __m128i tmp_1 = _mm_loadl_epi64(
+      (__m128i *)&filter_8bit[(sx + 1 * alpha) >> WARPEDDIFF_PREC_BITS]);
+  const __m128i tmp_2 = _mm_loadl_epi64(
+      (__m128i *)&filter_8bit[(sx + 2 * alpha) >> WARPEDDIFF_PREC_BITS]);
+  const __m128i tmp_3 = _mm_loadl_epi64(
+      (__m128i *)&filter_8bit[(sx + 3 * alpha) >> WARPEDDIFF_PREC_BITS]);
+  const __m128i tmp_4 = _mm_loadl_epi64(
+      (__m128i *)&filter_8bit[(sx + 4 * alpha) >> WARPEDDIFF_PREC_BITS]);
+  const __m128i tmp_5 = _mm_loadl_epi64(
+      (__m128i *)&filter_8bit[(sx + 5 * alpha) >> WARPEDDIFF_PREC_BITS]);
+  const __m128i tmp_6 = _mm_loadl_epi64(
+      (__m128i *)&filter_8bit[(sx + 6 * alpha) >> WARPEDDIFF_PREC_BITS]);
+  const __m128i tmp_7 = _mm_loadl_epi64(
+      (__m128i *)&filter_8bit[(sx + 7 * alpha) >> WARPEDDIFF_PREC_BITS]);
+
+  // Coeffs 0 2 0 2 4 6 4 6 1 3 1 3 5 7 5 7 for pixels 0 2
+  const __m128i tmp_8 = _mm_unpacklo_epi16(tmp_0, tmp_2);
+  // Coeffs 0 2 0 2 4 6 4 6 1 3 1 3 5 7 5 7 for pixels 1 3
+  const __m128i tmp_9 = _mm_unpacklo_epi16(tmp_1, tmp_3);
+  // Coeffs 0 2 0 2 4 6 4 6 1 3 1 3 5 7 5 7 for pixels 4 6
+  const __m128i tmp_10 = _mm_unpacklo_epi16(tmp_4, tmp_6);
+  // Coeffs 0 2 0 2 4 6 4 6 1 3 1 3 5 7 5 7 for pixels 5 7
+  const __m128i tmp_11 = _mm_unpacklo_epi16(tmp_5, tmp_7);
+
+  // Coeffs 0 2 0 2 0 2 0 2 4 6 4 6 4 6 4 6 for pixels 0 2 4 6
+  const __m128i tmp_12 = _mm_unpacklo_epi32(tmp_8, tmp_10);
+  // Coeffs 1 3 1 3 1 3 1 3 5 7 5 7 5 7 5 7 for pixels 0 2 4 6
+  const __m128i tmp_13 = _mm_unpackhi_epi32(tmp_8, tmp_10);
+  // Coeffs 0 2 0 2 0 2 0 2 4 6 4 6 4 6 4 6 for pixels 1 3 5 7
+  const __m128i tmp_14 = _mm_unpacklo_epi32(tmp_9, tmp_11);
+  // Coeffs 1 3 1 3 1 3 1 3 5 7 5 7 5 7 5 7 for pixels 1 3 5 7
+  const __m128i tmp_15 = _mm_unpackhi_epi32(tmp_9, tmp_11);
+
+  // Coeffs 0 2 for pixels 0 2 4 6 1 3 5 7
+  const __m128i coeff_02 = _mm_unpacklo_epi64(tmp_12, tmp_14);
+  // Coeffs 4 6 for pixels 0 2 4 6 1 3 5 7
+  const __m128i coeff_46 = _mm_unpackhi_epi64(tmp_12, tmp_14);
+  // Coeffs 1 3 for pixels 0 2 4 6 1 3 5 7
+  const __m128i coeff_13 = _mm_unpacklo_epi64(tmp_13, tmp_15);
+  // Coeffs 5 7 for pixels 0 2 4 6 1 3 5 7
+  const __m128i coeff_57 = _mm_unpackhi_epi64(tmp_13, tmp_15);
+
+  // The pixel order we need for 'src' is:
+  // 0 2 2 4 4 6 6 8 1 3 3 5 5 7 7 9
+  const __m128i src_02 = _mm_unpacklo_epi64(src_even, src_odd);
+  const __m128i res_02 = _mm_maddubs_epi16(src_02, coeff_02);
+  // 4 6 6 8 8 10 10 12 5 7 7 9 9 11 11 13
+  const __m128i src_46 = _mm_unpacklo_epi64(_mm_srli_si128(src_even, 4),
+                                            _mm_srli_si128(src_odd, 4));
+  const __m128i res_46 = _mm_maddubs_epi16(src_46, coeff_46);
+  // 1 3 3 5 5 7 7 9 2 4 4 6 6 8 8 10
+  const __m128i src_13 =
+      _mm_unpacklo_epi64(src_odd, _mm_srli_si128(src_even, 2));
+  const __m128i res_13 = _mm_maddubs_epi16(src_13, coeff_13);
+  // 5 7 7 9 9 11 11 13 6 8 8 10 10 12 12 14
+  const __m128i src_57 = _mm_unpacklo_epi64(_mm_srli_si128(src_odd, 4),
+                                            _mm_srli_si128(src_even, 6));
+  const __m128i res_57 = _mm_maddubs_epi16(src_57, coeff_57);
+
+  const __m128i round_const = _mm_set1_epi16((1 << offset_bits_horiz) +
+                                             ((1 << reduce_bits_horiz) >> 1));
+
+  // Note: The values res_02 + res_46 and res_13 + res_57 both
+  // fit into int16s at this point, but their sum may be too wide to fit
+  // into an int16. However, once we also add round_const, the sum of
+  // all of these fits into a uint16.
+  //
+  // The wrapping behaviour of _mm_add_* is used here to make sure we
+  // get the correct result despite converting between different
+  // (implicit) types.
+  const __m128i res_even = _mm_add_epi16(res_02, res_46);
+  const __m128i res_odd = _mm_add_epi16(res_13, res_57);
+  const __m128i res =
+      _mm_add_epi16(_mm_add_epi16(res_even, res_odd), round_const);
+  tmp[k + 7] = _mm_srl_epi16(res, _mm_cvtsi32_si128(reduce_bits_horiz));
+}
+
 void av1_warp_affine_sse4_1(const int32_t *mat, const uint8_t *ref, int width,
                             int height, int stride, uint8_t *pred, int p_col,
                             int p_row, int p_width, int p_height, int p_stride,
@@ -301,6 +390,46 @@ void av1_warp_affine_sse4_1(const int32_t *mat, const uint8_t *ref, int width,
                              ref[iy * stride + (width - 1)] *
                                  (1 << (FILTER_BITS - reduce_bits_horiz)));
         }
+      } else if ((ix4 - 7) < 0) {
+        const int out_of_boundary = -(ix4 - 6);
+        for (k = -7; k < AOMMIN(8, p_height - i); ++k) {
+          int iy = iy4 + k;
+          if (iy < 0)
+            iy = 0;
+          else if (iy > height - 1)
+            iy = height - 1;
+          int sx = sx4 + beta * (k + 4);
+
+          // Load source pixels
+          const __m128i src =
+              _mm_loadu_si128((__m128i *)(ref + iy * stride + ix4 - 7));
+
+          const __m128i shuffle_reg =
+              _mm_loadu_si128((__m128i *)warp_pad_left[out_of_boundary]);
+          const __m128i src_padded = _mm_shuffle_epi8(src, shuffle_reg);
+          horizontal_filter(src_padded, tmp, sx, alpha, k, offset_bits_horiz,
+                            reduce_bits_horiz);
+        }
+      } else if ((ix4 + 9) > width) {
+        const int out_of_boundary = (ix4 + 8) - width;
+        for (k = -7; k < AOMMIN(8, p_height - i); ++k) {
+          int iy = iy4 + k;
+          if (iy < 0)
+            iy = 0;
+          else if (iy > height - 1)
+            iy = height - 1;
+          int sx = sx4 + beta * (k + 4);
+
+          // Load source pixels
+          const __m128i src =
+              _mm_loadu_si128((__m128i *)(ref + iy * stride + ix4 - 7));
+
+          const __m128i shuffle_reg =
+              _mm_loadu_si128((__m128i *)warp_pad_right[out_of_boundary]);
+          const __m128i src_padded = _mm_shuffle_epi8(src, shuffle_reg);
+          horizontal_filter(src_padded, tmp, sx, alpha, k, offset_bits_horiz,
+                            reduce_bits_horiz);
+        }
       } else {
         for (k = -7; k < AOMMIN(8, p_height - i); ++k) {
           int iy = iy4 + k;
@@ -313,89 +442,8 @@ void av1_warp_affine_sse4_1(const int32_t *mat, const uint8_t *ref, int width,
           // Load source pixels
           const __m128i src =
               _mm_loadu_si128((__m128i *)(ref + iy * stride + ix4 - 7));
-          const __m128i src_even =
-              _mm_shuffle_epi8(src, _mm_loadu_si128((__m128i *)even_mask));
-          const __m128i src_odd =
-              _mm_shuffle_epi8(src, _mm_loadu_si128((__m128i *)odd_mask));
-
-          // Filter even-index pixels
-          const __m128i tmp_0 = _mm_loadl_epi64((
-              __m128i *)&filter_8bit[(sx + 0 * alpha) >> WARPEDDIFF_PREC_BITS]);
-          const __m128i tmp_1 = _mm_loadl_epi64((
-              __m128i *)&filter_8bit[(sx + 1 * alpha) >> WARPEDDIFF_PREC_BITS]);
-          const __m128i tmp_2 = _mm_loadl_epi64((
-              __m128i *)&filter_8bit[(sx + 2 * alpha) >> WARPEDDIFF_PREC_BITS]);
-          const __m128i tmp_3 = _mm_loadl_epi64((
-              __m128i *)&filter_8bit[(sx + 3 * alpha) >> WARPEDDIFF_PREC_BITS]);
-          const __m128i tmp_4 = _mm_loadl_epi64((
-              __m128i *)&filter_8bit[(sx + 4 * alpha) >> WARPEDDIFF_PREC_BITS]);
-          const __m128i tmp_5 = _mm_loadl_epi64((
-              __m128i *)&filter_8bit[(sx + 5 * alpha) >> WARPEDDIFF_PREC_BITS]);
-          const __m128i tmp_6 = _mm_loadl_epi64((
-              __m128i *)&filter_8bit[(sx + 6 * alpha) >> WARPEDDIFF_PREC_BITS]);
-          const __m128i tmp_7 = _mm_loadl_epi64((
-              __m128i *)&filter_8bit[(sx + 7 * alpha) >> WARPEDDIFF_PREC_BITS]);
-
-          // Coeffs 0 2 0 2 4 6 4 6 1 3 1 3 5 7 5 7 for pixels 0 2
-          const __m128i tmp_8 = _mm_unpacklo_epi16(tmp_0, tmp_2);
-          // Coeffs 0 2 0 2 4 6 4 6 1 3 1 3 5 7 5 7 for pixels 1 3
-          const __m128i tmp_9 = _mm_unpacklo_epi16(tmp_1, tmp_3);
-          // Coeffs 0 2 0 2 4 6 4 6 1 3 1 3 5 7 5 7 for pixels 4 6
-          const __m128i tmp_10 = _mm_unpacklo_epi16(tmp_4, tmp_6);
-          // Coeffs 0 2 0 2 4 6 4 6 1 3 1 3 5 7 5 7 for pixels 5 7
-          const __m128i tmp_11 = _mm_unpacklo_epi16(tmp_5, tmp_7);
-
-          // Coeffs 0 2 0 2 0 2 0 2 4 6 4 6 4 6 4 6 for pixels 0 2 4 6
-          const __m128i tmp_12 = _mm_unpacklo_epi32(tmp_8, tmp_10);
-          // Coeffs 1 3 1 3 1 3 1 3 5 7 5 7 5 7 5 7 for pixels 0 2 4 6
-          const __m128i tmp_13 = _mm_unpackhi_epi32(tmp_8, tmp_10);
-          // Coeffs 0 2 0 2 0 2 0 2 4 6 4 6 4 6 4 6 for pixels 1 3 5 7
-          const __m128i tmp_14 = _mm_unpacklo_epi32(tmp_9, tmp_11);
-          // Coeffs 1 3 1 3 1 3 1 3 5 7 5 7 5 7 5 7 for pixels 1 3 5 7
-          const __m128i tmp_15 = _mm_unpackhi_epi32(tmp_9, tmp_11);
-
-          // Coeffs 0 2 for pixels 0 2 4 6 1 3 5 7
-          const __m128i coeff_02 = _mm_unpacklo_epi64(tmp_12, tmp_14);
-          // Coeffs 4 6 for pixels 0 2 4 6 1 3 5 7
-          const __m128i coeff_46 = _mm_unpackhi_epi64(tmp_12, tmp_14);
-          // Coeffs 1 3 for pixels 0 2 4 6 1 3 5 7
-          const __m128i coeff_13 = _mm_unpacklo_epi64(tmp_13, tmp_15);
-          // Coeffs 5 7 for pixels 0 2 4 6 1 3 5 7
-          const __m128i coeff_57 = _mm_unpackhi_epi64(tmp_13, tmp_15);
-
-          // The pixel order we need for 'src' is:
-          // 0 2 2 4 4 6 6 8 1 3 3 5 5 7 7 9
-          const __m128i src_02 = _mm_unpacklo_epi64(src_even, src_odd);
-          const __m128i res_02 = _mm_maddubs_epi16(src_02, coeff_02);
-          // 4 6 6 8 8 10 10 12 5 7 7 9 9 11 11 13
-          const __m128i src_46 = _mm_unpacklo_epi64(_mm_srli_si128(src_even, 4),
-                                                    _mm_srli_si128(src_odd, 4));
-          const __m128i res_46 = _mm_maddubs_epi16(src_46, coeff_46);
-          // 1 3 3 5 5 7 7 9 2 4 4 6 6 8 8 10
-          const __m128i src_13 =
-              _mm_unpacklo_epi64(src_odd, _mm_srli_si128(src_even, 2));
-          const __m128i res_13 = _mm_maddubs_epi16(src_13, coeff_13);
-          // 5 7 7 9 9 11 11 13 6 8 8 10 10 12 12 14
-          const __m128i src_57 = _mm_unpacklo_epi64(
-              _mm_srli_si128(src_odd, 4), _mm_srli_si128(src_even, 6));
-          const __m128i res_57 = _mm_maddubs_epi16(src_57, coeff_57);
-
-          const __m128i round_const = _mm_set1_epi16(
-              (1 << offset_bits_horiz) + ((1 << reduce_bits_horiz) >> 1));
-
-          // Note: The values res_02 + res_46 and res_13 + res_57 both
-          // fit into int16s at this point, but their sum may be too wide to fit
-          // into an int16. However, once we also add round_const, the sum of
-          // all of these fits into a uint16.
-          //
-          // The wrapping behaviour of _mm_add_* is used here to make sure we
-          // get the correct result despite converting between different
-          // (implicit) types.
-          const __m128i res_even = _mm_add_epi16(res_02, res_46);
-          const __m128i res_odd = _mm_add_epi16(res_13, res_57);
-          const __m128i res =
-              _mm_add_epi16(_mm_add_epi16(res_even, res_odd), round_const);
-          tmp[k + 7] = _mm_srl_epi16(res, _mm_cvtsi32_si128(reduce_bits_horiz));
+          horizontal_filter(src, tmp, sx, alpha, k, offset_bits_horiz,
+                            reduce_bits_horiz);
         }
       }
 
