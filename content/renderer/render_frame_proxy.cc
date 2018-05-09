@@ -734,6 +734,7 @@ void RenderFrameProxy::ForwardPostMessage(
   DCHECK(!web_frame_ || web_frame_ == target_frame);
 
   FrameMsg_PostMessage_Params params;
+  params.is_data_raw_string = false;
   params.message =
       new base::RefCountedData<blink::TransferableMessage>(event.AsMessage());
   params.message->data.has_user_gesture = has_user_gesture;
