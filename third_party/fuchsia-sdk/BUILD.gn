@@ -166,7 +166,7 @@ fuchsia_sdk_pkg("fidl_cpp") {
   ]
 }
 
-fuchsia_sdk_pkg("fdio") {
+fuchsia_sdk_lib_pkg("fdio") {
   sources = [
     "include/fdio/debug.h",
     "include/fdio/io.fidl.h",
