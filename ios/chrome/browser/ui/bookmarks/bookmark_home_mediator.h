@@ -27,6 +27,10 @@
 // Stops mediating and disconnects from backend models.
 - (void)disconnect;
 
+// Rebuilds the table view model data for the Bookmarks section.  Deletes any
+// existing data first.
+- (void)computeBookmarkTableViewData;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_HOME_MEDIATOR_H_

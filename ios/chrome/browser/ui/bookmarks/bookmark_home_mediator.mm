@@ -5,13 +5,24 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_mediator.h"
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
+#include "components/bookmarks/browser/bookmark_model.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_home_consumer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_shared_state.h"
+#include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
+#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_node_item.h"
+#import "ios/chrome/browser/ui/table_view/table_view_model.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface BookmarkHomeMediator ()
+using bookmarks::BookmarkNode;
+
+@interface BookmarkHomeMediator ()<BookmarkModelBridgeObserver> {
+  // Bridge to register for bookmark changes.
+  std::unique_ptr<bookmarks::BookmarkModelBridge> _modelBridge;
+}
 
 @property(nonatomic, strong) BookmarkHomeSharedState* sharedState;
 
@@ -31,11 +42,198 @@
 - (void)startMediating {
   DCHECK(self.consumer);
   DCHECK(self.sharedState);
+
+  _modelBridge = std::make_unique<bookmarks::BookmarkModelBridge>(
+      self, self.sharedState.bookmarkModel);
+
+  [self computeBookmarkTableViewData];
 }
 
 - (void)disconnect {
+  _modelBridge = nullptr;
   self.consumer = nil;
   self.sharedState = nil;
+}
+
+#pragma mark - Initial Model Setup
+
+// Computes the bookmarks table view based on the current root node.
+- (void)computeBookmarkTableViewData {
+  // Regenerate the list of all bookmarks.
+  if ([self.sharedState.tableViewModel
+          hasSectionForSectionIdentifier:
+              BookmarkHomeSectionIdentifierBookmarks]) {
+    [self.sharedState.tableViewModel
+        removeSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
+  }
+  [self.sharedState.tableViewModel
+      addSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
+
+  if (!self.sharedState.bookmarkModel->loaded() ||
+      !self.sharedState.tableViewDisplayedRootNode) {
+    return;
+  }
+
+  if (self.sharedState.tableViewDisplayedRootNode ==
+      self.sharedState.bookmarkModel->root_node()) {
+    [self generateTableViewDataForRootNode];
+    return;
+  }
+  [self generateTableViewData];
+}
+
+// Generate the table view data when the current root node is a child node.
+- (void)generateTableViewData {
+  if (!self.sharedState.tableViewDisplayedRootNode) {
+    return;
+  }
+  // Add all bookmarks and folders of the current root node to the table.
+  int childCount = self.sharedState.tableViewDisplayedRootNode->child_count();
+  for (int i = 0; i < childCount; ++i) {
+    const BookmarkNode* node =
+        self.sharedState.tableViewDisplayedRootNode->GetChild(i);
+    BookmarkHomeNodeItem* nodeItem =
+        [[BookmarkHomeNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
+                                      bookmarkNode:node];
+    [self.sharedState.tableViewModel
+                        addItem:nodeItem
+        toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
+  }
+}
+
+// Generate the table view data when the current root node is the outermost
+// root.
+- (void)generateTableViewDataForRootNode {
+  // Add "Mobile Bookmarks" to the table.
+  const BookmarkNode* mobileNode =
+      self.sharedState.bookmarkModel->mobile_node();
+  BookmarkHomeNodeItem* mobileItem =
+      [[BookmarkHomeNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
+                                    bookmarkNode:mobileNode];
+  [self.sharedState.tableViewModel
+                      addItem:mobileItem
+      toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
+
+  // Add "Bookmarks Bar" and "Other Bookmarks" only when they are not empty.
+  const BookmarkNode* bookmarkBar =
+      self.sharedState.bookmarkModel->bookmark_bar_node();
+  if (!bookmarkBar->empty()) {
+    BookmarkHomeNodeItem* barItem =
+        [[BookmarkHomeNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
+                                      bookmarkNode:bookmarkBar];
+    [self.sharedState.tableViewModel
+                        addItem:barItem
+        toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
+  }
+
+  const BookmarkNode* otherBookmarks =
+      self.sharedState.bookmarkModel->other_node();
+  if (!otherBookmarks->empty()) {
+    BookmarkHomeNodeItem* otherItem =
+        [[BookmarkHomeNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
+                                      bookmarkNode:otherBookmarks];
+    [self.sharedState.tableViewModel
+                        addItem:otherItem
+        toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
+  }
+}
+
+#pragma mark - BookmarkModelBridgeObserver Callbacks
+
+// BookmarkModelBridgeObserver Callbacks
+// Instances of this class automatically observe the bookmark model.
+// The bookmark model has loaded.
+- (void)bookmarkModelLoaded {
+  [self.consumer refreshContents];
+}
+
+// The node has changed, but not its children.
+- (void)bookmarkNodeChanged:(const BookmarkNode*)bookmarkNode {
+  // The root folder changed. Do nothing.
+  if (bookmarkNode == self.sharedState.tableViewDisplayedRootNode) {
+    return;
+  }
+
+  // A specific cell changed. Reload, if currently shown.
+  if ([self itemForNode:bookmarkNode] != nil) {
+    [self.consumer refreshContents];
+  }
+}
+
+// The node has not changed, but its children have.
+- (void)bookmarkNodeChildrenChanged:(const BookmarkNode*)bookmarkNode {
+  // The current root folder's children changed. Reload everything.
+  // (When adding new folder, table is already been updated. So no need to
+  // reload here.)
+  if (bookmarkNode == self.sharedState.tableViewDisplayedRootNode &&
+      !self.sharedState.addingNewFolder) {
+    [self.consumer refreshContents];
+    return;
+  }
+}
+
+// The node has moved to a new parent folder.
+- (void)bookmarkNode:(const BookmarkNode*)bookmarkNode
+     movedFromParent:(const BookmarkNode*)oldParent
+            toParent:(const BookmarkNode*)newParent {
+  if (oldParent == self.sharedState.tableViewDisplayedRootNode ||
+      newParent == self.sharedState.tableViewDisplayedRootNode) {
+    // A folder was added or removed from the current root folder.
+    [self.consumer refreshContents];
+  }
+}
+
+// |node| was deleted from |folder|.
+- (void)bookmarkNodeDeleted:(const BookmarkNode*)node
+                 fromFolder:(const BookmarkNode*)folder {
+  if (self.sharedState.tableViewDisplayedRootNode == node) {
+    self.sharedState.tableViewDisplayedRootNode = NULL;
+    [self.consumer refreshContents];
+  }
+}
+
+// All non-permanent nodes have been removed.
+- (void)bookmarkModelRemovedAllNodes {
+  // TODO(crbug.com/695749) Check if this case is applicable in the new UI.
+}
+
+- (void)bookmarkNodeFaviconChanged:
+    (const bookmarks::BookmarkNode*)bookmarkNode {
+  // Only urls have favicons.
+  DCHECK(bookmarkNode->is_url());
+
+  // Update image of corresponding cell.
+  BookmarkHomeNodeItem* nodeItem = [self itemForNode:bookmarkNode];
+  if (!nodeItem) {
+    return;
+  }
+
+  // Check that this cell is visible.
+  NSIndexPath* indexPath =
+      [self.sharedState.tableViewModel indexPathForItem:nodeItem];
+  NSArray* visiblePaths = [self.sharedState.tableView indexPathsForVisibleRows];
+  if (![visiblePaths containsObject:indexPath]) {
+    return;
+  }
+
+  // Get the favicon from cache directly. (no need to fetch from server)
+  [self.consumer loadFaviconAtIndexPath:indexPath continueToGoogleServer:NO];
+}
+
+- (BookmarkHomeNodeItem*)itemForNode:
+    (const bookmarks::BookmarkNode*)bookmarkNode {
+  NSArray<TableViewItem*>* items = [self.sharedState.tableViewModel
+      itemsInSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
+  for (TableViewItem* item in items) {
+    if (item.type == BookmarkHomeItemTypeBookmark) {
+      BookmarkHomeNodeItem* nodeItem =
+          base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
+      if (nodeItem.bookmarkNode == bookmarkNode) {
+        return nodeItem;
+      }
+    }
+  }
+  return nil;
 }
 
 @end

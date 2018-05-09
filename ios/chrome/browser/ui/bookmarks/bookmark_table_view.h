@@ -68,6 +68,10 @@ class ChromeBrowserState;
 // Returns true if this table is at the top of the navigation stack.
 - (BOOL)isAtTopOfNavigation:(BookmarkTableView*)view;
 
+// TODO(crbug.com/840381): Temporarily made public while migrating code
+// out of BookmarkTableView.
+- (void)bookmarkTableViewRefreshContents:(BookmarkTableView*)view;
+
 @end
 
 @interface BookmarkTableView : UIView
@@ -123,7 +127,9 @@ class ChromeBrowserState;
 - (void)loadFaviconAtIndexPath:(NSIndexPath*)indexPath
         continueToGoogleServer:(BOOL)continueToGoogleServer;
 - (void)cancelLoadingFaviconAtIndexPath:(NSIndexPath*)indexPath;
-- (void)refreshContents;
+- (void)cancelAllFaviconLoads;
+- (void)showEmptyOrLoadingSpinnerBackgroundIfNeeded;
+- (void)restoreRowSelection;
 
 @end
 
