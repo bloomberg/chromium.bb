@@ -30,6 +30,10 @@ cast_source_set("common") {
     sources += [
       "cast_extensions_client.cc",
       "cast_extensions_client.h",
+      "extensions_api/cast_aliases.cc",
+      "extensions_api/cast_aliases.h",
+      "extensions_api/cast_api_permissions.cc",
+      "extensions_api/cast_api_permissions.h",
       "extensions_api/cast_extension_messages.cc",
       "extensions_api/cast_extension_messages.h",
     ]

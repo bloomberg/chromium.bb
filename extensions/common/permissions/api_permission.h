@@ -413,6 +413,7 @@ class APIPermissionInfo {
 
  private:
   // Instances should only be constructed from within a PermissionsProvider.
+  friend class CastAPIPermissions;
   friend class ChromeAPIPermissions;
   friend class ExtensionsAPIPermissions;
   // Implementations of APIPermission will want to get the permission message,

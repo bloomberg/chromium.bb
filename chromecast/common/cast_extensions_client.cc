@@ -10,7 +10,9 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "chromecast/common/extensions_api/cast_aliases.h"
 #include "chromecast/common/extensions_api/cast_api_features.h"
+#include "chromecast/common/extensions_api/cast_api_permissions.h"
 #include "chromecast/common/extensions_api/cast_behavior_features.h"
 #include "chromecast/common/extensions_api/cast_manifest_features.h"
 #include "chromecast/common/extensions_api/cast_permission_features.h"
@@ -93,6 +95,8 @@ void CastExtensionsClient::Initialize() {
   ManifestHandler::FinalizeRegistration();
   // TODO(jamescook): Do we need to whitelist any extensions?
 
+  PermissionsInfo::GetInstance()->AddProvider(cast_api_permissions_,
+                                              GetCastPermissionAliases());
   PermissionsInfo::GetInstance()->AddProvider(extensions_api_permissions_,
                                               GetExtensionsPermissionAliases());
 }

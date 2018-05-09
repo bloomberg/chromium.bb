@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "chromecast/common/extensions_api/cast_api_permissions.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/permissions/extensions_api_permissions.h"
 #include "url/gurl.h"
@@ -48,6 +49,7 @@ class CastExtensionsClient : public ExtensionsClient {
   std::string GetUserAgent() const override;
 
  private:
+  const CastAPIPermissions cast_api_permissions_;
   const ExtensionsAPIPermissions extensions_api_permissions_;
 
   ScriptingWhitelist scripting_whitelist_;
