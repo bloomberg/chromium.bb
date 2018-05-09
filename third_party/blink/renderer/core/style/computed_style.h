@@ -1322,6 +1322,9 @@ class ComputedStyle : public ComputedStyleBase,
   bool ShouldUseTextIndent(bool is_first_line,
                            bool is_after_forced_break) const;
 
+  // text-transform utility functions.
+  void ApplyTextTransform(String*, UChar previous_character = ' ') const;
+
   // Line-height utility functions.
   const Length& SpecifiedLineHeight() const;
   int ComputedLineHeight() const;

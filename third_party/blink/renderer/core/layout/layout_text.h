@@ -430,8 +430,6 @@ inline LayoutText* Text::GetLayoutObject() const {
   return ToLayoutText(CharacterData::GetLayoutObject());
 }
 
-void ApplyTextTransform(const ComputedStyle*, String&, UChar);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TEXT_H_

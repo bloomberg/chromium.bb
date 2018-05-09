@@ -1871,8 +1871,8 @@ String HTMLSelectElement::ItemText(const Element& element) const {
   else if (auto* option = ToHTMLOptionElementOrNull(element))
     item_string = option->TextIndentedToRespectGroupLabel();
 
-  if (GetLayoutObject())
-    ApplyTextTransform(GetLayoutObject()->Style(), item_string, ' ');
+  if (GetLayoutObject() && GetLayoutObject()->Style())
+    GetLayoutObject()->Style()->ApplyTextTransform(&item_string);
   return item_string;
 }
 

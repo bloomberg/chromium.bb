@@ -191,10 +191,10 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   String first_line_string;
   if (inline_text_box_.IsFirstLineStyle()) {
     first_line_string = layout_item_string;
-    ApplyTextTransform(
-        inline_text_box_.GetLineLayoutItem().Style(
-            inline_text_box_.IsFirstLineStyle()),
-        first_line_string,
+    const ComputedStyle& style = inline_text_box_.GetLineLayoutItem().StyleRef(
+        inline_text_box_.IsFirstLineStyle());
+    style.ApplyTextTransform(
+        &first_line_string,
         inline_text_box_.GetLineLayoutItem().PreviousCharacter());
     // TODO(crbug.com/795498): this is a hack. The root issue is that
     // capitalizing letters can change the length of the backing string.
