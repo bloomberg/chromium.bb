@@ -1274,7 +1274,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (BOOL)isToolbarOnScreen {
-  return self.headerHeight - [self currentHeaderOffset] > 0;
+  return [self nonFullscreenToolbarHeight] - [self currentHeaderOffset] > 0;
 }
 
 - (void)setInNewTabAnimation:(BOOL)inNewTabAnimation {
@@ -2598,9 +2598,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (CardView*)addCardViewInFullscreen:(BOOL)fullScreen {
   CGRect frame = self.contentArea.frame;
+  // Changing the origin here is unnecessary, it's set in page_animation_util.
   if (!fullScreen) {
-    // Changing the origin here is unnecessary, it's set in page_animation_util.
     frame.size.height -= self.headerHeight;
+  } else if (base::FeatureList::IsEnabled(kBrowserContainerFullscreen)) {
+    frame.size.height -= StatusBarHeight();
   }
 
   CGFloat shortAxis = frame.size.width;
@@ -5184,6 +5186,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
           [self snapshotEdgeInsetsForWebState:topTab.webState]);
     } else {
       imageFrame = [topTab.webState->GetView() bounds];
+      if (base::FeatureList::IsEnabled(kBrowserContainerFullscreen)) {
+        imageFrame.origin.y += StatusBarHeight();
+        imageFrame.size.height -= StatusBarHeight();
+      }
     }
 
     // Add three layers in order on top of the contentArea for the animation:
