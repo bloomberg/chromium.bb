@@ -129,9 +129,13 @@ bool P2PSocketHostTcpBase::Init(const net::IPEndPoint& local_address,
       ssl_config, GURL("https://" + dest_host_port_pair.ToString()),
       false /*use_tls*/);
 
-  int status = socket_->Connect(
-      base::Bind(&P2PSocketHostTcpBase::OnConnected,
-                 base::Unretained(this)));
+  if (IsPseudoTlsClientSocket(type_)) {
+    socket_ =
+        std::make_unique<jingle_glue::FakeSSLClientSocket>(std::move(socket_));
+  }
+
+  int status = socket_->Connect(base::BindOnce(
+      &P2PSocketHostTcpBase::OnConnected, base::Unretained(this)));
   if (status != net::ERR_IO_PENDING) {
     // We defer execution of ProcessConnectDone instead of calling it
     // directly here as the caller may not expect an error/close to
@@ -169,17 +173,6 @@ void P2PSocketHostTcpBase::OnConnected(int result) {
   if (IsTlsClientSocket(type_)) {
     state_ = STATE_TLS_CONNECTING;
     StartTls();
-  } else if (IsPseudoTlsClientSocket(type_)) {
-    std::unique_ptr<net::StreamSocket> transport_socket = std::move(socket_);
-    socket_.reset(
-        new jingle_glue::FakeSSLClientSocket(std::move(transport_socket)));
-    state_ = STATE_TLS_CONNECTING;
-    int status = socket_->Connect(
-        base::Bind(&P2PSocketHostTcpBase::ProcessTlsSslConnectDone,
-                   base::Unretained(this)));
-    if (status != net::ERR_IO_PENDING) {
-      ProcessTlsSslConnectDone(status);
-    }
   } else {
     // If we are not doing TLS, we are ready to send data now.
     // In case of TLS, SignalConnect will be sent only after TLS handshake is
