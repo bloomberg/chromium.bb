@@ -1,30 +1,20 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_VIEW_H_
-#define IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_VIEW_H_
+
+#ifndef IOS_CHROME_BROWSER_UI_INFOBARS_CONFIRM_INFOBAR_VIEW_H_
+#define IOS_CHROME_BROWSER_UI_INFOBARS_CONFIRM_INFOBAR_VIEW_H_
 
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/fancy_ui/bidi_container_view.h"
+#import "ios/chrome/browser/ui/infobars/infobar_view_sizing.h"
 
-class InfoBarViewDelegate;
-
-// UIView representing a single infobar.
-@interface InfoBarView : BidiContainerView
-
-- (instancetype)initWithFrame:(CGRect)frame
-                     delegate:(InfoBarViewDelegate*)delegate;
-
-// How much of infobar is visible. The infobar is only partly visible during
-// showing/hiding animation.
-@property(nonatomic, assign) CGFloat visibleHeight;
+// An inforbar with an optional message, icon, two action buttons, and a switch.
+@interface ConfirmInfoBarView : BidiContainerView<InfoBarViewSizing>
 
 // Label text with links initialized with |stringAsLink:|.
 @property(nonatomic, strong, readonly) NSString* markedLabel;
-
-// Stops propagating events to delegate.
-- (void)resetDelegate;
 
 // TODO(crbug.com/302582): rename methods from add* to set*.
 // Adds a dismiss button subview.
@@ -72,4 +62,4 @@ class InfoBarViewDelegate;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_VIEW_H_
+#endif  // IOS_CHROME_BROWSER_UI_INFOBARS_CONFIRM_INFOBAR_VIEW_H_

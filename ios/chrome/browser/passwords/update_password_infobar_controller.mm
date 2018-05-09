@@ -7,9 +7,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/infobars/confirm_infobar_controller+protected.h"
+#import "ios/chrome/browser/infobars/infobar_controller+protected.h"
 #include "ios/chrome/browser/passwords/ios_chrome_update_password_infobar_delegate.h"
 #import "ios/chrome/browser/ui/elements/selector_coordinator.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view.h"
+#import "ios/chrome/browser/ui/infobars/confirm_infobar_view.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -24,21 +25,34 @@ NSUInteger kAccountTag = 10;
 @interface UpdatePasswordInfoBarController ()<SelectorCoordinatorDelegate> {
   IOSChromeUpdatePasswordInfoBarDelegate* _delegate;
 }
+
+// The base view controller from which to present UI.
+@property(nonatomic, readwrite, weak) UIViewController* baseViewController;
+
 @property(nonatomic, strong) SelectorCoordinator* selectorCoordinator;
+
+// Action for any of the user defined links.
+- (void)infobarLinkDidPress:(NSUInteger)tag;
+
 @end
 
 @implementation UpdatePasswordInfoBarController
+
 @synthesize baseViewController = _baseViewController;
 @synthesize selectorCoordinator = _selectorCoordinator;
 
-- (InfoBarView*)viewForDelegate:
-                    (IOSChromeUpdatePasswordInfoBarDelegate*)delegate
-                          frame:(CGRect)frame {
-  _delegate = delegate;
-  return [super viewForDelegate:delegate frame:frame];
+- (instancetype)
+initWithBaseViewController:(UIViewController*)baseViewController
+           infoBarDelegate:(IOSChromeUpdatePasswordInfoBarDelegate*)delegate {
+  self = [super initWithInfoBarDelegate:delegate];
+  if (self) {
+    _baseViewController = baseViewController;
+    _delegate = delegate;
+  }
+  return self;
 }
 
-- (void)updateInfobarLabel:(InfoBarView*)view {
+- (void)updateInfobarLabel:(ConfirmInfoBarView*)view {
   [super updateInfobarLabel:view];
 
   // Get the message text with current links marked.

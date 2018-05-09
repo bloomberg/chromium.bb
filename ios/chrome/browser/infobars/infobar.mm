@@ -12,7 +12,7 @@
 #import "ios/chrome/browser/infobars/confirm_infobar_controller.h"
 #include "ios/chrome/browser/infobars/infobar_controller.h"
 #include "ios/chrome/browser/translate/translate_infobar_tags.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view.h"
+#import "ios/chrome/browser/ui/infobars/infobar_view_sizing.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -21,8 +21,12 @@
 using infobars::InfoBar;
 using infobars::InfoBarDelegate;
 
-InfoBarIOS::InfoBarIOS(std::unique_ptr<InfoBarDelegate> delegate)
-    : InfoBar(std::move(delegate)) {}
+InfoBarIOS::InfoBarIOS(InfoBarController* controller,
+                       std::unique_ptr<InfoBarDelegate> delegate)
+    : InfoBar(std::move(delegate)), controller_(controller) {
+  DCHECK(controller_);
+  [controller_ setDelegate:this];
+}
 
 InfoBarIOS::~InfoBarIOS() {
   DCHECK(controller_);
@@ -30,21 +34,13 @@ InfoBarIOS::~InfoBarIOS() {
   controller_ = nil;
 }
 
-void InfoBarIOS::SetController(InfoBarController* controller) {
-  controller_ = controller;
-}
-
 void InfoBarIOS::Layout(CGRect container_bounds) {
   DCHECK(controller_);
-  if ([controller_ view]) {
-    [[controller_ view] setFrame:container_bounds];
-  } else {
-    [controller_ layoutForDelegate:delegate() frame:container_bounds];
-  }
+  [controller_ layoutForFrame:container_bounds];
   SetTargetHeight([controller_ barHeight]);
 }
 
-UIView* InfoBarIOS::view() {
+UIView<InfoBarViewSizing>* InfoBarIOS::view() {
   DCHECK(controller_);
   return [controller_ view];
 }
@@ -59,71 +55,12 @@ void InfoBarIOS::PlatformSpecificOnHeightRecalculated() {
   [controller_ onHeightRecalculated:computed_height()];
 }
 
-#pragma mark - InfoBarViewDelegate
+#pragma mark - InfoBarControllerDelegate
 
 void InfoBarIOS::SetInfoBarTargetHeight(int height) {
   SetTargetHeight(height);
 }
 
-// Some infobar button was pressed.
-void InfoBarIOS::InfoBarButtonDidPress(NSUInteger button_id) {
-  // Do not add new logic for specific info bar delegates.
-  // TODO(droger): Move the logic elsewhere, http://crbug.com/307552.
-  // If not owned, the infobar has already been removed.
-  if (!owner())
-    return;
-  if (delegate()->AsConfirmInfoBarDelegate()) {
-    ConfirmInfoBarDelegate* confirmDelegate =
-        delegate()->AsConfirmInfoBarDelegate();
-    if ((button_id == ConfirmInfoBarDelegate::BUTTON_OK &&
-         confirmDelegate->Accept()) ||
-        (button_id == ConfirmInfoBarDelegate::BUTTON_CANCEL &&
-         delegate()->AsConfirmInfoBarDelegate()->Cancel())) {
-      RemoveSelf();
-    }
-  } else if (delegate()->AsTranslateInfoBarDelegate()) {
-    translate::TranslateInfoBarDelegate* translateDelegate =
-        delegate()->AsTranslateInfoBarDelegate();
-    switch (button_id) {
-      case TranslateInfoBarIOSTag::AFTER_DONE:
-        InfoBarDidCancel();
-        break;
-      case TranslateInfoBarIOSTag::AFTER_REVERT:
-        translateDelegate->RevertTranslation();
-        break;
-      case TranslateInfoBarIOSTag::BEFORE_ACCEPT:
-        translateDelegate->Translate();
-        break;
-      case TranslateInfoBarIOSTag::BEFORE_DENY:
-        translateDelegate->TranslationDeclined();
-        if (translateDelegate->ShouldShowNeverTranslateShortcut())
-          translateDelegate->ShowNeverTranslateInfobar();
-        else
-          RemoveSelf();
-        break;
-      case TranslateInfoBarIOSTag::DENY_LANGUAGE:
-        translateDelegate->NeverTranslatePageLanguage();
-        RemoveSelf();
-        break;
-      case TranslateInfoBarIOSTag::DENY_WEBSITE:
-        if (!translateDelegate->IsSiteBlacklisted())
-          translateDelegate->ToggleSiteBlacklist();
-        RemoveSelf();
-        break;
-      case TranslateInfoBarIOSTag::MESSAGE:
-        translateDelegate->MessageInfoBarButtonPressed();
-        break;
-      default:
-        NOTREACHED() << "Unexpected Translate button label";
-        break;
-    }
-  }
-}
-
-void InfoBarIOS::InfoBarDidCancel() {
-  // If not owned, the infobar has already been removed.
-  if (!owner())
-    return;
-  delegate()->InfoBarDismissed();
+void InfoBarIOS::RemoveInfoBar() {
   RemoveSelf();
 }

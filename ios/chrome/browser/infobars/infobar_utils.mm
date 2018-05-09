@@ -17,9 +17,7 @@
 
 std::unique_ptr<infobars::InfoBar> CreateConfirmInfoBar(
     std::unique_ptr<ConfirmInfoBarDelegate> delegate) {
-  std::unique_ptr<InfoBarIOS> infobar(new InfoBarIOS(std::move(delegate)));
   ConfirmInfoBarController* controller =
-      [[ConfirmInfoBarController alloc] initWithDelegate:infobar.get()];
-  infobar->SetController(controller);
-  return infobar;
+      [[ConfirmInfoBarController alloc] initWithInfoBarDelegate:delegate.get()];
+  return std::make_unique<InfoBarIOS>(controller, std::move(delegate));
 }

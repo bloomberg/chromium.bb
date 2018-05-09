@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "ios/chrome/browser/infobars/infobar.h"
-#include "ios/chrome/browser/ui/infobars/infobar_view.h"
 #include "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -19,7 +18,7 @@
   DCHECK_LE((NSUInteger)position, [[self subviews] count]);
   CGRect containerBounds = [self bounds];
   infoBarIOS->Layout(containerBounds);
-  UIView* view = infoBarIOS->view();
+  UIView<InfoBarViewSizing>* view = infoBarIOS->view();
   [self insertSubview:view atIndex:position];
 }
 
@@ -42,7 +41,7 @@
 }
 
 - (void)layoutSubviews {
-  for (InfoBarView* view in self.subviews) {
+  for (UIView<InfoBarViewSizing>* view in self.subviews) {
     [view sizeToFit];
     CGRect frame = view.frame;
     frame.origin.y = CGRectGetHeight(frame) - [view visibleHeight];
@@ -51,7 +50,7 @@
 }
 
 - (CGFloat)topmostVisibleInfoBarHeight {
-  for (InfoBarView* view in [self.subviews reverseObjectEnumerator]) {
+  for (UIView* view in [self.subviews reverseObjectEnumerator]) {
     return [view sizeThatFits:self.frame.size].height;
   }
   return 0;

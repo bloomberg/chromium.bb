@@ -37,11 +37,11 @@ void IOSChromeUpdatePasswordInfoBarDelegate::Create(
   auto delegate = base::WrapUnique(new IOSChromeUpdatePasswordInfoBarDelegate(
       is_smart_lock_branding_enabled, std::move(form_manager)));
   delegate->set_dispatcher(dispatcher);
-  std::unique_ptr<InfoBarIOS> infobar(new InfoBarIOS(std::move(delegate)));
   UpdatePasswordInfoBarController* controller =
-      [[UpdatePasswordInfoBarController alloc] initWithDelegate:infobar.get()];
-  [controller setBaseViewController:baseViewController];
-  infobar->SetController(controller);
+      [[UpdatePasswordInfoBarController alloc]
+          initWithBaseViewController:baseViewController
+                     infoBarDelegate:delegate.get()];
+  auto infobar = std::make_unique<InfoBarIOS>(controller, std::move(delegate));
   infobar_manager->AddInfoBar(std::move(infobar));
 }
 

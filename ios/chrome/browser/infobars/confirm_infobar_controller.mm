@@ -8,8 +8,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view_delegate.h"
+#import "ios/chrome/browser/infobars/infobar_controller+protected.h"
+#include "ios/chrome/browser/infobars/infobar_controller_delegate.h"
+#import "ios/chrome/browser/ui/infobars/confirm_infobar_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/image/image.h"
@@ -28,27 +29,15 @@ typedef NS_ENUM(NSInteger, ConfirmInfoBarUITags) {
   TITLE_LINK
 };
 
-// Converts a UI button tag to the corresponding InfoBarButton.
-ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
-  switch (tag) {
-    case ConfirmInfoBarUITags::OK:
-      return ConfirmInfoBarDelegate::BUTTON_OK;
-    case ConfirmInfoBarUITags::CANCEL:
-    case ConfirmInfoBarUITags::CLOSE:
-      return ConfirmInfoBarDelegate::BUTTON_CANCEL;
-    default:
-      NOTREACHED();
-      return ConfirmInfoBarDelegate::BUTTON_CANCEL;
-  }
-}
-
 }  // namespace
 
 #pragma mark - ConfirmInfoBarController
 
 @interface ConfirmInfoBarController () {
   ConfirmInfoBarDelegate* _confirmInfobarDelegate;
+  __weak ConfirmInfoBarView* _infoBarView;
 }
+
 @end
 
 @implementation ConfirmInfoBarController
@@ -56,11 +45,18 @@ ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
 #pragma mark -
 #pragma mark InfoBarController
 
-- (InfoBarView*)viewForDelegate:(infobars::InfoBarDelegate*)delegate
-                          frame:(CGRect)frame {
-  _confirmInfobarDelegate = delegate->AsConfirmInfoBarDelegate();
-  InfoBarView* infoBarView =
-      [[InfoBarView alloc] initWithFrame:frame delegate:self.delegate];
+- (instancetype)initWithInfoBarDelegate:(ConfirmInfoBarDelegate*)delegate {
+  self = [super init];
+  if (self) {
+    _confirmInfobarDelegate = delegate;
+  }
+  return self;
+}
+
+- (UIView<InfoBarViewSizing>*)viewForFrame:(CGRect)frame {
+  ConfirmInfoBarView* infoBarView =
+      [[ConfirmInfoBarView alloc] initWithFrame:frame];
+  _infoBarView = infoBarView;
   // Model data.
   gfx::Image modelIcon = _confirmInfobarDelegate->GetIcon();
   int buttons = _confirmInfobarDelegate->GetButtons();
@@ -106,7 +102,7 @@ ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
   return infoBarView;
 }
 
-- (void)updateInfobarLabel:(InfoBarView*)view {
+- (void)updateInfobarLabel:(ConfirmInfoBarView*)view {
   if (!_confirmInfobarDelegate->GetMessageText().length())
     return;
   if (_confirmInfobarDelegate->GetLinkText().length()) {
@@ -130,6 +126,10 @@ ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
   }
 }
 
+- (ConfirmInfoBarView*)view {
+  return _infoBarView;
+}
+
 #pragma mark - Handling of User Events
 
 - (void)infoBarButtonDidPress:(id)sender {
@@ -139,12 +139,26 @@ ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
   if (!self.delegate) {
     return;
   }
-  if ([sender isKindOfClass:[UIButton class]]) {
-    NSUInteger tag = static_cast<UIButton*>(sender).tag;
-    if (tag == ConfirmInfoBarUITags::CLOSE)
-      self.delegate->InfoBarDidCancel();
-    else
-      self.delegate->InfoBarButtonDidPress(UITagToButton(tag));
+
+  NSUInteger buttonId = base::mac::ObjCCastStrict<UIButton>(sender).tag;
+  switch (buttonId) {
+    case ConfirmInfoBarUITags::OK:
+      if (_confirmInfobarDelegate->Accept()) {
+        self.delegate->RemoveInfoBar();
+      }
+      break;
+    case ConfirmInfoBarUITags::CANCEL:
+      if (_confirmInfobarDelegate->Cancel()) {
+        self.delegate->RemoveInfoBar();
+      }
+      break;
+    case ConfirmInfoBarUITags::CLOSE:
+      _confirmInfobarDelegate->InfoBarDismissed();
+      self.delegate->RemoveInfoBar();
+      break;
+    default:
+      NOTREACHED() << "Unexpected button pressed";
+      break;
   }
 }
 
@@ -153,10 +167,10 @@ ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
   if (!self.delegate) {
     return;
   }
-  if (tag == ConfirmInfoBarUITags::TITLE_LINK) {
-    _confirmInfobarDelegate->LinkClicked(
-        WindowOpenDisposition::NEW_FOREGROUND_TAB);
-  }
+
+  DCHECK(tag == ConfirmInfoBarUITags::TITLE_LINK);
+  _confirmInfobarDelegate->LinkClicked(
+      WindowOpenDisposition::NEW_FOREGROUND_TAB);
 }
 
 @end

@@ -105,35 +105,33 @@ std::unique_ptr<infobars::InfoBar> ChromeIOSTranslateClient::CreateInfoBar(
     std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const {
   translate::TranslateStep step = delegate->translate_step();
 
-  std::unique_ptr<InfoBarIOS> infobar(new InfoBarIOS(std::move(delegate)));
   InfoBarController* controller;
   switch (step) {
     case translate::TRANSLATE_STEP_AFTER_TRANSLATE:
       controller = [[AfterTranslateInfoBarController alloc]
-          initWithDelegate:infobar.get()];
+          initWithInfoBarDelegate:delegate.get()];
       break;
     case translate::TRANSLATE_STEP_BEFORE_TRANSLATE: {
       BeforeTranslateInfoBarController* beforeController =
           [[BeforeTranslateInfoBarController alloc]
-              initWithDelegate:infobar.get()];
+              initWithInfoBarDelegate:delegate.get()];
       beforeController.languageSelectionHandler = language_selection_handler_;
       controller = beforeController;
       break;
     }
     case translate::TRANSLATE_STEP_NEVER_TRANSLATE:
       controller = [[NeverTranslateInfoBarController alloc]
-          initWithDelegate:infobar.get()];
+          initWithInfoBarDelegate:delegate.get()];
       break;
     case translate::TRANSLATE_STEP_TRANSLATING:
     case translate::TRANSLATE_STEP_TRANSLATE_ERROR:
       controller = [[TranslateMessageInfoBarController alloc]
-          initWithDelegate:infobar.get()];
+          initWithInfoBarDelegate:delegate.get()];
       break;
     default:
       NOTREACHED();
   }
-  infobar->SetController(controller);
-  return infobar;
+  return std::make_unique<InfoBarIOS>(controller, std::move(delegate));
 }
 
 void ChromeIOSTranslateClient::RecordTranslateEvent(
