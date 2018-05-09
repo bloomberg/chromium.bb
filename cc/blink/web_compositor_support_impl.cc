@@ -19,10 +19,6 @@ WebCompositorSupportImpl::WebCompositorSupportImpl() = default;
 
 WebCompositorSupportImpl::~WebCompositorSupportImpl() = default;
 
-std::unique_ptr<WebLayer> WebCompositorSupportImpl::CreateLayer() {
-  return std::make_unique<WebLayerImpl>();
-}
-
 std::unique_ptr<WebLayer> WebCompositorSupportImpl::CreateLayerFromCCLayer(
     cc::Layer* layer) {
   return std::make_unique<WebLayerImpl>(layer);

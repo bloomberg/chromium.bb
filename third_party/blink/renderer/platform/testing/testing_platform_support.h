@@ -54,7 +54,6 @@ class WebCompositorSupport;
 class WebThread;
 
 class TestingCompositorSupport : public WebCompositorSupport {
-  std::unique_ptr<WebLayer> CreateLayer() override;
   std::unique_ptr<WebLayer> CreateLayerFromCCLayer(cc::Layer*) override;
   std::unique_ptr<WebImageLayer> CreateImageLayer() override;
 };

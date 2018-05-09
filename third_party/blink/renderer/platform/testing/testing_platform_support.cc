@@ -88,10 +88,6 @@ class DummyThread final : public blink::WebThread {
 
 }  // namespace
 
-std::unique_ptr<WebLayer> TestingCompositorSupport::CreateLayer() {
-  return nullptr;
-}
-
 std::unique_ptr<WebLayer> TestingCompositorSupport::CreateLayerFromCCLayer(
     cc::Layer*) {
   return nullptr;
