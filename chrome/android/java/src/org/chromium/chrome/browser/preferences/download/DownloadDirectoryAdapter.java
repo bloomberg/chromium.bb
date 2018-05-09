@@ -12,6 +12,7 @@ import android.support.v4.widget.TextViewCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
@@ -125,6 +126,12 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
         TextView titleText = (TextView) view.findViewById(R.id.text);
         titleText.setText(directoryOption.getName());
 
+        // ModalDialogView may do a measure pass on the view hierarchy to limit the layout inside
+        // certain area, where LayoutParams cannot be null.
+        if (view.getLayoutParams() == null) {
+            view.setLayoutParams(
+                    new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        }
         return view;
     }
 
