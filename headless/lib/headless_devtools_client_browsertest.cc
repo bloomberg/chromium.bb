@@ -513,6 +513,17 @@ class TargetDomainCreateAndDeleteBrowserContextTest
 
   void OnDisposeBrowserContextResult(
       std::unique_ptr<target::DisposeBrowserContextResult> result) {
+    devtools_client_->GetTarget()->GetExperimental()->GetBrowserContexts(
+        target::GetBrowserContextsParams::Builder().Build(),
+        base::BindOnce(&TargetDomainCreateAndDeleteBrowserContextTest::
+                           OnGetBrowserContexts,
+                       base::Unretained(this)));
+  }
+
+  void OnGetBrowserContexts(
+      std::unique_ptr<target::GetBrowserContextsResult> result) {
+    const std::vector<std::string>* contexts = result->GetBrowserContextIds();
+    EXPECT_EQ(0u, contexts->size());
     FinishAsynchronousTest();
   }
 
