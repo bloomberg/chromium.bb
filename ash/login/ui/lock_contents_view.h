@@ -140,6 +140,9 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
       const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts) override;
   void OnDetachableBasePairingStatusChanged(
       DetachableBasePairingStatus pairing_status) override;
+  void OnFingerprintUnlockStateChanged(
+      const AccountId& account_id,
+      mojom::FingerprintUnlockState state) override;
 
   // SystemTrayFocusObserver:
   void OnFocusLeavingSystemTray(bool reverse) override;
@@ -174,6 +177,7 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
     bool enable_tap_auth = false;
     bool force_online_sign_in = false;
     mojom::EasyUnlockIconOptionsPtr easy_unlock_state;
+    mojom::FingerprintUnlockState fingerprint_state;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(UserState);
