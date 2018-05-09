@@ -143,7 +143,7 @@ class CORE_EXPORT DocumentMarkerController final
   void AddMarkerInternal(
       const EphemeralRange&,
       std::function<DocumentMarker*(int, int)> create_marker_from_offsets);
-  void AddMarkerToNode(const Node*, DocumentMarker*);
+  void AddMarkerToNode(const Node&, DocumentMarker*);
 
   using MarkerLists = HeapVector<Member<DocumentMarkerList>,
                                  DocumentMarker::kMarkerTypeIndexesCount>;
