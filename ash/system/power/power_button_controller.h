@@ -78,15 +78,14 @@ class ASH_EXPORT PowerButtonController
 
   // Value of switches::kAshPowerButtonPosition stored in JSON format. These
   // are the field names of the flag.
+  static constexpr const char* kEdgeField = "edge";
   static constexpr const char* kPositionField = "position";
-  static constexpr const char* kXField = "x";
-  static constexpr const char* kYField = "y";
 
-  // Value of |kPositionField|.
-  static constexpr const char* kLeftPosition = "left";
-  static constexpr const char* kRightPosition = "right";
-  static constexpr const char* kTopPosition = "top";
-  static constexpr const char* kBottomPosition = "bottom";
+  // Value of |kEdgeField|.
+  static constexpr const char* kLeftEdge = "left";
+  static constexpr const char* kRightEdge = "right";
+  static constexpr const char* kTopEdge = "top";
+  static constexpr const char* kBottomEdge = "bottom";
 
   explicit PowerButtonController(
       BacklightsForcedOffSetter* backlights_forced_off_setter);

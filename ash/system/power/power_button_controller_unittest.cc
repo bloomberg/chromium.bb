@@ -1024,31 +1024,26 @@ class PowerButtonControllerWithPositionTest
     base::DictionaryValue position_info;
     switch (power_button_position_) {
       case PowerButtonPosition::LEFT:
-        position_info.SetString(PowerButtonController::kPositionField,
-                                PowerButtonController::kLeftPosition);
+        position_info.SetString(PowerButtonController::kEdgeField,
+                                PowerButtonController::kLeftEdge);
         break;
       case PowerButtonPosition::RIGHT:
-        position_info.SetString(PowerButtonController::kPositionField,
-                                PowerButtonController::kRightPosition);
+        position_info.SetString(PowerButtonController::kEdgeField,
+                                PowerButtonController::kRightEdge);
         break;
       case PowerButtonPosition::TOP:
-        position_info.SetString(PowerButtonController::kPositionField,
-                                PowerButtonController::kTopPosition);
+        position_info.SetString(PowerButtonController::kEdgeField,
+                                PowerButtonController::kTopEdge);
         break;
       case PowerButtonPosition::BOTTOM:
-        position_info.SetString(PowerButtonController::kPositionField,
-                                PowerButtonController::kBottomPosition);
+        position_info.SetString(PowerButtonController::kEdgeField,
+                                PowerButtonController::kBottomEdge);
         break;
       default:
         return;
     }
-    if (IsLeftOrRightPosition()) {
-      position_info.SetDouble(PowerButtonController::kYField,
-                              kPowerButtonPercentage);
-    } else {
-      position_info.SetDouble(PowerButtonController::kXField,
-                              kPowerButtonPercentage);
-    }
+    position_info.SetDouble(PowerButtonController::kPositionField,
+                            kPowerButtonPercentage);
 
     std::string json_position_info;
     base::JSONWriter::Write(position_info, &json_position_info);
