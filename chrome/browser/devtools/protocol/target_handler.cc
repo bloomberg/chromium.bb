@@ -92,11 +92,26 @@ void DevToolsBrowserContextManager::DisposeBrowserContext(
     return;
   }
 
+  Profile* profile = it->second->profile();
+  bool has_opened_browser = false;
+  for (auto* opened_browser : *BrowserList::GetInstance()) {
+    if (opened_browser->profile() == profile) {
+      has_opened_browser = true;
+      break;
+    }
+  }
+
+  // If no browsers are opened - dispose right away.
+  if (!has_opened_browser) {
+    registrations_.erase(it);
+    callback->sendSuccess();
+    return;
+  }
+
   if (pending_context_disposals_.empty())
     BrowserList::AddObserver(this);
 
   pending_context_disposals_[context_id] = std::move(callback);
-  Profile* profile = it->second->profile();
   BrowserList::CloseAllBrowsersWithIncognitoProfile(
       profile, base::DoNothing(), base::DoNothing(),
       true /* skip_beforeunload */);
