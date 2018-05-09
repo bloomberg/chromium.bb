@@ -8,11 +8,11 @@
 #include "base/files/file_path.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system_id.h"
 #include "chrome/browser/chromeos/smb_client/smb_provider.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
-#include "chrome/browser/chromeos/smb_client/temp_file_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/smb_provider_client.h"
@@ -25,9 +25,7 @@ namespace smb_client {
 SmbService::SmbService(Profile* profile)
     : provider_id_(ProviderId::CreateFromNativeId("smb")), profile_(profile) {
   if (base::FeatureList::IsEnabled(features::kNativeSmb)) {
-    GetProviderService()->RegisterProvider(std::make_unique<SmbProvider>(
-        base::BindRepeating(&SmbService::Unmount, base::Unretained(this))));
-    RestoreMounts();
+    StartSetup();
   }
 }
 
@@ -148,6 +146,43 @@ void SmbService::OnRemountResponse(const std::string& file_system_id,
 
 void SmbService::InitTempFileManager() {
   temp_file_manager_ = std::make_unique<TempFileManager>();
+}
+
+void SmbService::StartSetup() {
+  user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+
+  if (!user) {
+    // An instance of SmbService is created on the lockscreen. When this
+    // instance is created, no setup will run.
+    return;
+  }
+
+  if (user->IsActiveDirectoryUser()) {
+    auto account_id = user->GetAccountId();
+    const std::string account_id_guid = account_id.GetObjGuid();
+
+    GetSmbProviderClient()->SetupKerberos(
+        account_id_guid,
+        base::BindOnce(&SmbService::OnSetupKerberosResponse, AsWeakPtr()));
+    return;
+  }
+
+  CompleteSetup();
+}
+
+void SmbService::OnSetupKerberosResponse(bool success) {
+  if (!success) {
+    LOG(ERROR) << "SmbService: Kerberos setup failed.";
+  }
+
+  CompleteSetup();
+}
+
+void SmbService::CompleteSetup() {
+  GetProviderService()->RegisterProvider(std::make_unique<SmbProvider>(
+      base::BindRepeating(&SmbService::Unmount, base::Unretained(this))));
+  RestoreMounts();
 }
 
 }  // namespace smb_client

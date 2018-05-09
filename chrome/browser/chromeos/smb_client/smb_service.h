@@ -98,6 +98,15 @@ class SmbService : public KeyedService,
   void OnRemountResponse(const std::string& file_system_id,
                          smbprovider::ErrorType error);
 
+  // Sets up SmbService, including setting up Keberos if the user is ChromAD.
+  void StartSetup();
+
+  // Completes SmbService setup. Called by StartSetup().
+  void CompleteSetup();
+
+  // Handles the response from attempting to setup Kerberos.
+  void OnSetupKerberosResponse(bool success);
+
   const ProviderId provider_id_;
   Profile* profile_;
   std::unique_ptr<TempFileManager> temp_file_manager_;
