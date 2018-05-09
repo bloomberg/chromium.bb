@@ -52,6 +52,7 @@ enum AccessibilityState {
   A11Y_STICKY_KEYS = 1 << 10,
   A11Y_SELECT_TO_SPEAK = 1 << 11,
   A11Y_DOCKED_MAGNIFIER = 1 << 12,
+  A11Y_DICTATION = 1 << 13,
 };
 
 uint32_t GetAccessibilityState() {
@@ -83,6 +84,8 @@ uint32_t GetAccessibilityState() {
     state |= A11Y_STICKY_KEYS;
   if (controller->IsSelectToSpeakEnabled())
     state |= A11Y_SELECT_TO_SPEAK;
+  if (controller->IsDictationEnabled())
+    state |= A11Y_DICTATION;
   if (features::IsDockedMagnifierEnabled() &&
       Shell::Get()->docked_magnifier_controller()->GetEnabled()) {
     state |= A11Y_DOCKED_MAGNIFIER;
@@ -147,6 +150,12 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
   select_to_speak_enabled_ = controller->IsSelectToSpeakEnabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(select_to_speak_view_,
                                             select_to_speak_enabled_);
+
+  if (dictation_view_) {
+    dictation_enabled_ = controller->IsDictationEnabled();
+    TrayPopupUtils::UpdateCheckMarkVisibility(dictation_view_,
+                                              dictation_enabled_);
+  }
 
   high_contrast_enabled_ = controller->IsHighContrastEnabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(high_contrast_view_,
@@ -218,6 +227,15 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SELECT_TO_SPEAK),
       select_to_speak_enabled_);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableExperimentalAccessibilityFeatures)) {
+    dictation_enabled_ = controller->IsDictationEnabled();
+    dictation_view_ = AddScrollListCheckableItem(
+        kDictationOffIcon,  // Need to get Chrome UI Review to comment on this
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DICTATION),
+        dictation_enabled_);
+  }
 
   high_contrast_enabled_ = controller->IsHighContrastEnabled();
   high_contrast_view_ = AddScrollListCheckableItem(
@@ -317,6 +335,11 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
                      ? UserMetricsAction("StatusArea_SelectToSpeakEnabled")
                      : UserMetricsAction("StatusArea_SelectToSpeakDisabled"));
     controller->SetSelectToSpeakEnabled(new_state);
+  } else if (view == dictation_view_) {
+    bool new_state = !controller->IsDictationEnabled();
+    RecordAction(new_state ? UserMetricsAction("StatusArea_DictationEnabled")
+                           : UserMetricsAction("StatusArea_DictationDisabled"));
+    controller->SetDictationEnabled(new_state);
   } else if (view == high_contrast_view_) {
     bool new_state = !controller->IsHighContrastEnabled();
     RecordAction(new_state

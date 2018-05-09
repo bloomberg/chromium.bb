@@ -28,6 +28,7 @@ ASH_PUBLIC_EXPORT extern const char kAccessibilityCursorHighlightEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityFocusHighlightEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilitySelectToSpeakEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilitySwitchAccessEnabled[];
+ASH_PUBLIC_EXPORT extern const char kAccessibilityDictationEnabled[];
 ASH_PUBLIC_EXPORT extern const char kShouldAlwaysShowAccessibilityMenu[];
 
 ASH_PUBLIC_EXPORT extern const char kDockedMagnifierEnabled[];

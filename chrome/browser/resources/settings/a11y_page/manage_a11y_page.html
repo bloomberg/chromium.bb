@@ -142,7 +142,12 @@
       </paper-icon-button-light>
     </div>
 
-    <h2>$i18n{keyboardHeading}</h2>
+    <template is="dom-if" if="[[!showExperimentalFeatures_]]">
+      <h2>$i18n{keyboardHeading}</h2>
+    </template>
+    <template is="dom-if" if="[[showExperimentalFeatures_]]">
+      <h2>$i18n{keyboardAndTextInputHeading}</h2>
+    </template>
     <settings-toggle-button class="first"
         pref="{{prefs.settings.a11y.sticky_keys_enabled}}"
         label="$i18n{stickyKeysLabel}">
@@ -151,6 +156,12 @@
         pref="{{prefs.settings.a11y.virtual_keyboard}}"
         label="$i18n{onScreenKeyboardLabel}">
     </settings-toggle-button>
+    <template is="dom-if" if="[[showExperimentalFeatures_]]">
+      <settings-toggle-button class="continuation"
+          pref="{{prefs.settings.a11y.dictation}}"
+          label="$i18n{dictationLabel}">
+      </settings-toggle-button>
+    </template>
     <settings-toggle-button class="continuation"
         pref="{{prefs.settings.a11y.focus_highlight}}"
         label="$i18n{focusHighlightLabel}">

@@ -26,6 +26,7 @@
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/scoped_backlights_forced_off.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -58,6 +59,7 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kAccessibilityAutoclickEnabled,
     prefs::kAccessibilityCaretHighlightEnabled,
     prefs::kAccessibilityCursorHighlightEnabled,
+    prefs::kAccessibilityDictationEnabled,
     prefs::kAccessibilityFocusHighlightEnabled,
     prefs::kAccessibilityHighContrastEnabled,
     prefs::kAccessibilityLargeCursorEnabled,
@@ -232,6 +234,7 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
                                   false);
     registry->RegisterBooleanPref(prefs::kAccessibilityCursorHighlightEnabled,
                                   false);
+    registry->RegisterBooleanPref(prefs::kAccessibilityDictationEnabled, false);
     registry->RegisterBooleanPref(prefs::kAccessibilityFocusHighlightEnabled,
                                   false);
     registry->RegisterBooleanPref(prefs::kAccessibilityHighContrastEnabled,
@@ -262,6 +265,7 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
   registry->RegisterForeignPref(prefs::kAccessibilityAutoclickDelayMs);
   registry->RegisterForeignPref(prefs::kAccessibilityCaretHighlightEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityCursorHighlightEnabled);
+  registry->RegisterForeignPref(prefs::kAccessibilityDictationEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityFocusHighlightEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityHighContrastEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityLargeCursorEnabled);
@@ -322,6 +326,23 @@ void AccessibilityController::SetCursorHighlightEnabled(bool enabled) {
 
 bool AccessibilityController::IsCursorHighlightEnabled() const {
   return cursor_highlight_enabled_;
+}
+
+void AccessibilityController::SetDictationEnabled(bool enabled) {
+  if (!active_user_prefs_)
+    return;
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableExperimentalAccessibilityFeatures)) {
+    return;
+  }
+
+  active_user_prefs_->SetBoolean(prefs::kAccessibilityDictationEnabled,
+                                 enabled);
+  active_user_prefs_->CommitPendingWrite();
+}
+
+bool AccessibilityController::IsDictationEnabled() const {
+  return dictation_enabled_;
 }
 
 void AccessibilityController::SetFocusHighlightEnabled(bool enabled) {
@@ -474,6 +495,10 @@ void AccessibilityController::HandleAccessibilityGesture(
 }
 
 void AccessibilityController::ToggleDictation() {
+  // Do nothing if dictation is not enabled.
+  if (!IsDictationEnabled())
+    return;
+
   if (client_) {
     client_->ToggleDictation(base::BindOnce(
         [](AccessibilityController* self, bool is_active) {
@@ -613,6 +638,10 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
           &AccessibilityController::UpdateCursorHighlightFromPref,
           base::Unretained(this)));
   pref_change_registrar_->Add(
+      prefs::kAccessibilityDictationEnabled,
+      base::BindRepeating(&AccessibilityController::UpdateDictationFromPref,
+                          base::Unretained(this)));
+  pref_change_registrar_->Add(
       prefs::kAccessibilityFocusHighlightEnabled,
       base::BindRepeating(
           &AccessibilityController::UpdateFocusHighlightFromPref,
@@ -738,6 +767,19 @@ void AccessibilityController::UpdateCursorHighlightFromPref() {
 
   NotifyAccessibilityStatusChanged();
   UpdateAccessibilityHighlightingFromPrefs();
+}
+
+void AccessibilityController::UpdateDictationFromPref() {
+  DCHECK(active_user_prefs_);
+  const bool enabled =
+      active_user_prefs_->GetBoolean(prefs::kAccessibilityDictationEnabled);
+
+  if (dictation_enabled_ == enabled)
+    return;
+
+  dictation_enabled_ = enabled;
+
+  NotifyAccessibilityStatusChanged();
 }
 
 void AccessibilityController::UpdateFocusHighlightFromPref() {

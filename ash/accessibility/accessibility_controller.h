@@ -64,6 +64,9 @@ class ASH_EXPORT AccessibilityController
   void SetCursorHighlightEnabled(bool enabled);
   bool IsCursorHighlightEnabled() const;
 
+  void SetDictationEnabled(bool enabled);
+  bool IsDictationEnabled() const;
+
   void SetFocusHighlightEnabled(bool enabled);
   bool IsFocusHighlightEnabled() const;
 
@@ -162,6 +165,7 @@ class ASH_EXPORT AccessibilityController
   void UpdateAutoclickDelayFromPref();
   void UpdateCaretHighlightFromPref();
   void UpdateCursorHighlightFromPref();
+  void UpdateDictationFromPref();
   void UpdateFocusHighlightFromPref();
   void UpdateHighContrastFromPref();
   void UpdateLargeCursorFromPref();
@@ -190,6 +194,7 @@ class ASH_EXPORT AccessibilityController
   base::TimeDelta autoclick_delay_;
   bool caret_highlight_enabled_ = false;
   bool cursor_highlight_enabled_ = false;
+  bool dictation_enabled_ = false;
   bool focus_highlight_enabled_ = false;
   bool high_contrast_enabled_ = false;
   bool large_cursor_enabled_ = false;

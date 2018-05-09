@@ -271,6 +271,9 @@
     <message name="IDS_SETTINGS_ON_SCREEN_KEYBOARD_LABEL" desc="Label for checkbox which enables an on-screen keyboard.">
       Enable on-screen keyboard
     </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_DICTATION_LABEL" desc="Label for checkbox which enables the ability to speak into text fields">
+      Enable dictation (speak to type)
+    </message>
     <message name="IDS_SETTINGS_MONO_AUDIO_LABEL" desc="Label for checkbox which enables mono audio output.">
       Play the same audio through all speakers (mono audio)
     </message>
@@ -309,6 +312,9 @@
     </message>
     <message name="IDS_SETTINGS_ACCESSIBILITY_KEYBOARD_HEADING" desc="In the settings tab, the heading above settings related to the keyboard.">
       Keyboard
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_KEYBOARD_AND_TEXT_INPUT_HEADING" desc="In the settings tab, the heading above settings related to the keyboard and other text input.">
+      Keyboard and text input
     </message>
     <message name="IDS_SETTINGS_ACCESSIBILITY_KEYBOARD_SETTINGS_TITLE" desc="In the settings tab, the title of a link to open keyboard settings.">
       Open keyboard device settings
