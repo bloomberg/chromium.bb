@@ -31,10 +31,16 @@ declare_args() {
   # Whether to include VR extras like test APKs in non-VR-specific targets
   include_vr_data = false
 
-  # TODO(crbug.com/837999): We currently only support arm and arm64 and we are
-  # limiting to canary and dev until binary size issues are resolved.
-  enable_arcore = is_android && !is_chromecast &&
-                  (current_cpu == "arm" || current_cpu == "arm64") &&
+  # TODO(crbug.com/837999, crbug.com/841389): We currently only support arm and
+  # we are limiting to canary and dev until binary size issues are resolved.
+  enable_arcore = is_android && !is_chromecast && current_cpu == "arm" &&
                   (android_channel == "default" || android_channel == "dev" ||
                    android_channel == "canary")
+
+  # TODO(crbug.com/841389): This should not be necessary once 64 bit is properly
+  # supported and enable_arcore permits arm64 as well.
+  enable_arcore_java = is_android && !is_chromecast &&
+                       (current_cpu == "arm" || current_cpu == "arm64") &&
+                       (android_channel == "default" ||
+                        android_channel == "dev" || android_channel == "canary")
 }
