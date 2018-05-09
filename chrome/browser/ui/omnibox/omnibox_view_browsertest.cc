@@ -678,7 +678,16 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_DesiredTLDWithTemporaryText) {
 }
 
 // See http://crbug.com/431575.
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, ClearUserTextAfterBackgroundCommit) {
+// Flaky on Mac (crbug.com/841195).
+#if defined(OS_MACOSX)
+#define MAYBE_ClearUserTextAfterBackgroundCommit \
+  DISABLED_ClearUserTextAfterBackgroundCommit
+#else
+#define MAYBE_ClearUserTextAfterBackgroundCommit \
+  ClearUserTextAfterBackgroundCommit
+#endif
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
+                       MAYBE_ClearUserTextAfterBackgroundCommit) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
 
