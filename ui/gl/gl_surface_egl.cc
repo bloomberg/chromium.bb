@@ -1101,6 +1101,18 @@ gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffers(
   } else if (use_egl_timestamps_) {
     UpdateSwapEvents(newFrameId, newFrameIdIsValid);
   }
+
+#if defined(USE_X11)
+  // We need to restore the background pixel that we set to WhitePixel on
+  // views::DesktopWindowTreeHostX11::InitX11Window back to None for the
+  // XWindow associated to this surface after the first SwapBuffers has
+  // happened, to avoid showing a weird white background while resizing.
+  if (g_native_display && !has_swapped_buffers_) {
+    XSetWindowBackgroundPixmap(g_native_display, window_, 0);
+    has_swapped_buffers_ = true;
+  }
+#endif
+
   return scoped_swap_buffers.result();
 }
 

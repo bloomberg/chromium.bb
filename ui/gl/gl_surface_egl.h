@@ -172,6 +172,10 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   bool supports_swap_buffer_with_damage_ = false;
   bool flips_vertically_ = false;
 
+#if defined(USE_X11)
+  bool has_swapped_buffers_ = false;
+#endif
+
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_external_;
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_internal_;
 

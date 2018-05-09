@@ -129,6 +129,8 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
   gfx::Size size_;
   VisualID visual_id_;
 
+  bool has_swapped_buffers_;
+
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
 
   std::unique_ptr<GLSurfacePresentationHelper> presentation_helper_;
