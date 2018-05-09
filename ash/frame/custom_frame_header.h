@@ -2,43 +2,47 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_HEADER_ASH_H_
-#define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_HEADER_ASH_H_
+#ifndef ASH_FRAME_CUSTOM_FRAME_HEADER_H_
+#define ASH_FRAME_CUSTOM_FRAME_HEADER_H_
 
+#include "ash/ash_export.h"
 #include "ash/frame/frame_header.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 
-namespace ash {
-class FrameCaptionButton;
-class FrameCaptionButtonContainerView;
-}  // namespace ash
-
 namespace gfx {
 class ImageSkia;
 class Rect;
 }  // namespace gfx
+
 namespace views {
 class View;
 class Widget;
 }  // namespace views
 
-// Helper class for managing the browser window header.
-class BrowserFrameHeaderAsh : public ash::FrameHeader,
-                              public gfx::AnimationDelegate {
+namespace ash {
+
+class FrameCaptionButton;
+class FrameCaptionButtonContainerView;
+
+// Helper class for drawing a custom frame (such as for a themed Chrome Browser
+// frame).
+class ASH_EXPORT CustomFrameHeader : public FrameHeader,
+                                     public gfx::AnimationDelegate {
  public:
   class AppearanceProvider {
    public:
+    virtual ~AppearanceProvider() = default;
     virtual SkColor GetFrameHeaderColor(bool active) = 0;
     virtual gfx::ImageSkia GetFrameHeaderImage(bool active) = 0;
     virtual gfx::ImageSkia GetFrameHeaderOverlayImage(bool active) = 0;
     virtual bool IsTabletMode() = 0;
   };
 
-  BrowserFrameHeaderAsh();
-  ~BrowserFrameHeaderAsh() override;
+  CustomFrameHeader();
+  ~CustomFrameHeader() override;
 
   // BrowserFrameHeaderAsh does not take ownership of any of the parameters.
   // |view| is the view into which |this| will paint. |back_button| can be
@@ -46,11 +50,9 @@ class BrowserFrameHeaderAsh : public ash::FrameHeader,
   void Init(views::View* view,
             AppearanceProvider* appearance_provider,
             bool incognito,
-            views::View* window_icon,
-            ash::FrameCaptionButtonContainerView* caption_button_container,
-            ash::FrameCaptionButton* back_button);
+            FrameCaptionButtonContainerView* caption_button_container);
 
-  // ash::FrameHeader overrides:
+  // FrameHeader overrides:
   int GetMinimumHeaderWidth() const override;
   void PaintHeader(gfx::Canvas* canvas, Mode mode) override;
   void LayoutHeader() override;
@@ -60,6 +62,11 @@ class BrowserFrameHeaderAsh : public ash::FrameHeader,
   void SchedulePaintForTitle() override;
   void SetPaintAsActive(bool paint_as_active) override;
   void OnShowStateChanged(ui::WindowShowState show_state) override;
+  void SetLeftHeaderView(views::View* left_header_view) override;
+  void SetBackButton(FrameCaptionButton* back_button) override;
+  FrameCaptionButton* GetBackButton() const override;
+  void SetFrameColors(SkColor active_frame_color,
+                      SkColor inactive_frame_color) override;
 
  private:
   // gfx::AnimationDelegate override:
@@ -98,8 +105,8 @@ class BrowserFrameHeaderAsh : public ash::FrameHeader,
   bool is_incognito_ = false;
 
   views::View* window_icon_ = nullptr;
-  ash::FrameCaptionButton* back_button_ = nullptr;
-  ash::FrameCaptionButtonContainerView* caption_button_container_ = nullptr;
+  FrameCaptionButton* back_button_ = nullptr;
+  FrameCaptionButtonContainerView* caption_button_container_ = nullptr;
   int painted_height_ = 0;
 
   // Whether the header is painted for the first time.
@@ -110,7 +117,9 @@ class BrowserFrameHeaderAsh : public ash::FrameHeader,
 
   gfx::SlideAnimation activation_animation_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserFrameHeaderAsh);
+  DISALLOW_COPY_AND_ASSIGN(CustomFrameHeader);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_HEADER_ASH_H_
+}  // namespace ash
+
+#endif  // ASH_FRAME_CUSTOM_FRAME_HEADER_H_

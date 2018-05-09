@@ -10,6 +10,7 @@
 
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/frame/default_frame_header.h"
 #include "ash/frame/frame_border_hit_test.h"
 #include "ash/frame/header_view.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
@@ -179,48 +180,6 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
 bool CustomFrameViewAsh::use_empty_minimum_size_for_test_ = false;
 
 ///////////////////////////////////////////////////////////////////////////////
-// CustomFrameViewAsh::AvatarObserver
-
-// AvatarObserver watches the frame window's avatar icon property and updates
-// HeaderView with it.
-class CustomFrameViewAsh::AvatarObserver : public aura::WindowObserver {
- public:
-  AvatarObserver(views::Widget* frame, HeaderView* header_view)
-      : frame_window_(frame->GetNativeWindow()), header_view_(header_view) {
-    frame_window_->AddObserver(this);
-  }
-
-  ~AvatarObserver() override {
-    if (frame_window_)
-      frame_window_->RemoveObserver(this);
-  }
-
-  // aura::WindowObserver:
-  void OnWindowPropertyChanged(aura::Window* window,
-                               const void* key,
-                               intptr_t old) override {
-    DCHECK_EQ(frame_window_, window);
-    if (key != aura::client::kAvatarIconKey)
-      return;
-
-    gfx::ImageSkia* const avatar_icon =
-        frame_window_->GetProperty(aura::client::kAvatarIconKey);
-    header_view_->SetAvatarIcon(avatar_icon ? *avatar_icon : gfx::ImageSkia());
-  }
-
-  void OnWindowDestroyed(aura::Window* window) override {
-    DCHECK_EQ(frame_window_, window);
-    frame_window_ = nullptr;
-  }
-
- private:
-  aura::Window* frame_window_;
-  HeaderView* const header_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(AvatarObserver);
-};
-
-///////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh::OverlayView
 
 // View which takes up the entire widget and contains the HeaderView. HeaderView
@@ -317,19 +276,18 @@ CustomFrameViewAsh::CustomFrameViewAsh(
       header_view_(new HeaderView(frame, window_style, std::move(model))),
       overlay_view_(new OverlayView(header_view_)),
       immersive_delegate_(immersive_delegate ? immersive_delegate
-                                             : header_view_),
-      avatar_observer_(std::make_unique<AvatarObserver>(frame_, header_view_)) {
+                                             : header_view_) {
   aura::Window* frame_window = frame->GetNativeWindow();
   wm::InstallResizeHandleWindowTargeterForWindow(frame_window, nullptr);
   // |header_view_| is set as the non client view's overlay view so that it can
   // overlay the web contents in immersive fullscreen.
   frame->non_client_view()->SetOverlayView(overlay_view_);
   frame_window->SetProperty(aura::client::kTopViewColor,
-                            header_view_->GetInactiveFrameColor());
+                            DefaultFrameHeader::GetDefaultFrameColor());
   frame_window->SetProperty(ash::kFrameActiveColorKey,
-                            header_view_->GetActiveFrameColor());
+                            DefaultFrameHeader::GetDefaultFrameColor());
   frame_window->SetProperty(ash::kFrameInactiveColorKey,
-                            header_view_->GetInactiveFrameColor());
+                            DefaultFrameHeader::GetDefaultFrameColor());
   frame_window->AddObserver(this);
 
   // A delegate for a more complex way of fullscreening the window may already
@@ -362,7 +320,6 @@ void CustomFrameViewAsh::InitImmersiveFullscreenControllerForView(
 
 void CustomFrameViewAsh::SetFrameColors(SkColor active_frame_color,
                                         SkColor inactive_frame_color) {
-  header_view_->SetFrameColors(active_frame_color, inactive_frame_color);
   aura::Window* frame_window = frame_->GetNativeWindow();
   frame_window->SetProperty(aura::client::kTopViewColor, inactive_frame_color);
   frame_window->SetProperty(ash::kFrameActiveColorKey, active_frame_color);
@@ -428,7 +385,6 @@ void CustomFrameViewAsh::ResetWindowControls() {
 void CustomFrameViewAsh::UpdateWindowIcon() {}
 
 void CustomFrameViewAsh::UpdateWindowTitle() {
-  header_view_->set_title(GetFrameTitle());
   header_view_->SchedulePaintForTitle();
 }
 
@@ -527,19 +483,6 @@ void CustomFrameViewAsh::OnWindowPropertyChanged(aura::Window* window,
   if (key == aura::client::kShowStateKey) {
     header_view_->OnShowStateChanged(
         window->GetProperty(aura::client::kShowStateKey));
-    return;
-  }
-
-  if (key == ash::kFrameActiveColorKey) {
-    header_view_->SetFrameColors(window->GetProperty(ash::kFrameActiveColorKey),
-                                 header_view_->GetInactiveFrameColor());
-    return;
-  }
-
-  if (key == ash::kFrameInactiveColorKey) {
-    header_view_->SetFrameColors(
-        header_view_->GetActiveFrameColor(),
-        window->GetProperty(ash::kFrameInactiveColorKey));
   }
 }
 
@@ -548,11 +491,11 @@ const views::View* CustomFrameViewAsh::GetAvatarIconViewForTest() const {
 }
 
 SkColor CustomFrameViewAsh::GetActiveFrameColorForTest() const {
-  return header_view_->GetActiveFrameColor();
+  return frame_->GetNativeWindow()->GetProperty(ash::kFrameActiveColorKey);
 }
 
 SkColor CustomFrameViewAsh::GetInactiveFrameColorForTest() const {
-  return header_view_->GetInactiveFrameColor();
+  return frame_->GetNativeWindow()->GetProperty(ash::kFrameInactiveColorKey);
 }
 
 void CustomFrameViewAsh::UpdateHeaderView() {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/browser_frame_header_ash.h"
+#include "ash/frame/custom_frame_header.h"
 
 #include "ash/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
@@ -24,6 +24,8 @@
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+
+namespace ash {
 
 namespace {
 
@@ -100,47 +102,40 @@ void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserFrameHeaderAsh, public:
+// CustomFrameHeader, public:
 
-BrowserFrameHeaderAsh::BrowserFrameHeaderAsh() = default;
+CustomFrameHeader::CustomFrameHeader() = default;
 
-BrowserFrameHeaderAsh::~BrowserFrameHeaderAsh() = default;
+CustomFrameHeader::~CustomFrameHeader() = default;
 
-void BrowserFrameHeaderAsh::Init(
+void CustomFrameHeader::Init(
     views::View* view,
     AppearanceProvider* appearance_provider,
     bool incognito,
-    views::View* window_icon,
-    ash::FrameCaptionButtonContainerView* caption_button_container,
-    ash::FrameCaptionButton* back_button) {
+    FrameCaptionButtonContainerView* caption_button_container) {
   DCHECK(view);
   DCHECK(appearance_provider);
-  // window_icon may be null.
   DCHECK(caption_button_container);
-  // back_button may be null.
 
   view_ = view;
   appearance_provider_ = appearance_provider;
   is_incognito_ = incognito;
-  window_icon_ = window_icon;
   caption_button_container_ = caption_button_container;
-  back_button_ = back_button;
 }
 
-int BrowserFrameHeaderAsh::GetMinimumHeaderWidth() const {
+int CustomFrameHeader::GetMinimumHeaderWidth() const {
   // Ensure we have enough space for the window icon and buttons. We allow
   // the title string to collapse to zero width.
   return GetTitleBounds().x() +
          caption_button_container_->GetMinimumSize().width();
 }
 
-void BrowserFrameHeaderAsh::PaintHeader(gfx::Canvas* canvas, Mode mode) {
+void CustomFrameHeader::PaintHeader(gfx::Canvas* canvas, Mode mode) {
   Mode old_mode = mode_;
   mode_ = mode;
 
   if (mode_ != old_mode) {
-    if (!initial_paint_ &&
-        ash::FrameHeaderUtil::CanAnimateActivation(GetWidget())) {
+    if (!initial_paint_ && FrameHeaderUtil::CanAnimateActivation(GetWidget())) {
       activation_animation_.SetSlideDuration(kActivationCrossfadeDurationMs);
       if (mode_ == MODE_ACTIVE)
         activation_animation_.Show();
@@ -164,31 +159,30 @@ void BrowserFrameHeaderAsh::PaintHeader(gfx::Canvas* canvas, Mode mode) {
   }
 }
 
-void BrowserFrameHeaderAsh::LayoutHeader() {
-  // Purposefully set |painted_height_| to an invalid value. We cannot use
-  // |painted_height_| because the computation of |painted_height_| may depend
-  // on having laid out the window controls.
-  painted_height_ = -1;
+void CustomFrameHeader::LayoutHeader() {
   LayoutHeaderInternal();
+  // Default to the header height; owning code may override via
+  // SetHeaderHeightForPainting().
+  painted_height_ = GetHeaderHeight();
 }
 
-int BrowserFrameHeaderAsh::GetHeaderHeight() const {
+int CustomFrameHeader::GetHeaderHeight() const {
   return caption_button_container_->height();
 }
 
-int BrowserFrameHeaderAsh::GetHeaderHeightForPainting() const {
+int CustomFrameHeader::GetHeaderHeightForPainting() const {
   return painted_height_;
 }
 
-void BrowserFrameHeaderAsh::SetHeaderHeightForPainting(int height) {
+void CustomFrameHeader::SetHeaderHeightForPainting(int height) {
   painted_height_ = height;
 }
 
-void BrowserFrameHeaderAsh::SchedulePaintForTitle() {
+void CustomFrameHeader::SchedulePaintForTitle() {
   view_->SchedulePaintInRect(GetTitleBounds());
 }
 
-void BrowserFrameHeaderAsh::SetPaintAsActive(bool paint_as_active) {
+void CustomFrameHeader::SetPaintAsActive(bool paint_as_active) {
   SkColor frame_color =
       appearance_provider_->GetFrameHeaderColor(paint_as_active);
   caption_button_container_->SetPaintAsActive(paint_as_active);
@@ -199,7 +193,7 @@ void BrowserFrameHeaderAsh::SetPaintAsActive(bool paint_as_active) {
   }
 }
 
-void BrowserFrameHeaderAsh::OnShowStateChanged(ui::WindowShowState show_state) {
+void CustomFrameHeader::OnShowStateChanged(ui::WindowShowState show_state) {
   if (show_state == ui::SHOW_STATE_MINIMIZED)
     return;
   // Call LayoutHeaderInternal() instead of LayoutHeader() here because
@@ -207,18 +201,34 @@ void BrowserFrameHeaderAsh::OnShowStateChanged(ui::WindowShowState show_state) {
   LayoutHeaderInternal();
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// gfx::AnimationDelegate overrides:
+void CustomFrameHeader::SetLeftHeaderView(views::View* left_header_view) {
+  window_icon_ = left_header_view;
+}
 
-void BrowserFrameHeaderAsh::AnimationProgressed(
-    const gfx::Animation* animation) {
+void CustomFrameHeader::SetBackButton(FrameCaptionButton* back_button) {
+  back_button_ = back_button;
+}
+
+FrameCaptionButton* CustomFrameHeader::GetBackButton() const {
+  return back_button_;
+}
+
+void CustomFrameHeader::SetFrameColors(SkColor active_frame_color,
+                                       SkColor inactive_frame_color) {
   view_->SchedulePaintInRect(GetPaintedBounds());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserFrameHeaderAsh, private:
+// gfx::AnimationDelegate overrides:
 
-void BrowserFrameHeaderAsh::LayoutHeaderInternal() {
+void CustomFrameHeader::AnimationProgressed(const gfx::Animation* animation) {
+  view_->SchedulePaintInRect(GetPaintedBounds());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CustomFrameHeader, private:
+
+void CustomFrameHeader::LayoutHeaderInternal() {
   UpdateCaptionButtons();
   const gfx::Size caption_button_container_size =
       caption_button_container_->GetPreferredSize();
@@ -236,11 +246,11 @@ void BrowserFrameHeaderAsh::LayoutHeaderInternal() {
   // container.
   const gfx::Size icon_size(window_icon_->GetPreferredSize());
   const int icon_offset_y = (GetHeaderHeight() - icon_size.height()) / 2;
-  window_icon_->SetBounds(ash::FrameHeaderUtil::GetLeftViewXInset(),
-                          icon_offset_y, icon_size.width(), icon_size.height());
+  window_icon_->SetBounds(FrameHeaderUtil::GetLeftViewXInset(), icon_offset_y,
+                          icon_size.width(), icon_size.height());
 }
 
-void BrowserFrameHeaderAsh::PaintFrameImages(gfx::Canvas* canvas, bool active) {
+void CustomFrameHeader::PaintFrameImages(gfx::Canvas* canvas, bool active) {
   int alpha = activation_animation_.CurrentValueBetween(0, 0xFF);
   if (!active)
     alpha = 0xFF - alpha;
@@ -257,15 +267,15 @@ void BrowserFrameHeaderAsh::PaintFrameImages(gfx::Canvas* canvas, bool active) {
 
   int corner_radius = 0;
   if (!GetWidget()->IsMaximized() && !GetWidget()->IsFullscreen())
-    corner_radius = ash::FrameHeaderUtil::GetTopCornerRadiusWhenRestored();
+    corner_radius = FrameHeaderUtil::GetTopCornerRadiusWhenRestored();
 
   PaintFrameImagesInRoundRect(canvas, frame_image, frame_overlay_image, alpha,
                               background_color, GetPaintedBounds(),
                               corner_radius,
-                              ash::FrameHeaderUtil::GetThemeBackgroundXInset());
+                              FrameHeaderUtil::GetThemeBackgroundXInset());
 }
 
-void BrowserFrameHeaderAsh::PaintTitleBar(gfx::Canvas* canvas) {
+void CustomFrameHeader::PaintTitleBar(gfx::Canvas* canvas) {
   // The window icon is painted by its own views::View.
   canvas->DrawStringRectWithFlags(
       GetWidget()->widget_delegate()->GetWindowTitle(),
@@ -276,21 +286,19 @@ void BrowserFrameHeaderAsh::PaintTitleBar(gfx::Canvas* canvas) {
       gfx::Canvas::NO_SUBPIXEL_RENDERING);
 }
 
-void BrowserFrameHeaderAsh::UpdateCaptionButtons() {
+void CustomFrameHeader::UpdateCaptionButtons() {
   // When |frame_| minimized, avoid tablet mode toggling to update caption
   // buttons as it would cause mismatch beteen window state and size button.
   if (GetWidget()->IsMinimized())
     return;
-  caption_button_container_->SetButtonImage(ash::CAPTION_BUTTON_ICON_MINIMIZE,
-                                            ash::kWindowControlMinimizeIcon);
-  caption_button_container_->SetButtonImage(ash::CAPTION_BUTTON_ICON_CLOSE,
-                                            ash::kWindowControlCloseIcon);
-  caption_button_container_->SetButtonImage(
-      ash::CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-      ash::kWindowControlLeftSnappedIcon);
-  caption_button_container_->SetButtonImage(
-      ash::CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-      ash::kWindowControlRightSnappedIcon);
+  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_MINIMIZE,
+                                            kWindowControlMinimizeIcon);
+  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_CLOSE,
+                                            kWindowControlCloseIcon);
+  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_LEFT_SNAPPED,
+                                            kWindowControlLeftSnappedIcon);
+  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+                                            kWindowControlRightSnappedIcon);
 
   const bool is_maximized_or_fullscreen =
       GetWidget()->IsMaximized() || GetWidget()->IsFullscreen();
@@ -298,25 +306,27 @@ void BrowserFrameHeaderAsh::UpdateCaptionButtons() {
       is_maximized_or_fullscreen || appearance_provider_->IsTabletMode()
           ? AshLayoutSize::kBrowserCaptionMaximized
           : AshLayoutSize::kBrowserCaptionRestored;
-  const gfx::VectorIcon* const size_icon =
-      is_maximized_or_fullscreen ? &ash::kWindowControlRestoreIcon
-                                 : &ash::kWindowControlMaximizeIcon;
+  const gfx::VectorIcon* const size_icon = is_maximized_or_fullscreen
+                                               ? &kWindowControlRestoreIcon
+                                               : &kWindowControlMaximizeIcon;
 
   caption_button_container_->SetButtonImage(
-      ash::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, *size_icon);
+      CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, *size_icon);
   caption_button_container_->SetButtonSize(GetAshLayoutSize(button_size_type));
 }
 
-gfx::Rect BrowserFrameHeaderAsh::GetPaintedBounds() const {
+gfx::Rect CustomFrameHeader::GetPaintedBounds() const {
   return gfx::Rect(view_->width(), painted_height_);
 }
 
-gfx::Rect BrowserFrameHeaderAsh::GetTitleBounds() const {
+gfx::Rect CustomFrameHeader::GetTitleBounds() const {
   views::View* left_view = window_icon_ ? window_icon_ : back_button_;
-  return ash::FrameHeaderUtil::GetAvailableTitleBounds(
+  return FrameHeaderUtil::GetAvailableTitleBounds(
       left_view, caption_button_container_, GetHeaderHeight());
 }
 
-views::Widget* BrowserFrameHeaderAsh::GetWidget() {
+views::Widget* CustomFrameHeader::GetWidget() {
   return view_->GetWidget();
 }
+
+}  // namespace ash

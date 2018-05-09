@@ -39,7 +39,6 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_frame_ash.h"
-#include "chrome/browser/ui/views/frame/browser_frame_header_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
@@ -439,7 +438,7 @@ void BrowserNonClientFrameViewAsh::ChildPreferredSizeChanged(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserFrameHeaderAsh::AppearanceProvider:
+// ash::CustomFrameHeader::AppearanceProvider:
 
 SkColor BrowserNonClientFrameViewAsh::GetFrameHeaderColor(bool active) {
   return GetFrameColor(active);
@@ -640,71 +639,72 @@ void BrowserNonClientFrameViewAsh::OnOverviewOrSplitviewModeChanged() {
 
 std::unique_ptr<ash::FrameHeader>
 BrowserNonClientFrameViewAsh::CreateFrameHeader() {
+  std::unique_ptr<ash::FrameHeader> header;
+
   Browser* browser = browser_view()->browser();
   if (!UsePackagedAppHeaderStyle()) {
-    auto browser_frame_header = std::make_unique<BrowserFrameHeaderAsh>();
-    browser_frame_header->Init(
-        this, this, !browser_view()->IsRegularOrGuestSession(), window_icon_,
-        caption_button_container_, back_button_);
-    return browser_frame_header;
-  }
-  std::unique_ptr<ash::DefaultFrameHeader> default_frame_header =
-      std::make_unique<ash::DefaultFrameHeader>(frame(), this,
-                                                caption_button_container_);
+    auto browser_frame_header = std::make_unique<ash::CustomFrameHeader>();
+    browser_frame_header->Init(this, this,
+                               !browser_view()->IsRegularOrGuestSession(),
+                               caption_button_container_);
+    header = std::move(browser_frame_header);
+  } else {
+    std::unique_ptr<ash::DefaultFrameHeader> default_frame_header =
+        std::make_unique<ash::DefaultFrameHeader>(frame(), this,
+                                                  caption_button_container_);
+    // TODO(alancutter): Move this branch into a new HostedAppFrameHeader class.
+    if (extensions::HostedAppBrowserController::
+            IsForExperimentalHostedAppBrowser(browser)) {
+      SkColor active_color = ash::FrameCaptionButton::GetButtonColor(
+          ash::FrameCaptionButton::ColorMode::kDefault,
+          ash::DefaultFrameHeader::GetDefaultFrameColor());
 
-  // TODO(alancutter): Move this branch into a new HostedAppFrameHeader class.
-  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser)) {
-    // Hosted apps apply a theme color if specified by the extension.
-    base::Optional<SkColor> theme_color =
-        browser->hosted_app_controller()->GetThemeColor();
-    if (theme_color) {
-      SkColor opaque_theme_color =
-          SkColorSetA(theme_color.value(), SK_AlphaOPAQUE);
-      default_frame_header->SetThemeColor(opaque_theme_color);
+      // Hosted apps apply a theme color if specified by the extension.
+      base::Optional<SkColor> theme_color =
+          browser->hosted_app_controller()->GetThemeColor();
+      if (theme_color) {
+        theme_color = SkColorSetA(theme_color.value(), SK_AlphaOPAQUE);
+        default_frame_header->SetThemeColor(*theme_color);
+        active_color = ash::FrameCaptionButton::GetButtonColor(
+            ash::FrameCaptionButton::ColorMode::kThemed, *theme_color);
+      }
+
+      // Add the container for extra hosted app buttons (e.g app menu button).
+      const float inactive_alpha_ratio =
+          ash::FrameCaptionButton::GetInactiveButtonColorAlphaRatio();
+      SkColor inactive_color =
+          SkColorSetA(active_color, 255 * inactive_alpha_ratio);
+      hosted_app_button_container_ = new HostedAppButtonContainer(
+          browser_view(), active_color, inactive_color);
+      caption_button_container_->AddChildViewAt(hosted_app_button_container_,
+                                                0);
+
+      // Add the origin text.
+      frame_header_origin_text_ =
+          std::make_unique<ash::FrameHeaderOriginText>(
+              browser->hosted_app_controller()->GetFormattedUrlOrigin(),
+              active_color, inactive_color)
+              .release();
+      AddChildView(frame_header_origin_text_);
+
+      // Schedule the title bar animation.
+      constexpr base::TimeDelta kTitlebarAnimationDelay =
+          base::TimeDelta::FromMilliseconds(750);
+      base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&BrowserNonClientFrameViewAsh::StartHostedAppAnimation,
+                         weak_factory_.GetWeakPtr()),
+          kTitlebarAnimationDelay);
+    } else if (!browser->is_app()) {
+      default_frame_header->SetFrameColors(BrowserFrameAsh::kMdWebUiFrameColor,
+                                           BrowserFrameAsh::kMdWebUiFrameColor);
     }
-
-    // Add the container for extra hosted app buttons (e.g app menu button).
-    SkColor active_color = ash::FrameCaptionButton::GetButtonColor(
-        theme_color ? ash::FrameCaptionButton::ColorMode::kThemed
-                    : ash::FrameCaptionButton::ColorMode::kDefault,
-        default_frame_header->GetActiveFrameColor());
-    const float inactive_alpha_ratio =
-        ash::FrameCaptionButton::GetInactiveButtonColorAlphaRatio();
-    SkColor inactive_color =
-        SkColorSetA(active_color, 255 * inactive_alpha_ratio);
-    hosted_app_button_container_ = new HostedAppButtonContainer(
-        browser_view(), active_color, inactive_color);
-    caption_button_container_->AddChildViewAt(hosted_app_button_container_, 0);
-
-    // Add the origin text.
-    frame_header_origin_text_ =
-        std::make_unique<ash::FrameHeaderOriginText>(
-            browser->hosted_app_controller()->GetFormattedUrlOrigin(),
-            active_color, inactive_color)
-            .release();
-    AddChildView(frame_header_origin_text_);
-
-    // Schedule the title bar animation.
-    constexpr base::TimeDelta kTitlebarAnimationDelay =
-        base::TimeDelta::FromMilliseconds(750);
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&BrowserNonClientFrameViewAsh::StartHostedAppAnimation,
-                       weak_factory_.GetWeakPtr()),
-        kTitlebarAnimationDelay);
-  } else if (!browser->is_app()) {
-    default_frame_header->SetFrameColors(BrowserFrameAsh::kMdWebUiFrameColor,
-                                         BrowserFrameAsh::kMdWebUiFrameColor);
+    header = std::move(default_frame_header);
   }
 
-  if (back_button_)
-    default_frame_header->set_back_button(back_button_);
-
-  if (window_icon_)
-    default_frame_header->set_left_header_view(window_icon_);
-
-  return default_frame_header;
+  header->SetBackButton(back_button_);
+  header->SetLeftHeaderView(window_icon_);
+  return header;
 }
 
 void BrowserNonClientFrameViewAsh::StartHostedAppAnimation() {
