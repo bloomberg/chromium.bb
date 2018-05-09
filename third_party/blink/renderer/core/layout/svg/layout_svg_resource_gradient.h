@@ -44,9 +44,9 @@ class LayoutSVGResourceGradient : public LayoutSVGResourcePaintServer {
   explicit LayoutSVGResourceGradient(SVGGradientElement*);
 
   void RemoveAllClientsFromCache(bool mark_for_invalidation = true) final;
-  bool RemoveClientFromCache(SVGResourceClient&) final;
+  bool RemoveClientFromCache(LayoutObject&) final;
 
-  SVGPaintServer PreparePaintServer(const SVGResourceClient&,
+  SVGPaintServer PreparePaintServer(const LayoutObject&,
                                     const FloatRect& object_bounding_box) final;
 
   bool IsChildAllowed(LayoutObject* child, const ComputedStyle&) const final;
@@ -62,9 +62,7 @@ class LayoutSVGResourceGradient : public LayoutSVGResourcePaintServer {
 
  private:
   bool should_collect_gradient_attributes_ : 1;
-  using GradientMap = PersistentHeapHashMap<Member<const SVGResourceClient>,
-                                            std::unique_ptr<GradientData>>;
-  GradientMap gradient_map_;
+  HashMap<const LayoutObject*, std::unique_ptr<GradientData>> gradient_map_;
 };
 
 }  // namespace blink

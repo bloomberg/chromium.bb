@@ -50,15 +50,24 @@ void SVGResourcesCache::AddResourcesFromLayoutObject(
   SVGResources* resources =
       cache_.Set(&object, std::move(new_resources)).stored_value->value.get();
 
-  // Run cycle-detection _afterwards_, so self-references can be caught as well.
   HashSet<LayoutSVGResourceContainer*> resource_set;
   resources->BuildSetOfResources(resource_set);
 
-  SVGResourcesCycleSolver solver(object);
-  for (auto* resource_container : resource_set) {
-    if (solver.FindCycle(resource_container))
-      resources->ClearReferencesTo(resource_container);
+  // Run cycle-detection _afterwards_, so self-references can be caught as well.
+  {
+    SVGResourcesCycleSolver solver(object);
+    for (auto* resource_container : resource_set) {
+      if (solver.FindCycle(resource_container))
+        resources->ClearReferencesTo(resource_container);
+    }
+    resource_set.clear();
   }
+
+  // Walk resources and register the layout object as a client of each resource.
+  resources->BuildSetOfResources(resource_set);
+
+  for (auto* resource_container : resource_set)
+    resource_container->AddClient(object);
 }
 
 void SVGResourcesCache::RemoveResourcesFromLayoutObject(LayoutObject& object) {
@@ -68,6 +77,19 @@ void SVGResourcesCache::RemoveResourcesFromLayoutObject(LayoutObject& object) {
 
   // Removal of the resource may cause removal of paint property nodes.
   object.SetNeedsPaintPropertyUpdate();
+
+  // Walk resources and unregister the layout object as a client of each
+  // resource.
+  HashSet<LayoutSVGResourceContainer*> resource_set;
+  resources->BuildSetOfResources(resource_set);
+
+  bool did_empty_client_set = false;
+  for (auto* resource_container : resource_set)
+    did_empty_client_set |= resource_container->RemoveClient(object);
+
+  // Remove any registrations that became empty after the above.
+  if (did_empty_client_set)
+    SVGResources::RemoveUnreferencedResources(object);
 }
 
 static inline SVGResourcesCache& ResourcesCache(Document& document) {
@@ -88,9 +110,8 @@ void SVGResourcesCache::ClientLayoutChanged(LayoutObject& object) {
   // or we have filter resources, which could depend on the layout of children.
   if (!object.SelfNeedsLayout() && !resources->Filter())
     return;
-  SVGResourceClient* client = SVGResources::GetClient(object);
   if (InvalidationModeMask invalidation_flags =
-          resources->RemoveClientFromCache(*client)) {
+          resources->RemoveClientFromCache(object)) {
     LayoutSVGResourceContainer::MarkClientForInvalidation(object,
                                                           invalidation_flags);
   }
@@ -206,27 +227,15 @@ SVGResourcesCache::TemporaryStyleScope::TemporaryStyleScope(
     const ComputedStyle& temporary_style)
     : layout_object_(layout_object),
       original_style_(style),
-      temporary_style_(temporary_style),
       styles_are_equal_(style == temporary_style) {
-  if (styles_are_equal_)
-    return;
-  DCHECK(LayoutObjectCanHaveResources(layout_object_));
-  SVGElement& element = ToSVGElement(*layout_object_.GetNode());
-  SVGResources::UpdatePaints(element, nullptr, temporary_style_);
   SwitchTo(temporary_style);
-}
-
-SVGResourcesCache::TemporaryStyleScope::~TemporaryStyleScope() {
-  if (styles_are_equal_)
-    return;
-  SVGElement& element = ToSVGElement(*layout_object_.GetNode());
-  SVGResources::ClearPaints(element, &temporary_style_);
-  SwitchTo(original_style_);
 }
 
 void SVGResourcesCache::TemporaryStyleScope::SwitchTo(
     const ComputedStyle& style) {
-  DCHECK(!styles_are_equal_);
+  DCHECK(LayoutObjectCanHaveResources(layout_object_));
+  if (styles_are_equal_)
+    return;
   SVGResourcesCache& cache = ResourcesCache(layout_object_.GetDocument());
   cache.RemoveResourcesFromLayoutObject(layout_object_);
   cache.AddResourcesFromLayoutObject(layout_object_, style);

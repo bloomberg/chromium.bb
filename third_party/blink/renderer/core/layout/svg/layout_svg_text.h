@@ -85,8 +85,6 @@ class LayoutSVGText final : public LayoutSVGBlock {
   void AddChild(LayoutObject* child,
                 LayoutObject* before_child = nullptr) override;
   void RemoveChild(LayoutObject*) override;
-
-  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void WillBeDestroyed() override;
 
   RootInlineBox* CreateRootInlineBox() override;

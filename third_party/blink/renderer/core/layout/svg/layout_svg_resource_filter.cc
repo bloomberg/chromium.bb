@@ -75,7 +75,7 @@ void LayoutSVGResourceFilter::RemoveAllClientsFromCache(
                             : SVGResourceClient::kParentOnlyInvalidation);
 }
 
-bool LayoutSVGResourceFilter::RemoveClientFromCache(SVGResourceClient& client) {
+bool LayoutSVGResourceFilter::RemoveClientFromCache(LayoutObject& client) {
   auto entry = filter_.find(&client);
   if (entry == filter_.end())
     return false;
@@ -129,7 +129,8 @@ void LayoutSVGResourceFilter::PrimitiveAttributeChanged(
     node_map->InvalidateDependentEffects(effect);
 
     // Issue paint invalidations for the image on the screen.
-    filter.key->Invalidate(SVGResourceClient::kPaintInvalidation);
+    MarkClientForInvalidation(*filter.key,
+                              SVGResourceClient::kPaintInvalidation);
   }
   if (LocalSVGResource* resource =
           ToSVGFilterElement(GetElement())->AssociatedResource())

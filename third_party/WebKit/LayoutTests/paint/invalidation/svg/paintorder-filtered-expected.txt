@@ -25,12 +25,12 @@
         {
           "object": "LayoutSVGContainer use id='t2'",
           "rect": [179, 160, 140, 140],
-          "reason": "SVG resource change"
+          "reason": "style change"
         },
         {
           "object": "LayoutSVGContainer use id='t1'",
           "rect": [42, 160, 140, 140],
-          "reason": "SVG resource change"
+          "reason": "style change"
         },
         {
           "object": "LayoutSVGViewportContainer svg",
@@ -43,7 +43,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGContainer use id='t1'",
-      "reason": "SVG resource change"
+      "reason": "style change"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='poly'",
@@ -55,7 +55,7 @@
     },
     {
       "object": "LayoutSVGContainer use id='t2'",
-      "reason": "SVG resource change"
+      "reason": "style change"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='poly'",

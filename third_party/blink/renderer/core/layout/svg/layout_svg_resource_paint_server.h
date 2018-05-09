@@ -103,7 +103,7 @@ class LayoutSVGResourcePaintServer : public LayoutSVGResourceContainer {
   ~LayoutSVGResourcePaintServer() override;
 
   virtual SVGPaintServer PreparePaintServer(
-      const SVGResourceClient&,
+      const LayoutObject&,
       const FloatRect& object_bounding_box) = 0;
 
   // Helper utilities used in to access the underlying resources for DRT.

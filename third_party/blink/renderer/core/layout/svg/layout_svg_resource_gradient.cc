@@ -40,8 +40,7 @@ void LayoutSVGResourceGradient::RemoveAllClientsFromCache(
                             : SVGResourceClient::kParentOnlyInvalidation);
 }
 
-bool LayoutSVGResourceGradient::RemoveClientFromCache(
-    SVGResourceClient& client) {
+bool LayoutSVGResourceGradient::RemoveClientFromCache(LayoutObject& client) {
   auto entry = gradient_map_.find(&client);
   if (entry == gradient_map_.end())
     return false;
@@ -50,7 +49,7 @@ bool LayoutSVGResourceGradient::RemoveClientFromCache(
 }
 
 SVGPaintServer LayoutSVGResourceGradient::PreparePaintServer(
-    const SVGResourceClient& client,
+    const LayoutObject& object,
     const FloatRect& object_bounding_box) {
   ClearInvalidationMask();
 
@@ -72,7 +71,7 @@ SVGPaintServer LayoutSVGResourceGradient::PreparePaintServer(
     return SVGPaintServer::Invalid();
 
   std::unique_ptr<GradientData>& gradient_data =
-      gradient_map_.insert(&client, nullptr).stored_value->value;
+      gradient_map_.insert(&object, nullptr).stored_value->value;
   if (!gradient_data)
     gradient_data = std::make_unique<GradientData>();
 

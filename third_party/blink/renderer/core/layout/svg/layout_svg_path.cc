@@ -38,17 +38,6 @@ LayoutSVGPath::LayoutSVGPath(SVGGeometryElement* node) : LayoutSVGShape(node) {}
 
 LayoutSVGPath::~LayoutSVGPath() = default;
 
-void LayoutSVGPath::StyleDidChange(StyleDifference diff,
-                                   const ComputedStyle* old_style) {
-  LayoutSVGShape::StyleDidChange(diff, old_style);
-  SVGResources::UpdateMarkers(*GetElement(), old_style, StyleRef());
-}
-
-void LayoutSVGPath::WillBeDestroyed() {
-  SVGResources::ClearMarkers(*GetElement(), Style());
-  LayoutSVGShape::WillBeDestroyed();
-}
-
 void LayoutSVGPath::UpdateShapeFromElement() {
   LayoutSVGShape::UpdateShapeFromElement();
   ProcessMarkerPositions();

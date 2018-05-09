@@ -25,13 +25,13 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
-#include "third_party/blink/renderer/core/svg/svg_resource_client.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
 class ComputedStyle;
+class Element;
 class LayoutObject;
 class LayoutSVGResourceClipper;
 class LayoutSVGResourceFilter;
@@ -47,23 +47,11 @@ class SVGResources {
  public:
   SVGResources();
 
-  static SVGResourceClient* GetClient(const LayoutObject&);
-
   static std::unique_ptr<SVGResources> BuildResources(const LayoutObject&,
                                                       const ComputedStyle&);
 
-  static void UpdateClipPathFilterMask(SVGElement&,
-                                       const ComputedStyle* old_style,
-                                       const ComputedStyle&);
-  static void ClearClipPathFilterMask(SVGElement&, const ComputedStyle*);
-  static void UpdatePaints(SVGElement&,
-                           const ComputedStyle* old_style,
-                           const ComputedStyle&);
-  static void ClearPaints(SVGElement&, const ComputedStyle*);
-  static void UpdateMarkers(SVGElement&,
-                            const ComputedStyle* old_style,
-                            const ComputedStyle&);
-  static void ClearMarkers(SVGElement&, const ComputedStyle*);
+  static void RemoveWatchesForElement(Element&);
+  static void RemoveUnreferencedResources(const LayoutObject&);
 
   void LayoutIfNeeded();
 
@@ -110,9 +98,9 @@ class SVGResources {
   void BuildSetOfResources(HashSet<LayoutSVGResourceContainer*>&);
 
   // Methods operating on all cached resources
-  InvalidationModeMask RemoveClientFromCache(SVGResourceClient&) const;
+  InvalidationModeMask RemoveClientFromCache(LayoutObject&) const;
   InvalidationModeMask RemoveClientFromCacheAffectingObjectBounds(
-      SVGResourceClient&) const;
+      LayoutObject&) const;
   void ResourceDestroyed(LayoutSVGResourceContainer*);
   void ClearReferencesTo(LayoutSVGResourceContainer*);
 
@@ -198,25 +186,6 @@ class SVGResources {
   std::unique_ptr<FillStrokeData> fill_stroke_data_;
   LayoutSVGResourceContainer* linked_resource_;
   DISALLOW_COPY_AND_ASSIGN(SVGResources);
-};
-
-class SVGElementResourceClient final
-    : public GarbageCollected<SVGElementResourceClient>,
-      public SVGResourceClient {
-  USING_GARBAGE_COLLECTED_MIXIN(SVGElementResourceClient);
-
- public:
-  explicit SVGElementResourceClient(SVGElement*);
-
-  void ResourceContentChanged(InvalidationModeMask) override;
-  void Invalidate(InvalidationModeMask) override;
-  void ResourceElementChanged() override;
-  void ResourceDestroyed(LayoutSVGResourceContainer*) override;
-
-  void Trace(Visitor*) override;
-
- private:
-  Member<SVGElement> element_;
 };
 
 }  // namespace blink

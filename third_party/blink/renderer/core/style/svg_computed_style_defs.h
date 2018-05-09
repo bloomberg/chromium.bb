@@ -31,7 +31,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/style/style_path.h"
-#include "third_party/blink/renderer/core/style/style_svg_resource.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/length.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -122,7 +121,7 @@ enum EPaintOrder {
 
 struct SVGPaint {
   SVGPaint() : type(SVG_PAINTTYPE_NONE) {}
-  SVGPaint(Color color) : color(color), type(SVG_PAINTTYPE_RGBCOLOR) {}
+  SVGPaint(Color color) : type(SVG_PAINTTYPE_RGBCOLOR), color(color) {}
 
   CORE_EXPORT bool operator==(const SVGPaint&) const;
   bool operator!=(const SVGPaint& other) const { return !(*this == other); }
@@ -146,14 +145,13 @@ struct SVGPaint {
     return type == SVG_PAINTTYPE_CURRENTCOLOR ||
            type == SVG_PAINTTYPE_URI_CURRENTCOLOR;
   }
-  StyleSVGResource* Resource() const { return resource.get(); }
 
   const Color& GetColor() const { return color; }
-  const String& GetUrl() const { return Resource()->Url(); }
+  const String& GetUrl() const { return url; }
 
-  scoped_refptr<StyleSVGResource> resource;
-  Color color;
   SVGPaintType type;
+  Color color;
+  String url;
 };
 
 // Inherited/Non-Inherited Style Datastructures
@@ -294,7 +292,7 @@ class StyleResourceData : public RefCounted<StyleResourceData> {
     return !(*this == other);
   }
 
-  scoped_refptr<StyleSVGResource> masker;
+  AtomicString masker;
 
  private:
   StyleResourceData();
@@ -317,9 +315,9 @@ class StyleInheritedResourceData
     return !(*this == other);
   }
 
-  scoped_refptr<StyleSVGResource> marker_start;
-  scoped_refptr<StyleSVGResource> marker_mid;
-  scoped_refptr<StyleSVGResource> marker_end;
+  AtomicString marker_start;
+  AtomicString marker_mid;
+  AtomicString marker_end;
 
  private:
   StyleInheritedResourceData();

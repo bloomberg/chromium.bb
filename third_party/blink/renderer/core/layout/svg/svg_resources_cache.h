@@ -71,14 +71,13 @@ class SVGResourcesCache {
     TemporaryStyleScope(LayoutObject&,
                         const ComputedStyle& original_style,
                         const ComputedStyle& temporary_style);
-    ~TemporaryStyleScope();
+    ~TemporaryStyleScope() { SwitchTo(original_style_); }
 
    private:
     void SwitchTo(const ComputedStyle&);
 
     LayoutObject& layout_object_;
     const ComputedStyle& original_style_;
-    const ComputedStyle& temporary_style_;
     const bool styles_are_equal_;
     DISALLOW_COPY_AND_ASSIGN(TemporaryStyleScope);
   };
