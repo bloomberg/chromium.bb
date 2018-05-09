@@ -28,7 +28,10 @@ void WorkerAnimationFrameProvider::CancelCallback(int id) {
 }
 
 void WorkerAnimationFrameProvider::BeginFrame() {
-  double time = WTF::TimeTicksInSeconds(WTF::CurrentTimeTicks()) * 1000;
+  double time = WTF::CurrentTimeTicksInMilliseconds();
+  // We don't want to expose microseconds residues to users.
+  time = round(time * 60) / 60;
+
   callback_collection_.ExecuteCallbacks(time, time);
 
   for (auto& ctx : rendering_contexts_) {
