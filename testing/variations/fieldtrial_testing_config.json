@@ -2294,21 +2294,6 @@
             ]
         }
     ],
-    "OutOfProcessPac": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
-                }
-            ]
-        }
-    ],
     "OverflowIconsForMediaControls": [
         {
             "platforms": [
