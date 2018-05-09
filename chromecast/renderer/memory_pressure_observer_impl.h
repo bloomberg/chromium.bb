@@ -6,7 +6,7 @@
 #define CHROMECAST_RENDERER_MEMORY_PRESSURE_OBSERVER_IMPL_H_
 
 #include "base/macros.h"
-#include "chromecast/common/memory_pressure.mojom.h"
+#include "chromecast/common/mojom/memory_pressure.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace chromecast {

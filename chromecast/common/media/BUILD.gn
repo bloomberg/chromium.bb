@@ -24,9 +24,3 @@ cast_source_set("media") {
     public_configs = [ "//chromecast:playready_config" ]
   }
 }
-
-mojom("interfaces") {
-  sources = [
-    "media_caps.mojom",
-  ]
-}

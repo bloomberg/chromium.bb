@@ -6,7 +6,7 @@
 #define CHROMECAST_BROWSER_APPLICATION_MEDIA_CAPABILITIES_H_
 
 #include "base/macros.h"
-#include "chromecast/common/application_media_capabilities.mojom.h"
+#include "chromecast/common/mojom/application_media_capabilities.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 

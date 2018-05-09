@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
-#include "chromecast/common/memory_pressure.mojom.h"
+#include "chromecast/common/mojom/memory_pressure.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 

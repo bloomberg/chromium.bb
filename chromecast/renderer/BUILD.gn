@@ -48,8 +48,8 @@ cast_source_set("renderer") {
     "//base",
     "//chromecast:chromecast_buildflags",
     "//chromecast/base",
-    "//chromecast/common:interfaces",
     "//chromecast/common/media",
+    "//chromecast/common/mojom",
     "//chromecast/media",
     "//components/network_hints/renderer",
     "//content/public/common",
@@ -72,7 +72,7 @@ cast_source_set("renderer") {
     ]
 
     deps += [
-      "//chromecast/common:interfaces",
+      "//chromecast/common/mojom",
       "//mojo/public/cpp/bindings",
     ]
   }
@@ -88,8 +88,8 @@ cast_source_set("renderer") {
     ]
 
     deps += [
-      "//chromecast/common/extensions_api:api",
       "//chromecast/common",
+      "//chromecast/common/extensions_api:api",
       "//extensions/common",
       "//extensions/renderer",
       "//gin:gin",
