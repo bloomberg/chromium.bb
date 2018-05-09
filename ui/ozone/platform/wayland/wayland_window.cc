@@ -194,8 +194,6 @@ void WaylandWindow::Maximize() {
 
 void WaylandWindow::Minimize() {
   DCHECK(xdg_surface_);
-
-  DCHECK(xdg_surface_);
   xdg_surface_->SetMinimized();
   connection_->ScheduleFlush();
 
