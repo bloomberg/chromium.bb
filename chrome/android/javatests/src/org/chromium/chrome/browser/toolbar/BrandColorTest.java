@@ -34,7 +34,7 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
-import org.chromium.content.browser.test.InterstitialPageDelegateAndroid;
+import org.chromium.content.browser.InterstitialPageDelegateAndroid;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.ui.test.util.UiRestriction;
@@ -249,7 +249,10 @@ public class BrandColorTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                delegate.showInterstitialPage(brandColorUrl, mActivityTestRule.getWebContents());
+                mActivityTestRule.getActivity()
+                        .getActivityTab()
+                        .getWebContents()
+                        .showInterstitialPage(brandColorUrl, delegate.getNative());
             }
         });
         CriteriaHelper.pollUiThread(new Criteria() {

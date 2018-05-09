@@ -100,6 +100,10 @@ class CONTENT_EXPORT WebContentsAndroid
                      const base::android::JavaParamRef<jobject>& jobj,
                      jboolean mute);
 
+  void ShowInterstitialPage(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj,
+                            const base::android::JavaParamRef<jstring>& jurl,
+                            jlong delegate_ptr);
   jboolean IsShowingInterstitialPage(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

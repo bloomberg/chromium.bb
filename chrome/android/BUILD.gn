@@ -858,7 +858,6 @@ chrome_shared_library("libchromefortest") {
     ":chrome_jni_for_test_registration($default_toolchain)",
     "//base/test:test_support",
     "//components/heap_profiling:test_support",
-    "//content/public/test/android:content_native_test_support",
   ]
 }
 
@@ -1124,7 +1123,6 @@ chrome_public_apk_tmpl_shared("chrome_public_apk_for_test") {
   }
   deps = [
     "//components/heap_profiling:heap_profiling_java_test_support",
-    "//content/public/test/android:content_java_test_support",
   ]
 }
 

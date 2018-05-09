@@ -2056,6 +2056,8 @@ jumbo_source_set("browser") {
       "android/gesture_listener_manager.h",
       "android/ime_adapter_android.cc",
       "android/ime_adapter_android.h",
+      "android/interstitial_page_delegate_android.cc",
+      "android/interstitial_page_delegate_android.h",
       "android/java/gin_java_bound_object.cc",
       "android/java/gin_java_bound_object.h",
       "android/java/gin_java_bound_object_delegate.cc",
@@ -2148,7 +2150,6 @@ jumbo_source_set("browser") {
     deps += [
       ":reflection_jni_headers",
       "//content/public/android:jni",
-      "//device/gamepad/public/mojom",
       "//media",
       "//media/capture/content/android",
       "//media/capture/video/android",
