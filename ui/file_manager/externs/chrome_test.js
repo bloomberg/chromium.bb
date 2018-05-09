@@ -170,11 +170,6 @@ chrome.test.isProcessingUserGesture = function() {};
 chrome.test.runWithUserGesture = function(callback) {};
 
 /**
- * @param {Function} callback
- */
-chrome.test.runWithoutUserGesture = function(callback) {};
-
-/**
  * Sends a string message one round trip from the renderer to the browser
  * process and back.
  * @param {string} message

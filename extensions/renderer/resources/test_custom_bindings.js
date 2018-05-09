@@ -375,11 +375,6 @@ binding.registerCustomHook(function(api) {
     return userGestures.RunWithUserGesture(callback);
   });
 
-  apiFunctions.setHandleRequest('runWithoutUserGesture', function(callback) {
-    chromeTest.assertEq(typeof(callback), 'function');
-    return userGestures.RunWithoutUserGesture(callback);
-  });
-
   apiFunctions.setHandleRequest('setExceptionHandler', function(callback) {
     chromeTest.assertEq(typeof(callback), 'function');
     setExceptionHandler(callback);

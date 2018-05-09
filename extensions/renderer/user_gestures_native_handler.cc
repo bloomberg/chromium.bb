@@ -23,10 +23,6 @@ void UserGesturesNativeHandler::AddRoutes() {
       "RunWithUserGesture", "test",
       base::Bind(&UserGesturesNativeHandler::RunWithUserGesture,
                  base::Unretained(this)));
-  RouteHandlerFunction(
-      "RunWithoutUserGesture", "test",
-      base::Bind(&UserGesturesNativeHandler::RunWithoutUserGesture,
-                 base::Unretained(this)));
 }
 
 void UserGesturesNativeHandler::IsProcessingUserGesture(
@@ -42,16 +38,6 @@ void UserGesturesNativeHandler::RunWithUserGesture(
   blink::WebScopedUserGesture user_gesture(context()->web_frame());
   CHECK_EQ(args.Length(), 1);
   CHECK(args[0]->IsFunction());
-  context()->SafeCallFunction(v8::Local<v8::Function>::Cast(args[0]), 0,
-                              nullptr);
-}
-
-void UserGesturesNativeHandler::RunWithoutUserGesture(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  blink::WebUserGestureIndicator::ConsumeUserGesture(context()->web_frame());
-  CHECK_EQ(args.Length(), 1);
-  CHECK(args[0]->IsFunction());
-  v8::Local<v8::Value> no_args;
   context()->SafeCallFunction(v8::Local<v8::Function>::Cast(args[0]), 0,
                               nullptr);
 }

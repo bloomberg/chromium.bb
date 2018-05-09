@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/messaging/incognito_connectability.h"
+#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -1241,14 +1242,21 @@ IN_PROC_BROWSER_TEST_P(MessagingApiTest, MessagingUserGesture) {
   const Extension* sender = LoadExtension(sender_dir.UnpackedPath());
   ASSERT_TRUE(sender);
 
-  EXPECT_EQ("false",
-      ExecuteScriptInBackgroundPage(sender->id(),
-                                    base::StringPrintf(
-          "chrome.test.runWithoutUserGesture(function() {\n"
-          "  chrome.runtime.sendMessage('%s', {}, function(response)  {\n"
-          "    window.domAutomationController.send('' + response.result);\n"
-          "  });\n"
-          "});", receiver->id().c_str())));
+  EXPECT_EQ(
+      "false",
+      ExecuteScriptInBackgroundPage(
+          sender->id(),
+          base::StringPrintf(
+              "if (chrome.test.isProcessingUserGesture()) {\n"
+              "  domAutomationController.send("
+              "      'Error: unexpected user gesture');\n"
+              "} else {\n"
+              "  chrome.runtime.sendMessage('%s', {}, function(response) {\n"
+              "    domAutomationController.send('' + response.result);\n"
+              "  });\n"
+              "}",
+              receiver->id().c_str()),
+          extensions::browsertest_util::ScriptUserActivation::kDontActivate));
 
   EXPECT_EQ("true",
       ExecuteScriptInBackgroundPage(sender->id(),

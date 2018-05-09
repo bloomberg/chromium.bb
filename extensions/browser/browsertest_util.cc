@@ -12,9 +12,11 @@
 namespace extensions {
 namespace browsertest_util {
 
-std::string ExecuteScriptInBackgroundPage(content::BrowserContext* context,
-                                          const std::string& extension_id,
-                                          const std::string& script) {
+std::string ExecuteScriptInBackgroundPage(
+    content::BrowserContext* context,
+    const std::string& extension_id,
+    const std::string& script,
+    ScriptUserActivation script_user_activation) {
   ExtensionHost* host =
       ProcessManager::Get(context)->GetBackgroundHostForExtension(extension_id);
   if (!host) {
@@ -23,8 +25,17 @@ std::string ExecuteScriptInBackgroundPage(content::BrowserContext* context,
   }
 
   std::string result;
-  if (!content::ExecuteScriptAndExtractString(host->host_contents(), script,
-                                              &result)) {
+  bool success;
+  if (script_user_activation == ScriptUserActivation::kActivate) {
+    success = content::ExecuteScriptAndExtractString(host->host_contents(),
+                                                     script, &result);
+  } else {
+    DCHECK_EQ(script_user_activation, ScriptUserActivation::kDontActivate);
+    success = content::ExecuteScriptWithoutUserGestureAndExtractString(
+        host->host_contents(), script, &result);
+  }
+
+  if (!success) {
     ADD_FAILURE() << "Executing script failed: " << script;
     result.clear();
   }
