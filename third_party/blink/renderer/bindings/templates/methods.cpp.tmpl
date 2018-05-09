@@ -151,7 +151,7 @@ if (UNLIKELY(numArgsPassed <= {{argument.index}})) {
 }
 {% endif %}
 {% if argument.is_callback_interface %}
-{# FIXME: remove EventListener/NodeFilter special case. crbug.com/630986 #}
+{# FIXME: remove EventListener special case. crbug.com/630986 #}
 {% if argument.idl_type == 'EventListener' %}
 if (!IsUndefinedOrNull(info[{{argument.index}}]) && !info[{{argument.index}}]->IsObject()) {
   {{throw_argument_error(method, argument, "The callback provided as parameter %(index)d is not an object.")}}
@@ -162,31 +162,31 @@ if (!IsUndefinedOrNull(info[{{argument.index}}]) && !info[{{argument.index}}]->I
 {% else %}{# method.name == 'AddEventListener' #}
 {{argument.name}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], false, kListenerFindOrCreate);
 {% endif %}{# method.name #}
-{% elif argument.idl_type == 'NodeFilter' %}
-{{argument.name}} = V8NodeFilterCondition::CreateOrNull(info[{{argument.index}}], ScriptState::Current(info.GetIsolate()));
-{% else %}{# argument.idl_type == 'EventListener'/'NodeFilter' #}
+{% else %}{# argument.idl_type == 'EventListener' #}
 if (info[{{argument.index}}]->IsObject()) {
   {{argument.name}} = V8{{argument.idl_type}}::Create(info[{{argument.index}}].As<v8::Object>());
-{% if argument.is_optional %}
+{% if argument.is_nullable %}
 } else if (info[{{argument.index}}]->IsNullOrUndefined()) {
   {{argument.name}} = nullptr;
-{% elif argument.is_nullable %}
-} else if ({{argument.index}} < info.Length() && info[{{argument.index}}]->IsNullOrUndefined()) {
+{% elif argument.is_optional %}
+{# TODO(yukishiino): Disallows ES null for optional arguments. #}
+} else if (info[{{argument.index}}]->IsNullOrUndefined()) {
   {{argument.name}} = nullptr;
 {% endif %}
 } else {
   {{throw_argument_error(method, argument, "The callback provided as parameter %(index)d is not an object.")}}
   return;
 }
-{% endif %}{# argument.idl_type == 'EventListener'/'NodeFilter' #}
+{% endif %}{# argument.idl_type == 'EventListener' #}
 {% elif argument.is_callback_function %}
 if (info[{{argument.index}}]->IsFunction()) {
   {{v8_value_to_local_cpp_value(argument)}}
-{% if argument.is_optional %}
+{% if argument.is_nullable %}
 } else if (info[{{argument.index}}]->IsNullOrUndefined()) {
   {{argument.name}} = nullptr;
-{% elif argument.is_nullable %}
-} else if ({{argument.index}} < info.Length() && info[{{argument.index}}]->IsNullOrUndefined()) {
+{% elif argument.is_optional %}
+{# TODO(yukishiino): Disallows ES null for optional arguments. #}
+} else if (info[{{argument.index}}]->IsNullOrUndefined()) {
   {{argument.name}} = nullptr;
 {% endif %}
 } else {

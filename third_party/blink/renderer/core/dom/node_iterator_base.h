@@ -32,25 +32,28 @@ namespace blink {
 
 class ExceptionState;
 class Node;
-class V8NodeFilterCondition;
+class V8NodeFilter;
 
 class NodeIteratorBase : public GarbageCollectedMixin {
  public:
+  virtual ~NodeIteratorBase() = default;
+
   Node* root() const { return root_.Get(); }
   unsigned whatToShow() const { return what_to_show_; }
-  V8NodeFilterCondition* filter() const { return filter_.Get(); }
+  V8NodeFilter* filter() const { return filter_.Get(); }
 
   void Trace(blink::Visitor*) override;
   virtual void TraceWrappers(ScriptWrappableVisitor*) const;
 
  protected:
-  NodeIteratorBase(Node*, unsigned what_to_show, V8NodeFilterCondition*);
-  unsigned AcceptNode(Node*, ExceptionState&) const;
+  NodeIteratorBase(Node*, unsigned what_to_show, V8NodeFilter*);
+  unsigned AcceptNode(Node*, ExceptionState&);
 
  private:
   Member<Node> root_;
   unsigned what_to_show_;
-  TraceWrapperMember<V8NodeFilterCondition> filter_;
+  TraceWrapperMember<V8NodeFilter> filter_;
+  bool active_flag_ = false;
 };
 
 }  // namespace blink

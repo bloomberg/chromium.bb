@@ -199,7 +199,6 @@ blink_core_sources("dom") {
     "node_child_removal_tracker.cc",
     "node_child_removal_tracker.h",
     "node_computed_style.h",
-    "node_filter.h",
     "node_iterator.cc",
     "node_iterator.h",
     "node_iterator_base.cc",

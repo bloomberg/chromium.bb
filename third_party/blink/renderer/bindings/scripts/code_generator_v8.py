@@ -185,14 +185,7 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
         include_paths = interface_info.get('dependencies_include_paths')
 
         # Select appropriate Jinja template and contents function
-        #
-        # A callback interface with constants needs a special handling.
-        # https://heycam.github.io/webidl/#legacy-callback-interface-object
-        if interface.is_callback and len(interface.constants) > 0:
-            header_template_filename = 'legacy_callback_interface.h.tmpl'
-            cpp_template_filename = 'legacy_callback_interface.cpp.tmpl'
-            interface_context = v8_callback_interface.legacy_callback_interface_context
-        elif interface.is_callback:
+        if interface.is_callback:
             header_template_filename = 'callback_interface.h.tmpl'
             cpp_template_filename = 'callback_interface.cpp.tmpl'
             interface_context = v8_callback_interface.callback_interface_context
@@ -218,8 +211,7 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
         if IdlType(interface_name).is_typed_array:
             template_context['header_includes'].add('core/typed_arrays/dom_typed_array.h')
         elif interface.is_callback:
-            if len(interface.constants) > 0:  # legacy callback interface
-                includes.add(interface_info['include_path'])
+            pass
         else:
             template_context['header_includes'].add(interface_info['include_path'])
         template_context['header_includes'].update(

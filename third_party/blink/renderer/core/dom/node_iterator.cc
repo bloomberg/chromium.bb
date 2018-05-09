@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/dom/node_iterator.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_node_filter.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
@@ -64,7 +65,7 @@ bool NodeIterator::NodePointer::MoveToPrevious(Node* root) {
 
 NodeIterator::NodeIterator(Node* root_node,
                            unsigned what_to_show,
-                           V8NodeFilterCondition* filter)
+                           V8NodeFilter* filter)
     : NodeIteratorBase(root_node, what_to_show, filter),
       reference_node_(root(), true) {
   // If NodeIterator target is Attr node, don't subscribe for nodeWillBeRemoved,
@@ -83,7 +84,7 @@ Node* NodeIterator::nextNode(ExceptionState& exception_state) {
     // of the rejected node. Hence, kFilterReject is the same as kFilterSkip.
     Node* provisional_result = candidate_node_.node;
     bool node_was_accepted = AcceptNode(provisional_result, exception_state) ==
-                             NodeFilter::kFilterAccept;
+                             V8NodeFilter::FILTER_ACCEPT;
     if (exception_state.HadException())
       break;
     if (node_was_accepted) {
@@ -107,7 +108,7 @@ Node* NodeIterator::previousNode(ExceptionState& exception_state) {
     // of the rejected node. Hence, kFilterReject is the same as kFilterSkip.
     Node* provisional_result = candidate_node_.node;
     bool node_was_accepted = AcceptNode(provisional_result, exception_state) ==
-                             NodeFilter::kFilterAccept;
+                             V8NodeFilter::FILTER_ACCEPT;
     if (exception_state.HadException())
       break;
     if (node_was_accepted) {

@@ -827,6 +827,7 @@ def constant_context(constant, interface):
 
     return {
         'cpp_class': extended_attributes.get('PartialInterfaceImplementedAs'),
+        'cpp_type': constant.idl_type.cpp_type,
         'deprecate_as': v8_utilities.deprecate_as(constant),  # [DeprecateAs]
         'idl_type': constant.idl_type.name,
         'measure_as': v8_utilities.measure_as(constant, interface),  # [MeasureAs]

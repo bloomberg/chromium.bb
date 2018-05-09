@@ -17,6 +17,16 @@ class {{forward_declaration}};
 
 class {{exported}}{{v8_class}} final : public CallbackInterfaceBase {
  public:
+{% if is_legacy_callback_interface %}
+  // Support of "legacy callback interface"
+  static v8::Local<v8::FunctionTemplate> DomTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  static const WrapperTypeInfo wrapperTypeInfo;
+  // Constants
+{% for constant in constants %}
+  static constexpr {{constant.cpp_type}} {{constant.name}} = {{constant.value}};
+{% endfor %}
+
+{% endif %}
   static {{v8_class}}* Create(v8::Local<v8::Object> callback_object) {
     return new {{v8_class}}(callback_object);
   }

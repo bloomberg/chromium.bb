@@ -126,7 +126,6 @@ CPP_SPECIAL_CONVERSION_RULES = {
     'Dictionary': 'Dictionary',
     'EventHandler': 'EventListener*',
     'EventListener': 'EventListener*',
-    'NodeFilter': 'V8NodeFilterCondition*',
     'Promise': 'ScriptPromise',
     'ScriptValue': 'ScriptValue',
     # FIXME: Eliminate custom bindings for XPathNSResolver  http://crbug.com/345529
@@ -422,7 +421,6 @@ INCLUDES_FOR_TYPE = {
                            'core/html/html_table_rows_collection.h',
                            'core/html/forms/html_data_list_options_collection.h',
                            'core/html/forms/html_form_controls_collection.h']),
-    'NodeFilter': set(['bindings/core/v8/v8_node_filter_condition.h']),
     'NodeList': set(['bindings/core/v8/v8_node_list.h',
                      'core/dom/name_node_list.h',
                      'core/dom/node_list.h',

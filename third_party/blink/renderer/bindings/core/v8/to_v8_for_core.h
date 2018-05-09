@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/idl_dictionary_base.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_node_filter_condition.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
@@ -47,12 +46,6 @@ inline v8::Local<v8::Value> ToV8(NotShared<T> value,
                                  v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   return ToV8(value.View(), creation_context, isolate);
-}
-
-inline v8::Local<v8::Value> ToV8(const V8NodeFilterCondition* value,
-                                 v8::Local<v8::Object> creation_context,
-                                 v8::Isolate* isolate) {
-  return value ? value->Callback(isolate) : v8::Null(isolate).As<v8::Value>();
 }
 
 // Dictionary

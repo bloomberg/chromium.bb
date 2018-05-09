@@ -49,6 +49,12 @@ class PLATFORM_EXPORT CallbackInterfaceBase
     return callback_relevant_script_state_.get();
   }
 
+  // NodeIteratorBase counts the invocation of those which are callable and
+  // those which are not.
+  bool IsCallbackObjectCallableForNodeIteratorBase() const {
+    return IsCallbackObjectCallable();
+  }
+
  protected:
   CallbackInterfaceBase(v8::Local<v8::Object> callback_object,
                         SingleOperationOrNot);
@@ -75,6 +81,10 @@ class PLATFORM_EXPORT CallbackInterfaceBase
   scoped_refptr<ScriptState> incumbent_script_state_;
 
   friend class V8PersistentCallbackInterfaceBase;
+  // ToV8 needs to call |CallbackObject| member function.
+  friend v8::Local<v8::Value> ToV8(CallbackInterfaceBase* callback,
+                                   v8::Local<v8::Object> creation_context,
+                                   v8::Isolate*);
 };
 
 // V8PersistentCallbackInterfaceBase retains the underlying v8::Object of a

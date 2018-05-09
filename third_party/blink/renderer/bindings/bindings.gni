@@ -135,8 +135,6 @@ bindings_core_v8_files =
                     "core/v8/v8_iterator_result_value.h",
                     "core/v8/v8_lazy_event_listener.cc",
                     "core/v8/v8_lazy_event_listener.h",
-                    "core/v8/v8_node_filter_condition.cc",
-                    "core/v8/v8_node_filter_condition.h",
                     "core/v8/v8_object_builder.cc",
                     "core/v8/v8_object_builder.h",
                     "core/v8/v8_object_parser.cc",
