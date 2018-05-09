@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/services/secure_channel/pending_connection_request.h"
+#include "chromeos/services/secure_channel/pending_connection_request_base.h"
 
 #include <memory>
 
@@ -26,23 +26,23 @@ enum class TestFailureDetail {
   kReasonWhichDoesNotCauseRequestToBecomeInactive
 };
 
-// Since PendingConnectionRequest is templatized, a concrete implementation is
-// needed for its test.
+// Since PendingConnectionRequestBase is templatized, a concrete implementation
+// is needed for its test.
 class TestPendingConnectionRequest
-    : public PendingConnectionRequest<TestFailureDetail> {
+    : public PendingConnectionRequestBase<TestFailureDetail> {
  public:
   TestPendingConnectionRequest(
       const std::string& feature,
       mojom::ConnectionDelegatePtr connection_delegate_ptr,
       PendingConnectionRequestDelegate* delegate)
-      : PendingConnectionRequest<TestFailureDetail>(
+      : PendingConnectionRequestBase<TestFailureDetail>(
             feature,
             kTestReadableRequestTypeForLogging,
             delegate,
             std::move(connection_delegate_ptr)) {}
   ~TestPendingConnectionRequest() override = default;
 
-  // PendingConnectionRequest<TestFailureDetail>:
+  // PendingConnectionRequestBase<TestFailureDetail>:
   void HandleConnectionFailure(TestFailureDetail failure_detail) override {
     switch (failure_detail) {
       case TestFailureDetail::kReasonWhichCausesRequestToBecomeInactive:
@@ -57,10 +57,10 @@ class TestPendingConnectionRequest
 
 }  // namespace
 
-class SecureChannelPendingConnectionRequestTest : public testing::Test {
+class SecureChannelPendingConnectionRequestBaseTest : public testing::Test {
  protected:
-  SecureChannelPendingConnectionRequestTest() = default;
-  ~SecureChannelPendingConnectionRequestTest() override = default;
+  SecureChannelPendingConnectionRequestBaseTest() = default;
+  ~SecureChannelPendingConnectionRequestBaseTest() override = default;
 
   void SetUp() override {
     fake_connection_delegate_ = std::make_unique<FakeConnectionDelegate>();
@@ -102,35 +102,32 @@ class SecureChannelPendingConnectionRequestTest : public testing::Test {
   std::unique_ptr<TestPendingConnectionRequest>
       test_pending_connection_request_;
 
-  DISALLOW_COPY_AND_ASSIGN(SecureChannelPendingConnectionRequestTest);
+  DISALLOW_COPY_AND_ASSIGN(SecureChannelPendingConnectionRequestBaseTest);
 };
 
-TEST_F(SecureChannelPendingConnectionRequestTest,
+TEST_F(SecureChannelPendingConnectionRequestBaseTest,
        HandleConnectionFailureWhichCausesRequestToBecomeInactive) {
   test_pending_connection_request()->HandleConnectionFailure(
       TestFailureDetail::kReasonWhichCausesRequestToBecomeInactive);
-  EXPECT_FALSE(test_pending_connection_request()->is_active());
   EXPECT_EQ(
       PendingConnectionRequestDelegate::FailedConnectionReason::kRequestFailed,
       *GetFailedConnectionReason());
 }
 
-TEST_F(SecureChannelPendingConnectionRequestTest,
+TEST_F(SecureChannelPendingConnectionRequestBaseTest,
        HandleConnectionFailureWhichDoesNotCauseRequestToBecomeInactive) {
   // Repeat 5 connection failures, none of which should cause the request to
   // become inactive.
   for (int i = 0; i < 5; ++i) {
     test_pending_connection_request()->HandleConnectionFailure(
         TestFailureDetail::kReasonWhichDoesNotCauseRequestToBecomeInactive);
-    EXPECT_TRUE(test_pending_connection_request()->is_active());
     EXPECT_FALSE(GetFailedConnectionReason());
   }
 }
 
-TEST_F(SecureChannelPendingConnectionRequestTest,
+TEST_F(SecureChannelPendingConnectionRequestBaseTest,
        ConnectionDelegateInvalidated) {
   DisconnectConnectionDelegatePtr();
-  EXPECT_FALSE(test_pending_connection_request()->is_active());
   EXPECT_EQ(PendingConnectionRequestDelegate::FailedConnectionReason::
                 kRequestCanceledByClient,
             *GetFailedConnectionReason());

@@ -7,6 +7,7 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 static_library("secure_channel") {
   sources = [
     "pending_connection_request.h",
+    "pending_connection_request_base.h",
     "pending_connection_request_delegate.cc",
     "pending_connection_request_delegate.h",
   ]
@@ -24,6 +25,8 @@ static_library("test_support") {
   sources = [
     "fake_connection_delegate.cc",
     "fake_connection_delegate.h",
+    "fake_pending_connection_request.cc",
+    "fake_pending_connection_request.h",
     "fake_pending_connection_request_delegate.cc",
     "fake_pending_connection_request_delegate.h",
   ]
@@ -39,7 +42,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "pending_connection_request_unittest.cc",
+    "pending_connection_request_base_unittest.cc",
   ]
 
   deps = [
