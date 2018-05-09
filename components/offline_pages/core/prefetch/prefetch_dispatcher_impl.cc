@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher_impl.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -49,24 +50,9 @@
 namespace offline_pages {
 
 namespace {
+
 void DeleteBackgroundTaskHelper(std::unique_ptr<PrefetchBackgroundTask> task) {
   task.reset();
-}
-
-void FetchComplete(OfflinePageModel* offline_model,
-                   int64_t offline_id,
-                   const std::string& image_data) {
-  if (image_data.empty())
-    return;
-  // Thumbnails are marked to expire after this delta. Expired thumbnails are
-  // eventually deleted if their offline_id does not correspond to an offline
-  // item. Two days gives us plenty of time so that the prefetched item can be
-  // imported into the offline item database.
-  const base::TimeDelta kThumbnailExpirationDelta =
-      base::TimeDelta::FromDays(2);
-
-  offline_model->StoreThumbnail(OfflinePageThumbnail(
-      offline_id, base::Time::Now() + kThumbnailExpirationDelta, image_data));
 }
 
 }  // namespace
@@ -230,7 +216,7 @@ void PrefetchDispatcherImpl::QueueActionTasks() {
 
   std::unique_ptr<Task> generate_page_bundle_task =
       std::make_unique<GeneratePageBundleTask>(
-          service_->GetPrefetchStore(), service_->GetPrefetchGCMHandler(),
+          this, service_->GetPrefetchStore(), service_->GetPrefetchGCMHandler(),
           service_->GetPrefetchNetworkRequestFactory(),
           base::Bind(
               &PrefetchDispatcherImpl::DidGenerateBundleOrGetOperationRequest,
@@ -332,6 +318,14 @@ void PrefetchDispatcherImpl::CleanupDownloads(
       success_downloads));
 }
 
+void PrefetchDispatcherImpl::GeneratePageBundleRequested(
+    std::unique_ptr<PrefetchDispatcher::IdsVector> ids) {
+  // Reverse the order so that the fresher items are last. This is done because
+  // the ids are popped from the end of the vector.
+  std::reverse(ids->begin(), ids->end());
+  FetchThumbnails(std::move(ids));
+}
+
 void PrefetchDispatcherImpl::DownloadCompleted(
     const PrefetchDownloadResult& download_result) {
   if (!service_->GetPrefetchConfiguration()->IsPrefetchingEnabled())
@@ -353,12 +347,9 @@ void PrefetchDispatcherImpl::DownloadCompleted(
 
 void PrefetchDispatcherImpl::ItemDownloaded(int64_t offline_id,
                                             const ClientId& client_id) {
-  DCHECK(client_id.name_space == kSuggestedArticlesNamespace);
-  auto complete_callback = base::BindOnce(
-      &FetchComplete, base::Unretained(service_->GetOfflinePageModel()),
-      offline_id);
-  service_->GetThumbnailFetcher()->FetchSuggestionImageData(
-      client_id, std::move(complete_callback));
+  auto ids = std::make_unique<IdsVector>();
+  ids->emplace_back(offline_id, client_id);
+  FetchThumbnails(std::move(ids));
 }
 
 void PrefetchDispatcherImpl::ArchiveImported(int64_t offline_id, bool success) {
@@ -394,6 +385,57 @@ void PrefetchDispatcherImpl::LogRequestResult(
         "Response for page: " + page.url +
         "; status=" + std::to_string(static_cast<int>(page.status)));
   }
+}
+
+void PrefetchDispatcherImpl::FetchThumbnails(
+    std::unique_ptr<PrefetchDispatcher::IdsVector> remaining_ids) {
+  if (remaining_ids->empty())
+    return;
+
+  int64_t offline_id = remaining_ids->back().first;
+  ClientId client_id = std::move(remaining_ids->back().second);
+  DCHECK(client_id.name_space == kSuggestedArticlesNamespace);
+  remaining_ids->pop_back();
+
+  service_->GetOfflinePageModel()->HasThumbnailForOfflineId(
+      offline_id,
+      base::BindOnce(&PrefetchDispatcherImpl::ThumbnailExistenceChecked,
+                     base::Unretained(this), offline_id, std::move(client_id),
+                     std::move(remaining_ids)));
+}
+
+void PrefetchDispatcherImpl::ThumbnailExistenceChecked(
+    const int64_t offline_id,
+    ClientId client_id,
+    std::unique_ptr<PrefetchDispatcher::IdsVector> remaining_ids,
+    bool thumbnail_exists) {
+  if (thumbnail_exists) {
+    ThumbnailFetchComplete(offline_id, std::move(remaining_ids), std::string());
+  } else {
+    auto complete_callback = base::BindOnce(
+        &PrefetchDispatcherImpl::ThumbnailFetchComplete, base::Unretained(this),
+        offline_id, std::move(remaining_ids));
+    service_->GetThumbnailFetcher()->FetchSuggestionImageData(
+        client_id, std::move(complete_callback));
+  }
+}
+
+void PrefetchDispatcherImpl::ThumbnailFetchComplete(
+    const int64_t offline_id,
+    std::unique_ptr<PrefetchDispatcher::IdsVector> remaining_ids,
+    const std::string& image_data) {
+  // Thumbnails are marked to expire after this delta. Expired thumbnails are
+  // eventually deleted if their offline_id does not correspond to an offline
+  // item. Two days gives us plenty of time so that the prefetched item can be
+  // imported into the offline item database.
+  const base::TimeDelta kThumbnailExpirationDelta =
+      base::TimeDelta::FromDays(2);
+
+  if (!image_data.empty()) {
+    service_->GetOfflinePageModel()->StoreThumbnail(OfflinePageThumbnail(
+        offline_id, base::Time::Now() + kThumbnailExpirationDelta, image_data));
+  }
+  FetchThumbnails(std::move(remaining_ids));
 }
 
 }  // namespace offline_pages

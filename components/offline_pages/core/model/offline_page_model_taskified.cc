@@ -26,6 +26,7 @@
 #include "components/offline_pages/core/model/delete_page_task.h"
 #include "components/offline_pages/core/model/get_pages_task.h"
 #include "components/offline_pages/core/model/get_thumbnail_task.h"
+#include "components/offline_pages/core/model/has_thumbnail_task.h"
 #include "components/offline_pages/core/model/mark_page_accessed_task.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/model/persistent_page_consistency_check_task.h"
@@ -423,6 +424,13 @@ void OfflinePageModelTaskified::GetThumbnailByOfflineId(
     int64_t offline_id,
     base::OnceCallback<void(std::unique_ptr<OfflinePageThumbnail>)> callback) {
   task_queue_.AddTask(std::make_unique<GetThumbnailTask>(
+      store_.get(), offline_id, std::move(callback)));
+}
+
+void OfflinePageModelTaskified::HasThumbnailForOfflineId(
+    int64_t offline_id,
+    base::OnceCallback<void(bool)> callback) {
+  task_queue_.AddTask(std::make_unique<HasThumbnailTask>(
       store_.get(), offline_id, std::move(callback)));
 }
 

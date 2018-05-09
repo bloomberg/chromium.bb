@@ -135,6 +135,9 @@ class OfflinePageModelTaskified : public OfflinePageModel,
       int64_t offline_id,
       base::OnceCallback<void(std::unique_ptr<OfflinePageThumbnail>)> callback)
       override;
+  void HasThumbnailForOfflineId(
+      int64_t offline_id,
+      base::OnceCallback<void(bool)> callback) override;
 
   const base::FilePath& GetInternalArchiveDirectory(
       const std::string& name_space) const override;

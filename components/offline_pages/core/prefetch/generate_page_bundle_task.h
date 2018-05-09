@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/clock.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
+#include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/task.h"
 
@@ -24,7 +25,10 @@ class PrefetchStore;
 // determined are viable to prefetch.
 class GeneratePageBundleTask : public Task {
  public:
-  GeneratePageBundleTask(PrefetchStore* prefetch_store,
+  struct UrlAndIds;
+
+  GeneratePageBundleTask(PrefetchDispatcher* prefetch_dispatcher,
+                         PrefetchStore* prefetch_store,
                          PrefetchGCMHandler* gcm_handler,
                          PrefetchNetworkRequestFactory* request_factory,
                          const PrefetchRequestFinishedCallback& callback);
@@ -36,13 +40,14 @@ class GeneratePageBundleTask : public Task {
   void SetClockForTesting(base::Clock* clock);
 
  private:
-  void StartGeneratePageBundle(std::unique_ptr<std::vector<std::string>> urls);
-  void GotRegistrationId(std::unique_ptr<std::vector<std::string>> urls,
+  void StartGeneratePageBundle(std::unique_ptr<UrlAndIds> url_and_ids);
+  void GotRegistrationId(std::unique_ptr<UrlAndIds> url_and_ids,
                          const std::string& id,
                          instance_id::InstanceID::Result result);
 
   base::Clock* clock_;
 
+  PrefetchDispatcher* prefetch_dispatcher_;
   PrefetchStore* prefetch_store_;
   PrefetchGCMHandler* gcm_handler_;
   PrefetchNetworkRequestFactory* request_factory_;

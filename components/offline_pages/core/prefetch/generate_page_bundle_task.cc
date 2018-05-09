@@ -8,7 +8,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/time/default_clock.h"
+#include "components/offline_pages/core/client_id.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
@@ -18,19 +20,32 @@
 #include "sql/transaction.h"
 
 namespace offline_pages {
+
+// A wrapper for two vectors, one with string URLs and one with offline and
+// client ids pairs, each holding data for the same set of prefetch items.
+struct GeneratePageBundleTask::UrlAndIds {
+  std::vector<std::string> urls;
+  PrefetchDispatcher::IdsVector ids;
+};
+
 namespace {
+
+using UrlAndIds = GeneratePageBundleTask::UrlAndIds;
 
 // Temporary storage for Urls metadata fetched from the storage.
 struct FetchedUrl {
   FetchedUrl() = default;
   FetchedUrl(int64_t offline_id,
+             ClientId client_id,
              const std::string& requested_url,
              int generate_bundle_attempts)
       : offline_id(offline_id),
+        client_id(client_id),
         requested_url(requested_url),
         generate_bundle_attempts(generate_bundle_attempts) {}
 
   int64_t offline_id;
+  ClientId client_id;
   std::string requested_url;
   int generate_bundle_attempts;
 };
@@ -58,7 +73,8 @@ bool UpdateStateSync(sql::Connection* db,
 
 std::unique_ptr<std::vector<FetchedUrl>> FetchUrlsSync(sql::Connection* db) {
   static const char kSql[] =
-      "SELECT offline_id, requested_url, generate_bundle_attempts"
+      "SELECT offline_id, client_namespace, client_id, requested_url,"
+      "       generate_bundle_attempts"
       " FROM prefetch_items"
       " WHERE state = ?"
       " ORDER BY creation_time DESC";
@@ -67,10 +83,15 @@ std::unique_ptr<std::vector<FetchedUrl>> FetchUrlsSync(sql::Connection* db) {
 
   auto urls = std::make_unique<std::vector<FetchedUrl>>();
   while (statement.Step()) {
-    urls->push_back(
-        FetchedUrl(statement.ColumnInt64(0),   // offline_id
-                   statement.ColumnString(1),  // requested_url
-                   statement.ColumnInt(2)));   // generate_bundle_attempts
+    urls->push_back(FetchedUrl(
+        // offline_id
+        statement.ColumnInt64(0),
+        // client_id
+        {statement.ColumnString(1), statement.ColumnString(2)},
+        // requested_url
+        statement.ColumnString(3),
+        // generate_bundle_attempts
+        statement.ColumnInt(4)));
   }
 
   return urls;
@@ -88,9 +109,8 @@ bool MarkUrlFinishedWithError(sql::Connection* db, const FetchedUrl& url) {
   return statement.Run();
 }
 
-std::unique_ptr<std::vector<std::string>> SelectUrlsToPrefetchSync(
-    base::Clock* clock,
-    sql::Connection* db) {
+std::unique_ptr<UrlAndIds> SelectUrlsToPrefetchSync(base::Clock* clock,
+                                                    sql::Connection* db) {
   if (!db)
     return nullptr;
 
@@ -112,26 +132,29 @@ std::unique_ptr<std::vector<std::string>> SelectUrlsToPrefetchSync(
     urls->resize(kMaxUrlsToSend);
   }
 
-  auto url_specs = std::make_unique<std::vector<std::string>>();
+  auto url_and_ids = std::make_unique<UrlAndIds>();
   for (const auto& url : *urls) {
     if (!UpdateStateSync(db, url.offline_id, clock))
       return nullptr;
-    url_specs->push_back(std::move(url.requested_url));
+    url_and_ids->urls.push_back(std::move(url.requested_url));
+    url_and_ids->ids.push_back({url.offline_id, std::move(url.client_id)});
   }
 
   if (!transaction.Commit())
     return nullptr;
 
-  return url_specs;
+  return url_and_ids;
 }
 }  // namespace
 
 GeneratePageBundleTask::GeneratePageBundleTask(
+    PrefetchDispatcher* prefetch_dispatcher,
     PrefetchStore* prefetch_store,
     PrefetchGCMHandler* gcm_handler,
     PrefetchNetworkRequestFactory* request_factory,
     const PrefetchRequestFinishedCallback& callback)
     : clock_(base::DefaultClock::GetInstance()),
+      prefetch_dispatcher_(prefetch_dispatcher),
       prefetch_store_(prefetch_store),
       gcm_handler_(gcm_handler),
       request_factory_(request_factory),
@@ -152,23 +175,30 @@ void GeneratePageBundleTask::SetClockForTesting(base::Clock* clock) {
 }
 
 void GeneratePageBundleTask::StartGeneratePageBundle(
-    std::unique_ptr<std::vector<std::string>> urls) {
-  if (!urls || urls->empty()) {
+    std::unique_ptr<UrlAndIds> url_and_ids) {
+  if (!url_and_ids) {
     TaskComplete();
     return;
   }
+  DCHECK(!url_and_ids->urls.empty());
+  DCHECK_EQ(url_and_ids->urls.size(), url_and_ids->ids.size());
 
-  gcm_handler_->GetGCMToken(
-      base::Bind(&GeneratePageBundleTask::GotRegistrationId,
-                 weak_factory_.GetWeakPtr(), base::Passed(std::move(urls))));
+  gcm_handler_->GetGCMToken(base::AdaptCallbackForRepeating(base::BindOnce(
+      &GeneratePageBundleTask::GotRegistrationId, weak_factory_.GetWeakPtr(),
+      base::Passed(std::move(url_and_ids)))));
 }
 
 void GeneratePageBundleTask::GotRegistrationId(
-    std::unique_ptr<std::vector<std::string>> urls,
+    std::unique_ptr<UrlAndIds> url_and_ids,
     const std::string& id,
     instance_id::InstanceID::Result result) {
+  DCHECK(url_and_ids);
   // TODO(dimich): Add UMA reporting on instance_id::InstanceID::Result.
-  request_factory_->MakeGeneratePageBundleRequest(*urls, id, callback_);
+  request_factory_->MakeGeneratePageBundleRequest(url_and_ids->urls, id,
+                                                  callback_);
+  prefetch_dispatcher_->GeneratePageBundleRequested(
+      std::make_unique<PrefetchDispatcher::IdsVector>(
+          std::move(url_and_ids->ids)));
   TaskComplete();
 }
 
