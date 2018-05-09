@@ -61,6 +61,12 @@ class BookmarkModelTypeController : public syncer::DataTypeController {
   // BookmarkModel/HistoryService.
   std::unique_ptr<BookmarkModelTypeProcessor> model_type_processor_;
 
+  // This is a hack to prevent reconfigurations from crashing, because USS
+  // activation is not idempotent. RegisterWithBackend only needs to actually do
+  // something the first time after the type is enabled.
+  // TODO(crbug.com/647505): Remove this once the DTM handles things better.
+  bool activated_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelTypeController);
 };
 

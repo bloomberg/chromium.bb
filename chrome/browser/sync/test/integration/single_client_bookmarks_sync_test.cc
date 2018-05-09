@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
@@ -14,9 +15,11 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/url_and_title.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
 #include "components/sync/test/fake_server/fake_server_verifier.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
 
 using bookmarks::BookmarkModel;
@@ -44,6 +47,22 @@ using bookmarks_helper::SetTitle;
 // TODO(pvalenzuela): Standardize this pattern by moving this constant to
 // SyncTest and using it in all single client tests.
 const int kSingleProfileIndex = 0;
+
+// Class that enables or disables USS based on test parameter. Must be the first
+// base class of the test fixture.
+class UssSwitchToggler : public testing::WithParamInterface<bool> {
+ public:
+  UssSwitchToggler() {
+    if (GetParam()) {
+      override_features_.InitAndEnableFeature(switches::kSyncUSSBookmarks);
+    } else {
+      override_features_.InitAndDisableFeature(switches::kSyncUSSBookmarks);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList override_features_;
+};
 
 class SingleClientBookmarksSyncTest : public SyncTest {
  public:
@@ -75,6 +94,19 @@ void SingleClientBookmarksSyncTest::VerifyBookmarkModelMatchesFakeServer(
         base::UTF16ToUTF8(it->title)));
   }
 }
+
+// TODO(crbug.com/516866): Merge the two fixtures into one when all tests are
+// passing for USS.
+class SingleClientBookmarksSyncTestIncludingUssTests
+    : public UssSwitchToggler,
+      public SingleClientBookmarksSyncTest {
+ public:
+  SingleClientBookmarksSyncTestIncludingUssTests(){};
+  ~SingleClientBookmarksSyncTestIncludingUssTests() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SingleClientBookmarksSyncTestIncludingUssTests);
+};
 
 IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
@@ -360,7 +392,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   ASSERT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, DownloadBookmark) {
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
+                       DownloadBookmark) {
   std::string title = "Patrick Star";
   fake_server::EntityBuilderFactory entity_builder_factory;
   fake_server::BookmarkEntityBuilder bookmark_builder =
@@ -463,3 +496,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, DownloadBookmarkFolder) {
 IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, E2E_ONLY(SanitySetup)) {
   ASSERT_TRUE(SetupSync()) <<  "SetupSync() failed.";
 }
+
+INSTANTIATE_TEST_CASE_P(USS,
+                        SingleClientBookmarksSyncTestIncludingUssTests,
+                        ::testing::Values(false, true));
