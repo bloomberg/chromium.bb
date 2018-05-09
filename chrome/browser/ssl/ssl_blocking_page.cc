@@ -147,6 +147,7 @@ SSLBlockingPage::SSLBlockingPage(
                           std::make_unique<SSLErrorControllerClient>(
                               web_contents,
                               ssl_info,
+                              cert_error,
                               request_url,
                               std::move(metrics_helper))),
       callback_(callback),

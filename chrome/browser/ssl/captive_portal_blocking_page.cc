@@ -72,6 +72,7 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
     const GURL& login_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const net::SSLInfo& ssl_info,
+    int cert_error,
     const base::Callback<void(content::CertificateRequestResultType)>& callback)
     : SSLBlockingPageBase(
           web_contents,
@@ -84,6 +85,7 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
           std::make_unique<SSLErrorControllerClient>(
               web_contents,
               ssl_info,
+              cert_error,
               request_url,
               CreateCaptivePortalMetricsHelper(web_contents, request_url))),
       login_url_(login_url),
@@ -205,6 +207,8 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
   load_time_data->SetString("closeDetails", base::string16());
   load_time_data->SetString("explanationParagraph", base::string16());
   load_time_data->SetString("finalParagraph", base::string16());
+  load_time_data->SetString("recurrentErrorParagraph", base::string16());
+  load_time_data->SetBoolean("show_recurrent_error_paragraph", false);
 
   if (cert_report_helper())
     cert_report_helper()->PopulateExtendedReportingOption(load_time_data);

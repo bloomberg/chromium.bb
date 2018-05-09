@@ -79,6 +79,7 @@ BadClockBlockingPage::BadClockBlockingPage(
           std::make_unique<SSLErrorControllerClient>(
               web_contents,
               ssl_info,
+              cert_error,
               request_url,
               CreateBadClockMetricsHelper(web_contents, request_url))),
       callback_(callback),

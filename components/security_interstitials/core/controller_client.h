@@ -100,6 +100,10 @@ class ControllerClient {
 
   virtual const std::string& GetApplicationLocale() const = 0;
 
+  // Returns true if the error page should display a message to account for the
+  // fact that the user has seen the same error multiple times.
+  virtual bool HasSeenRecurrentError();
+
   GURL GetBaseHelpCenterUrl() const;
 
   void SetBaseHelpCenterUrlForTesting(const GURL& test_url);

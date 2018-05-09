@@ -79,6 +79,7 @@ MITMSoftwareBlockingPage::MITMSoftwareBlockingPage(
           std::make_unique<SSLErrorControllerClient>(
               web_contents,
               ssl_info,
+              cert_error,
               request_url,
               CreateMitmSoftwareMetricsHelper(web_contents, request_url))),
       callback_(callback),
