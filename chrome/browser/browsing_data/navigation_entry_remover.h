@@ -15,12 +15,12 @@ namespace browsing_data {
 // Remove navigation entries from the tabs of all browsers of |profile|.
 // Recent tabs will be cleaned up as well and the session will be rewritten.
 // The last session will be removed as it can't be cleaned up easily.
-// If a valid time_range is supplied, all entries within this time range will be
-// removed and |deleted_rows| is ignored.
-// Otherwise entries matching |deleted_rows| will be deleted.
+// If a valid |deletion_info.time_range()| is supplied,
+// |deletion_info.restrict_urls()| (or all URLs if empty) within this time range
+// will be removed and |deletion_info.deleted_rows()| is ignored. Otherwise
+// entries matching |deletion_info.deleted_rows()| will be deleted.
 void RemoveNavigationEntries(Profile* profile,
-                             const history::DeletionTimeRange& time_range,
-                             const history::URLRows& deleted_rows);
+                             const history::DeletionInfo& deletion_info);
 
 }  // namespace browsing_data
 
