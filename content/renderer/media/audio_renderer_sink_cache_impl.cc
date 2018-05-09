@@ -14,13 +14,43 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_renderer_sink.h"
 
 namespace content {
 
+AudioRendererSinkCacheImpl* AudioRendererSinkCacheImpl::instance_ = nullptr;
 constexpr int kDeleteTimeoutMs = 5000;
+
+class AudioRendererSinkCacheImpl::FrameObserver : public RenderFrameObserver {
+ public:
+  explicit FrameObserver(content::RenderFrame* render_frame)
+      : RenderFrameObserver(render_frame) {}
+  ~FrameObserver() override{};
+
+ private:
+  // content::RenderFrameObserver implementation:
+  void DidCommitProvisionalLoad(bool is_new_navigation,
+                                bool is_same_document_navigation) override {
+    if (!is_same_document_navigation)
+      DropFrameCache();
+  }
+
+  void OnDestruct() override {
+    DropFrameCache();
+    delete this;
+  }
+
+  void DropFrameCache() {
+    if (AudioRendererSinkCacheImpl::instance_)
+      AudioRendererSinkCacheImpl::instance_->DropSinksForFrame(routing_id());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(FrameObserver);
+};
 
 namespace {
 
@@ -56,21 +86,30 @@ struct AudioRendererSinkCacheImpl::CacheEntry {
 
 // static
 std::unique_ptr<AudioRendererSinkCache> AudioRendererSinkCache::Create() {
-  return base::WrapUnique(new AudioRendererSinkCacheImpl(
+  return std::make_unique<AudioRendererSinkCacheImpl>(
       base::ThreadTaskRunnerHandle::Get(),
       base::Bind(&AudioDeviceFactory::NewAudioRendererMixerSink),
-      base::TimeDelta::FromMilliseconds(kDeleteTimeoutMs)));
+      base::TimeDelta::FromMilliseconds(kDeleteTimeoutMs));
+}
+
+// static
+void AudioRendererSinkCache::ObserveFrame(RenderFrame* frame) {
+  new AudioRendererSinkCacheImpl::FrameObserver(frame);
 }
 
 AudioRendererSinkCacheImpl::AudioRendererSinkCacheImpl(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const CreateSinkCallback& create_sink_cb,
+    CreateSinkCallback create_sink_cb,
     base::TimeDelta delete_timeout)
     : task_runner_(std::move(task_runner)),
-      create_sink_cb_(create_sink_cb),
+      create_sink_cb_(std::move(create_sink_cb)),
       delete_timeout_(delete_timeout),
       weak_ptr_factory_(this) {
   weak_this_ = weak_ptr_factory_.GetWeakPtr();
+  if (instance_)
+    LOG(ERROR) << "More that one AudioRendererSinkCache instance created. "
+                  "Allowed in tests only.";
+  instance_ = this;
 }
 
 AudioRendererSinkCacheImpl::~AudioRendererSinkCacheImpl() {
@@ -80,6 +119,9 @@ AudioRendererSinkCacheImpl::~AudioRendererSinkCacheImpl() {
   // is being destroyed anyways.
   for (auto& entry : cache_)
     entry.sink->Stop();
+
+  if (instance_ == this)
+    instance_ = nullptr;
 }
 
 media::OutputDeviceInfo AudioRendererSinkCacheImpl::GetSinkInfo(
@@ -264,6 +306,20 @@ void AudioRendererSinkCacheImpl::CacheOrStopUnusedSink(
   }
 
   DeleteLaterIfUnused(cache_entry.sink.get());
+}
+
+void AudioRendererSinkCacheImpl::DropSinksForFrame(int source_render_frame_id) {
+  base::AutoLock auto_lock(cache_lock_);
+  cache_.erase(std::remove_if(cache_.begin(), cache_.end(),
+                              [source_render_frame_id](const CacheEntry& val) {
+                                if (val.source_render_frame_id ==
+                                    source_render_frame_id) {
+                                  val.sink->Stop();
+                                  return true;
+                                }
+                                return false;
+                              }),
+               cache_.end());
 }
 
 int AudioRendererSinkCacheImpl::GetCacheSizeForTesting() {

@@ -84,6 +84,8 @@ class AudioRendererSinkCacheTest : public testing::Test {
     e.Wait();
   }
 
+  void DropSinksForFrame(int frame_id) { cache_->DropSinksForFrame(frame_id); }
+
   base::test::ScopedTaskEnvironment task_env_;
   std::unique_ptr<AudioRendererSinkCacheImpl> cache_;
 
@@ -367,6 +369,38 @@ TEST_F(AudioRendererSinkCacheTest, MultithreadedAccess) {
                      base::Unretained(cache_.get()), base::RetainedRef(sink)));
 
   EXPECT_EQ(0, sink_count());
+}
+
+TEST_F(AudioRendererSinkCacheTest, StopsAndDropsSinks) {
+  EXPECT_EQ(0, sink_count());
+  scoped_refptr<media::AudioRendererSink> sink1 =
+      cache_->GetSink(kRenderFrameId, "device1").get();
+  scoped_refptr<media::AudioRendererSink> sink2 =
+      cache_->GetSink(kRenderFrameId, "device2").get();
+  EXPECT_EQ(2, sink_count());
+
+  EXPECT_CALL(*static_cast<media::MockAudioRendererSink*>(sink1.get()), Stop());
+  EXPECT_CALL(*static_cast<media::MockAudioRendererSink*>(sink2.get()), Stop());
+  DropSinksForFrame(kRenderFrameId);
+  EXPECT_EQ(0, sink_count());
+}
+
+TEST_F(AudioRendererSinkCacheTest, StopsAndDropsCorrectSinks) {
+  EXPECT_EQ(0, sink_count());
+  scoped_refptr<media::AudioRendererSink> sink1 =
+      cache_->GetSink(kRenderFrameId, "device1").get();
+  scoped_refptr<media::AudioRendererSink> another_sink =
+      cache_->GetSink(kRenderFrameId + 1, "device1").get();
+  scoped_refptr<media::AudioRendererSink> sink2 =
+      cache_->GetSink(kRenderFrameId, "device2").get();
+  EXPECT_EQ(3, sink_count());
+
+  EXPECT_CALL(*static_cast<media::MockAudioRendererSink*>(sink1.get()), Stop());
+  EXPECT_CALL(*static_cast<media::MockAudioRendererSink*>(sink2.get()), Stop());
+  DropSinksForFrame(kRenderFrameId);
+  EXPECT_EQ(1, sink_count());
+  EXPECT_CALL(*static_cast<media::MockAudioRendererSink*>(another_sink.get()),
+              Stop());
 }
 
 }  // namespace content
