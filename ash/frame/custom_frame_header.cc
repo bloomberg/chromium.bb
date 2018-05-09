@@ -62,7 +62,7 @@ void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
                                  const gfx::ImageSkia& frame_image,
                                  const gfx::ImageSkia& frame_overlay_image,
                                  int alpha,
-                                 SkColor background_color,
+                                 SkColor opaque_background_color,
                                  const gfx::Rect& bounds,
                                  int corner_radius,
                                  int image_inset_x) {
@@ -72,31 +72,51 @@ void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
   gfx::ScopedCanvas scoped_save(canvas);
   canvas->ClipPath(frame_path, antialias);
 
-  cc::PaintFlags flags;
-  flags.setBlendMode(SkBlendMode::kPlus);
-  flags.setAntiAlias(antialias);
-
+  // When no images are used, just draw a color, with the animation |alpha|
+  // applied.
   if (frame_image.isNull() && frame_overlay_image.isNull()) {
-    flags.setColor(background_color);
-    canvas->DrawRect(bounds, flags);
-  } else if (frame_overlay_image.isNull()) {
-    flags.setAlpha(alpha);
-    canvas->TileImageInt(frame_image, image_inset_x, 0, 0, 0, bounds.width(),
-                         bounds.height(), 1.0f, &flags);
-  } else {
+    canvas->DrawColor(SkColorSetA(opaque_background_color, alpha));
+    return;
+  }
+
+  // This handles the case where blending is required between one or more images
+  // and the background color. In this case we use a SaveLayerWithFlags() call
+  // to draw all 2-3 components into a single layer then apply the alpha to them
+  // together.
+  if (alpha < 0xFF ||
+      (!frame_image.isNull() && !frame_overlay_image.isNull())) {
+    cc::PaintFlags flags;
+    // We use kPlus blending mode so that between the active and inactive
+    // background colors, the result is 255 alpha (i.e. opaque).
+    flags.setBlendMode(SkBlendMode::kPlus);
     flags.setAlpha(alpha);
     canvas->SaveLayerWithFlags(flags);
 
-    if (frame_image.isNull()) {
-      canvas->DrawColor(background_color);
-    } else {
+    // Images can be transparent and we expect the background color to be
+    // present behind them. Here the |alpha| will be applied to the background
+    // color by the SaveLayer call, so use |opaque_background_color|.
+    canvas->DrawColor(opaque_background_color);
+    if (!frame_image.isNull()) {
       canvas->TileImageInt(frame_image, image_inset_x, 0, 0, 0, bounds.width(),
                            bounds.height());
     }
-    canvas->DrawImageInt(frame_overlay_image, 0, 0);
+    if (!frame_overlay_image.isNull())
+      canvas->DrawImageInt(frame_overlay_image, 0, 0);
 
     canvas->Restore();
+    return;
   }
+
+  // Images can be transparent and we expect the background color to be
+  // present behind them.
+  canvas->DrawColor(opaque_background_color);
+
+  if (!frame_image.isNull()) {
+    canvas->TileImageInt(frame_image, image_inset_x, 0, 0, 0, bounds.width(),
+                         bounds.height());
+  }
+  if (!frame_overlay_image.isNull())
+    canvas->DrawImageInt(frame_overlay_image, 0, 0);
 }
 
 }  // namespace
@@ -262,15 +282,16 @@ void CustomFrameHeader::PaintFrameImages(gfx::Canvas* canvas, bool active) {
       appearance_provider_->GetFrameHeaderImage(active);
   gfx::ImageSkia frame_overlay_image =
       appearance_provider_->GetFrameHeaderOverlayImage(active);
-  SkColor background_color =
-      SkColorSetA(appearance_provider_->GetFrameHeaderColor(active), alpha);
+  // We ensure that the background color is opaque.
+  SkColor opaque_background_color =
+      SkColorSetA(appearance_provider_->GetFrameHeaderColor(active), 0xFF);
 
   int corner_radius = 0;
   if (!GetWidget()->IsMaximized() && !GetWidget()->IsFullscreen())
     corner_radius = FrameHeaderUtil::GetTopCornerRadiusWhenRestored();
 
   PaintFrameImagesInRoundRect(canvas, frame_image, frame_overlay_image, alpha,
-                              background_color, GetPaintedBounds(),
+                              opaque_background_color, GetPaintedBounds(),
                               corner_radius,
                               FrameHeaderUtil::GetThemeBackgroundXInset());
 }
