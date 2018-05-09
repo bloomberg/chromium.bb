@@ -95,7 +95,7 @@ GpuVideoDecoder::GpuVideoDecoder(
   DCHECK(factories_);
 }
 
-void GpuVideoDecoder::Reset(const base::Closure& closure)  {
+void GpuVideoDecoder::Reset(const base::Closure& closure) {
   DVLOG(3) << "Reset()";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
@@ -121,9 +121,9 @@ static bool IsCodedSizeSupported(const gfx::Size& coded_size,
                                  const gfx::Size& min_resolution,
                                  const gfx::Size& max_resolution) {
   return (coded_size.width() <= max_resolution.width() &&
-      coded_size.height() <= max_resolution.height() &&
-      coded_size.width() >= min_resolution.width() &&
-      coded_size.height() >= min_resolution.height());
+          coded_size.height() <= max_resolution.height() &&
+          coded_size.width() >= min_resolution.width() &&
+          coded_size.height() >= min_resolution.height());
 }
 
 // Report |success| to UMA and run |cb| with it.  This is super-specific to the
@@ -135,8 +135,8 @@ static void ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB(
     bool success) {
   // TODO(xhwang): Report |success| directly.
   PipelineStatus status = success ? PIPELINE_OK : DECODER_ERROR_NOT_SUPPORTED;
-  UMA_HISTOGRAM_ENUMERATION(
-      "Media.GpuVideoDecoderInitializeStatus", status, PIPELINE_STATUS_MAX + 1);
+  UMA_HISTOGRAM_ENUMERATION("Media.GpuVideoDecoderInitializeStatus", status,
+                            PIPELINE_STATUS_MAX + 1);
 
   if (!success) {
     media_log->RecordRapporWithSecurityOrigin(
@@ -466,10 +466,9 @@ void GpuVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
 void GpuVideoDecoder::RecordBufferData(const BitstreamBuffer& bitstream_buffer,
                                        const DecoderBuffer& buffer) {
-  input_buffer_data_.push_front(BufferData(bitstream_buffer.id(),
-                                           buffer.timestamp(),
-                                           config_.visible_rect(),
-                                           config_.natural_size()));
+  input_buffer_data_.push_front(
+      BufferData(bitstream_buffer.id(), buffer.timestamp(),
+                 config_.visible_rect(), config_.natural_size()));
   // Why this value?  Because why not.  avformat.h:MAX_REORDER_DELAY is 16, but
   // that's too small for some pathological B-frame test videos.  The cost of
   // using too-high a value is low (192 bits per extra slot).
@@ -484,9 +483,8 @@ void GpuVideoDecoder::GetBufferData(int32_t id,
                                     base::TimeDelta* timestamp,
                                     gfx::Rect* visible_rect,
                                     gfx::Size* natural_size) {
-  for (std::list<BufferData>::const_iterator it =
-           input_buffer_data_.begin(); it != input_buffer_data_.end();
-       ++it) {
+  for (std::list<BufferData>::const_iterator it = input_buffer_data_.begin();
+       it != input_buffer_data_.end(); ++it) {
     if (it->bitstream_buffer_id != id)
       continue;
     *timestamp = it->timestamp;
@@ -520,8 +518,8 @@ void GpuVideoDecoder::ProvidePictureBuffers(uint32_t count,
                                             uint32_t textures_per_buffer,
                                             const gfx::Size& size,
                                             uint32_t texture_target) {
-  DVLOG(3) << "ProvidePictureBuffers(" << count << ", "
-           << size.width() << "x" << size.height() << ")";
+  DVLOG(3) << "ProvidePictureBuffers(" << count << ", " << size.width() << "x"
+           << size.height() << ")";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
   std::vector<uint32_t> texture_ids;
@@ -559,8 +557,10 @@ void GpuVideoDecoder::ProvidePictureBuffers(uint32_t count,
     picture_buffers.push_back(PictureBuffer(next_picture_buffer_id_++, size,
                                             ids, mailboxes, texture_target,
                                             format));
-    bool inserted = assigned_picture_buffers_.insert(std::make_pair(
-        picture_buffers.back().id(), picture_buffers.back())).second;
+    bool inserted = assigned_picture_buffers_
+                        .insert(std::make_pair(picture_buffers.back().id(),
+                                               picture_buffers.back()))
+                        .second;
     DCHECK(inserted);
   }
 
@@ -686,8 +686,7 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   DeliverFrame(frame);
 }
 
-void GpuVideoDecoder::DeliverFrame(
-    const scoped_refptr<VideoFrame>& frame) {
+void GpuVideoDecoder::DeliverFrame(const scoped_refptr<VideoFrame>& frame) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
   // During a pending vda->Reset(), we don't accumulate frames.  Drop it on the
