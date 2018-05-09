@@ -1,9 +1,10 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/bookmarks/bookmark_folder_table_view_cell.h"
+#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_folder_item.h"
 
+#include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -24,41 +25,62 @@ const CGFloat kImageViewLeadingOffset = 1.0;
 const CGFloat kFolderCellIndentationWidth = 32.0;
 }  // namespace
 
-@implementation BookmarkFolderTableViewCell
+#pragma mark - BookmarkFolderItem
 
+@interface BookmarkFolderItem ()
+@property(nonatomic, assign) BookmarkFolderStyle style;
+@end
+
+@implementation BookmarkFolderItem
+@synthesize currentFolder = _currentFolder;
+@synthesize indentationLevel = _indentationLevel;
+@synthesize style = _style;
+@synthesize title = _title;
+
+- (instancetype)initWithType:(NSInteger)type style:(BookmarkFolderStyle)style {
+  if ((self = [super initWithType:type])) {
+    self.cellClass = [LegacyTableViewBookmarkFolderCell class];
+    self.style = style;
+  }
+  return self;
+}
+
+- (void)configureCell:(UITableViewCell*)cell
+           withStyler:(ChromeTableViewStyler*)styler {
+  [super configureCell:cell withStyler:styler];
+  LegacyTableViewBookmarkFolderCell* folderCell =
+      base::mac::ObjCCastStrict<LegacyTableViewBookmarkFolderCell>(cell);
+
+  switch (self.style) {
+    case BookmarkFolderStyleNewFolder: {
+      folderCell.textLabel.text =
+          l10n_util::GetNSString(IDS_IOS_BOOKMARK_CREATE_GROUP);
+      folderCell.imageView.image =
+          [UIImage imageNamed:@"bookmark_gray_new_folder"];
+      folderCell.accessibilityIdentifier = @"Create New Folder";
+      break;
+    }
+    case BookmarkFolderStyleFolderEntry: {
+      folderCell.textLabel.text = self.title;
+      folderCell.accessibilityIdentifier = self.title;
+      folderCell.accessibilityLabel = self.title;
+      folderCell.checked = self.isCurrentFolder;
+      folderCell.indentationLevel = self.indentationLevel;
+      folderCell.indentationWidth = kFolderCellIndentationWidth;
+      folderCell.imageView.image =
+          [UIImage imageNamed:@"bookmark_gray_folder_new"];
+      break;
+    }
+  }
+}
+
+@end
+
+#pragma mark - LegacyTableViewBookmarkFolderCell
+
+@implementation LegacyTableViewBookmarkFolderCell
 @synthesize checked = _checked;
 @synthesize enabled = _enabled;
-
-+ (NSString*)folderCellReuseIdentifier {
-  return @"BookmarkFolderCellReuseIdentifier";
-}
-
-+ (NSString*)folderCreationCellReuseIdentifier {
-  return @"BookmarkFolderCreationCellReuseIdentifier";
-}
-
-+ (instancetype)folderCell {
-  BookmarkFolderTableViewCell* folderCell =
-      [[[self class] alloc] initWithStyle:UITableViewCellStyleDefault
-                          reuseIdentifier:[self folderCellReuseIdentifier]];
-  folderCell.indentationWidth = kFolderCellIndentationWidth;
-  // TODO(crbug.com/787668): Replace bookmark_gray_folder by
-  // bookmark_gray_folder_new and use bookmark_gray_folder below.
-  folderCell.imageView.image = [UIImage imageNamed:@"bookmark_gray_folder_new"];
-  return folderCell;
-}
-
-+ (instancetype)folderCreationCell {
-  BookmarkFolderTableViewCell* newFolderCell = [[[self class] alloc]
-        initWithStyle:UITableViewCellStyleDefault
-      reuseIdentifier:[self folderCreationCellReuseIdentifier]];
-  newFolderCell.textLabel.text =
-      l10n_util::GetNSString(IDS_IOS_BOOKMARK_CREATE_GROUP);
-  newFolderCell.imageView.image =
-      [UIImage imageNamed:@"bookmark_gray_new_folder"];
-  newFolderCell.accessibilityIdentifier = @"Create New Folder";
-  return newFolderCell;
-}
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
               reuseIdentifier:(NSString*)reuseIdentifier {
@@ -67,10 +89,6 @@ const CGFloat kFolderCellIndentationWidth = 32.0;
     self.textLabel.font = [MDCTypography subheadFont];
     self.textLabel.textColor = bookmark_utils_ios::darkTextColor();
     self.selectionStyle = UITableViewCellSelectionStyleGray;
-
-    // TODO(crbug.com/787668): Replace bookmark_gray_folder by
-    // bookmark_gray_folder_new and use bookmark_gray_folder below.
-    self.imageView.image = [UIImage imageNamed:@"bookmark_gray_folder_new"];
     self.accessibilityTraits |= UIAccessibilityTraitButton;
     _enabled = YES;
   }
@@ -116,6 +134,8 @@ const CGFloat kFolderCellIndentationWidth = 32.0;
   [super prepareForReuse];
   self.checked = NO;
   self.enabled = YES;
+  self.indentationWidth = 0;
+  self.imageView.image = nil;
 }
 
 @end

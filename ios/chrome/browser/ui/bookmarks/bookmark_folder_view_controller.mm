@@ -11,21 +11,18 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_folder_table_view_cell.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
+#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_folder_item.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-using bookmarks::BookmarkNode;
 
 namespace {
 
@@ -36,16 +33,19 @@ const CGFloat kFolderCellHeight = 48.0;
 const CGFloat kSectionHeaderHeight = 8.0;
 const CGFloat kSectionFooterHeight = 8.0;
 
-// Enum for the available sections.
-// First section displays a cell to create a new folder.
-// The second section displays as many folders as are available.
-typedef enum {
-  BookmarkFolderSectionDefault = 0,
-  BookmarkFolderSectionFolders,
-} BookmarkFolderSection;
-const NSInteger BookmarkFolderSectionCount = 2;
+typedef NS_ENUM(NSInteger, SectionIdentifier) {
+  SectionIdentifierAddFolder = kSectionIdentifierEnumZero,
+  SectionIdentifierBookmarkFolders,
+};
+
+typedef NS_ENUM(NSInteger, ItemType) {
+  ItemTypeCreateNewFolder = kItemTypeEnumZero,
+  ItemTypeBookmarkFolder,
+};
 
 }  // namespace
+
+using bookmarks::BookmarkNode;
 
 @interface BookmarkFolderViewController ()<
     BookmarkFolderEditorViewControllerDelegate,
@@ -55,7 +55,6 @@ const NSInteger BookmarkFolderSectionCount = 2;
   std::set<const BookmarkNode*> _editedNodes;
   std::vector<const BookmarkNode*> _folders;
   std::unique_ptr<bookmarks::BookmarkModelBridge> _modelBridge;
-  MDCAppBar* _appBar;
 }
 
 // Should the controller setup Cancel and Done buttons instead of a back button.
@@ -78,17 +77,9 @@ const NSInteger BookmarkFolderSectionCount = 2;
 @property(nonatomic, assign, readonly)
     const std::vector<const BookmarkNode*>& folders;
 
-// The table view that displays the options and folders.
-@property(nonatomic, strong) UITableView* tableView;
-
-// Returns the cell for the default section and the given |row|.
-- (BookmarkFolderTableViewCell*)defaultSectionCellForRow:(NSInteger)row;
-
-// Returns a folder cell for the folder at |row| in |self.folders|.
-- (BookmarkFolderTableViewCell*)folderSectionCellForRow:(NSInteger)row;
-
-// Reloads the folder list.
-- (void)reloadFolders;
+// Reloads the model and the updates |self.tableView| to reflect any model
+// changes.
+- (void)reloadModel;
 
 // Pushes on the navigation controller a view controller to create a new folder.
 - (void)pushFolderAddViewController;
@@ -111,7 +102,6 @@ const NSInteger BookmarkFolderSectionCount = 2;
 @synthesize folderAddController = _folderAddController;
 @synthesize delegate = _delegate;
 @synthesize folders = _folders;
-@synthesize tableView = _tableView;
 @synthesize selectedFolder = _selectedFolder;
 
 - (instancetype)initWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
@@ -123,7 +113,9 @@ const NSInteger BookmarkFolderSectionCount = 2;
   DCHECK(bookmarkModel);
   DCHECK(bookmarkModel->loaded());
   DCHECK(selectedFolder == NULL || selectedFolder->is_folder());
-  self = [super initWithNibName:nil bundle:nil];
+  self =
+      [super initWithTableViewStyle:UITableViewStylePlain
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     _allowsCancel = allowsCancel;
     _allowsNewFolders = allowsNewFolders;
@@ -134,9 +126,6 @@ const NSInteger BookmarkFolderSectionCount = 2;
     // Set up the bookmark model oberver.
     _modelBridge.reset(
         new bookmarks::BookmarkModelBridge(self, _bookmarkModel));
-
-    _appBar = [[MDCAppBar alloc] init];
-    [self addChildViewController:[_appBar headerViewController]];
   }
   return self;
 }
@@ -145,23 +134,19 @@ const NSInteger BookmarkFolderSectionCount = 2;
   DCHECK(selectedFolder);
   DCHECK(selectedFolder->is_folder());
   _selectedFolder = selectedFolder;
-  [self.tableView reloadData];
+  [self reloadModel];
 }
 
 - (void)dealloc {
-  _tableView.dataSource = nil;
-  _tableView.delegate = nil;
   _folderAddController.delegate = nil;
-}
-
-- (UIStatusBarStyle)preferredStatusBarStyle {
-  return UIStatusBarStyleDefault;
 }
 
 #pragma mark - View lifecycle
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+  [super loadModel];
+
   if ([self respondsToSelector:@selector(setEdgesForExtendedLayout:)]) {
     [self setEdgesForExtendedLayout:UIRectEdgeNone];
   }
@@ -199,39 +184,24 @@ const NSInteger BookmarkFolderSectionCount = 2;
     self.navigationItem.leftBarButtonItem = backItem;
   }
 
-  // The table view.
-  UITableView* tableView =
-      [[UITableView alloc] initWithFrame:self.view.bounds
-                                   style:UITableViewStylePlain];
-  tableView.dataSource = self;
-  tableView.delegate = self;
-  tableView.autoresizingMask =
+  // Configure the table view.
+  self.tableView.autoresizingMask =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-  tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-  [self.view addSubview:tableView];
-  [self.view sendSubviewToBack:tableView];
-  self.tableView = tableView;
+  self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
 
-  // Add the app bar to the view hierarchy.  This must be done last, so that the
-  // app bar's views are the frontmost.
-  ConfigureAppBarWithCardStyle(_appBar);
-  [_appBar headerViewController].headerView.trackingScrollView = self.tableView;
-  [_appBar addSubviewsToParent];
+  // To support the pre UIRefresh we need to set the insets since
+  // UITableViewCell lines itself up with the tableView separator insets. The
+  // following line won't be needed for UIRefresh.
+  [self.tableView setSeparatorInset:UIEdgeInsetsMake(0, 51, 0, 0)];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
   // Whevener this VC is displayed the bottom toolbar will be hidden.
   self.navigationController.toolbarHidden = YES;
-  [self reloadFolders];
-}
 
-- (UIViewController*)childViewControllerForStatusBarHidden {
-  return [_appBar headerViewController];
-}
-
-- (UIViewController*)childViewControllerForStatusBarStyle {
-  return [_appBar headerViewController];
+  // Load the model.
+  [self reloadModel];
 }
 
 #pragma mark - Accessibility
@@ -239,75 +209,6 @@ const NSInteger BookmarkFolderSectionCount = 2;
 - (BOOL)accessibilityPerformEscape {
   [self.delegate folderPickerDidCancel:self];
   return YES;
-}
-
-#pragma mark - UIScrollViewDelegate
-
-- (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  MDCFlexibleHeaderView* headerView = [_appBar headerViewController].headerView;
-  if (scrollView == headerView.trackingScrollView) {
-    [headerView trackingScrollViewDidScroll];
-  }
-}
-
-- (void)scrollViewDidEndDecelerating:(UIScrollView*)scrollView {
-  MDCFlexibleHeaderView* headerView = [_appBar headerViewController].headerView;
-  if (scrollView == headerView.trackingScrollView) {
-    [headerView trackingScrollViewDidEndDecelerating];
-  }
-}
-
-- (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
-                  willDecelerate:(BOOL)decelerate {
-  MDCFlexibleHeaderView* headerView = [_appBar headerViewController].headerView;
-  if (scrollView == headerView.trackingScrollView) {
-    [headerView trackingScrollViewDidEndDraggingWillDecelerate:decelerate];
-  }
-}
-
-- (void)scrollViewWillEndDragging:(UIScrollView*)scrollView
-                     withVelocity:(CGPoint)velocity
-              targetContentOffset:(inout CGPoint*)targetContentOffset {
-  MDCFlexibleHeaderView* headerView = [_appBar headerViewController].headerView;
-  if (scrollView == headerView.trackingScrollView) {
-    [headerView
-        trackingScrollViewWillEndDraggingWithVelocity:velocity
-                                  targetContentOffset:targetContentOffset];
-  }
-}
-
-#pragma mark - UITableViewDataSource
-
-- (NSInteger)numberOfSectionsInTableView:(UITableView*)tableView {
-  return BookmarkFolderSectionCount;
-}
-
-- (NSInteger)tableView:(UITableView*)tableView
-    numberOfRowsInSection:(NSInteger)section {
-  switch (static_cast<BookmarkFolderSection>(section)) {
-    case BookmarkFolderSectionDefault:
-      return [self shouldShowDefaultSection] ? 1 : 0;
-
-    case BookmarkFolderSectionFolders:
-      return self.folders.size();
-  }
-  NOTREACHED();
-  return 0;
-}
-
-- (UITableViewCell*)tableView:(UITableView*)tableView
-        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
-  BookmarkFolderTableViewCell* cell = nil;
-  switch (static_cast<BookmarkFolderSection>(indexPath.section)) {
-    case BookmarkFolderSectionDefault:
-      cell = [self defaultSectionCellForRow:indexPath.row];
-      break;
-
-    case BookmarkFolderSectionFolders:
-      cell = [self folderSectionCellForRow:indexPath.row];
-      break;
-  }
-  return cell;
 }
 
 #pragma mark - UITableViewDelegate
@@ -319,15 +220,7 @@ const NSInteger BookmarkFolderSectionCount = 2;
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForHeaderInSection:(NSInteger)section {
-  switch (static_cast<BookmarkFolderSection>(section)) {
-    case BookmarkFolderSectionDefault:
-      return [self shouldShowDefaultSection] ? kSectionHeaderHeight : 0;
-
-    case BookmarkFolderSectionFolders:
-      return kSectionHeaderHeight;
-  }
-  NOTREACHED();
-  return 0;
+  return kSectionHeaderHeight;
 }
 
 - (UIView*)tableView:(UITableView*)tableView
@@ -336,7 +229,9 @@ const NSInteger BookmarkFolderSectionCount = 2;
       CGRectMake(0, 0, CGRectGetWidth(tableView.frame),
                  [self tableView:tableView heightForHeaderInSection:section]);
   UIView* headerView = [[UIView alloc] initWithFrame:headerViewFrame];
-  if (section == BookmarkFolderSectionFolders &&
+  if (section ==
+          [self.tableViewModel
+              sectionForSectionIdentifier:SectionIdentifierBookmarkFolders] &&
       [self shouldShowDefaultSection]) {
     CGRect separatorFrame =
         CGRectMake(0, 0, CGRectGetWidth(headerView.bounds),
@@ -352,15 +247,7 @@ const NSInteger BookmarkFolderSectionCount = 2;
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForFooterInSection:(NSInteger)section {
-  switch (static_cast<BookmarkFolderSection>(section)) {
-    case BookmarkFolderSectionDefault:
-      return [self shouldShowDefaultSection] ? kSectionFooterHeight : 0;
-
-    case BookmarkFolderSectionFolders:
-      return kSectionFooterHeight;
-  }
-  NOTREACHED();
-  return 0;
+  return kSectionFooterHeight;
 }
 
 - (UIView*)tableView:(UITableView*)tableView
@@ -371,12 +258,12 @@ const NSInteger BookmarkFolderSectionCount = 2;
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
-  switch (static_cast<BookmarkFolderSection>(indexPath.section)) {
-    case BookmarkFolderSectionDefault:
+  switch ([self.tableViewModel sectionIdentifierForSection:indexPath.section]) {
+    case SectionIdentifierAddFolder:
       [self pushFolderAddViewController];
       break;
 
-    case BookmarkFolderSectionFolders: {
+    case SectionIdentifierBookmarkFolders: {
       const BookmarkNode* folder = self.folders[indexPath.row];
       [self changeSelectedFolder:folder];
       [self delayedNotifyDelegateOfSelection];
@@ -390,7 +277,7 @@ const NSInteger BookmarkFolderSectionCount = 2;
 - (void)bookmarkFolderEditor:(BookmarkFolderEditorViewController*)folderEditor
       didFinishEditingFolder:(const BookmarkNode*)folder {
   DCHECK(folder);
-  [self reloadFolders];
+  [self reloadModel];
   [self changeSelectedFolder:folder];
   [self delayedNotifyDelegateOfSelection];
 }
@@ -422,18 +309,18 @@ const NSInteger BookmarkFolderSectionCount = 2;
 - (void)bookmarkNodeChanged:(const BookmarkNode*)bookmarkNode {
   if (!bookmarkNode->is_folder())
     return;
-  [self reloadFolders];
+  [self reloadModel];
 }
 
 - (void)bookmarkNodeChildrenChanged:(const BookmarkNode*)bookmarkNode {
-  [self reloadFolders];
+  [self reloadModel];
 }
 
 - (void)bookmarkNode:(const BookmarkNode*)bookmarkNode
      movedFromParent:(const BookmarkNode*)oldParent
             toParent:(const BookmarkNode*)newParent {
   if (bookmarkNode->is_folder()) {
-    [self reloadFolders];
+    [self reloadModel];
   }
 }
 
@@ -460,14 +347,14 @@ const NSInteger BookmarkFolderSectionCount = 2;
     // node.
     [self changeSelectedFolder:self.bookmarkModel->mobile_node()];
   }
-  [self reloadFolders];
+  [self reloadModel];
 }
 
 - (void)bookmarkModelRemovedAllNodes {
   // The selected folder is no longer valid. Fallback on the Mobile Bookmarks
   // node.
   [self changeSelectedFolder:self.bookmarkModel->mobile_node()];
-  [self reloadFolders];
+  [self reloadModel];
 }
 
 #pragma mark - Actions
@@ -490,52 +377,57 @@ const NSInteger BookmarkFolderSectionCount = 2;
   return self.allowsNewFolders;
 }
 
-- (BookmarkFolderTableViewCell*)defaultSectionCellForRow:(NSInteger)row {
-  DCHECK([self shouldShowDefaultSection]);
-  DCHECK_EQ(0, row);
-  BookmarkFolderTableViewCell* cell = [self.tableView
-      dequeueReusableCellWithIdentifier:[BookmarkFolderTableViewCell
-                                            folderCreationCellReuseIdentifier]];
-  if (!cell) {
-    cell = [BookmarkFolderTableViewCell folderCreationCell];
-  }
-  return cell;
-}
-
-- (BookmarkFolderTableViewCell*)folderSectionCellForRow:(NSInteger)row {
-  DCHECK(row <
-         [self.tableView numberOfRowsInSection:BookmarkFolderSectionFolders]);
-  BookmarkFolderTableViewCell* cell = [self.tableView
-      dequeueReusableCellWithIdentifier:[BookmarkFolderTableViewCell
-                                            folderCellReuseIdentifier]];
-  if (!cell) {
-    cell = [BookmarkFolderTableViewCell folderCell];
-  }
-  const BookmarkNode* folder = self.folders[row];
-  NSString* title = bookmark_utils_ios::TitleForBookmarkNode(folder);
-  cell.textLabel.text = title;
-  cell.accessibilityIdentifier = title;
-  cell.accessibilityLabel = title;
-  cell.checked = (self.selectedFolder == folder);
-
-  // Indentation level.
-  NSInteger level = 0;
-  const BookmarkNode* node = folder;
-  while (node && !(self.bookmarkModel->is_root_node(node))) {
-    ++level;
-    node = node->parent();
-  }
-  // The root node is not shown as a folder, so top level folders have a
-  // level strictly positive.
-  DCHECK(level > 0);
-  cell.indentationLevel = level - 1;
-
-  return cell;
-}
-
-- (void)reloadFolders {
+- (void)reloadModel {
   _folders = bookmark_utils_ios::VisibleNonDescendantNodes(self.editedNodes,
                                                            self.bookmarkModel);
+
+  // Delete any existing section.
+  if ([self.tableViewModel
+          hasSectionForSectionIdentifier:SectionIdentifierAddFolder])
+    [self.tableViewModel
+        removeSectionWithIdentifier:SectionIdentifierAddFolder];
+  if ([self.tableViewModel
+          hasSectionForSectionIdentifier:SectionIdentifierBookmarkFolders])
+    [self.tableViewModel
+        removeSectionWithIdentifier:SectionIdentifierBookmarkFolders];
+
+  // Add default add Folder section if needed.
+  if ([self shouldShowDefaultSection]) {
+    [self.tableViewModel addSectionWithIdentifier:SectionIdentifierAddFolder];
+    BookmarkFolderItem* createFolderItem =
+        [[BookmarkFolderItem alloc] initWithType:ItemTypeBookmarkFolder
+                                           style:BookmarkFolderStyleNewFolder];
+    [self.tableViewModel addItem:createFolderItem
+         toSectionWithIdentifier:SectionIdentifierAddFolder];
+  }
+
+  // Add Folders entries.
+  [self.tableViewModel
+      addSectionWithIdentifier:SectionIdentifierBookmarkFolders];
+  for (NSUInteger row = 0; row < _folders.size(); row++) {
+    const BookmarkNode* folderNode = self.folders[row];
+    BookmarkFolderItem* folderItem = [[BookmarkFolderItem alloc]
+        initWithType:ItemTypeBookmarkFolder
+               style:BookmarkFolderStyleFolderEntry];
+    folderItem.title = bookmark_utils_ios::TitleForBookmarkNode(folderNode);
+    folderItem.currentFolder = (self.selectedFolder == folderNode);
+
+    // Indentation level.
+    NSInteger level = 0;
+    const BookmarkNode* node = folderNode;
+    while (node && !(self.bookmarkModel->is_root_node(node))) {
+      ++level;
+      node = node->parent();
+    }
+    // The root node is not shown as a folder, so top level folders have a
+    // level strictly positive.
+    DCHECK(level > 0);
+    folderItem.indentationLevel = level - 1;
+
+    [self.tableViewModel addItem:folderItem
+         toSectionWithIdentifier:SectionIdentifierBookmarkFolders];
+  }
+
   [self.tableView reloadData];
 }
 
