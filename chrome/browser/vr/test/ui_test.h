@@ -106,6 +106,9 @@ class UiTest : public testing::Test {
 
   void GetBackgroundColor(SkColor* background_color) const;
 
+  // Synthesize a controller orientation that intersects the element, and cycle
+  // the controller button.  This offers a reasonably correct means of testing
+  // clicks on elements, that's true to hit testability, visbility, etc.
   void ClickElement(UiElement* element);
 
   std::unique_ptr<Ui> ui_;
