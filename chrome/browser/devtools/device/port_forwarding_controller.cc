@@ -50,9 +50,9 @@ const char kIdParam[] = "id";
 const char kMethodParam[] = "method";
 const char kParamsParam[] = "params";
 
-const char kBindMethod[] = "bind";
-const char kUnbindMethod[] = "unbind";
-const char kAcceptedEvent[] = "accepted";
+const char kBindMethod[] = "Tethering.bind";
+const char kUnbindMethod[] = "Tethering.unbind";
+const char kAcceptedEvent[] = "Tethering.accepted";
 const char kPortParam[] = "port";
 const char kConnectionIdParam[] = "connectionId";
 
