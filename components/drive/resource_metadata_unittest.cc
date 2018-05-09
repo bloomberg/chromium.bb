@@ -27,9 +27,8 @@ namespace drive {
 namespace internal {
 namespace {
 
-// The changestamp of the resource metadata used in
-// ResourceMetadataTest.
-const int64_t kTestChangestamp = 100;
+// The start page token of the resource metadata used in ResourceMetadataTest.
+constexpr char kTestStartPageToken[] = "a token";
 
 // Returns the sorted base names from |entries|.
 std::vector<std::string> GetSortedBaseNames(
@@ -52,7 +51,8 @@ ResourceEntry CreateDirectoryEntryWithResourceId(
   entry.set_resource_id(resource_id);
   entry.set_parent_local_id(parent_local_id);
   entry.mutable_file_info()->set_is_directory(true);
-  entry.mutable_directory_specific_info()->set_changestamp(kTestChangestamp);
+  entry.mutable_directory_specific_info()->set_start_page_token(
+      kTestStartPageToken);
   return entry;
 }
 
@@ -131,7 +131,7 @@ void SetUpEntries(ResourceMetadata* resource_metadata) {
       CreateFileEntry("file10", local_id_dir3), &local_id));
 
   ASSERT_EQ(FILE_ERROR_OK,
-            resource_metadata->SetLargestChangestamp(kTestChangestamp));
+            resource_metadata->SetStartPageToken(kTestStartPageToken));
 }
 
 }  // namespace
@@ -181,6 +181,16 @@ TEST_F(ResourceMetadataTest, LargestChangestamp) {
   EXPECT_EQ(kChangestamp, changestamp);
 }
 
+TEST_F(ResourceMetadataTest, StartPageToken) {
+  constexpr char kStartPageToken[] = "a different token";
+  EXPECT_EQ(FILE_ERROR_OK,
+            resource_metadata_->SetStartPageToken(kStartPageToken));
+  std::string start_page_token;
+  EXPECT_EQ(FILE_ERROR_OK,
+            resource_metadata_->GetStartPageToken(&start_page_token));
+  EXPECT_EQ(kStartPageToken, start_page_token);
+}
+
 TEST_F(ResourceMetadataTest, GetResourceEntryByPath) {
   // Confirm that an existing file is found.
   ResourceEntry entry;
@@ -200,7 +210,7 @@ TEST_F(ResourceMetadataTest, GetResourceEntryByPath) {
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, resource_metadata_->GetResourceEntryByPath(
       base::FilePath::FromUTF8Unsafe("non_existing"), &entry));
 
-   // Confirm that an entry is not found with a wrong root.
+  // Confirm that an entry is not found with a wrong root.
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, resource_metadata_->GetResourceEntryByPath(
       base::FilePath::FromUTF8Unsafe("non_existing/root"), &entry));
 }
@@ -675,10 +685,10 @@ TEST_F(ResourceMetadataTest, Reset) {
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->Reset());
 
   // change stamp should be reset.
-  int64_t changestamp = 0;
+  std::string start_page_token;
   EXPECT_EQ(FILE_ERROR_OK,
-            resource_metadata_->GetLargestChangestamp(&changestamp));
-  EXPECT_EQ(0, changestamp);
+            resource_metadata_->GetStartPageToken(&start_page_token));
+  EXPECT_TRUE(start_page_token.empty());
 
   // root should continue to exist.
   ResourceEntry entry;

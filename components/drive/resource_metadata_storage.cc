@@ -767,6 +767,33 @@ FileError ResourceMetadataStorage::GetLargestChangestamp(
   return FILE_ERROR_OK;
 }
 
+FileError ResourceMetadataStorage::GetStartPageToken(
+    std::string* start_page_token) {
+  base::AssertBlockingAllowed();
+  ResourceMetadataHeader header;
+  FileError error = GetHeader(&header);
+  if (error != FILE_ERROR_OK) {
+    DLOG(ERROR) << "Failed to get the header.";
+    return error;
+  }
+  *start_page_token = header.start_page_token();
+  return FILE_ERROR_OK;
+}
+
+FileError ResourceMetadataStorage::SetStartPageToken(
+    const std::string& start_page_token) {
+  base::AssertBlockingAllowed();
+
+  ResourceMetadataHeader header;
+  FileError error = GetHeader(&header);
+  if (error != FILE_ERROR_OK) {
+    DLOG(ERROR) << "Failed to get the header.";
+    return error;
+  }
+  header.set_start_page_token(start_page_token);
+  return PutHeader(header);
+}
+
 FileError ResourceMetadataStorage::PutEntry(const ResourceEntry& entry) {
   base::AssertBlockingAllowed();
 

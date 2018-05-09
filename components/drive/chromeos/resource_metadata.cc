@@ -103,6 +103,10 @@ FileError ResourceMetadata::Reset() {
   if (error != FILE_ERROR_OK)
     return error;
 
+  error = storage_->SetStartPageToken(std::string());
+  if (error != FILE_ERROR_OK)
+    return error;
+
   // Remove all root entries.
   std::unique_ptr<Iterator> it = GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
@@ -243,6 +247,20 @@ FileError ResourceMetadata::SetLargestChangestamp(int64_t value) {
     return FILE_ERROR_NO_LOCAL_SPACE;
 
   return storage_->SetLargestChangestamp(value);
+}
+
+FileError ResourceMetadata::GetStartPageToken(std::string* out_value) {
+  DCHECK(blocking_task_runner_->RunsTasksInCurrentSequence());
+  return storage_->GetStartPageToken(out_value);
+}
+
+FileError ResourceMetadata::SetStartPageToken(const std::string& value) {
+  DCHECK(blocking_task_runner_->RunsTasksInCurrentSequence());
+
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
+    return FILE_ERROR_NO_LOCAL_SPACE;
+
+  return storage_->SetStartPageToken(value);
 }
 
 FileError ResourceMetadata::AddEntry(const ResourceEntry& entry,

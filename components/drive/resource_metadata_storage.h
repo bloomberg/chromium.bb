@@ -109,6 +109,10 @@ class ResourceMetadataStorage {
   // Gets the largest changestamp.
   FileError GetLargestChangestamp(int64_t* largest_changestamp);
 
+  FileError GetStartPageToken(std::string* out_value);
+
+  FileError SetStartPageToken(const std::string& value);
+
   // Puts the entry to this storage.
   FileError PutEntry(const ResourceEntry& entry);
 
