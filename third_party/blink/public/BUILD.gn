@@ -232,7 +232,6 @@ source_set("blink_headers") {
     "platform/web_content_decryption_module_exception.h",
     "platform/web_content_decryption_module_result.h",
     "platform/web_content_decryption_module_session.h",
-    "platform/web_content_layer.h",
     "platform/web_content_security_policy.h",
     "platform/web_content_security_policy_struct.h",
     "platform/web_content_setting_callbacks.h",
