@@ -36,7 +36,9 @@ source_set("browser_tests") {
     ":browser_test_resources",
     "//chrome/browser/resources/media_router/extension:media_router",
   ]
-  data = [ "$root_gen_dir/chrome/browser/resources/media_router/extension/" ]
+  data = [
+    "$root_gen_dir/chrome/browser/resources/media_router/extension/",
+  ]
 }
 
 copy("browser_test_resources") {
@@ -50,6 +52,7 @@ copy("browser_test_resources") {
     "resources/fail_reconnect_session.json",
     "resources/local_media_sink.json",
     "resources/local_media_sink_route_fail.json",
+    "resources/no_presentation_receiver.html",
     "resources/no_provider.json",
     "resources/no_sinks.json",
     "resources/no_supported_sinks.json",
