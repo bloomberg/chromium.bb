@@ -150,7 +150,7 @@ def call(*args, **kwargs):  # pragma: no cover
     kwargs['stdin'] = subprocess.PIPE
   out = cStringIO.StringIO()
   new_env = kwargs.get('env', {})
-  env = copy.copy(os.environ)
+  env = os.environ.copy()
   env.update(new_env)
   kwargs['env'] = env
 
@@ -672,11 +672,16 @@ def _git_checkout(sln, sln_dir, revisions, shallow, refs, git_cache_dir,
   for ref in refs:
     populate_cmd.extend(['--ref', ref])
 
+  env = {}
+  if url == CHROMIUM_SRC_URL or url + '.git' == CHROMIUM_SRC_URL:
+    # This is for performance investigation of `git fetch` in chromium/src.
+    env = {'GIT_TRACE': 'true'}
+
   # Step 1: populate/refresh cache, if necessary.
   pin = get_target_pin(name, url, revisions)
   if not pin:
     # Refresh only once.
-    git(*populate_cmd)
+    git(*populate_cmd, env=env)
   elif _has_in_git_cache(pin, git_cache_dir, url):
     # No need to fetch at all, because we already have needed revision.
     pass
@@ -690,7 +695,7 @@ def _git_checkout(sln, sln_dir, revisions, shallow, refs, git_cache_dir,
       # TODO(tandrii): propagate the pin to git server per recommendation of
       # maintainers of *.googlesource.com (workaround git server replication
       # lag).
-      git(*populate_cmd)
+      git(*populate_cmd, env=env)
       if _has_in_git_cache(pin, git_cache_dir, url):
         break
       overrun = time.time() - soft_deadline
