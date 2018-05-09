@@ -166,25 +166,28 @@ def get_waterfall_config():
     swarming=[
       {
        'os': 'Android',
-       'pool': 'Chrome-perf',
+       'pool': 'chrome.tests.perf',
        'device_ids': [
-           'build13-b1--device1', 'build13-b1--device2', 'build13-b1--device3',
-           'build13-b1--device4', 'build13-b1--device5', 'build13-b1--device6',
-           'build13-b1--device7',
-           'build14-b1--device1', 'build14-b1--device2', 'build14-b1--device3',
-           'build14-b1--device4', 'build14-b1--device5', 'build14-b1--device6',
-           'build14-b1--device7',
-           'build48-b1--device1', 'build48-b1--device2', 'build48-b1--device3',
-           'build48-b1--device4', 'build48-b1--device5', 'build48-b1--device6',
-           'build48-b1--device7',
+           'build199-b7--device1', 'build199-b7--device2',
+           'build199-b7--device3', 'build199-b7--device4',
+           'build199-b7--device5', 'build199-b7--device6',
+           'build199-b7--device7',
+           'build200-b7--device1', 'build200-b7--device2',
+           'build200-b7--device3', 'build200-b7--device4',
+           'build200-b7--device5', 'build200-b7--device6',
+           'build200-b7--device7',
+           'build201-b7--device1', 'build201-b7--device2',
+           'build201-b7--device3', 'build201-b7--device4',
+           'build201-b7--device5', 'build201-b7--device6',
+           'build201-b7--device7',
           ],
        'perf_tests': [
-         ('tracing_perftests', 'build13-b1--device2'),
-         ('gpu_perftests', 'build13-b1--device2'),
-         ('components_perftests', 'build48-b1--device5'),
+         ('tracing_perftests', 'build199-b7--device2'),
+         ('gpu_perftests', 'build199-b7--device2'),
+         ('components_perftests', 'build201-b7--device5'),
         ],
        'perf_tests_with_args': [
-         ('angle_perftests', 'build13-b1--device3', ['--shard-timeout=300'],
+         ('angle_perftests', 'build199-b7--device3', ['--shard-timeout=300'],
            'angle_perftests'),
        ]
       }
