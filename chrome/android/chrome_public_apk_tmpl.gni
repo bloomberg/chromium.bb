@@ -198,12 +198,13 @@ template("monochrome_public_apk_tmpl") {
       png_to_webp = true
     }
 
-    if (enable_arcore) {
+    if (enable_arcore_java) {
       deps += [
         "//third_party/arcore-android-sdk:libarcore_library",
         "//third_party/arcore-android-sdk:libdynamite_client_java",
       ]
-
+    }
+    if (enable_arcore) {
       # We store this as a separate .so in the APK and only load as needed.
       loadable_modules = [ "${root_out_dir}/libarcore_sdk_c_minimal.so" ]
     }
