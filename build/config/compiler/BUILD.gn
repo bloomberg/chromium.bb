@@ -480,10 +480,6 @@ config("compiler") {
     # disabling this (https://bugs.llvm.org/show_bug.cgi?id=18538#c13),
     # but for now it looks like our build might rely on it
     # (https://crbug.com/829795).
-    if (is_win) {
-      # TODO(hans): Expose the flag in clang-cl so we don't need -Xclang.
-      cflags += [ "-Xclang" ]
-    }
     cflags += [ "-fmerge-all-constants" ]
   }
 
@@ -496,12 +492,6 @@ config("compiler") {
       "-mllvm",
       "-Xclang",
       "-instcombine-lower-dbg-declare=0",
-
-      # TODO(rnk): Remove this once it's the default. https://crbug.com/793819
-      "-Xclang",
-      "-mllvm",
-      "-Xclang",
-      "-fast-isel-sink-local-values=1",
     ]
   }
 
