@@ -432,6 +432,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     TabHistoryPresentation,
                                     TabModelObserver,
                                     TabStripPresentation,
+                                    ToolbarHeightProviderForFullscreen,
                                     ToolsMenuConfigurationProvider,
                                     UIGestureRecognizerDelegate,
                                     UpgradeCenterClient,
@@ -3982,6 +3983,19 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 }
 
+#pragma mark - ToolbarHeightProviderForFullscreen
+
+- (CGFloat)nonFullscreenToolbarHeight {
+  CGFloat toolbarHeightFullscreen = 0;
+  if (IsUIRefreshPhase1Enabled()) {
+    toolbarHeightFullscreen = kToolbarHeightFullscreen;
+  }
+  if (base::FeatureList::IsEnabled(kBrowserContainerFullscreen)) {
+    toolbarHeightFullscreen += StatusBarHeight();
+  }
+  return MAX(0, self.headerHeight - toolbarHeightFullscreen);
+}
+
 #pragma mark - FullscreenUIElement methods
 
 - (void)updateForFullscreenProgress:(CGFloat)progress {
@@ -4053,12 +4067,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
 // progress of 1.0 fully shows the headers and a progress of 0.0 fully hides
 // them.
 - (void)updateHeadersForFullscreenProgress:(CGFloat)progress {
-  CGFloat toolbarHeightFullscreen = 0;
-  if (IsUIRefreshPhase1Enabled()) {
-    toolbarHeightFullscreen = kToolbarHeightFullscreen;
-  }
-  CGFloat offset = AlignValueToPixel(
-      (1.0 - progress) * ([self toolbarHeight] - toolbarHeightFullscreen));
+  CGFloat offset =
+      AlignValueToPixel((1.0 - progress) * [self nonFullscreenToolbarHeight]);
   [self setFramesForHeaders:[self headerViews] atOffset:offset];
 }
 
@@ -4106,13 +4116,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (self.currentWebState) {
     UIEdgeInsets contentPadding =
         self.currentWebState->GetWebViewProxy().contentInset;
-    CGFloat toolbarHeightFullscreen = 0;
-    if (IsUIRefreshPhase1Enabled()) {
-      toolbarHeightFullscreen = kToolbarHeightFullscreen;
-    }
-    CGFloat toolbarHeightDelta = [self toolbarHeight] - toolbarHeightFullscreen;
-    contentPadding.top = AlignValueToPixel(toolbarHeightFullscreen +
-                                           progress * toolbarHeightDelta);
+    CGFloat toolbarHeightFullscreen =
+        self.headerHeight - [self nonFullscreenToolbarHeight];
+    contentPadding.top = AlignValueToPixel(
+        toolbarHeightFullscreen + progress * [self nonFullscreenToolbarHeight]);
     contentPadding.bottom =
         AlignValueToPixel(progress * [self secondaryToolbarHeightWithInset]);
     self.currentWebState->GetWebViewProxy().contentInset = contentPadding;
@@ -4935,10 +4942,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 #pragma mark - ToolbarOwner (Public)
-
-- (CGFloat)toolbarHeight {
-  return self.headerHeight;
-}
 
 - (CGRect)toolbarFrame {
   return _toolbarCoordinator.viewController.view.frame;

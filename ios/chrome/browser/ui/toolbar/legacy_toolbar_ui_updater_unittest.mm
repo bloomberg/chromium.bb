@@ -20,18 +20,14 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TestToolbarOwner : NSObject<ToolbarOwner>
-// Define writable property with same name as |-toolbarHeight| getter defined in
-// ToolbarOwner.
-@property(nonatomic, assign) CGFloat toolbarHeight;
+@interface TestToolbarOwner : NSObject<ToolbarHeightProviderForFullscreen>
+// Define writable property with same name as |-nonFullscreenToolbarHeight|
+// getter defined in ToolbarHeightProviderForFullscreen.
+@property(nonatomic, assign) CGFloat nonFullscreenToolbarHeight;
 @end
 
 @implementation TestToolbarOwner
-@synthesize toolbarHeight = _toolbarHeight;
-@synthesize toolbarSnapshotProvider = _toolbarSnapshotProvider;
-- (CGRect)toolbarFrame {
-  return CGRectZero;
-}
+@synthesize nonFullscreenToolbarHeight = _nonFullscreenToolbarHeight;
 @end
 
 class LegacyToolbarUIUpdaterTest : public PlatformTest {
@@ -91,7 +87,7 @@ class LegacyToolbarUIUpdaterTest : public PlatformTest {
 TEST_F(LegacyToolbarUIUpdaterTest, StartUpdating) {
   EXPECT_EQ(toolbar_height(), 0.0);
   const CGFloat kHeight = 150.0;
-  toolbar_owner().toolbarHeight = kHeight;
+  toolbar_owner().nonFullscreenToolbarHeight = kHeight;
   StartUpdating();
   EXPECT_EQ(toolbar_height(), kHeight);
 }
@@ -101,13 +97,13 @@ TEST_F(LegacyToolbarUIUpdaterTest, StopUpdating) {
   web::TestWebState* web_state = InsertActiveWebState();
   StartUpdating();
   const CGFloat kHeight = 150.0;
-  toolbar_owner().toolbarHeight = kHeight;
+  toolbar_owner().nonFullscreenToolbarHeight = kHeight;
   web::FakeNavigationContext context;
   web_state->OnNavigationFinished(&context);
   EXPECT_EQ(toolbar_height(), kHeight);
   const CGFloat kNonUpdatedHeight = 500.0;
   StopUpdating();
-  toolbar_owner().toolbarHeight = kNonUpdatedHeight;
+  toolbar_owner().nonFullscreenToolbarHeight = kNonUpdatedHeight;
   web_state->OnNavigationFinished(&context);
   EXPECT_EQ(toolbar_height(), kHeight);
 }
@@ -117,7 +113,7 @@ TEST_F(LegacyToolbarUIUpdaterTest, StopUpdating) {
 TEST_F(LegacyToolbarUIUpdaterTest, UpdateActiveWebState) {
   StartUpdating();
   const CGFloat kHeight = 150.0;
-  toolbar_owner().toolbarHeight = kHeight;
+  toolbar_owner().nonFullscreenToolbarHeight = kHeight;
   EXPECT_EQ(toolbar_height(), 0.0);
   InsertActiveWebState();
   EXPECT_EQ(toolbar_height(), kHeight);
@@ -129,7 +125,7 @@ TEST_F(LegacyToolbarUIUpdaterTest, UserInitiatedNavigation) {
   web::TestWebState* web_state = InsertActiveWebState();
   StartUpdating();
   const CGFloat kHeight = 150.0;
-  toolbar_owner().toolbarHeight = kHeight;
+  toolbar_owner().nonFullscreenToolbarHeight = kHeight;
   EXPECT_EQ(toolbar_height(), 0.0);
   web::FakeNavigationContext context;
   context.SetIsRendererInitiated(false);
@@ -143,7 +139,7 @@ TEST_F(LegacyToolbarUIUpdaterTest, RendererInitiatedNavigation) {
   web::TestWebState* web_state = InsertActiveWebState();
   StartUpdating();
   const CGFloat kHeight = 150.0;
-  toolbar_owner().toolbarHeight = kHeight;
+  toolbar_owner().nonFullscreenToolbarHeight = kHeight;
   EXPECT_EQ(toolbar_height(), 0.0);
   web::FakeNavigationContext context;
   context.SetIsRendererInitiated(true);
