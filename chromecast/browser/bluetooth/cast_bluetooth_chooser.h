@@ -8,7 +8,7 @@
 #include <string>
 #include <unordered_set>
 
-#include "chromecast/browser/bluetooth/public/interfaces/web_bluetooth.mojom.h"
+#include "chromecast/browser/bluetooth/public/mojom/web_bluetooth.mojom.h"
 #include "content/public/browser/bluetooth_chooser.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"

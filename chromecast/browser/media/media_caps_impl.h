@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chromecast/common/media/media_caps.mojom.h"
+#include "chromecast/common/mojom/media_caps.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "ui/gfx/geometry/size.h"

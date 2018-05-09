@@ -15,7 +15,7 @@ cast_source_set("media") {
   deps = [
     "//base",
     "//chromecast:chromecast_buildflags",
-    "//chromecast/common/media:interfaces",
+    "//chromecast/common/mojom",
     "//chromecast/media",
     "//chromecast/media/cdm",
     "//chromecast/public:public",

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chromecast/common/media/media_caps.mojom.h"
+#include "chromecast/common/mojom/media_caps.mojom.h"
 #include "chromecast/media/base/supported_codec_profile_levels_memo.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/geometry/size.h"
