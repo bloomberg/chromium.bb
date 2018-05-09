@@ -7,6 +7,10 @@
 
 #include <stdint.h>
 
+#include <vector>
+
+#include "media/base/media_export.h"
+
 namespace media {
 
 // The Common Encryption spec provides for subsample encryption, where portions
@@ -25,6 +29,13 @@ struct SubsampleEntry {
   uint32_t clear_bytes;
   uint32_t cypher_bytes;
 };
+
+// Verifies that |subsamples| correctly specifies a buffer of length
+// |input_size|. Returns false if the total of bytes specified in |subsamples|
+// does not match |input_size|.
+MEDIA_EXPORT bool VerifySubsamplesMatchSize(
+    const std::vector<SubsampleEntry>& subsamples,
+    size_t input_size);
 
 }  // namespace media
 

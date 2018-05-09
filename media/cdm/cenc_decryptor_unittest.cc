@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/span.h"
+#include "base/time/time.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
 #include "media/base/decoder_buffer.h"
@@ -132,6 +134,34 @@ TEST_F(CencDecryptorTest, OneBlock) {
   auto encrypted_buffer =
       CreateEncryptedBuffer(encrypted_block, iv_, subsamples);
   EXPECT_EQ(one_block_, DecryptWithKey(encrypted_buffer, *key_));
+}
+
+TEST_F(CencDecryptorTest, ExtraData) {
+  auto encrypted_block = Encrypt(one_block_, *key_, iv_);
+
+  // Only 1 subsample, all encrypted data.
+  std::vector<SubsampleEntry> subsamples = {{0, encrypted_block.size()}};
+
+  auto encrypted_buffer =
+      CreateEncryptedBuffer(encrypted_block, iv_, subsamples);
+  encrypted_buffer->set_timestamp(base::TimeDelta::FromDays(2));
+  encrypted_buffer->set_duration(base::TimeDelta::FromMinutes(5));
+  encrypted_buffer->set_is_key_frame(true);
+  encrypted_buffer->CopySideDataFrom(encrypted_block.data(),
+                                     encrypted_block.size());
+
+  auto decrypted_buffer = DecryptCencBuffer(*encrypted_buffer, *key_);
+  EXPECT_EQ(encrypted_buffer->timestamp(), decrypted_buffer->timestamp());
+  EXPECT_EQ(encrypted_buffer->duration(), decrypted_buffer->duration());
+  EXPECT_EQ(encrypted_buffer->end_of_stream(),
+            decrypted_buffer->end_of_stream());
+  EXPECT_EQ(encrypted_buffer->is_key_frame(), decrypted_buffer->is_key_frame());
+  EXPECT_EQ(encrypted_buffer->side_data_size(),
+            decrypted_buffer->side_data_size());
+  EXPECT_EQ(base::make_span(encrypted_buffer->side_data(),
+                            encrypted_buffer->side_data_size()),
+            base::make_span(decrypted_buffer->side_data(),
+                            decrypted_buffer->side_data_size()));
 }
 
 TEST_F(CencDecryptorTest, NoSubsamples) {
