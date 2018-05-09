@@ -53,6 +53,12 @@ PaintArtifactCompositor::PaintArtifactCompositor(
 }
 
 PaintArtifactCompositor::~PaintArtifactCompositor() {
+  // TODO(crbug.com/836897, crbug.com/836912):
+  // In BlinkGenPropertyTrees mode, some of the layers passed from Blink core
+  // have pre-filled element ID. Need to figure out what is the best place to
+  // setup them.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
   for (auto child : root_layer_->children())
     DCHECK(!child->element_id());
 }

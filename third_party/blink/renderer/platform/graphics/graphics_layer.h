@@ -226,6 +226,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
     SetContentsTo(layer, prevent_contents_opaque_changes);
   }
   bool HasContentsLayer() const { return contents_layer_; }
+  WebLayer* ContentsLayer() const { return contents_layer_; }
 
   // For hosting this GraphicsLayer in a native layer hierarchy.
   WebLayer* PlatformLayer() const;
@@ -276,9 +277,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void didChangeScrollbarsHiddenIfOverlay(bool) override;
 
   PaintController& GetPaintController() const;
-
-  // Exposed for tests.
-  WebLayer* ContentsLayer() const { return contents_layer_; }
 
   void SetElementId(const CompositorElementId&);
   CompositorElementId GetElementId() const;
