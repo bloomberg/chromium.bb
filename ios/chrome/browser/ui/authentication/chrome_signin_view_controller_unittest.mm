@@ -218,11 +218,22 @@ class ChromeSigninViewControllerTest
       NSString* view_name = NSStringFromClass([view class]);
       // Views that don't display strings.
       NSArray* other_views = @[
-        @"AccountControlCell", @"CollectionViewFooterCell", @"UIButtonLabel",
-        @"UICollectionView", @"UICollectionViewControllerWrapperView",
-        @"UIImageView", @"UIView", @"MDCActivityIndicator", @"MDCButtonBar",
-        @"MDCFlexibleHeaderView", @"MDCHeaderStackView", @"MDCInkView",
-        @"MDCNavigationBar", @"UIScrollView", @"IdentityPickerView"
+        @"AccountControlCell",
+        @"CollectionViewFooterCell",
+        @"IdentityPickerView",
+        @"IdentityView",
+        @"UIButtonLabel",
+        @"MDCActivityIndicator",
+        @"MDCButtonBar",
+        @"MDCFlexibleHeaderView",
+        @"MDCHeaderStackView",
+        @"MDCInkView",
+        @"MDCNavigationBar",
+        @"UICollectionView",
+        @"UICollectionViewControllerWrapperView",
+        @"UIImageView",
+        @"UIScrollView",
+        @"UIView",
       ];
       // If this test fails, the unknown class should be added in other_views if
       // it doesn't display any strings, otherwise the strings diplay by this
