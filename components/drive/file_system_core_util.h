@@ -53,6 +53,9 @@ std::string EscapeCacheFileName(const std::string& filename);
 // This is the inverse of EscapeCacheFileName.
 std::string UnescapeCacheFileName(const std::string& filename);
 
+// Converts a numerical changestamp value to a start page token.
+std::string ConvertChangestampToStartPageToken(int64_t changestamp);
+
 // Converts the given string to a form suitable as a file name. Specifically,
 // - Normalizes in Unicode Normalization Form C.
 // - Replaces slashes '/' with '_'.

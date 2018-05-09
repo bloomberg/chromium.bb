@@ -657,5 +657,47 @@ TEST_F(ResourceMetadataStorageTest, CheckValidity) {
   EXPECT_TRUE(CheckValidity());
 }
 
+TEST_F(ResourceMetadataStorageTest, UpgradeDB15to16) {
+  constexpr int64_t kLargestChangestamp = 54321;
+  constexpr char kStartPageToken[] = "54322";
+  constexpr int64_t kDirectoryChangestamp = 12345;
+  constexpr char kDirectoryStartpageToken[] = "12346";
+
+  // Construct a v15 DB
+  SetDBVersion(15);
+  EXPECT_EQ(FILE_ERROR_OK,
+            storage_->SetLargestChangestamp(kLargestChangestamp));
+
+  // Add a directory with a changestamp
+  ResourceEntry entry;
+  entry.set_local_id("local_id_1");
+  entry.set_base_name("resource_id_1");
+  entry.mutable_directory_specific_info()->set_changestamp(
+      kDirectoryChangestamp);
+  EXPECT_EQ(FILE_ERROR_OK, storage_->PutEntry(entry));
+
+  // Upgrade and reopen
+  storage_.reset();
+  EXPECT_TRUE(UpgradeOldDB());
+  storage_.reset(new ResourceMetadataStorage(
+      temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
+  ASSERT_TRUE(storage_->Initialize());
+
+  int64_t largest_changestamp = 0;
+  EXPECT_EQ(FILE_ERROR_OK,
+            storage_->GetLargestChangestamp(&largest_changestamp));
+  EXPECT_EQ(kLargestChangestamp, largest_changestamp);
+
+  std::string start_page_token;
+  EXPECT_EQ(FILE_ERROR_OK, storage_->GetStartPageToken(&start_page_token));
+  EXPECT_EQ(kStartPageToken, start_page_token);
+
+  EXPECT_EQ(FILE_ERROR_OK, storage_->GetEntry("local_id_1", &entry));
+  EXPECT_EQ(kDirectoryChangestamp,
+            entry.directory_specific_info().changestamp());
+  EXPECT_EQ(kDirectoryStartpageToken,
+            entry.directory_specific_info().start_page_token());
+}
+
 }  // namespace internal
 }  // namespace drive

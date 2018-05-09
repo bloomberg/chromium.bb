@@ -114,6 +114,11 @@ std::string UnescapeCacheFileName(const std::string& filename) {
   return unescaped;
 }
 
+std::string ConvertChangestampToStartPageToken(int64_t changestamp) {
+  DCHECK_LE(0, changestamp);
+  return base::NumberToString(changestamp + 1);
+}
+
 std::string NormalizeFileName(const std::string& input) {
   DCHECK(base::IsStringUTF8(input));
 
