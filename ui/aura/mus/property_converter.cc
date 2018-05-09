@@ -305,6 +305,8 @@ bool PropertyConverter::GetPropertyValueFromTransportValue(
 void PropertyConverter::RegisterImageSkiaProperty(
     const WindowProperty<gfx::ImageSkia*>* property,
     const char* transport_name) {
+  DCHECK(!IsTransportNameRegistered(transport_name))
+      << "Property already registered: " << transport_name;
   image_properties_[property] = transport_name;
   transport_names_.insert(transport_name);
 }
@@ -312,6 +314,8 @@ void PropertyConverter::RegisterImageSkiaProperty(
 void PropertyConverter::RegisterRectProperty(
     const WindowProperty<gfx::Rect*>* property,
     const char* transport_name) {
+  DCHECK(!IsTransportNameRegistered(transport_name))
+      << "Property already registered: " << transport_name;
   rect_properties_[property] = transport_name;
   transport_names_.insert(transport_name);
 }
@@ -319,6 +323,8 @@ void PropertyConverter::RegisterRectProperty(
 void PropertyConverter::RegisterSizeProperty(
     const WindowProperty<gfx::Size*>* property,
     const char* transport_name) {
+  DCHECK(!IsTransportNameRegistered(transport_name))
+      << "Property already registered: " << transport_name;
   size_properties_[property] = transport_name;
   transport_names_.insert(transport_name);
 }
@@ -326,6 +332,8 @@ void PropertyConverter::RegisterSizeProperty(
 void PropertyConverter::RegisterStringProperty(
     const WindowProperty<std::string*>* property,
     const char* transport_name) {
+  DCHECK(!IsTransportNameRegistered(transport_name))
+      << "Property already registered: " << transport_name;
   string_properties_[property] = transport_name;
   transport_names_.insert(transport_name);
 }
@@ -333,6 +341,8 @@ void PropertyConverter::RegisterStringProperty(
 void PropertyConverter::RegisterString16Property(
     const WindowProperty<base::string16*>* property,
     const char* transport_name) {
+  DCHECK(!IsTransportNameRegistered(transport_name))
+      << "Property already registered: " << transport_name;
   string16_properties_[property] = transport_name;
   transport_names_.insert(transport_name);
 }

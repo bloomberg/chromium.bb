@@ -17,14 +17,9 @@
 #include "ash/event_matcher_util.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/public/cpp/config.h"
-#include "ash/public/cpp/shelf_types.h"
-#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_actions.mojom.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
-#include "ash/public/interfaces/window_properties.mojom.h"
-#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/session/session_controller.h"
@@ -63,7 +58,6 @@
 #include "ui/events/mojo/event.mojom.h"
 #include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/wm/core/capture_controller.h"
-#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/wm_state.h"
 #include "ui/wm/public/activation_client.h"
@@ -88,52 +82,7 @@ WindowManager::WindowManager(service_manager::Connector* connector,
       show_primary_host_on_connect_(show_primary_host_on_connect),
       wm_state_(std::make_unique<::wm::WMState>()),
       property_converter_(std::make_unique<aura::PropertyConverter>()) {
-  property_converter_->RegisterPrimitiveProperty(
-      kCanConsumeSystemKeysKey, ash::mojom::kCanConsumeSystemKeys_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter_->RegisterPrimitiveProperty(
-      aura::client::kDrawAttentionKey,
-      ui::mojom::WindowManager::kDrawAttention_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter_->RegisterImageSkiaProperty(
-      kFrameImageActiveKey, ash::mojom::kFrameImageActive_Property);
-  property_converter_->RegisterPrimitiveProperty(
-      kPanelAttachedKey, ui::mojom::WindowManager::kPanelAttached_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter_->RegisterPrimitiveProperty(
-      kRenderTitleAreaProperty,
-      ui::mojom::WindowManager::kRenderParentTitleArea_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter_->RegisterPrimitiveProperty(
-      kShelfItemTypeKey, ui::mojom::WindowManager::kShelfItemType_Property,
-      base::Bind(&IsValidShelfItemType));
-  property_converter_->RegisterPrimitiveProperty(
-      ::wm::kShadowElevationKey,
-      ui::mojom::WindowManager::kShadowElevation_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter_->RegisterPrimitiveProperty(
-      kWindowStateTypeKey, mojom::kWindowStateType_Property,
-      base::Bind(&ash::IsValidWindowStateType));
-  property_converter_->RegisterPrimitiveProperty(
-      kWindowPinTypeKey, ash::mojom::kWindowPinType_Property,
-      base::Bind(&ash::IsValidWindowPinType));
-  property_converter_->RegisterPrimitiveProperty(
-      kWindowPositionManagedTypeKey,
-      ash::mojom::kWindowPositionManaged_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter_->RegisterStringProperty(
-      kShelfIDKey, ui::mojom::WindowManager::kShelfID_Property);
-  property_converter_->RegisterPrimitiveProperty(
-      kRestoreBoundsOverrideKey, ash::mojom::kRestoreBoundsOverride_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter_->RegisterPrimitiveProperty(
-      kRestoreWindowStateTypeOverrideKey,
-      ash::mojom::kRestoreWindowStateTypeOverride_Property,
-      base::BindRepeating(&ash::IsValidWindowStateType));
-  property_converter_->RegisterPrimitiveProperty(
-      kWindowTitleShownKey,
-      ui::mojom::WindowManager::kWindowTitleShown_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  RegisterWindowProperties(property_converter_.get());
 }
 
 WindowManager::~WindowManager() {

@@ -92,7 +92,6 @@ MusClient::MusClient(service_manager::Connector* connector,
     io_task_runner = io_thread_->task_runner();
   }
 
-  // TODO(msw): Avoid this... use some default value? Allow clients to extend?
   property_converter_ = std::make_unique<aura::PropertyConverter>();
   property_converter_->RegisterPrimitiveProperty(
       ::wm::kShadowElevationKey,

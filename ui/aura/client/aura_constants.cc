@@ -64,8 +64,8 @@ DEFINE_UI_CLASS_PROPERTY_KEY(
 DEFINE_UI_CLASS_PROPERTY_KEY(
     ui::WindowShowState, kPreFullscreenShowStateKey, ui::SHOW_STATE_DEFAULT);
 DEFINE_UI_CLASS_PROPERTY_KEY(int32_t,
-                           kResizeBehaviorKey,
-                           ui::mojom::kResizeBehaviorCanResize);
+                             kResizeBehaviorKey,
+                             ui::mojom::kResizeBehaviorCanResize);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(
     ui::WindowShowState, kShowStateKey, ui::SHOW_STATE_DEFAULT);

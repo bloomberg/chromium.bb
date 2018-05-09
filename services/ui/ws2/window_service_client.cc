@@ -18,6 +18,7 @@
 #include "services/ui/ws2/window_service_delegate.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/mus/property_converter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer.h"
@@ -330,7 +331,7 @@ mojom::WindowDataPtr WindowServiceClient::WindowToWindowData(
                        : kInvalidTransportId;
   client_window->bounds = window->bounds();
 
-  // TODO: use property mapping.
+  // TODO(crbug.com/837695): Include the window properties.
   client_window->visible = window->TargetVisibility();
   return client_window;
 }
@@ -368,6 +369,7 @@ bool WindowServiceClient::NewWindowImpl(
   window->Init(LAYER_NOT_DRAWN);
   // Windows created by the client should only be destroyed by the client.
   window->set_owned_by_parent(false);
+  // TODO(crbug.com/837695): Apply |properties|.
   return true;
 }
 
@@ -473,6 +475,31 @@ bool WindowServiceClient::SetWindowVisibilityImpl(
     return true;
   }
   DVLOG(1) << "SetWindowVisibility failed (access policy denied change)";
+  return false;
+}
+
+bool WindowServiceClient::SetWindowPropertyImpl(
+    const ClientWindowId& window_id,
+    const std::string& name,
+    const base::Optional<std::vector<uint8_t>>& value) {
+  aura::Window* window = GetWindowByClientId(window_id);
+  DVLOG(3) << "SetWindowProperty client=" << client_id_
+           << " client window_id= " << window_id.ToString();
+  if (!window) {
+    DVLOG(1) << "SetWindowProperty failed (no window)";
+    return false;
+  }
+  DCHECK(window_service_->property_converter()->IsTransportNameRegistered(name))
+      << "Attempting to set an unrgistered property; this is not implemented.";
+  if (IsClientCreatedWindow(window) || IsClientRootWindow(window)) {
+    std::unique_ptr<std::vector<uint8_t>> data;
+    if (value.has_value())
+      data = std::make_unique<std::vector<uint8_t>>(value.value());
+    window_service_->property_converter()->SetPropertyFromTransportValue(
+        window, name, data.get());
+    return true;
+  }
+  DVLOG(1) << "SetWindowProperty failed (access policy denied change)";
   return false;
 }
 
@@ -632,7 +659,7 @@ void WindowServiceClient::NewWindow(
     Id transport_window_id,
     const base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>&
         transport_properties) {
-  // TODO: needs to map and validate |transport_properties|.
+  // TODO(crbug.com/837695): Map and validate |transport_properties|.
   std::map<std::string, std::vector<uint8_t>> properties;
 
   window_tree_client_->OnChangeCompleted(
@@ -752,7 +779,9 @@ void WindowServiceClient::SetWindowProperty(
     Id window_id,
     const std::string& name,
     const base::Optional<std::vector<uint8_t>>& value) {
-  NOTIMPLEMENTED();
+  window_tree_client_->OnChangeCompleted(
+      change_id,
+      SetWindowPropertyImpl(MakeClientWindowId(window_id), name, value));
 }
 
 void WindowServiceClient::SetWindowOpacity(uint32_t change_id,

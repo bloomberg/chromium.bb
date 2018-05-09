@@ -83,6 +83,8 @@ class AURA_EXPORT PropertyConverter {
       const WindowProperty<T>* property,
       const char* transport_name,
       const base::RepeatingCallback<bool(int64_t)>& validator) {
+    DCHECK(!IsTransportNameRegistered(transport_name))
+        << "Property already registered: " << transport_name;
     PrimitiveProperty primitive_property;
     primitive_property.property_name = property->name;
     primitive_property.transport_name = transport_name;

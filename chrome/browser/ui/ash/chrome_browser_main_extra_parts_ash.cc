@@ -9,14 +9,9 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/mus_property_mirror_ash.h"
 #include "ash/public/cpp/shelf_model.h"
-#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/process_creation_time_recorder.mojom.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
-#include "ash/public/interfaces/window_properties.mojom.h"
-#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
@@ -137,56 +132,12 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
   if (chromeos::GetAshConfig() == ash::Config::MASH) {
     // ash::Shell will not be created because ash is running out-of-process.
     ash::Shell::SetIsBrowserProcessWithMash();
-    // Register ash-specific window properties with Chrome's property converter.
-    // This propagates ash properties set on chrome windows to ash, via mojo.
     DCHECK(views::MusClient::Exists());
     views::MusClient* mus_client = views::MusClient::Get();
     aura::WindowTreeClientDelegate* delegate = mus_client;
-    aura::PropertyConverter* converter = delegate->GetPropertyConverter();
-
-    converter->RegisterPrimitiveProperty(
-        ash::kCanConsumeSystemKeysKey,
-        ash::mojom::kCanConsumeSystemKeys_Property,
-        aura::PropertyConverter::CreateAcceptAnyValueCallback());
-    converter->RegisterImageSkiaProperty(
-        ash::kFrameImageActiveKey, ash::mojom::kFrameImageActive_Property);
-    converter->RegisterPrimitiveProperty(
-        ash::kHideShelfWhenFullscreenKey,
-        ash::mojom::kHideShelfWhenFullscreen_Property,
-        aura::PropertyConverter::CreateAcceptAnyValueCallback());
-    converter->RegisterPrimitiveProperty(
-        ash::kPanelAttachedKey,
-        ui::mojom::WindowManager::kPanelAttached_Property,
-        aura::PropertyConverter::CreateAcceptAnyValueCallback());
-    converter->RegisterPrimitiveProperty(
-        ash::kShelfItemTypeKey,
-        ui::mojom::WindowManager::kShelfItemType_Property,
-        base::Bind(&ash::IsValidShelfItemType));
-    converter->RegisterPrimitiveProperty(
-        ash::kWindowStateTypeKey, ash::mojom::kWindowStateType_Property,
-        base::Bind(&ash::IsValidWindowStateType));
-    converter->RegisterPrimitiveProperty(
-        ash::kWindowPinTypeKey, ash::mojom::kWindowPinType_Property,
-        base::Bind(&ash::IsValidWindowPinType));
-    converter->RegisterPrimitiveProperty(
-        ash::kWindowPositionManagedTypeKey,
-        ash::mojom::kWindowPositionManaged_Property,
-        aura::PropertyConverter::CreateAcceptAnyValueCallback());
-    converter->RegisterStringProperty(
-        ash::kShelfIDKey, ui::mojom::WindowManager::kShelfID_Property);
-    converter->RegisterPrimitiveProperty(
-        ash::kRestoreBoundsOverrideKey,
-        ash::mojom::kRestoreBoundsOverride_Property,
-        aura::PropertyConverter::CreateAcceptAnyValueCallback());
-    converter->RegisterPrimitiveProperty(
-        ash::kRestoreWindowStateTypeOverrideKey,
-        ash::mojom::kRestoreWindowStateTypeOverride_Property,
-        base::BindRepeating(&ash::IsValidWindowStateType));
-    converter->RegisterPrimitiveProperty(
-        ash::kWindowTitleShownKey,
-        ui::mojom::WindowManager::kWindowTitleShown_Property,
-        aura::PropertyConverter::CreateAcceptAnyValueCallback());
-
+    // Register ash-specific window properties with Chrome's property converter.
+    // Values of registered properties will be transported between the services.
+    ash::RegisterWindowProperties(delegate->GetPropertyConverter());
     mus_client->SetMusPropertyMirror(
         std::make_unique<ash::MusPropertyMirrorAsh>());
   }

@@ -16,6 +16,7 @@
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws2/ids.h"
+#include "ui/aura/mus/property_converter.h"
 
 namespace aura {
 class Window;
@@ -58,6 +59,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   WindowServiceDelegate* delegate() { return delegate_; }
 
+  aura::PropertyConverter* property_converter() { return &property_converter_; }
+
   // service_manager::Service:
   void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& remote_info,
@@ -79,6 +82,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   service_manager::BinderRegistry registry_;
 
   std::unique_ptr<WindowTreeFactory> window_tree_factory_;
+
+  // Helper used to serialize and deserialize window properties.
+  aura::PropertyConverter property_converter_;
 
   // Id for the next WindowServiceClient.
   ClientSpecificId next_client_id_ = kWindowServerClientId + 1;

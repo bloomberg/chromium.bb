@@ -215,7 +215,7 @@ specific_include_rules = {
     # Once Ash runs out of process no longer needed.
     "+ash/content/content_gpu_support.h",
     "+ash/shell.h",
-    "+ash/ws/window_service_delegate_impl.h",
+    "+ash/ws/window_service_util.h",
     "+services/ui/ws2/window_service.h",
 
     # Needed for classic mode.

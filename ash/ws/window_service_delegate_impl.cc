@@ -21,6 +21,7 @@ std::unique_ptr<aura::Window> WindowServiceDelegateImpl::NewTopLevel(
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_NOT_DRAWN);
   ash::wm::GetDefaultParent(window.get(), gfx::Rect())->AddChild(window.get());
+  // TODO(crbug.com/837695): Apply |properties|.
   return window;
 }
 

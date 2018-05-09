@@ -9,11 +9,12 @@
 #include "ash/ash_service.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/content/content_gpu_support.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
 #include "ash/shell/content/client/shell_browser_main_parts.h"
 #include "ash/shell/grit/ash_shell_resources.h"
-#include "ash/ws/window_service_delegate_impl.h"
+#include "ash/ws/window_service_util.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -27,7 +28,6 @@
 #include "content/public/utility/content_utility_client.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/ws2/window_service.h"
-#include "services/ui/ws2/window_service_delegate.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -37,10 +37,9 @@ namespace ash {
 namespace shell {
 namespace {
 
-std::unique_ptr<service_manager::Service> CreateWindowService() {
-  return std::make_unique<ui::ws2::WindowService>(
-      Shell::Get()->window_service_delegate(),
-      std::make_unique<ContentGpuSupport>());
+// A factory function used in creation of the WindowService.
+std::unique_ptr<ui::ws2::GpuSupport> CreateContentGpuSupport() {
+  return std::make_unique<ContentGpuSupport>();
 }
 
 }  // namespace
@@ -97,7 +96,8 @@ void ShellContentBrowserClient::RegisterInProcessServices(
                                   AshService::CreateEmbeddedServiceInfo()));
 
   service_manager::EmbeddedServiceInfo ws_service_info;
-  ws_service_info.factory = base::BindRepeating(&CreateWindowService);
+  ws_service_info.factory = base::BindRepeating(
+      &CreateWindowService, base::BindRepeating(&CreateContentGpuSupport));
   ws_service_info.task_runner = base::ThreadTaskRunnerHandle::Get();
   services->insert(std::make_pair(ui::mojom::kServiceName, ws_service_info));
 }

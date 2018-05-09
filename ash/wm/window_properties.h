@@ -43,10 +43,6 @@ enum class WidgetCreationType {
 // bounds outside of its root window is set.
 ASH_EXPORT extern const aura::WindowProperty<bool>* const kLockedToRootKey;
 
-// Maps to ui::mojom::WindowManager::kRenderParentTitleArea_Property.
-ASH_EXPORT extern const aura::WindowProperty<bool>* const
-    kRenderTitleAreaProperty;
-
 // Containers with this property (true) are aligned with physical pixel
 // boundary.
 extern const aura::WindowProperty<bool>* const kSnapChildrenToPixelBoundary;

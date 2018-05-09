@@ -7,9 +7,11 @@
 #include "ash/ash_service.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/content/content_gpu_support.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/window_properties.mojom.h"
 #include "ash/shell.h"
-#include "ash/ws/window_service_delegate_impl.h"
+#include "ash/ws/window_service_util.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -65,10 +67,9 @@ void RegisterOutOfProcessServicesImpl(
   }
 }
 
-std::unique_ptr<service_manager::Service> CreateEmbeddedWindowService() {
-  return std::make_unique<ui::ws2::WindowService>(
-      ash::Shell::Get()->window_service_delegate(),
-      std::make_unique<ash::ContentGpuSupport>());
+// A factory function used in creation of the WindowService.
+std::unique_ptr<ui::ws2::GpuSupport> CreateContentGpuSupport() {
+  return std::make_unique<ash::ContentGpuSupport>();
 }
 
 }  // namespace
@@ -105,7 +106,8 @@ void RegisterInProcessServices(
       ash::AshService::CreateEmbeddedServiceInfo();
 
   service_manager::EmbeddedServiceInfo ui_service_info;
-  ui_service_info.factory = base::BindRepeating(&CreateEmbeddedWindowService);
+  ui_service_info.factory = base::BindRepeating(
+      &ash::CreateWindowService, base::BindRepeating(&CreateContentGpuSupport));
   ui_service_info.task_runner = base::ThreadTaskRunnerHandle::Get();
   (*services)[ui::mojom::kServiceName] = ui_service_info;
 }

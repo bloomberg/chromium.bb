@@ -14,8 +14,6 @@ namespace ash {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kLockedToRootKey, false);
 
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kRenderTitleAreaProperty, false);
-
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSnapChildrenToPixelBoundary, false);
 
 DEFINE_UI_CLASS_PROPERTY_KEY(WidgetCreationType,
