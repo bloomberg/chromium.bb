@@ -103,7 +103,7 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
 
   const KURL& url() const;
   State readyState() const;
-  unsigned bufferedAmount() const;
+  uint64_t bufferedAmount() const;
 
   String protocol() const;
   String extensions() const;
