@@ -427,10 +427,7 @@ bool Tab::IsActive() const {
 
 void Tab::ActiveStateChanged() {
   if (IsActive()) {
-    // Cancel the pinned tab title change attention indicator when a tab
-    // becomes activated. Clear the blocked WebContents for active tabs because
-    // it's distracting.
-    icon_->SetAttention(TabIcon::AttentionType::kPinnedTabTitleChange, false);
+    // Clear the blocked WebContents for active tabs because it's distracting.
     icon_->SetAttention(TabIcon::AttentionType::kBlockedWebContents, false);
   }
   OnButtonColorMaybeChanged();
@@ -514,13 +511,6 @@ void Tab::StartPulse() {
 
 void Tab::StopPulse() {
   pulse_animation_.Stop();
-}
-
-void Tab::TabTitleChangedNotLoading() {
-  // When the title changes on a pinned background page that has completed
-  // loading, assume it's doing so to get the user's attention.
-  if (data_.pinned && !IsActive())
-    icon_->SetAttention(TabIcon::AttentionType::kPinnedTabTitleChange, true);
 }
 
 void Tab::SetTabNeedsAttention(bool attention) {

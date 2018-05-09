@@ -109,9 +109,6 @@ class Tab : public gfx::AnimationDelegate,
   void StartPulse();
   void StopPulse();
 
-  // Notifies the tab that its title changed outside of loading.
-  void TabTitleChangedNotLoading();
-
   // Sets the visibility of the indicator shown when the tab needs to indicate
   // to the user that it needs their attention.
   void SetTabNeedsAttention(bool attention);
