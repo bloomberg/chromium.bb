@@ -85,7 +85,7 @@ TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
   wait_loop.Run();
 }
 
-// Tests that VideoCaptureDeviceFactory::CreateDeviceProxy() returns an error
+// Tests that VideoCaptureDeviceFactory::CreateDevice() returns an error
 // code when trying to create a device for an invalid descriptor.
 TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
        ErrorCodeOnCreateDeviceForInvalidDescriptor) {
@@ -105,7 +105,7 @@ TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
   wait_loop.Run();
 }
 
-// Test that CreateDevice will succeed when trying to create a device
+// Test that CreateDevice() will succeed when trying to create a device
 // for an added virtual device.
 TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
        CreateDeviceSuccessForVirtualDevice) {
