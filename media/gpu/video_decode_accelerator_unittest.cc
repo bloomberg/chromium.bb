@@ -1262,35 +1262,43 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
     base::FilePath filepath(test_video_files_[0]->file_name);
     auto golden_md5s = media::test::ReadGoldenThumbnailMD5s(
         filepath.AddExtension(FILE_PATH_LITERAL(".md5")));
-    if (!base::ContainsValue(golden_md5s, md5_string)) {
-      // Convert raw RGBA into PNG for export.
-      std::vector<unsigned char> png;
-      gfx::PNGCodec::Encode(&rgba[0], gfx::PNGCodec::FORMAT_RGBA,
-                            kThumbnailsPageSize,
-                            kThumbnailsPageSize.width() * 4, true,
-                            std::vector<gfx::PNGCodec::Comment>(), &png);
+    bool is_valid_thumbnail = base::ContainsValue(golden_md5s, md5_string);
 
-      if (!g_thumbnail_output_dir.empty() &&
-          base::DirectoryExists(g_thumbnail_output_dir)) {
-        // Write bad thumbnails image to where --thumbnail_output_dir assigned.
-        filepath = g_thumbnail_output_dir.Append(filepath.BaseName());
-      } else {
-        // Fallback to write to test data directory.
-        // Note: test data directory is not writable by vda_unittest while
-        //       running by autotest. It should assign its resultsdir as output
-        //       directory.
-        filepath = GetTestDataFile(filepath);
-      }
+    // Convert raw RGBA into PNG for export.
+    std::vector<unsigned char> png;
+    gfx::PNGCodec::Encode(&rgba[0], gfx::PNGCodec::FORMAT_RGBA,
+                          kThumbnailsPageSize, kThumbnailsPageSize.width() * 4,
+                          true, std::vector<gfx::PNGCodec::Comment>(), &png);
+
+    if (!g_thumbnail_output_dir.empty() &&
+        base::DirectoryExists(g_thumbnail_output_dir)) {
+      // Write thumbnails image to where --thumbnail_output_dir assigned.
+      filepath = g_thumbnail_output_dir.Append(filepath.BaseName());
+    } else {
+      // Fallback to write to test data directory.
+      // Note: test data directory is not writable by vda_unittest while
+      //       running by autotest. It should assign its resultsdir as output
+      //       directory.
+      filepath = GetTestDataFile(filepath);
+    }
+
+    if (is_valid_thumbnail) {
+      filepath =
+          filepath.AddExtension(FILE_PATH_LITERAL(".good_thumbnails.png"));
+      LOG(INFO) << "Write good thumbnails image to: "
+                << filepath.value().c_str();
+    } else {
       filepath =
           filepath.AddExtension(FILE_PATH_LITERAL(".bad_thumbnails.png"));
       LOG(INFO) << "Write bad thumbnails image to: "
                 << filepath.value().c_str();
-      int num_bytes = base::WriteFile(
-          filepath, reinterpret_cast<char*>(&png[0]), png.size());
-      LOG_ASSERT(num_bytes != -1);
-      EXPECT_EQ(static_cast<size_t>(num_bytes), png.size());
-      LOG(FATAL) << "Unknown thumbnails MD5: " << md5_string;
     }
+    int num_bytes =
+        base::WriteFile(filepath, reinterpret_cast<char*>(&png[0]), png.size());
+    LOG_ASSERT(num_bytes != -1);
+    EXPECT_EQ(static_cast<size_t>(num_bytes), png.size());
+    EXPECT_EQ(is_valid_thumbnail, true)
+        << "Unknown thumbnails MD5: " << md5_string;
   }
 
   // Output the frame delivery time to file
