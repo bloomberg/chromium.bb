@@ -219,6 +219,13 @@ bool SharedLibrary::Load(const char* full_path,
   strlcpy(full_path_, full_path, sizeof(full_path_));
   base_name_ = GetBaseNamePtr(full_path_);
 
+  // Default value of |soname_| will be |base_name_| unless overidden
+  // by a DT_SONAME entry. This helps deal with broken libraries that don't
+  // have one. Note that starting with Android N, the system linker requires
+  // every library to have a DT_SONAME, as these are used to uniquely identify
+  // libraries for dependency resolution (barring namespace isolation).
+  soname_ = base_name_;
+
   // Load the ELF binary in memory.
   LOG("Loading ELF segments for %s", base_name_);
 
@@ -318,6 +325,11 @@ bool SharedLibrary::Load(const char* full_path,
             reinterpret_cast<ELF::Addr>(rdebug->GetAddress());
         break;
 #endif
+      case DT_SONAME:
+        soname_ = symbols_.string_table() + dyn_value;
+        LOG("  DT_SONAME %s", soname_);
+        break;
+
       default:
         ;
     }

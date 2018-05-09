@@ -356,8 +356,7 @@ LibraryView* LibraryList::LoadLibrary(const char* lib_name,
       return NULL;
     }
 
-    LibraryView* wrap = new LibraryView();
-    wrap->SetSystem(system_lib, lib_name);
+    LibraryView* wrap = new LibraryView(system_lib, base_name);
     known_libraries_.PushBack(wrap);
 
     LOG("System library %s loaded at %p", lib_name, wrap);
@@ -430,8 +429,12 @@ LibraryView* LibraryList::LoadLibrary(const char* lib_name,
   head_ = lib.Get();
 
   // Then create a new LibraryView for it.
-  wrap = new LibraryView();
-  wrap->SetCrazy(lib.Get(), lib_name);
+  // TODO(digit): Use the library's soname() instead of |lib_name| here.
+  // This is not possible yet because the current code relies on the fact
+  // that lib_name is /data/data/..../base.apk + a file offset at the moment
+  // to perform RELRO sharing properly. This will be fixed in a future CL
+  // that also modifies the client code in chromium_android_linker.
+  wrap = new LibraryView(lib.Get(), lib_name);
   known_libraries_.PushBack(wrap);
 
   LOG("Running constructors for %s", base_name);

@@ -40,6 +40,10 @@ class SharedLibrary {
   size_t phdr_count() const { return view_.phdr_count(); }
   const char* base_name() const { return base_name_; }
 
+  // Return name of the library as found in DT_SONAME entry, or same
+  // as base_name() if not available.
+  const char* soname() const { return soname_; }
+
   // Load a library (without its dependents) from an ELF file.
   // Note: This does not apply relocations, nor runs constructors.
   // |full_path| if the file full path.
@@ -200,6 +204,7 @@ class SharedLibrary {
 
   void* java_vm_;
 
+  const char* soname_;
   const char* base_name_;
   char full_path_[512];
 };
