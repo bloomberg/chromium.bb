@@ -15,6 +15,7 @@ import argparse
 import contextlib
 import errno
 import os
+import pipes
 import sys
 import tempfile
 
@@ -23,11 +24,9 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import namespaces
 from chromite.lib import osutils
-from chromite.lib import parallel
 from chromite.lib import qemu
 from chromite.lib import remote_access
 from chromite.lib import retry_util
-from chromite.lib import timeout_util
 from chromite.lib import toolchain
 
 class GdbException(Exception):
@@ -75,8 +74,11 @@ class BoardSpecificGdb(object):
 
   _BIND_MOUNT_PATHS = ('dev', 'dev/pts', 'proc', 'mnt/host/source', 'sys')
   _GDB = '/usr/bin/gdb'
-  _EXTRA_SSH_SETTINGS = {'CheckHostIP': 'no',
-                         'BatchMode': 'yes'}
+  _EXTRA_SSH_SETTINGS = {
+      'CheckHostIP': 'no',
+      'BatchMode': 'yes',
+      'LogLevel': 'QUIET'
+  }
   _MISSING_DEBUG_INFO_MSG = """
 %(inf_cmd)s is stripped and %(debug_file)s does not exist on your local machine.
   The debug symbols for that package may not be installed.  To install the debug
@@ -341,30 +343,7 @@ To install the debug symbols for all available packages, run:
                                     'setup_board?' % cross_gdb)
     return cross_gdb
 
-  def StartGdbserver(self, inf_cmd, device):
-    """Set up and start gdbserver running on remote."""
-
-    # Generate appropriate gdbserver command.
-    command = ['gdbserver']
-    if self.pid:
-      # Attach to an existing process.
-      command += [
-          '--attach',
-          'localhost:%s' % self.gdbserver_port,
-          '%s' % self.pid,
-      ]
-    elif inf_cmd:
-      # Start executing a new process.
-      command += ['localhost:%s' % self.gdbserver_port, inf_cmd] + self.inf_args
-
-    self.ssh_settings.append('-n')
-    self.ssh_settings.append('-L%s:localhost:%s' %
-                             (self.gdbserver_port, self.gdbserver_port))
-    return device.RunCommand(command,
-                             connect_settings=self.ssh_settings,
-                             input=open('/dev/null')).returncode
-
-  def GetGdbInitCommands(self, inferior_cmd):
+  def GetGdbInitCommands(self, inferior_cmd, device=None):
     """Generate list of commands with which to initialize the gdb session."""
     gdb_init_commands = []
 
@@ -381,14 +360,29 @@ To install the debug symbols for all available packages, run:
         'set prompt %s' % self.prompt,
     ]
 
-    if self.remote:
-      if inferior_cmd and not inferior_cmd.startswith(self.sysroot):
-        inferior_cmd = os.path.join(self.sysroot, inferior_cmd.lstrip('/'))
+    if device:
+      ssh_cmd = device.GetAgent().GetSSHCommand(self.ssh_settings)
+
+      ssh_cmd.extend(['--', 'gdbserver'])
+
+      if self.pid:
+        ssh_cmd.extend(['--attach', 'stdio', str(self.pid)])
+        target_type = 'remote'
+      elif inferior_cmd:
+        ssh_cmd.extend(['-', inferior_cmd])
+        ssh_cmd.extend(self.inf_args)
+        target_type = 'remote'
+      else:
+        ssh_cmd.extend(['--multi', 'stdio'])
+        target_type = 'extended-remote'
+
+      ssh_cmd = ' '.join(map(pipes.quote, ssh_cmd))
 
       if inferior_cmd:
-        gdb_init_commands.append('file %s' % inferior_cmd)
-      gdb_init_commands.append('target remote localhost:%s' %
-                               self.gdbserver_port)
+        gdb_init_commands.append(
+            'file %s' % os.path.join(sysroot_var, inferior_cmd.lstrip(os.sep)))
+
+      gdb_init_commands.append('target %s | %s' % (target_type, ssh_cmd))
     else:
       if inferior_cmd:
         gdb_init_commands.append('file %s ' % inferior_cmd)
@@ -412,27 +406,18 @@ To install the debug symbols for all available packages, run:
     self.VerifyAndFinishInitialization(device)
     gdb_cmd = self.cross_gdb
 
-    gdb_commands = self.GetGdbInitCommands(self.inf_cmd)
-    gdb_args = [gdb_cmd, '--quiet'] + ['--eval-command=%s' % x
-                                       for x in gdb_commands]
+    gdb_commands = self.GetGdbInitCommands(self.inf_cmd, device)
+    gdb_args = ['--quiet'] + ['--eval-command=%s' % x for x in gdb_commands]
     gdb_args += self.gdb_args
 
     if self.cgdb:
-      gdb_args = ['cgdb'] + gdb_args
+      gdb_args = ['-d', gdb_cmd, '--'] + gdb_args
+      gdb_cmd = 'cgdb'
 
-    with parallel.BackgroundTaskRunner(self.StartGdbserver,
-                                       self.inf_cmd,
-                                       device) as task:
-      task.put([])
-      # Verify that gdbserver finished launching.
-      try:
-        timeout_util.WaitForSuccess(
-            lambda x: len(x) == 0, self.device.GetRunningPids,
-            4, func_args=('gdbserver',))
-      except timeout_util.TimeoutError:
-        raise GdbUnableToStartGdbserverError('gdbserver did not start on'
-                                             ' remote device.')
-      cros_build_lib.RunCommand(gdb_args)
+    logging.debug('Running: %s', [gdb_cmd] + gdb_args)
+
+    os.chdir(self.sysroot)
+    sys.exit(os.execvp(gdb_cmd, gdb_args))
 
   def Run(self):
     """Runs the debugger in a proper environment (e.g. qemu)."""
@@ -582,9 +567,6 @@ def main(argv):
                  ' running process (--remote-pid or --attach).')
 
   if options.remote:
-    if not options.pid and not inf_cmd and not options.attach_name:
-      parser.error('Must specify a program to start or a pid to attach '
-                   'to on the remote device.')
     if options.attach_name and options.attach_name == 'browser':
       inf_cmd = '/opt/google/chrome/chrome'
   else:

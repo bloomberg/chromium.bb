@@ -294,6 +294,20 @@ class RemoteAccess(object):
 
     return cmd
 
+  def GetSSHCommand(self, connect_settings=None):
+    """Returns the ssh command that can be used to connect to the device
+
+    Args:
+      connect_settings: dict of additional ssh options
+
+    Returns:
+      ['ssh', '...', 'user@host']
+    """
+    ssh_cmd = self._GetSSHCmd(connect_settings=connect_settings)
+    ssh_cmd.append(self.target_ssh_url)
+
+    return ssh_cmd
+
   def RemoteSh(self, cmd, connect_settings=None, error_code_ok=False,
                remote_sudo=False, ssh_error_ok=False, **kwargs):
     """Run a sh command on the remote device through ssh.
@@ -327,8 +341,7 @@ class RemoteAccess(object):
     # requires English errors to detect a known_hosts key mismatch error.
     kwargs.setdefault('extra_env', {})['LC_MESSAGES'] = 'C'
 
-    ssh_cmd = self._GetSSHCmd(connect_settings)
-    ssh_cmd.append(self.target_ssh_url)
+    ssh_cmd = self.GetSSHCommand(connect_settings=connect_settings)
 
     if cmd:
       ssh_cmd.append('--')
