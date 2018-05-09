@@ -2,15 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
+#include "base/json/json_writer.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -131,10 +143,75 @@ class CrashRestoreComplexTest : public CrashRestoreSimpleTest {
   CrashRestoreComplexTest() {}
   ~CrashRestoreComplexTest() override {}
 
+  bool SetUpUserDataDirectory() override {
+    RegisterUsers();
+    CreateUserProfiles();
+    return true;
+  }
+
   void SetUpInProcessBrowserTestFixture() override {
     CrashRestoreSimpleTest::SetUpInProcessBrowserTestFixture();
     session_manager_client_->StartSession(cryptohome_id2_);
     session_manager_client_->StartSession(cryptohome_id3_);
+  }
+
+  // Register test users so that UserManager knows them and make kUserId3 as the
+  // last active user.
+  void RegisterUsers() {
+    base::DictionaryValue local_state;
+
+    const char* kTestUserIds[] = {kUserId1, kUserId2, kUserId3};
+
+    auto users_list = std::make_unique<base::ListValue>();
+    for (auto* user_id : kTestUserIds)
+      users_list->AppendString(user_id);
+
+    local_state.SetList("LoggedInUsers", std::move(users_list));
+    local_state.SetString("LastActiveUser", kUserId3);
+
+    auto known_users_list = std::make_unique<base::ListValue>();
+    int gaia_id = 10000;
+    for (auto* user_id : kTestUserIds) {
+      auto user_dict = std::make_unique<base::DictionaryValue>();
+      user_dict->SetString("account_type", "google");
+      user_dict->SetString("email", user_id);
+      user_dict->SetString("gaia_id", base::IntToString(gaia_id++));
+      known_users_list->Append(std::move(user_dict));
+    }
+    local_state.SetList("KnownUsers", std::move(known_users_list));
+
+    std::string local_state_json;
+    ASSERT_TRUE(base::JSONWriter::Write(local_state, &local_state_json));
+
+    base::FilePath local_state_file;
+    ASSERT_TRUE(
+        base::PathService::Get(chrome::DIR_USER_DATA, &local_state_file));
+    local_state_file = local_state_file.Append(chrome::kLocalStateFilename);
+    ASSERT_NE(-1, base::WriteFile(local_state_file, local_state_json.data(),
+                                  local_state_json.size()));
+  }
+
+  // Creates user profiles with open user sessions to simulate crashes.
+  void CreateUserProfiles() {
+    base::DictionaryValue prefs;
+    prefs.SetString(prefs::kSessionExitType, "Crashed");
+    std::string prefs_json;
+    ASSERT_TRUE(base::JSONWriter::Write(prefs, &prefs_json));
+
+    base::FilePath user_data_dir;
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+
+    const char* kTestUserIds[] = {kUserId1, kUserId2, kUserId3};
+    for (auto* user_id : kTestUserIds) {
+      const std::string user_id_hash =
+          ProfileHelper::GetUserIdHashByUserIdForTesting(user_id);
+      const base::FilePath user_profile_path =
+          user_data_dir.Append(ProfileHelper::GetUserProfileDir(user_id_hash));
+      ASSERT_TRUE(base::CreateDirectory(user_profile_path));
+
+      ASSERT_NE(-1, base::WriteFile(user_profile_path.Append("Preferences"),
+                                    prefs_json.data(), prefs_json.size()));
+    }
   }
 };
 
@@ -165,11 +242,11 @@ IN_PROC_BROWSER_TEST_F(CrashRestoreComplexTest, RestoreSessionForThreeUsers) {
   EXPECT_EQ(account_id3_, users[0]->GetAccountId());
   EXPECT_EQ(CryptohomeClient::GetStubSanitizedUsername(cryptohome_id3_),
             users[0]->username_hash());
-  EXPECT_EQ(account_id2_, users[1]->GetAccountId());
-  EXPECT_EQ(CryptohomeClient::GetStubSanitizedUsername(cryptohome_id2_),
-            users[1]->username_hash());
-  EXPECT_EQ(account_id1_, users[2]->GetAccountId());
+  EXPECT_EQ(account_id1_, users[1]->GetAccountId());
   EXPECT_EQ(CryptohomeClient::GetStubSanitizedUsername(cryptohome_id1_),
+            users[1]->username_hash());
+  EXPECT_EQ(account_id2_, users[2]->GetAccountId());
+  EXPECT_EQ(CryptohomeClient::GetStubSanitizedUsername(cryptohome_id2_),
             users[2]->username_hash());
 
   auto* session_manager = session_manager::SessionManager::Get();
