@@ -69,6 +69,29 @@ class TextFormattingAttribute {
 
 typedef std::vector<TextFormattingAttribute> TextFormatting;
 
+enum TextAlignment {
+  kTextAlignmentNone,
+  kTextAlignmentLeft,
+  kTextAlignmentCenter,
+  kTextAlignmentRight,
+};
+
+enum WrappingBehavior {
+  kWrappingBehaviorWrap,
+  kWrappingBehaviorNoWrap,
+};
+
+struct TextRenderParameters {
+  SkColor color = SK_ColorBLACK;
+  TextAlignment text_alignment = kTextAlignmentNone;
+  WrappingBehavior wrapping_behavior = kWrappingBehaviorNoWrap;
+  bool cursor_enabled = false;
+  int cursor_position = 0;
+  bool shadows_enabled = false;
+  SkColor shadow_color = SK_ColorBLACK;
+  float shadow_size = 10.0f;
+};
+
 class Text : public TexturedElement {
  public:
   explicit Text(float font_height_dmms);
@@ -87,7 +110,7 @@ class Text : public TexturedElement {
   // Formatting must be applied only to non-wrapping text elements.
   void SetFormatting(const TextFormatting& formatting);
 
-  void SetAlignment(UiTexture::TextAlignment alignment);
+  void SetAlignment(TextAlignment alignment);
   void SetLayoutMode(TextLayoutMode mode);
 
   // This text element does not typically feature a cursor, but since the cursor

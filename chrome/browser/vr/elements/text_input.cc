@@ -28,7 +28,7 @@ TextInput::TextInput(float font_height_meters,
   text->set_x_centering(LEFT);
   text->SetSize(1, 1);
   text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
-  text->SetAlignment(UiTexture::kTextAlignmentLeft);
+  text->SetAlignment(kTextAlignmentLeft);
   hint_element_ = text.get();
   this->AddChild(std::move(text));
 
@@ -42,7 +42,7 @@ TextInput::TextInput(float font_height_meters,
   text->set_bubble_events(true);
   text->SetSize(1, 1);
   text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
-  text->SetAlignment(UiTexture::kTextAlignmentLeft);
+  text->SetAlignment(kTextAlignmentLeft);
   text->SetCursorEnabled(true);
   text_element_ = text.get();
   this->AddChild(std::move(text));
