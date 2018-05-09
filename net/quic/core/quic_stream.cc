@@ -46,7 +46,7 @@ size_t GetReceivedFlowControlWindow(QuicSession* session) {
 const SpdyPriority QuicStream::kDefaultPriority;
 
 QuicStream::QuicStream(QuicStreamId id, QuicSession* session, bool is_static)
-    : sequencer_(this, session->connection()->clock()),
+    : sequencer_(this),
       id_(id),
       session_(session),
       priority_(kDefaultPriority),

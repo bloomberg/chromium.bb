@@ -76,7 +76,7 @@ class QuicStreamSequencerTest : public QuicTest {
                                            Perspective::IS_CLIENT)),
         session_(connection_),
         stream_(&session_, 1),
-        sequencer_(new QuicStreamSequencer(&stream_, &clock_)) {}
+        sequencer_(new QuicStreamSequencer(&stream_)) {}
 
   // Verify that the data in first region match with the expected[0].
   bool VerifyReadableRegion(const std::vector<QuicString>& expected) {
@@ -152,7 +152,6 @@ class QuicStreamSequencerTest : public QuicTest {
   MockQuicConnectionHelper helper_;
   MockAlarmFactory alarm_factory_;
   MockQuicConnection* connection_;
-  MockClock clock_;
   MockQuicSpdySession session_;
   testing::StrictMock<MockStream> stream_;
   std::unique_ptr<QuicStreamSequencer> sequencer_;
@@ -455,13 +454,12 @@ TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingBackup) {
       bool has_bytes = sequencer_->HasBytesToRead();
       iovec peek_iov[20];
       int iovs_peeked = sequencer_->GetReadableRegions(peek_iov, 20);
-      QuicTime timestamp = clock_.ApproximateNow();
       if (has_bytes) {
         ASSERT_LT(0, iovs_peeked);
-        ASSERT_TRUE(sequencer_->GetReadableRegion(peek_iov, &timestamp));
+        ASSERT_TRUE(sequencer_->GetReadableRegion(peek_iov));
       } else {
         ASSERT_EQ(0, iovs_peeked);
-        ASSERT_FALSE(sequencer_->GetReadableRegion(peek_iov, &timestamp));
+        ASSERT_FALSE(sequencer_->GetReadableRegion(peek_iov));
       }
       int total_bytes_to_peek = QUIC_ARRAYSIZE(buffer);
       for (int i = 0; i < iovs_peeked; ++i) {
@@ -638,88 +636,6 @@ TEST_F(QuicStreamSequencerTest, OnDataAvailableWhenReadableBytesIncrease) {
   EXPECT_CALL(stream_, OnDataAvailable()).Times(0);
   sequencer_->OnStreamFrame(frame3);
   EXPECT_EQ(11u, sequencer_->NumBytesBuffered());
-}
-
-TEST_F(QuicStreamSequencerTest, InOrderTimestamps) {
-  // This test verifies that timestamps returned by
-  // GetReadableRegion() are in the correct sequence when frames
-  // arrive at the sequencer in order.
-  EXPECT_CALL(stream_, OnDataAvailable());
-
-  clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
-
-  // Buffer the first frame.
-  clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
-  QuicTime t1 = clock_.ApproximateNow();
-  OnFrame(0, "abc");
-  EXPECT_EQ(3u, NumBufferedBytes());
-  EXPECT_EQ(0u, sequencer_->NumBytesConsumed());
-  EXPECT_EQ(3u, sequencer_->NumBytesBuffered());
-  // Buffer the second frame.
-  QuicTime t2 = clock_.ApproximateNow();
-  OnFrame(3, "def");
-  clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
-  EXPECT_EQ(6u, NumBufferedBytes());
-  EXPECT_EQ(0u, sequencer_->NumBytesConsumed());
-  EXPECT_EQ(6u, sequencer_->NumBytesBuffered());
-
-  iovec iovecs[1];
-  QuicTime timestamp(QuicTime::Zero());
-
-  EXPECT_TRUE(sequencer_->GetReadableRegion(iovecs, &timestamp));
-  EXPECT_EQ(timestamp, t1);
-  QuicStreamSequencerTest::ConsumeData(3);
-  EXPECT_EQ(3u, NumBufferedBytes());
-  EXPECT_EQ(3u, sequencer_->NumBytesConsumed());
-  EXPECT_EQ(3u, sequencer_->NumBytesBuffered());
-
-  EXPECT_TRUE(sequencer_->GetReadableRegion(iovecs, &timestamp));
-  EXPECT_EQ(timestamp, t2);
-  QuicStreamSequencerTest::ConsumeData(3);
-  EXPECT_EQ(0u, NumBufferedBytes());
-  EXPECT_EQ(6u, sequencer_->NumBytesConsumed());
-  EXPECT_EQ(0u, sequencer_->NumBytesBuffered());
-}
-
-TEST_F(QuicStreamSequencerTest, OutOfOrderTimestamps) {
-  // This test verifies that timestamps returned by
-  // GetReadableRegion() are in the correct sequence when frames
-  // arrive at the sequencer out of order.
-  EXPECT_CALL(stream_, OnDataAvailable());
-
-  clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
-
-  // Buffer the first frame
-  clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
-  QuicTime t1 = clock_.ApproximateNow();
-  OnFrame(3, "def");
-  EXPECT_EQ(3u, NumBufferedBytes());
-  EXPECT_EQ(0u, sequencer_->NumBytesConsumed());
-  EXPECT_EQ(3u, sequencer_->NumBytesBuffered());
-  // Buffer the second frame
-  QuicTime t2 = clock_.ApproximateNow();
-  OnFrame(0, "abc");
-  clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
-  EXPECT_EQ(6u, NumBufferedBytes());
-  EXPECT_EQ(0u, sequencer_->NumBytesConsumed());
-  EXPECT_EQ(6u, sequencer_->NumBytesBuffered());
-
-  iovec iovecs[1];
-  QuicTime timestamp(QuicTime::Zero());
-
-  EXPECT_TRUE(sequencer_->GetReadableRegion(iovecs, &timestamp));
-  EXPECT_EQ(timestamp, t2);
-  QuicStreamSequencerTest::ConsumeData(3);
-  EXPECT_EQ(3u, NumBufferedBytes());
-  EXPECT_EQ(3u, sequencer_->NumBytesConsumed());
-  EXPECT_EQ(3u, sequencer_->NumBytesBuffered());
-
-  EXPECT_TRUE(sequencer_->GetReadableRegion(iovecs, &timestamp));
-  EXPECT_EQ(timestamp, t1);
-  QuicStreamSequencerTest::ConsumeData(3);
-  EXPECT_EQ(0u, NumBufferedBytes());
-  EXPECT_EQ(6u, sequencer_->NumBytesConsumed());
-  EXPECT_EQ(0u, sequencer_->NumBytesBuffered());
 }
 
 TEST_F(QuicStreamSequencerTest, OnStreamFrameWithNullSource) {

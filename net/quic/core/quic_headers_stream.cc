@@ -37,15 +37,14 @@ QuicHeadersStream::~QuicHeadersStream() {}
 void QuicHeadersStream::OnDataAvailable() {
   char buffer[1024];
   struct iovec iov;
-  QuicTime timestamp(QuicTime::Zero());
   while (true) {
     iov.iov_base = buffer;
     iov.iov_len = QUIC_ARRAYSIZE(buffer);
-    if (!sequencer()->GetReadableRegion(&iov, &timestamp)) {
+    if (!sequencer()->GetReadableRegion(&iov)) {
       // No more data to read.
       break;
     }
-    if (spdy_session_->ProcessHeaderData(iov, timestamp) != iov.iov_len) {
+    if (spdy_session_->ProcessHeaderData(iov) != iov.iov_len) {
       // Error processing data.
       return;
     }

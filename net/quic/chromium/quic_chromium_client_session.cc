@@ -922,13 +922,6 @@ size_t QuicChromiumClientSession::WriteHeaders(
                           exclusive, std::move(ack_notifier_delegate));
 }
 
-void QuicChromiumClientSession::OnHeadersHeadOfLineBlocking(
-    QuicTime::Delta delta) {
-  UMA_HISTOGRAM_TIMES(
-      "Net.QuicSession.HeadersHOLBlockedTime",
-      base::TimeDelta::FromMicroseconds(delta.ToMicroseconds()));
-}
-
 void QuicChromiumClientSession::UnregisterStreamPriority(QuicStreamId id,
                                                          bool is_static) {
   if (headers_include_h2_stream_dependency_ && !is_static) {

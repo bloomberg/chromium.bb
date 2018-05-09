@@ -33,13 +33,6 @@ QuicStreamSequencerBuffer::Gap::Gap(QuicStreamOffset begin_offset,
                                     QuicStreamOffset end_offset)
     : begin_offset(begin_offset), end_offset(end_offset) {}
 
-QuicStreamSequencerBuffer::FrameInfo::FrameInfo()
-    : length(1), timestamp(QuicTime::Zero()) {}
-
-QuicStreamSequencerBuffer::FrameInfo::FrameInfo(size_t length,
-                                                QuicTime timestamp)
-    : length(length), timestamp(timestamp) {}
-
 QuicStreamSequencerBuffer::QuicStreamSequencerBuffer(size_t max_capacity_bytes)
     : max_buffer_capacity_bytes_(max_capacity_bytes),
       blocks_count_(CalculateBlockCount(max_capacity_bytes)),
@@ -68,8 +61,6 @@ void QuicStreamSequencerBuffer::Clear() {
   num_bytes_buffered_ = 0;
   bytes_received_.Clear();
   bytes_received_.Add(0, total_bytes_read_);
-
-  frame_arrival_time_map_.clear();
 }
 
 bool QuicStreamSequencerBuffer::RetireBlock(size_t idx) {
@@ -86,7 +77,6 @@ bool QuicStreamSequencerBuffer::RetireBlock(size_t idx) {
 QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
     QuicStreamOffset starting_offset,
     QuicStringPiece data,
-    QuicTime timestamp,
     size_t* const bytes_buffered,
     QuicString* error_details) {
   CHECK_EQ(destruction_indicator_, 123456) << "This object has been destructed";
@@ -131,8 +121,6 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
       return QUIC_STREAM_SEQUENCER_INVALID_STATE;
     }
     *bytes_buffered += bytes_copy;
-    frame_arrival_time_map_.insert(
-        std::make_pair(starting_offset, FrameInfo(size, timestamp)));
     num_bytes_buffered_ += *bytes_buffered;
     return QUIC_NO_ERROR;
   }
@@ -160,8 +148,6 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
       return QUIC_STREAM_SEQUENCER_INVALID_STATE;
     }
     *bytes_buffered += bytes_copy;
-    frame_arrival_time_map_.insert(
-        std::make_pair(copy_offset, FrameInfo(copy_length, timestamp)));
   }
   num_bytes_buffered_ += *bytes_buffered;
   return QUIC_NO_ERROR;
@@ -302,9 +288,6 @@ QuicErrorCode QuicStreamSequencerBuffer::Readv(const iovec* dest_iov,
     }
   }
 
-  if (*bytes_read > 0) {
-    UpdateFrameArrivalMap(total_bytes_read_);
-  }
   return QUIC_NO_ERROR;
 }
 
@@ -368,45 +351,8 @@ int QuicStreamSequencerBuffer::GetReadableRegions(struct iovec* iov,
   return iov_used;
 }
 
-bool QuicStreamSequencerBuffer::GetReadableRegion(iovec* iov,
-                                                  QuicTime* timestamp) const {
-  CHECK_EQ(destruction_indicator_, 123456) << "This object has been destructed";
-
-  if (ReadableBytes() == 0) {
-    iov[0].iov_base = nullptr;
-    iov[0].iov_len = 0;
-    return false;
-  }
-
-  size_t start_block_idx = NextBlockToRead();
-  iov->iov_base = blocks_[start_block_idx]->buffer + ReadOffset();
-  size_t readable_bytes_in_block = std::min<size_t>(
-      GetBlockCapacity(start_block_idx) - ReadOffset(), ReadableBytes());
-  size_t region_len = 0;
-  auto iter = frame_arrival_time_map_.begin();
-  *timestamp = iter->second.timestamp;
-  QUIC_DVLOG(1) << "Readable bytes in block: " << readable_bytes_in_block;
-  for (; iter != frame_arrival_time_map_.end() &&
-         region_len + iter->second.length <= readable_bytes_in_block;
-       ++iter) {
-    if (iter->second.timestamp != *timestamp) {
-      // If reaches a frame arrive at another timestamp, stop expanding current
-      // region.
-      QUIC_DVLOG(1) << "Meet frame with different timestamp.";
-      break;
-    }
-    region_len += iter->second.length;
-    QUIC_DVLOG(1) << "Added bytes to region: " << iter->second.length;
-  }
-  if (iter == frame_arrival_time_map_.end() ||
-      iter->second.timestamp == *timestamp) {
-    // If encountered the end of readable bytes before reaching a different
-    // timestamp.
-    QUIC_DVLOG(1) << "Got all readable bytes in first block.";
-    region_len = readable_bytes_in_block;
-  }
-  iov->iov_len = region_len;
-  return true;
+bool QuicStreamSequencerBuffer::GetReadableRegion(iovec* iov) const {
+  return GetReadableRegions(iov, 1) == 1;
 }
 
 bool QuicStreamSequencerBuffer::MarkConsumed(size_t bytes_used) {
@@ -430,9 +376,6 @@ bool QuicStreamSequencerBuffer::MarkConsumed(size_t bytes_used) {
     if (bytes_available == bytes_read) {
       RetireBlockIfEmpty(block_idx);
     }
-  }
-  if (bytes_used > 0) {
-    UpdateFrameArrivalMap(total_bytes_read_);
   }
   return true;
 }
@@ -532,44 +475,13 @@ size_t QuicStreamSequencerBuffer::GetBlockCapacity(size_t block_index) const {
   }
 }
 
-void QuicStreamSequencerBuffer::UpdateFrameArrivalMap(QuicStreamOffset offset) {
-  // Get the frame before which all frames should be removed.
-  auto next_frame = frame_arrival_time_map_.upper_bound(offset);
-  DCHECK(next_frame != frame_arrival_time_map_.begin());
-  auto iter = frame_arrival_time_map_.begin();
-  while (iter != next_frame) {
-    auto erased = *iter;
-    iter = frame_arrival_time_map_.erase(iter);
-    QUIC_DVLOG(1) << "Removed FrameInfo with offset: " << erased.first
-                  << " and length: " << erased.second.length;
-    if (erased.first + erased.second.length > offset) {
-      // If last frame is partially read out, update this FrameInfo and insert
-      // it back.
-      auto updated = std::make_pair(
-          offset, FrameInfo(erased.first + erased.second.length - offset,
-                            erased.second.timestamp));
-      QUIC_DVLOG(1) << "Inserted FrameInfo with offset: " << updated.first
-                    << " and length: " << updated.second.length;
-      frame_arrival_time_map_.insert(updated);
-    }
-  }
-}
-
 QuicString QuicStreamSequencerBuffer::GapsDebugString() {
+  // TODO(vasilvv): this should return the complement of |bytes_received_|.
   return bytes_received_.ToString();
 }
 
 QuicString QuicStreamSequencerBuffer::ReceivedFramesDebugString() {
-  QuicString current_frames_string;
-  for (auto it : frame_arrival_time_map_) {
-    QuicStreamOffset current_frame_begin_offset = it.first;
-    QuicStreamOffset current_frame_end_offset =
-        it.second.length + current_frame_begin_offset;
-    current_frames_string.append(QuicStrCat(
-        "[", current_frame_begin_offset, ", ", current_frame_end_offset,
-        ") receiving time ", it.second.timestamp.ToDebuggingValue()));
-  }
-  return current_frames_string;
+  return bytes_received_.ToString();
 }
 
 QuicStreamOffset QuicStreamSequencerBuffer::FirstMissingByte() const {

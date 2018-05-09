@@ -10,7 +10,6 @@
 #include "net/test/gtest_util.h"
 
 typedef net::QuicStreamSequencerBuffer::BufferBlock BufferBlock;
-typedef net::QuicStreamSequencerBuffer::FrameInfo FrameInfo;
 typedef net::QuicStreamSequencerBuffer::Gap Gap;
 
 static const size_t kBlockSizeBytes =
@@ -129,11 +128,6 @@ size_t QuicStreamSequencerBufferPeer::max_buffer_capacity() {
 
 size_t QuicStreamSequencerBufferPeer::ReadableBytes() {
   return buffer_->ReadableBytes();
-}
-
-std::map<QuicStreamOffset, FrameInfo>*
-QuicStreamSequencerBufferPeer::frame_arrival_time_map() {
-  return &(buffer_->frame_arrival_time_map_);
 }
 
 void QuicStreamSequencerBufferPeer::set_total_bytes_read(

@@ -287,8 +287,6 @@ QuicSpdySession::QuicSpdySession(QuicConnection* connection,
       frame_len_(0),
       uncompressed_frame_len_(0),
       supports_push_promise_(perspective() == Perspective::IS_CLIENT),
-      cur_max_timestamp_(QuicTime::Zero()),
-      prev_max_timestamp_(QuicTime::Zero()),
       spdy_framer_(SpdyFramer::ENABLE_COMPRESSION),
       spdy_framer_visitor_(new SpdyFramerVisitor(this)) {
   hq_deframer_.set_visitor(spdy_framer_visitor_.get());
@@ -382,10 +380,7 @@ void QuicSpdySession::OnPriorityFrame(QuicStreamId stream_id,
   stream->OnPriorityFrame(priority);
 }
 
-size_t QuicSpdySession::ProcessHeaderData(const struct iovec& iov,
-                                          QuicTime timestamp) {
-  DCHECK(timestamp.IsInitialized());
-  UpdateCurMaxTimeStamp(timestamp);
+size_t QuicSpdySession::ProcessHeaderData(const struct iovec& iov) {
   return hq_deframer_.ProcessInput(static_cast<char*>(iov.iov_base),
                                    iov.iov_len);
 }
@@ -467,10 +462,6 @@ size_t QuicSpdySession::SendMaxHeaderListSize(size_t value) {
   headers_stream_->WriteOrBufferData(
       QuicStringPiece(frame.data(), frame.size()), false, nullptr);
   return frame.size();
-}
-
-void QuicSpdySession::OnHeadersHeadOfLineBlocking(QuicTime::Delta delta) {
-  // Implemented in Chromium for stats tracking.
 }
 
 QuicSpdyStream* QuicSpdySession::GetSpdyDataStream(
@@ -556,19 +547,6 @@ void QuicSpdySession::OnPriority(SpdyStreamId stream_id,
 void QuicSpdySession::OnHeaderList(const QuicHeaderList& header_list) {
   QUIC_DVLOG(1) << "Received header list for stream " << stream_id_ << ": "
                 << header_list.DebugString();
-  if (prev_max_timestamp_ > cur_max_timestamp_) {
-    // prev_max_timestamp_ > cur_max_timestamp_ implies that
-    // headers from lower numbered streams actually came off the
-    // wire after headers for the current stream, hence there was
-    // HOL blocking.
-    QuicTime::Delta delta = prev_max_timestamp_ - cur_max_timestamp_;
-    QUIC_DLOG(INFO) << "stream " << stream_id_
-                    << ": Net.QuicSession.HeadersHOLBlockedTime "
-                    << delta.ToMilliseconds();
-    OnHeadersHeadOfLineBlocking(delta);
-  }
-  prev_max_timestamp_ = std::max(prev_max_timestamp_, cur_max_timestamp_);
-  cur_max_timestamp_ = QuicTime::Zero();
   if (promised_stream_id_ == kInvalidStreamId) {
     OnStreamHeaderList(stream_id_, fin_, frame_len_, header_list);
   } else {

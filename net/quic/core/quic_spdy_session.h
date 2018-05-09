@@ -83,7 +83,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   virtual void OnPriorityFrame(QuicStreamId stream_id, SpdyPriority priority);
 
   // Sends contents of |iov| to hq_deframer_, returns number of bytes processed.
-  size_t ProcessHeaderData(const struct iovec& iov, QuicTime timestamp);
+  size_t ProcessHeaderData(const struct iovec& iov);
 
   // Writes |headers| for the stream |id| to the dedicated headers stream.
   // If |fin| is true, then no more data will be sent for the stream |id|.
@@ -116,17 +116,9 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
 
   QuicHeadersStream* headers_stream() { return headers_stream_.get(); }
 
-  // Called when Head of Line Blocking happens in the headers stream.
-  // |delta| indicates how long that piece of data has been blocked.
-  virtual void OnHeadersHeadOfLineBlocking(QuicTime::Delta delta);
-
   void OnConfigNegotiated() override;
 
   bool server_push_enabled() const { return server_push_enabled_; }
-
-  void UpdateCurMaxTimeStamp(QuicTime timestamp) {
-    cur_max_timestamp_ = std::max(timestamp, cur_max_timestamp_);
-  }
 
   // Called by |QuicHeadersStream::UpdateEnableServerPush()| with
   // value from SETTINGS_ENABLE_PUSH.
@@ -249,15 +241,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   size_t uncompressed_frame_len_;
 
   bool supports_push_promise_;
-
-  // Timestamps used to measure HOL blocking, these are recorded by
-  // the sequencer approximate to the time of arrival off the wire.
-  // |cur_max_timestamp_| tracks the most recent arrival time of
-  // frames for current (at the headers stream level) processed
-  // stream's headers, and |prev_max_timestamp_| tracks the most
-  // recent arrival time of lower numbered streams.
-  QuicTime cur_max_timestamp_;
-  QuicTime prev_max_timestamp_;
 
   SpdyFramer spdy_framer_;
   QuicHttpDecoderAdapter hq_deframer_;
