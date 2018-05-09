@@ -36,6 +36,7 @@ GURL AppendGoogleLocaleParam(const GURL& url,
                              const std::string& application_locale);
 
 // Returns the Google country code string for the given Google homepage URL.
+// Returns an empty string if |google_homepage_url| contains no country code.
 std::string GetGoogleCountryCode(const GURL& google_homepage_url);
 
 // Returns the Google search URL for the given Google homepage URL.
