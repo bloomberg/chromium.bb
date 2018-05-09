@@ -2297,33 +2297,9 @@ void RenderFrameImpl::OnPostMessageEvent(
         WebString::FromUTF16(params.target_origin));
   }
 
-  WebDOMMessageEvent msg_event;
-  if (params.is_data_raw_string) {
-    v8::Isolate* isolate = blink::MainThreadIsolate();
-    v8::HandleScope handle_scope(isolate);
-    v8::Local<v8::Context> context = frame_->MainWorldScriptContext();
-    v8::Context::Scope context_scope(context);
-    V8ValueConverterImpl converter;
-    converter.SetDateAllowed(true);
-    converter.SetRegExpAllowed(true);
-    base::string16 data;
-    data.resize(params.message->data.encoded_message.size() /
-                sizeof(base::char16));
-    std::memcpy(&data[0], params.message->data.encoded_message.data(),
-                data.length() * sizeof(base::char16));
-    base::Value value(data);
-    v8::Local<v8::Value> result_value = converter.ToV8Value(&value, context);
-    WebSerializedScriptValue serialized_script_value =
-        WebSerializedScriptValue::Serialize(isolate, result_value);
-    msg_event = WebDOMMessageEvent(serialized_script_value,
-                                   WebString::FromUTF16(params.source_origin),
-                                   source_frame, frame_->GetDocument(),
-                                   std::move(params.message->data.ports));
-  } else {
-    msg_event = WebDOMMessageEvent(std::move(params.message->data),
-                                   WebString::FromUTF16(params.source_origin),
-                                   source_frame, frame_->GetDocument());
-  }
+  WebDOMMessageEvent msg_event(std::move(params.message->data),
+                               WebString::FromUTF16(params.source_origin),
+                               source_frame, frame_->GetDocument());
 
   frame_->DispatchMessageEventWithOriginCheck(
       target_origin, msg_event, params.message->data.has_user_gesture);
