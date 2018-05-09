@@ -28,6 +28,7 @@ bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
           WebFeature::kPaymentHandler,
           WebFeature::kPaymentRequestShowWithoutGesture,
           WebFeature::kHTMLImports, WebFeature::kHTMLImportsHasStyleSheets,
+          WebFeature::kElementCreateShadowRoot,
       }));
   return opt_in_features.count(feature);
 }

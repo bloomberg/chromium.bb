@@ -8,6 +8,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 
 using WebFeature = blink::mojom::WebFeature;
 using Features = page_load_metrics::mojom::PageLoadFeatures;
@@ -53,6 +54,14 @@ void UseCounterPageLoadMetricsObserver::OnFeaturesUsageObserved(
     UMA_HISTOGRAM_ENUMERATION(internal::kFeaturesHistogramName, feature,
                               WebFeature::kNumberOfFeatures);
     features_recorded_.set(static_cast<size_t>(feature));
+    // TODO(kochi): https://crbug.com/806671 as ElementCreateShadowRoot is
+    // ~12% as of April, 2018, and to meet the UKM's data volume expectation,
+    // reduce the data size by sampling. Revisit and remove this code once
+    // Shadow DOM V0 is removed.
+    const int kSamplingFactor = 10;
+    if (feature == WebFeature::kElementCreateShadowRoot &&
+        base::RandGenerator(kSamplingFactor) != 0)
+      continue;
     if (IsAllowedUkmFeature(feature)) {
       ukm::builders::Blink_UseCounter(extra_info.source_id)
           .SetFeature(static_cast<int64_t>(feature))
