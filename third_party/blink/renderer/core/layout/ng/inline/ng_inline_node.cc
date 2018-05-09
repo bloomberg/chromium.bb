@@ -169,6 +169,29 @@ static bool NeedsShaping(const NGInlineItem& item) {
   return item.Type() == NGInlineItem::kText && !item.TextShapeResult();
 }
 
+// Determine if reshape is needed for ::first-line style.
+bool FirstLineNeedsReshape(const ComputedStyle& first_line_style,
+                           const ComputedStyle& base_style) {
+  const Font& base_font = base_style.GetFont();
+  const Font& first_line_font = first_line_style.GetFont();
+  return &base_font != &first_line_font && base_font != first_line_font;
+}
+
+// Make a string to the specified length, either by truncating if longer, or
+// appending space characters if shorter.
+void TruncateOrPadText(String* text, unsigned length) {
+  if (text->length() > length) {
+    *text = text->Substring(0, length);
+  } else if (text->length() < length) {
+    StringBuilder builder;
+    builder.ReserveCapacity(length);
+    builder.Append(*text);
+    while (builder.length() < length)
+      builder.Append(kSpaceCharacter);
+    *text = builder.ToString();
+  }
+}
+
 }  // namespace
 
 NGInlineNode::NGInlineNode(LayoutBlockFlow* block)
@@ -494,10 +517,25 @@ void NGInlineNode::ShapeTextForFirstLineIfNeeded(NGInlineNodeData* data) {
     return;
 
   auto first_line_items = std::make_unique<NGInlineItemsData>();
-  // TODO(kojii): Support 'text-transform' to change the text_content.
-  // When the text changes, offsets in items are also changed. This might need
-  // to change this function a bit drastically.
   first_line_items->text_content = data->text_content;
+  bool needs_reshape = false;
+  if (first_line_style->TextTransform() != block_style->TextTransform()) {
+    // TODO(kojii): This logic assumes that text-transform is applied only to
+    // ::first-line, and does not work when the base style has text-transform
+    // and ::first-line has different text-transform.
+    first_line_style->ApplyTextTransform(&first_line_items->text_content);
+    if (first_line_items->text_content != data->text_content) {
+      // TODO(kojii): When text-transform changes the length, we need to adjust
+      // offset in NGInlineItem, or re-collect inlines. Other classes such as
+      // line breaker need to support the scenario too. For now, we force the
+      // string to be the same length to prevent them from crashing. This may
+      // result in a missing or a duplicate character if the length changes.
+      TruncateOrPadText(&first_line_items->text_content,
+                        data->text_content.length());
+      needs_reshape = true;
+    }
+  }
+
   first_line_items->items.AppendVector(data->items);
   for (auto& item : first_line_items->items) {
     if (item.style_) {
@@ -508,9 +546,7 @@ void NGInlineNode::ShapeTextForFirstLineIfNeeded(NGInlineNodeData* data) {
   }
 
   // Re-shape if the font is different.
-  const Font& font = block_style->GetFont();
-  const Font& first_line_font = first_line_style->GetFont();
-  if (&font != &first_line_font && font != first_line_font)
+  if (needs_reshape || FirstLineNeedsReshape(*first_line_style, *block_style))
     ShapeText(first_line_items.get());
 
   data->first_line_items_ = std::move(first_line_items);
