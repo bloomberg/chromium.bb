@@ -888,6 +888,19 @@ TEST_F(SyncedSessionTrackerTest, UpdateTrackerWithHeaderWithDuplicateTabIds) {
               MatchesSyncedSession(kTag, /*window_id_to_tabs=*/{}));
 }
 
+// Verifies that an invalid tab (with invalid ID) is discarded.
+TEST_F(SyncedSessionTrackerTest, UpdateTrackerWithInvalidTab) {
+  const int kInvalidTabId = -1;
+  sync_pb::SessionSpecifics tab;
+  tab.set_session_tag(kTag);
+  tab.mutable_tab()->set_tab_id(kInvalidTabId);
+  UpdateTrackerWithSpecifics(tab, base::Time::Now(), GetTracker());
+
+  EXPECT_THAT(GetTracker()->LookupSessionTab(
+                  kTag, SessionID::FromSerializedValue(kInvalidTabId)),
+              IsNull());
+}
+
 TEST_F(SyncedSessionTrackerTest, UpdateTrackerWithTab) {
   sync_pb::SessionSpecifics tab;
   tab.set_session_tag(kTag);

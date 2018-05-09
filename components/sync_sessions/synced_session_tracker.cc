@@ -646,8 +646,8 @@ void UpdateTrackerWithSpecifics(const sync_pb::SessionSpecifics& specifics,
     // for their tabs.
 
     if (!IsValidSessionHeader(specifics.header())) {
-      LOG(WARNING) << "Ignoring session node with invalid header "
-                   << "and tag " << session_tag << ".";
+      DLOG(WARNING) << "Ignoring session node with invalid header "
+                    << "and tag " << session_tag << ".";
       return;
     }
 
@@ -667,6 +667,13 @@ void UpdateTrackerWithSpecifics(const sync_pb::SessionSpecifics& specifics,
   } else if (specifics.has_tab()) {
     const sync_pb::SessionTab& tab_s = specifics.tab();
     SessionID tab_id = SessionID::FromSerializedValue(tab_s.tab_id());
+    if (!tab_id.is_valid()) {
+      DLOG(WARNING) << "Ignoring session tab with invalid tab ID for session "
+                    << "tag " << session_tag << " and node ID "
+                    << specifics.tab_node_id() << ".";
+      return;
+    }
+
     DVLOG(1) << "Populating " << session_tag << "'s tab id " << tab_id
              << " from node " << specifics.tab_node_id();
 
