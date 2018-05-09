@@ -32,13 +32,13 @@ FidoRequestHandlerBase::~FidoRequestHandlerBase() = default;
 
 void FidoRequestHandlerBase::CancelOngoingTasks(
     base::StringPiece exclude_device_id) {
-  for (auto task_it = ongoing_tasks_.begin();
-       task_it != ongoing_tasks_.end();) {
+  for (auto task_it = active_authenticators_.begin();
+       task_it != active_authenticators_.end();) {
     DCHECK(!task_it->first.empty());
     if (task_it->first != exclude_device_id) {
       DCHECK(task_it->second);
-      task_it->second->CancelTask();
-      task_it = ongoing_tasks_.erase(task_it);
+      task_it->second->Cancel();
+      task_it = active_authenticators_.erase(task_it);
     } else {
       ++task_it;
     }
@@ -56,12 +56,21 @@ void FidoRequestHandlerBase::DiscoveryStarted(FidoDiscovery* discovery,
 
 void FidoRequestHandlerBase::DeviceAdded(FidoDiscovery* discovery,
                                          FidoDevice* device) {
-  DCHECK(!base::ContainsKey(ongoing_tasks(), device->GetId()));
+  DCHECK(!base::ContainsKey(active_authenticators(), device->GetId()));
   // All devices are initially assumed to support CTAP protocol and thus
   // AuthenticatorGetInfo command is sent to all connected devices. If device
   // errors out, then it is assumed to support U2F protocol.
   device->set_supported_protocol(ProtocolVersion::kCtap);
-  ongoing_tasks_.emplace(device->GetId(), CreateTaskForNewDevice(device));
+  auto* authenticator =
+      active_authenticators_
+          .emplace(device->GetId(), CreateAuthenticatorFromDevice(device))
+          .first->second.get();
+  DispatchRequest(authenticator);
+}
+
+std::unique_ptr<FidoDeviceAuthenticator>
+FidoRequestHandlerBase::CreateAuthenticatorFromDevice(FidoDevice* device) {
+  return std::make_unique<FidoDeviceAuthenticator>(device);
 }
 
 void FidoRequestHandlerBase::DeviceRemoved(FidoDiscovery* discovery,
@@ -71,7 +80,7 @@ void FidoRequestHandlerBase::DeviceRemoved(FidoDiscovery* discovery,
   // ongoing_tasks_.erase() will have no effect for the devices that have been
   // already removed due to processing error or due to invocation of
   // CancelOngoingTasks().
-  ongoing_tasks_.erase(device->GetId());
+  active_authenticators_.erase(device->GetId());
 }
 
 }  // namespace device

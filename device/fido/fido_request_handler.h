@@ -13,6 +13,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
 #include "device/fido/fido_transport_protocol.h"
@@ -41,11 +42,11 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
   bool is_complete() const { return completion_callback_.is_null(); }
 
  protected:
-  // Converts device response code received from CTAP1/CTAP2 device into
+  // Converts authenticator response code received from CTAP1/CTAP2 device into
   // FidoReturnCode and passes response data to webauth::mojom::Authenticator.
-  void OnDeviceResponse(FidoDevice* device,
-                        CtapDeviceResponseCode device_response_code,
-                        base::Optional<Response> response_data) {
+  void OnAuthenticatorResponse(FidoAuthenticator* authenticator,
+                               CtapDeviceResponseCode device_response_code,
+                               base::Optional<Response> response_data) {
     if (is_complete()) {
       DVLOG(2)
           << "Response from authenticator received after request is complete.";
@@ -55,17 +56,17 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
     const auto return_code = ConvertDeviceResponseCodeToFidoReturnCode(
         device_response_code, response_data.has_value());
 
-    // Any device response codes that do not result from user consent
-    // imply that the device should be dropped and that other on-going
+    // Any authenticator response codes that do not result from user consent
+    // imply that the authenticator should be dropped and that other on-going
     // requests should continue until timeout is reached.
     if (!return_code) {
-      ongoing_tasks().erase(device->GetId());
+      active_authenticators().erase(authenticator->GetId());
       return;
     }
 
     // Once response has been passed to the relying party, cancel all other on
     // going requests.
-    CancelOngoingTasks(device->GetId());
+    CancelOngoingTasks(authenticator->GetId());
     std::move(completion_callback_).Run(*return_code, std::move(response_data));
   }
 
@@ -81,7 +82,7 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
                    : FidoReturnCode::kAuthenticatorResponseInvalid;
 
       // These errors are only returned after the user interacted with the
-      // device.
+      // authenticator.
       case CtapDeviceResponseCode::kCtap2ErrCredentialExcluded:
         return FidoReturnCode::kUserConsentButCredentialExcluded;
       case CtapDeviceResponseCode::kCtap2ErrNoCredentials:

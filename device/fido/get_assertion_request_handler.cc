@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "device/fido/authenticator_get_assertion_response.h"
-#include "device/fido/fido_device.h"
+#include "device/fido/fido_authenticator.h"
 #include "device/fido/get_assertion_task.h"
 
 namespace device {
@@ -26,12 +26,12 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
 
 GetAssertionRequestHandler::~GetAssertionRequestHandler() = default;
 
-std::unique_ptr<FidoTask> GetAssertionRequestHandler::CreateTaskForNewDevice(
-    FidoDevice* device) {
-  return std::make_unique<GetAssertionTask>(
-      device, request_,
-      base::BindOnce(&GetAssertionRequestHandler::OnDeviceResponse,
-                     weak_factory_.GetWeakPtr(), device));
+void GetAssertionRequestHandler::DispatchRequest(
+    FidoAuthenticator* authenticator) {
+  authenticator->GetAssertion(
+      request_,
+      base::BindOnce(&GetAssertionRequestHandler::OnAuthenticatorResponse,
+                     weak_factory_.GetWeakPtr(), authenticator));
 }
 
 }  // namespace device
