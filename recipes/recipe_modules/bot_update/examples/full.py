@@ -222,6 +222,14 @@ def GenTests(api):
       'gerrit get_patch_destination_branch',
       api.gerrit.get_one_change_response_data(branch='experimental/feature'),
   )
+  yield api.test('tryjob_gerrit_branch_heads') + api.properties.tryserver(
+      gerrit_project='chromium/src',
+      patch_issue=338811,
+      patch_set=3,
+  ) + api.step_data(
+      'gerrit get_patch_destination_branch',
+      api.gerrit.get_one_change_response_data(branch='refs/branch-heads/67'),
+  )
   yield api.test('tryjob_gerrit_angle_deprecated') + api.properties.tryserver(
       patch_project='angle/angle',
       gerrit='https://chromium-review.googlesource.com',
