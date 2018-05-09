@@ -776,6 +776,16 @@ void SerializePartialTrackerToSpecifics(
       // Tab entities.
       const SessionID tab_id =
           tracker.LookupTabIdFromTabNodeId(session_tag, tab_node_id);
+      if (!tab_id.is_valid()) {
+        // This can be the case for tabs that were unmapped because we received
+        // a new foreign tab with the same tab ID (the last one wins), so we
+        // don't remember the tab ID for the original |tab_node_id|. Instead of
+        // returning partially populated SessionSpecifics (without tab ID), we
+        // simply drop them, because older clients don't handle well such
+        // invalid specifics.
+        continue;
+      }
+
       const sessions::SessionTab* tab =
           tracker.LookupSessionTab(session_tag, tab_id);
       if (tab) {
@@ -788,12 +798,11 @@ void SerializePartialTrackerToSpecifics(
         continue;
       }
 
-      // Create entities for unmapped tabs nodes (possibly not even associated
-      // to a tab ID).
+      // Create entities for unmapped tabs nodes.
       sync_pb::SessionSpecifics tab_pb;
       tab_pb.set_tab_node_id(tab_node_id);
       tab_pb.set_session_tag(session_tag);
-      tab_pb.mutable_tab()->set_tab_id(tab_id.id());  // Might be invalid.
+      tab_pb.mutable_tab()->set_tab_id(tab_id.id());
       output_cb.Run(session->session_name, &tab_pb);
     }
   }
