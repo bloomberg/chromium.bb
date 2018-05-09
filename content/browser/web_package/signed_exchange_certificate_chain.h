@@ -25,12 +25,12 @@ namespace content {
 class CONTENT_EXPORT SignedExchangeCertificateChain {
  public:
   static std::unique_ptr<SignedExchangeCertificateChain> Parse(
-      base::StringPiece cert_response_body);
+      base::span<const uint8_t> cert_response_body);
 
   // Parses a TLS 1.3 Certificate message containing X.509v3 certificates and
   // returns a vector of cert_data. Returns nullopt when failed to parse.
   static base::Optional<std::vector<base::StringPiece>> GetCertChainFromMessage(
-      base::StringPiece message);
+      base::span<const uint8_t> message);
 
   ~SignedExchangeCertificateChain();
 
