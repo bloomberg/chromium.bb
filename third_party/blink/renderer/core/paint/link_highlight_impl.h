@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace cc {
+class Layer;
 class PictureLayer;
 }
 
@@ -103,7 +104,8 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
 
   scoped_refptr<cc::PictureLayer> content_layer_;
   std::unique_ptr<WebLayer> web_content_layer_;  // Wraps |content_layer_|.
-  std::unique_ptr<WebLayer> clip_layer_;
+  scoped_refptr<cc::Layer> clip_layer_;
+  std::unique_ptr<WebLayer> web_clip_layer_;
   Path path_;
 
   Persistent<Node> node_;

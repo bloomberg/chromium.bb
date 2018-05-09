@@ -47,7 +47,6 @@ class WebCompositorSupport {
  public:
   // Layers -------------------------------------------------------
 
-  virtual std::unique_ptr<WebLayer> CreateLayer() = 0;
   virtual std::unique_ptr<WebLayer> CreateLayerFromCCLayer(cc::Layer*) = 0;
   virtual std::unique_ptr<WebImageLayer> CreateImageLayer() = 0;
 

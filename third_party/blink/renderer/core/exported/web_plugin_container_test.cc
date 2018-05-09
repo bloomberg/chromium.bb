@@ -34,6 +34,7 @@
 #include <string>
 
 #include "build/build_config.h"
+#include "cc/layers/layer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_clipboard.h"
@@ -1325,16 +1326,19 @@ class CompositedPlugin : public FakeWebPlugin {
  public:
   explicit CompositedPlugin(const WebPluginParams& params)
       : FakeWebPlugin(params),
-        layer_(Platform::Current()->CompositorSupport()->CreateLayer()) {}
+        layer_(cc::Layer::Create()),
+        web_layer_(
+            Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
+                layer_.get())) {}
 
-  WebLayer* GetWebLayer() const { return layer_.get(); }
+  WebLayer* GetWebLayer() const { return web_layer_.get(); }
 
   // WebPlugin
 
   bool Initialize(WebPluginContainer* container) override {
     if (!FakeWebPlugin::Initialize(container))
       return false;
-    container->SetWebLayer(layer_.get(), false);
+    container->SetWebLayer(web_layer_.get(), false);
     return true;
   }
 
@@ -1346,7 +1350,8 @@ class CompositedPlugin : public FakeWebPlugin {
  private:
   ~CompositedPlugin() override = default;
 
-  std::unique_ptr<WebLayer> layer_;
+  scoped_refptr<cc::Layer> layer_;
+  std::unique_ptr<WebLayer> web_layer_;
 };
 
 }  // namespace

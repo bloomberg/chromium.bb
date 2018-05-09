@@ -29,6 +29,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/paint/display_item_list.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -91,11 +92,14 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owning_web_view)
       Platform::Current()->CompositorSupport();
   DCHECK(compositor_support);
   content_layer_ = cc::PictureLayer::Create(this);
+  clip_layer_ = cc::Layer::Create();
+  clip_layer_->SetTransformOrigin(FloatPoint3D());
+  clip_layer_->AddChild(content_layer_);
+
   web_content_layer_ =
       compositor_support->CreateLayerFromCCLayer(content_layer_.get());
-  clip_layer_ = compositor_support->CreateLayer();
-  clip_layer_->SetTransformOrigin(FloatPoint3D());
-  clip_layer_->AddChild(web_content_layer_.get());
+  web_clip_layer_ =
+      compositor_support->CreateLayerFromCCLayer(clip_layer_.get());
 
   compositor_animation_ = CompositorAnimation::Create();
   DCHECK(compositor_animation_);
@@ -129,7 +133,7 @@ cc::PictureLayer* LinkHighlightImpl::ContentLayer() {
 }
 
 WebLayer* LinkHighlightImpl::ClipLayer() {
-  return clip_layer_.get();
+  return web_clip_layer_.get();
 }
 
 void LinkHighlightImpl::ReleaseResources() {

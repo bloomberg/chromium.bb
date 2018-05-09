@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/video_painter.h"
 
+#include "cc/layers/layer.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/public/platform/web_layer.h"
@@ -32,7 +33,10 @@ class StubWebMediaPlayer : public EmptyWebMediaPlayer {
     client_->NetworkStateChanged();
     ready_state_ = kReadyStateHaveEnoughData;
     client_->ReadyStateChanged();
-    web_layer_ = Platform::Current()->CompositorSupport()->CreateLayer();
+    layer_ = cc::Layer::Create();
+    web_layer_ =
+        Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
+            layer_.get());
     client_->SetWebLayer(web_layer_.get());
   }
   NetworkState GetNetworkState() const override { return network_state_; }
@@ -40,6 +44,7 @@ class StubWebMediaPlayer : public EmptyWebMediaPlayer {
 
  private:
   WebMediaPlayerClient* client_;
+  scoped_refptr<cc::Layer> layer_;
   std::unique_ptr<WebLayer> web_layer_;
   NetworkState network_state_ = kNetworkStateEmpty;
   ReadyState ready_state_ = kReadyStateHaveNothing;
