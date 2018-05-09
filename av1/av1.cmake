@@ -172,13 +172,9 @@ set(AOM_AV1_COMMON_INTRIN_SSE4_1 "${AOM_ROOT}/av1/common/x86/av1_txfm_sse4.c"
 
 set(AOM_AV1_COMMON_INTRIN_AVX2
     "${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_avx2.c"
-    "${AOM_ROOT}/av1/common/x86/hybrid_inv_txfm_avx2.c"
     "${AOM_ROOT}/av1/common/x86/av1_inv_txfm_avx2.h"
     "${AOM_ROOT}/av1/common/x86/av1_inv_txfm_avx2.c"
     "${AOM_ROOT}/av1/common/x86/reconinter_avx2.c")
-
-set(AOM_AV1_COMMON_INTRIN_MSA
-    "${AOM_ROOT}/av1/common/mips/msa/av1_idct4x4_msa.c")
 
 set(AOM_AV1_ENCODER_ASM_SSE2 "${AOM_ROOT}/av1/encoder/x86/dct_sse2.asm"
     "${AOM_ROOT}/av1/encoder/x86/error_sse2.asm"
@@ -208,7 +204,6 @@ set(AOM_AV1_ENCODER_INTRIN_NEON
     "${AOM_ROOT}/av1/encoder/arm/neon/quantize_neon.c")
 
 set(AOM_AV1_ENCODER_INTRIN_MSA "${AOM_ROOT}/av1/encoder/mips/msa/error_msa.c"
-    "${AOM_ROOT}/av1/encoder/mips/msa/fdct16x16_msa.c"
     "${AOM_ROOT}/av1/encoder/mips/msa/fdct4x4_msa.c"
     "${AOM_ROOT}/av1/encoder/mips/msa/temporal_filter_msa.c")
 
@@ -530,8 +525,6 @@ function(setup_av1_targets)
   endif()
 
   if(HAVE_MSA)
-    add_intrinsics_object_library("" "msa" "aom_av1_common"
-                                  "AOM_AV1_COMMON_INTRIN_MSA" "aom")
     add_intrinsics_object_library("" "msa" "aom_av1_encoder"
                                   "AOM_AV1_ENCODER_INTRIN_MSA" "aom")
   endif()

@@ -36,8 +36,7 @@ set(AOM_DSP_COMMON_SOURCES
     "${AOM_ROOT}/aom_dsp/simd/v64_intrinsics_c.h"
     "${AOM_ROOT}/aom_dsp/subtract.c"
     "${AOM_ROOT}/aom_dsp/txfm_common.h"
-    "${AOM_ROOT}/aom_dsp/x86/convolve_common_intrin.h"
-    "${AOM_ROOT}/aom_dsp/x86/txfm_common_intrin.h")
+    "${AOM_ROOT}/aom_dsp/x86/convolve_common_intrin.h")
 
 set(AOM_DSP_COMMON_ASM_SSE2
     "${AOM_ROOT}/aom_dsp/x86/aom_convolve_copy_sse2.asm"
@@ -61,8 +60,7 @@ set(AOM_DSP_COMMON_ASM_SSSE3
 
 set(AOM_DSP_COMMON_INTRIN_SSSE3
     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_ssse3.c"
-    "${AOM_ROOT}/aom_dsp/x86/intrapred_ssse3.c"
-    "${AOM_ROOT}/aom_dsp/x86/inv_txfm_ssse3.c")
+    "${AOM_ROOT}/aom_dsp/x86/intrapred_ssse3.c")
 
 set(AOM_DSP_COMMON_INTRIN_SSE4_1
     "${AOM_ROOT}/aom_dsp/x86/blend_a64_hmask_sse4.c"
@@ -72,22 +70,11 @@ set(AOM_DSP_COMMON_INTRIN_SSE4_1
 set(AOM_DSP_COMMON_INTRIN_AVX2
     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_avx2.c"
     "${AOM_ROOT}/aom_dsp/x86/intrapred_avx2.c"
-    "${AOM_ROOT}/aom_dsp/x86/inv_txfm_avx2.c"
     "${AOM_ROOT}/aom_dsp/x86/common_avx2.h"
-    "${AOM_ROOT}/aom_dsp/x86/convolve_avx2.h"
-    "${AOM_ROOT}/aom_dsp/x86/inv_txfm_common_avx2.h"
-    "${AOM_ROOT}/aom_dsp/x86/txfm_common_avx2.h")
+    "${AOM_ROOT}/aom_dsp/x86/convolve_avx2.h")
 
 set(AOM_DSP_COMMON_ASM_NEON
     ${AOM_DSP_COMMON_ASM_NEON}
-    "${AOM_ROOT}/aom_dsp/arm/idct16x16_1_add_neon.asm"
-    "${AOM_ROOT}/aom_dsp/arm/idct16x16_add_neon.asm"
-    "${AOM_ROOT}/aom_dsp/arm/idct32x32_1_add_neon.asm"
-    "${AOM_ROOT}/aom_dsp/arm/idct32x32_add_neon.asm"
-    "${AOM_ROOT}/aom_dsp/arm/idct4x4_1_add_neon.asm"
-    "${AOM_ROOT}/aom_dsp/arm/idct4x4_add_neon.asm"
-    "${AOM_ROOT}/aom_dsp/arm/idct8x8_1_add_neon.asm"
-    "${AOM_ROOT}/aom_dsp/arm/idct8x8_add_neon.asm"
     "${AOM_ROOT}/aom_dsp/arm/intrapred_neon_asm.asm"
     "${AOM_ROOT}/aom_dsp/arm/save_reg_neon.asm")
 
@@ -95,21 +82,12 @@ set(AOM_DSP_COMMON_INTRIN_NEON ${AOM_DSP_COMMON_INTRIN_NEON}
     "${AOM_ROOT}/aom_dsp/arm/avg_neon.c"
     "${AOM_ROOT}/aom_dsp/arm/fwd_txfm_neon.c"
     "${AOM_ROOT}/aom_dsp/arm/hadamard_neon.c"
-    "${AOM_ROOT}/aom_dsp/arm/idct16x16_neon.c"
     "${AOM_ROOT}/aom_dsp/arm/intrapred_neon.c"
     "${AOM_ROOT}/aom_dsp/arm/subtract_neon.c")
 
 if("${AOM_TARGET_CPU}" STREQUAL "arm64")
   set(AOM_DSP_COMMON_INTRIN_NEON
       ${AOM_DSP_COMMON_INTRIN_NEON}
-      "${AOM_ROOT}/aom_dsp/arm/idct16x16_1_add_neon.c"
-      "${AOM_ROOT}/aom_dsp/arm/idct16x16_add_neon.c"
-      "${AOM_ROOT}/aom_dsp/arm/idct32x32_1_add_neon.c"
-      "${AOM_ROOT}/aom_dsp/arm/idct32x32_add_neon.c"
-      "${AOM_ROOT}/aom_dsp/arm/idct4x4_1_add_neon.c"
-      "${AOM_ROOT}/aom_dsp/arm/idct4x4_add_neon.c"
-      "${AOM_ROOT}/aom_dsp/arm/idct8x8_1_add_neon.c"
-      "${AOM_ROOT}/aom_dsp/arm/idct8x8_add_neon.c"
       "${AOM_ROOT}/aom_dsp/arm/intrapred_neon.c")
 
 endif()
@@ -134,17 +112,8 @@ set(AOM_DSP_COMMON_INTRIN_MSA
     "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_vert_msa.c"
     "${AOM_ROOT}/aom_dsp/mips/aom_convolve_copy_msa.c"
     "${AOM_ROOT}/aom_dsp/mips/aom_convolve_msa.h"
-    "${AOM_ROOT}/aom_dsp/mips/fwd_dct32x32_msa.c"
-    "${AOM_ROOT}/aom_dsp/mips/fwd_txfm_msa.c"
-    "${AOM_ROOT}/aom_dsp/mips/fwd_txfm_msa.h"
-    "${AOM_ROOT}/aom_dsp/mips/idct16x16_msa.c"
-    "${AOM_ROOT}/aom_dsp/mips/idct32x32_msa.c"
-    "${AOM_ROOT}/aom_dsp/mips/idct4x4_msa.c"
-    "${AOM_ROOT}/aom_dsp/mips/idct8x8_msa.c"
     "${AOM_ROOT}/aom_dsp/mips/intrapred_msa.c"
-    "${AOM_ROOT}/aom_dsp/mips/inv_txfm_msa.h"
-    "${AOM_ROOT}/aom_dsp/mips/macros_msa.h"
-    "${AOM_ROOT}/aom_dsp/mips/txfm_macros_msa.h")
+    "${AOM_ROOT}/aom_dsp/mips/macros_msa.h")
 
 set(AOM_DSP_COMMON_ASM_SSE2 ${AOM_DSP_COMMON_ASM_SSE2}
     "${AOM_ROOT}/aom_dsp/x86/aom_high_subpixel_8t_sse2.asm"
@@ -171,10 +140,6 @@ if(CONFIG_AV1)
 
   set(AOM_DSP_COMMON_ASM_SSE2 ${AOM_DSP_COMMON_ASM_SSE2}
       "${AOM_ROOT}/aom_dsp/x86/inv_wht_sse2.asm")
-
-  set(AOM_DSP_COMMON_INTRIN_SSE2 ${AOM_DSP_COMMON_INTRIN_SSE2}
-      "${AOM_ROOT}/aom_dsp/x86/inv_txfm_sse2.c"
-      "${AOM_ROOT}/aom_dsp/x86/inv_txfm_sse2.h")
 endif()
 
 if(CONFIG_AV1_DECODER)
@@ -229,9 +194,6 @@ if(CONFIG_AV1_ENCODER)
       "${AOM_ROOT}/aom_dsp/x86/ssim_opt_x86_64.asm")
 
   set(AOM_DSP_ENCODER_INTRIN_AVX2
-      "${AOM_ROOT}/aom_dsp/x86/fwd_dct32x32_impl_avx2.h"
-      "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_avx2.c"
-      "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_avx2.h"
       "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_avx2.c"
       "${AOM_ROOT}/aom_dsp/x86/sad4d_avx2.c"
       "${AOM_ROOT}/aom_dsp/x86/sad_avx2.c"
@@ -241,14 +203,12 @@ if(CONFIG_AV1_ENCODER)
 
   set(AOM_DSP_ENCODER_SOURCES ${AOM_DSP_ENCODER_SOURCES}
       "${AOM_ROOT}/aom_dsp/avg.c" "${AOM_ROOT}/aom_dsp/fwd_txfm.c"
-      "${AOM_ROOT}/aom_dsp/fwd_txfm.h" "${AOM_ROOT}/aom_dsp/quantize.c"
-      "${AOM_ROOT}/aom_dsp/quantize.h" "${AOM_ROOT}/aom_dsp/sum_squares.c")
+      "${AOM_ROOT}/aom_dsp/quantize.c" "${AOM_ROOT}/aom_dsp/quantize.h"
+      "${AOM_ROOT}/aom_dsp/sum_squares.c")
 
   set(AOM_DSP_ENCODER_INTRIN_SSE2
       ${AOM_DSP_ENCODER_INTRIN_SSE2}
       "${AOM_ROOT}/aom_dsp/x86/avg_intrin_sse2.c"
-      "${AOM_ROOT}/aom_dsp/x86/fwd_dct32_8cols_sse2.c"
-      "${AOM_ROOT}/aom_dsp/x86/fwd_dct32x32_impl_sse2.h"
       "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_impl_sse2.h"
       "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_sse2.c"
       "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_sse2.h"
