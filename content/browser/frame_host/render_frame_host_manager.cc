@@ -1124,7 +1124,7 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
 
   // If error page navigations should be isolated, ensure a dedicated
   // SiteInstance is used for them.
-  if (is_failure && GetContentClient()->browser()->ShouldIsolateErrorPage(
+  if (is_failure && SiteIsolationPolicy::IsErrorPageIsolationEnabled(
                         frame_tree_node_->IsMainFrame())) {
     // Keep the error page in the same BrowsingInstance, such that in the case
     // of transient network errors, a subsequent successful load of the same
@@ -1929,7 +1929,9 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
     // go cross-process. Main frame navigations resulting in an error are also
     // expected to change process. Check it first.
     bool can_renderer_initiate_transfer =
-        request.state() == NavigationRequest::FAILED ||
+        (request.state() == NavigationRequest::FAILED &&
+         SiteIsolationPolicy::IsErrorPageIsolationEnabled(
+             true /* in_main_frame */)) ||
         (render_frame_host_->IsRenderFrameLive() &&
          IsURLHandledByNetworkStack(request.common_params().url) &&
          IsRendererTransferNeededForNavigation(render_frame_host_.get(),
