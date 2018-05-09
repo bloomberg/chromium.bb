@@ -5,15 +5,22 @@
 #include "chrome/browser/chromeos/file_manager/file_manager_browsertest_base.h"
 
 #include "chromeos/chromeos_switches.h"
+#include "media/base/media_switches.h"
 
 namespace file_manager {
+
+static constexpr bool kUseFakeAudioLayer = true;
 
 template <GuestMode MODE>
 class VideoPlayerBrowserTestBase : public FileManagerBrowserTestBase {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    if (kUseFakeAudioLayer)
+      command_line->AppendSwitch(switches::kDisableAudioOutput);
+
     command_line->AppendSwitch(
         chromeos::switches::kEnableVideoPlayerChromecastSupport);
+
     FileManagerBrowserTestBase::SetUpCommandLine(command_line);
   }
 
