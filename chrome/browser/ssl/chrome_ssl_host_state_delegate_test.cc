@@ -345,6 +345,30 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Migrate) {
   EXPECT_EQ(ContentSettingsPattern::Wildcard(), settings[0].secondary_pattern);
 }
 
+// Tests that ChromeSSLHostStateDelegate::HasSeenRecurrentErrors returns true
+// after seeing an error of interest multiple times.
+IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, HasSeenRecurrentErrors) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(kRecurrentInterstitialFeature,
+                                                  {{"threshold", "2"}});
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
+  ChromeSSLHostStateDelegate* chrome_state =
+      static_cast<ChromeSSLHostStateDelegate*>(state);
+
+  chrome_state->DidDisplayErrorPage(net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
+  EXPECT_FALSE(chrome_state->HasSeenRecurrentErrors(
+      net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
+  chrome_state->DidDisplayErrorPage(net::ERR_CERT_SYMANTEC_LEGACY);
+  EXPECT_FALSE(chrome_state->HasSeenRecurrentErrors(
+      net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
+  chrome_state->DidDisplayErrorPage(net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
+  EXPECT_TRUE(chrome_state->HasSeenRecurrentErrors(
+      net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
+}
+
 class ForgetAtSessionEndSSLHostStateDelegateTest
     : public ChromeSSLHostStateDelegateTest {
  protected:
