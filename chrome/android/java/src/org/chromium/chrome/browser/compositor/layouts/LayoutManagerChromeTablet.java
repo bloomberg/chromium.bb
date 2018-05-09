@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.tab.Tab;
@@ -72,11 +71,6 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
             mTabObserver.destroy();
             mTabObserver = null;
         }
-    }
-
-    @Override
-    protected ToolbarSwipeHandler createToolbarSwipeHandler(LayoutProvider provider) {
-        return new TabletToolbarSwipeHandler(provider);
     }
 
     @Override
@@ -174,22 +168,5 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
             getActiveLayout().tabTitleChanged(tab.getId(), title);
         }
         requestUpdate();
-    }
-
-    private class TabletToolbarSwipeHandler extends ToolbarSwipeHandler {
-        public TabletToolbarSwipeHandler(LayoutProvider provider) {
-            super(provider);
-        }
-
-        @Override
-        public boolean isSwipeEnabled(ScrollDirection direction) {
-            if ((direction == ScrollDirection.LEFT || direction == ScrollDirection.RIGHT)
-                    && (getTabModelSelector() == null
-                               || getTabModelSelector().getCurrentModel().getCount() <= 1)) {
-                return false;
-            }
-
-            return super.isSwipeEnabled(direction);
-        }
     }
 }

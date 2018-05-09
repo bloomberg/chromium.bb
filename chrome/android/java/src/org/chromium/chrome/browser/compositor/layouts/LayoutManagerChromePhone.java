@@ -8,7 +8,6 @@ import android.content.Context;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.layouts.phone.SimpleAnimationLayout;
 import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
@@ -43,11 +42,6 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
         // Set up layout parameters
         mStaticLayout.setLayoutHandlesTabLifecycles(false);
         mToolbarSwipeLayout.setMovesToolbar(true);
-    }
-
-    @Override
-    protected ToolbarSwipeHandler createToolbarSwipeHandler(LayoutProvider provider) {
-        return new PhoneToolbarSwipeHandler(provider);
     }
 
     @Override
@@ -154,16 +148,5 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
     public void releaseTabLayout(int id) {
         mTitleCache.remove(id);
         super.releaseTabLayout(id);
-    }
-
-    private class PhoneToolbarSwipeHandler extends ToolbarSwipeHandler {
-        public PhoneToolbarSwipeHandler(LayoutProvider provider) {
-            super(provider);
-        }
-
-        @Override
-        public boolean isSwipeEnabled(ScrollDirection direction) {
-            return super.isSwipeEnabled(direction);
-        }
     }
 }
