@@ -80,6 +80,7 @@ _CONFIG = [
             'base::FEATURE_.+',
 
             # Chromium geometry types.
+            'gfx::Point',
             'gfx::Rect',
             'gfx::RectF',
             'gfx::Size',
@@ -92,10 +93,24 @@ _CONFIG = [
             # depends on the geometry types above.
             'cc::TouchActionRegion',
 
+            # cc::Layers.
+            'cc::Layer',
+
             # cc::Layer helper data structs.
+            'cc::ElementId',
             'cc::LayerPositionConstraint',
             'cc::LayerStickyPositionConstraint',
             'cc::OverscrollBehavior',
+            'cc::Scrollbar',
+            'cc::ScrollbarLayerInterface',
+            'cc::ScrollbarOrientation',
+            'cc::ScrollbarPart',
+
+            # cc::Layer helper enums.
+            'cc::HORIZONTAL',
+            'cc::VERTICAL',
+            'cc::THUMB',
+            'cc::TICKMARKS',
 
             # Standalone utility libraries that only depend on //base
             'skia::.+',
@@ -174,6 +189,18 @@ _CONFIG = [
             'cc::ContentLayerClient',
             'cc::DisplayItemList',
             'cc::DrawRecordOp',
+        ],
+    },
+    {
+        'paths': ['third_party/blink/renderer/core/page/scrolling'],
+        'allowed': [
+            # cc painting types.
+            'cc::PaintCanvas',
+
+            # cc scrollbar layer types.
+            'cc::PaintedOverlayScrollbarLayer',
+            'cc::PaintedScrollbarLayer',
+            'cc::SolidColorScrollbarLayer',
         ],
     },
     {

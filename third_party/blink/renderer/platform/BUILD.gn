@@ -1320,6 +1320,8 @@ jumbo_component("platform") {
     "scroll/scrollable_area.h",
     "scroll/scrollbar.cc",
     "scroll/scrollbar.h",
+    "scroll/scrollbar_layer_delegate.cc",
+    "scroll/scrollbar_layer_delegate.h",
     "scroll/scrollbar_theme.cc",
     "scroll/scrollbar_theme.h",
     "scroll/scrollbar_theme_android.cc",

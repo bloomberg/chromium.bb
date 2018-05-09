@@ -31,10 +31,13 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 
 #include <memory>
+
+#include "cc/layers/layer.h"
+#include "cc/layers/scrollbar_layer_interface.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_compositor_support.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_scrollbar.h"
-#include "third_party/blink/public/platform/web_scrollbar_layer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -47,7 +50,6 @@
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
@@ -444,9 +446,9 @@ void VisualViewport::SetupScrollbar(WebScrollbar::Orientation orientation) {
   GraphicsLayer* scrollbar_graphics_layer =
       is_horizontal ? overlay_scrollbar_horizontal_.get()
                     : overlay_scrollbar_vertical_.get();
-  std::unique_ptr<WebScrollbarLayer>& web_scrollbar_layer =
-      is_horizontal ? web_overlay_scrollbar_horizontal_
-                    : web_overlay_scrollbar_vertical_;
+  std::unique_ptr<ScrollingCoordinator::ScrollbarLayerGroup>&
+      scrollbar_layer_group = is_horizontal ? scrollbar_layer_group_horizontal_
+                                            : scrollbar_layer_group_vertical_;
 
   ScrollbarThemeOverlay& theme = ScrollbarThemeOverlay::MobileTheme();
   int thumb_thickness = clampTo<int>(
@@ -459,23 +461,23 @@ void VisualViewport::SetupScrollbar(WebScrollbar::Orientation orientation) {
       std::floor(GetPage().GetChromeClient().WindowToViewportScalar(
           theme.ScrollbarMargin())));
 
-  if (!web_scrollbar_layer) {
+  if (!scrollbar_layer_group) {
     ScrollingCoordinator* coordinator = GetPage().GetScrollingCoordinator();
     DCHECK(coordinator);
     ScrollbarOrientation webcore_orientation =
         is_horizontal ? kHorizontalScrollbar : kVerticalScrollbar;
-    web_scrollbar_layer = coordinator->CreateSolidColorScrollbarLayer(
+    scrollbar_layer_group = coordinator->CreateSolidColorScrollbarLayer(
         webcore_orientation, thumb_thickness, scrollbar_margin, false);
 
     // The compositor will control the scrollbar's visibility. Set to invisible
     // by default so scrollbars don't show up in layout tests.
-    web_scrollbar_layer->Layer()->SetOpacity(0);
+    scrollbar_layer_group->layer->SetOpacity(0.f);
     scrollbar_graphics_layer->SetContentsToPlatformLayer(
-        web_scrollbar_layer->Layer(),
+        scrollbar_layer_group->web_layer.get(),
         /*prevent_contents_opaque_changes=*/false);
     scrollbar_graphics_layer->SetDrawsContent(false);
-    web_scrollbar_layer->SetScrollLayer(
-        inner_viewport_scroll_layer_->PlatformLayer());
+    scrollbar_layer_group->scrollbar_layer->SetScrollElementId(
+        inner_viewport_scroll_layer_->PlatformLayer()->GetElementId());
   }
 
   int x_position = is_horizontal

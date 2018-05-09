@@ -28,19 +28,6 @@ class CC_BLINK_EXPORT WebCompositorSupportImpl
   std::unique_ptr<blink::WebContentLayer> CreateContentLayer(
       cc::ContentLayerClient* client) override;
   std::unique_ptr<blink::WebImageLayer> CreateImageLayer() override;
-  std::unique_ptr<blink::WebScrollbarLayer> CreateScrollbarLayer(
-      std::unique_ptr<blink::WebScrollbar> scrollbar,
-      blink::WebScrollbarThemePainter painter,
-      std::unique_ptr<blink::WebScrollbarThemeGeometry>) override;
-  std::unique_ptr<blink::WebScrollbarLayer> CreateOverlayScrollbarLayer(
-      std::unique_ptr<blink::WebScrollbar> scrollbar,
-      blink::WebScrollbarThemePainter painter,
-      std::unique_ptr<blink::WebScrollbarThemeGeometry>) override;
-  std::unique_ptr<blink::WebScrollbarLayer> CreateSolidColorScrollbarLayer(
-      blink::WebScrollbar::Orientation orientation,
-      int thumb_thickness,
-      int track_start,
-      bool is_left_side_vertical_scrollbar) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebCompositorSupportImpl);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_BLINK_SCROLLBAR_IMPL_H_
-#define CC_BLINK_SCROLLBAR_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLLBAR_LAYER_DELEGATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLLBAR_LAYER_DELEGATE_H_
 
 #include <memory>
 
@@ -11,20 +11,20 @@
 #include "cc/input/scrollbar.h"
 #include "cc/paint/paint_canvas.h"
 #include "third_party/blink/public/platform/web_scrollbar_theme_painter.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 class WebScrollbar;
 class WebScrollbarThemeGeometry;
-}
 
-namespace cc_blink {
-
-class ScrollbarImpl : public cc::Scrollbar {
+// Implementation of cc::Scrollbar, providing a delegate to query about
+// scrollbar state and to paint the image in the scrollbar.
+class PLATFORM_EXPORT ScrollbarLayerDelegate : public cc::Scrollbar {
  public:
-  ScrollbarImpl(std::unique_ptr<blink::WebScrollbar> scrollbar,
-                blink::WebScrollbarThemePainter painter,
-                std::unique_ptr<blink::WebScrollbarThemeGeometry> geometry);
-  ~ScrollbarImpl() override;
+  ScrollbarLayerDelegate(std::unique_ptr<WebScrollbar> scrollbar,
+                         WebScrollbarThemePainter painter,
+                         std::unique_ptr<WebScrollbarThemeGeometry> geometry);
+  ~ScrollbarLayerDelegate() override;
 
   // cc::Scrollbar implementation.
   cc::ScrollbarOrientation Orientation() const override;
@@ -47,13 +47,13 @@ class ScrollbarImpl : public cc::Scrollbar {
   gfx::Rect NinePatchThumbAperture() const override;
 
  private:
-  std::unique_ptr<blink::WebScrollbar> scrollbar_;
-  blink::WebScrollbarThemePainter painter_;
-  std::unique_ptr<blink::WebScrollbarThemeGeometry> geometry_;
+  std::unique_ptr<WebScrollbar> scrollbar_;
+  WebScrollbarThemePainter painter_;
+  std::unique_ptr<WebScrollbarThemeGeometry> geometry_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScrollbarImpl);
+  DISALLOW_COPY_AND_ASSIGN(ScrollbarLayerDelegate);
 };
 
-}  // namespace cc_blink
+}  // namespace blink
 
-#endif  // CC_BLINK_SCROLLBAR_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLLBAR_LAYER_DELEGATE_H_

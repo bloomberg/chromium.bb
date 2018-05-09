@@ -32,14 +32,14 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SIZE_H_
 
 #include "third_party/blink/public/platform/web_common.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 #if INSIDE_BLINK
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #else
 #include <algorithm>
 #include <cmath>
-#include <ui/gfx/geometry/size.h>
-#include <ui/gfx/geometry/vector2d.h>
 #endif
 
 namespace blink {
@@ -64,9 +64,18 @@ struct WebSize {
   }
 
   operator IntSize() const { return IntSize(width, height); }
+
+  explicit WebSize(const gfx::Size& s) : width(s.width()), height(s.height()) {}
+  explicit WebSize(const gfx::Vector2d& v) : width(v.x()), height(v.y()) {}
+
+  // Note that this conversion clamps to non-negative values.
+  explicit operator gfx::Size() const { return gfx::Size(width, height); }
+
+  explicit operator gfx::Vector2d() const {
+    return gfx::Vector2d(width, height);
+  }
 #else
   WebSize(const gfx::Size& s) : width(s.width()), height(s.height()) {}
-
   WebSize(const gfx::Vector2d& v) : width(v.x()), height(v.y()) {}
 
   WebSize& operator=(const gfx::Size& s) {
@@ -81,9 +90,8 @@ struct WebSize {
     return *this;
   }
 
-  operator gfx::Size() const {
-    return gfx::Size(std::max(0, width), std::max(0, height));
-  }
+  // Note that this conversion clamps to non-negative values.
+  operator gfx::Size() const { return gfx::Size(width, height); }
 
   operator gfx::Vector2d() const { return gfx::Vector2d(width, height); }
 #endif

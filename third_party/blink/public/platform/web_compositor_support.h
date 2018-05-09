@@ -44,8 +44,6 @@ namespace blink {
 class WebContentLayer;
 class WebImageLayer;
 class WebLayer;
-class WebScrollbarLayer;
-class WebScrollbarThemeGeometry;
 
 class WebCompositorSupport {
  public:
@@ -59,22 +57,6 @@ class WebCompositorSupport {
       cc::ContentLayerClient*) = 0;
 
   virtual std::unique_ptr<WebImageLayer> CreateImageLayer() = 0;
-
-  virtual std::unique_ptr<WebScrollbarLayer> CreateScrollbarLayer(
-      std::unique_ptr<WebScrollbar>,
-      WebScrollbarThemePainter,
-      std::unique_ptr<WebScrollbarThemeGeometry>) = 0;
-
-  virtual std::unique_ptr<WebScrollbarLayer> CreateOverlayScrollbarLayer(
-      std::unique_ptr<WebScrollbar>,
-      WebScrollbarThemePainter,
-      std::unique_ptr<WebScrollbarThemeGeometry>) = 0;
-
-  virtual std::unique_ptr<WebScrollbarLayer> CreateSolidColorScrollbarLayer(
-      WebScrollbar::Orientation,
-      int thumb_thickness,
-      int track_start,
-      bool is_left_side_vertical_scrollbar) = 0;
 
  protected:
   virtual ~WebCompositorSupport() = default;

@@ -38,6 +38,11 @@
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+namespace cc {
+class Layer;
+class ScrollbarLayerInterface;
+}  // namespace cc
+
 namespace blink {
 using MainThreadScrollingReasons = uint32_t;
 
@@ -51,14 +56,14 @@ class Page;
 class PaintLayer;
 class Region;
 class ScrollableArea;
+class WebLayer;
 class WebLayerTreeView;
-class WebScrollbarLayer;
 
 using ScrollbarId = uint64_t;
 
 // ScrollingCoordinator is a page-level object that mediates interactions
-// between Blink and the compositor's scroll-related APIs on WebLayer and
-// WebScrollbarLayer.
+// between Blink and the compositor's scroll-related APIs on the composited
+// layer representing the scrollbar.
 //
 // It's responsible for propagating scroll offsets, main-thread scrolling
 // reasons, touch action regions, and non-fast-scrollable regions into the
@@ -67,6 +72,17 @@ using ScrollbarId = uint64_t;
 class CORE_EXPORT ScrollingCoordinator final
     : public GarbageCollectedFinalized<ScrollingCoordinator> {
  public:
+  struct ScrollbarLayerGroup {
+    // The compositor layer for the scrollbar. It can be one of a few
+    // concrete types, so we store the base type.
+    scoped_refptr<cc::Layer> layer;
+    // A wrapper for the |layer| for use in blink core.
+    std::unique_ptr<WebLayer> web_layer;
+    // An interface shared by all scrollbar layer types since we don't know
+    // the concrete |layer| type.
+    cc::ScrollbarLayerInterface* scrollbar_layer = nullptr;
+  };
+
   static ScrollingCoordinator* Create(Page*);
 
   ~ScrollingCoordinator();
@@ -103,7 +119,7 @@ class CORE_EXPORT ScrollingCoordinator final
   // Should be called whenever the root layer for the given frame view changes.
   void FrameViewRootLayerDidChange(LocalFrameView*);
 
-  std::unique_ptr<WebScrollbarLayer> CreateSolidColorScrollbarLayer(
+  std::unique_ptr<ScrollbarLayerGroup> CreateSolidColorScrollbarLayer(
       ScrollbarOrientation,
       int thumb_thickness,
       int track_start,
@@ -178,12 +194,12 @@ class CORE_EXPORT ScrollingCoordinator final
   void SetTouchEventTargetRects(LocalFrame*, LayerHitTestRects&);
   void ComputeTouchEventTargetRects(LocalFrame*, LayerHitTestRects&);
 
-  WebScrollbarLayer* AddWebScrollbarLayer(ScrollableArea*,
-                                          ScrollbarOrientation,
-                                          std::unique_ptr<WebScrollbarLayer>);
-  WebScrollbarLayer* GetWebScrollbarLayer(ScrollableArea*,
-                                          ScrollbarOrientation);
-  void RemoveWebScrollbarLayer(ScrollableArea*, ScrollbarOrientation);
+  void AddScrollbarLayerGroup(ScrollableArea*,
+                              ScrollbarOrientation,
+                              std::unique_ptr<ScrollbarLayerGroup>);
+  ScrollbarLayerGroup* GetScrollbarLayerGroup(ScrollableArea*,
+                                              ScrollbarOrientation);
+  void RemoveScrollbarLayerGroup(ScrollableArea*, ScrollbarOrientation);
 
   bool FrameScrollerIsDirty(LocalFrameView*) const;
 
@@ -192,7 +208,7 @@ class CORE_EXPORT ScrollingCoordinator final
       programmatic_scroll_animator_timeline_;
 
   using ScrollbarMap =
-      HeapHashMap<Member<ScrollableArea>, std::unique_ptr<WebScrollbarLayer>>;
+      HeapHashMap<Member<ScrollableArea>, std::unique_ptr<ScrollbarLayerGroup>>;
   ScrollbarMap horizontal_scrollbars_;
   ScrollbarMap vertical_scrollbars_;
 
