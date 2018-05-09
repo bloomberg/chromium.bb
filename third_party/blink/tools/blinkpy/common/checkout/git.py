@@ -256,7 +256,7 @@ class Git(object):
             '--no-color',
             '--no-ext-diff',
             '--full-index',
-            '--no-renames',
+            '-M',
             '--src-prefix=a/',
             '--dst-prefix=b/',
         ]
