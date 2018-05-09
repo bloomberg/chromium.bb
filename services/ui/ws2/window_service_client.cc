@@ -12,7 +12,7 @@
 #include "services/ui/ws2/client_change.h"
 #include "services/ui/ws2/client_change_tracker.h"
 #include "services/ui/ws2/client_root.h"
-#include "services/ui/ws2/window_data.h"
+#include "services/ui/ws2/client_window.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_client_binding.h"
 #include "services/ui/ws2/window_service_delegate.h"
@@ -40,10 +40,10 @@ WindowServiceClient::WindowServiceClient(WindowService* window_service,
 
 void WindowServiceClient::InitForEmbed(aura::Window* root,
                                        mojom::WindowTreePtr window_tree_ptr) {
-  // Force WindowData to be created for |root|.
-  WindowData* window_data =
-      window_service_->GetWindowDataForWindowCreateIfNecessary(root);
-  const ClientWindowId client_window_id = window_data->frame_sink_id();
+  // Force ClientWindow to be created for |root|.
+  ClientWindow* client_window =
+      window_service_->GetClientWindowForWindowCreateIfNecessary(root);
+  const ClientWindowId client_window_id = client_window->frame_sink_id();
   AddWindowToKnownWindows(root, client_window_id);
 
   CreateClientRoot(root, std::move(window_tree_ptr));
@@ -78,9 +78,9 @@ ClientRoot* WindowServiceClient::CreateClientRoot(
     mojom::WindowTreePtr window_tree) {
   OnWillBecomeClientRootWindow(window);
 
-  WindowData* window_data = WindowData::GetMayBeNull(window);
-  DCHECK(window_data);
-  const ClientWindowId client_window_id = window_data->frame_sink_id();
+  ClientWindow* client_window = ClientWindow::GetMayBeNull(window);
+  DCHECK(client_window);
+  const ClientWindowId client_window_id = client_window->frame_sink_id();
 
   const bool for_embed = window_tree.is_bound();
 
@@ -103,7 +103,7 @@ ClientRoot* WindowServiceClient::CreateClientRoot(
 
     // Reset the frame sink id locally (after calling OnEmbed()). This is
     // needed so that the id used by the client matches the id used locally.
-    window_data->SetFrameSinkId(ClientWindowId(client_id_, 0));
+    client_window->SetFrameSinkId(ClientWindowId(client_id_, 0));
   }
 
   // TODO(sky): centralize FrameSinkId management.
@@ -114,7 +114,7 @@ ClientRoot* WindowServiceClient::CreateClientRoot(
     // TODO(sky): centralize FrameSinkId management.
     window_tree_client_->OnFrameSinkIdAllocated(
         ClientWindowIdToTransportId(client_window_id),
-        window_data->frame_sink_id());
+        client_window->frame_sink_id());
   }
 
   return client_root;
@@ -159,16 +159,16 @@ void WindowServiceClient::DeleteClientRoot(ClientRoot* client_root,
 
   if (reason == DeleteClientRootReason::kUnembed) {
     // Notify the owner of the window it no longer has a client embedded in it.
-    WindowData* window_data = WindowData::GetMayBeNull(window);
-    if (window_data->owning_window_service_client() &&
-        window_data->owning_window_service_client() != this) {
-      // ClientRoots always trigger creation of a WindowData, so |window_data|
-      // must exist at this point.
-      DCHECK(window_data);
-      window_data->owning_window_service_client()
+    ClientWindow* client_window = ClientWindow::GetMayBeNull(window);
+    if (client_window->owning_window_service_client() &&
+        client_window->owning_window_service_client() != this) {
+      // ClientRoots always trigger creation of a ClientWindow, so
+      // |client_window| must exist at this point.
+      DCHECK(client_window);
+      client_window->owning_window_service_client()
           ->window_tree_client_->OnEmbeddedAppDisconnected(
-              window_data->owning_window_service_client()->TransportIdForWindow(
-                  window));
+              client_window->owning_window_service_client()
+                  ->TransportIdForWindow(window));
     }
   }
 }
@@ -215,10 +215,10 @@ bool WindowServiceClient::IsWindowKnown(aura::Window* window) const {
 
 bool WindowServiceClient::IsWindowRootOfAnotherClient(
     aura::Window* window) const {
-  WindowData* window_data = WindowData::GetMayBeNull(window);
-  return window_data &&
-         window_data->embedded_window_service_client() != nullptr &&
-         window_data->embedded_window_service_client() != this;
+  ClientWindow* client_window = ClientWindow::GetMayBeNull(window);
+  return client_window &&
+         client_window->embedded_window_service_client() != nullptr &&
+         client_window->embedded_window_service_client() != this;
 }
 
 aura::Window* WindowServiceClient::AddClientCreatedWindow(
@@ -226,7 +226,7 @@ aura::Window* WindowServiceClient::AddClientCreatedWindow(
     std::unique_ptr<aura::Window> window_ptr) {
   aura::Window* window = window_ptr.get();
   client_created_windows_.insert(std::move(window_ptr));
-  WindowData::Create(window, this, id);
+  ClientWindow::Create(window, this, id);
   AddWindowToKnownWindows(window, id);
   return window;
 }
@@ -320,31 +320,31 @@ mojom::WindowDataPtr WindowServiceClient::WindowToWindowData(
     parent = nullptr;
   if (!IsWindowKnown(transient_parent))
     transient_parent = nullptr;
-  mojom::WindowDataPtr window_data(mojom::WindowData::New());
-  window_data->parent_id =
+  mojom::WindowDataPtr client_window(mojom::WindowData::New());
+  client_window->parent_id =
       parent ? TransportIdForWindow(parent) : kInvalidTransportId;
-  window_data->window_id =
+  client_window->window_id =
       window ? TransportIdForWindow(window) : kInvalidTransportId;
-  window_data->transient_parent_id =
+  client_window->transient_parent_id =
       transient_parent ? TransportIdForWindow(transient_parent)
                        : kInvalidTransportId;
-  window_data->bounds = window->bounds();
+  client_window->bounds = window->bounds();
 
   // TODO: use property mapping.
-  window_data->visible = window->TargetVisibility();
-  return window_data;
+  client_window->visible = window->TargetVisibility();
+  return client_window;
 }
 
 void WindowServiceClient::OnWillBecomeClientRootWindow(aura::Window* window) {
   DCHECK(window);
 
   // Only one client may be embedded in a window at a time.
-  WindowData* window_data =
-      window_service_->GetWindowDataForWindowCreateIfNecessary(window);
-  if (window_data->embedded_window_service_client()) {
-    window_data->embedded_window_service_client()->DeleteClientRootWithRoot(
+  ClientWindow* client_window =
+      window_service_->GetClientWindowForWindowCreateIfNecessary(window);
+  if (client_window->embedded_window_service_client()) {
+    client_window->embedded_window_service_client()->DeleteClientRootWithRoot(
         window);
-    DCHECK(!window_data->embedded_window_service_client());
+    DCHECK(!client_window->embedded_window_service_client());
   }
 
   // Because a new client is being embedded all existing children are removed.
@@ -670,7 +670,7 @@ void WindowServiceClient::NewTopLevelWindow(
   top_level_ptr->set_owned_by_parent(false);
   aura::Window* top_level =
       AddClientCreatedWindow(client_window_id, std::move(top_level_ptr));
-  WindowData::GetMayBeNull(top_level)->SetFrameSinkId(client_window_id);
+  ClientWindow::GetMayBeNull(top_level)->SetFrameSinkId(client_window_id);
   const int64_t display_id =
       display::Screen::GetScreen()->GetDisplayNearestWindow(top_level).id();
   // This passes null for the mojom::WindowTreePtr because the client has
@@ -775,19 +775,20 @@ void WindowServiceClient::AttachCompositorFrameSink(
     DVLOG(1) << "AttachCompositorFrameSink failed (invalid window id)";
     return;
   }
-  WindowData* window_data = WindowData::GetMayBeNull(window);
+  ClientWindow* client_window = ClientWindow::GetMayBeNull(window);
   // If this isn't called on the root, then only allow it if there is not
   // another client embedded in the window.
-  const bool allow = IsClientRootWindow(window) ||
-                     (IsClientCreatedWindow(window) &&
-                      window_data->embedded_window_service_client() == nullptr);
+  const bool allow =
+      IsClientRootWindow(window) ||
+      (IsClientCreatedWindow(window) &&
+       client_window->embedded_window_service_client() == nullptr);
   if (!allow) {
     DVLOG(1) << "AttachCompositorFrameSink failed (policy disallowed)";
     return;
   }
 
-  window_data->AttachCompositorFrameSink(std::move(compositor_frame_sink),
-                                         std::move(client));
+  client_window->AttachCompositorFrameSink(std::move(compositor_frame_sink),
+                                           std::move(client));
 }
 
 void WindowServiceClient::AddWindow(uint32_t change_id,

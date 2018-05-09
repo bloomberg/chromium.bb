@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS2_WINDOW_DATA_H_
-#define SERVICES_UI_WS2_WINDOW_DATA_H_
+#ifndef SERVICES_UI_WS2_CLIENT_WINDOW_H_
+#define SERVICES_UI_WS2_CLIENT_WINDOW_H_
 
 #include "base/component_export.h"
 #include "base/macros.h"
@@ -22,24 +22,24 @@ class WindowHostFrameSinkClient;
 class WindowServiceClient;
 
 // Tracks any state associated with an aura::Window for the WindowService.
-// WindowData is created for every window created at the request of a client,
+// ClientWindow is created for every window created at the request of a client,
 // including the root window of ClientRoots.
-class COMPONENT_EXPORT(WINDOW_SERVICE) WindowData {
+class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
  public:
-  ~WindowData();
+  ~ClientWindow();
 
-  // Creates a new WindowData. The lifetime of the WindowData is tied to that
-  // of the Window (the Window ends up owning the WindowData).
-  static WindowData* Create(aura::Window* window,
-                            WindowServiceClient* client,
-                            const viz::FrameSinkId& frame_sink_id);
+  // Creates a new ClientWindow. The lifetime of the ClientWindow is tied to
+  // that of the Window (the Window ends up owning the ClientWindow).
+  static ClientWindow* Create(aura::Window* window,
+                              WindowServiceClient* client,
+                              const viz::FrameSinkId& frame_sink_id);
 
-  // Returns the WindowData associated with a window, null if not created yet.
-  static WindowData* GetMayBeNull(aura::Window* window) {
-    return const_cast<WindowData*>(
+  // Returns the ClientWindow associated with a window, null if not created yet.
+  static ClientWindow* GetMayBeNull(aura::Window* window) {
+    return const_cast<ClientWindow*>(
         GetMayBeNull(const_cast<const aura::Window*>(window)));
   }
-  static const WindowData* GetMayBeNull(const aura::Window* window);
+  static const ClientWindow* GetMayBeNull(const aura::Window* window);
 
   WindowServiceClient* owning_window_service_client() {
     return owning_window_service_client_;
@@ -66,9 +66,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowData {
       viz::mojom::CompositorFrameSinkClientPtr client);
 
  private:
-  WindowData(aura::Window*,
-             WindowServiceClient* client,
-             const viz::FrameSinkId& frame_sink_id);
+  ClientWindow(aura::Window*,
+               WindowServiceClient* client,
+               const viz::FrameSinkId& frame_sink_id);
 
   aura::Window* window_;
 
@@ -99,10 +99,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowData {
   // window.
   std::unique_ptr<WindowHostFrameSinkClient> window_host_frame_sink_client_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowData);
+  DISALLOW_COPY_AND_ASSIGN(ClientWindow);
 };
 
 }  // namespace ws2
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS2_WINDOW_DATA_H_
+#endif  // SERVICES_UI_WS2_CLIENT_WINDOW_H_

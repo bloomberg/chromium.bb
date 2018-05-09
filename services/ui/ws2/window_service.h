@@ -29,8 +29,8 @@ class WindowTreeClient;
 
 namespace ws2 {
 
+class ClientWindow;
 class GpuSupport;
-class WindowData;
 class WindowServiceClient;
 class WindowServiceDelegate;
 class WindowTreeFactory;
@@ -47,8 +47,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
                 std::unique_ptr<GpuSupport> gpu_support);
   ~WindowService() override;
 
-  // Gets the WindowData for |window|, creating if necessary.
-  WindowData* GetWindowDataForWindowCreateIfNecessary(aura::Window* window);
+  // Gets the ClientWindow for |window|, creating if necessary.
+  ClientWindow* GetClientWindowForWindowCreateIfNecessary(aura::Window* window);
 
   // Creates a new WindowServiceClient, caller must call one of the Init()
   // functions on the returned object.

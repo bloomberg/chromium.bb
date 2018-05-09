@@ -5,7 +5,6 @@
 #include "services/ui/ws2/window_host_frame_sink_client.h"
 
 #include "base/logging.h"
-#include "services/ui/ws2/window_data.h"
 #include "ui/aura/mus/client_surface_embedder.h"
 
 namespace ui {
