@@ -5042,6 +5042,11 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
 
   DCHECK(!have_context || context_->IsCurrent(nullptr));
 
+  // Prepare to destroy the surface while the context is still current, because
+  // some surface destructors make GL calls.
+  if (surface_)
+    surface_->PrepareToDestroy(have_context);
+
   ReleaseAllBackTextures(have_context);
   if (have_context) {
     if (apply_framebuffer_attachment_cmaa_intel_.get()) {
@@ -5232,14 +5237,11 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
     group_ = nullptr;
   }
 
-  // Destroy the surface before the context, some surface destructors make GL
-  // calls.
-  surface_ = nullptr;
-
   if (context_.get()) {
     context_->ReleaseCurrent(nullptr);
     context_ = nullptr;
   }
+  surface_ = nullptr;
 }
 
 void GLES2DecoderImpl::SetSurface(const scoped_refptr<gl::GLSurface>& surface) {
