@@ -264,6 +264,10 @@
 -SafeBrowsingNetworkContext/NetworkContextConfigurationHttpsStrippingPacBrowserTest.PacHttpsUrlStripping/0
 -SafeBrowsingNetworkContext/NetworkContextConfigurationProxyOnStartBrowserTest.TestInitialProxyConfig/0
 
+# Fails on Windows. It's passing on Linux but this feature needs to be converted
+# to work with network service.
+-ConditionalCacheCountingHelperBrowserTest.Count
+
 # NOTE: if adding an exclusion for an existing failure (e.g. additional test for
 # feature X that is already not working), please add it beside the existing
 # failures. Otherwise please reach out to network-service-dev@.
