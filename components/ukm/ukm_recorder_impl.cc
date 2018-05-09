@@ -120,8 +120,8 @@ void StoreEntryProto(const mojom::UkmEntry& in, Entry* out) {
   out->set_event_hash(in.event_hash);
   for (const auto& metric : in.metrics) {
     Entry::Metric* proto_metric = out->add_metrics();
-    proto_metric->set_metric_hash(metric->metric_hash);
-    proto_metric->set_value(metric->value);
+    proto_metric->set_metric_hash(metric.first);
+    proto_metric->set_value(metric.second);
   }
 }
 
@@ -157,7 +157,7 @@ bool HasUnknownMetrics(const ukm::builders::DecodeMap& decode_map,
     return true;
   const auto& metric_map = it->second.metric_map;
   for (const auto& metric : entry.metrics) {
-    if (metric_map.count(metric->metric_hash) == 0)
+    if (metric_map.count(metric.first) == 0)
       return true;
   }
   return false;
@@ -404,8 +404,8 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
   EventAggregate& event_aggregate = event_aggregations_[entry->event_hash];
   event_aggregate.total_count++;
   for (const auto& metric : entry->metrics) {
-    MetricAggregate& aggregate = event_aggregate.metrics[metric->metric_hash];
-    double value = metric->value;
+    MetricAggregate& aggregate = event_aggregate.metrics[metric.first];
+    double value = metric.second;
     aggregate.total_count++;
     aggregate.value_sum += value;
     aggregate.value_square_sum += value * value;
@@ -420,7 +420,7 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
     RecordDroppedEntry(DroppedDataReason::SAMPLED_OUT);
     event_aggregate.dropped_due_to_sampling++;
     for (auto& metric : entry->metrics)
-      event_aggregate.metrics[metric->metric_hash].dropped_due_to_sampling++;
+      event_aggregate.metrics[metric.first].dropped_due_to_sampling++;
     return;
   }
 
@@ -428,7 +428,7 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
     RecordDroppedEntry(DroppedDataReason::MAX_HIT);
     event_aggregate.dropped_due_to_limits++;
     for (auto& metric : entry->metrics)
-      event_aggregate.metrics[metric->metric_hash].dropped_due_to_limits++;
+      event_aggregate.metrics[metric.first].dropped_due_to_limits++;
     return;
   }
 

@@ -81,8 +81,8 @@ UkmEntryChecker::~UkmEntryChecker() {
         ukm_recorder_.GetEntriesByName(entry_name)[first_unexpected_index];
 
     std::ostringstream entry_metrics;
-    for (const ukm::mojom::UkmMetricPtr& metric : ukm_entry->metrics)
-      entry_metrics << "\n" << metric->metric_hash << ": " << metric->value;
+    for (const auto& metric : ukm_entry->metrics)
+      entry_metrics << "\n" << metric.first << ": " << metric.second;
     LOG(ERROR) << "First unexpected entry: " << entry_metrics.str();
   }
 }

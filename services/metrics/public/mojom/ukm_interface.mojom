@@ -6,15 +6,10 @@ module ukm.mojom;
 
 import "url/mojom/url.mojom";
 
-struct UkmMetric {
-  uint64 metric_hash;
-  int64 value;
-};
-
 struct UkmEntry {
   int64 source_id;
   uint64 event_hash;
-  array<UkmMetric> metrics;
+  map<uint64,int64> metrics;
 };
 
 interface UkmRecorderInterface {
