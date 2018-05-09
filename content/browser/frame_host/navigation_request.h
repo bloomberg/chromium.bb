@@ -391,7 +391,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   base::Optional<SubresourceLoaderParams> subresource_loader_params_;
 
   // See comment on accessor.
-  base::UnguessableToken devtools_navigation_token_;
+  const base::UnguessableToken devtools_navigation_token_;
 
   base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
       subresource_overrides_;

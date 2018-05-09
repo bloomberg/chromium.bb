@@ -19,7 +19,8 @@ NavigationRequestInfo::NavigationRequestInfo(
     bool report_raw_headers,
     bool is_prerendering,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        blob_url_loader_factory)
+        blob_url_loader_factory,
+    const base::UnguessableToken& devtools_navigation_token)
     : common_params(common_params),
       begin_params(std::move(begin_params)),
       site_for_cookies(site_for_cookies),
@@ -30,7 +31,8 @@ NavigationRequestInfo::NavigationRequestInfo(
       is_for_guests_only(is_for_guests_only),
       report_raw_headers(report_raw_headers),
       is_prerendering(is_prerendering),
-      blob_url_loader_factory(std::move(blob_url_loader_factory)) {}
+      blob_url_loader_factory(std::move(blob_url_loader_factory)),
+      devtools_navigation_token(devtools_navigation_token) {}
 
 NavigationRequestInfo::NavigationRequestInfo(const NavigationRequestInfo& other)
     : common_params(other.common_params),
@@ -42,7 +44,8 @@ NavigationRequestInfo::NavigationRequestInfo(const NavigationRequestInfo& other)
       frame_tree_node_id(other.frame_tree_node_id),
       is_for_guests_only(other.is_for_guests_only),
       report_raw_headers(other.report_raw_headers),
-      is_prerendering(other.is_prerendering) {}
+      is_prerendering(other.is_prerendering),
+      devtools_navigation_token(other.devtools_navigation_token) {}
 
 NavigationRequestInfo::~NavigationRequestInfo() {}
 

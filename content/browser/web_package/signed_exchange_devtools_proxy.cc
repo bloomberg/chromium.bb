@@ -5,8 +5,11 @@
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 
 #include "base/trace_event/trace_event.h"
+#include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/web_package/signed_exchange_header.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
 namespace content {
@@ -25,11 +28,33 @@ void AddErrorMessageToConsoleOnUI(
       content::CONSOLE_MESSAGE_LEVEL_ERROR, error_message);
 }
 
+void OnSignedExchangeReceivedOnUI(
+    base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+    const GURL& outer_request_url,
+    scoped_refptr<network::ResourceResponse> outer_response,
+    base::Optional<const base::UnguessableToken> devtools_navigation_token) {
+  FrameTreeNode* frame_tree_node =
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id_getter.Run());
+  if (!frame_tree_node)
+    return;
+  RenderFrameDevToolsAgentHost::OnSignedExchangeReceived(
+      frame_tree_node, devtools_navigation_token, outer_request_url,
+      outer_response->head);
+}
+
 }  // namespace
 
 SignedExchangeDevToolsProxy::SignedExchangeDevToolsProxy(
-    base::RepeatingCallback<int(void)> frame_tree_node_id_getter)
-    : frame_tree_node_id_getter_(frame_tree_node_id_getter) {
+    const GURL& outer_request_url,
+    const network::ResourceResponseHead& outer_response,
+    base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+    base::Optional<const base::UnguessableToken> devtools_navigation_token,
+    bool report_raw_headers)
+    : outer_request_url_(outer_request_url),
+      outer_response_(outer_response),
+      frame_tree_node_id_getter_(frame_tree_node_id_getter),
+      devtools_navigation_token_(devtools_navigation_token),
+      devtools_enabled_(report_raw_headers) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
@@ -44,6 +69,25 @@ void SignedExchangeDevToolsProxy::ReportErrorMessage(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&AddErrorMessageToConsoleOnUI, frame_tree_node_id_getter_,
                      std::move(message)));
+}
+
+void SignedExchangeDevToolsProxy::OnSignedExchangeReceived(
+    const base::Optional<SignedExchangeHeader>& header) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!devtools_enabled_)
+    return;
+
+  // Make a deep copy of ResourceResponseHead before passing it cross-thread.
+  auto resource_response = base::MakeRefCounted<network::ResourceResponse>();
+  resource_response->head = outer_response_;
+
+  // TODO(crbug/830505): Send |header| information to DevTools.
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&OnSignedExchangeReceivedOnUI, frame_tree_node_id_getter_,
+                     outer_request_url_, resource_response->DeepCopy(),
+                     devtools_navigation_token_));
 }
 
 }  // namespace content

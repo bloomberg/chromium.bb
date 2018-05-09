@@ -1262,7 +1262,8 @@ void NavigationRequest::OnStartChecksComplete(
           navigating_frame_host->GetVisibilityState() ==
               blink::mojom::PageVisibilityState::kPrerender,
           blob_url_loader_factory_ ? blob_url_loader_factory_->Clone()
-                                   : nullptr),
+                                   : nullptr,
+          devtools_navigation_token()),
       std::move(navigation_ui_data),
       navigation_handle_->service_worker_handle(),
       navigation_handle_->appcache_handle(), this);

@@ -39,11 +39,13 @@ class WebPackagePrefetchHandler final : public network::mojom::URLLoaderClient {
   // creates this handler).
   WebPackagePrefetchHandler(
       base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+      bool report_raw_headers,
       const network::ResourceResponseHead& response,
       network::mojom::URLLoaderPtr network_loader,
       network::mojom::URLLoaderClientRequest network_client_request,
       scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
       url::Origin request_initiator,
+      const GURL& outer_request_url,
       URLLoaderThrottlesGetter loader_throttles_getter,
       ResourceContext* resource_context,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,

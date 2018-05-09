@@ -250,7 +250,8 @@ std::unique_ptr<NavigationRequestInfo> CreateNavigationRequestInfoForRedirect(
       previous_request_info.is_for_guests_only,
       previous_request_info.report_raw_headers,
       previous_request_info.is_prerendering,
-      nullptr /* blob_url_loader_factory */);
+      nullptr /* blob_url_loader_factory */,
+      previous_request_info.devtools_navigation_token);
 }
 
 // Called for requests that we don't have a URLLoaderFactory for.
@@ -353,8 +354,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // header is verified and parsed, that's where the getter is used.
       interceptors_.push_back(std::make_unique<WebPackageRequestHandler>(
           url::Origin::Create(request_info->common_params.url),
+          request_info->common_params.url,
           GetURLLoaderOptions(request_info->is_main_frame),
           request_info->frame_tree_node_id,
+          request_info->devtools_navigation_token,
+          request_info->report_raw_headers,
           base::MakeRefCounted<
               SignedExchangeURLLoaderFactoryForNonNetworkService>(
               resource_context_, url_request_context_getter),
@@ -542,8 +546,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // header is verified and parsed, that's where the getter is used.
       interceptors_.push_back(std::make_unique<WebPackageRequestHandler>(
           url::Origin::Create(request_info->common_params.url),
+          request_info->common_params.url,
           GetURLLoaderOptions(request_info->is_main_frame),
           request_info->frame_tree_node_id,
+          request_info->devtools_navigation_token,
+          request_info->report_raw_headers,
           default_url_loader_factory_getter_->GetNetworkFactory(),
           base::BindRepeating(
               &URLLoaderRequestController::CreateURLLoaderThrottles,

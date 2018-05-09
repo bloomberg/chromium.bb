@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_LOADER_H_
 #define CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_LOADER_H_
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -27,6 +28,7 @@ class SharedURLLoaderFactory;
 
 namespace content {
 
+class SignedExchangeDevToolsProxy;
 class SignedExchangeHandler;
 class SignedExchangeHandlerFactory;
 class URLLoaderThrottle;
@@ -44,12 +46,12 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
       std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
 
   WebPackageLoader(
-      const network::ResourceResponseHead& original_response,
+      const network::ResourceResponseHead& outer_response,
       network::mojom::URLLoaderClientPtr forwarding_client,
       network::mojom::URLLoaderClientEndpointsPtr endpoints,
       url::Origin request_initiator,
       uint32_t url_loader_options,
-      base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+      std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
@@ -102,7 +104,10 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
   void FinishReadingBody(int result);
 
   // This timing info is used to create a dummy redirect response.
-  std::unique_ptr<const ResponseTimingInfo> original_response_timing_info_;
+  std::unique_ptr<const ResponseTimingInfo> outer_response_timing_info_;
+
+  // The outer response of signed HTTP exchange which was received from network.
+  const network::ResourceResponseHead outer_response_;
 
   // This client is alive until OnHTTPExchangeFound() is called.
   network::mojom::URLLoaderClientPtr forwarding_client_;
@@ -127,7 +132,7 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
 
   url::Origin request_initiator_;
   const uint32_t url_loader_options_;
-  base::RepeatingCallback<int(void)> frame_tree_node_id_getter_;
+  std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;

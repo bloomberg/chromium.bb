@@ -1608,6 +1608,22 @@ void NetworkHandler::LoadingComplete(
       status.encoded_data_length);
 }
 
+void NetworkHandler::OnSignedExchangeReceived(
+    base::Optional<const base::UnguessableToken> devtools_navigation_token,
+    const GURL& outer_request_url,
+    const network::ResourceResponseHead& outer_response) {
+  if (!enabled_)
+    return;
+  std::unique_ptr<Network::SignedExchangeInfo> signed_exchange_info =
+      Network::SignedExchangeInfo::Create()
+          .SetOuterResponse(BuildResponse(outer_request_url, outer_response))
+          .Build();
+
+  frontend_->SignedExchangeReceived(
+      devtools_navigation_token ? devtools_navigation_token->ToString() : "",
+      std::move(signed_exchange_info));
+}
+
 DispatchResponse NetworkHandler::SetRequestInterception(
     std::unique_ptr<protocol::Array<protocol::Network::RequestPattern>>
         patterns) {

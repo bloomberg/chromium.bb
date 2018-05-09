@@ -224,6 +224,17 @@ void RenderFrameDevToolsAgentHost::OnNavigationRequestFailed(
 }
 
 // static
+void RenderFrameDevToolsAgentHost::OnSignedExchangeReceived(
+    FrameTreeNode* frame_tree_node,
+    base::Optional<const base::UnguessableToken> devtools_navigation_token,
+    const GURL& outer_request_url,
+    const network::ResourceResponseHead& outer_response) {
+  DispatchToAgents(
+      frame_tree_node, &protocol::NetworkHandler::OnSignedExchangeReceived,
+      devtools_navigation_token, outer_request_url, outer_response);
+}
+
+// static
 std::vector<std::unique_ptr<NavigationThrottle>>
 RenderFrameDevToolsAgentHost::CreateNavigationThrottles(
     NavigationHandleImpl* navigation_handle) {
