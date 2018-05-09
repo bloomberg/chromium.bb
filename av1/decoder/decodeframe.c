@@ -3978,7 +3978,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   if (initialize_flag) setup_frame_info(pbi);
 
-  if (pbi->max_threads > 1 && cm->tile_rows == 1 && tile_count_tg > 1)
+  if (pbi->max_threads > 1 && tile_count_tg > 1)
     *p_data_end = decode_tiles_mt(pbi, data, data_end, startTile, endTile);
   else
     *p_data_end = decode_tiles(pbi, data, data_end, startTile, endTile);
