@@ -86,6 +86,19 @@ void AppListSyncableServiceFactory::RegisterProfilePrefs(
 
 content::BrowserContext* AppListSyncableServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
+  Profile* const profile = Profile::FromBrowserContext(context);
+  // No service if |context| is not a profile.
+  if (!profile)
+    return nullptr;
+
+  // No service for system profile.
+  if (profile->IsSystemProfile())
+    return nullptr;
+
+  // Use profile as-is for guest session.
+  if (profile->IsGuestSession())
+    return chrome::GetBrowserContextOwnInstanceInIncognito(context);
+
   // This matches the logic in ExtensionSyncServiceFactory, which uses the
   // orginal browser context.
   return chrome::GetBrowserContextRedirectedInIncognito(context);
