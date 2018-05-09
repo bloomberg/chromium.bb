@@ -46,6 +46,8 @@ class GpuBlacklistTest : public testing::Test {
             nullptr,                               // driver info
             nullptr,                               // GL strings
             nullptr,                               // machine model info
+            0,                                     // gpu_series size
+            nullptr,                               // gpu_series
             nullptr,                               // more conditions
         },
         0,        // exceptions count

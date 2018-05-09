@@ -84,6 +84,27 @@ class GPU_EXPORT GpuControlList {
     kVersionStyleUnknown
   };
 
+  enum class GpuSeriesType {
+    // Intel 6th gen
+    kIntelSandyBridge,
+    // Intel 7th gen
+    kIntelValleyView,  // BayTrail
+    kIntelIvyBridge,
+    kIntelHaswell,
+    // Intel 8th gen
+    kIntelCherryView,  // Braswell
+    kIntelBroadwell,
+    // Intel 9th gen
+    kIntelApolloLake,
+    kIntelSkyLake,
+    kIntelGeminiLake,
+    kIntelKabyLake,
+    kIntelCoffeeLake,
+    // Please also update |gpu_series_map| in process_json.py.
+
+    kUnknown,
+  };
+
   struct GPU_EXPORT Version {
     NumericOp op;
     VersionStyle style;
@@ -173,6 +194,8 @@ class GPU_EXPORT GpuControlList {
     const DriverInfo* driver_info;
     const GLStrings* gl_strings;
     const MachineModelInfo* machine_model_info;
+    size_t gpu_series_list_size;
+    const GpuSeriesType* gpu_series_list;
     const More* more;
 
     bool Contains(OsType os_type,
@@ -291,6 +314,8 @@ class GPU_EXPORT GpuControlList {
 
   // Gets the current OS type.
   static OsType GetOsType();
+
+  static GpuSeriesType GetGpuSeriesType(uint32_t vendor_id, uint32_t device_id);
 
   size_t entry_count_;
   const Entry* entries_;

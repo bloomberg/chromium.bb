@@ -139,7 +139,7 @@ def write_disabled_extension_list(entry_kind, entry_id, data, data_file,
       data_helper_file.write(',\n')
     data_helper_file.write('};\n\n')
     # use the list
-    data_file.write('arraysize(%s),  // %s size\n' % (var_name, entry_kind))
+    data_file.write('base::size(%s),  // %s size\n' % (var_name, entry_kind))
     data_file.write('%s,  // %s\n' % (var_name, entry_kind))
   else:
     data_file.write('0,  // %s size\n' % entry_kind)
@@ -233,7 +233,7 @@ def write_number_list(entry_id, data_type, name_tag, data, is_exception,
       data_helper_file.write(',\n')
     data_helper_file.write('};\n\n')
     # reference the list
-    data_file.write('arraysize(%s),  // %s size\n' % (var_name, name_tag))
+    data_file.write('base::size(%s),  // %s size\n' % (var_name, name_tag))
     data_file.write('%s,  // %s\n' % (var_name, name_tag))
   else:
     data_file.write('0,  // %s size\n' % name_tag)
@@ -281,7 +281,7 @@ def write_machine_model_info(entry_id, is_exception, exception_id,
     data_helper_file.write(
       'const GpuControlList::MachineModelInfo %s = {\n' % var_name)
     if machine_model_name:
-      data_helper_file.write('arraysize(%s),  // machine model name size\n' %
+      data_helper_file.write('base::size(%s),  // machine model name size\n' %
                              model_name_var_name)
       data_helper_file.write('%s,  // machine model names\n' %
                              model_name_var_name)
@@ -349,6 +349,7 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   device_id = None
   multi_gpu_category = ''
   multi_gpu_style = ''
+  gpu_series_list = None
   driver_vendor = ''
   driver_version = None
   driver_date = None
@@ -406,6 +407,8 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
       multi_gpu_category = entry[key]
     elif key == 'multi_gpu_style':
       multi_gpu_style = entry[key]
+    elif key == 'gpu_series':
+      gpu_series_list = entry[key]
     elif key == 'driver_vendor':
       driver_vendor = entry[key]
     elif key == 'driver_version':
@@ -474,6 +477,8 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   write_machine_model_info(entry_id, is_exception, exception_id,
                            machine_model_name, machine_model_version,
                            data_file, data_helper_file)
+  write_gpu_series_list(entry_id, is_exception, exception_id, gpu_series_list,
+                        data_file, data_helper_file)
   # group a bunch of less used conditions
   if (gl_version != None or pixel_shader_version != None or in_process_gpu or
       gl_reset_notification_strategy != None or (not direct_rendering) or
@@ -484,6 +489,40 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
                           gpu_count, test_group, data_file, data_helper_file)
   else:
     data_file.write('nullptr,  // more conditions\n')
+
+
+def write_gpu_series_list(entry_id, is_exception, exception_id, gpu_series_list,
+                          data_file, data_helper_file):
+  if gpu_series_list:
+    var_name = 'kGpuSeriesForEntry' + str(entry_id)
+    if is_exception:
+      var_name += 'Exception' + str(exception_id)
+    data_helper_file.write('const GpuControlList::GpuSeriesType %s[%d] = {\n' %
+                           (var_name, len(gpu_series_list)))
+    gpu_series_map = {
+      'intel_sandybridge': 'kIntelSandyBridge',
+      'intel_valleyview': 'kIntelValleyView',
+      'intel_ivybridge': 'kIntelIvyBridge',
+      'intel_haswell': 'kIntelHaswell',
+      'intel_cherryview': 'kIntelCherryView',
+      'intel_broadwell': 'kIntelBroadwell',
+      'intel_apollolake': 'kIntelApolloLake',
+      'intel_skylake': 'kIntelSkyLake',
+      'intel_geminilake': 'kIntelGeminiLake',
+      'intel_kabylake': 'kIntelKabyLake',
+      'intel_coffeelake': 'kIntelCoffeeLake',
+    }
+    for series in gpu_series_list:
+      assert gpu_series_map.has_key(series)
+      data_helper_file.write('GpuControlList::GpuSeriesType::%s,\n' %
+                             gpu_series_map[series])
+    data_helper_file.write('};\n\n')
+
+    data_file.write('base::size(%s),  // gpu_series size\n' % var_name)
+    data_file.write('%s,  // gpu_series\n' % var_name)
+  else:
+    data_file.write('0,  // gpu_series size\n')
+    data_file.write('nullptr,  // gpu_series\n')
 
 
 def write_entry_more_data(entry_id, is_exception, exception_id, gl_type,
@@ -522,7 +561,7 @@ def write_entry(entry, total_feature_set, feature_name_prefix,
   if 'features' in entry:
     features = entry['features']
     feature_set = get_feature_set(features, total_feature_set)
-    data_file.write('arraysize(kFeatureListForEntry%d),  // features size\n' %
+    data_file.write('base::size(kFeatureListForEntry%d),  // features size\n' %
                     entry_id)
     data_file.write('kFeatureListForEntry%d,  // features\n' % entry_id)
     write_features(entry_id, feature_set, feature_name_prefix, data_helper_file)
@@ -566,7 +605,7 @@ def write_entry(entry, total_feature_set, feature_name_prefix,
                        data_exception_file, data_helper_file, None)
       data_exception_file.write('},\n')
     data_exception_file.write('};\n\n')
-    data_file.write('arraysize(%s),  // exceptions count\n' % exception_var)
+    data_file.write('base::size(%s),  // exceptions count\n' % exception_var)
     data_file.write('%s,  // exceptions\n' % exception_var)
   else:
     data_file.write('0,  // exceptions count\n')
