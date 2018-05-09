@@ -40,7 +40,6 @@
 -NavigationHandleImplBrowserTest.RedirectToRendererDebugUrl
 
 -AsyncResourceHandlerBrowserTest/AsyncResourceHandlerBrowserTest.UploadProgress*
--NavigationHandleImplBrowserTest.ErrorCodeOnRedirect
 -WebContentsImplBrowserTest.DownloadImage_Deny_FileImage
 
 # services/network/url_loader.cc should handle failure in
