@@ -23,6 +23,7 @@ class MockUiBrowserInterface : public UiBrowserInterface {
   MOCK_METHOD0(NavigateForward, void());
   MOCK_METHOD0(ReloadTab, void());
   MOCK_METHOD1(OpenNewTab, void(bool));
+  MOCK_METHOD2(SelectTab, void(int id, bool incognito));
   MOCK_METHOD0(OpenBookmarks, void());
   MOCK_METHOD0(OpenRecentTabs, void());
   MOCK_METHOD0(OpenHistory, void());
@@ -41,8 +42,8 @@ class MockUiBrowserInterface : public UiBrowserInterface {
   MOCK_METHOD1(SetVoiceSearchActive, void(bool active));
   MOCK_METHOD1(StartAutocomplete, void(const AutocompleteRequest& request));
   MOCK_METHOD0(StopAutocomplete, void());
-  MOCK_METHOD0(ShowPageInfo, void());
   MOCK_METHOD0(LoadAssets, void());
+  MOCK_METHOD0(ShowPageInfo, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockUiBrowserInterface);

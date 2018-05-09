@@ -46,6 +46,7 @@ class MockBrowserUiInterface : public BrowserUiInterface {
                void(int id, bool incognito, const base::string16& title));
   MOCK_METHOD2(RemoveTab, void(int id, bool incognito));
   MOCK_METHOD0(RemoveAllTabs, void());
+  MOCK_METHOD2(OnTabSelected, void(int id, bool incognito));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBrowserUiInterface);

@@ -56,6 +56,7 @@ class BrowserUiInterface {
                               const base::string16& title) = 0;
   virtual void RemoveTab(int id, bool incognito) = 0;
   virtual void RemoveAllTabs() = 0;
+  virtual void OnTabSelected(int id, bool incognito) = 0;
 };
 
 }  // namespace vr

@@ -579,6 +579,10 @@ void VrTestContext::OpenNewTab(bool incognito) {
   ui_->AddOrUpdateTab(tab_id_++, incognito, base::UTF8ToUTF16("test"));
 }
 
+void VrTestContext::SelectTab(int id, bool incognito) {
+  ui_->OnTabSelected(id, incognito);
+}
+
 void VrTestContext::OpenBookmarks() {}
 void VrTestContext::OpenRecentTabs() {}
 void VrTestContext::OpenHistory() {}

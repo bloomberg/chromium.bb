@@ -33,6 +33,7 @@ class UiBrowserInterface {
   virtual void NavigateForward() = 0;
   virtual void ReloadTab() = 0;
   virtual void OpenNewTab(bool incognito) = 0;
+  virtual void SelectTab(int id, bool incognito) = 0;
   virtual void OpenBookmarks() = 0;
   virtual void OpenRecentTabs() = 0;
   virtual void OpenHistory() = 0;

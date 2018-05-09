@@ -48,6 +48,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   void NavigateForward() override;
   void ReloadTab() override;
   void OpenNewTab(bool incognito) override;
+  void SelectTab(int id, bool incognito) override;
   void OpenBookmarks() override;
   void OpenRecentTabs() override;
   void OpenHistory() override;

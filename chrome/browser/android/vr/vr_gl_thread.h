@@ -87,6 +87,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void NavigateForward() override;
   void ReloadTab() override;
   void OpenNewTab(bool incognito) override;
+  void SelectTab(int id, bool incognito) override;
   void OpenBookmarks() override;
   void OpenRecentTabs() override;
   void OpenHistory() override;
@@ -138,6 +139,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
                       const base::string16& title) override;
   void RemoveTab(int id, bool incognito) override;
   void RemoveAllTabs() override;
+  void OnTabSelected(int id, bool incognito) override;
 
   void ReportUiActivityResultForTesting(
       const VrUiTestActivityResult& result) override;
