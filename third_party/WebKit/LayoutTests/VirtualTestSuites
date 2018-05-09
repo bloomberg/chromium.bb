@@ -680,17 +680,17 @@
   {
     "prefix": "off-main-thread-websocket",
     "base": "external/wpt/websockets",
-    "args": ["--enable-features=OffMainThreadWebSocket"]
+    "args": ["--disable-features=OffMainThreadWebSocket"]
   },
   {
     "prefix": "off-main-thread-websocket",
     "base": "http/tests/websocket",
-    "args": ["--enable-features=OffMainThreadWebSocket"]
+    "args": ["--disable-features=OffMainThreadWebSocket"]
   },
   {
     "prefix": "off-main-thread-websocket",
     "base": "http/tests/security/mixedContent/websocket",
-    "args": ["--enable-features=OffMainThreadWebSocket"]
+    "args": ["--disable-features=OffMainThreadWebSocket"]
   },
   {
     "prefix": "webrtc-wpt-unified-plan",
