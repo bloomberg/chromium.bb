@@ -8003,7 +8003,7 @@ class LayerTreeHostTestLocalSurfaceId : public LayerTreeHostTest {
   }
 
   void BeginTest() override {
-    expected_local_surface_id_ = allocator_.GenerateId();
+    expected_local_surface_id_ = allocator_.GetCurrentLocalSurfaceId();
     PostSetLocalSurfaceIdToMainThread(expected_local_surface_id_);
   }
 
@@ -8027,8 +8027,55 @@ class LayerTreeHostTestLocalSurfaceId : public LayerTreeHostTest {
   viz::LocalSurfaceId expected_local_surface_id_;
   viz::ParentLocalSurfaceIdAllocator allocator_;
 };
-
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLocalSurfaceId);
+
+// Makes sure that viz::LocalSurfaceId allocation requests propagate all the way
+// to LayerTreeFrameSink.
+class LayerTreeHostTestRequestNewLocalSurfaceId : public LayerTreeHostTest {
+ protected:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->enable_surface_synchronization = true;
+  }
+
+  void BeginTest() override {
+    expected_parent_local_surface_id_ = allocator_.GetCurrentLocalSurfaceId();
+    PostSetLocalSurfaceIdToMainThread(expected_parent_local_surface_id_);
+    PostRequestNewLocalSurfaceIdToMainThread();
+  }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    EXPECT_EQ(DRAW_SUCCESS, draw_result);
+    EXPECT_EQ(expected_parent_local_surface_id_,
+              host_impl->active_tree()->local_surface_id_from_parent());
+    return draw_result;
+  }
+
+  void DisplayReceivedLocalSurfaceIdOnThread(
+      const viz::LocalSurfaceId& local_surface_id) override {
+    viz::LocalSurfaceId child_local_surface_id(
+        expected_parent_local_surface_id_.parent_sequence_number(),
+        expected_parent_local_surface_id_.child_sequence_number() + 1,
+        expected_parent_local_surface_id_.embed_token());
+    EXPECT_NE(expected_parent_local_surface_id_, local_surface_id);
+    EXPECT_EQ(child_local_surface_id, local_surface_id);
+  }
+
+  // This gets called after DispllayReceivedLocalSurfaceIdOnThread.
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    // Verify that the request bit doesn't stick after we submit a frame.
+    EXPECT_FALSE(
+        host_impl->active_tree()->new_local_surface_id_request_for_testing());
+    EndTest();
+  }
+
+  void AfterTest() override {}
+
+  viz::LocalSurfaceId expected_parent_local_surface_id_;
+  viz::ParentLocalSurfaceIdAllocator allocator_;
+};
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestRequestNewLocalSurfaceId);
 
 // The GPU image decode controller hands images off to Skia for rasterization.
 // When used with large images, the images in question could be deleted before

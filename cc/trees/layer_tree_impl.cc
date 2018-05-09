@@ -469,6 +469,8 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 
   target_tree->set_content_source_id(content_source_id());
 
+  if (TakeNewLocalSurfaceIdRequest())
+    target_tree->RequestNewLocalSurfaceId();
   target_tree->SetLocalSurfaceIdFromParent(local_surface_id_from_parent());
 
   target_tree->pending_page_scale_animation_ =
@@ -965,9 +967,23 @@ void LayerTreeImpl::SetDeviceScaleFactor(float device_scale_factor) {
 
 void LayerTreeImpl::SetLocalSurfaceIdFromParent(
     const viz::LocalSurfaceId& local_surface_id_from_parent) {
+  // If surface synchronization is on then we expect that if the viewport size
+  // has changed then either the |local_surface_id_from_parent| or there is a
+  // pending impl-side request for new viz::LocalSurfaceId allocation.
   CHECK(!settings().enable_surface_synchronization || !viewport_size_invalid_ ||
-        local_surface_id_from_parent_ != local_surface_id_from_parent);
+        local_surface_id_from_parent_ != local_surface_id_from_parent ||
+        new_local_surface_id_request_);
   local_surface_id_from_parent_ = local_surface_id_from_parent;
+}
+
+void LayerTreeImpl::RequestNewLocalSurfaceId() {
+  new_local_surface_id_request_ = true;
+}
+
+bool LayerTreeImpl::TakeNewLocalSurfaceIdRequest() {
+  bool new_local_surface_id_request = new_local_surface_id_request_;
+  new_local_surface_id_request_ = false;
+  return new_local_surface_id_request;
 }
 
 void LayerTreeImpl::SetRasterColorSpace(

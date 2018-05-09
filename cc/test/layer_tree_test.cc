@@ -685,6 +685,13 @@ void LayerTreeTest::PostSetLocalSurfaceIdToMainThread(
                                 main_thread_weak_ptr_, local_surface_id));
 }
 
+void LayerTreeTest::PostRequestNewLocalSurfaceIdToMainThread() {
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&LayerTreeTest::DispatchRequestNewLocalSurfaceId,
+                     main_thread_weak_ptr_));
+}
+
 void LayerTreeTest::PostSetDeferCommitsToMainThread(bool defer_commits) {
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&LayerTreeTest::DispatchSetDeferCommits,
@@ -872,6 +879,12 @@ void LayerTreeTest::DispatchSetLocalSurfaceId(
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (layer_tree_host_)
     layer_tree_host_->SetLocalSurfaceIdFromParent(local_surface_id);
+}
+
+void LayerTreeTest::DispatchRequestNewLocalSurfaceId() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  if (layer_tree_host_)
+    layer_tree_host_->RequestNewLocalSurfaceId();
 }
 
 void LayerTreeTest::DispatchSetDeferCommits(bool defer_commits) {
