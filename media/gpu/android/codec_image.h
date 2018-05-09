@@ -14,7 +14,7 @@
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "media/gpu/android/codec_wrapper.h"
 #include "media/gpu/android/promotion_hint_aggregator.h"
-#include "media/gpu/android/texture_owner.h"
+#include "media/gpu/android/surface_texture_gl_owner.h"
 #include "media/gpu/media_gpu_export.h"
 
 namespace media {
