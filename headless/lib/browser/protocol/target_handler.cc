@@ -98,6 +98,7 @@ Response TargetHandler::DisposeBrowserContext(const std::string& context_id) {
     // close them too.
     web_contents = context->GetAllWebContents();
   }
+  context->Close();
   return Response::OK();
 }
 
