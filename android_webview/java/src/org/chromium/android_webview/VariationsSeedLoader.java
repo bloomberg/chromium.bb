@@ -23,6 +23,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 import org.chromium.components.variations.LoadSeedResult;
+import org.chromium.components.variations.firstrun.VariationsSeedBridge;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
 
 import java.io.File;
@@ -125,7 +126,7 @@ public class VariationsSeedLoader {
 
         private FutureTask<SeedInfo> mLoadTask = new FutureTask<>(() -> {
             mEnabledByExperiment = checkEnabledByExperiment();
-            if (!(mEnabledByCmd || mEnabledByExperiment)) return null;
+            if (!isVariationsEnabled()) return null;
 
             AwMetricsServiceClient.preloadClientId();
 
@@ -338,15 +339,12 @@ public class VariationsSeedLoader {
     // variations.
     public void finishVariationsInit() {
         SeedInfo seed = getSeedBlockingAndLog();
-
-        // If enabled by experiment but not cmd, then also enable by cmd.
-        // isVariationsEnabled() must not be called before getSeedBlockingAndLog() returns.
-        // TODO(paulmiller): Remove this after completing the experiment.
-        if (mRunnable.isVariationsEnabled() && !isEnabledByCmd()) {
-            CommandLine.getInstance().appendSwitch(AwSwitches.ENABLE_WEBVIEW_VARIATIONS);
+        if (seed != null) {
+            if (!isEnabledByCmd()) {
+                CommandLine.getInstance().appendSwitch(AwSwitches.ENABLE_WEBVIEW_VARIATIONS);
+            }
+            VariationsSeedBridge.setVariationsFirstRunSeed(
+                    seed.seedData, seed.signature, seed.country, seed.date, seed.isGzipCompressed);
         }
-
-        // TODO(paulmiller): Once we have actual seeds, this would be the place to do:
-        // if (seed != null) { VariationsSeedBridge.setVariationsFirstRunSeed(seed); }
     }
 }
