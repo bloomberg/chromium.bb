@@ -212,7 +212,7 @@ class FileManagerTestMessageListener : public content::NotificationObserver {
       using SendMessage = content::Source<extensions::TestSendMessageFunction>;
       message.function = SendMessage(source).ptr();
       using WillReply = content::Details<std::pair<std::string, bool*>>;
-      *WillReply(details).ptr()->second = true;  // http:/crbug.com/668680
+      *WillReply(details).ptr()->second = true;  // crbug.com/668680
       CHECK(!test_complete_) << "LATE MESSAGE: " << message.message;
     }
 
