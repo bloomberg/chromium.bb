@@ -35,7 +35,6 @@ group("pdf_fuzzers") {
       ":pdf_css_fuzzer",
       ":pdf_fm2js_fuzzer",
       ":pdf_formcalc_fuzzer",
-      ":pdf_lzw_fuzzer",
       ":pdf_xml_fuzzer",
       ":pdfium_xfa_fuzzer",
     ]
@@ -43,7 +42,10 @@ group("pdf_fuzzers") {
       deps += [ ":pdf_codec_bmp_fuzzer" ]
     }
     if (pdf_enable_xfa_gif) {
-      deps += [ ":pdf_codec_gif_fuzzer" ]
+      deps += [
+        ":pdf_codec_gif_fuzzer",
+        ":pdf_lzw_fuzzer",
+      ]
     }
     if (pdf_enable_xfa_png) {
       deps += [ ":pdf_codec_png_fuzzer" ]
@@ -235,11 +237,13 @@ if (pdf_enable_xfa) {
     dict = "dicts/pdf_formcalc.dict"
   }
 
-  fuzzer_test("pdf_lzw_fuzzer") {
-    sources = []
-    deps = [
-      "//third_party/pdfium/testing/libfuzzer:pdf_lzw_fuzzer",
-    ]
+  if (pdf_enable_xfa_gif) {
+    fuzzer_test("pdf_lzw_fuzzer") {
+      sources = []
+      deps = [
+        "//third_party/pdfium/testing/libfuzzer:pdf_lzw_fuzzer",
+      ]
+    }
   }
 
   fuzzer_test("pdf_xml_fuzzer") {
