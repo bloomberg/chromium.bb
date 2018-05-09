@@ -57,6 +57,7 @@ class UserInputMonitorWinCore
 
   uint32_t GetKeyPressCount() const;
   void StartMonitor();
+  void StartMonitorWithMapping(base::WritableSharedMemoryMapping mapping);
   void StopMonitor();
 
  private:
@@ -70,6 +71,9 @@ class UserInputMonitorWinCore
 
   // Task runner on which |window_| is created.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+
+  // Used for sharing key press count value.
+  std::unique_ptr<base::WritableSharedMemoryMapping> key_press_count_mapping_;
 
   // These members are only accessed on the UI thread.
   std::unique_ptr<base::win::MessageWindow> window_;
@@ -90,6 +94,8 @@ class UserInputMonitorWin : public UserInputMonitorBase {
  private:
   // Private UserInputMonitor overrides.
   void StartKeyboardMonitoring() override;
+  void StartKeyboardMonitoring(
+      base::WritableSharedMemoryMapping mapping) override;
   void StopKeyboardMonitoring() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
@@ -143,6 +149,13 @@ void UserInputMonitorWinCore::StartMonitor() {
   base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
 }
 
+void UserInputMonitorWinCore::StartMonitorWithMapping(
+    base::WritableSharedMemoryMapping mapping) {
+  StartMonitor();
+  key_press_count_mapping_ =
+      std::make_unique<base::WritableSharedMemoryMapping>(std::move(mapping));
+}
+
 void UserInputMonitorWinCore::StopMonitor() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
@@ -158,6 +171,8 @@ void UserInputMonitorWinCore::StopMonitor() {
   }
 
   window_ = nullptr;
+
+  key_press_count_mapping_.reset();
 
   // Stop observing message loop destruction if no event is being monitored.
   base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
@@ -196,6 +211,10 @@ LRESULT UserInputMonitorWinCore::OnInput(HRAWINPUT input_handle) {
     ui::KeyboardCode key_code =
         ui::KeyboardCodeForWindowsKeyCode(input->data.keyboard.VKey);
     counter_.OnKeyboardEvent(event, key_code);
+
+    // Update count value in shared memory.
+    if (key_press_count_mapping_)
+      WriteKeyPressMonitorCount(*key_press_count_mapping_, GetKeyPressCount());
   }
 
   return DefRawInputProc(&input, 1, sizeof(RAWINPUTHEADER));
@@ -239,6 +258,14 @@ void UserInputMonitorWin::StartKeyboardMonitoring() {
   ui_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&UserInputMonitorWinCore::StartMonitor,
                                 core_->AsWeakPtr()));
+}
+
+void UserInputMonitorWin::StartKeyboardMonitoring(
+    base::WritableSharedMemoryMapping mapping) {
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&UserInputMonitorWinCore::StartMonitorWithMapping,
+                     core_->AsWeakPtr(), std::move(mapping)));
 }
 
 void UserInputMonitorWin::StopKeyboardMonitoring() {

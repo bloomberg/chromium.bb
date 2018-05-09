@@ -9,6 +9,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_LINUX)
@@ -38,7 +39,35 @@ TEST(UserInputMonitorTest, CreatePlatformSpecific) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST(UserInputMonitorTest, KeyPressMonitorReadWriteCount) {
+TEST(UserInputMonitorTest, CreatePlatformSpecificWithMapping) {
+#if defined(OS_LINUX)
+  base::MessageLoopForIO message_loop;
+  base::FileDescriptorWatcher file_descriptor_watcher(&message_loop);
+#else
+  base::MessageLoopForUI message_loop;
+#endif  // defined(OS_LINUX)
+
+  std::unique_ptr<UserInputMonitor> monitor = UserInputMonitor::Create(
+      message_loop.task_runner(), message_loop.task_runner());
+
+  if (!monitor)
+    return;
+
+  base::ReadOnlySharedMemoryMapping readonly_mapping =
+      static_cast<UserInputMonitorBase*>(monitor.get())
+          ->EnableKeyPressMonitoringWithMapping()
+          .Map();
+  EXPECT_EQ(0u, ReadKeyPressMonitorCount(readonly_mapping));
+  monitor->DisableKeyPressMonitoring();
+
+  monitor.reset();
+  base::RunLoop().RunUntilIdle();
+
+  // Check that read only region remains valid after disable.
+  EXPECT_EQ(0u, ReadKeyPressMonitorCount(readonly_mapping));
+}
+
+TEST(UserInputMonitorTest, ReadWriteKeyPressMonitorCount) {
   std::unique_ptr<base::MappedReadOnlyRegion> shmem =
       std::make_unique<base::MappedReadOnlyRegion>(
           base::ReadOnlySharedMemoryRegion::Create(sizeof(uint32_t)));

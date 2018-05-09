@@ -104,14 +104,14 @@ class MockEventHandler : public media::AudioInputDelegate::EventHandler {
   MOCK_METHOD1(OnStreamError, void(int));
 };
 
-class MockUserInputMonitor : public media::UserInputMonitorBase {
+class MockUserInputMonitor : public media::UserInputMonitor {
  public:
   MockUserInputMonitor() {}
 
   uint32_t GetKeyPressCount() const override { return 0; }
 
-  MOCK_METHOD0(StartKeyboardMonitoring, void());
-  MOCK_METHOD0(StopKeyboardMonitoring, void());
+  MOCK_METHOD0(EnableKeyPressMonitoring, void());
+  MOCK_METHOD0(DisableKeyPressMonitoring, void());
 };
 
 class MockAudioInputStream : public media::AudioInputStream {
