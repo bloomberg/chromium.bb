@@ -635,7 +635,6 @@ public class NewTabPageTest {
     }
 
     @Test
-    @DisabledTest(message = "crbug.com/829377")
     @SmallTest
     @Feature({"NewTabPage", "RenderTest"})
     @EnableFeatures(ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)
@@ -644,10 +643,10 @@ public class NewTabPageTest {
                 (NewTabPage) mActivityTestRule.getActivity().getActivityTab().getNativePage();
         RecyclerView recyclerView = ntp.getNewTabPageView().getRecyclerView();
         NewTabPageAdapter adapter = (NewTabPageAdapter) recyclerView.getAdapter();
+        int position = adapter.getFirstHeaderPosition();
+        RecyclerViewTestUtils.scrollToView(recyclerView, position);
         RecyclerViewTestUtils.waitForStableRecyclerView(recyclerView);
-        View view = ThreadUtils.runOnUiThreadBlocking(
-                () -> recyclerView.findViewHolderForAdapterPosition(
-                        adapter.getFirstHeaderPosition()).itemView);
+        View view = recyclerView.findViewHolderForAdapterPosition(position).itemView;
 
         // Check header is expanded.
         mRenderTestRule.render(view, "expandable_header_expanded");
