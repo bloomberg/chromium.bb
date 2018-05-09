@@ -1898,26 +1898,20 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
-  const struct {
-    const GURL renderer_debug_url;
-    const net::Error error_code;
-  } kTestCases[] = {
-      {GURL("javascript:window.alert('hello')"), net::ERR_ABORTED},
-      {GURL(kChromeUIBadCastCrashURL), net::ERR_UNSAFE_REDIRECT},
-      {GURL(kChromeUICrashURL), net::ERR_UNSAFE_REDIRECT},
-      {GURL(kChromeUIDumpURL), net::ERR_UNSAFE_REDIRECT},
-      {GURL(kChromeUIKillURL), net::ERR_UNSAFE_REDIRECT},
-      {GURL(kChromeUIHangURL), net::ERR_UNSAFE_REDIRECT},
-      {GURL(kChromeUIShorthangURL), net::ERR_UNSAFE_REDIRECT},
-      {GURL(kChromeUIMemoryExhaustURL), net::ERR_UNSAFE_REDIRECT},
-  };
+  const GURL kTestUrls[] = {GURL("javascript:window.alert('hello')"),
+                            GURL(kChromeUIBadCastCrashURL),
+                            GURL(kChromeUICrashURL),
+                            GURL(kChromeUIDumpURL),
+                            GURL(kChromeUIKillURL),
+                            GURL(kChromeUIHangURL),
+                            GURL(kChromeUIShorthangURL),
+                            GURL(kChromeUIMemoryExhaustURL)};
 
-  for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message()
-                 << "renderer_debug_url = " << test_case.renderer_debug_url);
+  for (const auto& test_url : kTestUrls) {
+    SCOPED_TRACE(testing::Message() << "renderer_debug_url = " << test_url);
 
-    GURL redirecting_url = embedded_test_server()->GetURL(
-        "/server-redirect?" + test_case.renderer_debug_url.spec());
+    GURL redirecting_url =
+        embedded_test_server()->GetURL("/server-redirect?" + test_url.spec());
 
     NavigationHandleObserver observer(shell()->web_contents(), redirecting_url);
     NavigationLogger logger(shell()->web_contents());
@@ -1925,7 +1919,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
     // Try to navigate to the url. The navigation should be canceled and the
     // NavigationHandle should have the right error code.
     EXPECT_FALSE(NavigateToURL(shell(), redirecting_url));
-    EXPECT_EQ(test_case.error_code, observer.net_error_code());
+    EXPECT_EQ(net::ERR_UNSAFE_REDIRECT, observer.net_error_code());
 
     // Both WebContentsObserver::{DidStartNavigation, DidFinishNavigation}
     // are called, but no WebContentsObserver::DidRedirectNavigation.

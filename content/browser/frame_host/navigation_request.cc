@@ -720,9 +720,7 @@ void NavigationRequest::OnRequestRedirected(
           redirect_info.new_url)) {
     DVLOG(1) << "Denied redirect for "
              << redirect_info.new_url.possibly_invalid_spec();
-    // TODO(arthursonzogni): Consider switching to net::ERR_UNSAFE_REDIRECT
-    // when PlzNavigate is launched.
-    navigation_handle_->set_net_error_code(net::ERR_ABORTED);
+    navigation_handle_->set_net_error_code(net::ERR_UNSAFE_REDIRECT);
     frame_tree_node_->ResetNavigationRequest(false, true);
     return;
   }
@@ -736,7 +734,7 @@ void NavigationRequest::OnRequestRedirected(
           redirect_info.new_url)) {
     DVLOG(1) << "Denied unauthorized redirect for "
              << redirect_info.new_url.possibly_invalid_spec();
-    navigation_handle_->set_net_error_code(net::ERR_ABORTED);
+    navigation_handle_->set_net_error_code(net::ERR_UNSAFE_REDIRECT);
     frame_tree_node_->ResetNavigationRequest(false, true);
     return;
   }
