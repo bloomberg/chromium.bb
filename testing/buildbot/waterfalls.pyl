@@ -1414,6 +1414,7 @@
             {
               'kvm': '1',
               'os': 'Ubuntu-14.04',
+              'pool': 'Chrome-CrOS-VM',
             },
           ],
         },
