@@ -1160,6 +1160,21 @@
             ]
         }
     ],
+    "EmojiContextMenu": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableEmojiContextMenu"
+                    ]
+                }
+            ]
+        }
+    ],
     "EnableAppContainer": [
         {
             "platforms": [
