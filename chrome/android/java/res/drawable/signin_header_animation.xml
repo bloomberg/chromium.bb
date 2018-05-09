@@ -135,17 +135,18 @@
         </vector>
     </aapt:attr>
     <!-- Each animation here has a period of 10.45 seconds. Animation is restarted from the code. -->
-    <!-- Light grey circle -->
     <target android:name="cloud1_animation_group">
         <aapt:attr name="android:animation">
             <set android:ordering="sequentially">
                 <objectAnimator
                     android:duration="3900"
+                    android:interpolator="@anim/fast_out_slow_in_interpolator"
                     android:propertyName="translateX"
                     android:valueFrom="0"
                     android:valueTo="-3.24"/>
                 <objectAnimator
                     android:duration="6550"
+                    android:interpolator="@anim/fast_out_slow_in_interpolator"
                     android:propertyName="translateX"
                     android:valueFrom="-3.24"
                     android:valueTo="0"/>
@@ -157,11 +158,13 @@
             <set android:ordering="sequentially">
                 <objectAnimator
                     android:duration="4650"
+                    android:interpolator="@anim/fast_out_slow_in_interpolator"
                     android:propertyName="translateX"
                     android:valueFrom="0"
                     android:valueTo="-2.16"/>
                 <objectAnimator
                     android:duration="5800"
+                    android:interpolator="@anim/fast_out_slow_in_interpolator"
                     android:propertyName="translateX"
                     android:valueFrom="-2.16"
                     android:valueTo="0"/>
@@ -173,11 +176,13 @@
             <set android:ordering="sequentially">
                 <objectAnimator
                     android:duration="6150"
+                    android:interpolator="@anim/fast_out_slow_in_interpolator"
                     android:propertyName="translateX"
                     android:valueFrom="0"
                     android:valueTo="-5.04"/>
                 <objectAnimator
                     android:duration="4300"
+                    android:interpolator="@anim/fast_out_slow_in_interpolator"
                     android:propertyName="translateX"
                     android:valueFrom="-5.04"
                     android:valueTo="0"/>
@@ -189,11 +194,13 @@
             <set android:ordering="sequentially">
                 <objectAnimator
                     android:duration="5550"
+                    android:interpolator="@anim/fast_out_slow_in_interpolator"
                     android:propertyName="translateX"
                     android:valueFrom="0"
                     android:valueTo="5.04"/>
                 <objectAnimator
                     android:duration="4900"
+                    android:interpolator="@anim/fast_out_slow_in_interpolator"
                     android:propertyName="translateX"
                     android:valueFrom="5.04"
                     android:valueTo="0"/>
@@ -205,23 +212,27 @@
             <set android:ordering="sequentially">
                 <objectAnimator
                     android:duration="700"
+                    android:interpolator="@anim/fast_out_slow_in_interpolator"
                     android:propertyName="rotation"
                     android:valueFrom="0"
                     android:valueTo="-360"/>
                 <objectAnimator
                     android:duration="700"
-                    android:propertyName="rotation"
-                    android:startOffset="1900"
-                    android:valueFrom="0"
-                    android:valueTo="-360"/>
-                <objectAnimator
-                    android:duration="700"
+                    android:interpolator="@anim/fast_out_slow_in_interpolator"
                     android:propertyName="rotation"
                     android:startOffset="1900"
                     android:valueFrom="0"
                     android:valueTo="-360"/>
                 <objectAnimator
                     android:duration="700"
+                    android:interpolator="@anim/fast_out_slow_in_interpolator"
+                    android:propertyName="rotation"
+                    android:startOffset="1900"
+                    android:valueFrom="0"
+                    android:valueTo="-360"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:interpolator="@anim/fast_out_slow_in_interpolator"
                     android:propertyName="rotation"
                     android:startOffset="1900"
                     android:valueFrom="0"
@@ -234,6 +245,7 @@
             <set android:ordering="sequentially">
                 <objectAnimator
                     android:duration="700"
+                    android:interpolator="@anim/fast_out_slow_in_interpolator"
                     android:propertyName="rotation"
                     android:valueFrom="-120"
                     android:valueTo="120"/>
@@ -244,6 +256,7 @@
                     android:valueTo="120"/>
                 <objectAnimator
                     android:duration="700"
+                    android:interpolator="@anim/fast_out_slow_in_interpolator"
                     android:propertyName="rotation"
                     android:valueFrom="120"
                     android:valueTo="-120"/>
@@ -254,6 +267,7 @@
                     android:valueTo="-120"/>
                 <objectAnimator
                     android:duration="700"
+                    android:interpolator="@anim/fast_out_slow_in_interpolator"
                     android:propertyName="rotation"
                     android:valueFrom="-120"
                     android:valueTo="120"/>
@@ -264,6 +278,7 @@
                     android:valueTo="120"/>
                 <objectAnimator
                     android:duration="700"
+                    android:interpolator="@anim/fast_out_slow_in_interpolator"
                     android:propertyName="rotation"
                     android:valueFrom="120"
                     android:valueTo="-120"/>
