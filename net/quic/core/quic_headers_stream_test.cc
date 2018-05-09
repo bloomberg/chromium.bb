@@ -113,26 +113,6 @@ class MockVisitor : public SpdyFramerVisitorInterface {
                bool(SpdyStreamId stream_id, uint8_t frame_type));
 };
 
-class ForceHolAckListener : public QuicAckListenerInterface {
- public:
-  ForceHolAckListener() : total_acked_bytes_(0) {}
-
-  void OnPacketAcked(int acked_bytes, QuicTime::Delta ack_delay_time) override {
-    total_acked_bytes_ += acked_bytes;
-  }
-
-  void OnPacketRetransmitted(int retransmitted_bytes) override {}
-
-  size_t total_acked_bytes() { return total_acked_bytes_; }
-
- private:
-  ~ForceHolAckListener() override {}
-
-  size_t total_acked_bytes_;
-
-  DISALLOW_COPY_AND_ASSIGN(ForceHolAckListener);
-};
-
 struct TestParams {
   TestParams(const ParsedQuicVersion& version, Perspective perspective)
       : version(version), perspective(perspective) {
@@ -514,80 +494,6 @@ TEST_P(QuicHeadersStreamTest, ProcessPushPromiseDisabledSetting) {
   headers_stream_->OnStreamFrame(stream_frame_);
   EXPECT_EQ(session_.server_push_enabled(),
             perspective() == Perspective::IS_CLIENT);
-}
-
-TEST_P(QuicHeadersStreamTest, EmptyHeaderHOLBlockedTime) {
-  EXPECT_CALL(session_, OnHeadersHeadOfLineBlocking(_)).Times(0);
-  InSequence seq;
-  bool fin = true;
-  for (int stream_num = 0; stream_num < 10; stream_num++) {
-    QuicStreamId stream_id = GetNthClientInitiatedId(stream_num);
-    // Replace with "WriteHeadersAndSaveData"
-    SpdySerializedFrame frame;
-    if (perspective() == Perspective::IS_SERVER) {
-      SpdyHeadersIR headers_frame(stream_id, headers_.Clone());
-      headers_frame.set_fin(fin);
-      headers_frame.set_has_priority(true);
-      headers_frame.set_weight(Spdy3PriorityToHttp2Weight(0));
-      frame = framer_->SerializeFrame(headers_frame);
-      EXPECT_CALL(session_, OnStreamHeadersPriority(stream_id, 0));
-    } else {
-      SpdyHeadersIR headers_frame(stream_id, headers_.Clone());
-      headers_frame.set_fin(fin);
-      frame = framer_->SerializeFrame(headers_frame);
-    }
-    EXPECT_CALL(session_, OnStreamHeaderList(stream_id, fin, frame.size(), _))
-        .Times(1);
-    stream_frame_.data_buffer = frame.data();
-    stream_frame_.data_length = frame.size();
-    headers_stream_->OnStreamFrame(stream_frame_);
-    connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
-    stream_frame_.offset += frame.size();
-  }
-}
-
-TEST_P(QuicHeadersStreamTest, NonEmptyHeaderHOLBlockedTime) {
-  QuicStreamId stream_id;
-  bool fin = true;
-  QuicStreamFrame stream_frames[10];
-  SpdySerializedFrame frames[10];
-  // First create all the frames in order
-  {
-    InSequence seq;
-    for (int stream_num = 0; stream_num < 10; ++stream_num) {
-      stream_id = GetNthClientInitiatedId(stream_num);
-      if (perspective() == Perspective::IS_SERVER) {
-        SpdyHeadersIR headers_frame(stream_id, headers_.Clone());
-        headers_frame.set_fin(fin);
-        headers_frame.set_has_priority(true);
-        headers_frame.set_weight(Spdy3PriorityToHttp2Weight(0));
-        frames[stream_num] = framer_->SerializeFrame(headers_frame);
-        EXPECT_CALL(session_, OnStreamHeadersPriority(stream_id, 0)).Times(1);
-      } else {
-        SpdyHeadersIR headers_frame(stream_id, headers_.Clone());
-        headers_frame.set_fin(fin);
-        frames[stream_num] = framer_->SerializeFrame(headers_frame);
-      }
-      stream_frames[stream_num].stream_id = stream_frame_.stream_id;
-      stream_frames[stream_num].offset = stream_frame_.offset;
-      stream_frames[stream_num].data_buffer = frames[stream_num].data();
-      stream_frames[stream_num].data_length = frames[stream_num].size();
-      QUIC_DVLOG(1) << "make frame for stream " << stream_num << " offset "
-                    << stream_frames[stream_num].offset;
-      stream_frame_.offset += frames[stream_num].size();
-      EXPECT_CALL(session_, OnStreamHeaderList(stream_id, fin, _, _)).Times(1);
-    }
-  }
-
-  // Actually writing the frames in reverse order will cause HOL blocking.
-  EXPECT_CALL(session_, OnHeadersHeadOfLineBlocking(_)).Times(9);
-
-  for (int stream_num = 9; stream_num >= 0; --stream_num) {
-    QUIC_DVLOG(1) << "OnStreamFrame for stream " << stream_num << " offset "
-                  << stream_frames[stream_num].offset;
-    headers_stream_->OnStreamFrame(stream_frames[stream_num]);
-    connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
-  }
 }
 
 TEST_P(QuicHeadersStreamTest, ProcessLargeRawData) {

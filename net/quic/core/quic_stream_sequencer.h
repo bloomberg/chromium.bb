@@ -20,14 +20,13 @@ namespace test {
 class QuicStreamSequencerPeer;
 }  // namespace test
 
-class QuicClock;
 class QuicStream;
 
 // Buffers frames until we have something which can be passed
 // up to the next layer.
 class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
  public:
-  QuicStreamSequencer(QuicStream* quic_stream, const QuicClock* clock);
+  explicit QuicStreamSequencer(QuicStream* quic_stream);
   virtual ~QuicStreamSequencer();
 
   // If the frame is the next one we need in order to process in-order data,
@@ -44,11 +43,9 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
   // number of iovs used.  Non-destructive of the underlying data.
   int GetReadableRegions(iovec* iov, size_t iov_len) const;
 
-  // Fills in one iovec with the next readable region.  |timestamp| is
-  // data arrived at the sequencer, and is used for measuring head of
-  // line blocking (HOL).  Returns false if there is no readable
-  // region available.
-  bool GetReadableRegion(iovec* iov, QuicTime* timestamp) const;
+  // Fills in one iovec with the next readable region.  Returns false if there
+  // is no readable region available.
+  bool GetReadableRegion(iovec* iov) const;
 
   // Copies the data into the iov_len buffers provided.  Returns the number of
   // bytes read.  Any buffered data no longer in use will be released.
@@ -144,9 +141,6 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
 
   // Count of the number of duplicate frames received.
   int num_duplicate_frames_received_;
-
-  // Not owned.
-  const QuicClock* clock_;
 
   // If true, all incoming data will be discarded.
   bool ignore_read_data_;

@@ -40,9 +40,6 @@ class QuicStreamSequencerBufferPeer {
 
   size_t ReadableBytes();
 
-  std::map<QuicStreamOffset, QuicStreamSequencerBuffer::FrameInfo>*
-  frame_arrival_time_map();
-
   void set_total_bytes_read(QuicStreamOffset total_bytes_read);
 
   void AddBytesReceived(QuicStreamOffset offset, QuicByteCount length);

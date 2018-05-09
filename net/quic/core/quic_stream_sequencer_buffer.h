@@ -46,10 +46,9 @@
 //                  iovec{dest + 80, 40}};
 //  size_t read = buffer.Readv(iovecs, 3);
 //
-//  // Get single readable region with timestamp.
-//  QuicTime t;
+//  // Get single readable region.
 //  iovec iov;
-//  buffer.GetReadableRegion(iov, &t);
+//  buffer.GetReadableRegion(iov);
 //
 //  // Get readable regions from [256, 1024) and consume some of it.
 //  iovec iovs[2];
@@ -86,15 +85,6 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
     QuicStreamOffset end_offset;
   };
 
-  // A FrameInfo stores the length of a frame and the time it arrived.
-  struct QUIC_EXPORT_PRIVATE FrameInfo {
-    FrameInfo();
-    FrameInfo(size_t length, QuicTime timestamp);
-
-    size_t length;
-    QuicTime timestamp;
-  };
-
   // Size of blocks used by this buffer.
   // Choose 8K to make block large enough to hold multiple frames, each of
   // which could be up to 1.5 KB.
@@ -117,10 +107,8 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
   // Called to buffer new data received for this stream.  If the data was
   // successfully buffered, returns QUIC_NO_ERROR and stores the number of
   // bytes buffered in |bytes_buffered|. Returns an error otherwise.
-  // |timestamp| is the time the data arrived.
   QuicErrorCode OnStreamData(QuicStreamOffset offset,
                              QuicStringPiece data,
-                             QuicTime timestamp,
                              size_t* bytes_buffered,
                              QuicString* error_details);
 
@@ -137,15 +125,13 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
   // Returns the number of iovec entries in |iov| which were populated.
   // If the region is empty, one iovec entry with 0 length
   // is returned, and the function returns 0. If there are more readable
-  // regions than iov_size, the function only processes the first
-  // iov_size of them.
+  // regions than |iov_size|, the function only processes the first
+  // |iov_size| of them.
   int GetReadableRegions(struct iovec* iov, int iov_len) const;
 
-  // Fills in one iovec with data which all arrived at the same time from the
-  // next readable region.
-  // Populates |timestamp| with the time that this data arrived.
+  // Fills in one iovec with data from the next readable region.
   // Returns false if there is no readable region available.
-  bool GetReadableRegion(iovec* iov, QuicTime* timestamp) const;
+  bool GetReadableRegion(iovec* iov) const;
 
   // Called after GetReadableRegions() to free up |bytes_used| space if these
   // bytes are processed.
@@ -218,12 +204,6 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
   // Returns offset of highest received byte + 1.
   QuicStreamOffset NextExpectedByte() const;
 
-  // Called after Readv() and MarkConsumed() to keep frame_arrival_time_map_
-  // up to date.
-  // |offset| is the byte next read should start from. All frames before it
-  // should be removed from the map.
-  void UpdateFrameArrivalMap(QuicStreamOffset offset);
-
   // Return |gaps_| as a string: [1024, 1500) [1800, 2048)... for debugging.
   QuicString GapsDebugString();
 
@@ -246,10 +226,6 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
 
   // Number of bytes in buffer.
   size_t num_bytes_buffered_;
-
-  // Stores all the buffered frames' start offset, length and arrival time.
-  // TODO(fayang): Remove this as it is obsolete.
-  std::map<QuicStreamOffset, FrameInfo> frame_arrival_time_map_;
 
   // For debugging use after free, assigned to 123456 in constructor and 654321
   // in destructor. As long as it's not 123456, this means either use after free

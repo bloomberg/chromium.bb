@@ -22,15 +22,13 @@
 
 namespace net {
 
-QuicStreamSequencer::QuicStreamSequencer(QuicStream* quic_stream,
-                                         const QuicClock* clock)
+QuicStreamSequencer::QuicStreamSequencer(QuicStream* quic_stream)
     : stream_(quic_stream),
       buffered_frames_(kStreamReceiveWindowLimit),
       close_offset_(std::numeric_limits<QuicStreamOffset>::max()),
       blocked_(false),
       num_frames_received_(0),
       num_duplicate_frames_received_(0),
-      clock_(clock),
       ignore_read_data_(false),
       level_triggered_(false) {}
 
@@ -52,7 +50,7 @@ void QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
   QuicString error_details;
   QuicErrorCode result = buffered_frames_.OnStreamData(
       byte_offset, QuicStringPiece(frame.data_buffer, frame.data_length),
-      clock_->ApproximateNow(), &bytes_written, &error_details);
+      &bytes_written, &error_details);
   if (result != QUIC_NO_ERROR) {
     QuicString details = QuicStrCat(
         "Stream ", stream_->id(), ": ", QuicErrorCodeToString(result), ": ",
@@ -135,10 +133,9 @@ int QuicStreamSequencer::GetReadableRegions(iovec* iov, size_t iov_len) const {
   return buffered_frames_.GetReadableRegions(iov, iov_len);
 }
 
-bool QuicStreamSequencer::GetReadableRegion(iovec* iov,
-                                            QuicTime* timestamp) const {
+bool QuicStreamSequencer::GetReadableRegion(iovec* iov) const {
   DCHECK(!blocked_);
-  return buffered_frames_.GetReadableRegion(iov, timestamp);
+  return buffered_frames_.GetReadableRegion(iov);
 }
 
 int QuicStreamSequencer::Readv(const struct iovec* iov, size_t iov_len) {
