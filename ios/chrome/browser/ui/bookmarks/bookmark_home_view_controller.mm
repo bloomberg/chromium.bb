@@ -17,6 +17,8 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_view_controller.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_home_consumer.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_home_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_shared_state.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_waiting_view.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
@@ -79,6 +81,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     BookmarkEditViewControllerDelegate,
     BookmarkFolderEditorViewControllerDelegate,
     BookmarkFolderViewControllerDelegate,
+    BookmarkHomeConsumer,
     BookmarkHomeSharedStateObserver,
     BookmarkModelBridgeObserver,
     BookmarkPromoControllerDelegate,
@@ -108,8 +111,14 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 // The user's browser state model used.
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 
+// The mediator that provides data for this view controller.
+@property(nonatomic, strong) BookmarkHomeMediator* mediator;
+
 // The main view showing all the bookmarks.
 @property(nonatomic, strong) BookmarkTableView* bookmarksTableView;
+
+// The table view's styler.
+@property(nonatomic, strong) ChromeTableViewStyler* tableViewStyler;
 
 // The view controller used to pick a folder in which to move the selected
 // bookmarks.
@@ -169,6 +178,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 @synthesize cachedContentPosition = _cachedContentPosition;
 @synthesize isReconstructingFromCache = _isReconstructingFromCache;
 @synthesize sharedState = _sharedState;
+@synthesize mediator = _mediator;
+@synthesize tableViewStyler = _tableViewStyler;
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -201,6 +212,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 }
 
 - (void)dealloc {
+  [self.mediator disconnect];
   [self removeKeyboardObservers];
   _sharedState.tableView.dataSource = nil;
   _sharedState.tableView.delegate = nil;
@@ -284,8 +296,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   [self.view addSubview:self.bookmarksTableView];
 
   // Configure the table view.
-  self.sharedState.tableView.dataSource = self;
-  self.sharedState.tableView.delegate = self;
+  self.tableViewStyler = [[ChromeTableViewStyler alloc] init];
   self.sharedState.tableView.accessibilityIdentifier = @"bookmarksTableView";
   if (@available(iOS 11.0, *)) {
     self.sharedState.tableView.contentInsetAdjustmentBehavior =
@@ -303,6 +314,14 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   longPressRecognizer.numberOfTouchesRequired = 1;
   longPressRecognizer.delegate = self;
   [self.sharedState.tableView addGestureRecognizer:longPressRecognizer];
+
+  // Create the mediator and hook up the table view.
+  self.mediator =
+      [[BookmarkHomeMediator alloc] initWithSharedState:self.sharedState];
+  self.mediator.consumer = self;
+  [self.mediator startMediating];
+  self.sharedState.tableView.dataSource = self;
+  self.sharedState.tableView.delegate = self;
 
   [self registerForKeyboardNotifications];
 
@@ -339,6 +358,22 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                               scrollPosition:static_cast<double>(
                                                  self.bookmarksTableView
                                                      .contentPosition)];
+}
+
+#pragma mark - BookmarkHomeConsumer
+
+- (void)reconfigureCellsForItems:(NSArray*)items {
+  for (TableViewItem* item in items) {
+    NSIndexPath* indexPath =
+        [self.sharedState.tableViewModel indexPathForItem:item];
+    UITableViewCell* cell =
+        [self.sharedState.tableView cellForRowAtIndexPath:indexPath];
+
+    // |cell| may be nil if the row is not currently on screen.
+    if (cell) {
+      [item configureCell:cell withStyler:self.tableViewStyler];
+    }
+  }
 }
 
 #pragma mark - BookmarkPromoControllerDelegate
@@ -1450,7 +1485,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   UITableViewCell* cell = [self.sharedState.tableView
       dequeueReusableCellWithIdentifier:reuseIdentifier
                            forIndexPath:indexPath];
-  [item configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
+  [item configureCell:cell withStyler:self.tableViewStyler];
 
   if (item.type == BookmarkHomeItemTypeBookmark) {
     BookmarkHomeNodeItem* nodeItem =
