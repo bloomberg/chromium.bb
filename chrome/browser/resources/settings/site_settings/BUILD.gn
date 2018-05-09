@@ -124,6 +124,7 @@ js_library("site_data") {
     ":local_data_browser_proxy",
     ":site_settings_behavior",
     "..:global_scroll_target_behavior",
+    "..:list_property_update_behavior",
     "../settings_page:settings_subpage_search",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",

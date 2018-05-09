@@ -114,7 +114,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
    * @private
    */
   function flushPasswordSection(passwordsSection) {
-    passwordsSection.$.passwordList.notifyResize();
+    passwordsSection.notifySplices('savedPasswords');
     Polymer.dom.flush();
   }
 
