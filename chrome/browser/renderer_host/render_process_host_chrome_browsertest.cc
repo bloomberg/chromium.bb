@@ -85,7 +85,7 @@ base::Process ProcessFromHandle(base::ProcessHandle handle) {
 
 }  // namespace
 
-class ChromeRenderProcessHostTest : public ExtensionBrowserTest {
+class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
  public:
   ChromeRenderProcessHostTest() {}
 

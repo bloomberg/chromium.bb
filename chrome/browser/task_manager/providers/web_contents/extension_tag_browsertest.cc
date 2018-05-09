@@ -18,15 +18,15 @@
 
 namespace task_manager {
 
-class ExtensionTagsTest : public ExtensionBrowserTest {
+class ExtensionTagsTest : public extensions::ExtensionBrowserTest {
  public:
   ExtensionTagsTest() {}
   ~ExtensionTagsTest() override {}
 
  protected:
-  // ExtensionBrowserTest:
+  // extensions::ExtensionBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
+    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
 
     // Do not launch device discovery process.
     command_line->AppendSwitch(switches::kDisableDeviceDiscoveryNotifications);

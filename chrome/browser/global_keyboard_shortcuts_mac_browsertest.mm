@@ -17,7 +17,7 @@
 
 using cocoa_test_event_utils::SynthesizeKeyEvent;
 
-using GlobalKeyboardShortcutsTest = ExtensionBrowserTest;
+using GlobalKeyboardShortcutsTest = extensions::ExtensionBrowserTest;
 
 namespace {
 

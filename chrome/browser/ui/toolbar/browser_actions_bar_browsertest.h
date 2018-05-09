@@ -19,7 +19,7 @@ class BrowserActionTestUtil;
 class ToolbarActionsModel;
 
 // A platform-independent browser test class for the browser actions bar.
-class BrowserActionsBarBrowserTest : public ExtensionBrowserTest {
+class BrowserActionsBarBrowserTest : public extensions::ExtensionBrowserTest {
  protected:
   BrowserActionsBarBrowserTest();
   ~BrowserActionsBarBrowserTest() override;

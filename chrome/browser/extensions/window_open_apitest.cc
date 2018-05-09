@@ -57,6 +57,8 @@ namespace aura {
 class Window;
 }
 
+namespace extensions {
+
 class WindowOpenApiTest : public ExtensionApiTest {
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
@@ -524,3 +526,5 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest,
             extension->install_warnings().front().message);
 }
 #endif
+
+}  // namespace extensions

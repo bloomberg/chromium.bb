@@ -44,7 +44,7 @@ class TestBackgroundModeManager : public BackgroundModeManager {
   DISALLOW_COPY_AND_ASSIGN(TestBackgroundModeManager);
 };
 
-class BackgroundAppBrowserTest: public ExtensionBrowserTest {};
+using BackgroundAppBrowserTest = extensions::ExtensionBrowserTest;
 
 // Tests that if we reload a background app, we don't get a popup bubble
 // telling us that a new background app has been installed.

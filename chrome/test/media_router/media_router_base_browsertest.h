@@ -28,7 +28,7 @@ namespace media_router {
  * 2. "--extension-unpacked" flag to specify the unpacked extension location
  * Only one of them should be passed when run browser tests.
  */
-class MediaRouterBaseBrowserTest : public ExtensionBrowserTest,
+class MediaRouterBaseBrowserTest : public extensions::ExtensionBrowserTest,
                                    public extensions::ProcessManagerObserver {
  public:
   MediaRouterBaseBrowserTest();

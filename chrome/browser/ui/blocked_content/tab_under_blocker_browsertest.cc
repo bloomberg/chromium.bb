@@ -41,7 +41,7 @@
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #endif
 
-class TabUnderBlockerBrowserTest : public ExtensionBrowserTest {
+class TabUnderBlockerBrowserTest : public extensions::ExtensionBrowserTest {
  public:
   TabUnderBlockerBrowserTest() {
     EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
@@ -52,7 +52,7 @@ class TabUnderBlockerBrowserTest : public ExtensionBrowserTest {
   ~TabUnderBlockerBrowserTest() override {}
 
   void SetUpOnMainThread() override {
-    ExtensionBrowserTest::SetUpOnMainThread();
+    extensions::ExtensionBrowserTest::SetUpOnMainThread();
     scoped_feature_list_.InitAndEnableFeature(
         TabUnderNavigationThrottle::kBlockTabUnders);
     host_resolver()->AddRule("*", "127.0.0.1");

@@ -77,7 +77,7 @@ const base::FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
 
 }  // namespace
 
-class TaskManagerBrowserTest : public ExtensionBrowserTest {
+class TaskManagerBrowserTest : public extensions::ExtensionBrowserTest {
  public:
   TaskManagerBrowserTest() {}
   ~TaskManagerBrowserTest() override {}
@@ -117,7 +117,7 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
+    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
 
     // Do not launch device discovery process.
     command_line->AppendSwitch(switches::kDisableDeviceDiscoveryNotifications);
@@ -125,11 +125,11 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
 
   void TearDownOnMainThread() override {
     model_.reset();
-    ExtensionBrowserTest::TearDownOnMainThread();
+    extensions::ExtensionBrowserTest::TearDownOnMainThread();
   }
 
   void SetUpOnMainThread() override {
-    ExtensionBrowserTest::SetUpOnMainThread();
+    extensions::ExtensionBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
 
     // Add content/test/data so we can use cross_site_iframe_factory.html

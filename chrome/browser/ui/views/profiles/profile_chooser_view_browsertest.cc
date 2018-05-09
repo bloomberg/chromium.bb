@@ -125,7 +125,7 @@ Profile* SetupProfilesForLock(Profile* signed_in) {
 }  // namespace
 
 class ProfileChooserViewExtensionsTest
-    : public SupportsTestDialog<ExtensionBrowserTest> {
+    : public SupportsTestDialog<extensions::ExtensionBrowserTest> {
  public:
   ProfileChooserViewExtensionsTest() {}
   ~ProfileChooserViewExtensionsTest() override {}

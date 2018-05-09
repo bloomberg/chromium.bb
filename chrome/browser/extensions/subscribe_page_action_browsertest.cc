@@ -14,7 +14,8 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 using content::WebContents;
-using extensions::Extension;
+
+namespace extensions {
 
 namespace {
 
@@ -68,10 +69,9 @@ GURL GetFeedUrl(net::EmbeddedTestServer* server,
   if (direct_url) {
     // We navigate directly to the subscribe page for feeds where the feed
     // sniffing won't work, in other words, as is the case for malformed feeds.
-    return GURL(std::string(extensions::kExtensionScheme) +
-        url::kStandardSchemeSeparator +
-        extension_id + std::string(kSubscribePage) + std::string("?") +
-        feed_url.spec() + std::string("&synchronous"));
+    return GURL(std::string(kExtensionScheme) + url::kStandardSchemeSeparator +
+                extension_id + std::string(kSubscribePage) + std::string("?") +
+                feed_url.spec() + std::string("&synchronous"));
   } else {
     // Navigate to the feed content (which will cause the extension to try to
     // sniff the type and display the subscribe page in another tab.
@@ -328,3 +328,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
                             browser(), id, true, "Feed for MyFeedTitle",
                             "Title with no link", "Desc", "No error");
 }
+
+}  // namespace extensions

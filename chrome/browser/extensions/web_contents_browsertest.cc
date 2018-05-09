@@ -22,9 +22,8 @@
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 
+namespace extensions {
 namespace {
-
-using ExtensionApiFrameIdMap = extensions::ExtensionApiFrameIdMap;
 
 content::WebContents* GetActiveWebContents(const Browser* browser) {
   return browser->tab_strip_model()->GetActiveWebContents();
@@ -37,7 +36,7 @@ class ExtensionNavigationUIDataObserver : public content::WebContentsObserver {
   explicit ExtensionNavigationUIDataObserver(content::WebContents* web_contents)
       : WebContentsObserver(web_contents) {}
 
-  const extensions::ExtensionNavigationUIData* GetExtensionNavigationUIData(
+  const ExtensionNavigationUIData* GetExtensionNavigationUIData(
       content::RenderFrameHost* rfh) const {
     auto iter = navigation_ui_data_map_.find(rfh);
     if (iter == navigation_ui_data_map_.end())
@@ -59,7 +58,7 @@ class ExtensionNavigationUIDataObserver : public content::WebContentsObserver {
   }
 
   std::map<content::RenderFrameHost*,
-           std::unique_ptr<extensions::ExtensionNavigationUIData>>
+           std::unique_ptr<ExtensionNavigationUIData>>
       navigation_ui_data_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionNavigationUIDataObserver);
@@ -102,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DevToolsMainFrameIsCached) {
   auto test_devtools_main_frame_cached = [](Browser* browser, bool is_docked) {
     SCOPED_TRACE(base::StringPrintf("Testing a %s devtools window",
                                     is_docked ? "docked" : "undocked"));
-    const auto* api_frame_id_map = extensions::ExtensionApiFrameIdMap::Get();
+    const auto* api_frame_id_map = ExtensionApiFrameIdMap::Get();
     size_t prior_count = api_frame_id_map->GetFrameDataCountForTesting();
 
     // Open a devtools window.
@@ -133,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DevToolsMainFrameIsCached) {
 // Regression test for crbug.com/810614.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FrameDataCached) {
   // Load an extension with a web accessible resource.
-  const extensions::Extension* extension =
+  const Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("web_accessible_resources"));
   ASSERT_TRUE(extension);
 
@@ -306,3 +305,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ExtensionNavigationUIData) {
     EXPECT_FALSE(frame_data.pending_main_frame_url);
   }
 }
+
+}  // namespace extensions

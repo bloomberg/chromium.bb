@@ -152,16 +152,16 @@ typedef base::Optional<policy::PolicyLevel> PolicyVariant;
 
 }  // namespace
 
-class StartupBrowserCreatorTest : public ExtensionBrowserTest {
+class StartupBrowserCreatorTest : public extensions::ExtensionBrowserTest {
  protected:
   StartupBrowserCreatorTest() {}
 
   bool SetUpUserDataDirectory() override {
-    return ExtensionBrowserTest::SetUpUserDataDirectory();
+    return extensions::ExtensionBrowserTest::SetUpUserDataDirectory();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
+    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kHomePage, url::kAboutBlankURL);
 #if defined(OS_CHROMEOS)
     // TODO(nkostylev): Investigate if we can remove this switch.

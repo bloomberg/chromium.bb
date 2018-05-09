@@ -59,7 +59,7 @@ std::string BuildForceInstallPolicyValue(const char* extension_id,
 
 }  // namespace
 
-class ExtensionManagementTest : public ExtensionBrowserTest {
+class ExtensionManagementTest : public extensions::ExtensionBrowserTest {
  public:
   void SetUpInProcessBrowserTestFixture() override {
     EXPECT_CALL(policy_provider_, IsInitializationComplete(_))

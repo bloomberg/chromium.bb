@@ -19,7 +19,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
-typedef ExtensionBrowserTest ViewExtensionSourceTest;
+typedef extensions::ExtensionBrowserTest ViewExtensionSourceTest;
 
 // Verify that restoring a view-source tab for a Chrome extension works
 // properly.  See https://crbug.com/699428.

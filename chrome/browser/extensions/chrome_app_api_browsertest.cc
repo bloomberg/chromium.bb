@@ -25,9 +25,9 @@
 
 using extensions::Extension;
 
-class ChromeAppAPITest : public ExtensionBrowserTest {
+class ChromeAppAPITest : public extensions::ExtensionBrowserTest {
   void SetUpOnMainThread() override {
-    ExtensionBrowserTest::SetUpOnMainThread();
+    extensions::ExtensionBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
   }

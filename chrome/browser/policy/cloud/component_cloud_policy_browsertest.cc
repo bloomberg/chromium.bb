@@ -92,13 +92,13 @@ const char kTestPolicy2JSON[] = "{\"Another\":\"turn_it_off\"}";
 
 }  // namespace
 
-class ComponentCloudPolicyTest : public ExtensionBrowserTest {
+class ComponentCloudPolicyTest : public extensions::ExtensionBrowserTest {
  protected:
   ComponentCloudPolicyTest() {}
   ~ComponentCloudPolicyTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
+    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
 #if defined(OS_CHROMEOS)
     // ExtensionBrowserTest sets the login users to a non-managed value;
     // replace it. This is the default username sent in policy blobs from the
@@ -122,11 +122,11 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kDeviceManagementUrl, url);
 
-    ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
+    extensions::ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
   void SetUpOnMainThread() override {
-    ExtensionBrowserTest::SetUpOnMainThread();
+    extensions::ExtensionBrowserTest::SetUpOnMainThread();
     ASSERT_TRUE(PolicyServiceIsEmpty(g_browser_process->policy_service()))
         << "Pre-existing policies in this machine will make this test fail.";
 
@@ -147,7 +147,7 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
 
   void TearDownOnMainThread() override {
     event_listener_.reset();
-    ExtensionBrowserTest::TearDownOnMainThread();
+    extensions::ExtensionBrowserTest::TearDownOnMainThread();
   }
 
   scoped_refptr<const extensions::Extension> LoadExtension(
@@ -158,7 +158,8 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
       return NULL;
     }
     scoped_refptr<const extensions::Extension> extension(
-        ExtensionBrowserTest::LoadExtension(full_path.Append(path)));
+        extensions::ExtensionBrowserTest::LoadExtension(
+            full_path.Append(path)));
     if (!extension.get()) {
       ADD_FAILURE();
       return NULL;

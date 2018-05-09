@@ -32,7 +32,8 @@ using extensions::ContextMenuMatcher;
 using extensions::MenuItem;
 using ui::MenuModel;
 
-class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
+class ExtensionContextMenuBrowserTest
+    : public extensions::ExtensionBrowserTest {
  public:
   // Helper to load an extension from context_menus/|subdirectory| in the
   // extensions test data dir.

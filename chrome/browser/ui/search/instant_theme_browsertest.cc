@@ -24,7 +24,8 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class InstantThemeTest : public ExtensionBrowserTest, public InstantTestBase {
+class InstantThemeTest : public extensions::ExtensionBrowserTest,
+                         public InstantTestBase {
  public:
   InstantThemeTest() {}
 
@@ -37,7 +38,7 @@ class InstantThemeTest : public ExtensionBrowserTest, public InstantTestBase {
   }
 
   void SetUpOnMainThread() override {
-    ExtensionBrowserTest::SetUpOnMainThread();
+    extensions::ExtensionBrowserTest::SetUpOnMainThread();
 
     content::URLDataSource::Add(profile(), new ThemeSource(profile()));
   }
@@ -58,7 +59,7 @@ class InstantThemeTest : public ExtensionBrowserTest, public InstantTestBase {
         content::Source<ThemeService>(
             ThemeServiceFactory::GetForProfile(profile())));
     ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
-        theme_path, 1, ExtensionBrowserTest::browser()));
+        theme_path, 1, extensions::ExtensionBrowserTest::browser()));
     theme_change_observer.Wait();
     size_t num_after = extensions::ExtensionRegistry::Get(profile())
                            ->enabled_extensions()

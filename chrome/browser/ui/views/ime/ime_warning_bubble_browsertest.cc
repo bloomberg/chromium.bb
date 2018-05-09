@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/views/ime/ime_warning_bubble_view.h"
 #include "ui/views/controls/button/checkbox.h"
 
-class ImeWarningBubbleTest : public ExtensionBrowserTest {
+class ImeWarningBubbleTest : public extensions::ExtensionBrowserTest {
  public:
   ImeWarningBubbleTest();
   ~ImeWarningBubbleTest() override {}
@@ -40,9 +40,8 @@ ImeWarningBubbleTest::ImeWarningBubbleTest()
 
 void ImeWarningBubbleTest::SetUpOnMainThread() {
   ToolbarActionsBar::disable_animations_for_testing_ = true;
-  ExtensionBrowserTest::SetUpOnMainThread();
-  extension_ = ExtensionBrowserTest::LoadExtension(
-      test_data_dir_.AppendASCII("input_ime"));
+  extensions::ExtensionBrowserTest::SetUpOnMainThread();
+  extension_ = LoadExtension(test_data_dir_.AppendASCII("input_ime"));
   callback_ =
       base::Bind(&ImeWarningBubbleTest::OnPermissionBubbleFinished,
                  base::Unretained(this));

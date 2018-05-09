@@ -9,7 +9,7 @@ using extensions::Extension;
 // Test ensures that Wasm can run in Chrome Apps.
 namespace {
 
-class WasmAppTest : public ExtensionBrowserTest {};
+using WasmAppTest = extensions::ExtensionBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(WasmAppTest, InstantiateWasmFromFetch) {
   const Extension* extension =

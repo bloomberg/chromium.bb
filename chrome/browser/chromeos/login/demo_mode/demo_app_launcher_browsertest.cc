@@ -60,7 +60,7 @@ bool VerifyNetworksDisabled() {
 
 }  // namespace
 
-class DemoAppLauncherTest : public ExtensionBrowserTest {
+class DemoAppLauncherTest : public extensions::ExtensionBrowserTest {
  public:
   DemoAppLauncherTest() { set_exit_when_last_browser_closes(false); }
 
@@ -78,7 +78,7 @@ class DemoAppLauncherTest : public ExtensionBrowserTest {
 
   void SetUp() override {
     chromeos::DemoAppLauncher::SetDemoAppPathForTesting(GetTestDemoAppPath());
-    ExtensionBrowserTest::SetUp();
+    extensions::ExtensionBrowserTest::SetUp();
   }
 
  private:

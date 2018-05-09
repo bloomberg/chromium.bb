@@ -16,7 +16,7 @@
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/value_builder.h"
 
-class LocationBarBrowserTest : public ExtensionBrowserTest {
+class LocationBarBrowserTest : public extensions::ExtensionBrowserTest {
  public:
   LocationBarBrowserTest() {}
   ~LocationBarBrowserTest() override {}
@@ -31,7 +31,7 @@ class LocationBarBrowserTest : public ExtensionBrowserTest {
 };
 
 void LocationBarBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
-  ExtensionBrowserTest::SetUpCommandLine(command_line);
+  extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
 
   // In order to let a vanilla extension override the bookmark star, we have to
   // enable the switch.

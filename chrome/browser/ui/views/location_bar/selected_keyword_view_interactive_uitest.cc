@@ -22,7 +22,7 @@ void InputKeys(Browser* browser, const std::vector<ui::KeyboardCode>& keys) {
   }
 }
 
-class SelectedKeywordViewTest : public ExtensionBrowserTest {
+class SelectedKeywordViewTest : public extensions::ExtensionBrowserTest {
  public:
   SelectedKeywordViewTest() = default;
   ~SelectedKeywordViewTest() override = default;

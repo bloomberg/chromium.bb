@@ -28,7 +28,7 @@ bool UsingCustomTheme(const ThemeService& theme_service) {
          !theme_service.UsingDefaultTheme();
 }
 
-class ThemeServiceBrowserTest : public ExtensionBrowserTest {
+class ThemeServiceBrowserTest : public extensions::ExtensionBrowserTest {
  public:
   ThemeServiceBrowserTest() {
   }
@@ -36,7 +36,7 @@ class ThemeServiceBrowserTest : public ExtensionBrowserTest {
 
   void SetUp() override {
     extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
-    ExtensionBrowserTest::SetUp();
+    extensions::ExtensionBrowserTest::SetUp();
   }
 
  private:
