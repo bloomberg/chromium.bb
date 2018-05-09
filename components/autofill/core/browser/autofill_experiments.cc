@@ -55,8 +55,6 @@ const base::Feature kAutofillPreferServerNamePredictions{
 const base::Feature kAutofillRationalizeFieldTypePredictions{
     "AutofillRationalizeFieldTypePredictions",
     base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kAutofillSuggestInvalidProfileData{
-    "AutofillSuggestInvalidProfileData", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAutofillSuppressDisusedAddresses{
     "AutofillSuppressDisusedAddresses", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAutofillSuppressDisusedCreditCards{
@@ -70,8 +68,6 @@ const base::Feature kAutofillUpstreamSendPanFirstSix{
 const base::Feature kAutofillUpstreamUpdatePromptExplanation{
     "AutofillUpstreamUpdatePromptExplanation",
     base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillVoteUsingInvalidProfileData{
-    "AutofillVoteUsingInvalidProfileData", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const char kCreditCardSigninPromoImpressionLimitParamKey[] = "impression_limit";
 const char kAutofillCreditCardPopupBackgroundColorKey[] = "background_color";

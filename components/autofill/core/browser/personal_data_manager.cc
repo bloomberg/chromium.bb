@@ -16,7 +16,6 @@
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/timezone.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -976,32 +975,6 @@ void PersonalDataManager::RemoveProfilesNotUsedSinceTimestamp(
       num_profiles_supressed);
 }
 
-// static
-void PersonalDataManager::MaybeRemoveInvalidSuggestions(
-    const AutofillType& type,
-    std::vector<AutofillProfile*>* profiles) {
-  const bool suggest_invalid =
-      base::FeatureList::IsEnabled(kAutofillSuggestInvalidProfileData);
-
-  for (size_t i = 0; i < profiles->size(); ++i) {
-    bool is_invalid = (*profiles)[i]->GetValidityState(
-                          type.GetStorableType()) == AutofillProfile::INVALID;
-    if (is_invalid) {
-      UMA_HISTOGRAM_BOOLEAN("Autofill.InvalidProfileData.UsedForSuggestion",
-                            suggest_invalid);
-      if (!suggest_invalid)
-        (*profiles)[i] = nullptr;
-    }
-  }
-
-  if (!suggest_invalid) {
-    profiles->erase(
-        std::stable_partition(profiles->begin(), profiles->end(),
-                              [](AutofillProfile* p) { return p != nullptr; }),
-        profiles->end());
-  }
-}
-
 std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
     const AutofillType& type,
     const base::string16& field_contents,
@@ -1017,15 +990,13 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   // Get the profiles to suggest, which are already sorted.
   std::vector<AutofillProfile*> profiles = GetProfilesToSuggest();
 
-  // When suggesting with no prefix to match, consider suppressing disused
-  // address suggestions as well as those based on invalid profile data.
-  if (field_contents_canon.empty()) {
-    if (base::FeatureList::IsEnabled(kAutofillSuppressDisusedAddresses)) {
-      const base::Time min_last_used =
-          AutofillClock::Now() - kDisusedProfileTimeDelta;
-      RemoveProfilesNotUsedSinceTimestamp(min_last_used, &profiles);
-    }
-    MaybeRemoveInvalidSuggestions(type, &profiles);
+  // If enabled, suppress disused address profiles when triggered from an empty
+  // field.
+  if (field_contents_canon.empty() &&
+      base::FeatureList::IsEnabled(kAutofillSuppressDisusedAddresses)) {
+    const base::Time min_last_used =
+        AutofillClock::Now() - kDisusedProfileTimeDelta;
+    RemoveProfilesNotUsedSinceTimestamp(min_last_used, &profiles);
   }
 
   std::vector<Suggestion> suggestions;
