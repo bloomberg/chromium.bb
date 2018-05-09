@@ -74,7 +74,7 @@
     <enum name="error">
       <entry name="role" value="0" summary="given wl_surface has another role"/>
       <entry name="invalid_notification_key" value="1"
-       summary="invalid notification key"/>
+	     summary="invalid notification key"/>
     </enum>
 
     <enum name="layout_mode">
@@ -202,7 +202,7 @@
 
     <enum name="systemui_visibility_state">
       <description summary="systemui visibility behavior">
-         Determine the visibility behavior of the system UI.
+	Determine the visibility behavior of the system UI.
       </description>
       <entry name="visible" value="1" summary="system ui is visible"/>
       <entry name="autohide_non_sticky" value="2" summary="system ui autohides and is not sticky"/>
@@ -211,7 +211,7 @@
 
     <enum name="orientation">
       <description summary="window orientation">
-         The orientation of the window.
+	The orientation of the window.
       </description>
       <entry name="portrait" value="1" summary="portrait"/>
       <entry name="landscape" value="2" summary="landscape"/>
@@ -219,7 +219,7 @@
 
     <enum name="window_type">
       <description summary="window type">
-        The type of the window.
+	The type of the window.
       </description>
       <entry name="normal" value="1" summary="normal app window"/>
       <entry name="system_ui" value="2" summary="window is treated as systemui"/>
@@ -291,7 +291,7 @@
       <arg name="y" type="int"/>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
-     </request>
+    </request>
 
     <request name="set_rectangular_shadow_background_opacity">
       <description summary="suggests the window's background opacity">
@@ -629,7 +629,7 @@
 
     <enum name="bounds_change_reason">
       <description summary="bounds_change_reason">
-        Specifies the cause of the window bounds change event.
+	Specifies the cause of the window bounds change event.
       </description>
       <entry name="drag_move" value="1" summary="the window is being moved by drag operation"/>
       <entry name="drag_resize" value="2" summary="the window is being resized by drag operation."/>
@@ -767,13 +767,13 @@
 
     <request name="set_snapped_to_left" since="11">
       <description summary="set the surface to left snapped">
-        Request that surface is snapped to left.
+	Request that surface is snapped to left.
       </description>
     </request>
 
     <request name="set_snapped_to_right" since="11">
       <description summary="set the surface to right snapped">
-        Request that surface is snapped to right.
+	Request that surface is snapped to right.
       </description>
     </request>
 
@@ -822,7 +822,7 @@
 
     <enum name="frame_button_type">
       <description summary="frame button types">
-        The mask that represents buttons on frame.
+	The mask that represents buttons on frame.
       </description>
       <entry name="back" value="1" summary="a button to naviate backwards"/>
       <entry name="minimize" value="2" summary="a button to minimize the window"/>
@@ -888,7 +888,7 @@
 
     <request name="pip" since="15">
       <description summary="set pip for a remote surface">
-  Request that surface is set to Picture-in-Picture (PIP).
+	Request that surface is set to Picture-in-Picture (PIP).
       </description>
     </request>
 
@@ -910,7 +910,7 @@
 
     <request name="set_app_id" since="2">
       <description summary="set application ID">
-        Set an application identifier for the notification surface.
+	Set an application identifier for the notification surface.
       </description>
       <arg name="app_id" type="string"/>
     </request>
