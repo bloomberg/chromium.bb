@@ -140,6 +140,11 @@ __x86.get_pc_thunk.ax:
          * this address be aligned to 16 bytes.  Align it further to 64
          * bytes because that is the usual size of a cache line; this
          * might help performance and is very unlikely to hurt it.
+         *
+         * Note: On Windows the assembler currently used (GAS 2.17.50) doesn't
+         * request any alignment of the .rodata section, so the memory block
+         * only gets the default alignment which is 16 bytes. If we upgrade to
+         * GAS 2.20.1, we could request alignment in the .section directive.
          */
         .balign 64
 fxrstor_default_state:
