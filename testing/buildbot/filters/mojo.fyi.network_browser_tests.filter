@@ -138,7 +138,9 @@
 -ExtensionWebRequestApiTest.WebRequestDiceHeaderProtection
 -ExtensionWebRequestApiTest.WebRequestTypes
 -ExtensionWebRequestApiTest.WebRequestTestOSDD
+# http://crbug.com/841002
 -ExtensionWebRequestApiTest.WebRequestURLFetcherInterception
+-ExtensionWebRequestApiTest.WebRequestClientsGoogleComProtection
 # Note WebRequestUnloadImmediately is disabled on Linux
 -ExtensionWebRequestApiTest.WebRequestUnloadImmediately
 
