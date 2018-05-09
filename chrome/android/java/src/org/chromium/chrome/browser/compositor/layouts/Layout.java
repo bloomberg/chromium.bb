@@ -109,7 +109,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     private boolean mIsHiding;
 
     // The next id to show when the layout is hidden, or TabBase#INVALID_TAB_ID if no change.
-    private int mNextTabId = Tab.INVALID_TAB_ID;
+    protected int mNextTabId = Tab.INVALID_TAB_ID;
 
     // The ratio of dp to px.
     protected final float mDpToPx;

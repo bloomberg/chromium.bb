@@ -14,6 +14,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
@@ -99,6 +100,12 @@ public abstract class StackLayoutBase
      * otherwise.
      */
     protected boolean mIsActiveLayout;
+
+    /**
+     * This is true if a new tab was just created and we're in the process of hiding this layout as
+     * a result and false otherwise.
+     */
+    private boolean mIsHidingBecauseOfNewTabCreation;
 
     /** The list of potentially visible stacks. */
     protected final ArrayList<Stack> mStacks;
@@ -543,6 +550,9 @@ public abstract class StackLayoutBase
             boolean background, float originX, float originY) {
         super.onTabCreated(
                 time, id, tabIndex, sourceId, newIsIncognito, background, originX, originY);
+
+        // Suppress startHiding()'s logging to the Tabs.TabOffsetOfSwitch histogram.
+        mIsHidingBecauseOfNewTabCreation = true;
         startHiding(id, false);
         mStacks.get(getTabStackIndex(id)).tabCreated(time, id);
 
@@ -1225,15 +1235,37 @@ public abstract class StackLayoutBase
 
     @Override
     public void startHiding(int nextTabId, boolean hintAtTabSelection) {
+        super.startHiding(nextTabId, hintAtTabSelection);
+
         // Reset mIsActiveLayout here instead of in doneHiding() so if a user hits the tab switcher
         // button on the toolbar to re-open it while we're still in the process of hiding the tab
         // switcher, we don't skip the logging.
-        super.startHiding(nextTabId, hintAtTabSelection);
         mIsActiveLayout = false;
     }
 
     @Override
     public void doneHiding() {
+        // Log offset between newly-selected and previously-active tabs. A positive offset means the
+        // user switched to a tab earlier in the stack. A negative offset means the user switched to
+        // a tab later in the stack. 0 means they stayed on the same tab. We do not log anything if
+        // the user switched between stacks (normal to incognito or vice-versa). We also do not log
+        // anything if the tab switch was the result of a new tab being created (we do log for
+        // presses of the tab switcher button on the toolbar).
+
+        // Note: we log this in doneHiding() instead of startHiding() because Layout#doneHiding() is
+        // where the new tab actually gets selected. If the user immediately reopens the tab
+        // switcher before the close animation finishes, the new tab doesn't actually get selected.
+        if (!mIsHidingBecauseOfNewTabCreation
+                && mModelIndexWhenOpened == mTabModelSelector.getCurrentModelIndex()) {
+            final int currentIndex = mTabModelSelector.getCurrentModel().index();
+            final Tab newTab = mTabModelSelector.getTabById(mNextTabId);
+            final int newIndex = mTabModelSelector.getCurrentModel().indexOf(newTab);
+            assert newIndex != TabList.INVALID_TAB_INDEX;
+            RecordHistogram.recordSparseSlowlyHistogram(
+                    "Tabs.TabOffsetOfSwitch", currentIndex - newIndex);
+        }
+        mIsHidingBecauseOfNewTabCreation = false;
+
         super.doneHiding();
 
         mInnerMarginPercent = 0.0f;
