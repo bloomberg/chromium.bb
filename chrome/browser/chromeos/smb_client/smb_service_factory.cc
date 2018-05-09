@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
 
+#include "chrome/browser/chromeos/authpolicy/auth_policy_credentials_manager.h"
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
 #include "chrome/browser/chromeos/smb_client/smb_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -31,6 +32,7 @@ SmbServiceFactory::SmbServiceFactory()
           "SmbService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(file_system_provider::ServiceFactory::GetInstance());
+  DependsOn(AuthPolicyCredentialsManagerFactory::GetInstance());
 }
 
 SmbServiceFactory::~SmbServiceFactory() {}
