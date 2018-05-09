@@ -36,6 +36,8 @@
 #include "third_party/blink/renderer/core/layout/layout_state.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/paint/block_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -825,6 +827,30 @@ void LayoutFlexibleBox::ClearCachedMainSizeForChild(const LayoutBox& child) {
   intrinsic_size_along_main_axis_.erase(&child);
 }
 
+bool LayoutFlexibleBox::ShouldForceLayoutForNGChild(
+    const LayoutBlockFlow& child) const {
+  // If the last layout was done with a different override size,
+  // or different definite-ness, we need to force-relayout so
+  // that percentage sizes are resolved correctly.
+  const NGConstraintSpace* old_space = child.CachedConstraintSpace();
+  if (!old_space)
+    return true;
+  if (old_space->IsFixedSizeInline() != child.HasOverrideLogicalWidth())
+    return true;
+  if (old_space->IsFixedSizeBlock() != child.HasOverrideLogicalHeight())
+    return true;
+  if (old_space->FixedSizeBlockIsDefinite() !=
+      UseOverrideLogicalHeightForPerentageResolution(child))
+    return true;
+  if (child.HasOverrideLogicalWidth() &&
+      old_space->AvailableSize().inline_size != child.OverrideLogicalWidth())
+    return true;
+  if (child.HasOverrideLogicalHeight() &&
+      old_space->AvailableSize().block_size != child.OverrideLogicalHeight())
+    return true;
+  return false;
+}
+
 DISABLE_CFI_PERF
 LayoutUnit LayoutFlexibleBox::ComputeInnerFlexBaseSizeForChild(
     LayoutBox& child,
@@ -1464,12 +1490,10 @@ void LayoutFlexibleBox::LayoutLineItems(FlexLine* current_line,
     }
     // We may have already forced relayout for orthogonal flowing children in
     // computeInnerFlexBaseSizeForChild.
-    // TODO(crbug.com/839661): LayoutNG does not correctly set
-    // HasPercentHeightDescendants(), so we need to bypass this optimization
-    // for now.
     bool force_child_relayout =
         relayout_children && !relaid_out_children_.Contains(child);
-    if (RuntimeEnabledFeatures::LayoutNGEnabled() ||
+    if ((child->IsLayoutNGMixin() &&
+         ShouldForceLayoutForNGChild(ToLayoutBlockFlow(*child))) ||
         (child->IsLayoutBlock() &&
          ToLayoutBlock(*child).HasPercentHeightDescendants())) {
       // Have to force another relayout even though the child is sized

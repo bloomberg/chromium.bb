@@ -168,6 +168,11 @@ scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
 }
 
 template <typename Base>
+const NGConstraintSpace* LayoutNGMixin<Base>::CachedConstraintSpace() const {
+  return cached_constraint_space_.get();
+}
+
+template <typename Base>
 void LayoutNGMixin<Base>::SetCachedLayoutResult(
     const NGConstraintSpace& constraint_space,
     NGBreakToken* break_token,
