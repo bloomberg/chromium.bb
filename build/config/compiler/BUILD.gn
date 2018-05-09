@@ -1588,11 +1588,7 @@ config("thin_archive") {
   # have a "thin archive" mode (it does accept -T, but it means truncating
   # archive names to 16 characters, which is not what we want).
   if ((is_posix && !is_nacl && !is_mac && !is_ios) || is_fuchsia) {
-    # TODO(thomasanderson): Enable on ChromeOS builds once
-    # https://crbug.com/829956 is fixed.
-    if (default_toolchain != "//build/toolchain/cros:target") {
-      arflags = [ "-T" ]
-    }
+    arflags = [ "-T" ]
   }
 }
 

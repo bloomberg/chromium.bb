@@ -335,11 +335,7 @@ template("gcc_toolchain") {
       ar_wrapper =
           rebase_path("//build/toolchain/gcc_ar_wrapper.py", root_build_dir)
 
-      # TODO(thomasanderson): Remove the special ChromeOS case once
-      # https://crbug.com/829956 is fixed.
-      if (default_toolchain == "//build/toolchain/cros:target") {
-        extra_arflags = "rcsD"
-      } else if (current_os == "aix") {
+      if (current_os == "aix") {
         # We use slightly different arflags for AIX.
         extra_arflags = "-r -c -s"
       } else {
