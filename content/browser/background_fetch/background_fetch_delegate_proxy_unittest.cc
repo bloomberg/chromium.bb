@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "content/browser/background_fetch/background_fetch_test_base.h"
 #include "content/public/browser/background_fetch_delegate.h"
+#include "content/public/browser/background_fetch_description.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,13 +34,7 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
     std::move(callback).Run(gfx::Size(kIconDisplaySize, kIconDisplaySize));
   }
   void CreateDownloadJob(
-      const std::string& job_unique_id,
-      const std::string& title,
-      const url::Origin& origin,
-      const SkBitmap& icon,
-      int completed_parts,
-      int total_parts,
-      const std::vector<std::string>& current_guids) override {}
+      std::unique_ptr<BackgroundFetchDescription> fetch_description) override {}
   void DownloadUrl(const std::string& job_unique_id,
                    const std::string& guid,
                    const std::string& method,
@@ -154,9 +149,13 @@ TEST_F(BackgroundFetchDelegateProxyTest, StartRequest) {
   EXPECT_FALSE(controller.request_started_);
   EXPECT_FALSE(controller.request_completed_);
 
-  delegate_proxy_.CreateDownloadJob(
+  auto fetch_description = std::make_unique<BackgroundFetchDescription>(
       kExampleUniqueId, "Job 1", url::Origin(), SkBitmap(),
-      controller.weak_ptr_factory_.GetWeakPtr(), 0, 1, {});
+      0 /* completed_parts */, 1 /* total_parts */,
+      0 /* completed_parts_size */, 0 /* total_parts_size */,
+      std::vector<std::string>());
+  delegate_proxy_.CreateDownloadJob(controller.weak_ptr_factory_.GetWeakPtr(),
+                                    std::move(fetch_description));
 
   delegate_proxy_.StartRequest(kExampleUniqueId, url::Origin(), request);
   base::RunLoop().RunUntilIdle();
@@ -174,9 +173,13 @@ TEST_F(BackgroundFetchDelegateProxyTest, StartRequest_NotCompleted) {
   EXPECT_FALSE(controller.request_completed_);
 
   delegate_.set_complete_downloads(false);
-  delegate_proxy_.CreateDownloadJob(
+  auto fetch_description = std::make_unique<BackgroundFetchDescription>(
       kExampleUniqueId, "Job 1", url::Origin(), SkBitmap(),
-      controller.weak_ptr_factory_.GetWeakPtr(), 0, 1, {});
+      0 /* completed_parts */, 1 /* total_parts */,
+      0 /* completed_parts_size */, 0 /* total_parts_size */,
+      std::vector<std::string>());
+  delegate_proxy_.CreateDownloadJob(controller.weak_ptr_factory_.GetWeakPtr(),
+                                    std::move(fetch_description));
 
   delegate_proxy_.StartRequest(kExampleUniqueId, url::Origin(), request);
   base::RunLoop().RunUntilIdle();
@@ -198,13 +201,21 @@ TEST_F(BackgroundFetchDelegateProxyTest, Abort) {
   EXPECT_FALSE(controller2.request_started_);
   EXPECT_FALSE(controller2.request_completed_);
 
-  delegate_proxy_.CreateDownloadJob(
+  auto fetch_description1 = std::make_unique<BackgroundFetchDescription>(
       kExampleUniqueId, "Job 1", url::Origin(), SkBitmap(),
-      controller.weak_ptr_factory_.GetWeakPtr(), 0, 1, {});
+      0 /* completed_parts */, 1 /* total_parts */,
+      0 /* completed_parts_size */, 0 /* total_parts_size */,
+      std::vector<std::string>());
+  delegate_proxy_.CreateDownloadJob(controller.weak_ptr_factory_.GetWeakPtr(),
+                                    std::move(fetch_description1));
 
-  delegate_proxy_.CreateDownloadJob(
+  auto fetch_description2 = std::make_unique<BackgroundFetchDescription>(
       kExampleUniqueId2, "Job 2", url::Origin(), SkBitmap(),
-      controller2.weak_ptr_factory_.GetWeakPtr(), 0, 1, {});
+      0 /* completed_parts */, 1 /* total_parts */,
+      0 /* completed_parts_size */, 0 /* total_parts_size */,
+      std::vector<std::string>());
+  delegate_proxy_.CreateDownloadJob(controller2.weak_ptr_factory_.GetWeakPtr(),
+                                    std::move(fetch_description2));
 
   delegate_proxy_.StartRequest(kExampleUniqueId, url::Origin(), request);
   delegate_proxy_.StartRequest(kExampleUniqueId2, url::Origin(), request2);

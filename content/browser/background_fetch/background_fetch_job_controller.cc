@@ -45,10 +45,17 @@ void BackgroundFetchJobController::InitializeRequestStatus(
   completed_downloads_ = completed_downloads;
   total_downloads_ = total_downloads;
 
-  delegate_proxy_->CreateDownloadJob(registration_id().unique_id(),
-                                     options_.title, registration_id().origin(),
-                                     icon_, GetWeakPtr(), completed_downloads,
-                                     total_downloads, outstanding_guids);
+  // TODO(nator): Update this when we support uploads.
+  int total_downloads_size = options_.download_total;
+
+  auto fetch_description = std::make_unique<BackgroundFetchDescription>(
+      registration_id().unique_id(), options_.title, registration_id().origin(),
+      icon_, completed_downloads, total_downloads,
+      complete_requests_downloaded_bytes_cache_, total_downloads_size,
+      outstanding_guids);
+
+  delegate_proxy_->CreateDownloadJob(GetWeakPtr(),
+                                     std::move(fetch_description));
 }
 
 BackgroundFetchJobController::~BackgroundFetchJobController() {

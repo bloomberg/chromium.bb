@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/background_fetch/mock_background_fetch_delegate.h"
+#include "content/public/browser/background_fetch_description.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_response_headers.h"
@@ -59,13 +60,7 @@ void MockBackgroundFetchDelegate::GetIconDisplaySize(
     GetIconDisplaySizeCallback callback) {}
 
 void MockBackgroundFetchDelegate::CreateDownloadJob(
-    const std::string& job_unique_id,
-    const std::string& title,
-    const url::Origin& origin,
-    const SkBitmap& icon,
-    int completed_parts,
-    int total_parts,
-    const std::vector<std::string>& current_guids) {}
+    std::unique_ptr<BackgroundFetchDescription> fetch_description) {}
 
 void MockBackgroundFetchDelegate::DownloadUrl(
     const std::string& job_unique_id,

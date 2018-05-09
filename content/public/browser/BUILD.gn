@@ -41,6 +41,8 @@ jumbo_source_set("browser_sources") {
     "ax_event_notification_details.h",
     "background_fetch_delegate.cc",
     "background_fetch_delegate.h",
+    "background_fetch_description.cc",
+    "background_fetch_description.h",
     "background_fetch_response.cc",
     "background_fetch_response.h",
     "background_sync_controller.h",

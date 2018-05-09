@@ -4,6 +4,14 @@
 
 // Background Fetch Id to use when its value is not significant.
 const kBackgroundFetchId = 'bg-fetch-id';
+const kBackgroundFetchResource = [ '/background_fetch/types_of_cheese.txt' ];
+const kIcon = [
+  {
+    src: '/notifications/icon.png',
+    sizes: '100x100',
+    type: 'image/png'
+  }
+];
 
 function RegisterServiceWorker() {
   navigator.serviceWorker.register('sw.js').then(() => {
@@ -15,18 +23,46 @@ function RegisterServiceWorker() {
 function StartSingleFileDownload() {
   navigator.serviceWorker.ready.then(swRegistration => {
     const options = {
-      icons: [
-        {
-          src: '/notifications/icon.png',
-          sizes: '100x100',
-          type: 'image/png'
-        }
-      ],
+      icons: kIcon,
       title: 'Single-file Background Fetch'
     };
 
     return swRegistration.backgroundFetch.fetch(
-        kBackgroundFetchId, [ '/notifications/icon.png' ], options);
+        kBackgroundFetchId, kBackgroundFetchResource, options);
+  }).then(bgFetchRegistration => {
+    sendResultToTest('ok');
+  }).catch(sendErrorToTest);
+}
+
+// Starts a Background Fetch request for a single to-be-downloaded file, with
+// downloadTotal greater than the actual size.
+function StartSingleFileDownloadWithBiggerThanActualDownloadTotal() {
+  navigator.serviceWorker.ready.then(swRegistration => {
+    const options = {
+      icons: kIcon,
+      title: 'Single-file Background Fetch with incorrect downloadTotal',
+      downloadTotal: 1000
+    };
+
+    return swRegistration.backgroundFetch.fetch(
+        kBackgroundFetchId, kBackgroundFetchResource, options);
+  }).then(bgFetchRegistration => {
+    sendResultToTest('ok');
+  }).catch(sendErrorToTest);
+}
+
+// Starts a Background Fetch request for a single to-be-downloaded file, with
+// downloadTotal equal to the actual size (in bytes).
+function StartSingleFileDownloadWithCorrectDownloadTotal() {
+  navigator.serviceWorker.ready.then(swRegistration => {
+    const options = {
+      icons: kIcon,
+      title: 'Single-file Background Fetch with accurate downloadTotal',
+      downloadTotal: 82
+    };
+
+    return swRegistration.backgroundFetch.fetch(
+        kBackgroundFetchId, kBackgroundFetchResource, options);
   }).then(bgFetchRegistration => {
     sendResultToTest('ok');
   }).catch(sendErrorToTest);

@@ -9,6 +9,7 @@
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
+#include "content/public/browser/background_fetch_description.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/download_manager.h"
 #include "ui/gfx/geometry/size.h"
@@ -63,19 +64,12 @@ class BackgroundFetchDelegateProxy::Core
     }
   }
 
-  void CreateDownloadJob(const std::string& job_unique_id,
-                         const std::string& title,
-                         const url::Origin& origin,
-                         const SkBitmap& icon,
-                         int completed_parts,
-                         int total_parts,
-                         const std::vector<std::string>& current_guids) {
+  void CreateDownloadJob(
+      std::unique_ptr<BackgroundFetchDescription> fetch_description) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    if (delegate_) {
-      delegate_->CreateDownloadJob(job_unique_id, title, origin, icon,
-                                   completed_parts, total_parts, current_guids);
-    }
+    if (delegate_)
+      delegate_->CreateDownloadJob(std::move(fetch_description));
   }
 
   void StartRequest(const std::string& job_unique_id,
@@ -261,24 +255,17 @@ void BackgroundFetchDelegateProxy::GetIconDisplaySize(
 }
 
 void BackgroundFetchDelegateProxy::CreateDownloadJob(
-    const std::string& job_unique_id,
-    const std::string& title,
-    const url::Origin& origin,
-    const SkBitmap& icon,
     base::WeakPtr<Controller> controller,
-    int completed_parts,
-    int total_parts,
-    const std::vector<std::string>& current_guids) {
+    std::unique_ptr<BackgroundFetchDescription> fetch_description) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  DCHECK(!job_details_map_.count(job_unique_id));
-  job_details_map_.emplace(job_unique_id, JobDetails(controller));
+  DCHECK(!job_details_map_.count(fetch_description->job_unique_id));
+  job_details_map_.emplace(fetch_description->job_unique_id,
+                           JobDetails(controller));
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&Core::CreateDownloadJob, ui_core_ptr_, job_unique_id,
-                     title, origin, icon, completed_parts, total_parts,
-                     current_guids));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(&Core::CreateDownloadJob, ui_core_ptr_,
+                                         std::move(fetch_description)));
 }
 
 void BackgroundFetchDelegateProxy::StartRequest(
