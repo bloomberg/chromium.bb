@@ -24,8 +24,8 @@ message BookmarkSpecifics {
   optional string url = 1;
   optional bytes favicon = 2;
   optional string title = 3;
-  // Corresponds to BookmarkNode::date_added() and is the internal value from
-  // base::Time.
+  // Corresponds to BookmarkNode::date_added() represented as microseconds since
+  // the Windows epoch.
   optional int64 creation_time_us = 4;
   optional string icon_url = 5;
   repeated MetaInfo meta_info = 6;

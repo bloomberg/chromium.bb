@@ -16,6 +16,8 @@ static_library("sync_bookmarks") {
     "bookmark_model_type_controller.h",
     "bookmark_model_type_processor.cc",
     "bookmark_model_type_processor.h",
+    "synced_bookmark_tracker.cc",
+    "synced_bookmark_tracker.h",
   ]
 
   deps = [
@@ -36,6 +38,7 @@ source_set("unit_tests") {
     "bookmark_data_type_controller_unittest.cc",
     "bookmark_model_type_controller_unittest.cc",
     "bookmark_model_type_processor_unittest.cc",
+    "synced_bookmark_tracker_unittest.cc",
   ]
 
   deps = [

@@ -68,12 +68,15 @@ void BookmarkModelTypeController::RegisterWithBackend(
     base::Callback<void(bool)> set_downloaded,
     syncer::ModelTypeConfigurer* configurer) {
   DCHECK(CalledOnValidThread());
+  if (activated_)
+    return;
   DCHECK(configurer);
   std::unique_ptr<syncer::ActivationContext> activation_context =
       PrepareActivationContext();
   set_downloaded.Run(activation_context->model_type_state.initial_sync_done());
   configurer->ActivateNonBlockingDataType(type(),
                                           std::move(activation_context));
+  activated_ = true;
 }
 
 void BookmarkModelTypeController::StartAssociating(
@@ -92,13 +95,17 @@ void BookmarkModelTypeController::StartAssociating(
 void BookmarkModelTypeController::ActivateDataType(
     syncer::ModelTypeConfigurer* configurer) {
   DCHECK(CalledOnValidThread());
-  NOTIMPLEMENTED();
+  DCHECK(configurer);
+  DCHECK_EQ(RUNNING, state_);
 }
 
 void BookmarkModelTypeController::DeactivateDataType(
     syncer::ModelTypeConfigurer* configurer) {
   DCHECK(CalledOnValidThread());
-  NOTIMPLEMENTED();
+  if (activated_) {
+    configurer->DeactivateNonBlockingDataType(type());
+    activated_ = false;
+  }
 }
 
 void BookmarkModelTypeController::Stop() {
@@ -158,7 +165,8 @@ BookmarkModelTypeController::PrepareActivationContext() {
       directory->InitialSyncEndedForType(type()));
   // TODO(pavely): Populate model_type_state.type_context.
 
-  model_type_processor_ = std::make_unique<BookmarkModelTypeProcessor>();
+  model_type_processor_ =
+      std::make_unique<BookmarkModelTypeProcessor>(sync_client_);
   activation_context->type_processor =
       std::make_unique<syncer::ModelTypeProcessorProxy>(
           model_type_processor_->GetWeakPtr(),
