@@ -50,6 +50,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_known_logs.h"
 #include "net/cert/ct_log_verifier.h"
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/http/transport_security_state.h"
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
@@ -67,7 +68,6 @@
 #include "url/gurl.h"
 
 using net::CertVerifier;
-using net::CTPolicyEnforcer;
 using net::CTVerifier;
 using net::MultiLogCTVerifier;
 using net::ProofVerifier;
@@ -267,7 +267,8 @@ int main(int argc, char* argv[]) {
       new TransportSecurityState);
   std::unique_ptr<MultiLogCTVerifier> ct_verifier(new MultiLogCTVerifier());
   ct_verifier->AddLogs(net::ct::CreateLogVerifiersForKnownLogs());
-  std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer(new CTPolicyEnforcer());
+  std::unique_ptr<net::CTPolicyEnforcer> ct_policy_enforcer(
+      new net::DefaultCTPolicyEnforcer());
   std::unique_ptr<ProofVerifier> proof_verifier;
   if (line->HasSwitch("disable-certificate-verification")) {
     proof_verifier.reset(new FakeProofVerifier());

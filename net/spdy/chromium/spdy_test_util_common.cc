@@ -311,7 +311,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       channel_id_service(nullptr),
       transport_security_state(std::make_unique<TransportSecurityState>()),
       cert_transparency_verifier(std::make_unique<DoNothingCTVerifier>()),
-      ct_policy_enforcer(std::make_unique<CTPolicyEnforcer>()),
+      ct_policy_enforcer(std::make_unique<DefaultCTPolicyEnforcer>()),
       proxy_resolution_service(std::move(proxy_resolution_service)),
       ssl_config_service(base::MakeRefCounted<SSLConfigServiceDefaults>()),
       socket_factory(std::make_unique<MockClientSocketFactory>()),
@@ -413,27 +413,13 @@ HttpNetworkSession::Context SpdySessionDependencies::CreateSessionContext(
   return context;
 }
 
-class AllowAnyCertCTPolicyEnforcer : public CTPolicyEnforcer {
- public:
-  AllowAnyCertCTPolicyEnforcer() = default;
-  ~AllowAnyCertCTPolicyEnforcer() override = default;
-
-  ct::CTPolicyCompliance CheckCompliance(
-      X509Certificate* cert,
-      const SCTList& verified_scts,
-      const NetLogWithSource& net_log) override {
-    return ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
-  }
-};
-
 SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
   storage_.set_host_resolver(std::make_unique<MockHostResolver>());
   storage_.set_cert_verifier(std::make_unique<MockCertVerifier>());
   storage_.set_transport_security_state(
       std::make_unique<TransportSecurityState>());
   storage_.set_proxy_resolution_service(ProxyResolutionService::CreateDirect());
-  storage_.set_ct_policy_enforcer(
-      std::make_unique<AllowAnyCertCTPolicyEnforcer>());
+  storage_.set_ct_policy_enforcer(std::make_unique<DefaultCTPolicyEnforcer>());
   storage_.set_cert_transparency_verifier(
       std::make_unique<DoNothingCTVerifier>());
   storage_.set_ssl_config_service(new SSLConfigServiceDefaults);

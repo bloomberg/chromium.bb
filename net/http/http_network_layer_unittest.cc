@@ -267,7 +267,7 @@ class HttpNetworkLayerTest : public PlatformTest,
   std::unique_ptr<CertVerifier> cert_verifier_;
   std::unique_ptr<TransportSecurityState> transport_security_state_;
   MultiLogCTVerifier ct_verifier_;
-  CTPolicyEnforcer ct_policy_enforcer_;
+  DefaultCTPolicyEnforcer ct_policy_enforcer_;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   const scoped_refptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<HttpNetworkSession> network_session_;

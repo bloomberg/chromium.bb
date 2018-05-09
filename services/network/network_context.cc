@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
+#include "components/certificate_transparency/chrome_ct_policy_enforcer.h"
 #include "components/certificate_transparency/ct_policy_manager.h"
 #include "components/cookie_config/cookie_store_util.h"
 #include "components/network_session_configurator/browser/network_session_configurator.h"
@@ -533,6 +534,11 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   builder->set_network_error_logging_enabled(
       base::FeatureList::IsEnabled(features::kNetworkErrorLogging));
 #endif  // BUILDFLAG(ENABLE_REPORTING)
+
+  if (network_context_params->enforce_chrome_ct_policy) {
+    builder->set_ct_policy_enforcer(
+        std::make_unique<certificate_transparency::ChromeCTPolicyEnforcer>());
+  }
 
   net::HttpNetworkSession::Params session_params;
   bool is_quic_force_disabled = false;

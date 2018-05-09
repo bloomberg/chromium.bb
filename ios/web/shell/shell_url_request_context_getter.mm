@@ -103,7 +103,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     storage_->set_cert_transparency_verifier(
         base::WrapUnique(new net::MultiLogCTVerifier));
     storage_->set_ct_policy_enforcer(
-        base::WrapUnique(new net::CTPolicyEnforcer));
+        base::WrapUnique(new net::DefaultCTPolicyEnforcer));
     transport_security_persister_ =
         std::make_unique<net::TransportSecurityPersister>(
             url_request_context_->transport_security_state(), base_path_,

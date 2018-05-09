@@ -17,6 +17,7 @@
 #include "ios/web_view/internal/web_view_network_delegate.h"
 #include "net/base/cache_type.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
@@ -103,7 +104,7 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
     storage_->set_cert_transparency_verifier(
         base::WrapUnique(new net::MultiLogCTVerifier));
     storage_->set_ct_policy_enforcer(
-        base::WrapUnique(new net::CTPolicyEnforcer));
+        base::WrapUnique(new net::DefaultCTPolicyEnforcer));
     transport_security_persister_ =
         std::make_unique<net::TransportSecurityPersister>(
             url_request_context_->transport_security_state(), base_path_,

@@ -4775,7 +4775,6 @@ test("net_unittests") {
     "cert/ct_log_response_parser_unittest.cc",
     "cert/ct_log_verifier_unittest.cc",
     "cert/ct_objects_extractor_unittest.cc",
-    "cert/ct_policy_enforcer_unittest.cc",
     "cert/ct_serialization_unittest.cc",
     "cert/ev_root_ca_metadata_unittest.cc",
     "cert/internal/cert_issuer_source_aia_unittest.cc",

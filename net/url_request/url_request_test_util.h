@@ -27,6 +27,7 @@
 #include "net/base/network_delegate_impl.h"
 #include "net/base/request_priority.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/ftp/ftp_network_layer.h"

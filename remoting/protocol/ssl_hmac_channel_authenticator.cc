@@ -95,20 +95,6 @@ class FailingCertVerifier : public net::CertVerifier {
   }
 };
 
-// A CTPolicyEnforcer that accepts all certificates.
-class IgnoresCTPolicyEnforcer : public net::CTPolicyEnforcer {
- public:
-  IgnoresCTPolicyEnforcer() = default;
-  ~IgnoresCTPolicyEnforcer() override = default;
-
-  net::ct::CTPolicyCompliance CheckCompliance(
-      net::X509Certificate* cert,
-      const net::SCTList& verified_scts,
-      const net::NetLogWithSource& net_log) override {
-    return net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
-  }
-};
-
 // Implements net::StreamSocket interface on top of P2PStreamSocket to be passed
 // to net::SSLClientSocket and net::SSLServerSocket.
 class NetStreamSocketAdapter : public net::StreamSocket {
@@ -300,7 +286,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     transport_security_state_.reset(new net::TransportSecurityState);
     cert_verifier_.reset(new FailingCertVerifier);
     ct_verifier_.reset(new net::DoNothingCTVerifier);
-    ct_policy_enforcer_.reset(new IgnoresCTPolicyEnforcer);
+    ct_policy_enforcer_.reset(new net::DefaultCTPolicyEnforcer);
 
     net::SSLConfig ssl_config;
     // Certificate verification and revocation checking are not needed

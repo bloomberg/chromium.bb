@@ -8,6 +8,7 @@
 
 #include "net/base/completion_once_callback.h"
 #include "net/base/test_completion_callback.h"
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/x509_certificate.h"
@@ -79,7 +80,7 @@ struct Env {
   QuicTagVector connection_options;
   QuicTagVector client_connection_options;
   std::unique_ptr<CTVerifier> cert_transparency_verifier;
-  CTPolicyEnforcer ct_policy_enforcer;
+  DefaultCTPolicyEnforcer ct_policy_enforcer;
 };
 
 static struct Env* env = new Env();

@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "net/base/net_export.h"
-#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 
 namespace net {
@@ -16,8 +15,6 @@ namespace net {
 namespace ct {
 
 enum class CTPolicyCompliance;
-
-typedef std::vector<scoped_refptr<SignedCertificateTimestamp> > SCTList;
 
 // Holds Signed Certificate Timestamps, depending on their verification
 // results, and information about CT policies that were applied on the

@@ -99,7 +99,7 @@ std::unique_ptr<ProofVerifier> ProofVerifierForTesting() {
   return std::make_unique<TestProofVerifierChromium>(
       std::move(cert_verifier), std::make_unique<TransportSecurityState>(),
       std::make_unique<MultiLogCTVerifier>(),
-      std::make_unique<CTPolicyEnforcer>(), "quic-root.pem");
+      std::make_unique<DefaultCTPolicyEnforcer>(), "quic-root.pem");
 }
 
 ProofVerifyContext* ProofVerifyContextForTesting() {

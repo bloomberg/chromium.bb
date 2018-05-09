@@ -145,6 +145,8 @@ struct NET_EXPORT SignedCertificateTimestamp
   DISALLOW_COPY_AND_ASSIGN(SignedCertificateTimestamp);
 };
 
+using SCTList = std::vector<scoped_refptr<ct::SignedCertificateTimestamp>>;
+
 }  // namespace ct
 
 }  // namespace net

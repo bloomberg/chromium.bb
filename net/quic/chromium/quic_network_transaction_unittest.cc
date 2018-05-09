@@ -902,7 +902,7 @@ class QuicNetworkTransactionTest : public PlatformTest,
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
   std::unique_ptr<CTVerifier> cert_transparency_verifier_;
-  CTPolicyEnforcer ct_policy_enforcer_;
+  DefaultCTPolicyEnforcer ct_policy_enforcer_;
   TestSocketPerformanceWatcherFactory test_socket_performance_watcher_factory_;
   scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
@@ -6122,7 +6122,7 @@ class QuicNetworkTransactionWithDestinationTest
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
   std::unique_ptr<CTVerifier> cert_transparency_verifier_;
-  CTPolicyEnforcer ct_policy_enforcer_;
+  DefaultCTPolicyEnforcer ct_policy_enforcer_;
   TestSocketPerformanceWatcherFactory test_socket_performance_watcher_factory_;
   scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;

@@ -4,6 +4,8 @@
 
 static_library("certificate_transparency") {
   sources = [
+    "chrome_ct_policy_enforcer.cc",
+    "chrome_ct_policy_enforcer.h",
     "ct_policy_manager.cc",
     "ct_policy_manager.h",
     "features.cc",
@@ -36,6 +38,7 @@ static_library("certificate_transparency") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "chrome_ct_policy_enforcer_unittest.cc",
     "ct_policy_manager_unittest.cc",
     "log_dns_client_unittest.cc",
     "mock_log_dns_traffic.cc",

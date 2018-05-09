@@ -239,7 +239,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
   std::unique_ptr<ChannelIDService> channel_id_service_;
   TransportSecurityState transport_security_state_;
   std::unique_ptr<CTVerifier> cert_transparency_verifier_;
-  CTPolicyEnforcer ct_policy_enforcer_;
+  DefaultCTPolicyEnforcer ct_policy_enforcer_;
   scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<HttpAuthHandlerFactory> auth_handler_factory_;

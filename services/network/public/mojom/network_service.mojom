@@ -90,6 +90,14 @@ struct NetworkContextParams {
   // Must be false if built without FTP support.
   bool enable_ftp_url_support = false;
 
+  // True if the "Certificate Transparency in Chrome" policy (see
+  // https://github.com/chromium/ct-policy/blob/master/ct_policy.md) should
+  // be enforced for certificates and connections.
+  //
+  // See //net/docs/certificate-transparency.md before setting this flag to
+  // true.
+  bool enforce_chrome_ct_policy = false;
+
   // Enables HTTP/0.9 on ports other than 80 for HTTP and 443 for HTTPS.
   bool http_09_on_non_default_ports_enabled = false;
 

@@ -168,7 +168,7 @@ std::unique_ptr<net::SSLClientSocket> CastSocketImpl::CreateSslSocket(
   cert_verifier_ = base::WrapUnique(new FakeCertVerifier);
   transport_security_state_.reset(new net::TransportSecurityState);
   cert_transparency_verifier_.reset(new net::MultiLogCTVerifier());
-  ct_policy_enforcer_.reset(new net::CTPolicyEnforcer());
+  ct_policy_enforcer_.reset(new net::DefaultCTPolicyEnforcer());
 
   // Note that |context| fields remain owned by CastSocketImpl.
   net::SSLClientSocketContext context;
