@@ -43,6 +43,7 @@ class UserInputMonitorLinuxCore
 
   uint32_t GetKeyPressCount() const;
   void StartMonitor();
+  void StartMonitorWithMapping(base::WritableSharedMemoryMapping mapping);
   void StopMonitor();
 
  private:
@@ -53,6 +54,9 @@ class UserInputMonitorLinuxCore
   static void ProcessReply(XPointer self, XRecordInterceptData* data);
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+  // Used for sharing key press count value.
+  std::unique_ptr<base::WritableSharedMemoryMapping> key_press_count_mapping_;
 
   //
   // The following members should only be accessed on the IO thread.
@@ -79,6 +83,8 @@ class UserInputMonitorLinux : public UserInputMonitorBase {
  private:
   // Private UserInputMonitor overrides.
   void StartKeyboardMonitoring() override;
+  void StartKeyboardMonitoring(
+      base::WritableSharedMemoryMapping mapping) override;
   void StopKeyboardMonitoring() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
@@ -192,6 +198,13 @@ void UserInputMonitorLinuxCore::StartMonitor() {
   OnXEvent();
 }
 
+void UserInputMonitorLinuxCore::StartMonitorWithMapping(
+    base::WritableSharedMemoryMapping mapping) {
+  StartMonitor();
+  key_press_count_mapping_ =
+      std::make_unique<base::WritableSharedMemoryMapping>(std::move(mapping));
+}
+
 void UserInputMonitorLinuxCore::StopMonitor() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
@@ -219,6 +232,8 @@ void UserInputMonitorLinuxCore::StopMonitor() {
     x_control_display_ = NULL;
   }
 
+  key_press_count_mapping_.reset();
+
   // Stop observing message loop destruction if no event is being monitored.
   base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
 }
@@ -243,6 +258,10 @@ void UserInputMonitorLinuxCore::ProcessXEvent(xEvent* event) {
       XkbKeycodeToKeysym(x_control_display_, event->u.u.detail, 0, 0);
   ui::KeyboardCode key_code = ui::KeyboardCodeFromXKeysym(key_sym);
   counter_.OnKeyboardEvent(type, key_code);
+
+  // Update count value in shared memory.
+  if (key_press_count_mapping_)
+    WriteKeyPressMonitorCount(*key_press_count_mapping_, GetKeyPressCount());
 }
 
 // static
@@ -277,6 +296,14 @@ void UserInputMonitorLinux::StartKeyboardMonitoring() {
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&UserInputMonitorLinuxCore::StartMonitor,
                                 core_->AsWeakPtr()));
+}
+
+void UserInputMonitorLinux::StartKeyboardMonitoring(
+    base::WritableSharedMemoryMapping mapping) {
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&UserInputMonitorLinuxCore::StartMonitorWithMapping,
+                     core_->AsWeakPtr(), std::move(mapping)));
 }
 
 void UserInputMonitorLinux::StopKeyboardMonitoring() {

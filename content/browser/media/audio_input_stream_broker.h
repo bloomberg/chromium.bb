@@ -17,6 +17,10 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 
+namespace media {
+class UserInputMonitorBase;
+}
+
 namespace content {
 
 // AudioInputStreamBroker is used to broker a connection between a client
@@ -53,6 +57,7 @@ class CONTENT_EXPORT AudioInputStreamBroker final
   media::AudioParameters params_;
   const uint32_t shared_memory_count_;
   const bool enable_agc_;
+  media::UserInputMonitorBase* user_input_monitor_ = nullptr;
 
   DeleterCallback deleter_;
 

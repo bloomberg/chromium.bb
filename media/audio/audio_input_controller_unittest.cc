@@ -82,14 +82,14 @@ class MockSyncWriter : public AudioInputController::SyncWriter {
   MOCK_METHOD0(Close, void());
 };
 
-class MockUserInputMonitor : public UserInputMonitorBase {
+class MockUserInputMonitor : public UserInputMonitor {
  public:
   MockUserInputMonitor() = default;
 
   uint32_t GetKeyPressCount() const override { return 0; }
 
-  MOCK_METHOD0(StartKeyboardMonitoring, void());
-  MOCK_METHOD0(StopKeyboardMonitoring, void());
+  MOCK_METHOD0(EnableKeyPressMonitoring, void());
+  MOCK_METHOD0(DisableKeyPressMonitoring, void());
 };
 
 class MockAudioInputStream : public AudioInputStream {
@@ -185,13 +185,13 @@ TEST_P(AudioInputControllerTest, CreateRecordAndClose) {
       .Times(AtLeast(10))
       .WillRepeatedly(
           CheckCountAndPostQuitTask(&count, 10, message_loop_.task_runner()));
-  EXPECT_CALL(user_input_monitor_, StartKeyboardMonitoring());
+  EXPECT_CALL(user_input_monitor_, EnableKeyPressMonitoring());
   controller_->Record();
 
   // Record and wait until ten Write() callbacks are received.
   base::RunLoop().Run();
 
-  EXPECT_CALL(user_input_monitor_, StopKeyboardMonitoring());
+  EXPECT_CALL(user_input_monitor_, DisableKeyPressMonitoring());
   EXPECT_CALL(sync_writer_, Close());
   CloseAudioController();
 }
@@ -212,10 +212,10 @@ TEST_P(AudioInputControllerTest, CloseTwice) {
   CreateAudioController();
   ASSERT_TRUE(controller_.get());
 
-  EXPECT_CALL(user_input_monitor_, StartKeyboardMonitoring());
+  EXPECT_CALL(user_input_monitor_, EnableKeyPressMonitoring());
   controller_->Record();
 
-  EXPECT_CALL(user_input_monitor_, StopKeyboardMonitoring());
+  EXPECT_CALL(user_input_monitor_, DisableKeyPressMonitoring());
   EXPECT_CALL(sync_writer_, Close());
   CloseAudioController();
 

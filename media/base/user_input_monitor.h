@@ -58,27 +58,32 @@ class MEDIA_EXPORT UserInputMonitor {
 };
 
 // Monitors and notifies about keyboard events.
-// Thread safe.
 class MEDIA_EXPORT UserInputMonitorBase : public UserInputMonitor {
  public:
   UserInputMonitorBase();
   ~UserInputMonitorBase() override;
 
-  // A caller must call EnableKeyPressMonitoring and
-  // DisableKeyPressMonitoring in pair.
+  // A caller must call EnableKeyPressMonitoring(WithMapping) and
+  // DisableKeyPressMonitoring in pair on the same sequence.
   void EnableKeyPressMonitoring() override;
   void DisableKeyPressMonitoring() override;
 
+  // Initializes a MappedReadOnlyRegion storing key press count. Returns a
+  // readonly region to the mapping and passes the writable mapping to platform
+  // specific implementation, to update key press count. If monitoring is
+  // already enabled, it only returns a handle to readonly region.
+  base::ReadOnlySharedMemoryRegion EnableKeyPressMonitoringWithMapping();
+
  private:
   virtual void StartKeyboardMonitoring() = 0;
+  virtual void StartKeyboardMonitoring(
+      base::WritableSharedMemoryMapping mapping) = 0;
   virtual void StopKeyboardMonitoring() = 0;
 
-  // Aquired in EnableKeyPressMonitoring()/DisableKeyPressMonitoring(). Together
-  // with |references_| updated under lock, it is used to ensure operation
-  // ordering for start/stop keyboard monitoring, i.e. start is always followed
-  // by stop and start is only called when keyboard monitoring is stopped.
-  base::Lock lock_;
   size_t references_ = 0;
+  base::ReadOnlySharedMemoryRegion key_press_count_region_;
+
+  SEQUENCE_CHECKER(owning_sequence_);
 
   DISALLOW_COPY_AND_ASSIGN(UserInputMonitorBase);
 };
