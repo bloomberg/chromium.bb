@@ -340,7 +340,7 @@ void HistoryService::TopHosts(size_t num_hosts,
       callback);
 }
 
-void HistoryService::GetCountsAndLastVisitForOrigins(
+void HistoryService::GetCountsAndLastVisitForOriginsForTesting(
     const std::set<GURL>& origins,
     const GetCountsAndLastVisitForOriginsCallback& callback) const {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";

@@ -218,10 +218,7 @@ void MediaEngagementService::OnURLsDeleted(
     }
 
     // Check if any origins no longer have any visits.
-    history_service->GetCountsAndLastVisitForOrigins(
-        origins,
-        base::BindRepeating(&MediaEngagementService::RemoveOriginsWithNoVisits,
-                            base::Unretained(this), origins));
+    RemoveOriginsWithNoVisits(origins, deletion_info.deleted_urls_origin_map());
     return;
   }
 
