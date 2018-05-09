@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_system.h"
@@ -309,8 +310,12 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // Returns
   // browsertest_util::ExecuteScriptInBackgroundPage(profile(),
   // extension_id, script).
-  std::string ExecuteScriptInBackgroundPage(const std::string& extension_id,
-                                            const std::string& script);
+  std::string ExecuteScriptInBackgroundPage(
+      const std::string& extension_id,
+      const std::string& script,
+      extensions::browsertest_util::ScriptUserActivation
+          script_user_activation =
+              extensions::browsertest_util::ScriptUserActivation::kActivate);
 
   // Returns
   // browsertest_util::ExecuteScriptInBackgroundPageNoWait(

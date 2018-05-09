@@ -14,13 +14,25 @@ class BrowserContext;
 namespace extensions {
 namespace browsertest_util {
 
+// Determine if a user activation notification should be triggered before
+// executing a script
+enum class ScriptUserActivation {
+  kActivate,
+  kDontActivate,
+};
+
 // Waits until |script| calls "window.domAutomationController.send(result)",
 // where |result| is a string, and returns |result|. Fails the test and returns
 // an empty string if |extension_id| isn't installed in |context| or doesn't
-// have a background page, or if executing the script fails.
-std::string ExecuteScriptInBackgroundPage(content::BrowserContext* context,
-                                          const std::string& extension_id,
-                                          const std::string& script);
+// have a background page, or if executing the script fails. The argument
+// |script_user_activation| determines if the script should be executed after a
+// user activation.
+std::string ExecuteScriptInBackgroundPage(
+    content::BrowserContext* context,
+    const std::string& extension_id,
+    const std::string& script,
+    ScriptUserActivation script_user_activation =
+        ScriptUserActivation::kActivate);
 
 // Same as ExecuteScriptInBackgroundPage, but doesn't wait for the script
 // to return a result. Fails the test and returns false if |extension_id|

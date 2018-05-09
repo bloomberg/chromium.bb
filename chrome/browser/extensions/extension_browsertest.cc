@@ -625,9 +625,10 @@ ExtensionHost* ExtensionBrowserTest::FindHostWithPath(ProcessManager* manager,
 
 std::string ExtensionBrowserTest::ExecuteScriptInBackgroundPage(
     const std::string& extension_id,
-    const std::string& script) {
-  return browsertest_util::ExecuteScriptInBackgroundPage(profile(),
-                                                         extension_id, script);
+    const std::string& script,
+    browsertest_util::ScriptUserActivation script_user_activation) {
+  return browsertest_util::ExecuteScriptInBackgroundPage(
+      profile(), extension_id, script, script_user_activation);
 }
 
 bool ExtensionBrowserTest::ExecuteScriptInBackgroundPageNoWait(

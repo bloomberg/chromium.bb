@@ -353,18 +353,6 @@
         ]
       },
       {
-        "name": "runWithoutUserGesture",
-        "type": "function",
-        "nocompile": true,
-        "parameters": [
-          {
-            "type": "function",
-            "name": "callback",
-            "parameters": []
-          }
-        ]
-      },
-      {
         "name": "waitForRoundTrip",
         "type": "function",
         "description": "Sends a string message one round trip from the renderer to the browser process and back.",
