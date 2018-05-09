@@ -30,8 +30,10 @@ source_set("activity_services") {
     "share_to_data_builder.mm",
   ]
   deps = [
+    "resources:activity_services_add_bookmark",
+    "resources:activity_services_edit_bookmark",
     "resources:activity_services_print",
-    "resources:activity_services_reading_list",
+    "resources:activity_services_read_later",
     "//base",
     "//components/bookmarks/browser",
     "//components/ui_metrics",

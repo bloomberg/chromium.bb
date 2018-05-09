@@ -64,7 +64,9 @@ NSString* const kBookmarkActivityType = @"com.google.chrome.bookmarkActivity";
 }
 
 - (UIImage*)activityImage {
-  return [UIImage imageNamed:@"popup_menu_bookmarks"];
+  if (self.bookmarked)
+    return [UIImage imageNamed:@"activity_services_edit_bookmark"];
+  return [UIImage imageNamed:@"activity_services_add_bookmark"];
 }
 
 - (BOOL)canPerformWithActivityItems:(NSArray*)activityItems {

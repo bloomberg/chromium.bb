@@ -61,7 +61,7 @@ NSString* const kReadingListActivityType =
 }
 
 - (UIImage*)activityImage {
-  return [UIImage imageNamed:@"activity_services_reading_list"];
+  return [UIImage imageNamed:@"activity_services_read_later"];
 }
 
 - (BOOL)canPerformWithActivityItems:(NSArray*)activityItems {
