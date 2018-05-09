@@ -53,12 +53,13 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionChildSurfaceWin
   ~DirectCompositionChildSurfaceWin() override;
 
  private:
-  void ReleaseCurrentSurface();
+  // Releases previous surface or swap chain, and initializes new surface or
+  // swap chain.
   bool InitializeSurface();
   // Release the texture that's currently being drawn to. If will_discard is
   // true then the surface should be discarded without swapping any contents
-  // to it.
-  void ReleaseDrawTexture(bool will_discard);
+  // to it. Returns false if this fails.
+  bool ReleaseDrawTexture(bool will_discard);
 
   // This is a placeholder surface used when not rendering to the
   // DirectComposition surface.

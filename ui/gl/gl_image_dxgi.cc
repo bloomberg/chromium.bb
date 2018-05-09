@@ -237,13 +237,10 @@ bool CopyingGLImageDXGI::Initialize() {
 
   HRESULT hr = d3d11_device_->CreateTexture2D(
       &desc, nullptr, decoder_copy_texture_.GetAddressOf());
-  // TODO(sunnyps): Remove after fixing https://crbug.com/794735
-  base::debug::Alias(&hr);
-  HRESULT reason_hr = S_OK;
-  base::debug::Alias(&reason_hr);
-  if (hr == DXGI_ERROR_DEVICE_REMOVED)
-    reason_hr = d3d11_device_->GetDeviceRemovedReason();
-  CHECK(SUCCEEDED(hr));
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "CreateTexture2D failed: " << std::hex << hr;
+    return false;
+  }
   EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
 
   EGLAttrib frame_attributes[] = {
@@ -253,20 +250,27 @@ bool CopyingGLImageDXGI::Initialize() {
   EGLBoolean result = eglStreamPostD3DTextureANGLE(
       egl_display, stream_, static_cast<void*>(decoder_copy_texture_.Get()),
       frame_attributes);
-  if (!result)
+  if (!result) {
+    DLOG(ERROR) << "eglStreamPostD3DTextureANGLE failed";
     return false;
+  }
   result = eglStreamConsumerAcquireKHR(egl_display, stream_);
-  if (!result)
+  if (!result) {
+    DLOG(ERROR) << "eglStreamConsumerAcquireKHR failed";
     return false;
+  }
 
   d3d11_device_.CopyTo(video_device_.GetAddressOf());
   Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
   d3d11_device_->GetImmediateContext(context.GetAddressOf());
   context.CopyTo(video_context_.GetAddressOf());
 
+#if DCHECK_IS_ON()
   Microsoft::WRL::ComPtr<ID3D10Multithread> multithread;
   d3d11_device_.CopyTo(multithread.GetAddressOf());
-  CHECK(multithread->GetMultithreadProtected());
+  DCHECK(multithread->GetMultithreadProtected());
+#endif  // DCHECK_IS_ON()
+
   return true;
 }
 
@@ -277,7 +281,7 @@ bool CopyingGLImageDXGI::InitializeVideoProcessor(
 
   Microsoft::WRL::ComPtr<ID3D11Device> processor_device;
   video_processor->GetDevice(processor_device.GetAddressOf());
-  CHECK_EQ(d3d11_device_.Get(), processor_device.Get());
+  DCHECK_EQ(d3d11_device_.Get(), processor_device.Get());
 
   d3d11_processor_ = video_processor;
   enumerator_ = enumerator;
@@ -303,10 +307,10 @@ bool CopyingGLImageDXGI::BindTexImage(unsigned target) {
   if (copied_)
     return true;
 
-  CHECK(video_device_);
+  DCHECK(video_device_);
   Microsoft::WRL::ComPtr<ID3D11Device> texture_device;
   texture_->GetDevice(texture_device.GetAddressOf());
-  CHECK_EQ(d3d11_device_.Get(), texture_device.Get());
+  DCHECK_EQ(d3d11_device_.Get(), texture_device.Get());
 
   D3D11_VIDEO_PROCESSOR_INPUT_VIEW_DESC input_view_desc = {0};
   input_view_desc.ViewDimension = D3D11_VPIV_DIMENSION_TEXTURE2D;
