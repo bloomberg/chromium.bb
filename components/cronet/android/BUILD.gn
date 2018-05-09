@@ -940,7 +940,8 @@ action("repackage_extracted_native_jars") {
     "*/multidex/*.class",
     "*/process_launcher/*.class",
     "*/SysUtils.class",
-    "*/CachedMetrics.class",
+    "*/CachedMetrics*.class",
+    "org/chromium/base/memory/MemoryPressureMonitor*.class",
   ]
 
   args = [
