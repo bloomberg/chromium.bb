@@ -147,6 +147,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
 
   // Speed 0 for all speed features that give neutral coding performance change.
   sf->reduce_inter_modes = 1;
+  sf->prune_ext_partition_types_search_level = 1;
 
   if (speed >= 1) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_1;
@@ -158,7 +159,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->tx_size_search_lgr_block = 1;
     sf->two_pass_partition_search = 1;
     sf->mode_pruning_based_on_two_pass_partition_search = 1;
-    sf->prune_ext_partition_types_search = 1;
+    sf->prune_ext_partition_types_search_level = 2;
     sf->use_fast_interpolation_filter_search = 1;
     sf->tx_type_search.skip_tx_search = 1;
     sf->adaptive_txb_search = 1;
@@ -353,7 +354,7 @@ static void set_dev_sf(AV1_COMP *cpi, SPEED_FEATURES *sf, int speed) {
       sf->use_square_partition_only = !frame_is_intra_only(cm);
     }
     sf->less_rectangular_check = 1;
-    sf->prune_ext_partition_types_search = 1;
+    sf->prune_ext_partition_types_search_level = 2;
   }
 
   if (speed & LOOP_FILTER_SF) {
@@ -473,7 +474,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->partition_search_breakout_dist_thr = 0;
   sf->partition_search_breakout_rate_thr = 0;
   sf->simple_model_rd_from_var = 0;
-  sf->prune_ext_partition_types_search = 0;
+  sf->prune_ext_partition_types_search_level = 0;
   sf->fast_cdef_search = 0;
 
   // Set this at the appropriate speed levels
