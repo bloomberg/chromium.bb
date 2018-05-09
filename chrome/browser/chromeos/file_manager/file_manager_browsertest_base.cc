@@ -37,6 +37,7 @@
 #include "extensions/browser/notification_types.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
+#include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -537,6 +538,9 @@ void FileManagerBrowserTestBase::SetUp() {
 
 void FileManagerBrowserTestBase::SetUpCommandLine(
     base::CommandLine* command_line) {
+  // Use a fake audio stream crbug.com/835626
+  command_line->AppendSwitch(switches::kDisableAudioOutput);
+
   if (IsGuestModeTest()) {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
     command_line->AppendSwitchNative(chromeos::switches::kLoginUser, "");
