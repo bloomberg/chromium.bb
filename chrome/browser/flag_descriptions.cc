@@ -2220,14 +2220,6 @@ const char kNtpModernLayoutName[] = "Modern NTP layout";
 const char kNtpModernLayoutDescription[] =
     "Show a modern layout on the New Tab Page.";
 
-const char kNtpShortcutsName[] = "NTP Shortcuts";
-const char kNtpShortcutsDescription[] =
-    "Show shortcuts for bookmarks and downloads on the New Tab Page.";
-
-const char kSiteExplorationUiName[] = "Site Exploration UI";
-const char kSiteExplorationUiDescription[] =
-    "Show site suggestions in the Exploration UI";
-
 const char kNtpGoogleGInOmniboxName[] = "Google G in New Tab Page omnibox";
 const char kNtpGoogleGInOmniboxDescription[] =
     "Show a Google G in the omnibox on the New Tab Page.";
@@ -2375,6 +2367,13 @@ const char kSpannableInlineAutocompleteName[] = "Spannable inline autocomplete";
 const char kSpannableInlineAutocompleteDescription[] =
     "A new type of inline autocomplete for the omnibox that works with "
     "keyboards that compose text.";
+
+const char kSimplifiedNtpName[] = "Simplified NTP";
+const char kSimplifiedNtpDescription[] = "Show a simplified New Tab Page.";
+
+const char kSiteExplorationUiName[] = "Site Exploration UI";
+const char kSiteExplorationUiDescription[] =
+    "Show site suggestions in the Exploration UI";
 
 const char kUpdateMenuBadgeName[] = "Force show update menu badge";
 const char kUpdateMenuBadgeDescription[] =

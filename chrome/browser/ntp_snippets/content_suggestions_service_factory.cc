@@ -119,10 +119,10 @@ using syncer::SyncService;
 
 #if defined(OS_ANDROID)
 using content::DownloadManager;
-using ntp_snippets::AreNtpShortcutsEnabled;
 using ntp_snippets::BreakingNewsGCMAppHandler;
 using ntp_snippets::GetPushUpdatesSubscriptionEndpoint;
 using ntp_snippets::GetPushUpdatesUnsubscriptionEndpoint;
+using ntp_snippets::IsSimplifiedNtpEnabled;
 using ntp_snippets::SubscriptionManagerImpl;
 #endif  // OS_ANDROID
 
@@ -459,7 +459,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   std::unique_ptr<CategoryRanker> category_ranker =
       ntp_snippets::BuildSelectedCategoryRanker(
           pref_service, base::DefaultClock::GetInstance(),
-          AreNtpShortcutsEnabled());
+          IsSimplifiedNtpEnabled());
 
   auto* service = new ContentSuggestionsService(
       State::ENABLED, identity_manager, history_service, large_icon_service,

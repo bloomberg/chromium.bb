@@ -1503,9 +1503,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.DownloadManager.CheckForExternallyRemovedItems">
-  <owner>dfalcantara@chromium.org</owner>
+  <owner>dtrainor@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
-  <owner>ianwen@chromium.org</owner>
   <description>
     A request was issued to check the file system for download items that were
     externally deleted e.g. through a third-party download manager.
@@ -1513,9 +1512,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.DownloadManager.Delete">
-  <owner>dfalcantara@chromium.org</owner>
+  <owner>dtrainor@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
-  <owner>ianwen@chromium.org</owner>
   <description>
     User deleted one or more download items. This is recorded when the snackbar
     allowing the user to &quot;undo&quot; deletion is dismissed and the
@@ -1524,9 +1522,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.DownloadManager.Item.ExternallyDeleted">
-  <owner>dfalcantara@chromium.org</owner>
+  <owner>dtrainor@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
-  <owner>ianwen@chromium.org</owner>
   <description>
     A download tracked by the Chrome download service was externally deleted
     e.g. through a third-party download manager.
@@ -1538,7 +1535,14 @@ should be able to be added at any place in this file.
   <description>User opened a download from download home.</description>
 </action>
 
+<action name="Android.DownloadManager.Open">
+  <owner>dtrainor@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>User opened the downloads manager UI.</description>
+</action>
+
 <action name="Android.DownloadManager.OpenDrawer">
+  <obsolete>Drawer removed during 2017 redesign.</obsolete>
   <owner>dfalcantara@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>ianwen@chromium.org</owner>
@@ -1548,6 +1552,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.DownloadManager.RemoveItem">
+  <owner>dtrainor@chromium.org</owner>
   <owner>huayinz@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
@@ -1557,13 +1562,13 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.DownloadManager.Search">
-  <owner>dfalcantara@chromium.org</owner>
+  <owner>dtrainor@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>User initiated a search of their downloads.</description>
 </action>
 
 <action name="Android.DownloadManager.SelectionEstablished">
-  <owner>dfalcantara@chromium.org</owner>
+  <owner>dtrainor@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>ianwen@chromium.org</owner>
   <description>
@@ -1581,9 +1586,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.DownloadManager.UndoDelete">
-  <owner>dfalcantara@chromium.org</owner>
+  <owner>dtrainor@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
-  <owner>ianwen@chromium.org</owner>
   <description>
     User chose to &quot;undo&quot; the deletion of one or more download items.
   </description>

@@ -305,6 +305,8 @@ public class DownloadManagerUi
 
         mIsSeparateActivity = isSeparateActivity;
         if (!mIsSeparateActivity) mToolbar.removeCloseButton();
+
+        RecordUserAction.record("Android.DownloadManager.Open");
     }
 
     /**
