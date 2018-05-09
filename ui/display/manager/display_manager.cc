@@ -1614,20 +1614,21 @@ bool DisplayManager::ZoomDisplay(int64_t display_id, bool up) {
   ManagedDisplayMode display_mode;
   if (!GetActiveModeForDisplayId(display_id, &display_mode))
     return false;
-  const std::vector<double> zooms = GetDisplayZoomFactors(display_mode);
   auto iter = display_info_.find(display_id);
   if (iter == display_info_.end())
     return false;
 
-  const double current_display_zoom = iter->second.zoom_factor();
+  const float current_display_zoom = iter->second.zoom_factor();
 
   // Find the index of |current_display_zoom| in |zooms|. The nearest value is
   // used if the exact match is not found.
+  const std::vector<float> zooms = GetDisplayZoomFactors(display_mode);
   std::size_t zoom_idx = 0;
-  double min_diff = std::abs(zooms[zoom_idx] - current_display_zoom);
+  float min_diff = std::abs(zooms[zoom_idx] - current_display_zoom);
   for (std::size_t i = 1; i < zooms.size(); i++) {
-    if (std::abs(current_display_zoom - zooms[i]) < min_diff) {
-      min_diff = std::abs(current_display_zoom - zooms[i]);
+    const float diff = std::abs(current_display_zoom - zooms[i]);
+    if (diff < min_diff) {
+      min_diff = diff;
       zoom_idx = i;
     }
   }
@@ -1652,7 +1653,7 @@ void DisplayManager::ResetDisplayZoom(int64_t display_id) {
   auto iter = display_info_.find(display_id);
   if (iter == display_info_.end())
     return;
-  if (std::abs(iter->second.zoom_factor() - 1.f) > 0.001) {
+  if (std::abs(iter->second.zoom_factor() - 1.f) > 0.001f) {
     iter->second.set_zoom_factor(1.f);
     UpdateDisplays();
   }

@@ -37,8 +37,16 @@ GetDisplayPower(const std::vector<DisplaySnapshot*>& displays,
 bool IsPhysicalDisplayType(DisplayConnectionType type);
 
 // Returns a list of display zooms supported by the given |mode|.
-std::vector<double> DISPLAY_MANAGER_EXPORT
+std::vector<float> DISPLAY_MANAGER_EXPORT
 GetDisplayZoomFactors(const ManagedDisplayMode& mode);
+
+// This function adds |inverse_dsf| to the vector of |zoom_values| by replacing
+// the element it is closest to in the list. It also ensures that it never
+// replaces the default zoom value of 1.0 from the list and that the size of the
+// list never changes.
+// Exposed for testing.
+void DISPLAY_MANAGER_EXPORT
+InsertInverseDsfIntoList(std::vector<float>* zoom_values, float inverse_dsf);
 
 }  // namespace display
 

@@ -83,7 +83,7 @@ constexpr char kPortAssociationDisplayId[] = "port_association_display_id";
 constexpr char kMirroringSourceId[] = "mirroring_source_id";
 constexpr char kMirroringDestinationIds[] = "mirroring_destination_ids";
 
-constexpr char kDisplayZoom[] = "display_zoom";
+constexpr char kDisplayZoom[] = "display_zoom_factor";
 
 constexpr char kDisplayPowerAllOn[] = "all_on";
 constexpr char kDisplayPowerInternalOffExternalOn[] =
@@ -282,14 +282,12 @@ void LoadDisplayProperties(DisplayPrefs::LocalState* local_state) {
     if (ValueToInsets(*dict_value, &insets))
       insets_to_set = &insets;
 
-    // Set the default zoom percentage to 100.
-    int display_zoom_percentage = 100;
-    dict_value->GetInteger(kDisplayZoom, &display_zoom_percentage);
+    double display_zoom = 1.0;
+    dict_value->GetDouble(kDisplayZoom, &display_zoom);
 
     GetDisplayManager()->RegisterDisplayProperty(
         id, rotation, ui_scale, insets_to_set, resolution_in_pixels,
-        device_scale_factor,
-        static_cast<float>(display_zoom_percentage) / 100.f);
+        device_scale_factor, display_zoom);
   }
 }
 
@@ -577,10 +575,7 @@ void StoreCurrentDisplayProperties(PrefService* pref_service) {
                        property_value.get());
     }
 
-    // Store the display zoom as a percentage.
-    int display_zoom_percentage = std::round(info.zoom_factor() * 100.f);
-
-    property_value->SetInteger(kDisplayZoom, display_zoom_percentage);
+    property_value->SetDouble(kDisplayZoom, info.zoom_factor());
 
     pref_data->Set(base::Int64ToString(id), std::move(property_value));
   }
