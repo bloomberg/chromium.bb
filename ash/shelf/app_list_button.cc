@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/assistant/ash_assistant_controller.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/assistant_overlay.h"
@@ -132,12 +133,18 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
         Shell::Get()->app_list_controller()->StartVoiceInteractionSession();
         assistant_overlay_->BurstAnimation();
         event->SetHandled();
+      } else if (chromeos::switches::IsAssistantEnabled()) {
+        // TODO: Handle overlay animation similarly to above. Also needs to
+        // factor in Assistant enabled state.
+        Shell::Get()->ash_assistant_controller()->StartInteraction();
+        event->SetHandled();
       } else {
         ImageButton::OnGestureEvent(event);
       }
       return;
     case ui::ET_GESTURE_LONG_TAP:
-      if (UseVoiceInteractionStyle()) {
+      if (UseVoiceInteractionStyle() ||
+          chromeos::switches::IsAssistantEnabled()) {
         // Also consume the long tap event. This happens after the user long
         // presses and lifts the finger. We already handled the long press
         // ignore the long tap to avoid bringing up the context menu again.
