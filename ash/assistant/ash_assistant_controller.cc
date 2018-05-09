@@ -14,12 +14,6 @@
 
 namespace ash {
 
-namespace {
-
-constexpr base::TimeDelta kAutoDismissDelay = base::TimeDelta::FromSeconds(5);
-
-}  // namespace
-
 AshAssistantController::AshAssistantController()
     : assistant_controller_binding_(this),
       assistant_event_subscriber_binding_(this),
@@ -108,7 +102,6 @@ void AshAssistantController::StartInteraction() {
 }
 
 void AshAssistantController::StopInteraction() {
-  // TODO(dmblack): Instruct underlying service to stop listening.
   if (assistant_interaction_model_.interaction_state() !=
       InteractionState::kInactive) {
     OnInteractionDismissed();
@@ -138,40 +131,45 @@ void AshAssistantController::OnInteractionStateChanged(
 void AshAssistantController::OnHighlighterEnabledChanged(bool enabled) {
   // TODO(warx): add a reason enum to distinguish the case of deselecting the
   // tool and done with a stylus selection.
-  assistant_bubble_timer_.Stop();
   assistant_interaction_model_.SetInputModality(InputModality::kStylus);
   assistant_interaction_model_.SetInteractionState(
       enabled ? InteractionState::kActive : InteractionState::kInactive);
 }
 
 void AshAssistantController::OnInteractionStarted() {
-  assistant_bubble_timer_.Stop();
   assistant_interaction_model_.SetInteractionState(InteractionState::kActive);
 }
 
 void AshAssistantController::OnInteractionFinished(
     chromeos::assistant::mojom::AssistantInteractionResolution resolution) {
-  assistant_bubble_timer_.Start(
-      FROM_HERE, kAutoDismissDelay, this,
-      &AshAssistantController::OnInteractionDismissed);
 }
 
 void AshAssistantController::OnInteractionDismissed() {
-  assistant_bubble_timer_.Stop();
   assistant_interaction_model_.SetInteractionState(InteractionState::kInactive);
+
+  // When the user-facing interaction is dismissed, we instruct the service to
+  // terminate any listening, speaking, or query in flight.
+  DCHECK(assistant_);
+  assistant_->StopActiveInteraction();
 }
 
 void AshAssistantController::OnDialogPlateContentsChanged(
     const std::string& text) {
-  assistant_bubble_timer_.Stop();
-
   if (text.empty()) {
     // Note: This does not open the mic. It only updates the input modality to
     // voice so that we will show the mic icon in the UI.
     assistant_interaction_model_.SetInputModality(InputModality::kVoice);
   } else {
-    // TODO(dmblack): Instruct the underlying service to stop any in flight
-    // voice interaction.
+    // If switching to keyboard modality from voice, we instruct the service to
+    // terminate any listening, speaking, or query in flight.
+    // TODO(dmblack): We probably want this same logic when switching to any
+    // modality from voice. Handle this instead in OnInputModalityChanged, but
+    // we will need to add a previous modality parameter to that API.
+    if (assistant_interaction_model_.input_modality() ==
+        InputModality::kVoice) {
+      DCHECK(assistant_);
+      assistant_->StopActiveInteraction();
+    }
     assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
     assistant_interaction_model_.SetMicState(MicState::kClosed);
   }

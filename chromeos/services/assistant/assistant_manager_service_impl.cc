@@ -127,6 +127,14 @@ void AssistantManagerServiceImpl::SendUpdateSettingsUiRequest(
       });
 }
 
+void AssistantManagerServiceImpl::StartVoiceInteraction() {
+  assistant_manager_->StartAssistantInteraction();
+}
+
+void AssistantManagerServiceImpl::StopActiveInteraction() {
+  assistant_manager_->StopAssistantInteraction();
+}
+
 void AssistantManagerServiceImpl::SendTextQuery(const std::string& query) {
   assistant_manager_internal_->SendTextQuery(query);
 }

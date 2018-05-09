@@ -42,6 +42,10 @@ void FakeAssistantManagerServiceImpl::SendUpdateSettingsUiRequest(
     const std::string& update,
     UpdateSettingsUiResponseCallback callback) {}
 
+void FakeAssistantManagerServiceImpl::StartVoiceInteraction() {}
+
+void FakeAssistantManagerServiceImpl::StopActiveInteraction() {}
+
 void FakeAssistantManagerServiceImpl::SendTextQuery(const std::string& query) {}
 
 void FakeAssistantManagerServiceImpl::AddAssistantEventSubscriber(
