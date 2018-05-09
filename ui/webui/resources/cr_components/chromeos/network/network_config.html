@@ -1,10 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="network_shared_css.html">
 <link rel="import" href="network_config_input.html">
 <link rel="import" href="network_config_select.html">
@@ -96,9 +96,9 @@
         <div id="vpnSaveCredentialsLabel" class="start">
           [[i18n('networkConfigSaveCredentials')]]
         </div>
-        <paper-toggle-button checked="{{vpnSaveCredentials_}}"
+        <cr-toggle checked="{{vpnSaveCredentials_}}"
             aria-labelledby="vpnSaveCredentialsLabel">
-        </paper-toggle-button>
+        </cr-toggle>
       </div>
     </template>
 
@@ -140,9 +140,9 @@
         <div id="eapSaveCredentialsLabel" class="start">
           [[i18n('networkConfigSaveCredentials')]]
         </div>
-        <paper-toggle-button checked="{{eapProperties_.SaveCredentials}}"
+        <cr-toggle checked="{{eapProperties_.SaveCredentials}}"
             aria-labelledby="eapSaveCredentialsLabel">
-        </paper-toggle-button>
+        </cr-toggle>
       </div>
     </template>
 
@@ -151,11 +151,11 @@
         if="[[shareIsVisible_(guid, type, networkProperties)]]" restamp>
       <div class="property-box">
         <div id="shareLabel" class="start">[[i18n('networkConfigShare')]]</div>
-        <paper-toggle-button id="share" checked="{{shareNetwork_}}"
+        <cr-toggle id="share" checked="{{shareNetwork_}}"
             disabled="[[!shareIsEnabled_(guid, configProperties_.*,
                       security_, eapProperties_.*, shareAllowEnable)]]"
             aria-label="[[i18n('networkConfigShare')]]">
-        </paper-toggle-button>
+        </cr-toggle>
       </div>
     </template>
 

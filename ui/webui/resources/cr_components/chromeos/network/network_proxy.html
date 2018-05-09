@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior.html">
 <link rel="import" href="chrome://resources/html/assert.html">
@@ -11,7 +12,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="network_proxy_exclusions.html">
 <link rel="import" href="network_proxy_input.html">
 <link rel="import" href="network_shared_css.html">
@@ -73,11 +73,11 @@
       <div id="networkProxyToggleLabel" class="flex">
         [[i18n('networkProxyUseSame')]]
       </div>
-      <paper-toggle-button checked="{{useSameProxy_}}"
+      <cr-toggle checked="{{useSameProxy_}}"
           disabled="[[!isEditable_('Type', networkProperties, editable,
               useSharedProxies)]]"
           aria-labelledby="networkProxyToggleLabel">
-      </paper-toggle-button>
+      </cr-toggle>
     </div>
 
     <div id="manualProxy" class="layout vertical start"

@@ -1,8 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="network_property_list.html">
 <link rel="import" href="network_shared_css.html">
 
@@ -13,10 +13,10 @@
       <div id="autoIPConfigLabel" class="start">
         [[i18n('networkIPConfigAuto')]]
       </div>
-      <paper-toggle-button checked="{{automatic_}}" disabled="[[!editable]]"
+      <cr-toggle checked="{{automatic_}}" disabled="[[!editable]]"
           on-change="onAutomaticChange_"
           aria-labelledby="autoIPConfigLabel">
-      </paper-toggle-button>
+      </cr-toggle>
     </div>
     <template is="dom-if" if="[[hasIpConfigFields_(ipConfig_)]]">
       <div class="property-box single-column indented stretch">
