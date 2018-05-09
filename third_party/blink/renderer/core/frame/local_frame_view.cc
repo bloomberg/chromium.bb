@@ -2767,7 +2767,7 @@ LocalFrameView::ScrollingReasons LocalFrameView::GetScrollingReasons() const {
   else
     contents_size = ContentsSize();
 
-  IntSize visible_content_size = VisibleContentRect().Size();
+  IntSize visible_content_size = VisibleContentSize();
   if (contents_size.Height() <= visible_content_size.Height() &&
       contents_size.Width() <= visible_content_size.Width())
     return kNotScrollableNoOverflow;
@@ -4459,7 +4459,7 @@ int LocalFrameView::ScrollSize(ScrollbarOrientation orientation) const {
 
   // If no scrollbars are present, the content may still be scrollable.
   if (!scrollbar) {
-    IntSize scroll_size = ContentsSize() - VisibleContentRect().Size();
+    IntSize scroll_size = ContentsSize() - VisibleContentSize();
     scroll_size.ClampNegativeToZero();
     return orientation == kHorizontalScrollbar ? scroll_size.Width()
                                                : scroll_size.Height();
@@ -4585,7 +4585,7 @@ void LocalFrameView::ComputeScrollbarExistence(
   if (HasOverlayScrollbars())
     return;
 
-  IntSize full_visible_size = VisibleContentRect(kIncludeScrollbars).Size();
+  IntSize full_visible_size = VisibleContentSize(kIncludeScrollbars);
 
   bool attempt_to_remove_scrollbars =
       (option == kFirstPass && doc_size.Width() <= full_visible_size.Width() &&
