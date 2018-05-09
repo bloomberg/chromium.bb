@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/infobars/infobar_view.h"
+#import "ios/chrome/browser/ui/infobars/confirm_infobar_view.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -12,7 +12,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface InfoBarView (Testing)
+@interface ConfirmInfoBarView (Testing)
 - (CGFloat)buttonsHeight;
 - (CGFloat)buttonMargin;
 - (CGFloat)computeRequiredHeightAndLayoutSubviews:(BOOL)layout;
@@ -28,15 +28,14 @@ namespace {
 const int kShortStringLength = 4;
 const int kLongStringLength = 1000;
 
-class InfoBarViewTest : public PlatformTest {
+class ConfirmInfoBarViewTest : public PlatformTest {
  protected:
   void SetUp() override {
     PlatformTest::SetUp();
     CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
-    infobarView_ =
-        [[InfoBarView alloc] initWithFrame:CGRectMake(0, 0, screenWidth, 0)
-                                  delegate:NULL];
-    [infobarView_ addCloseButtonWithTag:0 target:nil action:nil];
+    confirmInfobarView_ = [[ConfirmInfoBarView alloc]
+        initWithFrame:CGRectMake(0, 0, screenWidth, 0)];
+    [confirmInfobarView_ addCloseButtonWithTag:0 target:nil action:nil];
   }
 
   NSString* RandomString(int numberOfCharacters) {
@@ -55,23 +54,25 @@ class InfoBarViewTest : public PlatformTest {
   NSString* LongRandomString() { return RandomString(kLongStringLength); }
 
   CGFloat InfobarHeight() {
-    return [infobarView_ computeRequiredHeightAndLayoutSubviews:NO];
+    return [confirmInfobarView_ computeRequiredHeightAndLayoutSubviews:NO];
   }
 
-  CGFloat MinimumInfobarHeight() { return [infobarView_ minimumInfobarHeight]; }
+  CGFloat MinimumInfobarHeight() {
+    return [confirmInfobarView_ minimumInfobarHeight];
+  }
 
-  CGFloat ButtonsHeight() { return [infobarView_ buttonsHeight]; }
+  CGFloat ButtonsHeight() { return [confirmInfobarView_ buttonsHeight]; }
 
-  CGFloat ButtonMargin() { return [infobarView_ buttonMargin]; }
+  CGFloat ButtonMargin() { return [confirmInfobarView_ buttonMargin]; }
 
   void TestLinkDetectionHelper(
       NSString* input,
       NSString* expectedOutput,
       const std::vector<std::pair<NSUInteger, NSRange>>& expectedRanges) {
-    NSString* output = [infobarView_ stripMarkersFromString:input];
+    NSString* output = [confirmInfobarView_ stripMarkersFromString:input];
     EXPECT_NSEQ(expectedOutput, output);
     const std::vector<std::pair<NSUInteger, NSRange>>& ranges =
-        [infobarView_ linkRanges];
+        [confirmInfobarView_ linkRanges];
     EXPECT_EQ(expectedRanges.size(), ranges.size());
     for (unsigned int i = 0; i < expectedRanges.size(); ++i) {
       EXPECT_EQ(expectedRanges[i].first, ranges[i].first);
@@ -79,81 +80,89 @@ class InfoBarViewTest : public PlatformTest {
     }
   }
 
-  InfoBarView* infobarView_;
+  ConfirmInfoBarView* confirmInfobarView_;
 };
 
-TEST_F(InfoBarViewTest, TestLayoutWithNoLabel) {
+TEST_F(ConfirmInfoBarViewTest, TestLayoutWithNoLabel) {
   // Do not call -addLabel: to test the case when there is no label.
   EXPECT_EQ(MinimumInfobarHeight(), InfobarHeight());
 }
 
-TEST_F(InfoBarViewTest, TestLayoutWithShortLabel) {
-  [infobarView_ addLabel:ShortRandomString()];
+TEST_F(ConfirmInfoBarViewTest, TestLayoutWithShortLabel) {
+  [confirmInfobarView_ addLabel:ShortRandomString()];
   EXPECT_EQ(MinimumInfobarHeight(), InfobarHeight());
 }
 
-TEST_F(InfoBarViewTest, TestLayoutWithLongLabel) {
-  [infobarView_ addLabel:LongRandomString()];
+TEST_F(ConfirmInfoBarViewTest, TestLayoutWithLongLabel) {
+  [confirmInfobarView_ addLabel:LongRandomString()];
   EXPECT_LT(MinimumInfobarHeight(), InfobarHeight());
-  EXPECT_EQ(0,
-            [infobarView_ heightThatFitsButtonsUnderOtherWidgets:0 layout:NO]);
+  EXPECT_EQ(0, [confirmInfobarView_ heightThatFitsButtonsUnderOtherWidgets:0
+                                                                    layout:NO]);
 }
 
-TEST_F(InfoBarViewTest, TestLayoutWithShortButtons) {
-  [infobarView_ addLabel:ShortRandomString()];
-  [infobarView_ addButton1:ShortRandomString()
-                      tag1:0
-                   button2:ShortRandomString()
-                      tag2:0
-                    target:nil
-                    action:nil];
+TEST_F(ConfirmInfoBarViewTest, TestLayoutWithShortButtons) {
+  [confirmInfobarView_ addLabel:ShortRandomString()];
+  [confirmInfobarView_ addButton1:ShortRandomString()
+                             tag1:0
+                          button2:ShortRandomString()
+                             tag2:0
+                           target:nil
+                           action:nil];
   EXPECT_EQ(MinimumInfobarHeight(), InfobarHeight());
-  EXPECT_EQ(ButtonsHeight(),
-            [infobarView_ heightThatFitsButtonsUnderOtherWidgets:0 layout:NO]);
+  EXPECT_EQ(
+      ButtonsHeight(),
+      [confirmInfobarView_ heightThatFitsButtonsUnderOtherWidgets:0 layout:NO]);
 }
 
-TEST_F(InfoBarViewTest, TestLayoutWithOneLongButtonAndOneShortButton) {
-  [infobarView_ addLabel:ShortRandomString()];
-  [infobarView_ addButton1:LongRandomString()
-                      tag1:0
-                   button2:ShortRandomString()
-                      tag2:0
-                    target:nil
-                    action:nil];
+TEST_F(ConfirmInfoBarViewTest, TestLayoutWithOneLongButtonAndOneShortButton) {
+  [confirmInfobarView_ addLabel:ShortRandomString()];
+  [confirmInfobarView_ addButton1:LongRandomString()
+                             tag1:0
+                          button2:ShortRandomString()
+                             tag2:0
+                           target:nil
+                           action:nil];
   EXPECT_EQ(MinimumInfobarHeight() + ButtonsHeight() * 2 + ButtonMargin(),
             InfobarHeight());
-  EXPECT_EQ(ButtonsHeight() * 2,
-            [infobarView_ heightThatFitsButtonsUnderOtherWidgets:0 layout:NO]);
+  EXPECT_EQ(
+      ButtonsHeight() * 2,
+      [confirmInfobarView_ heightThatFitsButtonsUnderOtherWidgets:0 layout:NO]);
 }
 
-TEST_F(InfoBarViewTest, TestLayoutWithShortLabelAndShortButton) {
-  [infobarView_ addLabel:ShortRandomString()];
-  [infobarView_ addButton:ShortRandomString() tag:0 target:nil action:nil];
+TEST_F(ConfirmInfoBarViewTest, TestLayoutWithShortLabelAndShortButton) {
+  [confirmInfobarView_ addLabel:ShortRandomString()];
+  [confirmInfobarView_ addButton:ShortRandomString()
+                             tag:0
+                          target:nil
+                          action:nil];
   EXPECT_EQ(MinimumInfobarHeight(), InfobarHeight());
 }
 
-TEST_F(InfoBarViewTest, TestLayoutWithShortLabelAndLongButton) {
-  [infobarView_ addLabel:ShortRandomString()];
-  [infobarView_ addButton:LongRandomString() tag:0 target:nil action:nil];
+TEST_F(ConfirmInfoBarViewTest, TestLayoutWithShortLabelAndLongButton) {
+  [confirmInfobarView_ addLabel:ShortRandomString()];
+  [confirmInfobarView_ addButton:LongRandomString()
+                             tag:0
+                          target:nil
+                          action:nil];
   EXPECT_EQ(MinimumInfobarHeight() + ButtonsHeight() + ButtonMargin(),
             InfobarHeight());
 }
 
-TEST_F(InfoBarViewTest, TestLayoutWithLongLabelAndLongButtons) {
-  [infobarView_ addLabel:LongRandomString()];
-  [infobarView_ addButton1:ShortRandomString()
-                      tag1:0
-                   button2:LongRandomString()
-                      tag2:0
-                    target:nil
-                    action:nil];
+TEST_F(ConfirmInfoBarViewTest, TestLayoutWithLongLabelAndLongButtons) {
+  [confirmInfobarView_ addLabel:LongRandomString()];
+  [confirmInfobarView_ addButton1:ShortRandomString()
+                             tag1:0
+                          button2:LongRandomString()
+                             tag2:0
+                           target:nil
+                           action:nil];
   EXPECT_LT(MinimumInfobarHeight() + ButtonsHeight() * 2, InfobarHeight());
 }
 
-TEST_F(InfoBarViewTest, TestLinkDetection) {
-  [infobarView_ addLabel:ShortRandomString()];
-  NSString* linkFoo = [InfoBarView stringAsLink:@"foo" tag:1];
-  NSString* linkBar = [InfoBarView stringAsLink:@"bar" tag:2];
+TEST_F(ConfirmInfoBarViewTest, TestLinkDetection) {
+  [confirmInfobarView_ addLabel:ShortRandomString()];
+  NSString* linkFoo = [ConfirmInfoBarView stringAsLink:@"foo" tag:1];
+  NSString* linkBar = [ConfirmInfoBarView stringAsLink:@"bar" tag:2];
   std::vector<std::pair<NSUInteger, NSRange>> ranges;
   // No link.
   TestLinkDetectionHelper(@"", @"", ranges);

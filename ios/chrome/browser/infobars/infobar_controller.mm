@@ -7,28 +7,21 @@
 #include <memory>
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view.h"
+#include "ios/chrome/browser/infobars/infobar_controller_delegate.h"
+#import "ios/chrome/browser/ui/infobars/infobar_view_sizing.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 @interface InfoBarController () {
-  InfoBarView* _infoBarView;
+  UIView<InfoBarViewSizing>* _infoBarView;
 }
 @end
 
 @implementation InfoBarController
-@synthesize delegate = _delegate;
 
-- (instancetype)initWithDelegate:(InfoBarViewDelegate*)delegate {
-  self = [super init];
-  if (self) {
-    DCHECK(delegate);
-    _delegate = delegate;
-  }
-  return self;
-}
+@synthesize delegate = _delegate;
 
 - (void)dealloc {
   [_infoBarView removeFromSuperview];
@@ -38,16 +31,17 @@
   return CGRectGetHeight([_infoBarView frame]);
 }
 
-- (void)layoutForDelegate:(infobars::InfoBarDelegate*)delegate
-                    frame:(CGRect)bounds {
-  DCHECK(!_infoBarView);
-  _infoBarView = [self viewForDelegate:delegate frame:bounds];
+- (void)layoutForFrame:(CGRect)bounds {
+  if (!_infoBarView) {
+    _infoBarView = [self viewForFrame:bounds];
+    [_infoBarView setDelegate:self];
+  } else {
+    [_infoBarView setFrame:bounds];
+  }
 }
 
-- (InfoBarView*)viewForDelegate:(infobars::InfoBarDelegate*)delegate
-                          frame:(CGRect)bounds {
-  // Must be overriden in subclasses.
-  NOTREACHED();
+- (UIView<InfoBarViewSizing>*)viewForFrame:(CGRect)bounds {
+  NOTREACHED() << "Must be overriden in subclasses.";
   return _infoBarView;
 }
 
@@ -55,7 +49,7 @@
   [_infoBarView setVisibleHeight:newHeight];
 }
 
-- (InfoBarView*)view {
+- (UIView<InfoBarViewSizing>*)view {
   return _infoBarView;
 }
 
@@ -64,8 +58,17 @@
 }
 
 - (void)detachView {
-  [_infoBarView resetDelegate];
+  [_infoBarView setDelegate:nil];
   _delegate = nullptr;
+}
+
+#pragma mark - InfoBarViewDelegate
+
+- (void)didSetInfoBarTargetHeight:(CGFloat)height {
+  if (!_delegate)
+    return;
+
+  _delegate->SetInfoBarTargetHeight(height);
 }
 
 @end

@@ -8,8 +8,16 @@
 #include "ios/chrome/browser/infobars/infobar_controller.h"
 
 @protocol LanguageSelectionHandler;
+namespace translate {
+class TranslateInfoBarDelegate;
+}
 
 @interface BeforeTranslateInfoBarController : InfoBarController
+
+- (instancetype)init NS_UNAVAILABLE;
+
+- (instancetype)initWithInfoBarDelegate:
+    (translate::TranslateInfoBarDelegate*)delegate;
 
 @property(nonatomic, weak) id<LanguageSelectionHandler>
     languageSelectionHandler;

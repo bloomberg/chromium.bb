@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/infobars/infobar_view.h"
+#import "ios/chrome/browser/ui/infobars/confirm_infobar_view.h"
 
 #import <CoreGraphics/CoreGraphics.h>
 #import <QuartzCore/QuartzCore.h>
@@ -14,7 +14,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view_delegate.h"
+#import "ios/chrome/browser/ui/infobars/infobar_view_sizing_delegate.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
@@ -277,7 +277,7 @@ UIImage* InfoBarCloseImage() {
 
 @end
 
-@interface InfoBarView (Testing)
+@interface ConfirmInfoBarView (Testing)
 // Returns the buttons' height.
 - (CGFloat)buttonsHeight;
 // Returns the button margin applied in some views.
@@ -307,7 +307,7 @@ UIImage* InfoBarCloseImage() {
 - (const std::vector<std::pair<NSUInteger, NSRange>>&)linkRanges;
 @end
 
-@interface InfoBarView ()
+@interface ConfirmInfoBarView ()
 
 // Returns the marker delimiting the start of a link.
 + (NSString*)openingMarkerForLink;
@@ -316,12 +316,7 @@ UIImage* InfoBarCloseImage() {
 
 @end
 
-@implementation InfoBarView {
-  // Delegates UIView events.
-  InfoBarViewDelegate* delegate_;  // weak.
-  // The current height of this infobar (used for animations where part of the
-  // infobar is hidden).
-  CGFloat visibleHeight_;
+@implementation ConfirmInfoBarView {
   // The height of this infobar when fully visible.
   CGFloat targetHeight_;
   // View containing the icon.
@@ -352,12 +347,11 @@ UIImage* InfoBarCloseImage() {
 }
 
 @synthesize visibleHeight = visibleHeight_;
+@synthesize delegate = delegate_;
 
-- (instancetype)initWithFrame:(CGRect)frame
-                     delegate:(InfoBarViewDelegate*)delegate {
+- (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    delegate_ = delegate;
     metrics_ = InfoBarLayoutMetrics();
     if (!IsRefreshInfobarEnabled()) {
       // Make the drop shadow.
@@ -372,13 +366,8 @@ UIImage* InfoBarCloseImage() {
   return self;
 }
 
-
 - (NSString*)markedLabel {
   return markedLabel_;
-}
-
-- (void)resetDelegate {
-  delegate_ = NULL;
 }
 
 // Returns the width reserved for the icon.
@@ -763,7 +752,7 @@ UIImage* InfoBarCloseImage() {
   targetHeight_ = [self computeRequiredHeightAndLayoutSubviews:YES];
 
   if (delegate_)
-    delegate_->SetInfoBarTargetHeight(targetHeight_);
+    [delegate_ didSetInfoBarTargetHeight:targetHeight_];
   [self resetBackground];
 
   // Asks the BidiContainerView to reposition of all the subviews.
@@ -830,7 +819,7 @@ UIImage* InfoBarCloseImage() {
   for (;;) {
     // Find the opening marker, followed by the tag between parentheses.
     NSRange startingRange =
-        [string rangeOfString:[[InfoBarView openingMarkerForLink]
+        [string rangeOfString:[[ConfirmInfoBarView openingMarkerForLink]
                                   stringByAppendingString:@"("]];
     if (!startingRange.length)
       return [string copy];
@@ -852,7 +841,7 @@ UIImage* InfoBarCloseImage() {
     startingRange.length =
         closingParenthesis.location - startingRange.location + 1;
     NSRange endingRange =
-        [string rangeOfString:[InfoBarView closingMarkerForLink]];
+        [string rangeOfString:[ConfirmInfoBarView closingMarkerForLink]];
     DCHECK(endingRange.length);
     // Compute range of link in stripped string and add it to the array.
     NSRange rangeOfLinkInStrippedString =
@@ -1040,8 +1029,9 @@ UIImage* InfoBarCloseImage() {
 + (NSString*)stringAsLink:(NSString*)string tag:(NSUInteger)tag {
   DCHECK_NE(0u, tag);
   return [NSString stringWithFormat:@"%@(%" PRIuNS ")%@%@",
-                                    [InfoBarView openingMarkerForLink], tag,
-                                    string, [InfoBarView closingMarkerForLink]];
+                                    [ConfirmInfoBarView openingMarkerForLink],
+                                    tag, string,
+                                    [ConfirmInfoBarView closingMarkerForLink]];
 }
 
 #pragma mark - Testing

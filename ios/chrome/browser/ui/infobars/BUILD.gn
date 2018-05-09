@@ -5,9 +5,10 @@
 source_set("infobars") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "infobar_view.h",
-    "infobar_view.mm",
-    "infobar_view_delegate.h",
+    "confirm_infobar_view.h",
+    "confirm_infobar_view.mm",
+    "infobar_view_sizing.h",
+    "infobar_view_sizing_delegate.h",
   ]
   deps = [
     "resources:infobar_close",
@@ -41,7 +42,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "infobar_view_unittest.mm",
+    "confirm_infobar_view_unittest.mm",
   ]
   deps = [
     ":infobars",

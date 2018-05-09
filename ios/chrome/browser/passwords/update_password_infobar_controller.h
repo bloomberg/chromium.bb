@@ -13,12 +13,11 @@ class IOSChromeUpdatePasswordInfoBarDelegate;
 // the user whether they want to update their password.
 @interface UpdatePasswordInfoBarController : ConfirmInfoBarController
 
-// The base view controller from which to present UI.
-@property(nonatomic, readwrite, weak) UIViewController* baseViewController;
+- (instancetype)init NS_UNAVAILABLE;
 
-- (InfoBarView*)viewForDelegate:
-                    (IOSChromeUpdatePasswordInfoBarDelegate*)delegate
-                          frame:(CGRect)frame;
+- (instancetype)
+initWithBaseViewController:(UIViewController*)baseViewController
+           infoBarDelegate:(IOSChromeUpdatePasswordInfoBarDelegate*)delegate;
 
 @end
 
