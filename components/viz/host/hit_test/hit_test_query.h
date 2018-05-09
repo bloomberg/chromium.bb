@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "components/viz/common/hit_test/aggregated_hit_test_region.h"
 #include "components/viz/host/viz_host_export.h"
-#include "mojo/public/cpp/system/buffer.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace viz {
@@ -42,20 +41,10 @@ class VIZ_HOST_EXPORT HitTestQuery {
 
   // TODO(riajiang): Need to validate the data received.
   // http://crbug.com/746470
-  // HitTestAggregator should only send new active_handle and idle_handle when
-  // they are initialized or replaced with OnAggregatedHitTestRegionListUpdated.
-  // Both handles must be valid. HitTestQuery would store and update these two
-  // handles received.
-  // HitTestAggregator would tell HitTestQuery to update its active hit test
-  // list based on |active_handle_index| with
-  // SwitchActiveAggregatedHitTestRegionList if HitTestAggregator only swapped
-  // handles.
+  // HitTestAggregator has sent the most recent |hit_test_data| for targeting/
+  // transforming requests.
   void OnAggregatedHitTestRegionListUpdated(
-      mojo::ScopedSharedBufferHandle active_handle,
-      uint32_t active_handle_size,
-      mojo::ScopedSharedBufferHandle idle_handle,
-      uint32_t idle_handle_size);
-  void SwitchActiveAggregatedHitTestRegionList(uint8_t active_handle_index);
+      const std::vector<AggregatedHitTestRegion>& hit_test_data);
 
   // Finds Target for |location_in_root|, including the FrameSinkId of the
   // target, updated location in the coordinate system of the target and
@@ -104,37 +93,32 @@ class VIZ_HOST_EXPORT HitTestQuery {
                             gfx::Transform* transform) const;
 
  private:
-  // Helper function to find |target| for |location_in_parent| in the |region|,
-  // returns true if a target is found and false otherwise. |location_in_parent|
-  // is in the coordinate space of |region|'s parent.
+  // Helper function to find |target| for |location_in_parent| in the
+  // |region_index|, returns true if a target is found and false otherwise.
+  // |location_in_parent| is in the coordinate space of |region_index|'s parent.
   bool FindTargetInRegionForLocation(EventSource event_source,
                                      const gfx::PointF& location_in_parent,
-                                     AggregatedHitTestRegion* region,
+                                     uint32_t region_index,
                                      Target* target) const;
 
-  // Transform |location_in_target| to be in |region|'s coordinate space.
-  // |location_in_target| is in the coordinate space of |region|'s parent at the
-  // beginning.
+  // Transform |location_in_target| to be in |region_index|'s coordinate space.
+  // |location_in_target| is in the coordinate space of |region_index|'s parent
+  // at the beginning.
   bool TransformLocationForTargetRecursively(
       EventSource event_source,
       const std::vector<FrameSinkId>& target_ancestors,
       size_t target_ancestor,
-      AggregatedHitTestRegion* region,
+      uint32_t region_index,
       gfx::PointF* location_in_target) const;
 
   bool GetTransformToTargetRecursively(const FrameSinkId& target,
-                                       AggregatedHitTestRegion* region,
+                                       uint32_t region_index,
                                        gfx::Transform* transform) const;
 
   void ReceivedBadMessageFromGpuProcess() const;
 
-  bool CheckChildCount(AggregatedHitTestRegion* region) const;
-
-  uint32_t handle_buffer_sizes_[2];
-  mojo::ScopedSharedBufferMapping handle_buffers_[2];
-
-  AggregatedHitTestRegion* active_hit_test_list_ = nullptr;
-  uint32_t active_hit_test_list_size_ = 0;
+  std::vector<AggregatedHitTestRegion> hit_test_data_;
+  uint32_t hit_test_data_size_ = 0;
 
   // Log bad message and shut down Viz process when it is compromised.
   base::RepeatingClosure bad_message_gpu_callback_;

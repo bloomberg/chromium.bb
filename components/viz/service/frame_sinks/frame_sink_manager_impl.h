@@ -113,13 +113,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // HitTestAggregatorDelegate implementation:
   void OnAggregatedHitTestRegionListUpdated(
       const FrameSinkId& frame_sink_id,
-      mojo::ScopedSharedBufferHandle active_handle,
-      uint32_t active_handle_size,
-      mojo::ScopedSharedBufferHandle idle_handle,
-      uint32_t idle_handle_size) override;
-  void SwitchActiveAggregatedHitTestRegionList(
-      const FrameSinkId& frame_sink_id,
-      uint8_t active_handle_index) override;
+      const std::vector<AggregatedHitTestRegion>& hit_test_data) override;
 
   // CompositorFrameSinkSupport, hierarchy, and BeginFrameSource can be
   // registered and unregistered in any order with respect to each other.

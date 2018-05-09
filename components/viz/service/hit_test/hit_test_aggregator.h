@@ -17,12 +17,9 @@ class HitTestAggregatorDelegate;
 
 // HitTestAggregator assembles the list of HitTestRegion objects that define the
 // hit test information required for one display. Active HitTestRegionList
-// information is obtained from the HitTestManager.  The resulting list is made
-// available in shared memory and used by HitTestQuery to enable efficient hit
-// testing across processes.
-//
-// This is intended to be created in the viz or GPU process. For mus+ash this
-// will be true after the mus process split.
+// information is obtained from the HitTestManager. The resulting list is sent
+// to HitTestQuery for event targeting. This is intended to be created in the
+// viz or GPU process.
 class VIZ_SERVICE_EXPORT HitTestAggregator {
  public:
   // |delegate| owns and outlives HitTestAggregator.
@@ -31,70 +28,38 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
       HitTestAggregatorDelegate* delegate,
       LatestLocalSurfaceIdLookupDelegate* local_surface_id_lookup_delegate,
       const FrameSinkId& frame_sink_id,
-      uint32_t initial_region_size = 1024,
-      uint32_t max_region_size = 100 * 1024);
+      uint32_t initial_region_size = 100,
+      uint32_t max_region_size = 100 * 100);
   ~HitTestAggregator();
 
   // Called after surfaces have been aggregated into the DisplayFrame.
   // In this call HitTestRegionList structures received from active surfaces
-  // are aggregated into the HitTestRegionList structure in
-  // shared memory used for event targetting.
+  // are aggregated into |hit_test_data_|.
   void Aggregate(const SurfaceId& display_surface_id);
-
-  // Called at BeginFrame. Swaps buffers in shared memory and tells its
-  // delegate.
-  void Swap();
 
  private:
   friend class TestHitTestAggregator;
 
-  // Allocates memory for the AggregatedHitTestRegion array.
-  void AllocateHitTestRegionArray();
-
-  // Resizes memory for the AggregatedHitTestRegion array. |size| indicates the
-  // number of elements.
-  void ResizeHitTestRegionArray(uint32_t size);
-
-  void GrowRegionList();
-  void SwapHandles();
+  void SendHitTestData();
 
   // Appends the root element to the AggregatedHitTestRegion array.
   void AppendRoot(const SurfaceId& surface_id);
 
   // Appends a |region| to the HitTestRegionList structure to recursively
-  // build the tree.  |region_index| indicates the current index of the end of
+  // build the tree. |region_index| indicates the current index of the end of
   // the list.
   size_t AppendRegion(size_t region_index,
                       const mojom::HitTestRegionPtr& region);
 
   // Populates the HitTestRegion element at the given element |index|.
-  // Access to the HitTestRegion list is localized to this call
-  // in order to prevent errors if the array is resized during aggregation.
   void SetRegionAt(size_t index,
                    const FrameSinkId& frame_sink_id,
                    uint32_t flags,
                    const gfx::Rect& rect,
                    const gfx::Transform& transform,
                    int32_t child_count);
-  // Marks the element at the given index as the end of list.
-  void MarkEndAt(size_t index);
 
   const HitTestManager* const hit_test_manager_;
-
-  mojo::ScopedSharedBufferHandle read_handle_;
-  mojo::ScopedSharedBufferHandle write_handle_;
-
-  // The number of elements allocated.
-  uint32_t read_size_ = 0;
-  uint32_t write_size_ = 0;
-
-  mojo::ScopedSharedBufferMapping read_buffer_;
-  mojo::ScopedSharedBufferMapping write_buffer_;
-
-  bool handle_replaced_ = false;
-
-  // Can only be 0 or 1 when we only have two buffers.
-  uint8_t active_handle_index_ = 0;
 
   HitTestAggregatorDelegate* const delegate_;
 
@@ -109,6 +74,10 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
   const uint32_t initial_region_size_;
   const uint32_t incremental_region_size_;
   const uint32_t max_region_size_;
+
+  uint32_t hit_test_data_capacity_ = 0;
+  uint32_t hit_test_data_size_ = 0;
+  std::vector<AggregatedHitTestRegion> hit_test_data_;
 
   // This is the set of FrameSinkIds referenced in the aggregation so far, used
   // to detect cycles.

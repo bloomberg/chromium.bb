@@ -625,8 +625,8 @@ TEST_F(HostFrameSinkManagerRemoteTest, DeletedHitTestQuery) {
     run_loop.Run();
   }
 
-  GetFrameSinkManagerClient()->SwitchActiveAggregatedHitTestRegionList(
-      kFrameSinkParent1, 0);
+  GetFrameSinkManagerClient()->OnAggregatedHitTestRegionListUpdated(
+      kFrameSinkParent1, {});
   // Continue to send hit-test data to HitTestQuery associated with
   // kFrameSinkChild1.
 
@@ -634,8 +634,8 @@ TEST_F(HostFrameSinkManagerRemoteTest, DeletedHitTestQuery) {
   // Invalidating kFrameSinkChild1 would delete the corresponding HitTestQuery,
   // so further msgs to that HitTestQuery should be dropped.
   EXPECT_FALSE(DisplayHitTestQueryExists(kFrameSinkParent1));
-  GetFrameSinkManagerClient()->SwitchActiveAggregatedHitTestRegionList(
-      kFrameSinkParent1, 1);
+  GetFrameSinkManagerClient()->OnAggregatedHitTestRegionListUpdated(
+      kFrameSinkParent1, {});
 }
 
 // Verify that HostFrameSinkManager assigns temporary references when connected

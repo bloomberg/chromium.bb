@@ -21,6 +21,11 @@ bool RegionMatchEventSource(EventSource event_source, uint32_t flags) {
   return (flags & (mojom::kHitTestMouse | mojom::kHitTestTouch)) != 0u;
 }
 
+bool CheckChildCount(int32_t child_count, uint32_t child_count_max) {
+  return (child_count >= 0) &&
+         (static_cast<uint32_t>(child_count) < child_count_max);
+}
+
 }  // namespace
 
 HitTestQuery::HitTestQuery(base::RepeatingClosure bad_message_gpu_callback)
@@ -29,39 +34,10 @@ HitTestQuery::HitTestQuery(base::RepeatingClosure bad_message_gpu_callback)
 HitTestQuery::~HitTestQuery() = default;
 
 void HitTestQuery::OnAggregatedHitTestRegionListUpdated(
-    mojo::ScopedSharedBufferHandle active_handle,
-    uint32_t active_handle_size,
-    mojo::ScopedSharedBufferHandle idle_handle,
-    uint32_t idle_handle_size) {
-  if (!active_handle.is_valid() || !idle_handle.is_valid()) {
-    ReceivedBadMessageFromGpuProcess();
-    return;
-  }
-  handle_buffer_sizes_[0] = active_handle_size;
-  handle_buffers_[0] = active_handle->Map(handle_buffer_sizes_[0] *
-                                          sizeof(AggregatedHitTestRegion));
-  handle_buffer_sizes_[1] = idle_handle_size;
-  handle_buffers_[1] = idle_handle->Map(handle_buffer_sizes_[1] *
-                                        sizeof(AggregatedHitTestRegion));
-  if (!handle_buffers_[0] || !handle_buffers_[1]) {
-    handle_buffer_sizes_[0] = handle_buffer_sizes_[1] = 0;
-    handle_buffers_[0] = {};
-    handle_buffers_[1] = {};
-    ReceivedBadMessageFromGpuProcess();
-    return;
-  }
-  SwitchActiveAggregatedHitTestRegionList(0);
-}
-
-void HitTestQuery::SwitchActiveAggregatedHitTestRegionList(
-    uint8_t active_handle_index) {
-  if (active_handle_index != 0u && active_handle_index != 1u) {
-    ReceivedBadMessageFromGpuProcess();
-    return;
-  }
-  active_hit_test_list_ = static_cast<AggregatedHitTestRegion*>(
-      handle_buffers_[active_handle_index].get());
-  active_hit_test_list_size_ = handle_buffer_sizes_[active_handle_index];
+    const std::vector<AggregatedHitTestRegion>& hit_test_data) {
+  hit_test_data_.clear();
+  hit_test_data_ = hit_test_data;
+  hit_test_data_size_ = hit_test_data.size();
 }
 
 Target HitTestQuery::FindTargetForLocation(
@@ -70,11 +46,10 @@ Target HitTestQuery::FindTargetForLocation(
   SCOPED_UMA_HISTOGRAM_TIMER("Event.VizHitTest.TargetTime");
 
   Target target;
-  if (!active_hit_test_list_size_)
+  if (!hit_test_data_size_)
     return target;
 
-  FindTargetInRegionForLocation(event_source, location_in_root,
-                                active_hit_test_list_, &target);
+  FindTargetInRegionForLocation(event_source, location_in_root, 0, &target);
   return target;
 }
 
@@ -85,69 +60,74 @@ bool HitTestQuery::TransformLocationForTarget(
     gfx::PointF* transformed_location) const {
   SCOPED_UMA_HISTOGRAM_TIMER("Event.VizHitTest.TransformTime");
 
-  if (!active_hit_test_list_size_)
+  if (!hit_test_data_size_)
     return false;
 
   if (target_ancestors.size() == 0u ||
       target_ancestors[target_ancestors.size() - 1] !=
-          active_hit_test_list_->frame_sink_id) {
+          hit_test_data_[0].frame_sink_id) {
     return false;
   }
 
   // TODO(riajiang): Cache the matrix product such that the transform can be
   // done immediately. crbug/758062.
   *transformed_location = location_in_root;
-  return TransformLocationForTargetRecursively(
-      event_source, target_ancestors, target_ancestors.size() - 1,
-      active_hit_test_list_, transformed_location);
+  return TransformLocationForTargetRecursively(event_source, target_ancestors,
+                                               target_ancestors.size() - 1, 0,
+                                               transformed_location);
 }
 
 bool HitTestQuery::GetTransformToTarget(const FrameSinkId& target,
                                         gfx::Transform* transform) const {
-  if (!active_hit_test_list_size_)
+  if (!hit_test_data_size_)
     return false;
 
-  return GetTransformToTargetRecursively(target, active_hit_test_list_,
-                                         transform);
+  return GetTransformToTargetRecursively(target, 0, transform);
 }
 
 bool HitTestQuery::FindTargetInRegionForLocation(
     EventSource event_source,
     const gfx::PointF& location_in_parent,
-    AggregatedHitTestRegion* region,
+    uint32_t region_index,
     Target* target) const {
   gfx::PointF location_transformed(location_in_parent);
-  region->transform().TransformPoint(&location_transformed);
-  if (!gfx::RectF(region->rect).Contains(location_transformed))
+  hit_test_data_[region_index].transform().TransformPoint(
+      &location_transformed);
+  if (!gfx::RectF(hit_test_data_[region_index].rect)
+           .Contains(location_transformed)) {
+    return false;
+  }
+
+  const int32_t region_child_count = hit_test_data_[region_index].child_count;
+  if (!CheckChildCount(region_child_count, hit_test_data_size_ - region_index))
     return false;
 
-  if (!CheckChildCount(region))
-    return false;
-
-  AggregatedHitTestRegion* child_region = region + 1;
-  AggregatedHitTestRegion* child_region_end =
-      child_region + region->child_count;
+  uint32_t child_region = region_index + 1;
+  uint32_t child_region_end = child_region + region_child_count;
   gfx::PointF location_in_target =
-      location_transformed - region->rect.OffsetFromOrigin();
+      location_transformed -
+      hit_test_data_[region_index].rect.OffsetFromOrigin();
   while (child_region < child_region_end) {
     if (FindTargetInRegionForLocation(event_source, location_in_target,
                                       child_region, target)) {
       return true;
     }
 
-    if (child_region->child_count < 0 ||
-        child_region->child_count >= region->child_count) {
+    const int32_t child_region_child_count =
+        hit_test_data_[child_region].child_count;
+    if (!CheckChildCount(child_region_child_count, region_child_count))
       return false;
-    }
-    child_region = child_region + child_region->child_count + 1;
+
+    child_region = child_region + child_region_child_count + 1;
   }
 
-  if (!RegionMatchEventSource(event_source, region->flags))
+  const uint32_t flags = hit_test_data_[region_index].flags;
+  if (!RegionMatchEventSource(event_source, flags))
     return false;
-  if (region->flags & (mojom::kHitTestMine | mojom::kHitTestAsk)) {
-    target->frame_sink_id = region->frame_sink_id;
+  if (flags & (mojom::kHitTestMine | mojom::kHitTestAsk)) {
+    target->frame_sink_id = hit_test_data_[region_index].frame_sink_id;
     target->location_in_target = location_in_target;
-    target->flags = region->flags;
+    target->flags = flags;
     return true;
   }
   return false;
@@ -157,36 +137,40 @@ bool HitTestQuery::TransformLocationForTargetRecursively(
     EventSource event_source,
     const std::vector<FrameSinkId>& target_ancestors,
     size_t target_ancestor,
-    AggregatedHitTestRegion* region,
+    uint32_t region_index,
     gfx::PointF* location_in_target) const {
-  if ((region->flags & mojom::kHitTestChildSurface) == 0u &&
-      !RegionMatchEventSource(event_source, region->flags)) {
+  const uint32_t flags = hit_test_data_[region_index].flags;
+  if ((flags & mojom::kHitTestChildSurface) == 0u &&
+      !RegionMatchEventSource(event_source, flags)) {
     return false;
   }
 
-  region->transform().TransformPoint(location_in_target);
-  location_in_target->Offset(-region->rect.x(), -region->rect.y());
+  hit_test_data_[region_index].transform().TransformPoint(location_in_target);
+  location_in_target->Offset(-hit_test_data_[region_index].rect.x(),
+                             -hit_test_data_[region_index].rect.y());
   if (!target_ancestor)
     return true;
 
-  if (!CheckChildCount(region))
+  const int32_t region_child_count = hit_test_data_[region_index].child_count;
+  if (!CheckChildCount(region_child_count, hit_test_data_size_ - region_index))
     return false;
 
-  AggregatedHitTestRegion* child_region = region + 1;
-  AggregatedHitTestRegion* child_region_end =
-      child_region + region->child_count;
+  uint32_t child_region = region_index + 1;
+  uint32_t child_region_end = child_region + region_child_count;
   while (child_region < child_region_end) {
-    if (child_region->frame_sink_id == target_ancestors[target_ancestor - 1]) {
+    if (hit_test_data_[child_region].frame_sink_id ==
+        target_ancestors[target_ancestor - 1]) {
       return TransformLocationForTargetRecursively(
           event_source, target_ancestors, target_ancestor - 1, child_region,
           location_in_target);
     }
 
-    if (child_region->child_count < 0 ||
-        child_region->child_count >= region->child_count) {
+    const int32_t child_region_child_count =
+        hit_test_data_[child_region].child_count;
+    if (!CheckChildCount(child_region_child_count, region_child_count))
       return false;
-    }
-    child_region = child_region + child_region->child_count + 1;
+
+    child_region = child_region + child_region_child_count + 1;
   }
 
   return false;
@@ -194,37 +178,40 @@ bool HitTestQuery::TransformLocationForTargetRecursively(
 
 bool HitTestQuery::GetTransformToTargetRecursively(
     const FrameSinkId& target,
-    AggregatedHitTestRegion* region,
+    uint32_t region_index,
     gfx::Transform* transform) const {
   // TODO(riajiang): Cache the matrix product such that the transform can be
   // found immediately.
-  if (region->frame_sink_id == target) {
-    *transform = region->transform();
-    transform->Translate(-region->rect.x(), -region->rect.y());
+  if (hit_test_data_[region_index].frame_sink_id == target) {
+    *transform = hit_test_data_[region_index].transform();
+    transform->Translate(-hit_test_data_[region_index].rect.x(),
+                         -hit_test_data_[region_index].rect.y());
     return true;
   }
 
-  if (!CheckChildCount(region))
+  const int32_t region_child_count = hit_test_data_[region_index].child_count;
+  if (!CheckChildCount(region_child_count, hit_test_data_size_ - region_index))
     return false;
 
-  AggregatedHitTestRegion* child_region = region + 1;
-  AggregatedHitTestRegion* child_region_end =
-      child_region + region->child_count;
+  uint32_t child_region = region_index + 1;
+  uint32_t child_region_end = child_region + region_child_count;
   while (child_region < child_region_end) {
     gfx::Transform transform_to_child;
     if (GetTransformToTargetRecursively(target, child_region,
                                         &transform_to_child)) {
-      gfx::Transform region_transform(region->transform());
-      region_transform.Translate(-region->rect.x(), -region->rect.y());
+      gfx::Transform region_transform(hit_test_data_[region_index].transform());
+      region_transform.Translate(-hit_test_data_[region_index].rect.x(),
+                                 -hit_test_data_[region_index].rect.y());
       *transform = transform_to_child * region_transform;
       return true;
     }
 
-    if (child_region->child_count < 0 ||
-        child_region->child_count >= region->child_count) {
+    const int32_t child_region_child_count =
+        hit_test_data_[child_region].child_count;
+    if (!CheckChildCount(child_region_child_count, region_child_count))
       return false;
-    }
-    child_region = child_region + child_region->child_count + 1;
+
+    child_region = child_region + child_region_child_count + 1;
   }
 
   return false;
@@ -233,12 +220,6 @@ bool HitTestQuery::GetTransformToTargetRecursively(
 void HitTestQuery::ReceivedBadMessageFromGpuProcess() const {
   if (!bad_message_gpu_callback_.is_null())
     bad_message_gpu_callback_.Run();
-}
-
-bool HitTestQuery::CheckChildCount(AggregatedHitTestRegion* region) const {
-  return (region->child_count >= 0) &&
-         (region->child_count <=
-          (active_hit_test_list_ + active_hit_test_list_size_ - region - 1));
 }
 
 }  // namespace viz

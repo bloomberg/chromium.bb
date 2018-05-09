@@ -477,9 +477,8 @@ class EventProcessorVizTargeterTest
   VizHostProxy* viz_host_proxy() {
     return ws_test_helper_.window_server()->GetVizHostProxy();
   }
-  viz::AggregatedHitTestRegion* aggregated_hit_test_region() {
-    return static_cast<viz::AggregatedHitTestRegion*>(active_buffer_.get());
-  }
+
+  void SendHitTestData();
 
   void DispatchEvent(EventProcessor* dispatcher,
                      const ui::Event& event,
@@ -507,6 +506,8 @@ class EventProcessorVizTargeterTest
   // testing::TestWithParam<bool>:
   void SetUp() override;
 
+  std::vector<viz::AggregatedHitTestRegion> active_hit_test_data_;
+
  private:
   // TestEventProcessorDelegate::Delegate:
   void ReleaseCapture() override {
@@ -520,10 +521,14 @@ class EventProcessorVizTargeterTest
   std::unique_ptr<ServerWindow> root_window_;
   std::unique_ptr<TestEventProcessorDelegate> test_event_dispatcher_delegate_;
   std::unique_ptr<EventProcessor> event_dispatcher_;
-  mojo::ScopedSharedBufferMapping active_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(EventProcessorVizTargeterTest);
 };
+
+void EventProcessorVizTargeterTest::SendHitTestData() {
+  test_event_dispatcher_delegate_->hit_test_query()
+      ->OnAggregatedHitTestRegionListUpdated(active_hit_test_data_);
+}
 
 void EventProcessorVizTargeterTest::SetUp() {
   feature_list_.InitAndEnableFeature(features::kEnableVizHitTestDrawQuad);
@@ -547,18 +552,6 @@ void EventProcessorVizTargeterTest::SetUp() {
       std::make_unique<EventProcessor>(test_event_dispatcher_delegate_.get(),
                                        test_event_dispatcher_delegate_.get());
   test_event_dispatcher_delegate_->set_root(root_window_.get());
-
-  uint32_t handle_size = 100;
-  size_t num_bytes = handle_size * sizeof(viz::AggregatedHitTestRegion);
-  mojo::ScopedSharedBufferHandle active_handle =
-      mojo::SharedBufferHandle::Create(num_bytes);
-  mojo::ScopedSharedBufferHandle idle_handle =
-      mojo::SharedBufferHandle::Create(num_bytes);
-  active_buffer_ = active_handle->Map(num_bytes);
-  test_event_dispatcher_delegate_->hit_test_query()
-      ->OnAggregatedHitTestRegionListUpdated(
-          std::move(active_handle), handle_size, std::move(idle_handle),
-          handle_size);
 }
 
 TEST_P(EventProcessorTest, ProcessEvent) {
@@ -2437,16 +2430,15 @@ TEST_P(EventProcessorVizTargeterTest, ProcessEvent) {
   child->SetBounds(gfx::Rect(10, 10, 20, 20));
   test_event_dispatcher_delegate()->AddWindow(root_window());
   test_event_dispatcher_delegate()->AddWindow(child.get());
-  viz::AggregatedHitTestRegion* aggregated_hit_test_region_list =
-      aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] = viz::AggregatedHitTestRegion(
+  active_hit_test_data_.push_back(viz::AggregatedHitTestRegion(
       root_window()->frame_sink_id(),
       viz::mojom::kHitTestMine | viz::mojom::kHitTestMouse,
-      root_window()->bounds(), root_window()->transform(), 1);  // root_window
-  aggregated_hit_test_region_list[1] = viz::AggregatedHitTestRegion(
+      root_window()->bounds(), root_window()->transform(), 1));  // root_window
+  active_hit_test_data_.push_back(viz::AggregatedHitTestRegion(
       child->frame_sink_id(),
       viz::mojom::kHitTestMine | viz::mojom::kHitTestMouse, child->bounds(),
-      child->transform(), 0);  // child
+      child->transform(), 0));  // child
+  SendHitTestData();
 
   // Send event that is over child.
   const ui::PointerEvent ui_event(ui::MouseEvent(
