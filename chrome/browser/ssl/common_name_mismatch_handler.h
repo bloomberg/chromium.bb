@@ -10,21 +10,25 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 namespace net {
-class URLFetcher;
-}
+struct RedirectInfo;
+}  // namespace net
+
+namespace network {
+struct ResourceResponseHead;
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+}  // namespace network
 
 // This class handles errors due to common name mismatches
 // (|ERR_CERT_COMMON_NAME_INVALID|) and helps remediate them by suggesting
 // alternative URLs that may be what the user intended to load.
-class CommonNameMismatchHandler : public net::URLFetcherDelegate {
+class CommonNameMismatchHandler {
  public:
   enum SuggestedUrlCheckResult {
     // The request succeeds with good response code i.e. URL exists and its
@@ -46,8 +50,8 @@ class CommonNameMismatchHandler : public net::URLFetcherDelegate {
 
   CommonNameMismatchHandler(
       const GURL& request_url,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context);
-  ~CommonNameMismatchHandler() override;
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  ~CommonNameMismatchHandler();
 
   // Performs a network request to suggested URL. After completion, runs the
   // |callback|.
@@ -73,17 +77,23 @@ class CommonNameMismatchHandler : public net::URLFetcherDelegate {
   void Cancel();
 
  private:
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnSimpleLoaderRedirect(
+      const net::RedirectInfo& redirect_info,
+      const network::ResourceResponseHead& response_head);
+  void OnSimpleLoaderResponseStarted(
+      const GURL& final_url,
+      const network::ResourceResponseHead& response_head);
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   // Returns true if the check is currently running.
   bool IsCheckingSuggestedUrl() const;
 
   static TestingState testing_state_;
   const GURL request_url_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  GURL check_url_;
   CheckUrlCallback check_url_callback_;
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

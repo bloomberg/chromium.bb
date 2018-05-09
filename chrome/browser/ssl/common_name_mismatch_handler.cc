@@ -12,12 +12,17 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request_status.h"
+#include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 CommonNameMismatchHandler::CommonNameMismatchHandler(
     const GURL& request_url,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context)
-    : request_url_(request_url), request_context_(request_context) {}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : request_url_(request_url),
+      url_loader_factory_(std::move(url_loader_factory)) {}
 
 CommonNameMismatchHandler::~CommonNameMismatchHandler() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -38,6 +43,7 @@ void CommonNameMismatchHandler::CheckSuggestedUrl(
   DCHECK(!IsCheckingSuggestedUrl());
   DCHECK(check_url_callback_.is_null());
 
+  check_url_ = url;
   check_url_callback_ = callback;
 
   // Create traffic annotation tag.
@@ -68,19 +74,29 @@ void CommonNameMismatchHandler::CheckSuggestedUrl(
             "Not implemented."
         })");
 
-  url_fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::HEAD, this,
-                                         traffic_annotation);
-  url_fetcher_->SetAutomaticallyRetryOn5xx(false);
-  url_fetcher_->SetRequestContext(request_context_.get());
-
+  auto resource_request = std::make_unique<network::ResourceRequest>();
   // Can't safely use net::LOAD_DISABLE_CERT_REVOCATION_CHECKING here,
   // since then the connection may be reused without checking the cert.
-  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                             net::LOAD_DO_NOT_SEND_COOKIES |
-                             net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  resource_request->url = check_url_;
+  resource_request->method = "HEAD";
+  resource_request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES |
+                                 net::LOAD_DO_NOT_SEND_COOKIES |
+                                 net::LOAD_DO_NOT_SEND_AUTH_DATA;
+
+  simple_url_loader_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
   // Don't follow redirects to prevent leaking URL data to HTTP sites.
-  url_fetcher_->SetStopOnRedirect(true);
-  url_fetcher_->Start();
+  simple_url_loader_->SetOnRedirectCallback(
+      base::BindRepeating(&CommonNameMismatchHandler::OnSimpleLoaderRedirect,
+                          base::Unretained(this)));
+  simple_url_loader_->SetOnResponseStartedCallback(
+      base::BindOnce(&CommonNameMismatchHandler::OnSimpleLoaderResponseStarted,
+                     base::Unretained(this)));
+  simple_url_loader_->DownloadToString(
+      url_loader_factory_.get(),
+      base::BindOnce(&CommonNameMismatchHandler::OnSimpleLoaderComplete,
+                     base::Unretained(this)),
+      1 /*max_body_size*/);
 }
 
 // static
@@ -103,36 +119,45 @@ bool CommonNameMismatchHandler::GetSuggestedUrl(
 }
 
 void CommonNameMismatchHandler::Cancel() {
-  url_fetcher_.reset();
+  simple_url_loader_.reset();
   check_url_callback_.Reset();
 }
 
-void CommonNameMismatchHandler::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+void CommonNameMismatchHandler::OnSimpleLoaderRedirect(
+    const net::RedirectInfo& redirect_info,
+    const network::ResourceResponseHead& response_head) {
+  OnSimpleLoaderResponseStarted(redirect_info.new_url, response_head);
+}
+
+void CommonNameMismatchHandler::OnSimpleLoaderResponseStarted(
+    const GURL& final_url,
+    const network::ResourceResponseHead& response_head) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsCheckingSuggestedUrl());
-  DCHECK_EQ(url_fetcher_.get(), source);
   DCHECK(!check_url_callback_.is_null());
-  DCHECK(!url_fetcher_.get()->GetStatus().is_io_pending());
 
   SuggestedUrlCheckResult result = SUGGESTED_URL_NOT_AVAILABLE;
-  // Save a copy of |suggested_url| so it can be used after |url_fetcher_|
-  // is destroyed.
-  const GURL suggested_url = url_fetcher_->GetOriginalURL();
-  const GURL landing_url = url_fetcher_->GetURL();
 
-  // Make sure the |landing_url| is a HTTPS page and returns a proper response
-  // code.
-  if (url_fetcher_.get()->GetResponseCode() == 200 &&
-      landing_url.SchemeIsCryptographic() &&
-      landing_url.host() != request_url_.host()) {
-    DCHECK_EQ(landing_url.host(), suggested_url.host());
+  // Make sure the URL is a HTTPS page and returns a proper response code.
+  int response_code = -1;
+  if (response_head.headers) {
+    response_code = response_head.headers->response_code();
+  }
+  if (response_code == 200 && final_url.SchemeIsCryptographic() &&
+      final_url.host() != request_url_.host()) {
+    DCHECK_EQ(final_url.host(), final_url.host());
     result = SUGGESTED_URL_AVAILABLE;
   }
-  url_fetcher_.reset();
-  base::ResetAndReturn(&check_url_callback_).Run(result, suggested_url);
+  simple_url_loader_.reset();
+  base::ResetAndReturn(&check_url_callback_).Run(result, check_url_);
+}
+
+void CommonNameMismatchHandler::OnSimpleLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
+  OnSimpleLoaderResponseStarted(simple_url_loader_->GetFinalURL(),
+                                *simple_url_loader_->ResponseInfo());
 }
 
 bool CommonNameMismatchHandler::IsCheckingSuggestedUrl() const {
-  return !!url_fetcher_;
+  return !!simple_url_loader_;
 }
