@@ -2347,8 +2347,15 @@ void notification_surface_destroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
 }
 
+void notification_surface_set_app_id(wl_client* client,
+                                     wl_resource* resource,
+                                     const char* app_id) {
+  GetUserDataAs<NotificationSurface>(resource)->SetApplicationId(app_id);
+}
+
 const struct zcr_notification_surface_v1_interface
-    notification_surface_implementation = {notification_surface_destroy};
+    notification_surface_implementation = {notification_surface_destroy,
+                                           notification_surface_set_app_id};
 
 ////////////////////////////////////////////////////////////////////////////////
 // remote_shell_interface:
