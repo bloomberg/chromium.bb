@@ -42,21 +42,19 @@ namespace blink {
 class FrameSelection;
 struct CompositedSelection;
 
+// TODO(xiaochengh): RenderedPosition is deprecated. It's currently only used in
+// |SelectionController| for bidi adjustment. We should break this class and
+// move relevant code to |inline_box_traversal.cc|, and templatize it so that it
+// can be reused in LayoutNG.
 class CORE_EXPORT RenderedPosition {
   STACK_ALLOCATED();
 
  public:
   RenderedPosition();
-  explicit RenderedPosition(const VisiblePosition&);
   explicit RenderedPosition(const VisiblePositionInFlatTree&);
-  RenderedPosition(const Position&, TextAffinity);
-  RenderedPosition(const PositionInFlatTree&, TextAffinity);
   bool IsEquivalent(const RenderedPosition&) const;
 
   bool IsNull() const { return !inline_box_; }
-  const RootInlineBox* RootBox() const {
-    return inline_box_ ? &inline_box_->Root() : nullptr;
-  }
 
   unsigned char BidiLevelOnLeft() const;
   unsigned char BidiLevelOnRight() const;
@@ -79,8 +77,8 @@ class CORE_EXPORT RenderedPosition {
     return AtRightBoundaryOfBidiRun(kMatchBidiLevel, bidi_level_of_run);
   }
 
-  Position PositionAtLeftBoundaryOfBiDiRun() const;
-  Position PositionAtRightBoundaryOfBiDiRun() const;
+  PositionInFlatTree PositionAtLeftBoundaryOfBiDiRun() const;
+  PositionInFlatTree PositionAtRightBoundaryOfBiDiRun() const;
 
   // TODO(editing-dev): This function doesn't use RenderedPosition
   // instance anymore. Consider moving.
