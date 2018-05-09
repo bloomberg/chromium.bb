@@ -107,6 +107,7 @@ component("cpp_base") {
   deps = [
     "//base",
     "//ipc",
+    "//mojo/public/mojom/base",
     "//net",
     "//services/network/public/mojom:mojom_shared",
   ]
@@ -129,10 +130,12 @@ source_set("tests") {
     "cors/cors_unittest.cc",
     "cors/preflight_cache_unittest.cc",
     "cors/preflight_result_unittest.cc",
+    "digitally_signed_mojom_traits_unittest.cc",
     "mutable_network_traffic_annotation_tag_mojom_traits_unittest.cc",
     "mutable_partial_network_traffic_annotation_tag_mojom_traits_unittest.cc",
     "network_mojom_traits_unittest.cc",
     "proxy_config_mojom_traits_unittest.cc",
+    "signed_tree_head_mojom_traits_unittest.cc",
     "simple_url_loader_unittest.cc",
   ]
 

@@ -11,6 +11,7 @@ import "mojo/public/mojom/base/time.mojom";
 import "net/interfaces/address_list.mojom";
 import "net/interfaces/ip_endpoint.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
+import "services/network/public/mojom/ct_log_info.mojom";
 import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/proxy_config.mojom";
@@ -19,6 +20,7 @@ import "services/network/public/mojom/tcp_socket.mojom";
 import "services/network/public/mojom/udp_socket.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/network_param.mojom";
+import "services/network/public/mojom/signed_tree_head.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/network/public/mojom/websocket.mojom";
 import "services/proxy_resolver/public/mojom/proxy_resolver.mojom";
@@ -137,6 +139,11 @@ struct NetworkContextParams {
   // The GSSAPI library name.
   // Only used on (OS_POSIX && !OS_ANDROID) platform.
   string gssapi_library_name;
+
+  // The Certificate Transparency logs that are known to the client. SCTs from
+  // these logs will be extracted and verified; other SCTs will be treated as
+  // unrecognized.
+  array<CTLogInfo> ct_logs;
 };
 
 struct NetworkConditions {
@@ -478,4 +485,9 @@ interface NetworkService {
 
   // Gets the accumulated network usage since the start/restart of the service.
   GetTotalNetworkUsages() => (array<NetworkUsage> total_network_usages);
+
+  // Update Signed Tree Heads (STH) used in the handling of Certificate
+  // Transparency. Broadcast to each NetworkContext using the NetworkService.
+  // NetworkContextes ignore STHs from unrecognized logs.
+  UpdateSignedTreeHead(SignedTreeHead signed_tree_head);
 };

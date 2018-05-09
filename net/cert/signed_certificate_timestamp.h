@@ -61,7 +61,7 @@ struct NET_EXPORT SignedEntryData {
 
 // Helper structure to represent Digitally Signed data, as described in
 // Sections 4.7 and 7.4.1.4.1 of RFC 5246.
-struct NET_EXPORT_PRIVATE DigitallySigned {
+struct NET_EXPORT DigitallySigned {
   enum HashAlgorithm {
     HASH_ALGO_NONE = 0,
     HASH_ALGO_MD5 = 1,

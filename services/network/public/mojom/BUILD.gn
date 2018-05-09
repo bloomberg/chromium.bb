@@ -75,6 +75,8 @@ mojom("mojom") {
   sources = [
     "cookie_manager.mojom",
     "cors.mojom",
+    "ct_log_info.mojom",
+    "digitally_signed.mojom",
     "fetch_api.mojom",
     "http_request_headers.mojom",
     "network_change_manager.mojom",
@@ -86,6 +88,7 @@ mojom("mojom") {
     "proxy_config_with_annotation.mojom",
     "request_context_frame_type.mojom",
     "restricted_cookie_manager.mojom",
+    "signed_tree_head.mojom",
     "tcp_socket.mojom",
     "tls_socket.mojom",
     "url_loader.mojom",

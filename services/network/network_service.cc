@@ -12,10 +12,15 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/values.h"
 #include "build/build_config.h"
+#include "components/certificate_transparency/sth_distributor.h"
+#include "components/certificate_transparency/sth_observer.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/base/network_change_notifier.h"
+#include "net/cert/ct_log_response_parser.h"
+#include "net/cert/signed_tree_head.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/log/net_log.h"
@@ -153,6 +158,8 @@ NetworkService::NetworkService(
   host_resolver_ = CreateHostResolver();
 
   network_usage_accumulator_ = std::make_unique<NetworkUsageAccumulator>();
+  sth_distributor_ =
+      std::make_unique<certificate_transparency::STHDistributor>();
 }
 
 NetworkService::~NetworkService() {
@@ -255,6 +262,14 @@ void NetworkService::GetNetworkChangeManager(
 void NetworkService::GetTotalNetworkUsages(
     mojom::NetworkService::GetTotalNetworkUsagesCallback callback) {
   std::move(callback).Run(network_usage_accumulator_->GetTotalNetworkUsages());
+}
+
+void NetworkService::UpdateSignedTreeHead(const net::ct::SignedTreeHead& sth) {
+  sth_distributor_->NewSTHObserved(sth);
+}
+
+certificate_transparency::STHReporter* NetworkService::sth_reporter() {
+  return sth_distributor_.get();
 }
 
 void NetworkService::OnBindInterface(

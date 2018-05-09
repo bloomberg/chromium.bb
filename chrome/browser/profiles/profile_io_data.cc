@@ -713,12 +713,6 @@ ProfileIOData::~ProfileIOData() {
     domain_reliability_monitor_unowned_->Shutdown();
 
   if (main_request_context_) {
-    // Prevent the TreeStateTracker from getting any more notifications by
-    // severing the link between it and the CTVerifier and unregistering it from
-    // new STH notifications.
-    main_request_context_->cert_transparency_verifier()->SetObserver(nullptr);
-    ct_tree_tracker_unregistration_.Run();
-
     // Destroy certificate_report_sender_ before main_request_context_,
     // since the former has a reference to the latter.
     main_request_context_->transport_security_state()->SetReportSender(nullptr);
@@ -1179,23 +1173,6 @@ void ProfileIOData::Init(
     request_interceptors.push_back(
         std::move(profile_params_->new_tab_page_interceptor));
   }
-
-  std::unique_ptr<net::MultiLogCTVerifier> ct_verifier(
-      new net::MultiLogCTVerifier());
-  ct_verifier->AddLogs(io_thread_globals->ct_logs);
-
-  ct_tree_tracker_.reset(new certificate_transparency::TreeStateTracker(
-      io_thread_globals->ct_logs,
-      io_thread_globals->system_request_context->host_resolver(),
-      io_thread->net_log()));
-  ct_verifier->SetObserver(ct_tree_tracker_.get());
-
-  builder->set_ct_verifier(std::move(ct_verifier));
-
-  io_thread->RegisterSTHObserver(ct_tree_tracker_.get());
-  ct_tree_tracker_unregistration_ =
-      base::Bind(&IOThread::UnregisterSTHObserver, base::Unretained(io_thread),
-                 ct_tree_tracker_.get());
 
   if (data_reduction_proxy_io_data_.get()) {
     builder->set_shared_proxy_delegate(

@@ -11,6 +11,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/log/net_log.h"
 #include "services/network/keepalive_statistics_recorder.h"
@@ -27,6 +28,11 @@ class LoggingNetworkChangeObserver;
 class NetworkQualityEstimator;
 class URLRequestContext;
 }  // namespace net
+
+namespace certificate_transparency {
+class STHDistributor;
+class STHReporter;
+}  // namespace certificate_transparency
 
 namespace network {
 
@@ -102,6 +108,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       mojom::NetworkChangeManagerRequest request) override;
   void GetTotalNetworkUsages(
       mojom::NetworkService::GetTotalNetworkUsagesCallback callback) override;
+  void UpdateSignedTreeHead(const net::ct::SignedTreeHead& sth) override;
 
   bool quic_disabled() const { return quic_disabled_; }
   bool HasRawHeadersAccess(uint32_t process_id) const;
@@ -118,6 +125,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   NetworkUsageAccumulator* network_usage_accumulator() {
     return network_usage_accumulator_.get();
   }
+
+  certificate_transparency::STHReporter* sth_reporter();
 
  private:
   // service_manager::Service implementation.
@@ -159,6 +168,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   std::set<uint32_t> processes_with_raw_headers_access_;
 
   bool quic_disabled_ = false;
+
+  std::unique_ptr<certificate_transparency::STHDistributor> sth_distributor_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkService);
 };

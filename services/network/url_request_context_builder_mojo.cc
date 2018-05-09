@@ -39,6 +39,8 @@ URLRequestContextOwner URLRequestContextBuilderMojo::Create(
     net::NetworkQualityEstimator* network_quality_estimator) {
   return NetworkContext::ApplyContextParamsToBuilder(
       this, params, quic_disabled, net_log, network_quality_estimator,
+      nullptr, /* sth_distributor */
+      nullptr, /* out_ct_tree_tracker */
       nullptr /* out_static_user_agent_settings */);
 }
 

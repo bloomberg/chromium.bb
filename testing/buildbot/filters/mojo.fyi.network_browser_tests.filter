@@ -244,12 +244,6 @@
 -IOThreadEctFieldTrialAndCommandLineBrowserTest.ECTFromCommandLineOverridesFieldTrial
 -IOThreadEctFieldTrialBrowserTest.ForceECTUsingFieldTrial
 
-# No certificate_transparency::TreeStateTracker observes the CTVerifier created
-# by the network service, so Certificate Transparency tests fail.
-# https://crbug.com/803871
--CertificateTransparencyBrowserTest.ProfileRequest
--CertificateTransparencyBrowserTest.SystemRequest
-
 # SafeBrowsing doesn't yet set up its NetworkContext correctly when the network
 # service is enabled.
 # https://crbug.com/789640

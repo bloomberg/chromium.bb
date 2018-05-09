@@ -22,14 +22,15 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/after_startup_task_utils.h"
-#include "chrome/browser/net/sth_distributor_provider.h"
-#include "components/certificate_transparency/sth_distributor.h"
 #include "components/certificate_transparency/sth_observer.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "crypto/sha2.h"
 #include "net/cert/ct_log_response_parser.h"
 #include "net/cert/signed_tree_head.h"
+#include "services/network/network_service.h"
+#include "services/service_manager/public/cpp/service.h"
 
 using component_updater::ComponentUpdateService;
 
@@ -41,27 +42,6 @@ base::FilePath GetInstalledPath(const base::FilePath& base) {
       .Append(FILE_PATH_LITERAL("all"))
       .Append(kSTHsDirName);
 }
-
-// Lives and dies on the UI thread, but proxies notifications to the IO
-// thread to notify the chrome_browser_net::GetGlobalSTHDistributor(), as
-// it always lives on the IO thread.
-class IOThreadSTHObserver : public certificate_transparency::STHObserver {
- public:
-  ~IOThreadSTHObserver() override = default;
-
-  void NewSTHObserved(const net::ct::SignedTreeHead& sth) override {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(
-            [](const net::ct::SignedTreeHead& sth) {
-              certificate_transparency::STHObserver* observer =
-                  chrome_browser_net::GetGlobalSTHDistributor();
-              if (observer)
-                observer->NewSTHObserved(sth);
-            },
-            sth));
-  }
-};
 
 // Loads the STHs from |sths_path|, which contains a series of files that
 // are the in the form "[log_id].sth", where [log_id] is the hex-encoded ID
@@ -150,20 +130,30 @@ const uint8_t kSthSetPublicKeySHA256[32] = {
 
 const char kSTHSetFetcherManifestName[] = "Signed Tree Heads";
 
-STHSetComponentInstallerPolicy::STHSetComponentInstallerPolicy(
-    std::unique_ptr<certificate_transparency::STHObserver> sth_observer)
-    : sth_observer_(std::move(sth_observer)), weak_ptr_factory_(this) {}
+STHSetComponentInstallerPolicy::STHSetComponentInstallerPolicy()
+    : weak_ptr_factory_(this) {}
 
 STHSetComponentInstallerPolicy::~STHSetComponentInstallerPolicy() = default;
 
-void STHSetComponentInstallerPolicy::NewSTHObserved(
-    const net::ct::SignedTreeHead& sth) {
-  sth_observer_->NewSTHObserved(sth);
+void STHSetComponentInstallerPolicy::SetNetworkServiceForTesting(
+    network::mojom::NetworkService* network_service) {
+  DCHECK(network_service);
+  network_service_for_testing_ = network_service;
 }
 
 bool STHSetComponentInstallerPolicy::
     SupportsGroupPolicyEnabledComponentUpdates() const {
   return false;
+}
+
+void STHSetComponentInstallerPolicy::OnSTHLoaded(
+    const net::ct::SignedTreeHead& sth) {
+  // TODO(rsleevi): https://crbug.com/840444 - Ensure the network service
+  // is notified of the STHs if it crashes/restarts.
+  network::mojom::NetworkService* network_service =
+      network_service_for_testing_ ? network_service_for_testing_
+                                   : content::GetNetworkService();
+  network_service->UpdateSignedTreeHead(sth);
 }
 
 // Public data is delivered via this component, no need for encryption.
@@ -195,7 +185,7 @@ void STHSetComponentInstallerPolicy::ComponentReady(
       base::BindOnce(
           &LoadSTHsFromDisk, GetInstalledPath(install_dir),
           base::SequencedTaskRunnerHandle::Get(),
-          base::BindRepeating(&STHSetComponentInstallerPolicy::NewSTHObserved,
+          base::BindRepeating(&STHSetComponentInstallerPolicy::OnSTHLoaded,
                               weak_ptr_factory_.GetWeakPtr())));
 }
 
@@ -231,10 +221,8 @@ std::vector<std::string> STHSetComponentInstallerPolicy::GetMimeTypes() const {
 void RegisterSTHSetComponent(ComponentUpdateService* cus,
                              const base::FilePath& user_data_dir) {
   DVLOG(1) << "Registering STH Set fetcher component.";
-
   auto installer = base::MakeRefCounted<ComponentInstaller>(
-      std::make_unique<STHSetComponentInstallerPolicy>(
-          std::make_unique<IOThreadSTHObserver>()));
+      std::make_unique<STHSetComponentInstallerPolicy>());
   installer->Register(cus, base::Closure());
 }
 
