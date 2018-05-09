@@ -209,4 +209,9 @@ group("zucchini_fuzzers") {
     "//components/zucchini/fuzzers:zucchini_disassembler_win32_fuzzer",
     "//components/zucchini/fuzzers:zucchini_patch_fuzzer",
   ]
+
+  # Ensure protoc is available.
+  if (current_toolchain == host_toolchain) {
+    deps += [ "//components/zucchini/fuzzers:zucchini_raw_apply_fuzzer" ]
+  }
 }
