@@ -29,7 +29,7 @@ using extensions::Manifest;
 using ActionType = extensions::ExtensionBuilder::ActionType;
 
 class ExtensionInstalledBubbleBrowserTest
-    : public SupportsTestDialog<ExtensionBrowserTest> {
+    : public SupportsTestDialog<extensions::ExtensionBrowserTest> {
  public:
   ExtensionInstalledBubbleBrowserTest()
       : disable_animations_(&ToolbarActionsBar::disable_animations_for_testing_,

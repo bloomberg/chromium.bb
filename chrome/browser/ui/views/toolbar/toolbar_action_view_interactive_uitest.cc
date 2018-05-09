@@ -134,12 +134,13 @@ void TestWhileContextMenuOpen(Browser* browser,
 
 }  // namespace
 
-class ToolbarActionViewInteractiveUITest : public ExtensionBrowserTest {
+class ToolbarActionViewInteractiveUITest
+    : public extensions::ExtensionBrowserTest {
  protected:
   ToolbarActionViewInteractiveUITest();
   ~ToolbarActionViewInteractiveUITest() override;
 
-  // ExtensionBrowserTest:
+  // extensions::ExtensionBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void TearDownOnMainThread() override;
 
@@ -154,7 +155,7 @@ ToolbarActionViewInteractiveUITest::~ToolbarActionViewInteractiveUITest() {}
 
 void ToolbarActionViewInteractiveUITest::SetUpCommandLine(
     base::CommandLine* command_line) {
-  ExtensionBrowserTest::SetUpCommandLine(command_line);
+  extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
   ToolbarActionsBar::disable_animations_for_testing_ = true;
 }
 

@@ -45,7 +45,8 @@ using extensions::PermissionIDSet;
 using extensions::PermissionMessage;
 using extensions::PermissionMessages;
 
-class ExtensionInstallDialogViewTestBase : public ExtensionBrowserTest {
+class ExtensionInstallDialogViewTestBase
+    : public extensions::ExtensionBrowserTest {
  protected:
   ExtensionInstallDialogViewTestBase();
 
@@ -68,9 +69,9 @@ ExtensionInstallDialogViewTestBase::ExtensionInstallDialogViewTestBase()
     : extension_(nullptr), web_contents_(nullptr) {}
 
 void ExtensionInstallDialogViewTestBase::SetUpOnMainThread() {
-  ExtensionBrowserTest::SetUpOnMainThread();
+  extensions::ExtensionBrowserTest::SetUpOnMainThread();
 
-  extension_ = ExtensionBrowserTest::LoadExtension(test_data_dir_.AppendASCII(
+  extension_ = LoadExtension(test_data_dir_.AppendASCII(
       "install_prompt/permissions_scrollbar_regression"));
 
   web_contents_ = browser()->tab_strip_model()->GetWebContentsAt(0);

@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/url_constants.h"
 
-class ChromeUIOverridesBrowserTest : public ExtensionBrowserTest {};
+using ChromeUIOverridesBrowserTest = extensions::ExtensionBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(ChromeUIOverridesBrowserTest,
                        BookmarkShortcutOverrides) {

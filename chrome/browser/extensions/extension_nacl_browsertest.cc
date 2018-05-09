@@ -38,12 +38,12 @@ const char kExtensionId[] = "bjjcibdiodkkeanflmiijlcfieiemced";
 
 // This class tests that the Native Client plugin is blocked unless the
 // .nexe is part of an extension from the Chrome Webstore.
-class NaClExtensionTest : public ExtensionBrowserTest {
+class NaClExtensionTest : public extensions::ExtensionBrowserTest {
  public:
   NaClExtensionTest() {}
 
   void SetUpOnMainThread() override {
-    ExtensionBrowserTest::SetUpOnMainThread();
+    extensions::ExtensionBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
   }
@@ -93,7 +93,7 @@ class NaClExtensionTest : public ExtensionBrowserTest {
 
       case INSTALL_TYPE_NON_WEBSTORE:
         // Install native_client.crx but not from the webstore.
-        if (ExtensionBrowserTest::InstallExtension(file_path, 1)) {
+        if (extensions::ExtensionBrowserTest::InstallExtension(file_path, 1)) {
           extension = service->GetExtensionById(last_loaded_extension_id(),
                                                 false);
         }

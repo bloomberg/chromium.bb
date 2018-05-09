@@ -19,7 +19,7 @@ namespace task_manager {
 // properly and the TagsManager records these tags. It is also used to test that
 // the WebContentsTaskProvider will be able to provide the appropriate
 // BackgroundContentsTask.
-class BackgroundContentsTagTest : public ExtensionBrowserTest {
+class BackgroundContentsTagTest : public extensions::ExtensionBrowserTest {
  public:
   BackgroundContentsTagTest() {}
   ~BackgroundContentsTagTest() override {}
@@ -41,10 +41,10 @@ class BackgroundContentsTagTest : public ExtensionBrowserTest {
   }
 
  protected:
-  // ExtensionBrowserTest:
+  // extensions::ExtensionBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Pass flags to make testing apps easier.
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
+    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
     test_data_dir_ = test_data_dir_.AppendASCII("api_test");
     command_line->AppendSwitch(switches::kDisableRendererBackgrounding);
     command_line->AppendSwitch(switches::kDisablePopupBlocking);

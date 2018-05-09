@@ -43,7 +43,7 @@ class TestPermissionBubbleViewDelegate : public PermissionPrompt::Delegate {
 // Use this class to test on a default window or an app window. Inheriting from
 // ExtensionBrowserTest allows us to easily load and launch apps, and doesn't
 // really add any extra work.
-class PermissionBubbleBrowserTest : public ExtensionBrowserTest {
+class PermissionBubbleBrowserTest : public extensions::ExtensionBrowserTest {
  public:
   PermissionBubbleBrowserTest();
   ~PermissionBubbleBrowserTest() override;

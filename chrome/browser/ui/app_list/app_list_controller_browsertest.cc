@@ -49,7 +49,8 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, CreateNewWindow) {
 }
 
 // Browser Test for AppListController that observes search result changes.
-using AppListControllerSearchResultsBrowserTest = ExtensionBrowserTest;
+using AppListControllerSearchResultsBrowserTest =
+    extensions::ExtensionBrowserTest;
 
 // Test showing search results, and uninstalling one of them while displayed.
 IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,

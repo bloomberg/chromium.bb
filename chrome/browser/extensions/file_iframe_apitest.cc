@@ -13,7 +13,7 @@
 #include "extensions/test/test_extension_dir.h"
 #include "net/base/filename_util.h"
 
-class FileIFrameAPITest : public ExtensionBrowserTest {
+class FileIFrameAPITest : public extensions::ExtensionBrowserTest {
  public:
   FileIFrameAPITest() {}
   void set_has_all_urls(bool val) { has_all_urls_ = val; }

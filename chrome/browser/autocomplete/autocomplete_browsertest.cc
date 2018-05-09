@@ -57,7 +57,7 @@ base::string16 AutocompleteResultAsString(const AutocompleteResult& result) {
 
 }  // namespace
 
-class AutocompleteBrowserTest : public ExtensionBrowserTest {
+class AutocompleteBrowserTest : public extensions::ExtensionBrowserTest {
  protected:
   void WaitForTemplateURLServiceToLoad() {
     search_test_utils::WaitForTemplateURLServiceToLoad(

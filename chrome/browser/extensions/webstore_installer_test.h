@@ -27,7 +27,7 @@ struct HttpRequest;
 }
 }
 
-class WebstoreInstallerTest : public ExtensionBrowserTest {
+class WebstoreInstallerTest : public extensions::ExtensionBrowserTest {
  public:
   WebstoreInstallerTest(const std::string& webstore_domain,
                         const std::string& test_data_path,

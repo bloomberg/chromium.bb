@@ -97,7 +97,7 @@ const char kManifestToOverrideStartupUrls[] =
     "  }"
     "}";
 
-class SettingsResetPromptModelBrowserTest : public ExtensionBrowserTest {
+class SettingsResetPromptModelBrowserTest : public extensions::ExtensionBrowserTest {
  public:
   virtual void OnResetDone() { ++reset_callbacks_; }
 
@@ -108,7 +108,7 @@ class SettingsResetPromptModelBrowserTest : public ExtensionBrowserTest {
       : startup_pref_(SessionStartupPref::URLS) {}
 
   void SetUpOnMainThread() override {
-    ExtensionBrowserTest::SetUpOnMainThread();
+    extensions::ExtensionBrowserTest::SetUpOnMainThread();
 
     // Set up an active homepage with visible homepage button.
     PrefService* prefs = profile()->GetPrefs();

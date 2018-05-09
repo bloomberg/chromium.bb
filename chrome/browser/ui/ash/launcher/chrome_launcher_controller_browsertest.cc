@@ -230,7 +230,7 @@ enum RipOffCommand {
   RIP_OFF_ITEM_AND_DONT_RELEASE_MOUSE,
 };
 
-class ShelfAppBrowserTest : public ExtensionBrowserTest {
+class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
  protected:
   ShelfAppBrowserTest() {}
 
@@ -244,7 +244,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
 
     controller_ = ChromeLauncherController::instance();
     ASSERT_TRUE(controller_);
-    ExtensionBrowserTest::SetUpOnMainThread();
+    extensions::ExtensionBrowserTest::SetUpOnMainThread();
   }
 
   size_t NumberOfDetectedLauncherBrowsers(bool show_all_tabs) {

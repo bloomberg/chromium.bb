@@ -70,7 +70,7 @@ class LockScreenAppsEnabledWaiter : public lock_screen_apps::StateObserver {
   DISALLOW_COPY_AND_ASSIGN(LockScreenAppsEnabledWaiter);
 };
 
-class LockScreenNoteTakingTest : public ExtensionBrowserTest {
+class LockScreenNoteTakingTest : public extensions::ExtensionBrowserTest {
  public:
   LockScreenNoteTakingTest() { set_chromeos_user_ = true; }
   ~LockScreenNoteTakingTest() override = default;
@@ -80,7 +80,7 @@ class LockScreenNoteTakingTest : public ExtensionBrowserTest {
                                 kTestAppId);
     cmd_line->AppendSwitch(ash::switches::kAshForceEnableStylusTools);
 
-    ExtensionBrowserTest::SetUpCommandLine(cmd_line);
+    extensions::ExtensionBrowserTest::SetUpCommandLine(cmd_line);
   }
 
   bool EnableLockScreenAppLaunch(const std::string& app_id) {

@@ -166,13 +166,13 @@ void PrintTo(const SampleMatcherP2<P1, P2>& matcher, std::ostream* os) {
 
 }  // namespace
 
-class SiteDetailsBrowserTest : public ExtensionBrowserTest {
+class SiteDetailsBrowserTest : public extensions::ExtensionBrowserTest {
  public:
   SiteDetailsBrowserTest() {}
   ~SiteDetailsBrowserTest() override {}
 
   void SetUpOnMainThread() override {
-    ExtensionBrowserTest::SetUpOnMainThread();
+    extensions::ExtensionBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
 
     // Add content/test/data so we can use cross_site_iframe_factory.html

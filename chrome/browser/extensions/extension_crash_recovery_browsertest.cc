@@ -39,10 +39,10 @@ using content::WebContents;
 using extensions::Extension;
 using extensions::ExtensionRegistry;
 
-class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
+class ExtensionCrashRecoveryTest : public extensions::ExtensionBrowserTest {
  protected:
   void SetUpOnMainThread() override {
-    ExtensionBrowserTest::SetUpOnMainThread();
+    extensions::ExtensionBrowserTest::SetUpOnMainThread();
     display_service_ =
         std::make_unique<NotificationDisplayServiceTester>(profile());
   }
@@ -107,7 +107,7 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
   }
 
   void LoadTestExtension() {
-    ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
+    extensions::ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
     const Extension* extension = LoadExtension(
         test_data_dir_.AppendASCII("common").AppendASCII("background_page"));
     ASSERT_TRUE(extension);

@@ -154,7 +154,7 @@ std::string CreateIntentUriWithShelfGroup(const std::string& shelf_group_id) {
 
 }  // namespace
 
-class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
+class ArcAppLauncherBrowserTest : public extensions::ExtensionBrowserTest {
  public:
   ArcAppLauncherBrowserTest() {}
   ~ArcAppLauncherBrowserTest() override {}
@@ -162,12 +162,12 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
  protected:
   // content::BrowserTestBase:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
+    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
     arc::SetArcAvailableCommandLineForTesting(command_line);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
+    extensions::ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
     arc::ArcSessionManager::SetUiEnabledForTesting(false);
   }
 

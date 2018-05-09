@@ -182,7 +182,7 @@ bool SupportsRegistryValidation() {
 // Based on top of ExtensionBrowserTest to allow easy interaction with the
 // ExtensionService.
 class PrefHashBrowserTestBase
-    : public ExtensionBrowserTest,
+    : public extensions::ExtensionBrowserTest,
       public testing::WithParamInterface<std::string> {
  public:
   // List of potential protection levels for this test in strict increasing
@@ -203,7 +203,7 @@ class PrefHashBrowserTestBase
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
+    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
     EXPECT_FALSE(command_line->HasSwitch(switches::kForceFieldTrials));
     command_line->AppendSwitchASCII(
         switches::kForceFieldTrials,
@@ -219,7 +219,7 @@ class PrefHashBrowserTestBase
     // Do the normal setup in the PRE test and attack preferences in the main
     // test.
     if (content::IsPreTest())
-      return ExtensionBrowserTest::SetUpUserDataDirectory();
+      return extensions::ExtensionBrowserTest::SetUpUserDataDirectory();
 
 #if defined(OS_CHROMEOS)
     // For some reason, the Preferences file does not exist in the location
@@ -284,7 +284,7 @@ class PrefHashBrowserTestBase
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
+    extensions::ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
 
     // Bots are on a domain, turn off the domain check for settings hardening in
     // order to be able to test all SettingsEnforcement groups.
@@ -324,14 +324,14 @@ class PrefHashBrowserTestBase
       }
     }
 #endif
-    ExtensionBrowserTest::TearDown();
+    extensions::ExtensionBrowserTest::TearDown();
   }
 
   // In the PRE_ test, find the number of tracked preferences that were
   // initialized and save it to a file to be read back in the main test and used
   // as the total number of tracked preferences.
   void SetUpOnMainThread() override {
-    ExtensionBrowserTest::SetUpOnMainThread();
+    extensions::ExtensionBrowserTest::SetUpOnMainThread();
 
     // File in which the PRE_ test will save the number of tracked preferences
     // on this platform.

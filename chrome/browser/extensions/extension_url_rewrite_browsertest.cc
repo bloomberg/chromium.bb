@@ -26,11 +26,11 @@
 
 using content::NavigationEntry;
 
-class ExtensionURLRewriteBrowserTest : public ExtensionBrowserTest {
+class ExtensionURLRewriteBrowserTest : public extensions::ExtensionBrowserTest {
  public:
   void SetUp() override {
     extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
-    ExtensionBrowserTest::SetUp();
+    extensions::ExtensionBrowserTest::SetUp();
   }
 
  protected:

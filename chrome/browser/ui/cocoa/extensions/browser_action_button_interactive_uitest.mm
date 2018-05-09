@@ -233,13 +233,13 @@ void ClickOnOverflowedAction(
 
 @end
 
-class BrowserActionButtonUiTest : public ExtensionBrowserTest {
+class BrowserActionButtonUiTest : public extensions::ExtensionBrowserTest {
  protected:
   BrowserActionButtonUiTest() {}
   ~BrowserActionButtonUiTest() override {}
 
   void SetUpOnMainThread() override {
-    ExtensionBrowserTest::SetUpOnMainThread();
+    extensions::ExtensionBrowserTest::SetUpOnMainThread();
     toolbarController_ =
         [[BrowserWindowController
             browserWindowControllerForWindow:browser()->
@@ -251,13 +251,13 @@ class BrowserActionButtonUiTest : public ExtensionBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
+    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
     ToolbarActionsBar::disable_animations_for_testing_ = true;
   }
 
   void TearDownOnMainThread() override {
     ToolbarActionsBar::disable_animations_for_testing_ = false;
-    ExtensionBrowserTest::TearDownOnMainThread();
+    extensions::ExtensionBrowserTest::TearDownOnMainThread();
   }
 
   // Opens the app menu and the context menu of the overflowed action, and

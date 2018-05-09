@@ -93,7 +93,8 @@ class MockSelectFileDialogListener : public ui::SelectFileDialog::Listener {
   DISALLOW_COPY_AND_ASSIGN(MockSelectFileDialogListener);
 };
 
-class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
+class SelectFileDialogExtensionBrowserTest
+    : public extensions::ExtensionBrowserTest {
  public:
   enum DialogButtonType {
     DIALOG_BTN_OK,
@@ -116,11 +117,11 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
     base::CreateDirectory(downloads_dir_);
 
     // Must run after our setup because it actually runs the test.
-    ExtensionBrowserTest::SetUp();
+    extensions::ExtensionBrowserTest::SetUp();
   }
 
   void TearDown() override {
-    ExtensionBrowserTest::TearDown();
+    extensions::ExtensionBrowserTest::TearDown();
 
     // Delete the dialog first, as it holds a pointer to the listener.
     dialog_ = NULL;

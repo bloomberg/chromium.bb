@@ -33,7 +33,7 @@ using content::WebContents;
 using extensions::AppSorting;
 using extensions::Extension;
 
-class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
+class ExtensionInstallUIBrowserTest : public extensions::ExtensionBrowserTest {
  public:
   ExtensionInstallUIBrowserTest() {}
   ~ExtensionInstallUIBrowserTest() override {}

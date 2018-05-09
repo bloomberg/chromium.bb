@@ -55,15 +55,14 @@ enum TestType {
 };
 
 class InputMethodEngineBrowserTest
-    : public ExtensionBrowserTest,
+    : public extensions::ExtensionBrowserTest,
       public ::testing::WithParamInterface<TestType> {
  public:
-  InputMethodEngineBrowserTest()
-      : ExtensionBrowserTest() {}
+  InputMethodEngineBrowserTest() : extensions::ExtensionBrowserTest() {}
   virtual ~InputMethodEngineBrowserTest() {}
 
   void SetUpInProcessBrowserTestFixture() override {
-    ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
+    extensions::ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
   void TearDownInProcessBrowserTestFixture() override { extension_ = NULL; }

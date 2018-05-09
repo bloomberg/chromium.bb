@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/base/theme_provider.h"
 
-using BrowserNonClientFrameViewBrowserTest = ExtensionBrowserTest;
+using BrowserNonClientFrameViewBrowserTest = extensions::ExtensionBrowserTest;
 
 // Test is Flaky on Windows see crbug.com/600201.
 #if defined(OS_WIN)

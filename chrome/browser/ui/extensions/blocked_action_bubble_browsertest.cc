@@ -20,7 +20,7 @@
 #include "net/dns/mock_host_resolver.h"
 
 class ExtensionBlockedActionsBubbleTest
-    : public SupportsTestDialog<ExtensionBrowserTest> {
+    : public SupportsTestDialog<extensions::ExtensionBrowserTest> {
  public:
   ExtensionBlockedActionsBubbleTest();
   ~ExtensionBlockedActionsBubbleTest() override;
@@ -45,13 +45,13 @@ ExtensionBlockedActionsBubbleTest::~ExtensionBlockedActionsBubbleTest() =
 
 void ExtensionBlockedActionsBubbleTest::SetUpCommandLine(
     base::CommandLine* command_line) {
-  ExtensionBrowserTest::SetUpCommandLine(command_line);
+  extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
   scoped_feature_list_.InitAndEnableFeature(
       extensions::features::kRuntimeHostPermissions);
 }
 
 void ExtensionBlockedActionsBubbleTest::SetUpOnMainThread() {
-  ExtensionBrowserTest::SetUpOnMainThread();
+  extensions::ExtensionBrowserTest::SetUpOnMainThread();
   host_resolver()->AddRule("*", "127.0.0.1");
 }
 

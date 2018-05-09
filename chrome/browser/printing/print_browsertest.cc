@@ -243,7 +243,7 @@ class IsolateOriginsPrintBrowserTest : public PrintBrowserTest {
 
 constexpr char IsolateOriginsPrintBrowserTest::kIsolatedSite[];
 
-class PrintExtensionBrowserTest : public ExtensionBrowserTest {
+class PrintExtensionBrowserTest : public extensions::ExtensionBrowserTest {
  public:
   PrintExtensionBrowserTest() {}
   ~PrintExtensionBrowserTest() override {}

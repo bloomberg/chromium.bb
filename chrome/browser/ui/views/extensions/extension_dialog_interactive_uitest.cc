@@ -15,7 +15,7 @@
 
 namespace {
 
-class ExtensionDialogUiTest : public ExtensionBrowserTest {
+class ExtensionDialogUiTest : public extensions::ExtensionBrowserTest {
  public:
   ExtensionDialogUiTest() = default;
   ~ExtensionDialogUiTest() override = default;

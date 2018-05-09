@@ -38,7 +38,7 @@
 
 using bookmarks::BookmarkModel;
 
-class ToolbarViewInteractiveUITest : public ExtensionBrowserTest {
+class ToolbarViewInteractiveUITest : public extensions::ExtensionBrowserTest {
  public:
   ToolbarViewInteractiveUITest();
   ~ToolbarViewInteractiveUITest() override;
@@ -135,13 +135,13 @@ void ToolbarViewInteractiveUITest::FinishDragAndDrop(
 
 void ToolbarViewInteractiveUITest::SetUpCommandLine(
     base::CommandLine* command_line) {
-  ExtensionBrowserTest::SetUpCommandLine(command_line);
+  extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
   ToolbarActionsBar::disable_animations_for_testing_ = true;
   BrowserAppMenuButton::g_open_app_immediately_for_testing = true;
 }
 
 void ToolbarViewInteractiveUITest::SetUpOnMainThread() {
-  ExtensionBrowserTest::SetUpOnMainThread();
+  extensions::ExtensionBrowserTest::SetUpOnMainThread();
   ExtensionToolbarMenuView::set_close_menu_delay_for_testing(0);
 
   toolbar_view_ = BrowserView::GetBrowserViewForBrowser(browser())->toolbar();

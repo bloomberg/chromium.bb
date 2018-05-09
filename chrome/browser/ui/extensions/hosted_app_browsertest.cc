@@ -211,7 +211,7 @@ class TestAppBannerManagerDesktop : public banners::AppBannerManagerDesktop {
 // is a Hosted or Bookmark app. |desktop_pwa_flag| enables the
 // kDesktopPWAWindowing flag.
 class HostedAppTest
-    : public ExtensionBrowserTest,
+    : public extensions::ExtensionBrowserTest,
       public ::testing::WithParamInterface<std::tuple<AppType, bool>> {
  public:
   HostedAppTest()
@@ -239,7 +239,7 @@ class HostedAppTest
 #endif
     }
 
-    ExtensionBrowserTest::SetUp();
+    extensions::ExtensionBrowserTest::SetUp();
   }
 
  protected:
@@ -299,24 +299,24 @@ class HostedAppTest
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
+    extensions::ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
     ProfileIOData::SetCertVerifierForTesting(&mock_cert_verifier_);
   }
 
   void TearDownInProcessBrowserTestFixture() override {
-    ExtensionBrowserTest::TearDownInProcessBrowserTestFixture();
+    extensions::ExtensionBrowserTest::TearDownInProcessBrowserTestFixture();
     ProfileIOData::SetCertVerifierForTesting(nullptr);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
+    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
     // Browser will both run and display insecure content.
     command_line->AppendSwitch(switches::kAllowRunningInsecureContent);
     command_line->AppendSwitch(switches::kUseMockCertVerifierForTesting);
   }
 
   void SetUpOnMainThread() override {
-    ExtensionBrowserTest::SetUpOnMainThread();
+    extensions::ExtensionBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
     // By default, all SSL cert checks are valid. Can be overriden in tests.
     cert_verifier_.set_default_result(net::OK);

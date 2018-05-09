@@ -67,19 +67,19 @@ BrowserActionsBarBrowserTest::~BrowserActionsBarBrowserTest() {
 
 void BrowserActionsBarBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
-  ExtensionBrowserTest::SetUpCommandLine(command_line);
+  extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
   ToolbarActionsBar::disable_animations_for_testing_ = true;
 }
 
 void BrowserActionsBarBrowserTest::SetUpOnMainThread() {
-  ExtensionBrowserTest::SetUpOnMainThread();
+  extensions::ExtensionBrowserTest::SetUpOnMainThread();
   browser_actions_bar_ = BrowserActionTestUtil::Create(browser());
   toolbar_model_ = ToolbarActionsModel::Get(profile());
 }
 
 void BrowserActionsBarBrowserTest::TearDownOnMainThread() {
   ToolbarActionsBar::disable_animations_for_testing_ = false;
-  ExtensionBrowserTest::TearDownOnMainThread();
+  extensions::ExtensionBrowserTest::TearDownOnMainThread();
 }
 
 void BrowserActionsBarBrowserTest::LoadExtensions() {

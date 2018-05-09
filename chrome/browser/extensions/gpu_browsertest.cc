@@ -9,6 +9,8 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
 
+namespace extensions {
+
 // Tests that background pages are marked as never visible to prevent GPU
 // resource allocation. See crbug.com/362165 and crbug.com/163698.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, BackgroundPageIsNeverVisible) {
@@ -17,10 +19,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, BackgroundPageIsNeverVisible) {
                     .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
                     .AppendASCII("1.0.0.0")));
 
-  extensions::ProcessManager* manager =
-      extensions::ProcessManager::Get(browser()->profile());
-  extensions::ExtensionHost* host =
-      FindHostWithPath(manager, "/backgroundpage.html", 1);
+  ProcessManager* manager = ProcessManager::Get(browser()->profile());
+  ExtensionHost* host = FindHostWithPath(manager, "/backgroundpage.html", 1);
   ASSERT_TRUE(host->host_contents()->GetDelegate()->IsNeverVisible(
       host->host_contents()));
 }
+
+}  // namespace extensions

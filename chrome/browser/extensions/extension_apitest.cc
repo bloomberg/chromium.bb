@@ -43,6 +43,8 @@
 
 namespace {
 
+using extensions::ExtensionBrowserTest;
+
 const char kTestCustomArg[] = "customArg";
 const char kTestDataDirectory[] = "testDataDirectory";
 const char kTestWebSocketPort[] = "testWebSocketPort";

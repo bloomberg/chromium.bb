@@ -332,10 +332,10 @@ class RenderViewSizeObserver : public content::WebContentsObserver {
 
 }  // namespace
 
-class BrowserTest : public ExtensionBrowserTest {
+class BrowserTest : public extensions::ExtensionBrowserTest {
  protected:
   void SetUpOnMainThread() override {
-    ExtensionBrowserTest::SetUpOnMainThread();
+    extensions::ExtensionBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 

@@ -36,7 +36,7 @@
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 
 class ImmersiveModeControllerAshHostedAppBrowserTest
-    : public ExtensionBrowserTest {
+    : public extensions::ExtensionBrowserTest {
  public:
   ImmersiveModeControllerAshHostedAppBrowserTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
@@ -81,17 +81,17 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
+    extensions::ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
     ProfileIOData::SetCertVerifierForTesting(&mock_cert_verifier_);
   }
 
   void TearDownInProcessBrowserTestFixture() override {
     ProfileIOData::SetCertVerifierForTesting(nullptr);
-    ExtensionBrowserTest::TearDownInProcessBrowserTestFixture();
+    extensions::ExtensionBrowserTest::TearDownInProcessBrowserTestFixture();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
+    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kUseMockCertVerifierForTesting);
   }
 

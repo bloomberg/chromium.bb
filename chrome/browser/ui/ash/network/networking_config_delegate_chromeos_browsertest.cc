@@ -20,7 +20,7 @@
 
 namespace {
 
-using NetworkingConfigDelegateChromeosTest = ExtensionBrowserTest;
+using NetworkingConfigDelegateChromeosTest = extensions::ExtensionBrowserTest;
 
 // Tests that an extension registering itself as handling a Wi-Fi SSID updates
 // the ash system tray network item.

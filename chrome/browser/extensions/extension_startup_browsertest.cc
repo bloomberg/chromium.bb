@@ -325,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsLoadMultipleTest, Test) {
 
 // TODO(catmullings): Remove test in future chrome release, perhaps M59.
 class DeprecatedLoadComponentExtensionSwitchBrowserTest
-    : public ExtensionBrowserTest {
+    : public extensions::ExtensionBrowserTest {
  public:
   DeprecatedLoadComponentExtensionSwitchBrowserTest() {}
 
@@ -338,7 +338,7 @@ class DeprecatedLoadComponentExtensionSwitchBrowserTest
 
 void DeprecatedLoadComponentExtensionSwitchBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
-  ExtensionBrowserTest::SetUpCommandLine(command_line);
+  extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
   base::FilePath fp1(test_data_dir_.AppendASCII("app_dot_com_app/"));
   base::FilePath fp2(test_data_dir_.AppendASCII("app/"));
 
@@ -371,7 +371,8 @@ IN_PROC_BROWSER_TEST_F(DeprecatedLoadComponentExtensionSwitchBrowserTest,
   EXPECT_FALSE(is_app_test_extension_installed);
 }
 
-class DisableExtensionsExceptBrowserTest : public ExtensionBrowserTest {
+class DisableExtensionsExceptBrowserTest
+    : public extensions::ExtensionBrowserTest {
  public:
   DisableExtensionsExceptBrowserTest() {}
 
@@ -384,7 +385,7 @@ class DisableExtensionsExceptBrowserTest : public ExtensionBrowserTest {
 
 void DisableExtensionsExceptBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
-  ExtensionBrowserTest::SetUpCommandLine(command_line);
+  extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
   base::FilePath fp1(test_data_dir_.AppendASCII("app_dot_com_app/"));
   base::FilePath fp2(test_data_dir_.AppendASCII("app/"));
 

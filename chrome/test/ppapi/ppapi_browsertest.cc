@@ -1250,7 +1250,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FlashDRM) {
 }
 
 #if BUILDFLAG(ENABLE_NACL)
-class PackagedAppTest : public ExtensionBrowserTest {
+class PackagedAppTest : public extensions::ExtensionBrowserTest {
  public:
   explicit PackagedAppTest(const std::string& toolchain)
       : toolchain_(toolchain) { }

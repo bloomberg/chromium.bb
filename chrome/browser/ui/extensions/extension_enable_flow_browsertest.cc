@@ -74,7 +74,7 @@ class TestDelegate : public ExtensionEnableFlowDelegate {
 
 }  // namespace
 
-using ExtensionEnableFlowBrowserTest = ExtensionBrowserTest;
+using ExtensionEnableFlowBrowserTest = extensions::ExtensionBrowserTest;
 
 // Test that trying to enable an extension that's blocked by policy fails
 // gracefully. See https://crbug.com/783831.

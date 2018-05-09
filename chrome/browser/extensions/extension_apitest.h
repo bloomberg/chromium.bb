@@ -29,7 +29,7 @@ class Extension;
 //     chrome.test.fail
 // (4) Verify expected browser state.
 // TODO(erikkay): There should also be a way to drive events in these tests.
-class ExtensionApiTest : public ExtensionBrowserTest {
+class ExtensionApiTest : public extensions::ExtensionBrowserTest {
  public:
   // Flags used to configure how the tests are run.
   // TODO(aa): Many of these are dupes of ExtensionBrowserTest::Flags. Combine

@@ -41,7 +41,7 @@
 #include "extensions/common/extension.h"
 #include "ui/views/win/hwnd_util.h"
 
-typedef ExtensionBrowserTest BrowserWindowPropertyManagerTest;
+typedef extensions::ExtensionBrowserTest BrowserWindowPropertyManagerTest;
 
 namespace {
 
