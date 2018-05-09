@@ -37,8 +37,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
                                  uint32_t client_id,
                                  uint32_t sink_id,
                                  int placeholder_canvas_id,
-                                 int width,
-                                 int height);
+                                 const IntSize&);
 
   // OffscreenCanvasFrameDispatcher implementation.
   ~OffscreenCanvasFrameDispatcher() override;
@@ -50,7 +49,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
                      double commit_start_time,
                      const SkIRect& damage_rect);
   void ReclaimResource(unsigned resource_id);
-  void Reshape(int width, int height);
+  void Reshape(const IntSize&);
 
   // viz::mojom::blink::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
@@ -81,8 +80,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
   const viz::FrameSinkId frame_sink_id_;
 
-  int width_;
-  int height_;
+  IntSize size_;
   bool change_size_for_next_commit_;
   bool suspend_animation_ = false;
   bool needs_begin_frame_ = false;
