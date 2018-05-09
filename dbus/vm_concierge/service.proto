@@ -266,6 +266,10 @@ message StartContainerRequest {
 
   // Async mode is always used now.
   bool async = 4 [deprecated=true];
+
+  // The cryptohome id for the user's encrypted storage. This is used for SSH
+  // key storage.
+  string cryptohome_id = 5;
 }
 
 enum ContainerStatus {
@@ -357,4 +361,36 @@ message DesktopIcon {
 // Some desktop_file_id may not have an icon.
 message ContainerAppIconResponse {
   repeated DesktopIcon icons = 1;
+}
+
+// Request to get the SSH keys associated with the host and a specific
+// container for the GetContainerSshKeys call. These keys will be generated
+// when StartContainer is called the first time for a container, so this should
+// not be called until after that call is invoked.
+message ContainerSshKeysRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container within the VM to target, if empty the default
+  // container name will be used.
+  string container_name = 2;
+
+  // The cryptohome id for the user's encrypted storage.
+  string cryptohome_id = 3;
+}
+
+// Response sent back by vm_concierge when it receives a GetContainerSshKeys
+// call. If either of the keys do not exist, the empty string will be set for
+// that value.
+message ContainerSshKeysResponse {
+  // Public key of the container for verification of it as a known host. This
+  // will be a single line string equivalent to the contents in the ssh-keygen
+  // generated file.
+  string container_public_key = 1;
+
+  // Private key for the host, counterpart fo the public key which is stored in
+  // the container as an authorized host. This will be a multiline string that
+  // is equivalent to the contents in the ssh-keygen generated file. This will
+  // be the same for all VMs/containers.
+  string host_private_key = 2;
 }

@@ -22,6 +22,7 @@ const char kListVmDisksMethod[] = "ListVmDisks";
 const char kStartContainerMethod[] = "StartContainer";
 const char kLaunchContainerApplicationMethod[] = "LaunchContainerApplication";
 const char kGetContainerAppIconMethod[] = "GetContainerAppIcon";
+const char kGetContainerSshKeysMethod[] = "GetContainerSshKeys";
 
 const char kContainerStartedSignal[] = "ContainerStarted";
 const char kContainerStartupFailedSignal[] = "ContainerStartupFailed";
