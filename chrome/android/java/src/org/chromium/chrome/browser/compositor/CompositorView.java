@@ -318,7 +318,7 @@ public class CompositorView
     }
 
     @CalledByNative
-    private void didSwapBuffers() {
+    private void didSwapBuffers(boolean swappedCurrentSize) {
         // If we're in the middle of a surface swap, then see if we've received a new frame yet for
         // the new surface before hiding the outgoing surface.
         if (mFramesUntilHideBackground > 1) {
@@ -333,7 +333,10 @@ public class CompositorView
             mCompositorSurfaceManager.doneWithUnownedSurface();
         }
 
-        runDrawFinishedCallbacks();
+        // Only run our draw finished callbacks if the frame we swapped was the correct size.
+        if (swappedCurrentSize) {
+            runDrawFinishedCallbacks();
+        }
     }
 
     /**

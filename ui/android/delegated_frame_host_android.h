@@ -89,6 +89,10 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   void SynchronizeVisualProperties();
 
+  // Called when we begin a resize operation. Takes the compositor lock until we
+  // receive a frame of the expected size.
+  void PixelSizeWillChange(const gfx::Size& pixel_size);
+
   // Returns the ID for the current Surface. Returns an invalid ID if no
   // surface exists (!HasDelegatedContent()).
   const viz::SurfaceId& SurfaceId() const;
@@ -143,10 +147,18 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   const bool enable_surface_synchronization_;
   viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator_;
 
+  // The size we are resizing to. Once we receive a frame of this size we can
+  // release any resize compositor lock.
+  gfx::Size expected_pixel_size_;
+
   // A lock that is held from the point at which we attach to the compositor to
   // the point at which we submit our first frame to the compositor. This
   // ensures that the compositor doesn't swap without a frame available.
   std::unique_ptr<ui::CompositorLock> compositor_attach_until_frame_lock_;
+
+  // A lock that is held from the point we begin resizing this frame to the
+  // point at which we receive a frame of the correct size.
+  std::unique_ptr<ui::CompositorLock> compositor_pending_resize_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatedFrameHostAndroid);
 };

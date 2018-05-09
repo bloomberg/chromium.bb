@@ -160,7 +160,7 @@ class CONTENT_EXPORT CompositorImpl
   void InitializeDisplay(
       std::unique_ptr<viz::OutputSurface> display_output_surface,
       scoped_refptr<viz::ContextProvider> context_provider);
-  void DidSwapBuffers();
+  void DidSwapBuffers(gfx::Size swap_size);
 
   bool HavePendingReadbacks();
 

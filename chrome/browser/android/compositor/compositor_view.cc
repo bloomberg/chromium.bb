@@ -127,9 +127,11 @@ void CompositorView::DidSwapFrame(int pending_frames) {
   Java_CompositorView_didSwapFrame(env, obj_, pending_frames);
 }
 
-void CompositorView::DidSwapBuffers() {
+void CompositorView::DidSwapBuffers(const gfx::Size& swap_size) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_CompositorView_didSwapBuffers(env, obj_);
+  bool swapped_current_size =
+      swap_size == gfx::Size(content_width_, content_height_);
+  Java_CompositorView_didSwapBuffers(env, obj_, swapped_current_size);
 }
 
 ui::UIResourceProvider* CompositorView::GetUIResourceProvider() {
