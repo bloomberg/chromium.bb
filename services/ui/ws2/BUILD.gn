@@ -10,32 +10,30 @@ import("//services/service_manager/public/service_manifest.gni")
 import("//services/service_manager/public/tools/test/service_test.gni")
 
 component("lib") {
+  public = [
+    "gpu_support.h",
+    "ids.h",
+    "window_service.h",
+    "window_service_client.h",
+    "window_service_client_binding.h",
+    "window_service_delegate.h",
+    "window_tree_factory.h",
+  ]
   sources = [
     "client_change.cc",
     "client_change.h",
     "client_change_tracker.cc",
     "client_change_tracker.h",
-
-    # TODO: client_root should be internal and moved to a different target.
     "client_root.cc",
     "client_root.h",
-    "gpu_support.h",
-    "ids.h",
-
-    # TODO: window_data should be internal and moved to a different target.
-    "window_data.cc",
-    "window_data.h",
+    "client_window.cc",
+    "client_window.h",
     "window_host_frame_sink_client.cc",
     "window_host_frame_sink_client.h",
     "window_service.cc",
-    "window_service.h",
     "window_service_client.cc",
-    "window_service_client.h",
     "window_service_client_binding.cc",
-    "window_service_client_binding.h",
-    "window_service_delegate.h",
     "window_tree_factory.cc",
-    "window_tree_factory.h",
   ]
 
   public_deps = [

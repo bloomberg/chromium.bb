@@ -6,7 +6,7 @@
 
 #include "services/ui/ws2/client_change.h"
 #include "services/ui/ws2/client_change_tracker.h"
-#include "services/ui/ws2/window_data.h"
+#include "services/ui/ws2/client_window.h"
 #include "services/ui/ws2/window_service_client.h"
 #include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/aura/window.h"
@@ -21,7 +21,7 @@ ClientRoot::ClientRoot(WindowServiceClient* window_service_client,
     : window_service_client_(window_service_client),
       window_(window),
       is_top_level_(is_top_level) {
-  WindowData::GetMayBeNull(window)->set_embedded_window_service_client(
+  ClientWindow::GetMayBeNull(window)->set_embedded_window_service_client(
       window_service_client);
   window_->AddObserver(this);
   // TODO: wire up gfx::Insets() correctly below. See usage in
@@ -36,14 +36,14 @@ ClientRoot::ClientRoot(WindowServiceClient* window_service_client,
 }
 
 ClientRoot::~ClientRoot() {
-  WindowData::GetMayBeNull(window_)->set_embedded_window_service_client(
+  ClientWindow::GetMayBeNull(window_)->set_embedded_window_service_client(
       nullptr);
   window_->RemoveObserver(this);
 }
 
 void ClientRoot::FrameSinkIdChanged() {
   window_->SetEmbedFrameSinkId(
-      WindowData::GetMayBeNull(window_)->frame_sink_id());
+      ClientWindow::GetMayBeNull(window_)->frame_sink_id());
   UpdatePrimarySurfaceId();
 }
 

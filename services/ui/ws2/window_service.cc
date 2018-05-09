@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
+#include "services/ui/ws2/client_window.h"
 #include "services/ui/ws2/gpu_support.h"
-#include "services/ui/ws2/window_data.h"
 #include "services/ui/ws2/window_service_client.h"
 #include "services/ui/ws2/window_service_delegate.h"
 #include "services/ui/ws2/window_tree_factory.h"
@@ -26,16 +26,16 @@ WindowService::WindowService(WindowServiceDelegate* delegate,
 
 WindowService::~WindowService() {}
 
-WindowData* WindowService::GetWindowDataForWindowCreateIfNecessary(
+ClientWindow* WindowService::GetClientWindowForWindowCreateIfNecessary(
     aura::Window* window) {
-  WindowData* data = WindowData::GetMayBeNull(window);
-  if (data)
-    return data;
+  ClientWindow* client_window = ClientWindow::GetMayBeNull(window);
+  if (client_window)
+    return client_window;
 
   const viz::FrameSinkId frame_sink_id =
       ClientWindowId(kWindowServerClientId, next_window_id_++);
   CHECK_NE(0u, next_window_id_);
-  return WindowData::Create(window, nullptr, frame_sink_id);
+  return ClientWindow::Create(window, nullptr, frame_sink_id);
 }
 
 std::unique_ptr<WindowServiceClient> WindowService::CreateWindowServiceClient(

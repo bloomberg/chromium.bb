@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws2/window_data.h"
+#include "services/ui/ws2/client_window.h"
 
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "services/ui/ws2/window_host_frame_sink_client.h"
@@ -10,35 +10,35 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(ui::ws2::WindowData*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ui::ws2::ClientWindow*);
 
 namespace ui {
 namespace ws2 {
 namespace {
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ui::ws2::WindowData,
-                                   kWindowDataKey,
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ui::ws2::ClientWindow,
+                                   kClientWindowKey,
                                    nullptr);
 }  // namespace
 
-WindowData::~WindowData() = default;
+ClientWindow::~ClientWindow() = default;
 
 // static
-WindowData* WindowData::Create(aura::Window* window,
-                               WindowServiceClient* client,
-                               const viz::FrameSinkId& frame_sink_id) {
+ClientWindow* ClientWindow::Create(aura::Window* window,
+                                   WindowServiceClient* client,
+                                   const viz::FrameSinkId& frame_sink_id) {
   DCHECK(!GetMayBeNull(window));
   // Owned by |window|.
-  WindowData* data = new WindowData(window, client, frame_sink_id);
-  window->SetProperty(kWindowDataKey, data);
-  return data;
+  ClientWindow* client_window = new ClientWindow(window, client, frame_sink_id);
+  window->SetProperty(kClientWindowKey, client_window);
+  return client_window;
 }
 
 // static
-const WindowData* WindowData::GetMayBeNull(const aura::Window* window) {
-  return window->GetProperty(kWindowDataKey);
+const ClientWindow* ClientWindow::GetMayBeNull(const aura::Window* window) {
+  return window->GetProperty(kClientWindowKey);
 }
 
-void WindowData::SetFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
+void ClientWindow::SetFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
   frame_sink_id_ = frame_sink_id;
   viz::HostFrameSinkManager* host_frame_sink_manager =
       aura::Env::GetInstance()
@@ -61,7 +61,7 @@ void WindowData::SetFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
   window_host_frame_sink_client_->OnFrameSinkIdChanged();
 }
 
-void WindowData::AttachCompositorFrameSink(
+void ClientWindow::AttachCompositorFrameSink(
     viz::mojom::CompositorFrameSinkRequest compositor_frame_sink,
     viz::mojom::CompositorFrameSinkClientPtr client) {
   viz::HostFrameSinkManager* host_frame_sink_manager =
@@ -72,9 +72,9 @@ void WindowData::AttachCompositorFrameSink(
       frame_sink_id_, std::move(compositor_frame_sink), std::move(client));
 }
 
-WindowData::WindowData(aura::Window* window,
-                       WindowServiceClient* client,
-                       const viz::FrameSinkId& frame_sink_id)
+ClientWindow::ClientWindow(aura::Window* window,
+                           WindowServiceClient* client,
+                           const viz::FrameSinkId& frame_sink_id)
     : window_(window),
       owning_window_service_client_(client),
       frame_sink_id_(frame_sink_id) {}
