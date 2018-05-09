@@ -78,9 +78,11 @@ FullscreenControlHost::~FullscreenControlHost() = default;
 // static
 bool FullscreenControlHost::IsFullscreenExitUIEnabled() {
 #if defined(OS_MACOSX)
-  // Exit UI is unnecessary, since Mac reveals the top chrome when the cursor
-  // moves to the top of the screen.
-  return false;
+  // On Mac we only use FullscreenControlHost as a visual feedback for
+  // press-and-hold ESC to exit fullscreen.
+  // IsExitUiNeeded() will guard that mouse and touch inputs won't trigger the
+  // UI.
+  return true;
 #else
   return chrome::GetChannel() == version_info::Channel::CANARY ||
          chrome::GetChannel() == version_info::Channel::DEV ||
@@ -217,8 +219,14 @@ void FullscreenControlHost::OnPopupTimeout(
 }
 
 bool FullscreenControlHost::IsExitUiNeeded() {
+#if defined(OS_MACOSX)
+  // Exit UI is unnecessary, since Mac uses the OS fullscreen such that window
+  // menu and controls reveal when the cursor is moved to the top.
+  return false;
+#else
   return exclusive_access_context_->IsFullscreen() &&
          exclusive_access_context_->ShouldHideUIForFullscreen();
+#endif
 }
 
 float FullscreenControlHost::CalculateCursorBufferHeight() const {

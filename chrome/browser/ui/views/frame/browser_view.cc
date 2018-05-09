@@ -141,6 +141,7 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/views/event_monitor.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/native_widget.h"
@@ -2415,12 +2416,16 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
     if (GetLocationBarView()->Contains(focus_manager->GetFocusedView()))
       focus_manager->ClearFocus();
 
-#if defined(USE_AURA)
     if (FullscreenControlHost::IsFullscreenExitUIEnabled()) {
+#if defined(USE_AURA)
       frame_->GetNativeView()->AddPreTargetHandler(
           GetFullscreenControlHost(), ui::EventTarget::Priority::kSystem);
-    }
+#else
+      fullscreen_control_host_event_monitor_ =
+          views::EventMonitor::CreateWindowMonitor(GetFullscreenControlHost(),
+                                                   GetNativeWindow());
 #endif
+    }
   } else {
     // Hide the fullscreen bubble as soon as possible, since the mode toggle can
     // take enough time for the user to notice.
@@ -2432,6 +2437,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
       auto* native_view = frame_->GetNativeView();
       if (native_view)
         native_view->RemovePreTargetHandler(fullscreen_control_host_.get());
+#else
+      fullscreen_control_host_event_monitor_.reset();
 #endif
     }
   }
