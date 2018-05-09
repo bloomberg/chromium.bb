@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "media/gpu/android/avda_state_provider.h"
 #include "media/gpu/android/avda_surface_bundle.h"
-#include "media/gpu/android/texture_owner.h"
+#include "media/gpu/android/surface_texture_gl_owner.h"
 #include "media/gpu/media_gpu_export.h"
 
 namespace gpu {

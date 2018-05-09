@@ -190,6 +190,8 @@ component("gpu") {
       "android/promotion_hint_aggregator_impl.h",
       "android/surface_chooser_helper.cc",
       "android/surface_chooser_helper.h",
+      "android/surface_texture_gl_owner.cc",
+      "android/surface_texture_gl_owner.h",
       "android/texture_owner.cc",
       "android/texture_owner.h",
       "android/texture_pool.cc",
