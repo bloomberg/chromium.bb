@@ -21,7 +21,8 @@ int main(int argc, const char** argv) {
   settings.log_file = log_filename.value().c_str();
   settings.delete_old = logging::DELETE_OLD_LOG_FILE;
   logging::InitLogging(settings);
-
+  logging::SetLogItems(true /* process_id */, true /* thread_id */,
+                       true /* timestamp */, false /* tick_count */);
   ash::shell::ShellMainDelegate delegate;
   content::ContentMainParams params(&delegate);
   params.argc = argc;

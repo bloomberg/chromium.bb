@@ -18,6 +18,8 @@ interface DisplayManagerObserver {
                     int64 internal_display_id);
 };
 
+// TODO(jamescook): Rename to ScreenProvider.
 interface DisplayManager {
+  // Adding an observer triggers a notification with the initial values.
   AddObserver(DisplayManagerObserver observer);
 };

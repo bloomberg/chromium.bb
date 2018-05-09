@@ -31,6 +31,7 @@ class WindowTreeClient;
 namespace ws2 {
 
 class ClientWindow;
+class DisplayManagerMus;
 class GpuSupport;
 class WindowServiceClient;
 class WindowServiceDelegate;
@@ -78,6 +79,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   // GpuSupport may be null in tests.
   std::unique_ptr<GpuSupport> gpu_support_;
+
+  std::unique_ptr<DisplayManagerMus> display_manager_mus_;
 
   service_manager::BinderRegistry registry_;
 
