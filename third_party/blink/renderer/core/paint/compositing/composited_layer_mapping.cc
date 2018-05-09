@@ -3380,7 +3380,7 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
   // MapToVisualRectInAncestorSpace is exclusive of the scroll and clip on the
   // ancestor, so we map to nullptr instead of |root_view| to include these.
   anchor_layout_object->MapToVisualRectInAncestorSpace(
-      nullptr, graphics_layer_bounds_in_root_view_space);
+      nullptr, graphics_layer_bounds_in_root_view_space, kUseGeometryMapper);
 
   // MapToVisualRectInAncestorSpace will not clip if the anchor is the root
   // view, because the rect is assumed to already be in the clipped space of
