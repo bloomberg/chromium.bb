@@ -309,6 +309,7 @@ bool AccessibilityManager::ShouldShowAccessibilityMenu() {
         prefs->GetBoolean(ash::prefs::kAccessibilityCaretHighlightEnabled) ||
         prefs->GetBoolean(ash::prefs::kAccessibilityCursorHighlightEnabled) ||
         prefs->GetBoolean(ash::prefs::kAccessibilityFocusHighlightEnabled) ||
+        prefs->GetBoolean(ash::prefs::kAccessibilityDictationEnabled) ||
         prefs->GetBoolean(ash::prefs::kDockedMagnifierEnabled)) {
       return true;
     }

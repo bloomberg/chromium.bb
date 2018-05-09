@@ -59,6 +59,7 @@ void DictationButtonTray::OnDictationEnded() {
 }
 
 void DictationButtonTray::OnAccessibilityStatusChanged() {
+  UpdateVisibility();
   CheckDictationStatusAndUpdateIcon();
 }
 
@@ -82,9 +83,8 @@ void DictationButtonTray::UpdateIcon(bool dictation_active) {
 }
 
 void DictationButtonTray::UpdateVisibility() {
-  // TODO(zhelfins): Check dictation settings once they are configured.
-  // https://crbug.com/801398
-  bool is_visible = true;
+  bool is_visible =
+      Shell::Get()->accessibility_controller()->IsDictationEnabled();
   SetVisible(is_visible);
 }
 

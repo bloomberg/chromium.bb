@@ -209,6 +209,9 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       ash::prefs::kAccessibilityScreenMagnifierEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(
+      ash::prefs::kAccessibilityDictationEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterDoublePref(ash::prefs::kAccessibilityScreenMagnifierScale,
                                std::numeric_limits<double>::min(),
                                PrefRegistry::PUBLIC);

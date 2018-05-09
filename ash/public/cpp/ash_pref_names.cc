@@ -63,6 +63,8 @@ const char kAccessibilitySelectToSpeakEnabled[] =
     "settings.a11y.select_to_speak";
 // A boolean pref which determines whether switch access is enabled.
 const char kAccessibilitySwitchAccessEnabled[] = "settings.a11y.switch_access";
+// A boolean pref which determines whether dictation is enabled.
+const char kAccessibilityDictationEnabled[] = "settings.a11y.dictation";
 // A boolean pref which determines whether the accessibility menu shows
 // regardless of the state of a11y features.
 const char kShouldAlwaysShowAccessibilityMenu[] = "settings.a11y.enable_menu";
