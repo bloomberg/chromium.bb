@@ -15,6 +15,7 @@ cr.define('extensions', function() {
         'reloadItem',
         'setProfileInDevMode',
         'setShortcutHandlingSuspended',
+        'shouldIgnoreUpdate',
         'updateAllExtensions',
         'updateExtensionCommandKeybinding',
         'updateExtensionCommandScope',
@@ -75,6 +76,11 @@ cr.define('extensions', function() {
     /** @override */
     setShortcutHandlingSuspended(enable) {
       this.methodCalled('setShortcutHandlingSuspended', enable);
+    }
+
+    /** @override */
+    shouldIgnoreUpdate(extensionId, eventType) {
+      this.methodCalled('shouldIgnoreUpdate', [extensionId, eventType]);
     }
 
     /** @override */

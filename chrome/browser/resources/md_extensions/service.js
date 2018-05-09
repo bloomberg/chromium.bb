@@ -17,6 +17,9 @@ cr.define('extensions', function() {
     constructor() {
       /** @private {boolean} */
       this.isDeleting_ = false;
+
+      /** @private {!Set<string>} */
+      this.eventsToIgnoreOnce_ = new Set();
     }
 
     getProfileConfiguration() {
@@ -27,6 +30,23 @@ cr.define('extensions', function() {
 
     getItemStateChangedTarget() {
       return chrome.developerPrivate.onItemStateChanged;
+    }
+
+    /**
+     * @param {string} extensionId
+     * @param {!chrome.developerPrivate.EventType} eventType
+     * @return {boolean}
+     */
+    shouldIgnoreUpdate(extensionId, eventType) {
+      return this.eventsToIgnoreOnce_.delete(`${extensionId}_${eventType}`);
+    }
+
+    /**
+     * @param {string} extensionId
+     * @param {!chrome.developerPrivate.EventType} eventType
+     */
+    ignoreNextEvent(extensionId, eventType) {
+      this.eventsToIgnoreOnce_.add(`${extensionId}_${eventType}`);
     }
 
     getProfileStateChangedTarget() {
@@ -79,6 +99,11 @@ cr.define('extensions', function() {
 
     /** @override */
     updateExtensionCommandScope(extensionId, commandName, scope) {
+      // The COMMAND_REMOVED event needs to be ignored since it is sent before
+      // the command is added back with the updated scope but can be handled
+      // after the COMMAND_ADDED event.
+      this.ignoreNextEvent(
+          extensionId, chrome.developerPrivate.EventType.COMMAND_REMOVED);
       chrome.developerPrivate.updateExtensionCommand({
         extensionId: extensionId,
         commandName: commandName,

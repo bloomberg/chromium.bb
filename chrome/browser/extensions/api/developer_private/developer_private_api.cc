@@ -430,14 +430,13 @@ void DeveloperPrivateEventRouter::OnAppWindowRemoved(AppWindow* window) {
 void DeveloperPrivateEventRouter::OnExtensionCommandAdded(
     const std::string& extension_id,
     const Command& added_command) {
-  BroadcastItemStateChanged(developer::EVENT_TYPE_PREFS_CHANGED,
-                            extension_id);
+  BroadcastItemStateChanged(developer::EVENT_TYPE_COMMAND_ADDED, extension_id);
 }
 
 void DeveloperPrivateEventRouter::OnExtensionCommandRemoved(
     const std::string& extension_id,
     const Command& removed_command) {
-  BroadcastItemStateChanged(developer::EVENT_TYPE_PREFS_CHANGED,
+  BroadcastItemStateChanged(developer::EVENT_TYPE_COMMAND_REMOVED,
                             extension_id);
 }
 
