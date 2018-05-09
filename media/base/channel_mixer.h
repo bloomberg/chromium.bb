@@ -35,14 +35,6 @@ class MEDIA_EXPORT ChannelMixer {
   // Transforms all channels from |input| into |output| channels.
   void Transform(const AudioBus* input, AudioBus* output);
 
-  // Transforms all channels from |input| into |output| channels, for just the
-  // initial part of the input. Callers can use this to avoid reallocating
-  // AudioBuses, if the length of the data changes frequently for their use
-  // case.
-  void TransformPartial(const AudioBus* input,
-                        int frame_count,
-                        AudioBus* output);
-
  private:
   void Initialize(ChannelLayout input_layout, int input_channels,
                   ChannelLayout output_layout, int output_channels);
