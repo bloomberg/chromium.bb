@@ -99,6 +99,7 @@ enum class DomCode;
 namespace content {
 
 class BrowserAccessibilityManager;
+class FlingScheduler;
 class InputRouter;
 class MockRenderWidgetHost;
 class RenderWidgetHostOwnerDelegate;
@@ -672,9 +673,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnMessageDispatchError(const IPC::Message& message) override;
   void OnProcessSwapMessage(const IPC::Message& message) override;
 
-  void ProgressFling(base::TimeTicks current_time);
+  void ProgressFlingIfNeeded(base::TimeTicks current_time);
   void StopFling();
   bool FlingCancellationIsDeferred() const;
+  void SetNeedsBeginFrameForFlingProgress();
 
   void DidReceiveFirstFrameAfterNavigation();
 
@@ -700,6 +702,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Indicates whether keyboard lock is active.
   bool IsKeyboardLocked() const;
+
+  void DidStopFlinging() override;
 
   void GetContentRenderingTimeoutFrom(RenderWidgetHostImpl* other);
 
@@ -844,11 +848,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void DecrementInFlightEventCount(InputEventAckSource ack_source) override;
   void OnHasTouchEventHandlers(bool has_handlers) override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
-  void DidStopFlinging() override;
   void DidStartScrollingViewport() override;
   void OnSetWhiteListedTouchAction(
       cc::TouchAction white_listed_touch_action) override {}
-  void SetNeedsBeginFrameForFlingProgress() override;
 
   // Dispatch input events with latency information
   void DispatchInputEventWithLatencyInfo(const blink::WebInputEvent& event,
@@ -1164,6 +1166,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   RenderFrameMetadataProviderImpl render_frame_metadata_provider_;
 
   const viz::FrameSinkId frame_sink_id_;
+
+  std::unique_ptr<FlingScheduler> fling_scheduler_;
 
   bool did_receive_first_frame_after_navigation_ = true;
 

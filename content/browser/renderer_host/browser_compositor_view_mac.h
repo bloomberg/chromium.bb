@@ -129,7 +129,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   }
 
   // Returns nullptr if no compositor is attached.
-  ui::Compositor* CompositorForTesting() const;
+  ui::Compositor* Compositor() const;
 
   void DidNavigate();
 

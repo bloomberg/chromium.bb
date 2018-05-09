@@ -2086,12 +2086,12 @@ void RenderWidgetHostViewAndroid::OnBeginFrame(
 
   bool webview_fling = sync_compositor_ && is_currently_scrolling_viewport_;
   if (!webview_fling) {
-    host_->ProgressFling(args.frame_time);
+    host_->ProgressFlingIfNeeded(args.frame_time);
   } else if (sync_compositor_->on_compute_scroll_called()) {
     // On Android webview progress the fling only when |OnComputeScroll| is
     // called since in some cases Apps override |OnComputeScroll| to cancel
     // fling animation.
-    host_->ProgressFling(args.frame_time);
+    host_->ProgressFlingIfNeeded(args.frame_time);
   }
 
   // Update |last_begin_frame_args_| before handling

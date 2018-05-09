@@ -26,7 +26,8 @@ GestureEventQueue::Config::Config() {
 
 GestureEventQueue::GestureEventQueue(
     GestureEventQueueClient* client,
-    FlingControllerClient* fling_client,
+    FlingControllerEventSenderClient* fling_event_sender_client,
+    FlingControllerSchedulerClient* fling_scheduler_client,
     const Config& config)
     : client_(client),
       fling_in_progress_(false),
@@ -36,10 +37,12 @@ GestureEventQueue::GestureEventQueue(
           base::FeatureList::IsEnabled(features::kVsyncAlignedInputEvents)),
       debounce_interval_(config.debounce_interval),
       fling_controller_(this,
-                        fling_client,
+                        fling_event_sender_client,
+                        fling_scheduler_client,
                         config.fling_config) {
   DCHECK(client);
-  DCHECK(fling_client);
+  DCHECK(fling_event_sender_client);
+  DCHECK(fling_scheduler_client);
 }
 
 GestureEventQueue::~GestureEventQueue() { }
@@ -74,10 +77,6 @@ bool GestureEventQueue::QueueEvent(
   return true;
 }
 
-gfx::Vector2dF GestureEventQueue::ProgressFling(base::TimeTicks current_time) {
-  return fling_controller_.ProgressFling(current_time);
-}
-
 void GestureEventQueue::StopFling() {
   fling_in_progress_ = false;
   fling_controller_.StopFling();
@@ -89,6 +88,9 @@ bool GestureEventQueue::FlingCancellationIsDeferred() const {
 
 bool GestureEventQueue::TouchscreenFlingInProgress() const {
   return fling_controller_.TouchscreenFlingInProgress();
+}
+gfx::Vector2dF GestureEventQueue::CurrentFlingVelocity() const {
+  return fling_controller_.CurrentFlingVelocity();
 }
 
 bool GestureEventQueue::ShouldDiscardFlingCancelEvent(

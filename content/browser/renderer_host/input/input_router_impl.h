@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/input/touch_action.h"
+#include "content/browser/renderer_host/input/fling_scheduler.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
@@ -49,16 +50,16 @@ class CONTENT_EXPORT InputRouterImplClient : public InputRouterClient {
 };
 
 // A default implementation for browser input event routing.
-class CONTENT_EXPORT InputRouterImpl
-    : public InputRouter,
-      public GestureEventQueueClient,
-      public FlingControllerClient,
-      public MouseWheelEventQueueClient,
-      public PassthroughTouchEventQueueClient,
-      public mojom::WidgetInputHandlerHost {
+class CONTENT_EXPORT InputRouterImpl : public InputRouter,
+                                       public GestureEventQueueClient,
+                                       public FlingControllerEventSenderClient,
+                                       public MouseWheelEventQueueClient,
+                                       public PassthroughTouchEventQueueClient,
+                                       public mojom::WidgetInputHandlerHost {
  public:
   InputRouterImpl(InputRouterImplClient* client,
                   InputDispositionHandler* disposition_handler,
+                  FlingControllerSchedulerClient* fling_scheduler_client,
                   const Config& config);
   ~InputRouterImpl() override;
 
@@ -79,10 +80,8 @@ class CONTENT_EXPORT InputRouterImpl
   cc::TouchAction AllowedTouchAction() override;
   void BindHost(mojom::WidgetInputHandlerHostRequest request,
                 bool frame_handler) override;
-  void ProgressFling(base::TimeTicks current_time) override;
   void StopFling() override;
   bool FlingCancellationIsDeferred() override;
-  void DidStopFlingingOnBrowser() override;
 
   // InputHandlerHost impl
   void CancelTouchTimeout() override;
@@ -125,12 +124,11 @@ class CONTENT_EXPORT InputRouterImpl
                          InputEventAckSource ack_source,
                          InputEventAckState ack_result) override;
 
-  // FlingControllerClient
+  // FlingControllerEventSenderClient
   void SendGeneratedWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) override;
   void SendGeneratedGestureScrollEvents(
       const GestureEventWithLatencyInfo& gesture_event) override;
-  void SetNeedsBeginFrameForFlingProgress() override;
 
   // MouseWheelEventQueueClient
   void SendMouseWheelEventImmediately(
@@ -216,8 +214,6 @@ class CONTENT_EXPORT InputRouterImpl
   InputEventStreamValidator output_stream_validator_;
 
   float device_scale_factor_;
-
-  gfx::Vector2dF current_fling_velocity_;
 
   // Last touch position relative to screen. Used to compute movementX/Y.
   base::flat_map<int, gfx::Point> global_touch_position_;

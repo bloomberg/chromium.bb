@@ -88,9 +88,5 @@
 # Flaky Result on Windows-7 http://crbug.com/883463
 -MainThreadEventQueueBrowserTest.MouseMove
 
-# Browser side fling cannot use SetNeedsBeginFrame on viz https://crbug.com/823310
--CompositorEventAckBrowserTest.TouchStartDuringFling
--BrowserSideFlingBrowserTest.*
-
 # Uses LatencyInfo for input info https://crbug.com/791557
 -MouseLatencyBrowserTest.CoalescedMouseMovesCorrectlyTerminated

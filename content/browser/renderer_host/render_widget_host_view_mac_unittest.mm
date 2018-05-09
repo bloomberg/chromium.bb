@@ -1934,13 +1934,12 @@ TEST_F(InputMethodMacTest, MonitorCompositionRangeForActiveWidget) {
 }
 
 TEST_F(RenderWidgetHostViewMacTest, ClearCompositorFrame) {
-  BrowserCompositorMac* browser_compositor =
-      rwhv_mac_->BrowserCompositorForTesting();
-  EXPECT_NE(browser_compositor->CompositorForTesting(), nullptr);
-  EXPECT_TRUE(browser_compositor->CompositorForTesting()->IsLocked());
+  BrowserCompositorMac* browser_compositor = rwhv_mac_->BrowserCompositor();
+  EXPECT_NE(browser_compositor->Compositor(), nullptr);
+  EXPECT_TRUE(browser_compositor->Compositor()->IsLocked());
   rwhv_mac_->ClearCompositorFrame();
-  EXPECT_NE(browser_compositor->CompositorForTesting(), nullptr);
-  EXPECT_FALSE(browser_compositor->CompositorForTesting()->IsLocked());
+  EXPECT_NE(browser_compositor->Compositor(), nullptr);
+  EXPECT_FALSE(browser_compositor->Compositor()->IsLocked());
 }
 
 // This test verifies that in AutoResize mode a child-allocated
@@ -1974,8 +1973,7 @@ TEST_F(RenderWidgetHostViewMacTest, ConflictingAllocationsResolve) {
   host_->DidUpdateVisualProperties(gfx::Size(75, 75), local_surface_id2);
 
   // Cause a conflicting viz::LocalSurfaceId allocation
-  BrowserCompositorMac* browser_compositor =
-      rwhv_mac_->BrowserCompositorForTesting();
+  BrowserCompositorMac* browser_compositor = rwhv_mac_->BrowserCompositor();
   EXPECT_TRUE(browser_compositor->ForceNewSurfaceForTesting());
   viz::LocalSurfaceId local_surface_id3(rwhv_mac_->GetLocalSurfaceId());
   EXPECT_NE(local_surface_id1, local_surface_id3);

@@ -131,7 +131,6 @@ class MockInputRouter : public InputRouter {
   void SetForceEnableZoom(bool enabled) override {}
   void BindHost(mojom::WidgetInputHandlerHostRequest request,
                 bool frame_handler) override {}
-  void ProgressFling(base::TimeTicks time) override {}
   void StopFling() override {}
   bool FlingCancellationIsDeferred() override { return false; }
 
@@ -209,7 +208,8 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   void DisableGestureDebounce() {
-    input_router_.reset(new InputRouterImpl(this, this, InputRouter::Config()));
+    input_router_.reset(new InputRouterImpl(this, this, fling_scheduler_.get(),
+                                            InputRouter::Config()));
   }
 
   void ExpectForceEnableZoom(bool enable) {
@@ -285,13 +285,15 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
                              std::move(widget),
                              false),
         new_content_rendering_timeout_fired_(false),
-        widget_impl_(std::move(widget_impl)) {
+        widget_impl_(std::move(widget_impl)),
+        fling_scheduler_(std::make_unique<FlingScheduler>(this)) {
     acked_touch_event_type_ = blink::WebInputEvent::kUndefined;
     frame_token_message_queue_.reset(new TestFrameTokenMessageQueue(this));
   }
 
   std::unique_ptr<MockWidgetImpl> widget_impl_;
 
+  std::unique_ptr<FlingScheduler> fling_scheduler_;
   DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHost);
 };
 

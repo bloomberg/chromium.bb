@@ -77,7 +77,7 @@ void RenderWidgetHostViewMac::BrowserCompositorMacOnBeginFrame(
     base::TimeTicks frame_time) {
   // ProgressFling must get called for middle click autoscroll fling on Mac.
   if (host())
-    host()->ProgressFling(frame_time);
+    host()->ProgressFlingIfNeeded(frame_time);
   UpdateNeedsBeginFramesInternal();
 }
 

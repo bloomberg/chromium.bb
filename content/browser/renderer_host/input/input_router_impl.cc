@@ -68,9 +68,11 @@ ui::WebScopedInputEvent ScaleEvent(const WebInputEvent& event, double scale) {
 
 }  // namespace
 
-InputRouterImpl::InputRouterImpl(InputRouterImplClient* client,
-                                 InputDispositionHandler* disposition_handler,
-                                 const Config& config)
+InputRouterImpl::InputRouterImpl(
+    InputRouterImplClient* client,
+    InputDispositionHandler* disposition_handler,
+    FlingControllerSchedulerClient* fling_scheduler_client,
+    const Config& config)
     : client_(client),
       disposition_handler_(disposition_handler),
       frame_tree_node_id_(-1),
@@ -80,7 +82,10 @@ InputRouterImpl::InputRouterImpl(InputRouterImplClient* client,
           features::kTouchpadAndWheelScrollLatching)),
       wheel_event_queue_(this, wheel_scroll_latching_enabled_),
       touch_event_queue_(this, config.touch_config),
-      gesture_event_queue_(this, this, config.gesture_config),
+      gesture_event_queue_(this,
+                           this,
+                           fling_scheduler_client,
+                           config.gesture_config),
       device_scale_factor_(1.f),
       host_binding_(this),
       frame_host_binding_(this),
@@ -89,6 +94,7 @@ InputRouterImpl::InputRouterImpl(InputRouterImplClient* client,
 
   DCHECK(client);
   DCHECK(disposition_handler);
+  DCHECK(fling_scheduler_client);
   UpdateTouchAckTimeoutEnabled();
 }
 
@@ -209,21 +215,12 @@ void InputRouterImpl::BindHost(mojom::WidgetInputHandlerHostRequest request,
   }
 }
 
-void InputRouterImpl::ProgressFling(base::TimeTicks current_time) {
-  current_fling_velocity_ = gesture_event_queue_.ProgressFling(current_time);
-}
-
 void InputRouterImpl::StopFling() {
   gesture_event_queue_.StopFling();
 }
 
 bool InputRouterImpl::FlingCancellationIsDeferred() {
   return gesture_event_queue_.FlingCancellationIsDeferred();
-}
-
-void InputRouterImpl::DidStopFlingingOnBrowser() {
-  current_fling_velocity_ = gfx::Vector2dF();
-  client_->DidStopFlinging();
 }
 
 void InputRouterImpl::CancelTouchTimeout() {
@@ -243,7 +240,8 @@ void InputRouterImpl::SetWhiteListedTouchAction(cc::TouchAction touch_action,
 void InputRouterImpl::DidOverscroll(const ui::DidOverscrollParams& params) {
   // Touchpad and Touchscreen flings are handled on the browser side.
   ui::DidOverscrollParams fling_updated_params = params;
-  fling_updated_params.current_fling_velocity = current_fling_velocity_;
+  fling_updated_params.current_fling_velocity =
+      gesture_event_queue_.CurrentFlingVelocity();
   client_->DidOverscroll(fling_updated_params);
 }
 
@@ -388,10 +386,6 @@ void InputRouterImpl::SendGeneratedGestureScrollEvents(
     const GestureEventWithLatencyInfo& gesture_event) {
   client_->ForwardGestureEventWithLatencyInfo(gesture_event.event,
                                               gesture_event.latency);
-}
-
-void InputRouterImpl::SetNeedsBeginFrameForFlingProgress() {
-  client_->SetNeedsBeginFrameForFlingProgress();
 }
 
 void InputRouterImpl::SendMouseWheelEventImmediately(

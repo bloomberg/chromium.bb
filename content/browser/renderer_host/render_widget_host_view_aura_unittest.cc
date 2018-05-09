@@ -4488,7 +4488,7 @@ void RenderWidgetHostViewAuraOverscrollTest::ScrollEventsOverscrollWithFling() {
       base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(17);
   // Overscroll mode will get reset at the end of the fling progress.
   while (overscroll_mode() != OVERSCROLL_NONE) {
-    widget_host_->ProgressFling(progress_time);
+    widget_host_->ProgressFlingIfNeeded(progress_time);
     progress_time += base::TimeDelta::FromMilliseconds(17);
   }
   EXPECT_EQ(OverscrollSource::NONE, overscroll_source());
@@ -4674,7 +4674,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
     // progress.
     base::TimeTicks progress_time =
         base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(17);
-    widget_host_->ProgressFling(progress_time);
+    widget_host_->ProgressFlingIfNeeded(progress_time);
     EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
   }
 }
@@ -5951,7 +5951,7 @@ void RenderWidgetHostViewAuraOverscrollTest::ScrollDeltasResetOnEnd() {
       base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(17);
   // Overscroll delta will get reset at the end of the fling progress.
   while (overscroll_delta_y() != 0.f) {
-    widget_host_->ProgressFling(progress_time);
+    widget_host_->ProgressFlingIfNeeded(progress_time);
     progress_time += base::TimeDelta::FromMilliseconds(17);
   }
 }
