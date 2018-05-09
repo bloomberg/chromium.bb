@@ -543,6 +543,7 @@ typedef struct AV1Common {
   int enhancement_layers_cnt;
   int num_allocated_above_context_mi_col;
   int num_allocated_above_contexts;
+  int num_allocated_above_context_planes;
 
 #if TXCOEFF_TIMER
   int64_t cum_txcoeff_timer;

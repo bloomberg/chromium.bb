@@ -167,7 +167,7 @@ static int alloc_loop_filter(AV1_COMMON *cm) {
 void av1_free_above_context_buffers(AV1_COMMON *cm,
                                     int num_free_above_contexts) {
   int i;
-  const int num_planes = av1_num_planes(cm);
+  const int num_planes = cm->num_allocated_above_context_planes;
 
   for (int tile_row = 0; tile_row < num_free_above_contexts; tile_row++) {
     for (i = 0; i < num_planes; i++) {
@@ -192,6 +192,7 @@ void av1_free_above_context_buffers(AV1_COMMON *cm,
 
   cm->num_allocated_above_contexts = 0;
   cm->num_allocated_above_context_mi_col = 0;
+  cm->num_allocated_above_context_planes = 0;
 }
 
 void av1_free_context_buffers(AV1_COMMON *cm) {
@@ -225,6 +226,7 @@ int av1_alloc_above_context_buffers(AV1_COMMON *cm,
   // Allocate above context buffers
   cm->num_allocated_above_contexts = num_alloc_above_contexts;
   cm->num_allocated_above_context_mi_col = aligned_mi_cols;
+  cm->num_allocated_above_context_planes = num_planes;
   for (plane_idx = 0; plane_idx < num_planes; plane_idx++) {
     cm->above_context[plane_idx] = (ENTROPY_CONTEXT **)aom_calloc(
         num_alloc_above_contexts, sizeof(cm->above_context[0]));

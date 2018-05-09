@@ -3692,7 +3692,8 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
   alloc_frame_mvs(cm, cm->new_fb_idx);
 
   // Allocate above context buffers
-  if (cm->num_allocated_above_context_mi_col < cm->mi_cols ||
+  if (cm->num_allocated_above_context_planes < av1_num_planes(cm) ||
+      cm->num_allocated_above_context_mi_col < cm->mi_cols ||
       cm->num_allocated_above_contexts < cm->tile_rows) {
     av1_free_above_context_buffers(cm, cm->num_allocated_above_contexts);
     if (av1_alloc_above_context_buffers(cm, cm->tile_rows))

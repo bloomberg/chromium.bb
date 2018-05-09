@@ -3311,7 +3311,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   setup_quantization(cm, rb);
   xd->bd = (int)cm->bit_depth;
 
-  if (cm->num_allocated_above_context_mi_col < cm->mi_cols ||
+  if (cm->num_allocated_above_context_planes < av1_num_planes(cm) ||
+      cm->num_allocated_above_context_mi_col < cm->mi_cols ||
       cm->num_allocated_above_contexts < cm->tile_rows) {
     av1_free_above_context_buffers(cm, cm->num_allocated_above_contexts);
     if (av1_alloc_above_context_buffers(cm, cm->tile_rows))
