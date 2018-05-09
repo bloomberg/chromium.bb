@@ -59,6 +59,10 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   // Set up the views::Views that will be shown on the window.
   void SetUpViews();
 
+  // Update |current_size_| closest to the |new_size| while adhering to the
+  // aspect ratio of the video, which is retrieved from |natural_size_|.
+  void UpdateCurrentSizeWithAspectRatio(gfx::Size new_size);
+
   // Not owned; |controller_| owns |this|.
   content::PictureInPictureWindowController* controller_;
 
