@@ -581,6 +581,8 @@ config("compiler") {
   }
 
   if (is_mac) {
+    # The system libc++ on Mac doesn't have aligned allocation in C++17.
+    defines += [ "_LIBCPP_HAS_NO_ALIGNED_ALLOCATION" ]
     cflags_cc += [ "-stdlib=libc++" ]
     ldflags += [ "-stdlib=libc++" ]
   }
