@@ -8182,6 +8182,11 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="The system clock is known to be inaccurate"/>
 </enum>
 
+<enum name="CrosSystemTrayInteraction">
+  <int value="0" label="Tap"/>
+  <int value="1" label="Click"/>
+</enum>
+
 <enum name="CrostiniAppLaunchAppType">
   <int value="0" label="Unknown App"/>
   <int value="1" label="Terminal"/>

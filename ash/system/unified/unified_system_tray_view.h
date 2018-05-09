@@ -81,6 +81,8 @@ class UnifiedSystemTrayView : public views::View {
   views::View* system_tray_container_;
   views::View* detailed_view_container_;
 
+  const std::unique_ptr<ui::EventHandler> interacted_by_tap_recorder_;
+
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTrayView);
 };
 

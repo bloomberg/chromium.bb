@@ -5,6 +5,7 @@
 #include "ash/system/unified/unified_system_tray_view.h"
 
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/system/tray/interacted_by_tap_recorder.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_pods_container_view.h"
@@ -106,7 +107,9 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
       sliders_container_(new UnifiedSlidersContainerView(initially_expanded)),
       system_info_view_(new UnifiedSystemInfoView()),
       system_tray_container_(new views::View()),
-      detailed_view_container_(new DetailedViewContainer()) {
+      detailed_view_container_(new DetailedViewContainer()),
+      interacted_by_tap_recorder_(
+          std::make_unique<InteractedByTapRecorder>(this)) {
   DCHECK(controller_);
 
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(

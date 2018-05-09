@@ -5,6 +5,7 @@
 #include "ash/system/tray/system_tray_view.h"
 
 #include "ash/shell.h"
+#include "ash/system/tray/interacted_by_tap_recorder.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/metrics/histogram_macros.h"
@@ -52,6 +53,8 @@ SystemTrayView::SystemTrayView(SystemTray* system_tray,
                                const std::vector<ash::SystemTrayItem*>& items)
     : time_to_click_recorder_(
           std::make_unique<TimeToClickRecorder>(system_tray, this)),
+      interacted_by_tap_recorder_(
+          std::make_unique<InteractedByTapRecorder>(this)),
       items_(items),
       system_tray_type_(system_tray_type) {
   SetLayoutManager(std::make_unique<BottomAlignedBoxLayout>());
