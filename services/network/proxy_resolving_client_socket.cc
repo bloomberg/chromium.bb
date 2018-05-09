@@ -86,6 +86,7 @@ int ProxyResolvingClientSocket::SetSendBufferSize(int32_t size) {
 
 int ProxyResolvingClientSocket::Connect(net::CompletionOnceCallback callback) {
   DCHECK(user_connect_callback_.is_null());
+  DCHECK(!socket_handle_->socket());
 
   next_state_ = STATE_PROXY_RESOLVE;
   int result = DoLoop(net::OK);
