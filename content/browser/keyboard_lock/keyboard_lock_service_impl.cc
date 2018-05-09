@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/keyboard_lock/keyboard_lock_metrics.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -28,19 +29,8 @@ namespace content {
 
 namespace {
 
-// These values must stay in sync with tools/metrics/histograms.xml.
-// Enum values should never be renumbered or reused as they are stored and can
-// be used for multi-release queries.  Insert any new values before |kCount| and
-// increment the count.
-enum class KeyboardLockMethods {
-  kRequestAllKeys = 0,
-  kRequestSomeKeys = 1,
-  kCancelLock = 2,
-  kCount = 3
-};
-
 void LogKeyboardLockMethodCalled(KeyboardLockMethods method) {
-  UMA_HISTOGRAM_ENUMERATION("Blink.KeyboardLock.MethodCalled", method,
+  UMA_HISTOGRAM_ENUMERATION(kKeyboardLockMethodCalledHistogramName, method,
                             KeyboardLockMethods::kCount);
 }
 
