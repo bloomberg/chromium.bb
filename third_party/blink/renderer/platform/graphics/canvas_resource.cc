@@ -8,6 +8,7 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
@@ -204,7 +205,7 @@ CanvasResourceGpuMemoryBuffer::CanvasResourceGpuMemoryBuffer(
 
   gpu_memory_buffer_->SetColorSpace(color_params.GetStorageGfxColorSpace());
   gl->GenTextures(1, &texture_id_);
-  const GLenum target = GL_TEXTURE_RECTANGLE_ARB;
+  const GLenum target = TextureTarget();
   gl->BindTexture(target, texture_id_);
   gl->BindTexImage2DCHROMIUM(target, image_id_);
 }
@@ -214,7 +215,7 @@ CanvasResourceGpuMemoryBuffer::~CanvasResourceGpuMemoryBuffer() {
 }
 
 GLenum CanvasResourceGpuMemoryBuffer::TextureTarget() const {
-  return GL_TEXTURE_RECTANGLE_ARB;
+  return gpu::GetPlatformSpecificTextureTarget();
 }
 
 IntSize CanvasResourceGpuMemoryBuffer::Size() const {
