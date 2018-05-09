@@ -241,7 +241,8 @@ def main():
                              chrome_version_name='v%s' % version_name)
       code2 = RunJavaTests(chromedriver, chrome=chrome_path,
                            chrome_version=version,
-                           chrome_version_name='v%s' % version_name)
+                           chrome_version_name='v%s' % version_name,
+                           verbose=True)
       code = code or code1 or code2
       _KillChromes()
       shutil.rmtree(temp_dir)
