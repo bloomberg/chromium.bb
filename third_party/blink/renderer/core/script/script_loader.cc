@@ -964,10 +964,9 @@ bool ScriptLoader::IsScriptForEventSupported() const {
          DeprecatedEqualIgnoringCase(event_attribute, "onload()");
 }
 
-PendingScript* ScriptLoader::GetPendingScriptIfScriptIsAsync() {
-  if (pending_script_ && async_exec_type_ == ScriptRunner::kAsync)
-    return pending_script_;
-  return nullptr;
+PendingScript* ScriptLoader::GetPendingScriptIfScriptOfAsyncScript() {
+  DCHECK(IsAsync());
+  return pending_script_;
 }
 
 }  // namespace blink

@@ -202,8 +202,7 @@ bool ScriptRunner::ExecuteInOrderTask() {
   if (in_order_scripts_to_execute_soon_.IsEmpty())
     return false;
 
-  DCHECK(!in_order_scripts_to_execute_soon_.front()
-              ->GetPendingScriptIfScriptIsAsync())
+  DCHECK(!in_order_scripts_to_execute_soon_.front()->IsAsync())
       << "In-order scripts queue should not contain any async script.";
 
   in_order_scripts_to_execute_soon_.TakeFirst()->Execute();
@@ -213,18 +212,25 @@ bool ScriptRunner::ExecuteInOrderTask() {
 }
 
 bool ScriptRunner::ExecuteAsyncTask() {
-  for (auto iter = async_scripts_to_execute_soon_.begin();
-       iter != async_scripts_to_execute_soon_.end(); ++iter) {
-    PendingScript* pending_script = (*iter)->GetPendingScriptIfScriptIsAsync();
-    if (!pending_script || !pending_script->IsCurrentlyStreaming()) {
-      ScriptLoader* loader = *iter;
-      async_scripts_to_execute_soon_.erase(iter);
-      loader->Execute();
-      document_->DecrementLoadEventDelayCount();
-      return true;
-    }
+  // Find an async script loader which is not currently streaming.
+  auto it = std::find_if(async_scripts_to_execute_soon_.begin(),
+                         async_scripts_to_execute_soon_.end(),
+                         [](ScriptLoader* loader) {
+                           PendingScript* pending_script =
+                               loader->GetPendingScriptIfScriptOfAsyncScript();
+                           DCHECK(pending_script);
+                           return !pending_script->IsCurrentlyStreaming();
+                         });
+  if (it == async_scripts_to_execute_soon_.end()) {
+    return false;
   }
-  return false;
+
+  // Remove the async script loader from the ready-to-exec set and execute.
+  ScriptLoader* async_script_to_execute = *it;
+  async_scripts_to_execute_soon_.erase(it);
+  async_script_to_execute->Execute();
+  document_->DecrementLoadEventDelayCount();
+  return true;
 }
 
 void ScriptRunner::ExecuteTask() {
@@ -279,7 +285,7 @@ bool ScriptRunner::DoTryStream(ScriptLoader* script_loader) {
                    script_loader) != async_scripts_to_execute_soon_.end());
 
   PendingScript* pending_script =
-      script_loader->GetPendingScriptIfScriptIsAsync();
+      script_loader->GetPendingScriptIfScriptOfAsyncScript();
   if (!pending_script)
     return false;
 

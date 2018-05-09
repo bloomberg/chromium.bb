@@ -84,6 +84,7 @@ class CORE_EXPORT ScriptRunner final
   // Execute the first task in in_order_scripts_to_execute_soon_.
   // Returns true if task was run, and false otherwise.
   bool ExecuteInOrderTask();
+
   // Execute any task in async_scripts_to_execute_soon_.
   // Returns true if task was run, and false otherwise.
   bool ExecuteAsyncTask();

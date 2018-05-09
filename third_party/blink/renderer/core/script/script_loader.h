@@ -121,16 +121,24 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   void HandleSourceAttribute(const String& source_url);
   void HandleAsyncAttribute();
 
+  // IsReady only makes sense for scripts controlled by ScriptRunner.
   virtual bool IsReady() const {
     return pending_script_ && pending_script_->IsReady();
   }
 
   void SetFetchDocWrittenScriptDeferIdle();
 
-  // To support script streaming, the ScriptRunner may need to access the
-  // PendingScript. This breaks the intended layering, so please use with
-  // care. (Method is virtual to support testing.)
-  virtual PendingScript* GetPendingScriptIfScriptIsAsync();
+  // IsAsync only makes sense for scripts controlled by ScriptRunner.
+  bool IsAsync() const {
+    DCHECK_NE(async_exec_type_, ScriptRunner::kNone);
+    return async_exec_type_ == ScriptRunner::kAsync;
+  }
+
+  // GetPendingScriptIfScriptOfAsyncScript only makes sense for scripts
+  // controlled by ScriptRunner. To support script streaming, the ScriptRunner
+  // may need to access the PendingScript. This breaks the intended layering, so
+  // please use with care. (Method is virtual to support testing.)
+  virtual PendingScript* GetPendingScriptIfScriptOfAsyncScript();
 
  protected:
   ScriptLoader(ScriptElementBase*,
