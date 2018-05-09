@@ -261,6 +261,8 @@ def ParseCommandLine(argv):
                       'the VM into CWD after running the test.')
   parser.add_argument('--results-dest-dir', help='Destination directory to '
                       'copy results to.')
+  parser.add_argument('--host-cmd', action='store_true', default=False,
+                      help='Run a command on the host.')
 
   opts = parser.parse_args(argv)
 
@@ -286,13 +288,13 @@ def ParseCommandLine(argv):
   # Ensure command is provided. For eg, to copy out to the VM and run
   # out/unittest:
   # cros_run_vm_test --files out --cwd out --cmd -- ./unittest
-  if opts.cmd and len(opts.args) < 2:
+  if (opts.cmd or opts.host_cmd) and len(opts.args) < 2:
     parser.error('Must specify test command to run.')
   # Verify additional args.
   if opts.args:
-    if not opts.cmd:
-      parser.error('Additional args may only be specified with --cmd: %s'
-                   % opts.args)
+    if not opts.cmd and not opts.host_cmd:
+      parser.error('Additional args may be specified with either '
+                   '--cmd or --host-cmd: %s' % opts.args)
     if opts.args[0] != '--':
       parser.error('Additional args must start with \'--\': %s' % opts.args)
 
@@ -329,6 +331,8 @@ def main(argv):
   if opts.cmd:
     files = FileList(opts.files, opts.files_from)
     result = vm_test.RunVMCmd(opts.args[1:], files, opts.cwd)
+  elif opts.host_cmd:
+    result = cros_build_lib.RunCommand(opts.args[1:], log_output=True)
   else:
     result = vm_test.RunTests()
   vm_test.ProcessResult(result, opts.output)
