@@ -80,7 +80,7 @@ public class VariationsSeedLoader {
 
     // If false, then variations will be enabled if either the CMD flag or the AGSA experiment file
     // is present. If true, then variations will be enabled regardless of flag or experiment file.
-    private static boolean sVariationsAlwaysEnabled = false;
+    private static boolean sVariationsAlwaysEnabled = true;
 
     private static void recordLoadSeedResult(int result) {
         EnumeratedHistogramSample histogram = new EnumeratedHistogramSample(
