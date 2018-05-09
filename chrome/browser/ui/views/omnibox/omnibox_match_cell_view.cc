@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_match_cell_view.h"
 
+#include <algorithm>
+
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -150,7 +152,6 @@ class OmniboxImageView : public views::ImageView {
 // OmniboxMatchCellView:
 
 OmniboxMatchCellView::OmniboxMatchCellView(OmniboxResultView* result_view,
-                                           const gfx::FontList& font_list,
                                            int text_height)
     : is_old_style_answer_(false),
       is_rich_suggestion_(false),
@@ -158,9 +159,9 @@ OmniboxMatchCellView::OmniboxMatchCellView(OmniboxResultView* result_view,
       text_height_(text_height) {
   AddChildView(icon_view_ = new OmniboxImageView());
   AddChildView(image_view_ = new OmniboxImageView());
-  AddChildView(content_view_ = new OmniboxTextView(result_view, font_list));
-  AddChildView(description_view_ = new OmniboxTextView(result_view, font_list));
-  AddChildView(separator_view_ = new OmniboxTextView(result_view, font_list));
+  AddChildView(content_view_ = new OmniboxTextView(result_view));
+  AddChildView(description_view_ = new OmniboxTextView(result_view));
+  AddChildView(separator_view_ = new OmniboxTextView(result_view));
 
   const base::string16& separator =
       l10n_util::GetStringUTF16(IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
@@ -172,10 +173,8 @@ OmniboxMatchCellView::~OmniboxMatchCellView() = default;
 gfx::Size OmniboxMatchCellView::CalculatePreferredSize() const {
   int height = text_height_ +
                GetVerticalInsets(text_height_, is_old_style_answer_).height();
-  if (is_rich_suggestion_) {
-    height += text_height_;
-  } else if (is_old_style_answer_) {
-    height += GetOldStyleAnswerHeight();
+  if (is_rich_suggestion_ || is_old_style_answer_) {
+    height += GetDescriptionHeight();
   }
   return gfx::Size(0, height);
 }
@@ -184,7 +183,7 @@ bool OmniboxMatchCellView::CanProcessEventsWithinSubtree() const {
   return false;
 }
 
-int OmniboxMatchCellView::GetOldStyleAnswerHeight() const {
+int OmniboxMatchCellView::GetDescriptionHeight() const {
   int icon_width = icon_view_->width();
   int answer_icon_size = image_view_->visible()
                              ? image_view_->height() + kAnswerIconToTextPadding
@@ -276,7 +275,11 @@ void OmniboxMatchCellView::LayoutRichSuggestion() {
   x += kRichImageSize + HorizontalPadding();
   content_view_->SetBounds(x, y, width() - x, text_height_);
   y += text_height_;
-  description_view_->SetBounds(x, y, width() - x, text_height_);
+  int description_width = width() - x;
+  description_view_->SetBounds(
+      x, y, description_width,
+      description_view_->GetHeightForWidth(description_width) +
+          kVerticalPadding);
 }
 
 void OmniboxMatchCellView::LayoutSplit() {

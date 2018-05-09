@@ -126,13 +126,8 @@ const gfx::FontList& GetFontForType(int text_type) {
 
 }  // namespace
 
-OmniboxTextView::OmniboxTextView(OmniboxResultView* result_view,
-                                 const gfx::FontList& font_list)
-    : result_view_(result_view),
-      font_height_(std::max(
-          font_list.GetHeight(),
-          font_list.DeriveWithWeight(gfx::Font::Weight::BOLD).GetHeight())),
-      wrap_text_lines_(false) {}
+OmniboxTextView::OmniboxTextView(OmniboxResultView* result_view)
+    : result_view_(result_view), font_height_(0), wrap_text_lines_(false) {}
 
 OmniboxTextView::~OmniboxTextView() {}
 
@@ -155,7 +150,7 @@ int OmniboxTextView::GetHeightForWidth(int width) const {
     return 0;
   // If text wrapping is not called for we can simply return the font height.
   if (!wrap_text_lines_) {
-    return font_height_;
+    return GetLineHeight();
   }
   render_text_->SetDisplayRect(gfx::Rect(width, 0));
   gfx::Size string_size = render_text_->GetStringSize();
@@ -227,11 +222,13 @@ void OmniboxTextView::SetText(const base::string16& text,
                               const ACMatchClassifications& classifications) {
   render_text_.reset();
   render_text_ = CreateClassifiedRenderText(text, classifications);
+  UpdateLineHeight();
 }
 
 void OmniboxTextView::SetText(const base::string16& text) {
   render_text_.reset();
   render_text_ = CreateRenderText(text);
+  UpdateLineHeight();
 }
 
 void OmniboxTextView::SetText(const SuggestionAnswer::ImageLine& line) {
@@ -242,7 +239,7 @@ void OmniboxTextView::SetText(const SuggestionAnswer::ImageLine& line) {
   // sizes or use multiple RenderTexts.
   render_text_.reset();
   render_text_ = CreateText(line, GetFontForType(line.text_fields()[0].type()));
-  font_height_ = render_text_->font_list().GetHeight();
+  UpdateLineHeight();
 }
 
 std::unique_ptr<gfx::RenderText> OmniboxTextView::CreateText(
@@ -333,4 +330,11 @@ void OmniboxTextView::AppendTextHelper(gfx::RenderText* destination,
 
 int OmniboxTextView::GetLineHeight() const {
   return font_height_;
+}
+
+void OmniboxTextView::UpdateLineHeight() {
+  font_height_ = std::max(render_text_->font_list().GetHeight(),
+                          render_text_->font_list()
+                              .DeriveWithWeight(gfx::Font::Weight::BOLD)
+                              .GetHeight());
 }

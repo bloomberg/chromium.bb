@@ -7,10 +7,6 @@
 
 #include "ui/views/view.h"
 
-namespace gfx {
-class FontList;
-}
-
 namespace views {
 class ImageView;
 }
@@ -22,7 +18,6 @@ class OmniboxTextView;
 class OmniboxMatchCellView : public views::View {
  public:
   explicit OmniboxMatchCellView(OmniboxResultView* result_view,
-                                const gfx::FontList& font_list,
                                 int text_height);
   ~OmniboxMatchCellView() override;
 
@@ -45,7 +40,7 @@ class OmniboxMatchCellView : public views::View {
   const char* GetClassName() const override;
 
   // Returns the height of the the description section of answer suggestions.
-  int GetOldStyleAnswerHeight() const;
+  int GetDescriptionHeight() const;
 
   void LayoutOldStyleAnswer();
   void LayoutRichSuggestion();
