@@ -78,6 +78,7 @@ enum class Channel;
 }
 
 namespace views {
+class EventMonitor;
 class ExternalFocusTracker;
 class WebView;
 }
@@ -742,6 +743,10 @@ class BrowserView : public BrowserWindow,
   std::unique_ptr<BrowserWindowHistogramHelper> histogram_helper_;
 
   std::unique_ptr<FullscreenControlHost> fullscreen_control_host_;
+
+#if !defined(USE_AURA)
+  std::unique_ptr<views::EventMonitor> fullscreen_control_host_event_monitor_;
+#endif
 
   struct ResizeSession {
     // The time when user started resizing the window.
