@@ -939,14 +939,25 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   ASSERT_TRUE(extension) << message_;
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
-  EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
+  auto get_clients_google_request_count = [this, extension]() {
+    return GetCountFromBackgroundPage(extension, profile(),
+                                      "window.clientsGoogleWebRequestCount");
+  };
+  auto get_yahoo_request_count = [this, extension]() {
+    return GetCountFromBackgroundPage(extension, profile(),
+                                      "window.yahooWebRequestCount");
+  };
+
+  EXPECT_EQ(0, get_clients_google_request_count());
+  EXPECT_EQ(0, get_yahoo_request_count());
 
   GURL main_frame_url =
       embedded_test_server()->GetURL("www.example.com", "/simple.html");
   NavigateParams params(browser(), main_frame_url, ui::PAGE_TRANSITION_TYPED);
   ui_test_utils::NavigateToURL(&params);
 
-  EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
+  EXPECT_EQ(0, get_clients_google_request_count());
+  EXPECT_EQ(0, get_yahoo_request_count());
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -966,33 +977,42 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   // Requests always fail due to cross origin nature.
   EXPECT_FALSE(success);
 
-  EXPECT_EQ(1, GetWebRequestCountFromBackgroundPage(extension, profile()));
+  EXPECT_EQ(1, get_clients_google_request_count());
+  EXPECT_EQ(0, get_yahoo_request_count());
 
-  // Now perform a request to client1.google.com from the browser process. This
-  // should *not* be visible to the WebRequest API.
+  auto make_browser_request = [this](const GURL& url) {
+    auto request = std::make_unique<network::ResourceRequest>();
+    request->url = url;
 
-  auto request = std::make_unique<network::ResourceRequest>();
-  request->url =
-      embedded_test_server()->GetURL("clients1.google.com", "/simple.html");
+    auto* url_loader_factory =
+        content::BrowserContext::GetDefaultStoragePartition(profile())
+            ->GetURLLoaderFactoryForBrowserProcess()
+            .get();
+    content::SimpleURLLoaderTestHelper loader_helper;
+    auto loader = network::SimpleURLLoader::Create(
+        std::move(request), TRAFFIC_ANNOTATION_FOR_TESTS);
+    loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+        url_loader_factory, loader_helper.GetCallback());
 
-  auto* url_loader_factory =
-      content::BrowserContext::GetDefaultStoragePartition(profile())
-          ->GetURLLoaderFactoryForBrowserProcess()
-          .get();
-  content::SimpleURLLoaderTestHelper loader_helper;
-  auto loader = network::SimpleURLLoader::Create(std::move(request),
-                                                 TRAFFIC_ANNOTATION_FOR_TESTS);
-  loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      url_loader_factory, loader_helper.GetCallback());
+    // Wait for the response to complete.
+    loader_helper.WaitForCallback();
+    EXPECT_TRUE(loader_helper.response_body());
+    EXPECT_EQ(200, loader->ResponseInfo()->headers->response_code());
+  };
 
-  // Wait for the response to complete.
-  loader_helper.WaitForCallback();
-  EXPECT_TRUE(loader_helper.response_body());
-  EXPECT_EQ(200, loader->ResponseInfo()->headers->response_code());
+  // Now perform a request to "client1.google.com" from the browser process.
+  // This should *not* be visible to the WebRequest API. We should still have
+  // only seen the single render-initiated request from the first half of the
+  // test.
+  make_browser_request(
+      embedded_test_server()->GetURL("clients1.google.com", "/simple.html"));
+  EXPECT_EQ(1, get_clients_google_request_count());
 
-  // We should still have only seen the single render-initiated request from the
-  // first half of the test.
-  EXPECT_EQ(1, GetWebRequestCountFromBackgroundPage(extension, profile()));
+  // Sanity check that other requests made by the browser can still be
+  // intercepted by the extension.
+  make_browser_request(
+      embedded_test_server()->GetURL("yahoo.com", "/simple.html"));
+  EXPECT_EQ(1, get_yahoo_request_count());
 }
 
 // Verify that requests for PAC scripts are protected properly.
