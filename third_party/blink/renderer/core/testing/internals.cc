@@ -2484,15 +2484,6 @@ void Internals::mediaPlayerPlayingRemotelyChanged(
     media_element->DisconnectedFromRemoteDevice();
 }
 
-void Internals::setMediaElementNetworkState(HTMLMediaElement* media_element,
-                                            int state) {
-  DCHECK(media_element);
-  DCHECK(state >= WebMediaPlayer::NetworkState::kNetworkStateEmpty);
-  DCHECK(state <= WebMediaPlayer::NetworkState::kNetworkStateDecodeError);
-  media_element->SetNetworkState(
-      static_cast<WebMediaPlayer::NetworkState>(state));
-}
-
 void Internals::setPersistent(HTMLVideoElement* video_element,
                               bool persistent) {
   DCHECK(video_element);

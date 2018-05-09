@@ -5,7 +5,6 @@ PASS playWhenCanPlay
 PASS playAfterPlaybackStarted
 PASS playNotSupportedContent
 PASS playDecodeError
-PASS playNetworkError
 PASS playWithErrorAlreadySet
 PASS playSrcChangedAfterError
 PASS playRaceWithSrcChangeError

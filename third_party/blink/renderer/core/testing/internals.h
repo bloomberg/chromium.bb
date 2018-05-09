@@ -390,7 +390,6 @@ class Internals final : public ScriptWrappable {
   String effectivePreload(HTMLMediaElement*);
   void mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement*, bool);
   void mediaPlayerPlayingRemotelyChanged(HTMLMediaElement*, bool);
-  void setMediaElementNetworkState(HTMLMediaElement*, int state);
   void setPersistent(HTMLVideoElement*, bool);
   void forceStaleStateForMediaElement(HTMLMediaElement*, int target_state);
   bool isMediaElementSuspended(HTMLMediaElement*);

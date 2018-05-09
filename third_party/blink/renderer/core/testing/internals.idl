@@ -236,7 +236,6 @@ enum EffectiveConnectionType {
     DOMString effectivePreload(HTMLMediaElement mediaElement);
     void mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement mediaElement, boolean available);
     void mediaPlayerPlayingRemotelyChanged(HTMLMediaElement mediaElement, boolean remote);
-    void setMediaElementNetworkState(HTMLMediaElement element, long state);
     void setPersistent(HTMLVideoElement video, boolean persistent);
     void forceStaleStateForMediaElement(HTMLMediaElement mediaElement, long state);
     boolean isMediaElementSuspended(HTMLMediaElement mediaElement);
