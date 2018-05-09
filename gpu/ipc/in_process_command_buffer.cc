@@ -560,16 +560,17 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
   gpu_thread_weak_ptr_factory_.InvalidateWeakPtrs();
   // Clean up GL resources if possible.
   bool have_context = context_.get() && context_->MakeCurrent(surface_.get());
+
+  // Prepare to destroy the surface while the context is still current, because
+  // some surface destructors make GL calls.
+  if (surface_)
+    surface_->PrepareToDestroy(have_context);
+
   if (decoder_) {
     decoder_->Destroy(have_context);
     decoder_.reset();
   }
   command_buffer_.reset();
-
-  // Destroy the surface with the context current, some surface destructors make
-  // GL calls.
-  if (context_)
-    context_->MakeCurrent(surface_.get());
   surface_ = nullptr;
 
   context_ = nullptr;

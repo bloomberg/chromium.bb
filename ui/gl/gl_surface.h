@@ -58,6 +58,12 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // Destroys the surface.
   virtual void Destroy() = 0;
 
+  // Some implementations (macOS), in Destroy, will need to delete GL objects
+  // that exist in the current GL context. This method is called before the
+  // context's decoder (and potentially context itself) are destroyed, giving an
+  // opportunity for this cleanup.
+  virtual void PrepareToDestroy(bool have_context);
+
   // Color spaces that can be dynamically specified to the surface when resized.
   enum class ColorSpace {
     UNSPECIFIED,

@@ -37,6 +37,7 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
   // GLSurface implementation
   bool Initialize(gl::GLSurfaceFormat format) override;
   void Destroy() override;
+  void PrepareToDestroy(bool have_context) override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
               ColorSpace color_space,

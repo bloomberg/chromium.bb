@@ -36,6 +36,8 @@ bool GLSurface::Initialize(GLSurfaceFormat format) {
   return true;
 }
 
+void GLSurface::PrepareToDestroy(bool have_context) {}
+
 bool GLSurface::Resize(const gfx::Size& size,
                        float scale_factor,
                        ColorSpace color_space,

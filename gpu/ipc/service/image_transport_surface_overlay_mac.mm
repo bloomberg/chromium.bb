@@ -82,15 +82,26 @@ bool ImageTransportSurfaceOverlayMac::Initialize(gl::GLSurfaceFormat format) {
   return true;
 }
 
+void ImageTransportSurfaceOverlayMac::PrepareToDestroy(bool have_context) {
+  if (!previous_frame_fence_)
+    return;
+  if (!have_context) {
+    // If we have no context, leak the GL objects, since we have no way to
+    // delete them.
+    DLOG(ERROR) << "Leaking GL fences.";
+    previous_frame_fence_.release();
+    return;
+  }
+  // Ensure we are using the context with which the fence was created.
+  DCHECK_EQ(fence_context_obj_, CGLGetCurrentContext());
+  CheckGLErrors("Before destroy fence");
+  previous_frame_fence_.reset();
+  CheckGLErrors("After destroy fence");
+}
+
 void ImageTransportSurfaceOverlayMac::Destroy() {
   ca_layer_tree_coordinator_.reset();
-  if (previous_frame_fence_) {
-    // Ensure we are using the context with which the fence was created.
-    gl::ScopedCGLSetCurrentContext scoped_set_current(fence_context_obj_);
-    CheckGLErrors("Before destroy fence");
-    previous_frame_fence_.reset();
-    CheckGLErrors("After destroy fence");
-  }
+  DCHECK(!previous_frame_fence_);
 }
 
 bool ImageTransportSurfaceOverlayMac::IsOffscreen() {
