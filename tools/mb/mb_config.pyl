@@ -56,6 +56,7 @@
       'Deterministic Android (dbg)': 'android_debug_bot',
       'KitKat Phone Tester (rel)': 'android_release_bot_minimal_symbols',
       'Marshmallow Phone Tester (rel)': 'android_release_bot_minimal_symbols_arm64',
+      'android-kitkat-arm-rel': 'android_release_bot_minimal_symbols',
     },
 
     'chromium.android.fyi': {
@@ -532,6 +533,7 @@
     },
 
     'tryserver.chromium.android': {
+      'android-kitkat-arm-rel': 'android_release_trybot',
       'android_archive_rel_ng': 'android_release_trybot',
       'android_arm64_dbg_recipe': 'android_debug_trybot_compile_only_arm64',
       'android_blink_rel': 'android_release_trybot',
