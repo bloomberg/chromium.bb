@@ -74,12 +74,8 @@ using bookmarks::BookmarkNode;
 // collections.
 using IntegerPair = std::pair<NSInteger, NSInteger>;
 
-@interface BookmarkTableView ()<BookmarkModelBridgeObserver,
-                                SyncedSessionsObserver,
+@interface BookmarkTableView ()<SyncedSessionsObserver,
                                 UIGestureRecognizerDelegate> {
-  // Bridge to register for bookmark changes.
-  std::unique_ptr<bookmarks::BookmarkModelBridge> _modelBridge;
-
   // Observer to keep track of the signin and syncing status.
   std::unique_ptr<synced_sessions::SyncedSessionsObserverBridge>
       _syncedSessionsObserver;
@@ -130,14 +126,9 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
               ios::BookmarkModelFactory::GetForBrowserState(browserState));
 
     // Set up observers.
-    _modelBridge = std::make_unique<bookmarks::BookmarkModelBridge>(
-        self, self.sharedState.bookmarkModel);
     _syncedSessionsObserver =
         std::make_unique<synced_sessions::SyncedSessionsObserverBridge>(
             self, _browserState);
-
-    // Populate the model.
-    [self computeBookmarkTableViewData];
 
     // Set promo state before the tableview is created.
     [self promoStateChangedAnimated:NO];
@@ -328,88 +319,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   [self.sharedState.editingFolderCell stopEdit];
 }
 
-#pragma mark - BookmarkModelBridgeObserver Callbacks
-
-// BookmarkModelBridgeObserver Callbacks
-// Instances of this class automatically observe the bookmark model.
-// The bookmark model has loaded.
-- (void)bookmarkModelLoaded {
-  [self refreshContents];
-}
-
-// The node has changed, but not its children.
-- (void)bookmarkNodeChanged:(const BookmarkNode*)bookmarkNode {
-  // The root folder changed. Do nothing.
-  if (bookmarkNode == self.sharedState.tableViewDisplayedRootNode) {
-    return;
-  }
-
-  // A specific cell changed. Reload, if currently shown.
-  if ([self itemForNode:bookmarkNode] != nil) {
-    [self refreshContents];
-  }
-}
-
-// The node has not changed, but its children have.
-- (void)bookmarkNodeChildrenChanged:(const BookmarkNode*)bookmarkNode {
-  // The current root folder's children changed. Reload everything.
-  // (When adding new folder, table is already been updated. So no need to
-  // reload here.)
-  if (bookmarkNode == self.sharedState.tableViewDisplayedRootNode &&
-      !self.sharedState.addingNewFolder) {
-    [self refreshContents];
-    return;
-  }
-}
-
-// The node has moved to a new parent folder.
-- (void)bookmarkNode:(const BookmarkNode*)bookmarkNode
-     movedFromParent:(const BookmarkNode*)oldParent
-            toParent:(const BookmarkNode*)newParent {
-  if (oldParent == self.sharedState.tableViewDisplayedRootNode ||
-      newParent == self.sharedState.tableViewDisplayedRootNode) {
-    // A folder was added or removed from the current root folder.
-    [self refreshContents];
-  }
-}
-
-// |node| was deleted from |folder|.
-- (void)bookmarkNodeDeleted:(const BookmarkNode*)node
-                 fromFolder:(const BookmarkNode*)folder {
-  if (self.sharedState.tableViewDisplayedRootNode == node) {
-    self.sharedState.tableViewDisplayedRootNode = NULL;
-    [self refreshContents];
-  }
-}
-
-// All non-permanent nodes have been removed.
-- (void)bookmarkModelRemovedAllNodes {
-  // TODO(crbug.com/695749) Check if this case is applicable in the new UI.
-}
-
-- (void)bookmarkNodeFaviconChanged:
-    (const bookmarks::BookmarkNode*)bookmarkNode {
-  // Only urls have favicons.
-  DCHECK(bookmarkNode->is_url());
-
-  // Update image of corresponding cell.
-  BookmarkHomeNodeItem* nodeItem = [self itemForNode:bookmarkNode];
-  if (!nodeItem) {
-    return;
-  }
-
-  // Check that this cell is visible.
-  NSIndexPath* indexPath =
-      [self.sharedState.tableViewModel indexPathForItem:nodeItem];
-  NSArray* visiblePaths = [self.sharedState.tableView indexPathsForVisibleRows];
-  if (![visiblePaths containsObject:indexPath]) {
-    return;
-  }
-
-  // Get the favicon from cache directly. (no need to fetch from server)
-  [self loadFaviconAtIndexPath:indexPath continueToGoogleServer:NO];
-}
-
 // Row selection of the tableView will be cleared after reloadData.  This
 // function is used to restore the row selection.  It also updates editNodes in
 // case some selected nodes are removed.
@@ -450,19 +359,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   return self.sharedState.promoVisible;
 }
 
-- (void)refreshContents {
-  [self computeBookmarkTableViewData];
-  [self showEmptyOrLoadingSpinnerBackgroundIfNeeded];
-  [self cancelAllFaviconLoads];
-  [self.delegate bookmarkTableViewRefreshContextBar:self];
-  [self.sharedState.editingFolderCell stopEdit];
-  [self.sharedState.tableView reloadData];
-  if (self.sharedState.currentlyInEditMode &&
-      !self.sharedState.editNodes.empty()) {
-    [self restoreRowSelection];
-  }
-}
-
 // Returns the bookmark node associated with |indexPath|.
 - (const BookmarkNode*)nodeAtIndexPath:(NSIndexPath*)indexPath {
   TableViewItem* item =
@@ -476,87 +372,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
   NOTREACHED();
   return nullptr;
-}
-
-// Computes the bookmarks table view based on the current root node.
-- (void)computeBookmarkTableViewData {
-  // Regenerate the list of all bookmarks.
-  if ([self.sharedState.tableViewModel
-          hasSectionForSectionIdentifier:
-              BookmarkHomeSectionIdentifierBookmarks]) {
-    [self.sharedState.tableViewModel
-        removeSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
-  }
-  [self.sharedState.tableViewModel
-      addSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
-
-  if (!self.sharedState.bookmarkModel->loaded() ||
-      !self.sharedState.tableViewDisplayedRootNode) {
-    return;
-  }
-
-  if (self.sharedState.tableViewDisplayedRootNode ==
-      self.sharedState.bookmarkModel->root_node()) {
-    [self generateTableViewDataForRootNode];
-    return;
-  }
-  [self generateTableViewData];
-}
-
-// Generate the table view data when the current root node is a child node.
-- (void)generateTableViewData {
-  if (!self.sharedState.tableViewDisplayedRootNode) {
-    return;
-  }
-  // Add all bookmarks and folders of the current root node to the table.
-  int childCount = self.sharedState.tableViewDisplayedRootNode->child_count();
-  for (int i = 0; i < childCount; ++i) {
-    const BookmarkNode* node =
-        self.sharedState.tableViewDisplayedRootNode->GetChild(i);
-    BookmarkHomeNodeItem* nodeItem =
-        [[BookmarkHomeNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
-                                      bookmarkNode:node];
-    [self.sharedState.tableViewModel
-                        addItem:nodeItem
-        toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
-  }
-}
-
-// Generate the table view data when the current root node is the outermost
-// root.
-- (void)generateTableViewDataForRootNode {
-  // Add "Mobile Bookmarks" to the table.
-  const BookmarkNode* mobileNode =
-      self.sharedState.bookmarkModel->mobile_node();
-  BookmarkHomeNodeItem* mobileItem =
-      [[BookmarkHomeNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
-                                    bookmarkNode:mobileNode];
-  [self.sharedState.tableViewModel
-                      addItem:mobileItem
-      toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
-
-  // Add "Bookmarks Bar" and "Other Bookmarks" only when they are not empty.
-  const BookmarkNode* bookmarkBar =
-      self.sharedState.bookmarkModel->bookmark_bar_node();
-  if (!bookmarkBar->empty()) {
-    BookmarkHomeNodeItem* barItem =
-        [[BookmarkHomeNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
-                                      bookmarkNode:bookmarkBar];
-    [self.sharedState.tableViewModel
-                        addItem:barItem
-        toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
-  }
-
-  const BookmarkNode* otherBookmarks =
-      self.sharedState.bookmarkModel->other_node();
-  if (!otherBookmarks->empty()) {
-    BookmarkHomeNodeItem* otherItem =
-        [[BookmarkHomeNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
-                                      bookmarkNode:otherBookmarks];
-    [self.sharedState.tableViewModel
-                        addItem:otherItem
-        toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
-  }
 }
 
 // If the current root node is the outermost root, check if we need to show the
@@ -621,22 +436,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     self.emptyTableBackgroundView.frame = self.sharedState.tableView.bounds;
   }
   self.sharedState.tableView.backgroundView = self.emptyTableBackgroundView;
-}
-
-- (BookmarkHomeNodeItem*)itemForNode:
-    (const bookmarks::BookmarkNode*)bookmarkNode {
-  NSArray<TableViewItem*>* items = [self.sharedState.tableViewModel
-      itemsInSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
-  for (TableViewItem* item in items) {
-    if (item.type == BookmarkHomeItemTypeBookmark) {
-      BookmarkHomeNodeItem* nodeItem =
-          base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
-      if (nodeItem.bookmarkNode == bookmarkNode) {
-        return nodeItem;
-      }
-    }
-  }
-  return nil;
 }
 
 - (void)updateCellAtIndexPath:(NSIndexPath*)indexPath
@@ -794,7 +593,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   // be added after syncing.  So we need to refresh here.
   if (self.sharedState.tableViewDisplayedRootNode ==
       self.sharedState.bookmarkModel->root_node()) {
-    [self refreshContents];
+    [self.delegate bookmarkTableViewRefreshContents:self];
     return;
   }
   [self showEmptyOrLoadingSpinnerBackgroundIfNeeded];

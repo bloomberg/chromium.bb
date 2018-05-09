@@ -10,6 +10,15 @@
 // BookmarkHomeConsumer provides methods that allow mediators to update the UI.
 @protocol BookmarkHomeConsumer<ChromeTableViewConsumer>
 
+// Refreshes the UI.
+- (void)refreshContents;
+
+// Starts an asynchronous favicon load for the row at the given |indexPath|. Can
+// optionally fetch a favicon from a Google server if nothing suitable is found
+// locally; otherwise uses the fallback icon style.
+- (void)loadFaviconAtIndexPath:(NSIndexPath*)indexPath
+        continueToGoogleServer:(BOOL)continueToGoogleServer;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_HOME_CONSUMER_H_

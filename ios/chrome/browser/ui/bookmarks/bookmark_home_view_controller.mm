@@ -376,6 +376,25 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   }
 }
 
+- (void)refreshContents {
+  [self.mediator computeBookmarkTableViewData];
+  [self.bookmarksTableView showEmptyOrLoadingSpinnerBackgroundIfNeeded];
+  [self.bookmarksTableView cancelAllFaviconLoads];
+  [self bookmarkTableViewRefreshContextBar:self.bookmarksTableView];
+  [self.sharedState.editingFolderCell stopEdit];
+  [self.sharedState.tableView reloadData];
+  if (self.sharedState.currentlyInEditMode &&
+      !self.sharedState.editNodes.empty()) {
+    [self.bookmarksTableView restoreRowSelection];
+  }
+}
+
+- (void)loadFaviconAtIndexPath:(NSIndexPath*)indexPath
+        continueToGoogleServer:(BOOL)continueToGoogleServer {
+  [self.bookmarksTableView loadFaviconAtIndexPath:indexPath
+                           continueToGoogleServer:continueToGoogleServer];
+}
+
 #pragma mark - BookmarkPromoControllerDelegate
 
 - (void)promoStateChanged:(BOOL)promoEnabled {
@@ -592,6 +611,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   return (self.navigationController.topViewController == self);
 }
 
+- (void)bookmarkTableViewRefreshContents:(BookmarkTableView*)view {
+  [self refreshContents];
+}
+
 #pragma mark - BookmarkTableCellTitleEditDelegate
 
 - (void)textDidChangeTo:(NSString*)newName {
@@ -603,7 +626,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   }
   self.sharedState.editingFolderNode = nullptr;
   self.sharedState.editingFolderCell = nil;
-  [self.bookmarksTableView refreshContents];
+  [self refreshContents];
 }
 
 #pragma mark - BookmarkFolderViewControllerDelegate
