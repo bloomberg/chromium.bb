@@ -92,10 +92,12 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   static float InitialFloodOpacity() { return 1; }
   static Color InitialFloodColor() { return Color(0, 0, 0); }
   static Color InitialLightingColor() { return Color(255, 255, 255); }
-  static StyleSVGResource* InitialMaskerResource() { return nullptr; }
-  static StyleSVGResource* InitialMarkerStartResource() { return nullptr; }
-  static StyleSVGResource* InitialMarkerMidResource() { return nullptr; }
-  static StyleSVGResource* InitialMarkerEndResource() { return nullptr; }
+  static const AtomicString& InitialMaskerResource() { return g_null_atom; }
+  static const AtomicString& InitialMarkerStartResource() {
+    return g_null_atom;
+  }
+  static const AtomicString& InitialMarkerMidResource() { return g_null_atom; }
+  static const AtomicString& InitialMarkerEndResource() { return g_null_atom; }
   static EMaskType InitialMaskType() { return MT_LUMINANCE; }
   static EPaintOrder InitialPaintOrder() { return kPaintOrderNormal; }
   static StylePath* InitialD() { return nullptr; }
@@ -257,25 +259,25 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   }
 
   // Setters for non-inherited resources
-  void SetMaskerResource(scoped_refptr<StyleSVGResource> resource) {
-    if (!(resources->masker == resource))
-      resources.Access()->masker = std::move(resource);
+  void SetMaskerResource(const AtomicString& obj) {
+    if (!(resources->masker == obj))
+      resources.Access()->masker = obj;
   }
 
   // Setters for inherited resources
-  void SetMarkerStartResource(scoped_refptr<StyleSVGResource> resource) {
-    if (!(inherited_resources->marker_start == resource))
-      inherited_resources.Access()->marker_start = std::move(resource);
+  void SetMarkerStartResource(const AtomicString& obj) {
+    if (!(inherited_resources->marker_start == obj))
+      inherited_resources.Access()->marker_start = obj;
   }
 
-  void SetMarkerMidResource(scoped_refptr<StyleSVGResource> resource) {
-    if (!(inherited_resources->marker_mid == resource))
-      inherited_resources.Access()->marker_mid = std::move(resource);
+  void SetMarkerMidResource(const AtomicString& obj) {
+    if (!(inherited_resources->marker_mid == obj))
+      inherited_resources.Access()->marker_mid = obj;
   }
 
-  void SetMarkerEndResource(scoped_refptr<StyleSVGResource> resource) {
-    if (!(inherited_resources->marker_end == resource))
-      inherited_resources.Access()->marker_end = std::move(resource);
+  void SetMarkerEndResource(const AtomicString& obj) {
+    if (!(inherited_resources->marker_end == obj))
+      inherited_resources.Access()->marker_end = obj;
   }
 
   // Read accessors for all the properties
@@ -339,15 +341,15 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   const Length& R() const { return geometry->r; }
   const Length& Rx() const { return geometry->rx; }
   const Length& Ry() const { return geometry->ry; }
-  StyleSVGResource* MaskerResource() const { return resources->masker.get(); }
-  StyleSVGResource* MarkerStartResource() const {
-    return inherited_resources->marker_start.get();
+  const AtomicString& MaskerResource() const { return resources->masker; }
+  const AtomicString& MarkerStartResource() const {
+    return inherited_resources->marker_start;
   }
-  StyleSVGResource* MarkerMidResource() const {
-    return inherited_resources->marker_mid.get();
+  const AtomicString& MarkerMidResource() const {
+    return inherited_resources->marker_mid;
   }
-  StyleSVGResource* MarkerEndResource() const {
-    return inherited_resources->marker_end.get();
+  const AtomicString& MarkerEndResource() const {
+    return inherited_resources->marker_end;
   }
   EMaskType MaskType() const {
     return (EMaskType)svg_noninherited_flags.f.mask_type;
@@ -375,9 +377,10 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   }
 
   // convenience
-  bool HasMasker() const { return MaskerResource(); }
+  bool HasMasker() const { return !MaskerResource().IsEmpty(); }
   bool HasMarkers() const {
-    return MarkerStartResource() || MarkerMidResource() || MarkerEndResource();
+    return !MarkerStartResource().IsEmpty() || !MarkerMidResource().IsEmpty() ||
+           !MarkerEndResource().IsEmpty();
   }
   bool HasStroke() const { return !StrokePaint().IsNone(); }
   bool HasVisibleStroke() const {

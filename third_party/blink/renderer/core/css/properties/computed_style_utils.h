@@ -26,6 +26,11 @@ class ComputedStyleUtils {
   STATIC_ONLY(ComputedStyleUtils);
 
  public:
+  static inline AtomicString SerializeAsFragmentIdentifier(
+      const AtomicString& resource) {
+    return "#" + resource;
+  }
+
   inline static CSSValue* ZoomAdjustedPixelValueOrAuto(
       const Length& length,
       const ComputedStyle& style) {
@@ -145,7 +150,6 @@ class ComputedStyleUtils {
                                                  const ComputedStyle&);
   static CSSValue* PaintOrderToCSSValueList(const SVGComputedStyle&);
   static CSSValue* AdjustSVGPaintForCurrentColor(const SVGPaint&, const Color&);
-  static CSSValue* ValueForSVGResource(const StyleSVGResource*);
   static CSSValue* ValueForShadowData(const ShadowData&,
                                       const ComputedStyle&,
                                       bool use_spread);

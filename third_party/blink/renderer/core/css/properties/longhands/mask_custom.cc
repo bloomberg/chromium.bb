@@ -27,7 +27,12 @@ const CSSValue* Mask::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForSVGResource(svg_style.MaskerResource());
+  if (!svg_style.MaskerResource().IsEmpty()) {
+    return CSSURIValue::Create(
+        ComputedStyleUtils::SerializeAsFragmentIdentifier(
+            svg_style.MaskerResource()));
+  }
+  return CSSIdentifierValue::Create(CSSValueNone);
 }
 
 }  // namespace CSSLonghand

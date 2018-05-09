@@ -42,10 +42,10 @@ class LayoutSVGResourcePattern final : public LayoutSVGResourcePaintServer {
   const char* GetName() const override { return "LayoutSVGResourcePattern"; }
 
   void RemoveAllClientsFromCache(bool mark_for_invalidation = true) override;
-  bool RemoveClientFromCache(SVGResourceClient&) override;
+  bool RemoveClientFromCache(LayoutObject&) override;
 
   SVGPaintServer PreparePaintServer(
-      const SVGResourceClient&,
+      const LayoutObject&,
       const FloatRect& object_bounding_box) override;
 
   static const LayoutSVGResourceType kResourceType = kPatternResourceType;
@@ -56,7 +56,7 @@ class LayoutSVGResourcePattern final : public LayoutSVGResourcePaintServer {
       const FloatRect& object_bounding_box);
   sk_sp<PaintRecord> AsPaintRecord(const FloatSize&,
                                    const AffineTransform&) const;
-  PatternData* PatternForClient(const SVGResourceClient&,
+  PatternData* PatternForClient(const LayoutObject&,
                                 const FloatRect& object_bounding_box);
 
   const LayoutSVGResourceContainer* ResolveContentElement() const;
@@ -78,9 +78,7 @@ class LayoutSVGResourcePattern final : public LayoutSVGResourcePaintServer {
   // same => we should be able to cache a single display list per
   // LayoutSVGResourcePattern + one Pattern(shader) for each client -- this
   // would avoid re-recording when multiple clients share the same pattern.
-  using PatternMap = PersistentHeapHashMap<Member<const SVGResourceClient>,
-                                           std::unique_ptr<PatternData>>;
-  PatternMap pattern_map_;
+  HashMap<const LayoutObject*, std::unique_ptr<PatternData>> pattern_map_;
 };
 
 }  // namespace blink

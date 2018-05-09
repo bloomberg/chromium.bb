@@ -250,7 +250,7 @@
     },
     {
       "object": "LayoutSVGRect rect id='separate2'",
-      "reason": "SVG resource change"
+      "reason": "style change"
     }
   ]
 }
