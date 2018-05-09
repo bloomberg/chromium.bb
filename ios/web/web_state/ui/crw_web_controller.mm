@@ -1738,7 +1738,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   } else {
     NSString* errorHTML = nil;
     web::GetWebClient()->PrepareErrorPage(
-        error, context->IsPost(), _webStateImpl->GetBrowserState(), &errorHTML);
+        error, context->IsPost(),
+        _webStateImpl->GetBrowserState()->IsOffTheRecord(), &errorHTML);
 
     [_webView loadHTMLString:errorHTML baseURL:net::NSURLWithGURL(currentURL)];
   }

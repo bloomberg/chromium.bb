@@ -8,6 +8,7 @@
 #include "ios/web/public/features.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/reload_type.h"
+#include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
@@ -75,7 +76,7 @@ TEST_F(ErrorPageTest, ReloadErrorPage) {
   server_responds_with_content_ = false;
   test::LoadUrl(web_state(), server_.GetURL("/echo-query?foo"));
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 1"));
+      web_state(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 0"));
 
   // Reload the page, which should load without errors.
   server_responds_with_content_ = true;
@@ -96,7 +97,7 @@ TEST_F(ErrorPageTest, ReloadPageAfterServerIsDown) {
   web_state()->GetNavigationManager()->Reload(ReloadType::NORMAL,
                                               /*check_for_repost=*/false);
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 1"));
+      web_state(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 0"));
 }
 
 // Sucessfully loads the page, goes back, stops the server, goes forward and
@@ -127,7 +128,7 @@ TEST_F(ErrorPageTest, GoForwardAfterServerIsDownAndReload) {
   web_state()->GetNavigationManager()->Reload(ReloadType::NORMAL,
                                               /*check_for_repost=*/false);
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 1"));
+      web_state(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 0"));
 #endif  // TARGET_IPHONE_SIMULATOR
 }
 
@@ -141,7 +142,7 @@ TEST_F(ErrorPageTest, GoBackFromErrorPage) {
   // Second page fails to load.
   test::LoadUrl(web_state(), server_.GetURL("/close-socket"));
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 1"));
+      web_state(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 0"));
 
   // Going back should sucessfully load the first page.
   web_state()->GetNavigationManager()->GoBack();
@@ -154,7 +155,7 @@ TEST_F(ErrorPageTest, RedirectToFailingURL) {
   server_responds_with_content_ = false;
   test::LoadUrl(web_state(), server_.GetURL("/server-redirect?echo-query"));
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 1"));
+      web_state(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 0"));
 }
 
 // Loads the page with iframe, and that iframe fails to load. There should be no
@@ -165,6 +166,23 @@ TEST_F(ErrorPageTest, ErrorPageInIFrame) {
     return test::IsWebViewContainingCssSelector(web_state(),
                                                 "iframe[src*='echo-query']");
   }));
+}
+
+// Loads the URL with off the record browser state;
+TEST_F(ErrorPageTest, OtrError) {
+  TestBrowserState browser_state;
+  browser_state.SetOffTheRecord(true);
+  WebState::CreateParams params(&browser_state);
+  auto web_state = WebState::Create(params);
+
+  // No response leads to -1005 error code.
+  server_responds_with_content_ = false;
+  test::LoadUrl(web_state.get(), server_.GetURL("/echo-query?foo"));
+  // LoadIfNecessary is needed because the view is not created (but needed) when
+  // loading the page. TODO(crbug.com/705819): Remove this call.
+  web_state->GetNavigationManager()->LoadIfNecessary();
+  ASSERT_TRUE(test::WaitForWebViewContainingText(
+      web_state.get(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 1"));
 }
 
 }  // namespace web
