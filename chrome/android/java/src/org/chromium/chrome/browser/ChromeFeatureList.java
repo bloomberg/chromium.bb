@@ -199,6 +199,7 @@ public abstract class ChromeFeatureList {
     public static final String DATA_REDUCTION_MAIN_MENU = "DataReductionProxyMainMenu";
     public static final String DONT_PREFETCH_LIBRARIES = "DontPrefetchLibraries";
     public static final String DOWNLOAD_HOME_SHOW_STORAGE_INFO = "DownloadHomeShowStorageInfo";
+    public static final String DOWNLOAD_PROGRESS_INFOBAR = "DownloadProgressInfoBar";
     public static final String DOWNLOADS_FOREGROUND = "DownloadsForeground";
     public static final String DOWNLOADS_LOCATION_CHANGE = "DownloadsLocationChange";
     public static final String EXPERIMENTAL_APP_BANNERS = "ExperimentalAppBanners";

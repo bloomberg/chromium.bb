@@ -248,6 +248,13 @@ public class FeatureUtilities {
     }
 
     /**
+     * @return Whether or not the download progress infobar is enabled.
+     */
+    public static boolean isDownloadProgressInfoBarEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_PROGRESS_INFOBAR);
+    }
+
+    /**
      * Resets whether Chrome Home is enabled for tests. After this is called, the next call to
      * #isChromeHomeEnabled() will retrieve the value from shared preferences.
      */

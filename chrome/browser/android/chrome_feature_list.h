@@ -45,6 +45,7 @@ extern const base::Feature kCustomContextMenu;
 extern const base::Feature kCustomFeedbackUi;
 extern const base::Feature kDontPrefetchLibraries;
 extern const base::Feature kDownloadAutoResumptionThrottling;
+extern const base::Feature kDownloadProgressInfoBar;
 extern const base::Feature kDownloadHomeShowStorageInfo;
 extern const base::Feature kFullscreenActivity;
 extern const base::Feature kHomePageButtonForceEnabled;
