@@ -22,6 +22,7 @@
 
 #include <blpwtk2_contentrendererclientimpl.h>
 #include <blpwtk2_inprocessresourceloaderbridge.h>
+#include <blpwtk2_rendermessagedelegate.h>
 #include <blpwtk2_renderviewobserverimpl.h>
 #include <blpwtk2_resourceloader.h>
 #include <blpwtk2_statics.h>
@@ -148,6 +149,17 @@ bool ContentRendererClientImpl::OverrideCreatePlugin(
     return false;
 }
 
+bool ContentRendererClientImpl::Dispatch(IPC::Message *msg)
+{
+    if (Statics::rendererUIEnabled &&
+        RenderMessageDelegate::GetInstance()->OnMessageReceived(*msg)) {
+        delete msg;
+        return true;
+    }
+
+    return false;
+}
+
 void ContentRendererClientImpl::OnBindInterface(
         const service_manager::BindSourceInfo& source,
         const std::string& name,
@@ -216,3 +228,4 @@ void ForwardingService::SetContext(service_manager::ServiceContext* context) {
 
 // vim: ts=4 et
 
+}  // close namespace blpwtk2

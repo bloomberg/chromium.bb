@@ -169,6 +169,8 @@ shared_library("blpwtk2") {
     "private/blpwtk2_profileimpl.h",
     "private/blpwtk2_rendererutil.cc",
     "private/blpwtk2_rendererutil.h",
+    "private/blpwtk2_rendermessagedelegate.cc",
+    "private/blpwtk2_rendermessagedelegate.h",
     "private/blpwtk2_renderviewobserverimpl.cc",
     "private/blpwtk2_renderviewobserverimpl.h",
     "private/blpwtk2_renderwebview.cc",
