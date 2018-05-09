@@ -44,6 +44,10 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
  public:
   static AwMetricsServiceClient* GetInstance();
 
+  // If the client ID was pre-loaded on the Java side, store it in "client_id"
+  // and return true; otherwise, return false.
+  static bool GetPreloadedClientId(std::string* client_id);
+
   // Retrieve the client ID or generate one if none exists.
   static void LoadOrCreateClientId();
 

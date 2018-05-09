@@ -4,10 +4,16 @@
 
 #include "android_webview/browser/aw_metrics_service_client.h"
 
+#include <jni.h>
+#include <stdint.h>
+#include <vector>
+
 #include "android_webview/browser/aw_metrics_log_uploader.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/jni/AwMetricsServiceClient_jni.h"
 #include "base/android/build_info.h"
+#include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -41,8 +47,10 @@ namespace {
 
 const int kUploadIntervalMinutes = 30;
 
-// A GUID in text form is composed of 32 hex digits and 4 hyphens.
-const size_t GUID_SIZE = 32 + 4;
+// A GUID in text form is composed of 32 hex digits and 4 hyphens. These values
+// must match those in AwMetricsServiceClient.java.
+const size_t kGuidSize = 32 + 4;
+const char* const kGuidFileName = "metrics_guid";
 
 // Client ID of the app, read and cached synchronously at startup
 base::LazyInstance<std::string>::Leaky g_client_id = LAZY_INSTANCE_INITIALIZER;
@@ -79,9 +87,22 @@ AwMetricsServiceClient* AwMetricsServiceClient::GetInstance() {
   return g_lazy_instance_.Pointer();
 }
 
+bool AwMetricsServiceClient::GetPreloadedClientId(std::string* client_id) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jbyteArray> client_id_java =
+      Java_AwMetricsServiceClient_getPreloadedClientId(env);
+  if (client_id_java.is_null())
+    return false;
+  std::vector<uint8_t> client_id_vector;
+  base::android::JavaByteArrayToByteVector(env, client_id_java.obj(),
+                                           &client_id_vector);
+  *client_id = std::string(client_id_vector.begin(), client_id_vector.end());
+  return true;
+}
+
 void AwMetricsServiceClient::LoadOrCreateClientId() {
   // This function should only be called once at start up.
-  DCHECK_NE(g_client_id.Get().length(), GUID_SIZE);
+  DCHECK_NE(g_client_id.Get().length(), kGuidSize);
 
   // UMA uses randomly-generated GUIDs (globally unique identifiers) to
   // anonymously identify logs. Every WebView-using app on every device
@@ -96,11 +117,12 @@ void AwMetricsServiceClient::LoadOrCreateClientId() {
   }
 
   const base::FilePath guid_file_path =
-      user_data_dir.Append(FILE_PATH_LITERAL("metrics_guid"));
+      user_data_dir.Append(FILE_PATH_LITERAL(kGuidFileName));
 
-  // Try to read an existing GUID.
-  if (base::ReadFileToStringWithMaxSize(guid_file_path, &g_client_id.Get(),
-                                        GUID_SIZE)) {
+  // Try to get an existing GUID.
+  if (GetPreloadedClientId(&g_client_id.Get()) ||
+      base::ReadFileToStringWithMaxSize(guid_file_path, &g_client_id.Get(),
+                                        kGuidSize)) {
     if (base::IsValidGUID(g_client_id.Get()))
       return;
     LOG(ERROR) << "Overwriting invalid GUID";
@@ -119,7 +141,7 @@ void AwMetricsServiceClient::LoadOrCreateClientId() {
 std::string AwMetricsServiceClient::GetClientId() {
   // This function should only be called if LoadOrCreateClientId() was
   // previously called.
-  DCHECK_EQ(g_client_id.Get().length(), GUID_SIZE);
+  DCHECK_EQ(g_client_id.Get().length(), kGuidSize);
 
   return g_client_id.Get();
 }
@@ -134,24 +156,17 @@ void AwMetricsServiceClient::Initialize(
   pref_service_ = pref_service;
   request_context_ = request_context;
 
-  // If variations are enabled for WebView the GUID will already have been read
-  // at startup
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebViewVariations)) {
-    InitializeWithClientId();
-  } else {
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE, {base::MayBlock()},
-        base::BindOnce(&AwMetricsServiceClient::LoadOrCreateClientId),
-        base::BindOnce(&AwMetricsServiceClient::InitializeWithClientId,
-                       base::Unretained(this)));
-  }
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&AwMetricsServiceClient::LoadOrCreateClientId),
+      base::BindOnce(&AwMetricsServiceClient::InitializeWithClientId,
+                     base::Unretained(this)));
 }
 
 void AwMetricsServiceClient::InitializeWithClientId() {
   // The guid must have already been initialized at this point, either
   // synchronously or asynchronously depending on the kEnableWebViewFinch flag
-  DCHECK_EQ(g_client_id.Get().length(), GUID_SIZE);
+  DCHECK_EQ(g_client_id.Get().length(), kGuidSize);
   pref_service_->SetString(metrics::prefs::kMetricsClientID, g_client_id.Get());
 
   in_sample_ = IsInSample(g_client_id.Get());

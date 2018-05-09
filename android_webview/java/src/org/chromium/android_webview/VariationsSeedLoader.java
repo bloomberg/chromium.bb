@@ -44,12 +44,14 @@ import java.util.concurrent.TimeoutException;
  * by the Runnable.
  *
  * The Runnable and FutureTask together perform these steps:
- * 1. Load the new seed file, if any.
- * 2. If no new seed file, load the old seed file, if any.
- * 3. Make the loaded seed available via get() (or null if there was no seed).
- * 4. If there was a new seed file, replace the old with the new (but only after making the loaded
+ * 1. Pre-load the metrics client ID. This is needed to seed the EntropyProvider. If there is no
+ *    client ID, variations can't be used on this run.
+ * 2. Load the new seed file, if any.
+ * 3. If no new seed file, load the old seed file, if any.
+ * 4. Make the loaded seed available via get() (or null if there was no seed).
+ * 5. If there was a new seed file, replace the old with the new (but only after making the loaded
  *    seed available, as the replace need not block startup).
- * 5. If there was no seed, or the loaded seed was expired, request a new seed (but don't request
+ * 6. If there was no seed, or the loaded seed was expired, request a new seed (but don't request
  *    more often than MAX_REQUEST_PERIOD_MILLIS).
  *
  * VariationsSeedLoader should be used during WebView startup like so:
@@ -124,6 +126,8 @@ public class VariationsSeedLoader {
         private FutureTask<SeedInfo> mLoadTask = new FutureTask<>(() -> {
             mEnabledByExperiment = checkEnabledByExperiment();
             if (!(mEnabledByCmd || mEnabledByExperiment)) return null;
+
+            AwMetricsServiceClient.preloadClientId();
 
             File newSeedFile = VariationsUtils.getNewSeedFile();
             File oldSeedFile = VariationsUtils.getSeedFile();
