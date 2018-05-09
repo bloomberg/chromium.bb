@@ -47,9 +47,6 @@ class CORE_EXPORT NGExclusionSpace {
   // Returns the block start offset of the last float added.
   LayoutUnit LastFloatBlockStart() const { return last_float_block_start_; }
 
-  bool HasLeftFloat() const { return has_left_float_; }
-  bool HasRightFloat() const { return has_right_float_; }
-
   bool operator==(const NGExclusionSpace& other) const;
   bool operator!=(const NGExclusionSpace& other) const {
     return !(*this == other);
@@ -147,9 +144,6 @@ class CORE_EXPORT NGExclusionSpace {
   // type of float. This is used for implementing float clearance.
   LayoutUnit left_float_clear_offset_;
   LayoutUnit right_float_clear_offset_;
-
-  unsigned has_left_float_ : 1;
-  unsigned has_right_float_ : 1;
 };
 
 }  // namespace blink

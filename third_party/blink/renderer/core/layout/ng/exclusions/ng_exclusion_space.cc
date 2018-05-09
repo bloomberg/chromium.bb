@@ -159,9 +159,7 @@ NGLayoutOpportunity CreateLayoutOpportunity(
 NGExclusionSpace::NGExclusionSpace()
     : last_float_block_start_(LayoutUnit::Min()),
       left_float_clear_offset_(LayoutUnit::Min()),
-      right_float_clear_offset_(LayoutUnit::Min()),
-      has_left_float_(false),
-      has_right_float_(false) {
+      right_float_clear_offset_(LayoutUnit::Min()) {
   // The exclusion space must always have at least one shelf, at -Infinity.
   shelves_.push_back(NGShelf(/* block_offset */ LayoutUnit::Min()));
 }
@@ -174,11 +172,9 @@ void NGExclusionSpace::Add(scoped_refptr<const NGExclusion> exclusion) {
 
   // Update the members used for clearance calculations.
   if (exclusion->type == EFloat::kLeft) {
-    has_left_float_ = true;
     left_float_clear_offset_ =
         std::max(left_float_clear_offset_, exclusion->rect.BlockEndOffset());
   } else if (exclusion->type == EFloat::kRight) {
-    has_right_float_ = true;
     right_float_clear_offset_ =
         std::max(right_float_clear_offset_, exclusion->rect.BlockEndOffset());
   }

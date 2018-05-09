@@ -178,6 +178,8 @@ crbug.com/711709 external/wpt/css/CSS2/floats-clear/floats-129.xht [ Skip ]
 crbug.com/711709 external/wpt/css/CSS2/floats-clear/floats-130.xht [ Skip ]
 crbug.com/711709 external/wpt/css/CSS2/floats-clear/floats-131.xht [ Skip ]
 crbug.com/711709 external/wpt/css/CSS2/floats-clear/floats-137.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/no-clearance-adjoining-opposite-float.html [ Failure ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/no-clearance-due-to-large-margin-after-left-right.html [ Failure ]
 
 crbug.com/711805 external/wpt/css/CSS2/positioning/abspos-inline-001.xht [ Skip ]
 crbug.com/711805 external/wpt/css/CSS2/positioning/abspos-inline-002.xht [ Skip ]
