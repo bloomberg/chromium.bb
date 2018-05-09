@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_PERFORMANCE_AGENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_PERFORMANCE_AGENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
@@ -59,16 +61,20 @@ class CORE_EXPORT InspectorPerformanceAgent final
   void DidProcessTask(double start_time, double end_time) override;
 
  private:
-  InspectorPerformanceAgent(InspectedFrames*);
+  explicit InspectorPerformanceAgent(InspectedFrames*);
+  void ScriptStarts();
+  void ScriptEnds();
 
   Member<InspectedFrames> inspected_frames_;
   bool enabled_ = false;
   TimeDelta layout_duration_;
+  TimeTicks layout_start_ticks_;
   TimeDelta recalc_style_duration_;
+  TimeTicks recalc_style_start_ticks_;
   TimeDelta script_duration_;
-  TimeTicks script_start_time_;
+  TimeTicks script_start_ticks_;
   TimeDelta task_duration_;
-  TimeTicks task_start_time_;
+  TimeTicks task_start_ticks_;
   unsigned long long layout_count_ = 0;
   unsigned long long recalc_style_count_ = 0;
   int script_call_depth_ = 0;
