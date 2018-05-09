@@ -1925,54 +1925,6 @@ TEST_F(PersonalDataManagerTest,
   }
 }
 
-// Tests that suggestions based on invalid data are handled correctly.
-TEST_F(PersonalDataManagerTest, GetProfileSuggestions_InvalidData) {
-  // Set up 2 different profiles.
-  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile1, "Marion1", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "9876543210");
-  profile1.SetValidityState(PHONE_HOME_WHOLE_NUMBER, AutofillProfile::INVALID);
-  personal_data_->AddProfile(profile1);
-
-  AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile2, "Marion2", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "456 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "1234567890");
-  profile1.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(20));
-  personal_data_->AddProfile(profile2);
-
-  ResetPersonalDataManager(USER_MODE_NORMAL);
-  {
-    base::HistogramTester histogram_tester;
-    base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitAndDisableFeature(kAutofillSuggestInvalidProfileData);
-    std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-        AutofillType(PHONE_HOME_WHOLE_NUMBER), base::string16(), false,
-        std::vector<ServerFieldType>());
-    ASSERT_EQ(1U, suggestions.size());
-    EXPECT_EQ(base::ASCIIToUTF16("1234567890"), suggestions[0].value);
-    histogram_tester.ExpectUniqueSample(
-        "Autofill.InvalidProfileData.UsedForSuggestion", false, 1);
-  }
-
-  {
-    base::HistogramTester histogram_tester;
-    base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitAndEnableFeature(kAutofillSuggestInvalidProfileData);
-    std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-        AutofillType(PHONE_HOME_WHOLE_NUMBER), base::string16(), false,
-        std::vector<ServerFieldType>());
-    ASSERT_EQ(2U, suggestions.size());
-    EXPECT_EQ(base::ASCIIToUTF16("1234567890"), suggestions[0].value);
-    EXPECT_EQ(base::ASCIIToUTF16("9876543210"), suggestions[1].value);
-    histogram_tester.ExpectUniqueSample(
-        "Autofill.InvalidProfileData.UsedForSuggestion", true, 1);
-  }
-}
-
 TEST_F(PersonalDataManagerTest, IsKnownCard_MatchesMaskedServerCard) {
   // Add a masked server card.
   std::vector<CreditCard> server_cards;

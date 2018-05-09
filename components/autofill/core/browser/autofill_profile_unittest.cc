@@ -1127,7 +1127,7 @@ TEST(AutofillProfileTest, ValidityStates_UnsupportedTypes) {
             profile.GetValidityState(ADDRESS_HOME_LINE1));
   EXPECT_EQ(AutofillProfile::UNSUPPORTED,
             profile.GetValidityState(ADDRESS_HOME_LINE2));
-  EXPECT_EQ(AutofillProfile::UNVALIDATED,
+  EXPECT_EQ(AutofillProfile::UNSUPPORTED,
             profile.GetValidityState(PHONE_HOME_CITY_AND_NUMBER));
 }
 

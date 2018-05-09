@@ -203,7 +203,7 @@ class AutofillProfile : public AutofillDataModel,
   void SetValidityState(ServerFieldType type, ValidityState validity);
 
   // Returns whether autofill does the validation of the specified |type|.
-  static bool IsValidationSupportedForType(ServerFieldType type);
+  bool IsValidationSupportedForType(ServerFieldType type) const;
 
   // Returns the bitfield value representing the validity state of this profile.
   int GetValidityBitfieldValue() const;

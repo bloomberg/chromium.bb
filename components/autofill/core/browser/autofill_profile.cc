@@ -25,7 +25,6 @@
 #include "components/autofill/core/browser/address.h"
 #include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill_country.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_profile_comparator.h"
@@ -193,10 +192,10 @@ void GetFieldsForDistinguishingProfiles(
 }
 
 // Constants for the validity bitfield.
-const size_t kValidityBitsPerType = 2;
+static const size_t kValidityBitsPerType = 2;
 // The order is important to ensure a consistent bitfield value. New values
 // should be added at the end NOT at the start or middle.
-const ServerFieldType kSupportedTypesForValidation[] = {
+static const ServerFieldType kSupportedTypesForValidation[] = {
     ADDRESS_HOME_COUNTRY,
     ADDRESS_HOME_STATE,
     ADDRESS_HOME_ZIP,
@@ -205,21 +204,12 @@ const ServerFieldType kSupportedTypesForValidation[] = {
     EMAIL_ADDRESS,
     PHONE_HOME_WHOLE_NUMBER};
 
-const size_t kNumSupportedTypesForValidation =
+static const size_t kNumSupportedTypesForValidation =
     sizeof(kSupportedTypesForValidation) /
     sizeof(kSupportedTypesForValidation[0]);
 
 static_assert(kNumSupportedTypesForValidation * kValidityBitsPerType <= 64,
               "Not enough bits to encode profile validity information!");
-
-// Some types are specializations of other types. Normalize these back to the
-// main stored type for used to mark field validity .
-ServerFieldType NormalizeTypeForValidityCheck(ServerFieldType type) {
-  auto field_type_group = AutofillType(type).group();
-  if (field_type_group == PHONE_HOME || field_type_group == PHONE_BILLING)
-    return PHONE_HOME_WHOLE_NUMBER;
-  return type;
-}
 
 }  // namespace
 
@@ -288,22 +278,9 @@ void AutofillProfile::GetMatchingTypes(
     const base::string16& text,
     const std::string& app_locale,
     ServerFieldTypeSet* matching_types) const {
-  ServerFieldTypeSet matching_types_in_this_profile;
   FormGroupList info = FormGroups();
   for (const auto* form_group : info) {
-    form_group->GetMatchingTypes(text, app_locale,
-                                 &matching_types_in_this_profile);
-  }
-  for (auto type : matching_types_in_this_profile) {
-    if (GetValidityState(type) == INVALID) {
-      bool vote_using_invalid_data =
-          base::FeatureList::IsEnabled(kAutofillVoteUsingInvalidProfileData);
-      UMA_HISTOGRAM_BOOLEAN("Autofill.InvalidProfileData.UsedForMetrics",
-                            vote_using_invalid_data);
-      if (!vote_using_invalid_data)
-        continue;
-    }
-    matching_types->insert(type);
+    form_group->GetMatchingTypes(text, app_locale, matching_types);
   }
 }
 
@@ -730,7 +707,6 @@ void AutofillProfile::RecordAndLogUse() {
 
 AutofillProfile::ValidityState AutofillProfile::GetValidityState(
     ServerFieldType type) const {
-  type = NormalizeTypeForValidityCheck(type);
   // Return UNSUPPORTED for types that autofill does not validate.
   if (!IsValidationSupportedForType(type))
     return UNSUPPORTED;
@@ -748,8 +724,7 @@ void AutofillProfile::SetValidityState(ServerFieldType type,
   validity_states_[type] = validity;
 }
 
-// static
-bool AutofillProfile::IsValidationSupportedForType(ServerFieldType type) {
+bool AutofillProfile::IsValidationSupportedForType(ServerFieldType type) const {
   for (auto supported_type : kSupportedTypesForValidation) {
     if (type == supported_type)
       return true;
