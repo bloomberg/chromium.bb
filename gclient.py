@@ -719,17 +719,10 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
                   self, name, package, cipd_root,
                   self.custom_vars, should_process, use_relative_paths,
                   condition, condition_value))
-      elif dep_type == 'git':
-        url = raw_url.format(**self.get_vars())
-        deps_to_add.append(
-            GitDependency(
-                self, name, raw_url, url, None, None, self.custom_vars, None,
-                deps_file, should_process, use_relative_paths, condition,
-                condition_value))
       else:
         url = raw_url.format(**self.get_vars()) if raw_url else None
         deps_to_add.append(
-            Dependency(
+            GitDependency(
                 self, name, raw_url, url, None, None, self.custom_vars, None,
                 deps_file, should_process, use_relative_paths, condition,
                 condition_value))
@@ -1097,38 +1090,11 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           print('Skipped missing %s' % cwd, file=sys.stderr)
 
   def GetScmName(self, url):
-    """Get the name of the SCM for the given URL.
-
-    While we currently support both git and cipd as SCM implementations,
-    this currently cannot return 'cipd', regardless of the URL, as CIPD
-    has no canonical URL format. If you want to use CIPD as an SCM, you
-    must currently do so by explicitly using a CipdDependency.
-    """
-    if not url:
-      return None
-    url, _ = gclient_utils.SplitUrlRevision(url)
-    if url.endswith('.git'):
-      return 'git'
-    protocol = url.split('://')[0]
-    if protocol in (
-        'file', 'git', 'git+http', 'git+https', 'http', 'https', 'ssh', 'sso'):
-      return 'git'
-    return None
+    raise NotImplementedError()
 
   def CreateSCM(self, url, root_dir=None, relpath=None, out_fh=None,
                 out_cb=None):
-    SCM_MAP = {
-      'cipd': gclient_scm.CipdWrapper,
-      'git': gclient_scm.GitWrapper,
-    }
-
-    scm_name = self.GetScmName(url)
-    if not scm_name in SCM_MAP:
-      raise gclient_utils.Error('No SCM found for url %s' % url)
-    scm_class = SCM_MAP[scm_name]
-    if not scm_class.BinaryExists():
-      raise gclient_utils.Error('%s command not found' % scm_name)
-    return scm_class(url, root_dir, relpath, out_fh, out_cb, self.print_outbuf)
+    raise NotImplementedError()
 
   def HasGNArgsFile(self):
     return self._gn_args_file is not None
@@ -1399,7 +1365,24 @@ def _detect_host_os():
   return _PLATFORM_MAPPING[sys.platform]
 
 
-class GClient(Dependency):
+class GitDependency(Dependency):
+  """A Dependency object that represents a single git checkout."""
+
+  #override
+  def GetScmName(self, url):
+    """Always 'git'."""
+    del url
+    return 'git'
+
+  #override
+  def CreateSCM(self, url, root_dir=None, relpath=None, out_fh=None,
+                out_cb=None):
+    """Create a Wrapper instance suitable for handling this git dependency."""
+    return gclient_scm.GitWrapper(url, root_dir, relpath, out_fh, out_cb,
+                                  print_outbuf=self.print_outbuf)
+
+
+class GClient(GitDependency):
   """Object that represent a gclient checkout. A tree of Dependency(), one per
   solution or DEPS entry."""
 
@@ -1441,8 +1424,8 @@ solutions = %(solution_list)s
     # Do not change previous behavior. Only solution level and immediate DEPS
     # are processed.
     self._recursion_limit = 2
-    Dependency.__init__(self, None, None, None, None, True, None, None, None,
-                        'unused', True, None, None, True)
+    GitDependency.__init__(self, None, None, None, None, True, None, None, None,
+                           'unused', True, None, None, True)
     self._options = options
     if options.deps_os:
       enforced_os = options.deps_os.split(',')
@@ -1461,7 +1444,7 @@ solutions = %(solution_list)s
     solutions."""
     for dep in self.dependencies:
       if dep.managed and dep.url:
-        scm = self.CreateSCM(
+        scm = dep.CreateSCM(
             dep.url, self.root_dir, dep.name, self.outbuf)
         actual_url = scm.GetActualRemoteURL(self._options)
         if actual_url and not scm.DoesRemoteURLMatch(self._options):
@@ -1533,7 +1516,7 @@ it or fix the checkout.
     deps_to_add = []
     for s in config_dict.get('solutions', []):
       try:
-        deps_to_add.append(Dependency(
+        deps_to_add.append(GitDependency(
             self, s['name'], s['url'], s['url'],
             s.get('managed', True),
             s.get('custom_deps', {}),
@@ -1757,8 +1740,8 @@ it or fix the checkout.
             (not any(path.startswith(entry + '/') for path in entries)) and
             os.path.exists(e_dir)):
           # The entry has been removed from DEPS.
-          scm = self.CreateSCM(
-              prev_url, self.root_dir, entry_fixed, self.outbuf)
+          scm = GitDependency.CreateSCM(
+              self, prev_url, self.root_dir, entry_fixed, self.outbuf)
 
           # Check to see if this directory is now part of a higher-up checkout.
           scm_root = None
@@ -1963,22 +1946,6 @@ it or fix the checkout.
   @property
   def target_cpu(self):
     return self._enforced_cpu
-
-
-class GitDependency(Dependency):
-  """A Dependency object that represents a single git checkout."""
-
-  #override
-  def GetScmName(self, url):
-    """Always 'git'."""
-    del url
-    return 'git'
-
-  #override
-  def CreateSCM(self, url, root_dir=None, relpath=None, out_fh=None,
-                out_cb=None):
-    """Create a Wrapper instance suitable for handling this git dependency."""
-    return gclient_scm.GitWrapper(url, root_dir, relpath, out_fh, out_cb)
 
 
 class CipdDependency(Dependency):

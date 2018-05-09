@@ -61,15 +61,15 @@ class GclientTest(trial_dir.TestCase):
     self.previous_dir = os.getcwd()
     os.chdir(self.root_dir)
     # Manual mocks.
-    self._old_createscm = gclient.Dependency.CreateSCM
-    gclient.Dependency.CreateSCM = self._createscm
+    self._old_createscm = gclient.GitDependency.CreateSCM
+    gclient.GitDependency.CreateSCM = self._createscm
     self._old_sys_stdout = sys.stdout
     sys.stdout = gclient.gclient_utils.MakeFileAutoFlush(sys.stdout)
     sys.stdout = gclient.gclient_utils.MakeFileAnnotated(sys.stdout)
 
   def tearDown(self):
     self.assertEquals([], self._get_processed())
-    gclient.Dependency.CreateSCM = self._old_createscm
+    gclient.GitDependency.CreateSCM = self._old_createscm
     sys.stdout = self._old_sys_stdout
     os.chdir(self.previous_dir)
     super(GclientTest, self).tearDown()
