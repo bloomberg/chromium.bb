@@ -100,20 +100,6 @@ VisibleSelectionInFlatTree CreateVisibleSelectionWithGranularity(
 }
 
 template <typename Strategy>
-static SelectionType ComputeSelectionType(
-    const EphemeralRangeTemplate<Strategy>& range) {
-  if (range.IsNull())
-    return kNoSelection;
-  DCHECK(!NeedsLayoutTreeUpdate(range.StartPosition())) << range;
-  if (range.IsCollapsed())
-    return kCaretSelection;
-  if (MostBackwardCaretPosition(range.StartPosition()) ==
-      MostBackwardCaretPosition(range.EndPosition()))
-    return kCaretSelection;
-  return kRangeSelection;
-}
-
-template <typename Strategy>
 VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(
     const VisibleSelectionTemplate<Strategy>& other)
     : base_(other.base_),
@@ -268,42 +254,13 @@ static SelectionTemplate<Strategy> ComputeVisibleSelection(
   const SelectionTemplate<Strategy>& editing_adjusted_selection =
       SelectionAdjuster::AdjustSelectionToAvoidCrossingEditingBoundaries(
           shadow_adjusted_selection);
-  const EphemeralRangeTemplate<Strategy> editing_adjusted_range =
-      editing_adjusted_selection.ComputeRange();
-  // TODO(editing-dev): Implement
-  // const SelectionTemplate<Strategy>& adjusted_selection =
-  // AdjustSelectionType(editing_adjusted_range);
-  const SelectionType selection_type =
-      ComputeSelectionType(editing_adjusted_range);
-  if (selection_type == kCaretSelection) {
-    return typename SelectionTemplate<Strategy>::Builder()
-        .Collapse(PositionWithAffinityTemplate<Strategy>(
-            editing_adjusted_range.StartPosition(),
-            passed_selection.Affinity()))
-        .Build();
-  }
-
-  DCHECK_EQ(selection_type, kRangeSelection);
-  // "Constrain" the selection to be the smallest equivalent range of
-  // nodes. This is a somewhat arbitrary choice, but experience shows that
-  // it is useful to make to make the selection "canonical" (if only for
-  // purposes of comparing selections). This is an ideal point of the code
-  // to do this operation, since all selection changes that result in a
-  // RANGE come through here before anyone uses it.
-  // TODO(yosin) Canonicalizing is good, but haven't we already done it
-  // (when we set these two positions to |VisiblePosition|
-  // |DeepEquivalent()|s above)?
-  const EphemeralRangeTemplate<Strategy> range(
-      MostForwardCaretPosition(editing_adjusted_range.StartPosition()),
-      MostBackwardCaretPosition(editing_adjusted_range.EndPosition()));
-  if (canonicalized_selection.IsBaseFirst()) {
-    return typename SelectionTemplate<Strategy>::Builder()
-        .SetAsForwardSelection(range)
-        .Build();
-  }
-  return typename SelectionTemplate<Strategy>::Builder()
-      .SetAsBackwardSelection(range)
-      .Build();
+  const SelectionTemplate<Strategy>& type_adjusted_selection =
+      SelectionAdjuster::AdjustSelectionType(
+          typename SelectionTemplate<Strategy>::Builder(
+              editing_adjusted_selection)
+              .SetAffinity(passed_selection.Affinity())
+              .Build());
+  return type_adjusted_selection;
 }
 
 template <typename Strategy>
