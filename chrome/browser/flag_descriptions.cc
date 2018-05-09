@@ -405,7 +405,8 @@ const char kEnableDockedMagnifierDescription[] =
 
 const char kEnableEmojiContextMenuName[] = "Emoji Context Menu";
 const char kEnableEmojiContextMenuDescription[] =
-    "Enables the Emoji picker item in context menus for editable text areas.";
+    "Enables the Emoji picker item in context menus for editable text areas, if"
+    " supported by the operating system.";
 
 const char kEnableEnumeratingAudioDevicesName[] =
     "Experimentally enable enumerating audio devices.";

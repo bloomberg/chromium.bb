@@ -359,6 +359,7 @@ component("base") {
       "dragdrop/cocoa_dnd_util.mm",
       "dragdrop/file_info.cc",
       "dragdrop/file_info.h",
+      "emoji/emoji_panel_helper.h",
       "idle/idle.cc",
       "idle/idle.h",
       "idle/idle_chromeos.cc",
@@ -372,6 +373,15 @@ component("base") {
       "touch/touch_editing_controller.cc",
       "touch/touch_editing_controller.h",
     ]
+  }
+
+  if (is_mac) {
+    sources += [ "emoji/emoji_panel_helper_mac.mm" ]
+  } else if (is_win) {
+    sources += [ "emoji/emoji_panel_helper_win.cc" ]
+  } else {
+    # Empty implementation for all other platforms.
+    sources += [ "emoji/emoji_panel_helper.cc" ]
   }
 
   if (is_mac) {

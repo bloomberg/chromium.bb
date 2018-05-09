@@ -130,10 +130,12 @@
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/strings/grit/ui_strings.h"
 
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 #include "chrome/browser/renderer_context_menu/spelling_options_submenu_observer.h"
@@ -1406,6 +1408,11 @@ void RenderViewContextMenu::AppendEditableItems() {
     AppendSearchProvider();
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
+  if (params_.misspelled_word.empty() && ui::IsEmojiPanelSupported()) {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_EMOJI,
+                                    IDS_CONTENT_CONTEXT_EMOJI);
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  }
 
 // 'Undo' and 'Redo' for text input with no suggestions and no text selected.
 // We make an exception for OS X as context clicking will select the closest
@@ -1736,6 +1743,9 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return !!(params_.media_flags &
                 WebContextMenuData::kMediaCanPictureInPicture);
 
+    case IDC_CONTENT_CONTEXT_EMOJI:
+      return params_.is_editable;
+
     default:
       NOTREACHED();
       return false;
@@ -1752,6 +1762,9 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
 
   if (id == IDC_CONTENT_CONTEXT_CONTROLS)
     return (params_.media_flags & WebContextMenuData::kMediaControls) != 0;
+
+  if (id == IDC_CONTENT_CONTEXT_EMOJI)
+    return false;
 
   // Extension items.
   if (ContextMenuMatcher::IsExtensionsCustomCommandId(id))
@@ -2023,6 +2036,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTENT_PICTUREINPICTURE:
       ExecPictureInPicture();
+      break;
+
+    case IDC_CONTENT_CONTEXT_EMOJI:
+      ui::ShowEmojiPanel();
       break;
 
     default:
