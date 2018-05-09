@@ -773,16 +773,19 @@ class SelectionTypeAdjuster final {
   template <typename Strategy>
   static SelectionTemplate<Strategy> AdjustSelection(
       const SelectionTemplate<Strategy>& selection) {
+    if (selection.IsNone())
+      return selection;
     const EphemeralRangeTemplate<Strategy>& range = selection.ComputeRange();
-    const SelectionType selection_type = ComputeSelectionType(range);
-    if (selection_type == kCaretSelection) {
+    DCHECK(!NeedsLayoutTreeUpdate(range.StartPosition())) << range;
+    if (range.IsCollapsed() ||
+        // TODO(editing-dev): Consider this canonicalization is really needed.
+        MostBackwardCaretPosition(range.StartPosition()) ==
+            MostBackwardCaretPosition(range.EndPosition())) {
       return typename SelectionTemplate<Strategy>::Builder()
           .Collapse(PositionWithAffinityTemplate<Strategy>(
               range.StartPosition(), selection.Affinity()))
           .Build();
     }
-
-    DCHECK_EQ(selection_type, kRangeSelection);
     // "Constrain" the selection to be the smallest equivalent range of
     // nodes. This is a somewhat arbitrary choice, but experience shows that
     // it is useful to make to make the selection "canonical" (if only for
@@ -801,22 +804,6 @@ class SelectionTypeAdjuster final {
     return typename SelectionTemplate<Strategy>::Builder()
         .SetAsBackwardSelection(minimal_range)
         .Build();
-  }
-
- private:
-  template <typename Strategy>
-  static SelectionType ComputeSelectionType(
-      const EphemeralRangeTemplate<Strategy>& range) {
-    if (range.IsNull())
-      return kNoSelection;
-    DCHECK(!NeedsLayoutTreeUpdate(range.StartPosition())) << range;
-    if (range.IsCollapsed())
-      return kCaretSelection;
-    // TODO(editing-dev): Consider this canonicalization is really needed.
-    if (MostBackwardCaretPosition(range.StartPosition()) ==
-        MostBackwardCaretPosition(range.EndPosition()))
-      return kCaretSelection;
-    return kRangeSelection;
   }
 };
 
