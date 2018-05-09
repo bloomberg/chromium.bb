@@ -108,6 +108,12 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
                 if (tab != tabModelSelector.getCurrentTab()) return;
                 clearRequestsAndHide();
             }
+
+            @Override
+            public void onCrash(Tab tab, boolean sadTabShown) {
+                if (tab != tabModelSelector.getCurrentTab()) return;
+                clearRequestsAndHide();
+            }
         };
 
         final TabModelObserver tabSelectionObserver = new EmptyTabModelObserver() {
