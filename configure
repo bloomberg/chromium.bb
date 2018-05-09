@@ -6199,6 +6199,9 @@ pod2man --help     > /dev/null 2>&1 && enable pod2man   || disable pod2man
 rsync --help 2> /dev/null | grep -q 'contimeout' && enable rsync_contimeout || disable rsync_contimeout
 
 # check V4L2 codecs available in the API
+# https://crbug.com/841360 -- check explicitly for libv4l2, else we get several
+# v4l2_m2m files included in the build.
+enabled libv4l2 && {
 check_header linux/fb.h
 check_header linux/videodev2.h
 test_code cc linux/videodev2.h "struct v4l2_frmsizeenum vfse; vfse.discrete.width = 0;" && enable_sanitized struct_v4l2_frmivalenum_discrete
@@ -6212,6 +6215,7 @@ check_cc h263_v4l2_m2m linux/videodev2.h "int i = V4L2_PIX_FMT_H263;"
 check_cc h264_v4l2_m2m linux/videodev2.h "int i = V4L2_PIX_FMT_H264;"
 check_cc vp8_v4l2_m2m linux/videodev2.h "int i = V4L2_PIX_FMT_VP8;"
 check_cc vp9_v4l2_m2m linux/videodev2.h "int i = V4L2_PIX_FMT_VP9;"
+}
 
 check_header sys/videoio.h
 test_code cc sys/videoio.h "struct v4l2_frmsizeenum vfse; vfse.discrete.width = 0;" && enable_sanitized struct_v4l2_frmivalenum_discrete

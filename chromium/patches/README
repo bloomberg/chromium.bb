@@ -99,3 +99,7 @@ Current patches:
   configure
     Re-added missing quotes to allow inline asm detection that were removed
     upstream by 8c893aa3cd5 .  https://crbug.com/840959 .
+
+  configure
+    Check explicity for v4l2, else it seems to include v4l2-m2m in the build
+    anyway.  https://crbug.com/841360 .
