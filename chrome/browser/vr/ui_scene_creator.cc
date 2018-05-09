@@ -414,6 +414,7 @@ std::unique_ptr<UiElement> CreatePrompt(Model* model) {
   auto background = Create<Rect>(kNone, kPhaseForeground);
   background->SetType(kTypePromptBackground);
   background->set_bounds_contain_children(true);
+  background->set_hit_testable(true);
   background->set_padding(kPromptPadding, kPromptPadding);
   background->SetTranslate(0, 0, kPromptShadowOffsetDMM);
   background->set_corner_radius(kPromptCornerRadius);

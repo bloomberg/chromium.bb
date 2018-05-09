@@ -600,7 +600,7 @@ TEST_F(UiTest, PrimaryButtonClickTriggersOnExitPrompt) {
 
   // Initial state.
   VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
-  model_->active_modal_prompt_type = kModalPromptTypeExitVRForSiteInfo;
+  ui_->ShowExitVrPrompt(UiUnsupportedMode::kUnhandledPageInfo);
   OnBeginFrame();
 
   // Click on 'OK' should trigger UI browser interface and close prompt.
@@ -611,6 +611,24 @@ TEST_F(UiTest, PrimaryButtonClickTriggersOnExitPrompt) {
   auto* button = prompt->GetDescendantByType(kTypePromptPrimaryButton);
   ClickElement(button);
   VerifyOnlyElementsVisible("Prompt cleared", kElementsVisibleInBrowsing);
+}
+
+TEST_F(UiTest, ClickOnPromptBackgroundDoesNothing) {
+  CreateScene(kNotInCct, kNotInWebVr);
+
+  ui_->ShowExitVrPrompt(UiUnsupportedMode::kUnhandledPageInfo);
+  OnBeginFrame();
+
+  EXPECT_CALL(*browser_, OnExitVrPromptResult(testing::_, testing::_)).Times(0);
+  auto* prompt = scene_->GetUiElementByName(kExitPrompt);
+  UiElement* target;
+  // Target the inert icon and text to reliably miss the buttons.
+  target = prompt->GetDescendantByType(kTypePromptIcon);
+  ClickElement(target);
+  target = prompt->GetDescendantByType(kTypePromptText);
+  ClickElement(target);
+
+  EXPECT_EQ(model_->get_mode(), kModeModalPrompt);
 }
 
 TEST_F(UiTest, SecondaryButtonClickTriggersOnExitPrompt) {
@@ -962,7 +980,9 @@ TEST_F(UiTest, OmniboxSuggestionNavigates) {
       base::string16(), base::string16(), ACMatchClassifications(),
       ACMatchClassifications(), AutocompleteMatch::Type::VOICE_SUGGEST, gurl,
       base::string16(), base::string16()));
-  OnBeginFrame();
+
+  // Let the omnibox fade in.
+  RunForMs(100);
 
   UiElement* suggestions = scene_->GetUiElementByName(kOmniboxSuggestions);
   ASSERT_NE(suggestions, nullptr);

@@ -10,6 +10,7 @@
 #include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/test/fake_ui_element_renderer.h"
 #include "chrome/browser/vr/ui.h"
+#include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_creator.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
@@ -253,10 +254,31 @@ void UiTest::GetBackgroundColor(SkColor* background_color) const {
 }
 
 void UiTest::ClickElement(UiElement* element) {
-  element->OnHoverEnter({0.5f, 0.5f});
-  element->OnButtonDown({0.5f, 0.5f});
-  element->OnButtonUp({0.5f, 0.5f});
-  element->OnHoverLeave();
+  // Synthesize a controller vector targeting the element.
+  gfx::Point3F target;
+  element->ComputeTargetWorldSpaceTransform().TransformPoint(&target);
+  gfx::Point3F origin;
+  gfx::Vector3dF direction(target - origin);
+  direction.GetNormalized(&direction);
+
+  RenderInfo render_info;
+  ReticleModel reticle_model;
+  GestureList gesture_list;
+  ControllerModel controller_model;
+  controller_model.laser_direction = direction;
+  controller_model.laser_origin = origin;
+
+  controller_model.touchpad_button_state = UiInputManager::ButtonState::DOWN;
+  ui_->input_manager()->HandleInput(current_time_, render_info,
+                                    controller_model, &reticle_model,
+                                    &gesture_list);
+  OnBeginFrame();
+
+  controller_model.touchpad_button_state = UiInputManager::ButtonState::UP;
+  ui_->input_manager()->HandleInput(current_time_, render_info,
+                                    controller_model, &reticle_model,
+                                    &gesture_list);
+  OnBeginFrame();
 }
 
 }  // namespace vr
