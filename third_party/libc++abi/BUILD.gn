@@ -36,9 +36,10 @@ source_set("libc++abi") {
     "trunk/src/stdlib_typeinfo.cpp",
   ]
 
-  # On Android, android_crazy_linker provides __cxa_demangle.
+  # See the comment in cxa_demangle_stub.cc for why we don't use LLVM's
+  # demangler on android.
   if (is_android) {
-    deps += [ "//third_party/android_crazy_linker" ]
+    sources += [ "cxa_demangle_stub.cc" ]
   } else {
     sources += [ "trunk/src/cxa_demangle.cpp" ]
   }
