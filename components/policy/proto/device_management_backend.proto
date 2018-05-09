@@ -1154,33 +1154,55 @@ message SessionStatusReportResponse {
 // go through enterprise enrollment. Unlike the other requests, this request is
 // not authenticated.
 message DeviceAutoEnrollmentRequest {
-  // SHA-256 hash of the device's serial number, mod |modulus|.
-  // Should always be present.
+  // Device identifier hash, mod |modulus|.
+  // The type of the device identifier hash depends on |enrollment_check_type|.
+  // If |modulus| is 1, |remainder| should be 0.
+  // |remainder| should always be present.
   optional int64 remainder = 1;
 
-  // Modulus of the hash used by the client. Should always be present. This
-  // is the number of buckets the client thinks the server has. For now,
-  // it is a power of 2, but due to the strict constraint on how many serial
-  // numbers a bucket can contain, it may become non power of 2. If that
-  // happens, client-side needs to change its assumption.
+  // Modulus of the hash used by the client. For now, it is a power of 2, but
+  // due to the strict constraint on how many serial numbers a bucket can
+  // contain, it may become non power of 2. If that happens, client-side needs
+  // to change its assumption.
+  // |modulus| should always be present, but setting |modulus| to 1 means that
+  // no bits of the client's hash are uploaded. |remainder| should be 0 in this
+  // case.
   optional int64 modulus = 2;
+
+  enum EnrollmentCheckType {
+    // Unspecified.
+    ENROLLMENT_CHECK_TYPE_UNSPECIFIED = 0;
+    // Forced Re-Enrollment check with full SHA-256 hashes of the
+    // server-backed state key.
+    ENROLLMENT_CHECK_TYPE_FRE = 1;
+    // Forced Enrollment check with SHA-256 hashes of (brand code + “_” + serial
+    // number), truncated to first 8 bytes each.
+    ENROLLMENT_CHECK_TYPE_FORCED_ENROLLMENT = 2;
+  };
+
+  // Specifies the type of auto enrollment check that is being made.
+  // This also defines the format of the device identifier hash used in this
+  // exchange.
+  optional EnrollmentCheckType enrollment_check_type = 3
+      [default = ENROLLMENT_CHECK_TYPE_FRE];
 }
 
 // Response from server to auto-enrollment detection request.
 message DeviceAutoEnrollmentResponse {
   // If this field is present, the other fields are ignored and the client
-  // should send a new DeviceAutoEnrollmentRequest with a new |remainder|
-  // computed using this new |modulus|. If this field is empty, the client's
-  // request was accepted.
+  // should send a new DeviceAutoEnrollmentRequest with a |remainder|
+  // computed using this new |expected_modulus|. If this field is empty, the
+  // client's request was accepted.
   // DMServer guarantees that if the modulus sent by client in
   // DeviceAutoEnrollmentRequest matches server's expectation, this field
   // is unset.
   optional int64 expected_modulus = 1;
 
-  // List of hashes in the client's hash bucket. If the client's hash matches
-  // any in this list, the client device should do enterprise enrollment.
-  // If it matches none, enrollment should be optional.
-  // Each entry has exactly 256 bits (32 bytes).
+  // List of hashes. If the client's hash matches any in this list, the
+  // client device should do enterprise enrollment. If it matches none,
+  // enrollment should be optional.
+  // The format of each entry depends on the |enrollment_check_type| that was
+  // set in the DeviceAutoEnrollmentRequest.
   repeated bytes hash = 2;
 }
 
@@ -1238,6 +1260,36 @@ message DeviceStateRetrievalResponse {
   // State that is relevant only when the |restore_mode| is
   // |RESTORE_MODE_DISABLED|.
   optional DisabledState disabled_state = 3;
+}
+
+// Request from device to server to retrieve the enrollment mode and domain for
+// this device. The client will use this request when the
+// DeviceAutoEnrollmentRequest exchange with |enrollment_check_type| set to
+// |ENROLLMENT_CHECK_TYPE_FORCED_ENROLLMENT| indicated that it should be
+// enrolled. This request is not authenticated.
+message DeviceInitialEnrollmentStateRequest {
+  // The serial number of the device.
+  optional string serial_number = 1;
+
+  // The 4-character brand code of the device.
+  optional string brand_code = 2;
+}
+
+// Response from server DeviceInitialEnrollmentStateRequest.
+message DeviceInitialEnrollmentStateResponse {
+  // Initial action to take after OOBE.
+  enum InitialEnrollmentMode {
+    // No initial enrollment restoration.
+    INITIAL_ENROLLMENT_MODE_NONE = 0;
+    // Enterprise enrollment is enforced and cannot be skipped.
+    INITIAL_ENROLLMENT_MODE_ENROLLMENT_ENFORCED = 1;
+  };
+  // The server-indicated initial enrollment mode.
+  optional InitialEnrollmentMode initial_enrollment_mode = 1
+      [default = INITIAL_ENROLLMENT_MODE_NONE];
+
+  // The domain the device should be enrolled into.
+  optional string management_domain = 2;
 }
 
 // Sent by the client to the server to pair the Host device with the Controller
@@ -1752,6 +1804,7 @@ message AppInstallReportResponse {}
 //     * active_directory_user_signin
 //     * register_browser
 //     * policy_validation_report
+//     * device_initial_enrollment_state
 //   * devicetype: MUST BE "1" for Android, "2" for Chrome OS or "3" for Chrome
 //     browser.
 //   * apptype: MUST BE Android or Chrome.
@@ -1771,10 +1824,10 @@ message AppInstallReportResponse {}
 //     policy_validation_report and chrome_desktop_report requests
 //     Authorization: GoogleDMToken token=<dm token from register>
 //
-//   * The Authorization header isn't used for enterprise_check or for
-//     certificate_based_register requests, nor for register requests
-//     using OAuth. In the latter case, the OAuth token is passed in the
-//     "oauth" parameter.
+//   * The Authorization header isn't used for enterprise_check,
+//     device_initial_enrollment_state or certificate_based_register requests,
+//     nor for register requests using OAuth. In the latter case, the OAuth
+//     token is passed in the "oauth" parameter.
 //
 // DeviceManagementRequest should only contain one request which matches the
 // HTTP query parameter - request, as listed below. Other requests within the
@@ -1804,6 +1857,7 @@ message AppInstallReportResponse {}
 //   register_browser: register_browser_request
 //   app_install_report: app_install_report_request
 //   policy_validation_report: policy_validation_report_request
+//   device_initial_enrollment_state: device_initial_enrollment_state_request
 //
 message DeviceManagementRequest {
   reserved 24;  // unused previous version of chrome_desktop_report_request.
@@ -1889,6 +1943,10 @@ message DeviceManagementRequest {
 
   // Result of validating fetched policy on the client.
   optional PolicyValidationReportRequest policy_validation_report_request = 27;
+
+  // Query for initial enrollment details.
+  optional DeviceInitialEnrollmentStateRequest
+      device_initial_enrollment_state_request = 28;
 }
 
 // Response from server to device.
@@ -2021,4 +2079,8 @@ message DeviceManagementResponse {
   // Response to a policy validation report.
   optional PolicyValidationReportResponse policy_validation_report_response =
       26;
+
+  // Response to initial enrollment details query.
+  optional DeviceInitialEnrollmentStateResponse
+      device_initial_enrollment_state_response = 27;
 }
