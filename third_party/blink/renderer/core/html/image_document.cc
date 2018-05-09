@@ -122,6 +122,9 @@ void ImageDocumentParser::AppendBytes(const char* data, size_t length) {
   if (!length)
     return;
 
+  if (IsDetached())
+    return;
+
   LocalFrame* frame = GetDocument()->GetFrame();
   Settings* settings = frame->GetSettings();
   if (!frame->GetContentSettingsClient()->AllowImage(
