@@ -90,13 +90,11 @@ constexpr base::TimeDelta PowerButtonController::kIgnoreRepeatedButtonUpDelay;
 constexpr base::TimeDelta
     PowerButtonController::kIgnorePowerButtonAfterResumeDelay;
 
-constexpr const char* PowerButtonController::kPositionField;
-constexpr const char* PowerButtonController::kXField;
-constexpr const char* PowerButtonController::kYField;
-constexpr const char* PowerButtonController::kLeftPosition;
-constexpr const char* PowerButtonController::kRightPosition;
-constexpr const char* PowerButtonController::kTopPosition;
-constexpr const char* PowerButtonController::kBottomPosition;
+constexpr const char* PowerButtonController::kEdgeField;
+constexpr const char* PowerButtonController::kLeftEdge;
+constexpr const char* PowerButtonController::kRightEdge;
+constexpr const char* PowerButtonController::kTopEdge;
+constexpr const char* PowerButtonController::kBottomEdge;
 
 // Maintain active state of the given |widget|. Sets |widget| to always render
 // as active if it's not already initially configured that way. Resets the
@@ -558,42 +556,35 @@ void PowerButtonController::ParsePowerButtonPositionSwitch() {
     return;
   }
 
-  std::string str_power_button_position;
-  if (!position_info->GetString(kPositionField, &str_power_button_position)) {
-    LOG(ERROR) << kPositionField << " field is always needed if "
-               << switches::kAshPowerButtonPosition << " is set";
+  std::string edge, position;
+  if (!position_info->GetString(kEdgeField, &edge) ||
+      !position_info->GetDouble(kPositionField,
+                                &power_button_offset_percentage_)) {
+    LOG(ERROR) << "Both " << kEdgeField << " field and " << kPositionField
+               << " are always needed if " << switches::kAshPowerButtonPosition
+               << " is set";
     return;
   }
 
-  if (str_power_button_position == kLeftPosition) {
+  if (edge == kLeftEdge) {
     power_button_position_ = PowerButtonPosition::LEFT;
-  } else if (str_power_button_position == kRightPosition) {
+  } else if (edge == kRightEdge) {
     power_button_position_ = PowerButtonPosition::RIGHT;
-  } else if (str_power_button_position == kTopPosition) {
+  } else if (edge == kTopEdge) {
     power_button_position_ = PowerButtonPosition::TOP;
-  } else if (str_power_button_position == kBottomPosition) {
+  } else if (edge == kBottomEdge) {
     power_button_position_ = PowerButtonPosition::BOTTOM;
   } else {
-    LOG(ERROR) << "Invalid " << kPositionField << " field in "
+    LOG(ERROR) << "Invalid " << kEdgeField << " field in "
                << switches::kAshPowerButtonPosition;
     return;
   }
 
-  if (power_button_position_ == PowerButtonPosition::LEFT ||
-      power_button_position_ == PowerButtonPosition::RIGHT) {
-    if (!position_info->GetDouble(kYField, &power_button_offset_percentage_)) {
-      LOG(ERROR) << kYField << " not set in "
-                 << switches::kAshPowerButtonPosition;
-      power_button_position_ = PowerButtonPosition::NONE;
-      return;
-    }
-  } else {
-    if (!position_info->GetDouble(kXField, &power_button_offset_percentage_)) {
-      LOG(ERROR) << kXField << " not set in "
-                 << switches::kAshPowerButtonPosition;
-      power_button_position_ = PowerButtonPosition::NONE;
-      return;
-    }
+  if (power_button_offset_percentage_ < 0 ||
+      power_button_offset_percentage_ > 1.0f) {
+    LOG(ERROR) << "Invalid " << kPositionField << " field in "
+               << switches::kAshPowerButtonPosition;
+    power_button_position_ = PowerButtonPosition::NONE;
   }
 }
 
