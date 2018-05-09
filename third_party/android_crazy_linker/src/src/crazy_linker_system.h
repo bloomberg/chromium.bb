@@ -133,6 +133,19 @@ bool PathIsFile(const char* path_name);
 // Returns the current directory, as a string.
 String GetCurrentDirectory();
 
+// Convert |path| into a String, and appends a trailing directory separator
+// if there isn't already one. NOTE: As a special case, if the input is empty,
+// then "./" will be returned.
+String MakeDirectoryPath(const char* path);
+String MakeDirectoryPath(const char* path, size_t path_len);
+
+// Convert |path| into an absolute path if necessary, always returns a new
+// String instance as well.
+String MakeAbsolutePathFrom(const char* path);
+
+// Same, but for the [path..path + path_len) input string.
+String MakeAbsolutePathFrom(const char* path, size_t path_len);
+
 // Returns the value of a given environment variable.
 const char* GetEnv(const char* var_name);
 
