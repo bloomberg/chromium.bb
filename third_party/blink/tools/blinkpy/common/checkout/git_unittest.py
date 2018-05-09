@@ -164,6 +164,9 @@ class GitTestWithRealFilesystemAndExecutive(unittest.TestCase):
         git.move('foo_file', 'bar_file')
         git.commit_locally_with_message('message')
 
+        patch = git.create_patch(changed_files=git.changed_files())
+        self.assertTrue('rename from' in patch)
+
     def test_commit_position_from_git_log(self):
         # This tests a protected method. pylint: disable=protected-access
         git_log = """
