@@ -38,5 +38,4 @@ class FuzzerBuilder(simple_builders.SimpleBuilder):
     self._RunStage(android_stages.UprevAndroidStage)
     self._RunStage(android_stages.AndroidMetadataStage)
     self._RunStage(build_stages.BuildPackagesStage, board)
-    self._RunStage(test_stages.UnitTestStage, board)
     self._RunStage(artifact_stages.GenerateSysrootStage, board)
