@@ -22,6 +22,9 @@ from symbolizer import FilterStream
 FAR = os.path.join(common.SDK_ROOT, 'tools', 'far')
 PM = os.path.join(common.SDK_ROOT, 'tools', 'pm')
 
+# Amount of time to wait for the termination of the system log output thread.
+_JOIN_TIMEOUT_SECS = 5
+
 
 def _AttachKernelLogReader(target):
   """Attaches a kernel log reader as a long-running SSH task."""
@@ -100,9 +103,7 @@ def RunPackage(output_dir, target, package_path, package_name, run_args,
 
   system_logger = _AttachKernelLogReader(target) if system_logging else None
   package_copied = False
-  log_output_thread = None
   try:
-    log_output_thread = None
     if system_logger:
       # Spin up a thread to asynchronously dump the system log to stdout
       # for easier diagnoses of early, pre-execution failures.
@@ -110,6 +111,7 @@ def RunPackage(output_dir, target, package_path, package_name, run_args,
       log_output_thread = threading.Thread(
           target=lambda: DrainStreamToStdout(system_logger.stdout,
                                              log_output_quit_event))
+      log_output_thread.daemon = True
       log_output_thread.start()
 
     logging.info('Copying package to target.')
@@ -128,9 +130,9 @@ def RunPackage(output_dir, target, package_path, package_name, run_args,
       if len(output) != 1 or 'ErrAlreadyExists' not in output[0]:
         raise Exception('Error while installing: %s' % '\n'.join(output))
 
-    if log_output_thread:
+    if system_logger:
       log_output_quit_event.set()
-      log_output_thread.join()
+      log_output_thread.join(timeout=_JOIN_TIMEOUT_SECS)
 
     logging.info('Running application.')
     command = ['run', package_name] + run_args
@@ -166,7 +168,9 @@ def RunPackage(output_dir, target, package_path, package_name, run_args,
 
   finally:
     if system_logger:
-      print 'Terminating kernel log reader.'
+      logging.info('Terminating kernel log reader.')
+      log_output_quit_event.set()
+      log_output_thread.join()
       system_logger.kill()
 
     if package_copied:
