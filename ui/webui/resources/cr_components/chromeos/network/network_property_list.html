@@ -49,10 +49,12 @@
         <template is="dom-if" restamp
             if="[[isEditTypeInput_(item, propertyDict, editFieldTypes)]]">
           <paper-input-container no-label-float>
-            <input id="[[item]]" is="iron-input" slot="input"
-                type="[[getEditInputType_(item, editFieldTypes)]]"
-                value="[[getPropertyValue_(item, prefix, propertyDict)]]"
-                on-change="onValueChange_">
+            <iron-input slot="input">
+              <input id="[[item]]"
+                  type="[[getEditInputType_(item, editFieldTypes)]]"
+                  value="[[getPropertyValue_(item, prefix, propertyDict)]]"
+                  on-change="onValueChange_">
+            </iron-input>
           </paper-input-container>
         </template>
         <!-- TODO(stevenjb): Support other types (number, boolean)? -->

@@ -59,11 +59,16 @@
       #dropdownIcon {
         background-size: 24px;
       }
+
+      iron-input input {
+        @apply --paper-input-container-shared-input-style;
+      }
     </style>
     <paper-input-container no-label-float on-click="onTap_">
-      <input is="iron-input" type="search" bind-value="{{selectedItem}}"
-          on-search="onInputValueChanged_" on-change="onChange_" incremental
-          slot="input">
+      <iron-input id="search" slot="input" bind-value="{{selectedItem}}">
+        <input type="search" on-search="onInputValueChanged_"
+            value="{{value::input}}" on-change="onChange_" incremental>
+      </iron-input>
       <paper-icon-button-light id="searchIcon" class="icon-search" hidden
           slot="suffix">
         <button></button>

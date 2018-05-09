@@ -26,6 +26,10 @@ paper-input-container > label > span {
   color: rgba(0, 0, 0, 0.54);
 }
 
+iron-input input {
+  @apply --paper-input-container-shared-input-style;
+}
+
 :host-context(html[dir=rtl]) input {
   flex-direction: row-reverse;
 }

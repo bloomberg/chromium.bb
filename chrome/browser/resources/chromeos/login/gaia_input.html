@@ -44,10 +44,13 @@
     <paper-input-container id="decorator" on-tap="onTap"
         invalid="[[isInvalid]]" disabled$="[[disabled]]">
       <label slot="label"><span>[[label]]</span></label>
-      <input id="input" is="iron-input" on-keydown="onKeyDown"
-          bind-value="{{value}}" invalid="[[isInvalid]]" slot="input"
+      <iron-input id="ironInput" slot="input" class="flex"
+          bind-value="{{value}}">
+        <input id="input" on-keydown="onKeyDown"
+          value="{{value::input}}" invalid="[[isInvalid]]"
           required$="[[required]]" disabled$="[[disabled]]"
-          pattern$="[[pattern]]" class="flex">
+          pattern$="[[pattern]]">
+      </iron-input>
       <span id="domainLabel" slot="suffix">[[domain]]</span>
       <template is="dom-if" if="[[error]]">
         <paper-input-error slot="add-on">[[error]]</paper-input-error>

@@ -88,9 +88,11 @@
           <div class="property-box single-column two-line">
             <template is="dom-repeat" items="[[nameservers_]]">
               <paper-input-container no-label-float>
-                <input id="nameserver[[index]]" is="iron-input" value="[[item]]"
-                    disabled="[[!canEdit_(editable, nameserversType_)]]"
-                    on-change="onValueChange_" slot="input">
+                <iron-input slot="input">
+                  <input id="nameserver[[index]]" value="[[item]]"
+                      disabled="[[!canEdit_(editable, nameserversType_)]]"
+                      on-change="onValueChange_">
+                </iron-input>
               </paper-input-container>
             </template>
           </div>

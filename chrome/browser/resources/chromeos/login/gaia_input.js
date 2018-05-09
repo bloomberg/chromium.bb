@@ -49,7 +49,7 @@ Polymer((function() {
     },
 
     checkValidity: function() {
-      var valid = this.$.input.validate();
+      var valid = this.$.ironInput.validate();
       this.isInvalid = !valid;
       return valid;
     },

@@ -7,13 +7,7 @@ Polymer({
     ],
 
     beforeRegister: function() {
-      // We need to tell which kind of of template to stamp based on
-      // what kind of `iron-input` we got, but because of polyfills and
-      // custom elements differences between v0 and v1, the safest bet is
-      // to check a particular method we know the iron-input#2.x can have.
-      // If it doesn't have it, then it's an iron-input#1.x.
-      var ironInput = document.createElement('iron-input');
-      var version = typeof ironInput._initSlottedInput == 'function' ? 'v1' : 'v0';
+      var version = 'v1';  // Hard coded Polymer 2 style iron-input.
       var template = Polymer.DomModule.import('paper-input', 'template');
       var inputTemplate = Polymer.DomModule.import('paper-input', 'template#' + version);
       var inputPlaceholder = template.content.querySelector('#template-placeholder');
@@ -30,7 +24,8 @@ Polymer({
      * @return {!HTMLElement}
      */
     get _focusableElement() {
-      return Polymer.Element ? this.inputElement._inputElement : this.inputElement;
+      // TODO(hcarmona): remove this patch after polymer is v2.
+      return this.inputElement._inputElement;
     },
 
     // Note: This event is only available in the 1.0 version of this element.

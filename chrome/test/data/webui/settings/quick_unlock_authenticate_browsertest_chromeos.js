@@ -73,6 +73,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         testElement = document.createElement('settings-password-prompt-dialog');
         testElement.quickUnlockPrivate_ = quickUnlockPrivateApi;
         testElement.writeUma_ = fakeUma.recordProgress.bind(fakeUma);
+        Polymer.dom.flush();
         document.body.appendChild(testElement);
 
         passwordElement = getFromElement('#passwordInput');
@@ -99,13 +100,16 @@ cr.define('settings_people_page_quick_unlock', function() {
         const confirmButton = getFromElement('#passwordInput');
         quickUnlockPrivateApi.accountPassword = 'bar';
         passwordElement.value = 'foo';
+        Polymer.dom.flush();
+
         MockInteractions.tap(
             getFromElement('paper-button[class="action-button"]'));
 
-        assertEquals(0, passwordElement.inputElement.selectionStart);
+        assertEquals(
+            0, passwordElement.inputElement.inputElement.selectionStart);
         assertEquals(
             passwordElement.value.length,
-            passwordElement.inputElement.selectionEnd);
+            passwordElement.inputElement.inputElement.selectionEnd);
       });
 
       test('TapConfirmButtonWithWrongPasswordRestoresFocus', function() {

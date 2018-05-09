@@ -82,6 +82,7 @@ cr.define('extension_pack_dialog_tests', function() {
         expectEquals(kRootPath, packDialog.packDirectory_);
       }));
 
+      Polymer.dom.flush();
       expectEquals('', packDialog.$$('#key-file').value);
       MockInteractions.tap(packDialog.$$('#key-file-browse'));
       expectTrue(!!mockDelegate.keyPromise);

@@ -71,6 +71,7 @@ suite('<bookmarks-edit-dialog>', function() {
 
     dialog.titleValue_ = 'Permission Site';
     dialog.urlValue_ = 'permission.site';
+    Polymer.dom.flush();
 
     MockInteractions.tap(dialog.$.saveButton);
 
@@ -87,7 +88,9 @@ suite('<bookmarks-edit-dialog>', function() {
     assertTrue(dialog.validateUrl_());
 
     dialog.urlValue_ = 'example.com';
+    Polymer.dom.flush();
     assertTrue(dialog.validateUrl_());
+    Polymer.dom.flush();
     assertEquals('http://example.com', dialog.urlValue_);
 
     dialog.urlValue_ = '';
@@ -103,7 +106,9 @@ suite('<bookmarks-edit-dialog>', function() {
 
     dialog.urlValue_ = '';
 
+    Polymer.dom.flush();
     MockInteractions.tap(dialog.$.saveButton);
+    Polymer.dom.flush();
 
     assertTrue(dialog.$.url.invalid);
     assertTrue(dialog.$.dialog.open);
