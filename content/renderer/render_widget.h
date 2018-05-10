@@ -26,7 +26,6 @@
 #include "build/build_config.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/input/touch_action.h"
-#include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "content/common/buildflags.h"
 #include "content/common/content_export.h"
@@ -849,10 +848,6 @@ class CONTENT_EXPORT RenderWidget
   // Wraps the |webwidget_| as a MouseLockDispatcher::LockTarget interface.
   std::unique_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;
 
-  // Sometimes a parent-allocated LocalSurfaceId is used. But other times
-  // the child allocates its own with this.
-  viz::ChildLocalSurfaceIdAllocator child_local_surface_id_allocator_;
-
   viz::LocalSurfaceId local_surface_id_;
 
  private:
@@ -878,7 +873,7 @@ class CONTENT_EXPORT RenderWidget
                     int32_t* routing_id);
 
   void UpdateSurfaceAndScreenInfo(
-      viz::LocalSurfaceId new_local_surface_id,
+      const viz::LocalSurfaceId& new_local_surface_id,
       const gfx::Size& new_compositor_viewport_pixel_size,
       const ScreenInfo& new_screen_info);
 

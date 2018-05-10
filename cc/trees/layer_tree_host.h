@@ -350,6 +350,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Returns the current state of the new LocalSurfaceId request and resets
   // the state.
   bool TakeNewLocalSurfaceIdRequest();
+  bool new_local_surface_id_request_for_testing() const {
+    return new_local_surface_id_request_;
+  }
 
   void SetRasterColorSpace(const gfx::ColorSpace& raster_color_space);
   const gfx::ColorSpace& raster_color_space() const {

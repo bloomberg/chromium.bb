@@ -353,6 +353,7 @@ void BrowserCompositorMac::UpdateForAutoResize(const gfx::Size& new_size_dip) {
   GetDelegatedFrameHost()->SynchronizeVisualProperties(
       dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId(), dfh_size_dip_,
       cc::DeadlinePolicy::UseExistingDeadline());
+  client_->SynchronizeVisualProperties();
 }
 
 void BrowserCompositorMac::UpdateVSyncParameters(

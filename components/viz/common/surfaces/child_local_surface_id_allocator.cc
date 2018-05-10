@@ -17,19 +17,10 @@ ChildLocalSurfaceIdAllocator::ChildLocalSurfaceIdAllocator()
 
 const LocalSurfaceId& ChildLocalSurfaceIdAllocator::UpdateFromParent(
     const LocalSurfaceId& parent_allocated_local_surface_id) {
-  // TODO(fsamuel): How a parent allocated LocalSurfaceId is incorporated into
-  // a ChildLocalSurfaceIdAllocator has been loosened. The parent should not
-  // be touching the child_sequence_number but currently there are cases where
-  // there are two ChildLocalSurfaceIdAllocators operating on a LocalSurfaceId.
-  // When that case is eliminated, we can avoid updating the child sequence
-  // number here.
-  if (parent_allocated_local_surface_id.parent_sequence_number() >=
+  if (parent_allocated_local_surface_id.parent_sequence_number() >
       current_local_surface_id_.parent_sequence_number()) {
     current_local_surface_id_.parent_sequence_number_ =
         parent_allocated_local_surface_id.parent_sequence_number_;
-    current_local_surface_id_.child_sequence_number_ =
-        std::max(current_local_surface_id_.child_sequence_number_,
-                 parent_allocated_local_surface_id.child_sequence_number_);
     current_local_surface_id_.embed_token_ =
         parent_allocated_local_surface_id.embed_token_;
   }

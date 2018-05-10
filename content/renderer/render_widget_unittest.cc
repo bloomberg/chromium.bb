@@ -22,6 +22,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator.h"
+#include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/test/fake_compositor_dependencies.h"
 #include "content/test/mock_render_process.h"
@@ -176,13 +177,6 @@ class InteractiveRenderWidget : public RenderWidget {
 
   const viz::LocalSurfaceId& local_surface_id() const {
     return local_surface_id_;
-  }
-
-  void SetAutoResizeMode(bool enable) { auto_resize_mode_ = enable; }
-
-  void UpdateChildLocalSurfaceIdAllocatorForAutoResize(
-      const viz::LocalSurfaceId& parent_local_surface_id) {
-    child_local_surface_id_allocator_.UpdateFromParent(parent_local_surface_id);
   }
 
  protected:
@@ -373,79 +367,27 @@ TEST_F(RenderWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
       PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED, 1);
 }
 
-// Tests that if a RenderWidget auto-resizes multiple times and receives an IPC
-// with a LocalSurfaceId, it will drop that LocalSurfaceId if it does not
-// correspond to the latest auto-resize request.
-TEST_F(RenderWidgetUnittest, SurfaceSynchronizationAutoResizeThrottling) {
-  if (!features::IsSurfaceSynchronizationEnabled())
-    return;
-
-  constexpr gfx::Size auto_size(100, 100);
+// Tests that if a RenderWidget is auto-resized, it requests a new
+// viz::LocalSurfaceId to be allocated on the impl thread.
+TEST_F(RenderWidgetUnittest, AutoResizeAllocatedLocalSurfaceId) {
   widget()->InitializeLayerTreeView();
-  widget()->SetAutoResizeMode(true);
 
   viz::ParentLocalSurfaceIdAllocator allocator;
-  viz::LocalSurfaceId initial_local_surface_id = allocator.GenerateId();
-  widget()->UpdateChildLocalSurfaceIdAllocatorForAutoResize(
-      initial_local_surface_id);
 
-  // Issue an auto-resize.
-  widget()->DidAutoResize(auto_size);
-  widget()->DidCommitCompositorFrame();
-
-  // Issue another auto-resize but keep it in-flight.
-  constexpr gfx::Size auto_size2(200, 200);
-  widget()->DidAutoResize(auto_size2);
-
-  // Send the LocalSurfaceId for the first Auto-Resize.
+  // Enable auto-resize.
   content::VisualProperties visual_properties;
   visual_properties.auto_resize_enabled = true;
-  visual_properties.min_size_for_auto_resize = auto_size;
-  visual_properties.max_size_for_auto_resize = auto_size2;
-  visual_properties.local_surface_id = allocator.GenerateId();
-  widget()->OnMessageReceived(ViewMsg_SynchronizeVisualProperties(
-      widget()->routing_id(), visual_properties));
-
-  // The LocalSurfaceId should not take because there's another in-flight auto-
-  // resize operation.
-  EXPECT_NE(widget()->local_surface_id(), visual_properties.local_surface_id);
-}
-
-// Tests that if a RenderWidget is auto-resized, it allocates its own
-// viz::LocalSurfaceId
-TEST_F(RenderWidgetUnittest, AutoResizeAllocatedLocalSurfaceId) {
-  viz::LocalSurfaceId fake_parent_local_surface_id(
-      1, base::UnguessableToken::Create());
-  widget()->UpdateChildLocalSurfaceIdAllocatorForAutoResize(
-      fake_parent_local_surface_id);
-  widget()->SetAutoResizeMode(true);
+  visual_properties.min_size_for_auto_resize = gfx::Size(100, 100);
+  visual_properties.max_size_for_auto_resize = gfx::Size(200, 200);
+  visual_properties.local_surface_id = allocator.GetCurrentLocalSurfaceId();
+  widget()->SynchronizeVisualProperties(visual_properties);
+  EXPECT_EQ(allocator.GetCurrentLocalSurfaceId(), widget()->local_surface_id());
+  EXPECT_FALSE(widget()->compositor()->HasNewLocalSurfaceIdRequest());
 
   constexpr gfx::Size size(200, 200);
   widget()->DidAutoResize(size);
-  viz::LocalSurfaceId local_surface_id1 = widget()->local_surface_id();
-
-  constexpr gfx::Size size2(100, 100);
-  widget()->DidAutoResize(size2);
-  viz::LocalSurfaceId local_surface_id2 = widget()->local_surface_id();
-
-  // Our first child allocated LSI should match |fake_parent_local_surface_id|
-  // with an incremented child sequence number.
-  EXPECT_NE(fake_parent_local_surface_id, local_surface_id1);
-  EXPECT_EQ(fake_parent_local_surface_id.parent_sequence_number(),
-            local_surface_id1.parent_sequence_number());
-  EXPECT_EQ(fake_parent_local_surface_id.child_sequence_number() + 1,
-            local_surface_id1.child_sequence_number());
-  EXPECT_EQ(fake_parent_local_surface_id.embed_token(),
-            local_surface_id2.embed_token());
-
-  // Our second child allocated LSI should match the first with an incremented
-  // child sequence number.
-  EXPECT_NE(local_surface_id1, local_surface_id2);
-  EXPECT_EQ(local_surface_id1.parent_sequence_number(),
-            local_surface_id2.parent_sequence_number());
-  EXPECT_EQ(local_surface_id1.child_sequence_number() + 1,
-            local_surface_id2.child_sequence_number());
-  EXPECT_EQ(local_surface_id1.embed_token(), local_surface_id2.embed_token());
+  EXPECT_EQ(allocator.GetCurrentLocalSurfaceId(), widget()->local_surface_id());
+  EXPECT_TRUE(widget()->compositor()->HasNewLocalSurfaceIdRequest());
 }
 
 class PopupRenderWidget : public RenderWidget {

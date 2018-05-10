@@ -1081,6 +1081,7 @@ void LayerTreeHost::SetViewportSizeAndScale(
     // TODO(ccameron): This check is not valid on Aura or Mus yet, but should
     // be.
     CHECK(!has_pushed_local_surface_id_from_parent_ ||
+          new_local_surface_id_request_ ||
           !local_surface_id_from_parent_.is_valid());
 #endif
   }
@@ -1189,7 +1190,11 @@ void LayerTreeHost::SetLocalSurfaceIdFromParent(
 }
 
 void LayerTreeHost::RequestNewLocalSurfaceId() {
-  DCHECK(local_surface_id_from_parent_.is_valid());
+  // If surface synchronization is enabled, then we can still request a new
+  // viz::LocalSurfaceId but that request will be deferred until we have a valid
+  // viz::LocalSurfaceId from the parent.
+  DCHECK(settings_.enable_surface_synchronization ||
+         local_surface_id_from_parent_.is_valid());
   if (new_local_surface_id_request_)
     return;
   new_local_surface_id_request_ = true;
