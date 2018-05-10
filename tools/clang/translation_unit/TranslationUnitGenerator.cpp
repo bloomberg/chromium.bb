@@ -63,7 +63,7 @@ class IncludeFinderPPCallbacks : public clang::PPCallbacks {
                           const clang::Module* imported
 #if defined(LLVM_FORCE_HEAD_REVISION)
                           ,
-                          SrcMgr::CharacteristicKind /*file_type*/
+                          clang::SrcMgr::CharacteristicKind /*file_type*/
 #endif
                           ) override;
   void EndOfMainFile() override;
@@ -151,7 +151,7 @@ void IncludeFinderPPCallbacks::InclusionDirective(
     const clang::Module* imported
 #if defined(LLVM_FORCE_HEAD_REVISION)
     ,
-    SrcMgr::CharacteristicKind /*file_type*/
+    clang::SrcMgr::CharacteristicKind /*file_type*/
 #endif
     ) {
   if (!file)
