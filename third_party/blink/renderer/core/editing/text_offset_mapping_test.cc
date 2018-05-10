@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -27,8 +28,7 @@ class ParameterizedTextOffsetMappingTest
   std::string ComputeTextOffset(const std::string& selection_text) {
     const PositionInFlatTree position =
         ToPositionInFlatTree(SetSelectionTextToBody(selection_text).Base());
-    TextOffsetMapping mapping(
-        TextOffsetMapping::ComputeContainigBlock(position));
+    TextOffsetMapping mapping(GetInlineContents(position));
     const String text = mapping.GetText();
     const int offset = mapping.ComputeTextOffset(position);
     StringBuilder builder;
@@ -42,8 +42,7 @@ class ParameterizedTextOffsetMappingTest
   std::string GetRange(const std::string& selection_text) {
     const PositionInFlatTree position =
         ToPositionInFlatTree(SetSelectionTextToBody(selection_text).Base());
-    TextOffsetMapping mapping(
-        TextOffsetMapping::ComputeContainigBlock(position));
+    TextOffsetMapping mapping(GetInlineContents(position));
     return GetSelectionTextInFlatTreeFromBody(
         SelectionInFlatTree::Builder()
             .SetBaseAndExtent(mapping.GetRange())
@@ -52,7 +51,7 @@ class ParameterizedTextOffsetMappingTest
 
   std::string GetPositionBefore(const std::string& html_text, int offset) {
     SetBodyContent(html_text);
-    TextOffsetMapping mapping(TextOffsetMapping::ComputeContainigBlock(
+    TextOffsetMapping mapping(GetInlineContents(
         PositionInFlatTree(*GetDocument().body()->firstChild(), 0)));
     return GetSelectionTextInFlatTreeFromBody(
         SelectionInFlatTree::Builder()
@@ -62,12 +61,21 @@ class ParameterizedTextOffsetMappingTest
 
   std::string GetPositionAfter(const std::string& html_text, int offset) {
     SetBodyContent(html_text);
-    TextOffsetMapping mapping(TextOffsetMapping::ComputeContainigBlock(
+    TextOffsetMapping mapping(GetInlineContents(
         PositionInFlatTree(*GetDocument().body()->firstChild(), 0)));
     return GetSelectionTextInFlatTreeFromBody(
         SelectionInFlatTree::Builder()
             .Collapse(mapping.GetPositionAfter(offset))
             .Build());
+  }
+
+ private:
+  static TextOffsetMapping::InlineContents GetInlineContents(
+      const PositionInFlatTree& position) {
+    const TextOffsetMapping::InlineContents inline_contents =
+        TextOffsetMapping::FindForwardInlineContents(position);
+    DCHECK(inline_contents.IsNotNull()) << position;
+    return inline_contents;
   }
 };
 
@@ -207,9 +215,123 @@ TEST_P(ParameterizedTextOffsetMappingTest, RangeOfBlockWithTABLE) {
       << "After TABLE";
 }
 
+// |InlineContents| can represent an empty block.
+// See LinkSelectionClickEventsTest.SingleAndDoubleClickWillBeHandled
 TEST_P(ParameterizedTextOffsetMappingTest, RangeOfEmptyBlock) {
-  EXPECT_EQ("<div><p>abc</p><p>|</p><p>ghi</p></div>",
-            GetRange("<div><p>abc</p><p>|</p><p>ghi</p></div>"));
+  const PositionInFlatTree position = ToPositionInFlatTree(
+      SetSelectionTextToBody(
+          "<div><p>abc</p><p id='target'>|</p><p>ghi</p></div>")
+          .Base());
+  const LayoutObject* const target_layout_object =
+      GetDocument().getElementById("target")->GetLayoutObject();
+  const TextOffsetMapping::InlineContents inline_contents =
+      TextOffsetMapping::FindForwardInlineContents(position);
+  ASSERT_TRUE(inline_contents.IsNotNull());
+  EXPECT_EQ(target_layout_object, inline_contents.GetEmptyBlock());
+  EXPECT_EQ(inline_contents,
+            TextOffsetMapping::FindBackwardInlineContents(position));
+}
+
+// http://crbug.com/832497
+TEST_P(ParameterizedTextOffsetMappingTest, RangeWithCollapsedWhitespace) {
+  // Whitespaces after <div> is collapsed.
+  EXPECT_EQ(" <div> ^<a></a>|</div>", GetRange("| <div> <a></a></div>"));
+}
+
+// http://crbug.com//832055
+TEST_P(ParameterizedTextOffsetMappingTest, RangeWithMulticol) {
+  InsertStyleElement("div { columns: 3 100px; }");
+  EXPECT_EQ("<div>^<b>foo|</b></div>", GetRange("<div><b>foo|</b></div>"));
+}
+
+// http://crbug.com/832101
+TEST_P(ParameterizedTextOffsetMappingTest, RangeWithNestedFloat) {
+  InsertStyleElement("b, i { float: right; }");
+  // Note: Legacy: BODY is inline, NG: BODY is block.
+  EXPECT_EQ(LayoutNGEnabled() ? "<b>^abc <i>def</i> ghi|</b>xyz"
+                              : "^<b>abc <i>def</i> ghi</b>xyz|",
+            GetRange("<b>abc <i>d|ef</i> ghi</b>xyz"));
+}
+
+TEST_P(ParameterizedTextOffsetMappingTest, RangeWithNestedInlineBlock) {
+  InsertStyleElement("b, i { display: inline-block; }");
+  EXPECT_EQ("^<b>a <i>b</i> d</b>e|", GetRange("|<b>a <i>b</i> d</b>e"));
+  EXPECT_EQ("^<b>a <i>b</i> d</b>e|", GetRange("<b>|a <i>b</i> d</b>e"));
+  EXPECT_EQ("^<b>a <i>b</i> d</b>e|", GetRange("<b>a| <i>b</i> d</b>e"));
+  EXPECT_EQ("^<b>a <i>b</i> d</b>e|", GetRange("<b>a |<i>b</i> d</b>e"));
+  EXPECT_EQ("^<b>a <i>b</i> d</b>e|", GetRange("<b>a <i>|b</i> d</b>e"));
+  EXPECT_EQ("^<b>a <i>b</i> d</b>e|", GetRange("<b>a <i>b|</i> d</b>e"));
+  EXPECT_EQ("^<b>a <i>b</i> d</b>e|", GetRange("<b>a <i>b</i>| d</b>e"));
+  EXPECT_EQ("^<b>a <i>b</i> d</b>e|", GetRange("<b>a <i>b</i> |d</b>e"));
+  EXPECT_EQ("^<b>a <i>b</i> d</b>e|", GetRange("<b>a <i>b</i> d|</b>e"));
+  EXPECT_EQ("^<b>a <i>b</i> d</b>e|", GetRange("<b>a <i>b</i> d</b>|e"));
+  EXPECT_EQ("^<b>a <i>b</i> d</b>e|", GetRange("<b>a <i>b</i> d</b>e|"));
+}
+
+TEST_P(ParameterizedTextOffsetMappingTest, RangeWithInlineBlockBlock) {
+  InsertStyleElement("b { display:inline-block; }");
+  // TODO(editing-dev): We should have "^a<b>b|<p>"
+  EXPECT_EQ("^a<b>b<p>c</p>d</b>e|", GetRange("|a<b>b<p>c</p>d</b>e"));
+  EXPECT_EQ("^a<b>b<p>c</p>d</b>e|", GetRange("a|<b>b<p>c</p>d</b>e"));
+  EXPECT_EQ("a<b>^b|<p>c</p>d</b>e", GetRange("a<b>|b<p>c</p>d</b>e"));
+  EXPECT_EQ("a<b>^b|<p>c</p>d</b>e", GetRange("a<b>b|<p>c</p>d</b>e"));
+  EXPECT_EQ("a<b>b<p>^c|</p>d</b>e", GetRange("a<b>b<p>|c</p>d</b>e"));
+  EXPECT_EQ("a<b>b<p>^c|</p>d</b>e", GetRange("a<b>b<p>c|</p>d</b>e"));
+  EXPECT_EQ("a<b>b<p>c</p>^d|</b>e", GetRange("a<b>b<p>c</p>|d</b>e"));
+  EXPECT_EQ("^a<b>b<p>c</p>d</b>e|", GetRange("a<b>b<p>c</p>d</b>|e"));
+  EXPECT_EQ("^a<b>b<p>c</p>d</b>e|", GetRange("a<b>b<p>c</p>d</b>e|"));
+}
+
+TEST_P(ParameterizedTextOffsetMappingTest, RangeWithInlineBlockBlocks) {
+  InsertStyleElement("b { display:inline-block; }");
+  // TODO(editing-dev): We should have "^a|"
+  EXPECT_EQ("^a<b><p>b</p><p>c</p></b>d|",
+            GetRange("|a<b><p>b</p><p>c</p></b>d"));
+  EXPECT_EQ("^a<b><p>b</p><p>c</p></b>d|",
+            GetRange("a|<b><p>b</p><p>c</p></b>d"));
+  EXPECT_EQ("a<b><p>^b|</p><p>c</p></b>d",
+            GetRange("a<b>|<p>b</p><p>c</p></b>d"));
+  EXPECT_EQ("a<b><p>^b|</p><p>c</p></b>d",
+            GetRange("a<b><p>|b</p><p>c</p></b>d"));
+  EXPECT_EQ("a<b><p>^b|</p><p>c</p></b>d",
+            GetRange("a<b><p>b|</p><p>c</p></b>d"));
+  EXPECT_EQ("a<b><p>b</p><p>^c|</p></b>d",
+            GetRange("a<b><p>b</p>|<p>c</p></b>d"));
+  EXPECT_EQ("a<b><p>b</p><p>^c|</p></b>d",
+            GetRange("a<b><p>b</p><p>|c</p></b>d"));
+  EXPECT_EQ("a<b><p>b</p><p>^c|</p></b>d",
+            GetRange("a<b><p>b</p><p>c|</p></b>d"));
+  EXPECT_EQ("^a<b><p>b</p><p>c</p></b>d|",
+            GetRange("a<b><p>b</p><p>c</p>|</b>d"));
+  EXPECT_EQ("^a<b><p>b</p><p>c</p></b>d|",
+            GetRange("a<b><p>b</p><p>c</p></b>|d"));
+  EXPECT_EQ("^a<b><p>b</p><p>c</p></b>d|",
+            GetRange("a<b><p>b</p><p>c</p></b>d|"));
+}
+
+// http://crbug.com/832101
+TEST_P(ParameterizedTextOffsetMappingTest, RangeWithNestedPosition) {
+  InsertStyleElement("b, i { position: fixed; }");
+  EXPECT_EQ("<b>abc <i>^def|</i> ghi</b>xyz",
+            GetRange("<b>abc <i>d|ef</i> ghi</b>xyz"));
+}
+
+// http://crbug.com//834623
+TEST_P(ParameterizedTextOffsetMappingTest, RangeWithSelect) {
+  EXPECT_EQ(
+      "^<select>"
+      "<slot name=\"user-agent-custom-assign-slot\"></slot>"
+      "</select>foo|",
+      GetRange("<select>|</select>foo"));
+}
+
+// http://crbug.com//832350
+TEST_P(ParameterizedTextOffsetMappingTest, RangeWithShadowDOM) {
+  EXPECT_EQ("<div><slot>^abc|</slot></div>",
+            GetRange("<div>"
+                     "<template data-mode='open'><slot></slot></template>"
+                     "|abc"
+                     "</div>"));
 }
 
 TEST_P(ParameterizedTextOffsetMappingTest, GetPositionBefore) {

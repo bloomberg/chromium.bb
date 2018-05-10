@@ -34,7 +34,7 @@
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/text_offset_mapping.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
-#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/text/text_boundaries.h"
 
@@ -82,23 +82,20 @@ PositionTemplate<Strategy> EndOfWordAlgorithm(
 PositionInFlatTree NextWordPositionInternal(
     const PositionInFlatTree& position) {
   DCHECK(position.IsNotNull());
-  PositionInFlatTree block_end_position;
-  for (const LayoutBlock* block =
-           &TextOffsetMapping::ComputeContainigBlock(position);
-       block; block = TextOffsetMapping::NextBlockFor(*block)) {
-    const TextOffsetMapping mapping(*block);
+  PositionInFlatTree last_position = position;
+  for (const auto& inline_contents :
+       TextOffsetMapping::ForwardRangeOf(position)) {
+    const TextOffsetMapping mapping(inline_contents);
     const String text = mapping.GetText();
     const int offset =
-        block_end_position.IsNull() ? mapping.ComputeTextOffset(position) : 0;
+        last_position == position ? mapping.ComputeTextOffset(position) : 0;
     const int word_end =
         FindNextWordForward(text.Characters16(), text.length(), offset);
     if (offset < word_end)
       return mapping.GetPositionAfter(word_end);
-    block_end_position = mapping.GetRange().EndPosition();
+    last_position = mapping.GetRange().EndPosition();
   }
-  // TODO(yosin): Once we have a case, we should remove following |DCHECK()|.
-  DCHECK(block_end_position.IsNotNull()) << block_end_position;
-  return block_end_position;
+  return last_position;
 }
 
 unsigned PreviousWordPositionBoundary(
