@@ -216,6 +216,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWKHTTPSystemCookieStoreName,
      flag_descriptions::kWKHTTPSystemCookieStoreName, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kWKHTTPSystemCookieStore)},
+    {"enable-autofill-credit-card-upload-google-pay-branding",
+     flag_descriptions::kAutofillUpstreamUseGooglePayBrandingOnMobileName,
+     flag_descriptions::
+         kAutofillUpstreamUseGooglePayBrandingOnMobileDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUpstreamUseGooglePayBrandingOnMobile)},
     {"show-autofill-type-predictions",
      flag_descriptions::kShowAutofillTypePredictionsName,
      flag_descriptions::kShowAutofillTypePredictionsDescription,

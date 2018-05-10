@@ -2912,7 +2912,7 @@ const FeatureEntry kFeatureEntries[] = {
          kEnableAutofillCreditCardUploadGooglePayOnAndroidBrandingDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillUpstreamUseGooglePayOnAndroidBranding)},
+         autofill::features::kAutofillUpstreamUseGooglePayBrandingOnMobile)},
     {"enable-autofill-credit-card-upload-send-detected-values",
      flag_descriptions::kEnableAutofillCreditCardUploadSendDetectedValuesName,
      flag_descriptions::

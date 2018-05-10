@@ -11,6 +11,12 @@
 
 namespace flag_descriptions {
 
+const char kAutofillUpstreamUseGooglePayBrandingOnMobileName[] =
+    "Enable Google Pay branding when offering credit card upload";
+const char kAutofillUpstreamUseGooglePayBrandingOnMobileDescription[] =
+    "If enabled, shows the Google Pay logo and a shorter header message when "
+    "credit card upload to Google Payments is offered.";
+
 const char kAutofillIOSDelayBetweenFieldsName[] = "Autofill delay";
 const char kAutofillIOSDelayBetweenFieldsDescription[] =
     "Delay between the different fields of a form being autofilled. In "
