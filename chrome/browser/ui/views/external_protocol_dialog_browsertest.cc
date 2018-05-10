@@ -58,10 +58,10 @@ class TestExternalProtocolDialogDelegate
 
   // ExternalProtocolDialogDelegate:
   void DoAccept(const GURL& url, bool remember) const override {
-    // Don't call the base impl because it will actually launch |url|.
     *called_ = true;
     *accept_ = true;
     *remember_ = remember;
+    ExternalProtocolDialogDelegate::DoAccept(url, remember);
   }
 
  private:
@@ -72,9 +72,17 @@ class TestExternalProtocolDialogDelegate
   DISALLOW_COPY_AND_ASSIGN(TestExternalProtocolDialogDelegate);
 };
 
-class ExternalProtocolDialogBrowserTest : public DialogBrowserTest {
+class ExternalProtocolDialogBrowserTest
+    : public DialogBrowserTest,
+      public ExternalProtocolHandler::Delegate {
  public:
-  ExternalProtocolDialogBrowserTest() {}
+  ExternalProtocolDialogBrowserTest() {
+    ExternalProtocolHandler::SetDelegateForTesting(this);
+  }
+
+  ~ExternalProtocolDialogBrowserTest() override {
+    ExternalProtocolHandler::SetDelegateForTesting(nullptr);
+  }
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
@@ -95,6 +103,30 @@ class ExternalProtocolDialogBrowserTest : public DialogBrowserTest {
     test::ExternalProtocolDialogTestApi(dialog_).SetCheckBoxSelected(checked);
   }
 
+  // ExternalProtocolHander::Delegate:
+  scoped_refptr<shell_integration::DefaultProtocolClientWorker>
+  CreateShellWorker(
+      const shell_integration::DefaultWebClientWorkerCallback& callback,
+      const std::string& protocol) override {
+    return nullptr;
+  }
+  ExternalProtocolHandler::BlockState GetBlockState(const std::string& scheme,
+                                                    Profile* profile) override {
+    return ExternalProtocolHandler::DONT_BLOCK;
+  }
+  void BlockRequest() override {}
+  void RunExternalProtocolDialog(const GURL& url,
+                                 int render_process_host_id,
+                                 int routing_id,
+                                 ui::PageTransition page_transition,
+                                 bool has_user_gesture) override {}
+  void LaunchUrlWithoutSecurityCheck(
+      const GURL& url,
+      content::WebContents* web_contents) override {
+    url_did_launch_ = true;
+  }
+  void FinishedProcessingCheck() override {}
+
   base::HistogramTester histogram_tester_;
 
  protected:
@@ -102,6 +134,7 @@ class ExternalProtocolDialogBrowserTest : public DialogBrowserTest {
   bool called_ = false;
   bool accept_ = false;
   bool remember_ = false;
+  bool url_did_launch_ = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExternalProtocolDialogBrowserTest);
@@ -113,6 +146,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestAccept) {
   EXPECT_TRUE(called_);
   EXPECT_TRUE(accept_);
   EXPECT_FALSE(remember_);
+  EXPECT_TRUE(url_did_launch_);
   histogram_tester_.ExpectBucketCount(
       ExternalProtocolHandler::kHandleStateMetric,
       ExternalProtocolHandler::LAUNCH, 1);
@@ -126,9 +160,27 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
   EXPECT_TRUE(called_);
   EXPECT_TRUE(accept_);
   EXPECT_TRUE(remember_);
+  EXPECT_TRUE(url_did_launch_);
   histogram_tester_.ExpectBucketCount(
       ExternalProtocolHandler::kHandleStateMetric,
       ExternalProtocolHandler::CHECKED_LAUNCH, 1);
+}
+
+// Regression test for http://crbug.com/835216. The OS owns the dialog, so it
+// may may outlive the WebContents it is attached to.
+IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
+                       TestAcceptAfterCloseTab) {
+  ShowUi(std::string());
+  SetChecked(true);  // |remember_| must be true for the segfault to occur.
+  browser()->tab_strip_model()->CloseAllTabs();
+  EXPECT_TRUE(dialog_->Accept());
+  EXPECT_TRUE(called_);
+  EXPECT_TRUE(accept_);
+  EXPECT_TRUE(remember_);
+  EXPECT_FALSE(url_did_launch_);
+  histogram_tester_.ExpectBucketCount(
+      ExternalProtocolHandler::kHandleStateMetric,
+      ExternalProtocolHandler::DONT_LAUNCH, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestCancel) {
@@ -137,6 +189,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestCancel) {
   EXPECT_FALSE(called_);
   EXPECT_FALSE(accept_);
   EXPECT_FALSE(remember_);
+  EXPECT_FALSE(url_did_launch_);
   histogram_tester_.ExpectBucketCount(
       ExternalProtocolHandler::kHandleStateMetric,
       ExternalProtocolHandler::DONT_LAUNCH, 1);
@@ -150,6 +203,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
   EXPECT_FALSE(called_);
   EXPECT_FALSE(accept_);
   EXPECT_FALSE(remember_);
+  EXPECT_FALSE(url_did_launch_);
   histogram_tester_.ExpectBucketCount(
       ExternalProtocolHandler::kHandleStateMetric,
       ExternalProtocolHandler::DONT_LAUNCH, 1);
@@ -162,6 +216,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestClose) {
   EXPECT_FALSE(called_);
   EXPECT_FALSE(accept_);
   EXPECT_FALSE(remember_);
+  EXPECT_FALSE(url_did_launch_);
   histogram_tester_.ExpectBucketCount(
       ExternalProtocolHandler::kHandleStateMetric,
       ExternalProtocolHandler::DONT_LAUNCH, 1);
@@ -176,6 +231,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
   EXPECT_FALSE(called_);
   EXPECT_FALSE(accept_);
   EXPECT_FALSE(remember_);
+  EXPECT_FALSE(url_did_launch_);
   histogram_tester_.ExpectBucketCount(
       ExternalProtocolHandler::kHandleStateMetric,
       ExternalProtocolHandler::DONT_LAUNCH, 1);

@@ -63,6 +63,9 @@ void ExternalProtocolDialogDelegate::DoAccept(const GURL& url,
   content::WebContents* web_contents = tab_util::GetWebContentsByID(
       render_process_host_id_, render_view_routing_id_);
 
+  if (!web_contents)
+    return;  // The dialog may outlast the WebContents.
+
   if (remember) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
