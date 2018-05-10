@@ -12,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "content/browser/web_package/signed_exchange_certificate_chain.h"
 #include "content/common/content_export.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -107,6 +108,7 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
 
   // This is owned by SignedExchangeHandler which is the owner of |this|.
   SignedExchangeDevToolsProxy* devtools_proxy_;
+  base::Optional<base::UnguessableToken> cert_request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeCertFetcher);
 };

@@ -4,4 +4,8 @@ Tests the signed exchange information are available when the prefetch failed.
   failed: true
   statusCode: 200
   resourceType: other
+* http://localhost:8000/loading/htxg/resources/127.0.0.1.pem.msg
+  failed: false
+  statusCode: 200
+  resourceType: other
 

@@ -94,6 +94,21 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       base::Optional<const base::UnguessableToken> devtools_navigation_token,
       const GURL& outer_request_url,
       const network::ResourceResponseHead& outer_response);
+  static void OnSignedExchangeCertificateRequestSent(
+      FrameTreeNode* frame_tree_node,
+      const base::UnguessableToken& request_id,
+      const base::UnguessableToken& loader_id,
+      const network::ResourceRequest& request);
+  static void OnSignedExchangeCertificateResponseReceived(
+      FrameTreeNode* frame_tree_node,
+      const base::UnguessableToken& request_id,
+      const base::UnguessableToken& loader_id,
+      const GURL& url,
+      const network::ResourceResponseHead& head);
+  static void OnSignedExchangeCertificateRequestCompleted(
+      FrameTreeNode* frame_tree_node,
+      const base::UnguessableToken& request_id,
+      const network::URLLoaderCompletionStatus& status);
 
   static std::vector<std::unique_ptr<NavigationThrottle>>
   CreateNavigationThrottles(NavigationHandleImpl* navigation_handle);

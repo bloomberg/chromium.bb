@@ -4,6 +4,10 @@ Tests the signed exchange information are available when the navigation succeede
   failed: false
   statusCode: 200
   resourceType: signed-exchange
+* http://localhost:8000/loading/htxg/resources/127.0.0.1.pem.msg
+  failed: false
+  statusCode: 200
+  resourceType: other
 * https://www.127.0.0.1/test.html
   failed: false
   statusCode: 200
