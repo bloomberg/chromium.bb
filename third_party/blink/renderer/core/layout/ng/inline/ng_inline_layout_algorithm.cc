@@ -618,6 +618,11 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     exclusion_space =
         std::make_unique<NGExclusionSpace>(*initial_exclusion_space);
 
+    NGLineLayoutOpportunity line_opportunity(
+        opportunity.rect.LineStartOffset(), opportunity.rect.LineEndOffset(),
+        opportunity.rect.LineStartOffset(), opportunity.rect.LineEndOffset(),
+        opportunity.rect.BlockStartOffset(), LayoutUnit());
+
     NGLineInfo line_info;
     NGLineBreaker line_breaker(
         Node(), NGLineBreakerMode::kContent, constraint_space_,
@@ -626,14 +631,14 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 
     // TODO(ikilpatrick): Does this always succeed when we aren't an empty
     // inline?
-    if (!line_breaker.NextLine(opportunity, &line_info))
+    if (!line_breaker.NextLine(line_opportunity, &line_info))
       break;
 
     // If this fragment will be larger than the inline-size of the opportunity,
     // *and* the opportunity is smaller than the available inline-size, and the
     // container autowraps, continue to the next opportunity.
-    if (line_info.Width() > opportunity.rect.InlineSize() &&
-        opportunity.rect.InlineSize() !=
+    if (line_info.Width() > line_opportunity.AvailableInlineSize() &&
+        line_opportunity.AvailableInlineSize() !=
             ConstraintSpace().AvailableSize().inline_size &&
         Node().Style().AutoWrap())
       continue;

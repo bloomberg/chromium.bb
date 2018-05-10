@@ -153,8 +153,9 @@ void NGLineBreaker::ComputeBaseDirection(const NGLineInfo& line_info) {
 }
 
 // Initialize internal states for the next line.
-void NGLineBreaker::PrepareNextLine(const NGLayoutOpportunity& opportunity,
-                                    NGLineInfo* line_info) {
+void NGLineBreaker::PrepareNextLine(
+    const NGLineLayoutOpportunity& line_opportunity,
+    NGLineInfo* line_info) {
   NGInlineItemResults* item_results = &line_info->Results();
   item_results->clear();
   line_info->SetStartOffset(offset_);
@@ -177,17 +178,12 @@ void NGLineBreaker::PrepareNextLine(const NGLayoutOpportunity& opportunity,
   // regardless of 'text-indent'.
   line_.position = line_info->TextIndent();
 
-  line_.opportunity = opportunity;
-  line_.line_left_bfc_offset = opportunity.rect.LineStartOffset();
-  line_.line_right_bfc_offset = opportunity.rect.LineEndOffset();
-  bfc_block_offset_ = opportunity.rect.BlockStartOffset();
+  line_.line_opportunity = line_opportunity;
 }
 
-bool NGLineBreaker::NextLine(const NGLayoutOpportunity& opportunity,
+bool NGLineBreaker::NextLine(const NGLineLayoutOpportunity& line_opportunity,
                              NGLineInfo* line_info) {
-  bfc_block_offset_ = constraint_space_.BfcOffset().block_offset;
-
-  PrepareNextLine(opportunity, line_info);
+  PrepareNextLine(line_opportunity, line_info);
   BreakLine(line_info);
 
   if (line_info->Results().IsEmpty())
@@ -294,14 +290,14 @@ void NGLineBreaker::UpdatePosition(const NGInlineItemResults& results) {
 }
 
 void NGLineBreaker::ComputeLineLocation(NGLineInfo* line_info) const {
-  LayoutUnit bfc_line_offset = line_.line_left_bfc_offset;
+  LayoutUnit bfc_line_offset = line_.line_opportunity.line_left_offset;
   LayoutUnit available_width = line_.AvailableWidth();
 
   // Negative margins can make the position negative, but the inline size is
   // always positive or 0.
-  line_info->SetLineBfcOffset({bfc_line_offset, bfc_block_offset_},
-                              available_width,
-                              line_.position.ClampNegativeToZero());
+  line_info->SetLineBfcOffset(
+      {bfc_line_offset, line_.line_opportunity.bfc_block_offset},
+      available_width, line_.position.ClampNegativeToZero());
 }
 
 NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
@@ -397,7 +393,7 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   //   * If offset == item.EndOffset(): the break opportunity at the end fits,
   //     or the first break opportunity is beyond the end.
   //     There may be room for more characters.
-  // * If width > available_width: The first break opporunity does not fit.
+  // * If width > available_width: The first break opportunity does not fit.
   //   offset is the first break opportunity, either inside, at the end, or
   //   beyond the end.
   if (item_result->end_offset < item.EndOffset()) {
@@ -643,8 +639,6 @@ void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item,
 // We have this check if there are already UnpositionedFloats as we aren't
 // allowed to position a float "above" another float which has come before us
 // in the document.
-//
-// TODO(glebl): Add the support of clearance for inline floats.
 void NGLineBreaker::HandleFloat(const NGInlineItem& item,
                                 NGLineInfo* line_info,
                                 NGInlineItemResult* item_result) {
@@ -691,6 +685,8 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
        margins.InlineSum())
           .ClampNegativeToZero();
 
+  LayoutUnit bfc_block_offset = line_.line_opportunity.bfc_block_offset;
+
   // The float should be positioned after the current line if:
   //  - It can't fit.
   //  - It will be moved down due to block-start edge alignment.
@@ -700,9 +696,9 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
   //    the line breaker has run).
   bool float_after_line =
       !line_.CanFit(inline_margin_size) ||
-      exclusion_space_->LastFloatBlockStart() > bfc_block_offset_ ||
+      exclusion_space_->LastFloatBlockStart() > bfc_block_offset ||
       exclusion_space_->ClearanceOffset(float_style.Clear()) >
-          bfc_block_offset_ ||
+          bfc_block_offset ||
       mode_ != NGLineBreakerMode::kContent;
 
   // Check if we already have a pending float. That's because a float cannot be
@@ -711,30 +707,26 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
     AddUnpositionedFloat(unpositioned_floats_, container_builder_,
                          std::move(unpositioned_float));
   } else {
-    LayoutUnit origin_block_offset = bfc_block_offset_;
-
     NGPositionedFloat positioned_float = PositionFloat(
-        origin_block_offset, constraint_space_.BfcOffset().block_offset,
+        bfc_block_offset, constraint_space_.BfcOffset().block_offset,
         unpositioned_float.get(), constraint_space_, exclusion_space_);
     positioned_floats_->push_back(positioned_float);
 
     DCHECK_EQ(positioned_float.bfc_offset.block_offset,
-              bfc_block_offset_ + margins.block_start);
+              bfc_block_offset + margins.block_start);
 
     if (float_style.Floating() == EFloat::kLeft) {
-      line_.line_left_bfc_offset = std::max(
-          line_.line_left_bfc_offset,
+      line_.line_opportunity.line_left_offset = std::max(
+          line_.line_opportunity.line_left_offset,
           positioned_float.bfc_offset.line_offset + inline_margin_size -
               margins.LineLeft(TextDirection::kLtr));
     } else {
-      line_.line_right_bfc_offset =
-          std::min(line_.line_right_bfc_offset,
+      line_.line_opportunity.line_right_offset =
+          std::min(line_.line_opportunity.line_right_offset,
                    positioned_float.bfc_offset.line_offset -
                        margins.LineLeft(TextDirection::kLtr));
     }
 
-    DCHECK_GE(line_.line_left_bfc_offset, LayoutUnit());
-    DCHECK_GE(line_.line_right_bfc_offset, LayoutUnit());
     DCHECK_GE(line_.AvailableWidth(), LayoutUnit());
   }
 }
@@ -930,7 +922,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleOverflow(
   }
 
   // Let this line overflow.
-  // If there was a break opporunity, the overflow should stop there.
+  // If there was a break opportunity, the overflow should stop there.
   if (break_before) {
     Rewind(line_info, break_before);
     return LineBreakState::kTrailing;
