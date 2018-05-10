@@ -758,8 +758,11 @@ bool RenderWidgetHostViewChildFrame::HasSize() const {
 
 gfx::PointF RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpaceF(
     const gfx::PointF& point) {
-  if (!frame_connector_ || !last_received_local_surface_id_.is_valid())
+  // LocalSurfaceId is not needed in Viz hit-test.
+  if (!frame_connector_ ||
+      (!use_viz_hit_test_ && !last_received_local_surface_id_.is_valid())) {
     return point;
+  }
 
   return frame_connector_->TransformPointToRootCoordSpace(
       point, viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_));
@@ -784,8 +787,11 @@ bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
     RenderWidgetHostViewBase* target_view,
     gfx::PointF* transformed_point,
     viz::EventSource source) {
-  if (!frame_connector_ || !last_received_local_surface_id_.is_valid())
+  // LocalSurfaceId is not needed in Viz hit-test.
+  if (!frame_connector_ ||
+      (!use_viz_hit_test_ && !last_received_local_surface_id_.is_valid())) {
     return false;
+  }
 
   if (target_view == this) {
     *transformed_point = point;
