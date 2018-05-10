@@ -966,6 +966,29 @@ void BrowserView::SetToolbarButtonProvider(ToolbarButtonProvider* provider) {
   toolbar_button_provider_ = provider;
 }
 
+const views::View::Views BrowserView::DesiredPaintOrderForViews(
+    const views::View::Views views) {
+  // Ink drops in the toolbar can spread beyond the toolbar bounds, so if the
+  // bookmark bar is attached, we want it to be below the toolbar so the toolbar
+  // ink drops draw atop it.  This doesn't cause a problem for interactions with
+  // the bookmark bar, since it does not host any ink drops that spread beyond
+  // its bounds.  If it did, we would need to change how ink drops are drawn.
+  auto it = std::find(views.cbegin(), views.cend(), bookmark_bar_view_.get());
+  if (it == views.cend())
+    return views;
+
+  views::View::Views result = {*it};
+  for (auto* view : views) {
+    if (view != *it)
+      result.push_back(view);
+  }
+  return result;
+}
+
+views::View::Views BrowserView::GetChildrenInZOrder() {
+  return DesiredPaintOrderForViews(views::View::GetChildrenInZOrder());
+}
+
 LocationBar* BrowserView::GetLocationBar() const {
   return GetLocationBarView();
 }
@@ -2287,7 +2310,10 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
       new_parent = top_container_;
   }
   if (new_parent != bookmark_bar_view_->parent()) {
-    SetBookmarkBarParent(new_parent);
+    if (new_parent == nullptr)
+      bookmark_bar_view_->parent()->RemoveChildView(bookmark_bar_view_.get());
+    else
+      new_parent->AddChildView(bookmark_bar_view_.get());
     needs_layout = true;
   }
 
@@ -2297,38 +2323,6 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
     needs_layout = true;
 
   return needs_layout;
-}
-
-void BrowserView::SetBookmarkBarParent(views::View* new_parent) {
-  // Because children are drawn in order, the child order also affects z-order:
-  // earlier children will appear "below" later ones.  This is important for ink
-  // drops, which are drawn with the z-order of the view that parents them.  Ink
-  // drops in the toolbar can spread beyond the toolbar bounds, so if the
-  // bookmark bar is attached, we want it to be below the toolbar so the toolbar
-  // ink drops draw atop it.  This doesn't cause a problem for interactions with
-  // the bookmark bar, since it does not host any ink drops that spread beyond
-  // its bounds.  If it did, we would need to change how ink drops are drawn.
-  // TODO(bruthig): Consider a more general mechanism for manipulating the
-  // z-order of the ink drops.
-
-  if (new_parent == this) {
-    // BookmarkBarView is detached.
-    const int top_container_index = GetIndexOf(top_container_);
-    DCHECK_GE(top_container_index, 0);
-    // |top_container_| contains the toolbar, so putting the bookmark bar ahead
-    // of it will ensure it's drawn before the toolbar.
-    AddChildViewAt(bookmark_bar_view_.get(), top_container_index);
-  } else if (new_parent == top_container_) {
-    // BookmarkBarView is attached.
-
-    // The toolbar is a child of |top_container_|, so making the bookmark bar
-    // the first child ensures it's drawn before the toolbar.
-    new_parent->AddChildViewAt(bookmark_bar_view_.get(), 0);
-  } else {
-    DCHECK(!new_parent);
-    // Bookmark bar is being detached from all views because it is hidden.
-    bookmark_bar_view_->parent()->RemoveChildView(bookmark_bar_view_.get());
-  }
 }
 
 bool BrowserView::MaybeShowInfoBar(WebContents* contents) {

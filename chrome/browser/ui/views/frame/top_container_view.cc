@@ -45,3 +45,8 @@ void TopContainerView::PaintChildren(const views::PaintInfo& paint_info) {
 void TopContainerView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
+
+views::View::Views TopContainerView::GetChildrenInZOrder() {
+  return browser_view_->DesiredPaintOrderForViews(
+      views::View::GetChildrenInZOrder());
+}
