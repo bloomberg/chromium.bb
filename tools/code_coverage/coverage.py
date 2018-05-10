@@ -11,10 +11,6 @@
   "use_clang_coverage=true" and "is_component_build=false" GN flags to args.gn
   file in your build output directory (e.g. out/coverage).
 
-  Existing implementation requires "is_component_build=false" flag because
-  coverage info for dynamic libraries may be missing and "is_component_build"
-  is set to true by "is_debug" unless it is explicitly set to false.
-
   Example usage:
 
   gn gen out/coverage --args='use_clang_coverage=true is_component_build=false'
@@ -489,7 +485,6 @@ def DownloadCoverageToolsIfNeeded():
   try:
     clang_update.DownloadAndUnpack(coverage_tools_url,
                                    clang_update.LLVM_BUILD_DIR)
-    logging.info('Coverage tools %s unpacked.', package_version)
     with open(coverage_revision_stamp_file, 'w') as file_handle:
       file_handle.write('%s,%s' % (package_version, host_platform))
       file_handle.write('\n')
