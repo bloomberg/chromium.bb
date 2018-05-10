@@ -44,6 +44,27 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
       base::OnceCallback<void(unsigned int /* frame */,
                               base::TimeTicks /* timestamp */)>;
 
+  struct Property {
+    // Unique identifier for the property. 0 denotes an invalid ID.
+    uint32_t id;
+
+    // Depending on the property, this may be an actual value describing the
+    // property or an ID of another property.
+    uint32_t value;
+  };
+
+  struct CrtcProperties {
+    // Unique identifier for the CRTC. This must be greater than 0 to be valid.
+    uint32_t id;
+
+    // Optional properties.
+    Property ctm;
+    Property gamma_lut;
+    Property gamma_lut_size;
+    Property degamma_lut;
+    Property degamma_lut_size;
+  };
+
   DrmDevice(const base::FilePath& device_path,
             base::File file,
             bool is_primary_device);
@@ -192,8 +213,12 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   class IOWatcher;
   class PageFlipManager;
 
+  bool InitializeProperties();
+
   bool SetGammaRamp(uint32_t crtc_id,
                     const std::vector<display::GammaRampRGBEntry>& lut);
+
+  CrtcProperties* GetCrtcProperties(uint32_t crtc_id);
 
   // Path to the DRM device (in sysfs).
   const base::FilePath device_path_;
@@ -209,6 +234,8 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   bool is_primary_device_;
 
   bool allow_addfb2_modifiers_;
+
+  std::vector<CrtcProperties> crtc_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmDevice);
 };
