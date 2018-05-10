@@ -6149,7 +6149,7 @@ TEST_F(SpdyNetworkTransactionTest, WindowUpdateOverflow) {
 
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback.have_result());
-  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_SPDY_FLOW_CONTROL_ERROR));
   helper.VerifyDataConsumed();
 }
 

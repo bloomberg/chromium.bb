@@ -151,7 +151,7 @@ StreamDelegateCloseOnHeaders::~StreamDelegateCloseOnHeaders() = default;
 
 void StreamDelegateCloseOnHeaders::OnHeadersReceived(
     const SpdyHeaderBlock& response_headers) {
-  stream()->Cancel();
+  stream()->Cancel(ERR_ABORTED);
 }
 
 }  // namespace test

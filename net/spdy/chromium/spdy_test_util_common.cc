@@ -255,7 +255,7 @@ CompletionOnceCallback StreamReleaserCallback::MakeCallback(
 void StreamReleaserCallback::OnComplete(
     SpdyStreamRequest* request, int result) {
   if (result == OK)
-    request->ReleaseStream()->Cancel();
+    request->ReleaseStream()->Cancel(ERR_ABORTED);
   SetResult(result);
 }
 

@@ -138,7 +138,7 @@ void SpdyProxyClientSocket::Disconnect() {
   if (spdy_stream_.get()) {
     // This will cause OnClose to be invoked, which takes care of
     // cleaning up all the internal state.
-    spdy_stream_->Cancel();
+    spdy_stream_->Cancel(ERR_ABORTED);
     DCHECK(!spdy_stream_.get());
   }
 }

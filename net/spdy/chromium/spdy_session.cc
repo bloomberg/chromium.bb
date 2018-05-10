@@ -896,7 +896,7 @@ void SpdySession::CancelPush(const GURL& url) {
     return;
 
   DCHECK(active_streams_.find(stream_id) != active_streams_.end());
-  ResetStream(stream_id, ERROR_CODE_CANCEL, "Cancelled push stream.");
+  ResetStream(stream_id, ERR_ABORTED, "Cancelled push stream.");
 }
 
 void SpdySession::InitializeWithSocket(
@@ -1161,7 +1161,7 @@ void SpdySession::CloseCreatedStream(const base::WeakPtr<SpdyStream>& stream,
 }
 
 void SpdySession::ResetStream(SpdyStreamId stream_id,
-                              SpdyErrorCode error_code,
+                              int error,
                               const SpdyString& description) {
   DCHECK_NE(stream_id, 0u);
 
@@ -1171,7 +1171,7 @@ void SpdySession::ResetStream(SpdyStreamId stream_id,
     return;
   }
 
-  ResetStreamIterator(it, error_code, description);
+  ResetStreamIterator(it, error, description);
 }
 
 bool SpdySession::IsStreamActive(SpdyStreamId stream_id) const {
@@ -1906,17 +1906,30 @@ void SpdySession::CloseCreatedStreamIterator(CreatedStreamSet::iterator it,
 }
 
 void SpdySession::ResetStreamIterator(ActiveStreamMap::iterator it,
-                                      SpdyErrorCode error_code,
+                                      int error,
                                       const SpdyString& description) {
   // Send the RST_STREAM frame first as CloseActiveStreamIterator()
   // may close us.
+  SpdyErrorCode error_code = ERROR_CODE_PROTOCOL_ERROR;
+  if (error == ERR_FAILED) {
+    error_code = ERROR_CODE_INTERNAL_ERROR;
+  } else if (error == ERR_ABORTED) {
+    error_code = ERROR_CODE_CANCEL;
+  } else if (error == ERR_SPDY_FLOW_CONTROL_ERROR) {
+    error_code = ERROR_CODE_FLOW_CONTROL_ERROR;
+  } else if (error == ERR_TIMED_OUT ||
+             error == ERR_SPDY_CLIENT_REFUSED_STREAM) {
+    error_code = ERROR_CODE_REFUSED_STREAM;
+  } else if (error == ERR_SPDY_STREAM_CLOSED) {
+    error_code = ERROR_CODE_STREAM_CLOSED;
+  }
   SpdyStreamId stream_id = it->first;
   RequestPriority priority = it->second->priority();
   EnqueueResetStreamFrame(stream_id, priority, error_code, description);
 
   // Removes any pending writes for the stream except for possibly an
   // in-flight one.
-  CloseActiveStreamIterator(it, ERR_SPDY_PROTOCOL_ERROR);
+  CloseActiveStreamIterator(it, error);
 }
 
 void SpdySession::EnqueueResetStreamFrame(SpdyStreamId stream_id,
@@ -2730,8 +2743,7 @@ void SpdySession::CancelPushedStreamIfUnclaimed(SpdyStreamId stream_id) {
   LogAbandonedActiveStream(active_it, ERR_TIMED_OUT);
   // CloseActiveStreamIterator() will remove the stream from
   // |pool_->push_promise_index()|.
-  ResetStreamIterator(active_it, ERROR_CODE_REFUSED_STREAM,
-                      "Stream not claimed.");
+  ResetStreamIterator(active_it, ERR_TIMED_OUT, "Stream not claimed.");
 }
 
 void SpdySession::OnError(
@@ -2759,7 +2771,7 @@ void SpdySession::OnStreamError(SpdyStreamId stream_id,
     return;
   }
 
-  ResetStreamIterator(it, ERROR_CODE_PROTOCOL_ERROR, description);
+  ResetStreamIterator(it, ERR_SPDY_PROTOCOL_ERROR, description);
 }
 
 void SpdySession::OnPing(SpdyPingId unique_id, bool is_ack) {
@@ -3027,7 +3039,7 @@ void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
 
     if (delta_window_size < 1) {
       ResetStreamIterator(
-          it, ERROR_CODE_FLOW_CONTROL_ERROR,
+          it, ERR_SPDY_FLOW_CONTROL_ERROR,
           "Received WINDOW_UPDATE with an invalid delta_window_size.");
       return;
     }
@@ -3087,7 +3099,7 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
     if (max_concurrent_pushed_streams_ &&
         num_active_pushed_streams_ >= max_concurrent_pushed_streams_) {
       // TODO(https://crbug.com/831536): Add histogram.
-      ResetStream(stream_id, ERROR_CODE_REFUSED_STREAM,
+      ResetStream(stream_id, ERR_SPDY_CLIENT_REFUSED_STREAM,
                   "Stream concurrency limit reached.");
       return;
     }

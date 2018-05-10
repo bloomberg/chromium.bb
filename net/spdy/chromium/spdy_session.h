@@ -380,7 +380,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // stream with the given ID, which must exist and be active. Note
   // that that stream may hold the last reference to the session.
   void ResetStream(SpdyStreamId stream_id,
-                   SpdyErrorCode error_code,
+                   int error,
                    const SpdyString& description);
 
   // Check if a stream is active.
@@ -611,7 +611,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Calls EnqueueResetStreamFrame() and then
   // CloseActiveStreamIterator().
   void ResetStreamIterator(ActiveStreamMap::iterator it,
-                           SpdyErrorCode error_code,
+                           int status,
                            const SpdyString& description);
 
   // Send a RST_STREAM frame with the given parameters. There should
