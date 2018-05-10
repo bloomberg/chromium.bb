@@ -5,6 +5,7 @@
 #include "chromeos/dbus/dbus_clients_browser.h"
 
 #include "base/logging.h"
+#include "chromeos/dbus/arc_appfuse_provider_client.h"
 #include "chromeos/dbus/arc_midis_client.h"
 #include "chromeos/dbus/arc_obb_mounter_client.h"
 #include "chromeos/dbus/arc_oemcrypto_client.h"
@@ -15,6 +16,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/easy_unlock_client.h"
+#include "chromeos/dbus/fake_arc_appfuse_provider_client.h"
 #include "chromeos/dbus/fake_arc_midis_client.h"
 #include "chromeos/dbus/fake_arc_obb_mounter_client.h"
 #include "chromeos/dbus/fake_arc_oemcrypto_client.h"
@@ -38,6 +40,13 @@
 namespace chromeos {
 
 DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
+  if (use_real_clients) {
+    arc_appfuse_provider_client_ = ArcAppfuseProviderClient::Create();
+  } else {
+    arc_appfuse_provider_client_ =
+        std::make_unique<FakeArcAppfuseProviderClient>();
+  }
+
   if (use_real_clients)
     arc_midis_client_ = ArcMidisClient::Create();
   else
