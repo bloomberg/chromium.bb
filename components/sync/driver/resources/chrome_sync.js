@@ -105,6 +105,13 @@ cr.define('chrome.sync', function() {
   };
 
   /**
+   * Triggers a GetUpdates call for all enabled datatypes.
+   */
+  var triggerRefresh = function() {
+    chrome.send('triggerRefresh');
+  };
+
+  /**
    * Counter to uniquely identify requests while they're in progress.
    * Used in the implementation of GetAllNodes.
    */
@@ -153,5 +160,6 @@ cr.define('chrome.sync', function() {
     requestUserEventsVisibility: requestUserEventsVisibility,
     setIncludeSpecifics: setIncludeSpecifics,
     writeUserEvent: writeUserEvent,
+    triggerRefresh: triggerRefresh,
   };
 });

@@ -17,6 +17,8 @@
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/base/enum_set.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/driver/about_sync_util.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -127,6 +129,11 @@ void SyncInternalsMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       syncer::sync_ui_util::kWriteUserEvent,
       base::BindRepeating(&SyncInternalsMessageHandler::HandleWriteUserEvent,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      syncer::sync_ui_util::kTriggerRefresh,
+      base::BindRepeating(&SyncInternalsMessageHandler::HandleTriggerRefresh,
                           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
@@ -254,6 +261,18 @@ void SyncInternalsMessageHandler::HandleWriteUserEvent(
   }
 
   user_event_service->RecordUserEvent(event_specifics);
+}
+
+void SyncInternalsMessageHandler::HandleTriggerRefresh(
+    const base::ListValue* args) {
+  SyncService* service = GetSyncService();
+  if (!service)
+    return;
+
+  // Only allowed to trigger refresh/schedule nudges for protocol types, things
+  // like PROXY_TABS are not allowed.
+  service->TriggerRefresh(syncer::Intersection(service->GetActiveDataTypes(),
+                                               syncer::ProtocolTypes()));
 }
 
 void SyncInternalsMessageHandler::OnReceivedAllNodes(

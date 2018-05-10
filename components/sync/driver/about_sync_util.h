@@ -53,6 +53,7 @@ extern const char kRequestUserEventsVisibility[];
 extern const char kSetIncludeSpecifics[];
 extern const char kUserEventsVisibilityCallback[];
 extern const char kWriteUserEvent[];
+extern const char kTriggerRefresh[];
 
 // Other strings.
 // Must match the constants used in the resource files.

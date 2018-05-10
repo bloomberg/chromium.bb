@@ -122,6 +122,11 @@ cr.define('chrome.sync.about_tab', function() {
 
     // Make the prototype jscontent element disappear.
     jstProcess({}, $('traffic-event-container'));
+
+    var triggerRefreshButton = $('trigger-refresh');
+    triggerRefreshButton.addEventListener('click', function(event) {
+      chrome.sync.triggerRefresh();
+    });
   }
 
   /**
