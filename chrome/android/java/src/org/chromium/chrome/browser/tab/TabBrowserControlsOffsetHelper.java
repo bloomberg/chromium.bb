@@ -63,6 +63,7 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver {
     TabBrowserControlsOffsetHelper(Tab tab) {
         mTab = tab;
         VrShellDelegate.registerVrModeObserver(this);
+        if (VrShellDelegate.isInVr()) onEnterVr();
     }
 
     /**
@@ -258,7 +259,11 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver {
     @Override
     public void onExitVr() {
         mIsInVr = false;
+        // Call resetPositions() to clear the VR-specific overrides for controls height.
         resetPositions();
+        // Show the Controls explicitly because under some situations, like when we're showing a
+        // Native Page, the renderer won't send any new offsets.
+        showAndroidControls(false);
     }
 
     /**
