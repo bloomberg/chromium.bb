@@ -387,12 +387,12 @@ class NET_EXPORT_PRIVATE SpdyStream {
   int64_t raw_received_bytes() const { return raw_received_bytes_; }
   int64_t raw_sent_bytes() const { return raw_sent_bytes_; }
   int recv_bytes() const { return recv_bytes_; }
-  bool ShouldRetryRSTPushStream();
+  bool ShouldRetryRSTPushStream() const;
 
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const;
 
-  const SpdyHeaderBlock& request_headers() { return request_headers_; }
-  const SpdyHeaderBlock& response_headers() { return response_headers_; }
+  const SpdyHeaderBlock& request_headers() const { return request_headers_; }
+  const SpdyHeaderBlock& response_headers() const { return response_headers_; }
 
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
