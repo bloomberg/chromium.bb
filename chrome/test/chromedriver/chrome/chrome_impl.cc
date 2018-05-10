@@ -14,11 +14,8 @@
 #include "chrome/test/chromedriver/chrome/page_load_strategy.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/web_view_impl.h"
-#include "chrome/test/chromedriver/net/port_server.h"
 
 ChromeImpl::~ChromeImpl() {
-  if (!quit_)
-    port_reservation_->Leak();
 }
 
 Status ChromeImpl::GetAsDesktop(ChromeDesktopImpl** desktop) {
@@ -184,11 +181,9 @@ ChromeImpl::ChromeImpl(std::unique_ptr<DevToolsHttpClient> http_client,
                        std::unique_ptr<DevToolsClient> websocket_client,
                        std::vector<std::unique_ptr<DevToolsEventListener>>
                            devtools_event_listeners,
-                       std::unique_ptr<PortReservation> port_reservation,
                        std::string page_load_strategy)
     : quit_(false),
       devtools_http_client_(std::move(http_client)),
       devtools_websocket_client_(std::move(websocket_client)),
       devtools_event_listeners_(std::move(devtools_event_listeners)),
-      port_reservation_(std::move(port_reservation)),
       page_load_strategy_(page_load_strategy) {}

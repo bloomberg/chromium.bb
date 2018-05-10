@@ -27,8 +27,8 @@ class FakeAdb : public Adb {
   }
 
   Status ForwardPort(const std::string& device_serial,
-                     int local_port,
-                     const std::string& remote_abstract) override {
+                     const std::string& remote_abstract,
+                     int* local_port) override {
     return Status(kOk);
   }
 

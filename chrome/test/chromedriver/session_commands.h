@@ -18,8 +18,6 @@ class Value;
 }
 
 class DeviceManager;
-class PortManager;
-class PortServer;
 struct Session;
 class Status;
 class URLRequestContextGetter;
@@ -27,17 +25,13 @@ class URLRequestContextGetter;
 struct InitSessionParams {
   InitSessionParams(scoped_refptr<URLRequestContextGetter> context_getter,
                     const SyncWebSocketFactory& socket_factory,
-                    DeviceManager* device_manager,
-                    PortServer* port_server,
-                    PortManager* port_manager);
+                    DeviceManager* device_manager);
   InitSessionParams(const InitSessionParams& other);
   ~InitSessionParams();
 
   scoped_refptr<URLRequestContextGetter> context_getter;
   SyncWebSocketFactory socket_factory;
   DeviceManager* device_manager;
-  PortServer* port_server;
-  PortManager* port_manager;
 };
 
 bool MergeCapabilities(const base::DictionaryValue* always_match,

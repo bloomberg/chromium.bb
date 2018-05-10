@@ -93,14 +93,10 @@ Status EvaluateScriptAndIgnoreResult(Session* session, std::string expression) {
 InitSessionParams::InitSessionParams(
     scoped_refptr<URLRequestContextGetter> context_getter,
     const SyncWebSocketFactory& socket_factory,
-    DeviceManager* device_manager,
-    PortServer* port_server,
-    PortManager* port_manager)
+    DeviceManager* device_manager)
     : context_getter(context_getter),
       socket_factory(socket_factory),
-      device_manager(device_manager),
-      port_server(port_server),
-      port_manager(port_manager) {}
+      device_manager(device_manager) {}
 
 InitSessionParams::InitSessionParams(const InitSessionParams& other) = default;
 
@@ -268,7 +264,6 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   status =
       LaunchChrome(bound_params.context_getter.get(),
                    bound_params.socket_factory, bound_params.device_manager,
-                   bound_params.port_server, bound_params.port_manager,
                    capabilities, std::move(devtools_event_listeners),
                    &session->chrome, session->w3c_compliant);
   if (status.IsError())

@@ -200,3 +200,48 @@ TEST(PrepareUserDataDir, CustomPrefs) {
   AssertEQ(*local_state_dict, "myLocalKey", "ok");
   AssertEQ(*local_state_dict, "local.state.sub", "2");
 }
+
+TEST(DesktopLauncher, ReadInPort_Success) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  char data[] = "12345\nblahblah";
+  base::FilePath temp_file =
+      temp_dir.GetPath().Append(FILE_PATH_LITERAL("DevToolsActivePort"));
+  ASSERT_TRUE(base::WriteFile(temp_file, data, strlen(data)));
+  int port;
+  ASSERT_TRUE(internal::ReadInPort(temp_file, &port).IsOk());
+  ASSERT_EQ(port, 12345);
+}
+
+TEST(DesktopLauncher, ReadInPort_NoNewline) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  char data[] = "12345";
+  base::FilePath temp_file =
+      temp_dir.GetPath().Append(FILE_PATH_LITERAL("DevToolsActivePort"));
+  ASSERT_TRUE(base::WriteFile(temp_file, data, strlen(data)));
+  int port = 1111;
+  ASSERT_FALSE(internal::ReadInPort(temp_file, &port).IsOk());
+  ASSERT_EQ(port, 1111);
+}
+
+TEST(DesktopLauncher, ReadInPort_NotNumber) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  char data[] = "12345asdf\nblahblah";
+  base::FilePath temp_file =
+      temp_dir.GetPath().Append(FILE_PATH_LITERAL("DevToolsActivePort"));
+  ASSERT_TRUE(base::WriteFile(temp_file, data, strlen(data)));
+  int port;
+  ASSERT_FALSE(internal::ReadInPort(temp_file, &port).IsOk());
+}
+
+TEST(DesktopLauncher, ReadInPort_NoFile) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath temp_file =
+      temp_dir.GetPath().Append(FILE_PATH_LITERAL("DevToolsActivePort"));
+  int port = 1111;
+  ASSERT_FALSE(internal::ReadInPort(temp_file, &port).IsOk());
+  ASSERT_EQ(port, 1111);
+}
