@@ -23,10 +23,7 @@ namespace {
 
 // Ink drop parameters.
 constexpr float kInkDropVisibleOpacity = 0.06f;
-constexpr float kHighlightVisibleOpacity = 0.08f;
 constexpr int kInkDropCornerRadius = 14;
-constexpr gfx::Size kInkDropHighlightSize{2 * kInkDropCornerRadius,
-                                          2 * kInkDropCornerRadius};
 
 // The duration of the crossfade animation when swapping the button's images.
 const int kSwapImagesAnimationDurationMs = 200;
@@ -58,6 +55,8 @@ bool UseLightColor(FrameCaptionButton::ColorMode color_mode,
 // from the button size in order to achieve a circular inkdrop with a size
 // equals to kInkDropHighlightSize.
 gfx::Insets GetInkdropInsets(const gfx::Size& button_size) {
+  constexpr gfx::Size kInkDropHighlightSize{2 * kInkDropCornerRadius,
+                                            2 * kInkDropCornerRadius};
   return gfx::Insets(
       (button_size.height() - kInkDropHighlightSize.height()) / 2,
       (button_size.width() - kInkDropHighlightSize.width()) / 2);
@@ -190,9 +189,8 @@ views::PaintInfo::ScaleType FrameCaptionButton::GetPaintScaleType() const {
 
 std::unique_ptr<views::InkDrop> FrameCaptionButton::CreateInkDrop() {
   auto ink_drop = std::make_unique<views::InkDropImpl>(this, size());
-  ink_drop->SetAutoHighlightMode(
-      views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
-  ink_drop->SetShowHighlightOnHover(true);
+  ink_drop->SetAutoHighlightMode(views::InkDropImpl::AutoHighlightMode::NONE);
+  ink_drop->SetShowHighlightOnHover(false);
   return ink_drop;
 }
 
@@ -201,16 +199,6 @@ std::unique_ptr<views::InkDropRipple> FrameCaptionButton::CreateInkDropRipple()
   return std::make_unique<views::FloodFillInkDropRipple>(
       size(), GetInkdropInsets(size()), GetInkDropCenterBasedOnLastEvent(),
       GetInkDropBaseColor(), ink_drop_visible_opacity());
-}
-
-std::unique_ptr<views::InkDropHighlight>
-FrameCaptionButton::CreateInkDropHighlight() const {
-  auto highlight = std::make_unique<views::InkDropHighlight>(
-      kInkDropHighlightSize, kInkDropCornerRadius,
-      gfx::PointF(GetMirroredRect(GetContentsBounds()).CenterPoint()),
-      GetInkDropBaseColor());
-  highlight->set_visible_opacity(kHighlightVisibleOpacity);
-  return highlight;
 }
 
 std::unique_ptr<views::InkDropMask> FrameCaptionButton::CreateInkDropMask()
@@ -236,6 +224,30 @@ void FrameCaptionButton::SetColorMode(ColorMode color_mode) {
 }
 
 void FrameCaptionButton::PaintButtonContents(gfx::Canvas* canvas) {
+  constexpr SkAlpha kHighlightVisibleOpacity = 0x14;
+  SkAlpha highlight_alpha = SK_AlphaTRANSPARENT;
+  if (hover_animation().is_animating()) {
+    highlight_alpha = hover_animation().CurrentValueBetween(
+        SK_AlphaTRANSPARENT, kHighlightVisibleOpacity);
+  } else if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
+    // Painting a circular highlight in both "hovered" and "pressed" states
+    // simulates and ink drop highlight mode of
+    // AutoHighlightMode::SHOW_ON_RIPPLE.
+    highlight_alpha = kHighlightVisibleOpacity;
+  }
+
+  if (highlight_alpha != SK_AlphaTRANSPARENT) {
+    // We paint the highlight manually here rather than relying on the ink drop
+    // highlight as it doesn't work well when the button size is changing while
+    // the window is moving as a result of the animation from normal to
+    // maximized state or vice versa. https://crbug.com/840901.
+    cc::PaintFlags flags;
+    flags.setColor(GetInkDropBaseColor());
+    flags.setAlpha(highlight_alpha);
+    const gfx::Point center(GetMirroredRect(GetContentsBounds()).CenterPoint());
+    canvas->DrawCircle(center, kInkDropCornerRadius, flags);
+  }
+
   int icon_alpha = swap_images_animation_->CurrentValueBetween(0, 255);
   int crossfade_icon_alpha = 0;
   if (icon_alpha < static_cast<int>(kFadeOutRatio * 255))
