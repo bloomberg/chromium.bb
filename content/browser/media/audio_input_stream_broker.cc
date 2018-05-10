@@ -92,8 +92,8 @@ AudioInputStreamBroker::~AudioInputStreamBroker() {
       browser_main_loop->keyboard_mic_registration()->Deregister();
   }
 #else
-  // Check that DisableKeyPressMonitoring() was called.
-  DCHECK(!user_input_monitor_);
+  if (user_input_monitor_)
+    user_input_monitor_->DisableKeyPressMonitoring();
 #endif
 
   auto* process_host = RenderProcessHost::FromID(render_process_id());
@@ -170,13 +170,6 @@ void AudioInputStreamBroker::StreamCreated(
 
 void AudioInputStreamBroker::Cleanup() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (user_input_monitor_) {
-    user_input_monitor_->DisableKeyPressMonitoring();
-
-    // Set to nullptr to check that DisableKeyPressMonitoring() was called
-    // before destructor
-    user_input_monitor_ = nullptr;
-  }
 
   std::move(deleter_).Run(this);
 }
