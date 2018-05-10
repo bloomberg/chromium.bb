@@ -283,6 +283,21 @@ red-green.h264.md5:
   not specified to the last bit and GLES shader/texture filtering
   precision varies.
 
+// VDA test files: resolution_change_500frames
+resolution_change_500frames-vp8.ivf
+resolution_change_500frames-vp9.ivf
+  Dumped compressed stream of videos on http://crosvideo.appspot.com manually
+  changing resolutions at random.
+  Those contain 144p, 240p, 360p, 480p, 720p, and 1080p frames.
+  Those frame sizes can be found by
+  ffprobe -show_frames resolution_change_500frames.vp8
+
+// VDA test files: switch_1080p_720p_240frames
+switch_1080p_720p_240frames.h264
+  Extract 240 frames using ffmpeg from
+  http://commondatastorage.googleapis.com/chromiumos-test-assets-public/MSE/switch_1080p_720p.mp4.
+  The frame sizes change between 1080p and 720p every 24 frames.
+
 // VEA test files:
 bear_320x192_40frames.yuv
   First 40 raw i420 frames of bear-1280x720.mp4 scaled down to 320x192 for

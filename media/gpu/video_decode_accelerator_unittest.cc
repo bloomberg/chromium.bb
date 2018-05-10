@@ -498,6 +498,7 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
   LOG_ASSERT((pixel_format_ == PIXEL_FORMAT_UNKNOWN) ||
              (pixel_format_ == pixel_format));
   pixel_format_ = pixel_format;
+  frame_size_ = dimensions;
 
   texture_target_ = texture_target;
   for (uint32_t i = 0; i < requested_num_of_buffers; ++i) {
@@ -561,7 +562,7 @@ void GLRenderingVDAClient::PictureReady(const Picture& picture) {
 
   gfx::Rect visible_rect = picture.visible_rect();
   if (!visible_rect.IsEmpty())
-    EXPECT_EQ(gfx::Rect(frame_size_), visible_rect);
+    EXPECT_TRUE(gfx::Rect(frame_size_).Contains(visible_rect));
 
   base::TimeTicks now = base::TimeTicks::Now();
 
