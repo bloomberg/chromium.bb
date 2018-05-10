@@ -227,6 +227,7 @@ enum BadMessageReason {
   SYNC_COMPOSITOR_NO_BEGIN_FRAME = 199,
   WEBUI_BAD_HOST_ACCESS = 200,
   RFMF_BLOB_URL_TOKEN_FOR_NON_BLOB_URL = 201,
+  PERMISSION_SERVICE_BAD_PERMISSION_DESCRIPTOR = 202,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

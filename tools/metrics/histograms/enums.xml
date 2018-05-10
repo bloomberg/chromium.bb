@@ -3110,6 +3110,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="199" label="SYNC_COMPOSITOR_NO_BEGIN_FRAME"/>
   <int value="200" label="WEBUI_BAD_HOST_ACCESS"/>
   <int value="201" label="RFMF_BLOB_URL_TOKEN_FOR_NON_BLOB_URL"/>
+  <int value="202" label="PERMISSION_SERVICE_BAD_PERMISSION_DESCRIPTOR"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">

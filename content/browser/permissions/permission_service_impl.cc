@@ -10,6 +10,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
+#include "build/build_config.h"
+#include "content/browser/bad_message.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"
@@ -24,44 +27,64 @@ namespace content {
 
 namespace {
 
-PermissionType PermissionDescriptorToPermissionType(
-    const PermissionDescriptorPtr& descriptor) {
+bool PermissionDescriptorToPermissionType(
+    const PermissionDescriptorPtr& descriptor,
+    PermissionType* permission_type) {
   switch (descriptor->name) {
     case PermissionName::GEOLOCATION:
-      return PermissionType::GEOLOCATION;
+      *permission_type = PermissionType::GEOLOCATION;
+      return true;
     case PermissionName::NOTIFICATIONS:
-      return PermissionType::NOTIFICATIONS;
+      *permission_type = PermissionType::NOTIFICATIONS;
+      return true;
     case PermissionName::MIDI: {
       if (descriptor->extension && descriptor->extension->is_midi() &&
           descriptor->extension->get_midi()->sysex) {
-        return PermissionType::MIDI_SYSEX;
+        *permission_type = PermissionType::MIDI_SYSEX;
+        return true;
       }
-      return PermissionType::MIDI;
+      *permission_type = PermissionType::MIDI;
+      return true;
     }
     case PermissionName::PROTECTED_MEDIA_IDENTIFIER:
-      return PermissionType::PROTECTED_MEDIA_IDENTIFIER;
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+      *permission_type = PermissionType::PROTECTED_MEDIA_IDENTIFIER;
+      return true;
+#else
+      NOTIMPLEMENTED();
+      return false;
+#endif
     case PermissionName::DURABLE_STORAGE:
-      return PermissionType::DURABLE_STORAGE;
+      *permission_type = PermissionType::DURABLE_STORAGE;
+      return true;
     case PermissionName::AUDIO_CAPTURE:
-      return PermissionType::AUDIO_CAPTURE;
+      *permission_type = PermissionType::AUDIO_CAPTURE;
+      return true;
     case PermissionName::VIDEO_CAPTURE:
-      return PermissionType::VIDEO_CAPTURE;
+      *permission_type = PermissionType::VIDEO_CAPTURE;
+      return true;
     case PermissionName::BACKGROUND_SYNC:
-      return PermissionType::BACKGROUND_SYNC;
+      *permission_type = PermissionType::BACKGROUND_SYNC;
+      return true;
     case PermissionName::SENSORS:
-      return PermissionType::SENSORS;
+      *permission_type = PermissionType::SENSORS;
+      return true;
     case PermissionName::ACCESSIBILITY_EVENTS:
-      return PermissionType::ACCESSIBILITY_EVENTS;
+      *permission_type = PermissionType::ACCESSIBILITY_EVENTS;
+      return true;
     case PermissionName::CLIPBOARD_READ:
-      return PermissionType::CLIPBOARD_READ;
+      *permission_type = PermissionType::CLIPBOARD_READ;
+      return true;
     case PermissionName::CLIPBOARD_WRITE:
-      return PermissionType::CLIPBOARD_WRITE;
+      *permission_type = PermissionType::CLIPBOARD_WRITE;
+      return true;
     case PermissionName::PAYMENT_HANDLER:
-      return PermissionType::PAYMENT_HANDLER;
+      *permission_type = PermissionType::PAYMENT_HANDLER;
+      return true;
   }
 
   NOTREACHED();
-  return PermissionType::NUM;
+  return false;
 }
 
 // This function allows the usage of the the multiple request map with single
@@ -145,8 +168,12 @@ void PermissionServiceImpl::RequestPermissions(
   }
 
   std::vector<PermissionType> types(permissions.size());
-  for (size_t i = 0; i < types.size(); ++i)
-    types[i] = PermissionDescriptorToPermissionType(permissions[i]);
+  for (size_t i = 0; i < types.size(); ++i) {
+    if (!PermissionDescriptorToPermissionType(permissions[i], &types[i])) {
+      ReceivedBadMessage();
+      return;
+    }
+  }
 
   std::unique_ptr<PendingRequest> pending_request =
       std::make_unique<PendingRequest>(types, std::move(callback));
@@ -182,8 +209,11 @@ void PermissionServiceImpl::HasPermission(PermissionDescriptorPtr permission,
 void PermissionServiceImpl::RevokePermission(
     PermissionDescriptorPtr permission,
     PermissionStatusCallback callback) {
-  PermissionType permission_type =
-      PermissionDescriptorToPermissionType(permission);
+  PermissionType permission_type;
+  if (!PermissionDescriptorToPermissionType(permission, &permission_type)) {
+    ReceivedBadMessage();
+    return;
+  }
   PermissionStatus status = GetPermissionStatusFromType(permission_type);
 
   // Resetting the permission should only be possible if the permission is
@@ -208,14 +238,23 @@ void PermissionServiceImpl::AddPermissionObserver(
     last_known_status = current_status;
   }
 
-  context_->CreateSubscription(PermissionDescriptorToPermissionType(permission),
-                               origin_, std::move(observer));
+  PermissionType type;
+  if (!PermissionDescriptorToPermissionType(permission, &type)) {
+    ReceivedBadMessage();
+    return;
+  }
+
+  context_->CreateSubscription(type, origin_, std::move(observer));
 }
 
 PermissionStatus PermissionServiceImpl::GetPermissionStatus(
     const PermissionDescriptorPtr& permission) {
-  return GetPermissionStatusFromType(
-      PermissionDescriptorToPermissionType(permission));
+  PermissionType type;
+  if (!PermissionDescriptorToPermissionType(permission, &type)) {
+    ReceivedBadMessage();
+    return PermissionStatus::DENIED;
+  }
+  return GetPermissionStatusFromType(type);
 }
 
 PermissionStatus PermissionServiceImpl::GetPermissionStatusFromType(
@@ -252,6 +291,18 @@ void PermissionServiceImpl::ResetPermissionStatus(PermissionType type) {
   browser_context->GetPermissionManager()->ResetPermission(
       type, requesting_origin,
       embedding_origin.is_empty() ? requesting_origin : embedding_origin);
+}
+
+void PermissionServiceImpl::ReceivedBadMessage() {
+  if (context_->render_frame_host()) {
+    bad_message::ReceivedBadMessage(
+        context_->render_frame_host()->GetProcess(),
+        bad_message::PERMISSION_SERVICE_BAD_PERMISSION_DESCRIPTOR);
+  } else {
+    bad_message::ReceivedBadMessage(
+        context_->render_process_host(),
+        bad_message::PERMISSION_SERVICE_BAD_PERMISSION_DESCRIPTOR);
+  }
 }
 
 }  // namespace content
