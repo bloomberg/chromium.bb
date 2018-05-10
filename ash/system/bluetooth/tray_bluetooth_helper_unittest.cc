@@ -9,12 +9,25 @@
 #include "ash/test/ash_test_base.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
+#include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
 
 using bluez::BluezDBusManager;
 using bluez::FakeBluetoothAdapterClient;
+using bluez::FakeBluetoothDeviceClient;
 
 namespace ash {
 namespace {
+
+// Returns true if device with |address| exists in the filtered device list.
+// Returns false otherwise.
+bool ExistInFilteredDevices(const std::string& address,
+                            BluetoothDeviceList filtered_devices) {
+  for (const auto& device : filtered_devices) {
+    if (device.address == address)
+      return true;
+  }
+  return false;
+}
 
 using TrayBluetoothHelperTest = AshTestBase;
 
@@ -27,6 +40,18 @@ TEST_F(TrayBluetoothHelperTest, Basics) {
           BluezDBusManager::Get()->GetBluetoothAdapterClient());
   adapter_client->SetSimulationIntervalMs(0);
 
+  FakeBluetoothDeviceClient* device_client =
+      static_cast<FakeBluetoothDeviceClient*>(
+          BluezDBusManager::Get()->GetBluetoothDeviceClient());
+  // A classic bluetooth keyboard device shouldn't be filtered out.
+  device_client->CreateDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kDisplayPinCodePath));
+  // A low energy bluetooth heart rate monitor should be filtered out.
+  device_client->CreateDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+
   TrayBluetoothHelper helper;
   helper.Initialize();
   RunAllPendingInMessageLoop();
@@ -37,6 +62,10 @@ TEST_F(TrayBluetoothHelperTest, Basics) {
   BluetoothDeviceList devices = helper.GetAvailableBluetoothDevices();
   // The devices are fake in tests, so don't assume any particular number.
   EXPECT_FALSE(devices.empty());
+  EXPECT_TRUE(ExistInFilteredDevices(
+      FakeBluetoothDeviceClient::kDisplayPinCodeAddress, devices));
+  EXPECT_FALSE(ExistInFilteredDevices(
+      FakeBluetoothDeviceClient::kLowEnergyAddress, devices));
 
   helper.StartBluetoothDiscovering();
   RunAllPendingInMessageLoop();
