@@ -8,6 +8,7 @@
 #include <climits>
 
 #include "base/containers/stack_container.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -20,7 +21,8 @@ namespace {
 
 // The prefix for IPv6 mapped IPv4 addresses.
 // https://tools.ietf.org/html/rfc4291#section-2.5.5.2
-const uint8_t kIPv4MappedPrefix[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF};
+constexpr uint8_t kIPv4MappedPrefix[] = {0, 0, 0, 0, 0,    0,
+                                         0, 0, 0, 0, 0xFF, 0xFF};
 
 // Note that this function assumes:
 // * |ip_address| is at least |prefix_length_in_bits| (bits) long;
@@ -359,7 +361,7 @@ IPAddress ConvertIPv4MappedIPv6ToIPv4(const IPAddress& address) {
 
   base::StackVector<uint8_t, 16> bytes;
   bytes->insert(bytes->end(),
-                address.bytes().begin() + arraysize(kIPv4MappedPrefix),
+                address.bytes().begin() + base::size(kIPv4MappedPrefix),
                 address.bytes().end());
   return IPAddress(bytes->data(), bytes->size());
 }

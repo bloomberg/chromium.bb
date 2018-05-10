@@ -43,11 +43,11 @@ TEST(DirectoryListingTest, GetDirectoryListingEntry) {
        ",0,10000,\"9.8 kB\",0,\"\");</script>\n"},
   };
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (const auto& test_case : test_cases) {
     const std::string results = GetDirectoryListingEntry(
-        base::WideToUTF16(test_cases[i].name), test_cases[i].raw_bytes,
-        test_cases[i].is_dir, test_cases[i].filesize, test_cases[i].time);
-    EXPECT_EQ(test_cases[i].expected, results);
+        base::WideToUTF16(test_case.name), test_case.raw_bytes,
+        test_case.is_dir, test_case.filesize, test_case.time);
+    EXPECT_EQ(test_case.expected, results);
   }
 }
 

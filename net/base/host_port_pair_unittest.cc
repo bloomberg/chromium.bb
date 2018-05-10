@@ -42,8 +42,8 @@ TEST(HostPortPairTest, BadString) {
       "www.google.com:+1", "127.0.0.1:65536", "[2001:db8::42]:65536",
   };
 
-  for (size_t index = 0; index < arraysize(kBadStrings); ++index) {
-    HostPortPair foo = HostPortPair::FromString(kBadStrings[index]);
+  for (const auto* const test : kBadStrings) {
+    HostPortPair foo = HostPortPair::FromString(test);
     EXPECT_TRUE(foo.host().empty());
     EXPECT_EQ(0, foo.port());
   }
@@ -57,9 +57,9 @@ TEST(HostPortPairTest, Emptiness) {
 }
 
 TEST(HostPortPairTest, ToString) {
-  for (size_t index = 0; index < arraysize(tests); ++index) {
-    HostPortPair foo(tests[index].host, tests[index].port);
-    EXPECT_EQ(tests[index].to_string, foo.ToString());
+  for (const auto& test : tests) {
+    HostPortPair foo(test.host, test.port);
+    EXPECT_EQ(test.to_string, foo.ToString());
   }
 
   // Test empty hostname.
@@ -67,9 +67,9 @@ TEST(HostPortPairTest, ToString) {
 }
 
 TEST(HostPortPairTest, HostForURL) {
-  for (size_t index = 0; index < arraysize(tests); ++index) {
-    HostPortPair foo(tests[index].host, tests[index].port);
-    EXPECT_EQ(tests[index].host_for_url, foo.HostForURL());
+  for (const auto& test : tests) {
+    HostPortPair foo(test.host, test.port);
+    EXPECT_EQ(test.host_for_url, foo.HostForURL());
   }
 
   // Test hostname with null character.

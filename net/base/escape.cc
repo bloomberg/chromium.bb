@@ -5,6 +5,7 @@
 #include "net/base/escape.h"
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
@@ -143,7 +144,7 @@ bool UnescapeUTF8CharacterAtIndex(base::StringPiece escaped_text,
     // reach max character length number of bytes, or hit an unescaped
     // character. No need to check length of escaped_text, as
     // UnescapeUnsignedByteAtIndex checks lengths.
-    while (num_bytes < arraysize(bytes) &&
+    while (num_bytes < base::size(bytes) &&
            UnescapeUnsignedByteAtIndex(escaped_text, index + num_bytes * 3,
                                        &bytes[num_bytes]) &&
            CBU8_IS_TRAIL(bytes[num_bytes])) {
@@ -323,9 +324,9 @@ std::string UnescapeURLWithAdjustmentsImpl(
 
 template <class str>
 void AppendEscapedCharForHTMLImpl(typename str::value_type c, str* output) {
-  static const struct {
+  static constexpr struct {
     char key;
-    const char* replacement;
+    base::StringPiece replacement;
   } kCharsToEscape[] = {
     { '<', "&lt;" },
     { '>', "&gt;" },
@@ -333,17 +334,14 @@ void AppendEscapedCharForHTMLImpl(typename str::value_type c, str* output) {
     { '"', "&quot;" },
     { '\'', "&#39;" },
   };
-  size_t k;
-  for (k = 0; k < arraysize(kCharsToEscape); ++k) {
-    if (c == kCharsToEscape[k].key) {
-      const char* p = kCharsToEscape[k].replacement;
-      while (*p)
-        output->push_back(*p++);
-      break;
+  for (const auto& char_to_escape : kCharsToEscape) {
+    if (c == char_to_escape.key) {
+      output->append(std::begin(char_to_escape.replacement),
+                     std::end(char_to_escape.replacement));
+      return;
     }
   }
-  if (k == arraysize(kCharsToEscape))
-    output->push_back(c);
+  output->push_back(c);
 }
 
 template <class str>
@@ -522,14 +520,14 @@ base::string16 UnescapeForHTML(base::StringPiece16 input) {
   if (input.find(base::ASCIIToUTF16("&")) == std::string::npos)
     return input.as_string();
 
-  base::string16 ampersand_chars[arraysize(kEscapeToChars)];
+  base::string16 ampersand_chars[base::size(kEscapeToChars)];
   base::string16 text = input.as_string();
   for (base::string16::iterator iter = text.begin();
        iter != text.end(); ++iter) {
     if (*iter == '&') {
       // Potential ampersand encode char.
       size_t index = iter - text.begin();
-      for (size_t i = 0; i < arraysize(kEscapeToChars); i++) {
+      for (size_t i = 0; i < base::size(kEscapeToChars); i++) {
         if (ampersand_chars[i].empty()) {
           ampersand_chars[i] =
               base::ASCIIToUTF16(kEscapeToChars[i].ampersand_code);

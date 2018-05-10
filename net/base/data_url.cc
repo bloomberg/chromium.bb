@@ -52,9 +52,8 @@ bool DataURL::Parse(const GURL& url,
     ++iter;
   }
 
-  static const char kBase64Tag[] = "base64";
-  static const char kCharsetTag[] = "charset=";
-  const size_t kCharsetTagLength = arraysize(kCharsetTag) - 1;
+  static constexpr base::StringPiece kBase64Tag("base64");
+  static constexpr base::StringPiece kCharsetTag("charset=");
 
   bool base64_encoded = false;
   for (; iter != meta_data.cend(); ++iter) {
@@ -63,7 +62,7 @@ bool DataURL::Parse(const GURL& url,
     } else if (charset->empty() &&
                base::StartsWith(*iter, kCharsetTag,
                                 base::CompareCase::SENSITIVE)) {
-      *charset = std::string(iter->substr(kCharsetTagLength));
+      *charset = std::string(iter->substr(kCharsetTag.size()));
       // The grammar for charset is not specially defined in RFC2045 and
       // RFC2397. It just needs to be a token.
       if (!HttpUtil::IsToken(*charset))

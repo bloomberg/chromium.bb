@@ -9,6 +9,7 @@
 #include <unordered_set>
 
 #include "base/base64.h"
+#include "base/containers/span.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -368,16 +369,9 @@ bool MimeUtil::MatchesMimeType(const std::string& mime_type_pattern,
 }
 
 // See http://www.iana.org/assignments/media-types/media-types.xhtml
-static const char* const legal_top_level_types[] = {
-  "application",
-  "audio",
-  "example",
-  "image",
-  "message",
-  "model",
-  "multipart",
-  "text",
-  "video",
+static const char* const kLegalTopLevelTypes[] = {
+    "application", "audio",     "example", "image", "message",
+    "model",       "multipart", "text",    "video",
 };
 
 bool MimeUtil::ParseMimeTypeWithoutParameter(
@@ -400,8 +394,8 @@ bool MimeUtil::ParseMimeTypeWithoutParameter(
 
 bool MimeUtil::IsValidTopLevelMimeType(const std::string& type_string) const {
   std::string lower_type = base::ToLowerASCII(type_string);
-  for (size_t i = 0; i < arraysize(legal_top_level_types); ++i) {
-    if (lower_type.compare(legal_top_level_types[i]) == 0)
+  for (const char* const legal_type : kLegalTopLevelTypes) {
+    if (lower_type.compare(legal_type) == 0)
       return true;
   }
 
@@ -519,15 +513,13 @@ static const char* const kStandardVideoTypes[] = {
 
 struct StandardType {
   const char* const leading_mime_type;
-  const char* const* standard_types;
-  size_t standard_types_len;
+  base::span<const char* const> standard_types;
 };
 static const StandardType kStandardTypes[] = {
-  { "image/", kStandardImageTypes, arraysize(kStandardImageTypes) },
-  { "audio/", kStandardAudioTypes, arraysize(kStandardAudioTypes) },
-  { "video/", kStandardVideoTypes, arraysize(kStandardVideoTypes) },
-  { NULL, NULL, 0 }
-};
+    {"image/", kStandardImageTypes},
+    {"audio/", kStandardAudioTypes},
+    {"video/", kStandardVideoTypes},
+    {nullptr, base::span<const char* const>()}};
 
 // GetExtensionsFromHardCodedMappings() adds file extensions (without a leading
 // dot) to the set |extensions|, for all MIME types matching |mime_type|.
@@ -539,9 +531,8 @@ static const StandardType kStandardTypes[] = {
 //
 //  * If |prefix_match = true| then |mime_type| is treated as the prefix for a
 //    (case-insensitive) string. For instance "Text/" would match "text/plain".
-template <size_t N>
 void GetExtensionsFromHardCodedMappings(
-    const MimeInfo (&mappings)[N],
+    base::span<const MimeInfo> mappings,
     const std::string& mime_type,
     bool prefix_match,
     std::unordered_set<base::FilePath::StringType>* extensions) {
@@ -561,12 +552,11 @@ void GetExtensionsFromHardCodedMappings(
 }
 
 void GetExtensionsHelper(
-    const char* const* standard_types,
-    size_t standard_types_len,
+    base::span<const char* const> standard_types,
     const std::string& leading_mime_type,
     std::unordered_set<base::FilePath::StringType>* extensions) {
-  for (size_t i = 0; i < standard_types_len; ++i) {
-    g_mime_util.Get().GetPlatformExtensionsForMimeType(standard_types[i],
+  for (auto* standard_type : standard_types) {
+    g_mime_util.Get().GetPlatformExtensionsForMimeType(standard_type,
                                                        extensions);
   }
 
@@ -599,8 +589,8 @@ void UnorderedSetToVector(std::unordered_set<T>* source,
 // following characters are legal for boundaries:  '()+_,-./:=?
 // However the following characters, though legal, cause some sites
 // to fail: (),./:=+
-const char kMimeBoundaryCharacters[] =
-    "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+constexpr base::StringPiece kMimeBoundaryCharacters(
+    "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
 
 // Size of mime multipart boundary.
 const size_t kMimeBoundarySize = 69;
@@ -621,16 +611,16 @@ void GetExtensionsForMimeType(
 
     // Find the matching StandardType from within kStandardTypes, or fall
     // through to the last (default) StandardType.
-    const StandardType* type = NULL;
-    for (size_t i = 0; i < arraysize(kStandardTypes); ++i) {
-      type = &(kStandardTypes[i]);
+    const StandardType* type = nullptr;
+    for (const StandardType& standard_type : kStandardTypes) {
+      type = &standard_type;
       if (type->leading_mime_type &&
-          leading_mime_type == type->leading_mime_type)
+          leading_mime_type == type->leading_mime_type) {
         break;
+      }
     }
     DCHECK(type);
     GetExtensionsHelper(type->standard_types,
-                        type->standard_types_len,
                         leading_mime_type,
                         &unique_extensions);
   } else {
@@ -671,10 +661,8 @@ NET_EXPORT std::string GenerateMimeMultipartBoundary() {
   result.reserve(kMimeBoundarySize);
   result.append("----MultipartBoundary--");
   while (result.size() < (kMimeBoundarySize - 4)) {
-    // Subtract 2 from the array size to 1) exclude '\0', and 2) turn the size
-    // into the last index.
-    const int last_char_index = sizeof(kMimeBoundaryCharacters) - 2;
-    char c = kMimeBoundaryCharacters[base::RandInt(0, last_char_index)];
+    char c = kMimeBoundaryCharacters[base::RandInt(
+        0, kMimeBoundaryCharacters.size() - 1)];
     result.push_back(c);
   }
   result.append("----");

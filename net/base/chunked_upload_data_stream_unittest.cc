@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/stl_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -23,9 +24,9 @@ namespace net {
 
 namespace {
 
-const char kTestData[] = "0123456789";
-const size_t kTestDataSize = arraysize(kTestData) - 1;
-const size_t kTestBufferSize = 1 << 14;  // 16KB.
+constexpr char kTestData[] = "0123456789";
+constexpr size_t kTestDataSize = base::size(kTestData) - 1;
+constexpr size_t kTestBufferSize = 1 << 14;  // 16KB.
 
 }  // namespace
 

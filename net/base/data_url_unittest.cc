@@ -233,16 +233,16 @@ TEST(DataURLTest, Parse) {
     // TODO(darin): add more interesting tests
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (const auto& test : tests) {
     std::string mime_type;
     std::string charset;
     std::string data;
-    bool ok = DataURL::Parse(GURL(tests[i].url), &mime_type, &charset, &data);
-    EXPECT_EQ(ok, tests[i].is_valid);
-    if (tests[i].is_valid) {
-      EXPECT_EQ(tests[i].mime_type, mime_type);
-      EXPECT_EQ(tests[i].charset, charset);
-      EXPECT_EQ(tests[i].data, data);
+    bool ok = DataURL::Parse(GURL(test.url), &mime_type, &charset, &data);
+    EXPECT_EQ(ok, test.is_valid);
+    if (test.is_valid) {
+      EXPECT_EQ(test.mime_type, mime_type);
+      EXPECT_EQ(test.charset, charset);
+      EXPECT_EQ(test.data, data);
     }
   }
 }

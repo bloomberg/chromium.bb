@@ -128,49 +128,41 @@ constexpr const base::FilePath::CharType* kSafePortableRelativePaths[] = {
 }  // namespace
 
 TEST(FilenameUtilTest, IsSafePortablePathComponent) {
-  for (size_t i = 0; i < arraysize(kSafePortableBasenames); ++i) {
-    EXPECT_TRUE(
-        IsSafePortablePathComponent(base::FilePath(kSafePortableBasenames[i])))
-        << kSafePortableBasenames[i];
+  for (auto* basename : kSafePortableBasenames) {
+    EXPECT_TRUE(IsSafePortablePathComponent(base::FilePath(basename)))
+        << basename;
   }
-  for (size_t i = 0; i < arraysize(kUnsafePortableBasenames); ++i) {
-    EXPECT_FALSE(IsSafePortablePathComponent(
-        base::FilePath(kUnsafePortableBasenames[i])))
-        << kUnsafePortableBasenames[i];
+  for (auto* basename : kUnsafePortableBasenames) {
+    EXPECT_FALSE(IsSafePortablePathComponent(base::FilePath(basename)))
+        << basename;
   }
-  for (size_t i = 0; i < arraysize(kSafePortableRelativePaths); ++i) {
-    EXPECT_FALSE(IsSafePortablePathComponent(
-        base::FilePath(kSafePortableRelativePaths[i])))
-        << kSafePortableRelativePaths[i];
+  for (auto* path : kSafePortableRelativePaths) {
+    EXPECT_FALSE(IsSafePortablePathComponent(base::FilePath(path))) << path;
   }
 }
 
 TEST(FilenameUtilTest, IsSafePortableRelativePath) {
   base::FilePath safe_dirname(FILE_PATH_LITERAL("a"));
-  for (size_t i = 0; i < arraysize(kSafePortableBasenames); ++i) {
+  for (auto* basename : kSafePortableBasenames) {
+    EXPECT_TRUE(IsSafePortableRelativePath(base::FilePath(basename)))
+        << basename;
+    EXPECT_TRUE(IsSafePortableRelativePath(
+        safe_dirname.Append(base::FilePath(basename))))
+        << basename;
+  }
+  for (auto* path : kSafePortableRelativePaths) {
+    EXPECT_TRUE(IsSafePortableRelativePath(base::FilePath(path))) << path;
     EXPECT_TRUE(
-        IsSafePortableRelativePath(base::FilePath(kSafePortableBasenames[i])))
-        << kSafePortableBasenames[i];
-    EXPECT_TRUE(IsSafePortableRelativePath(
-        safe_dirname.Append(base::FilePath(kSafePortableBasenames[i]))))
-        << kSafePortableBasenames[i];
+        IsSafePortableRelativePath(safe_dirname.Append(base::FilePath(path))))
+        << path;
   }
-  for (size_t i = 0; i < arraysize(kSafePortableRelativePaths); ++i) {
-    EXPECT_TRUE(IsSafePortableRelativePath(
-        base::FilePath(kSafePortableRelativePaths[i])))
-        << kSafePortableRelativePaths[i];
-    EXPECT_TRUE(IsSafePortableRelativePath(
-        safe_dirname.Append(base::FilePath(kSafePortableRelativePaths[i]))))
-        << kSafePortableRelativePaths[i];
-  }
-  for (size_t i = 0; i < arraysize(kUnsafePortableBasenames); ++i) {
-    EXPECT_FALSE(
-        IsSafePortableRelativePath(base::FilePath(kUnsafePortableBasenames[i])))
-        << kUnsafePortableBasenames[i];
-    if (!base::FilePath::StringType(kUnsafePortableBasenames[i]).empty()) {
+  for (auto* basename : kUnsafePortableBasenames) {
+    EXPECT_FALSE(IsSafePortableRelativePath(base::FilePath(basename)))
+        << basename;
+    if (!base::FilePath::StringType(basename).empty()) {
       EXPECT_FALSE(IsSafePortableRelativePath(
-          safe_dirname.Append(base::FilePath(kUnsafePortableBasenames[i]))))
-          << kUnsafePortableBasenames[i];
+          safe_dirname.Append(base::FilePath(basename))))
+          << basename;
     }
   }
 }
@@ -215,15 +207,14 @@ TEST(FilenameUtilTest, FileURLConversion) {
 
   // First, we'll test that we can round-trip all of the above cases of URLs
   base::FilePath output;
-  for (size_t i = 0; i < arraysize(round_trip_cases); i++) {
+  for (const auto& test_case : round_trip_cases) {
     // convert to the file URL
-    GURL file_url(
-        FilePathToFileURL(WStringAsFilePath(round_trip_cases[i].file)));
-    EXPECT_EQ(round_trip_cases[i].url, file_url.spec());
+    GURL file_url(FilePathToFileURL(WStringAsFilePath(test_case.file)));
+    EXPECT_EQ(test_case.url, file_url.spec());
 
     // Back to the filename.
     EXPECT_TRUE(FileURLToFilePath(file_url, &output));
-    EXPECT_EQ(round_trip_cases[i].file, FilePathAsWString(output));
+    EXPECT_EQ(test_case.file, FilePathAsWString(output));
   }
 
   // Test that various file: URLs get decoded into the correct file type
@@ -266,9 +257,9 @@ TEST(FilenameUtilTest, FileURLConversion) {
 //  {L"/foo%5Cbar.txt", "file://foo\\bar.txt"},
 #endif
   };
-  for (size_t i = 0; i < arraysize(url_cases); i++) {
-    FileURLToFilePath(GURL(url_cases[i].url), &output);
-    EXPECT_EQ(url_cases[i].file, FilePathAsWString(output));
+  for (const auto& test_case : url_cases) {
+    FileURLToFilePath(GURL(test_case.url), &output);
+    EXPECT_EQ(test_case.file, FilePathAsWString(output));
   }
 
 // Unfortunately, UTF8ToWide discards invalid UTF8 input.
@@ -698,30 +689,28 @@ TEST(FilenameUtilTest, GenerateFileName) {
 #endif
   };
 
-  for (size_t i = 0; i < arraysize(selection_tests); ++i)
-    RunGenerateFileNameTestCase(&selection_tests[i]);
+  for (const auto& selection_test : selection_tests)
+    RunGenerateFileNameTestCase(&selection_test);
 
-  for (size_t i = 0; i < arraysize(generation_tests); ++i)
-    RunGenerateFileNameTestCase(&generation_tests[i]);
+  for (const auto& generation_test : generation_tests)
+    RunGenerateFileNameTestCase(&generation_test);
 
-  for (size_t i = 0; i < arraysize(generation_tests); ++i) {
-    GenerateFilenameCase test_case = generation_tests[i];
+  for (const auto& generation_test : generation_tests) {
+    GenerateFilenameCase test_case = generation_test;
     test_case.referrer_charset = "GBK";
     RunGenerateFileNameTestCase(&test_case);
   }
 }
 
 TEST(FilenameUtilTest, IsReservedNameOnWindows) {
-  for (size_t i = 0; i < arraysize(kSafePortableBasenames); ++i) {
-    EXPECT_FALSE(IsReservedNameOnWindows(
-        base::FilePath(kSafePortableBasenames[i]).value()))
-        << kSafePortableBasenames[i];
+  for (auto* basename : kSafePortableBasenames) {
+    EXPECT_FALSE(IsReservedNameOnWindows(base::FilePath(basename).value()))
+        << basename;
   }
 
-  for (size_t i = 0; i < arraysize(kUnsafePortableBasenamesForWin); ++i) {
-    EXPECT_TRUE(IsReservedNameOnWindows(
-        base::FilePath(kUnsafePortableBasenamesForWin[i]).value()))
-        << kUnsafePortableBasenamesForWin[i];
+  for (auto* basename : kUnsafePortableBasenamesForWin) {
+    EXPECT_TRUE(IsReservedNameOnWindows(base::FilePath(basename).value()))
+        << basename;
   }
 }
 

@@ -6,6 +6,7 @@
 
 #include <cstddef>
 
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -13,13 +14,13 @@ namespace net {
 namespace {
 
 typedef PriorityQueue<int>::Priority Priority;
-const Priority kPriorities[] = { 2, 1, 2, 0, 4, 3, 1, 4, 0 };
-const Priority kNumPriorities = 5;  // max(kPriorities) + 1
-const size_t kNumElements = arraysize(kPriorities);
-const int kFirstMinOrder[kNumElements] = { 3, 8, 1, 6, 0, 2, 5, 4, 7 };
-const int kLastMaxOrderErase[kNumElements] = { 7, 4, 5, 2, 0, 6, 1, 8, 3 };
-const int kFirstMaxOrder[kNumElements] = { 4, 7, 5, 0, 2, 1, 6, 3, 8 };
-const int kLastMinOrder[kNumElements] = { 8, 3, 6, 1, 2, 0, 5, 7, 4 };
+constexpr Priority kPriorities[] = {2, 1, 2, 0, 4, 3, 1, 4, 0};
+constexpr Priority kNumPriorities = 5;  // max(kPriorities) + 1
+constexpr size_t kNumElements = base::size(kPriorities);
+constexpr int kFirstMinOrder[kNumElements] = {3, 8, 1, 6, 0, 2, 5, 4, 7};
+constexpr int kLastMaxOrderErase[kNumElements] = {7, 4, 5, 2, 0, 6, 1, 8, 3};
+constexpr int kFirstMaxOrder[kNumElements] = {4, 7, 5, 0, 2, 1, 6, 3, 8};
+constexpr int kLastMinOrder[kNumElements] = {8, 3, 6, 1, 2, 0, 5, 7, 4};
 
 class PriorityQueueTest : public testing::Test {
  protected:
@@ -124,8 +125,8 @@ TEST_F(PriorityQueueTest, EraseFromMiddle) {
 
   const int expected_order[] = { 8, 1, 6, 0, 5, 4, 7 };
 
-  for (size_t i = 0; i < arraysize(expected_order); ++i) {
-    EXPECT_EQ(expected_order[i], queue_.FirstMin().value());
+  for (const auto& value : expected_order) {
+    EXPECT_EQ(value, queue_.FirstMin().value());
     queue_.Erase(queue_.FirstMin());
   }
   CheckEmpty();
@@ -139,8 +140,8 @@ TEST_F(PriorityQueueTest, InsertAtFront) {
 
   const int expected_order[] = { 10, 3, 8, 12, 11, 1, 6, 9, 0, 2, 5, 4, 7 };
 
-  for (size_t i = 0; i < arraysize(expected_order); ++i) {
-    EXPECT_EQ(expected_order[i], queue_.FirstMin().value());
+  for (const auto& value : expected_order) {
+    EXPECT_EQ(value, queue_.FirstMin().value());
     queue_.Erase(queue_.FirstMin());
   }
   CheckEmpty();

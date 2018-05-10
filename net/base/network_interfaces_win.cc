@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -105,7 +106,7 @@ WlanApi::WlanApi() : initialized(false) {
   // Use an absolute path to load the DLL to avoid DLL preloading attacks.
   static const wchar_t* const kDLL = L"%WINDIR%\\system32\\wlanapi.dll";
   wchar_t path[MAX_PATH] = {0};
-  ExpandEnvironmentStrings(kDLL, path, arraysize(path));
+  ExpandEnvironmentStrings(kDLL, path, base::size(path));
   module = ::LoadLibraryEx(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
   if (!module)
     return;

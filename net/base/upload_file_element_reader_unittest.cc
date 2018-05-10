@@ -38,8 +38,8 @@ class UploadFileElementReaderTest : public testing::TestWithParam<bool>,
  protected:
   void SetUp() override {
     // Some tests (*.ReadPartially) rely on bytes_.size() being even.
-    const char kData[] = "123456789abcdefghi";
-    bytes_.assign(kData, kData + arraysize(kData) - 1);
+    bytes_.assign({'1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c',
+                   'd', 'e', 'f', 'g', 'h', 'i'});
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 

@@ -56,9 +56,9 @@ TEST(EscapeTest, EscapeTextForFormSubmission) {
     {"foo bar", "foo+bar"},
     {"foo++", "foo%2B%2B"}
   };
-  for (size_t i = 0; i < arraysize(escape_cases); ++i) {
-    EscapeCase value = escape_cases[i];
-    EXPECT_EQ(value.output, EscapeQueryParamValue(value.input, true));
+  for (const auto& escape_case : escape_cases) {
+    EXPECT_EQ(escape_case.output,
+              EscapeQueryParamValue(escape_case.input, true));
   }
 
   const EscapeCase escape_cases_no_plus[] = {
@@ -66,9 +66,9 @@ TEST(EscapeTest, EscapeTextForFormSubmission) {
     {"foo bar", "foo%20bar"},
     {"foo++", "foo%2B%2B"}
   };
-  for (size_t i = 0; i < arraysize(escape_cases_no_plus); ++i) {
-    EscapeCase value = escape_cases_no_plus[i];
-    EXPECT_EQ(value.output, EscapeQueryParamValue(value.input, false));
+  for (const auto& escape_case : escape_cases_no_plus) {
+    EXPECT_EQ(escape_case.output,
+              EscapeQueryParamValue(escape_case.input, false));
   }
 
   // Test all the values in we're supposed to be escaping.
@@ -312,19 +312,19 @@ TEST(EscapeTest, UnescapeAndDecodeUTF8URLComponent) {
      L"%ED%ED"},  // Invalid UTF-8 -> kept unescaped.
   };
 
-  for (size_t i = 0; i < arraysize(unescape_cases); i++) {
-    std::string unescaped = UnescapeURLComponent(unescape_cases[i].input,
-                                                 UnescapeRule::NORMAL);
-    EXPECT_EQ(std::string(unescape_cases[i].url_unescaped), unescaped);
+  for (const auto& unescape_case : unescape_cases) {
+    std::string unescaped =
+        UnescapeURLComponent(unescape_case.input, UnescapeRule::NORMAL);
+    EXPECT_EQ(std::string(unescape_case.url_unescaped), unescaped);
 
-    unescaped = UnescapeURLComponent(unescape_cases[i].input,
+    unescaped = UnescapeURLComponent(unescape_case.input,
                                      UnescapeRule::REPLACE_PLUS_WITH_SPACE);
-    EXPECT_EQ(std::string(unescape_cases[i].query_unescaped), unescaped);
+    EXPECT_EQ(std::string(unescape_case.query_unescaped), unescaped);
 
     // TODO: Need to test unescape_spaces and unescape_percent.
     base::string16 decoded = UnescapeAndDecodeUTF8URLComponent(
-        unescape_cases[i].input, UnescapeRule::NORMAL);
-    EXPECT_EQ(base::WideToUTF16(unescape_cases[i].decoded), decoded);
+        unescape_case.input, UnescapeRule::NORMAL);
+    EXPECT_EQ(base::WideToUTF16(unescape_case.decoded), decoded);
   }
 }
 
@@ -371,15 +371,15 @@ TEST(EscapeTest, AdjustOffset) {
       {"%ED%B0%80+%E5%A5%BD", 6, 6},  // not convertable to UTF-8
   };
 
-  for (size_t i = 0; i < arraysize(adjust_cases); i++) {
-    size_t offset = adjust_cases[i].input_offset;
+  for (const auto& adjust_case : adjust_cases) {
+    size_t offset = adjust_case.input_offset;
     base::OffsetAdjuster::Adjustments adjustments;
     UnescapeAndDecodeUTF8URLComponentWithAdjustments(
-        adjust_cases[i].input, UnescapeRule::NORMAL, &adjustments);
+        adjust_case.input, UnescapeRule::NORMAL, &adjustments);
     base::OffsetAdjuster::AdjustOffset(adjustments, &offset);
-    EXPECT_EQ(adjust_cases[i].output_offset, offset)
-        << "input=" << adjust_cases[i].input
-        << " offset=" << adjust_cases[i].input_offset;
+    EXPECT_EQ(adjust_case.output_offset, offset)
+        << "input=" << adjust_case.input
+        << " offset=" << adjust_case.input_offset;
   }
 }
 
@@ -434,9 +434,9 @@ TEST(EscapeTest, EscapeForHTML) {
     { "<hello>", "&lt;hello&gt;" },
     { "don\'t mess with me", "don&#39;t mess with me" },
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    std::string result = EscapeForHTML(std::string(tests[i].input));
-    EXPECT_EQ(std::string(tests[i].expected_output), result);
+  for (const auto& test : tests) {
+    std::string result = EscapeForHTML(std::string(test.input));
+    EXPECT_EQ(std::string(test.expected_output), result);
   }
 }
 
@@ -454,9 +454,9 @@ TEST(EscapeTest, UnescapeForHTML) {
     { "&gt;", ">" },
     { "&amp; &", "& &" },
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    base::string16 result = UnescapeForHTML(base::ASCIIToUTF16(tests[i].input));
-    EXPECT_EQ(base::ASCIIToUTF16(tests[i].expected_output), result);
+  for (const auto& test : tests) {
+    base::string16 result = UnescapeForHTML(base::ASCIIToUTF16(test.input));
+    EXPECT_EQ(base::ASCIIToUTF16(test.expected_output), result);
   }
 }
 

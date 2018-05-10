@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -709,7 +710,7 @@ const char* NetworkChangeNotifier::ConnectionTypeToString(
     "CONNECTION_NONE",
     "CONNECTION_BLUETOOTH"
   };
-  static_assert(arraysize(kConnectionTypeNames) ==
+  static_assert(base::size(kConnectionTypeNames) ==
                     NetworkChangeNotifier::CONNECTION_LAST + 1,
                 "ConnectionType name count should match");
   if (type < CONNECTION_UNKNOWN || type > CONNECTION_LAST) {

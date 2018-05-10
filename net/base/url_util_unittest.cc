@@ -211,16 +211,15 @@ TEST(UrlUtilTest, ParseHostAndPort) {
     {"[]", false, "", -1},
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (const auto& test : tests) {
     std::string host;
     int port;
-    bool ok = ParseHostAndPort(tests[i].input, &host, &port);
+    bool ok = ParseHostAndPort(test.input, &host, &port);
+    EXPECT_EQ(test.success, ok);
 
-    EXPECT_EQ(tests[i].success, ok);
-
-    if (tests[i].success) {
-      EXPECT_EQ(tests[i].expected_host, host);
-      EXPECT_EQ(tests[i].expected_port, port);
+    if (test.success) {
+      EXPECT_EQ(test.expected_host, host);
+      EXPECT_EQ(test.expected_port, port);
     }
   }
 }
@@ -236,9 +235,9 @@ TEST(UrlUtilTest, GetHostAndPort) {
     { GURL("http://[1::2]/x"), "[1::2]:80"},
     { GURL("http://[::a]:33/x"), "[::a]:33"},
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    std::string host_and_port = GetHostAndPort(tests[i].url);
-    EXPECT_EQ(std::string(tests[i].expected_host_and_port), host_and_port);
+  for (const auto& test : tests) {
+    std::string host_and_port = GetHostAndPort(test.url);
+    EXPECT_EQ(std::string(test.expected_host_and_port), host_and_port);
   }
 }
 
@@ -254,9 +253,9 @@ TEST(UrlUtilTest, GetHostAndOptionalPort) {
     { GURL("http://[1::2]/x"), "[1::2]"},
     { GURL("http://[::a]:33/x"), "[::a]:33"},
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    std::string host_and_port = GetHostAndOptionalPort(tests[i].url);
-    EXPECT_EQ(std::string(tests[i].expected_host_and_port), host_and_port);
+  for (const auto& test : tests) {
+    std::string host_and_port = GetHostAndOptionalPort(test.url);
+    EXPECT_EQ(std::string(test.expected_host_and_port), host_and_port);
   }
 }
 
@@ -302,9 +301,9 @@ TEST(UrlUtilTest, CompliantHost) {
       {"1.2.3.4.5.", true},
   };
 
-  for (size_t i = 0; i < arraysize(compliant_host_cases); ++i) {
-    EXPECT_EQ(compliant_host_cases[i].expected_output,
-              IsCanonicalizedHostCompliant(compliant_host_cases[i].host));
+  for (const auto& compliant_host : compliant_host_cases) {
+    EXPECT_EQ(compliant_host.expected_output,
+              IsCanonicalizedHostCompliant(compliant_host.host));
   }
 }
 
@@ -471,11 +470,10 @@ TEST(UrlUtilTest, SimplifyUrlForRequest) {
       "foobar://user:pass@google.com:80/sup?yo",
     },
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i,
-                                    tests[i].input_url));
-    GURL input_url(GURL(tests[i].input_url));
-    GURL expected_url(GURL(tests[i].expected_simplified_url));
+  for (const auto& test : tests) {
+    SCOPED_TRACE(test.input_url);
+    GURL input_url(GURL(test.input_url));
+    GURL expected_url(GURL(test.expected_simplified_url));
     EXPECT_EQ(expected_url, SimplifyUrlForRequest(input_url));
   }
 }
@@ -522,16 +520,15 @@ TEST(UrlUtilTest, GetIdentityFromURL) {
       "p&ssword",
     },
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i,
-                                    tests[i].input_url));
-    GURL url(tests[i].input_url);
+  for (const auto& test : tests) {
+    SCOPED_TRACE(test.input_url);
+    GURL url(test.input_url);
 
     base::string16 username, password;
     GetIdentityFromURL(url, &username, &password);
 
-    EXPECT_EQ(ASCIIToUTF16(tests[i].expected_username), username);
-    EXPECT_EQ(ASCIIToUTF16(tests[i].expected_password), password);
+    EXPECT_EQ(ASCIIToUTF16(test.expected_username), username);
+    EXPECT_EQ(ASCIIToUTF16(test.expected_password), password);
   }
 }
 
@@ -580,9 +577,8 @@ TEST(UrlUtilTest, GoogleHost) {
       {GURL("http://oggole.com"), false},
   };
 
-  for (size_t i = 0; i < arraysize(google_host_cases); ++i) {
-    EXPECT_EQ(google_host_cases[i].expected_output,
-              HasGoogleHost(google_host_cases[i].url));
+  for (const auto& host : google_host_cases) {
+    EXPECT_EQ(host.expected_output, HasGoogleHost(host.url));
   }
 }
 
