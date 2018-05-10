@@ -137,8 +137,7 @@ void DownloadWorker::OnUrlDownloadStarted(
     Pause();
   }
 
-  delegate_->OnInputStreamReady(this, std::move(input_stream),
-                                std::move(create_info));
+  delegate_->OnInputStreamReady(this, std::move(input_stream));
 }
 
 void DownloadWorker::OnUrlDownloadStopped(UrlDownloadHandler* downloader) {
