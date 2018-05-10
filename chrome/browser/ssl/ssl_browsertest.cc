@@ -58,7 +58,6 @@
 #include "chrome/browser/ssl/ssl_error_assistant.h"
 #include "chrome/browser/ssl/ssl_error_assistant.pb.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
-#include "chrome/browser/ssl/ssl_error_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -88,6 +87,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_state/core/features.h"
@@ -383,7 +383,9 @@ void SetHSTSForHostName(Profile* profile) {
 
 bool IsShowingInterstitial(content::WebContents* tab) {
   if (AreCommittedInterstitialsEnabled()) {
-    SSLErrorTabHelper* helper = SSLErrorTabHelper::FromWebContents(tab);
+    security_interstitials::SecurityInterstitialTabHelper* helper =
+        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+            tab);
     if (!helper) {
       return false;
     }
@@ -1020,7 +1022,9 @@ class SSLUITest : public SSLUITestBase,
 
   SSLBlockingPage* GetSSLBlockingPage(WebContents* tab) override {
     if (IsCommittedInterstitialTest()) {
-      SSLErrorTabHelper* helper = SSLErrorTabHelper::FromWebContents(tab);
+      security_interstitials::SecurityInterstitialTabHelper* helper =
+          security_interstitials::SecurityInterstitialTabHelper::
+              FromWebContents(tab);
       if (!helper) {
         return nullptr;
       }
@@ -1032,7 +1036,9 @@ class SSLUITest : public SSLUITestBase,
 
   BadClockBlockingPage* GetBadClockBlockingPage(WebContents* tab) override {
     if (IsCommittedInterstitialTest()) {
-      SSLErrorTabHelper* helper = SSLErrorTabHelper::FromWebContents(tab);
+      security_interstitials::SecurityInterstitialTabHelper* helper =
+          security_interstitials::SecurityInterstitialTabHelper::
+              FromWebContents(tab);
       if (!helper) {
         return nullptr;
       }

@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/ssl/ssl_error_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "content/public/browser/navigation_handle.h"
 #include "net/cert/cert_status_flags.h"
 
@@ -134,9 +134,9 @@ void SSLErrorNavigationThrottle::ShowInterstitial(
   // Get the error page content before giving up ownership of |blocking_page|.
   std::string error_page_content = blocking_page->GetHTMLContents();
 
-  SSLErrorTabHelper::AssociateBlockingPage(handle->GetWebContents(),
-                                           handle->GetNavigationId(),
-                                           std::move(blocking_page));
+  security_interstitials::SecurityInterstitialTabHelper::AssociateBlockingPage(
+      handle->GetWebContents(), handle->GetNavigationId(),
+      std::move(blocking_page));
 
   CancelDeferredNavigation(content::NavigationThrottle::ThrottleCheckResult(
       content::NavigationThrottle::CANCEL, static_cast<net::Error>(net_error),

@@ -2,17 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/ssl_error_tab_helper.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "content/public/browser/navigation_handle.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(SSLErrorTabHelper);
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(
+    security_interstitials::SecurityInterstitialTabHelper);
 
-SSLErrorTabHelper::~SSLErrorTabHelper() {}
+namespace security_interstitials {
 
-void SSLErrorTabHelper::DidFinishNavigation(
+SecurityInterstitialTabHelper::~SecurityInterstitialTabHelper() {}
+
+void SecurityInterstitialTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsSameDocument()) {
     return;
@@ -39,42 +42,45 @@ void SSLErrorTabHelper::DidFinishNavigation(
   }
 }
 
-void SSLErrorTabHelper::WebContentsDestroyed() {
+void SecurityInterstitialTabHelper::WebContentsDestroyed() {
   if (blocking_page_for_currently_committed_navigation_) {
     blocking_page_for_currently_committed_navigation_->OnInterstitialClosing();
   }
 }
 
 // static
-void SSLErrorTabHelper::AssociateBlockingPage(
+void SecurityInterstitialTabHelper::AssociateBlockingPage(
     content::WebContents* web_contents,
     int64_t navigation_id,
     std::unique_ptr<security_interstitials::SecurityInterstitialPage>
         blocking_page) {
   // CreateForWebContents() creates a tab helper if it doesn't exist for
   // |web_contents| yet.
-  SSLErrorTabHelper::CreateForWebContents(web_contents);
+  SecurityInterstitialTabHelper::CreateForWebContents(web_contents);
 
-  SSLErrorTabHelper* helper = SSLErrorTabHelper::FromWebContents(web_contents);
+  SecurityInterstitialTabHelper* helper =
+      SecurityInterstitialTabHelper::FromWebContents(web_contents);
   helper->SetBlockingPage(navigation_id, std::move(blocking_page));
 }
 
 security_interstitials::SecurityInterstitialPage*
-SSLErrorTabHelper::GetBlockingPageForCurrentlyCommittedNavigationForTesting() {
+SecurityInterstitialTabHelper::
+    GetBlockingPageForCurrentlyCommittedNavigationForTesting() {
   return blocking_page_for_currently_committed_navigation_.get();
 }
 
-SSLErrorTabHelper::SSLErrorTabHelper(content::WebContents* web_contents)
+SecurityInterstitialTabHelper::SecurityInterstitialTabHelper(
+    content::WebContents* web_contents)
     : WebContentsObserver(web_contents), binding_(web_contents, this) {}
 
-void SSLErrorTabHelper::SetBlockingPage(
+void SecurityInterstitialTabHelper::SetBlockingPage(
     int64_t navigation_id,
     std::unique_ptr<security_interstitials::SecurityInterstitialPage>
         blocking_page) {
   blocking_pages_for_navigations_[navigation_id] = std::move(blocking_page);
 }
 
-void SSLErrorTabHelper::HandleCommand(
+void SecurityInterstitialTabHelper::HandleCommand(
     security_interstitials::SecurityInterstitialCommand cmd) {
   if (blocking_page_for_currently_committed_navigation_) {
     // Currently commands need to be converted to strings before passing them
@@ -86,67 +92,69 @@ void SSLErrorTabHelper::HandleCommand(
   }
 }
 
-void SSLErrorTabHelper::DontProceed() {
+void SecurityInterstitialTabHelper::DontProceed() {
   HandleCommand(
       security_interstitials::SecurityInterstitialCommand::CMD_DONT_PROCEED);
 }
 
-void SSLErrorTabHelper::Proceed() {
+void SecurityInterstitialTabHelper::Proceed() {
   HandleCommand(
       security_interstitials::SecurityInterstitialCommand::CMD_PROCEED);
 }
 
-void SSLErrorTabHelper::ShowMoreSection() {
+void SecurityInterstitialTabHelper::ShowMoreSection() {
   HandleCommand(security_interstitials::SecurityInterstitialCommand::
                     CMD_SHOW_MORE_SECTION);
 }
 
-void SSLErrorTabHelper::OpenHelpCenter() {
+void SecurityInterstitialTabHelper::OpenHelpCenter() {
   HandleCommand(security_interstitials::SecurityInterstitialCommand::
                     CMD_OPEN_HELP_CENTER);
 }
 
-void SSLErrorTabHelper::OpenDiagnostic() {
+void SecurityInterstitialTabHelper::OpenDiagnostic() {
   // SSL error pages do not implement this.
   NOTREACHED();
 }
 
-void SSLErrorTabHelper::Reload() {
+void SecurityInterstitialTabHelper::Reload() {
   HandleCommand(
       security_interstitials::SecurityInterstitialCommand::CMD_RELOAD);
 }
 
-void SSLErrorTabHelper::OpenDateSettings() {
+void SecurityInterstitialTabHelper::OpenDateSettings() {
   HandleCommand(security_interstitials::SecurityInterstitialCommand::
                     CMD_OPEN_DATE_SETTINGS);
 }
 
-void SSLErrorTabHelper::OpenLogin() {
+void SecurityInterstitialTabHelper::OpenLogin() {
   HandleCommand(
       security_interstitials::SecurityInterstitialCommand::CMD_OPEN_LOGIN);
 }
 
-void SSLErrorTabHelper::DoReport() {
+void SecurityInterstitialTabHelper::DoReport() {
   HandleCommand(
       security_interstitials::SecurityInterstitialCommand::CMD_DO_REPORT);
 }
 
-void SSLErrorTabHelper::DontReport() {
+void SecurityInterstitialTabHelper::DontReport() {
   HandleCommand(
       security_interstitials::SecurityInterstitialCommand::CMD_DONT_REPORT);
 }
 
-void SSLErrorTabHelper::OpenReportingPrivacy() {
+void SecurityInterstitialTabHelper::OpenReportingPrivacy() {
   HandleCommand(security_interstitials::SecurityInterstitialCommand::
                     CMD_OPEN_REPORTING_PRIVACY);
 }
 
-void SSLErrorTabHelper::OpenWhitepaper() {
+void SecurityInterstitialTabHelper::OpenWhitepaper() {
   HandleCommand(
       security_interstitials::SecurityInterstitialCommand::CMD_OPEN_WHITEPAPER);
 }
 
-void SSLErrorTabHelper::ReportPhishingError() {
+void SecurityInterstitialTabHelper::ReportPhishingError() {
   // SSL error pages do not implement this.
   NOTREACHED();
 }
+
+}  //  namespace security_interstitials

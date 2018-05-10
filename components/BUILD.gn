@@ -223,6 +223,7 @@ test("components_unittests") {
       "//components/safe_browsing/common:unit_tests",
       "//components/safe_browsing/password_protection:password_protection_unittest",
       "//components/safe_browsing/triggers:unit_tests",
+      "//components/security_interstitials/content:unit_tests",
       "//components/security_state/content:unit_tests",
       "//components/services/heap_profiling:unit_tests",
       "//components/spellcheck/browser:unit_tests",

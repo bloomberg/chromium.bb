@@ -6,4 +6,7 @@ include_rules = [
   "+components/security_interstitials/core",
   "+content/public/browser",
   "+content/public/common",
+  "+content/public/test",
+  "+net",
+  "+net/test",
 ]
