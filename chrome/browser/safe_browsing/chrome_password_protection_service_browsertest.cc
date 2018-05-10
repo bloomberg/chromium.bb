@@ -4,7 +4,6 @@
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 
 #include "base/run_loop.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -22,7 +21,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -62,11 +60,15 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
                      : browser()->profile());
   }
 
-  void SimulateGaiaPasswordChange(const std::string& new_password) {
-    password_manager::HashPasswordManager hash_manager;
-    hash_manager.set_prefs(browser()->profile()->GetPrefs());
-    hash_manager.SavePasswordHash("stub-user@example.com",
-                                  base::UTF8ToUTF16(new_password));
+  void SimulateGaiaPasswordChange(bool is_incognito,
+                                  const std::string& new_password_hash) {
+    if (is_incognito) {
+      browser()->profile()->GetOffTheRecordProfile()->GetPrefs()->SetString(
+          password_manager::prefs::kSyncPasswordHash, new_password_hash);
+    } else {
+      browser()->profile()->GetPrefs()->SetString(
+          password_manager::prefs::kSyncPasswordHash, new_password_hash);
+    }
   }
 
   void SimulateAction(ChromePasswordProtectionService* service,
@@ -116,11 +118,10 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
         context, &FakeAccountFetcherServiceBuilder::BuildForTests);
   }
 
-  // Makes user signed-in as |email| with |hosted_domain|.
+  // Makes user signed-in as |email| with |gaia_id| and |hosted_domain|.
   void PrepareSyncAccount(const std::string& hosted_domain,
-                          const std::string& email) {
-    // For simplicity purpose, we make gaia_id the same as email.
-    std::string gaia_id(email);
+                          const std::string& email,
+                          const std::string& gaia_id) {
     FakeSigninManagerForTesting* signin_manager =
         static_cast<FakeSigninManagerForTesting*>(
             SigninManagerFactory::GetInstance()->GetForProfile(
@@ -143,6 +144,7 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
+  base::HistogramTester histograms_;
   std::unique_ptr<
       base::CallbackList<void(content::BrowserContext*)>::Subscription>
       will_create_browser_context_services_subscription_;
@@ -321,9 +323,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        VerifyUnhandledPasswordReuse) {
-  PrepareSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
-                     "stub-user@example.com");
-  // Prepare sync account will trigger a password change.
+  histograms_.ExpectTotalCount(kGaiaPasswordChangeHistogramName, 0);
   ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
   ASSERT_TRUE(service);
   Profile* profile = browser()->profile();
@@ -337,7 +337,6 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
           profile));
 
-  base::HistogramTester histograms;
   // Shows modal dialog on current web_contents.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -368,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
           profile));
 
   // Simulates a Gaia password change.
-  SimulateGaiaPasswordChange("new_password");
+  SimulateGaiaPasswordChange(/*is_incognito=*/false, "new_password_hash");
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u,
             profile->GetPrefs()
@@ -377,22 +376,15 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   EXPECT_FALSE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
           profile));
-  EXPECT_THAT(histograms.GetAllSamples(kGaiaPasswordChangeHistogramName),
+  EXPECT_THAT(histograms_.GetAllSamples(kGaiaPasswordChangeHistogramName),
               testing::ElementsAre(base::Bucket(2, 1)));
 }
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        VerifyCheckGaiaPasswordChange) {
-  PrepareSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
-                     "stub-user@example.com");
   Profile* profile = browser()->profile();
   ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
-  // Configures initial password to "password_1";
-  password_manager::PasswordHashData hash_data(
-      "stub-user@example.com", base::UTF8ToUTF16("password_1"), true);
-  password_manager::HashPasswordManager hash_manager;
-  hash_manager.set_prefs(profile->GetPrefs());
-  hash_manager.SavePasswordHash(hash_data);
+  service->SetGaiaPasswordHashForTesting("password_hash_1");
   ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL("/"));
 
   // Shows modal dialog on current web_contents.
@@ -407,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
   // Save the same password will not trigger OnGaiaPasswordChanged(), thus no
   // change to size of unhandled_password_reuses().
-  SimulateGaiaPasswordChange("password_1");
+  SimulateGaiaPasswordChange(/*is_incognito=*/false, "password_hash_1");
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u,
             profile->GetPrefs()
@@ -415,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                 ->size());
 
   // Save a different password will clear unhandled_password_reuses().
-  SimulateGaiaPasswordChange("password_2");
+  SimulateGaiaPasswordChange(/*is_incognito=*/false, "password_hash_2");
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u,
             profile->GetPrefs()
@@ -472,7 +464,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
           profile));
 
   PrepareSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
-                     "stub-user@example.com");
+                     "stub-user@example.com", "gaia_id");
   profile->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
                                   1 /*PASSWORD_REUSE*/);
   // Otherwise, |IsPasswordReuseProtectionConfigured(..)| returns true.

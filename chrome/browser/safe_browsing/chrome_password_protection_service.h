@@ -224,7 +224,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       PasswordProtectionService::WarningAction action);
 
   void SetGaiaPasswordHashForTesting(const std::string& new_password_hash) {
-    sync_password_hash_ = new_password_hash;
+    gaia_password_hash_ = new_password_hash;
   }
 
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
@@ -302,8 +302,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   TriggerManager* trigger_manager_;
   // Profile associated with this instance.
   Profile* profile_;
-  // Current sync password hash.
-  std::string sync_password_hash_;
+  // Current Gaia password hash.
+  std::string gaia_password_hash_;
   scoped_refptr<SafeBrowsingNavigationObserverManager>
       navigation_observer_manager_;
   base::ObserverList<Observer> observer_list_;

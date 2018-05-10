@@ -75,12 +75,11 @@ PasswordStoreChangeList GetChangeList(
   return changes;
 }
 
-PasswordHashData GetSyncPasswordData(const std::string& sync_password) {
-  PasswordHashData sync_password_data;
-  sync_password_data.username = "sync_username";
+SyncPasswordData GetSyncPasswordData(const std::string& sync_password) {
+  SyncPasswordData sync_password_data;
   sync_password_data.salt = "1234567890123456";
   sync_password_data.length = sync_password.size();
-  sync_password_data.hash = HashPasswordManager::CalculatePasswordHash(
+  sync_password_data.hash = HashPasswordManager::CalculateSyncPasswordHash(
       base::ASCIIToUTF16(sync_password), sync_password_data.salt);
   return sync_password_data;
 }

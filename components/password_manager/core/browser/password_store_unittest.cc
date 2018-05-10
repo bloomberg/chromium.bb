@@ -917,18 +917,21 @@ TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
       std::make_unique<LoginDatabase>(test_login_db_file_path())));
 
   TestingPrefServiceSimple prefs;
-  prefs.registry()->RegisterListPref(prefs::kPasswordHashDataList,
-                                     PrefRegistry::NO_REGISTRATION_FLAGS);
+  prefs.registry()->RegisterStringPref(prefs::kSyncPasswordHash, std::string(),
+                                       PrefRegistry::NO_REGISTRATION_FLAGS);
+  prefs.registry()->RegisterStringPref(prefs::kSyncPasswordLengthAndHashSalt,
+                                       std::string(),
+                                       PrefRegistry::NO_REGISTRATION_FLAGS);
   ASSERT_FALSE(prefs.HasPrefPath(prefs::kSyncPasswordHash));
   store->Init(syncer::SyncableService::StartSyncFlare(), &prefs);
 
   const base::string16 sync_password = base::ASCIIToUTF16("password");
   const base::string16 input = base::ASCIIToUTF16("123password");
   store->SaveSyncPasswordHash(
-      "sync_username", sync_password,
+      sync_password,
       metrics_util::SyncPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
   WaitForPasswordStore();
-  EXPECT_TRUE(prefs.HasPrefPath(prefs::kPasswordHashDataList));
+  EXPECT_TRUE(prefs.HasPrefPath(prefs::kSyncPasswordHash));
 
   // Check that sync password reuse is found.
   MockPasswordReuseDetectorConsumer mock_consumer;
@@ -941,8 +944,8 @@ TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
 
   // Check that no sync password reuse is found after clearing the saved sync
   // password hash.
-  store->ClearPasswordHash("sync_username");
-  EXPECT_EQ(0u, prefs.GetList(prefs::kPasswordHashDataList)->GetList().size());
+  store->ClearSyncPasswordHash();
+  EXPECT_FALSE(prefs.HasPrefPath(prefs::kSyncPasswordHash));
   EXPECT_CALL(mock_consumer, OnReuseFound(_, _, _, _)).Times(0);
   store->CheckReuse(input, "https://facebook.com", &mock_consumer);
   WaitForPasswordStore();

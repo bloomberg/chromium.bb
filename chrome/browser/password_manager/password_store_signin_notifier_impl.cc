@@ -32,13 +32,13 @@ void PasswordStoreSigninNotifierImpl::GoogleSigninSucceededWithPassword(
     const std::string& account_id,
     const std::string& username,
     const std::string& password) {
-  NotifySignin(username, password);
+  NotifySignin(password);
 }
 
 void PasswordStoreSigninNotifierImpl::GoogleSignedOut(
     const std::string& account_id,
     const std::string& username) {
-  NotifySignedOut(username);
+  NotifySignedOut();
 }
 
 }  // namespace password_manager

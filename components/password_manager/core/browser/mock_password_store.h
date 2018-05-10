@@ -76,11 +76,10 @@ class MockPasswordStore : public PasswordStore {
                void(const base::string16&,
                     const std::string&,
                     PasswordReuseDetectorConsumer*));
-  MOCK_METHOD3(SaveSyncPasswordHash,
-               void(const std::string&,
-                    const base::string16&,
+  MOCK_METHOD2(SaveSyncPasswordHash,
+               void(const base::string16&,
                     metrics_util::SyncPasswordHashChange));
-  MOCK_METHOD1(ClearPasswordHash, void(const std::string&));
+  MOCK_METHOD0(ClearSyncPasswordHash, void());
 #endif
 
   PasswordStoreSync* GetSyncInterface() { return this; }

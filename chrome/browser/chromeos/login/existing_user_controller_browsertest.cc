@@ -1059,7 +1059,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerSavePasswordHashTest,
   Profile* profile =
       content::Details<Profile>(profile_prepared_observer.details()).ptr();
   EXPECT_TRUE(profile->GetPrefs()->HasPrefPath(
-      password_manager::prefs::kPasswordHashDataList));
+      password_manager::prefs::kSyncPasswordHash));
+  EXPECT_TRUE(profile->GetPrefs()->HasPrefPath(
+      password_manager::prefs::kSyncPasswordLengthAndHashSalt));
 }
 
 // Tests that successful offline login saves SyncPasswordData to user profile
@@ -1081,7 +1083,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerSavePasswordHashTest,
   Profile* profile =
       content::Details<Profile>(profile_prepared_observer.details()).ptr();
   EXPECT_TRUE(profile->GetPrefs()->HasPrefPath(
-      password_manager::prefs::kPasswordHashDataList));
+      password_manager::prefs::kSyncPasswordHash));
+  EXPECT_TRUE(profile->GetPrefs()->HasPrefPath(
+      password_manager::prefs::kSyncPasswordLengthAndHashSalt));
 }
 
 }  // namespace chromeos
