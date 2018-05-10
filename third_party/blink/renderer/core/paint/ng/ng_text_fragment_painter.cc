@@ -42,15 +42,6 @@ inline bool ShouldPaintTextFragment(const NGPhysicalTextFragment& text_fragment,
   return true;
 }
 
-// Copied from Font.cpp
-inline FloatRect PixelSnappedSelectionRect(FloatRect rect) {
-  // Using roundf() rather than ceilf() for the right edge as a compromise to
-  // ensure correct caret positioning.
-  float rounded_x = roundf(rect.X());
-  return FloatRect(rounded_x, rect.Y(), roundf(rect.MaxX() - rounded_x),
-                   rect.Height());
-}
-
 Color SelectionBackgroundColor(const Document& document,
                                const ComputedStyle& style,
                                const NGPhysicalTextFragment& text_fragment,
@@ -93,20 +84,11 @@ static void PaintSelection(GraphicsContext& context,
     return;
 
   GraphicsContextStateSaver state_saver(context);
-
-  DCHECK_LE(text_fragment.StartOffset(), selection_status.start);
-  DCHECK_LE(text_fragment.StartOffset(), selection_status.end);
-  DCHECK_GE(text_fragment.EndOffset(), selection_status.start);
-  DCHECK_GE(text_fragment.EndOffset(), selection_status.end);
-  const ShapeResult* shape_result = text_fragment.TextShapeResult();
-  DCHECK(shape_result);
-  const CharacterRange& range = shape_result->GetCharacterRange(
-      selection_status.start - text_fragment.StartOffset(),
-      selection_status.end - text_fragment.StartOffset());
-  const FloatRect& selection_rect = PixelSnappedSelectionRect(
-      FloatRect(box_rect.Location().X() + range.start, box_rect.Location().Y(),
-                range.Width(), box_rect.Height().ToFloat()));
-  context.FillRect(selection_rect, color);
+  const NGPhysicalOffsetRect& ng_rect =
+      text_fragment.LocalRect(selection_status.start, selection_status.end);
+  LayoutRect selection_rect = ng_rect.ToLayoutRect();
+  selection_rect.MoveBy(box_rect.Location());
+  context.FillRect(FloatRect(selection_rect), color);
 }
 
 // This is copied from InlineTextBoxPainter::PaintSelection() but lacks of
