@@ -96,9 +96,7 @@ int GetToolbarHorizontalPadding() {
   // In the touch-optimized UI, we don't use any horizontal paddings; the back
   // button starts from the beginning of the view, and the app menu button ends
   // at the end of the view.
-  using Md = ui::MaterialDesignController;
-  constexpr int kPaddings[] = {4, 8, 0, 8};
-  return kPaddings[Md::GetMode()];
+  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 0 : 8;
 }
 
 }  // namespace

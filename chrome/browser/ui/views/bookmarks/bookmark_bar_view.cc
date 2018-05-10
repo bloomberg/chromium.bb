@@ -120,9 +120,6 @@ using views::LabelButtonBorder;
 using views::MenuButton;
 using views::View;
 
-// How inset the bookmarks bar is when displayed on the new tab page.
-static const int kNewTabHorizontalPadding = 2;
-
 // Maximum size of buttons on the bookmark bar.
 static const int kMaxButtonWidth = 150;
 
@@ -130,7 +127,7 @@ static const int kMaxButtonWidth = 150;
 static const int kDetachedTopMargin = 1;  // When attached, we use 0 and let the
                                           // toolbar above serve as the margin.
 static const int kBottomMargin = 4;
-static const int kHorizontalMargin = 4;
+static const int kHorizontalMargin = 8;
 
 // Padding between buttons.
 static const int kButtonPadding = 8;
@@ -169,17 +166,15 @@ gfx::ImageSkia* GetImageSkiaNamed(int id) {
 }
 
 int GetInkDropCornerRadius() {
-  return ui::MaterialDesignController::IsNewerMaterialUi() ? 4 : 2;
+  return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+      views::EMPHASIS_MEDIUM);
 }
 
 gfx::Insets GetInkDropInsets() {
-  // Ink drop ripple/highlight for bookmark buttons should be inset 1px
-  // vertically so that they do not touch the bookmark bar borders.
-  // TODO(estade): currently this is used as DIP rather than pixels. This
-  // should be fixed: see https://crbug.com/706228
-  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
-             ? gfx::Insets(3, 3)
-             : gfx::Insets(1, 0);
+  // Refresh insets aren't required as a larger 28dp (vs 24) inkdrop is used for
+  // the toolbar buttons we're trying to match here.
+  constexpr int kInsets[] = {2, 2, 3, 0};
+  return gfx::Insets(kInsets[ui::MaterialDesignController::GetMode()]);
 }
 
 SkColor GetBookmarkButtonInkDropBaseColor(const ui::ThemeProvider* tp) {
@@ -865,7 +860,6 @@ gfx::Size BookmarkBarView::GetMinimumSize() const {
   int height = GetPreferredHeight();
   if (IsDetached()) {
     double current_state = 1 - size_animation_.GetCurrentValue();
-    width += 2 * static_cast<int>(kNewTabHorizontalPadding * current_state);
     height += static_cast<int>(
         (GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT) - height) * current_state);
   }
@@ -909,9 +903,7 @@ void BookmarkBarView::Layout() {
 
   if (IsDetached()) {
     double current_state = 1 - size_animation_.GetCurrentValue();
-    x += static_cast<int>(kNewTabHorizontalPadding * current_state);
     y += (View::height() - preferred_height) / 2;
-    width -= static_cast<int>(kNewTabHorizontalPadding * current_state);
     separator_margin -= static_cast<int>(kSeparatorMargin * current_state);
   } else {
     // For the attached appearance, pin the content to the bottom of the bar
@@ -929,7 +921,7 @@ void BookmarkBarView::Layout() {
       apps_page_shortcut_->GetPreferredSize() : gfx::Size();
 
   int max_x = kHorizontalMargin + width - overflow_pref.width() -
-              kButtonPadding - bookmarks_separator_pref.width();
+              bookmarks_separator_pref.width();
   if (other_bookmarks_button_->visible())
     max_x -= other_bookmarks_pref.width() + kButtonPadding;
 
