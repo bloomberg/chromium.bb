@@ -74,13 +74,13 @@ function marginEllipseLeftXIntercept(y, cx, rx, ry)
 var quiet = true; // PASS output depends on SubPixelLayout.isEnabled()
 
 shouldBe("elementRect('s1').top", "0");
-shouldBe("elementRect('s1').left", marginEllipseLeftXIntercept(20, 225, 225, 125), quiet);
+shouldBe("elementRect('s1').left", marginEllipseLeftXIntercept(20, 225, 225, 125), quiet, 1);
 
 shouldBe("elementRect('s2').top", "20");
-shouldBe("elementRect('s2').left", marginEllipseLeftXIntercept(40, 225, 225, 125), quiet);
+shouldBe("elementRect('s2').left", marginEllipseLeftXIntercept(40, 225, 225, 125), quiet, 1);
 
 shouldBe("elementRect('s3').top", "40");
-shouldBe("elementRect('s3').left", marginEllipseLeftXIntercept(60, 225, 225, 125), quiet);
+shouldBe("elementRect('s3').left", marginEllipseLeftXIntercept(60, 225, 225, 125), quiet, 1);
 
 </script>
 </html>

@@ -143,7 +143,7 @@ TEST_F(BoxShapeTest, getIntervals) {
   TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(15), LayoutUnit(6), 0, 100);
   TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(20), LayoutUnit(50), 0, 100);
   TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(69), LayoutUnit(5), 0, 100);
-  TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(85), LayoutUnit(10), 0, 97.320511f);
+  TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(85), LayoutUnit(10), 0, 97.3125f);
 }
 
 }  // anonymous namespace
