@@ -26,8 +26,7 @@ class OmniboxView;
 // A view representing the contents of the autocomplete popup.
 class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
  public:
-  OmniboxPopupContentsView(const gfx::FontList& font_list,
-                           OmniboxView* omnibox_view,
+  OmniboxPopupContentsView(OmniboxView* omnibox_view,
                            OmniboxEditModel* edit_model,
                            LocationBarView* location_bar_view);
   ~OmniboxPopupContentsView() override;
@@ -122,9 +121,6 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
   OmniboxView* omnibox_view_;
 
   LocationBarView* location_bar_view_;
-
-  // The font list used for result rows, based on the omnibox font list.
-  gfx::FontList font_list_;
 
   int start_margin_;
   int end_margin_;

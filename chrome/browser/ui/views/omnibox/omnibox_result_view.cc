@@ -44,7 +44,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 
 namespace {
-
 // The vertical padding to provide each RenderText in addition to the height of
 // the font. Where possible, RenderText uses this additional space to vertically
 // center the cap height of the font instead of centering the entire font.
@@ -85,20 +84,15 @@ int HorizontalPadding() {
 // OmniboxResultView, public:
 
 OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
-                                     int model_index,
-                                     const gfx::FontList& font_list)
+                                     int model_index)
     : model_(model),
       model_index_(model_index),
       is_hovered_(false),
-      font_height_(std::max(
-          font_list.GetHeight(),
-          font_list.DeriveWithWeight(gfx::Font::Weight::BOLD).GetHeight())),
       animation_(new gfx::SlideAnimation(this)) {
   CHECK_GE(model_index, 0);
 
-  AddChildView(suggestion_view_ =
-                   new OmniboxMatchCellView(this, GetTextHeight()));
-  AddChildView(keyword_view_ = new OmniboxMatchCellView(this, GetTextHeight()));
+  AddChildView(suggestion_view_ = new OmniboxMatchCellView(this));
+  AddChildView(keyword_view_ = new OmniboxMatchCellView(this));
 
   keyword_view_->icon()->EnableCanvasFlippingForRTLUI(true);
   keyword_view_->icon()->SetImage(gfx::CreateVectorIcon(
@@ -122,8 +116,11 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
 
   // Set up 'switch to tab' button.
   if (match.has_tab_match && !match_.associated_keyword.get()) {
-    suggestion_tab_switch_button_ =
-        std::make_unique<OmniboxTabSwitchButton>(model_, this, GetTextHeight());
+    // TODO(dschuyler): the kVerticalPadding is added here, and again within
+    // OmniboxTabSwitchButton. Should that just be done once?
+    suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
+        model_, this,
+        suggestion_view_->content()->GetLineHeight() + kVerticalPadding);
     suggestion_tab_switch_button_->set_owned_by_client();
     AddChildView(suggestion_tab_switch_button_.get());
   } else {
@@ -322,10 +319,6 @@ void OmniboxResultView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, private:
-
-int OmniboxResultView::GetTextHeight() const {
-  return font_height_ + kVerticalPadding;
-}
 
 gfx::Image OmniboxResultView::GetIcon() const {
   return model_->GetMatchIcon(match_, GetColor(OmniboxPart::RESULTS_ICON));

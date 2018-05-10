@@ -63,8 +63,7 @@ class OmniboxTextView : public views::View {
 
   // Creates a RenderText with text and styling from the image line.
   std::unique_ptr<gfx::RenderText> CreateText(
-      const SuggestionAnswer::ImageLine& line,
-      const gfx::FontList& font_list) const;
+      const SuggestionAnswer::ImageLine& line) const;
 
   // Adds |text| to |destination|.  |text_type| is an index into the
   // kTextStyles constant defined in the .cc file and is used to style the text,

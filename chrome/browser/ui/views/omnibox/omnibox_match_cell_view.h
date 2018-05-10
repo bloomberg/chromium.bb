@@ -17,8 +17,7 @@ class OmniboxTextView;
 
 class OmniboxMatchCellView : public views::View {
  public:
-  explicit OmniboxMatchCellView(OmniboxResultView* result_view,
-                                int text_height);
+  explicit OmniboxMatchCellView(OmniboxResultView* result_view);
   ~OmniboxMatchCellView() override;
 
   views::ImageView* icon() { return icon_view_; }
@@ -49,7 +48,6 @@ class OmniboxMatchCellView : public views::View {
   bool is_old_style_answer_;
   bool is_rich_suggestion_;
   bool is_search_type_;
-  int text_height_;
 
   // Weak pointers for easy reference.
   views::ImageView* icon_view_;   // An icon representing the type or content.
