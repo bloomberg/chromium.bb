@@ -111,8 +111,8 @@ class DirectoryLoader::FeedFetcher {
   ~FeedFetcher() = default;
 
   void Run(const FileOperationCallback& callback) {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    DCHECK(!callback.is_null());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DCHECK(callback);
     DCHECK(!directory_fetch_info_.resource_id().empty());
 
     // Remember the time stamp for usage stats.
@@ -128,8 +128,8 @@ class DirectoryLoader::FeedFetcher {
   void OnFileListFetched(const FileOperationCallback& callback,
                          google_apis::DriveApiErrorCode status,
                          std::unique_ptr<google_apis::FileList> file_list) {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    DCHECK(!callback.is_null());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DCHECK(callback);
 
     FileError error = GDataToFileError(status);
     if (error != FILE_ERROR_OK) {
@@ -158,8 +158,8 @@ class DirectoryLoader::FeedFetcher {
       const GURL& next_url,
       const std::vector<ResourceEntry>* refreshed_entries,
       FileError error) {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    DCHECK(!callback.is_null());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DCHECK(callback);
 
     if (error != FILE_ERROR_OK) {
       callback.Run(error);
@@ -190,7 +190,7 @@ class DirectoryLoader::FeedFetcher {
   DirectoryFetchInfo directory_fetch_info_;
   std::string root_folder_id_;
   base::TimeTicks start_time_;
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<FeedFetcher> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(FeedFetcher);
 };
@@ -214,12 +214,12 @@ DirectoryLoader::DirectoryLoader(
 DirectoryLoader::~DirectoryLoader() = default;
 
 void DirectoryLoader::AddObserver(ChangeListLoaderObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   observers_.AddObserver(observer);
 }
 
 void DirectoryLoader::RemoveObserver(ChangeListLoaderObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   observers_.RemoveObserver(observer);
 }
 
@@ -227,8 +227,8 @@ void DirectoryLoader::ReadDirectory(
     const base::FilePath& directory_path,
     const ReadDirectoryEntriesCallback& entries_callback,
     const FileOperationCallback& completion_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!completion_callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(completion_callback);
 
   ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
@@ -254,8 +254,8 @@ void DirectoryLoader::ReadDirectoryAfterGetEntry(
     bool should_try_loading_parent,
     const ResourceEntry* entry,
     FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!completion_callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(completion_callback);
 
   if (error == FILE_ERROR_NOT_FOUND &&
       should_try_loading_parent &&
@@ -306,8 +306,8 @@ void DirectoryLoader::ReadDirectoryAfterLoadParent(
     const ReadDirectoryEntriesCallback& entries_callback,
     const FileOperationCallback& completion_callback,
     FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!completion_callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(completion_callback);
 
   if (error != FILE_ERROR_OK) {
     completion_callback.Run(error);
@@ -335,7 +335,7 @@ void DirectoryLoader::ReadDirectoryAfterGetAboutResource(
     const std::string& local_id,
     google_apis::DriveApiErrorCode status,
     std::unique_ptr<google_apis::AboutResource> about_resource) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   FileError error = GDataToFileError(status);
   if (error != FILE_ERROR_OK) {
@@ -365,7 +365,7 @@ void DirectoryLoader::ReadDirectoryAfterCheckLocalState(
     const ResourceEntry* entry,
     const int64_t* local_changestamp,
     FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(about_resource);
 
   if (error != FILE_ERROR_OK) {
@@ -403,7 +403,7 @@ void DirectoryLoader::ReadDirectoryAfterCheckLocalState(
 
 void DirectoryLoader::OnDirectoryLoadComplete(const std::string& local_id,
                                               FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   LoadCallbackMap::iterator it = pending_load_callback_.find(local_id);
   if (it == pending_load_callback_.end())
@@ -413,12 +413,12 @@ void DirectoryLoader::OnDirectoryLoadComplete(const std::string& local_id,
   bool needs_to_send_entries = false;
   for (size_t i = 0; i < it->second.size(); ++i) {
     const ReadDirectoryCallbackState& callback_state = it->second[i];
-    if (!callback_state.entries_callback.is_null())
+    if (callback_state.entries_callback)
       needs_to_send_entries = true;
   }
 
   if (!needs_to_send_entries) {
-    OnDirectoryLoadCompleteAfterRead(local_id, NULL, FILE_ERROR_OK);
+    OnDirectoryLoadCompleteAfterRead(local_id, nullptr, FILE_ERROR_OK);
     return;
   }
 
@@ -460,7 +460,7 @@ void DirectoryLoader::SendEntries(const std::string& local_id,
 
   for (size_t i = 0; i < it->second.size(); ++i) {
     ReadDirectoryCallbackState* callback_state = &it->second[i];
-    if (callback_state->entries_callback.is_null())
+    if (!callback_state->entries_callback)
       continue;
 
     // Filter out entries which were already sent.
@@ -479,7 +479,7 @@ void DirectoryLoader::SendEntries(const std::string& local_id,
 
 void DirectoryLoader::LoadDirectoryFromServer(
     const DirectoryFetchInfo& directory_fetch_info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!directory_fetch_info.empty());
   DVLOG(1) << "Start loading directory: " << directory_fetch_info.ToString();
 
@@ -508,7 +508,7 @@ void DirectoryLoader::LoadDirectoryFromServerAfterLoad(
     const DirectoryFetchInfo& directory_fetch_info,
     FeedFetcher* fetcher,
     FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!directory_fetch_info.empty());
 
   // Delete the fetcher.
@@ -552,7 +552,7 @@ void DirectoryLoader::LoadDirectoryFromServerAfterUpdateChangestamp(
     const DirectoryFetchInfo& directory_fetch_info,
     const base::FilePath* directory_path,
     FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   DVLOG(1) << "Directory loaded: " << directory_fetch_info.ToString();
   OnDirectoryLoadComplete(directory_fetch_info.local_id(), error);

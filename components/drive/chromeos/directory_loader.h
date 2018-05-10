@@ -138,7 +138,7 @@ class DirectoryLoader {
   // Set of the running feed fetcher for the fast fetch.
   std::set<std::unique_ptr<FeedFetcher>> fast_fetch_feed_fetcher_set_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

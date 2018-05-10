@@ -283,7 +283,7 @@ void SearchMetadata(
     size_t at_most_num_matches,
     MetadataSearchOrder order,
     const SearchMetadataCallback& callback) {
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
 

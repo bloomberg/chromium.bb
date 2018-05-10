@@ -12,8 +12,7 @@ FakeFreeDiskSpaceGetter::FakeFreeDiskSpaceGetter()
     : default_value_(test_util::kLotsOfSpace) {
 }
 
-FakeFreeDiskSpaceGetter::~FakeFreeDiskSpaceGetter() {
-}
+FakeFreeDiskSpaceGetter::~FakeFreeDiskSpaceGetter() = default;
 
 void FakeFreeDiskSpaceGetter::PushFakeValue(int64_t value) {
   fake_values_.push_back(value);

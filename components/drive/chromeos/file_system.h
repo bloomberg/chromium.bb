@@ -302,7 +302,7 @@ class FileSystem : public FileSystemInterface,
       get_file_for_saving_operation_;
   std::unique_ptr<file_system::SetPropertyOperation> set_property_operation_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

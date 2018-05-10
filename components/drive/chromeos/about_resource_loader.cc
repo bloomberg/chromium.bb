@@ -4,6 +4,7 @@
 
 #include "components/drive/chromeos/about_resource_loader.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/threading/thread_task_runner_handle.h"
@@ -17,7 +18,7 @@ AboutResourceLoader::AboutResourceLoader(JobScheduler* scheduler)
       current_update_task_id_(-1),
       weak_ptr_factory_(this) {}
 
-AboutResourceLoader::~AboutResourceLoader() {}
+AboutResourceLoader::~AboutResourceLoader() = default;
 
 void AboutResourceLoader::GetAboutResource(
     const google_apis::AboutResourceCallback& callback) {
@@ -77,7 +78,8 @@ void AboutResourceLoader::UpdateAboutResourceAfterGetAbout(
                  << "local = " << cached_about_resource_->largest_change_id()
                  << ", server = " << about_resource->largest_change_id();
   }
-  cached_about_resource_.reset(new google_apis::AboutResource(*about_resource));
+  cached_about_resource_ =
+      std::make_unique<google_apis::AboutResource>(*about_resource);
 
   for (auto& callback : callbacks) {
     callback.Run(status,

@@ -35,7 +35,7 @@ class ChangeListLoaderObserver {
   virtual void OnInitialLoadComplete() {}
 
  protected:
-  virtual ~ChangeListLoaderObserver() {}
+  virtual ~ChangeListLoaderObserver() = default;
 };
 
 }  // namespace internal

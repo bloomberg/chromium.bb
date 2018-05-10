@@ -92,7 +92,7 @@ class EntryUpdatePerformer {
   std::unique_ptr<RemovePerformer> remove_performer_;
   std::unique_ptr<EntryRevertPerformer> entry_revert_performer_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

@@ -85,7 +85,7 @@ FileError ResourceMetadata::Initialize() {
 }
 
 void ResourceMetadata::Destroy() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   blocking_task_runner_->PostTask(
       FROM_HERE,
