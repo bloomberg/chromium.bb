@@ -4,6 +4,7 @@
 
 #include "net/spdy/chromium/header_coalescer.h"
 
+#include <string>
 #include <vector>
 
 #include "net/log/test_net_log.h"

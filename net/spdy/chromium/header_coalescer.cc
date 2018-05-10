@@ -5,6 +5,7 @@
 #include "net/spdy/chromium/header_coalescer.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"

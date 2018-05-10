@@ -4,6 +4,8 @@
 
 #include "net/spdy/chromium/multiplexed_http_stream.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "net/http/http_raw_request_headers.h"
 #include "net/third_party/spdy/core/spdy_header_block.h"
