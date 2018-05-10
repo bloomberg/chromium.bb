@@ -116,18 +116,6 @@ class CORE_EXPORT NGConstraintSpace final
   // Also note this is true only when the document has ':first-line' rules.
   bool UseFirstLineStyle() const { return use_first_line_style_; }
 
-  // Whether exceeding the AvailableSize() triggers the presence of a scrollbar
-  // for the indicated direction.
-  // If exceeded the current layout should be aborted and invoked again with a
-  // constraint space modified to reserve space for a scrollbar.
-  bool IsInlineDirectionTriggersScrollbar() const {
-    return is_inline_direction_triggers_scrollbar_;
-  }
-
-  bool IsBlockDirectionTriggersScrollbar() const {
-    return is_block_direction_triggers_scrollbar_;
-  }
-
   // Some layout modes “stretch” their children to a fixed size (e.g. flex,
   // grid). These flags represented whether a layout needs to produce a
   // fragment that satisfies a fixed constraint in the inline and block
@@ -235,8 +223,6 @@ class CORE_EXPORT NGConstraintSpace final
                     bool is_fixed_size_block,
                     bool fixed_size_block_is_definite,
                     bool is_shrink_to_fit,
-                    bool is_inline_direction_triggers_scrollbar,
-                    bool is_block_direction_triggers_scrollbar,
                     NGFragmentationType block_direction_fragmentation_type,
                     bool separate_leading_fragmentainer_margins_,
                     bool is_new_fc,
@@ -263,9 +249,6 @@ class CORE_EXPORT NGConstraintSpace final
   unsigned fixed_size_block_is_definite_ : 1;
 
   unsigned is_shrink_to_fit_ : 1;
-
-  unsigned is_inline_direction_triggers_scrollbar_ : 1;
-  unsigned is_block_direction_triggers_scrollbar_ : 1;
 
   unsigned block_direction_fragmentation_type_ : 2;
   unsigned separate_leading_fragmentainer_margins_ : 1;
