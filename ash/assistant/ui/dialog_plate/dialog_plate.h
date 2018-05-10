@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASSISTANT_UI_DIALOG_PLATE_H_
-#define ASH_ASSISTANT_UI_DIALOG_PLATE_H_
+#ifndef ASH_ASSISTANT_UI_DIALOG_PLATE_DIALOG_PLATE_H_
+#define ASH_ASSISTANT_UI_DIALOG_PLATE_DIALOG_PLATE_H_
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "base/macros.h"
@@ -39,12 +39,12 @@ class DialogPlate : public views::View,
   void UpdateIcon();
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
-  views::Textfield* textfield_;  // Owned by view hierarchy.
-  views::View* icon_;  // Owned by view hierarchy.
+  views::Textfield* textfield_;                      // Owned by view hierarchy.
+  views::View* icon_;                                // Owned by view hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(DialogPlate);
 };
 
 }  // namespace ash
 
-#endif  // ASH_ASSISTANT_UI_DIALOG_PLATE_H_
+#endif  // ASH_ASSISTANT_UI_DIALOG_PLATE_DIALOG_PLATE_H_

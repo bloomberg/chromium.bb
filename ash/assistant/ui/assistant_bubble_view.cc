@@ -7,7 +7,7 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_ui_element.h"
-#include "ash/assistant/ui/dialog_plate.h"
+#include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
