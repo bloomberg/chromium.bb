@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.layouts.phone;
 
 import android.content.Context;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -137,5 +138,18 @@ public class StackLayout extends StackLayoutBase {
     protected @SwipeMode int computeInputMode(long time, float x, float y, float dx, float dy) {
         if (mStacks.size() == 2 && !mStacks.get(1).isDisplayable()) return SWIPE_MODE_SEND_TO_STACK;
         return super.computeInputMode(time, x, y, dx, dy);
+    }
+
+    @Override
+    public void setActiveStackState(int stackIndex) {
+        if (stackIndex != getTabStackIndex(Tab.INVALID_TAB_ID)) {
+            if (stackIndex == NORMAL_STACK_INDEX) {
+                RecordUserAction.record("MobileStackViewNormalMode");
+            } else {
+                RecordUserAction.record("MobileStackViewIncognitoMode");
+            }
+        }
+
+        super.setActiveStackState(stackIndex);
     }
 }
