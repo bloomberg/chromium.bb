@@ -45,6 +45,7 @@ class ServiceWorkerContextCoreObserver;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerDispatcherHost;
 class ServiceWorkerJobCoordinator;
+class ServiceWorkerNavigationHandleCore;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 class ServiceWorkerStorage;
@@ -171,9 +172,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void AddProviderHost(
       std::unique_ptr<ServiceWorkerProviderHost> provider_host);
   ServiceWorkerProviderHost* GetProviderHost(int process_id, int provider_id);
-  std::unique_ptr<ServiceWorkerProviderHost> ReleaseProviderHost(
-      int process_id,
-      int provider_id);
   void RemoveProviderHost(int process_id, int provider_id);
   void RemoveAllProviderHostsForProcess(int process_id);
 
@@ -186,7 +184,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   // Runs the callback with true if there is a ProviderHost for |origin| of type
   // blink::mojom::ServiceWorkerProviderType::kForWindow which is a main
-  // (top-level) frame. Reserved clients are ignored.
+  // (top-level) frame.
   void HasMainFrameProviderHost(const GURL& origin,
                                 BoolCallback callback) const;
 
@@ -246,6 +244,15 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   const std::map<int64_t, ServiceWorkerVersion*>& GetLiveVersions() const {
     return live_versions_;
   }
+
+  // PlzNavigate
+  // Methods to manage the map keeping track of all
+  // ServiceWorkerNavigationHandleCores registered for ongoing navigations.
+  void AddNavigationHandleCore(int service_worker_provider_id,
+                               ServiceWorkerNavigationHandleCore* handle);
+  void RemoveNavigationHandleCore(int service_worker_provider_id);
+  ServiceWorkerNavigationHandleCore* GetNavigationHandleCore(
+      int service_worker_provider_id);
 
   std::vector<ServiceWorkerRegistrationInfo> GetAllLiveRegistrationInfo();
   std::vector<ServiceWorkerVersionInfo> GetAllLiveVersionInfo();
@@ -352,6 +359,11 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   std::map<int64_t, scoped_refptr<ServiceWorkerVersion>> protected_versions_;
 
   std::map<int64_t /* version_id */, FailureInfo> failure_counts_;
+
+  // PlzNavigate
+  // Map of ServiceWorkerNavigationHandleCores used for navigation requests.
+  std::map<int, ServiceWorkerNavigationHandleCore*>
+      navigation_handle_cores_map_;
 
   // IsServicificationEnabled
   scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;

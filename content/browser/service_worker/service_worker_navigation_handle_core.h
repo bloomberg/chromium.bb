@@ -33,15 +33,21 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
   ~ServiceWorkerNavigationHandleCore();
 
   // Called when a ServiceWorkerProviderHost was pre-created for the navigation
-  // tracked by this ServiceWorkerNavigationHandleCore.
-  void DidPreCreateProviderHost(int provider_id);
+  // tracked by this ServiceWorkerNavigationHandleCore. Takes ownership of
+  // |precreated_host|.
+  void DidPreCreateProviderHost(
+      std::unique_ptr<ServiceWorkerProviderHost> precreated_host);
+
+  // Called when the renderer created a ServiceWorkerNetworkProvider matching
+  // |precreated_host_|. This releases ownership of |precreated_host_|.
+  std::unique_ptr<ServiceWorkerProviderHost> RetrievePreCreatedHost();
 
   ServiceWorkerContextWrapper* context_wrapper() const {
     return context_wrapper_.get();
   }
 
  private:
-  int provider_id_;
+  std::unique_ptr<ServiceWorkerProviderHost> precreated_host_;
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
   base::WeakPtr<ServiceWorkerNavigationHandle> ui_handle_;
 
