@@ -21,6 +21,9 @@ Polymer({
   behaviors: [settings.RouteObserverBehavior],
 
   properties: {
+    /** Preferences state. */
+    prefs: Object,
+
     // <if expr="chromeos">
     /** @private */
     showPowerwashDialog_: Boolean,

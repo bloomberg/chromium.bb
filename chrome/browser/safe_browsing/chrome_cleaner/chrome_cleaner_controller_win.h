@@ -204,6 +204,9 @@ class ChromeCleanerController {
   // if the system calls to initiate a reboot return success.
   virtual void Reboot() = 0;
 
+  // Returns true if the cleaner is allowed to run by enterprise policy.
+  virtual bool IsAllowedByPolicy() = 0;
+
  protected:
   ChromeCleanerController();
   virtual ~ChromeCleanerController();

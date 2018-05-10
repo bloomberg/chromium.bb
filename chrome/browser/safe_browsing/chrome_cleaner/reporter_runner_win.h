@@ -216,6 +216,9 @@ class SwReporterInvocationSequence {
 void MaybeStartSwReporter(SwReporterInvocationType invocation_type,
                           SwReporterInvocationSequence&& invocations);
 
+// Returns true if the sw_reporter is allowed to run due to enterprise policies.
+bool SwReporterIsAllowedByPolicy();
+
 // A delegate used by tests to implement test doubles (e.g., stubs, fakes, or
 // mocks).
 //

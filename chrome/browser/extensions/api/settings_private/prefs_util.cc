@@ -17,6 +17,7 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/browsing_data/core/pref_names.h"
+#include "components/component_updater/pref_names.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -75,6 +76,11 @@ bool IsSettingReadOnly(const std::string& pref_name) {
     return chromeos::system::PerUserTimezoneEnabled();
   // enable_screen_lock must be changed through the quickUnlockPrivate API.
   if (pref_name == ash::prefs::kEnableAutoScreenLock)
+    return true;
+#endif
+#if defined(OS_WIN)
+  // Don't allow user to change sw_reporter preferences.
+  if (pref_name == prefs::kSwReporterEnabled)
     return true;
 #endif
   return false;
@@ -482,6 +488,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   // Media Remoting settings.
   (*s_whitelist)[::prefs::kMediaRouterMediaRemotingEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+
+#if defined(OS_WIN)
+  // SwReporter settings.
+  (*s_whitelist)[::prefs::kSwReporterEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+#endif
 
   return *s_whitelist;
 }

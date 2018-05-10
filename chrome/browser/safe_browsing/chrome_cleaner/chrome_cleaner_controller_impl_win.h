@@ -67,6 +67,7 @@ class ChromeCleanerControllerImpl : public ChromeCleanerController {
   void ReplyWithUserResponse(Profile* profile,
                              UserResponse user_response) override;
   void Reboot() override;
+  bool IsAllowedByPolicy() override;
 
   static void ResetInstanceForTesting();
   // Passing in a nullptr as |delegate| resets the delegate to a default
@@ -80,6 +81,8 @@ class ChromeCleanerControllerImpl : public ChromeCleanerController {
  private:
   ChromeCleanerControllerImpl();
   ~ChromeCleanerControllerImpl() override;
+
+  void Init();
 
   void NotifyObserver(Observer* observer) const;
   void SetStateAndNotifyObservers(State state);
