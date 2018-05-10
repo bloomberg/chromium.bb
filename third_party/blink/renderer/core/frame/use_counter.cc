@@ -1136,6 +1136,8 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 591;
     case CSSPropertyGap:
       return 592;
+    case CSSPropertyViewportFit:
+      return 593;
     // 1. Add new features above this line (don't change the assigned numbers of
     // the existing items).
     // 2. Update kMaximumCSSSampleId (defined in

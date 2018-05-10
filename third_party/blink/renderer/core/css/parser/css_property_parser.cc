@@ -270,6 +270,8 @@ static CSSValue* ConsumeSingleViewportDescriptor(
     case CSSPropertyOrientation:
       return ConsumeIdent<CSSValueAuto, CSSValuePortrait, CSSValueLandscape>(
           range);
+    case CSSPropertyViewportFit:
+      return ConsumeIdent<CSSValueAuto, CSSValueContain, CSSValueCover>(range);
     default:
       NOTREACHED();
       break;
@@ -325,6 +327,7 @@ bool CSSPropertyParser::ParseViewportDescriptor(CSSPropertyID prop_id,
                   *parsed_properties_);
       return true;
     }
+    case CSSPropertyViewportFit:
     case CSSPropertyMinWidth:
     case CSSPropertyMaxWidth:
     case CSSPropertyMinHeight:

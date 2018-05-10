@@ -1061,4 +1061,123 @@ TEST_P(ParameterizedDocumentTest, ElementFromPointWithPageZoom) {
   EXPECT_EQ(GetDocument().ElementFromPoint(1, 12), GetDocument().body());
 }
 
+/**
+ * Tests for viewport-fit propagation.
+ */
+
+class ViewportFitDocumentTest : public DocumentTest {
+ public:
+  void SetUp() override {
+    DocumentTest::SetUp();
+
+    RuntimeEnabledFeatures::SetDisplayCutoutViewportFitEnabled(true);
+    GetDocument().GetSettings()->SetViewportMetaEnabled(true);
+  }
+};
+
+// Test both meta and @viewport present but no viewport-fit.
+TEST_F(ViewportFitDocumentTest, MetaCSSViewportButNoFit) {
+  SetHtmlInnerHTML(
+      "<style>@viewport { min-width: 100px; }</style>"
+      "<meta name='viewport' content='initial-scale=1'>");
+
+  EXPECT_EQ(ViewportDescription::ViewportFit::kAuto,
+            GetDocument().GetViewportDescription().GetViewportFit());
+}
+
+// Test @viewport present but no viewport-fit.
+TEST_F(ViewportFitDocumentTest, CSSViewportButNoFit) {
+  SetHtmlInnerHTML("<style>@viewport { min-width: 100px; }</style>");
+
+  EXPECT_EQ(ViewportDescription::ViewportFit::kAuto,
+            GetDocument().GetViewportDescription().GetViewportFit());
+}
+
+// Test meta viewport present but no viewport-fit.
+TEST_F(ViewportFitDocumentTest, MetaViewportButNoFit) {
+  SetHtmlInnerHTML("<meta name='viewport' content='initial-scale=1'>");
+
+  EXPECT_EQ(ViewportDescription::ViewportFit::kAuto,
+            GetDocument().GetViewportDescription().GetViewportFit());
+}
+
+// This is a test case for testing a combination of viewport-fit meta value,
+// viewport CSS value and the expected outcome.
+using ViewportTestCase =
+    std::tuple<const char*, const char*, ViewportDescription::ViewportFit>;
+
+class ParameterizedViewportFitDocumentTest
+    : public ViewportFitDocumentTest,
+      public testing::WithParamInterface<ViewportTestCase> {
+ protected:
+  void LoadTestHTML() {
+    const char* kMetaValue = std::get<0>(GetParam());
+    const char* kCSSValue = std::get<1>(GetParam());
+    StringBuilder html;
+
+    if (kCSSValue) {
+      html.Append("<style>@viewport { viewport-fit: ");
+      html.Append(kCSSValue);
+      html.Append("; }</style>");
+    }
+
+    if (kMetaValue) {
+      html.Append("<meta name='viewport' content='viewport-fit=");
+      html.Append(kMetaValue);
+      html.Append("'>");
+    }
+
+    GetDocument().documentElement()->SetInnerHTMLFromString(html.ToString());
+    GetDocument().View()->UpdateAllLifecyclePhases();
+  }
+};
+
+TEST_P(ParameterizedViewportFitDocumentTest, EffectiveViewportFit) {
+  LoadTestHTML();
+  EXPECT_EQ(std::get<2>(GetParam()),
+            GetDocument().GetViewportDescription().GetViewportFit());
+}
+
+INSTANTIATE_TEST_CASE_P(
+    All,
+    ParameterizedViewportFitDocumentTest,
+    testing::Values(
+        // Test the default case.
+        ViewportTestCase(nullptr,
+                         nullptr,
+                         ViewportDescription::ViewportFit::kAuto),
+        // Test the different values set through CSS.
+        ViewportTestCase(nullptr,
+                         "auto",
+                         ViewportDescription::ViewportFit::kAuto),
+        ViewportTestCase(nullptr,
+                         "contain",
+                         ViewportDescription::ViewportFit::kContain),
+        ViewportTestCase(nullptr,
+                         "cover",
+                         ViewportDescription::ViewportFit::kCover),
+        ViewportTestCase(nullptr,
+                         "invalid",
+                         ViewportDescription::ViewportFit::kAuto),
+        // Test the different values set through the meta tag.
+        ViewportTestCase("auto",
+                         nullptr,
+                         ViewportDescription::ViewportFit::kAuto),
+        ViewportTestCase("contain",
+                         nullptr,
+                         ViewportDescription::ViewportFit::kContain),
+        ViewportTestCase("cover",
+                         nullptr,
+                         ViewportDescription::ViewportFit::kCover),
+        ViewportTestCase("invalid",
+                         nullptr,
+                         ViewportDescription::ViewportFit::kAuto),
+        // Test that the CSS should override the meta tag.
+        ViewportTestCase("cover",
+                         "auto",
+                         ViewportDescription::ViewportFit::kAuto),
+        ViewportTestCase("cover",
+                         "contain",
+                         ViewportDescription::ViewportFit::kContain)));
+
 }  // namespace blink

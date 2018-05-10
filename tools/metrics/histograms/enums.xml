@@ -29167,6 +29167,7 @@ Called by update_use_counter_css.py.-->
   <int value="590" label="scroll-customization"/>
   <int value="591" label="row-gap"/>
   <int value="592" label="gap"/>
+  <int value="593" label="viewport-fit"/>
 </enum>
 
 <enum name="MappedEditingCommands">

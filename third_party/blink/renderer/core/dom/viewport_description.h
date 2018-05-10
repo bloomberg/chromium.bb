@@ -29,6 +29,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_VIEWPORT_DESCRIPTION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_VIEWPORT_DESCRIPTION_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/page_scale_constraints.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -132,7 +133,10 @@ struct CORE_EXPORT ViewportDescription {
   bool max_zoom_is_explicit;
   bool user_zoom_is_explicit;
 
-  ViewportFit viewport_fit = ViewportFit::kAuto;
+  ViewportFit GetViewportFit() const {
+    return viewport_fit_.value_or(ViewportFit::kAuto);
+  }
+  void SetViewportFit(ViewportFit value) { viewport_fit_ = value; }
 
   bool operator==(const ViewportDescription& other) const {
     // Used for figuring out whether to reset the viewport or not,
@@ -148,7 +152,7 @@ struct CORE_EXPORT ViewportDescription {
            min_zoom_is_explicit == other.min_zoom_is_explicit &&
            max_zoom_is_explicit == other.max_zoom_is_explicit &&
            user_zoom_is_explicit == other.user_zoom_is_explicit &&
-           viewport_fit == other.viewport_fit;
+           viewport_fit_ == other.viewport_fit_;
   }
 
   bool operator!=(const ViewportDescription& other) const {
@@ -172,6 +176,8 @@ struct CORE_EXPORT ViewportDescription {
   static float ResolveViewportLength(const Length&,
                                      const FloatSize& initial_viewport_size,
                                      Direction);
+
+  base::Optional<ViewportFit> viewport_fit_;
 };
 
 }  // namespace blink
