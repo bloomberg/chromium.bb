@@ -649,6 +649,7 @@
       <if expr="safe_browsing_mode == 1">
         <include name="IDR_RESET_PASSWORD_HTML" file="resources\reset_password\reset_password.html" type="BINDATA" compress="gzip" />
         <include name="IDR_RESET_PASSWORD_JS" file="resources\reset_password\reset_password.js" type="BINDATA" compress="gzip" />
+        <include name="IDR_RESET_PASSWORD_MOJO_JS" file="${root_gen_dir}\chrome\browser\ui\webui\reset_password\reset_password.mojom.js" use_base_dir="false" type="BINDATA" compress="gzip" />
       </if>
     </includes>
   </release>

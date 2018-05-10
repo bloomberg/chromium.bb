@@ -56,10 +56,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // change password card, etc) in reaction to user events.
   class Observer {
    public:
-    // Called when user clicks on the "Change Password" button on
-    // chrome://settings page.
-    virtual void OnStartingGaiaPasswordChange() = 0;
-
     // Called when user completes the Gaia password reset.
     virtual void OnGaiaPasswordChanged() = 0;
 
@@ -95,6 +91,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   void ShowModalWarning(content::WebContents* web_contents,
                         const std::string& verdict_token) override;
+
+  void ShowInterstitial(content::WebContents* web_contens) override;
 
   // Called when user interacts with password protection UIs.
   void OnUserAction(content::WebContents* web_contents,
@@ -218,6 +216,10 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       PasswordProtectionService::WarningAction action);
 
   void HandleUserActionOnSettings(
+      content::WebContents* web_contents,
+      PasswordProtectionService::WarningAction action);
+
+  void HandleResetPasswordOnInterstitial(
       content::WebContents* web_contents,
       PasswordProtectionService::WarningAction action);
 
