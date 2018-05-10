@@ -675,7 +675,10 @@ def _git_checkout(sln, sln_dir, revisions, shallow, refs, git_cache_dir,
   env = {}
   if url == CHROMIUM_SRC_URL or url + '.git' == CHROMIUM_SRC_URL:
     # This is for performance investigation of `git fetch` in chromium/src.
-    env = {'GIT_TRACE': 'true'}
+    env = {
+        'GIT_TRACE': 'true',
+        'GIT_TRACE_PERFORMANCE': 'true',
+    }
 
   # Step 1: populate/refresh cache, if necessary.
   pin = get_target_pin(name, url, revisions)
