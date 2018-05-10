@@ -164,16 +164,11 @@ class ConversionContext {
   void UpdateEffectBounds(const FloatRect&, const TransformPaintPropertyNode*);
 
   // Starts a clip state by adjusting the transform state, applying
-  // |combined_clip_rect| which is combined from multiple rectangular
-  // consecutive clips, and updating the current state.
-  // |lowest_combined_clip_node| is the lowest node of the combined clips.
-  void StartCombinedClip(
-      const FloatRect& combined_clip_rect,
-      const ClipPaintPropertyNode* lowest_combined_clip_node);
-  // Starts a clip state by adjusting the transform state, applying the single
-  // clip node which can't be combined with other clips, and updating the
-  // current state.
-  void StartSingleClip(const ClipPaintPropertyNode*);
+  // |combined_clip_rect| which is combined from one or more consecutive clips,
+  // and updating the current state. |lowest_combined_clip_node| is the lowest
+  // node of the combined clips.
+  void StartClip(const FloatRoundedRect& combined_clip_rect,
+                 const ClipPaintPropertyNode* lowest_combined_clip_node);
   // Pop one clip state from the top of the stack.
   void EndClip();
   // Pop clip states from the top of the stack until the top is an effect state
@@ -274,6 +269,46 @@ void ConversionContext::SwitchToChunkState(const PaintChunk& chunk) {
   SwitchToTransform(chunk_state.Transform());
 }
 
+// Tries to combine a clip node's clip rect into |combined_clip_rect|.
+// Returns whether the clip has been combined.
+static bool CombineClip(const ClipPaintPropertyNode* clip,
+                        FloatRoundedRect& combined_clip_rect) {
+  // Don't combine into a clip with clip path.
+  if (clip->Parent()->ClipPath())
+    return false;
+
+  // Don't combine clips in different transform spaces.
+  if (clip->LocalTransformSpace() != clip->Parent()->LocalTransformSpace() &&
+      !GeometryMapper::SourceToDestinationProjection(
+           clip->Parent()->LocalTransformSpace(), clip->LocalTransformSpace())
+           .IsIdentity())
+    return false;
+
+  // Don't combine two rounded clip rects.
+  bool clip_is_rounded = clip->ClipRect().IsRounded();
+  bool combined_is_rounded = combined_clip_rect.IsRounded();
+  if (clip_is_rounded && combined_is_rounded)
+    return false;
+
+  // If one is rounded and the other contains the rounded bounds, use the
+  // rounded as the combined.
+  if (combined_is_rounded)
+    return clip->ClipRect().Rect().Contains(combined_clip_rect.Rect());
+  if (clip_is_rounded) {
+    if (combined_clip_rect.Rect().Contains(clip->ClipRect().Rect())) {
+      combined_clip_rect = clip->ClipRect();
+      return true;
+    }
+    return false;
+  }
+
+  // The combined is the intersection if both are rectangular.
+  DCHECK(!combined_is_rounded && !clip_is_rounded);
+  combined_clip_rect = FloatRoundedRect(
+      Intersection(combined_clip_rect.Rect(), clip->ClipRect().Rect()));
+  return true;
+}
+
 void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
   if (target_clip == current_clip_)
     return;
@@ -317,49 +352,29 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
   }
 
   // Step 3: Now apply the list of clips in top-down order.
-  base::Optional<FloatRect> pending_combined_clip_rect;
-  const ClipPaintPropertyNode* lowest_combined_clip_node = nullptr;
-  for (size_t i = pending_clips.size(); i--;) {
+  DCHECK(pending_clips.size());
+  auto pending_combined_clip_rect = pending_clips.back()->ClipRect();
+  const auto* lowest_combined_clip_node = pending_clips.back();
+  for (size_t i = pending_clips.size() - 1; i--;) {
     const auto* sub_clip = pending_clips[i];
-    bool has_rounded_clip_or_clip_path =
-        sub_clip->ClipRect().IsRounded() || sub_clip->ClipPath();
-    if (!has_rounded_clip_or_clip_path && pending_combined_clip_rect &&
-        (sub_clip->Parent()->LocalTransformSpace() ==
-             sub_clip->LocalTransformSpace() ||
-         GeometryMapper::SourceToDestinationProjection(
-             sub_clip->Parent()->LocalTransformSpace(),
-             sub_clip->LocalTransformSpace())
-             .IsIdentity())) {
-      // Continue to combine rectangular clips in the same transform space.
-      pending_combined_clip_rect->Intersect(sub_clip->ClipRect().Rect());
+    if (CombineClip(sub_clip, pending_combined_clip_rect)) {
+      // Continue to combine.
       lowest_combined_clip_node = sub_clip;
-      continue;
-    }
-
-    if (pending_combined_clip_rect) {
-      StartCombinedClip(*pending_combined_clip_rect, lowest_combined_clip_node);
-      lowest_combined_clip_node = nullptr;
-      pending_combined_clip_rect.reset();
-    }
-
-    if (has_rounded_clip_or_clip_path) {
-      // The clip can't be combined with others.
-      StartSingleClip(sub_clip);
     } else {
-      // Start to combine clips.
-      pending_combined_clip_rect = sub_clip->ClipRect().Rect();
+      // |sub_clip| can't be combined to previous clips. Output the current
+      // combined clip, and start new combination.
+      StartClip(pending_combined_clip_rect, lowest_combined_clip_node);
+      pending_combined_clip_rect = sub_clip->ClipRect();
       lowest_combined_clip_node = sub_clip;
     }
   }
-
-  if (pending_combined_clip_rect)
-    StartCombinedClip(*pending_combined_clip_rect, lowest_combined_clip_node);
+  StartClip(pending_combined_clip_rect, lowest_combined_clip_node);
 
   DCHECK_EQ(current_clip_, target_clip);
 }
 
-void ConversionContext::StartCombinedClip(
-    const FloatRect& combined_clip_rect,
+void ConversionContext::StartClip(
+    const FloatRoundedRect& combined_clip_rect,
     const ClipPaintPropertyNode* lowest_combined_clip_node) {
   if (lowest_combined_clip_node->LocalTransformSpace() != current_transform_)
     EndTransform();
@@ -367,37 +382,23 @@ void ConversionContext::StartCombinedClip(
   cc_list_.push<cc::SaveOp>();
   ApplyTransform(lowest_combined_clip_node->LocalTransformSpace());
   const bool antialias = true;
-  cc_list_.push<cc::ClipRectOp>(combined_clip_rect, SkClipOp::kIntersect,
-                                antialias);
+  if (combined_clip_rect.IsRounded()) {
+    cc_list_.push<cc::ClipRRectOp>(combined_clip_rect, SkClipOp::kIntersect,
+                                   antialias);
+  } else {
+    cc_list_.push<cc::ClipRectOp>(combined_clip_rect.Rect(),
+                                  SkClipOp::kIntersect, antialias);
+  }
+  if (lowest_combined_clip_node->ClipPath()) {
+    cc_list_.push<cc::ClipPathOp>(
+        lowest_combined_clip_node->ClipPath()->GetSkPath(),
+        SkClipOp::kIntersect, antialias);
+  }
   cc_list_.EndPaintOfPairedBegin();
 
   PushState(StateEntry::kClip, 1);
   current_clip_ = lowest_combined_clip_node;
   current_transform_ = lowest_combined_clip_node->LocalTransformSpace();
-}
-
-void ConversionContext::StartSingleClip(const ClipPaintPropertyNode* clip) {
-  if (clip->LocalTransformSpace() != current_transform_)
-    EndTransform();
-  cc_list_.StartPaint();
-  cc_list_.push<cc::SaveOp>();
-  ApplyTransform(clip->LocalTransformSpace());
-  const bool antialias = true;
-  cc_list_.push<cc::ClipRectOp>(static_cast<SkRect>(clip->ClipRect().Rect()),
-                                SkClipOp::kIntersect, antialias);
-  if (clip->ClipRect().IsRounded()) {
-    cc_list_.push<cc::ClipRRectOp>(static_cast<SkRRect>(clip->ClipRect()),
-                                   SkClipOp::kIntersect, antialias);
-  }
-  if (clip->ClipPath()) {
-    cc_list_.push<cc::ClipPathOp>(clip->ClipPath()->GetSkPath(),
-                                  SkClipOp::kIntersect, antialias);
-  }
-  cc_list_.EndPaintOfPairedBegin();
-
-  PushState(StateEntry::kClip, 1);
-  current_clip_ = clip;
-  current_transform_ = clip->LocalTransformSpace();
 }
 
 void ConversionContext::SwitchToEffect(
