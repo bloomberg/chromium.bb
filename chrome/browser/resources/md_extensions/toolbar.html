@@ -19,9 +19,9 @@
     <style include="cr-hidden-style paper-button-style">
       :host {
         /* The constant is the height of the tallest control. */
-        --button-row-height: calc(var(--margin-bottom) + 36px);
+        --button-row-height: calc(2 * var(--padding-top-bottom) + 36px);
         --drawer-transition: 0.3s cubic-bezier(.25, .1, .25, 1);
-        --margin-bottom: 4px;
+        --padding-top-bottom: 8px;
         --toolbar-color: var(--md-toolbar-color);
       }
 
@@ -46,6 +46,7 @@
       }
 
       #devDrawer {
+        background: white;
         height: 0;
         overflow: hidden;
         position: relative;
@@ -58,11 +59,9 @@
 
       #buttonStrip {
         -webkit-margin-end: auto;
-        -webkit-margin-start: auto;
-        background: var(--toolbar-color);
-        margin-bottom: var(--margin-bottom);
+        -webkit-margin-start: 24px;
+        padding: var(--padding-top-bottom) 0;
         position: absolute;
-        text-align: center;
         top: calc(var(--button-row-height) * -1);
         transition: top var(--drawer-transition);
         /* Prevent selection of the blank space between buttons. */
@@ -72,11 +71,6 @@
 
       #buttonStrip paper-button {
         -webkit-margin-end: 16px;
-        color: white;
-        /* Increase contrast compared to default values. */
-        --paper-button-flat-keyboard-focus: {
-          background: rgba(0, 0, 0, .3);
-        };
       }
 
       .more-actions {
