@@ -2316,6 +2316,9 @@ void UiSceneCreator::CreateOverflowMenu() {
   overflow_outer_layout->AddChild(std::move(button_spacer));
 
   std::vector<std::tuple<UiElementName, int>> menu_items = {
+      {kOverflowMenuCloseAllTabsItem, IDS_VR_MENU_CLOSE_ALL_TABS},
+      {kOverflowMenuCloseAllIncognitoTabsItem,
+       IDS_VR_MENU_CLOSE_INCOGNITO_TABS},
       {kOverflowMenuNewTabItem, IDS_VR_MENU_NEW_TAB},
       {kOverflowMenuNewIncognitoTabItem, IDS_VR_MENU_NEW_INCOGNITO_TAB},
       {kOverflowMenuBookmarksItem, IDS_VR_MENU_BOOKMARKS},
@@ -2324,9 +2327,6 @@ void UiSceneCreator::CreateOverflowMenu() {
       {kOverflowMenuDownloadsItem, IDS_VR_MENU_DOWNLOADS},
       {kOverflowMenuShareItem, IDS_VR_MENU_SHARE},
       {kOverflowMenuPreferencesItem, IDS_VR_MENU_PREFERENCES},
-      {kOverflowMenuCloseAllTabsItem, IDS_VR_MENU_CLOSE_ALL_TABS},
-      {kOverflowMenuCloseAllIncognitoTabsItem,
-       IDS_VR_MENU_CLOSE_INCOGNITO_TABS},
       {kOverflowMenuSendFeedbackItem, IDS_VR_MENU_SEND_FEEDBACK},
   };
 
@@ -2366,111 +2366,86 @@ void UiSceneCreator::CreateOverflowMenu() {
                           &ColorScheme::url_bar_button,
                           &Button::SetButtonColors);
     background->AddChild(std::move(layout));
+    base::RepeatingClosure callback;
     switch (std::get<0>(item)) {
-      case kOverflowMenuNewTabItem:
-        background->set_click_handler(base::BindRepeating(
-            [](Model* model, UiBrowserInterface* browser) {
-              model->overflow_menu_enabled = false;
-              browser->OpenNewTab(false);
-            },
-            base::Unretained(model_), base::Unretained(browser_)));
-        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
-        break;
-      case kOverflowMenuNewIncognitoTabItem:
-        background->set_click_handler(base::BindRepeating(
-            [](Model* model, UiBrowserInterface* browser) {
-              model->overflow_menu_enabled = false;
-              browser->OpenNewTab(true);
-            },
-            base::Unretained(model_), base::Unretained(browser_)));
-        break;
-      case kOverflowMenuBookmarksItem:
-        background->set_click_handler(base::BindRepeating(
-            [](Model* model, UiBrowserInterface* browser) {
-              model->overflow_menu_enabled = false;
-              browser->OpenBookmarks();
-            },
-            base::Unretained(model_), base::Unretained(browser_)));
-        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
-        break;
-      case kOverflowMenuRecentTabsItem:
-        background->set_click_handler(base::BindRepeating(
-            [](Model* model, UiBrowserInterface* browser) {
-              model->overflow_menu_enabled = false;
-              browser->OpenRecentTabs();
-            },
-            base::Unretained(model_), base::Unretained(browser_)));
-        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
-        break;
-      case kOverflowMenuHistoryItem:
-        background->set_click_handler(base::BindRepeating(
-            [](Model* model, UiBrowserInterface* browser) {
-              model->overflow_menu_enabled = false;
-              browser->OpenHistory();
-            },
-            base::Unretained(model_), base::Unretained(browser_)));
-        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
-        break;
-      case kOverflowMenuDownloadsItem:
-        background->set_click_handler(base::BindRepeating(
-            [](Model* model, UiBrowserInterface* browser) {
-              model->overflow_menu_enabled = false;
-              browser->OpenDownloads();
-            },
-            base::Unretained(model_), base::Unretained(browser_)));
-        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
-        break;
-      case kOverflowMenuShareItem:
-        background->set_click_handler(base::BindRepeating(
-            [](Model* model, UiBrowserInterface* browser) {
-              model->overflow_menu_enabled = false;
-              browser->OpenShare();
-            },
-            base::Unretained(model_), base::Unretained(browser_)));
-        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
-        break;
-      case kOverflowMenuPreferencesItem:
-        background->set_click_handler(base::BindRepeating(
-            [](Model* model, UiBrowserInterface* browser) {
-              model->overflow_menu_enabled = false;
-              browser->OpenSettings();
-            },
-            base::Unretained(model_), base::Unretained(browser_)));
-        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
-        break;
       case kOverflowMenuCloseAllTabsItem:
-        background->set_click_handler(base::BindRepeating(
-            [](Model* model, UiBrowserInterface* browser) {
-              model->overflow_menu_enabled = false;
-              browser->CloseAllTabs();
-            },
-            base::Unretained(model_), base::Unretained(browser_)));
+        callback = base::BindRepeating(
+            [](UiBrowserInterface* browser) { browser->CloseAllTabs(); },
+            base::Unretained(browser_));
         VR_BIND_VISIBILITY(background, model->standalone_vr_device &&
                                            (!model->incognito_tabs.empty() ||
                                             !model->regular_tabs.empty()));
         break;
       case kOverflowMenuCloseAllIncognitoTabsItem:
-        background->set_click_handler(base::BindRepeating(
-            [](Model* model, UiBrowserInterface* browser) {
-              model->overflow_menu_enabled = false;
+        callback = base::BindRepeating(
+            [](UiBrowserInterface* browser) {
               browser->CloseAllIncognitoTabs();
             },
-            base::Unretained(model_), base::Unretained(browser_)));
+            base::Unretained(browser_));
         VR_BIND_VISIBILITY(background, !model->incognito_tabs.empty());
         break;
+      case kOverflowMenuNewTabItem:
+        callback = base::BindRepeating(
+            [](UiBrowserInterface* browser) { browser->OpenNewTab(false); },
+            base::Unretained(browser_));
+        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
+        break;
+      case kOverflowMenuNewIncognitoTabItem:
+        callback = base::BindRepeating(
+            [](UiBrowserInterface* browser) { browser->OpenNewTab(true); },
+            base::Unretained(browser_));
+        break;
+      case kOverflowMenuBookmarksItem:
+        callback = base::BindRepeating(
+            [](UiBrowserInterface* browser) { browser->OpenBookmarks(); },
+            base::Unretained(browser_));
+        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
+        break;
+      case kOverflowMenuRecentTabsItem:
+        callback = base::BindRepeating(
+            [](UiBrowserInterface* browser) { browser->OpenRecentTabs(); },
+            base::Unretained(browser_));
+        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
+        break;
+      case kOverflowMenuHistoryItem:
+        callback = base::BindRepeating(
+            [](UiBrowserInterface* browser) { browser->OpenHistory(); },
+            base::Unretained(browser_));
+        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
+        break;
+      case kOverflowMenuDownloadsItem:
+        callback = base::BindRepeating(
+            [](UiBrowserInterface* browser) { browser->OpenDownloads(); },
+            base::Unretained(browser_));
+        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
+        break;
+      case kOverflowMenuShareItem:
+        callback = base::BindRepeating(
+            [](UiBrowserInterface* browser) { browser->OpenShare(); },
+            base::Unretained(browser_));
+        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
+        break;
+      case kOverflowMenuPreferencesItem:
+        callback = base::BindRepeating(
+            [](UiBrowserInterface* browser) { browser->OpenSettings(); },
+            base::Unretained(browser_));
+        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
+        break;
       case kOverflowMenuSendFeedbackItem:
-        background->set_click_handler(base::BindRepeating(
-            [](Model* model, UiBrowserInterface* browser) {
-              model->overflow_menu_enabled = false;
-              browser->OpenFeedback();
-            },
-            base::Unretained(model_), base::Unretained(browser_)));
+        callback = base::BindRepeating(
+            [](UiBrowserInterface* browser) { browser->OpenFeedback(); },
+            base::Unretained(browser_));
         VR_BIND_VISIBILITY(background, model->standalone_vr_device);
         break;
       default:
         break;
     }
-
+    background->set_click_handler(base::BindRepeating(
+        [](Model* model, const base::RepeatingClosure& callback) {
+          model->overflow_menu_enabled = false;
+          callback.Run();
+        },
+        base::Unretained(model_), callback));
     overflow_menu_layout->AddChild(std::move(background));
   }
 
