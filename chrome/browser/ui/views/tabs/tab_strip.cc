@@ -1770,6 +1770,8 @@ void TabStrip::RemoveAndDeleteTab(Tab* tab) {
   res.first->second.erase(res.second);
   if (res.first->second.empty())
     tabs_closing_map_.erase(res.first);
+  if (tab == last_hovered_tab_)
+    last_hovered_tab_ = nullptr;
 }
 
 void TabStrip::UpdateTabsClosingMap(int index, int delta) {
