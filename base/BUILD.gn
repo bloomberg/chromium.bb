@@ -2130,7 +2130,6 @@ if (is_fuchsia) {
     sources = [
       "fuchsia/test.fidl",
     ]
-    namespace = "base"
   }
 }
 
