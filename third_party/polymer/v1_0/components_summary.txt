@@ -196,12 +196,6 @@ Tree: v2.0.0
 Revision: b37655b85e1c3364ce9f5ca0470ddf1071cca3aa
 Tree link: https://github.com/PolymerElements/paper-button/tree/v2.0.0
 
-Name: paper-checkbox
-Repository: https://github.com/PolymerElements/paper-checkbox.git
-Tree: v2.0.2
-Revision: 8404761baae76f5229dd31f0ffe22ae400a67ee2
-Tree link: https://github.com/PolymerElements/paper-checkbox/tree/v2.0.2
-
 Name: paper-fab
 Repository: https://github.com/PolymerElements/paper-fab.git
 Tree: v2.0.0

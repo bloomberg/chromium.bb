@@ -576,14 +576,6 @@
              file="../../../third_party/polymer/v1_0/components-chromium/paper-button/paper-button.html"
              type="chrome_html"
              compress="gzip" />
-  <structure name="IDR_POLYMER_1_0_PAPER_CHECKBOX_PAPER_CHECKBOX_EXTRACTED_JS"
-             file="../../../third_party/polymer/v1_0/components-chromium/paper-checkbox/paper-checkbox-extracted.js"
-             type="chrome_html"
-             compress="gzip" />
-  <structure name="IDR_POLYMER_1_0_PAPER_CHECKBOX_PAPER_CHECKBOX_HTML"
-             file="../../../third_party/polymer/v1_0/components-chromium/paper-checkbox/paper-checkbox.html"
-             type="chrome_html"
-             compress="gzip" />
   <structure name="IDR_POLYMER_1_0_PAPER_FAB_PAPER_FAB_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-fab/paper-fab-extracted.js"
              type="chrome_html"
