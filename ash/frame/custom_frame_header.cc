@@ -141,6 +141,15 @@ void CustomFrameHeader::Init(
   appearance_provider_ = appearance_provider;
   is_incognito_ = incognito;
   caption_button_container_ = caption_button_container;
+
+  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_MINIMIZE,
+                                            kWindowControlMinimizeIcon);
+  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_CLOSE,
+                                            kWindowControlCloseIcon);
+  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_LEFT_SNAPPED,
+                                            kWindowControlLeftSnappedIcon);
+  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+                                            kWindowControlRightSnappedIcon);
 }
 
 int CustomFrameHeader::GetMinimumHeaderWidth() const {
@@ -216,6 +225,7 @@ void CustomFrameHeader::SetPaintAsActive(bool paint_as_active) {
 void CustomFrameHeader::OnShowStateChanged(ui::WindowShowState show_state) {
   if (show_state == ui::SHOW_STATE_MINIMIZED)
     return;
+
   // Call LayoutHeaderInternal() instead of LayoutHeader() here because
   // |show_state| shouldn't cause |painted_height_| change.
   LayoutHeaderInternal();
@@ -249,7 +259,19 @@ void CustomFrameHeader::AnimationProgressed(const gfx::Animation* animation) {
 // CustomFrameHeader, private:
 
 void CustomFrameHeader::LayoutHeaderInternal() {
-  UpdateCaptionButtons();
+  caption_button_container_->SetButtonImage(
+      CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
+      GetWidget()->IsMaximized() || GetWidget()->IsFullscreen()
+          ? kWindowControlRestoreIcon
+          : kWindowControlMaximizeIcon);
+
+  const AshLayoutSize button_size_type =
+      GetWidget()->IsMaximized() || GetWidget()->IsFullscreen() ||
+              appearance_provider_->IsTabletMode()
+          ? AshLayoutSize::kBrowserCaptionMaximized
+          : AshLayoutSize::kBrowserCaptionRestored;
+  caption_button_container_->SetButtonSize(GetAshLayoutSize(button_size_type));
+
   const gfx::Size caption_button_container_size =
       caption_button_container_->GetPreferredSize();
   caption_button_container_->SetBounds(
@@ -305,35 +327,6 @@ void CustomFrameHeader::PaintTitleBar(gfx::Canvas* canvas) {
                     : kNormalWindowTitleTextColor,
       view_->GetMirroredRect(GetTitleBounds()),
       gfx::Canvas::NO_SUBPIXEL_RENDERING);
-}
-
-void CustomFrameHeader::UpdateCaptionButtons() {
-  // When |frame_| minimized, avoid tablet mode toggling to update caption
-  // buttons as it would cause mismatch beteen window state and size button.
-  if (GetWidget()->IsMinimized())
-    return;
-  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_MINIMIZE,
-                                            kWindowControlMinimizeIcon);
-  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_CLOSE,
-                                            kWindowControlCloseIcon);
-  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-                                            kWindowControlLeftSnappedIcon);
-  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-                                            kWindowControlRightSnappedIcon);
-
-  const bool is_maximized_or_fullscreen =
-      GetWidget()->IsMaximized() || GetWidget()->IsFullscreen();
-  const AshLayoutSize button_size_type =
-      is_maximized_or_fullscreen || appearance_provider_->IsTabletMode()
-          ? AshLayoutSize::kBrowserCaptionMaximized
-          : AshLayoutSize::kBrowserCaptionRestored;
-  const gfx::VectorIcon* const size_icon = is_maximized_or_fullscreen
-                                               ? &kWindowControlRestoreIcon
-                                               : &kWindowControlMaximizeIcon;
-
-  caption_button_container_->SetButtonImage(
-      CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, *size_icon);
-  caption_button_container_->SetButtonSize(GetAshLayoutSize(button_size_type));
 }
 
 gfx::Rect CustomFrameHeader::GetPaintedBounds() const {

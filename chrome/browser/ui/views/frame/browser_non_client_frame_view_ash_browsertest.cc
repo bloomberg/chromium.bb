@@ -453,6 +453,19 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
             *test.size_button()->icon_definition_for_test()->name);
 }
 
+// Regression test for https://crbug.com/839955
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
+                       ActiveStateOfButtonMatchesWidget) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+
+  ash::FrameCaptionButtonContainerView::TestApi test(
+      GetFrameViewAsh(browser_view)->caption_button_container_);
+  EXPECT_TRUE(test.size_button()->paint_as_active());
+
+  browser_view->GetWidget()->Deactivate();
+  EXPECT_FALSE(test.size_button()->paint_as_active());
+}
+
 // This is a regression test that session restore minimized browser should
 // update caption buttons (https://crbug.com/827444).
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
