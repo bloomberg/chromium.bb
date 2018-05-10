@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/background_sync/background_sync_service_impl.h"
@@ -86,9 +85,9 @@ void BackgroundSyncContext::CreateServiceOnIOThread(
     mojo::InterfaceRequest<blink::mojom::BackgroundSyncService> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(background_sync_manager_);
-  BackgroundSyncServiceImpl* service =
-      new BackgroundSyncServiceImpl(this, std::move(request));
-  services_[service] = base::WrapUnique(service);
+  auto service =
+      std::make_unique<BackgroundSyncServiceImpl>(this, std::move(request));
+  services_[service.get()] = std::move(service);
 }
 
 void BackgroundSyncContext::ShutdownOnIO() {
