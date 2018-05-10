@@ -12,6 +12,10 @@ source_set("cpp") {
     "debug_recording_session.h",
     "debug_recording_session_factory.cc",
     "debug_recording_session_factory.h",
+    "device_factory.cc",
+    "device_factory.h",
+    "input_ipc.cc",
+    "input_ipc.h",
   ]
 
   public_deps = [
