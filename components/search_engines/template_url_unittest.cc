@@ -1843,3 +1843,54 @@ TEST_F(TemplateURLTest, InvalidateCachedValues) {
 
   search_terms_data_.set_google_base_url("http://www.google.com/");
 }
+
+// Tests the use of wildcards in the path to ensure both extracting search terms
+// and generating a search URL work correctly.
+TEST_F(TemplateURLTest, PathWildcard) {
+  TemplateURLData data;
+  data.SetURL(
+      "https://www.google.com/search{google:pathWildcard}?q={searchTerms}");
+  TemplateURL url(data);
+
+  // Test extracting search terms from a URL.
+  base::string16 search_terms;
+  url.ExtractSearchTermsFromURL(GURL("https://www.google.com/search?q=testing"),
+                                search_terms_data_, &search_terms);
+  EXPECT_EQ(base::ASCIIToUTF16("testing"), search_terms);
+  url.ExtractSearchTermsFromURL(
+      GURL("https://www.google.com/search;_this_is_a_test;_?q=testing"),
+      search_terms_data_, &search_terms);
+  EXPECT_EQ(base::ASCIIToUTF16("testing"), search_terms);
+
+  // Tests overlapping prefix/suffix.
+  data.SetURL(
+      "https://www.google.com/search{google:pathWildcard}rch?q={searchTerms}");
+  TemplateURL overlap_url(data);
+  overlap_url.ExtractSearchTermsFromURL(
+      GURL("https://www.google.com/search?q=testing"), search_terms_data_,
+      &search_terms);
+  EXPECT_TRUE(search_terms.empty());
+
+  // Tests wildcard at beginning of path so we only have a suffix.
+  data.SetURL(
+      "https://www.google.com/{google:pathWildcard}rch?q={searchTerms}");
+  TemplateURL suffix_url(data);
+  suffix_url.ExtractSearchTermsFromURL(
+      GURL("https://www.google.com/search?q=testing"), search_terms_data_,
+      &search_terms);
+  EXPECT_EQ(base::ASCIIToUTF16("testing"), search_terms);
+
+  // Tests wildcard between prefix/suffix.
+  overlap_url.ExtractSearchTermsFromURL(
+      GURL("https://www.google.com/search_testing_rch?q=testing"),
+      search_terms_data_, &search_terms);
+  EXPECT_EQ(base::ASCIIToUTF16("testing"), search_terms);
+
+  // Test generating a URL.
+  TemplateURLRef::SearchTermsArgs search_terms_args(ASCIIToUTF16("foo"));
+  GURL generated_url;
+  url.ReplaceSearchTermsInURL(url.GenerateSearchURL(search_terms_data_),
+                              search_terms_args, search_terms_data_,
+                              &generated_url);
+  EXPECT_EQ("https://www.google.com/search?q=foo", generated_url.spec());
+}
