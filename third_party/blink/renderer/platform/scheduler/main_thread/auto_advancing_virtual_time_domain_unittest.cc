@@ -5,8 +5,9 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 
 #include <memory>
-#include "base/test/simple_test_tick_clock.h"
-#include "components/viz/test/ordered_simple_task_runner.h"
+#include "base/run_loop.h"
+#include "base/test/test_mock_time_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
@@ -26,19 +27,21 @@ class AutoAdvancingVirtualTimeDomainTest : public testing::Test {
   ~AutoAdvancingVirtualTimeDomainTest() override = default;
 
   void SetUp() override {
-    clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
-
-    mock_task_runner_ =
-        base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, false);
-
+    test_task_runner_ = base::WrapRefCounted(new base::TestMockTimeTaskRunner(
+        base::TestMockTimeTaskRunner::Type::kBoundToThread));
+    // A null clock triggers some assertions.
+    test_task_runner_->AdvanceMockTickClock(
+        base::TimeDelta::FromMilliseconds(5));
     scheduler_helper_.reset(new NonMainThreadSchedulerHelper(
-        TaskQueueManagerForTest::Create(nullptr, mock_task_runner_, &clock_),
+        TaskQueueManagerForTest::Create(nullptr,
+                                        base::ThreadTaskRunnerHandle::Get(),
+                                        test_task_runner_->GetMockTickClock()),
         nullptr));
 
     scheduler_helper_->AddTaskTimeObserver(&test_task_time_observer_);
     task_queue_ = scheduler_helper_->DefaultWorkerTaskQueue();
     initial_time_ = base::Time::FromJsTime(100000.0);
-    initial_time_ticks_ = clock_.NowTicks();
+    initial_time_ticks_ = test_task_runner_->NowTicks();
     auto_advancing_time_domain_.reset(new AutoAdvancingVirtualTimeDomain(
         initial_time_, initial_time_ticks_, scheduler_helper_.get(),
         AutoAdvancingVirtualTimeDomain::BaseTimeOverridePolicy::OVERRIDE));
@@ -51,10 +54,9 @@ class AutoAdvancingVirtualTimeDomainTest : public testing::Test {
     scheduler_helper_->UnregisterTimeDomain(auto_advancing_time_domain_.get());
   }
 
+  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
   base::Time initial_time_;
   base::TimeTicks initial_time_ticks_;
-  base::SimpleTestTickClock clock_;
-  scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   std::unique_ptr<NonMainThreadSchedulerHelper> scheduler_helper_;
   scoped_refptr<TaskQueue> task_queue_;
   std::unique_ptr<AutoAdvancingVirtualTimeDomain> auto_advancing_time_domain_;
@@ -83,9 +85,9 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest, VirtualTimeAdvances) {
                                delay);
 
   EXPECT_CALL(mock_observer, OnVirtualTimeAdvanced());
-  mock_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(initial_time_ticks_, clock_.NowTicks());
+  EXPECT_EQ(initial_time_ticks_, test_task_runner_->NowTicks());
   EXPECT_EQ(initial_time_ticks_ + delay,
             auto_advancing_time_domain_->CreateLazyNow().Now());
   EXPECT_TRUE(task_run);
@@ -105,9 +107,9 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest, VirtualTimeDoesNotAdvance) {
   auto_advancing_time_domain_->SetCanAdvanceVirtualTime(false);
 
   EXPECT_CALL(mock_observer, OnVirtualTimeAdvanced()).Times(0);
-  mock_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(initial_time_ticks_, clock_.NowTicks());
+  EXPECT_EQ(initial_time_ticks_, test_task_runner_->NowTicks());
   EXPECT_EQ(initial_time_ticks_,
             auto_advancing_time_domain_->CreateLazyNow().Now());
   EXPECT_FALSE(task_run);
@@ -145,7 +147,7 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest,
       base::BindOnce(DelayedTask, &count, &delayed_task_run_at_count),
       base::TimeDelta::FromMilliseconds(10));
 
-  mock_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1000, count);
   EXPECT_EQ(102, delayed_task_run_at_count);
@@ -164,7 +166,7 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest,
       base::BindOnce(DelayedTask, &count, &delayed_task_run_at_count),
       base::TimeDelta::FromMilliseconds(10));
 
-  mock_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1000, count);
   // If the initial count had been higher, the delayed task could have been
@@ -206,13 +208,13 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest, BaseTimeOverriden) {
   bool task_run = false;
   task_queue_->PostDelayedTask(FROM_HERE, base::BindOnce(NopTask, &task_run),
                                delay);
-  mock_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(base::Time::Now(), initial_time + delay);
 }
 
 TEST_F(AutoAdvancingVirtualTimeDomainTest, BaseTimeTicksOverriden) {
-  base::TimeTicks initial_time = clock_.NowTicks();
+  base::TimeTicks initial_time = test_task_runner_->NowTicks();
   EXPECT_EQ(base::TimeTicks::Now(), initial_time);
 
   // Make time advance.
@@ -220,14 +222,14 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest, BaseTimeTicksOverriden) {
   bool task_run = false;
   task_queue_->PostDelayedTask(FROM_HERE, base::BindOnce(NopTask, &task_run),
                                delay);
-  mock_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(base::TimeTicks::Now(), initial_time + delay);
 }
 
 TEST_F(AutoAdvancingVirtualTimeDomainTest,
        DelayTillNextTaskHandlesPastRunTime) {
-  base::TimeTicks initial_time = clock_.NowTicks();
+  base::TimeTicks initial_time = test_task_runner_->NowTicks();
 
   // Post a task for t+10ms.
   bool task_run = false;
