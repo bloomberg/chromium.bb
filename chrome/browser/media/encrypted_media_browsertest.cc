@@ -803,9 +803,15 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, Playback_Encryption_CENS) {
 }
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, Playback_Encryption_CBCS) {
+  // 'cbcs' decryption is only supported on CDM 10 or later as long as
+  // the appropriate buildflag is enabled.
+  std::string expected_result =
+      GetCdmInterfaceVersion() >= 10 && BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
+          ? media::kEnded
+          : media::kError;
   TestMp4EncryptionPlayback(kExternalClearKeyKeySystem,
                             "bear-640x360-v_frag-cbcs.mp4", kMp4Avc1VideoOnly,
-                            media::kError);
+                            expected_result);
 }
 
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)

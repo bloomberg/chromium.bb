@@ -567,13 +567,11 @@ void ChromeContentClient::AddContentDecryptionModules(
       // Otherwise, it'll be treated as a sub-key-system of normal
       // kExternalClearKeyKeySystem. See MultipleCdmTypes test in
       // ECKEncryptedMediaTest.
-      // TODO(crbug.com/835009): Update when ECK supports more encryption
-      // schemes.
       cdms->push_back(content::CdmInfo(
           media::kClearKeyCdmDisplayName, media::kClearKeyCdmDifferentGuid,
           base::Version("0.1.0.0"), clear_key_cdm_path,
           media::kClearKeyCdmFileSystemId, {}, supports_persistent_license,
-          {media::EncryptionMode::kCenc},
+          {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs},
           kExternalClearKeyDifferentGuidTestKeySystem, false));
 
       // Supported codecs are hard-coded in ExternalClearKeyProperties.
@@ -581,7 +579,8 @@ void ChromeContentClient::AddContentDecryptionModules(
           media::kClearKeyCdmDisplayName, media::kClearKeyCdmGuid,
           base::Version("0.1.0.0"), clear_key_cdm_path,
           media::kClearKeyCdmFileSystemId, {}, supports_persistent_license,
-          {media::EncryptionMode::kCenc}, kExternalClearKeyKeySystem, true));
+          {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs},
+          kExternalClearKeyKeySystem, true));
     }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
   }
