@@ -2226,16 +2226,13 @@ are declared in build/common.gypi.
         Pop-ups were blocked on this page.
       </message>
       <message name="IDS_BLOCKED_POPUPS_TITLE" desc="Bubble title when a page is not allowed to display popups.">
-        Pop-ups blocked
+        Pop-ups blocked:
       </message>
-      <message name="IDS_BLOCKED_POPUPS_MESSAGE" desc="Bubble info header text when a page is not allowed to display popups.  This appears above a list of popup titles.">
-        The following pop-ups were blocked on this page:
+      <message name="IDS_BLOCKED_POPUPS_REDIRECTS_UNBLOCK" desc="Radio button choice to unblock a site from showing popups and redirects, displayed in bubble when a page tries to display popups or redirects.">
+        Always allow pop-ups and redirects from <ph name="HOST">$1<ex>mail.google.com</ex></ph>
       </message>
-      <message name="IDS_BLOCKED_POPUPS_UNBLOCK" desc="Radio button choice to unblock a site from showing popups, displayed in bubble when a page tries to display popups.">
-        Always allow pop-ups from <ph name="HOST">$1<ex>mail.google.com</ex></ph>
-      </message>
-      <message name="IDS_BLOCKED_POPUPS_NO_ACTION" desc="Radio button choice to continue blocking a site from showing popups, displayed in bubble when a page tries to display popups.">
-        Continue blocking pop-ups
+      <message name="IDS_BLOCKED_POPUPS_REDIRECTS_NO_ACTION" desc="Radio button choice to continue blocking a site from showing popups and redirects, displayed in bubble when a page tries to display popups or redirects.">
+        Continue blocking
       </message>
       <message name="IDS_BLOCKED_POPUPS_LINK" desc="Link to popups section of content blocking management dialog, displayed in bubble when a page tries to display popups.">
         Manage pop-up blocking...
@@ -5507,18 +5504,6 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_MEDIA_MENU_NO_DEVICE_TITLE" desc="The title of the media select menu if there is no microphone or camera available on the machine">
         None available
-      </message>
-      <message name="IDS_POPUP_TAB_LABEL" desc="Label for Pop-up Windows tab on Content Settings dialog">
-        Pop-ups
-      </message>
-      <message name="IDS_POPUP_HEADER" desc="Header for popup exception management page on Content Settings dialog">
-        Pop-up exceptions
-      </message>
-      <message name="IDS_POPUP_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing pop-up windows in the browser.">
-        Allow all sites to show pop-ups
-      </message>
-      <message name="IDS_POPUP_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for preventing showing pop-up windows on any sites.">
-        Do not allow any site to show pop-ups (recommended)
       </message>
       <if expr="is_android">
         <message name="IDS_POPUPS_BLOCKED_INFOBAR_BUTTON_SHOW" desc="Pop-up Blocking Show Button [CHAR-LIMIT=32]">
@@ -10488,7 +10473,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <if expr="not is_android">
       <!-- Android strings are declared in android_chrome_strings.grd. -->
       <message name="IDS_REDIRECT_BLOCKED_MESSAGE" desc="The message stating that a redirect (noun) was blocked on this page. This will be followed on a separate line with the address the user was being redirected to.">
-        Redirect blocked to site
+        Redirect blocked:
       </message>
       <if expr="use_titlecase">
         <message name="IDS_REDIRECT_BLOCKED_GOT_IT" desc="In Title Case: The text of the OK button for the blocked redirect dialog.">
