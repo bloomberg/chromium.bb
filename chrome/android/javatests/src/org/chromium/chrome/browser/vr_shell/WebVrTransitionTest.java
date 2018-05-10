@@ -421,11 +421,11 @@ public class WebVrTransitionTest {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/840883")
-    //@CommandLineFlags.Remove({"enable-webvr"})
-    //@CommandLineFlags.Add({"enable-features=WebXR"})
+    @CommandLineFlags.Remove({"enable-webvr"})
+    @CommandLineFlags.Add({"enable-features=WebXR"})
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
-    public void testWindowRafStopsFiringWhilePresenting_WebXr() throws InterruptedException {
+    public void testWindowRafStopsFiringWhilePresenting_WebXr()
+            throws InterruptedException {
         windowRafStopsFiringWhilePresentingImpl(
                 XrTestFramework.getFileUrlForHtmlTestFile(
                         "webxr_test_window_raf_stops_firing_during_exclusive_session"),
