@@ -36,6 +36,13 @@ void ScreenProvider::AddBinding(mojom::ScreenProviderRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
+void ScreenProvider::SetFrameDecorationValues(
+    const gfx::Insets& client_area_insets,
+    int max_title_bar_button_width) {
+  client_area_insets_ = client_area_insets;
+  max_title_bar_button_width_ = max_title_bar_button_width;
+}
+
 void ScreenProvider::AddObserver(mojom::ScreenProviderObserverPtr observer) {
   mojom::ScreenProviderObserver* observer_impl = observer.get();
   observers_.AddPtr(std::move(observer));
@@ -68,12 +75,20 @@ std::vector<mojom::WsDisplayPtr> ScreenProvider::GetAllDisplays() {
   for (const Display& display : displays) {
     mojom::WsDisplayPtr ws_display = mojom::WsDisplay::New();
     ws_display->display = display;
-    // TODO(jamescook): Add a delegate to get frame decoration values from ash.
-    ws_display->frame_decoration_values = mojom::FrameDecorationValues::New();
+    ws_display->frame_decoration_values = GetFrameDecorationValues();
     ws_displays.push_back(std::move(ws_display));
   }
 
   return ws_displays;
+}
+
+mojom::FrameDecorationValuesPtr ScreenProvider::GetFrameDecorationValues() {
+  mojom::FrameDecorationValuesPtr values = mojom::FrameDecorationValues::New();
+  // TODO(jamescook): These insets are always the same. Collapse them.
+  values->normal_client_area_insets = client_area_insets_;
+  values->maximized_client_area_insets = client_area_insets_;
+  values->max_title_bar_button_width = max_title_bar_button_width_;
+  return values;
 }
 
 }  // namespace ws2

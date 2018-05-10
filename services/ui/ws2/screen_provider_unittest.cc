@@ -77,12 +77,14 @@ class TestScreenProviderObserver : public mojom::ScreenProviderObserver {
   void OnDisplaysChanged(std::vector<mojom::WsDisplayPtr> displays,
                          int64_t primary_display_id,
                          int64_t internal_display_id) override {
-    display_ids_ = DisplayIdsToString(displays);
+    displays_ = std::move(displays);
+    display_ids_ = DisplayIdsToString(displays_);
     primary_display_id_ = primary_display_id;
     internal_display_id_ = internal_display_id;
   }
 
   mojo::Binding<mojom::ScreenProviderObserver> binding_{this};
+  std::vector<mojom::WsDisplayPtr> displays_;
   std::string display_ids_;
   int64_t primary_display_id_ = 0;
   int64_t internal_display_id_ = 0;
@@ -136,6 +138,31 @@ TEST_F(ScreenProviderTest, AddRemoveDisplay) {
   RunUntilIdle();
   EXPECT_EQ("222", observer.display_ids_);
   EXPECT_EQ(222, observer.primary_display_id_);
+}
+
+TEST_F(ScreenProviderTest, SetFrameDecorationValues) {
+  // Set up a single display.
+  TestScreen screen;
+  screen.AddDisplay(Display(111, gfx::Rect(0, 0, 640, 480)),
+                    DisplayList::Type::PRIMARY);
+
+  // Set up custom frame decoration values.
+  ScreenProvider screen_provider;
+  screen_provider.SetFrameDecorationValues(gfx::Insets(1, 2, 3, 4), 55u);
+
+  // Add an observer to the screen provider.
+  TestScreenProviderObserver observer;
+  screen_provider.AddObserver(observer.GetPtr());
+  // Wait for mojo message to observer.
+  RunUntilIdle();
+
+  // The screen information contains the frame decoration values.
+  ASSERT_EQ(1u, observer.displays_.size());
+  const mojom::FrameDecorationValuesPtr& values =
+      observer.displays_[0]->frame_decoration_values;
+  EXPECT_EQ(gfx::Insets(1, 2, 3, 4), values->normal_client_area_insets);
+  EXPECT_EQ(gfx::Insets(1, 2, 3, 4), values->maximized_client_area_insets);
+  EXPECT_EQ(55u, values->max_title_bar_button_width);
 }
 
 }  // namespace

@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
+#include "ash/wm/non_client_frame_controller.h"
 #include "ash/ws/window_service_delegate_impl.h"
 #include "services/ui/ws2/gpu_support.h"
 #include "services/ui/ws2/window_service.h"
@@ -17,6 +18,9 @@ std::unique_ptr<service_manager::Service> CreateWindowService(
         gpu_support_factory) {
   auto window_service = std::make_unique<ui::ws2::WindowService>(
       Shell::Get()->window_service_delegate(), gpu_support_factory.Run());
+  window_service->SetFrameDecorationValues(
+      NonClientFrameController::GetPreferredClientAreaInsets(),
+      NonClientFrameController::GetMaxTitleBarButtonWidth());
   RegisterWindowProperties(window_service->property_converter());
   return window_service;
 }

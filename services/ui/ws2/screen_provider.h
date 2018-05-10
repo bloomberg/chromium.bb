@@ -10,7 +10,9 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/ui/public/interfaces/screen_provider.mojom.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/display/display_observer.h"
+#include "ui/gfx/geometry/insets.h"
 
 namespace ui {
 namespace ws2 {
@@ -26,6 +28,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ScreenProvider
 
   void AddBinding(mojom::ScreenProviderRequest request);
 
+  // Sets the window frame metrics.
+  void SetFrameDecorationValues(const gfx::Insets& client_area_insets,
+                                int max_title_bar_button_width);
+
   // mojom::ScreenProvider:
   void AddObserver(mojom::ScreenProviderObserverPtr observer) override;
 
@@ -33,13 +39,20 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ScreenProvider
   void OnDidProcessDisplayChanges() override;
 
  private:
-  std::vector<mojom::WsDisplayPtr> GetAllDisplays();
-
   void NotifyAllObservers();
 
   void NotifyObserver(mojom::ScreenProviderObserver* observer);
 
+  std::vector<mojom::WsDisplayPtr> GetAllDisplays();
+
+  // Returns the window frame metrics as a mojo struct.
+  mojom::FrameDecorationValuesPtr GetFrameDecorationValues();
+
   mojo::BindingSet<mojom::ScreenProvider> bindings_;
+
+  // See mojom::FrameDecorationValuesPtr documentation.
+  gfx::Insets client_area_insets_;
+  int max_title_bar_button_width_ = 0;
 
   mojo::InterfacePtrSet<mojom::ScreenProviderObserver> observers_;
 
