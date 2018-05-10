@@ -26,8 +26,14 @@ source_set("test_support") {
   testonly = true
 
   sources = [
+    "fake_stream_factory.cc",
+    "fake_stream_factory.h",
     "fake_system_info.cc",
     "fake_system_info.h",
+  ]
+
+  deps = [
+    "//testing/gmock",
   ]
 
   public_deps = [

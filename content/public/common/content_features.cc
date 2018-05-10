@@ -36,6 +36,10 @@ const base::Feature kAsmJsToWebAssembly{"AsmJsToWebAssembly",
 const base::Feature kAsyncWheelEvents{"AsyncWheelEvents",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Creates audio output and input streams using the audio service.
+const base::Feature kAudioServiceAudioStreams{
+    "AudioServiceAudioStreams", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Runs the audio service in a separate process.
 const base::Feature kAudioServiceOutOfProcess{
     "AudioServiceOutOfProcess", base::FEATURE_DISABLED_BY_DEFAULT};

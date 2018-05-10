@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,36 +10,55 @@
 
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/threading/thread_checker.h"
+#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "content/public/browser/browser_thread.h"
+#include "media/base/output_device_info.h"
 #include "mojo/public/cpp/bindings/binding.h"
+
+namespace media {
+class AudioSystem;
+class AudioParameters;
+}  // namespace media
 
 namespace content {
 
-class RendererAudioOutputStreamFactoryContext;
+class AudioOutputAuthorizationHandler;
+class MediaStreamManager;
+class RenderFrameHost;
 
-// Handles a RendererAudioOutputStreamFactory request for a render frame host,
-// using the provided RendererAudioOutputStreamFactoryContext. This class may
-// be constructed on any thread, but must be used on the IO thread after that.
+// This class, which lives on the UI thread, takes care of stream requests from
+// a render frame. It verifies that the stream creation is allowed and then
+// forwards the request to the appropriate ForwardingAudioStreamFactory.
 class CONTENT_EXPORT RenderFrameAudioOutputStreamFactory
     : public mojom::RendererAudioOutputStreamFactory {
  public:
   RenderFrameAudioOutputStreamFactory(
-      int render_frame_id,
-      RendererAudioOutputStreamFactoryContext* context);
+      RenderFrameHost* frame,
+      media::AudioSystem* audio_system,
+      MediaStreamManager* media_stream_manager,
+      mojom::RendererAudioOutputStreamFactoryRequest request);
 
   ~RenderFrameAudioOutputStreamFactory() override;
 
+  size_t current_number_of_providers_for_testing() {
+    return stream_providers_.size();
+  }
+
  private:
+  class ProviderImpl;
+  friend class ProviderImpl;  // For DeleteProvider.
+
   using OutputStreamProviderSet =
       base::flat_set<std::unique_ptr<media::mojom::AudioOutputStreamProvider>,
                      base::UniquePtrComparator>;
 
   // mojom::RendererAudioOutputStreamFactory implementation.
   void RequestDeviceAuthorization(
-      media::mojom::AudioOutputStreamProviderRequest stream_provider,
+      media::mojom::AudioOutputStreamProviderRequest provider_request,
       int32_t session_id,
       const std::string& device_id,
       RequestDeviceAuthorizationCallback callback) override;
@@ -57,50 +76,25 @@ class CONTENT_EXPORT RenderFrameAudioOutputStreamFactory
       const std::string& raw_device_id,
       const std::string& device_id_for_renderer);
 
-  void RemoveStream(media::mojom::AudioOutputStreamProvider* stream_provider);
+  void DeleteProvider(media::mojom::AudioOutputStreamProvider* stream_provider);
 
-  const int render_frame_id_;
-  RendererAudioOutputStreamFactoryContext* const context_;
-  base::ThreadChecker thread_checker_;
+  const mojo::Binding<mojom::RendererAudioOutputStreamFactory> binding_;
+  RenderFrameHost* const frame_;
+  const std::unique_ptr<AudioOutputAuthorizationHandler,
+                        BrowserThread::DeleteOnIOThread>
+      authorization_handler_;
 
-  // The stream providers will contain the corresponding streams.
+  // The OutputStreamProviders for authorized streams are kept here while
+  // waiting for the renderer to finish creating the stream, and destructed
+  // afterwards.
   OutputStreamProviderSet stream_providers_;
 
-  // All streams require IDs. Use a counter to generate them.
-  int next_stream_id_ = 0;
-
+  // Weak pointers are used to cancel device authorizations that are in flight
+  // while |this| is destructed.
   base::WeakPtrFactory<RenderFrameAudioOutputStreamFactory> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameAudioOutputStreamFactory);
 };
-
-// This class is a convenient bundle of factory and binding.
-class CONTENT_EXPORT RenderFrameAudioOutputStreamFactoryHandle {
- public:
-  static std::unique_ptr<RenderFrameAudioOutputStreamFactoryHandle,
-                         BrowserThread::DeleteOnIOThread>
-  CreateFactory(RendererAudioOutputStreamFactoryContext* context,
-                int render_frame_id,
-                mojom::RendererAudioOutputStreamFactoryRequest request);
-
-  ~RenderFrameAudioOutputStreamFactoryHandle();
-
- private:
-  RenderFrameAudioOutputStreamFactoryHandle(
-      RendererAudioOutputStreamFactoryContext* context,
-      int render_frame_id);
-
-  void Init(mojom::RendererAudioOutputStreamFactoryRequest request);
-
-  RenderFrameAudioOutputStreamFactory impl_;
-  mojo::Binding<mojom::RendererAudioOutputStreamFactory> binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameAudioOutputStreamFactoryHandle);
-};
-
-using UniqueAudioOutputStreamFactoryPtr =
-    std::unique_ptr<RenderFrameAudioOutputStreamFactoryHandle,
-                    BrowserThread::DeleteOnIOThread>;
 
 }  // namespace content
 
