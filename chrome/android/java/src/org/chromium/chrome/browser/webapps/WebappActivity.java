@@ -927,7 +927,7 @@ public class WebappActivity extends SingleTabActivity {
 
     @Override
     protected TabDelegate createTabDelegate(boolean incognito) {
-        return new WebappTabDelegate(incognito, getActivityType(), mWebappInfo.apkPackageName());
+        return new WebappTabDelegate(incognito, getActivityType(), getNativeClientPackageName());
     }
 
     // We're temporarily disable CS on webapp since there are some issues. (http://crbug.com/471950)

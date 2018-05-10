@@ -4,6 +4,11 @@
 
 package org.chromium.chrome.browser.externalnav;
 
+import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE;
+import static org.chromium.chrome.browser.webapps.WebappActivity.ACTIVITY_TYPE_OTHER;
+import static org.chromium.chrome.browser.webapps.WebappActivity.ACTIVITY_TYPE_TWA;
+import static org.chromium.chrome.browser.webapps.WebappActivity.ACTIVITY_TYPE_WEBAPK;
+
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -35,6 +40,7 @@ import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.PageTransition;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -564,6 +570,14 @@ public class ExternalNavigationHandler {
                 intent.setPackage(targetWebApkPackageName);
             }
 
+            // http://crbug.com/831806 : Stay in the CCT if the CCT is opened by WebAPK and the url
+            // is within the WebAPK scope.
+            if (shouldStayInWebappCCT(params, resolvingInfos)) {
+                if (DEBUG)
+                    Log.i(TAG, "NO_OVERRIDE: Navigation in CCT within scope of parent webapp.");
+                return OverrideUrlLoadingResult.NO_OVERRIDE;
+            }
+
             if (mDelegate.startActivityIfNeeded(intent, shouldProxyForInstantApps)) {
                 if (DEBUG) Log.i(TAG, "OVERRIDE_WITH_EXTERNAL_INTENT: startActivityIfNeeded");
                 return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
@@ -706,5 +720,34 @@ public class ExternalNavigationHandler {
             }
         }
         return null;
+    }
+
+    // Returns whether a navigation in a CustomTabActivity opened from a WebAPK/TWA should stay
+    // within the CustomTabActivity. Returns false if the navigation does not occur within a
+    // CustomTabActivity or the CustomTabActivity was not opened from a WebAPK/TWA.
+    private boolean shouldStayInWebappCCT(
+            ExternalNavigationParams params, List<ResolveInfo> handlers) {
+        Tab tab = params.getTab();
+        if (tab == null || !tab.isCurrentlyACustomTab() || tab.getActivity() == null) {
+            return false;
+        }
+
+        int launchSource = IntentUtils.safeGetIntExtra(
+                tab.getActivity().getIntent(), EXTRA_BROWSER_LAUNCH_SOURCE, ACTIVITY_TYPE_OTHER);
+        if (launchSource != ACTIVITY_TYPE_WEBAPK && launchSource != ACTIVITY_TYPE_TWA) return false;
+
+        String appId = IntentUtils.safeGetStringExtra(
+                tab.getActivity().getIntent(), Browser.EXTRA_APPLICATION_ID);
+        if (appId == null) return false;
+
+        Intent intent;
+        try {
+            intent = Intent.parseUri(params.getUrl(), Intent.URI_INTENT_SCHEME);
+        } catch (URISyntaxException ex) {
+            return false;
+        }
+        return ExternalNavigationDelegateImpl.getSpecializedHandlersWithFilter(handlers, appId)
+                       .size()
+                > 0;
     }
 }

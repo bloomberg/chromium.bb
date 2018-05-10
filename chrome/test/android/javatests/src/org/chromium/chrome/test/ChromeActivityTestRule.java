@@ -50,6 +50,7 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.RenderProcessLimit;
@@ -629,6 +630,24 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
 
     public void setActivity(T chromeActivity) {
         mSetActivity = chromeActivity;
+    }
+
+    /**
+     * Waits for an Activity of the given class to be started.
+     * @return The Activity.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends ChromeActivity> T waitFor(final Class<T> expectedClass) {
+        final Activity[] holder = new Activity[1];
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                holder[0] = ApplicationStatus.getLastTrackedFocusedActivity();
+                return holder[0] != null && expectedClass.isAssignableFrom(holder[0].getClass())
+                        && ((ChromeActivity) holder[0]).getActivityTab() != null;
+            }
+        });
+        return (T) holder[0];
     }
 
     private class ChromeUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
