@@ -29,8 +29,6 @@ NGConstraintSpace::NGConstraintSpace(
     bool is_fixed_size_block,
     bool fixed_size_block_is_definite,
     bool is_shrink_to_fit,
-    bool is_inline_direction_triggers_scrollbar,
-    bool is_block_direction_triggers_scrollbar,
     NGFragmentationType block_direction_fragmentation_type,
     bool separate_leading_fragmentainer_margins,
     bool is_new_fc,
@@ -54,10 +52,6 @@ NGConstraintSpace::NGConstraintSpace(
       is_fixed_size_block_(is_fixed_size_block),
       fixed_size_block_is_definite_(fixed_size_block_is_definite),
       is_shrink_to_fit_(is_shrink_to_fit),
-      is_inline_direction_triggers_scrollbar_(
-          is_inline_direction_triggers_scrollbar),
-      is_block_direction_triggers_scrollbar_(
-          is_block_direction_triggers_scrollbar),
       block_direction_fragmentation_type_(block_direction_fragmentation_type),
       separate_leading_fragmentainer_margins_(
           separate_leading_fragmentainer_margins),
@@ -177,10 +171,6 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
 
   return builder.SetAvailableSize(available_size)
       .SetPercentageResolutionSize(percentage_size)
-      .SetIsInlineDirectionTriggersScrollbar(
-          box.StyleRef().OverflowInlineDirection() == EOverflow::kAuto)
-      .SetIsBlockDirectionTriggersScrollbar(
-          box.StyleRef().OverflowBlockDirection() == EOverflow::kAuto)
       .SetIsFixedSizeInline(fixed_inline)
       .SetIsFixedSizeBlock(fixed_block)
       .SetFixedSizeBlockIsDefinite(fixed_block_is_definite)
@@ -230,10 +220,6 @@ bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
          is_fixed_size_inline_ == other.is_fixed_size_inline_ &&
          is_fixed_size_block_ == other.is_fixed_size_block_ &&
          is_shrink_to_fit_ == other.is_shrink_to_fit_ &&
-         is_inline_direction_triggers_scrollbar_ ==
-             other.is_inline_direction_triggers_scrollbar_ &&
-         is_block_direction_triggers_scrollbar_ ==
-             other.is_block_direction_triggers_scrollbar_ &&
          block_direction_fragmentation_type_ ==
              other.block_direction_fragmentation_type_ &&
          is_new_fc_ == other.is_new_fc_ &&
