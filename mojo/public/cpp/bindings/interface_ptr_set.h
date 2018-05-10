@@ -77,8 +77,10 @@ class PtrSet {
     if (it == ptrs_.end())
       return Ptr<Interface>();
     Ptr<Interface> ptr;
-    if (it->second)
+    if (it->second) {
       ptr = it->second->Take();
+      delete it->second.get();
+    }
     ptrs_.erase(it);
     return ptr;
   }
