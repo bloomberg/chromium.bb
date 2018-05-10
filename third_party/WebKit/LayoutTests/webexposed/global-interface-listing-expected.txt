@@ -1600,14 +1600,12 @@ interface Document : Node
     getter plugins
     getter pointerLockElement
     getter policy
-    getter preferredStylesheetSet
     getter readyState
     getter referrer
     getter rootElement
     getter rootScroller
     getter scripts
     getter scrollingElement
-    getter selectedStylesheetSet
     getter styleSheets
     getter timeline
     getter title
@@ -1784,7 +1782,6 @@ interface Document : Node
     setter onwebkitfullscreenerror
     setter onwheel
     setter rootScroller
-    setter selectedStylesheetSet
     setter title
     setter vlinkColor
     setter xmlStandalone

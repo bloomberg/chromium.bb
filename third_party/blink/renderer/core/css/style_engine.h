@@ -155,11 +155,7 @@ class CORE_EXPORT StyleEngine final
   String PreferredStylesheetSetName() const {
     return preferred_stylesheet_set_name_;
   }
-  String SelectedStylesheetSetName() const {
-    return selected_stylesheet_set_name_;
-  }
   void SetPreferredStylesheetSetNameIfNotSet(const String&);
-  void SetSelectedStylesheetSetName(const String&);
   void SetHttpDefaultStyle(const String&);
 
   void AddPendingSheet(StyleEngineContext&);
@@ -434,7 +430,6 @@ class CORE_EXPORT StyleEngine final
   TreeOrderedList tree_boundary_crossing_scopes_;
 
   String preferred_stylesheet_set_name_;
-  String selected_stylesheet_set_name_;
 
   bool uses_rem_units_ = false;
   bool ignore_pending_stylesheets_ = false;

@@ -5,7 +5,6 @@ TEST SUCCEEDED: The value was the string 'about:blank'. [tested Document.documen
 TEST SUCCEEDED: The value was the string 'UTF-8'. [tested Document.charset]
 TEST SUCCEEDED: The value was the string 'UTF-8'. [tested Document.characterSet]
 TEST SUCCEEDED: The value was the string 'UTF-8'. [tested Document.inputEncoding]
-TEST SUCCEEDED: The value was null. [tested Document.selectedStylesheetSet]
 
 TEST SUCCEEDED: The value was 'null'. [tested HTMLDocument.title]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLDocument.cookie]
