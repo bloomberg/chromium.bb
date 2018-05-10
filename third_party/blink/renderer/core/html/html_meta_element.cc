@@ -368,8 +368,8 @@ void HTMLMetaElement::ProcessViewportKeyValuePair(
   } else if (key_string == "viewport-fit") {
     if (RuntimeEnabledFeatures::DisplayCutoutViewportFitEnabled()) {
       bool unknown_value = false;
-      description->viewport_fit =
-          ParseViewportFitValueAsEnum(unknown_value, value_string);
+      description->SetViewportFit(
+          ParseViewportFitValueAsEnum(unknown_value, value_string));
 
       // If we got an unknown value then report a warning.
       if (unknown_value) {
@@ -451,6 +451,7 @@ void HTMLMetaElement::GetViewportDescriptionFromContentAttribute(
     description.min_zoom = std::min(description.min_zoom, float(5));
   }
 }
+
 void HTMLMetaElement::ProcessViewportContentAttribute(
     const String& content,
     ViewportDescription::Type origin) {

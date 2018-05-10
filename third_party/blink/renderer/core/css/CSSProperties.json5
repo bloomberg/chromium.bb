@@ -4200,6 +4200,12 @@
       is_descriptor: true,
       is_property: false,
     },
+    {
+      name: "viewport-fit",
+      is_descriptor: true,
+      is_property: false,
+      runtime_flag: "DisplayCutoutViewportFit",
+    },
 
     // Shorthands
     {

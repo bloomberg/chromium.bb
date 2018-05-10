@@ -52,6 +52,16 @@
 
 namespace blink {
 
+namespace {
+
+bool HasViewportFitProperty(const CSSPropertyValueSet* property_set) {
+  DCHECK(property_set);
+  return RuntimeEnabledFeatures::DisplayCutoutViewportFitEnabled() &&
+         property_set->HasProperty(CSSPropertyViewportFit);
+}
+
+}  // namespace
+
 ViewportStyleResolver::ViewportStyleResolver(Document& document)
     : document_(document) {
   DCHECK(document.GetFrame());
@@ -205,6 +215,8 @@ void ViewportStyleResolver::Resolve() {
   description.min_height = ViewportLengthValue(CSSPropertyMinHeight);
   description.max_height = ViewportLengthValue(CSSPropertyMaxHeight);
   description.orientation = ViewportArgumentValue(CSSPropertyOrientation);
+  if (HasViewportFitProperty(property_set_))
+    description.SetViewportFit(ViewportFitValue());
 
   document_->SetViewportDescription(description);
 
@@ -308,6 +320,26 @@ Length ViewportStyleResolver::ViewportLengthValue(CSSPropertyID id) {
     result.SetValue(scaled_value);
   }
   return result;
+}
+
+ViewportDescription::ViewportFit ViewportStyleResolver::ViewportFitValue()
+    const {
+  const CSSValue* value =
+      property_set_->GetPropertyCSSValue(CSSPropertyViewportFit);
+  if (value->IsIdentifierValue()) {
+    switch (ToCSSIdentifierValue(value)->GetValueID()) {
+      case CSSValueCover:
+        return ViewportDescription::ViewportFit::kCover;
+      case CSSValueContain:
+        return ViewportDescription::ViewportFit::kContain;
+      case CSSValueAuto:
+      default:
+        return ViewportDescription::ViewportFit::kAuto;
+    }
+  }
+
+  NOTREACHED();
+  return ViewportDescription::ViewportFit::kAuto;
 }
 
 void ViewportStyleResolver::InitialStyleChanged() {

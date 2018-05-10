@@ -24,7 +24,7 @@ class HTMLMetaElementTest : public PageTestBase {
   ViewportDescription::ViewportFit LoadTestPageAndReturnViewportFit(
       const String& value) {
     LoadTestPageWithViewportFitValue(value);
-    return GetDocument().GetViewportDescription().viewport_fit;
+    return GetDocument().GetViewportDescription().GetViewportFit();
   }
 
  private:
