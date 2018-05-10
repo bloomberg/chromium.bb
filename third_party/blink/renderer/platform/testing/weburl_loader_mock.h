@@ -45,8 +45,7 @@ class WebURLLoaderMock : public WebURLLoader {
                        const WebURLResponse& redirect_response);
 
   // WebURLLoader methods:
-  void LoadSynchronously(WebURLLoaderClient*,
-                         const WebURLRequest&,
+  void LoadSynchronously(const WebURLRequest&,
                          WebURLResponse&,
                          base::Optional<WebURLError>&,
                          WebData&,

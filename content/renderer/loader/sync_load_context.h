@@ -114,8 +114,6 @@ class SyncLoadContext : public RequestPeer {
   base::WaitableEventWatcher abort_watcher_;
   base::OneShotTimer timeout_timer_;
 
-  const network::mojom::FetchRequestMode fetch_request_mode_;
-
   DISALLOW_COPY_AND_ASSIGN(SyncLoadContext);
 };
 
