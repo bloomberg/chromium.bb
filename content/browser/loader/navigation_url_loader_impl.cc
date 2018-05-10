@@ -50,6 +50,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/ssl_status.h"
+#include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
@@ -75,6 +76,26 @@
 namespace content {
 
 namespace {
+
+class NavigationLoaderInterceptorBrowserContainer
+    : public NavigationLoaderInterceptor {
+ public:
+  explicit NavigationLoaderInterceptorBrowserContainer(
+      std::unique_ptr<URLLoaderRequestInterceptor> browser_interceptor)
+      : browser_interceptor_(std::move(browser_interceptor)) {}
+
+  ~NavigationLoaderInterceptorBrowserContainer() override = default;
+
+  void MaybeCreateLoader(const network::ResourceRequest& resource_request,
+                         ResourceContext* resource_context,
+                         LoaderCallback callback) override {
+    browser_interceptor_->MaybeCreateLoader(resource_request, resource_context,
+                                            std::move(callback));
+  }
+
+ private:
+  std::unique_ptr<URLLoaderRequestInterceptor> browser_interceptor_;
+};
 
 // Only used on the IO thread.
 base::LazyInstance<NavigationURLLoaderImpl::BeginNavigationInterceptor>::Leaky
@@ -563,6 +584,20 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
               &URLLoaderRequestController::CreateURLLoaderThrottles,
               base::Unretained(this)),
           url_request_context_getter));
+    }
+
+    std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
+        browser_interceptors = GetContentClient()
+                                   ->browser()
+                                   ->WillCreateURLLoaderRequestInterceptors(
+                                       navigation_ui_data_.get(),
+                                       request_info->frame_tree_node_id);
+    if (!browser_interceptors.empty()) {
+      for (auto& browser_interceptor : browser_interceptors) {
+        interceptors_.push_back(
+            std::make_unique<NavigationLoaderInterceptorBrowserContainer>(
+                std::move(browser_interceptor)));
+      }
     }
 
     Restart();
