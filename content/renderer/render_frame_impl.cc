@@ -4544,10 +4544,6 @@ void RenderFrameImpl::ShowContextMenu(const blink::WebContextMenuData& data) {
 }
 
 void RenderFrameImpl::ShowDeferredContextMenu(const ContextMenuParams& params) {
-  // TODO (amaralp): Remove this once selection menu race conditions are fixed.
-  if (selection_text_.empty() && !params.selection_text.empty())
-    return;
-
   Send(new FrameHostMsg_ContextMenu(routing_id_, params));
 }
 
