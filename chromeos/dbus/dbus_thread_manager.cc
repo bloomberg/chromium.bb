@@ -116,6 +116,11 @@ dbus::Bus* DBusThreadManager::GetSystemBus() {
   return system_bus_.get();
 }
 
+ArcAppfuseProviderClient* DBusThreadManager::GetArcAppfuseProviderClient() {
+  return clients_browser_ ? clients_browser_->arc_appfuse_provider_client_.get()
+                          : nullptr;
+}
+
 ArcMidisClient* DBusThreadManager::GetArcMidisClient() {
   return clients_browser_ ? clients_browser_->arc_midis_client_.get() : nullptr;
 }
