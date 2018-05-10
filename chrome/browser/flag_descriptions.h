@@ -1342,12 +1342,6 @@ extern const char kNewPhotoPickerDescription[];
 extern const char kNoCreditCardAbort[];
 extern const char kNoCreditCardAbortDescription[];
 
-extern const char kNtpCondensedLayoutName[];
-extern const char kNtpCondensedLayoutDescription[];
-
-extern const char kNtpCondensedTileLayoutName[];
-extern const char kNtpCondensedTileLayoutDescription[];
-
 extern const char kNtpModernLayoutName[];
 extern const char kNtpModernLayoutDescription[];
 

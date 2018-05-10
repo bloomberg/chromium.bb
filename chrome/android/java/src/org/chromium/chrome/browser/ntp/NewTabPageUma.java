@@ -88,43 +88,6 @@ public final class NewTabPageUma {
     private static final int MAX_SUGGESTIONS_PER_SECTION = 20;
 
     /**
-     * Possible results when sizing the NewTabPageLayout.
-     * Do not remove or change existing values other than NUM_NTP_LAYOUT_RESULTS.
-     */
-    @IntDef({NTP_LAYOUT_DOES_NOT_FIT, NTP_LAYOUT_DOES_NOT_FIT_PUSH_MOST_LIKELY,
-            NTP_LAYOUT_FITS_NO_FIELD_TRIAL, NTP_LAYOUT_FITS_WITHOUT_FIELD_TRIAL,
-            NTP_LAYOUT_FITS_WITH_FIELD_TRIAL, NTP_LAYOUT_CONDENSED, NUM_NTP_LAYOUT_RESULTS})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface NTPLayoutResult {}
-
-    /** The NewTabPageLayout does not fit above the fold and it is displayed as is. */
-    public static final int NTP_LAYOUT_DOES_NOT_FIT = 0;
-
-    /**
-     * The NewTabPageLayout does not fit above the fold, but we added some extra space so that
-     * Most Likely is cut off, indicating to the user they can scroll.
-     */
-    public static final int NTP_LAYOUT_DOES_NOT_FIT_PUSH_MOST_LIKELY = 1;
-
-    /** The NewTabPageLayout fits above the fold, the field trial is not enabled. */
-    public static final int NTP_LAYOUT_FITS_NO_FIELD_TRIAL = 2;
-
-    /**
-     * The NewTabPageLayout fits above the fold, but cannot allow space for the field trial
-     * experiment.
-     */
-    public static final int NTP_LAYOUT_FITS_WITHOUT_FIELD_TRIAL = 3;
-
-    /** The NewTabPageLayout fits above the fold allowing space for the field trial experiment. */
-    public static final int NTP_LAYOUT_FITS_WITH_FIELD_TRIAL = 4;
-
-    /** The NewTabPageLayout is condensed to take up minimal space. */
-    public static final int NTP_LAYOUT_CONDENSED = 5;
-
-    /** The number of possible results for the NewTabPageLayout calculations. */
-    public static final int NUM_NTP_LAYOUT_RESULTS = 6;
-
-    /**
      * Possible results when updating content suggestions list in the UI. Keep in sync with the
      * ContentSuggestionsUIUpdateResult enum in histograms.xml. Do not remove or change existing
      * values other than NUM_UI_UPDATE_RESULTS.
@@ -213,15 +176,6 @@ public final class NewTabPageUma {
             default:
                 return;
         }
-    }
-
-    /**
-     * Records how the NewTabPageLayout fits on the user's screen.
-     * @param result result key, one of {@link NTPLayoutResult}'s values.
-     */
-    public static void recordNTPLayoutResult(@NTPLayoutResult int result) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "NewTabPage.Layout", result, NUM_NTP_LAYOUT_RESULTS);
     }
 
     /**

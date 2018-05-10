@@ -50,7 +50,6 @@ import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.UrlBar;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
@@ -152,9 +151,6 @@ public class NewTabPageTest {
 
     @Before
     public void setUp() throws Exception {
-        // Disable peeking card animation.
-        ChromePreferenceManager.getInstance().setNewTabPageFirstCardAnimationRunCount(100);
-
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 
         mSiteSuggestions = new ArrayList<>();

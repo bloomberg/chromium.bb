@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.ntp;
 
-import static org.chromium.chrome.browser.util.ViewUtils.dpToPx;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -68,31 +66,6 @@ public class NewTabPageView
     private static final String TAG = "NewTabPageView";
 
     private static final long SNAP_SCROLL_DELAY_MS = 30;
-
-    /**
-     * Experiment parameter for the maximum number of tile suggestion rows to show.
-     */
-    private static final String PARAM_NTP_MAX_TILE_ROWS = "ntp_max_tile_rows";
-
-    /**
-     * Experiment parameter for the number of tile title lines to show.
-     */
-    private static final String PARAM_NTP_TILE_TITLE_LINES = "ntp_tile_title_lines";
-
-    /**
-     * Experiment parameter for whether to show the logo in the condensed layout.
-     */
-    private static final String PARAM_CONDENSED_LAYOUT_SHOW_LOGO = "condensed_layout_show_logo";
-
-    /**
-     * Experiment parameter for the logo height in dp in the condensed layout.
-     */
-    private static final String PARAM_CONDENSED_LAYOUT_LOGO_HEIGHT = "condensed_layout_logo_height";
-
-    /**
-     * Default experiment parameter value for the logo height in dp in the condensed layout.
-     */
-    private static final int PARAM_DEFAULT_VALUE_CONDENSED_LAYOUT_LOGO_HEIGHT_DP = 100;
 
     /**
      * Parameter for the simplified NTP ablation experiment arm which removes the additional
@@ -279,14 +252,6 @@ public class NewTabPageView
         mSiteSectionViewHolder.bindDataSource(mTileGroup, tileRenderer);
 
         mSearchProviderLogoView = mNewTabPageLayout.findViewById(R.id.search_provider_logo);
-        int experimentalLogoHeightDp = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.NTP_CONDENSED_LAYOUT, PARAM_CONDENSED_LAYOUT_LOGO_HEIGHT,
-                PARAM_DEFAULT_VALUE_CONDENSED_LAYOUT_LOGO_HEIGHT_DP);
-        if (experimentalLogoHeightDp > 0) {
-            ViewGroup.LayoutParams logoParams = mSearchProviderLogoView.getLayoutParams();
-            logoParams.height = dpToPx(getContext(), experimentalLogoHeightDp);
-            mSearchProviderLogoView.setLayoutParams(logoParams);
-        }
         mLogoDelegate = new LogoDelegateImpl(
                 mManager.getNavigationDelegate(), mSearchProviderLogoView, profile);
 
@@ -479,7 +444,6 @@ public class NewTabPageView
                 onUrlFocusAnimationChanged();
                 updateSearchBoxOnScroll();
 
-                mRecyclerView.updatePeekingCardAndHeader();
                 // The positioning of elements may have been changed (since the elements expand to
                 // fill the available vertical space), so adjust the scroll.
                 mRecyclerView.snapScroll(mSearchBoxView, getHeight());
@@ -616,7 +580,6 @@ public class NewTabPageView
             mRecyclerView.postDelayed(mSnapScrollRunnable, SNAP_SCROLL_DELAY_MS);
         }
         updateSearchBoxOnScroll();
-        mRecyclerView.updatePeekingCardAndHeader();
     }
 
     /**
@@ -951,13 +914,7 @@ public class NewTabPageView
     }
 
     private static int getMaxTileRows(boolean searchProviderHasLogo) {
-        int defaultValue = 2;
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_CONDENSED_LAYOUT)
-                && !searchProviderHasLogo) {
-            defaultValue = 3;
-        }
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.NTP_CONDENSED_LAYOUT, PARAM_NTP_MAX_TILE_ROWS, defaultValue);
+        return 2;
     }
 
     /**
@@ -973,30 +930,11 @@ public class NewTabPageView
     }
 
     private static int getTileTitleLines() {
-        int defaultValue = 2;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_CONDENSED_LAYOUT)) {
-            defaultValue = 1;
-        }
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.NTP_CONDENSED_LAYOUT, PARAM_NTP_TILE_TITLE_LINES, defaultValue);
+        return 1;
     }
 
     private boolean shouldShowLogo() {
-        boolean condensedLayoutEnabled =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_CONDENSED_LAYOUT);
-        boolean showLogoInCondensedLayout = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.NTP_CONDENSED_LAYOUT, PARAM_CONDENSED_LAYOUT_SHOW_LOGO, true);
-        return mSearchProviderHasLogo && (!condensedLayoutEnabled || showLogoInCondensedLayout);
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        if (mNewTabPageLayout != null) {
-            mNewTabPageLayout.setParentViewportHeight(MeasureSpec.getSize(heightMeasureSpec));
-        }
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
-        mRecyclerView.updatePeekingCardAndHeader();
+        return mSearchProviderHasLogo;
     }
 
     /**

@@ -173,11 +173,6 @@ public final class ContentSuggestionsTestUtils {
             }
 
             @Override
-            public void visitSpacingItem() {
-                describeItem("SPACING");
-            }
-
-            @Override
             public void visitNoSuggestionsItem() {
                 describeItem("NO_SUGGESTIONS");
             }

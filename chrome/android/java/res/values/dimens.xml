@@ -336,7 +336,7 @@
     <dimen name="tile_view_title_margin_top">66dp</dimen>
     <dimen name="tile_view_title_margin_top_condensed">62dp</dimen>
     <dimen name="tile_view_title_margin_top_modern">61dp</dimen>
-    <dimen name="ntp_logo_height">116dp</dimen>
+    <dimen name="ntp_logo_height">100dp</dimen>
     <dimen name="ntp_logo_margin_top_modern">25dp</dimen>
     <!-- bottom_control_container_height + 8 -->
     <dimen name="ntp_logo_margin_bottom_modern">64dp</dimen>
@@ -363,10 +363,6 @@
          peeking card animation (the calculations assume this is the same). -->
     <dimen name="snippets_padding">16dp</dimen>
     <dimen name="snippets_header_top_padding">10dp</dimen>
-    <!-- The amount of the peeking card showing above the fold with the increased visibility UI
-         (https://crbug.com/660837). -->
-    <dimen name="snippets_peeking_card_peek_amount">32dp</dimen>
-    <dimen name="snippets_peeking_card_bounce_distance">10dp</dimen>
     <dimen name="snippets_card_gap">0.5dp</dimen>
     <dimen name="snippets_article_header_height">40dp</dimen>
     <dimen name="snippets_publisher_margin_top">8dp</dimen>

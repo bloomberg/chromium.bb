@@ -684,21 +684,6 @@ const FeatureEntry::FeatureVariation kRemoteSuggestionsFeatureVariations[] = {
      "3313422"}};
 #endif  // OS_ANDROID
 
-#if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kCondensedTileLayoutForSmallScreensEnabled[] =
-    {{"condensed_tile_layout_for_small_screens_enabled", "true"}};
-
-const FeatureEntry::FeatureParam kCondensedTileLayoutForLargeScreensEnabled[] =
-    {{"condensed_tile_layout_for_large_screens_enabled", "true"}};
-
-const FeatureEntry::FeatureVariation
-    kNTPCondensedTileLayoutFeatureVariations[] = {
-        {"(small screens)", kCondensedTileLayoutForSmallScreensEnabled,
-         arraysize(kCondensedTileLayoutForSmallScreensEnabled), nullptr},
-        {"(large screens)", kCondensedTileLayoutForLargeScreensEnabled,
-         arraysize(kCondensedTileLayoutForLargeScreensEnabled), nullptr}};
-#endif  // OS_ANDROID
-
 const FeatureEntry::Choice kEnableUseZoomForDSFChoices[] = {
     {flag_descriptions::kEnableUseZoomForDsfChoiceDefault, "", ""},
     {flag_descriptions::kEnableUseZoomForDsfChoiceEnabled,
@@ -2587,16 +2572,6 @@ const FeatureEntry kFeatureEntries[] = {
          ntp_snippets::kNotificationsFeature,
          kContentSuggestionsNotificationsFeatureVariations,
          ntp_snippets::kNotificationsFeature.name)},
-    {"ntp-condensed-layout", flag_descriptions::kNtpCondensedLayoutName,
-     flag_descriptions::kNtpCondensedLayoutDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kNTPCondensedLayoutFeature)},
-    {"ntp-condensed-tile-layout",
-     flag_descriptions::kNtpCondensedTileLayoutName,
-     flag_descriptions::kNtpCondensedTileLayoutDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         chrome::android::kNTPCondensedTileLayoutFeature,
-         kNTPCondensedTileLayoutFeatureVariations,
-         chrome::android::kNTPCondensedTileLayoutFeature.name)},
     {"ntp-modern-layout", flag_descriptions::kNtpModernLayoutName,
      flag_descriptions::kNtpModernLayoutDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kNTPModernLayoutFeature)},
