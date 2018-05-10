@@ -3073,7 +3073,7 @@ static INLINE int bsize_to_num_blk(BLOCK_SIZE bsize) {
   return num_blk;
 }
 
-static int get_search_init_depth(int mi_width, int mi_height,
+static int get_search_init_depth(int mi_width, int mi_height, int is_inter,
                                  const SPEED_FEATURES *sf) {
   if (sf->tx_size_search_method == USE_LARGESTALL) return MAX_VARTX_DEPTH;
 
@@ -3083,8 +3083,13 @@ static int get_search_init_depth(int mi_width, int mi_height,
       return MAX_VARTX_DEPTH;
   }
 
-  return (mi_height != mi_width) ? sf->tx_size_search_init_depth_rect
-                                 : sf->tx_size_search_init_depth_sqr;
+  if (is_inter) {
+    return (mi_height != mi_width) ? sf->inter_tx_size_search_init_depth_rect
+                                   : sf->inter_tx_size_search_init_depth_sqr;
+  } else {
+    return (mi_height != mi_width) ? sf->intra_tx_size_search_init_depth_rect
+                                   : sf->intra_tx_size_search_init_depth_sqr;
+  }
 }
 
 static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
@@ -3109,7 +3114,8 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 
   if (tx_select) {
     start_tx = max_rect_tx_size;
-    depth = get_search_init_depth(mi_size_wide[bs], mi_size_high[bs], &cpi->sf);
+    depth = get_search_init_depth(mi_size_wide[bs], mi_size_high[bs],
+                                  is_inter_block(mbmi), &cpi->sf);
   } else {
     const TX_SIZE chosen_tx_size = tx_size_from_tx_mode(bs, cm->tx_mode);
     start_tx = chosen_tx_size;
@@ -4483,7 +4489,8 @@ static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     TXFM_CONTEXT tx_left[MAX_MIB_SIZE * 2];
 
     RD_STATS pn_rd_stats;
-    const int init_depth = get_search_init_depth(mi_width, mi_height, &cpi->sf);
+    const int init_depth =
+        get_search_init_depth(mi_width, mi_height, 1, &cpi->sf);
     av1_init_rd_stats(&pn_rd_stats);
 
     av1_get_entropy_contexts(bsize, pd, ctxa, ctxl);
@@ -4684,7 +4691,8 @@ int inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_stats,
     const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, plane_bsize, 0);
     const int bh = tx_size_high_unit[max_tx_size];
     const int bw = tx_size_wide_unit[max_tx_size];
-    const int init_depth = get_search_init_depth(mi_width, mi_height, &cpi->sf);
+    const int init_depth =
+        get_search_init_depth(mi_width, mi_height, 1, &cpi->sf);
     int idx, idy;
     int block = 0;
     int step = tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];

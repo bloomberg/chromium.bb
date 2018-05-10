@@ -344,8 +344,10 @@ typedef struct SPEED_FEATURES {
   // Init search depth for square and rectangular transform partitions.
   // Values:
   // 0 - search full tree, 1: search 1 level, 2: search the highest level only
-  int tx_size_search_init_depth_sqr;
-  int tx_size_search_init_depth_rect;
+  int inter_tx_size_search_init_depth_sqr;
+  int inter_tx_size_search_init_depth_rect;
+  int intra_tx_size_search_init_depth_sqr;
+  int intra_tx_size_search_init_depth_rect;
   // If any dimension of a coding block size above 64, always search the
   // largest transform only, since the largest transform block size is 64x64.
   int tx_size_search_lgr_block;

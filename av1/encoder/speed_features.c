@@ -144,8 +144,10 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   if (speed >= 1) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_1;
     sf->selective_ref_frame = 1;
-    sf->tx_size_search_init_depth_rect = 1;
-    sf->tx_size_search_init_depth_sqr = 1;
+    sf->inter_tx_size_search_init_depth_rect = 1;
+    sf->inter_tx_size_search_init_depth_sqr = 1;
+    sf->intra_tx_size_search_init_depth_rect = 1;
+    sf->intra_tx_size_search_init_depth_sqr = 1;
     sf->tx_size_search_lgr_block = 1;
     sf->two_pass_partition_search = 1;
     sf->mode_pruning_based_on_two_pass_partition_search = 1;
@@ -314,8 +316,10 @@ static void set_dev_sf(AV1_COMP *cpi, SPEED_FEATURES *sf, int speed) {
   AV1_COMMON *const cm = &cpi->common;
 
   if (speed & TXFM_CODING_SF) {
-    sf->tx_size_search_init_depth_rect = 1;
-    sf->tx_size_search_init_depth_sqr = 1;
+    sf->inter_tx_size_search_init_depth_rect = 1;
+    sf->inter_tx_size_search_init_depth_sqr = 1;
+    sf->intra_tx_size_search_init_depth_rect = 1;
+    sf->intra_tx_size_search_init_depth_sqr = 1;
     sf->tx_size_search_method = USE_FAST_RD;
     sf->tx_type_search.fast_intra_tx_type_search = 1;
     sf->tx_type_search.fast_inter_tx_type_search = 1;
@@ -388,8 +392,10 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->comp_inter_joint_search_thresh = BLOCK_4X4;
   sf->adaptive_rd_thresh = 0;
   sf->tx_size_search_method = USE_FULL_RD;
-  sf->tx_size_search_init_depth_sqr = 0;
-  sf->tx_size_search_init_depth_rect = 0;
+  sf->inter_tx_size_search_init_depth_sqr = 0;
+  sf->inter_tx_size_search_init_depth_rect = 0;
+  sf->intra_tx_size_search_init_depth_rect = 0;
+  sf->intra_tx_size_search_init_depth_sqr = 0;
   sf->tx_size_search_lgr_block = 0;
   sf->reduce_inter_modes = 0;
   sf->adaptive_motion_search = 0;
