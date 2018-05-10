@@ -26,9 +26,7 @@
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
 #include "base/bind_helpers.h"
-#include "media/base/audio_renderer_sink.h"
-#include "media/base/renderer_factory.h"
-#include "media/base/video_renderer_sink.h"
+#include "media/base/renderer.h"
 #include "media/mojo/services/mojo_renderer_service.h"
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 
@@ -107,10 +105,6 @@ void InterfaceFactoryImpl::CreateRenderer(
     mojo::InterfaceRequest<mojom::Renderer> request) {
   DVLOG(2) << __func__;
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
-  RendererFactory* renderer_factory = GetRendererFactory();
-  if (!renderer_factory)
-    return;
-
   // Creation requests for non default renderers should have already been
   // handled by now, in a different layer.
   if (type != media::mojom::HostedRendererType::kDefault) {
@@ -118,17 +112,11 @@ void InterfaceFactoryImpl::CreateRenderer(
     return;
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner(
-      base::ThreadTaskRunnerHandle::Get());
-  auto audio_sink =
-      mojo_media_client_->CreateAudioRendererSink(type_specific_id);
-
-  auto video_sink = mojo_media_client_->CreateVideoRendererSink(task_runner);
-  // TODO(hubbe): Find out if gfx::ColorSpace() is correct for the
-  // target_color_space.
-  auto renderer = renderer_factory->CreateRenderer(
-      task_runner, task_runner, audio_sink.get(), video_sink.get(),
-      RequestOverlayInfoCB(), gfx::ColorSpace());
+  // For HostedRendererType::kDefault type, |type_specific_id| represents an
+  // audio device ID. See interface_factory.mojom.
+  const std::string& audio_device_id = type_specific_id;
+  auto renderer = mojo_media_client_->CreateRenderer(
+      base::ThreadTaskRunnerHandle::Get(), media_log_, audio_device_id);
   if (!renderer) {
     DLOG(ERROR) << "Renderer creation failed.";
     return;
@@ -136,8 +124,8 @@ void InterfaceFactoryImpl::CreateRenderer(
 
   std::unique_ptr<MojoRendererService> mojo_renderer_service =
       std::make_unique<MojoRendererService>(
-          &cdm_service_context_, std::move(audio_sink), std::move(video_sink),
-          std::move(renderer), MojoRendererService::InitiateSurfaceRequestCB());
+          &cdm_service_context_, std::move(renderer),
+          MojoRendererService::InitiateSurfaceRequestCB());
 
   MojoRendererService* mojo_renderer_service_ptr = mojo_renderer_service.get();
 
@@ -279,16 +267,6 @@ void InterfaceFactoryImpl::OnBindingConnectionError() {
   if (destroy_cb_ && IsEmpty())
     std::move(destroy_cb_).Run();
 }
-
-#if BUILDFLAG(ENABLE_MOJO_RENDERER)
-RendererFactory* InterfaceFactoryImpl::GetRendererFactory() {
-  if (!renderer_factory_) {
-    renderer_factory_ = mojo_media_client_->CreateRendererFactory(media_log_);
-    LOG_IF(ERROR, !renderer_factory_) << "RendererFactory not available.";
-  }
-  return renderer_factory_.get();
-}
-#endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
 CdmFactory* InterfaceFactoryImpl::GetCdmFactory() {

@@ -30,13 +30,11 @@ class InterfaceProvider;
 namespace media {
 
 class AudioDecoder;
-class AudioRendererSink;
 class CdmFactory;
 class CdmProxy;
 class MediaLog;
-class RendererFactory;
+class Renderer;
 class VideoDecoder;
-class VideoRendererSink;
 
 class MEDIA_MOJO_EXPORT MojoMediaClient {
  public:
@@ -58,19 +56,12 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
       mojom::CommandBufferIdPtr command_buffer_id,
       RequestOverlayInfoCB request_overlay_info_cb);
 
-  // Returns the output sink used for rendering audio on |audio_device_id|.
-  // May be null if the RendererFactory doesn't need an audio sink.
-  virtual scoped_refptr<AudioRendererSink> CreateAudioRendererSink(
+  // Returns the Renderer to be used by MojoRendererService.
+  // TODO(hubbe): Find out whether we should pass in |target_color_space| here.
+  virtual std::unique_ptr<Renderer> CreateRenderer(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      MediaLog* media_log,
       const std::string& audio_device_id);
-
-  // Returns the output sink used for rendering video.
-  // May be null if the RendererFactory doesn't need a video sink.
-  virtual std::unique_ptr<VideoRendererSink> CreateVideoRendererSink(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
-
-  // Returns the RendererFactory to be used by MojoRendererService.
-  virtual std::unique_ptr<RendererFactory> CreateRendererFactory(
-      MediaLog* media_log);
 
   // Returns the CdmFactory to be used by MojoCdmService. |host_interfaces| can
   // be used to request interfaces provided remotely by the host. It may be a

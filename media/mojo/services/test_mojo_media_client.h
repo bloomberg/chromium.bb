@@ -6,25 +6,21 @@
 #define MEDIA_MOJO_SERVICES_TEST_MOJO_MEDIA_CLIENT_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/services/mojo_media_client.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace media {
 
 class AudioManager;
 class AudioRendererSink;
-class MediaLog;
 class RendererFactory;
 class VideoRendererSink;
 
-// Default MojoMediaClient for MediaService.
+// Test MojoMediaClient for MediaService.
 class TestMojoMediaClient : public MojoMediaClient {
  public:
   TestMojoMediaClient();
@@ -32,12 +28,10 @@ class TestMojoMediaClient : public MojoMediaClient {
 
   // MojoMediaClient implementation.
   void Initialize(service_manager::Connector* connector) final;
-  scoped_refptr<AudioRendererSink> CreateAudioRendererSink(
+  std::unique_ptr<Renderer> CreateRenderer(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      MediaLog* media_log,
       const std::string& audio_device_id) final;
-  std::unique_ptr<VideoRendererSink> CreateVideoRendererSink(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) final;
-  std::unique_ptr<RendererFactory> CreateRendererFactory(
-      MediaLog* media_log) final;
   std::unique_ptr<CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* /* host_interfaces */) final;
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -46,6 +40,9 @@ class TestMojoMediaClient : public MojoMediaClient {
 
  private:
   std::unique_ptr<AudioManager> audio_manager_;
+  std::unique_ptr<RendererFactory> renderer_factory_;
+  std::vector<scoped_refptr<AudioRendererSink>> audio_sinks_;
+  std::vector<std::unique_ptr<VideoRendererSink>> video_sinks_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMojoMediaClient);
 };

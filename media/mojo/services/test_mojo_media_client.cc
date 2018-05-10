@@ -55,23 +55,35 @@ void TestMojoMediaClient::Initialize(
   }
 }
 
-scoped_refptr<AudioRendererSink> TestMojoMediaClient::CreateAudioRendererSink(
+std::unique_ptr<Renderer> TestMojoMediaClient::CreateRenderer(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    MediaLog* media_log,
     const std::string& /* audio_device_id */) {
-  return new AudioOutputStreamSink();
-}
+  // If called the first time, do one time initialization.
+  if (!renderer_factory_) {
+    renderer_factory_ = std::make_unique<DefaultRendererFactory>(
+        media_log, nullptr, DefaultRendererFactory::GetGpuFactoriesCB());
+  }
 
-std::unique_ptr<VideoRendererSink> TestMojoMediaClient::CreateVideoRendererSink(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
-  return std::make_unique<NullVideoSink>(
+  // We cannot share AudioOutputStreamSink or NullVideoSink among different
+  // RendererImpls. Thus create one for each Renderer creation.
+  auto audio_sink = base::MakeRefCounted<AudioOutputStreamSink>();
+  auto video_sink = std::make_unique<NullVideoSink>(
       false, base::TimeDelta::FromSecondsD(1.0 / 60),
       NullVideoSink::NewFrameCB(), task_runner);
-}
+  auto* video_sink_ptr = video_sink.get();
 
-std::unique_ptr<RendererFactory> TestMojoMediaClient::CreateRendererFactory(
-    MediaLog* media_log) {
-  return std::make_unique<DefaultRendererFactory>(
-      media_log, nullptr, DefaultRendererFactory::GetGpuFactoriesCB());
-}
+  // Hold created sinks since DefaultRendererFactory only takes raw pointers to
+  // the sinks. We are not cleaning up them even after a created Renderer is
+  // destroyed. But this is fine since this class is only used for tests.
+  audio_sinks_.push_back(audio_sink);
+  video_sinks_.push_back(std::move(video_sink));
+
+  return renderer_factory_->CreateRenderer(
+      task_runner, task_runner, audio_sink.get(), video_sink_ptr,
+      RequestOverlayInfoCB(), gfx::ColorSpace());
+
+}  // namespace media
 
 std::unique_ptr<CdmFactory> TestMojoMediaClient::CreateCdmFactory(
     service_manager::mojom::InterfaceProvider* /* host_interfaces */) {
