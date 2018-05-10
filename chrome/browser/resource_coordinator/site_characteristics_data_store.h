@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_reader.h"
+#include "chrome/browser/resource_coordinator/site_characteristics_data_writer.h"
 
 namespace resource_coordinator {
 
@@ -22,6 +23,10 @@ class SiteCharacteristicsDataStore {
   // Returns a SiteCharacteristicsDataReader for the given origin.
   virtual std::unique_ptr<SiteCharacteristicsDataReader> GetReaderForOrigin(
       const std::string& origin) = 0;
+
+  // Returns a SiteCharacteristicsDataWriter for the given origin.
+  virtual std::unique_ptr<SiteCharacteristicsDataWriter> GetWriterForOrigin(
+      const std::string& origin_str) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SiteCharacteristicsDataStore);
