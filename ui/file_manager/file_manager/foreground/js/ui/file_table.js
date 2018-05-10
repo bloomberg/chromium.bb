@@ -953,7 +953,8 @@ FileTable.prototype.updateListItemsMetadata = function(type, entries) {
       filelist.updateListItemExternalProps(
           listItem,
           this.metadataModel_.getCache(
-              [entry], ['availableOffline', 'customIconUrl', 'shared'])[0]);
+              [entry], ['availableOffline', 'customIconUrl', 'shared'])[0],
+          util.isTeamDriveRoot(entry));
     });
   } else if (type === 'import-history') {
     forEachCell('.table-row-cell > .status', function(item, entry, unused) {

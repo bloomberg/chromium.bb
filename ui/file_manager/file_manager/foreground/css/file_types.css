@@ -42,6 +42,12 @@
       url(../images/filetype/2x/filetype_folder_shared.png) 2x);
 }
 
+.team-drive-root[file-type-icon='folder'] {
+  background-image: -webkit-image-set(
+      url(../images/filetype/filetype_team_drive.png) 1x,
+      url(../images/filetype/2x/filetype_team_drive.png) 2x);
+}
+
 tree .tree-item[selected] > .tree-row > [file-type-icon='folder'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_folder_active.png) 1x,
@@ -52,6 +58,13 @@ tree .tree-item[selected] > .tree-row > .shared[file-type-icon='folder'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_folder_shared_active.png) 1x,
       url(../images/filetype/2x/filetype_folder_shared_active.png) 2x);
+}
+
+tree .tree-item[selected] > .tree-row >
+.team-drive-root[file-type-icon='folder'] {
+  background-image: -webkit-image-set(
+      url(../images/filetype/filetype_team_drive_active.png) 1x,
+      url(../images/filetype/2x/filetype_team_drive_active.png) 2x);
 }
 
 /* TODO(fukino): Check if 'form' is in use, and remove this if possible. */
