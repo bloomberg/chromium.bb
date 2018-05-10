@@ -3785,7 +3785,7 @@ void RenderFrameHostImpl::CommitNavigation(
     GetContentClient()
         ->browser()
         ->RegisterNonNetworkSubresourceURLLoaderFactories(
-            this, common_params.url, &non_network_url_loader_factories_);
+            process_->GetID(), routing_id_, &non_network_url_loader_factories_);
 
     for (auto& factory : non_network_url_loader_factories_) {
       network::mojom::URLLoaderFactoryPtrInfo factory_proxy_info;

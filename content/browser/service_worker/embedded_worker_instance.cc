@@ -139,7 +139,7 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
     ContentBrowserClient::NonNetworkURLLoaderFactoryMap factories;
     GetContentClient()
         ->browser()
-        ->RegisterNonNetworkNavigationURLLoaderFactories(
+        ->RegisterNonNetworkSubresourceURLLoaderFactories(
             rph->GetID(), MSG_ROUTING_NONE, &factories);
     auto iter = factories.find(params->script_url.scheme());
     if (iter != factories.end()) {

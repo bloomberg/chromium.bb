@@ -18,6 +18,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -30,6 +31,7 @@
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/io_thread_extension_message_filter.h"
 #include "extensions/browser/process_map.h"
@@ -262,28 +264,23 @@ ShellContentBrowserClient::GetNavigationUIData(
 }
 
 void ShellContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
-    int render_process_id,
-    int render_frame_id,
+    int frame_tree_node_id,
     NonNetworkURLLoaderFactoryMap* factories) {
-  content::RenderProcessHost* process_host =
-      content::RenderProcessHost::FromID(render_process_id);
-  content::BrowserContext* browser_context = process_host->GetBrowserContext();
+  content::WebContents* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
   factories->emplace(
       extensions::kExtensionScheme,
       extensions::CreateExtensionNavigationURLLoaderFactory(
-          render_process_id, render_frame_id,
-          extensions::ExtensionSystem::Get(browser_context)->info_map()));
+          web_contents->GetBrowserContext(),
+          !!extensions::WebViewGuest::FromWebContents(web_contents)));
 }
 
 void ShellContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
-    content::RenderFrameHost* frame_host,
-    const GURL& frame_url,
+    int render_process_id,
+    int render_frame_id,
     NonNetworkURLLoaderFactoryMap* factories) {
-  content::RenderProcessHost* process_host = frame_host->GetProcess();
-  content::BrowserContext* browser_context = process_host->GetBrowserContext();
-  auto factory = extensions::MaybeCreateExtensionSubresourceURLLoaderFactory(
-      process_host->GetID(), frame_host->GetRoutingID(), frame_url,
-      extensions::ExtensionSystem::Get(browser_context)->info_map());
+  auto factory = extensions::CreateExtensionURLLoaderFactory(render_process_id,
+                                                             render_frame_id);
   if (factory)
     factories->emplace(extensions::kExtensionScheme, std::move(factory));
 }

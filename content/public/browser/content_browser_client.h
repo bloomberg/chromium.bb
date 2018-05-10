@@ -989,21 +989,23 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to register per-scheme URLLoaderFactory implementations
   // to handle navigation URL requests for schemes not handled by the Network
   // Service. Only called when the Network Service is enabled.
+  // Note that a RenderFrameHost or RenderProcessHost aren't passed in because
+  // these can change during a navigation (e.g. depending on redirects).
   using NonNetworkURLLoaderFactoryMap =
       std::map<std::string, std::unique_ptr<network::mojom::URLLoaderFactory>>;
   virtual void RegisterNonNetworkNavigationURLLoaderFactories(
-      int render_process_id,
-      int render_frame_id,
+      int frame_tree_node_id,
       NonNetworkURLLoaderFactoryMap* factories);
 
   // Allows the embedder to register per-scheme URLLoaderFactory implementations
   // to handle subresource URL requests for schemes not handled by the Network
-  // Service. The factories added to this map will only be used to service
-  // subresource requests from |frame_host| as long as it's navigated to
-  // |frame_url|. Only called when the Network Service is enabled.
+  // Service. This function can also be used to make a factory for other
+  // non-subresource requests, such as for the service worker script when
+  // starting a service worker. In that case, the frame id will be
+  // MSG_ROUTING_NONE.
   virtual void RegisterNonNetworkSubresourceURLLoaderFactories(
-      RenderFrameHost* frame_host,
-      const GURL& frame_url,
+      int render_process_id,
+      int render_frame_id,
       NonNetworkURLLoaderFactoryMap* factories);
 
   // Allows the embedder to intercept URLLoaderFactory interfaces used for

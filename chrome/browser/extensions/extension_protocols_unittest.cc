@@ -35,6 +35,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -196,7 +197,6 @@ class ExtensionProtocolsTest
     testing::Test::SetUp();
     testing_profile_ = TestingProfile::Builder().Build();
     contents_ = CreateTestWebContents();
-    extension_info_map_ = new InfoMap();
     old_factory_ = resource_context_.GetRequestContext()->job_factory();
 
     // Set up content verification.
@@ -207,7 +207,7 @@ class ExtensionProtocolsTest
     content_verifier_ = new ContentVerifier(
         browser_context(),
         std::make_unique<ChromeContentVerifierDelegate>(browser_context()));
-    extension_info_map_->SetContentVerifier(content_verifier_.get());
+    info_map()->SetContentVerifier(content_verifier_.get());
   }
 
   void TearDown() override {
@@ -220,13 +220,12 @@ class ExtensionProtocolsTest
     switch (request_handler()) {
       case RequestHandlerType::kURLLoader:
         loader_factory_ = extensions::CreateExtensionNavigationURLLoaderFactory(
-            main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
-            extension_info_map_.get());
+            browser_context(), false);
         break;
       case RequestHandlerType::kURLRequest:
         job_factory_.SetProtocolHandler(
-            kExtensionScheme, CreateExtensionProtocolHandler(
-                                  is_incognito, extension_info_map_.get()));
+            kExtensionScheme,
+            CreateExtensionProtocolHandler(is_incognito, info_map()));
         resource_context_.GetRequestContext()->set_job_factory(&job_factory_);
         break;
     }
@@ -247,9 +246,8 @@ class ExtensionProtocolsTest
   void AddExtension(const scoped_refptr<const Extension>& extension,
                     bool incognito_enabled,
                     bool notifications_disabled) {
-    extension_info_map_->AddExtension(extension.get(), base::Time::Now(),
-                                      incognito_enabled,
-                                      notifications_disabled);
+    info_map()->AddExtension(extension.get(), base::Time::Now(),
+                             incognito_enabled, notifications_disabled);
     if (request_handler() == RequestHandlerType::kURLLoader) {
       EXPECT_TRUE(extension_registry()->AddEnabled(extension));
       ExtensionPrefs::Get(browser_context())
@@ -259,7 +257,7 @@ class ExtensionProtocolsTest
 
   void RemoveExtension(const scoped_refptr<const Extension>& extension,
                        const UnloadedExtensionReason reason) {
-    extension_info_map_->RemoveExtension(extension->id(), reason);
+    info_map()->RemoveExtension(extension->id(), reason);
     if (request_handler() == RequestHandlerType::kURLLoader) {
       EXPECT_TRUE(extension_registry()->RemoveEnabled(extension->id()));
       if (reason == UnloadedExtensionReason::DISABLE)
@@ -269,10 +267,10 @@ class ExtensionProtocolsTest
 
   // Helper method to create a URL request/loader, call RequestOrLoad on it, and
   // return the result. If |extension| hasn't already been added to
-  // |extension_info_map_|, this will add it.
+  // info_map(), this will add it.
   GetResult DoRequestOrLoad(const scoped_refptr<Extension> extension,
                             const std::string& relative_path) {
-    if (!extension_info_map_->extensions().Contains(extension->id())) {
+    if (!info_map()->extensions().Contains(extension->id())) {
       AddExtension(extension.get(),
                    /*incognito_enabled=*/false,
                    /*notifications_disabled=*/false);
@@ -283,6 +281,10 @@ class ExtensionProtocolsTest
 
   ExtensionRegistry* extension_registry() {
     return ExtensionRegistry::Get(browser_context());
+  }
+
+  InfoMap* info_map() {
+    return ExtensionSystem::Get(browser_context())->info_map();
   }
 
   content::BrowserContext* browser_context() { return testing_profile_.get(); }
@@ -352,7 +354,6 @@ class ExtensionProtocolsTest
   std::unique_ptr<TestingProfile> testing_profile_;
   net::TestDelegate test_delegate_;
   std::unique_ptr<content::WebContents> contents_;
-  scoped_refptr<InfoMap> extension_info_map_;
 };
 
 // Tests that making a chrome-extension request in an incognito context is
