@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 
 class TabAndroid;
+class TabModelObserverJniBridge;
 
 namespace content {
 class WebContents;
@@ -63,6 +64,9 @@ class TabModelJniBridge : public TabModel {
   // tab model selector.
   bool IsCurrentModel() const override;
 
+  void AddObserver(TabModelObserver* observer) override;
+  void RemoveObserver(TabModelObserver* observer) override;
+
   // Instructs the TabModel to broadcast a notification that all tabs are now
   // loaded from storage.
   void BroadcastSessionRestoreComplete(
@@ -71,6 +75,11 @@ class TabModelJniBridge : public TabModel {
 
  protected:
   JavaObjectWeakGlobalRef java_object_;
+
+  // The observer bridge. This exists as long as there are registered observers.
+  // It corresponds to a Java observer that is registered with the corresponding
+  // Java TabModelJniBridge.
+  std::unique_ptr<TabModelObserverJniBridge> observer_bridge_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabModelJniBridge);

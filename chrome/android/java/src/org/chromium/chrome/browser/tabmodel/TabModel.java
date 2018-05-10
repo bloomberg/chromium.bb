@@ -14,6 +14,8 @@ import org.chromium.chrome.browser.tab.Tab;
 public interface TabModel extends TabList {
     /**
      * A list of the various ways tabs can be launched.
+     *
+     * This must be kept in sync with chrome/browser/ui/android/tab_model/tab_model.h.
      */
     public enum TabLaunchType {
         /**
@@ -68,9 +70,13 @@ public interface TabModel extends TabList {
         /** Opened in the background from Browser Actions context menu. */
         FROM_BROWSER_ACTIONS,
     }
+    // For validating that enums are synchronized between Java and corresponding C++.
+    public static final int TabLaunchTypeSize = TabLaunchType.values().length;
 
     /**
      * A list of the various ways tabs can be selected.
+     *
+     * This must be kept in sync with chrome/browser/ui/android/tab_model/tab_model.h.
      */
     public enum TabSelectionType {
         /** Selection of adjacent tab when the active tab is closed in foreground. */
@@ -85,6 +91,8 @@ public interface TabModel extends TabList {
         /** User-originated switch to existing tab or selection of main tab on app startup. */
         FROM_USER
     }
+    // For validating that enums are synchronized between Java and corresponding C++.
+    public static final int TabSelectionTypeSize = TabSelectionType.values().length;
 
     /**
      * @return The profile associated with the current model.
