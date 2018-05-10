@@ -35,6 +35,7 @@ extern const base::Feature kIPHContextualSearchPromotePanelOpenFeature;
 extern const base::Feature kIPHContextualSearchOptInFeature;
 extern const base::Feature kIPHContextualSuggestionsFeature;
 extern const base::Feature kIPHDownloadSettingsFeature;
+extern const base::Feature kIPHHomePageButtonFeature;
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)

@@ -67,6 +67,7 @@ DEFINE_VARIATION_PARAM(kIPHContextualSearchOptInFeature,
 DEFINE_VARIATION_PARAM(kIPHContextualSuggestionsFeature,
                        "IPH_ContextualSuggestions");
 DEFINE_VARIATION_PARAM(kIPHDownloadSettingsFeature, "IPH_DownloadSettings");
+DEFINE_VARIATION_PARAM(kIPHHomePageButtonFeature, "IPH_HomePageButton");
 #endif  // defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 DEFINE_VARIATION_PARAM(kIPHBookmarkFeature, "IPH_Bookmark");
@@ -101,6 +102,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHContextualSearchOptInFeature),
         VARIATION_ENTRY(kIPHContextualSuggestionsFeature),
         VARIATION_ENTRY(kIPHDownloadSettingsFeature),
+        VARIATION_ENTRY(kIPHHomePageButtonFeature),
 #elif BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
         VARIATION_ENTRY(kIPHBookmarkFeature),
         VARIATION_ENTRY(kIPHIncognitoWindowFeature),
