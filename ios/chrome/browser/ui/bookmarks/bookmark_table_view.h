@@ -80,29 +80,11 @@ class ChromeBrowserState;
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype) new NS_UNAVAILABLE;
 
-// Called when adding a new folder
-- (void)addNewFolder;
-
-// Returns a vector of edit nodes.
-- (std::vector<const bookmarks::BookmarkNode*>)getEditNodesInVector;
-
-// Returns if current root node allows new folder to be created on it.
-- (BOOL)allowsNewFolder;
-
-// Returns the row position that is visible.
-- (CGFloat)contentPosition;
-
-// Scrolls the table view to the desired row position.
-- (void)setContentPosition:(CGFloat)position;
-
-// Called when back or done button of navigation bar is tapped.
-- (void)navigateAway;
-
-// TODO(crbug.com/840381): Temporarily made public while migrating code
-// out of BookmarkTableView.
-- (void)restoreRowSelection;
+// Methods to show and hide the loading spinner.
 - (void)showLoadingSpinnerBackground;
 - (void)hideLoadingSpinnerBackground;
+
+// Methods to show and hide the "no bookmarks" background.
 - (void)showEmptyBackground;
 - (void)hideEmptyBackground;
 
