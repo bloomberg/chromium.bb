@@ -203,6 +203,11 @@ public class AwContents implements SmartClipProvider {
          * @see View#startActivityForResult(Intent, int)
          */
         void super_startActivityForResult(Intent intent, int requestCode);
+
+        /**
+         * @see View#onConfigurationChanged(Configuration)
+         */
+        void super_onConfigurationChanged(Configuration newConfig);
     }
 
     /**
@@ -3432,6 +3437,7 @@ public class AwContents implements SmartClipProvider {
         public void onConfigurationChanged(Configuration newConfig) {
             if (!isDestroyedOrNoOperation(NO_WARN)) {
                 mContentViewCore.onConfigurationChanged(newConfig);
+                mInternalAccessAdapter.super_onConfigurationChanged(newConfig);
             }
         }
 

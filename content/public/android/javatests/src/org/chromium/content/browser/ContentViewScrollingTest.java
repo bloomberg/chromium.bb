@@ -4,7 +4,6 @@
 
 package org.chromium.content.browser;
 
-import android.content.res.Configuration;
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
@@ -65,10 +64,6 @@ public class ContentViewScrollingTest {
         @Override
         public boolean super_onGenericMotionEvent(MotionEvent event) {
             return false;
-        }
-
-        @Override
-        public void super_onConfigurationChanged(Configuration newConfig) {
         }
 
         @Override
