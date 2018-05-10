@@ -90,8 +90,6 @@ bool IsSameOriginClientProviderHost(const GURL& origin,
                                     ServiceWorkerProviderHost* host) {
   return host->IsProviderForClient() &&
          host->document_url().GetOrigin() == origin &&
-         // Don't expose "reserved" clients (clients that are not yet execution
-         // ready) to the Clients API.
          host->is_execution_ready();
 }
 
@@ -99,7 +97,8 @@ bool IsSameOriginWindowProviderHost(const GURL& origin,
                                     ServiceWorkerProviderHost* host) {
   return host->provider_type() ==
              blink::mojom::ServiceWorkerProviderType::kForWindow &&
-         host->document_url().GetOrigin() == origin;
+         host->document_url().GetOrigin() == origin &&
+         host->is_execution_ready();
 }
 
 // Returns true if any of the frames specified by |frames| is a top-level frame.
@@ -366,6 +365,18 @@ void ServiceWorkerContextCore::AddProviderHost(
   map->AddWithID(std::move(host), provider_id);
 }
 
+std::unique_ptr<ServiceWorkerProviderHost>
+ServiceWorkerContextCore::ReleaseProviderHost(int process_id, int provider_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  ProviderMap* map = GetProviderMapForProcess(process_id);
+  if (!map || !map->Lookup(provider_id))
+    return nullptr;
+  std::unique_ptr<ServiceWorkerProviderHost> host =
+      map->Replace(provider_id, nullptr);
+  map->Remove(provider_id);
+  return host;
+}
+
 ServiceWorkerProviderHost* ServiceWorkerContextCore::GetProviderHost(
     int process_id,
     int provider_id) {
@@ -607,33 +618,6 @@ void ServiceWorkerContextCore::RemoveLiveRegistration(int64_t id) {
 ServiceWorkerVersion* ServiceWorkerContextCore::GetLiveVersion(int64_t id) {
   VersionMap::iterator it = live_versions_.find(id);
   return (it != live_versions_.end()) ? it->second : nullptr;
-}
-
-// PlzNavigate
-void ServiceWorkerContextCore::AddNavigationHandleCore(
-    int service_worker_provider_id,
-    ServiceWorkerNavigationHandleCore* handle) {
-  auto result = navigation_handle_cores_map_.insert(
-      std::pair<int, ServiceWorkerNavigationHandleCore*>(
-          service_worker_provider_id, handle));
-  DCHECK(result.second)
-      << "Inserting a duplicate ServiceWorkerNavigationHandleCore";
-}
-
-// PlzNavigate
-void ServiceWorkerContextCore::RemoveNavigationHandleCore(
-    int service_worker_provider_id) {
-  navigation_handle_cores_map_.erase(service_worker_provider_id);
-}
-
-// PlzNavigate
-ServiceWorkerNavigationHandleCore*
-ServiceWorkerContextCore::GetNavigationHandleCore(
-    int service_worker_provider_id) {
-  auto result = navigation_handle_cores_map_.find(service_worker_provider_id);
-  if (result == navigation_handle_cores_map_.end())
-    return nullptr;
-  return result->second;
 }
 
 void ServiceWorkerContextCore::AddLiveVersion(ServiceWorkerVersion* version) {
