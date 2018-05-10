@@ -12,6 +12,7 @@ js_type_check("closure_compile") {
 
 js_library("settings_ui") {
   deps = [
+    "..:find_shortcut_behavior",
     "..:global_scroll_target_behavior",
     "..:page_visibility",
     "../prefs:prefs",

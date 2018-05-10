@@ -103,6 +103,7 @@ group("closure_compile") {
 js_type_check("settings_resources") {
   deps = [
     ":extension_control_browser_proxy",
+    ":find_shortcut_behavior",
     ":focus_row_behavior",
     ":global_scroll_target_behavior",
     ":lifetime_browser_proxy",
@@ -119,6 +120,14 @@ js_library("extension_control_browser_proxy") {
     "//ui/webui/resources/js:cr",
   ]
   externs_list = [ "$externs_path/chrome_send.js" ]
+}
+
+js_library("find_shortcut_behavior") {
+  deps = [
+    "//third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior:iron-a11y-keys-behavior-extracted",
+    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:cr",
+  ]
 }
 
 js_library("focus_row_behavior") {

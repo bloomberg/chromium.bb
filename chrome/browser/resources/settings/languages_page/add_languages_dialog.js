@@ -11,6 +11,7 @@ Polymer({
 
   behaviors: [
     CrScrollableBehavior,
+    settings.FindShortcutBehavior,
   ],
 
   properties: {
@@ -47,6 +48,16 @@ Polymer({
   /** @override */
   attached: function() {
     this.$.dialog.showModal();
+  },
+
+  // Override settings.FindShortcutBehavior methods.
+  canHandleFindShortcut: function() {
+    return true;
+  },
+
+  handleFindShortcut: function() {
+    this.$.search.getSearchInput().scrollIntoViewIfNeeded();
+    this.$.search.getSearchInput().focus();
   },
 
   /**
