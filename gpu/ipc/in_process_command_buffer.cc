@@ -238,6 +238,12 @@ void InProcessCommandBuffer::InitializeDefaultServiceForTesting(
   g_default_service.Get().SetGpuFeatureInfo(gpu_feature_info);
 }
 
+gpu::ServiceTransferCache* InProcessCommandBuffer::GetTransferCacheForTest()
+    const {
+  return static_cast<raster::RasterDecoder*>(decoder_.get())
+      ->GetTransferCacheForTest();
+}
+
 bool InProcessCommandBuffer::MakeCurrent() {
   CheckSequencedThread();
   command_buffer_lock_.AssertAcquired();

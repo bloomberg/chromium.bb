@@ -5949,6 +5949,36 @@ bool GLES2Implementation::ThreadsafeDiscardableTextureIsDeletedForTracing(
   return manager->TextureIsDeletedForTracing(texture_id);
 }
 
+void* GLES2Implementation::MapTransferCacheEntry(size_t serialized_size) {
+  NOTREACHED();
+  return nullptr;
+}
+
+void GLES2Implementation::UnmapAndCreateTransferCacheEntry(uint32_t type,
+                                                           uint32_t id) {
+  NOTREACHED();
+}
+
+bool GLES2Implementation::ThreadsafeLockTransferCacheEntry(uint32_t type,
+                                                           uint32_t id) {
+  NOTREACHED();
+  return false;
+}
+
+void GLES2Implementation::UnlockTransferCacheEntries(
+    const std::vector<std::pair<uint32_t, uint32_t>>& entries) {
+  NOTREACHED();
+}
+
+void GLES2Implementation::DeleteTransferCacheEntry(uint32_t type, uint32_t id) {
+  NOTREACHED();
+}
+
+unsigned int GLES2Implementation::GetTransferBufferFreeSize() const {
+  NOTREACHED();
+  return 0;
+}
+
 void GLES2Implementation::GenSyncTokenCHROMIUM(GLbyte* sync_token) {
   if (!sync_token) {
     SetGLError(GL_INVALID_VALUE, "glGenSyncTokenCHROMIUM", "empty sync_token");
@@ -6482,7 +6512,7 @@ void GLES2Implementation::PathCommandsCHROMIUM(GLuint path,
     coords_shm_offset = buffer.offset();
   }
 
-  DCHECK(num_commands > 0);
+  DCHECK_GT(num_commands, 0);
   unsigned char* commands_addr =
       static_cast<unsigned char*>(buffer.address()) + coords_size;
   memcpy(commands_addr, commands, num_commands);
@@ -6556,7 +6586,7 @@ bool GLES2Implementation::PrepareInstancedPathCommand(
   }
 
   // The multiplication below will not overflow.
-  DCHECK(transforms_component_count <= 12);
+  DCHECK_LE(transforms_component_count, 12U);
   uint32_t one_transform_size = sizeof(GLfloat) * transforms_component_count;
 
   uint32_t transforms_size;
@@ -6590,7 +6620,7 @@ bool GLES2Implementation::PrepareInstancedPathCommand(
     *out_transforms_offset = 0;
   }
 
-  DCHECK(paths_size > 0);
+  DCHECK_GT(paths_size, 0U);
   unsigned char* paths_addr =
       static_cast<unsigned char*>(buffer->address()) + transforms_size;
   memcpy(paths_addr, paths, paths_size);
@@ -6859,7 +6889,7 @@ void GLES2Implementation::ProgramPathFragmentInputGenCHROMIUM(
       return;
     }
 
-    DCHECK(coeffs_size > 0);
+    DCHECK_GT(coeffs_size, 0U);
     unsigned char* addr = static_cast<unsigned char*>(buffer.address());
     memcpy(addr, coeffs, coeffs_size);
 
@@ -6953,83 +6983,6 @@ void GLES2Implementation::Viewport(GLint x,
   CheckGLError();
 }
 
-void* GLES2Implementation::MapRasterCHROMIUM(GLsizeiptr size) {
-  if (size < 0) {
-    SetGLError(GL_INVALID_VALUE, "glMapRasterCHROMIUM", "negative size");
-    return nullptr;
-  }
-  if (raster_mapped_buffer_) {
-    SetGLError(GL_INVALID_OPERATION, "glMapRasterCHROMIUM", "already mapped");
-    return nullptr;
-  }
-  raster_mapped_buffer_.emplace(size, helper_, transfer_buffer_);
-  if (!raster_mapped_buffer_->valid()) {
-    SetGLError(GL_INVALID_OPERATION, "glMapRasterCHROMIUM", "size too big");
-    raster_mapped_buffer_ = base::nullopt;
-    return nullptr;
-  }
-  return raster_mapped_buffer_->address();
-}
-
-void* GLES2Implementation::MapFontBufferCHROMIUM(GLsizeiptr size) {
-  if (size < 0) {
-    SetGLError(GL_INVALID_VALUE, "glMapFontBufferCHROMIUM", "negative size");
-    return nullptr;
-  }
-  if (font_mapped_buffer_) {
-    SetGLError(GL_INVALID_OPERATION, "glMapFontBufferCHROMIUM",
-               "already mapped");
-    return nullptr;
-  }
-  if (!raster_mapped_buffer_) {
-    SetGLError(GL_INVALID_OPERATION, "glMapFontBufferCHROMIUM",
-               "mapped font buffer with no raster buffer");
-    return nullptr;
-  }
-
-  font_mapped_buffer_.emplace(size, helper_, mapped_memory_.get());
-  if (!font_mapped_buffer_->valid()) {
-    SetGLError(GL_INVALID_OPERATION, "glMapFontBufferCHROMIUM", "size too big");
-    font_mapped_buffer_ = base::nullopt;
-    return nullptr;
-  }
-  return font_mapped_buffer_->address();
-}
-
-void GLES2Implementation::UnmapRasterCHROMIUM(GLsizeiptr written_size) {
-  if (written_size < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUnmapRasterCHROMIUM",
-               "negative written_size");
-    return;
-  }
-  if (!raster_mapped_buffer_) {
-    SetGLError(GL_INVALID_OPERATION, "glUnmapRasterCHROMIUM", "not mapped");
-    return;
-  }
-  DCHECK(raster_mapped_buffer_->valid());
-  if (written_size == 0) {
-    raster_mapped_buffer_->Discard();
-    raster_mapped_buffer_ = base::nullopt;
-    return;
-  }
-  raster_mapped_buffer_->Shrink(written_size);
-
-  GLuint font_shm_id = 0u;
-  GLuint font_shm_offset = 0u;
-  GLsizeiptr font_shm_size = 0u;
-  if (font_mapped_buffer_) {
-    font_shm_id = font_mapped_buffer_->shm_id();
-    font_shm_offset = font_mapped_buffer_->offset();
-    font_shm_size = font_mapped_buffer_->size();
-  }
-  helper_->RasterCHROMIUM(raster_mapped_buffer_->shm_id(),
-                          raster_mapped_buffer_->offset(), written_size,
-                          font_shm_id, font_shm_offset, font_shm_size);
-  raster_mapped_buffer_ = base::nullopt;
-  font_mapped_buffer_ = base::nullopt;
-  CheckGLError();
-}
-
 void GLES2Implementation::IssueBeginQuery(GLenum target,
                                           GLuint id,
                                           uint32_t sync_data_shm_id,
@@ -7074,29 +7027,6 @@ GLenum GLES2Implementation::GetClientSideGLError() {
 
 CommandBufferHelper* GLES2Implementation::cmd_buffer_helper() {
   return helper_;
-}
-
-void GLES2Implementation::IssueCreateTransferCacheEntry(
-    GLuint entry_type,
-    GLuint entry_id,
-    GLuint handle_shm_id,
-    GLuint handle_shm_offset,
-    GLuint data_shm_id,
-    GLuint data_shm_offset,
-    GLuint data_size) {
-  helper_->CreateTransferCacheEntryINTERNAL(entry_type, entry_id, handle_shm_id,
-                                            handle_shm_offset, data_shm_id,
-                                            data_shm_offset, data_size);
-}
-
-void GLES2Implementation::IssueDeleteTransferCacheEntry(GLuint entry_type,
-                                                        GLuint entry_id) {
-  helper_->DeleteTransferCacheEntryINTERNAL(entry_type, entry_id);
-}
-
-void GLES2Implementation::IssueUnlockTransferCacheEntry(GLuint entry_type,
-                                                        GLuint entry_id) {
-  helper_->UnlockTransferCacheEntryINTERNAL(entry_type, entry_id);
 }
 
 CommandBuffer* GLES2Implementation::command_buffer() const {

@@ -21,6 +21,7 @@
 #include "base/callback_helpers.h"
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
+#include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
@@ -29,9 +30,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "cc/paint/color_space_transfer_cache_entry.h"
-#include "cc/paint/paint_op_buffer.h"
-#include "cc/paint/transfer_cache_entry.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -69,8 +67,6 @@
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/sampler_manager.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
-#include "gpu/command_buffer/service/service_font_manager.h"
-#include "gpu/command_buffer/service/service_transfer_cache.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -78,14 +74,6 @@
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "third_party/angle/src/image_util/loadimage.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
-#include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/include/core/SkSurfaceProps.h"
-#include "third_party/skia/include/core/SkTypeface.h"
-#include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/src/core/SkRemoteGlyphCache.h"
 #include "third_party/smhasher/src/City.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
@@ -574,9 +562,7 @@ void GLES2Decoder::SetLogCommands(bool log_commands) {
 
 // This class implements GLES2Decoder so we don't have to expose all the GLES2
 // cmd stuff to outside this class.
-class GLES2DecoderImpl : public GLES2Decoder,
-                         public ErrorStateClient,
-                         public ServiceFontManager::Client {
+class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
  public:
   GLES2DecoderImpl(DecoderClient* client,
                    CommandBufferServiceBase* command_buffer_service,
@@ -670,9 +656,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
   ImageManager* GetImageManagerForTest() override {
     return group_->image_manager();
   }
-  ServiceTransferCache* GetTransferCacheForTest() override {
-    return transfer_cache_.get();
-  }
 
   bool HasPendingQueries() const override;
   void ProcessPendingQueries(bool did_finish) override;
@@ -757,7 +740,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   }
 
   // ServiceFontManager::Client implementation.
-  scoped_refptr<gpu::Buffer> GetShmBuffer(uint32_t shm_id) override;
+  scoped_refptr<gpu::Buffer> GetShmBuffer(uint32_t shm_id);
 
  private:
   friend class ScopedFramebufferBinder;
@@ -2039,30 +2022,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
                                     GLenum textarget,
                                     GLuint texture_unit);
 
-  void DoBeginRasterCHROMIUM(GLuint texture_id,
-                             GLuint sk_color,
-                             GLuint msaa_sample_count,
-                             GLboolean can_use_lcd_text,
-                             GLint color_type,
-                             GLuint color_space_transfer_cache_id);
-  void DoRasterCHROMIUM(GLuint raster_shm_id,
-                        GLuint raster_shm_offset,
-                        GLsizeiptr raster_shm_size,
-                        GLuint font_shm_id,
-                        GLuint font_shm_offset,
-                        GLsizeiptr font_shm_size);
-  void DoEndRasterCHROMIUM();
-
-  void DoCreateTransferCacheEntryINTERNAL(GLuint entry_type,
-                                          GLuint entry_id,
-                                          GLuint handle_shm_id,
-                                          GLuint handle_shm_offset,
-                                          GLuint data_shm_id,
-                                          GLuint data_shm_offset,
-                                          GLuint data_size);
-  void DoUnlockTransferCacheEntryINTERNAL(GLuint entry_type, GLuint entry_id);
-  void DoDeleteTransferCacheEntryINTERNAL(GLuint entry_type, GLuint entry_id);
-
   void DoUnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
                                             GLuint dest_id,
                                             GLint x,
@@ -2497,14 +2456,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   std::unique_ptr<VertexArrayManager> vertex_array_manager_;
 
-  // ServiceTransferCache uses Ids based on transfer buffer shm_id+offset, which
-  // are guaranteed to be unique within the scope of the TransferBufferManager
-  // which generates them. Because of this, |transfer_cache_| must have a
-  // narrower scope than |transfer_buffer_manager_|.
-  // In the future, we could add necessary scoping Id(s) to allow a single
-  // ServiceTransferCache to be shared among multiple contexts / channels.
-  std::unique_ptr<ServiceTransferCache> transfer_cache_;
-
   // The format of the back buffer_
   GLenum back_buffer_color_format_;
   bool back_buffer_has_depth_;
@@ -2549,7 +2500,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
   bool supports_swap_buffers_with_bounds_;
   bool supports_commit_overlay_planes_;
   bool supports_async_swap_;
-  bool supports_oop_raster_;
   bool supports_dc_layers_ = false;
 
   // These flags are used to override the state of the shared feature_info_
@@ -2639,12 +2589,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   std::unique_ptr<CALayerSharedState> ca_layer_shared_state_;
   std::unique_ptr<DCLayerSharedState> dc_layer_shared_state_;
-
-  // Raster helpers.
-  ServiceFontManager font_manager_;
-  sk_sp<GrContext> gr_context_;
-  sk_sp<SkSurface> sk_surface_;
-  std::unique_ptr<SkCanvas> raster_canvas_;
 
   base::WeakPtrFactory<GLES2DecoderImpl> weak_ptr_factory_;
 
@@ -3287,7 +3231,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(
       supports_swap_buffers_with_bounds_(false),
       supports_commit_overlay_planes_(false),
       supports_async_swap_(false),
-      supports_oop_raster_(false),
       derivatives_explicitly_enabled_(false),
       frag_depth_explicitly_enabled_(false),
       draw_buffers_explicitly_enabled_(false),
@@ -3310,7 +3253,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(
       validation_fbo_(0),
       texture_manager_service_id_generation_(0),
       force_shader_name_hashing_for_test(false),
-      font_manager_(this),
       weak_ptr_factory_(this) {
   DCHECK(client);
   DCHECK(group);
@@ -3884,49 +3826,6 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
     api()->glHintFn(GL_TEXTURE_FILTERING_HINT_CHROMIUM, GL_NICEST);
   }
 
-  if (attrib_helper.enable_oop_rasterization) {
-    if (!features().chromium_raster_transport) {
-      LOG(ERROR) << "ContextResult::kFatalFailure: "
-                    "chromium_raster_transport not present";
-      return gpu::ContextResult::kFatalFailure;
-    }
-    // Assume that we can create a GrContext. This will be set to false if
-    // there's a failure.
-    supports_oop_raster_ = true;
-    sk_sp<const GrGLInterface> interface(
-        gl::init::CreateGrGLInterface(gl_version_info()));
-    if (!interface) {
-      DLOG(ERROR) << "OOP raster support disabled: GrGLInterface creation "
-                     "failed.";
-      supports_oop_raster_ = false;
-    }
-
-    if (supports_oop_raster_) {
-      gr_context_ = GrContext::MakeGL(std::move(interface));
-      if (gr_context_) {
-        // TODO(enne): this cache is for this decoder only and each decoder has
-        // its own cache.  This is pretty unfortunate.  This really needs to be
-        // rethought before shipping.  Most likely a different command buffer
-        // context for raster-in-gpu, with a shared gl context / gr context
-        // that different decoders can use.
-        static const int kMaxGaneshResourceCacheCount = 8196;
-        static const size_t kMaxGaneshResourceCacheBytes = 96 * 1024 * 1024;
-        gr_context_->setResourceCacheLimits(kMaxGaneshResourceCacheCount,
-                                            kMaxGaneshResourceCacheBytes);
-        transfer_cache_ = std::make_unique<ServiceTransferCache>();
-      } else {
-        bool was_lost = CheckResetStatus();
-        if (was_lost) {
-          DLOG(ERROR)
-              << "ContextResult::kTransientFailure: Could not create GrContext";
-          return gpu::ContextResult::kTransientFailure;
-        }
-        DLOG(ERROR) << "OOP raster support disabled: GrContext creation "
-                       "failed.";
-        supports_oop_raster_ = false;
-      }
-    }
-  }
   return gpu::ContextResult::kSuccess;
 }
 
@@ -4129,7 +4028,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.texture_npot = feature_info_->feature_flags().npot_ok;
   caps.texture_storage_image =
       feature_info_->feature_flags().chromium_texture_storage_image;
-  caps.supports_oop_raster = supports_oop_raster_;
+  caps.supports_oop_raster = false;
   caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
   caps.unpremultiply_and_dither_copy =
       feature_info_->feature_flags().unpremultiply_and_dither_copy;
@@ -5137,8 +5036,6 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
 
     if (group_ && group_->texture_manager())
       group_->texture_manager()->MarkContextLost();
-    if (gr_context_)
-      gr_context_->abandonContext();
     state_.MarkContextLost();
   }
   deschedule_until_finished_fences_.clear();
@@ -5175,7 +5072,6 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   copy_texture_chromium_.reset();
   srgb_converter_.reset();
   clear_framebuffer_blit_.reset();
-  transfer_cache_.reset();
 
   if (framebuffer_manager_.get()) {
     framebuffer_manager_->Destroy(have_context);
@@ -20173,288 +20069,9 @@ error::Error GLES2DecoderImpl::HandleLockDiscardableTextureCHROMIUM(
   return error::kNoError;
 }
 
-namespace {
-
-class TransferCacheDeserializeHelperImpl
-    : public cc::TransferCacheDeserializeHelper {
- public:
-  explicit TransferCacheDeserializeHelperImpl(
-      ServiceTransferCache* transfer_cache)
-      : transfer_cache_(transfer_cache) {
-    DCHECK(transfer_cache_);
-  }
-  ~TransferCacheDeserializeHelperImpl() override = default;
-
-  void CreateLocalEntry(
-      uint32_t id,
-      std::unique_ptr<cc::ServiceTransferCacheEntry> entry) override {
-    transfer_cache_->CreateLocalEntry(id, std::move(entry));
-  }
-
- private:
-  cc::ServiceTransferCacheEntry* GetEntryInternal(
-      cc::TransferCacheEntryType entry_type,
-      uint32_t entry_id) override {
-    return transfer_cache_->GetEntry(entry_type, entry_id);
-  }
-  ServiceTransferCache* transfer_cache_;
-};
-
-}  // namespace
-
-void GLES2DecoderImpl::DoBeginRasterCHROMIUM(
-    GLuint texture_id,
-    GLuint sk_color,
-    GLuint msaa_sample_count,
-    GLboolean can_use_lcd_text,
-    GLint color_type,
-    GLuint color_space_transfer_cache_id) {
-  if (!gr_context_) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
-                       "chromium_raster_transport not enabled via attribs");
-    return;
-  }
-  if (sk_surface_) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
-                       "BeginRasterCHROMIUM without EndRasterCHROMIUM");
-    return;
-  }
-
-  DCHECK(!raster_canvas_);
-  gr_context_->resetContext();
-
-  // This function should look identical to
-  // ResourceProvider::ScopedSkSurfaceProvider.
-  GrGLTextureInfo texture_info;
-  auto* texture_ref = GetTexture(texture_id);
-  if (!texture_ref) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
-                       "unknown texture id");
-    return;
-  }
-  auto* texture = texture_ref->texture();
-  int width;
-  int height;
-  int depth;
-  if (!texture->GetLevelSize(texture->target(), 0, &width, &height, &depth)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
-                       "missing texture size info");
-    return;
-  }
-  GLenum type;
-  GLenum internal_format;
-  if (!texture->GetLevelType(texture->target(), 0, &type, &internal_format)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
-                       "missing texture type info");
-    return;
-  }
-  texture_info.fID = texture_ref->service_id();
-  texture_info.fTarget = texture->target();
-
-  if (texture->target() != GL_TEXTURE_2D &&
-      texture->target() != GL_TEXTURE_RECTANGLE_ARB) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
-                       "invalid texture target");
-    return;
-  }
-
-  // GetInternalFormat may return a base internal format but Skia requires a
-  // sized internal format. So this may be adjusted below.
-  texture_info.fFormat = GetInternalFormat(&gl_version_info(), internal_format);
-  switch (color_type) {
-    case kARGB_4444_SkColorType:
-      if (internal_format != GL_RGBA4 && internal_format != GL_RGBA) {
-        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
-                           "color type mismatch");
-        return;
-      }
-      if (texture_info.fFormat == GL_RGBA)
-        texture_info.fFormat = GL_RGBA4;
-      break;
-    case kRGBA_8888_SkColorType:
-      if (internal_format != GL_RGBA8_OES && internal_format != GL_RGBA) {
-        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
-                           "color type mismatch");
-        return;
-      }
-      if (texture_info.fFormat == GL_RGBA)
-        texture_info.fFormat = GL_RGBA8_OES;
-      break;
-    case kBGRA_8888_SkColorType:
-      if (internal_format != GL_BGRA_EXT && internal_format != GL_BGRA8_EXT) {
-        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
-                           "color type mismatch");
-        return;
-      }
-      if (texture_info.fFormat == GL_BGRA_EXT)
-        texture_info.fFormat = GL_BGRA8_EXT;
-      if (texture_info.fFormat == GL_RGBA)
-        texture_info.fFormat = GL_RGBA8_OES;
-      break;
-    default:
-      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
-                         "unsupported color type");
-      return;
-  }
-
-  GrBackendTexture gr_texture(width, height, GrMipMapped::kNo, texture_info);
-
-  uint32_t flags = 0;
-
-  // Use unknown pixel geometry to disable LCD text.
-  SkSurfaceProps surface_props(flags, kUnknown_SkPixelGeometry);
-  if (can_use_lcd_text) {
-    // LegacyFontHost will get LCD text and skia figures out what type to use.
-    surface_props =
-        SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
-  }
-
-  SkColorType sk_color_type = static_cast<SkColorType>(color_type);
-  // If we can't match requested MSAA samples, don't use MSAA.
-  int final_msaa_count = std::max(static_cast<int>(msaa_sample_count), 0);
-  if (final_msaa_count >
-      gr_context_->maxSurfaceSampleCountForColorType(sk_color_type))
-    final_msaa_count = 0;
-  sk_surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
-      gr_context_.get(), gr_texture, kTopLeft_GrSurfaceOrigin, final_msaa_count,
-      sk_color_type, nullptr, &surface_props);
-
-  if (!sk_surface_) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
-                       "failed to create surface");
-    return;
-  }
-
-  TransferCacheDeserializeHelperImpl transfer_cache_deserializer(
-      transfer_cache_.get());
-  auto* color_space_entry =
-      transfer_cache_deserializer
-          .GetEntryAs<cc::ServiceColorSpaceTransferCacheEntry>(
-              color_space_transfer_cache_id);
-  if (!color_space_entry || !color_space_entry->color_space().IsValid()) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
-                       "failed to find valid color space");
-    return;
-  }
-  raster_canvas_ = SkCreateColorSpaceXformCanvas(
-      sk_surface_->getCanvas(),
-      color_space_entry->color_space().ToSkColorSpace());
-
-  // All or nothing clearing, as no way to validate the client's input on what
-  // is the "used" part of the texture.
-  if (texture->IsLevelCleared(texture->target(), 0))
-    return;
-
-  // TODO(enne): this doesn't handle the case where the background color
-  // changes and so any extra pixels outside the raster area that get
-  // sampled may be incorrect.
-  raster_canvas_->drawColor(sk_color);
-  texture_manager()->SetLevelCleared(texture_ref, texture->target(), 0, true);
-}
 
 scoped_refptr<gpu::Buffer> GLES2DecoderImpl::GetShmBuffer(uint32_t shm_id) {
   return GetSharedMemoryBuffer(shm_id);
-}
-
-void GLES2DecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
-                                        GLuint raster_shm_offset,
-                                        GLsizeiptr raster_shm_size,
-                                        GLuint font_shm_id,
-                                        GLuint font_shm_offset,
-                                        GLsizeiptr font_shm_size) {
-  TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoRasterCHROMIUM");
-
-  if (!sk_surface_) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glRasterCHROMIUM",
-                       "RasterCHROMIUM without BeginRasterCHROMIUM");
-    return;
-  }
-  DCHECK(transfer_cache_);
-
-  std::vector<SkDiscardableHandleId> locked_handles;
-  if (font_shm_size > 0) {
-    // Deserialize fonts before raster.
-    volatile char* font_buffer_memory =
-        GetSharedMemoryAs<char*>(font_shm_id, font_shm_offset, font_shm_size);
-    if (!font_buffer_memory) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glRasterCHROMIUM",
-                         "Can not read font buffer.");
-      return;
-    }
-
-    if (!font_manager_.Deserialize(font_buffer_memory, font_shm_size,
-                                   &locked_handles)) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glRasterCHROMIUM",
-                         "Invalid font buffer.");
-      return;
-    }
-  }
-
-  char* paint_buffer_memory = GetSharedMemoryAs<char*>(
-      raster_shm_id, raster_shm_offset, raster_shm_size);
-  if (!paint_buffer_memory) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glRasterCHROMIUM",
-                       "Can not read paint buffer.");
-    return;
-  }
-
-  alignas(
-      cc::PaintOpBuffer::PaintOpAlign) char data[sizeof(cc::LargestPaintOp)];
-
-  SkCanvas* canvas = raster_canvas_.get();
-  SkMatrix original_ctm;
-  cc::PlaybackParams playback_params(nullptr, original_ctm);
-  cc::PaintOp::DeserializeOptions options;
-  TransferCacheDeserializeHelperImpl impl(transfer_cache_.get());
-  options.transfer_cache = &impl;
-  options.strike_client = font_manager_.strike_client();
-
-  int op_idx = 0;
-  size_t paint_buffer_size = raster_shm_size;
-  while (paint_buffer_size > 4) {
-    size_t skip = 0;
-    cc::PaintOp* deserialized_op = cc::PaintOp::Deserialize(
-        paint_buffer_memory, paint_buffer_size, &data[0],
-        sizeof(cc::LargestPaintOp), &skip, options);
-    if (!deserialized_op) {
-      std::string msg =
-          base::StringPrintf("RasterCHROMIUM: bad op: %i", op_idx);
-      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glRasterCHROMIUM", msg.c_str());
-      return;
-    }
-
-    deserialized_op->Raster(canvas, playback_params);
-    deserialized_op->DestroyThis();
-
-    paint_buffer_size -= skip;
-    paint_buffer_memory += skip;
-    op_idx++;
-  }
-
-  // Unlock all font handles.
-  // TODO(khushalsagar): We just unlocked a bunch of handles, do we need to give
-  // a call to skia to attempt to purge any unlocked handles?
-  if (!font_manager_.Unlock(locked_handles)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glRasterCHROMIUM",
-                       "Invalid font discardable handle.");
-  }
-}
-
-void GLES2DecoderImpl::DoEndRasterCHROMIUM() {
-  if (!sk_surface_) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
-                       "EndRasterCHROMIUM without BeginRasterCHROMIUM");
-    return;
-  }
-
-  raster_canvas_ = nullptr;
-  sk_surface_->prepareForExternalIO();
-  sk_surface_.reset();
-
-  // It is important to reset state after each RasterCHROMIUM since skia can
-  // change the GL state which can invalidate the tracking done in this
-  // decoder.
-  RestoreState(nullptr);
 }
 
 void GLES2DecoderImpl::DoWindowRectanglesEXT(GLenum mode,
@@ -20476,109 +20093,6 @@ void GLES2DecoderImpl::DoWindowRectanglesEXT(GLenum mode,
   }
   state_.SetWindowRectangles(mode, n, box_copy.data());
   state_.UpdateWindowRectangles();
-}
-
-void GLES2DecoderImpl::DoCreateTransferCacheEntryINTERNAL(
-    GLuint raw_entry_type,
-    GLuint entry_id,
-    GLuint handle_shm_id,
-    GLuint handle_shm_offset,
-    GLuint data_shm_id,
-    GLuint data_shm_offset,
-    GLuint data_size) {
-  if (!supports_oop_raster_) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
-        "Attempt to use OOP transfer cache on a context without OOP raster.");
-    return;
-  }
-  DCHECK(gr_context_);
-  DCHECK(transfer_cache_);
-
-  // Validate the type we are about to create.
-  cc::TransferCacheEntryType entry_type;
-  if (!cc::ServiceTransferCacheEntry::SafeConvertToType(raw_entry_type,
-                                                        &entry_type)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
-        "Attempt to use OOP transfer cache with an invalid cache entry type.");
-    return;
-  }
-
-  uint8_t* data_memory =
-      GetSharedMemoryAs<uint8_t*>(data_shm_id, data_shm_offset, data_size);
-  if (!data_memory) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
-                       "Can not read transfer cache entry data.");
-    return;
-  }
-
-  scoped_refptr<gpu::Buffer> handle_buffer =
-      GetSharedMemoryBuffer(handle_shm_id);
-  if (!DiscardableHandleBase::ValidateParameters(handle_buffer.get(),
-                                                 handle_shm_offset)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
-                       "Invalid shm for discardable handle.");
-    return;
-  }
-  ServiceDiscardableHandle handle(std::move(handle_buffer), handle_shm_offset,
-                                  handle_shm_id);
-
-  if (!transfer_cache_->CreateLockedEntry(
-          entry_type, entry_id, handle, gr_context_.get(),
-          base::make_span(data_memory, data_size))) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
-                       "Failure to deserialize transfer cache entry.");
-    return;
-  }
-}
-
-void GLES2DecoderImpl::DoUnlockTransferCacheEntryINTERNAL(GLuint raw_entry_type,
-                                                          GLuint entry_id) {
-  if (!supports_oop_raster_) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glUnlockTransferCacheEntryINTERNAL",
-        "Attempt to use OOP transfer cache on a context without OOP raster.");
-    return;
-  }
-  DCHECK(transfer_cache_);
-  cc::TransferCacheEntryType entry_type;
-  if (!cc::ServiceTransferCacheEntry::SafeConvertToType(raw_entry_type,
-                                                        &entry_type)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glUnlockTransferCacheEntryINTERNAL",
-        "Attempt to use OOP transfer cache with an invalid cache entry type.");
-    return;
-  }
-
-  if (!transfer_cache_->UnlockEntry(entry_type, entry_id)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUnlockTransferCacheEntryINTERNAL",
-                       "Attempt to unlock an invalid ID");
-  }
-}
-
-void GLES2DecoderImpl::DoDeleteTransferCacheEntryINTERNAL(GLuint raw_entry_type,
-                                                          GLuint entry_id) {
-  if (!supports_oop_raster_) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glDeleteTransferCacheEntryINTERNAL",
-        "Attempt to use OOP transfer cache on a context without OOP raster.");
-    return;
-  }
-  DCHECK(transfer_cache_);
-  cc::TransferCacheEntryType entry_type;
-  if (!cc::ServiceTransferCacheEntry::SafeConvertToType(raw_entry_type,
-                                                        &entry_type)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glDeleteTransferCacheEntryINTERNAL",
-        "Attempt to use OOP transfer cache with an invalid cache entry type.");
-    return;
-  }
-
-  if (!transfer_cache_->DeleteEntry(entry_type, entry_id)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glDeleteTransferCacheEntryINTERNAL",
-                       "Attempt to delete an invalid ID");
-  }
 }
 
 void GLES2DecoderImpl::DoUnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,

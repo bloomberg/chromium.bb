@@ -1770,29 +1770,6 @@ void GL_APIENTRY GLES2UnlockDiscardableTextureCHROMIUM(GLuint texture_id) {
 bool GL_APIENTRY GLES2LockDiscardableTextureCHROMIUM(GLuint texture_id) {
   return gles2::GetGLContext()->LockDiscardableTextureCHROMIUM(texture_id);
 }
-void GL_APIENTRY
-GLES2BeginRasterCHROMIUM(GLuint texture_id,
-                         GLuint sk_color,
-                         GLuint msaa_sample_count,
-                         GLboolean can_use_lcd_text,
-                         GLint color_type,
-                         GLuint color_space_transfer_cache_id) {
-  gles2::GetGLContext()->BeginRasterCHROMIUM(
-      texture_id, sk_color, msaa_sample_count, can_use_lcd_text, color_type,
-      color_space_transfer_cache_id);
-}
-void* GL_APIENTRY GLES2MapRasterCHROMIUM(GLsizeiptr size) {
-  return gles2::GetGLContext()->MapRasterCHROMIUM(size);
-}
-void* GL_APIENTRY GLES2MapFontBufferCHROMIUM(GLsizeiptr size) {
-  return gles2::GetGLContext()->MapFontBufferCHROMIUM(size);
-}
-void GL_APIENTRY GLES2UnmapRasterCHROMIUM(GLsizeiptr written_size) {
-  gles2::GetGLContext()->UnmapRasterCHROMIUM(written_size);
-}
-void GL_APIENTRY GLES2EndRasterCHROMIUM() {
-  gles2::GetGLContext()->EndRasterCHROMIUM();
-}
 void GL_APIENTRY GLES2TexStorage2DImageCHROMIUM(GLenum target,
                                                 GLenum internalFormat,
                                                 GLenum bufferUsage,
@@ -3149,26 +3126,6 @@ extern const NameToFunc g_gles2_function_table[] = {
         "glLockDiscardableTextureCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(
             glLockDiscardableTextureCHROMIUM),
-    },
-    {
-        "glBeginRasterCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glBeginRasterCHROMIUM),
-    },
-    {
-        "glMapRasterCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glMapRasterCHROMIUM),
-    },
-    {
-        "glMapFontBufferCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glMapFontBufferCHROMIUM),
-    },
-    {
-        "glUnmapRasterCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glUnmapRasterCHROMIUM),
-    },
-    {
-        "glEndRasterCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glEndRasterCHROMIUM),
     },
     {
         "glTexStorage2DImageCHROMIUM",

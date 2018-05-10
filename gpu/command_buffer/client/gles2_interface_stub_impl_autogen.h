@@ -1206,21 +1206,6 @@ bool GLES2InterfaceStub::LockDiscardableTextureCHROMIUM(
     GLuint /* texture_id */) {
   return 0;
 }
-void GLES2InterfaceStub::BeginRasterCHROMIUM(
-    GLuint /* texture_id */,
-    GLuint /* sk_color */,
-    GLuint /* msaa_sample_count */,
-    GLboolean /* can_use_lcd_text */,
-    GLint /* color_type */,
-    GLuint /* color_space_transfer_cache_id */) {}
-void* GLES2InterfaceStub::MapRasterCHROMIUM(GLsizeiptr /* size */) {
-  return 0;
-}
-void* GLES2InterfaceStub::MapFontBufferCHROMIUM(GLsizeiptr /* size */) {
-  return 0;
-}
-void GLES2InterfaceStub::UnmapRasterCHROMIUM(GLsizeiptr /* written_size */) {}
-void GLES2InterfaceStub::EndRasterCHROMIUM() {}
 void GLES2InterfaceStub::TexStorage2DImageCHROMIUM(GLenum /* target */,
                                                    GLenum /* internalFormat */,
                                                    GLenum /* bufferUsage */,

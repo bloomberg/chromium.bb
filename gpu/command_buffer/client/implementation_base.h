@@ -42,8 +42,7 @@ struct SharedMemoryLimits;
 class GLES2_IMPL_EXPORT ImplementationBase
     : public base::trace_event::MemoryDumpProvider,
       public ContextSupport,
-      public GpuControlClient,
-      public ClientTransferCache::Client {
+      public GpuControlClient {
  public:
   // The maximum result size from simple GL get commands.
   static const size_t kMaxSizeOfSimpleResult =
@@ -84,13 +83,6 @@ class GLES2_IMPL_EXPORT ImplementationBase
   void GetGpuFence(uint32_t gpu_fence_id,
                    base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)>
                        callback) override;
-  void* MapTransferCacheEntry(size_t serialized_size) override;
-  void UnmapAndCreateTransferCacheEntry(uint32_t type, uint32_t id) override;
-  bool ThreadsafeLockTransferCacheEntry(uint32_t type, uint32_t id) override;
-  void UnlockTransferCacheEntries(
-      const std::vector<std::pair<uint32_t, uint32_t>>& entries) override;
-  void DeleteTransferCacheEntry(uint32_t type, uint32_t id) override;
-  unsigned int GetTransferBufferFreeSize() const override;
   void SetGrContext(GrContext* gr) override;
   bool HasGrContextSupport() const override;
   void WillCallGLFromSkia() override;
@@ -158,8 +150,6 @@ class GLES2_IMPL_EXPORT ImplementationBase
   virtual void IssueShallowFlush() = 0;
 
   CommandBufferHelper* helper_;
-
-  ClientTransferCache transfer_cache_;
 
   base::WeakPtrFactory<ImplementationBase> weak_ptr_factory_;
 

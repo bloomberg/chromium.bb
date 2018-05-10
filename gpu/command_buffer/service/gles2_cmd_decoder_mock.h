@@ -100,7 +100,6 @@ class MockGLES2Decoder : public GLES2Decoder {
       GetTransformFeedbackManager, gpu::gles2::TransformFeedbackManager*());
   MOCK_METHOD0(GetVertexArrayManager, gpu::gles2::VertexArrayManager*());
   MOCK_METHOD0(GetImageManagerForTest, gpu::gles2::ImageManager*());
-  MOCK_METHOD0(GetTransferCacheForTest, gpu::ServiceTransferCache*());
   MOCK_METHOD1(
       SetResizeCallback, void(const base::Callback<void(gfx::Size, float)>&));
   MOCK_METHOD1(SetIgnoreCachedStateForTest, void(bool ignore));

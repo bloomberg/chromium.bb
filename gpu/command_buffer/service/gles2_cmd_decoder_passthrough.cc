@@ -4,6 +4,9 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 
+#include <string>
+#include <utility>
+
 #include "base/callback.h"
 #include "base/strings/string_split.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -43,7 +46,7 @@ bool GetClientID(const ClientServiceMap<ClientType, ServiceType>* map,
   }
   *result = static_cast<ResultType>(client_id);
   return true;
-};
+}
 
 void ResizeRenderbuffer(gl::GLApi* api,
                         GLuint renderbuffer,
@@ -1226,7 +1229,6 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
 }
 
 void GLES2DecoderPassthroughImpl::RestoreState(const ContextState* prev_state) {
-
 }
 
 void GLES2DecoderPassthroughImpl::RestoreActiveTexture() const {}
@@ -1268,7 +1270,6 @@ void GLES2DecoderPassthroughImpl::RestoreAllAttributes() const {}
 void GLES2DecoderPassthroughImpl::SetIgnoreCachedStateForTest(bool ignore) {}
 
 void GLES2DecoderPassthroughImpl::SetForceShaderNameHashingForTest(bool force) {
-
 }
 
 size_t GLES2DecoderPassthroughImpl::GetSavedBackTextureCountForTest() {
@@ -1305,10 +1306,6 @@ GLES2DecoderPassthroughImpl::GetVertexArrayManager() {
 gpu::gles2::ImageManager*
 GLES2DecoderPassthroughImpl::GetImageManagerForTest() {
   return group_->image_manager();
-}
-
-ServiceTransferCache* GLES2DecoderPassthroughImpl::GetTransferCacheForTest() {
-  return nullptr;
 }
 
 bool GLES2DecoderPassthroughImpl::HasPendingQueries() const {
@@ -1633,8 +1630,8 @@ error::Error GLES2DecoderPassthroughImpl::PatchGetBufferResults(GLenum target,
   }
 
   // Buffer is mapped, patch the result with the original access flags
-  DCHECK(bufsize >= 1);
-  DCHECK(*length == 1);
+  DCHECK_GE(bufsize, 1);
+  DCHECK_EQ(*length, 1);
   params[0] = mapped_buffer_info_iter->second.original_access;
   return error::kNoError;
 }

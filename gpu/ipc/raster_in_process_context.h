@@ -20,12 +20,9 @@ class TransferBuffer;
 struct GpuFeatureInfo;
 struct SharedMemoryLimits;
 
-namespace gles2 {
-class GLES2Implementation;
-}
-
 namespace raster {
 class RasterInterface;
+class RasterImplementation;
 }  // namespace raster
 
 // Runs client and server side command buffer code in process. Only supports
@@ -62,12 +59,7 @@ class RasterInProcessContext {
  private:
   std::unique_ptr<CommandBufferHelper> helper_;
   std::unique_ptr<TransferBuffer> transfer_buffer_;
-  std::unique_ptr<raster::RasterInterface> raster_implementation_;
-
-  // TODO(backer): Nix this once RasterDecoder launches.
-  // Only created if attribs.enable_gles2_interface.
-  std::unique_ptr<gles2::GLES2Implementation> gles2_implementation_;
-
+  std::unique_ptr<raster::RasterImplementation> raster_implementation_;
   std::unique_ptr<InProcessCommandBuffer> command_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterInProcessContext);

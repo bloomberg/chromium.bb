@@ -947,6 +947,9 @@ void RasterDecoderImpl::Destroy(bool have_context) {
     if (group_ && group_->texture_manager()) {
       group_->texture_manager()->MarkContextLost();
     }
+    if (gr_context_) {
+      gr_context_->abandonContext();
+    }
     state_.MarkContextLost();
   }
 

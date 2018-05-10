@@ -7,6 +7,12 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_PASSTHROUGH_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_PASSTHROUGH_H_
 
+#include <algorithm>
+#include <memory>
+#include <set>
+#include <unordered_map>
+#include <vector>
+
 #include "base/containers/circular_deque.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
@@ -215,8 +221,6 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   // Gets the ImageManager for this context.
   ImageManager* GetImageManagerForTest() override;
-
-  ServiceTransferCache* GetTransferCacheForTest() override;
 
   // Returns false if there are no pending queries.
   bool HasPendingQueries() const override;

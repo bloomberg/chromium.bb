@@ -4,6 +4,8 @@
 
 #include "gpu/skia_bindings/gles2_implementation_with_grcontext_support.h"
 
+#include <utility>
+
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -52,13 +54,6 @@ void GLES2ImplementationWithGrContextSupport::WillCallGLFromSkia() {
 
 void GLES2ImplementationWithGrContextSupport::DidCallGLFromSkia() {
   using_gl_from_skia_ = false;
-}
-
-void GLES2ImplementationWithGrContextSupport::EndRasterCHROMIUM() {
-  BaseClass::EndRasterCHROMIUM();
-  // Assume that invoking the GLES2-backed version of the raster interface
-  // invalidates everything.
-  ResetGrContextIfNeeded(kALL_GrGLBackendState);
 }
 
 // Calls that invalidate kRenderTarget_GrGLBackendState

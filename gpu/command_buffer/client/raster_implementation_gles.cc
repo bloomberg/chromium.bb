@@ -20,7 +20,6 @@
 #include "cc/paint/transfer_cache_serialize_helper.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
-#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
@@ -29,117 +28,6 @@
 
 namespace gpu {
 namespace raster {
-
-namespace {
-
-class TransferCacheSerializeHelperImpl
-    : public cc::TransferCacheSerializeHelper {
- public:
-  TransferCacheSerializeHelperImpl(ContextSupport* support)
-      : support_(support) {}
-  ~TransferCacheSerializeHelperImpl() final = default;
-
- private:
-  bool LockEntryInternal(const EntryKey& key) final {
-    return support_->ThreadsafeLockTransferCacheEntry(
-        static_cast<uint32_t>(key.first), key.second);
-  }
-
-  void CreateEntryInternal(const cc::ClientTransferCacheEntry& entry) final {
-    size_t size = entry.SerializedSize();
-    void* data = support_->MapTransferCacheEntry(size);
-    // TODO(piman): handle error (failed to allocate/map shm)
-    DCHECK(data);
-    bool succeeded = entry.Serialize(
-        base::make_span(reinterpret_cast<uint8_t*>(data), size));
-    DCHECK(succeeded);
-    support_->UnmapAndCreateTransferCacheEntry(entry.UnsafeType(), entry.Id());
-  }
-
-  void FlushEntriesInternal(std::set<EntryKey> entries) final {
-    std::vector<std::pair<uint32_t, uint32_t>> transformed;
-    transformed.reserve(entries.size());
-    for (const auto& e : entries)
-      transformed.emplace_back(static_cast<uint32_t>(e.first), e.second);
-    support_->UnlockTransferCacheEntries(transformed);
-  }
-
-  ContextSupport* support_;
-};
-
-struct PaintOpSerializer {
- public:
-  PaintOpSerializer(size_t initial_size,
-                    gles2::GLES2Interface* gl,
-                    cc::DecodeStashingImageProvider* stashing_image_provider,
-                    cc::TransferCacheSerializeHelper* transfer_cache_helper,
-                    ClientFontManager* font_manager)
-      : gl_(gl),
-        buffer_(static_cast<char*>(gl_->MapRasterCHROMIUM(initial_size))),
-        stashing_image_provider_(stashing_image_provider),
-        transfer_cache_helper_(transfer_cache_helper),
-        font_manager_(font_manager),
-        free_bytes_(buffer_ ? initial_size : 0) {}
-
-  ~PaintOpSerializer() {
-    // Need to call SendSerializedData;
-    DCHECK(!written_bytes_);
-  }
-
-  size_t Serialize(const cc::PaintOp* op,
-                   const cc::PaintOp::SerializeOptions& options) {
-    if (!valid())
-      return 0;
-    size_t size = op->Serialize(buffer_ + written_bytes_, free_bytes_, options);
-    if (!size) {
-      SendSerializedData();
-      buffer_ = static_cast<char*>(gl_->MapRasterCHROMIUM(kBlockAlloc));
-      if (!buffer_) {
-        free_bytes_ = 0;
-        return 0;
-      }
-      free_bytes_ = kBlockAlloc;
-      size = op->Serialize(buffer_ + written_bytes_, free_bytes_, options);
-    }
-    DCHECK_LE(size, free_bytes_);
-
-    written_bytes_ += size;
-    free_bytes_ -= size;
-    return size;
-  }
-
-  void SendSerializedData() {
-    if (!valid())
-      return;
-
-    // Serialize fonts before sending raster commands.
-    font_manager_->Serialize();
-    gl_->UnmapRasterCHROMIUM(written_bytes_);
-
-    // Now that we've issued the RasterCHROMIUM referencing the stashed
-    // images, Reset the |stashing_image_provider_|, causing us to issue
-    // unlock commands for these images.
-    stashing_image_provider_->Reset();
-    transfer_cache_helper_->FlushEntries();
-    written_bytes_ = 0;
-  }
-
-  bool valid() const { return !!buffer_; }
-
- private:
-  static constexpr unsigned int kBlockAlloc = 512 * 1024;
-
-  gles2::GLES2Interface* gl_;
-  char* buffer_;
-  cc::DecodeStashingImageProvider* stashing_image_provider_;
-  cc::TransferCacheSerializeHelper* transfer_cache_helper_;
-  ClientFontManager* font_manager_;
-
-  size_t written_bytes_ = 0;
-  size_t free_bytes_ = 0;
-};
-
-}  // anonymous namespace
 
 static GLenum GetImageTextureTarget(const gpu::Capabilities& caps,
                                     gfx::BufferUsage usage,
@@ -158,16 +46,6 @@ RasterImplementationGLES::Texture::Texture(GLuint id,
       use_buffer(use_buffer),
       buffer_usage(buffer_usage),
       format(format) {}
-
-RasterImplementationGLES::RasterProperties::RasterProperties(
-    SkColor background_color,
-    bool can_use_lcd_text,
-    sk_sp<SkColorSpace> color_space)
-    : background_color(background_color),
-      can_use_lcd_text(can_use_lcd_text),
-      color_space(std::move(color_space)) {}
-
-RasterImplementationGLES::RasterProperties::~RasterProperties() = default;
 
 RasterImplementationGLES::Texture* RasterImplementationGLES::GetTexture(
     GLuint texture_id) {
@@ -188,15 +66,12 @@ RasterImplementationGLES::Texture* RasterImplementationGLES::EnsureTextureBound(
 
 RasterImplementationGLES::RasterImplementationGLES(
     gles2::GLES2Interface* gl,
-    ContextSupport* support,
     CommandBuffer* command_buffer,
     const gpu::Capabilities& caps)
     : gl_(gl),
-      support_(support),
       caps_(caps),
       use_texture_storage_(caps.texture_storage),
-      use_texture_storage_image_(caps.texture_storage_image),
-      font_manager_(this, command_buffer) {}
+      use_texture_storage_image_(caps.texture_storage_image) {}
 
 RasterImplementationGLES::~RasterImplementationGLES() {}
 
@@ -439,27 +314,7 @@ void RasterImplementationGLES::BeginRasterCHROMIUM(
     GLboolean can_use_lcd_text,
     GLint color_type,
     const cc::RasterColorSpace& raster_color_space) {
-  DCHECK(!raster_properties_);
-
-  TransferCacheSerializeHelperImpl transfer_cache_serialize_helper(support_);
-  if (!transfer_cache_serialize_helper.LockEntry(
-          cc::TransferCacheEntryType::kColorSpace,
-          raster_color_space.color_space_id)) {
-    transfer_cache_serialize_helper.CreateEntry(
-        cc::ClientColorSpaceTransferCacheEntry(raster_color_space));
-  }
-  transfer_cache_serialize_helper.AssertLocked(
-      cc::TransferCacheEntryType::kColorSpace,
-      raster_color_space.color_space_id);
-
-  Texture* texture = GetTexture(texture_id);
-  gl_->BeginRasterCHROMIUM(texture->id, sk_color, msaa_sample_count,
-                           can_use_lcd_text, color_type,
-                           raster_color_space.color_space_id);
-  transfer_cache_serialize_helper.FlushEntries();
-
-  raster_properties_.emplace(sk_color, can_use_lcd_text,
-                             raster_color_space.color_space.ToSkColorSpace());
+  NOTREACHED();
 }
 
 void RasterImplementationGLES::RasterCHROMIUM(
@@ -471,58 +326,11 @@ void RasterImplementationGLES::RasterCHROMIUM(
     const gfx::Vector2dF& post_translate,
     GLfloat post_scale,
     bool requires_clear) {
-  if (std::abs(post_scale) < std::numeric_limits<float>::epsilon())
-    return;
-
-  gfx::Rect query_rect =
-      gfx::ScaleToEnclosingRect(playback_rect, 1.f / post_scale);
-  std::vector<size_t> offsets = list->rtree_.Search(query_rect);
-  if (offsets.empty())
-    return;
-
-  // TODO(enne): tune these numbers
-  // TODO(enne): convert these types here and in transfer buffer to be size_t.
-  static constexpr unsigned int kMinAlloc = 16 * 1024;
-  unsigned int free_size =
-      std::max(support_->GetTransferBufferFreeSize(), kMinAlloc);
-
-  // This section duplicates RasterSource::PlaybackToCanvas setup preamble.
-  cc::PaintOpBufferSerializer::Preamble preamble;
-  preamble.content_size = content_size;
-  preamble.full_raster_rect = full_raster_rect;
-  preamble.playback_rect = playback_rect;
-  preamble.post_translation = post_translate;
-  preamble.post_scale = gfx::SizeF(post_scale, post_scale);
-  preamble.requires_clear = requires_clear;
-  preamble.background_color = raster_properties_->background_color;
-
-  // Wrap the provided provider in a stashing provider so that we can delay
-  // unrefing images until we have serialized dependent commands.
-  cc::DecodeStashingImageProvider stashing_image_provider(provider);
-
-  // TODO(enne): don't access private members of DisplayItemList.
-  TransferCacheSerializeHelperImpl transfer_cache_serialize_helper(support_);
-  PaintOpSerializer op_serializer(free_size, gl_, &stashing_image_provider,
-                                  &transfer_cache_serialize_helper,
-                                  &font_manager_);
-
-  cc::PaintOpBufferSerializer::SerializeCallback serialize_cb =
-      base::BindRepeating(&PaintOpSerializer::Serialize,
-                          base::Unretained(&op_serializer));
-  cc::PaintOpBufferSerializer serializer(
-      serialize_cb, &stashing_image_provider, &transfer_cache_serialize_helper,
-      font_manager_.strike_server(), raster_properties_->color_space.get(),
-      raster_properties_->can_use_lcd_text);
-  serializer.Serialize(&list->paint_op_buffer_, &offsets, preamble);
-  // TODO(piman): raise error if !serializer.valid()?
-  op_serializer.SendSerializedData();
+  NOTREACHED();
 }
 
 void RasterImplementationGLES::EndRasterCHROMIUM() {
-  DCHECK(raster_properties_);
-
-  gl_->EndRasterCHROMIUM();
-  raster_properties_.reset();
+  NOTREACHED();
 }
 
 void RasterImplementationGLES::BeginGpuRaster() {
@@ -542,10 +350,6 @@ void RasterImplementationGLES::EndGpuRaster() {
   // Reset cached raster state.
   bound_texture_ = nullptr;
   gl_->ActiveTexture(GL_TEXTURE0);
-}
-
-void* RasterImplementationGLES::MapFontBuffer(size_t size) {
-  return gl_->MapFontBufferCHROMIUM(size);
 }
 
 }  // namespace raster

@@ -37,10 +37,7 @@ class TestInProcessContextProvider
       public viz::ContextProvider,
       public viz::RasterContextProvider {
  public:
-  // TODO(backer): Once we only support OOP-R on Raster{Implementation,Decoder},
-  // fold these two options into one.
-  TestInProcessContextProvider(bool enable_oop_rasterization,
-                               bool support_gles2_interface);
+  explicit TestInProcessContextProvider(bool enable_oop_rasterization);
 
   // viz::ContextProvider / viz::RasterContextProvider implementation.
   void AddRef() const override;

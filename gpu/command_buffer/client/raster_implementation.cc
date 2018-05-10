@@ -227,7 +227,8 @@ RasterImplementation::RasterImplementation(
       current_trace_stack_(0),
       aggressively_free_resources_(false),
       font_manager_(this, helper->command_buffer()),
-      lost_(false) {
+      lost_(false),
+      transfer_cache_(this) {
   DCHECK(helper);
   DCHECK(transfer_buffer);
   DCHECK(gpu_control);
@@ -390,6 +391,34 @@ bool RasterImplementation::ThreadsafeDiscardableTextureIsDeletedForTracing(
     uint32_t texture_id) {
   NOTREACHED();
   return false;
+}
+
+void* RasterImplementation::MapTransferCacheEntry(size_t serialized_size) {
+  return transfer_cache_.MapEntry(mapped_memory_.get(), serialized_size);
+}
+
+void RasterImplementation::UnmapAndCreateTransferCacheEntry(uint32_t type,
+                                                            uint32_t id) {
+  transfer_cache_.UnmapAndCreateEntry(type, id);
+}
+
+bool RasterImplementation::ThreadsafeLockTransferCacheEntry(uint32_t type,
+                                                            uint32_t id) {
+  return transfer_cache_.LockEntry(type, id);
+}
+
+void RasterImplementation::UnlockTransferCacheEntries(
+    const std::vector<std::pair<uint32_t, uint32_t>>& entries) {
+  transfer_cache_.UnlockEntries(entries);
+}
+
+void RasterImplementation::DeleteTransferCacheEntry(uint32_t type,
+                                                    uint32_t id) {
+  transfer_cache_.DeleteEntry(type, id);
+}
+
+unsigned int RasterImplementation::GetTransferBufferFreeSize() const {
+  return transfer_buffer_->GetFreeSize();
 }
 
 const std::string& RasterImplementation::GetLogPrefix() const {

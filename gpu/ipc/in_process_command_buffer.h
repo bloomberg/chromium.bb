@@ -209,9 +209,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   static void InitializeDefaultServiceForTesting(
       const GpuFeatureInfo& gpu_feature_info);
 
-  gpu::ServiceTransferCache* GetTransferCacheForTest() const {
-    return decoder_->GetTransferCacheForTest();
-  }
+  gpu::ServiceTransferCache* GetTransferCacheForTest() const;
 
   static const int kGpuMemoryBufferClientId;
 

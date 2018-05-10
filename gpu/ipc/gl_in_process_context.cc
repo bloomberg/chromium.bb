@@ -64,7 +64,6 @@ class GLInProcessContextImpl
   void SetPresentationCallback(
       const InProcessCommandBuffer::PresentationCallback& callback) override;
   void SetLock(base::Lock* lock) override;
-  ServiceTransferCache* GetTransferCacheForTest() const override;
 
  private:
   std::unique_ptr<gles2::GLES2CmdHelper> gles2_helper_;
@@ -118,10 +117,6 @@ void GLInProcessContextImpl::SetPresentationCallback(
 
 void GLInProcessContextImpl::SetLock(base::Lock* lock) {
   NOTREACHED();
-}
-
-ServiceTransferCache* GLInProcessContextImpl::GetTransferCacheForTest() const {
-  return command_buffer_->GetTransferCacheForTest();
 }
 
 ContextResult GLInProcessContextImpl::Initialize(
