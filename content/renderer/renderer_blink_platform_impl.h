@@ -75,7 +75,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
     plugin_refresh_allowed_ = plugin_refresh_allowed;
   }
   // Platform methods:
-  blink::WebClipboard* Clipboard() override;
   blink::WebSandboxSupport* GetSandboxSupport() override;
   blink::WebCookieJar* CookieJar() override;
   blink::WebThemeEngine* ThemeEngine() override;

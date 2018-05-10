@@ -33,7 +33,6 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_clipboard.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
@@ -59,6 +58,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
+#include "third_party/blink/renderer/core/clipboard/pasteboard.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/events/drag_event.h"
@@ -396,7 +396,7 @@ void WebPluginContainerImpl::Copy() {
   if (!web_plugin_->HasSelection())
     return;
 
-  Platform::Current()->Clipboard()->WriteHTML(
+  Pasteboard::GeneralPasteboard()->Clipboard()->WriteHTML(
       web_plugin_->SelectionAsMarkup(), WebURL(),
       web_plugin_->SelectionAsText(), false);
 }

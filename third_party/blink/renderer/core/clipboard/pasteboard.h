@@ -27,8 +27,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_PASTEBOARD_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_clipboard.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/exported/web_clipboard_impl.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -71,9 +71,13 @@ class CORE_EXPORT Pasteboard {
 
   mojom::ClipboardBuffer GetBuffer() const { return buffer_; }
 
+  // TODO(dgozman): merge Pasteboard and WebClipboardImpl.
+  WebClipboardImpl* Clipboard() { return &clipboard_; }
+
  private:
   Pasteboard();
 
+  WebClipboardImpl clipboard_;
   mojom::ClipboardBuffer buffer_;
   DISALLOW_COPY_AND_ASSIGN(Pasteboard);
 };

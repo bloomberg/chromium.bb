@@ -25,7 +25,6 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
 
   // BlinkPlatformImpl methods:
   blink::WebThread* CurrentThread() override;
-  blink::WebClipboard* Clipboard() override;
   blink::WebSandboxSupport* GetSandboxSupport() override;
   virtual bool sandboxEnabled();
   unsigned long long VisitedLinkHash(const char* canonicalURL,

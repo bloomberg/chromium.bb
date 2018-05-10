@@ -77,7 +77,6 @@ class TestingPlatformSupport : public Platform {
   WebCompositorSupport* CompositorSupport() override;
   WebThread* CurrentThread() override;
   WebBlobRegistry* GetBlobRegistry() override;
-  WebClipboard* Clipboard() override;
   WebIDBFactory* IdbFactory() override;
   WebURLLoaderMockFactory* GetURLLoaderMockFactory() override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateDefaultURLLoaderFactory()

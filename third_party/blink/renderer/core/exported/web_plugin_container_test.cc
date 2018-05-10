@@ -37,7 +37,6 @@
 #include "cc/layers/layer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_clipboard.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/public/platform/web_layer.h"
@@ -52,6 +51,7 @@
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "third_party/blink/renderer/core/clipboard/pasteboard.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/exported/fake_web_plugin.h"
@@ -250,12 +250,12 @@ WebString ReadClipboard() {
   // Run all tasks in a message loop to allow asynchronous clipboard writing
   // to happen before reading from it synchronously.
   test::RunPendingTasks();
-  return Platform::Current()->Clipboard()->ReadPlainText(
+  return Pasteboard::GeneralPasteboard()->Clipboard()->ReadPlainText(
       mojom::ClipboardBuffer::kStandard);
 }
 
 void ClearClipboardBuffer() {
-  Platform::Current()->Clipboard()->WritePlainText(WebString(""));
+  Pasteboard::GeneralPasteboard()->Clipboard()->WritePlainText(WebString(""));
   EXPECT_EQ(WebString(""), ReadClipboard());
 }
 

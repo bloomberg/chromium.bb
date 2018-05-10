@@ -399,11 +399,6 @@ blink::BlameContext* RendererBlinkPlatformImpl::GetTopLevelBlameContext() {
   return &top_level_blame_context_;
 }
 
-blink::WebClipboard* RendererBlinkPlatformImpl::Clipboard() {
-  // TODO(dgozman): remove the ability to override this from embedder.
-  return BlinkPlatformImpl::Clipboard();
-}
-
 blink::WebSandboxSupport* RendererBlinkPlatformImpl::GetSandboxSupport() {
 #if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_FUCHSIA)
   // These platforms do not require sandbox support.

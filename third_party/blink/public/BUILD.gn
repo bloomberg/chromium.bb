@@ -220,7 +220,6 @@ source_set("blink_headers") {
     "platform/web_canvas.h",
     "platform/web_canvas_capture_handler.h",
     "platform/web_client_hints_type.h",
-    "platform/web_clipboard.h",
     "platform/web_coalesced_input_event.h",
     "platform/web_common.h",
     "platform/web_compositor_support.h",
