@@ -192,6 +192,52 @@ static const SegmentCase segment_cases[] = {
     url::Component(), // query
     url::Component(), // ref
   },
+  {
+      "file://host/path/file#ref", "file", url::Component(0, 4),  // scheme
+      url::Component(),                                           // username
+      url::Component(),                                           // password
+      url::Component(7, 4),                                       // host
+      url::Component(),                                           // port
+      url::Component(11, 10),                                     // path
+      url::Component(),                                           // query
+      url::Component(22, 3),                                      // ref
+  },
+  {
+      "file:///notahost/path/file#ref", "file",
+      url::Component(0, 4),   // scheme
+      url::Component(),       // username
+      url::Component(),       // password
+      url::Component(),       // host
+      url::Component(),       // port
+      url::Component(7, 19),  // path
+      url::Component(),       // query
+      url::Component(27, 3),  // ref
+  },
+#if defined(OS_WIN)
+  {
+      "c:/notahost/path/file#ref", "file",
+      url::Component(),       // scheme
+      url::Component(),       // username
+      url::Component(),       // password
+      url::Component(),       // host
+      url::Component(),       // port
+      url::Component(0, 21),  // path
+      url::Component(),       // query
+      url::Component(22, 3),  // ref
+  },
+#elif defined(OS_POSIX)
+  {
+      "~/notahost/path/file#ref", "file",
+      url::Component(),       // scheme
+      url::Component(),       // username
+      url::Component(),       // password
+      url::Component(),       // host
+      url::Component(),       // port
+      url::Component(0, 20),  // path
+      url::Component(),       // query
+      url::Component(21, 3),  // ref
+  },
+#endif
 };
 
 typedef testing::Test URLFixerTest;
