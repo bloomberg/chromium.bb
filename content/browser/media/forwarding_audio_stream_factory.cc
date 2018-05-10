@@ -38,6 +38,8 @@ ForwardingAudioStreamFactory::~ForwardingAudioStreamFactory() {
 // static
 ForwardingAudioStreamFactory* ForwardingAudioStreamFactory::ForFrame(
     RenderFrameHost* frame) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   auto* contents =
       static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(frame));
   if (!contents)
@@ -94,19 +96,10 @@ void ForwardingAudioStreamFactory::FrameDeleted(
   CleanupStreamsBelongingTo(render_frame_host);
 }
 
-void ForwardingAudioStreamFactory::DidFinishNavigation(
-    NavigationHandle* navigation_handle) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!navigation_handle->IsSameDocument()) {
-    // Document of frame will be destroyed, don't keep any streams around.
-    CleanupStreamsBelongingTo(navigation_handle->GetRenderFrameHost());
-  }
-}
-
 void ForwardingAudioStreamFactory::WebContentsDestroyed() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(inputs_.empty());
   DCHECK(outputs_.empty());
+  DCHECK(inputs_.empty());
 }
 
 void ForwardingAudioStreamFactory::CleanupStreamsBelongingTo(
@@ -121,8 +114,8 @@ void ForwardingAudioStreamFactory::CleanupStreamsBelongingTo(
            broker->render_frame_id() == frame_id;
   };
 
-  base::EraseIf(inputs_, match_rfh);
   base::EraseIf(outputs_, match_rfh);
+  base::EraseIf(inputs_, match_rfh);
 
   ResetRemoteFactoryPtrIfIdle();
 }
@@ -166,8 +159,8 @@ void ForwardingAudioStreamFactory::ResetRemoteFactoryPtrIfIdle() {
 void ForwardingAudioStreamFactory::ResetRemoteFactoryPtr() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   remote_factory_.reset();
-  inputs_.clear();
-  outputs_.clear();
+  // The stream brokers will call a callback to be deleted soon, give them a
+  // chance to signal an error to the client first.
 }
 
 }  // namespace content

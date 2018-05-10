@@ -102,12 +102,11 @@ void AudioOutputStreamBroker::ObserverBindingLost(
     uint32_t reason,
     const std::string& description) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-  if (reason ==
-      media::mojom::AudioOutputStreamObserver::kPlatformErrorDisconnectReason) {
-    client_.ResetWithReason(media::mojom::AudioOutputStreamProviderClient::
-                                kPlatformErrorDisconnectReason,
-                            std::string());
-  }
+  // TODO(https://crbug.com/787806): Don't propagate errors if we can retry
+  // instead.
+  client_.ResetWithReason(media::mojom::AudioOutputStreamProviderClient::
+                              kPlatformErrorDisconnectReason,
+                          std::string());
 
   Cleanup();
 }
