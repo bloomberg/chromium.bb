@@ -189,6 +189,16 @@ class WebNotificationItem : public views::View, public gfx::AnimationDelegate {
  private:
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override {
+    // After HideAndDelete() has been called and |this| is responsible for
+    // deleting itself, but |tray_| has been deleted before the animation
+    // reached its end, |this| will be parentless. It's ok to stop the animation
+    // (deleting |this|). See https://crbug.com/841768
+    if (!parent()) {
+      DCHECK(delete_after_animation_);
+      animation_->Stop();
+      return;
+    }
+
     gfx::Transform transform;
     if (tray_->shelf()->IsHorizontalAlignment()) {
       transform.Translate(0, animation->CurrentValueBetween(
@@ -202,6 +212,7 @@ class WebNotificationItem : public views::View, public gfx::AnimationDelegate {
     layer()->SetTransform(transform);
     PreferredSizeChanged();
   }
+
   void AnimationEnded(const gfx::Animation* animation) override {
     if (animation->GetCurrentValue() < 0.1)
       views::View::SetVisible(false);
