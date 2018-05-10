@@ -816,14 +816,6 @@
              file="../../../third_party/polymer/v1_0/components-chromium/paper-tabs/paper-tabs.html"
              type="chrome_html"
              compress="gzip" />
-  <structure name="IDR_POLYMER_1_0_PAPER_TOGGLE_BUTTON_PAPER_TOGGLE_BUTTON_EXTRACTED_JS"
-             file="../../../third_party/polymer/v1_0/components-chromium/paper-toggle-button/paper-toggle-button-extracted.js"
-             type="chrome_html"
-             compress="gzip" />
-  <structure name="IDR_POLYMER_1_0_PAPER_TOGGLE_BUTTON_PAPER_TOGGLE_BUTTON_HTML"
-             file="../../../third_party/polymer/v1_0/components-chromium/paper-toggle-button/paper-toggle-button.html"
-             type="chrome_html"
-             compress="gzip" />
   <structure name="IDR_POLYMER_1_0_PAPER_TOOLTIP_PAPER_TOOLTIP_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-tooltip/paper-tooltip-extracted.js"
              type="chrome_html"

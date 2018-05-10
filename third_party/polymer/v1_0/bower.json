@@ -49,7 +49,6 @@
     "paper-spinner": "PolymerElements/paper-spinner#2.0.0",
     "paper-styles": "PolymerElements/paper-styles#2.1.0",
     "paper-tabs": "PolymerElements/paper-tabs#2.0.0",
-    "paper-toggle-button": "PolymerElements/paper-toggle-button#2.0.0",
     "paper-tooltip": "PolymerElements/paper-tooltip#2.0.0",
     "polymer": "Polymer/polymer#1.11.2",
     "web-animations-js": "web-animations/web-animations-js#2.2.2"
