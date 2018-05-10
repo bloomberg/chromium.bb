@@ -3,10 +3,16 @@
 # found in the LICENSE file.
 
 mojom = "//ash/public/interfaces/menu.mojom"
-public_headers = [ "//ui/base/models/menu_model.h" ]
+public_headers = [
+  "//ui/base/models/menu_model.h",
+  "//ui/base/models/menu_separator_types.h",
+]
 traits_headers = [ "//ash/public/cpp/menu_struct_mojom_traits.h" ]
 public_deps = [
   "//ui/base",
   "//ui/gfx/image/mojo:struct_traits",
 ]
-type_mappings = [ "ash.mojom.MenuItemType=ui::MenuModel::ItemType" ]
+type_mappings = [
+  "ash.mojom.MenuItemType=ui::MenuModel::ItemType",
+  "ash.mojom.MenuSeparatorType=ui::MenuSeparatorType",
+]

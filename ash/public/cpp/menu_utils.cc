@@ -30,6 +30,7 @@ MenuItemList GetMojoMenuItemsFromModel(ui::MenuModel* model) {
         item->type == ui::MenuModel::TYPE_ACTIONABLE_SUBMENU) {
       item->submenu = GetMojoMenuItemsFromModel(model->GetSubmenuModelAt(i));
     }
+    item->separator_type = model->GetSeparatorTypeAt(i);
     gfx::Image icon;
     if (model->GetIconAt(i, &icon))
       item->image = icon.AsImageSkia();
@@ -55,7 +56,7 @@ void PopulateMenuFromMojoMenuItems(ui::SimpleMenuModel* model,
                             item->radio_group_id);
         break;
       case ui::MenuModel::TYPE_SEPARATOR:
-        model->AddSeparator(ui::NORMAL_SEPARATOR);
+        model->AddSeparator(item->separator_type);
         break;
       case ui::MenuModel::TYPE_BUTTON_ITEM:
         NOTREACHED() << "TYPE_BUTTON_ITEM is not yet supported.";
