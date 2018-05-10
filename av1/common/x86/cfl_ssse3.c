@@ -39,7 +39,7 @@ static INLINE void _mm_storeh_epi32(__m128i const *mem_addr, __m128i a) {
  */
 static INLINE void cfl_luma_subsampling_420_lbd_ssse3(const uint8_t *input,
                                                       int input_stride,
-                                                      int16_t *pred_buf_q3,
+                                                      uint16_t *pred_buf_q3,
                                                       int width, int height) {
   const __m128i twos = _mm_set1_epi8(2);
   __m128i *pred_buf_m128i = (__m128i *)pred_buf_q3;
@@ -94,7 +94,7 @@ static INLINE void cfl_luma_subsampling_420_lbd_ssse3(const uint8_t *input,
  */
 static INLINE void cfl_luma_subsampling_422_lbd_ssse3(const uint8_t *input,
                                                       int input_stride,
-                                                      int16_t *pred_buf_q3,
+                                                      uint16_t *pred_buf_q3,
                                                       int width, int height) {
   const __m128i fours = _mm_set1_epi8(4);
   __m128i *pred_buf_m128i = (__m128i *)pred_buf_q3;
@@ -134,7 +134,7 @@ static INLINE void cfl_luma_subsampling_422_lbd_ssse3(const uint8_t *input,
  */
 static INLINE void cfl_luma_subsampling_444_lbd_ssse3(const uint8_t *input,
                                                       int input_stride,
-                                                      int16_t *pred_buf_q3,
+                                                      uint16_t *pred_buf_q3,
                                                       int width, int height) {
   const __m128i zeros = _mm_setzero_si128();
   const int luma_stride = input_stride;
@@ -180,9 +180,9 @@ static INLINE void cfl_luma_subsampling_444_lbd_ssse3(const uint8_t *input,
  */
 static INLINE void cfl_luma_subsampling_420_hbd_ssse3(const uint16_t *input,
                                                       int input_stride,
-                                                      int16_t *pred_buf_q3,
+                                                      uint16_t *pred_buf_q3,
                                                       int width, int height) {
-  const int16_t *end = pred_buf_q3 + (height >> 1) * CFL_BUF_LINE;
+  const uint16_t *end = pred_buf_q3 + (height >> 1) * CFL_BUF_LINE;
   const int luma_stride = input_stride << 1;
   do {
     if (width == 4) {
@@ -235,7 +235,7 @@ static INLINE void cfl_luma_subsampling_420_hbd_ssse3(const uint16_t *input,
  */
 static INLINE void cfl_luma_subsampling_422_hbd_ssse3(const uint16_t *input,
                                                       int input_stride,
-                                                      int16_t *pred_buf_q3,
+                                                      uint16_t *pred_buf_q3,
                                                       int width, int height) {
   __m128i *pred_buf_m128i = (__m128i *)pred_buf_q3;
   const __m128i *end = pred_buf_m128i + height * CFL_BUF_LINE_I128;
@@ -268,9 +268,9 @@ static INLINE void cfl_luma_subsampling_422_hbd_ssse3(const uint16_t *input,
 
 static INLINE void cfl_luma_subsampling_444_hbd_ssse3(const uint16_t *input,
                                                       int input_stride,
-                                                      int16_t *pred_buf_q3,
+                                                      uint16_t *pred_buf_q3,
                                                       int width, int height) {
-  const int16_t *end = pred_buf_q3 + height * CFL_BUF_LINE;
+  const uint16_t *end = pred_buf_q3 + height * CFL_BUF_LINE;
   do {
     if (width == 4) {
       const __m128i row = _mm_slli_epi16(_mm_loadl_epi64((__m128i *)input), 3);

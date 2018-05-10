@@ -36,12 +36,12 @@ struct yv12_buffer_config;
 
 /* Function pointers return by CfL functions */
 typedef void (*cfl_subsample_lbd_fn)(const uint8_t *input, int input_stride,
-                                     int16_t *output_q3);
+                                     uint16_t *output_q3);
 
 typedef void (*cfl_subsample_hbd_fn)(const uint16_t *input, int input_stride,
-                                     int16_t *output_q3);
+                                     uint16_t *output_q3);
 
-typedef void (*cfl_subtract_average_fn)(const int16_t *src, int16_t *dst);
+typedef void (*cfl_subtract_average_fn)(const uint16_t *src, int16_t *dst);
 
 typedef void (*cfl_predict_lbd_fn)(const int16_t *src, uint8_t *dst,
                                    int dst_stride, int alpha_q3);

@@ -14,9 +14,10 @@
 
 #include "av1/common/cfl.h"
 
-static INLINE void vldsubstq_s16(int16_t *dst, const int16_t *src, int offset,
+static INLINE void vldsubstq_s16(int16_t *dst, const uint16_t *src, int offset,
                                  int16x8_t sub) {
-  vst1q_s16(dst + offset, vsubq_s16(vld1q_s16(src + offset), sub));
+  vst1q_s16(dst + offset,
+            vsubq_s16(vreinterpretq_s16_u16(vld1q_u16(src + offset)), sub));
 }
 
 static INLINE uint16x8_t vldaddq_u16(const uint16_t *buf, size_t offset) {
@@ -29,8 +30,8 @@ static INLINE uint8x8_t vldh_dup_u8(const uint8_t *ptr) {
 }
 
 // Store half of a vector.
-static INLINE void vsth_s16(int16_t *ptr, int16x4_t val) {
-  *((uint32_t *)ptr) = vreinterpret_u32_s16(val)[0];
+static INLINE void vsth_u16(uint16_t *ptr, uint16x4_t val) {
+  *((uint32_t *)ptr) = vreinterpret_u32_u16(val)[0];
 }
 
 // Store half of a vector.
@@ -40,23 +41,23 @@ static INLINE void vsth_u8(uint8_t *ptr, uint8x8_t val) {
 
 static void cfl_luma_subsampling_420_lbd_neon(const uint8_t *input,
                                               int input_stride,
-                                              int16_t *pred_buf_q3, int width,
+                                              uint16_t *pred_buf_q3, int width,
                                               int height) {
-  const int16_t *end = pred_buf_q3 + (height >> 1) * CFL_BUF_LINE;
+  const uint16_t *end = pred_buf_q3 + (height >> 1) * CFL_BUF_LINE;
   const int luma_stride = input_stride << 1;
   do {
     if (width == 4) {
       const uint16x4_t top = vpaddl_u8(vldh_dup_u8(input));
       const uint16x4_t sum = vpadal_u8(top, vldh_dup_u8(input + input_stride));
-      vsth_s16(pred_buf_q3, vshl_n_s16(vreinterpret_s16_u16(sum), 1));
+      vsth_u16(pred_buf_q3, vshl_n_u16(sum, 1));
     } else if (width == 8) {
       const uint16x4_t top = vpaddl_u8(vld1_u8(input));
       const uint16x4_t sum = vpadal_u8(top, vld1_u8(input + input_stride));
-      vst1_s16(pred_buf_q3, vshl_n_s16(vreinterpret_s16_u16(sum), 1));
+      vst1_u16(pred_buf_q3, vshl_n_u16(sum, 1));
     } else if (width == 16) {
       const uint16x8_t top = vpaddlq_u8(vld1q_u8(input));
       const uint16x8_t sum = vpadalq_u8(top, vld1q_u8(input + input_stride));
-      vst1q_s16(pred_buf_q3, vshlq_n_s16(vreinterpretq_s16_u16(sum), 1));
+      vst1q_u16(pred_buf_q3, vshlq_n_u16(sum, 1));
     } else {
       const uint8x8x4_t top = vld4_u8(input);
       const uint8x8x4_t bot = vld4_u8(input + input_stride);
@@ -68,12 +69,10 @@ static void cfl_luma_subsampling_420_lbd_neon(const uint8_t *input,
       const uint16x8_t top_1 = vaddl_u8(top.val[2], top.val[3]);
       // equivalent to a vpaddlq_u8 (because vld4q interleaves)
       const uint16x8_t bot_1 = vaddl_u8(bot.val[2], bot.val[3]);
-      int16x8x2_t sum;
-      sum.val[0] =
-          vshlq_n_s16(vreinterpretq_s16_u16(vaddq_u16(top_0, bot_0)), 1);
-      sum.val[1] =
-          vshlq_n_s16(vreinterpretq_s16_u16(vaddq_u16(top_1, bot_1)), 1);
-      vst2q_s16(pred_buf_q3, sum);
+      uint16x8x2_t sum;
+      sum.val[0] = vshlq_n_u16(vaddq_u16(top_0, bot_0), 1);
+      sum.val[1] = vshlq_n_u16(vaddq_u16(top_1, bot_1), 1);
+      vst2q_u16(pred_buf_q3, sum);
     }
     input += luma_stride;
   } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
@@ -81,29 +80,26 @@ static void cfl_luma_subsampling_420_lbd_neon(const uint8_t *input,
 
 static void cfl_luma_subsampling_422_lbd_neon(const uint8_t *input,
                                               int input_stride,
-                                              int16_t *pred_buf_q3, int width,
+                                              uint16_t *pred_buf_q3, int width,
                                               int height) {
-  const int16_t *end = pred_buf_q3 + height * CFL_BUF_LINE;
+  const uint16_t *end = pred_buf_q3 + height * CFL_BUF_LINE;
   do {
     if (width == 4) {
       const uint16x4_t top = vpaddl_u8(vldh_dup_u8(input));
-      vsth_s16(pred_buf_q3, vshl_n_s16(vreinterpret_s16_u16(top), 2));
+      vsth_u16(pred_buf_q3, vshl_n_u16(top, 2));
     } else if (width == 8) {
       const uint16x4_t top = vpaddl_u8(vld1_u8(input));
-      vst1_s16(pred_buf_q3, vshl_n_s16(vreinterpret_s16_u16(top), 2));
+      vst1_u16(pred_buf_q3, vshl_n_u16(top, 2));
     } else if (width == 16) {
       const uint16x8_t top = vpaddlq_u8(vld1q_u8(input));
-      vst1q_s16(pred_buf_q3, vshlq_n_s16(vreinterpretq_s16_u16(top), 2));
+      vst1q_u16(pred_buf_q3, vshlq_n_u16(top, 2));
     } else {
       const uint8x8x4_t top = vld4_u8(input);
-      int16x8x2_t sum;
-      sum.val[0] = vshlq_n_s16(
-          // vaddl_u8 is equivalent to a vpaddlq_u8 (because vld4q interleaves)
-          vreinterpretq_s16_u16(vaddl_u8(top.val[0], top.val[1])), 2);
-      sum.val[1] = vshlq_n_s16(
-          // vaddl_u8 is equivalent to a vpaddlq_u8 (because vld4q interleaves)
-          vreinterpretq_s16_u16(vaddl_u8(top.val[2], top.val[3])), 2);
-      vst2q_s16(pred_buf_q3, sum);
+      uint16x8x2_t sum;
+      // vaddl_u8 is equivalent to a vpaddlq_u8 (because vld4q interleaves)
+      sum.val[0] = vshlq_n_u16(vaddl_u8(top.val[0], top.val[1]), 2);
+      sum.val[1] = vshlq_n_u16(vaddl_u8(top.val[2], top.val[3]), 2);
+      vst2q_u16(pred_buf_q3, sum);
     }
     input += input_stride;
   } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
@@ -111,28 +107,24 @@ static void cfl_luma_subsampling_422_lbd_neon(const uint8_t *input,
 
 static void cfl_luma_subsampling_444_lbd_neon(const uint8_t *input,
                                               int input_stride,
-                                              int16_t *pred_buf_q3, int width,
+                                              uint16_t *pred_buf_q3, int width,
                                               int height) {
-  const int16_t *end = pred_buf_q3 + height * CFL_BUF_LINE;
+  const uint16_t *end = pred_buf_q3 + height * CFL_BUF_LINE;
   do {
     if (width == 4) {
       const uint16x8_t top = vshll_n_u8(vldh_dup_u8(input), 3);
-      vst1_s16(pred_buf_q3, vreinterpret_s16_u16(vget_low_u16(top)));
+      vst1_u16(pred_buf_q3, vget_low_u16(top));
     } else if (width == 8) {
       const uint16x8_t top = vshll_n_u8(vld1_u8(input), 3);
-      vst1q_s16(pred_buf_q3, vreinterpretq_s16_u16(top));
+      vst1q_u16(pred_buf_q3, top);
     } else {
       const uint8x16_t top = vld1q_u8(input);
-      vst1q_s16(pred_buf_q3,
-                vreinterpretq_s16_u16(vshll_n_u8(vget_low_u8(top), 3)));
-      vst1q_s16(pred_buf_q3 + 8,
-                vreinterpretq_s16_u16(vshll_n_u8(vget_high_u8(top), 3)));
+      vst1q_u16(pred_buf_q3, vshll_n_u8(vget_low_u8(top), 3));
+      vst1q_u16(pred_buf_q3 + 8, vshll_n_u8(vget_high_u8(top), 3));
       if (width == 32) {
         const uint8x16_t next_top = vld1q_u8(input + 16);
-        vst1q_s16(pred_buf_q3 + 16,
-                  vreinterpretq_s16_u16(vshll_n_u8(vget_low_u8(next_top), 3)));
-        vst1q_s16(pred_buf_q3 + 24,
-                  vreinterpretq_s16_u16(vshll_n_u8(vget_high_u8(next_top), 3)));
+        vst1q_u16(pred_buf_q3 + 16, vshll_n_u8(vget_low_u8(next_top), 3));
+        vst1q_u16(pred_buf_q3 + 24, vshll_n_u8(vget_high_u8(next_top), 3));
       }
     }
     input += input_stride;
@@ -148,9 +140,9 @@ uint16x8_t vpaddq_u16(uint16x8_t a, uint16x8_t b) {
 
 static void cfl_luma_subsampling_420_hbd_neon(const uint16_t *input,
                                               int input_stride,
-                                              int16_t *pred_buf_q3, int width,
+                                              uint16_t *pred_buf_q3, int width,
                                               int height) {
-  const int16_t *end = pred_buf_q3 + (height >> 1) * CFL_BUF_LINE;
+  const uint16_t *end = pred_buf_q3 + (height >> 1) * CFL_BUF_LINE;
   const int luma_stride = input_stride << 1;
   do {
     if (width == 4) {
@@ -158,21 +150,20 @@ static void cfl_luma_subsampling_420_hbd_neon(const uint16_t *input,
       const uint16x4_t bot = vld1_u16(input + input_stride);
       const uint16x4_t sum = vadd_u16(top, bot);
       const uint16x4_t hsum = vpadd_u16(sum, sum);
-      vsth_s16(pred_buf_q3, vshl_n_s16(vreinterpret_s16_u16(hsum), 1));
+      vsth_u16(pred_buf_q3, vshl_n_u16(hsum, 1));
     } else if (width < 32) {
       const uint16x8_t top = vld1q_u16(input);
       const uint16x8_t bot = vld1q_u16(input + input_stride);
       const uint16x8_t sum = vaddq_u16(top, bot);
       if (width == 8) {
-        const int16x4_t hsum =
-            vreinterpret_s16_u16(vget_low_u16(vpaddq_u16(sum, sum)));
-        vst1_s16(pred_buf_q3, vshl_n_s16(hsum, 1));
+        const uint16x4_t hsum = vget_low_u16(vpaddq_u16(sum, sum));
+        vst1_u16(pred_buf_q3, vshl_n_u16(hsum, 1));
       } else {
         const uint16x8_t top_1 = vld1q_u16(input + 8);
         const uint16x8_t bot_1 = vld1q_u16(input + 8 + input_stride);
         const uint16x8_t sum_1 = vaddq_u16(top_1, bot_1);
-        const int16x8_t hsum = vreinterpretq_s16_u16(vpaddq_u16(sum, sum_1));
-        vst1q_s16(pred_buf_q3, vshlq_n_s16(hsum, 1));
+        const uint16x8_t hsum = vpaddq_u16(sum, sum_1);
+        vst1q_u16(pred_buf_q3, vshlq_n_u16(hsum, 1));
       }
     } else {
       const uint16x8x4_t top = vld4q_u16(input);
@@ -185,12 +176,10 @@ static void cfl_luma_subsampling_420_hbd_neon(const uint16_t *input,
       const uint16x8_t top_1 = vaddq_u16(top.val[2], top.val[3]);
       // equivalent to a vpaddq_u16 (because vld4q interleaves)
       const uint16x8_t bot_1 = vaddq_u16(bot.val[2], bot.val[3]);
-      int16x8x2_t sum;
-      sum.val[0] =
-          vshlq_n_s16(vreinterpretq_s16_u16(vaddq_u16(top_0, bot_0)), 1);
-      sum.val[1] =
-          vshlq_n_s16(vreinterpretq_s16_u16(vaddq_u16(top_1, bot_1)), 1);
-      vst2q_s16(pred_buf_q3, sum);
+      uint16x8x2_t sum;
+      sum.val[0] = vshlq_n_u16(vaddq_u16(top_0, bot_0), 1);
+      sum.val[1] = vshlq_n_u16(vaddq_u16(top_1, bot_1), 1);
+      vst2q_u16(pred_buf_q3, sum);
     }
     input += luma_stride;
   } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
@@ -198,34 +187,33 @@ static void cfl_luma_subsampling_420_hbd_neon(const uint16_t *input,
 
 static void cfl_luma_subsampling_422_hbd_neon(const uint16_t *input,
                                               int input_stride,
-                                              int16_t *pred_buf_q3, int width,
+                                              uint16_t *pred_buf_q3, int width,
                                               int height) {
-  const int16_t *end = pred_buf_q3 + height * CFL_BUF_LINE;
+  const uint16_t *end = pred_buf_q3 + height * CFL_BUF_LINE;
   do {
     if (width == 4) {
       const uint16x4_t top = vld1_u16(input);
       const uint16x4_t hsum = vpadd_u16(top, top);
-      vsth_s16(pred_buf_q3, vshl_n_s16(vreinterpret_s16_u16(hsum), 2));
+      vsth_u16(pred_buf_q3, vshl_n_u16(hsum, 2));
     } else if (width == 8) {
       const uint16x4x2_t top = vld2_u16(input);
       // equivalent to a vpadd_u16 (because vld2 interleaves)
       const uint16x4_t hsum = vadd_u16(top.val[0], top.val[1]);
-      vst1_s16(pred_buf_q3, vshl_n_s16(vreinterpret_s16_u16(hsum), 2));
+      vst1_u16(pred_buf_q3, vshl_n_u16(hsum, 2));
     } else if (width == 16) {
       const uint16x8x2_t top = vld2q_u16(input);
       // equivalent to a vpaddq_u16 (because vld2q interleaves)
       const uint16x8_t hsum = vaddq_u16(top.val[0], top.val[1]);
-      vst1q_s16(pred_buf_q3, vshlq_n_s16(vreinterpretq_s16_u16(hsum), 2));
+      vst1q_u16(pred_buf_q3, vshlq_n_u16(hsum, 2));
     } else {
       const uint16x8x4_t top = vld4q_u16(input);
       // equivalent to a vpaddq_u16 (because vld4q interleaves)
       const uint16x8_t hsum_0 = vaddq_u16(top.val[0], top.val[1]);
       // equivalent to a vpaddq_u16 (because vld4q interleaves)
       const uint16x8_t hsum_1 = vaddq_u16(top.val[2], top.val[3]);
-      int16x8x2_t result = { { vshlq_n_s16(vreinterpretq_s16_u16(hsum_0), 2),
-                               vshlq_n_s16(vreinterpretq_s16_u16(hsum_1),
-                                           2) } };
-      vst2q_s16(pred_buf_q3, result);
+      uint16x8x2_t result = { { vshlq_n_u16(hsum_0, 2),
+                                vshlq_n_u16(hsum_1, 2) } };
+      vst2q_u16(pred_buf_q3, result);
     }
     input += input_stride;
   } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
@@ -233,30 +221,28 @@ static void cfl_luma_subsampling_422_hbd_neon(const uint16_t *input,
 
 static void cfl_luma_subsampling_444_hbd_neon(const uint16_t *input,
                                               int input_stride,
-                                              int16_t *pred_buf_q3, int width,
+                                              uint16_t *pred_buf_q3, int width,
                                               int height) {
-  const int16_t *end = pred_buf_q3 + height * CFL_BUF_LINE;
+  const uint16_t *end = pred_buf_q3 + height * CFL_BUF_LINE;
   do {
     if (width == 4) {
-      const int16x4_t top = vreinterpret_s16_u16(vld1_u16(input));
-      vst1_s16(pred_buf_q3, vshl_n_s16(top, 3));
+      const uint16x4_t top = vld1_u16(input);
+      vst1_u16(pred_buf_q3, vshl_n_u16(top, 3));
     } else if (width == 8) {
-      const int16x8_t top = vreinterpretq_s16_u16(vld1q_u16(input));
-      vst1q_s16(pred_buf_q3, vshlq_n_s16(top, 3));
+      const uint16x8_t top = vld1q_u16(input);
+      vst1q_u16(pred_buf_q3, vshlq_n_u16(top, 3));
     } else if (width == 16) {
-      const uint16x8x2_t top = vld2q_u16(input);
-      int16x8x2_t results;
-      results.val[0] = vshlq_n_s16(vreinterpretq_s16_u16(top.val[0]), 3);
-      results.val[1] = vshlq_n_s16(vreinterpretq_s16_u16(top.val[1]), 3);
-      vst2q_s16(pred_buf_q3, results);
+      uint16x8x2_t top = vld2q_u16(input);
+      top.val[0] = vshlq_n_u16(top.val[0], 3);
+      top.val[1] = vshlq_n_u16(top.val[1], 3);
+      vst2q_u16(pred_buf_q3, top);
     } else {
-      const uint16x8x4_t top = vld4q_u16(input);
-      int16x8x4_t results;
-      results.val[0] = vshlq_n_s16(vreinterpretq_s16_u16(top.val[0]), 3);
-      results.val[1] = vshlq_n_s16(vreinterpretq_s16_u16(top.val[1]), 3);
-      results.val[2] = vshlq_n_s16(vreinterpretq_s16_u16(top.val[2]), 3);
-      results.val[3] = vshlq_n_s16(vreinterpretq_s16_u16(top.val[3]), 3);
-      vst4q_s16(pred_buf_q3, results);
+      uint16x8x4_t top = vld4q_u16(input);
+      top.val[0] = vshlq_n_u16(top.val[0], 3);
+      top.val[1] = vshlq_n_u16(top.val[1], 3);
+      top.val[2] = vshlq_n_u16(top.val[2], 3);
+      top.val[3] = vshlq_n_u16(top.val[3], 3);
+      vst4q_u16(pred_buf_q3, top);
     }
     input += input_stride;
   } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
@@ -264,12 +250,11 @@ static void cfl_luma_subsampling_444_hbd_neon(const uint16_t *input,
 
 CFL_GET_SUBSAMPLE_FUNCTION(neon)
 
-static INLINE void subtract_average_neon(const int16_t *src, int16_t *dst,
+static INLINE void subtract_average_neon(const uint16_t *src, int16_t *dst,
                                          int width, int height,
                                          int round_offset,
                                          const int num_pel_log2) {
-  const int16_t *const end = src + height * CFL_BUF_LINE;
-  const uint16_t *const sum_end = (uint16_t *)end;
+  const uint16_t *const end = src + height * CFL_BUF_LINE;
 
   // Round offset is not needed, because NEON will handle the rounding.
   (void)round_offset;
@@ -281,7 +266,7 @@ static INLINE void subtract_average_neon(const int16_t *src, int16_t *dst,
   // pixels, which are positive integer and only require 15 bits. By using
   // unsigned integer for the sum, we can do one addition operation inside 16
   // bits (8 lanes) before having to convert to 32 bits (4 lanes).
-  const uint16_t *sum_buf = (uint16_t *)src;
+  const uint16_t *sum_buf = src;
   uint32x4_t sum_32x4 = { 0, 0, 0, 0 };
   do {
     // For all widths, we load, add and combine the data so it fits in 4 lanes.
@@ -322,7 +307,7 @@ static INLINE void subtract_average_neon(const int16_t *src, int16_t *dst,
       }
     }
     sum_buf += step;
-  } while (sum_buf < sum_end);
+  } while (sum_buf < end);
 
   // Permute and add in such a way that each lane contains the block sum.
   // [A+C+B+D, B+D+A+C, C+A+D+B, D+B+C+A]
@@ -355,7 +340,7 @@ static INLINE void subtract_average_neon(const int16_t *src, int16_t *dst,
 
   if (width == 4) {
     do {
-      vst1_s16(dst, vsub_s16(vld1_s16(src), avg_16x4));
+      vst1_s16(dst, vsub_s16(vreinterpret_s16_u16(vld1_u16(src)), avg_16x4));
       src += CFL_BUF_LINE;
       dst += CFL_BUF_LINE;
     } while (src < end);

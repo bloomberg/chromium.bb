@@ -178,8 +178,8 @@ class CFLSubAvgTest : public ::testing::TestWithParam<sub_avg_param>,
 TEST_P(CFLSubAvgTest, SubAvgTest) {
   for (int it = 0; it < NUM_ITERATIONS; it++) {
     randData(&ACMRandom::Rand15Signed);
-    sub_avg(data, data);
-    sub_avg_ref(data_ref, data_ref);
+    sub_avg((uint16_t *)data, data);
+    sub_avg_ref((uint16_t *)data_ref, data_ref);
     assert_eq<int16_t>(data, data_ref, width, height);
   }
 }
@@ -190,13 +190,13 @@ TEST_P(CFLSubAvgTest, DISABLED_SubAvgSpeedTest) {
   randData(&ACMRandom::Rand15Signed);
   aom_usec_timer_start(&ref_timer);
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    sub_avg_ref(data_ref, data_ref);
+    sub_avg_ref((uint16_t *)data_ref, data_ref);
   }
   aom_usec_timer_mark(&ref_timer);
   int ref_elapsed_time = (int)aom_usec_timer_elapsed(&ref_timer);
   aom_usec_timer_start(&timer);
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    sub_avg(data, data);
+    sub_avg((uint16_t *)data, data);
   }
   aom_usec_timer_mark(&timer);
   int elapsed_time = (int)aom_usec_timer_elapsed(&timer);
@@ -225,21 +225,21 @@ class CFLSubsampleTest : public ::testing::TestWithParam<S>,
 
   void subsampleTest(T fun, T fun_ref, int sub_width, int sub_height,
                      I (ACMRandom::*random)()) {
-    int16_t sub_luma_pels[CFL_BUF_SQUARE];
-    int16_t sub_luma_pels_ref[CFL_BUF_SQUARE];
+    uint16_t sub_luma_pels[CFL_BUF_SQUARE];
+    uint16_t sub_luma_pels_ref[CFL_BUF_SQUARE];
 
     for (int it = 0; it < NUM_ITERATIONS; it++) {
       CFLTestWithData<I>::randData(random);
       fun(this->data, CFL_BUF_LINE, sub_luma_pels);
       fun_ref(this->data_ref, CFL_BUF_LINE, sub_luma_pels_ref);
-      assert_eq<int16_t>(sub_luma_pels, sub_luma_pels_ref, sub_width,
-                         sub_height);
+      assert_eq<uint16_t>(sub_luma_pels, sub_luma_pels_ref, sub_width,
+                          sub_height);
     }
   }
 
   void subsampleSpeedTest(T fun, T fun_ref, I (ACMRandom::*random)()) {
-    int16_t sub_luma_pels[CFL_BUF_SQUARE];
-    int16_t sub_luma_pels_ref[CFL_BUF_SQUARE];
+    uint16_t sub_luma_pels[CFL_BUF_SQUARE];
+    uint16_t sub_luma_pels_ref[CFL_BUF_SQUARE];
     aom_usec_timer ref_timer;
     aom_usec_timer timer;
 

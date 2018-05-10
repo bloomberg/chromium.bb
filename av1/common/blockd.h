@@ -451,7 +451,7 @@ typedef struct {
 typedef struct cfl_ctx {
   // Q3 reconstructed luma pixels (only Q2 is required, but Q3 is used to avoid
   // shifts)
-  int16_t recon_buf_q3[CFL_BUF_SQUARE];
+  uint16_t recon_buf_q3[CFL_BUF_SQUARE];
   // Q3 AC contributions (reconstructed luma pixels - tx block avg)
   int16_t ac_buf_q3[CFL_BUF_SQUARE];
 

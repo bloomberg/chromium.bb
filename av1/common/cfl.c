@@ -95,9 +95,9 @@ static INLINE void cfl_pad(CFL_CTX *cfl, int width, int height) {
 
   if (diff_width > 0) {
     const int min_height = height - diff_height;
-    int16_t *recon_buf_q3 = cfl->recon_buf_q3 + (width - diff_width);
+    uint16_t *recon_buf_q3 = cfl->recon_buf_q3 + (width - diff_width);
     for (int j = 0; j < min_height; j++) {
-      const int16_t last_pixel = recon_buf_q3[-1];
+      const uint16_t last_pixel = recon_buf_q3[-1];
       assert(recon_buf_q3 + diff_width <= cfl->recon_buf_q3 + CFL_BUF_SQUARE);
       for (int i = 0; i < diff_width; i++) {
         recon_buf_q3[i] = last_pixel;
@@ -107,10 +107,10 @@ static INLINE void cfl_pad(CFL_CTX *cfl, int width, int height) {
     cfl->buf_width = width;
   }
   if (diff_height > 0) {
-    int16_t *recon_buf_q3 =
+    uint16_t *recon_buf_q3 =
         cfl->recon_buf_q3 + ((height - diff_height) * CFL_BUF_LINE);
     for (int j = 0; j < diff_height; j++) {
-      const int16_t *last_row_q3 = recon_buf_q3 - CFL_BUF_LINE;
+      const uint16_t *last_row_q3 = recon_buf_q3 - CFL_BUF_LINE;
       assert(recon_buf_q3 + width <= cfl->recon_buf_q3 + CFL_BUF_SQUARE);
       for (int i = 0; i < width; i++) {
         recon_buf_q3[i] = last_row_q3[i];
@@ -121,10 +121,10 @@ static INLINE void cfl_pad(CFL_CTX *cfl, int width, int height) {
   }
 }
 
-static void subtract_average_c(const int16_t *src, int16_t *dst, int width,
+static void subtract_average_c(const uint16_t *src, int16_t *dst, int width,
                                int height, int round_offset, int num_pel_log2) {
   int sum = round_offset;
-  const int16_t *recon = src;
+  const uint16_t *recon = src;
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
       sum += recon[i];
@@ -235,7 +235,7 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
 
 // Null function used for invalid tx_sizes
 void cfl_subsample_lbd_null(const uint8_t *input, int input_stride,
-                            int16_t *output_q3) {
+                            uint16_t *output_q3) {
   (void)input;
   (void)input_stride;
   (void)output_q3;
@@ -244,7 +244,7 @@ void cfl_subsample_lbd_null(const uint8_t *input, int input_stride,
 
 // Null function used for invalid tx_sizes
 void cfl_subsample_hbd_null(const uint16_t *input, int input_stride,
-                            int16_t *output_q3) {
+                            uint16_t *output_q3) {
   (void)input;
   (void)input_stride;
   (void)output_q3;
@@ -252,8 +252,9 @@ void cfl_subsample_hbd_null(const uint16_t *input, int input_stride,
 }
 
 static void cfl_luma_subsampling_420_lbd_c(const uint8_t *input,
-                                           int input_stride, int16_t *output_q3,
-                                           int width, int height) {
+                                           int input_stride,
+                                           uint16_t *output_q3, int width,
+                                           int height) {
   for (int j = 0; j < height; j += 2) {
     for (int i = 0; i < width; i += 2) {
       const int bot = i + input_stride;
@@ -266,8 +267,9 @@ static void cfl_luma_subsampling_420_lbd_c(const uint8_t *input,
 }
 
 static void cfl_luma_subsampling_422_lbd_c(const uint8_t *input,
-                                           int input_stride, int16_t *output_q3,
-                                           int width, int height) {
+                                           int input_stride,
+                                           uint16_t *output_q3, int width,
+                                           int height) {
   assert((height - 1) * CFL_BUF_LINE + width <= CFL_BUF_SQUARE);
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i += 2) {
@@ -279,8 +281,9 @@ static void cfl_luma_subsampling_422_lbd_c(const uint8_t *input,
 }
 
 static void cfl_luma_subsampling_444_lbd_c(const uint8_t *input,
-                                           int input_stride, int16_t *output_q3,
-                                           int width, int height) {
+                                           int input_stride,
+                                           uint16_t *output_q3, int width,
+                                           int height) {
   assert((height - 1) * CFL_BUF_LINE + width <= CFL_BUF_SQUARE);
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
@@ -292,8 +295,9 @@ static void cfl_luma_subsampling_444_lbd_c(const uint8_t *input,
 }
 
 static void cfl_luma_subsampling_420_hbd_c(const uint16_t *input,
-                                           int input_stride, int16_t *output_q3,
-                                           int width, int height) {
+                                           int input_stride,
+                                           uint16_t *output_q3, int width,
+                                           int height) {
   for (int j = 0; j < height; j += 2) {
     for (int i = 0; i < width; i += 2) {
       const int bot = i + input_stride;
@@ -306,8 +310,9 @@ static void cfl_luma_subsampling_420_hbd_c(const uint16_t *input,
 }
 
 static void cfl_luma_subsampling_422_hbd_c(const uint16_t *input,
-                                           int input_stride, int16_t *output_q3,
-                                           int width, int height) {
+                                           int input_stride,
+                                           uint16_t *output_q3, int width,
+                                           int height) {
   assert((height - 1) * CFL_BUF_LINE + width <= CFL_BUF_SQUARE);
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i += 2) {
@@ -319,8 +324,9 @@ static void cfl_luma_subsampling_422_hbd_c(const uint16_t *input,
 }
 
 static void cfl_luma_subsampling_444_hbd_c(const uint16_t *input,
-                                           int input_stride, int16_t *output_q3,
-                                           int width, int height) {
+                                           int input_stride,
+                                           uint16_t *output_q3, int width,
+                                           int height) {
   assert((height - 1) * CFL_BUF_LINE + width <= CFL_BUF_SQUARE);
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
@@ -386,7 +392,7 @@ static void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride,
   assert(store_col + store_width <= CFL_BUF_LINE);
 
   // Store the input into the CfL pixel buffer
-  int16_t *recon_buf_q3 =
+  uint16_t *recon_buf_q3 =
       cfl->recon_buf_q3 + (store_row * CFL_BUF_LINE + store_col);
 
   if (use_hbd) {

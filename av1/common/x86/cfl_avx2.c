@@ -60,7 +60,7 @@
  */
 static void cfl_luma_subsampling_420_lbd_avx2(const uint8_t *input,
                                               int input_stride,
-                                              int16_t *pred_buf_q3, int width,
+                                              uint16_t *pred_buf_q3, int width,
                                               int height) {
   (void)width;                               // Forever 32
   const __m256i twos = _mm256_set1_epi8(2);  // Thirty two twos
@@ -95,7 +95,7 @@ CFL_GET_SUBSAMPLE_FUNCTION_AVX2(420, lbd)
  */
 static void cfl_luma_subsampling_422_lbd_avx2(const uint8_t *input,
                                               int input_stride,
-                                              int16_t *pred_buf_q3, int width,
+                                              uint16_t *pred_buf_q3, int width,
                                               int height) {
   (void)width;                                // Forever 32
   const __m256i fours = _mm256_set1_epi8(4);  // Thirty two fours
@@ -123,7 +123,7 @@ CFL_GET_SUBSAMPLE_FUNCTION_AVX2(422, lbd)
  */
 static void cfl_luma_subsampling_444_lbd_avx2(const uint8_t *input,
                                               int input_stride,
-                                              int16_t *pred_buf_q3, int width,
+                                              uint16_t *pred_buf_q3, int width,
                                               int height) {
   (void)width;  // Forever 32
   __m256i *row = (__m256i *)pred_buf_q3;
@@ -161,7 +161,7 @@ CFL_GET_SUBSAMPLE_FUNCTION_AVX2(444, lbd)
  */
 static void cfl_luma_subsampling_420_hbd_avx2(const uint16_t *input,
                                               int input_stride,
-                                              int16_t *pred_buf_q3, int width,
+                                              uint16_t *pred_buf_q3, int width,
                                               int height) {
   (void)width;  // Forever 32
   const int luma_stride = input_stride << 1;
@@ -201,7 +201,7 @@ CFL_GET_SUBSAMPLE_FUNCTION_AVX2(420, hbd)
  */
 static void cfl_luma_subsampling_422_hbd_avx2(const uint16_t *input,
                                               int input_stride,
-                                              int16_t *pred_buf_q3, int width,
+                                              uint16_t *pred_buf_q3, int width,
                                               int height) {
   (void)width;  // Forever 32
   __m256i *row = (__m256i *)pred_buf_q3;
@@ -223,7 +223,7 @@ CFL_GET_SUBSAMPLE_FUNCTION_AVX2(422, hbd)
 
 static void cfl_luma_subsampling_444_hbd_avx2(const uint16_t *input,
                                               int input_stride,
-                                              int16_t *pred_buf_q3, int width,
+                                              uint16_t *pred_buf_q3, int width,
                                               int height) {
   (void)width;  // Forever 32
   __m256i *row = (__m256i *)pred_buf_q3;
@@ -395,7 +395,7 @@ static INLINE __m256i _mm256_addl_epi16(__m256i a) {
                           _mm256_unpackhi_epi16(a, _mm256_setzero_si256()));
 }
 
-static INLINE void subtract_average_avx2(const int16_t *src_ptr,
+static INLINE void subtract_average_avx2(const uint16_t *src_ptr,
                                          int16_t *dst_ptr, int width,
                                          int height, int round_offset,
                                          int num_pel_log2) {

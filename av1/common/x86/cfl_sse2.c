@@ -19,7 +19,7 @@ static INLINE __m128i fill_sum_epi32(__m128i l0) {
   return _mm_add_epi32(l0, _mm_shuffle_epi32(l0, _MM_SHUFFLE(2, 3, 0, 1)));
 }
 
-static INLINE void subtract_average_sse2(const int16_t *src_ptr,
+static INLINE void subtract_average_sse2(const uint16_t *src_ptr,
                                          int16_t *dst_ptr, int width,
                                          int height, int round_offset,
                                          int num_pel_log2) {

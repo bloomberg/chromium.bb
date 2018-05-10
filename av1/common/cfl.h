@@ -82,11 +82,11 @@ void cfl_load_dc_pred(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
 
 // Null function used for invalid tx_sizes
 void cfl_subsample_lbd_null(const uint8_t *input, int input_stride,
-                            int16_t *output_q3);
+                            uint16_t *output_q3);
 
 // Null function used for invalid tx_sizes
 void cfl_subsample_hbd_null(const uint16_t *input, int input_stride,
-                            int16_t *output_q3);
+                            uint16_t *output_q3);
 
 // Allows the CFL_SUBSAMPLE function to switch types depending on the bitdepth.
 #define CFL_lbd_TYPE uint8_t *cfl_type
@@ -98,7 +98,7 @@ void cfl_subsample_hbd_null(const uint16_t *input, int input_stride,
 // goodness.
 #define CFL_SUBSAMPLE(arch, sub, bd, width, height)                       \
   void subsample_##bd##_##sub##_##width##x##height##_##arch(              \
-      const CFL_##bd##_TYPE, int input_stride, int16_t *output_q3) {      \
+      const CFL_##bd##_TYPE, int input_stride, uint16_t *output_q3) {     \
     cfl_luma_subsampling_##sub##_##bd##_##arch(cfl_type, input_stride,    \
                                                output_q3, width, height); \
   }
@@ -161,7 +161,8 @@ void cfl_subsample_hbd_null(const uint16_t *input, int input_stride,
   CFL_SUBSAMPLE_FUNCTIONS(arch, 444, hbd)
 
 // Null function used for invalid tx_sizes
-static INLINE void cfl_subtract_average_null(const int16_t *src, int16_t *dst) {
+static INLINE void cfl_subtract_average_null(const uint16_t *src,
+                                             int16_t *dst) {
   (void)dst;
   (void)src;
   assert(0);
@@ -171,11 +172,11 @@ static INLINE void cfl_subtract_average_null(const int16_t *src, int16_t *dst) {
 // will inline the size generic function in here, the advantage is that the size
 // will be constant allowing for loop unrolling and other constant propagated
 // goodness.
-#define CFL_SUB_AVG_X(arch, width, height, round_offset, num_pel_log2)  \
-  void subtract_average_##width##x##height##_##arch(const int16_t *src, \
-                                                    int16_t *dst) {     \
-    subtract_average_##arch(src, dst, width, height, round_offset,      \
-                            num_pel_log2);                              \
+#define CFL_SUB_AVG_X(arch, width, height, round_offset, num_pel_log2)   \
+  void subtract_average_##width##x##height##_##arch(const uint16_t *src, \
+                                                    int16_t *dst) {      \
+    subtract_average_##arch(src, dst, width, height, round_offset,       \
+                            num_pel_log2);                               \
   }
 
 // Declare size-specific wrappers for all valid CfL sizes.
@@ -223,9 +224,9 @@ static INLINE void cfl_subtract_average_null(const int16_t *src, int16_t *dst) {
 
 // For VSX SIMD optimization, the C versions of width == 4 subtract are
 // faster than the VSX. As such, the VSX code calls the C versions.
-void subtract_average_4x4_c(const int16_t *src, int16_t *dst);
-void subtract_average_4x8_c(const int16_t *src, int16_t *dst);
-void subtract_average_4x16_c(const int16_t *src, int16_t *dst);
+void subtract_average_4x4_c(const uint16_t *src, int16_t *dst);
+void subtract_average_4x8_c(const uint16_t *src, int16_t *dst);
+void subtract_average_4x16_c(const uint16_t *src, int16_t *dst);
 
 #define CFL_PREDICT_lbd(arch, width, height)                                 \
   void predict_lbd_##width##x##height##_##arch(const int16_t *pred_buf_q3,   \
