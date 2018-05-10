@@ -15,6 +15,9 @@ namespace blink {
 
 class TransformationMatrix;
 
+// Clips can use FloatRect::Intersect or FloatRect::InclusiveIntersect.
+enum InclusiveIntersectOrNot { kNonInclusiveIntersect, kInclusiveIntersect };
+
 // GeometryMapper is a helper class for fast computations of transformed and
 // visual rects in different PropertyTreeStates. The design document has a
 // number of details on use cases, algorithmic definitions, and running times.
@@ -28,8 +31,6 @@ class TransformationMatrix;
 // If needed, callers must store local copies of the return values.
 //
 // Design document: http://bit.ly/28P4FDA
-//
-// TODO(chrishtr): take effect tree into account.
 class PLATFORM_EXPORT GeometryMapper {
   STATIC_ONLY(GeometryMapper);
 
@@ -67,6 +68,7 @@ class PLATFORM_EXPORT GeometryMapper {
   // The output FloatClipRect may contain false positives for rounded-ness
   // if a rounded clip is clipped out, and overly conservative results
   // in the presences of transforms.
+
   static FloatClipRect LocalToAncestorClipRect(
       const PropertyTreeState& local_state,
       const PropertyTreeState& ancestor_state,
@@ -92,11 +94,27 @@ class PLATFORM_EXPORT GeometryMapper {
   // The output FloatClipRect may contain false positives for rounded-ness
   // if a rounded clip is clipped out, and overly conservative results
   // in the presences of transforms.
-  static void LocalToAncestorVisualRect(
+  //
+  // Returns true if the mapped rect is non-empty. (Note: this has special
+  // meaning in the presence of inclusive intersection.)
+  //
+  // Note: if inclusive intersection is specified, then the
+  // GeometryMapperClipCache is bypassed (the GeometryMapperTRansformCache is
+  // still used, however).
+  //
+  // If kInclusiveIntersect is set, clipping operations will
+  // use FloatRect::InclusiveIntersect, and the return value of
+  // InclusiveIntersect will be propagated to the return value of this method.
+  // Otherwise, clipping operations will use LayoutRect::intersect, and the
+  // return value will be true only if the clipped rect has non-zero area.
+  // See the documentation for FloatRect::InclusiveIntersect for more
+  // information.
+  static bool LocalToAncestorVisualRect(
       const PropertyTreeState& local_state,
       const PropertyTreeState& ancestor_state,
       FloatClipRect& mapping_rect,
-      OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize);
+      OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize,
+      InclusiveIntersectOrNot = kNonInclusiveIntersect);
 
   static void ClearCache();
 
@@ -116,20 +134,27 @@ class PLATFORM_EXPORT GeometryMapper {
       const ClipPaintPropertyNode* ancestor_clip,
       const TransformPaintPropertyNode* ancestor_transform,
       OverlayScrollbarClipBehavior,
+      InclusiveIntersectOrNot,
       bool& success);
 
-  static void LocalToAncestorVisualRectInternal(
+  // The return value has the same meaning as that for
+  // LocalToAncestorVisualRect.
+  static bool LocalToAncestorVisualRectInternal(
       const PropertyTreeState& local_state,
       const PropertyTreeState& ancestor_state,
       FloatClipRect& mapping_rect,
       OverlayScrollbarClipBehavior,
+      InclusiveIntersectOrNot,
       bool& success);
 
-  static void SlowLocalToAncestorVisualRectWithEffects(
+  // The return value has the same meaning as that for
+  // LocalToAncestorVisualRect.
+  static bool SlowLocalToAncestorVisualRectWithEffects(
       const PropertyTreeState& local_state,
       const PropertyTreeState& ancestor_state,
       FloatClipRect& mapping_rect,
       OverlayScrollbarClipBehavior,
+      InclusiveIntersectOrNot,
       bool& success);
 
   friend class GeometryMapperTest;

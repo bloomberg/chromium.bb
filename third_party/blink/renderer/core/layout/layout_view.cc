@@ -499,17 +499,18 @@ bool LayoutView::MapToVisualRectInAncestorSpace(
     LayoutRect& rect,
     MapCoordinatesFlags mode,
     VisualRectFlags visual_rect_flags) const {
-  if (MapToVisualRectInAncestorSpaceInternalFastPath(ancestor, rect,
-                                                     visual_rect_flags))
-    return !rect.IsEmpty();
+  bool intersects = true;
+  if (MapToVisualRectInAncestorSpaceInternalFastPath(
+          ancestor, rect, visual_rect_flags, intersects))
+    return intersects;
 
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  FloatQuad(FloatRect(rect)));
-  bool retval = MapToVisualRectInAncestorSpaceInternal(
-      ancestor, transform_state, mode, visual_rect_flags);
+  intersects = MapToVisualRectInAncestorSpaceInternal(ancestor, transform_state,
+                                                      mode, visual_rect_flags);
   transform_state.Flatten();
   rect = LayoutRect(transform_state.LastPlanarQuad().BoundingBox());
-  return retval;
+  return intersects;
 }
 
 bool LayoutView::MapToVisualRectInAncestorSpaceInternal(

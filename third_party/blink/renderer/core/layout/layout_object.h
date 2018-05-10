@@ -1465,11 +1465,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // and clip. This is even true if the main frame is remote.
   //
   // If visualRectFlags has the EdgeInclusive bit set, clipping operations will
-  // use/ LayoutRect::inclusiveIntersect, and the return value of
-  // inclusiveIntersect will be propagated to the return value of this method.
+  // use LayoutRect::InclusiveIntersect, and the return value of
+  // InclusiveIntersect will be propagated to the return value of this method.
   // Otherwise, clipping operations will use LayoutRect::intersect, and the
   // return value will be true only if the clipped rect has non-zero area.
-  // See the documentation for LayoutRect::inclusiveIntersect for more
+  // See the documentation for LayoutRect::InclusiveIntersect for more
   // information.
   bool MapToVisualRectInAncestorSpace(
       const LayoutBoxModelObject* ancestor,
@@ -2066,11 +2066,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                                          TransformationMatrix&) const;
 
   // A fast path for MapToVisualRectInAncestorSpace for when GeometryMapper
-  // can be used.
+  // can be used. |intersects| is set to whether the input rect intersected
+  // (see documentation of return value of MapToVisualRectInAncestorSpace).
+  //
+  // The return value of this method is whether the fast path could be used.
   bool MapToVisualRectInAncestorSpaceInternalFastPath(
       const LayoutBoxModelObject* ancestor,
       LayoutRect&,
-      VisualRectFlags) const;
+      VisualRectFlags,
+      bool& intersects) const;
 
   // This function is called before calling the destructor so that some clean-up
   // can happen regardless of whether they call a virtual function or not. As a

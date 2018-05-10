@@ -37,7 +37,7 @@ class GeometryMapperTest : public testing::Test,
       bool& success) {
     GeometryMapper::LocalToAncestorVisualRectInternal(
         local_state, ancestor_state, mapping_rect,
-        kIgnorePlatformOverlayScrollbarSize, success);
+        kIgnorePlatformOverlayScrollbarSize, kNonInclusiveIntersect, success);
   }
 
   // Variables required by CHECK_MAPPINGS(). The tests should set these
@@ -343,6 +343,31 @@ TEST_P(GeometryMapperTest, SimpleClipOverlayScrollbars) {
       local_state, ancestor_state, kIgnorePlatformOverlayScrollbarSize);
   EXPECT_CLIP_RECT_EQ(FloatClipRect(FloatRect(10, 10, 50, 50)),
                       actual_clip_rect);
+}
+
+TEST_P(GeometryMapperTest, SimpleClipInclusiveIntersect) {
+  ClipPaintPropertyNode::State clip_state;
+  clip_state.local_transform_space = TransformPaintPropertyNode::Root();
+  clip_state.clip_rect = FloatRoundedRect(10, 10, 50, 50);
+  auto clip = ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
+                                            std::move(clip_state));
+
+  local_state.SetClip(clip.get());
+
+  FloatClipRect actual_clip_rect(FloatRect(60, 10, 10, 10));
+  GeometryMapper::LocalToAncestorVisualRect(
+      local_state, ancestor_state, actual_clip_rect,
+      kIgnorePlatformOverlayScrollbarSize, kInclusiveIntersect);
+  EXPECT_CLIP_RECT_EQ(FloatClipRect(FloatRect(60, 10, 0, 10)),
+                      actual_clip_rect);
+
+  // Check that not passing kExcludeOverlayScrollbarSizeForHitTesting gives
+  // a different result.
+  actual_clip_rect.SetRect(FloatRect(60, 10, 10, 10));
+  GeometryMapper::LocalToAncestorVisualRect(
+      local_state, ancestor_state, actual_clip_rect,
+      kIgnorePlatformOverlayScrollbarSize, kNonInclusiveIntersect);
+  EXPECT_CLIP_RECT_EQ(FloatClipRect(FloatRect()), actual_clip_rect);
 }
 
 TEST_P(GeometryMapperTest, RoundedClip) {

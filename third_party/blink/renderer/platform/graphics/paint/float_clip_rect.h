@@ -56,6 +56,21 @@ class PLATFORM_EXPORT FloatClipRect {
       ClearIsTight();
   }
 
+  bool InclusiveIntersect(const FloatClipRect& other) {
+    bool retval = true;
+    if (is_infinite_) {
+      is_infinite_ = other.is_infinite_;
+      rect_ = other.rect_;
+    } else {
+      retval = rect_.InclusiveIntersect(other.Rect());
+    }
+    if (other.HasRadius())
+      SetHasRadius();
+    else if (!other.IsTight())
+      ClearIsTight();
+    return retval;
+  }
+
   bool HasRadius() const { return has_radius_; }
   void SetHasRadius() {
     has_radius_ = true;

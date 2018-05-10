@@ -1564,23 +1564,30 @@ LayoutRect LayoutObject::LocalVisualRectIgnoringVisibility() const {
 bool LayoutObject::MapToVisualRectInAncestorSpaceInternalFastPath(
     const LayoutBoxModelObject* ancestor,
     LayoutRect& rect,
-    VisualRectFlags visual_rect_flags) const {
+    VisualRectFlags visual_rect_flags,
+    bool& intersects) const {
   if (!(visual_rect_flags & kUseGeometryMapper) ||
       !RuntimeEnabledFeatures::SlimmingPaintV175Enabled() ||
-      (visual_rect_flags & kEdgeInclusive) ||
       !FirstFragment().HasLocalBorderBoxProperties() || !ancestor ||
       !ancestor->FirstFragment().HasLocalBorderBoxProperties()) {
+    intersects = true;
     return false;
   }
 
-  if (ancestor == this)
+  if (ancestor == this) {
+    intersects = true;
     return true;
+  }
 
   rect.MoveBy(FirstFragment().PaintOffset());
   FloatClipRect clip_rect((FloatRect(rect)));
-  GeometryMapper::LocalToAncestorVisualRect(
+  intersects = GeometryMapper::LocalToAncestorVisualRect(
       FirstFragment().LocalBorderBoxProperties(),
-      ancestor->FirstFragment().ContentsProperties(), clip_rect);
+      ancestor->FirstFragment().ContentsProperties(), clip_rect,
+      kIgnorePlatformOverlayScrollbarSize,
+      (visual_rect_flags & kEdgeInclusive) ? kInclusiveIntersect
+                                           : kNonInclusiveIntersect);
+
   rect = LayoutRect(clip_rect.Rect());
   rect.MoveBy(-ancestor->FirstFragment().PaintOffset());
 
@@ -1591,17 +1598,18 @@ bool LayoutObject::MapToVisualRectInAncestorSpace(
     const LayoutBoxModelObject* ancestor,
     LayoutRect& rect,
     VisualRectFlags visual_rect_flags) const {
-  if (MapToVisualRectInAncestorSpaceInternalFastPath(ancestor, rect,
-                                                     visual_rect_flags))
-    return !rect.IsEmpty();
+  bool intersects = true;
+  if (MapToVisualRectInAncestorSpaceInternalFastPath(
+          ancestor, rect, visual_rect_flags, intersects))
+    return intersects;
 
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  FloatQuad(FloatRect(rect)));
-  bool retval = MapToVisualRectInAncestorSpaceInternal(
-      ancestor, transform_state, visual_rect_flags);
+  intersects = MapToVisualRectInAncestorSpaceInternal(ancestor, transform_state,
+                                                      visual_rect_flags);
   transform_state.Flatten();
   rect = LayoutRect(transform_state.LastPlanarQuad().BoundingBox());
-  return retval;
+  return intersects;
 }
 
 bool LayoutObject::MapToVisualRectInAncestorSpaceInternal(

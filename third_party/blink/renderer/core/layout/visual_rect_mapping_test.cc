@@ -104,17 +104,21 @@ class VisualRectMappingTest : public PaintTestConfigurations,
 
   // Checks the result of MapToVisualRectInAncestorSpace with and without
   // geometry mapper.
-  void CheckMapToVisualRectInAncestorSpace(
-      LayoutRect rect,
-      LayoutRect expected,
-      const LayoutObject* object,
-      const LayoutBoxModelObject* ancestor) {
+  void CheckMapToVisualRectInAncestorSpace(LayoutRect rect,
+                                           LayoutRect expected,
+                                           const LayoutObject* object,
+                                           const LayoutBoxModelObject* ancestor,
+                                           VisualRectFlags flags,
+                                           bool expected_retval) {
     LayoutRect result(rect);
-    EXPECT_TRUE(object->MapToVisualRectInAncestorSpace(ancestor, result));
+    EXPECT_EQ(expected_retval,
+              object->MapToVisualRectInAncestorSpace(ancestor, result, flags));
     EXPECT_EQ(result, expected);
     result = rect;
-    EXPECT_TRUE(object->MapToVisualRectInAncestorSpace(ancestor, result,
-                                                       kUseGeometryMapper));
+    EXPECT_EQ(expected_retval,
+              object->MapToVisualRectInAncestorSpace(
+                  ancestor, result,
+                  static_cast<VisualRectFlags>(flags | kUseGeometryMapper)));
     EXPECT_EQ(result, expected);
   }
 };
@@ -972,8 +976,9 @@ TEST_P(VisualRectMappingTest, FixedContentsInIframe) {
   while (root_view->GetFrame()->OwnerLayoutObject())
     root_view = root_view->GetFrame()->OwnerLayoutObject()->View();
 
-  CheckMapToVisualRectInAncestorSpace(
-      LayoutRect(0, 0, 400, 300), LayoutRect(0, 0, 400, 300), fixed, root_view);
+  CheckMapToVisualRectInAncestorSpace(LayoutRect(0, 0, 400, 300),
+                                      LayoutRect(0, 0, 400, 300), fixed,
+                                      root_view, kDefaultVisualRectFlags, true);
 
   ChildDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0, 50), kProgrammaticScroll);
@@ -981,8 +986,9 @@ TEST_P(VisualRectMappingTest, FixedContentsInIframe) {
 
   // The fixed element should not scroll so the mapped visual rect should not
   // have changed.
-  CheckMapToVisualRectInAncestorSpace(
-      LayoutRect(0, 0, 400, 300), LayoutRect(0, 0, 400, 300), fixed, root_view);
+  CheckMapToVisualRectInAncestorSpace(LayoutRect(0, 0, 400, 300),
+                                      LayoutRect(0, 0, 400, 300), fixed,
+                                      root_view, kDefaultVisualRectFlags, true);
 }
 
 TEST_P(VisualRectMappingTest, FixedContentsWithScrollOffset) {
@@ -1000,14 +1006,13 @@ TEST_P(VisualRectMappingTest, FixedContentsWithScrollOffset) {
     <div id='forcescroll' style='height:1000px;'></div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
   auto* ancestor =
       ToLayoutBox(GetDocument().getElementById("ancestor")->GetLayoutObject());
   auto* fixed = GetDocument().getElementById("fixed")->GetLayoutObject();
 
   CheckMapToVisualRectInAncestorSpace(LayoutRect(0, 0, 400, 300),
                                       LayoutRect(0, -10, 400, 300), fixed,
-                                      ancestor);
+                                      ancestor, kDefaultVisualRectFlags, true);
 
   GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0, 50), kProgrammaticScroll);
@@ -1015,8 +1020,41 @@ TEST_P(VisualRectMappingTest, FixedContentsWithScrollOffset) {
 
   // The fixed element does not scroll but the ancestor does which changes the
   // visual rect.
-  CheckMapToVisualRectInAncestorSpace(
-      LayoutRect(0, 0, 400, 300), LayoutRect(0, 40, 400, 300), fixed, ancestor);
+  CheckMapToVisualRectInAncestorSpace(LayoutRect(0, 0, 400, 300),
+                                      LayoutRect(0, 40, 400, 300), fixed,
+                                      ancestor, kDefaultVisualRectFlags, true);
+}
+
+TEST_P(VisualRectMappingTest, InclusiveIntersect) {
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin:0; }</style>
+    <div id='ancestor' style='position: relative'>
+      <div style='width: 50px; height: 50px; overflow: hidden'>
+        <div id='child' style='width: 10px; height: 10px; position: relative; left: 50px'></div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* ancestor =
+      ToLayoutBox(GetDocument().getElementById("ancestor")->GetLayoutObject());
+  auto* child =
+      ToLayoutBox(GetDocument().getElementById("child")->GetLayoutObject());
+
+  CheckMapToVisualRectInAncestorSpace(LayoutRect(0, 0, 10, 10),
+                                      LayoutRect(50, 0, 0, 10), child, ancestor,
+                                      kEdgeInclusive, true);
+
+  CheckMapToVisualRectInAncestorSpace(LayoutRect(1, 1, 10, 10), LayoutRect(),
+                                      child, ancestor, kEdgeInclusive, false);
+
+  CheckMapToVisualRectInAncestorSpace(LayoutRect(1, 1, 10, 10),
+                                      LayoutRect(1, 1, 10, 10), child, child,
+                                      kEdgeInclusive, true);
+
+  CheckMapToVisualRectInAncestorSpace(LayoutRect(0, 0, 10, 10), LayoutRect(),
+                                      child, ancestor, kDefaultVisualRectFlags,
+                                      false);
 }
 
 }  // namespace blink

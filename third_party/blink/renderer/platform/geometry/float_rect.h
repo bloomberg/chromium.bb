@@ -141,6 +141,14 @@ class PLATFORM_EXPORT FloatRect {
   bool Contains(const FloatPoint&, ContainsMode = kInsideOrOnStroke) const;
 
   void Intersect(const FloatRect&);
+  // Set this rect to be the intersection of itself and the argument rect
+  // using edge-inclusive geometry. If the two rectangles overlap but the
+  // overlap region is zero-area (either because one of the two rectangles
+  // is zero-area, or because the rectangles overlap at an edge or a corner),
+  // the result is the zero-area intersection. The return value indicates
+  // whether the two rectangle actually have an intersection, since checking
+  // the result for isEmpty() is not conclusive.
+  bool InclusiveIntersect(const FloatRect&);
   void Unite(const FloatRect&);
   void UniteEvenIfEmpty(const FloatRect&);
   void UniteIfNonZero(const FloatRect&);
