@@ -531,9 +531,7 @@ public class NotificationPlatformBridge {
         Resources res = context.getResources();
 
         // Record whether it's known whether notifications can be shown to the user at all.
-        RecordHistogram.recordEnumeratedHistogram("Notifications.AppNotificationStatus",
-                NotificationSystemStatusUtil.determineAppNotificationStatus(context),
-                NotificationSystemStatusUtil.APP_NOTIFICATIONS_STATUS_BOUNDARY);
+        NotificationSystemStatusUtil.recordAppNotificationStatusHistogram(context);
 
         PendingIntent clickIntent = makePendingIntent(context,
                 NotificationConstants.ACTION_CLICK_NOTIFICATION, notificationId, origin, scopeUrl,
