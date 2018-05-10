@@ -268,6 +268,9 @@ bool DrawingBuffer::DefaultBufferRequiresAlphaChannelToBePreserved() {
 
 DrawingBuffer::RegisteredBitmap DrawingBuffer::CreateOrRecycleBitmap(
     cc::SharedBitmapIdRegistrar* bitmap_registrar) {
+  // When searching for a hit in SharedBitmap, we don't consider the bitmap
+  // format (RGBA 8888 vs F16). We expect to always have the same bitmap format,
+  // matching the back storage of the drawing buffer.
   auto* it = std::remove_if(recycled_bitmaps_.begin(), recycled_bitmaps_.end(),
                             [this](const RegisteredBitmap& registered) {
                               return registered.bitmap->size() !=
@@ -283,11 +286,14 @@ DrawingBuffer::RegisteredBitmap DrawingBuffer::CreateOrRecycleBitmap(
   }
 
   viz::SharedBitmapId id = viz::SharedBitmap::GenerateId();
+  viz::ResourceFormat format = viz::RGBA_8888;
+  if (use_half_float_storage_)
+    format = viz::RGBA_F16;
   std::unique_ptr<base::SharedMemory> shm =
       viz::bitmap_allocation::AllocateMappedBitmap(
-          static_cast<gfx::Size>(size_), viz::RGBA_8888);
+          static_cast<gfx::Size>(size_), format);
   auto bitmap = base::MakeRefCounted<cc::CrossThreadSharedBitmap>(
-      id, std::move(shm), static_cast<gfx::Size>(size_), viz::RGBA_8888);
+      id, std::move(shm), static_cast<gfx::Size>(size_), format);
   RegisteredBitmap registered = {
       bitmap, bitmap_registrar->RegisterSharedBitmapId(id, bitmap)};
   return registered;
@@ -363,8 +369,11 @@ void DrawingBuffer::FinishPrepareTransferableResourceSoftware(
                         op);
   }
 
+  viz::ResourceFormat format = viz::RGBA_8888;
+  if (use_half_float_storage_)
+    format = viz::RGBA_F16;
   *out_resource = viz::TransferableResource::MakeSoftware(
-      registered.bitmap->id(), static_cast<gfx::Size>(size_), viz::RGBA_8888);
+      registered.bitmap->id(), static_cast<gfx::Size>(size_), format);
   out_resource->color_space = storage_color_space_;
 
   // This holds a ref on the DrawingBuffer that will keep it alive until the
@@ -457,6 +466,8 @@ void DrawingBuffer::FinishPrepareTransferableResourceGpu(
         is_overlay_candidate);
     out_resource->color_space = sampler_color_space_;
     out_resource->format = viz::RGBA_8888;
+    if (use_half_float_storage_)
+      out_resource->format = viz::RGBA_F16;
 
     // This holds a ref on the DrawingBuffer that will keep it alive until the
     // mailbox is released (and while the release callback is running).

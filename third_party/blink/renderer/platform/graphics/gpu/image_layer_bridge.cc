@@ -15,9 +15,12 @@
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/color_behavior.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace blink {
@@ -135,17 +138,22 @@ bool ImageLayerBridge::PrepareTransferableResource(
                   WrapWeakPersistent(this), std::move(image_for_compositor));
     *out_release_callback = viz::SingleReleaseCallback::Create(std::move(func));
   } else {
-    const gfx::Size size(image_for_compositor->width(),
-                         image_for_compositor->height());
-    RegisteredBitmap registered = CreateOrRecycleBitmap(size, bitmap_registrar);
-
     sk_sp<SkImage> sk_image =
         image_for_compositor->PaintImageForCurrentFrame().GetSkImage();
     if (!sk_image)
       return false;
 
-    SkImageInfo dst_info = SkImageInfo::MakeN32Premul(
-        size.width(), size.height(), sk_image->refColorSpace());
+    const gfx::Size size(image_for_compositor->width(),
+                         image_for_compositor->height());
+    viz::ResourceFormat resource_format = viz::RGBA_8888;
+    if (sk_image->colorType() == SkColorType::kRGBA_F16_SkColorType)
+      resource_format = viz::RGBA_F16;
+    RegisteredBitmap registered =
+        CreateOrRecycleBitmap(size, resource_format, bitmap_registrar);
+
+    SkImageInfo dst_info =
+        SkImageInfo::Make(size.width(), size.height(), sk_image->colorType(),
+                          kPremul_SkAlphaType, sk_image->refColorSpace());
     void* pixels = registered.bitmap->shared_memory()->memory();
 
     // Copy from SkImage into SharedMemory owned by |registered|.
@@ -153,25 +161,32 @@ bool ImageLayerBridge::PrepareTransferableResource(
       return false;
 
     *out_resource = viz::TransferableResource::MakeSoftware(
-        registered.bitmap->id(), size, viz::RGBA_8888);
+        registered.bitmap->id(), size, resource_format);
+    if (RuntimeEnabledFeatures::CanvasColorManagementEnabled()) {
+      out_resource->color_space =
+          SkColorSpaceToGfxColorSpace(sk_image->refColorSpace());
+    }
     auto func = WTF::Bind(&ImageLayerBridge::ResourceReleasedSoftware,
                           WrapWeakPersistent(this), std::move(registered));
     *out_release_callback = viz::SingleReleaseCallback::Create(std::move(func));
   }
-
-  // TODO(junov): Figure out how to get the color space info.
-  // out_resource->color_space = ...;
 
   return true;
 }
 
 ImageLayerBridge::RegisteredBitmap ImageLayerBridge::CreateOrRecycleBitmap(
     const gfx::Size& size,
+    viz::ResourceFormat format,
     cc::SharedBitmapIdRegistrar* bitmap_registrar) {
-  auto* it = std::remove_if(recycled_bitmaps_.begin(), recycled_bitmaps_.end(),
-                            [&size](const RegisteredBitmap& registered) {
-                              return registered.bitmap->size() != size;
-                            });
+  auto* it = std::remove_if(
+      recycled_bitmaps_.begin(), recycled_bitmaps_.end(),
+      [&size, &format](const RegisteredBitmap& registered) {
+        unsigned src_bytes_per_pixel =
+            (registered.bitmap->format() == viz::RGBA_8888) ? 4 : 8;
+        unsigned target_bytes_per_pixel = (format == viz::RGBA_8888) ? 4 : 8;
+        return (registered.bitmap->size().GetArea() * src_bytes_per_pixel !=
+                size.GetArea() * target_bytes_per_pixel);
+      });
   recycled_bitmaps_.Shrink(it - recycled_bitmaps_.begin());
 
   if (!recycled_bitmaps_.IsEmpty()) {
@@ -184,11 +199,11 @@ ImageLayerBridge::RegisteredBitmap ImageLayerBridge::CreateOrRecycleBitmap(
   // There are no bitmaps to recycle so allocate a new one.
   viz::SharedBitmapId id = viz::SharedBitmap::GenerateId();
   std::unique_ptr<base::SharedMemory> shm =
-      viz::bitmap_allocation::AllocateMappedBitmap(size, viz::RGBA_8888);
+      viz::bitmap_allocation::AllocateMappedBitmap(size, format);
 
   RegisteredBitmap registered;
   registered.bitmap = base::MakeRefCounted<cc::CrossThreadSharedBitmap>(
-      id, std::move(shm), size, viz::RGBA_8888);
+      id, std::move(shm), size, format);
   registered.registration =
       bitmap_registrar->RegisterSharedBitmapId(id, registered.bitmap);
 

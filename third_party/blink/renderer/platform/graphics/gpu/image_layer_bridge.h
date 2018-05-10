@@ -9,6 +9,7 @@
 
 #include "cc/layers/texture_layer_client.h"
 #include "cc/resources/shared_bitmap_id_registrar.h"
+#include "components/viz/common/resources/resource_format.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
@@ -76,6 +77,7 @@ class PLATFORM_EXPORT ImageLayerBridge
   // recycled bitmaps that are the wrong size.
   RegisteredBitmap CreateOrRecycleBitmap(
       const gfx::Size& size,
+      viz::ResourceFormat format,
       cc::SharedBitmapIdRegistrar* bitmap_registrar);
 
   void ResourceReleasedGpu(scoped_refptr<StaticBitmapImage>,
