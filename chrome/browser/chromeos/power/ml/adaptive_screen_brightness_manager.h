@@ -51,6 +51,10 @@ class AdaptiveScreenBrightnessManager
   static constexpr base::TimeDelta kInactivityDuration =
       base::TimeDelta::FromSeconds(20);
 
+  // Interval at which data should be logged.
+  static constexpr base::TimeDelta kLoggingInterval =
+      base::TimeDelta::FromMinutes(10);
+
   AdaptiveScreenBrightnessManager(
       std::unique_ptr<AdaptiveScreenBrightnessUkmLogger> ukm_logger,
       ui::UserActivityDetector* detector,
@@ -142,7 +146,14 @@ class AdaptiveScreenBrightnessManager
   // Battery percent. This is in the range [0.0, 100.0].
   base::Optional<float> battery_percent_;
 
+  // Both |screen_brightness_percent_| and |previous_screen_brightness_percent_|
+  // are values reported directly by powerd. They are percentages as double but
+  // are in the range of [0, 100]. When we convert these values to the fields in
+  // ScreenBrightnessEvent, we cast them to ints.
   base::Optional<double> screen_brightness_percent_;
+  base::Optional<double> previous_screen_brightness_percent_;
+  base::Optional<base::TimeDelta> last_event_time_since_boot_;
+
   // The time (since boot) of the most recent active event. This is the end of
   // the most recent period of activity.
   base::Optional<base::TimeDelta> last_activity_time_since_boot_;

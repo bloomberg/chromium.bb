@@ -52,9 +52,6 @@ constexpr base::TimeDelta kUserInputEventsDuration =
 constexpr int kNumUserInputEventsBuckets =
     kUserInputEventsDuration / base::TimeDelta::FromMinutes(1);
 
-// Log data every 10 minutes.
-constexpr base::TimeDelta kLoggingInterval = base::TimeDelta::FromMinutes(10);
-
 // Returns the focused visible browser unless no visible browser is focused,
 // then returns the topmost visible browser.
 // Returns nullopt if no suitable browsers are found.
@@ -106,6 +103,7 @@ const std::pair<ukm::SourceId, bool> GetActiveTabData() {
 }  // namespace
 
 constexpr base::TimeDelta AdaptiveScreenBrightnessManager::kInactivityDuration;
+constexpr base::TimeDelta AdaptiveScreenBrightnessManager::kLoggingInterval;
 
 AdaptiveScreenBrightnessManager::AdaptiveScreenBrightnessManager(
     std::unique_ptr<AdaptiveScreenBrightnessUkmLogger> ukm_logger,
@@ -268,6 +266,7 @@ void AdaptiveScreenBrightnessManager::ScreenBrightnessChanged(
     default:
       reason_ = ScreenBrightnessEvent::Event::OTHER;
   }
+  previous_screen_brightness_percent_ = screen_brightness_percent_;
   screen_brightness_percent_ = change.percent();
   LogEvent();
 }
@@ -311,6 +310,7 @@ void AdaptiveScreenBrightnessManager::OnVideoActivityEnded() {
 
 void AdaptiveScreenBrightnessManager::OnTimerFired() {
   reason_ = ScreenBrightnessEvent::Event::PERIODIC;
+  previous_screen_brightness_percent_ = screen_brightness_percent_;
   LogEvent();
 }
 
@@ -326,6 +326,7 @@ void AdaptiveScreenBrightnessManager::OnReceiveSwitchStates(
 void AdaptiveScreenBrightnessManager::OnReceiveScreenBrightnessPercent(
     const base::Optional<double> screen_brightness_percent) {
   if (screen_brightness_percent.has_value()) {
+    previous_screen_brightness_percent_ = screen_brightness_percent_;
     screen_brightness_percent_ = *screen_brightness_percent;
   }
 }
@@ -350,12 +351,19 @@ void AdaptiveScreenBrightnessManager::LogEvent() {
   if (!screen_brightness_percent_.has_value()) {
     return;
   }
+
+  const base::TimeDelta time_since_boot = boot_clock_->GetTimeSinceBoot();
+
   ScreenBrightnessEvent screen_brightness;
   ScreenBrightnessEvent::Event* const event = screen_brightness.mutable_event();
   event->set_brightness(*screen_brightness_percent_);
   if (reason_.has_value()) {
     event->set_reason(*reason_);
     reason_ = base::nullopt;
+  }
+  if (last_event_time_since_boot_.has_value()) {
+    event->set_time_since_last_event_sec(
+        (time_since_boot - *last_event_time_since_boot_).InSeconds());
   }
 
   ScreenBrightnessEvent::Features* const features =
@@ -373,7 +381,6 @@ void AdaptiveScreenBrightnessManager::LogEvent() {
       static_cast<ScreenBrightnessEvent_Features_ActivityData_DayOfWeek>(
           exploded.day_of_week));
 
-  const base::TimeDelta time_since_boot = boot_clock_->GetTimeSinceBoot();
   activity_data->set_num_recent_mouse_events(
       mouse_counter_->GetTotal(time_since_boot));
   activity_data->set_num_recent_key_events(
@@ -433,6 +440,11 @@ void AdaptiveScreenBrightnessManager::LogEvent() {
         *temperature);
   }
 
+  if (previous_screen_brightness_percent_.has_value()) {
+    features->mutable_env_data()->set_previous_brightness(
+        *previous_screen_brightness_percent_);
+  }
+
   ScreenBrightnessEvent::Features::AccessibilityData* const accessibility_data =
       features->mutable_accessibility_data();
 
@@ -472,6 +484,8 @@ void AdaptiveScreenBrightnessManager::LogEvent() {
 
   // Log to metrics.
   ukm_logger_->LogActivity(screen_brightness, tab_data.first, tab_data.second);
+
+  last_event_time_since_boot_ = time_since_boot;
 }
 
 }  // namespace ml

@@ -62,6 +62,7 @@ TEST_F(AdaptiveScreenBrightnessUkmLoggerImplTest, Basic) {
   env_data->set_battery_percent(96.0);
   env_data->set_device_mode(ScreenBrightnessEvent::Features::EnvData::LAPTOP);
   env_data->set_night_light_temperature_percent(40);
+  env_data->set_previous_brightness(10);
 
   ScreenBrightnessEvent::Features::AccessibilityData* const accessibility_data =
       features->mutable_accessibility_data();
@@ -83,6 +84,7 @@ TEST_F(AdaptiveScreenBrightnessUkmLoggerImplTest, Basic) {
       screen_brightness_event.mutable_event();
   event->set_brightness(31);
   event->set_reason(ScreenBrightnessEvent::Event::USER_UP);
+  event->set_time_since_last_event_sec(9);
 
   LogActivity(screen_brightness_event, 5 /* tab_id */,
               true /* has_form_entry */);
@@ -109,15 +111,17 @@ TEST_F(AdaptiveScreenBrightnessUkmLoggerImplTest, Basic) {
       {ukm::builders::ScreenBrightness::kIsSwitchAccessEnabledName, 1},
       {ukm::builders::ScreenBrightness::kIsVideoPlayingName, 1},
       {ukm::builders::ScreenBrightness::kIsVirtualKeyboardEnabledName, 1},
+      {ukm::builders::ScreenBrightness::kLastActivityTimeSecName, 22},
+      {ukm::builders::ScreenBrightness::kNightLightTemperaturePercentName, 40},
       {ukm::builders::ScreenBrightness::kNumRecentKeyEventsName, 0},
       {ukm::builders::ScreenBrightness::kNumRecentMouseEventsName, 12},
       {ukm::builders::ScreenBrightness::kNumRecentStylusEventsName, 34},
       {ukm::builders::ScreenBrightness::kNumRecentTouchEventsName, 56},
-      {ukm::builders::ScreenBrightness::kNightLightTemperaturePercentName, 40},
-      {ukm::builders::ScreenBrightness::kLastActivityTimeSecName, 22},
+      {ukm::builders::ScreenBrightness::kOnBatteryName, 1},
+      {ukm::builders::ScreenBrightness::kPreviousBrightnessName, 10},
       {ukm::builders::ScreenBrightness::kReasonName, 1},
       {ukm::builders::ScreenBrightness::kRecentTimeActiveSecName, 33},
-      {ukm::builders::ScreenBrightness::kOnBatteryName, 1},
+      {ukm::builders::ScreenBrightness::kTimeSinceLastEventSecName, 9},
   };
 
   ukm_entry_checker_.ExpectNewEntry(ukm::builders::ScreenBrightness::kEntryName,

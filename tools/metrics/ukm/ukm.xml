@@ -2776,6 +2776,12 @@ be describing additional metrics about the same event.
       power.
     </summary>
   </metric>
+  <metric name="PreviousBrightness">
+    <summary>
+      The brightness of the screen prior to the time at which the current event
+      was logged.
+    </summary>
+  </metric>
   <metric name="Reason">
     <summary>
       The reason that the event is logged. Values are enumerated in
@@ -2790,6 +2796,11 @@ be describing additional metrics about the same event.
   <metric name="SequenceId">
     <summary>
       The ID of this event in the current session.
+    </summary>
+  </metric>
+  <metric name="TimeSinceLastEventSec">
+    <summary>
+      Time in seconds since last time an event was logged.
     </summary>
   </metric>
 </event>

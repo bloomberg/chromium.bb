@@ -32,6 +32,10 @@ constexpr UserActivityUkmLoggerImpl::Bucket kUserInputEventBuckets[] = {
 constexpr UserActivityUkmLoggerImpl::Bucket kRecentTimeActiveBuckets[] =
     {{60, 1}, {600, 60}, {1200, 300}, {3600, 600}, {18000, 1800}};
 
+constexpr UserActivityUkmLoggerImpl::Bucket kTimeSinceLastEventBuckets[] = {
+    {60, 1},
+    {600, 60}};
+
 }  // namespace
 
 AdaptiveScreenBrightnessUkmLoggerImpl::
@@ -63,28 +67,28 @@ void AdaptiveScreenBrightnessUkmLoggerImpl::LogActivity(
     ukm_screen_brightness.SetNumRecentMouseEvents(
         UserActivityUkmLoggerImpl::Bucketize(
             activity_data.num_recent_mouse_events(), kUserInputEventBuckets,
-            arraysize(kUserInputEventBuckets)));
+            base::size(kUserInputEventBuckets)));
   }
 
   if (activity_data.has_num_recent_key_events()) {
     ukm_screen_brightness.SetNumRecentKeyEvents(
         UserActivityUkmLoggerImpl::Bucketize(
             activity_data.num_recent_key_events(), kUserInputEventBuckets,
-            arraysize(kUserInputEventBuckets)));
+            base::size(kUserInputEventBuckets)));
   }
 
   if (activity_data.has_num_recent_stylus_events()) {
     ukm_screen_brightness.SetNumRecentStylusEvents(
         UserActivityUkmLoggerImpl::Bucketize(
             activity_data.num_recent_stylus_events(), kUserInputEventBuckets,
-            arraysize(kUserInputEventBuckets)));
+            base::size(kUserInputEventBuckets)));
   }
 
   if (activity_data.has_num_recent_touch_events()) {
     ukm_screen_brightness.SetNumRecentTouchEvents(
         UserActivityUkmLoggerImpl::Bucketize(
             activity_data.num_recent_touch_events(), kUserInputEventBuckets,
-            arraysize(kUserInputEventBuckets)));
+            base::size(kUserInputEventBuckets)));
   }
 
   if (activity_data.has_last_activity_time_sec()) {
@@ -96,7 +100,7 @@ void AdaptiveScreenBrightnessUkmLoggerImpl::LogActivity(
     ukm_screen_brightness.SetRecentTimeActiveSec(
         UserActivityUkmLoggerImpl::Bucketize(
             activity_data.recent_time_active_sec(), kRecentTimeActiveBuckets,
-            arraysize(kRecentTimeActiveBuckets)));
+            base::size(kRecentTimeActiveBuckets)));
   }
 
   if (activity_data.has_is_video_playing()) {
@@ -113,7 +117,7 @@ void AdaptiveScreenBrightnessUkmLoggerImpl::LogActivity(
     ukm_screen_brightness.SetBatteryPercent(
         UserActivityUkmLoggerImpl::Bucketize(
             std::floor(env_data.battery_percent()), kBatteryPercentBuckets,
-            arraysize(kBatteryPercentBuckets)));
+            base::size(kBatteryPercentBuckets)));
   }
 
   if (env_data.has_device_mode()) {
@@ -123,6 +127,10 @@ void AdaptiveScreenBrightnessUkmLoggerImpl::LogActivity(
   if (env_data.has_night_light_temperature_percent()) {
     ukm_screen_brightness.SetNightLightTemperaturePercent(
         env_data.night_light_temperature_percent());
+  }
+
+  if (env_data.has_previous_brightness()) {
+    ukm_screen_brightness.SetPreviousBrightness(env_data.previous_brightness());
   }
 
   const ScreenBrightnessEvent_Features_AccessibilityData accessibility_data =
@@ -200,6 +208,13 @@ void AdaptiveScreenBrightnessUkmLoggerImpl::LogActivity(
 
   if (event.has_reason()) {
     ukm_screen_brightness.SetReason(event.reason());
+  }
+
+  if (event.has_time_since_last_event_sec()) {
+    ukm_screen_brightness.SetTimeSinceLastEventSec(
+        UserActivityUkmLoggerImpl::Bucketize(
+            event.time_since_last_event_sec(), kTimeSinceLastEventBuckets,
+            base::size(kTimeSinceLastEventBuckets)));
   }
 
   ukm::UkmRecorder* const ukm_recorder = ukm::UkmRecorder::Get();

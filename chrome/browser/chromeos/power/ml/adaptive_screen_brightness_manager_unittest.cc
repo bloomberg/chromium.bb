@@ -48,6 +48,8 @@ struct LogActivityInfo {
 
 const int kInactivityDurationSecs =
     AdaptiveScreenBrightnessManager::kInactivityDuration.InSeconds();
+const int kLoggingIntervalSecs =
+    AdaptiveScreenBrightnessManager::kLoggingInterval.InSeconds();
 
 // Testing ukm logger.
 class TestingAdaptiveScreenBrightnessUkmLogger
@@ -233,7 +235,7 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, PeriodicLogging) {
   ReportLidEvent(chromeos::PowerManagerClient::LidState::OPEN);
   ReportTabletModeEvent(chromeos::PowerManagerClient::TabletMode::UNSUPPORTED);
 
-  FireTimer();
+  FastForwardTimeBySecs(kLoggingIntervalSecs);
 
   const std::vector<LogActivityInfo>& info = ukm_logger()->log_activity_info();
   ASSERT_EQ(1U, info.size());
@@ -244,50 +246,105 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, PeriodicLogging) {
   EXPECT_TRUE(features.activity_data().is_video_playing());
   EXPECT_EQ(ScreenBrightnessEvent::Features::EnvData::LAPTOP,
             features.env_data().device_mode());
+  EXPECT_EQ(75, features.env_data().previous_brightness());
 
   const ScreenBrightnessEvent::Event& event =
       info[0].screen_brightness_event.event();
   EXPECT_EQ(75, event.brightness());
+  EXPECT_EQ(ScreenBrightnessEvent::Event::PERIODIC, event.reason());
+  EXPECT_FALSE(event.has_time_since_last_event_sec());
+}
+
+TEST_F(AdaptiveScreenBrightnessManagerTest,
+       PeriodicLoggingBrightnessUninitialized) {
+  ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 23.0f);
+  ReportVideoStart();
+  ReportLidEvent(chromeos::PowerManagerClient::LidState::OPEN);
+  ReportTabletModeEvent(chromeos::PowerManagerClient::TabletMode::UNSUPPORTED);
+
+  FastForwardTimeBySecs(kLoggingIntervalSecs);
+
+  const std::vector<LogActivityInfo>& info = ukm_logger()->log_activity_info();
+  EXPECT_TRUE(info.empty());
+}
+
+TEST_F(AdaptiveScreenBrightnessManagerTest, PeriodicTimerTest) {
+  ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 23.0f);
+  ReportVideoStart();
+  ReportLidEvent(chromeos::PowerManagerClient::LidState::OPEN);
+  ReportTabletModeEvent(chromeos::PowerManagerClient::TabletMode::UNSUPPORTED);
+
+  FastForwardTimeBySecs(kLoggingIntervalSecs - 10);
+
+  const std::vector<LogActivityInfo>& info = ukm_logger()->log_activity_info();
+  EXPECT_TRUE(info.empty());
 }
 
 TEST_F(AdaptiveScreenBrightnessManagerTest, BrightnessChange) {
   ReportBrightnessChangeEvent(
-      30.0f, power_manager::
-                 BacklightBrightnessChange_Cause_EXTERNAL_POWER_DISCONNECTED);
+      30.0f, power_manager::BacklightBrightnessChange_Cause_USER_REQUEST);
+  FastForwardTimeBySecs(2);
   ReportBrightnessChangeEvent(
-      40.0f, power_manager::BacklightBrightnessChange_Cause_USER_REQUEST);
+      40.0f, power_manager::
+                 BacklightBrightnessChange_Cause_EXTERNAL_POWER_DISCONNECTED);
+  FastForwardTimeBySecs(6);
   ReportBrightnessChangeEvent(
       20.0f, power_manager::BacklightBrightnessChange_Cause_USER_REQUEST);
 
   const std::vector<LogActivityInfo>& info = ukm_logger()->log_activity_info();
   ASSERT_EQ(3U, info.size());
+
   const ScreenBrightnessEvent::Event& event =
       info[0].screen_brightness_event.event();
   EXPECT_EQ(30, event.brightness());
-  EXPECT_EQ(ScreenBrightnessEvent::Event::EXTERNAL_POWER_DISCONNECTED,
-            event.reason());
+  EXPECT_EQ(ScreenBrightnessEvent::Event::OTHER, event.reason());
+  EXPECT_FALSE(event.has_time_since_last_event_sec());
+  // Brightness wasn't initialized so there's no previous brightness level.
+  EXPECT_FALSE(info[0]
+                   .screen_brightness_event.features()
+                   .env_data()
+                   .has_previous_brightness());
+
   const ScreenBrightnessEvent::Event& event1 =
       info[1].screen_brightness_event.event();
   EXPECT_EQ(40, event1.brightness());
-  EXPECT_EQ(ScreenBrightnessEvent::Event::USER_UP, event1.reason());
+  EXPECT_EQ(ScreenBrightnessEvent::Event::EXTERNAL_POWER_DISCONNECTED,
+            event1.reason());
+  EXPECT_EQ(2, event1.time_since_last_event_sec());
+  EXPECT_EQ(30, info[1]
+                    .screen_brightness_event.features()
+                    .env_data()
+                    .previous_brightness());
+
   const ScreenBrightnessEvent::Event& event2 =
       info[2].screen_brightness_event.event();
   EXPECT_EQ(20, event2.brightness());
   EXPECT_EQ(ScreenBrightnessEvent::Event::USER_DOWN, event2.reason());
+  EXPECT_EQ(6, event2.time_since_last_event_sec());
+  EXPECT_EQ(40, info[2]
+                    .screen_brightness_event.features()
+                    .env_data()
+                    .previous_brightness());
 }
 
 TEST_F(AdaptiveScreenBrightnessManagerTest, NoUserEvents) {
   InitializeBrightness(75.0f);
 
-  FastForwardTimeBySecs(2);
-  FireTimer();
+  FastForwardTimeBySecs(kLoggingIntervalSecs);
 
   const std::vector<LogActivityInfo>& info = ukm_logger()->log_activity_info();
   ASSERT_EQ(1U, info.size());
   const ScreenBrightnessEvent::Features& features =
       info[0].screen_brightness_event.features();
-  EXPECT_EQ(0, features.activity_data().last_activity_time_sec());
-  EXPECT_EQ(0, features.activity_data().recent_time_active_sec());
+  EXPECT_FALSE(features.activity_data().has_last_activity_time_sec());
+  EXPECT_FALSE(features.activity_data().has_recent_time_active_sec());
+  EXPECT_EQ(75, features.env_data().previous_brightness());
+
+  const ScreenBrightnessEvent::Event& event =
+      info[0].screen_brightness_event.event();
+  EXPECT_EQ(75, event.brightness());
+  EXPECT_FALSE(event.has_time_since_last_event_sec());
+  EXPECT_EQ(ScreenBrightnessEvent::Event::PERIODIC, event.reason());
 
   EXPECT_EQ(ukm::kInvalidSourceId, info[0].tab_id);
 }
@@ -297,30 +354,35 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, NullUserActivity) {
 
   FastForwardTimeBySecs(1);
   ReportUserActivity(nullptr);
-  FastForwardTimeBySecs(2);
-  FireTimer();
+  FastForwardTimeBySecs(kLoggingIntervalSecs);
 
   const std::vector<LogActivityInfo>& info = ukm_logger()->log_activity_info();
   ASSERT_EQ(1U, info.size());
   const ScreenBrightnessEvent::Features& features =
       info[0].screen_brightness_event.features();
-  EXPECT_EQ(0, features.activity_data().last_activity_time_sec());
-  EXPECT_EQ(0, features.activity_data().recent_time_active_sec());
+  EXPECT_FALSE(features.activity_data().has_last_activity_time_sec());
+  EXPECT_FALSE(features.activity_data().has_recent_time_active_sec());
+  EXPECT_EQ(75, features.env_data().previous_brightness());
+
+  const ScreenBrightnessEvent::Event& event =
+      info[0].screen_brightness_event.event();
+  EXPECT_EQ(75, event.brightness());
+  EXPECT_FALSE(event.has_time_since_last_event_sec());
+  EXPECT_EQ(ScreenBrightnessEvent::Event::PERIODIC, event.reason());
 }
 
 TEST_F(AdaptiveScreenBrightnessManagerTest, OneUserEvent) {
   InitializeBrightness(75.0f);
 
-  FastForwardTimeBySecs(1);
   ReportUserActivity(&kMouseEvent);
-  FastForwardTimeBySecs(2);
-  FireTimer();
+  FastForwardTimeBySecs(kLoggingIntervalSecs);
 
   const std::vector<LogActivityInfo>& info = ukm_logger()->log_activity_info();
   ASSERT_EQ(1U, info.size());
   const ScreenBrightnessEvent::Features& features =
       info[0].screen_brightness_event.features();
-  EXPECT_EQ(2, features.activity_data().last_activity_time_sec());
+  EXPECT_EQ(kLoggingIntervalSecs,
+            features.activity_data().last_activity_time_sec());
   EXPECT_EQ(0, features.activity_data().recent_time_active_sec());
 }
 
@@ -333,14 +395,15 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, TwoUserEventsSameActivity) {
   FastForwardTimeBySecs(5);
   ReportUserActivity(&kMouseEvent);
 
-  FastForwardTimeBySecs(2);
-  FireTimer();
+  FastForwardTimeBySecs(kLoggingIntervalSecs);
 
   const std::vector<LogActivityInfo>& info = ukm_logger()->log_activity_info();
   ASSERT_EQ(1U, info.size());
   const ScreenBrightnessEvent::Features& features =
       info[0].screen_brightness_event.features();
-  EXPECT_EQ(2, features.activity_data().last_activity_time_sec());
+  // Timer starts from the beginning, so subtract 6 seconds.
+  EXPECT_EQ(kLoggingIntervalSecs - 6,
+            features.activity_data().last_activity_time_sec());
   EXPECT_EQ(5, features.activity_data().recent_time_active_sec());
 }
 
@@ -353,14 +416,14 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, TwoUserEventsDifferentActivities) {
   FastForwardTimeBySecs(kInactivityDurationSecs + 5);
   ReportUserActivity(&kMouseEvent);
 
-  FastForwardTimeBySecs(2);
-  FireTimer();
+  FastForwardTimeBySecs(kLoggingIntervalSecs);
 
   const std::vector<LogActivityInfo>& info = ukm_logger()->log_activity_info();
   ASSERT_EQ(1U, info.size());
   const ScreenBrightnessEvent::Features& features =
       info[0].screen_brightness_event.features();
-  EXPECT_EQ(2, features.activity_data().last_activity_time_sec());
+  EXPECT_EQ(kLoggingIntervalSecs - kInactivityDurationSecs - 6,
+            features.activity_data().last_activity_time_sec());
   EXPECT_EQ(0, features.activity_data().recent_time_active_sec());
 }
 
