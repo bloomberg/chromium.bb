@@ -86,9 +86,12 @@ void BrowsingDataChannelIDHelperImpl::FetchOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
 
-  net::ChannelIDStore* cert_store =
-      request_context_getter_->GetURLRequestContext()->
-      channel_id_service()->GetChannelIDStore();
+  net::ChannelIDService* channel_id_service =
+      request_context_getter_->GetURLRequestContext()->channel_id_service();
+  net::ChannelIDStore* cert_store = nullptr;
+  if (channel_id_service) {
+    cert_store = channel_id_service->GetChannelIDStore();
+  }
   if (cert_store) {
     cert_store->GetAllChannelIDs(base::Bind(
         &BrowsingDataChannelIDHelperImpl::OnFetchComplete, this, callback));
