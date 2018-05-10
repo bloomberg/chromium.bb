@@ -237,48 +237,14 @@ class FakeWindowEventDispatcher : public aura::WindowEventDispatcher {
   size_t processed_touch_event_count_;
 };
 
-class FakeDelegatedFrameHostClientAura
-    : public DelegatedFrameHostClientAura,
-      public ui::CompositorLockManagerClient {
+class FakeDelegatedFrameHostClientAura : public DelegatedFrameHostClientAura {
  public:
   explicit FakeDelegatedFrameHostClientAura(
       RenderWidgetHostViewAura* render_widget_host_view)
-      : DelegatedFrameHostClientAura(render_widget_host_view),
-        lock_manager_(new base::NullTaskRunner(), this) {}
+      : DelegatedFrameHostClientAura(render_widget_host_view) {}
   ~FakeDelegatedFrameHostClientAura() override = default;
 
-  void DisableResizeLock() { can_create_resize_lock_ = false; }
-
-  bool resize_locked() const { return resize_locked_; }
-  bool compositor_locked() const { return compositor_locked_; }
-
  private:
-  // CompositorResizeLockClient implemention. Overrides from
-  // DelegatedFrameHostClientAura, to prevent the lock from timing out.
-  std::unique_ptr<ui::CompositorLock> GetCompositorLock(
-      ui::CompositorLockClient* client) override {
-    resize_locked_ = compositor_locked_ = true;
-    return lock_manager_.GetCompositorLock(nullptr, base::TimeDelta());
-  }
-  // CompositorResizeLockClient implemention. Overrides from
-  // // DelegatedFrameHostClientAura.
-  void CompositorResizeLockEnded() override {
-    resize_locked_ = false;
-    DelegatedFrameHostClientAura::CompositorResizeLockEnded();
-  }
-
-  // ui::CompositorLockManagerClient implementation.
-  void OnCompositorLockStateChanged(bool locked) override {
-    if (!locked) {
-      compositor_locked_ = false;
-    }
-  }
-
-  bool can_create_resize_lock_ = true;
-  bool resize_locked_ = false;
-  bool compositor_locked_ = false;
-  ui::CompositorLockManager lock_manager_;
-
   DISALLOW_COPY_AND_ASSIGN(FakeDelegatedFrameHostClientAura);
 };
 
@@ -310,10 +276,6 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
             std::move(sink), std::move(client_request));
     DidCreateNewRendererCompositorFrameSink(
         renderer_compositor_frame_sink_ptr_.get());
-  }
-
-  void DisableResizeLock() {
-    delegated_frame_host_client_->DisableResizeLock();
   }
 
   void UseFakeDispatcher() {
@@ -354,12 +316,6 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
         metadata);
   }
 
-  bool resize_locked() const {
-    return delegated_frame_host_client_->resize_locked();
-  }
-  bool compositor_locked() const {
-    return delegated_frame_host_client_->compositor_locked();
-  }
   bool is_guest_view_hack() { return is_guest_view_hack_; }
 
   gfx::Size last_frame_size_;
@@ -3278,9 +3234,6 @@ TEST_F(RenderWidgetHostViewAuraTest, ZeroSizeStillGetsLocalSurfaceId) {
   viz::LocalSurfaceId local_surface_id =
       parent_local_surface_id_allocator_.GenerateId();
 
-  // Prevent the DelegatedFrameHost from skipping frames.
-  view_->DisableResizeLock();
-
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
@@ -3311,9 +3264,6 @@ TEST_F(RenderWidgetHostViewAuraTest, BackgroundColorMatchesCompositorFrame) {
   gfx::Size frame_size(100, 100);
   viz::LocalSurfaceId local_surface_id =
       parent_local_surface_id_allocator_.GenerateId();
-
-  // Prevent the DelegatedFrameHost from skipping frames.
-  view_->DisableResizeLock();
 
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
@@ -3530,8 +3480,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
 
-  // Prevent the DelegatedFrameHost from skipping frames.
-  view_->DisableResizeLock();
   ASSERT_TRUE(view_->delegated_frame_host_);
 
   view_->SetSize(gfx::Size(300, 300));
@@ -3568,9 +3516,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
-
-  // Prevent the DelegatedFrameHost from skipping frames.
-  view_->DisableResizeLock();
 
   view_->SetSize(gfx::Size(300, 300));
   ASSERT_TRUE(view_->HasPrimarySurface());
@@ -3656,7 +3601,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
     // run a UI compositor so the DelegatedFrameHost doesn't get the chance
     // to release its resize lock once it receives a frame of the expected
     // size.
-    views[i]->DisableResizeLock();
     views[i]->InitAsChild(nullptr);
     aura::client::ParentWindowWithContext(
         views[i]->GetNativeView(),

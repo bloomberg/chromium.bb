@@ -51,19 +51,6 @@ void DelegatedFrameHostClientAura::OnFrameTokenChanged(uint32_t frame_token) {
   render_widget_host_view_->OnFrameTokenChangedForView(frame_token);
 }
 
-std::unique_ptr<ui::CompositorLock>
-DelegatedFrameHostClientAura::GetCompositorLock(
-    ui::CompositorLockClient* client) {
-  auto* window_host = render_widget_host_view_->window_->GetHost();
-  return window_host->compositor()->GetCompositorLock(client);
-}
-
-void DelegatedFrameHostClientAura::CompositorResizeLockEnded() {
-  auto* window_host = render_widget_host_view_->window_->GetHost();
-  window_host->dispatcher()->ReleasePointerMoves();
-  render_widget_host_view_->host_->SynchronizeVisualProperties();
-}
-
 void DelegatedFrameHostClientAura::DidReceiveFirstFrameAfterNavigation() {
   render_widget_host_view_->host_->DidReceiveFirstFrameAfterNavigation();
 }

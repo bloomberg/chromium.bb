@@ -14,7 +14,6 @@
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/features.h"
 #include "content/browser/compositor/image_transport_factory.h"
-#include "content/browser/renderer_host/compositor_resize_lock.h"
 #include "content/browser/renderer_host/display_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/context_factory.h"
