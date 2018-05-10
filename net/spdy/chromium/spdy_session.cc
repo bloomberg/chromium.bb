@@ -1450,21 +1450,21 @@ bool SpdySession::ValidatePushedStream(SpdyStreamId stream_id,
   // 206 Partial Content and 416 Requested Range Not Satisfiable are range
   // responses.
   if (status_it->second == "206" || status_it->second == "416") {
-    SpdyHeaderBlock::const_iterator client_request_range_it =
-        stream_it->second->request_headers().find("range");
-    if (client_request_range_it == stream_it->second->request_headers().end()) {
+    std::string client_request_range;
+    if (!request_info.extra_headers.GetHeader(HttpRequestHeaders::kRange,
+                                              &client_request_range)) {
       // Client initiated request is not a range request.
       // TODO(https://crbug.com/831536): Add histogram.
       return false;
     }
-    std::string pushed_request_range;
-    if (!request_info.extra_headers.GetHeader(HttpRequestHeaders::kRange,
-                                              &pushed_request_range)) {
+    SpdyHeaderBlock::const_iterator pushed_request_range_it =
+        stream_it->second->request_headers().find("range");
+    if (pushed_request_range_it == stream_it->second->request_headers().end()) {
       // Pushed request is not a range request.
       // TODO(https://crbug.com/831536): Add histogram.
       return false;
     }
-    if (client_request_range_it->second != pushed_request_range) {
+    if (client_request_range != pushed_request_range_it->second) {
       // Client and pushed request ranges do not match.
       // TODO(https://crbug.com/831536): Add histogram.
       return false;
