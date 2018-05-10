@@ -676,10 +676,9 @@ static INLINE CFL_ALLOWED_TYPE store_cfl_required_rdo(const AV1_COMMON *cm,
 #define FAST_EXT_TX_CORR_MARGIN 0.5
 #define FAST_EXT_TX_EDST_MARGIN 0.3
 
-int inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_stats,
-                    BLOCK_SIZE bsize, int64_t ref_best_rd, int fast);
-int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_stats,
-                     BLOCK_SIZE bsize, int64_t ref_best_rd, int fast);
+static int inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
+                           RD_STATS *rd_stats, BLOCK_SIZE bsize,
+                           int64_t ref_best_rd, int fast);
 
 static unsigned pixel_dist_visible_only(
     const AV1_COMP *const cpi, const MACROBLOCK *x, const uint8_t *src,
@@ -1866,19 +1865,6 @@ int64_t av1_block_error_c(const tran_low_t *coeff, const tran_low_t *dqcoeff,
   return error;
 }
 
-int64_t av1_block_error_fp_c(const int16_t *coeff, const int16_t *dqcoeff,
-                             int block_size) {
-  int i;
-  int64_t error = 0;
-
-  for (i = 0; i < block_size; i++) {
-    const int diff = coeff[i] - dqcoeff[i];
-    error += diff * diff;
-  }
-
-  return error;
-}
-
 int64_t av1_highbd_block_error_c(const tran_low_t *coeff,
                                  const tran_low_t *dqcoeff, intptr_t block_size,
                                  int64_t *ssz, int bd) {
@@ -2029,9 +2015,9 @@ int av1_count_colors_highbd(const uint8_t *src8, int stride, int rows, int cols,
   return n;
 }
 
-void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
-                                        int blk_row, int blk_col, int eob,
-                                        int reduced_tx_set) {
+static void inverse_transform_block_facade(MACROBLOCKD *xd, int plane,
+                                           int block, int blk_row, int blk_col,
+                                           int eob, int reduced_tx_set) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   const PLANE_TYPE plane_type = get_plane_type(plane);
@@ -2068,11 +2054,11 @@ static uint32_t get_intra_txb_hash(MACROBLOCK *x, int plane, int blk_row,
          tx_size;
 }
 
-void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
-                BLOCK_SIZE plane_bsize, int block, int blk_row, int blk_col,
-                TX_SIZE tx_size, int64_t *out_dist, int64_t *out_sse,
-                OUTPUT_STATUS output_status,
-                int use_transform_domain_distortion) {
+static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
+                       BLOCK_SIZE plane_bsize, int block, int blk_row,
+                       int blk_col, TX_SIZE tx_size, int64_t *out_dist,
+                       int64_t *out_sse, OUTPUT_STATUS output_status,
+                       int use_transform_domain_distortion) {
   MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblock_plane *const p = &x->plane[plane];
 #if CONFIG_DIST_8X8
@@ -2711,9 +2697,9 @@ RECON_INTRA:
       }
     }
 
-    av1_inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
-                                       x->plane[plane].eobs[block],
-                                       cm->reduced_tx_set_used);
+    inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
+                                   x->plane[plane].eobs[block],
+                                   cm->reduced_tx_set_used);
 
     // This may happen because of hash collision. The eob stored in the hash
     // table is non-zero, but the real eob is zero. We need to make sure tx_type
@@ -2943,39 +2929,6 @@ static int tx_size_cost(const AV1_COMMON *const cm, const MACROBLOCK *const x,
   } else {
     return 0;
   }
-}
-
-// TODO(angiebird): use this function whenever it's possible
-int av1_tx_type_cost(const AV1_COMMON *cm, const MACROBLOCK *x,
-                     const MACROBLOCKD *xd, int plane, TX_SIZE tx_size,
-                     TX_TYPE tx_type) {
-  if (plane > 0) return 0;
-
-  const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
-
-  const MB_MODE_INFO *mbmi = xd->mi[0];
-  const int is_inter = is_inter_block(mbmi);
-  if (get_ext_tx_types(tx_size, is_inter, cm->reduced_tx_set_used) > 1 &&
-      !xd->lossless[xd->mi[0]->segment_id]) {
-    const int ext_tx_set =
-        get_ext_tx_set(tx_size, is_inter, cm->reduced_tx_set_used);
-    if (is_inter) {
-      if (ext_tx_set > 0)
-        return x->inter_tx_type_costs[ext_tx_set][square_tx_size][tx_type];
-    } else {
-      if (ext_tx_set > 0) {
-        PREDICTION_MODE intra_dir;
-        if (mbmi->filter_intra_mode_info.use_filter_intra)
-          intra_dir = fimode_to_intradir[mbmi->filter_intra_mode_info
-                                             .filter_intra_mode];
-        else
-          intra_dir = mbmi->mode;
-        return x->intra_tx_type_costs[ext_tx_set][square_tx_size][intra_dir]
-                                     [tx_type];
-      }
-    }
-  }
-  return 0;
 }
 
 static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
@@ -4673,8 +4626,9 @@ static void tx_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
 // Return value 0: early termination triggered, no valid rd cost available;
 //              1: rd cost values are valid.
-int inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_stats,
-                    BLOCK_SIZE bsize, int64_t ref_best_rd, int fast) {
+static int inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
+                           RD_STATS *rd_stats, BLOCK_SIZE bsize,
+                           int64_t ref_best_rd, int fast) {
   MACROBLOCKD *const xd = &x->e_mbd;
   int is_cost_valid = 1;
   int64_t this_rd = 0;
@@ -5146,8 +5100,9 @@ static void tx_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
 // Return value 0: early termination triggered, no valid rd cost available;
 //              1: rd cost values are valid.
-int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_stats,
-                     BLOCK_SIZE bsize, int64_t ref_best_rd, int fast) {
+static int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x,
+                            RD_STATS *rd_stats, BLOCK_SIZE bsize,
+                            int64_t ref_best_rd, int fast) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   int plane;
@@ -8771,75 +8726,6 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
 
   ctx->mic = *xd->mi[0];
   ctx->mbmi_ext = *x->mbmi_ext;
-}
-
-// Do we have an internal image edge (e.g. formatting bars).
-int av1_internal_image_edge(const AV1_COMP *cpi) {
-  return (cpi->oxcf.pass == 2) &&
-         ((cpi->twopass.this_frame_stats.inactive_zone_rows > 0) ||
-          (cpi->twopass.this_frame_stats.inactive_zone_cols > 0));
-}
-
-// Checks to see if a super block is on a horizontal image edge.
-// In most cases this is the "real" edge unless there are formatting
-// bars embedded in the stream.
-int av1_active_h_edge(const AV1_COMP *cpi, int mi_row, int mi_step) {
-  int top_edge = 0;
-  int bottom_edge = cpi->common.mi_rows;
-  int is_active_h_edge = 0;
-
-  // For two pass account for any formatting bars detected.
-  if (cpi->oxcf.pass == 2) {
-    const TWO_PASS *const twopass = &cpi->twopass;
-
-    // The inactive region is specified in MBs not mi units.
-    // The image edge is in the following MB row.
-    top_edge += (int)(twopass->this_frame_stats.inactive_zone_rows * 2);
-
-    bottom_edge -= (int)(twopass->this_frame_stats.inactive_zone_rows * 2);
-    bottom_edge = AOMMAX(top_edge, bottom_edge);
-  }
-
-  if (((top_edge >= mi_row) && (top_edge < (mi_row + mi_step))) ||
-      ((bottom_edge >= mi_row) && (bottom_edge < (mi_row + mi_step)))) {
-    is_active_h_edge = 1;
-  }
-  return is_active_h_edge;
-}
-
-// Checks to see if a super block is on a vertical image edge.
-// In most cases this is the "real" edge unless there are formatting
-// bars embedded in the stream.
-int av1_active_v_edge(const AV1_COMP *cpi, int mi_col, int mi_step) {
-  int left_edge = 0;
-  int right_edge = cpi->common.mi_cols;
-  int is_active_v_edge = 0;
-
-  // For two pass account for any formatting bars detected.
-  if (cpi->oxcf.pass == 2) {
-    const TWO_PASS *const twopass = &cpi->twopass;
-
-    // The inactive region is specified in MBs not mi units.
-    // The image edge is in the following MB row.
-    left_edge += (int)(twopass->this_frame_stats.inactive_zone_cols * 2);
-
-    right_edge -= (int)(twopass->this_frame_stats.inactive_zone_cols * 2);
-    right_edge = AOMMAX(left_edge, right_edge);
-  }
-
-  if (((left_edge >= mi_col) && (left_edge < (mi_col + mi_step))) ||
-      ((right_edge >= mi_col) && (right_edge < (mi_col + mi_step)))) {
-    is_active_v_edge = 1;
-  }
-  return is_active_v_edge;
-}
-
-// Checks to see if a super block is at the edge of the active image.
-// In most cases this is the "real" edge unless there are formatting
-// bars embedded in the stream.
-int av1_active_edge_sb(const AV1_COMP *cpi, int mi_row, int mi_col) {
-  return av1_active_h_edge(cpi, mi_row, cpi->common.seq_params.mib_size) ||
-         av1_active_v_edge(cpi, mi_col, cpi->common.seq_params.mib_size);
 }
 
 static void restore_uv_color_map(const AV1_COMP *const cpi, MACROBLOCK *x) {

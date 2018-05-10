@@ -78,6 +78,13 @@ static BLOCK_SIZE set_partition_min_limit(AV1_COMMON *const cm) {
   }
 }
 
+// Do we have an internal image edge (e.g. formatting bars).
+static int has_internal_image_edge(const AV1_COMP *cpi) {
+  return (cpi->oxcf.pass == 2) &&
+         ((cpi->twopass.this_frame_stats.inactive_zone_rows > 0) ||
+          (cpi->twopass.this_frame_stats.inactive_zone_cols > 0));
+}
+
 static void set_good_speed_feature_framesize_dependent(AV1_COMP *cpi,
                                                        SPEED_FEATURES *sf,
                                                        int speed) {
@@ -118,7 +125,7 @@ static void set_good_speed_feature_framesize_dependent(AV1_COMP *cpi,
   // Also if the image edge is internal to the coded area.
   if ((speed >= 2) && (cpi->oxcf.pass == 2) &&
       ((cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION) ||
-       (av1_internal_image_edge(cpi)))) {
+       (has_internal_image_edge(cpi)))) {
     sf->disable_split_mask = DISABLE_COMPOUND_SPLIT;
   }
 
@@ -340,7 +347,7 @@ static void set_dev_sf(AV1_COMP *cpi, SPEED_FEATURES *sf, int speed) {
 
   if (speed & PARTITION_SF) {
     if ((cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION) ||
-        av1_internal_image_edge(cpi)) {
+        has_internal_image_edge(cpi)) {
       sf->use_square_partition_only = !frame_is_boosted(cpi);
     } else {
       sf->use_square_partition_only = !frame_is_intra_only(cm);

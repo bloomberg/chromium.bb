@@ -35,10 +35,6 @@ void av1_init_tile_data(struct AV1_COMP *cpi);
 void av1_encode_tile(struct AV1_COMP *cpi, struct ThreadData *td, int tile_row,
                      int tile_col);
 
-void av1_update_tx_type_count(const struct AV1Common *cm, MACROBLOCKD *xd,
-                              int blk_row, int blk_col, int plane,
-                              TX_SIZE tx_size, FRAME_COUNTS *counts,
-                              uint8_t allow_update_cdf);
 #ifdef __cplusplus
 }  // extern "C"
 #endif
