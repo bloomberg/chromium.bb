@@ -173,6 +173,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
 
             @Override
             public void onTransitionPeekToHalf(float transitionFraction) {
+                if (!mBottomSheet.isSheetOpen()) return;
                 fadingBackgroundView.setViewAlpha(transitionFraction);
             }
 

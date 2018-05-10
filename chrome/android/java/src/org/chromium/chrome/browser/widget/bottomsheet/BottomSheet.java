@@ -1160,7 +1160,7 @@ public class BottomSheet extends FrameLayout
         float offsetWithBrowserControls = getCurrentOffsetPx() - getOffsetFromBrowserControls();
 
         // Do not send events for states less than the hidden state unless 0 has not been sent.
-        if (offsetWithBrowserControls < getSheetHeightForState(SHEET_STATE_HIDDEN)
+        if (offsetWithBrowserControls <= getSheetHeightForState(SHEET_STATE_HIDDEN)
                 && mLastOffsetRatioSent <= 0) {
             return;
         }
