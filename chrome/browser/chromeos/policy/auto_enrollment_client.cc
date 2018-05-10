@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/common/chrome_content_client.h"
@@ -33,6 +34,9 @@ namespace em = enterprise_management;
 namespace policy {
 
 namespace {
+
+using EnrollmentCheckType =
+    em::DeviceAutoEnrollmentRequest::EnrollmentCheckType;
 
 // UMA histogram names.
 const char kUMAProtocolTime[] = "Enterprise.AutoEnrollmentProtocolTime";
@@ -62,7 +66,7 @@ void UpdateDict(base::DictionaryValue* dict,
     dict->Remove(pref_path, NULL);
 }
 
-// Converts a restore mode enum value from the DM protocol into the
+// Converts a restore mode enum value from the DM protocol for FRE into the
 // corresponding prefs string constant.
 std::string ConvertRestoreMode(
     em::DeviceStateRetrievalResponse::RestoreMode restore_mode) {
@@ -84,33 +88,278 @@ std::string ConvertRestoreMode(
   return std::string();
 }
 
+// Converts an initial enrollment mode enum value from the DM protocol for
+// initial enrollment into the corresponding prefs string constant. Note that we
+// use the |kDeviceStateRestoreMode*| constants on the client for simplicity,
+// because every initial enrollment mode has a matching restore mode (but not
+// vice versa).
+std::string ConvertInitialEnrollmentMode(
+    em::DeviceInitialEnrollmentStateResponse::InitialEnrollmentMode
+        initial_enrollment_mode) {
+  switch (initial_enrollment_mode) {
+    case em::DeviceInitialEnrollmentStateResponse::INITIAL_ENROLLMENT_MODE_NONE:
+      return std::string();
+    case em::DeviceInitialEnrollmentStateResponse::
+        INITIAL_ENROLLMENT_MODE_ENROLLMENT_ENFORCED:
+      return kDeviceStateRestoreModeReEnrollmentEnforced;
+  }
+}
+
 }  // namespace
 
-AutoEnrollmentClient::AutoEnrollmentClient(
-    const ProgressCallback& callback,
-    DeviceManagementService* service,
+// Subclasses of this class provide an identifier and specify the identifier
+// set for the DeviceAutoEnrollmentRequest,
+class AutoEnrollmentClient::DeviceIdentifierProvider {
+ public:
+  virtual ~DeviceIdentifierProvider() {}
+
+  // Should return the EnrollmentCheckType to be used in the
+  // DeviceAutoEnrollmentRequest. This specifies the identifier set used on
+  // the server.
+  virtual enterprise_management::DeviceAutoEnrollmentRequest::
+      EnrollmentCheckType
+      GetEnrollmentCheckType() const = 0;
+
+  // Should return the hash of this device's identifier. The
+  // DeviceAutoEnrollmentRequest exchange will check if this hash is in the
+  // server-side identifier set specified by |GetEnrollmentCheckType()|
+  virtual const std::string& GetIdHash() const = 0;
+};
+
+// Subclasses of this class generate the request to download the device state
+// (after determining that there is server-side device state) and parse the
+// response.
+class AutoEnrollmentClient::StateDownloadMessageProcessor {
+ public:
+  virtual ~StateDownloadMessageProcessor() {}
+
+  // Returns the request job type. This must match the request filled in
+  // |FillRequest|.
+  virtual DeviceManagementRequestJob::JobType GetJobType() const = 0;
+
+  // Fills the specific request type in |request|.
+  virtual void FillRequest(
+      enterprise_management::DeviceManagementRequest* request) = 0;
+
+  // Parses the |response|. If it is valid, extracts |restore_mode|,
+  // |management_domain| and |disabled_message| and returns true. Otherwise,
+  // returns false.
+  virtual bool ParseResponse(
+      const enterprise_management::DeviceManagementResponse& response,
+      std::string* restore_mode,
+      base::Optional<std::string>* management_domain,
+      base::Optional<std::string>* disabled_message) = 0;
+};
+
+namespace {
+
+// Provides device identifier for Forced Re-Enrollment (FRE), where the
+// server-backed state key is used.
+class DeviceIdentifierProviderFRE
+    : public AutoEnrollmentClient::DeviceIdentifierProvider {
+ public:
+  explicit DeviceIdentifierProviderFRE(
+      const std::string& server_backed_state_key) {
+    CHECK(!server_backed_state_key.empty());
+    server_backed_state_key_hash_ =
+        crypto::SHA256HashString(server_backed_state_key);
+  }
+
+  EnrollmentCheckType GetEnrollmentCheckType() const override {
+    return em::DeviceAutoEnrollmentRequest::ENROLLMENT_CHECK_TYPE_FRE;
+  }
+
+  const std::string& GetIdHash() const override {
+    return server_backed_state_key_hash_;
+  }
+
+ private:
+  // SHA-256 digest of the stable identifier.
+  std::string server_backed_state_key_hash_;
+};
+
+// Provides device identifier for Forced Initial Enrollment, where the brand
+// code and serial number is used.
+class DeviceIdentifierProviderInitialEnrollment
+    : public AutoEnrollmentClient::DeviceIdentifierProvider {
+ public:
+  DeviceIdentifierProviderInitialEnrollment(
+      const std::string& device_serial_number,
+      const std::string& device_brand_code) {
+    CHECK(!device_serial_number.empty());
+    CHECK(!device_brand_code.empty());
+    // The hash for initial enrollment is the first 8 bytes of
+    // SHA256(<brnad_code>_<serial_number>).
+    id_hash_ =
+        crypto::SHA256HashString(device_brand_code + "_" + device_serial_number)
+            .substr(0, 8);
+  }
+
+  EnrollmentCheckType GetEnrollmentCheckType() const override {
+    return em::DeviceAutoEnrollmentRequest::
+        ENROLLMENT_CHECK_TYPE_FORCED_ENROLLMENT;
+  }
+
+  const std::string& GetIdHash() const override { return id_hash_; }
+
+ private:
+  // 8-byte Hash built from serial number and brand code passed to the
+  // constructor.
+  std::string id_hash_;
+};
+
+// Handles DeviceStateRetrievalRequest / DeviceStateRetrievalResponse for
+// Forced Re-Enrollment (FRE).
+class StateDownloadMessageProcessorFRE
+    : public AutoEnrollmentClient::StateDownloadMessageProcessor {
+ public:
+  explicit StateDownloadMessageProcessorFRE(
+      const std::string& server_backed_state_key)
+      : server_backed_state_key_(server_backed_state_key) {}
+
+  DeviceManagementRequestJob::JobType GetJobType() const override {
+    return DeviceManagementRequestJob::TYPE_DEVICE_STATE_RETRIEVAL;
+  }
+
+  void FillRequest(em::DeviceManagementRequest* request) override {
+    request->mutable_device_state_retrieval_request()
+        ->set_server_backed_state_key(server_backed_state_key_);
+  }
+
+  bool ParseResponse(const em::DeviceManagementResponse& response,
+                     std::string* restore_mode,
+                     base::Optional<std::string>* management_domain,
+                     base::Optional<std::string>* disabled_message) override {
+    if (!response.has_device_state_retrieval_response()) {
+      LOG(ERROR) << "Server failed to provide auto-enrollment response.";
+      return false;
+    }
+    const em::DeviceStateRetrievalResponse& state_response =
+        response.device_state_retrieval_response();
+    *restore_mode = ConvertRestoreMode(state_response.restore_mode());
+    if (state_response.has_management_domain())
+      *management_domain = state_response.management_domain();
+    else
+      management_domain->reset();
+
+    if (state_response.has_disabled_state())
+      *disabled_message = state_response.disabled_state().message();
+    else
+      disabled_message->reset();
+
+    // Logging as "WARNING" to make sure it's preserved in the logs.
+    LOG(WARNING) << "Received restore_mode=" << state_response.restore_mode();
+
+    return true;
+  }
+
+ private:
+  // Stable state key.
+  std::string server_backed_state_key_;
+};
+
+// Handles DeviceInitialEnrollmentStateRequest /
+// DeviceInitialEnrollmentStateResponse for Forced Initial Enrollment.
+class StateDownloadMessageProcessorInitialEnrollment
+    : public AutoEnrollmentClient::StateDownloadMessageProcessor {
+ public:
+  StateDownloadMessageProcessorInitialEnrollment(
+      const std::string& device_serial_number,
+      const std::string& device_brand_code)
+      : device_serial_number_(device_serial_number),
+        device_brand_code_(device_brand_code) {}
+
+  DeviceManagementRequestJob::JobType GetJobType() const override {
+    return DeviceManagementRequestJob::TYPE_INITIAL_ENROLLMENT_STATE_RETRIEVAL;
+  }
+
+  void FillRequest(em::DeviceManagementRequest* request) override {
+    auto* inner_request =
+        request->mutable_device_initial_enrollment_state_request();
+    inner_request->set_brand_code(device_brand_code_);
+    inner_request->set_serial_number(device_serial_number_);
+  }
+
+  bool ParseResponse(const em::DeviceManagementResponse& response,
+                     std::string* restore_mode,
+                     base::Optional<std::string>* management_domain,
+                     base::Optional<std::string>* disabled_message) override {
+    if (!response.has_device_initial_enrollment_state_response()) {
+      LOG(ERROR) << "Server failed to provide initial enrollment response.";
+      return false;
+    }
+
+    const em::DeviceInitialEnrollmentStateResponse& state_response =
+        response.device_initial_enrollment_state_response();
+    if (state_response.has_initial_enrollment_mode()) {
+      *restore_mode = ConvertInitialEnrollmentMode(
+          state_response.initial_enrollment_mode());
+    } else {
+      // Unknown initial enrollment mode - treat as no enrollment.
+      *restore_mode = std::string();
+    }
+
+    if (state_response.has_management_domain())
+      *management_domain = state_response.management_domain();
+    else
+      management_domain->reset();
+
+    // Device disabling is not supported in initial forced enrollment.
+    disabled_message->reset();
+
+    // Logging as "WARNING" to make sure it's preserved in the logs.
+    LOG(WARNING) << "Received initial_enrollment_mode="
+                 << state_response.initial_enrollment_mode();
+
+    return true;
+  }
+
+ private:
+  // Serial number of the device.
+  std::string device_serial_number_;
+  // 4-character brand code of the device.
+  std::string device_brand_code_;
+};
+
+}  // namespace
+
+// static
+std::unique_ptr<AutoEnrollmentClient> AutoEnrollmentClient::CreateForFRE(
+    const ProgressCallback& progress_callback,
+    DeviceManagementService* device_management_service,
     PrefService* local_state,
     scoped_refptr<net::URLRequestContextGetter> system_request_context,
     const std::string& server_backed_state_key,
     int power_initial,
-    int power_limit)
-    : progress_callback_(callback),
-      state_(AUTO_ENROLLMENT_STATE_IDLE),
-      has_server_state_(false),
-      device_state_available_(false),
-      device_id_(base::GenerateGUID()),
-      server_backed_state_key_(server_backed_state_key),
-      current_power_(power_initial),
-      power_limit_(power_limit),
-      modulus_updates_received_(0),
-      device_management_service_(service),
-      local_state_(local_state),
-      request_context_(system_request_context) {
-  DCHECK_LE(current_power_, power_limit_);
-  DCHECK(!progress_callback_.is_null());
-  CHECK(!server_backed_state_key_.empty());
-  server_backed_state_key_hash_ =
-      crypto::SHA256HashString(server_backed_state_key_);
+    int power_limit) {
+  return base::WrapUnique(new AutoEnrollmentClient(
+      progress_callback, device_management_service, local_state,
+      system_request_context,
+      std::make_unique<DeviceIdentifierProviderFRE>(server_backed_state_key),
+      std::make_unique<StateDownloadMessageProcessorFRE>(
+          server_backed_state_key),
+      power_initial, power_limit));
+}
+
+// static
+std::unique_ptr<AutoEnrollmentClient>
+AutoEnrollmentClient::CreateForInitialEnrollment(
+    const ProgressCallback& progress_callback,
+    DeviceManagementService* device_management_service,
+    PrefService* local_state,
+    scoped_refptr<net::URLRequestContextGetter> system_request_context,
+    const std::string& device_serial_number,
+    const std::string& device_brand_code,
+    int power_initial,
+    int power_limit) {
+  return base::WrapUnique(new AutoEnrollmentClient(
+      progress_callback, device_management_service, local_state,
+      system_request_context,
+      std::make_unique<DeviceIdentifierProviderInitialEnrollment>(
+          device_serial_number, device_brand_code),
+      std::make_unique<StateDownloadMessageProcessorInitialEnrollment>(
+          device_serial_number, device_brand_code),
+      power_initial, power_limit));
 }
 
 AutoEnrollmentClient::~AutoEnrollmentClient() {
@@ -162,6 +411,34 @@ void AutoEnrollmentClient::OnNetworkChanged(
       !progress_callback_.is_null()) {
     RetryStep();
   }
+}
+
+AutoEnrollmentClient::AutoEnrollmentClient(
+    const ProgressCallback& callback,
+    DeviceManagementService* service,
+    PrefService* local_state,
+    scoped_refptr<net::URLRequestContextGetter> system_request_context,
+    std::unique_ptr<DeviceIdentifierProvider> device_identifier_provider,
+    std::unique_ptr<StateDownloadMessageProcessor>
+        state_download_message_processor,
+    int power_initial,
+    int power_limit)
+    : progress_callback_(callback),
+      state_(AUTO_ENROLLMENT_STATE_IDLE),
+      has_server_state_(false),
+      device_state_available_(false),
+      device_id_(base::GenerateGUID()),
+      current_power_(power_initial),
+      power_limit_(power_limit),
+      modulus_updates_received_(0),
+      device_management_service_(service),
+      local_state_(local_state),
+      request_context_(system_request_context),
+      device_identifier_provider_(std::move(device_identifier_provider)),
+      state_download_message_processor_(
+          std::move(state_download_message_processor)) {
+  DCHECK_LE(current_power_, power_limit_);
+  DCHECK(!progress_callback_.is_null());
 }
 
 bool AutoEnrollmentClient::GetCachedDecision() {
@@ -241,11 +518,16 @@ void AutoEnrollmentClient::NextStep() {
 }
 
 void AutoEnrollmentClient::SendBucketDownloadRequest() {
-  // Only power-of-2 moduli are supported for now. These are computed by taking
-  // the lower |current_power_| bits of the hash.
+  std::string id_hash = device_identifier_provider_->GetIdHash();
+  // Currently AutoEnrollmentClient supports working with hashes that are at
+  // least 8 bytes long. If this is reduced, the computation of the remainder
+  // must also be adapted to handle the case of a shorter hash gracefully.
+  DCHECK_GE(id_hash.size(), 8u);
+
   uint64_t remainder = 0;
+  const size_t last_byte_index = id_hash.size() - 1;
   for (int i = 0; 8 * i < current_power_; ++i) {
-    uint64_t byte = server_backed_state_key_hash_[31 - i] & 0xff;
+    uint64_t byte = id_hash[last_byte_index - i] & 0xff;
     remainder = remainder | (byte << (8 * i));
   }
   remainder = remainder & ((UINT64_C(1) << current_power_) - 1);
@@ -262,6 +544,8 @@ void AutoEnrollmentClient::SendBucketDownloadRequest() {
       request_job_->GetRequest()->mutable_auto_enrollment_request();
   request->set_remainder(remainder);
   request->set_modulus(INT64_C(1) << current_power_);
+  request->set_enrollment_check_type(
+      device_identifier_provider_->GetEnrollmentCheckType());
   request_job_->Start(
       base::Bind(&AutoEnrollmentClient::HandleRequestCompletion,
                  base::Unretained(this),
@@ -271,15 +555,10 @@ void AutoEnrollmentClient::SendBucketDownloadRequest() {
 void AutoEnrollmentClient::SendDeviceStateRequest() {
   ReportProgress(AUTO_ENROLLMENT_STATE_PENDING);
 
-  VLOG(1) << "State request for key: " << server_backed_state_key_;
-  request_job_.reset(
-      device_management_service_->CreateJob(
-          DeviceManagementRequestJob::TYPE_DEVICE_STATE_RETRIEVAL,
-          request_context_.get()));
+  request_job_.reset(device_management_service_->CreateJob(
+      state_download_message_processor_->GetJobType(), request_context_.get()));
   request_job_->SetClientID(device_id_);
-  em::DeviceStateRetrievalRequest* request =
-      request_job_->GetRequest()->mutable_device_state_retrieval_request();
-  request->set_server_backed_state_key(server_backed_state_key_);
+  state_download_message_processor_->FillRequest(request_job_->GetRequest());
   request_job_->Start(
       base::Bind(&AutoEnrollmentClient::HandleRequestCompletion,
                  base::Unretained(this),
@@ -377,45 +656,41 @@ bool AutoEnrollmentClient::OnBucketDownloadRequestCompletion(
 bool AutoEnrollmentClient::OnDeviceStateRequestCompletion(
     DeviceManagementStatus status,
     int net_error,
-    const enterprise_management::DeviceManagementResponse& response) {
-  bool progress = false;
-  if (!response.has_device_state_retrieval_response()) {
-    LOG(ERROR) << "Server failed to provide auto-enrollment response.";
-  } else {
-    const em::DeviceStateRetrievalResponse& state_response =
-        response.device_state_retrieval_response();
-    {
-      DictionaryPrefUpdate dict(local_state_, prefs::kServerBackedDeviceState);
-      UpdateDict(
-          dict.Get(), kDeviceStateManagementDomain,
-          state_response.has_management_domain(),
-          std::make_unique<base::Value>(state_response.management_domain()));
+    const em::DeviceManagementResponse& response) {
+  std::string restore_mode;
+  base::Optional<std::string> management_domain;
+  base::Optional<std::string> disabled_message;
 
-      std::string restore_mode =
-          ConvertRestoreMode(state_response.restore_mode());
-      UpdateDict(dict.Get(), kDeviceStateRestoreMode, !restore_mode.empty(),
-                 std::make_unique<base::Value>(restore_mode));
+  bool progress = state_download_message_processor_->ParseResponse(
+      response, &restore_mode, &management_domain, &disabled_message);
+  if (!progress)
+    return false;
 
-      UpdateDict(dict.Get(), kDeviceStateDisabledMessage,
-                 state_response.has_disabled_state(),
-                 std::make_unique<base::Value>(
-                     state_response.disabled_state().message()));
+  {
+    DictionaryPrefUpdate dict(local_state_, prefs::kServerBackedDeviceState);
+    UpdateDict(dict.Get(), kDeviceStateManagementDomain,
+               management_domain.has_value(),
+               std::make_unique<base::Value>(
+                   management_domain.value_or(std::string())));
 
-      // Logging as "WARNING" to make sure it's preserved in the logs.
-      LOG(WARNING) << "Received restore_mode=" << state_response.restore_mode();
-    }
-    local_state_->CommitPendingWrite();
-    device_state_available_ = true;
-    progress = true;
+    UpdateDict(dict.Get(), kDeviceStateRestoreMode, !restore_mode.empty(),
+               std::make_unique<base::Value>(restore_mode));
+
+    UpdateDict(dict.Get(), kDeviceStateDisabledMessage,
+               disabled_message.has_value(),
+               std::make_unique<base::Value>(
+                   disabled_message.value_or(std::string())));
   }
-
-  return progress;
+  local_state_->CommitPendingWrite();
+  device_state_available_ = true;
+  return true;
 }
 
 bool AutoEnrollmentClient::IsIdHashInProtobuf(
       const google::protobuf::RepeatedPtrField<std::string>& hashes) {
+  std::string id_hash = device_identifier_provider_->GetIdHash();
   for (int i = 0; i < hashes.size(); ++i) {
-    if (hashes.Get(i) == server_backed_state_key_hash_)
+    if (hashes.Get(i) == id_hash)
       return true;
   }
   return false;

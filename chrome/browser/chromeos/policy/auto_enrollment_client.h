@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "net/base/network_change_notifier.h"
@@ -31,8 +32,8 @@ class URLRequestContextGetter;
 
 namespace policy {
 
-class DeviceManagementRequestJob;
 class DeviceManagementService;
+class DeviceManagementRequestJob;
 
 // Indicates the current state of the auto-enrollment check.  (Numeric values
 // are just to make reading of log files easier.)
@@ -64,15 +65,24 @@ class AutoEnrollmentClient
   // and the max is 2^62 (when the moduli are restricted to powers-of-2).
   static const int kMaximumPower = 62;
 
+  // Subclasses of this class provide an identifier and specify the identifier
+  // set for the DeviceAutoEnrollmentRequest,
+  class DeviceIdentifierProvider;
+
+  // Subclasses of this class generate the request to download the device state
+  // (after determining that there is server-side device state) and parse the
+  // response.
+  class StateDownloadMessageProcessor;
+
   // Used for signaling progress to a consumer.
-  typedef base::Callback<void(AutoEnrollmentState)> ProgressCallback;
+  typedef base::RepeatingCallback<void(AutoEnrollmentState)> ProgressCallback;
 
   // |progress_callback| will be invoked whenever some significant event happens
   // as part of the protocol, after Start() is invoked.
   // The result of the protocol will be cached in |local_state|.
   // |power_initial| and |power_limit| are exponents of power-of-2 values which
   // will be the initial modulus and the maximum modulus used by this client.
-  AutoEnrollmentClient(
+  static std::unique_ptr<AutoEnrollmentClient> CreateForFRE(
       const ProgressCallback& progress_callback,
       DeviceManagementService* device_management_service,
       PrefService* local_state,
@@ -80,6 +90,22 @@ class AutoEnrollmentClient
       const std::string& server_backed_state_key,
       int power_initial,
       int power_limit);
+
+  // |progress_callback| will be invoked whenever some significant event happens
+  // as part of the protocol, after Start() is invoked.
+  // The result of the protocol will be cached in |local_state|.
+  // |power_initial| and |power_limit| are exponents of power-of-2 values which
+  // will be the initial modulus and the maximum modulus used by this client.
+  static std::unique_ptr<AutoEnrollmentClient> CreateForInitialEnrollment(
+      const ProgressCallback& progress_callback,
+      DeviceManagementService* device_management_service,
+      PrefService* local_state,
+      scoped_refptr<net::URLRequestContextGetter> system_request_context,
+      const std::string& device_serial_number,
+      const std::string& device_brand_code,
+      int power_initial,
+      int power_limit);
+
   ~AutoEnrollmentClient() override;
 
   // Registers preferences in local state.
@@ -115,6 +141,17 @@ class AutoEnrollmentClient
       DeviceManagementStatus,
       int,
       const enterprise_management::DeviceManagementResponse&);
+
+  AutoEnrollmentClient(
+      const ProgressCallback& progress_callback,
+      DeviceManagementService* device_management_service,
+      PrefService* local_state,
+      scoped_refptr<net::URLRequestContextGetter> system_request_context,
+      std::unique_ptr<DeviceIdentifierProvider> device_identifier_provider,
+      std::unique_ptr<StateDownloadMessageProcessor>
+          state_download_message_processor,
+      int power_initial,
+      int power_limit);
 
   // Tries to load the result of a previous execution of the protocol from
   // local state. Returns true if that decision has been made and is valid.
@@ -157,7 +194,8 @@ class AutoEnrollmentClient
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
-  // Returns true if |server_backed_state_key_hash_| is contained in |hashes|.
+  // Returns true if the identifier hash provided by
+  // |device_identifier_provider_| is contained in |hashes|.
   bool IsIdHashInProtobuf(
       const google::protobuf::RepeatedPtrField<std::string>& hashes);
 
@@ -181,10 +219,6 @@ class AutoEnrollmentClient
   // Randomly generated device id for the auto-enrollment requests.
   std::string device_id_;
 
-  // Stable state key and its SHA-256 digest.
-  std::string server_backed_state_key_;
-  std::string server_backed_state_key_hash_;
-
   // Power-of-2 modulus to try next.
   int current_power_;
 
@@ -205,6 +239,14 @@ class AutoEnrollmentClient
 
   // The request context to use to perform the auto enrollment request.
   scoped_refptr<net::URLRequestContextGetter> request_context_;
+
+  // Specifies the identifier set and the hash of the device's current
+  // identifier.
+  std::unique_ptr<DeviceIdentifierProvider> device_identifier_provider_;
+
+  // Fills and parses state retrieval request / response.
+  std::unique_ptr<StateDownloadMessageProcessor>
+      state_download_message_processor_;
 
   // Times used to determine the duration of the protocol, and the extra time
   // needed to complete after the signin was complete.

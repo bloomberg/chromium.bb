@@ -267,7 +267,7 @@ void AutoEnrollmentController::StartClient(
     power_initial = power_limit;
   }
 
-  client_ = std::make_unique<policy::AutoEnrollmentClient>(
+  client_ = policy::AutoEnrollmentClient::CreateForFRE(
       base::Bind(&AutoEnrollmentController::UpdateState,
                  weak_ptr_factory_.GetWeakPtr()),
       service, g_browser_process->local_state(),
