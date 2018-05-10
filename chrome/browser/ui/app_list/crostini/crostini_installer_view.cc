@@ -183,6 +183,12 @@ void CrostiniInstallerView::StepProgress() {
 
 void CrostiniInstallerView::HandleError(const base::string16& error_message,
                                         SetupResult result) {
+  // Only ever set the error once. This check is necessary as the
+  // CrostiniManager can give multiple error callbacks. Only the first should be
+  // shown to the user.
+  if (state_ == State::ERROR)
+    return;
+
   RecordSetupResultHistogram(result);
   state_ = State::ERROR;
   message_label_->SetVisible(true);
