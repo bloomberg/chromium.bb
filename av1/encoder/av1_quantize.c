@@ -239,36 +239,22 @@ void av1_quantize_fp_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
         if (n_coeffs < 16) {
           // TODO(jingning): Need SIMD implementation for smaller block size
           // quantization.
-          quantize_fp_helper_c(coeff_ptr, n_coeffs, p->zbin_QTX,
-                               p->round_fp_QTX, p->quant_fp_QTX,
-                               p->quant_shift_QTX, qcoeff_ptr, dqcoeff_ptr,
-                               p->dequant_QTX, eob_ptr, sc->scan, sc->iscan,
-                               NULL, NULL, qparam->log_scale);
+          quantize_fp_helper_c(
+              coeff_ptr, n_coeffs, p->zbin_QTX, p->round_fp_QTX,
+              p->quant_fp_QTX, p->quant_shift_QTX, qcoeff_ptr, dqcoeff_ptr,
+              p->dequant_QTX, eob_ptr, sc->scan, sc->iscan, NULL, NULL, 0);
         } else {
-          if (qparam->tx_size == TX_4X16 || qparam->tx_size == TX_16X4 ||
-              qparam->tx_size == TX_8X32 || qparam->tx_size == TX_32X8)
-            av1_quantize_fp_c(coeff_ptr, n_coeffs, p->zbin_QTX, p->round_fp_QTX,
-                              p->quant_fp_QTX, p->quant_shift_QTX, qcoeff_ptr,
-                              dqcoeff_ptr, p->dequant_QTX, eob_ptr, sc->scan,
-                              sc->iscan);
-          else
-            av1_quantize_fp(coeff_ptr, n_coeffs, p->zbin_QTX, p->round_fp_QTX,
-                            p->quant_fp_QTX, p->quant_shift_QTX, qcoeff_ptr,
-                            dqcoeff_ptr, p->dequant_QTX, eob_ptr, sc->scan,
-                            sc->iscan);
+          av1_quantize_fp(coeff_ptr, n_coeffs, p->zbin_QTX, p->round_fp_QTX,
+                          p->quant_fp_QTX, p->quant_shift_QTX, qcoeff_ptr,
+                          dqcoeff_ptr, p->dequant_QTX, eob_ptr, sc->scan,
+                          sc->iscan);
         }
         break;
       case 1:
-        if (qparam->tx_size == TX_16X64 || qparam->tx_size == TX_64X16)
-          av1_quantize_fp_32x32_c(coeff_ptr, n_coeffs, p->zbin_QTX,
-                                  p->round_fp_QTX, p->quant_fp_QTX,
-                                  p->quant_shift_QTX, qcoeff_ptr, dqcoeff_ptr,
-                                  p->dequant_QTX, eob_ptr, sc->scan, sc->iscan);
-        else
-          av1_quantize_fp_32x32(coeff_ptr, n_coeffs, p->zbin_QTX,
-                                p->round_fp_QTX, p->quant_fp_QTX,
-                                p->quant_shift_QTX, qcoeff_ptr, dqcoeff_ptr,
-                                p->dequant_QTX, eob_ptr, sc->scan, sc->iscan);
+        av1_quantize_fp_32x32(coeff_ptr, n_coeffs, p->zbin_QTX, p->round_fp_QTX,
+                              p->quant_fp_QTX, p->quant_shift_QTX, qcoeff_ptr,
+                              dqcoeff_ptr, p->dequant_QTX, eob_ptr, sc->scan,
+                              sc->iscan);
         break;
       case 2:
         av1_quantize_fp_64x64(coeff_ptr, n_coeffs, p->zbin_QTX, p->round_fp_QTX,
