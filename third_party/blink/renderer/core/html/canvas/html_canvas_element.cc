@@ -1141,7 +1141,10 @@ HTMLCanvasElement::GetOrCreateCanvasResourceProviderForWebGL() {
     resource_provider_is_clear_ = true;
     if (IsValidImageSize(Size())) {
       webgl_resource_provider_ = CanvasResourceProvider::Create(
-          size_, CanvasResourceProvider::kAcceleratedResourceUsage,
+          size_,
+          Platform::Current()->IsGpuCompositingDisabled()
+              ? CanvasResourceProvider::kSoftwareResourceUsage
+              : CanvasResourceProvider::kAcceleratedResourceUsage,
           SharedGpuContext::ContextProviderWrapper(), 0, ColorParams());
     }
     if (!webgl_resource_provider_) {
@@ -1511,7 +1514,9 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
   if (Is3d()) {
     if (webgl_resource_provider_) {
       non_gpu_buffer_count++;
-      gpu_buffer_count += 2;
+      if (webgl_resource_provider_->IsAccelerated()) {
+        gpu_buffer_count += 2;
+      }
     }
     non_gpu_buffer_count += context_->ExternallyAllocatedBufferCountPerPixel();
   }

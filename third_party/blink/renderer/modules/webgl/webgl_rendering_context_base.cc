@@ -1505,6 +1505,9 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
   if (!canvas()->GetOrCreateCanvasResourceProviderForWebGL())
     return false;
 
+  if (!canvas()->GetOrCreateCanvasResourceProviderForWebGL()->IsAccelerated())
+    return false;
+
   ScopedTexture2DRestorer restorer(this);
   ScopedFramebufferRestorer fbo_restorer(this);
 
