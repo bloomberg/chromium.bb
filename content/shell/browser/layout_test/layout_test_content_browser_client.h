@@ -7,12 +7,14 @@
 
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/common/layout_test/fake_bluetooth_chooser.mojom.h"
+#include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 
 namespace content {
 
 class FakeBluetoothChooser;
 class LayoutTestBrowserContext;
 class LayoutTestNotificationManager;
+class MockClipboardHost;
 
 class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
  public:
@@ -24,6 +26,7 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
 
   LayoutTestBrowserContext* GetLayoutTestBrowserContext();
   void SetPopupBlockingEnabled(bool block_popups_);
+  void ResetMockClipboardHost();
 
   // Retrieves the last created FakeBluetoothChooser instance.
   std::unique_ptr<FakeBluetoothChooser> GetNextFakeBluetoothChooser();
@@ -83,6 +86,7 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
  private:
   // Creates and stores a FakeBluetoothChooser instance.
   void CreateFakeBluetoothChooser(mojom::FakeBluetoothChooserRequest request);
+  void BindClipboardHost(blink::mojom::ClipboardHostRequest request);
 
   std::unique_ptr<LayoutTestNotificationManager>
       layout_test_notification_manager_;
@@ -91,6 +95,7 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
   // Stores the next instance of FakeBluetoothChooser that is to be returned
   // when GetNextFakeBluetoothChooser is called.
   std::unique_ptr<FakeBluetoothChooser> next_fake_bluetooth_chooser_;
+  std::unique_ptr<MockClipboardHost> mock_clipboard_host_;
 };
 
 }  // content

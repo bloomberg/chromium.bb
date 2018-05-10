@@ -44,8 +44,7 @@ DragData BuildDragData(const WebDragData& web_drag_data) {
         result.text = item.string_data;
       } else if (item.string_type == blink::kMimeTypeTextHTML) {
         result.html = item.string_data;
-      } else if (item.string_type != blink::kMimeTypeTextURIList &&
-                 item.string_type != blink::kMimeTypeDownloadURL) {
+      } else if (item.string_type != blink::kMimeTypeDownloadURL) {
         result.custom_data.insert(item.string_type, item.string_data);
       }
     }
@@ -177,7 +176,8 @@ WebString WebClipboardImpl::ReadCustomData(mojom::ClipboardBuffer buffer,
 }
 
 void WebClipboardImpl::WritePlainText(const WebString& plain_text) {
-  clipboard_->WriteText(mojom::ClipboardBuffer::kStandard, plain_text);
+  clipboard_->WriteText(mojom::ClipboardBuffer::kStandard,
+                        EnsureNotNullWTFString(plain_text));
   clipboard_->CommitWrite(mojom::ClipboardBuffer::kStandard);
 }
 
@@ -185,9 +185,10 @@ void WebClipboardImpl::WriteHTML(const WebString& html_text,
                                  const WebURL& source_url,
                                  const WebString& plain_text,
                                  bool write_smart_paste) {
-  clipboard_->WriteHtml(mojom::ClipboardBuffer::kStandard, html_text,
-                        source_url);
-  clipboard_->WriteText(mojom::ClipboardBuffer::kStandard, plain_text);
+  clipboard_->WriteHtml(mojom::ClipboardBuffer::kStandard,
+                        EnsureNotNullWTFString(html_text), source_url);
+  clipboard_->WriteText(mojom::ClipboardBuffer::kStandard,
+                        EnsureNotNullWTFString(plain_text));
 
   if (write_smart_paste)
     clipboard_->WriteSmartPasteMarker(mojom::ClipboardBuffer::kStandard);

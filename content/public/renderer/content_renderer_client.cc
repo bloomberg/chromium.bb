@@ -70,10 +70,6 @@ ContentRendererClient::OverrideCreateAudioDevice(
   return nullptr;
 }
 
-blink::WebClipboard* ContentRendererClient::OverrideWebClipboard() {
-  return nullptr;
-}
-
 blink::WebThemeEngine* ContentRendererClient::OverrideThemeEngine() {
   return nullptr;
 }

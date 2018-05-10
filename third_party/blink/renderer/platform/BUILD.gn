@@ -570,7 +570,6 @@ jumbo_component("platform") {
     "exported/web_media_stream_track.cc",
     "exported/web_memory_coordinator.cc",
     "exported/web_mixed_content.cc",
-    "exported/web_mock_clipboard.cc",
     "exported/web_network_state_notifier.cc",
     "exported/web_prerender.cc",
     "exported/web_prerendering_support.cc",

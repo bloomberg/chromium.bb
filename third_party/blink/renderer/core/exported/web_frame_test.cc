@@ -50,7 +50,6 @@
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
-#include "third_party/blink/public/platform/web_mock_clipboard.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -11230,57 +11229,6 @@ TEST_P(ParameterizedWebFrameTest, SaveImageWithImageMap) {
 
   // Explicitly reset to break dependency on locally scoped client.
   helper.Reset();
-}
-
-TEST_P(ParameterizedWebFrameTest, CopyImageAt) {
-  std::string url = base_url_ + "canvas-copy-image.html";
-  RegisterMockedURLLoadFromBase(base_url_, "canvas-copy-image.html");
-
-  FrameTestHelpers::WebViewHelper helper;
-  WebViewImpl* web_view = helper.InitializeAndLoad(url);
-  web_view->Resize(WebSize(400, 400));
-
-  uint64_t sequence = Platform::Current()->Clipboard()->SequenceNumber(
-      mojom::ClipboardBuffer::kStandard);
-
-  WebLocalFrame* local_frame = web_view->MainFrameImpl();
-  local_frame->CopyImageAt(WebPoint(50, 50));
-
-  EXPECT_NE(sequence, Platform::Current()->Clipboard()->SequenceNumber(
-                          mojom::ClipboardBuffer::kStandard));
-
-  WebImage image =
-      static_cast<WebMockClipboard*>(Platform::Current()->Clipboard())
-          ->ReadRawImage(mojom::ClipboardBuffer::kStandard);
-
-  EXPECT_EQ(SkColorSetARGB(255, 255, 0, 0), image.GetSkBitmap().getColor(0, 0));
-}
-
-TEST_P(ParameterizedWebFrameTest, CopyImageAtWithPinchZoom) {
-  std::string url = base_url_ + "canvas-copy-image.html";
-  RegisterMockedURLLoadFromBase(base_url_, "canvas-copy-image.html");
-
-  FrameTestHelpers::WebViewHelper helper;
-  WebViewImpl* web_view = helper.InitializeAndLoad(url);
-  web_view->Resize(WebSize(400, 400));
-  web_view->UpdateAllLifecyclePhases();
-  web_view->SetPageScaleFactor(2);
-  web_view->SetVisualViewportOffset(WebFloatPoint(200, 200));
-
-  uint64_t sequence = Platform::Current()->Clipboard()->SequenceNumber(
-      mojom::ClipboardBuffer::kStandard);
-
-  WebLocalFrame* local_frame = web_view->MainFrameImpl();
-  local_frame->CopyImageAt(WebPoint(0, 0));
-
-  EXPECT_NE(sequence, Platform::Current()->Clipboard()->SequenceNumber(
-                          mojom::ClipboardBuffer::kStandard));
-
-  WebImage image =
-      static_cast<WebMockClipboard*>(Platform::Current()->Clipboard())
-          ->ReadRawImage(mojom::ClipboardBuffer::kStandard);
-
-  EXPECT_EQ(SkColorSetARGB(255, 255, 0, 0), image.GetSkBitmap().getColor(0, 0));
 }
 
 TEST_P(ParameterizedWebFrameTest, CopyImageWithImageMap) {

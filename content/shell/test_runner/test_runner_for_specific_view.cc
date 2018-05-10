@@ -283,13 +283,6 @@ void TestRunnerForSpecificView::CopyImageAtAndCapturePixelsAsyncThen(
     v8::Local<v8::Function> callback) {
   v8::UniquePersistent<v8::Function> persistent_callback(
       blink::MainThreadIsolate(), callback);
-
-  // TODO(lukasza): Support image capture in OOPIFs for
-  // https://crbug.com/477150.
-  CHECK(web_view()->MainFrame()->IsWebLocalFrame())
-      << "Layout tests harness doesn't support calling "
-      << "testRunner.copyImageAtAndCapturePixelsAsyncThen from an OOPIF.";
-
   CopyImageAtAndCapturePixels(
       web_view()->MainFrame()->ToWebLocalFrame(), x, y,
       base::BindOnce(&TestRunnerForSpecificView::CapturePixelsCallback,

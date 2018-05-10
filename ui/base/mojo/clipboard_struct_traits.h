@@ -12,10 +12,11 @@ namespace mojo {
 
 template <>
 struct EnumTraits<blink::mojom::ClipboardBuffer, ui::ClipboardType> {
-  static blink::mojom::ClipboardBuffer ToMojom(ui::ClipboardType) {
-    // We never intend on converting from ui::Clipboardtype to
-    // blink::mojom::ClipboardBuffer.
-    NOTREACHED();
+  static blink::mojom::ClipboardBuffer ToMojom(
+      ui::ClipboardType clipboard_type) {
+    // We only convert ui::Clipboardtype to blink::mojom::ClipboardBuffer
+    // in tests, and they use ui::CLIPBOARD_TYPE_COPY_PASTE.
+    DCHECK(clipboard_type == ui::CLIPBOARD_TYPE_COPY_PASTE);
     return blink::mojom::ClipboardBuffer::kStandard;
   }
 

@@ -12,7 +12,6 @@
 namespace content {
 
 class LayoutTestRenderThreadObserver;
-class MockWebClipboardImpl;
 
 class LayoutTestContentRendererClient : public ShellContentRendererClient {
  public:
@@ -27,7 +26,6 @@ class LayoutTestContentRendererClient : public ShellContentRendererClient {
       blink::WebMIDIAccessorClient* client) override;
   std::unique_ptr<blink::WebAudioDevice> OverrideCreateAudioDevice(
       const blink::WebAudioLatencyHint& latency_hint) override;
-  blink::WebClipboard* OverrideWebClipboard() override;
   blink::WebThemeEngine* OverrideThemeEngine() override;
   std::unique_ptr<MediaStreamRendererFactory> CreateMediaStreamRendererFactory()
       override;
@@ -40,7 +38,6 @@ class LayoutTestContentRendererClient : public ShellContentRendererClient {
 
  private:
   std::unique_ptr<LayoutTestRenderThreadObserver> shell_observer_;
-  std::unique_ptr<MockWebClipboardImpl> clipboard_;
 };
 
 }  // namespace content

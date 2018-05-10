@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/xlink_names.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -71,6 +72,9 @@ String ContentAfterPastingHTML(DummyPageHolder* page_holder,
   Pasteboard* pasteboard = Pasteboard::GeneralPasteboard();
   pasteboard->WriteHTML(html_to_paste, BlankURL(), "",
                         Pasteboard::kCannotSmartReplace);
+  // Run all tasks in a message loop to allow asynchronous clipboard writing
+  // to happen before reading from it synchronously.
+  test::RunPendingTasks();
   EXPECT_TRUE(frame.GetEditor().ExecuteCommand("Paste"));
 
   return body->InnerHTMLAsString();

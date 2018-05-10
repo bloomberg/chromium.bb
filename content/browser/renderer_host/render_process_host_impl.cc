@@ -1939,9 +1939,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context =
       ChromeBlobStorageContext::GetFor(browser_context);
 
-  AddUIThreadInterface(
-      registry.get(),
-      base::Bind(&ClipboardHostImpl::Create, std::move(blob_storage_context)));
+  AddUIThreadInterface(registry.get(),
+                       base::BindRepeating(&ClipboardHostImpl::Create,
+                                           std::move(blob_storage_context)));
 
   media::VideoDecodePerfHistory* video_perf_history =
       GetBrowserContext()->GetVideoDecodePerfHistory();
@@ -2014,8 +2014,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(registry.get(), base::Bind(&FieldTrialRecorder::Create));
 
   associated_interfaces_.reset(new AssociatedInterfaceRegistryImpl());
-  GetContentClient()->browser()->ExposeInterfacesToRenderer(
-      registry.get(), associated_interfaces_.get(), this);
   blink::AssociatedInterfaceRegistry* associated_registry =
       associated_interfaces_.get();
   associated_registry->AddInterface(base::Bind(
@@ -2037,6 +2035,14 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   registry->AddInterface(base::BindRepeating(&KeySystemSupportImpl::Create));
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+  // ---- Please do not register interfaces below this line ------
+  //
+  // This call should be done after registering all interfaces above, so that
+  // embedder can override any interfaces. The fact that registry calls
+  // the last registration for the name allows us to easily override interfaces.
+  GetContentClient()->browser()->ExposeInterfacesToRenderer(
+      registry.get(), associated_interfaces_.get(), this);
 
   ServiceManagerConnection* service_manager_connection =
       BrowserContext::GetServiceManagerConnectionFor(browser_context_);

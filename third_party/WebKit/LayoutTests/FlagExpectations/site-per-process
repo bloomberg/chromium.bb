@@ -59,9 +59,6 @@ crbug.com/601584 virtual/outofblink-cors/external/wpt/bluetooth/requestDevice/cr
 # https://crbug.com/786510 - test tries to access cross-origin document body
 crbug.com/606594 http/tests/local/serviceworker/fetch-request-body-file.html [ Skip ]
 
-# https://crbug.com/607991 - MockWebClipboardImpl not replicated across OOPIFs.
-crbug.com/607991 http/tests/misc/copy-resolves-urls.html [ Failure ]
-
 # https://crbug.com/616626 - allow_universal_access_from_file_urls doesn't work with --site-per-process.
 # https://crbug.com/665058 - EventSender drag-and-drop simulation doesn't support OOPIFs.
 crbug.com/665058 http/tests/local/drag-over-remote-content.html [ Crash ]
