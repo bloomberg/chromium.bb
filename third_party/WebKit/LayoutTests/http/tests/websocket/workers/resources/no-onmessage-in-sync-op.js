@@ -14,11 +14,10 @@ var expectedEvents = ["Got bufferedAmount: 0",
 
 ws.onopen = function()
 {
-    // After handshake, the server will send three messages immediately, but they should not be received
-    // until we exit this event loop.
-    postMessage("INFO: Waiting for two seconds to make sure we receive messages from the server.");
-    var start = (new Date()).getTime();
-    while ((new Date()).getTime() - start < 2000) {}
+    // After handshake, the server will send three messages immediately, but
+    // the events should not be fired until we return from this event handler.
+    var start = performance.now();
+    while (performance.now() - start < 200) {}
 
     var bufferedAmount = ws.bufferedAmount;
     events.push("Got bufferedAmount: " + bufferedAmount);
