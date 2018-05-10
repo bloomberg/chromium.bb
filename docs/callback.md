@@ -155,12 +155,13 @@ void DoSomething(const base::RepeatingCallback<double(double)>& callback) {
 
 If running a callback could result in its own destruction (e.g., if the callback
 recipient deletes the object the callback is a member of), the callback should
-be moved before it can be safely invoked. The `base::ResetAndReturn` method
-provides this functionality.
+be moved before it can be safely invoked. (Note that this is only an issue for
+RepeatingCallbacks, because a OnceCallback always has to be moved for
+execution.)
 
 ```cpp
 void Foo::RunCallback() {
-  base::ResetAndReturn(&foo_deleter_callback_).Run();
+  std::move(&foo_deleter_callback_).Run();
 }
 ```
 
