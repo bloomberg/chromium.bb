@@ -29,7 +29,10 @@ static constexpr int kTestResultViewIndex = 4;
 class TestOmniboxPopupContentsView : public OmniboxPopupContentsView {
  public:
   explicit TestOmniboxPopupContentsView(OmniboxEditModel* edit_model)
-      : OmniboxPopupContentsView(gfx::FontList(), nullptr, edit_model, nullptr),
+      : OmniboxPopupContentsView(
+            /*omnibox_view=*/nullptr,
+            edit_model,
+            /*location_bar_view=*/nullptr),
         selected_index_(0) {}
 
   void SetSelectedLine(size_t index) override { selected_index_ = index; }
@@ -55,8 +58,8 @@ class OmniboxResultViewTest : public views::ViewsTestBase {
         nullptr, nullptr, std::make_unique<TestOmniboxClient>());
     popup_view_ =
         std::make_unique<TestOmniboxPopupContentsView>(edit_model_.get());
-    result_view_ = new OmniboxResultView(popup_view_.get(),
-                                         kTestResultViewIndex, gfx::FontList());
+    result_view_ =
+        new OmniboxResultView(popup_view_.get(), kTestResultViewIndex);
 
     // Create a widget and assign bounds to support calls to HitTestPoint.
     widget_.reset(new views::Widget);

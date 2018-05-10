@@ -233,21 +233,20 @@ void OmniboxTextView::SetText(const base::string16& text) {
 
 void OmniboxTextView::SetText(const SuggestionAnswer::ImageLine& line) {
   wrap_text_lines_ = line.num_text_lines() > 1;
-  // This assumes that the first text type in the line can be used to specify
-  // the font for all the text fields in the line.  For now this works but
-  // eventually it may be necessary to get RenderText to support multiple font
-  // sizes or use multiple RenderTexts.
   render_text_.reset();
-  render_text_ = CreateText(line, GetFontForType(line.text_fields()[0].type()));
+  render_text_ = CreateText(line);
   UpdateLineHeight();
 }
 
 std::unique_ptr<gfx::RenderText> OmniboxTextView::CreateText(
-    const SuggestionAnswer::ImageLine& line,
-    const gfx::FontList& font_list) const {
+    const SuggestionAnswer::ImageLine& line) const {
   std::unique_ptr<gfx::RenderText> destination =
       CreateRenderText(base::string16());
-  destination->SetFontList(font_list);
+  // This assumes that the first text type in the line can be used to specify
+  // the font for all the text fields in the line.  For now this works but
+  // eventually it may be necessary to get RenderText to support multiple font
+  // sizes or use multiple RenderTexts.
+  destination->SetFontList(GetFontForType(line.text_fields()[0].type()));
 
   for (const SuggestionAnswer::TextField& text_field : line.text_fields())
     AppendText(destination.get(), text_field.text(), text_field.type());

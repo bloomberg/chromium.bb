@@ -38,9 +38,7 @@ class OmniboxResultView : public views::View,
                           private gfx::AnimationDelegate,
                           public views::ButtonListener {
  public:
-  OmniboxResultView(OmniboxPopupContentsView* model,
-                    int model_index,
-                    const gfx::FontList& font_list);
+  OmniboxResultView(OmniboxPopupContentsView* model, int model_index);
   ~OmniboxResultView() override;
 
   // Helper to get the color for |part| using the current state and tint.
@@ -111,9 +109,6 @@ class OmniboxResultView : public views::View,
 
   // Whether this view is in the hovered state.
   bool is_hovered_;
-
-  // Cache the font height as a minor optimization.
-  int font_height_;
 
   // The data this class is built to display (the "Omnibox Result").
   AutocompleteMatch match_;

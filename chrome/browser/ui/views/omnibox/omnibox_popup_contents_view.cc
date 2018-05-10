@@ -210,14 +210,12 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
 // OmniboxPopupContentsView, public:
 
 OmniboxPopupContentsView::OmniboxPopupContentsView(
-    const gfx::FontList& font_list,
     OmniboxView* omnibox_view,
     OmniboxEditModel* edit_model,
     LocationBarView* location_bar_view)
     : model_(new OmniboxPopupModel(this, edit_model)),
       omnibox_view_(omnibox_view),
       location_bar_view_(location_bar_view),
-      font_list_(font_list),
       start_margin_(0),
       end_margin_(0) {
   // The contents is owned by the LocationBarView.
@@ -227,7 +225,7 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
     InitializeWideShadows();
 
   for (size_t i = 0; i < AutocompleteResult::GetMaxMatches(); ++i) {
-    OmniboxResultView* result_view = new OmniboxResultView(this, i, font_list_);
+    OmniboxResultView* result_view = new OmniboxResultView(this, i);
     result_view->SetVisible(false);
     AddChildViewAt(result_view, static_cast<int>(i));
   }

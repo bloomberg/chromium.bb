@@ -151,12 +151,10 @@ class OmniboxImageView : public views::ImageView {
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxMatchCellView:
 
-OmniboxMatchCellView::OmniboxMatchCellView(OmniboxResultView* result_view,
-                                           int text_height)
+OmniboxMatchCellView::OmniboxMatchCellView(OmniboxResultView* result_view)
     : is_old_style_answer_(false),
       is_rich_suggestion_(false),
-      is_search_type_(false),
-      text_height_(text_height) {
+      is_search_type_(false) {
   AddChildView(icon_view_ = new OmniboxImageView());
   AddChildView(image_view_ = new OmniboxImageView());
   AddChildView(content_view_ = new OmniboxTextView(result_view));
@@ -171,8 +169,9 @@ OmniboxMatchCellView::OmniboxMatchCellView(OmniboxResultView* result_view,
 OmniboxMatchCellView::~OmniboxMatchCellView() = default;
 
 gfx::Size OmniboxMatchCellView::CalculatePreferredSize() const {
-  int height = text_height_ +
-               GetVerticalInsets(text_height_, is_old_style_answer_).height();
+  const int text_height = content_view_->GetLineHeight();
+  int height = text_height +
+               GetVerticalInsets(text_height, is_old_style_answer_).height();
   if (is_rich_suggestion_ || is_old_style_answer_) {
     height += GetDescriptionHeight();
   }
@@ -242,14 +241,15 @@ void OmniboxMatchCellView::Layout() {
 }
 
 void OmniboxMatchCellView::LayoutOldStyleAnswer() {
+  const int text_height = content_view_->GetLineHeight();
   int x = GetIconAlignmentOffset() + HorizontalPadding();
-  int y = GetVerticalInsets(text_height_, /*is_old_style_answer=*/true).top();
+  int y = GetVerticalInsets(text_height, /*is_old_style_answer=*/true).top();
   icon_view_->SetSize(icon_view_->CalculatePreferredSize());
   icon_view_->SetPosition(
-      gfx::Point(x, y + (text_height_ - icon_view_->height()) / 2));
+      gfx::Point(x, y + (text_height - icon_view_->height()) / 2));
   x += icon_view_->width() + HorizontalPadding();
-  content_view_->SetBounds(x, y, width() - x, text_height_);
-  y += text_height_;
+  content_view_->SetBounds(x, y, width() - x, text_height);
+  y += text_height;
   if (image_view_->visible()) {
     // The description may be multi-line. Using the view height results in
     // an image that's too large, so we use the line height here instead.
@@ -267,14 +267,15 @@ void OmniboxMatchCellView::LayoutOldStyleAnswer() {
 }
 
 void OmniboxMatchCellView::LayoutRichSuggestion() {
+  const int text_height = content_view_->GetLineHeight();
   int x = GetIconAlignmentOffset() + HorizontalPadding();
-  int y = GetVerticalInsets(text_height_, /*is_old_style_answer=*/false).top();
+  int y = GetVerticalInsets(text_height, /*is_old_style_answer=*/false).top();
   image_view_->SetImageSize(gfx::Size(kRichImageSize, kRichImageSize));
-  image_view_->SetBounds(x, y + (text_height_ * 2 - kRichImageSize) / 2,
+  image_view_->SetBounds(x, y + (text_height * 2 - kRichImageSize) / 2,
                          kRichImageSize, kRichImageSize);
   x += kRichImageSize + HorizontalPadding();
-  content_view_->SetBounds(x, y, width() - x, text_height_);
-  y += text_height_;
+  content_view_->SetBounds(x, y, width() - x, text_height);
+  y += text_height;
   int description_width = width() - x;
   description_view_->SetBounds(
       x, y, description_width,
@@ -283,11 +284,12 @@ void OmniboxMatchCellView::LayoutRichSuggestion() {
 }
 
 void OmniboxMatchCellView::LayoutSplit() {
+  const int text_height = content_view_->GetLineHeight();
   int x = GetIconAlignmentOffset() + HorizontalPadding();
   icon_view_->SetSize(icon_view_->CalculatePreferredSize());
-  int y = GetVerticalInsets(text_height_, /*is_old_style_answer=*/false).top();
+  int y = GetVerticalInsets(text_height, /*is_old_style_answer=*/false).top();
   icon_view_->SetPosition(
-      gfx::Point(x, y + (text_height_ - icon_view_->height()) / 2));
+      gfx::Point(x, y + (text_height - icon_view_->height()) / 2));
   x += icon_view_->width() + HorizontalPadding();
   int content_width = content_view_->CalculatePreferredSize().width();
   int description_width = description_view_->CalculatePreferredSize().width();
@@ -296,13 +298,13 @@ void OmniboxMatchCellView::LayoutSplit() {
       content_width, separator_size.width(), description_width, width() - x,
       /*description_on_separate_line=*/false, !is_search_type_, &content_width,
       &description_width);
-  content_view_->SetBounds(x, y, content_width, text_height_);
+  content_view_->SetBounds(x, y, content_width, text_height);
   if (description_width != 0) {
     x += content_view_->width();
     separator_view_->SetSize(separator_size);
-    separator_view_->SetBounds(x, y, separator_view_->width(), text_height_);
+    separator_view_->SetBounds(x, y, separator_view_->width(), text_height);
     x += separator_view_->width();
-    description_view_->SetBounds(x, y, description_width, text_height_);
+    description_view_->SetBounds(x, y, description_width, text_height);
   } else {
     description_view_->SetSize(gfx::Size());
     separator_view_->SetSize(gfx::Size());
