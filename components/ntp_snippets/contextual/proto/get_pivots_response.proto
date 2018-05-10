@@ -108,6 +108,9 @@ message Url {
 message Image {
   // The identity of this image.
   optional ImageId id = 1;
+
+  // The underlying source data that encodes the image.
+  optional ImageSource source_data = 2;
 }
 
 message ImageId {
@@ -122,4 +125,17 @@ message ImageId {
   //
   // ... has an encrypted doc ID of "e-AB_0zkH08qtM".
   optional string encrypted_docid = 1;
+}
+
+// Represents the underlying encoding / source data for an image.
+message ImageSource {
+  // The raster image representation.
+  optional RasterImage raster = 1;
+}
+
+// A representation of an image as a collection of pixels at a specific size.
+message RasterImage {
+  // A URL at which the image may be retrieved. The format of the image
+  // is determined by the "Content-Type" of the HTTP response for the URL.
+  optional Url url = 2;
 }

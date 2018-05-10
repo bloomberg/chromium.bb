@@ -38,6 +38,9 @@ struct ContextualSuggestion {
   // As above, but for identifying the favicon for the site the suggestion
   // resides on.
   std::string favicon_image_id;
+
+  // The favicon URL for the suggestion.
+  std::string favicon_image_url;
 };
 
 // Allows compact, precise construction of a ContextualSuggestion. Its main
@@ -52,6 +55,7 @@ class SuggestionBuilder {
   SuggestionBuilder& Snippet(const std::string& snippet);
   SuggestionBuilder& ImageId(const std::string& image_id);
   SuggestionBuilder& FaviconImageId(const std::string& favicon_image_id);
+  SuggestionBuilder& FaviconImageUrl(const std::string& favicon_image_url);
   ContextualSuggestion Build();
 
  private:

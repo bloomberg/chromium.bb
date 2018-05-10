@@ -39,6 +39,7 @@ ClusterBuilder::ClusterBuilder(const ClusterBuilder& other) {
                       .Snippet(suggestion.snippet)
                       .ImageId(suggestion.image_id)
                       .FaviconImageId(suggestion.favicon_image_id)
+                      .FaviconImageUrl(suggestion.favicon_image_url)
                       .Build());
   }
 }

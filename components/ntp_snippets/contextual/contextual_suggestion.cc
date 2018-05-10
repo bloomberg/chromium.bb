@@ -21,7 +21,8 @@ ContextualSuggestion::ContextualSuggestion(
       publisher_name(std::move(other.publisher_name)),
       snippet(std::move(other.snippet)),
       image_id(std::move(other.image_id)),
-      favicon_image_id(std::move(other.favicon_image_id)) {}
+      favicon_image_id(std::move(other.favicon_image_id)),
+      favicon_image_url(std::move(other.favicon_image_url)) {}
 
 ContextualSuggestion::~ContextualSuggestion() = default;
 
@@ -54,6 +55,12 @@ SuggestionBuilder& SuggestionBuilder::ImageId(const std::string& image_id) {
 SuggestionBuilder& SuggestionBuilder::FaviconImageId(
     const std::string& favicon_image_id) {
   suggestion_.favicon_image_id = favicon_image_id;
+  return *this;
+}
+
+SuggestionBuilder& SuggestionBuilder::FaviconImageUrl(
+    const std::string& favicon_image_url) {
+  suggestion_.favicon_image_url = favicon_image_url;
   return *this;
 }
 
