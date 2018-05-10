@@ -1999,7 +1999,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   }
   hasInsertionPos_ = NO;
   BookmarkButton* draggedButton = [BookmarkButton draggedButton];
-  if (!draggedButton) {
+  if (!draggedButton || [draggedButton bookmarkNode] == nullptr) {
     [self applyLayout:layout_ animated:YES];
     return;
   }
