@@ -716,7 +716,8 @@ void FFmpegDemuxerStream::EnableBitstreamConverter() {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   InitBitstreamConverter();
 #else
-  NOTREACHED() << "Proprietary codecs not enabled.";
+  DLOG(ERROR) << "Proprietary codecs not enabled and stream requires bitstream "
+                 "conversion. Playback will likely fail.";
 #endif
 }
 
