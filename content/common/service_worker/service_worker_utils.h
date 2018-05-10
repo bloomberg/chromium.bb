@@ -51,7 +51,6 @@ class ServiceWorkerUtils {
   // Returns true if servicified service worker is enabled.
   CONTENT_EXPORT static bool IsServicificationEnabled();
 
-  // PlzNavigate
   // Returns true if the |provider_id| was assigned by the browser process.
   static bool IsBrowserAssignedProviderId(int provider_id) {
     return provider_id < kInvalidServiceWorkerProviderId;
