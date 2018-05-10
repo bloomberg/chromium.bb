@@ -406,7 +406,6 @@ public class WebVrTransitionTest {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/840725")
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     @RetryOnFailure
     public void testWindowRafStopsFiringWhilePresenting() throws InterruptedException {
