@@ -47,12 +47,19 @@ std::string Unescape(const std::string& encoded_text) {
 ContextualSuggestion ItemToSuggestion(const PivotItem& item) {
   PivotDocument document = item.document();
 
+  std::string favicon_url;
+  if (document.favicon_image().source_data().has_raster()) {
+    favicon_url =
+        document.favicon_image().source_data().raster().url().raw_url();
+  }
+
   return SuggestionBuilder(GURL(document.url().raw_url()))
       .Title(Unescape(document.title()))
       .Snippet(Unescape(document.summary()))
       .PublisherName(Unescape(document.site_name()))
       .ImageId(document.image().id().encrypted_docid())
       .FaviconImageId(document.favicon_image().id().encrypted_docid())
+      .FaviconImageUrl(favicon_url)
       .Build();
 }
 

@@ -58,7 +58,8 @@ class ContextualContentSuggestionsServiceProxy {
   void FlushMetrics();
 
  private:
-  void FetchImageImpl(const std::string& image_id,
+  void FetchImageImpl(const GURL& image_url,
+                      const std::string& image_id,
                       ntp_snippets::ImageFetchedCallback callback);
 
   void CacheSuggestions(ClustersCallback callback,

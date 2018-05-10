@@ -60,7 +60,10 @@ void ContextualContentSuggestionsServiceProxy::FetchContextualSuggestionImage(
     return;
   }
 
-  FetchImageImpl(suggestion_iter->second.image_id, std::move(callback));
+  std::string& image_id = suggestion_iter->second.image_id;
+  GURL image_url = ImageUrlFromId(image_id);
+
+  FetchImageImpl(image_url, image_id, std::move(callback));
 }
 
 void ContextualContentSuggestionsServiceProxy::FetchContextualSuggestionFavicon(
@@ -74,7 +77,8 @@ void ContextualContentSuggestionsServiceProxy::FetchContextualSuggestionFavicon(
     return;
   }
 
-  FetchImageImpl(suggestion_iter->second.favicon_image_id, std::move(callback));
+  FetchImageImpl(GURL(suggestion_iter->second.favicon_image_url),
+                 suggestion_iter->second.favicon_image_id, std::move(callback));
 }
 
 void ContextualContentSuggestionsServiceProxy::ClearState() {
@@ -111,10 +115,9 @@ void ContextualContentSuggestionsServiceProxy::FlushMetrics() {
 }
 
 void ContextualContentSuggestionsServiceProxy::FetchImageImpl(
+    const GURL& image_url,
     const std::string& image_id,
     ntp_snippets::ImageFetchedCallback callback) {
-  GURL image_url = ImageUrlFromId(image_id);
-
   ntp_snippets::ContentSuggestion::ID synthetic_cache_id(
       ntp_snippets::Category::FromKnownCategory(
           ntp_snippets::KnownCategories::CONTEXTUAL),
