@@ -1491,7 +1491,11 @@ inline void BreakingContext::CommitAndUpdateLineBreakIfNeeded() {
   bool check_for_break = auto_wrap_;
   if (width_.CommittedWidth() && !width_.FitsOnLine() &&
       line_break_.GetLineLayoutItem() && curr_ws_ == EWhiteSpace::kNowrap) {
-    if (width_.FitsOnLine(0, kExcludeWhitespace)) {
+    // If this nowrap item fits but its trailing spaces does not, and if the
+    // next item is auto-wrap, break before the next item.
+    // TODO(kojii): This case should be handled when we read next item.
+    if (width_.FitsOnLine(0, kExcludeWhitespace) &&
+        (!next_object_ || next_object_.StyleRef().AutoWrap())) {
       width_.Commit();
       line_break_.MoveToStartOf(next_object_);
     }
