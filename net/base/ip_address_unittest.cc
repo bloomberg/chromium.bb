@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/format_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,29 +34,29 @@ TEST(IPAddressBytesTest, ConstructEmpty) {
 
 TEST(IPAddressBytesTest, ConstructIPv4) {
   uint8_t data[] = {192, 168, 1, 1};
-  IPAddressBytes bytes(data, arraysize(data));
-  ASSERT_EQ(arraysize(data), bytes.size());
+  IPAddressBytes bytes(data, base::size(data));
+  ASSERT_EQ(base::size(data), bytes.size());
   size_t i = 0;
   for (uint8_t byte : bytes)
     EXPECT_EQ(data[i++], byte);
-  ASSERT_EQ(arraysize(data), i);
+  ASSERT_EQ(base::size(data), i);
 }
 
 TEST(IPAddressBytesTest, ConstructIPv6) {
   uint8_t data[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
-  IPAddressBytes bytes(data, arraysize(data));
-  ASSERT_EQ(arraysize(data), bytes.size());
+  IPAddressBytes bytes(data, base::size(data));
+  ASSERT_EQ(base::size(data), bytes.size());
   size_t i = 0;
   for (uint8_t byte : bytes)
     EXPECT_EQ(data[i++], byte);
-  ASSERT_EQ(arraysize(data), i);
+  ASSERT_EQ(base::size(data), i);
 }
 
 TEST(IPAddressBytesTest, Assign) {
   uint8_t data[] = {192, 168, 1, 1};
   IPAddressBytes copy;
-  copy.Assign(data, arraysize(data));
-  EXPECT_EQ(IPAddressBytes(data, arraysize(data)), copy);
+  copy.Assign(data, base::size(data));
+  EXPECT_EQ(IPAddressBytes(data, base::size(data)), copy);
 }
 
 TEST(IPAddressTest, ConstructIPv4) {
@@ -521,20 +522,19 @@ TEST(IPAddressTest, IPAddressMatchesPrefix) {
       {"10.11.33.44", 16, "::ffff:0a0b:89", true},
       {"10.11.33.44", 16, "::ffff:10.12.33.44", false},
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s, %s", i,
-                                    tests[i].cidr_literal,
-                                    tests[i].ip_literal));
+  for (const auto& test : tests) {
+    SCOPED_TRACE(
+        base::StringPrintf("%s, %s", test.cidr_literal, test.ip_literal));
 
     IPAddress ip_address;
-    EXPECT_TRUE(ip_address.AssignFromIPLiteral(tests[i].ip_literal));
+    EXPECT_TRUE(ip_address.AssignFromIPLiteral(test.ip_literal));
 
     IPAddress ip_prefix;
-    EXPECT_TRUE(ip_prefix.AssignFromIPLiteral(tests[i].cidr_literal));
+    EXPECT_TRUE(ip_prefix.AssignFromIPLiteral(test.cidr_literal));
 
-    EXPECT_EQ(tests[i].expected_to_match,
+    EXPECT_EQ(test.expected_to_match,
               IPAddressMatchesPrefix(ip_address, ip_prefix,
-                                     tests[i].prefix_length_in_bits));
+                                     test.prefix_length_in_bits));
   }
 }
 

@@ -4,6 +4,7 @@
 
 #include "net/base/address_list.h"
 
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "net/base/ip_address.h"
@@ -122,9 +123,9 @@ TEST(AddressListTest, CreateFromIPAddressList) {
 
   // Construct a list of ip addresses.
   IPAddressList ip_list;
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (const auto& test : tests) {
     IPAddress ip_address;
-    ASSERT_TRUE(ip_address.AssignFromIPLiteral(tests[i].ip_address));
+    ASSERT_TRUE(ip_address.AssignFromIPLiteral(test.ip_address));
     ip_list.push_back(ip_address);
   }
 
@@ -132,7 +133,7 @@ TEST(AddressListTest, CreateFromIPAddressList) {
                                                                kCanonicalName);
   std::string canonical_name;
   EXPECT_EQ(kCanonicalName, test_list.canonical_name());
-  EXPECT_EQ(arraysize(tests), test_list.size());
+  EXPECT_EQ(base::size(tests), test_list.size());
 }
 
 }  // namespace

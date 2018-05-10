@@ -14,27 +14,14 @@ using ::testing::Range;
 using ::testing::Values;
 using ::net::SniffMimeType;  // It is shadowed by SniffMimeType(), below.
 
-struct SnifferTest {
-  const char* content;
-  size_t content_len;
-  std::string url;
-  std::string type_hint;
-  const char* mime_type;
-};
-
-static void TestArray(SnifferTest* tests, size_t count) {
-  std::string mime_type;
-
-  for (size_t i = 0; i < count; ++i) {
-    SniffMimeType(tests[i].content, tests[i].content_len, GURL(tests[i].url),
-                  tests[i].type_hint, ForceSniffFileUrlsForHtml::kDisabled,
-                  &mime_type);
-    EXPECT_EQ(tests[i].mime_type, mime_type);
-  }
+// Turn |str|, a constant string with one or more embedded NULs, along with
+// a NUL terminator, into an std::string() containing just that data.
+// Turn |str|, a string with one or more embedded NULs, into an std::string()
+template <size_t N>
+std::string MakeConstantString(const char (&str)[N]) {
+  return std::string(str, N - 1);
 }
 
-// TODO(evanm): convert other tests to use SniffMimeType instead of TestArray,
-// so the error messages produced by test failures are more useful.
 static std::string SniffMimeType(const std::string& content,
                                  const std::string& url,
                                  const std::string& mime_type_hint) {
@@ -66,184 +53,169 @@ TEST(MimeSnifferTest, BoundaryConditionsTest) {
 }
 
 TEST(MimeSnifferTest, BasicSniffingTest) {
-  SnifferTest tests[] = {
-    { "<!DOCTYPE html PUBLIC", sizeof("<!DOCTYPE html PUBLIC")-1,
-      "http://www.example.com/",
-      "", "text/html" },
-    { "<HtMl><Body></body></htMl>", sizeof("<HtMl><Body></body></htMl>")-1,
-      "http://www.example.com/foo.gif",
-      "application/octet-stream", "application/octet-stream" },
-    { "GIF89a\x1F\x83\x94", sizeof("GIF89a\xAF\x83\x94")-1,
-      "http://www.example.com/foo",
-      "text/plain", "image/gif" },
-    { "Gif87a\x1F\x83\x94", sizeof("Gif87a\xAF\x83\x94")-1,
-      "http://www.example.com/foo?param=tt.gif",
-      "", "application/octet-stream" },
-    { "%!PS-Adobe-3.0", sizeof("%!PS-Adobe-3.0")-1,
-      "http://www.example.com/foo",
-      "text/plain", "text/plain" },
-    { "\x89" "PNG\x0D\x0A\x1A\x0A", sizeof("\x89" "PNG\x0D\x0A\x1A\x0A")-1,
-      "http://www.example.com/foo",
-      "application/octet-stream", "application/octet-stream" },
-    { "\xFF\xD8\xFF\x23\x49\xAF", sizeof("\xFF\xD8\xFF\x23\x49\xAF")-1,
-      "http://www.example.com/foo",
-      "", "image/jpeg" },
-  };
-
-  TestArray(tests, arraysize(tests));
+  EXPECT_EQ("text/html",
+            SniffMimeType(MakeConstantString("<!DOCTYPE html PUBLIC"),
+                          "http://www.example.com/", ""));
+  EXPECT_EQ("application/octet-stream",
+            SniffMimeType(MakeConstantString("<HtMl><Body></body></htMl>"),
+                          "http://www.example.com/foo.gif",
+                          "application/octet-stream"));
+  EXPECT_EQ("image/gif",
+            SniffMimeType(MakeConstantString("GIF89a\x1F\x83\x94"),
+                          "http://www.example.com/foo", "text/plain"));
+  EXPECT_EQ("application/octet-stream",
+            SniffMimeType(MakeConstantString("Gif87a\x1F\x83\x94"),
+                          "http://www.example.com/foo?param=tt.gif", ""));
+  EXPECT_EQ("text/plain",
+            SniffMimeType(MakeConstantString("%!PS-Adobe-3.0"),
+                          "http://www.example.com/foo", "text/plain"));
+  EXPECT_EQ(
+      "application/octet-stream",
+      SniffMimeType(MakeConstantString("\x89"
+                                       "PNG\x0D\x0A\x1A\x0A"),
+                    "http://www.example.com/foo", "application/octet-stream"));
+  EXPECT_EQ("image/jpeg",
+            SniffMimeType(MakeConstantString("\xFF\xD8\xFF\x23\x49\xAF"),
+                          "http://www.example.com/foo", ""));
 }
 
 TEST(MimeSnifferTest, ChromeExtensionsTest) {
-  SnifferTest tests[] = {
-      // schemes
-      {"Cr24\x02\x00\x00\x00", sizeof("Cr24\x02\x00\x00\x00") - 1,
-       "http://www.example.com/foo.crx", "", "application/x-chrome-extension"},
-      {"Cr24\x02\x00\x00\x00", sizeof("Cr24\x02\x00\x00\x00") - 1,
-       "https://www.example.com/foo.crx", "", "application/x-chrome-extension"},
-      {"Cr24\x02\x00\x00\x00", sizeof("Cr24\x02\x00\x00\x00") - 1,
-       "ftp://www.example.com/foo.crx", "", "application/x-chrome-extension"},
+  // schemes
+  EXPECT_EQ("application/x-chrome-extension",
+            SniffMimeType(MakeConstantString("Cr24\x02\x00\x00\x00"),
+                          "http://www.example.com/foo.crx", ""));
+  EXPECT_EQ("application/x-chrome-extension",
+            SniffMimeType(MakeConstantString("Cr24\x02\x00\x00\x00"),
+                          "https://www.example.com/foo.crx", ""));
+  EXPECT_EQ("application/x-chrome-extension",
+            SniffMimeType(MakeConstantString("Cr24\x02\x00\x00\x00"),
+                          "ftp://www.example.com/foo.crx", ""));
 
-      // some other mimetypes that should get converted
-      {"Cr24\x02\x00\x00\x00", sizeof("Cr24\x02\x00\x00\x00") - 1,
-       "http://www.example.com/foo.crx", "text/plain",
-       "application/x-chrome-extension"},
-      {"Cr24\x02\x00\x00\x00", sizeof("Cr24\x02\x00\x00\x00") - 1,
-       "http://www.example.com/foo.crx", "application/octet-stream",
-       "application/x-chrome-extension"},
+  // some other mimetypes that should get converted
+  EXPECT_EQ("application/x-chrome-extension",
+            SniffMimeType(MakeConstantString("Cr24\x02\x00\x00\x00"),
+                          "http://www.example.com/foo.crx", "text/plain"));
+  EXPECT_EQ("application/x-chrome-extension",
+            SniffMimeType(MakeConstantString("Cr24\x02\x00\x00\x00"),
+                          "http://www.example.com/foo.crx",
+                          "application/octet-stream"));
 
-      // success edge cases
-      {"Cr24\x02\x00\x00\x00", sizeof("Cr24\x02\x00\x00\x00") - 1,
-       "http://www.example.com/foo.crx?query=string", "",
-       "application/x-chrome-extension"},
-      {"Cr24\x02\x00\x00\x00", sizeof("Cr24\x02\x00\x00\x00") - 1,
-       "http://www.example.com/foo..crx", "", "application/x-chrome-extension"},
-      {"Cr24\x03\x00\x00\x00", sizeof("Cr24\x03\x00\x00\x00") - 1,
-       "http://www.example.com/foo..crx", "", "application/x-chrome-extension"},
+  // success edge cases
+  EXPECT_EQ("application/x-chrome-extension",
+            SniffMimeType(MakeConstantString("Cr24\x02\x00\x00\x00"),
+                          "http://www.example.com/foo.crx?query=string", ""));
+  EXPECT_EQ("application/x-chrome-extension",
+            SniffMimeType(MakeConstantString("Cr24\x02\x00\x00\x00"),
+                          "http://www.example.com/foo..crx", ""));
+  EXPECT_EQ("application/x-chrome-extension",
+            SniffMimeType(MakeConstantString("Cr24\x03\x00\x00\x00"),
+                          "http://www.example.com/foo..crx", ""));
 
-      // wrong file extension
-      {"Cr24\x02\x00\x00\x00", sizeof("Cr24\x02\x00\x00\x00") - 1,
-       "http://www.example.com/foo.bin", "", "application/octet-stream"},
-      {"Cr24\x02\x00\x00\x00", sizeof("Cr24\x02\x00\x00\x00") - 1,
-       "http://www.example.com/foo.bin?monkey", "", "application/octet-stream"},
-      {"Cr24\x02\x00\x00\x00", sizeof("Cr24\x02\x00\x00\x00") - 1,
-       "invalid-url", "", "application/octet-stream"},
-      {"Cr24\x02\x00\x00\x00", sizeof("Cr24\x02\x00\x00\x00") - 1,
-       "http://www.example.com", "", "application/octet-stream"},
-      {"Cr24\x02\x00\x00\x00", sizeof("Cr24\x02\x00\x00\x00") - 1,
-       "http://www.example.com/", "", "application/octet-stream"},
-      {"Cr24\x02\x00\x00\x00", sizeof("Cr24\x02\x00\x00\x00") - 1,
-       "http://www.example.com/foo", "", "application/octet-stream"},
-      {"Cr24\x02\x00\x00\x00", sizeof("Cr24\x02\x00\x00\x00") - 1,
-       "http://www.example.com/foocrx", "", "application/octet-stream"},
-      {"Cr24\x02\x00\x00\x00", sizeof("Cr24\x02\x00\x00\x00") - 1,
-       "http://www.example.com/foo.crx.blech", "", "application/octet-stream"},
+  // wrong file extension
+  EXPECT_EQ("application/octet-stream",
+            SniffMimeType(MakeConstantString("Cr24\x02\x00\x00\x00"),
+                          "http://www.example.com/foo.bin", ""));
+  EXPECT_EQ("application/octet-stream",
+            SniffMimeType(MakeConstantString("Cr24\x02\x00\x00\x00"),
+                          "http://www.example.com/foo.bin?monkey", ""));
+  EXPECT_EQ("application/octet-stream",
+            SniffMimeType(MakeConstantString("Cr24\x02\x00\x00\x00"),
+                          "invalid-url", ""));
+  EXPECT_EQ("application/octet-stream",
+            SniffMimeType(MakeConstantString("Cr24\x02\x00\x00\x00"),
+                          "http://www.example.com", ""));
+  EXPECT_EQ("application/octet-stream",
+            SniffMimeType(MakeConstantString("Cr24\x02\x00\x00\x00"),
+                          "http://www.example.com/", ""));
+  EXPECT_EQ("application/octet-stream",
+            SniffMimeType(MakeConstantString("Cr24\x02\x00\x00\x00"),
+                          "http://www.example.com/foo", ""));
+  EXPECT_EQ("application/octet-stream",
+            SniffMimeType(MakeConstantString("Cr24\x02\x00\x00\x00"),
+                          "http://www.example.com/foocrx", ""));
+  EXPECT_EQ("application/octet-stream",
+            SniffMimeType(MakeConstantString("Cr24\x02\x00\x00\x00"),
+                          "http://www.example.com/foo.crx.blech", ""));
 
-      // wrong magic
-      {"Cr24\x02\x00\x00\x01", sizeof("Cr24\x02\x00\x00\x01") - 1,
-       "http://www.example.com/foo.crx?monkey", "", "application/octet-stream"},
-      {"PADDING_Cr24\x02\x00\x00\x00",
-       sizeof("PADDING_Cr24\x02\x00\x00\x00") - 1,
-       "http://www.example.com/foo.crx?monkey", "", "application/octet-stream"},
-  };
-
-  TestArray(tests, arraysize(tests));
+  // wrong magic
+  EXPECT_EQ("application/octet-stream",
+            SniffMimeType(MakeConstantString("Cr24\x02\x00\x00\x01"),
+                          "http://www.example.com/foo.crx?monkey", ""));
+  EXPECT_EQ("application/octet-stream",
+            SniffMimeType(MakeConstantString("PADDING_Cr24\x02\x00\x00\x00"),
+                          "http://www.example.com/foo.crx?monkey", ""));
 }
 
 TEST(MimeSnifferTest, MozillaCompatibleTest) {
-  SnifferTest tests[] = {
-    { " \n <hTmL>\n <hea", sizeof(" \n <hTmL>\n <hea")-1,
-      "http://www.example.com/",
-      "", "text/html" },
-    { " \n <hTmL>\n <hea", sizeof(" \n <hTmL>\n <hea")-1,
-      "http://www.example.com/",
-      "text/plain", "text/plain" },
-    { "BMjlakdsfk", sizeof("BMjlakdsfk")-1,
-      "http://www.example.com/foo",
-      "", "image/bmp" },
-    { "\x00\x00\x30\x00", sizeof("\x00\x00\x30\x00")-1,
-      "http://www.example.com/favicon.ico",
-      "", "application/octet-stream" },
-    { "#!/bin/sh\nls /\n", sizeof("#!/bin/sh\nls /\n")-1,
-      "http://www.example.com/foo",
-      "", "text/plain" },
-    { "From: Fred\nTo: Bob\n\nHi\n.\n",
-      sizeof("From: Fred\nTo: Bob\n\nHi\n.\n")-1,
-      "http://www.example.com/foo",
-      "", "text/plain" },
-    { "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n",
-      sizeof("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")-1,
-      "http://www.example.com/foo",
-      "", "text/xml" },
-    { "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n",
-      sizeof("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")-1,
-      "http://www.example.com/foo",
-      "application/octet-stream", "application/octet-stream" },
-  };
-
-  TestArray(tests, arraysize(tests));
+  EXPECT_EQ("text/html", SniffMimeType(MakeConstantString(" \n <hTmL>\n <hea"),
+                                       "http://www.example.com/", ""));
+  EXPECT_EQ("text/plain",
+            SniffMimeType(MakeConstantString(" \n <hTmL>\n <hea"),
+                          "http://www.example.com/", "text/plain"));
+  EXPECT_EQ("image/bmp", SniffMimeType(MakeConstantString("BMjlakdsfk"),
+                                       "http://www.example.com/foo", ""));
+  EXPECT_EQ("application/octet-stream",
+            SniffMimeType(MakeConstantString("\x00\x00\x30\x00"),
+                          "http://www.example.com/favicon.ico", ""));
+  EXPECT_EQ("text/plain", SniffMimeType(MakeConstantString("#!/bin/sh\nls /\n"),
+                                        "http://www.example.com/foo", ""));
+  EXPECT_EQ("text/plain",
+            SniffMimeType(MakeConstantString("From: Fred\nTo: Bob\n\nHi\n.\n"),
+                          "http://www.example.com/foo", ""));
+  EXPECT_EQ("text/xml",
+            SniffMimeType(MakeConstantString(
+                              "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"),
+                          "http://www.example.com/foo", ""));
+  EXPECT_EQ(
+      "application/octet-stream",
+      SniffMimeType(
+          MakeConstantString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"),
+          "http://www.example.com/foo", "application/octet-stream"));
 }
 
 TEST(MimeSnifferTest, DontAllowPrivilegeEscalationTest) {
-  SnifferTest tests[] = {
-    { "GIF87a\n<html>\n<body>"
-        "<script>alert('haxorzed');\n</script>"
-        "</body></html>\n",
-      sizeof("GIF87a\n<html>\n<body>"
-        "<script>alert('haxorzed');\n</script>"
-        "</body></html>\n")-1,
-      "http://www.example.com/foo",
-      "", "image/gif" },
-    { "GIF87a\n<html>\n<body>"
-        "<script>alert('haxorzed');\n</script>"
-        "</body></html>\n",
-      sizeof("GIF87a\n<html>\n<body>"
-        "<script>alert('haxorzed');\n</script>"
-        "</body></html>\n")-1,
-      "http://www.example.com/foo?q=ttt.html",
-      "", "image/gif" },
-    { "GIF87a\n<html>\n<body>"
-        "<script>alert('haxorzed');\n</script>"
-        "</body></html>\n",
-      sizeof("GIF87a\n<html>\n<body>"
-        "<script>alert('haxorzed');\n</script>"
-        "</body></html>\n")-1,
-      "http://www.example.com/foo#ttt.html",
-      "", "image/gif" },
-    { "a\n<html>\n<body>"
-        "<script>alert('haxorzed');\n</script>"
-        "</body></html>\n",
-      sizeof("a\n<html>\n<body>"
-        "<script>alert('haxorzed');\n</script>"
-        "</body></html>\n")-1,
-      "http://www.example.com/foo",
-      "", "text/plain" },
-    { "a\n<html>\n<body>"
-        "<script>alert('haxorzed');\n</script>"
-        "</body></html>\n",
-      sizeof("a\n<html>\n<body>"
-        "<script>alert('haxorzed');\n</script>"
-        "</body></html>\n")-1,
-      "http://www.example.com/foo?q=ttt.html",
-      "", "text/plain" },
-    { "a\n<html>\n<body>"
-        "<script>alert('haxorzed');\n</script>"
-        "</body></html>\n",
-      sizeof("a\n<html>\n<body>"
-        "<script>alert('haxorzed');\n</script>"
-        "</body></html>\n")-1,
-      "http://www.example.com/foo#ttt.html",
-      "", "text/plain" },
-    { "a\n<html>\n<body>"
-        "<script>alert('haxorzed');\n</script>"
-        "</body></html>\n",
-      sizeof("a\n<html>\n<body>"
-        "<script>alert('haxorzed');\n</script>"
-        "</body></html>\n")-1,
-      "http://www.example.com/foo.html",
-      "", "text/plain" },
-  };
-
-  TestArray(tests, arraysize(tests));
+  EXPECT_EQ(
+      "image/gif",
+      SniffMimeType(MakeConstantString("GIF87a\n<html>\n<body>"
+                                       "<script>alert('haxorzed');\n</script>"
+                                       "</body></html>\n"),
+                    "http://www.example.com/foo", ""));
+  EXPECT_EQ(
+      "image/gif",
+      SniffMimeType(MakeConstantString("GIF87a\n<html>\n<body>"
+                                       "<script>alert('haxorzed');\n</script>"
+                                       "</body></html>\n"),
+                    "http://www.example.com/foo?q=ttt.html", ""));
+  EXPECT_EQ(
+      "image/gif",
+      SniffMimeType(MakeConstantString("GIF87a\n<html>\n<body>"
+                                       "<script>alert('haxorzed');\n</script>"
+                                       "</body></html>\n"),
+                    "http://www.example.com/foo#ttt.html", ""));
+  EXPECT_EQ(
+      "text/plain",
+      SniffMimeType(MakeConstantString("a\n<html>\n<body>"
+                                       "<script>alert('haxorzed');\n</script>"
+                                       "</body></html>\n"),
+                    "http://www.example.com/foo", ""));
+  EXPECT_EQ(
+      "text/plain",
+      SniffMimeType(MakeConstantString("a\n<html>\n<body>"
+                                       "<script>alert('haxorzed');\n</script>"
+                                       "</body></html>\n"),
+                    "http://www.example.com/foo?q=ttt.html", ""));
+  EXPECT_EQ(
+      "text/plain",
+      SniffMimeType(MakeConstantString("a\n<html>\n<body>"
+                                       "<script>alert('haxorzed');\n</script>"
+                                       "</body></html>\n"),
+                    "http://www.example.com/foo#ttt.html", ""));
+  EXPECT_EQ(
+      "text/plain",
+      SniffMimeType(MakeConstantString("a\n<html>\n<body>"
+                                       "<script>alert('haxorzed');\n</script>"
+                                       "</body></html>\n"),
+                    "http://www.example.com/foo.html", ""));
 }
 
 TEST(MimeSnifferTest, SniffFilesAsHtml) {
@@ -261,66 +233,61 @@ TEST(MimeSnifferTest, SniffFilesAsHtml) {
 }
 
 TEST(MimeSnifferTest, UnicodeTest) {
-  SnifferTest tests[] = {
-    { "\xEF\xBB\xBF" "Hi there", sizeof("\xEF\xBB\xBF" "Hi there")-1,
-      "http://www.example.com/foo",
-      "", "text/plain" },
-    { "\xEF\xBB\xBF\xED\x7A\xAD\x7A\x0D\x79",
-      sizeof("\xEF\xBB\xBF\xED\x7A\xAD\x7A\x0D\x79")-1,
-      "http://www.example.com/foo",
-      "", "text/plain" },
-    { "\xFE\xFF\xD0\xA5\xD0\xBE\xD0\xBB\xD1\x83\xD0\xB9",
-      sizeof("\xFE\xFF\xD0\xA5\xD0\xBE\xD0\xBB\xD1\x83\xD0\xB9")-1,
-      "http://www.example.com/foo",
-      "", "text/plain" },
-    { "\xFE\xFF\x00\x41\x00\x20\xD8\x00\xDC\x00\xD8\x00\xDC\x01",
-      sizeof("\xFE\xFF\x00\x41\x00\x20\xD8\x00\xDC\x00\xD8\x00\xDC\x01")-1,
-      "http://www.example.com/foo",
-      "", "text/plain" },
-  };
-
-  TestArray(tests, arraysize(tests));
+  EXPECT_EQ("text/plain", SniffMimeType(MakeConstantString("\xEF\xBB\xBF"
+                                                           "Hi there"),
+                                        "http://www.example.com/foo", ""));
+  EXPECT_EQ(
+      "text/plain",
+      SniffMimeType(MakeConstantString("\xEF\xBB\xBF\xED\x7A\xAD\x7A\x0D\x79"),
+                    "http://www.example.com/foo", ""));
+  EXPECT_EQ(
+      "text/plain",
+      SniffMimeType(MakeConstantString(
+                        "\xFE\xFF\xD0\xA5\xD0\xBE\xD0\xBB\xD1\x83\xD0\xB9"),
+                    "http://www.example.com/foo", ""));
+  EXPECT_EQ("text/plain",
+            SniffMimeType(
+                MakeConstantString(
+                    "\xFE\xFF\x00\x41\x00\x20\xD8\x00\xDC\x00\xD8\x00\xDC\x01"),
+                "http://www.example.com/foo", ""));
 }
 
 TEST(MimeSnifferTest, FlashTest) {
-  SnifferTest tests[] = {
-    { "CWSdd\x00\xB3", sizeof("CWSdd\x00\xB3")-1,
-      "http://www.example.com/foo",
-      "", "application/octet-stream" },
-    { "FLVjdkl*(#)0sdj\x00", sizeof("FLVjdkl*(#)0sdj\x00")-1,
-      "http://www.example.com/foo?q=ttt.swf",
-      "", "application/octet-stream" },
-    { "FWS3$9\r\b\x00", sizeof("FWS3$9\r\b\x00")-1,
-      "http://www.example.com/foo#ttt.swf",
-      "", "application/octet-stream" },
-    { "FLVjdkl*(#)0sdj", sizeof("FLVjdkl*(#)0sdj")-1,
-      "http://www.example.com/foo.swf",
-      "", "text/plain" },
-    { "FLVjdkl*(#)0s\x01dj", sizeof("FLVjdkl*(#)0s\x01dj")-1,
-      "http://www.example.com/foo/bar.swf",
-      "", "application/octet-stream" },
-    { "FWS3$9\r\b\x1A", sizeof("FWS3$9\r\b\x1A")-1,
-      "http://www.example.com/foo.swf?clickTAG=http://www.adnetwork.com/bar",
-      "", "application/octet-stream" },
-    { "FWS3$9\r\x1C\b", sizeof("FWS3$9\r\x1C\b")-1,
-      "http://www.example.com/foo.swf?clickTAG=http://www.adnetwork.com/bar",
-      "text/plain", "application/octet-stream" },
-  };
-
-  TestArray(tests, arraysize(tests));
+  EXPECT_EQ("application/octet-stream",
+            SniffMimeType(MakeConstantString("CWSdd\x00\xB3"),
+                          "http://www.example.com/foo", ""));
+  EXPECT_EQ("application/octet-stream",
+            SniffMimeType(MakeConstantString("FLVjdkl*(#)0sdj\x00"),
+                          "http://www.example.com/foo?q=ttt.swf", ""));
+  EXPECT_EQ("application/octet-stream",
+            SniffMimeType(MakeConstantString("FWS3$9\r\b\x00"),
+                          "http://www.example.com/foo#ttt.swf", ""));
+  EXPECT_EQ("text/plain", SniffMimeType(MakeConstantString("FLVjdkl*(#)0sdj"),
+                                        "http://www.example.com/foo.swf", ""));
+  EXPECT_EQ("application/octet-stream",
+            SniffMimeType(MakeConstantString("FLVjdkl*(#)0s\x01dj"),
+                          "http://www.example.com/foo/bar.swf", ""));
+  EXPECT_EQ("application/octet-stream",
+            SniffMimeType(MakeConstantString("FWS3$9\r\b\x1A"),
+                          "http://www.example.com/foo.swf?clickTAG=http://"
+                          "www.adnetwork.com/bar",
+                          ""));
+  EXPECT_EQ("application/octet-stream",
+            SniffMimeType(MakeConstantString("FWS3$9\r\x1C\b"),
+                          "http://www.example.com/foo.swf?clickTAG=http://"
+                          "www.adnetwork.com/bar",
+                          "text/plain"));
 }
 
 TEST(MimeSnifferTest, XMLTest) {
   // An easy feed to identify.
   EXPECT_EQ("application/atom+xml",
-            SniffMimeType("<?xml?><feed", std::string(), "text/xml"));
+            SniffMimeType("<?xml?><feed", "", "text/xml"));
   // Don't sniff out of plain text.
-  EXPECT_EQ("text/plain",
-            SniffMimeType("<?xml?><feed", std::string(), "text/plain"));
+  EXPECT_EQ("text/plain", SniffMimeType("<?xml?><feed", "", "text/plain"));
   // Simple RSS.
   EXPECT_EQ("application/rss+xml",
-            SniffMimeType(
-                "<?xml version='1.0'?>\r\n<rss", std::string(), "text/xml"));
+            SniffMimeType("<?xml version='1.0'?>\r\n<rss", "", "text/xml"));
 
   // The top of CNN's RSS feed, which we'd like to recognize as RSS.
   static const char kCNNRSS[] =
@@ -332,39 +299,33 @@ TEST(MimeSnifferTest, XMLTest) {
       "<rss xmlns:feedburner=\"http://rssnamespace.org/feedburner/ext/1.0\" "
       "version=\"2.0\">";
   // CNN's RSS
-  EXPECT_EQ("application/rss+xml",
-            SniffMimeType(kCNNRSS, std::string(), "text/xml"));
-  EXPECT_EQ("text/plain", SniffMimeType(kCNNRSS, std::string(), "text/plain"));
+  EXPECT_EQ("application/rss+xml", SniffMimeType(kCNNRSS, "", "text/xml"));
+  EXPECT_EQ("text/plain", SniffMimeType(kCNNRSS, "", "text/plain"));
 
   // Don't sniff random XML as something different.
-  EXPECT_EQ("text/xml",
-            SniffMimeType("<?xml?><notafeed", std::string(), "text/xml"));
+  EXPECT_EQ("text/xml", SniffMimeType("<?xml?><notafeed", "", "text/xml"));
   // Don't sniff random plain-text as something different.
-  EXPECT_EQ("text/plain",
-            SniffMimeType("<?xml?><notafeed", std::string(), "text/plain"));
+  EXPECT_EQ("text/plain", SniffMimeType("<?xml?><notafeed", "", "text/plain"));
 
   // We never upgrade to application/xhtml+xml.
   EXPECT_EQ("text/xml",
-            SniffMimeType("<html xmlns=\"http://www.w3.org/1999/xhtml\">",
-                          std::string(), "text/xml"));
+            SniffMimeType("<html xmlns=\"http://www.w3.org/1999/xhtml\">", "",
+                          "text/xml"));
   EXPECT_EQ("application/xml",
-            SniffMimeType("<html xmlns=\"http://www.w3.org/1999/xhtml\">",
-                          std::string(), "application/xml"));
+            SniffMimeType("<html xmlns=\"http://www.w3.org/1999/xhtml\">", "",
+                          "application/xml"));
   EXPECT_EQ("text/plain",
-            SniffMimeType("<html xmlns=\"http://www.w3.org/1999/xhtml\">",
-                          std::string(),
+            SniffMimeType("<html xmlns=\"http://www.w3.org/1999/xhtml\">", "",
                           "text/plain"));
   EXPECT_EQ("application/rss+xml",
-            SniffMimeType("<html xmlns=\"http://www.w3.org/1999/xhtml\">",
-                          std::string(),
+            SniffMimeType("<html xmlns=\"http://www.w3.org/1999/xhtml\">", "",
                           "application/rss+xml"));
-  EXPECT_EQ("text/xml",
-            SniffMimeType("<html><head>", std::string(), "text/xml"));
+  EXPECT_EQ("text/xml", SniffMimeType("<html><head>", "", "text/xml"));
   EXPECT_EQ("text/xml",
             SniffMimeType("<foo><rss "
                           "xmlns:feedburner=\"http://rssnamespace.org/"
                           "feedburner/ext/1.0\" version=\"2.0\">",
-                          std::string(), "text/xml"));
+                          "", "text/xml"));
 }
 
 // Test content which is >= 1024 bytes, and includes no open angle bracket.
@@ -400,54 +361,55 @@ TEST(MimeSnifferTest, LooksBinary) {
 }
 
 TEST(MimeSnifferTest, OfficeTest) {
-  SnifferTest tests[] = {
     // Check for URLs incorrectly reported as Microsoft Office files.
-    { "Hi there",
-      sizeof("Hi there")-1,
-      "http://www.example.com/foo.doc",
-      "application/msword", "application/octet-stream" },
-    { "Hi there",
-      sizeof("Hi there")-1,
-      "http://www.example.com/foo.xls",
-      "application/vnd.ms-excel", "application/octet-stream" },
-    { "Hi there",
-      sizeof("Hi there")-1,
-      "http://www.example.com/foo.ppt",
-      "application/vnd.ms-powerpoint", "application/octet-stream" },
+    EXPECT_EQ(
+        "application/octet-stream",
+        SniffMimeType(MakeConstantString("Hi there"),
+                      "http://www.example.com/foo.doc", "application/msword"));
+    EXPECT_EQ("application/octet-stream",
+              SniffMimeType(MakeConstantString("Hi there"),
+                            "http://www.example.com/foo.xls",
+                            "application/vnd.ms-excel"));
+    EXPECT_EQ("application/octet-stream",
+              SniffMimeType(MakeConstantString("Hi there"),
+                            "http://www.example.com/foo.ppt",
+                            "application/vnd.ms-powerpoint"));
     // Check for Microsoft Office files incorrectly reported as text.
-    { "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1" "Hi there",
-      sizeof("\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1" "Hi there")-1,
-      "http://www.example.com/foo.doc",
-      "text/plain", "application/msword" },
-    { "PK\x03\x04" "Hi there",
-      sizeof("PK\x03\x04" "Hi there")-1,
-      "http://www.example.com/foo.doc",
-      "text/plain",
-      "application/vnd.openxmlformats-officedocument."
-      "wordprocessingml.document" },
-    { "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1" "Hi there",
-      sizeof("\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1" "Hi there")-1,
-      "http://www.example.com/foo.xls",
-      "text/plain", "application/vnd.ms-excel" },
-    { "PK\x03\x04" "Hi there",
-      sizeof("PK\x03\x04" "Hi there")-1,
-      "http://www.example.com/foo.xls",
-      "text/plain",
-      "application/vnd.openxmlformats-officedocument."
-      "spreadsheetml.sheet" },
-    { "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1" "Hi there",
-      sizeof("\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1" "Hi there")-1,
-      "http://www.example.com/foo.ppt",
-      "text/plain", "application/vnd.ms-powerpoint" },
-    { "PK\x03\x04" "Hi there",
-      sizeof("PK\x03\x04" "Hi there")-1,
-      "http://www.example.com/foo.ppt",
-      "text/plain",
-      "application/vnd.openxmlformats-officedocument."
-      "presentationml.presentation" },
-  };
+    EXPECT_EQ(
+        "application/msword",
+        SniffMimeType(MakeConstantString("\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1"
+                                         "Hi there"),
+                      "http://www.example.com/foo.doc", "text/plain"));
+    EXPECT_EQ(
+        "application/vnd.openxmlformats-officedocument."
+        "wordprocessingml.document",
+        SniffMimeType(MakeConstantString(
 
-  TestArray(tests, arraysize(tests));
+                          "PK\x03\x04"
+                          "Hi there"),
+                      "http://www.example.com/foo.doc", "text/plain"));
+    EXPECT_EQ(
+        "application/vnd.ms-excel",
+        SniffMimeType(MakeConstantString("\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1"
+                                         "Hi there"),
+                      "http://www.example.com/foo.xls", "text/plain"));
+    EXPECT_EQ(
+        "application/vnd.openxmlformats-officedocument."
+        "spreadsheetml.sheet",
+        SniffMimeType(MakeConstantString("PK\x03\x04"
+                                         "Hi there"),
+                      "http://www.example.com/foo.xls", "text/plain"));
+    EXPECT_EQ(
+        "application/vnd.ms-powerpoint",
+        SniffMimeType(MakeConstantString("\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1"
+                                         "Hi there"),
+                      "http://www.example.com/foo.ppt", "text/plain"));
+    EXPECT_EQ(
+        "application/vnd.openxmlformats-officedocument."
+        "presentationml.presentation",
+        SniffMimeType(MakeConstantString("PK\x03\x04"
+                                         "Hi there"),
+                      "http://www.example.com/foo.ppt", "text/plain"));
 }
 
 // TODO(thestig) Add more tests for other AV formats. Add another test case for

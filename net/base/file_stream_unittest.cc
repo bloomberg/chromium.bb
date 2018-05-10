@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
@@ -41,8 +42,8 @@ namespace net {
 
 namespace {
 
-const char kTestData[] = "0123456789";
-const int kTestDataSize = arraysize(kTestData) - 1;
+constexpr char kTestData[] = "0123456789";
+constexpr int kTestDataSize = base::size(kTestData) - 1;
 
 // Creates an IOBufferWithSize that contains the kTestDataSize.
 IOBufferWithSize* CreateTestDataBuffer() {

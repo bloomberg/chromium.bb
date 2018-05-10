@@ -61,15 +61,13 @@ struct TestData {
   { "::1", "[::1]", true },
   { "2001:db8:0::42", "[2001:db8::42]", true },
 };
-uint16_t test_count = static_cast<uint16_t>(arraysize(tests));
 
 class IPEndPointTest : public PlatformTest {
  public:
   void SetUp() override {
     // This is where we populate the TestData.
-    for (int index = 0; index < test_count; ++index) {
-      EXPECT_TRUE(
-          tests[index].ip_address.AssignFromIPLiteral(tests[index].host));
+    for (auto& test : tests) {
+      EXPECT_TRUE(test.ip_address.AssignFromIPLiteral(test.host));
     }
   }
 };
@@ -78,16 +76,17 @@ TEST_F(IPEndPointTest, Constructor) {
   IPEndPoint endpoint;
   EXPECT_EQ(0, endpoint.port());
 
-  for (uint16_t index = 0; index < test_count; ++index) {
-    IPEndPoint endpoint(tests[index].ip_address, 80);
+  for (const auto& test : tests) {
+    IPEndPoint endpoint(test.ip_address, 80);
     EXPECT_EQ(80, endpoint.port());
-    EXPECT_EQ(tests[index].ip_address, endpoint.address());
+    EXPECT_EQ(test.ip_address, endpoint.address());
   }
 }
 
 TEST_F(IPEndPointTest, Assignment) {
-  for (uint16_t index = 0; index < test_count; ++index) {
-    IPEndPoint src(tests[index].ip_address, index);
+  uint16_t port = 0;
+  for (const auto& test : tests) {
+    IPEndPoint src(test.ip_address, ++port);
     IPEndPoint dest = src;
 
     EXPECT_EQ(src.port(), dest.port());
@@ -96,8 +95,9 @@ TEST_F(IPEndPointTest, Assignment) {
 }
 
 TEST_F(IPEndPointTest, Copy) {
-  for (uint16_t index = 0; index < test_count; ++index) {
-    IPEndPoint src(tests[index].ip_address, index);
+  uint16_t port = 0;
+  for (const auto& test : tests) {
+    IPEndPoint src(test.ip_address, ++port);
     IPEndPoint dest(src);
 
     EXPECT_EQ(src.port(), dest.port());
@@ -106,16 +106,17 @@ TEST_F(IPEndPointTest, Copy) {
 }
 
 TEST_F(IPEndPointTest, ToFromSockAddr) {
-  for (uint16_t index = 0; index < test_count; ++index) {
-    IPEndPoint ip_endpoint(tests[index].ip_address, index);
+  uint16_t port = 0;
+  for (const auto& test : tests) {
+    IPEndPoint ip_endpoint(test.ip_address, ++port);
 
     // Convert to a sockaddr.
     SockaddrStorage storage;
     EXPECT_TRUE(ip_endpoint.ToSockAddr(storage.addr, &storage.addr_len));
 
     // Basic verification.
-    socklen_t expected_size = tests[index].ipv6 ?
-        sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
+    socklen_t expected_size =
+        test.ipv6 ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
     EXPECT_EQ(expected_size, storage.addr_len);
     EXPECT_EQ(ip_endpoint.port(), GetPortFromSockaddr(storage.addr,
                                                       storage.addr_len));
@@ -129,11 +130,12 @@ TEST_F(IPEndPointTest, ToFromSockAddr) {
 }
 
 TEST_F(IPEndPointTest, ToSockAddrBufTooSmall) {
-  for (uint16_t index = 0; index < test_count; ++index) {
-    IPEndPoint ip_endpoint(tests[index].ip_address, index);
+  uint16_t port = 0;
+  for (const auto& test : tests) {
+    IPEndPoint ip_endpoint(test.ip_address, port);
 
     SockaddrStorage storage;
-    storage.addr_len = index;  // size is too small!
+    storage.addr_len = 3;  // size is too small!
     EXPECT_FALSE(ip_endpoint.ToSockAddr(storage.addr, &storage.addr_len));
   }
 }
@@ -148,8 +150,9 @@ TEST_F(IPEndPointTest, FromSockAddrBufTooSmall) {
 }
 
 TEST_F(IPEndPointTest, Equality) {
-  for (uint16_t index = 0; index < test_count; ++index) {
-    IPEndPoint src(tests[index].ip_address, index);
+  uint16_t port = 0;
+  for (const auto& test : tests) {
+    IPEndPoint src(test.ip_address, ++port);
     IPEndPoint dest(src);
     EXPECT_TRUE(src == dest);
   }
@@ -191,12 +194,12 @@ TEST_F(IPEndPointTest, ToString) {
   IPEndPoint endpoint;
   EXPECT_EQ(0, endpoint.port());
 
-  for (uint16_t index = 0; index < test_count; ++index) {
-    uint16_t port = 100 + index;
-    IPEndPoint endpoint(tests[index].ip_address, port);
+  uint16_t port = 100;
+  for (const auto& test : tests) {
+    ++port;
+    IPEndPoint endpoint(test.ip_address, port);
     const std::string result = endpoint.ToString();
-    EXPECT_EQ(tests[index].host_normalized + ":" + base::UintToString(port),
-              result);
+    EXPECT_EQ(test.host_normalized + ":" + base::UintToString(port), result);
   }
 
   // ToString() shouldn't crash on invalid addresses.
