@@ -4,6 +4,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#import "ios/testing/wait_util.h"
 #include "ios/web/public/favicon_url.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -12,6 +13,8 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using testing::WaitUntilConditionOrTimeout;
 
 namespace web {
 
@@ -73,9 +76,9 @@ TEST_F(FaviconCallbackTest, ShortcutIconFavicon) {
   ASSERT_TRUE(observer()->favicon_url_candidates().empty());
   LoadHtml(@"<link rel='shortcut icon' href='http://fav.ico'>");
 
-  WaitForCondition(^{
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForActionTimeout, ^{
     return observer()->favicon_url_updated();
-  });
+  }));
 
   const std::vector<FaviconURL>& favicons =
       observer()->favicon_url_candidates();
@@ -90,9 +93,9 @@ TEST_F(FaviconCallbackTest, IconFavicon) {
   ASSERT_TRUE(observer()->favicon_url_candidates().empty());
   LoadHtml(@"<link rel='icon' href='http://fav.ico'>");
 
-  WaitForCondition(^{
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForActionTimeout, ^{
     return observer()->favicon_url_updated();
-  });
+  }));
 
   const std::vector<FaviconURL>& favicons =
       observer()->favicon_url_candidates();
@@ -108,9 +111,9 @@ TEST_F(FaviconCallbackTest, AppleTouchIconFavicon) {
   LoadHtml(@"<link rel='apple-touch-icon' href='http://fav.ico'>",
            GURL("https://chromium.test"));
 
-  WaitForCondition(^{
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForActionTimeout, ^{
     return observer()->favicon_url_updated();
-  });
+  }));
 
   const std::vector<FaviconURL>& favicons =
       observer()->favicon_url_candidates();
@@ -129,9 +132,9 @@ TEST_F(FaviconCallbackTest, AppleTouchIconPrecomposedFavicon) {
   LoadHtml(@"<link rel='apple-touch-icon-precomposed' href='http://fav.ico'>",
            GURL("https://chromium.test"));
 
-  WaitForCondition(^{
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForActionTimeout, ^{
     return observer()->favicon_url_updated();
-  });
+  }));
 
   const std::vector<FaviconURL>& favicons =
       observer()->favicon_url_candidates();
@@ -149,9 +152,9 @@ TEST_F(FaviconCallbackTest, NoFavicon) {
   ASSERT_TRUE(observer()->favicon_url_candidates().empty());
   LoadHtml(@"<html></html>", GURL("https://chromium.test/test/test.html"));
 
-  WaitForCondition(^{
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForActionTimeout, ^{
     return observer()->favicon_url_updated();
-  });
+  }));
 
   const std::vector<FaviconURL>& favicons =
       observer()->favicon_url_candidates();
@@ -167,9 +170,9 @@ TEST_F(FaviconCallbackTest, NoFaviconWithQuery) {
   LoadHtml(@"<html></html>",
            GURL("https://chromium.test/test/test.html?q1#h1"));
 
-  WaitForCondition(^{
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForActionTimeout, ^{
     return observer()->favicon_url_updated();
-  });
+  }));
 
   const std::vector<FaviconURL>& favicons =
       observer()->favicon_url_candidates();
@@ -187,9 +190,9 @@ TEST_F(FaviconCallbackTest, MultipleFavicons) {
             "<link rel='apple-touch-icon' href='http://fav2.ico'>"
             "<link rel='apple-touch-icon-precomposed' href='http://fav3.ico'>");
 
-  WaitForCondition(^{
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForActionTimeout, ^{
     return observer()->favicon_url_updated();
-  });
+  }));
 
   const std::vector<FaviconURL>& favicons =
       observer()->favicon_url_candidates();
@@ -214,9 +217,9 @@ TEST_F(FaviconCallbackTest, InvalidFaviconUrl) {
   LoadHtml(@"<html><head><link rel='icon' href='http://'></head></html>",
            GURL("https://chromium.test"));
 
-  WaitForCondition(^{
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForActionTimeout, ^{
     return observer()->favicon_url_updated();
-  });
+  }));
 
   const std::vector<FaviconURL>& favicons =
       observer()->favicon_url_candidates();
@@ -231,9 +234,9 @@ TEST_F(FaviconCallbackTest, EmptyFaviconUrl) {
   ASSERT_TRUE(observer()->favicon_url_candidates().empty());
   LoadHtml(@"<head><link rel='icon' href=''></head>");
 
-  WaitForCondition(^{
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForActionTimeout, ^{
     return observer()->favicon_url_updated();
-  });
+  }));
 
   const std::vector<FaviconURL>& favicons =
       observer()->favicon_url_candidates();
@@ -251,9 +254,9 @@ TEST_F(FaviconCallbackTest, IconFaviconSizes) {
       @"<link rel='icon' href='http://fav.ico' sizes='10x20 30x40'><link "
       @"rel='apple-touch-icon' href='http://fav2.ico' sizes='10x20 asdfx'>");
 
-  WaitForCondition(^{
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForActionTimeout, ^{
     return observer()->favicon_url_updated();
-  });
+  }));
 
   const std::vector<FaviconURL>& favicons =
       observer()->favicon_url_candidates();
