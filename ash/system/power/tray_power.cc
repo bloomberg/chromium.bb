@@ -39,55 +39,50 @@ namespace ash {
 
 namespace tray {
 
-// This view is used only for the tray.
-class PowerTrayView : public TrayItemView {
- public:
-  explicit PowerTrayView(SystemTrayItem* owner) : TrayItemView(owner) {
-    CreateImageView();
-    UpdateImage();
-  }
+PowerTrayView::PowerTrayView(SystemTrayItem* owner) : TrayItemView(owner) {
+  CreateImageView();
+  UpdateImage();
+  UpdateStatus();
+  PowerStatus::Get()->AddObserver(this);
+}
 
-  ~PowerTrayView() override = default;
+PowerTrayView::~PowerTrayView() {
+  PowerStatus::Get()->RemoveObserver(this);
+}
 
-  // Overridden from views::View.
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->SetName(accessible_name_);
-    node_data->role = ax::mojom::Role::kButton;
-  }
+void PowerTrayView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->SetName(accessible_name_);
+  node_data->role = ax::mojom::Role::kButton;
+}
 
-  void UpdateStatus() {
-    UpdateImage();
-    SetVisible(PowerStatus::Get()->IsBatteryPresent());
-  }
+void PowerTrayView::OnPowerStatusChanged() {
+  UpdateStatus();
+}
 
- private:
-  void UpdateImage() {
-    const PowerStatus::BatteryImageInfo& info =
-        PowerStatus::Get()->GetBatteryImageInfo();
-    // Only change the image when the info changes. http://crbug.com/589348
-    if (info_ && info_->ApproximatelyEqual(info))
-      return;
-    image_view()->SetImage(PowerStatus::GetBatteryImage(
-        info, kTrayIconSize, SkColorSetA(kTrayIconColor, 0x4C),
-        kTrayIconColor));
-  }
+void PowerTrayView::UpdateStatus() {
+  UpdateImage();
+  SetVisible(PowerStatus::Get()->IsBatteryPresent());
+  accessible_name_ = PowerStatus::Get()->GetAccessibleNameString(true);
+}
 
-  base::string16 accessible_name_;
-  base::Optional<PowerStatus::BatteryImageInfo> info_;
-
-  DISALLOW_COPY_AND_ASSIGN(PowerTrayView);
-};
+void PowerTrayView::UpdateImage() {
+  const PowerStatus::BatteryImageInfo& info =
+      PowerStatus::Get()->GetBatteryImageInfo();
+  // Only change the image when the info changes. http://crbug.com/589348
+  if (info_ && info_->ApproximatelyEqual(info))
+    return;
+  info_ = info;
+  image_view()->SetImage(PowerStatus::GetBatteryImage(
+      info, kTrayIconSize, SkColorSetA(kTrayIconColor, 0x4C), kTrayIconColor));
+}
 
 }  // namespace tray
 
 TrayPower::TrayPower(SystemTray* system_tray)
     : SystemTrayItem(system_tray, UMA_POWER) {
-  PowerStatus::Get()->AddObserver(this);
 }
 
-TrayPower::~TrayPower() {
-  PowerStatus::Get()->RemoveObserver(this);
-}
+TrayPower::~TrayPower() = default;
 
 views::View* TrayPower::CreateTrayView(LoginStatus status) {
   // There may not be enough information when this is created about whether
@@ -95,7 +90,6 @@ views::View* TrayPower::CreateTrayView(LoginStatus status) {
   // necessary.
   CHECK(power_tray_ == nullptr);
   power_tray_ = new tray::PowerTrayView(this);
-  power_tray_->UpdateStatus();
   return power_tray_;
 }
 
@@ -107,11 +101,6 @@ views::View* TrayPower::CreateDefaultView(LoginStatus status) {
 
 void TrayPower::OnTrayViewDestroyed() {
   power_tray_ = nullptr;
-}
-
-void TrayPower::OnPowerStatusChanged() {
-  if (power_tray_)
-    power_tray_->UpdateStatus();
 }
 
 }  // namespace ash
