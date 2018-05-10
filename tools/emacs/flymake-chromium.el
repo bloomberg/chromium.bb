@@ -109,7 +109,7 @@
                      'cr-flymake-getfname)))
     (flymake-find-file-hook)
     (if flymake-mode
-        (cancel-timer flymake-timer)
+        (when flymake-timer (cancel-timer flymake-timer))
       (kill-local-variable 'flymake-allowed-file-name-masks))))
 
 (defun cr-compile ()
