@@ -81,7 +81,10 @@ void WindowTreeHostPlatform::SetPlatformWindow(
 WindowTreeHostPlatform::~WindowTreeHostPlatform() {
   DestroyCompositor();
   DestroyDispatcher();
-  platform_window_->Close();
+
+  // |platform_window_| might have already been destroyed by this time.
+  if (platform_window_)
+    platform_window_->Close();
 }
 
 ui::EventSource* WindowTreeHostPlatform::GetEventSource() {
