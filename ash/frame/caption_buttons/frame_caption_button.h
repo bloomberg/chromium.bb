@@ -62,8 +62,6 @@ class ASH_EXPORT FrameCaptionButton : public views::Button {
   // views::InkDropHostView:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
   void SetBackgroundColor(SkColor background_color);
