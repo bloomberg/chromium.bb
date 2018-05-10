@@ -69,7 +69,7 @@ class FileDefinitionListConverter {
                               const std::string& extension_id,
                               const FileDefinitionList& file_definition_list,
                               const EntryDefinitionListCallback& callback);
-  ~FileDefinitionListConverter() {}
+  ~FileDefinitionListConverter() = default;
 
  private:
   // Converts the element under the iterator to an entry. First, converts
@@ -408,13 +408,11 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
 
 }  // namespace
 
-EntryDefinition::EntryDefinition() {
-}
+EntryDefinition::EntryDefinition() = default;
 
 EntryDefinition::EntryDefinition(const EntryDefinition& other) = default;
 
-EntryDefinition::~EntryDefinition() {
-}
+EntryDefinition::~EntryDefinition() = default;
 
 storage::FileSystemContext* GetFileSystemContextForExtensionId(
     Profile* profile,

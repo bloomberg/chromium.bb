@@ -63,8 +63,8 @@ class LoggingObserver : public VolumeManagerObserver {
     bool success;
   };
 
-  LoggingObserver() {}
-  ~LoggingObserver() override {}
+  LoggingObserver() = default;
+  ~LoggingObserver() override = default;
 
   const std::vector<Event>& events() const { return events_; }
 
@@ -176,13 +176,12 @@ class VolumeManagerTest : public testing::Test {
                   extension_registry_.get())),
           volume_manager_(new VolumeManager(
               profile_.get(),
-              NULL,  // DriveIntegrationService
+              nullptr,  // DriveIntegrationService
               power_manager_client,
               disk_manager,
               file_system_provider_service_.get(),
               base::Bind(&ProfileEnvironment::GetFakeMtpStorageInfo,
-                         base::Unretained(this)))) {
-    }
+                         base::Unretained(this)))) {}
 
     Profile* profile() const { return profile_.get(); }
     VolumeManager* volume_manager() const { return volume_manager_.get(); }
@@ -203,10 +202,11 @@ class VolumeManagerTest : public testing::Test {
   };
 
   void SetUp() override {
-    power_manager_client_.reset(new chromeos::FakePowerManagerClient);
-    disk_mount_manager_.reset(new FakeDiskMountManager);
-    main_profile_.reset(new ProfileEnvironment(power_manager_client_.get(),
-                                               disk_mount_manager_.get()));
+    power_manager_client_ =
+        std::make_unique<chromeos::FakePowerManagerClient>();
+    disk_mount_manager_ = std::make_unique<FakeDiskMountManager>();
+    main_profile_ = std::make_unique<ProfileEnvironment>(
+        power_manager_client_.get(), disk_mount_manager_.get());
   }
 
   Profile* profile() const { return main_profile_->profile(); }

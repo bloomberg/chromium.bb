@@ -109,8 +109,8 @@ SnapshotManager::FileReferenceWithSizeInfo::FileReferenceWithSizeInfo(
 SnapshotManager::FileReferenceWithSizeInfo::FileReferenceWithSizeInfo(
     const FileReferenceWithSizeInfo& other) = default;
 
-SnapshotManager::FileReferenceWithSizeInfo::~FileReferenceWithSizeInfo() {
-}
+SnapshotManager::FileReferenceWithSizeInfo::~FileReferenceWithSizeInfo() =
+    default;
 
 SnapshotManager::SnapshotManager(Profile* profile)
     : profile_(profile), weak_ptr_factory_(this) {

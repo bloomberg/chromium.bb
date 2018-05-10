@@ -38,13 +38,11 @@ TEST(FileManagerUrlUtilTest, GetFileManagerMainPageUrl) {
 
 TEST(FileManagerUrlUtilTest, GetFileManagerMainPageUrlWithParams_NoFileTypes) {
   const GURL url = GetFileManagerMainPageUrlWithParams(
-      ui::SelectFileDialog::SELECT_OPEN_FILE,
-      base::UTF8ToUTF16("some title"),
+      ui::SelectFileDialog::SELECT_OPEN_FILE, base::UTF8ToUTF16("some title"),
       GURL("filesystem:chrome-extension://abc/Downloads/"),
-      GURL("filesystem:chrome-extension://abc/Downloads/foo.txt"),
-      "foo.txt",
-      NULL,  // No file types
-      0,  // Hence no file type index.
+      GURL("filesystem:chrome-extension://abc/Downloads/foo.txt"), "foo.txt",
+      nullptr,  // No file types
+      0,        // Hence no file type index.
       FILE_PATH_LITERAL("txt"));
   EXPECT_EQ(extensions::kExtensionScheme, url.scheme());
   EXPECT_EQ("hhaomjibdihmijegdhdafkllkbggdgoj", url.host());
@@ -74,10 +72,10 @@ TEST(FileManagerUrlUtilTest,
   // extensions: [["htm", "html"], ["txt"]]
   // descriptions: ["HTML", "TEXT"]
   ui::SelectFileDialog::FileTypeInfo file_types;
-  file_types.extensions.push_back(std::vector<base::FilePath::StringType>());
+  file_types.extensions.emplace_back();
   file_types.extensions[0].push_back(FILE_PATH_LITERAL("htm"));
   file_types.extensions[0].push_back(FILE_PATH_LITERAL("html"));
-  file_types.extensions.push_back(std::vector<base::FilePath::StringType>());
+  file_types.extensions.emplace_back();
   file_types.extensions[1].push_back(FILE_PATH_LITERAL("txt"));
   file_types.extension_description_overrides.push_back(
       base::UTF8ToUTF16("HTML"));

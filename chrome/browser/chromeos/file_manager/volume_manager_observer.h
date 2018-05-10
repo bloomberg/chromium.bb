@@ -17,7 +17,7 @@ class Volume;
 // Observer interface of volume related events.
 class VolumeManagerObserver {
  public:
-  virtual ~VolumeManagerObserver() {}
+  virtual ~VolumeManagerObserver() = default;
 
   // Fired when a new disk is added.
   virtual void OnDiskAdded(

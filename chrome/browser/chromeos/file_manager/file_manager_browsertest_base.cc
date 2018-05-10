@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/containers/circular_deque.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_value_converter.h"
@@ -236,7 +238,7 @@ class FileManagerTestMessageListener : public content::NotificationObserver {
 class TestVolume {
  protected:
   explicit TestVolume(const std::string& name) : name_(name) {}
-  virtual ~TestVolume() {}
+  virtual ~TestVolume() = default;
 
   bool CreateRootDirectory(const Profile* profile) {
     if (root_initialized_)
@@ -275,7 +277,7 @@ class TestVolume {
 class LocalTestVolume : public TestVolume {
  public:
   explicit LocalTestVolume(const std::string& name) : TestVolume(name) {}
-  ~LocalTestVolume() override {}
+  ~LocalTestVolume() override = default;
 
   // Adds this local volume. Returns true on success.
   virtual bool Mount(Profile* profile) = 0;
@@ -334,7 +336,7 @@ class LocalTestVolume : public TestVolume {
 class DownloadsTestVolume : public LocalTestVolume {
  public:
   DownloadsTestVolume() : LocalTestVolume("Downloads") {}
-  ~DownloadsTestVolume() override {}
+  ~DownloadsTestVolume() override = default;
 
   bool Mount(Profile* profile) override {
     if (!CreateRootDirectory(profile))
@@ -356,7 +358,7 @@ class FakeTestVolume : public LocalTestVolume {
       : LocalTestVolume(name),
         volume_type_(volume_type),
         device_type_(device_type) {}
-  ~FakeTestVolume() override {}
+  ~FakeTestVolume() override = default;
 
   // Add the fake test volume entries.
   bool PrepareTestEntries(Profile* profile) {
@@ -406,7 +408,7 @@ class FakeTestVolume : public LocalTestVolume {
 class DriveTestVolume : public TestVolume {
  public:
   DriveTestVolume() : TestVolume("drive") {}
-  ~DriveTestVolume() override {}
+  ~DriveTestVolume() override = default;
 
   void CreateEntry(const TestEntryInfo& entry) {
     const base::FilePath path =
@@ -572,15 +574,16 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
 void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
   ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
-  local_volume_.reset(new DownloadsTestVolume);
+  local_volume_ = std::make_unique<DownloadsTestVolume>();
 
   if (!IsGuestModeTest()) {
     create_drive_integration_service_ =
         base::Bind(&FileManagerBrowserTestBase::CreateDriveIntegrationService,
                    base::Unretained(this));
-    service_factory_for_test_.reset(
-        new drive::DriveIntegrationServiceFactory::ScopedFactoryForTest(
-            &create_drive_integration_service_));
+    service_factory_for_test_ = std::make_unique<
+        drive::DriveIntegrationServiceFactory::ScopedFactoryForTest>(
+
+        &create_drive_integration_service_);
   }
 }
 
@@ -758,16 +761,16 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "mountFakeUsb") {
-    usb_volume_.reset(new FakeTestVolume("fake-usb",
-                                         VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
-                                         chromeos::DEVICE_TYPE_USB));
+    usb_volume_ = std::make_unique<FakeTestVolume>(
+        "fake-usb", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
+        chromeos::DEVICE_TYPE_USB);
     ASSERT_TRUE(usb_volume_->Mount(profile()));
     return;
   }
 
   if (name == "mountFakeMtp") {
-    mtp_volume_.reset(new FakeTestVolume("fake-mtp", VOLUME_TYPE_MTP,
-                                         chromeos::DEVICE_TYPE_UNKNOWN));
+    mtp_volume_ = std::make_unique<FakeTestVolume>(
+        "fake-mtp", VOLUME_TYPE_MTP, chromeos::DEVICE_TYPE_UNKNOWN);
     ASSERT_TRUE(mtp_volume_->PrepareTestEntries(profile()));
 
     ASSERT_TRUE(mtp_volume_->Mount(profile()));
@@ -814,7 +817,8 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
 drive::DriveIntegrationService*
 FileManagerBrowserTestBase::CreateDriveIntegrationService(Profile* profile) {
-  drive_volumes_[profile->GetOriginalProfile()].reset(new DriveTestVolume());
+  drive_volumes_[profile->GetOriginalProfile()] =
+      std::make_unique<DriveTestVolume>();
   return drive_volumes_[profile->GetOriginalProfile()]
       ->CreateDriveIntegrationService(profile);
 }
