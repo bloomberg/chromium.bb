@@ -371,8 +371,8 @@ ShapeOutsideDeltas ShapeOutsideInfo::ComputeDeltasForContainingBlockLine(
             containing_block.Style()->IsLeftToRightDirection()
                 ? containing_block.MarginStartForChild(layout_box_)
                 : containing_block.MarginEndForChild(layout_box_);
-        LayoutUnit raw_left_margin_box_delta(
-            segment.logical_left + LogicalLeftOffset() + logical_left_margin);
+        LayoutUnit raw_left_margin_box_delta =
+            segment.logical_left + LogicalLeftOffset() + logical_left_margin;
         LayoutUnit left_margin_box_delta = clampTo<LayoutUnit>(
             raw_left_margin_box_delta, LayoutUnit(), float_margin_box_width);
 
@@ -380,10 +380,10 @@ ShapeOutsideDeltas ShapeOutsideInfo::ComputeDeltasForContainingBlockLine(
             containing_block.Style()->IsLeftToRightDirection()
                 ? containing_block.MarginEndForChild(layout_box_)
                 : containing_block.MarginStartForChild(layout_box_);
-        LayoutUnit raw_right_margin_box_delta(
+        LayoutUnit raw_right_margin_box_delta =
             segment.logical_right + LogicalLeftOffset() -
             containing_block.LogicalWidthForChild(layout_box_) -
-            logical_right_margin);
+            logical_right_margin;
         LayoutUnit right_margin_box_delta = clampTo<LayoutUnit>(
             raw_right_margin_box_delta, -float_margin_box_width, LayoutUnit());
 

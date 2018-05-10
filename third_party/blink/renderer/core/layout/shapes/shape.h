@@ -51,8 +51,8 @@ struct LineSegment {
         logical_right(logical_right),
         is_valid(true) {}
 
-  float logical_left;
-  float logical_right;
+  LayoutUnit logical_left;
+  LayoutUnit logical_right;
   bool is_valid;
 };
 
