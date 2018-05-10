@@ -6,7 +6,7 @@
 #define NGLineBreaker_h
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/ng/exclusions/ng_layout_opportunity.h"
+#include "third_party/blink/renderer/core/layout/ng/exclusions/ng_line_layout_opportunity.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_shaper.h"
@@ -47,7 +47,7 @@ class CORE_EXPORT NGLineBreaker {
 
   // Compute the next line break point and produces NGInlineItemResults for
   // the line.
-  bool NextLine(const NGLayoutOpportunity&, NGLineInfo*);
+  bool NextLine(const NGLineLayoutOpportunity& line_opportunity, NGLineInfo*);
 
   // Create an NGInlineBreakToken for the last line returned by NextLine().
   scoped_refptr<NGInlineBreakToken> CreateBreakToken(
@@ -71,11 +71,7 @@ class CORE_EXPORT NGLineBreaker {
     // that computes position in visual order, this position in logical order.
     LayoutUnit position;
 
-    // The current opportunity.
-    NGLayoutOpportunity opportunity;
-
-    LayoutUnit line_left_bfc_offset;
-    LayoutUnit line_right_bfc_offset;
+    NGLineLayoutOpportunity line_opportunity;
 
     // True if this line is the "first formatted line".
     // https://www.w3.org/TR/CSS22/selector.html#first-formatted-line
@@ -95,8 +91,7 @@ class CORE_EXPORT NGLineBreaker {
     bool is_after_forced_break = false;
 
     LayoutUnit AvailableWidth() const {
-      DCHECK_GE(line_right_bfc_offset, line_left_bfc_offset);
-      return line_right_bfc_offset - line_left_bfc_offset;
+      return line_opportunity.AvailableInlineSize();
     }
     bool CanFit() const { return position <= AvailableWidth(); }
     bool CanFit(LayoutUnit extra) const {
@@ -116,7 +111,7 @@ class CORE_EXPORT NGLineBreaker {
 
   void BreakLine(NGLineInfo*);
 
-  void PrepareNextLine(const NGLayoutOpportunity&, NGLineInfo*);
+  void PrepareNextLine(const NGLineLayoutOpportunity&, NGLineInfo*);
 
   void UpdatePosition(const NGInlineItemResults&);
   void ComputeLineLocation(NGLineInfo*) const;
@@ -187,8 +182,6 @@ class CORE_EXPORT NGLineBreaker {
   HarfBuzzShaper shaper_;
   ShapeResultSpacing<String> spacing_;
   bool previous_line_had_forced_break_ = false;
-  LayoutUnit bfc_line_offset_;
-  LayoutUnit bfc_block_offset_;
   const Hyphenation* hyphenation_ = nullptr;
 
   // Keep track of handled float items. See HandleFloat().

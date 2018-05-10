@@ -10,6 +10,11 @@
 
 namespace blink {
 
+// This struct represents an 2D-area where a NGFragment can fit within the
+// exclusion space. A layout opportunity is produced by the exclusion space by
+// calling FindLayoutOpportunity, or AllLayoutOpportunities.
+//
+// Its coordinates are relative to the BFC.
 struct CORE_EXPORT NGLayoutOpportunity {
   NGLayoutOpportunity()
       : rect(NGBfcOffset(LayoutUnit::Min(), LayoutUnit::Min()),
