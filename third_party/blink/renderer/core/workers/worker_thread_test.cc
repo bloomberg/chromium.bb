@@ -311,7 +311,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
           mojom::IPAddressSpace::kLocal, nullptr /* originTrialToken */,
           base::UnguessableToken::Create(),
           std::make_unique<WorkerSettings>(Settings::Create().get()),
-          kV8CacheOptionsDefault, nullptr /* module_fetch_coordinator */);
+          kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */);
 
   // Specify PauseOnWorkerStart::kPause so that the worker thread can pause
   // on initialization to run debugger tasks.

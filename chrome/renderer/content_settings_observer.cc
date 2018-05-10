@@ -156,6 +156,11 @@ void ContentSettingsObserver::SetContentSettingRules(
                        content_setting_rules_->client_hints_rules.size());
 }
 
+const RendererContentSettingRules*
+ContentSettingsObserver::GetContentSettingRules() {
+  return content_setting_rules_;
+}
+
 bool ContentSettingsObserver::IsPluginTemporarilyAllowed(
     const std::string& identifier) {
   // If the empty string is in here, it means all plugins are allowed.

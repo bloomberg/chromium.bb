@@ -19,7 +19,7 @@ namespace blink {
 class ConsoleMessage;
 
 // DocumentModuleScriptFetcher is used to fetch module scripts used in main
-// documents (that means, not worker nor worklets).
+// documents and workers (but not worklets).
 //
 // DocumentModuleScriptFetcher emits FetchParameters to ResourceFetcher
 // (via ScriptResource::Fetch). Then, it keeps track of the fetch progress by

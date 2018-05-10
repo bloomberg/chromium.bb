@@ -23,7 +23,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     const base::UnguessableToken& parent_devtools_token,
     std::unique_ptr<WorkerSettings> worker_settings,
     V8CacheOptions v8_cache_options,
-    WorkerOrWorkletModuleFetchCoordinator* module_fetch_coordinator,
+    WorkletModuleResponsesMap* module_responses_map,
     service_manager::mojom::blink::InterfaceProviderPtrInfo
         interface_provider_info,
     BeginFrameProviderParams begin_frame_provider_params)
@@ -38,7 +38,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
       parent_devtools_token(parent_devtools_token),
       worker_settings(std::move(worker_settings)),
       v8_cache_options(v8_cache_options),
-      module_fetch_coordinator(module_fetch_coordinator),
+      module_responses_map(module_responses_map),
       interface_provider(std::move(interface_provider_info)),
       begin_frame_provider_params(std::move(begin_frame_provider_params)) {
   this->content_security_policy_parsed_headers =

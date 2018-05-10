@@ -61,6 +61,7 @@ class CORE_EXPORT WorkerContentSettingsClient final
   bool AllowRunningInsecureContent(bool enabled_per_settings,
                                    const SecurityOrigin*,
                                    const KURL&);
+  bool AllowScriptFromSource(bool enabled_per_settings, const KURL&);
 
   static WorkerContentSettingsClient* From(ExecutionContext&);
 

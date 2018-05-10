@@ -439,13 +439,17 @@ Resource* ResourceFetcher::ResourceForStaticData(
     return nullptr;
 
   const String cache_identifier = GetCacheIdentifier();
-  if (Resource* old_resource =
-          GetMemoryCache()->ResourceForURL(url, cache_identifier)) {
-    // There's no reason to re-parse if we saved the data from the previous
-    // parse.
-    if (params.Options().data_buffering_policy != kDoNotBufferData)
-      return old_resource;
-    GetMemoryCache()->Remove(old_resource);
+  // Most off-main-thread resource fetches use Resource::kRaw and don't reach
+  // this point, but off-main-thread module fetches might.
+  if (IsMainThread()) {
+    if (Resource* old_resource =
+            GetMemoryCache()->ResourceForURL(url, cache_identifier)) {
+      // There's no reason to re-parse if we saved the data from the previous
+      // parse.
+      if (params.Options().data_buffering_policy != kDoNotBufferData)
+        return old_resource;
+      GetMemoryCache()->Remove(old_resource);
+    }
   }
 
   ResourceResponse response;

@@ -108,7 +108,7 @@ class WorkerThreadForTest : public WorkerThread {
         mojom::IPAddressSpace::kLocal, nullptr,
         base::UnguessableToken::Create(),
         std::make_unique<WorkerSettings>(Settings::Create().get()),
-        kV8CacheOptionsDefault, nullptr /* module_fetch_coordinator */);
+        kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */);
 
     Start(std::move(creation_params),
           WorkerBackingThreadStartupData::CreateDefault(),

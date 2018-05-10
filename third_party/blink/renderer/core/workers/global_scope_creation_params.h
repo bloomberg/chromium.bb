@@ -16,8 +16,8 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
-#include "third_party/blink/renderer/core/workers/worker_or_worklet_module_fetch_coordinator.h"
 #include "third_party/blink/renderer/core/workers/worker_settings.h"
+#include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/platform/graphics/begin_frame_provider.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
@@ -49,7 +49,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       const base::UnguessableToken& parent_devtools_token,
       std::unique_ptr<WorkerSettings>,
       V8CacheOptions,
-      WorkerOrWorkletModuleFetchCoordinator*,
+      WorkletModuleResponsesMap*,
       service_manager::mojom::blink::InterfaceProviderPtrInfo = {},
       BeginFrameProviderParams begin_frame_provider_params = {});
 
@@ -113,8 +113,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
 
   V8CacheOptions v8_cache_options;
 
-  CrossThreadPersistent<WorkerOrWorkletModuleFetchCoordinator>
-      module_fetch_coordinator;
+  CrossThreadPersistent<WorkletModuleResponsesMap> module_responses_map;
 
   service_manager::mojom::blink::InterfaceProviderPtrInfo interface_provider;
 
