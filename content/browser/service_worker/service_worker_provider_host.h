@@ -133,11 +133,16 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Used to pre-create a ServiceWorkerProviderHost for a navigation. The
   // ServiceWorkerNetworkProvider will later be created in the renderer, should
-  // the navigation succeed. |is_parent_frame_is_secure| should be true for main
+  // the navigation succeed. |are_ancestors_secure| should be true for main
   // frames. Otherwise it is true iff all ancestor frames of this frame have a
   // secure origin. |web_contents_getter| indicates the tab where the navigation
   // is occurring.
-  static std::unique_ptr<ServiceWorkerProviderHost> PreCreateNavigationHost(
+  //
+  // The returned host is owned by |context|. Upon successful navigation, the
+  // caller should remove it from |context| and re-add it after calling
+  // CompleteNavigationInitialized() to update it with the correct process id.
+  // If navigation fails, the caller should remove it from |context|.
+  static base::WeakPtr<ServiceWorkerProviderHost> PreCreateNavigationHost(
       base::WeakPtr<ServiceWorkerContextCore> context,
       bool are_ancestors_secure,
       const WebContentsGetter& web_contents_getter);
