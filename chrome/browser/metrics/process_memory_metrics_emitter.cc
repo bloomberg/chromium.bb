@@ -360,6 +360,9 @@ int ProcessMemoryMetricsEmitter::GetNumberOfExtensions(base::ProcessId pid) {
   int rph_id = -1;
   auto iter = content::RenderProcessHost::AllHostsIterator();
   while (!iter.IsAtEnd()) {
+    if (!iter.GetCurrentValue()->GetProcess().IsValid())
+      continue;
+
     if (iter.GetCurrentValue()->GetProcess().Pid() == pid) {
       rph_id = iter.GetCurrentValue()->GetID();
       break;
