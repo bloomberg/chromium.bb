@@ -731,13 +731,13 @@ TEST(CreditCardTest, CreditCardVerificationCode) {
   EXPECT_EQ(base::string16(), card.GetRawInfo(CREDIT_CARD_VERIFICATION_CODE));
 }
 
-struct MatchingTypesCase {
-  MatchingTypesCase(const char* value,
-                    const char* card_exp_month,
-                    const char* card_exp_year,
-                    CreditCard::RecordType record_type,
-                    ServerFieldTypeSet expected_matched_types,
-                    const char* locale = "US")
+struct CreditCardMatchingTypesCase {
+  CreditCardMatchingTypesCase(const char* value,
+                              const char* card_exp_month,
+                              const char* card_exp_year,
+                              CreditCard::RecordType record_type,
+                              ServerFieldTypeSet expected_matched_types,
+                              const char* locale = "US")
       : value(value),
         card_exp_month(card_exp_month),
         card_exp_year(card_exp_year),
@@ -746,7 +746,7 @@ struct MatchingTypesCase {
         locale(locale) {}
 
   // The value entered by the user.
-  const std::string value;
+  const char* value;
   // Some values for an already saved card. Card number will be fixed to
   // 4012888888881881.
   const char* card_exp_month;
@@ -755,13 +755,13 @@ struct MatchingTypesCase {
   // The types that are expected to match.
   const ServerFieldTypeSet expected_matched_types;
 
-  const std::string locale;
+  const char* locale = "US";
 };
 
-class GetMatchingTypesTest : public testing::TestWithParam<MatchingTypesCase> {
-};
+class CreditCardMatchingTypesTest
+    : public testing::TestWithParam<CreditCardMatchingTypesCase> {};
 
-TEST_P(GetMatchingTypesTest, Cases) {
+TEST_P(CreditCardMatchingTypesTest, Cases) {
   auto test_case = GetParam();
   CreditCard card(base::GenerateGUID(), "https://www.example.com/");
   card.set_record_type(test_case.record_type);
@@ -777,129 +777,60 @@ TEST_P(GetMatchingTypesTest, Cases) {
   EXPECT_EQ(test_case.expected_matched_types, matching_types);
 }
 
-INSTANTIATE_TEST_CASE_P(
-    CreditCardTest,
-    GetMatchingTypesTest,
-    testing::Values(
-        // If comparing against a masked card, last four digits are checked.
-        MatchingTypesCase{"1881",
-                          "01",
-                          "2020",
-                          MASKED_SERVER_CARD,
-                          {CREDIT_CARD_NUMBER}},
-        MatchingTypesCase{"4012888888881881",
-                          "01",
-                          "2020",
-                          MASKED_SERVER_CARD,
-                          {CREDIT_CARD_NUMBER}},
-        MatchingTypesCase{"4111111111111111", "01", "2020",
-                          CreditCard::MASKED_SERVER_CARD, ServerFieldTypeSet()},
-        // Same value will not match a local card or full server card since we
-        // have the full number for those. However the full number will.
-        MatchingTypesCase{"1881", "01", "2020", LOCAL_CARD,
-                          ServerFieldTypeSet()},
-        MatchingTypesCase{"1881", "01", "2020", FULL_SERVER_CARD,
-                          ServerFieldTypeSet()},
-        MatchingTypesCase{"4012888888881881",
-                          "01",
-                          "2020",
-                          LOCAL_CARD,
-                          {CREDIT_CARD_NUMBER}},
-        MatchingTypesCase{"4012888888881881",
-                          "01",
-                          "2020",
-                          FULL_SERVER_CARD,
-                          {CREDIT_CARD_NUMBER}},
+const CreditCardMatchingTypesCase kCreditCardMatchingTypesTestCases[] = {
+    // If comparing against a masked card, last four digits are checked.
+    {"1881", "01", "2020", MASKED_SERVER_CARD, {CREDIT_CARD_NUMBER}},
+    {"4012888888881881",
+     "01",
+     "2020",
+     MASKED_SERVER_CARD,
+     {CREDIT_CARD_NUMBER}},
+    {"4111111111111111", "01", "2020", CreditCard::MASKED_SERVER_CARD,
+     ServerFieldTypeSet()},
+    // Same value will not match a local card or full server card since we
+    // have the full number for those. However the full number will.
+    {"1881", "01", "2020", LOCAL_CARD, ServerFieldTypeSet()},
+    {"1881", "01", "2020", FULL_SERVER_CARD, ServerFieldTypeSet()},
+    {"4012888888881881", "01", "2020", LOCAL_CARD, {CREDIT_CARD_NUMBER}},
+    {"4012888888881881", "01", "2020", FULL_SERVER_CARD, {CREDIT_CARD_NUMBER}},
 
-        // Wrong last four digits.
-        MatchingTypesCase{"1111", "01", "2020", MASKED_SERVER_CARD,
-                          ServerFieldTypeSet()},
-        MatchingTypesCase{"1111", "01", "2020", LOCAL_CARD,
-                          ServerFieldTypeSet()},
-        MatchingTypesCase{"1111", "01", "2020", FULL_SERVER_CARD,
-                          ServerFieldTypeSet()},
-        MatchingTypesCase{"4111111111111111", "01", "2020", MASKED_SERVER_CARD,
-                          ServerFieldTypeSet()},
-        MatchingTypesCase{"4111111111111111", "01", "2020", LOCAL_CARD,
-                          ServerFieldTypeSet()},
-        MatchingTypesCase{"4111111111111111", "01", "2020", FULL_SERVER_CARD,
-                          ServerFieldTypeSet()},
+    // Wrong last four digits.
+    {"1111", "01", "2020", MASKED_SERVER_CARD, ServerFieldTypeSet()},
+    {"1111", "01", "2020", LOCAL_CARD, ServerFieldTypeSet()},
+    {"1111", "01", "2020", FULL_SERVER_CARD, ServerFieldTypeSet()},
+    {"4111111111111111", "01", "2020", MASKED_SERVER_CARD,
+     ServerFieldTypeSet()},
+    {"4111111111111111", "01", "2020", LOCAL_CARD, ServerFieldTypeSet()},
+    {"4111111111111111", "01", "2020", FULL_SERVER_CARD, ServerFieldTypeSet()},
 
-        // Matching the expiration month.
-        MatchingTypesCase{"01",
-                          "01",
-                          "2020",
-                          LOCAL_CARD,
-                          {CREDIT_CARD_EXP_MONTH}},
-        MatchingTypesCase{"1",
-                          "01",
-                          "2020",
-                          LOCAL_CARD,
-                          {CREDIT_CARD_EXP_MONTH}},
-        MatchingTypesCase{"jan",
-                          "01",
-                          "2020",
-                          LOCAL_CARD,
-                          {CREDIT_CARD_EXP_MONTH},
-                          "US"},
-        // Locale-specific interpretations.
-        MatchingTypesCase{"janv",
-                          "01",
-                          "2020",
-                          LOCAL_CARD,
-                          {CREDIT_CARD_EXP_MONTH},
-                          "FR"},
-        MatchingTypesCase{"janv.",
-                          "01",
-                          "2020",
-                          LOCAL_CARD,
-                          {CREDIT_CARD_EXP_MONTH},
-                          "FR"},
-        MatchingTypesCase{"janvier",
-                          "01",
-                          "2020",
-                          LOCAL_CARD,
-                          {CREDIT_CARD_EXP_MONTH},
-                          "FR"},
-        MatchingTypesCase{"février",
-                          "02",
-                          "2020",
-                          LOCAL_CARD,
-                          {CREDIT_CARD_EXP_MONTH},
-                          "FR"},
-        MatchingTypesCase{"mars", "01", "2020", LOCAL_CARD,
-                          ServerFieldTypeSet(), "FR"},
+    // Matching the expiration month.
+    {"01", "01", "2020", LOCAL_CARD, {CREDIT_CARD_EXP_MONTH}},
+    {"1", "01", "2020", LOCAL_CARD, {CREDIT_CARD_EXP_MONTH}},
+    {"jan", "01", "2020", LOCAL_CARD, {CREDIT_CARD_EXP_MONTH}, "US"},
+    // Locale-specific interpretations.
+    {"janv", "01", "2020", LOCAL_CARD, {CREDIT_CARD_EXP_MONTH}, "FR"},
+    {"janv.", "01", "2020", LOCAL_CARD, {CREDIT_CARD_EXP_MONTH}, "FR"},
+    {"janvier", "01", "2020", LOCAL_CARD, {CREDIT_CARD_EXP_MONTH}, "FR"},
+    {"février", "02", "2020", LOCAL_CARD, {CREDIT_CARD_EXP_MONTH}, "FR"},
+    {"mars", "01", "2020", LOCAL_CARD, ServerFieldTypeSet(), "FR"},
 
-        // Matching the expiration year.
-        MatchingTypesCase{"2019",
-                          "01",
-                          "2019",
-                          LOCAL_CARD,
-                          {CREDIT_CARD_EXP_4_DIGIT_YEAR}},
-        MatchingTypesCase{"19",
-                          "01",
-                          "2019",
-                          LOCAL_CARD,
-                          {CREDIT_CARD_EXP_2_DIGIT_YEAR}},
-        MatchingTypesCase{"01/2019",
-                          "01",
-                          "2019",
-                          LOCAL_CARD,
-                          {CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR}},
-        MatchingTypesCase{"01-2019",
-                          "01",
-                          "2019",
-                          LOCAL_CARD,
-                          {CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR}},
-        MatchingTypesCase{"01/2020", "01", "2019", LOCAL_CARD,
-                          ServerFieldTypeSet()},
-        MatchingTypesCase{"20", "01", "2019", LOCAL_CARD, ServerFieldTypeSet()},
-        MatchingTypesCase{"2021", "01", "2019", LOCAL_CARD,
-                          ServerFieldTypeSet()}));
+    // Matching the expiration year.
+    {"2019", "01", "2019", LOCAL_CARD, {CREDIT_CARD_EXP_4_DIGIT_YEAR}},
+    {"19", "01", "2019", LOCAL_CARD, {CREDIT_CARD_EXP_2_DIGIT_YEAR}},
+    {"01/2019", "01", "2019", LOCAL_CARD, {CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR}},
+    {"01-2019", "01", "2019", LOCAL_CARD, {CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR}},
+    {"01/2020", "01", "2019", LOCAL_CARD, ServerFieldTypeSet()},
+    {"20", "01", "2019", LOCAL_CARD, ServerFieldTypeSet()},
+    {"2021", "01", "2019", LOCAL_CARD, ServerFieldTypeSet()},
+};
+
+INSTANTIATE_TEST_CASE_P(CreditCardTest,
+                        CreditCardMatchingTypesTest,
+                        testing::ValuesIn(kCreditCardMatchingTypesTestCases));
 
 struct GetCardNetworkTestCase {
-  std::string card_number;
-  std::string issuer_network;
+  const char* card_number;
+  const char* issuer_network;
   bool is_valid;
 };
 
@@ -975,7 +906,7 @@ INSTANTIATE_TEST_CASE_P(
         GetCardNetworkTestCase{"6362970000457013", kEloCard, true},
 
         // Empty string
-        GetCardNetworkTestCase{std::string(), kGenericCard, false},
+        GetCardNetworkTestCase{"", kGenericCard, false},
 
         // Non-numeric
         GetCardNetworkTestCase{"garbage", kGenericCard, false},
