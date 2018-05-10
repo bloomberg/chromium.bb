@@ -382,13 +382,6 @@ void LoginScreenController::SetPublicSessionKeyboardLayouts(
   }
 }
 
-void LoginScreenController::SetFingerprintUnlockState(
-    const AccountId& account_id,
-    mojom::FingerprintUnlockState state) {
-  if (DataDispatcher())
-    DataDispatcher()->SetFingerprintUnlockState(account_id, state);
-}
-
 void LoginScreenController::DoAuthenticateUser(const AccountId& account_id,
                                                const std::string& password,
                                                bool authenticated_by_pin,

@@ -1233,9 +1233,6 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_KEYBOARD_SELECTION_SELECT" desc="Label for keyboard selection dropdown">
         Set your keyboard
       </message>
-      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_MESSAGE" desc="Text shown in the user pod to remind user that fingerprint unlock is supported">
-        Unlock with fingerprint
-      </message>
 
       <!-- Multi-profiles intro dialog -->
       <message name="IDS_ASH_MULTIPROFILES_INTRO_HEADLINE" desc="Describes which feature multi-profiles intro dialog presents.">
