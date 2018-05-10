@@ -12,7 +12,6 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/pattern.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -52,13 +51,6 @@ class SelectToSpeakTest : public InProcessBrowserTest {
  protected:
   SelectToSpeakTest() : weak_ptr_factory_(this) {}
   ~SelectToSpeakTest() override {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // TODO(katie): Remove this flag once the feature to add a STS button
-    // in the shelf is launched.
-    command_line->AppendSwitch(
-        chromeos::switches::kEnableExperimentalAccessibilityFeatures);
-  }
 
   void SetUpOnMainThread() override {
     ASSERT_FALSE(AccessibilityManager::Get()->IsSelectToSpeakEnabled());
