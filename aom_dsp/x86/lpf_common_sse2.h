@@ -56,6 +56,52 @@ static INLINE void highbd_transpose6x6_sse2(__m128i *x0, __m128i *x1,
                            _mm_slli_si128(w5, 4));  // 05 15 25 35 45 55 xx xx
 }
 
+static INLINE void highbd_transpose4x8_8x4_sse2(__m128i *x0, __m128i *x1,
+                                                __m128i *x2, __m128i *x3,
+                                                __m128i *d0, __m128i *d1,
+                                                __m128i *d2, __m128i *d3,
+                                                __m128i *d4, __m128i *d5,
+                                                __m128i *d6, __m128i *d7) {
+  __m128i w0, w1, ww0, ww1, ww2, ww3;
+  // input
+  // x0 00 01 02 03 04 05 06 07
+  // x1 10 11 12 13 14 15 16 17
+  // x2 20 21 22 23 24 25 26 27
+  // x3 30 31 32 33 34 35 36 37
+  // output
+  // 00 10 20 30 xx xx xx xx
+  // 01 11 21 31 xx xx xx xx
+  // 02 12 22 32 xx xx xx xx
+  // 03 13 23 33 xx xx xx xx
+  // 04 14 24 34 xx xx xx xx
+  // 05 15 25 35 xx xx xx xx
+  // 06 16 26 36 xx xx xx xx
+  // 07 17 27 37 xx xx xx xx
+
+  __m128i zero = _mm_setzero_si128();
+
+  w0 = _mm_unpacklo_epi16(*x0, *x1);  // 00 10 01 11 02 12 03 13
+  w1 = _mm_unpacklo_epi16(*x2, *x3);  // 20 30 21 31 22 32 23 33
+
+  ww0 = _mm_unpacklo_epi32(w0, w1);  // 00 10 20 30 01 11 21 31
+  ww1 = _mm_unpackhi_epi32(w0, w1);  // 02 12 22 32 03 13 23 33
+
+  w0 = _mm_unpackhi_epi16(*x0, *x1);  // 04 14 05 15 06 16 07 17
+  w1 = _mm_unpackhi_epi16(*x2, *x3);  // 24 34 25 35 26 36 27 37
+
+  ww2 = _mm_unpacklo_epi32(w0, w1);  //  04 14 24 34 05 15 25 35
+  ww3 = _mm_unpackhi_epi32(w0, w1);  //  06 16 26 36 07 17 27 37
+
+  *d0 = _mm_unpacklo_epi64(ww0, zero);  // 00 10 20 30 xx xx xx xx
+  *d1 = _mm_unpackhi_epi64(ww0, zero);  // 01 11 21 31 xx xx xx xx
+  *d2 = _mm_unpacklo_epi64(ww1, zero);  // 02 12 22 32 xx xx xx xx
+  *d3 = _mm_unpackhi_epi64(ww1, zero);  // 03 13 23 33 xx xx xx xx
+  *d4 = _mm_unpacklo_epi64(ww2, zero);  // 04 14 24 34 xx xx xx xx
+  *d5 = _mm_unpackhi_epi64(ww2, zero);  // 05 15 25 35 xx xx xx xx
+  *d6 = _mm_unpacklo_epi64(ww3, zero);  // 06 16 26 36 xx xx xx xx
+  *d7 = _mm_unpackhi_epi64(ww3, zero);  // 07 17 27 37 xx xx xx xx
+}
+
 static INLINE void highbd_transpose8x8_low_sse2(__m128i *x0, __m128i *x1,
                                                 __m128i *x2, __m128i *x3,
                                                 __m128i *x4, __m128i *x5,
