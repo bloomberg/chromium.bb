@@ -74,6 +74,14 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   UnifiedSystemTrayModel* model() { return model_; }
 
  private:
+  // How the expanded state is toggled. The enum is used to back an UMA
+  // histogram and should be treated as append-only.
+  enum ToggleExpandedType {
+    TOGGLE_EXPANDED_TYPE_BY_BUTTON = 0,
+    TOGGLE_EXPANDED_TYPE_BY_GESTURE,
+    TOGGLE_EXPANDED_TYPE_COUNT
+  };
+
   // Initialize feature pod controllers and their views.
   // If you want to add a new feature pod item, you have to add here.
   void InitFeaturePods();
