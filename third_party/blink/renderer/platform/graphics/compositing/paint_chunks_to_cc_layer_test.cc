@@ -129,6 +129,22 @@ class PaintRecordMatcher
     EXPECT_EQ(y, translate->dy);                               \
   } while (false)
 
+#define EXPECT_CLIP(r, op_buffer, index)                      \
+  do {                                                        \
+    const auto* clip_op =                                     \
+        (op_buffer).GetOpAtForTesting<cc::ClipRectOp>(index); \
+    ASSERT_NE(nullptr, clip_op);                              \
+    EXPECT_EQ(SkRect(r), clip_op->rect);                      \
+  } while (false)
+
+#define EXPECT_ROUNDED_CLIP(r, op_buffer, index)               \
+  do {                                                         \
+    const auto* clip_op =                                      \
+        (op_buffer).GetOpAtForTesting<cc::ClipRRectOp>(index); \
+    ASSERT_NE(nullptr, clip_op);                               \
+    EXPECT_EQ(SkRRect(r), clip_op->rrect);                     \
+  } while (false)
+
 // Convenient shorthands.
 const TransformPaintPropertyNode* t0() {
   return TransformPaintPropertyNode::Root();
@@ -691,15 +707,12 @@ TEST_F(PaintChunksToCcLayerTest, EmptyEffectsAreStored) {
 
 TEST_F(PaintChunksToCcLayerTest, CombineClips) {
   FloatRoundedRect clip_rect(0, 0, 100, 100);
-  FloatSize corner(5, 5);
-  FloatRoundedRect rounded_clip_rect(clip_rect.Rect(), corner, corner, corner,
-                                     corner);
   auto t1 = CreateTransform(t0(), TransformationMatrix().Scale(2.f));
   auto c1 = CreateClip(c0(), t0(), clip_rect);
   auto c2 = CreateClip(c1, t0(), clip_rect);
   auto c3 = CreateClip(c2, t1, clip_rect);
   auto c4 = CreateClip(c3, t1, clip_rect);
-  auto c5 = CreateClip(c4, t1, rounded_clip_rect);
+  auto c5 = CreateClipPathClip(c4, t1, clip_rect);
   auto c6 = CreateClip(c5, t1, clip_rect);
 
   TestChunks chunks;
@@ -715,21 +728,65 @@ TEST_F(PaintChunksToCcLayerTest, CombineClips) {
   EXPECT_THAT(
       *output,
       PaintRecordMatcher::Make(
-          {cc::PaintOpType::Save,       cc::PaintOpType::ClipRect,  // <c1+c2>
-           cc::PaintOpType::Save,       cc::PaintOpType::Concat,    // <t1
-           cc::PaintOpType::ClipRect,                               //  c3+c4>
-           cc::PaintOpType::Save,       cc::PaintOpType::ClipRect,
-           cc::PaintOpType::ClipRRect,                              // <c5>
-           cc::PaintOpType::Save,       cc::PaintOpType::ClipRect,  // <c6>
-           cc::PaintOpType::DrawRecord,                             // <p0/>
-           cc::PaintOpType::Restore,                                // </c6>
-           cc::PaintOpType::Restore,                                // </c5>
-           cc::PaintOpType::Restore,                              // </c3+c4 t1>
-           cc::PaintOpType::Save,       cc::PaintOpType::Concat,  // <t1
-           cc::PaintOpType::ClipRect,                             // c3>
-           cc::PaintOpType::DrawRecord,                           // <p1/>
-           cc::PaintOpType::Restore,                              // </c3 t1>
-           cc::PaintOpType::Restore}));                           // </c1+c2>
+          {cc::PaintOpType::Save, cc::PaintOpType::ClipRect,      // <c1+c2>
+           cc::PaintOpType::Save, cc::PaintOpType::Concat,        // <t1
+           cc::PaintOpType::ClipRect, cc::PaintOpType::ClipPath,  //  c3+c4+c5>
+           cc::PaintOpType::Save, cc::PaintOpType::ClipRect,      // <c6>
+           cc::PaintOpType::DrawRecord,                           // <p0/>
+           cc::PaintOpType::Restore,                              // </c6>
+           cc::PaintOpType::Restore,                        // </c3+c4+c5 t1>
+           cc::PaintOpType::Save, cc::PaintOpType::Concat,  // <t1
+           cc::PaintOpType::ClipRect,                       // c3>
+           cc::PaintOpType::DrawRecord,                     // <p1/>
+           cc::PaintOpType::Restore,                        // </c3 t1>
+           cc::PaintOpType::Restore}));                     // </c1+c2>
+}
+
+TEST_F(PaintChunksToCcLayerTest, CombineClipsWithRoundedRects) {
+  FloatRoundedRect clip_rect(0, 0, 100, 100);
+  FloatSize corner(5, 5);
+  FloatRoundedRect big_rounded_clip_rect(FloatRect(0, 0, 200, 200), corner,
+                                         corner, corner, corner);
+  FloatRoundedRect small_rounded_clip_rect(FloatRect(0, 0, 100, 100), corner,
+                                           corner, corner, corner);
+
+  auto c1 = CreateClip(c0(), t0(), clip_rect);
+  auto c2 = CreateClip(c1, t0(), small_rounded_clip_rect);
+  auto c3 = CreateClip(c2, t0(), clip_rect);
+  auto c4 = CreateClip(c3, t0(), big_rounded_clip_rect);
+  auto c5 = CreateClip(c4, t0(), clip_rect);
+  auto c6 = CreateClip(c5, t0(), big_rounded_clip_rect);
+  auto c7 = CreateClip(c6, t0(), small_rounded_clip_rect);
+
+  TestChunks chunks;
+  chunks.AddChunk(t0(), c7.get(), e0());
+
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState(t0(), c0(), e0()), gfx::Vector2dF(),
+          chunks.items, cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+
+  EXPECT_THAT(
+      *output,
+      PaintRecordMatcher::Make(
+          {cc::PaintOpType::Save, cc::PaintOpType::ClipRRect,  // <c1+c2+c3>
+           cc::PaintOpType::Save, cc::PaintOpType::ClipRRect,  // <c4>
+           cc::PaintOpType::Save, cc::PaintOpType::ClipRect,   // <c5>
+           cc::PaintOpType::Save, cc::PaintOpType::ClipRRect,  // <c6>
+           cc::PaintOpType::Save, cc::PaintOpType::ClipRRect,  // <c7>
+           cc::PaintOpType::DrawRecord,                        // <p0/>
+           cc::PaintOpType::Restore,                           // </c7>
+           cc::PaintOpType::Restore,                           // </c6>
+           cc::PaintOpType::Restore,                           // </c5>
+           cc::PaintOpType::Restore,                           // </c4>
+           cc::PaintOpType::Restore}));                        // </c1+c2+c3>
+
+  EXPECT_ROUNDED_CLIP(small_rounded_clip_rect, *output, 1);
+  EXPECT_ROUNDED_CLIP(big_rounded_clip_rect, *output, 3);
+  EXPECT_CLIP(clip_rect.Rect(), *output, 5);
+  EXPECT_ROUNDED_CLIP(big_rounded_clip_rect, *output, 7);
+  EXPECT_ROUNDED_CLIP(small_rounded_clip_rect, *output, 9);
 }
 
 TEST_F(PaintChunksToCcLayerTest, ChunksSamePropertyTreeState) {
