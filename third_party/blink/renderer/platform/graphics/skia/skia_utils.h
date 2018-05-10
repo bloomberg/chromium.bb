@@ -71,6 +71,10 @@ BlendMode PLATFORM_EXPORT BlendModeFromSkBlendMode(SkBlendMode);
 // alpha is in the range [0, 1].
 SkColor PLATFORM_EXPORT ScaleAlpha(SkColor, float);
 
+// Convert a SkColorSpace to a gfx::ColorSpace
+gfx::ColorSpace PLATFORM_EXPORT
+SkColorSpaceToGfxColorSpace(const sk_sp<SkColorSpace>);
+
 // Skia has problems when passed infinite, etc floats, filter them to 0.
 inline SkScalar WebCoreFloatToSkScalar(float f) {
   return SkFloatToScalar(std::isfinite(f) ? f : 0);

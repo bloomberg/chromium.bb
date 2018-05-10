@@ -14,6 +14,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/uint8_array.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -80,12 +81,12 @@ void OffscreenCanvasResourceProvider::SetTransferableResourceToSharedBitmap(
     frame_resource->provider = this;
     frame_resource->shared_bitmap_id = viz::SharedBitmap::GenerateId();
     frame_resource->shared_memory =
-        viz::bitmap_allocation::AllocateMappedBitmap(
-            gfx::Size(width_, height_), viz::ResourceFormat::RGBA_8888);
+        viz::bitmap_allocation::AllocateMappedBitmap(gfx::Size(width_, height_),
+                                                     resource.format);
     sink_->DidAllocateSharedBitmap(
         viz::bitmap_allocation::DuplicateAndCloseMappedBitmap(
             frame_resource->shared_memory.get(), gfx::Size(width_, height_),
-            viz::ResourceFormat::RGBA_8888),
+            resource.format),
         SharedBitmapIdToGpuMailboxPtr(frame_resource->shared_bitmap_id));
   }
   void* pixels = frame_resource->shared_memory->memory();
@@ -102,6 +103,10 @@ void OffscreenCanvasResourceProvider::SetTransferableResourceToSharedBitmap(
       sk_image->refColorSpace());
   if (image_info.isEmpty())
     return;
+
+  if (RuntimeEnabledFeatures::CanvasColorManagementEnabled()) {
+    image_info = image_info.makeColorType(sk_image->colorType());
+  }
   bool read_pixels_successful =
       sk_image->readPixels(image_info, pixels, image_info.minRowBytes(), 0, 0);
   DCHECK(read_pixels_successful);
