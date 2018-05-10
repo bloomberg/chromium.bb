@@ -1536,7 +1536,6 @@ bool ProfileSyncService::IsLocalSyncEnabled() const {
   return sync_prefs_.IsLocalSyncEnabled();
 }
 
-// TODO(tschumann): This is only called for tests. Add ForTesting name suffix.
 void ProfileSyncService::TriggerRefresh(const syncer::ModelTypeSet& types) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (engine_initialized_)

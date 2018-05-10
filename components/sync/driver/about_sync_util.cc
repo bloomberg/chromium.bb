@@ -56,6 +56,7 @@ const char kSetIncludeSpecifics[] = "setIncludeSpecifics";
 const char kUserEventsVisibilityCallback[] =
     "chrome.sync.userEventsVisibilityCallback";
 const char kWriteUserEvent[] = "writeUserEvent";
+const char kTriggerRefresh[] = "triggerRefresh";
 
 // Other strings.
 const char kCommit[] = "commit";
