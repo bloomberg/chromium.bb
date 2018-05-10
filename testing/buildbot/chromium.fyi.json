@@ -8085,7 +8085,7 @@
             }
           ]
         },
-        "test": "cacheinvalidation_unittests"
+        "test": "base_unittests"
       },
       {
         "swarming": {
@@ -8098,73 +8098,7 @@
             }
           ]
         },
-        "test": "capture_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-14.04",
-              "pool": "Chrome-CrOS-VM"
-            }
-          ],
-          "shards": 2
-        },
-        "test": "crypto_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-14.04",
-              "pool": "Chrome-CrOS-VM"
-            }
-          ]
-        },
-        "test": "google_apis_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-14.04",
-              "pool": "Chrome-CrOS-VM"
-            }
-          ]
-        },
-        "test": "midi_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-14.04",
-              "pool": "Chrome-CrOS-VM"
-            }
-          ]
-        },
-        "test": "sql_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-14.04",
-              "pool": "Chrome-CrOS-VM"
-            }
-          ]
-        },
-        "test": "url_unittests"
+        "test": "net_unittests"
       }
     ],
     "isolated_scripts": [

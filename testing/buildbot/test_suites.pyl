@@ -362,15 +362,16 @@
   'chromeos_gtests': {
     'cacheinvalidation_unittests': {},
     'capture_unittests': {},
-    'crypto_unittests': {
-       'swarming': {
-         'shards': 2,
-       },
-    },
+    'crypto_unittests': {},
     'midi_unittests': {},
     'google_apis_unittests': {},
     'sql_unittests': {},
     'url_unittests': {},
+  },
+
+  'chromeos_gtests_experimental': {
+    'base_unittests': {},
+    'net_unittests': {},
   },
 
   'chromeos_isolated_scripts': {
