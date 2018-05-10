@@ -136,14 +136,14 @@ TEST(OfflinePageFeatureTest, OfflinePagesDescriptiveFailStatus) {
 }
 
 TEST(OfflinePageFeatureTest, OfflinePagesDescriptivePendingStatus) {
-  // Disabled by default.
-  EXPECT_FALSE(offline_pages::IsOfflinePagesDescriptivePendingStatusEnabled());
+  // Enabled by default.
+  EXPECT_TRUE(offline_pages::IsOfflinePagesDescriptivePendingStatusEnabled());
 
   // Check if helper method works correctly when the features is enabled.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
+  scoped_feature_list.InitAndDisableFeature(
       kOfflinePagesDescriptivePendingStatusFeature);
-  EXPECT_TRUE(offline_pages::IsOfflinePagesDescriptivePendingStatusEnabled());
+  EXPECT_FALSE(offline_pages::IsOfflinePagesDescriptivePendingStatusEnabled());
 }
 
 TEST(OfflinePageFeatureTest, AlternateDinoPage) {

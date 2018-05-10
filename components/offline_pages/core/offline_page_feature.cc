@@ -64,7 +64,7 @@ const base::Feature kOfflinePagesDescriptiveFailStatusFeature{
     "OfflinePagesDescriptiveFailStatus", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kOfflinePagesDescriptivePendingStatusFeature{
-    "OfflinePagesDescriptivePendingStatus", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OfflinePagesDescriptivePendingStatus", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOfflinePagesInDownloadHomeOpenInCctFeature{
     "OfflinePagesInDownloadHomeOpenInCct", base::FEATURE_DISABLED_BY_DEFAULT};
