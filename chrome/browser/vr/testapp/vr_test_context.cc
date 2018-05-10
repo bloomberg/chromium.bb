@@ -62,7 +62,7 @@ constexpr float kTouchpadPositionDelta = 0.05f;
 const float kVerticalScrollScaleFactor =
     -8.0f / ui::MouseWheelEvent::kWheelDelta;
 const float kHorizontalScrollScaleFactor =
-    60.0f / ui::MouseWheelEvent::kWheelDelta;
+    100.0f / ui::MouseWheelEvent::kWheelDelta;
 constexpr gfx::PointF kInitialTouchPosition = {0.5f, 0.5f};
 
 void RotateToward(const gfx::Vector3dF& fwd, gfx::Transform* transform) {
