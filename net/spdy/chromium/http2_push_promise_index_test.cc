@@ -28,7 +28,7 @@ namespace {
 class TestDelegate : public Http2PushPromiseIndex::Delegate {
  public:
   TestDelegate() = delete;
-  TestDelegate(const SpdySessionKey& key) : key_(key) {}
+  explicit TestDelegate(const SpdySessionKey& key) : key_(key) {}
   ~TestDelegate() override {}
 
   bool ValidatePushedStream(SpdyStreamId stream_id,
@@ -417,7 +417,7 @@ TEST(Http2PushPromiseIndexCompareByUrlTest, Reflexivity) {
   // (which then must be |entry2|).
   std::tie(std::ignore, success) = entries.insert(entry2);
   EXPECT_FALSE(success);
-};
+}
 
 TEST(Http2PushPromiseIndexCompareByUrlTest, LookupByURL) {
   const GURL url1("https://example.com:1");
@@ -463,7 +463,7 @@ TEST(Http2PushPromiseIndexCompareByUrlTest, LookupByURL) {
   EXPECT_TRUE(
       entries.lower_bound(Http2PushPromiseIndexPeer::UnclaimedPushedStream{
           url2, nullptr, kNoPushedStreamFound}) == entries.find(entry2));
-};
+}
 
 }  // namespace test
 }  // namespace net

@@ -5,6 +5,7 @@
 #include "net/spdy/chromium/spdy_session.h"
 
 #include <algorithm>
+#include <string>
 #include <utility>
 
 #include "base/base64.h"

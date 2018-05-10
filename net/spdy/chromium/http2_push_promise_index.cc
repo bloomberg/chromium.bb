@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 #include "net/spdy/chromium/http2_push_promise_index.h"
-#include "base/trace_event/memory_usage_estimator.h"
 
 #include <algorithm>
 #include <utility>
+
+#include "base/trace_event/memory_usage_estimator.h"
 
 namespace net {
 
