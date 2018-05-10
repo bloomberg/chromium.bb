@@ -19,6 +19,7 @@ import sys
 import traceback
 import urllib
 import urllib2
+import zlib
 
 from core import path_util
 
@@ -492,7 +493,7 @@ def _SendResultsJson(url, results_json):
     raise SendResultsRetryException()
 
 def _Httplib2Request(url, data, oauth_token):
-  data = urllib.urlencode({'data': data})
+  data = zlib.compress(data)
   headers = {
       'Authorization': 'Bearer %s' % oauth_token,
       'User-Agent': 'perf-uploader/1.0'
