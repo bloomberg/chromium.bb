@@ -63,7 +63,6 @@ VolumeManagerFactory::VolumeManagerFactory()
   DependsOn(chromeos::file_system_provider::ServiceFactory::GetInstance());
 }
 
-VolumeManagerFactory::~VolumeManagerFactory() {
-}
+VolumeManagerFactory::~VolumeManagerFactory() = default;
 
 }  // namespace file_manager

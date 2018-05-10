@@ -93,7 +93,7 @@ const FileBrowserHandler* FindFileBrowserHandlerForActionId(
     if (handler_iter->get()->id() == action_id)
       return handler_iter->get();
   }
-  return NULL;
+  return nullptr;
 }
 
 std::string EscapedUtf8ToLower(const std::string& str) {
@@ -280,7 +280,7 @@ FileBrowserHandlerExecutor::FileBrowserHandlerExecutor(
       weak_ptr_factory_(this) {
 }
 
-FileBrowserHandlerExecutor::~FileBrowserHandlerExecutor() {}
+FileBrowserHandlerExecutor::~FileBrowserHandlerExecutor() = default;
 
 void FileBrowserHandlerExecutor::Execute(
     const std::vector<FileSystemURL>& file_urls,
@@ -345,7 +345,7 @@ void FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread(
   if (handler_pid > 0) {
     SetupPermissionsAndDispatchEvent(std::move(file_definition_list),
                                      std::move(entry_definition_list),
-                                     handler_pid, NULL);
+                                     handler_pid, nullptr);
   } else {
     // We have to wake the handler background page before we proceed.
     extensions::LazyBackgroundTaskQueue* queue =

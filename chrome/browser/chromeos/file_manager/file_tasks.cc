@@ -200,7 +200,7 @@ FullTaskDescriptor::FullTaskDescriptor(const TaskDescriptor& task_descriptor,
       is_default_(is_default),
       is_generic_file_handler_(is_generic_file_handler) {}
 
-FullTaskDescriptor::~FullTaskDescriptor() {}
+FullTaskDescriptor::~FullTaskDescriptor() = default;
 
 FullTaskDescriptor::FullTaskDescriptor(const FullTaskDescriptor& other) =
     default;

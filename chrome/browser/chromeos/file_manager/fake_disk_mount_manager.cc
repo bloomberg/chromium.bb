@@ -32,11 +32,9 @@ FakeDiskMountManager::RemountAllRequest::RemountAllRequest(
     chromeos::MountAccessMode access_mode)
     : access_mode(access_mode) {}
 
-FakeDiskMountManager::FakeDiskMountManager() {
-}
+FakeDiskMountManager::FakeDiskMountManager() = default;
 
-FakeDiskMountManager::~FakeDiskMountManager() {
-}
+FakeDiskMountManager::~FakeDiskMountManager() = default;
 
 void FakeDiskMountManager::AddObserver(Observer* observer) {
   DCHECK(observer);
@@ -76,8 +74,8 @@ void FakeDiskMountManager::MountPath(const std::string& source_path,
                                      const std::string& mount_label,
                                      chromeos::MountType type,
                                      chromeos::MountAccessMode access_mode) {
-  mount_requests_.push_back(
-      MountRequest(source_path, source_format, mount_label, type, access_mode));
+  mount_requests_.emplace_back(source_path, source_format, mount_label, type,
+                               access_mode);
 
   const MountPointInfo mount_point(
       source_path,
@@ -94,7 +92,7 @@ void FakeDiskMountManager::MountPath(const std::string& source_path,
 void FakeDiskMountManager::UnmountPath(const std::string& mount_path,
                                        chromeos::UnmountOptions options,
                                        const UnmountPathCallback& callback) {
-  unmount_requests_.push_back(UnmountRequest(mount_path, options));
+  unmount_requests_.emplace_back(mount_path, options);
 
   MountPointMap::iterator iter = mount_points_.find(mount_path);
   if (iter == mount_points_.end())
@@ -114,7 +112,7 @@ void FakeDiskMountManager::UnmountPath(const std::string& mount_path,
 
 void FakeDiskMountManager::RemountAllRemovableDrives(
     chromeos::MountAccessMode access_mode) {
-  remount_all_requests_.push_back(RemountAllRequest(access_mode));
+  remount_all_requests_.emplace_back(access_mode);
 }
 
 bool FakeDiskMountManager::FinishAllUnmountPathRequests() {

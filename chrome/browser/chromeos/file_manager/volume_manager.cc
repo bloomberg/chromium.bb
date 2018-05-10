@@ -162,8 +162,7 @@ Volume::Volume()
       watchable_(false) {
 }
 
-Volume::~Volume() {
-}
+Volume::~Volume() = default;
 
 // static
 std::unique_ptr<Volume> Volume::CreateForDrive(Profile* profile) {
@@ -342,8 +341,7 @@ VolumeManager::VolumeManager(
   DCHECK(disk_mount_manager);
 }
 
-VolumeManager::~VolumeManager() {
-}
+VolumeManager::~VolumeManager() = default;
 
 VolumeManager* VolumeManager::Get(content::BrowserContext* context) {
   return VolumeManagerFactory::Get(context);

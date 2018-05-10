@@ -163,8 +163,7 @@ struct TaskDescriptor {
         task_type(in_task_type),
         action_id(in_action_id) {
   }
-  TaskDescriptor() {
-  }
+  TaskDescriptor() = default;
 
   std::string app_id;
   TaskType task_type;

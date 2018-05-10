@@ -24,7 +24,7 @@ base::FilePathWatcher* CreateAndStartFilePathWatcher(
 
   std::unique_ptr<base::FilePathWatcher> watcher(new base::FilePathWatcher);
   if (!watcher->Watch(watch_path, false /* recursive */, callback))
-    return NULL;
+    return nullptr;
 
   return watcher.release();
 }
@@ -34,7 +34,7 @@ base::FilePathWatcher* CreateAndStartFilePathWatcher(
 FileWatcher::FileWatcher(const base::FilePath& virtual_path)
     : sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
-      local_file_watcher_(NULL),
+      local_file_watcher_(nullptr),
       virtual_path_(virtual_path),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

@@ -36,14 +36,11 @@ drive::DriveIntegrationService* CreateDriveIntegrationService(
     Profile* profile) {
   drive::FakeDriveService* const drive_service = new drive::FakeDriveService;
   if (!drive::test_util::SetUpTestEntries(drive_service))
-    return NULL;
+    return nullptr;
 
   return new drive::DriveIntegrationService(
-      profile,
-      NULL,
-      drive_service,
-      /* default mount name */ "",
-      temp_dir,
+      profile, nullptr, drive_service,
+      /* default mount name */ "", temp_dir,
       new drive::test_util::FakeFileSystem(drive_service));
 }
 

@@ -109,7 +109,7 @@ std::string GetDownloadsMountPointName(Profile* profile) {
       user_manager::UserManager::IsInitialized()
           ? chromeos::ProfileHelper::Get()->GetUserByProfile(
                 profile->GetOriginalProfile())
-          : NULL;
+          : nullptr;
   const std::string id = user ? "-" + user->username_hash() : "";
   return net::EscapeQueryParamValue(kDownloadsFolderName + id, false);
 }

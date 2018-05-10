@@ -113,7 +113,7 @@ void OpenFileWithMimeType(Profile* profile,
                           const platform_util::OpenOperationCallback& callback,
                           const std::string& mime_type) {
   std::vector<extensions::EntryInfo> entries;
-  entries.push_back(extensions::EntryInfo(path, mime_type, false));
+  entries.emplace_back(path, mime_type, false);
 
   std::vector<GURL> file_urls;
   file_urls.push_back(url);
