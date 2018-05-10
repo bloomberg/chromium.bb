@@ -3875,6 +3875,29 @@
             ]
         }
     ],
+    "UkmSamplingRate": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Sampled",
+                    "params": {
+                        "_default_sampling": "1"
+                    },
+                    "enable_features": [
+                        "UkmSamplingRate"
+                    ]
+                }
+            ]
+        }
+    ],
     "UpdateMenuItem": [
         {
             "platforms": [
