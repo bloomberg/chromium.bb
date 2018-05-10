@@ -278,14 +278,15 @@ class DependencySettings(object):
     self._custom_hooks = custom_hooks or []
 
     # Post process the url to remove trailing slashes.
-    if isinstance(self._url, basestring):
+    if isinstance(self.url, basestring):
       # urls are sometime incorrectly written as proto://host/path/@rev. Replace
       # it to proto://host/path@rev.
-      self._url = self._url.replace('/@', '@')
-    elif not isinstance(self._url, (None.__class__)):
+      self.set_url(self.url.replace('/@', '@'))
+    elif not isinstance(self.url, (None.__class__)):
       raise gclient_utils.Error(
           ('dependency url must be either string or None, '
-           'instead of %s') % self._url.__class__.__name__)
+           'instead of %s') % self.url.__class__.__name__)
+
     # Make any deps_file path platform-appropriate.
     if self._deps_file:
       for sep in ['/', '\\']:
@@ -357,6 +358,12 @@ class DependencySettings(object):
   def target_cpu(self):
     return self.parent.target_cpu
 
+  def set_url(self, url):
+    self._url = url
+
+  def set_raw_url(self, url):
+    self._raw_url = url
+
   def get_custom_deps(self, name, url):
     """Returns a custom deps if applicable."""
     if self.parent:
@@ -383,7 +390,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     self._pre_deps_hooks = []
 
     # Calculates properties:
-    self._parsed_url = None
     self._dependencies = []
     self._vars = {}
     self._os_dependencies = {}
@@ -429,11 +435,13 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # It will be a dictionary of {deps_name: {"deps_file": depfile_name}} or
     # None.
     self.recursedeps = None
+
+    self._OverrideUrl()
     # This is inherited from WorkItem.  We want the URL to be a resource.
-    if url and isinstance(url, basestring):
+    if self.url and isinstance(self.url, basestring):
       # The url is usually given to gclient either as https://blah@123
       # or just https://blah.  The @123 portion is irrelevant.
-      self.resources.append(url.split('@')[0])
+      self.resources.append(self.url.split('@')[0])
 
     # Controls whether we want to print git's output when we first clone the
     # dependency
@@ -441,6 +449,50 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     if not self.name and self.parent:
       raise gclient_utils.Error('Dependency without name')
+
+  def _OverrideUrl(self):
+    """Resolves the parsed url from the parent hierarchy."""
+    parsed_url = self.get_custom_deps(self._name, self.url)
+    if parsed_url != self.url:
+      logging.info('Dependency(%s)._OverrideUrl(%s) -> %s', self._name,
+                   self.url, parsed_url)
+      self.set_url(parsed_url)
+
+    elif isinstance(self.url, basestring):
+      parsed_url = urlparse.urlparse(self.url)
+      if (not parsed_url[0] and
+          not re.match(r'^\w+\@[\w\.-]+\:[\w\/]+', parsed_url[2])):
+        path = parsed_url[2]
+        if not path.startswith('/'):
+          raise gclient_utils.Error(
+              'relative DEPS entry \'%s\' must begin with a slash' % self.url)
+        # A relative url. Get the parent url, strip from the last '/'
+        # (equivalent to unix basename), and append the relative url.
+        parent_url = self.parent.url
+        parsed_url = parent_url[:parent_url.rfind('/')] + self.url
+        logging.info('Dependency(%s)._OverrideUrl(%s) -> %s', self.name,
+                     self.url, parsed_url)
+        self.set_url(parsed_url)
+
+    elif self.url is None:
+      logging.info('Dependency(%s)._OverrideUrl(None) -> None', self._name)
+
+    else:
+      raise gclient_utils.Error('Unknown url type')
+
+  def PinToActualRevision(self):
+    """Updates self.url and self.raw_url to the revision checked out on disk."""
+    if self.url is None:
+      return
+    url = raw_url = None
+    scm = self.CreateSCM(self.url, self.root.root_dir, self.name, self.outbuf)
+    if os.path.isdir(scm.checkout_path):
+      revision = scm.revinfo(None, None, None)
+      url = '%s@%s' % (gclient_utils.SplitUrlRevision(self.url)[0], revision)
+      raw_url = '%s@%s' % (
+          gclient_utils.SplitUrlRevision(self.raw_url)[0], revision)
+    self.set_url(url)
+    self.set_raw_url(raw_url)
 
   def ToLines(self):
     s = []
@@ -527,10 +579,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # This require a full tree traversal with locks.
     siblings = [d for d in self.root.subtree(False) if d.name == self.name]
     for sibling in siblings:
-      self_url = self.LateOverride(self.url)
-      sibling_url = sibling.LateOverride(sibling.url)
       # Allow to have only one to be None or ''.
-      if self_url != sibling_url and bool(self_url) == bool(sibling_url):
+      if self.url != sibling.url and bool(self.url) == bool(sibling.url):
         raise gclient_utils.Error(
             ('Dependency %s specified more than once:\n'
             '  %s [%s]\n'
@@ -538,52 +588,14 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
             '  %s [%s]') % (
               self.name,
               sibling.hierarchy(),
-              sibling_url,
+              sibling.url,
               self.hierarchy(),
-              self_url))
+              self.url))
       # In theory we could keep it as a shadow of the other one. In
       # practice, simply ignore it.
       logging.warn('Won\'t process duplicate dependency %s' % sibling)
       return False
     return True
-
-  def LateOverride(self, url):
-    """Resolves the parsed url from url."""
-    assert self.parsed_url == None or not self.should_process, self.parsed_url
-    parsed_url = self.get_custom_deps(self.name, url)
-    if parsed_url != url:
-      logging.info(
-          'Dependency(%s).LateOverride(%s) -> %s' %
-          (self.name, url, parsed_url))
-      return parsed_url
-
-    if isinstance(url, basestring):
-      parsed_url = urlparse.urlparse(url)
-      if (not parsed_url[0] and
-          not re.match(r'^\w+\@[\w\.-]+\:[\w\/]+', parsed_url[2])):
-        # A relative url. Fetch the real base.
-        path = parsed_url[2]
-        if not path.startswith('/'):
-          raise gclient_utils.Error(
-              'relative DEPS entry \'%s\' must begin with a slash' % url)
-        # Create a scm just to query the full url.
-        parent_url = self.parent.parsed_url
-        scm = self.CreateSCM(
-            parent_url, self.root.root_dir, None, self.outbuf)
-        parsed_url = scm.FullUrlForRelativeUrl(url)
-      else:
-        parsed_url = url
-      logging.info(
-          'Dependency(%s).LateOverride(%s) -> %s' %
-          (self.name, url, parsed_url))
-      return parsed_url
-
-    if url is None:
-      logging.info(
-          'Dependency(%s).LateOverride(%s) -> %s' % (self.name, url, url))
-      return url
-
-    raise gclient_utils.Error('Unknown url type')
 
   @staticmethod
   def MergeWithOsDeps(deps, deps_os, target_os_list, process_all_deps):
@@ -934,17 +946,15 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           bad_deps.append(dep)
     return bad_deps
 
-  def FuzzyMatchUrl(self, parsed_url, candidates):
+  def FuzzyMatchUrl(self, candidates):
     """Attempts to find this dependency in the list of candidates.
 
-    It looks first for the URL of this dependency (parsed_url) in the list of
+    It looks first for the URL of this dependency in the list of
     candidates. If it doesn't succeed, and the URL ends in '.git', it will try
     looking for the URL minus '.git'. Finally it will try to look for the name
     of the dependency.
 
     Args:
-      parsed_url: str. The parsed URL for this dependency. Something like
-          "https://example.com/src.git@revision"
       candidates: list, dict. The list of candidates in which to look for this
           dependency. It can contain URLs as above, or dependency names like
           "src/some/dep".
@@ -956,8 +966,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
        - Its parsed url minus '.git': "https://example.com/src"
        - Its name: "src"
     """
-    if parsed_url:
-      origin, _ = gclient_utils.SplitUrlRevision(parsed_url)
+    if self.url:
+      origin, _ = gclient_utils.SplitUrlRevision(self.url)
       if origin in candidates:
         return origin
       if origin.endswith('.git') and origin[:-len('.git')] in candidates:
@@ -982,24 +992,22 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # copy state, so skip the SCM status check.
     run_scm = command not in (
         'flatten', 'runhooks', 'recurse', 'validate', None)
-    parsed_url = self.LateOverride(self.url)
     file_list = [] if not options.nohooks else None
     revision_override = revision_overrides.pop(
-        self.FuzzyMatchUrl(parsed_url, revision_overrides), None)
-    if run_scm and parsed_url:
+        self.FuzzyMatchUrl(revision_overrides), None)
+    if run_scm and self.url:
       # Create a shallow copy to mutate revision.
       options = copy.copy(options)
       options.revision = revision_override
       self._used_revision = options.revision
       self._used_scm = self.CreateSCM(
-          parsed_url, self.root.root_dir, self.name, self.outbuf,
+          self.url, self.root.root_dir, self.name, self.outbuf,
           out_cb=work_queue.out_cb)
       self._got_revision = self._used_scm.RunCommand(command, options, args,
                                                      file_list)
 
-      patch_repo = parsed_url.split('@')[0]
-      patch_ref = patch_refs.pop(
-          self.FuzzyMatchUrl(parsed_url, patch_refs), None)
+      patch_repo = self.url.split('@')[0]
+      patch_ref = patch_refs.pop(self.FuzzyMatchUrl(patch_refs), None)
       if command == 'update' and patch_ref is not None:
         self._used_scm.apply_patch_ref(patch_repo, patch_ref, options,
                                        file_list)
@@ -1023,7 +1031,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     if self.recursion_limit:
       self.ParseDepsFile(expand_vars=(command != 'flatten'))
 
-    self._run_is_done(file_list or [], parsed_url)
+    self._run_is_done(file_list or [])
 
     if self.recursion_limit:
       if command in ('update', 'revert') and not options.noprehooks:
@@ -1035,7 +1043,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     if command == 'recurse':
       # Skip file only checkout.
-      scm = self.GetScmName(parsed_url)
+      scm = self.GetScmName(self.url)
       if not options.scm or scm in options.scm:
         cwd = os.path.normpath(os.path.join(self.root.root_dir, self.name))
         # Pass in the SCM type as an env variable.  Make sure we don't put
@@ -1043,8 +1051,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         env = os.environ.copy()
         if scm:
           env['GCLIENT_SCM'] = str(scm)
-        if parsed_url:
-          env['GCLIENT_URL'] = str(parsed_url)
+        if self.url:
+          env['GCLIENT_URL'] = str(self.url)
         env['GCLIENT_DEP_PATH'] = str(self.name)
         if options.prepend_dir and scm == 'git':
           print_stdout = False
@@ -1075,7 +1083,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           print_stdout = True
           filter_fn = None
 
-        if parsed_url is None:
+        if self.url is None:
           print('Skipped omitted dependency %s' % cwd, file=sys.stderr)
         elif os.path.isdir(cwd):
           try:
@@ -1111,10 +1119,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       f.write('\n'.join(lines))
 
   @gclient_utils.lockedmethod
-  def _run_is_done(self, file_list, parsed_url):
+  def _run_is_done(self, file_list):
     # Both these are kept for hooks that are run as a separate tree traversal.
     self._file_list = file_list
-    self._parsed_url = parsed_url
     self._processed = True
 
   def GetHooks(self, options):
@@ -1133,7 +1140,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       # what files have changed so we always run all hooks. It'd be nice to fix
       # that.
       if (options.force or
-          self.GetScmName(self.parsed_url) in ('git', None) or
+          self.GetScmName(self.url) in ('git', None) or
           os.path.isdir(os.path.join(self.root.root_dir, self.name, '.git'))):
         result.extend(self.deps_hooks)
       else:
@@ -1221,11 +1228,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
   @property
   @gclient_utils.lockedmethod
-  def parsed_url(self):
-    return self._parsed_url
-
-  @property
-  @gclient_utils.lockedmethod
   def deps_parsed(self):
     """This is purely for debugging purposes. It's not used anywhere."""
     return self._deps_parsed
@@ -1274,7 +1276,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
   def __str__(self):
     out = []
-    for i in ('name', 'url', 'parsed_url', 'custom_deps',
+    for i in ('name', 'url', 'custom_deps',
               'custom_vars', 'deps_hooks', 'file_list', 'should_process',
               'processed', 'hooks_ran', 'deps_parsed', 'requirements',
               'allowed_hosts'):
@@ -1593,7 +1595,7 @@ it or fix the checkout.
     result = 'entries = {\n'
     for entry in self.root.subtree(False):
       result += '  %s: %s,\n' % (pprint.pformat(entry.name),
-          pprint.pformat(entry.parsed_url))
+          pprint.pformat(entry.url))
     result += '}\n'
     file_path = os.path.join(self.root_dir, self._options.entries_filename)
     logging.debug(result)
@@ -1825,20 +1827,9 @@ it or fix the checkout.
         work_queue.enqueue(s)
     work_queue.flush({}, None, [], options=self._options, patch_refs=None)
 
-    def ShouldPrintRevision(dep, rev):
+    def ShouldPrintRevision(dep):
       return (not self._options.filter
-              or d.FuzzyMatchUrl(rev, self._options.filter))
-
-    def GetURLAndRev(dep):
-      """Returns the revision-qualified SCM url for a Dependency."""
-      if dep.parsed_url is None:
-        return None
-      url, _ = gclient_utils.SplitUrlRevision(dep.parsed_url)
-      scm = dep.CreateSCM(
-          dep.parsed_url, self.root_dir, dep.name, self.outbuf)
-      if not os.path.isdir(scm.checkout_path):
-        return None
-      return '%s@%s' % (url, scm.revinfo(self._options, [], None))
+              or dep.FuzzyMatchUrl(self._options.filter))
 
     if self._options.snapshot:
       json_output = []
@@ -1848,9 +1839,9 @@ it or fix the checkout.
         def GrabDeps(dep):
           """Recursively grab dependencies."""
           for d in dep.dependencies:
-            rev = GetURLAndRev(d)
-            if ShouldPrintRevision(d, rev):
-              entries[d.name] = rev
+            d.PinToActualRevision()
+            if ShouldPrintRevision(d):
+              entries[d.name] = d.url
             GrabDeps(d)
         GrabDeps(d)
         json_output.append({
@@ -1874,11 +1865,9 @@ it or fix the checkout.
       entries = {}
       for d in self.root.subtree(False):
         if self._options.actual:
-          rev = GetURLAndRev(d)
-        else:
-          rev = d.parsed_url
-        if ShouldPrintRevision(d, rev):
-          entries[d.name] = rev
+          d.PinToActualRevision()
+        if ShouldPrintRevision(d):
+          entries[d.name] = d.url
       if self._options.output_json:
         json_output = {
             name: {
@@ -2146,24 +2135,16 @@ class Flattener(object):
     Arguments:
       dep (Dependency): dependency to process
     """
-    if dep.parsed_url is None:
+    if dep.url is None:
       return
 
     # Make sure the revision is always fully specified (a hash),
     # as opposed to refs or tags which might change. Similarly,
     # shortened shas might become ambiguous; make sure to always
     # use full one for pinning.
-    url, revision = gclient_utils.SplitUrlRevision(dep.parsed_url)
-    if revision and gclient_utils.IsFullGitSha(revision):
-      return
-
-    scm = dep.CreateSCM(
-        dep.parsed_url, self._client.root_dir, dep.name, dep.outbuf)
-    revinfo = scm.revinfo(self._client._options, [], None)
-
-    dep._parsed_url = dep._url = '%s@%s' % (url, revinfo)
-    raw_url, _ = gclient_utils.SplitUrlRevision(dep._raw_url)
-    dep._raw_url = '%s@%s' % (raw_url, revinfo)
+    revision = gclient_utils.SplitUrlRevision(dep.url)[1]
+    if not revision or not gclient_utils.IsFullGitSha(revision):
+      dep.PinToActualRevision()
 
   def _flatten(self, pin_all_deps=False):
     """Runs the flattener. Saves resulting DEPS string.
@@ -2198,8 +2179,8 @@ class Flattener(object):
         deps_path = os.path.join(self._client.root_dir, dep.name, deps_file)
         if not os.path.exists(deps_path):
           return
-      assert dep.parsed_url
-      self._deps_files.add((dep.parsed_url, deps_file, dep.hierarchy_data()))
+      assert dep.url
+      self._deps_files.add((dep.url, deps_file, dep.hierarchy_data()))
     for dep in self._deps.itervalues():
       add_deps_file(dep)
     for os_deps in self._deps_os.itervalues():
@@ -2244,10 +2225,6 @@ class Flattener(object):
         self._deps_os.get(dep_os, {}).get(os_dep.name) == os_dep), (
             os_dep.name, self._deps_os.get(dep_os, {}).get(os_dep.name))
     if os_dep.url:
-      # OS-specific deps need to have their full URL resolved manually.
-      assert not os_dep.parsed_url, (os_dep, os_dep.parsed_url)
-      os_dep._parsed_url = os_dep.LateOverride(os_dep.url)
-
       self._deps_os.setdefault(dep_os, {})[os_dep.name] = os_dep
 
   def _flatten_dep(self, dep, dep_os=None):
