@@ -17,6 +17,7 @@
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "device/geolocation/public/cpp/location_provider.h"
@@ -721,6 +722,13 @@ std::unique_ptr<OverlayWindow>
 ContentBrowserClient::CreateWindowForPictureInPicture(
     PictureInPictureWindowController* controller) {
   return nullptr;
+}
+
+std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
+ContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
+    NavigationUIData* navigation_ui_data,
+    int frame_tree_node_id) {
+  return std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>();
 }
 
 }  // namespace content

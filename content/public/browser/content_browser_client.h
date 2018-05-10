@@ -157,6 +157,7 @@ class SiteInstance;
 class SpeechRecognitionManagerDelegate;
 class StoragePartition;
 class TracingDelegate;
+class URLLoaderRequestInterceptor;
 class URLLoaderThrottle;
 class VpnServiceProxy;
 class WebContents;
@@ -1022,6 +1023,15 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* frame,
       bool is_navigation,
       network::mojom::URLLoaderFactoryRequest* factory_request);
+
+  // Allows the embedder to returns a list of request interceptors that can
+  // intercept a navigation request.
+  //
+  // Always called on the IO thread and only when the Network Service is
+  // enabled.
+  virtual std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
+  WillCreateURLLoaderRequestInterceptors(NavigationUIData* navigation_ui_data,
+                                         int frame_tree_node_id);
 
   // Creates a NetworkContext for a BrowserContext's StoragePartition. If the
   // network service is enabled, it must return a NetworkContext using the
