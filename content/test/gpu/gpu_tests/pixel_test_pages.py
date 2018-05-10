@@ -599,8 +599,7 @@ def NoGpuProcessPages(base_name):
 # arguments.
 def MacSpecificPages(base_name):
   iosurface_2d_canvas_args = [
-    '--enable-accelerated-2d-canvas',
-    '--disable-display-list-2d-canvas']
+    '--enable-accelerated-2d-canvas']
 
   non_chromium_image_args = ['--disable-webgl-image-chromium']
 

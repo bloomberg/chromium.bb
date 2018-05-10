@@ -12,8 +12,7 @@
   {
     "prefix": "gpu",
     "base": "fast/canvas",
-    "args": ["--enable-accelerated-2d-canvas",
-             "--disable-display-list-2d-canvas"]
+    "args": ["--enable-accelerated-2d-canvas"]
   },
   {
     "prefix": "threaded",
