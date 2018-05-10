@@ -64,14 +64,6 @@ bool CopyOutputRequest::SendsResultsInCurrentSequence() const {
          result_task_runner_->RunsTasksInCurrentSequence();
 }
 
-void CopyOutputRequest::SetMailbox(const gpu::Mailbox& mailbox,
-                                   const gpu::SyncToken& sync_token) {
-  DCHECK_EQ(result_format_, ResultFormat::RGBA_TEXTURE);
-  DCHECK(!mailbox.IsZero());
-  mailbox_ = mailbox;
-  sync_token_ = sync_token;
-}
-
 // static
 std::unique_ptr<CopyOutputRequest> CopyOutputRequest::CreateStubForTesting() {
   return std::make_unique<CopyOutputRequest>(

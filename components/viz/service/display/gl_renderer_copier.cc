@@ -215,10 +215,10 @@ GLuint GLRendererCopier::RenderResultTexture(
     // return it as the result texture. The request must not include scaling nor
     // a texture mailbox to use for delivering results. The texture format must
     // also be GL_RGBA, as described by CopyOutputResult::Format::RGBA_TEXTURE.
-    const int purpose = (!request.is_scaled() && flipped_source &&
-                         !request.has_mailbox() && internal_format == GL_RGBA)
-                            ? CacheEntry::kResultTexture
-                            : CacheEntry::kFramebufferCopyTexture;
+    const int purpose =
+        (!request.is_scaled() && flipped_source && internal_format == GL_RGBA)
+            ? CacheEntry::kResultTexture
+            : CacheEntry::kFramebufferCopyTexture;
     TakeCachedObjectsOrCreate(SourceOf(request), purpose, 1, &source_texture);
     gl->BindTexture(GL_TEXTURE_2D, source_texture);
     gl->CopyTexImage2D(GL_TEXTURE_2D, 0, internal_format, sampling_rect.x(),
@@ -230,21 +230,9 @@ GLuint GLRendererCopier::RenderResultTexture(
     sampling_rect.set_origin(gfx::Point());
   }
 
-  // Determine the result texture: If the copy request provided a valid one, use
-  // it instead of one owned by GLRendererCopier.
   GLuint result_texture = 0;
-  if (request.has_mailbox()) {
-    if (!request.mailbox().IsZero()) {
-      if (request.sync_token().HasData())
-        gl->WaitSyncTokenCHROMIUM(request.sync_token().GetConstData());
-      result_texture =
-          gl->CreateAndConsumeTextureCHROMIUM(request.mailbox().name);
-    }
-  }
-  if (result_texture == 0) {
-    TakeCachedObjectsOrCreate(SourceOf(request), CacheEntry::kResultTexture, 1,
-                              &result_texture);
-  }
+  TakeCachedObjectsOrCreate(SourceOf(request), CacheEntry::kResultTexture, 1,
+                            &result_texture);
   gl->BindTexture(GL_TEXTURE_2D, result_texture);
   gl->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, result_rect.width(),
                  result_rect.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
@@ -492,34 +480,18 @@ void GLRendererCopier::SendTextureResult(
   // within its own GL context will be using the texture at a point in time
   // after the texture has been rendered (via GLRendererCopier's GL context).
   gpu::Mailbox mailbox;
-  if (request->has_mailbox()) {
-    mailbox = request->mailbox();
-  } else {
-    gl->GenMailboxCHROMIUM(mailbox.name);
-    gl->ProduceTextureDirectCHROMIUM(result_texture, mailbox.name);
-  }
+  gl->GenMailboxCHROMIUM(mailbox.name);
+  gl->ProduceTextureDirectCHROMIUM(result_texture, mailbox.name);
   gpu::SyncToken sync_token;
   gl->GenSyncTokenCHROMIUM(sync_token.GetData());
 
-  // Create a |release_callback| appropriate to the situation: If the
-  // |result_texture| was provided in the mailbox of the copy request,
-  // create a no-op release callback because the requestor owns the texture.
-  // Otherwise, create a callback that deletes what was created in this GL
-  // context.
-  std::unique_ptr<SingleReleaseCallback> release_callback;
-  if (request->has_mailbox()) {
-    gl->DeleteTextures(1, &result_texture);
-    // TODO(crbug/754872): This non-null release callback wart is going away
-    // soon, as copy requestors won't need pool/manage textures anymore.
-    release_callback = SingleReleaseCallback::Create(base::DoNothing());
-  } else {
-    // Note: There's no need to try to pool/re-use the result texture from here,
-    // since only clients that are trying to re-invent video capture would see
-    // any significant performance benefit. Instead, such clients should use the
-    // video capture services provided by VIZ.
-    release_callback =
-        texture_deleter_->GetReleaseCallback(context_provider_, result_texture);
-  }
+  // Create a callback that deletes what was created in this GL context.
+  // Note: There's no need to try to pool/re-use the result texture from here,
+  // since only clients that are trying to re-invent video capture would see any
+  // significant performance benefit. Instead, such clients should use the video
+  // capture services provided by VIZ.
+  auto release_callback =
+      texture_deleter_->GetReleaseCallback(context_provider_, result_texture);
 
   request->SendResult(std::make_unique<CopyOutputTextureResult>(
       result_rect, mailbox, sync_token, color_space,

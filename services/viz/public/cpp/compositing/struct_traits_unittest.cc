@@ -327,7 +327,6 @@ TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
             quit_closure.Run();
           },
           run_loop_for_result.QuitClosure(), result_rect)));
-  input->SetMailbox(mailbox, sync_token);
   EXPECT_FALSE(input->is_scaled());
   std::unique_ptr<CopyOutputRequest> output;
   SerializeAndDeserialize<mojom::CopyOutputRequest>(input, &output);
@@ -336,8 +335,6 @@ TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
   EXPECT_FALSE(output->is_scaled());
   EXPECT_FALSE(output->has_source());
   EXPECT_FALSE(output->has_area());
-  EXPECT_TRUE(output->has_mailbox());
-  EXPECT_EQ(mailbox, output->mailbox());
 
   base::RunLoop run_loop_for_release;
   output->SendResult(std::make_unique<CopyOutputTextureResult>(
