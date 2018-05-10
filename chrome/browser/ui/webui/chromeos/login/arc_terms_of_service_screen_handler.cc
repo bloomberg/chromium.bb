@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 
+#include "base/command_line.h"
 #include "base/i18n/timezone.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -222,6 +223,12 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
   // user accepts ToS then prefs::kArcEnabled is left activated. If user skips
   // ToS then prefs::kArcEnabled is automatically reset in ArcSessionManager.
   arc::SetArcPlayStoreEnabledForProfile(profile, true);
+
+  // Hide the Skip button if the ToS screen can not be skipped during OOBE.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableArcOobeOptinNoSkip)) {
+    CallJS("hideSkipButton");
+  }
 
   action_taken_ = false;
 

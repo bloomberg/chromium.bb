@@ -10,7 +10,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
   return {
     EXTERNAL_API: [
       'setMetricsMode', 'setBackupAndRestoreMode', 'setLocationServicesMode',
-      'loadPlayStoreToS', 'setArcManaged'
+      'loadPlayStoreToS', 'setArcManaged', 'hideSkipButton'
     ],
 
     /** @override */
@@ -168,6 +168,13 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     },
 
     /**
+     * Hides the "Skip" button in the ToS screen.
+     */
+    hideSkipButton: function() {
+      this.addClass_('arc-tos-disable-skip');
+    },
+
+    /**
      * Loads Play Store ToS in case country code has been changed or previous
      * attempt failed.
      * @param {string} countryCode Country code based on current timezone.
@@ -306,7 +313,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     },
 
     /**
-     * Handles Retry button click.
+     * Handles Skip button click.
      */
     onSkip: function() {
       this.enableButtons_(false);
