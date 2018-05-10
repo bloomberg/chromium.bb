@@ -449,6 +449,13 @@ int Main(const MainParams& params) {
     case ProcessType::kEmbedder:
       if (delegate->IsEmbedderSubprocess())
         CommonSubprocessInit();
+      else {
+        // TODO(https://crbug.com/729596): Use this task runner to start
+        // ServiceManager.
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+            delegate->GetServiceManagerTaskRunnerForEmbedderProcess();
+      }
+
       exit_code = delegate->RunEmbedderProcess();
       break;
   }

@@ -71,10 +71,10 @@ template("implement_content_app") {
     content_app_deps += [ "//content/ppapi_plugin:ppapi_plugin_sources" ]
   }
 
-  # Compile content_main_runner_impl.cc in a separate target to exempt from GN
-  # header checking without exempting any other source file. This file includes
-  # headers of all process types and varies significantly per platform in
-  # between browser and child. Otherwise it would require many "nogncheck"
+  # Compile content_main_runner_impl.[h, cc] in a separate target to exempt from
+  # GN header checking without exempting any other source file. These files
+  # includes headers of all process types and varies significantly per platform
+  # in between browser and child. Otherwise it would require many "nogncheck"
   # annotations that would both be useless and add noise.
   #
   # This will generate :content_main_runner_both, :content_main_runner_browser,
@@ -85,6 +85,7 @@ template("implement_content_app") {
 
     sources = [
       "content_main_runner_impl.cc",
+      "content_main_runner_impl.h",
     ]
 
     configs += extra_configs

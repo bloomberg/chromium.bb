@@ -10,6 +10,14 @@ MainDelegate::MainDelegate() = default;
 
 MainDelegate::~MainDelegate() = default;
 
+scoped_refptr<base::SingleThreadTaskRunner>
+MainDelegate::GetServiceManagerTaskRunnerForEmbedderProcess() {
+  // The default implementation is provided for compiling purpose on Windows and
+  // should never be called.
+  NOTREACHED();
+  return nullptr;
+}
+
 bool MainDelegate::IsEmbedderSubprocess() {
   return false;
 }

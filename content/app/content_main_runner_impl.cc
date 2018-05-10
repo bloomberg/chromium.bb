@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/app/content_main_runner.h"
+#include "content/app/content_main_runner_impl.h"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -34,17 +34,16 @@
 #include "base/process/memory.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
-#include "build/build_config.h"
 #include "components/tracing/common/trace_startup.h"
 #include "content/app/mojo/mojo_init.h"
+#include "content/browser/browser_process_sub_thread.h"
 #include "content/common/url_schemes.h"
-#include "content/public/app/content_main.h"
 #include "content/public/app/content_main_delegate.h"
-#include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_descriptor_keys.h"
 #include "content/public/common/content_features.h"
@@ -71,10 +70,8 @@
 #include <cstring>
 
 #include "base/trace_event/trace_event_etw_export_win.h"
-#include "sandbox/win/src/sandbox_types.h"
 #include "ui/display/win/dpi.h"
 #elif defined(OS_MACOSX)
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "content/browser/mach_broker_mac.h"
 #endif  // OS_WIN
@@ -291,7 +288,7 @@ pid_t LaunchZygoteHelper(base::CommandLine* cmd_line,
       switches::kVModule,
   };
   cmd_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
-                             kForwardSwitches, arraysize(kForwardSwitches));
+                             kForwardSwitches, base::size(kForwardSwitches));
 
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(cmd_line, -1);
 
@@ -564,7 +561,7 @@ int RunZygote(ContentMainDelegate* delegate) {
   if (sandbox_type == service_manager::SANDBOX_TYPE_PROFILING)
     sandbox::SetUseLocaltimeOverride(false);
 
-  for (size_t i = 0; i < arraysize(kMainFunctions); ++i) {
+  for (size_t i = 0; i < base::size(kMainFunctions); ++i) {
     if (process_type == kMainFunctions[i].name)
       return kMainFunctions[i].function(main_params);
   }
@@ -597,17 +594,39 @@ static void RegisterMainThreadFactories() {
 #endif  // !CHROME_MULTIPLE_DLL_BROWSER && !CHROME_MULTIPLE_DLL_CHILD
 }
 
-// Run the FooMain() for a given process type.
-// If |process_type| is empty, runs BrowserMain().
-// Returns the exit code for this process.
-int RunNamedProcessTypeMain(const std::string& process_type,
-                            const MainFunctionParams& main_function_params,
-                            ContentMainDelegate* delegate) {
-  static const MainFunction kMainFunctions[] = {
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
-    {"", BrowserMain},
+// Run the main function for browser process.
+// Returns the exit code for this process.
+int RunBrowserProcessMain(
+    const MainFunctionParams& main_function_params,
+    ContentMainDelegate* delegate,
+    std::unique_ptr<BrowserProcessSubThread> service_manager_thread) {
+  if (delegate) {
+    int exit_code = delegate->RunProcess("", main_function_params);
+#if defined(OS_ANDROID)
+    // In Android's browser process, the negative exit code doesn't mean the
+    // default behavior should be used as the UI message loop is managed by
+    // the Java and the browser process's default behavior is always
+    // overridden.
+    return exit_code;
 #endif
+    if (exit_code >= 0)
+      return exit_code;
+  }
+  // GetServiceManagerTaskRunnerForEmbedderProcess() needs to be invoked before
+  // Run() for the browser process.
+  DCHECK(service_manager_thread);
+  return BrowserMain(main_function_params, std::move(service_manager_thread));
+}
+#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
+
+// Run the FooMain() for a given process type.
+// Returns the exit code for this process.
+int RunOtherNamedProcessTypeMain(const std::string& process_type,
+                                 const MainFunctionParams& main_function_params,
+                                 ContentMainDelegate* delegate) {
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
+  static const MainFunction kMainFunctions[] = {
 #if BUILDFLAG(ENABLE_PLUGINS)
     {switches::kPpapiPluginProcess, PpapiPluginMain},
     {switches::kPpapiBrokerProcess, PpapiBrokerMain},
@@ -615,30 +634,20 @@ int RunNamedProcessTypeMain(const std::string& process_type,
     {switches::kUtilityProcess, UtilityMain},
     {switches::kRendererProcess, RendererMain},
     {switches::kGpuProcess, GpuMain},
-#endif  // !CHROME_MULTIPLE_DLL_BROWSER
   };
 
-  RegisterMainThreadFactories();
-
-  for (size_t i = 0; i < arraysize(kMainFunctions); ++i) {
+  for (size_t i = 0; i < base::size(kMainFunctions); ++i) {
     if (process_type == kMainFunctions[i].name) {
       if (delegate) {
         int exit_code =
             delegate->RunProcess(process_type, main_function_params);
-#if defined(OS_ANDROID)
-        // In Android's browser process, the negative exit code doesn't mean the
-        // default behavior should be used as the UI message loop is managed by
-        // the Java and the browser process's default behavior is always
-        // overridden.
-        if (process_type.empty())
-          return exit_code;
-#endif
         if (exit_code >= 0)
           return exit_code;
       }
       return kMainFunctions[i].function(main_function_params);
     }
   }
+#endif  // !CHROME_MULTIPLE_DLL_BROWSER
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
   // Zygote startup is special -- see RunZygote comments above
@@ -655,351 +664,342 @@ int RunNamedProcessTypeMain(const std::string& process_type,
   return 1;
 }
 
-class ContentMainRunnerImpl : public ContentMainRunner {
- public:
-  ContentMainRunnerImpl() {
+// static
+ContentMainRunnerImpl* ContentMainRunnerImpl::Create() {
+  return new ContentMainRunnerImpl();
+}
+
+ContentMainRunnerImpl::ContentMainRunnerImpl() {
 #if defined(OS_WIN)
-    memset(&sandbox_info_, 0, sizeof(sandbox_info_));
+  memset(&sandbox_info_, 0, sizeof(sandbox_info_));
 #endif
-  }
+}
 
-  ~ContentMainRunnerImpl() override {
-    if (is_initialized_ && !is_shutdown_)
-      Shutdown();
-  }
+ContentMainRunnerImpl::~ContentMainRunnerImpl() {
+  if (is_initialized_ && !is_shutdown_)
+    Shutdown();
+}
 
-  int TerminateForFatalInitializationError() {
-    if (delegate_)
-      return delegate_->TerminateForFatalInitializationError();
+int ContentMainRunnerImpl::TerminateForFatalInitializationError() {
+  if (delegate_)
+    return delegate_->TerminateForFatalInitializationError();
 
-    CHECK(false);
-    return 0;
-  }
+  CHECK(false);
+  return 0;
+}
 
-  int Initialize(const ContentMainParams& params) override {
-    ui_task_ = params.ui_task;
-    created_main_parts_closure_ = params.created_main_parts_closure;
+int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
+  ui_task_ = params.ui_task;
+  created_main_parts_closure_ = params.created_main_parts_closure;
 
 #if defined(OS_WIN)
-    sandbox_info_ = *params.sandbox_info;
+  sandbox_info_ = *params.sandbox_info;
 #else  // !OS_WIN
 
 #if defined(OS_MACOSX)
-    autorelease_pool_ = params.autorelease_pool;
+  autorelease_pool_ = params.autorelease_pool;
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
-    // See note at the initialization of ExitManager, below; basically,
-    // only Android builds have the ctor/dtor handlers set up to use
-    // TRACE_EVENT right away.
-    TRACE_EVENT0("startup,benchmark,rail", "ContentMainRunnerImpl::Initialize");
+  // See note at the initialization of ExitManager, below; basically,
+  // only Android builds have the ctor/dtor handlers set up to use
+  // TRACE_EVENT right away.
+  TRACE_EVENT0("startup,benchmark,rail", "ContentMainRunnerImpl::Initialize");
 #endif  // OS_ANDROID
 
-    base::GlobalDescriptors* g_fds = base::GlobalDescriptors::GetInstance();
-    ALLOW_UNUSED_LOCAL(g_fds);
+  base::GlobalDescriptors* g_fds = base::GlobalDescriptors::GetInstance();
+  ALLOW_UNUSED_LOCAL(g_fds);
 
 // On Android, the ipc_fd is passed through the Java service.
 #if !defined(OS_ANDROID)
-    g_fds->Set(kMojoIPCChannel,
-               kMojoIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
+  g_fds->Set(kMojoIPCChannel,
+             kMojoIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
 
-    g_fds->Set(
-        kFieldTrialDescriptor,
-        kFieldTrialDescriptor + base::GlobalDescriptors::kBaseDescriptor);
+  g_fds->Set(kFieldTrialDescriptor,
+             kFieldTrialDescriptor + base::GlobalDescriptors::kBaseDescriptor);
 #endif  // !OS_ANDROID
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
-    g_fds->Set(kCrashDumpSignal,
-               kCrashDumpSignal + base::GlobalDescriptors::kBaseDescriptor);
+  g_fds->Set(kCrashDumpSignal,
+             kCrashDumpSignal + base::GlobalDescriptors::kBaseDescriptor);
 #endif  // OS_LINUX || OS_OPENBSD
 
 #endif  // !OS_WIN
 
-    is_initialized_ = true;
-    delegate_ = params.delegate;
+  is_initialized_ = true;
+  delegate_ = params.delegate;
 
 // The exit manager is in charge of calling the dtors of singleton objects.
 // On Android, AtExitManager is set up when library is loaded.
 // A consequence of this is that you can't use the ctor/dtor-based
 // TRACE_EVENT methods on Linux or iOS builds till after we set this up.
 #if !defined(OS_ANDROID)
-    if (!ui_task_) {
-      // When running browser tests, don't create a second AtExitManager as that
-      // interfers with shutdown when objects created before ContentMain is
-      // called are destructed when it returns.
-      exit_manager_.reset(new base::AtExitManager);
-    }
+  if (!ui_task_) {
+    // When running browser tests, don't create a second AtExitManager as that
+    // interfers with shutdown when objects created before ContentMain is
+    // called are destructed when it returns.
+    exit_manager_.reset(new base::AtExitManager);
+  }
 #endif  // !OS_ANDROID
 
-    int exit_code = 0;
-    if (delegate_ && delegate_->BasicStartupComplete(&exit_code))
-      return exit_code;
-    completed_basic_startup_ = true;
+  int exit_code = 0;
+  if (delegate_ && delegate_->BasicStartupComplete(&exit_code))
+    return exit_code;
+  completed_basic_startup_ = true;
 
-    // We will need to use data from resources.pak in later cl, so load the file
-    // now.
-    if (IsRootProcess()) {
-      ui::DataPack* data_pack = delegate_->LoadServiceManifestDataPack();
-      // TODO(ranj): Read manifest from this data pack.
-      ignore_result(data_pack);
-    }
+  // We will need to use data from resources.pak in later cl, so load the file
+  // now.
+  if (IsRootProcess()) {
+    ui::DataPack* data_pack = delegate_->LoadServiceManifestDataPack();
+    // TODO(ranj): Read manifest from this data pack.
+    ignore_result(data_pack);
+  }
 
-    const base::CommandLine& command_line =
-        *base::CommandLine::ForCurrentProcess();
-    std::string process_type =
-        command_line.GetSwitchValueASCII(switches::kProcessType);
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
 
 #if defined(OS_WIN)
-    if (command_line.HasSwitch(switches::kDeviceScaleFactor)) {
-      std::string scale_factor_string =
-          command_line.GetSwitchValueASCII(switches::kDeviceScaleFactor);
-      double scale_factor = 0;
-      if (base::StringToDouble(scale_factor_string, &scale_factor))
-        display::win::SetDefaultDeviceScaleFactor(scale_factor);
-    }
+  if (command_line.HasSwitch(switches::kDeviceScaleFactor)) {
+    std::string scale_factor_string =
+        command_line.GetSwitchValueASCII(switches::kDeviceScaleFactor);
+    double scale_factor = 0;
+    if (base::StringToDouble(scale_factor_string, &scale_factor))
+      display::win::SetDefaultDeviceScaleFactor(scale_factor);
+  }
 #endif
 
-    if (!GetContentClient())
-      SetContentClient(&empty_content_client_);
-    ContentClientInitializer::Set(process_type, delegate_);
+  if (!GetContentClient())
+    SetContentClient(&empty_content_client_);
+  ContentClientInitializer::Set(process_type, delegate_);
 
 #if !defined(OS_ANDROID)
-    // Enable startup tracing asap to avoid early TRACE_EVENT calls being
-    // ignored. For Android, startup tracing is enabled in an even earlier place
-    // content/app/android/library_loader_hooks.cc.
-    //
-    // Startup tracing flags are not (and should not) passed to Zygote
-    // processes. We will enable tracing when forked, if needed.
-    if (process_type != switches::kZygoteProcess)
-      tracing::EnableStartupTracingIfNeeded();
+  // Enable startup tracing asap to avoid early TRACE_EVENT calls being
+  // ignored. For Android, startup tracing is enabled in an even earlier place
+  // content/app/android/library_loader_hooks.cc.
+  //
+  // Startup tracing flags are not (and should not) passed to Zygote
+  // processes. We will enable tracing when forked, if needed.
+  if (process_type != switches::kZygoteProcess)
+    tracing::EnableStartupTracingIfNeeded();
 #endif  // !OS_ANDROID
 
 #if defined(OS_WIN)
-    // Enable exporting of events to ETW if requested on the command line.
-    if (command_line.HasSwitch(switches::kTraceExportEventsToETW))
-      base::trace_event::TraceEventETWExport::EnableETWExport();
+  // Enable exporting of events to ETW if requested on the command line.
+  if (command_line.HasSwitch(switches::kTraceExportEventsToETW))
+    base::trace_event::TraceEventETWExport::EnableETWExport();
 #endif  // OS_WIN
 
 #if !defined(OS_ANDROID)
-    // Android tracing started at the beginning of the method.
-    // Other OSes have to wait till we get here in order for all the memory
-    // management setup to be completed.
-    TRACE_EVENT0("startup,benchmark,rail", "ContentMainRunnerImpl::Initialize");
+  // Android tracing started at the beginning of the method.
+  // Other OSes have to wait till we get here in order for all the memory
+  // management setup to be completed.
+  TRACE_EVENT0("startup,benchmark,rail", "ContentMainRunnerImpl::Initialize");
 #endif  // !OS_ANDROID
 
 #if defined(OS_MACOSX)
-    // We need to allocate the IO Ports before the Sandbox is initialized or
-    // the first instance of PowerMonitor is created.
-    // It's important not to allocate the ports for processes which don't
-    // register with the power monitor - see crbug.com/88867.
-    if (process_type.empty() ||
-        (delegate_ &&
-         delegate_->ProcessRegistersWithSystemProcess(process_type))) {
-      base::PowerMonitorDeviceSource::AllocateSystemIOPorts();
-    }
+  // We need to allocate the IO Ports before the Sandbox is initialized or
+  // the first instance of PowerMonitor is created.
+  // It's important not to allocate the ports for processes which don't
+  // register with the power monitor - see https://crbug.com/88867.
+  if (process_type.empty() ||
+      (delegate_ &&
+       delegate_->ProcessRegistersWithSystemProcess(process_type))) {
+    base::PowerMonitorDeviceSource::AllocateSystemIOPorts();
+  }
 
-    if (!process_type.empty() &&
-        (!delegate_ || delegate_->ShouldSendMachPort(process_type))) {
-      MachBroker::ChildSendTaskPortToParent();
-    }
+  if (!process_type.empty() &&
+      (!delegate_ || delegate_->ShouldSendMachPort(process_type))) {
+    MachBroker::ChildSendTaskPortToParent();
+  }
 #endif
 
-    // If we are on a platform where the default allocator is overridden (shim
-    // layer on windows, tcmalloc on Linux Desktop) smoke-tests that the
-    // overriding logic is working correctly. If not causes a hard crash, as its
-    // unexpected absence has security implications.
-    CHECK(base::allocator::IsAllocatorInitialized());
+  // If we are on a platform where the default allocator is overridden (shim
+  // layer on windows, tcmalloc on Linux Desktop) smoke-tests that the
+  // overriding logic is working correctly. If not causes a hard crash, as its
+  // unexpected absence has security implications.
+  CHECK(base::allocator::IsAllocatorInitialized());
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
-    if (!process_type.empty()) {
-      // When you hit Ctrl-C in a terminal running the browser
-      // process, a SIGINT is delivered to the entire process group.
-      // When debugging the browser process via gdb, gdb catches the
-      // SIGINT for the browser process (and dumps you back to the gdb
-      // console) but doesn't for the child processes, killing them.
-      // The fix is to have child processes ignore SIGINT; they'll die
-      // on their own when the browser process goes away.
-      //
-      // Note that we *can't* rely on BeingDebugged to catch this case because
-      // we are the child process, which is not being debugged.
-      // TODO(evanm): move this to some shared subprocess-init function.
-      if (!base::debug::BeingDebugged())
-        signal(SIGINT, SIG_IGN);
-    }
+  if (!process_type.empty()) {
+    // When you hit Ctrl-C in a terminal running the browser
+    // process, a SIGINT is delivered to the entire process group.
+    // When debugging the browser process via gdb, gdb catches the
+    // SIGINT for the browser process (and dumps you back to the gdb
+    // console) but doesn't for the child processes, killing them.
+    // The fix is to have child processes ignore SIGINT; they'll die
+    // on their own when the browser process goes away.
+    //
+    // Note that we *can't* rely on BeingDebugged to catch this case because
+    // we are the child process, which is not being debugged.
+    // TODO(evanm): move this to some shared subprocess-init function.
+    if (!base::debug::BeingDebugged())
+      signal(SIGINT, SIG_IGN);
+  }
 #endif
 
-    RegisterPathProvider();
-    RegisterContentSchemes(true);
+  RegisterPathProvider();
+  RegisterContentSchemes(true);
 
 #if defined(OS_ANDROID) && (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
-    int icudata_fd = g_fds->MaybeGet(kAndroidICUDataDescriptor);
-    if (icudata_fd != -1) {
-      auto icudata_region = g_fds->GetRegion(kAndroidICUDataDescriptor);
-      if (!base::i18n::InitializeICUWithFileDescriptor(icudata_fd,
-                                                       icudata_region))
-        return TerminateForFatalInitializationError();
-    } else {
-      if (!base::i18n::InitializeICU())
-        return TerminateForFatalInitializationError();
-    }
-#else
+  int icudata_fd = g_fds->MaybeGet(kAndroidICUDataDescriptor);
+  if (icudata_fd != -1) {
+    auto icudata_region = g_fds->GetRegion(kAndroidICUDataDescriptor);
+    if (!base::i18n::InitializeICUWithFileDescriptor(icudata_fd,
+                                                     icudata_region))
+      return TerminateForFatalInitializationError();
+  } else {
     if (!base::i18n::InitializeICU())
       return TerminateForFatalInitializationError();
+  }
+#else
+  if (!base::i18n::InitializeICU())
+    return TerminateForFatalInitializationError();
 #endif  // OS_ANDROID && (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
 
-    InitializeV8IfNeeded(command_line, process_type);
+  InitializeV8IfNeeded(command_line, process_type);
 
-    blink::TrialTokenValidator::SetOriginTrialPolicyGetter(
-        base::BindRepeating([]() -> blink::OriginTrialPolicy* {
-          if (auto* client = GetContentClient())
-            return client->GetOriginTrialPolicy();
-          return nullptr;
-        }));
+  blink::TrialTokenValidator::SetOriginTrialPolicyGetter(
+      base::BindRepeating([]() -> blink::OriginTrialPolicy* {
+        if (auto* client = GetContentClient())
+          return client->GetOriginTrialPolicy();
+        return nullptr;
+      }));
 
 #if !defined(OFFICIAL_BUILD)
 #if defined(OS_WIN)
-    bool should_enable_stack_dump = !process_type.empty();
+  bool should_enable_stack_dump = !process_type.empty();
 #else
-    bool should_enable_stack_dump = true;
+  bool should_enable_stack_dump = true;
 #endif
-    // Print stack traces to stderr when crashes occur. This opens up security
-    // holes so it should never be enabled for official builds. This needs to
-    // happen before crash reporting is initialized (which for chrome happens in
-    // the call to PreSandboxStartup() on the delegate below), because otherwise
-    // this would interfere with signal handlers used by crash reporting.
-    if (should_enable_stack_dump &&
-        !command_line.HasSwitch(
-            service_manager::switches::kDisableInProcessStackTraces)) {
-      base::debug::EnableInProcessStackDumping();
-    }
+  // Print stack traces to stderr when crashes occur. This opens up security
+  // holes so it should never be enabled for official builds. This needs to
+  // happen before crash reporting is initialized (which for chrome happens in
+  // the call to PreSandboxStartup() on the delegate below), because otherwise
+  // this would interfere with signal handlers used by crash reporting.
+  if (should_enable_stack_dump &&
+      !command_line.HasSwitch(
+          service_manager::switches::kDisableInProcessStackTraces)) {
+    base::debug::EnableInProcessStackDumping();
+  }
 #endif  // !defined(OFFICIAL_BUILD)
 
-    if (delegate_)
-      delegate_->PreSandboxStartup();
+  if (delegate_)
+    delegate_->PreSandboxStartup();
 
 #if defined(OS_WIN)
-    if (!InitializeSandbox(
-            service_manager::SandboxTypeFromCommandLine(command_line),
-            params.sandbox_info))
-      return TerminateForFatalInitializationError();
+  if (!InitializeSandbox(
+          service_manager::SandboxTypeFromCommandLine(command_line),
+          params.sandbox_info))
+    return TerminateForFatalInitializationError();
 #elif defined(OS_MACOSX)
-    // Do not initialize the sandbox at this point if the V2
-    // sandbox is enabled for the process type.
-    bool v2_enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableV2Sandbox);
+  // Do not initialize the sandbox at this point if the V2
+  // sandbox is enabled for the process type.
+  bool v2_enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableV2Sandbox);
 
-    if (process_type == switches::kRendererProcess ||
-        process_type == switches::kPpapiPluginProcess || v2_enabled ||
-        (delegate_ && delegate_->DelaySandboxInitialization(process_type))) {
-      // On OS X the renderer sandbox needs to be initialized later in the
-      // startup sequence in RendererMainPlatformDelegate::EnableSandbox().
-    } else {
-      if (!InitializeSandbox())
-        return TerminateForFatalInitializationError();
-    }
+  if (process_type == switches::kRendererProcess ||
+      process_type == switches::kPpapiPluginProcess || v2_enabled ||
+      (delegate_ && delegate_->DelaySandboxInitialization(process_type))) {
+    // On OS X the renderer sandbox needs to be initialized later in the
+    // startup sequence in RendererMainPlatformDelegate::EnableSandbox().
+  } else {
+    if (!InitializeSandbox())
+      return TerminateForFatalInitializationError();
+  }
 #endif
 
-    if (delegate_)
-      delegate_->SandboxInitialized(process_type);
+  if (delegate_)
+    delegate_->SandboxInitialized(process_type);
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
-    if (process_type.empty()) {
-      // The sandbox host needs to be initialized before forking a thread to
-      // start the ServiceManager, and after setting up the sandbox and invoking
-      // SandboxInitialized().
-      InitializeZygoteSandboxForBrowserProcess(
-          *base::CommandLine::ForCurrentProcess());
-    }
+  if (process_type.empty()) {
+    // The sandbox host needs to be initialized before forking a thread to
+    // start the ServiceManager, and after setting up the sandbox and invoking
+    // SandboxInitialized().
+    InitializeZygoteSandboxForBrowserProcess(
+        *base::CommandLine::ForCurrentProcess());
+  }
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 
-    // Return -1 to indicate no early termination.
-    return -1;
-  }
+  // Return -1 to indicate no early termination.
+  return -1;
+}
 
-  int Run() override {
-    DCHECK(is_initialized_);
-    DCHECK(!is_shutdown_);
+int ContentMainRunnerImpl::Run() {
+  DCHECK(is_initialized_);
+  DCHECK(!is_shutdown_);
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+
+  // Run this logic on all child processes. Zygotes will run this at a later
+  // point in time when the command line has been updated.
+  std::unique_ptr<base::FieldTrialList> field_trial_list;
+  if (!process_type.empty() && process_type != switches::kZygoteProcess)
+    InitializeFieldTrialAndFeatureList(&field_trial_list);
+
+  MainFunctionParams main_params(command_line);
+  main_params.ui_task = ui_task_;
+  main_params.created_main_parts_closure = created_main_parts_closure_;
+#if defined(OS_WIN)
+  main_params.sandbox_info = &sandbox_info_;
+#elif defined(OS_MACOSX)
+  main_params.autorelease_pool = autorelease_pool_;
+#endif
+
+  RegisterMainThreadFactories();
+
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
+  // The thread used to start the ServiceManager is handed-off to
+  // BrowserMain() which may elect to promote it (e.g. to BrowserThread::IO).
+  if (process_type.empty()) {
+    return RunBrowserProcessMain(main_params, delegate_,
+                                 std::move(service_manager_thread_));
+  }
+#endif
+
+  return RunOtherNamedProcessTypeMain(process_type, main_params, delegate_);
+}
+
+void ContentMainRunnerImpl::Shutdown() {
+  DCHECK(is_initialized_);
+  DCHECK(!is_shutdown_);
+
+  if (completed_basic_startup_ && delegate_) {
     const base::CommandLine& command_line =
         *base::CommandLine::ForCurrentProcess();
     std::string process_type =
         command_line.GetSwitchValueASCII(switches::kProcessType);
 
-    // Run this logic on all child processes. Zygotes will run this at a later
-    // point in time when the command line has been updated.
-    std::unique_ptr<base::FieldTrialList> field_trial_list;
-    if (!process_type.empty() && process_type != switches::kZygoteProcess)
-      InitializeFieldTrialAndFeatureList(&field_trial_list);
-
-    MainFunctionParams main_params(command_line);
-    main_params.ui_task = ui_task_;
-    main_params.created_main_parts_closure = created_main_parts_closure_;
-#if defined(OS_WIN)
-    main_params.sandbox_info = &sandbox_info_;
-#elif defined(OS_MACOSX)
-    main_params.autorelease_pool = autorelease_pool_;
-#endif
-
-    return RunNamedProcessTypeMain(process_type, main_params, delegate_);
+    delegate_->ProcessExiting(process_type);
   }
-
-  void Shutdown() override {
-    DCHECK(is_initialized_);
-    DCHECK(!is_shutdown_);
-
-    if (completed_basic_startup_ && delegate_) {
-      const base::CommandLine& command_line =
-          *base::CommandLine::ForCurrentProcess();
-      std::string process_type =
-          command_line.GetSwitchValueASCII(switches::kProcessType);
-
-      delegate_->ProcessExiting(process_type);
-    }
 
 #if defined(OS_WIN)
 #ifdef _CRTDBG_MAP_ALLOC
-    _CrtDumpMemoryLeaks();
+  _CrtDumpMemoryLeaks();
 #endif  // _CRTDBG_MAP_ALLOC
 #endif  // OS_WIN
 
-    exit_manager_.reset(nullptr);
+  exit_manager_.reset(nullptr);
 
-    delegate_ = nullptr;
-    is_shutdown_ = true;
-  }
+  delegate_ = nullptr;
+  is_shutdown_ = true;
+}
 
- private:
-  // True if the runner has been initialized.
-  bool is_initialized_ = false;
-
-  // True if the runner has been shut down.
-  bool is_shutdown_ = false;
-
-  // True if basic startup was completed.
-  bool completed_basic_startup_ = false;
-
-  // Used if the embedder doesn't set one.
-  ContentClient empty_content_client_;
-
-  // The delegate will outlive this object.
-  ContentMainDelegate* delegate_ = nullptr;
-
-  std::unique_ptr<base::AtExitManager> exit_manager_;
-#if defined(OS_WIN)
-  sandbox::SandboxInterfaceInfo sandbox_info_;
-#elif defined(OS_MACOSX)
-  base::mac::ScopedNSAutoreleasePool* autorelease_pool_ = nullptr;
-#endif
-
-  base::Closure* ui_task_ = nullptr;
-
-  CreatedMainPartsClosure* created_main_parts_closure_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentMainRunnerImpl);
-};
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
+scoped_refptr<base::SingleThreadTaskRunner>
+ContentMainRunnerImpl::GetServiceManagerTaskRunnerForEmbedderProcess() {
+  service_manager_thread_ = BrowserProcessSubThread::CreateIOThread();
+  return service_manager_thread_->task_runner();
+}
+#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 // static
 ContentMainRunner* ContentMainRunner::Create() {
-  return new ContentMainRunnerImpl();
+  return ContentMainRunnerImpl::Create();
 }
 
 }  // namespace content

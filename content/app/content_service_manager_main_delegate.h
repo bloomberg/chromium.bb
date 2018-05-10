@@ -8,13 +8,15 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "content/public/app/content_main.h"
 #include "services/service_manager/embedder/main_delegate.h"
 
 namespace content {
 
-class ContentMainRunner;
+class ContentMainRunnerImpl;
 
 class ContentServiceManagerMainDelegate : public service_manager::MainDelegate {
  public:
@@ -23,6 +25,10 @@ class ContentServiceManagerMainDelegate : public service_manager::MainDelegate {
 
   // service_manager::MainDelegate:
   int Initialize(const InitializeParams& params) override;
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
+  scoped_refptr<base::SingleThreadTaskRunner>
+  GetServiceManagerTaskRunnerForEmbedderProcess() override;
+#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
   bool IsEmbedderSubprocess() override;
   int RunEmbedderProcess() override;
   void ShutDownEmbedderProcess() override;
@@ -42,7 +48,7 @@ class ContentServiceManagerMainDelegate : public service_manager::MainDelegate {
 
  private:
   ContentMainParams content_main_params_;
-  std::unique_ptr<ContentMainRunner> content_main_runner_;
+  std::unique_ptr<ContentMainRunnerImpl> content_main_runner_;
 
 #if defined(OS_ANDROID)
   bool initialized_ = false;
