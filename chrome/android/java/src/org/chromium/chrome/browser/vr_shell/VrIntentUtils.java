@@ -155,6 +155,7 @@ public class VrIntentUtils {
      * @return Options that a VR-specific Chrome activity should be launched with.
      */
     public static Bundle getVrIntentOptions(Context context) {
+        if (!VrShellDelegate.isVrEnabled()) return null;
         // These options are used to start the Activity with a custom animation to keep it hidden
         // for a few hundred milliseconds - enough time for us to draw the first black view.
         // The animation is sufficient to hide the 2D screenshot but not to the 2D UI while the
