@@ -78,6 +78,14 @@ android {
 {% endif %}
     }
 
+{% if native is defined %}
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+{% endif %}
+
     defaultConfig {
         vectorDrawables.useSupportLibrary = true
     }
