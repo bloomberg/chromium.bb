@@ -162,6 +162,9 @@ public abstract class StackLayoutBase
     /** Which model (normal or incognito) was active when StackLayout was shown. */
     private int mModelIndexWhenOpened;
 
+    /** ID of the tab that was active when this layout was shown. */
+    private int mCurrentTabIdWhenOpened;
+
     /**
      * Temporarily stores the index of the selected tab stack. This is used to set the currently
      * selected stack in TabModelSelector once the stack-switching animation finishes.
@@ -713,6 +716,7 @@ public abstract class StackLayoutBase
             RecordUserAction.record("MobileToolbarShowStackView");
 
             mModelIndexWhenOpened = mTabModelSelector.getCurrentModelIndex();
+            mCurrentTabIdWhenOpened = mTabModelSelector.getCurrentTabId();
         }
         mIsActiveLayout = true;
 
@@ -1241,6 +1245,10 @@ public abstract class StackLayoutBase
         // button on the toolbar to re-open it while we're still in the process of hiding the tab
         // switcher, we don't skip the logging.
         mIsActiveLayout = false;
+
+        if (mCurrentTabIdWhenOpened == nextTabId) {
+            RecordUserAction.record("MobileTabReturnedToCurrentTab");
+        }
     }
 
     @Override
