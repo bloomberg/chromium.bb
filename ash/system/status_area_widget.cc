@@ -74,13 +74,11 @@ void StatusAreaWidget::Initialize() {
   ime_menu_tray_ = std::make_unique<ImeMenuTray>(shelf_);
   status_area_widget_delegate_->AddChildView(ime_menu_tray_.get());
 
+  select_to_speak_tray_ = std::make_unique<SelectToSpeakTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(select_to_speak_tray_.get());
+
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableExperimentalAccessibilityFeatures)) {
-    // The Select-to-Speak button is currently only available behind the
-    // experimental accessibility features flag.
-    select_to_speak_tray_ = std::make_unique<SelectToSpeakTray>(shelf_);
-    status_area_widget_delegate_->AddChildView(select_to_speak_tray_.get());
-
     // Dictation is currently only available behind the experimental
     // accessibility features flag.
     dictation_button_tray_ = std::make_unique<DictationButtonTray>(shelf_);
@@ -112,8 +110,7 @@ void StatusAreaWidget::Initialize() {
   palette_tray_->Initialize();
   virtual_keyboard_tray_->Initialize();
   ime_menu_tray_->Initialize();
-  if (select_to_speak_tray_)
-    select_to_speak_tray_->Initialize();
+  select_to_speak_tray_->Initialize();
   if (dictation_button_tray_)
     dictation_button_tray_->Initialize();
   overview_button_tray_->Initialize();
@@ -152,8 +149,7 @@ void StatusAreaWidget::UpdateAfterShelfAlignmentChange() {
   logout_button_tray_->UpdateAfterShelfAlignmentChange();
   virtual_keyboard_tray_->UpdateAfterShelfAlignmentChange();
   ime_menu_tray_->UpdateAfterShelfAlignmentChange();
-  if (select_to_speak_tray_)
-    select_to_speak_tray_->UpdateAfterShelfAlignmentChange();
+  select_to_speak_tray_->UpdateAfterShelfAlignmentChange();
   if (dictation_button_tray_)
     dictation_button_tray_->UpdateAfterShelfAlignmentChange();
   palette_tray_->UpdateAfterShelfAlignmentChange();
@@ -217,8 +213,7 @@ void StatusAreaWidget::SchedulePaint() {
   virtual_keyboard_tray_->SchedulePaint();
   logout_button_tray_->SchedulePaint();
   ime_menu_tray_->SchedulePaint();
-  if (select_to_speak_tray_)
-    select_to_speak_tray_->SchedulePaint();
+  select_to_speak_tray_->SchedulePaint();
   if (dictation_button_tray_)
     dictation_button_tray_->SchedulePaint();
   palette_tray_->SchedulePaint();
@@ -245,8 +240,7 @@ void StatusAreaWidget::UpdateShelfItemBackground(SkColor color) {
   system_tray_->UpdateShelfItemBackground(color);
   virtual_keyboard_tray_->UpdateShelfItemBackground(color);
   ime_menu_tray_->UpdateShelfItemBackground(color);
-  if (select_to_speak_tray_)
-    select_to_speak_tray_->UpdateShelfItemBackground(color);
+  select_to_speak_tray_->UpdateShelfItemBackground(color);
   if (dictation_button_tray_)
     dictation_button_tray_->UpdateShelfItemBackground(color);
   palette_tray_->UpdateShelfItemBackground(color);
