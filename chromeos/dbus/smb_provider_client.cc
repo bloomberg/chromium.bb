@@ -236,7 +236,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
     options.set_mount_id(mount_id);
     options.set_source_path(source_path.value());
     options.set_target_path(target_path.value());
-    CallDefaultMethod(smbprovider::kCopyEntryMethod, options, &callback);
+    CallCopyEntryMethod(options, std::move(callback));
   }
 
   void GetDeleteList(int32_t mount_id,
@@ -326,6 +326,21 @@ class SmbProviderClientImpl : public SmbProviderClient {
         base::BindOnce(&SmbProviderClientImpl::HandleDefaultCallback,
                        GetWeakPtr(), method_call->GetMember(),
                        std::move(*callback)));
+  }
+
+  // Calls the CopyEntry D-Bus method with no timeout, passing the |protobuf| as
+  // an argument. Uses the default callback handler to process |callback|.
+  void CallCopyEntryMethod(const google::protobuf::MessageLite& protobuf,
+                           StatusCallback callback) {
+    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
+                                 smbprovider::kCopyEntryMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(protobuf);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_INFINITE,
+        base::BindOnce(&SmbProviderClientImpl::HandleDefaultCallback,
+                       GetWeakPtr(), method_call.GetMember(),
+                       std::move(callback)));
   }
 
   // Handles D-Bus callback for mount.
