@@ -198,7 +198,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
   navigation_handle_core =
       CreateNavigationHandleCore(helper_->context_wrapper());
   ASSERT_TRUE(navigation_handle_core);
-  base::WeakPtr<ServiceWorkerProviderHost> host1 =
+  std::unique_ptr<ServiceWorkerProviderHost> host1 =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           context()->AsWeakPtr(), true /* are_ancestors_secure */,
           base::RepeatingCallback<WebContents*(void)>());
@@ -210,7 +210,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
       host1->provider_id(), 1 /* route_id */, host1->provider_type(),
       host1->is_parent_frame_secure());
   RemoteProviderInfo remote_info_1 = SetupProviderHostInfoPtrs(&host_info_1);
-  navigation_handle_core->DidPreCreateProviderHost(host1->provider_id());
+  navigation_handle_core->DidPreCreateProviderHost(std::move(host1));
 
   dispatcher_host_->OnProviderCreated(std::move(host_info_1));
   EXPECT_TRUE(context()->GetProviderHost(process_id, kProviderId1));
@@ -229,7 +229,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
   navigation_handle_core =
       CreateNavigationHandleCore(helper_->context_wrapper());
   ASSERT_TRUE(navigation_handle_core);
-  base::WeakPtr<ServiceWorkerProviderHost> host2 =
+  // ProviderHost should be created before OnProviderCreated.
+  std::unique_ptr<ServiceWorkerProviderHost> host2 =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           context()->AsWeakPtr(), true /* are_ancestors_secure */,
           base::RepeatingCallback<WebContents*(void)>());
@@ -238,7 +239,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
       host2->provider_id(), 2 /* route_id */, host2->provider_type(),
       host2->is_parent_frame_secure());
   RemoteProviderInfo remote_info_2 = SetupProviderHostInfoPtrs(&host_info_2);
-  navigation_handle_core->DidPreCreateProviderHost(host2->provider_id());
+  navigation_handle_core->DidPreCreateProviderHost(std::move(host2));
 
   // Deletion of the dispatcher_host should cause providers for that
   // process to get deleted as well.

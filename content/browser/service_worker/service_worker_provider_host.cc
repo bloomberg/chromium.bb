@@ -169,12 +169,11 @@ std::string ProviderTypeStringForBadMessage(
 }  // anonymous namespace
 
 // static
-base::WeakPtr<ServiceWorkerProviderHost>
+std::unique_ptr<ServiceWorkerProviderHost>
 ServiceWorkerProviderHost::PreCreateNavigationHost(
     base::WeakPtr<ServiceWorkerContextCore> context,
     bool are_ancestors_secure,
     const WebContentsGetter& web_contents_getter) {
-  DCHECK(context);
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       ChildProcessHost::kInvalidUniqueID,
       ServiceWorkerProviderHostInfo(
@@ -183,10 +182,7 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
           are_ancestors_secure),
       context, nullptr /* dispatcher_host */));
   host->web_contents_getter_ = web_contents_getter;
-
-  auto weak_ptr = host->AsWeakPtr();
-  context->AddProviderHost(std::move(host));
-  return weak_ptr;
+  return host;
 }
 
 // static

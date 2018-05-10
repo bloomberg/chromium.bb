@@ -161,24 +161,6 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     return host_raw;
   }
 
-  void FinishNavigation(ServiceWorkerProviderHost* host,
-                        ServiceWorkerProviderHostInfo info) {
-    // In production code, the loader/request handler does this.
-    host->SetDocumentUrl(GURL("https://www.example.com/page"));
-    host->SetTopmostFrameUrl(GURL("https://www.example.com/page"));
-
-    // In production code, the OnProviderCreated IPC is received which
-    // does this.
-    std::unique_ptr<ServiceWorkerProviderHost> owned_host =
-        helper_->context()->ReleaseProviderHost(host->process_id(),
-                                                host->provider_id());
-    host->CompleteNavigationInitialized(
-        helper_->mock_render_process_id(), std::move(info),
-        helper_->GetDispatcherHostForProcess(helper_->mock_render_process_id())
-            ->AsWeakPtr());
-    helper_->context()->AddProviderHost(std::move(owned_host));
-  }
-
   blink::mojom::ServiceWorkerErrorType Register(
       mojom::ServiceWorkerContainerHost* container_host,
       GURL pattern,
@@ -273,7 +255,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
       const GURL& document_url,
       const GURL& topmost_frame_url,
       ServiceWorkerRemoteProviderEndpoint* remote_endpoint) {
-    base::WeakPtr<ServiceWorkerProviderHost> host =
+    std::unique_ptr<ServiceWorkerProviderHost> host =
         ServiceWorkerProviderHost::PreCreateNavigationHost(
             helper_->context()->AsWeakPtr(), true,
             base::Callback<WebContents*(void)>());
@@ -282,19 +264,16 @@ class ServiceWorkerProviderHostTest : public testing::Test {
         blink::mojom::ServiceWorkerProviderType::kForWindow,
         true /* is_parent_frame_secure */);
     remote_endpoint->BindWithProviderHostInfo(&info);
-
-    std::unique_ptr<ServiceWorkerProviderHost> owned_host =
-        helper_->context()->ReleaseProviderHost(host->process_id(),
-                                                host->provider_id());
     host->CompleteNavigationInitialized(
         helper_->mock_render_process_id(), std::move(info),
         helper_->GetDispatcherHostForProcess(helper_->mock_render_process_id())
             ->AsWeakPtr());
+
     host->SetDocumentUrl(document_url);
     host->SetTopmostFrameUrl(topmost_frame_url);
-    helper_->context()->AddProviderHost(std::move(owned_host));
-
-    return host.get();
+    ServiceWorkerProviderHost* host_raw = host.get();
+    context_->AddProviderHost(std::move(host));
+    return host_raw;
   }
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHostTest);
@@ -428,7 +407,7 @@ class MockServiceWorkerContainer : public mojom::ServiceWorkerContainer {
 
 TEST_F(ServiceWorkerProviderHostTest, Controller) {
   // Create a host.
-  base::WeakPtr<ServiceWorkerProviderHost> host =
+  std::unique_ptr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
           base::Callback<WebContents*(void)>());
@@ -448,7 +427,12 @@ TEST_F(ServiceWorkerProviderHostTest, Controller) {
   registration1_->SetActiveVersion(version);
 
   // Finish the navigation.
-  FinishNavigation(host.get(), std::move(info));
+  host->SetDocumentUrl(GURL("https://www.example.com/page"));
+  host->CompleteNavigationInitialized(
+      helper_->mock_render_process_id(), std::move(info),
+      helper_->GetDispatcherHostForProcess(helper_->mock_render_process_id())
+          ->AsWeakPtr());
+
   host->AssociateRegistration(registration1_.get(),
                               false /* notify_controllerchange */);
   base::RunLoop().RunUntilIdle();
@@ -462,7 +446,7 @@ TEST_F(ServiceWorkerProviderHostTest, Controller) {
 
 TEST_F(ServiceWorkerProviderHostTest, ActiveIsNotController) {
   // Create a host.
-  base::WeakPtr<ServiceWorkerProviderHost> host =
+  std::unique_ptr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
           base::Callback<WebContents*(void)>());
@@ -483,7 +467,12 @@ TEST_F(ServiceWorkerProviderHostTest, ActiveIsNotController) {
 
 
   // Finish the navigation.
-  FinishNavigation(host.get(), std::move(info));
+  host->SetDocumentUrl(GURL("https://www.example.com/page"));
+  host->CompleteNavigationInitialized(
+      helper_->mock_render_process_id(), std::move(info),
+      helper_->GetDispatcherHostForProcess(helper_->mock_render_process_id())
+          ->AsWeakPtr());
+
   host->AssociateRegistration(registration1_.get(),
                               false /* notify_controllerchange */);
   // Promote the worker to active while navigation is still happening.
@@ -820,9 +809,9 @@ TEST_F(ServiceWorkerProviderHostTest,
   EXPECT_EQ(1u, bad_messages_.size());
 }
 
-// Test that a "reserved" (i.e., not execution ready) client is not included
-// when iterating over client provider hosts. If it were, it'd be undesirably
-// exposed via the Clients API.
+// Test that a "reserved" (i.e., not execution ready) shared worker client is
+// not included when iterating over client provider hosts. If it were, it'd be
+// undesirably exposed via the Clients API.
 TEST_F(ServiceWorkerProviderHostTest,
        ReservedClientsAreNotExposedToClientsAPI) {
   {
@@ -839,7 +828,7 @@ TEST_F(ServiceWorkerProviderHostTest,
   }
 
   {
-    base::WeakPtr<ServiceWorkerProviderHost> host =
+    std::unique_ptr<ServiceWorkerProviderHost> host =
         ServiceWorkerProviderHost::PreCreateNavigationHost(
             helper_->context()->AsWeakPtr(), true,
             base::RepeatingCallback<WebContents*(void)>());
@@ -852,8 +841,13 @@ TEST_F(ServiceWorkerProviderHostTest,
     host->SetDocumentUrl(GURL("https://www.example.com/page"));
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
 
-    FinishNavigation(host.get(), std::move(info));
-    EXPECT_TRUE(CanFindClientProviderHost(host.get()));
+    host->CompleteNavigationInitialized(
+        helper_->mock_render_process_id(), std::move(info),
+        helper_->GetDispatcherHostForProcess(helper_->mock_render_process_id())
+            ->AsWeakPtr());
+    auto* host_rawptr = host.get();
+    context_->AddProviderHost(std::move(host));
+    EXPECT_TRUE(CanFindClientProviderHost(host_rawptr));
   }
 }
 

@@ -139,10 +139,13 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
       return;
     }
 
-    // Retrieve the provider host pre-created for the navigation.
-    std::unique_ptr<ServiceWorkerProviderHost> provider_host =
-        GetContext()->ReleaseProviderHost(ChildProcessHost::kInvalidUniqueID,
-                                          info.provider_id);
+    // Retrieve the provider host previously created for navigation requests.
+    std::unique_ptr<ServiceWorkerProviderHost> provider_host;
+    ServiceWorkerNavigationHandleCore* navigation_handle_core =
+        GetContext()->GetNavigationHandleCore(info.provider_id);
+    if (navigation_handle_core != nullptr)
+      provider_host = navigation_handle_core->RetrievePreCreatedHost();
+
     // If no host is found, create one.
     // TODO(crbug.com/789111#c14): This is probably not right, see bug.
     if (!provider_host) {
