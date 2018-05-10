@@ -3251,7 +3251,6 @@ test("unit_tests") {
     deps += [
       "//ash:test_support_with_content",
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
-      "//ash/resources",
       "//ash/strings",
     ]
   }
@@ -4884,7 +4883,6 @@ if (!is_android) {
         "//ash:interactive_ui_test_support",
         "//ash/app_list/presenter:test_support",
         "//ash/public/interfaces:test_interfaces",
-        "//ash/resources",
         "//chrome/browser/media/router:test_support",
         "//chromeos",
         "//mojo/edk",
