@@ -6,6 +6,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
-    "sync_password_data.mojom",
+    "password_hash_data.mojom",
   ]
 }

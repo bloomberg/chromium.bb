@@ -236,9 +236,9 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     scoped_refptr<password_manager::PasswordStore> password_store =
         PasswordStoreFactory::GetForProfile(profile_,
                                             ServiceAccessType::EXPLICIT_ACCESS);
-    if (password_store) {
+    if (password_store && !primary_email.empty()) {
       password_store->SaveSyncPasswordHash(
-          base::UTF8ToUTF16(password_),
+          primary_email, base::UTF8ToUTF16(password_),
           password_manager::metrics_util::SyncPasswordHashChange::
               SAVED_ON_CHROME_SIGNIN);
     }

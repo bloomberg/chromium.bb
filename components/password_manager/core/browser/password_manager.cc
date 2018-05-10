@@ -37,6 +37,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 #if defined(OS_WIN)
@@ -246,6 +247,8 @@ void PasswordManager::RegisterProfilePrefs(
       prefs::kKeychainMigrationStatus,
       static_cast<int>(MigrationStatus::MIGRATED_DELETED));
 #endif
+  registry->RegisterListPref(prefs::kPasswordHashDataList,
+                             PrefRegistry::NO_REGISTRATION_FLAGS);
 }
 
 #if defined(OS_WIN)
@@ -887,31 +890,7 @@ void PasswordManager::OnLoginSuccessful() {
 
   DCHECK(provisional_save_manager_->submitted_form());
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-  if (client_->GetStoreResultFilter()->ShouldSavePasswordHash(
-          *provisional_save_manager_->submitted_form()))
-    // When |username_value| is empty, it's not clear whether the submitted
-    // credentials are really sync credentials. Don't save sync password hash
-    // in that case.
-    if (!provisional_save_manager_->submitted_form()->username_value.empty()) {
-      password_manager::PasswordStore* store = client_->GetPasswordStore();
-      // May be null in tests.
-      if (store) {
-        bool is_sync_password_change =
-            !provisional_save_manager_->submitted_form()
-                 ->new_password_element.empty();
-        if (is_sync_password_change) {
-          store->SaveSyncPasswordHash(
-              provisional_save_manager_->submitted_form()->new_password_value,
-              metrics_util::SyncPasswordHashChange::CHANGED_IN_CONTENT_AREA);
-        } else {
-          store->SaveSyncPasswordHash(
-              provisional_save_manager_->submitted_form()->password_value,
-              metrics_util::SyncPasswordHashChange::SAVED_IN_CONTENT_AREA);
-        }
-      }
-    }
-#endif
+  MaybeSavePasswordHash();
 
   if (!client_->GetStoreResultFilter()->ShouldSave(
           *provisional_save_manager_->submitted_form())) {
@@ -959,6 +938,42 @@ void PasswordManager::OnLoginSuccessful() {
       provisional_save_manager_.reset();
     }
   }
+}
+
+void PasswordManager::MaybeSavePasswordHash() {
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+  if (client_->GetStoreResultFilter()->ShouldSavePasswordHash(
+          *provisional_save_manager_->submitted_form())) {
+    // When |username_value| is empty, it's not clear whether the submitted
+    // credentials are really sync credentials. Don't save sync password hash
+    // in that case.
+    std::string username = base::UTF16ToUTF8(
+        provisional_save_manager_->submitted_form()->username_value);
+    if (username.empty())
+      return;
+
+    password_manager::PasswordStore* store = client_->GetPasswordStore();
+    // May be null in tests.
+    if (!store)
+      return;
+    bool is_sync_password_change = !provisional_save_manager_->submitted_form()
+                                        ->new_password_element.empty();
+    // Canonicalizes username if it is an email.
+    if (username.find('@') != std::string::npos)
+      username = gaia::CanonicalizeEmail(username);
+
+    if (is_sync_password_change) {
+      store->SaveSyncPasswordHash(
+          username,
+          provisional_save_manager_->submitted_form()->new_password_value,
+          metrics_util::SyncPasswordHashChange::CHANGED_IN_CONTENT_AREA);
+    } else {
+      store->SaveSyncPasswordHash(
+          username, provisional_save_manager_->submitted_form()->password_value,
+          metrics_util::SyncPasswordHashChange::SAVED_IN_CONTENT_AREA);
+    }
+  }
+#endif
 }
 
 void PasswordManager::AutofillHttpAuth(

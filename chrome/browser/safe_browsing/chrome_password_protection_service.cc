@@ -30,6 +30,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -177,11 +178,16 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
       pref_change_registrar_(new PrefChangeRegistrar) {
   pref_change_registrar_->Init(profile_->GetPrefs());
   pref_change_registrar_->Add(
-      password_manager::prefs::kSyncPasswordHash,
+      password_manager::prefs::kPasswordHashDataList,
       base::Bind(&ChromePasswordProtectionService::CheckGaiaPasswordChange,
                  base::Unretained(this)));
-  gaia_password_hash_ = profile_->GetPrefs()->GetString(
-      password_manager::prefs::kSyncPasswordHash);
+  password_manager::HashPasswordManager hash_password_manager;
+  hash_password_manager.set_prefs(profile->GetPrefs());
+  base::Optional<password_manager::PasswordHashData> sync_hash_data =
+      hash_password_manager.RetrievePasswordHash(GetAccountInfo().email);
+  sync_password_hash_ = sync_hash_data
+                            ? base::NumberToString(sync_hash_data->hash)
+                            : std::string();
 }
 
 ChromePasswordProtectionService::~ChromePasswordProtectionService() {
@@ -727,10 +733,17 @@ void ChromePasswordProtectionService::
 }
 
 void ChromePasswordProtectionService::CheckGaiaPasswordChange() {
-  std::string new_gaia_password_hash = profile_->GetPrefs()->GetString(
-      password_manager::prefs::kSyncPasswordHash);
-  if (gaia_password_hash_ != new_gaia_password_hash) {
-    gaia_password_hash_ = new_gaia_password_hash;
+  password_manager::HashPasswordManager hash_password_manager;
+  hash_password_manager.set_prefs(profile_->GetPrefs());
+  base::Optional<password_manager::PasswordHashData>
+      new_sync_password_hash_data =
+          hash_password_manager.RetrievePasswordHash(GetAccountInfo().email);
+  std::string new_sync_password_hash =
+      new_sync_password_hash_data
+          ? base::NumberToString(new_sync_password_hash_data->hash)
+          : std::string();
+  if (sync_password_hash_ != new_sync_password_hash) {
+    sync_password_hash_ = new_sync_password_hash;
     OnGaiaPasswordChanged();
   }
 }

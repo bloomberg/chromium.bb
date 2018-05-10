@@ -69,7 +69,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void HandleAuthenticateUser(
       const AccountId& account_id,
       const std::string& hashed_password,
-      const password_manager::SyncPasswordData& sync_password_data,
+      const password_manager::PasswordHashData& sync_password_hash_data,
       bool authenticated_by_pin,
       AuthenticateUserCallback callback) override;
   void HandleAttemptUnlock(const AccountId& account_id) override;

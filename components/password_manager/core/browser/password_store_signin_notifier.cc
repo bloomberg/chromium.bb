@@ -13,19 +13,20 @@ PasswordStoreSigninNotifier::PasswordStoreSigninNotifier() {}
 
 PasswordStoreSigninNotifier::~PasswordStoreSigninNotifier() {}
 
-void PasswordStoreSigninNotifier::NotifySignin(const std::string& password) {
+void PasswordStoreSigninNotifier::NotifySignin(const std::string& username,
+                                               const std::string& password) {
   if (store_) {
     store_->SaveSyncPasswordHash(
-        base::UTF8ToUTF16(password),
+        username, base::UTF8ToUTF16(password),
         metrics_util::SyncPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
   }
 }
 
-void PasswordStoreSigninNotifier::NotifySignedOut() {
+void PasswordStoreSigninNotifier::NotifySignedOut(const std::string& username) {
   metrics_util::LogSyncPasswordHashChange(
       metrics_util::SyncPasswordHashChange::CLEARED_ON_CHROME_SIGNOUT);
   if (store_)
-    store_->ClearSyncPasswordHash();
+    store_->ClearPasswordHash(username);
 }
 
 }  // namespace password_manager
