@@ -8,7 +8,7 @@
 
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 
-namespace net {
+namespace http2 {
 
 Http2String HpackEntryTypeToString(HpackEntryType v) {
   switch (v) {
@@ -30,4 +30,4 @@ std::ostream& operator<<(std::ostream& out, HpackEntryType v) {
   return out << HpackEntryTypeToString(v);
 }
 
-}  // namespace net
+}  // namespace http2

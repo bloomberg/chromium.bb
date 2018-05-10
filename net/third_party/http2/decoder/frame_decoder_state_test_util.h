@@ -9,7 +9,7 @@
 #include "net/third_party/http2/http2_structures.h"
 #include "net/third_party/http2/tools/random_decoder_test.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 class FrameDecoderStatePeer {
@@ -31,6 +31,6 @@ class FrameDecoderStatePeer {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_DECODER_FRAME_DECODER_STATE_TEST_UTIL_H_

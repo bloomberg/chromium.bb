@@ -5,7 +5,7 @@
 #include "net/third_party/http2/http2_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 namespace {
 
@@ -267,4 +267,4 @@ TEST(Http2ConstantsTest, Http2SettingsParameterToString) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

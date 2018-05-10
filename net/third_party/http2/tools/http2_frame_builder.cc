@@ -14,7 +14,7 @@
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 Http2FrameBuilder::Http2FrameBuilder(Http2FrameType type,
@@ -178,4 +178,4 @@ size_t Http2FrameBuilder::SetPayloadLength() {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2

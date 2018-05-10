@@ -7,10 +7,10 @@
 
 #include "base/strings/string_piece.h"
 
-namespace net {
+namespace http2 {
 
 using Http2StringPieceImpl = base::StringPiece;
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_PLATFORM_IMPL_HTTP2_STRING_PIECE_IMPL_H_

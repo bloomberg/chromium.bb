@@ -8,7 +8,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "net/third_party/http2/decoder/decode_status.h"
 
-namespace net {
+namespace http2 {
 
 HpackDecoder::HpackDecoder(HpackDecoderListener* listener,
                            size_t max_string_size)
@@ -119,4 +119,4 @@ void HpackDecoder::ReportError(Http2StringPiece error_message) {
   }
 }
 
-}  // namespace net
+}  // namespace http2

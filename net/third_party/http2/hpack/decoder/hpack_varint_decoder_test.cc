@@ -28,7 +28,7 @@
 using ::testing::AssertionFailure;
 using ::testing::AssertionSuccess;
 
-namespace net {
+namespace http2 {
 namespace test {
 namespace {
 
@@ -380,4 +380,4 @@ TEST_F(HpackVarintDecoderTest, ValueTooLarge) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

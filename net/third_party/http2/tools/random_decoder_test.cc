@@ -25,7 +25,7 @@ using ::testing::AssertionFailure;
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
 
-namespace net {
+namespace http2 {
 namespace test {
 
 RandomDecoderTest::RandomDecoderTest() = default;
@@ -169,4 +169,4 @@ uint32_t RandomDecoderTest::RandStreamId() {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2

@@ -4,11 +4,11 @@
 
 #include "net/third_party/http2/decoder/http2_frame_decoder_listener.h"
 
-namespace net {
+namespace http2 {
 
 bool Http2FrameDecoderNoOpListener::OnFrameHeader(
     const Http2FrameHeader& header) {
   return true;
 }
 
-}  // namespace net
+}  // namespace http2

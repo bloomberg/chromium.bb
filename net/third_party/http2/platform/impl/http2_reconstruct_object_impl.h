@@ -7,7 +7,7 @@
 
 #include <utility>
 
-namespace net {
+namespace http2 {
 namespace test {
 
 class RandomBase;
@@ -29,6 +29,6 @@ void Http2DefaultReconstructObjectImpl(T* ptr, RandomBase* rng) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_PLATFORM_IMPL_HTTP2_RECONSTRUCT_OBJECT_IMPL_H_

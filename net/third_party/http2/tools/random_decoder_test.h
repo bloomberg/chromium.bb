@@ -25,7 +25,7 @@
 #include "net/third_party/http2/tools/http2_random.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 // Some helpers.
@@ -251,6 +251,6 @@ class RandomDecoderTest : public ::testing::Test {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_TOOLS_RANDOM_DECODER_TEST_H_

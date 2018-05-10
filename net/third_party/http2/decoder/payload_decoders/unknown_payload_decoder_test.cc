@@ -20,7 +20,7 @@
 #include "net/third_party/http2/tools/random_decoder_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 namespace {
 Http2FrameType g_unknown_frame_type;
@@ -97,4 +97,4 @@ TEST_P(UnknownPayloadDecoderTest, ValidLength) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

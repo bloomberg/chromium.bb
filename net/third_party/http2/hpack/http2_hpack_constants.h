@@ -15,7 +15,7 @@
 #include "net/third_party/http2/platform/api/http2_export.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
 
-namespace net {
+namespace http2 {
 
 const size_t kFirstDynamicTableIndex = 62;
 
@@ -57,6 +57,6 @@ HTTP2_EXPORT_PRIVATE Http2String HpackEntryTypeToString(HpackEntryType v);
 // Inserts the name of the enum member into |out|.
 HTTP2_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& out,
                                               HpackEntryType v);
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HPACK_HTTP2_HPACK_CONSTANTS_H_

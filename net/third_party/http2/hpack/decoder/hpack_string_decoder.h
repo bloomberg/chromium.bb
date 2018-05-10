@@ -21,7 +21,7 @@
 #include "net/third_party/http2/platform/api/http2_export.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
 
-namespace net {
+namespace http2 {
 
 // Decodes a single string in an HPACK header entry. The high order bit of
 // the first byte of the length is the H (Huffman) bit indicating whether
@@ -202,5 +202,5 @@ class HTTP2_EXPORT_PRIVATE HpackStringDecoder {
 HTTP2_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& out,
                                               const HpackStringDecoder& v);
 
-}  // namespace net
+}  // namespace http2
 #endif  // NET_THIRD_PARTY_HTTP2_HPACK_DECODER_HPACK_STRING_DECODER_H_

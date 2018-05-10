@@ -8,7 +8,7 @@
 #include "net/third_party/http2/tools/http2_random.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 namespace {
 
@@ -201,4 +201,4 @@ TEST(DecodeBufferSubsetDeathTest, BaseCursorAdvanced) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

@@ -16,7 +16,7 @@ using ::testing::AssertionFailure;
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
 
-namespace net {
+namespace http2 {
 namespace test {
 namespace {
 const bool kReturnNonZeroOnFirst = true;
@@ -84,4 +84,4 @@ TEST_F(HpackEntryTypeDecoderTest, HeaderWithIndex) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

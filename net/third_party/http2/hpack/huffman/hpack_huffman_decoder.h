@@ -20,7 +20,7 @@
 #include "net/third_party/http2/platform/api/http2_string.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
 
-namespace net {
+namespace http2 {
 
 // HuffmanAccumulator is used to store bits during decoding, e.g. next N bits
 // that have not yet been decoded, but have been extracted from the encoded
@@ -142,6 +142,6 @@ inline std::ostream& operator<<(std::ostream& out,
   return out << v.DebugString();
 }
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HPACK_HUFFMAN_HPACK_HUFFMAN_DECODER_H_

@@ -8,7 +8,7 @@
 #include "net/third_party/http2/hpack/hpack_string.h"
 #include "net/third_party/http2/http2_constants.h"
 
-namespace net {
+namespace http2 {
 namespace {
 
 HpackString ExtractHpackString(HpackDecoderStringBuffer* string_buffer) {
@@ -216,4 +216,4 @@ void HpackDecoderState::ReportError(Http2StringPiece error_message) {
   }
 }
 
-}  // namespace net
+}  // namespace http2

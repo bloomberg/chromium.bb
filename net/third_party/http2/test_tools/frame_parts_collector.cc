@@ -11,7 +11,7 @@
 #include "net/third_party/http2/platform/api/http2_ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 FramePartsCollector::FramePartsCollector() = default;
@@ -110,4 +110,4 @@ Http2FrameDecoderListener* FramePartsCollector::FrameError(
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2

@@ -20,7 +20,7 @@ using ::testing::Property;
 using ::testing::StrictMock;
 using ::testing::_;
 
-namespace net {
+namespace http2 {
 namespace test {
 namespace {
 
@@ -29,10 +29,10 @@ constexpr size_t kMaxStringSize = 20;
 // Define HasSubstr() for Http2StringPiece arguments.
 // This shadows ::testing::HasSubstr(), which only works on argument types
 // that can be implicitly converted to a Http2String.
-inline ::testing::PolymorphicMatcher<StringPieceHasSubstrMatcher> HasSubstr(
-    const Http2String& substring) {
+inline ::testing::PolymorphicMatcher<net::test::StringPieceHasSubstrMatcher>
+HasSubstr(const Http2String& substring) {
   return ::testing::MakePolymorphicMatcher(
-      StringPieceHasSubstrMatcher(substring));
+      net::test::StringPieceHasSubstrMatcher(substring));
 }
 
 class MockHpackWholeEntryListener : public HpackWholeEntryListener {
@@ -216,4 +216,4 @@ TEST_F(HpackWholeEntryBufferTest, ValueeHuffmanError) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

@@ -4,12 +4,14 @@
 
 #include "net/third_party/spdy/core/hpack/hpack_decoder_adapter.h"
 
-#include <utility>
-
 #include "base/logging.h"
 #include "net/third_party/http2/decoder/decode_buffer.h"
 #include "net/third_party/http2/decoder/decode_status.h"
 #include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
+
+using ::http2::DecodeBuffer;
+using ::http2::HpackEntryType;
+using ::http2::HpackString;
 
 namespace net {
 namespace {
@@ -61,7 +63,7 @@ bool HpackDecoderAdapter::HandleControlFrameHeadersData(
       return false;
     }
     listener_adapter_.AddToTotalHpackBytes(headers_data_length);
-    DecodeBuffer db(headers_data, headers_data_length);
+    http2::DecodeBuffer db(headers_data, headers_data_length);
     bool ok = hpack_decoder_.DecodeFragment(&db);
     DCHECK(!ok || db.Empty()) << "Remaining=" << db.Remaining();
     return ok;
@@ -165,7 +167,7 @@ void HpackDecoderAdapter::ListenerAdapter::OnHeaderErrorDetected(
 }
 
 int64_t HpackDecoderAdapter::ListenerAdapter::OnEntryInserted(
-    const HpackStringPair& sp,
+    const http2::HpackStringPair& sp,
     size_t insert_count) {
   DVLOG(2) << "HpackDecoderAdapter::ListenerAdapter::OnEntryInserted: " << sp
            << ",  insert_count=" << insert_count;
@@ -181,9 +183,10 @@ int64_t HpackDecoderAdapter::ListenerAdapter::OnEntryInserted(
   return time_added;
 }
 
-void HpackDecoderAdapter::ListenerAdapter::OnUseEntry(const HpackStringPair& sp,
-                                                      size_t insert_count,
-                                                      int64_t time_added) {
+void HpackDecoderAdapter::ListenerAdapter::OnUseEntry(
+    const http2::HpackStringPair& sp,
+    size_t insert_count,
+    int64_t time_added) {
   DVLOG(2) << "HpackDecoderAdapter::ListenerAdapter::OnUseEntry: " << sp
            << ",  insert_count=" << insert_count
            << ",  time_added=" << time_added;

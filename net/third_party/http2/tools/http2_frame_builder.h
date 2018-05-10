@@ -20,7 +20,7 @@
 #include "net/third_party/http2/platform/api/http2_string.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 class Http2FrameBuilder {
@@ -94,6 +94,6 @@ class Http2FrameBuilder {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_TOOLS_HTTP2_FRAME_BUILDER_H_

@@ -11,7 +11,7 @@
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 
-namespace net {
+namespace http2 {
 
 Http2String Http2FrameTypeToString(Http2FrameType v) {
   switch (v) {
@@ -154,4 +154,4 @@ Http2String Http2SettingsParameterToString(Http2SettingsParameter v) {
   return Http2SettingsParameterToString(static_cast<uint32_t>(v));
 }
 
-}  // namespace net
+}  // namespace http2

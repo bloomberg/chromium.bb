@@ -15,7 +15,7 @@
 #include "net/third_party/http2/platform/api/http2_export.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
 
-namespace net {
+namespace http2 {
 
 // TODO(jamessynge): create http2_simple_types for types similar to
 // SpdyStreamId, but not for structures like Http2FrameHeader. Then will be
@@ -257,6 +257,6 @@ class Http2SettingsInfo {
   static constexpr uint32_t MaximumMaxFrameSize() { return (1 << 24) - 1; }
 };
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HTTP2_CONSTANTS_H_

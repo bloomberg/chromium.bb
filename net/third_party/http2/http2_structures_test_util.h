@@ -10,7 +10,7 @@
 #include "net/third_party/http2/tools/http2_frame_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 class RandomBase;
@@ -55,6 +55,6 @@ bool FrameCanHavePayload(const Http2FrameHeader& header);
 bool FrameCanHaveHpackPayload(const Http2FrameHeader& header);
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HTTP2_STRUCTURES_TEST_UTIL_H_

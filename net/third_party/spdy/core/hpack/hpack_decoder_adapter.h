@@ -5,7 +5,7 @@
 #ifndef NET_THIRD_PARTY_SPDY_CORE_HPACK_HPACK_DECODER_ADAPTER_H_
 #define NET_THIRD_PARTY_SPDY_CORE_HPACK_HPACK_DECODER_ADAPTER_H_
 
-// HpackDecoderAdapter uses HpackDecoder to decode HPACK blocks into
+// HpackDecoderAdapter uses http2::HpackDecoder to decode HPACK blocks into
 // HTTP/2 header lists as outlined in http://tools.ietf.org/html/rfc7541.
 
 #include <stddef.h>
@@ -81,8 +81,8 @@ class SPDY_EXPORT_PRIVATE HpackDecoderAdapter {
 
  private:
   class SPDY_EXPORT_PRIVATE ListenerAdapter
-      : public HpackDecoderListener,
-        public HpackDecoderTablesDebugListener {
+      : public http2::HpackDecoderListener,
+        public http2::HpackDecoderTablesDebugListener {
    public:
     ListenerAdapter();
     ~ListenerAdapter() override;
@@ -99,16 +99,16 @@ class SPDY_EXPORT_PRIVATE HpackDecoderAdapter {
 
     // Override the HpackDecoderListener methods:
     void OnHeaderListStart() override;
-    void OnHeader(HpackEntryType entry_type,
-                  const HpackString& name,
-                  const HpackString& value) override;
+    void OnHeader(http2::HpackEntryType entry_type,
+                  const http2::HpackString& name,
+                  const http2::HpackString& value) override;
     void OnHeaderListEnd() override;
     void OnHeaderErrorDetected(SpdyStringPiece error_message) override;
 
     // Override the HpackDecoderTablesDebugListener methods:
-    int64_t OnEntryInserted(const HpackStringPair& entry,
+    int64_t OnEntryInserted(const http2::HpackStringPair& entry,
                             size_t insert_count) override;
-    void OnUseEntry(const HpackStringPair& entry,
+    void OnUseEntry(const http2::HpackStringPair& entry,
                     size_t insert_count,
                     int64_t insert_time) override;
 
@@ -140,7 +140,7 @@ class SPDY_EXPORT_PRIVATE HpackDecoderAdapter {
   ListenerAdapter listener_adapter_;
 
   // The actual decoder.
-  HpackDecoder hpack_decoder_;
+  http2::HpackDecoder hpack_decoder_;
 
   // How much encoded data this decoder is willing to buffer.
   size_t max_decode_buffer_size_bytes_;

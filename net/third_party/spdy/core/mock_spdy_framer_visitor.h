@@ -26,7 +26,8 @@ class MockSpdyFramerVisitor : public SpdyFramerVisitorInterface {
   MockSpdyFramerVisitor();
   ~MockSpdyFramerVisitor() override;
 
-  MOCK_METHOD1(OnError, void(Http2DecoderAdapter::SpdyFramerError error));
+  MOCK_METHOD1(OnError,
+               void(http2::Http2DecoderAdapter::SpdyFramerError error));
   MOCK_METHOD3(OnDataFrameHeader,
                void(SpdyStreamId stream_id, size_t length, bool fin));
   MOCK_METHOD3(OnStreamFrameData,

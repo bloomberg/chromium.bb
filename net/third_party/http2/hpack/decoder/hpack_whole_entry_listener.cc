@@ -4,7 +4,7 @@
 
 #include "net/third_party/http2/hpack/decoder/hpack_whole_entry_listener.h"
 
-namespace net {
+namespace http2 {
 
 HpackWholeEntryListener::~HpackWholeEntryListener() = default;
 
@@ -30,4 +30,4 @@ HpackWholeEntryNoOpListener* HpackWholeEntryNoOpListener::NoOpListener() {
   return static_instance;
 }
 
-}  // namespace net
+}  // namespace http2

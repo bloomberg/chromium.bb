@@ -6,7 +6,7 @@
 
 #include <cstddef>
 
-namespace net {
+namespace http2 {
 namespace test {
 
 // static
@@ -19,4 +19,4 @@ void Http2StructureDecoderPeer::Randomize(Http2StructureDecoder* p,
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2

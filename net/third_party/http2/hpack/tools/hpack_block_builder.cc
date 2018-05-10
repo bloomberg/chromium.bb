@@ -7,7 +7,7 @@
 #include "net/third_party/http2/tools/http2_bug_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 void HpackBlockBuilder::AppendHighBitsAndVarint(uint8_t high_bits,
@@ -82,4 +82,4 @@ void HpackBlockBuilder::AppendString(bool is_huffman_encoded,
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2

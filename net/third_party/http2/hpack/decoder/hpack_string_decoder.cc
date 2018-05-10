@@ -6,7 +6,7 @@
 
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 
-namespace net {
+namespace http2 {
 
 Http2String HpackStringDecoder::DebugString() const {
   return Http2StrCat("HpackStringDecoder(state=", StateToString(state_),
@@ -32,4 +32,4 @@ std::ostream& operator<<(std::ostream& out, const HpackStringDecoder& v) {
   return out << v.DebugString();
 }
 
-}  // namespace net
+}  // namespace http2

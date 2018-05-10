@@ -206,9 +206,9 @@ class HpackHuffmanTableTest : public GenericHuffmanTableTest {
     EXPECT_TRUE(table_.IsInitialized());
   }
 
-  // Use net::HpackHuffmanDecoder for roundtrip tests.
+  // Use http2::HpackHuffmanDecoder for roundtrip tests.
   void DecodeString(const SpdyString& encoded, SpdyString* out) {
-    HpackHuffmanDecoder decoder;
+    http2::HpackHuffmanDecoder decoder;
     out->clear();
     EXPECT_TRUE(decoder.Decode(encoded, out));
   }

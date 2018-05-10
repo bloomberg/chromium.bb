@@ -11,7 +11,7 @@
 #include "net/third_party/http2/platform/api/http2_string.h"
 #include "net/third_party/http2/tools/http2_bug_tracker.h"
 
-namespace net {
+namespace http2 {
 
 std::ostream& operator<<(std::ostream& out,
                          const HpackDecoderStringBuffer::State v) {
@@ -232,4 +232,4 @@ std::ostream& operator<<(std::ostream& out, const HpackDecoderStringBuffer& v) {
   return out;
 }
 
-}  // namespace net
+}  // namespace http2

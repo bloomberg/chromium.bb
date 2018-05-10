@@ -23,7 +23,7 @@
 
 using ::testing::AssertionSuccess;
 
-namespace net {
+namespace http2 {
 namespace test {
 namespace {
 
@@ -293,4 +293,4 @@ TEST_F(HpackBlockDecoderTest, Computed) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

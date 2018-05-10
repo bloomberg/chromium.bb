@@ -40,7 +40,8 @@ class SpdyDeframerVisitorTest : public ::testing::Test {
   bool DeframeInput(const char* input, size_t size) {
     size_t input_remaining = size;
     while (input_remaining > 0 &&
-           decoder_.spdy_framer_error() == Http2DecoderAdapter::SPDY_NO_ERROR) {
+           decoder_.spdy_framer_error() ==
+               http2::Http2DecoderAdapter::SPDY_NO_ERROR) {
       // To make the tests more interesting, we feed random (and small) chunks
       // into the framer.  This simulates getting strange-sized reads from
       // the socket.
@@ -50,16 +51,18 @@ class SpdyDeframerVisitorTest : public ::testing::Test {
       size_t bytes_processed = decoder_.ProcessInput(input, bytes_read);
       input_remaining -= bytes_processed;
       input += bytes_processed;
-      if (decoder_.state() == Http2DecoderAdapter::SPDY_READY_FOR_FRAME) {
+      if (decoder_.state() ==
+          http2::Http2DecoderAdapter::SPDY_READY_FOR_FRAME) {
         deframer_->AtFrameEnd();
       }
     }
     return (input_remaining == 0 &&
-            decoder_.spdy_framer_error() == Http2DecoderAdapter::SPDY_NO_ERROR);
+            decoder_.spdy_framer_error() ==
+                http2::Http2DecoderAdapter::SPDY_NO_ERROR);
   }
 
   SpdyFramer encoder_;
-  Http2DecoderAdapter decoder_;
+  http2::Http2DecoderAdapter decoder_;
   std::vector<CollectedFrame> collected_frames_;
   std::unique_ptr<SpdyTestDeframer> deframer_;
 };

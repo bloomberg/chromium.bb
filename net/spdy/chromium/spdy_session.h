@@ -98,7 +98,7 @@ class TransportSecurityState;
 // NOTE: There's an enum of the same name (also with numeric suffixes)
 // in histograms.xml. Be sure to add new values there also.
 enum SpdyProtocolErrorDetails {
-  // Http2DecoderAdapter::SpdyFramerError mappings.
+  // http2::Http2DecoderAdapter::SpdyFramerError mappings.
   SPDY_ERROR_NO_ERROR = 0,
   SPDY_ERROR_INVALID_STREAM_ID = 38,
   SPDY_ERROR_INVALID_CONTROL_FRAME = 1,
@@ -148,17 +148,17 @@ enum SpdyProtocolErrorDetails {
   // Next free value.
   NUM_SPDY_PROTOCOL_ERROR_DETAILS = 43,
 };
-SpdyProtocolErrorDetails NET_EXPORT_PRIVATE
-MapFramerErrorToProtocolError(Http2DecoderAdapter::SpdyFramerError error);
+SpdyProtocolErrorDetails NET_EXPORT_PRIVATE MapFramerErrorToProtocolError(
+    http2::Http2DecoderAdapter::SpdyFramerError error);
 Error NET_EXPORT_PRIVATE
-MapFramerErrorToNetError(Http2DecoderAdapter::SpdyFramerError error);
+MapFramerErrorToNetError(http2::Http2DecoderAdapter::SpdyFramerError error);
 SpdyProtocolErrorDetails NET_EXPORT_PRIVATE
 MapRstStreamStatusToProtocolError(SpdyErrorCode error_code);
 SpdyErrorCode NET_EXPORT_PRIVATE MapNetErrorToGoAwayStatus(Error err);
 
 // If these compile asserts fail then SpdyProtocolErrorDetails needs
 // to be updated with new values, as do the mapping functions above.
-static_assert(17 == Http2DecoderAdapter::LAST_ERROR,
+static_assert(17 == http2::Http2DecoderAdapter::LAST_ERROR,
               "SpdyProtocolErrorDetails / Spdy Errors mismatch");
 static_assert(13 == SpdyErrorCode::ERROR_CODE_MAX,
               "SpdyProtocolErrorDetails / SpdyErrorCode mismatch");
@@ -771,7 +771,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   void CancelPushedStreamIfUnclaimed(SpdyStreamId stream_id);
 
   // BufferedSpdyFramerVisitorInterface:
-  void OnError(Http2DecoderAdapter::SpdyFramerError spdy_framer_error) override;
+  void OnError(
+      http2::Http2DecoderAdapter::SpdyFramerError spdy_framer_error) override;
   void OnStreamError(SpdyStreamId stream_id,
                      const SpdyString& description) override;
   void OnPing(SpdyPingId unique_id, bool is_ack) override;

@@ -11,13 +11,13 @@
 #include "net/third_party/http2/tools/http2_random.h"
 #include "net/third_party/http2/tools/random_decoder_test.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 // static
 void FrameDecoderStatePeer::Randomize(FrameDecoderState* p, RandomBase* rng) {
   VLOG(1) << "FrameDecoderStatePeer::Randomize";
-  ::net::test::Randomize(&p->frame_header_, rng);
+  ::http2::test::Randomize(&p->frame_header_, rng);
   p->remaining_payload_ = rng->Rand32();
   p->remaining_padding_ = rng->Rand32();
   Http2StructureDecoderPeer::Randomize(&p->structure_decoder_, rng);
@@ -31,4 +31,4 @@ void FrameDecoderStatePeer::set_frame_header(const Http2FrameHeader& header,
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2

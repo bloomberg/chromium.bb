@@ -33,7 +33,7 @@
 #include "net/third_party/http2/platform/api/http2_export.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
 
-namespace net {
+namespace http2 {
 // Decodes an HPACK variable length unsigned integer, in a resumable fashion
 // so it can handle running out of input in the DecodeBuffer. Call Start or
 // StartExtended the first time (when decoding the byte that contains the
@@ -113,6 +113,6 @@ class HTTP2_EXPORT_PRIVATE HpackVarintDecoder {
   uint32_t offset_ = 0;
 };
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HPACK_DECODER_HPACK_VARINT_DECODER_H_

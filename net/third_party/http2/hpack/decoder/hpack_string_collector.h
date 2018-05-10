@@ -16,7 +16,7 @@
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 // Records the callbacks associated with a decoding a string; must
@@ -58,6 +58,6 @@ bool operator!=(const HpackStringCollector& a, const HpackStringCollector& b);
 std::ostream& operator<<(std::ostream& out, const HpackStringCollector& v);
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HPACK_DECODER_HPACK_STRING_COLLECTOR_H_

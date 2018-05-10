@@ -8,7 +8,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 
-namespace net {
+namespace http2 {
 
 HpackWholeEntryBuffer::HpackWholeEntryBuffer(HpackWholeEntryListener* listener,
                                              size_t max_string_size_bytes)
@@ -137,4 +137,4 @@ void HpackWholeEntryBuffer::ReportError(Http2StringPiece error_message) {
   }
 }
 
-}  // namespace net
+}  // namespace http2

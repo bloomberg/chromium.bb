@@ -38,7 +38,23 @@
 #include "net/third_party/spdy/platform/api/spdy_ptr_util.h"
 #include "net/third_party/spdy/platform/api/spdy_string_utils.h"
 
-namespace net {
+using ::net::ExtensionVisitorInterface;
+using ::net::HpackDecoderAdapter;
+using ::net::HpackHeaderTable;
+using ::net::ParseErrorCode;
+using ::net::ParseFrameType;
+using ::net::SpdyAltSvcWireFormat;
+using ::net::SpdyErrorCode;
+using ::net::SpdyEstimateMemoryUsage;
+using ::net::SpdyFrameType;
+using ::net::SpdyFramerDebugVisitorInterface;
+using ::net::SpdyFramerVisitorInterface;
+using ::net::SpdyHeadersHandlerInterface;
+using ::net::SpdyKnownSettingsId;
+using ::net::SpdyMakeUnique;
+using ::net::SpdySettingsId;
+
+namespace http2 {
 namespace {
 
 using SpdyFramerError = Http2DecoderAdapter::SpdyFramerError;
@@ -998,6 +1014,10 @@ void Http2DecoderAdapter::CommonHpackFragmentEnd() {
     expected_frame_type_ = Http2FrameType::CONTINUATION;
   }
 }
+
+}  // namespace http2
+
+namespace net {
 
 bool SpdyFramerVisitorInterface::OnGoAwayFrameData(const char* goaway_data,
                                                    size_t len) {

@@ -12,7 +12,7 @@
 
 #include "net/third_party/http2/platform/api/http2_export.h"
 
-namespace net {
+namespace http2 {
 
 enum class DecodeStatus {
   // Decoding is done.
@@ -28,6 +28,6 @@ enum class DecodeStatus {
 HTTP2_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& out,
                                               DecodeStatus v);
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_DECODER_DECODE_STATUS_H_

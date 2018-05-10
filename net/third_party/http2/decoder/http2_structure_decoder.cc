@@ -8,7 +8,7 @@
 
 #include "net/third_party/http2/tools/http2_bug_tracker.h"
 
-namespace net {
+namespace http2 {
 
 // Below we have some defensive coding: if we somehow run off the end, don't
 // overwrite lots of memory. Note that most of this decoder is not defensive
@@ -87,4 +87,4 @@ bool Http2StructureDecoder::ResumeFillingBuffer(DecodeBuffer* db,
   return needed == num_to_copy;
 }
 
-}  // namespace net
+}  // namespace http2

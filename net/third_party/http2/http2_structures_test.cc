@@ -34,7 +34,7 @@ using ::testing::Not;
 using ::testing::Values;
 using ::testing::ValuesIn;
 
-namespace net {
+namespace http2 {
 namespace test {
 namespace {
 
@@ -486,4 +486,4 @@ TEST(Http2AltSvcTest, Misc) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

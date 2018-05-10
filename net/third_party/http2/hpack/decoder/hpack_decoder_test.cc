@@ -33,7 +33,7 @@ using ::testing::AssertionSuccess;
 using ::testing::ElementsAreArray;
 using ::testing::HasSubstr;
 
-namespace net {
+namespace http2 {
 namespace test {
 class HpackDecoderStatePeer {
  public:
@@ -1217,4 +1217,4 @@ TEST_P(HpackDecoderTest, OversizeStringDetected) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

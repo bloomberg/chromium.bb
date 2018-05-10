@@ -20,7 +20,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 template <typename T>
@@ -60,7 +60,7 @@ Http2String GetBoolAssertionFailureMessage(
     const char* expected_predicate_value);
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2
 
 // Macro for adding verification location to output stream or AssertionResult.
 // Starts with a new-line because of the way that gUnit displays failures for
@@ -81,7 +81,7 @@ Http2String GetBoolAssertionFailureMessage(
   else                                                                 \
     return ::testing::AssertionFailure()                               \
          << VERIFY_FAILED_LOCATION_                                    \
-         << ::net::test::GetBoolAssertionFailureMessage(              \
+         << ::http2::test::GetBoolAssertionFailureMessage(             \
                 __assertion_result, text, #actual, #expected)
 // clang-format on
 
@@ -108,15 +108,15 @@ Http2String GetBoolAssertionFailureMessage(
 //   VERIFY_THAT(foo, Eq(bar));
 // else
 //   FAIL();
-#define VERIFY_THAT(value, matcher)                                       \
-  if (const auto& _verify_that_helper =                                   \
-          ::net::test::VerifyThatHelper<decltype(value)>(value, matcher)) \
-    ;                                                                     \
-  else                                                                    \
-    return ::testing::AssertionFailure()                                  \
-           << "Failed to verify that '" #value "' ("                      \
-           << _verify_that_helper.printed_value() << ") "                 \
-           << _verify_that_helper.matcher_description()                   \
+#define VERIFY_THAT(value, matcher)                                         \
+  if (const auto& _verify_that_helper =                                     \
+          ::http2::test::VerifyThatHelper<decltype(value)>(value, matcher)) \
+    ;                                                                       \
+  else                                                                      \
+    return ::testing::AssertionFailure()                                    \
+           << "Failed to verify that '" #value "' ("                        \
+           << _verify_that_helper.printed_value() << ") "                   \
+           << _verify_that_helper.matcher_description()                     \
            << " (on " __FILE__ ":" << __LINE__ << "). "
 
 // Useful variants of VERIFY_THAT, similar to the corresponding EXPECT_X or

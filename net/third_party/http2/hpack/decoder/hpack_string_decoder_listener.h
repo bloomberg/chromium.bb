@@ -14,7 +14,7 @@
 
 #include "net/third_party/http2/platform/api/http2_export.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 // HpackStringDecoder methods require a listener that implements the methods
@@ -57,6 +57,6 @@ class HTTP2_EXPORT_PRIVATE HpackStringDecoderVLoggingListener
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HPACK_DECODER_HPACK_STRING_DECODER_LISTENER_H_

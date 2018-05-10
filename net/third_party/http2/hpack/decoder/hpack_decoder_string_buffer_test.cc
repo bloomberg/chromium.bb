@@ -18,7 +18,7 @@ using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
 using ::testing::HasSubstr;
 
-namespace net {
+namespace http2 {
 namespace test {
 namespace {
 
@@ -247,4 +247,4 @@ TEST_F(HpackDecoderStringBufferTest, InvalidHuffmanOnEnd) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

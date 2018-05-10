@@ -8,7 +8,7 @@
 
 #include "base/rand_util.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 bool Http2Random::OneIn(int n) {
@@ -55,4 +55,4 @@ Http2String Http2Random::RandString(int length) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2

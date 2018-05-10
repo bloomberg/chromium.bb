@@ -7,10 +7,10 @@
 
 #include "net/third_party/http2/platform/impl/http2_string_impl.h"
 
-namespace net {
+namespace http2 {
 
 using Http2String = Http2StringImpl;
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_PLATFORM_API_HTTP2_STRING_H_

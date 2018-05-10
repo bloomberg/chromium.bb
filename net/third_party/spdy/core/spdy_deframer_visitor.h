@@ -150,7 +150,7 @@ class SpdyDeframerVisitorInterface {
   virtual void OnWindowUpdate(std::unique_ptr<SpdyWindowUpdateIR> frame) {}
 
   // The SpdyFramer will not process any more data at this point.
-  virtual void OnError(Http2DecoderAdapter::SpdyFramerError error,
+  virtual void OnError(http2::Http2DecoderAdapter::SpdyFramerError error,
                        SpdyTestDeframer* deframer) {}
 };
 
@@ -239,7 +239,7 @@ class DeframerCallbackCollector : public SpdyDeframerVisitorInterface {
                   std::unique_ptr<SettingVector> settings) override;
   void OnSettingsAck(std::unique_ptr<SpdySettingsIR> frame_ir) override;
   void OnWindowUpdate(std::unique_ptr<SpdyWindowUpdateIR> frame_ir) override;
-  void OnError(Http2DecoderAdapter::SpdyFramerError error,
+  void OnError(http2::Http2DecoderAdapter::SpdyFramerError error,
                SpdyTestDeframer* deframer) override;
 
  private:

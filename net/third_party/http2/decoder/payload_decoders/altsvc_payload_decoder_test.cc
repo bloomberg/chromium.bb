@@ -19,7 +19,7 @@
 #include "net/third_party/http2/tools/random_decoder_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 // Provides friend access to an instance of the payload decoder, and also
@@ -118,4 +118,4 @@ TEST_P(AltSvcPayloadLengthTests, ValidOriginAndValueLength) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

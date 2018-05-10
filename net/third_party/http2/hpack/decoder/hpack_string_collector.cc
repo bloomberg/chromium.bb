@@ -14,7 +14,9 @@
 #include "net/third_party/http2/tools/failure.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+using net::EscapeQueryParamValue;
+
+namespace http2 {
 namespace test {
 namespace {
 
@@ -121,4 +123,4 @@ std::ostream& operator<<(std::ostream& out, const HpackStringCollector& v) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2

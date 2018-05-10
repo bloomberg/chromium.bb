@@ -37,7 +37,7 @@ using ::testing::AssertionFailure;
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
 
-namespace net {
+namespace http2 {
 namespace test {
 namespace {
 const bool kMayReturnZeroOnFirst = false;
@@ -536,4 +536,4 @@ TEST_F(Http2AltSvcFieldsDecoderTest, DecodesRandomized) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

@@ -9,7 +9,7 @@
 
 #include "net/third_party/http2/http2_constants.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 // Returns a vector of all supported RST_STREAM and GOAWAY error codes.
@@ -28,6 +28,6 @@ uint8_t KnownFlagsMaskForFrameType(Http2FrameType type);
 uint8_t InvalidFlagMaskForFrameType(Http2FrameType type);
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HTTP2_CONSTANTS_TEST_UTIL_H_

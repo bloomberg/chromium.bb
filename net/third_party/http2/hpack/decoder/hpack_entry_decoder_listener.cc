@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-namespace net {
+namespace http2 {
 
 void HpackEntryDecoderVLoggingListener::OnIndexedHeader(size_t index) {
   VLOG(1) << "OnIndexedHeader, index=" << index;
@@ -78,4 +78,4 @@ void HpackEntryDecoderVLoggingListener::OnDynamicTableSizeUpdate(size_t size) {
   }
 }
 
-}  // namespace net
+}  // namespace http2

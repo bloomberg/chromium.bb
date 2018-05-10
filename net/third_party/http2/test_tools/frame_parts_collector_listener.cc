@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 bool FramePartsCollectorListener::OnFrameHeader(
@@ -227,4 +227,4 @@ void FramePartsCollectorListener::OnFrameSizeError(
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2

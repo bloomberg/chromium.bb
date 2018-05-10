@@ -21,7 +21,7 @@
 #include "net/third_party/http2/platform/api/http2_string.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 class HpackEntryCollector : public HpackEntryDecoderListener {
@@ -149,6 +149,6 @@ bool operator!=(const HpackEntryCollector& a, const HpackEntryCollector& b);
 std::ostream& operator<<(std::ostream& out, const HpackEntryCollector& v);
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HPACK_DECODER_HPACK_ENTRY_COLLECTOR_H_

@@ -22,7 +22,7 @@
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 class HpackBlockBuilder {
@@ -89,6 +89,6 @@ class HpackBlockBuilder {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HPACK_TOOLS_HPACK_BLOCK_BUILDER_H_

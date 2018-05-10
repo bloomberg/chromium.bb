@@ -10,7 +10,7 @@
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 #include "net/third_party/http2/tools/http2_bug_tracker.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 namespace {
 
@@ -55,4 +55,4 @@ Http2String HpackExampleToStringOrDie(Http2StringPiece example) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2

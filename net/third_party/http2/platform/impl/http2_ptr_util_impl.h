@@ -8,13 +8,13 @@
 #include <memory>
 #include <utility>
 
-namespace net {
+namespace http2 {
 
 template <typename T, typename... Args>
 std::unique_ptr<T> Http2MakeUniqueImpl(Args&&... args) {
   return std::make_unique<T>(std::forward<Args>(args)...);
 }
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_PLATFORM_IMPL_HTTP2_PTR_UTIL_IMPL_H_

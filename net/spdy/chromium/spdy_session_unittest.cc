@@ -6351,34 +6351,34 @@ TEST_F(AltSvcFrameTest, InvalidOrigin) {
 TEST(MapFramerErrorToProtocolError, MapsValues) {
   CHECK_EQ(SPDY_ERROR_INVALID_CONTROL_FRAME,
            MapFramerErrorToProtocolError(
-               Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME));
+               http2::Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME));
   CHECK_EQ(SPDY_ERROR_INVALID_DATA_FRAME_FLAGS,
            MapFramerErrorToProtocolError(
-               Http2DecoderAdapter::SPDY_INVALID_DATA_FRAME_FLAGS));
+               http2::Http2DecoderAdapter::SPDY_INVALID_DATA_FRAME_FLAGS));
   CHECK_EQ(SPDY_ERROR_GOAWAY_FRAME_CORRUPT,
            MapFramerErrorToProtocolError(
-               Http2DecoderAdapter::SPDY_GOAWAY_FRAME_CORRUPT));
+               http2::Http2DecoderAdapter::SPDY_GOAWAY_FRAME_CORRUPT));
   CHECK_EQ(SPDY_ERROR_UNEXPECTED_FRAME,
            MapFramerErrorToProtocolError(
-               Http2DecoderAdapter::SPDY_UNEXPECTED_FRAME));
+               http2::Http2DecoderAdapter::SPDY_UNEXPECTED_FRAME));
 }
 
 TEST(MapFramerErrorToNetError, MapsValue) {
   CHECK_EQ(ERR_SPDY_PROTOCOL_ERROR,
            MapFramerErrorToNetError(
-               Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME));
-  CHECK_EQ(
-      ERR_SPDY_COMPRESSION_ERROR,
-      MapFramerErrorToNetError(Http2DecoderAdapter::SPDY_COMPRESS_FAILURE));
-  CHECK_EQ(
-      ERR_SPDY_COMPRESSION_ERROR,
-      MapFramerErrorToNetError(Http2DecoderAdapter::SPDY_DECOMPRESS_FAILURE));
+               http2::Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME));
+  CHECK_EQ(ERR_SPDY_COMPRESSION_ERROR,
+           MapFramerErrorToNetError(
+               http2::Http2DecoderAdapter::SPDY_COMPRESS_FAILURE));
+  CHECK_EQ(ERR_SPDY_COMPRESSION_ERROR,
+           MapFramerErrorToNetError(
+               http2::Http2DecoderAdapter::SPDY_DECOMPRESS_FAILURE));
   CHECK_EQ(ERR_SPDY_FRAME_SIZE_ERROR,
            MapFramerErrorToNetError(
-               Http2DecoderAdapter::SPDY_CONTROL_PAYLOAD_TOO_LARGE));
-  CHECK_EQ(
-      ERR_SPDY_FRAME_SIZE_ERROR,
-      MapFramerErrorToNetError(Http2DecoderAdapter::SPDY_OVERSIZED_PAYLOAD));
+               http2::Http2DecoderAdapter::SPDY_CONTROL_PAYLOAD_TOO_LARGE));
+  CHECK_EQ(ERR_SPDY_FRAME_SIZE_ERROR,
+           MapFramerErrorToNetError(
+               http2::Http2DecoderAdapter::SPDY_OVERSIZED_PAYLOAD));
 }
 
 TEST(MapRstStreamStatusToProtocolError, MapsValues) {

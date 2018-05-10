@@ -8,7 +8,7 @@
 #include "net/third_party/http2/decoder/http2_frame_decoder_listener.h"
 #include "net/third_party/http2/http2_constants.h"
 
-namespace net {
+namespace http2 {
 namespace {
 constexpr auto kOpaqueSize = Http2PingFields::EncodedSize();
 }
@@ -86,4 +86,4 @@ DecodeStatus PingPayloadDecoder::HandleStatus(FrameDecoderState* state,
   return status;
 }
 
-}  // namespace net
+}  // namespace http2

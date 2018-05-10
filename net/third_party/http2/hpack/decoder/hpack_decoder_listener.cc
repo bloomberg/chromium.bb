@@ -4,7 +4,7 @@
 
 #include "net/third_party/http2/hpack/decoder/hpack_decoder_listener.h"
 
-namespace net {
+namespace http2 {
 
 HpackDecoderListener::HpackDecoderListener() = default;
 HpackDecoderListener::~HpackDecoderListener() = default;
@@ -27,4 +27,4 @@ HpackDecoderNoOpListener* HpackDecoderNoOpListener::NoOpListener() {
   return static_instance;
 }
 
-}  // namespace net
+}  // namespace http2

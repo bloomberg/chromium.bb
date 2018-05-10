@@ -52,7 +52,7 @@ using base::nullopt;
 
 namespace net {
 
-using SpdyFramerError = Http2DecoderAdapter::SpdyFramerError;
+using SpdyFramerError = http2::Http2DecoderAdapter::SpdyFramerError;
 
 namespace {
 
@@ -664,7 +664,8 @@ size_t QuicHttpDecoderAdapter::ProcessInputFrame(const char* data, size_t len) {
     DetermineSpdyState(status);
   } else {
     VLOG(1) << "ProcessInputFrame spdy_framer_error_="
-            << Http2DecoderAdapter::SpdyFramerErrorToString(spdy_framer_error_);
+            << http2::Http2DecoderAdapter::SpdyFramerErrorToString(
+                   spdy_framer_error_);
     if (spdy_framer_error_ == SpdyFramerError::SPDY_INVALID_PADDING &&
         has_frame_header_ && frame_type() != QuicHttpFrameType::DATA) {
       // spdy_framer_test checks that all of the available frame payload
@@ -733,7 +734,7 @@ void QuicHttpDecoderAdapter::DetermineSpdyState(QuicHttpDecodeStatus status) {
             SetSpdyErrorAndNotify(SpdyFramerError::SPDY_INTERNAL_FRAMER_ERROR);
           } else if (spdy_framer_error_ != SpdyFramerError::SPDY_NO_ERROR) {
             SPDY_BUG << "Expected to have no error, not "
-                     << Http2DecoderAdapter::SpdyFramerErrorToString(
+                     << http2::Http2DecoderAdapter::SpdyFramerErrorToString(
                             spdy_framer_error_);
           } else {
             ResetBetweenFrames();
@@ -785,7 +786,8 @@ void QuicHttpDecoderAdapter::SetSpdyErrorAndNotify(SpdyFramerError error) {
     DCHECK_EQ(spdy_state_, SpdyState::SPDY_ERROR);
   } else {
     VLOG(2) << "SetSpdyErrorAndNotify("
-            << Http2DecoderAdapter::SpdyFramerErrorToString(error) << ")";
+            << http2::Http2DecoderAdapter::SpdyFramerErrorToString(error)
+            << ")";
     DCHECK_NE(error, SpdyFramerError::SPDY_NO_ERROR);
     spdy_framer_error_ = error;
     set_spdy_state(SpdyState::SPDY_ERROR);

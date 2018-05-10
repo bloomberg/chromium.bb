@@ -20,7 +20,7 @@
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
 
-namespace net {
+namespace http2 {
 namespace test {
 class HpackDecoderTablesPeer {
  public:
@@ -262,4 +262,4 @@ TEST_F(HpackDecoderTablesTest, RandomDynamicTable) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

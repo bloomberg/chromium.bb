@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "net/third_party/http2/tools/http2_bug_tracker.h"
 
-namespace net {
+namespace http2 {
 namespace {
 // Converts calls from HpackStringDecoder when decoding a header name into the
 // appropriate HpackEntryDecoderListener::OnName* calls.
@@ -261,4 +261,4 @@ std::ostream& operator<<(std::ostream& out,
   return out << static_cast<int>(state);
 }
 
-}  // namespace net
+}  // namespace http2
