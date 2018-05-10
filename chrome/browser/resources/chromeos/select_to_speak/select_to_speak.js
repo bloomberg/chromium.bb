@@ -699,6 +699,8 @@ SelectToSpeak.prototype = {
         this.recordSelectToSpeakStateChangeEvent_(
             StateChangeEvent.CANCEL_SELECTION);
     }
+    this.onStateChangeRequestedCallbackForTest_ &&
+        this.onStateChangeRequestedCallbackForTest_();
   },
 
   /**
@@ -1310,9 +1312,9 @@ SelectToSpeak.prototype = {
   },
 
   /**
-   * Fires a mock state change request.
+   * Function to be called when a state change request is received from the
+   * accessibilityPrivate API.
+   * @type {?function()}
    */
-  fireMockStateChangeRequest: function() {
-    this.onStateChangeRequested_();
-  },
+  onStateChangeRequestedCallbackForTest_: null,
 };
