@@ -2788,6 +2788,8 @@ crbug.com/832071 external/wpt/service-workers/service-worker/worker-client-id.ht
 crbug.com/832071 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_pointerout_received_once-manual.html [ Skip ]
+crbug.com/626703 external/wpt/infrastructure/expected-fail/timeout.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-016.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-013.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-011.html [ Failure ]
