@@ -21,6 +21,7 @@
 #include "media/base/cdm_key_information.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
+#include "media/base/encryption_pattern.h"
 #include "media/cdm/api/content_decryption_module_ext.h"
 #include "media/cdm/json_web_key.h"
 #include "media/cdm/library_cdm/cdm_host_proxy.h"
@@ -95,23 +96,32 @@ static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
   output_buffer->set_timestamp(
       base::TimeDelta::FromMicroseconds(input_buffer.timestamp));
 
-  // TODO(crbug.com/658026): Support other schemes.
-  if (input_buffer.encryption_scheme == cdm::EncryptionScheme::kCenc) {
-    DCHECK_GT(input_buffer.iv_size, 0u);
-    DCHECK_GT(input_buffer.key_id_size, 0u);
-    std::vector<media::SubsampleEntry> subsamples;
-    for (uint32_t i = 0; i < input_buffer.num_subsamples; ++i) {
-      subsamples.push_back(
-          media::SubsampleEntry(input_buffer.subsamples[i].clear_bytes,
-                                input_buffer.subsamples[i].cipher_bytes));
-    }
+  if (input_buffer.encryption_scheme == cdm::EncryptionScheme::kUnencrypted)
+    return output_buffer;
 
+  DCHECK_GT(input_buffer.iv_size, 0u);
+  DCHECK_GT(input_buffer.key_id_size, 0u);
+  std::vector<media::SubsampleEntry> subsamples;
+  for (uint32_t i = 0; i < input_buffer.num_subsamples; ++i) {
+    subsamples.push_back(
+        media::SubsampleEntry(input_buffer.subsamples[i].clear_bytes,
+                              input_buffer.subsamples[i].cipher_bytes));
+  }
+
+  const std::string key_id_string(
+      reinterpret_cast<const char*>(input_buffer.key_id),
+      input_buffer.key_id_size);
+  const std::string iv_string(reinterpret_cast<const char*>(input_buffer.iv),
+                              input_buffer.iv_size);
+  if (input_buffer.encryption_scheme == cdm::EncryptionScheme::kCenc) {
     output_buffer->set_decrypt_config(media::DecryptConfig::CreateCencConfig(
-        std::string(reinterpret_cast<const char*>(input_buffer.key_id),
-                    input_buffer.key_id_size),
-        std::string(reinterpret_cast<const char*>(input_buffer.iv),
-                    input_buffer.iv_size),
-        subsamples));
+        key_id_string, iv_string, subsamples));
+  } else {
+    DCHECK_EQ(input_buffer.encryption_scheme, cdm::EncryptionScheme::kCbcs);
+    output_buffer->set_decrypt_config(media::DecryptConfig::CreateCbcsConfig(
+        key_id_string, iv_string, subsamples,
+        media::EncryptionPattern(input_buffer.pattern.crypt_byte_block,
+                                 input_buffer.pattern.skip_byte_block)));
   }
 
   return output_buffer;
@@ -361,36 +371,6 @@ bool VerifyCdmHost_0(const cdm::HostFile* host_files, uint32_t num_files) {
 namespace media {
 
 namespace {
-
-bool IsSupportedConfigEncryptionScheme(cdm::EncryptionScheme scheme) {
-  // TODO(crbug.com/658026): Support other decryption schemes.
-  switch (scheme) {
-    case cdm::EncryptionScheme::kUnencrypted:
-    case cdm::EncryptionScheme::kCenc:
-      return true;
-    case cdm::EncryptionScheme::kCbcs:
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-bool IsSupportedBufferEncryptionScheme(cdm::EncryptionScheme scheme,
-                                       cdm::Pattern pattern) {
-  // TODO(crbug.com/658026): Support other decryption schemes.
-  switch (scheme) {
-    case cdm::EncryptionScheme::kUnencrypted:
-      return true;
-    case cdm::EncryptionScheme::kCenc:
-      return pattern.crypt_byte_block == 0 && pattern.skip_byte_block == 0;
-    case cdm::EncryptionScheme::kCbcs:
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
-}
 
 cdm::InputBuffer_2 ToInputBuffer_2(cdm::InputBuffer_1 encrypted_buffer) {
   cdm::InputBuffer_2 buffer = {};
@@ -707,11 +687,6 @@ cdm::Status ClearKeyCdm::InitializeAudioDecoder(
   if (key_system_ == kExternalClearKeyDecryptOnlyKeySystem)
     return cdm::kInitializationError;
 
-  if (!IsSupportedConfigEncryptionScheme(
-          audio_decoder_config.encryption_scheme)) {
-    return cdm::kInitializationError;
-  }
-
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   if (!audio_decoder_)
     audio_decoder_.reset(
@@ -743,11 +718,6 @@ cdm::Status ClearKeyCdm::InitializeVideoDecoder(
     const cdm::VideoDecoderConfig_2& video_decoder_config) {
   if (key_system_ == kExternalClearKeyDecryptOnlyKeySystem)
     return cdm::kInitializationError;
-
-  if (!IsSupportedConfigEncryptionScheme(
-          video_decoder_config.encryption_scheme)) {
-    return cdm::kInitializationError;
-  }
 
   if (video_decoder_ && video_decoder_->is_initialized()) {
     DCHECK(!video_decoder_->is_initialized());
@@ -893,11 +863,6 @@ cdm::Status ClearKeyCdm::DecryptToMediaDecoderBuffer(
     const cdm::InputBuffer_2& encrypted_buffer,
     scoped_refptr<DecoderBuffer>* decrypted_buffer) {
   DCHECK(decrypted_buffer);
-
-  if (!IsSupportedBufferEncryptionScheme(encrypted_buffer.encryption_scheme,
-                                         encrypted_buffer.pattern)) {
-    return cdm::kDecryptError;
-  }
 
   scoped_refptr<DecoderBuffer> buffer = CopyDecoderBufferFrom(encrypted_buffer);
 
