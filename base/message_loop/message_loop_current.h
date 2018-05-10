@@ -210,7 +210,7 @@ class BASE_EXPORT MessageLoopCurrentForUI : public MessageLoopCurrent {
 
   MessageLoopCurrentForUI* operator->() { return this; }
 
-#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
+#if defined(USE_OZONE) && !defined(OS_FUCHSIA) && !defined(OS_WIN)
   // Please see MessagePumpLibevent for definition.
   static_assert(std::is_same<MessagePumpForUI, MessagePumpLibevent>::value,
                 "MessageLoopCurrentForUI::WatchFileDescriptor is not supported "
