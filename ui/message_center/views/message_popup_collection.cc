@@ -350,8 +350,7 @@ void MessagePopupCollection::OnNotificationRemoved(
 
   RemoveToast(*iter, /*mark_as_shown=*/true);
 
-  if (by_user)
-    RepositionWidgets();
+  DoUpdate();
 }
 
 void MessagePopupCollection::OnNotificationUpdated(
