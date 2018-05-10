@@ -35,24 +35,25 @@ class LayoutTable;
 //
 // This class is very simple as the logic for handling the caption is done in
 // LayoutTable. In particular, the placement and sizing is done in
-// LayoutTable::layoutCaption. The function is called at different timing
+// LayoutTable::LayoutCaption. The function is called at different timing
 // depending on the 'caption-side' property: "top" is laid out before table row
 // groups when "bottom" ones are laid out after. This ensures that "top"
 // captions are visually before the row groups and "bottom" ones are after.
 //
 // See http://www.w3.org/TR/CSS21/tables.html#caption-position for the
 // positioning.
-class LayoutTableCaption final : public LayoutBlockFlow {
+class LayoutTableCaption : public LayoutBlockFlow {
  public:
   explicit LayoutTableCaption(Element*);
   ~LayoutTableCaption() override;
   LayoutUnit ContainingBlockLogicalWidthForContent() const override;
 
- private:
+ protected:
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectTableCaption || LayoutBlockFlow::IsOfType(type);
   }
 
+ private:
   void InsertedIntoTree() override;
   void WillBeRemovedFromTree() override;
 

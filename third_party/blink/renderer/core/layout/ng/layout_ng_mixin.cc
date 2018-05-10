@@ -277,6 +277,7 @@ PositionWithAffinity LayoutNGMixin<Base>::PositionForPoint(
   return Base::CreatePositionWithAffinity(0);
 }
 
+template class LayoutNGMixin<LayoutTableCaption>;
 template class LayoutNGMixin<LayoutTableCell>;
 template class LayoutNGMixin<LayoutBlockFlow>;
 

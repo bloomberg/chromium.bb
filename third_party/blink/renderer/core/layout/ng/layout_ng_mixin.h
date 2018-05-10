@@ -7,6 +7,7 @@
 
 #include <type_traits>
 
+#include "third_party/blink/renderer/core/layout/layout_table_caption.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
@@ -95,6 +96,8 @@ class CORE_TEMPLATE_CLASS_EXPORT LayoutNGMixin : public Base {
   friend class NGBaseLayoutAlgorithmTest;
 };
 
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    LayoutNGMixin<LayoutTableCaption>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     LayoutNGMixin<LayoutTableCell>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
