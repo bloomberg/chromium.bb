@@ -100,10 +100,6 @@ class ChromeBrowserState;
 
 // TODO(crbug.com/840381): Temporarily made public while migrating code
 // out of BookmarkTableView.
-- (void)loadFaviconAtIndexPath:(NSIndexPath*)indexPath
-        continueToGoogleServer:(BOOL)continueToGoogleServer;
-- (void)cancelLoadingFaviconAtIndexPath:(NSIndexPath*)indexPath;
-- (void)cancelAllFaviconLoads;
 - (void)restoreRowSelection;
 - (void)showLoadingSpinnerBackground;
 - (void)hideLoadingSpinnerBackground;
