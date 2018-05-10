@@ -38,7 +38,7 @@ class LocalSiteCharacteristicsDataStore
       const std::string& origin_str) override;
 
   std::unique_ptr<SiteCharacteristicsDataWriter> GetWriterForOrigin(
-      const std::string& origin_str);
+      const std::string& origin_str) override;
 
   const LocalSiteCharacteristicsMap& origin_data_map_for_testing() const {
     return origin_data_map_;
