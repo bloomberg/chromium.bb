@@ -63,7 +63,10 @@ import org.chromium.chrome.test.util.browser.compositor.layouts.DisableChromeAni
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestWebContentsObserver;
+import org.chromium.content_public.browser.GestureListenerManager;
+import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -118,6 +121,7 @@ public class ContextualSuggestionsTest {
         mFakeSource = new FakeContextualSuggestionsSource();
         mContextualSuggestionsDeps.getFactory().suggestionsSource = mFakeSource;
         FetchHelper.setDisableDelayForTesting(true);
+        ContextualSuggestionsMediator.setOverrideBrowserControlsHiddenForTesting(true);
 
         FakeEnabledStateMonitor stateMonitor = new FakeEnabledStateMonitor();
         mContextualSuggestionsDeps.getFactory().enabledStateMonitor = new FakeEnabledStateMonitor();
@@ -147,6 +151,7 @@ public class ContextualSuggestionsTest {
     public void tearDown() {
         mTestServer.stopAndDestroyServer();
         FetchHelper.setDisableDelayForTesting(false);
+        ContextualSuggestionsMediator.setOverrideBrowserControlsHiddenForTesting(false);
     }
 
     @Test
@@ -171,7 +176,7 @@ public class ContextualSuggestionsTest {
         assertEquals("RecyclerView should be empty.", 0, recyclerView.getChildCount());
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mMediator.showContentInSheetForTesting(true);
+            mMediator.showContentInSheetForTesting(true, true);
             mBottomSheet.endAnimations();
         });
 
@@ -190,6 +195,8 @@ public class ContextualSuggestionsTest {
     @MediumTest
     @Feature({"ContextualSuggestions"})
     public void testScrollPageToTrigger() throws InterruptedException, TimeoutException {
+        ContextualSuggestionsMediator.setOverrideBrowserControlsHiddenForTesting(false);
+        mMediator.setTargetScrollPercentageForTesting(0f);
         assertEquals("Sheet should be hidden.", BottomSheet.SHEET_STATE_HIDDEN,
                 mBottomSheet.getSheetState());
 
@@ -427,7 +434,7 @@ public class ContextualSuggestionsTest {
                 mModel2.getClusterList().getItemCount());
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mMediator2.showContentInSheetForTesting(true);
+            mMediator2.showContentInSheetForTesting(true, true);
             mBottomSheet2.endAnimations();
 
             ContextualSuggestionsBottomSheetContent content1 =
@@ -538,6 +545,53 @@ public class ContextualSuggestionsTest {
     @Test
     @MediumTest
     @Feature({"ContextualSuggestions"})
+    public void testPeekWithPageScrollPercentage() throws Exception {
+        CallbackHelper scrollChangedCallback = new CallbackHelper();
+        GestureStateListener gestureStateListener = new GestureStateListener() {
+            @Override
+            public void onScrollOffsetOrExtentChanged(int scrollOffsetY, int scrollExtentY) {
+                scrollChangedCallback.notifyCalled();
+            }
+        };
+        WebContents webContents = mActivityTestRule.getWebContents();
+        GestureListenerManager.fromWebContents(webContents).addListener(gestureStateListener);
+        View view = webContents.getViewAndroidDelegate().getContainerView();
+
+        // Verify that suggestions are not shown before scroll.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mMediator.showContentInSheetForTesting(false, true));
+        assertEquals("Bottom sheet should be hidden before scroll.", BottomSheet.SHEET_STATE_HIDDEN,
+                mBottomSheet.getSheetState());
+
+        // Scroll the page to 30% and verify that the suggestions are not shown. The pixel to scroll
+        // is hard coded (approximately) based on the html height of the TEST_PAGE.
+        int callCount = scrollChangedCallback.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(() -> view.scrollBy(0, 3000));
+        scrollChangedCallback.waitForCallback(callCount);
+
+        // Simulate call to show content without browser controls being hidden.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mMediator.showContentInSheetForTesting(false, true));
+        assertEquals("Bottom sheet should be hidden on 30% scroll percentage.",
+                BottomSheet.SHEET_STATE_HIDDEN, mBottomSheet.getSheetState());
+
+        // Scroll the page to approximately 60% and verify that the suggestions are shown.
+        callCount = scrollChangedCallback.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(() -> view.scrollBy(0, 3000));
+        scrollChangedCallback.waitForCallback(callCount);
+
+        // Simulate call to show content without browser controls being hidden.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mMediator.showContentInSheetForTesting(false, true));
+        assertEquals("Bottom sheet should be shown on >=50% scroll percentage.",
+                BottomSheet.SHEET_STATE_PEEK, mBottomSheet.getSheetState());
+
+        GestureListenerManager.fromWebContents(webContents).removeListener(gestureStateListener);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions"})
     public void testPeekDelay() throws Exception {
         // Close the suggestions from setUp().
         ThreadUtils.runOnUiThreadBlocking(() -> {
@@ -550,12 +604,12 @@ public class ContextualSuggestionsTest {
         FetchHelper.setFetchTimeBaselineMillisForTesting(startTime);
         ThreadUtils.runOnUiThreadBlocking(
                 () -> mMediator.requestSuggestions("http://www.testurl.com"));
-        assertTrue("Bottom sheet should be hidden before delay.",
-                mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_HIDDEN);
+        assertEquals("Bottom sheet should be hidden before delay.", BottomSheet.SHEET_STATE_HIDDEN,
+                mBottomSheet.getSheetState());
 
         // Simulate user scroll by calling showContentInSheet until the sheet is peeked.
         CriteriaHelper.pollUiThread(() -> {
-            mMediator.showContentInSheetForTesting(false);
+            mMediator.showContentInSheetForTesting(true, false);
             mBottomSheet.endAnimations();
             return mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_PEEK;
         });
@@ -606,7 +660,7 @@ public class ContextualSuggestionsTest {
                 mModel.getClusterList().getItemCount());
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mMediator.showContentInSheetForTesting(true);
+            mMediator.showContentInSheetForTesting(true, true);
             mBottomSheet.endAnimations();
 
             assertEquals("Sheet should be peeked.", BottomSheet.SHEET_STATE_PEEK,
