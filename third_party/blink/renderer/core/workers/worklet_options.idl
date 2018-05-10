@@ -4,5 +4,5 @@
 
 // https://drafts.css-houdini.org/worklets/#dictdef-workletoptions
 dictionary WorkletOptions {
-    RequestCredentials credentials = "omit";
+    RequestCredentials credentials = "same-origin";
 };
