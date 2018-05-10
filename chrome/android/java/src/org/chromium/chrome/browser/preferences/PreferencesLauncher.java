@@ -13,6 +13,9 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.preferences.autofill.AutofillAndPaymentsPreferences;
 import org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences;
 import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataTabsFragment;
+import org.chromium.content_public.browser.WebContents;
+
+import java.lang.ref.WeakReference;
 
 /**
  * A utility class for launching Chrome Settings.
@@ -62,8 +65,11 @@ public class PreferencesLauncher {
     }
 
     @CalledByNative
-    private static void showAutofillSettings() {
-        launchSettingsPage(ContextUtils.getApplicationContext(),
+    private static void showAutofillSettings(WebContents webContents) {
+        WeakReference<Activity> currentActivity =
+                webContents.getTopLevelNativeWindow().getActivity();
+
+        launchSettingsPage(currentActivity.get(),
                 AutofillAndPaymentsPreferences.class.getName());
     }
 

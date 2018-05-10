@@ -145,7 +145,7 @@ AddressNormalizer* ChromeAutofillClient::GetAddressNormalizer() {
 
 void ChromeAutofillClient::ShowAutofillSettings() {
 #if defined(OS_ANDROID)
-  chrome::android::PreferencesLauncher::ShowAutofillSettings();
+  chrome::android::PreferencesLauncher::ShowAutofillSettings(web_contents());
 #else
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (browser)
