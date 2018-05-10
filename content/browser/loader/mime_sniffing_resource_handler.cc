@@ -23,6 +23,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/stream_resource_handler.h"
+#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/browser/web_package/web_package_request_handler.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/plugin_service.h"
@@ -41,6 +42,7 @@
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
+#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "url/origin.h"
 
 namespace content {
@@ -457,11 +459,10 @@ bool MimeSniffingResourceHandler::MaybeStartInterception() {
   if (!must_download) {
     if (blink::IsSupportedMimeType(mime_type))
       return true;
-    if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange) &&
-        WebPackageRequestHandler::IsSupportedMimeType(mime_type)) {
+    if (signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
+            request()->url(), response_->head)) {
       return true;
     }
-
     bool handled_by_plugin;
     if (!CheckForPluginHandler(&handled_by_plugin))
       return false;

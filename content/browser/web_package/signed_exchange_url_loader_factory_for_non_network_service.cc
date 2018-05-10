@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "content/browser/loader/resource_requester_info.h"
 #include "content/browser/loader/url_loader_factory_impl.h"
+#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/common/content_features.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
@@ -20,7 +21,7 @@ SignedExchangeURLLoaderFactoryForNonNetworkService::
     : resource_context_(resource_context),
       url_request_context_getter_(url_request_context_getter) {
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  DCHECK(base::FeatureList::IsEnabled(features::kSignedHTTPExchange));
+  DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
 }
 
 SignedExchangeURLLoaderFactoryForNonNetworkService::

@@ -356,6 +356,10 @@ const base::Feature kSharedArrayBuffer{"SharedArrayBuffer",
 const base::Feature kSignedHTTPExchange{"SignedHTTPExchange",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Origin Trial of Origin-Signed HTTP Exchanges (for WebPackage Loading)
+const base::Feature kSignedHTTPExchangeOriginTrial{
+    "SignedHTTPExchangeOriginTrial", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // An experiment to require process isolation for the sign-in origin,
 // https://accounts.google.com.  Launch bug: https://crbug.com/739418.
 const base::Feature kSignInProcessIsolation{"sign-in-process-isolation",

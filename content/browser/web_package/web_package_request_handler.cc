@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
+#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/browser/web_package/web_package_loader.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/content_features.h"
@@ -18,13 +19,13 @@
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 
 namespace content {
 
 // static
 bool WebPackageRequestHandler::IsSupportedMimeType(
     const std::string& mime_type) {
-  DCHECK(base::FeatureList::IsEnabled(features::kSignedHTTPExchange));
   return mime_type == "application/signed-exchange";
 }
 
@@ -48,7 +49,7 @@ WebPackageRequestHandler::WebPackageRequestHandler(
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
       request_context_getter_(std::move(request_context_getter)),
       weak_factory_(this) {
-  DCHECK(base::FeatureList::IsEnabled(features::kSignedHTTPExchange));
+  DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
 }
 
 WebPackageRequestHandler::~WebPackageRequestHandler() = default;
@@ -75,10 +76,8 @@ bool WebPackageRequestHandler::MaybeCreateLoaderForResponse(
     network::mojom::URLLoaderPtr* loader,
     network::mojom::URLLoaderClientRequest* client_request,
     ThrottlingURLLoader* url_loader) {
-  std::string mime_type;
-  if (response.was_fetched_via_service_worker || !response.headers ||
-      !response.headers->GetMimeType(&mime_type) ||
-      !IsSupportedMimeType(mime_type)) {
+  if (!signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
+          request_initiator_.GetURL(), response)) {
     return false;
   }
 

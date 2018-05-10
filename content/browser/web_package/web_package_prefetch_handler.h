@@ -30,9 +30,6 @@ class WebPackagePrefetchHandler final : public network::mojom::URLLoaderClient {
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
       std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
 
-  static bool IsResponseForWebPackage(
-      const network::ResourceResponseHead& response);
-
   // This takes |network_loader| and |network_client| to set up the
   // WebPackageLoader (so that the loader can load data from the network).
   // |forwarding_client| is a pointer to the downstream client (typically who

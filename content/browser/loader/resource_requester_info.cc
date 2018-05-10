@@ -9,6 +9,7 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
@@ -134,7 +135,7 @@ scoped_refptr<ResourceRequesterInfo>
 ResourceRequesterInfo::CreateForCertificateFetcherForSignedExchange(
     const GetContextsCallback& get_contexts_callback) {
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  DCHECK(base::FeatureList::IsEnabled(features::kSignedHTTPExchange));
+  DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
   return scoped_refptr<ResourceRequesterInfo>(new ResourceRequesterInfo(
       RequesterType::CERTIFICATE_FETCHER_FOR_SIGNED_EXCHANGE,
       ChildProcessHost::kInvalidUniqueID, nullptr /* appcache_service */,

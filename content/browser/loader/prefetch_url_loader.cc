@@ -5,6 +5,7 @@
 #include "content/browser/loader/prefetch_url_loader.h"
 
 #include "base/feature_list.h"
+#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/browser/web_package/web_package_prefetch_handler.h"
 #include "content/public/common/content_features.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -81,7 +82,7 @@ void PrefetchURLLoader::ResumeReadingBodyFromNet() {
 void PrefetchURLLoader::OnReceiveResponse(
     const network::ResourceResponseHead& response,
     network::mojom::DownloadedTempFilePtr downloaded_file) {
-  if (WebPackagePrefetchHandler::IsResponseForWebPackage(response)) {
+  if (signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(url_, response)) {
     DCHECK(!web_package_prefetch_handler_);
 
     // Note that after this point this doesn't directly get upcalls from the
