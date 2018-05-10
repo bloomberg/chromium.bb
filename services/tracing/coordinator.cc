@@ -19,7 +19,6 @@
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/synchronization/lock.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -98,7 +97,6 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
   // shutdown. We either will not write to the stream afterwards or do not care
   // what happens to what we try to write.
   void CloseStream() {
-    base::AutoLock mutex(stream_lock_);
     DCHECK(stream_.is_valid());
     stream_.reset();
   }
@@ -113,8 +111,7 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
   // Handles synchronize writes to |stream_|, if the stream is not already
   // closed.
   void WriteToStream(const std::string& data) {
-    base::AutoLock mutex(stream_lock_);
-    if (stream_->is_valid())
+    if (stream_.is_valid())
       mojo::BlockingCopyFromString(data, stream_);
   }
 
@@ -257,7 +254,6 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
   // The stream to which trace events from different agents should be
   // serialized, eventually. This is set when tracing is stopped.
   mojo::ScopedDataPipeProducerHandle stream_;
-  base::Lock stream_lock_;
   std::string agent_label_;
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
   base::WeakPtr<Coordinator> coordinator_;
