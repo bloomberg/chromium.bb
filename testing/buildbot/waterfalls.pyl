@@ -586,6 +586,18 @@
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'kvm': '1',
+              'os': 'Ubuntu-14.04',
+              'pool': 'Chrome-CrOS-VM',
+            },
+          ],
+        },
       },
       'chromeos-daisy-rel': {
         'additional_compile_targets': [
@@ -1430,7 +1442,7 @@
           'chromiumos_preflight',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_gtests',
+          'gtest_tests': 'chromeos_gtests_experimental',
           'isolated_scripts': 'chromeos_isolated_scripts',
         },
         'swarming': {
