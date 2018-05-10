@@ -20,7 +20,7 @@
 #include "net/third_party/http2/platform/api/http2_export.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
 
-namespace net {
+namespace http2 {
 
 class HTTP2_EXPORT_PRIVATE HpackEntryDecoder {
  public:
@@ -80,6 +80,6 @@ HTTP2_EXPORT_PRIVATE std::ostream& operator<<(
     std::ostream& out,
     HpackEntryDecoder::EntryDecoderState state);
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HPACK_DECODER_HPACK_ENTRY_DECODER_H_

@@ -9,7 +9,7 @@
 #include "net/third_party/http2/http2_structures.h"
 #include "net/third_party/http2/tools/http2_random.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 void Randomize(Http2FrameHeader* p, RandomBase* rng) {
@@ -104,4 +104,4 @@ bool FrameCanHaveHpackPayload(const Http2FrameHeader& header) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2

@@ -11,7 +11,7 @@
 #include "net/third_party/http2/http2_constants.h"
 #include "net/third_party/http2/http2_structures.h"
 
-namespace net {
+namespace http2 {
 
 // Fail if any of the methods are called. Allows a test to override only the
 // expected calls.
@@ -136,6 +136,6 @@ class LoggingHttp2FrameDecoderListener : public Http2FrameDecoderListener {
   Http2FrameDecoderListener* wrapped_;
 };
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_DECODER_HTTP2_FRAME_DECODER_LISTENER_TEST_UTIL_H_

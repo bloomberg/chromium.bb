@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 void HpackStringDecoderVLoggingListener::OnStringStart(bool huffman_encoded,
@@ -33,4 +33,4 @@ void HpackStringDecoderVLoggingListener::OnStringEnd() {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2

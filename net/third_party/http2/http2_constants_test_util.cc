@@ -4,7 +4,7 @@
 
 #include "net/third_party/http2/http2_constants_test_util.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 std::vector<Http2ErrorCode> AllHttp2ErrorCodes() {
@@ -81,4 +81,4 @@ uint8_t InvalidFlagMaskForFrameType(Http2FrameType type) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2

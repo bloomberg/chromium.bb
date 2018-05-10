@@ -166,7 +166,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
   }
 
   void OnError(
-      Http2DecoderAdapter::SpdyFramerError spdy_framer_error) override {}
+      http2::Http2DecoderAdapter::SpdyFramerError spdy_framer_error) override {}
   void OnStreamError(SpdyStreamId stream_id,
                      const SpdyString& description) override {}
   void OnHeaders(SpdyStreamId stream_id,

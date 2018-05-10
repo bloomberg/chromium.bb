@@ -20,12 +20,12 @@
 //
 // (excluding the leading "//").
 
-namespace net {
+namespace http2 {
 namespace test {
 
 Http2String HpackExampleToStringOrDie(Http2StringPiece example);
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HPACK_TOOLS_HPACK_EXAMPLE_H_

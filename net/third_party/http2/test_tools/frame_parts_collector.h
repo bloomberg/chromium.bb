@@ -18,7 +18,7 @@
 #include "net/third_party/http2/http2_structures.h"
 #include "net/third_party/http2/test_tools/frame_parts.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 class FramePartsCollector : public FailingHttp2FrameDecoderListener {
@@ -106,6 +106,6 @@ class FramePartsCollector : public FailingHttp2FrameDecoderListener {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_TEST_TOOLS_FRAME_PARTS_COLLECTOR_H_

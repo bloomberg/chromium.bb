@@ -9,7 +9,7 @@
 
 #include "net/third_party/http2/tools/http2_random.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 class Http2StructureDecoderPeer {
@@ -19,6 +19,6 @@ class Http2StructureDecoderPeer {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_DECODER_HTTP2_STRUCTURE_DECODER_TEST_UTIL_H_

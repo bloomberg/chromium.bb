@@ -27,7 +27,7 @@ using ::testing::HasSubstr;
 using ::testing::Mock;
 using ::testing::StrictMock;
 
-namespace net {
+namespace http2 {
 namespace test {
 class HpackDecoderStatePeer {
  public:
@@ -41,10 +41,10 @@ namespace {
 // Define HasSubstr() for Http2StringPiece arguments.
 // This shadows ::testing::HasSubstr(), which only works on argument types
 // that can be implicilty converted to a Http2String.
-inline ::testing::PolymorphicMatcher<StringPieceHasSubstrMatcher> HasSubstr(
-    const Http2String& substring) {
+inline ::testing::PolymorphicMatcher<net::test::StringPieceHasSubstrMatcher>
+HasSubstr(const Http2String& substring) {
   return ::testing::MakePolymorphicMatcher(
-      StringPieceHasSubstrMatcher(substring));
+      net::test::StringPieceHasSubstrMatcher(substring));
 }
 
 class MockHpackDecoderListener : public HpackDecoderListener {
@@ -547,4 +547,4 @@ TEST_F(HpackDecoderStateTest, ErrorsSuppressCallbacks) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

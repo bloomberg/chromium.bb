@@ -6,7 +6,7 @@
 
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 
-namespace net {
+namespace http2 {
 
 DecodeStatus HpackVarintDecoder::Start(uint8_t prefix_value,
                                        uint8_t prefix_mask,
@@ -92,4 +92,4 @@ DecodeStatus HpackVarintDecoder::ResumeForTest(DecodeBuffer* db) {
   return Resume(db);
 }
 
-}  // namespace net
+}  // namespace http2

@@ -40,7 +40,7 @@
 #include "net/third_party/http2/http2_structures.h"
 #include "net/third_party/http2/platform/api/http2_export.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 class Http2FrameDecoderPeer;
 }  // namespace test
@@ -198,6 +198,6 @@ class HTTP2_EXPORT_PRIVATE Http2FrameDecoder {
   DISALLOW_COPY_AND_ASSIGN(Http2FrameDecoder);
 };
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_DECODER_HTTP2_FRAME_DECODER_H_

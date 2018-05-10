@@ -18,7 +18,7 @@
 #include "net/third_party/http2/platform/api/http2_string.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
 
-namespace net {
+namespace http2 {
 
 class HTTP2_EXPORT_PRIVATE HpackString {
  public:
@@ -72,6 +72,6 @@ struct HTTP2_EXPORT_PRIVATE HpackStringPair {
 HTTP2_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
                                               const HpackStringPair& p);
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HPACK_HPACK_STRING_H_

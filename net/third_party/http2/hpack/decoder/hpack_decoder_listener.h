@@ -13,7 +13,7 @@
 #include "net/third_party/http2/platform/api/http2_export.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
 
-namespace net {
+namespace http2 {
 
 class HTTP2_EXPORT_PRIVATE HpackDecoderListener {
  public:
@@ -61,6 +61,6 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderNoOpListener
   static HpackDecoderNoOpListener* NoOpListener();
 };
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HPACK_DECODER_HPACK_DECODER_LISTENER_H_

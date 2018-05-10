@@ -28,7 +28,7 @@
 
 // TODO(jamessynge): Remove use of binary literals, that is a C++ 14 feature.
 
-namespace net {
+namespace http2 {
 namespace {
 
 // HuffmanCode is used to store the codes associated with symbols (a pattern of
@@ -536,4 +536,4 @@ Http2String HpackHuffmanDecoder::DebugString() const {
   return bit_buffer_.DebugString();
 }
 
-}  // namespace net
+}  // namespace http2

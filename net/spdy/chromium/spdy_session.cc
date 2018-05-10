@@ -464,86 +464,87 @@ class SpdyServerPushHelper : public ServerPushDelegate::ServerPushHelper {
 }  // namespace
 
 SpdyProtocolErrorDetails MapFramerErrorToProtocolError(
-    Http2DecoderAdapter::SpdyFramerError err) {
+    http2::Http2DecoderAdapter::SpdyFramerError err) {
   switch (err) {
-    case Http2DecoderAdapter::SPDY_NO_ERROR:
+    case http2::Http2DecoderAdapter::SPDY_NO_ERROR:
       return SPDY_ERROR_NO_ERROR;
-    case Http2DecoderAdapter::SPDY_INVALID_STREAM_ID:
+    case http2::Http2DecoderAdapter::SPDY_INVALID_STREAM_ID:
       return SPDY_ERROR_INVALID_STREAM_ID;
-    case Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME:
+    case http2::Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME:
       return SPDY_ERROR_INVALID_CONTROL_FRAME;
-    case Http2DecoderAdapter::SPDY_CONTROL_PAYLOAD_TOO_LARGE:
+    case http2::Http2DecoderAdapter::SPDY_CONTROL_PAYLOAD_TOO_LARGE:
       return SPDY_ERROR_CONTROL_PAYLOAD_TOO_LARGE;
-    case Http2DecoderAdapter::SPDY_ZLIB_INIT_FAILURE:
+    case http2::Http2DecoderAdapter::SPDY_ZLIB_INIT_FAILURE:
       return SPDY_ERROR_ZLIB_INIT_FAILURE;
-    case Http2DecoderAdapter::SPDY_UNSUPPORTED_VERSION:
+    case http2::Http2DecoderAdapter::SPDY_UNSUPPORTED_VERSION:
       return SPDY_ERROR_UNSUPPORTED_VERSION;
-    case Http2DecoderAdapter::SPDY_DECOMPRESS_FAILURE:
+    case http2::Http2DecoderAdapter::SPDY_DECOMPRESS_FAILURE:
       return SPDY_ERROR_DECOMPRESS_FAILURE;
-    case Http2DecoderAdapter::SPDY_COMPRESS_FAILURE:
+    case http2::Http2DecoderAdapter::SPDY_COMPRESS_FAILURE:
       return SPDY_ERROR_COMPRESS_FAILURE;
-    case Http2DecoderAdapter::SPDY_GOAWAY_FRAME_CORRUPT:
+    case http2::Http2DecoderAdapter::SPDY_GOAWAY_FRAME_CORRUPT:
       return SPDY_ERROR_GOAWAY_FRAME_CORRUPT;
-    case Http2DecoderAdapter::SPDY_RST_STREAM_FRAME_CORRUPT:
+    case http2::Http2DecoderAdapter::SPDY_RST_STREAM_FRAME_CORRUPT:
       return SPDY_ERROR_RST_STREAM_FRAME_CORRUPT;
-    case Http2DecoderAdapter::SPDY_INVALID_PADDING:
+    case http2::Http2DecoderAdapter::SPDY_INVALID_PADDING:
       return SPDY_ERROR_INVALID_PADDING;
-    case Http2DecoderAdapter::SPDY_INVALID_DATA_FRAME_FLAGS:
+    case http2::Http2DecoderAdapter::SPDY_INVALID_DATA_FRAME_FLAGS:
       return SPDY_ERROR_INVALID_DATA_FRAME_FLAGS;
-    case Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME_FLAGS:
+    case http2::Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME_FLAGS:
       return SPDY_ERROR_INVALID_CONTROL_FRAME_FLAGS;
-    case Http2DecoderAdapter::SPDY_UNEXPECTED_FRAME:
+    case http2::Http2DecoderAdapter::SPDY_UNEXPECTED_FRAME:
       return SPDY_ERROR_UNEXPECTED_FRAME;
-    case Http2DecoderAdapter::SPDY_INTERNAL_FRAMER_ERROR:
+    case http2::Http2DecoderAdapter::SPDY_INTERNAL_FRAMER_ERROR:
       return SPDY_ERROR_INTERNAL_FRAMER_ERROR;
-    case Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME_SIZE:
+    case http2::Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME_SIZE:
       return SPDY_ERROR_INVALID_CONTROL_FRAME_SIZE;
-    case Http2DecoderAdapter::SPDY_OVERSIZED_PAYLOAD:
+    case http2::Http2DecoderAdapter::SPDY_OVERSIZED_PAYLOAD:
       return SPDY_ERROR_OVERSIZED_PAYLOAD;
-    case Http2DecoderAdapter::LAST_ERROR:
+    case http2::Http2DecoderAdapter::LAST_ERROR:
       NOTREACHED();
   }
   NOTREACHED();
   return static_cast<SpdyProtocolErrorDetails>(-1);
 }
 
-Error MapFramerErrorToNetError(Http2DecoderAdapter::SpdyFramerError err) {
+Error MapFramerErrorToNetError(
+    http2::Http2DecoderAdapter::SpdyFramerError err) {
   switch (err) {
-    case Http2DecoderAdapter::SPDY_NO_ERROR:
+    case http2::Http2DecoderAdapter::SPDY_NO_ERROR:
       return OK;
-    case Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME:
+    case http2::Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME:
       return ERR_SPDY_PROTOCOL_ERROR;
-    case Http2DecoderAdapter::SPDY_CONTROL_PAYLOAD_TOO_LARGE:
+    case http2::Http2DecoderAdapter::SPDY_CONTROL_PAYLOAD_TOO_LARGE:
       return ERR_SPDY_FRAME_SIZE_ERROR;
-    case Http2DecoderAdapter::SPDY_ZLIB_INIT_FAILURE:
+    case http2::Http2DecoderAdapter::SPDY_ZLIB_INIT_FAILURE:
       return ERR_SPDY_COMPRESSION_ERROR;
-    case Http2DecoderAdapter::SPDY_UNSUPPORTED_VERSION:
+    case http2::Http2DecoderAdapter::SPDY_UNSUPPORTED_VERSION:
       return ERR_SPDY_PROTOCOL_ERROR;
-    case Http2DecoderAdapter::SPDY_DECOMPRESS_FAILURE:
+    case http2::Http2DecoderAdapter::SPDY_DECOMPRESS_FAILURE:
       return ERR_SPDY_COMPRESSION_ERROR;
-    case Http2DecoderAdapter::SPDY_COMPRESS_FAILURE:
+    case http2::Http2DecoderAdapter::SPDY_COMPRESS_FAILURE:
       return ERR_SPDY_COMPRESSION_ERROR;
-    case Http2DecoderAdapter::SPDY_GOAWAY_FRAME_CORRUPT:
+    case http2::Http2DecoderAdapter::SPDY_GOAWAY_FRAME_CORRUPT:
       return ERR_SPDY_PROTOCOL_ERROR;
-    case Http2DecoderAdapter::SPDY_RST_STREAM_FRAME_CORRUPT:
+    case http2::Http2DecoderAdapter::SPDY_RST_STREAM_FRAME_CORRUPT:
       return ERR_SPDY_PROTOCOL_ERROR;
-    case Http2DecoderAdapter::SPDY_INVALID_PADDING:
+    case http2::Http2DecoderAdapter::SPDY_INVALID_PADDING:
       return ERR_SPDY_PROTOCOL_ERROR;
-    case Http2DecoderAdapter::SPDY_INVALID_DATA_FRAME_FLAGS:
+    case http2::Http2DecoderAdapter::SPDY_INVALID_DATA_FRAME_FLAGS:
       return ERR_SPDY_PROTOCOL_ERROR;
-    case Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME_FLAGS:
+    case http2::Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME_FLAGS:
       return ERR_SPDY_PROTOCOL_ERROR;
-    case Http2DecoderAdapter::SPDY_UNEXPECTED_FRAME:
+    case http2::Http2DecoderAdapter::SPDY_UNEXPECTED_FRAME:
       return ERR_SPDY_PROTOCOL_ERROR;
-    case Http2DecoderAdapter::SPDY_INTERNAL_FRAMER_ERROR:
+    case http2::Http2DecoderAdapter::SPDY_INTERNAL_FRAMER_ERROR:
       return ERR_SPDY_PROTOCOL_ERROR;
-    case Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME_SIZE:
+    case http2::Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME_SIZE:
       return ERR_SPDY_FRAME_SIZE_ERROR;
-    case Http2DecoderAdapter::SPDY_INVALID_STREAM_ID:
+    case http2::Http2DecoderAdapter::SPDY_INVALID_STREAM_ID:
       return ERR_SPDY_PROTOCOL_ERROR;
-    case Http2DecoderAdapter::SPDY_OVERSIZED_PAYLOAD:
+    case http2::Http2DecoderAdapter::SPDY_OVERSIZED_PAYLOAD:
       return ERR_SPDY_FRAME_SIZE_ERROR;
-    case Http2DecoderAdapter::LAST_ERROR:
+    case http2::Http2DecoderAdapter::LAST_ERROR:
       NOTREACHED();
   }
   NOTREACHED();
@@ -2086,7 +2087,7 @@ int SpdySession::DoReadComplete(int result) {
     }
 
     DCHECK_EQ(buffered_spdy_framer_->spdy_framer_error(),
-              Http2DecoderAdapter::SPDY_NO_ERROR);
+              http2::Http2DecoderAdapter::SPDY_NO_ERROR);
   }
 
   read_buffer_ = nullptr;
@@ -2734,14 +2735,14 @@ void SpdySession::CancelPushedStreamIfUnclaimed(SpdyStreamId stream_id) {
 }
 
 void SpdySession::OnError(
-    Http2DecoderAdapter::SpdyFramerError spdy_framer_error) {
+    http2::Http2DecoderAdapter::SpdyFramerError spdy_framer_error) {
   CHECK(in_io_loop_);
 
   RecordProtocolErrorHistogram(
       MapFramerErrorToProtocolError(spdy_framer_error));
   SpdyString description = SpdyStringPrintf(
       "Framer error: %d (%s).", spdy_framer_error,
-      Http2DecoderAdapter::SpdyFramerErrorToString(spdy_framer_error));
+      http2::Http2DecoderAdapter::SpdyFramerErrorToString(spdy_framer_error));
   DoDrainSession(MapFramerErrorToNetError(spdy_framer_error), description);
 }
 

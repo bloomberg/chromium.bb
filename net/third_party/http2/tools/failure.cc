@@ -4,7 +4,7 @@
 
 #include "net/third_party/http2/tools/failure.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 // This is a copy of the same named method in ::testing::internal.
@@ -26,4 +26,4 @@ Http2String GetBoolAssertionFailureMessage(
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2

@@ -12,7 +12,7 @@
 #include "net/third_party/http2/decoder/frame_decoder_state.h"
 #include "net/third_party/http2/platform/api/http2_export.h"
 
-namespace net {
+namespace http2 {
 
 class HTTP2_EXPORT_PRIVATE ContinuationPayloadDecoder {
  public:
@@ -26,6 +26,6 @@ class HTTP2_EXPORT_PRIVATE ContinuationPayloadDecoder {
                                      DecodeBuffer* db);
 };
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_DECODER_PAYLOAD_DECODERS_CONTINUATION_PAYLOAD_DECODER_H_

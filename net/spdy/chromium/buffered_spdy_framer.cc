@@ -47,7 +47,7 @@ void BufferedSpdyFramer::set_debug_visitor(
 }
 
 void BufferedSpdyFramer::OnError(
-    Http2DecoderAdapter::SpdyFramerError spdy_framer_error) {
+    http2::Http2DecoderAdapter::SpdyFramerError spdy_framer_error) {
   visitor_->OnError(spdy_framer_error);
 }
 
@@ -227,17 +227,17 @@ void BufferedSpdyFramer::Reset() {
   deframer_.Reset();
 }
 
-Http2DecoderAdapter::SpdyFramerError BufferedSpdyFramer::spdy_framer_error()
-    const {
+http2::Http2DecoderAdapter::SpdyFramerError
+BufferedSpdyFramer::spdy_framer_error() const {
   return deframer_.spdy_framer_error();
 }
 
-Http2DecoderAdapter::SpdyState BufferedSpdyFramer::state() const {
+http2::Http2DecoderAdapter::SpdyState BufferedSpdyFramer::state() const {
   return deframer_.state();
 }
 
 bool BufferedSpdyFramer::MessageFullyRead() {
-  return state() == Http2DecoderAdapter::SPDY_FRAME_COMPLETE;
+  return state() == http2::Http2DecoderAdapter::SPDY_FRAME_COMPLETE;
 }
 
 bool BufferedSpdyFramer::HasError() {

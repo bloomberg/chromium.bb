@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "net/third_party/http2/hpack/http2_hpack_constants.h"
 
-namespace net {
+namespace http2 {
 namespace {
 
 std::vector<HpackStringPair>* MakeStaticTable() {
@@ -150,4 +150,4 @@ const HpackStringPair* HpackDecoderTables::Lookup(size_t index) const {
   }
 }
 
-}  // namespace net
+}  // namespace http2

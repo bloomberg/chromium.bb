@@ -22,7 +22,7 @@
 
 using ::testing::AssertionResult;
 
-namespace net {
+namespace http2 {
 namespace test {
 namespace {
 
@@ -49,7 +49,7 @@ class StructureDecoderTest : public ::testing::Test {
   }
 
   // Set the fields of |*p| to random values.
-  void Randomize(S* p) { ::net::test::Randomize(p, &random_); }
+  void Randomize(S* p) { ::http2::test::Randomize(p, &random_); }
 
   // Fully decodes the Structure at the start of data, and confirms it matches
   // *expected (if provided).
@@ -457,4 +457,4 @@ TEST_F(AltSvcFieldsDecoderTest, DecodesRandomized) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

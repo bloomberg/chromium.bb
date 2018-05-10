@@ -7,7 +7,7 @@
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 namespace {
 const bool kUncompressed = false;
@@ -165,4 +165,4 @@ TEST(HpackBlockBuilderTest, DynamicTableSizeUpdate) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

@@ -27,10 +27,15 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::http2::HpackEntryType;
+using ::http2::HpackString;
+using ::http2::HpackStringPair;
+using ::http2::test::HpackBlockBuilder;
+using ::http2::test::HpackDecoderPeer;
 using ::testing::ElementsAre;
 using ::testing::Pair;
 
-namespace net {
+namespace http2 {
 namespace test {
 
 class HpackDecoderStatePeer {
@@ -50,6 +55,12 @@ class HpackDecoderPeer {
   }
 };
 
+}  // namespace test
+}  // namespace http2
+
+namespace net {
+namespace test {
+
 class HpackDecoderAdapterPeer {
  public:
   explicit HpackDecoderAdapterPeer(HpackDecoderAdapter* decoder)
@@ -60,7 +71,7 @@ class HpackDecoderAdapterPeer {
                                          HpackString(name), HpackString(value));
   }
 
-  HpackDecoderTables* GetDecoderTables() {
+  http2::HpackDecoderTables* GetDecoderTables() {
     return HpackDecoderPeer::GetDecoderTables(&decoder_->hpack_decoder_);
   }
 
@@ -238,7 +249,7 @@ class HpackDecoderAdapterTest
     return result;
   }
 
-  Http2Random random_;
+  http2::test::Http2Random random_;
   HpackDecoderAdapter decoder_;
   test::HpackDecoderAdapterPeer decoder_peer_;
   TestHeadersHandler handler_;

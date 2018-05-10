@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace http2 {
 
 FailingHttp2FrameDecoderListener::FailingHttp2FrameDecoderListener() = default;
 FailingHttp2FrameDecoderListener::~FailingHttp2FrameDecoderListener() = default;
@@ -482,4 +482,4 @@ void LoggingHttp2FrameDecoderListener::OnFrameSizeError(
   }
 }
 
-}  // namespace net
+}  // namespace http2

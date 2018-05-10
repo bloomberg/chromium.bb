@@ -16,8 +16,9 @@ using ::testing::AssertionFailure;
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
 using ::testing::ContainerEq;
+using net::EscapeQueryParamValue;
 
-namespace net {
+namespace http2 {
 namespace test {
 namespace {
 
@@ -524,4 +525,4 @@ std::ostream& operator<<(std::ostream& out, const FrameParts& v) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2

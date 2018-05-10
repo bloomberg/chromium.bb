@@ -92,10 +92,10 @@ class QuicSpdySession::SpdyFramerVisitor
                     QUIC_INVALID_HEADERS_STREAM_DATA);
   }
 
-  void OnError(Http2DecoderAdapter::SpdyFramerError error) override {
+  void OnError(http2::Http2DecoderAdapter::SpdyFramerError error) override {
     QuicErrorCode code = QUIC_INVALID_HEADERS_STREAM_DATA;
     switch (error) {
-      case Http2DecoderAdapter::SpdyFramerError::SPDY_DECOMPRESS_FAILURE:
+      case http2::Http2DecoderAdapter::SpdyFramerError::SPDY_DECOMPRESS_FAILURE:
         code = QUIC_HEADERS_STREAM_DATA_DECOMPRESS_FAILURE;
         break;
       default:
@@ -103,7 +103,7 @@ class QuicSpdySession::SpdyFramerVisitor
     }
     CloseConnection(
         QuicStrCat("SPDY framing error: ",
-                   Http2DecoderAdapter::SpdyFramerErrorToString(error)),
+                   http2::Http2DecoderAdapter::SpdyFramerErrorToString(error)),
         code);
   }
 

@@ -13,7 +13,7 @@
 #include "net/third_party/http2/http2_structures.h"
 #include "net/third_party/http2/platform/api/http2_export.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 class PushPromisePayloadDecoderPeer;
 }  // namespace test
@@ -61,6 +61,6 @@ class HTTP2_EXPORT_PRIVATE PushPromisePayloadDecoder {
   Http2PushPromiseFields push_promise_fields_;
 };
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_DECODER_PAYLOAD_DECODERS_PUSH_PROMISE_PAYLOAD_DECODER_H_

@@ -33,7 +33,7 @@
 #include "net/third_party/http2/http2_constants.h"
 #include "net/third_party/http2/http2_structures.h"
 
-namespace net {
+namespace http2 {
 
 // TODO(jamessynge): Consider sorting the methods by frequency of call, if that
 // helps at all.
@@ -351,6 +351,6 @@ class Http2FrameDecoderNoOpListener : public Http2FrameDecoderListener {
 static_assert(!std::is_abstract<Http2FrameDecoderNoOpListener>(),
               "Http2FrameDecoderNoOpListener ought to be concrete.");
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_DECODER_HTTP2_FRAME_DECODER_LISTENER_H_

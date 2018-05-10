@@ -14,7 +14,7 @@
 #include "net/third_party/http2/hpack/http2_hpack_constants.h"
 #include "net/third_party/http2/platform/api/http2_export.h"
 
-namespace net {
+namespace http2 {
 
 class HTTP2_EXPORT_PRIVATE HpackEntryDecoderListener {
  public:
@@ -105,6 +105,6 @@ class HTTP2_EXPORT_PRIVATE HpackEntryDecoderNoOpListener
   void OnDynamicTableSizeUpdate(size_t size) override {}
 };
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HPACK_DECODER_HPACK_ENTRY_DECODER_LISTENER_H_

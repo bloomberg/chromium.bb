@@ -59,7 +59,8 @@ const bool kFins[] = {false, true};
 
 class MockVisitor : public SpdyFramerVisitorInterface {
  public:
-  MOCK_METHOD1(OnError, void(Http2DecoderAdapter::SpdyFramerError error));
+  MOCK_METHOD1(OnError,
+               void(http2::Http2DecoderAdapter::SpdyFramerError error));
   MOCK_METHOD3(OnDataFrameHeader,
                void(SpdyStreamId stream_id, size_t length, bool fin));
   MOCK_METHOD3(OnStreamFrameData,
@@ -157,7 +158,8 @@ class QuicHeadersStreamTest : public QuicTestWithParam<TestParams> {
     headers_["content-length"] = "11";
     framer_ = std::unique_ptr<SpdyFramer>(
         new SpdyFramer(SpdyFramer::ENABLE_COMPRESSION));
-    deframer_ = std::unique_ptr<Http2DecoderAdapter>(new Http2DecoderAdapter());
+    deframer_ = std::unique_ptr<http2::Http2DecoderAdapter>(
+        new http2::Http2DecoderAdapter());
     deframer_->set_visitor(&visitor_);
     EXPECT_EQ(transport_version(), session_.connection()->transport_version());
     EXPECT_TRUE(headers_stream_ != nullptr);
@@ -266,7 +268,7 @@ class QuicHeadersStreamTest : public QuicTestWithParam<TestParams> {
     }
     deframer_->ProcessInput(saved_data_.data(), saved_data_.length());
     EXPECT_FALSE(deframer_->HasError())
-        << Http2DecoderAdapter::SpdyFramerErrorToString(
+        << http2::Http2DecoderAdapter::SpdyFramerErrorToString(
                deframer_->spdy_framer_error());
 
     CheckHeaders();
@@ -313,7 +315,7 @@ class QuicHeadersStreamTest : public QuicTestWithParam<TestParams> {
   QuicString saved_header_data_;
   QuicString saved_payloads_;
   std::unique_ptr<SpdyFramer> framer_;
-  std::unique_ptr<Http2DecoderAdapter> deframer_;
+  std::unique_ptr<http2::Http2DecoderAdapter> deframer_;
   StrictMock<MockVisitor> visitor_;
   QuicStreamFrame stream_frame_;
   QuicStreamId next_promised_stream_id_;
@@ -369,7 +371,7 @@ TEST_P(QuicHeadersStreamTest, WritePushPromises) {
       EXPECT_CALL(visitor_, OnHeaderFrameEnd(stream_id)).Times(1);
       deframer_->ProcessInput(saved_data_.data(), saved_data_.length());
       EXPECT_FALSE(deframer_->HasError())
-          << Http2DecoderAdapter::SpdyFramerErrorToString(
+          << http2::Http2DecoderAdapter::SpdyFramerErrorToString(
                  deframer_->spdy_framer_error());
       CheckHeaders();
       saved_data_.clear();

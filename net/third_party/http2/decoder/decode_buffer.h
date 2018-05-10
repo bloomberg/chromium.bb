@@ -22,7 +22,7 @@
 #include "net/third_party/http2/platform/api/http2_export.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
 
-namespace net {
+namespace http2 {
 class DecodeBufferSubset;
 
 class HTTP2_EXPORT_PRIVATE DecodeBuffer {
@@ -160,6 +160,6 @@ class HTTP2_EXPORT_PRIVATE DecodeBufferSubset : public DecodeBuffer {
   DISALLOW_COPY_AND_ASSIGN(DecodeBufferSubset);
 };
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_DECODER_DECODE_BUFFER_H_

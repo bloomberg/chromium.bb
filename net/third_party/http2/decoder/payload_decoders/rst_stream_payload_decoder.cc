@@ -10,7 +10,7 @@
 #include "net/third_party/http2/http2_constants.h"
 #include "net/third_party/http2/http2_structures.h"
 
-namespace net {
+namespace http2 {
 
 DecodeStatus RstStreamPayloadDecoder::StartDecodingPayload(
     FrameDecoderState* state,
@@ -63,4 +63,4 @@ DecodeStatus RstStreamPayloadDecoder::HandleStatus(FrameDecoderState* state,
   return status;
 }
 
-}  // namespace net
+}  // namespace http2

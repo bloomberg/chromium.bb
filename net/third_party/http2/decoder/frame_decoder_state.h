@@ -23,7 +23,7 @@
 #include "net/third_party/http2/http2_structures.h"
 #include "net/third_party/http2/platform/api/http2_export.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 class FrameDecoderStatePeer;
 }  // namespace test
@@ -243,6 +243,6 @@ class HTTP2_EXPORT_PRIVATE FrameDecoderState {
   Http2StructureDecoder structure_decoder_;
 };
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_DECODER_FRAME_DECODER_STATE_H_

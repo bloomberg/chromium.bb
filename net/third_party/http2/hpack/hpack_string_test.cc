@@ -16,7 +16,7 @@ using ::testing::AssertionFailure;
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
 
-namespace net {
+namespace http2 {
 namespace test {
 namespace {
 
@@ -146,4 +146,4 @@ TEST_F(HpackStringTest, MoveConstructor) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

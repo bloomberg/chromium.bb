@@ -35,7 +35,7 @@
 #include "net/third_party/http2/platform/api/http2_export.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
 
-namespace net {
+namespace http2 {
 
 struct HTTP2_EXPORT_PRIVATE Http2FrameHeader {
   Http2FrameHeader() {}
@@ -320,6 +320,6 @@ HTTP2_EXPORT_PRIVATE inline bool operator!=(const Http2AltSvcFields& a,
 HTTP2_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& out,
                                               const Http2AltSvcFields& v);
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HTTP2_STRUCTURES_H_

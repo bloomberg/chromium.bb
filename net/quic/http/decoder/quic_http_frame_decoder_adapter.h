@@ -102,7 +102,7 @@ class SPDY_EXPORT_PRIVATE QuicHttpDecoderAdapter
   SpdyState state() const;
 
   // Current error code (NO_ERROR if state != ERROR).
-  Http2DecoderAdapter::SpdyFramerError spdy_framer_error() const;
+  http2::Http2DecoderAdapter::SpdyFramerError spdy_framer_error() const;
 
   // Has any frame header looked like the start of an HTTP/1.1 (or earlier)
   // response? Used to detect if a backend/server that we sent a request to
@@ -172,7 +172,7 @@ class SPDY_EXPORT_PRIVATE QuicHttpDecoderAdapter
 
   void set_spdy_state(SpdyState v);
 
-  void SetSpdyErrorAndNotify(Http2DecoderAdapter::SpdyFramerError error);
+  void SetSpdyErrorAndNotify(http2::Http2DecoderAdapter::SpdyFramerError error);
 
   const QuicHttpFrameHeader& frame_header() const;
 
@@ -250,7 +250,7 @@ class SPDY_EXPORT_PRIVATE QuicHttpDecoderAdapter
   // Attempt to duplicate the SpdyState and SpdyFramer::Error values that
   // SpdyFramer sets. Values determined by getting tests to pass.
   SpdyState spdy_state_;
-  Http2DecoderAdapter::SpdyFramerError spdy_framer_error_;
+  http2::Http2DecoderAdapter::SpdyFramerError spdy_framer_error_;
 
   // The limit on the size of received HTTP/2 payloads as specified in the
   // SETTINGS_MAX_FRAME_SIZE advertised to peer.

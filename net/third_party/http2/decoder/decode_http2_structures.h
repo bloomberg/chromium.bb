@@ -11,7 +11,7 @@
 #include "net/third_party/http2/http2_structures.h"
 #include "net/third_party/http2/platform/api/http2_export.h"
 
-namespace net {
+namespace http2 {
 
 // DoDecode(STRUCTURE* out, DecodeBuffer* b) decodes the structure from start
 // to end, advancing the cursor by STRUCTURE::EncodedSize(). The decode buffer
@@ -29,6 +29,6 @@ HTTP2_EXPORT_PRIVATE void DoDecode(Http2WindowUpdateFields* out,
                                    DecodeBuffer* b);
 HTTP2_EXPORT_PRIVATE void DoDecode(Http2AltSvcFields* out, DecodeBuffer* b);
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_DECODER_DECODE_HTTP2_STRUCTURES_H_

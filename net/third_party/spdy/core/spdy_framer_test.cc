@@ -31,7 +31,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-using testing::_;
+using ::http2::Http2DecoderAdapter;
+using ::testing::_;
 
 namespace net {
 

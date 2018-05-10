@@ -17,7 +17,7 @@
 
 using ::testing::AssertionResult;
 
-namespace net {
+namespace http2 {
 namespace test {
 namespace {
 
@@ -209,4 +209,4 @@ TEST_P(HpackLiteralEntryDecoderTest, RandLiteralNameAndValue) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

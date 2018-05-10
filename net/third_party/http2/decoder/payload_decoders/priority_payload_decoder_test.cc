@@ -18,7 +18,7 @@
 #include "net/third_party/http2/tools/random_decoder_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 class PriorityPayloadDecoderPeer {
@@ -87,4 +87,4 @@ TEST_F(PriorityPayloadDecoderTest, VariousPayloads) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

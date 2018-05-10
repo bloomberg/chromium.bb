@@ -15,7 +15,7 @@
 
 using ::testing::AssertionResult;
 
-namespace net {
+namespace http2 {
 namespace test {
 namespace {
 
@@ -305,4 +305,4 @@ std::ostream& operator<<(std::ostream& out, const HpackEntryCollector& v) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2

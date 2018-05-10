@@ -11,7 +11,7 @@
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
 #include "net/third_party/http2/platform/impl/http2_string_utils_impl.h"
 
-namespace net {
+namespace http2 {
 
 template <typename... Args>
 inline Http2String Http2StrCat(const Args&... args) {
@@ -40,6 +40,6 @@ inline Http2String Http2HexDump(Http2StringPiece data) {
   return Http2HexDumpImpl(data);
 }
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_PLATFORM_API_HTTP2_STRING_UTILS_H_

@@ -25,7 +25,7 @@
 #include "net/third_party/http2/tools/random_decoder_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 // Base class for tests of payload decoders. Below this there is a templated
@@ -450,6 +450,6 @@ class AbstractPaddablePayloadDecoderTest
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_DECODER_PAYLOAD_DECODERS_PAYLOAD_DECODER_BASE_TEST_UTIL_H_

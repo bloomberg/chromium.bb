@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 
-namespace net {
+namespace http2 {
 
 DecodeStatus HpackBlockDecoder::Decode(DecodeBuffer* db) {
   if (!before_entry_) {
@@ -61,4 +61,4 @@ std::ostream& operator<<(std::ostream& out, const HpackBlockDecoder& v) {
   return out << v.DebugString();
 }
 
-}  // namespace net
+}  // namespace http2

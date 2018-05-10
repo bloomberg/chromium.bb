@@ -19,7 +19,7 @@
 #include "net/third_party/http2/platform/api/http2_string.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
 
-namespace net {
+namespace http2 {
 
 class HTTP2_EXPORT_PRIVATE HpackDecoderStringBuffer {
  public:
@@ -97,6 +97,6 @@ HTTP2_EXPORT_PRIVATE std::ostream& operator<<(
     std::ostream& out,
     const HpackDecoderStringBuffer& v);
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HPACK_DECODER_HPACK_DECODER_STRING_BUFFER_H_

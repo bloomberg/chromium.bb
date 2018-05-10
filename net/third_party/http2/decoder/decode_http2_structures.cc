@@ -8,7 +8,7 @@
 #include "net/third_party/http2/decoder/decode_buffer.h"
 #include "net/third_party/http2/http2_constants.h"
 
-namespace net {
+namespace http2 {
 
 // Http2FrameHeader decoding:
 
@@ -106,4 +106,4 @@ void DoDecode(Http2AltSvcFields* out, DecodeBuffer* b) {
   out->origin_length = b->DecodeUInt16();
 }
 
-}  // namespace net
+}  // namespace http2

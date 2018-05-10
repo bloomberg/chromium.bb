@@ -15,7 +15,7 @@
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
 
-namespace net {
+namespace http2 {
 namespace test {
 
 HpackBlockCollector::HpackBlockCollector() = default;
@@ -150,4 +150,4 @@ AssertionResult HpackBlockCollector::VerifyEq(
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2

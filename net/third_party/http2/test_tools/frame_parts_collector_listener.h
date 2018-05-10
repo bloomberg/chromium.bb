@@ -19,7 +19,7 @@
 #include "net/third_party/http2/http2_structures.h"
 #include "net/third_party/http2/test_tools/frame_parts_collector.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 class FramePartsCollectorListener : public FramePartsCollector {
@@ -78,6 +78,6 @@ class FramePartsCollectorListener : public FramePartsCollector {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_TEST_TOOLS_FRAME_PARTS_COLLECTOR_LISTENER_H_

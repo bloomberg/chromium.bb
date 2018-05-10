@@ -8,7 +8,7 @@
 #include "net/third_party/http2/http2_structures_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 PayloadDecoderBaseTest::PayloadDecoderBaseTest() {
   // If the test adds more data after the frame payload,
@@ -94,4 +94,4 @@ PayloadDecoderBaseTest::DecodePayloadAndValidateSeveralWays(
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2

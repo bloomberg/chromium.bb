@@ -11,7 +11,7 @@
 
 #include "net/third_party/http2/platform/api/http2_string.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 class RandomBase {
@@ -53,6 +53,6 @@ class Http2Random : public RandomBase {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_TOOLS_HTTP2_RANDOM_H_

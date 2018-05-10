@@ -8,7 +8,7 @@
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 #include "net/third_party/http2/tools/http2_bug_tracker.h"
 
-namespace net {
+namespace http2 {
 
 Http2String HpackEntryTypeDecoder::DebugString() const {
   return Http2StrCat(
@@ -355,4 +355,4 @@ DecodeStatus HpackEntryTypeDecoder::Start(DecodeBuffer* db) {
   return DecodeStatus::kDecodeError;
 }
 
-}  // namespace net
+}  // namespace http2

@@ -9,7 +9,7 @@
 #include "base/rand_util.h"
 #include "net/third_party/http2/tools/http2_random.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 namespace {
 
@@ -90,4 +90,4 @@ size_t GenerateRandomSizeSkewedLow(size_t max, RandomBase* rng) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2

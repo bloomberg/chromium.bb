@@ -4,7 +4,7 @@
 
 #include "net/third_party/http2/decoder/frame_decoder_state.h"
 
-namespace net {
+namespace http2 {
 
 DecodeStatus FrameDecoderState::ReadPadLength(DecodeBuffer* db,
                                               bool report_pad_length) {
@@ -78,4 +78,4 @@ DecodeStatus FrameDecoderState::ReportFrameSizeError() {
   return DecodeStatus::kDecodeError;
 }
 
-}  // namespace net
+}  // namespace http2

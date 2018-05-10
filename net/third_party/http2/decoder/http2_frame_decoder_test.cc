@@ -23,7 +23,7 @@
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
 
-namespace net {
+namespace http2 {
 namespace test {
 class Http2FrameDecoderPeer {
  public:
@@ -922,4 +922,4 @@ TEST_F(Http2FrameDecoderTest, WindowUpdateTooLong) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

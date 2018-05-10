@@ -9,7 +9,7 @@
 
 #include "net/third_party/http2/platform/impl/http2_reconstruct_object_impl.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 class RandomBase;
@@ -29,6 +29,6 @@ void Http2DefaultReconstructObject(T* ptr, RandomBase* rng) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_PLATFORM_API_HTTP2_RECONSTRUCT_OBJECT_H_

@@ -26,7 +26,7 @@
 //#include "net/third_party/http2/http2_constants.h"
 #include "net/third_party/http2/platform/api/http2_export.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 class HpackDecoderTablesPeer;
 }  // namespace test
@@ -188,6 +188,6 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderTables {
   DISALLOW_COPY_AND_ASSIGN(HpackDecoderTables);
 };
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HPACK_DECODER_HPACK_DECODER_TABLES_H_

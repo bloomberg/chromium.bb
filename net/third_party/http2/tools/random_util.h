@@ -10,7 +10,7 @@
 #include "net/third_party/http2/platform/api/http2_string.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
 
-namespace net {
+namespace http2 {
 namespace test {
 
 class RandomBase;
@@ -37,6 +37,6 @@ Http2String GenerateWebSafeString(size_t lo, size_t hi, RandomBase* rng);
 size_t GenerateRandomSizeSkewedLow(size_t max, RandomBase* rng);
 
 }  // namespace test
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_TOOLS_RANDOM_UTIL_H_

@@ -18,7 +18,7 @@
 
 using ::testing::AssertionResult;
 
-namespace net {
+namespace http2 {
 namespace test {
 namespace {
 
@@ -261,4 +261,4 @@ TEST_P(HpackHuffmanDecoderTest, SpecResponseExamples) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2

@@ -4,7 +4,7 @@
 
 #include "net/third_party/http2/decoder/decode_buffer.h"
 
-namespace net {
+namespace http2 {
 
 uint8_t DecodeBuffer::DecodeUInt8() {
   return static_cast<uint8_t>(DecodeChar());
@@ -90,4 +90,4 @@ void DecodeBufferSubset::DebugTearDown() {
 }
 #endif
 
-}  // namespace net
+}  // namespace http2

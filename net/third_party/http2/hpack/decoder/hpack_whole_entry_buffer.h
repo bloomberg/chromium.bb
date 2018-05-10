@@ -20,7 +20,7 @@
 #include "net/third_party/http2/platform/api/http2_export.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
 
-namespace net {
+namespace http2 {
 
 // TODO(jamessynge): Consider renaming HpackEntryDecoderListener to
 // HpackEntryPartsListener or HpackEntryFragmentsListener.
@@ -99,6 +99,6 @@ class HTTP2_EXPORT_PRIVATE HpackWholeEntryBuffer
   DISALLOW_COPY_AND_ASSIGN(HpackWholeEntryBuffer);
 };
 
-}  // namespace net
+}  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HPACK_DECODER_HPACK_WHOLE_ENTRY_BUFFER_H_

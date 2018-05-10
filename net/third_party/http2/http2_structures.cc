@@ -9,7 +9,7 @@
 
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 
-namespace net {
+namespace http2 {
 
 // Http2FrameHeader:
 
@@ -129,4 +129,4 @@ std::ostream& operator<<(std::ostream& out, const Http2AltSvcFields& v) {
   return out << "origin_length=" << v.origin_length;
 }
 
-}  // namespace net
+}  // namespace http2

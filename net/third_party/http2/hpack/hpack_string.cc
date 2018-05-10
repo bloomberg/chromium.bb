@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 
-namespace net {
+namespace http2 {
 
 HpackString::HpackString(const char* data) : str_(data) {}
 HpackString::HpackString(Http2StringPiece str) : str_(str.as_string()) {}
@@ -69,4 +69,4 @@ std::ostream& operator<<(std::ostream& os, const HpackStringPair& p) {
   return os;
 }
 
-}  // namespace net
+}  // namespace http2

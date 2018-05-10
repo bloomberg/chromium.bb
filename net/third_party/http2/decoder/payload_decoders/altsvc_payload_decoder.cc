@@ -14,7 +14,7 @@
 #include "net/third_party/http2/http2_structures.h"
 #include "net/third_party/http2/tools/http2_bug_tracker.h"
 
-namespace net {
+namespace http2 {
 
 std::ostream& operator<<(std::ostream& out,
                          AltSvcPayloadDecoder::PayloadState v) {
@@ -144,4 +144,4 @@ DecodeStatus AltSvcPayloadDecoder::DecodeStrings(FrameDecoderState* state,
   return DecodeStatus::kDecodeInProgress;
 }
 
-}  // namespace net
+}  // namespace http2

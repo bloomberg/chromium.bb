@@ -23,7 +23,7 @@
 
 using ::testing::AssertionResult;
 
-namespace net {
+namespace http2 {
 namespace test {
 
 // Provides friend access to an instance of the payload decoder, and also
@@ -110,4 +110,4 @@ TEST_P(DataPayloadDecoderTest, VariousDataPayloadSizes) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace http2
