@@ -4,13 +4,16 @@
 
 #include "chrome/browser/ui/app_list/crostini/crostini_installer_view.h"
 
+#include "base/metrics/histogram_base.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_model_builder.h"
+#include "chrome/browser/ui/app_list/crostini/crostini_installer_view.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -82,10 +85,18 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InstallFlow) {
 }
 
 IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, Cancel) {
+  base::HistogramTester histogram_tester;
+
   ShowUi("default");
   EXPECT_NE(nullptr, ActiveView());
   ActiveView()->GetDialogClientView()->CancelWindow();
   EXPECT_TRUE(ActiveView()->GetWidget()->IsClosed());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, ActiveView());
+
+  histogram_tester.ExpectBucketCount(
+      "Crostini.SetupResult",
+      static_cast<base::HistogramBase::Sample>(
+          CrostiniInstallerView::SetupResult::kNotStarted),
+      1);
 }
