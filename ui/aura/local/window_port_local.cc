@@ -70,9 +70,9 @@ void WindowPortLocal::OnDeviceScaleFactorChanged(
     float new_device_scale_factor) {
   if (!window_->IsRootWindow() &&
       last_device_scale_factor_ != new_device_scale_factor &&
-      GetCurrentLocalSurfaceId().is_valid()) {
+      IsEmbeddingExternalContent()) {
     last_device_scale_factor_ = new_device_scale_factor;
-    parent_local_surface_id_allocator_.GenerateId();
+    parent_local_surface_id_allocator_->GenerateId();
     if (frame_sink_)
       frame_sink_->SetLocalSurfaceId(GetCurrentLocalSurfaceId());
   }
@@ -96,9 +96,9 @@ void WindowPortLocal::OnVisibilityChanged(bool visible) {}
 void WindowPortLocal::OnDidChangeBounds(const gfx::Rect& old_bounds,
                                         const gfx::Rect& new_bounds) {
   if (!window_->IsRootWindow() && last_size_ != new_bounds.size() &&
-      GetCurrentLocalSurfaceId().is_valid()) {
+      IsEmbeddingExternalContent()) {
     last_size_ = new_bounds.size();
-    parent_local_surface_id_allocator_.GenerateId();
+    parent_local_surface_id_allocator_->GenerateId();
     if (frame_sink_)
       frame_sink_->SetLocalSurfaceId(GetCurrentLocalSurfaceId());
   }
@@ -135,29 +135,33 @@ WindowPortLocal::CreateLayerTreeFrameSink() {
 }
 
 void WindowPortLocal::AllocateLocalSurfaceId() {
-  parent_local_surface_id_allocator_.GenerateId();
+  if (!parent_local_surface_id_allocator_)
+    parent_local_surface_id_allocator_ = viz::ParentLocalSurfaceIdAllocator();
+  else
+    parent_local_surface_id_allocator_->GenerateId();
   UpdateLocalSurfaceId();
 }
 
 bool WindowPortLocal::IsLocalSurfaceIdAllocationSuppressed() const {
-  return parent_local_surface_id_allocator_.is_allocation_suppressed();
+  return parent_local_surface_id_allocator_ &&
+         parent_local_surface_id_allocator_->is_allocation_suppressed();
 }
 
 viz::ScopedSurfaceIdAllocator WindowPortLocal::GetSurfaceIdAllocator(
     base::OnceCallback<void()> allocation_task) {
-  return viz::ScopedSurfaceIdAllocator(&parent_local_surface_id_allocator_,
-                                       std::move(allocation_task));
+  return viz::ScopedSurfaceIdAllocator(
+      &parent_local_surface_id_allocator_.value(), std::move(allocation_task));
 }
 
 void WindowPortLocal::UpdateLocalSurfaceIdFromEmbeddedClient(
     const viz::LocalSurfaceId& embedded_client_local_surface_id) {
-  parent_local_surface_id_allocator_.UpdateFromChild(
+  parent_local_surface_id_allocator_->UpdateFromChild(
       embedded_client_local_surface_id);
   UpdateLocalSurfaceId();
 }
 
 const viz::LocalSurfaceId& WindowPortLocal::GetLocalSurfaceId() {
-  if (!GetCurrentLocalSurfaceId().is_valid())
+  if (!parent_local_surface_id_allocator_)
     AllocateLocalSurfaceId();
   return GetCurrentLocalSurfaceId();
 }
@@ -186,7 +190,11 @@ void WindowPortLocal::UpdateLocalSurfaceId() {
 }
 
 const viz::LocalSurfaceId& WindowPortLocal::GetCurrentLocalSurfaceId() const {
-  return parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+  return parent_local_surface_id_allocator_->GetCurrentLocalSurfaceId();
+}
+
+bool WindowPortLocal::IsEmbeddingExternalContent() const {
+  return parent_local_surface_id_allocator_.has_value();
 }
 
 }  // namespace aura
