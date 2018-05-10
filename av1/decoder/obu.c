@@ -431,6 +431,7 @@ static aom_codec_err_t read_obu_size(const uint8_t *data,
     return AOM_CODEC_CORRUPT_FRAME;
   }
 
+  if (u_obu_size > UINT32_MAX) return AOM_CODEC_CORRUPT_FRAME;
   *obu_size = (size_t)u_obu_size;
   return AOM_CODEC_OK;
 }
