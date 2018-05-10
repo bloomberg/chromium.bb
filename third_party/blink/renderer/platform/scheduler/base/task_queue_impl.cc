@@ -7,12 +7,12 @@
 #include <memory>
 #include <utility>
 
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/trace_event/blame_context.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/base/time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
-#include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
 
 namespace blink {
 namespace scheduler {
@@ -467,7 +467,7 @@ void TaskQueueImpl::WakeUpForDelayedWork(LazyNow* lazy_now) {
 void TaskQueueImpl::TraceQueueSize() const {
   bool is_tracing;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(
-      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), &is_tracing);
+      TRACE_DISABLED_BY_DEFAULT("sequence_manager"), &is_tracing);
   if (!is_tracing)
     return;
 
@@ -477,7 +477,7 @@ void TaskQueueImpl::TraceQueueSize() const {
     return;
 
   base::AutoLock lock(immediate_incoming_queue_lock_);
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), GetName(),
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("sequence_manager"), GetName(),
                  immediate_incoming_queue().size() +
                      main_thread_only().immediate_work_queue->Size() +
                      main_thread_only().delayed_work_queue->Size() +
@@ -513,7 +513,10 @@ void TaskQueueImpl::AsValueInto(base::TimeTicks now,
   DCHECK(main_thread_only().delayed_work_queue);
   DCHECK(main_thread_only().immediate_work_queue);
 
-  state->SetString("task_queue_id", PointerToString(this));
+  state->SetString(
+      "task_queue_id",
+      base::StringPrintf("0x%" PRIx64, static_cast<uint64_t>(
+                                           reinterpret_cast<uintptr_t>(this))));
   state->SetBoolean("enabled", IsQueueEnabled());
   state->SetString("time_domain_name",
                    main_thread_only().time_domain->GetName());
@@ -539,7 +542,13 @@ void TaskQueueImpl::AsValueInto(base::TimeTicks now,
         "delayed_fence_seconds_from_now",
         (main_thread_only().delayed_fence.value() - now).InSecondsF());
   }
-  if (AreVerboseSnapshotsEnabled()) {
+
+  bool verbose = false;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("sequence_manager.verbose_snapshots"),
+      &verbose);
+
+  if (verbose) {
     state->BeginArray("immediate_incoming_queue");
     QueueAsValueInto(immediate_incoming_queue(), now, state);
     state->EndArray();

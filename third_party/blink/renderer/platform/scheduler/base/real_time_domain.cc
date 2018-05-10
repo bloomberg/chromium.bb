@@ -52,7 +52,7 @@ base::Optional<base::TimeDelta> RealTimeDomain::DelayTillNextTask(
     return base::TimeDelta();  // Makes DoWork post an immediate continuation.
 
   base::TimeDelta delay = next_run_time - now;
-  TRACE_EVENT1("renderer.scheduler", "RealTimeDomain::DelayTillNextTask",
+  TRACE_EVENT1("sequence_manager", "RealTimeDomain::DelayTillNextTask",
                "delay_ms", delay.InMillisecondsF());
 
   // The next task is sometime in the future. DoWork will make sure it gets

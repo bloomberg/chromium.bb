@@ -34,8 +34,6 @@ PLATFORM_EXPORT void ValidateTracingCategory(const char* category);
 
 PLATFORM_EXPORT void WarmupTracingCategories();
 
-PLATFORM_EXPORT bool AreVerboseSnapshotsEnabled();
-
 PLATFORM_EXPORT std::string PointerToString(const void* pointer);
 
 PLATFORM_EXPORT double TimeDeltaToMilliseconds(const base::TimeDelta& value);

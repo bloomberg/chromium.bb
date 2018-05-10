@@ -17,14 +17,6 @@ const char kTracingCategoryNameInfo[] =
 const char kTracingCategoryNameDebug[] =
     TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug");
 
-namespace {
-
-// No trace events should be created with this category.
-const char kTracingCategoryNameVerboseSnapshots[] =
-    TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.enable_verbose_snapshots");
-
-}  // namespace
-
 namespace internal {
 
 void ValidateTracingCategory(const char* category) {
@@ -40,19 +32,11 @@ void ValidateTracingCategory(const char* category) {
 
 }  // namespace internal
 
-bool AreVerboseSnapshotsEnabled() {
-  bool result = false;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(kTracingCategoryNameVerboseSnapshots,
-                                     &result);
-  return result;
-}
-
 void WarmupTracingCategories() {
   // No need to warm-up toplevel category here.
   TRACE_EVENT_WARMUP_CATEGORY(kTracingCategoryNameDefault);
   TRACE_EVENT_WARMUP_CATEGORY(kTracingCategoryNameInfo);
   TRACE_EVENT_WARMUP_CATEGORY(kTracingCategoryNameDebug);
-  TRACE_EVENT_WARMUP_CATEGORY(kTracingCategoryNameVerboseSnapshots);
 }
 
 std::string PointerToString(const void* pointer) {
