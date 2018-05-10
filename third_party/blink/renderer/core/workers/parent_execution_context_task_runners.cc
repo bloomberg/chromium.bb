@@ -27,10 +27,10 @@ ParentExecutionContextTaskRunners::ParentExecutionContextTaskRunners(
     ExecutionContext* context)
     : ContextLifecycleObserver(context) {
   // For now we only support very limited task types.
-  for (auto type :
-       {TaskType::kInternalDefault, TaskType::kInternalLoading,
-        TaskType::kNetworking, TaskType::kPostedMessage, TaskType::kUnthrottled,
-        TaskType::kInternalTest, TaskType::kInternalInspector}) {
+  for (auto type : {TaskType::kInternalDefault, TaskType::kInternalLoading,
+                    TaskType::kNetworking, TaskType::kPostedMessage,
+                    TaskType::kUnthrottled, TaskType::kInternalTest,
+                    TaskType::kInternalInspector, TaskType::kInternalWorker}) {
     auto task_runner =
         context ? context->GetTaskRunner(type)
                 : Platform::Current()->CurrentThread()->GetTaskRunner();

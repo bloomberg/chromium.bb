@@ -165,6 +165,10 @@ enum class TaskType : unsigned {
   // Tasks related to animation like blinking caret or CSS animation.
   kInternalAnimation = 34,
 
+  // Tasks related to workers. Tasks with this type are mainly posted by:
+  // * //third_party/blink/renderer/core/workers
+  kInternalWorker = 36,
+
   ///////////////////////////////////////
   // The following task types are DEPRECATED! Use kInternal* instead.
   ///////////////////////////////////////
@@ -173,7 +177,7 @@ enum class TaskType : unsigned {
   // should be very limited.
   kUnthrottled = 25,
 
-  kCount = 36,
+  kCount = 37,
 };
 
 }  // namespace blink

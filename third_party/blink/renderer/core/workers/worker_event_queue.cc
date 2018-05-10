@@ -65,7 +65,7 @@ bool WorkerEventQueue::EnqueueEvent(const base::Location& from_here,
   // database concurrently. See also comments in the ctor of
   // DOMWindowEventQueueTimer.
   // TODO(nhiroki): Callers of enqueueEvent() should specify the task type.
-  global_scope_->GetTaskRunner(TaskType::kUnthrottled)
+  global_scope_->GetTaskRunner(TaskType::kInternalWorker)
       ->PostTask(from_here,
                  WTF::Bind(&WorkerEventQueue::DispatchEvent,
                            WrapPersistent(this), WrapWeakPersistent(event)));

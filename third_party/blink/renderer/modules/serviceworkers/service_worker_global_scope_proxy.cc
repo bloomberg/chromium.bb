@@ -563,7 +563,7 @@ void ServiceWorkerGlobalScopeProxy::DidLoadInstalledScript(
   DCHECK(embedded_worker_);
   WaitableEvent waitable_event;
   PostCrossThreadTask(
-      *parent_execution_context_task_runners_->Get(TaskType::kUnthrottled),
+      *parent_execution_context_task_runners_->Get(TaskType::kInternalWorker),
       FROM_HERE,
       CrossThreadBind(&SetContentSecurityPolicyAndReferrerPolicyOnMainThread,
                       CrossThreadUnretained(embedded_worker_),
