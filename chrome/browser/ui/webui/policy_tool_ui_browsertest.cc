@@ -618,6 +618,9 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, MultipleSessionsChoice) {
 
   // Load the page. This should load the last session.
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
+  // Wait until the session data is loaded.
+  content::RunAllTasksUntilIdle();
+
   std::unique_ptr<base::DictionaryValue> page_contents =
       ExtractPolicyValues(false);
   base::DictionaryValue expected;
