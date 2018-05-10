@@ -308,6 +308,10 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
     // The TaskType of Inspector tasks needs to be unpausable because they need
     // to run even on a paused page.
     case TaskType::kInternalInspector:
+    // The TaskType of worker tasks needs to be unpausable (in addition to
+    // unthrottled and undeferred) not to prevent service workers that may
+    // control browser navigation on multiple tabs.
+    case TaskType::kInternalWorker:
       return TaskRunnerImpl::Create(UnpausableTaskQueue(), type);
     case TaskType::kDeprecatedNone:
     case TaskType::kCount:

@@ -38950,6 +38950,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="33" label="InternalInspector"/>
   <int value="34" label="InternalAnimation"/>
   <int value="35" label="InternalAccessibility"/>
+  <int value="36" label="InternalWorker"/>
 </enum>
 
 <enum name="RendererSchedulerTaskUseCase">
