@@ -90,16 +90,20 @@ void RunExternalProtocolDialogWithDelegate(
 
 void LaunchUrlWithoutSecurityCheckWithDelegate(
     const GURL& url,
-    int render_process_host_id,
-    int render_view_routing_id,
+    content::WebContents* web_contents,
     ExternalProtocolHandler::Delegate* delegate) {
-  content::WebContents* web_contents = tab_util::GetWebContentsByID(
-      render_process_host_id, render_view_routing_id);
   if (delegate) {
     delegate->LaunchUrlWithoutSecurityCheck(url, web_contents);
     return;
   }
-  ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url, web_contents);
+
+  // |web_contents| is only passed in to find browser context. Do not assume
+  // that the external protocol request came from the main frame.
+  if (!web_contents)
+    return;
+
+  platform_util::OpenExternal(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()), url);
 }
 
 // When we are about to launch a URL with the default OS level application, we
@@ -137,8 +141,10 @@ void OnDefaultProtocolClientWorkerFinished(
     return;
   }
 
-  LaunchUrlWithoutSecurityCheckWithDelegate(escaped_url, render_process_host_id,
-                                            render_view_routing_id, delegate);
+  content::WebContents* web_contents = tab_util::GetWebContentsByID(
+      render_process_host_id, render_view_routing_id);
+  LaunchUrlWithoutSecurityCheckWithDelegate(escaped_url, web_contents,
+                                            delegate);
 }
 
 }  // namespace
@@ -267,13 +273,8 @@ void ExternalProtocolHandler::LaunchUrl(const GURL& url,
 void ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
     const GURL& url,
     content::WebContents* web_contents) {
-  // |web_contents| is only passed in to find browser context. Do not assume
-  // that the external protocol request came from the main frame.
-  if (!web_contents)
-    return;
-
-  platform_util::OpenExternal(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()), url);
+  LaunchUrlWithoutSecurityCheckWithDelegate(
+      url, web_contents, g_external_protocol_handler_delegate);
 }
 
 // static
