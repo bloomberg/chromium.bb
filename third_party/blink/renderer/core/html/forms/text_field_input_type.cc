@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/html/forms/text_field_input_type.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/events/before_text_inserted_event.h"
@@ -366,14 +367,20 @@ void TextFieldInputType::AttributeChanged() {
   UpdateView();
 }
 
-void TextFieldInputType::DisabledAttributeChanged() {
+void TextFieldInputType::DisabledOrReadonlyAttributeChanged(
+    const QualifiedName& attr) {
   if (SpinButtonElement* spin_button = GetSpinButtonElement())
     spin_button->ReleaseCapture();
+  GetElement().InnerEditorElement()->SetNeedsStyleRecalc(
+      kLocalStyleChange, StyleChangeReasonForTracing::FromAttribute(attr));
+}
+
+void TextFieldInputType::DisabledAttributeChanged() {
+  DisabledOrReadonlyAttributeChanged(disabledAttr);
 }
 
 void TextFieldInputType::ReadonlyAttributeChanged() {
-  if (SpinButtonElement* spin_button = GetSpinButtonElement())
-    spin_button->ReleaseCapture();
+  DisabledOrReadonlyAttributeChanged(readonlyAttr);
 }
 
 bool TextFieldInputType::SupportsReadOnly() const {
