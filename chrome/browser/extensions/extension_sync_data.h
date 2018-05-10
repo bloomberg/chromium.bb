@@ -49,7 +49,6 @@ class ExtensionSyncData {
                     int disable_reasons,
                     bool incognito_enabled,
                     bool remote_install,
-                    base::Optional<bool> all_urls_enabled,
                     bool installed_by_custodian);
   // App constructor.
   ExtensionSyncData(const Extension& extension,
@@ -57,7 +56,6 @@ class ExtensionSyncData {
                     int disable_reasons,
                     bool incognito_enabled,
                     bool remote_install,
-                    base::Optional<bool> all_urls_enabled,
                     bool installed_by_custodian,
                     const syncer::StringOrdinal& app_launch_ordinal,
                     const syncer::StringOrdinal& page_ordinal,
@@ -90,7 +88,6 @@ class ExtensionSyncData {
   int disable_reasons() const { return disable_reasons_; }
   bool incognito_enabled() const { return incognito_enabled_; }
   bool remote_install() const { return remote_install_; }
-  base::Optional<bool> all_urls_enabled() const { return all_urls_enabled_; }
   bool installed_by_custodian() const { return installed_by_custodian_; }
 
   // Version-dependent properties (i.e., should be used only when the
@@ -156,7 +153,6 @@ class ExtensionSyncData {
   int disable_reasons_;
   bool incognito_enabled_;
   bool remote_install_;
-  base::Optional<bool> all_urls_enabled_;
   bool installed_by_custodian_;
   base::Version version_;
   GURL update_url_;

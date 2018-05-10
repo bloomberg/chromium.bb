@@ -42,8 +42,7 @@ class ExtensionSyncService : public syncer::SyncableService,
 
   // Notifies Sync (if needed) of a newly-installed extension or a change to
   // an existing extension. Call this when you change an extension setting that
-  // is synced as part of ExtensionSyncData (e.g. incognito_enabled or
-  // all_urls_enabled).
+  // is synced as part of ExtensionSyncData (e.g. incognito_enabled).
   void SyncExtensionChangeIfNeeded(const extensions::Extension& extension);
 
   // Returns whether the extension with the given |id| will be re-enabled once

@@ -59,9 +59,6 @@ void ProtobufToSyncDataEqual(const sync_pb::EntitySpecifics& entity) {
   EXPECT_EQ(input.incognito_enabled(), output.incognito_enabled());
   EXPECT_EQ(input.remote_install(), output.remote_install());
   EXPECT_EQ(input.installed_by_custodian(), output.installed_by_custodian());
-  EXPECT_EQ(input.has_all_urls_enabled(), output.has_all_urls_enabled());
-  if (input.has_all_urls_enabled())
-    EXPECT_EQ(input.all_urls_enabled(), output.all_urls_enabled());
 }
 
 // Serializes an ExtensionSyncData into a protobuf structure and back again, and
@@ -78,7 +75,6 @@ void SyncDataToProtobufEqual(const ExtensionSyncData& input) {
   EXPECT_EQ(input.incognito_enabled(), output->incognito_enabled());
   EXPECT_EQ(input.remote_install(), output->remote_install());
   EXPECT_EQ(input.installed_by_custodian(), output->installed_by_custodian());
-  EXPECT_EQ(input.all_urls_enabled(), output->all_urls_enabled());
   EXPECT_EQ(input.version(), output->version());
   EXPECT_EQ(input.update_url(), output->update_url());
   EXPECT_EQ(input.name(), output->name());
@@ -100,7 +96,6 @@ TEST_F(ExtensionSyncDataTest, ExtensionSyncDataForExtension) {
   extension_specifics->set_incognito_enabled(true);
   extension_specifics->set_remote_install(false);
   extension_specifics->set_installed_by_custodian(false);
-  extension_specifics->set_all_urls_enabled(true);
   extension_specifics->set_version(kVersion);
   extension_specifics->set_name(kName);
 
@@ -117,35 +112,21 @@ TEST_F(ExtensionSyncDataTest, ExtensionSyncDataForExtension) {
   EXPECT_FALSE(extension_sync_data.enabled());
   EXPECT_EQ(true, extension_sync_data.incognito_enabled());
   EXPECT_FALSE(extension_sync_data.remote_install());
-  EXPECT_EQ(base::Optional<bool>(true), extension_sync_data.all_urls_enabled());
   EXPECT_EQ(base::Version(kVersion), extension_sync_data.version());
   EXPECT_EQ(std::string(kName), extension_sync_data.name());
 
   // Check the serialize-deserialize process for ExtensionSyncData to proto.
   SyncDataToProtobufEqual(extension_sync_data);
 
-  // The most important thing to test is the "all urls" bit, since it is a
-  // tri-state boolean (and thus has more logic). Also flip another bit for a
-  // sanity check.
-  extension_specifics->set_all_urls_enabled(false);
+  // Flip a bit and verify the result is correct.
   extension_specifics->set_incognito_enabled(false);
   ProtobufToSyncDataEqual(entity);
 
   extension_sync_data.PopulateFromExtensionSpecifics(*extension_specifics);
-  EXPECT_EQ(base::Optional<bool>(false),
-            extension_sync_data.all_urls_enabled());
   EXPECT_FALSE(extension_sync_data.incognito_enabled());
 
   SyncDataToProtobufEqual(extension_sync_data);
-
-  extension_specifics->clear_all_urls_enabled();
   ProtobufToSyncDataEqual(entity);
-
-  extension_sync_data.PopulateFromExtensionSpecifics(*extension_specifics);
-  EXPECT_FALSE(extension_specifics->has_all_urls_enabled());
-  EXPECT_FALSE(extension_sync_data.all_urls_enabled().has_value());
-
-  SyncDataToProtobufEqual(extension_sync_data);
 }
 
 class AppSyncDataTest : public testing::Test {
@@ -162,7 +143,6 @@ class AppSyncDataTest : public testing::Test {
     extension_specifics->set_disable_reasons(kValidDisableReasons);
     extension_specifics->set_incognito_enabled(true);
     extension_specifics->set_remote_install(false);
-    extension_specifics->set_all_urls_enabled(true);
     extension_specifics->set_installed_by_custodian(false);
     extension_specifics->set_name(kName);
   }
