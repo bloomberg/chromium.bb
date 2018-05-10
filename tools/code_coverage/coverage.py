@@ -137,6 +137,13 @@ _BUILD_ARGS = None
 # Retry failed merges.
 MERGE_RETRIES = 3
 
+# Message to guide user to file a bug when everything else fails.
+FILE_BUG_MESSAGE = (
+    'If it persists, please file a bug with the command you used, git revision '
+    'and args.gn config here: '
+    'https://bugs.chromium.org/p/chromium/issues/entry?'
+    'components=Tools%3ECodeCoverage')
+
 
 class _CoverageSummary(object):
   """Encapsulates coverage summary representation."""
@@ -958,26 +965,23 @@ def _GetTargetProfDataPathsByExecutingCommands(targets, commands):
 
       assert profraw_file_paths, (
           'Running target "%s" failed to generate any profraw data file, '
-          'please make sure the binary exists and is properly '
-          'instrumented.' % target)
+          'please make sure the binary exists, is properly instrumented and '
+          'does not crash. %s' % (target, FILE_BUG_MESSAGE))
 
       try:
         profdata_file_path = _CreateTargetProfDataFileFromProfRawFiles(
             target, profraw_file_paths)
         break
       except Exception:
-        print('Retrying...')
+        logging.info('Retrying...')
       finally:
         # Remove profraw files now so that they are not used in next iteration.
         for profraw_file_path in profraw_file_paths:
           os.remove(profraw_file_path)
 
     assert profdata_file_path, (
-        'Failed to merge target "%s" profraw files after %d retries. '
-        'Please file a bug with command you used, commit position and args.gn '
-        'config here: '
-        'https://bugs.chromium.org/p/chromium/issues/entry?'
-        'components=Tools%%3ECodeCoverage' % (target, MERGE_RETRIES))
+        'Failed to merge target "%s" profraw files after %d retries. %s' %
+        (target, MERGE_RETRIES, FILE_BUG_MESSAGE))
     profdata_file_paths.append(profdata_file_path)
 
   logging.debug('Finished executing the test commands.')
@@ -1117,8 +1121,9 @@ def _CreateCoverageProfileDataFromTargetProfDataFiles(profdata_file_paths):
     subprocess_cmd.extend(profdata_file_paths)
     subprocess.check_call(subprocess_cmd)
   except subprocess.CalledProcessError as error:
-    print('Failed to merge target profdata files to create coverage profdata. '
-          'Try again.')
+    logging.error(
+        'Failed to merge target profdata files to create coverage profdata. %s',
+        FILE_BUG_MESSAGE)
     raise error
 
   logging.debug('Finished merging target profdata files.')
@@ -1152,7 +1157,8 @@ def _CreateTargetProfDataFileFromProfRawFiles(target, profraw_file_paths):
     subprocess_cmd.extend(profraw_file_paths)
     subprocess.check_call(subprocess_cmd)
   except subprocess.CalledProcessError as error:
-    print('Failed to merge target profraw files to create target profdata.')
+    logging.error(
+        'Failed to merge target profraw files to create target profdata.')
     raise error
 
   logging.debug('Finished merging target profraw files.')
