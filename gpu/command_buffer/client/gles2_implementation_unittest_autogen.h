@@ -3082,28 +3082,6 @@ TEST_F(GLES2ImplementationTest, SetEnableDCLayersCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
-TEST_F(GLES2ImplementationTest, BeginRasterCHROMIUM) {
-  struct Cmds {
-    cmds::BeginRasterCHROMIUM cmd;
-  };
-  Cmds expected;
-  expected.cmd.Init(1, 2, 3, true, 5, 6);
-
-  gl_->BeginRasterCHROMIUM(1, 2, 3, true, 5, 6);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
-TEST_F(GLES2ImplementationTest, EndRasterCHROMIUM) {
-  struct Cmds {
-    cmds::EndRasterCHROMIUM cmd;
-  };
-  Cmds expected;
-  expected.cmd.Init();
-
-  gl_->EndRasterCHROMIUM();
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
 TEST_F(GLES2ImplementationTest, TexStorage2DImageCHROMIUM) {
   struct Cmds {
     cmds::TexStorage2DImageCHROMIUM cmd;

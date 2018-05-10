@@ -25,7 +25,6 @@
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/native_widget_types.h"
-
 namespace cc {
 
 namespace {
@@ -64,16 +63,13 @@ std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext() {
 }
 
 TestInProcessContextProvider::TestInProcessContextProvider(
-    bool enable_oop_rasterization,
-    bool support_gles2_interface) {
+    bool enable_oop_rasterization) {
   if (enable_oop_rasterization) {
     gpu::ContextCreationAttribs attribs;
     attribs.bind_generates_resource = false;
     attribs.enable_oop_rasterization = true;
     attribs.enable_raster_interface = true;
-    // TODO(crbug.com/834313): Remove this once we start tearing down OOP-R in
-    // GLES2Decoder.
-    attribs.enable_gles2_interface = support_gles2_interface;
+    attribs.enable_gles2_interface = false;
 
     raster_context_.reset(new gpu::RasterInProcessContext);
     auto result = raster_context_->Initialize(
@@ -95,7 +91,6 @@ TestInProcessContextProvider::TestInProcessContextProvider(
                                         base::ThreadTaskRunnerHandle::Get()));
     raster_implementation_gles2_ =
         std::make_unique<gpu::raster::RasterImplementationGLES>(
-            gles2_context_->GetImplementation(),
             gles2_context_->GetImplementation(),
             gles2_context_->GetImplementation()->command_buffer(),
             gles2_context_->GetCapabilities());

@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/client/implementation_base.h"
 
+#include <algorithm>
+
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
@@ -28,7 +30,6 @@ ImplementationBase::ImplementationBase(CommandBufferHelper* helper,
       gpu_control_(gpu_control),
       capabilities_(gpu_control->GetCapabilities()),
       helper_(helper),
-      transfer_cache_(this),
       weak_ptr_factory_(this) {}
 
 ImplementationBase::~ImplementationBase() {
@@ -99,33 +100,6 @@ void ImplementationBase::GetGpuFence(
   // call is processed after the preceding CreateGpuFenceCHROMIUM call.
   IssueShallowFlush();
   gpu_control_->GetGpuFence(gpu_fence_id, std::move(callback));
-}
-
-void* ImplementationBase::MapTransferCacheEntry(size_t serialized_size) {
-  return transfer_cache_.MapEntry(mapped_memory_.get(), serialized_size);
-}
-
-void ImplementationBase::UnmapAndCreateTransferCacheEntry(uint32_t type,
-                                                          uint32_t id) {
-  transfer_cache_.UnmapAndCreateEntry(type, id);
-}
-
-bool ImplementationBase::ThreadsafeLockTransferCacheEntry(uint32_t type,
-                                                          uint32_t id) {
-  return transfer_cache_.LockEntry(type, id);
-}
-
-void ImplementationBase::UnlockTransferCacheEntries(
-    const std::vector<std::pair<uint32_t, uint32_t>>& entries) {
-  transfer_cache_.UnlockEntries(entries);
-}
-
-void ImplementationBase::DeleteTransferCacheEntry(uint32_t type, uint32_t id) {
-  transfer_cache_.DeleteEntry(type, id);
-}
-
-unsigned int ImplementationBase::GetTransferBufferFreeSize() const {
-  return transfer_buffer_->GetFreeSize();
 }
 
 bool ImplementationBase::OnMemoryDump(

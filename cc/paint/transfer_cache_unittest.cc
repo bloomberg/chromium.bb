@@ -27,11 +27,9 @@
 namespace cc {
 namespace {
 
-class TransferCacheTest : public testing::TestWithParam<bool> {
+class TransferCacheTest : public testing::Test {
  public:
   TransferCacheTest() : test_client_entry_(std::vector<uint8_t>(100)) {}
-
-  bool UseRasterDecoder() { return GetParam(); }
 
   void SetUp() override {
     gpu::ContextCreationAttribs attribs;
@@ -45,7 +43,7 @@ class TransferCacheTest : public testing::TestWithParam<bool> {
     // Enable OOP rasterization.
     attribs.enable_oop_rasterization = true;
     attribs.enable_raster_interface = true;
-    attribs.enable_gles2_interface = !UseRasterDecoder();
+    attribs.enable_gles2_interface = false;
 
     context_ = std::make_unique<gpu::RasterInProcessContext>();
     auto result = context_->Initialize(
@@ -91,9 +89,7 @@ class TransferCacheTest : public testing::TestWithParam<bool> {
   ClientRawMemoryTransferCacheEntry test_client_entry_;
 };
 
-INSTANTIATE_TEST_CASE_P(Service, TransferCacheTest, ::testing::Bool());
-
-TEST_P(TransferCacheTest, Basic) {
+TEST_F(TransferCacheTest, Basic) {
   auto* service_cache = ServiceTransferCache();
   auto* context_support = ContextSupport();
 
@@ -121,7 +117,7 @@ TEST_P(TransferCacheTest, Basic) {
   EXPECT_EQ(nullptr, service_cache->GetEntry(entry.Type(), entry.Id()));
 }
 
-TEST_P(TransferCacheTest, Eviction) {
+TEST_F(TransferCacheTest, Eviction) {
   auto* service_cache = ServiceTransferCache();
   auto* context_support = ContextSupport();
 
@@ -147,7 +143,7 @@ TEST_P(TransferCacheTest, Eviction) {
       entry.UnsafeType(), entry.Id()));
 }
 
-TEST_P(TransferCacheTest, RawMemoryTransfer) {
+TEST_F(TransferCacheTest, RawMemoryTransfer) {
   auto* service_cache = ServiceTransferCache();
 
   // Create an entry with some initialized data.
@@ -171,7 +167,7 @@ TEST_P(TransferCacheTest, RawMemoryTransfer) {
   EXPECT_EQ(data, service_data);
 }
 
-TEST_P(TransferCacheTest, ImageMemoryTransfer) {
+TEST_F(TransferCacheTest, ImageMemoryTransfer) {
 // TODO(ericrk): This test doesn't work on Android. crbug.com/777628
 #if defined(OS_ANDROID)
   return;

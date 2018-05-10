@@ -20,19 +20,15 @@
 
 namespace gpu {
 class CommandBuffer;
-class ContextSupport;
 
 namespace raster {
 
 struct Capabilities;
 
 // An implementation of RasterInterface on top of GLES2Interface.
-class RASTER_EXPORT RasterImplementationGLES
-    : public RasterInterface,
-      public ClientFontManager::Client {
+class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
  public:
   RasterImplementationGLES(gles2::GLES2Interface* gl,
-                           ContextSupport* support,
                            CommandBuffer* command_buffer,
                            const gpu::Capabilities& caps);
   ~RasterImplementationGLES() override;
@@ -132,9 +128,6 @@ class RASTER_EXPORT RasterImplementationGLES
   void BeginGpuRaster() override;
   void EndGpuRaster() override;
 
-  // ClientFontManager::Client implementation.
-  void* MapFontBuffer(size_t size) override;
-
  private:
   struct Texture {
     Texture(GLuint id,
@@ -153,25 +146,12 @@ class RASTER_EXPORT RasterImplementationGLES
   Texture* EnsureTextureBound(Texture* texture);
 
   gles2::GLES2Interface* gl_;
-  ContextSupport* support_;
   gpu::Capabilities caps_;
   bool use_texture_storage_;
   bool use_texture_storage_image_;
 
   std::unordered_map<GLuint, Texture> texture_info_;
   Texture* bound_texture_ = nullptr;
-
-  ClientFontManager font_manager_;
-  struct RasterProperties {
-    RasterProperties(SkColor background_color,
-                     bool can_use_lcd_text,
-                     sk_sp<SkColorSpace> color_space);
-    ~RasterProperties();
-    SkColor background_color = SK_ColorWHITE;
-    bool can_use_lcd_text = false;
-    sk_sp<SkColorSpace> color_space;
-  };
-  base::Optional<RasterProperties> raster_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterImplementationGLES);
 };

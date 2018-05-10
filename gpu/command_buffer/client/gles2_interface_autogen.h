@@ -925,16 +925,6 @@ virtual void SetEnableDCLayersCHROMIUM(GLboolean enabled) = 0;
 virtual void InitializeDiscardableTextureCHROMIUM(GLuint texture_id) = 0;
 virtual void UnlockDiscardableTextureCHROMIUM(GLuint texture_id) = 0;
 virtual bool LockDiscardableTextureCHROMIUM(GLuint texture_id) = 0;
-virtual void BeginRasterCHROMIUM(GLuint texture_id,
-                                 GLuint sk_color,
-                                 GLuint msaa_sample_count,
-                                 GLboolean can_use_lcd_text,
-                                 GLint color_type,
-                                 GLuint color_space_transfer_cache_id) = 0;
-virtual void* MapRasterCHROMIUM(GLsizeiptr size) = 0;
-virtual void* MapFontBufferCHROMIUM(GLsizeiptr size) = 0;
-virtual void UnmapRasterCHROMIUM(GLsizeiptr written_size) = 0;
-virtual void EndRasterCHROMIUM() = 0;
 virtual void TexStorage2DImageCHROMIUM(GLenum target,
                                        GLenum internalFormat,
                                        GLenum bufferUsage,

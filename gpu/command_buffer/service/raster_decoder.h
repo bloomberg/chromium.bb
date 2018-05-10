@@ -13,6 +13,7 @@
 namespace gpu {
 
 class DecoderClient;
+class ServiceTransferCache;
 
 namespace gles2 {
 class CopyTextureCHROMIUMResourceManager;
@@ -72,6 +73,8 @@ class GPU_GLES2_EXPORT RasterDecoder : public DecoderContext,
   virtual void SetCopyTextureResourceManagerForTest(
       gles2::CopyTextureCHROMIUMResourceManager*
           copy_texture_resource_manager) = 0;
+
+  virtual ServiceTransferCache* GetTransferCacheForTest() = 0;
 
  protected:
   RasterDecoder(CommandBufferServiceBase* command_buffer_service);

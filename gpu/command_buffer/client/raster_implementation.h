@@ -45,6 +45,7 @@ class RasterCmdHelper;
 // buffer management.
 class RASTER_EXPORT RasterImplementation : public RasterInterface,
                                            public ImplementationBase,
+                                           public ClientTransferCache::Client,
                                            public gles2::QueryTrackerClient,
                                            public ClientFontManager::Client {
  public:
@@ -145,6 +146,13 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
       uint32_t texture_id) override;
   bool ThreadsafeDiscardableTextureIsDeletedForTracing(
       uint32_t texture_id) override;
+  void* MapTransferCacheEntry(size_t serialized_size) override;
+  void UnmapAndCreateTransferCacheEntry(uint32_t type, uint32_t id) override;
+  bool ThreadsafeLockTransferCacheEntry(uint32_t type, uint32_t id) override;
+  void UnlockTransferCacheEntries(
+      const std::vector<std::pair<uint32_t, uint32_t>>& entries) override;
+  void DeleteTransferCacheEntry(uint32_t type, uint32_t id) override;
+  unsigned int GetTransferBufferFreeSize() const override;
 
   bool GetQueryObjectValueHelper(const char* function_name,
                                  GLuint id,
@@ -291,6 +299,8 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
     sk_sp<SkColorSpace> color_space;
   };
   base::Optional<RasterProperties> raster_properties_;
+
+  ClientTransferCache transfer_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterImplementation);
 };

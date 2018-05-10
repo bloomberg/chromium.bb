@@ -20,7 +20,6 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/common/surface_handle.h"
-#include "gpu/skia_bindings/gles2_implementation_with_grcontext_support.h"
 
 namespace gpu {
 
@@ -36,11 +35,6 @@ RasterInProcessContext::~RasterInProcessContext() {
     raster_implementation_->Flush();
     raster_implementation_.reset();
   }
-  if (gles2_implementation_) {
-    gles2_implementation_->Flush();
-    gles2_implementation_.reset();
-  }
-
   transfer_buffer_.reset();
   helper_.reset();
   command_buffer_.reset();
@@ -56,6 +50,10 @@ ContextResult RasterInProcessContext::Initialize(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(attribs.enable_raster_interface);
   if (!attribs.enable_raster_interface) {
+    return ContextResult::kFatalFailure;
+  }
+  DCHECK(!attribs.enable_gles2_interface);
+  if (attribs.enable_gles2_interface) {
     return ContextResult::kFatalFailure;
   }
 
@@ -82,52 +80,28 @@ ContextResult RasterInProcessContext::Initialize(
   // Check for consistency.
   DCHECK(!attribs.bind_generates_resource);
   constexpr bool bind_generates_resource = false;
-  constexpr bool support_client_side_arrays = false;
 
-  if (attribs.enable_gles2_interface) {
-    auto gles2_helper =
-        std::make_unique<gles2::GLES2CmdHelper>(command_buffer_.get());
-    result = gles2_helper->Initialize(memory_limits.command_buffer_size);
-    if (result != ContextResult::kSuccess) {
-      LOG(ERROR) << "Failed to initialize GLES2CmdHelper";
-      return result;
-    }
-    transfer_buffer_ = std::make_unique<TransferBuffer>(gles2_helper.get());
+  // TODO(https://crbug.com/829469): Remove check once we fuzz RasterDecoder.
+  // enable_oop_rasterization is currently necessary to create RasterDecoder
+  // in InProcessCommandBuffer.
+  DCHECK(attribs.enable_oop_rasterization);
 
-    // Create the object exposing the OpenGL API.
-    gles2_implementation_ = std::make_unique<
-        skia_bindings::GLES2ImplementationWithGrContextSupport>(
-        gles2_helper.get(), /*share_group=*/nullptr, transfer_buffer_.get(),
-        bind_generates_resource, attribs.lose_context_when_out_of_memory,
-        support_client_side_arrays, command_buffer_.get());
-    result = gles2_implementation_->Initialize(memory_limits);
-    raster_implementation_ = std::make_unique<raster::RasterImplementationGLES>(
-        gles2_implementation_.get(), gles2_implementation_.get(),
-        gles2_implementation_->command_buffer(), GetCapabilities());
-    helper_ = std::move(gles2_helper);
-  } else {
-    // TODO(https://crbug.com/829469): Remove check once we fuzz RasterDecoder.
-    // enable_oop_rasterization is currently necessary to create RasterDecoder
-    // in InProcessCommandBuffer.
-    DCHECK(attribs.enable_oop_rasterization);
-
-    // Create the RasterCmdHelper, which writes the command buffer protocol.
-    auto raster_helper =
-        std::make_unique<raster::RasterCmdHelper>(command_buffer_.get());
-    result = raster_helper->Initialize(memory_limits.command_buffer_size);
-    if (result != ContextResult::kSuccess) {
-      LOG(ERROR) << "Failed to initialize RasterCmdHelper";
-      return result;
-    }
-    transfer_buffer_ = std::make_unique<TransferBuffer>(raster_helper.get());
-
-    auto raster_implementation = std::make_unique<raster::RasterImplementation>(
-        raster_helper.get(), transfer_buffer_.get(), bind_generates_resource,
-        attribs.lose_context_when_out_of_memory, command_buffer_.get());
-    result = raster_implementation->Initialize(memory_limits);
-    raster_implementation_ = std::move(raster_implementation);
-    helper_ = std::move(raster_helper);
+  // Create the RasterCmdHelper, which writes the command buffer protocol.
+  auto raster_helper =
+      std::make_unique<raster::RasterCmdHelper>(command_buffer_.get());
+  result = raster_helper->Initialize(memory_limits.command_buffer_size);
+  if (result != ContextResult::kSuccess) {
+    LOG(ERROR) << "Failed to initialize RasterCmdHelper";
+    return result;
   }
+  transfer_buffer_ = std::make_unique<TransferBuffer>(raster_helper.get());
+
+  auto raster_implementation = std::make_unique<raster::RasterImplementation>(
+      raster_helper.get(), transfer_buffer_.get(), bind_generates_resource,
+      attribs.lose_context_when_out_of_memory, command_buffer_.get());
+  result = raster_implementation->Initialize(memory_limits);
+  raster_implementation_ = std::move(raster_implementation);
+  helper_ = std::move(raster_helper);
   return result;
 }
 
@@ -144,12 +118,7 @@ raster::RasterInterface* RasterInProcessContext::GetImplementation() {
 }
 
 ContextSupport* RasterInProcessContext::GetContextSupport() {
-  if (gles2_implementation_) {
-    return gles2_implementation_.get();
-  } else {
-    return static_cast<raster::RasterImplementation*>(
-        raster_implementation_.get());
-  }
+  return raster_implementation_.get();
 }
 
 ServiceTransferCache* RasterInProcessContext::GetTransferCacheForTest() const {

@@ -128,7 +128,13 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
       uint32_t texture_id) override;
   bool ThreadsafeDiscardableTextureIsDeletedForTracing(
       uint32_t texture_id) override;
-
+  void* MapTransferCacheEntry(size_t serialized_size) override;
+  void UnmapAndCreateTransferCacheEntry(uint32_t type, uint32_t id) override;
+  bool ThreadsafeLockTransferCacheEntry(uint32_t type, uint32_t id) override;
+  void UnlockTransferCacheEntries(
+      const std::vector<std::pair<uint32_t, uint32_t>>& entries) override;
+  void DeleteTransferCacheEntry(uint32_t type, uint32_t id) override;
+  unsigned int GetTransferBufferFreeSize() const override;
   void GetProgramInfoCHROMIUMHelper(GLuint program,
                                     std::vector<int8_t>* result);
   GLint GetAttribLocationHelper(GLuint program, const char* name);
@@ -196,19 +202,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
                   const char* function_name,
                   const char* msg) override;
 
-  // ClientTransferCache::Client implementation.
-  void IssueCreateTransferCacheEntry(GLuint entry_type,
-                                     GLuint entry_id,
-                                     GLuint handle_shm_id,
-                                     GLuint handle_shm_offset,
-                                     GLuint data_shm_id,
-                                     GLuint data_shm_offset,
-                                     GLuint data_size) override;
-  void IssueDeleteTransferCacheEntry(GLuint entry_type,
-                                     GLuint entry_id) override;
-  void IssueUnlockTransferCacheEntry(GLuint entry_type,
-                                     GLuint entry_id) override;
-  CommandBuffer* command_buffer() const override;
+  CommandBuffer* command_buffer() const;
 
  private:
   friend class GLES2ImplementationTest;

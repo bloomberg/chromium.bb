@@ -336,18 +336,12 @@
   OP(InitializeDiscardableTextureCHROMIUM)                 /* 577 */ \
   OP(UnlockDiscardableTextureCHROMIUM)                     /* 578 */ \
   OP(LockDiscardableTextureCHROMIUM)                       /* 579 */ \
-  OP(BeginRasterCHROMIUM)                                  /* 580 */ \
-  OP(RasterCHROMIUM)                                       /* 581 */ \
-  OP(EndRasterCHROMIUM)                                    /* 582 */ \
-  OP(CreateTransferCacheEntryINTERNAL)                     /* 583 */ \
-  OP(DeleteTransferCacheEntryINTERNAL)                     /* 584 */ \
-  OP(UnlockTransferCacheEntryINTERNAL)                     /* 585 */ \
-  OP(TexStorage2DImageCHROMIUM)                            /* 586 */ \
-  OP(SetColorSpaceMetadataCHROMIUM)                        /* 587 */ \
-  OP(WindowRectanglesEXTImmediate)                         /* 588 */ \
-  OP(CreateGpuFenceINTERNAL)                               /* 589 */ \
-  OP(WaitGpuFenceCHROMIUM)                                 /* 590 */ \
-  OP(DestroyGpuFenceCHROMIUM)                              /* 591 */
+  OP(TexStorage2DImageCHROMIUM)                            /* 580 */ \
+  OP(SetColorSpaceMetadataCHROMIUM)                        /* 581 */ \
+  OP(WindowRectanglesEXTImmediate)                         /* 582 */ \
+  OP(CreateGpuFenceINTERNAL)                               /* 583 */ \
+  OP(WaitGpuFenceCHROMIUM)                                 /* 584 */ \
+  OP(DestroyGpuFenceCHROMIUM)                              /* 585 */
 
 enum CommandId {
   kOneBeforeStartPoint =

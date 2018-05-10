@@ -38,9 +38,6 @@ class GLES2ImplementationWithGrContextSupport
   // These must be kept in sync with the invalidation defines in
   // GrGLGpu::onResetContext()
 
-  // Calls that invalidate arbitrary state
-  void EndRasterCHROMIUM() override;
-
   // Calls that invalidate kRenderTarget_GrGLBackendState
   void BindFramebuffer(GLenum target, GLuint framebuffer) override;
   void BindRenderbuffer(GLenum target, GLuint renderbuffer) override;
@@ -193,4 +190,4 @@ class GLES2ImplementationWithGrContextSupport
 
 }  // namespace skia_bindings
 
-#endif
+#endif  // GPU_SKIA_BINDINGS_GLES2_IMPLEMENTATION_WITH_GRCONTEXT_SUPPORT_H_

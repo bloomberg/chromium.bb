@@ -241,15 +241,15 @@ class RasterImplementationGLESTest : public testing::Test {
   void SetUp() override {
     gl_.reset(new RasterMockGLES2Interface());
 
-    ri_.reset(new RasterImplementationGLES(
-        gl_.get(), &support_, &command_buffer_, gpu::Capabilities()));
+    ri_.reset(new RasterImplementationGLES(gl_.get(), &command_buffer_,
+                                           gpu::Capabilities()));
   }
 
   void TearDown() override {}
 
   void SetUpWithCapabilities(const gpu::Capabilities& capabilities) {
-    ri_.reset(new RasterImplementationGLES(gl_.get(), &support_,
-                                           &command_buffer_, capabilities));
+    ri_.reset(new RasterImplementationGLES(gl_.get(), &command_buffer_,
+                                           capabilities));
   }
 
   void ExpectBindTexture(GLenum target, GLuint texture_id) {
@@ -634,52 +634,6 @@ TEST_F(RasterImplementationGLESTest, TexStorage2DOverlayNative) {
         .Times(1);
     ri_->TexStorage2D(kTextureId, 1, kWidth, kHeight);
   }
-}
-
-TEST_F(RasterImplementationGLESTest, RasterCHROMIUM) {
-  const GLuint texture_id = 23;
-  const GLuint sk_color = 0x226688AAu;
-  const GLuint msaa_sample_count = 4;
-  const GLboolean can_use_lcd_text = GL_TRUE;
-  const GLint color_type = kRGBA_8888_SkColorType;
-  const auto raster_color_space =
-      cc::RasterColorSpace(gfx::ColorSpace::CreateSRGB(), 2);
-
-  AllocTextureId(false, gfx::BufferUsage::GPU_READ, viz::RGBA_8888, texture_id);
-
-  EXPECT_CALL(*gl_, BeginRasterCHROMIUM(texture_id, sk_color, msaa_sample_count,
-                                        can_use_lcd_text, color_type, 2))
-      .Times(1);
-  ri_->BeginRasterCHROMIUM(texture_id, sk_color, msaa_sample_count,
-                           can_use_lcd_text, color_type, raster_color_space);
-
-  scoped_refptr<cc::DisplayItemList> display_list = new cc::DisplayItemList;
-  display_list->StartPaint();
-  display_list->push<cc::DrawColorOp>(SK_ColorRED, SkBlendMode::kSrc);
-  display_list->EndPaintOfUnpaired(gfx::Rect(100, 100));
-  display_list->Finalize();
-
-  ImageProviderStub image_provider;
-  const gfx::Size content_size(100, 200);
-  const gfx::Rect full_raster_rect(2, 3, 8, 9);
-  const gfx::Rect playback_rect(3, 4, 5, 6);
-  const gfx::Vector2dF post_translate(7.0f, 8.0f);
-  const GLfloat post_scale = 9.0f;
-  bool requires_clear = false;
-
-  constexpr const GLsizeiptr kBufferSize = 16 << 10;
-  char buffer[kBufferSize];
-
-  EXPECT_CALL(*gl_, MapRasterCHROMIUM(Le(kBufferSize)))
-      .WillOnce(Return(buffer));
-  EXPECT_CALL(*gl_, UnmapRasterCHROMIUM(Gt(0))).Times(1);
-
-  ri_->RasterCHROMIUM(display_list.get(), &image_provider, content_size,
-                      full_raster_rect, playback_rect, post_translate,
-                      post_scale, requires_clear);
-
-  EXPECT_CALL(*gl_, EndRasterCHROMIUM()).Times(1);
-  ri_->EndRasterCHROMIUM();
 }
 
 TEST_F(RasterImplementationGLESTest, BeginGpuRaster) {
