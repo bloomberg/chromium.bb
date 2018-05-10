@@ -18,7 +18,7 @@ class ChromeGoogleURLTrackerClient : public GoogleURLTrackerClient {
   // GoogleURLTrackerClient:
   bool IsBackgroundNetworkingEnabled() override;
   PrefService* GetPrefs() override;
-  net::URLRequestContextGetter* GetRequestContext() override;
+  network::mojom::URLLoaderFactory* GetURLLoaderFactory() override;
 
  private:
   Profile* profile_;

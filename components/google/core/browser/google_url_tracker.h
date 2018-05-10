@@ -15,13 +15,15 @@
 #include "components/google/core/browser/google_url_tracker_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/base/network_change_notifier.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
+
+namespace network {
+class SimpleURLLoader;
+}  // namespace network
 
 // This object is responsible for checking the Google URL once per network
 // change.  The current value is saved to prefs.
@@ -33,8 +35,7 @@ class PrefRegistrySyncable;
 // performed (ever) unless at least one consumer registers interest by calling
 // RequestServerCheck().
 class GoogleURLTracker
-    : public net::URLFetcherDelegate,
-      public net::NetworkChangeNotifier::NetworkChangeObserver,
+    : public net::NetworkChangeNotifier::NetworkChangeObserver,
       public KeyedService {
  public:
   // Callback that is called when the Google URL is updated.
@@ -93,8 +94,7 @@ class GoogleURLTracker
 
   static const char kSearchDomainCheckURL[];
 
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
 
   // NetworkChangeNotifier::NetworkChangeObserver:
   void OnNetworkChanged(
@@ -119,8 +119,7 @@ class GoogleURLTracker
   std::unique_ptr<GoogleURLTrackerClient> client_;
 
   GURL google_url_;
-  std::unique_ptr<net::URLFetcher> fetcher_;
-  int fetcher_id_;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader_;
   bool in_startup_sleep_;  // True if we're in the five-second "no fetching"
                            // period that begins at browser start.
   bool already_fetched_;   // True if we've already fetched a URL once this run;

@@ -7,6 +7,8 @@
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/storage_partition.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 ChromeGoogleURLTrackerClient::ChromeGoogleURLTrackerClient(Profile* profile)
     : profile_(profile) {
@@ -24,7 +26,9 @@ PrefService* ChromeGoogleURLTrackerClient::GetPrefs() {
   return profile_->GetPrefs();
 }
 
-net::URLRequestContextGetter*
-ChromeGoogleURLTrackerClient::GetRequestContext() {
-  return profile_->GetRequestContext();
+network::mojom::URLLoaderFactory*
+ChromeGoogleURLTrackerClient::GetURLLoaderFactory() {
+  return content::BrowserContext::GetDefaultStoragePartition(profile_)
+      ->GetURLLoaderFactoryForBrowserProcess()
+      .get();
 }

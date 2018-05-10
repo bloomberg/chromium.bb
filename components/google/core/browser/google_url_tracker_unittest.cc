@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/google/core/browser/google_pref_names.h"
@@ -17,9 +18,10 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -71,25 +73,29 @@ void TestCallbackListener::RegisterCallback(
 
 class TestGoogleURLTrackerClient : public GoogleURLTrackerClient {
  public:
-  explicit TestGoogleURLTrackerClient(PrefService* prefs_);
+  TestGoogleURLTrackerClient(
+      PrefService* prefs_,
+      network::TestURLLoaderFactory* test_url_loader_factory);
   ~TestGoogleURLTrackerClient() override;
 
   bool IsBackgroundNetworkingEnabled() override;
   PrefService* GetPrefs() override;
-  net::URLRequestContextGetter* GetRequestContext() override;
+  network::mojom::URLLoaderFactory* GetURLLoaderFactory() override;
 
  private:
   PrefService* prefs_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestGoogleURLTrackerClient);
 };
 
-TestGoogleURLTrackerClient::TestGoogleURLTrackerClient(PrefService* prefs)
+TestGoogleURLTrackerClient::TestGoogleURLTrackerClient(
+    PrefService* prefs,
+    network::TestURLLoaderFactory* test_url_loader_factory)
     : prefs_(prefs),
-      request_context_(new net::TestURLRequestContextGetter(
-          base::ThreadTaskRunnerHandle::Get())) {
-}
+      test_shared_loader_factory_(
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              test_url_loader_factory)) {}
 
 TestGoogleURLTrackerClient::~TestGoogleURLTrackerClient() {
 }
@@ -102,10 +108,10 @@ PrefService* TestGoogleURLTrackerClient::GetPrefs() {
   return prefs_;
 }
 
-net::URLRequestContextGetter* TestGoogleURLTrackerClient::GetRequestContext() {
-  return request_context_.get();
+network::mojom::URLLoaderFactory*
+TestGoogleURLTrackerClient::GetURLLoaderFactory() {
+  return test_shared_loader_factory_.get();
 }
-
 
 }  // namespace
 
@@ -120,7 +126,6 @@ class GoogleURLTrackerTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  net::TestURLFetcher* GetFetcher();
   void MockSearchDomainCheckResponse(const std::string& domain);
   void RequestServerCheck();
   void FinishSleep();
@@ -131,18 +136,24 @@ class GoogleURLTrackerTest : public testing::Test {
   GURL google_url() const { return google_url_tracker_->google_url(); }
   bool listener_notified() const { return listener_.notified(); }
   void clear_listener_notified() { listener_.clear_notified(); }
+  bool handled_request() const { return handled_request_; }
+
+  GoogleURLTrackerClient* client() const { return client_; }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestingPrefServiceSimple prefs_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
 
   // Creating this allows us to call
   // net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests().
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  net::TestURLFetcherFactory fetcher_factory_;
   GoogleURLTrackerClient* client_;
+
   std::unique_ptr<GoogleURLTracker> google_url_tracker_;
   TestCallbackListener listener_;
+
+  bool handled_request_ = false;
 };
 
 GoogleURLTrackerTest::GoogleURLTrackerTest() {
@@ -158,7 +169,7 @@ void GoogleURLTrackerTest::SetUp() {
   network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
   // Ownership is passed to google_url_tracker_, but a weak pointer is kept;
   // this is safe since GoogleURLTracker keeps the client for its lifetime.
-  client_ = new TestGoogleURLTrackerClient(&prefs_);
+  client_ = new TestGoogleURLTrackerClient(&prefs_, &test_url_loader_factory_);
   std::unique_ptr<GoogleURLTrackerClient> client(client_);
   google_url_tracker_.reset(new GoogleURLTracker(
       std::move(client), GoogleURLTracker::ALWAYS_DOT_COM_MODE));
@@ -168,33 +179,27 @@ void GoogleURLTrackerTest::TearDown() {
   google_url_tracker_->Shutdown();
 }
 
-net::TestURLFetcher* GoogleURLTrackerTest::GetFetcher() {
-  // This will return the last fetcher created.  If no fetchers have been
-  // created, we'll pass GetFetcherByID() "-1", and it will return NULL.
-  return fetcher_factory_.GetFetcherByID(google_url_tracker_->fetcher_id_ - 1);
-}
-
 void GoogleURLTrackerTest::MockSearchDomainCheckResponse(
     const std::string& domain) {
-  net::TestURLFetcher* fetcher = GetFetcher();
-  if (!fetcher)
-    return;
-  fetcher_factory_.RemoveFetcherFromMap(fetcher->id());
-  fetcher->set_url(GURL(GoogleURLTracker::kSearchDomainCheckURL));
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(domain);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
-  // At this point, |fetcher| is deleted.
+  handled_request_ = false;
+  test_url_loader_factory_.SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        handled_request_ = true;
+      }));
+  test_url_loader_factory_.AddResponse(GoogleURLTracker::kSearchDomainCheckURL,
+                                       domain);
 }
 
 void GoogleURLTrackerTest::RequestServerCheck() {
   if (!listener_.HasRegisteredCallback())
     listener_.RegisterCallback(google_url_tracker_.get());
   google_url_tracker_->SetNeedToFetch();
+  base::RunLoop().RunUntilIdle();
 }
 
 void GoogleURLTrackerTest::FinishSleep() {
   google_url_tracker_->FinishSleep();
+  base::RunLoop().RunUntilIdle();
 }
 
 void GoogleURLTrackerTest::NotifyNetworkChanged() {
@@ -211,35 +216,37 @@ TEST_F(GoogleURLTrackerTest, DontFetchWhenNoOneRequestsCheck) {
   EXPECT_EQ(GURL(GoogleURLTracker::kDefaultGoogleHomepage), google_url());
   FinishSleep();
   // No one called RequestServerCheck() so nothing should have happened.
-  EXPECT_FALSE(GetFetcher());
+  EXPECT_FALSE(handled_request());
   MockSearchDomainCheckResponse(".google.co.uk");
   EXPECT_EQ(GURL(GoogleURLTracker::kDefaultGoogleHomepage), google_url());
   EXPECT_FALSE(listener_notified());
 }
 
 TEST_F(GoogleURLTrackerTest, Update) {
+  MockSearchDomainCheckResponse(".google.co.uk");
+
   RequestServerCheck();
-  EXPECT_FALSE(GetFetcher());
+  EXPECT_FALSE(handled_request());
   EXPECT_EQ(GURL(GoogleURLTracker::kDefaultGoogleHomepage), google_url());
   EXPECT_FALSE(listener_notified());
 
   FinishSleep();
-  MockSearchDomainCheckResponse(".google.co.uk");
   EXPECT_EQ(GURL("https://www.google.co.uk/"), google_url());
   EXPECT_TRUE(listener_notified());
 }
 
 TEST_F(GoogleURLTrackerTest, DontUpdateWhenUnchanged) {
+  MockSearchDomainCheckResponse(".google.co.uk");
+
   GURL original_google_url("https://www.google.co.uk/");
   set_google_url(original_google_url);
 
   RequestServerCheck();
-  EXPECT_FALSE(GetFetcher());
+  EXPECT_FALSE(handled_request());
   EXPECT_EQ(original_google_url, google_url());
   EXPECT_FALSE(listener_notified());
 
   FinishSleep();
-  MockSearchDomainCheckResponse(".google.co.uk");
   EXPECT_EQ(original_google_url, google_url());
   // No one should be notified, because the new URL matches the old.
   EXPECT_FALSE(listener_notified());
@@ -250,107 +257,107 @@ TEST_F(GoogleURLTrackerTest, DontUpdateOnBadReplies) {
   set_google_url(original_google_url);
 
   RequestServerCheck();
-  EXPECT_FALSE(GetFetcher());
+  EXPECT_FALSE(handled_request());
   EXPECT_EQ(original_google_url, google_url());
   EXPECT_FALSE(listener_notified());
 
   // Old-style URL string.
-  FinishSleep();
   MockSearchDomainCheckResponse("https://www.google.com/");
+  FinishSleep();
   EXPECT_EQ(original_google_url, google_url());
   EXPECT_FALSE(listener_notified());
 
   // Not a Google domain.
-  FinishSleep();
   MockSearchDomainCheckResponse(".google.evil.com");
+  FinishSleep();
   EXPECT_EQ(original_google_url, google_url());
   EXPECT_FALSE(listener_notified());
 
   // Doesn't start with .google.
-  NotifyNetworkChanged();
   MockSearchDomainCheckResponse(".mail.google.com");
+  NotifyNetworkChanged();
   EXPECT_EQ(original_google_url, google_url());
   EXPECT_FALSE(listener_notified());
 
   // Non-empty path.
-  NotifyNetworkChanged();
   MockSearchDomainCheckResponse(".google.com/search");
+  NotifyNetworkChanged();
   EXPECT_EQ(original_google_url, google_url());
   EXPECT_FALSE(listener_notified());
 
   // Non-empty query.
-  NotifyNetworkChanged();
   MockSearchDomainCheckResponse(".google.com/?q=foo");
+  NotifyNetworkChanged();
   EXPECT_EQ(original_google_url, google_url());
   EXPECT_FALSE(listener_notified());
 
   // Non-empty ref.
-  NotifyNetworkChanged();
   MockSearchDomainCheckResponse(".google.com/#anchor");
+  NotifyNetworkChanged();
   EXPECT_EQ(original_google_url, google_url());
   EXPECT_FALSE(listener_notified());
 
   // Complete garbage.
-  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("HJ)*qF)_*&@f1");
+  NotifyNetworkChanged();
   EXPECT_EQ(original_google_url, google_url());
   EXPECT_FALSE(listener_notified());
 }
 
 TEST_F(GoogleURLTrackerTest, RefetchOnNetworkChange) {
+  MockSearchDomainCheckResponse(".google.co.uk");
   RequestServerCheck();
   FinishSleep();
-  MockSearchDomainCheckResponse(".google.co.uk");
   EXPECT_EQ(GURL("https://www.google.co.uk/"), google_url());
   EXPECT_TRUE(listener_notified());
   clear_listener_notified();
 
-  NotifyNetworkChanged();
   MockSearchDomainCheckResponse(".google.co.in");
+  NotifyNetworkChanged();
   EXPECT_EQ(GURL("https://www.google.co.in/"), google_url());
   EXPECT_TRUE(listener_notified());
 }
 
 TEST_F(GoogleURLTrackerTest, DontRefetchWhenNoOneRequestsCheck) {
+  MockSearchDomainCheckResponse(".google.co.uk");
   FinishSleep();
   NotifyNetworkChanged();
   // No one called RequestServerCheck() so nothing should have happened.
-  EXPECT_FALSE(GetFetcher());
-  MockSearchDomainCheckResponse(".google.co.uk");
+  EXPECT_FALSE(handled_request());
   EXPECT_EQ(GURL(GoogleURLTracker::kDefaultGoogleHomepage), google_url());
   EXPECT_FALSE(listener_notified());
 }
 
 TEST_F(GoogleURLTrackerTest, FetchOnLateRequest) {
+  MockSearchDomainCheckResponse(".google.co.jp");
   FinishSleep();
   NotifyNetworkChanged();
-  MockSearchDomainCheckResponse(".google.co.jp");
 
+  MockSearchDomainCheckResponse(".google.co.uk");
   RequestServerCheck();
   // The first request for a check should trigger a fetch if it hasn't happened
   // already.
-  MockSearchDomainCheckResponse(".google.co.uk");
   EXPECT_EQ(GURL("https://www.google.co.uk/"), google_url());
   EXPECT_TRUE(listener_notified());
 }
 
 TEST_F(GoogleURLTrackerTest, DontFetchTwiceOnLateRequests) {
+  MockSearchDomainCheckResponse(".google.co.jp");
   FinishSleep();
   NotifyNetworkChanged();
-  MockSearchDomainCheckResponse(".google.co.jp");
 
+  MockSearchDomainCheckResponse(".google.co.uk");
   RequestServerCheck();
   // The first request for a check should trigger a fetch if it hasn't happened
   // already.
-  MockSearchDomainCheckResponse(".google.co.uk");
   EXPECT_EQ(GURL("https://www.google.co.uk/"), google_url());
   EXPECT_TRUE(listener_notified());
   clear_listener_notified();
 
+  MockSearchDomainCheckResponse(".google.co.in");
   RequestServerCheck();
   // The second request should be ignored.
-  EXPECT_FALSE(GetFetcher());
-  MockSearchDomainCheckResponse(".google.co.in");
+  EXPECT_FALSE(handled_request());
   EXPECT_EQ(GURL("https://www.google.co.uk/"), google_url());
   EXPECT_FALSE(listener_notified());
 }

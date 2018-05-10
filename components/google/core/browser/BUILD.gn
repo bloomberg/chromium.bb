@@ -30,6 +30,8 @@ static_library("browser") {
     "//components/prefs",
     "//components/strings",
     "//components/url_formatter",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
   ]
 }
 
@@ -46,6 +48,9 @@ source_set("unit_tests") {
     "//base",
     "//components/prefs:test_support",
     "//net:test_support",
+    "//services/network:test_support",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
     "//testing/gtest",
   ]
 }

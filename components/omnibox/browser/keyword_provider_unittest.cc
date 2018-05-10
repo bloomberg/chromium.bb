@@ -24,6 +24,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
+#include "net/url_request/url_request.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"

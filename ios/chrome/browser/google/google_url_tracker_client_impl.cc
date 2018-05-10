@@ -24,6 +24,7 @@ PrefService* GoogleURLTrackerClientImpl::GetPrefs() {
   return browser_state_->GetPrefs();
 }
 
-net::URLRequestContextGetter* GoogleURLTrackerClientImpl::GetRequestContext() {
-  return browser_state_->GetRequestContext();
+network::mojom::URLLoaderFactory*
+GoogleURLTrackerClientImpl::GetURLLoaderFactory() {
+  return browser_state_->GetURLLoaderFactory();
 }
