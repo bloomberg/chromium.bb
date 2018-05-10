@@ -293,6 +293,9 @@
   "ash/public/cpp/resources/ash_public_unscaled_resources.grd": {
     "includes": [24260],
   },
+  "ash/resources/ash_resources.grd": {
+    "structures": [24280],
+  },
   "ash/shell/ash_shell_resources.grd": {
     "includes": [24290],
   },

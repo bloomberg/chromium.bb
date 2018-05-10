@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/crostini/crostini_app_model_builder.h"
 
+#include "ash/resources/grit/ash_resources.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
@@ -11,9 +12,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_item.h"
+#include "chrome/grit/chrome_unscaled_resources.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 CrostiniAppModelBuilder::CrostiniAppModelBuilder(
     AppListControllerDelegate* controller)
