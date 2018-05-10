@@ -1175,8 +1175,6 @@ jumbo_source_set("browser") {
     "notifications/notification_event_dispatcher_impl.h",
     "notifications/notification_id_generator.cc",
     "notifications/notification_id_generator.h",
-    "notifications/notification_message_filter.cc",
-    "notifications/notification_message_filter.h",
     "notifications/platform_notification_context_impl.cc",
     "notifications/platform_notification_context_impl.h",
     "origin_manifest/origin_manifest_parser.cc",

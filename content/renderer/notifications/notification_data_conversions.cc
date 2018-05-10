@@ -19,66 +19,6 @@ using blink::WebString;
 
 namespace content {
 
-PlatformNotificationData ToPlatformNotificationData(
-    const WebNotificationData& web_data) {
-  PlatformNotificationData platform_data;
-  platform_data.title = web_data.title.Utf16();
-
-  switch (web_data.direction) {
-    case WebNotificationData::kDirectionLeftToRight:
-      platform_data.direction =
-          PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
-      break;
-    case WebNotificationData::kDirectionRightToLeft:
-      platform_data.direction =
-          PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT;
-      break;
-    case WebNotificationData::kDirectionAuto:
-      platform_data.direction = PlatformNotificationData::DIRECTION_AUTO;
-      break;
-  }
-
-  platform_data.lang = web_data.lang.Utf8(
-      WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
-  platform_data.body = web_data.body.Utf16();
-  platform_data.tag = web_data.tag.Utf8(
-      WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
-  platform_data.image = WebStringToGURL(web_data.image.GetString());
-  platform_data.icon = WebStringToGURL(web_data.icon.GetString());
-  platform_data.badge = WebStringToGURL(web_data.badge.GetString());
-  platform_data.vibration_pattern.assign(web_data.vibrate.begin(),
-                                         web_data.vibrate.end());
-  platform_data.timestamp = base::Time::FromJsTime(web_data.timestamp);
-  platform_data.renotify = web_data.renotify;
-  platform_data.silent = web_data.silent;
-  platform_data.require_interaction = web_data.require_interaction;
-  platform_data.data.assign(web_data.data.begin(), web_data.data.end());
-  platform_data.actions.resize(web_data.actions.size());
-  for (size_t i = 0; i < web_data.actions.size(); ++i) {
-    switch (web_data.actions[i].type) {
-      case blink::WebNotificationAction::kButton:
-        platform_data.actions[i].type =
-            PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
-        break;
-      case blink::WebNotificationAction::kText:
-        platform_data.actions[i].type = PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT;
-        break;
-      default:
-        NOTREACHED() << "Unknown notification action type: "
-                     << web_data.actions[i].type;
-    }
-    platform_data.actions[i].action = web_data.actions[i].action.Utf8(
-        WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
-    platform_data.actions[i].title = web_data.actions[i].title.Utf16();
-    platform_data.actions[i].icon =
-        WebStringToGURL(web_data.actions[i].icon.GetString());
-    platform_data.actions[i].placeholder =
-        WebString::ToNullableString16(web_data.actions[i].placeholder);
-  }
-
-  return platform_data;
-}
-
 WebNotificationData ToWebNotificationData(
     const PlatformNotificationData& platform_data) {
   WebNotificationData web_data;

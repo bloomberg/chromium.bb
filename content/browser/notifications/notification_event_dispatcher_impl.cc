@@ -9,7 +9,6 @@
 #include "base/callback_helpers.h"
 #include "base/optional.h"
 #include "build/build_config.h"
-#include "content/browser/notifications/notification_message_filter.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"

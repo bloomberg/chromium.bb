@@ -58,7 +58,6 @@ namespace content {
 class BlinkInterfaceProviderImpl;
 class ChildURLLoaderFactoryBundle;
 class LocalStorageCachedAreas;
-class NotificationDispatcher;
 class PlatformEventObserverBase;
 class ThreadSafeSender;
 class WebDatabaseObserverImpl;
@@ -206,7 +205,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
                     const blink::WebString& sample) override;
   void RecordRapporURL(const char* metric, const blink::WebURL& url) override;
   blink::WebPushProvider* PushProvider() override;
-  blink::WebNotificationManager* GetWebNotificationManager() override;
   void DidStartWorkerThread() override;
   void WillStopWorkerThread() override;
   void WorkerContextCreated(const v8::Local<v8::Context>& worker) override;
@@ -332,8 +330,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   blink::mojom::WebDatabaseHostPtrInfo web_database_host_info_;
   scoped_refptr<blink::mojom::ThreadSafeWebDatabaseHostPtr> web_database_host_;
-
-  scoped_refptr<NotificationDispatcher> notification_dispatcher_;
 
   THREAD_CHECKER(main_thread_checker_);
 

@@ -104,7 +104,6 @@
 #include "content/renderer/mus/render_widget_window_tree_client_factory.h"
 #include "content/renderer/mus/renderer_window_tree_client.h"
 #include "content/renderer/net_info_helper.h"
-#include "content/renderer/notifications/notification_dispatcher.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -802,10 +801,6 @@ void RenderThreadImpl::Init(
                              ? ui::mojom::kServiceName
                              : mojom::kBrowserServiceName,
                          GetIOTaskRunner());
-
-  notification_dispatcher_ = new NotificationDispatcher(
-      thread_safe_sender(), GetWebMainThreadScheduler()->IPCTaskRunner());
-  AddFilter(notification_dispatcher_->GetFilter());
 
   resource_dispatcher_.reset(new ResourceDispatcher());
   url_loader_throttle_provider_ =

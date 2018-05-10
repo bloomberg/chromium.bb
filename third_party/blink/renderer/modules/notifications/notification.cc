@@ -33,10 +33,7 @@
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_action.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_constants.h"
-#include "third_party/blink/public/platform/modules/notifications/web_notification_manager.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -63,13 +60,6 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
-namespace {
-
-WebNotificationManager* GetWebNotificationManager() {
-  return Platform::Current()->GetWebNotificationManager();
-}
-
-}  // namespace
 
 Notification* Notification::Create(ExecutionContext* context,
                                    const String& title,
@@ -167,7 +157,6 @@ Notification::Notification(ExecutionContext* context,
       state_(State::kLoading),
       data_(data),
       listener_binding_(this) {
-  DCHECK(GetWebNotificationManager());
 }
 
 Notification::~Notification() = default;
@@ -231,17 +220,8 @@ void Notification::close() {
 
   state_ = State::kClosed;
 
-  if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {
-    NotificationManager::From(GetExecutionContext())
-        ->ClosePersistentNotification(notification_id_);
-    return;
-  }
-
-  const SecurityOrigin* origin = GetExecutionContext()->GetSecurityOrigin();
-  DCHECK(origin);
-
-  GetWebNotificationManager()->ClosePersistent(WebSecurityOrigin(origin),
-                                               data_.tag, notification_id_);
+  NotificationManager::From(GetExecutionContext())
+      ->ClosePersistentNotification(notification_id_);
 }
 
 void Notification::OnShow() {

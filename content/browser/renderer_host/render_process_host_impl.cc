@@ -103,7 +103,6 @@
 #include "content/browser/media/midi_host.h"
 #include "content/browser/memory/memory_coordinator_impl.h"
 #include "content/browser/mime_registry_impl.h"
-#include "content/browser/notifications/notification_message_filter.h"
 #include "content/browser/payments/payment_manager.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
@@ -1865,10 +1864,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context(
       static_cast<ServiceWorkerContextWrapper*>(
           storage_partition_impl_->GetServiceWorkerContext()));
-  notification_message_filter_ = new NotificationMessageFilter(
-      GetID(), storage_partition_impl_->GetPlatformNotificationContext(),
-      resource_context, service_worker_context, browser_context);
-  AddFilter(notification_message_filter_.get());
 }
 
 void RenderProcessHostImpl::BindCacheStorage(

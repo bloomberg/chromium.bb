@@ -155,7 +155,6 @@ source_set("blink_headers") {
     "platform/modules/notifications/web_notification_action.h",
     "platform/modules/notifications/web_notification_constants.h",
     "platform/modules/notifications/web_notification_data.h",
-    "platform/modules/notifications/web_notification_manager.h",
     "platform/modules/notifications/web_notification_resources.h",
     "platform/modules/payments/web_payment_currency_amount.h",
     "platform/modules/payments/web_payment_details_modifier.h",
