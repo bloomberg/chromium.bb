@@ -102,6 +102,7 @@ NSAppleEventDescriptor* ValueToAppleEventDescriptor(const base::Value* value) {
 }
 
 bool IsJavaScriptEnabledForProfile(Profile* profile) {
+  DCHECK(profile);
   if (!base::FeatureList::IsEnabled(
           features::kAppleScriptExecuteJavaScriptMenuItem))
     return YES;
