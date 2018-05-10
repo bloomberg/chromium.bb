@@ -79,6 +79,10 @@ public class LocationBarVoiceRecognitionHandlerTest {
         private int mStartSource = -1;
         @VoiceInteractionSource
         private int mFinishSource = -1;
+        @VoiceInteractionSource
+        private int mDismissedSource = -1;
+        @VoiceInteractionSource
+        private int mFailureSource = -1;
         private Boolean mResult = null;
         private Float mVoiceConfidenceValue = null;
 
@@ -94,6 +98,16 @@ public class LocationBarVoiceRecognitionHandlerTest {
         @Override
         protected void recordVoiceSearchFinishEventSource(@VoiceInteractionSource int source) {
             mFinishSource = source;
+        }
+
+        @Override
+        protected void recordVoiceSearchFailureEventSource(@VoiceInteractionSource int source) {
+            mFailureSource = source;
+        }
+
+        @Override
+        protected void recordVoiceSearchDismissedEventSource(@VoiceInteractionSource int source) {
+            mDismissedSource = source;
         }
 
         @Override
@@ -119,6 +133,16 @@ public class LocationBarVoiceRecognitionHandlerTest {
         @VoiceInteractionSource
         public int getVoiceSearchFinishEventSource() {
             return mFinishSource;
+        }
+
+        @VoiceInteractionSource
+        public int getVoiceSearchDismissedEventSource() {
+            return mDismissedSource;
+        }
+
+        @VoiceInteractionSource
+        public int getVoiceSearchFailureEventSource() {
+            return mFailureSource;
         }
 
         public Boolean getVoiceSearchResult() {
@@ -482,6 +506,8 @@ public class LocationBarVoiceRecognitionHandlerTest {
         Assert.assertEquals(
                 VoiceInteractionSource.OMNIBOX, mHandler.getVoiceSearchStartEventSource());
         Assert.assertTrue(mDelegate.updatedMicButtonState());
+        Assert.assertEquals(
+                VoiceInteractionSource.OMNIBOX, mHandler.getVoiceSearchFailureEventSource());
     }
 
     @Test
@@ -503,10 +529,23 @@ public class LocationBarVoiceRecognitionHandlerTest {
     @Test
     @SmallTest
     public void testCallback_noVoiceSearchResultWithBadResultCode() {
+        mWindowAndroid.setResultCode(Activity.RESULT_FIRST_USER);
+        startVoiceRecognition(VoiceInteractionSource.NTP);
+        Assert.assertEquals(VoiceInteractionSource.NTP, mHandler.getVoiceSearchStartEventSource());
+        Assert.assertEquals(null, mHandler.getVoiceSearchResult());
+        Assert.assertEquals(
+                VoiceInteractionSource.NTP, mHandler.getVoiceSearchFailureEventSource());
+    }
+
+    @Test
+    @SmallTest
+    public void testCallback_noVoiceSearchResultCanceled() {
         mWindowAndroid.setResultCode(Activity.RESULT_CANCELED);
         startVoiceRecognition(VoiceInteractionSource.NTP);
         Assert.assertEquals(VoiceInteractionSource.NTP, mHandler.getVoiceSearchStartEventSource());
         Assert.assertEquals(null, mHandler.getVoiceSearchResult());
+        Assert.assertEquals(
+                VoiceInteractionSource.NTP, mHandler.getVoiceSearchDismissedEventSource());
     }
 
     @Test

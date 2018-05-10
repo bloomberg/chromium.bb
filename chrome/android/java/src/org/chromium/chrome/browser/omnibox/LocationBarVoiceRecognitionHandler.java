@@ -45,6 +45,14 @@ public class LocationBarVoiceRecognitionHandler {
             .EnumeratedHistogramSample VOICE_INTERACTION_FINISH_SOURCE_METRIC =
             new CachedMetrics.EnumeratedHistogramSample("VoiceInteraction.FinishEventSource",
                     VoiceInteractionSource.HISTOGRAM_BOUNDARY);
+    private static final CachedMetrics
+            .EnumeratedHistogramSample VOICE_INTERACTION_DISMISSED_SOURCE_METRIC =
+            new CachedMetrics.EnumeratedHistogramSample("VoiceInteraction.DismissedEventSource",
+                    VoiceInteractionSource.HISTOGRAM_BOUNDARY);
+    private static final CachedMetrics
+            .EnumeratedHistogramSample VOICE_INTERACTION_FAILURE_SOURCE_METRIC =
+            new CachedMetrics.EnumeratedHistogramSample("VoiceInteraction.FailureEventSource",
+                    VoiceInteractionSource.HISTOGRAM_BOUNDARY);
     private static final CachedMetrics.BooleanHistogramSample VOICE_SEARCH_RESULT_METRIC =
             new CachedMetrics.BooleanHistogramSample("VoiceInteraction.VoiceSearchResult");
     // There's no percentage histogram sample in CachedMetrics, so we mimic what that does
@@ -168,10 +176,20 @@ public class LocationBarVoiceRecognitionHandler {
         // WindowAndroid.IntentCallback implementation:
         @Override
         public void onIntentCompleted(WindowAndroid window, int resultCode, Intent data) {
-            if (resultCode != Activity.RESULT_OK || data.getExtras() == null) return;
+            if (resultCode != Activity.RESULT_OK || data.getExtras() == null) {
+                if (resultCode == Activity.RESULT_CANCELED) {
+                    recordVoiceSearchDismissedEventSource(mSource);
+                } else {
+                    recordVoiceSearchFailureEventSource(mSource);
+                }
+                return;
+            }
 
             AutocompleteController autocompleteController = mDelegate.getAutocompleteController();
             assert autocompleteController != null;
+
+            recordVoiceSearchFinishEventSource(mSource);
+
             VoiceResult topResult = autocompleteController.onVoiceResults(data.getExtras());
             if (topResult == null) {
                 recordVoiceSearchResult(false);
@@ -184,9 +202,6 @@ public class LocationBarVoiceRecognitionHandler {
                 return;
             }
 
-            // Record metrics of where the voice search was started and the top result confidence
-            // value.
-            recordVoiceSearchFinishEventSource(mSource);
             recordVoiceSearchResult(true);
             recordVoiceSearchConfidenceValue(topResult.getConfidence());
 
@@ -264,6 +279,7 @@ public class LocationBarVoiceRecognitionHandler {
             // Requery whether or not the recognition intent can be handled.
             isRecognitionIntentPresent(activity, false);
             mDelegate.updateMicButtonState();
+            recordVoiceSearchFailureEventSource(source);
         }
     }
 
@@ -322,6 +338,26 @@ public class LocationBarVoiceRecognitionHandler {
     @VisibleForTesting
     protected void recordVoiceSearchFinishEventSource(@VoiceInteractionSource int source) {
         VOICE_INTERACTION_FINISH_SOURCE_METRIC.record(source);
+    }
+
+    /**
+     * Records the source of a dismissed voice search.
+     * @param source The source of the voice search, such as NTP or omnibox. Values taken from the
+     *        enum VoiceInteractionEventSource in enums.xml.
+     */
+    @VisibleForTesting
+    protected void recordVoiceSearchDismissedEventSource(@VoiceInteractionSource int source) {
+        VOICE_INTERACTION_DISMISSED_SOURCE_METRIC.record(source);
+    }
+
+    /**
+     * Records the source of a failed voice search.
+     * @param source The source of the voice search, such as NTP or omnibox. Values taken from the
+     *        enum VoiceInteractionEventSource in enums.xml.
+     */
+    @VisibleForTesting
+    protected void recordVoiceSearchFailureEventSource(@VoiceInteractionSource int source) {
+        VOICE_INTERACTION_FAILURE_SOURCE_METRIC.record(source);
     }
 
     /**
