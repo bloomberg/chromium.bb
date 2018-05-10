@@ -1206,10 +1206,9 @@ void LocationBarView::AnimationEnded(const gfx::Animation* animation) {
 void LocationBarView::OnChanged() {
   RefreshLocationIcon();
   location_icon_view_->set_show_tooltip(!GetOmniboxView()->IsEditingOrEmpty());
-  clear_all_button_->SetVisible(
-      GetToolbarModel()->input_in_progress() &&
-      (InTouchableMode() ||
-       LocationBarView::IsVirtualKeyboardVisible(GetWidget())));
+  clear_all_button_->SetVisible(GetToolbarModel()->input_in_progress() &&
+                                !omnibox_view_->text().empty() &&
+                                IsVirtualKeyboardVisible(GetWidget()));
   Layout();
   SchedulePaint();
 }
