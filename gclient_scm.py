@@ -824,6 +824,12 @@ class GitWrapper(SCMWrapper):
 
     return sha1
 
+  def FullUrlForRelativeUrl(self, url):
+    # Strip from last '/'
+    # Equivalent to unix basename
+    base_url = self.url
+    return base_url[:base_url.rfind('/')] + url
+
   def GetGitBackupDirPath(self):
     """Returns the path where the .git folder for the current project can be
     staged/restored. Use case: subproject moved from DEPS <-> outer project."""

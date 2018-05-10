@@ -205,12 +205,12 @@ class GClientSmoke(GClientSmokeBase):
           ']\n'
           'cache_dir = None\n') % self.git_base)
 
-    test(['config', 'https://example.com/foo', 'faa'],
+    test(['config', 'foo', 'faa'],
          'solutions = [\n'
          '  { "name"        : "foo",\n'
-         '    "url"         : "https://example.com/foo",\n'
+         '    "url"         : "foo",\n'
          '    "deps_file"   : "DEPS",\n'
-         '    "managed"     : True,\n'
+          '    "managed"     : True,\n'
          '    "custom_deps" : {\n'
          '    },\n'
          '    "custom_vars": {},\n'
@@ -218,10 +218,10 @@ class GClientSmoke(GClientSmokeBase):
          ']\n'
          'cache_dir = None\n')
 
-    test(['config', 'https://example.com/foo', '--deps', 'blah'],
+    test(['config', 'foo', '--deps', 'blah'],
          'solutions = [\n'
          '  { "name"        : "foo",\n'
-         '    "url"         : "https://example.com/foo",\n'
+         '    "url"         : "foo",\n'
          '    "deps_file"   : "blah",\n'
          '    "managed"     : True,\n'
          '    "custom_deps" : {\n'
@@ -384,7 +384,7 @@ class GClientSmokeGIT(GClientSmokeBase):
             },
             'src/repo2/repo_renamed/': {
                 'scm': 'git',
-                'url': self.git_base + 'repo_3',
+                'url': '/repo_3',
                 'revision': self.githash('repo_3', 2),
             },
         },
@@ -1316,14 +1316,14 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertEqual([
       {'url': 'git://127.0.0.1:20000/git/repo_11', 'deps_file': 'DEPS',
        'hierarchy': [['src', 'git://127.0.0.1:20000/git/repo_10'],
-                     ['src/repo11', 'git://127.0.0.1:20000/git/repo_11']]},
+                     ['src/repo11', '/repo_11']]},
       {'url': 'git://127.0.0.1:20000/git/repo_8', 'deps_file': 'DEPS',
        'hierarchy': [['src', 'git://127.0.0.1:20000/git/repo_10'],
-                     ['src/repo9', 'git://127.0.0.1:20000/git/repo_9'],
-                     ['src/repo8', 'git://127.0.0.1:20000/git/repo_8']]},
+                     ['src/repo9', '/repo_9'],
+                     ['src/repo8', '/repo_8']]},
       {'url': 'git://127.0.0.1:20000/git/repo_9', 'deps_file': 'DEPS',
        'hierarchy': [['src', 'git://127.0.0.1:20000/git/repo_10'],
-                     ['src/repo9', 'git://127.0.0.1:20000/git/repo_9']]},
+                     ['src/repo9', '/repo_9']]},
     ], deps_files_contents)
 
   def testFlattenCipd(self):
