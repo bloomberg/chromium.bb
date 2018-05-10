@@ -130,6 +130,8 @@ function setupEvents() {
 
   if (!ssl || !showRecurrentErrorParagraph) {
     $('recurrent-error-message').classList.add(HIDDEN_CLASS);
+  } else {
+    $('body').classList.add('showing-recurrent-error-message');
   }
 
   if ($('diagnostic-link')) {

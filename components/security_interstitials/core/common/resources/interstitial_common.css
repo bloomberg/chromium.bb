@@ -456,3 +456,13 @@ input[type=checkbox]:checked ~ .checkbox::before {
     padding-right: 0;
   }
 }
+
+#recurrent-error-message {
+  background: #efefef;
+  padding: 14px;
+  margin-top: 7px;
+}
+
+.showing-recurrent-error-message #extended-reporting-opt-in {
+  margin-top: 14px;
+}
