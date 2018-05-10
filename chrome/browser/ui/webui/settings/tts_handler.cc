@@ -39,6 +39,12 @@ void TtsHandler::HandleGetTtsExtensions(const base::ListValue* args) {
     const std::string extension_id = *iter;
     const extensions::Extension* extension =
         registry->GetInstalledExtension(extension_id);
+    if (!extension) {
+      // The extension is still loading from OnVoicesChange call to
+      // TtsControllerImpl::GetVoices(). Don't do any work, voices will
+      // be updated again after extension load.
+      continue;
+    }
     base::DictionaryValue response;
     response.SetPath({"name"}, base::Value(extension->name()));
     response.SetPath({"extensionId"}, base::Value(extension_id));
@@ -89,6 +95,14 @@ void TtsHandler::RegisterMessages() {
       "getTtsExtensions",
       base::BindRepeating(&TtsHandler::HandleGetTtsExtensions,
                           base::Unretained(this)));
+}
+
+void TtsHandler::OnJavascriptAllowed() {
+  TtsController::GetInstance()->AddVoicesChangedDelegate(this);
+}
+
+void TtsHandler::OnJavascriptDisallowed() {
+  TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);
 }
 
 }  // namespace settings
