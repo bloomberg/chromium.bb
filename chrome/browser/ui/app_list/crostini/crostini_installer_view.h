@@ -28,6 +28,20 @@ class CrostiniInstallerView
     : public views::DialogDelegateView,
       public crostini::CrostiniManager::RestartObserver {
  public:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class SetupResult {
+    kNotStarted = 0,
+    kUserCancelled = 1,
+    kSuccess = 2,
+    kErrorLoadingTermina = 3,
+    kErrorStartingConcierge = 4,
+    kErrorCreatingDiskImage = 5,
+    kErrorStartingTermina = 6,
+    kErrorStartingContainer = 7,
+    kCount = 8
+  };
+
   static void Show(Profile* profile);
 
   // views::DialogDelegateView:
@@ -48,15 +62,6 @@ class CrostiniInstallerView
   static CrostiniInstallerView* GetActiveViewForTesting();
 
  private:
-  explicit CrostiniInstallerView(Profile* profile);
-  ~CrostiniInstallerView() override;
-
-  void HandleError(const base::string16& error_message);
-  void StartContainerFinished(crostini::ConciergeClientResult result);
-  void ShowLoginShell();
-  void StepProgress();
-  void SetMessageLabel();
-
   enum class State {
     PROMPT,  // Prompting the user to allow installation.
     ERROR,   // Something unexpected happened.
@@ -70,6 +75,18 @@ class CrostiniInstallerView
     SHOW_LOGIN_SHELL,      // Showing a new crosh window.
     INSTALL_END = SHOW_LOGIN_SHELL,  // Marker enum for last install state.
   };
+
+  explicit CrostiniInstallerView(Profile* profile);
+  ~CrostiniInstallerView() override;
+
+  void HandleError(const base::string16& error_message, SetupResult result);
+  void StartContainerFinished(crostini::ConciergeClientResult result);
+  void ShowLoginShell();
+  void StepProgress();
+  void SetMessageLabel();
+
+  void RecordSetupResultHistogram(SetupResult result);
+
   State state_ = State::PROMPT;
   views::Label* message_label_ = nullptr;
   views::ProgressBar* progress_bar_ = nullptr;
@@ -77,6 +94,12 @@ class CrostiniInstallerView
   Profile* profile_;
   crostini::CrostiniManager::RestartId restart_id_ =
       crostini::CrostiniManager::kUninitializedRestartId;
+
+  // Whether the result has been logged or not is stored to prevent multiple
+  // results being logged for a given setup flow. This can happen due to
+  // multiple error callbacks happening in some cases, as well as the user being
+  // able to hit Cancel after any errors occur.
+  bool has_logged_result_ = false;
 
   base::WeakPtrFactory<CrostiniInstallerView> weak_ptr_factory_;
 

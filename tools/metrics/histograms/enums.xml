@@ -8193,6 +8193,17 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Registered App"/>
 </enum>
 
+<enum name="CrostiniSetupResult">
+  <int value="0" label="Not Started"/>
+  <int value="1" label="User Cancelled"/>
+  <int value="2" label="Success"/>
+  <int value="3" label="Error Loading Termina"/>
+  <int value="4" label="Error Starting Concierge"/>
+  <int value="5" label="Error Creating Disk Image"/>
+  <int value="6" label="Error Starting Termina"/>
+  <int value="7" label="Error Starting Container"/>
+</enum>
+
 <enum name="CrosTPMDictionaryAttackResetStatusEnum">
   <int value="0" label="Reset not necessary"/>
   <int value="1" label="Reset attempt succeeded"/>

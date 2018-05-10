@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -40,6 +41,9 @@ CrostiniInstallerView* g_crostini_installer_view = nullptr;
 constexpr int kDownloadSizeInBytes = 300 * 1024 * 1024;
 
 constexpr int kDialogWidth = 448;
+
+constexpr char kCrostiniSetupResultHistogram[] = "Crostini.SetupResult";
+
 }  // namespace
 
 void CrostiniInstallerView::Show(Profile* profile) {
@@ -116,6 +120,9 @@ bool CrostiniInstallerView::Cancel() {
     // Abort the long-running flow, and prevent our RestartObserver methods
     // being called after "this" has been destroyed.
     crostini::CrostiniManager::GetInstance()->AbortRestartCrostini(restart_id_);
+    RecordSetupResultHistogram(SetupResult::kUserCancelled);
+  } else {
+    RecordSetupResultHistogram(SetupResult::kNotStarted);
   }
   return true;  // Should close the dialog
 }
@@ -174,7 +181,9 @@ void CrostiniInstallerView::StepProgress() {
   GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
 }
 
-void CrostiniInstallerView::HandleError(const base::string16& error_message) {
+void CrostiniInstallerView::HandleError(const base::string16& error_message,
+                                        SetupResult result) {
+  RecordSetupResultHistogram(result);
   state_ = State::ERROR;
   message_label_->SetVisible(true);
   message_label_->SetText(error_message);
@@ -212,7 +221,8 @@ void CrostiniInstallerView::OnComponentLoaded(ConciergeClientResult result) {
   if (result != ConciergeClientResult::SUCCESS) {
     LOG(ERROR) << "Failed to install the cros-termina component";
     HandleError(
-        l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_LOAD_TERMINA_ERROR));
+        l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_LOAD_TERMINA_ERROR),
+        SetupResult::kErrorLoadingTermina);
     return;
   }
   VLOG(1) << "cros-termina install success";
@@ -225,8 +235,9 @@ void CrostiniInstallerView::OnConciergeStarted(ConciergeClientResult result) {
   if (result != ConciergeClientResult::SUCCESS) {
     LOG(ERROR) << "Failed to install start Concierge with error code: "
                << static_cast<int>(result);
-    HandleError(l10n_util::GetStringUTF16(
-        IDS_CROSTINI_INSTALLER_START_CONCIERGE_ERROR));
+    HandleError(
+        l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_START_CONCIERGE_ERROR),
+        SetupResult::kErrorStartingConcierge);
     return;
   }
   VLOG(1) << "Concierge service started";
@@ -240,7 +251,8 @@ void CrostiniInstallerView::OnDiskImageCreated(ConciergeClientResult result) {
     LOG(ERROR) << "Failed to create disk imagewith error code: "
                << static_cast<int>(result);
     HandleError(l10n_util::GetStringUTF16(
-        IDS_CROSTINI_INSTALLER_CREATE_DISK_IMAGE_ERROR));
+                    IDS_CROSTINI_INSTALLER_CREATE_DISK_IMAGE_ERROR),
+                SetupResult::kErrorCreatingDiskImage);
     return;
   }
   VLOG(1) << "Created crostini disk image";
@@ -254,7 +266,8 @@ void CrostiniInstallerView::OnVmStarted(ConciergeClientResult result) {
     LOG(ERROR) << "Failed to start Termina VM with error code: "
                << static_cast<int>(result);
     HandleError(l10n_util::GetStringUTF16(
-        IDS_CROSTINI_INSTALLER_START_TERMINA_VM_ERROR));
+                    IDS_CROSTINI_INSTALLER_START_TERMINA_VM_ERROR),
+                SetupResult::kErrorStartingTermina);
     return;
   }
   VLOG(1) << "Started Termina VM successfully";
@@ -268,8 +281,9 @@ void CrostiniInstallerView::StartContainerFinished(
   if (result != ConciergeClientResult::SUCCESS) {
     LOG(ERROR) << "Failed to start container with error code: "
                << static_cast<int>(result);
-    HandleError(l10n_util::GetStringUTF16(
-        IDS_CROSTINI_INSTALLER_START_CONTAINER_ERROR));
+    HandleError(
+        l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_START_CONTAINER_ERROR),
+        SetupResult::kErrorStartingContainer);
     return;
   }
   StepProgress();
@@ -284,5 +298,18 @@ void CrostiniInstallerView::ShowLoginShell() {
       profile_, kCrostiniDefaultVmName, kCrostiniDefaultContainerName);
 
   StepProgress();
+  RecordSetupResultHistogram(SetupResult::kSuccess);
   GetWidget()->Close();
+}
+
+void CrostiniInstallerView::RecordSetupResultHistogram(SetupResult result) {
+  // Prevent multiple results being logged for a given setup flow. This can
+  // happen due to multiple error callbacks happening in some cases, as well as
+  // the user being able to hit Cancel after any errors occur.
+  if (has_logged_result_)
+    return;
+
+  base::UmaHistogramEnumeration(kCrostiniSetupResultHistogram, result,
+                                SetupResult::kCount);
+  has_logged_result_ = true;
 }
