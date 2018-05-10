@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/string_message_codec.h"
+#include "third_party/blink/public/common/message_port/string_message_codec.h"
 
 #include <vector>
 
 #include "base/logging.h"
 
-namespace content {
+namespace blink {
 namespace {
 
 const uint32_t kVarIntShift = 7;
@@ -46,7 +46,8 @@ void WriteUint32(uint32_t value, std::vector<uint8_t>* buffer) {
   }
 }
 
-void WriteBytes(const char* bytes, size_t num_bytes,
+void WriteBytes(const char* bytes,
+                size_t num_bytes,
                 std::vector<uint8_t>* buffer) {
   buffer->insert(buffer->end(), bytes, bytes + num_bytes);
 }
@@ -79,7 +80,7 @@ bool ContainsOnlyLatin1(const base::string16& data) {
   return !(x & 0xFF00);
 }
 
-} // namespace
+}  // namespace
 
 std::vector<uint8_t> EncodeStringMessage(const base::string16& data) {
   std::vector<uint8_t> buffer;
@@ -142,4 +143,4 @@ bool DecodeStringMessage(const std::vector<uint8_t>& encoded_data,
   return false;
 }
 
-}  // namespace content
+}  // namespace blink

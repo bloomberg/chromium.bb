@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/string_message_codec.h"
+#include "third_party/blink/public/common/message_port/string_message_codec.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
-namespace content {
+namespace blink {
 namespace {
 
 base::string16 DecodeWithV8(const std::vector<uint8_t>& encoded) {
@@ -36,7 +36,7 @@ base::string16 DecodeWithV8(const std::vector<uint8_t>& encoded) {
     v8::Local<v8::String> str = value->ToString(context).ToLocalChecked();
 
     result.resize(str->Length());
-    str->Write(&result[0], 0, result.size());
+    str->Write(reinterpret_cast<uint16_t*>(&result[0]), 0, result.size());
   }
   isolate->Dispose();
   delete params.array_buffer_allocator;
@@ -59,10 +59,10 @@ std::vector<uint8_t> EncodeWithV8(const base::string16& message) {
     v8::Local<v8::Context> context = v8::Context::New(isolate);
 
     v8::Local<v8::String> message_as_value =
-        v8::String::NewFromTwoByte(isolate,
-                                   message.data(),
-                                   v8::NewStringType::kNormal,
-                                   message.size()).ToLocalChecked();
+        v8::String::NewFromTwoByte(
+            isolate, reinterpret_cast<const uint16_t*>(message.data()),
+            v8::NewStringType::kNormal, message.size())
+            .ToLocalChecked();
 
     v8::ValueSerializer serializer(isolate);
     serializer.WriteHeader();
@@ -136,4 +136,4 @@ TEST(StringMessageCodecTest, V8ToSelfTest_NonASCIILongEnoughToForcePadding) {
 }
 
 }  // namespace
-}  // namespace content
+}  // namespace blink

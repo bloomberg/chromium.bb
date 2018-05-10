@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_STRING_MESSAGE_CODEC_H_
-#define CONTENT_BROWSER_ANDROID_STRING_MESSAGE_CODEC_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_MESSAGE_PORT_STRING_MESSAGE_CODEC_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_MESSAGE_PORT_STRING_MESSAGE_CODEC_H_
 
 #include <vector>
 #include "base/strings/string16.h"
-#include "content/common/content_export.h"
+#include "third_party/blink/common/common_export.h"
 
-namespace content {
+namespace blink {
 
 // To support exposing HTML message ports to Java, it is necessary to be able
 // to encode and decode message data using the same serialization format as V8.
@@ -21,13 +21,13 @@ namespace content {
 // handle string messages and this serialization format is static, as it is a
 // format we currently persist to disk via IndexedDB.
 
-CONTENT_EXPORT std::vector<uint8_t> EncodeStringMessage(
+BLINK_COMMON_EXPORT std::vector<uint8_t> EncodeStringMessage(
     const base::string16& data);
 
-CONTENT_EXPORT bool DecodeStringMessage(
+BLINK_COMMON_EXPORT bool DecodeStringMessage(
     const std::vector<uint8_t>& encoded_data,
     base::string16* result);
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_BROWSER_ANDROID_STRING_MESSAGE_CODEC_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_MESSAGE_PORT_STRING_MESSAGE_CODEC_H_

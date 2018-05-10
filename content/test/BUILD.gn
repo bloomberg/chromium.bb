@@ -1955,7 +1955,6 @@ test("content_unittests") {
       "../browser/android/java/java_type_unittest.cc",
       "../browser/android/overscroll_controller_android_unittest.cc",
       "../browser/android/scoped_surface_request_manager_unittest.cc",
-      "../browser/android/string_message_codec_unittest.cc",
       "../browser/android/url_request_content_job_unittest.cc",
       "../browser/media/capture/screen_capture_device_android_unittest.cc",
       "../renderer/java/gin_java_bridge_value_converter_unittest.cc",
