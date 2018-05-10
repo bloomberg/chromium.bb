@@ -303,6 +303,9 @@ const char kDisableZipArchiverUnpacker[] = "disable-zip-archiver-unpacker";
 // Enables starting the ARC instance upon session start.
 const char kEnableArc[] = "enable-arc";
 
+// Enables "hide Skip button" for ARC setup in the OOBE flow.
+const char kEnableArcOobeOptinNoSkip[] = "enable-arc-oobe-optin-no-skip";
+
 // Enables using a random url for captive portal detection.
 const char kEnableCaptivePortalRandomUrl[] = "enable-captive-portal-random-url";
 

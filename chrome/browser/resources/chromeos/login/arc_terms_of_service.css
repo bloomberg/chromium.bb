@@ -20,6 +20,7 @@ p {
   padding: 0;
 }
 
+.arc-tos-disable-skip #arc-tos-skip-button,
 .arc-tos-loaded .arc-tos-loading,
 .arc-tos-loaded .arc-tos-error,
 .arc-tos-loaded #arc-tos-retry-button,
