@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/conflicts/installed_programs_win.h"
+#include "chrome/browser/conflicts/installed_applications_win.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
 class RegistryKeyWatcher;
@@ -35,8 +35,8 @@ class IncompatibleApplicationsHandler : public SettingsPageUIHandler {
   // Sends the list of incompatible applications to the caller via a promise.
   void HandleRequestIncompatibleApplicationsList(const base::ListValue* args);
 
-  // Initiates the uninstallation of the program passed using |args|.
-  void HandleStartProgramUninstallation(const base::ListValue* args);
+  // Initiates the uninstallation of the application passed using |args|.
+  void HandleStartApplicationUninstallation(const base::ListValue* args);
 
   void HandleGetSubtitlePluralString(const base::ListValue* args);
   void HandleGetSubtitleNoAdminRightsPluralString(const base::ListValue* args);
@@ -44,10 +44,12 @@ class IncompatibleApplicationsHandler : public SettingsPageUIHandler {
   void GetPluralString(int id, const base::ListValue* args);
 
   // Callback for the registry key watchers.
-  void OnApplicationRemoved(const InstalledPrograms::ProgramInfo& program);
+  void OnApplicationRemoved(
+      const InstalledApplications::ApplicationInfo& application);
 
   // Container for the watchers.
-  std::map<InstalledPrograms::ProgramInfo, std::unique_ptr<RegistryKeyWatcher>>
+  std::map<InstalledApplications::ApplicationInfo,
+           std::unique_ptr<RegistryKeyWatcher>>
       registry_key_watchers_;
 
   DISALLOW_COPY_AND_ASSIGN(IncompatibleApplicationsHandler);

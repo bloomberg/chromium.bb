@@ -89,7 +89,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
 #if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/conflicts/problematic_programs_updater_win.h"
+#include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -679,9 +679,8 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
     // Check if there are any incompatible applications cached from the last
     // Chrome run.
     has_incompatible_applications =
-        ProblematicProgramsUpdater::
-            IsIncompatibleApplicationsWarningEnabled() &&
-        ProblematicProgramsUpdater::HasCachedPrograms();
+        IncompatibleApplicationsUpdater::IsWarningEnabled() &&
+        IncompatibleApplicationsUpdater::HasCachedApplications();
   }
 #endif
   const auto session_startup_pref =

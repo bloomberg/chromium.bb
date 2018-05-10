@@ -274,8 +274,8 @@
 #include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #if defined(GOOGLE_CHROME_BUILD)
+#include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #include "chrome/browser/conflicts/module_database_win.h"
-#include "chrome/browser/conflicts/problematic_programs_updater_win.h"
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_prefs_manager.h"
@@ -460,8 +460,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   desktop_ios_promotion::RegisterLocalPrefs(registry);
   password_manager::PasswordManager::RegisterLocalPrefs(registry);
 #if defined(GOOGLE_CHROME_BUILD)
+  IncompatibleApplicationsUpdater::RegisterLocalStatePrefs(registry);
   ModuleDatabase::RegisterLocalStatePrefs(registry);
-  ProblematicProgramsUpdater::RegisterLocalStatePrefs(registry);
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif
 
@@ -708,6 +708,11 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
   // Added 1/2018.
   local_state->ClearPref(kShowFirstRunBubbleOption);
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  // Added 5/2018.
+  local_state->ClearPref(prefs::kProblematicPrograms);
+#endif
 }
 
 // This method should be periodically pruned of year+ old migrations.

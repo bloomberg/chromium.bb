@@ -42,10 +42,11 @@ cr.define('settings', function() {
     requestIncompatibleApplicationsList() {}
 
     /**
-     * Launches the Apps & Features page that allows uninstalling 'programName'.
-     * @param {string} programName
+     * Launches the Apps & Features page that allows uninstalling
+     * 'applicationName'.
+     * @param {string} applicationName
      */
-    startProgramUninstallation(programName) {}
+    startApplicationUninstallation(applicationName) {}
 
     /**
      * Opens the specified URL in a new tab.
@@ -86,8 +87,8 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    startProgramUninstallation(programName) {
-      chrome.send('startProgramUninstallation', [programName]);
+    startApplicationUninstallation(applicationName) {
+      chrome.send('startApplicationUninstallation', [applicationName]);
     }
 
     /** @override */

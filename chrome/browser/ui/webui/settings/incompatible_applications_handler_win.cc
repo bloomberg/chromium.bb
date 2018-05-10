@@ -15,7 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/registry.h"
-#include "chrome/browser/conflicts/problematic_programs_updater_win.h"
+#include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #include "chrome/browser/conflicts/registry_key_watcher_win.h"
 #include "chrome/browser/conflicts/uninstall_application_win.h"
 #include "chrome/grit/generated_resources.h"
@@ -34,10 +34,10 @@ void IncompatibleApplicationsHandler::RegisterMessages() {
                               HandleRequestIncompatibleApplicationsList,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "startProgramUninstallation",
-      base::BindRepeating(
-          &IncompatibleApplicationsHandler::HandleStartProgramUninstallation,
-          base::Unretained(this)));
+      "startApplicationUninstallation",
+      base::BindRepeating(&IncompatibleApplicationsHandler::
+                              HandleStartApplicationUninstallation,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getSubtitlePluralString",
       base::BindRepeating(
@@ -71,54 +71,58 @@ void IncompatibleApplicationsHandler::HandleRequestIncompatibleApplicationsList(
   // requestIncompatibleApplicationsList().
   registry_key_watchers_.clear();
 
-  std::vector<ProblematicProgramsUpdater::ProblematicProgram>
-      problematic_programs = ProblematicProgramsUpdater::GetCachedPrograms();
+  std::vector<IncompatibleApplicationsUpdater::IncompatibleApplication>
+      incompatible_applications =
+          IncompatibleApplicationsUpdater::GetCachedApplications();
 
   base::Value application_list(base::Value::Type::LIST);
-  application_list.GetList().reserve(problematic_programs.size());
+  application_list.GetList().reserve(incompatible_applications.size());
 
-  for (const auto& program : problematic_programs) {
+  for (const auto& application : incompatible_applications) {
     // Set up a registry watcher for each problem application.
     // Since this instance owns the watcher, it is safe to use
     // base::Unretained() because the callback won't be invoked when the watcher
     // gets deleted.
     auto registry_key_watcher = RegistryKeyWatcher::Create(
-        program.info.registry_root, program.info.registry_key_path.c_str(),
-        program.info.registry_wow64_access,
+        application.info.registry_root,
+        application.info.registry_key_path.c_str(),
+        application.info.registry_wow64_access,
         base::BindOnce(&IncompatibleApplicationsHandler::OnApplicationRemoved,
-                       base::Unretained(this), program.info));
+                       base::Unretained(this), application.info));
 
     // Only keep the watcher if it was successfully initialized. A failure here
-    // is unlikely, but the worst that can happen is that the |program| will not
-    // get removed from the list automatically in the Incompatible Applications
-    // subpage.
+    // is unlikely, but the worst that can happen is that the |application| will
+    // not get removed from the list automatically in the Incompatible
+    // Applications subpage.
     if (registry_key_watcher) {
       registry_key_watchers_.insert(
-          {program.info, std::move(registry_key_watcher)});
+          {application.info, std::move(registry_key_watcher)});
     }
 
     // Also add the application to the list that is passed to the javascript.
     base::Value dict(base::Value::Type::DICTIONARY);
-    dict.SetKey("name", base::Value(program.info.name));
-    dict.SetKey("type", base::Value(program.blacklist_action->message_type()));
-    dict.SetKey("url", base::Value(program.blacklist_action->message_url()));
+    dict.SetKey("name", base::Value(application.info.name));
+    dict.SetKey("type",
+                base::Value(application.blacklist_action->message_type()));
+    dict.SetKey("url",
+                base::Value(application.blacklist_action->message_url()));
     application_list.GetList().push_back(std::move(dict));
   }
 
   UMA_HISTOGRAM_COUNTS_100("IncompatibleApplicationsPage.NumApplications",
-                           problematic_programs.size());
+                           incompatible_applications.size());
 
   const base::Value& callback_id = args->GetList().front();
   ResolveJavascriptCallback(callback_id, application_list);
 }
 
-void IncompatibleApplicationsHandler::HandleStartProgramUninstallation(
+void IncompatibleApplicationsHandler::HandleStartApplicationUninstallation(
     const base::ListValue* args) {
   CHECK_EQ(1u, args->GetList().size());
   base::RecordAction(base::UserMetricsAction(
       "IncompatibleApplicationsPage.UninstallationStarted"));
 
-  // Open the Apps & Settings page with the program name highlighted.
+  // Open the Apps & Settings page with the application name highlighted.
   uninstall_application::LaunchUninstallFlow(
       base::UTF8ToUTF16(args->GetList()[0].GetString()));
 }
@@ -156,13 +160,13 @@ void IncompatibleApplicationsHandler::GetPluralString(
 }
 
 void IncompatibleApplicationsHandler::OnApplicationRemoved(
-    const InstalledPrograms::ProgramInfo& program) {
+    const InstalledApplications::ApplicationInfo& application) {
   base::RecordAction(base::UserMetricsAction(
       "IncompatibleApplicationsPage.ApplicationRemoved"));
 
-  registry_key_watchers_.erase(program);
+  registry_key_watchers_.erase(application);
   FireWebUIListener("incompatible-application-removed",
-                    base::Value(program.name));
+                    base::Value(application.name));
 }
 
 }  // namespace settings

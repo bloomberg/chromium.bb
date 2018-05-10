@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/conflicts/installed_programs_win.h"
+#include "chrome/browser/conflicts/installed_applications_win.h"
 
 #include <algorithm>
 
@@ -96,26 +96,28 @@ void SortByFilePaths(
 
 }  // namespace
 
-InstalledPrograms::InstalledPrograms()
-    : InstalledPrograms(std::make_unique<MsiUtil>()) {}
+InstalledApplications::InstalledApplications()
+    : InstalledApplications(std::make_unique<MsiUtil>()) {}
 
-InstalledPrograms::~InstalledPrograms() = default;
+InstalledApplications::~InstalledApplications() = default;
 
-bool InstalledPrograms::GetInstalledPrograms(
+bool InstalledApplications::GetInstalledApplications(
     const base::FilePath& file,
-    std::vector<ProgramInfo>* programs) const {
+    std::vector<ApplicationInfo>* applications) const {
   // First, check if an exact file match exists in the installed files list.
-  if (GetProgramsFromInstalledFiles(file, programs))
+  if (GetApplicationsFromInstalledFiles(file, applications))
     return true;
 
   // Then try to find a parent directory in the install directories list.
-  return GetProgramsFromInstallDirectories(file, programs);
+  return GetApplicationsFromInstallDirectories(file, applications);
 }
 
-InstalledPrograms::InstalledPrograms(std::unique_ptr<MsiUtil> msi_util) {
+InstalledApplications::InstalledApplications(
+    std::unique_ptr<MsiUtil> msi_util) {
   base::AssertBlockingAllowed();
 
-  SCOPED_UMA_HISTOGRAM_TIMER("ThirdPartyModules.InstalledPrograms.GetDataTime");
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "ThirdPartyModules.InstalledApplications.GetDataTime");
 
   // Iterate over all the variants of the uninstall registry key.
   static constexpr wchar_t kUninstallKeyPath[] =
@@ -133,9 +135,9 @@ InstalledPrograms::InstalledPrograms(std::unique_ptr<MsiUtil> msi_util) {
     for (base::win::RegistryKeyIterator i(combination.first, kUninstallKeyPath,
                                           combination.second);
          i.Valid(); ++i) {
-      CheckRegistryKeyForInstalledProgram(combination.first, kUninstallKeyPath,
-                                          combination.second, i.Name(),
-                                          *msi_util);
+      CheckRegistryKeyForInstalledApplication(
+          combination.first, kUninstallKeyPath, combination.second, i.Name(),
+          *msi_util);
     }
   }
 
@@ -145,7 +147,7 @@ InstalledPrograms::InstalledPrograms(std::unique_ptr<MsiUtil> msi_util) {
   SortByFilePaths(&install_directories_);
 }
 
-void InstalledPrograms::CheckRegistryKeyForInstalledProgram(
+void InstalledApplications::CheckRegistryKeyForInstalledApplication(
     HKEY hkey,
     const base::string16& key_path,
     REGSAM wow64access,
@@ -159,7 +161,7 @@ void InstalledPrograms::CheckRegistryKeyForInstalledProgram(
   if (!candidate.Valid())
     return;
 
-  // System components are not displayed in the Add or remove programs list.
+  // System components are not displayed in the Add or remove applications list.
   if (IsSystemComponent(candidate))
     return;
 
@@ -168,7 +170,7 @@ void InstalledPrograms::CheckRegistryKeyForInstalledProgram(
   if (!GetValue(candidate, L"UninstallString", &uninstall_string))
     return;
 
-  // Ignore Microsoft programs.
+  // Ignore Microsoft applications.
   base::string16 publisher;
   if (GetValue(candidate, L"Publisher", &publisher) &&
       base::StartsWith(publisher, L"Microsoft", base::CompareCase::SENSITIVE)) {
@@ -184,29 +186,31 @@ void InstalledPrograms::CheckRegistryKeyForInstalledProgram(
 
   base::FilePath install_path;
   if (GetInstallPathUsingInstallLocation(candidate, &install_path)) {
-    programs_.push_back({std::move(display_name), hkey,
-                         std::move(candidate_key_path), wow64access});
+    applications_.push_back({std::move(display_name), hkey,
+                             std::move(candidate_key_path), wow64access});
 
-    const size_t program_index = programs_.size() - 1;
-    install_directories_.emplace_back(std::move(install_path), program_index);
+    const size_t application_index = applications_.size() - 1;
+    install_directories_.emplace_back(std::move(install_path),
+                                      application_index);
     return;
   }
 
   std::vector<base::FilePath> installed_files;
   if (GetInstalledFilesUsingMsiGuid(key_name, msi_util, &installed_files)) {
-    programs_.push_back({std::move(display_name), hkey,
-                         std::move(candidate_key_path), wow64access});
+    applications_.push_back({std::move(display_name), hkey,
+                             std::move(candidate_key_path), wow64access});
 
-    const size_t program_index = programs_.size() - 1;
+    const size_t application_index = applications_.size() - 1;
     for (auto& installed_file : installed_files) {
-      installed_files_.emplace_back(std::move(installed_file), program_index);
+      installed_files_.emplace_back(std::move(installed_file),
+                                    application_index);
     }
   }
 }
 
-bool InstalledPrograms::GetProgramsFromInstalledFiles(
+bool InstalledApplications::GetApplicationsFromInstalledFiles(
     const base::FilePath& file,
-    std::vector<ProgramInfo>* programs) const {
+    std::vector<ApplicationInfo>* applications) const {
   // This functor is used to find all exact items by their key in a collection
   // of key/value pairs.
   struct FilePathLess {
@@ -229,16 +233,16 @@ bool InstalledPrograms::GetProgramsFromInstalledFiles(
   if (nb_matches == 0)
     return false;
 
-  programs->reserve(programs->size() + nb_matches);
+  applications->reserve(applications->size() + nb_matches);
   for (auto iter = equal_range.first; iter != equal_range.second; ++iter)
-    programs->push_back(programs_[iter->second]);
+    applications->push_back(applications_[iter->second]);
 
   return true;
 }
 
-bool InstalledPrograms::GetProgramsFromInstallDirectories(
+bool InstalledApplications::GetApplicationsFromInstallDirectories(
     const base::FilePath& file,
-    std::vector<ProgramInfo>* programs) const {
+    std::vector<ApplicationInfo>* applications) const {
   // This functor is used to find all matching items by their key in a
   // collection of key/value pairs. This also takes advantage of the fact that
   // only the first element of the pair is a directory.
@@ -264,16 +268,17 @@ bool InstalledPrograms::GetProgramsFromInstallDirectories(
                        file, FilePathParentLess());
 
   // Skip cases where there are multiple matches because there is no way to know
-  // which program is the real owner of the |file| with the data owned by us.
+  // which application is the real owner of the |file| with the data owned by
+  // us.
   if (std::distance(equal_range.first, equal_range.second) != 1)
     return false;
 
-  programs->push_back(programs_[equal_range.first->second]);
+  applications->push_back(applications_[equal_range.first->second]);
   return true;
 }
 
-bool operator<(const InstalledPrograms::ProgramInfo& lhs,
-               const InstalledPrograms::ProgramInfo& rhs) {
+bool operator<(const InstalledApplications::ApplicationInfo& lhs,
+               const InstalledApplications::ApplicationInfo& rhs) {
   return std::tie(lhs.name, lhs.registry_root, lhs.registry_key_path,
                   lhs.registry_wow64_access) <
          std::tie(rhs.name, rhs.registry_root, rhs.registry_key_path,

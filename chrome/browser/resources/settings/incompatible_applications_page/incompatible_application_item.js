@@ -6,7 +6,7 @@
  * @fileoverview
  * 'incompatible-application-item' represents one item in a "list-box" of
  * incompatible applications, as defined in
- * chrome/browser/conflicts/problematic_programs_updater_win.h.
+ * chrome/browser/conflicts/incompatible_applications_updater_win.h.
  * This element contains a button that can be used to remove or update the
  * incompatible application, depending on the value of the action-type property.
  *
@@ -41,7 +41,7 @@ Polymer({
   properties: {
     /**
      * The name of the application to be displayed. Also used for the UNINSTALL
-     * action, where the name is passed to the startProgramUninstallation()
+     * action, where the name is passed to the startApplicationUninstallation()
      * call.
      */
     applicationName: String,
@@ -77,7 +77,7 @@ Polymer({
    */
   onActionTap_: function() {
     if (this.actionType === settings.ActionTypes.UNINSTALL) {
-      this.browserProxy_.startProgramUninstallation(this.applicationName);
+      this.browserProxy_.startApplicationUninstallation(this.applicationName);
     } else if (
         this.actionType === settings.ActionTypes.MORE_INFO ||
         this.actionType === settings.ActionTypes.UPGRADE) {

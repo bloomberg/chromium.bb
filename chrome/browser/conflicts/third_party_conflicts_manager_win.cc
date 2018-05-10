@@ -11,11 +11,11 @@
 #include "base/location.h"
 #include "base/path_service.h"
 #include "base/task_scheduler/post_task.h"
-#include "chrome/browser/conflicts/installed_programs_win.h"
+#include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
+#include "chrome/browser/conflicts/installed_applications_win.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
 #include "chrome/browser/conflicts/module_list_filter_win.h"
-#include "chrome/browser/conflicts/problematic_programs_updater_win.h"
 
 namespace {
 
@@ -68,9 +68,11 @@ void ThirdPartyConflictsManager::OnModuleDatabaseIdle() {
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BACKGROUND,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce([]() { return std::make_unique<InstalledPrograms>(); }),
-      base::BindOnce(&ThirdPartyConflictsManager::OnInstalledProgramsCreated,
-                     weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(
+          []() { return std::make_unique<InstalledApplications>(); }),
+      base::BindOnce(
+          &ThirdPartyConflictsManager::OnInstalledApplicationsCreated,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ThirdPartyConflictsManager::LoadModuleList(const base::FilePath& path) {
@@ -92,8 +94,8 @@ void ThirdPartyConflictsManager::OnExeCertificateCreated(
     std::unique_ptr<CertificateInfo> exe_certificate_info) {
   exe_certificate_info_ = std::move(exe_certificate_info);
 
-  if (module_list_filter_ && installed_programs_)
-    InitializeProblematicProgramsUpdater();
+  if (module_list_filter_ && installed_applications_)
+    InitializeIncompatibleApplicationsUpdater();
 }
 
 void ThirdPartyConflictsManager::OnModuleListFilterCreated(
@@ -101,7 +103,7 @@ void ThirdPartyConflictsManager::OnModuleListFilterCreated(
   module_list_filter_ = std::move(module_list_filter);
 
   // A valid |module_list_filter_| is critical to the blocking of third-party
-  // modules. By returning early here, the |problematic_programs_updater_|
+  // modules. By returning early here, the |incompatible_applications_updater_|
   // instance never gets created, thus disabling the identification of
   // incompatible applications.
   if (!module_list_filter_) {
@@ -111,24 +113,26 @@ void ThirdPartyConflictsManager::OnModuleListFilterCreated(
     return;
   }
 
-  if (exe_certificate_info_ && installed_programs_)
-    InitializeProblematicProgramsUpdater();
+  if (exe_certificate_info_ && installed_applications_)
+    InitializeIncompatibleApplicationsUpdater();
 }
 
-void ThirdPartyConflictsManager::OnInstalledProgramsCreated(
-    std::unique_ptr<InstalledPrograms> installed_programs) {
-  installed_programs_ = std::move(installed_programs);
+void ThirdPartyConflictsManager::OnInstalledApplicationsCreated(
+    std::unique_ptr<InstalledApplications> installed_applications) {
+  installed_applications_ = std::move(installed_applications);
 
   if (exe_certificate_info_ && module_list_filter_)
-    InitializeProblematicProgramsUpdater();
+    InitializeIncompatibleApplicationsUpdater();
 }
 
-void ThirdPartyConflictsManager::InitializeProblematicProgramsUpdater() {
+void ThirdPartyConflictsManager::InitializeIncompatibleApplicationsUpdater() {
   DCHECK(exe_certificate_info_);
   DCHECK(module_list_filter_);
-  DCHECK(installed_programs_);
+  DCHECK(installed_applications_);
 
-  problematic_programs_updater_ = std::make_unique<ProblematicProgramsUpdater>(
-      *exe_certificate_info_, *module_list_filter_, *installed_programs_);
-  module_database_->AddObserver(problematic_programs_updater_.get());
+  incompatible_applications_updater_ =
+      std::make_unique<IncompatibleApplicationsUpdater>(
+          *exe_certificate_info_, *module_list_filter_,
+          *installed_applications_);
+  module_database_->AddObserver(incompatible_applications_updater_.get());
 }

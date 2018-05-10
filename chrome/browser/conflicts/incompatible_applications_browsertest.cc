@@ -16,8 +16,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #include "chrome/browser/conflicts/module_database_win.h"
-#include "chrome/browser/conflicts/problematic_programs_updater_win.h"
 #include "chrome/browser/conflicts/proto/module_list.pb.h"
 #include "chrome/browser/conflicts/third_party_conflicts_manager_win.h"
 #include "chrome/common/chrome_features.h"
@@ -26,28 +26,28 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 
-// This class allows to wait until the kProblematicPrograms preference is
-// modified. This can only happen if a new problematic program is found, since
-// the pref starts empty during testing.
+// This class allows to wait until the kIncompatibleApplications preference is
+// modified. This can only happen if a new incompatible application is found,
+// since the pref starts empty during testing.
 //
 // Note: The browser process must be initialized before the creation of an
 // instance of this class.
-class ProblematicProgramsObserver {
+class IncompatibleApplicationsObserver {
  public:
-  ProblematicProgramsObserver() {
+  IncompatibleApplicationsObserver() {
     pref_change_registrar_.Init(g_browser_process->local_state());
     pref_change_registrar_.Add(
-        prefs::kProblematicPrograms,
-        base::BindRepeating(
-            &ProblematicProgramsObserver::OnProblematicProgramsChanged,
-            base::Unretained(this)));
+        prefs::kIncompatibleApplications,
+        base::BindRepeating(&IncompatibleApplicationsObserver::
+                                OnIncompatibleApplicationsChanged,
+                            base::Unretained(this)));
   }
 
-  ~ProblematicProgramsObserver() = default;
+  ~IncompatibleApplicationsObserver() = default;
 
-  // Wait until the kProblematicPrograms preference is modified.
-  void WaitForProblematicProgramsChanged() {
-    if (problematic_programs_changed_)
+  // Wait until the kIncompatibleApplications preference is modified.
+  void WaitForIncompatibleApplicationsChanged() {
+    if (incompatible_applications_changed_)
       return;
 
     base::RunLoop run_loop;
@@ -57,26 +57,26 @@ class ProblematicProgramsObserver {
 
  private:
   // Callback for |pref_change_registrar_|.
-  void OnProblematicProgramsChanged() {
-    problematic_programs_changed_ = true;
+  void OnIncompatibleApplicationsChanged() {
+    incompatible_applications_changed_ = true;
 
     if (run_loop_quit_closure_)
       std::move(run_loop_quit_closure_).Run();
   }
 
-  bool problematic_programs_changed_ = false;
+  bool incompatible_applications_changed_ = false;
 
   PrefChangeRegistrar pref_change_registrar_;
 
   base::RepeatingClosure run_loop_quit_closure_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProblematicProgramsObserver);
+  DISALLOW_COPY_AND_ASSIGN(IncompatibleApplicationsObserver);
 };
 
 class IncompatibleApplicationsBrowserTest : public InProcessBrowserTest {
  protected:
-  // The name of the program deemed incompatible.
-  static constexpr wchar_t kProgramName[] = L"FooBar123";
+  // The name of the application deemed incompatible.
+  static constexpr wchar_t kApplicationName[] = L"FooBar123";
 
   IncompatibleApplicationsBrowserTest() = default;
   ~IncompatibleApplicationsBrowserTest() override = default;
@@ -96,7 +96,7 @@ class IncompatibleApplicationsBrowserTest : public InProcessBrowserTest {
         {});
 
     ASSERT_NO_FATAL_FAILURE(CreateModuleList());
-    ASSERT_NO_FATAL_FAILURE(InstallThirdPartyProgram());
+    ASSERT_NO_FATAL_FAILURE(InstallThirdPartyApplication());
 
     InProcessBrowserTest::SetUp();
   }
@@ -109,7 +109,7 @@ class IncompatibleApplicationsBrowserTest : public InProcessBrowserTest {
   // Returns the path to the DLL that is injected into the process.
   base::FilePath GetDllPath() const {
     return scoped_temp_dir_.GetPath()
-        .Append(kProgramName)
+        .Append(kApplicationName)
         .Append(L"foo_bar.dll");
   }
 
@@ -128,9 +128,9 @@ class IncompatibleApplicationsBrowserTest : public InProcessBrowserTest {
               static_cast<int>(contents.size()));
   }
 
-  // Registers an uninstallation entry for the third-party program, and creates
-  // a DLL meant to be injected into the process.
-  void InstallThirdPartyProgram() {
+  // Registers an uninstallation entry for the third-party application, and
+  // creates a DLL meant to be injected into the process.
+  void InstallThirdPartyApplication() {
     // This module should not be a static dependency of the test executable, but
     // should be a build-system dependency or a module that is present on any
     // Windows machine.
@@ -138,14 +138,14 @@ class IncompatibleApplicationsBrowserTest : public InProcessBrowserTest {
     static constexpr wchar_t kRegistryKeyPathFormat[] =
         L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\%ls";
 
-    // Note: Using the program name for the product id.
+    // Note: Using the application name for the product id.
     const base::string16 registry_key_path =
-        base::StringPrintf(kRegistryKeyPathFormat, kProgramName);
+        base::StringPrintf(kRegistryKeyPathFormat, kApplicationName);
     base::win::RegKey registry_key(HKEY_CURRENT_USER, registry_key_path.c_str(),
                                    KEY_WRITE);
 
     const base::FilePath dll_path = GetDllPath();
-    ASSERT_EQ(registry_key.WriteValue(L"DisplayName", kProgramName),
+    ASSERT_EQ(registry_key.WriteValue(L"DisplayName", kApplicationName),
               ERROR_SUCCESS);
     ASSERT_EQ(registry_key.WriteValue(L"InstallLocation",
                                       dll_path.DirName().value().c_str()),
@@ -157,7 +157,7 @@ class IncompatibleApplicationsBrowserTest : public InProcessBrowserTest {
         ERROR_SUCCESS);
 
     // Copy the test DLL to the install directory so that it will get associated
-    // with the program by the ProblematicProgramsUpdater.
+    // with the application by the IncompatibleApplicationsUpdater.
     base::FilePath test_dll_path;
     ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &test_dll_path));
     test_dll_path = test_dll_path.Append(kTestDllName);
@@ -169,8 +169,8 @@ class IncompatibleApplicationsBrowserTest : public InProcessBrowserTest {
   // Temp directory used to host the install directory and the module list.
   base::ScopedTempDir scoped_temp_dir_;
 
-  // Overrides HKLM and HKCU so that the InstalledPrograms instance doesn't pick
-  // up real programs on the test machine.
+  // Overrides HKLM and HKCU so that the InstalledApplications instance doesn't
+  // pick up real applications on the test machine.
   registry_util::RegistryOverrideManager registry_override_manager_;
 
   // The third party conflicts code is gated behind the kModuleDatabase and
@@ -181,7 +181,7 @@ class IncompatibleApplicationsBrowserTest : public InProcessBrowserTest {
 };
 
 // static
-constexpr wchar_t IncompatibleApplicationsBrowserTest::kProgramName[];
+constexpr wchar_t IncompatibleApplicationsBrowserTest::kApplicationName[];
 
 // This is an integration test for the identification of incompatible
 // applications.
@@ -202,8 +202,8 @@ IN_PROC_BROWSER_TEST_F(IncompatibleApplicationsBrowserTest,
   module_database->IncreaseInspectionPriority();
 
   // Create the observer early so the change is guaranteed to be observed.
-  auto problematic_programs_observer =
-      std::make_unique<ProblematicProgramsObserver>();
+  auto incompatible_applications_observer =
+      std::make_unique<IncompatibleApplicationsObserver>();
 
   // Simulate the download of the module list component.
   module_database->third_party_conflicts_manager()->LoadModuleList(
@@ -214,15 +214,16 @@ IN_PROC_BROWSER_TEST_F(IncompatibleApplicationsBrowserTest,
   base::ScopedNativeLibrary dll(GetDllPath());
   ASSERT_TRUE(dll.is_valid());
 
-  // Wait until the program gets marked as problematic.
-  problematic_programs_observer->WaitForProblematicProgramsChanged();
+  // Wait until the application gets marked as problematic.
+  incompatible_applications_observer->WaitForIncompatibleApplicationsChanged();
 
   // Verify the cache.
-  EXPECT_TRUE(ProblematicProgramsUpdater::HasCachedPrograms());
-  auto problematic_programs = ProblematicProgramsUpdater::GetCachedPrograms();
-  ASSERT_EQ(problematic_programs.size(), 1u);
-  const auto& problematic_program = problematic_programs[0];
-  EXPECT_EQ(problematic_program.info.name, kProgramName);
-  EXPECT_EQ(problematic_program.blacklist_action->message_type(),
+  EXPECT_TRUE(IncompatibleApplicationsUpdater::HasCachedApplications());
+  auto incompatible_applications =
+      IncompatibleApplicationsUpdater::GetCachedApplications();
+  ASSERT_EQ(incompatible_applications.size(), 1u);
+  const auto& incompatible_application = incompatible_applications[0];
+  EXPECT_EQ(incompatible_application.info.name, kApplicationName);
+  EXPECT_EQ(incompatible_application.blacklist_action->message_type(),
             chrome::conflicts::BlacklistMessageType::UNINSTALL);
 }

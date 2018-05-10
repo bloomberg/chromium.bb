@@ -56,7 +56,7 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "chrome/browser/ui/webui/settings/chrome_cleanup_handler.h"
 #if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/conflicts/problematic_programs_updater_win.h"
+#include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #include "chrome/browser/conflicts/token_util_win.h"
 #include "chrome/browser/ui/webui/settings/incompatible_applications_handler_win.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
@@ -229,8 +229,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   bool has_incompatible_applications =
-      ProblematicProgramsUpdater::IsIncompatibleApplicationsWarningEnabled() &&
-      ProblematicProgramsUpdater::HasCachedPrograms();
+      IncompatibleApplicationsUpdater::IsWarningEnabled() &&
+      IncompatibleApplicationsUpdater::HasCachedApplications();
   html_source->AddBoolean("showIncompatibleApplications",
                           has_incompatible_applications);
   html_source->AddBoolean("hasAdminRights", HasAdminRights());

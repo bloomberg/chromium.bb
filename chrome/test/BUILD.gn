@@ -4202,9 +4202,9 @@ test("unit_tests") {
 
     if (is_chrome_branded) {
       sources += [
-        "../browser/conflicts/installed_programs_win_unittest.cc",
+        "../browser/conflicts/incompatible_applications_updater_win_unittest.cc",
+        "../browser/conflicts/installed_applications_win_unittest.cc",
         "../browser/conflicts/module_list_filter_win_unittest.cc",
-        "../browser/conflicts/problematic_programs_updater_win_unittest.cc",
         "../browser/conflicts/registry_key_watcher_win_unittest.cc",
         "../browser/google/google_update_win_unittest.cc",
       ]

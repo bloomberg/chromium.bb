@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/conflicts/installed_programs_win.h"
+#include "chrome/browser/conflicts/installed_applications_win.h"
 
 #include <map>
 
@@ -26,12 +26,12 @@ struct CommonInfo {
   base::string16 uninstall_string;
 };
 
-struct InstallLocationProgramInfo {
+struct InstallLocationApplicationInfo {
   CommonInfo common_info;
   base::string16 install_location;
 };
 
-struct MsiProgramInfo {
+struct MsiApplicationInfo {
   CommonInfo common_info;
   std::vector<base::string16> components;
 };
@@ -58,16 +58,16 @@ class MockMsiUtil : public MsiUtil {
       component_paths_map_;
 };
 
-class TestInstalledPrograms : public InstalledPrograms {
+class TestInstalledApplications : public InstalledApplications {
  public:
-  explicit TestInstalledPrograms(std::unique_ptr<MsiUtil> msi_util)
-      : InstalledPrograms(std::move(msi_util)) {}
+  explicit TestInstalledApplications(std::unique_ptr<MsiUtil> msi_util)
+      : InstalledApplications(std::move(msi_util)) {}
 };
 
-class InstalledProgramsTest : public testing::Test {
+class InstalledApplicationsTest : public testing::Test {
  public:
-  InstalledProgramsTest() = default;
-  ~InstalledProgramsTest() override = default;
+  InstalledApplicationsTest() = default;
+  ~InstalledApplicationsTest() override = default;
 
   // ASSERT_NO_FATAL_FAILURE cannot be used in a constructor so the registry
   // hive overrides are done here.
@@ -89,56 +89,61 @@ class InstalledProgramsTest : public testing::Test {
     registry_key->WriteValue(L"DisplayName", common_info.display_name.c_str());
   }
 
-  void AddFakeProgram(const MsiProgramInfo& program_info) {
-    const base::string16 registry_key_path = base::StringPrintf(
-        kRegistryKeyPathFormat, program_info.common_info.product_id.c_str());
+  void AddFakeApplication(const MsiApplicationInfo& application_info) {
+    const base::string16 registry_key_path =
+        base::StringPrintf(kRegistryKeyPathFormat,
+                           application_info.common_info.product_id.c_str());
     base::win::RegKey registry_key(HKEY_CURRENT_USER, registry_key_path.c_str(),
                                    KEY_WRITE);
 
-    AddCommonInfo(program_info.common_info, &registry_key);
+    AddCommonInfo(application_info.common_info, &registry_key);
 
     component_paths_map_.insert(
-        {program_info.common_info.product_id, program_info.components});
+        {application_info.common_info.product_id, application_info.components});
   }
 
-  void AddFakeProgram(const InstallLocationProgramInfo& program_info) {
-    const base::string16 registry_key_path = base::StringPrintf(
-        kRegistryKeyPathFormat, program_info.common_info.product_id.c_str());
+  void AddFakeApplication(
+      const InstallLocationApplicationInfo& application_info) {
+    const base::string16 registry_key_path =
+        base::StringPrintf(kRegistryKeyPathFormat,
+                           application_info.common_info.product_id.c_str());
     base::win::RegKey registry_key(HKEY_CURRENT_USER, registry_key_path.c_str(),
                                    KEY_WRITE);
 
-    AddCommonInfo(program_info.common_info, &registry_key);
+    AddCommonInfo(application_info.common_info, &registry_key);
 
     registry_key.WriteValue(L"InstallLocation",
-                            program_info.install_location.c_str());
+                            application_info.install_location.c_str());
   }
 
-  TestInstalledPrograms& installed_programs() { return *installed_programs_; }
+  TestInstalledApplications& installed_applications() {
+    return *installed_applications_;
+  }
 
-  void InitializeInstalledPrograms() {
-    installed_programs_ = std::make_unique<TestInstalledPrograms>(
+  void InitializeInstalledApplications() {
+    installed_applications_ = std::make_unique<TestInstalledApplications>(
         std::make_unique<MockMsiUtil>(component_paths_map_));
   }
 
  private:
   registry_util::RegistryOverrideManager registry_override_manager_;
 
-  std::unique_ptr<TestInstalledPrograms> installed_programs_;
+  std::unique_ptr<TestInstalledApplications> installed_applications_;
 
   std::map<base::string16, std::vector<base::string16>> component_paths_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(InstalledProgramsTest);
+  DISALLOW_COPY_AND_ASSIGN(InstalledApplicationsTest);
 };
 
 }  // namespace
 
 // Checks that registry entries with invalid information are skipped.
-TEST_F(InstalledProgramsTest, InvalidEntries) {
+TEST_F(InstalledApplicationsTest, InvalidEntries) {
   const wchar_t kValidDisplayName[] = L"ADisplayName";
   const wchar_t kValidUninstallString[] = L"c:\\an\\UninstallString.exe";
-  const wchar_t kInstallLocation[] = L"c:\\program files\\program\\";
+  const wchar_t kInstallLocation[] = L"c:\\application files\\application\\";
 
-  InstallLocationProgramInfo kTestCases[] = {
+  InstallLocationApplicationInfo kTestCases[] = {
       {
           {
               L"Is SystemComponent", true, false, kValidDisplayName,
@@ -168,25 +173,25 @@ TEST_F(InstalledProgramsTest, InvalidEntries) {
   };
 
   for (const auto& test_case : kTestCases)
-    AddFakeProgram(test_case);
+    AddFakeApplication(test_case);
 
-  InitializeInstalledPrograms();
+  InitializeInstalledApplications();
 
   // None of the invalid entries were picked up.
   const base::FilePath valid_child_file =
       base::FilePath(kInstallLocation).Append(L"file.dll");
-  std::vector<InstalledPrograms::ProgramInfo> programs;
-  EXPECT_FALSE(
-      installed_programs().GetInstalledPrograms(valid_child_file, &programs));
+  std::vector<InstalledApplications::ApplicationInfo> applications;
+  EXPECT_FALSE(installed_applications().GetInstalledApplications(
+      valid_child_file, &applications));
 }
 
-// Tests InstalledPrograms on a valid entry with an InstallLocation.
-TEST_F(InstalledProgramsTest, InstallLocation) {
+// Tests InstalledApplications on a valid entry with an InstallLocation.
+TEST_F(InstalledApplicationsTest, InstallLocation) {
   const wchar_t kValidDisplayName[] = L"ADisplayName";
   const wchar_t kValidUninstallString[] = L"c:\\an\\UninstallString.exe";
-  const wchar_t kInstallLocation[] = L"c:\\program files\\program\\";
+  const wchar_t kInstallLocation[] = L"c:\\application files\\application\\";
 
-  InstallLocationProgramInfo kTestCase = {
+  InstallLocationApplicationInfo kTestCase = {
       {
           L"Completely valid", false, false, kValidDisplayName,
           kValidUninstallString,
@@ -194,81 +199,82 @@ TEST_F(InstalledProgramsTest, InstallLocation) {
       kInstallLocation,
   };
 
-  AddFakeProgram(kTestCase);
+  AddFakeApplication(kTestCase);
 
-  InitializeInstalledPrograms();
+  InitializeInstalledApplications();
 
   // Child file path.
   const base::FilePath valid_child_file =
       base::FilePath(kInstallLocation).Append(L"file.dll");
-  std::vector<InstalledPrograms::ProgramInfo> programs;
-  EXPECT_TRUE(
-      installed_programs().GetInstalledPrograms(valid_child_file, &programs));
-  ASSERT_EQ(1u, programs.size());
-  EXPECT_EQ(kTestCase.common_info.display_name, programs[0].name);
-  EXPECT_EQ(HKEY_CURRENT_USER, programs[0].registry_root);
-  EXPECT_FALSE(programs[0].registry_key_path.empty());
-  EXPECT_EQ(0u, programs[0].registry_wow64_access);
+  std::vector<InstalledApplications::ApplicationInfo> applications;
+  EXPECT_TRUE(installed_applications().GetInstalledApplications(
+      valid_child_file, &applications));
+  ASSERT_EQ(1u, applications.size());
+  EXPECT_EQ(kTestCase.common_info.display_name, applications[0].name);
+  EXPECT_EQ(HKEY_CURRENT_USER, applications[0].registry_root);
+  EXPECT_FALSE(applications[0].registry_key_path.empty());
+  EXPECT_EQ(0u, applications[0].registry_wow64_access);
 
   // Non-child file path.
   const base::FilePath invalid_child_file(
-      L"c:\\program files\\another program\\test.dll");
-  EXPECT_FALSE(
-      installed_programs().GetInstalledPrograms(invalid_child_file, &programs));
+      L"c:\\application files\\another application\\test.dll");
+  EXPECT_FALSE(installed_applications().GetInstalledApplications(
+      invalid_child_file, &applications));
 }
 
-// Tests InstalledPrograms on a valid MSI entry.
-TEST_F(InstalledProgramsTest, Msi) {
+// Tests InstalledApplications on a valid MSI entry.
+TEST_F(InstalledApplicationsTest, Msi) {
   const wchar_t kValidDisplayName[] = L"ADisplayName";
   const wchar_t kValidUninstallString[] = L"c:\\an\\UninstallString.exe";
 
-  MsiProgramInfo kTestCase = {
+  MsiApplicationInfo kTestCase = {
       {
           L"Completely valid", false, false, kValidDisplayName,
           kValidUninstallString,
       },
       {
-          L"c:\\program files\\program\\file1.dll",
-          L"c:\\program files\\program\\file2.dll",
-          L"c:\\program files\\program\\sub\\file3.dll",
+          L"c:\\application files\\application\\file1.dll",
+          L"c:\\application files\\application\\file2.dll",
+          L"c:\\application files\\application\\sub\\file3.dll",
           L"c:\\windows\\system32\\file4.dll",
       },
   };
 
-  AddFakeProgram(kTestCase);
+  AddFakeApplication(kTestCase);
 
-  InitializeInstalledPrograms();
+  InitializeInstalledApplications();
 
-  // Checks that all the files match the program.
+  // Checks that all the files match the application.
   for (const auto& component : kTestCase.components) {
-    std::vector<InstalledPrograms::ProgramInfo> programs;
-    EXPECT_TRUE(installed_programs().GetInstalledPrograms(
-        base::FilePath(component), &programs));
-    ASSERT_EQ(1u, programs.size());
-    EXPECT_EQ(kTestCase.common_info.display_name, programs[0].name);
-    EXPECT_EQ(HKEY_CURRENT_USER, programs[0].registry_root);
-    EXPECT_FALSE(programs[0].registry_key_path.empty());
-    EXPECT_EQ(0u, programs[0].registry_wow64_access);
+    std::vector<InstalledApplications::ApplicationInfo> applications;
+    EXPECT_TRUE(installed_applications().GetInstalledApplications(
+        base::FilePath(component), &applications));
+    ASSERT_EQ(1u, applications.size());
+    EXPECT_EQ(kTestCase.common_info.display_name, applications[0].name);
+    EXPECT_EQ(HKEY_CURRENT_USER, applications[0].registry_root);
+    EXPECT_FALSE(applications[0].registry_key_path.empty());
+    EXPECT_EQ(0u, applications[0].registry_wow64_access);
   }
 
   // Any other file shouldn't work.
   const base::FilePath invalid_child_file(
-      L"c:\\program files\\another program\\test.dll");
-  std::vector<InstalledPrograms::ProgramInfo> programs;
-  EXPECT_FALSE(
-      installed_programs().GetInstalledPrograms(invalid_child_file, &programs));
+      L"c:\\application files\\another application\\test.dll");
+  std::vector<InstalledApplications::ApplicationInfo> applications;
+  EXPECT_FALSE(installed_applications().GetInstalledApplications(
+      invalid_child_file, &applications));
 }
 
 // Checks that if a file matches an InstallLocation and an MSI component, only
-// the MSI program will be considered.
-TEST_F(InstalledProgramsTest, PrioritizeMsi) {
+// the MSI application will be considered.
+TEST_F(InstalledApplicationsTest, PrioritizeMsi) {
   const wchar_t kValidUninstallString[] = L"c:\\an\\UninstallString.exe";
   const wchar_t kInstallLocationDisplayName[] = L"InstallLocation DisplayName";
   const wchar_t kMsiDisplayName[] = L"Msi DisplayName";
-  const wchar_t kInstallLocation[] = L"c:\\program files\\program\\";
-  const wchar_t kMsiComponent[] = L"c:\\program files\\program\\file.dll";
+  const wchar_t kInstallLocation[] = L"c:\\application files\\application\\";
+  const wchar_t kMsiComponent[] =
+      L"c:\\application files\\application\\file.dll";
 
-  InstallLocationProgramInfo kInstallLocationFakeProgram = {
+  InstallLocationApplicationInfo kInstallLocationFakeApplication = {
       {
           L"GUID1", false, false, kInstallLocationDisplayName,
           kValidUninstallString,
@@ -276,7 +282,7 @@ TEST_F(InstalledProgramsTest, PrioritizeMsi) {
       kInstallLocation,
   };
 
-  MsiProgramInfo kMsiFakeProgram = {
+  MsiApplicationInfo kMsiFakeApplication = {
       {
           L"GUID2", false, false, kMsiDisplayName, kValidUninstallString,
       },
@@ -285,49 +291,50 @@ TEST_F(InstalledProgramsTest, PrioritizeMsi) {
       },
   };
 
-  AddFakeProgram(kInstallLocationFakeProgram);
-  AddFakeProgram(kMsiFakeProgram);
+  AddFakeApplication(kInstallLocationFakeApplication);
+  AddFakeApplication(kMsiFakeApplication);
 
-  InitializeInstalledPrograms();
+  InitializeInstalledApplications();
 
-  std::vector<InstalledPrograms::ProgramInfo> programs;
-  EXPECT_TRUE(installed_programs().GetInstalledPrograms(
-      base::FilePath(kMsiComponent), &programs));
-  ASSERT_EQ(1u, programs.size());
-  EXPECT_NE(kInstallLocationDisplayName, programs[0].name);
-  EXPECT_EQ(kMsiDisplayName, programs[0].name);
+  std::vector<InstalledApplications::ApplicationInfo> applications;
+  EXPECT_TRUE(installed_applications().GetInstalledApplications(
+      base::FilePath(kMsiComponent), &applications));
+  ASSERT_EQ(1u, applications.size());
+  EXPECT_NE(kInstallLocationDisplayName, applications[0].name);
+  EXPECT_EQ(kMsiDisplayName, applications[0].name);
 }
 
 // Tests that if 2 entries with conflicting InstallLocation exist, both are
 // ignored.
-TEST_F(InstalledProgramsTest, ConflictingInstallLocations) {
+TEST_F(InstalledApplicationsTest, ConflictingInstallLocations) {
   const wchar_t kValidUninstallString[] = L"c:\\an\\UninstallString.exe";
   const wchar_t kDisplayName1[] = L"DisplayName1";
   const wchar_t kDisplayName2[] = L"DisplayName2";
-  const wchar_t kInstallLocationParent[] = L"c:\\program files\\company\\";
+  const wchar_t kInstallLocationParent[] = L"c:\\application files\\company\\";
   const wchar_t kInstallLocationChild[] =
-      L"c:\\program files\\company\\program";
-  const wchar_t kFile[] = L"c:\\program files\\company\\program\\file.dll";
+      L"c:\\application files\\company\\application";
+  const wchar_t kFile[] =
+      L"c:\\application files\\company\\application\\file.dll";
 
-  InstallLocationProgramInfo kFakeProgram1 = {
+  InstallLocationApplicationInfo kFakeApplication1 = {
       {
           L"GUID1", false, false, kDisplayName1, kValidUninstallString,
       },
       kInstallLocationParent,
   };
-  InstallLocationProgramInfo kFakeProgram2 = {
+  InstallLocationApplicationInfo kFakeApplication2 = {
       {
           L"GUID2", false, false, kDisplayName2, kValidUninstallString,
       },
       kInstallLocationChild,
   };
 
-  AddFakeProgram(kFakeProgram1);
-  AddFakeProgram(kFakeProgram2);
+  AddFakeApplication(kFakeApplication1);
+  AddFakeApplication(kFakeApplication2);
 
-  InitializeInstalledPrograms();
+  InitializeInstalledApplications();
 
-  std::vector<InstalledPrograms::ProgramInfo> programs;
-  EXPECT_FALSE(installed_programs().GetInstalledPrograms(base::FilePath(kFile),
-                                                         &programs));
+  std::vector<InstalledApplications::ApplicationInfo> applications;
+  EXPECT_FALSE(installed_applications().GetInstalledApplications(
+      base::FilePath(kFile), &applications));
 }
