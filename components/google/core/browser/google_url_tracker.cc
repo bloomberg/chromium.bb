@@ -40,14 +40,14 @@ GoogleURLTracker::GoogleURLTracker(
               ? kDefaultGoogleHomepage
               : client_->GetPrefs()->GetString(prefs::kLastKnownGoogleURL)),
       in_startup_sleep_(true),
-      already_fetched_(false),
-      need_to_fetch_(false),
+      already_loaded_(false),
+      need_to_load_(false),
       weak_ptr_factory_(this) {
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   client_->set_google_url_tracker(this);
 
   // Because this function can be called during startup, when kicking off a URL
-  // fetch can eat up 20 ms of time, we delay five seconds, which is hopefully
+  // load can eat up 20 ms of time, we delay five seconds, which is hopefully
   // long enough to be after startup, but still get results back quickly.
   // Ideally, instead of this timer, we'd do something like "check if the
   // browser is starting up, and if so, come back later", but there is currently
@@ -57,12 +57,12 @@ GoogleURLTracker::GoogleURLTracker(
   // /searchdomaincheck lookups might still be issued by calling FinishSleep
   // manually).
   if (mode == NORMAL_MODE) {
-    static const int kStartFetchDelayMS = 5000;
+    static const int kStartLoadDelayMS = 5000;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&GoogleURLTracker::FinishSleep,
                        weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(kStartFetchDelayMS));
+        base::TimeDelta::FromMilliseconds(kStartLoadDelayMS));
   }
 }
 
@@ -79,7 +79,7 @@ void GoogleURLTracker::RegisterProfilePrefs(
 
 void GoogleURLTracker::RequestServerCheck() {
   if (!simple_loader_)
-    SetNeedToFetch();
+    SetNeedToLoad();
 }
 
 std::unique_ptr<GoogleURLTracker::Subscription>
@@ -94,7 +94,7 @@ void GoogleURLTracker::OnURLLoaderComplete(
 
   // Don't update the URL if the request didn't succeed.
   if (!response_body) {
-    already_fetched_ = false;
+    already_loaded_ = false;
     return;
   }
 
@@ -124,8 +124,8 @@ void GoogleURLTracker::OnNetworkChanged(
   // Ignore destructive signals.
   if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
     return;
-  already_fetched_ = false;
-  StartFetchIfDesirable();
+  already_loaded_ = false;
+  StartLoadIfDesirable();
 }
 
 void GoogleURLTracker::Shutdown() {
@@ -135,28 +135,28 @@ void GoogleURLTracker::Shutdown() {
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
-void GoogleURLTracker::SetNeedToFetch() {
-  need_to_fetch_ = true;
-  StartFetchIfDesirable();
+void GoogleURLTracker::SetNeedToLoad() {
+  need_to_load_ = true;
+  StartLoadIfDesirable();
 }
 
 void GoogleURLTracker::FinishSleep() {
   in_startup_sleep_ = false;
-  StartFetchIfDesirable();
+  StartLoadIfDesirable();
 }
 
-void GoogleURLTracker::StartFetchIfDesirable() {
-  // Bail if a fetch isn't appropriate right now.  This function will be called
-  // again each time one of the preconditions changes, so we'll fetch
+void GoogleURLTracker::StartLoadIfDesirable() {
+  // Bail if a load isn't appropriate right now.  This function will be called
+  // again each time one of the preconditions changes, so we'll load
   // immediately once all of them are met.
   //
   // See comments in header on the class, on RequestServerCheck(), and on the
   // various members here for more detail on exactly what the conditions are.
-  if (in_startup_sleep_ || already_fetched_ || !need_to_fetch_)
+  if (in_startup_sleep_ || already_loaded_ || !need_to_load_)
     return;
 
   // Some switches should disable the Google URL tracker entirely.  If we can't
-  // do background networking, we can't do the necessary fetch, and if the user
+  // do background networking, we can't do the necessary load, and if the user
   // specified a Google base URL manually, we shouldn't bother to look up any
   // alternatives or offer to switch to them.
   if (!client_->IsBackgroundNetworkingEnabled() ||
@@ -164,7 +164,7 @@ void GoogleURLTracker::StartFetchIfDesirable() {
           switches::kGoogleBaseURL))
     return;
 
-  already_fetched_ = true;
+  already_loaded_ = true;
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("google_url_tracker", R"(
         semantics {
@@ -211,7 +211,7 @@ void GoogleURLTracker::StartFetchIfDesirable() {
   // changes.
   // A network change can propagate through Chrome in various stages, so it's
   // possible for this code to be reached via OnNetworkChanged(), and then have
-  // the fetch we kick off be canceled due to e.g. the DNS server changing at a
+  // the load we kick off be canceled due to e.g. the DNS server changing at a
   // later time. In general it's not possible to ensure that by the time we
   // reach here any requests we start won't be canceled in this fashion, so
   // retrying is the best we can do.

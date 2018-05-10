@@ -48,7 +48,7 @@ class GoogleURLTracker
   enum Mode {
     // Use current local Google TLD.
     // Defer network requests to update TLD until 5 seconds after
-    // creation, to avoid an expensive fetch during Chrome startup.
+    // creation, to avoid an expensive load during Chrome startup.
     NORMAL_MODE,
 
     // Always use www.google.com.
@@ -73,7 +73,6 @@ class GoogleURLTracker
 
   // Register user preferences for GoogleURLTracker.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
 
   // Returns the current Google homepage URL.
   const GURL& google_url() const { return google_url_; }
@@ -103,16 +102,16 @@ class GoogleURLTracker
   // KeyedService:
   void Shutdown() override;
 
-  // Sets |need_to_fetch_| and attempts to start a fetch.
-  void SetNeedToFetch();
+  // Sets |need_to_load_| and attempts to start a load.
+  void SetNeedToLoad();
 
   // Called when the five second startup sleep has finished.  Runs any pending
-  // fetch.
+  // load.
   void FinishSleep();
 
-  // Starts the fetch of the up-to-date Google URL if we actually want to fetch
+  // Starts the load of the up-to-date Google URL if we actually want to load
   // it and can currently do so.
-  void StartFetchIfDesirable();
+  void StartLoadIfDesirable();
 
   CallbackList callback_list_;
 
@@ -120,13 +119,13 @@ class GoogleURLTracker
 
   GURL google_url_;
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;
-  bool in_startup_sleep_;  // True if we're in the five-second "no fetching"
+  bool in_startup_sleep_;  // True if we're in the five-second "no loading"
                            // period that begins at browser start.
-  bool already_fetched_;   // True if we've already fetched a URL once this run;
-                           // we won't fetch again until after a restart.
-  bool need_to_fetch_;     // True if a consumer actually wants us to fetch an
+  bool already_loaded_;    // True if we've already loaded a URL once this run;
+                           // we won't load again until after a restart.
+  bool need_to_load_;      // True if a consumer actually wants us to load an
                            // updated URL.  If this is never set, we won't
-                           // bother to fetch anything.
+                           // bother to load anything.
                            // Consumers should register a callback via
                            // RegisterCallback().
   base::WeakPtrFactory<GoogleURLTracker> weak_ptr_factory_;

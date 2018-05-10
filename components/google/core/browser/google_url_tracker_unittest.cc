@@ -193,7 +193,7 @@ void GoogleURLTrackerTest::MockSearchDomainCheckResponse(
 void GoogleURLTrackerTest::RequestServerCheck() {
   if (!listener_.HasRegisteredCallback())
     listener_.RegisterCallback(google_url_tracker_.get());
-  google_url_tracker_->SetNeedToFetch();
+  google_url_tracker_->SetNeedToLoad();
   base::RunLoop().RunUntilIdle();
 }
 
