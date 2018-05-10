@@ -81,6 +81,28 @@ const LayoutObject* FindTargetLayoutObject(Node*& target_node) {
   return layout_object;
 }
 
+unsigned ButtonsToWebInputEventModifiers(unsigned short buttons) {
+  unsigned modifiers = 0;
+
+  if (buttons &
+      static_cast<unsigned short>(WebPointerProperties::Buttons::kLeft))
+    modifiers |= WebInputEvent::kLeftButtonDown;
+  if (buttons &
+      static_cast<unsigned short>(WebPointerProperties::Buttons::kRight))
+    modifiers |= WebInputEvent::kRightButtonDown;
+  if (buttons &
+      static_cast<unsigned short>(WebPointerProperties::Buttons::kMiddle))
+    modifiers |= WebInputEvent::kMiddleButtonDown;
+  if (buttons &
+      static_cast<unsigned short>(WebPointerProperties::Buttons::kBack))
+    modifiers |= WebInputEvent::kBackButtonDown;
+  if (buttons &
+      static_cast<unsigned short>(WebPointerProperties::Buttons::kForward))
+    modifiers |= WebInputEvent::kForwardButtonDown;
+
+  return modifiers;
+}
+
 }  // namespace
 
 MouseEvent* MouseEvent::Create(ScriptState* script_state,
@@ -113,23 +135,24 @@ MouseEvent* MouseEvent::Create(const AtomicString& event_type,
   }
 
   SyntheticEventType synthetic_type = kPositionless;
-  double screen_x = 0;
-  double screen_y = 0;
+  MouseEventInit initializer;
   if (underlying_event && underlying_event->IsMouseEvent()) {
     synthetic_type = kRealOrIndistinguishable;
     MouseEvent* mouse_event = ToMouseEvent(underlying_event);
-    screen_x = mouse_event->screenX();
-    screen_y = mouse_event->screenY();
+    initializer.setScreenX(mouse_event->screenX());
+    initializer.setScreenY(mouse_event->screenY());
+    initializer.setSourceCapabilities(
+        view ? view->GetInputDeviceCapabilities()->FiresTouchEvents(false)
+             : nullptr);
   }
 
-  MouseEventInit initializer;
   initializer.setBubbles(true);
   initializer.setCancelable(true);
-  initializer.setScreenX(screen_x);
-  initializer.setScreenY(screen_y);
   initializer.setView(view);
   initializer.setComposed(true);
   UIEventWithKeyState::SetFromWebInputEventModifiers(initializer, modifiers);
+  initializer.setButtons(
+      MouseEvent::WebInputEventModifiersToButtons(modifiers));
 
   TimeTicks timestamp = underlying_event ? underlying_event->PlatformTimeStamp()
                                          : CurrentTimeTicks();
@@ -176,6 +199,7 @@ MouseEvent::MouseEvent(const AtomicString& event_type,
       region_(initializer.region()),
       menu_source_type_(menu_source_type) {
   InitCoordinates(initializer.clientX(), initializer.clientY());
+  modifiers_ |= ButtonsToWebInputEventModifiers(buttons_);
 }
 
 void MouseEvent::InitCoordinates(const double client_x, const double client_y) {
