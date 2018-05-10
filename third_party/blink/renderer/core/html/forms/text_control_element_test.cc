@@ -7,6 +7,7 @@
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -78,13 +79,37 @@ TEST_F(TextControlElementTest, SetSelectionRangeDoesNotCauseLayout) {
 }
 
 TEST_F(TextControlElementTest, IndexForPosition) {
-  HTMLInputElement* input =
-      ToHTMLInputElement(GetDocument().getElementById("input"));
-  input->setValue("Hello");
-  HTMLElement* inner_editor = input->InnerEditorElement();
+  Input().setValue("Hello");
+  HTMLElement* inner_editor = Input().InnerEditorElement();
   EXPECT_EQ(5u, TextControlElement::IndexForPosition(
                     inner_editor,
                     Position(inner_editor, PositionAnchorType::kAfterAnchor)));
+}
+
+TEST_F(TextControlElementTest, ReadOnlyAttributeChangeEditability) {
+  Input().setAttribute(HTMLNames::styleAttr, "all:initial");
+  Input().setAttribute(HTMLNames::readonlyAttr, "");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(EUserModify::kReadOnly,
+            Input().InnerEditorElement()->GetComputedStyle()->UserModify());
+
+  Input().removeAttribute(HTMLNames::readonlyAttr);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(EUserModify::kReadWritePlaintextOnly,
+            Input().InnerEditorElement()->GetComputedStyle()->UserModify());
+}
+
+TEST_F(TextControlElementTest, DisabledAttributeChangeEditability) {
+  Input().setAttribute(HTMLNames::styleAttr, "all:initial");
+  Input().setAttribute(HTMLNames::disabledAttr, "");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(EUserModify::kReadOnly,
+            Input().InnerEditorElement()->GetComputedStyle()->UserModify());
+
+  Input().removeAttribute(HTMLNames::disabledAttr);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(EUserModify::kReadWritePlaintextOnly,
+            Input().InnerEditorElement()->GetComputedStyle()->UserModify());
 }
 
 }  // namespace blink

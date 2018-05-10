@@ -101,6 +101,7 @@ class TextFieldInputType : public InputType,
   void SpinButtonDidReleaseMouseCapture(SpinButtonElement::EventDispatch) final;
 
   SpinButtonElement* GetSpinButtonElement() const;
+  void DisabledOrReadonlyAttributeChanged(const QualifiedName&);
 };
 
 }  // namespace blink
