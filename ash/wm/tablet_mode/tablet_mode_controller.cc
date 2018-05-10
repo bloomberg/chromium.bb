@@ -281,7 +281,9 @@ void TabletModeController::LidEventReceived(
 
   const bool open = state == chromeos::PowerManagerClient::LidState::OPEN;
   lid_is_closed_ = !open;
-  LeaveTabletMode(false);
+
+  if (!tablet_mode_switch_is_on_)
+    LeaveTabletMode(false);
 }
 
 void TabletModeController::TabletModeEventReceived(
