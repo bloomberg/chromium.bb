@@ -18,6 +18,8 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/animation/tween.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -104,6 +106,12 @@ const char* TabCloseButton::GetClassName() const {
   return "TabCloseButton";
 }
 
+void TabCloseButton::PaintButtonContents(gfx::Canvas* canvas) {
+  canvas->SaveLayerAlpha(GetOpacity());
+  views::ImageButton::PaintButtonContents(canvas);
+  canvas->Restore();
+}
+
 views::View* TabCloseButton::TargetForRect(views::View* root,
                                            const gfx::Rect& rect) {
   CHECK_EQ(root, this);
@@ -135,6 +143,14 @@ bool TabCloseButton::GetHitTestMask(gfx::Path* mask) const {
   // We need to define this so hit-testing won't include the border region.
   mask->addRect(gfx::RectToSkRect(GetMirroredRect(GetContentsBounds())));
   return true;
+}
+
+SkAlpha TabCloseButton::GetOpacity() {
+  if (MD::GetMode() != MD::MATERIAL_REFRESH && !IsMouseHovered())
+    return SK_AlphaOPAQUE;
+  const double animation_value =
+      static_cast<Tab*>(parent())->hover_controller()->GetAnimationValue();
+  return gfx::Tween::IntValueBetween(animation_value, 0, 255);
 }
 
 void TabCloseButton::GenerateImages(bool is_touch,

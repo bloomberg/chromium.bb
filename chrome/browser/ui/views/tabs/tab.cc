@@ -1090,47 +1090,46 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
       PaintTabBackgroundStroke(canvas, fill_path, stroke_path, active,
                                stroke_color);
     }
-    return;
-  }
+  } else {
+    BackgroundCache& cache =
+        active ? background_active_cache_ : background_inactive_cache_;
+    if (!cache.CacheKeyMatches(canvas->image_scale(), size(), active_color,
+                               inactive_color, stroke_color)) {
+      gfx::Path fill_path =
+          GetInteriorPath(canvas->image_scale(), size(), endcap_width);
+      gfx::Path stroke_path = GetBorderPath(canvas->image_scale(), false, false,
+                                            endcap_width, size());
+      cc::PaintRecorder recorder;
 
-  BackgroundCache& cache =
-      active ? background_active_cache_ : background_inactive_cache_;
-  if (!cache.CacheKeyMatches(canvas->image_scale(), size(), active_color,
-                             inactive_color, stroke_color)) {
-    gfx::Path fill_path =
-        GetInteriorPath(canvas->image_scale(), size(), endcap_width);
-    gfx::Path stroke_path = GetBorderPath(canvas->image_scale(), false, false,
-                                          endcap_width, size());
-    cc::PaintRecorder recorder;
+      {
+        gfx::Canvas cache_canvas(
+            recorder.beginRecording(size().width(), size().height()),
+            canvas->image_scale());
+        PaintTabBackgroundFill(&cache_canvas, fill_path, active,
+                               paint_hover_effect, active_color, inactive_color,
+                               fill_id, y_offset);
+        cache.fill_record = recorder.finishRecordingAsPicture();
+      }
+      if (TabStrip::ShouldDrawStrokes()) {
+        gfx::Canvas cache_canvas(
+            recorder.beginRecording(size().width(), size().height()),
+            canvas->image_scale());
+        PaintTabBackgroundStroke(&cache_canvas, fill_path, stroke_path, active,
+                                 stroke_color);
+        cache.stroke_record = recorder.finishRecordingAsPicture();
+      }
 
-    {
-      gfx::Canvas cache_canvas(
-          recorder.beginRecording(size().width(), size().height()),
-          canvas->image_scale());
-      PaintTabBackgroundFill(&cache_canvas, fill_path, active,
-                             paint_hover_effect, active_color, inactive_color,
-                             fill_id, y_offset);
-      cache.fill_record = recorder.finishRecordingAsPicture();
+      cache.SetCacheKey(canvas->image_scale(), size(), active_color,
+                        inactive_color, stroke_color);
     }
+
+    canvas->sk_canvas()->drawPicture(cache.fill_record);
     if (TabStrip::ShouldDrawStrokes()) {
-      gfx::Canvas cache_canvas(
-          recorder.beginRecording(size().width(), size().height()),
-          canvas->image_scale());
-      PaintTabBackgroundStroke(&cache_canvas, fill_path, stroke_path, active,
-                               stroke_color);
-      cache.stroke_record = recorder.finishRecordingAsPicture();
+      gfx::ScopedCanvas scoped_canvas(clip ? canvas : nullptr);
+      if (clip)
+        canvas->sk_canvas()->clipPath(*clip, SkClipOp::kDifference, true);
+      canvas->sk_canvas()->drawPicture(cache.stroke_record);
     }
-
-    cache.SetCacheKey(canvas->image_scale(), size(), active_color,
-                      inactive_color, stroke_color);
-  }
-
-  canvas->sk_canvas()->drawPicture(cache.fill_record);
-  if (TabStrip::ShouldDrawStrokes()) {
-    gfx::ScopedCanvas scoped_canvas(clip ? canvas : nullptr);
-    if (clip)
-      canvas->sk_canvas()->clipPath(*clip, SkClipOp::kDifference, true);
-    canvas->sk_canvas()->drawPicture(cache.stroke_record);
   }
 
   if (!active)
@@ -1195,25 +1194,33 @@ void Tab::PaintTabBackgroundStroke(gfx::Canvas* canvas,
 }
 
 void Tab::PaintSeparator(gfx::Canvas* canvas, SkColor inactive_color) {
-  if (MD::GetMode() != MD::MATERIAL_REFRESH || IsMouseHovered())
+  if (MD::GetMode() != MD::MATERIAL_REFRESH)
     return;
 
-  // If the tab to the left is either active or the mouse is hovered over it,
-  // the separator on this tab should not be painted.
+  // If the tab to the left is active, the separator on this tab should not be
+  // painted.
   Tab* previous_tab =
       controller_->GetAdjacentTab(this, TabController::BACKWARD);
-  if (previous_tab &&
-      (previous_tab->IsActive() || previous_tab->IsMouseHovered()))
+  if (previous_tab && previous_tab->IsActive())
     return;
 
   const int tab_height = GetContentsBounds().height();
   gfx::RectF separator_bounds;
   separator_bounds.set_size(gfx::SizeF(1, 16));
   separator_bounds.set_origin(gfx::PointF(
-      (tab_height - separator_bounds.height()) / 2, GetTabEndcapWidth() / 2));
+      GetTabEndcapWidth() / 2, (tab_height - separator_bounds.height()) / 2));
+  // The following will paint the separator using an opacity that should
+  // cross-fade with the maximum hover animation value of this tab or the
+  // tab to the left. This will have the effect of fading out the separator
+  // while this tab's or the tab to the left's hover animation is progressing.
+  const double max_hover_value = std::max(
+      hover_controller_.GetAnimationValue(),
+      previous_tab ? previous_tab->hover_controller()->GetAnimationValue() : 0);
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(color_utils::BlendTowardOppositeLuma(inactive_color, 0x5a));
+  flags.setColor(
+      SkColorSetA(color_utils::BlendTowardOppositeLuma(inactive_color, 0x5a),
+                  gfx::Tween::IntValueBetween(max_hover_value, 255, 0)));
   canvas->DrawRect(separator_bounds, flags);
 }
 
@@ -1295,7 +1302,7 @@ void Tab::UpdateIconVisibility() {
       int title_width =
           (!showing_icon_ + !showing_alert_indicator_) * favicon_width;
       if ((!hide_inactive_close_button ||
-           (show_close_button_on_hover && IsMouseHovered())) &&
+           (show_close_button_on_hover && hover_controller_.ShouldDraw())) &&
           (title_width + close_button_width + extra_padding <=
            available_width)) {
         showing_close_button_ = true;
