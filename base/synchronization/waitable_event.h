@@ -64,7 +64,8 @@ class BASE_EXPORT WaitableEvent {
 
   // Constructs a WaitableEvent with policy and initial state as detailed in
   // the above enums.
-  WaitableEvent(ResetPolicy reset_policy, InitialState initial_state);
+  WaitableEvent(ResetPolicy reset_policy = ResetPolicy::MANUAL,
+                InitialState initial_state = InitialState::NOT_SIGNALED);
 
 #if defined(OS_WIN)
   // Create a WaitableEvent from an Event HANDLE which has already been
