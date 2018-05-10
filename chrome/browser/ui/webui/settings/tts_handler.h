@@ -21,8 +21,8 @@ class TtsHandler : public SettingsPageUIHandler, public VoicesChangedDelegate {
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
-  void OnJavascriptAllowed() override {}
-  void OnJavascriptDisallowed() override {}
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
   // VoicesChangedDelegate implementation.
   void OnVoicesChanged() override;
