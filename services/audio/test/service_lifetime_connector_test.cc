@@ -36,7 +36,7 @@ class AudioServiceLifetimeConnectorTest : public testing::Test {
             false /*not using a separate audio thread*/));
     std::unique_ptr<Service> service_impl = std::make_unique<Service>(
         std::make_unique<InProcessAudioManagerAccessor>(audio_manager_.get()),
-        kQuitTimeout);
+        kQuitTimeout, false /* device_notifications_enabled */);
     service_ = service_impl.get();
     service_->SetQuitClosureForTesting(quit_request_.Get());
     connector_factory_ =

@@ -9,9 +9,11 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/system_monitor/system_monitor.h"
 #include "build/build_config.h"
 #include "media/audio/audio_manager.h"
 #include "services/audio/debug_recording.h"
+#include "services/audio/device_notifier.h"
 #include "services/audio/system_info.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
@@ -19,9 +21,11 @@
 namespace audio {
 
 Service::Service(std::unique_ptr<AudioManagerAccessor> audio_manager_accessor,
-                 base::TimeDelta quit_timeout)
+                 base::TimeDelta quit_timeout,
+                 bool device_notifications_enabled)
     : quit_timeout_(quit_timeout),
-      audio_manager_accessor_(std::move(audio_manager_accessor)) {
+      audio_manager_accessor_(std::move(audio_manager_accessor)),
+      device_notifications_enabled_(device_notifications_enabled) {
   DCHECK(audio_manager_accessor_);
 }
 
@@ -41,6 +45,10 @@ void Service::OnStart() {
       &Service::BindDebugRecordingRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::StreamFactory>(base::BindRepeating(
       &Service::BindStreamFactoryRequest, base::Unretained(this)));
+  if (device_notifications_enabled_) {
+    registry_.AddInterface<mojom::DeviceNotifier>(base::BindRepeating(
+        &Service::BindDeviceNotifierRequest, base::Unretained(this)));
+  }
 }
 
 void Service::OnBindInterface(
@@ -98,6 +106,19 @@ void Service::BindStreamFactoryRequest(mojom::StreamFactoryRequest request) {
   if (!stream_factory_)
     stream_factory_.emplace(audio_manager_accessor_->GetAudioManager());
   stream_factory_->Bind(std::move(request), ref_factory_->CreateRef());
+}
+
+void Service::BindDeviceNotifierRequest(mojom::DeviceNotifierRequest request) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(ref_factory_);
+  DCHECK(device_notifications_enabled_);
+  if (!system_monitor_) {
+    CHECK(!base::SystemMonitor::Get());
+    system_monitor_ = std::make_unique<base::SystemMonitor>();
+  }
+  if (!device_notifier_)
+    device_notifier_ = std::make_unique<DeviceNotifier>();
+  device_notifier_->Bind(std::move(request), ref_factory_->CreateRef());
 }
 
 void Service::MaybeRequestQuitDelayed() {

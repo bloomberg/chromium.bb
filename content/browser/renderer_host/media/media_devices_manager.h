@@ -30,6 +30,10 @@ namespace media {
 class AudioSystem;
 }
 
+namespace service_manager {
+class Connector;
+}
+
 namespace content {
 
 class MediaDevicesPermissionChecker;
@@ -263,6 +267,11 @@ class CONTENT_EXPORT MediaDevicesManager
 
   // Callback used to obtain the current device ID salt and security origin.
   MediaDeviceSaltAndOriginCallback salt_and_origin_callback_;
+
+  std::unique_ptr<service_manager::Connector> connector_;
+
+  class AudioServiceDeviceListener;
+  std::unique_ptr<AudioServiceDeviceListener> audio_service_device_listener_;
 
   base::WeakPtrFactory<MediaDevicesManager> weak_factory_;
 
