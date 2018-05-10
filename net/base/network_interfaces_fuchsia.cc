@@ -11,7 +11,7 @@
 
 namespace net {
 
-IPAddress NetAddressToIPAddress(const fuchsia::netstack::NetAddress& addr) {
+IPAddress NetAddressToIPAddress(const netstack::NetAddress& addr) {
   if (addr.ipv4) {
     return IPAddress(addr.ipv4->addr.data(), addr.ipv4->addr.count());
   }
@@ -22,25 +22,25 @@ IPAddress NetAddressToIPAddress(const fuchsia::netstack::NetAddress& addr) {
 }
 
 bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
-  fuchsia::netstack::NetstackSyncPtr netstack =
+  netstack::NetstackSyncPtr netstack =
       base::fuchsia::ComponentContext::GetDefault()
-          ->ConnectToServiceSync<fuchsia::netstack::Netstack>();
+          ->ConnectToServiceSync<netstack::Netstack>();
 
-  fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces;
+  fidl::VectorPtr<netstack::NetInterface> interfaces;
   if (!netstack->GetInterfaces(&interfaces))
     return false;
 
   for (auto& interface : interfaces.get()) {
     // Check if the interface is up.
-    if (!(interface.flags & fuchsia::netstack::NetInterfaceFlagUp))
+    if (!(interface.flags & netstack::NetInterfaceFlagUp))
       continue;
 
     // Skip loopback.
-    if (interface.features & fuchsia::netstack::interfaceFeatureLoopback)
+    if (interface.features & netstack::interfaceFeatureLoopback)
       continue;
 
     NetworkChangeNotifier::ConnectionType connection_type =
-        (interface.features & fuchsia::netstack::interfaceFeatureWlan)
+        (interface.features & netstack::interfaceFeatureWlan)
             ? NetworkChangeNotifier::CONNECTION_WIFI
             : NetworkChangeNotifier::CONNECTION_UNKNOWN;
 
