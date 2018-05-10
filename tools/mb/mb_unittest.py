@@ -190,10 +190,6 @@ TRYSERVER_CONFIG = """\
       'try_builder2': 'fake_config',
     },
   },
-  'luci_tryservers': {
-    'luci_tryserver1': ['luci_builder1'],
-    'luci_tryserver2': ['luci_builder2'],
-  },
   'configs': {},
   'mixins': {},
 }
@@ -630,22 +626,6 @@ class UnitTest(unittest.TestCase):
     mbw = self.fake_mbw()
     mbw.files[mbw.default_config] = TEST_BAD_CONFIG
     self.check(['validate'], mbw=mbw, ret=1)
-
-  def test_buildbucket(self):
-    mbw = self.fake_mbw()
-    mbw.files[mbw.default_config] = TRYSERVER_CONFIG
-    self.check(['gerrit-buildbucket-config'], mbw=mbw,
-               ret=0,
-               out=('# This file was generated using '
-                    '"tools/mb/mb.py gerrit-buildbucket-config".\n'
-                    '[bucket "luci.luci_tryserver1"]\n'
-                    '\tbuilder = luci_builder1\n'
-                    '[bucket "luci.luci_tryserver2"]\n'
-                    '\tbuilder = luci_builder2\n'
-                    '[bucket "master.tryserver.chromium.linux"]\n'
-                    '\tbuilder = try_builder\n'
-                    '[bucket "master.tryserver.chromium.mac"]\n'
-                    '\tbuilder = try_builder2\n'))
 
   def test_build_command_unix(self):
     files = {

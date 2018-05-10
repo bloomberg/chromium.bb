@@ -2122,8 +2122,4 @@
       'gn_args': 'target_cpu="x86"',
     },
   },
-
-  'luci_tryservers': {
-    'chromium.try': [ 'linux_chromium_rel_ng' ],
-  },
 }
