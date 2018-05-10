@@ -452,6 +452,8 @@ class RenderViewImplScaleFactorTest : public RenderViewImplBlinkSettingsTest {
         view()->min_size_for_auto_resize();
     visual_properties.max_size_for_auto_resize =
         view()->max_size_for_auto_resize();
+    visual_properties.local_surface_id = base::Optional<viz::LocalSurfaceId>(
+        viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()));
     visual_properties.content_source_id = view()->GetContentSourceId();
     view()->OnSynchronizeVisualProperties(visual_properties);
     ASSERT_EQ(dsf, view()->GetWebScreenInfo().device_scale_factor);

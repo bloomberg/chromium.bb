@@ -99,10 +99,7 @@ TEST(ChildLocalSurfaceIdAllocatorTest,
       parent_updated_child_allocator.GetCurrentLocalSurfaceId();
   EXPECT_EQ(postupdate_local_surface_id.parent_sequence_number(),
             parent_allocated_local_surface_id.parent_sequence_number());
-  // TODO(fsamuel): We shouldn't update the child sequence number but in order
-  // to allow a transition from LocalSurfaceId allocation on the main thread to
-  // the compositor, we will briefly support this.
-  EXPECT_EQ(postupdate_local_surface_id.child_sequence_number(),
+  EXPECT_NE(postupdate_local_surface_id.child_sequence_number(),
             parent_allocated_local_surface_id.child_sequence_number());
   EXPECT_EQ(postupdate_local_surface_id.embed_token(),
             parent_allocated_local_surface_id.embed_token());

@@ -781,6 +781,14 @@ void RenderWidgetCompositor::SetViewportSizeAndScale(
       device_viewport_size, device_scale_factor, local_surface_id);
 }
 
+void RenderWidgetCompositor::RequestNewLocalSurfaceId() {
+  layer_tree_host_->RequestNewLocalSurfaceId();
+}
+
+bool RenderWidgetCompositor::HasNewLocalSurfaceIdRequest() const {
+  return layer_tree_host_->new_local_surface_id_request_for_testing();
+}
+
 void RenderWidgetCompositor::SetViewportVisibleRect(
     const gfx::Rect& visible_rect) {
   layer_tree_host_->SetViewportVisibleRect(visible_rect);

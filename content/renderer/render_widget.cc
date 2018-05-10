@@ -1238,16 +1238,6 @@ gfx::Size RenderWidget::GetSizeForWebWidget() const {
 }
 
 void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
-  viz::LocalSurfaceId new_local_surface_id;
-  // If the content_source_id of VisualProperties doesn't match
-  // |current_content_source_id_|, then the given LocalSurfaceId was generated
-  // before the navigation. Continue with the resize but don't use the
-  // LocalSurfaceId until the right one comes.
-  if (params.local_surface_id) {
-    new_local_surface_id = child_local_surface_id_allocator_.UpdateFromParent(
-        *params.local_surface_id);
-  }
-
   // The content_source_id that the browser sends us should never be larger than
   // |current_content_source_id_|.
   DCHECK_GE(1u << 30, current_content_source_id_ - params.content_source_id);
@@ -1267,9 +1257,9 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
           ? gfx::ScaleToCeiledSize(size_,
                                    params.screen_info.device_scale_factor)
           : params.compositor_viewport_pixel_size;
-  UpdateSurfaceAndScreenInfo(new_local_surface_id,
-                             new_compositor_viewport_pixel_size,
-                             params.screen_info);
+  UpdateSurfaceAndScreenInfo(
+      params.local_surface_id.value_or(viz::LocalSurfaceId()),
+      new_compositor_viewport_pixel_size, params.screen_info);
   UpdateCaptureSequenceNumber(params.capture_sequence_number);
   if (compositor_) {
     compositor_->SetBrowserControlsHeight(
@@ -1746,7 +1736,7 @@ void RenderWidget::OnImeFinishComposingText(bool keep_selection) {
 }
 
 void RenderWidget::UpdateSurfaceAndScreenInfo(
-    viz::LocalSurfaceId new_local_surface_id,
+    const viz::LocalSurfaceId& new_local_surface_id,
     const gfx::Size& new_compositor_viewport_pixel_size,
     const ScreenInfo& new_screen_info) {
   bool orientation_changed =
@@ -2174,11 +2164,12 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
     // |size_| from |compositor_viewport_pixel_size_|. Also note that the
     // calculation of |new_compositor_viewport_pixel_size| does not appear to
     // take into account device emulation.
+    if (compositor_)
+      compositor_->RequestNewLocalSurfaceId();
     gfx::Size new_compositor_viewport_pixel_size =
         gfx::ScaleToCeiledSize(size_, GetWebScreenInfo().device_scale_factor);
-    UpdateSurfaceAndScreenInfo(child_local_surface_id_allocator_.GenerateId(),
-                               new_compositor_viewport_pixel_size,
-                               screen_info_);
+    UpdateSurfaceAndScreenInfo(
+        local_surface_id_, new_compositor_viewport_pixel_size, screen_info_);
   }
 }
 
