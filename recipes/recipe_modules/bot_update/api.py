@@ -190,6 +190,14 @@ class BotUpdateApi(recipe_api.RecipeApi):
           refs.append(fixed_revision.split(':')[0])
         flags.append(['--revision', '%s@%s' % (name, fixed_revision)])
 
+    for ref in refs:
+      assert not ref.startswith('refs/remotes/'), (
+          'The "refs/remotes/*" syntax is not supported.\n'
+          'The "remotes" syntax is dependent on the way the local repo is '
+          'configured, and while there are defaults that can often be '
+          'assumed, there is no guarantee the mapping will always be done in '
+          'a particular way.')
+
     # Add extra fetch refspecs.
     for ref in refs:
       flags.append(['--refs', ref])
