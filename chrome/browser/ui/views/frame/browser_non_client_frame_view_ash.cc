@@ -329,7 +329,19 @@ void BrowserNonClientFrameViewAsh::UpdateWindowTitle() {
     frame_header_->SchedulePaintForTitle();
 }
 
-void BrowserNonClientFrameViewAsh::SizeConstraintsChanged() {
+void BrowserNonClientFrameViewAsh::SizeConstraintsChanged() {}
+
+void BrowserNonClientFrameViewAsh::ActivationChanged(bool active) {
+  BrowserNonClientFrameView::ActivationChanged(active);
+
+  const bool should_paint_as_active = ShouldPaintAsActive();
+  frame_header_->SetPaintAsActive(should_paint_as_active);
+
+  if (hosted_app_button_container_)
+    hosted_app_button_container_->SetPaintAsActive(should_paint_as_active);
+
+  if (frame_header_origin_text_)
+    frame_header_origin_text_->SetPaintAsActive(should_paint_as_active);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -339,19 +351,10 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   if (!ShouldPaint())
     return;
 
-  const bool should_paint_as_active = ShouldPaintAsActive();
-  frame_header_->SetPaintAsActive(should_paint_as_active);
-
   const ash::FrameHeader::Mode header_mode =
-      should_paint_as_active ? ash::FrameHeader::MODE_ACTIVE
-                             : ash::FrameHeader::MODE_INACTIVE;
+      ShouldPaintAsActive() ? ash::FrameHeader::MODE_ACTIVE
+                            : ash::FrameHeader::MODE_INACTIVE;
   frame_header_->PaintHeader(canvas, header_mode);
-
-  if (hosted_app_button_container_)
-    hosted_app_button_container_->SetPaintAsActive(should_paint_as_active);
-
-  if (frame_header_origin_text_)
-    frame_header_origin_text_->SetPaintAsActive(should_paint_as_active);
 
   if (browser_view()->IsToolbarVisible() &&
       !browser_view()->toolbar()->GetPreferredSize().IsEmpty() &&

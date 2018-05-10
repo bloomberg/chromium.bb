@@ -220,7 +220,13 @@ std::unique_ptr<views::InkDropMask> FrameCaptionButton::CreateInkDropMask()
 }
 
 void FrameCaptionButton::SetBackgroundColor(SkColor background_color) {
+  if (background_color_ == background_color)
+    return;
+
   background_color_ = background_color;
+  // Refresh the icon since the color may have changed.
+  if (icon_definition_)
+    SetImage(icon_, ANIMATE_NO, *icon_definition_);
   UpdateInkDropBaseColor();
 }
 

@@ -82,10 +82,6 @@ class ASH_EXPORT CustomFrameHeader : public FrameHeader,
   // Paints the title bar, primarily the title string.
   void PaintTitleBar(gfx::Canvas* canvas);
 
-  // Updates the size and icons used for the minimize, restore, and close
-  // buttons.
-  void UpdateCaptionButtons();
-
   // Returns bounds of the region in |view_| which is painted with the header
   // images. The region is assumed to start at the top left corner of |view_|
   // and to have the same width as |view_|.

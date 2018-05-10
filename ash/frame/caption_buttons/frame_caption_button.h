@@ -73,6 +73,8 @@ class ASH_EXPORT FrameCaptionButton : public views::Button {
     paint_as_active_ = paint_as_active;
   }
 
+  bool paint_as_active() { return paint_as_active_; }
+
   CaptionButtonIcon icon() const { return icon_; }
 
   const gfx::VectorIcon* icon_definition_for_test() const {
