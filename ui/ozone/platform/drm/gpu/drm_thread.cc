@@ -41,10 +41,15 @@ class GbmBufferGenerator : public ScanoutBufferGenerator {
   // ScanoutBufferGenerator:
   scoped_refptr<ScanoutBuffer> Create(const scoped_refptr<DrmDevice>& drm,
                                       uint32_t format,
+                                      const std::vector<uint64_t>& modifiers,
                                       const gfx::Size& size) override {
     scoped_refptr<GbmDevice> gbm(static_cast<GbmDevice*>(drm.get()));
-    // TODO(dcastagna): Use GBM_BO_USE_MAP modifier once minigbm exposes it.
-    return GbmBuffer::CreateBuffer(gbm, format, size, GBM_BO_USE_SCANOUT);
+    if (modifiers.size() > 0) {
+      return GbmBuffer::CreateBufferWithModifiers(
+          gbm, format, size, GBM_BO_USE_SCANOUT, modifiers);
+    } else {
+      return GbmBuffer::CreateBuffer(gbm, format, size, GBM_BO_USE_SCANOUT);
+    }
   }
 
  protected:
