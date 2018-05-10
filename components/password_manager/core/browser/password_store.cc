@@ -133,9 +133,6 @@ bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare,
       base::Bind(&PasswordStore::InitOnBackgroundSequence, this, flare));
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   hash_password_manager_.set_prefs(prefs);
-  ScheduleTask(
-      base::Bind(&PasswordStore::SaveSyncPasswordHashImpl, this,
-                 base::Passed(hash_password_manager_.RetrievePasswordHash())));
 #endif
   return true;
 }
@@ -286,8 +283,10 @@ void PasswordStore::ReportMetrics(const std::string& sync_username,
   if (!sync_username.empty()) {
     auto hash_password_state =
         hash_password_manager_.HasPasswordHash()
-            ? metrics_util::IsSyncPasswordHashSaved::SAVED
-            : metrics_util::IsSyncPasswordHashSaved::NOT_SAVED;
+            ? metrics_util::IsSyncPasswordHashSaved::SAVED_VIA_STRING_PREF
+            : hash_password_manager_.HasPasswordHash(sync_username)
+                  ? metrics_util::IsSyncPasswordHashSaved::SAVED_VIA_LIST_PREF
+                  : metrics_util::IsSyncPasswordHashSaved::NOT_SAVED;
     metrics_util::LogIsSyncPasswordHashSaved(hash_password_state);
   }
 #endif
@@ -359,12 +358,24 @@ void PasswordStore::CheckReuse(const base::string16& input,
 #endif
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+void PasswordStore::PrepareSyncPasswordHashData(
+    const std::string& sync_username) {
+  // TODO(crbug.com/841438): Delete migration code when most users complete
+  // the migration.
+  hash_password_manager_.MaybeMigrateExistingSyncPasswordHash(sync_username);
+  ScheduleTask(base::BindRepeating(
+      &PasswordStore::SaveSyncPasswordHashImpl, this,
+      base::Passed(
+          hash_password_manager_.RetrievePasswordHash(sync_username))));
+}
+
 void PasswordStore::SaveSyncPasswordHash(
+    const std::string& username,
     const base::string16& password,
     metrics_util::SyncPasswordHashChange event) {
-  if (hash_password_manager_.SavePasswordHash(password)) {
-    base::Optional<SyncPasswordData> sync_password_data =
-        hash_password_manager_.RetrievePasswordHash();
+  if (hash_password_manager_.SavePasswordHash(username, password)) {
+    base::Optional<PasswordHashData> sync_password_data =
+        hash_password_manager_.RetrievePasswordHash(username);
     metrics_util::LogSyncPasswordHashChange(event);
     ScheduleTask(base::BindRepeating(&PasswordStore::SaveSyncPasswordHashImpl,
                                      this, std::move(sync_password_data)));
@@ -372,7 +383,7 @@ void PasswordStore::SaveSyncPasswordHash(
 }
 
 void PasswordStore::SaveSyncPasswordHash(
-    const SyncPasswordData& sync_password_data,
+    const PasswordHashData& sync_password_data,
     metrics_util::SyncPasswordHashChange event) {
   if (hash_password_manager_.SavePasswordHash(sync_password_data)) {
     metrics_util::LogSyncPasswordHashChange(event);
@@ -381,8 +392,8 @@ void PasswordStore::SaveSyncPasswordHash(
   }
 }
 
-void PasswordStore::ClearSyncPasswordHash() {
-  hash_password_manager_.ClearSavedPasswordHash();
+void PasswordStore::ClearPasswordHash(const std::string& username) {
+  hash_password_manager_.ClearSavedPasswordHash(username);
   ScheduleTask(base::Bind(&PasswordStore::ClearSyncPasswordHashImpl, this));
 }
 
@@ -492,7 +503,7 @@ void PasswordStore::CheckReuseImpl(std::unique_ptr<CheckReuseRequest> request,
 }
 
 void PasswordStore::SaveSyncPasswordHashImpl(
-    base::Optional<SyncPasswordData> sync_password_data) {
+    base::Optional<PasswordHashData> sync_password_data) {
   if (reuse_detector_)
     reuse_detector_->UseSyncPasswordHash(std::move(sync_password_data));
 }

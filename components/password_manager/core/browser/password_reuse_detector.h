@@ -55,7 +55,7 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
                   PasswordReuseDetectorConsumer* consumer);
 
   // Stores internal |sync_password_data| for password reuse checking.
-  void UseSyncPasswordHash(base::Optional<SyncPasswordData> sync_password_data);
+  void UseSyncPasswordHash(base::Optional<PasswordHashData> sync_password_data);
 
   // Clears a sync password hash if it was saved.
   void ClearSyncPasswordHash();
@@ -102,7 +102,7 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
   // of times how many different sites it's saved on.
   int saved_passwords_ = 0;
 
-  base::Optional<SyncPasswordData> sync_password_data_;
+  base::Optional<PasswordHashData> sync_password_data_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordReuseDetector);
 };

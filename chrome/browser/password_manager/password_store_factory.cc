@@ -32,6 +32,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/password_manager_util_win.h"
@@ -64,6 +65,15 @@ namespace {
 #if defined(USE_X11)
 const LocalProfileId kInvalidLocalProfileId =
     static_cast<LocalProfileId>(0);
+#endif
+
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+std::string GetSyncUsername(Profile* profile) {
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfileIfExists(profile);
+  return signin_manager ? signin_manager->GetAuthenticatedAccountInfo().email
+                        : std::string();
+}
 #endif
 
 }  // namespace
@@ -259,6 +269,13 @@ PasswordStoreFactory::BuildServiceInstanceFor(
     LOG(WARNING) << "Could not initialize password store.";
     return nullptr;
   }
+
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+  // Prepare sync password hash data for reuse detection.
+  std::string sync_username = GetSyncUsername(profile);
+  if (!sync_username.empty())
+    ps->PrepareSyncPasswordHashData(sync_username);
+#endif
 
   // TODO(https://crbug.com/817754): remove the code once majority of the users
   // executed it.

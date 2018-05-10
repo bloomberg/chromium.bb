@@ -83,7 +83,7 @@ class CHROMEOS_EXPORT UserContext {
   const std::string& GetPublicSessionInputMethod() const;
   const std::string& GetDeviceId() const;
   const std::string& GetGAPSCookie() const;
-  const base::Optional<password_manager::SyncPasswordData>&
+  const base::Optional<password_manager::PasswordHashData>&
   GetSyncPasswordData() const;
 
   bool HasCredentials() const;
@@ -104,7 +104,7 @@ class CHROMEOS_EXPORT UserContext {
   void SetDeviceId(const std::string& device_id);
   void SetGAPSCookie(const std::string& gaps_cookie);
   void SetSyncPasswordData(
-      const password_manager::SyncPasswordData& sync_password_data);
+      const password_manager::PasswordHashData& sync_password_data);
 
   void ClearSecrets();
 
@@ -128,7 +128,7 @@ class CHROMEOS_EXPORT UserContext {
   std::string gaps_cookie_;
 
   // For password reuse detection use.
-  base::Optional<password_manager::SyncPasswordData> sync_password_data_;
+  base::Optional<password_manager::PasswordHashData> sync_password_data_;
 };
 
 }  // namespace chromeos
