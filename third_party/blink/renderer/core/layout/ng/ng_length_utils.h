@@ -33,7 +33,11 @@ CORE_EXPORT bool NeedMinMaxSize(const ComputedStyle&);
 
 // Like NeedMinMaxSize, but for use when calling
 // ComputeMinAndMaxContentContribution.
-CORE_EXPORT bool NeedMinMaxSizeForContentContribution(const ComputedStyle&);
+// Because content contributions are commonly needed by a block's parent,
+// we also take a writing mode here so we can check this in the parent's
+// coordinate system.
+CORE_EXPORT bool NeedMinMaxSizeForContentContribution(WritingMode mode,
+                                                      const ComputedStyle&);
 
 // Convert an inline-axis length to a layout unit using the given constraint
 // space.
@@ -63,8 +67,12 @@ CORE_EXPORT LayoutUnit ResolveMarginPaddingLength(const NGConstraintSpace&,
 // to zero) and that an auto inline size resolves to the respective min/max
 // content size.
 // Also, the min/max contribution does include the inline margins as well.
+// Because content contributions are commonly needed by a block's parent,
+// we also take a writing mode here so we can compute this in the parent's
+// coordinate system.
 CORE_EXPORT MinMaxSize
-ComputeMinAndMaxContentContribution(const ComputedStyle&,
+ComputeMinAndMaxContentContribution(WritingMode writing_mode,
+                                    const ComputedStyle&,
                                     const base::Optional<MinMaxSize>&);
 
 // Resolves the given length to a layout unit, constraining it by the min

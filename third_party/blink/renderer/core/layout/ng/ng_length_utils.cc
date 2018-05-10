@@ -33,10 +33,14 @@ bool NeedMinMaxSize(const ComputedStyle& style) {
          style.LogicalMaxWidth().IsIntrinsic();
 }
 
-bool NeedMinMaxSizeForContentContribution(const ComputedStyle& style) {
-  return style.LogicalWidth().IsIntrinsicOrAuto() ||
-         style.LogicalMinWidth().IsIntrinsic() ||
-         style.LogicalMaxWidth().IsIntrinsic();
+bool NeedMinMaxSizeForContentContribution(WritingMode mode,
+                                          const ComputedStyle& style) {
+  if (mode == WritingMode::kHorizontalTb) {
+    return style.Width().IsIntrinsicOrAuto() ||
+           style.MinWidth().IsIntrinsic() || style.MaxWidth().IsIntrinsic();
+  }
+  return style.Height().IsIntrinsicOrAuto() ||
+         style.MinHeight().IsIntrinsic() || style.MaxHeight().IsIntrinsic();
 }
 
 LayoutUnit ResolveInlineLength(const NGConstraintSpace& constraint_space,
@@ -224,39 +228,68 @@ LayoutUnit ResolveMarginPaddingLength(const NGConstraintSpace& constraint_space,
 }
 
 MinMaxSize ComputeMinAndMaxContentContribution(
+    WritingMode writing_mode,
     const ComputedStyle& style,
     const base::Optional<MinMaxSize>& min_and_max) {
   // Synthesize a zero-sized constraint space for passing to
   // ResolveInlineLength.
-  WritingMode writing_mode = style.GetWritingMode();
+  // The constraint space's writing mode has to match the style, so we can't
+  // use the passed-in mode here.
   NGConstraintSpaceBuilder builder(
-      writing_mode,
+      style.GetWritingMode(),
       /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite});
   scoped_refptr<NGConstraintSpace> space =
-      builder.ToConstraintSpace(writing_mode);
+      builder.ToConstraintSpace(style.GetWritingMode());
+
+  LayoutUnit content_size =
+      min_and_max ? min_and_max->max_size : NGSizeIndefinite;
 
   MinMaxSize computed_sizes;
-  Length inline_size = style.LogicalWidth();
+  Length inline_size = writing_mode == WritingMode::kHorizontalTb
+                           ? style.Width()
+                           : style.Height();
   if (inline_size.IsAuto()) {
     CHECK(min_and_max.has_value());
     computed_sizes = *min_and_max;
   } else {
-    computed_sizes.min_size = computed_sizes.max_size =
-        ResolveInlineLength(*space, style, min_and_max, inline_size,
-                            LengthResolveType::kContentSize);
+    if (IsParallelWritingMode(writing_mode, style.GetWritingMode())) {
+      computed_sizes.min_size = computed_sizes.max_size =
+          ResolveInlineLength(*space, style, min_and_max, inline_size,
+                              LengthResolveType::kContentSize);
+    } else {
+      computed_sizes.min_size = computed_sizes.max_size =
+          ResolveBlockLength(*space, style, inline_size, content_size,
+                             LengthResolveType::kContentSize);
+    }
   }
 
-  Length max_length = style.LogicalMaxWidth();
+  Length max_length = writing_mode == WritingMode::kHorizontalTb
+                          ? style.MaxWidth()
+                          : style.MaxHeight();
   if (!max_length.IsMaxSizeNone()) {
-    LayoutUnit max = ResolveInlineLength(*space, style, min_and_max, max_length,
-                                         LengthResolveType::kMaxSize);
+    LayoutUnit max;
+    if (IsParallelWritingMode(writing_mode, style.GetWritingMode())) {
+      max = ResolveInlineLength(*space, style, min_and_max, max_length,
+                                LengthResolveType::kMaxSize);
+    } else {
+      max = ResolveBlockLength(*space, style, max_length, content_size,
+                               LengthResolveType::kMaxSize);
+    }
     computed_sizes.min_size = std::min(computed_sizes.min_size, max);
     computed_sizes.max_size = std::min(computed_sizes.max_size, max);
   }
 
-  LayoutUnit min =
-      ResolveInlineLength(*space, style, min_and_max, style.LogicalMinWidth(),
-                          LengthResolveType::kMinSize);
+  Length min_length = writing_mode == WritingMode::kHorizontalTb
+                          ? style.MinWidth()
+                          : style.MinHeight();
+  LayoutUnit min;
+  if (IsParallelWritingMode(writing_mode, style.GetWritingMode())) {
+    min = ResolveInlineLength(*space, style, min_and_max, min_length,
+                              LengthResolveType::kMinSize);
+  } else {
+    min = ResolveBlockLength(*space, style, min_length, content_size,
+                             LengthResolveType::kMinSize);
+  }
   computed_sizes.min_size = std::max(computed_sizes.min_size, min);
   computed_sizes.max_size = std::max(computed_sizes.max_size, min);
 
