@@ -554,6 +554,11 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
             net_log));
   }
 
+  if (network_context_params->transport_security_persister_path) {
+    builder->set_transport_security_persister_path(
+        *network_context_params->transport_security_persister_path);
+  }
+
   builder->set_data_enabled(network_context_params->enable_data_url_support);
 #if !BUILDFLAG(DISABLE_FILE_SUPPORT)
   builder->set_file_enabled(network_context_params->enable_file_url_support);
