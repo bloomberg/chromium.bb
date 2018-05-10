@@ -371,15 +371,20 @@ void AppsNavigationThrottle::CloseOrGoBack(content::WebContents* tab) {
   if (tab->GetController().CanGoBack())
     tab->GetController().GoBack();
   else
-    tab->Close();
+    tab->ClosePage();
 }
 
 void AppsNavigationThrottle::CancelNavigation() {
   content::WebContents* tab = navigation_handle()->GetWebContents();
-  if (tab && tab->GetController().IsInitialNavigation())
-    tab->Close();
-  else
+  if (tab && tab->GetController().IsInitialNavigation()) {
+    // Workaround for b/79167225, closing |tab| here may be dangerous.
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&AppsNavigationThrottle::CloseTab,
+                       weak_factory_.GetWeakPtr()));
+  } else {
     CancelDeferredNavigation(content::NavigationThrottle::CANCEL_AND_IGNORE);
+  }
 }
 
 void AppsNavigationThrottle::OnDeferredNavigationProcessed(
@@ -465,6 +470,13 @@ AppsNavigationThrottle::HandleRequest() {
   }
 
   return content::NavigationThrottle::PROCEED;
+}
+
+void AppsNavigationThrottle::CloseTab() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  content::WebContents* tab = navigation_handle()->GetWebContents();
+  if (tab)
+    tab->ClosePage();
 }
 
 }  // namespace chromeos
