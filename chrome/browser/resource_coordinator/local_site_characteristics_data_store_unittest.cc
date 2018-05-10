@@ -7,18 +7,36 @@
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_impl.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/url_row.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
 
 namespace {
+
 const char kTestOrigin[] = "http://www.foo.com";
 const char kTestOrigin2[] = "http://www.bar.com";
+
+class MockLocalSiteCharacteristicsDatabase
+    : public testing::NoopLocalSiteCharacteristicsDatabase {
+ public:
+  MockLocalSiteCharacteristicsDatabase() = default;
+  ~MockLocalSiteCharacteristicsDatabase() = default;
+
+  MOCK_METHOD1(RemoveSiteCharacteristicsFromDB,
+               void(const std::vector<std::string>& site_origin));
+  MOCK_METHOD0(ClearDatabase, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockLocalSiteCharacteristicsDatabase);
+};
+
 }  // namespace
 
 class LocalSiteCharacteristicsDataStoreTest : public ::testing::Test {
@@ -72,11 +90,17 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, EndToEnd) {
 }
 
 TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
+  // Mock the database to ensure that the delete events get propagated properly.
+  ::testing::StrictMock<MockLocalSiteCharacteristicsDatabase>* mock_db =
+      new ::testing::StrictMock<MockLocalSiteCharacteristicsDatabase>();
+  data_store_.SetDatabaseForTesting(base::WrapUnique(mock_db));
+
   // Load a first origin, and then make use of a feature on it.
 
   const std::string kOrigin1Url = GURL(kTestOrigin).GetOrigin().GetContent();
   auto reader = data_store_.GetReaderForOrigin(kOrigin1Url);
   EXPECT_TRUE(reader);
+
   auto writer = data_store_.GetWriterForOrigin(kOrigin1Url);
   EXPECT_TRUE(writer);
 
@@ -104,8 +128,8 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
   internal::LocalSiteCharacteristicsDataImpl* data2 =
       data_store_.origin_data_map_for_testing().find(kOrigin2Url)->second;
   EXPECT_NE(nullptr, data2);
-  writer2->NotifySiteLoaded();
-  writer2->NotifyUpdatesFaviconInBackground();
+  data2->NotifySiteLoaded();
+  data2->NotifyUpdatesFaviconInBackground();
 
   // This site hasn'be been unloaded yet, so the last loaded time shouldn't have
   // changed.
@@ -114,8 +138,11 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
   history::URLRows urls_to_delete = {
       history::URLRow(GURL(kTestOrigin)),
       history::URLRow(GURL("http://www.url-not-in-map.com"))};
+  EXPECT_CALL(*mock_db, RemoveSiteCharacteristicsFromDB(::testing::ContainerEq(
+                            std::vector<std::string>({kOrigin1Url}))));
   data_store_.OnURLsDeleted(nullptr, history::DeletionInfo::ForUrls(
                                          urls_to_delete, std::set<GURL>()));
+  ::testing::Mock::VerifyAndClear(mock_db);
 
   // The information for this site have been reset, so the last loaded time
   // should now be equal to the current time and the title update feature
@@ -132,7 +159,9 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
   test_clock_.Advance(kDelay);
 
   // Delete all the information stored in the data store.
+  EXPECT_CALL(*mock_db, ClearDatabase());
   data_store_.OnURLsDeleted(nullptr, history::DeletionInfo::ForAllHistory());
+  ::testing::Mock::VerifyAndClear(mock_db);
 
   EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader2->UpdatesFaviconInBackground());

@@ -12,5 +12,24 @@ MockLocalSiteCharacteristicsDataImplOnDestroyDelegate::
 MockLocalSiteCharacteristicsDataImplOnDestroyDelegate::
     ~MockLocalSiteCharacteristicsDataImplOnDestroyDelegate() = default;
 
+NoopLocalSiteCharacteristicsDatabase::NoopLocalSiteCharacteristicsDatabase() =
+    default;
+NoopLocalSiteCharacteristicsDatabase::~NoopLocalSiteCharacteristicsDatabase() {}
+
+void NoopLocalSiteCharacteristicsDatabase::ReadSiteCharacteristicsFromDB(
+    const std::string& site_origin,
+    ReadSiteCharacteristicsFromDBCallback callback) {
+  std::move(callback).Run(base::nullopt);
+}
+
+void NoopLocalSiteCharacteristicsDatabase::WriteSiteCharacteristicsIntoDB(
+    const std::string& site_origin,
+    const SiteCharacteristicsProto& site_characteristic_proto) {}
+
+void NoopLocalSiteCharacteristicsDatabase::RemoveSiteCharacteristicsFromDB(
+    const std::vector<std::string>& site_origins) {}
+
+void NoopLocalSiteCharacteristicsDatabase::ClearDatabase() {}
+
 }  // namespace testing
 }  // namespace resource_coordinator

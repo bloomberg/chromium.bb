@@ -20,8 +20,13 @@ class Profile;
 
 namespace resource_coordinator {
 
+class LocalSiteCharacteristicsDatabase;
+
 // Implementation of a SiteCharacteristicsDataStore that use the local site
 // characteristics database as a backend.
+//
+// TODO(sebmarchand): Expose a method to receive a dummy writer that doesn't
+// record anything, for use in incognito sessions.
 class LocalSiteCharacteristicsDataStore
     : public SiteCharacteristicsDataStore,
       public internal::LocalSiteCharacteristicsDataImpl::OnDestroyDelegate,
@@ -42,6 +47,14 @@ class LocalSiteCharacteristicsDataStore
 
   const LocalSiteCharacteristicsMap& origin_data_map_for_testing() const {
     return origin_data_map_;
+  }
+
+  // NOTE: This should be called before creating any
+  // LocalSiteCharacteristicsDataImpl object (this doesn't update the database
+  // used by these objects).
+  void SetDatabaseForTesting(
+      std::unique_ptr<LocalSiteCharacteristicsDatabase> database) {
+    database_ = std::move(database);
   }
 
  private:
@@ -75,6 +88,8 @@ class LocalSiteCharacteristicsDataStore
 
   ScopedObserver<history::HistoryService, LocalSiteCharacteristicsDataStore>
       history_observer_;
+
+  std::unique_ptr<LocalSiteCharacteristicsDatabase> database_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalSiteCharacteristicsDataStore);
 };

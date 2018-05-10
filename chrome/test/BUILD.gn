@@ -2908,6 +2908,7 @@ test("unit_tests") {
       "../browser/page_load_metrics/observers/session_restore_page_load_metrics_observer_unittest.cc",
       "../browser/resource_coordinator/background_tab_navigation_throttle_unittest.cc",
       "../browser/resource_coordinator/discard_metrics_lifecycle_unit_observer_unittest.cc",
+      "../browser/resource_coordinator/leveldb_site_characteristics_database_unittest.cc",
       "../browser/resource_coordinator/lifecycle_unit_base_unittest.cc",
       "../browser/resource_coordinator/lifecycle_unit_unittest.cc",
       "../browser/resource_coordinator/local_site_characteristics_data_impl_unittest.cc",

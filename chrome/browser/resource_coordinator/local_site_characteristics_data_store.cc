@@ -8,15 +8,24 @@
 #include "base/stl_util.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/leveldb_site_characteristics_database.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_reader.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_writer.h"
 #include "components/history/core/browser/history_service.h"
 
 namespace resource_coordinator {
 
+namespace {
+constexpr char kSiteCharacteristicsDirectoryName[] =
+    "Site Characteristics Database";
+}
+
 LocalSiteCharacteristicsDataStore::LocalSiteCharacteristicsDataStore(
     Profile* profile)
     : history_observer_(this) {
+  database_ = LevelDBSiteCharacteristicsDatabase::OpenOrCreateDatabase(
+      profile->GetPath().AppendASCII(kSiteCharacteristicsDirectoryName));
+
   history::HistoryService* history =
       HistoryServiceFactory::GetForProfileWithoutCreating(profile);
   if (history)
@@ -58,7 +67,8 @@ LocalSiteCharacteristicsDataStore::GetOrCreateFeatureImpl(
 
   // If not create a new one and add it to the map.
   internal::LocalSiteCharacteristicsDataImpl* site_characteristic_data =
-      new internal::LocalSiteCharacteristicsDataImpl(origin_str, this);
+      new internal::LocalSiteCharacteristicsDataImpl(origin_str, this,
+                                                     database_.get());
   // internal::LocalSiteCharacteristicsDataImpl is a ref-counted object, it's
   // safe to store a raw pointer to it here as this class will get notified when
   // it's about to be destroyed and it'll be removed from the map.
@@ -91,21 +101,25 @@ LocalSiteCharacteristicsDataStore::ResetLocalSiteCharacteristicsEntry(
 void LocalSiteCharacteristicsDataStore::OnURLsDeleted(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
-  // TODO(sebmarchand): Removes these entry from the on-disk database once it's
-  // implemented.
+  // TODO(sebmarchand): Invalidates all the pending read/write operations to the
+  // database once it's asynchronous.
   if (deletion_info.IsAllHistory()) {
     for (auto iter = origin_data_map_.begin();
          iter != origin_data_map_.end();) {
       iter = ResetLocalSiteCharacteristicsEntry(iter);
     }
+    database_->ClearDatabase();
   } else {
-    for (const auto& deleted_row : deletion_info.deleted_rows()) {
+    std::vector<std::string> entries_to_remove;
+    for (auto deleted_row : deletion_info.deleted_rows()) {
       auto map_iter =
           origin_data_map_.find(deleted_row.url().GetOrigin().GetContent());
       if (map_iter != origin_data_map_.end()) {
         ResetLocalSiteCharacteristicsEntry(map_iter);
+        entries_to_remove.emplace_back(map_iter->first);
       }
     }
+    database_->RemoveSiteCharacteristicsFromDB(entries_to_remove);
   }
 }
 

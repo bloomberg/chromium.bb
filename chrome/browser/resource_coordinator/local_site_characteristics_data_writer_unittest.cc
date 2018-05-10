@@ -22,13 +22,16 @@ class LocalSiteCharacteristicsDataWriterTest : public ::testing::Test {
   LocalSiteCharacteristicsDataWriterTest()
       : test_impl_(base::WrapRefCounted(
             new internal::LocalSiteCharacteristicsDataImpl("foo.com",
-                                                           &delegate_))) {
+                                                           &delegate_,
+                                                           &database_))) {
     LocalSiteCharacteristicsDataWriter* writer =
         new LocalSiteCharacteristicsDataWriter(test_impl_.get());
     writer_ = base::WrapUnique(writer);
   }
 
   ~LocalSiteCharacteristicsDataWriterTest() override = default;
+
+  bool TabIsLoaded() { return test_impl_->IsLoaded(); }
 
   // The mock delegate used by the LocalSiteCharacteristicsDataImpl objects
   // created by this class, NiceMock is used to avoid having to set
@@ -37,14 +40,14 @@ class LocalSiteCharacteristicsDataWriterTest : public ::testing::Test {
       testing::MockLocalSiteCharacteristicsDataImplOnDestroyDelegate>
       delegate_;
 
+  testing::NoopLocalSiteCharacteristicsDatabase database_;
+
   // The LocalSiteCharacteristicsDataImpl object used in these tests.
   scoped_refptr<internal::LocalSiteCharacteristicsDataImpl> test_impl_;
 
   // A LocalSiteCharacteristicsDataWriter object associated with the origin used
   // to create this object.
   std::unique_ptr<LocalSiteCharacteristicsDataWriter> writer_;
-
-  bool TabIsLoaded() { return test_impl_->IsLoaded(); }
 
   DISALLOW_COPY_AND_ASSIGN(LocalSiteCharacteristicsDataWriterTest);
 };

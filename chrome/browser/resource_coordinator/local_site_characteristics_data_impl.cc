@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/bind.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_database.h"
 #include "chrome/browser/resource_coordinator/time.h"
 
 namespace resource_coordinator {
@@ -123,12 +125,36 @@ void LocalSiteCharacteristicsDataImpl::NotifyUsesNotificationsInBackground() {
 
 LocalSiteCharacteristicsDataImpl::LocalSiteCharacteristicsDataImpl(
     const std::string& origin_str,
-    OnDestroyDelegate* delegate)
+    OnDestroyDelegate* delegate,
+    LocalSiteCharacteristicsDatabase* database)
     : origin_str_(origin_str),
       active_webcontents_count_(0U),
-      delegate_(delegate) {
+      database_(database),
+      delegate_(delegate),
+      weak_factory_(this) {
   DCHECK_NE(nullptr, delegate_);
-  InitWithDefaultValues();
+  DCHECK_NE(nullptr, database_);
+  DCHECK(!site_characteristics_.IsInitialized());
+  database_->ReadSiteCharacteristicsFromDB(
+      origin_str_,
+      base::BindOnce(&LocalSiteCharacteristicsDataImpl::OnInitCallback,
+                     weak_factory_.GetWeakPtr()));
+}
+
+LocalSiteCharacteristicsDataImpl::~LocalSiteCharacteristicsDataImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // It's currently required that the site gets unloaded before destroying this
+  // object.
+  // TODO(sebmarchand): Check if this is a valid assumption.
+  DCHECK(!IsLoaded());
+
+  DCHECK_NE(nullptr, delegate_);
+  delegate_->OnLocalSiteCharacteristicsDataImplDestroyed(this);
+
+  if (site_characteristics_.IsInitialized()) {
+    database_->WriteSiteCharacteristicsIntoDB(origin_str_,
+                                              site_characteristics_);
+  }
 }
 
 base::TimeDelta LocalSiteCharacteristicsDataImpl::FeatureObservationDuration(
@@ -153,22 +179,12 @@ base::TimeDelta LocalSiteCharacteristicsDataImpl::FeatureObservationDuration(
   return observation_time_for_feature;
 }
 
-LocalSiteCharacteristicsDataImpl::~LocalSiteCharacteristicsDataImpl() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // It's currently required that the site gets unloaded before destroying this
-  // object.
-  // TODO(sebmarchand): Check if this is a valid assumption.
-  DCHECK(!IsLoaded());
-
-  DCHECK_NE(nullptr, delegate_);
-  delegate_->OnLocalSiteCharacteristicsDataImplDestroyed(this);
-}
-
 // static:
 void LocalSiteCharacteristicsDataImpl::IncrementFeatureObservationDuration(
     SiteCharacteristicsFeatureProto* feature_proto,
     base::TimeDelta extra_observation_duration) {
-  if (InternalRepresentationToTimeDelta(feature_proto->use_timestamp())
+  if (!feature_proto->has_use_timestamp() ||
+      InternalRepresentationToTimeDelta(feature_proto->use_timestamp())
           .is_zero()) {
     feature_proto->set_observation_duration(TimeDeltaToInternalRepresentation(
         InternalRepresentationToTimeDelta(
@@ -186,20 +202,26 @@ void LocalSiteCharacteristicsDataImpl::
   proto->set_use_timestamp(kZeroIntervalInternalRepresentation);
 }
 
-void LocalSiteCharacteristicsDataImpl::InitWithDefaultValues() {
+void LocalSiteCharacteristicsDataImpl::InitWithDefaultValues(
+    bool only_init_uninitialized_fields) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Initialize the feature elements with the default value, this is required
   // because some fields might otherwise never be initialized.
-  for (auto* iter : GetAllFeaturesFromProto(&site_characteristics_))
-    InitSiteCharacteristicsFeatureProtoWithDefaultValues(iter);
+  for (auto* iter : GetAllFeaturesFromProto(&site_characteristics_)) {
+    if (!only_init_uninitialized_fields || !iter->IsInitialized())
+      InitSiteCharacteristicsFeatureProtoWithDefaultValues(iter);
+  }
 
-  site_characteristics_.set_last_loaded(kZeroIntervalInternalRepresentation);
+  if (!only_init_uninitialized_fields ||
+      !site_characteristics_.has_last_loaded()) {
+    site_characteristics_.set_last_loaded(kZeroIntervalInternalRepresentation);
+  }
 }
 
 void LocalSiteCharacteristicsDataImpl::ClearObservations() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Reset all the observations.
-  InitWithDefaultValues();
+  InitWithDefaultValues(false);
 
   // Set the last loaded time to the current time if there's some loaded
   // instances of this site.
@@ -213,6 +235,9 @@ SiteFeatureUsage LocalSiteCharacteristicsDataImpl::GetFeatureUsage(
     const SiteCharacteristicsFeatureProto& feature_proto,
     const base::TimeDelta min_obs_time) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!feature_proto.IsInitialized())
+    return SiteFeatureUsage::kSiteFeatureUsageUnknown;
 
   // Checks if this feature has already been observed.
   // TODO(sebmarchand): Check the timestamp and reset features that haven't been
@@ -236,6 +261,59 @@ void LocalSiteCharacteristicsDataImpl::NotifyFeatureUsage(
   feature_proto->set_use_timestamp(
       TimeDeltaToInternalRepresentation(GetTickDeltaSinceEpoch()));
   feature_proto->set_observation_duration(kZeroIntervalInternalRepresentation);
+}
+
+void LocalSiteCharacteristicsDataImpl::OnInitCallback(
+    base::Optional<SiteCharacteristicsProto> db_site_characteristics) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Check if the initialization has succeeded.
+  if (db_site_characteristics) {
+    // If so, iterates over all the features and initialize them.
+    auto this_features = GetAllFeaturesFromProto(&site_characteristics_);
+    auto db_features =
+        GetAllFeaturesFromProto(&db_site_characteristics.value());
+    auto this_features_iter = this_features.begin();
+    auto db_features_iter = db_features.begin();
+    for (; this_features_iter != this_features.end() &&
+           db_features_iter != db_features.end();
+         ++this_features_iter, ++db_features_iter) {
+      // If the |use_timestamp| field is set for the in-memory entry for this
+      // feature then there's nothing to do, otherwise update it with the values
+      // from the database.
+      if (!(*this_features_iter)->has_use_timestamp()) {
+        if ((*db_features_iter)->has_use_timestamp()) {
+          // Keep the use timestamp from the database, if any.
+          (*this_features_iter)
+              ->set_use_timestamp((*db_features_iter)->use_timestamp());
+          (*this_features_iter)
+              ->set_observation_duration(kZeroIntervalInternalRepresentation);
+        } else {
+          // Else, add the observation duration from the database to the
+          // in-memory observation duration.
+          if (!(*this_features_iter)->has_observation_duration()) {
+            (*this_features_iter)
+                ->set_observation_duration(kZeroIntervalInternalRepresentation);
+          }
+          IncrementFeatureObservationDuration(
+              (*this_features_iter),
+              InternalRepresentationToTimeDelta(
+                  (*db_features_iter)->observation_duration()));
+        }
+      }
+    }
+    // Only update the last loaded field if we haven't updated it since the
+    // creation of this object.
+    if (!site_characteristics_.has_last_loaded()) {
+      site_characteristics_.set_last_loaded(
+          db_site_characteristics->last_loaded());
+    }
+  } else {
+    // Init all the fields that haven't been initialized with a default value.
+    InitWithDefaultValues(true /* only_init_uninitialized_fields */);
+  }
+
+  DCHECK(site_characteristics_.IsInitialized());
 }
 
 }  // namespace internal

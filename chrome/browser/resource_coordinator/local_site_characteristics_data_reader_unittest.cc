@@ -21,10 +21,10 @@ class LocalSiteCharacteristicsDataReaderTest : public ::testing::Test {
   // LocalSiteCharacteristicsDataImpl is protected and not visible to
   // base::MakeRefCounted.
   LocalSiteCharacteristicsDataReaderTest()
-      : scoped_set_tick_clock_for_testing_(&test_clock_),
-        test_impl_(base::WrapRefCounted(
-            new internal::LocalSiteCharacteristicsDataImpl("foo.com",
-                                                           &delegate_))) {
+      : scoped_set_tick_clock_for_testing_(&test_clock_) {
+    test_impl_ =
+        base::WrapRefCounted(new internal::LocalSiteCharacteristicsDataImpl(
+            "foo.com", &delegate_, &database_));
     test_impl_->NotifySiteLoaded();
     LocalSiteCharacteristicsDataReader* reader =
         new LocalSiteCharacteristicsDataReader(test_impl_.get());
@@ -51,6 +51,8 @@ class LocalSiteCharacteristicsDataReaderTest : public ::testing::Test {
   // A LocalSiteCharacteristicsDataReader object associated with the origin used
   // to create this object.
   std::unique_ptr<LocalSiteCharacteristicsDataReader> reader_;
+
+  testing::NoopLocalSiteCharacteristicsDatabase database_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalSiteCharacteristicsDataReaderTest);
 };
