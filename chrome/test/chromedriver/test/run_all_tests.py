@@ -189,37 +189,22 @@ def main():
     return code
   else:
     versions = {'HEAD': archive.GetLatestRevision()}
-    if util.IsLinux() and not util.Is64Bit():
-      # Linux32 builds need to be special-cased, because 1) they are keyed by
-      # git hash rather than commit position, and 2) come from a different
-      # download site (so we can't just convert the commit position to a hash).
-      versions['63'] = 'adb61db19020ed8ecee5e91b1a0ea4c924ae2988'
-      versions['62'] = '17030e3a08cfbb6e591991f7dbf0eb703454b365'
-      versions['61'] = '77132a2bc78e8dc9ce411e8166bfd009f6476f6f'
-
-      # TODO(samuong): speculative fix for crbug.com/611886
-      os.environ['CHROME_DEVEL_SANDBOX'] = '/opt/chromium/chrome_sandbox'
-
     # Linux64 build numbers
-    elif util.IsLinux():
+    if util.IsLinux():
       versions['67'] = '550422'
       versions['66'] = '540276'
-      versions['65'] = '530372'
 
 
     # Mac build numbers
     elif util.IsMac():
       versions['67'] = '550418'
       versions['66'] = '540271'
-      versions['65'] = '530368'
 
 
     # Windows build numbers
     elif util.IsWindows():
       versions['67'] = '550416'
       versions['66'] = '540272'
-      versions['65'] = '530366'
-
 
     code = 0
     for version, revision in versions.iteritems():
