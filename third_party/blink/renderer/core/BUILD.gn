@@ -1633,7 +1633,6 @@ jumbo_source_set("unit_tests") {
     "animation/keyframe_effect_model_test.cc",
     "animation/keyframe_effect_test.cc",
     "animation/property_handle_test.cc",
-    "animation/scroll_timeline_test.cc",
     "animation/timing_calculations_test.cc",
     "animation/timing_input_test.cc",
     "clipboard/data_object_test.cc",
