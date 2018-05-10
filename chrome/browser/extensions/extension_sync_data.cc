@@ -87,14 +87,12 @@ ExtensionSyncData::ExtensionSyncData(const Extension& extension,
                                      int disable_reasons,
                                      bool incognito_enabled,
                                      bool remote_install,
-                                     base::Optional<bool> all_urls_enabled,
                                      bool installed_by_custodian)
     : ExtensionSyncData(extension,
                         enabled,
                         disable_reasons,
                         incognito_enabled,
                         remote_install,
-                        all_urls_enabled,
                         installed_by_custodian,
                         StringOrdinal(),
                         StringOrdinal(),
@@ -105,7 +103,6 @@ ExtensionSyncData::ExtensionSyncData(const Extension& extension,
                                      int disable_reasons,
                                      bool incognito_enabled,
                                      bool remote_install,
-                                     base::Optional<bool> all_urls_enabled,
                                      bool installed_by_custodian,
                                      const StringOrdinal& app_launch_ordinal,
                                      const StringOrdinal& page_ordinal,
@@ -118,7 +115,6 @@ ExtensionSyncData::ExtensionSyncData(const Extension& extension,
       disable_reasons_(disable_reasons),
       incognito_enabled_(incognito_enabled),
       remote_install_(remote_install),
-      all_urls_enabled_(all_urls_enabled),
       installed_by_custodian_(installed_by_custodian),
       version_(extension.from_bookmark() ? base::Version("0")
                                          : extension.version()),
@@ -196,8 +192,6 @@ void ExtensionSyncData::ToExtensionSpecifics(
     specifics->set_disable_reasons(disable_reasons_);
   specifics->set_incognito_enabled(incognito_enabled_);
   specifics->set_remote_install(remote_install_);
-  if (all_urls_enabled_.has_value())
-    specifics->set_all_urls_enabled(*all_urls_enabled_);
   specifics->set_installed_by_custodian(installed_by_custodian_);
   specifics->set_name(name_);
 }
@@ -278,13 +272,6 @@ bool ExtensionSyncData::PopulateFromExtensionSpecifics(
   supports_disable_reasons_ = specifics.has_disable_reasons();
   disable_reasons_ = specifics.disable_reasons();
   incognito_enabled_ = specifics.incognito_enabled();
-  if (specifics.has_all_urls_enabled()) {
-    all_urls_enabled_ = specifics.all_urls_enabled();
-  } else {
-    // Set this explicitly (even though it's the default) on the offchance
-    // that someone is re-using an ExtensionSyncData object.
-    all_urls_enabled_ = base::nullopt;
-  }
   remote_install_ = specifics.remote_install();
   installed_by_custodian_ = specifics.installed_by_custodian();
   name_ = specifics.name();
