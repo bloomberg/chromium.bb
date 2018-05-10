@@ -96,6 +96,10 @@ RenderWidgetHostViewBase* RenderWidgetHostViewGuest::GetRootView(
   return rwhv;
 }
 
+RenderWidgetHostViewBase* RenderWidgetHostViewGuest::GetParentView() {
+  return GetOwnerRenderWidgetHostView();
+}
+
 RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
     RenderWidgetHost* widget_host,
     BrowserPluginGuest* guest,
