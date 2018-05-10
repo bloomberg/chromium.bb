@@ -20,6 +20,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -4445,28 +4446,163 @@ TEST_F(AutofillManagerTest, FormSubmittedWithDefaultValues) {
   EXPECT_EQ(1, personal_data_.num_times_save_imported_profile_called());
 }
 
+struct ProfileMatchingTypesTestCase {
+  const char* input_value;     // The value to input in the field.
+  ServerFieldType field_type;  // The expected field type to be determined.
+};
+
+class ProfileMatchingTypesTest
+    : public AutofillManagerTest,
+      public ::testing::WithParamInterface<
+          std::tuple<ProfileMatchingTypesTestCase,
+                     int,        // AutofillProfile::ValidityState
+                     bool>> {};  // Enable AutofillVoteUsingInvalidProfileValues
+
+const ProfileMatchingTypesTestCase kProfileMatchingTypesTestCases[] = {
+    // Profile fields matches.
+    {"Elvis", NAME_FIRST},
+    {"Aaron", NAME_MIDDLE},
+    {"A", NAME_MIDDLE_INITIAL},
+    {"Presley", NAME_LAST},
+    {"Elvis Aaron Presley", NAME_FULL},
+    {"theking@gmail.com", EMAIL_ADDRESS},
+    {"RCA", COMPANY_NAME},
+    {"3734 Elvis Presley Blvd.", ADDRESS_HOME_LINE1},
+    {"Apt. 10", ADDRESS_HOME_LINE2},
+    {"Memphis", ADDRESS_HOME_CITY},
+    {"Tennessee", ADDRESS_HOME_STATE},
+    {"38116", ADDRESS_HOME_ZIP},
+    {"USA", ADDRESS_HOME_COUNTRY},
+    {"United States", ADDRESS_HOME_COUNTRY},
+    {"12345678901", PHONE_HOME_WHOLE_NUMBER},
+    {"+1 (234) 567-8901", PHONE_HOME_WHOLE_NUMBER},
+    {"(234)567-8901", PHONE_HOME_CITY_AND_NUMBER},
+    {"2345678901", PHONE_HOME_CITY_AND_NUMBER},
+    {"1", PHONE_HOME_COUNTRY_CODE},
+    {"234", PHONE_HOME_CITY_CODE},
+    {"5678901", PHONE_HOME_NUMBER},
+    {"567", PHONE_HOME_NUMBER},
+    {"8901", PHONE_HOME_NUMBER},
+
+    // Test a European profile.
+    {"Paris", ADDRESS_HOME_CITY},
+    {"Île de France", ADDRESS_HOME_STATE},    // Exact match
+    {"Ile de France", ADDRESS_HOME_STATE},    // Missing accent.
+    {"-Ile-de-France-", ADDRESS_HOME_STATE},  // Extra punctuation.
+    {"île dÉ FrÃÑÇË", ADDRESS_HOME_STATE},    // Other accents & case mismatch.
+    {"75008", ADDRESS_HOME_ZIP},
+    {"FR", ADDRESS_HOME_COUNTRY},
+    {"France", ADDRESS_HOME_COUNTRY},
+    {"33249197070", PHONE_HOME_WHOLE_NUMBER},
+    {"+33 2 49 19 70 70", PHONE_HOME_WHOLE_NUMBER},
+    {"2 49 19 70 70", PHONE_HOME_CITY_AND_NUMBER},
+    {"249197070", PHONE_HOME_CITY_AND_NUMBER},
+    {"33", PHONE_HOME_COUNTRY_CODE},
+    {"2", PHONE_HOME_CITY_CODE},
+
+    // Credit card fields matches.
+    {"John Doe", CREDIT_CARD_NAME_FULL},
+    {"John", CREDIT_CARD_NAME_FIRST},
+    {"Doe", CREDIT_CARD_NAME_LAST},
+    {"4234-5678-9012-3456", CREDIT_CARD_NUMBER},
+    {"04", CREDIT_CARD_EXP_MONTH},
+    {"April", CREDIT_CARD_EXP_MONTH},
+    {"2999", CREDIT_CARD_EXP_4_DIGIT_YEAR},
+    {"99", CREDIT_CARD_EXP_2_DIGIT_YEAR},
+    {"04/2999", CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR},
+
+    // Make sure whitespace and invalid characters are handled properly.
+    {"", EMPTY_TYPE},
+    {" ", EMPTY_TYPE},
+    {"***", UNKNOWN_TYPE},
+    {" Elvis", NAME_FIRST},
+    {"Elvis ", NAME_FIRST},
+
+    // Make sure fields that differ by case match.
+    {"elvis ", NAME_FIRST},
+    {"UnItEd StAtEs", ADDRESS_HOME_COUNTRY},
+
+    // Make sure fields that differ by punctuation match.
+    {"3734 Elvis Presley Blvd", ADDRESS_HOME_LINE1},
+    {"3734, Elvis    Presley Blvd.", ADDRESS_HOME_LINE1},
+
+    // Make sure that a state's full name and abbreviation match.
+    {"TN", ADDRESS_HOME_STATE},     // Saved as "Tennessee" in profile.
+    {"Texas", ADDRESS_HOME_STATE},  // Saved as "TX" in profile.
+
+    // Special phone number case. A profile with no country code should only
+    // match PHONE_HOME_CITY_AND_NUMBER.
+    {"5142821292", PHONE_HOME_CITY_AND_NUMBER},
+
+    // Make sure unsupported variants do not match.
+    {"Elvis Aaron", UNKNOWN_TYPE},
+    {"Mr. Presley", UNKNOWN_TYPE},
+    {"3734 Elvis Presley", UNKNOWN_TYPE},
+    {"38116-1023", UNKNOWN_TYPE},
+    {"5", UNKNOWN_TYPE},
+    {"56", UNKNOWN_TYPE},
+    {"901", UNKNOWN_TYPE},
+};
+
 // Tests that DeterminePossibleFieldTypesForUpload makes accurate matches.
-TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
+TEST_P(ProfileMatchingTypesTest, DeterminePossibleFieldTypesForUpload) {
+  // Unpack the test paramters
+  const auto& test_case = std::get<0>(GetParam());
+  const auto& validity_state =
+      static_cast<AutofillProfile::ValidityState>(std::get<1>(GetParam()));
+  const auto& vote_using_invalid_profile_data = std::get<2>(GetParam());
+
+  SCOPED_TRACE(base::StringPrintf(
+      "Test: input_value='%s', field_type=%s, validity_state=%d, "
+      "ignore_invalid_profile_data=%d",
+      test_case.input_value,
+      AutofillType(test_case.field_type).ToString().c_str(), validity_state,
+      vote_using_invalid_profile_data));
+
+  ASSERT_LE(AutofillProfile::UNVALIDATED, validity_state);
+  ASSERT_LE(validity_state, AutofillProfile::UNSUPPORTED);
+
+  // Enable/Disable ignoring invalid profile data for the scope of this test.
+  base::test::ScopedFeatureList sfl;
+  if (vote_using_invalid_profile_data) {
+    sfl.InitAndEnableFeature(kAutofillVoteUsingInvalidProfileData);
+  } else {
+    sfl.InitAndDisableFeature(kAutofillVoteUsingInvalidProfileData);
+  }
+
   // Set up the test profiles.
   std::vector<AutofillProfile> profiles;
-  AutofillProfile profile;
-  test::SetProfileInfo(&profile, "Elvis", "Aaron", "Presley",
+  profiles.resize(3);
+  test::SetProfileInfo(&profiles[0], "Elvis", "Aaron", "Presley",
                        "theking@gmail.com", "RCA", "3734 Elvis Presley Blvd.",
                        "Apt. 10", "Memphis", "Tennessee", "38116", "US",
                        "+1 (234) 567-8901");
-  profile.set_guid("00000000-0000-0000-0000-000000000001");
-  profiles.push_back(profile);
-  test::SetProfileInfo(&profile, "Charles", "", "Holley", "buddy@gmail.com",
+  profiles[0].set_guid("00000000-0000-0000-0000-000000000001");
+
+  test::SetProfileInfo(&profiles[1], "Charles", "", "Holley", "buddy@gmail.com",
                        "Decca", "123 Apple St.", "unit 6", "Lubbock", "TX",
                        "79401", "US", "5142821292");
-  profile.set_guid("00000000-0000-0000-0000-000000000002");
-  profiles.push_back(profile);
-  test::SetProfileInfo(&profile, "Charles", "", "Baudelaire",
+  profiles[1].set_guid("00000000-0000-0000-0000-000000000002");
+
+  test::SetProfileInfo(&profiles[2], "Charles", "", "Baudelaire",
                        "lesfleursdumal@gmail.com", "", "108 Rue Saint-Lazare",
                        "Apt. 10", "Paris", "Île de France", "75008", "FR",
                        "+33 2 49 19 70 70");
-  profile.set_guid("00000000-0000-0000-0000-000000000001");
-  profiles.push_back(profile);
+  profiles[2].set_guid("00000000-0000-0000-0000-000000000001");
+
+  // Set the validity state for the matching field type.
+  if (test_case.field_type != EMPTY_TYPE &&
+      test_case.field_type != UNKNOWN_TYPE) {
+    auto field_type = test_case.field_type;
+    auto field_type_group = AutofillType(field_type).group();
+    if (field_type_group != CREDIT_CARD) {
+      if (field_type_group == PHONE_HOME || field_type_group == PHONE_BILLING)
+        field_type = PHONE_HOME_WHOLE_NUMBER;
+      for (auto& profile : profiles) {
+        profile.SetValidityState(test_case.field_type, validity_state);
+      }
+    }
+  }
 
   // Set up the test credit cards.
   std::vector<CreditCard> credit_cards;
@@ -4476,121 +4612,55 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
   credit_card.set_guid("00000000-0000-0000-0000-000000000003");
   credit_cards.push_back(credit_card);
 
-  typedef struct {
-    std::string input_value;     // The value to input in the field.
-    ServerFieldType field_type;  // The expected field type to be determined.
-  } TestCase;
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
 
-  TestCase test_cases[] = {
-      // Profile fields matches.
-      {"Elvis", NAME_FIRST},
-      {"Aaron", NAME_MIDDLE},
-      {"A", NAME_MIDDLE_INITIAL},
-      {"Presley", NAME_LAST},
-      {"Elvis Aaron Presley", NAME_FULL},
-      {"theking@gmail.com", EMAIL_ADDRESS},
-      {"RCA", COMPANY_NAME},
-      {"3734 Elvis Presley Blvd.", ADDRESS_HOME_LINE1},
-      {"Apt. 10", ADDRESS_HOME_LINE2},
-      {"Memphis", ADDRESS_HOME_CITY},
-      {"Tennessee", ADDRESS_HOME_STATE},
-      {"38116", ADDRESS_HOME_ZIP},
-      {"USA", ADDRESS_HOME_COUNTRY},
-      {"United States", ADDRESS_HOME_COUNTRY},
-      {"12345678901", PHONE_HOME_WHOLE_NUMBER},
-      {"+1 (234) 567-8901", PHONE_HOME_WHOLE_NUMBER},
-      {"(234)567-8901", PHONE_HOME_CITY_AND_NUMBER},
-      {"2345678901", PHONE_HOME_CITY_AND_NUMBER},
-      {"1", PHONE_HOME_COUNTRY_CODE},
-      {"234", PHONE_HOME_CITY_CODE},
-      {"5678901", PHONE_HOME_NUMBER},
-      {"567", PHONE_HOME_NUMBER},
-      {"8901", PHONE_HOME_NUMBER},
+  FormFieldData field;
+  test::CreateTestFormField("", "1", "", "text", &field);
+  field.value = UTF8ToUTF16(test_case.input_value);
+  form.fields.push_back(field);
 
-      // Test a European profile.
-      {"Paris", ADDRESS_HOME_CITY},
-      {"Île de France", ADDRESS_HOME_STATE},    // Exact match
-      {"Ile de France", ADDRESS_HOME_STATE},    // Missing accent.
-      {"-Ile-de-France-", ADDRESS_HOME_STATE},  // Extra punctuation.
-      {"île dÉ FrÃÑÇË", ADDRESS_HOME_STATE},  // Other accents & case mismatch.
-      {"75008", ADDRESS_HOME_ZIP},
-      {"FR", ADDRESS_HOME_COUNTRY},
-      {"France", ADDRESS_HOME_COUNTRY},
-      {"33249197070", PHONE_HOME_WHOLE_NUMBER},
-      {"+33 2 49 19 70 70", PHONE_HOME_WHOLE_NUMBER},
-      {"2 49 19 70 70", PHONE_HOME_CITY_AND_NUMBER},
-      {"249197070", PHONE_HOME_CITY_AND_NUMBER},
-      {"33", PHONE_HOME_COUNTRY_CODE},
-      {"2", PHONE_HOME_CITY_CODE},
+  FormStructure form_structure(form);
 
-      // Credit card fields matches.
-      {"John Doe", CREDIT_CARD_NAME_FULL},
-      {"John", CREDIT_CARD_NAME_FIRST},
-      {"Doe", CREDIT_CARD_NAME_LAST},
-      {"4234-5678-9012-3456", CREDIT_CARD_NUMBER},
-      {"04", CREDIT_CARD_EXP_MONTH},
-      {"April", CREDIT_CARD_EXP_MONTH},
-      {"2999", CREDIT_CARD_EXP_4_DIGIT_YEAR},
-      {"99", CREDIT_CARD_EXP_2_DIGIT_YEAR},
-      {"04/2999", CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR},
+  base::HistogramTester histogram_tester;
+  AutofillManager::DeterminePossibleFieldTypesForUpload(
+      profiles, credit_cards, "en-us", &form_structure);
 
-      // Make sure whitespace and invalid characters are handled properly.
-      {"", EMPTY_TYPE},
-      {" ", EMPTY_TYPE},
-      {"***", UNKNOWN_TYPE},
-      {" Elvis", NAME_FIRST},
-      {"Elvis ", NAME_FIRST},
+  ASSERT_EQ(1U, form_structure.field_count());
+  ServerFieldTypeSet possible_types = form_structure.field(0)->possible_types();
+  EXPECT_EQ(1U, possible_types.size());
 
-      // Make sure fields that differ by case match.
-      {"elvis ", NAME_FIRST},
-      {"UnItEd StAtEs", ADDRESS_HOME_COUNTRY},
-
-      // Make sure fields that differ by punctuation match.
-      {"3734 Elvis Presley Blvd", ADDRESS_HOME_LINE1},
-      {"3734, Elvis    Presley Blvd.", ADDRESS_HOME_LINE1},
-
-      // Make sure that a state's full name and abbreviation match.
-      {"TN", ADDRESS_HOME_STATE},     // Saved as "Tennessee" in profile.
-      {"Texas", ADDRESS_HOME_STATE},  // Saved as "TX" in profile.
-
-      // Special phone number case. A profile with no country code should only
-      // match PHONE_HOME_CITY_AND_NUMBER.
-      {"5142821292", PHONE_HOME_CITY_AND_NUMBER},
-
-      // Make sure unsupported variants do not match.
-      {"Elvis Aaron", UNKNOWN_TYPE},
-      {"Mr. Presley", UNKNOWN_TYPE},
-      {"3734 Elvis Presley", UNKNOWN_TYPE},
-      {"38116-1023", UNKNOWN_TYPE},
-      {"5", UNKNOWN_TYPE},
-      {"56", UNKNOWN_TYPE},
-      {"901", UNKNOWN_TYPE}};
-
-  for (TestCase test_case : test_cases) {
-    FormData form;
-    form.name = ASCIIToUTF16("MyForm");
-    form.origin = GURL("http://myform.com/form.html");
-    form.action = GURL("http://myform.com/submit.html");
-
-    FormFieldData field;
-    test::CreateTestFormField("", "1", "", "text", &field);
-    field.value = UTF8ToUTF16(test_case.input_value);
-    form.fields.push_back(field);
-
-    FormStructure form_structure(form);
-
-    AutofillManager::DeterminePossibleFieldTypesForUpload(
-        profiles, credit_cards, "en-us", &form_structure);
-
-    ASSERT_EQ(1U, form_structure.field_count());
-    ServerFieldTypeSet possible_types =
-        form_structure.field(0)->possible_types();
-    EXPECT_EQ(1U, possible_types.size());
-
-    EXPECT_NE(possible_types.end(), possible_types.find(test_case.field_type))
-        << "Failed to determine type for: \"" << test_case.input_value << "\"";
+  if (test_case.field_type != EMPTY_TYPE &&
+      AutofillProfile::IsValidationSupportedForType(test_case.field_type) &&
+      validity_state == AutofillProfile::INVALID) {
+    // There are two addresses in the US, every other type/value pair is unique.
+    int expected_count =
+        (test_case.field_type == ADDRESS_HOME_COUNTRY &&
+         base::StartsWith(test_case.input_value, "U",
+                          base::CompareCase::INSENSITIVE_ASCII))
+            ? 2
+            : 1;
+    histogram_tester.ExpectBucketCount(
+        "Autofill.InvalidProfileData.UsedForMetrics",
+        vote_using_invalid_profile_data, expected_count);
+    EXPECT_EQ(*possible_types.begin(), vote_using_invalid_profile_data
+                                           ? test_case.field_type
+                                           : UNKNOWN_TYPE);
+  } else {
+    EXPECT_EQ(*possible_types.begin(), test_case.field_type);
   }
 }
+
+INSTANTIATE_TEST_CASE_P(
+    AutofillManagerTest,
+    ProfileMatchingTypesTest,
+    testing::Combine(
+        testing::ValuesIn(kProfileMatchingTypesTestCases),
+        testing::Range(static_cast<int>(AutofillProfile::UNVALIDATED),
+                       static_cast<int>(AutofillProfile::UNSUPPORTED) + 1),
+        testing::Bool()));
 
 // Tests that DeterminePossibleFieldTypesForUpload is called when a form is
 // submitted.
