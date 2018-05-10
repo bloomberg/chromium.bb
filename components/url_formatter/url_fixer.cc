@@ -404,20 +404,20 @@ std::string SegmentURLInternal(std::string* text, url::Parsed* parts) {
   if (trimmed.empty())
     return std::string();  // Nothing to segment.
 
+  std::string scheme;
 #if defined(OS_WIN)
   int trimmed_length = static_cast<int>(trimmed.length());
   if (url::DoesBeginWindowsDriveSpec(trimmed.data(), 0, trimmed_length) ||
       url::DoesBeginUNCPath(trimmed.data(), 0, trimmed_length, true))
-    return url::kFileScheme;
+    scheme = url::kFileScheme;
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   if (base::FilePath::IsSeparator(trimmed.data()[0]) ||
       trimmed.data()[0] == '~')
-    return url::kFileScheme;
+    scheme = url::kFileScheme;
 #endif
 
   // Otherwise, we need to look at things carefully.
-  std::string scheme;
-  if (!GetValidScheme(*text, &parts->scheme, &scheme)) {
+  if (scheme.empty() && !GetValidScheme(*text, &parts->scheme, &scheme)) {
     // Try again if there is a ';' in the text. If changing it to a ':' results
     // in a standard scheme, "about", "chrome" or "file" scheme being found,
     // continue processing with the modified text.
@@ -444,24 +444,26 @@ std::string SegmentURLInternal(std::string* text, url::Parsed* parts) {
 
   // Proceed with about and chrome schemes, but not file or nonstandard schemes.
   if ((scheme != url::kAboutScheme) && (scheme != kChromeUIScheme) &&
-      ((scheme == url::kFileScheme) ||
-       !url::IsStandard(
-           scheme.c_str(),
-           url::Component(0, static_cast<int>(scheme.length()))))) {
+      !url::IsStandard(scheme.c_str(),
+                       url::Component(0, static_cast<int>(scheme.length())))) {
+    return scheme;
+  }
+
+  int text_length = static_cast<int>(text->length());
+  if (scheme == url::kFileScheme) {
+    url::ParseFileURL(text->data(), text_length, parts);
     return scheme;
   }
 
   if (scheme == url::kFileSystemScheme) {
     // Have the GURL parser do the heavy lifting for us.
-    url::ParseFileSystemURL(text->data(), static_cast<int>(text->length()),
-                            parts);
+    url::ParseFileSystemURL(text->data(), text_length, parts);
     return scheme;
   }
 
   if (parts->scheme.is_valid()) {
     // Have the GURL parser do the heavy lifting for us.
-    url::ParseStandardURL(text->data(), static_cast<int>(text->length()),
-                          parts);
+    url::ParseStandardURL(text->data(), text_length, parts);
     return scheme;
   }
 
