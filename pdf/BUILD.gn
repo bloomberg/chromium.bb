@@ -133,6 +133,7 @@ if (enable_pdf) {
 
     if (pdf_engine == 0) {
       sources += [ "pdfium/findtext_unittest.cc" ]
+      include_dirs = [ "//third_party/pdfium" ]
     }
   }
 } else {
