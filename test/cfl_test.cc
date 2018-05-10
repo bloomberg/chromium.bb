@@ -178,8 +178,8 @@ class CFLSubAvgTest : public ::testing::TestWithParam<sub_avg_param>,
 TEST_P(CFLSubAvgTest, SubAvgTest) {
   for (int it = 0; it < NUM_ITERATIONS; it++) {
     randData(&ACMRandom::Rand15Signed);
-    sub_avg(data);
-    sub_avg_ref(data_ref);
+    sub_avg(data, data);
+    sub_avg_ref(data_ref, data_ref);
     assert_eq<int16_t>(data, data_ref, width, height);
   }
 }
@@ -190,13 +190,13 @@ TEST_P(CFLSubAvgTest, DISABLED_SubAvgSpeedTest) {
   randData(&ACMRandom::Rand15Signed);
   aom_usec_timer_start(&ref_timer);
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    sub_avg_ref(data_ref);
+    sub_avg_ref(data_ref, data_ref);
   }
   aom_usec_timer_mark(&ref_timer);
   int ref_elapsed_time = (int)aom_usec_timer_elapsed(&ref_timer);
   aom_usec_timer_start(&timer);
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    sub_avg(data);
+    sub_avg(data, data);
   }
   aom_usec_timer_mark(&timer);
   int elapsed_time = (int)aom_usec_timer_elapsed(&timer);

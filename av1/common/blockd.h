@@ -449,11 +449,11 @@ typedef struct {
 #define CFL_BUF_LINE_I256 (CFL_BUF_LINE >> 4)
 #define CFL_BUF_SQUARE (CFL_BUF_LINE * CFL_BUF_LINE)
 typedef struct cfl_ctx {
-  // The CfL prediction buffer is used in two steps:
-  //   1. Stores Q3 reconstructed luma pixels
-  //      (only Q2 is required, but Q3 is used to avoid shifts)
-  //   2. Stores Q3 AC contributions (step1 - tx block avg)
-  int16_t pred_buf_q3[CFL_BUF_SQUARE];
+  // Q3 reconstructed luma pixels (only Q2 is required, but Q3 is used to avoid
+  // shifts)
+  int16_t recon_buf_q3[CFL_BUF_SQUARE];
+  // Q3 AC contributions (reconstructed luma pixels - tx block avg)
+  int16_t ac_buf_q3[CFL_BUF_SQUARE];
 
   // Cache the DC_PRED when performing RDO, so it does not have to be recomputed
   // for every scaling parameter

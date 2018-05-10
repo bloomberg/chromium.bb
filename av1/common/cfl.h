@@ -161,8 +161,9 @@ void cfl_subsample_hbd_null(const uint16_t *input, int input_stride,
   CFL_SUBSAMPLE_FUNCTIONS(arch, 444, hbd)
 
 // Null function used for invalid tx_sizes
-static INLINE void cfl_subtract_average_null(int16_t *pred_buf_q3) {
-  (void)pred_buf_q3;
+static INLINE void cfl_subtract_average_null(const int16_t *src, int16_t *dst) {
+  (void)dst;
+  (void)src;
   assert(0);
 }
 
@@ -170,10 +171,11 @@ static INLINE void cfl_subtract_average_null(int16_t *pred_buf_q3) {
 // will inline the size generic function in here, the advantage is that the size
 // will be constant allowing for loop unrolling and other constant propagated
 // goodness.
-#define CFL_SUB_AVG_X(arch, width, height, round_offset, num_pel_log2)      \
-  void subtract_average_##width##x##height##_##arch(int16_t *pred_buf_q3) { \
-    subtract_average_##arch(pred_buf_q3, width, height, round_offset,       \
-                            num_pel_log2);                                  \
+#define CFL_SUB_AVG_X(arch, width, height, round_offset, num_pel_log2)  \
+  void subtract_average_##width##x##height##_##arch(const int16_t *src, \
+                                                    int16_t *dst) {     \
+    subtract_average_##arch(src, dst, width, height, round_offset,      \
+                            num_pel_log2);                              \
   }
 
 // Declare size-specific wrappers for all valid CfL sizes.
@@ -221,9 +223,9 @@ static INLINE void cfl_subtract_average_null(int16_t *pred_buf_q3) {
 
 // For VSX SIMD optimization, the C versions of width == 4 subtract are
 // faster than the VSX. As such, the VSX code calls the C versions.
-void subtract_average_4x4_c(int16_t *pred_buf_q3);
-void subtract_average_4x8_c(int16_t *pred_buf_q3);
-void subtract_average_4x16_c(int16_t *pred_buf_q3);
+void subtract_average_4x4_c(const int16_t *src, int16_t *dst);
+void subtract_average_4x8_c(const int16_t *src, int16_t *dst);
+void subtract_average_4x16_c(const int16_t *src, int16_t *dst);
 
 #define CFL_PREDICT_lbd(arch, width, height)                                 \
   void predict_lbd_##width##x##height##_##arch(const int16_t *pred_buf_q3,   \

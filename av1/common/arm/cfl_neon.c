@@ -14,8 +14,9 @@
 
 #include "av1/common/cfl.h"
 
-static INLINE void vldsubstq_s16(int16_t *buf, int16x8_t sub) {
-  vst1q_s16(buf, vsubq_s16(vld1q_s16(buf), sub));
+static INLINE void vldsubstq_s16(int16_t *dst, const int16_t *src, int offset,
+                                 int16x8_t sub) {
+  vst1q_s16(dst + offset, vsubq_s16(vld1q_s16(src + offset), sub));
 }
 
 static INLINE uint16x8_t vldaddq_u16(const uint16_t *buf, size_t offset) {
@@ -263,10 +264,11 @@ static void cfl_luma_subsampling_444_hbd_neon(const uint16_t *input,
 
 CFL_GET_SUBSAMPLE_FUNCTION(neon)
 
-static INLINE void subtract_average_neon(int16_t *pred_buf, int width,
-                                         int height, int round_offset,
+static INLINE void subtract_average_neon(const int16_t *src, int16_t *dst,
+                                         int width, int height,
+                                         int round_offset,
                                          const int num_pel_log2) {
-  const int16_t *const end = pred_buf + height * CFL_BUF_LINE;
+  const int16_t *const end = src + height * CFL_BUF_LINE;
   const uint16_t *const sum_end = (uint16_t *)end;
 
   // Round offset is not needed, because NEON will handle the rounding.
@@ -279,7 +281,7 @@ static INLINE void subtract_average_neon(int16_t *pred_buf, int width,
   // pixels, which are positive integer and only require 15 bits. By using
   // unsigned integer for the sum, we can do one addition operation inside 16
   // bits (8 lanes) before having to convert to 32 bits (4 lanes).
-  const uint16_t *sum_buf = (uint16_t *)pred_buf;
+  const uint16_t *sum_buf = (uint16_t *)src;
   uint32x4_t sum_32x4 = { 0, 0, 0, 0 };
   do {
     // For all widths, we load, add and combine the data so it fits in 4 lanes.
@@ -319,7 +321,8 @@ static INLINE void subtract_average_neon(int16_t *pred_buf, int width,
         sum_32x4 = vpadalq_u16(sum_32x4, row3_1);
       }
     }
-  } while ((sum_buf += step) < sum_end);
+    sum_buf += step;
+  } while (sum_buf < sum_end);
 
   // Permute and add in such a way that each lane contains the block sum.
   // [A+C+B+D, B+D+A+C, C+A+D+B, D+B+C+A]
@@ -352,33 +355,37 @@ static INLINE void subtract_average_neon(int16_t *pred_buf, int width,
 
   if (width == 4) {
     do {
-      vst1_s16(pred_buf, vsub_s16(vld1_s16(pred_buf), avg_16x4));
-    } while ((pred_buf += CFL_BUF_LINE) < end);
+      vst1_s16(dst, vsub_s16(vld1_s16(src), avg_16x4));
+      src += CFL_BUF_LINE;
+      dst += CFL_BUF_LINE;
+    } while (src < end);
   } else {
     const int16x8_t avg_16x8 = vcombine_s16(avg_16x4, avg_16x4);
     do {
-      vldsubstq_s16(pred_buf, avg_16x8);
-      vldsubstq_s16(pred_buf + CFL_BUF_LINE, avg_16x8);
-      vldsubstq_s16(pred_buf + 2 * CFL_BUF_LINE, avg_16x8);
-      vldsubstq_s16(pred_buf + 3 * CFL_BUF_LINE, avg_16x8);
+      vldsubstq_s16(dst, src, 0, avg_16x8);
+      vldsubstq_s16(dst, src, CFL_BUF_LINE, avg_16x8);
+      vldsubstq_s16(dst, src, 2 * CFL_BUF_LINE, avg_16x8);
+      vldsubstq_s16(dst, src, 3 * CFL_BUF_LINE, avg_16x8);
 
       if (width > 8) {
-        vldsubstq_s16(pred_buf + 8, avg_16x8);
-        vldsubstq_s16(pred_buf + CFL_BUF_LINE + 8, avg_16x8);
-        vldsubstq_s16(pred_buf + 2 * CFL_BUF_LINE + 8, avg_16x8);
-        vldsubstq_s16(pred_buf + 3 * CFL_BUF_LINE + 8, avg_16x8);
+        vldsubstq_s16(dst, src, 8, avg_16x8);
+        vldsubstq_s16(dst, src, 8 + CFL_BUF_LINE, avg_16x8);
+        vldsubstq_s16(dst, src, 8 + 2 * CFL_BUF_LINE, avg_16x8);
+        vldsubstq_s16(dst, src, 8 + 3 * CFL_BUF_LINE, avg_16x8);
       }
       if (width == 32) {
-        vldsubstq_s16(pred_buf + 16, avg_16x8);
-        vldsubstq_s16(pred_buf + 24, avg_16x8);
-        vldsubstq_s16(pred_buf + CFL_BUF_LINE + 16, avg_16x8);
-        vldsubstq_s16(pred_buf + CFL_BUF_LINE + 24, avg_16x8);
-        vldsubstq_s16(pred_buf + 2 * CFL_BUF_LINE + 16, avg_16x8);
-        vldsubstq_s16(pred_buf + 2 * CFL_BUF_LINE + 24, avg_16x8);
-        vldsubstq_s16(pred_buf + 3 * CFL_BUF_LINE + 16, avg_16x8);
-        vldsubstq_s16(pred_buf + 3 * CFL_BUF_LINE + 24, avg_16x8);
+        vldsubstq_s16(dst, src, 16, avg_16x8);
+        vldsubstq_s16(dst, src, 16 + CFL_BUF_LINE, avg_16x8);
+        vldsubstq_s16(dst, src, 16 + 2 * CFL_BUF_LINE, avg_16x8);
+        vldsubstq_s16(dst, src, 16 + 3 * CFL_BUF_LINE, avg_16x8);
+        vldsubstq_s16(dst, src, 24, avg_16x8);
+        vldsubstq_s16(dst, src, 24 + CFL_BUF_LINE, avg_16x8);
+        vldsubstq_s16(dst, src, 24 + 2 * CFL_BUF_LINE, avg_16x8);
+        vldsubstq_s16(dst, src, 24 + 3 * CFL_BUF_LINE, avg_16x8);
       }
-    } while ((pred_buf += step) < end);
+      src += step;
+      dst += step;
+    } while (src < end);
   }
 }
 

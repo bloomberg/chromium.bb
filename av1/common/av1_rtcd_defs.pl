@@ -41,12 +41,12 @@ typedef void (*cfl_subsample_lbd_fn)(const uint8_t *input, int input_stride,
 typedef void (*cfl_subsample_hbd_fn)(const uint16_t *input, int input_stride,
                                      int16_t *output_q3);
 
-typedef void (*cfl_subtract_average_fn)(int16_t *pred_buf_q3);
+typedef void (*cfl_subtract_average_fn)(const int16_t *src, int16_t *dst);
 
-typedef void (*cfl_predict_lbd_fn)(const int16_t *pred_buf_q3, uint8_t *dst,
+typedef void (*cfl_predict_lbd_fn)(const int16_t *src, uint8_t *dst,
                                    int dst_stride, int alpha_q3);
 
-typedef void (*cfl_predict_hbd_fn)(const int16_t *pred_buf_q3, uint16_t *dst,
+typedef void (*cfl_predict_hbd_fn)(const int16_t *src, uint16_t *dst,
                                    int dst_stride, int alpha_q3, int bd);
 EOF
 }

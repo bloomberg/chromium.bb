@@ -395,41 +395,42 @@ static INLINE __m256i _mm256_addl_epi16(__m256i a) {
                           _mm256_unpackhi_epi16(a, _mm256_setzero_si256()));
 }
 
-static INLINE void subtract_average_avx2(int16_t *pred_buf, int width,
+static INLINE void subtract_average_avx2(const int16_t *src_ptr,
+                                         int16_t *dst_ptr, int width,
                                          int height, int round_offset,
                                          int num_pel_log2) {
   // Use SSE2 version for smaller widths
   assert(width == 16 || width == 32);
-  __m256i *row = (__m256i *)pred_buf;
-  const __m256i *const end = row + height * CFL_BUF_LINE_I256;
+
+  const __m256i *src = (__m256i *)src_ptr;
+  const __m256i *const end = src + height * CFL_BUF_LINE_I256;
   // To maximize usage of the AVX2 registers, we sum two rows per loop
   // iteration
   const int step = 2 * CFL_BUF_LINE_I256;
-  __m256i sum = _mm256_setzero_si256();
 
+  __m256i sum = _mm256_setzero_si256();
   // For width 32, we use a second sum accumulator to reduce accumulator
   // dependencies in the loop.
   __m256i sum2;
   if (width == 32) sum2 = _mm256_setzero_si256();
+
   do {
     // Add top row to the bottom row
-    __m256i l0 = _mm256_add_epi16(_mm256_loadu_si256(row),
-                                  _mm256_loadu_si256(row + CFL_BUF_LINE_I256));
+    __m256i l0 = _mm256_add_epi16(_mm256_loadu_si256(src),
+                                  _mm256_loadu_si256(src + CFL_BUF_LINE_I256));
     sum = _mm256_add_epi32(sum, _mm256_addl_epi16(l0));
     if (width == 32) { /* Don't worry, this if it gets optimized out. */
       // Add the second part of the top row to the second part of the bottom row
       __m256i l1 =
-          _mm256_add_epi16(_mm256_loadu_si256(row + 1),
-                           _mm256_loadu_si256(row + 1 + CFL_BUF_LINE_I256));
-      // Store the sum of the second part in the same accumulator as the first
-      // part
+          _mm256_add_epi16(_mm256_loadu_si256(src + 1),
+                           _mm256_loadu_si256(src + 1 + CFL_BUF_LINE_I256));
       sum2 = _mm256_add_epi32(sum2, _mm256_addl_epi16(l1));
     }
-  } while ((row += step) < end);
-  // Combine both sum accumulator
+    src += step;
+  } while (src < end);
+  // Combine both sum accumulators
   if (width == 32) sum = _mm256_add_epi32(sum, sum2);
 
-  // The sum accumulator now contains the 8 lanes
   __m256i fill = fill_sum_epi32(sum);
 
   __m256i avg_epi16 = _mm256_srli_epi32(
@@ -437,15 +438,18 @@ static INLINE void subtract_average_avx2(int16_t *pred_buf, int width,
   avg_epi16 = _mm256_packs_epi32(avg_epi16, avg_epi16);
 
   // Store and subtract loop
-  row = (__m256i *)pred_buf;
+  src = (__m256i *)src_ptr;
+  __m256i *dst = (__m256i *)dst_ptr;
   do {
-    _mm256_storeu_si256(row,
-                        _mm256_sub_epi16(_mm256_loadu_si256(row), avg_epi16));
+    _mm256_storeu_si256(dst,
+                        _mm256_sub_epi16(_mm256_loadu_si256(src), avg_epi16));
     if (width == 32) {
       _mm256_storeu_si256(
-          row + 1, _mm256_sub_epi16(_mm256_loadu_si256(row + 1), avg_epi16));
+          dst + 1, _mm256_sub_epi16(_mm256_loadu_si256(src + 1), avg_epi16));
     }
-  } while ((row += CFL_BUF_LINE_I256) < end);
+    src += CFL_BUF_LINE_I256;
+    dst += CFL_BUF_LINE_I256;
+  } while (src < end);
 }
 
 // Declare wrappers for AVX2 sizes

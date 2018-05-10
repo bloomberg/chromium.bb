@@ -177,15 +177,15 @@ void subsample_hbd_444_16x32_ssse3(const uint16_t *input, int input_stride,
                                    int16_t *output_q3);
 
 // SSE2 version is optimal for with == 4, we reuse them in AVX2
-void subtract_average_4x4_sse2(int16_t *pred_buf_q3);
-void subtract_average_4x8_sse2(int16_t *pred_buf_q3);
-void subtract_average_4x16_sse2(int16_t *pred_buf_q3);
+void subtract_average_4x4_sse2(const int16_t *src, int16_t *dst);
+void subtract_average_4x8_sse2(const int16_t *src, int16_t *dst);
+void subtract_average_4x16_sse2(const int16_t *src, int16_t *dst);
 
 // SSE2 version is optimal for with == 8, we reuse them in AVX2
-void subtract_average_8x4_sse2(int16_t *pred_buf_q3);
-void subtract_average_8x8_sse2(int16_t *pred_buf_q3);
-void subtract_average_8x16_sse2(int16_t *pred_buf_q3);
-void subtract_average_8x32_sse2(int16_t *pred_buf_q3);
+void subtract_average_8x4_sse2(const int16_t *src, int16_t *dst);
+void subtract_average_8x8_sse2(const int16_t *src, int16_t *dst);
+void subtract_average_8x16_sse2(const int16_t *src, int16_t *dst);
+void subtract_average_8x32_sse2(const int16_t *src, int16_t *dst);
 
 void predict_lbd_4x4_ssse3(const int16_t *pred_buf_q3, uint8_t *dst,
                            int dst_stride, int alpha_q3);
