@@ -12358,6 +12358,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileTabReturnedToCurrentTab">
+  <owner>rlanday@chromium.org</owner>
+  <description>
+    User in the Android tab switcher returned to the tab that was active when
+    the tab switcher was opened.
+  </description>
+</action>
+
 <action name="MobileTabStripCloseTab">
   <obsolete>Deprecated as of 5/2015</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
