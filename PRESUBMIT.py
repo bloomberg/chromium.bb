@@ -596,6 +596,7 @@ _IPC_ENUM_TRAITS_DEPRECATED = (
 
 _JAVA_MULTIPLE_DEFINITION_EXCLUDED_PATHS = [
     r".*[\\\/]BuildHooksAndroidImpl\.java",
+    r".*[\\\/]ClassRegisterImpl\.java",
     r".*[\\\/]LicenseContentProvider\.java",
     r".*[\\\/]PlatformServiceBridgeImpl.java",
 ]
