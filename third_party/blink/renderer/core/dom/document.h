@@ -748,14 +748,6 @@ class CORE_EXPORT Document : public ContainerNode,
                                                         const LayoutPoint&,
                                                         const WebMouseEvent&);
 
-  /* Newly proposed CSS3 mechanism for selecting alternate
-       stylesheets using the DOM. May be subject to change as
-       spec matures. - dwh
-    */
-  String preferredStylesheetSet() const;
-  String selectedStylesheetSet() const;
-  void setSelectedStylesheetSet(const String&);
-
   bool SetFocusedElement(Element*, const FocusParams&);
   void ClearFocusedElement();
   Element* FocusedElement() const { return focused_element_.Get(); }

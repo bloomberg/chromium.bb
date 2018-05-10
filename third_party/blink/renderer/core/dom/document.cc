@@ -4325,20 +4325,6 @@ StyleSheetList& Document::StyleSheets() {
   return *style_sheet_list_;
 }
 
-String Document::preferredStylesheetSet() const {
-  return style_engine_->PreferredStylesheetSetName();
-}
-
-String Document::selectedStylesheetSet() const {
-  UseCounter::Count(*this, WebFeature::kDocumentGetSelectedStylesheetSet);
-  return style_engine_->SelectedStylesheetSetName();
-}
-
-void Document::setSelectedStylesheetSet(const String& a_string) {
-  UseCounter::Count(*this, WebFeature::kDocumentSetSelectedStylesheetSet);
-  GetStyleEngine().SetSelectedStylesheetSetName(a_string);
-}
-
 void Document::EvaluateMediaQueryListIfNeeded() {
   if (!evaluate_media_queries_on_style_recalc_)
     return;

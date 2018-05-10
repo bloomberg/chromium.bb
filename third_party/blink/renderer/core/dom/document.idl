@@ -159,11 +159,6 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
 
     [SameObject, MeasureAs=DocumentAll] readonly attribute HTMLAllCollection all;
 
-    // CSS Object Model (CSSOM)
-    // https://drafts.csswg.org/cssom/#extensions-to-the-document-interface
-    attribute DOMString? selectedStylesheetSet;
-    [MeasureAs=DocumentGetPreferredStylesheetSet] readonly attribute DOMString? preferredStylesheetSet;
-
     [Affects=Nothing] readonly attribute Element? scrollingElement;
 
     // Pointer Lock

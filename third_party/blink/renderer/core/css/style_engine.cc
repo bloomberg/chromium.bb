@@ -1101,22 +1101,7 @@ void StyleEngine::SetPreferredStylesheetSetNameIfNotSet(const String& name) {
   if (!preferred_stylesheet_set_name_.IsEmpty())
     return;
   preferred_stylesheet_set_name_ = name;
-  // TODO(futhark@chromium.org): Setting the selected set here is wrong if the
-  // set has been previously set by through Document.selectedStylesheetSet. Our
-  // current implementation ignores the effect of Document.selectedStylesheetSet
-  // and either only collects persistent style, or additionally preferred
-  // style when present.
-  selected_stylesheet_set_name_ = name;
   MarkDocumentDirty();
-}
-
-void StyleEngine::SetSelectedStylesheetSetName(const String& name) {
-  selected_stylesheet_set_name_ = name;
-  // TODO(futhark@chromium.org): Setting Document.selectedStylesheetSet
-  // currently has no other effect than the ability to read back the set value
-  // using the same api. If it did have an effect, we should have marked the
-  // document scope dirty and triggered an update of the active stylesheets
-  // from here.
 }
 
 void StyleEngine::SetHttpDefaultStyle(const String& content) {

@@ -1277,13 +1277,11 @@ interface Document : Node
     getter origin
     getter plugins
     getter pointerLockElement
-    getter preferredStylesheetSet
     getter readyState
     getter referrer
     getter rootElement
     getter scripts
     getter scrollingElement
-    getter selectedStylesheetSet
     getter styleSheets
     getter title
     getter visibilityState
@@ -1447,7 +1445,6 @@ interface Document : Node
     setter onwebkitfullscreenchange
     setter onwebkitfullscreenerror
     setter onwheel
-    setter selectedStylesheetSet
     setter title
     setter vlinkColor
     setter xmlStandalone
