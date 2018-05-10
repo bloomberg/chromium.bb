@@ -76,14 +76,14 @@ cr.define('print_preview', function() {
       }
       // Should the select content be updated?
       const sameContent =
-          this.ticketItem_.capability.option.length == select.length &&
-          this.ticketItem_.capability.option.every(function(option, index) {
+          this.ticketItem_.capability().option.length == select.length &&
+          this.ticketItem_.capability().option.every(function(option, index) {
             return select.options[index].value == JSON.stringify(option);
           });
       let indexToSelect = select.selectedIndex;
       if (!sameContent) {
         select.innerHTML = '';
-        this.ticketItem_.capability.option.forEach(function(option, index) {
+        this.ticketItem_.capability().option.forEach(function(option, index) {
           const selectOption = document.createElement('option');
           selectOption.text = this.getCustomDisplayName_(option) ||
               this.getDefaultDisplayName_(option);

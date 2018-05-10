@@ -48,7 +48,7 @@ cr.define('print_preview', function() {
      */
     this.searchBubble_ = null;
 
-    /** @private {!EventTracker} */
+    /** @protected {!EventTracker} */
     this.tracker_ = new EventTracker();
   }
 
