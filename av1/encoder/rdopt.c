@@ -4264,7 +4264,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 #if CONFIG_DIST_8X8
         if (!x->using_dist_8x8)
 #endif
-          if (!this_cost_valid) break;
+          if (!this_cost_valid) goto LOOP_EXIT;
 #if CONFIG_DIST_8X8
         if (x->using_dist_8x8 && tx_size == TX_8X8) {
           sub8x8_eob[2 * (r / bsh) + (c / bsw)] = p->eobs[block];
@@ -4276,10 +4276,16 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 #if CONFIG_DIST_8X8
         if (!x->using_dist_8x8)
 #endif
-          if (no_split_rd < tmp_rd) break;
+          if (no_split_rd < tmp_rd) {
+            this_cost_valid = 0;
+            goto LOOP_EXIT;
+          }
         block += sub_step;
       }
     }
+
+  LOOP_EXIT : {}
+
 #if CONFIG_DIST_8X8
     if (x->using_dist_8x8 && this_cost_valid && tx_size == TX_8X8) {
       const int src_stride = p->src.stride;
