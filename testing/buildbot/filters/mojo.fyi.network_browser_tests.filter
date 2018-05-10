@@ -198,13 +198,7 @@
 # Finish ServiceWorker networking glue rewrite.
 # http://crbug.com/715640
 -ServiceWorkerTestWithJSBindings/ServiceWorkerTest.MimeHandlerView/0
--ServiceWorkerTestWithJSBindings/ServiceWorkerTest.SWServedBackgroundPageReceivesEvent/0
--ServiceWorkerTestWithJSBindings/ServiceWorkerTest.WebAccessibleResourcesFetch/0
--ServiceWorkerTestWithJSBindings/ServiceWorkerTest.WebAccessibleResourcesIframeSrc/0
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.MimeHandlerView/0
--ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.SWServedBackgroundPageReceivesEvent/0
--ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.WebAccessibleResourcesFetch/0
--ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.WebAccessibleResourcesIframeSrc/0
 
 # Support URLLoaderFactories from embedder in shared workers.
 # https://crbug.com/839982

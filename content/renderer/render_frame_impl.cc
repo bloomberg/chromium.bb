@@ -3357,23 +3357,11 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       container_host_ptr_info = provider_context->CloneContainerHostPtrInfo();
   }
 
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-      direct_network_loader_factory_info;
-  // Could be null in tests.
-  if (render_thread) {
-    direct_network_loader_factory_info =
-        base::MakeRefCounted<PossiblyAssociatedWrapperSharedURLLoaderFactory>(
-            render_thread->blink_platform_impl()
-                ->CreateNetworkURLLoaderFactory())
-            ->Clone();
-  }
-
   std::unique_ptr<WorkerFetchContextImpl> worker_fetch_context =
       std::make_unique<WorkerFetchContextImpl>(
           std::move(service_worker_client_request),
           std::move(container_host_ptr_info), GetLoaderFactoryBundle()->Clone(),
-          std::move(direct_network_loader_factory_info),
+          GetLoaderFactoryBundle()->CloneWithoutDefaultFactory(),
           GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
               URLLoaderThrottleProviderType::kWorker),
           GetContentClient()
@@ -3893,19 +3881,14 @@ void RenderFrameImpl::DidCreateDocumentLoader(
   if (document_loader->GetServiceWorkerNetworkProvider())
     return;
 
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  scoped_refptr<network::SharedURLLoaderFactory> direct_network_loader_factory;
-  if (render_thread) {
-    direct_network_loader_factory =
-        base::MakeRefCounted<PossiblyAssociatedWrapperSharedURLLoaderFactory>(
-            render_thread->blink_platform_impl()
-                ->CreateNetworkURLLoaderFactory());
-  }
+  scoped_refptr<network::SharedURLLoaderFactory> fallback_factory =
+      network::SharedURLLoaderFactory::Create(
+          GetLoaderFactoryBundle()->CloneWithoutDefaultFactory());
   document_loader->SetServiceWorkerNetworkProvider(
       ServiceWorkerNetworkProvider::CreateForNavigation(
           routing_id_, navigation_state->request_params(), frame_,
           content_initiated, std::move(controller_service_worker_info_),
-          std::move(direct_network_loader_factory)));
+          std::move(fallback_factory)));
 }
 
 void RenderFrameImpl::DidStartProvisionalLoad(

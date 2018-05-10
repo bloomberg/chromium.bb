@@ -83,6 +83,11 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
 
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
 
+  // Returns an info that omits this bundle's default factory, if any. This is
+  // useful to make a clone that bypasses AppCache, for example.
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+  CloneWithoutDefaultFactory();
+
   std::unique_ptr<ChildURLLoaderFactoryBundleInfo> PassInterface();
 
   void Update(std::unique_ptr<ChildURLLoaderFactoryBundleInfo> info,
@@ -97,6 +102,8 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
  private:
   void InitDefaultBlobFactoryIfNecessary();
   void InitDirectNetworkFactoryIfNecessary();
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> CloneInternal(
+      bool include_default);
 
   PossiblyAssociatedFactoryGetterCallback direct_network_factory_getter_;
   PossiblyAssociatedURLLoaderFactoryPtr direct_network_factory_;

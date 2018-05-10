@@ -109,10 +109,8 @@ class WorkerFetchContextImpl::URLLoaderFactoryImpl
 WorkerFetchContextImpl::WorkerFetchContextImpl(
     mojom::ServiceWorkerWorkerClientRequest service_worker_client_request,
     mojom::ServiceWorkerContainerHostPtrInfo service_worker_container_host_info,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        direct_network_factory_info,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info,
     std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
     std::unique_ptr<WebSocketHandshakeThrottleProvider>
         websocket_handshake_throttle_provider,
@@ -121,9 +119,8 @@ WorkerFetchContextImpl::WorkerFetchContextImpl(
       service_worker_client_request_(std::move(service_worker_client_request)),
       service_worker_container_host_info_(
           std::move(service_worker_container_host_info)),
-      url_loader_factory_info_(std::move(url_loader_factory_info)),
-      direct_network_loader_factory_info_(
-          std::move(direct_network_factory_info)),
+      loader_factory_info_(std::move(loader_factory_info)),
+      fallback_factory_info_(std::move(fallback_factory_info)),
       thread_safe_sender_(thread_safe_sender),
       throttle_provider_(std::move(throttle_provider)),
       websocket_handshake_throttle_provider_(
@@ -151,9 +148,8 @@ WorkerFetchContextImpl::CloneForNestedWorker() {
   // behavior. See https://crbug.com/731604
   auto new_context = std::make_unique<WorkerFetchContextImpl>(
       mojom::ServiceWorkerWorkerClientRequest(),
-      mojom::ServiceWorkerContainerHostPtrInfo(),
-      shared_url_loader_factory_->Clone(),
-      direct_network_loader_factory_->Clone(),
+      mojom::ServiceWorkerContainerHostPtrInfo(), loader_factory_->Clone(),
+      fallback_factory_->Clone(),
       throttle_provider_ ? throttle_provider_->Clone() : nullptr,
       websocket_handshake_throttle_provider_
           ? websocket_handshake_throttle_provider_->Clone()
@@ -171,10 +167,10 @@ void WorkerFetchContextImpl::InitializeOnWorkerThread() {
   resource_dispatcher_->set_terminate_sync_load_event(
       terminate_sync_load_event_);
 
-  shared_url_loader_factory_ = network::SharedURLLoaderFactory::Create(
-      std::move(url_loader_factory_info_));
-  direct_network_loader_factory_ = network::SharedURLLoaderFactory::Create(
-      std::move(direct_network_loader_factory_info_));
+  loader_factory_ =
+      network::SharedURLLoaderFactory::Create(std::move(loader_factory_info_));
+  fallback_factory_ = network::SharedURLLoaderFactory::Create(
+      std::move(fallback_factory_info_));
   if (service_worker_client_request_.is_pending())
     binding_.Bind(std::move(service_worker_client_request_));
 
@@ -192,10 +188,10 @@ void WorkerFetchContextImpl::InitializeOnWorkerThread() {
 
 std::unique_ptr<blink::WebURLLoaderFactory>
 WorkerFetchContextImpl::CreateURLLoaderFactory() {
-  DCHECK(shared_url_loader_factory_);
+  DCHECK(loader_factory_);
   DCHECK(!url_loader_factory_);
   auto factory = std::make_unique<URLLoaderFactoryImpl>(
-      resource_dispatcher_->GetWeakPtr(), shared_url_loader_factory_);
+      resource_dispatcher_->GetWeakPtr(), loader_factory_);
   url_loader_factory_ = factory->GetWeakPtr();
 
   if (ServiceWorkerUtils::IsServicificationEnabled())
@@ -344,12 +340,12 @@ void WorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
     url_loader_factory_->SetServiceWorkerURLLoaderFactory(nullptr);
     return;
   }
+
   network::mojom::URLLoaderFactoryPtr service_worker_url_loader_factory;
   ServiceWorkerSubresourceLoaderFactory::Create(
       base::MakeRefCounted<ControllerServiceWorkerConnector>(
           service_worker_container_host_.get()),
-      direct_network_loader_factory_,
-      mojo::MakeRequest(&service_worker_url_loader_factory));
+      fallback_factory_, mojo::MakeRequest(&service_worker_url_loader_factory));
   url_loader_factory_->SetServiceWorkerURLLoaderFactory(
       std::move(service_worker_url_loader_factory));
 }

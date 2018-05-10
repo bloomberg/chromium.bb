@@ -37,21 +37,27 @@ class CONTENT_EXPORT WorkerFetchContextImpl
     : public blink::WebWorkerFetchContext,
       public mojom::ServiceWorkerWorkerClient {
  public:
-  // |url_loader_factory_info| is a generic URLLoaderFactory that may
-  // contain multiple URLLoader factories for different schemes internally,
-  // and used for regular resource loading from the worker context.
-  // |direct_network_factory_info| is a URLLoader factory that directly
-  // goes to the network, used when this context creates a
-  // ServiceWorkerSubresourceLoader because it is controlled by a service
-  // worker.
+  // |loader_factory_info| is used for regular loading by the worker.
+  //
+  // S13nServiceWorker:
+  // If the worker is controlled by a service worker, this class makes another
+  // loader factory which sends requests to the service worker, and passes
+  // |fallback_factory_info| to that factory to use for network fallback.
+  //
+  // |loader_factory_info| and |fallback_factory_info| are different because
+  // |loader_factory_info| can possibly include a default factory like AppCache,
+  // while |fallback_factory_info| should not have such a default factory and
+  // instead go directly to network for http(s) requests.
+  // |fallback_factory_info| might not be simply the direct network factory,
+  // because it might additionally support non-NetworkService schemes (e.g.,
+  // chrome-extension://).
   WorkerFetchContextImpl(
       mojom::ServiceWorkerWorkerClientRequest service_worker_client_request,
       mojom::ServiceWorkerContainerHostPtrInfo
           service_worker_container_host_info,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_info,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          direct_network_factory_info,
+          fallback_factory_info,
       std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
       std::unique_ptr<WebSocketHandshakeThrottleProvider>
           websocket_handshake_throttle_provider,
@@ -118,11 +124,10 @@ class CONTENT_EXPORT WorkerFetchContextImpl
   mojom::ServiceWorkerWorkerClientRequest service_worker_client_request_;
   // Consumed on the worker thread to create |service_worker_container_host_|.
   mojom::ServiceWorkerContainerHostPtrInfo service_worker_container_host_info_;
-  // Consumed on the worker thread to create |shared_url_loader_factory_|.
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
-  // Consumed on the worker thread to create |direct_network_loader_factory_|.
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-      direct_network_loader_factory_info_;
+  // Consumed on the worker thread to create |loader_factory_|.
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info_;
+  // Consumed on the worker thread to create |fallback_factory_|.
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info_;
   // Consumed on the worker thread to create |blob_registry_|.
   blink::mojom::BlobRegistryPtrInfo blob_registry_ptr_info_;
 
@@ -136,14 +141,16 @@ class CONTENT_EXPORT WorkerFetchContextImpl
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
 
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
-  // |shared_url_loader_factory_| may be a bundled factory that contains
-  // multiple factories for different schemes and to be used for regular
-  // loading by the worker, while |direct_network_loader_factory_| is used
-  // specifically to initialize ServiceWorkerSubresourceLoader for network
-  // load that is controlled by a service worker (when this worker is a
-  // client of the service worker).
-  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
-  scoped_refptr<network::SharedURLLoaderFactory> direct_network_loader_factory_;
+  // |loader_factory_| is used for regular loading by the worker. In
+  // S13nServiceWorker, if the worker is controlled by a service worker, it
+  // creates a ServiceWorkerSubresourceLoaderFactory instead.
+  scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
+
+  // Initialized on the worker thread when InitializeOnWorkerThread() is called.
+  // S13nServiceWorker: If the worker is controlled by a service worker, it
+  // passes this factory to ServiceWorkerSubresourceLoaderFactory to use for
+  // network fallback.
+  scoped_refptr<network::SharedURLLoaderFactory> fallback_factory_;
 
   // S13nServiceWorker:
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
