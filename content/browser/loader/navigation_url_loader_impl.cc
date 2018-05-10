@@ -1222,9 +1222,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     GetContentClient()
         ->browser()
         ->RegisterNonNetworkNavigationURLLoaderFactories(
-            frame_tree_node->current_frame_host()->GetProcess()->GetID(),
-            frame_tree_node->current_frame_host()->GetRoutingID(),
-            &non_network_url_loader_factories_);
+            frame_tree_node_id, &non_network_url_loader_factories_);
 
     // The embedder may want to proxy all network-bound URLLoaderFactory
     // requests that it can. If it elects to do so, we'll pass its proxy

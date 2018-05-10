@@ -3954,34 +3954,32 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
 }
 
 void ChromeContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
-    int render_process_id,
-    int render_frame_id,
+    int frame_tree_node_id,
     NonNetworkURLLoaderFactoryMap* factories) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  content::RenderProcessHost* process_host =
-      content::RenderProcessHost::FromID(render_process_id);
-  content::BrowserContext* browser_context = process_host->GetBrowserContext();
+  content::WebContents* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
   factories->emplace(
       extensions::kExtensionScheme,
       extensions::CreateExtensionNavigationURLLoaderFactory(
-          render_process_id, render_frame_id,
-          extensions::ExtensionSystem::Get(browser_context)->info_map()));
+          web_contents->GetBrowserContext(),
+          !!extensions::WebViewGuest::FromWebContents(web_contents)));
 #endif
 }
 
 void ChromeContentBrowserClient::
     RegisterNonNetworkSubresourceURLLoaderFactories(
-        content::RenderFrameHost* frame_host,
-        const GURL& frame_url,
+        int render_process_id,
+        int render_frame_id,
         NonNetworkURLLoaderFactoryMap* factories) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  content::RenderProcessHost* process_host = frame_host->GetProcess();
-  content::BrowserContext* browser_context = process_host->GetBrowserContext();
-  auto factory = extensions::MaybeCreateExtensionSubresourceURLLoaderFactory(
-      process_host->GetID(), frame_host->GetRoutingID(), frame_url,
-      extensions::ExtensionSystem::Get(browser_context)->info_map());
+  auto factory = extensions::CreateExtensionURLLoaderFactory(render_process_id,
+                                                             render_frame_id);
   if (factory)
     factories->emplace(extensions::kExtensionScheme, std::move(factory));
+
+  content::RenderFrameHost* frame_host =
+      RenderFrameHost::FromID(render_process_id, render_frame_id);
 
   // This logic should match
   // ChromeExtensionWebContentsObserver::RenderFrameCreated.
@@ -3995,7 +3993,7 @@ void ChromeContentBrowserClient::
       InstantServiceFactory::GetForProfile(profile);
   // The test below matches what's done by ShouldServiceRequestIOThread in
   // local_ntp_source.cc.
-  if (instant_service->IsInstantProcess(frame_host->GetProcess()->GetID())) {
+  if (instant_service->IsInstantProcess(render_process_id)) {
     factories->emplace(
         chrome::kChromeSearchScheme,
         content::CreateWebUIURLLoader(
