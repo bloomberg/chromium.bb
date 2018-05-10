@@ -176,7 +176,6 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
         };
 
     if (frame.result != gfx::SwapResult::SWAP_ACK) {
-      DCHECK(!frame.timer);
       frame_presentation_callback(gfx::PresentationFeedback());
       continue;
     }
