@@ -4201,6 +4201,9 @@ crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ S
 
 crbug.com/766129 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 
+crbug.com/841567 virtual/threaded/fast/scrolling/listbox-wheel-event.html [ Failure ]
+crbug.com/841567 virtual/threaded/fast/scrolling/hover-during-scroll.html [ Timeout ]
+
 # Workaround crbug.com/817175 . Very difficult to fix with old-world compositing. Pass with SPv2.
 crbug.com/817175 compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Failure ]
 crbug.com/817175 virtual/disable-spv175/compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Failure ]
