@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/vr/android_ui_gesture_target.h"
 #include "chrome/browser/android/vr/autocomplete_controller.h"
@@ -1350,6 +1351,8 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
       base::FeatureList::IsEnabled(features::kVrBrowsingExperimentalRendering);
   ui_initial_state.assets_supported = AssetsLoader::AssetsSupported();
   ui_initial_state.is_standalone_vr_device = is_standalone_vr_device;
+  ui_initial_state.create_tabs_view =
+      base::FeatureList::IsEnabled(chrome::android::kVrBrowsingTabsView);
 
   return reinterpret_cast<intptr_t>(new VrShell(
       env, obj, ui_initial_state,

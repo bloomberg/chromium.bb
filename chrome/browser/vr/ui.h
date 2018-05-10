@@ -51,7 +51,6 @@ struct UiInitialState {
   bool supports_selection = true;
   bool needs_keyboard_update = false;
   bool is_standalone_vr_device = false;
-  // TODO(crbug.com/838937): Enable tabs.
   bool create_tabs_view = false;
 };
 
