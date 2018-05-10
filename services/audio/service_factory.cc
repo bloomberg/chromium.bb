@@ -4,6 +4,8 @@
 
 #include "services/audio/service_factory.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -40,14 +42,15 @@ std::unique_ptr<service_manager::Service> CreateEmbeddedService(
     media::AudioManager* audio_manager) {
   return std::make_unique<Service>(
       std::make_unique<InProcessAudioManagerAccessor>(audio_manager),
-      base::TimeDelta() /* do not quit if all clients disconnected */);
+      base::TimeDelta() /* do not quit if all clients disconnected */,
+      false /* enable_device_notifications */);
 }
 
 std::unique_ptr<service_manager::Service> CreateStandaloneService() {
   return std::make_unique<Service>(
       std::make_unique<audio::OwningAudioManagerAccessor>(
           base::BindOnce(&media::AudioManager::Create)),
-      GetQuitTimeout());
+      GetQuitTimeout(), true /* enable_device_notifications */);
 }
 
 }  // namespace audio

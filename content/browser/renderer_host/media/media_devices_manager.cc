@@ -12,6 +12,7 @@
 
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/sequence_checker.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_checker.h"
@@ -20,11 +21,18 @@
 #include "content/browser/media/media_devices_permission_checker.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
+#include "content/browser/service_manager/service_manager_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_system.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "services/audio/public/mojom/constants.mojom.h"
+#include "services/audio/public/mojom/device_notifications.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/mojom/connector.mojom-shared.h"
 
 #if defined(OS_MACOSX)
 #include "base/bind_helpers.h"
@@ -267,6 +275,64 @@ MediaDevicesManager::SubscriptionRequest&
 MediaDevicesManager::SubscriptionRequest::operator=(SubscriptionRequest&&) =
     default;
 
+class MediaDevicesManager::AudioServiceDeviceListener
+    : public audio::mojom::DeviceListener {
+ public:
+  explicit AudioServiceDeviceListener(service_manager::Connector* connector)
+      : binding_(this), weak_factory_(this) {
+    TryConnectToService(connector);
+  }
+  ~AudioServiceDeviceListener() override = default;
+
+  void DevicesChanged() override {
+    auto* system_monitor = base::SystemMonitor::Get();
+    if (system_monitor)
+      system_monitor->ProcessDevicesChanged(base::SystemMonitor::DEVTYPE_AUDIO);
+  }
+
+ private:
+  void TryConnectToService(service_manager::Connector* connector) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    // Check if the service manager is managing the audio service.
+    connector->QueryService(
+        service_manager::Identity(audio::mojom::kServiceName),
+        base::BindOnce(&AudioServiceDeviceListener::DoConnectToService,
+                       weak_factory_.GetWeakPtr(), connector));
+  }
+
+  void DoConnectToService(service_manager::Connector* connector,
+                          service_manager::mojom::ConnectResult connect_result,
+                          const std::string& ignore) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK(!mojo_audio_device_notifier_);
+    DCHECK(!binding_);
+    // Do not connect if the service manager is not managing the audio service.
+    if (connect_result != service_manager::mojom::ConnectResult::SUCCEEDED) {
+      LOG(WARNING) << "Audio service not available: " << connect_result;
+      return;
+    }
+
+    connector->BindInterface(audio::mojom::kServiceName,
+                             mojo::MakeRequest(&mojo_audio_device_notifier_));
+    mojo_audio_device_notifier_.set_connection_error_handler(base::BindOnce(
+        &MediaDevicesManager::AudioServiceDeviceListener::TryConnectToService,
+        weak_factory_.GetWeakPtr(), connector));
+    audio::mojom::DeviceListenerPtr audio_device_listener_ptr;
+    binding_.Bind(mojo::MakeRequest(&audio_device_listener_ptr));
+    mojo_audio_device_notifier_->RegisterListener(
+        std::move(audio_device_listener_ptr));
+  }
+
+  mojo::Binding<audio::mojom::DeviceListener> binding_;
+  audio::mojom::DeviceNotifierPtr mojo_audio_device_notifier_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<AudioServiceDeviceListener> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(AudioServiceDeviceListener);
+};
+
 MediaDevicesManager::MediaDevicesManager(
     media::AudioSystem* audio_system,
     const scoped_refptr<VideoCaptureManager>& video_capture_manager,
@@ -336,6 +402,7 @@ uint32_t MediaDevicesManager::SubscribeDeviceChangeNotifications(
     const BoolDeviceTypes& subscribe_types,
     blink::mojom::MediaDevicesListenerPtr listener) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  StartMonitoring();
   uint32_t subscription_id = ++last_subscription_id_;
   blink::mojom::MediaDevicesListenerPtr media_devices_listener =
       std::move(listener);
@@ -385,6 +452,22 @@ void MediaDevicesManager::StartMonitoring() {
     return;
 #endif
 
+#if defined(OS_WIN)
+  if (base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess)) {
+    DCHECK(!audio_service_device_listener_);
+    if (!connector_) {
+      auto* connector = ServiceManagerContext::GetConnectorForIOThread();
+      // |connector| can be null on unit tests.
+      if (!connector)
+        return;
+
+      connector_ = connector->Clone();
+    }
+
+    audio_service_device_listener_ =
+        std::make_unique<AudioServiceDeviceListener>(connector_.get());
+  }
+#endif
   monitoring_started_ = true;
   base::SystemMonitor::Get()->AddDevicesChangedObserver(this);
 
@@ -419,6 +502,7 @@ void MediaDevicesManager::StopMonitoring() {
   if (!monitoring_started_)
     return;
   base::SystemMonitor::Get()->RemoveDevicesChangedObserver(this);
+  audio_service_device_listener_.reset();
   monitoring_started_ = false;
   for (size_t i = 0; i < NUM_MEDIA_DEVICE_TYPES; ++i)
     SetCachePolicy(static_cast<MediaDeviceType>(i), CachePolicy::NO_CACHE);

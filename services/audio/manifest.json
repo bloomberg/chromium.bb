@@ -7,7 +7,8 @@
       "provides": {
         "info": [ "audio::mojom::SystemInfo" ],
         "debug_recording": [ "audio::mojom::DebugRecording" ],
-        "stream_factory": [ "audio::mojom::StreamFactory" ]
+        "stream_factory": [ "audio::mojom::StreamFactory" ],
+        "device_notifier": [ "audio::mojom::DeviceNotifier" ]
       },
       "requires": {
         "service_manager": [ "service_manager:all_users" ]

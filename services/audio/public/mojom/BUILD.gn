@@ -8,6 +8,7 @@ mojom("mojom") {
   sources = [
     "audio_device_description.mojom",
     "debug_recording.mojom",
+    "device_notifications.mojom",
     "stream_factory.mojom",
     "system_info.mojom",
   ]

@@ -45,7 +45,7 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
       service_context_ = std::make_unique<service_manager::ServiceContext>(
           std::make_unique<audio::Service>(
               std::make_unique<InProcessAudioManagerAccessor>(audio_manager_),
-              service_quit_timeout_),
+              service_quit_timeout_, false /* device_notifications_enabled */),
           std::move(request));
       service_context_->SetQuitClosure(base::BindRepeating(
           &AudioThreadContext::QuitOnAudioThread, base::Unretained(this)));
@@ -66,7 +66,7 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
     virtual ~AudioThreadContext() {
       if (service_context_)
         service_context_->QuitNow();
-    };
+    }
 
     media::AudioManager* const audio_manager_;
     const base::TimeDelta service_quit_timeout_;

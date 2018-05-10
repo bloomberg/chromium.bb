@@ -14,11 +14,16 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "services/audio/public/mojom/debug_recording.mojom.h"
+#include "services/audio/public/mojom/device_notifications.mojom.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 #include "services/audio/public/mojom/system_info.mojom.h"
 #include "services/audio/stream_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+
+namespace base {
+class SystemMonitor;
+}
 
 namespace media {
 class AudioManager;
@@ -30,6 +35,7 @@ class ServiceContextRefFactory;
 
 namespace audio {
 class DebugRecording;
+class DeviceNotifier;
 class SystemInfo;
 
 class Service : public service_manager::Service {
@@ -50,9 +56,12 @@ class Service : public service_manager::Service {
 
   // Service will attempt to quit if there are no connections to it within
   // |quit_timeout| interval. If |quit_timeout| is base::TimeDelta() the
-  // service never quits.
+  // service never quits. If |device_notifications_enabled| is true, the service
+  // will make available a DeviceNotifier object that allows clients to
+  // subscribe to notifications about device changes.
   Service(std::unique_ptr<AudioManagerAccessor> audio_manager_accessor,
-          base::TimeDelta quit_timeout);
+          base::TimeDelta quit_timeout,
+          bool device_notifications_enabled);
   ~Service() final;
 
   // service_manager::Service implementation.
@@ -68,6 +77,7 @@ class Service : public service_manager::Service {
   void BindSystemInfoRequest(mojom::SystemInfoRequest request);
   void BindDebugRecordingRequest(mojom::DebugRecordingRequest request);
   void BindStreamFactoryRequest(mojom::StreamFactoryRequest request);
+  void BindDeviceNotifierRequest(mojom::DeviceNotifierRequest request);
 
   void MaybeRequestQuitDelayed();
   void MaybeRequestQuit();
@@ -83,9 +93,12 @@ class Service : public service_manager::Service {
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
 
   std::unique_ptr<AudioManagerAccessor> audio_manager_accessor_;
+  const bool device_notifications_enabled_;
+  std::unique_ptr<base::SystemMonitor> system_monitor_;
   std::unique_ptr<SystemInfo> system_info_;
   std::unique_ptr<DebugRecording> debug_recording_;
   base::Optional<StreamFactory> stream_factory_;
+  std::unique_ptr<DeviceNotifier> device_notifier_;
 
   service_manager::BinderRegistry registry_;
 
