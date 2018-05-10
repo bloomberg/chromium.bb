@@ -613,8 +613,9 @@ bool DocumentThreadableLoader::RedirectReceived(
   if (!actual_request_.IsNull()) {
     ReportResponseReceived(resource->Identifier(), redirect_response);
 
-    HandlePreflightFailure(original_url,
-                           "Response for preflight is invalid (redirect)");
+    HandlePreflightFailure(
+        original_url, CORS::GetErrorString(
+                          CORS::ErrorParameter::CreateForDisallowedRedirect()));
 
     return false;
   }
