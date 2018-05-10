@@ -260,9 +260,8 @@ class PreflightController::PreflightLoader final {
     // Preflight should not allow any redirect.
     FinalizeLoader();
 
-    // TODO(toyoshim): Define kDisallowedPreflightRedirect in a separate patch.
     std::move(completion_callback_)
-        .Run(CORSErrorStatus(mojom::CORSError::kPreflightInvalidStatus));
+        .Run(CORSErrorStatus(mojom::CORSError::kPreflightDisallowedRedirect));
 
     RemoveFromController();
     // |this| is deleted here.

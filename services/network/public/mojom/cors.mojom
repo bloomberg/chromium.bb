@@ -37,9 +37,12 @@ enum CORSError {
   // header.
   kInvalidAllowCredentials,
 
-  // Preflight
+  // Preflight:
   // Failed to check HTTP response ok status in a CORS-preflight response.
   kPreflightInvalidStatus,
+
+  // Redirect is requested in CORS-preflight response, but not allowed.
+  kPreflightDisallowedRedirect,
 
   // Not allowed wildcard origin was found in Access-Control-Allow-Origin
   // CORS-preflight response header when the credentials mode is 'include'.

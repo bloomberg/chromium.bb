@@ -55,6 +55,9 @@ struct PLATFORM_EXPORT ErrorParameter {
   // CORS::CheckPreflight() returns.
   static ErrorParameter CreateForPreflightStatusCheck(int response_status_code);
 
+  // Creates an ErrorParameter for kPreflightDisallowedRedirect.
+  static ErrorParameter CreateForDisallowedRedirect();
+
   // Creates an ErrorParameter for an error that CORS::CheckExternalPreflight()
   // returns.
   static ErrorParameter CreateForExternalPreflightCheck(

@@ -121,6 +121,14 @@ ErrorParameter ErrorParameter::CreateForPreflightStatusCheck(
 }
 
 // static
+ErrorParameter ErrorParameter::CreateForDisallowedRedirect() {
+  return ErrorParameter(
+      network::mojom::CORSError::kPreflightDisallowedRedirect, GetInvalidURL(),
+      GetInvalidURL(), 0, HTTPHeaderMap(), *SecurityOrigin::CreateUnique(),
+      WebURLRequest::kRequestContextUnspecified, String(), false);
+}
+
+// static
 ErrorParameter ErrorParameter::CreateForExternalPreflightCheck(
     const network::mojom::CORSError error,
     const HTTPHeaderMap& response_header_map) {
@@ -335,6 +343,8 @@ String GetErrorString(const ErrorParameter& param) {
                : ""));
     case network::mojom::CORSError::kPreflightInvalidStatus:
       return String("Response for preflight does not have HTTP ok status.");
+    case network::mojom::CORSError::kPreflightDisallowedRedirect:
+      return String("Response for preflight is invalid (redirect)");
     case network::mojom::CORSError::kPreflightMissingAllowExternal:
       return String(
           "No 'Access-Control-Allow-External' header was present in the "
