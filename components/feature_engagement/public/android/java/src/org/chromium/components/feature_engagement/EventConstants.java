@@ -129,6 +129,12 @@ public final class EventConstants {
             "contextual_search_triggered_by_longpress";
 
     /**
+     * The partner homepage was pressed.
+     */
+    public static final String PARTNER_HOME_PAGE_BUTTON_PRESSED =
+            "partner_home_page_button_pressed";
+
+    /**
      * Do not instantiate.
      */
     private EventConstants() {}
