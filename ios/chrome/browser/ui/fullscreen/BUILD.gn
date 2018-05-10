@@ -70,10 +70,6 @@ source_set("internal") {
     "fullscreen_model.h",
     "fullscreen_model.mm",
     "fullscreen_model_observer.h",
-    "fullscreen_scroll_end_animator.h",
-    "fullscreen_scroll_end_animator.mm",
-    "fullscreen_scroll_to_top_animator.h",
-    "fullscreen_scroll_to_top_animator.mm",
     "fullscreen_system_notification_observer.h",
     "fullscreen_system_notification_observer.mm",
     "fullscreen_ui_updater.mm",
@@ -83,8 +79,6 @@ source_set("internal") {
     "fullscreen_web_state_observer.mm",
     "fullscreen_web_view_proxy_observer.h",
     "fullscreen_web_view_proxy_observer.mm",
-    "toolbar_reveal_animator.h",
-    "toolbar_reveal_animator.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

@@ -10,9 +10,9 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model_observer.h"
 
-@class FullscreenAnimator;
 class FullscreenController;
 class FullscreenControllerObserver;
 @class FullscreenResetAnimator;
@@ -55,41 +55,24 @@ class FullscreenMediator : public FullscreenModelObserver {
   void FullscreenModelScrollEventEnded(FullscreenModel* model) override;
   void FullscreenModelWasReset(FullscreenModel* model) override;
 
-  // Sets up |animator|.  |animator| is expected to be a pointer to a data
-  // member of this object, and is used to reset the variable in the animation
-  // completion block.
-  void SetUpAnimator(__strong FullscreenAnimator** animator);
+  // Sets up |animator_| with |style|.
+  void SetUpAnimator(FullscreenAnimatorStyle style);
 
-  // Starts |animator| if it has animations to run.  |animator| is expected to
-  // be a pointer to a data member of this object, and will be reset when
-  // attempting to start an animator without any animation blocks.
-  void StartAnimator(__strong FullscreenAnimator** animator);
+  // Starts |animator+| if it has animations to run.  |animator_| will be reset
+  // if no animations have been added.
+  void StartAnimator();
 
   // Stops the current scroll end animation if one is in progress.  If
   // |update_model| is true, the FullscreenModel will be updated with the active
   // animator's current progress value.
   void StopAnimating(bool update_model);
 
-  // Stops |animator|.  |animator| is expected to be a pointer to a data member
-  // of this object, and is used to reset the variable.  If |update_model| is
-  // true, the FullscreenModel will be updated with the current progress of the
-  // animator before deallocation.
-  void StopAnimator(__strong FullscreenAnimator** animator, bool update_model);
-
-  // Checks whether |animator| is a valid pointer to one of the three animator
-  // data members of this class.  No-op for non-debug builds.
-  void VerifyAnimatorPointer(__strong FullscreenAnimator** animator) const;
-
   // The controller.
   FullscreenController* controller_ = nullptr;
   // The model.
   FullscreenModel* model_ = nullptr;
-  // The scroll end animator passed to observers.
-  __strong FullscreenScrollEndAnimator* scroll_end_animator_ = nil;
-  // The scroll to top animator passed to observers.
-  __strong FullscreenScrollToTopAnimator* scroll_to_top_animator_ = nil;
-  // The toolbar reveal animator.
-  __strong ToolbarRevealAnimator* toolbar_reveal_animator_ = nil;
+  // The active animator.
+  __strong FullscreenAnimator* animator_ = nil;
   // The FullscreenControllerObservers that need to get notified of model
   // changes.
   base::ObserverList<FullscreenControllerObserver> observers_;

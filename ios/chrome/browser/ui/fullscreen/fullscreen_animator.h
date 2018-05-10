@@ -7,11 +7,19 @@
 
 #import "ios/chrome/browser/ui/util/optional_property_animator.h"
 
+// Enum describing whether the animator should enter or exit fullscreen.
+enum class FullscreenAnimatorStyle : short {
+  ENTER_FULLSCREEN,
+  EXIT_FULLSCREEN
+};
+
 // Helper object for animating changes to fullscreen progress.  Subclasses of
 // this object are provided to FullscreenControllerObservers to coordinate
 // animations across several different ojects.
 @interface FullscreenAnimator : OptionalPropertyAnimator
 
+// The animator style.
+@property(nonatomic, readonly) FullscreenAnimatorStyle style;
 // The progress value at the start of the animation.
 @property(nonatomic, readonly) CGFloat startProgress;
 // The final calculated fullscreen value.
@@ -23,7 +31,7 @@
 
 // Designated initializer.
 - (instancetype)initWithStartProgress:(CGFloat)startProgress
-                             duration:(NSTimeInterval)duration
+                                style:(FullscreenAnimatorStyle)style
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDuration:(NSTimeInterval)duration
                 timingParameters:(id<UITimingCurveProvider>)parameters

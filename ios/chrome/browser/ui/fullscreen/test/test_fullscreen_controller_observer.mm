@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/fullscreen/test/test_fullscreen_controller_observer.h"
 
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

@@ -25,22 +25,27 @@
 @end
 
 @implementation FullscreenAnimator
+@synthesize style = _style;
 @synthesize startProgress = _startProgress;
-@dynamic finalProgress;
+@synthesize finalProgress = _finalProgress;
 
 - (instancetype)initWithStartProgress:(CGFloat)startProgress
-                             duration:(NSTimeInterval)duration {
+                                style:(FullscreenAnimatorStyle)style {
   // Control points for Material Design CurveEaseOut curve.
   UICubicTimingParameters* timingParams = [[UICubicTimingParameters alloc]
       initWithControlPoint1:CGPointMake(0.0, 0.0)
               controlPoint2:CGPointMake(0.2, 0.1)];
   DCHECK_GE(startProgress, 0.0);
   DCHECK_LE(startProgress, 1.0);
-  self = [super initWithDuration:duration timingParameters:timingParams];
+  self = [super initWithDuration:ios::material::kDuration1
+                timingParameters:timingParams];
   if (self) {
     DCHECK_GE(startProgress, 0.0);
     DCHECK_LE(startProgress, 1.0);
+    _style = style;
     _startProgress = startProgress;
+    _finalProgress =
+        _style == FullscreenAnimatorStyle::ENTER_FULLSCREEN ? 0.0 : 1.0;
     _bezier = std::make_unique<gfx::CubicBezier>(
         timingParams.controlPoint1.x, timingParams.controlPoint1.y,
         timingParams.controlPoint2.x, timingParams.controlPoint2.y);
