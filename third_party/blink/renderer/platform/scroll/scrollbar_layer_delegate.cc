@@ -7,22 +7,43 @@
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_scrollbar.h"
-#include "third_party/blink/public/platform/web_scrollbar_theme_geometry.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
+#include "ui/gfx/skia_util.h"
 
 namespace blink {
 
-ScrollbarLayerDelegate::ScrollbarLayerDelegate(
-    std::unique_ptr<WebScrollbar> scrollbar,
-    WebScrollbarThemePainter painter,
-    std::unique_ptr<WebScrollbarThemeGeometry> geometry)
-    : scrollbar_(std::move(scrollbar)),
-      painter_(painter),
-      geometry_(std::move(geometry)) {}
+namespace {
+
+class ScopedScrollbarPainter {
+ public:
+  ScopedScrollbarPainter(cc::PaintCanvas& canvas, float device_scale_factor)
+      : canvas_(canvas) {
+    builder_.Context().SetDeviceScaleFactor(device_scale_factor);
+  }
+  ~ScopedScrollbarPainter() { canvas_.drawPicture(builder_.EndRecording()); }
+
+  GraphicsContext& Context() { return builder_.Context(); }
+
+ private:
+  cc::PaintCanvas& canvas_;
+  PaintRecordBuilder builder_;
+};
+
+}  // namespace
+
+ScrollbarLayerDelegate::ScrollbarLayerDelegate(blink::Scrollbar& scrollbar,
+                                               float device_scale_factor)
+    : scrollbar_(&scrollbar),
+      theme_(scrollbar.GetTheme()),
+      device_scale_factor_(device_scale_factor) {}
 
 ScrollbarLayerDelegate::~ScrollbarLayerDelegate() = default;
 
 cc::ScrollbarOrientation ScrollbarLayerDelegate::Orientation() const {
-  if (scrollbar_->GetOrientation() == WebScrollbar::kHorizontal)
+  if (scrollbar_->Orientation() == kHorizontalScrollbar)
     return cc::HORIZONTAL;
   return cc::VERTICAL;
 }
@@ -32,109 +53,122 @@ bool ScrollbarLayerDelegate::IsLeftSideVerticalScrollbar() const {
 }
 
 bool ScrollbarLayerDelegate::HasThumb() const {
-  return geometry_->HasThumb(scrollbar_.get());
+  return theme_.HasThumb(*scrollbar_);
 }
 
 bool ScrollbarLayerDelegate::IsOverlay() const {
-  return scrollbar_->IsOverlay();
+  return scrollbar_->IsOverlayScrollbar();
 }
 
 gfx::Point ScrollbarLayerDelegate::Location() const {
-  return static_cast<gfx::Point>(scrollbar_->Location());
+  return scrollbar_->Location();
 }
 
 int ScrollbarLayerDelegate::ThumbThickness() const {
-  auto thumb_rect =
-      static_cast<gfx::Rect>(geometry_->ThumbRect(scrollbar_.get()));
-  if (scrollbar_->GetOrientation() == WebScrollbar::kHorizontal)
-    return thumb_rect.height();
-  return thumb_rect.width();
+  IntRect thumb_rect = theme_.ThumbRect(*scrollbar_);
+  if (scrollbar_->Orientation() == kHorizontalScrollbar)
+    return thumb_rect.Height();
+  return thumb_rect.Width();
 }
 
 int ScrollbarLayerDelegate::ThumbLength() const {
-  auto thumb_rect =
-      static_cast<gfx::Rect>(geometry_->ThumbRect(scrollbar_.get()));
-  if (scrollbar_->GetOrientation() == WebScrollbar::kHorizontal)
-    return thumb_rect.width();
-  return thumb_rect.height();
+  IntRect thumb_rect = theme_.ThumbRect(*scrollbar_);
+  if (scrollbar_->Orientation() == kHorizontalScrollbar)
+    return thumb_rect.Width();
+  return thumb_rect.Height();
 }
 
 gfx::Rect ScrollbarLayerDelegate::TrackRect() const {
-  return static_cast<gfx::Rect>(geometry_->TrackRect(scrollbar_.get()));
+  return theme_.TrackRect(*scrollbar_);
 }
 
 float ScrollbarLayerDelegate::ThumbOpacity() const {
-  return painter_.ThumbOpacity();
+  return theme_.ThumbOpacity(*scrollbar_);
 }
 
 bool ScrollbarLayerDelegate::NeedsPaintPart(cc::ScrollbarPart part) const {
   if (part == cc::THUMB)
-    return painter_.ThumbNeedsRepaint();
-  return painter_.TrackNeedsRepaint();
+    return scrollbar_->ThumbNeedsRepaint();
+  return scrollbar_->TrackNeedsRepaint();
 }
 
 bool ScrollbarLayerDelegate::UsesNinePatchThumbResource() const {
-  return painter_.UsesNinePatchThumbResource();
+  return theme_.UsesNinePatchThumbResource();
 }
 
 gfx::Size ScrollbarLayerDelegate::NinePatchThumbCanvasSize() const {
-  return static_cast<gfx::Size>(
-      geometry_->NinePatchThumbCanvasSize(scrollbar_.get()));
+  DCHECK(theme_.UsesNinePatchThumbResource());
+  return static_cast<gfx::Size>(theme_.NinePatchThumbCanvasSize(*scrollbar_));
 }
 
 gfx::Rect ScrollbarLayerDelegate::NinePatchThumbAperture() const {
-  return static_cast<gfx::Rect>(
-      geometry_->NinePatchThumbAperture(scrollbar_.get()));
+  DCHECK(theme_.UsesNinePatchThumbResource());
+  return theme_.NinePatchThumbAperture(*scrollbar_);
 }
 
 bool ScrollbarLayerDelegate::HasTickmarks() const {
-  return scrollbar_->HasTickmarks();
+  Vector<IntRect> tickmarks;
+  scrollbar_->GetTickmarks(tickmarks);
+  return !tickmarks.IsEmpty();
 }
 
 void ScrollbarLayerDelegate::PaintPart(cc::PaintCanvas* canvas,
                                        cc::ScrollbarPart part,
                                        const gfx::Rect& content_rect) {
+  PaintCanvasAutoRestore auto_restore(canvas, true);
+  blink::Scrollbar& scrollbar = *scrollbar_;
+
   if (part == cc::THUMB) {
-    painter_.PaintThumb(canvas, WebRect(content_rect));
+    ScopedScrollbarPainter painter(*canvas, device_scale_factor_);
+    theme_.PaintThumb(painter.Context(), scrollbar, IntRect(content_rect));
+    if (!theme_.ShouldRepaintAllPartsOnInvalidation())
+      scrollbar.ClearThumbNeedsRepaint();
     return;
   }
 
   if (part == cc::TICKMARKS) {
-    painter_.PaintTickmarks(canvas, WebRect(content_rect));
+    ScopedScrollbarPainter painter(*canvas, device_scale_factor_);
+    theme_.PaintTickmarks(painter.Context(), scrollbar, IntRect(content_rect));
     return;
   }
 
-  // The following is a simplification of ScrollbarThemeComposite::paint.
-  painter_.PaintScrollbarBackground(canvas, WebRect(content_rect));
+  canvas->clipRect(gfx::RectToSkRect(content_rect));
+  ScopedScrollbarPainter painter(*canvas, device_scale_factor_);
+  GraphicsContext& context = painter.Context();
 
-  if (geometry_->HasButtons(scrollbar_.get())) {
-    WebRect back_button_start_paint_rect =
-        geometry_->BackButtonStartRect(scrollbar_.get());
-    painter_.PaintBackButtonStart(canvas, back_button_start_paint_rect);
+  theme_.PaintScrollbarBackground(context, scrollbar);
 
-    WebRect back_button_end_paint_rect =
-        geometry_->BackButtonEndRect(scrollbar_.get());
-    painter_.PaintBackButtonEnd(canvas, back_button_end_paint_rect);
-
-    WebRect forward_button_start_paint_rect =
-        geometry_->ForwardButtonStartRect(scrollbar_.get());
-    painter_.PaintForwardButtonStart(canvas, forward_button_start_paint_rect);
-
-    WebRect forward_button_end_paint_rect =
-        geometry_->ForwardButtonEndRect(scrollbar_.get());
-    painter_.PaintForwardButtonEnd(canvas, forward_button_end_paint_rect);
+  if (theme_.HasButtons(scrollbar)) {
+    theme_.PaintButton(context, scrollbar,
+                       theme_.BackButtonRect(scrollbar, kBackButtonStartPart),
+                       kBackButtonStartPart);
+    theme_.PaintButton(context, scrollbar,
+                       theme_.BackButtonRect(scrollbar, kBackButtonEndPart),
+                       kBackButtonEndPart);
+    theme_.PaintButton(
+        context, scrollbar,
+        theme_.ForwardButtonRect(scrollbar, kForwardButtonStartPart),
+        kForwardButtonStartPart);
+    theme_.PaintButton(
+        context, scrollbar,
+        theme_.ForwardButtonRect(scrollbar, kForwardButtonEndPart),
+        kForwardButtonEndPart);
   }
 
-  WebRect track_paint_rect = geometry_->TrackRect(scrollbar_.get());
-  painter_.PaintTrackBackground(canvas, track_paint_rect);
+  IntRect track_paint_rect = theme_.TrackRect(scrollbar);
+  theme_.PaintTrackBackground(context, scrollbar, track_paint_rect);
 
-  bool thumb_present = geometry_->HasThumb(scrollbar_.get());
-  if (thumb_present) {
-    painter_.PaintForwardTrackPart(canvas, track_paint_rect);
-    painter_.PaintBackTrackPart(canvas, track_paint_rect);
+  if (theme_.HasThumb(scrollbar)) {
+    theme_.PaintTrackPiece(painter.Context(), scrollbar, track_paint_rect,
+                           kForwardTrackPart);
+    theme_.PaintTrackPiece(painter.Context(), scrollbar, track_paint_rect,
+                           kBackTrackPart);
   }
 
-  painter_.PaintTickmarks(canvas, track_paint_rect);
+  theme_.PaintTickmarks(painter.Context(), scrollbar, track_paint_rect);
+
+  if (!theme_.ShouldRepaintAllPartsOnInvalidation())
+    scrollbar.ClearTrackNeedsRepaint();
 }
 
 }  // namespace blink

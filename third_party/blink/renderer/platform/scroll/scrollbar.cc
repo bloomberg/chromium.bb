@@ -29,6 +29,7 @@
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_scrollbar.h"
+#include "third_party/blink/public/platform/web_scrollbar_overlay_color_theme.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/platform_chrome_client.h"
@@ -644,25 +645,6 @@ STATIC_ASSERT_ENUM(WebScrollbar::ScrollingMode::kAlwaysOn, kScrollbarAlwaysOn);
 STATIC_ASSERT_ENUM(WebScrollbar::kHorizontal, kHorizontalScrollbar);
 STATIC_ASSERT_ENUM(WebScrollbar::kVertical, kVerticalScrollbar);
 
-STATIC_ASSERT_ENUM(WebScrollbar::kScrollByLine, kScrollByLine);
-STATIC_ASSERT_ENUM(WebScrollbar::kScrollByPage, kScrollByPage);
-STATIC_ASSERT_ENUM(WebScrollbar::kScrollByDocument, kScrollByDocument);
-STATIC_ASSERT_ENUM(WebScrollbar::kScrollByPixel, kScrollByPixel);
-
-STATIC_ASSERT_ENUM(WebScrollbar::kRegularScrollbar, kRegularScrollbar);
-STATIC_ASSERT_ENUM(WebScrollbar::kSmallScrollbar, kSmallScrollbar);
-STATIC_ASSERT_ENUM(WebScrollbar::kNoPart, kNoPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kBackButtonStartPart, kBackButtonStartPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kForwardButtonStartPart,
-                   kForwardButtonStartPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kBackTrackPart, kBackTrackPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kThumbPart, kThumbPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kForwardTrackPart, kForwardTrackPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kBackButtonEndPart, kBackButtonEndPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kForwardButtonEndPart, kForwardButtonEndPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kScrollbarBGPart, kScrollbarBGPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kTrackBGPart, kTrackBGPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kAllParts, kAllParts);
 STATIC_ASSERT_ENUM(kWebScrollbarOverlayColorThemeDark,
                    kScrollbarOverlayColorThemeDark);
 STATIC_ASSERT_ENUM(kWebScrollbarOverlayColorThemeLight,

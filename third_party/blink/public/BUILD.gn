@@ -381,8 +381,6 @@ source_set("blink_headers") {
     "platform/web_scrollbar_behavior.h",
     "platform/web_scrollbar_buttons_placement.h",
     "platform/web_scrollbar_overlay_color_theme.h",
-    "platform/web_scrollbar_theme_geometry.h",
-    "platform/web_scrollbar_theme_painter.h",
     "platform/web_security_origin.h",
     "platform/web_security_style.h",
     "platform/web_selection_bound.h",

@@ -10,20 +10,20 @@
 #include "base/macros.h"
 #include "cc/input/scrollbar.h"
 #include "cc/paint/paint_canvas.h"
-#include "third_party/blink/public/platform/web_scrollbar_theme_painter.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
-class WebScrollbar;
-class WebScrollbarThemeGeometry;
+
+class Scrollbar;
+class ScrollbarTheme;
 
 // Implementation of cc::Scrollbar, providing a delegate to query about
 // scrollbar state and to paint the image in the scrollbar.
 class PLATFORM_EXPORT ScrollbarLayerDelegate : public cc::Scrollbar {
  public:
-  ScrollbarLayerDelegate(std::unique_ptr<WebScrollbar> scrollbar,
-                         WebScrollbarThemePainter painter,
-                         std::unique_ptr<WebScrollbarThemeGeometry> geometry);
+  ScrollbarLayerDelegate(blink::Scrollbar& scrollbar,
+                         float device_scale_factor);
   ~ScrollbarLayerDelegate() override;
 
   // cc::Scrollbar implementation.
@@ -47,9 +47,12 @@ class PLATFORM_EXPORT ScrollbarLayerDelegate : public cc::Scrollbar {
   gfx::Rect NinePatchThumbAperture() const override;
 
  private:
-  std::unique_ptr<WebScrollbar> scrollbar_;
-  WebScrollbarThemePainter painter_;
-  std::unique_ptr<WebScrollbarThemeGeometry> geometry_;
+  // Accessed by main and compositor threads, e.g., the compositor thread
+  // checks |Orientation()|.
+  CrossThreadPersistent<blink::Scrollbar> scrollbar_;
+
+  ScrollbarTheme& theme_;
+  float device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollbarLayerDelegate);
 };

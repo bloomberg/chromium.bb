@@ -25,71 +25,13 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCROLLBAR_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCROLLBAR_H_
 
-#include "third_party/blink/public/platform/web_point.h"
-#include "third_party/blink/public/platform/web_rect.h"
-#include "third_party/blink/public/platform/web_scrollbar_overlay_color_theme.h"
-#include "third_party/blink/public/platform/web_size.h"
-#include "third_party/blink/public/platform/web_vector.h"
-
 namespace blink {
 
-// A const accessor interface for a WebKit scrollbar
-class BLINK_PLATFORM_EXPORT WebScrollbar {
+// TODO(jbroman): Clean up these, which are used elsewhere.
+class WebScrollbar {
  public:
   enum Orientation { kHorizontal, kVertical };
-
-  enum ScrollDirection { kScrollBackward, kScrollForward };
-
-  enum ScrollGranularity {
-    kScrollByLine,
-    kScrollByPage,
-    kScrollByDocument,
-    kScrollByPixel
-  };
-
-  enum ScrollbarControlSize { kRegularScrollbar, kSmallScrollbar };
-
-  enum ScrollbarPart {
-    kNoPart = 0,
-    kBackButtonStartPart = 1,
-    kForwardButtonStartPart = 1 << 1,
-    kBackTrackPart = 1 << 2,
-    kThumbPart = 1 << 3,
-    kForwardTrackPart = 1 << 4,
-    kBackButtonEndPart = 1 << 5,
-    kForwardButtonEndPart = 1 << 6,
-    kScrollbarBGPart = 1 << 7,
-    kTrackBGPart = 1 << 8,
-    kAllParts = 0xffffffff
-  };
-
   enum class ScrollingMode { kAuto, kAlwaysOff, kAlwaysOn, kLast = kAlwaysOn };
-
-  virtual ~WebScrollbar() = default;
-
-  // Return true if this is an overlay scrollbar.
-  virtual bool IsOverlay() const = 0;
-
-  // Gets the current value (i.e. position inside the region).
-  virtual int Value() const = 0;
-
-  virtual WebPoint Location() const = 0;
-  virtual WebSize Size() const = 0;
-  virtual bool Enabled() const = 0;
-  virtual int Maximum() const = 0;
-  virtual int TotalSize() const = 0;
-  virtual bool IsScrollableAreaActive() const = 0;
-  virtual bool HasTickmarks() const = 0;
-  virtual void GetTickmarks(WebVector<WebRect>& tickmarks) const = 0;
-  virtual ScrollbarControlSize GetControlSize() const = 0;
-  virtual ScrollbarPart PressedPart() const = 0;
-  virtual ScrollbarPart HoveredPart() const = 0;
-  virtual WebScrollbarOverlayColorTheme ScrollbarOverlayColorTheme() const = 0;
-  virtual bool IsCustomScrollbar() const = 0;
-  virtual Orientation GetOrientation() const = 0;
-  virtual bool IsLeftSideVerticalScrollbar() const = 0;
-  virtual float ElasticOverscroll() const = 0;
-  virtual void SetElasticOverscroll(float) = 0;
 };
 
 }  // namespace blink
