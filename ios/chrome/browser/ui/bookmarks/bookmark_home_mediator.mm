@@ -9,10 +9,14 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/sync/synced_sessions_bridge.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_consumer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_shared_state.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_node_item.h"
+#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_promo_item.h"
+#import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -21,7 +25,10 @@
 
 using bookmarks::BookmarkNode;
 
-@interface BookmarkHomeMediator ()<BookmarkModelBridgeObserver,
+@interface BookmarkHomeMediator ()<BookmarkHomePromoItemDelegate,
+                                   BookmarkModelBridgeObserver,
+                                   BookmarkPromoControllerDelegate,
+                                   SigninPresenter,
                                    SyncedSessionsObserver> {
   // Bridge to register for bookmark changes.
   std::unique_ptr<bookmarks::BookmarkModelBridge> _modelBridge;
@@ -31,13 +38,20 @@ using bookmarks::BookmarkNode;
       _syncedSessionsObserver;
 }
 
+// Shared state between Bookmark home classes.
 @property(nonatomic, strong) BookmarkHomeSharedState* sharedState;
 
+// The browser state for this mediator.
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+
+// The controller managing the display of the promo cell and the promo view
+// controller.
+@property(nonatomic, strong) BookmarkPromoController* bookmarkPromoController;
 
 @end
 
 @implementation BookmarkHomeMediator
+@synthesize bookmarkPromoController = _bookmarkPromoController;
 @synthesize browserState = _browserState;
 @synthesize consumer = _consumer;
 @synthesize sharedState = _sharedState;
@@ -61,7 +75,12 @@ using bookmarks::BookmarkNode;
   _syncedSessionsObserver =
       std::make_unique<synced_sessions::SyncedSessionsObserverBridge>(
           self, self.browserState);
+  _bookmarkPromoController =
+      [[BookmarkPromoController alloc] initWithBrowserState:self.browserState
+                                                   delegate:self
+                                                  presenter:self];
 
+  [self computePromoTableViewData];
   [self computeBookmarkTableViewData];
 }
 
@@ -185,6 +204,49 @@ using bookmarks::BookmarkNode;
   }
 }
 
+#pragma mark - Public
+
+- (void)computePromoTableViewData {
+  // We show promo cell only on the root view, that is when showing
+  // the permanent nodes.
+  BOOL promoVisible = ((self.sharedState.tableViewDisplayedRootNode ==
+                        self.sharedState.bookmarkModel->root_node()) &&
+                       self.bookmarkPromoController.shouldShowSigninPromo);
+
+  if (promoVisible == self.sharedState.promoVisible) {
+    return;
+  }
+  self.sharedState.promoVisible = promoVisible;
+
+  SigninPromoViewMediator* mediator = self.signinPromoViewMediator;
+  if (self.sharedState.promoVisible) {
+    DCHECK(![self.sharedState.tableViewModel
+        hasSectionForSectionIdentifier:BookmarkHomeSectionIdentifierPromo]);
+    [self.sharedState.tableViewModel
+        insertSectionWithIdentifier:BookmarkHomeSectionIdentifierPromo
+                            atIndex:0];
+    BookmarkHomePromoItem* item =
+        [[BookmarkHomePromoItem alloc] initWithType:BookmarkHomeItemTypePromo];
+    item.delegate = self;
+    [self.sharedState.tableViewModel
+                        addItem:item
+        toSectionWithIdentifier:BookmarkHomeSectionIdentifierPromo];
+    [mediator signinPromoViewVisible];
+  } else {
+    if (![mediator isInvalidClosedOrNeverVisible]) {
+      // When the sign-in view is closed, the promo state changes, but
+      // -[SigninPromoViewMediator signinPromoViewHidden] should not be called.
+      [mediator signinPromoViewHidden];
+    }
+
+    DCHECK([self.sharedState.tableViewModel
+        hasSectionForSectionIdentifier:BookmarkHomeSectionIdentifierPromo]);
+    [self.sharedState.tableViewModel
+        removeSectionWithIdentifier:BookmarkHomeSectionIdentifierPromo];
+  }
+  [self.sharedState.tableView reloadData];
+}
+
 #pragma mark - BookmarkModelBridgeObserver Callbacks
 
 // BookmarkModelBridgeObserver Callbacks
@@ -281,6 +343,41 @@ using bookmarks::BookmarkNode;
     }
   }
   return nil;
+}
+
+#pragma mark - BookmarkHomePromoItemDelegate
+
+- (SigninPromoViewMediator*)signinPromoViewMediator {
+  return self.bookmarkPromoController.signinPromoViewMediator;
+}
+
+#pragma mark - BookmarkPromoControllerDelegate
+
+- (void)promoStateChanged:(BOOL)promoEnabled {
+  [self computePromoTableViewData];
+}
+
+- (void)configureSigninPromoWithConfigurator:
+            (SigninPromoViewConfigurator*)configurator
+                             identityChanged:(BOOL)identityChanged {
+  if (![self.sharedState.tableViewModel
+          hasSectionForSectionIdentifier:BookmarkHomeSectionIdentifierPromo]) {
+    return;
+  }
+
+  NSIndexPath* indexPath = [self.sharedState.tableViewModel
+      indexPathForItemType:BookmarkHomeItemTypePromo
+         sectionIdentifier:BookmarkHomeSectionIdentifierPromo];
+  [self.consumer configureSigninPromoWithConfigurator:configurator
+                                          atIndexPath:indexPath
+                                      forceReloadCell:identityChanged];
+}
+
+#pragma mark - SigninPresenter
+
+- (void)showSignin:(ShowSigninCommand*)command {
+  // Proxy this call along to the consumer.
+  [self.consumer showSignin:command];
 }
 
 #pragma mark - SyncedSessionsObserver

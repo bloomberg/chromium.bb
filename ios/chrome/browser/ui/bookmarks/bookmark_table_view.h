@@ -8,14 +8,9 @@
 #import <UIKit/UIKit.h>
 #include <set>
 
-#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_promo_item.h"
-
 @class BookmarkHomeSharedState;
 @class BookmarkTableView;
 class GURL;
-@protocol SigninPresenter;
-@class SigninPromoViewConfigurator;
-@class SigninPromoViewMediator;
 
 namespace bookmarks {
 class BookmarkNode;
@@ -26,11 +21,7 @@ class ChromeBrowserState;
 }
 
 // Delegate to handle actions on the table.
-@protocol BookmarkTableViewDelegate<BookmarkHomePromoItemDelegate>
-
-// Returns the SigninPromoViewMediator to use for the sign-in promo view in the
-// bookmark table view.
-@property(nonatomic, readonly) SigninPromoViewMediator* signinPromoViewMediator;
+@protocol BookmarkTableViewDelegate
 
 // Tells the delegate that a URL was selected for navigation.
 - (void)bookmarkTableView:(BookmarkTableView*)view
@@ -44,9 +35,6 @@ class ChromeBrowserState;
 - (void)bookmarkTableView:(BookmarkTableView*)view
     selectedNodesForDeletion:
         (const std::set<const bookmarks::BookmarkNode*>&)nodes;
-
-// Returns true if a bookmarks promo cell should be shown.
-- (BOOL)bookmarkTableViewShouldShowPromoCell:(BookmarkTableView*)view;
 
 // Tells the delegate that nodes were selected in edit mode.
 - (void)bookmarkTableView:(BookmarkTableView*)view
@@ -91,15 +79,6 @@ class ChromeBrowserState;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype) new NS_UNAVAILABLE;
-
-// Called when something outside the view causes the promo state to change.
-- (void)promoStateChangedAnimated:(BOOL)animated;
-
-// Configures the sign-in promo view using |configurator|, and reloads the table
-// view if |identityChanged| is YES.
-- (void)configureSigninPromoWithConfigurator:
-            (SigninPromoViewConfigurator*)configurator
-                             identityChanged:(BOOL)identityChanged;
 
 // Called when adding a new folder
 - (void)addNewFolder;

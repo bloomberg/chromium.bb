@@ -17,19 +17,13 @@
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_empty_background.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_shared_state.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_waiting_view.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_node_item.h"
-#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_promo_item.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell.h"
-#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_signin_promo_cell.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
@@ -119,9 +113,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     DCHECK_EQ(self.sharedState.bookmarkModel,
               ios::BookmarkModelFactory::GetForBrowserState(browserState));
 
-    // Set promo state before the tableview is created.
-    [self promoStateChangedAnimated:NO];
-
     // Create and setup tableview.
     self.sharedState.tableView =
         [[UITableView alloc] initWithFrame:frame style:UITableViewStylePlain];
@@ -140,76 +131,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 }
 
 #pragma mark - Public
-
-- (void)promoStateChangedAnimated:(BOOL)animated {
-  // We show promo cell only on the root view, that is when showing
-  // the permanent nodes.
-  BOOL promoVisible =
-      ((self.sharedState.tableViewDisplayedRootNode ==
-        self.sharedState.bookmarkModel->root_node()) &&
-       [self.delegate bookmarkTableViewShouldShowPromoCell:self]);
-
-  if (promoVisible == self.sharedState.promoVisible) {
-    return;
-  }
-  self.sharedState.promoVisible = promoVisible;
-
-  SigninPromoViewMediator* mediator = self.delegate.signinPromoViewMediator;
-  if (self.sharedState.promoVisible) {
-    DCHECK(![self.sharedState.tableViewModel
-        hasSectionForSectionIdentifier:BookmarkHomeSectionIdentifierPromo]);
-    [self.sharedState.tableViewModel
-        insertSectionWithIdentifier:BookmarkHomeSectionIdentifierPromo
-                            atIndex:0];
-    BookmarkHomePromoItem* item =
-        [[BookmarkHomePromoItem alloc] initWithType:BookmarkHomeItemTypePromo];
-    item.delegate = self.delegate;
-    [self.sharedState.tableViewModel
-                        addItem:item
-        toSectionWithIdentifier:BookmarkHomeSectionIdentifierPromo];
-    [mediator signinPromoViewVisible];
-  } else {
-    if (![mediator isInvalidClosedOrNeverVisible]) {
-      // When the sign-in view is closed, the promo state changes, but
-      // -[SigninPromoViewMediator signinPromoViewHidden] should not be called.
-      [mediator signinPromoViewHidden];
-    }
-
-    DCHECK([self.sharedState.tableViewModel
-        hasSectionForSectionIdentifier:BookmarkHomeSectionIdentifierPromo]);
-    [self.sharedState.tableViewModel
-        removeSectionWithIdentifier:BookmarkHomeSectionIdentifierPromo];
-  }
-  [self.sharedState.tableView reloadData];
-}
-
-- (void)configureSigninPromoWithConfigurator:
-            (SigninPromoViewConfigurator*)configurator
-                             identityChanged:(BOOL)identityChanged {
-  if (![self.sharedState.tableViewModel
-          hasSectionForSectionIdentifier:BookmarkHomeSectionIdentifierPromo]) {
-    return;
-  }
-
-  NSIndexPath* indexPath = [self.sharedState.tableViewModel
-      indexPathForItemType:BookmarkHomeItemTypePromo
-         sectionIdentifier:BookmarkHomeSectionIdentifierPromo];
-  BookmarkTableSigninPromoCell* signinPromoCell =
-      base::mac::ObjCCast<BookmarkTableSigninPromoCell>(
-          [self.sharedState.tableView cellForRowAtIndexPath:indexPath]);
-  if (!signinPromoCell) {
-    return;
-  }
-  // Should always reconfigure the cell size even if it has to be reloaded,
-  // to make sure it has the right size to compute the cell size.
-  [configurator configureSigninPromoView:signinPromoCell.signinPromoView];
-  if (identityChanged) {
-    // The section should be reload to update the cell height.
-    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:indexPath.section];
-    [self.sharedState.tableView reloadSections:indexSet
-                              withRowAnimation:UITableViewRowAnimationNone];
-  }
-}
 
 - (void)addNewFolder {
   [self.sharedState.editingFolderCell stopEdit];
@@ -336,10 +257,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     [self.delegate bookmarkTableView:self
                    selectedEditNodes:self.sharedState.editNodes];
   }
-}
-
-- (BOOL)shouldShowPromoCell {
-  return self.sharedState.promoVisible;
 }
 
 // Returns the bookmark node associated with |indexPath|.
