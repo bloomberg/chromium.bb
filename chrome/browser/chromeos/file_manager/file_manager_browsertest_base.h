@@ -94,6 +94,8 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
       service_factory_for_test_;
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileManagerBrowserTestBase);
 };
 
 }  // namespace file_manager

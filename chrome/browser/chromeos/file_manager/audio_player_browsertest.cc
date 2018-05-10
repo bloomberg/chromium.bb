@@ -9,6 +9,9 @@ namespace file_manager {
 template <GuestMode MODE>
 class AudioPlayerBrowserTestBase : public FileManagerBrowserTestBase {
  public:
+  AudioPlayerBrowserTestBase() = default;
+
+ protected:
   GuestMode GetGuestMode() const override { return MODE; }
 
   const char* GetTestCaseName() const override {
@@ -19,11 +22,12 @@ class AudioPlayerBrowserTestBase : public FileManagerBrowserTestBase {
     return "audio_player_test_manifest.json";
   }
 
- protected:
   void set_test_case_name(const std::string& name) { test_case_name_ = name; }
 
  private:
   std::string test_case_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(AudioPlayerBrowserTestBase);
 };
 
 typedef AudioPlayerBrowserTestBase<NOT_IN_GUEST_MODE> AudioPlayerBrowserTest;
