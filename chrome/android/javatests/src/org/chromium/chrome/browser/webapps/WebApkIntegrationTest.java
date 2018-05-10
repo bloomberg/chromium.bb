@@ -23,12 +23,16 @@ import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.test.NativeLibraryTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.webapk.lib.client.WebApkValidator;
@@ -149,6 +153,53 @@ public class WebApkIntegrationTest {
 
         ChromeTabUtils.waitForTabPageLoaded(webApkActivity.getActivityTab(), googleUrl);
         WebappActivityTestRule.assertToolbarShowState(webApkActivity, true);
+    }
+
+    /**
+     * Test launching a WebAPK. Test that open a url within scope through window.open() will open a
+     * CCT.
+     */
+    @Test
+    @LargeTest
+    @Feature({"WebApk"})
+    public void testLaunchAndOpenNewWindowInOrigin() throws Exception {
+        String pwaRocksUrl = getUrlForHost("pwa.rocks");
+        startWebApkActivity("org.chromium.webapk.http", pwaRocksUrl);
+        waitUntilSplashscreenHides();
+
+        WebappActivityTestRule.jsWindowOpen(mActivityTestRule.getActivity(), pwaRocksUrl);
+
+        CustomTabActivity customTabActivity =
+                ChromeActivityTestRule.waitFor(CustomTabActivity.class);
+        ChromeTabUtils.waitForTabPageLoaded(customTabActivity.getActivityTab(), pwaRocksUrl);
+        Assert.assertTrue(
+                "Sending to external handlers needs to be enabled for redirect back (e.g. OAuth).",
+                IntentUtils.safeGetBooleanExtra(customTabActivity.getIntent(),
+                        CustomTabIntentDataProvider.EXTRA_SEND_TO_EXTERNAL_DEFAULT_HANDLER, false));
+    }
+
+    /**
+     * Test launching a WebAPK. Test that open a url off scope through window.open() will open a
+     * CCT, and in scope urls will stay in the CCT.
+     */
+    @Test
+    @LargeTest
+    @Feature({"WebApk"})
+    public void testLaunchAndNavigationInNewWindowOffandInOrigin() throws Exception {
+        String pwaRocksUrl = getUrlForHost("pwa.rocks");
+        String googleUrl = getUrlForHost("www.google.com");
+        startWebApkActivity("org.chromium.webapk.http", pwaRocksUrl);
+        waitUntilSplashscreenHides();
+
+        WebappActivityTestRule.jsWindowOpen(mActivityTestRule.getActivity(), googleUrl);
+        CustomTabActivity customTabActivity =
+                ChromeActivityTestRule.waitFor(CustomTabActivity.class);
+        ChromeTabUtils.waitForTabPageLoaded(customTabActivity.getActivityTab(), googleUrl);
+
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                customTabActivity.getActivityTab().getWebContents(),
+                String.format("window.location.href='%s'", pwaRocksUrl));
+        ChromeTabUtils.waitForTabPageLoaded(customTabActivity.getActivityTab(), pwaRocksUrl);
     }
 
     /**

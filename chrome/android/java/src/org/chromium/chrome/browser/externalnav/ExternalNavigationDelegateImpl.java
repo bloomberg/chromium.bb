@@ -271,7 +271,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @VisibleForTesting
-    static ArrayList<String> getSpecializedHandlersWithFilter(
+    public static ArrayList<String> getSpecializedHandlersWithFilter(
             List<ResolveInfo> infos, String filterPackageName) {
         ArrayList<String> result = new ArrayList<>();
         if (infos == null) {
