@@ -70,11 +70,6 @@ public interface ContentViewCore {
         boolean super_onGenericMotionEvent(MotionEvent event);
 
         /**
-         * @see View#onConfigurationChanged(Configuration)
-         */
-        void super_onConfigurationChanged(Configuration newConfig);
-
-        /**
          * @see View#onScrollChanged(int, int, int, int)
          */
         void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix);

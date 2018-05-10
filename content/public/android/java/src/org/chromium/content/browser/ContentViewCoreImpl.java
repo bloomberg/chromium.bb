@@ -199,7 +199,6 @@ public class ContentViewCoreImpl implements ContentViewCore {
         try {
             TraceEvent.begin("ContentViewCore.onConfigurationChanged");
             getImeAdapter().onKeyboardConfigurationChanged(newConfig);
-            mContainerViewInternals.super_onConfigurationChanged(newConfig);
             // To request layout has side effect, but it seems OK as it only happen in
             // onConfigurationChange and layout has to be changed in most case.
             ViewAndroidDelegate viewDelegate = mWebContents.getViewAndroidDelegate();

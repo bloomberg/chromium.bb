@@ -230,6 +230,7 @@ public class ContentView
     protected void onConfigurationChanged(Configuration newConfig) {
         ContentViewCore cvc = getContentViewCore();
         if (cvc != null) cvc.onConfigurationChanged(newConfig);
+        super.onConfigurationChanged(newConfig);
     }
 
     /**
@@ -338,11 +339,6 @@ public class ContentView
     @Override
     public boolean super_onGenericMotionEvent(MotionEvent event) {
         return super.onGenericMotionEvent(event);
-    }
-
-    @Override
-    public void super_onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
