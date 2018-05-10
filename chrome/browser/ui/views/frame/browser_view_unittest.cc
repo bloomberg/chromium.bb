@@ -96,15 +96,6 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   EXPECT_EQ(top_container, browser_view()->GetBookmarkBarView()->parent());
   EXPECT_EQ(browser_view(), browser_view()->infobar_container()->parent());
 
-  // Find bar host is at the front of the view hierarchy, followed by the
-  // infobar container and then top container.
-  EXPECT_EQ(browser_view()->child_count() - 1,
-            browser_view()->GetIndexOf(browser_view()->find_bar_host_view()));
-  EXPECT_EQ(browser_view()->child_count() - 2,
-            browser_view()->GetIndexOf(browser_view()->infobar_container()));
-  EXPECT_EQ(browser_view()->child_count() - 3,
-            browser_view()->GetIndexOf(top_container));
-
   // Verify basic layout.
   EXPECT_EQ(0, top_container->x());
   EXPECT_EQ(0, top_container->y());
@@ -145,15 +136,6 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   EXPECT_TRUE(bookmark_bar->IsDetached());
   EXPECT_EQ(browser_view(), bookmark_bar->parent());
 
-  // Find bar host is still at the front of the view hierarchy, followed by the
-  // infobar container and then top container.
-  EXPECT_EQ(browser_view()->child_count() - 1,
-            browser_view()->GetIndexOf(browser_view()->find_bar_host_view()));
-  EXPECT_EQ(browser_view()->child_count() - 2,
-            browser_view()->GetIndexOf(browser_view()->infobar_container()));
-  EXPECT_EQ(browser_view()->child_count() - 3,
-            browser_view()->GetIndexOf(top_container));
-
   // Bookmark bar layout on NTP.
   EXPECT_EQ(0, bookmark_bar->x());
   EXPECT_EQ(tabstrip->bounds().bottom() + toolbar->height(), bookmark_bar->y());
@@ -171,6 +153,31 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   // Top container is still third from front.
   EXPECT_EQ(browser_view()->child_count() - 3,
             browser_view()->GetIndexOf(top_container));
+
+  BookmarkBarView::DisableAnimationsForTesting(false);
+}
+
+TEST_F(BrowserViewTest, BookmarkBarPaintsFirst) {
+  // The bookmark bar should be first in the z-order of its parent so that
+  // any ink drops from the toolbar can overlap it.
+
+  BookmarkBarView::DisableAnimationsForTesting(true);
+
+  Browser* browser = browser_view()->browser();
+
+  // Attached bookmark bar.
+  AddTab(browser, GURL("about:blank"));
+  chrome::ExecuteCommand(browser, IDC_SHOW_BOOKMARK_BAR);
+  EXPECT_EQ(browser_view()->top_container()->GetChildrenInZOrder()[0],
+            browser_view()->GetBookmarkBarView());
+
+  // If "Always Show Bookmark Bar" is off, the NTP displays the detached
+  // bookmark bar.
+  chrome::ExecuteCommand(browser, IDC_SHOW_BOOKMARK_BAR);
+  NavigateAndCommitActiveTabWithTitle(browser, GURL(chrome::kChromeUINewTabURL),
+                                      base::string16());
+  EXPECT_EQ(browser_view()->GetChildrenInZOrder()[0],
+            browser_view()->GetBookmarkBarView());
 
   BookmarkBarView::DisableAnimationsForTesting(false);
 }
