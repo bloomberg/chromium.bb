@@ -57,35 +57,14 @@ std::string SysInfo::OperatingSystemVersion() {
 void SysInfo::OperatingSystemVersionNumbers(int32_t* major_version,
                                             int32_t* minor_version,
                                             int32_t* bugfix_version) {
-  NSProcessInfo* processInfo = [NSProcessInfo processInfo];
-  // We should try to avoid using Gestalt here because it has been observed to
-  // spin up threads among other things. Using an availability check here would
-  // prevent us from using the private API in 10.9.2. So use a
-  // respondsToSelector check here instead and silence the warning.
-  if ([processInfo respondsToSelector:@selector(operatingSystemVersion)]) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability"
-    NSOperatingSystemVersion version = [processInfo operatingSystemVersion];
-#pragma clang diagnostic pop
+  if (@available(macOS 10.10, *)) {
+    NSOperatingSystemVersion version =
+        [[NSProcessInfo processInfo] operatingSystemVersion];
     *major_version = version.majorVersion;
     *minor_version = version.minorVersion;
     *bugfix_version = version.patchVersion;
   } else {
-    // -[NSProcessInfo operatingSystemVersion] is documented available in 10.10.
-    // It's also available via a private API since 10.9.2. For the remaining
-    // cases in 10.9, rely on ::Gestalt(..). Since this code is only needed for
-    // 10.9.0 and 10.9.1 and uses the recommended replacement thereafter,
-    // suppress the warning for this fallback case.
-    DCHECK(base::mac::IsOS10_9());
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    Gestalt(gestaltSystemVersionMajor,
-            reinterpret_cast<SInt32*>(major_version));
-    Gestalt(gestaltSystemVersionMinor,
-            reinterpret_cast<SInt32*>(minor_version));
-    Gestalt(gestaltSystemVersionBugFix,
-            reinterpret_cast<SInt32*>(bugfix_version));
-#pragma clang diagnostic pop
+    NOTREACHED();
   }
 }
 
