@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_context_bar.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
@@ -24,18 +25,16 @@
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_table_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_node_item.h"
-#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_promo_item.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell.h"
+#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_signin_promo_cell.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/ui_util.h"
@@ -84,11 +83,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     BookmarkHomeConsumer,
     BookmarkHomeSharedStateObserver,
     BookmarkModelBridgeObserver,
-    BookmarkPromoControllerDelegate,
     BookmarkTableCellTitleEditDelegate,
     BookmarkTableViewDelegate,
     ContextBarDelegate,
-    SigninPresenter,
     UIGestureRecognizerDelegate,
     UITableViewDataSource,
     UITableViewDelegate> {
@@ -143,10 +140,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 // The view controller to present when editing the current folder.
 @property(nonatomic, strong) BookmarkFolderEditorViewController* folderEditor;
 
-// The controller managing the display of the promo cell and the promo view
-// controller.
-@property(nonatomic, strong) BookmarkPromoController* bookmarkPromoController;
-
 // The current state of the context bar UI.
 @property(nonatomic, assign) BookmarksContextBarState contextBarState;
 
@@ -162,7 +155,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 @implementation BookmarkHomeViewController
 
 @synthesize appBar = _appBar;
-@synthesize bookmarkPromoController = _bookmarkPromoController;
 @synthesize bookmarks = _bookmarks;
 @synthesize browserState = _browserState;
 @synthesize editViewController = _editViewController;
@@ -200,13 +192,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     _bookmarks = ios::BookmarkModelFactory::GetForBrowserState(browserState);
 
     _bridge.reset(new bookmarks::BookmarkModelBridge(self, _bookmarks));
-
-    // It is important to initialize the promo controller with the browser state
-    // passed in, as it could be incognito.
-    _bookmarkPromoController = [[BookmarkPromoController alloc]
-        initWithBrowserState:browserState
-                    delegate:self
-                   presenter:self /* id<SigninPresenter> */];
   }
   return self;
 }
@@ -408,21 +393,32 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   }
 }
 
-#pragma mark - BookmarkPromoControllerDelegate
-
-- (void)promoStateChanged:(BOOL)promoEnabled {
-  [self.bookmarksTableView promoStateChangedAnimated:YES];
+- (void)showSignin:(ShowSigninCommand*)command {
+  [self.dispatcher showSignin:command baseViewController:self];
 }
 
 - (void)configureSigninPromoWithConfigurator:
             (SigninPromoViewConfigurator*)configurator
-                             identityChanged:(BOOL)identityChanged {
-  [self.bookmarksTableView
-      configureSigninPromoWithConfigurator:configurator
-                           identityChanged:identityChanged];
+                                 atIndexPath:(NSIndexPath*)indexPath
+                             forceReloadCell:(BOOL)forceReloadCell {
+  BookmarkTableSigninPromoCell* signinPromoCell =
+      base::mac::ObjCCast<BookmarkTableSigninPromoCell>(
+          [self.sharedState.tableView cellForRowAtIndexPath:indexPath]);
+  if (!signinPromoCell) {
+    return;
+  }
+  // Should always reconfigure the cell size even if it has to be reloaded,
+  // to make sure it has the right size to compute the cell size.
+  [configurator configureSigninPromoView:signinPromoCell.signinPromoView];
+  if (forceReloadCell) {
+    // The section should be reload to update the cell height.
+    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:indexPath.section];
+    [self.sharedState.tableView reloadSections:indexSet
+                              withRowAnimation:UITableViewRowAnimationNone];
+  }
 }
 
-#pragma mark Action sheet callbacks
+#pragma mark - Action sheet callbacks
 
 // Opens the folder move editor for the given node.
 - (void)moveNodes:(const std::set<const BookmarkNode*>&)nodes {
@@ -500,10 +496,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 #pragma mark - BookmarkTableViewDelegate
 
-- (SigninPromoViewMediator*)signinPromoViewMediator {
-  return self.bookmarkPromoController.signinPromoViewMediator;
-}
-
 - (void)bookmarkTableView:(BookmarkTableView*)view
     selectedUrlForNavigation:(const GURL&)url {
   [self dismissWithURL:url];
@@ -520,10 +512,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     selectedNodesForDeletion:
         (const std::set<const bookmarks::BookmarkNode*>&)nodes {
   [self deleteNodes:nodes];
-}
-
-- (BOOL)bookmarkTableViewShouldShowPromoCell:(BookmarkTableView*)tableView {
-  return self.bookmarkPromoController.shouldShowSigninPromo;
 }
 
 - (void)bookmarkTableView:(BookmarkTableView*)view
@@ -1456,12 +1444,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
       UIEdgeInsetsMake(previousContentInsets.top, 0, 0, 0);
   self.sharedState.tableView.contentInset = contentInsets;
   self.sharedState.tableView.scrollIndicatorInsets = contentInsets;
-}
-
-#pragma mark - SigninPresenter
-
-- (void)showSignin:(ShowSigninCommand*)command {
-  [self.dispatcher showSignin:command baseViewController:self];
 }
 
 #pragma mark - BookmarkHomeSharedStateObserver

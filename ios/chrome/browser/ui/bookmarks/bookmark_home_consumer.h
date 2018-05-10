@@ -7,6 +7,10 @@
 
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_consumer.h"
 
+@class NSIndexPath;
+@class ShowSigninCommand;
+@class SigninPromoViewConfigurator;
+
 typedef NS_ENUM(NSInteger, BookmarkHomeBackgroundStyle) {
   // The default background style.
   BookmarkHomeBackgroundStyleDefault,
@@ -32,6 +36,16 @@ typedef NS_ENUM(NSInteger, BookmarkHomeBackgroundStyle) {
 
 // Displays the table view background for the given |style|.
 - (void)updateTableViewBackgroundStyle:(BookmarkHomeBackgroundStyle)style;
+
+// Displays the signin UI configured by |command|.
+- (void)showSignin:(ShowSigninCommand*)command;
+
+// Reconfigures the cell at the given |indexPath| with the given |configurator|.
+// If |forceReloadCell| is YES, reloads the section when complete.
+- (void)configureSigninPromoWithConfigurator:
+            (SigninPromoViewConfigurator*)configurator
+                                 atIndexPath:(NSIndexPath*)indexPath
+                             forceReloadCell:(BOOL)forceReloadCell;
 
 @end
 
