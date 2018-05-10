@@ -92,8 +92,8 @@ extern const char kInProductHelpDemoModeName[];
 extern const char kInProductHelpDemoModeDescription[];
 
 // Title and description for the flag to enable ITunes links store kit handling.
-extern const char kITunesLinksStoreKitHandlingName[];
-extern const char kITunesLinksStoreKitHandlingDescription[];
+extern const char kITunesUrlsStoreKitHandlingName[];
+extern const char kITunesUrlsStoreKitHandlingDescription[];
 
 // Title, description, and options for Google UI menu for handling mailto links.
 extern const char kMailtoHandlingWithGoogleUIName[];

@@ -2,13 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("itunes_links") {
+source_set("itunes_urls") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "itunes_links_flag.h",
-    "itunes_links_flag.mm",
-    "itunes_links_handler_tab_helper.h",
-    "itunes_links_handler_tab_helper.mm",
+    "itunes_urls_flag.h",
+    "itunes_urls_flag.mm",
+    "itunes_urls_handler_tab_helper.h",
+    "itunes_urls_handler_tab_helper.mm",
   ]
   deps = [
     "//base",
@@ -22,10 +22,10 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "itunes_links_handler_tab_helper_unittest.mm",
+    "itunes_urls_handler_tab_helper_unittest.mm",
   ]
   deps = [
-    ":itunes_links",
+    ":itunes_urls",
     "//base",
     "//base/test:test_support",
     "//ios/chrome/browser/browser_state:test_support",

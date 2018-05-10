@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/itunes_links/itunes_links_flag.h"
+#include "ios/chrome/browser/itunes_urls/itunes_urls_flag.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-const base::Feature kITunesLinksStoreKitHandling{
-    "ITunesLinksStoreKitHandling", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kITunesUrlsStoreKitHandling{
+    "ITunesUrlsStoreKitHandling", base::FEATURE_ENABLED_BY_DEFAULT};

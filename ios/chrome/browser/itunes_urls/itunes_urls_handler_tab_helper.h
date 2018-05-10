@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_ITUNES_LINKS_ITUNES_LINKS_HANDLER_TAB_HELPER_H_
-#define IOS_CHROME_BROWSER_ITUNES_LINKS_ITUNES_LINKS_HANDLER_TAB_HELPER_H_
+#ifndef IOS_CHROME_BROWSER_ITUNES_URLS_ITUNES_URLS_HANDLER_TAB_HELPER_H_
+#define IOS_CHROME_BROWSER_ITUNES_URLS_ITUNES_URLS_HANDLER_TAB_HELPER_H_
 
 #include "base/macros.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
@@ -33,12 +33,12 @@ enum class ITunesUrlsStoreKitHandlingResult {
 // StoreKitTabHelper to present the information of that product. The goal of
 // this class is to workaround a bug where appstore website serves the wrong
 // content for itunes.apple.com pages, see http://crbug.com/623016.
-class ITunesLinksHandlerTabHelper
+class ITunesUrlsHandlerTabHelper
     : public web::WebStatePolicyDecider,
-      public web::WebStateUserData<ITunesLinksHandlerTabHelper> {
+      public web::WebStateUserData<ITunesUrlsHandlerTabHelper> {
  public:
-  ~ITunesLinksHandlerTabHelper() override;
-  explicit ITunesLinksHandlerTabHelper(web::WebState* web_state);
+  ~ITunesUrlsHandlerTabHelper() override;
+  explicit ITunesUrlsHandlerTabHelper(web::WebState* web_state);
   // web::WebStatePolicyDecider implementation
   bool ShouldAllowRequest(NSURLRequest* request,
                           ui::PageTransition transition,
@@ -48,7 +48,7 @@ class ITunesLinksHandlerTabHelper
   // Opens the StoreKit for the given iTunes app |url|.
   void HandleITunesUrl(const GURL& url);
 
-  DISALLOW_COPY_AND_ASSIGN(ITunesLinksHandlerTabHelper);
+  DISALLOW_COPY_AND_ASSIGN(ITunesUrlsHandlerTabHelper);
 };
 
-#endif  // IOS_CHROME_BROWSER_ITUNES_LINKS_ITUNES_LINKS_HANDLER_TAB_HELPER_H_
+#endif  // IOS_CHROME_BROWSER_ITUNES_URLS_ITUNES_URLS_HANDLER_TAB_HELPER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/itunes_links/itunes_links_handler_tab_helper.h"
+#import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
 
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
@@ -28,11 +28,11 @@
 #error "This file requires ARC support."
 #endif
 
-DEFINE_WEB_STATE_USER_DATA_KEY(ITunesLinksHandlerTabHelper);
+DEFINE_WEB_STATE_USER_DATA_KEY(ITunesUrlsHandlerTabHelper);
 
 namespace {
 
-// The domain for iTunes appstore links.
+// The domain for iTunes appstore URLs.
 const char kITunesUrlDomain[] = "itunes.apple.com";
 const char kITunesProductIdPrefix[] = "id";
 const char kITunesAppPathIdentifier[] = "app";
@@ -77,7 +77,7 @@ NSDictionary* ExtractITunesProductParameters(const GURL& url) {
   return params_dictionary;
 }
 
-// Returns true, if ITunesLinksHandlerTabHelper can handle the given |url|.
+// Returns true, if ITunesUrlsHandlerTabHelper can handle the given |url|.
 bool CanHandleUrl(const GURL& url) {
   if (!IsITunesProductUrl(url))
     return false;
@@ -103,13 +103,12 @@ bool CanHandleUrl(const GURL& url) {
 
 }  // namespace
 
-ITunesLinksHandlerTabHelper::~ITunesLinksHandlerTabHelper() = default;
+ITunesUrlsHandlerTabHelper::~ITunesUrlsHandlerTabHelper() = default;
 
-ITunesLinksHandlerTabHelper::ITunesLinksHandlerTabHelper(
-    web::WebState* web_state)
+ITunesUrlsHandlerTabHelper::ITunesUrlsHandlerTabHelper(web::WebState* web_state)
     : web::WebStatePolicyDecider(web_state) {}
 
-bool ITunesLinksHandlerTabHelper::ShouldAllowRequest(
+bool ITunesUrlsHandlerTabHelper::ShouldAllowRequest(
     NSURLRequest* request,
     ui::PageTransition transition,
     bool from_main_frame) {
@@ -128,7 +127,7 @@ bool ITunesLinksHandlerTabHelper::ShouldAllowRequest(
 }
 
 // private
-void ITunesLinksHandlerTabHelper::HandleITunesUrl(const GURL& url) {
+void ITunesUrlsHandlerTabHelper::HandleITunesUrl(const GURL& url) {
   ITunesUrlsStoreKitHandlingResult handling_result =
       ITunesUrlsStoreKitHandlingResult::kSingleAppUrlHandled;
   StoreKitTabHelper* tab_helper = StoreKitTabHelper::FromWebState(web_state());

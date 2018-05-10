@@ -147,7 +147,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/find_in_page:unit_tests",
     "//ios/chrome/browser/geolocation:unit_tests",
     "//ios/chrome/browser/history:unit_tests",
-    "//ios/chrome/browser/itunes_links:unit_tests",
+    "//ios/chrome/browser/itunes_urls:unit_tests",
     "//ios/chrome/browser/language:unit_tests",
     "//ios/chrome/browser/metrics:unit_tests",
     "//ios/chrome/browser/metrics:unit_tests_internal",

@@ -42,7 +42,7 @@
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
-#include "ios/chrome/browser/itunes_links/itunes_links_flag.h"
+#include "ios/chrome/browser/itunes_urls/itunes_urls_flag.h"
 #include "ios/chrome/browser/mailto/features.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
 #include "ios/chrome/browser/ui/external_search/features.h"
@@ -264,10 +264,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"new-tools_menu", flag_descriptions::kNewToolsMenuName,
      flag_descriptions::kNewToolsMenuDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kNewToolsMenu)},
-    {"itunes-links-store-kit-handling",
-     flag_descriptions::kITunesLinksStoreKitHandlingName,
-     flag_descriptions::kITunesLinksStoreKitHandlingDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kITunesLinksStoreKitHandling)},
+    {"itunes-urls-store-kit-handling",
+     flag_descriptions::kITunesUrlsStoreKitHandlingName,
+     flag_descriptions::kITunesUrlsStoreKitHandlingDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kITunesUrlsStoreKitHandling)},
     {"unified-consent", flag_descriptions::kUnifiedConsentName,
      flag_descriptions::kUnifiedConsentDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(signin::kUnifiedConsent)},

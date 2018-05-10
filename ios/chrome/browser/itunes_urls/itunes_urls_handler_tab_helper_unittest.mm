@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/itunes_links/itunes_links_handler_tab_helper.h"
+#import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
 
 #import <Foundation/Foundation.h>
 
@@ -25,15 +25,15 @@ const char kITunesURLsHandlingResultHistogram[] =
     "IOS.StoreKit.ITunesURLsHandlingResult";
 }  // namespace
 
-class ITunesLinksHandlerTabHelperTest : public PlatformTest {
+class ITunesUrlsHandlerTabHelperTest : public PlatformTest {
  protected:
-  ITunesLinksHandlerTabHelperTest()
+  ITunesUrlsHandlerTabHelperTest()
       : fake_launcher_([[FakeStoreKitLauncher alloc] init]),
         chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
     web_state_.SetBrowserState(
         chrome_browser_state_->GetOriginalChromeBrowserState());
     StoreKitTabHelper::CreateForWebState(&web_state_);
-    ITunesLinksHandlerTabHelper::CreateForWebState(&web_state_);
+    ITunesUrlsHandlerTabHelper::CreateForWebState(&web_state_);
     StoreKitTabHelper::FromWebState(&web_state_)->SetLauncher(fake_launcher_);
   }
 
@@ -57,7 +57,7 @@ class ITunesLinksHandlerTabHelperTest : public PlatformTest {
 };
 
 // Verifies that iTunes URLs are not handled when in off the record mode.
-TEST_F(ITunesLinksHandlerTabHelperTest, NoHandlingInOffTheRecordMode) {
+TEST_F(ITunesUrlsHandlerTabHelperTest, NoHandlingInOffTheRecordMode) {
   NSString* url = @"http://itunes.apple.com/us/app/app_name/id123";
   EXPECT_TRUE(VerifyStoreKitLaunched(url, /*main_frame=*/true));
   web_state_.SetBrowserState(
@@ -66,7 +66,7 @@ TEST_F(ITunesLinksHandlerTabHelperTest, NoHandlingInOffTheRecordMode) {
 }
 
 // Verifies that iTunes URLs are not handled when the request is from iframe.
-TEST_F(ITunesLinksHandlerTabHelperTest, NoHandlingInIframes) {
+TEST_F(ITunesUrlsHandlerTabHelperTest, NoHandlingInIframes) {
   EXPECT_TRUE(VerifyStoreKitLaunched(
       @"http://itunes.apple.com/us/app/app_name/id123", /*main_frame=*/true));
   EXPECT_FALSE(VerifyStoreKitLaunched(
@@ -79,7 +79,7 @@ TEST_F(ITunesLinksHandlerTabHelperTest, NoHandlingInIframes) {
 
 // Verifies that navigating to non iTunes product URLs, or not supported iTunes
 // product type URLs does not launch storekit.
-TEST_F(ITunesLinksHandlerTabHelperTest, NonMatchingUrlsDoesntLaunchStoreKit) {
+TEST_F(ITunesUrlsHandlerTabHelperTest, NonMatchingUrlsDoesntLaunchStoreKit) {
   EXPECT_FALSE(VerifyStoreKitLaunched(@"", /*main_frame=*/true));
   EXPECT_FALSE(VerifyStoreKitLaunched(@"foobar", /*main_frame=*/true));
   EXPECT_FALSE(VerifyStoreKitLaunched(@"foo://bar", /*main_frame=*/true));
@@ -108,7 +108,7 @@ TEST_F(ITunesLinksHandlerTabHelperTest, NonMatchingUrlsDoesntLaunchStoreKit) {
 
 // Verifies that navigating to URLs for a product hosted on iTunes AppStore
 // with supported media type launches storekit.
-TEST_F(ITunesLinksHandlerTabHelperTest, MatchingUrlsLaunchesStoreKit) {
+TEST_F(ITunesUrlsHandlerTabHelperTest, MatchingUrlsLaunchesStoreKit) {
   EXPECT_TRUE(VerifyStoreKitLaunched(
       @"http://itunes.apple.com/us/app/app_name/id123", /*main_frame=*/true));
   NSString* product_id = @"id";
