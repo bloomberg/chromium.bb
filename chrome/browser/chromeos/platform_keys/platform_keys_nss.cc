@@ -785,6 +785,14 @@ void GetKeyLocationsWithDB(std::unique_ptr<GetKeyLocationsState> state,
     if (rsa_key)
       token_ids.push_back(kTokenIdUser);
   }
+  if (token_ids.empty() && cert_db->GetPublicSlot().get()) {
+    crypto::ScopedSECKEYPrivateKey rsa_key =
+        crypto::FindNSSKeyFromPublicKeyInfoInSlot(
+            public_key_vector, cert_db->GetPublicSlot().get());
+    if (rsa_key)
+      token_ids.push_back(kTokenIdUser);
+  }
+
   if (cert_db->GetSystemSlot().get()) {
     crypto::ScopedSECKEYPrivateKey rsa_key =
         crypto::FindNSSKeyFromPublicKeyInfoInSlot(

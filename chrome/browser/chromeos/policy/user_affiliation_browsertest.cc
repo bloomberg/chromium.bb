@@ -155,6 +155,12 @@ class UserAffiliationBrowserTest
     policy::DeviceManagementService::SetRetryDelayForTesting(0);
   }
 
+  void TearDownOnMainThread() override {
+    InProcessBrowserTest::TearDownOnMainThread();
+
+    TearDownTestSystemSlot();
+  }
+
   const AccountId account_id_;
 
   void SetUpTestSystemSlot() {
@@ -177,6 +183,21 @@ class UserAffiliationBrowserTest
     *out_system_slot_constructed_successfully =
         test_system_slot_->ConstructedSuccessfully();
   }
+
+  void TearDownTestSystemSlot() {
+    if (!test_system_slot_)
+      return;
+
+    base::RunLoop loop;
+    content::BrowserThread::PostTaskAndReply(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&UserAffiliationBrowserTest::TearDownTestSystemSlotOnIO,
+                       base::Unretained(this)),
+        loop.QuitClosure());
+    loop.Run();
+  }
+
+  void TearDownTestSystemSlotOnIO() { test_system_slot_.reset(); }
 
   std::unique_ptr<crypto::ScopedTestSystemNSSKeySlot> test_system_slot_;
 

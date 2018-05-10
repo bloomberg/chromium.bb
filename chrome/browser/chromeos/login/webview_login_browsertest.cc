@@ -405,27 +405,6 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
  public:
   WebviewClientCertsLoginTest() {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        switches::kDisableSigninFrameClientCertUserSelection);
-    WebviewLoginTest::SetUpCommandLine(command_line);
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    auto fake_session_manager_client =
-        std::make_unique<FakeSessionManagerClient>();
-    fake_session_manager_client_ = fake_session_manager_client.get();
-    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        std::move(fake_session_manager_client));
-    device_policy_test_helper_.InstallOwnerKey();
-    device_policy_test_helper_.MarkAsEnterpriseOwned();
-
-    fake_session_manager_client_->set_device_policy(
-        device_policy_test_helper_.device_policy()->GetBlob());
-
-    WebviewLoginTest::SetUpInProcessBrowserTestFixture();
-  }
-
   // Installs a testing system slot and imports a client certificate into it.
   void SetUpClientCertInSystemSlot() {
     {
@@ -534,6 +513,30 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
     OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
   }
 
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        switches::kDisableSigninFrameClientCertUserSelection);
+    WebviewLoginTest::SetUpCommandLine(command_line);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    auto fake_session_manager_client =
+        std::make_unique<FakeSessionManagerClient>();
+    fake_session_manager_client_ = fake_session_manager_client.get();
+    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::move(fake_session_manager_client));
+    device_policy_test_helper_.InstallOwnerKey();
+    device_policy_test_helper_.MarkAsEnterpriseOwned();
+
+    fake_session_manager_client_->set_device_policy(
+        device_policy_test_helper_.device_policy()->GetBlob());
+
+    WebviewLoginTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  void TearDownOnMainThread() override { TearDownTestSystemSlot(); }
+
  private:
   void SetUpTestSystemSlotOnIO(bool* out_system_slot_constructed_successfully) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -541,6 +544,21 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
     *out_system_slot_constructed_successfully =
         test_system_slot_->ConstructedSuccessfully();
   }
+
+  void TearDownTestSystemSlot() {
+    if (!test_system_slot_)
+      return;
+
+    base::RunLoop loop;
+    content::BrowserThread::PostTaskAndReply(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&WebviewClientCertsLoginTest::TearDownTestSystemSlotOnIO,
+                       base::Unretained(this)),
+        loop.QuitClosure());
+    loop.Run();
+  }
+
+  void TearDownTestSystemSlotOnIO() { test_system_slot_.reset(); }
 
   // Builds a device ONC dictionary defining a single untrusted authority
   // certificate.

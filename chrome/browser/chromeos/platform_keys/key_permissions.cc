@@ -427,6 +427,9 @@ void KeyPermissions::GetPermissionsForExtension(
 bool KeyPermissions::CanUserGrantPermissionFor(
     const std::string& public_key_spki_der,
     const std::vector<KeyLocation>& key_locations) const {
+  if (key_locations.empty())
+    return false;
+
   // As keys cannot be tagged for non-corporate usage, the user can currently
   // not grant any permissions if the profile is managed.
   if (profile_is_managed_)
