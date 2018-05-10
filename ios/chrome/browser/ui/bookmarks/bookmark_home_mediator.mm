@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/sync/synced_sessions_bridge.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_consumer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_shared_state.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
@@ -19,22 +21,32 @@
 
 using bookmarks::BookmarkNode;
 
-@interface BookmarkHomeMediator ()<BookmarkModelBridgeObserver> {
+@interface BookmarkHomeMediator ()<BookmarkModelBridgeObserver,
+                                   SyncedSessionsObserver> {
   // Bridge to register for bookmark changes.
   std::unique_ptr<bookmarks::BookmarkModelBridge> _modelBridge;
+
+  // Observer to keep track of the signin and syncing status.
+  std::unique_ptr<synced_sessions::SyncedSessionsObserverBridge>
+      _syncedSessionsObserver;
 }
 
 @property(nonatomic, strong) BookmarkHomeSharedState* sharedState;
 
+@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+
 @end
 
 @implementation BookmarkHomeMediator
+@synthesize browserState = _browserState;
 @synthesize consumer = _consumer;
 @synthesize sharedState = _sharedState;
 
-- (instancetype)initWithSharedState:(BookmarkHomeSharedState*)sharedState {
+- (instancetype)initWithSharedState:(BookmarkHomeSharedState*)sharedState
+                       browserState:(ios::ChromeBrowserState*)browserState {
   if ((self = [super init])) {
     _sharedState = sharedState;
+    _browserState = browserState;
   }
   return self;
 }
@@ -43,14 +55,20 @@ using bookmarks::BookmarkNode;
   DCHECK(self.consumer);
   DCHECK(self.sharedState);
 
+  // Set up observers.
   _modelBridge = std::make_unique<bookmarks::BookmarkModelBridge>(
       self, self.sharedState.bookmarkModel);
+  _syncedSessionsObserver =
+      std::make_unique<synced_sessions::SyncedSessionsObserverBridge>(
+          self, self.browserState);
 
   [self computeBookmarkTableViewData];
 }
 
 - (void)disconnect {
   _modelBridge = nullptr;
+  _syncedSessionsObserver = nullptr;
+  self.browserState = nullptr;
   self.consumer = nil;
   self.sharedState = nil;
 }
@@ -71,15 +89,18 @@ using bookmarks::BookmarkNode;
 
   if (!self.sharedState.bookmarkModel->loaded() ||
       !self.sharedState.tableViewDisplayedRootNode) {
+    [self updateTableViewBackground];
     return;
   }
 
   if (self.sharedState.tableViewDisplayedRootNode ==
       self.sharedState.bookmarkModel->root_node()) {
     [self generateTableViewDataForRootNode];
+    [self updateTableViewBackground];
     return;
   }
   [self generateTableViewData];
+  [self updateTableViewBackground];
 }
 
 // Generate the table view data when the current root node is a child node.
@@ -135,6 +156,32 @@ using bookmarks::BookmarkNode;
     [self.sharedState.tableViewModel
                         addItem:otherItem
         toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
+  }
+}
+
+- (void)updateTableViewBackground {
+  // If the current root node is the outermost root, check if we need to show
+  // the spinner backgound.  Otherwise, check if we need to show the empty
+  // background.
+  if (self.sharedState.tableViewDisplayedRootNode ==
+      self.sharedState.bookmarkModel->root_node()) {
+    if (self.sharedState.bookmarkModel->HasNoUserCreatedBookmarksOrFolders() &&
+        _syncedSessionsObserver->IsSyncing()) {
+      [self.consumer
+          updateTableViewBackgroundStyle:BookmarkHomeBackgroundStyleLoading];
+    } else {
+      [self.consumer
+          updateTableViewBackgroundStyle:BookmarkHomeBackgroundStyleDefault];
+    }
+    return;
+  }
+
+  if (![self hasBookmarksOrFolders]) {
+    [self.consumer
+        updateTableViewBackgroundStyle:BookmarkHomeBackgroundStyleEmpty];
+  } else {
+    [self.consumer
+        updateTableViewBackgroundStyle:BookmarkHomeBackgroundStyleDefault];
   }
 }
 
@@ -234,6 +281,30 @@ using bookmarks::BookmarkNode;
     }
   }
   return nil;
+}
+
+#pragma mark - SyncedSessionsObserver
+
+- (void)reloadSessions {
+  // Nothing to do.
+}
+
+- (void)onSyncStateChanged {
+  // Permanent nodes ("Bookmarks Bar", "Other Bookmarks") at the root node might
+  // be added after syncing.  So we need to refresh here.
+  if (self.sharedState.tableViewDisplayedRootNode ==
+      self.sharedState.bookmarkModel->root_node()) {
+    [self.consumer refreshContents];
+    return;
+  }
+  [self updateTableViewBackground];
+}
+
+#pragma mark - Private Helpers
+
+- (BOOL)hasBookmarksOrFolders {
+  return self.sharedState.tableViewDisplayedRootNode &&
+         !self.sharedState.tableViewDisplayedRootNode->empty();
 }
 
 @end

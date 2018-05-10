@@ -317,7 +317,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
   // Create the mediator and hook up the table view.
   self.mediator =
-      [[BookmarkHomeMediator alloc] initWithSharedState:self.sharedState];
+      [[BookmarkHomeMediator alloc] initWithSharedState:self.sharedState
+                                           browserState:self.browserState];
   self.mediator.consumer = self;
   [self.mediator startMediating];
   self.sharedState.tableView.dataSource = self;
@@ -378,7 +379,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (void)refreshContents {
   [self.mediator computeBookmarkTableViewData];
-  [self.bookmarksTableView showEmptyOrLoadingSpinnerBackgroundIfNeeded];
   [self.bookmarksTableView cancelAllFaviconLoads];
   [self bookmarkTableViewRefreshContextBar:self.bookmarksTableView];
   [self.sharedState.editingFolderCell stopEdit];
@@ -393,6 +393,19 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
         continueToGoogleServer:(BOOL)continueToGoogleServer {
   [self.bookmarksTableView loadFaviconAtIndexPath:indexPath
                            continueToGoogleServer:continueToGoogleServer];
+}
+
+- (void)updateTableViewBackgroundStyle:(BookmarkHomeBackgroundStyle)style {
+  if (style == BookmarkHomeBackgroundStyleDefault) {
+    [self.bookmarksTableView hideLoadingSpinnerBackground];
+    [self.bookmarksTableView hideEmptyBackground];
+  } else if (style == BookmarkHomeBackgroundStyleLoading) {
+    [self.bookmarksTableView hideEmptyBackground];
+    [self.bookmarksTableView showLoadingSpinnerBackground];
+  } else if (style == BookmarkHomeBackgroundStyleEmpty) {
+    [self.bookmarksTableView hideLoadingSpinnerBackground];
+    [self.bookmarksTableView showEmptyBackground];
+  }
 }
 
 #pragma mark - BookmarkPromoControllerDelegate
@@ -523,7 +536,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
   if (nodes.size() == 0) {
     // if nothing to select, exit edit mode.
-    if (![self.bookmarksTableView hasBookmarksOrFolders]) {
+    if (![self hasBookmarksOrFolders]) {
       [self setTableViewEditing:NO];
       return;
     }
@@ -988,6 +1001,11 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   return nullptr;
 }
 
+- (BOOL)hasBookmarksOrFolders {
+  return self.sharedState.tableViewDisplayedRootNode &&
+         !self.sharedState.tableViewDisplayedRootNode->empty();
+}
+
 #pragma mark - ContextBarDelegate implementation
 
 // Called when the leading button is clicked.
@@ -1134,9 +1152,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
       setButtonTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_SELECT)
            forButton:ContextBarTrailingButton];
   [self.contextBar setButtonVisibility:YES forButton:ContextBarTrailingButton];
-  [self.contextBar
-      setButtonEnabled:[self.bookmarksTableView hasBookmarksOrFolders]
-             forButton:ContextBarTrailingButton];
+  [self.contextBar setButtonEnabled:[self hasBookmarksOrFolders]
+                          forButton:ContextBarTrailingButton];
 }
 
 - (void)setBookmarksContextBarSelectionStartState {
