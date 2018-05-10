@@ -2,7 +2,6 @@ WebSocket's message event should not be invoked while we are waiting for the res
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-INFO: Waiting for two seconds to make sure we receive messages from the server.
 PASS PASS: closeEvent.wasClean is true
 PASS PASS: event.length is 9
 PASS PASS: events[0] is "Got bufferedAmount: 0"
