@@ -3991,6 +3991,7 @@
         {
           "enumerant" : "ConstOffsets",
           "value" : "0x0020",
+          "capabilities" : [ "ImageGatherExtended" ],
           "parameters" : [
             { "kind" : "IdRef" }
           ]
@@ -6260,8 +6261,7 @@
         },
         {
           "enumerant" : "Int8",
-          "value" : 39,
-          "capabilities" : [ "Kernel" ]
+          "value" : 39
         },
         {
           "enumerant" : "InputAttachment",
