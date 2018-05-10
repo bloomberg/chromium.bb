@@ -276,7 +276,7 @@ def get_waterfall_config():
        'device_ids': [
            'build194-b7', 'build195-b7',
            'build196-b7', 'build197-b7',
-           'build180-b4' # Added in https://crbug.com/695613
+           'build198-b7'
           ]
       }
     ])
