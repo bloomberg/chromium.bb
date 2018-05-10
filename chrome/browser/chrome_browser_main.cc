@@ -584,8 +584,12 @@ void RegisterComponentsForUpdate(PrefService* profile_prefs) {
   RegisterMediaEngagementPreloadComponent(cus, base::OnceClosure());
 
 #if defined(OS_WIN)
-#if defined(GOOGLE_CHROME_BUILD)
+  // SwReporter is only needed for official builds.  However, to enable testing
+  // on chromium build bots, it is always registered here and
+  // RegisterSwReporterComponent() has support for running only in official
+  // builds or tests.
   RegisterSwReporterComponent(cus);
+#if defined(GOOGLE_CHROME_BUILD)
   RegisterThirdPartyModuleListComponent(cus);
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_WIN)

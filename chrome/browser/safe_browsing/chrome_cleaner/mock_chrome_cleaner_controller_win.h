@@ -34,6 +34,7 @@ class MockChromeCleanerController
   MOCK_METHOD1(Scan, void(const safe_browsing::SwReporterInvocation&));
   MOCK_METHOD2(ReplyWithUserResponse, void(Profile*, UserResponse));
   MOCK_METHOD0(Reboot, void());
+  MOCK_METHOD0(IsAllowedByPolicy, bool());
 };
 
 }  // namespace safe_browsing

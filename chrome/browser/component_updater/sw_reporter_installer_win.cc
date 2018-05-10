@@ -76,6 +76,18 @@ const uint8_t kSwReporterSha2Hash[] = {
 const base::FilePath::CharType kSwReporterExeName[] =
     FILE_PATH_LITERAL("software_reporter_tool.exe");
 
+// SwReporter is normally only registered in official builds.  However, to
+// enable testing in chromium build bots, test code can set this to true.
+#if defined(GOOGLE_CHROME_BUILD)
+bool is_sw_reporter_enabled = true;
+#else
+bool is_sw_reporter_enabled = false;
+#endif
+
+// Callback function to be called once the registration of the component
+// is complete.  This is used only in tests.
+base::OnceClosure* registration_cb_for_testing = new base::OnceClosure();
+
 void SRTHasCompleted(SRTCompleted value) {
   UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Cleaner.HasCompleted", value,
                             SRT_COMPLETED_MAX);
@@ -460,6 +472,13 @@ void SwReporterOnDemandFetcher::OnEvent(Events event, const std::string& id) {
 }
 
 void RegisterSwReporterComponent(ComponentUpdateService* cus) {
+  base::ScopedClosureRunner runner(std::move(*registration_cb_for_testing));
+
+  // Don't install the component if not allowed by policy.  This prevents
+  // downloads and background scans.
+  if (!is_sw_reporter_enabled || !safe_browsing::SwReporterIsAllowedByPolicy())
+    return;
+
   ReportUMAForLastCleanerRun();
 
   // Once the component is ready and browser startup is complete, run
@@ -479,7 +498,13 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
   // Install the component.
   auto installer = base::MakeRefCounted<ComponentInstaller>(
       std::make_unique<SwReporterInstallerPolicy>(base::BindRepeating(lambda)));
-  installer->Register(cus, base::OnceClosure());
+  installer->Register(cus, runner.Release());
+}
+
+void SetRegisterSwReporterComponentCallbackForTesting(
+    base::OnceClosure registration_cb) {
+  is_sw_reporter_enabled = true;
+  *registration_cb_for_testing = std::move(registration_cb);
 }
 
 void RegisterPrefsForSwReporter(PrefRegistrySimple* registry) {

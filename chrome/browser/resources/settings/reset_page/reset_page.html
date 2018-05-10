@@ -92,7 +92,8 @@
             associated-control="[[$$('#chromeCleanupSubpageTrigger')]]"
             page-title="$i18n{resetCleanupComputerTrigger}"
             learn-more-url="$i18n{chromeCleanupLearnMoreUrl}">
-          <settings-chrome-cleanup-page></settings-chrome-cleanup-page>
+          <settings-chrome-cleanup-page prefs="[[prefs]]">
+          </settings-chrome-cleanup-page>
         </settings-subpage>
       </template>
       <template is="dom-if" if="[[showIncompatibleApplications_]]">

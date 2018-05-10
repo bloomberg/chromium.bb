@@ -19,19 +19,26 @@
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_reg_util_win.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_controller_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_client_info_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_launcher_utils.h"
 #include "components/component_updater/pref_names.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/variations/variations_params_manager.h"
@@ -74,6 +81,92 @@ class Waiter {
   bool done_ = false;
   base::Lock lock_;
 };
+
+// Parameters for this test:
+//  - bool: whether the policy is managed or not.
+//  - bool: if managed, whether the policy is forced on or not.
+using ReporterRunnerPolicyTestParams = std::tuple<bool, bool>;
+
+class ReporterRunnerPolicyTest
+    : public InProcessBrowserTest,
+      public ::testing::WithParamInterface<ReporterRunnerPolicyTestParams> {
+ public:
+  ReporterRunnerPolicyTest() {
+    std::tie(is_managed_, is_enabled_) = GetParam();
+    component_updater::SetRegisterSwReporterComponentCallbackForTesting(
+        base::BindOnce(&ReporterRunnerPolicyTest::ComponentRegistered,
+                       base::Unretained(this)));
+  }
+
+  bool is_managed() const { return is_managed_; }
+  bool is_enabled() const { return is_enabled_; }
+
+  void WaitForComponentRegistration() { waiter_.Wait(); }
+
+ private:
+  void SetUpCommandLine(base::CommandLine* command_line) override {}
+
+  // Make sure the component will be installed during the test.
+  void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
+    base::CommandLine default_command_line(base::CommandLine::NO_PROGRAM);
+    InProcessBrowserTest::SetUpDefaultCommandLine(&default_command_line);
+    test_launcher_utils::RemoveCommandLineSwitch(
+        default_command_line, switches::kDisableComponentUpdate, command_line);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    EXPECT_CALL(provider_, IsInitializationComplete(_))
+        .WillRepeatedly(Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+
+    // Setup polices as needed.
+    if (is_managed_) {
+      policy::PolicyMap policies;
+      policies.Set(policy::key::kChromeCleanupEnabled,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_PLATFORM,
+                   std::make_unique<base::Value>(is_enabled_), nullptr);
+      provider_.UpdateChromePolicy(policies);
+    }
+  }
+
+  void ComponentRegistered() { waiter_.Signal(); }
+
+  void SetUpOnMainThread() override {}
+
+  void TearDownInProcessBrowserTestFixture() override {}
+
+  registry_util::RegistryOverrideManager registry_override_manager_;
+  policy::MockConfigurationPolicyProvider provider_;
+  Waiter waiter_;
+  bool is_managed_;
+  bool is_enabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReporterRunnerPolicyTest);
+};
+
+IN_PROC_BROWSER_TEST_P(ReporterRunnerPolicyTest, CheckComponent) {
+  WaitForComponentRegistration();
+
+  // If the cleaner is disabled by policy, there should be no reporter
+  // component installed.  Otherwise it should be installed.
+  std::vector<std::string> component_ids =
+      g_browser_process->component_updater()->GetComponentIDs();
+  bool sw_component_registered =
+      std::find(component_ids.begin(), component_ids.end(),
+                component_updater::kSwReporterComponentId) !=
+      component_ids.end();
+  ASSERT_EQ(!is_managed() || is_enabled(), sw_component_registered);
+}
+
+// Tests for kUserInitiatedChromeCleanupsFeature enabled (all invocation types
+// are allowed).
+INSTANTIATE_TEST_CASE_P(
+    PolicyControl,
+    ReporterRunnerPolicyTest,
+    ::testing::Values(ReporterRunnerPolicyTestParams(false, false),
+                      ReporterRunnerPolicyTestParams(true, false),
+                      ReporterRunnerPolicyTestParams(true, true)));
 
 // Parameters for this test:
 //  - SwReporterInvocationType invocation_type_: identifies the type of

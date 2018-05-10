@@ -21,6 +21,8 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/component_updater/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -200,12 +202,22 @@ void ChromeCleanupHandler::HandleRegisterChromeCleanerObserver(
 
   // Send the current logs upload state.
   OnLogsEnabledChanged(controller_->logs_enabled());
+
+  // Inform the UI of the current chrome cleanup state.
+  bool is_managed = g_browser_process->local_state() &&
+                    g_browser_process->local_state()->IsManagedPreference(
+                        prefs::kSwReporterEnabled);
+  FireWebUIListener("chrome-cleanup-enabled-change", base::Value(is_managed),
+                    base::Value(controller_->IsAllowedByPolicy()));
 }
 
 void ChromeCleanupHandler::HandleStartScanning(const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   bool allow_logs_upload = false;
   args->GetBoolean(0, &allow_logs_upload);
+
+  // If this operation is not allowed the UI should be disabled.
+  CHECK(controller_->IsAllowedByPolicy());
 
   // The state is propagated to all open tabs and should be consistent.
   DCHECK_EQ(controller_->logs_enabled(), allow_logs_upload);

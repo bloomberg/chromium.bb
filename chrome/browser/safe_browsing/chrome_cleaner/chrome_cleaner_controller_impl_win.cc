@@ -223,8 +223,10 @@ void ChromeCleanerControllerDelegate::StartRebootPromptFlow(
 ChromeCleanerControllerImpl* ChromeCleanerControllerImpl::GetInstance() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!g_controller)
+  if (!g_controller) {
     g_controller = new ChromeCleanerControllerImpl();
+    g_controller->Init();
+  }
 
   return g_controller;
 }
@@ -392,6 +394,7 @@ void ChromeCleanerControllerImpl::OnSwReporterReady(
 
 void ChromeCleanerControllerImpl::RequestUserInitiatedScan() {
   base::AutoLock autolock(lock_);
+  DCHECK(IsAllowedByPolicy());
   DCHECK(pending_invocation_type_ !=
              SwReporterInvocationType::kUserInitiatedWithLogsAllowed &&
          pending_invocation_type_ !=
@@ -438,6 +441,7 @@ void ChromeCleanerControllerImpl::RequestUserInitiatedScan() {
 void ChromeCleanerControllerImpl::Scan(
     const SwReporterInvocation& reporter_invocation) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(IsAllowedByPolicy());
   DCHECK(reporter_invocation.BehaviourIsSupported(
       SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT));
 
@@ -521,6 +525,10 @@ void ChromeCleanerControllerImpl::Reboot() {
   InitiateReboot();
 }
 
+bool ChromeCleanerControllerImpl::IsAllowedByPolicy() {
+  return safe_browsing::SwReporterIsAllowedByPolicy();
+}
+
 ChromeCleanerControllerImpl::ChromeCleanerControllerImpl()
     : real_delegate_(std::make_unique<ChromeCleanerControllerDelegate>()),
       delegate_(real_delegate_.get()),
@@ -529,6 +537,12 @@ ChromeCleanerControllerImpl::ChromeCleanerControllerImpl()
 }
 
 ChromeCleanerControllerImpl::~ChromeCleanerControllerImpl() = default;
+
+void ChromeCleanerControllerImpl::Init() {
+  // The default value for logs is determined by whether the cleanup feature is
+  // enabled by policy.
+  logs_enabled_ = IsAllowedByPolicy();
+}
 
 void ChromeCleanerControllerImpl::NotifyObserver(Observer* observer) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

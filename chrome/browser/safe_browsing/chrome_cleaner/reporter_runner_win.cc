@@ -594,6 +594,9 @@ class ReporterRunner {
     if (!invocations.version().IsValid() || !local_state)
       return;
 
+    // By this point the reporter should be allowed to run.
+    DCHECK(SwReporterIsAllowedByPolicy());
+
     ReporterRunTimeInfo time_info(local_state);
 
     // The UI should block a new user-initiated run if the reporter is
@@ -1129,6 +1132,16 @@ void MaybeStartSwReporter(SwReporterInvocationType invocation_type,
 
   ReporterRunner::MaybeStartInvocations(invocation_type,
                                         std::move(invocations));
+}
+
+bool SwReporterIsAllowedByPolicy() {
+  static auto is_allowed = []() {
+    PrefService* local_state = g_browser_process->local_state();
+    return !local_state ||
+           !local_state->IsManagedPreference(prefs::kSwReporterEnabled) ||
+           local_state->GetBoolean(prefs::kSwReporterEnabled);
+  }();
+  return is_allowed;
 }
 
 void SetSwReporterTestingDelegate(SwReporterTestingDelegate* delegate) {
