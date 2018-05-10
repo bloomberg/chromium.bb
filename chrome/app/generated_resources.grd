@@ -4883,12 +4883,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OMNIBOX_KEYWORD_TEXT_MD" desc="Text shown in the search button at the front of the omnibox when the user has selected a keyword, in MD (no final colon)">
         Search <ph name="SITE_NAME">$1<ex>google.com</ex></ph>
       </message>
-      <message name="IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT" desc="The text displayed in the fakebox (on the New Tab page) when it is empty, and Google is the default search engine.">
-        Search Google or type URL
-      </message>
-      <message name="IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD" desc="The text displayed in the fakebox (on the New Tab page) when it is empty, Google is the default search engine, and the MD UI is enabled.">
-        Search Google or type a web address
-      </message>
       <message name="IDS_CLICK_TO_VIEW_DOODLE" desc="Prompts users to click on an icon to view a Google doodle. Normally, today's Google doodle is shown when the user opens a new tab (if there is a doodle today). If there is a doodle, but it cannot be shown, Chrome puts an icon next to the regular Google logo. The icon uses this label for accessibility. If the user clicks the icon, Chrome will show the doodle.">
         Click to view today’s doodle
       </message>
@@ -4903,6 +4897,80 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Search or type web address
         </message>
       </if>
+
+      <!-- NTP -->
+      <message name="IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT" desc="The text displayed in the fakebox (on the New Tab page) when it is empty, and Google is the default search engine.">
+        Search Google or type URL
+      </message>
+      <message name="IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD" desc="The text displayed in the fakebox (on the New Tab page) when it is empty, Google is the default search engine, and the Material Design UI is enabled.">
+        Search Google or type a URL
+      </message>
+      <message name="IDS_NTP_CUSTOM_LINKS_ADD_SHORTCUT_TOOLTIP" desc="The tooltip for adding a custom link shortcut. (On the New Tab Page)">
+        Add shortcut
+      </message>
+      <message name="IDS_NTP_CUSTOM_LINKS_ADD_SHORTCUT_TITLE" desc="The title of the custom link add shortcut dialog. (On the New Tab Page)">
+        Add shortcut
+      </message>
+      <message name="IDS_NTP_CUSTOM_LINKS_EDIT_SHORTCUT_TOOLTIP" desc="The tooltip for editing a custom link shortcut. (On the New Tab Page)">
+        Edit shortcut
+      </message>
+      <message name="IDS_NTP_CUSTOM_LINKS_EDIT_SHORTCUT" desc="The title for custom link edit shortcut dialog. (On the New Tab Page)">
+        Edit shortcut
+      </message>
+      <message name="IDS_NTP_CUSTOM_LINKS_NAME" desc="The title for custom link name input field on the edit shortcut dialog. (On the New Tab Page)">
+        Name
+      </message>
+      <message name="IDS_NTP_CUSTOM_LINKS_URL" desc="The title for custom link URL input field on the edit shortcut dialog. (On the New Tab Page)">
+        URL
+      </message>
+      <message name="IDS_NTP_CUSTOM_LINKS_REMOVE" desc="The text label of the custom link remove button on the edit shortcut dialog. (On the New Tab Page)">
+        Remove
+      </message>
+      <message name="IDS_NTP_CUSTOM_LINKS_CANCEL" desc="The text label of the custom link cancel button on the edit shortcut dialog. (On the New Tab Page)">
+        Cancel
+      </message>
+      <message name="IDS_NTP_CUSTOM_LINKS_DONE" desc="The text label of the custom link done button on the edit shortcut dialog. (On the New Tab Page)">
+        Done
+      </message>
+      <message name="IDS_NTP_CUSTOM_LINKS_INVALID_URL" desc="The text of displayed when an invalid URL is provided when creating a custom link. (On the New Tab Page)">
+       Type a valid URL
+      </message>
+      <message name="IDS_NTP_CONFIRM_MSG_SHORTCUT_REMOVED" desc="The title of the shortcut removed confirmation message when removing a custom link. (On the New Tab Page)">
+        Shortcut removed
+      </message>
+      <message name="IDS_NTP_CONFIRM_MSG_SHORTCUT_EDITED" desc="The title of the shortcut edited confirmation message when editing a custom link. (On the New Tab Page)">
+        Shortcut edited
+      </message>
+      <message name="IDS_NTP_CONFIRM_MSG_SHORTCUT_ADDED" desc="The title of the shortcut added confirmation message when adding a custom link. (On the New Tab Page)">
+        Shortcut added
+      </message>
+      <message name="IDS_NTP_CONFIRM_MSG_RESTORE_DEFAULTS" desc="The text label of the restore default shortcuts button when editing a custom link. (On the New Tab Page)">
+        Restore default shortcuts
+      </message>
+      <message name="IDS_NTP_CUSTOM_BG_CUSTOMIZE_BACKGROUND" desc="The title for the tooltip for background customization. (On the New Tab Page)">
+        Customize background
+      </message>
+      <message name="IDS_NTP_CUSTOM_BG_GOOGLE_PHOTOS" desc="The text label of the Google Photos option for background customization. (On the New Tab Page)">
+        Google Photos
+      </message>
+      <message name="IDS_NTP_CUSTOM_BG_CHROME_WALLPAPERS" desc="The text label of the Chrome wallpapers option for background customization.(On the New Tab Page)">
+        Chrome wallpapers
+      </message>
+      <message name="IDS_NTP_CUSTOM_BG_UPLOAD_AN_IMAGE" desc="The text label of the upload an image option for background customization. (On the New Tab Page)">
+        Upload an image
+      </message>
+      <message name="IDS_NTP_CUSTOM_BG_SELECT_A_COLLECTION" desc="The text label of the select a collection submenu for background customization. (On the New Tab Page)">
+        Select a collection
+      </message>
+      <message name="IDS_NTP_CUSTOM_BG_SELECT_GOOGLE_ALBUM" desc="The text label for the Google Photos submenu for background customization. (On the New Tab Page)">
+        Select a Google Photo Album
+      </message>
+      <message name="IDS_NTP_CUSTOM_BG_DAILY_REFRESH" desc="The text label for the daily background randomization option.  (On the New Tab Page)">
+        Daily refresh
+      </message>
+      <message name="IDS_NTP_CUSTOM_BG_SURPRISE_ME" desc="The text label for the random background option. (On the New Tab Page)">
+        Surprise me
+      </message>
 
       <!--Tooltip strings-->
       <message name="IDS_TOOLTIP_BACK" desc="The tooltip for back button">
