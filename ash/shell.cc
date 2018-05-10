@@ -107,6 +107,7 @@
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/video_activity_notifier.h"
 #include "ash/system/screen_layout_observer.h"
+#include "ash/system/screen_security/screen_switch_check_controller.h"
 #include "ash/system/session/logout_button_tray.h"
 #include "ash/system/session/logout_confirmation_controller.h"
 #include "ash/system/status_area_widget.h"
@@ -862,6 +863,8 @@ Shell::~Shell() {
   voice_interaction_controller_.reset();
   key_accessibility_enabler_.reset();
 
+  screen_switch_check_controller_.reset();
+
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
   // WindowTreeHostManager before resetting |window_tree_host_manager_|, since
   // destruction of its owned RootWindowControllers relies on the value.
@@ -963,6 +966,8 @@ void Shell::Init(ui::ContextFactory* context_factory,
   detachable_base_notification_controller_ =
       std::make_unique<DetachableBaseNotificationController>(
           detachable_base_handler_.get());
+  screen_switch_check_controller_ =
+      std::make_unique<ScreenSwitchCheckController>();
   // Connector can be null in tests.
   if (shell_delegate_->GetShellConnector() &&
       base::FeatureList::IsEnabled(

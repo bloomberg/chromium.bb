@@ -151,6 +151,7 @@ class ScreenOrientationController;
 class ScreenshotController;
 class ScreenPinningController;
 class ScreenPositionController;
+class ScreenSwitchCheckController;
 class SessionController;
 class ShelfController;
 class ShelfModel;
@@ -479,6 +480,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   ScreenPinningController* screen_pinning_controller() {
     return screen_pinning_controller_.get();
   }
+  ScreenSwitchCheckController* screen_switch_check_controller() {
+    return screen_switch_check_controller_.get();
+  }
   SessionController* session_controller() { return session_controller_.get(); }
   ::wm::ShadowController* shadow_controller() {
     return shadow_controller_.get();
@@ -746,6 +750,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<SessionController> session_controller_;
   std::unique_ptr<NightLightController> night_light_controller_;
   std::unique_ptr<NoteTakingController> note_taking_controller_;
+  std::unique_ptr<ScreenSwitchCheckController> screen_switch_check_controller_;
   std::unique_ptr<ShelfController> shelf_controller_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<ShellDelegate> shell_delegate_;

@@ -753,6 +753,8 @@ component("ash") {
     "system/screen_security/screen_share_observer.h",
     "system/screen_security/screen_share_tray_item.cc",
     "system/screen_security/screen_share_tray_item.h",
+    "system/screen_security/screen_switch_check_controller.cc",
+    "system/screen_security/screen_switch_check_controller.h",
     "system/screen_security/screen_tray_item.cc",
     "system/screen_security/screen_tray_item.h",
     "system/session/logout_button_tray.cc",

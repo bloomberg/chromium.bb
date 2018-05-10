@@ -17,7 +17,7 @@
 #include "ash/shell.h"
 #include "ash/system/message_center/notification_tray.h"
 #include "ash/system/screen_security/screen_tray_item.h"
-#include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_util.h"
@@ -559,11 +559,6 @@ class CanSwitchUserTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    SystemTray* system_tray = GetPrimarySystemTray();
-    share_item_ = system_tray->GetScreenShareItem();
-    capture_item_ = system_tray->GetScreenCaptureItem();
-    EXPECT_TRUE(share_item_);
-    EXPECT_TRUE(capture_item_);
     NotificationTray::DisableAnimationsForTest(true);
   }
 
@@ -576,12 +571,16 @@ class CanSwitchUserTest : public AshTestBase {
   // Accessing the capture session functionality.
   // Simulates a screen capture session start.
   void StartCaptureSession() {
-    capture_item_->Start(base::Bind(&CanSwitchUserTest::StopCaptureCallback,
-                                    base::Unretained(this)));
+    Shell::Get()->system_tray_notifier()->NotifyScreenCaptureStart(
+        base::BindRepeating(&CanSwitchUserTest::StopCaptureCallback,
+                            base::Unretained(this)),
+        base::EmptyString16());
   }
 
   // The callback which gets called when the screen capture gets stopped.
-  void StopCaptureSession() { capture_item_->Stop(); }
+  void StopCaptureSession() {
+    Shell::Get()->system_tray_notifier()->NotifyScreenCaptureStop();
+  }
 
   // Simulates a screen capture session stop.
   void StopCaptureCallback() { stop_capture_callback_hit_count_++; }
@@ -589,12 +588,16 @@ class CanSwitchUserTest : public AshTestBase {
   // Accessing the share session functionality.
   // Simulate a Screen share session start.
   void StartShareSession() {
-    share_item_->Start(base::Bind(&CanSwitchUserTest::StopShareCallback,
-                                  base::Unretained(this)));
+    Shell::Get()->system_tray_notifier()->NotifyScreenShareStart(
+        base::BindRepeating(&CanSwitchUserTest::StopShareCallback,
+                            base::Unretained(this)),
+        base::EmptyString16());
   }
 
   // Simulates a screen share session stop.
-  void StopShareSession() { share_item_->Stop(); }
+  void StopShareSession() {
+    Shell::Get()->system_tray_notifier()->NotifyScreenShareStop();
+  }
 
   // The callback which gets called when the screen share gets stopped.
   void StopShareCallback() { stop_share_callback_hit_count_++; }
@@ -656,11 +659,6 @@ class CanSwitchUserTest : public AshTestBase {
         return;
     }
   }
-
-  // The two items from the SystemTray for the screen capture / share
-  // functionality.
-  ScreenTrayItem* capture_item_ = nullptr;
-  ScreenTrayItem* share_item_ = nullptr;
 
   // Various counters to query for.
   int stop_capture_callback_hit_count_ = 0;

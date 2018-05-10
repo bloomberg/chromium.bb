@@ -135,11 +135,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // Returns TrayIME object if present or null otherwise.
   TrayIME* GetTrayIME() const;
 
-  // Determines if it's ok to switch away from the currently active user. Screen
-  // casting may block this (or at least throw up a confirmation dialog). Calls
-  // |callback| with the result.
-  void CanSwitchAwayFromActiveUser(base::OnceCallback<void(bool)> callback);
-
   // TrayBackgroundView:
   void UpdateAfterShelfAlignmentChange() override;
   void AnchorUpdated() override;
@@ -163,9 +158,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
 
   // TimeToClickRecorder::Delegate:
   void RecordTimeToClick() override;
-
-  ScreenTrayItem* GetScreenShareItem() { return screen_share_tray_item_; }
-  ScreenTrayItem* GetScreenCaptureItem() { return screen_capture_tray_item_; }
 
   // Activates the system tray bubble.
   void ActivateBubble();
@@ -250,10 +242,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   TrayTracing* tray_tracing_ = nullptr;
   TrayUpdate* tray_update_ = nullptr;
   TrayNightLight* tray_night_light_ = nullptr;
-
-  // A reference to the Screen share and capture item.
-  ScreenTrayItem* screen_capture_tray_item_ = nullptr;  // not owned
-  ScreenTrayItem* screen_share_tray_item_ = nullptr;    // not owned
 
   DISALLOW_COPY_AND_ASSIGN(SystemTray);
 };
