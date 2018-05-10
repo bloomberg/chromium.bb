@@ -266,10 +266,10 @@ bool LayoutListItem::UpdateMarkerLocation() {
   if (marker_parent != line_box_parent) {
     marker_->Remove();
     line_box_parent->AddChild(marker_, FirstNonMarkerChild(line_box_parent));
-    // TODO(rhogan): lineBoxParent and markerParent may be deleted by addChild,
-    // so they are not safe to reference here.
-    // Once we have a safe way of referencing them delete markerParent if it is
-    // an empty anonymous block.
+    // TODO(rhogan): line_box_parent and marker_parent may be deleted by
+    // AddChild, so they are not safe to reference here. Once we have a safe way
+    // of referencing them delete marker_parent if it is an empty anonymous
+    // block.
     marker_->UpdateMarginsAndContent();
     return true;
   }

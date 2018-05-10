@@ -177,16 +177,14 @@ void LayoutListMarker::ImageChanged(WrappedImagePtr o,
 }
 
 void LayoutListMarker::UpdateMarginsAndContent() {
-  UpdateContent();
-  UpdateMargins();
+  if (PreferredLogicalWidthsDirty())
+    ComputePreferredLogicalWidths();
+  else
+    UpdateMargins();
 }
 
 void LayoutListMarker::UpdateContent() {
-  // FIXME: This if-statement is just a performance optimization, but it's messy
-  // to use the preferredLogicalWidths dirty bit for this.
-  // It's unclear if this is a premature optimization.
-  if (!PreferredLogicalWidthsDirty())
-    return;
+  DCHECK(PreferredLogicalWidthsDirty());
 
   text_ = "";
 
@@ -282,8 +280,16 @@ void LayoutListMarker::UpdateMargins() {
     std::tie(margin_start, margin_end) =
         InlineMarginsForOutside(style, IsImage(), MinPreferredLogicalWidth());
   }
-  MutableStyleRef().SetMarginStart(Length(margin_start, kFixed));
-  MutableStyleRef().SetMarginEnd(Length(margin_end, kFixed));
+
+  Length start_length(margin_start, kFixed);
+  Length end_length(margin_end, kFixed);
+
+  if (start_length != style.MarginStart() || end_length != style.MarginEnd()) {
+    scoped_refptr<ComputedStyle> new_style = ComputedStyle::Clone(style);
+    new_style->SetMarginStart(start_length);
+    new_style->SetMarginEnd(end_length);
+    SetStyleInternal(std::move(new_style));
+  }
 }
 
 std::pair<LayoutUnit, LayoutUnit> LayoutListMarker::InlineMarginsForInside(
