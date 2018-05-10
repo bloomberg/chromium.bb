@@ -30,7 +30,6 @@
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_scrollbar.h"
-#include "third_party/blink/public/platform/web_scrollbar_theme_painter.h"
 
 #include <memory>
 

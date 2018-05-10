@@ -43,6 +43,10 @@ typedef struct CGPoint CGPoint;
 #endif
 #endif
 
+namespace gfx {
+class Point;
+}
+
 namespace blink {
 
 class PLATFORM_EXPORT IntPoint {
@@ -99,6 +103,8 @@ class PLATFORM_EXPORT IntPoint {
       const CGPoint&);  // don't do this implicitly since it's lossy
   operator CGPoint() const;
 #endif
+
+  operator gfx::Point() const;
 
   String ToString() const;
 

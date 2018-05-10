@@ -54,8 +54,6 @@
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
-#include "third_party/blink/renderer/platform/exported/web_scrollbar_impl.h"
-#include "third_party/blink/renderer/platform/exported/web_scrollbar_theme_geometry_native.h"
 #include "third_party/blink/renderer/platform/geometry/region.h"
 #include "third_party/blink/renderer/platform/geometry/transform_state.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -69,8 +67,6 @@
 #include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
-#include "third_party/blink/public/platform/web_scrollbar_theme_geometry.h"
-#include "third_party/blink/public/platform/web_scrollbar_theme_painter.h"
 #include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar_layer_delegate.h"
@@ -329,10 +325,8 @@ void ScrollingCoordinator::RemoveScrollbarLayerGroup(
 static std::unique_ptr<ScrollingCoordinator::ScrollbarLayerGroup>
 CreateScrollbarLayer(Scrollbar& scrollbar, float device_scale_factor) {
   ScrollbarTheme& theme = scrollbar.GetTheme();
-  auto scrollbar_delegate = std::make_unique<ScrollbarLayerDelegate>(
-      WebScrollbarImpl::Create(&scrollbar),
-      WebScrollbarThemePainter(theme, scrollbar, device_scale_factor),
-      WebScrollbarThemeGeometryNative::Create(theme));
+  auto scrollbar_delegate =
+      std::make_unique<ScrollbarLayerDelegate>(scrollbar, device_scale_factor);
 
   auto layer_group =
       std::make_unique<ScrollingCoordinator::ScrollbarLayerGroup>();
