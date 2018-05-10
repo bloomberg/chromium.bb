@@ -48,10 +48,17 @@ class TabCloseButton : public views::ImageButton,
   void OnGestureEvent(ui::GestureEvent* event) override;
   const char* GetClassName() const override;
 
+ protected:
+  void PaintButtonContents(gfx::Canvas* canvas) override;
+
  private:
   // views::MaskedTargeterDelegate:
   views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
   bool GetHitTestMask(gfx::Path* mask) const override;
+
+  // In material refresh mode, calculates opacity based on the current state of
+  // the hover animation on the parent tab.
+  SkAlpha GetOpacity();
 
   void GenerateImages(bool is_touch,
                       SkColor normal_icon_color,
