@@ -41,6 +41,7 @@ class HardwareDisplayPlaneAtomic : public HardwareDisplayPlane {
       DrmDevice* drm,
       const ScopedDrmObjectPropertyPtr& plane_props) override;
 
+  // TODO(dnicoara): Merge this with DrmDevice::Property.
   struct Property {
     Property();
     bool Initialize(DrmDevice* drm,
