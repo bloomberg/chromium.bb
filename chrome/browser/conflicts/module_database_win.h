@@ -33,7 +33,7 @@ class FilePath;
 // A class that keeps track of all modules loaded across Chrome processes.
 //
 // It is also the main class behind third-party modules tracking, and owns the
-// different classes that required to identify problematic programs and
+// different classes that required to identify incompatible applications and
 // record metrics.
 //
 // This is effectively a singleton, but doesn't use base::Singleton. The intent

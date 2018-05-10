@@ -12,10 +12,10 @@
 #include "chrome/browser/conflicts/module_database_observer_win.h"
 
 struct CertificateInfo;
-class InstalledPrograms;
+class InstalledApplications;
 class ModuleDatabase;
 class ModuleListFilter;
-class ProblematicProgramsUpdater;
+class IncompatibleApplicationsUpdater;
 
 namespace base {
 class FilePath;
@@ -43,13 +43,14 @@ class ThirdPartyConflictsManager : public ModuleDatabaseObserver {
   void OnModuleListFilterCreated(
       std::unique_ptr<ModuleListFilter> module_list_filter);
 
-  // Called when |installed_programs_| finishes its initialization.
-  void OnInstalledProgramsCreated(
-      std::unique_ptr<InstalledPrograms> installed_programs);
+  // Called when |installed_applications_| finishes its initialization.
+  void OnInstalledApplicationsCreated(
+      std::unique_ptr<InstalledApplications> installed_applications);
 
-  // Initializes |problematic_programs_updater_| when the exe_certificate_info_,
-  // the module_list_filter_ and the installed_programs_ are available.
-  void InitializeProblematicProgramsUpdater();
+  // Initializes |incompatible_applications_updater_| when the
+  // exe_certificate_info_, the module_list_filter_ and the
+  // installed_applications_ are available.
+  void InitializeIncompatibleApplicationsUpdater();
 
   ModuleDatabase* module_database_;
 
@@ -58,7 +59,7 @@ class ThirdPartyConflictsManager : public ModuleDatabaseObserver {
   bool module_list_received_;
 
   // Indicates if the OnModuleDatabaseIdle() function has been called once
-  // already. Used to prevent the creation of multiple InstalledPrograms
+  // already. Used to prevent the creation of multiple InstalledApplications
   // instances.
   bool on_module_database_idle_called_;
 
@@ -68,11 +69,12 @@ class ThirdPartyConflictsManager : public ModuleDatabaseObserver {
   // Filters third-party modules against a whitelist and a blacklist.
   std::unique_ptr<ModuleListFilter> module_list_filter_;
 
-  // Retrieves the list of installed programs.
-  std::unique_ptr<InstalledPrograms> installed_programs_;
+  // Retrieves the list of installed applications.
+  std::unique_ptr<InstalledApplications> installed_applications_;
 
-  // Maintains the cache of problematic programs.
-  std::unique_ptr<ProblematicProgramsUpdater> problematic_programs_updater_;
+  // Maintains the cache of incompatible applications.
+  std::unique_ptr<IncompatibleApplicationsUpdater>
+      incompatible_applications_updater_;
 
   base::WeakPtrFactory<ThirdPartyConflictsManager> weak_ptr_factory_;
 

@@ -7,7 +7,7 @@ class TestIncompatibleApplicationsBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'requestIncompatibleApplicationsList',
-      'startProgramUninstallation',
+      'startApplicationUninstallation',
       'openURL',
       'getSubtitlePluralString',
       'getSubtitleNoAdminRightsPluralString',
@@ -25,8 +25,8 @@ class TestIncompatibleApplicationsBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  startProgramUninstallation(programName) {
-    this.methodCalled('startProgramUninstallation', programName);
+  startApplicationUninstallation(applicationName) {
+    this.methodCalled('startApplicationUninstallation', applicationName);
   }
 
   /** @override */
@@ -90,7 +90,7 @@ suite('incompatibleApplicationsHandler', function() {
   };
   const updateIncompatibleApplication = {
     'name': 'Update Application',
-    'type': 1,
+    'type': 2,
     'url': 'chrome://update-url',
   };
 
@@ -148,7 +148,7 @@ suite('incompatibleApplicationsHandler', function() {
     });
   });
 
-  test('startProgramUninstallation', function() {
+  test('startApplicationUninstallation', function() {
     const singleIncompatibleApplicationTestList = [
       incompatibleApplication1,
     ];
@@ -167,10 +167,10 @@ suite('incompatibleApplicationsHandler', function() {
           item.$$('.action-button').click();
 
           return incompatibleApplicationsBrowserProxy.whenCalled(
-              'startProgramUninstallation');
+              'startApplicationUninstallation');
         })
-        .then(function(programName) {
-          assertEquals(incompatibleApplication1.name, programName);
+        .then(function(applicationName) {
+          assertEquals(incompatibleApplication1.name, applicationName);
         });
   });
 

@@ -846,6 +846,7 @@ extern const char kNumberHistoryPageIOSPromoShown[];
 extern const char kHistoryPageIOSPromoDismissed[];
 
 #if defined(GOOGLE_CHROME_BUILD)
+extern const char kIncompatibleApplications[];
 extern const char kProblematicPrograms[];
 extern const char kThirdPartyBlockingEnabled[];
 #endif  // defined(GOOGLE_CHROME_BUILD)

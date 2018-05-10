@@ -2394,8 +2394,13 @@ const char kNumberHistoryPageIOSPromoShown[] =
 const char kHistoryPageIOSPromoDismissed[] = "history_page_ios_promo_dismissed";
 
 #if defined(GOOGLE_CHROME_BUILD)
+// Acts as a cache to remember incompatible applications through restarts. Used
+// for the Incompatible Applications Warning feature.
+const char kIncompatibleApplications[] = "incompatible_applications";
+
 // Acts as a cache to remember problematic programs through restarts. Used for
-// the third-party conflicts warning.
+// the Incompatible Applications Warning feature.
+// Note: Deprecated. Renamed to kIncompatibleApplications.
 const char kProblematicPrograms[] = "problematic_programs";
 
 // A boolean value, controlling whether third party software is allowed to
