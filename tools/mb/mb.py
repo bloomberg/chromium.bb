@@ -54,7 +54,6 @@ class MetaBuildWrapper(object):
     self.sep = os.sep
     self.args = argparse.Namespace()
     self.configs = {}
-    self.luci_tryservers = {}
     self.masters = {}
     self.mixins = {}
 
@@ -221,14 +220,6 @@ class MetaBuildWrapper(object):
                       default=self.default_config,
                       help='path to config file (default is %(default)s)')
     subp.set_defaults(func=self.CmdValidate)
-
-    subp = subps.add_parser('gerrit-buildbucket-config',
-                            help='Print buildbucket.config for gerrit '
-                            '(see MB user guide)')
-    subp.add_argument('-f', '--config-file', metavar='PATH',
-                      default=self.default_config,
-                      help='path to config file (default is %(default)s)')
-    subp.set_defaults(func=self.CmdBuildbucket)
 
     subp = subps.add_parser('zip',
                             help='generate a .zip containing the files needed '
@@ -483,25 +474,6 @@ class MetaBuildWrapper(object):
             ('cpu', 'x86-64'),
             os_dim]
 
-  def CmdBuildbucket(self):
-    self.ReadConfigFile()
-
-    self.Print('# This file was generated using '
-               '"tools/mb/mb.py gerrit-buildbucket-config".')
-
-    for luci_tryserver in sorted(self.luci_tryservers):
-      self.Print('[bucket "luci.%s"]' % luci_tryserver)
-      for bot in sorted(self.luci_tryservers[luci_tryserver]):
-        self.Print('\tbuilder = %s' % bot)
-
-    for master in sorted(self.masters):
-      if master.startswith('tryserver.'):
-        self.Print('[bucket "master.%s"]' % master)
-        for bot in sorted(self.masters[master]):
-          self.Print('\tbuilder = %s' % bot)
-
-    return 0
-
   def CmdValidate(self, print_ok=True):
     errs = []
 
@@ -665,7 +637,6 @@ class MetaBuildWrapper(object):
                  (self.args.config_file, e))
 
     self.configs = contents['configs']
-    self.luci_tryservers = contents.get('luci_tryservers', {})
     self.masters = contents['masters']
     self.mixins = contents['mixins']
 
