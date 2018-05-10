@@ -17,7 +17,7 @@
 #include "ash/session/teleport_warning_dialog.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_event_observer.h"
-#include "ash/system/tray/system_tray.h"
+#include "ash/system/screen_security/screen_switch_check_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_state.h"
@@ -417,8 +417,9 @@ void SessionController::CanSwitchActiveUser(
   if (controller->IsSelecting())
     controller->ToggleOverview();
 
-  ash::Shell::Get()->GetPrimarySystemTray()->CanSwitchAwayFromActiveUser(
-      std::move(callback));
+  ash::Shell::Get()
+      ->screen_switch_check_controller()
+      ->CanSwitchAwayFromActiveUser(std::move(callback));
 }
 
 void SessionController::ShowMultiprofilesIntroDialog(
