@@ -85,7 +85,13 @@ const base::Feature kZeroSuggestSwapTitleAndUrl{
 
 // Feature used to display the title of the current URL match.
 const base::Feature kDisplayTitleForCurrentUrl{
-    "OmniboxDisplayTitleForCurrentUrl", base::FEATURE_DISABLED_BY_DEFAULT};
+  "OmniboxDisplayTitleForCurrentUrl",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Feature used for the max autocomplete matches UI experiment.
 const base::Feature kUIExperimentMaxAutocompleteMatches{
