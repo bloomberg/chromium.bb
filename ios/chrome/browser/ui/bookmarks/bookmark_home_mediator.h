@@ -10,6 +10,10 @@
 @protocol BookmarkHomeConsumer;
 @class BookmarkHomeSharedState;
 
+namespace ios {
+class ChromeBrowserState;
+}
+
 // BookmarkHomeMediator manages model interactions for the
 // BookmarkHomeViewController.
 @interface BookmarkHomeMediator : NSObject
@@ -17,6 +21,7 @@
 @property(nonatomic, weak) id<BookmarkHomeConsumer> consumer;
 
 - (instancetype)initWithSharedState:(BookmarkHomeSharedState*)sharedState
+                       browserState:(ios::ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 

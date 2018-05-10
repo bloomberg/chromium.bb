@@ -17,7 +17,6 @@
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
-#import "ios/chrome/browser/sync/synced_sessions_bridge.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
@@ -74,12 +73,7 @@ using bookmarks::BookmarkNode;
 // collections.
 using IntegerPair = std::pair<NSInteger, NSInteger>;
 
-@interface BookmarkTableView ()<SyncedSessionsObserver,
-                                UIGestureRecognizerDelegate> {
-  // Observer to keep track of the signin and syncing status.
-  std::unique_ptr<synced_sessions::SyncedSessionsObserverBridge>
-      _syncedSessionsObserver;
-
+@interface BookmarkTableView () {
   // Map of favicon load tasks for each index path. Used to keep track of
   // pending favicon load operations so that they can be cancelled upon cell
   // reuse. Keys are (section, item) pairs of cell index paths.
@@ -125,11 +119,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     DCHECK_EQ(self.sharedState.bookmarkModel,
               ios::BookmarkModelFactory::GetForBrowserState(browserState));
 
-    // Set up observers.
-    _syncedSessionsObserver =
-        std::make_unique<synced_sessions::SyncedSessionsObserverBridge>(
-            self, _browserState);
-
     // Set promo state before the tableview is created.
     [self promoStateChangedAnimated:NO];
 
@@ -142,7 +131,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     [self addSubview:self.sharedState.tableView];
     [self bringSubviewToFront:self.sharedState.tableView];
 
-    [self showEmptyOrLoadingSpinnerBackgroundIfNeeded];
   }
   return self;
 }
@@ -277,11 +265,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   return nodes;
 }
 
-- (BOOL)hasBookmarksOrFolders {
-  return self.sharedState.tableViewDisplayedRootNode &&
-         !self.sharedState.tableViewDisplayedRootNode->empty();
-}
-
 - (BOOL)allowsNewFolder {
   // When the current root node has been removed remotely (becomes NULL),
   // creating new folder is forbidden.
@@ -374,28 +357,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   return nullptr;
 }
 
-// If the current root node is the outermost root, check if we need to show the
-// spinner backgound.  Otherwise, check if we need to show the empty background.
-- (void)showEmptyOrLoadingSpinnerBackgroundIfNeeded {
-  if (self.sharedState.tableViewDisplayedRootNode ==
-      self.sharedState.bookmarkModel->root_node()) {
-    if (self.sharedState.bookmarkModel->HasNoUserCreatedBookmarksOrFolders() &&
-        _syncedSessionsObserver->IsSyncing()) {
-      [self showLoadingSpinnerBackground];
-    } else {
-      [self hideLoadingSpinnerBackground];
-    }
-    return;
-  }
-
-  if (![self hasBookmarksOrFolders]) {
-    [self showEmptyBackground];
-  } else {
-    // Hides the empty bookmarks background if it is showing.
-    self.sharedState.tableView.backgroundView = nil;
-  }
-}
-
 // Shows loading spinner background view.
 - (void)showLoadingSpinnerBackground {
   if (!self.spinnerView) {
@@ -436,6 +397,10 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     self.emptyTableBackgroundView.frame = self.sharedState.tableView.bounds;
   }
   self.sharedState.tableView.backgroundView = self.emptyTableBackgroundView;
+}
+
+- (void)hideEmptyBackground {
+  self.sharedState.tableView.backgroundView = nil;
 }
 
 - (void)updateCellAtIndexPath:(NSIndexPath*)indexPath
@@ -580,23 +545,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 - (BOOL)isUrlOrFolder:(const BookmarkNode*)node {
   return node->type() == BookmarkNode::URL ||
          node->type() == BookmarkNode::FOLDER;
-}
-
-#pragma mark - SyncedSessionsObserver
-
-- (void)reloadSessions {
-  // Nothing to do.
-}
-
-- (void)onSyncStateChanged {
-  // Permanent nodes ("Bookmarks Bar", "Other Bookmarks") at the root node might
-  // be added after syncing.  So we need to refresh here.
-  if (self.sharedState.tableViewDisplayedRootNode ==
-      self.sharedState.bookmarkModel->root_node()) {
-    [self.delegate bookmarkTableViewRefreshContents:self];
-    return;
-  }
-  [self showEmptyOrLoadingSpinnerBackgroundIfNeeded];
 }
 
 @end

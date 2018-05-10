@@ -7,6 +7,17 @@
 
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_consumer.h"
 
+typedef NS_ENUM(NSInteger, BookmarkHomeBackgroundStyle) {
+  // The default background style.
+  BookmarkHomeBackgroundStyleDefault,
+
+  // A background style that indicates that bookmarks are loading.
+  BookmarkHomeBackgroundStyleLoading,
+
+  // A background style that indicates that no bookmarks are present.
+  BookmarkHomeBackgroundStyleEmpty,
+};
+
 // BookmarkHomeConsumer provides methods that allow mediators to update the UI.
 @protocol BookmarkHomeConsumer<ChromeTableViewConsumer>
 
@@ -18,6 +29,9 @@
 // locally; otherwise uses the fallback icon style.
 - (void)loadFaviconAtIndexPath:(NSIndexPath*)indexPath
         continueToGoogleServer:(BOOL)continueToGoogleServer;
+
+// Displays the table view background for the given |style|.
+- (void)updateTableViewBackgroundStyle:(BookmarkHomeBackgroundStyle)style;
 
 @end
 

@@ -107,9 +107,6 @@ class ChromeBrowserState;
 // Returns a vector of edit nodes.
 - (std::vector<const bookmarks::BookmarkNode*>)getEditNodesInVector;
 
-// Returns if current root node has bookmarks or folders.
-- (BOOL)hasBookmarksOrFolders;
-
 // Returns if current root node allows new folder to be created on it.
 - (BOOL)allowsNewFolder;
 
@@ -128,8 +125,11 @@ class ChromeBrowserState;
         continueToGoogleServer:(BOOL)continueToGoogleServer;
 - (void)cancelLoadingFaviconAtIndexPath:(NSIndexPath*)indexPath;
 - (void)cancelAllFaviconLoads;
-- (void)showEmptyOrLoadingSpinnerBackgroundIfNeeded;
 - (void)restoreRowSelection;
+- (void)showLoadingSpinnerBackground;
+- (void)hideLoadingSpinnerBackground;
+- (void)showEmptyBackground;
+- (void)hideEmptyBackground;
 
 @end
 
