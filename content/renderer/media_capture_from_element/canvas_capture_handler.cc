@@ -62,12 +62,15 @@ class VideoCapturerSource : public media::VideoCapturerSource {
                     const VideoCaptureDeliverFrameCB& frame_callback,
                     const RunningCallback& running_callback) override {
     DCHECK(main_render_thread_checker_.CalledOnValidThread());
-    canvas_handler_->StartVideoCapture(params, frame_callback,
-                                       running_callback);
+    if (canvas_handler_.get()) {
+      canvas_handler_->StartVideoCapture(params, frame_callback,
+                                         running_callback);
+    }
   }
   void RequestRefreshFrame() override {
     DCHECK(main_render_thread_checker_.CalledOnValidThread());
-    canvas_handler_->RequestRefreshFrame();
+    if (canvas_handler_.get())
+      canvas_handler_->RequestRefreshFrame();
   }
   void StopCapture() override {
     DCHECK(main_render_thread_checker_.CalledOnValidThread());
@@ -80,8 +83,10 @@ class VideoCapturerSource : public media::VideoCapturerSource {
   const float frame_rate_;
   // Bound to Main Render thread.
   base::ThreadChecker main_render_thread_checker_;
-  // CanvasCaptureHandler is owned by CanvasDrawListener in blink and might be
-  // destroyed before StopCapture() call.
+  // CanvasCaptureHandler is owned by CanvasDrawListener in blink. It is
+  // guaranteed to be destroyed on Main Render thread and it would happen
+  // independently of this class. Therefore, WeakPtr should always be checked
+  // before use.
   base::WeakPtr<CanvasCaptureHandler> canvas_handler_;
 };
 
