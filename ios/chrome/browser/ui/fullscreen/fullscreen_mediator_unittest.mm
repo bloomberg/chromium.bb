@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_mediator.h"
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/test/fullscreen_model_test_util.h"
 #import "ios/chrome/browser/ui/fullscreen/test/test_fullscreen_controller_observer.h"
 #import "ios/chrome/browser/ui/fullscreen/test/test_fullscreen_mediator.h"

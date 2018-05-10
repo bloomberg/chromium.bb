@@ -5,8 +5,6 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_to_top_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "testing/platform_test.h"
@@ -91,8 +89,9 @@ TEST_F(FullscreenUIUpdaterTest, ScrollEnd) {
   ASSERT_FALSE(element().animator);
   // Create a test animator.  The start progress of 0.0 is a dummy value, as the
   // animator's progress properties are unused in this test.
-  FullscreenScrollEndAnimator* const kAnimator =
-      [[FullscreenScrollEndAnimator alloc] initWithStartProgress:0.0];
+  FullscreenAnimator* const kAnimator = [[FullscreenAnimator alloc]
+      initWithStartProgress:0.0
+                      style:FullscreenAnimatorStyle::ENTER_FULLSCREEN];
   observer()->FullscreenScrollEventEnded(nullptr, kAnimator);
   EXPECT_EQ(element().animator, kAnimator);
 }
