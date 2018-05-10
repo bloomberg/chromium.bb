@@ -6326,10 +6326,6 @@ class LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame
       : will_begin_impl_frame_count_(0), did_finish_impl_frame_count_(0) {}
 
   void BeginTest() override {
-    // Test terminates when a main frame is no longer expected so request that
-    // this message is actually sent.
-    layer_tree_host()->RequestBeginMainFrameNotExpected(true);
-
     PostSetNeedsCommitToMainThread();
   }
 
@@ -6344,27 +6340,20 @@ class LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame
     did_finish_impl_frame_count_++;
     EXPECT_EQ(will_begin_impl_frame_count_, did_finish_impl_frame_count_);
 
-    // Request a number of commits to cause multiple impl frames. We expect to
-    // get one more impl frames than the number of commits requested because
-    // after a commit it takes one frame to become idle.
-    if (did_finish_impl_frame_count_ < kExpectedNumImplFrames - 1)
-      PostSetNeedsCommitToMainThread();
+    // Trigger a new impl frame until we are done testing.
+    if (did_finish_impl_frame_count_ < kExpectedNumImplFrames)
+      PostSetNeedsRedrawToMainThread();
+    else
+      EndTest();
   }
-
-  void BeginMainFrameNotExpectedSoon() override { EndTest(); }
 
   void AfterTest() override {
     EXPECT_GT(will_begin_impl_frame_count_, 0);
     EXPECT_GT(did_finish_impl_frame_count_, 0);
     EXPECT_EQ(will_begin_impl_frame_count_, did_finish_impl_frame_count_);
 
-    // TODO(mithro): Figure out why the multithread version of this test
-    // sometimes has one more frame then expected. Possibly related to
-    // http://crbug.com/443185
-    if (!HasImplThread()) {
-      EXPECT_EQ(will_begin_impl_frame_count_, kExpectedNumImplFrames);
-      EXPECT_EQ(did_finish_impl_frame_count_, kExpectedNumImplFrames);
-    }
+    EXPECT_EQ(will_begin_impl_frame_count_, kExpectedNumImplFrames);
+    EXPECT_EQ(did_finish_impl_frame_count_, kExpectedNumImplFrames);
   }
 
  private:
