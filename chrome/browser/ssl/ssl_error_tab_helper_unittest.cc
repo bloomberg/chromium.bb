@@ -36,11 +36,12 @@ class TestSSLBlockingPage : public SSLBlockingPage {
   // |*destroyed_tracker| is set to true in the destructor.
   TestSSLBlockingPage(content::WebContents* web_contents,
                       GURL request_url,
+                      net::SSLInfo ssl_info,
                       bool* destroyed_tracker)
       : SSLBlockingPage(
             web_contents,
             net::ERR_CERT_CONTAINS_ERRORS,
-            net::SSLInfo(),
+            ssl_info,
             request_url,
             0,
             base::Time::NowFromSystemTime(),
@@ -72,9 +73,13 @@ class SSLErrorTabHelperTest : public ChromeRenderViewHostTestHarness {
   // corresponding blocking page is destroyed.
   void CreateAssociatedBlockingPage(content::NavigationHandle* handle,
                                     bool* destroyed_tracker) {
+    net::SSLInfo ssl_info;
+    ssl_info.cert =
+        net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+
     SSLErrorTabHelper::AssociateBlockingPage(
         web_contents(), handle->GetNavigationId(),
-        std::make_unique<TestSSLBlockingPage>(web_contents(), GURL(),
+        std::make_unique<TestSSLBlockingPage>(web_contents(), GURL(), ssl_info,
                                               destroyed_tracker));
   }
 };
