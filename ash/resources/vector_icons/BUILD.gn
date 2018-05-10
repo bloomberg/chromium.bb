@@ -22,7 +22,6 @@ aggregate_vector_icons("ash_vector_icons") {
     "lock_screen_backspace.icon",
     "lock_screen_caps_lock.icon",
     "lock_screen_dropdown.icon",
-    "lock_screen_fingerprint.icon",
     "login_screen_button_dropdown.icon",
     "login_screen_menu_dropdown.icon",
     "login_screen_enterprise.icon",

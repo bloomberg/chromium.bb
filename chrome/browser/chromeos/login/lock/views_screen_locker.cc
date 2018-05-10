@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/interfaces/login_user_info.mojom.h"
 #include "base/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_macros.h"
@@ -40,21 +39,6 @@ namespace chromeos {
 
 namespace {
 constexpr char kLockDisplay[] = "lock";
-
-ash::mojom::FingerprintUnlockState ConvertFromFingerprintState(
-    ScreenLocker::FingerprintState state) {
-  switch (state) {
-    case ScreenLocker::FingerprintState::kRemoved:
-    case ScreenLocker::FingerprintState::kHidden:
-    case ScreenLocker::FingerprintState::kDefault:
-      return ash::mojom::FingerprintUnlockState::UNAVAILABLE;
-    case ScreenLocker::FingerprintState::kSignin:
-      return ash::mojom::FingerprintUnlockState::AUTH_SUCCESS;
-    case ScreenLocker::FingerprintState::kFailed:
-      return ash::mojom::FingerprintUnlockState::AUTH_FAILED;
-  }
-}
-
 }  // namespace
 
 ViewsScreenLocker::ViewsScreenLocker(ScreenLocker* screen_locker)
@@ -166,8 +150,7 @@ void ViewsScreenLocker::OnAshLockAnimationFinished() {
 void ViewsScreenLocker::SetFingerprintState(
     const AccountId& account_id,
     ScreenLocker::FingerprintState state) {
-  LoginScreenClient::Get()->login_screen()->SetFingerprintUnlockState(
-      account_id, ConvertFromFingerprintState(state));
+  NOTIMPLEMENTED();
 }
 
 content::WebContents* ViewsScreenLocker::GetWebContents() {

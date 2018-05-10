@@ -38,18 +38,6 @@ enum EasyUnlockIconId {
   SPINNER,
 };
 
-// Fingerprint unlock state in the views lock screen.
-enum FingerprintUnlockState {
-  // Fingerprint unlock is not available.
-  UNAVAILABLE,
-  // Fingerprint unlock is available.
-  AVAILABLE,
-  // The unlock attempt is successful, the fingerprint is matched.
-  AUTH_SUCCESS,
-  // The unlock attempt is unsuccessful, the fingerprint is not recognized.
-  AUTH_FAILED,
-};
-
 // Information about the custom icon in the user pod.
 struct EasyUnlockIconOptions {
   // Icon that should be displayed.

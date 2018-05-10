@@ -82,7 +82,6 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
     AUTH_PIN = 1 << 1,             // Display PIN keyboard.
     AUTH_TAP = 1 << 2,             // Tap to unlock.
     AUTH_ONLINE_SIGN_IN = 1 << 3,  // Force online sign-in.
-    AUTH_FINGERPRINT = 1 << 4,     // Use fingerprint to unlock.
   };
 
   LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
@@ -108,8 +107,6 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   // Update the displayed name, icon, etc to that of |user|.
   void UpdateForUser(const mojom::LoginUserInfoPtr& user);
 
-  void SetFingerprintState(mojom::FingerprintUnlockState state);
-
   const mojom::LoginUserInfoPtr& current_user() const;
 
   LoginPasswordView* password_view() { return password_view_; }
@@ -124,7 +121,6 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
 
  private:
   struct AnimationState;
-  class FingerprintView;
 
   // Called when the user submits an auth method. Runs mojo call.
   void OnAuthSubmit(const base::string16& password);
@@ -151,7 +147,6 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   LoginPasswordView* password_view_ = nullptr;
   LoginPinView* pin_view_ = nullptr;
   views::LabelButton* online_sign_in_message_ = nullptr;
-  FingerprintView* fingerprint_view_ = nullptr;
   const OnAuthCallback on_auth_;
   const LoginUserView::OnTap on_tap_;
 

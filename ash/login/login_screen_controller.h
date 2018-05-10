@@ -123,8 +123,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
       const AccountId& account_id,
       const std::string& locale,
       std::vector<mojom::InputMethodItemPtr> keyboard_layouts) override;
-  void SetFingerprintUnlockState(const AccountId& account_id,
-                                 mojom::FingerprintUnlockState state) override;
 
   // Flushes the mojo pipes - to be used in tests.
   void FlushForTesting();
