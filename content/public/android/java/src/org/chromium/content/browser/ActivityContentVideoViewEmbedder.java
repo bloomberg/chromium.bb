@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
+import org.chromium.content_public.browser.ContentVideoViewEmbedder;
+
 /**
  * Uses an existing Activity to handle displaying video in full screen.
  */

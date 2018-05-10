@@ -134,9 +134,9 @@ import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
-import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content.common.ContentSwitches;
+import org.chromium.content_public.browser.ContentVideoView;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
@@ -2064,8 +2064,8 @@ public class ChromeTabbedActivity
     }
 
     private boolean isFullscreenVideoPlaying() {
-        View view = ContentVideoView.getContentVideoView();
-        return view != null && view.getContext() == this;
+        ContentVideoView view = ContentVideoView.getInstance();
+        return view != null && view.createdWithContext(this);
     }
 
     @Override

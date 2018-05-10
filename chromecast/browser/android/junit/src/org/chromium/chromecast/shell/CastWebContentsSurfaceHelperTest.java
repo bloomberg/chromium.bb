@@ -37,8 +37,8 @@ import org.chromium.chromecast.base.ScopeFactory;
 import org.chromium.chromecast.shell.CastWebContentsSurfaceHelper.ContentVideoViewEmbedderSetter;
 import org.chromium.chromecast.shell.CastWebContentsSurfaceHelper.MediaSessionGetter;
 import org.chromium.chromecast.shell.CastWebContentsSurfaceHelper.StartParams;
-import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content.browser.MediaSessionImpl;
+import org.chromium.content_public.browser.ContentVideoViewEmbedder;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;

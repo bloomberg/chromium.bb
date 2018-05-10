@@ -14,7 +14,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content.browser.ContentVideoViewEmbedder;
+import org.chromium.content_public.browser.ContentVideoViewEmbedder;
 
 /**
  * Implementation of {@link ContentViewViewEmbedder} for webview.

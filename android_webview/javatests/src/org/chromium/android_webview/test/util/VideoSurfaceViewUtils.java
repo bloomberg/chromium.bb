@@ -7,23 +7,12 @@ package org.chromium.android_webview.test.util;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.junit.Assert;
-
 import org.chromium.base.ThreadUtils;
-import org.chromium.content.browser.ContentVideoView;
 
 /**
  * Utils for testing SurfaceViews (SurfaceViews that display video).
  */
 public class VideoSurfaceViewUtils {
-
-    /**
-     * Asserts that the given ViewGroup contains exactly one ContentVideoView.
-     * @param view View or ViewGroup to traverse.
-     */
-    public static void assertContainsOneContentVideoView(View view) throws Exception {
-        Assert.assertEquals(1, containsNumChildrenOfType(view, ContentVideoView.class));
-    }
 
     private static int containsNumChildrenOfType(
             final View view, final Class<? extends View> childType) throws Exception {

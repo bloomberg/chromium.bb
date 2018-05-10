@@ -6,7 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/ContentVideoView_jni.h"
+#include "jni/ContentVideoViewImpl_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
@@ -24,7 +24,7 @@ ContentVideoView* g_content_video_view = NULL;
 }  // namespace
 
 static ScopedJavaLocalRef<jobject>
-JNI_ContentVideoView_GetSingletonJavaContentVideoView(
+JNI_ContentVideoViewImpl_GetSingletonJavaContentVideoView(
     JNIEnv* env,
     const JavaParamRef<jclass>&) {
   if (g_content_video_view)
@@ -53,8 +53,8 @@ ContentVideoView::~ContentVideoView() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
   if (!content_video_view.is_null()) {
-    Java_ContentVideoView_destroyContentVideoView(env, content_video_view,
-                                                  true);
+    Java_ContentVideoViewImpl_destroyContentVideoView(env, content_video_view,
+                                                      true);
     j_content_video_view_.reset();
   }
   g_content_video_view = NULL;
@@ -64,7 +64,7 @@ void ContentVideoView::OpenVideo() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
   if (!content_video_view.is_null()) {
-    Java_ContentVideoView_openVideo(env, content_video_view);
+    Java_ContentVideoViewImpl_openVideo(env, content_video_view);
   }
 }
 
@@ -72,8 +72,8 @@ void ContentVideoView::OnMediaPlayerError(int error_type) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
   if (!content_video_view.is_null()) {
-    Java_ContentVideoView_onMediaPlayerError(env, content_video_view,
-                                             error_type);
+    Java_ContentVideoViewImpl_onMediaPlayerError(env, content_video_view,
+                                                 error_type);
   }
 }
 
@@ -81,8 +81,8 @@ void ContentVideoView::OnVideoSizeChanged(int width, int height) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
   if (!content_video_view.is_null()) {
-    Java_ContentVideoView_onVideoSizeChanged(env, content_video_view, width,
-                                             height);
+    Java_ContentVideoViewImpl_onVideoSizeChanged(env, content_video_view, width,
+                                                 height);
   }
 }
 
@@ -91,8 +91,8 @@ void ContentVideoView::ExitFullscreen() {
   ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
   bool release_media_player = false;
   if (!content_video_view.is_null())
-    Java_ContentVideoView_exitFullscreen(env, content_video_view,
-                                         release_media_player);
+    Java_ContentVideoViewImpl_exitFullscreen(env, content_video_view,
+                                             release_media_player);
 }
 
 ScopedJavaLocalRef<jobject> ContentVideoView::GetJavaObject(JNIEnv* env) {
@@ -163,7 +163,7 @@ JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject(
     return JavaObjectWeakGlobalRef(env, nullptr);
 
   return JavaObjectWeakGlobalRef(
-      env, Java_ContentVideoView_createContentVideoView(
+      env, Java_ContentVideoViewImpl_createContentVideoView(
                env, j_web_contents, j_content_video_view_embedder,
                reinterpret_cast<intptr_t>(this), video_natural_size.width(),
                video_natural_size.height())
