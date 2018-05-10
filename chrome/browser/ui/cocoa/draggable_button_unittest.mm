@@ -11,7 +11,7 @@
 
 @interface TestableDraggableButton : DraggableButton {
   NSUInteger dragCount_;
-  BOOL wasTriggered_;
+  NSUInteger triggerCount_;
 }
 - (void)trigger:(id)sender;
 - (BOOL)wasTriggered;
@@ -22,7 +22,7 @@
 - (id)initWithFrame:(NSRect)frame {
   if ((self = [super initWithFrame:frame])) {
     dragCount_ = 0;
-    wasTriggered_ = NO;
+    triggerCount_ = 0;
   }
   return self;
 }
@@ -31,15 +31,23 @@
 }
 
 - (void)trigger:(id)sender {
-  wasTriggered_ = YES;
+  triggerCount_++;
 }
 
 - (BOOL)wasTriggered {
-  return wasTriggered_;
+  return triggerCount_ > 0;
+}
+
+- (NSUInteger)triggerCount {
+  return triggerCount_;
 }
 
 - (NSUInteger)dragCount {
   return dragCount_;
+}
+
+- (void)performBlock:(void (^)(void))block {
+  block();
 }
 @end
 
@@ -124,7 +132,7 @@ TEST_F(DraggableButtonTest, ResetState) {
       cocoa_test_event_utils::MouseEventAtPoint(NSMakePoint(100,100),
                                                 NSLeftMouseUp,
                                                 0);
-  // If the mouse moves > 5 pixels in either direciton it should cause a drag.
+  // If the mouse moves > 5 pixels in either direction it should cause a drag.
   [NSApp postEvent:upEvent atStart:YES];
   [NSApp postEvent:moveEvent atStart:YES];
   [button mouseDown:downEvent];
@@ -139,4 +147,43 @@ TEST_F(DraggableButtonTest, ResetState) {
   [button mouseDown:downEvent];
   EXPECT_EQ(2U, [button dragCount]);
   EXPECT_FALSE([[button cell] isHighlighted]);
+}
+
+TEST_F(DraggableButtonTest, ActsOnMouseDown) {
+  base::scoped_nsobject<TestableDraggableButton> button(
+      [[TestableDraggableButton alloc]
+          initWithFrame:NSMakeRect(0, 0, 500, 500)]);
+  [button setTarget:button];
+  [button setAction:@selector(trigger:)];
+  [[button draggableButton] setActsOnMouseDown:YES];
+
+  [[test_window() contentView] addSubview:button.get()];
+  [button performSelector:@selector(performBlock:)
+               withObject:^{
+                 EXPECT_EQ([button triggerCount], 1U);
+               }
+               afterDelay:.5
+                  inModes:@[ NSEventTrackingRunLoopMode ]];
+  NSEvent* downEvent = cocoa_test_event_utils::MouseEventAtPoint(
+      NSMakePoint(10, 10), NSLeftMouseDown, 0);
+  [button mouseDown:downEvent];
+}
+
+TEST_F(DraggableButtonTest, ActsOnMouseDownIgnoredForCommandClick) {
+  base::scoped_nsobject<TestableDraggableButton> button(
+      [[TestableDraggableButton alloc]
+          initWithFrame:NSMakeRect(0, 0, 500, 500)]);
+  [button setTarget:button];
+  [button setAction:@selector(trigger:)];
+  [[button draggableButton] setActsOnMouseDown:YES];
+
+  [[test_window() contentView] addSubview:button.get()];
+  NSEvent* downEvent = cocoa_test_event_utils::MouseEventAtPoint(
+      NSMakePoint(10, 10), NSLeftMouseDown, NSEventModifierFlagCommand);
+  [button mouseDown:downEvent];
+  EXPECT_FALSE([button wasTriggered]);
+  NSEvent* upEvent = cocoa_test_event_utils::MouseEventAtPoint(
+      NSMakePoint(100, 100), NSLeftMouseUp, 0);
+  [button mouseUp:upEvent];
+  EXPECT_EQ([button triggerCount], 1U);
 }
