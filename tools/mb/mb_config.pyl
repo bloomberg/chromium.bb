@@ -260,7 +260,10 @@
       'Chromium Linux Goma GCE Staging': 'release_bot',
       'Chromium Mac Goma GCE Staging': 'release_bot',
       'CrWinClangGomaGCEStaging': 'win_clang_release_bot_disable_nacl',
+      'Chromium Linux Goma RBE Staging (clobber)': 'release_bot',
       'Chromium Linux Goma RBE Staging': 'release_bot',
+      'Chromium Linux Goma RBE Staging (dbg) (clobber)': 'debug_bot',
+      'Chromium Linux Goma RBE Staging (dbg)': 'debug_bot',
     },
 
     'chromium.gpu': {
