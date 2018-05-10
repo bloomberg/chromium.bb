@@ -258,13 +258,13 @@ public class ModalDialogManagerTest {
         checkBrowserControls(false);
         checkCurrentPresenter(null);
 
-        // Insert a tab modal dialog and two app modal dialogs for showing.
+        // Insert two tab modal dialogs and two app modal dialogs for showing.
         showDialog(0, ModalDialogManager.TAB_MODAL);
         showDialog(1, ModalDialogManager.TAB_MODAL);
         showDialog(2, ModalDialogManager.APP_MODAL);
         showDialog(3, ModalDialogManager.APP_MODAL);
 
-        // The first inserted app modal dialog show be shown.
+        // The first inserted app modal dialog is shown.
         checkPendingSize(ModalDialogManager.APP_MODAL, 1);
         checkPendingSize(ModalDialogManager.TAB_MODAL, 2);
         onView(withText("2")).check(matches(isDisplayed()));
@@ -297,6 +297,59 @@ public class ModalDialogManagerTest {
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(allOf(hasDescendant(withText("1")),
                         not(hasDescendant(withText("0"))), not(hasDescendant(withText("2"))),
+                        not(hasDescendant(withText("3"))))));
+        checkBrowserControls(true);
+        checkCurrentPresenter(ModalDialogManager.TAB_MODAL);
+    }
+
+    @Test
+    @SmallTest
+    public void testShow_ShowDialogAsNext() throws Exception {
+        // Initially there are no dialogs in the pending list. Browser controls are not restricted.
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
+        checkBrowserControls(false);
+        checkCurrentPresenter(null);
+
+        // Insert a tab modal dialog and a app modal dialog for showing.
+        showDialog(0, ModalDialogManager.TAB_MODAL);
+        showDialog(1, ModalDialogManager.TAB_MODAL);
+        showDialog(2, ModalDialogManager.APP_MODAL);
+
+        // The first inserted app modal dialog is shown.
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 2);
+        onView(withText("2")).check(matches(isDisplayed()));
+        onView(withId(R.id.tab_modal_dialog_container)).check(doesNotExist());
+        checkCurrentPresenter(ModalDialogManager.APP_MODAL);
+
+        // Show a tab modal dialog as the next dialog to be shown. Verify that the app modal dialog
+        // is still showing.
+        showDialogAsNext(3, ModalDialogManager.TAB_MODAL);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 3);
+        onView(withText("2")).check(matches(isDisplayed()));
+        onView(withId(R.id.tab_modal_dialog_container)).check(doesNotExist());
+        checkCurrentPresenter(ModalDialogManager.APP_MODAL);
+
+        // Dismiss the dialog by clicking OK. The third tab modal dialog should be shown.
+        onView(withText(R.string.ok)).perform(click());
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 2);
+        onView(withId(R.id.tab_modal_dialog_container))
+                .check(matches(allOf(hasDescendant(withText("3")),
+                        not(hasDescendant(withText("0"))), not(hasDescendant(withText("1"))),
+                        not(hasDescendant(withText("2"))))));
+        checkBrowserControls(true);
+        checkCurrentPresenter(ModalDialogManager.TAB_MODAL);
+
+        // Dismiss the dialog by clicking OK. The first tab modal dialog should be shown.
+        onView(withText(R.string.ok)).perform(click());
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 1);
+        onView(withId(R.id.tab_modal_dialog_container))
+                .check(matches(allOf(hasDescendant(withText("0")),
+                        not(hasDescendant(withText("1"))), not(hasDescendant(withText("2"))),
                         not(hasDescendant(withText("3"))))));
         checkBrowserControls(true);
         checkCurrentPresenter(ModalDialogManager.TAB_MODAL);
@@ -658,12 +711,17 @@ public class ModalDialogManagerTest {
     private void showDialog(
             final int index, final @ModalDialogManager.ModalDialogType int dialogType) {
         ThreadUtils.runOnUiThreadBlocking(
-                () -> { mManager.showDialog(mModalDialogViews[index], dialogType); });
+                () -> mManager.showDialog(mModalDialogViews[index], dialogType));
+    }
+
+    private void showDialogAsNext(
+            final int index, final @ModalDialogManager.ModalDialogType int dialogType) {
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mManager.showDialog(mModalDialogViews[index], dialogType, true));
     }
 
     private void dismissDialog(final int index) {
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> { mManager.dismissDialog(mModalDialogViews[index]); });
+        ThreadUtils.runOnUiThreadBlocking(() -> mManager.dismissDialog(mModalDialogViews[index]));
     }
 
     private void checkPendingSize(

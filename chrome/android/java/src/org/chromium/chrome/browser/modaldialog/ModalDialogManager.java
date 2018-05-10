@@ -169,27 +169,35 @@ public class ModalDialogManager {
 
     /**
      * Show the specified dialog. If another dialog is currently showing, the specified dialog will
-     * be added to the pending dialog list.
+     * be added to the end of the pending dialog list of the specified type.
      * @param dialog The dialog to be shown or added to pending list.
      * @param dialogType The type of the dialog to be shown.
      */
     public void showDialog(ModalDialogView dialog, @ModalDialogType int dialogType) {
+        showDialog(dialog, dialogType, false);
+    }
+
+    /**
+     * Show the specified dialog. If another dialog is currently showing, the specified dialog will
+     * be added to the pending dialog list. If showNext is set to true, the dialog will be added
+     * to the top of the pending list of its type, otherwise it will be added to the end.
+     * @param dialog The dialog to be shown or added to pending list.
+     * @param dialogType The type of the dialog to be shown.
+     * @param showAsNext Whether the specified dialog should be set highest priority of its type.
+     */
+    public void showDialog(
+            ModalDialogView dialog, @ModalDialogType int dialogType, boolean showAsNext) {
         List<ModalDialogView> dialogs = mPendingDialogs.get(dialogType);
         if (dialogs == null) mPendingDialogs.put(dialogType, dialogs = new ArrayList<>());
 
-        if (mSuspendedTypes.contains(dialogType)) {
-            dialogs.add(dialog);
+        // Put the new dialog in pending list if the dialog type is suspended or the current dialog
+        // is of higher priority.
+        if (mSuspendedTypes.contains(dialogType) || (isShowing() && mCurrentType <= dialogType)) {
+            dialogs.add(showAsNext ? 0 : dialogs.size(), dialog);
             return;
         }
 
-        if (isShowing()) {
-            // Put the new dialog in pending list if the current dialog is of higher priority.
-            if (mCurrentType <= dialogType) {
-                dialogs.add(dialog);
-                return;
-            }
-            suspendCurrentDialog();
-        }
+        if (isShowing()) suspendCurrentDialog();
 
         assert !isShowing();
         dialog.prepareBeforeShow();
