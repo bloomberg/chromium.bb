@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
@@ -643,23 +644,37 @@ void FileManagerPrivateConfigureVolumeFunction::OnCompleted(
   Respond(NoArguments());
 }
 
-bool IsCrostiniEnabled() {
+namespace {
+bool IsCrostiniEnabledForProfile(Profile* profile) {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
              chromeos::switches::kCrostiniFiles) &&
-         crostini::CrostiniManager::IsCrosTerminaInstalled();
+         IsCrostiniUIAllowedForProfile(profile) && IsCrostiniEnabled(profile);
+}
 }
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateIsCrostiniEnabledFunction::Run() {
   return RespondNow(
-      OneArgument(std::make_unique<base::Value>(IsCrostiniEnabled())));
+      OneArgument(std::make_unique<base::Value>(IsCrostiniEnabledForProfile(
+          Profile::FromBrowserContext(browser_context())))));
 }
 
-ExtensionFunction::ResponseAction
-FileManagerPrivateMountCrostiniContainerFunction::Run() {
-  // TOOD(https://crbug.com/832509): implement MountCrostiniContainer.
-  DCHECK(IsCrostiniEnabled());
-  return RespondNow(NoArguments());
+bool FileManagerPrivateMountCrostiniContainerFunction::RunAsync() {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  DCHECK(IsCrostiniEnabledForProfile(profile));
+  crostini::CrostiniManager::GetInstance()->RestartCrostini(
+      profile, kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+      base::BindOnce(
+          &FileManagerPrivateMountCrostiniContainerFunction::RestartCallback,
+          this));
+  return true;
+}
+
+void FileManagerPrivateMountCrostiniContainerFunction::RestartCallback(
+    crostini::ConciergeClientResult result) {
+  SetResult(std::make_unique<base::Value>(
+      result == crostini::ConciergeClientResult::SUCCESS));
+  SendResponse(true);
 }
 
 FileManagerPrivateInternalGetCustomActionsFunction::
