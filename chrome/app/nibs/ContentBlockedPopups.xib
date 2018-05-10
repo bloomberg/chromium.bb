@@ -87,11 +87,11 @@ DQ
                                 </buttonCell>
                                 <cells>
                                     <column>
-                                        <buttonCell type="radio" title="^IDS_BLOCKED_POPUPS_UNBLOCK" imagePosition="left" alignment="left" controlSize="small" tag="1" inset="2" id="10">
+                                        <buttonCell type="radio" title="^IDS_BLOCKED_POPUPS_REDIRECTS_UNBLOCK" imagePosition="left" alignment="left" controlSize="small" tag="1" inset="2" id="10">
                                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                             <font key="font" metaFont="smallSystem"/>
                                         </buttonCell>
-                                        <buttonCell type="radio" title="^IDS_BLOCKED_POPUPS_NO_ACTION" imagePosition="left" alignment="left" controlSize="small" state="on" tag="2" inset="2" id="11">
+                                        <buttonCell type="radio" title="^IDS_BLOCKED_POPUPS_REDIRECTS_NO_ACTION" imagePosition="left" alignment="left" controlSize="small" state="on" tag="2" inset="2" id="11">
                                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                             <font key="font" metaFont="smallSystem"/>
                                         </buttonCell>

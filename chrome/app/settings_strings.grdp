@@ -2637,8 +2637,8 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_PDF_DOWNLOAD_PDFS" desc="Label for downloading PDF documents instead of automatically opening them in Chrome.">
     Download PDF files instead of automatically opening them in Chrome
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_POPUPS" desc="Label for the popups site settings.">
-    Popups
+  <message name="IDS_SETTINGS_SITE_SETTINGS_POPUPS" desc="Label for the pop-ups and redirects site settings.">
+    Pop-ups and redirects
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_PROTECTED_CONTENT" desc="Label for the protected content site settings.">
     Protected content
