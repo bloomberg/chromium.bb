@@ -108,6 +108,17 @@ CRYPTO_EXPORT ScopedPK11Slot GetPrivateSlotForChromeOSUser(
 // *Initialize*ForChromeOSUser functions.
 CRYPTO_EXPORT void CloseChromeOSUserForTesting(
     const std::string& username_hash);
+
+// Sets the slot which should be used as private slot for the next
+// |InitializePrivateSoftwareSlotForChromeOSUser| called. This is intended for
+// simulating a separate private slot in Chrome OS browser tests.
+// As a sanity check, it is recommended to check that the private slot of the
+// profile's certificate database is set to |slot| when the profile is
+// available, because |slot| will be used as private slot for whichever profile
+// is initialized next.
+CRYPTO_EXPORT void SetPrivateSoftwareSlotForChromeOSUserForTesting(
+    ScopedPK11Slot slot);
+
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace crypto

@@ -510,6 +510,12 @@ class NSSInitSingleton {
     DCHECK(chromeos_user_map_[username_hash]->
                private_slot_initialization_started());
 
+    if (prepared_test_private_slot_) {
+      chromeos_user_map_[username_hash]->SetPrivateSlot(
+          std::move(prepared_test_private_slot_));
+      return;
+    }
+
     chromeos_user_map_[username_hash]->SetPrivateSlot(
         chromeos_user_map_[username_hash]->GetPublicSlot());
   }
@@ -558,6 +564,8 @@ class NSSInitSingleton {
   }
 
   void SetSystemKeySlotForTesting(ScopedPK11Slot slot) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+
     // Ensure that a previous value of test_system_slot_ is not overwritten.
     // Unsetting, i.e. setting a nullptr, however is allowed.
     DCHECK(!slot || !test_system_slot_);
@@ -568,6 +576,15 @@ class NSSInitSingleton {
     } else {
       tpm_slot_.reset();
     }
+  }
+
+  void SetPrivateSoftwareSlotForChromeOSUserForTesting(ScopedPK11Slot slot) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+
+    // Ensure that a previous value of prepared_test_private_slot_ is not
+    // overwritten. Unsetting, i.e. setting a nullptr, however is allowed.
+    DCHECK(!slot || !prepared_test_private_slot_);
+    prepared_test_private_slot_ = std::move(slot);
   }
 #endif  // defined(OS_CHROMEOS)
 
@@ -746,6 +763,7 @@ class NSSInitSingleton {
 #if defined(OS_CHROMEOS)
   std::map<std::string, std::unique_ptr<ChromeOSUserData>> chromeos_user_map_;
   ScopedPK11Slot test_system_slot_;
+  ScopedPK11Slot prepared_test_private_slot_;
 #endif
 
   base::ThreadChecker thread_checker_;
@@ -861,6 +879,11 @@ ScopedPK11Slot GetPrivateSlotForChromeOSUser(
 
 void CloseChromeOSUserForTesting(const std::string& username_hash) {
   g_nss_singleton.Get().CloseChromeOSUserForTesting(username_hash);
+}
+
+void SetPrivateSoftwareSlotForChromeOSUserForTesting(ScopedPK11Slot slot) {
+  g_nss_singleton.Get().SetPrivateSoftwareSlotForChromeOSUserForTesting(
+      std::move(slot));
 }
 #endif  // defined(OS_CHROMEOS)
 
