@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 
 // Code taken from <http://codereview.chromium.org/180036/diff/3001/3004>.
 // TODO(viettrungluu): Do we want common, standard code for drag hysteresis?
@@ -86,6 +87,15 @@ const CGFloat kDragExpirationTimeout = 0.45;
   whenMouseDown_ = [theEvent timestamp];
   actionHasFired_ = NO;
 
+  // Even if the regular click should trigger on mouse down (for example,
+  // opening the bookmark menu), command click should behave like a
+  // button click.
+  WindowOpenDisposition disposition =
+      ui::WindowOpenDispositionFromNSEvent(theEvent);
+  BOOL shouldActOnMouseDown =
+      actsOnMouseDown_ &&
+      disposition != WindowOpenDisposition::NEW_BACKGROUND_TAB;
+
   if (draggable_) {
     NSDate* date = [NSDate dateWithTimeIntervalSinceNow:kDragExpirationTimeout];
     if ([self dragShouldBeginFromMouseDown:theEvent
@@ -93,7 +103,7 @@ const CGFloat kDragExpirationTimeout = 0.45;
       [button_ beginDrag:theEvent];
       [self endDrag];
     } else {
-      if (actsOnMouseDown_) {
+      if (shouldActOnMouseDown) {
         [self performMouseDownAction:theEvent];
         return kDraggableButtonImplDidWork;
       } else {
@@ -101,7 +111,7 @@ const CGFloat kDragExpirationTimeout = 0.45;
       }
     }
   } else {
-    if (actsOnMouseDown_) {
+    if (shouldActOnMouseDown) {
       [self performMouseDownAction:theEvent];
       return kDraggableButtonImplDidWork;
     } else {
