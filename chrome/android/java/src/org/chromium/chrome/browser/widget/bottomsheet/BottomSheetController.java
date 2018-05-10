@@ -395,7 +395,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
         // TODO(mdjones): Replace usages of bottom sheet with a model in line with MVC.
         // TODO(mdjones): It would probably be useful to expose an observer method that notifies
         //                objects when all content requests are cleared.
-        hideContent(mBottomSheet.getCurrentSheetContent(), true);
+        hideContent(mBottomSheet.getCurrentSheetContent(), false);
         mWasShownForCurrentTab = false;
         mIsSuppressed = false;
     }
