@@ -672,23 +672,23 @@ void WindowEventTargetingHelper::SetTaskRunner(
 
 // ----------------------------------------------------------------------------
 
-TestDisplayManagerObserver::TestDisplayManagerObserver() : binding_(this) {}
+TestScreenProviderObserver::TestScreenProviderObserver() : binding_(this) {}
 
-TestDisplayManagerObserver::~TestDisplayManagerObserver() = default;
+TestScreenProviderObserver::~TestScreenProviderObserver() = default;
 
-mojom::DisplayManagerObserverPtr TestDisplayManagerObserver::GetPtr() {
-  mojom::DisplayManagerObserverPtr ptr;
+mojom::ScreenProviderObserverPtr TestScreenProviderObserver::GetPtr() {
+  mojom::ScreenProviderObserverPtr ptr;
   binding_.Bind(mojo::MakeRequest(&ptr));
   return ptr;
 }
 
-std::string TestDisplayManagerObserver::GetAndClearObserverCalls() {
+std::string TestScreenProviderObserver::GetAndClearObserverCalls() {
   std::string result;
   std::swap(observer_calls_, result);
   return result;
 }
 
-std::string TestDisplayManagerObserver::DisplayIdsToString(
+std::string TestScreenProviderObserver::DisplayIdsToString(
     const std::vector<mojom::WsDisplayPtr>& wm_displays) {
   std::string display_ids;
   for (const auto& wm_display : wm_displays) {
@@ -699,7 +699,7 @@ std::string TestDisplayManagerObserver::DisplayIdsToString(
   return display_ids;
 }
 
-void TestDisplayManagerObserver::OnDisplaysChanged(
+void TestScreenProviderObserver::OnDisplaysChanged(
     std::vector<mojom::WsDisplayPtr> displays,
     int64_t primary_display_id,
     int64_t internal_display_id) {

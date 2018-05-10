@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws2/display_manager_mus.h"
+#include "services/ui/ws2/screen_provider.h"
 
 #include "ui/display/screen.h"
 
@@ -24,43 +24,42 @@ int64_t GetInternalDisplayId() {
 
 }  // namespace
 
-DisplayManagerMus::DisplayManagerMus() {
+ScreenProvider::ScreenProvider() {
   Screen::GetScreen()->AddObserver(this);
 }
 
-DisplayManagerMus::~DisplayManagerMus() {
+ScreenProvider::~ScreenProvider() {
   Screen::GetScreen()->RemoveObserver(this);
 }
 
-void DisplayManagerMus::AddBinding(mojom::DisplayManagerRequest request) {
+void ScreenProvider::AddBinding(mojom::ScreenProviderRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void DisplayManagerMus::AddObserver(mojom::DisplayManagerObserverPtr observer) {
-  mojom::DisplayManagerObserver* observer_impl = observer.get();
+void ScreenProvider::AddObserver(mojom::ScreenProviderObserverPtr observer) {
+  mojom::ScreenProviderObserver* observer_impl = observer.get();
   observers_.AddPtr(std::move(observer));
   NotifyObserver(observer_impl);
 }
 
-void DisplayManagerMus::OnDidProcessDisplayChanges() {
+void ScreenProvider::OnDidProcessDisplayChanges() {
   // Display changes happen in batches, so notify observers after the batch is
   // complete, rather than on every add/remove/metrics change.
   NotifyAllObservers();
 }
 
-void DisplayManagerMus::NotifyAllObservers() {
-  observers_.ForAllPtrs([this](mojom::DisplayManagerObserver* observer) {
+void ScreenProvider::NotifyAllObservers() {
+  observers_.ForAllPtrs([this](mojom::ScreenProviderObserver* observer) {
     NotifyObserver(observer);
   });
 }
 
-void DisplayManagerMus::NotifyObserver(
-    mojom::DisplayManagerObserver* observer) {
+void ScreenProvider::NotifyObserver(mojom::ScreenProviderObserver* observer) {
   observer->OnDisplaysChanged(GetAllDisplays(), GetPrimaryDisplayId(),
                               GetInternalDisplayId());
 }
 
-std::vector<mojom::WsDisplayPtr> DisplayManagerMus::GetAllDisplays() {
+std::vector<mojom::WsDisplayPtr> ScreenProvider::GetAllDisplays() {
   std::vector<Display> displays = Screen::GetScreen()->GetAllDisplays();
 
   std::vector<mojom::WsDisplayPtr> ws_displays;

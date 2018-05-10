@@ -6,7 +6,7 @@
 #define UI_VIEWS_MUS_SCREEN_MUS_H_
 
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/ui/public/interfaces/display_manager.mojom.h"
+#include "services/ui/public/interfaces/screen_provider.mojom.h"
 #include "ui/display/screen_base.h"
 #include "ui/views/mus/mus_export.h"
 
@@ -18,9 +18,9 @@ namespace views {
 
 class ScreenMusDelegate;
 
-// Screen implementation backed by ui::mojom::DisplayManager.
+// Screen implementation backed by ui::mojom::ScreenProvider.
 class VIEWS_MUS_EXPORT ScreenMus : public display::ScreenBase,
-                                   public ui::mojom::DisplayManagerObserver {
+                                   public ui::mojom::ScreenProviderObserver {
  public:
   explicit ScreenMus(ScreenMusDelegate* delegate);
   ~ScreenMus() override;
@@ -37,15 +37,15 @@ class VIEWS_MUS_EXPORT ScreenMus : public display::ScreenBase,
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
   aura::Window* GetWindowAtScreenPoint(const gfx::Point& point) override;
 
-  // ui::mojom::DisplayManager:
+  // ui::mojom::ScreenProvider:
   void OnDisplaysChanged(std::vector<ui::mojom::WsDisplayPtr> ws_displays,
                          int64_t primary_display_id,
                          int64_t internal_display_id) override;
 
   ScreenMusDelegate* delegate_;
-  ui::mojom::DisplayManagerPtr display_manager_;
-  mojo::Binding<ui::mojom::DisplayManagerObserver>
-      display_manager_observer_binding_;
+  ui::mojom::ScreenProviderPtr screen_provider_;
+  mojo::Binding<ui::mojom::ScreenProviderObserver>
+      screen_provider_observer_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenMus);
 };

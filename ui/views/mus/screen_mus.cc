@@ -37,7 +37,7 @@ namespace views {
 using Type = display::DisplayList::Type;
 
 ScreenMus::ScreenMus(ScreenMusDelegate* delegate)
-    : delegate_(delegate), display_manager_observer_binding_(this) {
+    : delegate_(delegate), screen_provider_observer_binding_(this) {
   DCHECK(delegate);
   display::Screen::SetScreenInstance(this);
 }
@@ -48,23 +48,23 @@ ScreenMus::~ScreenMus() {
 }
 
 void ScreenMus::Init(service_manager::Connector* connector) {
-  connector->BindInterface(ui::mojom::kServiceName, &display_manager_);
+  connector->BindInterface(ui::mojom::kServiceName, &screen_provider_);
 
-  ui::mojom::DisplayManagerObserverPtr observer;
-  display_manager_observer_binding_.Bind(mojo::MakeRequest(&observer));
-  display_manager_->AddObserver(std::move(observer));
+  ui::mojom::ScreenProviderObserverPtr observer;
+  screen_provider_observer_binding_.Bind(mojo::MakeRequest(&observer));
+  screen_provider_->AddObserver(std::move(observer));
 
   // We need the set of displays before we can continue. Wait for it.
   //
   // TODO(rockot): Do something better here. This should not have to block tasks
   // from running on the calling thread. http://crbug.com/594852.
-  bool success = display_manager_observer_binding_.WaitForIncomingMethodCall();
+  bool success = screen_provider_observer_binding_.WaitForIncomingMethodCall();
 
   // The WaitForIncomingMethodCall() should have supplied the set of Displays,
   // unless mus is going down, in which case encountered_error() is true, or the
   // call to WaitForIncomingMethodCall() failed.
   if (display_list().displays().empty()) {
-    DCHECK(display_manager_.encountered_error() || !success);
+    DCHECK(screen_provider_.encountered_error() || !success);
     // In this case we install a default display and assume the process is
     // going to exit shortly so that the real value doesn't matter.
     display_list().AddDisplay(

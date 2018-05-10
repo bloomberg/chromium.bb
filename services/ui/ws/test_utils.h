@@ -19,7 +19,7 @@
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/ui/display/screen_manager.h"
 #include "services/ui/display/viewport_metrics.h"
-#include "services/ui/public/interfaces/display_manager.mojom.h"
+#include "services/ui/public/interfaces/screen_provider.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_binding.h"
@@ -751,12 +751,12 @@ class WindowEventTargetingHelper {
 
 // -----------------------------------------------------------------------------
 
-class TestDisplayManagerObserver : public mojom::DisplayManagerObserver {
+class TestScreenProviderObserver : public mojom::ScreenProviderObserver {
  public:
-  TestDisplayManagerObserver();
-  ~TestDisplayManagerObserver() override;
+  TestScreenProviderObserver();
+  ~TestScreenProviderObserver() override;
 
-  mojom::DisplayManagerObserverPtr GetPtr();
+  mojom::ScreenProviderObserverPtr GetPtr();
 
   std::string GetAndClearObserverCalls();
 
@@ -764,15 +764,15 @@ class TestDisplayManagerObserver : public mojom::DisplayManagerObserver {
   std::string DisplayIdsToString(
       const std::vector<mojom::WsDisplayPtr>& wm_displays);
 
-  // mojom::DisplayManagerObserver:
+  // mojom::ScreenProviderObserver:
   void OnDisplaysChanged(std::vector<mojom::WsDisplayPtr> displays,
                          int64_t primary_display_id,
                          int64_t internal_display_id) override;
 
-  mojo::Binding<mojom::DisplayManagerObserver> binding_;
+  mojo::Binding<mojom::ScreenProviderObserver> binding_;
   std::string observer_calls_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestDisplayManagerObserver);
+  DISALLOW_COPY_AND_ASSIGN(TestScreenProviderObserver);
 };
 
 // -----------------------------------------------------------------------------

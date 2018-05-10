@@ -6,7 +6,7 @@ module ui.mojom;
 
 import "services/ui/public/interfaces/window_manager_constants.mojom";
 
-interface DisplayManagerObserver {
+interface ScreenProviderObserver {
   // Sent when the observer is added as well as any time the set of displays
   // changes in any way. |displays| contains all known displays. If the system
   // that WS is running on has an integrated display, for example a laptop
@@ -18,8 +18,7 @@ interface DisplayManagerObserver {
                     int64 internal_display_id);
 };
 
-// TODO(jamescook): Rename to ScreenProvider.
-interface DisplayManager {
+interface ScreenProvider {
   // Adding an observer triggers a notification with the initial values.
-  AddObserver(DisplayManagerObserver observer);
+  AddObserver(ScreenProviderObserver observer);
 };

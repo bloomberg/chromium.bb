@@ -14,7 +14,7 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "services/ui/public/interfaces/display_manager.mojom.h"
+#include "services/ui/public/interfaces/screen_provider.mojom.h"
 #include "services/ui/ws/cursor_state.h"
 #include "services/ui/ws/cursor_state_delegate.h"
 #include "services/ui/ws/event_dispatcher_delegate.h"
