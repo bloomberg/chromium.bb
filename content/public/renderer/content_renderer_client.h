@@ -41,7 +41,6 @@ class SingleThreadTaskRunner;
 namespace blink {
 class WebAudioDevice;
 class WebAudioLatencyHint;
-class WebClipboard;
 class WebFrame;
 class WebLocalFrame;
 class WebMIDIAccessor;
@@ -171,10 +170,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // returns NULL the content layer will create the audio device.
   virtual std::unique_ptr<blink::WebAudioDevice> OverrideCreateAudioDevice(
       const blink::WebAudioLatencyHint& latency_hint);
-
-  // Allows the embedder to override the blink::WebClipboard used. If it
-  // returns NULL the content layer will handle clipboard interactions.
-  virtual blink::WebClipboard* OverrideWebClipboard();
 
   // Allows the embedder to override the WebThemeEngine used. If it returns NULL
   // the content layer will provide an engine.

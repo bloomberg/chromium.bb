@@ -18,14 +18,16 @@
 #include "cc/blink/web_layer_impl.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "content/app/mojo/mojo_init.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/renderer/loader/web_data_consumer_handle_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
-#include "content/test/mock_webclipboard_impl.h"
+#include "content/test/mock_clipboard_host.h"
 #include "content/test/web_gesture_curve_mock.h"
 #include "media/base/media.h"
 #include "media/media_buildflags.h"
 #include "net/cookies/cookie_monster.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_connection_type.h"
@@ -135,7 +137,9 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
 #endif
 
   url_loader_factory_ = blink::WebURLLoaderMockFactory::Create();
-  mock_clipboard_.reset(new MockWebClipboardImpl());
+  // Mock out clipboard calls so that tests don't mess
+  // with each other's copies/pastes when running in parallel.
+  mock_clipboard_host_ = std::make_unique<MockClipboardHost>(nullptr);
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
@@ -163,6 +167,15 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
 
   // Initialize mojo firstly to enable Blink initialization to use it.
   InitializeMojo();
+
+  connector_ = std::make_unique<service_manager::Connector>(
+      service_manager::mojom::ConnectorPtrInfo());
+  service_manager::Connector::TestApi test_api(connector_.get());
+  test_api.OverrideBinderForTesting(
+      service_manager::Identity(mojom::kBrowserServiceName),
+      blink::mojom::ClipboardHost::Name_,
+      base::BindRepeating(&TestBlinkWebUnitTestSupport::BindClipboardHost,
+                          weak_factory_.GetWeakPtr()));
 
   service_manager::BinderRegistry empty_registry;
   blink::Initialize(this, &empty_registry);
@@ -192,19 +205,13 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
 
 TestBlinkWebUnitTestSupport::~TestBlinkWebUnitTestSupport() {
   url_loader_factory_.reset();
-  mock_clipboard_.reset();
+  mock_clipboard_host_.reset();
   if (main_thread_scheduler_)
     main_thread_scheduler_->Shutdown();
 }
 
 blink::WebBlobRegistry* TestBlinkWebUnitTestSupport::GetBlobRegistry() {
   return &blob_registry_;
-}
-
-blink::WebClipboard* TestBlinkWebUnitTestSupport::Clipboard() {
-  // Mock out clipboard calls so that tests don't mess
-  // with each other's copies/pastes when running in parallel.
-  return mock_clipboard_.get();
 }
 
 blink::WebIDBFactory* TestBlinkWebUnitTestSupport::IdbFactory() {
@@ -359,6 +366,16 @@ TestBlinkWebUnitTestSupport::CreateRTCCertificateGenerator() {
 #else
   return nullptr;
 #endif
+}
+
+service_manager::Connector* TestBlinkWebUnitTestSupport::GetConnector() {
+  return connector_.get();
+}
+
+void TestBlinkWebUnitTestSupport::BindClipboardHost(
+    mojo::ScopedMessagePipeHandle handle) {
+  mock_clipboard_host_->Bind(
+      blink::mojom::ClipboardHostRequest(std::move(handle)));
 }
 
 }  // namespace content

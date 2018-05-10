@@ -1060,6 +1060,7 @@ crbug.com/730284 fast/borders/border-radius-mask-video.html [ Failure ]
 crbug.com/730284 fast/replaced/border-radius-clip.html [ Failure ]
 
 # Check failed: layer_list_.empty() || *page_scale_factor == 1
+crbug.com/706066 clipboard/copy-image-at-with-pinch-zoom.html [ Crash Timeout ]
 crbug.com/706066 compositing/background-color/background-color-outside-document.html [ Crash Timeout ]
 crbug.com/706066 compositing/overflow/overflow-scaled-descendant-overlapping.html [ Crash Timeout ]
 crbug.com/706066 compositing/gestures/gesture-tapHighlight-simple-scaled-document.html [ Crash ]

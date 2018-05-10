@@ -15,7 +15,6 @@
 #include "cc/blink/web_compositor_support_impl.h"
 #include "content/child/blink_platform_impl.h"
 #include "content/test/mock_webblob_registry_impl.h"
-#include "content/test/mock_webclipboard_impl.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 
 namespace blink {
@@ -26,6 +25,8 @@ class WebMainThreadScheduler;
 
 namespace content {
 
+class MockClipboardHost;
+
 // An implementation of BlinkPlatformImpl for tests.
 class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
  public:
@@ -33,7 +34,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   ~TestBlinkWebUnitTestSupport() override;
 
   blink::WebBlobRegistry* GetBlobRegistry() override;
-  blink::WebClipboard* Clipboard() override;
   blink::WebIDBFactory* IdbFactory() override;
 
   std::unique_ptr<blink::WebURLLoaderFactory> CreateDefaultURLLoaderFactory()
@@ -69,9 +69,14 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   std::unique_ptr<blink::WebRTCCertificateGenerator>
   CreateRTCCertificateGenerator() override;
 
+  service_manager::Connector* GetConnector() override;
+
  private:
+  void BindClipboardHost(mojo::ScopedMessagePipeHandle handle);
+
+  std::unique_ptr<service_manager::Connector> connector_;
   MockWebBlobRegistryImpl blob_registry_;
-  std::unique_ptr<MockWebClipboardImpl> mock_clipboard_;
+  std::unique_ptr<MockClipboardHost> mock_clipboard_host_;
   base::ScopedTempDir file_system_root_;
   std::unique_ptr<blink::WebURLLoaderMockFactory> url_loader_factory_;
   cc_blink::WebCompositorSupportImpl compositor_support_;

@@ -31,7 +31,6 @@
 #include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_test_runner.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
-#include "content/test/mock_webclipboard_impl.h"
 #include "media/base/audio_latency.h"
 #include "media/base/mime_util.h"
 #include "media/media_buildflags.h"
@@ -49,7 +48,6 @@
 #include "v8/include/v8.h"
 
 using blink::WebAudioDevice;
-using blink::WebClipboard;
 using blink::WebFrame;
 using blink::WebLocalFrame;
 using blink::WebMIDIAccessor;
@@ -203,12 +201,6 @@ LayoutTestContentRendererClient::OverrideCreateAudioDevice(
   test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
   return interfaces->CreateAudioDevice(hw_sample_rate, buffer_size);
-}
-
-WebClipboard* LayoutTestContentRendererClient::OverrideWebClipboard() {
-  if (!clipboard_)
-    clipboard_.reset(new MockWebClipboardImpl);
-  return clipboard_.get();
 }
 
 WebThemeEngine* LayoutTestContentRendererClient::OverrideThemeEngine() {

@@ -400,11 +400,7 @@ blink::BlameContext* RendererBlinkPlatformImpl::GetTopLevelBlameContext() {
 }
 
 blink::WebClipboard* RendererBlinkPlatformImpl::Clipboard() {
-  blink::WebClipboard* clipboard =
-      GetContentClient()->renderer()->OverrideWebClipboard();
-  if (clipboard)
-    return clipboard;
-
+  // TODO(dgozman): remove the ability to override this from embedder.
   return BlinkPlatformImpl::Clipboard();
 }
 

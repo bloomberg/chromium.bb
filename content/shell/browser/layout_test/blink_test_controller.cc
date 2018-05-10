@@ -490,6 +490,7 @@ bool BlinkTestController::ResetAfterLayoutTest() {
   prefs_ = WebPreferences();
   should_override_prefs_ = false;
   LayoutTestContentBrowserClient::Get()->SetPopupBlockingEnabled(false);
+  LayoutTestContentBrowserClient::Get()->ResetMockClipboardHost();
   navigation_history_dump_ = "";
   pixel_dump_.reset();
   actual_pixel_hash_ = "";

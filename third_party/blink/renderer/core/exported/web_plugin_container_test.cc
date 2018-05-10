@@ -247,13 +247,16 @@ WebPluginContainer* GetWebPluginContainer(WebViewImpl* web_view,
 }
 
 WebString ReadClipboard() {
+  // Run all tasks in a message loop to allow asynchronous clipboard writing
+  // to happen before reading from it synchronously.
+  test::RunPendingTasks();
   return Platform::Current()->Clipboard()->ReadPlainText(
       mojom::ClipboardBuffer::kStandard);
 }
 
 void ClearClipboardBuffer() {
-  Platform::Current()->Clipboard()->WritePlainText(WebString());
-  EXPECT_EQ(WebString(), ReadClipboard());
+  Platform::Current()->Clipboard()->WritePlainText(WebString(""));
+  EXPECT_EQ(WebString(""), ReadClipboard());
 }
 
 void CreateAndHandleKeyboardEvent(WebElement* plugin_container_one_element,
