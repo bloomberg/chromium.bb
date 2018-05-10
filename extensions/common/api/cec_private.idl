@@ -6,8 +6,38 @@
 [platforms=("chromeos")]
 namespace cecPrivate {
 
+  enum DisplayCecPowerState {
+    // There was an error querying the power state of the display.
+    error,
+
+    // The kernel adapter for the CEC endpoint isn’t configured (no EDID set).
+    adapterNotConfigured,
+
+    // No device ACKed the request on the CEC bus.
+    noDevice,
+
+    // The display is a powered on state.
+    on,
+
+    // The display is in standby mode.
+    standby,
+
+    // The display is currently transitioning to an awake state. It can't be
+    // relied on to show any output yet.
+    transitioningToOn,
+
+    // The display is currently transitioning to standby.
+    transitioningToStandby,
+
+    // Found a CEC endpoint but unable to determine the power state.
+    unknown
+  };
+
+  callback DisplayCecPowerStateCallback =
+      void(DisplayCecPowerState[] powerStates);
+
   interface Functions {
-    // Attempt to put all HDMI CEC compatible devices in stand-by.
+    // Attempt to put all HDMI CEC compatible devices in standby.
     //
     // This is not guaranteed to have any effect on the connected displays.
     // Displays that do not support HDMI CEC will not be affected.
@@ -17,5 +47,9 @@ namespace cecPrivate {
     // HDMI CEC enabled displays connected, waking them from standby if
     // necessary.
     static void sendWakeUp();
+
+    // Queries all HDMI CEC capable displays for their current power state.
+    static void queryDisplayCecPowerState(
+        DisplayCecPowerStateCallback callback);
   };
 };

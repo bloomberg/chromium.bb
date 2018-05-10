@@ -5,10 +5,14 @@
 #ifndef EXTENSIONS_BROWSER_API_CEC_PRIVATE_CEC_PRIVATE_API_H_
 #define EXTENSIONS_BROWSER_API_CEC_PRIVATE_CEC_PRIVATE_API_H_
 
+#include <vector>
+
+#include "chromeos/dbus/cec_service_client.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 
 namespace extensions {
+namespace api {
 
 class CecPrivateFunction : public UIThreadExtensionFunction {
  public:
@@ -48,6 +52,24 @@ class CecPrivateSendWakeUpFunction : public CecPrivateFunction {
   DISALLOW_COPY_AND_ASSIGN(CecPrivateSendWakeUpFunction);
 };
 
+class CecPrivateQueryDisplayCecPowerStateFunction : public CecPrivateFunction {
+ public:
+  CecPrivateQueryDisplayCecPowerStateFunction();
+  DECLARE_EXTENSION_FUNCTION("cecPrivate.queryDisplayCecPowerState",
+                             CECPRIVATE_QUERYDISPLAYCECPOWERSTATE)
+
+ protected:
+  ~CecPrivateQueryDisplayCecPowerStateFunction() override;
+  ResponseAction Run() override;
+
+ private:
+  void HandlePowerStates(
+      const std::vector<chromeos::CecServiceClient::PowerState>& power_states);
+
+  DISALLOW_COPY_AND_ASSIGN(CecPrivateQueryDisplayCecPowerStateFunction);
+};
+
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_CEC_PRIVATE_CEC_PRIVATE_API_H_

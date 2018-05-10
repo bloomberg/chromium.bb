@@ -15419,6 +15419,7 @@ Called by update_net_error_codes.py.-->
   <int value="1249" label="INPUTMETHODPRIVATE_GETCOMPOSITIONBOUNDS"/>
   <int value="1250" label="FILEMANAGERPRIVATE_ISCROSTINIENABLED"/>
   <int value="1251" label="FILEMANAGERPRIVATE_MOUNTCROSTINICONTAINER"/>
+  <int value="1252" label="CECPRIVATE_QUERYDISPLAYCECPOWERSTATE"/>
 </enum>
 
 <enum name="ExtensionIconState">

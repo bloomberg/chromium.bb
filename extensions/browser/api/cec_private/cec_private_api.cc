@@ -4,18 +4,53 @@
 
 #include "extensions/browser/api/cec_private/cec_private_api.h"
 
+#include <vector>
+
+#include "base/bind.h"
+#include "base/logging.h"
 #include "chromeos/dbus/cec_service_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "extensions/common/api/cec_private.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
-
-namespace extensions {
 
 namespace {
 
 const char kKioskOnlyError[] =
     "Only kiosk enabled extensions are allowed to use this function.";
 
+extensions::api::cec_private::DisplayCecPowerState
+ConvertCecServiceClientPowerState(
+    chromeos::CecServiceClient::PowerState power_state) {
+  switch (power_state) {
+    case chromeos::CecServiceClient::PowerState::kError:
+      return extensions::api::cec_private::DISPLAY_CEC_POWER_STATE_ERROR;
+    case chromeos::CecServiceClient::PowerState::kAdapterNotConfigured:
+      return extensions::api::cec_private::
+          DISPLAY_CEC_POWER_STATE_ADAPTERNOTCONFIGURED;
+    case chromeos::CecServiceClient::PowerState::kNoDevice:
+      return extensions::api::cec_private::DISPLAY_CEC_POWER_STATE_NODEVICE;
+    case chromeos::CecServiceClient::PowerState::kOn:
+      return extensions::api::cec_private::DISPLAY_CEC_POWER_STATE_ON;
+    case chromeos::CecServiceClient::PowerState::kStandBy:
+      return extensions::api::cec_private::DISPLAY_CEC_POWER_STATE_STANDBY;
+    case chromeos::CecServiceClient::PowerState::kTransitioningToOn:
+      return extensions::api::cec_private::
+          DISPLAY_CEC_POWER_STATE_TRANSITIONINGTOON;
+    case chromeos::CecServiceClient::PowerState::kTransitioningToStandBy:
+      return extensions::api::cec_private::
+          DISPLAY_CEC_POWER_STATE_TRANSITIONINGTOSTANDBY;
+    case chromeos::CecServiceClient::PowerState::kUnknown:
+      return extensions::api::cec_private::DISPLAY_CEC_POWER_STATE_UNKNOWN;
+  }
+
+  NOTREACHED();
+  return extensions::api::cec_private::DISPLAY_CEC_POWER_STATE_UNKNOWN;
+}
+
 }  // namespace
+
+namespace extensions {
+namespace api {
 
 CecPrivateFunction::CecPrivateFunction() = default;
 
@@ -51,4 +86,33 @@ ExtensionFunction::ResponseAction CecPrivateSendWakeUpFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+CecPrivateQueryDisplayCecPowerStateFunction::
+    CecPrivateQueryDisplayCecPowerStateFunction() = default;
+
+CecPrivateQueryDisplayCecPowerStateFunction::
+    ~CecPrivateQueryDisplayCecPowerStateFunction() = default;
+
+ExtensionFunction::ResponseAction
+CecPrivateQueryDisplayCecPowerStateFunction::Run() {
+  chromeos::DBusThreadManager::Get()
+      ->GetCecServiceClient()
+      ->QueryDisplayCecPowerState(base::BindOnce(
+          &CecPrivateQueryDisplayCecPowerStateFunction::HandlePowerStates,
+          this));
+  return RespondLater();
+}
+
+void CecPrivateQueryDisplayCecPowerStateFunction::HandlePowerStates(
+    const std::vector<chromeos::CecServiceClient::PowerState>& power_states) {
+  std::vector<cec_private::DisplayCecPowerState> result_power_states;
+
+  for (const chromeos::CecServiceClient::PowerState& state : power_states) {
+    result_power_states.push_back(ConvertCecServiceClientPowerState(state));
+  }
+
+  Respond(ArgumentList(cec_private::QueryDisplayCecPowerState::Results::Create(
+      result_power_states)));
+}
+
+}  // namespace api
 }  // namespace extensions
