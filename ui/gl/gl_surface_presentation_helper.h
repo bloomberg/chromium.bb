@@ -75,6 +75,8 @@ class GL_EXPORT GLSurfacePresentationHelper {
   void UpdateVSyncCallback(const base::TimeTicks timebase,
                            const base::TimeDelta interval);
 
+  void ScheduleCheckPendingFrames(bool align_with_next_vsync);
+
   gfx::VSyncProvider* const vsync_provider_;
   scoped_refptr<GLContext> gl_context_;
   GLSurface* surface_ = nullptr;
@@ -82,7 +84,7 @@ class GL_EXPORT GLSurfacePresentationHelper {
   base::circular_deque<Frame> pending_frames_;
   base::TimeTicks vsync_timebase_;
   base::TimeDelta vsync_interval_;
-  bool waiting_for_vsync_parameters_ = false;
+  bool check_pending_frame_scheduled_ = false;
 
   base::WeakPtrFactory<GLSurfacePresentationHelper> weak_ptr_factory_;
 

@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
@@ -170,10 +171,8 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   using PresentedCallbacks = std::vector<Surface::PresentedCallback>;
   PresentedCallbacks presented_callbacks_;
-  PresentedCallbacks active_presented_callbacks_;
-  // TODO(penghuang): Remove it when we can get accurate presentation time from
-  // GPU for every SwapBuffers. https://crbug.com/776877
-  std::vector<PresentedCallbacks> previous_presented_callbacks_;
+  struct PendingPresentedCallbacks;
+  base::circular_deque<PendingPresentedCallbacks> pending_presented_callbacks_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Display);

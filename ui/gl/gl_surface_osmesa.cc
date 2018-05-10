@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "third_party/mesa/src/include/GL/osmesa.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -109,8 +110,10 @@ bool GLSurfaceOSMesaHeadless::IsOffscreen() { return false; }
 
 gfx::SwapResult GLSurfaceOSMesaHeadless::SwapBuffers(
     const PresentationCallback& callback) {
-  callback.Run(gfx::PresentationFeedback(base::TimeTicks::Now(),
-                                         base::TimeDelta(), 0 /* flags */));
+  gfx::PresentationFeedback feedback(base::TimeTicks::Now(), base::TimeDelta(),
+                                     0 /* flags */);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(callback, feedback));
   return gfx::SwapResult::SWAP_ACK;
 }
 
