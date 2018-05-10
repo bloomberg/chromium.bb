@@ -2,64 +2,71 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/ssl_error_tab_helper.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 
 #include <memory>
 
 #include "base/bind.h"
+#include "base/i18n/rtl.h"
 #include "base/time/time.h"
-#include "chrome/browser/interstitials/chrome_metrics_helper.h"
-#include "chrome/browser/ssl/ssl_blocking_page.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/security_interstitials/content/security_interstitial_controller_client.h"
+#include "components/security_interstitials/content/security_interstitial_page.h"
+#include "components/security_interstitials/core/controller_client.h"
+#include "components/security_interstitials/core/metrics_helper.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/test/test_renderer_host.h"
 #include "net/base/net_errors.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "url/gurl.h"
 
-namespace {
+namespace security_interstitials {
 
-const char kTestSslMetricsName[] = "test_ssl_blocking_page";
+const char kTestSslMetricsName[] = "test_blocking_page";
 
-std::unique_ptr<ChromeMetricsHelper> CreateTestSslMetricsHelper(
+std::unique_ptr<security_interstitials::MetricsHelper> CreateTestMetricsHelper(
     content::WebContents* web_contents) {
-  security_interstitials::MetricsHelper::ReportDetails report_details;
+  MetricsHelper::ReportDetails report_details;
   report_details.metric_prefix = kTestSslMetricsName;
-  return std::make_unique<ChromeMetricsHelper>(web_contents, GURL(),
-                                               report_details);
+  return std::make_unique<security_interstitials::MetricsHelper>(
+      GURL(), report_details, nullptr);
 }
 
-class TestSSLBlockingPage : public SSLBlockingPage {
+class TestInterstitialPage : public SecurityInterstitialPage {
  public:
   // |*destroyed_tracker| is set to true in the destructor.
-  TestSSLBlockingPage(content::WebContents* web_contents,
-                      GURL request_url,
-                      net::SSLInfo ssl_info,
-                      bool* destroyed_tracker)
-      : SSLBlockingPage(
+  TestInterstitialPage(content::WebContents* web_contents,
+                       const GURL& request_url,
+                       bool* destroyed_tracker)
+      : SecurityInterstitialPage(
             web_contents,
-            net::ERR_CERT_CONTAINS_ERRORS,
-            ssl_info,
             request_url,
-            0,
-            base::Time::NowFromSystemTime(),
-            GURL(),
-            nullptr /* ssl_cert_reporter */,
-            true /* overridable */,
-            CreateTestSslMetricsHelper(web_contents),
-            false /* is_superfish */,
-            base::Callback<void(content::CertificateRequestResultType)>()),
+            std::make_unique<SecurityInterstitialControllerClient>(
+                web_contents,
+                CreateTestMetricsHelper(web_contents),
+                nullptr,
+                base::i18n::GetConfiguredLocale(),
+                GURL())),
         destroyed_tracker_(destroyed_tracker) {}
 
-  ~TestSSLBlockingPage() override { *destroyed_tracker_ = true; }
+  ~TestInterstitialPage() override { *destroyed_tracker_ = true; }
+
+  void OnInterstitialClosing() override {}
+
+ protected:
+  bool ShouldCreateNewNavigation() const override { return false; }
+
+  void PopulateInterstitialStrings(
+      base::DictionaryValue* load_time_data) override {}
 
  private:
   bool* destroyed_tracker_;
 };
 
-class SSLErrorTabHelperTest : public ChromeRenderViewHostTestHarness {
+class SecurityInterstitialTabHelperTest
+    : public content::RenderViewHostTestHarness {
  protected:
   std::unique_ptr<content::NavigationHandle> CreateHandle(
       bool committed,
@@ -68,32 +75,29 @@ class SSLErrorTabHelperTest : public ChromeRenderViewHostTestHarness {
         GURL(), main_rfh(), committed, net::OK, is_same_document);
   }
 
-  // The lifetime of the blocking page is managed by the SSLErrorTabHelper for
-  // the test's web_contents. |destroyed_tracker| will be set to true when the
-  // corresponding blocking page is destroyed.
+  // The lifetime of the blocking page is managed by the
+  // SecurityInterstitialTabHelper for the test's web_contents.
+  // |destroyed_tracker| will be set to true when the corresponding blocking
+  // page is destroyed.
   void CreateAssociatedBlockingPage(content::NavigationHandle* handle,
                                     bool* destroyed_tracker) {
-    net::SSLInfo ssl_info;
-    ssl_info.cert =
-        net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
-
-    SSLErrorTabHelper::AssociateBlockingPage(
+    SecurityInterstitialTabHelper::AssociateBlockingPage(
         web_contents(), handle->GetNavigationId(),
-        std::make_unique<TestSSLBlockingPage>(web_contents(), GURL(), ssl_info,
-                                              destroyed_tracker));
+        std::make_unique<TestInterstitialPage>(web_contents(), GURL(),
+                                               destroyed_tracker));
   }
 };
 
 // Tests that the helper properly handles the lifetime of a single blocking
 // page, interleaved with other navigations.
-TEST_F(SSLErrorTabHelperTest, SingleBlockingPage) {
+TEST_F(SecurityInterstitialTabHelperTest, SingleBlockingPage) {
   std::unique_ptr<content::NavigationHandle> blocking_page_handle =
       CreateHandle(true, false);
   bool blocking_page_destroyed = false;
   CreateAssociatedBlockingPage(blocking_page_handle.get(),
                                &blocking_page_destroyed);
-  SSLErrorTabHelper* helper =
-      SSLErrorTabHelper::FromWebContents(web_contents());
+  SecurityInterstitialTabHelper* helper =
+      SecurityInterstitialTabHelper::FromWebContents(web_contents());
 
   // Test that a same-document navigation doesn't destroy the blocking page if
   // its navigation hasn't committed yet.
@@ -123,7 +127,7 @@ TEST_F(SSLErrorTabHelperTest, SingleBlockingPage) {
 
 // Tests that the helper properly handles the lifetime of multiple blocking
 // pages, committed in a different order than they are created.
-TEST_F(SSLErrorTabHelperTest, MultipleBlockingPages) {
+TEST_F(SecurityInterstitialTabHelperTest, MultipleBlockingPages) {
   // Simulate associating the first interstitial.
   std::unique_ptr<content::NavigationHandle> handle1 =
       CreateHandle(true, false);
@@ -132,8 +136,8 @@ TEST_F(SSLErrorTabHelperTest, MultipleBlockingPages) {
 
   // We can directly retrieve the helper for testing once
   // CreateAssociatedBlockingPage() was called.
-  SSLErrorTabHelper* helper =
-      SSLErrorTabHelper::FromWebContents(web_contents());
+  SecurityInterstitialTabHelper* helper =
+      SecurityInterstitialTabHelper::FromWebContents(web_contents());
 
   // Simulate commiting the first interstitial.
   helper->DidFinishNavigation(handle1.get());
@@ -171,14 +175,14 @@ TEST_F(SSLErrorTabHelperTest, MultipleBlockingPages) {
 
 // Tests that the helper properly handles a navigation that finishes without
 // committing.
-TEST_F(SSLErrorTabHelperTest, NavigationDoesNotCommit) {
+TEST_F(SecurityInterstitialTabHelperTest, NavigationDoesNotCommit) {
   std::unique_ptr<content::NavigationHandle> committed_handle =
       CreateHandle(true, false);
   bool committed_blocking_page_destroyed = false;
   CreateAssociatedBlockingPage(committed_handle.get(),
                                &committed_blocking_page_destroyed);
-  SSLErrorTabHelper* helper =
-      SSLErrorTabHelper::FromWebContents(web_contents());
+  SecurityInterstitialTabHelper* helper =
+      SecurityInterstitialTabHelper::FromWebContents(web_contents());
   helper->DidFinishNavigation(committed_handle.get());
   EXPECT_FALSE(committed_blocking_page_destroyed);
 
@@ -203,4 +207,4 @@ TEST_F(SSLErrorTabHelperTest, NavigationDoesNotCommit) {
   EXPECT_TRUE(committed_blocking_page_destroyed);
 }
 
-}  // namespace
+}  // namespace security_interstitials

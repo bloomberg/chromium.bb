@@ -1425,8 +1425,6 @@ jumbo_split_static_library("browser") {
     "ssl/ssl_error_handler.h",
     "ssl/ssl_error_navigation_throttle.cc",
     "ssl/ssl_error_navigation_throttle.h",
-    "ssl/ssl_error_tab_helper.cc",
-    "ssl/ssl_error_tab_helper.h",
     "ssl/typed_navigation_timing_throttle.cc",
     "ssl/typed_navigation_timing_throttle.h",
     "status_icons/status_icon.cc",

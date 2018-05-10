@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SSL_SSL_ERROR_TAB_HELPER_H_
-#define CHROME_BROWSER_SSL_SSL_ERROR_TAB_HELPER_H_
+#ifndef COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_SECURITY_INTERSTITIAL_TAB_HELPER_H_
+#define COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_SECURITY_INTERSTITIAL_TAB_HELPER_H_
 
 #include <map>
 
@@ -20,23 +20,22 @@ class WebContents;
 
 namespace security_interstitials {
 class SecurityInterstitialPage;
-}  // namespace security_interstitials
 
 // Long-lived helper associated with a WebContents, for owning blocking pages.
-class SSLErrorTabHelper
+class SecurityInterstitialTabHelper
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<SSLErrorTabHelper>,
+      public content::WebContentsUserData<SecurityInterstitialTabHelper>,
       public security_interstitials::mojom::InterstitialCommands {
  public:
-  ~SSLErrorTabHelper() override;
+  ~SecurityInterstitialTabHelper() override;
 
   // WebContentsObserver:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void WebContentsDestroyed() override;
 
-  // Associates |blocking_page| with an SSLErrorTabHelper for the given
-  // |web_contents| and |navigation_id|, to manage the |blocking_page|'s
+  // Associates |blocking_page| with an SecurityInterstitialTabHelper for the
+  // given |web_contents| and |navigation_id|, to manage the |blocking_page|'s
   // lifetime.
   static void AssociateBlockingPage(
       content::WebContents* web_contents,
@@ -48,8 +47,8 @@ class SSLErrorTabHelper
   GetBlockingPageForCurrentlyCommittedNavigationForTesting();
 
  private:
-  explicit SSLErrorTabHelper(content::WebContents* web_contents);
-  friend class content::WebContentsUserData<SSLErrorTabHelper>;
+  explicit SecurityInterstitialTabHelper(content::WebContents* web_contents);
+  friend class content::WebContentsUserData<SecurityInterstitialTabHelper>;
 
   void SetBlockingPage(
       int64_t navigation_id,
@@ -90,7 +89,9 @@ class SSLErrorTabHelper
       security_interstitials::mojom::InterstitialCommands>
       binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(SSLErrorTabHelper);
+  DISALLOW_COPY_AND_ASSIGN(SecurityInterstitialTabHelper);
 };
 
-#endif  // CHROME_BROWSER_SSL_SSL_ERROR_TAB_HELPER_H_
+}  // namespace security_interstitials
+
+#endif  // COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_SECURITY_INTERSTITIAL_TAB_HELPER_H_
