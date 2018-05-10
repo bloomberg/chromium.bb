@@ -71,7 +71,6 @@ bool SchemeMaySupportRedirectingToHTTPS(const GURL& url) {
 // static
 int ServiceWorkerRequestHandler::user_data_key_;
 
-// PlzNavigate:
 // static
 void ServiceWorkerRequestHandler::InitializeForNavigation(
     net::URLRequest* request,
@@ -108,16 +107,17 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
     return;
   }
 
-  if (!navigation_handle_core->context_wrapper() ||
-      !navigation_handle_core->context_wrapper()->context()) {
+  if (!navigation_handle_core->context_wrapper())
     return;
-  }
+  ServiceWorkerContextCore* context =
+      navigation_handle_core->context_wrapper()->context();
+  if (!context)
+    return;
 
   // Initialize the SWProviderHost.
-  std::unique_ptr<ServiceWorkerProviderHost> provider_host =
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
-          navigation_handle_core->context_wrapper()->context()->AsWeakPtr(),
-          is_parent_frame_secure, web_contents_getter);
+          context->AsWeakPtr(), is_parent_frame_secure, web_contents_getter);
 
   std::unique_ptr<ServiceWorkerRequestHandler> handler(
       provider_host->CreateRequestHandler(
@@ -130,12 +130,8 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
   if (handler)
     request->SetUserData(&user_data_key_, std::move(handler));
 
-  // Transfer ownership to the ServiceWorkerNavigationHandleCore.
-  // In the case of a successful navigation, the SWProviderHost will be
-  // transferred to its "final" destination in the OnProviderCreated handler. If
-  // the navigation fails, it will be destroyed along with the
-  // ServiceWorkerNavigationHandleCore.
-  navigation_handle_core->DidPreCreateProviderHost(std::move(provider_host));
+  navigation_handle_core->DidPreCreateProviderHost(
+      provider_host->provider_id());
 }
 
 // S13nServiceWorker:
@@ -163,13 +159,15 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
     return nullptr;
   }
 
-  if (!navigation_handle_core->context_wrapper() ||
-      !navigation_handle_core->context_wrapper()->context()) {
+  if (!navigation_handle_core->context_wrapper())
     return nullptr;
-  }
+  ServiceWorkerContextCore* context =
+      navigation_handle_core->context_wrapper()->context();
+  if (!context)
+    return nullptr;
 
   // Initialize the SWProviderHost.
-  std::unique_ptr<ServiceWorkerProviderHost> provider_host =
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           navigation_handle_core->context_wrapper()->context()->AsWeakPtr(),
           is_parent_frame_secure, web_contents_getter);
@@ -183,12 +181,8 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
           request_context_type, frame_type, blob_storage_context->AsWeakPtr(),
           body, skip_service_worker));
 
-  // Transfer ownership to the ServiceWorkerNavigationHandleCore.
-  // In the case of a successful navigation, the SWProviderHost will be
-  // transferred to its "final" destination in the OnProviderCreated handler. If
-  // the navigation fails, it will be destroyed along with the
-  // ServiceWorkerNavigationHandleCore.
-  navigation_handle_core->DidPreCreateProviderHost(std::move(provider_host));
+  navigation_handle_core->DidPreCreateProviderHost(
+      provider_host->provider_id());
 
   return base::WrapUnique<NavigationLoaderInterceptor>(handler.release());
 }
