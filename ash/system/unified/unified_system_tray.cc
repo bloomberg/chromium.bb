@@ -8,6 +8,7 @@
 #include "ash/system/date/date_view.h"
 #include "ash/system/message_center/ash_popup_alignment_delegate.h"
 #include "ash/system/model/system_tray_model.h"
+#include "ash/system/power/tray_power.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_container.h"
@@ -100,9 +101,12 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
       ui_delegate_(std::make_unique<UiDelegate>(this)),
       model_(std::make_unique<UnifiedSystemTrayModel>()) {
-  tray_container()->AddChildView(
+  tray_container()->AddChildView(new tray::PowerTrayView(nullptr));
+  TrayItemView* time_item = new TrayItemView(nullptr);
+  time_item->AddChildView(
       new tray::TimeView(tray::TimeView::ClockLayout::HORIZONTAL_CLOCK,
                          Shell::Get()->system_tray_model()->clock()));
+  tray_container()->AddChildView(time_item);
   SetInkDropMode(InkDropMode::ON);
   SetVisible(true);
 }
