@@ -126,6 +126,13 @@ static int amdgpu_get_auth(int fd, int *auth)
 
 static void amdgpu_device_free_internal(amdgpu_device_handle dev)
 {
+	pthread_mutex_lock(&fd_mutex);
+	util_hash_table_remove(fd_tab, UINT_TO_PTR(dev->fd));
+	close(dev->fd);
+	if ((dev->flink_fd >= 0) && (dev->fd != dev->flink_fd))
+		close(dev->flink_fd);
+	pthread_mutex_unlock(&fd_mutex);
+
 	amdgpu_vamgr_deinit(&dev->vamgr_32);
 	amdgpu_vamgr_deinit(&dev->vamgr);
 	amdgpu_vamgr_deinit(&dev->vamgr_high_32);
@@ -133,10 +140,6 @@ static void amdgpu_device_free_internal(amdgpu_device_handle dev)
 	util_hash_table_destroy(dev->bo_flink_names);
 	util_hash_table_destroy(dev->bo_handles);
 	pthread_mutex_destroy(&dev->bo_table_mutex);
-	util_hash_table_remove(fd_tab, UINT_TO_PTR(dev->fd));
-	close(dev->fd);
-	if ((dev->flink_fd >= 0) && (dev->fd != dev->flink_fd))
-		close(dev->flink_fd);
 	free(dev->marketing_name);
 	free(dev);
 }
