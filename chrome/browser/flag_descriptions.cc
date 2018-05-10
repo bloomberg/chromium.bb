@@ -2208,14 +2208,6 @@ const char kNoCreditCardAbort[] = "No Credit Card Abort";
 const char kNoCreditCardAbortDescription[] =
     "Whether or not the No Credit Card Abort is enabled.";
 
-const char kNtpCondensedLayoutName[] = "Condensed NTP layout";
-const char kNtpCondensedLayoutDescription[] =
-    "Show a condensed layout on the New Tab Page.";
-
-const char kNtpCondensedTileLayoutName[] = "Condensed NTP tile layout";
-const char kNtpCondensedTileLayoutDescription[] =
-    "Show a condensed tile layout on the New Tab Page.";
-
 const char kNtpModernLayoutName[] = "Modern NTP layout";
 const char kNtpModernLayoutDescription[] =
     "Show a modern layout on the New Tab Page.";

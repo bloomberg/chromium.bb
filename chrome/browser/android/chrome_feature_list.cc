@@ -101,8 +101,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kModalPermissionDialogView,
     &kNewPhotoPicker,
     &kNoCreditCardAbort,
-    &kNTPCondensedLayoutFeature,
-    &kNTPCondensedTileLayoutFeature,
     &kNTPLaunchAfterInactivity,
     &kNTPModernLayoutFeature,
     &kSimplifiedNTP,
@@ -309,12 +307,6 @@ const base::Feature kNewPhotoPicker{"NewPhotoPicker",
 
 const base::Feature kNoCreditCardAbort{"NoCreditCardAbort",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kNTPCondensedLayoutFeature{
-    "NTPCondensedLayout", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kNTPCondensedTileLayoutFeature{
-    "NTPCondensedTileLayout", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNTPModernLayoutFeature{"NTPModernLayout",
                                             base::FEATURE_DISABLED_BY_DEFAULT};

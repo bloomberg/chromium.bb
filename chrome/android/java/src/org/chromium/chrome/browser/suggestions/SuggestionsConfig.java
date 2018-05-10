@@ -17,18 +17,6 @@ import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
  * Provides configuration details for suggestions.
  */
 public final class SuggestionsConfig {
-    /**
-     * Experiment parameter for whether to use the condensed tile layout on small screens.
-     */
-    private static final String PARAM_CONDENSED_TILE_LAYOUT_FOR_SMALL_SCREENS_ENABLED =
-            "condensed_tile_layout_for_small_screens_enabled";
-
-    /**
-     * Experiment parameter for whether to use the condensed tile layout on large screens.
-     */
-    private static final String PARAM_CONDENSED_TILE_LAYOUT_FOR_LARGE_SCREENS_ENABLED =
-            "condensed_tile_layout_for_large_screens_enabled";
-
     private SuggestionsConfig() {}
 
     /**
@@ -67,15 +55,9 @@ public final class SuggestionsConfig {
     }
 
     private static boolean useCondensedTileLayout(boolean isScreenSmall) {
-        if (isScreenSmall) {
-            return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                    ChromeFeatureList.NTP_CONDENSED_TILE_LAYOUT,
-                    PARAM_CONDENSED_TILE_LAYOUT_FOR_SMALL_SCREENS_ENABLED, true);
-        }
+        if (isScreenSmall) return true;
 
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.NTP_CONDENSED_TILE_LAYOUT,
-                PARAM_CONDENSED_TILE_LAYOUT_FOR_LARGE_SCREENS_ENABLED, false);
+        return false;
     }
 
     /**

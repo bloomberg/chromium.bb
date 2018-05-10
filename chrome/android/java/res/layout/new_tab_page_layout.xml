@@ -14,26 +14,6 @@
     android:paddingTop="@dimen/toolbar_height_no_shadow"
     android:visibility="gone" >
 
-    <!-- Top spacer. Note: the top spacer must have layout_weight="1" and the middle and bottom
-         spacers must have layout_weight="0". The NewTabPageLayout will redistribute the extra space
-         between them. -->
-    <View
-        android:id="@+id/ntp_top_spacer"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:visibility="invisible" />
-
-    <!-- Spacer above the search provider logo that can be used to distribute extra space in order
-         to push part of Most Visited below the fold, suggesting that the page can be scrolled. This
-         is only used when there is not enough space to show the peeking card. -->
-    <View
-        android:id="@+id/search_provider_logo_spacer"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_weight="0"
-        android:visibility="gone" />
-
     <!-- Search provider logo -->
     <org.chromium.chrome.browser.ntp.LogoView
         android:id="@+id/search_provider_logo"
@@ -43,16 +23,6 @@
         android:layout_marginEnd="16dp"
         android:layout_marginTop="26dp"
         android:layout_marginBottom="23dp" />
-
-    <!-- Spacer above the search box that can be used to distribute extra space in order to push
-         part of Most Visited below the fold, suggesting that the page can be scrolled. This
-         is only used when there is not enough space to show the peeking card. -->
-    <View
-        android:id="@+id/search_box_spacer"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_weight="0"
-        android:visibility="gone" />
 
     <!-- Search box -->
     <view
@@ -124,14 +94,6 @@
         android:layout_weight="1"
         android:inflatedId="@+id/tile_grid_placeholder"
         android:layout="@layout/new_tab_page_tile_grid_placeholder" />
-
-    <!-- Bottom spacer -->
-    <View
-        android:id="@+id/ntp_bottom_spacer"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_weight="0"
-        android:visibility="invisible" />
 
     <!-- Spacer for when there is no search provider logo. -->
     <View

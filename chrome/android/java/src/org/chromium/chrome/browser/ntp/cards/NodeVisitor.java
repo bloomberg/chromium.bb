@@ -43,11 +43,6 @@ public class NodeVisitor {
     public void visitSignInPromo() {}
 
     /**
-     * Visits a spacing item.
-     */
-    public void visitSpacingItem() {}
-
-    /**
      * Visits a "no suggestions" item.
      */
     public void visitNoSuggestionsItem() {}

@@ -16,9 +16,8 @@ import java.lang.annotation.RetentionPolicy;
  * @see Adapter#getItemViewType(int)
  */
 @IntDef({ItemViewType.ABOVE_THE_FOLD, ItemViewType.LOGO, ItemViewType.SITE_SECTION,
-        ItemViewType.HEADER, ItemViewType.SNIPPET, ItemViewType.SPACING, ItemViewType.STATUS,
-        ItemViewType.PROGRESS, ItemViewType.ACTION, ItemViewType.FOOTER, ItemViewType.PROMO,
-        ItemViewType.ALL_DISMISSED})
+        ItemViewType.HEADER, ItemViewType.SNIPPET, ItemViewType.STATUS, ItemViewType.PROGRESS,
+        ItemViewType.ACTION, ItemViewType.FOOTER, ItemViewType.PROMO, ItemViewType.ALL_DISMISSED})
 @Retention(RetentionPolicy.SOURCE)
 public @interface ItemViewType {
     /**
@@ -52,45 +51,39 @@ public @interface ItemViewType {
      */
     int SNIPPET = 5;
     /**
-     * View type for a {@link SpacingItem} used to provide spacing at the end of the list.
-     *
-     * @see Adapter#getItemViewType(int)
-     */
-    int SPACING = 6;
-    /**
      * View type for a {@link StatusItem}, the card displaying status information
      *
      * @see Adapter#getItemViewType(int)
      */
-    int STATUS = 7;
+    int STATUS = 6;
     /**
      * View type for a {@link ProgressItem}, the progress indicator.
      *
      * @see Adapter#getItemViewType(int)
      */
-    int PROGRESS = 8;
+    int PROGRESS = 7;
     /**
      * View type for a {@link ActionItem}, an action button.
      *
      * @see Adapter#getItemViewType(int)
      */
-    int ACTION = 9;
+    int ACTION = 8;
     /**
      * View type for a {@link Footer}.
      *
      * @see Adapter#getItemViewType(int)
      */
-    int FOOTER = 10;
+    int FOOTER = 9;
     /**
      * View type for a {@link SignInPromo}.
      *
      * @see Adapter#getItemViewType(int)
      */
-    int PROMO = 11;
+    int PROMO = 10;
     /**
      * View type for a {@link AllDismissedItem}.
      *
      * @see Adapter#getItemViewType(int)
      */
-    int ALL_DISMISSED = 12;
+    int ALL_DISMISSED = 11;
 }
