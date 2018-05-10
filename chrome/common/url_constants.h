@@ -107,10 +107,6 @@ extern const char kDownloadInterruptedLearnMoreURL[];
 // The URL for the "Learn more" page for download scanning.
 extern const char kDownloadScanningLearnMoreURL[];
 
-// The URL for the "Learn more" link the the Easy Unlock settings.
-// TODO(thestig): Move into OS_CHROMEOS section.
-extern const char kEasyUnlockLearnMoreUrl[];
-
 // "Learn more" URL for the Settings API, NTP bubble and other settings bubbles
 // showing which extension is controlling them.
 extern const char kExtensionControlledSettingLearnMoreURL[];
@@ -120,10 +116,6 @@ extern const char kExtensionInvalidRequestURL[];
 
 // URL of the 'Activity controls' section of the privacy settings page.
 extern const char kGoogleAccountActivityControlsURL[];
-
-// The URL for the "Learn more" link in the language settings.
-// TODO(michaelpg): Compile on Chrome OS only when Options is removed.
-extern const char kLanguageSettingsLearnMoreUrl[];
 
 // The URL for the "Learn more" page for the usage/crash reporting option in the
 // first run dialog.
@@ -206,6 +198,9 @@ extern const char kCrosScheme[];
 
 extern const char kCupsPrintLearnMoreURL[];
 
+// The URL for the "Learn more" link the the Easy Unlock settings.
+extern const char kEasyUnlockLearnMoreUrl[];
+
 extern const char kEULAPathFormat[];
 
 // The URL for EOL notification
@@ -216,6 +211,9 @@ extern const char kGoogleNameserversLearnMoreURL[];
 
 // The URL for the "learn more" link for Instant Tethering.
 extern const char kInstantTetheringLearnMoreURL[];
+
+// The URL for the "Learn more" link in the language settings.
+extern const char kLanguageSettingsLearnMoreUrl[];
 
 // The URL for the Learn More page about enterprise enrolled devices.
 extern const char kLearnMoreEnterpriseURL[];
