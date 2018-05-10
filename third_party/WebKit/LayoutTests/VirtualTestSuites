@@ -658,6 +658,16 @@
     "args": ["--enable-features=SignedHTTPExchange,NetworkService"]
   },
   {
+    "prefix": "htxg-origin-trial",
+    "base": "http/tests/loading/htxg",
+    "args": ["--enable-features=SignedHTTPExchangeOriginTrial"]
+  },
+  {
+    "prefix": "htxg-origin-trial-with-network-service",
+    "base": "http/tests/loading/htxg",
+    "args": ["--enable-features=SignedHTTPExchangeOriginTrial,NetworkService"]
+  },
+  {
     "prefix": "picture-in-picture",
     "base": "external/wpt/picture-in-picture",
     "args": ["--enable-features=PictureInPicture,UseSurfaceLayerForVideo"]

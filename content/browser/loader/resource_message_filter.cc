@@ -14,6 +14,7 @@
 #include "content/browser/loader/resource_requester_info.h"
 #include "content/browser/loader/url_loader_factory_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/common/resource_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
@@ -125,7 +126,7 @@ void ResourceMessageFilter::CreateLoaderAndStart(
 
   // TODO(kinuko): Remove this flag guard when we have more confidence, this
   // doesn't need to be paired up with SignedExchange feature.
-  if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange) &&
+  if (signed_exchange_utils::IsSignedExchangeHandlingEnabled() &&
       url_request.resource_type == RESOURCE_TYPE_PREFETCH &&
       prefetch_url_loader_service_) {
     prefetch_url_loader_service_->CreateLoaderAndStart(

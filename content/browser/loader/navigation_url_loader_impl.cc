@@ -34,6 +34,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_url_loader_factory_for_non_network_service.h"
+#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/browser/web_package/web_package_request_handler.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_url_loader_factory_internal.h"
@@ -80,10 +81,13 @@ base::LazyInstance<NavigationURLLoaderImpl::BeginNavigationInterceptor>::Leaky
     g_interceptor = LAZY_INSTANCE_INITIALIZER;
 
 // Returns true if interception by NavigationLoaderInterceptors is enabled.
+// Both ServiceWorkerServicification and SignedExchange require the loader
+// interception. So even if NetworkService is not enabled, returns true when one
+// of them is enabled.
 bool IsLoaderInterceptionEnabled() {
   return base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-         base::FeatureList::IsEnabled(features::kSignedHTTPExchange) ||
-         ServiceWorkerUtils::IsServicificationEnabled();
+         ServiceWorkerUtils::IsServicificationEnabled() ||
+         signed_exchange_utils::IsSignedExchangeHandlingEnabled();
 }
 
 // Request ID for browser initiated requests. We start at -2 on the same lines
@@ -180,7 +184,10 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
       request_info->begin_params->headers);
 
   std::string accept_value = network::kFrameAcceptHeader;
-  if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange)) {
+  // TODO(https://crbug.com/840704): Decide whether the Accept header should
+  // advertise the state of kSignedHTTPExchangeOriginTrial before starting the
+  // Origin-Trial.
+  if (signed_exchange_utils::IsSignedExchangeHandlingEnabled()) {
     DCHECK(!accept_value.empty());
     accept_value.append(kAcceptHeaderSignedExchangeSuffix);
   }
@@ -346,7 +353,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     default_loader_used_ = true;
-    if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange)) {
+    if (signed_exchange_utils::IsSignedExchangeHandlingEnabled()) {
       DCHECK(!default_url_loader_factory_getter_);
       // It is safe to pass the callback of CreateURLLoaderThrottles with the
       // unretained |this|, because the passed callback will be used by a
@@ -539,7 +546,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         interceptors_.push_back(std::move(appcache_interceptor));
     }
 
-    if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange)) {
+    if (signed_exchange_utils::IsSignedExchangeHandlingEnabled()) {
       // It is safe to pass the callback of CreateURLLoaderThrottles with the
       // unretained |this|, because the passed callback will be used by a
       // SignedExchangeHandler which is indirectly owned by |this| until its

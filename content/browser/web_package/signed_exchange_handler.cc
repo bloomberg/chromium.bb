@@ -4,7 +4,6 @@
 
 #include "content/browser/web_package/signed_exchange_handler.h"
 
-#include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -19,7 +18,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/system/string_data_pipe_producer.h"
 #include "net/base/io_buffer.h"
@@ -87,7 +85,7 @@ SignedExchangeHandler::SignedExchangeHandler(
           net::NetLogSourceType::CERT_VERIFIER_JOB)),
       devtools_proxy_(std::move(devtools_proxy)),
       weak_factory_(this) {
-  DCHECK(base::FeatureList::IsEnabled(features::kSignedHTTPExchange));
+  DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "SignedExchangeHandler::SignedExchangeHandler");
 

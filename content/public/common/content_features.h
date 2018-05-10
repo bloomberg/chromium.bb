@@ -87,6 +87,7 @@ CONTENT_EXPORT extern const base::Feature kServiceWorkerScriptFullCodeCache;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerServicification;
 CONTENT_EXPORT extern const base::Feature kSharedArrayBuffer;
 CONTENT_EXPORT extern const base::Feature kSignedHTTPExchange;
+CONTENT_EXPORT extern const base::Feature kSignedHTTPExchangeOriginTrial;
 CONTENT_EXPORT extern const base::Feature kSignInProcessIsolation;
 CONTENT_EXPORT extern const base::Feature kSlimmingPaintV175;
 CONTENT_EXPORT extern const base::Feature kSpareRendererForSitePerProcess;

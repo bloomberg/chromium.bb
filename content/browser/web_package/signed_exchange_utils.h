@@ -7,6 +7,12 @@
 
 #include <string>
 
+class GURL;
+
+namespace network {
+struct ResourceResponseHead;
+}  // namespace network
+
 namespace content {
 
 class SignedExchangeDevToolsProxy;
@@ -19,6 +25,18 @@ namespace signed_exchange_utils {
 void ReportErrorAndEndTraceEvent(SignedExchangeDevToolsProxy* devtools_proxy,
                                  const char* trace_event_name,
                                  const std::string& error_message);
+
+// Returns true when SignedHTTPExchange feature or SignedHTTPExchangeOriginTrial
+// feature is enabled.
+bool IsSignedExchangeHandlingEnabled();
+
+// Returns true when the response should be handled as a signed exchange by
+// checking the mime type and the feature flags. When SignedHTTPExchange feature
+// is not enabled and SignedHTTPExchangeOriginTrial feature is enabled, this
+// method also checks the Origin Trial header.
+bool ShouldHandleAsSignedHTTPExchange(
+    const GURL& request_url,
+    const network::ResourceResponseHead& head);
 
 }  // namespace  signed_exchange_utils
 }  // namespace content

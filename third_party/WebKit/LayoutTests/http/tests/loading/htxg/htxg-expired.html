@@ -6,6 +6,8 @@
 <body>
 <script>
 promise_test(async (t) => {
+  await waitUntilDidFinishLoadForFrame;
+
   // The timestamp of the test HTXG file is "Apr 1 2018 00:00 UTC" and valid
   // until "Apr 8 2018 00:00 UTC". So in Apr 10, the page load should fail.
   await setSignedExchangeVerificationTime(new Date("Apr 10 2018 00:01 UTC"));

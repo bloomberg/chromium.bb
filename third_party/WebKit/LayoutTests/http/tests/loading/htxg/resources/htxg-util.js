@@ -19,6 +19,12 @@ function loadScript(url) {
   });
 }
 
+// Used to delay the iframe creation after "didFinishLoadForFrame" is printed.
+// This is intended to avoid the flakiness of the result outputs.
+const waitUntilDidFinishLoadForFrame = new Promise((resolve) => {
+  window.addEventListener('load', () => setTimeout(resolve, 0));
+});
+
 const mojoBindingsLoaded = (async () => {
   await loadScript('/gen/layout_test_data/mojo/public/js/mojo_bindings.js');
   mojo.config.autoLoadMojomDeps = false;
