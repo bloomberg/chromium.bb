@@ -18,6 +18,13 @@ Polymer({
       observer: 'checkedChanged_',
     },
 
+    disabled: {
+      type: Boolean,
+      computed: 'computeDisabled_(pref.*)',
+      reflectToAttribute: true,
+      observer: 'disabledChanged_',
+    },
+
     label: {
       type: String,
       value: '',  // Allows the hidden$= binding to run without being set.
@@ -29,17 +36,12 @@ Polymer({
     },
 
     /** @private */
-    controlled_: {
-      type: Boolean,
-      computed: 'computeControlled_(pref.*)',
-      reflectToAttribute: true,
-    },
-
-    /** @private */
     pressed_: Boolean,
   },
 
   hostAttributes: {
+    'aria-disabled': 'false',
+    'aria-checked': 'false',
     role: 'radio',
     tabindex: 0,
   },
@@ -67,19 +69,30 @@ Polymer({
    * @return {boolean} Whether the button is disabled.
    * @private
    */
-  computeControlled_: function() {
+  computeDisabled_: function() {
     return this.pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
   },
 
   /**
-   * @param {boolean} controlled
-   * @param {string} name
+   * @param {boolean} current
+   * @param {boolean} previous
+   * @private
+   */
+  disabledChanged_: function(current, previous) {
+    if (previous === undefined && !this.disabled)
+      return;
+
+    this.setAttribute('tabindex', this.disabled ? -1 : 0);
+    this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
+  },
+
+  /**
    * @return {boolean}
    * @private
    */
-  showIndicator_: function(controlled, name) {
-    return controlled &&
-        name == Settings.PrefUtil.prefToString(assert(this.pref));
+  showIndicator_: function() {
+    return this.disabled &&
+        this.name == Settings.PrefUtil.prefToString(assert(this.pref));
   },
 
   /**
@@ -87,7 +100,7 @@ Polymer({
    * @private
    */
   onIndicatorTap_: function(e) {
-    // Disallow <controlled-radio-button on-click="..."> when controlled.
+    // Disallow <controlled-radio-button on-click="..."> when disabled.
     e.preventDefault();
     e.stopPropagation();
   },
@@ -97,6 +110,9 @@ Polymer({
    * @private
    */
   updatePressed_: function(e) {
+    if (this.disabled)
+      return;
+
     this.pressed_ = ['down', 'focus'].includes(e.type);
   },
 });

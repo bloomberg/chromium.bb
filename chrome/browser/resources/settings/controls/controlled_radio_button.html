@@ -85,31 +85,31 @@
                    var(--primary-text-color));
       }
 
-      :host(:not([controlled_])) {
+      :host(:not([disabled])) {
         @apply --settings-actionable;
       }
 
-      :host([controlled_]) {
+      :host([disabled]) {
         /* Disable pointer events for this whole element, as outer on-tap gets
          * triggered when clicking/tapping anywhere in :host. */
         pointer-events: none;
       }
 
-      :host([controlled_]) :-webkit-any(.circle, .disc) {
+      :host([disabled]) :-webkit-any(.circle, .disc) {
         opacity: .5;
       }
 
-      :host([controlled_]) .circle {
+      :host([disabled]) .circle {
         border-color: var(--paper-radio-button-unchecked-color,
                           var(--primary-text-color));
       }
 
-      :host([controlled_][checked]) .disc {
+      :host([disabled][checked]) .disc {
         background-color: var(--paper-radio-button-unchecked-color,
                               var(--primary-text-color));
       }
 
-      :host([controlled_]) #labelWrapper {
+      :host([disabled]) #labelWrapper {
         opacity: .65;
       }
 
@@ -132,7 +132,7 @@
       <slot></slot>
     </div>
 
-    <template is="dom-if" if="[[showIndicator_(controlled_, name, pref.*)]]">
+    <template is="dom-if" if="[[showIndicator_(disabled, name, pref.*)]]">
       <cr-policy-pref-indicator pref="[[pref]]" on-click="onIndicatorTap_"
           icon-aria-label="[[label]]">
       </cr-policy-pref-indicator>
