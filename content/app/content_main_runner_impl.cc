@@ -191,8 +191,8 @@ void InitializeFieldTrialAndFeatureList(
   // browser process.
   field_trial_list->reset(new base::FieldTrialList(nullptr));
 
-  // Ensure any field trials in browser are reflected into the child
-  // process.
+// Ensure any field trials in browser are reflected into the child
+// process.
 #if defined(OS_WIN)
   base::FieldTrialList::CreateTrialsFromCommandLine(
       command_line, switches::kFieldTrialHandle, -1);
@@ -587,12 +587,12 @@ static void RegisterMainThreadFactories() {
 #else
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kSingleProcess)) {
-    LOG(FATAL) <<
-        "--single-process is not supported in chrome multiple dll browser.";
+    LOG(FATAL)
+        << "--single-process is not supported in chrome multiple dll browser.";
   }
   if (command_line.HasSwitch(switches::kInProcessGPU)) {
-    LOG(FATAL) <<
-        "--in-process-gpu is not supported in chrome multiple dll browser.";
+    LOG(FATAL)
+        << "--in-process-gpu is not supported in chrome multiple dll browser.";
   }
 #endif  // !CHROME_MULTIPLE_DLL_BROWSER && !CHROME_MULTIPLE_DLL_CHILD
 }
@@ -600,22 +600,21 @@ static void RegisterMainThreadFactories() {
 // Run the FooMain() for a given process type.
 // If |process_type| is empty, runs BrowserMain().
 // Returns the exit code for this process.
-int RunNamedProcessTypeMain(
-    const std::string& process_type,
-    const MainFunctionParams& main_function_params,
-    ContentMainDelegate* delegate) {
+int RunNamedProcessTypeMain(const std::string& process_type,
+                            const MainFunctionParams& main_function_params,
+                            ContentMainDelegate* delegate) {
   static const MainFunction kMainFunctions[] = {
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
-    { "",                            BrowserMain },
+    {"", BrowserMain},
 #endif
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
 #if BUILDFLAG(ENABLE_PLUGINS)
-    { switches::kPpapiPluginProcess, PpapiPluginMain },
-    { switches::kPpapiBrokerProcess, PpapiBrokerMain },
+    {switches::kPpapiPluginProcess, PpapiPluginMain},
+    {switches::kPpapiBrokerProcess, PpapiBrokerMain},
 #endif  // ENABLE_PLUGINS
-    { switches::kUtilityProcess,     UtilityMain },
-    { switches::kRendererProcess,    RendererMain },
-    { switches::kGpuProcess,         GpuMain },
+    {switches::kUtilityProcess, UtilityMain},
+    {switches::kRendererProcess, RendererMain},
+    {switches::kGpuProcess, GpuMain},
 #endif  // !CHROME_MULTIPLE_DLL_BROWSER
   };
 
@@ -624,8 +623,8 @@ int RunNamedProcessTypeMain(
   for (size_t i = 0; i < arraysize(kMainFunctions); ++i) {
     if (process_type == kMainFunctions[i].name) {
       if (delegate) {
-        int exit_code = delegate->RunProcess(process_type,
-            main_function_params);
+        int exit_code =
+            delegate->RunProcess(process_type, main_function_params);
 #if defined(OS_ANDROID)
         // In Android's browser process, the negative exit code doesn't mean the
         // default behavior should be used as the UI message loop is managed by
@@ -719,10 +718,10 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     is_initialized_ = true;
     delegate_ = params.delegate;
 
-    // The exit manager is in charge of calling the dtors of singleton objects.
-    // On Android, AtExitManager is set up when library is loaded.
-    // A consequence of this is that you can't use the ctor/dtor-based
-    // TRACE_EVENT methods on Linux or iOS builds till after we set this up.
+// The exit manager is in charge of calling the dtors of singleton objects.
+// On Android, AtExitManager is set up when library is loaded.
+// A consequence of this is that you can't use the ctor/dtor-based
+// TRACE_EVENT methods on Linux or iOS builds till after we set this up.
 #if !defined(OS_ANDROID)
     if (!ui_task_) {
       // When running browser tests, don't create a second AtExitManager as that
@@ -752,8 +751,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
 #if defined(OS_WIN)
     if (command_line.HasSwitch(switches::kDeviceScaleFactor)) {
-      std::string scale_factor_string = command_line.GetSwitchValueASCII(
-          switches::kDeviceScaleFactor);
+      std::string scale_factor_string =
+          command_line.GetSwitchValueASCII(switches::kDeviceScaleFactor);
       double scale_factor = 0;
       if (base::StringToDouble(scale_factor_string, &scale_factor))
         display::win::SetDefaultDeviceScaleFactor(scale_factor);

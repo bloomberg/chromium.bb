@@ -23,8 +23,8 @@ namespace chromecast {
 // THREAD SAFTEY: Accessing the CommandLine instance for this process is
 // technically not threadsafe when using the component build. However, the
 // instance is initialized on the main thread before any other threads are
-// started (see content/app/content_main_runner.cc), so accessing this instance
-// on those threads for read-operations is safe in practice.
+// started (see content/app/content_main_runner_impl.cc), so accessing this
+// instance on those threads for read-operations is safe in practice.
 void InitCommandLineShlib(const std::vector<std::string>& argv);
 
 }  // namespace chromecast
