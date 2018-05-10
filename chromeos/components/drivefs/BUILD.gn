@@ -6,6 +6,8 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 component("drivefs") {
   sources = [
+    "drive_file_stream_service_provider_delegate.cc",
+    "drive_file_stream_service_provider_delegate.h",
     "drivefs_host.cc",
     "drivefs_host.h",
     "pending_connection_manager.cc",
@@ -16,6 +18,7 @@ component("drivefs") {
     "//chromeos",
     "//chromeos/components/drivefs/mojom",
     "//components/account_id",
+    "//dbus",
     "//mojo/edk",
     "//mojo/public/cpp/bindings",
   ]

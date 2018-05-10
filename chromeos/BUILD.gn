@@ -269,6 +269,8 @@ component("chromeos") {
     "dbus/services/chrome_features_service_provider.h",
     "dbus/services/cros_dbus_service.cc",
     "dbus/services/cros_dbus_service.h",
+    "dbus/services/drive_file_stream_service_provider.cc",
+    "dbus/services/drive_file_stream_service_provider.h",
     "dbus/services/liveness_service_provider.cc",
     "dbus/services/liveness_service_provider.h",
     "dbus/services/proxy_resolution_service_provider.cc",
@@ -547,6 +549,7 @@ copy("dbus_service_files") {
   sources = [
     "dbus/services/org.chromium.ChromeFeaturesService.conf",
     "dbus/services/org.chromium.DisplayService.conf",
+    "dbus/services/org.chromium.DriveFileStreamService.conf",
     "dbus/services/org.chromium.KioskAppService.conf",
     "dbus/services/org.chromium.LibCrosService.conf",
     "dbus/services/org.chromium.LivenessService.conf",
