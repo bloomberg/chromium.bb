@@ -427,8 +427,6 @@ const char* ToString(ax::mojom::Role role) {
       return "slider";
     case ax::mojom::Role::kSliderThumb:
       return "sliderThumb";
-    case ax::mojom::Role::kSpinButtonPart:
-      return "spinButtonPart";
     case ax::mojom::Role::kSpinButton:
       return "spinButton";
     case ax::mojom::Role::kSplitter:
@@ -695,8 +693,6 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kSlider;
   if (0 == strcmp(role, "sliderThumb"))
     return ax::mojom::Role::kSliderThumb;
-  if (0 == strcmp(role, "spinButtonPart"))
-    return ax::mojom::Role::kSpinButtonPart;
   if (0 == strcmp(role, "spinButton"))
     return ax::mojom::Role::kSpinButton;
   if (0 == strcmp(role, "splitter"))

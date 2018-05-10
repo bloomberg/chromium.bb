@@ -171,7 +171,6 @@ enum WebAXRole {
   kWebAXRoleSearchBox,
   kWebAXRoleSlider,
   kWebAXRoleSliderThumb,
-  kWebAXRoleSpinButtonPart,
   kWebAXRoleSpinButton,
   kWebAXRoleSplitter,
   kWebAXRoleStaticText,

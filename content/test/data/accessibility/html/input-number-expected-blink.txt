@@ -4,13 +4,7 @@ rootWebArea
 ++++++genericContainer
 ++++++++staticText name='1'
 ++++++++++inlineTextBox name='1'
-++++++spinButton
-++++++++button
-++++++++button
 ++++spinButton value='6' valueForRange=6.00 minValueForRange=5.00 maxValueForRange=10.00
 ++++++genericContainer
 ++++++++staticText name='6'
 ++++++++++inlineTextBox name='6'
-++++++spinButton
-++++++++button
-++++++++button

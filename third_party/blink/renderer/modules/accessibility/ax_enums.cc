@@ -109,7 +109,6 @@ STATIC_ASSERT_ENUM(kWebAXRoleSearch, kSearchRole);
 STATIC_ASSERT_ENUM(kWebAXRoleSearchBox, kSearchBoxRole);
 STATIC_ASSERT_ENUM(kWebAXRoleSlider, kSliderRole);
 STATIC_ASSERT_ENUM(kWebAXRoleSliderThumb, kSliderThumbRole);
-STATIC_ASSERT_ENUM(kWebAXRoleSpinButtonPart, kSpinButtonPartRole);
 STATIC_ASSERT_ENUM(kWebAXRoleSpinButton, kSpinButtonRole);
 STATIC_ASSERT_ENUM(kWebAXRoleSplitter, kSplitterRole);
 STATIC_ASSERT_ENUM(kWebAXRoleStaticText, kStaticTextRole);

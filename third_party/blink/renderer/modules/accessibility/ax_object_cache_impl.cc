@@ -83,7 +83,6 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_radio_input.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_relation_cache.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_slider.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_spin_button.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_svg_root.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_table.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_table_cell.h"
@@ -509,7 +508,6 @@ AXObject* AXObjectCacheImpl::GetOrCreate(
 AXObject* AXObjectCacheImpl::GetOrCreate(AccessibilityRole role) {
   AXObject* obj = nullptr;
 
-  // will be filled in...
   switch (role) {
     case kColumnRole:
       obj = AXTableColumn::Create(*this);
@@ -522,12 +520,6 @@ AXObject* AXObjectCacheImpl::GetOrCreate(AccessibilityRole role) {
       break;
     case kMenuListPopupRole:
       obj = AXMenuListPopup::Create(*this);
-      break;
-    case kSpinButtonRole:
-      obj = AXSpinButton::Create(*this);
-      break;
-    case kSpinButtonPartRole:
-      obj = AXSpinButtonPart::Create(*this);
       break;
     default:
       obj = nullptr;

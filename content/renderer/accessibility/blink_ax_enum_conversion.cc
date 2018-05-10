@@ -265,8 +265,6 @@ ax::mojom::Role AXRoleFromBlink(blink::WebAXRole role) {
       return ax::mojom::Role::kSliderThumb;
     case blink::kWebAXRoleSpinButton:
       return ax::mojom::Role::kSpinButton;
-    case blink::kWebAXRoleSpinButtonPart:
-      return ax::mojom::Role::kSpinButtonPart;
     case blink::kWebAXRoleSplitter:
       return ax::mojom::Role::kSplitter;
     case blink::kWebAXRoleStaticText:

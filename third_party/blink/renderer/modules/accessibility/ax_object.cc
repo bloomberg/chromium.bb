@@ -262,7 +262,6 @@ const InternalRoleEntry kInternalRoles[] = {
     {kSearchBoxRole, "SearchBox"},
     {kSliderRole, "Slider"},
     {kSliderThumbRole, "SliderThumb"},
-    {kSpinButtonPartRole, "SpinButtonPart"},
     {kSpinButtonRole, "SpinButton"},
     {kSplitterRole, "Splitter"},
     {kStaticTextRole, "StaticText"},
@@ -2658,7 +2657,6 @@ bool AXObject::NameFromContents(bool recursive) const {
     case kSpinButtonRole:
     case kStatusRole:
     case kSliderThumbRole:
-    case kSpinButtonPartRole:
     case kSVGRootRole:
     case kTableRole:
     case kTableHeaderContainerRole:
