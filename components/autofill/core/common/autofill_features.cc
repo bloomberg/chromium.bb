@@ -56,8 +56,8 @@ const base::Feature kAutofillSkipComparingInferredLabels{
     "AutofillSkipComparingInferredLabels", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether the credit card upload bubble shows the Google Pay logo and
-// a shorter "Save card?" header message on Android.
-const base::Feature kAutofillUpstreamUseGooglePayOnAndroidBranding{
+// a shorter "Save card?" header message on mobile.
+const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile{
     "AutofillUpstreamUseGooglePayOnAndroidBranding",
     base::FEATURE_DISABLED_BY_DEFAULT};
 

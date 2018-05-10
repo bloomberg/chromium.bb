@@ -85,7 +85,7 @@ bool AutofillSaveCardInfoBarDelegateMobile::LegalMessagesParsedSuccessfully() {
 bool AutofillSaveCardInfoBarDelegateMobile::IsGooglePayBrandingEnabled() const {
   return upload_ &&
          base::FeatureList::IsEnabled(
-             features::kAutofillUpstreamUseGooglePayOnAndroidBranding);
+             features::kAutofillUpstreamUseGooglePayBrandingOnMobile);
 }
 
 base::string16 AutofillSaveCardInfoBarDelegateMobile::GetTitleText() const {

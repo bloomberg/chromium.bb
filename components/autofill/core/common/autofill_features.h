@@ -20,7 +20,7 @@ extern const base::Feature kAutofillEnforceMinRequiredFieldsForUpload;
 extern const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout;
 extern const base::Feature kAutofillShowTypePredictions;
 extern const base::Feature kAutofillSkipComparingInferredLabels;
-extern const base::Feature kAutofillUpstreamUseGooglePayOnAndroidBranding;
+extern const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile;
 
 }  // namespace features
 }  // namespace autofill

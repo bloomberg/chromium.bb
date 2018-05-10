@@ -7,11 +7,16 @@
 
 namespace flag_descriptions {
 
-// Title and description for the flag to controll the autofill delay.
+// Title and description for the flag to control GPay branding in credit card
+// upstream infobar.
+extern const char kAutofillUpstreamUseGooglePayBrandingOnMobileName[];
+extern const char kAutofillUpstreamUseGooglePayBrandingOnMobileDescription[];
+
+// Title and description for the flag to control the autofill delay.
 extern const char kAutofillIOSDelayBetweenFieldsName[];
 extern const char kAutofillIOSDelayBetweenFieldsDescription[];
 
-// Title and description for the flag to controll the dynamic autofill.
+// Title and description for the flag to control the dynamic autofill.
 extern const char kAutofillDynamicFormsName[];
 extern const char kAutofillDynamicFormsDescription[];
 
