@@ -92,15 +92,9 @@ bool StructTraits<viz::mojom::CopyOutputRequestDataView,
   request->SetScaleRatio(scale_from, scale_to);
 
   if (!data.ReadSource(&request->source_) || !data.ReadArea(&request->area_) ||
-      !data.ReadResultSelection(&request->result_selection_) ||
-      !data.ReadMailbox(&request->mailbox_) ||
-      !data.ReadSyncToken(&request->sync_token_)) {
+      !data.ReadResultSelection(&request->result_selection_)) {
     return false;
   }
-
-  // Mailbox and SyncToken always come together.
-  if (!request->mailbox_ != !request->sync_token_)
-    return false;
 
   *out_p = std::move(request);
 

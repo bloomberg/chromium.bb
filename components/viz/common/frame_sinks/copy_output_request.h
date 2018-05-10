@@ -107,17 +107,6 @@ class VIZ_COMMON_EXPORT CopyOutputRequest {
   bool has_result_selection() const { return result_selection_.has_value(); }
   const gfx::Rect& result_selection() const { return *result_selection_; }
 
-  // Legacy support for providing textures up-front, to copy results into.
-  // TODO(miu): Remove these methods after tab capture is moved to VIZ.
-  // http://crbug.com/754872
-  // The texture bound to the mailbox is expected to have a GL_TEXTURE_2D
-  // target.
-  void SetMailbox(const gpu::Mailbox& mailbox,
-                  const gpu::SyncToken& sync_token);
-  bool has_mailbox() const { return mailbox_.has_value(); }
-  const gpu::Mailbox& mailbox() const { return *mailbox_; }
-  const gpu::SyncToken& sync_token() const { return *sync_token_; }
-
   // Sends the result from executing this request. Called by the internal
   // implementation, usually a DirectRenderer.
   void SendResult(std::unique_ptr<CopyOutputResult> result);
@@ -144,8 +133,6 @@ class VIZ_COMMON_EXPORT CopyOutputRequest {
   base::Optional<base::UnguessableToken> source_;
   base::Optional<gfx::Rect> area_;
   base::Optional<gfx::Rect> result_selection_;
-  base::Optional<gpu::Mailbox> mailbox_;
-  base::Optional<gpu::SyncToken> sync_token_;
 
   DISALLOW_COPY_AND_ASSIGN(CopyOutputRequest);
 };

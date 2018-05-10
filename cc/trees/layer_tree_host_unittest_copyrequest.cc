@@ -1049,63 +1049,6 @@ class LayerTreeHostCopyRequestTestCreatesTexture
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostCopyRequestTestCreatesTexture);
 
-class LayerTreeHostCopyRequestTestProvideTexture
-    : public LayerTreeHostCopyRequestTestCountTextures {
- protected:
-  void BeginTest() override {
-    external_context_provider_ = viz::TestContextProvider::Create();
-    EXPECT_EQ(external_context_provider_->BindToCurrentThread(),
-              gpu::ContextResult::kSuccess);
-    LayerTreeHostCopyRequestTestCountTextures::BeginTest();
-  }
-
-  void CopyOutputCallback(std::unique_ptr<viz::CopyOutputResult> result) {
-    EXPECT_FALSE(result->IsEmpty());
-    EXPECT_EQ(result->format(), viz::CopyOutputResult::Format::RGBA_TEXTURE);
-    ASSERT_NE(nullptr, result->GetTextureResult());
-
-    std::unique_ptr<viz::SingleReleaseCallback> release_callback =
-        result->TakeTextureOwnership();
-    ASSERT_TRUE(release_callback);
-    release_callback->Run(gpu::SyncToken(), false);
-  }
-
-  void RequestCopy(Layer* layer) override {
-    // Request a copy to a provided texture. This should not create a new
-    // texture.
-    std::unique_ptr<viz::CopyOutputRequest> request =
-        std::make_unique<viz::CopyOutputRequest>(
-            viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
-            base::BindOnce(
-                &LayerTreeHostCopyRequestTestProvideTexture::CopyOutputCallback,
-                base::Unretained(this)));
-
-    gpu::gles2::GLES2Interface* gl = external_context_provider_->ContextGL();
-    gpu::Mailbox mailbox;
-    gl->GenMailboxCHROMIUM(mailbox.name);
-
-    gl->GenSyncTokenCHROMIUM(sync_token_.GetData());
-
-    request->SetMailbox(mailbox, sync_token_);
-    EXPECT_TRUE(request->has_mailbox());
-
-    copy_layer_->RequestCopyOfOutput(std::move(request));
-  }
-
-  void AfterTest() override {
-    // Expect the compositor to have waited for the sync point provided with the
-    // mailbox.
-    EXPECT_EQ(sync_token_, waited_sync_token_after_readback_);
-    // Except the copy to have *not* made another texture.
-    EXPECT_EQ(num_textures_without_readback_, num_textures_with_readback_);
-  }
-
-  scoped_refptr<viz::TestContextProvider> external_context_provider_;
-  gpu::SyncToken sync_token_;
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostCopyRequestTestProvideTexture);
-
 class LayerTreeHostCopyRequestTestDestroyBeforeCopy
     : public LayerTreeHostCopyRequestTest {
  protected:

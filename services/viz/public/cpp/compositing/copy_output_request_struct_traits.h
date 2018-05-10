@@ -46,16 +46,6 @@ struct StructTraits<viz::mojom::CopyOutputRequestDataView,
     return request->result_selection_;
   }
 
-  static const base::Optional<gpu::Mailbox>& mailbox(
-      const std::unique_ptr<viz::CopyOutputRequest>& request) {
-    return request->mailbox_;
-  }
-
-  static const base::Optional<gpu::SyncToken>& sync_token(
-      const std::unique_ptr<viz::CopyOutputRequest>& request) {
-    return request->sync_token_;
-  }
-
   static viz::mojom::CopyOutputResultSenderPtr result_sender(
       const std::unique_ptr<viz::CopyOutputRequest>& request);
 
