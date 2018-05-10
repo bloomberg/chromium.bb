@@ -91,8 +91,9 @@ SRC_ROOT_PATH = os.path.abspath(
 
 # Absolute path to the code coverage tools binary.
 LLVM_BUILD_DIR = clang_update.LLVM_BUILD_DIR
-LLVM_COV_PATH = os.path.join(LLVM_BUILD_DIR, 'bin', 'llvm-cov')
-LLVM_PROFDATA_PATH = os.path.join(LLVM_BUILD_DIR, 'bin', 'llvm-profdata')
+LLVM_BIN_DIR = os.path.join(LLVM_BUILD_DIR, 'bin')
+LLVM_COV_PATH = os.path.join(LLVM_BIN_DIR, 'llvm-cov')
+LLVM_PROFDATA_PATH = os.path.join(LLVM_BIN_DIR, 'llvm-profdata')
 
 # Build directory, the value is parsed from command line arguments.
 BUILD_DIR = None
@@ -130,7 +131,8 @@ INDEX_HTML_FILE = os.extsep.join(['index', 'html'])
 LOGS_DIR_NAME = 'logs'
 
 # Used to extract a mapping between directories and components.
-COMPONENT_MAPPING_URL = 'https://storage.googleapis.com/chromium-owners/component_map.json'
+COMPONENT_MAPPING_URL = (
+    'https://storage.googleapis.com/chromium-owners/component_map.json')
 
 # Caches the results returned by _GetBuildArgs, don't use this variable
 # directly, call _GetBuildArgs instead.
@@ -398,6 +400,16 @@ def _GetHostPlatform():
   else:
     assert sys.platform == 'darwin'
     return 'mac'
+
+
+def _GetPathWithLLVMSymbolizerDir():
+  """Add llvm-symbolizer directory to path for symbolized stacks."""
+  path = os.getenv('PATH')
+  dirs = path.split(os.pathsep)
+  if LLVM_BIN_DIR in dirs:
+    return path
+
+  return path + os.pathsep + LLVM_BIN_DIR
 
 
 def _GetTargetOS():
@@ -1009,10 +1021,15 @@ def _ExecuteCommand(target, command):
     output = subprocess.check_output(
         shlex.split(command),
         stderr=subprocess.STDOUT,
-        env={'LLVM_PROFILE_FILE': expected_profraw_file_path})
+        env={
+            'LLVM_PROFILE_FILE': expected_profraw_file_path,
+            'PATH': _GetPathWithLLVMSymbolizerDir()
+        })
   except subprocess.CalledProcessError as e:
     output = e.output
-    logging.warning('Command: "%s" exited with non-zero return code.', command)
+    logging.warning(
+        'Command: "%s" exited with non-zero return code. Output:\n%s', command,
+        output)
 
   return output
 
@@ -1045,7 +1062,10 @@ def _ExecuteIOSCommand(target, command):
   try:
     output = subprocess.check_output(
         shlex.split(command),
-        env={'LLVM_PROFILE_FILE': iossim_profraw_file_path})
+        env={
+            'LLVM_PROFILE_FILE': iossim_profraw_file_path,
+            'PATH': _GetPathWithLLVMSymbolizerDir()
+        })
   except subprocess.CalledProcessError as e:
     # iossim emits non-zero return code even if tests run successfully, so
     # ignore the return code.
