@@ -50,6 +50,13 @@ std::unique_ptr<WindowServiceClient> WindowService::CreateWindowServiceClient(
       this, client_id, window_tree_client, intercepts_events);
 }
 
+void WindowService::SetFrameDecorationValues(
+    const gfx::Insets& client_area_insets,
+    int max_title_bar_button_width) {
+  screen_provider_->SetFrameDecorationValues(client_area_insets,
+                                             max_title_bar_button_width);
+}
+
 void WindowService::OnStart() {
   window_tree_factory_ = std::make_unique<WindowTreeFactory>(this);
 

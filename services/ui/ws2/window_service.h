@@ -22,6 +22,10 @@ namespace aura {
 class Window;
 }
 
+namespace gfx {
+class Insets;
+}
+
 namespace ui {
 
 namespace mojom {
@@ -57,6 +61,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   std::unique_ptr<WindowServiceClient> CreateWindowServiceClient(
       mojom::WindowTreeClient* window_tree_client,
       bool intercepts_events);
+
+  // Sets the window frame metrics.
+  void SetFrameDecorationValues(const gfx::Insets& client_area_insets,
+                                int max_title_bar_button_width);
 
   WindowServiceDelegate* delegate() { return delegate_; }
 
