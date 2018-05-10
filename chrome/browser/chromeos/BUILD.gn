@@ -21,7 +21,6 @@ source_set("chromeos") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   public_deps = [
-    "//ash/resources",
     "//ash/strings",
     "//chrome:extra_resources",
     "//chrome:resources",
@@ -2180,7 +2179,6 @@ source_set("unit_tests") {
     ":attestation_proto",
     ":test_support",
     "//ash",
-    "//ash/resources",
     "//base",
     "//chrome/common",
     "//chromeos/components/tether:test_support",

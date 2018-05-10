@@ -12,7 +12,7 @@ Requires a git checkout. Must be run from your checkout's "src" root.
 
 Example:
   cd /work/chrome/src
-  tools/resources/find_unused_resouces.py ash/resources/ash_resources.grd
+  tools/resources/find_unused_resouces.py chrome/browser/browser_resources.grd
 """
 
 __author__ = 'jamescook@chromium.org (James Cook)'
