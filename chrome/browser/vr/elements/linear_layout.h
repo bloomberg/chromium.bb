@@ -18,10 +18,10 @@ class LinearLayout : public UiElement {
 
   void set_margin(float margin) { margin_ = margin; }
   void set_direction(Direction direction) { direction_ = direction; }
-  void set_layout_length(float extent) { layout_length = extent; }
+  void set_layout_length(float extent) { layout_length_ = extent; }
 
   // UiElement overrides.
-  bool SizeAndLayOut() override;
+  bool SizeAndLayOutChildren() override;
   void LayOutChildren() override;
 
  private:
@@ -39,12 +39,14 @@ class LinearLayout : public UiElement {
   bool AdjustResizableElement(UiElement* element_to_resize);
 
   Direction direction_;
+
+  // The spacing between elements.
   float margin_ = 0.0f;
 
   // If non-zero, LinearLayout will look for an element tagged as allowing
   // sizing by its parent, and set that element's size such that the total
   // layout's length is attained.
-  float layout_length = 0.0f;
+  float layout_length_ = 0.0f;
 };
 
 }  // namespace vr
