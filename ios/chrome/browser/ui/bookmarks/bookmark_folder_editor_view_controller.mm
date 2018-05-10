@@ -451,7 +451,9 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
 
 - (void)addToolbar {
   self.navigationController.toolbarHidden = NO;
+  self.navigationController.toolbar.barTintColor = [UIColor whiteColor];
   NSString* titleString = l10n_util::GetNSString(IDS_IOS_BOOKMARK_GROUP_DELETE);
+  titleString = [titleString uppercaseString];
   UIBarButtonItem* deleteButton =
       [[UIBarButtonItem alloc] initWithTitle:titleString
                                        style:UIBarButtonItemStylePlain
@@ -459,7 +461,14 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
                                       action:@selector(deleteFolder)];
   deleteButton.accessibilityIdentifier =
       kBookmarkFolderEditorDeleteButtonIdentifier;
-  deleteButton.tintColor = [UIColor blackColor];
+  [deleteButton
+      setTitleTextAttributes:[NSDictionary
+                                 dictionaryWithObjectsAndKeys:
+                                     [[MDCTypography fontLoader]
+                                         mediumFontOfSize:14],
+                                     NSFontAttributeName, [UIColor blackColor],
+                                     NSForegroundColorAttributeName, nil]
+                    forState:UIControlStateNormal];
 
   UIBarButtonItem* spaceButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace

@@ -39,6 +39,7 @@
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/ShadowElevations/src/MaterialShadowElevations.h"
 #import "ios/third_party/material_components_ios/src/components/ShadowLayer/src/MaterialShadowLayer.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -225,14 +226,24 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.doneItem = doneItem;
 
   // Setup the bottom toolbar.
+  self.navigationController.toolbar.barTintColor = [UIColor whiteColor];
   NSString* titleString = l10n_util::GetNSString(IDS_IOS_BOOKMARK_DELETE);
+  titleString = [titleString uppercaseString];
   UIBarButtonItem* deleteButton =
       [[UIBarButtonItem alloc] initWithTitle:titleString
                                        style:UIBarButtonItemStylePlain
                                       target:self
                                       action:@selector(deleteBookmark)];
   deleteButton.accessibilityIdentifier = kBookmarkEditDeleteButtonIdentifier;
-  deleteButton.tintColor = [UIColor blackColor];
+  [deleteButton
+      setTitleTextAttributes:[NSDictionary
+                                 dictionaryWithObjectsAndKeys:
+                                     [[MDCTypography fontLoader]
+                                         mediumFontOfSize:14],
+                                     NSFontAttributeName, [UIColor blackColor],
+                                     NSForegroundColorAttributeName, nil]
+                    forState:UIControlStateNormal];
+
   UIBarButtonItem* spaceButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
                            target:nil
