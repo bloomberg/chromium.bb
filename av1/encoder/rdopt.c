@@ -8099,7 +8099,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int search_jnt_comp = is_comp_pred & cm->seq_params.enable_jnt_comp &
                               (mbmi->mode != GLOBAL_GLOBALMV);
   // If !search_jnt_comp, we need to force mbmi->compound_idx = 1.
-  for (comp_idx = !search_jnt_comp; comp_idx < 2; ++comp_idx) {
+  for (comp_idx = 1; comp_idx >= !search_jnt_comp; --comp_idx) {
     rs = 0;
     int compmode_interinter_cost = 0;
     early_terminate = 0;
@@ -8128,14 +8128,13 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       continue;
     }
     if (have_newmv_in_inter_mode(this_mode)) {
-      // when jnt_comp_skip_mv_search flag is on, new mv will be searech once
+      // when jnt_comp_skip_mv_search flag is on, new mv will be searched once
       if (!(search_jnt_comp && cpi->sf.jnt_comp_skip_mv_search &&
-            comp_idx == 1))
+            comp_idx == 0))
         ret_val =
             handle_newmv(cpi, x, bsize, cur_mv, mi_row, mi_col, &rate_mv, args);
       if (ret_val != 0) {
         early_terminate = INT64_MAX;
-        if (cpi->sf.jnt_comp_skip_mv_search) return INT64_MAX;
         continue;
       } else {
         rd_stats->rate += rate_mv;
