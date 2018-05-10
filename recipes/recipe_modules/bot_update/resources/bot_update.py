@@ -457,7 +457,7 @@ def create_manifest(gclient_output, patch_root, gerrit_ref):
     the directory -> repo:revision mapping.
   * Gerrit Patch info which contains info about patched revisions.
 
-  We normalize the URLs such that if they are googlesource.com urls, they:
+  We normalize the URLs using the normalize_git_url function.
   """
   manifest = {
       'version': 0,  # Currently the only valid version is 0.
@@ -467,21 +467,16 @@ def create_manifest(gclient_output, patch_root, gerrit_ref):
     patch_root = patch_root.strip('/')  # Normalize directory names.
   for directory, info in gclient_output.get('solutions', {}).iteritems():
     directory = directory.strip('/')  # Normalize the directory name.
-    # There are two places to the the revision from, we do it in this order:
-    # 1. In the "revision" field
-    # 2. At the end of the URL, after @
-    repo = ''
-    revision = info.get('revision', '')
     # The format of the url is "https://repo.url/blah.git@abcdefabcdef" or
     # just "https://repo.url/blah.git"
-    url_split = info.get('url')
-    if url_split is not None:
-      url_split = url_split.split('@')
-    if not revision and len(url_split) == 2:
-      revision = url_split[1]
-    if url_split:
-      repo = normalize_git_url(url_split[0])
-    if repo:
+    url = info.get('url') or ''
+    repo, _, url_revision = url.partition('@')
+    repo = normalize_git_url(repo)
+    # There are two places to get the revision from, we do it in this order:
+    # 1. In the "revision" field
+    # 2. At the end of the URL, after @
+    revision = info.get('revision') or url_revision
+    if repo and revision:
       dirs[directory] = {
         'git_checkout': {
           'repo_url': repo,
