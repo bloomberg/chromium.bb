@@ -39,6 +39,7 @@ class PLATFORM_EXPORT CanvasResource : public WTF::RefCounted<CanvasResource> {
   virtual ~CanvasResource();
   virtual void Abandon() = 0;
   virtual bool IsRecycleable() const = 0;
+  virtual bool IsAccelerated() const = 0;
   virtual bool IsValid() const = 0;
   virtual IntSize Size() const = 0;
   virtual const gpu::Mailbox& GetOrCreateGpuMailbox() = 0;
@@ -47,6 +48,10 @@ class PLATFORM_EXPORT CanvasResource : public WTF::RefCounted<CanvasResource> {
       viz::TransferableResource* out_resource,
       std::unique_ptr<viz::SingleReleaseCallback>* out_callback);
   void SetSyncTokenForRelease(const gpu::SyncToken&);
+  virtual scoped_refptr<CanvasResource> MakeAccelerated(
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>) = 0;
+  virtual bool IsBitmap();
+  virtual scoped_refptr<StaticBitmapImage> Bitmap();
   void WaitSyncTokenBeforeRelease();
   virtual void CopyFromTexture(GLuint source_texture,
                                GLenum format,
@@ -67,6 +72,7 @@ class PLATFORM_EXPORT CanvasResource : public WTF::RefCounted<CanvasResource> {
   void PrepareTransferableResourceCommon(
       viz::TransferableResource* out_resource,
       std::unique_ptr<viz::SingleReleaseCallback>* out_callback);
+  SkFilterQuality filterQuality() const { return filter_quality_; }
 
  private:
   // Sync token that was provided when resource was released
@@ -87,9 +93,14 @@ class PLATFORM_EXPORT CanvasResourceBitmap final : public CanvasResource {
   // Not recyclable: Skia handles texture recycling internally and bitmaps are
   // cheap to allocate.
   bool IsRecycleable() const final { return false; }
+  bool IsAccelerated() const final;
   bool IsValid() const final;
   void Abandon() final { TearDown(); }
   IntSize Size() const final;
+  bool IsBitmap() final;
+  scoped_refptr<StaticBitmapImage> Bitmap() final;
+  scoped_refptr<CanvasResource> MakeAccelerated(
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final;
 
  private:
   void TearDown();
@@ -119,9 +130,14 @@ class PLATFORM_EXPORT CanvasResourceGpuMemoryBuffer final
       SkFilterQuality);
   ~CanvasResourceGpuMemoryBuffer() override;
   bool IsRecycleable() const final { return IsValid(); }
+  bool IsAccelerated() const final { return true; }
   bool IsValid() const override {
     return context_provider_wrapper_ && image_id_;
   }
+  scoped_refptr<CanvasResource> MakeAccelerated(
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final {
+    return base::WrapRefCounted(this);
+  };
   void Abandon() final { TearDown(); }
   IntSize Size() const final;
 

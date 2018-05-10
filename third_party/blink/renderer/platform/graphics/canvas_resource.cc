@@ -28,6 +28,15 @@ CanvasResource::~CanvasResource() {
   DCHECK(!sync_token_for_release_.HasData());
 }
 
+bool CanvasResource::IsBitmap() {
+  return false;
+}
+
+scoped_refptr<StaticBitmapImage> CanvasResource::Bitmap() {
+  NOTREACHED();
+  return nullptr;
+}
+
 gpu::gles2::GLES2Interface* CanvasResource::ContextGL() const {
   if (!ContextProviderWrapper())
     return nullptr;
@@ -126,6 +135,27 @@ bool CanvasResourceBitmap::IsValid() const {
   return image_->IsValid();
 }
 
+bool CanvasResourceBitmap::IsAccelerated() const {
+  return image_->IsTextureBacked();
+}
+
+scoped_refptr<CanvasResource> CanvasResourceBitmap::MakeAccelerated(
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+        context_provider_wrapper) {
+  if (IsAccelerated() || !context_provider_wrapper)
+    return base::WrapRefCounted(this);
+  scoped_refptr<StaticBitmapImage> accelerated_image =
+      image_->MakeAccelerated(context_provider_wrapper);
+  // passing nullptr for the resource provider argument creates an orphan
+  // CanvasResource, which implies that it internal resources will not be
+  // recycled.
+  scoped_refptr<CanvasResource> accelerated_resource =
+      Create(accelerated_image, nullptr, filterQuality());
+  if (!accelerated_resource)
+    return base::WrapRefCounted(this);
+  return accelerated_resource;
+}
+
 void CanvasResourceBitmap::TearDown() {
   WaitSyncTokenBeforeRelease();
   // We must not disassociate the mailbox from the texture object here because
@@ -142,6 +172,14 @@ IntSize CanvasResourceBitmap::Size() const {
 
 GLenum CanvasResourceBitmap::TextureTarget() const {
   return GL_TEXTURE_2D;
+}
+
+bool CanvasResourceBitmap::IsBitmap() {
+  return true;
+}
+
+scoped_refptr<StaticBitmapImage> CanvasResourceBitmap::Bitmap() {
+  return image_;
 }
 
 const gpu::Mailbox& CanvasResourceBitmap::GetOrCreateGpuMailbox() {
