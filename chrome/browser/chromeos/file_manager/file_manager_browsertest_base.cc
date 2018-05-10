@@ -228,6 +228,8 @@ class FileManagerTestMessageListener : public content::NotificationObserver {
   base::OnceClosure quit_closure_;
   base::circular_deque<Message> messages_;
   content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileManagerTestMessageListener);
 };
 
 // Test volume.
@@ -263,6 +265,8 @@ class TestVolume {
   base::ScopedTempDir root_;
   bool root_initialized_ = false;
   std::string name_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestVolume);
 };
 
 }  // anonymous namespace
@@ -295,6 +299,7 @@ class LocalTestVolume : public TestVolume {
             << "Failed to create a directory: " << target_path.value();
         break;
     }
+
     ASSERT_TRUE(UpdateModifiedTime(entry));
   }
 
@@ -316,10 +321,13 @@ class LocalTestVolume : public TestVolume {
         return false;
       return UpdateModifiedTime(it->second);
     }
+
     return true;
   }
 
   std::map<base::FilePath, const TestEntryInfo> entries_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalTestVolume);
 };
 
 // DownloadsTestVolume: local test volume for the "Downloads" directory.
@@ -334,6 +342,9 @@ class DownloadsTestVolume : public LocalTestVolume {
     auto* volume = VolumeManager::Get(profile);
     return volume->RegisterDownloadsDirectoryForTesting(root_path());
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DownloadsTestVolume);
 };
 
 // FakeTestVolume: local test volume with a given volume and device type.
@@ -387,6 +398,8 @@ class FakeTestVolume : public LocalTestVolume {
   const VolumeType volume_type_;
   const chromeos::DeviceType device_type_;
   const bool read_only_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeTestVolume);
 };
 
 // DriveTestVolume: test volume for Google Drive.
@@ -525,6 +538,8 @@ class DriveTestVolume : public TestVolume {
   drive::FakeDriveService* fake_drive_service_ = nullptr;
   // Integration service used for testing: not owned.
   drive::DriveIntegrationService* integration_service_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(DriveTestVolume);
 };
 
 FileManagerBrowserTestBase::FileManagerBrowserTestBase() = default;
