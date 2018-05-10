@@ -207,16 +207,18 @@ class _CoverageReportHtmlGenerator(object):
 
     self._table_entries = []
     self._total_entry = {}
-    template_dir = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), 'html_templates')
+
+    source_dir = os.path.dirname(os.path.realpath(__file__))
+    template_dir = os.path.join(source_dir, 'html_templates')
 
     jinja_env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(template_dir), trim_blocks=True)
     self._header_template = jinja_env.get_template('header.html')
     self._table_template = jinja_env.get_template('table.html')
     self._footer_template = jinja_env.get_template('footer.html')
+
     self._style_overrides = open(
-        os.path.join(template_dir, 'style_overrides.css')).read()
+        os.path.join(source_dir, 'static', 'css', 'style.css')).read()
 
   def AddLinkToAnotherReport(self, html_report_path, name, summary):
     """Adds a link to another html report in this report.
