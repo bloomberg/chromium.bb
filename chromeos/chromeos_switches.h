@@ -219,6 +219,10 @@ CHROMEOS_EXPORT bool AreExperimentalAccessibilityFeaturesEnabled();
 // Returns true if we should hide open apps that aren't pinned from the shelf.
 CHROMEOS_EXPORT bool ShouldHideActiveAppsFromShelf();
 
+// Returns true if we should show window previews when hovering over an app
+// on the shelf.
+CHROMEOS_EXPORT bool ShouldShowShelfHoverPreviews();
+
 // Returns true if Instant Tethering should support hosts which use the
 // background advertisement model
 CHROMEOS_EXPORT bool IsInstantTetheringBackgroundAdvertisingSupported();

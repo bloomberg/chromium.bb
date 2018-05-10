@@ -179,6 +179,11 @@ class ASH_EXPORT ShelfView : public views::View,
   // True if the current |drag_view_| is the given |drag_view|.
   bool IsDraggedView(const ShelfButton* drag_view) const;
 
+  // Returns the list of open windows that correspond to the app represented by
+  // this shelf view.
+  const std::vector<aura::Window*> GetOpenWindowsForShelfView(
+      views::View* view);
+
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
     return view_model_.get();

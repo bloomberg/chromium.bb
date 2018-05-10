@@ -7,6 +7,7 @@
 #include "ash/public/cpp/config.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_tooltip_bubble.h"
+#include "ash/shelf/shelf_tooltip_preview_bubble.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
@@ -15,6 +16,7 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -95,8 +97,17 @@ void ShelfTooltipManager::ShowTooltip(views::View* view) {
       break;
   }
 
-  base::string16 text = shelf_view_->GetTitleForView(view);
-  bubble_ = new ShelfTooltipBubble(view, arrow, text);
+  const std::vector<aura::Window*> open_windows =
+      shelf_view_->GetOpenWindowsForShelfView(view);
+
+  const base::string16 text = shelf_view_->GetTitleForView(view);
+  if (chromeos::switches::ShouldShowShelfHoverPreviews() &&
+      open_windows.size() > 0) {
+    bubble_ = new ShelfTooltipPreviewBubble(view, arrow, open_windows.front());
+  } else {
+    bubble_ = new ShelfTooltipBubble(view, arrow, text);
+  }
+
   aura::Window* window = bubble_->GetWidget()->GetNativeWindow();
   ::wm::SetWindowVisibilityAnimationType(
       window, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);

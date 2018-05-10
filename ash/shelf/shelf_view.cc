@@ -12,6 +12,7 @@
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/app_list_button.h"
@@ -30,6 +31,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/auto_reset.h"
@@ -627,6 +629,24 @@ void ShelfView::UpdateDragIconProxyByLocation(
 
 bool ShelfView::IsDraggedView(const ShelfButton* view) const {
   return drag_view_ == view;
+}
+
+const std::vector<aura::Window*> ShelfView::GetOpenWindowsForShelfView(
+    views::View* view) {
+  std::vector<aura::Window*> window_list =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+  std::vector<aura::Window*> open_windows;
+  const std::string shelf_item_app_id = ShelfItemForView(view)->id.app_id;
+  for (auto* window : window_list) {
+    const std::string window_app_id =
+        ShelfID::Deserialize(window->GetProperty(kShelfIDKey)).app_id;
+    if (window_app_id == shelf_item_app_id) {
+      // TODO: In the very first version we only show one window. Add the proper
+      // UI to show all windows for a given open app.
+      open_windows.push_back(window);
+    }
+  }
+  return open_windows;
 }
 
 void ShelfView::DestroyDragIconProxy() {
