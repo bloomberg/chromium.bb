@@ -73,23 +73,23 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                  mojom::NetworkContextRequest request,
                  mojom::NetworkContextParamsPtr params);
 
-  // Temporary constructor that allows creating an in-process NetworkContext
-  // with a pre-populated URLRequestContextBuilderMojo.
+  // DEPRECATED: Creates an in-process NetworkContext with a partially
+  // pre-populated URLRequestContextBuilderMojo. This API should not be used
+  // in new code, as some |params| configuration may be ignored, in favor of
+  // the pre-configured URLRequestContextBuilderMojo configuration.
   NetworkContext(NetworkService* network_service,
                  mojom::NetworkContextRequest request,
                  mojom::NetworkContextParamsPtr params,
                  std::unique_ptr<URLRequestContextBuilderMojo> builder);
 
-  // Creates a NetworkContext that wraps a consumer-provided URLRequestContext
-  // that the NetworkContext does not own.
+  // DEPRECATED: Creates a NetworkContext that simply wraps a consumer-provided
+  // URLRequestContext that is not owned by the NetworkContext.
   // TODO(mmenke):  Remove this constructor when the network service ships.
   NetworkContext(NetworkService* network_service,
                  mojom::NetworkContextRequest request,
                  net::URLRequestContext* url_request_context);
 
   ~NetworkContext() override;
-
-  static std::unique_ptr<NetworkContext> CreateForTesting();
 
   // Sets a global CertVerifier to use when initializing all profiles.
   static void SetCertVerifierForTesting(net::CertVerifier* cert_verifier);
@@ -180,6 +180,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // Disables use of QUIC by the NetworkContext.
   void DisableQuic();
 
+  // Destroys the specified URLLoaderFactory. Called by the URLLoaderFactory
+  // itself when it has no open pipes.
+  void DestroyURLLoaderFactory(URLLoaderFactory* url_loader_factory);
+
+ private:
+  friend class URLRequestContextBuilderMojo;
+
   // Applies the values in |network_context_params| to |builder|, and builds
   // the URLRequestContext. If |out_http_user_agent_settings| is non-null, it
   // will be set to point to StaticHttpUserAgentSettings owned by the
@@ -194,14 +201,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       std::unique_ptr<certificate_transparency::TreeStateTracker>*
           out_tree_state_tracker,
       net::StaticHttpUserAgentSettings** out_http_user_agent_settings);
-
-  // Destroys the specified URLLoaderFactory.  Called by the URLLoaderFactory
-  // itself when it has not open pipes.
-  void DestroyURLLoaderFactory(URLLoaderFactory* url_loader_factory);
-
- private:
-  // Constructor only used in tests.
-  explicit NetworkContext(mojom::NetworkContextParamsPtr params);
 
   // Invoked when the HTTP cache was cleared. Invokes |callback|.
   void OnHttpCacheCleared(ClearHttpCacheCallback callback,
