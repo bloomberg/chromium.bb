@@ -33,11 +33,6 @@ using testing::IsEmpty;
 using testing::SaveArg;
 using testing::StartsWith;
 
-// Needed for GoogleURLTrackerClientStub below.
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace {
 
 const char kApplicationLocale[] = "de";
@@ -55,7 +50,9 @@ class GoogleURLTrackerClientStub : public GoogleURLTrackerClient {
 
   bool IsBackgroundNetworkingEnabled() override { return true; }
   PrefService* GetPrefs() override { return nullptr; }
-  net::URLRequestContextGetter* GetRequestContext() override { return nullptr; }
+  network::SharedURLLoaderFactory* GetURLLoaderFactory() override {
+    return nullptr;
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTrackerClientStub);

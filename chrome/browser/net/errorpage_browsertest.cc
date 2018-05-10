@@ -1030,6 +1030,8 @@ class ErrorPageAutoReloadTest : public InProcessBrowserTest {
         std::make_unique<content::URLLoaderInterceptor>(base::BindRepeating(
             [](int32_t requests_to_fail, int32_t* requests, int32_t* failures,
                content::URLLoaderInterceptor::RequestParams* params) {
+              if (params->url_request.url.path() == "/searchdomaincheck")
+                return false;
               if (params->url_request.url.path() == "/favicon.ico")
                 return false;
               (*requests)++;

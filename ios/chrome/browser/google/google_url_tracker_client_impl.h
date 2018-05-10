@@ -14,10 +14,6 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 class GoogleURLTrackerClientImpl : public GoogleURLTrackerClient {
  public:
   explicit GoogleURLTrackerClientImpl(ios::ChromeBrowserState* browser_state);
@@ -27,7 +23,7 @@ class GoogleURLTrackerClientImpl : public GoogleURLTrackerClient {
   // GoogleURLTrackerClient implementation.
   bool IsBackgroundNetworkingEnabled() override;
   PrefService* GetPrefs() override;
-  net::URLRequestContextGetter* GetRequestContext() override;
+  network::mojom::URLLoaderFactory* GetURLLoaderFactory() override;
 
   ios::ChromeBrowserState* browser_state_;
 

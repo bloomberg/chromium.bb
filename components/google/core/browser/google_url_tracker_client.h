@@ -11,8 +11,10 @@
 class GoogleURLTracker;
 class PrefService;
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+namespace mojom {
+class URLLoaderFactory;
+}
 }
 
 // Interface by which GoogleURLTracker communicates with its embedder.
@@ -32,9 +34,8 @@ class GoogleURLTrackerClient {
   // Returns the PrefService that the GoogleURLTracker should use.
   virtual PrefService* GetPrefs() = 0;
 
-  // Returns the URL request context information that the GoogleURLTracker
-  // should use.
-  virtual net::URLRequestContextGetter* GetRequestContext() = 0;
+  // Returns the URL loader factory that the GoogleURLTracker should use.
+  virtual network::mojom::URLLoaderFactory* GetURLLoaderFactory() = 0;
 
  protected:
   GoogleURLTracker* google_url_tracker() { return google_url_tracker_; }
