@@ -230,7 +230,7 @@ bool ServerConnectionManager::PostBufferToPath(PostBufferParams* params,
   }
 
   std::unique_ptr<Connection> connection = MakeActiveConnection();
-  if (!connection.get()) {
+  if (!connection) {
     params->response.server_status = HttpResponse::CONNECTION_UNAVAILABLE;
     return false;
   }

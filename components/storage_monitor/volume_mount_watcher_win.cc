@@ -161,7 +161,7 @@ bool GetDeviceDetails(const base::FilePath& device_path, StorageInfo* info) {
   base::string16 volume_label;
   GetVolumeInformationW(device_path.value().c_str(),
                         base::WriteInto(&volume_label, kMaxPathBufLen),
-                        kMaxPathBufLen, NULL, NULL, NULL, NULL, 0);
+                        kMaxPathBufLen, nullptr, nullptr, nullptr, nullptr, 0);
 
   uint64_t total_size_in_bytes = GetVolumeSize(mount_path);
   std::string device_id =
@@ -231,9 +231,8 @@ void EjectDeviceInThreadPool(
   base::SStringPrintf(&volume_name, L"\\\\.\\%lc:", drive_letter);
 
   base::win::ScopedHandle volume_handle(CreateFile(
-      volume_name.c_str(),
-      GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
-      NULL, OPEN_EXISTING, 0, NULL));
+      volume_name.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+      nullptr, OPEN_EXISTING, 0, nullptr));
 
   if (!volume_handle.IsValid()) {
     BrowserThread::PostTask(
@@ -248,8 +247,8 @@ void EjectDeviceInThreadPool(
   // files on it). If this fails, it means some other process has files
   // open on the device. Note that the lock is released when the volume
   // handle is closed, and this is done by the ScopedHandle above.
-  BOOL locked = DeviceIoControl(volume_handle.Get(), FSCTL_LOCK_VOLUME,
-                                NULL, 0, NULL, 0, &bytes_returned, NULL);
+  BOOL locked = DeviceIoControl(volume_handle.Get(), FSCTL_LOCK_VOLUME, nullptr,
+                                0, nullptr, 0, &bytes_returned, nullptr);
   if (!locked) {
     const int kNumLockRetries = 1;
     const base::TimeDelta kLockRetryInterval =
@@ -273,15 +272,16 @@ void EjectDeviceInThreadPool(
 
   // Unmount the device from the filesystem -- this will remove it from
   // the file picker, drive enumerations, etc.
-  BOOL dismounted = DeviceIoControl(volume_handle.Get(), FSCTL_DISMOUNT_VOLUME,
-                                    NULL, 0, NULL, 0, &bytes_returned, NULL);
+  BOOL dismounted =
+      DeviceIoControl(volume_handle.Get(), FSCTL_DISMOUNT_VOLUME, nullptr, 0,
+                      nullptr, 0, &bytes_returned, nullptr);
 
   // Reached if we acquired a lock, but could not dismount. This might
   // occur if another process unmounted without locking. Call this OK,
   // since the volume is now unreachable.
   if (!dismounted) {
-    DeviceIoControl(volume_handle.Get(), FSCTL_UNLOCK_VOLUME,
-                    NULL, 0, NULL, 0, &bytes_returned, NULL);
+    DeviceIoControl(volume_handle.Get(), FSCTL_UNLOCK_VOLUME, nullptr, 0,
+                    nullptr, 0, &bytes_returned, nullptr);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(callback, StorageMonitor::EJECT_OK));
     return;
@@ -291,8 +291,8 @@ void EjectDeviceInThreadPool(
   pmr_buffer.PreventMediaRemoval = FALSE;
   // Mark the device as safe to remove.
   if (!DeviceIoControl(volume_handle.Get(), IOCTL_STORAGE_MEDIA_REMOVAL,
-                       &pmr_buffer, sizeof(PREVENT_MEDIA_REMOVAL),
-                       NULL, 0, &bytes_returned, NULL)) {
+                       &pmr_buffer, sizeof(PREVENT_MEDIA_REMOVAL), nullptr, 0,
+                       &bytes_returned, nullptr)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(callback, StorageMonitor::EJECT_FAILURE));
@@ -300,8 +300,8 @@ void EjectDeviceInThreadPool(
   }
 
   // Physically eject or soft-eject the device.
-  if (!DeviceIoControl(volume_handle.Get(), IOCTL_STORAGE_EJECT_MEDIA,
-                       NULL, 0, NULL, 0, &bytes_returned, NULL)) {
+  if (!DeviceIoControl(volume_handle.Get(), IOCTL_STORAGE_EJECT_MEDIA, nullptr,
+                       0, nullptr, 0, &bytes_returned, nullptr)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(callback, StorageMonitor::EJECT_FAILURE));

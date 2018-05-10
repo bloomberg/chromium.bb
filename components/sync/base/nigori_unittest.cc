@@ -156,7 +156,7 @@ TEST(SyncNigoriTest, InitByDerivationSetsUserKey) {
   Nigori nigori;
   EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
 
-  std::string user_key = "";
+  std::string user_key;
   std::string encryption_key;
   std::string mac_key;
   nigori.ExportKeys(&user_key, &encryption_key, &mac_key);

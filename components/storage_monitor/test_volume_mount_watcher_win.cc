@@ -111,7 +111,7 @@ void TestVolumeMountWatcherWin::SetAttachedDevicesFake() {
 void TestVolumeMountWatcherWin::DeviceCheckComplete(
     const base::FilePath& device_path) {
   devices_checked_.push_back(device_path);
-  if (device_check_complete_event_.get())
+  if (device_check_complete_event_)
     device_check_complete_event_->Wait();
   VolumeMountWatcherWin::DeviceCheckComplete(device_path);
 }

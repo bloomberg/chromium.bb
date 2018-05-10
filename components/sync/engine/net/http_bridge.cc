@@ -96,7 +96,7 @@ HttpPostProviderInterface* HttpBridgeFactory::Create() {
   // and at pretty much any time), then we won't have a request_context_getter_.
   // Some external mechanism must ensure that this function is not called after
   // we've been asked to shut down.
-  DCHECK(request_context_getter_.get());
+  DCHECK(request_context_getter_);
 
   scoped_refptr<HttpBridge> http =
       new HttpBridge(user_agent_, request_context_getter_,
@@ -225,14 +225,14 @@ void HttpBridge::MakeAsynchronousPost() {
 
   // Start the timer on the network thread (the same thread progress is made
   // on, and on which the url fetcher lives).
-  DCHECK(!fetch_state_.http_request_timeout_timer.get());
+  DCHECK(!fetch_state_.http_request_timeout_timer);
   fetch_state_.http_request_timeout_timer =
       std::make_unique<base::Timer>(false, false);
   fetch_state_.http_request_timeout_timer->Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kMaxHttpRequestTimeSeconds),
       base::Bind(&HttpBridge::OnURLFetchTimedOut, this));
 
-  DCHECK(request_context_getter_.get());
+  DCHECK(request_context_getter_);
   fetch_state_.start_time = base::Time::Now();
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("sync_http_bridge", R"(
@@ -340,7 +340,7 @@ void HttpBridge::Abort() {
 void HttpBridge::DestroyURLFetcherOnIOThread(net::URLFetcher* fetcher,
                                              base::Timer* fetch_timer) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
-  if (fetch_timer)
+
     delete fetch_timer;
   delete fetcher;
 }
@@ -351,7 +351,7 @@ void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
   base::AutoLock lock(fetch_state_lock_);
 
   // Stop the request timer now that the request completed.
-  if (fetch_state_.http_request_timeout_timer.get())
+  if (fetch_state_.http_request_timeout_timer)
     fetch_state_.http_request_timeout_timer.reset();
 
   if (fetch_state_.aborted)
@@ -408,7 +408,7 @@ void HttpBridge::OnURLFetchDownloadProgress(const net::URLFetcher* source,
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   // Reset the delay when forward progress is made.
   base::AutoLock lock(fetch_state_lock_);
-  if (fetch_state_.http_request_timeout_timer.get())
+  if (fetch_state_.http_request_timeout_timer)
     fetch_state_.http_request_timeout_timer->Reset();
 }
 
@@ -418,7 +418,7 @@ void HttpBridge::OnURLFetchUploadProgress(const net::URLFetcher* source,
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   // Reset the delay when forward progress is made.
   base::AutoLock lock(fetch_state_lock_);
-  if (fetch_state_.http_request_timeout_timer.get())
+  if (fetch_state_.http_request_timeout_timer)
     fetch_state_.http_request_timeout_timer->Reset();
 }
 

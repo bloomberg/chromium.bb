@@ -10,7 +10,7 @@ namespace syncer {
 
 SyncManagerFactoryForProfileSyncTest::SyncManagerFactoryForProfileSyncTest(
     base::OnceClosure init_callback)
-    : SyncManagerFactory(), init_callback_(std::move(init_callback)) {}
+    : init_callback_(std::move(init_callback)) {}
 
 SyncManagerFactoryForProfileSyncTest::~SyncManagerFactoryForProfileSyncTest() {}
 

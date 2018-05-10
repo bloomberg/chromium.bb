@@ -458,7 +458,7 @@ TEST_F(PrefixSetTest, CorruptionHelpers) {
   IncrementIntAt(file.get(), kPayloadOffset, 1);
   file.reset();
   std::unique_ptr<const PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
-  ASSERT_FALSE(prefix_set.get());
+  ASSERT_FALSE(prefix_set);
 
   // Fix up the checksum and it will read successfully (though the
   // data will be wrong).
@@ -476,7 +476,7 @@ TEST_F(PrefixSetTest, CorruptionMagic) {
 
   ASSERT_NO_FATAL_FAILURE(ModifyAndCleanChecksum(filename, kMagicOffset, 1));
   std::unique_ptr<const PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
-  ASSERT_FALSE(prefix_set.get());
+  ASSERT_FALSE(prefix_set);
 }
 
 // Bad version is caught by the sanity check.
@@ -486,7 +486,7 @@ TEST_F(PrefixSetTest, CorruptionVersion) {
 
   ASSERT_NO_FATAL_FAILURE(ModifyAndCleanChecksum(filename, kVersionOffset, 10));
   std::unique_ptr<const PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
-  ASSERT_FALSE(prefix_set.get());
+  ASSERT_FALSE(prefix_set);
 }
 
 // Bad |index_| size is caught by the sanity check.
@@ -497,7 +497,7 @@ TEST_F(PrefixSetTest, CorruptionIndexSize) {
   ASSERT_NO_FATAL_FAILURE(
       ModifyAndCleanChecksum(filename, kIndexSizeOffset, 1));
   std::unique_ptr<const PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
-  ASSERT_FALSE(prefix_set.get());
+  ASSERT_FALSE(prefix_set);
 }
 
 // Bad |deltas_| size is caught by the sanity check.
@@ -508,7 +508,7 @@ TEST_F(PrefixSetTest, CorruptionDeltasSize) {
   ASSERT_NO_FATAL_FAILURE(
       ModifyAndCleanChecksum(filename, kDeltasSizeOffset, 1));
   std::unique_ptr<const PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
-  ASSERT_FALSE(prefix_set.get());
+  ASSERT_FALSE(prefix_set);
 }
 
 // Bad |full_hashes_| size is caught by the sanity check.
@@ -519,7 +519,7 @@ TEST_F(PrefixSetTest, CorruptionFullHashesSize) {
   ASSERT_NO_FATAL_FAILURE(
       ModifyAndCleanChecksum(filename, kFullHashesSizeOffset, 1));
   std::unique_ptr<const PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
-  ASSERT_FALSE(prefix_set.get());
+  ASSERT_FALSE(prefix_set);
 }
 
 // Test that the digest catches corruption in the middle of the file
@@ -532,7 +532,7 @@ TEST_F(PrefixSetTest, CorruptionPayload) {
   ASSERT_NO_FATAL_FAILURE(IncrementIntAt(file.get(), 666, 1));
   file.reset();
   std::unique_ptr<const PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
-  ASSERT_FALSE(prefix_set.get());
+  ASSERT_FALSE(prefix_set);
 }
 
 // Test corruption in the digest itself.
@@ -547,7 +547,7 @@ TEST_F(PrefixSetTest, CorruptionDigest) {
   ASSERT_NO_FATAL_FAILURE(IncrementIntAt(file.get(), digest_offset, 1));
   file.reset();
   std::unique_ptr<const PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
-  ASSERT_FALSE(prefix_set.get());
+  ASSERT_FALSE(prefix_set);
 }
 
 // Test excess data after the digest (fails the size test).
@@ -561,7 +561,7 @@ TEST_F(PrefixSetTest, CorruptionExcess) {
   ASSERT_EQ(strlen(buf), fwrite(buf, 1, strlen(buf), file.get()));
   file.reset();
   std::unique_ptr<const PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
-  ASSERT_FALSE(prefix_set.get());
+  ASSERT_FALSE(prefix_set);
 }
 
 // Test that files which had 64-bit size_t are discarded.
@@ -603,7 +603,7 @@ TEST_F(PrefixSetTest, SizeTRecovery) {
   file.reset();  // Flush updates.
 
   std::unique_ptr<const PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
-  ASSERT_FALSE(prefix_set.get());
+  ASSERT_FALSE(prefix_set);
 }
 
 // Test Exists() against full hashes passed to builder.
@@ -684,7 +684,7 @@ TEST_F(PrefixSetTest, ReadSigned) {
   file.reset();  // Flush updates.
 
   std::unique_ptr<const PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
-  ASSERT_FALSE(prefix_set.get());
+  ASSERT_FALSE(prefix_set);
 }
 
 // Test that a golden v2 file is discarded on read.  All platforms generating v2
@@ -700,7 +700,7 @@ TEST_F(PrefixSetTest, Version2) {
   golden_path = golden_path.AppendASCII(kBasename);
 
   std::unique_ptr<const PrefixSet> prefix_set(PrefixSet::LoadFile(golden_path));
-  ASSERT_FALSE(prefix_set.get());
+  ASSERT_FALSE(prefix_set);
 }
 #endif
 

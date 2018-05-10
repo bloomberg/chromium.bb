@@ -302,7 +302,7 @@ TEST_F(V4UpdateProtocolManagerTest, TestDisableAutoUpdates) {
   runner->RunPendingTasks();
   EXPECT_FALSE(pm->IsUpdateScheduled());
 
-  DCHECK(!pm->request_.get());
+  DCHECK(!pm->request_);
 }
 
 TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesHasTimeout) {

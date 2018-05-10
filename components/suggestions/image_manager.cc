@@ -175,7 +175,7 @@ void ImageManager::OnCacheImageDecoded(const GURL& url,
                                        const GURL& image_url,
                                        const ImageCallback& callback,
                                        std::unique_ptr<SkBitmap> bitmap) {
-  if (bitmap.get()) {
+  if (bitmap) {
     callback.Run(url, gfx::Image::CreateFrom1xBitmap(*bitmap));
   } else {
     image_fetcher_->FetchImage(
@@ -200,7 +200,7 @@ void ImageManager::ServeFromCacheOrNetwork(const GURL& url,
                                            ImageCallback callback) {
   scoped_refptr<base::RefCountedMemory> encoded_data =
       GetEncodedImageFromCache(url);
-  if (encoded_data.get()) {
+  if (encoded_data) {
     base::PostTaskAndReplyWithResult(
         background_task_runner_.get(), FROM_HERE,
         base::Bind(&DecodeImage, encoded_data),

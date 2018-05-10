@@ -135,7 +135,7 @@ void ThreatDetailsCacheCollector::OnURLLoaderComplete(
     std::unique_ptr<std::string> response_body) {
   DVLOG(1) << "OnURLLoaderComplete";
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(current_load_.get());
+  DCHECK(current_load_);
   if (current_load_->NetError() == net::ERR_CACHE_MISS) {
     // Cache miss, skip this resource.
     DVLOG(1) << "Cache miss for url: " << current_load_->GetFinalURL();
@@ -164,7 +164,7 @@ void ThreatDetailsCacheCollector::OnURLLoaderComplete(
   ReadResponse(resource);
   std::string data;
   if (response_body)
-    data = *response_body.get();
+    data = *response_body;
   ReadData(resource, data);
   AdvanceEntry();
 }

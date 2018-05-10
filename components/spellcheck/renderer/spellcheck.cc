@@ -389,7 +389,7 @@ void SpellCheck::RequestTextChecking(
     const base::string16& text,
     blink::WebTextCheckingCompletion* completion) {
   // Clean up the previous request before starting a new request.
-  if (pending_request_param_.get())
+  if (pending_request_param_)
     pending_request_param_->completion()->DidCancelCheckingText();
 
   pending_request_param_.reset(new SpellcheckRequest(

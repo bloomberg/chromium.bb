@@ -199,7 +199,7 @@ PasswordProtectionService::GetCachedVerdict(
           hostname, GURL(), CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
           std::string(), nullptr));
 
-  if (!cache_dictionary.get() || cache_dictionary->empty())
+  if (!cache_dictionary || cache_dictionary->empty())
     return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
 
   base::DictionaryValue* verdict_dictionary = nullptr;
@@ -279,7 +279,7 @@ void PasswordProtectionService::CacheVerdict(
           hostname, GURL(), CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
           std::string(), nullptr));
 
-  if (!cache_dictionary || !cache_dictionary.get())
+  if (!cache_dictionary || !cache_dictionary)
     cache_dictionary = std::make_unique<base::DictionaryValue>();
 
   std::unique_ptr<base::DictionaryValue> verdict_entry(
@@ -624,7 +624,7 @@ int PasswordProtectionService::GetVerdictCountForURL(
       base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
           url, GURL(), CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
           nullptr));
-  if (!cache_dictionary.get() || cache_dictionary->empty())
+  if (!cache_dictionary || cache_dictionary->empty())
     return 0;
 
   if (trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {

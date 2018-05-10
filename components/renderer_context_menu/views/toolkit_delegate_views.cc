@@ -35,7 +35,7 @@ void ToolkitDelegateViews::Init(ui::SimpleMenuModel* menu_model) {
 }
 
 void ToolkitDelegateViews::Cancel() {
-  DCHECK(menu_runner_.get());
+  DCHECK(menu_runner_);
   menu_runner_->Cancel();
 }
 

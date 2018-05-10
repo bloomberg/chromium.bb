@@ -119,7 +119,7 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
 
 void TemplateURLFetcher::RequestDelegate::OnLoaded() {
   template_url_subscription_.reset();
-  if (!template_url_.get())
+  if (!template_url_)
     return;
   AddSearchProvider();
   // WARNING: AddSearchProvider deletes us.
@@ -146,7 +146,7 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
   template_url_ = TemplateURLParser::Parse(
       fetcher_->template_url_service_->search_terms_data(), data.data(),
       data.length(), nullptr);
-  if (!template_url_.get() ||
+  if (!template_url_ ||
       !template_url_->url_ref().SupportsReplacement(
           fetcher_->template_url_service_->search_terms_data())) {
     fetcher_->RequestCompleted(this);
@@ -162,7 +162,7 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
 }
 
 void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
-  DCHECK(template_url_.get());
+  DCHECK(template_url_);
   DCHECK(!keyword_.empty());
   TemplateURLService* model = fetcher_->template_url_service_;
   DCHECK(model);

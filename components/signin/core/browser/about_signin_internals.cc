@@ -480,7 +480,7 @@ AboutSigninInternals::TokenInfo::ToValue() const {
         token_expired = false;
         expiration_time_string = "Expiration time not available";
       }
-      std::string status_str = "";
+      std::string status_str;
       if (token_expired)
         status_str = "<p style=\"color: #ffffff; background-color: #ff0000\">";
       base::StringAppendF(&status_str, "Received token at %s. Expire at %s",

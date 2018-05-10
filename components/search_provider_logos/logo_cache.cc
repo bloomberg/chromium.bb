@@ -263,7 +263,7 @@ void LogoCache::WriteLogo(scoped_refptr<base::RefCountedMemory> encoded_image) {
   if (!EnsureCacheDirectoryExists())
     return;
 
-  if (!metadata_ || !encoded_image.get()) {
+  if (!metadata_ || !encoded_image) {
     DeleteLogoAndMetadata();
     return;
   }

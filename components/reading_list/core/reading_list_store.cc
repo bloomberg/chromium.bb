@@ -125,7 +125,7 @@ void ReadingListStore::OnDatabaseLoad(
   auto loaded_entries =
       std::make_unique<ReadingListStoreDelegate::ReadingListEntries>();
 
-  for (const syncer::ModelTypeStore::Record& r : *entries.get()) {
+  for (const syncer::ModelTypeStore::Record& r : *entries) {
     reading_list::ReadingListLocal proto;
     if (!proto.ParseFromString(r.value)) {
       continue;

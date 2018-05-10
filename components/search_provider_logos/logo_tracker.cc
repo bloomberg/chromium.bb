@@ -286,7 +286,7 @@ void LogoTracker::OnFreshLogoParsed(bool* parsing_failed,
   if (logo)
     logo->metadata.source_url = logo_url_;
 
-  if (!logo || !logo->encoded_image.get()) {
+  if (!logo || !logo->encoded_image) {
     OnFreshLogoAvailable(std::move(logo), /*download_failed=*/false,
                          *parsing_failed, from_http_cache, SkBitmap());
   } else {
@@ -316,8 +316,8 @@ void LogoTracker::OnFreshLogoAvailable(
 
   if (download_failed) {
     download_outcome = DOWNLOAD_OUTCOME_DOWNLOAD_FAILED;
-  } else if (encoded_logo && !encoded_logo->encoded_image.get() &&
-             cached_logo_ && !encoded_logo->metadata.fingerprint.empty() &&
+  } else if (encoded_logo && !encoded_logo->encoded_image && cached_logo_ &&
+             !encoded_logo->metadata.fingerprint.empty() &&
              encoded_logo->metadata.fingerprint ==
                  cached_logo_->metadata.fingerprint) {
     // The cached logo was revalidated, i.e. its fingerprint was verified.
@@ -352,8 +352,8 @@ void LogoTracker::OnFreshLogoAvailable(
   LogoCallbackReason callback_type = LogoCallbackReason::FAILED;
   switch (download_outcome) {
     case DOWNLOAD_OUTCOME_NEW_LOGO_SUCCESS:
-      DCHECK(encoded_logo.get());
-      DCHECK(logo.get());
+      DCHECK(encoded_logo);
+      DCHECK(logo);
       callback_type = LogoCallbackReason::DETERMINED;
       break;
 
@@ -361,8 +361,8 @@ void LogoTracker::OnFreshLogoAvailable(
     case DOWNLOAD_OUTCOME_NO_LOGO_TODAY:
       // Clear the cached logo if it was non-null. Otherwise, report this as a
       // revalidation of "no logo".
-      DCHECK(!encoded_logo.get());
-      DCHECK(!logo.get());
+      DCHECK(!encoded_logo);
+      DCHECK(!logo);
       if (cached_logo_) {
         callback_type = LogoCallbackReason::DETERMINED;
       } else {
@@ -373,14 +373,14 @@ void LogoTracker::OnFreshLogoAvailable(
     case DOWNLOAD_OUTCOME_DOWNLOAD_FAILED:
       // In the download failed, don't notify the callback at all, since the
       // callback should continue to use the cached logo.
-      DCHECK(!encoded_logo.get());
-      DCHECK(!logo.get());
+      DCHECK(!encoded_logo);
+      DCHECK(!logo);
       callback_type = LogoCallbackReason::FAILED;
       break;
 
     case DOWNLOAD_OUTCOME_DECODING_FAILED:
-      DCHECK(encoded_logo.get());
-      DCHECK(!logo.get());
+      DCHECK(encoded_logo);
+      DCHECK(!logo);
       encoded_logo.reset();
       callback_type = LogoCallbackReason::FAILED;
       break;
@@ -389,8 +389,8 @@ void LogoTracker::OnFreshLogoAvailable(
       // In the server reported that the cached logo is still current, don't
       // notify the callback at all, since the callback should continue to use
       // the cached logo.
-      DCHECK(encoded_logo.get());
-      DCHECK(!logo.get());
+      DCHECK(encoded_logo);
+      DCHECK(!logo);
       callback_type = LogoCallbackReason::REVALIDATED;
       break;
 

@@ -199,7 +199,7 @@ void SyncManagerImpl::ConfigureSyncer(
 void SyncManagerImpl::Init(InitArgs* args) {
   DCHECK(!initialized_);
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(args->post_factory.get());
+  DCHECK(args->post_factory);
   DCHECK(!args->short_poll_interval.is_zero());
   DCHECK(!args->long_poll_interval.is_zero());
   if (!args->enable_local_sync_backend) {
@@ -241,7 +241,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
           EngineComponentsFactory::STORAGE_ON_DISK,
           args->credentials.account_id, absolute_db_path);
 
-  DCHECK(backing_store.get());
+  DCHECK(backing_store);
   share_.directory = std::make_unique<syncable::Directory>(
       std::move(backing_store), args->unrecoverable_error_handler,
       report_unrecoverable_error_function_, sync_encryption_handler_.get(),

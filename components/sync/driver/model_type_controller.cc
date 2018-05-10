@@ -53,7 +53,7 @@ base::WeakPtr<ModelTypeControllerDelegate> ReturnCapturedDelegate(
 void RunModelTask(DelegateProvider delegate_provider, ModelTask task) {
   base::WeakPtr<ModelTypeControllerDelegate> delegate =
       std::move(delegate_provider).Run();
-  if (delegate.get())
+  if (delegate)
     std::move(task).Run(delegate.get());
 }
 

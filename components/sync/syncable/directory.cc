@@ -215,7 +215,7 @@ DirOpenResult Directory::OpenImpl(
 }
 
 DeleteJournal* Directory::delete_journal() {
-  DCHECK(delete_journal_.get());
+  DCHECK(delete_journal_);
   return delete_journal_.get();
 }
 

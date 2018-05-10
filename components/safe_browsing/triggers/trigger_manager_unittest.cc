@@ -28,7 +28,7 @@ namespace safe_browsing {
 // Mock ThreatDetails class that makes FinishCollection a no-op.
 class MockThreatDetails : public ThreatDetails {
  public:
-  MockThreatDetails() : ThreatDetails() {}
+  MockThreatDetails() {}
   MOCK_METHOD2(FinishCollection, void(bool did_proceed, int num_visits));
 
  private:

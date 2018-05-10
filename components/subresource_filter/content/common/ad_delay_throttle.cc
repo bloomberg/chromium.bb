@@ -196,8 +196,7 @@ void AdDelayThrottle::Resume(base::TimeTicks defer_start) {
 
 AdDelayThrottle::AdDelayThrottle(std::unique_ptr<MetadataProvider> provider,
                                  const AdDelayThrottle::Factory* factory)
-    : content::URLLoaderThrottle(),
-      provider_(std::move(provider)),
+    : provider_(std::move(provider)),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       delay_enabled_(factory->delay_enabled()),
       weak_factory_(this) {

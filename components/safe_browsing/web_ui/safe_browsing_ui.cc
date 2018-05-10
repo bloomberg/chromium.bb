@@ -366,7 +366,7 @@ void SafeBrowsingUIHandler::GetSentThreatDetails(const base::ListValue* args) {
 
   for (const auto& report : reports) {
     sent_reports.GetList().push_back(
-        base::Value(ParseThreatDetailsInfo(*report.get())));
+        base::Value(ParseThreatDetailsInfo(*report)));
 
     AllowJavascript();
     std::string callback_id;

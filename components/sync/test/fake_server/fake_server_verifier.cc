@@ -72,7 +72,7 @@ AssertionResult FakeServerVerifier::VerifyEntityCountByType(
     syncer::ModelType model_type) const {
   std::unique_ptr<base::DictionaryValue> entities =
       fake_server_->GetEntitiesAsDictionaryValue();
-  if (!entities.get()) {
+  if (!entities) {
     return DictionaryCreationAssertionFailure();
   }
 
@@ -96,7 +96,7 @@ AssertionResult FakeServerVerifier::VerifyEntityCountByTypeAndName(
     const string& name) const {
   std::unique_ptr<base::DictionaryValue> entities =
       fake_server_->GetEntitiesAsDictionaryValue();
-  if (!entities.get()) {
+  if (!entities) {
     return DictionaryCreationAssertionFailure();
   }
 

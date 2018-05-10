@@ -286,9 +286,8 @@ class AccountTrackerServiceTest : public testing::Test {
     pref_service_.registry()->RegisterInt64Pref(
         AccountFetcherService::kLastUpdatePref, 0);
     signin_client_.reset(new TestSigninClient(&pref_service_));
-    signin_client_.get()->SetURLRequestContext(
-        new net::TestURLRequestContextGetter(
-            scoped_task_environment_.GetMainThreadTaskRunner()));
+    signin_client_->SetURLRequestContext(new net::TestURLRequestContextGetter(
+        scoped_task_environment_.GetMainThreadTaskRunner()));
 
     account_tracker_.reset(new AccountTrackerService());
     account_tracker_->Initialize(signin_client_.get());

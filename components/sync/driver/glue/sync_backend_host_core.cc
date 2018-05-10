@@ -62,13 +62,13 @@ SyncBackendHostCore::SyncBackendHostCore(
       sync_data_folder_(sync_data_folder),
       host_(backend),
       weak_ptr_factory_(this) {
-  DCHECK(backend.get());
+  DCHECK(backend);
   // This is constructed on the UI thread but used from the sync thread.
   thread_checker_.DetachFromThread();
 }
 
 SyncBackendHostCore::~SyncBackendHostCore() {
-  DCHECK(!sync_manager_.get());
+  DCHECK(!sync_manager_);
 }
 
 bool SyncBackendHostCore::OnMemoryDump(
@@ -571,7 +571,7 @@ void SyncBackendHostCore::DisableDirectoryTypeDebugInfoForwarding() {
 
 void SyncBackendHostCore::StartSavingChanges() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!save_changes_timer_.get());
+  DCHECK(!save_changes_timer_);
   save_changes_timer_ = std::make_unique<base::RepeatingTimer>();
   save_changes_timer_->Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kSaveChangesIntervalSeconds),

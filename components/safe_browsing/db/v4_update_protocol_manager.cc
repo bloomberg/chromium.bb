@@ -306,7 +306,7 @@ void V4UpdateProtocolManager::IssueUpdateRequest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // If an update request is already pending, record and return silently.
-  if (request_.get()) {
+  if (request_) {
     RecordUpdateResult(V4OperationResult::ALREADY_PENDING_ERROR);
     return;
   }
@@ -376,7 +376,7 @@ void V4UpdateProtocolManager::OnURLLoaderComplete(
 
   std::string data;
   if (response_body)
-    data = *response_body.get();
+    data = *response_body;
 
   OnURLLoaderCompleteInternal(request_->NetError(), response_code, data);
 }

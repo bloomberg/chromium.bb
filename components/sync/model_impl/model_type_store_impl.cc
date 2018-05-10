@@ -389,7 +389,7 @@ void ModelTypeStoreImpl::ReadAllMetadataDone(
     return;
   }
 
-  std::string global_metadata = "";
+  std::string global_metadata;
   if (!missing_id_list->empty()) {
     // Missing global metadata record is not an error; we can just return the
     // default instance using the empty string above.
@@ -420,7 +420,7 @@ void ModelTypeStoreImpl::DeserializeMetadata(
   }
   metadata_batch->SetModelTypeState(state);
 
-  for (const Record& r : *metadata_records.get()) {
+  for (const Record& r : *metadata_records) {
     sync_pb::EntityMetadata entity_metadata;
     if (!entity_metadata.ParseFromString(r.value)) {
       std::move(callback).Run(

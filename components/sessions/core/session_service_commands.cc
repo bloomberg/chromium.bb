@@ -548,7 +548,7 @@ bool CreateTabsAndWindows(
             command->PayloadAsPickle());
         SessionID::id_type command_tab_id;
         std::string session_storage_persistent_id;
-        base::PickleIterator iter(*command_pickle.get());
+        base::PickleIterator iter(*command_pickle);
         if (!iter.ReadInt(&command_tab_id) ||
             !iter.ReadString(&session_storage_persistent_id))
           return true;

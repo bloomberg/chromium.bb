@@ -110,7 +110,7 @@ SyncServerConnectionManager::SyncServerConnectionManager(
     : ServerConnectionManager(server, port, use_ssl, cancelation_signal),
       post_provider_factory_(factory),
       cancelation_signal_(cancelation_signal) {
-  DCHECK(post_provider_factory_.get());
+  DCHECK(post_provider_factory_);
 }
 
 SyncServerConnectionManager::~SyncServerConnectionManager() = default;

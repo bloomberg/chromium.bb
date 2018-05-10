@@ -861,7 +861,7 @@ void V4LocalDatabaseManager::RespondSafeToQueuedChecks() {
 
 void V4LocalDatabaseManager::RespondToClient(
     std::unique_ptr<PendingCheck> check) {
-  DCHECK(check.get());
+  DCHECK(check);
 
   switch (check->client_callback_type) {
     case ClientCallbackType::CHECK_BROWSE_URL:

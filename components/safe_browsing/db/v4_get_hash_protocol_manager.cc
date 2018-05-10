@@ -227,8 +227,7 @@ std::unique_ptr<V4GetHashProtocolManager> V4GetHashProtocolManager::Create(
 // static
 void V4GetHashProtocolManager::RegisterFactory(
     std::unique_ptr<V4GetHashProtocolManagerFactory> factory) {
-  if (factory_)
-    delete factory_;
+  delete factory_;
   factory_ = factory.release();
 }
 
@@ -779,7 +778,7 @@ void V4GetHashProtocolManager::OnURLLoaderComplete(
 
   std::string data;
   if (response_body)
-    data = *response_body.get();
+    data = *response_body;
 
   OnURLLoaderCompleteInternal(url_loader, url_loader->NetError(), response_code,
                               data);

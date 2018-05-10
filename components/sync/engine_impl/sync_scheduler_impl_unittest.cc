@@ -270,7 +270,7 @@ class SyncSchedulerImplTest : public testing::Test {
     NudgeTracker::TypeTrackerMap::const_iterator tracker_it =
         scheduler_->nudge_tracker_.type_trackers_.find(type);
     DCHECK(tracker_it != scheduler_->nudge_tracker_.type_trackers_.end());
-    DCHECK(tracker_it->second->wait_interval_.get());
+    DCHECK(tracker_it->second->wait_interval_);
     return tracker_it->second->wait_interval_->length;
   }
 
@@ -278,7 +278,7 @@ class SyncSchedulerImplTest : public testing::Test {
     NudgeTracker::TypeTrackerMap::const_iterator tracker_it =
         scheduler_->nudge_tracker_.type_trackers_.find(type);
     DCHECK(tracker_it != scheduler_->nudge_tracker_.type_trackers_.end());
-    DCHECK(tracker_it->second->wait_interval_.get());
+    DCHECK(tracker_it->second->wait_interval_);
     tracker_it->second->wait_interval_->mode = mode;
   }
 

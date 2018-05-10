@@ -67,7 +67,7 @@ std::unique_ptr<LocalDeviceInfoProvider::Subscription>
 LocalDeviceInfoProviderImpl::RegisterOnInitializedCallback(
     const base::Closure& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!local_device_info_.get());
+  DCHECK(!local_device_info_);
   return callback_list_.Add(callback);
 }
 

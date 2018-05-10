@@ -9,7 +9,7 @@ namespace syncer {
 SharedChangeProcessorRef::SharedChangeProcessorRef(
     const scoped_refptr<SharedChangeProcessor>& change_processor)
     : change_processor_(change_processor) {
-  DCHECK(change_processor_.get());
+  DCHECK(change_processor_);
 }
 
 SharedChangeProcessorRef::~SharedChangeProcessorRef() {}

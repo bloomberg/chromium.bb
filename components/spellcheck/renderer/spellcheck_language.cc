@@ -19,7 +19,7 @@ SpellcheckLanguage::~SpellcheckLanguage() {
 }
 
 void SpellcheckLanguage::Init(base::File file, const std::string& language) {
-  DCHECK(platform_spelling_engine_.get());
+  DCHECK(platform_spelling_engine_);
   platform_spelling_engine_->Init(std::move(file));
 
   character_attributes_.SetDefaultLanguage(language);
@@ -28,7 +28,7 @@ void SpellcheckLanguage::Init(base::File file, const std::string& language) {
 }
 
 bool SpellcheckLanguage::InitializeIfNeeded() {
-  DCHECK(platform_spelling_engine_.get());
+  DCHECK(platform_spelling_engine_);
   return platform_spelling_engine_->InitializeIfNeeded();
 }
 
@@ -51,8 +51,7 @@ SpellcheckLanguage::SpellcheckWordResult SpellcheckLanguage::SpellCheckWord(
     return IS_CORRECT;
 
   // Do nothing if spell checking is disabled.
-  if (!platform_spelling_engine_.get() ||
-      !platform_spelling_engine_->IsEnabled())
+  if (!platform_spelling_engine_ || !platform_spelling_engine_->IsEnabled())
     return IS_CORRECT;
 
   *skip_or_misspelling_start = 0;
@@ -71,7 +70,7 @@ SpellcheckLanguage::SpellcheckWordResult SpellcheckLanguage::SpellCheckWord(
   }
 
   text_iterator_.SetText(text_begin + position_in_text, remaining_text_len);
-  DCHECK(platform_spelling_engine_.get());
+  DCHECK(platform_spelling_engine_);
   for (SpellcheckWordIterator::WordIteratorStatus status =
            text_iterator_.GetNextWord(&word, &word_start, &word_length);
        status != SpellcheckWordIterator::IS_END_OF_TEXT;
@@ -130,7 +129,7 @@ bool SpellcheckLanguage::IsValidContraction(const base::string16& contraction,
   int word_start;
   int word_length;
 
-  DCHECK(platform_spelling_engine_.get());
+  DCHECK(platform_spelling_engine_);
   for (SpellcheckWordIterator::WordIteratorStatus status =
            contraction_iterator_.GetNextWord(&word, &word_start, &word_length);
        status != SpellcheckWordIterator::IS_END_OF_TEXT;
@@ -146,6 +145,6 @@ bool SpellcheckLanguage::IsValidContraction(const base::string16& contraction,
 }
 
 bool SpellcheckLanguage::IsEnabled() {
-  DCHECK(platform_spelling_engine_.get());
+  DCHECK(platform_spelling_engine_);
   return platform_spelling_engine_->IsEnabled();
 }

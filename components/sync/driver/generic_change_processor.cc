@@ -143,7 +143,7 @@ void GenericChangeProcessor::CommitChangesFromSyncModel() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   if (syncer_changes_.empty())
     return;
-  if (!local_service_.get()) {
+  if (!local_service_) {
     ModelType type = syncer_changes_[0].sync_data().GetDataType();
     SyncError error(FROM_HERE, SyncError::DATATYPE_ERROR,
                     "Local service destroyed.", type);
@@ -384,7 +384,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
           AttemptDelete(change, type_, type_str, &sync_node, error_handler());
       if (error.IsSet())
         return error;
-      if (merge_result_.get()) {
+      if (merge_result_) {
         merge_result_->set_num_items_deleted(
             merge_result_->num_items_deleted() + 1);
       }
@@ -474,7 +474,7 @@ SyncError GenericChangeProcessor::HandleActionAdd(const SyncChange& change,
   sync_node->SetTitle(change.sync_data().GetTitle());
   SetNodeSpecifics(sync_data_local.GetSpecifics(), sync_node);
 
-  if (merge_result_.get()) {
+  if (merge_result_) {
     merge_result_->set_num_items_added(merge_result_->num_items_added() + 1);
   }
   return SyncError();
@@ -533,7 +533,7 @@ SyncError GenericChangeProcessor::HandleActionUpdate(
   sync_node->SetTitle(change.sync_data().GetTitle());
   SetNodeSpecifics(sync_data_local.GetSpecifics(), sync_node);
 
-  if (merge_result_.get()) {
+  if (merge_result_) {
     merge_result_->set_num_items_modified(merge_result_->num_items_modified() +
                                           1);
   }

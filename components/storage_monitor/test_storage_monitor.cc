@@ -18,9 +18,7 @@
 
 namespace storage_monitor {
 
-TestStorageMonitor::TestStorageMonitor()
-    : StorageMonitor(),
-      init_called_(false) {
+TestStorageMonitor::TestStorageMonitor() : init_called_(false) {
 #if defined(OS_CHROMEOS)
   media_transfer_protocol_manager_.reset(
       new TestMediaTransferProtocolManagerChromeOS());

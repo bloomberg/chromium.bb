@@ -198,7 +198,7 @@ bool SuggestionsServiceImpl::BlacklistURL(const GURL& candidate_url) {
 
   // Blacklist uploads are scheduled on any request completion, so only schedule
   // an upload if there is no ongoing request.
-  if (!pending_request_.get())
+  if (!pending_request_)
     ScheduleBlacklistUpload();
 
   return true;
@@ -238,7 +238,7 @@ base::TimeDelta SuggestionsServiceImpl::BlacklistDelayForTesting() const {
 }
 
 bool SuggestionsServiceImpl::HasPendingRequestForTesting() const {
-  return !!pending_request_.get();
+  return !!pending_request_;
 }
 
 // static
@@ -370,7 +370,7 @@ void SuggestionsServiceImpl::IssueRequestIfNoneOngoing(const GURL& url) {
   // request happens to be ongoing.
   // TODO(treib): Queue such requests and send them after the current one
   // completes.
-  if (pending_request_.get())
+  if (pending_request_)
     return;
   // If there is an ongoing token request, also wait for that.
   if (token_fetcher_)
