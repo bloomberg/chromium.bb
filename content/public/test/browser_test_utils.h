@@ -160,6 +160,12 @@ void SimulateMouseEvent(WebContents* web_contents,
                         blink::WebInputEvent::Type type,
                         const gfx::Point& point);
 
+// Same as SimulateMouseEvent() except it forces the mouse event to go through
+// RenderWidgetHostInputEventRouter.
+void SimulateRoutedMouseEvent(WebContents* web_contents,
+                              blink::WebInputEvent::Type type,
+                              const gfx::Point& point);
+
 // Simulate a mouse wheel event.
 void SimulateMouseWheelEvent(WebContents* web_contents,
                              const gfx::Point& point,

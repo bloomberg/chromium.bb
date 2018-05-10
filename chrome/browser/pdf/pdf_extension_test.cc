@@ -1632,6 +1632,61 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, CtrlWheelInvokesCustomZoom) {
 
 #endif  // defined(OS_MACOSX)
 
+IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, MouseLeave) {
+  GURL url = embedded_test_server()->GetURL("/pdf/pdf_embed.html");
+
+  // Load page with embedded PDF and make sure it succeeds.
+  ASSERT_TRUE(LoadPdf(url));
+  WebContents* guest_contents = nullptr;
+  WebContents* embedder_contents = GetActiveWebContents();
+  content::BrowserPluginGuestManager* guest_manager =
+      embedder_contents->GetBrowserContext()->GetGuestManager();
+  ASSERT_NO_FATAL_FAILURE(guest_manager->ForEachGuest(
+      embedder_contents, base::Bind(&GetGuestCallback, &guest_contents)));
+  ASSERT_NE(nullptr, guest_contents);
+#if defined(USE_AURA)
+  // TODO(wjmaclean): In theory this should be used to make sure the hit testing
+  // for routing to the guest process works as intended. Not sure if not having
+  // this on Mac is an issue.
+  content::WaitForGuestSurfaceReady(guest_contents);
+#endif
+  gfx::Point point_in_parent(250, 25);
+  gfx::Point point_in_pdf(250, 250);
+
+  // Inject script to count MouseLeaves in the PDF.
+  ASSERT_TRUE(content::ExecuteScript(
+      guest_contents,
+      "var enter_count = 0;\n"
+      "var leave_count = 0;\n"
+      "document.addEventListener('mouseenter', function (){\n"
+      "  enter_count++;"
+      "});\n"
+      "document.addEventListener('mouseleave', function (){\n"
+      "  leave_count++;"
+      "});"));
+
+  // Inject some MouseMoves to invoke a MouseLeave in the PDF.
+  content::SimulateRoutedMouseEvent(
+      embedder_contents, blink::WebInputEvent::kMouseMove, point_in_parent);
+  content::SimulateRoutedMouseEvent(
+      embedder_contents, blink::WebInputEvent::kMouseMove, point_in_pdf);
+  content::SimulateRoutedMouseEvent(
+      embedder_contents, blink::WebInputEvent::kMouseMove, point_in_parent);
+
+  // Verify MouseEnter, MouseLeave received.
+  int leave_count = 0;
+  do {
+    ASSERT_TRUE(ExecuteScriptAndExtractInt(
+        guest_contents, "window.domAutomationController.send(leave_count);",
+        &leave_count));
+  } while (!leave_count);
+  int enter_count = 0;
+  ASSERT_TRUE(ExecuteScriptAndExtractInt(
+      guest_contents, "window.domAutomationController.send(enter_count);",
+      &enter_count));
+  EXPECT_EQ(1, enter_count);
+}
+
 IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, ContextMenuCoordinates) {
   GURL url = embedded_test_server()->GetURL("/pdf/pdf_embed.html");
 

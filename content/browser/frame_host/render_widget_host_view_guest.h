@@ -62,6 +62,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   // Called when this RenderWidgetHostViewGuest is attached.
   void OnAttached();
 
+  // RenderWidgetHostViewChildFrame implementation.
+  RenderWidgetHostViewBase* GetParentView() override;
+
   // RenderWidgetHostView implementation.
   bool OnMessageReceived(const IPC::Message& msg) override;
   void InitAsChild(gfx::NativeView parent_view) override;
