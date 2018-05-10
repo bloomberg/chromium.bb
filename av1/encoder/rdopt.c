@@ -4203,7 +4203,8 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH)
       rd_stats->rate += x->txfm_partition_cost[ctx][0];
     no_split_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
-    if (cpi->sf.adaptive_txb_search && no_split_rd > ref_best_rd) {
+    if (cpi->sf.adaptive_txb_search &&
+        (no_split_rd - (no_split_rd >> 3)) > ref_best_rd) {
       *is_cost_valid = 0;
       return;
     }
