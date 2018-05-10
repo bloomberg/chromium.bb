@@ -24594,8 +24594,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 
 <enum name="IsSyncPasswordHashSaved">
   <int value="0" label="Not saved"/>
-  <int value="1" label="Saved via string pref"/>
-  <int value="2" label="Saved via list pref"/>
+  <int value="1" label="Saved"/>
 </enum>
 
 <enum name="JavaScriptDialogDismissalCause">

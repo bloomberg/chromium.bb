@@ -65,9 +65,6 @@ extern const char kSyncPasswordLengthAndHashSalt[];
 // Whether Chrome cleaned up username/password in the blacklisted credentials.
 extern const char kBlacklistedCredentialsStripped[];
 
-// List that contains captured password hashes.
-extern const char kPasswordHashDataList[];
-
 }  // namespace prefs
 }  // namespace password_manager
 

@@ -396,9 +396,8 @@ void LoginScreenController::DoAuthenticateUser(const AccountId& account_id,
       password, system_salt, chromeos::Key::KEY_TYPE_SALTED_SHA256_TOP_HALF);
 
   // Used for GAIA password reuse detection.
-  password_manager::PasswordHashData sync_password_hash_data(
-      account_id.GetUserEmail(), base::UTF8ToUTF16(password),
-      false /*force_update*/);
+  password_manager::SyncPasswordData sync_password_data(
+      base::UTF8ToUTF16(password), false /*force_update*/);
 
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
@@ -422,7 +421,7 @@ void LoginScreenController::DoAuthenticateUser(const AccountId& account_id,
       is_pin ? LoginMetricsRecorder::AuthMethod::kPin
              : LoginMetricsRecorder::AuthMethod::kPassword);
   login_screen_client_->AuthenticateUser(
-      account_id, hashed_password, sync_password_hash_data, is_pin,
+      account_id, hashed_password, sync_password_data, is_pin,
       base::BindOnce(&LoginScreenController::OnAuthenticateComplete,
                      weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 }

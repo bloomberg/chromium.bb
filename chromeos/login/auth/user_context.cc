@@ -133,7 +133,7 @@ const std::string& UserContext::GetGAPSCookie() const {
   return gaps_cookie_;
 }
 
-const base::Optional<password_manager::PasswordHashData>&
+const base::Optional<password_manager::SyncPasswordData>&
 UserContext::GetSyncPasswordData() const {
   return sync_password_data_;
 }
@@ -204,7 +204,7 @@ void UserContext::SetGAPSCookie(const std::string& gaps_cookie) {
 }
 
 void UserContext::SetSyncPasswordData(
-    const password_manager::PasswordHashData& sync_password_data) {
+    const password_manager::SyncPasswordData& sync_password_data) {
   sync_password_data_ = {sync_password_data};
 }
 

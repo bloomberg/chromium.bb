@@ -103,8 +103,8 @@ size_t PasswordReuseDetector::CheckSyncPasswordReuse(
   size_t offset = input.size() - sync_password_data_->length;
   base::string16 reuse_candidate = input.substr(offset);
 
-  if (HashPasswordManager::CalculatePasswordHash(reuse_candidate,
-                                                 sync_password_data_->salt) ==
+  if (HashPasswordManager::CalculateSyncPasswordHash(
+          reuse_candidate, sync_password_data_->salt) ==
       sync_password_data_->hash) {
     return reuse_candidate.size();
   }
@@ -150,7 +150,7 @@ size_t PasswordReuseDetector::CheckSavedPasswordReuse(
 }
 
 void PasswordReuseDetector::UseSyncPasswordHash(
-    base::Optional<PasswordHashData> sync_password_data) {
+    base::Optional<SyncPasswordData> sync_password_data) {
   sync_password_data_ = std::move(sync_password_data);
 }
 

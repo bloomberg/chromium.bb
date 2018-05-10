@@ -252,10 +252,6 @@ class PasswordStore : protected PasswordStoreSync,
 
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-  // Immediately called after |Init()| to retrieve sync password hash data for
-  // reuse detection.
-  void PrepareSyncPasswordHashData(const std::string& sync_username);
-
   // Checks that some suffix of |input| equals to a password saved on another
   // registry controlled domain than |domain|.
   // If such suffix is found, |consumer|->OnReuseFound() is called on the same
@@ -265,24 +261,22 @@ class PasswordStore : protected PasswordStoreSync,
                           const std::string& domain,
                           PasswordReuseDetectorConsumer* consumer);
 
-  // Saves |sync_username| and a hash of |password| for password reuse checking.
+  // Saves a hash of |password| for password reuse checking.
   // |event| is used for metric logging.
-  virtual void SaveSyncPasswordHash(const std::string& sync_username,
-                                    const base::string16& password,
+  virtual void SaveSyncPasswordHash(const base::string16& password,
                                     metrics_util::SyncPasswordHashChange event);
 
   // Saves |sync_password_data| for password reuse checking.
   // |event| is used for metric logging.
-  virtual void SaveSyncPasswordHash(const PasswordHashData& sync_password_data,
+  virtual void SaveSyncPasswordHash(const SyncPasswordData& sync_password_data,
                                     metrics_util::SyncPasswordHashChange event);
 
-  // Clears the saved password hash for |username|.
-  virtual void ClearPasswordHash(const std::string& username);
+  // Clears the saved sync password hash.
+  virtual void ClearSyncPasswordHash();
 
   // Shouldn't be called more than once, |notifier| must be not nullptr.
   void SetPasswordStoreSigninNotifier(
       std::unique_ptr<PasswordStoreSigninNotifier> notifier);
-
 #endif
 
  protected:
@@ -456,7 +450,7 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Synchronous implementation of SaveSyncPasswordHash().
   void SaveSyncPasswordHashImpl(
-      base::Optional<PasswordHashData> sync_password_data);
+      base::Optional<SyncPasswordData> sync_password_data);
 
   // Synchronous implementation of ClearSyncPasswordHash().
   void ClearSyncPasswordHashImpl();
