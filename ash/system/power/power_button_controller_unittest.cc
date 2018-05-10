@@ -278,24 +278,6 @@ TEST_F(PowerButtonControllerTest, TappingPowerButtonOfTablet) {
   // Should turn screen on if screen is off.
   AdvanceClockToAvoidIgnoring();
   TappingPowerButtonWhenScreenIsIdleOff();
-
-  // Should not turn screen off if clamshell-like power button behavior is
-  // requested.
-  AdvanceClockToAvoidIgnoring();
-  ForceClamshellPowerButton();
-  SetTabletModeSwitchState(PowerManagerClient::TabletMode::ON);
-  AdvanceClockToAvoidIgnoring();
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
-  PressPowerButton();
-  power_button_test_api_->SetShowMenuAnimationDone(false);
-  // Forced clamshell power button device should start showing menu animation
-  // immediately as pressing the power button.
-  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
-  ReleasePowerButton();
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
-  // Forced clamshell power button device should start dismissing menu animation
-  // immediately as releasing the power button.
-  EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
 }
 
 // Tests that power button taps turn the screen off while in tablet mode but not

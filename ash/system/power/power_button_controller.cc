@@ -211,7 +211,7 @@ void PowerButtonController::OnPowerButtonEvent(
     const base::TimeTicks& timestamp) {
   if (down) {
     force_off_on_button_up_ = false;
-    if (ShouldTurnScreenOffForTap()) {
+    if (in_tablet_mode_) {
       force_off_on_button_up_ = true;
 
       // When the system resumes in response to the power button being pressed,
@@ -242,7 +242,7 @@ void PowerButtonController::OnPowerButtonEvent(
       return;
     }
 
-    if (!ShouldTurnScreenOffForTap()) {
+    if (!in_tablet_mode_) {
       StartPowerMenuAnimation();
     } else {
       base::TimeDelta timeout = screen_off_when_power_button_down_
@@ -268,7 +268,7 @@ void PowerButtonController::OnPowerButtonEvent(
     pre_shutdown_timer_.Stop();
 
     const bool menu_was_opened = IsMenuOpened();
-    if (!ShouldTurnScreenOffForTap()) {
+    if (!in_tablet_mode_) {
       // Cancel the menu animation if it's still ongoing when the button is
       // released on a laptop-mode device.
       if (menu_was_opened && !show_menu_animation_done_) {
@@ -407,27 +407,17 @@ void PowerButtonController::OnGetSwitchStates(
   if (!result.has_value())
     return;
 
-  // Turn screen off if tapping the power button (except
-  // |force_clamshell_power_button_|) and power button screenshot accelerator
-  // are enabled on devices that have a tablet mode switch.
-  if (result->tablet_mode ==
+  if (result->tablet_mode !=
       chromeos::PowerManagerClient::TabletMode::UNSUPPORTED) {
-    return;
+    has_tablet_mode_switch_ = true;
+    InitTabletPowerButtonMembers();
   }
-
-  has_tablet_mode_switch_ = true;
-  InitTabletPowerButtonMembers();
 }
 
 void PowerButtonController::OnAccelerometerUpdated(
     scoped_refptr<const chromeos::AccelerometerUpdate> update) {
-  // Turn screen off if tapping the power button (except
-  // |force_clamshell_power_button_|) and power button screenshot accelerator
-  // are enabled on devices that can enter tablet mode, which must have a tablet
-  // mode switch or report accelerometer data before user actions.
-  if (has_tablet_mode_switch_ || !observe_accelerometer_events_)
-    return;
-  InitTabletPowerButtonMembers();
+  if (!has_tablet_mode_switch_ && observe_accelerometer_events_)
+    InitTabletPowerButtonMembers();
 }
 
 void PowerButtonController::OnBacklightsForcedOffChanged(bool forced_off) {
@@ -458,12 +448,6 @@ void PowerButtonController::OnLockStateEvent(
   // dirty state if press lock button after login but release in lock screen.
   if (event == EVENT_LOCK_ANIMATION_FINISHED)
     lock_button_down_ = false;
-}
-
-bool PowerButtonController::ShouldTurnScreenOffForTap() const {
-  return features::IsModeSpecificPowerButtonEnabled()
-             ? in_tablet_mode_
-             : default_turn_screen_off_for_tap_;
 }
 
 void PowerButtonController::StopTimersAndDismissMenu() {
@@ -503,16 +487,11 @@ void PowerButtonController::ProcessCommandLine() {
                      ? ButtonType::LEGACY
                      : ButtonType::NORMAL;
   observe_accelerometer_events_ = cl->HasSwitch(switches::kAshEnableTabletMode);
-  force_clamshell_power_button_ =
-      cl->HasSwitch(switches::kForceClamshellPowerButton);
 
   ParsePowerButtonPositionSwitch();
 }
 
 void PowerButtonController::InitTabletPowerButtonMembers() {
-  if (!force_clamshell_power_button_)
-    default_turn_screen_off_for_tap_ = true;
-
   if (!screenshot_controller_) {
     screenshot_controller_ =
         std::make_unique<PowerButtonScreenshotController>(tick_clock_);
