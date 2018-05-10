@@ -1,95 +1,114 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/media/render_frame_audio_output_stream_factory.h"
 
-#include <memory>
 #include <utility>
 
-#include "base/metrics/histogram_macros.h"
-#include "base/task_runner_util.h"
+#include "content/browser/media/forwarding_audio_stream_factory.h"
 #include "content/browser/renderer_host/media/audio_output_authorization_handler.h"
-#include "content/browser/renderer_host/media/audio_output_stream_observer_impl.h"
-#include "content/browser/renderer_host/media/renderer_audio_output_stream_factory_context.h"
 #include "content/public/browser/render_frame_host.h"
-#include "media/base/audio_parameters.h"
-#include "media/mojo/services/mojo_audio_output_stream_provider.h"
-#include "mojo/public/cpp/bindings/message.h"
+#include "content/public/browser/render_process_host.h"
+#include "media/base/bind_to_current_loop.h"
 
 namespace content {
 
-// static
-std::unique_ptr<RenderFrameAudioOutputStreamFactoryHandle,
-                BrowserThread::DeleteOnIOThread>
-RenderFrameAudioOutputStreamFactoryHandle::CreateFactory(
-    RendererAudioOutputStreamFactoryContext* context,
-    int render_frame_id,
-    mojom::RendererAudioOutputStreamFactoryRequest request) {
-  std::unique_ptr<RenderFrameAudioOutputStreamFactoryHandle,
-                  BrowserThread::DeleteOnIOThread>
-      handle(new RenderFrameAudioOutputStreamFactoryHandle(context,
-                                                           render_frame_id));
-  // Unretained is safe since |*handle| must be posted to the IO thread prior to
-  // deletion.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&RenderFrameAudioOutputStreamFactoryHandle::Init,
-                     base::Unretained(handle.get()), std::move(request)));
-  return handle;
-}
+// This class implements media::mojom::AudioOutputStreamProvider for a single
+// streams and cleans itself up (using the |owner| pointer) when done.
+class RenderFrameAudioOutputStreamFactory::ProviderImpl final
+    : public media::mojom::AudioOutputStreamProvider {
+ public:
+  ProviderImpl(media::mojom::AudioOutputStreamProviderRequest request,
+               RenderFrameAudioOutputStreamFactory* owner,
+               const std::string& device_id)
+      : owner_(owner),
+        device_id_(device_id),
+        binding_(this, std::move(request)) {
+    DCHECK(owner_);
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    // Unretained is safe since |this| owns |binding_|.
+    binding_.set_connection_error_handler(
+        base::BindOnce(&ProviderImpl::Done, base::Unretained(this)));
+  }
 
-RenderFrameAudioOutputStreamFactoryHandle::
-    ~RenderFrameAudioOutputStreamFactoryHandle() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-}
+  ~ProviderImpl() final { DCHECK_CURRENTLY_ON(BrowserThread::UI); }
 
-RenderFrameAudioOutputStreamFactoryHandle::
-    RenderFrameAudioOutputStreamFactoryHandle(
-        RendererAudioOutputStreamFactoryContext* context,
-        int render_frame_id)
-    : impl_(render_frame_id, context), binding_(&impl_) {}
+  void Acquire(
+      const media::AudioParameters& params,
+      media::mojom::AudioOutputStreamProviderClientPtr provider_client) final {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    RenderFrameHost* frame = owner_->frame_;
+    ForwardingAudioStreamFactory* factory =
+        ForwardingAudioStreamFactory::ForFrame(frame);
+    if (factory) {
+      // It's possible that |frame| has already been destroyed, in which case we
+      // don't need to create a stream. In this case, the renderer will get a
+      // connection error since |provider_client| is dropped.
+      factory->CreateOutputStream(frame, device_id_, params,
+                                  std::move(provider_client));
+    }
 
-void RenderFrameAudioOutputStreamFactoryHandle::Init(
-    mojom::RendererAudioOutputStreamFactoryRequest request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  binding_.Bind(std::move(request));
-}
+    // Since the stream creation has been propagated, |this| is no longer
+    // needed.
+    Done();
+  }
+
+  void Done() { owner_->DeleteProvider(this); }
+
+ private:
+  RenderFrameAudioOutputStreamFactory* const owner_;
+  const std::string device_id_;
+
+  mojo::Binding<media::mojom::AudioOutputStreamProvider> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProviderImpl);
+};
 
 RenderFrameAudioOutputStreamFactory::RenderFrameAudioOutputStreamFactory(
-    int render_frame_id,
-    RendererAudioOutputStreamFactoryContext* context)
-    : render_frame_id_(render_frame_id),
-      context_(context),
+    RenderFrameHost* frame,
+    media::AudioSystem* audio_system,
+    MediaStreamManager* media_stream_manager,
+    mojom::RendererAudioOutputStreamFactoryRequest request)
+    : binding_(this, std::move(request)),
+      frame_(frame),
+      authorization_handler_(
+          new AudioOutputAuthorizationHandler(audio_system,
+                                              media_stream_manager,
+                                              frame_->GetProcess()->GetID())),
       weak_ptr_factory_(this) {
-  DCHECK(context_);
-  // No thread-hostile state has been initialized yet, so we don't have to bind
-  // to this specific thread.
-  thread_checker_.DetachFromThread();
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 RenderFrameAudioOutputStreamFactory::~RenderFrameAudioOutputStreamFactory() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  UMA_HISTOGRAM_EXACT_LINEAR("Media.Audio.OutputStreamsCanceledByBrowser",
-                             stream_providers_.size(), 50);
-  // Make sure to close all streams.
-  stream_providers_.clear();
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void RenderFrameAudioOutputStreamFactory::RequestDeviceAuthorization(
-    media::mojom::AudioOutputStreamProviderRequest stream_provider_request,
+    media::mojom::AudioOutputStreamProviderRequest provider_request,
     int32_t session_id,
     const std::string& device_id,
     RequestDeviceAuthorizationCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const base::TimeTicks auth_start_time = base::TimeTicks::Now();
-
-  context_->RequestDeviceAuthorization(
-      render_frame_id_, session_id, device_id,
-      base::BindOnce(
+  // TODO(https://crbug.com/837625): This thread hopping is suboptimal since
+  // AudioOutputAuthorizationHandler was made to be used on the IO thread.
+  // Make AudioOutputAuthorizationHandler work on the UI thread instead.
+  AudioOutputAuthorizationHandler::AuthorizationCompletedCallback
+      completed_callback = media::BindToCurrentLoop(base::BindOnce(
           &RenderFrameAudioOutputStreamFactory::AuthorizationCompleted,
           weak_ptr_factory_.GetWeakPtr(), auth_start_time,
-          std::move(stream_provider_request), std::move(callback)));
+          std::move(provider_request), std::move(callback)));
+
+  // Unretained is safe since |authorization_handler_| is deleted on the IO
+  // thread.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(
+          &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
+          base::Unretained(authorization_handler_.get()),
+          frame_->GetRoutingID(), session_id, device_id,
+          std::move(completed_callback)));
 }
 
 void RenderFrameAudioOutputStreamFactory::AuthorizationCompleted(
@@ -100,43 +119,25 @@ void RenderFrameAudioOutputStreamFactory::AuthorizationCompleted(
     const media::AudioParameters& params,
     const std::string& raw_device_id,
     const std::string& device_id_for_renderer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AudioOutputAuthorizationHandler::UMALogDeviceAuthorizationTime(
       auth_start_time);
 
-  if (status != media::OUTPUT_DEVICE_STATUS_OK) {
-    std::move(callback).Run(media::OutputDeviceStatus(status),
-                            media::AudioParameters::UnavailableDeviceParams(),
-                            std::string());
-    return;
+  // If |status| is not OK, this call will be considered as an error signal by
+  // the renderer.
+  std::move(callback).Run(status, params, device_id_for_renderer);
+
+  if (status == media::OUTPUT_DEVICE_STATUS_OK) {
+    stream_providers_.insert(std::make_unique<ProviderImpl>(
+        std::move(request), this, std::move(raw_device_id)));
   }
-
-  int stream_id = next_stream_id_++;
-  std::unique_ptr<media::mojom::AudioOutputStreamObserver> observer =
-      std::make_unique<AudioOutputStreamObserverImpl>(
-          context_->GetRenderProcessId(), render_frame_id_, stream_id);
-  // Since |context_| outlives |this| and |this| outlives |stream_providers_|,
-  // unretained is safe.
-  stream_providers_.insert(
-      std::make_unique<media::MojoAudioOutputStreamProvider>(
-          std::move(request),
-          base::BindOnce(
-              &RendererAudioOutputStreamFactoryContext::CreateDelegate,
-              base::Unretained(context_), raw_device_id, render_frame_id_,
-              stream_id),
-          base::BindOnce(&RenderFrameAudioOutputStreamFactory::RemoveStream,
-                         base::Unretained(this)),
-          std::move(observer)));
-
-  std::move(callback).Run(media::OutputDeviceStatus(status), params,
-                          device_id_for_renderer);
 }
 
-void RenderFrameAudioOutputStreamFactory::RemoveStream(
+void RenderFrameAudioOutputStreamFactory::DeleteProvider(
     media::mojom::AudioOutputStreamProvider* stream_provider) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  stream_providers_.erase(stream_provider);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  size_t deleted = stream_providers_.erase(stream_provider);
+  DCHECK_EQ(1u, deleted);
 }
 
 }  // namespace content

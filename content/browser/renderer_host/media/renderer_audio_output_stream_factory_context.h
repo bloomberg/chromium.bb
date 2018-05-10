@@ -21,6 +21,8 @@ namespace content {
 
 // RendererAudioOutputStreamFactoryContext provides functions common to all
 // AudioOutputFactory instances for a single renderer process.
+// Not needed after switching to serving audio streams with the audio service
+// (https://crbug.com/830493).
 class CONTENT_EXPORT RendererAudioOutputStreamFactoryContext {
  public:
   virtual ~RendererAudioOutputStreamFactoryContext() {}

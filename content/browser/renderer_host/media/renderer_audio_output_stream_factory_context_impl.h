@@ -9,7 +9,7 @@
 #include <string>
 
 #include "content/browser/renderer_host/media/audio_output_authorization_handler.h"
-#include "content/browser/renderer_host/media/render_frame_audio_output_stream_factory.h"
+#include "content/browser/renderer_host/media/old_render_frame_audio_output_stream_factory.h"
 #include "content/browser/renderer_host/media/renderer_audio_output_stream_factory_context.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -40,6 +40,8 @@ class MediaStreamManager;
 //                 |
 // media::MojoAudioOutputStream
 //
+// Not needed after switching to serving audio streams with the audio service
+// (https://crbug.com/830493).
 class CONTENT_EXPORT RendererAudioOutputStreamFactoryContextImpl
     : public RendererAudioOutputStreamFactoryContext {
  public:

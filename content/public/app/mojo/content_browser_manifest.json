@@ -74,7 +74,7 @@
       },
       "requires": {
         "*": [ "app" ],
-        "audio": [ "info", "debug_recording"],
+        "audio": [ "info", "debug_recording", "stream_factory"],
         "cdm": [ "media:cdm" ],
         "content_gpu": [ "browser" ],
         "content_plugin": [ "browser" ],

@@ -72,6 +72,11 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
   void FrameDeleted(RenderFrameHost* render_frame_host) final;
   void WebContentsDestroyed() final;
 
+  // E.g. to override binder.
+  service_manager::Connector* get_connector_for_testing() {
+    return connector_.get();
+  }
+
  private:
   using StreamBrokerSet = base::flat_set<std::unique_ptr<AudioStreamBroker>,
                                          base::UniquePtrComparator>;

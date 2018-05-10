@@ -22,6 +22,7 @@ CONTENT_EXPORT extern const base::Feature
 CONTENT_EXPORT extern const base::Feature kArrayPrototypeValues;
 CONTENT_EXPORT extern const base::Feature kAsmJsToWebAssembly;
 CONTENT_EXPORT extern const base::Feature kAsyncWheelEvents;
+CONTENT_EXPORT extern const base::Feature kAudioServiceAudioStreams;
 CONTENT_EXPORT extern const base::Feature kAudioServiceOutOfProcess;
 CONTENT_EXPORT extern const base::Feature kBlockCredentialedSubresources;
 CONTENT_EXPORT extern const base::Feature kBrotliEncoding;
