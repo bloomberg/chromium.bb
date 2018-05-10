@@ -7,43 +7,47 @@
 
 #include <stdint.h>
 
-#include <string>
-
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom-blink.h"
-#include "third_party/blink/public/platform/web_clipboard.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {
 
-class WebClipboardImpl : public blink::WebClipboard {
+class WebDragData;
+class WebImage;
+class WebURL;
+
+class PLATFORM_EXPORT WebClipboardImpl {
  public:
   WebClipboardImpl();
-  virtual ~WebClipboardImpl();
+  ~WebClipboardImpl();
 
-  // WebClipboard methods:
-  uint64_t SequenceNumber(mojom::ClipboardBuffer) override;
-  bool IsFormatAvailable(mojom::ClipboardFormat,
-                         mojom::ClipboardBuffer) override;
+  uint64_t SequenceNumber(mojom::ClipboardBuffer);
+  bool IsFormatAvailable(mojom::ClipboardFormat, mojom::ClipboardBuffer);
   blink::WebVector<blink::WebString> ReadAvailableTypes(
       mojom::ClipboardBuffer,
-      bool* contains_filenames) override;
-  blink::WebString ReadPlainText(mojom::ClipboardBuffer) override;
+      bool* contains_filenames);
+  blink::WebString ReadPlainText(mojom::ClipboardBuffer);
   blink::WebString ReadHTML(mojom::ClipboardBuffer,
                             blink::WebURL* source_url,
                             unsigned* fragment_start,
-                            unsigned* fragment_end) override;
-  blink::WebString ReadRTF(mojom::ClipboardBuffer) override;
-  blink::WebBlobInfo ReadImage(mojom::ClipboardBuffer) override;
+                            unsigned* fragment_end);
+  blink::WebString ReadRTF(mojom::ClipboardBuffer);
+  blink::WebBlobInfo ReadImage(mojom::ClipboardBuffer);
   blink::WebString ReadCustomData(mojom::ClipboardBuffer,
-                                  const blink::WebString& type) override;
-  void WritePlainText(const blink::WebString& plain_text) override;
+                                  const blink::WebString& type);
+  void WritePlainText(const blink::WebString& plain_text);
   void WriteHTML(const blink::WebString& html_text,
                  const blink::WebURL& source_url,
                  const blink::WebString& plain_text,
-                 bool write_smart_paste) override;
+                 bool write_smart_paste);
   void WriteImage(const blink::WebImage&,
                   const blink::WebURL& source_url,
-                  const blink::WebString& title) override;
-  void WriteDataObject(const blink::WebDragData&) override;
+                  const blink::WebString& title);
+  void WriteDataObject(const blink::WebDragData&);
 
  private:
   bool IsValidBufferType(mojom::ClipboardBuffer);

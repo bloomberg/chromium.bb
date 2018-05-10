@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/clipboard/data_object_item.h"
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_clipboard.h"
 #include "third_party/blink/renderer/core/clipboard/pasteboard.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/platform/clipboard/clipboard_mime_types.h"
@@ -127,8 +126,9 @@ File* DataObjectItem::GetAsFile() const {
 
   DCHECK_EQ(source_, kPasteboardSource);
   if (GetType() == kMimeTypeImagePng) {
-    WebBlobInfo blob_info = Platform::Current()->Clipboard()->ReadImage(
-        mojom::ClipboardBuffer::kStandard);
+    WebBlobInfo blob_info =
+        Pasteboard::GeneralPasteboard()->Clipboard()->ReadImage(
+            mojom::ClipboardBuffer::kStandard);
     if (blob_info.size() < 0)
       return nullptr;
     return File::Create("image.png", CurrentTimeMS(),
@@ -150,19 +150,20 @@ String DataObjectItem::GetAsString() const {
   String data;
   // This is ugly but there's no real alternative.
   if (type_ == kMimeTypeTextPlain) {
-    data = Platform::Current()->Clipboard()->ReadPlainText(buffer);
+    data = Pasteboard::GeneralPasteboard()->Clipboard()->ReadPlainText(buffer);
   } else if (type_ == kMimeTypeTextRTF) {
-    data = Platform::Current()->Clipboard()->ReadRTF(buffer);
+    data = Pasteboard::GeneralPasteboard()->Clipboard()->ReadRTF(buffer);
   } else if (type_ == kMimeTypeTextHTML) {
     WebURL ignored_source_url;
     unsigned ignored;
-    data = Platform::Current()->Clipboard()->ReadHTML(
+    data = Pasteboard::GeneralPasteboard()->Clipboard()->ReadHTML(
         buffer, &ignored_source_url, &ignored, &ignored);
   } else {
-    data = Platform::Current()->Clipboard()->ReadCustomData(buffer, type_);
+    data = Pasteboard::GeneralPasteboard()->Clipboard()->ReadCustomData(buffer,
+                                                                        type_);
   }
 
-  return Platform::Current()->Clipboard()->SequenceNumber(buffer) ==
+  return Pasteboard::GeneralPasteboard()->Clipboard()->SequenceNumber(buffer) ==
                  sequence_number_
              ? data
              : String();

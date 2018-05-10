@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_clipboard.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/renderer/core/clipboard/dragged_isolated_file_system.h"
 #include "third_party/blink/renderer/core/clipboard/pasteboard.h"
@@ -49,10 +48,11 @@ DataObject* DataObject::CreateFromPasteboard(PasteMode paste_mode) {
 #endif
   mojom::ClipboardBuffer buffer = Pasteboard::GeneralPasteboard()->GetBuffer();
   uint64_t sequence_number =
-      Platform::Current()->Clipboard()->SequenceNumber(buffer);
+      Pasteboard::GeneralPasteboard()->Clipboard()->SequenceNumber(buffer);
   bool ignored;
   WebVector<WebString> web_types =
-      Platform::Current()->Clipboard()->ReadAvailableTypes(buffer, &ignored);
+      Pasteboard::GeneralPasteboard()->Clipboard()->ReadAvailableTypes(
+          buffer, &ignored);
   for (const WebString& type : web_types) {
     if (paste_mode == PasteMode::kPlainTextOnly && type != kMimeTypeTextPlain)
       continue;

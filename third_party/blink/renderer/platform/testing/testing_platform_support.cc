@@ -130,10 +130,6 @@ WebBlobRegistry* TestingPlatformSupport::GetBlobRegistry() {
   return old_platform_ ? old_platform_->GetBlobRegistry() : nullptr;
 }
 
-WebClipboard* TestingPlatformSupport::Clipboard() {
-  return old_platform_ ? old_platform_->Clipboard() : nullptr;
-}
-
 WebIDBFactory* TestingPlatformSupport::IdbFactory() {
   return old_platform_ ? old_platform_->IdbFactory() : nullptr;
 }

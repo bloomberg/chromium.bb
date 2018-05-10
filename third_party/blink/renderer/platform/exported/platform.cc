@@ -52,7 +52,6 @@
 #include "third_party/blink/public/platform/web_socket_handshake_throttle.h"
 #include "third_party/blink/public/platform/web_storage_namespace.h"
 #include "third_party/blink/public/platform/web_thread.h"
-#include "third_party/blink/renderer/platform/exported/web_clipboard_impl.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
@@ -274,12 +273,6 @@ Platform::CreateWebSocketHandshakeThrottle() {
 std::unique_ptr<WebImageCaptureFrameGrabber>
 Platform::CreateImageCaptureFrameGrabber() {
   return nullptr;
-}
-
-// TODO(slangley): Remove this once we can get pepper to use mojo directly.
-WebClipboard* Platform::Clipboard() {
-  DEFINE_STATIC_LOCAL(WebClipboardImpl, clipboard, ());
-  return &clipboard;
 }
 
 }  // namespace blink

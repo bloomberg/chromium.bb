@@ -141,11 +141,6 @@ blink::WebThread* PpapiBlinkPlatformImpl::CurrentThread() {
   return BlinkPlatformImpl::CurrentThread();
 }
 
-blink::WebClipboard* PpapiBlinkPlatformImpl::Clipboard() {
-  NOTREACHED();
-  return nullptr;
-}
-
 blink::WebSandboxSupport* PpapiBlinkPlatformImpl::GetSandboxSupport() {
 #if !defined(OS_ANDROID) && !defined(OS_WIN)
   return sandbox_support_.get();

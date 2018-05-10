@@ -93,7 +93,6 @@ class WebAudioBus;
 class WebAudioLatencyHint;
 class WebBlobRegistry;
 class WebCanvasCaptureHandler;
-class WebClipboard;
 class WebCompositorSupport;
 class WebCookieJar;
 class WebCrypto;
@@ -161,9 +160,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // May return null.
   virtual WebCookieJar* CookieJar() { return nullptr; }
-
-  // Must return non-null.
-  virtual WebClipboard* Clipboard();
 
   // May return null if sandbox support is not necessary
   virtual WebSandboxSupport* GetSandboxSupport() { return nullptr; }
