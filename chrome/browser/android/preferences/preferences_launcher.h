@@ -7,13 +7,17 @@
 
 #include "base/macros.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace chrome {
 namespace android {
 
 class PreferencesLauncher {
  public:
   // Opens the autofill settings page.
-  static void ShowAutofillSettings();
+  static void ShowAutofillSettings(content::WebContents* web_contents);
 
   // Opens the password settings page.
   static void ShowPasswordSettings();
