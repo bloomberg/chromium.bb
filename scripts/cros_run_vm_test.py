@@ -195,28 +195,31 @@ class VMTest(object):
     Returns:
       cros_build_lib.CommandResult object.
     """
-    # Some sanity checks.
-    for f in files:
-      if os.path.isabs(f):
-        raise ValueError('%s should be a relative path' % f)
-      if not os.path.exists(f):
-        raise ValueError('%s does not exist' % f)
-
     DEST_BASE = '/usr/local/vm_test'
     # Copy files, preserving the directory structure.
     for f in files:
+      # Trailing / messes up dirname.
+      f = f.rstrip('/')
       dirname = os.path.join(DEST_BASE, os.path.dirname(f))
       self._vm.RemoteCommand(['mkdir', '-p', dirname])
       self._vm.remote.CopyToDevice(src=f, dest=dirname, mode='scp',
                                    debug_level=logging.INFO)
 
-    # Run the remote command with cwd.
-    cwd = os.path.join(DEST_BASE, cwd) if cwd else DEST_BASE
-    cmd = '"cd %s; %s"' % (cwd, ' '.join(cmd))
-    result = self._vm.RemoteCommand(cmd, shell=True)
+    # Make cwd an absolute path (if it isn't one) rooted in DEST_BASE.
+    if files and not (cwd and os.path.isabs(cwd)):
+      cwd = os.path.join(DEST_BASE, cwd) if cwd else DEST_BASE
+      self._vm.RemoteCommand(['mkdir', '-p', cwd])
+    if cwd:
+      # Run the remote command with cwd.
+      cmd = '"cd %s && %s"' % (cwd, ' '.join(cmd))
+      result = self._vm.RemoteCommand(cmd, shell=True)
+    else:
+      result = self._vm.RemoteCommand(cmd)
 
     # Cleanup.
-    self._vm.RemoteCommand(['rm', '-rf', DEST_BASE])
+    if files:
+      self._vm.RemoteCommand(['rm', '-rf', DEST_BASE])
+
     return result
 
 def ParseCommandLine(argv):
@@ -251,7 +254,8 @@ def ParseCommandLine(argv):
   parser.add_argument('--deploy', action='store_true', default=False,
                       help='Before running tests, deploy chrome to the VM, '
                       '--build-dir must be specified.')
-  parser.add_argument('--cwd', help='Change working directory.')
+  parser.add_argument('--cwd', help='Change working directory.'
+                      'An absolute path or a path relative to CWD on the host.')
   parser.add_argument('--files', default=[], action='append',
                       help='Files to scp to the VM.')
   parser.add_argument('--files-from',
@@ -297,6 +301,30 @@ def ParseCommandLine(argv):
                    '--cmd or --host-cmd: %s' % opts.args)
     if opts.args[0] != '--':
       parser.error('Additional args must start with \'--\': %s' % opts.args)
+
+  # Verify CWD.
+  if opts.cwd:
+    if opts.cwd.startswith('..'):
+      parser.error('cwd cannot start with ..')
+    if not os.path.isabs(opts.cwd) and not opts.files and not opts.files_from:
+      parser.error('cwd must be an absolute path if '
+                   '--files or --files-from is not specified')
+
+  # Verify files.
+  if opts.files_from:
+    if opts.files:
+      parser.error('--files and --files-from cannot both be specified')
+    if not os.path.isfile(opts.files_from):
+      parser.error('%s is not a file' % opts.files_from)
+  files = FileList(opts.files, opts.files_from)
+  for f in files:
+    if os.path.isabs(f):
+      parser.error('%s should be a relative path' % f)
+    # Restrict paths to under CWD on the host. See crbug.com/829612.
+    if f.startswith('..'):
+      parser.error('%s cannot start with ..' % f)
+    if not os.path.exists(f):
+      parser.error('%s does not exist' % f)
 
   return opts
 
