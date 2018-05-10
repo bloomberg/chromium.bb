@@ -84,7 +84,7 @@ class EnterpriseDeviceAttributesTest :
  public:
   EnterpriseDeviceAttributesTest() {
     fake_statistics_provider_.SetMachineStatistic(
-        chromeos::system::kSerialNumberKey, kSerialNumber);
+        chromeos::system::kSerialNumberKeyForTest, kSerialNumber);
     set_exit_when_last_browser_closes(false);
     set_chromeos_user_ = false;
   }

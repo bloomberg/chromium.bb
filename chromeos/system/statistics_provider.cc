@@ -106,8 +106,8 @@ const char kTimeZonesPath[] = "time_zones";
 // devices. It's known *not* to be present on caroline.
 // TODO(tnagel): Remove "Product_S/N" after all devices that have it are AUE.
 const char* const kMachineInfoSerialNumberKeys[] = {
-    "Product_S/N",     // Samsung legacy
-    kSerialNumberKey,  // VPD v2+ devices
+    "Product_S/N",    // Samsung legacy
+    "serial_number",  // VPD v2+ devices (Samsung: caroline and later)
 };
 
 // Gets ListValue from given |dictionary| by given |key| and (unless |result| is
@@ -198,7 +198,7 @@ const char kOffersCouponCodeKey[] = "ubind_attribute";
 const char kOffersGroupCodeKey[] = "gbind_attribute";
 const char kRlzBrandCodeKey[] = "rlz_brand_code";
 const char kRegionKey[] = "region";
-const char kSerialNumberKey[] = "serial_number";
+const char kSerialNumberKeyForTest[] = "serial_number";
 const char kInitialLocaleKey[] = "initial_locale";
 const char kInitialTimezoneKey[] = "initial_timezone";
 const char kKeyboardLayoutKey[] = "keyboard_layout";
