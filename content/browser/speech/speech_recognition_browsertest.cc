@@ -32,19 +32,95 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "media/audio/audio_system_impl.h"
-#include "media/audio/audio_thread_impl.h"
-#include "media/audio/mock_audio_manager.h"
-#include "media/audio/test_audio_input_controller_factory.h"
+#include "media/audio/audio_system.h"
+#include "media/base/audio_capturer_source.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::RunLoop;
+using CaptureCallback = media::AudioCapturerSource::CaptureCallback;
 
 namespace content {
 
 namespace {
+
+// TODO(https://crbug.com/841818) Use FakeSystemInfo instead.
+class MockAudioSystem : public media::AudioSystem {
+ public:
+  MockAudioSystem() = default;
+
+  // AudioSystem implementation.
+  void GetInputStreamParameters(const std::string& device_id,
+                                OnAudioParamsCallback on_params_cb) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+    // Posting callback to allow current SpeechRecognizerImpl dispatching event
+    // to complete before transitioning to the next FSM state.
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(std::move(on_params_cb),
+                       media::AudioParameters::UnavailableDeviceParams()));
+  }
+
+  MOCK_METHOD2(GetOutputStreamParameters,
+               void(const std::string& device_id,
+                    OnAudioParamsCallback on_params_cb));
+  MOCK_METHOD1(HasInputDevices, void(OnBoolCallback on_has_devices_cb));
+  MOCK_METHOD1(HasOutputDevices, void(OnBoolCallback on_has_devices_cb));
+  MOCK_METHOD2(GetDeviceDescriptions,
+               void(bool for_input,
+                    OnDeviceDescriptionsCallback on_descriptions_cp));
+  MOCK_METHOD2(GetAssociatedOutputDeviceID,
+               void(const std::string& input_device_id,
+                    OnDeviceIdCallback on_device_id_cb));
+  MOCK_METHOD2(GetInputDeviceInfo,
+               void(const std::string& input_device_id,
+                    OnInputDeviceInfoCallback on_input_device_info_cb));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockAudioSystem);
+};
+
+class MockCapturerSource : public media::AudioCapturerSource {
+ public:
+  using StartCallback =
+      base::OnceCallback<void(const media::AudioParameters& audio_parameters,
+                              CaptureCallback* capture_callback)>;
+  using StopCallback = base::OnceCallback<void()>;
+
+  MockCapturerSource(StartCallback start_callback, StopCallback stop_callback) {
+    start_callback_ = std::move(start_callback);
+    stop_callback_ = std::move(stop_callback);
+  }
+
+  void Initialize(const media::AudioParameters& params,
+                  CaptureCallback* callback) {
+    audio_parameters_ = params;
+    capture_callback_ = callback;
+  }
+
+  void Start() override {
+    std::move(start_callback_).Run(audio_parameters_, capture_callback_);
+  }
+
+  void Stop() override { std::move(stop_callback_).Run(); }
+
+  MOCK_METHOD1(SetAutomaticGainControl, void(bool enable));
+  MOCK_METHOD1(SetVolume, void(double volume));
+
+ protected:
+  ~MockCapturerSource() override = default;
+
+ private:
+  StartCallback start_callback_;
+  StopCallback stop_callback_;
+  CaptureCallback* capture_callback_;
+  media::AudioParameters audio_parameters_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockCapturerSource);
+};
 
 std::string MakeGoodResponse() {
   proto::SpeechRecognitionEvent proto_event;
@@ -75,45 +151,13 @@ std::string MakeGoodResponse() {
 
 }  // namespace
 
-class SpeechRecognitionBrowserTest
-    : public ContentBrowserTest,
-      public media::TestAudioInputControllerDelegate {
+class SpeechRecognitionBrowserTest : public ContentBrowserTest {
  public:
   enum StreamingServerState {
     kIdle,
-    kTestAudioControllerOpened,
-    kTestAudioControllerClosed,
+    kTestAudioCapturerSourceOpened,
+    kTestAudioCapturerSourceClosed,
   };
-
-  // media::TestAudioInputControllerDelegate methods.
-  void TestAudioControllerOpened(
-      media::TestAudioInputController* controller) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    ASSERT_EQ(kIdle, streaming_server_state_);
-    streaming_server_state_ = kTestAudioControllerOpened;
-    const int capture_packet_interval_ms =
-        (1000 * controller->audio_parameters().frames_per_buffer()) /
-        controller->audio_parameters().sample_rate();
-    ASSERT_EQ(SpeechRecognitionEngine::kAudioPacketIntervalMs,
-        capture_packet_interval_ms);
-    FeedAudioController(500 /* ms */, /*noise=*/ false);
-    FeedAudioController(1000 /* ms */, /*noise=*/ true);
-    FeedAudioController(1000 /* ms */, /*noise=*/ false);
-  }
-
-  void TestAudioControllerClosed(
-      media::TestAudioInputController* controller) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    ASSERT_EQ(kTestAudioControllerOpened, streaming_server_state_);
-    streaming_server_state_ = kTestAudioControllerClosed;
-
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&SpeechRecognitionBrowserTest::SendResponse,
-                       base::Unretained(this)));
-  }
-
-  void SendResponse() {}
 
   // Helper methods used by test fixtures.
   GURL GetTestUrlFromFragment(const std::string& fragment) {
@@ -132,39 +176,67 @@ class SpeechRecognitionBrowserTest
  protected:
   // ContentBrowserTest methods.
   void SetUpOnMainThread() override {
-    test_audio_input_controller_factory_.set_delegate(this);
-    media::AudioInputController::set_factory_for_testing(
-        &test_audio_input_controller_factory_);
     streaming_server_state_ = kIdle;
 
     ASSERT_TRUE(SpeechRecognitionManagerImpl::GetInstance());
-    media::AudioManager::StartHangMonitorIfNeeded(
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
-    audio_manager_ = std::make_unique<media::MockAudioManager>(
-        std::make_unique<media::AudioThreadImpl>());
-    audio_manager_->SetInputStreamParameters(
-        media::AudioParameters::UnavailableDeviceParams());
-    audio_system_ =
-        std::make_unique<media::AudioSystemImpl>(audio_manager_.get());
-    SpeechRecognizerImpl::SetAudioEnvironmentForTesting(audio_system_.get(),
-                                                        audio_manager_.get());
+    audio_system_ = std::make_unique<MockAudioSystem>();
+    audio_capturer_source_ = base::MakeRefCounted<MockCapturerSource>(
+        base::BindOnce(&SpeechRecognitionBrowserTest::OnCapturerSourceStart,
+                       base::Unretained(this)),
+        base::BindOnce(&SpeechRecognitionBrowserTest::OnCapturerSourceStop,
+                       base::Unretained(this)));
+    SpeechRecognizerImpl::SetAudioEnvironmentForTesting(
+        audio_system_.get(),
+        static_cast<media::AudioCapturerSource*>(audio_capturer_source_.get()));
   }
 
   void TearDownOnMainThread() override {
     SpeechRecognizerImpl::SetAudioEnvironmentForTesting(nullptr, nullptr);
-
-    audio_manager_->Shutdown();
-
-    test_audio_input_controller_factory_.set_delegate(nullptr);
   }
 
  private:
-  static void FeedSingleBufferToAudioController(
-      scoped_refptr<media::TestAudioInputController> controller,
+  void OnCapturerSourceStart(const media::AudioParameters& audio_parameters,
+                             CaptureCallback* capture_callback) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    ASSERT_EQ(kIdle, streaming_server_state_);
+    streaming_server_state_ = kTestAudioCapturerSourceOpened;
+
+    const int capture_packet_interval_ms =
+        (1000 * audio_parameters.frames_per_buffer()) /
+        audio_parameters.sample_rate();
+    ASSERT_EQ(SpeechRecognitionEngine::kAudioPacketIntervalMs,
+              capture_packet_interval_ms);
+    FeedAudioCapturerSource(audio_parameters, capture_callback, 500 /* ms */,
+                            /*noise=*/false);
+    FeedAudioCapturerSource(audio_parameters, capture_callback, 1000 /* ms */,
+                            /*noise=*/true);
+    FeedAudioCapturerSource(audio_parameters, capture_callback, 1000 /* ms */,
+                            /*noise=*/false);
+  }
+
+  void OnCapturerSourceStop() {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    ASSERT_EQ(kTestAudioCapturerSourceOpened, streaming_server_state_);
+    streaming_server_state_ = kTestAudioCapturerSourceClosed;
+
+    // Reset capturer source so SpeechRecognizerImpl destructor doesn't call
+    // AudioCaptureSourcer::Stop() again.
+    SpeechRecognizerImpl::SetAudioEnvironmentForTesting(nullptr, nullptr);
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&SpeechRecognitionBrowserTest::SendResponse,
+                       base::Unretained(this)));
+  }
+
+  void SendResponse() {}
+
+  static void FeedSingleBufferToAudioCapturerSource(
+      const media::AudioParameters& audio_params,
+      CaptureCallback* capture_callback,
       size_t buffer_size,
       bool fill_with_noise) {
-    DCHECK(controller.get());
-    const media::AudioParameters& audio_params = controller->audio_parameters();
+    DCHECK(capture_callback);
     std::unique_ptr<uint8_t[]> audio_buffer(new uint8_t[buffer_size]);
     if (fill_with_noise) {
       for (size_t i = 0; i < buffer_size; ++i)
@@ -179,15 +251,13 @@ class SpeechRecognitionBrowserTest
     audio_bus->FromInterleaved<media::SignedInt16SampleTypeTraits>(
         reinterpret_cast<int16_t*>(&audio_buffer.get()[0]),
         audio_bus->frames());
-    controller->sync_writer()->Write(audio_bus.get(), 0.0, false,
-                                     base::TimeTicks::Now());
+    capture_callback->Capture(audio_bus.get(), 0, 0.0, false);
   }
 
-  void FeedAudioController(int duration_ms, bool feed_with_noise) {
-    media::TestAudioInputController* controller =
-        test_audio_input_controller_factory_.controller();
-    ASSERT_TRUE(controller);
-    const media::AudioParameters& audio_params = controller->audio_parameters();
+  void FeedAudioCapturerSource(const media::AudioParameters& audio_params,
+                               CaptureCallback* capture_callback,
+                               int duration_ms,
+                               bool feed_with_noise) {
     const size_t buffer_size =
         audio_params.GetBytesPerBuffer(media::kSampleFormatS16);
     const int ms_per_buffer = audio_params.GetBufferDuration().InMilliseconds();
@@ -200,18 +270,14 @@ class SpeechRecognitionBrowserTest
     for (int i = 0; i < n_buffers; ++i) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::BindOnce(
-              &FeedSingleBufferToAudioController,
-              scoped_refptr<media::TestAudioInputController>(controller),
-              buffer_size, feed_with_noise));
+          base::BindOnce(&FeedSingleBufferToAudioCapturerSource, audio_params,
+                         capture_callback, buffer_size, feed_with_noise));
     }
   }
 
-  std::unique_ptr<media::MockAudioManager> audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
+  scoped_refptr<MockCapturerSource> audio_capturer_source_;
   StreamingServerState streaming_server_state_;
-
-  media::TestAudioInputControllerFactory test_audio_input_controller_factory_;
 };
 
 // Simply loads the test page and checks if it was able to create a Speech
@@ -274,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, MAYBE_OneShotRecognition) {
 
   navigation_observer.Wait();
 
-  EXPECT_EQ(kTestAudioControllerClosed, streaming_server_state());
+  EXPECT_EQ(kTestAudioCapturerSourceClosed, streaming_server_state());
   EXPECT_EQ("goodresult1", GetPageFragment());
 
   // Remove reference to URL string that's on the stack.
