@@ -32,10 +32,10 @@ class CastMojoMediaClient : public ::media::MojoMediaClient {
 
   // MojoMediaClient overrides.
   void Initialize(service_manager::Connector* connector) override;
-  scoped_refptr<::media::AudioRendererSink> CreateAudioRendererSink(
+  std::unique_ptr<::media::Renderer> CreateRenderer(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      ::media::MediaLog* media_log,
       const std::string& audio_device_id) override;
-  std::unique_ptr<::media::RendererFactory> CreateRendererFactory(
-      ::media::MediaLog* media_log) override;
   std::unique_ptr<::media::CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* host_interfaces) override;
 

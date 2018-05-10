@@ -9,11 +9,9 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
-#include "media/base/audio_renderer_sink.h"
 #include "media/base/cdm_context.h"
 #include "media/base/media_url_demuxer.h"
 #include "media/base/renderer.h"
-#include "media/base/video_renderer_sink.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/services/media_resource_shim.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
@@ -36,14 +34,12 @@ const int kTimeUpdateIntervalMs = 50;
 // static
 mojo::StrongBindingPtr<mojom::Renderer> MojoRendererService::Create(
     MojoCdmServiceContext* mojo_cdm_service_context,
-    scoped_refptr<AudioRendererSink> audio_sink,
-    std::unique_ptr<VideoRendererSink> video_sink,
     std::unique_ptr<media::Renderer> renderer,
     const InitiateSurfaceRequestCB& initiate_surface_request_cb,
     mojo::InterfaceRequest<mojom::Renderer> request) {
-  MojoRendererService* service = new MojoRendererService(
-      mojo_cdm_service_context, std::move(audio_sink), std::move(video_sink),
-      std::move(renderer), initiate_surface_request_cb);
+  MojoRendererService* service =
+      new MojoRendererService(mojo_cdm_service_context, std::move(renderer),
+                              initiate_surface_request_cb);
 
   mojo::StrongBindingPtr<mojom::Renderer> binding =
       mojo::MakeStrongBinding<mojom::Renderer>(base::WrapUnique(service),
@@ -59,22 +55,18 @@ mojo::StrongBindingPtr<mojom::Renderer> MojoRendererService::Create(
     std::unique_ptr<media::Renderer> renderer,
     const InitiateSurfaceRequestCB& initiate_surface_request_cb,
     mojo::InterfaceRequest<mojom::Renderer> request) {
-  return MojoRendererService::Create(
-      nullptr, nullptr, nullptr, std::move(renderer),
-      initiate_surface_request_cb, std::move(request));
+  return MojoRendererService::Create(nullptr, std::move(renderer),
+                                     initiate_surface_request_cb,
+                                     std::move(request));
 }
 
 MojoRendererService::MojoRendererService(
     MojoCdmServiceContext* mojo_cdm_service_context,
-    scoped_refptr<AudioRendererSink> audio_sink,
-    std::unique_ptr<VideoRendererSink> video_sink,
     std::unique_ptr<media::Renderer> renderer,
     InitiateSurfaceRequestCB initiate_surface_request_cb)
     : mojo_cdm_service_context_(mojo_cdm_service_context),
       state_(STATE_UNINITIALIZED),
       playback_rate_(0),
-      audio_sink_(std::move(audio_sink)),
-      video_sink_(std::move(video_sink)),
       renderer_(std::move(renderer)),
       initiate_surface_request_cb_(initiate_surface_request_cb),
       weak_factory_(this) {
@@ -281,9 +273,8 @@ void MojoRendererService::OnFlushCompleted(FlushCallback callback) {
   std::move(callback).Run();
 }
 
-void MojoRendererService::OnCdmAttached(
-    base::OnceCallback<void(bool)> callback,
-    bool success) {
+void MojoRendererService::OnCdmAttached(base::OnceCallback<void(bool)> callback,
+                                        bool success) {
   DVLOG(1) << __func__ << "(" << success << ")";
 
   if (!success)

@@ -21,7 +21,6 @@ namespace media {
 class CdmFactory;
 class MediaLog;
 class MojoMediaClient;
-class RendererFactory;
 
 class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
  public:
@@ -55,10 +54,6 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
   void SetBindingConnectionErrorHandler();
   void OnBindingConnectionError();
 
-#if BUILDFLAG(ENABLE_MOJO_RENDERER)
-  RendererFactory* GetRendererFactory();
-#endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
-
 #if BUILDFLAG(ENABLE_MOJO_CDM)
   CdmFactory* GetCdmFactory();
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
@@ -78,7 +73,6 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
   MediaLog* media_log_;
-  std::unique_ptr<RendererFactory> renderer_factory_;
   mojo::StrongBindingSet<mojom::Renderer> renderer_bindings_;
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 
