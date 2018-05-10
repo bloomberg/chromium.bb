@@ -71,7 +71,7 @@ void ThreadControllerImpl::ScheduleWork() {
   }
   any_sequence().immediate_do_work_posted = true;
 
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                "ThreadControllerImpl::ScheduleWork::PostTask");
   task_runner_->PostTask(FROM_HERE, immediate_do_work_closure_);
 }
@@ -101,7 +101,7 @@ void ThreadControllerImpl::ScheduleDelayedWork(base::TimeTicks now,
   }
 
   base::TimeDelta delay = std::max(base::TimeDelta(), run_time - now);
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                "ThreadControllerImpl::ScheduleDelayedWork::PostDelayedTask",
                "delay_ms", delay.InMillisecondsF());
 
@@ -234,7 +234,7 @@ void ThreadControllerImpl::OnBeginNestedRunLoop() {
     any_sequence().nesting_depth++;
     if (!any_sequence().immediate_do_work_posted) {
       any_sequence().immediate_do_work_posted = true;
-      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                    "ThreadControllerImpl::OnBeginNestedRunLoop::PostTask");
       task_runner_->PostTask(FROM_HERE, immediate_do_work_closure_);
     }

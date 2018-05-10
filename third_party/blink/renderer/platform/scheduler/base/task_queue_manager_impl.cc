@@ -65,9 +65,16 @@ TaskQueueManagerImpl::TaskQueueManagerImpl(
       weak_factory_(this) {
   // TODO(altimin): Create a sequence checker here.
   DCHECK(controller_->RunsTasksInCurrentSequence());
+
+  TRACE_EVENT_WARMUP_CATEGORY("sequence_manager");
+  TRACE_EVENT_WARMUP_CATEGORY(TRACE_DISABLED_BY_DEFAULT("sequence_manager"));
+  TRACE_EVENT_WARMUP_CATEGORY(
+      TRACE_DISABLED_BY_DEFAULT("sequence_manager.debug"));
+  TRACE_EVENT_WARMUP_CATEGORY(
+      TRACE_DISABLED_BY_DEFAULT("sequence_manager.verbose_snapshots"));
+
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "TaskQueueManager",
-      this);
+      TRACE_DISABLED_BY_DEFAULT("sequence_manager"), "TaskQueueManager", this);
   main_thread_only().selector.SetTaskQueueSelectorObserver(this);
 
   RegisterTimeDomain(main_thread_only().real_time_domain.get());
@@ -78,8 +85,7 @@ TaskQueueManagerImpl::TaskQueueManagerImpl(
 
 TaskQueueManagerImpl::~TaskQueueManagerImpl() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "TaskQueueManager",
-      this);
+      TRACE_DISABLED_BY_DEFAULT("sequence_manager"), "TaskQueueManager", this);
 
   // TODO(altimin): restore default task runner automatically when
   // ThreadController is destroyed.
@@ -152,9 +158,8 @@ void TaskQueueManagerImpl::SetObserver(Observer* observer) {
 
 void TaskQueueManagerImpl::UnregisterTaskQueueImpl(
     std::unique_ptr<internal::TaskQueueImpl> task_queue) {
-  TRACE_EVENT1("renderer.scheduler",
-               "TaskQueueManagerImpl::UnregisterTaskQueue", "queue_name",
-               task_queue->GetName());
+  TRACE_EVENT1("sequence_manager", "TaskQueueManagerImpl::UnregisterTaskQueue",
+               "queue_name", task_queue->GetName());
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
 
   main_thread_only().selector.RemoveQueue(task_queue.get());
@@ -185,7 +190,7 @@ void TaskQueueManagerImpl::ReloadEmptyWorkQueues(
 }
 
 void TaskQueueManagerImpl::WakeUpReadyDelayedQueues(LazyNow* lazy_now) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                "TaskQueueManagerImpl::WakeUpReadyDelayedQueues");
 
   for (TimeDomain* time_domain : main_thread_only().time_domains) {
@@ -260,7 +265,7 @@ base::Optional<base::PendingTask> TaskQueueManagerImpl::TakeTask() {
   CHECK(Validate());
 
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
-  TRACE_EVENT0("renderer.scheduler", "TaskQueueManagerImpl::TakeTask");
+  TRACE_EVENT0("sequence_manager", "TaskQueueManagerImpl::TakeTask");
 
   IncomingImmediateWorkMap queues_to_reload;
 
@@ -280,9 +285,8 @@ base::Optional<base::PendingTask> TaskQueueManagerImpl::TakeTask() {
     bool should_run =
         main_thread_only().selector.SelectWorkQueueToService(&work_queue);
     TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-        TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug"),
-        "TaskQueueManager", this,
-        AsValueWithSelectorResult(should_run, work_queue));
+        TRACE_DISABLED_BY_DEFAULT("sequence_manager.debug"), "TaskQueueManager",
+        this, AsValueWithSelectorResult(should_run, work_queue));
 
     if (!should_run)
       return base::nullopt;
@@ -371,7 +375,7 @@ void TaskQueueManagerImpl::DidQueueTask(
 
 void TaskQueueManagerImpl::NotifyWillProcessTask(ExecutingTask* executing_task,
                                                  LazyNow* time_before_task) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                "TaskQueueManagerImpl::NotifyWillProcessTaskObservers");
   if (executing_task->task_queue->GetQuiescenceMonitored())
     main_thread_only().task_was_run_on_quiescence_monitored_queue = true;
@@ -385,14 +389,14 @@ void TaskQueueManagerImpl::NotifyWillProcessTask(ExecutingTask* executing_task,
 
   if (executing_task->task_queue->GetShouldNotifyObservers()) {
     {
-      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                    "TaskQueueManager.WillProcessTaskObservers");
       for (auto& observer : main_thread_only().task_observers)
         observer.WillProcessTask(executing_task->pending_task);
     }
 
     {
-      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                    "TaskQueueManager.QueueNotifyWillProcessTask");
       executing_task->task_queue->NotifyWillProcessTask(
           executing_task->pending_task);
@@ -408,14 +412,14 @@ void TaskQueueManagerImpl::NotifyWillProcessTask(ExecutingTask* executing_task,
           MonotonicTimeInSeconds(executing_task->task_start_time);
 
       {
-        TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+        TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                      "TaskQueueManager.WillProcessTaskTimeObservers");
         for (auto& observer : main_thread_only().task_time_observers)
           observer.WillProcessTask(task_start_time_sec);
       }
 
       {
-        TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+        TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                      "TaskQueueManager.QueueOnTaskStarted");
         executing_task->task_queue->OnTaskStarted(
             executing_task->pending_task, executing_task->task_start_time);
@@ -431,7 +435,7 @@ void TaskQueueManagerImpl::NotifyWillProcessTask(ExecutingTask* executing_task,
 void TaskQueueManagerImpl::NotifyDidProcessTask(
     const ExecutingTask& executing_task,
     LazyNow* time_after_task) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                "TaskQueueManagerImpl::NotifyDidProcessTaskObservers");
 
   base::ThreadTicks task_end_thread_time;
@@ -448,28 +452,28 @@ void TaskQueueManagerImpl::NotifyDidProcessTask(
   if (task_start_time_sec) {
     task_end_time_sec = MonotonicTimeInSeconds(time_after_task->Now());
 
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                  "TaskQueueManager.DidProcessTaskTimeObservers");
     for (auto& observer : main_thread_only().task_time_observers)
       observer.DidProcessTask(task_start_time_sec, task_end_time_sec);
   }
 
   {
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                  "TaskQueueManager.DidProcessTaskObservers");
     for (auto& observer : main_thread_only().task_observers)
       observer.DidProcessTask(executing_task.pending_task);
   }
 
   {
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                  "TaskQueueManager.QueueNotifyDidProcessTask");
     executing_task.task_queue->NotifyDidProcessTask(
         executing_task.pending_task);
   }
 
   {
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                  "TaskQueueManager.QueueOnTaskCompleted");
     if (task_start_time_sec && task_end_time_sec) {
       executing_task.task_queue->OnTaskCompleted(
