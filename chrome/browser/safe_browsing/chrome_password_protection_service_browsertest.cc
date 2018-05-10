@@ -31,6 +31,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -186,9 +187,8 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                  ChromePasswordProtectionService::CHANGE_PASSWORD);
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::TestNavigationObserver observer(
-      new_web_contents, /*number_of_navigations=*/1,
-      content::MessageLoopRunner::QuitMode::DEFERRED);
+  content::TestNavigationObserver observer(new_web_contents,
+                                           /*number_of_navigations=*/1);
   observer.Wait();
   // chrome://settings page should be opened in a new foreground tab.
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
@@ -311,9 +311,8 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                         ChromePasswordProtectionService::CHANGE_PASSWORD);
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::TestNavigationObserver observer(
-      new_web_contents, /*number_of_navigations=*/1,
-      content::MessageLoopRunner::QuitMode::DEFERRED);
+  content::TestNavigationObserver observer(new_web_contents,
+                                           /*number_of_navigations=*/1);
   observer.Wait();
   // chrome://settings page should be opened in a new foreground tab.
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
@@ -472,6 +471,58 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   EXPECT_TRUE(
       ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
           profile));
+}
+
+IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
+                       PasswordAlertMode) {
+  Profile* profile = browser()->profile();
+  ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
+  PrepareSyncAccount("example.com", "stub-user@example.com",
+                     "stub-user@example.com");
+  profile->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
+                                  1 /*PASSWORD_REUSE*/);
+  const std::string change_password_url = "https://changepassword.example.com/";
+  profile->GetPrefs()->SetString(prefs::kPasswordProtectionChangePasswordURL,
+                                 change_password_url);
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL(kLoginPageUrl));
+
+  base::HistogramTester histograms;
+  // Shows interstitial on current web_contents.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  service->ShowInterstitial(web_contents);
+  content::WebContents* new_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver observer(new_web_contents,
+                                           /*number_of_navigations=*/1);
+  observer.Wait();
+  // chrome://reset-password page should be opened in a new foreground tab.
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  ASSERT_EQ(GURL(chrome::kChromeUIResetPasswordURL),
+            new_web_contents->GetVisibleURL());
+  EXPECT_THAT(histograms.GetAllSamples("PasswordProtection.InterstitialString"),
+              testing::ElementsAre(base::Bucket(3, 1)));
+
+  // Clicks on "Reset Password" button.
+  std::string script =
+      "var node = document.getElementById('reset-password-button'); \n"
+      "node.click();";
+  ASSERT_TRUE(content::ExecuteScript(new_web_contents, script));
+  content::TestNavigationObserver observer1(new_web_contents,
+                                            /*number_of_navigations=*/1);
+  observer1.Wait();
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(browser()
+                ->tab_strip_model()
+                ->GetActiveWebContents()
+                ->GetLastCommittedURL(),
+            GURL(change_password_url));
+  EXPECT_THAT(histograms.GetAllSamples(
+                  "PasswordProtection.InterstitialAction.SyncPasswordEntry"),
+              testing::ElementsAre(base::Bucket(0, 1), base::Bucket(1, 1)));
 }
 
 }  // namespace safe_browsing

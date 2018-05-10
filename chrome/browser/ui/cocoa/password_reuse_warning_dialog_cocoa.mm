@@ -62,10 +62,6 @@ PasswordReuseWarningDialogCocoa::~PasswordReuseWarningDialogCocoa() {
     service_->RemoveObserver(this);
 }
 
-void PasswordReuseWarningDialogCocoa::OnStartingGaiaPasswordChange() {
-  Close();
-}
-
 void PasswordReuseWarningDialogCocoa::OnGaiaPasswordChanged() {
   Close();
 }

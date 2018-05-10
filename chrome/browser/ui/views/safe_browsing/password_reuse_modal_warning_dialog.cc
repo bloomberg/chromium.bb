@@ -142,10 +142,6 @@ base::string16 PasswordReuseModalWarningDialog::GetDialogButtonLabel(
   return base::string16();
 }
 
-void PasswordReuseModalWarningDialog::OnStartingGaiaPasswordChange() {
-  GetWidget()->Close();
-}
-
 void PasswordReuseModalWarningDialog::OnGaiaPasswordChanged() {
   GetWidget()->Close();
 }

@@ -14,7 +14,7 @@
 #include "base/callback.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -95,6 +95,8 @@ const char kSyncPasswordPageInfoHistogram[] =
     "PasswordProtection.PageInfoAction.SyncPasswordEntry";
 const char kSyncPasswordChromeSettingsHistogram[] =
     "PasswordProtection.ChromeSettingsAction.SyncPasswordEntry";
+const char kSyncPasswordInterstitialHistogram[] =
+    "PasswordProtection.InterstitialAction.SyncPasswordEntry";
 
 PasswordProtectionService::PasswordProtectionService(
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
@@ -133,19 +135,22 @@ void PasswordProtectionService::RecordWarningAction(WarningUIType ui_type,
                                                     WarningAction action) {
   switch (ui_type) {
     case PAGE_INFO:
-      UMA_HISTOGRAM_ENUMERATION(kSyncPasswordPageInfoHistogram, action,
-                                MAX_ACTION);
+      base::UmaHistogramEnumeration(kSyncPasswordPageInfoHistogram, action,
+                                    MAX_ACTION);
       break;
     case MODAL_DIALOG:
-      UMA_HISTOGRAM_ENUMERATION(kSyncPasswordWarningDialogHistogram, action,
-                                MAX_ACTION);
+      base::UmaHistogramEnumeration(kSyncPasswordWarningDialogHistogram, action,
+                                    MAX_ACTION);
       break;
     case CHROME_SETTINGS:
-      UMA_HISTOGRAM_ENUMERATION(kSyncPasswordChromeSettingsHistogram, action,
-                                MAX_ACTION);
+      base::UmaHistogramEnumeration(kSyncPasswordChromeSettingsHistogram,
+                                    action, MAX_ACTION);
+      break;
+    case INTERSTITIAL:
+      base::UmaHistogramEnumeration(kSyncPasswordInterstitialHistogram, action,
+                                    MAX_ACTION);
       break;
     case NOT_USED:
-    case MAX_UI_TYPE:
       NOTREACHED();
       break;
   }
@@ -409,9 +414,7 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
   } else {
     MaybeLogPasswordReuseLookupEvent(web_contents, reason, nullptr);
     if (reason == PASSWORD_ALERT_MODE && matches_sync_password) {
-      OnPolicySpecifiedPasswordReuseDetected(main_frame_url,
-                                             /*is_phishing_url=*/false);
-      // TODO(jialiul): Show chrome://reset-password page.
+      ShowInterstitial(web_contents);
     }
   }
 }
@@ -774,8 +777,8 @@ void PasswordProtectionService::RecordNoPingingReason(
          trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
 
   if (trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
-    UMA_HISTOGRAM_ENUMERATION(kPasswordOnFocusRequestOutcomeHistogram, reason,
-                              MAX_OUTCOME);
+    base::UmaHistogramEnumeration(kPasswordOnFocusRequestOutcomeHistogram,
+                                  reason, MAX_OUTCOME);
     return;
   }
 
@@ -786,14 +789,14 @@ void PasswordProtectionService::RecordNoPingingReason(
 void PasswordProtectionService::LogPasswordEntryRequestOutcome(
     RequestOutcome reason,
     bool matches_sync_password) {
-  UMA_HISTOGRAM_ENUMERATION(kAnyPasswordEntryRequestOutcomeHistogram, reason,
-                            MAX_OUTCOME);
+  base::UmaHistogramEnumeration(kAnyPasswordEntryRequestOutcomeHistogram,
+                                reason, MAX_OUTCOME);
   if (matches_sync_password) {
-    UMA_HISTOGRAM_ENUMERATION(kSyncPasswordEntryRequestOutcomeHistogram, reason,
-                              MAX_OUTCOME);
+    base::UmaHistogramEnumeration(kSyncPasswordEntryRequestOutcomeHistogram,
+                                  reason, MAX_OUTCOME);
   } else {
-    UMA_HISTOGRAM_ENUMERATION(kProtectedPasswordEntryRequestOutcomeHistogram,
-                              reason, MAX_OUTCOME);
+    base::UmaHistogramEnumeration(
+        kProtectedPasswordEntryRequestOutcomeHistogram, reason, MAX_OUTCOME);
   }
 }
 

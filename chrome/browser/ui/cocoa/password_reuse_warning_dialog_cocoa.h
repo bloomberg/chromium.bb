@@ -27,7 +27,6 @@ class PasswordReuseWarningDialogCocoa
   ~PasswordReuseWarningDialogCocoa() override;
 
   // ChromePasswordProtectionService::Observer:
-  void OnStartingGaiaPasswordChange() override;
   void OnGaiaPasswordChanged() override;
   void OnMarkingSiteAsLegitimate(const GURL& url) override;
   void InvokeActionForTesting(

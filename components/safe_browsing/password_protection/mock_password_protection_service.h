@@ -36,6 +36,7 @@ class MockPasswordProtectionService : public PasswordProtectionService {
   MOCK_METHOD0(OnPolicySpecifiedPasswordChanged, void());
   MOCK_METHOD1(MaybeLogPasswordReuseDetectedEvent, void(content::WebContents*));
   MOCK_METHOD1(UserClickedThroughSBInterstitial, bool(content::WebContents*));
+  MOCK_METHOD1(ShowInterstitial, void(content::WebContents*));
   MOCK_METHOD2(IsPingingEnabled,
                bool(safe_browsing::LoginReputationClientRequest::TriggerType,
                     RequestOutcome*));

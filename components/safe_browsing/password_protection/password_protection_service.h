@@ -115,7 +115,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
     PAGE_INFO = 1,
     MODAL_DIALOG = 2,
     CHROME_SETTINGS = 3,
-    MAX_UI_TYPE
+    INTERSTITIAL = 4
   };
 
   PasswordProtectionService(
@@ -202,6 +202,9 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // |verdict_token| to callback of this dialog.
   virtual void ShowModalWarning(content::WebContents* web_contents,
                                 const std::string& verdict_token) = 0;
+
+  // Shows chrome://reset-password interstitial.
+  virtual void ShowInterstitial(content::WebContents* web_contens) = 0;
 
   // Called when user interacts with warning UIs.
   virtual void OnUserAction(content::WebContents* web_contents,

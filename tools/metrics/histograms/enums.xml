@@ -35590,6 +35590,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="12" label="Clicked the link passwords.google.com"/>
 </enum>
 
+<enum name="PasswordProtectionInterstitialStringType">
+  <int value="0" label="Generic string without org name"/>
+  <int value="1" label="Generic string with org name"/>
+  <int value="2" label="Warning string without org name"/>
+  <int value="3" label="Warning string with org name"/>
+</enum>
+
 <enum name="PasswordProtectionRequestOutcome">
   <int value="0" label="Unknown"/>
   <int value="1" label="Succeeded"/>

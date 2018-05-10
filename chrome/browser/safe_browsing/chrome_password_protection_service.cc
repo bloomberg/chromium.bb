@@ -111,13 +111,19 @@ int64_t GetLastCommittedNavigationID(const content::WebContents* web_contents) {
              : 0;
 }
 
-// Opens a URL in a new foreground tab.
-void OpenUrlInNewTab(const GURL& url, content::WebContents* web_contents) {
-  content::OpenURLParams params(url, content::Referrer(),
-                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
+// Opens a |url| from |current_web_contents| with |referrer|. |in_new_tab|
+// indicates if opening in a new foreground tab or in current tab.
+void OpenUrl(content::WebContents* current_web_contents,
+             const GURL& url,
+             const content::Referrer& referrer,
+             bool in_new_tab) {
+  content::OpenURLParams params(url, referrer,
+                                in_new_tab
+                                    ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+                                    : WindowOpenDisposition::CURRENT_TAB,
                                 ui::PAGE_TRANSITION_LINK,
                                 /*is_renderer_initiated=*/false);
-  web_contents->OpenURL(params);
+  current_web_contents->OpenURL(params);
 }
 
 int64_t GetFirstNavIdOrZero(PrefService* prefs) {
@@ -304,6 +310,25 @@ void ChromePasswordProtectionService::OnModalWarningShown(
   MaybeStartThreatDetailsCollection(web_contents, verdict_token);
 }
 
+void ChromePasswordProtectionService::ShowInterstitial(
+    content::WebContents* web_contents) {
+  DCHECK(base::FeatureList::IsEnabled(kEnterprisePasswordProtectionV1));
+  // Exit fullscreen if this |web_contents| is showing in fullscreen mode.
+  if (web_contents->IsFullscreenForCurrentTab())
+    web_contents->ExitFullscreen(/*will_cause_resize=*/true);
+
+  GURL trigger_url = web_contents->GetLastCommittedURL();
+  OpenUrl(web_contents, GURL(chrome::kChromeUIResetPasswordURL),
+          content::Referrer(trigger_url, blink::kWebReferrerPolicyDefault),
+          /*in_new_tab=*/true);
+
+  RecordWarningAction(PasswordProtectionService::INTERSTITIAL,
+                      PasswordProtectionService::SHOWN);
+
+  OnPolicySpecifiedPasswordReuseDetected(trigger_url,
+                                         /*is_phishing_url=*/false);
+}
+
 void ChromePasswordProtectionService::OnUserAction(
     content::WebContents* web_contents,
     PasswordProtectionService::WarningUIType ui_type,
@@ -318,6 +343,10 @@ void ChromePasswordProtectionService::OnUserAction(
       break;
     case PasswordProtectionService::CHROME_SETTINGS:
       HandleUserActionOnSettings(web_contents, action);
+      break;
+    case PasswordProtectionService::INTERSTITIAL:
+      DCHECK_EQ(PasswordProtectionService::CHANGE_PASSWORD, action);
+      HandleResetPasswordOnInterstitial(web_contents, action);
       break;
     default:
       NOTREACHED();
@@ -744,12 +773,15 @@ AccountInfo ChromePasswordProtectionService::GetAccountInfo() const {
 }
 
 GURL ChromePasswordProtectionService::GetChangePasswordURL() const {
-  // If change password URL is specified in preferences, returns the
-  // corresponding pref value.
-  GURL enterprise_change_password_url =
-      GetPasswordProtectionChangePasswordURLPref(*profile_->GetPrefs());
-  if (!enterprise_change_password_url.is_empty()) {
-    return enterprise_change_password_url;
+  if (base::FeatureList::IsEnabled(kEnterprisePasswordProtectionV1)) {
+    // If change password URL is specified in preferences, returns the
+    // corresponding pref value.
+    GURL enterprise_change_password_url =
+        GetPasswordProtectionChangePasswordURLPref(*profile_->GetPrefs());
+    if (GetSyncAccountType() != PasswordReuseEvent::GMAIL &&
+        !enterprise_change_password_url.is_empty()) {
+      return enterprise_change_password_url;
+    }
   }
 
   // Otherwise, computes the default GAIA change password URL.
@@ -787,7 +819,9 @@ void ChromePasswordProtectionService::HandleUserActionOnModalWarning(
     LogPasswordReuseDialogInteraction(
         navigation_id, PasswordReuseDialogInteraction::WARNING_ACTION_TAKEN);
     // Opens chrome://settings page in a new tab.
-    OpenUrlInNewTab(GURL(chrome::kChromeUISettingsURL), web_contents);
+    OpenUrl(web_contents, GURL(chrome::kChromeUISettingsURL),
+            content::Referrer(),
+            /*in_new_tab=*/true);
     RecordWarningAction(PasswordProtectionService::CHROME_SETTINGS,
                         PasswordProtectionService::SHOWN);
   } else if (action == PasswordProtectionService::IGNORE_WARNING) {
@@ -820,7 +854,8 @@ void ChromePasswordProtectionService::HandleUserActionOnPageInfo(
         PasswordReuseDialogInteraction::WARNING_ACTION_TAKEN);
 
     // Opens chrome://settings page in a new tab.
-    OpenUrlInNewTab(GURL(chrome::kChromeUISettingsURL), web_contents);
+    OpenUrl(web_contents, GURL(chrome::kChromeUISettingsURL),
+            content::Referrer(), /*in_new_tab=*/true);
     RecordWarningAction(PasswordProtectionService::CHROME_SETTINGS,
                         PasswordProtectionService::SHOWN);
     return;
@@ -854,10 +889,21 @@ void ChromePasswordProtectionService::HandleUserActionOnSettings(
   LogPasswordReuseDialogInteraction(
       GetFirstNavIdOrZero(profile_->GetPrefs()),
       PasswordReuseDialogInteraction::WARNING_ACTION_TAKEN);
-  // Opens https://account.google.com for user to change password.
-  OpenUrlInNewTab(GetChangePasswordURL(), web_contents);
-  for (auto& observer : observer_list_)
-    observer.OnStartingGaiaPasswordChange();
+  // Opens change password page in a new tab for user to change password.
+  OpenUrl(web_contents, GetChangePasswordURL(),
+          content::Referrer(web_contents->GetLastCommittedURL(),
+                            blink::kWebReferrerPolicyDefault),
+          /*in_new_tab=*/true);
+}
+
+void ChromePasswordProtectionService::HandleResetPasswordOnInterstitial(
+    content::WebContents* web_contents,
+    PasswordProtectionService::WarningAction action) {
+  // Opens change password page in current tab for user to change password.
+  OpenUrl(web_contents, GetChangePasswordURL(),
+          content::Referrer(web_contents->GetLastCommittedURL(),
+                            blink::kWebReferrerPolicyDefault),
+          /*in_new_tab=*/false);
 }
 
 ChromePasswordProtectionService::ChromePasswordProtectionService(
