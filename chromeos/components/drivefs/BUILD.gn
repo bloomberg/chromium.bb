@@ -19,8 +19,12 @@ component("drivefs") {
     "//chromeos/components/drivefs/mojom",
     "//components/account_id",
     "//dbus",
+    "//google_apis",
     "//mojo/edk",
     "//mojo/public/cpp/bindings",
+    "//net",
+    "//services/identity/public/mojom",
+    "//services/service_manager/public/cpp",
   ]
   defines = [ "IS_DRIVEFS_IMPL" ]
 }
@@ -39,6 +43,10 @@ source_set("unit_tests") {
     "//chromeos:test_support",
     "//chromeos/components/drivefs/mojom",
     "//mojo/public/cpp/bindings",
+    "//net",
+    "//services/identity/public/mojom",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
