@@ -160,7 +160,7 @@ static void JNI_SSLClientCertificateRequest_OnSystemRequestCompletion(
 }
 
 static void NotifyClientCertificatesChanged() {
-  net::CertDatabase::GetInstance()->OnAndroidKeyStoreChanged();
+  net::CertDatabase::GetInstance()->NotifyObserversCertDBChanged();
 }
 
 static void

@@ -11,7 +11,7 @@ namespace net {
 
 void JNI_X509Util_NotifyKeyChainChanged(JNIEnv* env,
                                         const JavaParamRef<jclass>& clazz) {
-  CertDatabase::GetInstance()->OnAndroidKeyChainChanged();
+  CertDatabase::GetInstance()->NotifyObserversCertDBChanged();
 }
 
 }  // namespace net
