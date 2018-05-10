@@ -710,7 +710,9 @@ TEST_F(WebPluginContainerTest, PasteAndMatchStyleFromContextMenu) {
 class EventTestPlugin : public FakeWebPlugin {
  public:
   explicit EventTestPlugin(const WebPluginParams& params)
-      : FakeWebPlugin(params), last_event_type_(WebInputEvent::kUndefined) {}
+      : FakeWebPlugin(params),
+        last_event_type_(WebInputEvent::kUndefined),
+        last_event_modifiers_(WebInputEvent::kNoModifiers) {}
 
   WebInputEventResult HandleInputEvent(
       const WebCoalescedInputEvent& coalesced_event,
@@ -718,6 +720,7 @@ class EventTestPlugin : public FakeWebPlugin {
     const WebInputEvent& event = coalesced_event.Event();
     coalesced_event_count_ = coalesced_event.CoalescedEventSize();
     last_event_type_ = event.GetType();
+    last_event_modifiers_ = event.GetModifiers();
     if (WebInputEvent::IsMouseEventType(event.GetType()) ||
         event.GetType() == WebInputEvent::kMouseWheel) {
       const WebMouseEvent& mouse_event =
@@ -742,6 +745,8 @@ class EventTestPlugin : public FakeWebPlugin {
 
   IntPoint GetLastEventLocation() { return last_event_location_; }
 
+  int GetLastEventModifiers() { return last_event_modifiers_; }
+
   void ClearLastEventType() { last_event_type_ = WebInputEvent::kUndefined; }
 
   size_t GetCoalescedEventCount() { return coalesced_event_count_; }
@@ -752,6 +757,7 @@ class EventTestPlugin : public FakeWebPlugin {
   size_t coalesced_event_count_;
   WebInputEvent::Type last_event_type_;
   IntPoint last_event_location_;
+  int last_event_modifiers_;
 };
 
 TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin) {
@@ -796,6 +802,39 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin) {
 
   EXPECT_EQ(WebInputEvent::kGestureLongPress,
             test_plugin->GetLastInputEventType());
+}
+
+TEST_F(WebPluginContainerTest, MouseEventButtons) {
+  RegisterMockedURL("plugin_container.html");
+  // Must outlive |web_view_helper|.
+  CustomPluginWebFrameClient<EventTestPlugin> plugin_web_frame_client;
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
+      base_url_ + "plugin_container.html", &plugin_web_frame_client);
+  EnablePlugins(web_view, WebSize(300, 300));
+
+  WebElement plugin_container_one_element =
+      web_view->MainFrameImpl()->GetDocument().GetElementById(
+          WebString::FromUTF8("translated-plugin"));
+  WebPlugin* plugin = static_cast<WebPluginContainerImpl*>(
+                          plugin_container_one_element.PluginContainer())
+                          ->Plugin();
+  EventTestPlugin* test_plugin = static_cast<EventTestPlugin*>(plugin);
+
+  WebMouseEvent event = FrameTestHelpers::CreateMouseEvent(
+      WebMouseEvent::kMouseMove, WebMouseEvent::Button::kNoButton,
+      WebPoint(30, 30),
+      WebInputEvent::kMiddleButtonDown | WebInputEvent::kShiftKey);
+
+  WebRect rect = plugin_container_one_element.BoundsInViewport();
+  event.SetPositionInWidget(rect.x + rect.width / 2, rect.y + rect.height / 2);
+
+  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
+  RunPendingTasks();
+
+  EXPECT_EQ(WebInputEvent::kMouseMove, test_plugin->GetLastInputEventType());
+  EXPECT_EQ(WebInputEvent::kMiddleButtonDown | WebInputEvent::kShiftKey,
+            test_plugin->GetLastEventModifiers());
 }
 
 TEST_F(WebPluginContainerTest, MouseWheelEventTranslated) {
