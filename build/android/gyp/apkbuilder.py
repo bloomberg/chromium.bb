@@ -13,6 +13,8 @@ import shutil
 import sys
 import zipfile
 
+import finalize_apk
+
 from util import build_utils
 
 
@@ -77,6 +79,16 @@ def _ParseArgs(args):
   parser.add_argument('--uncompress-shared-libraries',
                       action='store_true',
                       help='Uncompress shared libraries')
+  parser.add_argument('--apksigner-path', required=True,
+                      help='Path to the apksigner executable.')
+  parser.add_argument('--zipalign-path', required=True,
+                      help='Path to the zipalign executable.')
+  parser.add_argument('--key-path', required=True,
+                      help='Path to keystore for signing.')
+  parser.add_argument('--key-passwd', required=True,
+                      help='Keystore password')
+  parser.add_argument('--key-name', required=True,
+                      help='Keystore name')
   options = parser.parse_args(args)
   options.assets = build_utils.ParseGnList(options.assets)
   options.uncompressed_assets = build_utils.ParseGnList(
@@ -347,7 +359,10 @@ def main(args):
         if options.apk_res_info_path:
           _MergeResInfoFiles(options.apk_res_info_path, options.resource_apk)
 
-      shutil.move(tmp_apk, options.output_apk)
+      finalize_apk.FinalizeApk(options.apksigner_path, options.zipalign_path,
+                               tmp_apk, options.output_apk,
+                               options.key_path, options.key_passwd,
+                               options.key_name)
     finally:
       if os.path.exists(tmp_apk):
         os.unlink(tmp_apk)
