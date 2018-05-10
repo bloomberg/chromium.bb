@@ -33,6 +33,8 @@ class TestTabModel : public TabModel {
   TabAndroid* GetTabAt(int index) const override { return nullptr; }
   void SetActiveIndex(int index) override {}
   void CloseTabAt(int index) override {}
+  void AddObserver(TabModelObserver* observer) override {}
+  void RemoveObserver(TabModelObserver* observer) override {}
 
   // A fake value for the current number of tabs.
   int tab_count_;

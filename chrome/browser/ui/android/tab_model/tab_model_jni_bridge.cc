@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_observer_jni_bridge.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/TabModelJniBridge_jni.h"
 
@@ -148,6 +149,24 @@ bool TabModelJniBridge::IsSessionRestoreInProgress() const {
 bool TabModelJniBridge::IsCurrentModel() const {
   JNIEnv* env = AttachCurrentThread();
   return Java_TabModelJniBridge_isCurrentModel(env, java_object_.get(env));
+}
+
+void TabModelJniBridge::AddObserver(TabModelObserver* observer) {
+  // If a first observer is being added then instantiate an observer bridge.
+  if (!observer_bridge_) {
+    JNIEnv* env = AttachCurrentThread();
+    observer_bridge_ =
+        std::make_unique<TabModelObserverJniBridge>(env, java_object_.get(env));
+  }
+  observer_bridge_->AddObserver(observer);
+}
+
+void TabModelJniBridge::RemoveObserver(TabModelObserver* observer) {
+  observer_bridge_->RemoveObserver(observer);
+
+  // Tear down the bridge if there are no observers left.
+  if (!observer_bridge_->might_have_observers())
+    observer_bridge_.reset();
 }
 
 void TabModelJniBridge::BroadcastSessionRestoreComplete(
