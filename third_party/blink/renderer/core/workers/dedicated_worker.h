@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/workers/abstract_worker.h"
 #include "third_party/blink/renderer/core/workers/worker_options.h"
+#include "third_party/blink/renderer/platform/graphics/begin_frame_provider.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace v8_inspector {
@@ -59,6 +60,7 @@ class CORE_EXPORT DedicatedWorker final
                    ExceptionState&);
   static bool CanTransferArrayBuffersAndImageBitmaps() { return true; }
   void terminate();
+  BeginFrameProviderParams CreateBeginFrameProviderParams();
 
   // Implements ContextLifecycleObserver (via AbstractWorker).
   void ContextDestroyed(ExecutionContext*) override;

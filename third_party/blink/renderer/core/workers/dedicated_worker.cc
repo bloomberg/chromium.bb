@@ -172,6 +172,27 @@ void DedicatedWorker::terminate() {
   context_proxy_->TerminateGlobalScope();
 }
 
+BeginFrameProviderParams DedicatedWorker::CreateBeginFrameProviderParams() {
+  DCHECK(GetExecutionContext()->IsContextThread());
+  // If we don't have a frame or we are not in Document, some of the SinkIds
+  // won't be initialized. If that's the case, the Worker will initialize it by
+  // itself later.
+  BeginFrameProviderParams begin_frame_provider_params;
+  if (GetExecutionContext()->IsDocument()) {
+    LocalFrame* frame = ToDocument(GetExecutionContext())->GetFrame();
+    WebLayerTreeView* layer_tree_view = nullptr;
+    if (frame) {
+      layer_tree_view =
+          frame->GetPage()->GetChromeClient().GetWebLayerTreeView(frame);
+      begin_frame_provider_params.parent_frame_sink_id =
+          layer_tree_view->GetFrameSinkId();
+    }
+    begin_frame_provider_params.frame_sink_id =
+        Platform::Current()->GenerateFrameSinkId();
+  }
+  return begin_frame_provider_params;
+}
+
 void DedicatedWorker::ContextDestroyed(ExecutionContext*) {
   DCHECK(GetExecutionContext()->IsContextThread());
   if (classic_script_loader_)
@@ -260,23 +281,6 @@ DedicatedWorker::CreateGlobalScopeCreationParams() {
     settings = WorkerSettings::Copy(worker_global_scope->GetWorkerSettings());
   }
 
-  BeginFrameProviderParams begin_frame_provider_params;
-  if (GetExecutionContext()->IsDocument()) {
-    LocalFrame* frame = ToDocument(GetExecutionContext())->GetFrame();
-    WebLayerTreeView* layer_tree_view = nullptr;
-    // TODO(fserb): what to do when there's no frame?
-    if (frame) {
-      layer_tree_view =
-          frame->GetPage()->GetChromeClient().GetWebLayerTreeView(frame);
-      begin_frame_provider_params.parent_frame_sink_id =
-          layer_tree_view->GetFrameSinkId();
-    }
-    begin_frame_provider_params.frame_sink_id =
-        Platform::Current()->GenerateFrameSinkId();
-  } else if (GetExecutionContext()->IsWorkerGlobalScope()) {
-    // TODO(fserb): copies parent/frame sink_id into new worker or reset it.
-  }
-
   ScriptType script_type = (options_.type() == "classic") ? ScriptType::kClassic
                                                           : ScriptType::kModule;
   return std::make_unique<GlobalScopeCreationParams>(
@@ -290,7 +294,7 @@ DedicatedWorker::CreateGlobalScopeCreationParams() {
       module_fetch_coordinator_.Get(),
       ConnectToWorkerInterfaceProvider(GetExecutionContext(),
                                        SecurityOrigin::Create(script_url_)),
-      std::move(begin_frame_provider_params));
+      CreateBeginFrameProviderParams());
 }
 
 const AtomicString& DedicatedWorker::InterfaceName() const {

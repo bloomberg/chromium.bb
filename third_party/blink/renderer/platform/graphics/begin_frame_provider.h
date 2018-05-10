@@ -32,7 +32,7 @@ class PLATFORM_EXPORT BeginFrameProvider
       const BeginFrameProviderParams& begin_frame_provider_params,
       BeginFrameProviderClient*);
 
-  void CreateCompositorFrameSink();
+  void CreateCompositorFrameSinkIfNeeded();
 
   void RequestBeginFrame();
 
@@ -62,17 +62,25 @@ class PLATFORM_EXPORT BeginFrameProvider
     NOTIMPLEMENTED();
   }
 
+  void ResetCompositorFrameSink();
+
   ~BeginFrameProvider() override = default;
 
  private:
+  void OnMojoConnectionError(uint32_t custom_reason,
+                             const std::string& description);
+
   bool needs_begin_frame_;
+  bool requested_needs_begin_frame_;
 
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> cfs_binding_;
   mojo::Binding<mojom::blink::EmbeddedFrameSinkClient> efs_binding_;
-  const viz::FrameSinkId frame_sink_id_;
-  const viz::FrameSinkId parent_frame_sink_id_;
+  viz::FrameSinkId frame_sink_id_;
+  viz::FrameSinkId parent_frame_sink_id_;
   viz::mojom::blink::CompositorFrameSinkPtr compositor_frame_sink_;
   BeginFrameProviderClient* begin_frame_client_;
+
+  base::WeakPtrFactory<BeginFrameProvider> weak_factory_;
 };
 
 }  // namespace blink

@@ -70,9 +70,14 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
 
   void Trace(blink::Visitor*) override;
 
- private:
   DedicatedWorkerObjectProxy& WorkerObjectProxy() const;
 };
+
+DEFINE_TYPE_CASTS(DedicatedWorkerGlobalScope,
+                  ExecutionContext,
+                  context,
+                  context->IsDedicatedWorkerGlobalScope(),
+                  context.IsDedicatedWorkerGlobalScope());
 
 }  // namespace blink
 
