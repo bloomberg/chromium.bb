@@ -37,6 +37,19 @@ CreateLowEntropyProvider(const std::string& client_id) {
       new variations::SHA1EntropyProvider(client_id));
 }
 
+// This experiment is for testing and doesn't control any features. Log it so QA
+// can check whether variations is working.
+// TODO(crbug/841623): Remove this after launch.
+void LogTestExperiment() {
+  static const char* const test_name = "First-WebView-Experiment";
+  base::FieldTrial* test_trial = base::FieldTrialList::Find(test_name);
+  if (test_trial) {
+    LOG(INFO) << test_name << " found, group=" << test_trial->group_name();
+  } else {
+    LOG(INFO) << test_name << " not found";
+  }
+}
+
 }  // anonymous namespace
 
 AwFieldTrialCreator::AwFieldTrialCreator()
@@ -108,6 +121,8 @@ void AwFieldTrialCreator::SetUpFieldTrials() {
       std::vector<std::string>(), CreateLowEntropyProvider(client_id),
       std::make_unique<base::FeatureList>(), aw_field_trials_.get(),
       &ignored_safe_seed_manager);
+
+  LogTestExperiment();
 }
 
 }  // namespace android_webview
