@@ -207,6 +207,15 @@ bool ChromeDesktopImpl::IsNetworkConnectionEnabled() const {
 }
 
 Status ChromeDesktopImpl::QuitImpl() {
+  Status status = devtools_websocket_client_->ConnectIfNecessary();
+  if (status.IsOk()) {
+    status = devtools_websocket_client_->SendCommandAndIgnoreResponse(
+        "Browser.close", base::DictionaryValue());
+    if (status.IsOk() && process_.WaitForExitWithTimeout(
+                             base::TimeDelta::FromSeconds(10), nullptr))
+      return status;
+  }
+
   // If the Chrome session uses a custom user data directory, try sending a
   // SIGTERM signal before SIGKILL, so that Chrome has a chance to write
   // everything back out to the user data directory and exit cleanly. If we're
