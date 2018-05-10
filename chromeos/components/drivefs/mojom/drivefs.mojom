@@ -25,6 +25,9 @@ interface DriveFsDelegate {
   // |access_token| is only valid if |status| is kSuccess.
   GetAccessToken(string client_id, string app_id, array<string> scopes) => (
       AccessTokenStatus status, string access_token);
+
+  // Invoked when the mount is ready for use.
+  OnMounted();
 };
 
 struct DriveFsConfiguration {

@@ -79,10 +79,11 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
             host_->delegate_->CreateMojoConnectionDelegate()),
         pending_token_(base::UnguessableToken::Create()),
         binding_(this) {
-    source_path_ = base::StrCat({kMountScheme, pending_token_.ToString(), "@",
-                                 host_->profile_path_.Append(kDataPath)
-                                     .Append(host_->account_id_.GetGaiaId())
-                                     .value()});
+    source_path_ =
+        base::StrCat({kMountScheme, pending_token_.ToString(), "@",
+                      host_->profile_path_.Append(kDataPath)
+                          .Append(host_->account_id_.GetAccountIdKey())
+                          .value()});
 
     // TODO(sammc): Switch the mount type once a more appropriate mount type
     // exists.
@@ -112,9 +113,12 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
     }
     if (!mount_path_.empty()) {
       chromeos::disks::DiskMountManager::GetInstance()->UnmountPath(
-          mount_path_, chromeos::UNMOUNT_OPTIONS_NONE, {});
+          mount_path_.value(), chromeos::UNMOUNT_OPTIONS_NONE, {});
     }
   }
+
+  bool mounted() const { return mounted_ && !mount_path_.empty(); }
+  const base::FilePath& mount_path() const { return mount_path_; }
 
   // Accepts the mojo connection over |handle|, delegating to
   // |mojo_connection_delegate_|.
@@ -139,7 +143,11 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
     if (error_code != chromeos::MOUNT_ERROR_NONE) {
       return false;
     }
-    mount_path_ = mount_info.mount_path;
+    mount_path_ = base::FilePath(mount_info.mount_path);
+    DCHECK(!mount_info.mount_path.empty());
+    if (mounted_) {
+      OnMounted();
+    }
     return true;
   }
 
@@ -163,6 +171,14 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
         host_->account_id_.GetUserEmail(), {}, kIdentityConsumerId,
         base::BindOnce(&DriveFsHost::MountState::GotChromeAccessToken,
                        base::Unretained(this)));
+  }
+  void OnMounted() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
+    mounted_ = true;
+    if (mount_path_.empty()) {
+      return;
+    }
+    host_->delegate_->OnMounted(mount_path());
   }
 
   void GotChromeAccessToken(const base::Optional<std::string>& access_token,
@@ -210,7 +226,7 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
   std::string source_path_;
 
   // The path where DriveFS is mounted.
-  std::string mount_path_;
+  base::FilePath mount_path_;
 
   // Pending callback for an in-flight GetAccessToken request.
   GetAccessTokenCallback get_access_token_callback_;
@@ -221,6 +237,9 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
   // Mojo connections to the DriveFS process.
   mojom::DriveFsPtr drivefs_;
   mojo::Binding<mojom::DriveFsDelegate> binding_;
+
+  // Whether DriveFS has reported mounting.
+  bool mounted_ = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MountState);
@@ -242,7 +261,8 @@ DriveFsHost::~DriveFsHost() {
 
 bool DriveFsHost::Mount() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (mount_state_ || account_id_.GetAccountType() != AccountType::GOOGLE) {
+  if (mount_state_ || !account_id_.HasAccountIdKey() ||
+      account_id_.GetUserEmail().empty()) {
     return false;
   }
   mount_state_ = std::make_unique<MountState>(this);
@@ -252,6 +272,15 @@ bool DriveFsHost::Mount() {
 void DriveFsHost::Unmount() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   mount_state_.reset();
+}
+
+bool DriveFsHost::IsMounted() const {
+  return mount_state_ && mount_state_->mounted();
+}
+
+const base::FilePath& DriveFsHost::GetMountPath() const {
+  DCHECK(IsMounted());
+  return mount_state_->mount_path();
 }
 
 void DriveFsHost::OnMountEvent(
