@@ -12,7 +12,7 @@ declare_args() {
   debug_devtools = false
 }
 
-# Unhandled Tap enable means Contextual Search aka Touch to Search.
+# Unhandled Tap enable means Contextual Search aka Tap to Search.
 enable_unhandled_tap = is_android
 
 use_default_render_theme = use_aura
