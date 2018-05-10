@@ -4163,8 +4163,8 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
       scale_references(cpi);
     }
     av1_set_quantizer(cm, q);
-    printf("Frame %d/%d: q = %d, frame_type = %d\n", cm->current_video_frame,
-           cm->show_frame, q, cm->frame_type);
+    // printf("Frame %d/%d: q = %d, frame_type = %d\n", cm->current_video_frame,
+    //        cm->show_frame, q, cm->frame_type);
 
     if (loop_count == 0) setup_frame(cpi);
 

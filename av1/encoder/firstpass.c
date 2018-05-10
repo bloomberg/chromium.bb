@@ -3462,8 +3462,8 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // Work out how many bits to allocate for the key frame itself.
   kf_bits = calculate_boost_bits((rc->frames_to_key - 1), rc->kf_boost,
                                  twopass->kf_group_bits);
-  printf("kf boost = %d kf_bits = %d kf_zeromotion_pct = %d\n", rc->kf_boost,
-         kf_bits, twopass->kf_zeromotion_pct);
+  // printf("kf boost = %d kf_bits = %d kf_zeromotion_pct = %d\n", rc->kf_boost,
+  //        kf_bits, twopass->kf_zeromotion_pct);
   twopass->kf_group_bits -= kf_bits;
 
   // Save the bits to spend on the key frame.
