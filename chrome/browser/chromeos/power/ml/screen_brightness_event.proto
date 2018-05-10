@@ -92,6 +92,12 @@ message ScreenBrightnessEvent {
       // Night light temperature percentage if night light mode is enabled. On
       // a scale from 0 to 100.
       optional int32 night_light_temperature_percent = 4;
+
+      // The brightness of the screen prior to the time at which the current
+      // event was logged. If an event is logged periodically, it will be the
+      // same as |Event.brightness|. It is only unset if event is logged due to
+      // brightness change but there is no initial brightness recorded.
+      optional int32 previous_brightness = 5;
     }
 
     optional DeviceSpec device_spec = 1;
@@ -147,6 +153,9 @@ message ScreenBrightnessEvent {
     optional int32 brightness = 1;
     optional Reason reason = 2;
     optional ModelOutcome model_outcome = 3;
+    // Time in seconds since the last event was logged. Unset if there wasn't an
+    // earlier event.
+    optional int32 time_since_last_event_sec = 4;
   }
   optional Features features = 1;
   optional Event event = 2;
