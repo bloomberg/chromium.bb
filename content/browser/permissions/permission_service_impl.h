@@ -67,6 +67,7 @@ class CONTENT_EXPORT PermissionServiceImpl
   blink::mojom::PermissionStatus GetPermissionStatusFromType(
       PermissionType type);
   void ResetPermissionStatus(PermissionType type);
+  void ReceivedBadMessage();
 
   RequestsMap pending_requests_;
   // context_ owns |this|.

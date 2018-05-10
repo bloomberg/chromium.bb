@@ -49,6 +49,9 @@ class CONTENT_EXPORT PermissionServiceContext : public WebContentsObserver {
   GURL GetEmbeddingOrigin() const;
 
   RenderFrameHost* render_frame_host() const;
+  RenderProcessHost* render_process_host() const {
+    return render_process_host_;
+  }
 
  private:
   class PermissionSubscription;
