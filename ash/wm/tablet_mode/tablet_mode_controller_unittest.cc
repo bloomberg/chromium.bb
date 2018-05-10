@@ -254,6 +254,27 @@ TEST_F(TabletModeControllerTest, OpenLidUnstableLidAngle) {
   EXPECT_FALSE(IsTabletModeStarted());
 }
 
+// Verify that suppressing unstable lid angle while opening the lid does not
+// override tablet mode switch on value - if tablet mode switch is on, device
+// should remain in tablet mode.
+TEST_F(TabletModeControllerTest, TabletModeSwitchOnWithOpenUnstableLidAngle) {
+  AttachTickClockForTest();
+
+  SetTabletMode(true /*on*/);
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  OpenLid();
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  // Simulate the correct accelerometer readings.
+  OpenLidToAngle(355.0f);
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  // Simulate the erroneous accelerometer readings.
+  OpenLidToAngle(5.0f);
+  EXPECT_TRUE(IsTabletModeStarted());
+}
+
 // Verify the unstable lid angle is suppressed during closing the lid.
 TEST_F(TabletModeControllerTest, CloseLidUnstableLidAngle) {
   AttachTickClockForTest();
@@ -272,6 +293,24 @@ TEST_F(TabletModeControllerTest, CloseLidUnstableLidAngle) {
   EXPECT_FALSE(IsTabletModeStarted());
 
   CloseLid();
+  EXPECT_FALSE(IsTabletModeStarted());
+}
+
+// Verify that suppressing unstable lid angle when the lid is closed does not
+// override tablet mode switch on value - if tablet mode switch is on, device
+// should remain in tablet mode.
+TEST_F(TabletModeControllerTest, TabletModeSwitchOnWithCloseUnstableLidAngle) {
+  AttachTickClockForTest();
+
+  OpenLid();
+
+  SetTabletMode(true /*on*/);
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  CloseLid();
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  SetTabletMode(false /*on*/);
   EXPECT_FALSE(IsTabletModeStarted());
 }
 
