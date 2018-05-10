@@ -409,7 +409,7 @@ TEST_F(ReportingCacheTest, GetClientsAsValue) {
   const base::TimeTicks expires =
       base::TimeTicks() + base::TimeDelta::FromDays(7);
   SetClient(kOrigin1_, kEndpoint1_, false, kGroup1_, expires);
-  SetClient(kOrigin2_, kEndpoint2_, false, kGroup1_, expires);
+  SetClient(kOrigin2_, kEndpoint2_, true, kGroup1_, expires);
 
   // Add some reports so that we can test the upload counts.
   const ReportingReport* report1a = AddAndReturnReport(
@@ -433,6 +433,7 @@ TEST_F(ReportingCacheTest, GetClientsAsValue) {
             {
               "name": "group1",
               "expires": "604800000",
+              "includeSubdomains": false,
               "endpoints": [
                 {"url": "https://endpoint1/", "priority": 0, "weight": 1,
                  "successful": {"uploads": 1, "reports": 2},
@@ -447,6 +448,7 @@ TEST_F(ReportingCacheTest, GetClientsAsValue) {
             {
               "name": "group1",
               "expires": "604800000",
+              "includeSubdomains": true,
               "endpoints": [
                 {"url": "https://endpoint2/", "priority": 0, "weight": 1,
                  "successful": {"uploads": 0, "reports": 0},
