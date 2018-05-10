@@ -194,4 +194,58 @@ TEST_F(CanvasResourceTest, GpuMemoryBufferSyncTokenRefresh) {
   testing::Mock::VerifyAndClearExpectations(&gl_);
 }
 
+TEST_F(CanvasResourceTest, MakeAcceleratedFromAcceleratedResourceIsNoOp) {
+  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
+
+  SkImageInfo image_info =
+      SkImageInfo::MakeN32(10, 10, kPremul_SkAlphaType, nullptr);
+  sk_sp<SkSurface> surface =
+      SkSurface::MakeRenderTarget(GetGrContext(), SkBudgeted::kYes, image_info);
+
+  testing::Mock::VerifyAndClearExpectations(&gl_);
+
+  EXPECT_TRUE(!!context_provider_wrapper_);
+  scoped_refptr<CanvasResource> resource = CanvasResourceBitmap::Create(
+      StaticBitmapImage::Create(surface->makeImageSnapshot(),
+                                context_provider_wrapper_),
+      nullptr, kLow_SkFilterQuality);
+
+  testing::Mock::VerifyAndClearExpectations(&gl_);
+
+  EXPECT_TRUE(resource->IsAccelerated());
+  scoped_refptr<CanvasResource> new_resource =
+      resource->MakeAccelerated(context_provider_wrapper_);
+
+  testing::Mock::VerifyAndClearExpectations(&gl_);
+
+  EXPECT_EQ(new_resource.get(), resource.get());
+  EXPECT_TRUE(new_resource->IsAccelerated());
+}
+
+TEST_F(CanvasResourceTest, MakeAcceleratedFromRasterResource) {
+  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
+
+  SkImageInfo image_info =
+      SkImageInfo::MakeN32(10, 10, kPremul_SkAlphaType, nullptr);
+  sk_sp<SkSurface> surface = SkSurface::MakeRaster(image_info);
+
+  EXPECT_TRUE(!!context_provider_wrapper_);
+  scoped_refptr<CanvasResource> resource = CanvasResourceBitmap::Create(
+      StaticBitmapImage::Create(surface->makeImageSnapshot(),
+                                context_provider_wrapper_),
+      nullptr, kLow_SkFilterQuality);
+
+  testing::Mock::VerifyAndClearExpectations(&gl_);
+
+  EXPECT_FALSE(resource->IsAccelerated());
+  scoped_refptr<CanvasResource> new_resource =
+      resource->MakeAccelerated(context_provider_wrapper_);
+
+  testing::Mock::VerifyAndClearExpectations(&gl_);
+
+  EXPECT_NE(new_resource.get(), resource.get());
+  EXPECT_FALSE(resource->IsAccelerated());
+  EXPECT_TRUE(new_resource->IsAccelerated());
+}
+
 }  // namespace blink
