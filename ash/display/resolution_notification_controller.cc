@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/resources/grit/ash_resources.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -220,22 +221,17 @@ void ResolutionNotificationController::CreateOrUpdateNotification(
                 base::UTF8ToUTF16(
                     change_info_->current_resolution.size().ToString()));
 
-  std::unique_ptr<Notification> notification =
-      Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, message,
-          timeout_message, gfx::Image(),
-          base::string16(),  // display_source
-          GURL(),
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
-              kNotifierDisplayResolutionChange),
-          data,
-          base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
-              weak_factory_.GetWeakPtr()),
-          kNotificationScreenIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
-  notification->set_priority(message_center::SYSTEM_PRIORITY);
-
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  auto notification = std::make_unique<Notification>(
+      message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, message,
+      timeout_message, bundle.GetImageNamed(IDR_AURA_NOTIFICATION_DISPLAY),
+      base::string16() /* display_source */, GURL(),
+      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+                                 kNotifierDisplayResolutionChange),
+      data,
+      base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
+          weak_factory_.GetWeakPtr()));
+  notification->SetSystemPriority();
   message_center->AddNotification(std::move(notification));
 }
 

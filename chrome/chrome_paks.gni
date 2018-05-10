@@ -59,10 +59,12 @@ template("chrome_repack_percent") {
     if (is_chromeos) {
       sources += [
         "$root_gen_dir/ash/components/resources/ash_components_resources_${percent}_percent.pak",
+        "$root_gen_dir/ash/resources/ash_resources_${percent}_percent.pak",
         "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_${percent}_percent.pak",
       ]
       deps += [
         "//ash/components/resources",
+        "//ash/resources",
         "//ui/chromeos/resources",
       ]
     }

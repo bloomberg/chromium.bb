@@ -137,6 +137,7 @@ def main():
     ui_chromeos_dir = os.path.join(ui_dir, 'chromeos')
     grd_files = [
       os.path.join(ash_base_dir, 'ash_strings.grd'),
+      os.path.join(ash_base_dir, 'resources', 'ash_resources.grd'),
       os.path.join(ash_components_dir, 'ash_components_strings.grd'),
       os.path.join(ash_components_dir, 'resources',
                    'ash_components_resources.grd'),

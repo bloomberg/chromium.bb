@@ -1208,6 +1208,7 @@ component("ash") {
   public_deps = [
     "//ash/public/cpp",
     "//ash/public/cpp/vector_icons",
+    "//ash/resources",
     "//ash/resources/vector_icons",
     "//ash/strings",
     "//ash/wayland",
@@ -1830,6 +1831,7 @@ test("ash_unittests") {
     "//ash/public/cpp",
     "//ash/public/cpp:unit_tests",
     "//ash/public/cpp/vector_icons",
+    "//ash/resources",
     "//ash/resources/vector_icons",
     "//ash/strings",
     "//ash/touch_hud",
@@ -2128,6 +2130,7 @@ static_library("test_support_common") {
     "//ash/components/fast_ink",
     "//ash/public/cpp",
     "//ash/public/interfaces:test_interfaces",
+    "//ash/resources",
     "//base",
     "//base:i18n",
     "//base/test:test_support",
@@ -2229,6 +2232,7 @@ repack("ash_service_resources") {
   output = "$root_out_dir/ash_service_resources.pak"
   sources = [
     "$root_gen_dir/ash/components/resources/ash_components_resources_100_percent.pak",
+    "$root_gen_dir/ash/resources/ash_resources_100_percent.pak",
     "$root_gen_dir/ash/strings/ash_strings_en-US.pak",
     "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_100_percent.pak",
     "$root_gen_dir/ui/chromeos/strings/ui_chromeos_strings_en-US.pak",
@@ -2239,6 +2243,7 @@ repack("ash_service_resources") {
   ]
   deps = [
     "//ash/components/resources",
+    "//ash/resources",
     "//ash/strings",
     "//ui/chromeos/resources",
     "//ui/chromeos/strings",
@@ -2253,12 +2258,14 @@ repack("ash_service_resources_200") {
   output = "$root_out_dir/ash_service_resources_200.pak"
   sources = [
     "$root_gen_dir/ash/components/resources/ash_components_resources_200_percent.pak",
+    "$root_gen_dir/ash/resources/ash_resources_200_percent.pak",
     "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_200_percent.pak",
     "$root_gen_dir/ui/resources/ui_resources_200_percent.pak",
     "$root_gen_dir/ui/views/resources/views_resources_200_percent.pak",
   ]
   deps = [
     "//ash/components/resources",
+    "//ash/resources",
     "//ui/chromeos/resources",
     "//ui/resources",
     "//ui/views/resources",
