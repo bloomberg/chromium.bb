@@ -4,9 +4,8 @@
 
 #include "chrome/browser/chromeos/file_manager/file_manager_browsertest_base.h"
 
-#include <stddef.h>
-
 #include <memory>
+#include <stddef.h>
 
 #include "base/containers/circular_deque.h"
 #include "base/json/json_reader.h"
