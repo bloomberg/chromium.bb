@@ -26,6 +26,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/range/range.h"
 
 using content::NavigationController;
 using content::WebContents;
@@ -34,7 +35,9 @@ using content::WebContents;
 static const int kMinFindWndDistanceFromSelection = 5;
 
 FindBarController::FindBarController(FindBar* find_bar, Browser* browser)
-    : find_bar_(find_bar), browser_(browser) {}
+    : find_bar_(find_bar),
+      browser_(browser),
+      find_bar_platform_helper_(FindBarPlatformHelper::Create(this)) {}
 
 FindBarController::~FindBarController() {
   DCHECK(!web_contents_);
@@ -132,6 +135,10 @@ void FindBarController::ChangeWebContents(WebContents* contents) {
 
   UpdateFindBarForCurrentResult();
   find_bar_->UpdateFindBarForChangedWebContents();
+}
+
+void FindBarController::SetText(base::string16 text) {
+  find_bar_->SetFindTextAndSelectedRange(text, gfx::Range());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
