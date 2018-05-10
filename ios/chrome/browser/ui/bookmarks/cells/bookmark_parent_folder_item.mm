@@ -24,7 +24,7 @@
   self = [super initWithType:type];
   if (self) {
     self.accessibilityIdentifier = @"Change Folder";
-    self.cellClass = [BookmarkParentFolderCell class];
+    self.cellClass = [LegacyBookmarkParentFolderCell class];
   }
   return self;
 }
@@ -34,19 +34,19 @@
 - (void)configureCell:(UITableViewCell*)tableCell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:tableCell withStyler:styler];
-  BookmarkParentFolderCell* cell =
-      base::mac::ObjCCastStrict<BookmarkParentFolderCell>(tableCell);
+  LegacyBookmarkParentFolderCell* cell =
+      base::mac::ObjCCastStrict<LegacyBookmarkParentFolderCell>(tableCell);
   cell.parentFolderNameLabel.text = self.title;
 }
 
 @end
 
-@interface BookmarkParentFolderCell ()
+@interface LegacyBookmarkParentFolderCell ()
 @property(nonatomic, readwrite, strong) UILabel* parentFolderNameLabel;
 @property(nonatomic, strong) UILabel* decorationLabel;
 @end
 
-@implementation BookmarkParentFolderCell
+@implementation LegacyBookmarkParentFolderCell
 
 @synthesize parentFolderNameLabel = _parentFolderNameLabel;
 @synthesize decorationLabel = _decorationLabel;

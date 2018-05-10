@@ -23,7 +23,7 @@
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [BookmarkTextFieldCell class];
+    self.cellClass = [LegacyBookmarkTextFieldCell class];
   }
   return self;
 }
@@ -34,8 +34,8 @@
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:tableCell withStyler:styler];
 
-  BookmarkTextFieldCell* cell =
-      base::mac::ObjCCastStrict<BookmarkTextFieldCell>(tableCell);
+  LegacyBookmarkTextFieldCell* cell =
+      base::mac::ObjCCastStrict<LegacyBookmarkTextFieldCell>(tableCell);
   cell.textField.text = self.text;
   cell.textField.placeholder = self.placeholder;
   cell.textField.tag = self.type;
@@ -58,12 +58,12 @@
 
 @end
 
-@interface BookmarkTextFieldCell ()
+@interface LegacyBookmarkTextFieldCell ()
 @property(nonatomic, readwrite, strong)
     UITextField<TextFieldStyling>* textField;
 @end
 
-@implementation BookmarkTextFieldCell
+@implementation LegacyBookmarkTextFieldCell
 
 @synthesize textField = _textField;
 

@@ -20,8 +20,8 @@ using BookmarkTextFieldItemTest = PlatformTest;
 
 TEST_F(BookmarkTextFieldItemTest, DelegateGetsTextFieldEvents) {
   BookmarkTextFieldItem* item = [[BookmarkTextFieldItem alloc] initWithType:0];
-  BookmarkTextFieldCell* cell =
-      [[BookmarkTextFieldCell alloc] initWithFrame:CGRectZero];
+  LegacyBookmarkTextFieldCell* cell =
+      [[LegacyBookmarkTextFieldCell alloc] initWithFrame:CGRectZero];
   id mockDelegate =
       [OCMockObject mockForProtocol:@protocol(BookmarkTextFieldItemDelegate)];
   ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
@@ -36,8 +36,8 @@ TEST_F(BookmarkTextFieldItemTest, DelegateGetsTextFieldEvents) {
 
 TEST_F(BookmarkTextFieldItemTest, TextFieldGetsText) {
   BookmarkTextFieldItem* item = [[BookmarkTextFieldItem alloc] initWithType:0];
-  BookmarkTextFieldCell* cell =
-      [[BookmarkTextFieldCell alloc] initWithFrame:CGRectZero];
+  LegacyBookmarkTextFieldCell* cell =
+      [[LegacyBookmarkTextFieldCell alloc] initWithFrame:CGRectZero];
   ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
 
   item.text = @"Foo";

@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/legacy/toolbar_controller_constants.h"
@@ -215,7 +216,8 @@ id<GREYMatcher> CloseToolsMenuButton() {
   // Clear the bookmark via the UI.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(kStarLitLabel)]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Delete_action")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkEditDeleteButtonIdentifier)]
       performAction:grey_tap()];
 
   // Verify the bookmark is not in the BookmarkModel.
@@ -1654,7 +1656,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Editor")]
       assertWithMatcher:grey_notNil()];
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Delete Folder")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkFolderEditorDeleteButtonIdentifier)]
       performAction:grey_tap()];
 
   // Wait for Undo toast to go away from screen.
@@ -2068,7 +2072,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Delete it.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Delete Folder")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkFolderEditorDeleteButtonIdentifier)]
       performAction:grey_tap()];
 
   // Wait until it's gone.

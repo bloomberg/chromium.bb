@@ -34,7 +34,7 @@
 
 @end
 
-@interface BookmarkTextFieldCell : UITableViewCell
+@interface LegacyBookmarkTextFieldCell : UITableViewCell
 
 // Text field to display the title or the URL of the bookmark node.
 @property(nonatomic, readonly, strong) UITextField<TextFieldStyling>* textField;

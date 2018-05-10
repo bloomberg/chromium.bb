@@ -16,6 +16,7 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_parent_folder_item.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_text_field_item.h"
@@ -456,7 +457,8 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
                                        style:UIBarButtonItemStylePlain
                                       target:self
                                       action:@selector(deleteFolder)];
-  deleteButton.accessibilityIdentifier = @"Delete Folder";
+  deleteButton.accessibilityIdentifier =
+      kBookmarkFolderEditorDeleteButtonIdentifier;
   deleteButton.tintColor = [UIColor blackColor];
 
   UIBarButtonItem* spaceButton = [[UIBarButtonItem alloc]

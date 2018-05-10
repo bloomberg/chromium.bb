@@ -21,8 +21,8 @@ using BookmarkParentFolderItemTest = PlatformTest;
 TEST_F(BookmarkParentFolderItemTest, LabelGetsTitle) {
   BookmarkParentFolderItem* item =
       [[BookmarkParentFolderItem alloc] initWithType:0];
-  BookmarkParentFolderCell* cell =
-      [[BookmarkParentFolderCell alloc] initWithFrame:CGRectZero];
+  LegacyBookmarkParentFolderCell* cell =
+      [[LegacyBookmarkParentFolderCell alloc] initWithFrame:CGRectZero];
   ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
 
   item.title = @"Foo";

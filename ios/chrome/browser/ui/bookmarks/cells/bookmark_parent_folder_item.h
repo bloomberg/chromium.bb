@@ -17,8 +17,8 @@
 
 @end
 
-// Cell class associated to BookmarkParentFolderItem.
-@interface BookmarkParentFolderCell : UITableViewCell
+// Legacy Cell class associated to BookmarkParentFolderItem.
+@interface LegacyBookmarkParentFolderCell : UITableViewCell
 
 // Label that displays the item's title.
 @property(nonatomic, readonly, strong) UILabel* parentFolderNameLabel;
