@@ -81,11 +81,16 @@ void FaceDetector::OnDetectFaces(
 
       Landmark web_landmark;
       web_landmark.setLocations(locations);
+      // TODO(junwei.fu): Consider using TypeConverter to convert the type of
+      // landmark from Mojo to IDL (https://crbug.com/841649).
       if (landmark->type == shape_detection::mojom::blink::LandmarkType::EYE) {
         web_landmark.setType("eye");
       } else if (landmark->type ==
                  shape_detection::mojom::blink::LandmarkType::MOUTH) {
         web_landmark.setType("mouth");
+      } else if (landmark->type ==
+                 shape_detection::mojom::blink::LandmarkType::NOSE) {
+        web_landmark.setType("nose");
       }
       landmarks.push_back(web_landmark);
     }

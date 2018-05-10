@@ -188,6 +188,10 @@ void FaceDetectionImplMacVision::OnFacesDetected(VNRequest* request,
       face->landmarks.push_back(BuildLandmark(
           outerLips, mojom::LandmarkType::MOUTH, face->bounding_box));
     }
+    if (VNFaceLandmarkRegion2D* nose = observation.landmarks.nose) {
+      face->landmarks.push_back(
+          BuildLandmark(nose, mojom::LandmarkType::NOSE, face->bounding_box));
+    }
 
     results.push_back(std::move(face));
   }

@@ -42,7 +42,12 @@ function FaceDetectorDetectionResultTest(detectionResult, mock) {
                       {type : 'eye', locations : [{x : 4.0, y : 5.0}]},
                       "landmark #1");
   assert_equals(detectionResult[0].landmarks[1].locations.length, 8,
-                "Number of locations along the landmark");
+                "Number of locations along eye");
+  assert_object_equals(detectionResult[1].landmarks[0],
+                      {type : 'nose', locations : [{x : 100.0, y : 50.0}]},
+                      "landmark #2");
+  assert_equals(detectionResult[1].landmarks[1].locations.length, 9,
+                "Number of locations along nose");
 }
 
 function BarcodeDetectorDetectionResultTest(detectionResult, mock) {
