@@ -101,3 +101,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Flaky('Pixel_WebGLSadCanvas', ['mac'], bug=575305)
     self.Flaky('Pixel_WebGLSadCanvas', ['win', 'intel'], bug=575305)
     self.Fail('Pixel_WebGLSadCanvas', ['android', 'nvidia'], bug=575305)
+
+    # TODO(fserb): temporary suppression for new test.
+    self.Fail('Pixel_WorkerRAF_OOPD', bug=833902)

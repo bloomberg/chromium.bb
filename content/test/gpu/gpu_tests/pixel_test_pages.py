@@ -395,6 +395,9 @@ def ExperimentalCanvasFeaturesPages(base_name):
   unaccelerated_args = [
     '--disable-accelerated-2d-canvas',
     '--disable-gpu-compositing']
+  browser_args_oopd = [
+    '--enable-viz-display-compositor',
+    '--enable-experimental-web-platform-features']
 
   return [
     PixelTestPage(
@@ -410,6 +413,14 @@ def ExperimentalCanvasFeaturesPages(base_name):
       test_rect=[0, 0, 350, 350],
       revision=6,
       browser_args=browser_args),
+
+    PixelTestPage(
+      'pixel_worker_requestAnimationFrame.html',
+      base_name + '_WorkerRAF_OOPD',
+      test_rect=[0, 0, 1, 1],
+      revision=1,
+      optional_action='CrashGpuProcess',
+      browser_args=browser_args_oopd),
 
     PixelTestPage(
       'pixel_offscreenCanvas_transferToImageBitmap_main.html',
