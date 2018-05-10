@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/assistant/ash_assistant_controller.h"
+#include "ash/assistant/assistant_controller.h"
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_ui_element.h"
@@ -14,7 +14,7 @@
 
 namespace ash {
 
-AshAssistantController::AshAssistantController()
+AssistantController::AssistantController()
     : assistant_controller_binding_(this),
       assistant_event_subscriber_binding_(this),
       assistant_bubble_(std::make_unique<AssistantBubble>(this)) {
@@ -22,7 +22,7 @@ AshAssistantController::AshAssistantController()
   Shell::Get()->highlighter_controller()->AddObserver(this);
 }
 
-AshAssistantController::~AshAssistantController() {
+AssistantController::~AssistantController() {
   Shell::Get()->highlighter_controller()->RemoveObserver(this);
   RemoveInteractionModelObserver(this);
 
@@ -30,12 +30,12 @@ AshAssistantController::~AshAssistantController() {
   assistant_event_subscriber_binding_.Close();
 }
 
-void AshAssistantController::BindRequest(
-    mojom::AshAssistantControllerRequest request) {
+void AssistantController::BindRequest(
+    mojom::AssistantControllerRequest request) {
   assistant_controller_binding_.Bind(std::move(request));
 }
 
-void AshAssistantController::SetAssistant(
+void AssistantController::SetAssistant(
     chromeos::assistant::mojom::AssistantPtr assistant) {
   assistant_ = std::move(assistant);
 
@@ -45,12 +45,12 @@ void AshAssistantController::SetAssistant(
   assistant_->AddAssistantEventSubscriber(std::move(ptr));
 }
 
-void AshAssistantController::SetAssistantCardRenderer(
+void AssistantController::SetAssistantCardRenderer(
     mojom::AssistantCardRendererPtr assistant_card_renderer) {
   assistant_card_renderer_ = std::move(assistant_card_renderer);
 }
 
-void AshAssistantController::RenderCard(
+void AssistantController::RenderCard(
     const base::UnguessableToken& id_token,
     mojom::AssistantCardParamsPtr params,
     mojom::AssistantCardRenderer::RenderCallback callback) {
@@ -70,29 +70,28 @@ void AshAssistantController::RenderCard(
                                    std::move(callback));
 }
 
-void AshAssistantController::ReleaseCard(
-    const base::UnguessableToken& id_token) {
+void AssistantController::ReleaseCard(const base::UnguessableToken& id_token) {
   DCHECK(assistant_card_renderer_);
   assistant_card_renderer_->Release(id_token);
 }
 
-void AshAssistantController::ReleaseCards(
+void AssistantController::ReleaseCards(
     const std::vector<base::UnguessableToken>& id_tokens) {
   DCHECK(assistant_card_renderer_);
   assistant_card_renderer_->ReleaseAll(id_tokens);
 }
 
-void AshAssistantController::AddInteractionModelObserver(
+void AssistantController::AddInteractionModelObserver(
     AssistantInteractionModelObserver* observer) {
   assistant_interaction_model_.AddObserver(observer);
 }
 
-void AshAssistantController::RemoveInteractionModelObserver(
+void AssistantController::RemoveInteractionModelObserver(
     AssistantInteractionModelObserver* observer) {
   assistant_interaction_model_.RemoveObserver(observer);
 }
 
-void AshAssistantController::StartInteraction() {
+void AssistantController::StartInteraction() {
   // TODO(dmblack): Instruct underlying service to start listening if current
   // input modality is VOICE.
   if (assistant_interaction_model_.interaction_state() ==
@@ -101,14 +100,14 @@ void AshAssistantController::StartInteraction() {
   }
 }
 
-void AshAssistantController::StopInteraction() {
+void AssistantController::StopInteraction() {
   if (assistant_interaction_model_.interaction_state() !=
       InteractionState::kInactive) {
     OnInteractionDismissed();
   }
 }
 
-void AshAssistantController::ToggleInteraction() {
+void AssistantController::ToggleInteraction() {
   if (assistant_interaction_model_.interaction_state() ==
       InteractionState::kInactive) {
     StartInteraction();
@@ -117,7 +116,7 @@ void AshAssistantController::ToggleInteraction() {
   }
 }
 
-void AshAssistantController::OnInteractionStateChanged(
+void AssistantController::OnInteractionStateChanged(
     InteractionState interaction_state) {
   if (interaction_state == InteractionState::kInactive) {
     assistant_interaction_model_.ClearInteraction();
@@ -128,7 +127,7 @@ void AshAssistantController::OnInteractionStateChanged(
   }
 }
 
-void AshAssistantController::OnHighlighterEnabledChanged(bool enabled) {
+void AssistantController::OnHighlighterEnabledChanged(bool enabled) {
   // TODO(warx): add a reason enum to distinguish the case of deselecting the
   // tool and done with a stylus selection.
   assistant_interaction_model_.SetInputModality(InputModality::kStylus);
@@ -136,15 +135,14 @@ void AshAssistantController::OnHighlighterEnabledChanged(bool enabled) {
       enabled ? InteractionState::kActive : InteractionState::kInactive);
 }
 
-void AshAssistantController::OnInteractionStarted() {
+void AssistantController::OnInteractionStarted() {
   assistant_interaction_model_.SetInteractionState(InteractionState::kActive);
 }
 
-void AshAssistantController::OnInteractionFinished(
-    chromeos::assistant::mojom::AssistantInteractionResolution resolution) {
-}
+void AssistantController::OnInteractionFinished(
+    chromeos::assistant::mojom::AssistantInteractionResolution resolution) {}
 
-void AshAssistantController::OnInteractionDismissed() {
+void AssistantController::OnInteractionDismissed() {
   assistant_interaction_model_.SetInteractionState(InteractionState::kInactive);
 
   // When the user-facing interaction is dismissed, we instruct the service to
@@ -153,7 +151,7 @@ void AshAssistantController::OnInteractionDismissed() {
   assistant_->StopActiveInteraction();
 }
 
-void AshAssistantController::OnDialogPlateContentsChanged(
+void AssistantController::OnDialogPlateContentsChanged(
     const std::string& text) {
   if (text.empty()) {
     // Note: This does not open the mic. It only updates the input modality to
@@ -175,7 +173,7 @@ void AshAssistantController::OnDialogPlateContentsChanged(
   }
 }
 
-void AshAssistantController::OnDialogPlateContentsCommitted(
+void AssistantController::OnDialogPlateContentsCommitted(
     const std::string& text) {
   Query query;
   query.high_confidence_text = text;
@@ -191,12 +189,12 @@ void AshAssistantController::OnDialogPlateContentsCommitted(
   assistant_->SendTextQuery(text);
 }
 
-void AshAssistantController::OnHtmlResponse(const std::string& response) {
+void AssistantController::OnHtmlResponse(const std::string& response) {
   assistant_interaction_model_.AddUiElement(
       std::make_unique<AssistantCardElement>(response));
 }
 
-void AshAssistantController::OnSuggestionChipPressed(const std::string& text) {
+void AssistantController::OnSuggestionChipPressed(const std::string& text) {
   Query query;
   query.high_confidence_text = text;
 
@@ -207,46 +205,46 @@ void AshAssistantController::OnSuggestionChipPressed(const std::string& text) {
   assistant_->SendTextQuery(text);
 }
 
-void AshAssistantController::OnSuggestionsResponse(
+void AssistantController::OnSuggestionsResponse(
     const std::vector<std::string>& response) {
   assistant_interaction_model_.AddSuggestions(response);
 }
 
-void AshAssistantController::OnTextResponse(const std::string& response) {
+void AssistantController::OnTextResponse(const std::string& response) {
   assistant_interaction_model_.AddUiElement(
       std::make_unique<AssistantTextElement>(response));
 }
 
-void AshAssistantController::OnSpeechRecognitionStarted() {
+void AssistantController::OnSpeechRecognitionStarted() {
   assistant_interaction_model_.ClearInteraction();
   assistant_interaction_model_.SetInputModality(InputModality::kVoice);
   assistant_interaction_model_.SetMicState(MicState::kOpen);
 }
 
-void AshAssistantController::OnSpeechRecognitionIntermediateResult(
+void AssistantController::OnSpeechRecognitionIntermediateResult(
     const std::string& high_confidence_text,
     const std::string& low_confidence_text) {
   assistant_interaction_model_.SetQuery(
       {high_confidence_text, low_confidence_text});
 }
 
-void AshAssistantController::OnSpeechRecognitionEndOfUtterance() {
+void AssistantController::OnSpeechRecognitionEndOfUtterance() {
   assistant_interaction_model_.SetMicState(MicState::kClosed);
 }
 
-void AshAssistantController::OnSpeechRecognitionFinalResult(
+void AssistantController::OnSpeechRecognitionFinalResult(
     const std::string& final_result) {
   Query query;
   query.high_confidence_text = final_result;
   assistant_interaction_model_.SetQuery(query);
 }
 
-void AshAssistantController::OnSpeechLevelUpdated(float speech_level) {
+void AssistantController::OnSpeechLevelUpdated(float speech_level) {
   // TODO(dmblack): Handle.
   NOTIMPLEMENTED();
 }
 
-void AshAssistantController::OnOpenUrlResponse(const GURL& url) {
+void AssistantController::OnOpenUrlResponse(const GURL& url) {
   Shell::Get()->shell_delegate()->OpenUrlFromArc(url);
   StopInteraction();
 }

@@ -12,13 +12,13 @@
 
 namespace ash {
 
-class AshAssistantController;
+class AssistantController;
 
 class DialogPlate : public views::View,
                     public views::TextfieldController,
                     public AssistantInteractionModelObserver {
  public:
-  explicit DialogPlate(AshAssistantController* assistant_controller);
+  explicit DialogPlate(AssistantController* assistant_controller);
   ~DialogPlate() override;
 
   // views::View:
@@ -38,7 +38,7 @@ class DialogPlate : public views::View,
   void InitLayout();
   void UpdateIcon();
 
-  AshAssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantController* const assistant_controller_;  // Owned by Shell.
   views::Textfield* textfield_;  // Owned by view hierarchy.
   views::View* icon_;  // Owned by view hierarchy.
 

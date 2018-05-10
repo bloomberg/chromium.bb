@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/public/interfaces/ash_assistant_controller.mojom.h"
+#include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -173,7 +173,7 @@ void Service::GetAccessTokenCallback(const base::Optional<std::string>& token,
               task_runner->PostTask(FROM_HERE, std::move(callback));
             },
             main_thread_task_runner_,
-            base::BindOnce(&Service::FinalizeAssistantManangerService,
+            base::BindOnce(&Service::FinalizeAssistantManagerService,
                            weak_ptr_factory_.GetWeakPtr())));
     DVLOG(1) << "Request Assistant start";
   } else {
@@ -184,12 +184,12 @@ void Service::GetAccessTokenCallback(const base::Optional<std::string>& token,
                               this, &Service::RequestAccessToken);
 }
 
-void Service::FinalizeAssistantManangerService() {
+void Service::FinalizeAssistantManagerService() {
   DCHECK(assistant_manager_service_->GetState() ==
          AssistantManagerService::State::RUNNING);
 
   // Bind to Assistant controller in ash.
-  ash::mojom::AshAssistantControllerPtr assistant_controller;
+  ash::mojom::AssistantControllerPtr assistant_controller;
   context()->connector()->BindInterface(ash::mojom::kServiceName,
                                         &assistant_controller);
   mojom::AssistantPtr ptr;

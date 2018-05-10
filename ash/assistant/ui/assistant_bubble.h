@@ -15,7 +15,7 @@ class Widget;
 
 namespace ash {
 
-class AshAssistantController;
+class AssistantController;
 
 namespace {
 class AssistantContainerView;
@@ -24,7 +24,7 @@ class AssistantContainerView;
 class AssistantBubble : public views::WidgetObserver,
                         public AssistantInteractionModelObserver {
  public:
-  explicit AssistantBubble(AshAssistantController* assistant_controller);
+  explicit AssistantBubble(AssistantController* assistant_controller);
   ~AssistantBubble() override;
 
   // views::WidgetObserver:
@@ -38,7 +38,7 @@ class AssistantBubble : public views::WidgetObserver,
   void Show();
   void Dismiss();
 
-  AshAssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantController* const assistant_controller_;  // Owned by Shell.
 
   // Owned by view hierarchy.
   AssistantContainerView* container_view_ = nullptr;

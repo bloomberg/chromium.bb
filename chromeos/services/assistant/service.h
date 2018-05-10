@@ -86,7 +86,7 @@ class Service : public service_manager::Service,
 
   void UpdateListeningState();
 
-  void FinalizeAssistantManangerService();
+  void FinalizeAssistantManagerService();
 
   service_manager::BinderRegistry registry_;
 

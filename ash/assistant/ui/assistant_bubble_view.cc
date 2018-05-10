@@ -4,7 +4,7 @@
 
 #include "ash/assistant/ui/assistant_bubble_view.h"
 
-#include "ash/assistant/ash_assistant_controller.h"
+#include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/ui/dialog_plate.h"
@@ -154,7 +154,7 @@ class InteractionLabel : public views::View {
     }
   }
 
-  // Owned by AshAssistantController.
+  // Owned by AssistantController.
   const AssistantInteractionModel* const assistant_interaction_model_;
   std::unique_ptr<gfx::RenderText> render_text_;
 
@@ -354,7 +354,7 @@ class SuggestionsContainer : public views::View {
 // AssistantBubbleView ---------------------------------------------------------
 
 AssistantBubbleView::AssistantBubbleView(
-    AshAssistantController* assistant_controller)
+    AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
       interaction_container_(
           new InteractionContainer(assistant_controller->interaction_model())),

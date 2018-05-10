@@ -21,8 +21,8 @@ class BoxLayout;
 
 namespace ash {
 
-class AshAssistantController;
 class AssistantCardElement;
+class AssistantController;
 class AssistantTextElement;
 class AssistantUiElement;
 class DialogPlate;
@@ -37,7 +37,7 @@ class AssistantBubbleView : public views::View,
                             public AssistantInteractionModelObserver,
                             public app_list::SuggestionChipListener {
  public:
-  explicit AssistantBubbleView(AshAssistantController* assistant_controller);
+  explicit AssistantBubbleView(AssistantController* assistant_controller);
   ~AssistantBubbleView() override;
 
   // views::View:
@@ -75,7 +75,7 @@ class AssistantBubbleView : public views::View,
   void OnReleaseCards();
   void OnTextAdded(const AssistantTextElement* text_element);
 
-  AshAssistantController* assistant_controller_;  // Owned by Shell.
+  AssistantController* assistant_controller_;    // Owned by Shell.
   InteractionContainer* interaction_container_;  // Owned by view hierarchy.
   UiElementContainer* ui_element_container_;     // Owned by view hierarchy.
   SuggestionsContainer* suggestions_container_;  // Owned by view hierarchy.
