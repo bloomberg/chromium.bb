@@ -45,11 +45,13 @@ public class FullscreenHtmlApiHandler {
     private final Handler mHandler;
     private final FullscreenHtmlApiDelegate mDelegate;
 
-    // We still need this since we are setting fullscreen UI state on the WebContents's
-    // container view, and a Tab can change to have null web contents, i.e., if you navigate
-    // to a native page.
+    // We need to cache WebContents/ContentView since we are setting fullscreen UI state on
+    // the WebContents's container view, and a Tab can change to have null web contents/
+    // content view, i.e., if you navigate to a native page.
     @Nullable
     private WebContents mWebContentsInFullscreen;
+    @Nullable
+    private View mContentViewInFullscreen;
     @Nullable private Tab mTabInFullscreen;
     private boolean mIsPersistentMode;
     private FullscreenOptions mFullscreenOptions;
@@ -113,7 +115,8 @@ public class FullscreenHtmlApiHandler {
             final WebContents webContents = fullscreenHtmlApiHandler.mWebContentsInFullscreen;
             if (webContents == null) return;
 
-            final View contentView = fullscreenHtmlApiHandler.mTabInFullscreen.getContentView();
+            final View contentView = fullscreenHtmlApiHandler.mContentViewInFullscreen;
+            if (contentView == null) return;
             int systemUiVisibility = contentView.getSystemUiVisibility();
 
             switch (msg.what) {
@@ -213,6 +216,7 @@ public class FullscreenHtmlApiHandler {
             }
         }
         mWebContentsInFullscreen = null;
+        mContentViewInFullscreen = null;
         mTabInFullscreen = null;
         mFullscreenOptions = null;
     }
@@ -319,6 +323,7 @@ public class FullscreenHtmlApiHandler {
         contentView.requestLayout();
 
         mWebContentsInFullscreen = webContents;
+        mContentViewInFullscreen = contentView;
         mTabInFullscreen = tab;
     }
 
