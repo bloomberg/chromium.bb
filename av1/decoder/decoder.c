@@ -286,6 +286,15 @@ static void swap_frame_buffers(AV1Decoder *pbi) {
 
     unlock_buffer_pool(pool);
     cm->frame_to_show = get_frame_new_buffer(cm);
+
+    // For now, we only extend the frame borders when the whole frame is
+    // decoded. Later, if needed, extend the border for the decoded tile on the
+    // frame border.
+    if (pbi->dec_tile_row == -1 && pbi->dec_tile_col == -1)
+      // TODO(debargha): Fix encoder side mv range, so that we can use the
+      // inner border extension. As of now use the larger extension.
+      // aom_extend_frame_inner_borders(cm->frame_to_show, av1_num_planes(cm));
+      aom_extend_frame_borders(cm->frame_to_show, av1_num_planes(cm));
   }
 
   pbi->hold_ref_buf = 0;
@@ -304,7 +313,6 @@ static void swap_frame_buffers(AV1Decoder *pbi) {
 int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
                                 const uint8_t **psource) {
   AV1_COMMON *volatile const cm = &pbi->common;
-  volatile const int num_planes = av1_num_planes(cm);
   BufferPool *volatile const pool = cm->buffer_pool;
   RefCntBuffer *volatile const frame_bufs = cm->buffer_pool->frame_bufs;
   const uint8_t *source = *psource;
@@ -407,15 +415,6 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
 #endif
 
   swap_frame_buffers(pbi);
-
-  // For now, we only extend the frame borders when the whole frame is decoded.
-  // Later, if needed, extend the border for the decoded tile on the frame
-  // border.
-  if (pbi->dec_tile_row == -1 && pbi->dec_tile_col == -1)
-    // TODO(debargha): Fix encoder side mv range, so that we can use the
-    // inner border extension. As of now use the larger extension.
-    // aom_extend_frame_inner_borders(cm->frame_to_show, num_planes);
-    aom_extend_frame_borders(cm->frame_to_show, num_planes);
 
   aom_clear_system_state();
 

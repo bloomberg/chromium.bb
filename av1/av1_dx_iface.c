@@ -459,7 +459,7 @@ static INLINE void check_resync(aom_codec_alg_priv_t *const ctx,
 }
 
 static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
-                                  const uint8_t **data, unsigned int data_sz,
+                                  const uint8_t **data, uint64_t data_sz,
                                   void *user_priv) {
   const AVxWorkerInterface *const winterface = aom_get_worker_interface();
 
@@ -469,8 +469,8 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
   if (!ctx->si.h) {
     int is_intra_only = 0;
     ctx->si.is_annexb = ctx->is_annexb;
-    const aom_codec_err_t res =
-        decoder_peek_si_internal(*data, data_sz, &ctx->si, &is_intra_only);
+    const aom_codec_err_t res = decoder_peek_si_internal(
+        *data, (unsigned int)data_sz, &ctx->si, &is_intra_only);
     if (res != AOM_CODEC_OK) return res;
 
     if (!ctx->si.is_kf && !is_intra_only) return AOM_CODEC_ERROR;
@@ -514,8 +514,6 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
   const uint8_t *data_start = data;
   const uint8_t *const data_end = data + data_sz;
   aom_codec_err_t res = AOM_CODEC_OK;
-  uint32_t frame_sizes[8];
-  int frame_count = 0;
 
   if (data == NULL && data_sz == 0) {
     ctx->flushed = 1;
@@ -543,45 +541,28 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
   }
 
   // Decode in serial mode.
-  if (frame_count > 0) {
-    int i;
-
-    for (i = 0; i < frame_count; ++i) {
-      const uint8_t *data_start_copy = data_start;
-      const uint32_t frame_size = frame_sizes[i];
-      if (data_start < data || frame_size > (uint32_t)(data_end - data_start)) {
-        set_error_detail(ctx, "Invalid frame size in index");
+  while (data_start < data_end) {
+    uint64_t frame_size;
+    if (ctx->is_annexb) {
+      // read the size of this frame unit
+      size_t length_of_size;
+      if (aom_uleb_decode(data_start, (size_t)(data_end - data_start),
+                          &frame_size, &length_of_size) != 0) {
         return AOM_CODEC_CORRUPT_FRAME;
       }
-
-      res = decode_one(ctx, &data_start_copy, frame_size, user_priv);
-      if (res != AOM_CODEC_OK) return res;
-
-      data_start += frame_size;
+      data_start += length_of_size;
+    } else {
+      frame_size = (uint64_t)(data_end - data_start);
     }
-  } else {
+
+    res = decode_one(ctx, &data_start, frame_size, user_priv);
+    if (res != AOM_CODEC_OK) return res;
+
+    // Allow extra zero bytes after the frame end
     while (data_start < data_end) {
-      if (ctx->is_annexb) {
-        // read the size of this frame unit
-        size_t length_of_size;
-        uint64_t size_of_frame_unit;
-        if (aom_uleb_decode(data_start, (uint32_t)(data_end - data_start),
-                            &size_of_frame_unit, &length_of_size) != 0) {
-          return AOM_CODEC_CORRUPT_FRAME;
-        }
-        data_start += length_of_size;
-      }
-
-      const uint32_t frame_size = (uint32_t)(data_end - data_start);
-      res = decode_one(ctx, &data_start, frame_size, user_priv);
-      if (res != AOM_CODEC_OK) return res;
-
-      // Account for suboptimal termination by the encoder.
-      while (data_start < data_end) {
-        const uint8_t marker = data_start[0];
-        if (marker) break;
-        ++data_start;
-      }
+      const uint8_t marker = data_start[0];
+      if (marker) break;
+      ++data_start;
     }
   }
 
