@@ -74,18 +74,6 @@ using content::BrowserThread;
 
 namespace extensions {
 
-namespace {
-
-// Used in histograms; do not change order.
-enum OffStoreInstallDecision {
-  OnStoreInstall,
-  OffStoreInstallAllowed,
-  OffStoreInstallDisallowed,
-  NumOffStoreInstallDecision
-};
-
-}  // namespace
-
 // static
 scoped_refptr<CrxInstaller> CrxInstaller::CreateSilent(
     ExtensionService* frontend) {
@@ -395,34 +383,17 @@ CrxInstallError CrxInstaller::AllowInstall(const Extension* extension) {
         l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_NOT_ENABLED));
   }
 
-  if (install_cause_ == extension_misc::INSTALL_CAUSE_USER_DOWNLOAD) {
-    // TODO(devlin): It appears that these histograms are never logged. We
-    // should either add them to histograms.xml or delete them.
-    const char kHistogramName[] = "Extensions.OffStoreInstallDecisionHard";
-    if (is_gallery_install()) {
-      UMA_HISTOGRAM_ENUMERATION(kHistogramName,
-                                OffStoreInstallDecision::OnStoreInstall,
-                                NumOffStoreInstallDecision);
-    } else if (off_store_install_allow_reason_ != OffStoreInstallDisallowed) {
-      UMA_HISTOGRAM_ENUMERATION(kHistogramName,
-                                OffStoreInstallDecision::OffStoreInstallAllowed,
-                                NumOffStoreInstallDecision);
-      UMA_HISTOGRAM_ENUMERATION("Extensions.OffStoreInstallAllowReason",
-                                off_store_install_allow_reason_,
-                                NumOffStoreInstallAllowReasons);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION(
-          kHistogramName, OffStoreInstallDecision::OffStoreInstallDisallowed,
-          NumOffStoreInstallDecision);
-      // Don't delete source in this case so that the user can install
-      // manually if they want.
-      delete_source_ = false;
-      did_handle_successfully_ = false;
+  if (install_cause_ == extension_misc::INSTALL_CAUSE_USER_DOWNLOAD &&
+      !is_gallery_install() &&
+      off_store_install_allow_reason_ == OffStoreInstallDisallowed) {
+    // Don't delete source in this case so that the user can install
+    // manually if they want.
+    delete_source_ = false;
+    did_handle_successfully_ = false;
 
-      return CrxInstallError(
-          CrxInstallError::ERROR_OFF_STORE,
-          l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_DISALLOWED_ON_SITE));
-    }
+    return CrxInstallError(
+        CrxInstallError::ERROR_OFF_STORE,
+        l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_DISALLOWED_ON_SITE));
   }
 
   if (extension_->is_app()) {
