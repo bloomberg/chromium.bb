@@ -157,7 +157,6 @@ component("net") {
     "cert/asn1_util.h",
     "cert/cert_database.cc",
     "cert/cert_database.h",
-    "cert/cert_database_stub.cc",
     "cert/cert_status_flags.cc",
     "cert/cert_status_flags.h",
     "cert/cert_status_flags_list.h",
@@ -513,11 +512,7 @@ component("net") {
       "base/winsock_util.h",
       "cert/caching_cert_verifier.cc",
       "cert/caching_cert_verifier.h",
-      "cert/cert_database_android.cc",
-      "cert/cert_database_ios.cc",
       "cert/cert_database_mac.cc",
-      "cert/cert_database_nss.cc",
-      "cert/cert_database_win.cc",
       "cert/cert_net_fetcher.cc",
       "cert/cert_net_fetcher.h",
       "cert/cert_verify_proc.cc",
@@ -1902,10 +1897,7 @@ component("net") {
     }
 
     if (!is_nacl) {
-      sources -= [
-        "base/network_interfaces_nacl.cc",
-        "cert/cert_database_stub.cc",
-      ]
+      sources -= [ "base/network_interfaces_nacl.cc" ]
     }
 
     # Use getifaddrs() on POSIX platforms, except Linux and Android.
@@ -1922,7 +1914,6 @@ component("net") {
 
     if (!use_nss_certs) {
       sources -= [
-        "cert/cert_database_nss.cc",
         "cert/internal/trust_store_nss.cc",
         "cert/internal/trust_store_nss.h",
         "cert/known_roots_nss.cc",
@@ -2045,7 +2036,6 @@ component("net") {
       sources += [
         "base/network_interfaces_fuchsia.cc",
         "base/platform_mime_util_fuchsia.cc",
-        "cert/cert_database_fuchsia.cc",
         "cert/test_root_certs_fuchsia.cc",
       ]
       deps += [ "//third_party/fuchsia-sdk:netstack" ]

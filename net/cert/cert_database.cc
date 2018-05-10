@@ -29,4 +29,13 @@ void CertDatabase::NotifyObserversCertDBChanged() {
   observer_list_->Notify(FROM_HERE, &Observer::OnCertDBChanged);
 }
 
+CertDatabase::CertDatabase()
+    : observer_list_(new base::ObserverListThreadSafe<Observer>) {}
+
+CertDatabase::~CertDatabase() {
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  ReleaseNotifier();
+#endif
+}
+
 }  // namespace net
