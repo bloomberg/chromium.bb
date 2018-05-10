@@ -692,6 +692,19 @@ void NetworkContext::ClearChannelIds(base::Time start_time,
                                      base::Time end_time,
                                      mojom::ClearDataFilterPtr filter,
                                      ClearChannelIdsCallback callback) {
+  net::ChannelIDService* channel_id_service =
+      url_request_context_->channel_id_service();
+  if (!channel_id_service) {
+    std::move(callback).Run();
+    return;
+  }
+  net::ChannelIDStore* channel_id_store =
+      channel_id_service->GetChannelIDStore();
+  if (!channel_id_store) {
+    std::move(callback).Run();
+    return;
+  }
+
   base::RepeatingCallback<bool(const std::string& channel_id_server_id)>
       filter_predicate;
   if (filter) {
@@ -708,14 +721,12 @@ void NetworkContext::ClearChannelIds(base::Time start_time,
         base::BindRepeating([](const std::string&) { return true; });
   }
 
-  url_request_context_->channel_id_service()
-      ->GetChannelIDStore()
-      ->DeleteForDomainsCreatedBetween(
-          std::move(filter_predicate), start_time, end_time,
-          base::BindOnce(
-              &OnClearedChannelIds,
-              base::RetainedRef(url_request_context_->ssl_config_service()),
-              std::move(callback)));
+  channel_id_store->DeleteForDomainsCreatedBetween(
+      std::move(filter_predicate), start_time, end_time,
+      base::BindOnce(
+          &OnClearedChannelIds,
+          base::RetainedRef(url_request_context_->ssl_config_service()),
+          std::move(callback)));
 }
 
 void NetworkContext::ClearHttpAuthCache(base::Time start_time,

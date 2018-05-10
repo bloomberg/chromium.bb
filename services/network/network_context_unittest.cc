@@ -795,6 +795,7 @@ TEST_F(NetworkContextTest, MultipleClearHttpCacheCalls) {
 TEST_F(NetworkContextTest, ClearChannelIds) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
+  ASSERT_TRUE(network_context->url_request_context()->channel_id_service());
 
   net::ChannelIDStore* store = network_context->url_request_context()
                                    ->channel_id_service()
@@ -820,6 +821,7 @@ TEST_F(NetworkContextTest, ClearChannelIds) {
 TEST_F(NetworkContextTest, ClearEmptyChannelIds) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
+  ASSERT_TRUE(network_context->url_request_context()->channel_id_service());
 
   net::ChannelIDStore* store = network_context->url_request_context()
                                    ->channel_id_service()
@@ -846,6 +848,7 @@ void GetAllChannelIdsCallback(
 TEST_F(NetworkContextTest, ClearChannelIdsWithKeepFilter) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
+  ASSERT_TRUE(network_context->url_request_context()->channel_id_service());
 
   net::ChannelIDStore* store = network_context->url_request_context()
                                    ->channel_id_service()
@@ -881,6 +884,7 @@ TEST_F(NetworkContextTest, ClearChannelIdsWithKeepFilter) {
 TEST_F(NetworkContextTest, ClearChannelIdsWithDeleteFilter) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
+  ASSERT_TRUE(network_context->url_request_context()->channel_id_service());
 
   net::ChannelIDStore* store = network_context->url_request_context()
                                    ->channel_id_service()
@@ -916,6 +920,7 @@ TEST_F(NetworkContextTest, ClearChannelIdsWithDeleteFilter) {
 TEST_F(NetworkContextTest, ClearChannelIdsWithTimeRange) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
+  ASSERT_TRUE(network_context->url_request_context()->channel_id_service());
 
   net::ChannelIDStore* store = network_context->url_request_context()
                                    ->channel_id_service()
@@ -955,6 +960,7 @@ TEST_F(NetworkContextTest, ClearChannelIdsWithTimeRange) {
 TEST_F(NetworkContextTest, ClearChannelIdTriggersSslChangeNotification) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
+  ASSERT_TRUE(network_context->url_request_context()->channel_id_service());
 
   network_context->url_request_context()->ssl_config_service()->AddObserver(
       this);
@@ -968,6 +974,18 @@ TEST_F(NetworkContextTest, ClearChannelIdTriggersSslChangeNotification) {
   run_loop.Run();
 
   EXPECT_EQ(1, ssl_config_changed_count_);
+}
+
+TEST_F(NetworkContextTest, ClearChannelIdWithNoService) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+  network_context->url_request_context()->set_channel_id_service(nullptr);
+
+  base::RunLoop run_loop;
+  network_context->ClearChannelIds(base::Time(), base::Time(),
+                                   nullptr /* filter */,
+                                   base::BindOnce(run_loop.QuitClosure()));
+  run_loop.Run();
 }
 
 TEST_F(NetworkContextTest, ClearHttpAuthCache) {
