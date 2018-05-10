@@ -12,20 +12,17 @@
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
-#include "chrome/test/chromedriver/net/port_server.h"
 
 ChromeAndroidImpl::ChromeAndroidImpl(
     std::unique_ptr<DevToolsHttpClient> http_client,
     std::unique_ptr<DevToolsClient> websocket_client,
     std::vector<std::unique_ptr<DevToolsEventListener>>
         devtools_event_listeners,
-    std::unique_ptr<PortReservation> port_reservation,
     std::string page_load_strategy,
     std::unique_ptr<Device> device)
     : ChromeImpl(std::move(http_client),
                  std::move(websocket_client),
                  std::move(devtools_event_listeners),
-                 std::move(port_reservation),
                  page_load_strategy),
       device_(std::move(device)) {}
 

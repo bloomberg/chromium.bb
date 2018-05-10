@@ -28,8 +28,8 @@ class AdbImpl : public Adb {
   // Overridden from Adb:
   Status GetDevices(std::vector<std::string>* devices) override;
   Status ForwardPort(const std::string& device_serial,
-                     int local_port,
-                     const std::string& remote_abstract) override;
+                     const std::string& remote_abstract,
+                     int* local_port_output) override;
   Status SetCommandLineFile(const std::string& device_serial,
                             const std::string& command_line_file,
                             const std::string& exec_name,

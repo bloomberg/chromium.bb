@@ -22,16 +22,12 @@ class FilePath;
 
 class Chrome;
 class DeviceManager;
-class PortManager;
-class PortServer;
 class Status;
 class URLRequestContextGetter;
 
 Status LaunchChrome(URLRequestContextGetter* context_getter,
                     const SyncWebSocketFactory& socket_factory,
                     DeviceManager* device_manager,
-                    PortServer* port_server,
-                    PortManager* port_manager,
                     const Capabilities& capabilities,
                     std::vector<std::unique_ptr<DevToolsEventListener>>
                         devtools_event_listeners,
@@ -48,6 +44,9 @@ Status PrepareUserDataDir(
     const base::FilePath& user_data_dir,
     const base::DictionaryValue* custom_prefs,
     const base::DictionaryValue* custom_local_state);
+Status ParseDevToolsActivePortFile(const base::FilePath& user_data_dir,
+                                   int* port);
+Status ReadInPort(const base::FilePath& port_filepath, int* port);
 }  // namespace internal
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_LAUNCHER_H_

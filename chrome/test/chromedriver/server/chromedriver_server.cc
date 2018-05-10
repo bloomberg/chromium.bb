@@ -35,7 +35,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/test/chromedriver/logging.h"
-#include "chrome/test/chromedriver/net/port_server.h"
 #include "chrome/test/chromedriver/server/http_handler.h"
 #include "chrome/test/chromedriver/version.h"
 #include "net/base/ip_address.h"
@@ -199,8 +198,7 @@ void RunServer(uint16_t port,
                bool allow_remote,
                const std::vector<std::string>& whitelisted_ips,
                const std::string& url_base,
-               int adb_port,
-               std::unique_ptr<PortServer> port_server) {
+               int adb_port) {
   base::Thread io_thread("ChromeDriver IO");
   CHECK(io_thread.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
@@ -208,7 +206,7 @@ void RunServer(uint16_t port,
   base::MessageLoop cmd_loop;
   base::RunLoop cmd_run_loop;
   HttpHandler handler(cmd_run_loop.QuitClosure(), io_thread.task_runner(),
-                      url_base, adb_port, std::move(port_server));
+                      url_base, adb_port);
   HttpRequestHandlerFunc handle_request_func =
       base::Bind(&HandleRequestOnCmdThread, &handler, whitelisted_ips);
 
@@ -248,7 +246,6 @@ int main(int argc, char *argv[]) {
   bool allow_remote = false;
   std::vector<std::string> whitelisted_ips;
   std::string url_base;
-  std::unique_ptr<PortServer> port_server;
   if (cmd_line->HasSwitch("h") || cmd_line->HasSwitch("help")) {
     std::string options;
     const char* const kOptionAndDescriptions[] = {
@@ -262,7 +259,6 @@ int main(int argc, char *argv[]) {
         "silent", "log nothing (equivalent to --log-level=OFF)",
         "version", "print the version number and exit",
         "url-base", "base URL path prefix for commands, e.g. wd/url",
-        "port-server", "address of server to contact for reserving a port",
         "whitelisted-ips", "comma-separated whitelist of remote IPv4 addresses "
             "which are allowed to connect to ChromeDriver",
     };
@@ -294,22 +290,6 @@ int main(int argc, char *argv[]) {
       printf("Invalid adb-port. Exiting...\n");
       return 1;
     }
-  }
-  if (cmd_line->HasSwitch("port-server")) {
-#if defined(OS_LINUX)
-    std::string address = cmd_line->GetSwitchValueASCII("port-server");
-    if (address.empty() || address[0] != '@') {
-      printf("Invalid port-server. Exiting...\n");
-      return 1;
-    }
-    std::string path;
-    // First character of path is \0 to use Linux's abstract namespace.
-    path.push_back(0);
-    path += address.substr(1);
-    port_server.reset(new PortServer(path));
-#else
-    printf("Warning: port-server not implemented for this platform.\n");
-#endif
   }
   if (cmd_line->HasSwitch("url-base"))
     url_base = cmd_line->GetSwitchValueASCII("url-base");
@@ -344,8 +324,7 @@ int main(int argc, char *argv[]) {
 
   base::TaskScheduler::CreateAndStartWithDefaultParams("ChromeDriver");
 
-  RunServer(port, allow_remote, whitelisted_ips, url_base, adb_port,
-            std::move(port_server));
+  RunServer(port, allow_remote, whitelisted_ips, url_base, adb_port);
 
   // clean up
   base::TaskScheduler::GetInstance()->Shutdown();

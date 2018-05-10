@@ -45,7 +45,7 @@ Status Device::SetUp(const std::string& package,
                      const std::string& exec_name,
                      const std::string& args,
                      bool use_running_app,
-                     int port) {
+                     int* devtools_port) {
   if (!active_package_.empty())
     return Status(kUnknownError,
         active_package_ + " was launched and has not been quit");
@@ -129,14 +129,14 @@ Status Device::SetUp(const std::string& package,
 
     active_package_ = package;
   }
-  return this->ForwardDevtoolsPort(package, process, port,
-                                   &known_device_socket);
+  return this->ForwardDevtoolsPort(package, process, &known_device_socket,
+                                   devtools_port);
 }
 
 Status Device::ForwardDevtoolsPort(const std::string& package,
                                    const std::string& process,
-                                   int port,
-                                   std::string* device_socket) {
+                                   std::string* device_socket,
+                                   int* devtools_port) {
   if (device_socket->empty()) {
     // Assume this is a WebView app.
     int pid;
@@ -167,7 +167,7 @@ Status Device::ForwardDevtoolsPort(const std::string& package,
     *device_socket = socket_name.substr(1);
   }
 
-  return adb_->ForwardPort(serial_, port, *device_socket);
+  return adb_->ForwardPort(serial_, *device_socket, devtools_port);
 }
 
 Status Device::TearDown() {

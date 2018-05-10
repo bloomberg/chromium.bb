@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Commands used are documented here:
+// https://github.com/mozilla/libadb.js/blob/master/android-tools/adb-bin/SERVICES.TXT
+
 #include "chrome/test/chromedriver/chrome/adb_impl.h"
 
 #include "base/bind.h"
@@ -123,19 +126,26 @@ Status AdbImpl::GetDevices(std::vector<std::string>* devices) {
   return Status(kOk);
 }
 
-Status AdbImpl::ForwardPort(
-    const std::string& device_serial, int local_port,
-    const std::string& remote_abstract) {
+Status AdbImpl::ForwardPort(const std::string& device_serial,
+                            const std::string& remote_abstract,
+                            int* local_port_output) {
   std::string response;
-  Status status =
-      ExecuteHostCommand(device_serial,
-                         "forward:tcp:" + base::IntToString(local_port) +
-                             ";localabstract:" + remote_abstract,
-                         &response);
-  if (status.IsOk())
-    return status;
-  return Status(kUnknownError, "Failed to forward ports to device " +
-                device_serial + ": " + response);
+  Status adb_command_status = ExecuteHostCommand(
+      device_serial, "forward:tcp:0;localabstract:" + remote_abstract,
+      &response);
+  // response should be the port number like "39025".
+  if (!adb_command_status.IsOk())
+    return Status(kUnknownError, "Failed to forward ports to device " +
+                                     device_serial + ": " + response + ". " +
+                                     adb_command_status.message());
+  base::StringToInt(response, local_port_output);
+  if (*local_port_output == 0) {
+    return Status(kUnknownError, "Failed to forward ports to device " +
+                                     device_serial +
+                                     ". No port chosen: " + response + ".");
+  }
+
+  return Status(kOk);
 }
 
 Status AdbImpl::SetCommandLineFile(const std::string& device_serial,

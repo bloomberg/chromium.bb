@@ -277,7 +277,7 @@ void StartServerOnHandlerThread(
     fflush(stderr);
 
     // Write this port to a well-known file in the profile directory
-    // so Telemetry can pick it up.
+    // so Telemetry, ChromeDriver, etc. can pick it up.
     if (!output_directory.empty()) {
       base::FilePath path =
           output_directory.Append(kDevToolsActivePortFileName);
