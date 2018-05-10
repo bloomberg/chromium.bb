@@ -261,6 +261,15 @@ class ContextualSuggestionsMediator
      */
     private void clearSuggestions() {
         // TODO(twellington): Does this signal need to go back to FetchHelper?
+
+        // Call remove suggestions before clearing model state so that views don't respond to model
+        // changes while suggestions are hiding. See https://crbug.com/840579.
+        if (mSheetObserver != null) {
+            mCoordinator.removeBottomSheetObserver(mSheetObserver);
+            mSheetObserver = null;
+        }
+        mCoordinator.removeSuggestions();
+
         mDidSuggestionsShowForTab = false;
         mHasRecordedPeekEventForTab = false;
         mHasSheetBeenOpened = false;
@@ -275,14 +284,9 @@ class ContextualSuggestionsMediator
         mModel.setMenuButtonDelegate(null);
         mModel.setDefaultToolbarClickListener(null);
         mModel.setTitle(null);
-        mCoordinator.removeSuggestions();
         mCurrentRequestUrl = "";
 
         if (mSuggestionsSource != null) mSuggestionsSource.clearState();
-
-        if (mSheetObserver != null) {
-            mCoordinator.removeBottomSheetObserver(mSheetObserver);
-        }
 
         if (mHelpBubble != null) mHelpBubble.dismiss();
     }
