@@ -258,7 +258,7 @@ TEST(AudioOutputStreamBrokerTest,
 }
 
 TEST(AudioOutputStreamBrokerTest,
-     ObserverDisconnect_DoesNotPropagateErrorButCallsDeleter) {
+     ObserverDisconnect_PropagatesErrorAndCallsDeleter) {
   TestEnvironment env;
   MockStreamFactory::StreamRequestData stream_request_data(
       kDeviceId, TestParams(), env.group);
@@ -269,7 +269,9 @@ TEST(AudioOutputStreamBrokerTest,
 
   EXPECT_TRUE(stream_request_data.requested);
   EXPECT_CALL(env.provider_client,
-              ConnectionError(/*general disconnect reason*/ 0, std::string()));
+              ConnectionError(media::mojom::AudioOutputStreamProviderClient::
+                                  kPlatformErrorDisconnectReason,
+                              std::string()));
   EXPECT_CALL(env.deleter, Run(env.broker.release()))
       .WillOnce(testing::DeleteArg<0>());
 
@@ -282,7 +284,7 @@ TEST(AudioOutputStreamBrokerTest,
 }
 
 TEST(AudioOutputStreamBrokerTest,
-     FactoryDisconnectDuringConstruction_CallsDeleter) {
+     FactoryDisconnectDuringConstruction_PropagatesErrorAndCallsDeleter) {
   TestEnvironment env;
 
   env.broker->CreateStream(env.factory_ptr.get());
@@ -291,7 +293,9 @@ TEST(AudioOutputStreamBrokerTest,
   EXPECT_CALL(env.deleter, Run(env.broker.release()))
       .WillOnce(testing::DeleteArg<0>());
   EXPECT_CALL(env.provider_client,
-              ConnectionError(/*general disconnect reason*/ 0, std::string()));
+              ConnectionError(media::mojom::AudioOutputStreamProviderClient::
+                                  kPlatformErrorDisconnectReason,
+                              std::string()));
 
   env.RunUntilIdle();
 }

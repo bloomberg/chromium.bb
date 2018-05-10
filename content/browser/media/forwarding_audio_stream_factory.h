@@ -68,9 +68,8 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
       media::mojom::AudioOutputStreamProviderClientPtr client);
 
   // WebContentsObserver implementation. We observe these events so that we can
-  // clean up streams belonging to a document when that document is destroyed.
+  // clean up streams belonging to a frame when that frame is destroyed.
   void FrameDeleted(RenderFrameHost* render_frame_host) final;
-  void DidFinishNavigation(NavigationHandle* navigation_handle) final;
   void WebContentsDestroyed() final;
 
  private:

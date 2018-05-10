@@ -271,7 +271,7 @@ TEST_F(ForwardingAudioStreamFactoryTest,
     testing::Mock::VerifyAndClear(&*other_rfh_broker);
   }
 
-  factory.FrameDeleted(other_rfh());
+  std::move(other_rfh_broker->deleter).Run(&*other_rfh_broker);
   EXPECT_FALSE(other_rfh_broker)
       << "Output broker should be destructed when deleter is called.";
   EXPECT_TRUE(main_rfh_broker);
@@ -365,39 +365,6 @@ TEST_F(ForwardingAudioStreamFactoryTest, DestroyWebContents_DestroysStreams) {
   EXPECT_FALSE(output_broker)
       << "Output broker should be destructed when owning "
          "WebContents is destructed.";
-}
-
-TEST_F(ForwardingAudioStreamFactoryTest, DestroyRemoteFactory_CleansUpStreams) {
-  mojom::RendererAudioInputStreamFactoryClientPtr input_client;
-  base::WeakPtr<MockBroker> input_broker =
-      ExpectInputBrokerConstruction(main_rfh());
-  media::mojom::AudioOutputStreamProviderClientPtr output_client;
-  base::WeakPtr<MockBroker> output_broker =
-      ExpectOutputBrokerConstruction(main_rfh());
-
-  ForwardingAudioStreamFactory factory(web_contents(), std::move(connector_),
-                                       std::move(broker_factory_));
-
-  EXPECT_CALL(*input_broker, CreateStream(NotNull()));
-  mojo::MakeRequest(&input_client);
-  factory.CreateInputStream(main_rfh(), kInputDeviceId, kParams,
-                            kSharedMemoryCount, kEnableAgc,
-                            std::move(input_client));
-
-  EXPECT_CALL(*output_broker, CreateStream(NotNull()));
-  mojo::MakeRequest(&output_client);
-  factory.CreateOutputStream(main_rfh(), kOutputDeviceId, kParams,
-                             std::move(output_client));
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(input_broker);
-  EXPECT_TRUE(output_broker);
-  pending_factory_request_.reset();  // Triggers connection error.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(input_broker) << "Input broker should be destructed when owning "
-                                "WebContents is destructed.";
-  EXPECT_FALSE(output_broker) << "Output broker should be destructed when "
-                                 "owning WebContents is destructed.";
 }
 
 TEST_F(ForwardingAudioStreamFactoryTest, LastStreamDeleted_ClearsFactoryPtr) {
