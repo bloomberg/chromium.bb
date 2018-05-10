@@ -26464,6 +26464,7 @@ from previous Chrome versions.
       label="OverlayScrollbarFlashAfterAnyScrollUpdate:enabled"/>
   <int value="-1907565048" label="HtmlBaseUsernameDetector:disabled"/>
   <int value="-1907342706" label="ReadItLaterInMenu:disabled"/>
+  <int value="-1895719323" label="VrBrowsingTabsView:enabled"/>
   <int value="-1892555086" label="disable-compositor-animation-timelines"/>
   <int value="-1892000374" label="SeccompSandboxAndroid:enabled"/>
   <int value="-1888273969" label="tab-capture-upscale-quality"/>
@@ -26824,6 +26825,7 @@ from previous Chrome versions.
   <int value="-1158993534" label="PrintScaling:enabled"/>
   <int value="-1156179600" label="OmniboxRichEntitySuggestions:enabled"/>
   <int value="-1155543191" label="CopylessPaste:disabled"/>
+  <int value="-1154343236" label="VrBrowsingTabsView:disabled"/>
   <int value="-1151766565" label="enable-fullscreen-tab-detaching"/>
   <int value="-1145702446" label="ChromeHomeInactivitySheetExpansion:enabled"/>
   <int value="-1145246849" label="ThirdPartyDoodles:enabled"/>

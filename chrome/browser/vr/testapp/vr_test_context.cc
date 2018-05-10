@@ -109,6 +109,7 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
   keyboard_delegate_ = std::make_unique<TestKeyboardDelegate>();
 
   UiInitialState ui_initial_state;
+  ui_initial_state.create_tabs_view = true;
   ui_ = std::make_unique<Ui>(this, nullptr, keyboard_delegate_.get(),
                              text_input_delegate_.get(), nullptr,
                              ui_initial_state);

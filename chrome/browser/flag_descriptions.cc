@@ -2386,6 +2386,10 @@ const char kVrBrowsingNativeAndroidUiName[] = "VR browsing native android ui";
 const char kVrBrowsingNativeAndroidUiDescription[] =
     "Enable Android UI elements in VR.";
 
+const char kVrBrowsingTabsViewName[] = "VR browsing tabs view";
+const char kVrBrowsingTabsViewDescription[] =
+    "Enable tab overview (tab switcher) in VR.";
+
 const char kThirdPartyDoodlesName[] =
     "Enable Doodles for third-party search engines";
 const char kThirdPartyDoodlesDescription[] =

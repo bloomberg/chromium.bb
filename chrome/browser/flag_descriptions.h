@@ -1448,6 +1448,9 @@ extern const char kUpdateMenuItemDescription[];
 extern const char kVrBrowsingNativeAndroidUiName[];
 extern const char kVrBrowsingNativeAndroidUiDescription[];
 
+extern const char kVrBrowsingTabsViewName[];
+extern const char kVrBrowsingTabsViewDescription[];
+
 extern const char kThirdPartyDoodlesName[];
 extern const char kThirdPartyDoodlesDescription[];
 
