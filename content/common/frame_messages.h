@@ -431,11 +431,6 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(FrameMsg_PostMessage_Params)
-  // Whether the data format is supplied as serialized script value, or as
-  // a simple string. If it is a raw string, must be converted from string to a
-  // WebSerializedScriptValue in the renderer process.
-  IPC_STRUCT_MEMBER(bool, is_data_raw_string)
-
   // When sent to the browser, this is the routing ID of the source frame in
   // the source process.  The browser replaces it with the routing ID of the
   // equivalent frame proxy in the destination process.

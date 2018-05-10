@@ -41,6 +41,7 @@ source_set("headers") {
     "frame/sandbox_flags.h",
     "message_port/cloneable_message.h",
     "message_port/message_port_channel.h",
+    "message_port/string_message_codec.h",
     "message_port/transferable_message.h",
     "mime_util/mime_util.h",
     "origin_manifest/origin_manifest.h",

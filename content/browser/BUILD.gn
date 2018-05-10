@@ -325,8 +325,6 @@ jumbo_source_set("browser") {
     "android/launcher_thread.h",
     "android/scoped_surface_request_manager.cc",
     "android/scoped_surface_request_manager.h",
-    "android/string_message_codec.cc",
-    "android/string_message_codec.h",
     "android/text_suggestion_host_android.cc",
     "android/text_suggestion_host_android.h",
     "android/text_suggestion_host_mojo_impl_android.cc",
