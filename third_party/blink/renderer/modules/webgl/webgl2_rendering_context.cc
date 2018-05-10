@@ -158,10 +158,4 @@ void WebGL2RenderingContext::Trace(blink::Visitor* visitor) {
   WebGL2RenderingContextBase::Trace(visitor);
 }
 
-void WebGL2RenderingContext::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  // Extensions are managed by WebGL2RenderingContextBase.
-  WebGL2RenderingContextBase::TraceWrappers(visitor);
-}
-
 }  // namespace blink

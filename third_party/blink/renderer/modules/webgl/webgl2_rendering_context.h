@@ -49,8 +49,6 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
 
   void Trace(blink::Visitor*) override;
 
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
-
  protected:
   WebGL2RenderingContext(
       CanvasRenderingContextHost*,

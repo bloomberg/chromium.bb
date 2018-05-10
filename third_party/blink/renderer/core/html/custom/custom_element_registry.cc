@@ -113,6 +113,7 @@ void CustomElementRegistry::Trace(blink::Visitor* visitor) {
   visitor->Trace(v0_);
   visitor->Trace(upgrade_candidates_);
   visitor->Trace(when_defined_promise_map_);
+  visitor->Trace(reaction_stack_);
   ScriptWrappable::Trace(visitor);
 }
 
