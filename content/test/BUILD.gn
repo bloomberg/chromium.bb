@@ -1393,7 +1393,6 @@ test("content_unittests") {
     "../browser/payments/payment_manager_unittest.cc",
     "../browser/presentation/presentation_service_impl_unittest.cc",
     "../browser/renderer_host/clipboard_host_impl_unittest.cc",
-    "../browser/renderer_host/compositor_resize_lock_unittest.cc",
     "../browser/renderer_host/cursor_manager_unittest.cc",
     "../browser/renderer_host/dwrite_font_proxy_message_filter_win_unittest.cc",
     "../browser/renderer_host/embedded_frame_sink_provider_impl_unittest.cc",
@@ -2031,7 +2030,6 @@ test("content_unittests") {
       "../browser/compositor/gpu_vsync_begin_frame_source_unittest.cc",
       "../browser/compositor/reflector_impl_unittest.cc",
       "../browser/compositor/software_browser_compositor_output_surface_unittest.cc",
-      "../browser/renderer_host/compositor_resize_lock_unittest.cc",
     ]
   }
 

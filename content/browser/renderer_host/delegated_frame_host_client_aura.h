@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_RENDERER_HOST_DELEGATED_FRAME_HOST_CLIENT_AURA_H_
 
 #include "base/macros.h"
-#include "content/browser/renderer_host/compositor_resize_lock.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/common/content_export.h"
 
@@ -16,8 +15,7 @@ class RenderWidgetHostViewAura;
 
 // DelegatedFrameHostClient implementation for aura, not used in mus.
 class CONTENT_EXPORT DelegatedFrameHostClientAura
-    : public DelegatedFrameHostClient,
-      public CompositorResizeLockClient {
+    : public DelegatedFrameHostClient {
  public:
   explicit DelegatedFrameHostClientAura(
       RenderWidgetHostViewAura* render_widget_host_view);
@@ -36,11 +34,6 @@ class CONTENT_EXPORT DelegatedFrameHostClientAura
   void OnBeginFrame(base::TimeTicks frame_time) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
   void DidReceiveFirstFrameAfterNavigation() override;
-
-  // CompositorResizeLockClient implementation.
-  std::unique_ptr<ui::CompositorLock> GetCompositorLock(
-      ui::CompositorLockClient* client) override;
-  void CompositorResizeLockEnded() override;
 
  private:
   RenderWidgetHostViewAura* render_widget_host_view_;

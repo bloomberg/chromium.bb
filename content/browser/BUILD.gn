@@ -2319,8 +2319,6 @@ jumbo_source_set("browser") {
       "context_factory.cc",
       "renderer_host/browser_compositor_view_mac.h",
       "renderer_host/browser_compositor_view_mac.mm",
-      "renderer_host/compositor_resize_lock.cc",
-      "renderer_host/compositor_resize_lock.h",
       "renderer_host/delegated_frame_host.cc",
       "renderer_host/delegated_frame_host.h",
     ]
