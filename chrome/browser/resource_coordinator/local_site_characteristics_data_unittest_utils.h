@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_impl.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_database.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace resource_coordinator {
@@ -24,6 +25,29 @@ class MockLocalSiteCharacteristicsDataImplOnDestroyDelegate
  private:
   DISALLOW_COPY_AND_ASSIGN(
       MockLocalSiteCharacteristicsDataImplOnDestroyDelegate);
+};
+
+// An implementation of a LocalSiteCharacteristicsDatabase that doesn't record
+// anything.
+class NoopLocalSiteCharacteristicsDatabase
+    : public LocalSiteCharacteristicsDatabase {
+ public:
+  NoopLocalSiteCharacteristicsDatabase();
+  ~NoopLocalSiteCharacteristicsDatabase() override;
+
+  // LocalSiteCharacteristicsDatabase:
+  void ReadSiteCharacteristicsFromDB(
+      const std::string& site_origin,
+      ReadSiteCharacteristicsFromDBCallback callback) override;
+  void WriteSiteCharacteristicsIntoDB(
+      const std::string& site_origin,
+      const SiteCharacteristicsProto& site_characteristic_proto) override;
+  void RemoveSiteCharacteristicsFromDB(
+      const std::vector<std::string>& site_origins) override;
+  void ClearDatabase() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NoopLocalSiteCharacteristicsDatabase);
 };
 
 }  // namespace testing

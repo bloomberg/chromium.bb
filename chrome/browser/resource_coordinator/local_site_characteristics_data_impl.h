@@ -9,14 +9,17 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_database.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_feature_usage.h"
 #include "chrome/browser/resource_coordinator/site_characteristics.pb.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 
 namespace resource_coordinator {
 
+class LocalSiteCharacteristicsDatabase;
 class LocalSiteCharacteristicsDataStore;
 class LocalSiteCharacteristicsDataReaderTest;
 class LocalSiteCharacteristicsDataWriterTest;
@@ -88,7 +91,10 @@ class LocalSiteCharacteristicsDataImpl
   friend class resource_coordinator::LocalSiteCharacteristicsDataWriterTest;
 
   LocalSiteCharacteristicsDataImpl(const std::string& origin_str,
-                                   OnDestroyDelegate* delegate);
+                                   OnDestroyDelegate* delegate,
+                                   LocalSiteCharacteristicsDatabase* database);
+
+  virtual ~LocalSiteCharacteristicsDataImpl();
 
   // Helper functions to convert from/to the internal representation that is
   // used to store TimeDelta values in the |SiteCharacteristicsProto| protobuf.
@@ -99,8 +105,6 @@ class LocalSiteCharacteristicsDataImpl
   static int64_t TimeDeltaToInternalRepresentation(base::TimeDelta delta) {
     return delta.InSeconds();
   }
-
-  virtual ~LocalSiteCharacteristicsDataImpl();
 
   // Returns for how long a given feature has been observed, this is the sum of
   // the recorded observation duration and the current observation duration
@@ -123,10 +127,13 @@ class LocalSiteCharacteristicsDataImpl
   static void InitSiteCharacteristicsFeatureProtoWithDefaultValues(
       SiteCharacteristicsFeatureProto* proto);
 
-  // Initialize this object with default values.
+  // Initialize this object with default values. If
+  // |only_init_uninitialized_fields| is set to true then only the fields that
+  // haven't yet been initialized will be initialized, otherwise everything will
+  // be overriden with default values.
   // NOTE: Do not call this directly while the site is loaded as this will not
   // properly update the last_loaded time, instead call |ClearObservations|.
-  void InitWithDefaultValues();
+  void InitWithDefaultValues(bool only_init_uninitialized_fields);
 
   // Clear all the past observations about this site.
   void ClearObservations();
@@ -144,6 +151,11 @@ class LocalSiteCharacteristicsDataImpl
 
   bool IsLoaded() const { return active_webcontents_count_ > 0U; }
 
+  // Callback that needs to be called by the database once it has finished
+  // trying to read the protobuf.
+  void OnInitCallback(
+      base::Optional<SiteCharacteristicsProto> site_characteristic_proto);
+
   // This site's characteristics, contains the features and other values are
   // measured.
   SiteCharacteristicsProto site_characteristics_;
@@ -155,13 +167,24 @@ class LocalSiteCharacteristicsDataImpl
   // same origin might share the same instance of this object, this counter
   // will allow to properly update the observation time (starts when the first
   // tab gets loaded, stops when the last one gets unloaded).
+  //
+  // TODO(sebmarchand): Also track the number of tabs that are in background for
+  // this origin and use this to update the observation windows. The number of
+  // active WebContents doesn't tell anything about the background/foreground
+  // state of a tab.
   size_t active_webcontents_count_;
+
+  // The database used to store the site characteristics.
+  LocalSiteCharacteristicsDatabase* database_;
 
   // The delegate that should get notified when this object is about to get
   // destroyed.
   OnDestroyDelegate* const delegate_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<LocalSiteCharacteristicsDataImpl> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(LocalSiteCharacteristicsDataImpl);
 };
 

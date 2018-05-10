@@ -31,8 +31,9 @@ class TestLocalSiteCharacteristicsDataImpl
 
   explicit TestLocalSiteCharacteristicsDataImpl(
       const std::string& origin_str,
-      LocalSiteCharacteristicsDataImpl::OnDestroyDelegate* delegate)
-      : LocalSiteCharacteristicsDataImpl(origin_str, delegate) {}
+      LocalSiteCharacteristicsDataImpl::OnDestroyDelegate* delegate,
+      LocalSiteCharacteristicsDatabase* database)
+      : LocalSiteCharacteristicsDataImpl(origin_str, delegate, database) {}
 
   base::TimeDelta FeatureObservationTimestamp(
       const SiteCharacteristicsFeatureProto& feature_proto) {
@@ -42,6 +43,47 @@ class TestLocalSiteCharacteristicsDataImpl
  protected:
   ~TestLocalSiteCharacteristicsDataImpl() override {}
 };
+
+class MockLocalSiteCharacteristicsDatabase
+    : public testing::NoopLocalSiteCharacteristicsDatabase {
+ public:
+  MockLocalSiteCharacteristicsDatabase() = default;
+  ~MockLocalSiteCharacteristicsDatabase() = default;
+
+  // Note: As move-only parameters (e.g. OnceCallback) aren't supported by mock
+  // methods, add On... methods to pass a non-const reference to OnceCallback.
+  void ReadSiteCharacteristicsFromDB(
+      const std::string& origin_str,
+      LocalSiteCharacteristicsDatabase::ReadSiteCharacteristicsFromDBCallback
+          callback) override {
+    OnReadSiteCharacteristicsFromDB(origin_str, callback);
+  }
+  MOCK_METHOD2(OnReadSiteCharacteristicsFromDB,
+               void(const std::string&,
+                    LocalSiteCharacteristicsDatabase::
+                        ReadSiteCharacteristicsFromDBCallback&));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockLocalSiteCharacteristicsDatabase);
+};
+
+// Returns a SiteCharacteristicsFeatureProto that indicates that a feature
+// hasn't been used.
+SiteCharacteristicsFeatureProto GetUnusedFeatureProto() {
+  SiteCharacteristicsFeatureProto unused_feature_proto;
+  unused_feature_proto.set_observation_duration(1U);
+  unused_feature_proto.set_use_timestamp(0U);
+  return unused_feature_proto;
+}
+
+// Returns a SiteCharacteristicsFeatureProto that indicates that a feature
+// has been used.
+SiteCharacteristicsFeatureProto GetUsedFeatureProto() {
+  SiteCharacteristicsFeatureProto used_feature_proto;
+  used_feature_proto.set_observation_duration(0U);
+  used_feature_proto.set_use_timestamp(1U);
+  return used_feature_proto;
+}
 
 }  // namespace
 
@@ -65,12 +107,17 @@ class LocalSiteCharacteristicsDataImplTest : public ::testing::Test {
   ::testing::NiceMock<
       testing::MockLocalSiteCharacteristicsDataImplOnDestroyDelegate>
       destroy_delegate_;
+
+  testing::NoopLocalSiteCharacteristicsDatabase database_;
 };
 
 TEST_F(LocalSiteCharacteristicsDataImplTest, BasicTestEndToEnd) {
   auto local_site_data =
       base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(
-          kDummyOrigin, &destroy_delegate_);
+          kDummyOrigin, &destroy_delegate_, &database_);
+
+  EXPECT_TRUE(
+      local_site_data->site_characteristics_for_testing().IsInitialized());
 
   local_site_data->NotifySiteLoaded();
 
@@ -126,7 +173,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, BasicTestEndToEnd) {
 TEST_F(LocalSiteCharacteristicsDataImplTest, LastLoadedTime) {
   auto local_site_data =
       base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(
-          kDummyOrigin, &destroy_delegate_);
+          kDummyOrigin, &destroy_delegate_, &database_);
   // Create a second instance of this object, simulates having several tab
   // owning it.
   auto local_site_data2(local_site_data);
@@ -157,7 +204,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, LastLoadedTime) {
 TEST_F(LocalSiteCharacteristicsDataImplTest, GetFeatureUsageForUnloadedSite) {
   auto local_site_data =
       base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(
-          kDummyOrigin, &destroy_delegate_);
+          kDummyOrigin, &destroy_delegate_, &database_);
 
   local_site_data->NotifySiteLoaded();
   local_site_data->NotifyUsesAudioInBackground();
@@ -210,7 +257,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, AllDurationGetSavedOnUnload) {
   // for all the features being tracked.
   auto local_site_data =
       base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(
-          kDummyOrigin, &destroy_delegate_);
+          kDummyOrigin, &destroy_delegate_, &database_);
 
   const base::TimeDelta kInterval = base::TimeDelta::FromSeconds(1);
   const auto kIntervalInternalRepresentation =
@@ -266,6 +313,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, AllDurationGetSavedOnUnload) {
   expected_proto.mutable_uses_audio_in_background()->CopyFrom(
       used_feature_proto);
 
+  EXPECT_TRUE(expected_proto.IsInitialized());
   EXPECT_TRUE(
       local_site_data->site_characteristics_for_testing().IsInitialized());
   EXPECT_EQ(
@@ -282,11 +330,109 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, DestroyNotifiesDelegate) {
   {
     auto local_site_data =
         base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(
-            kDummyOrigin, &strict_delegate);
+            kDummyOrigin, &strict_delegate, &database_);
     EXPECT_CALL(strict_delegate, OnLocalSiteCharacteristicsDataImplDestroyed(
                                      local_site_data.get()));
   }
   ::testing::Mock::VerifyAndClear(&strict_delegate);
+}
+
+TEST_F(LocalSiteCharacteristicsDataImplTest,
+       OnInitCallbackMergePreviousObservations) {
+  // Use a mock database to intercept the initialization callback and save it
+  // locally so it can be run later. This simulates an asynchronous
+  // initialization of this object and is used to test that the observations
+  // made between the time this object has been created and the callback is
+  // called get properly merged.
+  ::testing::StrictMock<MockLocalSiteCharacteristicsDatabase> mock_db;
+  LocalSiteCharacteristicsDatabase::ReadSiteCharacteristicsFromDBCallback
+      read_cb;
+  auto read_from_db_mock_impl =
+      [&](const std::string& site_origin,
+          LocalSiteCharacteristicsDatabase::
+              ReadSiteCharacteristicsFromDBCallback& callback) {
+        read_cb = std::move(callback);
+      };
+
+  EXPECT_CALL(mock_db,
+              OnReadSiteCharacteristicsFromDB(::testing::_, ::testing::_))
+      .WillOnce(::testing::Invoke(read_from_db_mock_impl));
+  auto local_site_data =
+      base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(
+          kDummyOrigin, &destroy_delegate_, &mock_db);
+  ::testing::Mock::VerifyAndClear(&mock_db);
+
+  // Simulates audio in background usage before the callback gets called.
+  local_site_data->NotifySiteLoaded();
+  local_site_data->NotifyUsesAudioInBackground();
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
+            local_site_data->UsesAudioInBackground());
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
+            local_site_data->UsesNotificationsInBackground());
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
+            local_site_data->UpdatesFaviconInBackground());
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
+            local_site_data->UpdatesTitleInBackground());
+
+  // Unload the site and save the last loaded time to make sure the
+  // initialization doesn't overwrite it.
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
+  local_site_data->NotifySiteUnloaded();
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
+  auto last_loaded = local_site_data->last_loaded_time_for_testing();
+
+  // This protobuf should have a valid |last_loaded| field and valid observation
+  // durations for each features, but the |use_timestamp| field shouldn't have
+  // been initialized for the features that haven't been used.
+  EXPECT_FALSE(
+      local_site_data->site_characteristics_for_testing().IsInitialized());
+  EXPECT_TRUE(
+      local_site_data->site_characteristics_for_testing().has_last_loaded());
+  EXPECT_TRUE(local_site_data->site_characteristics_for_testing()
+                  .uses_audio_in_background()
+                  .IsInitialized());
+  EXPECT_FALSE(local_site_data->site_characteristics_for_testing()
+                   .uses_notifications_in_background()
+                   .IsInitialized());
+  EXPECT_FALSE(local_site_data->site_characteristics_for_testing()
+                   .uses_notifications_in_background()
+                   .has_use_timestamp());
+  EXPECT_TRUE(local_site_data->site_characteristics_for_testing()
+                  .uses_notifications_in_background()
+                  .has_observation_duration());
+
+  // Initialize a fake protobuf that indicates that this site updates its title
+  // while in background and set a fake last loaded time (this should be
+  // overriden once the callback runs).
+  base::Optional<SiteCharacteristicsProto> test_proto =
+      SiteCharacteristicsProto();
+  SiteCharacteristicsFeatureProto unused_feature_proto =
+      GetUnusedFeatureProto();
+  test_proto->mutable_updates_title_in_background()->CopyFrom(
+      GetUsedFeatureProto());
+  test_proto->mutable_updates_favicon_in_background()->CopyFrom(
+      unused_feature_proto);
+  test_proto->mutable_uses_audio_in_background()->CopyFrom(
+      unused_feature_proto);
+  test_proto->mutable_uses_notifications_in_background()->CopyFrom(
+      unused_feature_proto);
+  test_proto->set_last_loaded(42);
+
+  // Run the callback to indicate that the initialization has completed.
+  std::move(read_cb).Run(test_proto);
+
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
+            local_site_data->UsesAudioInBackground());
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
+            local_site_data->UpdatesTitleInBackground());
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
+            local_site_data->UpdatesFaviconInBackground());
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
+            local_site_data->UsesNotificationsInBackground());
+  EXPECT_EQ(last_loaded, local_site_data->last_loaded_time_for_testing());
+
+  EXPECT_TRUE(
+      local_site_data->site_characteristics_for_testing().IsInitialized());
 }
 
 }  // namespace internal
