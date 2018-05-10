@@ -115,58 +115,50 @@ class SubprocessOutputLogger(object):
 
 
 class _TargetHost(object):
-    def __init__(self, build_path, ports_to_forward, fonts):
+    def __init__(self, build_path, ports_to_forward):
         try:
             self._target = None
             self._target = qemu_target.QemuTarget(
                 build_path, 'x64', ram_size_mb=8192)
             self._target.Start()
-            self._setup_target(build_path, ports_to_forward, fonts)
+            self._setup_target(build_path, ports_to_forward)
         except:
             self.cleanup()
             raise
 
-    def _setup_target(self, build_path, ports_to_forward, fonts):
-        # Run a proxy to forward all server ports from the Fuchsia device to
+    def _setup_target(self, build_path, ports_to_forward):
+        # Tell SSH to forward all server ports from the Fuchsia device to
         # the host.
-        # TODO(sergeyu): Potentially this can be implemented using port
-        # forwarding in SSH, but that feature is currently broken on Fuchsia,
-        # see ZX-1555. Remove layout_test_proxy once that SSH bug is fixed.
-        self._target.PutFile(
-            os.path.join(build_path, 'gen/build/fuchsia/layout_test_proxy/' +
-                         'layout_test_proxy/layout_test_proxy.far'),
-            '/tmp')
-        command = ['run', '/tmp/layout_test_proxy.far',
-                   '--remote-address=' + qemu_target.HOST_IP_ADDRESS,
-                   '--ports=' + ','.join([str(p) for p in ports_to_forward])]
-        self._proxy = self._target.RunCommandPiped(command,
-                                                   stdin=subprocess.PIPE,
-                                                   stdout=subprocess.PIPE)
+        forwarding_flags = [
+          '-O', 'forward',  # Send SSH mux control signal.
+          '-N',  # Don't execute command
+          '-T'  # Don't allocate terminal.
+        ]
+        for port in ports_to_forward:
+            forwarding_flags += ['-R', '%d:localhost:%d' % (port, port)]
+        self._proxy = self._target.RunCommandPiped([],
+                                                   ssh_args=forwarding_flags,
+                                                   stderr=subprocess.PIPE)
 
         # Copy content_shell package to the device.
+        device_package_path = \
+            os.path.join('/data', os.path.basename(CONTENT_SHELL_PACKAGE_PATH))
         self._target.PutFile(
-            os.path.join(build_path, CONTENT_SHELL_PACKAGE_PATH), '/tmp')
+            os.path.join(build_path, CONTENT_SHELL_PACKAGE_PATH),
+            device_package_path)
 
-        # Currently dynamic library loading is not implemented for packaged
-        # apps. Copy libosmesa.so to /system/lib as a workaround.
-        osmesa_path = os.path.join(build_path, 'libosmesa.so')
-        if not os.path.exists(osmesa_path):
-            # Only unstripped version of libosmesa.so is copied on Swarming bots.
-            osmesa_path = os.path.join(build_path, 'lib.unstripped/libosmesa.so')
-        self._target.PutFile(osmesa_path, '/system/lib')
+        pm_install = self._target.RunCommandPiped(
+            ['pm', 'install', device_package_path],
+            stderr=subprocess.PIPE)
+        output = pm_install.stderr.readlines()
+        pm_install.wait()
 
-        # Copy fonts.
-        self._target.RunCommand(['mkdir', '/system/fonts'])
+        if pm_install.returncode != 0:
+          # Don't error out if the package already exists on the device.
+          if len(output) != 1 or 'ErrAlreadyExists' not in output[0]:
+            raise Exception('Failed to install content_shell: %s' % \
+                            '\n'.join(output))
 
-        self._target.PutFile(
-            os.path.join(build_path, 'test_fonts', 'android_main_fonts.xml'),
-            FONTS_DEVICE_PATH + '/fonts.xml')
-
-        self._target.PutFile(
-            os.path.join(build_path, 'test_fonts', 'android_fallback_fonts.xml'),
-            FONTS_DEVICE_PATH + '/fonts_fallback.xml')
-
-        self._target.PutFiles(fonts, FONTS_DEVICE_PATH)
 
     def run_command(self, *args, **kvargs):
         return self._target.RunCommandPiped(*args,
@@ -222,7 +214,7 @@ class FuchsiaPort(base.Port):
         super(FuchsiaPort, self).setup_test_run()
         try:
             self._target_host = _TargetHost(
-                self._build_path(), self.SERVER_PORTS, self._get_font_files())
+                self._build_path(), self.SERVER_PORTS)
 
             if self.get_option('zircon_logging'):
                 self._zircon_logger = SubprocessOutputLogger(
@@ -247,9 +239,8 @@ class FuchsiaPort(base.Port):
         return min(MAX_WORKERS, requested_num_workers)
 
     def check_sys_deps(self, needs_http):
-        # _get_font_files() will throw if any of the required fonts is missing.
-        self._get_font_files()
-        # TODO(sergeyu): Implement this.
+        # There is nothing to check here. If we have the package built we should
+        # be able to run it.
         return exit_codes.OK_EXIT_STATUS
 
     def requires_http_server(self):
@@ -282,7 +273,7 @@ class ChromiumFuchsiaDriver(driver.Driver):
             port, worker_number, pixel_tests, no_timeout)
 
     def _base_cmd_line(self):
-        return ['run', '/tmp/content_shell.far']
+        return ['run', 'content_shell']
 
     def _command_from_driver_input(self, driver_input):
         command = super(ChromiumFuchsiaDriver, self)._command_from_driver_input(
