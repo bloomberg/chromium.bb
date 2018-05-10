@@ -81,6 +81,7 @@ class CORE_EXPORT InspectorPageAgent final
     kEventSourceResource,
     kWebSocketResource,
     kManifestResource,
+    kSignedExchangeResource,
     kOtherResource
   };
 

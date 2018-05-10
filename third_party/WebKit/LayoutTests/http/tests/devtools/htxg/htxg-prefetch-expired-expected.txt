@@ -3,4 +3,5 @@ Tests the signed exchange information are available when the prefetch failed.
 * http://127.0.0.1:8000/loading/htxg/resources/htxg-location.htxg
   failed: true
   statusCode: 200
+  resourceType: other
 

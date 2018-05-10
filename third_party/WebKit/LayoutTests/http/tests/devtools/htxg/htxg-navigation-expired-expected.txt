@@ -5,4 +5,5 @@ inspected-page.html:1 Failed to verify the signed exchange header.
 * http://127.0.0.1:8000/loading/htxg/resources/htxg-location.htxg
   failed: true
   statusCode: 200
+  resourceType: document
 

@@ -3,7 +3,9 @@ Tests the signed exchange information are available when the navigation succeede
 * http://127.0.0.1:8000/loading/htxg/resources/htxg-location.htxg
   failed: false
   statusCode: 200
+  resourceType: signed-exchange
 * https://www.127.0.0.1/test.html
   failed: false
   statusCode: 200
+  resourceType: document
 
