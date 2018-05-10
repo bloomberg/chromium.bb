@@ -115,6 +115,7 @@
 #include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/components/drivefs/drive_file_stream_service_provider_delegate.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/homedir_methods.h"
@@ -124,6 +125,7 @@
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/services/chrome_features_service_provider.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
+#include "chromeos/dbus/services/drive_file_stream_service_provider.h"
 #include "chromeos/dbus/services/liveness_service_provider.h"
 #include "chromeos/dbus/services/proxy_resolution_service_provider.h"
 #include "chromeos/dbus/services/virtual_file_request_service_provider.h"
@@ -402,6 +404,14 @@ class DBusServices {
             std::make_unique<VmApplicationsServiceProvider>(
                 std::make_unique<VmApplicationsServiceProviderDelegate>())));
 
+    drive_file_stream_service_ = CrosDBusService::Create(
+        drivefs::kDriveFileStreamServiceName,
+        dbus::ObjectPath(drivefs::kDriveFileStreamServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            std::make_unique<DriveFileStreamServiceProvider>(
+                std::make_unique<
+                    drivefs::DriveFileStreamServiceProviderDelegate>())));
+
     // Initialize PowerDataCollector after DBusThreadManager is initialized.
     PowerDataCollector::Initialize();
 
@@ -446,6 +456,7 @@ class DBusServices {
     component_updater_service_.reset();
     finch_features_service_.reset();
     vm_applications_service_.reset();
+    drive_file_stream_service_.reset();
     PowerDataCollector::Shutdown();
     if (GetAshConfig() != ash::Config::MASH)
       PowerPolicyController::Shutdown();
@@ -469,6 +480,7 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> component_updater_service_;
   std::unique_ptr<CrosDBusService> finch_features_service_;
   std::unique_ptr<CrosDBusService> vm_applications_service_;
+  std::unique_ptr<CrosDBusService> drive_file_stream_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusServices);
 };
