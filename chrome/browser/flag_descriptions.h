@@ -1178,18 +1178,6 @@ extern const char kBackgroundLoaderForDownloadsDescription[];
 extern const char kChromeDuplexName[];
 extern const char kChromeDuplexDescription[];
 
-extern const char kChromeHomeEnableSurveyName[];
-extern const char kChromeHomeEnableSurveyDescription[];
-
-extern const char kChromeHomeInactivitySheetExpansionName[];
-extern const char kChromeHomeInactivitySheetExpansionDescription[];
-
-extern const char kChromeHomePersistentIphName[];
-extern const char kChromeHomePersistentIphDescription[];
-
-extern const char kChromeHomePullToRefreshIphAtTopName[];
-extern const char kChromeHomePullToRefreshIphAtTopDescription[];
-
 extern const char kChromeHomeSwipeLogicName[];
 extern const char kChromeHomeSwipeLogicDescription[];
 extern const char kChromeHomeSwipeLogicRestrictArea[];

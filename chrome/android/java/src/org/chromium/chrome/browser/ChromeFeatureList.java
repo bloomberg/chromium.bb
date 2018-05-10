@@ -162,13 +162,7 @@ public abstract class ChromeFeatureList {
     public static final String CCT_POST_MESSAGE_API = "CCTPostMessageAPI";
     public static final String CCT_REDIRECT_PRECONNECT = "CCTRedirectPreconnect";
     public static final String CHROME_DUPLEX = "ChromeDuplex";
-    // TODO(mdjones): Remove CHROME_HOME completely.
-    public static final String CHROME_HOME = "ChromeHome";
-    public static final String CHROME_HOME_DROP_ALL_BUT_FIRST_THUMBNAIL =
-            "ChromeHomeDropAllButFirstThumbnail";
-    public static final String CHROME_HOME_PERSISTENT_IPH = "ChromeHomePersistentIph";
-    public static final String CHROME_HOME_PULL_TO_REFRESH_IPH_AT_TOP =
-            "ChromeHomePullToRefreshIphAtTop";
+    // TODO(mdjones): Remove CHROME_HOME_SWIPE_VELOCITY_FEATURE or rename.
     public static final String CHROME_HOME_SWIPE_VELOCITY_FEATURE = "ChromeHomeSwipeLogicVelocity";
     public static final String CHROME_MEMEX = "ChromeMemex";
     public static final String CHROME_MODERN_DESIGN = "ChromeModernDesign";

@@ -10,14 +10,12 @@ import android.view.ViewGroup;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.cards.NodeVisitor;
 import org.chromium.chrome.browser.ntp.cards.OptionalLeaf;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 /**
@@ -29,16 +27,6 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
      * enough space to fit all of them.
      */
     private static final int MAX_TILE_COLUMNS = 4;
-
-    /**
-     * Experiment parameter for the maximum number of tile suggestion rows to show.
-     */
-    private static final String PARAM_CHROME_HOME_MAX_TILE_ROWS = "chrome_home_max_tile_rows";
-
-    /**
-     * Experiment parameter for the number of tile title lines to show.
-     */
-    private static final String PARAM_CHROME_HOME_TILE_TITLE_LINES = "chrome_home_tile_title_lines";
 
     private final TileGroup mTileGroup;
     private final TileRenderer mTileRenderer;
@@ -110,17 +98,11 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
     }
 
     private static int getMaxTileRows() {
-        int defaultValue = 2;
-        if (!FeatureUtilities.isChromeHomeEnabled()) return defaultValue;
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.CHROME_HOME, PARAM_CHROME_HOME_MAX_TILE_ROWS, defaultValue);
+        return 2;
     }
 
     private static int getTileTitleLines() {
-        int defaultValue = 1;
-        if (!FeatureUtilities.isChromeHomeEnabled()) return defaultValue;
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.CHROME_HOME, PARAM_CHROME_HOME_TILE_TITLE_LINES, defaultValue);
+        return 1;
     }
 
     @LayoutRes
