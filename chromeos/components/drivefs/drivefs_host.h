@@ -16,6 +16,16 @@
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/account_id/account_id.h"
+#include "google_apis/gaia/oauth2_mint_token_flow.h"
+#include "services/identity/public/mojom/identity_manager.mojom.h"
+
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
+
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
 
 namespace drivefs {
 
@@ -23,9 +33,10 @@ namespace drivefs {
 // mounting and unmounting, it also bridges between the DriveFS process and the
 // file manager.
 class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
-    : public mojom::DriveFsDelegate,
-      public chromeos::disks::DiskMountManager::Observer {
+    : public chromeos::disks::DiskMountManager::Observer {
  public:
+  // Public for overriding in tests. A default implementation is used under
+  // normal conditions.
   class MojoConnectionDelegate {
    public:
     virtual ~MojoConnectionDelegate() = default;
@@ -38,10 +49,28 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
     virtual void AcceptMojoConnection(base::ScopedFD handle) = 0;
   };
 
+  class Delegate {
+   public:
+    Delegate() = default;
+    virtual ~Delegate() = default;
+
+    virtual net::URLRequestContextGetter* GetRequestContext() = 0;
+    virtual service_manager::Connector* GetConnector() = 0;
+    virtual std::unique_ptr<OAuth2MintTokenFlow> CreateMintTokenFlow(
+        OAuth2MintTokenFlow::Delegate* delegate,
+        const std::string& client_id,
+        const std::string& app_id,
+        const std::vector<std::string>& scopes);
+    virtual std::unique_ptr<MojoConnectionDelegate>
+    CreateMojoConnectionDelegate();
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Delegate);
+  };
+
   DriveFsHost(const base::FilePath& profile_path,
               const AccountId& account,
-              base::RepeatingCallback<std::unique_ptr<MojoConnectionDelegate>()>
-                  mojo_connection_delegate_factory = {});
+              Delegate* delegate);
   ~DriveFsHost() override;
 
   // Mount DriveFS.
@@ -53,17 +82,16 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
  private:
   class MountState;
 
-  // mojom::DriveFsDelegate:
-  void GetAccessToken(const std::string& client_id,
-                      const std::string& app_id,
-                      const std::vector<std::string>& scopes,
-                      GetAccessTokenCallback callback) override;
-
   // DiskMountManager::Observer:
   void OnMountEvent(chromeos::disks::DiskMountManager::MountEvent event,
                     chromeos::MountError error_code,
                     const chromeos::disks::DiskMountManager::MountPointInfo&
                         mount_info) override;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  // Returns the connection to the identity service, connecting lazily.
+  identity::mojom::IdentityManager& GetIdentityManager();
 
   // The path to the user's profile.
   const base::FilePath profile_path_;
@@ -71,12 +99,13 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
   // The user whose DriveFS instance |this| is host to.
   const AccountId account_id_;
 
-  // A callback used to create mojo connection delegates.
-  const base::RepeatingCallback<std::unique_ptr<MojoConnectionDelegate>()>
-      mojo_connection_delegate_factory_;
+  Delegate* const delegate_;
 
   // State specific to the current mount, or null if not mounted.
   std::unique_ptr<MountState> mount_state_;
+
+  // The connection to the identity service. Access via |GetIdentityManager()|.
+  identity::mojom::IdentityManagerPtr identity_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveFsHost);
 };
