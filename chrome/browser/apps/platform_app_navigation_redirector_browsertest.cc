@@ -7,7 +7,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -24,7 +23,6 @@ class PlatformAppNavigationRedirectorBrowserTest
     : public PlatformAppBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override;
-  void SetUpOnMainThread() override;
 
  protected:
   // Performs the following sequence:
@@ -120,12 +118,6 @@ void PlatformAppNavigationRedirectorBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   PlatformAppBrowserTest::SetUpCommandLine(command_line);
   command_line->AppendSwitch(::switches::kDisablePopupBlocking);
-}
-
-void PlatformAppNavigationRedirectorBrowserTest::SetUpOnMainThread() {
-  PlatformAppBrowserTest::SetUpOnMainThread();
-  prerender::PrerenderManager::SetMode(
-      prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
 }
 
 // TODO(sergeygs): Factor out common functionality from TestXyz,
@@ -434,13 +426,6 @@ IN_PROC_BROWSER_TEST_F(PlatformAppNavigationRedirectorBrowserTest,
                        XhrInTabNotIntercepted) {
   TestNegativeXhrInTab("url_handlers/xhr_downloader/main.html", "XHR succeeded",
                        "XHR failed", "url_handlers/handlers/steal_xhr_target");
-}
-
-// Test that a click on a prerendered link still launches.
-IN_PROC_BROWSER_TEST_F(PlatformAppNavigationRedirectorBrowserTest,
-                       PrerenderedClickInTabIntercepted) {
-  TestNavigationInTab("url_handlers/launching_pages/prerender_link.html",
-                      "url_handlers/handlers/simple", "Handler launched");
 }
 
 }  // namespace extensions
