@@ -250,7 +250,7 @@
     <messages fallback_to_english="true">
 
       <!-- The default value for HTTP Accept-Language header. -->
-      <message name="IDS_ACCEPT_LANGUAGES" use_name_for_id="true" formatter_data="android_java">
+      <message name="IDS_ACCEPT_LANGUAGES" use_name_for_id="true">
         en-US,en
       </message>
 
