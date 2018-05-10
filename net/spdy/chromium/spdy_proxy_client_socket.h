@@ -116,8 +116,6 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
     STATE_CLOSED
   };
 
-  void LogBlockedTunnelResponse() const;
-
   // Calls |callback.Run(result)|. Used to run a callback posted to the
   // message loop.
   void RunCallback(CompletionOnceCallback callback, int result) const;
