@@ -170,7 +170,11 @@ void FindBarHost::RestoreSavedFocus() {
 }
 
 bool FindBarHost::HasGlobalFindPasteboard() {
+#if defined(OS_MACOSX)
+  return true;
+#else
   return false;
+#endif
 }
 
 void FindBarHost::UpdateFindBarForChangedWebContents() {

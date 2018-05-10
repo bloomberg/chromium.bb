@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/find_bar/find_bar_platform_helper.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -71,6 +72,9 @@ class FindBarController : public content::NotificationObserver {
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  void SetText(base::string16 text);
+
+  Browser* browser() const { return browser_; }
   FindBar* find_bar() const { return find_bar_.get(); }
 
   // Reposition |view_location| such that it avoids |avoid_overlapping_rect|,
@@ -102,6 +106,8 @@ class FindBarController : public content::NotificationObserver {
 
   // The Browser creating this controller.
   Browser* const browser_;
+
+  std::unique_ptr<FindBarPlatformHelper> find_bar_platform_helper_;
 
   // The last match count we reported to the user. This is used by
   // UpdateFindBarForCurrentResult to avoid flickering.
