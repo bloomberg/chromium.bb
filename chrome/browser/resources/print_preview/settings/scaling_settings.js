@@ -176,7 +176,7 @@ cr.define('print_preview', function() {
     /** @override */
     isSectionVisibleInternal: function() {
       return this.fitToPageTicketItem_.isCapabilityAvailable() ||
-          (!this.collapseContent_ &&
+          (!this.collapseContent &&
            this.scalingTicketItem_.isCapabilityAvailable());
     },
 

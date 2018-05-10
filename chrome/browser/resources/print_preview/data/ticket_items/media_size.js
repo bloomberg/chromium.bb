@@ -44,7 +44,7 @@ cr.define('print_preview.ticket_items', function() {
       if (!this.isCapabilityAvailable()) {
         return false;
       }
-      return this.capability.option.some(function(option) {
+      return this.capability().option.some(function(option) {
         return option.width_microns == value.width_microns &&
             option.height_microns == value.height_microns &&
             option.is_continuous_feed == value.is_continuous_feed &&
@@ -60,7 +60,7 @@ cr.define('print_preview.ticket_items', function() {
           this.getSelectedDestInternal() &&
           this.getSelectedDestInternal().id ==
               print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
-      return !knownSizeToSaveAsPdf && !!this.capability;
+      return !knownSizeToSaveAsPdf && !!this.capability();
     }
 
     /** @override */
@@ -73,7 +73,7 @@ cr.define('print_preview.ticket_items', function() {
     }
 
     /** @return {Object} Media size capability of the selected destination. */
-    get capability() {
+    capability() {
       const destination = this.getSelectedDestInternal();
       return (destination && destination.capabilities &&
               destination.capabilities.printer &&
@@ -83,7 +83,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     getDefaultValueInternal() {
-      const defaultOptions = this.capability.option.filter(function(option) {
+      const defaultOptions = this.capability().option.filter(function(option) {
         return option.is_default;
       });
       return defaultOptions.length > 0 ? defaultOptions[0] : null;

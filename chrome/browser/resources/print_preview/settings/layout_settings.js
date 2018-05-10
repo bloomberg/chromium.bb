@@ -45,7 +45,7 @@ cr.define('print_preview', function() {
     /** @override */
     enterDocument: function() {
       print_preview.SettingsSection.prototype.enterDocument.call(this);
-      this.tracker.add(this.select_, 'change', this.onSelectChange_.bind(this));
+      this.tracker.add(this.select_, 'change', this.onSelectChange.bind(this));
       this.tracker.add(
           this.landscapeTicketItem_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
@@ -55,9 +55,8 @@ cr.define('print_preview', function() {
     /**
      * Called when the select element is changed. Updates the print ticket
      * layout selection.
-     * @private
      */
-    onSelectChange_: function() {
+    onSelectChange: function() {
       const select = this.select_;
       const isLandscape =
           select.options[select.selectedIndex].value == 'landscape';

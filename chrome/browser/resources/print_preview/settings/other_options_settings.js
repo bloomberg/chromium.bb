@@ -218,7 +218,10 @@ cr.define('print_preview', function() {
       $('rasterize-container').hidden = !this.rasterizeEnabled_;
     },
 
-    /** @override */
+    /**
+     * @public
+     * @override
+     */
     updateUiStateInternal: function() {
       if (this.isAvailable()) {
         for (let i = 0; i < this.elements_.length; i++)

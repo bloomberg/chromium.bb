@@ -1222,7 +1222,7 @@ cr.define('print_preview', function() {
         this.nativeLayer_.uiLoadedForTest();
       } else {
         combobox.value = 'landscape';
-        this.layoutSettings_.onSelectChange_();
+        this.layoutSettings_.onSelectChange();
       }
     },
 
@@ -1286,7 +1286,7 @@ cr.define('print_preview', function() {
         this.nativeLayer_.uiLoadedForTest();
       } else if (margins >= 0 && margins < combobox.length) {
         combobox.selectedIndex = margins;
-        this.marginSettings_.onSelectChange_();
+        this.marginSettings_.onSelectChange();
       } else {
         this.nativeLayer_.uiFailedLoadingForTest();
       }

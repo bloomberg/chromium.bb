@@ -15,7 +15,7 @@ cr.define('print_preview', function() {
 
     /**
      * Component's HTML element.
-     * @private {Element}
+     * @protected {Element}
      */
     this.element_ = null;
 
@@ -23,7 +23,7 @@ cr.define('print_preview', function() {
 
     /**
      * Component's event tracker.
-     * @private {!EventTracker}
+     * @protected {!EventTracker}
      */
     this.tracker_ = new EventTracker();
 

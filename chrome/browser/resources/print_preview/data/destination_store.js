@@ -1008,11 +1008,11 @@ cr.define('print_preview', function() {
      */
     updateDestination_(destination) {
       assert(destination.constructor !== Array, 'Single printer expected');
-      destination.capabilities_ =
-          localizeCapabilities(assert(destination.capabilities_));
+      destination.capabilities =
+          localizeCapabilities(assert(destination.capabilities));
       if (print_preview.originToType(destination.origin) !==
           print_preview.PrinterType.LOCAL_PRINTER) {
-        destination.capabilities_ = sortMediaSizes(destination.capabilities_);
+        destination.capabilities = sortMediaSizes(destination.capabilities);
       }
       const existingDestination =
           this.destinationMap_[this.getKey_(destination)];
