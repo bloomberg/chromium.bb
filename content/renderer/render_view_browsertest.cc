@@ -96,7 +96,6 @@
 #include "third_party/blink/public/platform/web_gesture_device.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_input_event.h"
-#include <android/keycodes.h>
 #endif
 
 #if defined(OS_WIN)
@@ -1552,55 +1551,6 @@ TEST_F(RenderViewImplTest, AndroidContextMenuSelectionOrdering) {
       ExecuteJavaScriptAndReturnIntValue(check_did_select, &did_select));
   EXPECT_EQ(1, did_select);
 }
-
-TEST_F(RenderViewImplTest, AndroidContextMenuSelectionCleared) {
-  // Load an HTML page consisting of an input field.
-  LoadHTML("<html>"
-           "<head>"
-           "</head>"
-           "<body>"
-           "<input id=\"test1\" value=\"abcdefghijklmnopqrstuvwxyz\"></input>"
-           "</body>"
-           "</html>");
-
-  WebGestureEvent gesture_event(WebInputEvent::kGestureTap,
-                                WebInputEvent::kNoModifiers,
-                                ui::EventTimeForNow());
-  gesture_event.SetPositionInWidget(gfx::PointF(20, 20));
-
-  SendWebGestureEvent(gesture_event);
-
-  frame()->GetWebFrame()->ExecuteCommand("SelectAll");
-
-  blink::WebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown,
-                                blink::WebInputEvent::kNoModifiers,
-                                ui::EventTimeForNow());
-  event.windows_key_code = ui::VKEY_BACK;
-  event.native_key_code = AKEYCODE_DEL;
-  SendWebKeyboardEvent(event);
-
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner =
-      new content::MessageLoopRunner;
-  blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
-      FROM_HERE, message_loop_runner->QuitClosure());
-
-  EXPECT_FALSE(render_thread_->sink().GetUniqueMessageMatching(
-      FrameHostMsg_ContextMenu::ID));
-
-  message_loop_runner->Run();
-
-  EXPECT_FALSE(render_thread_->sink().GetUniqueMessageMatching(
-      FrameHostMsg_ContextMenu::ID));
-
-  // Check whether text selection is cleared.
-  blink::WebInputMethodController* controller =
-      frame()->GetWebFrame()->GetInputMethodController();
-  blink::WebTextInputInfo info = controller->TextInputInfo();
-  EXPECT_EQ(0, info.selection_start);
-  EXPECT_EQ(0, info.selection_end);
-}
-
-
 #endif
 
 TEST_F(RenderViewImplTest, TestBackForward) {
