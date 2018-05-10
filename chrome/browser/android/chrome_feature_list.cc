@@ -70,9 +70,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTPostMessageAPI,
     &kCCTRedirectPreconnect,
     &kChromeDuplexFeature,
-    &kChromeHomeInactivitySheetExpansion,
-    &kChromeHomePersistentIph,
-    &kChromeHomePullToRefreshIphAtTop,
     &kChromeHomeSwipeLogic,
     &kChromeHomeSwipeLogicVelocity,
     &kChromeSmartSelection,
@@ -199,18 +196,6 @@ const base::Feature kCCTRedirectPreconnect{"CCTRedirectPreconnect",
 
 const base::Feature kChromeDuplexFeature{"ChromeDuplex",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kChromeHomeInactivitySheetExpansion{
-    "ChromeHomeInactivitySheetExpansion", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kChromeHomePersistentIph{"ChromeHomePersistentIph",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kChromeHomePullToRefreshIphAtTop{
-    "ChromeHomePullToRefreshIphAtTop", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kChromeHomeSurvey{"ChromeHomeSurvey",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeHomeSwipeLogic{"ChromeHomeSwipeLogic",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

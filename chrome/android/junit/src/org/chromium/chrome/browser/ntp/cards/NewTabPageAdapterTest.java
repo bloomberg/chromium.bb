@@ -81,7 +81,6 @@ import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -103,10 +102,9 @@ import java.util.List;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class})
 
-@DisableFeatures({ChromeFeatureList.CHROME_HOME,
-    ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD,
-    ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER,
-    ChromeFeatureList.SIMPLIFIED_NTP, ChromeFeatureList.CHROME_DUPLEX})
+@DisableFeatures({ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD,
+        ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER,
+        ChromeFeatureList.SIMPLIFIED_NTP, ChromeFeatureList.CHROME_DUPLEX})
 
 public class NewTabPageAdapterTest {
     @Rule
@@ -1016,10 +1014,9 @@ public class NewTabPageAdapterTest {
         assertEquals(0, preferenceManager.getNewTabPageSigninPromoSuppressionPeriodStart());
     }
 
-    @Ignore // Disabled for new Chrome Home, see: https://crbug.com/805160
+    @Ignore // Disabled for new Chrome Home, see: https://crbug.com/805160, re-enable for Modern
     @Test
     @Feature({"Ntp"})
-    @EnableFeatures(ChromeFeatureList.CHROME_HOME)
     public void testSigninPromoModern() {
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
         when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
@@ -1176,10 +1173,9 @@ public class NewTabPageAdapterTest {
                 mAdapter.getFirstPositionForType(ItemViewType.ALL_DISMISSED));
     }
 
-    @Ignore // Disabled for new Chrome Home, see: https://crbug.com/805160
+    @Ignore // Disabled for new Chrome Home, see: https://crbug.com/805160, re-enable for Modern
     @Test
     @Feature({"Ntp"})
-    @EnableFeatures(ChromeFeatureList.CHROME_HOME)
     public void testAllDismissedModern() {
         when(mUiDelegate.isVisible()).thenReturn(true);
 

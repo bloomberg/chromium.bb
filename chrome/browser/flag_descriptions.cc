@@ -1927,27 +1927,6 @@ const char kChromeDuplexName[] = "Chrome Duplex";
 const char kChromeDuplexDescription[] =
     "Enables Chrome Duplex, split toolbar Chrome Home, on Android.";
 
-const char kChromeHomeEnableSurveyName[] = "Enable Chrome Home survey";
-const char kChromeHomeEnableSurveyDescription[] =
-    "If enabled, the survey process will allow surveys using sample "
-    "parameters.";
-
-const char kChromeHomeInactivitySheetExpansionName[] =
-    "Expansion of Chrome Home bottom sheet on startup";
-const char kChromeHomeInactivitySheetExpansionDescription[] =
-    "Expand bottom sheet on startup in Chrome Home after a period of"
-    " inactivity.";
-
-const char kChromeHomePersistentIphName[] = "Chrome Home Persistent Iph";
-const char kChromeHomePersistentIphDescription[] =
-    "Wait to dismiss the Chrome Home IPH until the user inteacts with the "
-    "toolbar or a timer expires.";
-
-const char kChromeHomePullToRefreshIphAtTopName[] =
-    "Chrome Home Pull-To-Refresh Iph At Top";
-const char kChromeHomePullToRefreshIphAtTopDescription[] =
-    "Show the Chrome Home pull-to-refresh help bubble at the top of the screen";
-
 const char kChromeHomeSwipeLogicName[] = "Chrome Home Swipe Logic";
 const char kChromeHomeSwipeLogicDescription[] =
     "Various swipe logic options for Chrome Home for sheet expansion.";
