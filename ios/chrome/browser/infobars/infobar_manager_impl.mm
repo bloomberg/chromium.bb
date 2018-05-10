@@ -90,5 +90,8 @@ void InfoBarManagerImpl::WebStateDestroyed(web::WebState* web_state) {
 
 void InfoBarManagerImpl::OpenURL(const GURL& url,
                                  WindowOpenDisposition disposition) {
-  NOTIMPLEMENTED();
+  web::WebState::OpenURLParams params(url, web::Referrer(), disposition,
+                                      ui::PAGE_TRANSITION_LINK,
+                                      /*is_renderer_initiated=*/false);
+  web_state_->OpenURL(params);
 }
