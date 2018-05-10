@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
@@ -48,7 +49,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
   void DispatchFrame(scoped_refptr<StaticBitmapImage>,
                      double commit_start_time,
                      const SkIRect& damage_rect);
-  void ReclaimResource(unsigned resource_id);
+  void ReclaimResource(viz::ResourceId);
   void Reshape(const IntSize&);
 
   // viz::mojom::blink::CompositorFrameSinkClient implementation.
@@ -90,10 +91,10 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
 
   bool VerifyImageSize(const IntSize);
   void PostImageToPlaceholderIfNotBlocked(scoped_refptr<StaticBitmapImage>,
-                                          unsigned resource_id);
+                                          viz::ResourceId resource_id);
   // virtual for testing
   virtual void PostImageToPlaceholder(scoped_refptr<StaticBitmapImage>,
-                                      unsigned resource_id);
+                                      viz::ResourceId resource_id);
 
   viz::mojom::blink::CompositorFrameSinkPtr sink_;
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> binding_;
@@ -105,7 +106,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
   // The latest_unposted_resource_id_ always refers to the Id of the frame
   // resource used by the latest_unposted_image_.
   scoped_refptr<StaticBitmapImage> latest_unposted_image_;
-  unsigned latest_unposted_resource_id_;
+  viz::ResourceId latest_unposted_resource_id_;
   unsigned num_unreclaimed_frames_posted_;
 
   viz::BeginFrameAck current_begin_frame_ack_;
