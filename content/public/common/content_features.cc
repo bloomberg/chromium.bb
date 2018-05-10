@@ -233,10 +233,6 @@ const base::Feature kNetworkServiceInProcess{"NetworkServiceInProcess",
 const base::Feature kNotificationContentImage{"NotificationContentImage",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Use Mojo IPC for notifications.
-const base::Feature kNotificationsWithMojo{"NotificationsWithMojo",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Off-main-thread WebSocket. See https://crbug.com/825740
 const base::Feature kOffMainThreadWebSocket{"OffMainThreadWebSocket",
                                             base::FEATURE_ENABLED_BY_DEFAULT};

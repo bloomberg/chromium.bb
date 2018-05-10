@@ -17,19 +17,10 @@
 #include "content/public/common/platform_notification_data.h"
 #include "ipc/ipc_message_macros.h"
 
-// Singly-included section for type definitions.
-#ifndef INTERNAL_CONTENT_COMMON_PLATFORM_NOTIFICATION_MESSAGES_H_
-#define INTERNAL_CONTENT_COMMON_PLATFORM_NOTIFICATION_MESSAGES_H_
-
-// Defines the pair of [notification id] => [notification data] used when
-// getting the notifications for a given Service Worker registration.
-using PersistentNotificationInfo =
-    std::pair<std::string, content::PlatformNotificationData>;
-
-#endif  // INTERNAL_CONTENT_COMMON_PLATFORM_NOTIFICATION_MESSAGES_H_
-
 #define IPC_MESSAGE_START PlatformNotificationMsgStart
 
+// TODO(https://crbug.com/841329): Delete this legacy IPC code, use a pure
+// mojo struct instead from ServiceWorkerEventDispatcher mojo interface.
 IPC_ENUM_TRAITS_MAX_VALUE(
     content::PlatformNotificationData::Direction,
     content::PlatformNotificationData::DIRECTION_LAST)
@@ -62,49 +53,5 @@ IPC_STRUCT_TRAITS_BEGIN(content::PlatformNotificationData)
   IPC_STRUCT_TRAITS_MEMBER(data)
   IPC_STRUCT_TRAITS_MEMBER(actions)
 IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::NotificationResources)
-  IPC_STRUCT_TRAITS_MEMBER(image)
-  IPC_STRUCT_TRAITS_MEMBER(notification_icon)
-  IPC_STRUCT_TRAITS_MEMBER(badge)
-  IPC_STRUCT_TRAITS_MEMBER(action_icons)
-IPC_STRUCT_TRAITS_END()
-
-// Messages sent from the browser to the renderer.
-
-// Reply to PlatformNotificationHostMsg_ShowPersistent indicating that a
-// persistent notification has been shown on the platform (if |success| is
-// true), or that an unspecified error occurred.
-IPC_MESSAGE_CONTROL2(PlatformNotificationMsg_DidShowPersistent,
-                     int /* request_id */,
-                     bool /* success */)
-
-// Reply to PlatformNotificationHostMsg_GetNotifications sharing a vector of
-// available notifications per the request's constraints.
-IPC_MESSAGE_CONTROL2(PlatformNotificationMsg_DidGetNotifications,
-                     int /* request_id */,
-                     std::vector<PersistentNotificationInfo>
-                         /* notifications */)
-
-// Messages sent from the renderer to the browser.
-
-IPC_MESSAGE_CONTROL5(
-    PlatformNotificationHostMsg_ShowPersistent,
-    int /* request_id */,
-    int64_t /* service_worker_registration_id */,
-    GURL /* origin */,
-    content::PlatformNotificationData /* notification_data */,
-    content::NotificationResources /* notification_resources */)
-
-IPC_MESSAGE_CONTROL4(PlatformNotificationHostMsg_GetNotifications,
-                     int /* request_id */,
-                     int64_t /* service_worker_registration_id */,
-                     GURL /* origin */,
-                     std::string /* filter_tag */)
-
-IPC_MESSAGE_CONTROL3(PlatformNotificationHostMsg_ClosePersistent,
-                     GURL /* origin */,
-                     std::string /* tag */,
-                     std::string /* notification_id */)
 
 #endif  // CONTENT_COMMON_PLATFORM_NOTIFICATION_MESSAGES_H_

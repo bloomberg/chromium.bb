@@ -845,9 +845,6 @@
       status: "stable",
     },
     {
-      name: "NotificationsWithMojo",
-    },
-    {
       name: "NullableDocumentDomain",
       status: "experimental",
     },

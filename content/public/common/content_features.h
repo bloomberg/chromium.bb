@@ -60,7 +60,6 @@ CONTENT_EXPORT extern const base::Feature kMojoSessionStorage;
 CONTENT_EXPORT extern const base::Feature kMojoVideoCapture;
 CONTENT_EXPORT extern const base::Feature kNetworkServiceInProcess;
 CONTENT_EXPORT extern const base::Feature kNotificationContentImage;
-CONTENT_EXPORT extern const base::Feature kNotificationsWithMojo;
 CONTENT_EXPORT extern const base::Feature kOffMainThreadWebSocket;
 CONTENT_EXPORT extern const base::Feature kOriginManifest;
 CONTENT_EXPORT extern const base::Feature kOriginTrials;

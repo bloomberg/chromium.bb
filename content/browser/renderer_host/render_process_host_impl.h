@@ -75,7 +75,6 @@ class ChildConnection;
 class GpuClientImpl;
 class IndexedDBDispatcherHost;
 class InProcessChildThreadParams;
-class NotificationMessageFilter;
 class PermissionServiceContext;
 class PeerConnectionTrackerHost;
 class PushMessagingManager;
@@ -332,10 +331,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   RenderFrameMessageFilter* render_frame_message_filter_for_testing() const {
     return render_frame_message_filter_.get();
-  }
-
-  NotificationMessageFilter* notification_message_filter() const {
-    return notification_message_filter_.get();
   }
 
   void SetBrowserPluginMessageFilterSubFilterForTesting(
@@ -683,10 +678,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   scoped_refptr<RenderWidgetHelper> widget_helper_;
 
   scoped_refptr<RenderFrameMessageFilter> render_frame_message_filter_;
-
-  // The filter for Web Notification messages coming from the renderer. Holds a
-  // closure per notification that must be freed when the notification closes.
-  scoped_refptr<NotificationMessageFilter> notification_message_filter_;
 
   // The filter for messages coming from the browser plugin.
   scoped_refptr<BrowserPluginMessageFilter> bp_message_filter_;

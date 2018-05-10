@@ -9,11 +9,9 @@
 #include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
-#include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/notifications/get_notification_options.h"
-#include "third_party/blink/renderer/modules/notifications/notification.h"
 #include "third_party/blink/renderer/modules/notifications/notification_data.h"
 #include "third_party/blink/renderer/modules/notifications/notification_manager.h"
 #include "third_party/blink/renderer/modules/notifications/notification_options.h"
@@ -25,32 +23,6 @@
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
-namespace {
-
-// Allows using a CallbackPromiseAdapter with a WebVector to resolve the
-// getNotifications() promise with a HeapVector owning Notifications.
-class NotificationArray {
- public:
-  using WebType = const WebVector<WebPersistentNotificationInfo>&;
-
-  static HeapVector<Member<Notification>> Take(
-      ScriptPromiseResolver* resolver,
-      const WebVector<WebPersistentNotificationInfo>& notification_infos) {
-    HeapVector<Member<Notification>> notifications;
-    for (const WebPersistentNotificationInfo& notification_info :
-         notification_infos)
-      notifications.push_back(Notification::Create(
-          resolver->GetExecutionContext(), notification_info.notification_id,
-          notification_info.data, true /* showing */));
-
-    return notifications;
-  }
-
- private:
-  NotificationArray() = delete;
-};
-
-}  // namespace
 
 ServiceWorkerRegistrationNotifications::ServiceWorkerRegistrationNotifications(
     ExecutionContext* context,
@@ -115,23 +87,10 @@ ScriptPromise ServiceWorkerRegistrationNotifications::getNotifications(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {
-    ExecutionContext* execution_context = ExecutionContext::From(script_state);
-    NotificationManager::From(execution_context)
-        ->GetNotifications(registration.WebRegistration(), options.tag(),
-                           WrapPersistent(resolver));
-  } else {
-    auto callbacks =
-        std::make_unique<CallbackPromiseAdapter<NotificationArray, void>>(
-            resolver);
-
-    WebNotificationManager* notification_manager =
-        Platform::Current()->GetWebNotificationManager();
-    DCHECK(notification_manager);
-
-    notification_manager->GetNotifications(
-        options.tag(), registration.WebRegistration(), std::move(callbacks));
-  }
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  NotificationManager::From(execution_context)
+      ->GetNotifications(registration.WebRegistration(), options.tag(),
+                         WrapPersistent(resolver));
   return promise;
 }
 
@@ -186,23 +145,10 @@ void ServiceWorkerRegistrationNotifications::DidLoadResources(
     NotificationResourcesLoader* loader) {
   DCHECK(loaders_.Contains(loader));
 
-  if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {
-    NotificationManager::From(GetExecutionContext())
-        ->DisplayPersistentNotification(registration_->WebRegistration(), data,
-                                        loader->GetResources(),
-                                        WrapPersistent(resolver));
-  } else {
-    WebNotificationManager* notification_manager =
-        Platform::Current()->GetWebNotificationManager();
-    DCHECK(notification_manager);
-
-    std::unique_ptr<WebNotificationShowCallbacks> callbacks =
-        std::make_unique<CallbackPromiseAdapter<void, void>>(resolver);
-
-    notification_manager->ShowPersistent(
-        WebSecurityOrigin(origin.get()), data, loader->GetResources(),
-        registration_->WebRegistration(), std::move(callbacks));
-  }
+  NotificationManager::From(GetExecutionContext())
+      ->DisplayPersistentNotification(registration_->WebRegistration(), data,
+                                      loader->GetResources(),
+                                      WrapPersistent(resolver));
   loaders_.erase(loader);
 }
 

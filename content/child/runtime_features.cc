@@ -326,9 +326,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       WebRuntimeFeatures::EnableGenericSensorExtraClasses(true);
   }
 
-  if (base::FeatureList::IsEnabled(features::kNotificationsWithMojo))
-    WebRuntimeFeatures::EnableNotificationsWithMojo(true);
-
   if (base::FeatureList::IsEnabled(network::features::kOutOfBlinkCORS))
     WebRuntimeFeatures::EnableOutOfBlinkCORS(true);
 
