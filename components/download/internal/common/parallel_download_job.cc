@@ -123,14 +123,9 @@ void ParallelDownloadJob::BuildParallelRequestAfterDelay() {
 
 void ParallelDownloadJob::OnInputStreamReady(
     DownloadWorker* worker,
-    std::unique_ptr<InputStream> input_stream,
-    std::unique_ptr<DownloadCreateInfo> download_create_info) {
-  // If server returns a wrong range, abort the parallel request.
-  bool success = download_create_info->offset == worker->offset();
-  if (success) {
-    success = DownloadJob::AddInputStream(std::move(input_stream),
-                                          worker->offset(), worker->length());
-  }
+    std::unique_ptr<InputStream> input_stream) {
+  bool success = DownloadJob::AddInputStream(
+      std::move(input_stream), worker->offset(), worker->length());
   RecordParallelDownloadAddStreamSuccess(success);
 
   // Destroy the request if the sink is gone.
