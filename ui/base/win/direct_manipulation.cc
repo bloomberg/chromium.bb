@@ -170,7 +170,7 @@ bool DirectManipulationHelper::OnPointerHitTest(
   static GetPointerTypeFn get_pointer_type = reinterpret_cast<GetPointerTypeFn>(
       GetProcAddress(GetModuleHandleA("user32.dll"), "GetPointerType"));
   if (get_pointer_type && get_pointer_type(pointer_id, &pointer_type) &&
-      pointer_type == PT_TOUCHPAD) {
+      pointer_type == PT_TOUCHPAD && event_target) {
     viewport_->SetContact(pointer_id);
     // Request begin frame for fake viewport.
     need_poll_events_ = true;
@@ -284,12 +284,21 @@ HRESULT DirectManipulationHandler::OnViewportStatusChanged(
     IDirectManipulationViewport* viewport,
     DIRECTMANIPULATION_STATUS current,
     DIRECTMANIPULATION_STATUS previous) {
+  // MSDN never mention |viewport| are nullable and we never saw it is null when
+  // testing.
+  DCHECK(viewport);
+
   // The state of our viewport has changed! We'l be in one of three states:
   // - ENABLED: initial state
   // - READY: the previous gesture has been completed
   // - RUNNING: gesture updating
   // - INERTIA: finger leave touchpad content still updating by inertia
   HRESULT hr = S_OK;
+
+  // Windows should not call this when event_target_ is null since we do not
+  // pass the DM_POINTERHITTEST to DirectManipulation.
+  if (!event_target_)
+    return hr;
 
   if (current == previous)
     return hr;
@@ -359,8 +368,20 @@ bool DifferentLessThanOne(int f1, int f2) {
 HRESULT DirectManipulationHandler::OnContentUpdated(
     IDirectManipulationViewport* viewport,
     IDirectManipulationContent* content) {
+  // MSDN never mention these params are nullable and we never saw they are null
+  // when testing.
+  DCHECK(viewport);
+  DCHECK(content);
+
+  HRESULT hr = S_OK;
+
+  // Windows should not call this when event_target_ is null since we do not
+  // pass the DM_POINTERHITTEST to DirectManipulation.
+  if (!event_target_)
+    return hr;
+
   float xform[6];
-  HRESULT hr = content->GetContentTransform(xform, ARRAYSIZE(xform));
+  hr = content->GetContentTransform(xform, ARRAYSIZE(xform));
   if (!SUCCEEDED(hr))
     return hr;
 
@@ -428,7 +449,6 @@ HRESULT DirectManipulationHandler::OnContentUpdated(
 
 void DirectManipulationHandler::SetWindowEventTarget(
     WindowEventTarget* event_target) {
-  DCHECK(event_target);
   event_target_ = event_target;
 }
 
