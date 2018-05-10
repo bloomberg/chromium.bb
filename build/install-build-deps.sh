@@ -152,6 +152,7 @@ fi
 # Packages needed for development
 dev_list="\
   bison
+  bzip2
   cdbs
   curl
   dbus-x11
@@ -219,6 +220,7 @@ dev_list="\
   wdiff
   x11-utils
   xcompmgr
+  xz-utils
   zip
   $chromeos_dev_list
 "
