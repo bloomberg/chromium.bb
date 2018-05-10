@@ -725,6 +725,10 @@ bool ShouldHideActiveAppsFromShelf() {
       kHideActiveAppsFromShelf);
 }
 
+bool ShouldShowShelfHoverPreviews() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfHoverPreviews);
+}
+
 bool IsInstantTetheringBackgroundAdvertisingSupported() {
   return base::FeatureList::IsEnabled(
       kInstantTetheringBackgroundAdvertisementSupport);
