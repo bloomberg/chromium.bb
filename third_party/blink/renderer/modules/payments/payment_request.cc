@@ -200,6 +200,15 @@ void ValidateShippingOptionOrPaymentItem(const T& item,
     exception_state.ThrowRangeError(error_message);
     return;
   }
+
+  // TODO(zino): The `currencySystem` member is deprecated in spec side.
+  // We want to count when the currency code is not well-formed.
+  // Please see http://crbug.com/839402
+  if (ScriptRegexp("^[A-Z]{3}$", kTextCaseUnicodeInsensitive)
+          .Match(item.amount().currency()) != 0) {
+    UseCounter::Count(&execution_context,
+                      WebFeature::kPaymentRequestInvalidCurrencyCode);
+  }
 }
 
 void ValidateAndConvertDisplayItems(const HeapVector<PaymentItem>& input,
