@@ -3870,26 +3870,6 @@
             ]
         }
     ],
-    "UMAHttpRetry": [
-        {
-            "platforms": [
-                "win",
-                "mac",
-                "chromeos",
-                "linux",
-                "ios",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "UMAHttpRetryEnabled",
-                    "enable_features": [
-                        "UMAHttpRetry"
-                    ]
-                }
-            ]
-        }
-    ],
     "UkmSamplingRate": [
         {
             "platforms": [
