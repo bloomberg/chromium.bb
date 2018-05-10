@@ -148,14 +148,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "createNewFolderDownloads"),
         TestParameter(NOT_IN_GUEST_MODE, "createNewFolderDrive")));
 
-// Fails on official build. http://crbug.com/429294
-#if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
-#define MAYBE_KeyboardOperations DISABLED_KeyboardOperations
-#else
-#define MAYBE_KeyboardOperations KeyboardOperations
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_KeyboardOperations,
+    KeyboardOperations,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(IN_GUEST_MODE, "keyboardDeleteDownloads"),
