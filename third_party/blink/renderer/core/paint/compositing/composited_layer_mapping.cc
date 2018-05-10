@@ -1777,7 +1777,7 @@ void CompositedLayerMapping::UpdateBackgroundLayerGeometry(
   FloatSize background_size = relative_compositing_bounds_size;
   if (BackgroundLayerPaintsFixedRootBackground()) {
     LocalFrameView* frame_view = ToLayoutView(GetLayoutObject()).GetFrameView();
-    background_size = FloatSize(frame_view->VisibleContentRect().Size());
+    background_size = FloatSize(frame_view->VisibleContentSize());
   }
   background_layer_->SetPosition(FloatPoint());
   if (background_size != background_layer_->Size()) {

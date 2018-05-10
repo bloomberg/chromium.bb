@@ -40,8 +40,8 @@ void FramePainter::Paint(GraphicsContext& context,
 
   IntRect document_dirty_rect;
   IntPoint frame_view_location(GetFrameView().Location());
-  IntRect visible_area_without_scrollbars(
-      frame_view_location, GetFrameView().VisibleContentRect().Size());
+  IntRect visible_area_without_scrollbars(frame_view_location,
+                                          GetFrameView().VisibleContentSize());
   IntPoint content_offset =
       -frame_view_location + GetFrameView().ScrollOffsetInt();
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
@@ -95,7 +95,7 @@ void FramePainter::Paint(GraphicsContext& context,
     IntRect scroll_view_dirty_rect = rect.rect_;
     IntRect visible_area_with_scrollbars(
         frame_view_location,
-        GetFrameView().VisibleContentRect(kIncludeScrollbars).Size());
+        GetFrameView().VisibleContentSize(kIncludeScrollbars));
     scroll_view_dirty_rect.Intersect(visible_area_with_scrollbars);
     scroll_view_dirty_rect.MoveBy(-frame_view_location);
 
