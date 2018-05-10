@@ -9,6 +9,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_reader.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_data_writer.h"
 #include "components/history/core/browser/history_service.h"
 
 namespace resource_coordinator {
@@ -36,7 +37,7 @@ LocalSiteCharacteristicsDataStore::GetReaderForOrigin(
   return base::WrapUnique(data_reader);
 }
 
-std::unique_ptr<LocalSiteCharacteristicsDataWriter>
+std::unique_ptr<SiteCharacteristicsDataWriter>
 LocalSiteCharacteristicsDataStore::GetWriterForOrigin(
     const std::string& origin_str) {
   internal::LocalSiteCharacteristicsDataImpl* impl =

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/resource_coordinator/site_characteristics_data_writer.h"
 
 namespace resource_coordinator {
 
@@ -14,21 +15,20 @@ namespace internal {
 class LocalSiteCharacteristicsDataImpl;
 }  // namespace internal
 
-// Used to record local characteristics usage observations in the local
-// database.
-class LocalSiteCharacteristicsDataWriter {
+// Specialization of a SiteCharacteristicsDataWriter that delegates to a
+// LocalSiteCharacteristicsDataImpl.
+class LocalSiteCharacteristicsDataWriter
+    : public SiteCharacteristicsDataWriter {
  public:
-  ~LocalSiteCharacteristicsDataWriter();
+  ~LocalSiteCharacteristicsDataWriter() override;
 
-  // Records tab load/unload events.
-  void NotifySiteLoaded();
-  void NotifySiteUnloaded();
-
-  // Records feature usage.
-  void NotifyUpdatesFaviconInBackground();
-  void NotifyUpdatesTitleInBackground();
-  void NotifyUsesAudioInBackground();
-  void NotifyUsesNotificationsInBackground();
+  // SiteCharacteristicsDataWriter:
+  void NotifySiteLoaded() override;
+  void NotifySiteUnloaded() override;
+  void NotifyUpdatesFaviconInBackground() override;
+  void NotifyUpdatesTitleInBackground() override;
+  void NotifyUsesAudioInBackground() override;
+  void NotifyUsesNotificationsInBackground() override;
 
  private:
   friend class LocalSiteCharacteristicsDataWriterTest;

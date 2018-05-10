@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_impl.h"
-#include "chrome/browser/resource_coordinator/local_site_characteristics_data_writer.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_store.h"
+#include "chrome/browser/resource_coordinator/site_characteristics_data_writer.h"
 #include "components/history/core/browser/history_service_observer.h"
 
 class Profile;
@@ -37,7 +37,7 @@ class LocalSiteCharacteristicsDataStore
   std::unique_ptr<SiteCharacteristicsDataReader> GetReaderForOrigin(
       const std::string& origin_str) override;
 
-  std::unique_ptr<LocalSiteCharacteristicsDataWriter> GetWriterForOrigin(
+  std::unique_ptr<SiteCharacteristicsDataWriter> GetWriterForOrigin(
       const std::string& origin_str);
 
   const LocalSiteCharacteristicsMap& origin_data_map_for_testing() const {
