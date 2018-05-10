@@ -480,7 +480,10 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     WebViewContentsClientAdapter createWebViewContentsClientAdapter(WebView webView,
             Context context) {
-        return new WebViewContentsClientAdapter(webView, context, mWebViewDelegate);
+        try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped(
+                     "WebViewChromiumFactoryProvider.insideCreateWebViewContentsClientAdapter")) {
+            return new WebViewContentsClientAdapter(webView, context, mWebViewDelegate);
+        }
     }
 
     AutofillProvider createAutofillProvider(Context context, ViewGroup containerView) {

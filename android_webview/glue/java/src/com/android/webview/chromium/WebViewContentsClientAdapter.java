@@ -132,17 +132,20 @@ class WebViewContentsClientAdapter extends AwContentsClient {
     @SuppressLint("HandlerLeak")
     WebViewContentsClientAdapter(WebView webView, Context context,
             WebViewDelegate webViewDelegate) {
-        if (webView == null || webViewDelegate == null) {
-            throw new IllegalArgumentException("webView or delegate can't be null.");
-        }
+        try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped(
+                     "WebViewContentsClientAdapter.beginningOfConstructor")) {
+            if (webView == null || webViewDelegate == null) {
+                throw new IllegalArgumentException("webView or delegate can't be null.");
+            }
 
-        if (context == null) {
-            throw new IllegalArgumentException("context can't be null.");
-        }
+            if (context == null) {
+                throw new IllegalArgumentException("context can't be null.");
+            }
 
-        mContext = context;
-        mWebView = webView;
-        mWebViewDelegate = webViewDelegate;
+            mContext = context;
+            mWebView = webView;
+            mWebViewDelegate = webViewDelegate;
+        }
         try (ScopedSysTraceEvent event =
                         ScopedSysTraceEvent.scoped("WebViewContentsClientAdapter.constructor")) {
             mSupportLibClient = new SupportLibWebViewContentsClientAdapter();
