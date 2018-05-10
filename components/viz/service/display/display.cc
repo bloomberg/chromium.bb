@@ -39,6 +39,13 @@
 
 namespace viz {
 
+struct Display::PendingPresentedCallbacks {
+  PendingPresentedCallbacks(uint64_t swap_id, PresentedCallbacks callbacks)
+      : swap_id(swap_id), callbacks(std::move(callbacks)) {}
+  uint64_t swap_id = 0;
+  PresentedCallbacks callbacks;
+};
+
 Display::Display(
     SharedBitmapManager* bitmap_manager,
     const RendererSettings& settings,
@@ -61,13 +68,10 @@ Display::Display(
 }
 
 Display::~Display() {
-  for (auto& callbacks : previous_presented_callbacks_) {
-    for (auto& callback : callbacks)
+  for (auto& pending_callbacks : pending_presented_callbacks_) {
+    for (auto& callback : pending_callbacks.callbacks)
       std::move(callback).Run(base::TimeTicks(), base::TimeDelta(), 0);
   }
-
-  for (auto& callback : active_presented_callbacks_)
-    std::move(callback).Run(base::TimeTicks(), base::TimeDelta(), 0);
 
   for (auto& callback : presented_callbacks_)
     std::move(callback).Run(base::TimeTicks(), base::TimeDelta(), 0);
@@ -444,16 +448,12 @@ bool Display::DrawAndSwap() {
 }
 
 void Display::DidReceiveSwapBuffersAck(uint64_t swap_id) {
-  // TODO(penghuang): Remove it when we can get accurate presentation time from
-  // GPU for every SwapBuffers. https://crbug.com/776877
-  if (!active_presented_callbacks_.empty() ||
-      !previous_presented_callbacks_.empty()) {
-    DLOG(WARNING) << "VSync for last SwapBuffers is not received!";
-    previous_presented_callbacks_.push_back(
-        std::move(active_presented_callbacks_));
+  DCHECK(pending_presented_callbacks_.empty() ||
+         pending_presented_callbacks_.back().swap_id < swap_id);
+  if (!presented_callbacks_.empty()) {
+    pending_presented_callbacks_.emplace_back(swap_id,
+                                              std::move(presented_callbacks_));
   }
-  active_presented_callbacks_ = std::move(presented_callbacks_);
-
   if (scheduler_)
     scheduler_->DidReceiveSwapBuffersAck();
   if (renderer_)
@@ -475,23 +475,17 @@ void Display::DidReceiveCALayerParams(
 void Display::DidReceivePresentationFeedback(
     uint64_t swap_id,
     const gfx::PresentationFeedback& feedback) {
-  // TODO(penghuang): Remove it when we can get accurate presentation time from
-  // GPU for every SwapBuffers. https://crbug.com/776877
-  base::TimeTicks previous_timebase =
-      feedback.timestamp -
-      feedback.interval * previous_presented_callbacks_.size();
-  for (auto& callbacks : previous_presented_callbacks_) {
-    for (auto& callback : callbacks)
-      std::move(callback).Run(previous_timebase, feedback.interval, 0);
-    previous_timebase += feedback.interval;
+  if (pending_presented_callbacks_.empty())
+    return;
+  DCHECK_LE(swap_id, pending_presented_callbacks_.front().swap_id);
+  auto& pending_callbacks = pending_presented_callbacks_.front();
+  if (swap_id == pending_callbacks.swap_id) {
+    for (auto& callback : pending_callbacks.callbacks) {
+      std::move(callback).Run(feedback.timestamp, feedback.interval,
+                              feedback.flags);
+    }
+    pending_presented_callbacks_.pop_front();
   }
-  previous_presented_callbacks_.clear();
-
-  for (auto& callback : active_presented_callbacks_) {
-    std::move(callback).Run(feedback.timestamp, feedback.interval,
-                            feedback.flags);
-  }
-  active_presented_callbacks_.clear();
 }
 
 void Display::DidFinishLatencyInfo(

@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"
 #include "ui/gl/gl_bindings.h"
@@ -113,10 +114,12 @@ gfx::SwapResult GLSurfaceOSMesaWin::PostSubBuffer(
 
   constexpr int64_t kRefreshIntervalInMicroseconds =
       base::Time::kMicrosecondsPerSecond / 60;
-  callback.Run(gfx::PresentationFeedback(
+  gfx::PresentationFeedback feedback(
       base::TimeTicks::Now(),
       base::TimeDelta::FromMicroseconds(kRefreshIntervalInMicroseconds),
-      0 /* flags */));
+      0 /* flags */);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(callback, feedback));
   return gfx::SwapResult::SWAP_ACK;
 }
 

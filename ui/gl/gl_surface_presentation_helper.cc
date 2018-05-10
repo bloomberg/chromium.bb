@@ -99,8 +99,7 @@ void GLSurfacePresentationHelper::PostSwapBuffers(gfx::SwapResult result) {
   DCHECK(!pending_frames_.empty());
   auto& frame = pending_frames_.back();
   frame.result = result;
-  if (!waiting_for_vsync_parameters_)
-    CheckPendingFrames();
+  ScheduleCheckPendingFrames(false /* align_with_next_vsync */);
 }
 
 void GLSurfacePresentationHelper::CheckPendingFrames() {
@@ -230,13 +229,41 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
     }
   }
 
-  if (waiting_for_vsync_parameters_)
-    return;
-
   if (pending_frames_.empty() && !need_update_vsync)
     return;
+  ScheduleCheckPendingFrames(true /* align_with_next_vsync */);
+}
 
-  waiting_for_vsync_parameters_ = true;
+void GLSurfacePresentationHelper::CheckPendingFramesCallback() {
+  DCHECK(check_pending_frame_scheduled_);
+  check_pending_frame_scheduled_ = false;
+  CheckPendingFrames();
+}
+
+void GLSurfacePresentationHelper::UpdateVSyncCallback(
+    const base::TimeTicks timebase,
+    const base::TimeDelta interval) {
+  DCHECK(check_pending_frame_scheduled_);
+  check_pending_frame_scheduled_ = false;
+  vsync_timebase_ = timebase;
+  vsync_interval_ = interval;
+  CheckPendingFrames();
+}
+
+void GLSurfacePresentationHelper::ScheduleCheckPendingFrames(
+    bool align_with_next_vsync) {
+  if (check_pending_frame_scheduled_)
+    return;
+  check_pending_frame_scheduled_ = true;
+
+  if (!align_with_next_vsync) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&GLSurfacePresentationHelper::CheckPendingFramesCallback,
+                       weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
   if (vsync_provider_ &&
       !vsync_provider_->SupportGetVSyncParametersIfAvailable()) {
     // In this case, the |vsync_provider_| will call the callback when the next
@@ -260,22 +287,6 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
       base::BindOnce(&GLSurfacePresentationHelper::CheckPendingFramesCallback,
                      weak_ptr_factory_.GetWeakPtr()),
       next_vsync - now);
-}
-
-void GLSurfacePresentationHelper::CheckPendingFramesCallback() {
-  DCHECK(waiting_for_vsync_parameters_);
-  waiting_for_vsync_parameters_ = false;
-  CheckPendingFrames();
-}
-
-void GLSurfacePresentationHelper::UpdateVSyncCallback(
-    const base::TimeTicks timebase,
-    const base::TimeDelta interval) {
-  DCHECK(waiting_for_vsync_parameters_);
-  waiting_for_vsync_parameters_ = false;
-  vsync_timebase_ = timebase;
-  vsync_interval_ = interval;
-  CheckPendingFrames();
 }
 
 }  // namespace gl
