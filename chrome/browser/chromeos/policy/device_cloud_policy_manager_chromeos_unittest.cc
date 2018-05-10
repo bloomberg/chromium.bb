@@ -120,7 +120,7 @@ class DeviceCloudPolicyManagerChromeOSTest
         state_keys_broker_(&fake_session_manager_client_),
         store_(NULL) {
     fake_statistics_provider_.SetMachineStatistic(
-        chromeos::system::kSerialNumberKey, "test_sn");
+        chromeos::system::kSerialNumberKeyForTest, "test_sn");
     fake_statistics_provider_.SetMachineStatistic(
         chromeos::system::kHardwareClassKey, "test_hw");
     std::vector<std::string> state_keys;

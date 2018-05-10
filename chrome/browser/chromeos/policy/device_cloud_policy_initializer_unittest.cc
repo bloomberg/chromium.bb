@@ -50,7 +50,7 @@ class DeviceCloudPolicyInitializerTest
             &statistics_provider_) {
     RegisterLocalState(local_state_.registry());
     statistics_provider_.SetMachineStatistic(
-        chromeos::system::kSerialNumberKey, "fake-serial");
+        chromeos::system::kSerialNumberKeyForTest, "fake-serial");
     statistics_provider_.SetMachineStatistic(
         chromeos::system::kHardwareClassKey, "fake-hardware");
   }

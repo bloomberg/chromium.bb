@@ -239,7 +239,7 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
 
   void SetUp() override {
     fake_statistics_provider_.SetMachineStatistic(
-        chromeos::system::kSerialNumberKey, kFakeSerialNumber);
+        chromeos::system::kSerialNumberKeyForTest, kFakeSerialNumber);
 
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(false));

@@ -84,9 +84,10 @@ CHROMEOS_EXPORT extern const char kInitialLocaleKey[];
 CHROMEOS_EXPORT extern const char kInitialTimezoneKey[];
 CHROMEOS_EXPORT extern const char kKeyboardLayoutKey[];
 
-// Serial number key (only VPD v2+ devices). Use GetEnterpriseMachineID() to
-// cover legacy devices.
-CHROMEOS_EXPORT extern const char kSerialNumberKey[];
+// Serial number key (VPD v2+ devices, Samsung: caroline and later) for use in
+// tests. Outside of tests GetEnterpriseMachineID() is the backward-compatible
+// way to obtain the serial number.
+CHROMEOS_EXPORT extern const char kSerialNumberKeyForTest[];
 
 // This interface provides access to Chrome OS statistics.
 class CHROMEOS_EXPORT StatisticsProvider {
@@ -116,12 +117,11 @@ class CHROMEOS_EXPORT StatisticsProvider {
   virtual bool GetMachineFlag(const std::string& name, bool* result) = 0;
 
   // Returns the machine serial number after examining a set of well-known
-  // keys. In case no serial is found (possibly due to the device having already
-  // been enrolled or claimed by a local user), an empty string is returned.
-  // Caveat: For lumpy, the last letter is ommitted from the serial number for
-  // historical reasons.
-  // TODO(tnagel): Drop "Enterprise" from the method name and remove lumpy
-  // special casing after lumpy EOL.
+  // keys. In case no serial is found an empty string is returned.
+  // Caveat: On older Samsung devices, the last letter is omitted from the
+  // serial number for historical reasons. This is fine.
+  // TODO(tnagel): Drop "Enterprise" from the method name and remove Samsung
+  // special casing after kevin EOL.
   std::string GetEnterpriseMachineID();
 
   // Cancels any pending file operations.

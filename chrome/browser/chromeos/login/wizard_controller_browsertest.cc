@@ -814,8 +814,8 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
  protected:
   WizardControllerDeviceStateTest()
       : install_attributes_(ScopedStubInstallAttributes::CreateUnset()) {
-    fake_statistics_provider_.SetMachineStatistic(system::kSerialNumberKey,
-                                                  "test");
+    fake_statistics_provider_.SetMachineStatistic(
+        system::kSerialNumberKeyForTest, "test");
     fake_statistics_provider_.SetMachineStatistic(system::kActivateDateKey,
                                                   "2000-01");
   }
