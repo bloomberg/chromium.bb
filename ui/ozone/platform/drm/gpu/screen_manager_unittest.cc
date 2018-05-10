@@ -498,8 +498,9 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
       new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize(buffer_generator_.get());
   window->SetBounds(GetPrimaryBounds());
+
   scoped_refptr<ui::ScanoutBuffer> buffer = buffer_generator_->Create(
-      drm_, DRM_FORMAT_XRGB8888, GetPrimaryBounds().size());
+      drm_, DRM_FORMAT_XRGB8888, {}, GetPrimaryBounds().size());
   window->SchedulePageFlip(
       std::vector<ui::OverlayPlane>(
           1, ui::OverlayPlane(buffer, base::kInvalidPlatformFile)),

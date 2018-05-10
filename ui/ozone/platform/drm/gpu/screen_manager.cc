@@ -351,7 +351,7 @@ OverlayPlane ScreenManager::GetModesetBuffer(
 
   gfx::BufferFormat format = display::DisplaySnapshot::PrimaryFormat();
   uint32_t fourcc_format = ui::GetFourCCFormatForOpaqueFramebuffer(format);
-
+  const auto& modifiers = controller->GetFormatModifiers(fourcc_format);
   if (window) {
     const OverlayPlane* primary = window->GetLastModesetBuffer();
     const DrmDevice* drm = controller->GetAllocationDrmDevice().get();
@@ -361,7 +361,6 @@ OverlayPlane ScreenManager::GetModesetBuffer(
       // modifier either and we can reuse the buffer. Otherwise, check
       // to see if the controller supports the buffers format
       // modifier.
-      const auto& modifiers = controller->GetFormatModifiers(fourcc_format);
       if (modifiers.empty())
         return *primary;
       for (const uint64_t modifier : modifiers) {
@@ -373,7 +372,7 @@ OverlayPlane ScreenManager::GetModesetBuffer(
 
   scoped_refptr<DrmDevice> drm = controller->GetAllocationDrmDevice();
   scoped_refptr<ScanoutBuffer> buffer =
-      buffer_generator_->Create(drm, fourcc_format, bounds.size());
+      buffer_generator_->Create(drm, fourcc_format, modifiers, bounds.size());
   if (!buffer) {
     LOG(ERROR) << "Failed to create scanout buffer";
     return OverlayPlane(nullptr, 0, gfx::OVERLAY_TRANSFORM_INVALID, gfx::Rect(),

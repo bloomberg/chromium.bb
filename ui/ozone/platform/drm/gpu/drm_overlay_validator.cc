@@ -32,8 +32,10 @@ scoped_refptr<ScanoutBuffer> GetBufferForPageFlipTest(
     }
   }
 
+  const std::vector<uint64_t>
+      modifiers;  // TODO(dcastagna): use the right modifiers.
   scoped_refptr<ScanoutBuffer> scanout_buffer =
-      buffer_generator->Create(drm_device, format, size);
+      buffer_generator->Create(drm_device, format, modifiers, size);
   if (scanout_buffer)
     reusable_buffers->push_back(scanout_buffer);
 
