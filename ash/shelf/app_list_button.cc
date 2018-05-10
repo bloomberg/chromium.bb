@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/assistant/ash_assistant_controller.h"
+#include "ash/assistant/assistant_controller.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/assistant_overlay.h"
@@ -136,7 +136,7 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       } else if (chromeos::switches::IsAssistantEnabled()) {
         // TODO: Handle overlay animation similarly to above. Also needs to
         // factor in Assistant enabled state.
-        Shell::Get()->ash_assistant_controller()->StartInteraction();
+        Shell::Get()->assistant_controller()->StartInteraction();
         event->SetHandled();
       } else {
         ImageButton::OnGestureEvent(event);

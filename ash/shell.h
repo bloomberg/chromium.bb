@@ -83,12 +83,12 @@ class AcceleratorController;
 class AccessibilityController;
 class AccessibilityDelegate;
 class AccessibilityFocusRingController;
-class AshAssistantController;
 class AshDBusServices;
 class AshDisplayController;
 class AppListControllerImpl;
 class NativeCursorManagerAsh;
 class AshTouchTransformController;
+class AssistantController;
 class AutoclickController;
 class BacklightsForcedOffSetter;
 class BluetoothNotificationController;
@@ -346,12 +346,12 @@ class ASH_EXPORT Shell : public SessionObserver,
   AppListControllerImpl* app_list_controller() {
     return app_list_controller_.get();
   }
-  AshAssistantController* ash_assistant_controller() {
-    DCHECK(chromeos::switches::IsAssistantEnabled());
-    return ash_assistant_controller_.get();
-  }
   AshDisplayController* ash_display_controller() {
     return ash_display_controller_.get();
+  }
+  AssistantController* assistant_controller() {
+    DCHECK(chromeos::switches::IsAssistantEnabled());
+    return assistant_controller_.get();
   }
   AutoclickController* autoclick_controller() {
     return autoclick_controller_.get();
@@ -719,9 +719,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<AccessibilityFocusRingController>
       accessibility_focus_ring_controller_;
   std::unique_ptr<AppListControllerImpl> app_list_controller_;
-  std::unique_ptr<AshAssistantController> ash_assistant_controller_;
   std::unique_ptr<AshDBusServices> ash_dbus_services_;
   std::unique_ptr<AshDisplayController> ash_display_controller_;
+  std::unique_ptr<AssistantController> assistant_controller_;
   std::unique_ptr<BacklightsForcedOffSetter> backlights_forced_off_setter_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<CastConfigController> cast_config_;

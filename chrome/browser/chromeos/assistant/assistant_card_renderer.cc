@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
-#include "ash/public/interfaces/ash_assistant_controller.mojom.h"
+#include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -132,7 +132,7 @@ AssistantCardRenderer::AssistantCardRenderer(
     service_manager::Connector* connector)
     : assistant_controller_binding_(this) {
   // Bind to the Assistant controller in ash.
-  ash::mojom::AshAssistantControllerPtr assistant_controller;
+  ash::mojom::AssistantControllerPtr assistant_controller;
   connector->BindInterface(ash::mojom::kServiceName, &assistant_controller);
   ash::mojom::AssistantCardRendererPtr ptr;
   assistant_controller_binding_.Bind(mojo::MakeRequest(&ptr));

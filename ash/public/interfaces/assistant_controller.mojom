@@ -8,9 +8,9 @@ import "ash/public/interfaces/assistant_card_renderer.mojom";
 import "chromeos/services/assistant/public/mojom/assistant.mojom";
 
 // Interface for AssistantManagerService to communicate with
-// AshAssistantController.
-interface AshAssistantController {
-  // Provides a reference to the underlying service |assistant|.
+// AssistantController.
+interface AssistantController {
+  // Provides a reference to the underlying |assistant| service.
   SetAssistant(chromeos.assistant.mojom.Assistant assistant);
 
   // Provides an interface to the |assistant_card_renderer| owned by

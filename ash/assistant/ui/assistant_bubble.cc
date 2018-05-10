@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/assistant/ash_assistant_controller.h"
+#include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/ui/assistant_bubble_view.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/display/display.h"
@@ -30,7 +30,7 @@ constexpr int kMarginDip = 16;
 
 class AssistantContainerView : public views::BubbleDialogDelegateView {
  public:
-  explicit AssistantContainerView(AshAssistantController* assistant_controller)
+  explicit AssistantContainerView(AssistantController* assistant_controller)
       : assistant_controller_(assistant_controller) {
     set_accept_events(true);
     SetAnchor();
@@ -96,7 +96,7 @@ class AssistantContainerView : public views::BubbleDialogDelegateView {
     SetAnchorRect(anchor);
   }
 
-  AshAssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantController* const assistant_controller_;  // Owned by Shell.
 
   // Owned by view hierarchy.
   AssistantBubbleView* assistant_bubble_view_ = nullptr;
@@ -108,7 +108,7 @@ class AssistantContainerView : public views::BubbleDialogDelegateView {
 
 // AssistantBubble -------------------------------------------------------------
 
-AssistantBubble::AssistantBubble(AshAssistantController* assistant_controller)
+AssistantBubble::AssistantBubble(AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller) {
   assistant_controller_->AddInteractionModelObserver(this);
 }

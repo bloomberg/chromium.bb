@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/assistant/ash_assistant_controller.h"
+#include "ash/assistant/assistant_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
@@ -67,7 +67,7 @@ class RoundRectBackground : public views::Background {
 
 // DialogPlate -----------------------------------------------------------------
 
-DialogPlate::DialogPlate(AshAssistantController* assistant_controller)
+DialogPlate::DialogPlate(AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
       textfield_(new views::Textfield()),
       icon_(new views::View()) {

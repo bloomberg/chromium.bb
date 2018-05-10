@@ -19,7 +19,7 @@
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/accessibility/key_accessibility_enabler.h"
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/assistant/ash_assistant_controller.h"
+#include "ash/assistant/assistant_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/cast_config_controller.h"
 #include "ash/dbus/ash_dbus_services.h"
@@ -834,7 +834,7 @@ Shell::~Shell() {
   // These need a valid Shell instance to clean up properly, so explicitly
   // delete them before invalidating the instance.
   // Alphabetical. TODO(oshima): sort.
-  ash_assistant_controller_.reset();
+  assistant_controller_.reset();
   magnification_controller_.reset();
   tooltip_controller_.reset();
   event_client_.reset();
@@ -1179,9 +1179,9 @@ void Shell::Init(ui::ContextFactory* context_factory,
   voice_interaction_controller_ =
       std::make_unique<VoiceInteractionController>();
 
-  ash_assistant_controller_ = chromeos::switches::IsAssistantEnabled()
-                                  ? std::make_unique<AshAssistantController>()
-                                  : nullptr;
+  assistant_controller_ = chromeos::switches::IsAssistantEnabled()
+                              ? std::make_unique<AssistantController>()
+                              : nullptr;
 
   magnification_controller_ = std::make_unique<MagnificationController>();
   mru_window_tracker_ = std::make_unique<MruWindowTracker>();

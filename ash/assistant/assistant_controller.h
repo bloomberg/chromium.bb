@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASSISTANT_ASH_ASSISTANT_CONTROLLER_H_
-#define ASH_ASSISTANT_ASH_ASSISTANT_CONTROLLER_H_
+#ifndef ASH_ASSISTANT_ASSISTANT_CONTROLLER_H_
+#define ASH_ASSISTANT_ASSISTANT_CONTROLLER_H_
 
 #include <memory>
 #include <string>
@@ -12,8 +12,8 @@
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/highlighter/highlighter_controller.h"
-#include "ash/public/interfaces/ash_assistant_controller.mojom.h"
 #include "ash/public/interfaces/assistant_card_renderer.mojom.h"
+#include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -27,16 +27,16 @@ namespace ash {
 class AssistantBubble;
 class AssistantInteractionModelObserver;
 
-class AshAssistantController
-    : public mojom::AshAssistantController,
+class AssistantController
+    : public mojom::AssistantController,
       public chromeos::assistant::mojom::AssistantEventSubscriber,
       public AssistantInteractionModelObserver,
       public HighlighterController::Observer {
  public:
-  AshAssistantController();
-  ~AshAssistantController() override;
+  AssistantController();
+  ~AssistantController() override;
 
-  void BindRequest(mojom::AshAssistantControllerRequest request);
+  void BindRequest(mojom::AssistantControllerRequest request);
 
   // Returns a reference to the underlying interaction model.
   const AssistantInteractionModel* interaction_model() const {
@@ -102,7 +102,7 @@ class AshAssistantController
   void OnSpeechRecognitionFinalResult(const std::string& final_result) override;
   void OnSpeechLevelUpdated(float speech_level) override;
 
-  // mojom::AshAssistantController:
+  // mojom::AssistantController:
   void SetAssistant(
       chromeos::assistant::mojom::AssistantPtr assistant) override;
   void SetAssistantCardRenderer(
@@ -111,7 +111,7 @@ class AshAssistantController
  private:
   void OnInteractionDismissed();
 
-  mojo::Binding<mojom::AshAssistantController> assistant_controller_binding_;
+  mojo::Binding<mojom::AssistantController> assistant_controller_binding_;
   mojo::Binding<chromeos::assistant::mojom::AssistantEventSubscriber>
       assistant_event_subscriber_binding_;
   AssistantInteractionModel assistant_interaction_model_;
@@ -121,9 +121,9 @@ class AshAssistantController
 
   std::unique_ptr<AssistantBubble> assistant_bubble_;
 
-  DISALLOW_COPY_AND_ASSIGN(AshAssistantController);
+  DISALLOW_COPY_AND_ASSIGN(AssistantController);
 };
 
 }  // namespace ash
 
-#endif  // ASH_ASSISTANT_ASH_ASSISTANT_CONTROLLER_H_
+#endif  // ASH_ASSISTANT_ASSISTANT_CONTROLLER_H_

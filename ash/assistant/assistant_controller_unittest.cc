@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/assistant/ash_assistant_controller.h"
+#include "ash/assistant/assistant_controller.h"
 
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/shell.h"
@@ -13,17 +13,17 @@
 
 namespace ash {
 
-class AshAssistantControllerTest : public AshTestBase {
+class AssistantControllerTest : public AshTestBase {
  protected:
-  AshAssistantControllerTest() = default;
-  ~AshAssistantControllerTest() override = default;
+  AssistantControllerTest() = default;
+  ~AssistantControllerTest() override = default;
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
         chromeos::switches::kAssistantFeature);
     ASSERT_TRUE(chromeos::switches::IsAssistantEnabled());
     AshTestBase::SetUp();
-    controller_ = Shell::Get()->ash_assistant_controller();
+    controller_ = Shell::Get()->assistant_controller();
     DCHECK(controller_);
   }
 
@@ -33,12 +33,12 @@ class AshAssistantControllerTest : public AshTestBase {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  AshAssistantController* controller_ = nullptr;
+  AssistantController* controller_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(AshAssistantControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(AssistantControllerTest);
 };
 
-TEST_F(AshAssistantControllerTest, HighlighterEnabledStatus) {
+TEST_F(AssistantControllerTest, HighlighterEnabledStatus) {
   HighlighterController* highlighter_controller =
       Shell::Get()->highlighter_controller();
   highlighter_controller->SetEnabled(true);
