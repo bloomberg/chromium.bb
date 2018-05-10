@@ -88,6 +88,8 @@ Polymer({
       this.classList.remove('closing');
       this.$.dialog.close();
       this.open = false;
+    } else if (this.classList.contains('opening')) {
+      this.fire('cr-drawer-opened');
     }
   },
 });

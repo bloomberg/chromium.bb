@@ -20,7 +20,11 @@ settings.defaultResourceLoaded = true;
 Polymer({
   is: 'settings-ui',
 
-  behaviors: [settings.RouteObserverBehavior, CrContainerShadowBehavior],
+  behaviors: [
+    settings.RouteObserverBehavior,
+    CrContainerShadowBehavior,
+    settings.FindShortcutBehavior,
+  ],
 
   properties: {
     /**
@@ -193,6 +197,16 @@ Polymer({
     }
 
     this.$.main.searchContents(urlSearchQuery);
+  },
+
+  // Override settings.FindShortcutBehavior methods.
+  canHandleFindShortcut: function() {
+    return !this.$.drawer.open &&
+        !document.querySelector('* /deep/ cr-dialog[open]');
+  },
+
+  handleFindShortcut: function() {
+    this.$$('cr-toolbar').getSearchField().showAndFocus();
   },
 
   /**

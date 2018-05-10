@@ -13,6 +13,7 @@ js2gtest("interactive_ui_tests_js_webui") {
     "md_bookmarks/md_bookmarks_focus_test.js",
     "md_history/md_history_focus_test.js",
     "settings/cr_settings_interactive_ui_tests.js",
+    "settings/settings_ui_browsertest.js",
   ]
 
   gen_include_files = [
@@ -99,7 +100,6 @@ js2gtest("browser_tests_js_webui") {
     "settings/settings_idle_load_browsertest.js",
     "settings/settings_page_browsertest.js",
     "settings/settings_passwords_section_browsertest.js",
-    "settings/settings_ui_browsertest.js",
     "settings/site_settings_page_browsertest.js",
     "text_defaults_browsertest.js",
     "webui_resource_async_browsertest.js",

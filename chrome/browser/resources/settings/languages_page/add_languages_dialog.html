@@ -42,7 +42,7 @@
     <cr-dialog id="dialog" close-text="$i18n{close}">
       <div slot="title">$i18n{addLanguagesDialogTitle}</div>
       <div slot="body" scrollable>
-        <settings-subpage-search label="$i18n{searchLanguages}"
+        <settings-subpage-search label="$i18n{searchLanguages}" id="search"
             on-search-changed="onSearchChanged_" autofocus>
         </settings-subpage-search>
         <iron-list class="ripple-padding" scroll-target="[[$$('[slot=body]')]]"

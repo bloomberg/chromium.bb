@@ -87,6 +87,8 @@ js_library("add_languages_dialog") {
   deps = [
     ":languages",
     ":languages_types",
+    "..:find_shortcut_behavior",
+    "../settings_page:settings_subpage_search",
     "//ui/webui/resources/cr_elements:cr_scrollable_behavior",
   ]
 }

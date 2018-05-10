@@ -43,6 +43,13 @@ suite('cr-drawer', function() {
     });
   });
 
+  test('opened event', function() {
+    const drawer = createDrawer('ltr');
+    const whenOpen = test_util.eventToPromise('cr-drawer-opened', drawer);
+    drawer.openDrawer();
+    return whenOpen;
+  });
+
   test('align=ltr', function() {
     createDrawer('ltr').openDrawer();
     return test_util.eventToPromise('transitionend', drawer).then(() => {
