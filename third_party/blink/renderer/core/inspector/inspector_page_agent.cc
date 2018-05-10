@@ -400,6 +400,8 @@ String InspectorPageAgent::ResourceTypeJson(
       return protocol::Page::ResourceTypeEnum::WebSocket;
     case kManifestResource:
       return protocol::Page::ResourceTypeEnum::Manifest;
+    case kSignedExchangeResource:
+      return protocol::Page::ResourceTypeEnum::SignedExchange;
     case kOtherResource:
       return protocol::Page::ResourceTypeEnum::Other;
   }
