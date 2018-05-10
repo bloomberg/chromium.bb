@@ -20,7 +20,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "services/audio/public/mojom/stream_factory.mojom.h"
+#include "services/audio/public/cpp/fake_stream_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -76,18 +76,10 @@ class MockAudioOutputStreamProviderClient
   mojo::Binding<media::mojom::AudioOutputStreamProviderClient> binding_;
 };
 
-class MockStreamFactory : public audio::mojom::StreamFactory {
+class MockStreamFactory : public audio::FakeStreamFactory {
  public:
-  MockStreamFactory() : binding_(this) {}
+  MockStreamFactory() {}
   ~MockStreamFactory() final {}
-
-  audio::mojom::StreamFactoryPtr MakePtr() {
-    audio::mojom::StreamFactoryPtr ret;
-    binding_.Bind(mojo::MakeRequest(&ret));
-    return ret;
-  }
-
-  void CloseBinding() { binding_.Close(); }
 
   // State of an expected stream creation. |output_device_id|, |params|,
   // and |groups_id| are set ahead of time and verified during request.
@@ -115,19 +107,6 @@ class MockStreamFactory : public audio::mojom::StreamFactory {
   }
 
  private:
-  void CreateInputStream(media::mojom::AudioInputStreamRequest stream_request,
-                         media::mojom::AudioInputStreamClientPtr client,
-                         media::mojom::AudioInputStreamObserverPtr observer,
-                         media::mojom::AudioLogPtr log,
-                         const std::string& device_id,
-                         const media::AudioParameters& params,
-                         uint32_t shared_memory_count,
-                         bool enable_agc,
-                         mojo::ScopedSharedBufferHandle key_press_count_buffer,
-                         CreateInputStreamCallback created_callback) final {
-    ADD_FAILURE() << "Unexpected input stream creation in output test.";
-  }
-
   void CreateOutputStream(
       media::mojom::AudioOutputStreamRequest stream_request,
       media::mojom::AudioOutputStreamObserverAssociatedPtrInfo observer_info,
@@ -148,12 +127,6 @@ class MockStreamFactory : public audio::mojom::StreamFactory {
     stream_request_data_->created_callback = std::move(created_callback);
   }
 
-  void BindMuter(audio::mojom::LocalMuterAssociatedRequest request,
-                 const base::UnguessableToken& group_id) final {
-    ADD_FAILURE() << "Unexpected muting in output stream test";
-  }
-
-  mojo::Binding<audio::mojom::StreamFactory> binding_;
   StreamRequestData* stream_request_data_;
 };
 

@@ -24,6 +24,8 @@ class FakeStreamFactory : public mojom::StreamFactory {
     return ptr;
   }
 
+  void CloseBinding() { binding_.Close(); }
+
   void CreateInputStream(media::mojom::AudioInputStreamRequest stream_request,
                          media::mojom::AudioInputStreamClientPtr client,
                          media::mojom::AudioInputStreamObserverPtr observer,

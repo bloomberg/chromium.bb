@@ -12,6 +12,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "services/audio/public/cpp/fake_stream_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -69,18 +70,10 @@ class MockRendererAudioInputStreamFactoryClient
   media::mojom::AudioInputStreamClientRequest client_request_;
 };
 
-class MockStreamFactory : public audio::mojom::StreamFactory {
+class MockStreamFactory : public audio::FakeStreamFactory {
  public:
-  MockStreamFactory() : binding_(this) {}
+  MockStreamFactory() {}
   ~MockStreamFactory() final {}
-
-  audio::mojom::StreamFactoryPtr MakePtr() {
-    audio::mojom::StreamFactoryPtr ret;
-    binding_.Bind(mojo::MakeRequest(&ret));
-    return ret;
-  }
-
-  void CloseBinding() { binding_.Close(); }
 
   // State of an expected stream creation. |device_id| and |params| are set
   // ahead of time and verified during request. The other fields are filled in
@@ -134,23 +127,6 @@ class MockStreamFactory : public audio::mojom::StreamFactory {
     stream_request_data_->created_callback = std::move(created_callback);
   }
 
-  void CreateOutputStream(
-      media::mojom::AudioOutputStreamRequest stream_request,
-      media::mojom::AudioOutputStreamObserverAssociatedPtrInfo observer_info,
-      media::mojom::AudioLogPtr log,
-      const std::string& output_device_id,
-      const media::AudioParameters& params,
-      const base::UnguessableToken& group_id,
-      CreateOutputStreamCallback created_callback) final {
-    ADD_FAILURE() << "Unexpected output stream creation in input test.";
-  }
-
-  void BindMuter(audio::mojom::LocalMuterAssociatedRequest request,
-                 const base::UnguessableToken& group_id) final {
-    ADD_FAILURE() << "Unexpected muting in input stream test";
-  }
-
-  mojo::Binding<audio::mojom::StreamFactory> binding_;
   StreamRequestData* stream_request_data_;
 };
 
