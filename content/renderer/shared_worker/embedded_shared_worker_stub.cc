@@ -275,20 +275,20 @@ EmbeddedSharedWorkerStub::CreateApplicationCacheHost(
 
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 EmbeddedSharedWorkerStub::CreateServiceWorkerNetworkProvider() {
-  scoped_refptr<network::SharedURLLoaderFactory> direct_network_loader_factory;
+  scoped_refptr<network::SharedURLLoaderFactory> fallback_factory;
   // current() may be null in tests.
   if (RenderThreadImpl* render_thread = RenderThreadImpl::current()) {
-    direct_network_loader_factory =
-        base::MakeRefCounted<PossiblyAssociatedWrapperSharedURLLoaderFactory>(
-            render_thread->blink_platform_impl()
-                ->CreateNetworkURLLoaderFactory());
+    scoped_refptr<ChildURLLoaderFactoryBundle> bundle =
+        render_thread->blink_platform_impl()
+            ->CreateDefaultURLLoaderFactoryBundle();
+    fallback_factory = network::SharedURLLoaderFactory::Create(
+        bundle->CloneWithoutDefaultFactory());
   }
 
   std::unique_ptr<ServiceWorkerNetworkProvider> provider =
       ServiceWorkerNetworkProvider::CreateForSharedWorker(
           std::move(service_worker_provider_info_),
-          std::move(script_loader_factory_info_),
-          std::move(direct_network_loader_factory));
+          std::move(script_loader_factory_info_), std::move(fallback_factory));
   return std::make_unique<WebServiceWorkerNetworkProviderForSharedWorker>(
       std::move(provider), IsOriginSecure(url_));
 }
@@ -329,20 +329,10 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
       RenderThreadImpl::current()
           ->blink_platform_impl()
           ->CreateDefaultURLLoaderFactoryBundle();
-
-  auto direct_network_loader_factory =
-      base::MakeRefCounted<PossiblyAssociatedWrapperSharedURLLoaderFactory>(
-          RenderThreadImpl::current()
-              ->blink_platform_impl()
-              ->CreateNetworkURLLoaderFactory());
-
-  DCHECK(url_loader_factory_bundle);
-  DCHECK(direct_network_loader_factory);
-
   auto worker_fetch_context = std::make_unique<WorkerFetchContextImpl>(
       std::move(request), std::move(container_host_ptr_info),
       url_loader_factory_bundle->Clone(),
-      direct_network_loader_factory->Clone(),
+      url_loader_factory_bundle->CloneWithoutDefaultFactory(),
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
           URLLoaderThrottleProviderType::kWorker),
       GetContentClient()

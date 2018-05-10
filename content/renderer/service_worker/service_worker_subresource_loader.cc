@@ -142,7 +142,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
-    scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory)
+    scoped_refptr<network::SharedURLLoaderFactory> fallback_factory)
     : redirect_limit_(net::URLRequest::kMaxRedirects),
       url_loader_client_(std::move(client)),
       url_loader_binding_(this, std::move(request)),
@@ -154,7 +154,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
       options_(options),
       traffic_annotation_(traffic_annotation),
       resource_request_(resource_request),
-      network_loader_factory_(std::move(network_loader_factory)),
+      fallback_factory_(std::move(fallback_factory)),
       weak_factory_(this) {
   DCHECK(controller_connector_);
   response_head_.request_start = base::TimeTicks::Now();
@@ -214,7 +214,7 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
         ControllerServiceWorkerConnector::State::kNoController) {
       // The controller was lost after this loader or its loader factory was
       // created.
-      network_loader_factory_->CreateLoaderAndStart(
+      fallback_factory_->CreateLoaderAndStart(
           url_loader_binding_.Unbind(), routing_id_, request_id_, options_,
           resource_request_, std::move(url_loader_client_),
           traffic_annotation_);
@@ -342,8 +342,6 @@ void ServiceWorkerSubresourceLoader::OnResponseStream(
 void ServiceWorkerSubresourceLoader::OnFallback(
     base::Time dispatch_event_time) {
   SettleInflightFetchRequestIfNeeded();
-  DCHECK(network_loader_factory_);
-
   // When the request mode is CORS or CORS-with-forced-preflight and the origin
   // of the request URL is different from the security origin of the document,
   // we can't simply fallback to the network here. It is because the CORS
@@ -372,11 +370,17 @@ void ServiceWorkerSubresourceLoader::OnFallback(
                           response_head_.service_worker_ready_time));
   mojo::MakeStrongBinding(std::move(client_impl), mojo::MakeRequest(&client));
 
-  network_loader_factory_->CreateLoaderAndStart(
+  fallback_factory_->CreateLoaderAndStart(
       url_loader_binding_.Unbind(), routing_id_, request_id_, options_,
       resource_request_, std::move(client), traffic_annotation_);
   // Per spec, redirects after this point are not intercepted by the service
   // worker again (https://crbug.com/517364). So this loader is done.
+  //
+  // Assume ServiceWorkerSubresourceLoaderFactory is still alive and also
+  // has a ref to fallback_factory_, so it's OK to destruct here. If that
+  // factory dies, the web context that made the request is dead so the request
+  // is moot.
+  DCHECK(!fallback_factory_->HasOneRef());
   delete this;
 }
 
@@ -518,20 +522,20 @@ void ServiceWorkerSubresourceLoader::OnBlobReadingComplete(int net_error) {
 // static
 void ServiceWorkerSubresourceLoaderFactory::Create(
     scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
-    scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
     network::mojom::URLLoaderFactoryRequest request) {
   new ServiceWorkerSubresourceLoaderFactory(std::move(controller_connector),
-                                            std::move(network_loader_factory),
+                                            std::move(fallback_factory),
                                             std::move(request));
 }
 
 ServiceWorkerSubresourceLoaderFactory::ServiceWorkerSubresourceLoaderFactory(
     scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
-    scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
     network::mojom::URLLoaderFactoryRequest request)
     : controller_connector_(std::move(controller_connector)),
-      network_loader_factory_(std::move(network_loader_factory)) {
-  DCHECK(network_loader_factory_);
+      fallback_factory_(std::move(fallback_factory)) {
+  DCHECK(fallback_factory_);
   bindings_.AddBinding(this, std::move(request));
   bindings_.set_connection_error_handler(base::BindRepeating(
       &ServiceWorkerSubresourceLoaderFactory::OnConnectionError,
@@ -551,12 +555,12 @@ void ServiceWorkerSubresourceLoaderFactory::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   // This loader destructs itself, as we want to transparently switch to the
   // network loader when fallback happens. When that happens the loader unbinds
-  // the request, passes the request to the Network Loader Factory, and
+  // the request, passes the request to the fallback factory, and
   // destructs itself (while the loader client continues to work).
-  new ServiceWorkerSubresourceLoader(
-      std::move(request), routing_id, request_id, options, resource_request,
-      std::move(client), traffic_annotation, controller_connector_,
-      network_loader_factory_);
+  new ServiceWorkerSubresourceLoader(std::move(request), routing_id, request_id,
+                                     options, resource_request,
+                                     std::move(client), traffic_annotation,
+                                     controller_connector_, fallback_factory_);
 }
 
 void ServiceWorkerSubresourceLoaderFactory::Clone(

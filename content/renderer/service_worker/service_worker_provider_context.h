@@ -69,17 +69,17 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // S13nServiceWorker is enabled) and object info that is needed to set up the
   // controller service worker for the client.
   // For S13nServiceWorker:
-  // |default_loader_factory| is a default loader factory for network requests,
-  // and is used when we create a subresource loader for controllees. This is
-  // non-null only if the provider is created for controllees, and if the
-  // loading context, e.g. a frame, provides it.
+  // |fallback_loader_factory| is a default loader factory for fallback
+  // requests, and is used when we create a subresource loader for controllees.
+  // This is non-null only if the provider is created for controllees, and if
+  // the loading context, e.g. a frame, provides it.
   ServiceWorkerProviderContext(
       int provider_id,
       blink::mojom::ServiceWorkerProviderType provider_type,
       mojom::ServiceWorkerContainerAssociatedRequest request,
       mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info,
       mojom::ControllerServiceWorkerInfoPtr controller_info,
-      scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);
 
   // Constructor for service worker execution contexts.
   ServiceWorkerProviderContext(
