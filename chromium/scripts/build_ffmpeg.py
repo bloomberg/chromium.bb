@@ -366,8 +366,8 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
   # Replace the linker step with something that just creates the target.
   if target_os == 'mac' and host_os == 'linux':
     RewriteFile(
-        os.path.join(config_dir, 'ffbuild/config.mak'), r'LD=ld64.lld',
-        (r'LD=' + os.path.join(SCRIPTS_DIR, 'fake_linker.py')))
+        os.path.join(config_dir, 'ffbuild/config.mak'), [(r'LD=ld64.lld',
+        r'LD=' + os.path.join(SCRIPTS_DIR, 'fake_linker.py'))])
 
   if target_os in (host_os, host_os + '-noasm', 'android',
                    'win', 'mac') and not config_only:
@@ -506,6 +506,8 @@ def main(argv):
     result.get(1000)
   except Exception as e:
     p.terminate()
+    # Re-throw the exception so that we fail if any subprocess fails.
+    raise e
 
 
 def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
