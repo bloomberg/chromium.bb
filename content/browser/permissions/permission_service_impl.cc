@@ -47,13 +47,13 @@ bool PermissionDescriptorToPermissionType(
       return true;
     }
     case PermissionName::PROTECTED_MEDIA_IDENTIFIER:
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(ENABLE_PROTECTED_MEDIA_IDENTIFIER_PERMISSION)
       *permission_type = PermissionType::PROTECTED_MEDIA_IDENTIFIER;
       return true;
 #else
       NOTIMPLEMENTED();
       return false;
-#endif
+#endif  // defined(ENABLE_PROTECTED_MEDIA_IDENTIFIER_PERMISSION)
     case PermissionName::DURABLE_STORAGE:
       *permission_type = PermissionType::DURABLE_STORAGE;
       return true;
