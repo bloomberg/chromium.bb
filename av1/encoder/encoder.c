@@ -896,7 +896,18 @@ static void init_buffer_indices(AV1_COMP *cpi) {
   cpi->cur_poc = -1;
 }
 
+static void set_bitstream_level(SequenceHeader *seq,
+                                const AV1EncoderConfig *oxcf) {
+  // TODO(any): This is a placeholder function.
+  (void)oxcf;
+  for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
+    seq->level[i].major = 5;
+    seq->level[i].major = 2;
+  }
+}
+
 void init_seq_coding_tools(SequenceHeader *seq, const AV1EncoderConfig *oxcf) {
+  set_bitstream_level(seq, oxcf);
   seq->still_picture = (oxcf->limit == 1);
   seq->reduced_still_picture_hdr = seq->still_picture;
   seq->reduced_still_picture_hdr &= !oxcf->full_still_picture_hdr;

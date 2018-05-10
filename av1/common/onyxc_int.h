@@ -180,6 +180,11 @@ typedef struct {
 typedef int BASE_CTX_TABLE[2 /*col*/][3 /*sig_map*/]
                           [BASE_CONTEXT_POSITION_NUM + 1];
 
+typedef struct BitstreamLevel {
+  uint8_t major;
+  uint8_t minor;
+} BitstreamLevel;
+
 /* Initial version of sequence header structure */
 typedef struct SequenceHeader {
   int num_bits_width;
@@ -226,7 +231,7 @@ typedef struct SequenceHeader {
   int enable_cdef;         // To turn on/off CDEF
   int enable_restoration;  // To turn on/off loop restoration
   int operating_point_idc[MAX_NUM_OPERATING_POINTS];
-  int level[MAX_NUM_OPERATING_POINTS];
+  BitstreamLevel level[MAX_NUM_OPERATING_POINTS];
   int decoder_rate_model_param_present_flag[MAX_NUM_OPERATING_POINTS];
 #if !CONFIG_BUFFER_MODEL
   int decode_to_display_rate_ratio[MAX_NUM_OPERATING_POINTS];

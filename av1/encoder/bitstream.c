@@ -3450,6 +3450,13 @@ static void add_trailing_bits(struct aom_write_bit_buffer *wb) {
   }
 }
 
+static void write_bitstream_level(BitstreamLevel bl,
+                                  struct aom_write_bit_buffer *wb) {
+  assert(bl.major >= LEVEL_MAJOR_MIN && bl.major <= LEVEL_MAJOR_MAX);
+  aom_wb_write_literal(wb, bl.major - LEVEL_MAJOR_MIN, LEVEL_MAJOR_BITS);
+  aom_wb_write_literal(wb, bl.minor, LEVEL_MINOR_BITS);
+}
+
 static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst,
                                           uint8_t enhancement_layers_cnt) {
   AV1_COMMON *const cm = &cpi->common;
@@ -3466,7 +3473,7 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst,
   aom_wb_write_bit(&wb, cm->seq_params.reduced_still_picture_hdr);
 
   if (cm->seq_params.reduced_still_picture_hdr) {
-    aom_wb_write_literal(&wb, 0, LEVEL_BITS);  // level[0]
+    write_bitstream_level(cm->seq_params.level[0], &wb);
   } else {
     uint8_t operating_points_minus1_cnt = enhancement_layers_cnt;
     aom_wb_write_literal(&wb, operating_points_minus1_cnt,
@@ -3487,7 +3494,7 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst,
     for (i = 0; i < operating_points_minus1_cnt + 1; i++) {
       aom_wb_write_literal(&wb, cm->seq_params.operating_point_idc[i],
                            OP_POINTS_IDC_BITS);
-      aom_wb_write_literal(&wb, 0, LEVEL_BITS);  // level[i]
+      write_bitstream_level(cm->seq_params.level[i], &wb);
 #if !CONFIG_BUFFER_MODEL
       aom_wb_write_literal(&wb, 0, 1);  // decoder_rate_model_present_flag[i]
 #endif
