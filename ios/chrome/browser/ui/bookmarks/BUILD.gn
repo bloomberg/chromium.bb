@@ -7,8 +7,6 @@ source_set("bookmarks") {
   sources = [
     "bookmark_edit_view_controller.h",
     "bookmark_edit_view_controller.mm",
-    "bookmark_elevated_toolbar.h",
-    "bookmark_elevated_toolbar.mm",
     "bookmark_empty_background.h",
     "bookmark_empty_background.mm",
     "bookmark_folder_editor_view_controller.h",
@@ -46,6 +44,7 @@ source_set("bookmarks") {
     "undo_manager_wrapper.mm",
   ]
   deps = [
+    ":bookmarks_ui",
     "resources:bookmark_bar_innershadow",
     "resources:bookmark_bar_shadow",
     "resources:bookmark_black_delete",
@@ -132,6 +131,15 @@ source_set("bookmarks") {
   ]
 }
 
+source_set("bookmarks_ui") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "bookmark_ui_constants.h",
+    "bookmark_ui_constants.mm",
+  ]
+  deps = []
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
@@ -164,6 +172,7 @@ source_set("eg_tests") {
     "bookmarks_egtest.mm",
   ]
   deps = [
+    ":bookmarks_ui",
     "//base",
     "//components/bookmarks/browser",
     "//components/prefs",

@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_parent_folder_item.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_text_field_item.h"
@@ -230,7 +231,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                        style:UIBarButtonItemStylePlain
                                       target:self
                                       action:@selector(deleteBookmark)];
-  deleteButton.accessibilityIdentifier = @"Delete_action";
+  deleteButton.accessibilityIdentifier = kBookmarkEditDeleteButtonIdentifier;
   deleteButton.tintColor = [UIColor blackColor];
   UIBarButtonItem* spaceButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
@@ -455,8 +456,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       cell.selectionStyle = UITableViewCellSelectionStyleNone;
       break;
     case ItemTypeURL: {
-      BookmarkTextFieldCell* URLCell =
-          base::mac::ObjCCastStrict<BookmarkTextFieldCell>(cell);
+      LegacyBookmarkTextFieldCell* URLCell =
+          base::mac::ObjCCastStrict<LegacyBookmarkTextFieldCell>(cell);
       URLCell.textField.textValidator = self;
       URLCell.selectionStyle = UITableViewCellSelectionStyleNone;
       break;
