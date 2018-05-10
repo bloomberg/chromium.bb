@@ -127,32 +127,35 @@ void GeometryMapper::SourceToDestinationRect(
       success ? source_to_destination.MapRect(mapping_rect) : FloatRect();
 }
 
-void GeometryMapper::LocalToAncestorVisualRect(
+bool GeometryMapper::LocalToAncestorVisualRect(
     const PropertyTreeState& local_state,
     const PropertyTreeState& ancestor_state,
     FloatClipRect& mapping_rect,
-    OverlayScrollbarClipBehavior clip_behavior) {
+    OverlayScrollbarClipBehavior clip_behavior,
+    InclusiveIntersectOrNot inclusive_behavior) {
   bool success = false;
-  LocalToAncestorVisualRectInternal(local_state, ancestor_state, mapping_rect,
-                                    clip_behavior, success);
+  return LocalToAncestorVisualRectInternal(local_state, ancestor_state,
+                                           mapping_rect, clip_behavior,
+                                           inclusive_behavior, success);
   DCHECK(success);
 }
 
-void GeometryMapper::LocalToAncestorVisualRectInternal(
+bool GeometryMapper::LocalToAncestorVisualRectInternal(
     const PropertyTreeState& local_state,
     const PropertyTreeState& ancestor_state,
     FloatClipRect& rect_to_map,
     OverlayScrollbarClipBehavior clip_behavior,
+    InclusiveIntersectOrNot inclusive_behavior,
     bool& success) {
   if (local_state == ancestor_state) {
     success = true;
-    return;
+    return true;
   }
 
   if (local_state.Effect() != ancestor_state.Effect()) {
-    SlowLocalToAncestorVisualRectWithEffects(
-        local_state, ancestor_state, rect_to_map, clip_behavior, success);
-    return;
+    return SlowLocalToAncestorVisualRectWithEffects(
+        local_state, ancestor_state, rect_to_map, clip_behavior,
+        inclusive_behavior, success);
   }
 
   const auto& transform_matrix = SourceToDestinationProjectionInternal(
@@ -171,18 +174,20 @@ void GeometryMapper::LocalToAncestorVisualRectInternal(
     // Either way, the element won't be renderable thus returning empty rect.
     success = true;
     rect_to_map = FloatClipRect(FloatRect());
-    return;
+    return false;
   }
   rect_to_map.Map(transform_matrix);
 
   FloatClipRect clip_rect = LocalToAncestorClipRectInternal(
       local_state.Clip(), ancestor_state.Clip(), ancestor_state.Transform(),
-      clip_behavior, success);
+      clip_behavior, inclusive_behavior, success);
   if (success) {
     // This is where we propagate the roundedness and tightness of |clip_rect|
     // to |rect_to_map|.
+    if (inclusive_behavior == kInclusiveIntersect)
+      return rect_to_map.InclusiveIntersect(clip_rect);
     rect_to_map.Intersect(clip_rect);
-    return;
+    return !rect_to_map.Rect().IsEmpty();
   }
 
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
@@ -195,13 +200,15 @@ void GeometryMapper::LocalToAncestorVisualRectInternal(
     success = true;
     rect_to_map.ClearIsTight();
   }
+  return !rect_to_map.Rect().IsEmpty();
 }
 
-void GeometryMapper::SlowLocalToAncestorVisualRectWithEffects(
+bool GeometryMapper::SlowLocalToAncestorVisualRectWithEffects(
     const PropertyTreeState& local_state,
     const PropertyTreeState& ancestor_state,
     FloatClipRect& mapping_rect,
     OverlayScrollbarClipBehavior clip_behavior,
+    InclusiveIntersectOrNot inclusive_behavior,
     bool& success) {
   PropertyTreeState last_transform_and_clip_state(local_state.Transform(),
                                                   local_state.Clip(), nullptr);
@@ -214,13 +221,13 @@ void GeometryMapper::SlowLocalToAncestorVisualRectWithEffects(
     DCHECK(effect->OutputClip());
     PropertyTreeState transform_and_clip_state(effect->LocalTransformSpace(),
                                                effect->OutputClip(), nullptr);
-    LocalToAncestorVisualRectInternal(last_transform_and_clip_state,
-                                      transform_and_clip_state, mapping_rect,
-                                      clip_behavior, success);
-    if (!success) {
+    bool intersects = LocalToAncestorVisualRectInternal(
+        last_transform_and_clip_state, transform_and_clip_state, mapping_rect,
+        clip_behavior, inclusive_behavior, success);
+    if (!success || !intersects) {
       success = true;
       mapping_rect = FloatClipRect(FloatRect());
-      return;
+      return false;
     }
 
     mapping_rect = FloatClipRect(effect->MapRect(mapping_rect.Rect()));
@@ -229,12 +236,13 @@ void GeometryMapper::SlowLocalToAncestorVisualRectWithEffects(
 
   PropertyTreeState final_transform_and_clip_state(
       ancestor_state.Transform(), ancestor_state.Clip(), nullptr);
-  LocalToAncestorVisualRectInternal(last_transform_and_clip_state,
-                                    final_transform_and_clip_state,
-                                    mapping_rect, clip_behavior, success);
+  LocalToAncestorVisualRectInternal(
+      last_transform_and_clip_state, final_transform_and_clip_state,
+      mapping_rect, clip_behavior, inclusive_behavior, success);
 
   // Many effects (e.g. filters, clip-paths) can make a clip rect not tight.
   mapping_rect.ClearIsTight();
+  return true;
 }
 
 FloatClipRect GeometryMapper::LocalToAncestorClipRect(
@@ -247,7 +255,7 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRect(
   bool success = false;
   auto result = LocalToAncestorClipRectInternal(
       local_state.Clip(), ancestor_state.Clip(), ancestor_state.Transform(),
-      clip_behavior, success);
+      clip_behavior, kNonInclusiveIntersect, success);
   DCHECK(success);
 
   // Many effects (e.g. filters, clip-paths) can make a clip rect not tight.
@@ -270,6 +278,7 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRectInternal(
     const ClipPaintPropertyNode* ancestor_clip,
     const TransformPaintPropertyNode* ancestor_transform,
     OverlayScrollbarClipBehavior clip_behavior,
+    InclusiveIntersectOrNot inclusive_behavior,
     bool& success) {
   if (descendant == ancestor_clip) {
     success = true;
@@ -291,8 +300,12 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRectInternal(
   // Iterate over the path from localState.clip to ancestor_state.clip. Stop if
   // we've found a memoized (precomputed) clip for any particular node.
   while (clip_node && clip_node != ancestor_clip) {
-    if (const FloatClipRect* cached_clip =
-            clip_node->GetClipCache().GetCachedClip(clip_and_transform)) {
+    const FloatClipRect* cached_clip = nullptr;
+    // Inclusive intersected clips are not cached at present.
+    if (inclusive_behavior != kInclusiveIntersect)
+      cached_clip = clip_node->GetClipCache().GetCachedClip(clip_and_transform);
+
+    if (cached_clip) {
       clip = *cached_clip;
       break;
     }
@@ -332,12 +345,17 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRectInternal(
     // from clip and transform properties, and propagate them to |clip|.
     FloatClipRect mapped_rect(GetClipRect((*it), clip_behavior));
     mapped_rect.Map(transform_matrix);
-    clip.Intersect(mapped_rect);
-
-    (*it)->GetClipCache().SetCachedClip(clip_and_transform, clip);
+    if (inclusive_behavior == kInclusiveIntersect) {
+      clip.InclusiveIntersect(mapped_rect);
+    } else {
+      clip.Intersect(mapped_rect);
+      // Inclusive intersected clips are not cached at present.
+      (*it)->GetClipCache().SetCachedClip(clip_and_transform, clip);
+    }
   }
-
-  DCHECK(*descendant->GetClipCache().GetCachedClip(clip_and_transform) == clip);
+  // Inclusive intersected clips are not cached at present.
+  DCHECK(inclusive_behavior == kInclusiveIntersect ||
+         *descendant->GetClipCache().GetCachedClip(clip_and_transform) == clip);
   success = true;
   return clip;
 }

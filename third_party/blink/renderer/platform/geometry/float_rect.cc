@@ -145,6 +145,26 @@ void FloatRect::Intersect(const FloatRect& other) {
   SetLocationAndSizeFromEdges(left, top, right, bottom);
 }
 
+bool FloatRect::InclusiveIntersect(const FloatRect& other) {
+  float left = std::max(X(), other.X());
+  float top = std::max(Y(), other.Y());
+  float right = std::min(MaxX(), other.MaxX());
+  float bottom = std::min(MaxY(), other.MaxY());
+
+  // Return a clean empty rectangle for non-intersecting cases.
+  if (left > right || top > bottom) {
+    left = 0;
+    top = 0;
+    right = 0;
+    bottom = 0;
+    SetLocationAndSizeFromEdges(left, top, right, bottom);
+    return false;
+  }
+
+  SetLocationAndSizeFromEdges(left, top, right, bottom);
+  return true;
+}
+
 void FloatRect::Unite(const FloatRect& other) {
   // Handle empty special cases first.
   if (other.IsEmpty())
