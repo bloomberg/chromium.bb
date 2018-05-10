@@ -162,8 +162,15 @@ void PausableScriptExecutor::CreateAndRun(
 void PausableScriptExecutor::ContextDestroyed(
     ExecutionContext* destroyed_context) {
   PausableTimer::ContextDestroyed(destroyed_context);
-  if (callback_)
+
+  if (callback_) {
+    // Though the context is (about to be) destroyed, the callback is invoked
+    // with a vector of v8::Local<>s, which implies that creating v8::Locals
+    // is permitted. Ensure a valid scope is present for the callback.
+    // See https://crbug.com/840719.
+    ScriptState::Scope script_scope(script_state_.get());
     callback_->Completed(Vector<v8::Local<v8::Value>>());
+  }
   Dispose();
 }
 
