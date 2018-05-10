@@ -2687,9 +2687,6 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kSpinButton:
       return ROLE_SYSTEM_SPINBUTTON;
 
-    case ax::mojom::Role::kSpinButtonPart:
-      return ROLE_SYSTEM_PUSHBUTTON;
-
     case ax::mojom::Role::kAnnotation:
     case ax::mojom::Role::kListMarker:
     case ax::mojom::Role::kStaticText:

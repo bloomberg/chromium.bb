@@ -12,6 +12,3 @@ rootWebArea
 ++++++++++++staticText name='----'
 ++++++++++++++inlineTextBox name='----'
 ++++++popUpButton haspopup haspopup=menu
-++++++spinButton
-++++++++button
-++++++++button

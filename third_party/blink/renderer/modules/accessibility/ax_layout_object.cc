@@ -85,7 +85,6 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_image_map_link.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_inline_text_box.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_spin_button.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_svg_root.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_table.h"
 #include "third_party/blink/renderer/platform/geometry/transform_state.h"
@@ -1680,7 +1679,6 @@ void AXLayoutObject::AddChildren() {
   AddHiddenChildren();
   AddPopupChildren();
   AddImageMapChildren();
-  AddTextFieldChildren();
   AddCanvasChildren();
   AddRemoteSVGChildren();
   AddInlineTextBoxChildren(false);
@@ -2585,27 +2583,6 @@ void AXLayoutObject::AddHiddenChildren() {
     InsertChild(AXObjectCache().GetOrCreate(&child), insertion_index);
     insertion_index += (children_.size() - previous_size);
   }
-}
-
-void AXLayoutObject::AddTextFieldChildren() {
-  Node* node = this->GetNode();
-  if (!IsHTMLInputElement(node))
-    return;
-
-  HTMLInputElement& input = ToHTMLInputElement(*node);
-  Element* spin_button_element =
-      input.UserAgentShadowRoot() ? input.UserAgentShadowRoot()->getElementById(
-                                        ShadowElementNames::SpinButton())
-                                  : nullptr;
-  if (!spin_button_element || !spin_button_element->IsSpinButtonElement())
-    return;
-
-  AXSpinButton* ax_spin_button =
-      ToAXSpinButton(AXObjectCache().GetOrCreate(kSpinButtonRole));
-  ax_spin_button->SetSpinButtonElement(
-      ToSpinButtonElement(spin_button_element));
-  ax_spin_button->SetParent(this);
-  children_.push_back(ax_spin_button);
 }
 
 void AXLayoutObject::AddImageMapChildren() {

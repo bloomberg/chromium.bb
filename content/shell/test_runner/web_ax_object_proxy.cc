@@ -216,8 +216,6 @@ std::string RoleToString(blink::WebAXRole role) {
       return result.append("Slider");
     case blink::kWebAXRoleSliderThumb:
       return result.append("SliderThumb");
-    case blink::kWebAXRoleSpinButtonPart:
-      return result.append("SpinButtonPart");
     case blink::kWebAXRoleSpinButton:
       return result.append("SpinButton");
     case blink::kWebAXRoleSplitter:

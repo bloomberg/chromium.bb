@@ -353,7 +353,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool IsNativeSlider() const { return false; }
   virtual bool IsMoveableSplitter() const { return false; }
   virtual bool IsSpinButton() const { return RoleValue() == kSpinButtonRole; }
-  virtual bool IsSpinButtonPart() const { return false; }
   bool IsTabItem() const { return RoleValue() == kTabRole; }
   virtual bool IsTableCell() const { return false; }
   virtual bool IsTableRow() const { return false; }

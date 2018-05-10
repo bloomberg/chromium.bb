@@ -108,7 +108,6 @@ enum AccessibilityRole {
   kSearchBoxRole,
   kSliderRole,
   kSliderThumbRole,     // No mapping to ARIA role.
-  kSpinButtonPartRole,  // No mapping to ARIA role.
   kSpinButtonRole,
   kSplitterRole,
   kStaticTextRole,  // No mapping to ARIA role.

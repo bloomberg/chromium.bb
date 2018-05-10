@@ -181,7 +181,6 @@ chrome.automation.RoleType = {
   SLIDER: 'slider',
   SLIDER_THUMB: 'sliderThumb',
   SPIN_BUTTON: 'spinButton',
-  SPIN_BUTTON_PART: 'spinButtonPart',
   SPLITTER: 'splitter',
   STATIC_TEXT: 'staticText',
   STATUS: 'status',

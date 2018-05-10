@@ -196,7 +196,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   AXObject* RemoteSVGElementHitTest(const IntPoint&) const;
   void OffsetBoundingBoxForRemoteSVGElement(LayoutRect&) const;
   void AddHiddenChildren();
-  void AddTextFieldChildren();
   void AddImageMapChildren();
   void AddCanvasChildren();
   void AddPopupChildren();
