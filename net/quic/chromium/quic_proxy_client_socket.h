@@ -91,8 +91,6 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
     STATE_CONNECT_COMPLETE
   };
 
-  void LogBlockedTunnelResponse() const;
-
   void OnIOComplete(int result);  // Callback used during connecting
   void OnReadComplete(int rv);
   void OnWriteComplete(int rv);

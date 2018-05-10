@@ -57,22 +57,6 @@ int ProxyClientSocket::HandleProxyAuthChallenge(
 }
 
 // static
-void ProxyClientSocket::LogBlockedTunnelResponse(int http_status_code,
-                                                 bool is_https_proxy) {
-  if (is_https_proxy) {
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-        "Net.BlockedTunnelResponse.HttpsProxy",
-        HttpUtil::MapStatusCodeForHistogram(http_status_code),
-        HttpUtil::GetStatusCodesForHistogram());
-  } else {
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-        "Net.BlockedTunnelResponse.HttpProxy",
-        HttpUtil::MapStatusCodeForHistogram(http_status_code),
-        HttpUtil::GetStatusCodesForHistogram());
-  }
-}
-
-// static
 bool ProxyClientSocket::SanitizeProxyAuth(HttpResponseInfo* response) {
   DCHECK(response && response->headers.get());
 

@@ -223,7 +223,6 @@ int HttpProxyClientSocket::Read(IOBuffer* buf,
     // We reach this case when the user cancels a 407 proxy auth prompt.
     // See http://crbug.com/8473.
     DCHECK_EQ(407, response_.headers->response_code());
-    LogBlockedTunnelResponse();
 
     return ERR_TUNNEL_CONNECTION_FAILED;
   }
@@ -299,12 +298,6 @@ int HttpProxyClientSocket::DidDrainBodyForAuthRestart() {
   request_headers_.Clear();
   response_ = HttpResponseInfo();
   return OK;
-}
-
-void HttpProxyClientSocket::LogBlockedTunnelResponse() const {
-  ProxyClientSocket::LogBlockedTunnelResponse(
-      response_.headers->response_code(),
-      is_https_proxy_);
 }
 
 void HttpProxyClientSocket::DoCallback(int result) {
@@ -470,10 +463,8 @@ int HttpProxyClientSocket::DoReadHeadersComplete(int result) {
       // sanitize the response.  This still allows a rogue HTTPS proxy to
       // redirect an HTTPS site load to a similar-looking site, but no longer
       // allows it to impersonate the site the user requested.
-      if (!is_https_proxy_ || !SanitizeProxyRedirect(&response_)) {
-        LogBlockedTunnelResponse();
+      if (!is_https_proxy_ || !SanitizeProxyRedirect(&response_))
         return ERR_TUNNEL_CONNECTION_FAILED;
-      }
 
       redirect_has_load_timing_info_ = transport_->GetLoadTimingInfo(
           http_stream_parser_->IsConnectionReused(),
@@ -487,10 +478,8 @@ int HttpProxyClientSocket::DoReadHeadersComplete(int result) {
       // authentication code is smart enough to avoid being tricked by an
       // active network attacker.
       // The next state is intentionally not set as it should be STATE_NONE;
-      if (!SanitizeProxyAuth(&response_)) {
-        LogBlockedTunnelResponse();
+      if (!SanitizeProxyAuth(&response_))
         return ERR_TUNNEL_CONNECTION_FAILED;
-      }
       return HandleProxyAuthChallenge(auth_.get(), &response_, net_log_);
 
     default:
@@ -500,7 +489,6 @@ int HttpProxyClientSocket::DoReadHeadersComplete(int result) {
       // 501 response bodies that contain a useful error message.  For
       // example, Squid uses a 404 response to report the DNS error: "The
       // domain name does not exist."
-      LogBlockedTunnelResponse();
       return ERR_TUNNEL_CONNECTION_FAILED;
   }
 }

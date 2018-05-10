@@ -268,12 +268,6 @@ int SpdyProxyClientSocket::GetLocalAddress(IPEndPoint* address) const {
   return spdy_stream_->GetLocalAddress(address);
 }
 
-void SpdyProxyClientSocket::LogBlockedTunnelResponse() const {
-  ProxyClientSocket::LogBlockedTunnelResponse(
-      response_.headers->response_code(),
-      /* is_https_proxy = */ true);
-}
-
 void SpdyProxyClientSocket::RunCallback(CompletionOnceCallback callback,
                                         int result) const {
   std::move(callback).Run(result);
@@ -406,10 +400,8 @@ int SpdyProxyClientSocket::DoReadReplyComplete(int result) {
     case 302:  // Found / Moved Temporarily
       // Try to return a sanitized response so we can follow auth redirects.
       // If we can't, fail the tunnel connection.
-      if (!SanitizeProxyRedirect(&response_)) {
-        LogBlockedTunnelResponse();
+      if (!SanitizeProxyRedirect(&response_))
         return ERR_TUNNEL_CONNECTION_FAILED;
-      }
 
       redirect_has_load_timing_info_ =
           spdy_stream_->GetLoadTimingInfo(&redirect_load_timing_info_);
@@ -420,16 +412,13 @@ int SpdyProxyClientSocket::DoReadReplyComplete(int result) {
 
     case 407:  // Proxy Authentication Required
       next_state_ = STATE_OPEN;
-      if (!SanitizeProxyAuth(&response_)) {
-        LogBlockedTunnelResponse();
+      if (!SanitizeProxyAuth(&response_))
         return ERR_TUNNEL_CONNECTION_FAILED;
-      }
       return HandleProxyAuthChallenge(auth_.get(), &response_, net_log_);
 
     default:
       // Ignore response to avoid letting the proxy impersonate the target
       // server.  (See http://crbug.com/137891.)
-      LogBlockedTunnelResponse();
       return ERR_TUNNEL_CONNECTION_FAILED;
   }
 }

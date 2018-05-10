@@ -114,8 +114,6 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocket : public ProxyClientSocket {
   int PrepareForAuthRestart();
   int DidDrainBodyForAuthRestart();
 
-  void LogBlockedTunnelResponse() const;
-
   void DoCallback(int result);
   void OnIOComplete(int result);
 

@@ -74,10 +74,6 @@ class NET_EXPORT_PRIVATE ProxyClientSocket : public StreamSocket {
                                       HttpResponseInfo* response,
                                       const NetLogWithSource& net_log);
 
-  // Logs (to the log and in a histogram) a blocked CONNECT response.
-  static void LogBlockedTunnelResponse(int http_response_code,
-                                       bool is_https_proxy);
-
   // When a proxy authentication response is received during tunnel
   // construction, this method should be called to strip everything
   // but the auth header from the redirect response.  If it returns
