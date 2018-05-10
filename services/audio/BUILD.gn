@@ -87,6 +87,7 @@ source_set("tests") {
     "loopback_stream_unittest.cc",
     "output_controller_unittest.cc",
     "output_stream_unittest.cc",
+    "public/cpp/input_ipc_unittest.cc",
     "snooper_node_unittest.cc",
     "stream_factory_unittest.cc",
     "sync_reader_unittest.cc",
