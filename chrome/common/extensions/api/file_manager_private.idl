@@ -1078,7 +1078,8 @@ interface Functions {
   static void isCrostiniEnabled(BooleanCallback callback);
 
   // Starts and mounts crostini container.
-  static void mountCrostiniContainer();
+  // |callback|
+  static void mountCrostiniContainer(BooleanCallback callback);
 };
 
 interface Events {

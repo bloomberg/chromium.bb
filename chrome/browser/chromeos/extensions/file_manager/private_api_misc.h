@@ -26,6 +26,10 @@ namespace chromeos {
 class RecentFile;
 }  // namespace chromeos
 
+namespace crostini {
+enum class ConciergeClientResult;
+}
+
 namespace file_manager {
 namespace util {
 struct EntryDefinition;
@@ -278,7 +282,7 @@ class FileManagerPrivateIsCrostiniEnabledFunction
 // Implements the chrome.fileManagerPrivate.mountCrostiniContainer method.
 // Starts and mounts crostini container.
 class FileManagerPrivateMountCrostiniContainerFunction
-    : public UIThreadExtensionFunction {
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.mountCrostiniContainer",
                              FILEMANAGERPRIVATE_MOUNTCROSTINICONTAINER)
@@ -286,7 +290,8 @@ class FileManagerPrivateMountCrostiniContainerFunction
  protected:
   ~FileManagerPrivateMountCrostiniContainerFunction() override {}
 
-  ResponseAction Run() override;
+  bool RunAsync() override;
+  void RestartCallback(crostini::ConciergeClientResult);
 };
 
 // Implements the chrome.fileManagerPrivate.getCustomActions method.

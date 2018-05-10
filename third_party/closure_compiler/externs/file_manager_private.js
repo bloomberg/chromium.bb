@@ -730,14 +730,15 @@ chrome.fileManagerPrivate.executeCustomAction = function(
 
 /**
  * Returns true if crostini is enabled.
- * @param {function(!boolean)} callback
+ * @param {function(boolean)} callback
  */
 chrome.fileManagerPrivate.isCrostiniEnabled = function(callback) {};
 
 /**
  * Starts and mounts crostini container.
+ * @param {function(boolean)} callback
  */
-chrome.fileManagerPrivate.mountCrostiniContainer = function() {};
+chrome.fileManagerPrivate.mountCrostiniContainer = function(callback) {};
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;
