@@ -29,6 +29,7 @@
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/var_array.h"
 #include "ppapi/utility/completion_callback_factory.h"
+#include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_dataavail.h"
 #include "third_party/pdfium/public/fpdf_formfill.h"
 #include "third_party/pdfium/public/fpdf_progressive.h"
@@ -381,8 +382,8 @@ class PDFiumEngine : public PDFEngine,
   int GetProgressiveIndex(int page_index) const;
 
   // Creates a FPDF_BITMAP from a rectangle in screen coordinates.
-  FPDF_BITMAP CreateBitmap(const pp::Rect& rect,
-                           pp::ImageData* image_data) const;
+  ScopedFPDFBitmap CreateBitmap(const pp::Rect& rect,
+                                pp::ImageData* image_data) const;
 
   // Given a rectangle in screen coordinates, returns the coordinates in the
   // units that PDFium rendering functions expect.
@@ -637,13 +638,33 @@ class PDFiumEngine : public PDFEngine,
   std::string link_under_cursor_;
 
   // Pending progressive paints.
-  struct ProgressivePaint {
-    pp::Rect rect;  // In screen coordinates.
-    FPDF_BITMAP bitmap;
-    int page_index;
+  class ProgressivePaint {
+   public:
+    ProgressivePaint(int page_index, const pp::Rect& rect);
+    ProgressivePaint(ProgressivePaint&& that);
+    ~ProgressivePaint();
+
+    ProgressivePaint& operator=(ProgressivePaint&& that);
+
+    int page_index() const { return page_index_; }
+    const pp::Rect& rect() const { return rect_; }
+    FPDF_BITMAP bitmap() const { return bitmap_.get(); }
+    bool painted() const { return painted_; }
+
+    void set_painted(bool enable) { painted_ = enable; }
+    void SetBitmapAndImageData(ScopedFPDFBitmap bitmap,
+                               pp::ImageData image_data);
+
+   private:
+    int page_index_;
+    pp::Rect rect_;             // In screen coordinates.
+    pp::ImageData image_data_;  // Maintains reference while |bitmap_| exists.
+    ScopedFPDFBitmap bitmap_;   // Must come after |image_data_|.
     // Temporary used to figure out if in a series of Paint() calls whether this
     // pending paint was updated or not.
-    bool painted_;
+    bool painted_ = false;
+
+    DISALLOW_COPY_AND_ASSIGN(ProgressivePaint);
   };
   std::vector<ProgressivePaint> progressive_paints_;
 
