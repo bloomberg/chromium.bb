@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/timing/worker_global_scope_performance.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
+#include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -113,14 +114,12 @@ SubresourceFilter* WorkerFetchContext::GetSubresourceFilter() const {
   return subresource_filter_.Get();
 }
 
-bool WorkerFetchContext::AllowScriptFromSource(const KURL&) const {
-  // Currently we don't use WorkerFetchContext for loading scripts. So this
-  // method must not be called.
-  // TODO(horo): When we will use WorkerFetchContext for loading scripts, we
-  // need to have a copy the script rules of RendererContentSettingRules on the
-  // worker thread.
-  NOTREACHED();
-  return false;
+bool WorkerFetchContext::AllowScriptFromSource(const KURL& url) const {
+  WorkerContentSettingsClient* settings_client =
+      WorkerContentSettingsClient::From(*global_scope_);
+  // If we're on a worker, script should be enabled, so no need to plumb
+  // Settings::GetScriptEnabled() here.
+  return !settings_client || settings_client->AllowScriptFromSource(true, url);
 }
 
 bool WorkerFetchContext::ShouldBlockRequestByInspector(const KURL& url) const {

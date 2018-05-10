@@ -29,6 +29,8 @@ WorkerContentSettingsClient::WorkerContentSettingsClient(
       url::Origin(frame->Top()->GetSecurityOrigin()).GetURL();
   allow_running_insecure_content_ = ContentSettingsObserver::Get(render_frame)
                                         ->allow_running_insecure_content();
+  content_setting_rules_ =
+      ContentSettingsObserver::Get(render_frame)->GetContentSettingRules();
 }
 
 WorkerContentSettingsClient::WorkerContentSettingsClient(
@@ -38,7 +40,8 @@ WorkerContentSettingsClient::WorkerContentSettingsClient(
       document_origin_url_(other.document_origin_url_),
       top_frame_origin_url_(other.top_frame_origin_url_),
       allow_running_insecure_content_(other.allow_running_insecure_content_),
-      sync_message_filter_(other.sync_message_filter_) {}
+      sync_message_filter_(other.sync_message_filter_),
+      content_setting_rules_(other.content_setting_rules_) {}
 
 WorkerContentSettingsClient::~WorkerContentSettingsClient() {}
 
@@ -77,6 +80,29 @@ bool WorkerContentSettingsClient::AllowRunningInsecureContent(
   if (!allow_running_insecure_content_ && !allowed_per_settings) {
     sync_message_filter_->Send(new ChromeViewHostMsg_ContentBlocked(
         routing_id_, CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, base::string16()));
+    return false;
+  }
+
+  return true;
+}
+
+bool WorkerContentSettingsClient::AllowScriptFromSource(
+    bool enabled_per_settings,
+    const blink::WebURL& script_url) {
+  bool allow = enabled_per_settings;
+  if (allow && content_setting_rules_) {
+    for (const auto& rule : content_setting_rules_->script_rules) {
+      if (rule.primary_pattern.Matches(top_frame_origin_url_) &&
+          rule.secondary_pattern.Matches(script_url)) {
+        allow = rule.GetContentSetting() != CONTENT_SETTING_BLOCK;
+        break;
+      }
+    }
+  }
+
+  if (!allow) {
+    sync_message_filter_->Send(new ChromeViewHostMsg_ContentBlocked(
+        routing_id_, CONTENT_SETTINGS_TYPE_JAVASCRIPT, base::string16()));
     return false;
   }
 

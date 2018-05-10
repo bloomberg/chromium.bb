@@ -7,24 +7,25 @@
 
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/workers/worker_or_worklet_module_fetch_coordinator.h"
+#include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 // WorkerOrWorkletModuleFetchCoordinatorProxy serves as a proxy to talk to
-// an implementation of WorkerOrWorkletModuleFetchCoordinator on the main thread
+//  WorkletModuleResponsesMap on the main thread
 // (outside_settings) from the worker or worklet context thread
 // (inside_settings). The constructor and all public functions must be called on
 // the context thread.
+// TODO(japhet): Rename to WorkletModuleFetchCoordinatorProxy
 class CORE_EXPORT WorkerOrWorkletModuleFetchCoordinatorProxy
     : public GarbageCollectedFinalized<
           WorkerOrWorkletModuleFetchCoordinatorProxy> {
  public:
-  using Client = WorkerOrWorkletModuleFetchCoordinator::Client;
+  using Client = WorkletModuleResponsesMap::Client;
 
   static WorkerOrWorkletModuleFetchCoordinatorProxy* Create(
-      WorkerOrWorkletModuleFetchCoordinator*,
+      WorkletModuleResponsesMap*,
       scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> inside_settings_task_runner);
 
@@ -34,14 +35,14 @@ class CORE_EXPORT WorkerOrWorkletModuleFetchCoordinatorProxy
 
  private:
   WorkerOrWorkletModuleFetchCoordinatorProxy(
-      WorkerOrWorkletModuleFetchCoordinator*,
+      WorkletModuleResponsesMap*,
       scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> inside_settings_task_runner);
 
   void FetchOnMainThread(std::unique_ptr<CrossThreadFetchParametersData>,
                          Client*);
 
-  CrossThreadPersistent<WorkerOrWorkletModuleFetchCoordinator> coordinator_;
+  CrossThreadPersistent<WorkletModuleResponsesMap> module_responses_map_;
   scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> inside_settings_task_runner_;
 };

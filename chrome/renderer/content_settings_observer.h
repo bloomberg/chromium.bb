@@ -55,6 +55,7 @@ class ContentSettingsObserver
   // must outlive this |ContentSettingsObserver|.
   void SetContentSettingRules(
       const RendererContentSettingRules* content_setting_rules);
+  const RendererContentSettingRules* GetContentSettingRules();
 
   bool IsPluginTemporarilyAllowed(const std::string& identifier);
 

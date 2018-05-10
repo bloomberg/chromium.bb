@@ -29,8 +29,6 @@
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
-#include "third_party/blink/renderer/core/workers/worker_module_fetch_coordinator.h"
-#include "third_party/blink/renderer/core/workers/worker_or_worklet_module_fetch_coordinator.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
@@ -98,9 +96,7 @@ DedicatedWorker::DedicatedWorker(ExecutionContext* context,
     : AbstractWorker(context),
       script_url_(script_url),
       options_(options),
-      context_proxy_(new DedicatedWorkerMessagingProxy(context, this)),
-      module_fetch_coordinator_(
-          WorkerModuleFetchCoordinator::Create(context->Fetcher())) {
+      context_proxy_(new DedicatedWorkerMessagingProxy(context, this)) {
   DCHECK(context->IsContextThread());
   DCHECK(script_url_.IsValid());
   DCHECK(context_proxy_);
@@ -197,7 +193,6 @@ void DedicatedWorker::ContextDestroyed(ExecutionContext*) {
   DCHECK(GetExecutionContext()->IsContextThread());
   if (classic_script_loader_)
     classic_script_loader_->Cancel();
-  module_fetch_coordinator_->Dispose();
   terminate();
 }
 
@@ -291,7 +286,7 @@ DedicatedWorker::CreateGlobalScopeCreationParams() {
       GetExecutionContext()->GetSecurityContext().AddressSpace(),
       OriginTrialContext::GetTokens(GetExecutionContext()).get(),
       devtools_worker_token, std::move(settings), kV8CacheOptionsDefault,
-      module_fetch_coordinator_.Get(),
+      nullptr /* worklet_module_responses_map */,
       ConnectToWorkerInterfaceProvider(GetExecutionContext(),
                                        SecurityOrigin::Create(script_url_)),
       CreateBeginFrameProviderParams());
@@ -303,7 +298,6 @@ const AtomicString& DedicatedWorker::InterfaceName() const {
 
 void DedicatedWorker::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_proxy_);
-  visitor->Trace(module_fetch_coordinator_);
   AbstractWorker::Trace(visitor);
 }
 

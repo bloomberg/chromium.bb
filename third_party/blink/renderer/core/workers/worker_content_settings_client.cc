@@ -57,6 +57,15 @@ bool WorkerContentSettingsClient::AllowIndexedDB(const WebString& name) {
   return client_->AllowIndexedDB(name, WebSecurityOrigin());
 }
 
+bool WorkerContentSettingsClient::AllowScriptFromSource(
+    bool enabled_per_settings,
+    const KURL& url) {
+  if (client_) {
+    return client_->AllowScriptFromSource(enabled_per_settings, url);
+  }
+  return enabled_per_settings;
+}
+
 bool WorkerContentSettingsClient::AllowRunningInsecureContent(
     bool enabled_per_settings,
     const SecurityOrigin* origin,
@@ -73,7 +82,7 @@ const char WorkerContentSettingsClient::kSupplementName[] =
 
 WorkerContentSettingsClient* WorkerContentSettingsClient::From(
     ExecutionContext& context) {
-  WorkerClients* clients = ToWorkerGlobalScope(context).Clients();
+  WorkerClients* clients = ToWorkerOrWorkletGlobalScope(context).Clients();
   DCHECK(clients);
   return Supplement<WorkerClients>::From<WorkerContentSettingsClient>(*clients);
 }

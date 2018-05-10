@@ -22,6 +22,8 @@ namespace blink {
 class WebSecurityOrigin;
 }
 
+struct RendererContentSettingRules;
+
 // This client is created on the main renderer thread then passed onto the
 // blink's worker thread.
 class WorkerContentSettingsClient : public blink::WebContentSettingsClient {
@@ -37,6 +39,8 @@ class WorkerContentSettingsClient : public blink::WebContentSettingsClient {
   bool AllowRunningInsecureContent(bool allowed_per_settings,
                                    const blink::WebSecurityOrigin& context,
                                    const blink::WebURL& url) override;
+  bool AllowScriptFromSource(bool enabled_per_settings,
+                             const blink::WebURL& script_url) override;
 
  private:
   explicit WorkerContentSettingsClient(
@@ -49,6 +53,7 @@ class WorkerContentSettingsClient : public blink::WebContentSettingsClient {
   GURL top_frame_origin_url_;
   bool allow_running_insecure_content_;
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
+  const RendererContentSettingRules* content_setting_rules_;
 
   DISALLOW_ASSIGN(WorkerContentSettingsClient);
 };

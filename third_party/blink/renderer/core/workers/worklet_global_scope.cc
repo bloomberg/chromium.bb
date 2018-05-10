@@ -40,7 +40,7 @@ WorkletGlobalScope::WorkletGlobalScope(
       document_secure_context_(creation_params->starter_secure_context),
       fetch_coordinator_proxy_(
           WorkerOrWorkletModuleFetchCoordinatorProxy::Create(
-              creation_params->module_fetch_coordinator,
+              creation_params->module_responses_map,
               std::move(document_loading_task_runner),
               std::move(worklet_loading_task_runner))) {
   // Step 2: "Let inheritedAPIBaseURL be outsideSettings's API base URL."

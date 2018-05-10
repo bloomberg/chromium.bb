@@ -138,7 +138,7 @@ class DedicatedWorkerMessagingProxyForTest
             false /* starter_secure_context */, nullptr /* worker_clients */,
             mojom::IPAddressSpace::kLocal, nullptr /* origin_trial_tokens */,
             base::UnguessableToken::Create(), std::move(worker_settings),
-            kV8CacheOptionsDefault, nullptr /* module_fetch_coordinator */),
+            kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */),
         WorkerBackingThreadStartupData(
             WorkerBackingThreadStartupData::HeapLimitMode::kDefault,
             WorkerBackingThreadStartupData::AtomicsWaitMode::kAllow));

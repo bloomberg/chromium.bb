@@ -320,10 +320,6 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
   auto worker_settings = std::make_unique<WorkerSettings>(
       shadow_page_->GetDocument()->GetFrame()->GetSettings());
 
-  // TODO(nhiroki); Set the coordinator for module fetch.
-  // (https://crbug.com/824646)
-  WorkerOrWorkletModuleFetchCoordinator* module_fetch_coordinator = nullptr;
-
   // TODO(nhiroki); Set |script_type| to ScriptType::kModule for module fetch.
   // (https://crbug.com/824646)
   ScriptType script_type = ScriptType::kClassic;
@@ -337,7 +333,8 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
           worker_clients, main_script_loader_->ResponseAddressSpace(),
           main_script_loader_->OriginTrialTokens(), devtools_worker_token_,
           std::move(worker_settings), kV8CacheOptionsDefault,
-          module_fetch_coordinator, std::move(pending_interface_provider_));
+          nullptr /* worklet_module_response_map */,
+          std::move(pending_interface_provider_));
   String source_code = main_script_loader_->SourceText();
 
   // SharedWorker can sometimes run tasks that are initiated by/associated with

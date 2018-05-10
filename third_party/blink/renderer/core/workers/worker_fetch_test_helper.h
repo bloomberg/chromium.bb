@@ -8,7 +8,7 @@
 #include "base/optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
-#include "third_party/blink/renderer/core/workers/worker_or_worklet_module_fetch_coordinator.h"
+#include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/testing/fetch_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -17,7 +17,7 @@
 namespace blink {
 
 class ClientImpl final : public GarbageCollectedFinalized<ClientImpl>,
-                         public WorkerOrWorkletModuleFetchCoordinator::Client {
+                         public WorkletModuleResponsesMap::Client {
   USING_GARBAGE_COLLECTED_MIXIN(ClientImpl);
 
  public:
