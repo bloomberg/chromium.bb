@@ -17,7 +17,7 @@ class Point;
 
 namespace views {
 
-// Screen implementation backed by ui::mojom::DisplayManager.
+// Delegate for screen implementation backed by ui::mojom::ScreenProvider.
 class VIEWS_MUS_EXPORT ScreenMusDelegate {
  public:
   virtual void OnWindowManagerFrameValuesChanged() = 0;

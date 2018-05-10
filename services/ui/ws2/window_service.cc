@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "services/ui/ws2/client_window.h"
-#include "services/ui/ws2/display_manager_mus.h"
 #include "services/ui/ws2/gpu_support.h"
+#include "services/ui/ws2/screen_provider.h"
 #include "services/ui/ws2/window_service_client.h"
 #include "services/ui/ws2/window_service_delegate.h"
 #include "services/ui/ws2/window_tree_factory.h"
@@ -21,7 +21,7 @@ WindowService::WindowService(WindowServiceDelegate* delegate,
                              std::unique_ptr<GpuSupport> gpu_support)
     : delegate_(delegate),
       gpu_support_(std::move(gpu_support)),
-      display_manager_mus_(std::make_unique<DisplayManagerMus>()) {
+      screen_provider_(std::make_unique<ScreenProvider>()) {
   // MouseLocationManager is necessary for providing the shared memory with the
   // location of the mouse to clients.
   aura::Env::GetInstance()->CreateMouseLocationManager();
@@ -56,7 +56,7 @@ void WindowService::OnStart() {
   registry_.AddInterface(base::BindRepeating(
       &WindowService::BindClipboardRequest, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
-      &WindowService::BindDisplayManagerRequest, base::Unretained(this)));
+      &WindowService::BindScreenProviderRequest, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
       &WindowService::BindImeDriverRequest, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
@@ -88,9 +88,9 @@ void WindowService::BindClipboardRequest(mojom::ClipboardRequest request) {
   NOTIMPLEMENTED();
 }
 
-void WindowService::BindDisplayManagerRequest(
-    mojom::DisplayManagerRequest request) {
-  display_manager_mus_->AddBinding(std::move(request));
+void WindowService::BindScreenProviderRequest(
+    mojom::ScreenProviderRequest request) {
+  screen_provider_->AddBinding(std::move(request));
 }
 
 void WindowService::BindImeDriverRequest(mojom::IMEDriverRequest request) {

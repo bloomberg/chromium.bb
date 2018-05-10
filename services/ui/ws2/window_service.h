@@ -12,8 +12,8 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/ui/public/interfaces/clipboard.mojom.h"
-#include "services/ui/public/interfaces/display_manager.mojom.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
+#include "services/ui/public/interfaces/screen_provider.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws2/ids.h"
 #include "ui/aura/mus/property_converter.h"
@@ -31,8 +31,8 @@ class WindowTreeClient;
 namespace ws2 {
 
 class ClientWindow;
-class DisplayManagerMus;
 class GpuSupport;
+class ScreenProvider;
 class WindowServiceClient;
 class WindowServiceDelegate;
 class WindowTreeFactory;
@@ -70,7 +70,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
  private:
   void BindClipboardRequest(mojom::ClipboardRequest request);
-  void BindDisplayManagerRequest(mojom::DisplayManagerRequest request);
+  void BindScreenProviderRequest(mojom::ScreenProviderRequest request);
   void BindImeDriverRequest(mojom::IMEDriverRequest request);
   void BindWindowTreeFactoryRequest(
       ui::mojom::WindowTreeFactoryRequest request);
@@ -80,7 +80,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   // GpuSupport may be null in tests.
   std::unique_ptr<GpuSupport> gpu_support_;
 
-  std::unique_ptr<DisplayManagerMus> display_manager_mus_;
+  std::unique_ptr<ScreenProvider> screen_provider_;
 
   service_manager::BinderRegistry registry_;
 

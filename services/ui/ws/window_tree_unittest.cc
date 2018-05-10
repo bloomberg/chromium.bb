@@ -1851,19 +1851,19 @@ TEST_F(WindowTreeManualDisplayTest,
   const bool automatically_create_display_roots = false;
   AddWindowManager(window_server(), automatically_create_display_roots);
 
-  TestDisplayManagerObserver display_manager_observer;
+  TestScreenProviderObserver screen_provider_observer;
   DisplayManager* display_manager = window_server()->display_manager();
   UserDisplayManager* user_display_manager =
       display_manager->GetUserDisplayManager();
   ASSERT_TRUE(user_display_manager);
-  user_display_manager->AddObserver(display_manager_observer.GetPtr());
+  user_display_manager->AddObserver(screen_provider_observer.GetPtr());
 
   // Observer should not have been notified yet.
   //
   // NOTE: the RunUntilIdle() calls are necessary anytime the calls are checked
   // as the observer is called via mojo, which is async.
   RunUntilIdle();
-  EXPECT_TRUE(display_manager_observer.GetAndClearObserverCalls().empty());
+  EXPECT_TRUE(screen_provider_observer.GetAndClearObserverCalls().empty());
 
   // Set frame decorations, again observer should not be notified.
   WindowManagerState* window_manager_state =
@@ -1873,7 +1873,7 @@ TEST_F(WindowTreeManualDisplayTest,
   window_manager_state->SetFrameDecorationValues(
       mojom::FrameDecorationValues::New());
   RunUntilIdle();
-  EXPECT_TRUE(display_manager_observer.GetAndClearObserverCalls().empty());
+  EXPECT_TRUE(screen_provider_observer.GetAndClearObserverCalls().empty());
 
   // Create a window for the windowmanager and set it as the root.
   ClientWindowId display_root_id = BuildClientWindowId(window_manager_tree, 10);
@@ -1883,7 +1883,7 @@ TEST_F(WindowTreeManualDisplayTest,
       window_manager_tree->GetWindowByClientId(display_root_id);
   ASSERT_TRUE(display_root);
   RunUntilIdle();
-  EXPECT_TRUE(display_manager_observer.GetAndClearObserverCalls().empty());
+  EXPECT_TRUE(screen_provider_observer.GetAndClearObserverCalls().empty());
 
   // Add a new display.
   // The value for the scale factor doesn't matter, just choosing something
@@ -1902,7 +1902,7 @@ TEST_F(WindowTreeManualDisplayTest,
                   .ProcessSetDisplayRoot(display1, metrics1, is_primary_display,
                                          display_root_id));
   RunUntilIdle();
-  EXPECT_TRUE(display_manager_observer.GetAndClearObserverCalls().empty());
+  EXPECT_TRUE(screen_provider_observer.GetAndClearObserverCalls().empty());
 
   // Configure the displays, updating the bounds of the first display.
   std::vector<display::Display> displays;
@@ -1918,7 +1918,7 @@ TEST_F(WindowTreeManualDisplayTest,
   RunUntilIdle();
   EXPECT_EQ("OnDisplaysChanged " + std::to_string(display_id1) + " " +
                 std::to_string(display::kInvalidDisplayId),
-            display_manager_observer.GetAndClearObserverCalls());
+            screen_provider_observer.GetAndClearObserverCalls());
   PlatformDisplay* platform_display1 =
       display_manager->GetDisplayById(display_id1)->platform_display();
   ASSERT_TRUE(platform_display1);
@@ -1938,7 +1938,7 @@ TEST_F(WindowTreeManualDisplayTest,
       window_manager_tree->GetWindowByClientId(display_root_id);
   ASSERT_TRUE(display_root2);
   RunUntilIdle();
-  EXPECT_TRUE(display_manager_observer.GetAndClearObserverCalls().empty());
+  EXPECT_TRUE(screen_provider_observer.GetAndClearObserverCalls().empty());
 
   // Add another display.
   const float kDisplay2ScaleFactor = 1.75;
@@ -1954,7 +1954,7 @@ TEST_F(WindowTreeManualDisplayTest,
       WindowTreeTestApi(window_manager_tree)
           .ProcessSetDisplayRoot(display2, metrics2, false, display_root_id2));
   RunUntilIdle();
-  EXPECT_TRUE(display_manager_observer.GetAndClearObserverCalls().empty());
+  EXPECT_TRUE(screen_provider_observer.GetAndClearObserverCalls().empty());
 
   // Make |display2| the default, and resize both displays.
   display1.set_bounds(gfx::Rect(0, 0, 1024, 1280));
@@ -1974,7 +1974,7 @@ TEST_F(WindowTreeManualDisplayTest,
   RunUntilIdle();
   EXPECT_EQ("OnDisplaysChanged " + std::to_string(display_id1) + " " +
                 std::to_string(display_id2) + " " + std::to_string(display_id2),
-            display_manager_observer.GetAndClearObserverCalls());
+            screen_provider_observer.GetAndClearObserverCalls());
   EXPECT_EQ(
       kDisplay1ScaleFactor * ui::mojom::kCursorMultiplierForExternalDisplays,
       static_cast<TestPlatformDisplay*>(platform_display1)->cursor_scale());
@@ -1988,7 +1988,7 @@ TEST_F(WindowTreeManualDisplayTest,
   // Delete the second display, no notification should be sent.
   EXPECT_TRUE(window_manager_tree->DeleteWindow(display_root_id2));
   RunUntilIdle();
-  EXPECT_TRUE(display_manager_observer.GetAndClearObserverCalls().empty());
+  EXPECT_TRUE(screen_provider_observer.GetAndClearObserverCalls().empty());
   EXPECT_FALSE(display_manager->GetDisplayById(display_id2));
 
   // Set the config back to only the first.
@@ -2002,7 +2002,7 @@ TEST_F(WindowTreeManualDisplayTest,
   RunUntilIdle();
   EXPECT_EQ("OnDisplaysChanged " + std::to_string(display_id1) + " " +
                 std::to_string(display_id1),
-            display_manager_observer.GetAndClearObserverCalls());
+            screen_provider_observer.GetAndClearObserverCalls());
 
   // The display list should not have display2.
   display::DisplayList& display_list =

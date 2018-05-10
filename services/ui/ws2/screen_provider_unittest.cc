@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws2/display_manager_mus.h"
+#include "services/ui/ws2/screen_provider.h"
 
 #include <stdint.h>
 
 #include "base/strings/string_number_conversions.h"
 #include "services/ui/common/task_runner_test_base.h"
-#include "services/ui/public/interfaces/display_manager.mojom.h"
+#include "services/ui/public/interfaces/screen_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
 #include "ui/display/screen_base.h"
@@ -62,18 +62,18 @@ class TestScreen : public display::ScreenBase {
   DISALLOW_COPY_AND_ASSIGN(TestScreen);
 };
 
-class TestDisplayManagerObserver : public mojom::DisplayManagerObserver {
+class TestScreenProviderObserver : public mojom::ScreenProviderObserver {
  public:
-  TestDisplayManagerObserver() = default;
-  ~TestDisplayManagerObserver() override = default;
+  TestScreenProviderObserver() = default;
+  ~TestScreenProviderObserver() override = default;
 
-  mojom::DisplayManagerObserverPtr GetPtr() {
-    mojom::DisplayManagerObserverPtr ptr;
+  mojom::ScreenProviderObserverPtr GetPtr() {
+    mojom::ScreenProviderObserverPtr ptr;
     binding_.Bind(mojo::MakeRequest(&ptr));
     return ptr;
   }
 
-  // mojom::DisplayManagerObserver:
+  // mojom::ScreenProviderObserver:
   void OnDisplaysChanged(std::vector<mojom::WsDisplayPtr> displays,
                          int64_t primary_display_id,
                          int64_t internal_display_id) override {
@@ -82,29 +82,29 @@ class TestDisplayManagerObserver : public mojom::DisplayManagerObserver {
     internal_display_id_ = internal_display_id;
   }
 
-  mojo::Binding<mojom::DisplayManagerObserver> binding_{this};
+  mojo::Binding<mojom::ScreenProviderObserver> binding_{this};
   std::string display_ids_;
   int64_t primary_display_id_ = 0;
   int64_t internal_display_id_ = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestDisplayManagerObserver);
+  DISALLOW_COPY_AND_ASSIGN(TestScreenProviderObserver);
 };
 
 // Mojo needs a task runner.
-using DisplayManagerMusTest = TaskRunnerTestBase;
+using ScreenProviderTest = TaskRunnerTestBase;
 
-TEST_F(DisplayManagerMusTest, AddRemoveDisplay) {
+TEST_F(ScreenProviderTest, AddRemoveDisplay) {
   TestScreen screen;
   screen.AddDisplay(Display(111, gfx::Rect(0, 0, 640, 480)),
                     DisplayList::Type::PRIMARY);
   Display::SetInternalDisplayId(111);
 
-  DisplayManagerMus manager;
-  TestDisplayManagerObserver observer;
+  ScreenProvider screen_provider;
+  TestScreenProviderObserver observer;
 
   // Adding an observer triggers an update.
-  manager.AddObserver(observer.GetPtr());
+  screen_provider.AddObserver(observer.GetPtr());
   // Wait for mojo message to observer.
   RunUntilIdle();
   EXPECT_EQ("111", observer.display_ids_);

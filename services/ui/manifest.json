@@ -12,10 +12,10 @@
         "app": [
           "discardable_memory::mojom::DiscardableSharedMemoryManager",
           "ui::mojom::Clipboard",
-          "ui::mojom::DisplayManager",
           "ui::mojom::Gpu",
           "ui::mojom::IMEDriver",
           "ui::mojom::InputDeviceServer",
+          "ui::mojom::ScreenProvider",
           "ui::mojom::WindowTreeFactory"
         ],
         "arc_manager" : [
@@ -64,12 +64,12 @@
           "display::mojom::NativeDisplayDelegate",
           "ui::mojom::AccessibilityManager",
           "ui::mojom::Clipboard",
-          "ui::mojom::DisplayManager",
           "ui::mojom::EventInjector",
           "ui::mojom::Gpu",
           "ui::mojom::IMEDriver",
           "ui::mojom::InputDeviceController",
           "ui::mojom::InputDeviceServer",
+          "ui::mojom::ScreenProvider",
           "ui::mojom::TouchDeviceServer",
           "ui::mojom::UserActivityMonitor",
           "ui::mojom::WindowManagerWindowTreeFactory"

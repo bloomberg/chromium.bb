@@ -26,10 +26,10 @@
 #include "services/ui/input_devices/input_device_server.h"
 #include "services/ui/public/interfaces/accessibility_manager.mojom.h"
 #include "services/ui/public/interfaces/clipboard.mojom.h"
-#include "services/ui/public/interfaces/display_manager.mojom.h"
 #include "services/ui/public/interfaces/event_injector.mojom.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
+#include "services/ui/public/interfaces/screen_provider.mojom.h"
 #include "services/ui/public/interfaces/user_activity_monitor.mojom.h"
 #include "services/ui/public/interfaces/video_detector.mojom.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
@@ -138,8 +138,8 @@ class Service : public service_manager::Service,
   void BindClipboardRequest(mojom::ClipboardRequest request,
                             const service_manager::BindSourceInfo& source_info);
 
-  void BindDisplayManagerRequest(
-      mojom::DisplayManagerRequest request,
+  void BindScreenProviderRequest(
+      mojom::ScreenProviderRequest request,
       const service_manager::BindSourceInfo& source_info);
 
   void BindGpuRequest(mojom::GpuRequest request);

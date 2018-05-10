@@ -68,17 +68,17 @@ class UserDisplayManagerTest : public TaskRunnerTestBase {
 TEST_F(UserDisplayManagerTest, OnlyNotifyWhenFrameDecorationsSet) {
   screen_manager().AddDisplay();
 
-  TestDisplayManagerObserver display_manager_observer;
+  TestScreenProviderObserver screen_provider_observer;
   DisplayManager* display_manager = window_server()->display_manager();
   AddWindowManager(window_server());
   UserDisplayManager* user_display_manager =
       display_manager->GetUserDisplayManager();
   ASSERT_TRUE(user_display_manager);
-  user_display_manager->AddObserver(display_manager_observer.GetPtr());
+  user_display_manager->AddObserver(screen_provider_observer.GetPtr());
   RunUntilIdle();
 
   // Observer should not have been notified yet.
-  EXPECT_EQ(std::string(), display_manager_observer.GetAndClearObserverCalls());
+  EXPECT_EQ(std::string(), screen_provider_observer.GetAndClearObserverCalls());
 
   // Set the frame decoration values, which should trigger sending immediately.
   ASSERT_EQ(1u, display_manager->displays().size());
@@ -87,13 +87,13 @@ TEST_F(UserDisplayManagerTest, OnlyNotifyWhenFrameDecorationsSet) {
   RunUntilIdle();
 
   EXPECT_EQ("OnDisplaysChanged 1 -1",
-            display_manager_observer.GetAndClearObserverCalls());
+            screen_provider_observer.GetAndClearObserverCalls());
 }
 
 TEST_F(UserDisplayManagerTest, AddObserverAfterFrameDecorationsSet) {
   screen_manager().AddDisplay();
 
-  TestDisplayManagerObserver display_manager_observer1;
+  TestScreenProviderObserver screen_provider_observer;
   DisplayManager* display_manager = window_server()->display_manager();
   AddWindowManager(window_server());
   UserDisplayManager* user_display_manager =
@@ -103,17 +103,17 @@ TEST_F(UserDisplayManagerTest, AddObserverAfterFrameDecorationsSet) {
   window_server()->GetWindowManagerState()->SetFrameDecorationValues(
       CreateDefaultFrameDecorationValues());
 
-  user_display_manager->AddObserver(display_manager_observer1.GetPtr());
+  user_display_manager->AddObserver(screen_provider_observer.GetPtr());
   RunUntilIdle();
 
   EXPECT_EQ("OnDisplaysChanged 1 -1",
-            display_manager_observer1.GetAndClearObserverCalls());
+            screen_provider_observer.GetAndClearObserverCalls());
 }
 
 TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
   screen_manager().AddDisplay();
 
-  TestDisplayManagerObserver display_manager_observer1;
+  TestScreenProviderObserver screen_provider_observer;
   DisplayManager* display_manager = window_server()->display_manager();
   AddWindowManager(window_server());
   UserDisplayManager* user_display_manager =
@@ -122,11 +122,11 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
   ASSERT_EQ(1u, display_manager->displays().size());
   window_server()->GetWindowManagerState()->SetFrameDecorationValues(
       CreateDefaultFrameDecorationValues());
-  user_display_manager->AddObserver(display_manager_observer1.GetPtr());
+  user_display_manager->AddObserver(screen_provider_observer.GetPtr());
   RunUntilIdle();
 
   EXPECT_EQ("OnDisplaysChanged 1 -1",
-            display_manager_observer1.GetAndClearObserverCalls());
+            screen_provider_observer.GetAndClearObserverCalls());
 
   // Add another display.
   const int64_t second_display_id = screen_manager().AddDisplay();
@@ -134,14 +134,14 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
 
   // Observer should be notified immediately as frame decorations were set.
   EXPECT_EQ("OnDisplaysChanged 1 2 -1",
-            display_manager_observer1.GetAndClearObserverCalls());
+            screen_provider_observer.GetAndClearObserverCalls());
 
   // Remove the display and verify observer is notified.
   screen_manager().RemoveDisplay(second_display_id);
   RunUntilIdle();
 
   EXPECT_EQ("OnDisplaysChanged 1 -1",
-            display_manager_observer1.GetAndClearObserverCalls());
+            screen_provider_observer.GetAndClearObserverCalls());
 }
 
 }  // namespace test
