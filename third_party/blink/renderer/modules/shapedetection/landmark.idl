@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // https://wicg.github.io/shape-detection-api/#enumdef-landmarktype
-enum LandmarkType { "mouth", "eye" };
+enum LandmarkType { "mouth", "eye", "nose" };
 
 // https://wicg.github.io/shape-detection-api/#dictdef-landmark
 dictionary Landmark {

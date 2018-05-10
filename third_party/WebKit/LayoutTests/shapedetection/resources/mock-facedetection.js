@@ -59,7 +59,18 @@ class MockFaceDetection {
         },
         {
           boundingBox: {x: 2.0, y: 2.0, width: 200.0, height: 200.0},
-          landmarks: []
+          landmarks: [{
+            type: shapeDetection.mojom.LandmarkType.NOSE,
+            locations: [{x: 100.0, y: 50.0}]
+          },
+          {
+            type: shapeDetection.mojom.LandmarkType.NOSE,
+            locations: [
+              {x: 80.0, y: 50.0}, {x: 70.0, y: 60.0}, {x: 60.0, y: 70.0},
+              {x: 70.0, y: 60.0}, {x: 80.0, y: 70.0}, {x: 90.0, y: 80.0},
+              {x: 100.0, y: 70.0}, {x: 90.0, y: 60.0}, {x: 80.0, y: 50.0}
+            ]
+          }]
         },
         {
           boundingBox: {x: 3.0, y: 3.0, width: 300.0, height: 300.0},

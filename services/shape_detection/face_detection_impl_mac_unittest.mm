@@ -69,13 +69,13 @@ struct TestParams {
      base::Bind(&CreateFaceDetectorImplMac)},
     {true, 120, 120, "services/test/data/mona_lisa.jpg", 1, 3,
      base::Bind(&CreateFaceDetectorImplMac)},
-    {false, 120, 120, "services/test/data/mona_lisa.jpg", 1, 3,
+    {false, 120, 120, "services/test/data/mona_lisa.jpg", 1, 4,
      base::Bind(&CreateFaceDetectorImplMacVision)},
     {false, 240, 240, "services/test/data/the_beatles.jpg", 3, 3,
      base::Bind(&CreateFaceDetectorImplMac)},
     {true, 240, 240, "services/test/data/the_beatles.jpg", 3, 3,
      base::Bind(&CreateFaceDetectorImplMac)},
-    {false, 240, 240, "services/test/data/the_beatles.jpg", 4, 3,
+    {false, 240, 240, "services/test/data/the_beatles.jpg", 4, 4,
      base::Bind(&CreateFaceDetectorImplMacVision)},
 };
 

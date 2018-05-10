@@ -76,6 +76,8 @@ public class FaceDetectionImplTest {
     private void detectSucceedsOnValidImage(DetectionProviderType api) {
         FaceDetectionResult[] results = detect(MONA_LISA_BITMAP, true, api);
         Assert.assertEquals(1, results.length);
+        Assert.assertEquals(
+                api == DetectionProviderType.GMS_CORE ? 4 : 0, results[0].landmarks.length);
         Assert.assertEquals(40.0, results[0].boundingBox.width, BOUNDING_BOX_SIZE_ERROR);
         Assert.assertEquals(40.0, results[0].boundingBox.height, BOUNDING_BOX_SIZE_ERROR);
         Assert.assertEquals(24.0, results[0].boundingBox.x, BOUNDING_BOX_POSITION_ERROR);
