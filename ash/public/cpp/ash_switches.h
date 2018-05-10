@@ -53,7 +53,6 @@ ASH_PUBLIC_EXPORT extern const char kAshSidebarDisabled[];
 ASH_PUBLIC_EXPORT extern const char kAshSidebarEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAshTouchHud[];
 ASH_PUBLIC_EXPORT extern const char kAuraLegacyPowerButton[];
-ASH_PUBLIC_EXPORT extern const char kForceClamshellPowerButton[];
 ASH_PUBLIC_EXPORT extern const char kHasInternalStylus[];
 ASH_PUBLIC_EXPORT extern const char kShowTaps[];
 ASH_PUBLIC_EXPORT extern const char kShowViewsLogin[];

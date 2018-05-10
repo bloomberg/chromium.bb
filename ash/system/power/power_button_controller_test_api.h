@@ -67,8 +67,6 @@ class PowerButtonControllerTestApi {
 
   void SetTickClock(const base::TickClock* tick_clock);
 
-  void SetTurnScreenOffForTap(bool turn_screen_off_for_tap);
-
   void SetShowMenuAnimationDone(bool show_menu_animation_done);
 
  private:

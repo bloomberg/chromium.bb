@@ -635,24 +635,6 @@ TEST_F(TabletModeControllerTest, InitializedWhileTabletModeSwitchOn) {
   EXPECT_TRUE(controller.IsTabletModeWindowManagerEnabled());
 }
 
-// Verify when the force clamshell mode flag is turned on, opening the lid past
-// 180 degrees or setting tablet mode to true will no turn on tablet mode.
-TEST_F(TabletModeControllerTest, ForceClamshellModeTest) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAshUiMode, switches::kAshUiModeClamshell);
-  tablet_mode_controller()->OnShellInitialized();
-  EXPECT_EQ(TabletModeController::UiMode::CLAMSHELL, forced_ui_mode());
-  EXPECT_FALSE(IsTabletModeStarted());
-
-  OpenLidToAngle(300.0f);
-  EXPECT_FALSE(IsTabletModeStarted());
-  EXPECT_FALSE(AreEventsBlocked());
-
-  SetTabletMode(true);
-  EXPECT_FALSE(IsTabletModeStarted());
-  EXPECT_FALSE(AreEventsBlocked());
-}
-
 // Verify when the force touch view mode flag is turned on, tablet mode is on
 // initially, and opening the lid to less than 180 degress or setting tablet
 // mode to off will not turn off tablet mode.

@@ -126,8 +126,8 @@ class ASH_EXPORT PowerButtonController
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
-  // Initializes |default_turn_screen_off_for_tap_| and |screenshot_controller_|
-  // according to the tablet mode switch in |result|.
+  // Initializes |screenshot_controller_| according to the tablet mode switch in
+  // |result|.
   void OnGetSwitchStates(
       base::Optional<chromeos::PowerManagerClient::SwitchStates> result);
 
@@ -153,10 +153,6 @@ class ASH_EXPORT PowerButtonController
   class ActiveWindowWidgetController;
   friend class PowerButtonControllerTestApi;
 
-  // Returns true if the screen should be turned off in response to the power
-  // button being tapped.
-  bool ShouldTurnScreenOffForTap() const;
-
   // Stops |power_button_menu_timer_|, |shutdown_timer_| and dismisses the power
   // button menu.
   void StopTimersAndDismissMenu();
@@ -173,8 +169,8 @@ class ASH_EXPORT PowerButtonController
   // current command line.
   void ProcessCommandLine();
 
-  // Initializes tablet power button behavior related members
-  // |default_turn_screen_off_for_tap_| and |screenshot_controller_|.
+  // Initializes tablet power button behavior related member
+  // |screenshot_controller_|.
   void InitTabletPowerButtonMembers();
 
   // Locks the screen if the "Show lock screen when waking from sleep" pref is
@@ -224,11 +220,6 @@ class ASH_EXPORT PowerButtonController
 
   // True if the device has tablet mode switch.
   bool has_tablet_mode_switch_ = false;
-
-  // True if we should turn screen off when the power button is tapped.
-  // This may be overridden by a feature; use ShouldTurnScreenOffForTap() to
-  // get the actual desired behavior.
-  bool default_turn_screen_off_for_tap_ = false;
 
   // True if the screen was off when the power button was pressed.
   bool screen_off_when_power_button_down_ = false;

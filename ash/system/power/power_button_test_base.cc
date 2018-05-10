@@ -67,9 +67,7 @@ void PowerButtonTestBase::InitPowerButtonControllerMembers(
   if (initial_tablet_mode_switch_state !=
       chromeos::PowerManagerClient::TabletMode::UNSUPPORTED) {
     SetTabletModeSwitchState(initial_tablet_mode_switch_state);
-    screenshot_controller_ = power_button_test_api_->GetScreenshotController();
   } else {
-    power_button_test_api_->SetTurnScreenOffForTap(false);
     screenshot_controller_ = nullptr;
   }
 }
@@ -82,12 +80,6 @@ void PowerButtonTestBase::SetTabletModeSwitchState(
           tablet_mode_switch_state});
 
   screenshot_controller_ = power_button_test_api_->GetScreenshotController();
-}
-
-void PowerButtonTestBase::ForceClamshellPowerButton() {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kForceClamshellPowerButton);
-  ResetPowerButtonController();
 }
 
 void PowerButtonTestBase::PressPowerButton() {

@@ -37,9 +37,6 @@ const base::Feature kTrilinearFiltering{"TrilinearFiltering",
 const base::Feature kLockScreenNotifications{"LockScreenNotifications",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kModeSpecificPowerButton{"ModeSpecificPowerButton",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 bool IsDisplayMoveWindowAccelsEnabled() {
   return base::FeatureList::IsEnabled(kDisplayMoveWindowAccels);
 }
@@ -68,10 +65,6 @@ bool IsTrilinearFilteringEnabled() {
 
 bool IsLockScreenNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kLockScreenNotifications);
-}
-
-bool IsModeSpecificPowerButtonEnabled() {
-  return base::FeatureList::IsEnabled(kModeSpecificPowerButton);
 }
 
 }  // namespace features

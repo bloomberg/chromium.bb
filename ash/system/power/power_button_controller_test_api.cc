@@ -93,11 +93,6 @@ void PowerButtonControllerTestApi::SetTickClock(
           controller_->backlights_forced_off_setter_, controller_->tick_clock_);
 }
 
-void PowerButtonControllerTestApi::SetTurnScreenOffForTap(
-    bool turn_screen_off_for_tap) {
-  controller_->default_turn_screen_off_for_tap_ = turn_screen_off_for_tap;
-}
-
 void PowerButtonControllerTestApi::SetShowMenuAnimationDone(
     bool show_menu_animation_done) {
   controller_->show_menu_animation_done_ = show_menu_animation_done;

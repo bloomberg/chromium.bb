@@ -55,10 +55,6 @@ class PowerButtonTestBase : public AshTestBase {
   void SetTabletModeSwitchState(
       chromeos::PowerManagerClient::TabletMode tablet_mode_switch_state);
 
-  // Sets the flag for forcing clamshell-like power button behavior and resets
-  // |power_button_controller_|.
-  void ForceClamshellPowerButton();
-
   // Simulates a power button press.
   void PressPowerButton();
 
