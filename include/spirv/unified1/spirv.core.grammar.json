@@ -5551,12 +5551,14 @@
           "enumerant" : "OverrideCoverageNV",
           "value" : 5248,
           "capabilities" : [ "SampleMaskOverrideCoverageNV" ],
+          "extensions" : [ "SPV_NV_sample_mask_override_coverage" ],
           "version" : "None"
         },
         {
           "enumerant" : "PassthroughNV",
           "value" : 5250,
           "capabilities" : [ "GeometryShaderPassthroughNV" ],
+          "extensions" : [ "SPV_NV_geometry_shader_passthrough" ],
           "version" : "None"
         },
         {
@@ -5569,6 +5571,7 @@
           "enumerant" : "SecondaryViewportRelativeNV",
           "value" : 5256,
           "capabilities" : [ "ShaderStereoViewNV" ],
+          "extensions" : [ "SPV_NV_stereo_view_rendering" ],
           "version" : "None",
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "'Offset'" }
@@ -5961,12 +5964,14 @@
           "enumerant" : "SecondaryPositionNV",
           "value" : 5257,
           "capabilities" : [ "ShaderStereoViewNV" ],
+          "extensions" : [ "SPV_NV_stereo_view_rendering" ],
           "version" : "None"
         },
         {
           "enumerant" : "SecondaryViewportMaskNV",
           "value" : 5258,
           "capabilities" : [ "ShaderStereoViewNV" ],
+          "extensions" : [ "SPV_NV_stereo_view_rendering" ],
           "version" : "None"
         },
         {
@@ -6044,17 +6049,23 @@
         {
           "enumerant" : "PartitionedReduceNV",
           "value" : 6,
-          "capabilities" : [ "GroupNonUniformPartitionedNV" ]
+          "capabilities" : [ "GroupNonUniformPartitionedNV" ],
+          "extensions" : [ "SPV_NV_shader_subgroup_partitioned" ],
+          "version" : "None"
         },
         {
           "enumerant" : "PartitionedInclusiveScanNV",
           "value" : 7,
-          "capabilities" : [ "GroupNonUniformPartitionedNV" ]
+          "capabilities" : [ "GroupNonUniformPartitionedNV" ],
+          "extensions" : [ "SPV_NV_shader_subgroup_partitioned" ],
+          "version" : "None"
         },
         {
           "enumerant" : "PartitionedExclusiveScanNV",
           "value" : 8,
-          "capabilities" : [ "GroupNonUniformPartitionedNV" ]
+          "capabilities" : [ "GroupNonUniformPartitionedNV" ],
+          "extensions" : [ "SPV_NV_shader_subgroup_partitioned" ],
+          "version" : "None"
         }
       ]
     },
