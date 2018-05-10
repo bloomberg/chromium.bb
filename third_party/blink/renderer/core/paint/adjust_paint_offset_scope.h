@@ -31,19 +31,34 @@ class AdjustPaintOffsetScope {
       : old_paint_info_(paint_info) {
     DCHECK(fragment.GetLayoutObject());
     const LayoutBox& box = ToLayoutBox(*fragment.GetLayoutObject());
-    if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() ||
-        !AdjustPaintOffset(box)) {
-      if (!box.HasFlippedBlocksWritingMode()) {
-        adjusted_paint_offset_ =
-            paint_offset + fragment.Offset().ToLayoutPoint();
-      } else {
-        // fragment.Offset() is in physical coordinate, not a flipped physical
-        // coordinate, but BlockPainter::PaintChild() has already incorporated
-        // flipping and assume child painters accumulate flipped offset.
-        // NGBlockNode::CopyFragmentDataToLayoutBox() already computed flipped
-        // fragment.Offset() and stored to LayoutBox, so use it.
-        adjusted_paint_offset_ = paint_offset + box.Location();
-      }
+    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+        AdjustPaintOffset(box))
+      return;
+    // This code is poorly understood, this is teams current understanding.
+    //
+    // adjusted_paint_offset should be the flipped block physical frament
+    // offset from Layer() (flipped if flippedBlock, physical otherwise)
+    if (UNLIKELY(box.HasFlippedBlocksWritingMode() ||
+                 box.HasSelfPaintingLayer())) {
+      // Two separate problems result in thesame solution:
+      // A) box.HasSelfPaintingLayer()
+      //   There is no containing block here, we are painting from origin.
+      //   paint_offset is 0,0
+      //   box.Location is offset from Layer()
+      //   => adjusted__paint_offset = box offset from Layer()
+      // C) box.HasFlippedBlocksWritingMode()
+      //   paint_offset is containing box offset from Layer() in flipped blocks
+      //   box.Location is box offset from containing box in flipped blocks
+      //   => adjusted_paint_offset = box offset from Layer()
+      //
+      // fragment.Offset() is in physical coordinate, not a flipped physical
+      // coordinate, but BlockPainter::PaintChild() has already incorporated
+      // flipping and assume child painters accumulate flipped offset.
+      // NGBlockNode::CopyFragmentDataToLayoutBox() already computed flipped
+      // fragment.Offset() and stored to LayoutBox, so use it.
+      adjusted_paint_offset_ = paint_offset + box.Location();
+    } else {
+      adjusted_paint_offset_ = paint_offset + fragment.Offset().ToLayoutPoint();
     }
   }
 
