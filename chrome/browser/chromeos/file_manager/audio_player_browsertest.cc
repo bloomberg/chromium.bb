@@ -65,4 +65,14 @@ IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, ChangeTracks) {
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, ChangeTracksPlayList) {
+  set_test_case_name("changeTracksPlayList");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, ChangeTracksPlayListIcon) {
+  set_test_case_name("changeTracksPlayListIcon");
+  StartTest();
+}
+
 }  // namespace file_manager

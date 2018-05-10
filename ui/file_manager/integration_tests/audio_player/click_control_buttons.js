@@ -6,8 +6,8 @@
 
 /**
  * Confirms that clicking the play button changes the audio player state and
- * updates the play button's label.
- * @return {Promise} Promise to be fulfilled with on success.
+ * updates the play button label.
+ * @return {Promise} Promise to be fulfilled on success.
  */
 testcase.togglePlayState = function() {
   var openAudio = launch('local', 'downloads', [ENTRIES.beautiful]);
@@ -50,9 +50,9 @@ testcase.togglePlayState = function() {
 };
 
 /**
- * Confirms that the AudioPlayer default volume is 50 and that clicking the
- * volume button mutes / unmutes the volume label.
- * @return {Promise} Promise to be fulfilled with on success.
+ * Confirms that the AudioPlayer default volume is 50, and that clicking the
+ * volume button mutes / unmutes the volume.
+ * @return {Promise} Promise to be fulfilled on success.
  */
 testcase.changeVolumeLevel = function() {
   var openAudio = launch('local', 'downloads', [ENTRIES.beautiful]);
@@ -89,9 +89,9 @@ testcase.changeVolumeLevel = function() {
 };
 
 /**
- * Confirm that clicking "Next" and track on playlist change the current track
- * and play state correctly.
- * @return {Promise} Promise to be fulfilled with on success.
+ * Confirms that the Audio Player active track changes and plays when a user
+ * clicks the "next" button.
+ * @return {Promise} Promise to be fulfilled on success.
  */
 testcase.changeTracks = function() {
   var openAudio = launch('local', 'downloads',
@@ -100,71 +100,168 @@ testcase.changeTracks = function() {
   return openAudio.then(function(args) {
     appId = args[0];
   }).then(function() {
-    // While playing, the play/pause button should have 'Pause' label.
-    return remoteCallAudioPlayer.waitForElement(
-        appId, ['#play[aria-label="Pause"]']);
+    // Audio player starts playing automatically
+    return Promise.all([
+      remoteCallAudioPlayer.waitForElement(
+          appId, 'audio-player[playing]'),
+      remoteCallAudioPlayer.waitForElement(
+          appId, ['#play[aria-label="Pause"]'])
+    ]);
   }).then(function() {
-    // Clicking the pause button should change the playback state to pause.
-    return remoteCallAudioPlayer.callRemoteTestUtil(
-        'fakeMouseClick', appId, ['#play']);
-  }).then(function() {
-    return remoteCallAudioPlayer.waitForElement(
-        appId, 'audio-player:not([playing])');
-  }).then(function() {
-    // The first track should be active.
+    // ... and track 0 should be active.
     return remoteCallAudioPlayer.waitForElement(
         appId, ['.track[index="0"][active]']);
   }).then(function() {
-    // Clicking next button should activate the second track and start playing.
+    // Clicking the play button should
+    return remoteCallAudioPlayer.callRemoteTestUtil(
+        'fakeMouseClick', appId, ['#play']);
+  }).then(function() {
+    // ... change the playback state to pause
+    return Promise.all([
+      remoteCallAudioPlayer.waitForElement(
+          appId, 'audio-player:not([playing])'),
+      remoteCallAudioPlayer.waitForElement(
+          appId, ['#play[aria-label="Play"]'])
+    ]);
+  }).then(function() {
+    // ... and track 0 should still be active.
+    return remoteCallAudioPlayer.waitForElement(
+        appId, ['.track[index="0"][active]']);
+  }).then(function() {
+    // Clicking the player's "next" button should
     return remoteCallAudioPlayer.callRemoteTestUtil(
         'fakeMouseClick', appId, ['#next']);
   }).then(function() {
-    return remoteCallAudioPlayer.waitForElement(
-        appId, ['.track[index="1"][active]']);
+    // ... activate and play track 1.
+    return Promise.all([
+      remoteCallAudioPlayer.waitForElement(
+          appId, ['.track[index="1"][active]']),
+      remoteCallAudioPlayer.waitForElement(
+          appId, 'audio-player[playing]')
+    ]);
+  });
+};
+
+/**
+ * Confirms that the track-list expands when the play-list button is clicked,
+ * then clicking on a track in the play-list, plays that track.
+ * @return {Promise} Promise to be fulfilled on success.
+ */
+testcase.changeTracksPlayList = function() {
+  var openAudio = launch('local', 'downloads',
+      [ENTRIES.beautiful, ENTRIES.newlyAdded]);
+  var appId;
+  return openAudio.then(function(args) {
+    appId = args[0];
   }).then(function() {
-    return remoteCallAudioPlayer.waitForElement(
-        appId, 'audio-player[playing]');
+    // Audio player starts playing automatically
+    return Promise.all([
+      remoteCallAudioPlayer.waitForElement(
+          appId, 'audio-player[playing]'),
+      remoteCallAudioPlayer.waitForElement(
+          appId, ['#play[aria-label="Pause"]'])
+    ]);
   }).then(function() {
-    // Pause to prepare for remaining steps.
+    // ... and track 0 should be active.
+    return remoteCallAudioPlayer.waitForElement(
+        appId, ['.track[index="0"][active]']);
+  }).then(function() {
+    // Clicking the play button should
     return remoteCallAudioPlayer.callRemoteTestUtil(
         'fakeMouseClick', appId, ['#play']);
   }).then(function() {
-    return remoteCallAudioPlayer.waitForElement(
-        appId, 'audio-player:not([playing])');
+    // ... change the playback state to pause,
+    return Promise.all([
+      remoteCallAudioPlayer.waitForElement(
+          appId, 'audio-player:not([playing])'),
+      remoteCallAudioPlayer.waitForElement(
+          appId, ['#play[aria-label="Play"]'])
+    ]);
   }).then(function() {
-    // Clicking playlist button should expand track list.
+    // ... and track 0 should still be active.
+    return remoteCallAudioPlayer.waitForElement(
+        appId, ['.track[index="0"][active]']);
+  }).then(function() {
+    // Clicking the play-list button should
     return remoteCallAudioPlayer.callRemoteTestUtil(
         'fakeMouseClick', appId, ['#playList']);
   }).then(function() {
+    // ... expand the Audio Player track-list.
     return remoteCallAudioPlayer.waitForElement(
         appId, 'track-list[expanded]');
   }).then(function() {
-    // Clicking the first track should make it active and start playing it.
+    // Clicking on a track (track 0 here) should
     return remoteCallAudioPlayer.callRemoteTestUtil(
         'fakeMouseClick', appId, ['.track[index="0"]']);
   }).then(function() {
-    return remoteCallAudioPlayer.waitForElement(
-        appId, '.track[index="0"][active]');
+    // ... activate and start playing that track.
+    return Promise.all([
+      remoteCallAudioPlayer.waitForElement(
+          appId, '.track[index="0"][active]'),
+      remoteCallAudioPlayer.waitForElement(
+          appId, 'audio-player[playing]')
+    ]);
+  });
+};
+
+/**
+ * Confirms that the track-list expands when the play-list button is clicked,
+ * then clicking on a track 'Play' icon in the play-list, plays that track.
+ * @return {Promise} Promise to be fulfilled on success.
+ */
+testcase.changeTracksPlayListIcon = function() {
+  var openAudio = launch('local', 'downloads',
+      [ENTRIES.beautiful, ENTRIES.newlyAdded]);
+  var appId;
+  return openAudio.then(function(args) {
+    appId = args[0];
   }).then(function() {
-    return remoteCallAudioPlayer.waitForElement(
-        appId, 'audio-player[playing]');
+    // Audio player starts playing automatically
+    return Promise.all([
+      remoteCallAudioPlayer.waitForElement(
+          appId, 'audio-player[playing]'),
+      remoteCallAudioPlayer.waitForElement(
+          appId, ['#play[aria-label="Pause"]'])
+    ]);
   }).then(function() {
-    // Pause to prepare for remaining steps.
+    // ... and track 0 should be active.
+    return remoteCallAudioPlayer.waitForElement(
+        appId, ['.track[index="0"][active]']);
+  }).then(function() {
+    // Clicking the play button should
     return remoteCallAudioPlayer.callRemoteTestUtil(
         'fakeMouseClick', appId, ['#play']);
   }).then(function() {
-    return remoteCallAudioPlayer.waitForElement(
-        appId, 'audio-player:not([playing])');
+    // ... change the playback state to pause,
+    return Promise.all([
+      remoteCallAudioPlayer.waitForElement(
+          appId, 'audio-player:not([playing])'),
+      remoteCallAudioPlayer.waitForElement(
+          appId, ['#play[aria-label="Play"]'])
+    ]);
   }).then(function() {
-    // Clicking the play icon on the second should make it active, and start
-    // playing.
+    // ... and track 0 should still be active.
+    return remoteCallAudioPlayer.waitForElement(
+        appId, ['.track[index="0"][active]']);
+  }).then(function() {
+    // Clicking the play-list button should
+    return remoteCallAudioPlayer.callRemoteTestUtil(
+        'fakeMouseClick', appId, ['#playList']);
+  }).then(function() {
+    // ... expand the Audio Player track-list.
+    return remoteCallAudioPlayer.waitForElement(
+        appId, 'track-list[expanded]');
+  }).then(function() {
+    // Clicking a track (track 1 here) 'Play' icon should
     return remoteCallAudioPlayer.callRemoteTestUtil(
         'fakeMouseClick', appId, ['.track[index="1"] .icon']);
   }).then(function() {
-    return remoteCallAudioPlayer.waitForElement(
-        appId, '.track[index="1"][active]');
-  }).then(function() {
-    return remoteCallAudioPlayer.waitForElement(
-        appId, 'audio-player[playing]');
+    // ... activate and start playing that track.
+    return Promise.all([
+      remoteCallAudioPlayer.waitForElement(
+          appId, '.track[index="1"][active]'),
+      remoteCallAudioPlayer.waitForElement(
+          appId, 'audio-player[playing]')
+    ]);
   });
 };
