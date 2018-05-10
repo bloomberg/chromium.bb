@@ -729,6 +729,9 @@ public class NotificationPlatformBridgeTest {
         assertThat(actionTester.toString(), getNotificationActions(actionTester),
                 Matchers.contains(
                         "Notifications.Persistent.Shown", "Notifications.Persistent.Clicked"));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        "Notifications.AppNotificationStatus"));
     }
 
     /**
