@@ -24,7 +24,7 @@ PlaceholderIdMap& placeholderRegistry() {
 void releaseFrameToDispatcher(
     base::WeakPtr<blink::OffscreenCanvasFrameDispatcher> dispatcher,
     scoped_refptr<blink::Image> oldImage,
-    unsigned resourceId) {
+    viz::ResourceId resourceId) {
   oldImage = nullptr;  // Needed to unref'ed on the right thread
   if (dispatcher) {
     dispatcher->ReclaimResource(resourceId);
@@ -74,7 +74,7 @@ void OffscreenCanvasPlaceholder::SetPlaceholderFrame(
     scoped_refptr<StaticBitmapImage> new_frame,
     base::WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    unsigned resource_id) {
+    viz::ResourceId resource_id) {
   DCHECK(IsPlaceholderRegistered());
   DCHECK(new_frame);
   ReleasePlaceholderFrame();

@@ -73,7 +73,7 @@ void UpdatePlaceholderImage(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     int placeholder_canvas_id,
     scoped_refptr<blink::StaticBitmapImage> image,
-    unsigned resource_id) {
+    viz::ResourceId resource_id) {
   DCHECK(IsMainThread());
   OffscreenCanvasPlaceholder* placeholder_canvas =
       OffscreenCanvasPlaceholder::GetPlaceholderById(placeholder_canvas_id);
@@ -88,7 +88,7 @@ void UpdatePlaceholderImage(
 
 void OffscreenCanvasFrameDispatcher::PostImageToPlaceholderIfNotBlocked(
     scoped_refptr<StaticBitmapImage> image,
-    unsigned resource_id) {
+    viz::ResourceId resource_id) {
   if (placeholder_canvas_id_ == kInvalidPlaceholderCanvasId) {
     offscreen_canvas_resource_provider_->ReclaimResource(resource_id);
     return;
@@ -116,7 +116,7 @@ void OffscreenCanvasFrameDispatcher::PostImageToPlaceholderIfNotBlocked(
 
 void OffscreenCanvasFrameDispatcher::PostImageToPlaceholder(
     scoped_refptr<StaticBitmapImage> image,
-    unsigned resource_id) {
+    viz::ResourceId resource_id) {
   scoped_refptr<base::SingleThreadTaskRunner> dispatcher_task_runner =
       Platform::Current()->CurrentThread()->GetTaskRunner();
 
@@ -414,7 +414,8 @@ void OffscreenCanvasFrameDispatcher::ReclaimResources(
   offscreen_canvas_resource_provider_->ReclaimResources(resources);
 }
 
-void OffscreenCanvasFrameDispatcher::ReclaimResource(unsigned resource_id) {
+void OffscreenCanvasFrameDispatcher::ReclaimResource(
+    viz::ResourceId resource_id) {
   offscreen_canvas_resource_provider_->ReclaimResource(resource_id);
   num_unreclaimed_frames_posted_--;
 

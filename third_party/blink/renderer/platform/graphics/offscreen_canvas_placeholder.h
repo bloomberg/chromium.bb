@@ -9,6 +9,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "components/viz/common/resources/resource_id.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
@@ -24,7 +25,7 @@ class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
       scoped_refptr<StaticBitmapImage>,
       base::WeakPtr<OffscreenCanvasFrameDispatcher>,
       scoped_refptr<base::SingleThreadTaskRunner>,
-      unsigned resource_id);
+      viz::ResourceId resource_id);
   void ReleasePlaceholderFrame();
 
   void SetSuspendOffscreenCanvasAnimation(bool);
@@ -48,7 +49,7 @@ class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
   scoped_refptr<StaticBitmapImage> placeholder_frame_;
   base::WeakPtr<OffscreenCanvasFrameDispatcher> frame_dispatcher_;
   scoped_refptr<base::SingleThreadTaskRunner> frame_dispatcher_task_runner_;
-  unsigned placeholder_frame_resource_id_ = 0;
+  viz::ResourceId placeholder_frame_resource_id_ = 0;
 
   enum {
     kNoPlaceholderId = -1,
