@@ -2013,7 +2013,7 @@ if (enable_java_templates) {
     }
   }
 
-  # Creates an unsigned .apk.
+  # Creates a signed and aligned .apk.
   #
   # Variables
   #   assets_build_config: Path to android_apk .build_config containing merged
@@ -2030,6 +2030,9 @@ if (enable_java_templates) {
   #   native_libs_filearg: @FileArg() of additionally native libraries.
   #   write_asset_list: Adds an extra file to the assets, which contains a list of
   #     all other asset files.
+  #   keystore_path: Path to keystore to use for signing.
+  #   keystore_name: Key alias to use.
+  #   keystore_password: Keystore password.
   template("package_apk") {
     action(target_name) {
       forward_variables_from(invoker,
@@ -2050,16 +2053,26 @@ if (enable_java_templates) {
 
       script = "//build/android/gyp/apkbuilder.py"
       depfile = "$target_gen_dir/$target_name.d"
+      _apksigner = "$android_sdk_build_tools/apksigner"
+      _zipalign = "$android_sdk_build_tools/zipalign"
       data_deps = [
         "//tools/android/md5sum",
       ]  # Used when deploying APKs
 
-      inputs = invoker.native_libs + [ invoker.packaged_resources_path ]
+      inputs = invoker.native_libs + [
+                 invoker.keystore_path,
+                 invoker.packaged_resources_path,
+                 _apksigner,
+                 _zipalign,
+               ]
       if (defined(invoker.dex_path)) {
         inputs += [ invoker.dex_path ]
       }
 
       outputs = [
+        invoker.output_apk_path,
+      ]
+      data = [
         invoker.output_apk_path,
       ]
 
@@ -2072,6 +2085,16 @@ if (enable_java_templates) {
         rebase_path(depfile, root_build_dir),
         "--resource-apk=$_rebased_compiled_resources_path",
         "--output-apk=$_rebased_packaged_apk_path",
+        "--apksigner-path",
+        rebase_path(_apksigner, root_build_dir),
+        "--zipalign-path",
+        rebase_path(_zipalign, root_build_dir),
+        "--key-path",
+        rebase_path(invoker.keystore_path, root_build_dir),
+        "--key-name",
+        invoker.keystore_name,
+        "--key-passwd",
+        invoker.keystore_password,
       ]
       if (defined(invoker.assets_build_config)) {
         inputs += [ invoker.assets_build_config ]
@@ -2151,59 +2174,6 @@ if (enable_java_templates) {
     }
   }
 
-  # Signs & zipaligns an apk.
-  #
-  # Variables
-  #   input_apk_path: Path of the .apk to be finalized.
-  #   output_apk_path: Output path for the generated .apk.
-  #   keystore_path: Path to keystore to use for signing.
-  #   keystore_name: Key alias to use.
-  #   keystore_password: Keystore password.
-  template("finalize_apk") {
-    action(target_name) {
-      forward_variables_from(invoker,
-                             [
-                               "deps",
-                               "data_deps",
-                               "public_deps",
-                               "testonly",
-                             ])
-
-      script = "//build/android/gyp/finalize_apk.py"
-      _apksigner = "$android_sdk_build_tools/apksigner"
-      _zipalign = "$android_sdk_build_tools/zipalign"
-      inputs = [
-        _apksigner,
-        _zipalign,
-        invoker.input_apk_path,
-        invoker.keystore_path,
-      ]
-      outputs = [
-        invoker.output_apk_path,
-      ]
-      data = [
-        invoker.output_apk_path,
-      ]
-
-      args = [
-        "--unsigned-apk-path",
-        rebase_path(invoker.input_apk_path, root_build_dir),
-        "--final-apk-path",
-        rebase_path(invoker.output_apk_path, root_build_dir),
-        "--apksigner-path",
-        rebase_path(_apksigner, root_build_dir),
-        "--zipalign-path",
-        rebase_path(_zipalign, root_build_dir),
-        "--key-path",
-        rebase_path(invoker.keystore_path, root_build_dir),
-        "--key-name",
-        invoker.keystore_name,
-        "--key-passwd",
-        invoker.keystore_password,
-      ]
-    }
-  }
-
   # Packages resources, assets, dex, and native libraries into an apk. Signs and
   # zipaligns the apk.
   template("create_apk") {
@@ -2244,8 +2214,6 @@ if (enable_java_templates) {
     }
 
     _incremental_compiled_resources_path = "${_base_path}_incremental.ap_"
-    _packaged_apk_path = "${_base_path}_unsigned.apk"
-    _incremental_packaged_apk_path = "${_base_path}_incremental_unsigned.apk"
     _shared_resources =
         defined(invoker.shared_resources) && invoker.shared_resources
     assert(_shared_resources || true)  # Mark as used.
@@ -2299,8 +2267,7 @@ if (enable_java_templates) {
       }
     }
 
-    _package_target = "${target_name}__package_apk"
-    package_apk(_package_target) {
+    package_apk(target_name) {
       forward_variables_from(invoker,
                              [
                                "apk_name",
@@ -2319,16 +2286,18 @@ if (enable_java_templates) {
       }
       deps = _deps
       native_libs = _native_libs + _native_libs_even_when_incremental
+      keystore_path = _keystore_path
+      keystore_name = _keystore_name
+      keystore_password = _keystore_password
 
       if (defined(_dex_path)) {
         dex_path = _dex_path
       }
 
-      output_apk_path = _packaged_apk_path
+      output_apk_path = _final_apk_path
     }
 
-    _incremental_package_target = "${target_name}_incremental__package_apk"
-    package_apk(_incremental_package_target) {
+    package_apk("${target_name}_incremental") {
       forward_variables_from(invoker,
                              [
                                "assets_build_config",
@@ -2350,6 +2319,9 @@ if (enable_java_templates) {
       }
 
       native_libs = _native_libs_even_when_incremental
+      keystore_path = _keystore_path
+      keystore_name = _keystore_name
+      keystore_password = _keystore_password
 
       # http://crbug.com/384638
       _has_native_libs =
@@ -2358,33 +2330,8 @@ if (enable_java_templates) {
         native_lib_placeholders = [ "libfix.crbug.384638.so" ]
       }
 
-      output_apk_path = _incremental_packaged_apk_path
-      packaged_resources_path = _incremental_compiled_resources_path
-    }
-
-    finalize_apk(target_name) {
-      input_apk_path = _packaged_apk_path
-      output_apk_path = _final_apk_path
-      keystore_path = _keystore_path
-      keystore_name = _keystore_name
-      keystore_password = _keystore_password
-
-      public_deps = [
-        # Generator of the _packaged_apk_path this target takes as input.
-        ":$_package_target",
-      ]
-    }
-
-    finalize_apk("${target_name}_incremental") {
-      input_apk_path = _incremental_packaged_apk_path
       output_apk_path = _incremental_final_apk_path
-      keystore_path = _keystore_path
-      keystore_name = _keystore_name
-      keystore_password = _keystore_password
-
-      public_deps = [
-        ":$_incremental_package_target",
-      ]
+      packaged_resources_path = _incremental_compiled_resources_path
     }
   }
 

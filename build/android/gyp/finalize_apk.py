@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -32,30 +30,3 @@ def FinalizeApk(apksigner_path, zipalign_path, unsigned_apk_path,
     ])
     shutil.move(staging_file.name, final_apk_path)
     staging_file.delete = False
-
-
-def main():
-  parser = argparse.ArgumentParser()
-
-  parser.add_argument('--apksigner-path', required=True,
-                      help='Path to the apksigner executable.')
-  parser.add_argument('--zipalign-path', required=True,
-                      help='Path to the zipalign executable.')
-  parser.add_argument('--unsigned-apk-path', required=True,
-                      help='Path to input unsigned APK.')
-  parser.add_argument('--final-apk-path', required=True,
-                      help='Path to output signed and aligned APK.')
-  parser.add_argument('--key-path', required=True,
-                      help='Path to keystore for signing.')
-  parser.add_argument('--key-passwd', required=True,
-                      help='Keystore password')
-  parser.add_argument('--key-name', required=True,
-                      help='Keystore name')
-  options = parser.parse_args()
-  FinalizeApk(options.apksigner_path, options.zipalign_path,
-              options.unsigned_apk_path, options.final_apk_path,
-              options.key_path, options.key_passwd, options.key_name)
-
-
-if __name__ == '__main__':
-  main()
