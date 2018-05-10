@@ -43,9 +43,6 @@ class SCMMock(object):
     self.unit_test.assertEquals('None', command)
     self.unit_test.processed.put((self.name, self.url))
 
-  def FullUrlForRelativeUrl(self, url):
-    return self.url + url
-
   # pylint: disable=no-self-use
   def DoesRemoteURLMatch(self, _):
     return True
@@ -143,11 +140,11 @@ class GclientTest(trial_dir.TestCase):
       self.assertEquals(first_3, actual[0:3])
     self.assertEquals(
         [
-          ('foo/dir1', 'svn://example.com/foo/dir1'),
-          ('foo/dir1/dir2', 'svn://example.com/bar/dir1/dir2'),
-          ('foo/dir1/dir2/dir3', 'svn://example.com/foo/dir1/dir2/dir3'),
+          ('foo/dir1', 'svn://example.com/dir1'),
+          ('foo/dir1/dir2', 'svn://example.com/dir1/dir2'),
+          ('foo/dir1/dir2/dir3', 'svn://example.com/dir1/dir2/dir3'),
           ('foo/dir1/dir2/dir3/dir4',
-           'svn://example.com/foo/dir1/dir2/dir3/dir4'),
+           'svn://example.com/dir1/dir2/dir3/dir4'),
         ],
         actual[3:])
 
@@ -214,25 +211,27 @@ class GclientTest(trial_dir.TestCase):
     obj.add_dependencies_and_close(
       [
         gclient.Dependency(
-          obj, 'foo', 'raw_url', 'url', None, None, None, None, 'DEPS', True,
-          False, None, True),
+            obj, 'foo', 'svn://example.com/foo', 'svn://example.com/foo', None,
+            None, None, None, 'DEPS', True, False, None, True),
         gclient.Dependency(
-          obj, 'bar', 'raw_url', 'url', None, None, None, None, 'DEPS', True,
-          False, None, True),
+            obj, 'bar', 'svn://example.com/bar', 'svn://example.com/bar', None,
+            None, None, None, 'DEPS', True, False, None, True),
       ],
       [])
     obj.dependencies[0].add_dependencies_and_close(
       [
         gclient.Dependency(
-          obj.dependencies[0], 'foo/dir1', 'raw_url', 'url', None, None, None,
-          None, 'DEPS', True, False, None, True),
+            obj.dependencies[0], 'foo/dir1', 'svn://example.com/foo/dir1',
+            'svn://example.com/foo/dir1', None, None, None, None, 'DEPS', True,
+            False, None, True),
       ],
       [])
+    # TODO(ehmaldonado): Improve this test.
     # Make sure __str__() works fine.
     # pylint: disable=protected-access
     obj.dependencies[0]._file_list.append('foo')
     str_obj = str(obj)
-    self.assertEquals(263, len(str_obj), '%d\n%s' % (len(str_obj), str_obj))
+    self.assertEquals(322, len(str_obj), '%d\n%s' % (len(str_obj), str_obj))
 
   def testHooks(self):
     topdir = self.root_dir
@@ -460,10 +459,10 @@ class GclientTest(trial_dir.TestCase):
     self.assertEquals(
         [
           ('bar', 'svn://example.com/bar'),
-          ('bar/unix', 'svn://example.com/bar/unix'),
+          ('bar/unix', 'svn://example.com/unix'),
           ('foo', 'svn://example.com/foo'),
-          ('foo/baz', 'svn://example.com/foo/baz'),
-          ('foo/unix', 'svn://example.com/foo/unix'),
+          ('foo/baz', 'svn://example.com/baz'),
+          ('foo/unix', 'svn://example.com/unix'),
           ],
         sorted(self._get_processed()))
 
@@ -620,13 +619,12 @@ class GclientTest(trial_dir.TestCase):
       with self.assertRaises(gclient_utils.Error):
         gclient.Dependency.MergeWithOsDeps(deps, deps_os, target_os_list, False)
 
-  def testLateOverride(self):
-    """Verifies expected behavior of LateOverride."""
+  def testOverride(self):
+    """Verifies expected behavior of OverrideURL."""
     url = "git@github.com:dart-lang/spark.git"
-    d = gclient.Dependency(None, 'name', 'raw_url', 'url',
+    d = gclient.Dependency(None, 'name', url, url,
                            None, None, None, None, '', True, False, None, True)
-    late_url = d.LateOverride(url)
-    self.assertEquals(url, late_url)
+    self.assertEquals(url, d.url)
 
   def testDepsOsOverrideDepsInDepsFile(self):
     """Verifies that a 'deps_os' path cannot override a 'deps' path. Also
@@ -712,9 +710,9 @@ class GclientTest(trial_dir.TestCase):
         [
           ('foo', 'svn://example.com/foo'),
           ('foo/bar', 'svn://example.com/bar'),
-          ('bar', 'svn://example.com/foo/bar'),
-          ('baz', 'svn://example.com/foo/bar/baz'),
-          ('fizz', 'svn://example.com/foo/bar/baz/fizz'),
+          ('bar', 'svn://example.com/bar'),
+          ('baz', 'svn://example.com/baz'),
+          ('fizz', 'svn://example.com/fizz'),
         ],
         self._get_processed())
 
@@ -769,9 +767,9 @@ class GclientTest(trial_dir.TestCase):
     obj.RunOnDeps('None', [])
     self.assertEquals(
         [
-          ('bar', 'svn://example.com/foo/bar'),
-          ('baz', 'svn://example.com/foo/bar/baz'),
-          ('fizz', 'svn://example.com/foo/bar/baz/fizz'),
+          ('bar', 'svn://example.com/bar'),
+          ('baz', 'svn://example.com/baz'),
+          ('fizz', 'svn://example.com/fizz'),
           ('foo', 'svn://example.com/foo'),
           ('foo/bar', 'svn://example.com/bar'),
           ('foo/tar', 'svn://example.com/tar'),
@@ -810,8 +808,8 @@ class GclientTest(trial_dir.TestCase):
     self.assertEquals(
         [
           ('foo', 'svn://example.com/foo'),
-          ('foo/bar', 'svn://example.com/foo/bar'),
-          ('foo/baz', 'svn://example.com/foo/bar/baz'),
+          ('foo/bar', 'svn://example.com/bar'),
+          ('foo/baz', 'svn://example.com/baz'),
         ],
         self._get_processed())
 
@@ -847,8 +845,8 @@ class GclientTest(trial_dir.TestCase):
     self.assertEquals(
         [
           ('foo', 'svn://example.com/foo'),
-          ('foo/bar', 'svn://example.com/foo/bar'),
-          ('foo/bar/baz', 'svn://example.com/foo/bar/baz'),
+          ('foo/bar', 'svn://example.com/bar'),
+          ('foo/bar/baz', 'svn://example.com/baz'),
         ],
         self._get_processed())
 
@@ -930,11 +928,11 @@ class GclientTest(trial_dir.TestCase):
         [
           ('foo', 'svn://example.com/foo'),
           ('foo/bar', 'svn://example.com/bar'),
-          ('bar', 'svn://example.com/foo/bar'),
+          ('bar', 'svn://example.com/bar'),
           # Deps after this would have been skipped if we were obeying
           # |recursedeps|.
-          ('baz', 'svn://example.com/foo/bar/baz'),
-          ('fizz', 'svn://example.com/foo/bar/baz/fizz'),
+          ('baz', 'svn://example.com/baz'),
+          ('fizz', 'svn://example.com/fizz'),
           # And this dep would have been picked up if we were obeying
           # |recursedeps|.
           # 'svn://example.com/foo/bar/baz/fuzz',
@@ -972,8 +970,8 @@ class GclientTest(trial_dir.TestCase):
     self.assertEquals(
         [
           ('foo', 'svn://example.com/foo'),
-          ('bar', 'svn://example.com/foo/bar'),
-          ('baz', 'svn://example.com/foo/bar/baz'),
+          ('bar', 'svn://example.com/bar'),
+          ('baz', 'svn://example.com/baz'),
         ],
         self._get_processed())
 
@@ -1008,7 +1006,7 @@ class GclientTest(trial_dir.TestCase):
     self.assertEquals(
         [
           ('foo', 'svn://example.com/foo'),
-          ('bar', 'svn://example.com/foo/bar'),
+          ('bar', 'svn://example.com/bar'),
         ],
         self._get_processed())
 
@@ -1033,7 +1031,7 @@ class GclientTest(trial_dir.TestCase):
     self.assertEquals(
         [
           ('foo', 'svn://example.com/foo'),
-          ('bar', 'svn://example.com/foo/bar'),
+          ('bar', 'svn://example.com/bar'),
         ],
         self._get_processed())
 
@@ -1205,8 +1203,9 @@ class GclientTest(trial_dir.TestCase):
     obj.add_dependencies_and_close(
       [
         gclient.Dependency(
-          obj, 'foo', 'raw_url', 'url', None, None, None, None, 'DEPS', True,
-          False, None, True),
+            obj, 'foo', 'svn://example.com/foo', 'svn://example.com/foo', None,
+            None, None, None, 'DEPS', True,
+            False, None, True),
       ],
       [])
     obj.dependencies[0].add_dependencies_and_close(
@@ -1246,8 +1245,8 @@ class GclientTest(trial_dir.TestCase):
     foo_sol = obj.dependencies[0]
     self.assertEqual(
         'https://example.com/foo.git',
-        foo_sol.FuzzyMatchUrl('https://example.com/foo.git',
-                                   ['https://example.com/foo.git', 'foo']))
+        foo_sol.FuzzyMatchUrl(['https://example.com/foo.git', 'foo'])
+    )
 
   def testFuzzyMatchUrlByURLNoGit(self):
     write(
@@ -1267,8 +1266,8 @@ class GclientTest(trial_dir.TestCase):
     foo_sol = obj.dependencies[0]
     self.assertEqual(
         'https://example.com/foo',
-        foo_sol.FuzzyMatchUrl('https://example.com/foo.git',
-                                   ['https://example.com/foo', 'foo']))
+        foo_sol.FuzzyMatchUrl(['https://example.com/foo', 'foo'])
+    )
 
   def testFuzzyMatchUrlByName(self):
     write(
@@ -1286,9 +1285,7 @@ class GclientTest(trial_dir.TestCase):
     options, _ = gclient.OptionParser().parse_args([])
     obj = gclient.GClient.LoadCurrentConfig(options)
     foo_sol = obj.dependencies[0]
-    self.assertEqual(
-        'foo',
-        foo_sol.FuzzyMatchUrl('https://example.com/foo.git', ['foo']))
+    self.assertEqual('foo', foo_sol.FuzzyMatchUrl(['foo']))
 
 
 if __name__ == '__main__':
