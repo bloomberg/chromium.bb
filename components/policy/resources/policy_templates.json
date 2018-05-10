@@ -9159,13 +9159,13 @@
       },
       'example_value': True,
       'id': 281,
-      'caption': '''Enable Touch to Search''',
+      'caption': '''Enable Tap to Search''',
       'tags': [],
-      'desc': '''Enables the availability of Touch to Search in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s content view.
+      'desc': '''Enables the availability of Tap to Search in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s content view.
 
-      If you enable this setting, Touch to Search will be available to the user and they can choose to turn the feature on or off.
+      If you enable this setting, Tap to Search will be available to the user and they can choose to turn the feature on or off.
 
-      If you disable this setting, Touch to Search will be disabled completely.
+      If you disable this setting, Tap to Search will be disabled completely.
 
       If this policy is left not set, it is equivalent to being enabled, see description above.''',
     },
