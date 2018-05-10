@@ -12270,6 +12270,22 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileStackViewIncognitoMode">
+  <owner>rlanday@chromium.org</owner>
+  <description>
+    User in the Android tab switcher switches from normal mode to incognito
+    mode.
+  </description>
+</action>
+
+<action name="MobileStackViewNormalMode">
+  <owner>rlanday@chromium.org</owner>
+  <description>
+    User in the Android tab switcher switches from incognito mode to normal
+    mode.
+  </description>
+</action>
+
 <action name="MobileStackViewSwipeCloseTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
