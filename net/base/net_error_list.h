@@ -748,6 +748,12 @@ NET_ERROR(SPDY_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER, -374)
 // credentials or presents a fresh invalid certificate.
 NET_ERROR(TOO_MANY_RETRIES, -375)
 
+// Received an HTTP/2 frame on a closed stream.
+NET_ERROR(SPDY_STREAM_CLOSED, -376)
+
+// Client is refusing an HTTP/2 stream.
+NET_ERROR(SPDY_CLIENT_REFUSED_STREAM, -377)
+
 // The cache does not have the requested entry.
 NET_ERROR(CACHE_MISS, -400)
 

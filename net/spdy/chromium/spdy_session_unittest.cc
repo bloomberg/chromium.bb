@@ -1395,7 +1395,7 @@ TEST_F(SpdySessionTest, UnstallRacesWithStreamCreation) {
 
   // Cancel the first stream. A callback to unstall the second stream was
   // posted. Don't run it yet.
-  stream1->Cancel();
+  stream1->Cancel(ERR_ABORTED);
 
   EXPECT_EQ(0u, num_created_streams());
   EXPECT_EQ(0u, pending_create_stream_queue_size(MEDIUM));
@@ -1415,7 +1415,7 @@ TEST_F(SpdySessionTest, UnstallRacesWithStreamCreation) {
 
   // Cancel the third stream and run the message loop. Verify that the second
   // stream creation now completes.
-  stream3->Cancel();
+  stream3->Cancel(ERR_ABORTED);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1u, num_created_streams());
@@ -2028,7 +2028,7 @@ TEST_F(SpdySessionTest, CancelPendingCreateStream) {
       IsError(ERR_IO_PENDING));
 
   // Release the first one, this will allow the second to be created.
-  spdy_stream1->Cancel();
+  spdy_stream1->Cancel(ERR_ABORTED);
   EXPECT_FALSE(spdy_stream1);
 
   request.CancelRequest();
@@ -2335,7 +2335,7 @@ TEST_F(SpdySessionTest, CancelStream) {
 
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
-  spdy_stream1->Cancel();
+  spdy_stream1->Cancel(ERR_ABORTED);
   EXPECT_FALSE(spdy_stream1);
 
   EXPECT_EQ(0u, delegate1.stream_id());
@@ -2345,7 +2345,7 @@ TEST_F(SpdySessionTest, CancelStream) {
   EXPECT_EQ(0u, delegate1.stream_id());
   EXPECT_EQ(1u, delegate2.stream_id());
 
-  spdy_stream2->Cancel();
+  spdy_stream2->Cancel(ERR_ABORTED);
   EXPECT_FALSE(spdy_stream2);
 }
 
@@ -2679,7 +2679,7 @@ TEST_F(SpdySessionTest, CloseActivatedStreamThatClosesSession) {
 
   // Ensure we don't crash while closing the stream (which closes the
   // session).
-  spdy_stream->Cancel();
+  spdy_stream->Cancel(ERR_ABORTED);
 
   EXPECT_FALSE(spdy_stream);
   EXPECT_TRUE(delegate.StreamIsClosed());
@@ -2923,7 +2923,7 @@ TEST_F(SpdySessionTest, CancelTwoStalledCreateStream) {
 
   // Cancel the first stream; this will allow the second stream to be created.
   EXPECT_TRUE(spdy_stream1);
-  spdy_stream1->Cancel();
+  spdy_stream1->Cancel(ERR_ABORTED);
   EXPECT_FALSE(spdy_stream1);
 
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
@@ -2933,7 +2933,7 @@ TEST_F(SpdySessionTest, CancelTwoStalledCreateStream) {
 
   // Cancel the second stream; this will allow the third stream to be created.
   base::WeakPtr<SpdyStream> spdy_stream2 = request2.ReleaseStream();
-  spdy_stream2->Cancel();
+  spdy_stream2->Cancel(ERR_ABORTED);
   EXPECT_FALSE(spdy_stream2);
 
   EXPECT_THAT(callback3.WaitForResult(), IsOk());
@@ -2943,7 +2943,7 @@ TEST_F(SpdySessionTest, CancelTwoStalledCreateStream) {
 
   // Cancel the third stream.
   base::WeakPtr<SpdyStream> spdy_stream3 = request3.ReleaseStream();
-  spdy_stream3->Cancel();
+  spdy_stream3->Cancel(ERR_ABORTED);
   EXPECT_FALSE(spdy_stream3);
   EXPECT_EQ(0u, num_active_streams());
   EXPECT_EQ(kInitialMaxConcurrentStreams - 1, num_created_streams());
@@ -3633,7 +3633,7 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
   // Cancelling the request should result in the session's socket being
   // closed, since the pool is stalled.
   ASSERT_TRUE(spdy_stream1.get());
-  spdy_stream1->Cancel();
+  spdy_stream1->Cancel(ERR_ABORTED);
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(pool->IsStalled());
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
@@ -3798,7 +3798,7 @@ TEST_F(SpdySessionTest, UpdateStreamsSendWindowSize) {
   EXPECT_EQ(spdy_stream1->send_window_size(), window_size);
 
   // Release the first one, this will allow the second to be created.
-  spdy_stream1->Cancel();
+  spdy_stream1->Cancel(ERR_ABORTED);
   EXPECT_FALSE(spdy_stream1);
 
   base::WeakPtr<SpdyStream> spdy_stream2 =
@@ -3806,7 +3806,7 @@ TEST_F(SpdySessionTest, UpdateStreamsSendWindowSize) {
                                 MEDIUM, NetLogWithSource());
   ASSERT_TRUE(spdy_stream2);
   EXPECT_EQ(spdy_stream2->send_window_size(), window_size);
-  spdy_stream2->Cancel();
+  spdy_stream2->Cancel(ERR_ABORTED);
   EXPECT_FALSE(spdy_stream2);
 
   EXPECT_TRUE(session_);

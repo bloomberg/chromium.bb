@@ -98,7 +98,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   void InitializeStreamHelper();
 
   // Helper function used for resetting stream from inside the stream.
-  void ResetStreamInternal();
+  void ResetStream(int error);
 
   // Must be called only when |request_info_| is non-NULL.
   bool HasUploadData() const;

@@ -498,7 +498,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
       EXPECT_TRUE(session2->is_active());
       EXPECT_TRUE(session2->IsAvailable());
 
-      spdy_stream2->Cancel();
+      spdy_stream2->Cancel(ERR_ABORTED);
       EXPECT_FALSE(spdy_stream);
       EXPECT_FALSE(spdy_stream1);
       EXPECT_FALSE(spdy_stream2);

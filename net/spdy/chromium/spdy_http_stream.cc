@@ -292,7 +292,7 @@ void SpdyHttpStream::Cancel() {
   request_callback_.Reset();
   response_callback_.Reset();
   if (stream_) {
-    stream_->Cancel();
+    stream_->Cancel(ERR_ABORTED);
     DCHECK(!stream_);
   }
 }
@@ -458,23 +458,16 @@ void SpdyHttpStream::InitializeStreamHelper() {
   was_alpn_negotiated_ = stream_->WasAlpnNegotiated();
 }
 
-void SpdyHttpStream::ResetStreamInternal() {
-  spdy_session_->ResetStream(stream()->stream_id(), ERROR_CODE_INTERNAL_ERROR,
-                             SpdyString());
+void SpdyHttpStream::ResetStream(int error) {
+  spdy_session_->ResetStream(stream()->stream_id(), error, SpdyString());
 }
 
 void SpdyHttpStream::OnRequestBodyReadCompleted(int status) {
   if (status < 0) {
     DCHECK_NE(ERR_IO_PENDING, status);
-    // Post |request_callback_| with received error.  This should be posted
-    // before ResetStreamInternal, because the latter would call
-    // |request_callback_| via OnClose with an error code potentially different
-    // from |status|.
-    MaybePostRequestCallback(status);
-
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&SpdyHttpStream::ResetStreamInternal,
-                                  weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&SpdyHttpStream::ResetStream,
+                                  weak_factory_.GetWeakPtr(), status));
 
     return;
   }

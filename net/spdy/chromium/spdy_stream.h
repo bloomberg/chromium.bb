@@ -303,7 +303,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   // If this stream is active, reset it, and close it otherwise. In
   // either case the stream is deleted.
-  void Cancel();
+  void Cancel(int error);
 
   // Close this stream without sending a RST_STREAM and delete
   // it.
