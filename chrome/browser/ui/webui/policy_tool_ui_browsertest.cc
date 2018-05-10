@@ -640,6 +640,8 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, SessionsList) {
 IN_PROC_BROWSER_TEST_F(PolicyToolUITest, DeleteSession) {
   CreateMultipleSessionFiles(3);
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
+  // Wait until the page data is filled.
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ("2", ExtractSinglePolicyValue("SessionId"));
 
   // Check that a non-current session is deleted correctly.
