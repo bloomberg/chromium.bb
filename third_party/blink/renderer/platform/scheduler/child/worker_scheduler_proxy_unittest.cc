@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler_proxy.h"
-#include "base/test/simple_test_tick_clock.h"
-#include "components/viz/test/ordered_simple_task_runner.h"
+#include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
@@ -84,12 +85,14 @@ std::unique_ptr<WebThreadImplForWorkerSchedulerForTest> CreateWorkerThread(
 class WorkerSchedulerProxyTest : public testing::Test {
  public:
   WorkerSchedulerProxyTest()
-      : mock_main_thread_task_runner_(
-            new cc::OrderedSimpleTaskRunner(&clock_, true)),
+      : task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
         main_thread_scheduler_(std::make_unique<MainThreadSchedulerImpl>(
-            TaskQueueManagerForTest::Create(nullptr,
-                                            mock_main_thread_task_runner_,
-                                            &clock_),
+            TaskQueueManagerForTest::Create(
+                nullptr,
+                base::ThreadTaskRunnerHandle::Get(),
+                task_environment_.GetMockTickClock()),
             base::nullopt)),
         page_scheduler_(
             std::make_unique<PageSchedulerImpl>(nullptr,
@@ -97,7 +100,10 @@ class WorkerSchedulerProxyTest : public testing::Test {
                                                 false)),
         frame_scheduler_(page_scheduler_->CreateFrameSchedulerImpl(
             nullptr,
-            FrameScheduler::FrameType::kMainFrame)) {}
+            FrameScheduler::FrameType::kMainFrame)) {
+    // Null clock triggers some assertions.
+    task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5));
+  }
 
   ~WorkerSchedulerProxyTest() override {
     frame_scheduler_.reset();
@@ -106,9 +112,7 @@ class WorkerSchedulerProxyTest : public testing::Test {
   }
 
  protected:
-  base::SimpleTestTickClock clock_;
-  scoped_refptr<cc::OrderedSimpleTaskRunner> mock_main_thread_task_runner_;
-
+  base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<MainThreadSchedulerImpl> main_thread_scheduler_;
   std::unique_ptr<PageSchedulerImpl> page_scheduler_;
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler_;
@@ -133,7 +137,7 @@ TEST_F(WorkerSchedulerProxyTest, VisibilitySignalReceived) {
   DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
          FrameScheduler::ThrottlingState::kNotThrottled);
 
-  mock_main_thread_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Tests below check that no crashes occur during different shutdown sequences.
@@ -153,10 +157,10 @@ TEST_F(WorkerSchedulerProxyTest, FrameSchedulerDestroyed) {
          FrameScheduler::ThrottlingState::kThrottled);
 
   frame_scheduler_.reset();
-  mock_main_thread_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   worker_thread.reset();
-  mock_main_thread_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(WorkerSchedulerProxyTest, ThreadDestroyed) {
@@ -174,13 +178,13 @@ TEST_F(WorkerSchedulerProxyTest, ThreadDestroyed) {
          FrameScheduler::ThrottlingState::kThrottled);
 
   worker_thread.reset();
-  mock_main_thread_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   page_scheduler_->SetPageVisible(true);
-  mock_main_thread_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   frame_scheduler_.reset();
-  mock_main_thread_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace scheduler
