@@ -606,6 +606,124 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
   }
 }
 
+// Test certs cannot currently be installed on OSX with the network service
+// enabled.
+// TODO(mmenke): Once that is fixed, enable this test on OSX.
+// See https://crbug.com/757088
+#if !defined(OS_MACOSX)
+
+// Visits a URL with an HSTS header, and makes sure it is respected.
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_Hsts) {
+  net::test_server::EmbeddedTestServer ssl_server(
+      net::test_server::EmbeddedTestServer::TYPE_HTTPS);
+  ssl_server.SetSSLConfig(
+      net::test_server::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
+  ssl_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(ssl_server.Start());
+
+  // Make a request whose response has an STS header.
+  std::unique_ptr<network::ResourceRequest> request =
+      std::make_unique<network::ResourceRequest>();
+  request->url = ssl_server.GetURL(
+      "/set-header?Strict-Transport-Security: max-age%3D600000");
+
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader =
+      network::SimpleURLLoader::Create(std::move(request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory(), simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+
+  EXPECT_EQ(net::OK, simple_loader->NetError());
+  ASSERT_TRUE(simple_loader->ResponseInfo()->headers);
+  EXPECT_TRUE(simple_loader->ResponseInfo()->headers->HasHeaderValue(
+      "Strict-Transport-Security", "max-age=600000"));
+
+  // Make a cache-only request to make sure the HSTS entry is respected. Using a
+  // cache-only request both prevents the result from being cached, and makes
+  // the check identical to the one in the next test, which is run after the
+  // test server has been shut down.
+  GURL exected_ssl_url = ssl_server.base_url();
+  GURL::Replacements replacements;
+  replacements.SetSchemeStr("http");
+  GURL start_url = exected_ssl_url.ReplaceComponents(replacements);
+
+  request = std::make_unique<network::ResourceRequest>();
+  request->url = start_url;
+  request->load_flags = net::LOAD_ONLY_FROM_CACHE;
+
+  content::SimpleURLLoaderTestHelper simple_loader_helper2;
+  simple_loader = network::SimpleURLLoader::Create(
+      std::move(request), TRAFFIC_ANNOTATION_FOR_TESTS);
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory(), simple_loader_helper2.GetCallback());
+  simple_loader_helper2.WaitForCallback();
+  EXPECT_FALSE(simple_loader_helper2.response_body());
+  EXPECT_EQ(exected_ssl_url, simple_loader->GetFinalURL());
+
+  // Write the URL with HSTS information to a file, so it can be loaded in the
+  // next test. Have to use a file for this, since the server's port is random.
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::FilePath save_url_file_path = browser()->profile()->GetPath().Append(
+      FILE_PATH_LITERAL("url_for_test.txt"));
+  std::string file_data = start_url.spec();
+  ASSERT_EQ(
+      static_cast<int>(file_data.length()),
+      base::WriteFile(save_url_file_path, file_data.data(), file_data.size()));
+}
+
+// Checks if the HSTS information from the last test is still available after a
+// restart.
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Hsts) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::FilePath save_url_file_path = browser()->profile()->GetPath().Append(
+      FILE_PATH_LITERAL("url_for_test.txt"));
+  std::string file_data;
+  ASSERT_TRUE(ReadFileToString(save_url_file_path, &file_data));
+  GURL start_url = GURL(file_data);
+
+  // Unfortunately, loading HSTS information is loaded asynchronously from
+  // disk, so there's no way to guarantee it has loaded by the time a
+  // request is made. As a result, may have to try multiple times to verify that
+  // cached HSTS information has been loaded, when it's stored on disk.
+  while (true) {
+    std::unique_ptr<network::ResourceRequest> request =
+        std::make_unique<network::ResourceRequest>();
+    request->url = start_url;
+    request->load_flags = net::LOAD_ONLY_FROM_CACHE;
+
+    content::SimpleURLLoaderTestHelper simple_loader_helper;
+    std::unique_ptr<network::SimpleURLLoader> simple_loader =
+        network::SimpleURLLoader::Create(std::move(request),
+                                         TRAFFIC_ANNOTATION_FOR_TESTS);
+    simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+        loader_factory(), simple_loader_helper.GetCallback());
+    simple_loader_helper.WaitForCallback();
+    EXPECT_FALSE(simple_loader_helper.response_body());
+
+    // HSTS information is currently stored on disk if-and-only-if there's an
+    // on-disk HTTP cache.
+    if (GetHttpCacheType() == StorageType::kDisk) {
+      GURL::Replacements replacements;
+      replacements.SetSchemeStr("https");
+      GURL expected_https_url = start_url.ReplaceComponents(replacements);
+      // The file may not have been loaded yet, so if the cached HSTS
+      // information was not respected, try again.
+      if (expected_https_url != simple_loader->GetFinalURL())
+        continue;
+      EXPECT_EQ(expected_https_url, simple_loader->GetFinalURL());
+      break;
+    } else {
+      EXPECT_EQ(start_url, simple_loader->GetFinalURL());
+      break;
+    }
+  }
+}
+
+#endif  // !defined(OS_MACOSX)
+
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, ProxyConfig) {
   SetProxyPref(embedded_test_server()->host_port_pair());
   TestProxyConfigured();
@@ -968,6 +1086,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
 }
 
 // |NetworkServiceTestHelper| doesn't work on browser_tests on OSX.
+// See https://crbug.com/757088
 #if defined(OS_MACOSX)
 // Instiates tests with a prefix indicating which NetworkContext is being
 // tested, and a suffix of "/0" if the network service is disabled and "/1" if

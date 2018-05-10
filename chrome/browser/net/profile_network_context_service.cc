@@ -209,6 +209,8 @@ ProfileNetworkContextService::CreateNetworkContextParams(
       network_context_params->restore_old_session_cookies = false;
       network_context_params->persist_session_cookies = false;
     }
+
+    network_context_params->transport_security_persister_path = path;
   }
 
   // NOTE(mmenke): Keep these protocol handlers and

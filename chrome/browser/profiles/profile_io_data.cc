@@ -1101,9 +1101,6 @@ void ProfileIOData::Init(
 
   io_thread->SetUpProxyService(builder.get());
 
-  if (!IsOffTheRecord())
-    builder->set_transport_security_persister_path(profile_params_->path);
-
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;
   host_content_settings_map_ = profile_params_->host_content_settings_map;

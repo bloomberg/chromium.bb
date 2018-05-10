@@ -646,6 +646,61 @@ TEST_F(NetworkContextTest, ClearHttpServerPropertiesInMemory) {
                    ->GetSupportsSpdy(kSchemeHostPort));
 }
 
+// Test that TransportSecurity state is persisted (or not) as expected.
+TEST_F(NetworkContextTest, TransportSecurityStatePersisted) {
+  const char kDomain[] = "foo.test";
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath transport_security_persister_path = temp_dir.GetPath();
+  base::FilePath transport_security_persister_file_path =
+      transport_security_persister_path.AppendASCII("TransportSecurity");
+  EXPECT_FALSE(base::PathExists(transport_security_persister_file_path));
+
+  for (bool on_disk : {false, true}) {
+    // Create a NetworkContext.
+    mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+    if (on_disk) {
+      context_params->transport_security_persister_path =
+          transport_security_persister_path;
+    }
+    std::unique_ptr<NetworkContext> network_context =
+        CreateContextWithParams(std::move(context_params));
+
+    // Add an STS entry.
+    net::TransportSecurityState::STSState sts_state;
+    net::TransportSecurityState* state =
+        network_context->url_request_context()->transport_security_state();
+    EXPECT_FALSE(state->GetDynamicSTSState(kDomain, &sts_state));
+    state->AddHSTS(kDomain,
+                   base::Time::Now() + base::TimeDelta::FromSecondsD(1000),
+                   false /* include subdomains */);
+    EXPECT_TRUE(state->GetDynamicSTSState(kDomain, &sts_state));
+    ASSERT_EQ(kDomain, sts_state.domain);
+
+    // Destroy the network context, and wait for all tasks to write state to
+    // disk to finish running.
+    network_context.reset();
+    scoped_task_environment_.RunUntilIdle();
+    EXPECT_EQ(on_disk,
+              base::PathExists(transport_security_persister_file_path));
+
+    // Create a new NetworkContext,with the same parameters, and check if the
+    // added STS entry still exists.
+    context_params = CreateContextParams();
+    if (on_disk) {
+      context_params->transport_security_persister_path =
+          transport_security_persister_path;
+    }
+    network_context = CreateContextWithParams(std::move(context_params));
+    // Wait for the entry to load.
+    scoped_task_environment_.RunUntilIdle();
+    state = network_context->url_request_context()->transport_security_state();
+    ASSERT_EQ(on_disk, state->GetDynamicSTSState(kDomain, &sts_state));
+    if (on_disk)
+      EXPECT_EQ(kDomain, sts_state.domain);
+  }
+}
+
 // Validates that clearing the HTTP cache when no cache exists does complete.
 TEST_F(NetworkContextTest, ClearHttpCacheWithNoCache) {
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
