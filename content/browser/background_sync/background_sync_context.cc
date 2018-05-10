@@ -15,11 +15,15 @@
 
 namespace content {
 
-BackgroundSyncContext::BackgroundSyncContext() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-}
+BackgroundSyncContext::BackgroundSyncContext()
+    : base::RefCountedDeleteOnSequence<BackgroundSyncContext>(
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)) {}
 
 BackgroundSyncContext::~BackgroundSyncContext() {
+  // The destructor must run on the IO thread because it implicitly accesses
+  // background_sync_manager_ and services_, when it runs their destructors.
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   DCHECK(!background_sync_manager_);
   DCHECK(services_.empty());
 }
@@ -36,7 +40,6 @@ void BackgroundSyncContext::Init(
 
 void BackgroundSyncContext::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&BackgroundSyncContext::ShutdownOnIO, this));
@@ -45,7 +48,6 @@ void BackgroundSyncContext::Shutdown() {
 void BackgroundSyncContext::CreateService(
     blink::mojom::BackgroundSyncServiceRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&BackgroundSyncContext::CreateServiceOnIOThread, this,

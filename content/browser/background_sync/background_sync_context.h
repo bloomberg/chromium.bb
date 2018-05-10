@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/platform/modules/background_sync/background_sync.mojom.h"
 
@@ -23,7 +23,7 @@ class ServiceWorkerContextWrapper;
 // processes/origins. Most logic is delegated to the owned BackgroundSyncManager
 // instance, which is only accessed on the IO thread.
 class CONTENT_EXPORT BackgroundSyncContext
-    : public base::RefCountedThreadSafe<BackgroundSyncContext> {
+    : public base::RefCountedDeleteOnSequence<BackgroundSyncContext> {
  public:
   BackgroundSyncContext();
 
@@ -46,7 +46,8 @@ class CONTENT_EXPORT BackgroundSyncContext
   BackgroundSyncManager* background_sync_manager() const;
 
  protected:
-  friend class base::RefCountedThreadSafe<BackgroundSyncContext>;
+  friend class base::RefCountedDeleteOnSequence<BackgroundSyncContext>;
+  friend class base::DeleteHelper<BackgroundSyncContext>;
   virtual ~BackgroundSyncContext();
 
   void set_background_sync_manager_for_testing(
