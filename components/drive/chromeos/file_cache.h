@@ -43,7 +43,7 @@ const int64_t kMinFreeSpaceInBytes = 512ull * 1024ull * 1024ull;  // 512MB
 // implementation that reports fake free disk space.
 class FreeDiskSpaceGetterInterface {
  public:
-  virtual ~FreeDiskSpaceGetterInterface() {}
+  virtual ~FreeDiskSpaceGetterInterface() = default;
   virtual int64_t AmountOfFreeDiskSpace() = 0;
 };
 
@@ -226,7 +226,7 @@ class FileCache {
   // IDs of files marked mounted.
   std::set<std::string> mounted_files_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

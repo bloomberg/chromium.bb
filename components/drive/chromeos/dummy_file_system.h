@@ -14,7 +14,7 @@ namespace drive {
 // Dummy implementation of FileSystemInterface. All functions do nothing.
 class DummyFileSystem : public FileSystemInterface {
  public:
-  ~DummyFileSystem() override {}
+  ~DummyFileSystem() override = default;
   void AddObserver(FileSystemObserver* observer) override {}
   void RemoveObserver(FileSystemObserver* observer) override {}
   void CheckForUpdates() override {}

@@ -43,7 +43,7 @@ std::string DirectoryFetchInfo::ToString() const {
           ", changestamp: " + base::Int64ToString(changestamp_));
 }
 
-ChangeList::ChangeList() {}
+ChangeList::ChangeList() = default;
 
 ChangeList::ChangeList(const google_apis::TeamDriveList& team_drive_list) {
   const std::vector<std::unique_ptr<google_apis::TeamDriveResource>>& items =
@@ -94,7 +94,7 @@ ChangeList::ChangeList(const google_apis::FileList& file_list)
   parent_resource_ids_.resize(entries_index);
 }
 
-ChangeList::~ChangeList() {}
+ChangeList::~ChangeList() = default;
 
 class ChangeListProcessor::ChangeListToEntryMapUMAStats {
  public:
@@ -127,8 +127,7 @@ ChangeListProcessor::ChangeListProcessor(ResourceMetadata* resource_metadata,
       changed_files_(new FileChange) {
 }
 
-ChangeListProcessor::~ChangeListProcessor() {
-}
+ChangeListProcessor::~ChangeListProcessor() = default;
 
 FileError ChangeListProcessor::ApplyUserChangeList(
     std::unique_ptr<google_apis::AboutResource> about_resource,

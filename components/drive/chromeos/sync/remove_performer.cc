@@ -63,7 +63,7 @@ RemovePerformer::RemovePerformer(
 }
 
 RemovePerformer::~RemovePerformer() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 // Returns |entry| corresponding to |local_id|.
@@ -80,8 +80,8 @@ FileError TryToRemoveLocally(ResourceMetadata* metadata,
 void RemovePerformer::Remove(const std::string& local_id,
                              const ClientContext& context,
                              const FileOperationCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
@@ -100,8 +100,8 @@ void RemovePerformer::RemoveAfterGetResourceEntry(
     const FileOperationCallback& callback,
     const ResourceEntry* entry,
     FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   if (error != FILE_ERROR_OK || entry->resource_id().empty()) {
     callback.Run(error);
@@ -128,8 +128,8 @@ void RemovePerformer::TrashResource(const ClientContext& context,
                                     const FileOperationCallback& callback,
                                     const std::string& resource_id,
                                     const std::string& local_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   scheduler_->TrashResource(
       resource_id,
@@ -143,8 +143,8 @@ void RemovePerformer::TrashResourceAfterUpdateRemoteState(
     const FileOperationCallback& callback,
     const std::string& local_id,
     google_apis::DriveApiErrorCode status) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   if (status == google_apis::HTTP_FORBIDDEN) {
     // Editing this entry is not allowed, revert local changes.
@@ -170,8 +170,8 @@ void RemovePerformer::UnparentResource(const ClientContext& context,
                                        const FileOperationCallback& callback,
                                        const std::string& resource_id,
                                        const std::string& local_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   scheduler_->GetFileResource(
       resource_id,
@@ -186,8 +186,8 @@ void RemovePerformer::UnparentResourceAfterGetFileResource(
     const std::string& local_id,
     google_apis::DriveApiErrorCode status,
     std::unique_ptr<google_apis::FileResource> file_resource) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   FileError error = GDataToFileError(status);
   if (error == FILE_ERROR_NOT_FOUND) {  // Remove local entry when not found.
@@ -235,8 +235,8 @@ void RemovePerformer::UnparentResourceAfterUpdateRemoteState(
     const FileOperationCallback& callback,
     const std::string& local_id,
     google_apis::DriveApiErrorCode status) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   FileError error = GDataToFileError(status);
   if (error != FILE_ERROR_OK) {

@@ -146,7 +146,7 @@ class ResourceMetadata {
   ResourceMetadataStorage* storage_;
   FileCache* cache_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ResourceMetadata);
 };

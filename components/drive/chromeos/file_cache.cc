@@ -8,6 +8,7 @@
 #include <sys/ioctl.h>
 #include <sys/xattr.h>
 
+#include <memory>
 #include <queue>
 #include <vector>
 
@@ -541,12 +542,10 @@ FileError FileCache::OpenForWrite(
     return error;
 
   write_opened_files_[id]++;
-  file_closer->reset(new base::ScopedClosureRunner(
-      base::Bind(&google_apis::RunTaskWithTaskRunner,
-                 blocking_task_runner_,
+  *file_closer = std::make_unique<base::ScopedClosureRunner>(
+      base::Bind(&google_apis::RunTaskWithTaskRunner, blocking_task_runner_,
                  base::Bind(&FileCache::CloseForWrite,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            id))));
+                            weak_ptr_factory_.GetWeakPtr(), id)));
   return FILE_ERROR_OK;
 }
 
@@ -688,7 +687,7 @@ bool FileCache::Initialize() {
 }
 
 void FileCache::Destroy() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   in_shutdown_.Set();
 

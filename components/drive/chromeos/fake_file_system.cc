@@ -35,8 +35,7 @@ FakeFileSystem::FakeFileSystem(DriveServiceInterface* drive_service)
   CHECK(cache_dir_.CreateUniqueTempDir());
 }
 
-FakeFileSystem::~FakeFileSystem() {
-}
+FakeFileSystem::~FakeFileSystem() = default;
 
 void FakeFileSystem::AddObserver(FileSystemObserver* observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
