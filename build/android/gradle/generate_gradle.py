@@ -9,6 +9,7 @@ import argparse
 import codecs
 import collections
 import glob
+import json
 import logging
 import os
 import re
@@ -32,13 +33,15 @@ sys.path.append(os.path.join(host_paths.DIR_SOURCE_ROOT, 'build'))
 import find_depot_tools  # pylint: disable=import-error
 
 _DEFAULT_ANDROID_MANIFEST_PATH = os.path.join(
-    host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'AndroidManifest.xml')
+    host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'gradle',
+    'AndroidManifest.xml')
 _FILE_DIR = os.path.dirname(__file__)
 _SRCJARS_SUBDIR = 'extracted-srcjars'
 _JNI_LIBS_SUBDIR = 'symlinked-libs'
 _ARMEABI_SUBDIR = 'armeabi'
 _RES_SUBDIR = 'extracted-res'
 _GRADLE_BUILD_FILE = 'build.gradle'
+_CMAKE_FILE = 'CMakeLists.txt'
 # This needs to come first alphabetically among all modules.
 _MODULE_ALL = '_all'
 _SRC_INTERNAL = os.path.join(
@@ -108,6 +111,17 @@ def _WriteFile(path, data):
 def _ReadPropertiesFile(path):
   with open(path) as f:
     return dict(l.rstrip().split('=', 1) for l in f if '=' in l)
+
+
+def _RunGnGen(output_dir, args):
+  cmd = [
+    os.path.join(find_depot_tools.DEPOT_TOOLS_PATH, 'gn'),
+    'gen',
+    output_dir,
+  ]
+  cmd.extend(args)
+  logging.info('Running: %r', cmd)
+  subprocess.check_call(cmd)
 
 
 def _RunNinja(output_dir, args, j):
@@ -596,8 +610,38 @@ def _IsTestDir(path):
           'testing/' in path)
 
 
-def _GenerateModuleAll(gradle_output_dir, generator, build_vars,
-    source_properties, jinja_processor):
+# Example: //chrome/android:monochrome
+def _GetNative(relative_func, target_names):
+  out_dir = constants.GetOutDirectory()
+  with open(os.path.join(out_dir, 'project.json'), 'r') as project_file:
+    projects = json.load(project_file)
+  project_targets = projects['targets']
+  root_dir = projects['build_settings']['root_path']
+  targets = {}
+  includes = set()
+  def process_paths(paths):
+    # Ignores leading //
+    return relative_func(
+        sorted(os.path.join(root_dir, path[2:]) for path in paths))
+  for target_name in target_names:
+    target = project_targets[target_name]
+    includes.update(target.get('include_dirs', []))
+    sources = target.get('sources', [])
+    if sources:
+      # CMake does not like forward slashes or colons for the target name.
+      filtered_name = target_name.replace('/', '.').replace(':', '-')
+      targets[filtered_name] = {
+          'sources': process_paths(sources),
+      }
+  return {
+      'targets': targets,
+      'includes': process_paths(includes),
+  }
+
+
+def _GenerateModuleAll(
+    gradle_output_dir, generator, build_vars, source_properties,
+    jinja_processor, native_targets):
   """Returns the data for a pseudo build.gradle of all dirs.
 
   See //docs/android_studio.md for more details."""
@@ -623,10 +667,17 @@ def _GenerateModuleAll(gradle_output_dir, generator, build_vars,
       'java_dirs': Relativize(test_java_dirs),
       'java_excludes': ['**/*.java'],
   }]
+  if native_targets:
+    variables['native'] = _GetNative(
+        relative_func=Relativize, target_names=native_targets)
   data = jinja_processor.Render(
       _TemplatePath(target_type.split('_')[0]), variables)
   _WriteFile(
       os.path.join(gradle_output_dir, _MODULE_ALL, _GRADLE_BUILD_FILE), data)
+  if native_targets:
+    cmake_data = jinja_processor.Render(_TemplatePath('cmake'), variables)
+    _WriteFile(
+        os.path.join(gradle_output_dir, _MODULE_ALL, _CMAKE_FILE), cmake_data)
 
 
 def _GenerateRootGradle(jinja_processor, channel):
@@ -752,6 +803,11 @@ def main():
   parser.add_argument('-j',
                       default=1000 if os.path.exists(_SRC_INTERNAL) else 50,
                       help='Value for number of parallel jobs for ninja')
+  parser.add_argument('--native-target',
+                      dest='native_targets',
+                      action='append',
+                      help='GN native targets to generate for. May be '
+                           'repeated.')
   version_group = parser.add_mutually_exclusive_group()
   version_group.add_argument('--beta',
                       action='store_true',
@@ -805,11 +861,15 @@ def main():
     targets_from_args.update(args.extra_targets)
 
   if args.all:
-    # Run GN gen if necessary (faster than running "gn gen" in the no-op case).
-    _RunNinja(constants.GetOutDirectory(), ['build.ninja'], args.j)
+    if args.native_targets:
+      _RunGnGen(output_dir, ['--ide=json'])
+    else:
+      # Faster than running "gn gen" in the no-op case.
+      _RunNinja(constants.GetOutDirectory(), ['build.ninja'], args.j)
     # Query ninja for all __build_config targets.
     targets = _QueryForAllGnTargets(output_dir)
   else:
+    assert not args.native_targets, 'Native editing requires --all.'
     targets = [re.sub(r'_test_apk$', '_test_apk__apk', t)
                for t in targets_from_args]
 
@@ -866,7 +926,7 @@ def main():
     project_entries.append((_MODULE_ALL, _MODULE_ALL))
     _GenerateModuleAll(
         _gradle_output_dir, generator, build_vars, source_properties,
-        jinja_processor)
+        jinja_processor, args.native_targets)
 
   _WriteFile(os.path.join(generator.project_dir, _GRADLE_BUILD_FILE),
              _GenerateRootGradle(jinja_processor, channel))
