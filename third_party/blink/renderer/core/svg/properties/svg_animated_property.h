@@ -7,7 +7,7 @@
  *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
-G*     * Redistributions in binary form must reproduce the above
+ *     * Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
  * distribution.
@@ -76,9 +76,11 @@ class SVGAnimatedPropertyBase : public GarbageCollectedMixin {
 
   bool IsSpecified() const;
 
-  void Trace(blink::Visitor* visitor) override {}
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(context_element_);
+  }
   virtual void TraceWrappers(ScriptWrappableVisitor* visitor) const {
-    visitor->TraceWrappersWithManualWriteBarrier(context_element_.Get());
+    visitor->TraceWrappers(context_element_);
   }
 
  protected:
@@ -96,12 +98,7 @@ class SVGAnimatedPropertyBase : public GarbageCollectedMixin {
 
   const unsigned type_ : 5;
   const unsigned css_property_id_ : kCssPropertyBits;
-
-  // This raw pointer is safe since the SVG element is guaranteed to be kept
-  // alive by a V8 wrapper.
-  // See http://crbug.com/528275 for the detail.
-  UntracedMember<SVGElement> context_element_;
-
+  TraceWrapperMember<SVGElement> context_element_;
   const QualifiedName& attribute_name_;
   DISALLOW_COPY_AND_ASSIGN(SVGAnimatedPropertyBase);
 };
