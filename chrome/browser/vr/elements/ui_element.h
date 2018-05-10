@@ -397,9 +397,12 @@ class UiElement : public cc::AnimationTarget {
   void RemoveKeyframeModels(int target_property);
   bool IsAnimatingProperty(TargetProperty property) const;
 
-  // Recursive method that sizes and lays out element subtrees. This method may
-  // be overridden by elements that have custom layout requirements.
-  virtual bool SizeAndLayOut();
+  // Recursive method that sizes and lays out element subtrees.
+  bool SizeAndLayOut();
+
+  // This method may be overridden by elements that have custom layout
+  // requirements.
+  virtual bool SizeAndLayOutChildren();
 
   void DoLayOutChildren();
 

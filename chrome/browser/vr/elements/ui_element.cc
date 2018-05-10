@@ -799,13 +799,21 @@ bool UiElement::IsAnimatingProperty(TargetProperty property) const {
 bool UiElement::SizeAndLayOut() {
   if (!IsVisible() && kEnableOptimizedTreeWalks)
     return false;
-  bool changed = false;
-  for (auto& child : children_)
-    changed |= child->SizeAndLayOut();
+
+  // May be overridden by layout elements.
+  bool changed = SizeAndLayOutChildren();
+
   changed |= PrepareToDraw();
   set_update_phase(kUpdatedSize);
   DoLayOutChildren();
   set_update_phase(kUpdatedLayout);
+  return changed;
+}
+
+bool UiElement::SizeAndLayOutChildren() {
+  bool changed = false;
+  for (auto& child : children_)
+    changed |= child->SizeAndLayOut();
   return changed;
 }
 
