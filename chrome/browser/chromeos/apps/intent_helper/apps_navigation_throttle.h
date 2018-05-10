@@ -163,6 +163,8 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   void OnDeferredNavigationProcessed(AppsNavigationAction action,
                                      std::vector<IntentPickerAppInfo> apps);
 
+  void CloseTab();
+
   // A reference to the starting GURL.
   GURL starting_url_;
 
