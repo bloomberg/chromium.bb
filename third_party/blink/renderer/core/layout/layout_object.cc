@@ -78,6 +78,7 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_table_caption.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
@@ -266,6 +267,8 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
         return new LayoutNGTableCell(element);
       return new LayoutTableCell(element);
     case EDisplay::kTableCaption:
+      if (ShouldUseNewLayout(style))
+        return new LayoutNGTableCaption(element);
       return new LayoutTableCaption(element);
     case EDisplay::kWebkitBox:
     case EDisplay::kWebkitInlineBox:
