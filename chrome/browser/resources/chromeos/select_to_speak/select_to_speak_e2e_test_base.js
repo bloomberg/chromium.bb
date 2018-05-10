@@ -87,8 +87,8 @@ SelectToSpeakE2ETest.prototype = {
    * |this.newCallback| if passed to asynchonous calls.  Otherwise, the test
    * will be finished prematurely.
    * @param {string} url Url to load and wait for.
-   * @param {function(chrome.automation.AutomationNode)} callback
-   *     Called once the document is ready.
+   * @param {function(chrome.automation.AutomationNode)} callback Called with
+   *     the desktop node once the document is ready.
    */
   runWithLoadedTree: function(url, callback) {
     callback = this.newCallback(callback);
@@ -99,7 +99,7 @@ SelectToSpeakE2ETest.prototype = {
 
         r.removeEventListener('focus', listener, true);
         r.removeEventListener('loadComplete', listener, true);
-        callback && callback(evt.target);
+        callback && callback(r);
         callback = null;
       };
       r.addEventListener('focus', listener, true);
