@@ -11,6 +11,9 @@ namespace file_manager {
 template <GuestMode MODE>
 class VideoPlayerBrowserTestBase : public FileManagerBrowserTestBase {
  public:
+  VideoPlayerBrowserTestBase() = default;
+
+ protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         chromeos::switches::kEnableVideoPlayerChromecastSupport);
@@ -28,11 +31,12 @@ class VideoPlayerBrowserTestBase : public FileManagerBrowserTestBase {
     return "video_player_test_manifest.json";
   }
 
- protected:
   void set_test_case_name(const std::string& name) { test_case_name_ = name; }
 
  private:
   std::string test_case_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoPlayerBrowserTestBase);
 };
 
 typedef VideoPlayerBrowserTestBase<NOT_IN_GUEST_MODE> VideoPlayerBrowserTest;

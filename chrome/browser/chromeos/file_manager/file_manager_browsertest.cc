@@ -27,6 +27,9 @@ class FileManagerBrowserTest :
       public FileManagerBrowserTestBase,
       public ::testing::WithParamInterface<TestParameter> {
  public:
+  FileManagerBrowserTest() = default;
+
+ protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     FileManagerBrowserTestBase::SetUpCommandLine(command_line);
 
@@ -54,6 +57,8 @@ class FileManagerBrowserTest :
     // crbug.com/482121 crbug.com/480491
     return test_case_name.find("tabindex") != std::string::npos;
   }
+
+  DISALLOW_COPY_AND_ASSIGN(FileManagerBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, Test) {
@@ -65,11 +70,17 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, Test) {
 class FileManagerBrowserTestWithLegacyEventDispatch
     : public FileManagerBrowserTest {
  public:
+  FileManagerBrowserTestWithLegacyEventDispatch() = default;
+
+ protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     FileManagerBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII("disable-blink-features",
                                     "TrustedEventsDefaultAction");
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FileManagerBrowserTestWithLegacyEventDispatch);
 };
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTestWithLegacyEventDispatch, Test) {
@@ -484,6 +495,9 @@ static const TestAccountInfo kTestAccounts[] = {
 
 // Test fixture class for testing multi-profile features.
 class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
+ public:
+  MultiProfileFileManagerBrowserTest() = default;
+
  protected:
   // Enables multi-profiles.
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -531,9 +545,6 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
     return profile ? profile : FileManagerBrowserTestBase::profile();
   }
 
-  // Sets the test case name (used as a function name in test_cases.js to call.)
-  void set_test_case_name(const std::string& name) { test_case_name_ = name; }
-
   // Adds a new user for testing to the current session.
   void AddUser(const TestAccountInfo& info, bool log_in) {
     base::ScopedAllowBlockingForTesting allow_blocking;
@@ -567,8 +578,12 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
     return "file_manager_test_manifest.json";
   }
 
+  void set_test_case_name(const std::string& name) { test_case_name_ = name; }
+
  private:
   std::string test_case_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(MultiProfileFileManagerBrowserTest);
 };
 
 // Fails on official build. http://crbug.com/429294
