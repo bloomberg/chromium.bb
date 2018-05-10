@@ -11,6 +11,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
+#include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/resource_type.h"
@@ -109,11 +110,20 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
         net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_CACHE;
   }
   resource_request_->render_frame_id = MSG_ROUTING_NONE;
+  if (devtools_proxy_) {
+    cert_request_id_ = base::UnguessableToken::Create();
+    resource_request_->enable_load_timing = true;
+  }
 }
 
 SignedExchangeCertFetcher::~SignedExchangeCertFetcher() = default;
 
 void SignedExchangeCertFetcher::Start() {
+  if (devtools_proxy_) {
+    DCHECK(cert_request_id_);
+    devtools_proxy_->CertificateRequestSent(*cert_request_id_,
+                                            *resource_request_);
+  }
   url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
       std::move(shared_url_loader_factory_), std::move(throttles_),
       0 /* routing_id */,
@@ -189,6 +199,11 @@ void SignedExchangeCertFetcher::OnDataComplete() {
 void SignedExchangeCertFetcher::OnReceiveResponse(
     const network::ResourceResponseHead& head,
     network::mojom::DownloadedTempFilePtr downloaded_file) {
+  if (devtools_proxy_) {
+    DCHECK(cert_request_id_);
+    devtools_proxy_->CertificateResponseReceived(*cert_request_id_,
+                                                 resource_request_->url, head);
+  }
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "SignedExchangeCertFetcher::OnReceiveResponse");
   if (head.headers->response_code() != net::HTTP_OK) {
@@ -267,6 +282,10 @@ void SignedExchangeCertFetcher::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeCertFetcher::OnComplete");
+  if (devtools_proxy_) {
+    DCHECK(cert_request_id_);
+    devtools_proxy_->CertificateRequestCompleted(*cert_request_id_, status);
+  }
   if (!handle_watcher_)
     Abort();
 }

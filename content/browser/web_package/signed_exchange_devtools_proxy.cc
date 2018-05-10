@@ -28,6 +28,45 @@ void AddErrorMessageToConsoleOnUI(
       content::CONSOLE_MESSAGE_LEVEL_ERROR, error_message);
 }
 
+void CertificateRequestSentOnUI(
+    base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+    const base::UnguessableToken& request_id,
+    const base::UnguessableToken& loader_id,
+    const network::ResourceRequest& request) {
+  FrameTreeNode* frame_tree_node =
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id_getter.Run());
+  if (!frame_tree_node)
+    return;
+  RenderFrameDevToolsAgentHost::OnSignedExchangeCertificateRequestSent(
+      frame_tree_node, request_id, loader_id, request);
+}
+
+void CertificateResponseReceivedOnUI(
+    base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+    const base::UnguessableToken& request_id,
+    const base::UnguessableToken& loader_id,
+    const GURL& url,
+    scoped_refptr<network::ResourceResponse> response) {
+  FrameTreeNode* frame_tree_node =
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id_getter.Run());
+  if (!frame_tree_node)
+    return;
+  RenderFrameDevToolsAgentHost::OnSignedExchangeCertificateResponseReceived(
+      frame_tree_node, request_id, loader_id, url, response->head);
+}
+
+void CertificateRequestCompletedOnUI(
+    base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+    const base::UnguessableToken& request_id,
+    const network::URLLoaderCompletionStatus& status) {
+  FrameTreeNode* frame_tree_node =
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id_getter.Run());
+  if (!frame_tree_node)
+    return;
+  RenderFrameDevToolsAgentHost::OnSignedExchangeCertificateRequestCompleted(
+      frame_tree_node, request_id, status);
+}
+
 void OnSignedExchangeReceivedOnUI(
     base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
     const GURL& outer_request_url,
@@ -69,6 +108,51 @@ void SignedExchangeDevToolsProxy::ReportErrorMessage(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&AddErrorMessageToConsoleOnUI, frame_tree_node_id_getter_,
                      std::move(message)));
+}
+
+void SignedExchangeDevToolsProxy::CertificateRequestSent(
+    const base::UnguessableToken& request_id,
+    const network::ResourceRequest& request) {
+  if (!devtools_enabled_)
+    return;
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          &CertificateRequestSentOnUI, frame_tree_node_id_getter_, request_id,
+          devtools_navigation_token_ ? *devtools_navigation_token_ : request_id,
+          request));
+}
+
+void SignedExchangeDevToolsProxy::CertificateResponseReceived(
+    const base::UnguessableToken& request_id,
+    const GURL& url,
+    const network::ResourceResponseHead& head) {
+  if (!devtools_enabled_)
+    return;
+
+  // Make a deep copy of ResourceResponseHead before passing it cross-thread.
+  auto resource_response = base::MakeRefCounted<network::ResourceResponse>();
+  resource_response->head = head;
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          &CertificateResponseReceivedOnUI, frame_tree_node_id_getter_,
+          request_id,
+          devtools_navigation_token_ ? *devtools_navigation_token_ : request_id,
+          url, resource_response->DeepCopy()));
+}
+
+void SignedExchangeDevToolsProxy::CertificateRequestCompleted(
+    const base::UnguessableToken& request_id,
+    const network::URLLoaderCompletionStatus& status) {
+  if (!devtools_enabled_)
+    return;
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&CertificateRequestCompletedOnUI,
+                     frame_tree_node_id_getter_, request_id, status));
 }
 
 void SignedExchangeDevToolsProxy::OnSignedExchangeReceived(

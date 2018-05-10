@@ -34,4 +34,18 @@ gen-signedexchange \
   -expire 168h \
   -o htxg-location.htxg \
   -miRecordSize 100
+
+# Generate the signed exchange file which certificate file is not available.
+gen-signedexchange \
+  -uri https://www.127.0.0.1/not_found_cert.html \
+  -status 200 \
+  -content htxg-location.html \
+  -certificate ../../../../../../../blink/tools/blinkpy/third_party/wpt/certs/127.0.0.1.pem \
+  -certUrl http://localhost:8000/loading/htxg/resources/not_found_cert.pem.msg \
+  -validityUrl http://localhost:8000/loading/htxg/resources/not_found_cert.validity.msg \
+  -privateKey ../../../../../../../blink/tools/blinkpy/third_party/wpt/certs/127.0.0.1.key\
+  -date 2018-04-01T00:00:00Z \
+  -expire 168h \
+  -o htxg-cert-not-found.htxg \
+  -miRecordSize 100
 ```

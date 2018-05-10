@@ -235,6 +235,40 @@ void RenderFrameDevToolsAgentHost::OnSignedExchangeReceived(
 }
 
 // static
+void RenderFrameDevToolsAgentHost::OnSignedExchangeCertificateRequestSent(
+    FrameTreeNode* frame_tree_node,
+    const base::UnguessableToken& request_id,
+    const base::UnguessableToken& loader_id,
+    const network::ResourceRequest& request) {
+  DispatchToAgents(frame_tree_node, &protocol::NetworkHandler::RequestSent,
+                   request_id.ToString(), loader_id.ToString(), request,
+                   protocol::Network::Initiator::TypeEnum::Other);
+}
+
+// static
+void RenderFrameDevToolsAgentHost::OnSignedExchangeCertificateResponseReceived(
+    FrameTreeNode* frame_tree_node,
+    const base::UnguessableToken& request_id,
+    const base::UnguessableToken& loader_id,
+    const GURL& url,
+    const network::ResourceResponseHead& head) {
+  DispatchToAgents(frame_tree_node, &protocol::NetworkHandler::ResponseReceived,
+                   request_id.ToString(), loader_id.ToString(), url,
+                   protocol::Page::ResourceTypeEnum::Other, head,
+                   protocol::Maybe<std::string>());
+}
+
+// static
+void RenderFrameDevToolsAgentHost::OnSignedExchangeCertificateRequestCompleted(
+    FrameTreeNode* frame_tree_node,
+    const base::UnguessableToken& request_id,
+    const network::URLLoaderCompletionStatus& status) {
+  DispatchToAgents(frame_tree_node, &protocol::NetworkHandler::LoadingComplete,
+                   request_id.ToString(),
+                   protocol::Page::ResourceTypeEnum::Other, status);
+}
+
+// static
 std::vector<std::unique_ptr<NavigationThrottle>>
 RenderFrameDevToolsAgentHost::CreateNavigationThrottles(
     NavigationHandleImpl* navigation_handle) {

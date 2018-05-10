@@ -21,7 +21,9 @@ class UnguessableToken;
 }  // namespace base
 
 namespace network {
+struct ResourceRequest;
 struct ResourceResponseHead;
+struct URLLoaderCompletionStatus;
 }  // namespace network
 
 namespace content {
@@ -50,6 +52,14 @@ class CONTENT_EXPORT SignedExchangeDevToolsProxy {
   ~SignedExchangeDevToolsProxy();
 
   void ReportErrorMessage(const std::string& message);
+  void CertificateRequestSent(const base::UnguessableToken& request_id,
+                              const network::ResourceRequest& request);
+  void CertificateResponseReceived(const base::UnguessableToken& request_id,
+                                   const GURL& url,
+                                   const network::ResourceResponseHead& head);
+  void CertificateRequestCompleted(
+      const base::UnguessableToken& request_id,
+      const network::URLLoaderCompletionStatus& status);
 
   void OnSignedExchangeReceived(
       const base::Optional<SignedExchangeHeader>& header);
