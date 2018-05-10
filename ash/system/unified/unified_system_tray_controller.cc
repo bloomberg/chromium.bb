@@ -29,6 +29,7 @@
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/wm/lock_state_controller.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -100,6 +101,9 @@ void UnifiedSystemTrayController::HandlePowerAction() {
 }
 
 void UnifiedSystemTrayController::ToggleExpanded() {
+  UMA_HISTOGRAM_ENUMERATION("ChromeOS.SystemTray.ToggleExpanded",
+                            TOGGLE_EXPANDED_TYPE_BY_BUTTON,
+                            TOGGLE_EXPANDED_TYPE_COUNT);
   if (animation_->IsShowing())
     animation_->Hide();
   else
@@ -117,8 +121,15 @@ void UnifiedSystemTrayController::UpdateDrag(const gfx::Point& location) {
 }
 
 void UnifiedSystemTrayController::EndDrag(const gfx::Point& location) {
+  bool expanded = GetDragExpandedAmount(location) > 0.5;
+  if (was_expanded_ != expanded) {
+    UMA_HISTOGRAM_ENUMERATION("ChromeOS.SystemTray.ToggleExpanded",
+                              TOGGLE_EXPANDED_TYPE_BY_GESTURE,
+                              TOGGLE_EXPANDED_TYPE_COUNT);
+  }
+
   // If dragging is finished, animate to closer state.
-  if (GetDragExpandedAmount(location) > 0.5) {
+  if (expanded) {
     animation_->Show();
   } else {
     // To animate to hidden state, first set SlideAnimation::IsShowing() to
