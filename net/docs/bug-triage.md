@@ -8,7 +8,6 @@ label seems suitable.
 
 ### Required, in rough order of priority:
 * Identify new network bugs on the tracker.
-* Investigate UMA notifications.
 * Investigate recent Internals>Network issues with no subcomponent.
 * Follow up on Needs-Feedback issues for all network components.
 * Identify and file bugs for significant new crashers.
@@ -33,8 +32,8 @@ uniform, predictable two day commitment for all triagers.
 * Identify new network bugs on the bug tracker, looking at [this issue tracker
   query](https://bugs.chromium.org/p/chromium/issues/list?q=status%3Aunconfirmed&sort=-id&num=1000).
 
-  * All Unconfirmed issues filed during your triage rotation should be scanned,
-    and, for suspected network bugs, a network component assigned and a
+  * All Unconfirmed issues filed during your triage rotation should be scanned
+    for suspected network bugs, a network component assigned and a
     chrome://net-export/ log requested.  Suggested text: "Please collect and
     attach a chrome://net-export log. Instructions can be found here:
     https://sites.google.com/a/chromium.org/dev/for-testers/providing-network-details".
@@ -44,24 +43,6 @@ uniform, predictable two day commitment for all triagers.
   * A triager is responsible for looking at bugs reported from noon PST /
     3:00 pm EST of the last day of the previous triager's rotation until the
     same time on the last day of their rotation.
-
-* Investigate UMA notifications.
-
-    * UMA notifications ("chirps") are alerts based on UMA histograms that are
-      sent to   chrome-network-debugging@google.com.  Triagers should subscribe
-      to this list.  When an alert fires, the triager should determine if the
-      alert looks to be real and file a bug with the appropriate label if so.
-      Note that if no label more specific than Internals&gt;Network is
-      appropriate, the responsibility remains with the triager to continue
-      investigating the bug, as above.
-
-    * The triager is responsible for looking at any notification previous
-      triagers did not, so when an issue is investigated, the person who did
-      so should respond to chrome-network-debugging@google.com with a short
-      email, describing their conclusions.  Future triagers can then use the
-      fact an alert was responded to as an indicator of which of them need
-      to be followed up on.  Alerts fired before the beginning of the
-      previous triager's rotation may be ignored.
 
 * Investigate [Unconfirmed / Untriaged Internals>Network issues that don't belong to a more specific network component](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3DInternals%3ENetwork+status%3AUnconfirmed,Untriaged+-label:Needs-Feedback&sort=-modified),
   prioritizing the most recent issues, ones with the most responsive reporters,
