@@ -323,7 +323,7 @@ ContentSubresourceFilterThrottleManager::GetParentFrameFilter(
     if (it == activated_frame_hosts_.end())
       return nullptr;
 
-    if (it->second.get())
+    if (it->second)
       return it->second.get();
     parent = it->first->GetParent();
   }

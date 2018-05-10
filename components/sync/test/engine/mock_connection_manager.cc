@@ -591,7 +591,7 @@ bool MockConnectionManager::ProcessGetUpdates(
   update_queue_.pop_front();
 
   if (gu_client_command_) {
-    response->mutable_client_command()->CopyFrom(*gu_client_command_.get());
+    response->mutable_client_command()->CopyFrom(*gu_client_command_);
   }
   return true;
 }
@@ -694,7 +694,7 @@ bool MockConnectionManager::ProcessCommit(
 
   if (commit_client_command_) {
     response_buffer->mutable_client_command()->CopyFrom(
-        *commit_client_command_.get());
+        *commit_client_command_);
   }
   return true;
 }

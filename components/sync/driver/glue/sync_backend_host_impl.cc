@@ -57,7 +57,7 @@ SyncBackendHostImpl::SyncBackendHostImpl(
 }
 
 SyncBackendHostImpl::~SyncBackendHostImpl() {
-  DCHECK(!core_.get() && !host_) << "Must call Shutdown before destructor.";
+  DCHECK(!core_ && !host_) << "Must call Shutdown before destructor.";
   DCHECK(!registrar_);
 }
 

@@ -59,7 +59,7 @@ BaseSessionService::BaseSessionService(SessionType type,
           {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       weak_factory_(this) {
   backend_ = new SessionBackend(type, path);
-  DCHECK(backend_.get());
+  DCHECK(backend_);
 }
 
 BaseSessionService::~BaseSessionService() {}

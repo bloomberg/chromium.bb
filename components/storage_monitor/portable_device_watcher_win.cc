@@ -70,7 +70,7 @@ bool GetFriendlyName(const base::string16& pnp_device_id,
   DCHECK(name);
   DWORD name_len = 0;
   HRESULT hr = device_manager->GetDeviceFriendlyName(pnp_device_id.c_str(),
-                                                     NULL, &name_len);
+                                                     nullptr, &name_len);
   if (FAILED(hr))
     return false;
 
@@ -88,7 +88,7 @@ bool GetManufacturerName(const base::string16& pnp_device_id,
   DCHECK(name);
   DWORD name_len = 0;
   HRESULT hr = device_manager->GetDeviceManufacturer(pnp_device_id.c_str(),
-                                                     NULL, &name_len);
+                                                     nullptr, &name_len);
   if (FAILED(hr))
     return false;
 
@@ -106,8 +106,8 @@ bool GetDeviceDescription(const base::string16& pnp_device_id,
   DCHECK(device_manager);
   DCHECK(description);
   DWORD desc_len = 0;
-  HRESULT hr = device_manager->GetDeviceDescription(pnp_device_id.c_str(), NULL,
-                                                    &desc_len);
+  HRESULT hr = device_manager->GetDeviceDescription(pnp_device_id.c_str(),
+                                                    nullptr, &desc_len);
   if (FAILED(hr))
     return false;
 
@@ -121,7 +121,7 @@ bool GetDeviceDescription(const base::string16& pnp_device_id,
 // application that communicates with the device.
 bool GetClientInformation(
     Microsoft::WRL::ComPtr<IPortableDeviceValues>* client_info) {
-  HRESULT hr = ::CoCreateInstance(__uuidof(PortableDeviceValues), NULL,
+  HRESULT hr = ::CoCreateInstance(__uuidof(PortableDeviceValues), nullptr,
                                   CLSCTX_INPROC_SERVER,
                                   IID_PPV_ARGS(client_info->GetAddressOf()));
   if (FAILED(hr)) {
@@ -150,9 +150,9 @@ bool SetUp(const base::string16& pnp_device_id,
   if (!GetClientInformation(&client_info))
     return false;
 
-  HRESULT hr =
-      ::CoCreateInstance(__uuidof(PortableDevice), NULL, CLSCTX_INPROC_SERVER,
-                         IID_PPV_ARGS(device->GetAddressOf()));
+  HRESULT hr = ::CoCreateInstance(__uuidof(PortableDevice), nullptr,
+                                  CLSCTX_INPROC_SERVER,
+                                  IID_PPV_ARGS(device->GetAddressOf()));
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to create an instance of IPortableDevice";
     return false;
@@ -180,7 +180,7 @@ bool PopulatePropertyKeyCollection(
     const base::string16& object_id,
     Microsoft::WRL::ComPtr<IPortableDeviceKeyCollection>* properties_to_read) {
   HRESULT hr = ::CoCreateInstance(
-      __uuidof(PortableDeviceKeyCollection), NULL, CLSCTX_INPROC_SERVER,
+      __uuidof(PortableDeviceKeyCollection), nullptr, CLSCTX_INPROC_SERVER,
       IID_PPV_ARGS(properties_to_read->GetAddressOf()));
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to create IPortableDeviceKeyCollection instance";
@@ -286,7 +286,7 @@ bool GetRemovableStorageObjectIds(
     base::win::ScopedPropVariant object_id;
     hr = storage_ids->GetAt(index, object_id.Receive());
     if (SUCCEEDED(hr) && object_id.get().vt == VT_LPWSTR &&
-        object_id.get().pwszVal != NULL) {
+        object_id.get().pwszVal != nullptr) {
       storage_object_ids->push_back(object_id.get().pwszVal);
     }
   }
@@ -388,7 +388,7 @@ bool GetPortableDeviceManager(
     Microsoft::WRL::ComPtr<IPortableDeviceManager>* portable_device_mgr) {
   base::AssertBlockingAllowed();
   HRESULT hr = ::CoCreateInstance(
-      __uuidof(PortableDeviceManager), NULL, CLSCTX_INPROC_SERVER,
+      __uuidof(PortableDeviceManager), nullptr, CLSCTX_INPROC_SERVER,
       IID_PPV_ARGS(portable_device_mgr->GetAddressOf()));
   if (SUCCEEDED(hr))
     return true;
@@ -412,7 +412,7 @@ bool EnumerateAttachedDevicesOnBlockingThread(
 
   // Get the total number of devices found on the system.
   DWORD pnp_device_count = 0;
-  HRESULT hr = portable_device_mgr->GetDevices(NULL, &pnp_device_count);
+  HRESULT hr = portable_device_mgr->GetDevices(nullptr, &pnp_device_count);
   if (FAILED(hr))
     return false;
 
@@ -457,7 +457,7 @@ HDEVNOTIFY RegisterPortableDeviceNotification(HWND hwnd) {
   GUID dev_interface_guid = GUID_NULL;
   HRESULT hr = CLSIDFromString(kWPDDevInterfaceGUID, &dev_interface_guid);
   if (FAILED(hr))
-    return NULL;
+    return nullptr;
   DEV_BROADCAST_DEVICEINTERFACE db = {
       sizeof(DEV_BROADCAST_DEVICEINTERFACE),
       DBT_DEVTYP_DEVICEINTERFACE,
@@ -489,10 +489,9 @@ PortableDeviceWatcherWin::DeviceDetails::~DeviceDetails() {
 }
 
 PortableDeviceWatcherWin::PortableDeviceWatcherWin()
-    : notifications_(NULL),
-      storage_notifications_(NULL),
-      weak_ptr_factory_(this) {
-}
+    : notifications_(nullptr),
+      storage_notifications_(nullptr),
+      weak_ptr_factory_(this) {}
 
 PortableDeviceWatcherWin::~PortableDeviceWatcherWin() {
   UnregisterDeviceNotification(notifications_);
@@ -581,7 +580,7 @@ void PortableDeviceWatcherWin::EjectDevice(
 }
 
 void PortableDeviceWatcherWin::EnumerateAttachedDevices() {
-  DCHECK(media_task_runner_.get());
+  DCHECK(media_task_runner_);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   Devices* devices = new Devices;
   base::PostTaskAndReplyWithResult(
@@ -605,7 +604,7 @@ void PortableDeviceWatcherWin::OnDidEnumerateAttachedDevices(
 
 void PortableDeviceWatcherWin::HandleDeviceAttachEvent(
     const base::string16& pnp_device_id) {
-  DCHECK(media_task_runner_.get());
+  DCHECK(media_task_runner_);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DeviceDetails* device_details = new DeviceDetails;
   base::PostTaskAndReplyWithResult(

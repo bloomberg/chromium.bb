@@ -222,7 +222,7 @@ void SessionBackend::AppendCommands(
   Init();
   // Make sure and check current_session_file_, if opening the file failed
   // current_session_file_ will be NULL.
-  if ((reset_first && !empty_file_) || !current_session_file_.get() ||
+  if ((reset_first && !empty_file_) || !current_session_file_ ||
       !current_session_file_->IsValid()) {
     ResetFile();
   }
@@ -320,7 +320,7 @@ bool SessionBackend::AppendCommandsToFile(
 }
 
 SessionBackend::~SessionBackend() {
-  if (current_session_file_.get()) {
+  if (current_session_file_) {
     // Destructor performs file IO because file is open in sync mode.
     // crbug.com/112512.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
@@ -330,7 +330,7 @@ SessionBackend::~SessionBackend() {
 
 void SessionBackend::ResetFile() {
   DCHECK(inited_);
-  if (current_session_file_.get()) {
+  if (current_session_file_) {
     // File is already open, truncate it. We truncate instead of closing and
     // reopening to avoid the possibility of scanners locking the file out
     // from under us once we close it. If truncation fails, we'll try to
@@ -341,7 +341,7 @@ void SessionBackend::ResetFile() {
         !current_session_file_->SetLength(header_size))
       current_session_file_.reset(nullptr);
   }
-  if (!current_session_file_.get())
+  if (!current_session_file_)
     current_session_file_.reset(OpenAndWriteHeader(GetCurrentSessionPath()));
   empty_file_ = true;
 }

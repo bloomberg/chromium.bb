@@ -26,8 +26,8 @@ StorageMonitorWin::StorageMonitorWin(
     VolumeMountWatcherWin* volume_mount_watcher,
     PortableDeviceWatcherWin* portable_device_watcher)
     : window_class_(0),
-      instance_(NULL),
-      window_(NULL),
+      instance_(nullptr),
+      window_(nullptr),
       shell_change_notify_id_(0),
       volume_mount_watcher_(volume_mount_watcher),
       portable_device_watcher_(portable_device_watcher) {
@@ -40,8 +40,8 @@ StorageMonitorWin::StorageMonitorWin(
 StorageMonitorWin::~StorageMonitorWin() {
   if (shell_change_notify_id_)
     SHChangeNotifyDeregister(shell_change_notify_id_);
-  volume_mount_watcher_->SetNotifications(NULL);
-  portable_device_watcher_->SetNotifications(NULL);
+  volume_mount_watcher_->SetNotifications(nullptr);
+  portable_device_watcher_->SetNotifications(nullptr);
 
   if (window_)
     DestroyWindow(window_);
@@ -54,15 +54,14 @@ void StorageMonitorWin::Init() {
   WNDCLASSEX window_class;
   base::win::InitializeWindowClass(
       L"Chrome_StorageMonitorWindow",
-      &base::win::WrappedWindowProc<StorageMonitorWin::WndProcThunk>,
-      0, 0, 0, NULL, NULL, NULL, NULL, NULL,
-      &window_class);
+      &base::win::WrappedWindowProc<StorageMonitorWin::WndProcThunk>, 0, 0, 0,
+      nullptr, nullptr, nullptr, nullptr, nullptr, &window_class);
   instance_ = window_class.hInstance;
   window_class_ = RegisterClassEx(&window_class);
   DCHECK(window_class_);
 
-  window_ = CreateWindow(MAKEINTATOM(window_class_), 0, 0, 0, 0, 0, 0, 0, 0,
-                         instance_, 0);
+  window_ = CreateWindow(MAKEINTATOM(window_class_), nullptr, 0, 0, 0, 0, 0,
+                         nullptr, nullptr, instance_, nullptr);
   SetWindowLongPtr(window_, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
   volume_mount_watcher_->Init();
   portable_device_watcher_->Init(window_);
@@ -106,7 +105,7 @@ void StorageMonitorWin::EjectDevice(
     const std::string& device_id,
     base::Callback<void(EjectStatus)> callback) {
   StorageInfo::Type type;
-  if (!StorageInfo::CrackDeviceId(device_id, &type, NULL)) {
+  if (!StorageInfo::CrackDeviceId(device_id, &type, nullptr)) {
     callback.Run(EJECT_FAILURE);
     return;
   }
@@ -124,7 +123,7 @@ bool StorageMonitorWin::GetMTPStorageInfoFromDeviceId(
     base::string16* device_location,
     base::string16* storage_object_id) const {
   StorageInfo::Type type;
-  StorageInfo::CrackDeviceId(storage_device_id, &type, NULL);
+  StorageInfo::CrackDeviceId(storage_device_id, &type, nullptr);
   return ((type == StorageInfo::MTP_OR_PTP) &&
       portable_device_watcher_->GetMTPStorageInfoFromDeviceId(
           storage_device_id, device_location, storage_object_id));
@@ -158,7 +157,7 @@ LRESULT CALLBACK StorageMonitorWin::WndProc(HWND hwnd, UINT message,
 
 void StorageMonitorWin::MediaChangeNotificationRegister() {
   LPITEMIDLIST id_list;
-  if (SHGetSpecialFolderLocation(NULL, CSIDL_DRIVES, &id_list) == NOERROR) {
+  if (SHGetSpecialFolderLocation(nullptr, CSIDL_DRIVES, &id_list) == NOERROR) {
     SHChangeNotifyEntry notify_entry;
     notify_entry.pidl = id_list;
     notify_entry.fRecursive = TRUE;

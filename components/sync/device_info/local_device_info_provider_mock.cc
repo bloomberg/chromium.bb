@@ -34,7 +34,7 @@ std::string LocalDeviceInfoProviderMock::GetSyncUserAgent() const {
 }
 
 std::string LocalDeviceInfoProviderMock::GetLocalSyncCacheGUID() const {
-  return local_device_info_.get() ? local_device_info_->guid() : "";
+  return local_device_info_ ? local_device_info_->guid() : "";
 }
 
 void LocalDeviceInfoProviderMock::Initialize(

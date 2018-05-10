@@ -81,7 +81,7 @@ void ContentSerializedNavigationDriver::RegisterExtendedInfoHandler(
     std::unique_ptr<ExtendedInfoHandler> handler) {
   DCHECK(!key.empty());
   DCHECK(!extended_info_handler_map_.count(key));
-  DCHECK(handler.get());
+  DCHECK(handler);
   extended_info_handler_map_[key] = std::move(handler);
 }
 

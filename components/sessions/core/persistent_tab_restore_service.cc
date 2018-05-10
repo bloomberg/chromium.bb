@@ -237,7 +237,7 @@ CreateWindowEntryFromCommand(const SessionCommand* command,
 
   if (command->id() == kCommandWindow) {
     std::unique_ptr<base::Pickle> pickle(command->PayloadAsPickle());
-    if (!pickle.get())
+    if (!pickle)
       return nullptr;
 
     base::PickleIterator it(*pickle);

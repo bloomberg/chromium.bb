@@ -361,7 +361,7 @@ void DeviceInfoSyncBridge::OnReadAllData(
     return;
   }
 
-  for (const Record& r : *record_list.get()) {
+  for (const Record& r : *record_list) {
     std::unique_ptr<DeviceInfoSpecifics> specifics =
         std::make_unique<DeviceInfoSpecifics>();
     if (specifics->ParseFromString(r.value)) {

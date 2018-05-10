@@ -137,7 +137,7 @@ TEST_F(DefaultSearchManagerTest, DefaultSearchSetByUserPref) {
 
   // Setting a user pref overrides the pre-populated values.
   std::unique_ptr<TemplateURLData> data = GenerateDummyTemplateURLData("user");
-  manager.SetUserSelectedDefaultSearchEngine(*data.get());
+  manager.SetUserSelectedDefaultSearchEngine(*data);
 
   ExpectSimilar(data.get(), manager.GetDefaultSearchEngine(&source));
   EXPECT_EQ(DefaultSearchManager::FROM_USER, source);
@@ -148,7 +148,7 @@ TEST_F(DefaultSearchManagerTest, DefaultSearchSetByUserPref) {
       GenerateDummyTemplateURLData("user2");
   DefaultSearchManager other_manager(pref_service(),
                                      DefaultSearchManager::ObserverCallback());
-  other_manager.SetUserSelectedDefaultSearchEngine(*new_data.get());
+  other_manager.SetUserSelectedDefaultSearchEngine(*new_data);
 
   ExpectSimilar(new_data.get(), manager.GetDefaultSearchEngine(&source));
   EXPECT_EQ(DefaultSearchManager::FROM_USER, source);
@@ -196,7 +196,7 @@ TEST_F(DefaultSearchManagerTest, DefaultSearchSetByPolicy) {
   DefaultSearchManager manager(pref_service(),
                                DefaultSearchManager::ObserverCallback());
   std::unique_ptr<TemplateURLData> data = GenerateDummyTemplateURLData("user");
-  manager.SetUserSelectedDefaultSearchEngine(*data.get());
+  manager.SetUserSelectedDefaultSearchEngine(*data);
 
   DefaultSearchManager::Source source = DefaultSearchManager::FROM_FALLBACK;
   ExpectSimilar(data.get(), manager.GetDefaultSearchEngine(&source));

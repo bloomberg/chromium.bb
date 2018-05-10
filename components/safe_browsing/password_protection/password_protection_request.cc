@@ -316,11 +316,11 @@ void PasswordProtectionRequest::OnURLLoaderComplete(
 
   std::unique_ptr<LoginReputationClientResponse> response =
       std::make_unique<LoginReputationClientResponse>();
-  DCHECK(response_body.get());
+  DCHECK(response_body);
   url_loader_.reset();  // We don't need it anymore.
   UMA_HISTOGRAM_TIMES("PasswordProtection.RequestNetworkDuration",
                       base::TimeTicks::Now() - request_start_time_);
-  if (response_body.get() && response->ParseFromString(*response_body.get()))
+  if (response_body && response->ParseFromString(*response_body))
     Finish(PasswordProtectionService::SUCCEEDED, std::move(response));
   else
     Finish(PasswordProtectionService::RESPONSE_MALFORMED, nullptr);

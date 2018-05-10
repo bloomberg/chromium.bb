@@ -47,8 +47,7 @@ SSLErrorUI::SSLErrorUI(const GURL& request_url,
   controller_->metrics_helper()->RecordUserInteraction(
       MetricsHelper::TOTAL_VISITS);
   ssl_errors::RecordUMAStatistics(soft_override_enabled_, time_triggered_,
-                                  request_url, cert_error_,
-                                  *ssl_info_.cert.get());
+                                  request_url, cert_error_, *ssl_info_.cert);
 }
 
 SSLErrorUI::~SSLErrorUI() {

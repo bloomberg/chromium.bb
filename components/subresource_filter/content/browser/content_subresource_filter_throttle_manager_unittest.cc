@@ -114,8 +114,7 @@ class ContentSubresourceFilterThrottleManagerTest
       public ContentSubresourceFilterThrottleManager::Delegate,
       public ::testing::WithParamInterface<PageActivationNotificationTiming> {
  public:
-  ContentSubresourceFilterThrottleManagerTest()
-      : ContentSubresourceFilterThrottleManager::Delegate() {}
+  ContentSubresourceFilterThrottleManagerTest() {}
   ~ContentSubresourceFilterThrottleManagerTest() override {}
 
   // content::RenderViewHostTestHarness:

@@ -285,7 +285,7 @@ TemplateURLService::TemplateURLService(const Initializer* initializers,
 
 TemplateURLService::~TemplateURLService() {
   // |web_data_service_| should be deleted during Shutdown().
-  DCHECK(!web_data_service_.get());
+  DCHECK(!web_data_service_);
 }
 
 // static
@@ -455,7 +455,7 @@ void TemplateURLService::Remove(const TemplateURL* template_url) {
   template_urls_.erase(i);
 
   if (template_url->type() == TemplateURL::NORMAL) {
-    if (web_data_service_.get())
+    if (web_data_service_)
       web_data_service_->RemoveKeyword(template_url->id());
 
     // Inform sync of the deletion.
@@ -559,7 +559,7 @@ void TemplateURLService::IncrementUsageCount(TemplateURL* url) {
     return;
   ++url->data_.usage_count;
 
-  if (web_data_service_.get())
+  if (web_data_service_)
     web_data_service_->UpdateKeyword(url->data());
 }
 
@@ -723,7 +723,7 @@ void TemplateURLService::Load() {
   if (loaded_ || load_handle_ || disable_load_)
     return;
 
-  if (web_data_service_.get())
+  if (web_data_service_)
     load_handle_ = web_data_service_->GetKeywords(this);
   else
     ChangeToLoadedState();
@@ -832,7 +832,7 @@ void TemplateURLService::Shutdown() {
   // that no clients of KeywordWebDataService are holding ptrs to it after the
   // first phase of the KeyedService Shutdown() process.
   if (load_handle_) {
-    DCHECK(web_data_service_.get());
+    DCHECK(web_data_service_);
     web_data_service_->CancelRequest(load_handle_);
   }
   web_data_service_ = nullptr;
@@ -891,7 +891,7 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
         CreateTemplateURLFromTemplateURLAndSyncData(
             client_.get(), prefs_, search_terms_data(), existing_turl,
             iter->sync_data(), &new_changes));
-    if (!turl.get())
+    if (!turl)
       continue;
 
     // Explicitly don't check for conflicts against extension keywords; in this
@@ -1003,9 +1003,9 @@ syncer::SyncMergeResult TemplateURLService::MergeDataAndStartSyncing(
     std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory) {
   DCHECK(loaded_);
   DCHECK_EQ(type, syncer::SEARCH_ENGINES);
-  DCHECK(!sync_processor_.get());
-  DCHECK(sync_processor.get());
-  DCHECK(sync_error_factory.get());
+  DCHECK(!sync_processor_);
+  DCHECK(sync_processor);
+  DCHECK(sync_error_factory);
   syncer::SyncMergeResult merge_result(type);
 
   // Disable sync if we failed to load.
@@ -1046,7 +1046,7 @@ syncer::SyncMergeResult TemplateURLService::MergeDataAndStartSyncing(
         CreateTemplateURLFromTemplateURLAndSyncData(
             client_.get(), prefs_, search_terms_data(), local_turl,
             iter->second, &new_changes));
-    if (!sync_turl.get())
+    if (!sync_turl)
       continue;
 
     if (pre_sync_deletes_.find(sync_turl->sync_guid()) !=
@@ -1960,7 +1960,7 @@ TemplateURL* TemplateURLService::Add(std::unique_ptr<TemplateURL> template_url,
   AddToMaps(template_url_ptr);
 
   if (newly_adding && (template_url_ptr->type() == TemplateURL::NORMAL)) {
-    if (web_data_service_.get())
+    if (web_data_service_)
       web_data_service_->AddKeyword(template_url_ptr->data());
 
     // Inform sync of the addition. Note that this will assign a GUID to
@@ -2010,7 +2010,7 @@ void TemplateURLService::UpdateProvidersCreatedByPolicy(
       TemplateURLID id = template_url->id();
       RemoveFromMaps(template_url);
       i = template_urls->erase(i);
-      if (web_data_service_.get())
+      if (web_data_service_)
         web_data_service_->RemoveKeyword(id);
     } else {
       ++i;
@@ -2245,7 +2245,7 @@ void TemplateURLService::PatchMissingSyncGUIDs(
     if (template_url->sync_guid().empty() &&
         (template_url->type() == TemplateURL::NORMAL)) {
       template_url->data_.sync_guid = base::GenerateGUID();
-      if (web_data_service_.get())
+      if (web_data_service_)
         web_data_service_->UpdateKeyword(template_url->data());
     }
   }

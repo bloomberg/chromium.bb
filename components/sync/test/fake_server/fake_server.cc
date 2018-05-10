@@ -207,7 +207,7 @@ void FakeServer::SetClientCommand(
 
 bool FakeServer::TriggerError(const sync_pb::SyncEnums::ErrorType& error_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (triggered_actionable_error_.get()) {
+  if (triggered_actionable_error_) {
     DVLOG(1) << "Only one type of error can be triggered at any given time.";
     return false;
   }
@@ -240,7 +240,7 @@ bool FakeServer::TriggerActionableError(
 bool FakeServer::EnableAlternatingTriggeredErrors() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (error_type_ == sync_pb::SyncEnums::SUCCESS &&
-      !triggered_actionable_error_.get()) {
+      !triggered_actionable_error_) {
     DVLOG(1) << "No triggered error set. Alternating can't be enabled.";
     return false;
   }

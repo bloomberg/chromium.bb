@@ -369,7 +369,7 @@ PrefixSetBuilder::~PrefixSetBuilder() {}
 
 std::unique_ptr<const PrefixSet> PrefixSetBuilder::GetPrefixSet(
     const std::vector<SBFullHash>& hashes) {
-  DCHECK(prefix_set_.get());
+  DCHECK(prefix_set_);
 
   // Flush runs until buffered data is gone.
   while (!buffer_.empty()) {
@@ -392,7 +392,7 @@ std::unique_ptr<const PrefixSet> PrefixSetBuilder::GetPrefixSetNoHashes() {
 }
 
 void PrefixSetBuilder::EmitRun() {
-  DCHECK(prefix_set_.get());
+  DCHECK(prefix_set_);
 
   SBPrefix prev_prefix = buffer_[0];
   uint16_t run[PrefixSet::kMaxRun];
@@ -421,7 +421,7 @@ void PrefixSetBuilder::EmitRun() {
 }
 
 void PrefixSetBuilder::AddPrefix(SBPrefix prefix) {
-  DCHECK(prefix_set_.get());
+  DCHECK(prefix_set_);
 
   if (buffer_.empty()) {
     DCHECK(prefix_set_->index_.empty());

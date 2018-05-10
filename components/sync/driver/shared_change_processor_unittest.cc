@@ -75,7 +75,7 @@ class SyncSharedChangeProcessorTest : public testing::Test,
         did_connect_(false) {}
 
   ~SyncSharedChangeProcessorTest() override {
-    EXPECT_FALSE(db_syncable_service_.get());
+    EXPECT_FALSE(db_syncable_service_);
   }
 
   // FakeSyncClient override.
@@ -129,14 +129,14 @@ class SyncSharedChangeProcessorTest : public testing::Test,
   // Used by SetUp().
   void SetUpDBSyncableService() {
     DCHECK(model_thread_.task_runner()->BelongsToCurrentThread());
-    DCHECK(!db_syncable_service_.get());
+    DCHECK(!db_syncable_service_);
     db_syncable_service_ = std::make_unique<FakeSyncableService>();
   }
 
   // Used by TearDown().
   void TearDownDBSyncableService() {
     DCHECK(model_thread_.task_runner()->BelongsToCurrentThread());
-    DCHECK(db_syncable_service_.get());
+    DCHECK(db_syncable_service_);
     db_syncable_service_.reset();
   }
 

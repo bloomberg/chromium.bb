@@ -79,7 +79,7 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
 
  protected:
   void SetStartExpectations() {
-    EXPECT_CALL(*dtc_mock_.get(), StartModels()).WillOnce(Return(true));
+    EXPECT_CALL(*dtc_mock_, StartModels()).WillOnce(Return(true));
     EXPECT_CALL(model_load_callback_, Run(_, _));
   }
 
@@ -90,7 +90,7 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
         .WillOnce(DoAll(SetArgPointee<0>(true), Return(true)));
     EXPECT_CALL(*model_associator_, AssociateModels(_, _))
         .WillOnce(Return(SyncError()));
-    EXPECT_CALL(*dtc_mock_.get(), RecordAssociationTime(_));
+    EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   }
 
   void SetActivateExpectations(DataTypeController::ConfigureResult result) {
@@ -98,14 +98,14 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
   }
 
   void SetStopExpectations() {
-    EXPECT_CALL(*dtc_mock_.get(), CleanUpState());
+    EXPECT_CALL(*dtc_mock_, CleanUpState());
     EXPECT_CALL(*model_associator_, DisassociateModels())
         .WillOnce(Return(SyncError()));
   }
 
   void SetStartFailExpectations(DataTypeController::ConfigureResult result) {
-    EXPECT_CALL(*dtc_mock_.get(), CleanUpState());
-    EXPECT_CALL(*dtc_mock_.get(), RecordStartFailure(result));
+    EXPECT_CALL(*dtc_mock_, CleanUpState());
+    EXPECT_CALL(*dtc_mock_, RecordStartFailure(result));
     EXPECT_CALL(start_callback_, Run(result, _, _));
   }
 
@@ -147,7 +147,7 @@ TEST_F(SyncFrontendDataTypeControllerTest, StartFirstRun) {
       .WillOnce(DoAll(SetArgPointee<0>(false), Return(true)));
   EXPECT_CALL(*model_associator_, AssociateModels(_, _))
       .WillOnce(Return(SyncError()));
-  EXPECT_CALL(*dtc_mock_.get(), RecordAssociationTime(_));
+  EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   SetActivateExpectations(DataTypeController::OK_FIRST_RUN);
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
   Start();
@@ -155,8 +155,8 @@ TEST_F(SyncFrontendDataTypeControllerTest, StartFirstRun) {
 }
 
 TEST_F(SyncFrontendDataTypeControllerTest, StartStopBeforeAssociation) {
-  EXPECT_CALL(*dtc_mock_.get(), StartModels()).WillOnce(Return(true));
-  EXPECT_CALL(*dtc_mock_.get(), CleanUpState());
+  EXPECT_CALL(*dtc_mock_, StartModels()).WillOnce(Return(true));
+  EXPECT_CALL(*dtc_mock_, CleanUpState());
   EXPECT_CALL(model_load_callback_, Run(_, _));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -167,8 +167,8 @@ TEST_F(SyncFrontendDataTypeControllerTest, StartStopBeforeAssociation) {
 }
 
 TEST_F(SyncFrontendDataTypeControllerTest, AbortDuringStartModels) {
-  EXPECT_CALL(*dtc_mock_.get(), StartModels()).WillOnce(Return(false));
-  EXPECT_CALL(*dtc_mock_.get(), CleanUpState());
+  EXPECT_CALL(*dtc_mock_, StartModels()).WillOnce(Return(false));
+  EXPECT_CALL(*dtc_mock_, CleanUpState());
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
   frontend_dtc_->LoadModels(base::Bind(
       &ModelLoadCallbackMock::Run, base::Unretained(&model_load_callback_)));
@@ -187,7 +187,7 @@ TEST_F(SyncFrontendDataTypeControllerTest, StartAssociationFailed) {
       .WillOnce(Return(
           SyncError(FROM_HERE, SyncError::DATATYPE_ERROR, "error", BOOKMARKS)));
 
-  EXPECT_CALL(*dtc_mock_.get(), RecordAssociationTime(_));
+  EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   SetStartFailExpectations(DataTypeController::ASSOCIATION_FAILED);
   // Set up association to fail with an association failed error.
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());

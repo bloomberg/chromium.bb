@@ -285,7 +285,7 @@ void DataTypeTracker::UpdateLocalNudgeDelay(base::TimeDelta delay) {
 }
 
 WaitInterval::BlockingMode DataTypeTracker::GetBlockingMode() const {
-  if (!wait_interval_.get()) {
+  if (!wait_interval_) {
     return WaitInterval::UNKNOWN;
   }
   return wait_interval_->mode;

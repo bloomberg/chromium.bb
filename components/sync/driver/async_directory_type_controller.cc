@@ -56,9 +56,9 @@ void AsyncDirectoryTypeController::LoadModels(
   state_ = MODEL_STARTING;
   // Since we can't be called multiple times before Stop() is called,
   // |shared_change_processor_| must be null here.
-  DCHECK(!shared_change_processor_.get());
+  DCHECK(!shared_change_processor_);
   shared_change_processor_ = CreateSharedChangeProcessor();
-  DCHECK(shared_change_processor_.get());
+  DCHECK(shared_change_processor_);
   if (!StartModels()) {
     // If we are waiting for some external service to load before associating
     // or we failed to start the models, we exit early.
@@ -115,7 +115,7 @@ void AsyncDirectoryTypeController::StartAssociating(
     local_merge_result.set_error(error);
     StartDone(ASSOCIATION_FAILED, local_merge_result, SyncMergeResult(type()));
     // StartDone should have cleared the SharedChangeProcessor.
-    DCHECK(!shared_change_processor_.get());
+    DCHECK(!shared_change_processor_);
     return;
   }
 }
@@ -242,14 +242,14 @@ void AsyncDirectoryTypeController::DisconnectSharedChangeProcessor() {
   DCHECK(CalledOnValidThread());
   // |shared_change_processor_| can already be null if Stop() is
   // called after StartDone(_, DISABLED, _).
-  if (shared_change_processor_.get()) {
+  if (shared_change_processor_) {
     shared_change_processor_->Disconnect();
   }
 }
 
 void AsyncDirectoryTypeController::StopSyncableService() {
   DCHECK(CalledOnValidThread());
-  if (shared_change_processor_.get()) {
+  if (shared_change_processor_) {
     PostTaskOnModelThread(FROM_HERE,
                           base::Bind(&SharedChangeProcessor::StopLocalService,
                                      shared_change_processor_));

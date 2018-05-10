@@ -206,7 +206,7 @@ void SyncSchedulerImpl::Start(Mode mode, base::Time last_poll_time) {
     SendInitialSnapshot();
   }
 
-  DCHECK(syncer_.get());
+  DCHECK(syncer_);
 
   if (mode == CLEAR_SERVER_DATA_MODE) {
     DCHECK_EQ(mode_, CONFIGURATION_MODE);

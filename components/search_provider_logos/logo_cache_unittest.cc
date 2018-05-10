@@ -137,7 +137,7 @@ class LogoCacheTest : public ::testing::Test {
       ASSERT_TRUE(retrieved_logo.get());
       ExpectLogosEqual(*expected_logo, *retrieved_logo);
     } else {
-      ASSERT_FALSE(retrieved_logo.get());
+      ASSERT_FALSE(retrieved_logo);
     }
   }
 

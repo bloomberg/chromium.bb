@@ -237,13 +237,13 @@ TEST_F(ModelTypeStoreBackendTest, TwoSameBackendTest) {
 
   // Delete one reference, check the real backend still here.
   backend = nullptr;
-  ASSERT_FALSE(backend.get());
+  ASSERT_FALSE(backend);
   ASSERT_TRUE(backend_second.get());
   ASSERT_TRUE(backend_second->HasOneRef());
 
   // Delete another reference, check the real backend is deleted.
   backend_second = nullptr;
-  ASSERT_FALSE(backend_second.get());
+  ASSERT_FALSE(backend_second);
   ASSERT_FALSE(BackendExistsForPath(path));
 }
 
@@ -262,14 +262,14 @@ TEST_F(ModelTypeStoreBackendTest, TwoDifferentBackendTest) {
 
   // delete one backend, check only one got deleted.
   backend = nullptr;
-  ASSERT_FALSE(backend.get());
+  ASSERT_FALSE(backend);
   ASSERT_TRUE(backend_second.get());
   ASSERT_TRUE(backend_second->HasOneRef());
   ASSERT_FALSE(BackendExistsForPath(path));
 
   // delete another backend.
   backend_second = nullptr;
-  ASSERT_FALSE(backend_second.get());
+  ASSERT_FALSE(backend_second);
   ASSERT_FALSE(BackendExistsForPath("/test_db2"));
 }
 

@@ -123,7 +123,7 @@ bool RestoreUpdateTabNavigationCommand(
     sessions::SerializedNavigationEntry* navigation,
     SessionID* tab_id) {
   std::unique_ptr<base::Pickle> pickle(command.PayloadAsPickle());
-  if (!pickle.get())
+  if (!pickle)
     return false;
   base::PickleIterator iterator(*pickle);
   return ReadSessionIdFromPickle(&iterator, tab_id) &&
@@ -134,7 +134,7 @@ bool RestoreSetTabExtensionAppIDCommand(const SessionCommand& command,
                                         SessionID* tab_id,
                                         std::string* extension_app_id) {
   std::unique_ptr<base::Pickle> pickle(command.PayloadAsPickle());
-  if (!pickle.get())
+  if (!pickle)
     return false;
 
   base::PickleIterator iterator(*pickle);
@@ -146,7 +146,7 @@ bool RestoreSetTabUserAgentOverrideCommand(const SessionCommand& command,
                                            SessionID* tab_id,
                                            std::string* user_agent_override) {
   std::unique_ptr<base::Pickle> pickle(command.PayloadAsPickle());
-  if (!pickle.get())
+  if (!pickle)
     return false;
 
   base::PickleIterator iterator(*pickle);
@@ -158,7 +158,7 @@ bool RestoreSetWindowAppNameCommand(const SessionCommand& command,
                                     SessionID* window_id,
                                     std::string* app_name) {
   std::unique_ptr<base::Pickle> pickle(command.PayloadAsPickle());
-  if (!pickle.get())
+  if (!pickle)
     return false;
 
   base::PickleIterator iterator(*pickle);

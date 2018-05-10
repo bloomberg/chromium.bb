@@ -201,7 +201,7 @@ void StorageMonitorWinTest::DoMTPDeviceTest(const base::string16& pnp_device_id,
   std::unique_ptr<DEV_BROADCAST_DEVICEINTERFACE, base::FreeDeleter>
       dev_interface_broadcast(
           static_cast<DEV_BROADCAST_DEVICEINTERFACE*>(malloc(size)));
-  DCHECK(dev_interface_broadcast.get());
+  DCHECK(dev_interface_broadcast);
   ZeroMemory(dev_interface_broadcast.get(), size);
   dev_interface_broadcast->dbcc_size = size;
   dev_interface_broadcast->dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
