@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.widget.ListMenuButton.Item;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.content.browser.test.util.Criteria;
@@ -512,6 +513,7 @@ public class DownloadActivityTest {
 
     @Test
     @MediumTest
+    @DisableFeatures("OfflinePagesSharing")
     public void testShareFiles() throws Exception {
         // Adapter positions:
         // 0 = space display
