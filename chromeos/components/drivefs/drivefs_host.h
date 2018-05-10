@@ -64,6 +64,8 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
     virtual std::unique_ptr<MojoConnectionDelegate>
     CreateMojoConnectionDelegate();
 
+    virtual void OnMounted(const base::FilePath& mount_path) = 0;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
@@ -78,6 +80,13 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
 
   // Unmount DriveFS.
   void Unmount();
+
+  // Returns whether DriveFS is mounted.
+  bool IsMounted() const;
+
+  // Returns the path where DriveFS is mounted. It is only valid to call when
+  // |IsMounted()| returns true.
+  const base::FilePath& GetMountPath() const;
 
  private:
   class MountState;

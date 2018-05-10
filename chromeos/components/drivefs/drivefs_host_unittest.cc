@@ -114,6 +114,9 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate {
     pending_bootstrap_ = std::move(pending_bootstrap);
   }
 
+  // DriveFsHost::Delegate:
+  MOCK_METHOD1(OnMounted, void(const base::FilePath&));
+
  private:
   // DriveFsHost::Delegate:
   net::URLRequestContextGetter* GetRequestContext() override { return nullptr; }
@@ -200,6 +203,10 @@ class FakeIdentityService
   DISALLOW_COPY_AND_ASSIGN(FakeIdentityService);
 };
 
+ACTION_P(RunQuitClosure, quit) {
+  std::move(*quit).Run();
+}
+
 class DriveFsHostTest : public ::testing::Test,
                         public mojom::DriveFsBootstrap,
                         public mojom::DriveFs {
@@ -242,15 +249,16 @@ class DriveFsHostTest : public ::testing::Test,
     std::string source;
     EXPECT_CALL(
         *disk_manager_,
-        MountPath(
-            testing::AllOf(testing::StartsWith("drivefs://"),
-                           testing::EndsWith("@/path/to/profile/GCache/v2/ID")),
-            "", "", _, chromeos::MOUNT_ACCESS_MODE_READ_WRITE))
+        MountPath(testing::AllOf(
+                      testing::StartsWith("drivefs://"),
+                      testing::EndsWith("@/path/to/profile/GCache/v2/g-ID")),
+                  "", "", _, chromeos::MOUNT_ACCESS_MODE_READ_WRITE))
         .WillOnce(testing::SaveArg<0>(&source));
 
     mojom::DriveFsBootstrapPtrInfo bootstrap;
     bootstrap_binding_.Bind(mojo::MakeRequest(&bootstrap));
     host_delegate_->set_pending_bootstrap(std::move(bootstrap));
+    pending_delegate_request_ = mojo::MakeRequest(&delegate_ptr_);
 
     EXPECT_TRUE(host_->Mount());
     testing::Mock::VerifyAndClear(&disk_manager_);
@@ -262,22 +270,35 @@ class DriveFsHostTest : public ::testing::Test,
   }
 
   void DispatchMountSuccessEvent(const std::string& token) {
-    DispatchMountEvent(
-        chromeos::disks::DiskMountManager::MOUNTING, chromeos::MOUNT_ERROR_NONE,
-        {base::StrCat({"drivefs://", token, "@/path/to/profile/GCache/v2/ID"}),
-         "/media/drivefsroot/ID",
-         chromeos::MOUNT_TYPE_ARCHIVE,
-         {}});
+    DispatchMountEvent(chromeos::disks::DiskMountManager::MOUNTING,
+                       chromeos::MOUNT_ERROR_NONE,
+                       {base::StrCat({"drivefs://", token,
+                                      "@/path/to/profile/GCache/v2/g-ID"}),
+                        "/media/drivefsroot/g-ID",
+                        chromeos::MOUNT_TYPE_ARCHIVE,
+                        {}});
   }
+
+  void SendOnMounted() { delegate_ptr_->OnMounted(); }
 
   void DoMount() {
     auto token = StartMount();
     DispatchMountSuccessEvent(token);
 
-    base::RunLoop run_loop;
-    bootstrap_binding_.set_connection_error_handler(run_loop.QuitClosure());
     ASSERT_TRUE(PendingConnectionManager::Get().OpenIpcChannel(token, {}));
+    {
+      base::RunLoop run_loop;
+      bootstrap_binding_.set_connection_error_handler(run_loop.QuitClosure());
+      run_loop.Run();
+    }
+    base::RunLoop run_loop;
+    base::OnceClosure quit_closure = run_loop.QuitClosure();
+    EXPECT_CALL(*host_delegate_,
+                OnMounted(base::FilePath("/media/drivefsroot/g-ID")))
+        .WillOnce(RunQuitClosure(&quit_closure));
+    SendOnMounted();
     run_loop.Run();
+    ASSERT_TRUE(host_->IsMounted());
   }
 
   void Init(mojom::DriveFsConfigurationPtr config,
@@ -285,7 +306,8 @@ class DriveFsHostTest : public ::testing::Test,
             mojom::DriveFsDelegatePtr delegate) override {
     EXPECT_EQ("test@example.com", config->user_email);
     binding_.Bind(std::move(drive_fs));
-    delegate_ptr_ = std::move(delegate);
+    mojo::FuseInterface(std::move(pending_delegate_request_),
+                        delegate.PassInterface());
   }
 
   base::FilePath profile_path_;
@@ -300,19 +322,44 @@ class DriveFsHostTest : public ::testing::Test,
   mojo::Binding<mojom::DriveFsBootstrap> bootstrap_binding_;
   mojo::Binding<mojom::DriveFs> binding_;
   mojom::DriveFsDelegatePtr delegate_ptr_;
+  mojom::DriveFsDelegateRequest pending_delegate_request_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DriveFsHostTest);
 };
 
 TEST_F(DriveFsHostTest, Basic) {
+  EXPECT_FALSE(host_->IsMounted());
+
   ASSERT_NO_FATAL_FAILURE(DoMount());
+
+  EXPECT_EQ(base::FilePath("/media/drivefsroot/g-ID"), host_->GetMountPath());
+}
+
+TEST_F(DriveFsHostTest, OnMountedBeforeMountEvent) {
+  auto token = StartMount();
+  ASSERT_TRUE(PendingConnectionManager::Get().OpenIpcChannel(token, {}));
+  SendOnMounted();
+  EXPECT_CALL(*host_delegate_, OnMounted(_)).Times(0);
+  delegate_ptr_.FlushForTesting();
+
+  testing::Mock::VerifyAndClear(host_delegate_.get());
+
+  EXPECT_FALSE(host_->IsMounted());
+
+  EXPECT_CALL(*host_delegate_,
+              OnMounted(base::FilePath("/media/drivefsroot/g-ID")));
+
+  DispatchMountSuccessEvent(token);
+
+  ASSERT_TRUE(host_->IsMounted());
+  EXPECT_EQ(base::FilePath("/media/drivefsroot/g-ID"), host_->GetMountPath());
 }
 
 TEST_F(DriveFsHostTest, UnmountAfterMountComplete) {
   ASSERT_NO_FATAL_FAILURE(DoMount());
 
-  EXPECT_CALL(*disk_manager_, UnmountPath("/media/drivefsroot/ID",
+  EXPECT_CALL(*disk_manager_, UnmountPath("/media/drivefsroot/g-ID",
                                           chromeos::UNMOUNT_OPTIONS_NONE, _));
   base::RunLoop run_loop;
   binding_.set_connection_error_handler(run_loop.QuitClosure());
@@ -322,6 +369,7 @@ TEST_F(DriveFsHostTest, UnmountAfterMountComplete) {
 
 TEST_F(DriveFsHostTest, UnmountBeforeMountEvent) {
   auto token = StartMount();
+  EXPECT_FALSE(host_->IsMounted());
   host_->Unmount();
   EXPECT_FALSE(PendingConnectionManager::Get().OpenIpcChannel(token, {}));
 }
@@ -329,7 +377,9 @@ TEST_F(DriveFsHostTest, UnmountBeforeMountEvent) {
 TEST_F(DriveFsHostTest, UnmountBeforeMojoConnection) {
   auto token = StartMount();
   DispatchMountSuccessEvent(token);
-  EXPECT_CALL(*disk_manager_, UnmountPath("/media/drivefsroot/ID",
+
+  EXPECT_FALSE(host_->IsMounted());
+  EXPECT_CALL(*disk_manager_, UnmountPath("/media/drivefsroot/g-ID",
                                           chromeos::UNMOUNT_OPTIONS_NONE, _));
 
   host_->Unmount();
@@ -347,7 +397,7 @@ TEST_F(DriveFsHostTest, DestroyBeforeMountEvent) {
 TEST_F(DriveFsHostTest, DestroyBeforeMojoConnection) {
   auto token = StartMount();
   DispatchMountSuccessEvent(token);
-  EXPECT_CALL(*disk_manager_, UnmountPath("/media/drivefsroot/ID",
+  EXPECT_CALL(*disk_manager_, UnmountPath("/media/drivefsroot/g-ID",
                                           chromeos::UNMOUNT_OPTIONS_NONE, _));
 
   host_.reset();
@@ -366,10 +416,11 @@ TEST_F(DriveFsHostTest, ObserveOtherMount) {
                       {}});
   DispatchMountEvent(
       chromeos::disks::DiskMountManager::UNMOUNTING, chromeos::MOUNT_ERROR_NONE,
-      {base::StrCat({"drivefs://", token, "@/path/to/profile/GCache/v2/ID"}),
-       "/media/drivefsroot/ID",
+      {base::StrCat({"drivefs://", token, "@/path/to/profile/GCache/v2/g-ID"}),
+       "/media/drivefsroot/g-ID",
        chromeos::MOUNT_TYPE_ARCHIVE,
        {}});
+  EXPECT_FALSE(host_->IsMounted());
   host_->Unmount();
 }
 
@@ -380,10 +431,11 @@ TEST_F(DriveFsHostTest, MountError) {
   DispatchMountEvent(
       chromeos::disks::DiskMountManager::MOUNTING,
       chromeos::MOUNT_ERROR_DIRECTORY_CREATION_FAILED,
-      {base::StrCat({"drivefs://", token, "@/path/to/profile/GCache/v2/ID"}),
-       "/media/drivefsroot/ID",
+      {base::StrCat({"drivefs://", token, "@/path/to/profile/GCache/v2/g-ID"}),
+       "/media/drivefsroot/g-ID",
        chromeos::MOUNT_TYPE_ARCHIVE,
        {}});
+  EXPECT_FALSE(host_->IsMounted());
   EXPECT_FALSE(PendingConnectionManager::Get().OpenIpcChannel(token, {}));
 }
 
@@ -392,12 +444,18 @@ TEST_F(DriveFsHostTest, MountWhileAlreadyMounted) {
   EXPECT_FALSE(host_->Mount());
 }
 
-TEST_F(DriveFsHostTest, NonGaiaAccount) {
+TEST_F(DriveFsHostTest, UnsupportedAccountTypes) {
   EXPECT_CALL(*disk_manager_, MountPath(_, _, _, _, _)).Times(0);
-  AccountId non_gaia_account = AccountId::FromUserEmail("test2@example.com");
-  host_ =
-      std::make_unique<DriveFsHost>(profile_path_, non_gaia_account, nullptr);
-  EXPECT_FALSE(host_->Mount());
+  const AccountId unsupported_accounts[] = {
+      AccountId::FromGaiaId("ID"),
+      AccountId::FromUserEmail("test2@example.com"),
+      AccountId::AdFromObjGuid("ID"),
+  };
+  for (auto& account : unsupported_accounts) {
+    host_ = std::make_unique<DriveFsHost>(profile_path_, account, nullptr);
+    EXPECT_FALSE(host_->Mount());
+    EXPECT_FALSE(host_->IsMounted());
+  }
 }
 
 TEST_F(DriveFsHostTest, GetAccessToken_Success) {
