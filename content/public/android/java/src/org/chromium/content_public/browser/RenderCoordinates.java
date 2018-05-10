@@ -46,4 +46,9 @@ public interface RenderCoordinates {
      * @return Render-reported height of the viewport in physical pixels (approx, integer).
      */
     int getLastFrameViewportHeightPixInt();
+
+    /**
+     * @return Maximum possible vertical scroll in physical pixels (approx, integer).
+     */
+    int getMaxVerticalScrollPixInt();
 }

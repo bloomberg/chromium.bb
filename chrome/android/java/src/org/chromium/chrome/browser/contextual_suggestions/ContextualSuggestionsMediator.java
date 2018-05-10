@@ -28,6 +28,9 @@ import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.content_public.browser.GestureListenerManager;
+import org.chromium.content_public.browser.GestureStateListener;
+import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.widget.ViewRectProvider;
 
@@ -41,6 +44,9 @@ import java.util.List;
  */
 class ContextualSuggestionsMediator
         implements EnabledStateMonitor.Observer, FetchHelper.Delegate, ListMenuButton.Delegate {
+    private static final float INVALID_PERCENTAGE = -1f;
+    private static boolean sOverrideBrowserControlsHiddenForTesting;
+
     private final Profile mProfile;
     private final TabModelSelector mTabModelSelector;
     private final ContextualSuggestionsCoordinator mCoordinator;
@@ -48,6 +54,7 @@ class ContextualSuggestionsMediator
     private final ChromeFullscreenManager mFullscreenManager;
     private final View mIphParentView;
     private final EnabledStateMonitor mEnabledStateMonitor;
+    private final GestureStateListener mGestureStateListener;
     private final Handler mHandler = new Handler();
 
     private @Nullable ContextualSuggestionsSource mSuggestionsSource;
@@ -55,13 +62,16 @@ class ContextualSuggestionsMediator
     private @Nullable String mCurrentRequestUrl;
     private @Nullable BottomSheetObserver mSheetObserver;
     private @Nullable TextBubble mHelpBubble;
+    private @Nullable WebContents mCurrentWebContents;
 
     private boolean mDidSuggestionsShowForTab;
     private boolean mHasRecordedPeekEventForTab;
 
+    private boolean mHasReachedTargetScrollPercentage;
     private boolean mHasPeekDelayPassed;
     private boolean mUpdateRemainingCountOnNextPeek;
     private float mRemainingPeekCount;
+    private float mTargetScrollPercentage = INVALID_PERCENTAGE;
 
     /** Whether the content sheet is observed to be opened for the first time. */
     private boolean mHasSheetBeenOpened;
@@ -92,6 +102,25 @@ class ContextualSuggestionsMediator
                 ContextualSuggestionsDependencyFactory.getInstance().createEnabledStateMonitor(
                         this);
 
+        mGestureStateListener = new GestureStateListener() {
+            @Override
+            public void onScrollOffsetOrExtentChanged(int scrollOffsetY, int scrollExtentY) {
+                if (mHasReachedTargetScrollPercentage) return;
+
+                final RenderCoordinates coordinates =
+                        RenderCoordinates.fromWebContents(mCurrentWebContents);
+                // Use rounded percentage to avoid the approximated percentage not reaching 100%.
+                float percentage = Math.round((float) coordinates.getScrollYPixInt()
+                        / coordinates.getMaxVerticalScrollPixInt() * 100f) / 100f;
+
+                if (Float.compare(mTargetScrollPercentage, INVALID_PERCENTAGE) != 0
+                        && Float.compare(percentage, mTargetScrollPercentage) >= 0) {
+                    mHasReachedTargetScrollPercentage = true;
+                    maybeShowContentInSheet();
+                }
+            }
+        };
+
         fullscreenManager.addListener(new FullscreenListener() {
             @Override
             public void onContentOffsetChanged(float offset) {}
@@ -99,13 +128,7 @@ class ContextualSuggestionsMediator
             @Override
             public void onControlsOffsetChanged(
                     float topOffset, float bottomOffset, boolean needsAnimate) {
-                // When the controls scroll completely off-screen, the suggestions are "shown" but
-                // remain hidden since their offset from the bottom of the screen is determined by
-                // the top controls.
-                if (!mDidSuggestionsShowForTab && mModel.hasSuggestions()
-                        && areBrowserControlsHidden() && mSuggestionsSource != null) {
-                    showContentInSheet();
-                }
+                maybeShowContentInSheet();
             }
 
             @Override
@@ -131,6 +154,12 @@ class ContextualSuggestionsMediator
         }
 
         if (mHelpBubble != null) mHelpBubble.dismiss();
+
+        if (mCurrentWebContents != null) {
+            GestureListenerManager.fromWebContents(mCurrentWebContents)
+                    .removeListener(mGestureStateListener);
+            mCurrentWebContents = null;
+        }
     }
 
     /** Called when accessibility mode changes. */
@@ -142,8 +171,9 @@ class ContextualSuggestionsMediator
      * @return Whether the browser controls are currently completely hidden.
      */
     private boolean areBrowserControlsHidden() {
-        return MathUtils.areFloatsEqual(-mFullscreenManager.getTopControlOffset(),
-                mFullscreenManager.getTopControlsHeight());
+        return sOverrideBrowserControlsHiddenForTesting
+                || MathUtils.areFloatsEqual(-mFullscreenManager.getTopControlOffset(),
+                        mFullscreenManager.getTopControlsHeight());
     }
 
     @Override
@@ -184,7 +214,11 @@ class ContextualSuggestionsMediator
         reportEvent(ContextualSuggestionsEvent.FETCH_REQUESTED);
         mCurrentRequestUrl = url;
         mSuggestionsSource.fetchSuggestions(url, (suggestionsResult) -> {
-            if (mSuggestionsSource == null) return;
+            if (mTabModelSelector.getCurrentTab() == null
+                    || mTabModelSelector.getCurrentTab().getWebContents() == null
+                    || mSuggestionsSource == null) {
+                return;
+            }
             assert mFetchHelper != null;
 
             // Avoiding double fetches causing suggestions for incorrect context.
@@ -194,21 +228,31 @@ class ContextualSuggestionsMediator
 
             PeekConditions peekConditions = suggestionsResult.getPeekConditions();
             mRemainingPeekCount = peekConditions.getMaximumNumberOfPeeks();
+            mTargetScrollPercentage = peekConditions.getPageScrollPercentage();
             long remainingDelay =
                     mFetchHelper.getFetchTimeBaselineMillis(mTabModelSelector.getCurrentTab())
                     + Math.round(peekConditions.getMinimumSecondsOnPage() * 1000)
                     - SystemClock.uptimeMillis();
-            Runnable runnable = () -> mHasPeekDelayPassed = true;
+
+            assert mCurrentWebContents == null
+                : "The current web contents should be cleared before suggestions are requested.";
+            mCurrentWebContents = mTabModelSelector.getCurrentTab().getWebContents();
+            GestureListenerManager.fromWebContents(mCurrentWebContents)
+                    .addListener(mGestureStateListener);
 
             if (remainingDelay <= 0) {
                 // Don't postDelayed if the minimum delay has passed so that the suggestions may
-                // be shown through the following #showContentInSheet() call.
-                runnable.run();
+                // be shown through the following call to show contents in the bottom sheet.
+                mHasPeekDelayPassed = true;
             } else {
-                // Once delay expires, the bottom sheet can be peeked the next time the browser
-                // controls are fully hidden and reshown. Note that this triggering is handled by
+                // Once delay expires, the bottom sheet can be peeked if the browser controls are
+                // already hidden, or the next time the browser controls are fully hidden and
+                // reshown. Note that this triggering on the latter case is handled by
                 // FullscreenListener#onControlsOffsetChanged() in this class.
-                mHandler.postDelayed(runnable, remainingDelay);
+                mHandler.postDelayed(() -> {
+                    mHasPeekDelayPassed = true;
+                    maybeShowContentInSheet();
+                }, remainingDelay);
             }
 
             if (clusters.size() > 0 && clusters.get(0).getSuggestions().size() > 0) {
@@ -216,7 +260,7 @@ class ContextualSuggestionsMediator
                         generateClusterList(clusters), suggestionsResult.getPeekText());
                 // If the controls are already off-screen, show the suggestions immediately so they
                 // are available on reverse scroll.
-                if (areBrowserControlsHidden()) showContentInSheet();
+                maybeShowContentInSheet();
             }
         });
     }
@@ -274,8 +318,10 @@ class ContextualSuggestionsMediator
         mHasRecordedPeekEventForTab = false;
         mHasSheetBeenOpened = false;
         mHandler.removeCallbacksAndMessages(null);
+        mHasReachedTargetScrollPercentage = false;
         mHasPeekDelayPassed = false;
         mUpdateRemainingCountOnNextPeek = false;
+        mTargetScrollPercentage = INVALID_PERCENTAGE;
         mRemainingPeekCount = 0f;
         mModel.setClusterList(new ClusterList(Collections.emptyList()));
         mModel.setCloseButtonOnClickListener(null);
@@ -289,6 +335,12 @@ class ContextualSuggestionsMediator
         if (mSuggestionsSource != null) mSuggestionsSource.clearState();
 
         if (mHelpBubble != null) mHelpBubble.dismiss();
+
+        if (mCurrentWebContents != null) {
+            GestureListenerManager.fromWebContents(mCurrentWebContents)
+                    .removeListener(mGestureStateListener);
+            mCurrentWebContents = null;
+        }
     }
 
     private void preloadContentInSheet(ClusterList clusters, String title) {
@@ -313,8 +365,15 @@ class ContextualSuggestionsMediator
         mCoordinator.preloadContentInSheet();
     }
 
-    private void showContentInSheet() {
-        if (!mHasPeekDelayPassed || !hasRemainingPeek()) return;
+    private void maybeShowContentInSheet() {
+        // When the controls scroll completely off-screen, the suggestions are "shown" but
+        // remain hidden since their offset from the bottom of the screen is determined by
+        // the top controls.
+        if (mDidSuggestionsShowForTab || !mModel.hasSuggestions() || mSuggestionsSource == null
+                || !areBrowserControlsHidden() || !mHasReachedTargetScrollPercentage
+                || !mHasPeekDelayPassed || !hasRemainingPeek()) {
+            return;
+        }
 
         mDidSuggestionsShowForTab = true;
         mUpdateRemainingCountOnNextPeek = true;
@@ -430,13 +489,24 @@ class ContextualSuggestionsMediator
     }
 
     @VisibleForTesting
-    void showContentInSheetForTesting(boolean disablePeekDelay) {
+    void showContentInSheetForTesting(boolean disableScrollPercentage, boolean disablePeekDelay) {
+        if (disableScrollPercentage) mHasReachedTargetScrollPercentage = true;
         if (disablePeekDelay) mHasPeekDelayPassed = true;
-        showContentInSheet();
+        maybeShowContentInSheet();
     }
 
     @VisibleForTesting
     TextBubble getHelpBubbleForTesting() {
         return mHelpBubble;
+    }
+
+    @VisibleForTesting
+    void setTargetScrollPercentageForTesting(float percentage) {
+        mTargetScrollPercentage = percentage;
+    }
+
+    @VisibleForTesting
+    static void setOverrideBrowserControlsHiddenForTesting(boolean override) {
+        sOverrideBrowserControlsHiddenForTesting = override;
     }
 }

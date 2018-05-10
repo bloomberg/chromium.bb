@@ -79,6 +79,11 @@ public class RenderCoordinatesImpl implements RenderCoordinates {
         return (int) Math.ceil(getLastFrameViewportHeightPix());
     }
 
+    @Override
+    public int getMaxVerticalScrollPixInt() {
+        return (int) Math.floor(getMaxVerticalScrollPix());
+    }
+
     void updateContentSizeCss(float contentWidthCss, float contentHeightCss) {
         mContentWidthCss = contentWidthCss;
         mContentHeightCss = contentHeightCss;
@@ -223,10 +228,5 @@ public class RenderCoordinatesImpl implements RenderCoordinates {
     // Maximum possible horizontal scroll in physical pixels (approx, integer).
     private int getMaxHorizontalScrollPixInt() {
         return (int) Math.floor(getMaxHorizontalScrollPix());
-    }
-
-    // Maximum possible vertical scroll in physical pixels (approx, integer).
-    private int getMaxVerticalScrollPixInt() {
-        return (int) Math.floor(getMaxVerticalScrollPix());
     }
 }
