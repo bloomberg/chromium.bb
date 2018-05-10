@@ -28,6 +28,7 @@ import os
 import re
 import shutil
 import tempfile
+import time
 import subprocess
 import base64
 
@@ -333,29 +334,44 @@ def CopyToArcBucket(android_bucket_url, build_branch, build_id, subpaths,
         arc_path = os.path.join(arc_dir, _GetArcBasename(build, basename))
         acl = acls[build]
         needs_copy = True
+        retry_count = 2
 
-        # Check a pre-existing file with the original source.
-        if gs_context.Exists(arc_path):
-          if (gs_context.Stat(targetfile.url).hash_crc32c !=
-              gs_context.Stat(arc_path).hash_crc32c):
-            logging.warn('Removing incorrect file %s', arc_path)
-            gs_context.Remove(arc_path)
-          else:
-            logging.info('Skipping already copied file %s', arc_path)
-            needs_copy = False
+        # Retry in case race condition when several boards trying to copy the
+        # same resource
+        while True:
+          # Check a pre-existing file with the original source.
+          if gs_context.Exists(arc_path):
+            if (gs_context.Stat(targetfile.url).hash_crc32c !=
+                gs_context.Stat(arc_path).hash_crc32c):
+              logging.warn('Removing incorrect file %s', arc_path)
+              gs_context.Remove(arc_path)
+            else:
+              logging.info('Skipping already copied file %s', arc_path)
+              needs_copy = False
 
-        # Copy if necessary, and set the ACL unconditionally.
-        # The Stat() call above doesn't verify the ACL is correct and
-        # the ChangeACL should be relatively cheap compared to the copy.
-        # This covers the following caes:
-        # - handling an interrupted copy from a previous run.
-        # - rerunning the copy in case one of the googlestorage_acl_X.txt
-        #   files changes (e.g. we add a new variant which reuses a build).
-        if needs_copy:
-          logging.info('Copying %s -> %s (acl %s)',
-                       targetfile.url, arc_path, acl)
-          gs_context.Copy(targetfile.url, arc_path, version=0)
-        gs_context.ChangeACL(arc_path, acl_args_file=acl)
+          # Copy if necessary, and set the ACL unconditionally.
+          # The Stat() call above doesn't verify the ACL is correct and
+          # the ChangeACL should be relatively cheap compared to the copy.
+          # This covers the following caes:
+          # - handling an interrupted copy from a previous run.
+          # - rerunning the copy in case one of the googlestorage_acl_X.txt
+          #   files changes (e.g. we add a new variant which reuses a build).
+          if needs_copy:
+            logging.info('Copying %s -> %s (acl %s)',
+                         targetfile.url, arc_path, acl)
+            try:
+              gs_context.Copy(targetfile.url, arc_path, version=0)
+            except gs.GSContextPreconditionFailed as error:
+              if not retry_count:
+                raise error
+              # Retry one more time after a short delay
+              logging.warning('Will retry copying %s -> %s',
+                              targetfile.url, arc_path)
+              time.sleep(5)
+              retry_count = retry_count - 1
+              continue
+          gs_context.ChangeACL(arc_path, acl_args_file=acl)
+          break
 
 
 def MirrorArtifacts(android_bucket_url, android_build_branch, arc_bucket_url,
