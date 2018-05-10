@@ -12454,6 +12454,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileToolbarStackViewButtonInStackView">
+  <owner>rlanday@chromium.org</owner>
+  <description>
+    User in the Android tab switcher tapped the tab switcher button on the
+    toolbar to leave the tab switcher.
+  </description>
+</action>
+
 <action name="MobileToolbarStackViewNewTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

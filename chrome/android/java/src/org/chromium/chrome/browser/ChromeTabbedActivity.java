@@ -818,6 +818,14 @@ public class ChromeTabbedActivity
                         && getFullscreenManager().getPersistentFullscreenMode()) {
                     return;
                 }
+
+                Layout activeLayout = mLayoutManager.getActiveLayout();
+                if (activeLayout instanceof StackLayout) {
+                    if (!activeLayout.isHiding()) {
+                        RecordUserAction.record("MobileToolbarStackViewButtonInStackView");
+                    }
+                }
+
                 toggleOverview();
             };
             OnClickListener newTabClickHandler = v -> {
