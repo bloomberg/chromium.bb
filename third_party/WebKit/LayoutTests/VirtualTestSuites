@@ -72,6 +72,12 @@
              "--enable-prefer-compositing-to-lcd-text"]
   },
   {
+    "prefix": "threaded",
+    "base": "fast/scrolling",
+    "args": ["--enable-threaded-compositing",
+             "--enable-prefer-compositing-to-lcd-text"]
+  },
+  {
     "prefix": "gpu-rasterization",
     "base": "images",
     "args": ["--force-gpu-rasterization"]
