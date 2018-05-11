@@ -70,11 +70,14 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/stylus_utils.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/account_manager_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/android_apps_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/change_picture_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/crostini_handler.h"
@@ -91,6 +94,8 @@
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/smb_handler.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/account_manager/account_manager.h"
+#include "chromeos/account_manager/account_manager_factory.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_util.h"
 #else  // !defined(OS_CHROMEOS)
@@ -176,6 +181,16 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
       std::make_unique<chromeos::settings::AccessibilityHandler>(web_ui));
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::AndroidAppsHandler>(profile));
+
+  chromeos::AccountManagerFactory* factory =
+      g_browser_process->platform_part()->GetAccountManagerFactory();
+  chromeos::AccountManager* account_manager =
+      factory->GetAccountManager(profile->GetPath().value());
+  DCHECK(account_manager);
+  AddSettingsPageUIHandler(
+      std::make_unique<chromeos::settings::AccountManagerUIHandler>(
+          account_manager,
+          AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile)));
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::ChangePictureHandler>());
   if (IsCrostiniUIAllowedForProfile(profile)) {

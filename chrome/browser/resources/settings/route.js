@@ -270,6 +270,7 @@ cr.define('settings', function() {
       // <if expr="chromeos">
       r.CHANGE_PICTURE = r.PEOPLE.createChild('/changePicture');
       r.ACCOUNTS = r.PEOPLE.createChild('/accounts');
+      r.ACCOUNT_MANAGER = r.PEOPLE.createChild('/accountManager');
       r.LOCK_SCREEN = r.PEOPLE.createChild('/lockScreen');
       r.FINGERPRINT = r.LOCK_SCREEN.createChild('/lockScreen/fingerprint');
       // </if>

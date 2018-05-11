@@ -40,6 +40,9 @@ namespace chromeos {
 class CHROMEOS_EXPORT AccountManager {
  public:
   struct AccountKey {
+    // |id| is obfuscated GAIA id for |AccountType::ACCOUNT_TYPE_GAIA|.
+    // |id| is object GUID (|AccountId::GetObjGuid|) for
+    // |AccountType::ACCOUNT_TYPE_ACTIVE_DIRECTORY|.
     std::string id;
     account_manager::AccountType account_type;
 
