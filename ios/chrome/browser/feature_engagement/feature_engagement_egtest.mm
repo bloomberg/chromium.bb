@@ -14,7 +14,9 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_egtest_util.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_switcher_mode.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -23,7 +25,6 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/wait_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -65,11 +66,21 @@ void OpenAndCloseTabSwitcher() {
                     : chrome_test_util::ShowTabsButton();
   [[EarlGrey selectElementWithMatcher:openTabSwitcherMatcher]
       performAction:grey_tap()];
-  id<GREYMatcher> closeTabSwitcherMatcher =
-      IsIPadIdiom() ? chrome_test_util::TabletTabSwitcherCloseButton()
-                    : chrome_test_util::ShowTabsButton();
-  [[EarlGrey selectElementWithMatcher:closeTabSwitcherMatcher]
-      performAction:grey_tap()];
+
+  switch (GetTabSwitcherMode()) {
+    case TabSwitcherMode::GRID:
+      [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridDoneButton()]
+          performAction:grey_tap()];
+      break;
+    case TabSwitcherMode::TABLET_SWITCHER:
+    case TabSwitcherMode::STACK:
+      id<GREYMatcher> closeTabSwitcherMatcher =
+          IsIPadIdiom() ? chrome_test_util::TabletTabSwitcherCloseButton()
+                        : chrome_test_util::ShowTabsButton();
+      [[EarlGrey selectElementWithMatcher:closeTabSwitcherMatcher]
+          performAction:grey_tap()];
+      break;
+  }
 }
 
 // Create a test FeatureEngagementTracker.
@@ -235,11 +246,6 @@ void EnableNewTabTipTriggering(base::test::ScopedFeatureList& feature_list) {
 
 // Verifies that the New Tab Tip appears when all conditions are met.
 - (void)testNewTabTipPromoShouldShow {
-  if (IsUIRefreshPhase1Enabled()) {
-    // TODO(crbug.com/832661): Re-enable those tests.
-    EARL_GREY_TEST_SKIPPED(@"Not yet implemented.");
-  }
-
   base::test::ScopedFeatureList scoped_feature_list;
 
   EnableNewTabTipTriggering(scoped_feature_list);
@@ -256,7 +262,7 @@ void EnableNewTabTipTriggering(base::test::ScopedFeatureList& feature_list) {
 
   // Navigate to a page other than the NTP to allow for the New Tab Tip to
   // appear.
-  [ChromeEarlGrey loadURL:GURL("chrome://flags")];
+  [ChromeEarlGrey loadURL:GURL("chrome://version")];
 
   // Open and close the tab switcher to trigger the New Tab tip.
   OpenAndCloseTabSwitcher();
@@ -269,11 +275,6 @@ void EnableNewTabTipTriggering(base::test::ScopedFeatureList& feature_list) {
 // Verifies that the New Tab Tip does not appear if all conditions are met,
 // but the NTP is open.
 - (void)testNewTabTipPromoDoesNotAppearOnNTP {
-  if (IsUIRefreshPhase1Enabled()) {
-    // TODO(crbug.com/832661): Re-enable those tests.
-    EARL_GREY_TEST_SKIPPED(@"Not yet implemented.");
-  }
-
   base::test::ScopedFeatureList scoped_feature_list;
 
   EnableNewTabTipTriggering(scoped_feature_list);
