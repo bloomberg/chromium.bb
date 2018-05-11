@@ -562,6 +562,8 @@ class CONTENT_EXPORT RenderThreadImpl
       int32_t parent_routing_id,
       const FrameReplicationState& replicated_state,
       const base::UnguessableToken& devtools_frame_token) override;
+  void SetUpEmbeddedWorkerChannelForServiceWorker(
+      mojom::EmbeddedWorkerInstanceClientRequest client_request) override;
   void OnNetworkConnectionChanged(
       net::NetworkChangeNotifier::ConnectionType type,
       double max_bandwidth_mbps) override;
@@ -649,6 +651,9 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // Used on the render thread.
   std::unique_ptr<VideoCaptureImplManager> vc_manager_;
+
+  // The time Blink was initialized. Used for UMA.
+  base::TimeTicks blink_initialized_time_;
 
   // The count of RenderWidgets running through this thread.
   int widget_count_;

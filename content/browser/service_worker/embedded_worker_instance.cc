@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/service_worker_content_settings_proxy_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/common/content_switches_internal.h"
+#include "content/common/renderer.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -128,7 +129,8 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   // the process. If the process dies, |client_|'s connection error callback
   // will be called on the IO thread.
   if (request.is_pending()) {
-    BindInterface(rph, std::move(request));
+    rph->GetRendererInterface()->SetUpEmbeddedWorkerChannelForServiceWorker(
+        std::move(request));
   }
 
   // S13nServiceWorker:

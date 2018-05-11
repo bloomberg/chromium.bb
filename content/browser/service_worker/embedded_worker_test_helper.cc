@@ -23,12 +23,14 @@
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/background_fetch/background_fetch_types.h"
+#include "content/common/renderer.mojom.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/push_event_payload.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
@@ -134,8 +136,7 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
 // static
 void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::Bind(
     const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
-    mojo::ScopedMessagePipeHandle request_handle) {
-  mojom::EmbeddedWorkerInstanceClientRequest request(std::move(request_handle));
+    mojom::EmbeddedWorkerInstanceClientRequest request) {
   std::vector<std::unique_ptr<MockEmbeddedWorkerInstanceClient>>* clients =
       helper->mock_instance_clients();
   size_t next_client_index = helper->mock_instance_clients_next_index_;
@@ -323,6 +324,65 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
   const int thread_id_;
 };
 
+class EmbeddedWorkerTestHelper::MockRendererInterface : public mojom::Renderer {
+ public:
+  explicit MockRendererInterface(base::WeakPtr<EmbeddedWorkerTestHelper> helper)
+      : helper_(helper) {}
+
+  void AddBinding(mojom::RendererAssociatedRequest request) {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+ private:
+  void CreateEmbedderRendererService(
+      service_manager::mojom::ServiceRequest service_request) override {
+    NOTREACHED();
+  }
+  void CreateView(mojom::CreateViewParamsPtr) override { NOTREACHED(); }
+  void CreateFrame(mojom::CreateFrameParamsPtr) override { NOTREACHED(); }
+  void SetUpEmbeddedWorkerChannelForServiceWorker(
+      mojom::EmbeddedWorkerInstanceClientRequest client_request) override {
+    MockEmbeddedWorkerInstanceClient::Bind(helper_, std::move(client_request));
+  }
+  void CreateFrameProxy(
+      int32_t routing_id,
+      int32_t render_view_routing_id,
+      int32_t opener_routing_id,
+      int32_t parent_routing_id,
+      const FrameReplicationState& replicated_state,
+      const base::UnguessableToken& devtools_frame_token) override {
+    NOTREACHED();
+  }
+  void OnNetworkConnectionChanged(
+      net::NetworkChangeNotifier::ConnectionType type,
+      double max_bandwidth_mbps) override {
+    NOTREACHED();
+  }
+  void OnNetworkQualityChanged(net::EffectiveConnectionType type,
+                               base::TimeDelta http_rtt,
+                               base::TimeDelta transport_rtt,
+                               double bandwidth_kbps) override {
+    NOTREACHED();
+  }
+  void SetWebKitSharedTimersSuspended(bool suspend) override { NOTREACHED(); }
+  void UpdateScrollbarTheme(
+      mojom::UpdateScrollbarThemeParamsPtr params) override {
+    NOTREACHED();
+  }
+  void OnSystemColorsChanged(int32_t aqua_color_variant,
+                             const std::string& highlight_text_color,
+                             const std::string& highlight_color) override {
+    NOTREACHED();
+  }
+  void PurgePluginListCache(bool reload_pages) override { NOTREACHED(); }
+  void SetProcessBackgrounded(bool backgrounded) override { NOTREACHED(); }
+  void SetSchedulerKeepActive(bool keep_active) override { NOTREACHED(); }
+  void ProcessPurgeAndSuspend() override { NOTREACHED(); }
+
+  base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
+  mojo::AssociatedBindingSet<mojom::Renderer> bindings_;
+};
+
 EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
     const base::FilePath& user_data_directory)
     : EmbeddedWorkerTestHelper(user_data_directory, nullptr) {}
@@ -353,14 +413,26 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
   EnsureDispatcherHostForProcess(mock_render_process_id());
   EnsureDispatcherHostForProcess(new_render_process_id());
 
-  render_process_host_->OverrideBinderForTesting(
-      mojom::EmbeddedWorkerInstanceClient::Name_,
-      base::BindRepeating(&MockEmbeddedWorkerInstanceClient::Bind,
-                          AsWeakPtr()));
-  new_render_process_host_->OverrideBinderForTesting(
-      mojom::EmbeddedWorkerInstanceClient::Name_,
-      base::BindRepeating(&MockEmbeddedWorkerInstanceClient::Bind,
-                          AsWeakPtr()));
+  // Install a mocked mojom::Renderer interface to catch requests to
+  // establish Mojo connection for EWInstanceClient.
+  mock_renderer_interface_ =
+      std::make_unique<MockRendererInterface>(AsWeakPtr());
+
+  auto renderer_interface_ptr =
+      std::make_unique<mojom::RendererAssociatedPtr>();
+  mock_renderer_interface_->AddBinding(
+      mojo::MakeRequestAssociatedWithDedicatedPipe(
+          renderer_interface_ptr.get()));
+  render_process_host_->OverrideRendererInterfaceForTesting(
+      std::move(renderer_interface_ptr));
+
+  auto new_renderer_interface_ptr =
+      std::make_unique<mojom::RendererAssociatedPtr>();
+  mock_renderer_interface_->AddBinding(
+      mojo::MakeRequestAssociatedWithDedicatedPipe(
+          new_renderer_interface_ptr.get()));
+  new_render_process_host_->OverrideRendererInterfaceForTesting(
+      std::move(new_renderer_interface_ptr));
 }
 
 EmbeddedWorkerTestHelper::~EmbeddedWorkerTestHelper() {
