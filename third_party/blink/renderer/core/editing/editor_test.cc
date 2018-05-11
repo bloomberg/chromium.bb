@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/editing/editor.h"
 
-#include "third_party/blink/renderer/core/clipboard/pasteboard.h"
+#include "third_party/blink/renderer/core/clipboard/clipboard.h"
 #include "third_party/blink/renderer/core/editing/commands/editor_command.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -53,7 +53,7 @@ TEST_F(EditorTest, DontCopyHiddenSelections) {
   Editor& editor = GetDocument().GetFrame()->GetEditor();
   editor.CreateCommand("Copy").Execute();
 
-  const String copied = Pasteboard::GeneralPasteboard()->PlainText();
+  const String copied = Clipboard::GetInstance().ReadPlainText();
   EXPECT_TRUE(copied.IsEmpty()) << copied << " was copied.";
 }
 

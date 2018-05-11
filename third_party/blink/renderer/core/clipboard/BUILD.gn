@@ -6,6 +6,8 @@ import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("clipboard") {
   sources = [
+    "clipboard.cc",
+    "clipboard.h",
     "data_object.cc",
     "data_object.h",
     "data_object_item.cc",
@@ -19,7 +21,5 @@ blink_core_sources("clipboard") {
     "data_transfer_item_list.h",
     "dragged_isolated_file_system.cc",
     "dragged_isolated_file_system.h",
-    "pasteboard.cc",
-    "pasteboard.h",
   ]
 }

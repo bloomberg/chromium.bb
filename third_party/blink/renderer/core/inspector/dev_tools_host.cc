@@ -32,7 +32,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
-#include "third_party/blink/renderer/core/clipboard/pasteboard.h"
+#include "third_party/blink/renderer/core/clipboard/clipboard.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
@@ -166,8 +166,7 @@ float DevToolsHost::zoomFactor() {
 }
 
 void DevToolsHost::copyText(const String& text) {
-  Pasteboard::GeneralPasteboard()->WritePlainText(
-      text, Pasteboard::kCannotSmartReplace);
+  Clipboard::GetInstance().WritePlainText(text);
 }
 
 static String EscapeUnicodeNonCharacters(const String& str) {
