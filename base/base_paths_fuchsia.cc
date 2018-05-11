@@ -36,11 +36,9 @@ bool PathProviderFuchsia(int key, FilePath* result) {
     case FILE_MODULE:
       NOTIMPLEMENTED();
       return false;
-    case FILE_EXE: {
-      *result = base::MakeAbsoluteFilePath(base::FilePath(
-          base::CommandLine::ForCurrentProcess()->GetProgram().AsUTF8Unsafe()));
+    case FILE_EXE:
+      *result = CommandLine::ForCurrentProcess()->GetProgram();
       return true;
-    }
     case DIR_SOURCE_ROOT:
       *result = GetPackageRoot();
       return true;
