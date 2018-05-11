@@ -9,12 +9,12 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/clipboard/clipboard.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer_access_policy.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer_item.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer_item_list.h"
+#include "third_party/blink/renderer/core/clipboard/pasteboard.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
@@ -77,7 +77,8 @@ ClipboardPromise::ClipboardPromise(ScriptState* script_state)
     : ContextLifecycleObserver(blink::ExecutionContext::From(script_state)),
       script_state_(script_state),
       script_promise_resolver_(ScriptPromiseResolver::Create(script_state)),
-      buffer_(mojom::ClipboardBuffer::kStandard) {}
+      buffer_(mojom::ClipboardBuffer::kStandard),
+      write_data_() {}
 
 scoped_refptr<base::SingleThreadTaskRunner> ClipboardPromise::GetTaskRunner() {
   // TODO(garykac): Replace MiscPlatformAPI with TaskType specific to clipboard.
@@ -152,7 +153,8 @@ void ClipboardPromise::HandleReadWithPermission(PermissionStatus status) {
     return;
   }
 
-  String plain_text = Clipboard::GetInstance().ReadPlainText(buffer_);
+  String plain_text =
+      Pasteboard::GeneralPasteboard()->Clipboard()->ReadPlainText(buffer_);
 
   const DataTransfer::DataTransferType type =
       DataTransfer::DataTransferType::kCopyAndPaste;
@@ -173,7 +175,8 @@ void ClipboardPromise::HandleReadTextWithPermission(PermissionStatus status) {
     return;
   }
 
-  String text = Clipboard::GetInstance().ReadPlainText(buffer_);
+  String text =
+      Pasteboard::GeneralPasteboard()->Clipboard()->ReadPlainText(buffer_);
   script_promise_resolver_->Resolve(text);
 }
 
@@ -200,7 +203,7 @@ void ClipboardPromise::HandleWriteWithPermission(PermissionStatus status) {
     return;
   }
 
-  Clipboard::GetInstance().WritePlainText(write_data_);
+  Pasteboard::GeneralPasteboard()->Clipboard()->WritePlainText(write_data_);
   script_promise_resolver_->Resolve();
 }
 
@@ -217,7 +220,7 @@ void ClipboardPromise::HandleWriteTextWithPermission(PermissionStatus status) {
   }
 
   DCHECK(script_promise_resolver_);
-  Clipboard::GetInstance().WritePlainText(write_data_);
+  Pasteboard::GeneralPasteboard()->Clipboard()->WritePlainText(write_data_);
   script_promise_resolver_->Resolve();
 }
 

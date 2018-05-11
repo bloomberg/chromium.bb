@@ -1,0 +1,134 @@
+/*
+ * Copyright (c) 2008, 2009, Google Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include "third_party/blink/renderer/core/clipboard/pasteboard.h"
+
+#include "base/memory/scoped_refptr.h"
+#include "build/build_config.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_drag_data.h"
+#include "third_party/blink/public/platform/web_image.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/renderer/core/clipboard/data_object.h"
+#include "third_party/blink/renderer/platform/clipboard/clipboard_utilities.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+
+namespace blink {
+
+Pasteboard* Pasteboard::GeneralPasteboard() {
+  static Pasteboard* pasteboard = new Pasteboard;
+  return pasteboard;
+}
+
+Pasteboard::Pasteboard() : buffer_(mojom::ClipboardBuffer::kStandard) {}
+
+bool Pasteboard::IsSelectionMode() const {
+  return buffer_ == mojom::ClipboardBuffer::kSelection;
+}
+
+void Pasteboard::SetSelectionMode(bool selection_mode) {
+  buffer_ = selection_mode ? mojom::ClipboardBuffer::kSelection
+                           : mojom::ClipboardBuffer::kStandard;
+}
+
+void Pasteboard::WritePlainText(const String& text, SmartReplaceOption) {
+// FIXME: add support for smart replace
+#if defined(OS_WIN)
+  String plain_text(text);
+  ReplaceNewlinesWithWindowsStyleNewlines(plain_text);
+  clipboard_.WritePlainText(plain_text);
+#else
+  clipboard_.WritePlainText(text);
+#endif
+}
+
+void Pasteboard::WriteImage(Image* image,
+                            const KURL& url,
+                            const String& title) {
+  DCHECK(image);
+
+  const WebImage web_image(image);
+  if (web_image.IsNull())
+    return;
+
+  clipboard_.WriteImage(web_image, WebURL(url), WebString(title));
+}
+
+void Pasteboard::WriteDataObject(DataObject* data_object) {
+  clipboard_.WriteDataObject(data_object->ToWebDragData());
+}
+
+bool Pasteboard::CanSmartReplace() {
+  return clipboard_.IsFormatAvailable(mojom::ClipboardFormat::kSmartPaste,
+                                      buffer_);
+}
+
+bool Pasteboard::IsHTMLAvailable() {
+  return clipboard_.IsFormatAvailable(mojom::ClipboardFormat::kHtml, buffer_);
+}
+
+String Pasteboard::PlainText() {
+  return clipboard_.ReadPlainText(buffer_);
+}
+
+String Pasteboard::ReadHTML(KURL& url,
+                            unsigned& fragment_start,
+                            unsigned& fragment_end) {
+  WebURL web_url;
+  WebString markup =
+      clipboard_.ReadHTML(buffer_, &web_url, &fragment_start, &fragment_end);
+  if (!markup.IsEmpty()) {
+    url = web_url;
+    // fragmentStart and fragmentEnd are populated by WebClipboard::readHTML.
+  } else {
+    url = KURL();
+    fragment_start = 0;
+    fragment_end = 0;
+  }
+  return markup;
+}
+
+void Pasteboard::WriteHTML(const String& markup,
+                           const KURL& document_url,
+                           const String& plain_text,
+                           SmartReplaceOption smart_replace_option) {
+  String text = plain_text;
+#if defined(OS_WIN)
+  ReplaceNewlinesWithWindowsStyleNewlines(text);
+#endif
+  ReplaceNBSPWithSpace(text);
+
+  bool can_smart_copy_or_delete = smart_replace_option == kCanSmartReplace;
+  clipboard_.WriteHTML(markup, document_url, text, can_smart_copy_or_delete);
+}
+
+}  // namespace blink

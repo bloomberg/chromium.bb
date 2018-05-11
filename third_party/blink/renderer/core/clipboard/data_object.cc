@@ -32,8 +32,8 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
-#include "third_party/blink/renderer/core/clipboard/clipboard.h"
 #include "third_party/blink/renderer/core/clipboard/dragged_isolated_file_system.h"
+#include "third_party/blink/renderer/core/clipboard/pasteboard.h"
 #include "third_party/blink/renderer/platform/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/platform/clipboard/clipboard_utilities.h"
 #include "third_party/blink/renderer/platform/paste_mode.h"
@@ -41,17 +41,23 @@
 
 namespace blink {
 
-DataObject* DataObject::CreateFromClipboard(PasteMode paste_mode) {
+DataObject* DataObject::CreateFromPasteboard(PasteMode paste_mode) {
   DataObject* data_object = Create();
 #if DCHECK_IS_ON()
   HashSet<String> types_seen;
 #endif
-  uint64_t sequence_number = Clipboard::GetInstance().SequenceNumber();
-  for (const String& type : Clipboard::GetInstance().ReadAvailableTypes()) {
+  mojom::ClipboardBuffer buffer = Pasteboard::GeneralPasteboard()->GetBuffer();
+  uint64_t sequence_number =
+      Pasteboard::GeneralPasteboard()->Clipboard()->SequenceNumber(buffer);
+  bool ignored;
+  WebVector<WebString> web_types =
+      Pasteboard::GeneralPasteboard()->Clipboard()->ReadAvailableTypes(
+          buffer, &ignored);
+  for (const WebString& type : web_types) {
     if (paste_mode == PasteMode::kPlainTextOnly && type != kMimeTypeTextPlain)
       continue;
     data_object->item_list_.push_back(
-        DataObjectItem::CreateFromClipboard(type, sequence_number));
+        DataObjectItem::CreateFromPasteboard(type, sequence_number));
 #if DCHECK_IS_ON()
     DCHECK(types_seen.insert(type).is_new_entry);
 #endif

@@ -61,8 +61,8 @@ class CORE_EXPORT DataObjectItem
       const KURL&,
       const String& file_extension,
       const AtomicString& content_disposition);
-  static DataObjectItem* CreateFromClipboard(const String& type,
-                                             uint64_t sequence_number);
+  static DataObjectItem* CreateFromPasteboard(const String& type,
+                                              uint64_t sequence_number);
 
   ItemKind Kind() const { return kind_; }
   String GetType() const { return type_; }
@@ -84,7 +84,7 @@ class CORE_EXPORT DataObjectItem
 
  private:
   enum DataSource {
-    kClipboardSource,
+    kPasteboardSource,
     kInternalSource,
   };
 

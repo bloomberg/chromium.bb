@@ -56,9 +56,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
-#include "third_party/blink/renderer/core/clipboard/clipboard.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
+#include "third_party/blink/renderer/core/clipboard/pasteboard.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/events/drag_event.h"
@@ -396,8 +396,9 @@ void WebPluginContainerImpl::Copy() {
   if (!web_plugin_->HasSelection())
     return;
 
-  Clipboard::GetInstance().WriteHTML(web_plugin_->SelectionAsMarkup(), KURL(),
-                                     web_plugin_->SelectionAsText());
+  Pasteboard::GeneralPasteboard()->Clipboard()->WriteHTML(
+      web_plugin_->SelectionAsMarkup(), WebURL(),
+      web_plugin_->SelectionAsText(), false);
 }
 
 bool WebPluginContainerImpl::ExecuteEditCommand(const WebString& name) {

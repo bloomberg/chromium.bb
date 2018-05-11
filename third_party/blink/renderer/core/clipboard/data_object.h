@@ -63,7 +63,7 @@ class CORE_EXPORT DataObject : public GarbageCollectedFinalized<DataObject>,
     virtual void OnItemListChanged() = 0;
   };
 
-  static DataObject* CreateFromClipboard(PasteMode);
+  static DataObject* CreateFromPasteboard(PasteMode);
   static DataObject* CreateFromString(const String&);
   static DataObject* Create();
   static DataObject* Create(WebDragData);

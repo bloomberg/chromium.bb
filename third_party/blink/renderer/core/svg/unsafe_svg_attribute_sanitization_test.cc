@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/clipboard/clipboard.h"
+#include "third_party/blink/renderer/core/clipboard/pasteboard.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -69,8 +69,9 @@ String ContentAfterPastingHTML(DummyPageHolder* page_holder,
       frame.Selection().ComputeVisibleSelectionInDOMTree().IsContentEditable())
       << "We should be pasting into something editable.";
 
-  Clipboard::GetInstance().WriteHTML(html_to_paste, BlankURL(), "",
-                                     Clipboard::kCannotSmartReplace);
+  Pasteboard* pasteboard = Pasteboard::GeneralPasteboard();
+  pasteboard->WriteHTML(html_to_paste, BlankURL(), "",
+                        Pasteboard::kCannotSmartReplace);
   // Run all tasks in a message loop to allow asynchronous clipboard writing
   // to happen before reading from it synchronously.
   test::RunPendingTasks();

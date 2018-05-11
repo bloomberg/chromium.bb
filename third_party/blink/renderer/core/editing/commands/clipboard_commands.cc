@@ -31,8 +31,8 @@
 
 #include "third_party/blink/renderer/core/editing/commands/clipboard_commands.h"
 
-#include "third_party/blink/renderer/core/clipboard/clipboard.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer_access_policy.h"
+#include "third_party/blink/renderer/core/clipboard/pasteboard.h"
 #include "third_party/blink/renderer/core/editing/commands/editing_commands_utilities.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
@@ -77,9 +77,10 @@ bool ClipboardCommands::CanWriteClipboard(LocalFrame& frame,
   return frame.GetContentSettingsClient()->AllowWriteToClipboard(default_value);
 }
 
-bool ClipboardCommands::CanSmartReplaceInClipboard(LocalFrame& frame) {
+bool ClipboardCommands::CanSmartReplaceWithPasteboard(LocalFrame& frame,
+                                                      Pasteboard* pasteboard) {
   return frame.GetEditor().SmartInsertDeleteEnabled() &&
-         Clipboard::GetInstance().CanSmartReplace();
+         pasteboard->CanSmartReplace();
 }
 
 Element* ClipboardCommands::FindEventTargetForClipboardEvent(
@@ -111,13 +112,14 @@ bool ClipboardCommands::DispatchClipboardEvent(LocalFrame& frame,
       DataTransfer::Create(DataTransfer::kCopyAndPaste, policy,
                            policy == DataTransferAccessPolicy::kWritable
                                ? DataObject::Create()
-                               : DataObject::CreateFromClipboard(paste_mode));
+                               : DataObject::CreateFromPasteboard(paste_mode));
 
   Event* const evt = ClipboardEvent::Create(event_type, data_transfer);
   target->DispatchEvent(evt);
   const bool no_default_processing = evt->defaultPrevented();
   if (no_default_processing && policy == DataTransferAccessPolicy::kWritable) {
-    Clipboard::GetInstance().WriteDataObject(data_transfer->GetDataObject());
+    Pasteboard::GeneralPasteboard()->WriteDataObject(
+        data_transfer->GetDataObject());
   }
 
   // Invalidate clipboard here for security.
@@ -186,20 +188,20 @@ bool ClipboardCommands::EnabledPaste(LocalFrame& frame,
   return frame.GetEditor().CanPaste();
 }
 
-static Clipboard::SmartReplaceOption GetSmartReplaceOption(
+static Pasteboard::SmartReplaceOption GetSmartReplaceOption(
     const LocalFrame& frame) {
   if (frame.GetEditor().SmartInsertDeleteEnabled() &&
       frame.Selection().Granularity() == TextGranularity::kWord)
-    return Clipboard::kCanSmartReplace;
-  return Clipboard::kCannotSmartReplace;
+    return Pasteboard::kCanSmartReplace;
+  return Pasteboard::kCannotSmartReplace;
 }
 
-void ClipboardCommands::WriteSelectionToClipboard(LocalFrame& frame) {
+void ClipboardCommands::WriteSelectionToPasteboard(LocalFrame& frame) {
   const KURL& url = frame.GetDocument()->Url();
   const String html = frame.Selection().SelectedHTMLForClipboard();
   const String plain_text = frame.SelectedTextForClipboard();
-  Clipboard::GetInstance().WriteHTML(html, url, plain_text,
-                                     GetSmartReplaceOption(frame));
+  Pasteboard::GeneralPasteboard()->WriteHTML(html, url, plain_text,
+                                             GetSmartReplaceOption(frame));
 }
 
 bool ClipboardCommands::PasteSupported(LocalFrame* frame) {
@@ -237,17 +239,18 @@ bool ClipboardCommands::ExecuteCopy(LocalFrame& frame,
 
   if (EnclosingTextControl(
           frame.Selection().ComputeVisibleSelectionInDOMTree().Start())) {
-    Clipboard::GetInstance().WritePlainText(frame.SelectedTextForClipboard(),
-                                            GetSmartReplaceOption(frame));
+    Pasteboard::GeneralPasteboard()->WritePlainText(
+        frame.SelectedTextForClipboard(), GetSmartReplaceOption(frame));
     return true;
   }
   const Document* const document = frame.GetDocument();
   if (HTMLImageElement* image_element =
           ImageElementFromImageDocument(document)) {
-    WriteImageNodeToClipboard(*image_element, document->title());
+    WriteImageNodeToPasteboard(Pasteboard::GeneralPasteboard(), *image_element,
+                               document->title());
     return true;
   }
-  WriteSelectionToClipboard(frame);
+  WriteSelectionToPasteboard(frame);
   return true;
 }
 
@@ -262,10 +265,10 @@ bool ClipboardCommands::CanDeleteRange(const EphemeralRange& range) {
 }
 
 static DeleteMode ConvertSmartReplaceOptionToDeleteMode(
-    Clipboard::SmartReplaceOption smart_replace_option) {
-  if (smart_replace_option == Clipboard::kCanSmartReplace)
+    Pasteboard::SmartReplaceOption smart_replace_option) {
+  if (smart_replace_option == Pasteboard::kCanSmartReplace)
     return DeleteMode::kSmart;
-  DCHECK_EQ(smart_replace_option, Clipboard::kCannotSmartReplace);
+  DCHECK_EQ(smart_replace_option, Pasteboard::kCannotSmartReplace);
   return DeleteMode::kSimple;
 }
 
@@ -293,10 +296,10 @@ bool ClipboardCommands::ExecuteCut(LocalFrame& frame,
   if (EnclosingTextControl(
           frame.Selection().ComputeVisibleSelectionInDOMTree().Start())) {
     const String plain_text = frame.SelectedTextForClipboard();
-    Clipboard::GetInstance().WritePlainText(plain_text,
-                                            GetSmartReplaceOption(frame));
+    Pasteboard::GeneralPasteboard()->WritePlainText(
+        plain_text, GetSmartReplaceOption(frame));
   } else {
-    WriteSelectionToClipboard(frame);
+    WriteSelectionToPasteboard(frame);
   }
 
   if (source == EditorCommandSource::kMenuOrKeyBinding) {
@@ -328,26 +331,28 @@ void ClipboardCommands::PasteAsFragment(LocalFrame& frame,
       frame.DomWindow(), pasting_fragment, smart_replace, match_style));
 }
 
-void ClipboardCommands::PasteAsPlainTextFromClipboard(
+void ClipboardCommands::PasteAsPlainTextWithPasteboard(
     LocalFrame& frame,
+    Pasteboard* pasteboard,
     EditorCommandSource source) {
   Element* const target = FindEventTargetForClipboardEvent(frame, source);
   if (!target)
     return;
   target->DispatchEvent(TextEvent::CreateForPlainTextPaste(
-      frame.DomWindow(), Clipboard::GetInstance().ReadPlainText(),
-      CanSmartReplaceInClipboard(frame)));
+      frame.DomWindow(), pasteboard->PlainText(),
+      CanSmartReplaceWithPasteboard(frame, pasteboard)));
 }
 
 ClipboardCommands::FragmentAndPlainText
-ClipboardCommands::GetFragmentFromClipboard(LocalFrame& frame) {
+ClipboardCommands::GetFragmentFromClipboard(LocalFrame& frame,
+                                            Pasteboard* pasteboard) {
   DocumentFragment* fragment = nullptr;
-  if (Clipboard::GetInstance().IsHTMLAvailable()) {
+  if (pasteboard->IsHTMLAvailable()) {
     unsigned fragment_start = 0;
     unsigned fragment_end = 0;
     KURL url;
     const String markup =
-        Clipboard::GetInstance().ReadHTML(url, fragment_start, fragment_end);
+        pasteboard->ReadHTML(url, fragment_start, fragment_end);
     if (!markup.IsEmpty()) {
       DCHECK(frame.GetDocument());
       fragment = CreateFragmentFromMarkupWithContext(
@@ -358,7 +363,7 @@ ClipboardCommands::GetFragmentFromClipboard(LocalFrame& frame) {
   if (fragment)
     return std::make_pair(fragment, false);
 
-  const String text = Clipboard::GetInstance().ReadPlainText();
+  const String text = pasteboard->PlainText();
   if (text.IsEmpty())
     return std::make_pair(fragment, false);
 
@@ -371,16 +376,17 @@ ClipboardCommands::GetFragmentFromClipboard(LocalFrame& frame) {
   return std::make_pair(fragment, true);
 }
 
-void ClipboardCommands::PasteFromClipboard(LocalFrame& frame,
-                                           EditorCommandSource source) {
+void ClipboardCommands::PasteWithPasteboard(LocalFrame& frame,
+                                            Pasteboard* pasteboard,
+                                            EditorCommandSource source) {
   const ClipboardCommands::FragmentAndPlainText fragment_and_plain_text =
-      GetFragmentFromClipboard(frame);
+      GetFragmentFromClipboard(frame, pasteboard);
 
   if (!fragment_and_plain_text.first)
     return;
 
   PasteAsFragment(frame, fragment_and_plain_text.first,
-                  CanSmartReplaceInClipboard(frame),
+                  CanSmartReplaceWithPasteboard(frame, pasteboard),
                   fragment_and_plain_text.second, source);
 }
 
@@ -411,7 +417,7 @@ void ClipboardCommands::Paste(LocalFrame& frame, EditorCommandSource source) {
   if (source == EditorCommandSource::kMenuOrKeyBinding) {
     DataTransfer* data_transfer = DataTransfer::Create(
         DataTransfer::kCopyAndPaste, DataTransferAccessPolicy::kReadable,
-        DataObject::CreateFromClipboard(paste_mode));
+        DataObject::CreateFromPasteboard(paste_mode));
 
     if (DispatchBeforeInputDataTransfer(
             FindEventTargetForClipboardEvent(frame, source),
@@ -424,10 +430,11 @@ void ClipboardCommands::Paste(LocalFrame& frame, EditorCommandSource source) {
   }
 
   if (paste_mode == PasteMode::kAllMimeTypes) {
-    PasteFromClipboard(frame, source);
+    PasteWithPasteboard(frame, Pasteboard::GeneralPasteboard(), source);
     return;
   }
-  PasteAsPlainTextFromClipboard(frame, source);
+  PasteAsPlainTextWithPasteboard(frame, Pasteboard::GeneralPasteboard(),
+                                 source);
 }
 
 bool ClipboardCommands::ExecutePaste(LocalFrame& frame,
@@ -446,10 +453,11 @@ bool ClipboardCommands::ExecutePasteGlobalSelection(LocalFrame& frame,
     return false;
   DCHECK_EQ(source, EditorCommandSource::kMenuOrKeyBinding);
 
-  const bool old_selection_mode = Clipboard::GetInstance().IsSelectionMode();
-  Clipboard::GetInstance().SetSelectionMode(true);
+  const bool old_selection_mode =
+      Pasteboard::GeneralPasteboard()->IsSelectionMode();
+  Pasteboard::GeneralPasteboard()->SetSelectionMode(true);
   Paste(frame, source);
-  Clipboard::GetInstance().SetSelectionMode(old_selection_mode);
+  Pasteboard::GeneralPasteboard()->SetSelectionMode(old_selection_mode);
   return true;
 }
 
@@ -472,7 +480,8 @@ bool ClipboardCommands::ExecutePasteAndMatchStyle(LocalFrame& frame,
       !frame.Selection().SelectionHasFocus())
     return false;
 
-  PasteAsPlainTextFromClipboard(frame, source);
+  PasteAsPlainTextWithPasteboard(frame, Pasteboard::GeneralPasteboard(),
+                                 source);
   return true;
 }
 
