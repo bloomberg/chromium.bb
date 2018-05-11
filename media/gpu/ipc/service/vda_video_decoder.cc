@@ -250,6 +250,8 @@ void VdaVideoDecoder::Initialize(
     return;
   }
 
+  // Encrypted streams are not supported by design. To support encrypted stream,
+  // use a hardware VideoDecoder directly.
   if (config.is_encrypted()) {
     MEDIA_LOG(INFO, media_log_) << "Encrypted streams are not supported";
     EnterErrorState();

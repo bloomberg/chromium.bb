@@ -33,6 +33,7 @@
 #include "media/base/limits.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
+#include "media/base/media_util.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_decoder_config.h"
 #include "media/gpu/android/android_video_surface_chooser_impl.h"
@@ -362,7 +363,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
 
   // For encrypted media, start by initializing the CDM.  Otherwise, start with
   // the surface.
-  if (config_.is_encrypted()) {
+  if (config_.cdm_id != CdmContext::kInvalidCdmId) {
     if (!deferred_initialization_pending_) {
       DLOG(ERROR)
           << "Deferred initialization must be used for encrypted streams";
@@ -659,9 +660,10 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
                                             bitstream_buffer.size(),
                                             presentation_timestamp);
   } else {
+    // VDAs only support "cenc" encryption scheme.
     status = media_codec_->QueueSecureInputBuffer(
         input_buf_index, memory, bitstream_buffer.size(), key_id, iv,
-        subsamples, config_.encryption_scheme, presentation_timestamp);
+        subsamples, AesCtrEncryptionScheme(), presentation_timestamp);
   }
 
   DVLOG(2) << __func__
@@ -1494,14 +1496,23 @@ void AndroidVideoDecodeAccelerator::OnMediaCryptoReady(
     JavaObjectPtr media_crypto,
     bool requires_secure_video_codec) {
   DVLOG(1) << __func__;
-
   DCHECK(media_crypto);
 
   if (media_crypto->is_null()) {
-    LOG(ERROR) << "MediaCrypto is not available, can't play encrypted stream.";
     cdm_for_reference_holding_only_ = nullptr;
     media_crypto_context_ = nullptr;
-    NOTIFY_ERROR(PLATFORM_FAILURE, "MediaCrypto is not available");
+
+    if (config_.is_encrypted()) {
+      LOG(ERROR)
+          << "MediaCrypto is not available, can't play encrypted stream.";
+      NOTIFY_ERROR(PLATFORM_FAILURE, "MediaCrypto is not available");
+      return;
+    }
+
+    // MediaCrypto is not available, but the stream is clear. So we can still
+    // play the current stream. But if we switch to an encrypted stream playback
+    // will fail.
+    StartSurfaceChooser();
     return;
   }
 
@@ -1512,6 +1523,7 @@ void AndroidVideoDecodeAccelerator::OnMediaCryptoReady(
 
   codec_config_->media_crypto = std::move(media_crypto);
   codec_config_->requires_secure_codec = requires_secure_video_codec;
+
   // Request a secure surface in all cases.  For L3, it's okay if we fall back
   // to TextureOwner rather than fail composition.  For L1, it's required.
   // It's also required if the command line says so.
