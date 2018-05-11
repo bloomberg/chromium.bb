@@ -17,12 +17,16 @@ namespace autofill {
 
 namespace {
 
-std::pair<int, int> CalculatePopupXAndWidth(
-    const display::Display& left_display,
-    const display::Display& right_display,
-    int popup_required_width,
-    const gfx::Rect& element_bounds,
-    bool is_rtl) {
+// Sets the |x| and |width| components of |popup_bounds| as the x-coordinate of
+// the starting point and the width of the popup, taking into account the
+// direction it's supposed to grow (either to the left or to the right).
+// Components |y| and |height| of |popup_bounds| are not changed.
+void CalculatePopupXAndWidth(const display::Display& left_display,
+                             const display::Display& right_display,
+                             int popup_required_width,
+                             const gfx::Rect& element_bounds,
+                             bool is_rtl,
+                             gfx::Rect* popup_bounds) {
   int leftmost_display_x = left_display.bounds().x();
   int rightmost_display_x =
       right_display.GetSizeInPixel().width() + right_display.bounds().x();
@@ -41,29 +45,32 @@ std::pair<int, int> CalculatePopupXAndWidth(
   int popup_width =
       std::min(popup_required_width, std::max(right_available, left_available));
 
-  std::pair<int, int> grow_right(right_growth_start, popup_width);
-  std::pair<int, int> grow_left(left_growth_end - popup_width, popup_width);
-
   // Prefer to grow towards the end (right for LTR, left for RTL). But if there
   // is not enough space available in the desired direction and more space in
   // the other direction, reverse it.
+  bool grow_left = false;
   if (is_rtl) {
-    return left_available >= popup_width || left_available >= right_available
-               ? grow_left
-               : grow_right;
+    grow_left =
+        left_available >= popup_width || left_available >= right_available;
+  } else {
+    grow_left =
+        right_available < popup_width && right_available < left_available;
   }
-  return right_available >= popup_width || right_available >= left_available
-             ? grow_right
-             : grow_left;
+
+  popup_bounds->set_width(popup_width);
+  popup_bounds->set_x(grow_left ? left_growth_end - popup_width
+                                : right_growth_start);
 }
 
-// Calculates the height of the popup and the y position of it. These values
-// will stay on the screen.
-std::pair<int, int> CalculatePopupYAndHeight(
-    const display::Display& top_display,
-    const display::Display& bottom_display,
-    int popup_required_height,
-    const gfx::Rect& element_bounds) {
+// Sets the |y| and |height| components of |popup_bounds| as the y-coordinate of
+// the starting point and the height of the popup, taking into account the
+// direction it's supposed to grow (either up or down). Components |x| and
+// |width| of |popup_bounds| are not changed.
+void CalculatePopupYAndHeight(const display::Display& top_display,
+                              const display::Display& bottom_display,
+                              int popup_required_height,
+                              const gfx::Rect& element_bounds,
+                              gfx::Rect* popup_bounds) {
   int topmost_display_y = top_display.bounds().y();
   int bottommost_display_y =
       bottom_display.GetSizeInPixel().height() + bottom_display.bounds().y();
@@ -80,14 +87,14 @@ std::pair<int, int> CalculatePopupYAndHeight(
   int bottom_available = bottommost_display_y - top_growth_end;
 
   // TODO(csharp): Restrict the popup height to what is available.
+  popup_bounds->set_height(popup_required_height);
   if (bottom_available >= popup_required_height ||
       bottom_available >= top_available) {
     // The popup can appear below the field.
-    return std::make_pair(bottom_growth_start, popup_required_height);
+    popup_bounds->set_y(bottom_growth_start);
   } else {
     // The popup must appear above the field.
-    return std::make_pair(top_growth_end - popup_required_height,
-                          popup_required_height);
+    popup_bounds->set_y(top_growth_end - popup_required_height);
   }
 }
 
@@ -117,14 +124,13 @@ gfx::Rect PopupViewCommon::CalculatePopupBounds(int desired_width,
   display::Display bottom_right_display =
       GetDisplayNearestPoint(bottom_right_corner_of_popup, container_view);
 
-  std::pair<int, int> popup_x_and_width =
-      CalculatePopupXAndWidth(top_left_display, bottom_right_display,
-                              desired_width, element_bounds, is_rtl);
-  std::pair<int, int> popup_y_and_height = CalculatePopupYAndHeight(
-      top_left_display, bottom_right_display, desired_height, element_bounds);
+  gfx::Rect popup_bounds;
+  CalculatePopupXAndWidth(top_left_display, bottom_right_display, desired_width,
+                          element_bounds, is_rtl, &popup_bounds);
+  CalculatePopupYAndHeight(top_left_display, bottom_right_display,
+                           desired_height, element_bounds, &popup_bounds);
 
-  return gfx::Rect(popup_x_and_width.first, popup_y_and_height.first,
-                   popup_x_and_width.second, popup_y_and_height.second);
+  return popup_bounds;
 }
 
 display::Display PopupViewCommon::GetDisplayNearestPoint(
