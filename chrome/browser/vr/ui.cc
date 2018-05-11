@@ -114,6 +114,7 @@ void Ui::SetToolbarState(const ToolbarState& state) {
 
 void Ui::SetIncognito(bool enabled) {
   model_->incognito = enabled;
+  model_->incognito_tabs_view_selected = enabled;
 }
 
 void Ui::SetLoading(bool loading) {

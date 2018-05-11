@@ -58,6 +58,7 @@ struct Model {
   bool standalone_vr_device = false;
   std::vector<TabModel> regular_tabs;
   std::vector<TabModel> incognito_tabs;
+  bool incognito_tabs_view_selected = false;
   bool create_tabs_view = false;
 
   // WebVR state.

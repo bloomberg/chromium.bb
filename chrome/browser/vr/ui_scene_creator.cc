@@ -887,8 +887,8 @@ std::unique_ptr<UiElement> CreateTabsView(Model* model,
   auto tabs_scroll_view = Create<PagedScrollView>(
       kNone, kPhaseNone,
       kTabsViewColumnCount * kTabItemWidthDMM +
-          (kTabsViewColumnCount - 1) * kTabsViewMarginDMM);
-  tabs_scroll_view->set_margin(kTabsViewMarginDMM);
+          (kTabsViewColumnCount - 1) * kTabsViewGridMarginDMM);
+  tabs_scroll_view->set_margin(kTabsViewGridMarginDMM);
   tabs_scroll_view->set_scrollable(true);
   tabs_scroll_view->set_bounds_contain_children(true);
   tabs_scroll_view->SetTransitionedProperties({SCROLL_OFFSET});
@@ -896,7 +896,7 @@ std::unique_ptr<UiElement> CreateTabsView(Model* model,
   auto tabs_layout = Create<PagedGridLayout>(
       kNone, kPhaseNone, kTabsViewRowCount, kTabsViewColumnCount,
       gfx::SizeF(kTabItemWidthDMM, kTabItemHeightDMM));
-  tabs_layout->set_margin(kTabsViewMarginDMM);
+  tabs_layout->set_margin(kTabsViewGridMarginDMM);
   tabs_layout->set_hit_testable(true);
   tabs_layout->set_bounds_contain_children(false);
   tabs_layout->AddBinding(VR_BIND(
@@ -915,6 +915,49 @@ std::unique_ptr<UiElement> CreateTabsView(Model* model,
   tabs_scroll_view->AddScrollingChild(std::move(tabs_layout));
 
   return tabs_scroll_view;
+}
+
+std::unique_ptr<UiElement> CreateTabModeButton(Model* model,
+                                               AudioDelegate* audio_delegate,
+                                               bool select_incognito) {
+  auto button = Create<TextButton>(
+      kNone, kPhaseForeground, kTabsViewModeButtonTextSizeDMM, audio_delegate);
+  button->set_click_handler(base::BindRepeating(
+      [](Model* model, bool select_incognito) {
+        model->incognito_tabs_view_selected = select_incognito;
+      },
+      base::Unretained(model), select_incognito));
+  button->background()->SetSize(kTabsViewModeButtonWidthDMM,
+                                kTabsViewModeButtonHeightDMM);
+  button->background()->set_padding(0.0f, 0.0f);
+  button->background()->set_bounds_contain_children(false);
+  float radius = 0.5f * kTabsViewModeButtonHeightDMM;
+  button->SetCornerRadii(select_incognito
+                             ? CornerRadii({0, radius, 0, radius})
+                             : CornerRadii({radius, 0, radius, 0}));
+  button->set_hover_offset(0);
+  // TODO(https://crbug.com/787654): Uppercasing should be conditional.
+  button->SetText(base::i18n::ToUpper(l10n_util::GetStringUTF16(
+      select_incognito ? IDS_VR_TABS_BUTTON_INCOGNITO
+                       : IDS_VR_TABS_BUTTON_REGULAR)));
+  button->AddBinding(std::make_unique<Binding<std::pair<bool, bool>>>(
+      VR_BIND_LAMBDA(
+          [](Model* model, bool select_incognito) {
+            return std::make_pair(
+                model->incognito,
+                select_incognito == model->incognito_tabs_view_selected);
+          },
+          base::Unretained(model), select_incognito),
+      VR_BIND_LAMBDA(
+          [](Button* view, Model* model, const std::pair<bool, bool>& value) {
+            // Change color if selected.
+            view->SetButtonColors(
+                value.second ? model->color_scheme().tab_mode_button_selected
+                             : model->color_scheme().disc_button_colors);
+          },
+          base::Unretained(button.get()), base::Unretained(model))));
+
+  return button;
 }
 
 }  // namespace
@@ -3093,20 +3136,30 @@ void UiSceneCreator::CreateTabsViews() {
       Create<LinearLayout>(kNone, kPhaseNone, LinearLayout::kDown);
   tabs_view_root->SetTranslate(0, kTabsViewVerticalOffsetDMM, 0);
   tabs_view_root->set_bounds_contain_children(true);
-  tabs_view_root->set_margin(kTabsViewMarginDMM);
+  tabs_view_root->set_margin(kTabsViewRootMarginDMM);
   tabs_view_root->SetVisible(false);
   VR_BIND_VISIBILITY(tabs_view_root,
                      model->get_last_opaque_mode() == kModeTabsView);
 
   auto regular_tabs_view =
       CreateTabsView(model_, scene_, audio_delegate_, browser_, false);
-  VR_BIND_VISIBILITY(regular_tabs_view, !model->incognito);
+  VR_BIND_VISIBILITY(regular_tabs_view, !model->incognito_tabs_view_selected);
   tabs_view_root->AddChild(std::move(regular_tabs_view));
 
   auto incognito_tabs_view =
       CreateTabsView(model_, scene_, audio_delegate_, browser_, true);
-  VR_BIND_VISIBILITY(incognito_tabs_view, model->incognito);
+  VR_BIND_VISIBILITY(incognito_tabs_view, model->incognito_tabs_view_selected);
   tabs_view_root->AddChild(std::move(incognito_tabs_view));
+
+  auto mode_switcher_layout =
+      Create<LinearLayout>(kNone, kPhaseNone, LinearLayout::kRight);
+  mode_switcher_layout->set_bounds_contain_children(true);
+  mode_switcher_layout->AddChild(
+      CreateTabModeButton(model_, audio_delegate_, false));
+  mode_switcher_layout->AddChild(
+      CreateTabModeButton(model_, audio_delegate_, true));
+
+  tabs_view_root->AddChild(std::move(mode_switcher_layout));
 
   auto button_scaler = Create<ScaledDepthAdjuster>(
       kNone, kPhaseNone, kTabsViewCloseButtonDepthOffset);

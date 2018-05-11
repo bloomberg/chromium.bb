@@ -118,6 +118,13 @@ void InitializeColorSchemes() {
 
   normal_scheme.tab_item_background = normal_scheme.omnibox_background;
   normal_scheme.tab_item_text = normal_scheme.url_bar_text;
+  normal_scheme.tab_mode_button_selected = normal_scheme.disc_button_colors;
+  normal_scheme.tab_mode_button_selected.foreground = MakeWhite(100);
+  normal_scheme.tab_mode_button_selected.background = MakeColor(0x4286F4, 100);
+  normal_scheme.tab_mode_button_selected.background_hover =
+      MakeColor(0x4B89ED, 100);
+  normal_scheme.tab_mode_button_selected.background_down =
+      MakeColor(0x5F7DAD, 100);
 
   normal_scheme.dimmer_inner = 0xCC0D0D0D;
   normal_scheme.dimmer_outer = 0xE6000000;
@@ -301,7 +308,6 @@ void ColorScheme::UpdateForComponent(const base::Version& component_version) {
     normal_scheme.url_bar_background = MakeColor(0xEEEEEE, 87);
     normal_scheme.omnibox_background = MakeColor(0xEEEEEE, 100);
     normal_scheme.tab_item_background = normal_scheme.omnibox_background;
-    normal_scheme.tab_item_text = normal_scheme.url_bar_text;
 
     ColorScheme& incognito_scheme = g_incognito_scheme.Get();
     incognito_scheme.disc_button_colors.background = MakeColor(0x263238, 100);
@@ -310,7 +316,6 @@ void ColorScheme::UpdateForComponent(const base::Version& component_version) {
     incognito_scheme.url_bar_background = MakeColor(0x263238, 87);
     incognito_scheme.omnibox_background = MakeColor(0x263238, 100);
     incognito_scheme.tab_item_background = incognito_scheme.omnibox_background;
-    incognito_scheme.tab_item_text = incognito_scheme.url_bar_text;
   }
 }
 

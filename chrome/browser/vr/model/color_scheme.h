@@ -93,6 +93,7 @@ struct ColorScheme {
 
   SkColor tab_item_background;
   SkColor tab_item_text;
+  ButtonColors tab_mode_button_selected;
 
   ButtonColors indicator;
 
