@@ -6,10 +6,12 @@
 // Except for WebUI UI/Host/SubPage constants. Those go in
 // chrome/common/webui_url_constants.h.
 //
+// - The constants are divided into sections: Cross platform, platform-specific,
+//   and feature-specific.
+// - When adding platform/feature specific constants, if there already exists an
+//   appropriate #if block, use that.
+// - Keep the constants sorted by name within its section.
 // - Use the same order in this header and url_constants.cc.
-// - Keep the constants sorted by name.
-// - Put platform/feature specific constants towards the end in the appropriate
-//   section.
 
 #ifndef CHROME_COMMON_URL_CONSTANTS_H_
 #define CHROME_COMMON_URL_CONSTANTS_H_
@@ -227,6 +229,9 @@ extern const char kOnlineEulaURLPath[];
 
 // The URL for the "learn more" link for TPM firmware update.
 extern const char kTPMFirmwareUpdateLearnMoreURL[];
+
+// The URL for the "Learn more" page for the time zone settings page.
+extern const char kTimeZoneSettingsLearnMoreURL[];
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
@@ -258,10 +263,7 @@ extern const char kBlockedPluginLearnMoreURL[];
 extern const char kOutdatedPluginLearnMoreURL[];
 #endif
 
-#if defined(OS_CHROMEOS)
-// The URL for the "Learn more" page for the time zone settings page.
-extern const char kTimeZoneSettingsLearnMoreURL[];
-#endif
+// Please do not append entries here. See the comments at the top of the file.
 
 }  // namespace chrome
 

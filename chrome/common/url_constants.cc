@@ -276,6 +276,9 @@ const char kOnlineEulaURLPath[] =
 
 const char kTPMFirmwareUpdateLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=tpm_update";
+
+const char kTimeZoneSettingsLearnMoreURL[] =
+    "https://support.google.com/chromebook/answer/177871?hl=%s";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
@@ -305,11 +308,6 @@ const char kBlockedPluginLearnMoreURL[] =
 
 const char kOutdatedPluginLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ib_outdated_plugin";
-#endif
-
-#if defined(OS_CHROMEOS)
-const char kTimeZoneSettingsLearnMoreURL[] =
-    "https://support.google.com/chromebook/answer/177871?hl=%s";
 #endif
 
 }  // namespace chrome
