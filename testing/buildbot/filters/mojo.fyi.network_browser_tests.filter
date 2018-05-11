@@ -22,8 +22,6 @@
 -PKPModelClientTest.PKPBypass/1
 -PKPModelClientTest.PKPEnforced/0
 -PKPModelClientTest.PKPEnforced/1
--PlatformAppBrowserTest.AppWindowAdjustBoundsToBeVisibleOnScreen
--PlatformAppBrowserTest.CreateAndCloseAppWindow
 -PolicyTest.DefaultCookiesSetting
 -PrefetchBrowserTestPredictionDisabled.ExperimentDisabled
 -PreviewsOptimizationGuideBrowserTest.NoScriptPreviewsEnabledByWhitelist
@@ -87,7 +85,6 @@
 # crbug.com/776589 Intercepting requests with net::URLRequestFilter.
 -ContinueWhereILeftOffTest.CookiesClearedOnExit
 -DownloadExtensionTest.DownloadExtensionTest_Download_FileSystemURL
--MimeHandlerViewTests/MimeHandlerViewTest.SingleRequest/0
 -PolicyTest.CertificateTransparencyEnforcementDisabledForUrls/0
 -PolicyTest.CertificateTransparencyEnforcementDisabledForUrls/1
 -PolicyTest.ExtensionInstallSources
