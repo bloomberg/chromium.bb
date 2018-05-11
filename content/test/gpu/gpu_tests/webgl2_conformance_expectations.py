@@ -602,8 +602,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/uniforms/draw-with-uniform-blocks.html',
         ['mac', ('nvidia', 0xfe9)], bug=795052)
 
-    # When this fails on this configuration, it fails multiple times in a row.
+    # When these fail on this configuration, they fail multiple times in a row.
+    self.Fail('deqp/functional/gles3/shaderoperator/binary_operator_01.html',
+        ['mac', 'nvidia'], bug=756537)
     self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
+        ['mac', 'nvidia'], bug=756537)
+    self.Fail('deqp/functional/gles3/shaderoperator/unary_operator_01.html',
         ['mac', 'nvidia'], bug=756537)
 
     # Mac AMD
