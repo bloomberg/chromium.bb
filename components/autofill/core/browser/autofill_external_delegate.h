@@ -54,7 +54,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   void ClearPreviewedForm() override;
   // Returns false for all popups prior to |onQuery|, true for credit card
   // popups after call to |onQuery|.
-  bool IsCreditCardPopup() override;
+  bool IsCreditCardPopup() const override;
   AutofillDriver* GetAutofillDriver() override;
   void RegisterDeletionCallback(base::OnceClosure deletion_callback) override;
 

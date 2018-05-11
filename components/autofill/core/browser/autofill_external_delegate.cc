@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -274,7 +275,7 @@ void AutofillExternalDelegate::ClearPreviewedForm() {
   driver_->RendererShouldClearPreviewedForm();
 }
 
-bool AutofillExternalDelegate::IsCreditCardPopup() {
+bool AutofillExternalDelegate::IsCreditCardPopup() const {
   return is_credit_card_popup_;
 }
 
@@ -407,6 +408,12 @@ void AutofillExternalDelegate::InsertDataListValues(
 
 base::string16 AutofillExternalDelegate::GetSettingsSuggestionValue()
     const {
+  if (base::FeatureList::IsEnabled(autofill::kAutofillExpandedPopupViews)) {
+    return l10n_util::GetStringUTF16(IsCreditCardPopup()
+                                         ? IDS_AUTOFILL_MANAGE_PAYMENT_METHODS
+                                         : IDS_AUTOFILL_MANAGE_ADDRESSES);
+  }
+
   return l10n_util::GetStringUTF16(
       IsKeyboardAccessoryEnabled() ? IDS_AUTOFILL_OPTIONS_CONTENT_DESCRIPTION
                                    : IDS_AUTOFILL_SETTINGS_POPUP);

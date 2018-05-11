@@ -48,7 +48,7 @@ class AutofillPopupDelegate {
   virtual void ClearPreviewedForm() = 0;
 
   // Returns true if popup is for credit card.
-  virtual bool IsCreditCardPopup() = 0;
+  virtual bool IsCreditCardPopup() const = 0;
 
   // Returns the associated AutofillDriver.
   virtual AutofillDriver* GetAutofillDriver() = 0;
