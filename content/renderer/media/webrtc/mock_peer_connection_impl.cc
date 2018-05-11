@@ -483,7 +483,7 @@ void MockPeerConnectionImpl::RegisterUMAObserver(
 }
 
 webrtc::RTCError MockPeerConnectionImpl::SetBitrate(
-    const BitrateParameters& bitrate) {
+    const webrtc::BitrateSettings& bitrate) {
   NOTIMPLEMENTED();
   return webrtc::RTCError::OK();
 }
