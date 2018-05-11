@@ -248,4 +248,49 @@ TEST_F(CanvasResourceTest, MakeAcceleratedFromRasterResource) {
   EXPECT_TRUE(new_resource->IsAccelerated());
 }
 
+TEST_F(CanvasResourceTest, MakeUnacceleratedFromUnacceleratedResourceIsNoOp) {
+  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
+
+  SkImageInfo image_info =
+      SkImageInfo::MakeN32(10, 10, kPremul_SkAlphaType, nullptr);
+  sk_sp<SkSurface> surface = SkSurface::MakeRaster(image_info);
+
+  scoped_refptr<CanvasResource> resource = CanvasResourceBitmap::Create(
+      StaticBitmapImage::Create(surface->makeImageSnapshot(),
+                                context_provider_wrapper_),
+      nullptr, kLow_SkFilterQuality);
+
+  EXPECT_FALSE(resource->IsAccelerated());
+  scoped_refptr<CanvasResource> new_resource = resource->MakeUnaccelerated();
+
+  EXPECT_EQ(new_resource.get(), resource.get());
+  EXPECT_FALSE(new_resource->IsAccelerated());
+}
+
+TEST_F(CanvasResourceTest, MakeUnacceleratedFromAcceleratedResource) {
+  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
+
+  SkImageInfo image_info =
+      SkImageInfo::MakeN32(10, 10, kPremul_SkAlphaType, nullptr);
+  sk_sp<SkSurface> surface =
+      SkSurface::MakeRenderTarget(GetGrContext(), SkBudgeted::kYes, image_info);
+
+  EXPECT_TRUE(!!context_provider_wrapper_);
+  scoped_refptr<CanvasResource> resource = CanvasResourceBitmap::Create(
+      StaticBitmapImage::Create(surface->makeImageSnapshot(),
+                                context_provider_wrapper_),
+      nullptr, kLow_SkFilterQuality);
+
+  testing::Mock::VerifyAndClearExpectations(&gl_);
+
+  EXPECT_TRUE(resource->IsAccelerated());
+  scoped_refptr<CanvasResource> new_resource = resource->MakeUnaccelerated();
+
+  testing::Mock::VerifyAndClearExpectations(&gl_);
+
+  EXPECT_NE(new_resource.get(), resource.get());
+  EXPECT_TRUE(resource->IsAccelerated());
+  EXPECT_FALSE(new_resource->IsAccelerated());
+}
+
 }  // namespace blink
