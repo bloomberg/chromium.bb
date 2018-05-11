@@ -50,6 +50,7 @@ class PLATFORM_EXPORT CanvasResource : public WTF::RefCounted<CanvasResource> {
   void SetSyncTokenForRelease(const gpu::SyncToken&);
   virtual scoped_refptr<CanvasResource> MakeAccelerated(
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>) = 0;
+  virtual scoped_refptr<CanvasResource> MakeUnaccelerated() = 0;
   virtual bool IsBitmap();
   virtual scoped_refptr<StaticBitmapImage> Bitmap();
   void WaitSyncTokenBeforeRelease();
@@ -101,6 +102,7 @@ class PLATFORM_EXPORT CanvasResourceBitmap final : public CanvasResource {
   scoped_refptr<StaticBitmapImage> Bitmap() final;
   scoped_refptr<CanvasResource> MakeAccelerated(
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final;
+  scoped_refptr<CanvasResource> MakeUnaccelerated() final;
 
  private:
   void TearDown();
@@ -138,6 +140,10 @@ class PLATFORM_EXPORT CanvasResourceGpuMemoryBuffer final
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final {
     return base::WrapRefCounted(this);
   };
+  scoped_refptr<CanvasResource> MakeUnaccelerated() final {
+    NOTREACHED();
+    return nullptr;
+  }
   void Abandon() final { TearDown(); }
   IntSize Size() const final;
 

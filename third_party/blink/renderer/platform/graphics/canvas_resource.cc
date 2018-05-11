@@ -142,8 +142,10 @@ bool CanvasResourceBitmap::IsAccelerated() const {
 scoped_refptr<CanvasResource> CanvasResourceBitmap::MakeAccelerated(
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>
         context_provider_wrapper) {
-  if (IsAccelerated() || !context_provider_wrapper)
+  if (IsAccelerated())
     return base::WrapRefCounted(this);
+  if (!context_provider_wrapper)
+    return nullptr;
   scoped_refptr<StaticBitmapImage> accelerated_image =
       image_->MakeAccelerated(context_provider_wrapper);
   // passing nullptr for the resource provider argument creates an orphan
@@ -152,8 +154,21 @@ scoped_refptr<CanvasResource> CanvasResourceBitmap::MakeAccelerated(
   scoped_refptr<CanvasResource> accelerated_resource =
       Create(accelerated_image, nullptr, filterQuality());
   if (!accelerated_resource)
-    return base::WrapRefCounted(this);
+    return nullptr;
   return accelerated_resource;
+}
+
+scoped_refptr<CanvasResource> CanvasResourceBitmap::MakeUnaccelerated() {
+  if (!IsAccelerated())
+    return base::WrapRefCounted(this);
+  scoped_refptr<StaticBitmapImage> unaccelerated_image =
+      image_->MakeUnaccelerated();
+  // passing nullptr for the resource provider argument creates an orphan
+  // CanvasResource, which implies that it internal resources will not be
+  // recycled.
+  scoped_refptr<CanvasResource> unaccelerated_resource =
+      Create(unaccelerated_image, nullptr, filterQuality());
+  return unaccelerated_resource;
 }
 
 void CanvasResourceBitmap::TearDown() {
