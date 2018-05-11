@@ -492,7 +492,7 @@ void GraphicsLayer::UpdateContentsRect() {
 
   if (contents_clipping_mask_layer_) {
     if (contents_clipping_mask_layer_->Size() != contents_rect_.Size()) {
-      contents_clipping_mask_layer_->SetSize(FloatSize(contents_rect_.Size()));
+      contents_clipping_mask_layer_->SetSize(contents_rect_.Size());
       contents_clipping_mask_layer_->SetNeedsDisplay();
     }
     contents_clipping_mask_layer_->SetPosition(FloatPoint());
@@ -1019,14 +1019,13 @@ void GraphicsLayer::SetPosition(const FloatPoint& point) {
   PlatformLayer()->SetPosition(position_);
 }
 
-void GraphicsLayer::SetSize(const FloatSize& size) {
+void GraphicsLayer::SetSize(const IntSize& size) {
   // We are receiving negative sizes here that cause assertions to fail in the
   // compositor. Clamp them to 0 to avoid those assertions.
   // FIXME: This should be an DCHECK instead, as negative sizes should not exist
   // in WebCore.
-  FloatSize clamped_size = size;
-  if (clamped_size.Width() < 0 || clamped_size.Height() < 0)
-    clamped_size = FloatSize();
+  auto clamped_size = size;
+  clamped_size.ClampNegativeToZero();
 
   if (clamped_size == size_)
     return;
@@ -1036,7 +1035,7 @@ void GraphicsLayer::SetSize(const FloatSize& size) {
   // Invalidate the layer as a DisplayItemClient.
   SetDisplayItemsUncached();
 
-  layer_->SetBounds(static_cast<gfx::Size>(FlooredIntSize(size_)));
+  layer_->SetBounds(static_cast<gfx::Size>(size_));
   // Note that we don't resize m_contentsLayer. It's up the caller to do that.
 }
 
@@ -1209,7 +1208,7 @@ void GraphicsLayer::SetNeedsDisplay() {
     link_highlights_[i]->Invalidate();
   GetPaintController().InvalidateAll();
 
-  TrackRasterInvalidation(*this, IntRect(IntPoint(), ExpandedIntSize(size_)),
+  TrackRasterInvalidation(*this, IntRect(IntPoint(), size_),
                           PaintInvalidationReason::kFull);
 }
 

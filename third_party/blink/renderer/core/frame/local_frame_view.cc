@@ -5039,7 +5039,7 @@ static void PositionScrollbarLayer(GraphicsLayer* graphics_layer,
   if (scrollbar_rect.Size() == graphics_layer->Size())
     return;
 
-  graphics_layer->SetSize(FloatSize(scrollbar_rect.Size()));
+  graphics_layer->SetSize(scrollbar_rect.Size());
 
   if (graphics_layer->HasContentsLayer()) {
     graphics_layer->SetContentsRect(
@@ -5060,7 +5060,7 @@ static void PositionScrollCornerLayer(GraphicsLayer* graphics_layer,
   graphics_layer->SetOffsetFromLayoutObject(ToIntSize(corner_rect.Location()));
   if (corner_rect.Size() != graphics_layer->Size())
     graphics_layer->SetNeedsDisplay();
-  graphics_layer->SetSize(FloatSize(corner_rect.Size()));
+  graphics_layer->SetSize(corner_rect.Size());
 }
 
 void LocalFrameView::PositionScrollbarLayers() {

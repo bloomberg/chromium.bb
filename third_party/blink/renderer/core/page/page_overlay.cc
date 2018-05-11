@@ -94,7 +94,7 @@ void PageOverlay::Update() {
     }
   }
 
-  FloatSize size(frame->GetPage()->GetVisualViewport().Size());
+  IntSize size = frame->GetPage()->GetVisualViewport().Size();
   if (size != layer_->Size())
     layer_->SetSize(size);
 

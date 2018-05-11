@@ -722,9 +722,9 @@ void PaintLayerCompositor::UpdateContainerSizes() {
     return;
 
   LocalFrameView* frame_view = layout_view_.GetFrameView();
-  container_layer_->SetSize(FloatSize(frame_view->VisibleContentSize()));
+  container_layer_->SetSize(frame_view->VisibleContentSize());
   overflow_controls_host_layer_->SetSize(
-      FloatSize(frame_view->VisibleContentSize(kIncludeScrollbars)));
+      frame_view->VisibleContentSize(kIncludeScrollbars));
 }
 
 void PaintLayerCompositor::FrameViewDidChangeSize() {
@@ -942,7 +942,7 @@ void PaintLayerCompositor::UpdateRootLayerPosition() {
         IntRect(document_rect.Location(),
                 layout_view_.GetFrameView()->VisibleContentSize()));
 
-    root_content_layer_->SetSize(FloatSize(document_rect.Size()));
+    root_content_layer_->SetSize(document_rect.Size());
     root_content_layer_->SetPosition(document_rect.Location());
   }
   if (container_layer_)
@@ -1000,7 +1000,7 @@ bool PaintLayerCompositor::NeedsContentsCompositingLayer(
 IntRect PaintLayerCompositor::ComputeInterestRect(
     const GraphicsLayer* graphics_layer,
     const IntRect&) const {
-  return EnclosingIntRect(FloatRect(FloatPoint(), graphics_layer->Size()));
+  return IntRect(IntPoint(), graphics_layer->Size());
 }
 
 void PaintLayerCompositor::PaintContents(const GraphicsLayer* graphics_layer,
@@ -1212,7 +1212,7 @@ void PaintLayerCompositor::EnsureRootLayer() {
     root_content_layer_ = GraphicsLayer::Create(*this);
     IntRect overflow_rect = layout_view_.PixelSnappedLayoutOverflowRect();
     root_content_layer_->SetSize(
-        FloatSize(overflow_rect.MaxX(), overflow_rect.MaxY()));
+        IntSize(overflow_rect.MaxX(), overflow_rect.MaxY()));
     root_content_layer_->SetPosition(FloatPoint());
     root_content_layer_->SetOwnerNodeId(
         DOMNodeIds::IdForNode(layout_view_.GetNode()));

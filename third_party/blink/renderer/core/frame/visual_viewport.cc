@@ -115,7 +115,7 @@ void VisualViewport::SetSize(const IntSize& size) {
   size_ = size;
 
   if (inner_viewport_container_layer_) {
-    inner_viewport_container_layer_->SetSize(FloatSize(size_));
+    inner_viewport_container_layer_->SetSize(size_);
     inner_viewport_scroll_layer_->PlatformLayer()->SetScrollable(
         static_cast<gfx::Size>(size_));
 
@@ -150,7 +150,7 @@ void VisualViewport::MainFrameDidChangeSize() {
 
   // In unit tests we may not have initialized the layer tree.
   if (inner_viewport_scroll_layer_)
-    inner_viewport_scroll_layer_->SetSize(FloatSize(ContentsSize()));
+    inner_viewport_scroll_layer_->SetSize(ContentsSize());
 
   ClampToBoundaries();
 }
@@ -374,7 +374,7 @@ void VisualViewport::CreateLayerTree() {
   // set inner viewport container layer size.
   inner_viewport_container_layer_->SetMasksToBounds(
       GetPage().GetSettings().GetMainFrameClipsContent());
-  inner_viewport_container_layer_->SetSize(FloatSize(size_));
+  inner_viewport_container_layer_->SetSize(size_);
 
   inner_viewport_scroll_layer_->PlatformLayer()->SetScrollable(
       static_cast<gfx::Size>(size_));
@@ -498,7 +498,7 @@ void VisualViewport::SetupScrollbar(WebScrollbar::Orientation orientation) {
 
   // Use the GraphicsLayer to position the scrollbars.
   scrollbar_graphics_layer->SetPosition(IntPoint(x_position, y_position));
-  scrollbar_graphics_layer->SetSize(FloatSize(width, height));
+  scrollbar_graphics_layer->SetSize(IntSize(width, height));
   scrollbar_graphics_layer->SetContentsRect(IntRect(0, 0, width, height));
 }
 

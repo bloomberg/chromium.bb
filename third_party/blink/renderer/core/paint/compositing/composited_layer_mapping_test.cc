@@ -1705,8 +1705,7 @@ TEST_P(CompositedLayerMappingTest,
   ASSERT_TRUE(child_mapping->AncestorClippingLayer());
   EXPECT_TRUE(child_mapping->AncestorClippingLayer()->MaskLayer());
   ASSERT_TRUE(child_mapping->AncestorClippingMaskLayer());
-  const FloatSize layer_size =
-      child_mapping->AncestorClippingMaskLayer()->Size();
+  auto layer_size = child_mapping->AncestorClippingMaskLayer()->Size();
   EXPECT_EQ(120, layer_size.Width());
   EXPECT_EQ(120, layer_size.Height());
 }
@@ -1787,8 +1786,7 @@ TEST_P(CompositedLayerMappingTest,
   ASSERT_TRUE(child_mapping->AncestorClippingLayer());
   EXPECT_TRUE(child_mapping->AncestorClippingLayer()->MaskLayer());
   ASSERT_TRUE(child_mapping->AncestorClippingMaskLayer());
-  const FloatSize layer_size =
-      child_mapping->AncestorClippingMaskLayer()->Size();
+  auto layer_size = child_mapping->AncestorClippingMaskLayer()->Size();
   EXPECT_EQ(120, layer_size.Width());
   EXPECT_EQ(120, layer_size.Height());
 }
@@ -1828,8 +1826,7 @@ TEST_P(CompositedLayerMappingTest,
   ASSERT_TRUE(child_mapping->AncestorClippingLayer());
   EXPECT_TRUE(child_mapping->AncestorClippingLayer()->MaskLayer());
   ASSERT_TRUE(child_mapping->AncestorClippingMaskLayer());
-  const FloatSize layer_size =
-      child_mapping->AncestorClippingMaskLayer()->Size();
+  auto layer_size = child_mapping->AncestorClippingMaskLayer()->Size();
   EXPECT_EQ(160, layer_size.Width());
   EXPECT_EQ(160, layer_size.Height());
 }

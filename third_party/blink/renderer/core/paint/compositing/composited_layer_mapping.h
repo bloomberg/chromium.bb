@@ -383,9 +383,9 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
       const IntRect& relative_compositing_bounds);
   void UpdateForegroundLayerGeometry();
   void UpdateBackgroundLayerGeometry(
-      const FloatSize& relative_compositing_bounds_size);
+      const IntSize& relative_compositing_bounds_size);
   void UpdateDecorationOutlineLayerGeometry(
-      const FloatSize& relative_compositing_bounds_size);
+      const IntSize& relative_compositing_bounds_size);
   void UpdateScrollingLayerGeometry(const IntRect& local_compositing_bounds);
   void UpdateChildClippingMaskLayerGeometry();
   void UpdateStickyConstraints(const ComputedStyle&);
