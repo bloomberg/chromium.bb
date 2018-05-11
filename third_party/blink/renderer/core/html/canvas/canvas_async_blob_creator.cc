@@ -468,7 +468,7 @@ bool CanvasAsyncBlobCreator::InitializeEncoder(double quality) {
     // Progressive encoding is only applicable to png and jpeg image format,
     // and thus idle tasks scheduling can only be applied to these image
     // formats.
-    // TODO(xlai): Progressive encoding on webp image formats
+    // TODO(zakerinasab): Progressive encoding on webp image formats
     // (crbug.com/571399)
     DCHECK_EQ(kMimeTypePng, mime_type_);
     SkPngEncoder::Options options;
