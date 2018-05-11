@@ -94,10 +94,8 @@ class ParallelDownloadJobForTest : public ParallelDownloadJob {
     return min_remaining_time_;
   }
 
-  void OnInputStreamReady(
-      DownloadWorker* worker,
-      std::unique_ptr<InputStream> input_stream,
-      std::unique_ptr<DownloadCreateInfo> download_create_info) override {
+  void OnInputStreamReady(DownloadWorker* worker,
+                          std::unique_ptr<InputStream> input_stream) override {
     CountOnInputStreamReady();
   }
 
