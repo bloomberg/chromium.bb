@@ -100,25 +100,6 @@ SRC_RESOURCES= \
 	src/images/no_camera.svg \
 	src/images/spinner.svg \
 	src/js/background.js \
-	src/js/effect.js \
-	src/js/effects/andy.js \
-	src/js/effects/beauty.js \
-	src/js/effects/big_eyes.js \
-	src/js/effects/cinema.js \
-	src/js/effects/colorize.js \
-	src/js/effects/funky.js \
-	src/js/effects/ghost.js \
-	src/js/effects/grayscale.js \
-	src/js/effects/modern.js \
-	src/js/effects/newspaper.js \
-	src/js/effects/normal.js \
-	src/js/effects/photo_lab.js \
-	src/js/effects/pinch.js \
-	src/js/effects/retro.js \
-	src/js/effects/sepia.js \
-	src/js/effects/swirl.js \
-	src/js/effects/tilt_shift.js \
-	src/js/effects/vintage.js \
 	src/js/main.js \
 	src/js/models/gallery.js \
 	src/js/processor.js \
@@ -126,7 +107,6 @@ SRC_RESOURCES= \
 	src/js/scrollbar.js \
 	src/js/test.js \
 	src/js/test_cases.js \
-	src/js/tracker.js \
 	src/js/util.js \
 	src/js/view.js \
 	src/js/views/album.js \
@@ -188,13 +168,6 @@ GLFX_RESOURCES= \
 	third_party/glfx/src/filters/warp/swirl.js \
 	third_party/glfx/www/build.py \
 
-# Resouces of the third party ccv library. All of these files will be copied to
-# the target package.
-CCV_RESOURCES= \
-	third_party/ccv/js/face.js \
-	third_party/ccv/js/ccv.js \
-	third_party/ccv/COPYING \
-
 # Builds camera.crx and tests.crx
 all: build/camera.crx build/tests.crx
 
@@ -216,20 +189,9 @@ build/tests/js/third_party/glfx: $(GLFX_RESOURCES) build/third_party/glfx
 	cp build/third_party/glfx/glfx.js build/tests/js/third_party/glfx
 	cp build/third_party/glfx/LICENSE build/tests/js/third_party/glfx
 
-# Copies the ccv library to the camera.crx build directory.
-build/camera/js/third_party/ccv: $(CCV_RESOURCES)
-	mkdir -p build/camera/js
-	cp --parents $(CCV_RESOURCES) build/camera/js
-
-# Copies the ccv library to the tests.crx build directory.
-build/tests/js/third_party/ccv: $(CCV_RESOURCES)
-	mkdir -p build/tests/js
-	cp --parents $(CCV_RESOURCES) build/tests/js
-
 # Builds the release version.
 build/camera: $(SRC_RESOURCES) $(SRC_MANIFEST) \
-	  build/camera/js/third_party/glfx \
-	  build/camera/js/third_party/ccv
+	  build/camera/js/third_party/glfx
 	mkdir -p build/camera
 	cd $(SRC_PATH); cp --parents $(patsubst $(SRC_PATH)%, %, \
 	  $(SRC_RESOURCES)) ../build/camera
@@ -245,8 +207,7 @@ camera: build/camera.crx
 
 # Builds the tests version.
 build/tests: $(SRC_RESOURCES) $(SRC_TESTS_MANIFEST) \
-	  build/tests/js/third_party/glfx \
-	  build/tests/js/third_party/ccv
+	  build/tests/js/third_party/glfx
 	mkdir -p build/tests
 	cd $(SRC_PATH); cp --parents $(patsubst $(SRC_PATH)%, %, \
 	  $(SRC_RESOURCES)) ../build/tests

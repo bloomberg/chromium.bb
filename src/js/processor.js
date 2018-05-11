@@ -13,19 +13,12 @@ var camera = camera || {};
  * Creates a processor object, which takes the camera stream and processes it.
  * Flushes the result to a canvas.
  *
- * @param {camera.Tracker} tracker Head tracker object.
  * @param {fx.Texture} input Texture with the input frame.
  * @param {Canvas} output Canvas with the output frame.
  * @param {fx.Canvas} fxCanvas Fx canvas to be used for processing.
  * @constructor
  */
-camera.Processor = function(tracker, input, output, fxCanvas) {
-  /**
-   * @type {camera.Tracker}
-   * @private
-   */
-  this.tracker_ = tracker;
-
+camera.Processor = function(input, output, fxCanvas) {
   /**
    * @type {fx.Texture}
    * @private
@@ -51,18 +44,6 @@ camera.Processor = function(tracker, input, output, fxCanvas) {
   this.scale_ = 1;
 
   /**
-   * @type {camera.Effect}
-   * @private
-   */
-  this.effect_ = null;
-
-  /**
-   * @type {boolean}
-   * @private
-   */
-  this.effectDisabled_ = false;
-
-  /**
    * Performance monitors for the processor.
    * @type {camera.util.NamedPerformanceMonitors}
    * @private
@@ -80,18 +61,6 @@ camera.Processor.prototype = {
   get scale() {
     return this.scale_;
   },
-  set effect(inEffect) {
-    this.effect_ = inEffect;
-  },
-  get effect() {
-    return this.effect_;
-  },
-  set effectDisabled(inEffectDisabled) {
-    this.effectDisabled_ = inEffectDisabled;
-  },
-  get effectDisabled() {
-    return this.effectDisabled_;
-  },
   get output() {
     return this.output_;
   },
@@ -101,8 +70,7 @@ camera.Processor.prototype = {
 };
 
 /**
- * Processes an input frame, applies effects and flushes result to the output
- * canvas.
+ * Processes an input frame and flushes result to the output canvas.
  */
 camera.Processor.prototype.processFrame = function() {
   var width = this.input_._.width;
@@ -117,18 +85,6 @@ camera.Processor.prototype.processFrame = function() {
     var finishMeasuring =
         this.performanceMonitors_.startMeasuring('draw-to-fx-canvas');
     this.fxCanvas_.draw(this.input_, textureWidth, textureHeight);
-    finishMeasuring();
-  }
-
-  {
-    var finishMeasuring =
-        this.performanceMonitors_.startMeasuring('filter-frame');
-    if (!this.effectDisabled_ && this.effect_) {
-      this.effect_.filterFrame(
-          this.fxCanvas_,
-          this.effect_.usesHeadTracker() ?
-              this.tracker_.getFacesForCanvas(this.fxCanvas_) : null);
-    }
     finishMeasuring();
   }
 

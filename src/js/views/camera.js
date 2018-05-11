@@ -101,24 +101,6 @@ camera.views.Camera = function(context, router) {
   this.recordEndSound_ = document.createElement('audio');
 
   /**
-   * Canvas element with the current frame downsampled to small resolution, to
-   * be used in effect preview windows.
-   *
-   * @type {Canvas}
-   * @private
-   */
-  this.effectInputCanvas_ = document.createElement('canvas');
-
-  /**
-   * Canvas element with the current frame downsampled to small resolution, to
-   * be used by the head tracker.
-   *
-   * @type {Canvas}
-   * @private
-   */
-  this.trackerInputCanvas_ = document.createElement('canvas');
-
-  /**
    * @type {boolean}
    * @private
    */
@@ -179,20 +161,6 @@ camera.views.Camera = function(context, router) {
   this.mainFastCanvasTexture_ = null;
 
   /**
-   * Shared fx canvas for effects' previews.
-   * @type {fx.Canvas}
-   * @private
-   */
-  this.effectCanvas_ = null;
-
-  /**
-   * Texture for the effects' canvas.
-   * @type {fx.Texture}
-   * @private
-   */
-  this.effectCanvasTexture_ = null;
-
-  /**
    * The main (full screen) processor in the full quality mode.
    * @type {camera.Processor}
    * @private
@@ -212,27 +180,6 @@ camera.views.Camera = function(context, router) {
    * @private
    */
   this.mainFastProcessor_ = null;
-
-  /**
-   * Processors for effect previews.
-   * @type {Array.<camera.Processor>}
-   * @private
-   */
-  this.effectProcessors_ = [];
-
-  /**
-   * Selected effect or null if no effect.
-   * @type {number}
-   * @private
-   */
-  this.currentEffectIndex_ = 0;
-
-  /**
-   * Face detector and tracker.
-   * @type {camera.Tracker}
-   * @private
-   */
-  this.tracker_ = new camera.Tracker(this.trackerInputCanvas_);
 
   /**
    * Current previewing frame.
@@ -260,8 +207,6 @@ camera.views.Camera = function(context, router) {
           return;
         }
         var toolbar = document.querySelector('#toolbar');
-        var activeEffect = document.querySelector('#effects #effect-' +
-            this.currentEffectIndex_);
         if (args) {
           toolbar.classList.add('expanded');
         } else {
@@ -278,16 +223,6 @@ camera.views.Camera = function(context, router) {
         }
         camera.util.waitForTransitionCompletion(
             document.querySelector('#toolbar'), 500, function() {
-          // If the ribbon is opened, then make all of the items focusable.
-          if (args) {
-            activeEffect.tabIndex = 0;  // In the focusing order.
-
-            // If the filters button was previously selected, then advance to
-            // the ribbon.
-            if (document.activeElement == toggleFilters) {
-              activeEffect.focus();
-            }
-          }
           callback();
         });
       }.bind(this));
@@ -332,8 +267,7 @@ camera.views.Camera = function(context, router) {
   this.recordingTimer_ = null;
 
   /**
-   * Whether a picture is being taken. Used for smoother effect previews and
-   * updating toolbar UI.
+   * Whether a picture is being taken. Used for updating toolbar UI.
    * @type {boolean}
    * @private
    */
@@ -402,7 +336,7 @@ camera.views.Camera = function(context, router) {
    * @private
    */
   this.scrollTracker_ = new camera.util.ScrollTracker(
-      this.scroller_, function() {}, this.onScrollEnded_.bind(this));
+      this.scroller_, function() {}, function() {});
 
   /**
    * @type {string}
@@ -418,14 +352,6 @@ camera.views.Camera = function(context, router) {
   this.performanceMonitors_ = new camera.util.NamedPerformanceMonitors();
 
   /**
-   * Counter used to refresh periodically invisible images on the ribbons, to
-   * avoid displaying stale ones.
-   * @type {number}
-   * @private
-   */
-  this.staleEffectsRefreshIndex_ = 0;
-
-  /**
    * Timer used for a multi-shot.
    * @type {number?}
    * @private
@@ -438,28 +364,6 @@ camera.views.Camera = function(context, router) {
    * @private
    */
   this.takePictureTimer_ = null;
-
-  /**
-   * Used by the performance test to progress to a next step. If not null, then
-   * the performance test is in progress.
-   * @type {number?}
-   * @private
-   */
-  this.performanceTestTimer_ = null;
-
-  /**
-   * Stores results of the performance test.
-   * @type {Array.<Object>}
-   * @private
-   */
-  this.performanceTestResults_ = [];
-
-  /**
-   * Used by the performance test to periodically update the UI.
-   * @type {number?}
-   * @private
-   */
-  this.performanceTestUIInterval_ = null;
 
   /**
    * DeviceId of the camera device used for the last time during this session.
@@ -513,11 +417,6 @@ camera.views.Camera = function(context, router) {
   this.video_.addEventListener('resize',
       this.synchronizeBounds_.bind(this));
 
-  // Sets dimensions of the input canvas for the effects' preview on the ribbon.
-  // Keep in sync with CSS.
-  this.effectInputCanvas_.width = camera.views.Camera.EFFECT_CANVAS_SIZE;
-  this.effectInputCanvas_.height = camera.views.Camera.EFFECT_CANVAS_SIZE;
-
   // Handle the 'Take' button.
   document.querySelector('#take-picture').addEventListener(
       'click', this.onTakePictureClicked_.bind(this));
@@ -565,42 +464,6 @@ camera.views.Camera.DrawMode = Object.freeze({
 });
 
 /**
- * Head tracker quality.
- * @enum {number}
- */
-camera.views.Camera.HeadTrackerQuality = Object.freeze({
-  LOW: 0,    // Very low resolution, used for the effects' previews.
-  NORMAL: 1  // Default resolution, still low though.
-});
-
-/**
- * Number of frames to be skipped between optimized effects' ribbon refreshes
- * and the head detection invocations (which both use the preview back buffer).
- *
- * @type {number}
- * @const
- */
-camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES = 3;
-
-/**
- * Number of frames to be skipped between the head tracker invocations when
- * the head tracker is used for the ribbon only.
- *
- * @type {number}
- * @const
- */
-camera.views.Camera.RIBBON_HEAD_TRACKER_SKIP_FRAMES = 30;
-
-/**
- * Width and height of the effect canvases in pixels.
- * Keep in sync with CSS.
- *
- * @type {number}
- * @const
- */
-camera.views.Camera.EFFECT_CANVAS_SIZE = 80;
-
-/**
  * Ratio between video and window aspect ratios to be considered close enough
  * to snap the window dimensions to the window frame. 1.1 means the aspect
  * ratios can differ by 1.1 times.
@@ -625,143 +488,95 @@ camera.views.Camera.prototype = {
  * @override
  */
 camera.views.Camera.prototype.initialize = function(callback) {
-  var effects = [camera.effects.Normal, camera.effects.Vintage,
-      camera.effects.Cinema, camera.effects.TiltShift,
-      camera.effects.Retro30, camera.effects.Retro50,
-      camera.effects.Retro60, camera.effects.PhotoLab,
-      camera.effects.BigHead, camera.effects.BigJaw,
-      camera.effects.BigEyes, camera.effects.BunnyHead,
-      camera.effects.Grayscale, camera.effects.Sepia,
-      camera.effects.Colorize, camera.effects.Modern,
-      camera.effects.Beauty, camera.effects.Newspaper,
-      camera.effects.Funky, camera.effects.Ghost,
-      camera.effects.Swirl];
+  // Initialize the webgl canvases.
+  try {
+    this.mainCanvas_ = fx.canvas();
+    this.mainPreviewCanvas_ = fx.canvas();
+    this.mainFastCanvas_ = fx.canvas();
+  }
+  catch (e) {
+    // Initialization failed due to lack of webgl.
+    // TODO(mtomasz): Replace with a better icon.
+    this.context_.onError('no-camera',
+        chrome.i18n.getMessage('errorMsgNoWebGL'),
+        chrome.i18n.getMessage('errorMsgNoWebGLHint'));
+  }
 
-  // Workaround for: crbug.com/523216.
-  // Hide unsupported effects on alex.
-  camera.util.isBoard('x86-alex').then(function(result) {
-    if (result) {
-      var unsupported = [camera.effects.Cinema, camera.effects.TiltShift,
-          camera.effects.Beauty, camera.effects.Funky];
-      effects = effects.filter(function(item) {
-        return (unsupported.indexOf(item) == -1);
-      });
-    }
+  if (this.mainCanvas_ && this.mainPreviewCanvas_ && this.mainFastCanvas_) {
+    // Initialize the processors.
+    this.mainCanvasTexture_ = this.mainCanvas_.texture(this.video_);
+    this.mainPreviewCanvasTexture_ = this.mainPreviewCanvas_.texture(
+        this.video_);
+    this.mainFastCanvasTexture_ = this.mainFastCanvas_.texture(this.video_);
+    this.mainProcessor_ = new camera.Processor(
+        this.mainCanvasTexture_,
+        this.mainCanvas_,
+        this.mainCanvas_);
+    this.mainPreviewProcessor_ = new camera.Processor(
+        this.mainPreviewCanvasTexture_,
+        this.mainPreviewCanvas_,
+        this.mainPreviewCanvas_);
+    this.mainFastProcessor_ = new camera.Processor(
+        this.mainFastCanvasTexture_,
+        this.mainFastCanvas_,
+        this.mainFastCanvas_);
 
-    // Initialize the webgl canvases.
-    try {
-      this.mainCanvas_ = fx.canvas();
-      this.mainPreviewCanvas_ = fx.canvas();
-      this.mainFastCanvas_ = fx.canvas();
-      this.effectCanvas_ = fx.canvas();
-    }
-    catch (e) {
-      // Initialization failed due to lack of webgl.
-      // TODO(mtomasz): Replace with a better icon.
-      this.context_.onError('no-camera',
-          chrome.i18n.getMessage('errorMsgNoWebGL'),
-          chrome.i18n.getMessage('errorMsgNoWebGLHint'));
-    }
+    // Insert the main canvas to its container.
+    document.querySelector('#main-canvas-wrapper').appendChild(
+        this.mainCanvas_);
+    document.querySelector('#main-preview-canvas-wrapper').appendChild(
+        this.mainPreviewCanvas_);
+    document.querySelector('#main-fast-canvas-wrapper').appendChild(
+        this.mainFastCanvas_);
 
-    if (this.mainCanvas_ && this.mainPreviewCanvas_ && this.mainFastCanvas_) {
-      // Initialize the processors.
-      this.mainCanvasTexture_ = this.mainCanvas_.texture(this.video_);
-      this.mainPreviewCanvasTexture_ = this.mainPreviewCanvas_.texture(
-          this.video_);
-      this.mainFastCanvasTexture_ = this.mainFastCanvas_.texture(this.video_);
-      this.mainProcessor_ = new camera.Processor(
-          this.tracker_,
-          this.mainCanvasTexture_,
-          this.mainCanvas_,
-          this.mainCanvas_);
-      this.mainPreviewProcessor_ = new camera.Processor(
-          this.tracker_,
-          this.mainPreviewCanvasTexture_,
-          this.mainPreviewCanvas_,
-          this.mainPreviewCanvas_);
-      this.mainFastProcessor_ = new camera.Processor(
-          this.tracker_,
-          this.mainFastCanvasTexture_,
-          this.mainFastCanvas_,
-          this.mainFastCanvas_);
+    // Select the default state of the toggle buttons.
+    // TODO(mtomasz): Move to chrome.storage.local.sync, after implementing
+    // syncing of the gallery.
+    chrome.storage.local.get(
+        {
+          toggleTimer: false,
+          toggleMulti: false,
+          toggleMirror: true,  // Deprecated.
+          mirroringToggles: {},  // Per device.
+        },
+        function(values) {
+          document.querySelector('#toggle-timer').checked =
+              values.toggleTimer;
+          document.querySelector('#toggle-multi').checked =
+              values.toggleMulti;
+          this.legacyMirroringToggle_ = values.toggleMirror;
+          this.mirroringToggles_ = values.mirroringToggles;
 
-      // Insert the main canvas to its container.
-      document.querySelector('#main-canvas-wrapper').appendChild(
-          this.mainCanvas_);
-      document.querySelector('#main-preview-canvas-wrapper').appendChild(
-          this.mainPreviewCanvas_);
-      document.querySelector('#main-fast-canvas-wrapper').appendChild(
-          this.mainFastCanvas_);
+          // Initialize the web camera.
+          this.start_();
+        }.bind(this));
+    // Remove the deprecated values.
+    chrome.storage.local.remove(['effectIndex']);
+  }
 
-      // Set the default effect.
-      this.mainProcessor_.effect = new camera.effects.Normal();
+  // TODO: Replace with "devicechanged" event once it's implemented in Chrome.
+  this.maybeRefreshVideoDeviceIds_();
+  setInterval(this.maybeRefreshVideoDeviceIds_.bind(this), 1000);
 
-      // Prepare effect previews.
-      this.effectCanvasTexture_ = this.effectCanvas_.texture(
-          this.effectInputCanvas_);
-
-      for (var index = 0; index < effects.length; index++) {
-        this.addEffect_(new effects[index]());
-      }
-
-      // Disable effects for both photo-taking and video-recording.
-      // TODO(yuli): Remove effects completely.
-      this.mainProcessor_.effectDisabled = true;
-      this.mainPreviewProcessor_.effectDisabled = true;
-      this.mainFastProcessor_.effectDisabled = true;
-
-      // Select the default effect and state of the timer toggle button.
-      // TODO(mtomasz): Move to chrome.storage.local.sync, after implementing
-      // syncing of the gallery.
-      chrome.storage.local.get(
-          {
-            effectIndex: 0,
-            toggleTimer: false,
-            toggleMulti: false,
-            toggleMirror: true,  // Deprecated.
-            mirroringToggles: {},  // Per device.
-          },
-          function(values) {
-            if (values.effectIndex < this.effectProcessors_.length)
-              this.setCurrentEffect_(values.effectIndex);
-            else
-              this.setCurrentEffect_(0);
-            document.querySelector('#toggle-timer').checked =
-                values.toggleTimer;
-            document.querySelector('#toggle-multi').checked =
-                values.toggleMulti;
-            this.legacyMirroringToggle_ = values.toggleMirror;
-            this.mirroringToggles_ = values.mirroringToggles;
-
-            // Initialize the web camera.
-            this.start_();
-          }.bind(this));
-    }
-
-    // TODO: Replace with "devicechanged" event once it's implemented in Chrome.
-    this.maybeRefreshVideoDeviceIds_();
-    setInterval(this.maybeRefreshVideoDeviceIds_.bind(this), 1000);
-
-    // Monitor the locked state to avoid retrying camera connection when locked.
-    chrome.idle.onStateChanged.addListener(function(newState) {
-      if (newState == 'locked')
-        this.locked_ = true;
-      else if (newState == 'active')
-        this.locked_ = false;
-    }.bind(this));
-
-    // Acquire the gallery model.
-    camera.models.Gallery.getInstance(function(model) {
-      this.model_ = model;
-      this.model_.addObserver(this);
-      this.updateAlbumButton_();
-      callback();
-    }.bind(this), function() {
-      // TODO(mtomasz): Add error handling.
-      console.error('Unable to initialize the file system.');
-      callback();
-    });
+  // Monitor the locked state to avoid retrying camera connection when locked.
+  chrome.idle.onStateChanged.addListener(function(newState) {
+    if (newState == 'locked')
+      this.locked_ = true;
+    else if (newState == 'active')
+      this.locked_ = false;
   }.bind(this));
+
+  // Acquire the gallery model.
+  camera.models.Gallery.getInstance(function(model) {
+    this.model_ = model;
+    this.model_.addObserver(this);
+    this.updateAlbumButton_();
+    callback();
+  }.bind(this), function() {
+    // TODO(mtomasz): Add error handling.
+    console.error('Unable to initialize the file system.');
+    callback();
+  });
 };
 
 /**
@@ -773,7 +588,6 @@ camera.views.Camera.prototype.onEnter = function() {
   this.mainProcessor_.performanceMonitors.reset();
   this.mainPreviewProcessor_.performanceMonitors.reset();
   this.mainFastProcessor_.performanceMonitors.reset();
-  this.tracker_.start();
   this.onResize();
 };
 
@@ -782,7 +596,6 @@ camera.views.Camera.prototype.onEnter = function() {
  * @override
  */
 camera.views.Camera.prototype.onLeave = function() {
-  this.tracker_.stop();
 };
 
 /**
@@ -810,8 +623,6 @@ camera.views.Camera.prototype.onInactivate = function() {
  * @private
  */
 camera.views.Camera.prototype.onTakePictureClicked_ = function(event) {
-  if (this.performanceTestTimer_)
-    return;
   this.takePicture_();
 };
 
@@ -821,8 +632,6 @@ camera.views.Camera.prototype.onTakePictureClicked_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onAlbumEnterClicked_ = function(event) {
-  if (this.performanceTestTimer_ || !this.model_)
-    return;
   this.router.navigate(camera.Router.ViewIdentifier.ALBUM);
 };
 
@@ -832,21 +641,17 @@ camera.views.Camera.prototype.onAlbumEnterClicked_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onFiltersToggleClicked_ = function(event) {
-  if (this.performanceTestTimer_)
-    return;
   this.setExpanded_(!this.expanded_);
 };
 
 /**
  * Handles pressing a key within a window.
- * TODO(yuli): Remove this function when removing effects.
+ * TODO(yuli): Remove this function when removing effects UI.
  *
  * @param {Event} event Key down event
  * @private
  */
 camera.views.Camera.prototype.onWindowKeyDown_ = function(event) {
-  if (this.performanceTestTimer_)
-    return;
   // When the ribbon is focused, then do not collapse it when pressing keys.
   if (this.active &&
       document.activeElement == document.querySelector('#effects-wrapper')) {
@@ -860,8 +665,6 @@ camera.views.Camera.prototype.onWindowKeyDown_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onToggleTimerKeyPress_ = function(event) {
-  if (this.performanceTestTimer_)
-    return;
   if (camera.util.getShortcutIdentifier(event) == 'Enter')
     document.querySelector('#toggle-timer').click();
 };
@@ -872,8 +675,6 @@ camera.views.Camera.prototype.onToggleTimerKeyPress_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onToggleMultiKeyPress_ = function(event) {
-  if (this.performanceTestTimer_)
-    return;
   if (camera.util.getShortcutIdentifier(event) == 'Enter')
     document.querySelector('#toggle-multi').click();
 };
@@ -884,8 +685,6 @@ camera.views.Camera.prototype.onToggleMultiKeyPress_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onToggleMirrorKeyPress_ = function(event) {
-  if (this.performanceTestTimer_)
-    return;
   if (camera.util.getShortcutIdentifier(event) == 'Enter')
     document.querySelector('#toggle-mirror').click();
 };
@@ -896,8 +695,6 @@ camera.views.Camera.prototype.onToggleMirrorKeyPress_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onToggleTimerClicked_ = function(event) {
-  if (this.performanceTestTimer_)
-    return;
   var enabled = document.querySelector('#toggle-timer').checked;
   this.showToastMessage_(
       chrome.i18n.getMessage(enabled ? 'toggleTimerActiveMessage' :
@@ -911,8 +708,6 @@ camera.views.Camera.prototype.onToggleTimerClicked_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onToggleMultiClicked_ = function(event) {
-  if (this.performanceTestTimer_)
-    return;
   var enabled = document.querySelector('#toggle-multi').checked;
   this.showToastMessage_(
       chrome.i18n.getMessage(enabled ? 'toggleMultiActiveMessage' :
@@ -926,9 +721,6 @@ camera.views.Camera.prototype.onToggleMultiClicked_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onToggleCameraClicked_ = function(event) {
-  if (this.performanceTestTimer_)
-    return;
-
   this.videoDeviceIds_.then(function(deviceIds) {
     var index = deviceIds.indexOf(this.videoDeviceId_);
     if (index == -1)
@@ -949,9 +741,6 @@ camera.views.Camera.prototype.onToggleCameraClicked_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onToggleRecordClicked_ = function(event) {
-  if (this.performanceTestTimer_)
-    return;
-
   var label;
   var toggleRecord = document.querySelector('#toggle-record');
   if (this.is_recording_mode_) {
@@ -987,8 +776,6 @@ camera.views.Camera.prototype.onToggleRecordClicked_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onToggleMirrorClicked_ = function(event) {
-  if (this.performanceTestTimer_)
-    return;
   var enabled = document.querySelector('#toggle-mirror').checked;
   this.showToastMessage_(
       chrome.i18n.getMessage(enabled ? 'toggleMirrorActiveMessage' :
@@ -1004,10 +791,8 @@ camera.views.Camera.prototype.onToggleMirrorClicked_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onPointerActivity_ = function(event) {
-  if (this.performanceTestTimer_)
-    return;
-
   // Update the ribbon's visibility only when camera view is active.
+  // TODO(yuli): Remove this function after removing effects UI.
   if (this.active) {
     switch (event.type) {
       case 'mousedown':
@@ -1028,18 +813,6 @@ camera.views.Camera.prototype.onPointerActivity_ = function(event) {
           this.setExpanded_(true);
         break;
     }
-  }
-};
-
-/**
- * Handles end of scroll on the ribbon with effects.
- * @private
- */
-camera.views.Camera.prototype.onScrollEnded_ = function() {
-  if (document.activeElement != document.body && this.expanded_) {
-    var effect = document.querySelector('#effects #effect-' +
-        this.currentEffectIndex_);
-    effect.focus();
   }
 };
 
@@ -1132,127 +905,16 @@ camera.views.Camera.prototype.enableAudio_ = function(enabled) {
 };
 
 /**
- * Adds an effect to the user interface.
- * @param {camera.Effect} effect Effect to be added.
- * @private
- */
-camera.views.Camera.prototype.addEffect_ = function(effect) {
-  // Create the preview on the ribbon.
-  var listPadder = document.querySelector('#effects .padder');
-  var wrapper = document.createElement('div');
-  wrapper.className = 'preview-canvas-wrapper';
-  var canvas = document.createElement('canvas');
-  canvas.width = 257;  // Forces acceleration on the canvas.
-  canvas.height = 257;
-  var padder = document.createElement('div');
-  padder.className = 'preview-canvas-padder';
-  padder.appendChild(canvas);
-  wrapper.appendChild(padder);
-  var item = document.createElement('li');
-  item.appendChild(wrapper);
-  listPadder.appendChild(item);
-  var label = document.createElement('span');
-  label.textContent = effect.getTitle();
-  item.appendChild(label);
-
-  // Calculate the effect index.
-  var effectIndex = this.effectProcessors_.length;
-  item.id = 'effect-' + effectIndex;
-
-  // Set aria attributes.
-  item.setAttribute('i18n-aria-label', effect.getTitle());
-  item.setAttribute('aria-role', 'option');
-  item.setAttribute('aria-selected', 'false');
-  item.tabIndex = -1;
-
-  // Assign events.
-  item.addEventListener('click', function() {
-    if (this.currentEffectIndex_ == effectIndex)
-      this.effectProcessors_[effectIndex].effect.randomize();
-    this.setCurrentEffect_(effectIndex);
-  }.bind(this));
-  item.addEventListener('focus',
-      this.setCurrentEffect_.bind(this, effectIndex));
-
-  // Create the effect preview processor.
-  var processor = new camera.Processor(
-      this.tracker_,
-      this.effectCanvasTexture_,
-      canvas,
-      this.effectCanvas_);
-  processor.effect = effect;
-  this.effectProcessors_.push(processor);
-};
-
-/**
- * Sets the current effect.
- * @param {number} effectIndex Effect index.
- * @private
- */
-camera.views.Camera.prototype.setCurrentEffect_ = function(effectIndex) {
-  if (document.querySelector('#filters-toggle').disabled)
-    return;
-
-  var previousEffect =
-      document.querySelector('#effects #effect-' + this.currentEffectIndex_);
-  previousEffect.removeAttribute('selected');
-  previousEffect.setAttribute('aria-selected', 'false');
-
-  if (this.expanded_)
-    previousEffect.tabIndex = -1;
-
-  var effect = document.querySelector('#effects #effect-' + effectIndex);
-  effect.setAttribute('selected', '');
-  effect.setAttribute('aria-selected', 'true');
-  if (this.expanded_)
-    effect.tabIndex = 0;
-  camera.util.ensureVisible(effect, this.scroller_);
-
-  // If there was something focused before, then synchronize the focus.
-  if (this.expanded_ && document.activeElement != document.body) {
-    // If not scrolling, then focus immediately. Otherwise, the element will
-    // be focused, when the scrolling is finished in onScrollEnded.
-    if (!this.scrollTracker_.scrolling && !this.scroller_.animating)
-      effect.focus();
-  }
-
-  this.mainProcessor_.effect = this.effectProcessors_[effectIndex].effect;
-  this.mainPreviewProcessor_.effect =
-      this.effectProcessors_[effectIndex].effect;
-  this.mainFastProcessor_.effect = this.effectProcessors_[effectIndex].effect;
-
-  var listWrapper = document.querySelector('#effects-wrapper');
-  listWrapper.setAttribute('aria-activedescendant', effect.id);
-  listWrapper.setAttribute('aria-labelledby', effect.id);
-  this.currentEffectIndex_ = effectIndex;
-
-  // Show the ribbon when switching effects.
-  if (!this.performanceTestTimer_)
-    this.setExpanded_(true);
-
-  // TODO(mtomasz): This is a little racy, since setting may be run in parallel,
-  // without guarantee which one will be written as the last one.
-  chrome.storage.local.set({effectIndex: effectIndex});
-};
-
-/**
  * @override
  */
 camera.views.Camera.prototype.onResize = function() {
   this.synchronizeBounds_();
-  if (this.expanded_) {
-    camera.util.ensureVisible(
-        document.querySelector('#effect-' + this.currentEffectIndex_),
-        this.scroller_);
-  }
 };
 
 /**
  * @override
  */
 camera.views.Camera.prototype.onKeyPressed = function(event) {
-  if (this.performanceTestTimer_)
-    return;
   this.keyBuffer_ += String.fromCharCode(event.which);
   this.keyBuffer_ = this.keyBuffer_.substr(-10);
 
@@ -1268,31 +930,7 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
     this.keyBuffer_ = '';
   }
 
-  if (this.keyBuffer_.indexOf('CHOCOBUNNY') !== -1) {
-    this.startPerformanceTest_();
-    this.keyBuffer_ = '';
-  }
-
   switch (camera.util.getShortcutIdentifier(event)) {
-    case 'Left':
-      this.setCurrentEffect_(
-          (this.currentEffectIndex_ + this.effectProcessors_.length - 1) %
-              this.effectProcessors_.length);
-      event.preventDefault();
-      break;
-    case 'Right':
-      this.setCurrentEffect_(
-          (this.currentEffectIndex_ + 1) % this.effectProcessors_.length);
-      event.preventDefault();
-      break;
-    case 'Home':
-      this.setCurrentEffect_(0);
-      event.preventDefault();
-      break;
-    case 'End':
-      this.setCurrentEffect_(this.effectProcessors_.length - 1);
-      event.preventDefault();
-      break;
     case 'Space':  // Space key for taking the picture.
       document.querySelector('#take-picture').click();
       event.stopPropagation();
@@ -1410,7 +1048,7 @@ camera.views.Camera.prototype.setExpanded_ = function(expanded) {
       expanded) {
     var isRibbonHovered =
         document.querySelector('#toolbar').webkitMatchesSelector(':hover');
-    if (!isRibbonHovered && !this.performanceTestTimer_) {
+    if (!isRibbonHovered) {
       this.collapseTimer_ = setTimeout(
           this.setExpanded_.bind(this, false), 3000);
     }
@@ -1453,138 +1091,11 @@ camera.views.Camera.prototype.showVersion_ = function() {
       'Resolution: ' +
           this.video_.videoWidth + 'x' + this.video_.videoHeight + '\n' +
       'Frames per second: ' +
-          this.performanceMonitors_.fps('main').toPrecision(2) + '\n' +
-      'Head tracking frames per second: ' + this.tracker_.fps.toPrecision(2);
+          this.performanceMonitors_.fps('main').toPrecision(2) + '\n';
   this.router.navigate(camera.Router.ViewIdentifier.DIALOG, {
     type: camera.views.Dialog.Type.ALERT,
     message: message
   });
-};
-
-/**
- * Starts a performance test.
- * @private
- */
-camera.views.Camera.prototype.startPerformanceTest_ = function() {
-  if (this.performanceTestTimer_)
-    return;
-
-  this.performanceTestResults_ = [];
-
-  // Start the test after resizing to desired dimensions.
-  var onBoundsChanged = function() {
-    document.body.classList.add('performance-test');
-    this.progressPerformanceTest_(0);
-    var perfTestBubble = document.querySelector('#perf-test-bubble');
-    this.performanceTestUIInterval_ = setInterval(function() {
-      var fps = this.performanceMonitors_.fps('main');
-      var scale = 1 + Math.min(fps / 60, 1);
-      // (10..30) -> (0..30)
-      var hue = 120 * Math.max(0, Math.min(fps, 30) * 40 / 30 - 10) / 30;
-      perfTestBubble.textContent = Math.round(fps);
-      perfTestBubble.style.backgroundColor =
-          'hsla(' + hue + ', 100%, 75%, 0.75)';
-      perfTestBubble.style.webkitTransform = 'scale(' + scale + ')';
-    }.bind(this), 100);
-    // Removing listener will be ignored if not registered earlier.
-    chrome.app.window.current().onBoundsChanged.removeListener(onBoundsChanged);
-  }.bind(this);
-
-   // Set the default window size and wait until it is applied.
-  var onRestored = function() {
-    if (this.setDefaultGeometry_())
-      chrome.app.window.current().onBoundsChanged.addListener(onBoundsChanged);
-    else
-      onBoundsChanged();
-    chrome.app.window.current().onRestored.removeListener(onRestored);
-  }.bind(this);
-
-  // If maximized, then restore before proceeding. The timer has to be used, to
-  // know that the performance test has started.
-  // TODO(mtomasz): Consider using a bool member instead of reusing timer.
-  this.performanceTestTimer_ = setTimeout(function() {
-    if (chrome.app.window.current().isMaximized()) {
-      chrome.app.window.current().restore();
-      chrome.app.window.current().onRestored.addListener(onRestored);
-    } else {
-      onRestored();
-    }
-  }, 0);
-};
-
-/**
- * Progresses to the next step of the performance test.
- * @param {number} index Step index to progress to.
- * @private
- */
-camera.views.Camera.prototype.progressPerformanceTest_ = function(index) {
-  // Finalize the previous test.
-  if (index) {
-    var result = {
-      effect: Math.floor(index - 1 / 2),
-      ribbon: (index - 1) % 2,
-      // TODO(mtomasz): Avoid localization. Use English instead.
-      name: this.mainProcessor_.effect.getTitle(),
-      fps: this.performanceMonitors_.fps('main')
-    };
-    this.performanceTestResults_.push(result);
-  }
-
-  // Check if the end.
-  if (index == this.effectProcessors_.length * 2) {
-    this.stopPerformanceTest_();
-    var message = '';
-    var score = 0;
-    this.performanceTestResults_.forEach(function(result) {
-      message += [
-        result.effect,
-        result.ribbon,
-        result.name,
-        Math.round(result.fps)
-      ].join(', ') + '\n';
-      score += result.fps / this.performanceTestResults_.length;
-    }.bind(this));
-    var header = 'Score: ' + Math.round(score * 100) + '\n';
-    this.router.navigate(camera.Router.ViewIdentifier.DIALOG, {
-      type: camera.views.Dialog.Type.ALERT,
-      message: header + message
-    });
-    return;
-  }
-
-  // Run new test.
-  this.performanceMonitors_.reset();
-  this.mainProcessor_.performanceMonitors.reset();
-  this.mainPreviewProcessor_.performanceMonitors.reset();
-  this.mainFastProcessor_.performanceMonitors.reset();
-  this.setCurrentEffect_(Math.floor(index / 2));
-  this.setExpanded_(index % 2 == 1);
-
-  // Update the progress bar.
-  var progress = (index / (this.effectProcessors_.length * 2)) * 100;
-  var perfTestBar = document.querySelector('#perf-test-bar');
-  perfTestBar.textContent = Math.round(progress) + '%';
-  perfTestBar.style.width = progress + '%';
-
-  // Schedule the next test.
-  this.performanceTestTimer_ = setTimeout(function() {
-    this.progressPerformanceTest_(index + 1);
-  }.bind(this), 5000);
-};
-
-/**
- * Stops the performance test.
- * @private
- */
-camera.views.Camera.prototype.stopPerformanceTest_ = function() {
-  if (!this.performanceTestTimer_)
-    return;
-  clearTimeout(this.performanceTestTimer_);
-  this.performanceTestTimer_ = null;
-  clearInterval(this.performanceTestUIInterval_);
-  this.performanceTestUIInterval_ = null;
-  this.showToastMessage_('Performance test terminated');
-  document.body.classList.remove('performance-test');
 };
 
 /**
@@ -1787,36 +1298,6 @@ camera.views.Camera.prototype.synchronizeBounds_ = function() {
   this.video_.width = this.video_.videoWidth;
   this.video_.height = this.video_.videoHeight;
 }
-
-/**
- * Sets resolution of the low-resolution tracker input canvas. Depending on the
- * argument, the resolution is low, or very low.
- *
- * @param {camera.views.Camera.HeadTrackerQuality} quality Quality of the head
- *     tracker.
- * @private
- */
-camera.views.Camera.prototype.setHeadTrackerQuality_ = function(quality) {
-  var videoRatio = this.video_.videoWidth / this.video_.videoHeight;
-  var scale;
-  switch (quality) {
-    case camera.views.Camera.HeadTrackerQuality.NORMAL:
-      scale = 1;
-      break;
-    case camera.views.Camera.HeadTrackerQuality.LOW:
-      scale = 0.75;
-      break;
-  }
-  if (videoRatio < 1.5) {
-    // For resolutions: 800x600.
-    this.trackerInputCanvas_.width = Math.round(120 * scale);
-    this.trackerInputCanvas_.height = Math.round(90 * scale);
-  } else {
-    // For wide resolutions (any other).
-    this.trackerInputCanvas_.width = Math.round(160 * scale);
-    this.trackerInputCanvas_.height = Math.round(90 * scale);
-  }
-};
 
 /**
  * Creates the media recorder for the video stream.
@@ -2270,36 +1751,7 @@ camera.views.Camera.prototype.start_ = function() {
 };
 
 /**
- * Draws the effects' ribbon.
- * @param {camera.views.Camera.DrawMode} mode Drawing mode.
- * @private
- */
-camera.views.Camera.prototype.drawEffectsRibbon_ = function(mode) {
-  var notDrawn = [];
-
-  // Draw visible frames only when in DrawMode.NORMAL mode. Otherwise, only one
-  // per method call.
-  for (var index = 0; index < this.effectProcessors_.length; index++) {
-    var processor = this.effectProcessors_[index];
-    var effectRect = processor.output.getBoundingClientRect();
-    if (mode == camera.views.Camera.DrawMode.NORMAL && effectRect.right >= 0 &&
-        effectRect.left < document.body.offsetWidth) {
-      processor.processFrame();
-    } else {
-      notDrawn.push(processor);
-    }
-  }
-
-  // Additionally, draw one frame which is not visible. This is to avoid stale
-  // images when scrolling.
-  this.staleEffectsRefreshIndex_++;
-  if (notDrawn.length) {
-    notDrawn[this.staleEffectsRefreshIndex_ % notDrawn.length].processFrame();
-  }
-};
-
-/**
- * Draws a single frame for the main canvas and effects.
+ * Draws a single frame for the main canvas.
  * @param {camera.views.Camera.DrawMode} mode Drawing mode.
  * @private
  */
@@ -2392,86 +1844,12 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
   var finishFrameMeasuring = this.performanceMonitors_.startMeasuring('main');
   this.frame_++;
 
-  // Copy the video frame to the back buffer. The back buffer is low
-  // resolution, since it is only used by the effects' previews.
-  {
-    var finishMeasuring = this.performanceMonitors_.startMeasuring(
-        'resample-and-upload-preview-texture');
-    if (this.frame_ % camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0) {
-      var context = this.effectInputCanvas_.getContext('2d');
-      // Since the effect input canvas is square, cut the center out of the
-      // original frame.
-      var sw = Math.min(this.video_.width, this.video_.height);
-      var sh = Math.min(this.video_.width, this.video_.height);
-      var sx = Math.round(this.video_.width / 2 - sw / 2);
-      var sy = Math.round(this.video_.height / 2 - sh / 2);
-      context.drawImage(this.video_,
-                        sx,
-                        sy,
-                        sw,
-                        sh,
-                        0,
-                        0,
-                        camera.views.Camera.EFFECT_CANVAS_SIZE,
-                        camera.views.Camera.EFFECT_CANVAS_SIZE);
-      this.effectCanvasTexture_.loadContentsOf(this.effectInputCanvas_);
-    }
-    finishMeasuring();
-  }
-
-  // Request update of the head tracker always if it is used by the active
-  // effect, or periodically if used on the visible ribbon only.
-  // TODO(mtomasz): Do not call the head tracker when performing any CSS
-  // transitions or animations.
-  var requestHeadTrackerUpdate = this.mainProcessor_.effect.usesHeadTracker() ||
-      (this.expanded_ && this.frame_ %
-       camera.views.Camera.RIBBON_HEAD_TRACKER_SKIP_FRAMES == 0);
-
-  // Copy the video frame to the back buffer. The back buffer is low resolution
-  // since it is only used by the head tracker. Also, if the currently selected
-  // effect does not use head tracking, then use even lower resolution, so we
-  // can get higher FPS, when the head tracker is used for tiny effect previews
-  // only.
-  {
-    var finishMeasuring = this.performanceMonitors_.startMeasuring(
-        'resample-and-schedule-head-tracking');
-    if (!this.tracker_.busy && requestHeadTrackerUpdate) {
-      this.setHeadTrackerQuality_(
-          this.mainProcessor_.effect.usesHeadTracker() ?
-              camera.views.Camera.HeadTrackerQuality.NORMAL :
-              camera.views.Camera.HeadTrackerQuality.LOW);
-
-      // Aspect ratios are required to be same.
-      var context = this.trackerInputCanvas_.getContext('2d');
-      context.drawImage(this.video_,
-                        0,
-                        0,
-                        this.trackerInputCanvas_.width,
-                        this.trackerInputCanvas_.height);
-
-      this.tracker_.detect();
-    }
-    finishMeasuring();
-  }
-
-  // Update internal state of the tracker.
-  {
-    var finishMeasuring =
-        this.performanceMonitors_.startMeasuring('interpolate-head-tracker');
-    this.tracker_.update();
-    finishMeasuring();
-  }
-
   // Draw the camera frame. Decrease the rendering resolution when scrolling, or
   // while performing animations.
   {
     var finishMeasuring =
         this.performanceMonitors_.startMeasuring('draw-frame');
-    if (this.mainProcessor_.effect.isMultiframe()) {
-      // Always draw in best quality as taken pictures need multiple frames.
-      this.drawCameraFrame_(camera.views.Camera.DrawMode.BEST);
-    } else if (this.toolbarEffect_.animating ||
-        this.mainProcessor_.effect.isSlow() ||
+    if (this.toolbarEffect_.animating ||
         this.context.isUIAnimating() || this.toastEffect_.animating ||
         (this.scrollTracker_.scrolling && this.expanded_)) {
       this.drawCameraFrame_(camera.views.Camera.DrawMode.FAST);
@@ -2479,30 +1857,6 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
       this.drawCameraFrame_(camera.views.Camera.DrawMode.NORMAL);
     }
     finishMeasuring();
-  }
-
-  if (!document.querySelector('#filters-toggle').disabled) {
-    // Draw the effects' ribbon.
-    // Process effect preview canvases. Ribbon initialization is true before the
-    // ribbon is expanded for the first time. This trick is used to fill the
-    // ribbon with images as soon as possible.
-    {
-      var finishMeasuring =
-          this.performanceMonitors_.startMeasuring('draw-ribbon');
-      if (!this.taking_ && !this.context.isUIAnimating() &&
-          !this.scrollTracker_.scrolling && !this.toolbarEffect_.animating &&
-          !this.toastEffect_.animating || this.ribbonInitialization_) {
-        if (this.expanded_ &&
-            this.frame_ % camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0) {
-          // Render all visible + one not visible.
-          this.drawEffectsRibbon_(camera.views.Camera.DrawMode.NORMAL);
-        } else {
-          // Render only one effect per frame. This is to avoid stale images.
-          this.drawEffectsRibbon_(camera.views.Camera.DrawMode.FAST);
-        }
-      }
-      finishMeasuring();
-    }
   }
 
   this.frame_++;
