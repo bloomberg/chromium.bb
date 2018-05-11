@@ -158,18 +158,15 @@ def main():
   if not args:
     parser.error('No function names specified')
 
-  # Make sure we are always dealing with paths relative to source tree root
-  # to avoid issues caused by different relative path roots.
-  source_tree_root = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..', '..'))
-  options.output_cc = os.path.relpath(options.output_cc, source_tree_root)
-  options.output_h = os.path.relpath(options.output_h, source_tree_root)
+  if os.path.dirname(options.output_cc) != os.path.dirname(options.output_h):
+    parser.error('--output-cc and --output-h must be in same directory')
 
   # Create a unique prefix, e.g. for header guards.
   # Stick a known string at the beginning to ensure this doesn't begin
   # with an underscore, which is reserved for the C++ implementation.
-  unique_prefix = ('LIBRARY_LOADER_' +
-                   re.sub(r'[\W]', '_', options.output_h).upper())
+  unique_prefix = (
+      'LIBRARY_LOADER_' +
+      re.sub(r'[\W]', '_', os.path.basename(options.output_h)).upper())
 
   member_decls = []
   member_init = []
@@ -212,6 +209,8 @@ def main():
   # Make it easier for people to find the code generator just in case.
   # Doing it this way is more maintainable, because it's going to work
   # even if file gets moved without updating the contents.
+  source_tree_root = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', '..'))
   generator_path = os.path.relpath(__file__, source_tree_root)
 
   header_contents = HEADER_TEMPLATE % {
@@ -225,19 +224,19 @@ def main():
   impl_contents = IMPL_TEMPLATE % {
     'generator_path': generator_path,
     'unique_prefix': unique_prefix,
-    'generated_header_name': options.output_h,
+    'generated_header_name': os.path.basename(options.output_h),
     'class_name': options.name,
     'member_init': ''.join(member_init),
     'member_cleanup': ''.join(member_cleanup),
   }
 
-  header_file = open(os.path.join(source_tree_root, options.output_h), 'w')
+  header_file = open(options.output_h, 'w')
   try:
     header_file.write(header_contents)
   finally:
     header_file.close()
 
-  impl_file = open(os.path.join(source_tree_root, options.output_cc), 'w')
+  impl_file = open(options.output_cc, 'w')
   try:
     impl_file.write(impl_contents)
   finally:
