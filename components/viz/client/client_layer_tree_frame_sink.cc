@@ -135,8 +135,10 @@ void ClientLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
     if (local_surface_id_ == last_submitted_local_surface_id_) {
       CHECK_EQ(last_submitted_device_scale_factor_,
                frame.device_scale_factor());
-      CHECK_EQ(last_submitted_size_in_pixels_.ToString(),
-               frame.size_in_pixels().ToString());
+      CHECK_EQ(last_submitted_size_in_pixels_.height(),
+               frame.size_in_pixels().height());
+      CHECK_EQ(last_submitted_size_in_pixels_.width(),
+               frame.size_in_pixels().width());
     }
   }
 
