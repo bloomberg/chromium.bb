@@ -113,13 +113,15 @@ const GUID kContentShellProviderName = {
 #endif
 
 void InitLogging(const base::CommandLine& command_line) {
-  base::FilePath log_filename;
-  std::string filename = command_line.GetSwitchValueASCII(switches::kLogFile);
-  if (filename.empty()) {
+  base::FilePath log_filename =
+      command_line.GetSwitchValuePath(switches::kLogFile);
+  if (log_filename.empty()) {
+#if defined(OS_FUCHSIA)
+    base::PathService::Get(base::DIR_TEMP, &log_filename);
+#else
     base::PathService::Get(base::DIR_EXE, &log_filename);
+#endif
     log_filename = log_filename.AppendASCII("content_shell.log");
-  } else {
-    log_filename = base::FilePath::FromUTF8Unsafe(filename);
   }
 
   logging::LoggingSettings settings;
