@@ -6,6 +6,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
+    ":account_manager",
     ":change_picture",
     ":change_picture_browser_proxy",
     ":easy_unlock_browser_proxy",
@@ -31,6 +32,14 @@ js_type_check("closure_compile") {
     ":user_list",
     ":users_add_user_dialog",
     ":users_page",
+  ]
+}
+
+js_library("account_manager") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js:icon",
   ]
 }
 

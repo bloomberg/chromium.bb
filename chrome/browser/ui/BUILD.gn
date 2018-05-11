@@ -2066,6 +2066,8 @@ split_static_library("ui") {
       "webui/help/version_updater_chromeos.h",
       "webui/settings/chromeos/accessibility_handler.cc",
       "webui/settings/chromeos/accessibility_handler.h",
+      "webui/settings/chromeos/account_manager_handler.cc",
+      "webui/settings/chromeos/account_manager_handler.h",
       "webui/settings/chromeos/android_apps_handler.cc",
       "webui/settings/chromeos/android_apps_handler.h",
       "webui/settings/chromeos/change_picture_handler.cc",
