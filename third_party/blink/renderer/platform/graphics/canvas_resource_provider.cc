@@ -320,10 +320,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
                 size, msaa_sample_count, colorParams, context_provider_wrapper);
         break;
       case kTextureResourceType:
-        // TODO(xlai): Check gpu acceleration mode before using this Resource
-        // Type of CanvasResourceProvider and then add
-        // "DCHECK(SharedGpuContext::IsGpuCompositingEnabled());" here.
-        // See https://crbug.com/802053.
+        DCHECK(SharedGpuContext::IsGpuCompositingEnabled());
         provider = std::make_unique<CanvasResourceProviderTexture>(
             size, msaa_sample_count, colorParams, context_provider_wrapper);
         break;
