@@ -61,8 +61,8 @@ class FileDescriptorWatcher::Controller::Watcher
   // MessageLoopCurrent::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override;
 
-  // Used to instruct the MessageLoopForIO to stop watching the file descriptor.
-  MessagePumpForIO::FdWatchController file_descriptor_watcher_;
+  // The MessageLoopForIO's watch handle (stops the watch when destroyed).
+  MessagePumpForIO::FdWatchController fd_watch_controller_;
 
   // Runs tasks on the sequence on which this was instantiated (i.e. the
   // sequence on which the callback must run).
@@ -94,7 +94,7 @@ FileDescriptorWatcher::Controller::Watcher::Watcher(
     WeakPtr<Controller> controller,
     MessagePumpForIO::Mode mode,
     int fd)
-    : file_descriptor_watcher_(FROM_HERE),
+    : fd_watch_controller_(FROM_HERE),
       controller_(controller),
       mode_(mode),
       fd_(fd) {
@@ -111,7 +111,7 @@ void FileDescriptorWatcher::Controller::Watcher::StartWatching() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
-          fd_, false, mode_, &file_descriptor_watcher_, this)) {
+          fd_, false, mode_, &fd_watch_controller_, this)) {
     // TODO(wez): Ideally we would [D]CHECK here, or propagate the failure back
     // to the caller, but there is no guarantee that they haven't already
     // closed |fd_| on another thread, so the best we can do is Debug-log.
