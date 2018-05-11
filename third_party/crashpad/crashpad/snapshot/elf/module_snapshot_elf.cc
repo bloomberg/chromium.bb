@@ -14,6 +14,8 @@
 
 #include "snapshot/elf/module_snapshot_elf.h"
 
+#include <endian.h>
+
 #include <algorithm>
 
 #include "base/files/file_path.h"
@@ -25,10 +27,12 @@ namespace internal {
 
 ModuleSnapshotElf::ModuleSnapshotElf(const std::string& name,
                                      ElfImageReader* elf_reader,
-                                     ModuleSnapshot::ModuleType type)
+                                     ModuleSnapshot::ModuleType type,
+                                     ProcessMemoryRange* process_memory_range)
     : ModuleSnapshot(),
       name_(name),
       elf_reader_(elf_reader),
+      process_memory_range_(process_memory_range),
       crashpad_info_(),
       type_(type),
       initialized_() {}
@@ -144,6 +148,13 @@ void ModuleSnapshotElf::UUIDAndAge(crashpad::UUID* uuid, uint32_t* age) const {
   notes->NextNote(nullptr, nullptr, &desc);
   desc.insert(desc.end(), 16 - std::min(desc.size(), size_t{16}), '\0');
   uuid->InitializeFromBytes(reinterpret_cast<const uint8_t*>(&desc[0]));
+
+  // TODO(scottmg): https://crashpad.chromium.org/bug/229. These are
+  // endian-swapped to match FileID::ConvertIdentifierToUUIDString() in
+  // Breakpad. This is necessary as this identifier is used for symbol lookup.
+  uuid->data_1 = htobe32(uuid->data_1);
+  uuid->data_2 = htobe16(uuid->data_2);
+  uuid->data_3 = htobe16(uuid->data_3);
 }
 
 std::string ModuleSnapshotElf::DebugFileName() const {
@@ -161,7 +172,7 @@ std::map<std::string, std::string> ModuleSnapshotElf::AnnotationsSimpleMap()
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   std::map<std::string, std::string> annotations;
   if (crashpad_info_ && crashpad_info_->SimpleAnnotations()) {
-    ImageAnnotationReader reader(elf_reader_->Memory());
+    ImageAnnotationReader reader(process_memory_range_);
     reader.SimpleMap(crashpad_info_->SimpleAnnotations(), &annotations);
   }
   return annotations;
@@ -171,7 +182,7 @@ std::vector<AnnotationSnapshot> ModuleSnapshotElf::AnnotationObjects() const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   std::vector<AnnotationSnapshot> annotations;
   if (crashpad_info_ && crashpad_info_->AnnotationsList()) {
-    ImageAnnotationReader reader(elf_reader_->Memory());
+    ImageAnnotationReader reader(process_memory_range_);
     reader.AnnotationsList(crashpad_info_->AnnotationsList(), &annotations);
   }
   return annotations;

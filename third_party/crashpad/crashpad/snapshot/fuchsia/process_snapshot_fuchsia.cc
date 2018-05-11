@@ -33,7 +33,8 @@ bool ProcessSnapshotFuchsia::Initialize(zx_handle_t process) {
     return false;
   }
 
-  if (!process_reader_.Initialize(process)) {
+  if (!process_reader_.Initialize(process) ||
+      !memory_range_.Initialize(process_reader_.Memory(), true)) {
     return false;
   }
 
@@ -43,6 +44,15 @@ bool ProcessSnapshotFuchsia::Initialize(zx_handle_t process) {
   InitializeModules();
 
   INITIALIZATION_STATE_SET_VALID(initialized_);
+  return true;
+}
+
+bool ProcessSnapshotFuchsia::InitializeException(
+    zx_koid_t thread_id,
+    const zx_exception_report_t& report) {
+  INITIALIZATION_STATE_DCHECK_VALID(initialized_);
+  exception_.reset(new internal::ExceptionSnapshotFuchsia());
+  exception_->Initialize(&process_reader_, thread_id, report);
   return true;
 }
 
@@ -161,8 +171,7 @@ std::vector<UnloadedModuleSnapshot> ProcessSnapshotFuchsia::UnloadedModules()
 
 const ExceptionSnapshot* ProcessSnapshotFuchsia::Exception() const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  // TODO(scottmg): https://crashpad.chromium.org/bug/196
-  return nullptr;
+  return exception_.get();
 }
 
 std::vector<const MemoryMapRegionSnapshot*> ProcessSnapshotFuchsia::MemoryMap()
@@ -196,8 +205,11 @@ void ProcessSnapshotFuchsia::InitializeThreads() {
 void ProcessSnapshotFuchsia::InitializeModules() {
   for (const ProcessReaderFuchsia::Module& reader_module :
        process_reader_.Modules()) {
-    auto module = std::make_unique<internal::ModuleSnapshotElf>(
-        reader_module.name, reader_module.reader, reader_module.type);
+    auto module =
+        std::make_unique<internal::ModuleSnapshotElf>(reader_module.name,
+                                                      reader_module.reader,
+                                                      reader_module.type,
+                                                      &memory_range_);
     if (module->Initialize()) {
       modules_.push_back(std::move(module));
     }

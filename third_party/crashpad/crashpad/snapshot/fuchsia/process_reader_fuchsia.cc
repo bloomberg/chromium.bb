@@ -24,6 +24,53 @@
 
 namespace crashpad {
 
+namespace {
+
+// Based on the thread's SP and the process's memory map, attempts to figure out
+// the stack regions for the thread. Fuchsia's C ABI specifies
+// https://fuchsia.googlesource.com/zircon/+/master/docs/safestack.md so the
+// callstack and locals-that-have-their-address-taken are in two different
+// stacks.
+void GetStackRegions(
+    const zx_thread_state_general_regs_t& regs,
+    const MemoryMapFuchsia& memory_map,
+    std::vector<CheckedRange<zx_vaddr_t, size_t>>* stack_regions) {
+  stack_regions->clear();
+
+  uint64_t sp;
+#if defined(ARCH_CPU_X86_64)
+  sp = regs.rsp;
+#elif defined(ARCH_CPU_ARM64)
+  sp = regs.sp;
+#else
+#error Port
+#endif
+
+  zx_info_maps_t range_with_sp;
+  if (!memory_map.FindMappingForAddress(sp, &range_with_sp)) {
+    LOG(ERROR) << "stack pointer not found in mapping";
+    return;
+  }
+
+  if (range_with_sp.type != ZX_INFO_MAPS_TYPE_MAPPING) {
+    LOG(ERROR) << "stack range has unexpected type, continuing anyway";
+  }
+
+  if (range_with_sp.u.mapping.mmu_flags & ZX_VM_FLAG_PERM_EXECUTE) {
+    LOG(ERROR)
+        << "stack range is unexpectedly marked executable, continuing anyway";
+  }
+
+  stack_regions->push_back(
+      CheckedRange<zx_vaddr_t, size_t>(range_with_sp.base, range_with_sp.size));
+
+  // TODO(scottmg): https://crashpad.chromium.org/bug/196, once the retrievable
+  // registers include FS and similar for ARM, retrieve the region for the
+  // unsafe part of the stack too.
+}
+
+}  // namespace
+
 ProcessReaderFuchsia::Module::Module() = default;
 
 ProcessReaderFuchsia::Module::~Module() = default;
@@ -43,6 +90,8 @@ bool ProcessReaderFuchsia::Initialize(zx_handle_t process) {
 
   process_memory_.reset(new ProcessMemoryFuchsia());
   process_memory_->Initialize(process_);
+
+  memory_map_.Initialize(process_);
 
   INITIALIZATION_STATE_SET_VALID(initialized_);
   return true;
@@ -81,7 +130,7 @@ void ProcessReaderFuchsia::InitializeModules() {
   // retrieves (some of) the data into internal structures. It may be worth
   // trying to refactor/upstream some of this into Fuchsia.
 
-  std::string app_name("app:");
+  std::string app_name;
   {
     char name[ZX_MAX_NAME_LEN];
     zx_status_t status =
@@ -91,7 +140,7 @@ void ProcessReaderFuchsia::InitializeModules() {
       return;
     }
 
-    app_name += name;
+    app_name = name;
   }
 
   // Starting from the ld.so's _dl_debug_addr, read the link_map structure and
@@ -155,6 +204,16 @@ void ProcessReaderFuchsia::InitializeModules() {
       // In this case, it could be reasonable to continue on to the next module
       // as this data isn't strictly in the link_map.
       LOG(ERROR) << "ReadCString name";
+    }
+
+    // The vDSO is libzircon.so, but it's not actually loaded normally, it's
+    // injected by the kernel, so doesn't have a normal name. When dump_syms is
+    // run on libzircon.so, it uses that file name, and in order for the crash
+    // server to match symbols both the debug id and the name of the binary have
+    // to match. So, map from "<vDSO>" to "libzircon.so" so that symbol
+    // resolution works correctly.
+    if (dsoname == "<vDSO>") {
+      dsoname = "libzircon.so";
     }
 
     Module module;
@@ -232,6 +291,8 @@ void ProcessReaderFuchsia::InitializeThreads() {
         ZX_LOG(WARNING, status) << "zx_thread_read_state";
       } else {
         thread.general_registers = regs;
+
+        GetStackRegions(regs, memory_map_, &thread.stack_regions);
       }
     }
 

@@ -14,13 +14,6 @@
 
 import("../build/crashpad_buildconfig.gni")
 
-declare_args() {
-  if (crashpad_is_linux) {
-    # Whether the libcurl-based HTTPTransport implementation should be built.
-    crashpad_enable_http_transport_libcurl = !crashpad_is_in_chromium
-  }
-}
-
 if (crashpad_is_mac) {
   if (crashpad_is_in_chromium) {
     import("//build/config/sysroot.gni")
@@ -251,12 +244,10 @@ static_library("util") {
     sources += get_target_outputs(":mig")
   }
 
-  if (crashpad_is_linux || crashpad_is_android) {
-    if (crashpad_is_linux && crashpad_enable_http_transport_libcurl) {
-      sources += [ "net/http_transport_libcurl.cc" ]
-    } else {
-      sources += [ "net/http_transport_none.cc" ]
-    }
+  if (crashpad_is_linux || crashpad_is_fuchsia) {
+    sources += [ "net/http_transport_socket.cc" ]
+  } else if (crashpad_is_android) {
+    sources += [ "net/http_transport_none.cc" ]
   }
 
   if (crashpad_is_linux || crashpad_is_android) {
@@ -388,13 +379,13 @@ static_library("util") {
 
   if (crashpad_is_fuchsia) {
     sources += [
+      "fuchsia/system_exception_port_key.h",
       "fuchsia/koid_utilities.cc",
       "fuchsia/koid_utilities.h",
       "fuchsia/scoped_task_suspend.cc",
       "fuchsia/scoped_task_suspend.h",
       "misc/capture_context_fuchsia.S",
       "misc/paths_fuchsia.cc",
-      "net/http_transport_none.cc",
       "process/process_memory_fuchsia.cc",
       "process/process_memory_fuchsia.h",
     ]
@@ -425,10 +416,6 @@ static_library("util") {
     include_dirs += [ "$root_build_dir/gen" ]
   }
 
-  if (crashpad_is_linux && crashpad_enable_http_transport_libcurl) {
-    libs = [ "curl" ]
-  }
-
   if (crashpad_is_win) {
     libs = [
       "user32.lib",
@@ -444,6 +431,33 @@ static_library("util") {
 
     if (current_cpu == "x86") {
       asmflags = [ "/safeseh" ]
+    }
+  }
+}
+
+if (!crashpad_is_android) {
+  crashpad_executable("http_transport_test_server") {
+    testonly = true
+    sources = [
+      "net/http_transport_test_server.cc",
+    ]
+
+    deps = [
+      ":util",
+      "../third_party/cpp-httplib",
+      "../third_party/mini_chromium:base",
+      "../third_party/zlib",
+      "../tools:tool_support",
+    ]
+
+    if (crashpad_is_standalone) {
+      remove_configs = [
+        "//third_party/mini_chromium/mini_chromium/build:Wexit_time_destructors",
+      ]
+    }
+
+    if (crashpad_is_win) {
+      libs = [ "ws2_32.lib" ]
     }
   }
 }
@@ -494,19 +508,8 @@ source_set("util_test") {
     "thread/worker_thread_test.cc",
   ]
 
-  if (!crashpad_is_android && !crashpad_is_fuchsia &&
-      (!crashpad_is_linux || crashpad_enable_http_transport_libcurl)) {
-    # Android and Fuchsia will each require an HTTPTransport implementation
-    # (libcurl isn’t in either’s SDK) and a solution to
-    # http_transport_test_server.py, because Python isn’t available on either.
-    # The latter could be ported to non-Python, or the test server could run on
-    # the build host with a method to forward requests from the device to the
-    # host.
-    #
-    # Linux optionally compiles in a libcurl-based HTTPTransport, but since curl
-    # isn't in a base Debian sysroot (which is what Chromium builds against),
-    # maintain an option to exclude that, for now.
-    # https://crashpad.chromium.org/bug/220.
+  if (!crashpad_is_android) {
+    # Android requires an HTTPTransport implementation.
     sources += [ "net/http_transport_test.cc" ]
   }
 
@@ -589,7 +592,6 @@ source_set("util_test") {
   }
 
   data = [
-    "net/http_transport_test_server.py",
     "net/testdata/",
   ]
 
@@ -604,6 +606,12 @@ source_set("util_test") {
     "../third_party/zlib",
   ]
 
+  if (!crashpad_is_android) {
+    data_deps = [
+      ":http_transport_test_server",
+    ]
+  }
+
   if (crashpad_is_mac) {
     libs = [ "Foundation.framework" ]
   }
@@ -613,7 +621,7 @@ source_set("util_test") {
       "rpcrt4.lib",
       "dbghelp.lib",
     ]
-    data_deps = [
+    data_deps += [
       ":crashpad_util_test_process_info_test_child",
       ":crashpad_util_test_safe_terminate_process_test_child",
     ]

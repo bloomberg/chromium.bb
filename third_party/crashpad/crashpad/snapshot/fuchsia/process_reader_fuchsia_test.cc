@@ -14,11 +14,15 @@
 
 #include "snapshot/fuchsia/process_reader_fuchsia.h"
 
+#include <pthread.h>
 #include <zircon/process.h>
 #include <zircon/syscalls.h>
+#include <zircon/syscalls/port.h>
 
 #include "gtest/gtest.h"
 #include "test/multiprocess_exec.h"
+#include "test/test_paths.h"
+#include "util/fuchsia/scoped_task_suspend.h"
 
 namespace crashpad {
 namespace test {
@@ -60,6 +64,9 @@ TEST(ProcessReaderFuchsia, SelfBasic) {
 constexpr char kTestMemory[] = "Read me from another process";
 
 CRASHPAD_CHILD_TEST_MAIN(ProcessReaderBasicChildTestMain) {
+  zx_vaddr_t addr = reinterpret_cast<zx_vaddr_t>(kTestMemory);
+  CheckedWriteFile(
+      StdioFileHandle(StdioStream::kStandardOutput), &addr, sizeof(addr));
   CheckedReadFileAtEOF(StdioFileHandle(StdioStream::kStandardInput));
   return 0;
 }
@@ -74,11 +81,13 @@ class BasicChildTest : public MultiprocessExec {
  private:
   void MultiprocessParent() override {
     ProcessReaderFuchsia process_reader;
-    ASSERT_TRUE(process_reader.Initialize(zx_process_self()));
+    ASSERT_TRUE(process_reader.Initialize(ChildProcess()));
+
+    zx_vaddr_t addr;
+    ASSERT_TRUE(ReadFileExactly(ReadPipeHandle(), &addr, sizeof(addr)));
 
     std::string read_string;
-    ASSERT_TRUE(process_reader.Memory()->ReadCString(
-        reinterpret_cast<zx_vaddr_t>(kTestMemory), &read_string));
+    ASSERT_TRUE(process_reader.Memory()->ReadCString(addr, &read_string));
     EXPECT_EQ(read_string, kTestMemory);
   }
 
@@ -87,6 +96,77 @@ class BasicChildTest : public MultiprocessExec {
 
 TEST(ProcessReaderFuchsia, ChildBasic) {
   BasicChildTest test;
+  test.Run();
+}
+
+void* SignalAndSleep(void* arg) {
+  zx_port_packet_t packet = {};
+  packet.type = ZX_PKT_TYPE_USER;
+  zx_port_queue(*reinterpret_cast<zx_handle_t*>(arg), &packet, 1);
+  zx_nanosleep(UINT64_MAX);
+  return nullptr;
+}
+
+CRASHPAD_CHILD_TEST_MAIN(ProcessReaderChildThreadsTestMain) {
+  // Create 5 threads with stack sizes of 4096, 8192, ...
+  zx_handle_t port;
+  zx_status_t status = zx_port_create(0, &port);
+  EXPECT_EQ(status, ZX_OK);
+
+  constexpr size_t kNumThreads = 5;
+  for (size_t i = 0; i < kNumThreads; ++i) {
+    pthread_attr_t attr;
+    EXPECT_EQ(pthread_attr_init(&attr), 0);
+    EXPECT_EQ(pthread_attr_setstacksize(&attr, (i + 1) * 4096), 0);
+    pthread_t thread;
+    EXPECT_EQ(pthread_create(&thread, &attr, &SignalAndSleep, &port), 0);
+  }
+
+  // Wait until all threads are ready.
+  for (size_t i = 0; i < kNumThreads; ++i) {
+    zx_port_packet_t packet;
+    zx_port_wait(port, ZX_TIME_INFINITE, &packet, 1);
+  }
+
+  char c = ' ';
+  CheckedWriteFile(
+      StdioFileHandle(StdioStream::kStandardOutput), &c, sizeof(c));
+  CheckedReadFileAtEOF(StdioFileHandle(StdioStream::kStandardInput));
+  return 0;
+}
+
+class ThreadsChildTest : public MultiprocessExec {
+ public:
+  ThreadsChildTest() : MultiprocessExec() {
+    SetChildTestMainFunction("ProcessReaderChildThreadsTestMain");
+  }
+  ~ThreadsChildTest() {}
+
+ private:
+  void MultiprocessParent() override {
+    char c;
+    ASSERT_TRUE(ReadFileExactly(ReadPipeHandle(), &c, 1));
+    ASSERT_EQ(c, ' ');
+
+    ScopedTaskSuspend suspend(ChildProcess());
+
+    ProcessReaderFuchsia process_reader;
+    ASSERT_TRUE(process_reader.Initialize(ChildProcess()));
+
+    const auto& threads = process_reader.Threads();
+    EXPECT_EQ(threads.size(), 6u);
+
+    for (size_t i = 1; i < 6; ++i) {
+      ASSERT_GT(threads[i].stack_regions.size(), 0u);
+      EXPECT_EQ(threads[i].stack_regions[0].size(), i * 4096u);
+    }
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadsChildTest);
+};
+
+TEST(ProcessReaderFuchsia, ChildThreads) {
+  ThreadsChildTest test;
   test.Run();
 }
 
