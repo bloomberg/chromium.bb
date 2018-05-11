@@ -10,12 +10,8 @@ namespace resource_coordinator {
 enum class LifecycleState {
   // The LifecycleUnit is alive and active.
   ACTIVE,
-  // The LifecycleUnit is pending a freeze.
-  PENDING_FREEZE,
   // The LifecycleUnit is frozen.
   FROZEN,
-  // The LifecycleUnit is pending a discard.
-  PENDING_DISCARD,
   // The LifecycleUnit is discarded, and is consuming no system resources.
   DISCARDED,
 };

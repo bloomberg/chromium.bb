@@ -8,12 +8,8 @@
 #include <vector>
 
 #include "base/stl_util.h"
-#include "base/test/simple_test_tick_clock.h"
-#include "base/test/test_mock_time_task_runner.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
-#include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -46,6 +42,8 @@ class MockLocalSessionEventHandler : public LocalSessionEventHandler {
 
 class BrowserListRouterHelperTest : public BrowserWithTestWindowTest {
  protected:
+  ~BrowserListRouterHelperTest() override {}
+
   MockLocalSessionEventHandler handler_1;
   MockLocalSessionEventHandler handler_2;
 };
@@ -139,24 +137,8 @@ TEST_F(BrowserListRouterHelperTest, NotifyOnDiscardTab) {
   handler_1.seen_urls()->clear();
   handler_1.seen_ids()->clear();
 
-  {
-    auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
-    base::TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner);
-    resource_coordinator::ScopedSetTickClockForTesting scoped_set_tick_clock(
-        task_runner->GetMockTickClock());
-
-    g_browser_process->GetTabManager()->DiscardTabByExtension(
-        browser()->tab_strip_model()->GetWebContentsAt(0));
-
-    // After a tab goes through a non-urgent discard, such as by an extension,
-    // it is frozen prior to being fully discarded.
-    // kProactiveDiscardFreezeTimeout is the duration before the tab finishes
-    // discarding after beginning a discard. Fast forward
-    // kProactiveDiscardFreezeTimeout amount of time to ensure the discard is
-    // complete.
-    task_runner->FastForwardBy(
-        resource_coordinator::kProactiveDiscardFreezeTimeout);
-  }
+  g_browser_process->GetTabManager()->DiscardTabByExtension(
+      browser()->tab_strip_model()->GetWebContentsAt(0));
 
   // We're typically notified twice while discarding tabs. Once for the
   // destruction of the old web contents, and once for the new. This test case
