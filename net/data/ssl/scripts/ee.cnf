@@ -112,3 +112,41 @@ DNS.3 = blahblahblahblah.com
 
 [wildcard]
 DNS.1 = *.example.org
+
+[subj_rsa_no_extension]
+CN = RSA-2048 no keyUsage extension
+[ext_rsa_no_extension]
+
+[subj_rsa_keyencipherment]
+CN = RSA-2048 keyEncipherment
+[ext_rsa_keyencipherment]
+keyUsage = critical, keyEncipherment
+
+[subj_rsa_digitalsignature]
+CN = RSA-2048 digitalSignature
+[ext_rsa_digitalsignature]
+keyUsage = critical, digitalSignature
+
+[subj_rsa_both]
+CN = RSA-2048 keyEncipherment and digitalSignature
+[ext_rsa_both]
+keyUsage = critical, keyEncipherment, digitalSignature
+
+[subj_p256_no_extension]
+CN = P-256 no keyUsage extension
+[ext_p256_no_extension]
+
+[subj_p256_keyagreement]
+CN = P-256 keyAgreement
+[ext_p256_keyagreement]
+keyUsage = critical, keyAgreement
+
+[subj_p256_digitalsignature]
+CN = P-256 digitalSignature
+[ext_p256_digitalsignature]
+keyUsage = critical, digitalSignature
+
+[subj_p256_both]
+CN = P-256 keyAgreement and digitalSignature
+[ext_p256_both]
+keyUsage = critical, keyAgreement, digitalSignature

@@ -16,7 +16,6 @@
 #include "crypto/signature_verifier.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
-#include "net/cert/asn1_util.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
@@ -514,12 +513,6 @@ bool ProofVerifierChromium::Job::VerifySignature(
     QuicStringPiece chlo_hash,
     const string& signature,
     const string& cert) {
-  QuicStringPiece spki;
-  if (!asn1::ExtractSPKIFromDERCert(cert, &spki)) {
-    DLOG(WARNING) << "ExtractSPKIFromDERCert failed";
-    return false;
-  }
-
   size_t size_bits;
   X509Certificate::PublicKeyType type;
   X509Certificate::GetPublicKeyInfo(cert_->cert_buffer(), &size_bits, &type);
@@ -537,10 +530,10 @@ bool ProofVerifierChromium::Job::VerifySignature(
   }
 
   crypto::SignatureVerifier verifier;
-  if (!verifier.VerifyInit(algorithm,
-                           base::as_bytes(base::make_span(signature)),
-                           base::as_bytes(base::make_span(spki)))) {
-    DLOG(WARNING) << "VerifyInit failed";
+  if (!x509_util::SignatureVerifierInitWithCertificate(
+          &verifier, algorithm, base::as_bytes(base::make_span(signature)),
+          cert_->cert_buffer())) {
+    DLOG(WARNING) << "SignatureVerifierInitWithCertificate failed";
     return false;
   }
 

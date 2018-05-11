@@ -18,7 +18,6 @@
 #include "content/browser/web_package/signed_exchange_header_parser.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "crypto/signature_verifier.h"
-#include "net/cert/asn1_util.h"
 #include "net/cert/x509_util.h"
 
 namespace content {
@@ -143,15 +142,6 @@ bool VerifySignature(base::span<const uint8_t> sig,
                      scoped_refptr<net::X509Certificate> cert,
                      SignedExchangeDevToolsProxy* devtools_proxy) {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature");
-  base::StringPiece spki;
-  if (!net::asn1::ExtractSPKIFromDERCert(
-          net::x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()),
-          &spki)) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "VerifySignature", "Failed to extract SPKI.");
-    return false;
-  }
-
   size_t size_bits;
   net::X509Certificate::PublicKeyType type;
   net::X509Certificate::GetPublicKeyInfo(cert->cert_buffer(), &size_bits,
@@ -165,13 +155,13 @@ bool VerifySignature(base::span<const uint8_t> sig,
     return false;
   }
 
-  // TODO(crbug.com/803774): This is missing the digitalSignature key usage bit
-  // check.
   crypto::SignatureVerifier verifier;
-  if (!verifier.VerifyInit(crypto::SignatureVerifier::RSA_PSS_SHA256, sig,
-                           base::as_bytes(base::make_span(spki)))) {
+  if (!net::x509_util::SignatureVerifierInitWithCertificate(
+          &verifier, crypto::SignatureVerifier::RSA_PSS_SHA256, sig,
+          cert->cert_buffer())) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "VerifySignature", "VerifyInit failed.");
+        devtools_proxy, "VerifySignature",
+        "SignatureVerifierInitWithCertificate failed.");
     return false;
   }
   verifier.VerifyUpdate(msg);
