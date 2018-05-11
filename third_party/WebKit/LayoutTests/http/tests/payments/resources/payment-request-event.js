@@ -3,7 +3,7 @@ importScripts('../../serviceworker/resources/worker-testharness.js');
 test(() => {
   assert_true('PaymentRequestEvent' in self);
   assert_inherits(PaymentRequestEvent.prototype, 'waitUntil');
-  assert_own_property(PaymentRequestEvent.prototype, 'topLevelOrigin');
+  assert_own_property(PaymentRequestEvent.prototype, 'topOrigin');
   assert_own_property(PaymentRequestEvent.prototype, 'paymentRequestOrigin');
   assert_own_property(PaymentRequestEvent.prototype, 'paymentRequestId');
   assert_own_property(PaymentRequestEvent.prototype, 'methodData');
@@ -16,7 +16,7 @@ test(() => {
 promise_test(() => {
   return new Promise(resolve => {
     var eventWithInit = new PaymentRequestEvent('paymentrequest', {
-      topLevelOrigin: 'https://example.com',
+      topOrigin: 'https://example.com',
       paymentRequestOrigin: 'https://example.com',
       paymentRequestId: 'payment-request-id',
       methodData: [{
@@ -33,7 +33,7 @@ promise_test(() => {
     });
 
     self.addEventListener('paymentrequest', e => {
-      assert_equals(e.topLevelOrigin, 'https://example.com');
+      assert_equals(e.topOrigin, 'https://example.com');
       assert_equals(e.paymentRequestOrigin, 'https://example.com');
       assert_equals(e.paymentRequestId, 'payment-request-id');
       assert_equals(e.methodData.length, 1);

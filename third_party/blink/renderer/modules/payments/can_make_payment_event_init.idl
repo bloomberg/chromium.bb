@@ -5,7 +5,7 @@
 // https://github.com/w3c/payment-handler/pull/170
 
 dictionary CanMakePaymentEventInit : ExtendableEventInit {
-    USVString topLevelOrigin;
+    USVString topOrigin;
     USVString paymentRequestOrigin;
     sequence<PaymentMethodData> methodData;
     sequence<PaymentDetailsModifier> modifiers;

@@ -37,8 +37,8 @@ const AtomicString& CanMakePaymentEvent::InterfaceName() const {
   return EventNames::CanMakePaymentEvent;
 }
 
-const String& CanMakePaymentEvent::topLevelOrigin() const {
-  return top_level_origin_;
+const String& CanMakePaymentEvent::topOrigin() const {
+  return top_origin_;
 }
 
 const String& CanMakePaymentEvent::paymentRequestOrigin() const {
@@ -83,7 +83,7 @@ CanMakePaymentEvent::CanMakePaymentEvent(
     RespondWithObserver* respond_with_observer,
     WaitUntilObserver* wait_until_observer)
     : ExtendableEvent(type, initializer, wait_until_observer),
-      top_level_origin_(initializer.topLevelOrigin()),
+      top_origin_(initializer.topOrigin()),
       payment_request_origin_(initializer.paymentRequestOrigin()),
       method_data_(std::move(initializer.methodData())),
       modifiers_(initializer.modifiers()),

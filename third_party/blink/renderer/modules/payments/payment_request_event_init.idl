@@ -5,7 +5,7 @@
 // https://w3c.github.io/payment-handler/#paymentrequesteventinit-dictionary
 
 dictionary PaymentRequestEventInit : ExtendableEventInit {
-    USVString topLevelOrigin;
+    USVString topOrigin;
     USVString paymentRequestOrigin;
     DOMString paymentRequestId;
     sequence<PaymentMethodData> methodData;
