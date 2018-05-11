@@ -108,7 +108,7 @@ CrashHandlerHostLinux::CrashHandlerHostLinux(const std::string& process_type,
 #if !defined(OS_ANDROID)
       upload_(upload),
 #endif
-      file_descriptor_watcher_(FROM_HERE),
+      fd_watch_controller_(FROM_HERE),
       shutting_down_(false),
       blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE})) {
@@ -148,7 +148,7 @@ void CrashHandlerHostLinux::Init() {
   base::MessageLoopCurrentForIO ml = base::MessageLoopCurrentForIO::Get();
   CHECK(ml->WatchFileDescriptor(browser_socket_, true /* persistent */,
                                 base::MessagePumpForIO::WATCH_READ,
-                                &file_descriptor_watcher_, this));
+                                &fd_watch_controller_, this));
   ml->AddDestructionObserver(this);
 }
 
@@ -225,7 +225,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
                << " is disabled."
                << " msg_size:" << msg_size
                << " errno:" << errno;
-    file_descriptor_watcher_.StopWatchingFileDescriptor();
+    fd_watch_controller_.StopWatchingFileDescriptor();
     return;
   }
   const bool bad_message = (msg_size != expected_msg_size ||
@@ -480,7 +480,7 @@ void CrashHandlerHostLinux::QueueCrashDumpTask(
 }
 
 void CrashHandlerHostLinux::WillDestroyCurrentMessageLoop() {
-  file_descriptor_watcher_.StopWatchingFileDescriptor();
+  fd_watch_controller_.StopWatchingFileDescriptor();
 
   // If we are quitting and there are crash dumps in the queue, turn them into
   // no-ops.
@@ -521,7 +521,7 @@ CrashHandlerHost::~CrashHandlerHost() = default;
 CrashHandlerHost::CrashHandlerHost()
     : observers_lock_(),
       observers_(),
-      file_descriptor_watcher_(FROM_HERE),
+      fd_watch_controller_(FROM_HERE),
       process_socket_(),
       browser_socket_() {
   int fds[2];
@@ -548,7 +548,7 @@ void CrashHandlerHost::Init() {
   base::MessageLoopCurrentForIO ml = base::MessageLoopCurrentForIO::Get();
   CHECK(ml->WatchFileDescriptor(browser_socket_.get(), /* persistent= */ true,
                                 base::MessagePumpForIO::WATCH_READ,
-                                &file_descriptor_watcher_, this));
+                                &fd_watch_controller_, this));
   ml->AddDestructionObserver(this);
 }
 
@@ -646,7 +646,7 @@ void CrashHandlerHost::OnFileCanReadWithoutBlocking(int fd) {
 }
 
 void CrashHandlerHost::WillDestroyCurrentMessageLoop() {
-  file_descriptor_watcher_.StopWatchingFileDescriptor();
+  fd_watch_controller_.StopWatchingFileDescriptor();
 }
 
 }  // namespace crashpad

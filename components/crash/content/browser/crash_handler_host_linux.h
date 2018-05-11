@@ -101,7 +101,7 @@ class CrashHandlerHostLinux
   int process_socket_;
   int browser_socket_;
 
-  base::MessagePumpForIO::FdWatchController file_descriptor_watcher_;
+  base::MessagePumpForIO::FdWatchController fd_watch_controller_;
   std::unique_ptr<base::Thread> uploader_thread_;
   bool shutting_down_;
 
@@ -160,7 +160,7 @@ class CrashHandlerHost : public base::MessagePumpForIO::FdWatcher,
 
   base::Lock observers_lock_;
   std::set<Observer*> observers_;
-  base::MessagePumpForIO::FdWatchController file_descriptor_watcher_;
+  base::MessagePumpForIO::FdWatchController fd_watch_controller_;
   base::ScopedFD process_socket_;
   base::ScopedFD browser_socket_;
 
