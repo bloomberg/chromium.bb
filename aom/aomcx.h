@@ -558,6 +558,17 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ENABLE_RESTORATION,
 
+  /*!\brief Codec control function to encode without trellis quantization.
+   *
+   *                          0 = apply trellis quantization
+   *                          1 = do not apply trellis quantization
+   *
+   *  By default, the encoder applies trellis optimization on quantized
+   *  coefficients.
+   *
+   */
+  AV1E_SET_DISABLE_TRELLIS_QUANT,
+
   /*!\brief Codec control function to encode with quantisation matrices.
    *
    * AOM can operate with default quantisation matrices dependent on
@@ -569,6 +580,7 @@ enum aome_enc_control_id {
    *
    * Experiment: AOM_QM
    */
+
   AV1E_SET_ENABLE_QM,
 
   /*!\brief Codec control function to set the min quant matrix flatness.
@@ -1014,6 +1026,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_CDEF, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_RESTORATION, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_RESTORATION
+
+AOM_CTRL_USE_TYPE(AV1E_SET_DISABLE_TRELLIS_QUANT, unsigned int)
+#define AOM_CTRL_AV1E_SET_DISABLE_TRELLIS_QUANT
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_QM, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_QM
