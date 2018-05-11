@@ -31,6 +31,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#include "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -584,6 +585,12 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // switched off and the correct button indicating that the torch is off is shown
 // when the scanner is opened again.
 - (void)testTorchButtonIsResetWhenQRScannerIsReopened {
+#if TARGET_IPHONE_SIMULATOR
+  if (!IsIPadIdiom() && !base::ios::IsRunningOnIOS11OrLater()) {
+    // TODO(crbug.com/842072): Re-enable those tests.
+    EARL_GREY_TEST_DISABLED(@"Disabled on iPhone iOS 10 simulator.");
+  }
+#endif  // TARGET_IPHONE_SIMULATOR
   id cameraControllerMock =
       [self getCameraControllerMockWithAuthorizationStatus:
                 AVAuthorizationStatusAuthorized];
@@ -664,6 +671,12 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // Tests that a UIAlertController is presented by the QRScannerViewController if
 // the camera state changes after the QRScannerViewController is presented.
 - (void)testDialogIsDisplayedIfCameraStateChanges {
+#if TARGET_IPHONE_SIMULATOR
+  if (!IsIPadIdiom() && !base::ios::IsRunningOnIOS11OrLater()) {
+    // TODO(crbug.com/842072): Re-enable those tests.
+    EARL_GREY_TEST_DISABLED(@"Disabled on iPhone iOS 10 simulator.");
+  }
+#endif  // TARGET_IPHONE_SIMULATOR
   id cameraControllerMock =
       [self getCameraControllerMockWithAuthorizationStatus:
                 AVAuthorizationStatusAuthorized];
@@ -727,6 +740,12 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 
 // Tests that an error dialog is dismissed if the camera becomes available.
 - (void)testDialogDismissedIfCameraBecomesAvailable {
+#if TARGET_IPHONE_SIMULATOR
+  if (!IsIPadIdiom() && !base::ios::IsRunningOnIOS11OrLater()) {
+    // TODO(crbug.com/842072): Re-enable those tests.
+    EARL_GREY_TEST_DISABLED(@"Disabled on iPhone iOS 10 simulator.");
+  }
+#endif  // TARGET_IPHONE_SIMULATOR
   id cameraControllerMock =
       [self getCameraControllerMockWithAuthorizationStatus:
                 AVAuthorizationStatusAuthorized];
