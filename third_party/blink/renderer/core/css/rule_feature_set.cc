@@ -894,10 +894,6 @@ RuleFeatureSet::SelectorPreMatch RuleFeatureSet::CollectFeaturesFromSelector(
         break;
     }
 
-    if (current->RelationIsAffectedByPseudoContent() ||
-        current->GetPseudoType() == CSSSelector::kPseudoSlotted)
-      metadata.found_insertion_point_crossing = true;
-
     relation = current->Relation();
 
     if (found_host_pseudo && relation != CSSSelector::kSubSelector)
@@ -929,7 +925,6 @@ void RuleFeatureSet::FeatureMetadata::Add(const FeatureMetadata& other) {
 void RuleFeatureSet::FeatureMetadata::Clear() {
   uses_first_line_rules = false;
   uses_window_inactive_selector = false;
-  found_insertion_point_crossing = false;
   needs_full_recalc_for_rule_set_invalidation = false;
   max_direct_adjacent_selectors = 0;
 }

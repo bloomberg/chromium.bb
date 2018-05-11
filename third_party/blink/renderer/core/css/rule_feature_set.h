@@ -158,7 +158,6 @@ class CORE_EXPORT RuleFeatureSet {
 
     bool uses_first_line_rules = false;
     bool uses_window_inactive_selector = false;
-    bool found_insertion_point_crossing = false;
     bool needs_full_recalc_for_rule_set_invalidation = false;
     unsigned max_direct_adjacent_selectors = 0;
   };
