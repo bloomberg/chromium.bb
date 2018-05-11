@@ -26,17 +26,17 @@ namespace blink {
 // https://crbug.com/753605
 class PLATFORM_EXPORT VideoFrameResourceProvider {
  public:
-  explicit VideoFrameResourceProvider(WebContextProviderCallback,
-                                      const cc::LayerTreeSettings&);
+  explicit VideoFrameResourceProvider(const cc::LayerTreeSettings&);
 
   virtual ~VideoFrameResourceProvider();
 
-  virtual void ObtainContextProvider();
   virtual void Initialize(viz::ContextProvider*);
   virtual void AppendQuads(viz::RenderPass*,
                            scoped_refptr<media::VideoFrame>,
                            media::VideoRotation);
   virtual void ReleaseFrameResources();
+
+  void OnContextLost();
 
   virtual void PrepareSendToParent(
       const std::vector<viz::ResourceId>& resource_ids,
@@ -50,7 +50,6 @@ class PLATFORM_EXPORT VideoFrameResourceProvider {
   std::unique_ptr<cc::VideoResourceUpdater> resource_updater_;
   std::unique_ptr<cc::LayerTreeResourceProvider> resource_provider_;
   viz::ContextProvider* context_provider_ = nullptr;
-  base::WeakPtrFactory<VideoFrameResourceProvider> weak_ptr_factory_;
 };
 
 }  // namespace blink

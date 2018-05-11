@@ -92,10 +92,7 @@ class MockVideoFrameResourceProvider
     : public blink::VideoFrameResourceProvider {
  public:
   MockVideoFrameResourceProvider(viz::ContextProvider* context_provider)
-      : blink::VideoFrameResourceProvider(
-            base::BindRepeating(
-                [](base::OnceCallback<void(viz::ContextProvider*)>) {}),
-            cc::LayerTreeSettings()) {
+      : blink::VideoFrameResourceProvider(cc::LayerTreeSettings()) {
     blink::VideoFrameResourceProvider::Initialize(context_provider);
   }
   ~MockVideoFrameResourceProvider() override = default;
@@ -138,9 +135,10 @@ class VideoFrameSubmitterTest : public testing::Test {
     resource_provider_ =
         new StrictMock<MockVideoFrameResourceProvider>(context_provider_.get());
     submitter_ = std::make_unique<VideoFrameSubmitter>(
+        base::BindRepeating(
+            [](base::OnceCallback<void(viz::ContextProvider*)>) {}),
         base::WrapUnique<MockVideoFrameResourceProvider>(resource_provider_));
 
-    EXPECT_CALL(*resource_provider_, ObtainContextProvider());
     submitter_->Initialize(provider_.get());
     viz::mojom::blink::CompositorFrameSinkPtr submitter_sink;
     viz::mojom::blink::CompositorFrameSinkRequest request =

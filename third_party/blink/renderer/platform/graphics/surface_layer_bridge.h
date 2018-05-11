@@ -42,6 +42,7 @@ class PLATFORM_EXPORT SurfaceLayerBridge
 
   // Implementation of WebSurfaceLayerBridge.
   WebLayer* GetWebLayer() const override { return web_layer_.get(); }
+  void ClearSurfaceId() override;
 
   const viz::FrameSinkId& GetFrameSinkId() const override {
     return frame_sink_id_;

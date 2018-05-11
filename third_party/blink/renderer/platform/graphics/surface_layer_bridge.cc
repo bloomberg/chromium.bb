@@ -46,6 +46,22 @@ SurfaceLayerBridge::~SurfaceLayerBridge() {
   observer_ = nullptr;
 }
 
+void SurfaceLayerBridge::ClearSurfaceId() {
+  current_surface_id_ = viz::SurfaceId();
+  cc::SurfaceLayer* surface_layer =
+      static_cast<cc::SurfaceLayer*>(cc_layer_.get());
+
+  if (!surface_layer)
+    return;
+
+  // We reset the Ids if we lose the context_provider (case: GPU process ended)
+  // If we destroyed the surface_layer before that point, we need not update
+  // the ids.
+  surface_layer->SetPrimarySurfaceId(viz::SurfaceId(),
+                                     cc::DeadlinePolicy::UseDefaultDeadline());
+  surface_layer->SetFallbackSurfaceId(viz::SurfaceId());
+}
+
 void SurfaceLayerBridge::CreateSolidColorLayer() {
   cc_layer_ = cc::SolidColorLayer::Create();
   cc_layer_->SetBackgroundColor(SK_ColorTRANSPARENT);

@@ -19,22 +19,14 @@
 namespace blink {
 
 VideoFrameResourceProvider::VideoFrameResourceProvider(
-    WebContextProviderCallback context_provider_callback,
     const cc::LayerTreeSettings& settings)
-    : context_provider_callback_(std::move(context_provider_callback)),
-      settings_(settings),
-      weak_ptr_factory_(this) {}
+    : settings_(settings) {}
 
 VideoFrameResourceProvider::~VideoFrameResourceProvider() {
   if (context_provider_) {
     resource_updater_ = nullptr;
     resource_provider_ = nullptr;
   }
-}
-
-void VideoFrameResourceProvider::ObtainContextProvider() {
-  context_provider_callback_.Run(base::BindOnce(
-      &VideoFrameResourceProvider::Initialize, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void VideoFrameResourceProvider::Initialize(
@@ -56,11 +48,19 @@ void VideoFrameResourceProvider::Initialize(
       settings_.resource_settings.use_r16_texture);
 }
 
+void VideoFrameResourceProvider::OnContextLost() {
+  resource_updater_ = nullptr;
+  resource_provider_ = nullptr;
+}
+
 void VideoFrameResourceProvider::AppendQuads(
     viz::RenderPass* render_pass,
     scoped_refptr<media::VideoFrame> frame,
     media::VideoRotation rotation) {
   TRACE_EVENT0("media", "VideoFrameResourceProvider::AppendQuads");
+  DCHECK(resource_updater_);
+  DCHECK(resource_provider_);
+
   gfx::Transform transform = gfx::Transform();
   gfx::Size rotated_size = frame->coded_size();
 

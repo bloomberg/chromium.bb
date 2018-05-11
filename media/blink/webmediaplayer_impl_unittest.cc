@@ -282,6 +282,7 @@ class MockSurfaceLayerBridge : public blink::WebSurfaceLayerBridge {
  public:
   MOCK_CONST_METHOD0(GetWebLayer, blink::WebLayer*());
   MOCK_CONST_METHOD0(GetFrameSinkId, const viz::FrameSinkId&());
+  MOCK_METHOD0(ClearSurfaceId, void());
 };
 
 class MockVideoFrameCompositor : public VideoFrameCompositor {
@@ -294,8 +295,10 @@ class MockVideoFrameCompositor : public VideoFrameCompositor {
   // MOCK_METHOD doesn't like OnceCallback.
   void SetOnNewProcessedFrameCallback(OnNewProcessedFrameCB cb) override {}
   MOCK_METHOD0(GetCurrentFrameAndUpdateIfStale, scoped_refptr<VideoFrame>());
-  MOCK_METHOD2(EnableSubmission,
-               void(const viz::FrameSinkId&, media::VideoRotation));
+  MOCK_METHOD3(EnableSubmission,
+               void(const viz::FrameSinkId&,
+                    media::VideoRotation,
+                    blink::WebFrameSinkDestroyedCallback));
 };
 
 class WebMediaPlayerImplTest : public testing::Test {
@@ -1146,7 +1149,7 @@ TEST_F(WebMediaPlayerImplTest, NoStreams) {
 
   if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId()).Times(0);
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _)).Times(0);
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _)).Times(0);
   }
 
   // Nothing should happen.  In particular, no assertions should fail.
@@ -1164,7 +1167,7 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
     EXPECT_CALL(client_, SetWebLayer(_)).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
         .WillOnce(ReturnRef(frame_sink_id_));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
   } else {
     EXPECT_CALL(client_, SetWebLayer(NotNull()));
   }
@@ -1189,7 +1192,7 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
     EXPECT_CALL(client_, SetWebLayer(_)).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
         .WillOnce(ReturnRef(frame_sink_id_));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
   } else {
     EXPECT_CALL(client_, SetWebLayer(NotNull()));
   }
@@ -1215,7 +1218,7 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
     EXPECT_CALL(client_, SetWebLayer(_)).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
         .WillOnce(ReturnRef(frame_sink_id_));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
   } else {
     EXPECT_CALL(client_, SetWebLayer(NotNull()));
   }
@@ -1289,7 +1292,7 @@ TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
     EXPECT_CALL(client_, SetWebLayer(_)).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
         .WillOnce(ReturnRef(frame_sink_id_));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
   } else {
     EXPECT_CALL(client_, SetWebLayer(NotNull()));
   }

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/video_frame_submitter.h"
 
+#include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/filter_operations.h"
@@ -19,16 +20,40 @@
 
 namespace blink {
 
+namespace {
+// Delay to retry getting the context_provider.
+constexpr int kGetContextProviderRetry = 150;
+}  // namespace
+
 VideoFrameSubmitter::VideoFrameSubmitter(
+    WebContextProviderCallback context_provider_callback,
     std::unique_ptr<VideoFrameResourceProvider> resource_provider)
     : binding_(this),
+      context_provider_callback_(context_provider_callback),
       resource_provider_(std::move(resource_provider)),
       is_rendering_(false),
       weak_ptr_factory_(this) {
   DETACH_FROM_THREAD(media_thread_checker_);
 }
 
-VideoFrameSubmitter::~VideoFrameSubmitter() = default;
+VideoFrameSubmitter::~VideoFrameSubmitter() {
+  if (context_provider_)
+    context_provider_->RemoveObserver(this);
+}
+
+void VideoFrameSubmitter::SetRotation(media::VideoRotation rotation) {
+  rotation_ = rotation;
+}
+
+void VideoFrameSubmitter::EnableSubmission(
+    viz::FrameSinkId id,
+    WebFrameSinkDestroyedCallback frame_sink_destroyed_callback) {
+  // TODO(lethalantidote): Set these fields earlier in the constructor. Will
+  // need to construct VideoFrameSubmitter later in order to do this.
+  frame_sink_id_ = id;
+  frame_sink_destroyed_callback_ = frame_sink_destroyed_callback;
+  StartSubmitting();
+}
 
 void VideoFrameSubmitter::StopUsingProvider() {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
@@ -42,11 +67,12 @@ void VideoFrameSubmitter::StopRendering() {
   DCHECK(is_rendering_);
   DCHECK(provider_);
 
-  // Push out final frame.
-  SubmitSingleFrame();
-
+  if (compositor_frame_sink_) {
+    // Push out final frame.
+    SubmitSingleFrame();
+    compositor_frame_sink_->SetNeedsBeginFrame(false);
+  }
   is_rendering_ = false;
-  compositor_frame_sink_->SetNeedsBeginFrame(false);
 }
 
 void VideoFrameSubmitter::SubmitSingleFrame() {
@@ -74,7 +100,8 @@ void VideoFrameSubmitter::DidReceiveFrame() {
 void VideoFrameSubmitter::StartRendering() {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
   DCHECK(!is_rendering_);
-  compositor_frame_sink_->SetNeedsBeginFrame(true);
+  if (compositor_frame_sink_)
+    compositor_frame_sink_->SetNeedsBeginFrame(true);
   is_rendering_ = true;
 }
 
@@ -83,13 +110,37 @@ void VideoFrameSubmitter::Initialize(cc::VideoFrameProvider* provider) {
   if (provider) {
     DCHECK(!provider_);
     provider_ = provider;
-    resource_provider_->ObtainContextProvider();
+    context_provider_callback_.Run(
+        base::BindOnce(&VideoFrameSubmitter::OnReceivedContextProvider,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
-void VideoFrameSubmitter::StartSubmitting(const viz::FrameSinkId& id) {
+void VideoFrameSubmitter::OnReceivedContextProvider(
+    viz::ContextProvider* context_provider) {
+  // We could get a null |context_provider| back if the context is still lost.
+  // TODO(lethalantidote): Handle software compositing case.
+  if (!context_provider) {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(
+            context_provider_callback_,
+            base::BindOnce(&VideoFrameSubmitter::OnReceivedContextProvider,
+                           weak_ptr_factory_.GetWeakPtr())),
+        base::TimeDelta::FromMilliseconds(kGetContextProviderRetry));
+    return;
+  }
+
+  context_provider_ = context_provider;
+  context_provider_->AddObserver(this);
+  resource_provider_->Initialize(context_provider);
+  if (frame_sink_id_.is_valid())
+    StartSubmitting();
+}
+
+void VideoFrameSubmitter::StartSubmitting() {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
-  DCHECK(id.is_valid());
+  DCHECK(frame_sink_id_.is_valid());
 
   mojom::blink::EmbeddedFrameSinkProviderPtr provider;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
@@ -98,7 +149,11 @@ void VideoFrameSubmitter::StartSubmitting(const viz::FrameSinkId& id) {
   viz::mojom::blink::CompositorFrameSinkClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
   provider->CreateCompositorFrameSink(
-      id, std::move(client), mojo::MakeRequest(&compositor_frame_sink_));
+      frame_sink_id_, std::move(client),
+      mojo::MakeRequest(&compositor_frame_sink_));
+
+  if (is_rendering_)
+    compositor_frame_sink_->SetNeedsBeginFrame(true);
 
   scoped_refptr<media::VideoFrame> video_frame = provider_->GetCurrentFrame();
   if (video_frame) {
@@ -179,8 +234,19 @@ void VideoFrameSubmitter::OnBeginFrame(const viz::BeginFrameArgs& args) {
   provider_->PutCurrentFrame();
 }
 
-void VideoFrameSubmitter::SetRotation(media::VideoRotation rotation) {
-  rotation_ = rotation;
+void VideoFrameSubmitter::OnContextLost() {
+  frame_sink_destroyed_callback_.Run();
+  if (binding_.is_bound())
+    binding_.Unbind();
+
+  compositor_frame_sink_.reset();
+  context_provider_->RemoveObserver(this);
+  context_provider_ = nullptr;
+
+  resource_provider_->OnContextLost();
+  context_provider_callback_.Run(
+      base::BindOnce(&VideoFrameSubmitter::OnReceivedContextProvider,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void VideoFrameSubmitter::DidReceiveCompositorFrameAck(

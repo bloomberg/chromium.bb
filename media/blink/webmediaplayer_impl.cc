@@ -1623,7 +1623,9 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
           base::BindOnce(
               &VideoFrameCompositor::EnableSubmission,
               base::Unretained(compositor_.get()), bridge_->GetFrameSinkId(),
-              pipeline_metadata_.video_decoder_config.video_rotation()));
+              pipeline_metadata_.video_decoder_config.video_rotation(),
+              BindToCurrentLoop(base::BindRepeating(
+                  &WebMediaPlayerImpl::OnFrameSinkDestroyed, AsWeakPtr()))));
     }
   }
 
@@ -1637,6 +1639,10 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
   CreateVideoDecodeStatsReporter();
 
   UpdatePlayState();
+}
+
+void WebMediaPlayerImpl::OnFrameSinkDestroyed() {
+  bridge_->ClearSurfaceId();
 }
 
 void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {

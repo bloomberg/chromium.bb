@@ -27,7 +27,8 @@ class MockWebVideoFrameSubmitter : public blink::WebVideoFrameSubmitter {
  public:
   // blink::WebVideoFrameSubmitter implementation.
   void StopUsingProvider() override {}
-  MOCK_METHOD1(StartSubmitting, void(const viz::FrameSinkId&));
+  MOCK_METHOD2(EnableSubmission,
+               void(viz::FrameSinkId, blink::WebFrameSinkDestroyedCallback));
   MOCK_METHOD0(StartRendering, void());
   MOCK_METHOD0(StopRendering, void());
   MOCK_METHOD1(Initialize, void(cc::VideoFrameProvider*));
@@ -68,9 +69,10 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
       base::RunLoop().RunUntilIdle();
       EXPECT_CALL(*submitter_,
                   SetRotation(Eq(media::VideoRotation::VIDEO_ROTATION_90)));
-      EXPECT_CALL(*submitter_, StartSubmitting(_));
+      EXPECT_CALL(*submitter_, EnableSubmission(Eq(viz::FrameSinkId(1, 1)), _));
       compositor_->EnableSubmission(viz::FrameSinkId(1, 1),
-                                    media::VideoRotation::VIDEO_ROTATION_90);
+                                    media::VideoRotation::VIDEO_ROTATION_90,
+                                    base::BindRepeating([] {}));
     }
 
     compositor_->set_tick_clock_for_testing(&tick_clock_);
