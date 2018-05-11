@@ -335,6 +335,10 @@ TEST_F(WiredDisplayMediaRouteProviderTest, CreateAndTerminateRoute) {
   EXPECT_CALL(callback, TerminateRoute(base::Optional<std::string>(),
                                        RouteRequestResult::OK));
   EXPECT_CALL(*receiver_creator_.receiver(), TerminateInternal());
+  EXPECT_CALL(router_,
+              OnPresentationConnectionStateChanged(
+                  presentation_id,
+                  mojom::MediaRouter::PresentationConnectionState::TERMINATED));
   provider_pointer_->TerminateRoute(
       presentation_id, base::BindOnce(&MockCallback::TerminateRoute,
                                       base::Unretained(&callback)));
