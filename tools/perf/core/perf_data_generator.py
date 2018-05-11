@@ -318,24 +318,6 @@ def get_waterfall_config():
       }
     ])
   waterfall = add_tester(
-    waterfall, 'Win 7 Intel GPU Perf',
-    'chromium-rel-win7-gpu-intel', 'win',
-    swarming=[
-      {
-       'gpu': '8086:041a',
-       'os': 'Windows-2008ServerR2-SP1',
-       'pool': 'Chrome-perf',
-       'device_ids': [
-           'build164-m1', 'build165-m1',
-           'build166-m1', 'build167-m1', 'build168-m1'
-          ],
-       'perf_tests': [
-         ('angle_perftests', 'build166-m1'),
-         ('load_library_perf_tests', 'build166-m1'),
-         ('performance_browser_tests', 'build166-m1')]
-      }
-    ])
-  waterfall = add_tester(
     waterfall, 'Win 7 Nvidia GPU Perf',
     'chromium-rel-win7-gpu-nvidia', 'win',
     swarming=[
