@@ -11,31 +11,26 @@
 namespace content {
 
 ControllerServiceWorkerConnector::ControllerServiceWorkerConnector(
-    mojom::ServiceWorkerContainerHost* container_host)
-    : container_host_(container_host) {}
-
-ControllerServiceWorkerConnector::ControllerServiceWorkerConnector(
     mojom::ServiceWorkerContainerHost* container_host,
     mojom::ControllerServiceWorkerPtr controller_ptr,
     const std::string& client_id)
-    : container_host_(container_host) {
-  ResetControllerConnection(std::move(controller_ptr), client_id);
+    : container_host_(container_host), client_id_(client_id) {
+  SetControllerServiceWorkerPtr(std::move(controller_ptr));
 }
 
 mojom::ControllerServiceWorker*
 ControllerServiceWorkerConnector::GetControllerServiceWorker(
     mojom::ControllerServiceWorkerPurpose purpose) {
   switch (state_) {
-    case State::kDisconnected:
+    case State::kDisconnected: {
       DCHECK(!controller_service_worker_);
       DCHECK(container_host_);
+      mojom::ControllerServiceWorkerPtr controller_ptr;
       container_host_->EnsureControllerServiceWorker(
-          mojo::MakeRequest(&controller_service_worker_), purpose);
-      controller_service_worker_.set_connection_error_handler(base::BindOnce(
-          &ControllerServiceWorkerConnector::OnControllerConnectionClosed,
-          base::Unretained(this)));
-      state_ = State::kConnected;
+          mojo::MakeRequest(&controller_ptr), purpose);
+      SetControllerServiceWorkerPtr(std::move(controller_ptr));
       return controller_service_worker_.get();
+    }
     case State::kConnected:
       DCHECK(controller_service_worker_.is_bound());
       return controller_service_worker_.get();
@@ -74,20 +69,22 @@ void ControllerServiceWorkerConnector::OnControllerConnectionClosed() {
 }
 
 void ControllerServiceWorkerConnector::ResetControllerConnection(
-    mojom::ControllerServiceWorkerPtr controller_ptr,
-    const std::string& client_id) {
+    mojom::ControllerServiceWorkerPtr controller_ptr) {
   if (state_ == State::kNoContainerHost)
     return;
+  SetControllerServiceWorkerPtr(std::move(controller_ptr));
+  if (!controller_service_worker_)
+    state_ = State::kNoController;
+}
+
+void ControllerServiceWorkerConnector::SetControllerServiceWorkerPtr(
+    mojom::ControllerServiceWorkerPtr controller_ptr) {
   controller_service_worker_ = std::move(controller_ptr);
   if (controller_service_worker_) {
-    DCHECK(client_id_.empty() || client_id_ == client_id);
-    client_id_ = client_id;
-    state_ = State::kConnected;
     controller_service_worker_.set_connection_error_handler(base::BindOnce(
         &ControllerServiceWorkerConnector::OnControllerConnectionClosed,
         base::Unretained(this)));
-  } else {
-    state_ = State::kNoController;
+    state_ = State::kConnected;
   }
 }
 

@@ -358,6 +358,7 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
     worker_fetch_context->set_is_controlled_by_service_worker(
         web_network_provider->HasControllerServiceWorker());
   }
+  worker_fetch_context->set_client_id(context->client_id());
   return std::move(worker_fetch_context);
 }
 

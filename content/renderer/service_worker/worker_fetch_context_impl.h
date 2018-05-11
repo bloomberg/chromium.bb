@@ -102,6 +102,7 @@ class CONTENT_EXPORT WorkerFetchContextImpl
   // https://w3c.github.io/webappsec-secure-contexts/
   void set_is_secure_context(bool flag);
   void set_origin_url(const GURL& origin_url);
+  void set_client_id(const std::string& client_id);
 
   using RewriteURLFunction = blink::WebURL (*)(const std::string&, bool);
   static void InstallRewriteURLFunction(RewriteURLFunction rewrite_url);
@@ -136,6 +137,12 @@ class CONTENT_EXPORT WorkerFetchContextImpl
   // S13nServiceWorker:
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
   mojom::ServiceWorkerContainerHostPtr service_worker_container_host_;
+
+  // S13nServiceWorker:
+  // The Client#id value of the shared worker or dedicated worker (since
+  // dedicated workers are not yet service worker clients, it is the parent
+  // document's id in that case). Passed to ControllerServiceWorkerConnector.
+  std::string client_id_;
 
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;

@@ -54,6 +54,10 @@ struct ServiceWorkerProviderContext::ProviderStateForClient {
   // Used when we create |subresource_loader_factory|.
   scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory;
 
+  // S13nServiceWorker:
+  // The Client#id value of the client.
+  std::string client_id;
+
   // Tracks feature usage for UseCounter.
   std::set<blink::mojom::WebFeature> used_features;
 
@@ -209,6 +213,11 @@ ServiceWorkerProviderContext::used_features() const {
   return state_for_client_->used_features;
 }
 
+const std::string& ServiceWorkerProviderContext::client_id() const {
+  DCHECK(state_for_client_);
+  return state_for_client_->client_id;
+}
+
 void ServiceWorkerProviderContext::SetWebServiceWorkerProvider(
     base::WeakPtr<WebServiceWorkerProviderImpl> provider) {
   DCHECK(state_for_client_);
@@ -298,6 +307,10 @@ void ServiceWorkerProviderContext::SetController(
   state->controller_version_id =
       state->controller ? state->controller->version_id
                         : blink::mojom::kInvalidServiceWorkerVersionId;
+  // The client id should never change once set.
+  DCHECK(state->client_id.empty() ||
+         state->client_id == controller_info->client_id);
+  state->client_id = controller_info->client_id;
 
   // Propagate the controller to workers related to this provider.
   if (state->controller) {
@@ -334,8 +347,7 @@ void ServiceWorkerProviderContext::SetController(
       // factory (this part is inherently racy).
       state->controller_connector->ResetControllerConnection(
           mojom::ControllerServiceWorkerPtr(
-              std::move(controller_info->endpoint)),
-          controller_info->client_id);
+              std::move(controller_info->endpoint)));
     } else if (state->controller) {
       // Case (C): never had a controller, but got a new one now.
       // Set a new |state->controller_connector| so that subsequent resource
