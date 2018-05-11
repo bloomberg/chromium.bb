@@ -20,11 +20,11 @@ class AssistantSuggestion;
 
 namespace ash {
 
+class AssistantQuery;
 class AssistantUiElement;
 enum class InputModality;
 enum class InteractionState;
 enum class MicState;
-struct Query;
 
 // An observer which receives notification of changes to an Assistant
 // interaction.
@@ -48,7 +48,7 @@ class AssistantInteractionModelObserver {
   virtual void OnUiElementsCleared() {}
 
   // Invoked when the query associated with the interaction is changed.
-  virtual void OnQueryChanged(const Query& query) {}
+  virtual void OnQueryChanged(const AssistantQuery& query) {}
 
   // Invoked when the query associated with the interaction is cleared.
   virtual void OnQueryCleared() {}

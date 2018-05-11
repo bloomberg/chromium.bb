@@ -103,6 +103,8 @@ component("ash") {
     "assistant/model/assistant_interaction_model.cc",
     "assistant/model/assistant_interaction_model.h",
     "assistant/model/assistant_interaction_model_observer.h",
+    "assistant/model/assistant_query.cc",
+    "assistant/model/assistant_query.h",
     "assistant/model/assistant_ui_element.h",
     "assistant/ui/assistant_bubble.cc",
     "assistant/ui/assistant_bubble.h",
