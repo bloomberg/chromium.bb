@@ -301,6 +301,8 @@ void ResourceDispatcher::FollowPendingRedirect(
   if (request_info->has_pending_redirect &&
       request_info->should_follow_redirect) {
     request_info->has_pending_redirect = false;
+    // net::URLRequest clears its request_start on redirect, so should we.
+    request_info->request_start = base::TimeTicks::Now();
     request_info->url_loader->FollowRedirect();
   }
 }
