@@ -19,10 +19,12 @@ namespace ash {
 namespace {
 
 // Appearance.
-constexpr SkColor kBackgroundColor = SkColorSetA(SK_ColorBLACK, 0x1F);
+constexpr SkColor kBorderColor = SkColorSetA(SK_ColorBLACK, 0x1F);
+constexpr int kBorderSizeDip = 1;
 constexpr int kIconSizeDip = 24;
-constexpr int kPaddingHorizontalDip = 12;
+constexpr int kPaddingHorizontalDip = 14;
 constexpr int kPaddingVerticalDip = 8;
+constexpr int kPreferredHeightDip = 48;
 constexpr int kSpacingDip = 8;
 
 // Typography.
@@ -82,14 +84,23 @@ DialogPlate::~DialogPlate() {
   assistant_controller_->RemoveInteractionModelObserver(this);
 }
 
+gfx::Size DialogPlate::CalculatePreferredSize() const {
+  return gfx::Size(INT_MAX, kPreferredHeightDip);
+}
+
 void DialogPlate::InitLayout() {
-  SetBackground(views::CreateSolidBackground(kBackgroundColor));
+  SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
+  SetBorder(
+      views::CreateSolidSidedBorder(kBorderSizeDip, 0, 0, 0, kBorderColor));
 
   views::BoxLayout* layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
           gfx::Insets(kPaddingVerticalDip, kPaddingHorizontalDip),
           kSpacingDip));
+
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
   gfx::FontList font_list =
       views::Textfield::GetDefaultFontList().DeriveWithSizeDelta(4);

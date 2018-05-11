@@ -22,6 +22,7 @@ class DialogPlate : public views::View,
   ~DialogPlate() override;
 
   // views::View:
+  gfx::Size CalculatePreferredSize() const override;
   void RequestFocus() override;
 
   // AssistantInteractionModelObserver:
