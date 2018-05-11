@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/payments/ssl_validity_checker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/payments/content/origin_security_checker.h"
-#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -25,11 +25,13 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/progress_bar.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -63,21 +65,34 @@ class ReadOnlyOriginView : public views::View {
     columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
                        views::GridLayout::USE_PREF, 0, 0);
 
-    title_origin_layout->StartRow(0, 0);
-    std::unique_ptr<views::Label> title_label = std::make_unique<views::Label>(
-        page_title, views::style::CONTEXT_DIALOG_TITLE);
-    title_label->set_id(static_cast<int>(DialogViewID::SHEET_TITLE));
-    title_label->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
-    // Turn off autoreadability because the computed |foreground| color takes
-    // contrast into account.
-    title_label->SetAutoColorReadabilityEnabled(false);
-    title_label->SetEnabledColor(foreground);
-
-    title_origin_layout->AddView(title_label.release());
+    bool title_is_valid = !page_title.empty();
+    if (title_is_valid) {
+      title_origin_layout->StartRow(0, 0);
+      std::unique_ptr<views::Label> title_label =
+          std::make_unique<views::Label>(page_title,
+                                         views::style::CONTEXT_DIALOG_TITLE);
+      title_label->set_id(static_cast<int>(DialogViewID::SHEET_TITLE));
+      title_label->SetFocusBehavior(
+          views::View::FocusBehavior::ACCESSIBLE_ONLY);
+      // Turn off autoreadability because the computed |foreground| color takes
+      // contrast into account.
+      title_label->SetAutoColorReadabilityEnabled(false);
+      title_label->SetEnabledColor(foreground);
+      title_origin_layout->AddView(title_label.release());
+    }
 
     title_origin_layout->StartRow(0, 0);
     views::Label* origin_label =
         new views::Label(base::UTF8ToUTF16(origin.spec()));
+    if (!title_is_valid) {
+      // Set the origin as title when the page title is invalid.
+      origin_label->set_id(static_cast<int>(DialogViewID::SHEET_TITLE));
+
+      // Pad to keep header as the same height as when the page title is valid.
+      constexpr int kVerticalPadding = 10;
+      origin_label->SetBorder(
+          views::CreateEmptyBorder(kVerticalPadding, 0, kVerticalPadding, 0));
+    }
     // Turn off autoreadability because the computed |foreground| color takes
     // contrast into account.
     origin_label->SetAutoColorReadabilityEnabled(false);
@@ -89,6 +104,9 @@ class ReadOnlyOriginView : public views::View {
     views::GridLayout* top_level_layout =
         SetLayoutManager(std::make_unique<views::GridLayout>(this));
     views::ColumnSet* top_level_columns = top_level_layout->AddColumnSet(0);
+    top_level_columns->AddColumn(views::GridLayout::LEADING,
+                                 views::GridLayout::CENTER, 1,
+                                 views::GridLayout::USE_PREF, 0, 0);
     // Payment handler icon comes from Web Manifest, which are square.
     constexpr int kPaymentHandlerIconSize = 32;
     bool has_icon = icon_image_skia && icon_image_skia->width();
@@ -100,15 +118,13 @@ class ReadOnlyOriginView : public views::View {
           kPaymentHandlerIconSize);
       top_level_columns->AddPaddingColumn(0, 8);
     }
-    top_level_columns->AddColumn(views::GridLayout::LEADING,
-                                 views::GridLayout::FILL, 1,
-                                 views::GridLayout::USE_PREF, 0, 0);
     constexpr int kSiteSettingsSize = 16;
     top_level_columns->AddColumn(
         views::GridLayout::TRAILING, views::GridLayout::FILL, 0,
         views::GridLayout::FIXED, kSiteSettingsSize, kSiteSettingsSize);
 
     top_level_layout->StartRow(0, 0);
+    top_level_layout->AddView(title_origin_container.release());
     if (has_icon) {
       std::unique_ptr<views::ImageView> instrument_icon_view =
           CreateInstrumentIconView(/*icon_id=*/0, icon_image_skia,
@@ -117,7 +133,6 @@ class ReadOnlyOriginView : public views::View {
           gfx::Size(kPaymentHandlerIconSize, kPaymentHandlerIconSize));
       top_level_layout->AddView(instrument_icon_view.release());
     }
-    top_level_layout->AddView(title_origin_container.release());
 
     views::ImageButton* site_settings_button =
         views::CreateVectorImageButton(site_settings_listener);
@@ -128,8 +143,7 @@ class ReadOnlyOriginView : public views::View {
         GetForegroundColorForBackground(background_color));
     site_settings_button->SetImage(
         views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(vector_icons::kInfoOutlineIcon, kSiteSettingsSize,
-                              icon_color));
+        gfx::CreateVectorIcon(kSettingsIcon, kSiteSettingsSize, icon_color));
     site_settings_button->set_ink_drop_base_color(icon_color);
 
     site_settings_button->SetSize(
@@ -158,8 +172,13 @@ PaymentHandlerWebFlowViewController::PaymentHandlerWebFlowViewController(
     : PaymentRequestSheetController(spec, state, dialog),
       profile_(profile),
       target_(target),
+      progress_bar_is_shown_(false),
+      progress_bar_(
+          std::make_unique<views::ProgressBar>(/*preferred_height=*/2)),
       first_navigation_complete_callback_(
-          std::move(first_navigation_complete_callback)) {}
+          std::move(first_navigation_complete_callback)) {
+  progress_bar_->set_owned_by_client();
+}
 
 PaymentHandlerWebFlowViewController::~PaymentHandlerWebFlowViewController() {}
 
@@ -172,11 +191,24 @@ base::string16 PaymentHandlerWebFlowViewController::GetSheetTitle() {
 
 void PaymentHandlerWebFlowViewController::FillContentView(
     views::View* content_view) {
-  content_view->SetLayoutManager(std::make_unique<views::FillLayout>());
+  views::GridLayout* content_layout = content_view->SetLayoutManager(
+      std::make_unique<views::GridLayout>(content_view));
+  views::ColumnSet* columns = content_layout->AddColumnSet(0);
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                     views::GridLayout::USE_PREF, 0, 0);
+
+  // Content header to display progress bar.
+  content_layout->StartRow(0, 0);
+  content_header_view_ = std::make_unique<views::View>();
+  content_header_view_->set_owned_by_client();
+  content_layout->AddView(content_header_view_.get());
+
+  // Content body to display the web page.
+  content_layout->StartRow(0, 0);
   std::unique_ptr<views::WebView> web_view =
       std::make_unique<views::WebView>(profile_);
-
   Observe(web_view->GetWebContents());
+  web_contents()->SetDelegate(this);
   web_view->LoadInitialURL(target_);
 
   // The webview must get an explicitly set height otherwise the layout doesn't
@@ -185,7 +217,7 @@ void PaymentHandlerWebFlowViewController::FillContentView(
   // total_dialog_height - header_height. On the other hand, the width will be
   // properly set so it can be 0 here.
   web_view->SetPreferredSize(gfx::Size(0, kDialogHeight - 75));
-  content_view->AddChildView(web_view.release());
+  content_layout->AddView(web_view.release());
 }
 
 bool PaymentHandlerWebFlowViewController::ShouldShowSecondaryButton() {
@@ -199,8 +231,8 @@ PaymentHandlerWebFlowViewController::CreateHeaderContentView() {
                           : target_.GetOrigin();
   std::unique_ptr<views::Background> background = GetHeaderBackground();
   return std::make_unique<ReadOnlyOriginView>(
-      GetSheetTitle(), origin,
-      state()->selected_instrument()->icon_image_skia(),
+      web_contents() == nullptr ? base::string16() : web_contents()->GetTitle(),
+      origin, state()->selected_instrument()->icon_image_skia(),
       background->get_color(), this);
 }
 
@@ -223,6 +255,32 @@ void PaymentHandlerWebFlowViewController::ButtonPressed(
   } else {
     PaymentRequestSheetController::ButtonPressed(sender, event);
   }
+}
+
+void PaymentHandlerWebFlowViewController::LoadProgressChanged(
+    content::WebContents* source,
+    double progress) {
+  DCHECK(source == web_contents());
+
+  progress_bar_->SetValue(progress);
+
+  if (progress == 1.0 && !progress_bar_is_shown_)
+    return;
+
+  if (progress < 1.0 && progress_bar_is_shown_)
+    return;
+
+  content_header_view_->RemoveAllChildViews(/*delete_children=*/true);
+  if (progress_bar_is_shown_) {
+    progress_bar_is_shown_ = false;
+  } else {
+    content_header_view_->SetLayoutManager(
+        std::make_unique<views::FillLayout>());
+    content_header_view_->AddChildView(progress_bar_.get());
+    progress_bar_is_shown_ = true;
+  }
+
+  RelayoutPane();
 }
 
 void PaymentHandlerWebFlowViewController::DidStartNavigation(
