@@ -362,7 +362,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
   network::mojom::URLLoaderFactoryPtr CreateSubresourceLoaderFactory() {
     if (!connector_) {
       connector_ = base::MakeRefCounted<ControllerServiceWorkerConnector>(
-          &fake_container_host_);
+          &fake_container_host_, nullptr /*controller_ptr*/, "" /*client_id*/);
     }
     network::mojom::URLLoaderFactoryPtr service_worker_url_loader_factory;
     ServiceWorkerSubresourceLoaderFactory::Create(
@@ -570,7 +570,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, NoController) {
   }
 
   // Make the connector have no controller.
-  connector_->ResetControllerConnection(nullptr, "" /*client_id*/);
+  connector_->ResetControllerConnection(nullptr);
   base::RunLoop().RunUntilIdle();
 
   {

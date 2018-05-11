@@ -51,15 +51,10 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
     kNoContainerHost,
   };
 
-  // Use this ctor when no |controller_ptr| is available at creation time.
-  // |state_| is set to kDisconnected.
-  // TODO(bashi): Remove this one constructor. We need to update
-  // WorkerFetchContextImpl to remove this constructor.
-  explicit ControllerServiceWorkerConnector(
-      mojom::ServiceWorkerContainerHost* container_host);
-
-  // Use this ctor when |controller_ptr| is given by the browser at the
-  // creation time. |state_| is set to either kConnected or kNoController.
+  // This class should only be created if a controller exists for the client.
+  // |controller_ptr| may be nullptr if the caller does not yet have a Mojo
+  // connection to the controller. |state_| is set to kDisconnected in that
+  // case.
   ControllerServiceWorkerConnector(
       mojom::ServiceWorkerContainerHost* container_host,
       mojom::ControllerServiceWorkerPtr controller_ptr,
@@ -79,14 +74,16 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   // Resets the controller connection with the given |controller_ptr|, this
   // can be called when a new controller is given, e.g. due to claim().
   void ResetControllerConnection(
-      mojom::ControllerServiceWorkerPtr controller_ptr,
-      const std::string& client_id);
+      mojom::ControllerServiceWorkerPtr controller_ptr);
 
   State state() const { return state_; }
 
   const std::string& client_id() const { return client_id_; }
 
  private:
+  void SetControllerServiceWorkerPtr(
+      mojom::ControllerServiceWorkerPtr controller_ptr);
+
   State state_ = State::kDisconnected;
 
   friend class base::RefCounted<ControllerServiceWorkerConnector>;

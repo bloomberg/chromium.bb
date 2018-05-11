@@ -313,6 +313,10 @@ void WorkerFetchContextImpl::set_origin_url(const GURL& origin_url) {
   origin_url_ = origin_url;
 }
 
+void WorkerFetchContextImpl::set_client_id(const std::string& client_id) {
+  client_id_ = client_id;
+}
+
 void WorkerFetchContextImpl::SetApplicationCacheHostID(int id) {
   appcache_host_id_ = id;
 }
@@ -344,7 +348,8 @@ void WorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
   network::mojom::URLLoaderFactoryPtr service_worker_url_loader_factory;
   ServiceWorkerSubresourceLoaderFactory::Create(
       base::MakeRefCounted<ControllerServiceWorkerConnector>(
-          service_worker_container_host_.get()),
+          service_worker_container_host_.get(), nullptr /*controller_ptr*/,
+          client_id_),
       fallback_factory_, mojo::MakeRequest(&service_worker_url_loader_factory));
   url_loader_factory_->SetServiceWorkerURLLoaderFactory(
       std::move(service_worker_url_loader_factory));

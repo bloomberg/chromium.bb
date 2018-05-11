@@ -127,6 +127,10 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // For service worker clients. Returns the feature usage of its controller.
   const std::set<blink::mojom::WebFeature>& used_features() const;
 
+  // S13nServiceWorker:
+  // The Client#id value of the client.
+  const std::string& client_id() const;
+
   // For service worker clients. Sets a weak pointer back to the
   // WebServiceWorkerProviderImpl (which corresponds to ServiceWorkerContainer
   // in JavaScript) which has a strong reference to |this|. This allows us to
