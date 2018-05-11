@@ -973,6 +973,14 @@ uploading your change for review.  These are checked by presubmit scripts.
     Renderer hosting visible subframe is killed to free renderer slot while app
     is foreground.
   </int>
+  <int value="5" label="Visible main frame renderer foreground crash">
+    Renderer is crashed (with crash report) while app is foreground and renderer
+    is hosting visible clients (generally tabs).
+  </int>
+  <int value="6" label="Visible subframe renderer foreground crash">
+    Renderer hosting visible subframe is crashed (with crash report) while app
+    is foreground.
+  </int>
 </enum>
 
 <enum name="AndroidResourceExtractionStatus">

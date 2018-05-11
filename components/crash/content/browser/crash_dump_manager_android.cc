@@ -38,7 +38,9 @@ enum class ProcessedCrashCounts {
   kRendererForegroundIntentionalKill = 2,
   kRendererForegroundVisibleSubframeOom = 3,
   kRendererForegroundVisibleSubframeIntentionalKill = 4,
-  kMaxValue = kRendererForegroundVisibleSubframeIntentionalKill
+  kRendererForegroundVisibleCrash = 5,
+  kRendererForegroundVisibleSubframeCrash = 6,
+  kMaxValue = kRendererForegroundVisibleSubframeCrash
 };
 
 void LogCount(ProcessedCrashCounts type) {
@@ -63,10 +65,19 @@ void LogProcessedMetrics(const CrashDumpObserver::TerminationInfo& info,
   }
 
   if (info.process_type == content::PROCESS_TYPE_RENDERER && app_foreground) {
-    if (android_oom_kill && renderer_visible) {
-      LogCount(renderer_sub_frame
-                   ? ProcessedCrashCounts::kRendererForegroundVisibleSubframeOom
-                   : ProcessedCrashCounts::kRendererForegroundVisibleOom);
+    if (renderer_visible) {
+      if (android_oom_kill) {
+        LogCount(
+            renderer_sub_frame
+                ? ProcessedCrashCounts::kRendererForegroundVisibleSubframeOom
+                : ProcessedCrashCounts::kRendererForegroundVisibleOom);
+      }
+      if (has_crash_dump) {
+        LogCount(
+            renderer_sub_frame
+                ? ProcessedCrashCounts::kRendererForegroundVisibleSubframeCrash
+                : ProcessedCrashCounts::kRendererForegroundVisibleCrash);
+      }
     }
     if (intentional_kill) {
       LogCount(ProcessedCrashCounts::kRendererForegroundIntentionalKill);
