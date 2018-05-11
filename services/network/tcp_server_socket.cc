@@ -41,7 +41,7 @@ int TCPServerSocket::Listen(const net::IPEndPoint& local_addr,
   backlog_ = backlog;
   int net_error = socket_->Listen(local_addr, backlog);
   if (net_error == net::OK)
-    socket_->GetLocalAddress(local_addr_out);
+    net_error = socket_->GetLocalAddress(local_addr_out);
   return net_error;
 }
 
