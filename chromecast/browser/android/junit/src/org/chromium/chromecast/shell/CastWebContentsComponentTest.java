@@ -137,12 +137,62 @@ public class CastWebContentsComponentTest {
 
         CastWebContentsComponent component =
                 new CastWebContentsComponent(INSTANCE_ID, null, null, null, false, false);
-        component.enableTouchInput(INSTANCE_ID, true);
+        component.enableTouchInput(true);
 
         LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext())
                 .unregisterReceiver(receiver);
 
         verify(receiver).onReceive(any(Context.class), any(Intent.class));
+    }
+
+    @Test
+    public void testEnableTouchInputBeforeStartedSendsEnableTouchToActivity() {
+        Assume.assumeFalse(BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE);
+        Assume.assumeFalse(BuildConfig.ENABLE_CAST_FRAGMENT);
+
+        BroadcastReceiver receiver = Mockito.mock(BroadcastReceiver.class);
+        IntentFilter intentFilter =
+                new IntentFilter(CastWebContentsIntentUtils.ACTION_ENABLE_TOUCH_INPUT);
+        LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext())
+                .registerReceiver(receiver, intentFilter);
+
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(INSTANCE_ID, null, null, null, false, false);
+        component.enableTouchInput(true);
+
+        component.start(mStartParams);
+
+        Intent intent = mShadowActivity.getNextStartedActivity();
+
+        Assert.assertTrue(CastWebContentsIntentUtils.isTouchable(intent));
+
+        LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext())
+                .unregisterReceiver(receiver);
+    }
+
+    @Test
+    public void testDisableTouchInputBeforeStartedSendsEnableTouchToActivity() {
+        Assume.assumeFalse(BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE);
+        Assume.assumeFalse(BuildConfig.ENABLE_CAST_FRAGMENT);
+
+        BroadcastReceiver receiver = Mockito.mock(BroadcastReceiver.class);
+        IntentFilter intentFilter =
+                new IntentFilter(CastWebContentsIntentUtils.ACTION_ENABLE_TOUCH_INPUT);
+        LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext())
+                .registerReceiver(receiver, intentFilter);
+
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(INSTANCE_ID, null, null, null, false, false);
+        component.enableTouchInput(false);
+
+        component.start(mStartParams);
+
+        Intent intent = mShadowActivity.getNextStartedActivity();
+
+        Assert.assertFalse(CastWebContentsIntentUtils.isTouchable(intent));
+
+        LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext())
+                .unregisterReceiver(receiver);
     }
 
     @Test
