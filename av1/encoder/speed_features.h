@@ -282,6 +282,7 @@ typedef enum {
   GM_ERRORADV_TR_0,
   GM_ERRORADV_TR_1,
   GM_ERRORADV_TR_2,
+  GM_ERRORADV_TR_TYPES,
 } GM_ERRORADV_TYPE;
 
 typedef enum {
