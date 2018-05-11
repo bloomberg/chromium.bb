@@ -33,9 +33,6 @@ SurfaceLayerBridge::SurfaceLayerBridge(WebLayerTreeView* layer_tree_view,
   mojom::blink::EmbeddedFrameSinkProviderPtr provider;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&provider));
-  // TODO(xlai): Ensure OffscreenCanvas commit() is still functional when a
-  // frame-less HTML canvas's document is reparenting under another frame.
-  // See crbug.com/683172.
   blink::mojom::blink::EmbeddedFrameSinkClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
   provider->RegisterEmbeddedFrameSink(parent_frame_sink_id_, frame_sink_id_,

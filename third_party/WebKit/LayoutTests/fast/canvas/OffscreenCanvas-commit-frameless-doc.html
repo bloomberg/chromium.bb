@@ -7,8 +7,6 @@
 // Since the document is invisible, the resultant image should be
 // not visible too. But users must be able to draw to the OffscreenCanvas
 // and do canvas-operations on the frameless placeholder canvas.
-// TODO(crbug.com/683172): Modify this test after handling for
-// frameless canvas is done.
 function createFramelessCanvas() {
   var framelessDoc = document.implementation.createHTMLDocument("frameless");
   var canvas = framelessDoc.createElement("canvas");

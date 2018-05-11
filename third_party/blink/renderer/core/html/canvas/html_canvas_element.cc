@@ -1465,9 +1465,7 @@ void HTMLCanvasElement::CreateLayer() {
   DCHECK(!surface_layer_bridge_);
   LocalFrame* frame = GetDocument().GetFrame();
   WebLayerTreeView* layer_tree_view = nullptr;
-  // TODO(xlai): Ensure OffscreenCanvas commit() is still functional when a
-  // frame-less HTML canvas's document is reparenting under another frame.
-  // See crbug.com/683172.
+  // We do not design transferControlToOffscreen() for frame-less HTML canvas.
   if (frame) {
     layer_tree_view =
         frame->GetPage()->GetChromeClient().GetWebLayerTreeView(frame);
