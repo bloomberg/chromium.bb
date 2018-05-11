@@ -332,13 +332,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "genericTaskIsNotExecuted"),
         TestParameter(NOT_IN_GUEST_MODE, "genericAndNonGenericTasksAreMixed")));
 
-#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER)
-#define MAYBE_FolderShortcuts DISABLED_FolderShortcuts
-#else
-#define MAYBE_FolderShortcuts FolderShortcuts
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_FolderShortcuts,
+    FolderShortcuts,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "traverseFolderShortcuts"),
