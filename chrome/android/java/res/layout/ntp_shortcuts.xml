@@ -16,61 +16,49 @@
     android:gravity="center"
     android:orientation="horizontal" >
 
-    <!-- TODO(twellington): Change these to compound drawables once we have a widget that supports
-                            easily sizing compound drawables. -->
-    <LinearLayout
+    <FrameLayout
         android:id="@+id/bookmarks_button"
         android:layout_width="0dp"
         android:layout_weight="1"
         android:layout_height="wrap_content"
         android:minHeight="48dp"
         android:paddingTop="4dp"
-        android:paddingBottom="4dp"
-        android:gravity="center"
-        android:orientation="horizontal"
-        tools:ignore="UseCompoundDrawables" >
+        android:paddingBottom="4dp" >
 
-        <ImageView
-            android:layout_width="20sp"
-            android:layout_height="20sp"
-            android:contentDescription="@null"
-            android:layout_marginEnd="8dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/btn_star_filled"
-            chrome:tint="@color/black_alpha_54" />
-
-        <TextView
+        <org.chromium.chrome.browser.widget.TextViewWithCompoundDrawables
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:drawablePadding="8dp"
+            android:drawableStart="@drawable/btn_star_filled"
             android:text="@string/menu_bookmarks"
-            android:textAppearance="@style/BlackCaption" />
-    </LinearLayout>
+            android:textAppearance="@style/BlackCaption"
+            chrome:drawableHeight="20sp"
+            chrome:drawableWidth="20sp"
+            chrome:chromeDrawableTint="@color/black_alpha_54"  />
+    </FrameLayout>
 
-    <LinearLayout
+    <FrameLayout
         android:id="@+id/downloads_button"
         android:layout_width="0dp"
         android:layout_weight="1"
         android:layout_height="wrap_content"
         android:minHeight="48dp"
         android:paddingTop="4dp"
-        android:paddingBottom="4dp"
-        android:gravity="center"
-        android:orientation="horizontal"
-        tools:ignore="UseCompoundDrawables" >
+        android:paddingBottom="4dp" >
 
-        <ImageView
-            android:layout_width="20sp"
-            android:layout_height="20sp"
-            android:contentDescription="@null"
-            android:layout_marginEnd="8dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_file_download_white_24dp"
-            chrome:tint="@color/black_alpha_54" />
-
-        <TextView
+        <org.chromium.chrome.browser.widget.TextViewWithCompoundDrawables
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:drawablePadding="8dp"
+            android:drawableStart="@drawable/ic_file_download_white_24dp"
             android:text="@string/menu_downloads"
-            android:textAppearance="@style/BlackCaption" />
-    </LinearLayout>
+            android:textAppearance="@style/BlackCaption"
+            chrome:drawableHeight="20sp"
+            chrome:drawableWidth="20sp"
+            chrome:chromeDrawableTint="@color/black_alpha_54"  />
+    </FrameLayout>
 </LinearLayout>

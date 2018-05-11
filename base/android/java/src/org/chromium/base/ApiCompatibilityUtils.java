@@ -247,6 +247,17 @@ public class ApiCompatibilityUtils {
     }
 
     /**
+     * @see android.widget.TextView#getCompoundDrawablesRelative()
+     */
+    public static Drawable[] getCompoundDrawablesRelative(TextView textView) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            return textView.getCompoundDrawablesRelative();
+        } else {
+            return textView.getCompoundDrawables();
+        }
+    }
+
+    /**
      * @see android.widget.TextView#setCompoundDrawablesRelative(Drawable, Drawable, Drawable,
      *      Drawable)
      */
