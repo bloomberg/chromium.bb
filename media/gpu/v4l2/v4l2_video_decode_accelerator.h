@@ -199,8 +199,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
                             // from. See TextureManager for details.
     // Input fds of the processor. Exported from the decoder.
     std::vector<base::ScopedFD> processor_input_fds;
-    // Output fds of the processor. Used only when OutputMode is IMPORT.
-    std::vector<base::ScopedFD> processor_output_fds;
+    // Output fds. Used only when OutputMode is IMPORT.
+    std::vector<base::ScopedFD> output_fds;
   };
 
   //
