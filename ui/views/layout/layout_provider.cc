@@ -151,7 +151,7 @@ int LayoutProvider::GetCornerRadiusMetric(EmphasisMetric emphasis_metric,
     case EMPHASIS_MEDIUM:
       return is_touch ? 8 : 4;
     case EMPHASIS_HIGH:
-      return std::min(size.width(), size.height()) / 2;
+      return is_touch ? std::min(size.width(), size.height()) / 2 : 4;
     default:
       NOTREACHED();
       return 0;

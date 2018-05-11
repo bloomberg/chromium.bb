@@ -42,8 +42,9 @@ ToolbarButton::ToolbarButton(Profile* profile,
   if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
     set_ink_drop_visible_opacity(kTouchToolbarInkDropVisibleOpacity);
 
+  const int size = GetLayoutConstant(LOCATION_BAR_HEIGHT);
   const int radii = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MEDIUM);
+      views::EMPHASIS_HIGH, gfx::Size(size, size));
   set_ink_drop_corner_radii(radii, radii);
 }
 

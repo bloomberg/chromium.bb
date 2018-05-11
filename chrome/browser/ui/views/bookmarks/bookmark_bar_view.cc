@@ -165,16 +165,15 @@ gfx::ImageSkia* GetImageSkiaNamed(int id) {
   return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }
 
-int GetInkDropCornerRadius() {
-  return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MEDIUM);
+gfx::Insets GetInkDropInsets() {
+  // Slight insets are required for older layouts as they use a slightly smaller
+  // 24dp inkdrop.
+  return gfx::Insets(ui::MaterialDesignController::IsNewerMaterialUi() ? 0 : 2);
 }
 
-gfx::Insets GetInkDropInsets() {
-  // Refresh insets aren't required as a larger 28dp (vs 24) inkdrop is used for
-  // the toolbar buttons we're trying to match here.
-  constexpr int kInsets[] = {2, 2, 3, 0};
-  return gfx::Insets(kInsets[ui::MaterialDesignController::GetMode()]);
+int GetInkDropCornerRadius(const views::View* host_view) {
+  return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+      views::EMPHASIS_HIGH, host_view->size());
 }
 
 SkColor GetBookmarkButtonInkDropBaseColor(const ui::ThemeProvider* tp) {
@@ -203,19 +202,27 @@ std::unique_ptr<views::InkDropRipple> CreateBookmarkButtonInkDropRipple(
 std::unique_ptr<views::InkDropMask> CreateBookmarkButtonInkDropMask(
     const views::InkDropHostView* host_view) {
   return std::make_unique<views::RoundRectInkDropMask>(
-      host_view->size(), GetInkDropInsets(), GetInkDropCornerRadius());
+      host_view->size(), GetInkDropInsets(), GetInkDropCornerRadius(host_view));
 }
 
 std::unique_ptr<views::InkDropHighlight> CreateBookmarkButtonInkDropHighlight(
     const views::InkDropHostView* host_view) {
   std::unique_ptr<views::InkDropHighlight> highlight(
       new views::InkDropHighlight(
-          host_view->size(), GetInkDropCornerRadius(),
+          host_view->size(), GetInkDropCornerRadius(host_view),
           gfx::RectF(gfx::Rect(host_view->size())).CenterPoint(),
           GetBookmarkButtonInkDropBaseColor(host_view->GetThemeProvider())));
   if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
     highlight->set_visible_opacity(kTouchToolbarHighlightVisibleOpacity);
   return highlight;
+}
+
+std::unique_ptr<views::LabelButtonBorder> CreateBookmarkButtonBorder() {
+  std::unique_ptr<LabelButtonBorder> border =
+      std::make_unique<LabelButtonBorder>();
+  border->set_insets(ChromeLayoutProvider::Get()->GetInsetsMetric(
+      INSETS_BOOKMARKS_BAR_BUTTON));
+  return border;
 }
 
 // BookmarkButtonBase -----------------------------------------------
@@ -273,6 +280,11 @@ class BookmarkButtonBase : public views::LabelButton {
 
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
     return CreateBookmarkButtonInkDropMask(this);
+  }
+
+  std::unique_ptr<views::LabelButtonBorder> CreateDefaultBorder()
+      const override {
+    return CreateBookmarkButtonBorder();
   }
 
  private:
@@ -391,6 +403,11 @@ class BookmarkMenuButtonBase : public views::MenuButton {
 
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
     return CreateBookmarkButtonInkDropMask(this);
+  }
+
+  std::unique_ptr<views::LabelButtonBorder> CreateDefaultBorder()
+      const override {
+    return CreateBookmarkButtonBorder();
   }
 
  private:
