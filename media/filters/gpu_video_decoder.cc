@@ -169,6 +169,14 @@ void GpuVideoDecoder::Initialize(
   DVLOG(1) << (previously_initialized ? "Reinitializing" : "Initializing")
            << " GVD with config: " << config.AsHumanReadableString();
 
+  auto encryption_mode = config.encryption_scheme().mode();
+  if (encryption_mode != EncryptionScheme::CIPHER_MODE_UNENCRYPTED &&
+      encryption_mode != EncryptionScheme::CIPHER_MODE_AES_CTR) {
+    DVLOG(1) << "VDAs only support clear or cenc encrypted streams.";
+    bound_init_cb.Run(false);
+    return;
+  }
+
   // Disallow codec changes between configuration changes.
   if (previously_initialized && config_.codec() != config.codec()) {
     DVLOG(1) << "Codec changed, cannot reinitialize.";
@@ -262,15 +270,13 @@ void GpuVideoDecoder::Initialize(
     return;
   }
 
-  if (config.is_encrypted()) {
-    DCHECK(cdm_context);
+  if (cdm_context)
     cdm_id_ = cdm_context->GetCdmId();
-    // No need to store |cdm_context| since it's not needed in reinitialization.
-    if (cdm_id_ == CdmContext::kInvalidCdmId) {
-      DVLOG(1) << "CDM ID not available.";
-      bound_init_cb.Run(false);
-      return;
-    }
+
+  if (config.is_encrypted() && cdm_id_ == CdmContext::kInvalidCdmId) {
+    DVLOG(1) << "CDM ID not available.";
+    bound_init_cb.Run(false);
+    return;
   }
 
   init_cb_ = bound_init_cb;
