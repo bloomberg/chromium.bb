@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/resources/resource_provider.h"
+#include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
 #include "cc/trees/task_runner_provider.h"

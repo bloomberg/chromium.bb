@@ -22,7 +22,6 @@
 #include "cc/base/math_util.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "cc/resources/layer_tree_resource_provider.h"
-#include "cc/trees/layer_tree_frame_sink.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/texture_allocation.h"
 #include "components/viz/common/quads/render_pass.h"
@@ -31,6 +30,7 @@
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/resource_sizes.h"
+#include "components/viz/common/resources/shared_bitmap_reporter.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -252,14 +252,14 @@ class VideoResourceUpdater::SoftwarePlaneResource
  public:
   SoftwarePlaneResource(uint32_t plane_resource_id,
                         const gfx::Size& size,
-                        LayerTreeFrameSink* layer_tree_frame_sink)
+                        viz::SharedBitmapReporter* shared_bitmap_reporter)
       : PlaneResource(plane_resource_id,
                       size,
                       viz::ResourceFormat::RGBA_8888,
                       /*is_software=*/true),
-        layer_tree_frame_sink_(layer_tree_frame_sink),
+        shared_bitmap_reporter_(shared_bitmap_reporter),
         shared_bitmap_id_(viz::SharedBitmap::GenerateId()) {
-    DCHECK(layer_tree_frame_sink_);
+    DCHECK(shared_bitmap_reporter_);
 
     // Allocate SharedMemory and notify display compositor of the allocation.
     shared_memory_ = viz::bitmap_allocation::AllocateMappedBitmap(
@@ -268,11 +268,11 @@ class VideoResourceUpdater::SoftwarePlaneResource
         viz::bitmap_allocation::DuplicateAndCloseMappedBitmap(
             shared_memory_.get(), resource_size(),
             viz::ResourceFormat::RGBA_8888);
-    layer_tree_frame_sink_->DidAllocateSharedBitmap(std::move(handle),
-                                                    shared_bitmap_id_);
+    shared_bitmap_reporter_->DidAllocateSharedBitmap(std::move(handle),
+                                                     shared_bitmap_id_);
   }
   ~SoftwarePlaneResource() override {
-    layer_tree_frame_sink_->DidDeleteSharedBitmap(shared_bitmap_id_);
+    shared_bitmap_reporter_->DidDeleteSharedBitmap(shared_bitmap_id_);
   }
 
   const viz::SharedBitmapId& shared_bitmap_id() const {
@@ -286,7 +286,7 @@ class VideoResourceUpdater::SoftwarePlaneResource
   }
 
  private:
-  LayerTreeFrameSink* const layer_tree_frame_sink_;
+  viz::SharedBitmapReporter* const shared_bitmap_reporter_;
   const viz::SharedBitmapId shared_bitmap_id_;
   std::unique_ptr<base::SharedMemory> shared_memory_;
 
@@ -340,20 +340,20 @@ VideoResourceUpdater::PlaneResource::AsHardware() {
 
 VideoResourceUpdater::VideoResourceUpdater(
     viz::ContextProvider* context_provider,
-    LayerTreeFrameSink* layer_tree_frame_sink,
+    viz::SharedBitmapReporter* shared_bitmap_reporter,
     LayerTreeResourceProvider* resource_provider,
     bool use_stream_video_draw_quad,
     bool use_gpu_memory_buffer_resources,
     bool use_r16_texture)
     : context_provider_(context_provider),
-      layer_tree_frame_sink_(layer_tree_frame_sink),
+      shared_bitmap_reporter_(shared_bitmap_reporter),
       resource_provider_(resource_provider),
       use_stream_video_draw_quad_(use_stream_video_draw_quad),
       use_gpu_memory_buffer_resources_(use_gpu_memory_buffer_resources),
       use_r16_texture_(use_r16_texture),
       tracing_id_(g_next_video_resource_updater_id.GetNext()),
       weak_ptr_factory_(this) {
-  DCHECK(context_provider_ || layer_tree_frame_sink_);
+  DCHECK(context_provider_ || shared_bitmap_reporter_);
 
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "cc::VideoResourceUpdater", base::ThreadTaskRunnerHandle::Get());
@@ -608,7 +608,7 @@ VideoResourceUpdater::PlaneResource* VideoResourceUpdater::AllocateResource(
     DCHECK_EQ(format, viz::ResourceFormat::RGBA_8888);
 
     all_resources_.push_back(std::make_unique<SoftwarePlaneResource>(
-        plane_resource_id, plane_size, layer_tree_frame_sink_));
+        plane_resource_id, plane_size, shared_bitmap_reporter_));
   } else {
     // Video textures get composited into the display frame, the GPU doesn't
     // draw to them directly.
