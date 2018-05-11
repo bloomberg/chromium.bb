@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_ECHO_PRIVATE_API_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_ECHO_PRIVATE_API_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/ui/echo_dialog_listener.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
@@ -89,8 +91,8 @@ class EchoPrivateGetUserConsentFunction : public ChromeAsyncExtensionFunction,
                                           public chromeos::EchoDialogListener {
  public:
   // Type for the dialog shown callback used in tests.
-  typedef base::Callback<void(chromeos::EchoDialogView* dialog)>
-          DialogShownTestCallback;
+  using DialogShownTestCallback =
+      base::RepeatingCallback<void(chromeos::EchoDialogView* dialog)>;
 
   EchoPrivateGetUserConsentFunction();
 
