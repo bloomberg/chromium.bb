@@ -34,7 +34,8 @@ AccountManager::TokenMap LoadTokensFromDisk(
   bool success = ReadFileToStringWithMaxSize(tokens_file_path, &token_file_data,
                                              kTokensFileMaxSizeInBytes);
   if (!success) {
-    LOG(ERROR) << "Failed to read tokens file";
+    // TODO(sinhak): Add an error log when AccountManager becomes the default
+    // Identity provider on Chrome OS.
     return tokens;
   }
 
