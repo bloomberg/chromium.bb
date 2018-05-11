@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -21,6 +22,7 @@
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -44,6 +46,10 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "ui/display/display_switches.h"
+
+#if defined(USE_AURA)
+#include "third_party/blink/public/platform/web_mouse_event.h"
+#endif
 
 using guest_view::GuestViewManager;
 using guest_view::TestGuestViewManager;
@@ -470,6 +476,32 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestChromeExtensionURL) {
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestContentLoadEvent) {
   RunTest("testContentLoadEvent", "web_view/apitest");
 }
+
+#if defined(USE_AURA)
+// Verifies that trying to show the context menu doesn't crash
+// (https://crbug.com/820604).
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestContextMenu) {
+  // Launch some test app that displays a webview.
+  LaunchApp("web_view/visibility_changed");
+
+  // Ensure the webview's surface is ready for hit testing.
+  content::WebContents* guest_web_contents = GetGuestWebContents();
+  content::WaitForGuestSurfaceReady(guest_web_contents);
+
+  // Register a ContextMenuFilter to wait for the context menu event to be sent.
+  content::RenderProcessHost* guest_process_host =
+      guest_web_contents->GetMainFrame()->GetProcess();
+  auto context_menu_filter = base::MakeRefCounted<content::ContextMenuFilter>();
+  guest_process_host->AddFilter(context_menu_filter.get());
+
+  // Trigger the context menu. AppShell doesn't show a context menu; this is
+  // just a sanity check that nothing breaks.
+  content::SimulateRoutedMouseClickAt(
+      guest_web_contents, blink::WebInputEvent::kNoModifiers,
+      blink::WebMouseEvent::Button::kRight, gfx::Point(10, 10));
+  context_menu_filter->Wait();
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDeclarativeWebRequestAPI) {
   std::string app_location = "web_view/apitest";
