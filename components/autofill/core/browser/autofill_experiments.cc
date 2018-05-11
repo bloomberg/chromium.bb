@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -61,6 +60,8 @@ const base::Feature kAutofillSuppressDisusedAddresses{
     "AutofillSuppressDisusedAddresses", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAutofillSuppressDisusedCreditCards{
     "AutofillSuppressDisusedCreditCards", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kAutofillUpstream{"AutofillUpstream",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamAllowAllEmailDomains{
     "AutofillUpstreamAllowAllEmailDomains", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamSendDetectedValues{
@@ -232,10 +233,6 @@ bool OfferStoreUnmaskedCards() {
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const syncer::SyncService* sync_service,
                                const std::string& user_email) {
-  // Query the field trial first to ensure UMA always reports the correct group.
-  std::string group_name =
-      base::FieldTrialList::FindFullName("OfferUploadCreditCards");
-
   // Check Autofill sync setting.
   if (!(sync_service && sync_service->CanSyncStart() &&
         sync_service->GetPreferredDataTypes().Has(syncer::AUTOFILL_PROFILE))) {
@@ -270,18 +267,7 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     return false;
   }
 
-  // With the user settings and logged in state verified, now we can consult the
-  // command-line flags and experiment settings.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableOfferUploadCreditCards)) {
-    return true;
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableOfferUploadCreditCards)) {
-    return false;
-  }
-
-  return !group_name.empty() && group_name != "Disabled";
+  return base::FeatureList::IsEnabled(kAutofillUpstream);
 }
 
 bool IsAutofillUpstreamSendDetectedValuesExperimentEnabled() {

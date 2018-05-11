@@ -452,6 +452,25 @@
             ]
         }
     ],
+    "AutofillUpstream": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillUpstream"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillUpstreamRequestCvcIfMissing": [
         {
             "platforms": [
