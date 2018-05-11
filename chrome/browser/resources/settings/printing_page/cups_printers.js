@@ -151,10 +151,8 @@ Polymer({
       }
     }
 
+    this.$.errorToast.show();
     message.hidden = false;
-    window.setTimeout(function() {
-      message.hidden = true;
-    }, 3000);
   },
 
   /** @private */
