@@ -24,8 +24,8 @@ namespace ash {
 namespace {
 
 // Appearance.
-constexpr int kPaddingDip = 12;
-constexpr int kPreferredWidthDip = 364;
+constexpr int kPaddingDip = 14;
+constexpr int kPreferredWidthDip = 640;
 constexpr int kSpacingDip = 8;
 constexpr SkColor kTextBackgroundColor = SkColorSetARGB(0x8A, 0x42, 0x85, 0xF4);
 constexpr int kTextCornerRadiusDip = 16;
@@ -506,8 +506,8 @@ void AssistantBubbleView::OnCardAdded(
   ash::mojom::AssistantCardParamsPtr params(
       ash::mojom::AssistantCardParams::New());
   params->html = card_element->GetHtml();
-  params->min_width_dip = kPreferredWidthDip;
-  params->max_width_dip = kPreferredWidthDip;
+  params->min_width_dip = kPreferredWidthDip - 2 * kPaddingDip;
+  params->max_width_dip = kPreferredWidthDip - 2 * kPaddingDip;
 
   // The card will be rendered by AssistantCardRenderer, running the specified
   // callback when the card is ready for embedding.

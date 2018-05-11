@@ -34,7 +34,7 @@ class AssistantContainerView : public views::BubbleDialogDelegateView {
       : assistant_controller_(assistant_controller) {
     set_accept_events(true);
     SetAnchor();
-    set_arrow(views::BubbleBorder::Arrow::BOTTOM_LEFT);
+    set_arrow(views::BubbleBorder::Arrow::BOTTOM_CENTER);
     set_close_on_deactivate(false);
     set_color(kBackgroundColor);
     set_margins(gfx::Insets());
@@ -83,15 +83,15 @@ class AssistantContainerView : public views::BubbleDialogDelegateView {
   }
 
   void SetAnchor() {
-    // TODO(dmblack): Handle multiple displays, RTL orientation, dynamic shelf
-    // repositioning and any other corner cases.
-    // Anchors to bottom lefthand corner of primary display's work area.
+    // TODO(dmblack): Handle multiple displays, dynamic shelf repositioning, and
+    // any other corner cases.
+    // Anchors to bottom center of primary display's work area.
     display::Display primary_display =
         display::Screen::GetScreen()->GetPrimaryDisplay();
 
     gfx::Rect work_area = primary_display.work_area();
-    gfx::Rect anchor = gfx::Rect(work_area.x() + kMarginDip,
-                                 work_area.bottom() - kMarginDip, 0, 0);
+    gfx::Rect anchor = gfx::Rect(work_area.x(), work_area.bottom() - kMarginDip,
+                                 work_area.width(), 0);
 
     SetAnchorRect(anchor);
   }
