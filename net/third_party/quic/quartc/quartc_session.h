@@ -12,6 +12,7 @@
 #include "net/third_party/quic/core/quic_session.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/quartc/quartc_clock_interface.h"
+#include "net/third_party/quic/quartc/quartc_packet_writer.h"
 #include "net/third_party/quic/quartc/quartc_session_interface.h"
 #include "net/third_party/quic/quartc/quartc_stream.h"
 
@@ -77,7 +78,8 @@ class QUIC_EXPORT_PRIVATE QuartcSession
                 const std::string& unique_remote_server_id,
                 Perspective perspective,
                 QuicConnectionHelperInterface* helper,
-                QuicClock* clock);
+                QuicClock* clock,
+                std::unique_ptr<QuartcPacketWriter> packet_writer);
   ~QuartcSession() override;
 
   // QuicSession overrides.
@@ -162,12 +164,17 @@ class QUIC_EXPORT_PRIVATE QuartcSession
   std::unique_ptr<QuicCryptoStream> crypto_stream_;
   const std::string unique_remote_server_id_;
   Perspective perspective_;
-  // Take the ownership of the QuicConnection.
+  // Take the ownership of the QuicConnection.  Note:  if |connection_| changes,
+  // the new value of |connection_| must be given to |packet_writer_| before any
+  // packets are written.  Otherwise, |packet_writer_| will crash.
   std::unique_ptr<QuicConnection> connection_;
   // Not owned by QuartcSession. From the QuartcFactory.
   QuicConnectionHelperInterface* helper_;
   // For recording packet receipt time
   QuicClock* clock_;
+  // Packet writer used by |connection_|.
+  std::unique_ptr<QuartcPacketWriter> packet_writer_;
+
   // Not owned by QuartcSession.
   QuartcSessionInterface::Delegate* session_delegate_ = nullptr;
   // Used by QUIC crypto server stream to track most recently compressed certs.

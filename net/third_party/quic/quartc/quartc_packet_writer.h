@@ -11,12 +11,11 @@
 
 namespace net {
 
-// Implements a QuicPacketWriter using a
-// QuartcSessionInterface::PacketTransport, which allows a QuicConnection to
-// use(for example), a WebRTC IceTransport.
+// Implements a QuicPacketWriter using a QuartcPacketTransport, which allows a
+// QuicConnection to use (for example), a WebRTC IceTransport.
 class QUIC_EXPORT_PRIVATE QuartcPacketWriter : public QuicPacketWriter {
  public:
-  QuartcPacketWriter(QuartcSessionInterface::PacketTransport* packet_transport,
+  QuartcPacketWriter(QuartcPacketTransport* packet_transport,
                      QuicByteCount max_packet_size);
   ~QuartcPacketWriter() override {}
 
@@ -45,11 +44,18 @@ class QUIC_EXPORT_PRIVATE QuartcPacketWriter : public QuicPacketWriter {
   // Sets the packet writer to a writable (non-blocked) state.
   void SetWritable() override;
 
+  // Sets the connection which sends packets using this writer.  Connection must
+  // be set in order to attach packet info (eg. packet numbers) to writes.
+  void set_connection(QuicConnection* connection) { connection_ = connection; }
+
  private:
   // QuartcPacketWriter will not own the transport.
-  QuartcSessionInterface::PacketTransport* packet_transport_;
+  QuartcPacketTransport* packet_transport_;
   // The maximum size of the packet can be written by this writer.
   QuicByteCount max_packet_size_;
+
+  // The current connection sending packets using this writer.
+  QuicConnection* connection_;
 
   // Whether packets can be written.
   bool writable_ = false;

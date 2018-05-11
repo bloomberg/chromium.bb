@@ -171,13 +171,17 @@ QuartcSession::QuartcSession(std::unique_ptr<QuicConnection> connection,
                              const string& unique_remote_server_id,
                              Perspective perspective,
                              QuicConnectionHelperInterface* helper,
-                             QuicClock* clock)
+                             QuicClock* clock,
+                             std::unique_ptr<QuartcPacketWriter> packet_writer)
     : QuicSession(connection.get(), nullptr /*visitor*/, config),
       unique_remote_server_id_(unique_remote_server_id),
       perspective_(perspective),
       connection_(std::move(connection)),
       helper_(helper),
-      clock_(clock) {
+      clock_(clock),
+      packet_writer_(std::move(packet_writer)) {
+  packet_writer_->set_connection(connection_.get());
+
   // Initialization with default crypto configuration.
   if (perspective_ == Perspective::IS_CLIENT) {
     std::unique_ptr<ProofVerifier> proof_verifier(new InsecureProofVerifier);
