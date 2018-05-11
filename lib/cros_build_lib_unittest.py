@@ -725,6 +725,36 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     self.assertIsNotNone(cm.exception.result.error)
     self.assertNotEqual('', cm.exception.result.error)
 
+  def _CaptureLogOutput(self, cmd, **kwargs):
+    """Capture logging output of RunCommand."""
+    log = os.path.join(self.tempdir, 'output')
+    fh = logging.FileHandler(log)
+    fh.setLevel(logging.DEBUG)
+    logging.getLogger().addHandler(fh)
+    cros_build_lib.RunCommand(cmd, **kwargs)
+    logging.getLogger().removeHandler(fh)
+    return osutils.ReadFile(log)
+
+  @_ForceLoggingLevel
+  def testLogOutput(self):
+    """Normal log_output, stdout followed by stderr."""
+    cmd = 'echo Greece; echo Italy >&2; echo Spain'
+    log_output = ("RunCommand: /bin/bash -c "
+                  "'echo Greece; echo Italy >&2; echo Spain'\n"
+                  "(stdout):\nGreece\nSpain\n\n(stderr):\nItaly\n\n")
+    self.assertEquals(self._CaptureLogOutput(cmd, shell=True, log_output=True),
+                      log_output)
+
+  @_ForceLoggingLevel
+  def testStreamLog(self):
+    """Streaming log_output, stdout and stderr interwoven in order."""
+    cmd = 'echo Greece; echo Italy >&2; echo Spain'
+    log_output = ("RunCommand: /bin/bash -c "
+                  "'echo Greece; echo Italy >&2; echo Spain'\n"
+                  "(stdout/stderr):\n\nGreece\nItaly\nSpain\n")
+    self.assertEquals(self._CaptureLogOutput(cmd, shell=True, stream_log=True),
+                      log_output)
+
 
 class TestTimedSection(cros_test_lib.TestCase):
   """Tests for TimedSection context manager."""
