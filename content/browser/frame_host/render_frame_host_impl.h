@@ -835,9 +835,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDidBlockFramebust(const GURL& url);
   void OnAbortNavigation();
   void OnForwardResourceTimingToParent(
-      const ResourceTimingInfo& resource_timing,
-      bool view_is_closing,
-      bool widget_is_closing);
+      const ResourceTimingInfo& resource_timing);
   void OnDispatchLoad();
   void OnAccessibilityEvents(
       const std::vector<AccessibilityHostMsg_EventParams>& params,
