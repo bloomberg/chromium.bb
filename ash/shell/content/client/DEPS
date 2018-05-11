@@ -1,5 +1,6 @@
 include_rules = [
   "+ash/components/quick_launch",
+  "+ash/components/touch_hud",
   "+components/discardable_memory/public/interfaces",
   "+components/services/font",
   "+content/public",

@@ -537,17 +537,16 @@ void RootWindowController::UpdateShelfVisibility() {
 }
 
 void RootWindowController::InitTouchHuds() {
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   // Enable touch debugging features when each display is initialized.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAshTouchHud))
     set_touch_hud_debug(new TouchHudDebug(GetRootWindow()));
 
   // TouchHudProjection manages its own lifetime.
-  if (command_line->HasSwitch(switches::kShowTaps))
+  if (command_line->HasSwitch(switches::kShowTaps) &&
+      !command_line->HasSwitch(switches::kShowTapsApp)) {
     touch_hud_projection_ = new TouchHudProjection(GetRootWindow());
+  }
 }
 
 aura::Window* RootWindowController::GetWindowForFullscreenMode() {

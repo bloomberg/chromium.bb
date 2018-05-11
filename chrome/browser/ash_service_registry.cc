@@ -6,6 +6,7 @@
 
 #include "ash/ash_service.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
+#include "ash/components/touch_hud/public/mojom/constants.mojom.h"
 #include "ash/content/content_gpu_support.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -37,7 +38,7 @@ struct Service {
 constexpr Service kCommonServices[] = {
     {quick_launch::mojom::kServiceName, "Quick Launch", nullptr},
     {"autoclick_app", "Accessibility Autoclick", nullptr},
-    {"touch_hud_app", "Touch HUD", nullptr},
+    {touch_hud::mojom::kServiceName, "Touch HUD", nullptr},
     {font_service::mojom::kServiceName, "Font Service", nullptr},
 };
 
