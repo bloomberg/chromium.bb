@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
 
 namespace chromeos {
 namespace settings {
