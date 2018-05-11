@@ -30,7 +30,7 @@ class CONTENT_EXPORT ByteStreamInputStream : public download::InputStream {
 
  private:
   // ByteStreamReader to read from.
-  std::unique_ptr<ByteStreamReader> stream_reader_;
+  std::unique_ptr<ByteStreamReader, base::OnTaskRunnerDeleter> stream_reader_;
 
   // Status when the response completes.
   download::DownloadInterruptReason completion_status_;
