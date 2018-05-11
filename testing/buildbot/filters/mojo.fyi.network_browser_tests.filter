@@ -248,20 +248,6 @@
 -IOThreadEctFieldTrialAndCommandLineBrowserTest.ECTFromCommandLineOverridesFieldTrial
 -IOThreadEctFieldTrialBrowserTest.ForceECTUsingFieldTrial
 
-# SafeBrowsing doesn't yet set up its NetworkContext correctly when the network
-# service is enabled.
-# https://crbug.com/789640
--SafeBrowsingNetworkContext/NetworkContextConfigurationBrowserTest.DiskCache/0
--SafeBrowsingNetworkContext/NetworkContextConfigurationBrowserTest.DataURL/0
--SafeBrowsingNetworkContext/NetworkContextConfigurationBrowserTest.FileURL/0
--SafeBrowsingNetworkContext/NetworkContextConfigurationBrowserTest.ProxyConfig/0
--SafeBrowsingNetworkContext/NetworkContextConfigurationDataPacBrowserTest.DataPac/0
--SafeBrowsingNetworkContext/NetworkContextConfigurationFilePacBrowserTest.FilePac/0
--SafeBrowsingNetworkContext/NetworkContextConfigurationFtpPacBrowserTest.FtpPac/0
--SafeBrowsingNetworkContext/NetworkContextConfigurationHttpPacBrowserTest.HttpPac/0
--SafeBrowsingNetworkContext/NetworkContextConfigurationHttpsStrippingPacBrowserTest.PacHttpsUrlStripping/0
--SafeBrowsingNetworkContext/NetworkContextConfigurationProxyOnStartBrowserTest.TestInitialProxyConfig/0
-
 # Fails on Windows. It's passing on Linux but this feature needs to be converted
 # to work with network service.
 -ConditionalCacheCountingHelperBrowserTest.Count

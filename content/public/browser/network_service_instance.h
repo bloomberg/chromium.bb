@@ -31,8 +31,7 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkService();
 CONTENT_EXPORT network::NetworkService* GetNetworkServiceImpl();
 
 // Call |FlushForTesting()| on cached |NetworkServicePtr|. For testing only.
-// Must only be called on the UI thread. Must not be called if the network
-// service is disabled.
+// Must only be called on the UI thread.
 CONTENT_EXPORT void FlushNetworkServiceInstanceForTesting();
 
 }  // namespace content

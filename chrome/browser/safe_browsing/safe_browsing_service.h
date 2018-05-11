@@ -19,6 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "chrome/browser/net/proxy_config_monitor.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/util.h"
@@ -163,11 +164,6 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactoryOnIOThread();
 
-  // Called on IO thread thread when QUIC should be disabled (e.g. because of
-  // policy). This should not be necessary anymore when http://crbug.com/678653
-  // is implemented.
-  void DisableQuicOnIOThread();
-
   const scoped_refptr<SafeBrowsingUIManager>& ui_manager() const;
 
   // This returns either the v3 or the v4 database manager, depending on
@@ -259,8 +255,7 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
 
   // Called to initialize objects that are used on the io_thread.  This may be
   // called multiple times during the life of the SafeBrowsingService.
-  void StartOnIOThread(
-      net::URLRequestContextGetter* url_request_context_getter);
+  void StartOnIOThread();
 
   // Called to stop or shutdown operations on the io_thread. This may be called
   // multiple times to stop during the life of the SafeBrowsingService. If
@@ -303,6 +298,10 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   void CreateURLLoaderFactoryForIO(
       network::mojom::URLLoaderFactoryRequest request);
 
+  // Creates a configured NetworkContextParams when the network service is in
+  // use.
+  network::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
+
   // The factory used to instantiate a SafeBrowsingService object.
   // Useful for tests, so they can provide their own implementation of
   // SafeBrowsingService.
@@ -310,10 +309,16 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
 
   // The SafeBrowsingURLRequestContextGetter used to access
   // |url_request_context_|. Accessed on UI thread.
+  // This is only valid if the network service is disabled.
   scoped_refptr<SafeBrowsingURLRequestContextGetter>
       url_request_context_getter_;
 
-  // A wrapper around |url_request_context_getter_|. Accessed on UI thread.
+  std::unique_ptr<ProxyConfigMonitor> proxy_config_monitor_;
+
+  // If the network service is disabled, this is a wrapper around
+  // |url_request_context_getter_|. Otherwise it's what owns the
+  // URLRequestContext inside the network service. This is used by
+  // SimpleURLLoader for safe browsing requests.
   std::unique_ptr<safe_browsing::SafeBrowsingNetworkContext> network_context_;
 
   // A SharedURLLoaderFactory and its interfaceptr used on the IO thread.
@@ -332,6 +337,9 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // Whether SafeBrowsing Extended Reporting is enabled by the current set of
   // profiles. Updated on the UI thread.
   ExtendedReportingLevel estimated_extended_reporting_by_prefs_;
+
+  // Whether the service has been shutdown.
+  bool shutdown_;
 
   // Whether the service is running. 'enabled_' is used by SafeBrowsingService
   // on the IO thread during normal operations.

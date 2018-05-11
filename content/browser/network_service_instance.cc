@@ -75,7 +75,6 @@ network::NetworkService* GetNetworkServiceImpl() {
 
 void FlushNetworkServiceInstanceForTesting() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
 
   if (g_network_service_ptr)
     g_network_service_ptr->FlushForTesting();

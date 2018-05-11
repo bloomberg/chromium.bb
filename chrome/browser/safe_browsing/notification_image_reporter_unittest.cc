@@ -169,7 +169,11 @@ void NotificationImageReporterTest::SetUp() {
 
 void NotificationImageReporterTest::TearDown() {
   TestingBrowserProcess::GetGlobal()->safe_browsing_service()->ShutDown();
-  base::RunLoop().RunUntilIdle();  // TODO(johnme): Might still be tasks on IO.
+  // Ensure no races between internal SafeBrowsingService's IO thread
+  // initialization that will create a NetworkChangeNotifier, which is also used
+  // by Profile's destructor.
+  thread_bundle_.RunIOThreadUntilIdle();
+  thread_bundle_.RunUntilIdle();
   TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
 }
 

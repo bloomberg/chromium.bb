@@ -42,7 +42,7 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
   };
 
   // Construction needs to happen on the UI thread.
-  explicit AwSafeBrowsingUIManager(
+  AwSafeBrowsingUIManager(
       AwURLRequestContextGetter* browser_url_request_context_getter,
       PrefService* pref_service);
 
@@ -79,10 +79,13 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
 
   // The SafeBrowsingURLRequestContextGetter used to access
   // |url_request_context_|. Accessed on UI thread.
+  // This is only valid if the network service is disabled.
   scoped_refptr<safe_browsing::SafeBrowsingURLRequestContextGetter>
       url_request_context_getter_;
 
-  // A wrapper around |url_request_context_getter_| to allow usage of
+  // If the network service is disabled, this is a wrapper around
+  // |url_request_context_getter_|. Otherwise it's what owns the
+  // URLRequestContext inside the network service. This is used by
   // SimpleURLLoader for safe browsing requests.
   std::unique_ptr<safe_browsing::SafeBrowsingNetworkContext> network_context_;
 
