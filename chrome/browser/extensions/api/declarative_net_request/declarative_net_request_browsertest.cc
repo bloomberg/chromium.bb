@@ -93,8 +93,8 @@ class URLRequestMonitor : public RulesetManager::TestObserver {
 
  private:
   // RulesetManager::TestObserver implementation.
-  void OnShouldBlockRequest(const WebRequestInfo& request,
-                            bool is_incognito_context) override {
+  void OnEvaluateRequest(const WebRequestInfo& request,
+                         bool is_incognito_context) override {
     if (request.url == url_)
       GetAndResetRequestSeen(true);
   }

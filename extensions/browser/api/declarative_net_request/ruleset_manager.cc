@@ -152,79 +152,76 @@ void RulesetManager::RemoveRuleset(const ExtensionId& extension_id) {
   ClearRendererCacheOnNavigation();
 }
 
-bool RulesetManager::ShouldBlockRequest(const WebRequestInfo& request,
-                                        bool is_incognito_context) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!ShouldEvaluateRequest(request))
-    return false;
-
-  if (test_observer_)
-    test_observer_->OnShouldBlockRequest(request, is_incognito_context);
-
-  SCOPED_UMA_HISTOGRAM_TIMER(
-      "Extensions.DeclarativeNetRequest.ShouldBlockRequestTime.AllExtensions");
-
-  const url::Origin first_party_origin =
-      request.initiator.value_or(url::Origin());
-  const flat_rule::ElementType element_type = GetElementType(request);
-  const bool is_third_party =
-      IsThirdPartyRequest(request.url, first_party_origin);
-
-  for (const auto& ruleset_data : rulesets_) {
-    if (!ShouldEvaluateRulesetForRequest(ruleset_data, request,
-                                         is_incognito_context)) {
-      continue;
-    }
-
-    if (ruleset_data.matcher->ShouldBlockRequest(
-            request.url, first_party_origin, element_type, is_third_party)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool RulesetManager::ShouldRedirectRequest(const WebRequestInfo& request,
-                                           bool is_incognito_context,
-                                           GURL* redirect_url) const {
+RulesetManager::Action RulesetManager::EvaluateRequest(
+    const WebRequestInfo& request,
+    bool is_incognito_context,
+    GURL* redirect_url) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(redirect_url);
 
   if (!ShouldEvaluateRequest(request))
-    return false;
-
-  // Redirecting WebSocket handshake request is prohibited.
-  const flat_rule::ElementType element_type = GetElementType(request);
-  if (element_type == flat_rule::ElementType_WEBSOCKET)
-    return false;
+    return Action::NONE;
 
   SCOPED_UMA_HISTOGRAM_TIMER(
-      "Extensions.DeclarativeNetRequest.ShouldRedirectRequestTime."
-      "AllExtensions");
+      "Extensions.DeclarativeNetRequest.EvaluateRequestTime.AllExtensions");
+
+  if (test_observer_)
+    test_observer_->OnEvaluateRequest(request, is_incognito_context);
 
   const GURL& url = request.url;
   const url::Origin first_party_origin =
       request.initiator.value_or(url::Origin());
+  const flat_rule::ElementType element_type = GetElementType(request);
   const bool is_third_party = IsThirdPartyRequest(url, first_party_origin);
+
+  std::vector<bool> should_evaluate_rulesets_for_request(rulesets_.size());
+
+  // We first check if any extension wants the request to be blocked.
+  {
+    size_t i = 0;
+    auto ruleset_data = rulesets_.begin();
+    for (; ruleset_data != rulesets_.end(); ++ruleset_data, ++i) {
+      // As a minor optimization, cache the value of
+      // |ShouldEvaluateRulesetForRequest|.
+      should_evaluate_rulesets_for_request[i] = ShouldEvaluateRulesetForRequest(
+          *ruleset_data, request, is_incognito_context);
+
+      if (!should_evaluate_rulesets_for_request[i])
+        continue;
+
+      if (ruleset_data->matcher->ShouldBlockRequest(
+              url, first_party_origin, element_type, is_third_party)) {
+        return Action::BLOCK;
+      }
+    }
+  }
+
+  // The request shouldn't be blocked. Now check if any extension wants to
+  // redirect the request.
+
+  // Redirecting WebSocket handshake request is prohibited.
+  if (element_type == flat_rule::ElementType_WEBSOCKET)
+    return Action::NONE;
 
   // This iterates in decreasing order of extension installation time. Hence
   // more recently installed extensions get higher priority in choosing the
   // redirect url.
-  for (const auto& ruleset_data : rulesets_) {
-    if (!ShouldEvaluateRulesetForRequest(ruleset_data, request,
-                                         is_incognito_context)) {
-      continue;
-    }
+  {
+    size_t i = 0;
+    auto ruleset_data = rulesets_.begin();
+    for (; ruleset_data != rulesets_.end(); ++ruleset_data, ++i) {
+      if (!should_evaluate_rulesets_for_request[i])
+        continue;
 
-    if (ruleset_data.matcher->ShouldRedirectRequest(
-            url, first_party_origin, element_type, is_third_party,
-            redirect_url)) {
-      return true;
+      if (ruleset_data->matcher->ShouldRedirectRequest(
+              url, first_party_origin, element_type, is_third_party,
+              redirect_url)) {
+        return Action::REDIRECT;
+      }
     }
   }
 
-  return false;
+  return Action::NONE;
 }
 
 void RulesetManager::SetObserverForTest(TestObserver* observer) {

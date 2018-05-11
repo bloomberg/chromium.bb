@@ -677,16 +677,14 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   // OnBeforeRequest call.
   // |extension_info_map| is null for system level requests.
   if (extension_info_map) {
-    // Give priority to blocking rules over redirect rules.
-    if (extension_info_map->GetRulesetManager()->ShouldBlockRequest(
-            *request, is_incognito_context)) {
-      return net::ERR_BLOCKED_BY_CLIENT;
-    }
+    using Action = declarative_net_request::RulesetManager::Action;
 
-    if (extension_info_map->GetRulesetManager()->ShouldRedirectRequest(
-            *request, is_incognito_context, new_url)) {
+    Action action = extension_info_map->GetRulesetManager()->EvaluateRequest(
+        *request, is_incognito_context, new_url);
+    if (action == Action::BLOCK)
+      return net::ERR_BLOCKED_BY_CLIENT;
+    if (action == Action::REDIRECT)
       return net::OK;
-    }
   }
 
   // Whether to initialized |blocked_requests_|.
