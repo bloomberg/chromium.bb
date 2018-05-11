@@ -119,6 +119,10 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
             int targetSmallestScreenWidthDp =
                     DisplayUtil.pxToDp(display, DisplayUtil.getSmallestWidth(display));
             Configuration config = new Configuration();
+            // Pre-Android O, fontScale gets initialized to 1 in the constructor. Set it to 0 so
+            // that applyOverrideConfiguration() does not interpret it as an overridden value.
+            // https://crbug.com/834191
+            config.fontScale = 0;
             config.smallestScreenWidthDp = targetSmallestScreenWidthDp;
             applyOverrideConfiguration(config);
         }
