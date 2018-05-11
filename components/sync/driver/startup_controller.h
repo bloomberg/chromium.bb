@@ -26,13 +26,11 @@ class StartupController {
   ~StartupController();
 
   // Starts up sync if it is requested by the user and preconditions are met.
-  // Returns true if these preconditions are met, although does not imply
-  // the engine was started.
-  bool TryStart();
+  void TryStart();
 
   // Same as TryStart() above, but bypasses deferred startup and the first setup
   // complete check.
-  bool TryStartImmediately();
+  void TryStartImmediately();
 
   // Called when a datatype (SyncableService) has a need for sync to start
   // ASAP, presumably because a local change event has occurred but we're
@@ -60,8 +58,8 @@ class StartupController {
 
  private:
   enum StartUpDeferredOption { STARTUP_DEFERRED, STARTUP_IMMEDIATE };
-  // Returns true if all conditions to start the engine are met.
-  bool StartUp(StartUpDeferredOption deferred_option);
+
+  void StartUp(StartUpDeferredOption deferred_option);
   void OnFallbackStartupTimerExpired();
 
   // Records time spent in deferred state with UMA histograms.

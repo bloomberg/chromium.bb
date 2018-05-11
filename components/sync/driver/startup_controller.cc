@@ -80,10 +80,11 @@ void StartupController::SetSetupInProgress(bool setup_in_progress) {
   }
 }
 
-bool StartupController::StartUp(StartUpDeferredOption deferred_option) {
+void StartupController::StartUp(StartUpDeferredOption deferred_option) {
   const bool first_start = start_up_time_.is_null();
-  if (first_start)
+  if (first_start) {
     start_up_time_ = base::Time::Now();
+  }
 
   if (deferred_option == STARTUP_DEFERRED &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -96,15 +97,13 @@ bool StartupController::StartUp(StartUpDeferredOption deferred_option) {
                      weak_factory_.GetWeakPtr()),
           fallback_timeout_);
     }
-    return false;
+    return;
   }
 
   if (start_engine_time_.is_null()) {
     start_engine_time_ = base::Time::Now();
     start_engine_.Run();
   }
-
-  return true;
 }
 
 void StartupController::OverrideFallbackTimeoutForTest(
@@ -112,9 +111,10 @@ void StartupController::OverrideFallbackTimeoutForTest(
   fallback_timeout_ = timeout;
 }
 
-bool StartupController::TryStart() {
-  if (!can_start_.Run())
-    return false;
+void StartupController::TryStart() {
+  if (!can_start_.Run()) {
+    return;
+  }
 
   // For performance reasons, defer the heavy lifting for sync init unless:
   //
@@ -124,19 +124,16 @@ bool StartupController::TryStart() {
   // Do not start up the sync engine if setup has not completed and isn't
   // in progress, unless told to otherwise.
   if (setup_in_progress_) {
-    return StartUp(STARTUP_IMMEDIATE);
+    StartUp(STARTUP_IMMEDIATE);
   } else if (sync_prefs_->IsFirstSetupComplete() || bypass_setup_complete_) {
-    return StartUp(received_start_request_ ? STARTUP_IMMEDIATE
-                                           : STARTUP_DEFERRED);
-  } else {
-    return false;
+    StartUp(received_start_request_ ? STARTUP_IMMEDIATE : STARTUP_DEFERRED);
   }
 }
 
-bool StartupController::TryStartImmediately() {
+void StartupController::TryStartImmediately() {
   received_start_request_ = true;
   bypass_setup_complete_ = true;
-  return TryStart();
+  TryStart();
 }
 
 void StartupController::RecordTimeDeferred() {
