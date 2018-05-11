@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/c++/c++.gni")
+
 source_set("libc++abi") {
   visibility = [ "//buildtools/third_party/libc++" ]
   deps = []
@@ -39,7 +41,7 @@ source_set("libc++abi") {
   # See the comment in cxa_demangle_stub.cc for why we don't use LLVM's
   # demangler on android.
   if (is_android) {
-    sources += [ "cxa_demangle_stub.cc" ]
+    deps += [ ":cxa_demangle_stub" ]
   } else {
     sources += [ "trunk/src/cxa_demangle.cpp" ]
   }
@@ -67,4 +69,16 @@ source_set("libc++abi") {
     "//build/config/compiler:rtti",
     "//buildtools/third_party/libc++:config",
   ]
+}
+
+source_set("cxa_demangle_stub") {
+  # TODO(thomasanderson): This file is currently pulled in from //base on
+  # Android, but will no longer be needed once Android builds always set
+  # use_custom_libcxx=true.  When this happens, this target can be removed,
+  # cxa_demangle_stub.cc can be added to the libc++abi target above, and
+  # __cxa_demangle can simply be annoted with _LIBCXXABI_FUNC_VIS.
+  if (use_custom_libcxx && !libcpp_is_static) {
+    defines = [ "EXPORT_CXA_DEMANGLE" ]
+  }
+  sources = [ "cxa_demangle_stub.cc" ]
 }

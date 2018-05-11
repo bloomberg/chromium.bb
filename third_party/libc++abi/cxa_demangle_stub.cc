@@ -9,6 +9,12 @@
 // our own stub version here stops a lot of code being pulled in from libc++.
 // More here:
 //   https://llvm.org/svn/llvm-project/libcxxabi/trunk/src/cxa_demangle.cpp
+#if defined(EXPORT_CXA_DEMANGLE)
+__attribute__((visibility("default")))
+#endif
+// This is a weak symbol to let android_crazy_linker override it in
+// //base/android/linker:chromium_android_linker.
+__attribute__((weak))
 extern "C" char* __cxa_demangle(const char* mangled_name,
                                 char* buf,
                                 size_t* n,
