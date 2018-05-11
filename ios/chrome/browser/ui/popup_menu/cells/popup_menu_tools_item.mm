@@ -20,7 +20,8 @@
 #endif
 
 namespace {
-const int kEnabledColor = 0x1A73E8;
+const int kEnabledDefaultColor = 0x1A73E8;
+const int kEnabledDestructiveColor = 0xEA4334;
 const CGFloat kImageLength = 28;
 const CGFloat kCellHeight = 44;
 const CGFloat kInnerMargin = 11;
@@ -40,6 +41,7 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
 @synthesize image = _image;
 @synthesize title = _title;
 @synthesize enabled = _enabled;
+@synthesize destructiveAction = _destructiveAction;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
@@ -57,6 +59,7 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
   cell.imageView.image = self.image;
   cell.accessibilityTraits = UIAccessibilityTraitButton;
   cell.userInteractionEnabled = self.enabled;
+  cell.destructiveAction = self.destructiveAction;
   [cell setBadgeNumber:self.badgeNumber];
   [cell setBadgeText:self.badgeText];
 }
@@ -94,6 +97,9 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
 @property(nonatomic, strong) TextBadgeView* textBadgeView;
 // Constraints between the trailing of the label and the badges.
 @property(nonatomic, strong) NSLayoutConstraint* titleToBadgeConstraint;
+// Color for the title and the image.
+@property(nonatomic, strong, readonly) UIColor* contentColor;
+
 @end
 
 @implementation PopupMenuToolsCell
@@ -103,6 +109,7 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
 @synthesize textBadgeView = _textBadgeView;
 @synthesize titleLabel = _titleLabel;
 @synthesize titleToBadgeConstraint = _titleToBadgeConstraint;
+@synthesize destructiveAction = _destructiveAction;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
               reuseIdentifier:(NSString*)reuseIdentifier {
@@ -219,6 +226,18 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
   }
 }
 
+- (void)setDestructiveAction:(BOOL)destructiveAction {
+  _destructiveAction = destructiveAction;
+  self.titleLabel.textColor = self.contentColor;
+  self.imageView.tintColor = self.contentColor;
+}
+
+- (UIColor*)contentColor {
+  if (self.destructiveAction)
+    return UIColorFromRGB(kEnabledDestructiveColor);
+  return UIColorFromRGB(kEnabledDefaultColor);
+}
+
 - (void)layoutSubviews {
   [super layoutSubviews];
 
@@ -253,8 +272,8 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
 - (void)setUserInteractionEnabled:(BOOL)userInteractionEnabled {
   [super setUserInteractionEnabled:userInteractionEnabled];
   if (userInteractionEnabled) {
-    self.titleLabel.textColor = UIColorFromRGB(kEnabledColor);
-    self.imageView.tintColor = UIColorFromRGB(kEnabledColor);
+    self.titleLabel.textColor = self.contentColor;
+    self.imageView.tintColor = self.contentColor;
   } else {
     self.titleLabel.textColor = [[self class] disabledColor];
     self.imageView.tintColor = [[self class] disabledColor];
