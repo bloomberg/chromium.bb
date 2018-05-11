@@ -329,7 +329,22 @@ unit tests.
      the form expected of certificates discovered via AIA.
 
 ===== From net/data/ssl/scripts/generate-self-signed-certs.sh
- - self-signed-invalid-name.pem
- - self-signed-invalid-sig.pem
+- self-signed-invalid-name.pem
+- self-signed-invalid-sig.pem
      Two "self-signed" certificates with mismatched names or an invalid
      signature, respectively.
+
+===== From net/data/ssl/scripts/generate-key-usage-certs.sh
+- key_usage_rsa_no_extension.pem
+- key_usage_rsa_keyencipherment.pem
+- key_usage_rsa_digitalsignature.pem
+- key_usage_rsa_both.pem
+     Self-signed RSA certificates with various combinations of keyUsage
+     flags. Their private key is key_usage_rsa.key.
+
+- key_usage_p256_no_extension.pem
+- key_usage_p256_keyagreement.pem
+- key_usage_p256_digitalsignature.pem
+- key_usage_p256_both.pem
+     Self-signed P-256 certificates with various combinations of keyUsage
+     flags. Their private key is key_usage_p256.key.

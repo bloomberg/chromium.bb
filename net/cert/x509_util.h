@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "crypto/signature_verifier.h"
 #include "net/base/hash_value.h"
 #include "net/base/net_export.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
@@ -120,6 +121,15 @@ ParseCertificateOptions DefaultParseCertificateOptions();
 // valid certificate, returns false and |hash| is in an undefined state.
 NET_EXPORT bool CalculateSha256SpkiHash(const CRYPTO_BUFFER* buffer,
                                         HashValue* hash) WARN_UNUSED_RESULT;
+
+// Calls |verifier->VerifyInit|, using the public key from |certificate|,
+// checking if the digitalSignature key usage bit is present, and returns true
+// on success or false on error.
+NET_EXPORT bool SignatureVerifierInitWithCertificate(
+    crypto::SignatureVerifier* verifier,
+    crypto::SignatureVerifier::SignatureAlgorithm signature_algorithm,
+    base::span<const uint8_t> signature,
+    const CRYPTO_BUFFER* certificate);
 
 } // namespace x509_util
 
