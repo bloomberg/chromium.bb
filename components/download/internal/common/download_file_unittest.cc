@@ -1042,8 +1042,8 @@ TEST_F(DownloadFileTest, SecondStreamStartingOffsetAlreadyWritten) {
       .RetiresOnSaturation();
 
   download_file_->AddInputStream(
-      std::unique_ptr<MockInputStream>(additional_streams_[0]), 0,
-      DownloadSaveInfo::kLengthFullContent);
+      std::unique_ptr<MockInputStream>(additional_streams_[0]),
+      strlen(kTestData1), DownloadSaveInfo::kLengthFullContent);
 
   // The stream should get terminated and reset the callback.
   EXPECT_TRUE(sink_callback_.is_null());
