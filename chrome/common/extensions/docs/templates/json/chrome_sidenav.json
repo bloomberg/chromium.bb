@@ -36,6 +36,10 @@
                 "href": "/extensions/user_interface"
               },
               {
+                "title": "Declare Permissions and Warn Users",
+                "href": "/extensions/permission_warnings"
+              },
+              {
                 "title": "Reach Peak Performance",
                 "href": "/extensions/performance"
               },
@@ -46,10 +50,6 @@
               {
                 "title": "Stay Secure",
                 "href": "/extensions/security"
-              },
-              {
-                "title": "activeTab Permission",
-                "href": "/extensions/activeTab"
               },
               {
                 "title": "OAuth",
