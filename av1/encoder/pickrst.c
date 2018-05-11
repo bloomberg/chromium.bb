@@ -437,10 +437,10 @@ void encode_xq(int *xq, int *xqd, const sgr_params_type *params) {
 }
 
 // Apply the self-guided filter across an entire restoration unit.
-static void apply_sgr(const sgr_params_type *params, const uint8_t *dat8,
-                      int width, int height, int dat_stride, int use_highbd,
-                      int bit_depth, int pu_width, int pu_height, int32_t *flt0,
-                      int32_t *flt1, int flt_stride) {
+static void apply_sgr(int sgr_params_idx, const uint8_t *dat8, int width,
+                      int height, int dat_stride, int use_highbd, int bit_depth,
+                      int pu_width, int pu_height, int32_t *flt0, int32_t *flt1,
+                      int flt_stride) {
   for (int i = 0; i < height; i += pu_height) {
     const int h = AOMMIN(pu_height, height - i);
     int32_t *flt0_row = flt0 + i * flt_stride;
@@ -451,8 +451,8 @@ static void apply_sgr(const sgr_params_type *params, const uint8_t *dat8,
     for (int j = 0; j < width; j += pu_width) {
       const int w = AOMMIN(pu_width, width - j);
       av1_selfguided_restoration(dat8_row + j, w, h, dat_stride, flt0_row + j,
-                                 flt1_row + j, flt_stride, params, bit_depth,
-                                 use_highbd);
+                                 flt1_row + j, flt_stride, sgr_params_idx,
+                                 bit_depth, use_highbd);
     }
   }
 }
@@ -473,12 +473,11 @@ static SgrprojInfo search_selfguided_restoration(
          pu_height == RESTORATION_PROC_UNIT_SIZE);
 
   for (ep = 0; ep < SGRPROJ_PARAMS; ep++) {
-    const sgr_params_type *params = &sgr_params[ep];
     int exq[2];
-
-    apply_sgr(params, dat8, width, height, dat_stride, use_highbitdepth,
-              bit_depth, pu_width, pu_height, flt0, flt1, flt_stride);
+    apply_sgr(ep, dat8, width, height, dat_stride, use_highbitdepth, bit_depth,
+              pu_width, pu_height, flt0, flt1, flt_stride);
     aom_clear_system_state();
+    const sgr_params_type *const params = &sgr_params[ep];
     get_proj_subspace(src8, width, height, src_stride, dat8, dat_stride,
                       use_highbitdepth, flt0, flt_stride, flt1, flt_stride, exq,
                       params);

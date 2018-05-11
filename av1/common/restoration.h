@@ -107,7 +107,6 @@ extern "C" {
 #define SGRPROJ_BITS (SGRPROJ_PRJ_BITS * 2 + SGRPROJ_PARAMS_BITS)
 
 #define MAX_RADIUS 2  // Only 1, 2, 3 allowed
-#define MAX_EPS 80    // Max value of eps
 #define MAX_NELEM ((2 * MAX_RADIUS + 1) * (2 * MAX_RADIUS + 1))
 #define SGRPROJ_MTABLE_BITS 20
 #define SGRPROJ_RECIP_BITS 12
@@ -172,6 +171,9 @@ extern "C" {
 #error "Wiener filter currently only works if WIENER_FILT_PREC_BITS == 7"
 #endif
 
+// TODO(urvang): Just replace by a struct with r0, sgrproj_mtable0, r1,
+// sgrprog_mtable1 maybe? Where sgrproj_mtable{0,1} are pre-calculated.
+// Then, 'sgrproj_mtable' and its pre-calculation can be removed.
 typedef struct {
   int r0;
   int e0;
@@ -251,7 +253,7 @@ typedef struct {
 } RestorationTileLimits;
 
 extern const sgr_params_type sgr_params[SGRPROJ_PARAMS];
-extern int sgrproj_mtable[MAX_EPS][MAX_NELEM];
+extern int sgrproj_mtable[SGRPROJ_PARAMS][2];
 extern const int32_t x_by_xplus1[256];
 extern const int32_t one_by_x[MAX_NELEM];
 

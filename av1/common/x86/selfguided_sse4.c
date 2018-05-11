@@ -156,10 +156,12 @@ static __m128i compute_p(__m128i sum1, __m128i sum2, int bit_depth, int n) {
 // extended to have a padding of SGRPROJ_BORDER_VERT/SGRPROJ_BORDER_HORZ pixels
 // on the sides. A, B, C, D point at logical position (0, 0).
 static void calc_ab(int32_t *A, int32_t *B, const int32_t *C, const int32_t *D,
-                    int width, int height, int buf_stride, int eps,
-                    int bit_depth, int r) {
+                    int width, int height, int buf_stride, int bit_depth,
+                    int sgr_params_idx, int radius_idx) {
+  const sgr_params_type *const params = &sgr_params[sgr_params_idx];
+  const int r = (radius_idx == 0) ? params->r0 : params->r1;
   const int n = (2 * r + 1) * (2 * r + 1);
-  const __m128i s = _mm_set1_epi32(sgrproj_mtable[eps - 1][n - 1]);
+  const __m128i s = _mm_set1_epi32(sgrproj_mtable[sgr_params_idx][radius_idx]);
   // one_over_n[n-1] is 2^12/n, so easily fits in an int16
   const __m128i one_over_n = _mm_set1_epi32(one_by_x[n - 1]);
 
@@ -294,9 +296,12 @@ static void final_filter(int32_t *dst, int dst_stride, const int32_t *A,
 // on the sides. A, B, C, D point at logical position (0, 0).
 static void calc_ab_fast(int32_t *A, int32_t *B, const int32_t *C,
                          const int32_t *D, int width, int height,
-                         int buf_stride, int eps, int bit_depth, int r) {
+                         int buf_stride, int bit_depth, int sgr_params_idx,
+                         int radius_idx) {
+  const sgr_params_type *const params = &sgr_params[sgr_params_idx];
+  const int r = (radius_idx == 0) ? params->r0 : params->r1;
   const int n = (2 * r + 1) * (2 * r + 1);
-  const __m128i s = _mm_set1_epi32(sgrproj_mtable[eps - 1][n - 1]);
+  const __m128i s = _mm_set1_epi32(sgrproj_mtable[sgr_params_idx][radius_idx]);
   // one_over_n[n-1] is 2^12/n, so easily fits in an int16
   const __m128i one_over_n = _mm_set1_epi32(one_by_x[n - 1]);
 
@@ -485,8 +490,7 @@ static void final_filter_fast(int32_t *dst, int dst_stride, const int32_t *A,
 void av1_selfguided_restoration_sse4_1(const uint8_t *dgd8, int width,
                                        int height, int dgd_stride,
                                        int32_t *flt0, int32_t *flt1,
-                                       int flt_stride,
-                                       const sgr_params_type *params,
+                                       int flt_stride, int sgr_params_idx,
                                        int bit_depth, int highbd) {
   DECLARE_ALIGNED(16, int32_t, buf[4 * RESTORATION_PROC_UNIT_PELS]);
   memset(buf, 0, sizeof(buf));
@@ -536,6 +540,7 @@ void av1_selfguided_restoration_sse4_1(const uint8_t *dgd8, int width,
     integral_images(dgd0, dgd_stride, width_ext, height_ext, Ctl, Dtl,
                     buf_stride);
 
+  const sgr_params_type *const params = &sgr_params[sgr_params_idx];
   // Write to flt0 and flt1
   // If params->r == 0 we skip the corresponding filter. We only allow one of
   // the radii to be 0, as having both equal to 0 would be equivalent to
@@ -545,15 +550,15 @@ void av1_selfguided_restoration_sse4_1(const uint8_t *dgd8, int width,
   assert(params->r1 < AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
 
   if (params->r0 > 0) {
-    calc_ab_fast(A, B, C, D, width, height, buf_stride, params->e0, bit_depth,
-                 params->r0);
+    calc_ab_fast(A, B, C, D, width, height, buf_stride, bit_depth,
+                 sgr_params_idx, 0);
     final_filter_fast(flt0, flt_stride, A, B, buf_stride, dgd8, dgd_stride,
                       width, height, highbd);
   }
 
   if (params->r1 > 0) {
-    calc_ab(A, B, C, D, width, height, buf_stride, params->e1, bit_depth,
-            params->r1);
+    calc_ab(A, B, C, D, width, height, buf_stride, bit_depth, sgr_params_idx,
+            1);
     final_filter(flt1, flt_stride, A, B, buf_stride, dgd8, dgd_stride, width,
                  height, highbd);
   }
@@ -567,9 +572,9 @@ void apply_selfguided_restoration_sse4_1(const uint8_t *dat8, int width,
   int32_t *flt0 = tmpbuf;
   int32_t *flt1 = flt0 + RESTORATION_UNITPELS_MAX;
   assert(width * height <= RESTORATION_UNITPELS_MAX);
-  const sgr_params_type *params = &sgr_params[eps];
   av1_selfguided_restoration_sse4_1(dat8, width, height, stride, flt0, flt1,
-                                    width, params, bit_depth, highbd);
+                                    width, eps, bit_depth, highbd);
+  const sgr_params_type *const params = &sgr_params[eps];
   int xq[2];
   decode_xq(xqd, xq, params);
 
