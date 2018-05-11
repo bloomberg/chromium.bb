@@ -158,8 +158,7 @@ if(CONFIG_AV1_ENCODER)
       "${AOM_ROOT}/test/lossless_test.cc")
 
   if(NOT BUILD_SHARED_LIBS)
-    set(AOM_UNIT_TEST_ENCODER_SOURCES
-        ${AOM_UNIT_TEST_ENCODER_SOURCES}
+    set(AOM_UNIT_TEST_ENCODER_SOURCES ${AOM_UNIT_TEST_ENCODER_SOURCES}
         "${AOM_ROOT}/test/arf_freq_test.cc"
         "${AOM_ROOT}/test/av1_fwd_txfm1d_test.cc"
         "${AOM_ROOT}/test/av1_fwd_txfm2d_test.cc"
@@ -179,16 +178,12 @@ if(CONFIG_AV1_ENCODER)
         "${AOM_ROOT}/test/noise_model_test.cc"
         "${AOM_ROOT}/test/subtract_test.cc"
         "${AOM_ROOT}/test/sum_squares_test.cc"
-        "${AOM_ROOT}/test/variance_test.cc")
-
-    if(HAVE_SSE2)
-      set(AOM_UNIT_TEST_ENCODER_SOURCES ${AOM_UNIT_TEST_ENCODER_SOURCES}
-          "${AOM_ROOT}/test/av1_convolve_2d_test.cc"
-          "${AOM_ROOT}/test/av1_convolve_2d_test_util.cc"
-          "${AOM_ROOT}/test/av1_convolve_2d_test_util.h"
-          "${AOM_ROOT}/test/comp_avg_pred_test.h"
-          "${AOM_ROOT}/test/comp_avg_pred_test.cc")
-    endif()
+        "${AOM_ROOT}/test/variance_test.cc"
+        "${AOM_ROOT}/test/av1_convolve_2d_test.cc"
+        "${AOM_ROOT}/test/av1_convolve_2d_test_util.cc"
+        "${AOM_ROOT}/test/av1_convolve_2d_test_util.h"
+        "${AOM_ROOT}/test/comp_avg_pred_test.h"
+        "${AOM_ROOT}/test/comp_avg_pred_test.cc")
 
     if(HAVE_SSE4_1)
       set(AOM_UNIT_TEST_ENCODER_SOURCES ${AOM_UNIT_TEST_ENCODER_SOURCES}
