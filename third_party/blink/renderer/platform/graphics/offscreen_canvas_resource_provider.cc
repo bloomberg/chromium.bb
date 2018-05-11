@@ -70,8 +70,6 @@ void OffscreenCanvasResourceProvider::TransferResource(
   resource->is_overlay_candidate = false;
 }
 
-// TODO(xlai): Handle error cases when, by any reason,
-// OffscreenCanvasResourceProvider fails to get image data.
 void OffscreenCanvasResourceProvider::SetTransferableResourceToSharedBitmap(
     viz::TransferableResource& resource,
     scoped_refptr<StaticBitmapImage> image) {
