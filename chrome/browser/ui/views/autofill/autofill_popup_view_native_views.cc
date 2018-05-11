@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
+#include "chrome/browser/ui/autofill/popup_view_common.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/harmony/harmony_typography_provider.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
@@ -425,16 +426,14 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
 void AutofillPopupViewNativeViews::DoUpdateBoundsAndRedrawPopup() {
   SizeToPreferredSize();
 
-  // TODO(crbug.com/831603): Currently, we rely on the delegate bounds to
-  // provide the origin. The size included in these bounds, however, is not
-  // relevant since this Views-based implementation can provide its own
-  // appropriate width and height. In the future, we should be able to drop the
-  // size calculation logic from the delegate.
-  gfx::Rect bounds(delegate()->popup_bounds().origin(), size());
-
   // The Widget's bounds need to account for the border.
-  AdjustBoundsForBorder(&bounds);
-  GetWidget()->SetBounds(bounds);
+  gfx::Insets insets = GetWidget()->GetRootView()->GetInsets();
+  gfx::Rect popup_bounds = PopupViewCommon().CalculatePopupBounds(
+      size().width() + insets.width(), size().height() + insets.height(),
+      gfx::ToEnclosingRect(controller_->element_bounds()),
+      controller_->container_view(), controller_->IsRTL());
+
+  GetWidget()->SetBounds(popup_bounds);
 
   SchedulePaint();
 }
