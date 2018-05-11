@@ -30,7 +30,6 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_thread.h"
@@ -75,7 +74,7 @@ class GraphicsLayerTest : public testing::Test, public PaintTestConfigurations {
     platform_layer_ = graphics_layer_->PlatformLayer();
     layer_tree_view_ = std::make_unique<WebLayerTreeViewImplForTesting>();
     DCHECK(layer_tree_view_);
-    layer_tree_view_->SetRootLayer(*clip_layer_->PlatformLayer());
+    layer_tree_view_->SetRootLayer(clip_layer_->PlatformLayer());
     WebLayerTreeView::ViewportLayers viewport_layers;
     viewport_layers.overscroll_elasticity =
         scroll_elasticity_layer_->PlatformLayer();

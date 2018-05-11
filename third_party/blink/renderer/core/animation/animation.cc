@@ -35,7 +35,6 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/renderer/core/animation/animation_timeline.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
@@ -1084,7 +1083,6 @@ void Animation::EndUpdatingState() {
 void Animation::CreateCompositorAnimation() {
   if (Platform::Current()->IsThreadedAnimationEnabled() &&
       !compositor_animation_) {
-    DCHECK(Platform::Current()->CompositorSupport());
     compositor_animation_ = CompositorAnimationHolder::Create(this);
     DCHECK(compositor_animation_);
     AttachCompositorTimeline();

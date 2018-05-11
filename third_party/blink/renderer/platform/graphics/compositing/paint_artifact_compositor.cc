@@ -12,7 +12,6 @@
 #include "cc/paint/display_item_list.h"
 #include "cc/trees/layer_tree_host.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/content_layer_client_impl.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -48,8 +47,7 @@ PaintArtifactCompositor::PaintArtifactCompositor(
       !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
     return;
   root_layer_ = cc::Layer::Create();
-  web_layer_ = Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
-      root_layer_.get());
+  web_layer_ = std::make_unique<WebLayer>(root_layer_.get());
 }
 
 PaintArtifactCompositor::~PaintArtifactCompositor() {
@@ -841,14 +839,12 @@ void PaintArtifactCompositor::Update(
 std::unique_ptr<WebLayer>
 PaintArtifactCompositor::ExtraDataForTesting::ContentWebLayerAt(
     unsigned index) {
-  return Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
-      content_layers[index].get());
+  return std::make_unique<WebLayer>(content_layers[index].get());
 }
 std::unique_ptr<WebLayer>
 PaintArtifactCompositor::ExtraDataForTesting::ScrollHitTestWebLayerAt(
     unsigned index) {
-  return Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
-      scroll_hit_test_layers[index].get());
+  return std::make_unique<WebLayer>(scroll_hit_test_layers[index].get());
 }
 
 #if DCHECK_IS_ON()

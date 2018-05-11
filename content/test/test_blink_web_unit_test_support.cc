@@ -15,7 +15,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "cc/blink/web_layer_impl.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/public/common/service_names.mojom.h"
@@ -290,10 +289,6 @@ blink::WebString TestBlinkWebUnitTestSupport::QueryLocalizedString(
 
 blink::WebString TestBlinkWebUnitTestSupport::DefaultLocale() {
   return blink::WebString::FromASCII("en-US");
-}
-
-blink::WebCompositorSupport* TestBlinkWebUnitTestSupport::CompositorSupport() {
-  return &compositor_support_;
 }
 
 std::unique_ptr<blink::WebGestureCurve>

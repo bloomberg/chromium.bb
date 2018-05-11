@@ -16,7 +16,6 @@ include_rules = [
     "+base/time",
     "+base/trace_event",
     "+cc",
-    "-cc/blink",
     "+components/viz/common",
     "+media/base/video_rotation.h",
     "+mojo/public",

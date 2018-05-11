@@ -16,7 +16,6 @@ include_rules = [
     "+base/threading/thread.h",
     "+base/threading/thread_checker.h",
     "+cc",
-    "-cc/blink",
     "+components/viz/common",
     "+components/viz/test/fake_external_begin_frame_source.h",
     "+gpu/command_buffer/client/gles2_interface.h",

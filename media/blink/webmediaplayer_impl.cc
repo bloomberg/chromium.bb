@@ -28,7 +28,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "cc/blink/web_layer_impl.h"
 #include "cc/layers/video_layer.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "media/audio/null_audio_sink.h"
@@ -55,6 +54,7 @@
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/platform/web_encrypted_media_types.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_localized_string.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/web_media_player_encrypted_media_client.h"
@@ -1613,8 +1613,7 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
       video_layer_ = cc::VideoLayer::Create(
           compositor_.get(),
           pipeline_metadata_.video_decoder_config.video_rotation());
-      video_weblayer_ =
-          std::make_unique<cc_blink::WebLayerImpl>(video_layer_.get());
+      video_weblayer_ = std::make_unique<blink::WebLayer>(video_layer_.get());
       video_weblayer_->SetOpaque(opaque_);
       client_->SetWebLayer(video_weblayer_.get());
     } else {

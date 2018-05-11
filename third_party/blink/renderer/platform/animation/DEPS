@@ -7,7 +7,6 @@ include_rules = [
 
     # Dependencies.
     "+cc",
-    "-cc/blink",
     "+third_party/blink/renderer/platform/geometry",
     "+third_party/blink/renderer/platform/graphics",
     "+third_party/blink/renderer/platform/heap",

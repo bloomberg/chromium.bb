@@ -11,7 +11,6 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
@@ -34,8 +33,7 @@ ImageLayerBridge::ImageLayerBridge(OpacityMode opacity_mode)
     layer_->SetContentsOpaque(true);
     layer_->SetBlendBackgroundColor(false);
   }
-  web_layer_ = Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
-      layer_.get());
+  web_layer_ = std::make_unique<WebLayer>(layer_.get());
   GraphicsLayer::RegisterContentsLayer(web_layer_.get());
 }
 

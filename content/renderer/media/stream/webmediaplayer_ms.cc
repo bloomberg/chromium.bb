@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/blink/web_layer_impl.h"
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/layers/video_layer.h"
 #include "content/child/child_process.h"
@@ -35,6 +34,7 @@
 #include "media/blink/webmediaplayer_util.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -982,8 +982,7 @@ void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation,
   video_layer_ = cc::VideoLayer::Create(compositor_.get(), video_rotation);
   video_layer_->SetContentsOpaque(is_opaque);
 
-  video_weblayer_ =
-      std::make_unique<cc_blink::WebLayerImpl>(video_layer_.get());
+  video_weblayer_ = std::make_unique<blink::WebLayer>(video_layer_.get());
   get_client()->SetWebLayer(video_weblayer_.get());
 }
 

@@ -64,7 +64,6 @@
 #include "third_party/blink/renderer/platform/mac/scroll_animator_mac.h"
 #endif
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
@@ -346,9 +345,7 @@ CreateScrollbarLayer(Scrollbar& scrollbar, float device_scale_factor) {
     layer_group->layer = std::move(scrollbar_layer);
   }
 
-  layer_group->web_layer =
-      Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
-          layer_group->layer.get());
+  layer_group->web_layer = std::make_unique<WebLayer>(layer_group->layer.get());
   GraphicsLayer::RegisterContentsLayer(layer_group->web_layer.get());
 
   return layer_group;
@@ -371,9 +368,7 @@ ScrollingCoordinator::CreateSolidColorScrollbarLayer(
   auto layer_group = std::make_unique<ScrollbarLayerGroup>();
   layer_group->scrollbar_layer = scrollbar_layer.get();
   layer_group->layer = std::move(scrollbar_layer);
-  layer_group->web_layer =
-      Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
-          layer_group->layer.get());
+  layer_group->web_layer = std::make_unique<WebLayer>(layer_group->layer.get());
   GraphicsLayer::RegisterContentsLayer(layer_group->web_layer.get());
 
   return layer_group;

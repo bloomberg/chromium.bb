@@ -47,7 +47,6 @@
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
@@ -899,9 +898,7 @@ WebLayer* DrawingBuffer::PlatformLayer() {
                                   premultiplied_alpha_false_texture_);
     layer_->SetNearestNeighbor(filter_quality_ == kNone_SkFilterQuality);
 
-    web_layer_ =
-        Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
-            layer_.get());
+    web_layer_ = std::make_unique<WebLayer>(layer_.get());
     GraphicsLayer::RegisterContentsLayer(web_layer_.get());
   }
 

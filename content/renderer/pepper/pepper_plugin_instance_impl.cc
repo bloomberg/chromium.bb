@@ -22,7 +22,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "cc/blink/web_layer_impl.h"
 #include "cc/layers/texture_layer.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
@@ -101,6 +100,7 @@
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_pointer_event.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -2241,11 +2241,10 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
     // wmode=transparent was specified.
     opaque = opaque || fullscreen_container_;
     texture_layer_->SetContentsOpaque(opaque);
-    web_layer_ = std::make_unique<cc_blink::WebLayerImpl>(texture_layer_.get());
+    web_layer_ = std::make_unique<blink::WebLayer>(texture_layer_.get());
   } else if (want_compositor_layer) {
     compositor_layer_ = bound_compositor_->layer();
-    web_layer_ =
-        std::make_unique<cc_blink::WebLayerImpl>(compositor_layer_.get());
+    web_layer_ = std::make_unique<blink::WebLayer>(compositor_layer_.get());
   }
 
   if (web_layer_) {

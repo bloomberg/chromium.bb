@@ -36,7 +36,6 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -45,35 +44,20 @@ namespace base {
 class TestDiscardableMemoryAllocator;
 }
 
-namespace cc_blink {
-class WebCompositorSupportImpl;
-}  // namespace cc_blink
-
 namespace blink {
-class WebCompositorSupport;
 class WebThread;
-
-class TestingCompositorSupport : public WebCompositorSupport {
-  std::unique_ptr<WebLayer> CreateLayerFromCCLayer(cc::Layer*) override;
-};
 
 // A base class to override Platform methods for testing.  You can override the
 // behavior by subclassing TestingPlatformSupport or using
 // ScopedTestingPlatformSupport (see below).
 class TestingPlatformSupport : public Platform {
  public:
-  struct Config {
-    WebCompositorSupport* compositor_support = nullptr;
-  };
-
   TestingPlatformSupport();
-  explicit TestingPlatformSupport(const Config&);
 
   ~TestingPlatformSupport() override;
 
   // Platform:
   WebString DefaultLocale() override;
-  WebCompositorSupport* CompositorSupport() override;
   WebThread* CurrentThread() override;
   WebBlobRegistry* GetBlobRegistry() override;
   WebIDBFactory* IdbFactory() override;
@@ -88,7 +72,6 @@ class TestingPlatformSupport : public Platform {
  protected:
   class TestingInterfaceProvider;
 
-  const Config config_;
   Platform* const old_platform_;
   std::unique_ptr<TestingInterfaceProvider> interface_provider_;
 
@@ -161,8 +144,6 @@ class ScopedUnittestsEnvironmentSetup final {
   std::unique_ptr<DummyPlatform> dummy_platform_;
   std::unique_ptr<DummyRendererResourceCoordinator>
       dummy_renderer_resource_coordinator_;
-  std::unique_ptr<cc_blink::WebCompositorSupportImpl> compositor_support_;
-  TestingPlatformSupport::Config testing_platform_config_;
   std::unique_ptr<TestingPlatformSupport> testing_platform_support_;
 };
 

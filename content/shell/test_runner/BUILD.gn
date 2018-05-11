@@ -97,7 +97,6 @@ component("test_runner") {
     "//base:base",
     "//base:i18n",
     "//cc",
-    "//cc/blink",
     "//cc/paint",
     "//components/viz/common",
     "//content/public/common",

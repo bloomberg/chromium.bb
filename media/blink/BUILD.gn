@@ -77,7 +77,6 @@ component("blink") {
   deps = [
     "//base",
     "//cc",
-    "//cc/blink",
     "//gpu",
     "//media",
     "//media:shared_memory_support",
@@ -112,7 +111,6 @@ test("media_blink_unittests") {
     "//base",
     "//base/test:test_support",
     "//cc",
-    "//cc/blink",
     "//gin",
     "//media:test_support",
     "//media/mojo/interfaces",

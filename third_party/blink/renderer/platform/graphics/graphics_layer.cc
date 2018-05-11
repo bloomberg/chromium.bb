@@ -37,7 +37,6 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/paint/display_item_list.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_layer.h"
@@ -116,8 +115,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
   client.VerifyNotPainting();
 #endif
   layer_ = cc::PictureLayer::Create(this);
-  web_layer_ = Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
-      layer_.get());
+  web_layer_ = std::make_unique<WebLayer>(layer_.get());
   layer_->SetIsDrawable(draws_content_ && contents_visible_);
   layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
 
@@ -1278,9 +1276,7 @@ void GraphicsLayer::SetContentsToImage(
             .TakePaintImage();
     if (!image_layer_) {
       image_layer_ = cc::PictureImageLayer::Create();
-      web_image_layer_ =
-          Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
-              image_layer_.get());
+      web_image_layer_ = std::make_unique<WebLayer>(image_layer_.get());
       RegisterContentsLayer(web_image_layer_.get());
     }
     image_layer_->SetImage(std::move(paint_image), matrix,

@@ -22,7 +22,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "cc/blink/web_layer_impl.h"
 #include "components/viz/test/test_context_provider.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/gmock_callback_support.h"
@@ -45,6 +44,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
@@ -1320,8 +1320,7 @@ TEST_F(WebMediaPlayerImplTest, SetContentsLayerGetsWebLayerFromBridge) {
   InitializeWebMediaPlayerImpl();
 
   scoped_refptr<cc::Layer> layer = cc::Layer::Create();
-  std::unique_ptr<cc_blink::WebLayerImpl> web_layer =
-      std::make_unique<cc_blink::WebLayerImpl>(layer.get());
+  auto web_layer = std::make_unique<blink::WebLayer>(layer.get());
 
   EXPECT_CALL(*surface_layer_bridge_ptr_, GetWebLayer())
       .WillRepeatedly(Return(web_layer.get()));

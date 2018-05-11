@@ -1053,7 +1053,7 @@ void WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(bool active) {
   if (active) {
     TRACE_EVENT0("blink",
                  "WebViewImpl::setIsAcceleratedCompositingActive(true)");
-    layer_tree_view_->SetRootLayer(*root_layer_);
+    layer_tree_view_->SetRootLayer(root_layer_);
 
     layer_tree_view_->SetVisible(GetPage()->IsPageVisible());
     UpdateLayerTreeBackgroundColor();
@@ -1080,7 +1080,7 @@ void WebFrameWidgetImpl::SetRootGraphicsLayer(GraphicsLayer* layer) {
     return;
 
   if (root_layer_)
-    layer_tree_view_->SetRootLayer(*root_layer_);
+    layer_tree_view_->SetRootLayer(root_layer_);
   else
     layer_tree_view_->ClearRootLayer();
 }
@@ -1094,7 +1094,7 @@ void WebFrameWidgetImpl::SetRootLayer(WebLayer* layer) {
     return;
 
   if (root_layer_)
-    layer_tree_view_->SetRootLayer(*root_layer_);
+    layer_tree_view_->SetRootLayer(root_layer_);
   else
     layer_tree_view_->ClearRootLayer();
 }

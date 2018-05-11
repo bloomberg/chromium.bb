@@ -93,7 +93,6 @@ class WebAudioBus;
 class WebAudioLatencyHint;
 class WebBlobRegistry;
 class WebCanvasCaptureHandler;
-class WebCompositorSupport;
 class WebCookieJar;
 class WebCrypto;
 class WebDatabaseObserver;
@@ -554,8 +553,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual bool IsThreadedCompositingEnabled() { return false; }
   virtual bool IsThreadedAnimationEnabled() { return true; }
-
-  virtual WebCompositorSupport* CompositorSupport() { return nullptr; }
 
   // Creates a new fling animation curve instance for device |device_source|
   // with |velocity| and already scrolled |cumulative_scroll| pixels.

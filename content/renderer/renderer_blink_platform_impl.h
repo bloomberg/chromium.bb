@@ -17,7 +17,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "cc/blink/web_compositor_support_impl.h"
 #include "content/child/blink_platform_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/possibly_associated_interface_ptr.h"
@@ -191,7 +190,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   std::unique_ptr<blink::WebGraphicsContext3DProvider>
   CreateSharedOffscreenGraphicsContext3DProvider() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
-  blink::WebCompositorSupport* CompositorSupport() override;
   blink::WebString ConvertIDNToUnicode(const blink::WebString& host) override;
   service_manager::Connector* GetConnector() override;
   blink::InterfaceProvider* GetInterfaceProvider() override;
@@ -310,8 +308,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   std::unique_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
-
-  cc_blink::WebCompositorSupportImpl compositor_support_;
 
   std::unique_ptr<blink::WebScrollbarBehavior> web_scrollbar_behavior_;
 

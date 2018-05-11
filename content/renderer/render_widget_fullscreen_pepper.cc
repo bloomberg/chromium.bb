@@ -332,6 +332,7 @@ void RenderWidgetFullscreenPepper::PepperDidChangeCursor(
   DidChangeCursor(cursor);
 }
 
+// TODO(danakj): These should be a scoped_refptr<cc::Layer>.
 void RenderWidgetFullscreenPepper::SetLayer(blink::WebLayer* layer) {
   layer_ = layer;
   if (!layer_) {
@@ -343,7 +344,7 @@ void RenderWidgetFullscreenPepper::SetLayer(blink::WebLayer* layer) {
     InitializeLayerTreeView();
   UpdateLayerBounds();
   layer_->SetDrawsContent(true);
-  compositor_->SetRootLayer(*layer_);
+  compositor_->SetRootLayer(layer_);
 }
 
 bool RenderWidgetFullscreenPepper::OnMessageReceived(const IPC::Message& msg) {

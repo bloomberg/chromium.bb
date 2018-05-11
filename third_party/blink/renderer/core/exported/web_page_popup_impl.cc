@@ -367,7 +367,7 @@ void WebPagePopupImpl::SetRootGraphicsLayer(GraphicsLayer* layer) {
   is_accelerated_compositing_active_ = !!layer;
   if (layer_tree_view_) {
     if (root_layer_) {
-      layer_tree_view_->SetRootLayer(*root_layer_);
+      layer_tree_view_->SetRootLayer(root_layer_);
     } else {
       layer_tree_view_->ClearRootLayer();
     }
