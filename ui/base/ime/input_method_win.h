@@ -74,8 +74,6 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodWinBase {
 
   void RefreshInputLanguage();
 
-  ui::EventDispatchDetails DispatchFabricatedKeyEvent(ui::KeyEvent* event);
-
   // Asks the client to confirm current composition text.
   void ConfirmCompositionText();
 
