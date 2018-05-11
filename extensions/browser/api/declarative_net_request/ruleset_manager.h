@@ -28,14 +28,20 @@ class RulesetMatcher;
 // same sequence.
 class RulesetManager {
  public:
+  enum class Action {
+    NONE,
+    BLOCK,
+    REDIRECT,
+  };
+
   explicit RulesetManager(const InfoMap* info_map);
   ~RulesetManager();
 
   // An interface used for testing purposes.
   class TestObserver {
    public:
-    virtual void OnShouldBlockRequest(const WebRequestInfo& request,
-                                      bool is_incognito_context) = 0;
+    virtual void OnEvaluateRequest(const WebRequestInfo& request,
+                                   bool is_incognito_context) = 0;
 
    protected:
     virtual ~TestObserver() {}
@@ -50,15 +56,14 @@ class RulesetManager {
   // corresponding AddRuleset.
   void RemoveRuleset(const ExtensionId& extension_id);
 
-  // Returns whether the given |request| should be blocked.
-  bool ShouldBlockRequest(const WebRequestInfo& request,
-                          bool is_incognito_context) const;
-
-  // Returns whether the given |request| should be redirected along with the
-  // |redirect_url|. |redirect_url| must not be null.
-  bool ShouldRedirectRequest(const WebRequestInfo& request,
-                             bool is_incognito_context,
-                             GURL* redirect_url) const;
+  // Returns the action to take for the given request. |redirect_url| will be
+  // populated if the returned action is |REDIRECT|. Blocking rules have higher
+  // priority than redirect rules. For determining the |redirect_url|, most
+  // recently installed extensions are given preference. |redirect_url| must not
+  // be null.
+  Action EvaluateRequest(const WebRequestInfo& request,
+                         bool is_incognito_context,
+                         GURL* redirect_url) const;
 
   // Returns the number of RulesetMatcher currently being managed.
   size_t GetMatcherCountForTest() const { return rulesets_.size(); }
