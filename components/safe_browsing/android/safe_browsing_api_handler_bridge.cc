@@ -10,14 +10,8 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/containers/flat_set.h"
-#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task_scheduler/post_task.h"
-#include "base/task_scheduler/task_traits.h"
-#include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
@@ -152,60 +146,13 @@ void JNI_SafeBrowsingApiBridge_OnUrlCheckDone(
 //
 // SafeBrowsingApiHandlerBridge
 //
-SafeBrowsingApiHandlerBridge::SafeBrowsingApiHandlerBridge() {}
+SafeBrowsingApiHandlerBridge::SafeBrowsingApiHandlerBridge()
+    : checked_api_support_(false) {}
 
-SafeBrowsingApiHandlerBridge::~SafeBrowsingApiHandlerBridge() {
-  if (api_task_runner_)
-    api_task_runner_->DeleteSoon(FROM_HERE, core_.release());
-}
+SafeBrowsingApiHandlerBridge::~SafeBrowsingApiHandlerBridge() {}
 
-void SafeBrowsingApiHandlerBridge::Initialize() {
-  DCHECK(!core_);
-  core_ = std::make_unique<Core>();
-  api_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
-}
-
-void SafeBrowsingApiHandlerBridge::StartURLCheck(
-    std::unique_ptr<SafeBrowsingApiHandler::URLCheckCallbackMeta> callback,
-    const GURL& url,
-    const SBThreatTypeSet& threat_types) {
+bool SafeBrowsingApiHandlerBridge::CheckApiIsSupported() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // Initialize on the first URL check, when the feature list API is ready to be
-  // used.
-  if (!core_)
-    Initialize();
-
-  // Note: it turns out in practice that dispatching the IPC to Google Play
-  // Services can be quite expensive in terms of wall time, often due to thread
-  // descheduling. Since this task runs in an extremely performance critical
-  // place (it blocks navigation and subresource requests), dispatch it on a
-  // worker thread. In high percentiles it seems like the dispatching can take
-  // >100ms, so use base::MayBlock even though we aren't technically doing
-  // blocking IO.
-  if (!api_task_runner_) {
-    core_->StartURLCheck(std::move(callback), url, threat_types);
-    return;
-  }
-  // Unretained is safe because the task to delete |core_| will be sequenced
-  // after any task posted here.
-  api_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SafeBrowsingApiHandlerBridge::Core::StartURLCheck,
-                     base::Unretained(core_.get()), std::move(callback), url,
-                     threat_types));
-}
-
-SafeBrowsingApiHandlerBridge::Core::Core() {
-  // The sequence checker is constructed on a different sequence from where it
-  // is used.
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
-
-SafeBrowsingApiHandlerBridge::Core::~Core() = default;
-
-bool SafeBrowsingApiHandlerBridge::Core::CheckApiIsSupported() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!checked_api_support_) {
     DVLOG(1) << "Checking API support.";
     j_api_handler_ = base::android::ScopedJavaGlobalRef<jobject>(
@@ -215,13 +162,10 @@ bool SafeBrowsingApiHandlerBridge::Core::CheckApiIsSupported() {
   return j_api_handler_.obj() != nullptr;
 }
 
-void SafeBrowsingApiHandlerBridge::Core::StartURLCheck(
-    std::unique_ptr<URLCheckCallbackMeta> callback,
+void SafeBrowsingApiHandlerBridge::StartURLCheck(
+    std::unique_ptr<SafeBrowsingApiHandler::URLCheckCallbackMeta> callback,
     const GURL& url,
     const SBThreatTypeSet& threat_types) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  TRACE_EVENT0("safe_browsing",
-               "SafeBrowsingApiHandlerBridge::StartURLCheckAsync");
   if (!CheckApiIsSupported()) {
     // Mark all requests as safe. Only users who have an old, broken GMSCore or
     // have sideloaded Chrome w/o PlayStore should land here.
@@ -235,7 +179,6 @@ void SafeBrowsingApiHandlerBridge::Core::StartURLCheck(
   // releases ownership, we will re-own this callback when the response is
   // received in JNI_SafeBrowsingApiBridge_OnUrlCheckDone.
   intptr_t callback_id = reinterpret_cast<intptr_t>(callback.release());
-
   DVLOG(1) << "Starting check " << callback_id << " for URL " << url;
 
   DCHECK(!threat_types.empty());
@@ -245,13 +188,13 @@ void SafeBrowsingApiHandlerBridge::Core::StartURLCheck(
   ScopedJavaLocalRef<jintArray> j_threat_types =
       SBThreatTypeSetToJavaArray(env, threat_types);
 
-  // Increase parallelism by indicating that the lookup may block. Only the long
-  // tail of these calls block for more than 10ms, which is the current
-  // threshold for increasing worker capacity.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::ElapsedTimer check_timer;
   Java_SafeBrowsingApiBridge_startUriLookup(env, j_api_handler_, callback_id,
                                             j_url, j_threat_types);
+  // TODO(vakh): The following metric isn't very useful now since the
+  // |startUriLookup| method simply posts a task and adds listeners now.
+  // Continue to monitor it to ensure that it keeps falling and then remove it
+  // when it is consistently a low value. (https://crbug.com/839190)
   UMA_HISTOGRAM_COUNTS_10M("SB2.RemoteCall.CheckDispatchTime",
                            check_timer.Elapsed().InMicroseconds());
 }
