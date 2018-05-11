@@ -66,6 +66,8 @@
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_server_properties.h"
+#include "net/http/http_server_properties_manager.h"
 #include "net/net_buildflags.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -460,18 +462,17 @@ void ProfileImplIOData::InitializeInternal(
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
     // Set up server bound cert service.
-    std::unique_ptr<net::ChannelIDService> channel_id_service;
-    if (profile_params->main_network_context_params->channel_id_path
-            .has_value()) {
-      scoped_refptr<QuotaPolicyChannelIDStore> channel_id_db =
-          new QuotaPolicyChannelIDStore(
-              profile_params->main_network_context_params->channel_id_path
-                  .value(),
-              cookie_background_task_runner,
-              lazy_params_->special_storage_policy.get());
-      channel_id_service = std::make_unique<net::ChannelIDService>(
-          new net::DefaultChannelIDStore(channel_id_db.get()));
-    }
+    DCHECK(!profile_params->main_network_context_params->channel_id_path.value()
+                .empty());
+    scoped_refptr<QuotaPolicyChannelIDStore> channel_id_db =
+        new QuotaPolicyChannelIDStore(
+            profile_params->main_network_context_params->channel_id_path
+                .value(),
+            cookie_background_task_runner,
+            lazy_params_->special_storage_policy.get());
+    std::unique_ptr<net::ChannelIDService> channel_id_service(
+        std::make_unique<net::ChannelIDService>(
+            new net::DefaultChannelIDStore(channel_id_db.get())));
 
     // Set up cookie store.
     content::CookieStoreConfig cookie_config(
@@ -486,9 +487,7 @@ void ProfileImplIOData::InitializeInternal(
     std::unique_ptr<net::CookieStore> cookie_store(
         content::CreateCookieStore(cookie_config));
 
-    if (channel_id_service) {
-      cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
-    }
+    cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
 
     builder->SetCookieAndChannelIdStores(std::move(cookie_store),
                                          std::move(channel_id_service));
@@ -601,20 +600,13 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
     channel_id_db = new net::SQLiteChannelIDStore(
         channel_id_path, cookie_background_task_runner);
   }
-  std::unique_ptr<net::ChannelIDService> channel_id_service;
-
-  // If |main_context| has Channel ID disabled, do not enable it for the App's
-  // context.
-  if (main_context->channel_id_service()) {
-    channel_id_service.reset(new net::ChannelIDService(
-        new net::DefaultChannelIDStore(channel_id_db.get())));
-    cookie_config.channel_id_service = channel_id_service.get();
-  }
+  std::unique_ptr<net::ChannelIDService> channel_id_service(
+      new net::ChannelIDService(
+          new net::DefaultChannelIDStore(channel_id_db.get())));
+  cookie_config.channel_id_service = channel_id_service.get();
   cookie_config.background_task_runner = cookie_background_task_runner;
   cookie_store = content::CreateCookieStore(cookie_config);
-  if (channel_id_service) {
-    cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
-  }
+  cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
 
   // Build a new HttpNetworkSession that uses the new ChannelIDService.
   // TODO(mmenke):  It's weird to combine state from
