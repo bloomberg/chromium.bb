@@ -93,10 +93,6 @@ std::unique_ptr<WebLayer> TestingCompositorSupport::CreateLayerFromCCLayer(
   return nullptr;
 }
 
-std::unique_ptr<WebImageLayer> TestingCompositorSupport::CreateImageLayer() {
-  return nullptr;
-}
-
 TestingPlatformSupport::TestingPlatformSupport()
     : TestingPlatformSupport(TestingPlatformSupport::Config()) {}
 

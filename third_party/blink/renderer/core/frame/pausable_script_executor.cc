@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_script_execution_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"

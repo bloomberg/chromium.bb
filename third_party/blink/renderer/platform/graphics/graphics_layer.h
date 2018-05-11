@@ -33,7 +33,6 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer_client.h"
-#include "third_party/blink/public/platform/web_image_layer.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -56,6 +55,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace cc {
+class PictureImageLayer;
 class PictureLayer;
 }
 
@@ -422,7 +422,9 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   scoped_refptr<cc::PictureLayer> layer_;
   std::unique_ptr<WebLayer> web_layer_;  // Wraps |layer_|.
-  std::unique_ptr<WebImageLayer> image_layer_;
+  scoped_refptr<cc::PictureImageLayer> image_layer_;
+  std::unique_ptr<WebLayer> web_image_layer_;
+  IntSize image_size_;
   WebLayer* contents_layer_;
   // We don't have ownership of contents_layer_, but we do want to know if a
   // given layer is the same as our current layer in SetContentsTo(). Since

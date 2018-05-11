@@ -39,7 +39,6 @@ class Layer;
 
 namespace blink {
 
-class WebImageLayer;
 class WebLayer;
 
 class WebCompositorSupport {
@@ -47,7 +46,6 @@ class WebCompositorSupport {
   // Layers -------------------------------------------------------
 
   virtual std::unique_ptr<WebLayer> CreateLayerFromCCLayer(cc::Layer*) = 0;
-  virtual std::unique_ptr<WebImageLayer> CreateImageLayer() = 0;
 
  protected:
   virtual ~WebCompositorSupport() = default;

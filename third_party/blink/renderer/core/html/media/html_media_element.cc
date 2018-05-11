@@ -38,6 +38,7 @@
 #include "third_party/blink/public/platform/web_audio_source_provider.h"
 #include "third_party/blink/public/platform/web_content_decryption_module.h"
 #include "third_party/blink/public/platform/web_inband_text_track.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/public/platform/web_media_stream.h"

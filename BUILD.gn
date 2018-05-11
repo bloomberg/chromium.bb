@@ -447,7 +447,6 @@ group("gn_all") {
       "//base:build_utf8_validator_tables",
       "//base:check_example",
       "//cc:cc_perftests",
-      "//cc/blink:cc_blink_unittests",
       "//components:components_perftests",
       "//device:device_unittests",
       "//gin:gin_shell",

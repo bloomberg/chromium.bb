@@ -727,6 +727,8 @@ TEST_F(PaintArtifactCompositorTest, SiblingClips) {
 
 TEST_F(PaintArtifactCompositorTest, ForeignLayerPassesThrough) {
   scoped_refptr<cc::Layer> layer = cc::Layer::Create();
+  layer->SetIsDrawable(true);
+  layer->SetBounds(gfx::Size(400, 300));
 
   TestPaintArtifact test_artifact;
   test_artifact

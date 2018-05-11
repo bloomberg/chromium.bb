@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCHED_EVENT_H_
 
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom-blink.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_event.h"
 #include "third_party/blink/renderer/modules/modules_export.h"

@@ -33,6 +33,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/picture_image_layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/paint/display_item_list.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -466,8 +467,28 @@ void GraphicsLayer::UpdateContentsRect() {
 
   contents_layer->SetPosition(
       FloatPoint(contents_rect_.X(), contents_rect_.Y()));
-  contents_layer->SetBounds(
-      gfx::Size(contents_rect_.Width(), contents_rect_.Height()));
+  if (!image_layer_) {
+    contents_layer->SetBounds(static_cast<gfx::Size>(contents_rect_.Size()));
+  } else {
+    DCHECK_EQ(web_image_layer_.get(), contents_layer_);
+    // The image_layer_ has fixed bounds, and we apply bounds changes via the
+    // transform instead. Since we never change the transform on the
+    // |image_layer_| otherwise, we can assume it is identity and just apply
+    // the bounds to it directly. Same thing for transform origin.
+    DCHECK(image_layer_->transform_origin() == gfx::Point3F());
+
+    if (contents_rect_.Size().IsEmpty() || image_size_.IsEmpty()) {
+      image_layer_->SetTransform(gfx::Transform());
+      contents_layer->SetBounds(static_cast<gfx::Size>(contents_rect_.Size()));
+    } else {
+      gfx::Transform image_transform;
+      image_transform.Scale(
+          static_cast<float>(contents_rect_.Width()) / image_size_.Width(),
+          static_cast<float>(contents_rect_.Height()) / image_size_.Height());
+      image_layer_->SetTransform(image_transform);
+      image_layer_->SetBounds(static_cast<gfx::Size>(image_size_));
+    }
+  }
 
   if (contents_clipping_mask_layer_) {
     if (contents_clipping_mask_layer_->Size() != contents_rect_.Size()) {
@@ -1236,14 +1257,19 @@ void GraphicsLayer::SetContentsToImage(
   if (paint_image && image->IsBitmapImage() &&
       respect_image_orientation == kRespectImageOrientation) {
     image_orientation = ToBitmapImage(image)->CurrentFrameOrientation();
-    FloatSize size(paint_image.width(), paint_image.height());
+    image_size_ = IntSize(paint_image.width(), paint_image.height());
     if (image_orientation.UsesWidthAsHeight())
-      size = size.TransposedSize();
-    auto affine = image_orientation.TransformFromDefault(size);
+      image_size_ = image_size_.TransposedSize();
+    auto affine =
+        image_orientation.TransformFromDefault(FloatSize(image_size_));
     auto transform = affine.ToTransformationMatrix();
     matrix = TransformationMatrix::ToSkMatrix44(transform);
+  } else if (paint_image) {
+    matrix = SkMatrix::I();
+    image_size_ = IntSize(paint_image.width(), paint_image.height());
   } else {
     matrix = SkMatrix::I();
+    image_size_ = IntSize();
   }
 
   if (paint_image) {
@@ -1252,20 +1278,24 @@ void GraphicsLayer::SetContentsToImage(
             .set_decoding_mode(Image::ToPaintImageDecodingMode(decode_mode))
             .TakePaintImage();
     if (!image_layer_) {
-      image_layer_ =
-          Platform::Current()->CompositorSupport()->CreateImageLayer();
-      RegisterContentsLayer(image_layer_->Layer());
+      image_layer_ = cc::PictureImageLayer::Create();
+      web_image_layer_ =
+          Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
+              image_layer_.get());
+      RegisterContentsLayer(web_image_layer_.get());
     }
     image_layer_->SetImage(std::move(paint_image), matrix,
                            image_orientation.UsesWidthAsHeight());
-    image_layer_->Layer()->SetOpaque(image->CurrentFrameKnownToBeOpaque());
+    image_layer_->SetContentsOpaque(image->CurrentFrameKnownToBeOpaque());
     UpdateContentsRect();
   } else if (image_layer_) {
-    UnregisterContentsLayer(image_layer_->Layer());
-    image_layer_.reset();
+    UnregisterContentsLayer(web_image_layer_.get());
+    image_layer_ = nullptr;
+    web_image_layer_ = nullptr;
   }
 
-  SetContentsTo(image_layer_ ? image_layer_->Layer() : nullptr, true);
+  SetContentsTo(web_image_layer_.get(),
+                /*prevent_contents_opaque_changes=*/true);
 }
 
 WebLayer* GraphicsLayer::PlatformLayer() const {

@@ -34,6 +34,7 @@ class StubWebMediaPlayer : public EmptyWebMediaPlayer {
     ready_state_ = kReadyStateHaveEnoughData;
     client_->ReadyStateChanged();
     layer_ = cc::Layer::Create();
+    layer_->SetIsDrawable(true);
     web_layer_ =
         Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
             layer_.get());
