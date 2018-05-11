@@ -302,6 +302,10 @@ static constexpr float kTabsViewVerticalOffsetDMM = -0.1f;
 static constexpr float kTabsViewModeButtonWidthDMM = 0.25f;
 static constexpr float kTabsViewModeButtonHeightDMM = 0.075f;
 static constexpr float kTabsViewModeButtonTextSizeDMM = 0.03f;
+static constexpr float kTabsViewRemoveButtonShadowIntensity = 0.4f;
+static constexpr float kTabsViewRemoveButtonDepthOffsetDMM = 0.02f;
+static constexpr float kTabsViewRemoveButtonSizeDMM = 0.05f;
+static constexpr float kTabsViewRemoveButtonHoverOffsetDMM = 0.015f;
 
 }  // namespace vr
 

@@ -40,6 +40,7 @@ class UiBrowserInterface {
   virtual void OpenDownloads() = 0;
   virtual void OpenShare() = 0;
   virtual void OpenSettings() = 0;
+  virtual void CloseTab(int id, bool incognito) = 0;
   virtual void CloseAllTabs() = 0;
   virtual void CloseAllIncognitoTabs() = 0;
   virtual void OpenFeedback() = 0;

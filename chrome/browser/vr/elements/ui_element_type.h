@@ -45,6 +45,8 @@ enum UiElementType {
   kTypeOverflowMenuItem,
   kTypeTooltip,
   kTypeLabel,
+  kTypeTabItem,
+  kTypeTabItemRemoveButton,
 
   // This must be last.
   kNumUiElementTypes,
