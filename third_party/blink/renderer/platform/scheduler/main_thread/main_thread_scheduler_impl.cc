@@ -2528,7 +2528,7 @@ void MainThreadSchedulerImpl::RecordTaskUkmImpl(
   builder.SetTaskDuration((end - start).InMicroseconds());
 
   if (thread_time) {
-    builder.SetTaskDuration(thread_time->InMicroseconds());
+    builder.SetTaskCPUDuration(thread_time->InMicroseconds());
   }
 
   builder.Record(ukm_recorder);
