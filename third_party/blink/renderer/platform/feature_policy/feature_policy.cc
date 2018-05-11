@@ -145,9 +145,7 @@ bool IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature feature) {
     case mojom::FeaturePolicyFeature::kAmbientLightSensor:
     case mojom::FeaturePolicyFeature::kGyroscope:
     case mojom::FeaturePolicyFeature::kMagnetometer:
-      return true;
     case mojom::FeaturePolicyFeature::kPictureInPicture:
-      return RuntimeEnabledFeatures::PictureInPictureAPIEnabled();
     case mojom::FeaturePolicyFeature::kSyncXHR:
       return true;
     case mojom::FeaturePolicyFeature::kUnsizedMedia:
@@ -192,10 +190,8 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
                                  mojom::FeaturePolicyFeature::kGyroscope);
     default_feature_name_map.Set("magnetometer",
                                  mojom::FeaturePolicyFeature::kMagnetometer);
-    if (RuntimeEnabledFeatures::PictureInPictureAPIEnabled()) {
-      default_feature_name_map.Set(
-          "picture-in-picture", mojom::FeaturePolicyFeature::kPictureInPicture);
-    }
+    default_feature_name_map.Set("picture-in-picture",
+                                 mojom::FeaturePolicyFeature::kPictureInPicture);
     if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
       default_feature_name_map.Set(
           "image-compression", mojom::FeaturePolicyFeature::kImageCompression);
