@@ -29,8 +29,7 @@ namespace cc_blink {
 
 class CC_BLINK_EXPORT WebLayerImpl : public blink::WebLayer {
  public:
-  WebLayerImpl();
-  explicit WebLayerImpl(scoped_refptr<cc::Layer>);
+  explicit WebLayerImpl(cc::Layer*);
   ~WebLayerImpl() override;
 
   cc::Layer* layer() const;
@@ -126,7 +125,7 @@ class CC_BLINK_EXPORT WebLayerImpl : public blink::WebLayer {
   void SetClipParent(blink::WebLayer* parent) override;
 
  protected:
-  scoped_refptr<cc::Layer> layer_;
+  cc::Layer* layer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebLayerImpl);

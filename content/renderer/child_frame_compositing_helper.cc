@@ -67,9 +67,8 @@ void ChildFrameCompositingHelper::ChildFrameGone(
   }
 
   bool prevent_contents_opaque_changes = false;
-  child_frame_compositor_->SetLayer(
-      std::make_unique<cc_blink::WebLayerImpl>(crashed_layer),
-      prevent_contents_opaque_changes);
+  child_frame_compositor_->SetLayer(std::move(crashed_layer),
+                                    prevent_contents_opaque_changes);
 }
 
 void ChildFrameCompositingHelper::SetPrimarySurfaceId(
@@ -89,18 +88,15 @@ void ChildFrameCompositingHelper::SetPrimarySurfaceId(
   surface_layer_->SetPrimarySurfaceId(surface_id, deadline);
   surface_layer_->SetFallbackSurfaceId(fallback_surface_id_);
 
-  auto layer_owned = std::make_unique<cc_blink::WebLayerImpl>(surface_layer_);
-  auto* layer = layer_owned.get();
-
   // TODO(lfg): Investigate if it's possible to propagate the information
   // about the child surface's opacity. https://crbug.com/629851.
   bool prevent_contents_opaque_changes = true;
-  child_frame_compositor_->SetLayer(std::move(layer_owned),
+  child_frame_compositor_->SetLayer(surface_layer_,
                                     prevent_contents_opaque_changes);
 
   UpdateVisibility(true);
 
-  layer->SetBounds(frame_size_in_dip);
+  surface_layer_->SetBounds(frame_size_in_dip);
 }
 
 void ChildFrameCompositingHelper::SetFallbackSurfaceId(

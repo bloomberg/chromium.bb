@@ -1316,13 +1316,13 @@ TEST_F(WebMediaPlayerImplTest, SetContentsLayerGetsWebLayerFromBridge) {
 
   InitializeWebMediaPlayerImpl();
 
+  scoped_refptr<cc::Layer> layer = cc::Layer::Create();
   std::unique_ptr<cc_blink::WebLayerImpl> web_layer =
-      std::make_unique<cc_blink::WebLayerImpl>();
-  cc_blink::WebLayerImpl* web_layer_ptr = web_layer.get();
+      std::make_unique<cc_blink::WebLayerImpl>(layer.get());
 
   EXPECT_CALL(*surface_layer_bridge_ptr_, GetWebLayer())
-      .WillRepeatedly(Return(web_layer_ptr));
-  EXPECT_CALL(client_, SetWebLayer(Eq(web_layer_ptr)));
+      .WillRepeatedly(Return(web_layer.get()));
+  EXPECT_CALL(client_, SetWebLayer(Eq(web_layer.get())));
   wmpi_->RegisterContentsLayer(web_layer.get());
 }
 

@@ -320,8 +320,8 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
 
   ExitPictureInPicture(base::DoNothing());
 
-  if (!surface_layer_for_video_enabled_ && video_weblayer_) {
-    static_cast<cc::VideoLayer*>(video_weblayer_->layer())->StopUsingProvider();
+  if (!surface_layer_for_video_enabled_ && video_layer_) {
+    video_layer_->StopUsingProvider();
   }
 
   vfc_task_runner_->DeleteSoon(FROM_HERE, std::move(compositor_));
@@ -1610,9 +1610,11 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
 
     if (!surface_layer_for_video_enabled_) {
       DCHECK(!video_weblayer_);
-      video_weblayer_.reset(new cc_blink::WebLayerImpl(cc::VideoLayer::Create(
+      video_layer_ = cc::VideoLayer::Create(
           compositor_.get(),
-          pipeline_metadata_.video_decoder_config.video_rotation())));
+          pipeline_metadata_.video_decoder_config.video_rotation());
+      video_weblayer_ =
+          std::make_unique<cc_blink::WebLayerImpl>(video_layer_.get());
       video_weblayer_->SetOpaque(opaque_);
       client_->SetWebLayer(video_weblayer_.get());
     } else {

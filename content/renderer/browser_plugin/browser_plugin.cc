@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/blink/web_layer_impl.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
@@ -860,11 +861,14 @@ blink::WebLayer* BrowserPlugin::GetLayer() {
   return web_layer_.get();
 }
 
-void BrowserPlugin::SetLayer(std::unique_ptr<blink::WebLayer> web_layer,
+void BrowserPlugin::SetLayer(scoped_refptr<cc::Layer> layer,
                              bool prevent_contents_opaque_changes) {
+  auto web_layer = std::make_unique<cc_blink::WebLayerImpl>(layer.get());
+
   if (container_) {
     container_->SetWebLayer(web_layer.get(), prevent_contents_opaque_changes);
   }
+  embedded_layer_ = std::move(layer);
   web_layer_ = std::move(web_layer);
 }
 
