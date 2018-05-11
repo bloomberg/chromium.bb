@@ -380,7 +380,8 @@ void GetNonWindowClients(
       AddNonWindowClient(controllee.second, std::move(options), clients.get());
   } else if (controller->context()) {
     GURL origin = controller->script_url().GetOrigin();
-    for (auto it = controller->context()->GetClientProviderHostIterator(origin);
+    for (auto it = controller->context()->GetClientProviderHostIterator(
+             origin, false /* include_reserved_clients */);
          !it->IsAtEnd(); it->Advance()) {
       AddNonWindowClient(it->GetProviderHost(), std::move(options),
                          clients.get());
@@ -418,7 +419,8 @@ void GetWindowClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
       AddWindowClient(controllee.second, &clients_info);
   } else if (controller->context()) {
     GURL origin = controller->script_url().GetOrigin();
-    for (auto it = controller->context()->GetClientProviderHostIterator(origin);
+    for (auto it = controller->context()->GetClientProviderHostIterator(
+             origin, false /* include_reserved_clients */);
          !it->IsAtEnd(); it->Advance()) {
       AddWindowClient(it->GetProviderHost(), &clients_info);
     }
@@ -560,7 +562,8 @@ void DidNavigate(const base::WeakPtr<ServiceWorkerContextCore>& context,
   }
 
   for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context->GetClientProviderHostIterator(origin);
+           context->GetClientProviderHostIterator(
+               origin, false /* include_reserved_clients */);
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* provider_host = it->GetProviderHost();
     if (provider_host->process_id() != render_process_id ||

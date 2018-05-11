@@ -219,7 +219,8 @@ void ServiceWorkerRegistration::ClaimClients() {
   DCHECK(active_version());
 
   for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context_->GetClientProviderHostIterator(pattern_.GetOrigin());
+           context_->GetClientProviderHostIterator(
+               pattern_.GetOrigin(), false /* include_reserved_clients */);
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
     if (host->controller() == active_version())

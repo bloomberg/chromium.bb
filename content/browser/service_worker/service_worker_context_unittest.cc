@@ -688,7 +688,8 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
 
   // Iterate over the client provider hosts that belong to kOrigin1.
   std::set<ServiceWorkerProviderHost*> results;
-  for (auto it = context()->GetClientProviderHostIterator(kOrigin1);
+  for (auto it = context()->GetClientProviderHostIterator(
+           kOrigin1, true /* include_reserved_clients */);
        !it->IsAtEnd(); it->Advance()) {
     results.insert(it->GetProviderHost());
   }
@@ -699,7 +700,8 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
   // Iterate over the provider hosts that belong to kOrigin2.
   // (This should not include host4 as it's not for controllee.)
   results.clear();
-  for (auto it = context()->GetClientProviderHostIterator(kOrigin2);
+  for (auto it = context()->GetClientProviderHostIterator(
+           kOrigin2, true /* include_reserved_clients */);
        !it->IsAtEnd(); it->Advance()) {
     results.insert(it->GetProviderHost());
   }

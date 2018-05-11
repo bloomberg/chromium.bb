@@ -588,7 +588,8 @@ void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(
   DCHECK(registration);
   for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
            context_->GetClientProviderHostIterator(
-               registration->pattern().GetOrigin());
+               registration->pattern().GetOrigin(),
+               true /* include_reserved_clients */);
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
     if (!ServiceWorkerUtils::ScopeMatches(registration->pattern(),
