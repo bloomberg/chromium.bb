@@ -416,10 +416,6 @@ typedef struct macroblockd_plane {
   // They use a hardwired Q3 coeff shift and do not necessarily match
   // the TX scale in use.
   const int16_t *dequant_Q3;
-
-#if CONFIG_DIST_8X8
-  DECLARE_ALIGNED(16, int16_t, pred[MAX_SB_SQUARE]);
-#endif
 } MACROBLOCKD_PLANE;
 
 #define BLOCK_OFFSET(x, i) \

@@ -335,6 +335,7 @@ struct macroblock {
 #if CONFIG_DIST_8X8
   int using_dist_8x8;
   aom_tune_metric tune_metric;
+  DECLARE_ALIGNED(16, int16_t, pred_luma[MAX_SB_SQUARE]);
 #endif  // CONFIG_DIST_8X8
   int comp_idx_cost[COMP_INDEX_CONTEXTS][2];
   int comp_group_idx_cost[COMP_GROUP_IDX_CONTEXTS][2];
