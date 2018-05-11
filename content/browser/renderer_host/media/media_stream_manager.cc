@@ -542,7 +542,7 @@ VideoCaptureManager* MediaStreamManager::video_capture_manager() {
 }
 
 AudioInputDeviceManager* MediaStreamManager::audio_input_device_manager() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // May be called on any thread, provided that we are not in shutdown.
   DCHECK(audio_input_device_manager_.get());
   return audio_input_device_manager_.get();
 }
