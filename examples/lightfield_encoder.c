@@ -116,7 +116,7 @@ static int get_frame_stats(aom_codec_ctx_t *ctx, const aom_image_t *img,
 
 static int encode_frame(aom_codec_ctx_t *ctx, const aom_image_t *img,
                         aom_codec_pts_t pts, unsigned int duration,
-                        aom_enc_frame_flags_t flags AvxVideoWriter *writer) {
+                        aom_enc_frame_flags_t flags, AvxVideoWriter *writer) {
   int got_pkts = 0;
   aom_codec_iter_t iter = NULL;
   const aom_codec_cx_pkt_t *pkt = NULL;
@@ -241,6 +241,8 @@ static aom_fixed_buf_t pass0(aom_image_t *raw, FILE *infile,
   }
 
   printf("Pass 0 complete. Processed %d frames.\n", frame_count);
+
+  free(reference_images);
   if (aom_codec_destroy(&codec)) die_codec(&codec, "Failed to destroy codec.");
 
   return stats;
@@ -378,6 +380,7 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
   aom_video_writer_close(writer);
 
   printf("Pass 1 complete. Processed %d frames.\n", frame_count);
+  free(reference_images);
 }
 
 int main(int argc, char **argv) {

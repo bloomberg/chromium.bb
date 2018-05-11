@@ -491,6 +491,24 @@ if (ENABLE_EXAMPLES AND CONFIG_AV1_DECODER AND CONFIG_AV1_ENCODER)
   list(APPEND AOM_APP_TARGETS aom_cx_set_ref)
 endif ()
 
+if (ENABLE_EXAMPLES AND CONFIG_AV1_ENCODER)
+  add_executable(lightfield_encoder
+                 "${AOM_ROOT}/examples/lightfield_encoder.c"
+                 $<TARGET_OBJECTS:aom_common_app_util>
+                 $<TARGET_OBJECTS:aom_encoder_app_util>)
+  list(APPEND AOM_EXAMPLE_TARGETS lightfield_encoder)
+  list(APPEND AOM_APP_TARGETS lightfield_encoder)
+endif ()
+
+if (ENABLE_EXAMPLES AND CONFIG_AV1_DECODER)
+  add_executable(lightfield_decoder
+                 "${AOM_ROOT}/examples/lightfield_decoder.c"
+                 $<TARGET_OBJECTS:aom_common_app_util>
+                 $<TARGET_OBJECTS:aom_decoder_app_util>)
+  list(APPEND AOM_EXAMPLE_TARGETS lightfield_decoder)
+  list(APPEND AOM_APP_TARGETS lightfield_decoder)
+endif ()
+
 foreach (aom_app ${AOM_APP_TARGETS})
   target_link_libraries(${aom_app} ${AOM_LIB_LINK_TYPE} aom)
 endforeach ()

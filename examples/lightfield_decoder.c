@@ -182,6 +182,7 @@ int main(int argc, char **argv) {
   aom_image_t *img = aom_codec_get_frame(&codec, &iter);
   aom_img_write(img, outfile);
 
+  free(reference_images);
   if (aom_codec_destroy(&codec)) die_codec(&codec, "Failed to destroy codec");
   aom_video_reader_close(reader);
   fclose(outfile);

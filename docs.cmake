@@ -89,6 +89,22 @@ if(CONFIG_AV1_DECODER AND CONFIG_AV1_ENCODER)
       "Set encoder reference frame.")
 endif()
 
+if(CONFIG_AV1_ENCODER)
+  set(AOM_DOXYGEN_EXAMPLE_SOURCES ${AOM_DOXYGEN_EXAMPLE_SOURCES}
+      "${AOM_ROOT}/examples/lightfield_encoder.c")
+
+  set(AOM_DOXYGEN_EXAMPLE_DESCRIPTIONS ${AOM_DOXYGEN_EXAMPLE_DESCRIPTIONS}
+      "Lightfield encoder example.")
+endif()
+
+if(CONFIG_AV1_DECODER)
+  set(AOM_DOXYGEN_EXAMPLE_SOURCES ${AOM_DOXYGEN_EXAMPLE_SOURCES}
+      "${AOM_ROOT}/examples/lightfield_decoder.c")
+
+  set(AOM_DOXYGEN_EXAMPLE_DESCRIPTIONS ${AOM_DOXYGEN_EXAMPLE_DESCRIPTIONS}
+      "Lightfield decoder example.")
+endif()
+
 # Iterates over list named by $list_name and appends each item to $AOM_DOXYFILE
 # as values assigned to $var_name with no line breaks between list items.
 # Appends a new line after the entire config variable is expanded.

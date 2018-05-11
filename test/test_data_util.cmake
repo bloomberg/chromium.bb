@@ -26,7 +26,8 @@ set(AOM_TEST_DATA_FILE_NAMES
     "niklas_1280_720_30.y4m"
     "rush_hour_444.y4m"
     "screendata.y4m"
-    "niklas_640_480_30.yuv")
+    "niklas_640_480_30.yuv"
+    "vase10x10.yuv")
 
 if(CONFIG_DECODE_PERF_TESTS AND CONFIG_AV1_ENCODER)
   set(AOM_TEST_DATA_FILE_NAMES ${AOM_TEST_DATA_FILE_NAMES}
