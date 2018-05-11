@@ -5,9 +5,7 @@
 /** @implements {settings.ProfileInfoBrowserProxy} */
 class TestOnStartupBrowserProxy extends TestBrowserProxy {
   constructor() {
-    super([
-      'getNtpExtension'
-    ]);
+    super(['getNtpExtension']);
 
     /** @private {?NtpExtension} */
     this.ntpExtension_ = null;
@@ -50,11 +48,7 @@ suite('OnStartupPage', function() {
   let onStartupBrowserProxy = null;
 
   /** @type {NtpExtension} */
-  const ntpExtension = {
-    id: 'id',
-    name: 'name',
-    canBeDisabled: true
-  };
+  const ntpExtension = {id: 'id', name: 'name', canBeDisabled: true};
 
   /** @return {!Promise} */
   function initPage() {
@@ -70,15 +64,13 @@ suite('OnStartupPage', function() {
       },
     };
     document.body.appendChild(testElement);
-    return onStartupBrowserProxy.whenCalled('getNtpExtension')
-        .then(function() {
-          Polymer.dom.flush();
-        });
+    return onStartupBrowserProxy.whenCalled('getNtpExtension').then(function() {
+      Polymer.dom.flush();
+    });
   }
 
   function getSelectedOptionLabel() {
-    return testElement.$.onStartupRadioGroup
-        .querySelector('.iron-selected')
+    return testElement.$.onStartupRadioGroup.querySelector('.iron-selected')
         .label;
   }
 
@@ -114,8 +106,7 @@ suite('OnStartupPage', function() {
         'prefs.session.restore_on_startup.value',
         RestoreOnStartupEnum.OPEN_SPECIFIC);
     assertEquals(
-        'Open a specific page or set of pages',
-        getSelectedOptionLabel());
+        'Open a specific page or set of pages', getSelectedOptionLabel());
   });
 
   function extensionControlledIndicatorExists() {
@@ -124,15 +115,14 @@ suite('OnStartupPage', function() {
 
   test('given ntp extension, extension indicator always exists', function() {
     onStartupBrowserProxy.setNtpExtension(ntpExtension);
-    return onStartupBrowserProxy.whenCalled('getNtpExtension')
-        .then(function() {
-          Polymer.dom.flush();
-          assertTrue(extensionControlledIndicatorExists());
-          Object.values(RestoreOnStartupEnum).forEach(function(option) {
-            testElement.set('prefs.session.restore_on_startup.value', option);
-            assertTrue(extensionControlledIndicatorExists());
-          });
-        });
+    return onStartupBrowserProxy.whenCalled('getNtpExtension').then(function() {
+      Polymer.dom.flush();
+      assertTrue(extensionControlledIndicatorExists());
+      Object.values(RestoreOnStartupEnum).forEach(function(option) {
+        testElement.set('prefs.session.restore_on_startup.value', option);
+        assertTrue(extensionControlledIndicatorExists());
+      });
+    });
   });
 
   test(
@@ -143,16 +133,14 @@ suite('OnStartupPage', function() {
           testElement.set('prefs.session.restore_on_startup.value', option);
           assertFalse(extensionControlledIndicatorExists());
         });
-      }
-  );
+      });
 
   test('ntp extension updated, extension indicator added', function() {
     assertFalse(extensionControlledIndicatorExists());
     onStartupBrowserProxy.setNtpExtension(ntpExtension);
-    return onStartupBrowserProxy.whenCalled('getNtpExtension')
-        .then(function() {
-          Polymer.dom.flush();
-          assertTrue(extensionControlledIndicatorExists());
-        });
+    return onStartupBrowserProxy.whenCalled('getNtpExtension').then(function() {
+      Polymer.dom.flush();
+      assertTrue(extensionControlledIndicatorExists());
+    });
   });
 });

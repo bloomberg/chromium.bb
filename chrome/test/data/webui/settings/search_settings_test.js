@@ -28,8 +28,7 @@ cr.define('settings_test', function() {
     test('normal highlighting', function() {
       const optionText = 'FooSettingsFoo';
 
-      document.body.innerHTML =
-          `<settings-section hidden-by-search>
+      document.body.innerHTML = `<settings-section hidden-by-search>
              <div id="mydiv">${optionText}</div>
            </settings-section>`;
 
@@ -37,29 +36,32 @@ cr.define('settings_test', function() {
       const div = document.querySelector('#mydiv');
 
       assertTrue(section.hiddenBySearch);
-      return searchManager.search('settings', section).then(function() {
-        assertFalse(section.hiddenBySearch);
+      return searchManager.search('settings', section)
+          .then(function() {
+            assertFalse(section.hiddenBySearch);
 
-        const highlightWrapper = div.querySelector('.search-highlight-wrapper');
-        assertTrue(!!highlightWrapper);
+            const highlightWrapper =
+                div.querySelector('.search-highlight-wrapper');
+            assertTrue(!!highlightWrapper);
 
-        const originalContent = highlightWrapper.querySelector(
-            '.search-highlight-original-content');
-        assertTrue(!!originalContent);
-        assertEquals(optionText, originalContent.textContent);
+            const originalContent = highlightWrapper.querySelector(
+                '.search-highlight-original-content');
+            assertTrue(!!originalContent);
+            assertEquals(optionText, originalContent.textContent);
 
-        const searchHits = highlightWrapper.querySelectorAll(
-            '.search-highlight-hit');
-        assertEquals(1, searchHits.length);
-        assertEquals('Settings', searchHits[0].textContent);
+            const searchHits =
+                highlightWrapper.querySelectorAll('.search-highlight-hit');
+            assertEquals(1, searchHits.length);
+            assertEquals('Settings', searchHits[0].textContent);
 
-        // Check that original DOM structure is restored when search
-        // highlights are cleared.
-        return searchManager.search('', section);
-      }).then(function() {
-        assertEquals(0, div.children.length);
-        assertEquals(optionText, div.textContent);
-      });
+            // Check that original DOM structure is restored when search
+            // highlights are cleared.
+            return searchManager.search('', section);
+          })
+          .then(function() {
+            assertEquals(0, div.children.length);
+            assertEquals(optionText, div.textContent);
+          });
     });
 
     /**
@@ -68,8 +70,7 @@ cr.define('settings_test', function() {
      * modified.
      */
     test('<select> highlighting', function() {
-      document.body.innerHTML =
-          `<settings-section hidden-by-search>
+      document.body.innerHTML = `<settings-section hidden-by-search>
              <select>
                <option>Foo</option>
                <option>Settings</option>
@@ -81,29 +82,30 @@ cr.define('settings_test', function() {
       const select = section.querySelector('select');
 
       assertTrue(section.hiddenBySearch);
-      return searchManager.search('settings', section).then(function() {
-        assertFalse(section.hiddenBySearch);
+      return searchManager.search('settings', section)
+          .then(function() {
+            assertFalse(section.hiddenBySearch);
 
-        const highlightWrapper = select.querySelector(
-            '.search-highlight-wrapper');
-        assertFalse(!!highlightWrapper);
+            const highlightWrapper =
+                select.querySelector('.search-highlight-wrapper');
+            assertFalse(!!highlightWrapper);
 
-        // Check that original DOM structure is present even after search
-        // highlights are cleared.
-        return searchManager.search('', section);
-      }).then(function() {
-        const options = select.querySelectorAll('option');
-        assertEquals(3, options.length);
-        assertEquals('Foo', options[0].textContent);
-        assertEquals('Settings', options[1].textContent);
-        assertEquals('Baz', options[2].textContent);
-      });
+            // Check that original DOM structure is present even after search
+            // highlights are cleared.
+            return searchManager.search('', section);
+          })
+          .then(function() {
+            const options = select.querySelectorAll('option');
+            assertEquals(3, options.length);
+            assertEquals('Foo', options[0].textContent);
+            assertEquals('Settings', options[1].textContent);
+            assertEquals('Baz', options[2].textContent);
+          });
     });
 
     test('ignored elements are ignored', function() {
       const text = 'hello';
-      document.body.innerHTML =
-          `<settings-section hidden-by-search>
+      document.body.innerHTML = `<settings-section hidden-by-search>
              <cr-events>${text}</cr-events>
              <dialog>${text}</dialog>
              <iron-icon>${text}</iron-icon>
@@ -127,8 +129,7 @@ cr.define('settings_test', function() {
     // Test that multiple requests for the same text correctly highlight their
     // corresponding part of the tree without affecting other parts of the tree.
     test('multiple simultaneous requests for the same text', function() {
-      document.body.innerHTML =
-          `<settings-section hidden-by-search>
+      document.body.innerHTML = `<settings-section hidden-by-search>
              <div><span>Hello there</span></div>
            </settings-section>
            <settings-section hidden-by-search>

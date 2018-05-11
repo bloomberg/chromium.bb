@@ -30,10 +30,7 @@ class TestSyncBrowserProxy extends TestBrowserProxy {
   /** @override */
   getSyncStatus() {
     this.methodCalled('getSyncStatus');
-    return Promise.resolve({
-      signedIn: true,
-      signedInUsername: 'fakeUsername'
-    });
+    return Promise.resolve({signedIn: true, signedInUsername: 'fakeUsername'});
   }
 
   /** @override */

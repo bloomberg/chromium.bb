@@ -113,7 +113,8 @@ FakeDataMaker.creditCardEntry = function() {
   ret.metadata = {isLocal: true};
   const cards = ['Visa', 'Mastercard', 'Discover', 'Card'];
   const card = cards[Math.floor(Math.random() * cards.length)];
-  ret.metadata.summaryLabel = card + ' ' + '****' + ret.cardNumber.substr(-4);
+  ret.metadata.summaryLabel = card + ' ' +
+      '****' + ret.cardNumber.substr(-4);
   return ret;
 };
 
@@ -247,8 +248,9 @@ TestPasswordManager.prototype = {
 
     assertEquals(expected.requested.passwords, actual.requested.passwords);
     assertEquals(expected.requested.exceptions, actual.requested.exceptions);
-    assertEquals(expected.requested.plaintextPassword,
-                 actual.requested.plaintextPassword);
+    assertEquals(
+        expected.requested.plaintextPassword,
+        actual.requested.plaintextPassword);
 
     assertEquals(expected.removed.passwords, actual.removed.passwords);
     assertEquals(expected.removed.exceptions, actual.removed.exceptions);

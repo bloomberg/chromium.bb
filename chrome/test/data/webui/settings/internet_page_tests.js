@@ -61,7 +61,7 @@ suite('InternetPage', function() {
   }
 
   function setArcVpnProvidersForTest(arcVpnProviders) {
-    cr.webUIListenerCallback('sendArcVpnProviders',arcVpnProviders);
+    cr.webUIListenerCallback('sendArcVpnProviders', arcVpnProviders);
   }
 
   setup(function() {
@@ -164,22 +164,25 @@ suite('InternetPage', function() {
         {GUID: 'cellular1_guid', Name: 'cellular1', Type: 'Cellular'},
       ]);
       api_.enableNetworkType('Cellular');
-      return flushAsync().then(() => {
-        return Promise.all([
-          api_.whenCalled('getNetworks'),
-          api_.whenCalled('getDeviceStates'),
-        ]);
-      }).then(() => {
-        const mobile = networkSummary_.$$('#Cellular');
-        assertTrue(!!mobile);
-        MockInteractions.tap(mobile.$$('.subpage-arrow button'));
-        return Promise.all([
-          api_.whenCalled('getManagedProperties'),
-        ]);
-      }).then(() => {
-        const detailPage = internetPage.$$('settings-internet-detail-page');
-        assertTrue(!!detailPage);
-      });
+      return flushAsync()
+          .then(() => {
+            return Promise.all([
+              api_.whenCalled('getNetworks'),
+              api_.whenCalled('getDeviceStates'),
+            ]);
+          })
+          .then(() => {
+            const mobile = networkSummary_.$$('#Cellular');
+            assertTrue(!!mobile);
+            MockInteractions.tap(mobile.$$('.subpage-arrow button'));
+            return Promise.all([
+              api_.whenCalled('getManagedProperties'),
+            ]);
+          })
+          .then(() => {
+            const detailPage = internetPage.$$('settings-internet-detail-page');
+            assertTrue(!!detailPage);
+          });
     });
 
     test('Tether', function() {
@@ -299,7 +302,8 @@ suite('InternetPage', function() {
           ProviderName: 'MyArcVPN2',
           AppID: 'arcid2',
           LastLaunchTime: 1
-        }]);
+        }
+      ]);
       return flushAsync().then(() => {
         const expandAddConnections = internetPage.$$('#expandAddConnections');
         assertTrue(!!expandAddConnections);
@@ -321,38 +325,44 @@ suite('InternetPage', function() {
         {GUID: 'wifi1_guid', Name: 'wifi1', Type: 'WiFi'},
       ]);
       api_.enableNetworkType('WiFi');
-      return flushAsync().then(() => {
-        const wifi = networkSummary_.$$('#WiFi');
-        assertTrue(!!wifi);
-        MockInteractions.tap(wifi.$$('.subpage-arrow button'));
-        return flushAsync();
-      }).then(() => {
-        // Call setTimeout to populate iron-list.
-        return new Promise((resolve) => {
-          setTimeout(function() { resolve(); });
-        });
-      }).then(() => {
-        const subpage = internetPage.$$('settings-internet-subpage');
-        assertTrue(!!subpage);
-        const networkList = subpage.$$('#networkList');
-        assertTrue(!!networkList);
-        assertEquals(1, networkList.networks.length);
-        assertEquals(1, networkList.listItems_.length);
-        const ironList = networkList.$$('iron-list');
-        assertTrue(!!ironList);
-        assertEquals(1, ironList.items.length);
-        const networkListItem = networkList.$$('cr-network-list-item');
-        assertTrue(!!networkListItem);
-        MockInteractions.tap(networkListItem);
-        return flushAsync();
-      }).then(() => {
-        const detailPage = internetPage.$$('settings-internet-detail-page');
-        assertTrue(!!detailPage);
-        assertEquals('wifi1_guid', detailPage.guid);
-        return Promise.all([
-          api_.whenCalled('getManagedProperties'),
-        ]);
-      });
+      return flushAsync()
+          .then(() => {
+            const wifi = networkSummary_.$$('#WiFi');
+            assertTrue(!!wifi);
+            MockInteractions.tap(wifi.$$('.subpage-arrow button'));
+            return flushAsync();
+          })
+          .then(() => {
+            // Call setTimeout to populate iron-list.
+            return new Promise((resolve) => {
+              setTimeout(function() {
+                resolve();
+              });
+            });
+          })
+          .then(() => {
+            const subpage = internetPage.$$('settings-internet-subpage');
+            assertTrue(!!subpage);
+            const networkList = subpage.$$('#networkList');
+            assertTrue(!!networkList);
+            assertEquals(1, networkList.networks.length);
+            assertEquals(1, networkList.listItems_.length);
+            const ironList = networkList.$$('iron-list');
+            assertTrue(!!ironList);
+            assertEquals(1, ironList.items.length);
+            const networkListItem = networkList.$$('cr-network-list-item');
+            assertTrue(!!networkListItem);
+            MockInteractions.tap(networkListItem);
+            return flushAsync();
+          })
+          .then(() => {
+            const detailPage = internetPage.$$('settings-internet-detail-page');
+            assertTrue(!!detailPage);
+            assertEquals('wifi1_guid', detailPage.guid);
+            return Promise.all([
+              api_.whenCalled('getManagedProperties'),
+            ]);
+          });
     });
   });
 });

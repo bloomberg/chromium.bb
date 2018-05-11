@@ -59,18 +59,19 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
       assertFalse(!!drawer.open);
 
       const whenDone = test_util.eventToPromise('cr-drawer-opened', drawer)
-          .then(function() {
-            const whenClosed = test_util.eventToPromise('open-changed', drawer);
-            drawer.closeDrawer();
-            return whenClosed;
-          })
-          .then(function(e) {
-            // Drawer is closed, but menu is still stamped so
-            // its contents remain visible as the drawer slides
-            // out.
-            assertFalse(e.detail.value);
-            assertTrue(!!ui.$$('settings-menu'));
-          });
+                           .then(function() {
+                             const whenClosed = test_util.eventToPromise(
+                                 'open-changed', drawer);
+                             drawer.closeDrawer();
+                             return whenClosed;
+                           })
+                           .then(function(e) {
+                             // Drawer is closed, but menu is still stamped so
+                             // its contents remain visible as the drawer slides
+                             // out.
+                             assertFalse(e.detail.value);
+                             assertTrue(!!ui.$$('settings-menu'));
+                           });
       drawer.openDrawer();
       Polymer.dom.flush();
 
@@ -114,8 +115,8 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
 
     test('URL initiated search propagates to search box', function() {
       toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
-      const searchField = /** @type {CrToolbarSearchFieldElement} */ (
-          toolbar.getSearchField());
+      const searchField =
+          /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
       assertEquals('', searchField.getSearchInput().value);
 
       const query = 'foo';
@@ -126,8 +127,8 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
 
     test('search box initiated search propagates to URL', function() {
       toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
-      const searchField = /** @type {CrToolbarSearchFieldElement} */ (
-          toolbar.getSearchField());
+      const searchField =
+          /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
 
       settings.navigateTo(
           settings.routes.BASIC, /* dynamicParams */ null,
@@ -147,8 +148,8 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
 
     test('whitespace only search query is ignored', function() {
       toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
-      const searchField = /** @type {CrToolbarSearchFieldElement} */ (
-          toolbar.getSearchField());
+      const searchField =
+          /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
       searchField.setValue('    ');
       let urlParams = settings.getQueryParameters();
       assertFalse(urlParams.has('search'));

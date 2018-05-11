@@ -71,7 +71,9 @@ cr.define('settings_main_page', function() {
       document.body.appendChild(settingsMain);
     });
 
-    teardown(function() { settingsMain.remove(); });
+    teardown(function() {
+      settingsMain.remove();
+    });
 
     test('searchContents() triggers SearchManager', function() {
       Polymer.dom.flush();
@@ -80,25 +82,31 @@ cr.define('settings_main_page', function() {
       const expectedQuery2 = 'bar';
       const expectedQuery3 = '';
 
-      return settingsMain.searchContents(expectedQuery1).then(function() {
-        return searchManager.whenCalled('search');
-      }).then(function(query) {
-        assertEquals(expectedQuery1, query);
+      return settingsMain.searchContents(expectedQuery1)
+          .then(function() {
+            return searchManager.whenCalled('search');
+          })
+          .then(function(query) {
+            assertEquals(expectedQuery1, query);
 
-        searchManager.resetResolver('search');
-        return settingsMain.searchContents(expectedQuery2);
-      }).then(function() {
-        return searchManager.whenCalled('search');
-      }).then(function(query) {
-        assertEquals(expectedQuery2, query);
+            searchManager.resetResolver('search');
+            return settingsMain.searchContents(expectedQuery2);
+          })
+          .then(function() {
+            return searchManager.whenCalled('search');
+          })
+          .then(function(query) {
+            assertEquals(expectedQuery2, query);
 
-        searchManager.resetResolver('search');
-        return settingsMain.searchContents(expectedQuery3);
-      }).then(function() {
-        return searchManager.whenCalled('search');
-      }).then(function(query) {
-        assertEquals(expectedQuery3, query);
-      });
+            searchManager.resetResolver('search');
+            return settingsMain.searchContents(expectedQuery3);
+          })
+          .then(function() {
+            return searchManager.whenCalled('search');
+          })
+          .then(function(query) {
+            assertEquals(expectedQuery3, query);
+          });
     });
 
     /** @return {!HTMLElement} */
@@ -132,15 +140,17 @@ cr.define('settings_main_page', function() {
       assertToggleContainerVisible(true);
 
       searchManager.setMatchesFound(false);
-      return settingsMain.searchContents('Query1').then(function() {
-        assertFalse(noSearchResults.hidden);
-        assertToggleContainerVisible(false);
+      return settingsMain.searchContents('Query1')
+          .then(function() {
+            assertFalse(noSearchResults.hidden);
+            assertToggleContainerVisible(false);
 
-        searchManager.setMatchesFound(true);
-        return settingsMain.searchContents('Query2');
-      }).then(function() {
-        assertTrue(noSearchResults.hidden);
-      });
+            searchManager.setMatchesFound(true);
+            return settingsMain.searchContents('Query2');
+          })
+          .then(function() {
+            assertTrue(noSearchResults.hidden);
+          });
     });
 
     // Ensure that when the user clears the search box, the "no results" page
@@ -174,12 +184,12 @@ cr.define('settings_main_page', function() {
       assertEquals(
           expectedBasic, getComputedStyle(page.$$('#basicPage')).display);
 
-      return page.$$('#advancedPageTemplate').get().then(
-          function(advancedPage) {
+      return page.$$('#advancedPageTemplate')
+          .get()
+          .then(function(advancedPage) {
             assertEquals(
-                expectedAdvanced,
-                getComputedStyle(advancedPage).display);
-      });
+                expectedAdvanced, getComputedStyle(advancedPage).display);
+          });
     }
 
     // TODO(michaelpg): It would be better not to drill into
@@ -251,13 +261,15 @@ cr.define('settings_main_page', function() {
 
       const basicPage = settingsMain.$$('settings-basic-page');
       let advancedPage = null;
-      return basicPage.$$('#advancedPageTemplate').get().then(
-          function(advanced) {
+      return basicPage.$$('#advancedPageTemplate')
+          .get()
+          .then(function(advanced) {
             advancedPage = advanced;
             return assertPageVisibility('block', 'block');
-          }).then(function() {
-            const whenHidden = test_util.whenAttributeIs(
-                advancedPage, 'hidden', '');
+          })
+          .then(function() {
+            const whenHidden =
+                test_util.whenAttributeIs(advancedPage, 'hidden', '');
 
             const advancedToggle =
                 getToggleContainer().querySelector('#advancedToggle');
@@ -265,7 +277,8 @@ cr.define('settings_main_page', function() {
             MockInteractions.tap(advancedToggle);
 
             return whenHidden;
-          }).then(function() {
+          })
+          .then(function() {
             return assertPageVisibility('block', 'none');
           });
     });

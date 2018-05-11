@@ -36,8 +36,7 @@ TEST_F('SettingsIdleLoadBrowserTest', 'All', function() {
   // Register mocha tests.
   suite('Settings idle load tests', function() {
     setup(function() {
-      const template =
-          '<template is="settings-idle-load" id="idleTemplate" '+
+      const template = '<template is="settings-idle-load" id="idleTemplate" ' +
           '    url="chrome://resources/html/polymer.html">' +
           '  <div></div>' +
           '</template>';
@@ -48,8 +47,9 @@ TEST_F('SettingsIdleLoadBrowserTest', 'All', function() {
 
     test('stamps after get()', function() {
       // Calling get() will force stamping without waiting for idle time.
-      return document.getElementById('idleTemplate').get().then(
-          function(inner) {
+      return document.getElementById('idleTemplate')
+          .get()
+          .then(function(inner) {
             assertEquals('DIV', inner.nodeName);
             assertEquals(inner, document.body.querySelector('div'));
           });

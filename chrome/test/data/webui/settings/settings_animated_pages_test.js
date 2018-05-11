@@ -23,7 +23,9 @@ suite('settings-animated-pages', function() {
 
     const trigger = document.body.querySelector('#subpage-trigger');
     assertTrue(!!trigger);
-    trigger.addEventListener('focus', function() { done(); });
+    trigger.addEventListener('focus', function() {
+      done();
+    });
 
     // Trigger subpage exit navigation.
     settings.navigateTo(settings.routes.BASIC);

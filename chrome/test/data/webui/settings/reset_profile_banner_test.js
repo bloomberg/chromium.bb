@@ -15,7 +15,9 @@ suite('BannerTests', function() {
     assertTrue(resetBanner.$.dialog.open);
   });
 
-  teardown(function() { resetBanner.remove(); });
+  teardown(function() {
+    resetBanner.remove();
+  });
 
   // Tests that the reset profile banner navigates to the Reset profile dialog
   // URL when the "reset all settings" button is clicked.

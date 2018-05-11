@@ -44,7 +44,7 @@ suite('extension controlled indicator', function() {
     assertTrue(labelLink.href.includes(indicator.extensionId));
 
     indicator.extensionId = 'dpjamkmjmigaoobjbekmfgabipmfilij';
-    indicator.extensionName = "A Slightly Less Good Name (Can't Beat That ^)";
+    indicator.extensionName = 'A Slightly Less Good Name (Can\'t Beat That ^)';
     Polymer.dom.flush();
 
     imgSrc = indicator.$$('img').src;
@@ -61,8 +61,8 @@ suite('extension controlled indicator', function() {
     const disableButton = indicator.$$('paper-button');
     assertTrue(!!disableButton);
     MockInteractions.tap(disableButton);
-    return browserProxy.whenCalled('disableExtension').then(
-        function (extensionId) {
+    return browserProxy.whenCalled('disableExtension')
+        .then(function(extensionId) {
           assertEquals(extensionId, indicator.extensionId);
         });
   });

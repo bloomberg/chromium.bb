@@ -15,7 +15,9 @@ cr.define('settings_menu', function() {
       document.body.appendChild(settingsMenu);
     });
 
-    teardown(function() { settingsMenu.remove(); });
+    teardown(function() {
+      settingsMenu.remove();
+    });
 
     test('advancedOpenedBinding', function() {
       assertFalse(settingsMenu.advancedOpened);
@@ -70,8 +72,7 @@ cr.define('settings_menu', function() {
       const urlParams = new URLSearchParams('search=foo');
       settings.navigateTo(settings.routes.BASIC, urlParams);
       assertEquals(
-          urlParams.toString(),
-          settings.getQueryParameters().toString());
+          urlParams.toString(), settings.getQueryParameters().toString());
       MockInteractions.tap(settingsMenu.$.people);
       assertEquals('', settings.getQueryParameters().toString());
     });
@@ -85,7 +86,9 @@ cr.define('settings_menu', function() {
       document.body.appendChild(settingsMenu);
     });
 
-    teardown(function() { settingsMenu.remove(); });
+    teardown(function() {
+      settingsMenu.remove();
+    });
 
     test('openResetSection', function() {
       const selector = settingsMenu.$.subMenu;

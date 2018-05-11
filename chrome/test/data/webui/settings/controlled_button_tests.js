@@ -14,16 +14,20 @@ suite('controlled button', function() {
   };
 
   /** @type {!chrome.settingsPrivate.PrefObject} */
-  const extensionControlledPref = Object.assign({
-    controlledBy: chrome.settingsPrivate.ControlledBy.EXTENSION,
-    enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
-  }, uncontrolledPref);
+  const extensionControlledPref = Object.assign(
+      {
+        controlledBy: chrome.settingsPrivate.ControlledBy.EXTENSION,
+        enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
+      },
+      uncontrolledPref);
 
   /** @type {!chrome.settingsPrivate.PrefObject} */
-  const policyControlledPref = Object.assign({
-    controlledBy: chrome.settingsPrivate.ControlledBy.USER_POLICY,
-    enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
-  }, uncontrolledPref);
+  const policyControlledPref = Object.assign(
+      {
+        controlledBy: chrome.settingsPrivate.ControlledBy.USER_POLICY,
+        enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
+      },
+      uncontrolledPref);
 
   setup(function() {
     PolymerTest.clearBody();

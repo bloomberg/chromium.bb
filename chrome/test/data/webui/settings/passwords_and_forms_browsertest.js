@@ -12,8 +12,9 @@ GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 
 // Fake data generator.
-GEN_INCLUDE([ROOT_PATH +
-    'chrome/test/data/webui/settings/passwords_and_autofill_fake_data.js']);
+GEN_INCLUDE(
+    [ROOT_PATH +
+     'chrome/test/data/webui/settings/passwords_and_autofill_fake_data.js']);
 
 /**
  * @constructor
@@ -183,10 +184,8 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
       return createPrefs(true, true).then(function(prefs) {
         const element = createPasswordsAndFormsElement(prefs);
 
-        const list = [
-          FakeDataMaker.passwordEntry(),
-          FakeDataMaker.passwordEntry()
-        ];
+        const list =
+            [FakeDataMaker.passwordEntry(), FakeDataMaker.passwordEntry()];
 
         passwordManager.lastCallback.addSavedPasswordListChangedListener(list);
         Polymer.dom.flush();
@@ -209,8 +208,8 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
       return createPrefs(true, true).then(function(prefs) {
         const element = createPasswordsAndFormsElement(prefs);
 
-        const list = [FakeDataMaker.exceptionEntry(),
-        FakeDataMaker.exceptionEntry()];
+        const list =
+            [FakeDataMaker.exceptionEntry(), FakeDataMaker.exceptionEntry()];
         passwordManager.lastCallback.addExceptionListChangedListener(list);
         Polymer.dom.flush();
 
@@ -229,8 +228,8 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
       return createPrefs(true, true).then(function(prefs) {
         const element = createPasswordsAndFormsElement(prefs);
 
-        const list = [
-            FakeDataMaker.addressEntry(), FakeDataMaker.addressEntry()];
+        const list =
+            [FakeDataMaker.addressEntry(), FakeDataMaker.addressEntry()];
         autofillManager.lastCallback.addAddressListChangedListener(list);
         Polymer.dom.flush();
 
@@ -249,8 +248,8 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
       return createPrefs(true, true).then(function(prefs) {
         const element = createPasswordsAndFormsElement(prefs);
 
-        const list = [FakeDataMaker.creditCardEntry(),
-        FakeDataMaker.creditCardEntry()];
+        const list =
+            [FakeDataMaker.creditCardEntry(), FakeDataMaker.creditCardEntry()];
         autofillManager.lastCallback.addCreditCardListChangedListener(list);
         Polymer.dom.flush();
 

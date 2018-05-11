@@ -16,7 +16,9 @@ suite('metrics reporting', function() {
     page = document.createElement('settings-privacy-page');
   });
 
-  teardown(function() { page.remove(); });
+  teardown(function() {
+    page.remove();
+  });
 
   test('changes to whether metrics reporting is enabled/managed', function() {
     let toggled;

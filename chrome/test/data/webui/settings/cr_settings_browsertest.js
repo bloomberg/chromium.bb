@@ -1954,4 +1954,3 @@ TEST_F('CrSettingsDisplaySizeSliderTest', 'All', function() {
   mocha.run();
 });
 GEN('#endif  // defined(OS_CHROMEOS)');
-

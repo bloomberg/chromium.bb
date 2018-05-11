@@ -222,12 +222,12 @@ suite('CupsAddPrinterDialogTests', function() {
     assertTrue(!!dialog.$$('add-printer-configuring-dialog'));
 
     // Upon rejection, show model.
-    return cupsPrintersBrowserProxy.
-        whenCalled('getCupsPrinterManufacturersList').
-        then(function() {
+    return cupsPrintersBrowserProxy
+        .whenCalled('getCupsPrinterManufacturersList')
+        .then(function() {
           return PolymerTest.flushTasks();
-        }).
-        then(function() {
+        })
+        .then(function() {
           // Showing model selection.
           assertFalse(!!dialog.$$('add-printer-configuring-dialog'));
           assertTrue(!!dialog.$$('add-printer-manufacturer-model-dialog'));

@@ -157,7 +157,8 @@ suite('SiteDetails', function() {
           [optionalSiteDetailsContentSettingsTypes[contentSetting]] = true;
       loadTimeData.overrideValues(loadTimeDataOverride);
       testElement = createSiteDetails('https://foo.com:443');
-      assertEquals(numContentSettings+1, testElement.getCategoryList_().length);
+      assertEquals(
+          numContentSettings + 1, testElement.getCategoryList_().length);
 
       // Check for setting = off at the end to ensure that the setting does
       // not carry over for the next iteration.

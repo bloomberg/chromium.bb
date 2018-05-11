@@ -54,10 +54,10 @@ cr.define('settings-languages', function() {
 
     test('languages model', function() {
       const languageSettingsPrivate = browserProxy.getLanguageSettingsPrivate();
-      for (let i = 0; i < languageSettingsPrivate.languages.length;
-           i++) {
-        assertEquals(languageSettingsPrivate.languages[i].code,
-                     languageHelper.languages.supported[i].code);
+      for (let i = 0; i < languageSettingsPrivate.languages.length; i++) {
+        assertEquals(
+            languageSettingsPrivate.languages[i].code,
+            languageHelper.languages.supported[i].code);
       }
       assertLanguageOrder(['en-US', 'sw']);
       assertEquals('en', languageHelper.languages.translateTarget);
@@ -138,10 +138,10 @@ cr.define('settings-languages', function() {
 
         // The US Swahili keyboard should still be enabled, because it supports
         // English which is still enabled.
-        assertTrue(languageHelper.languages.inputMethods.enabled.some(
-              function(inputMethod) {
-                return inputMethod.id == swUS;
-              }));
+        assertTrue(languageHelper.languages.inputMethods.enabled.some(function(
+            inputMethod) {
+          return inputMethod.id == swUS;
+        }));
       });
     }
   });

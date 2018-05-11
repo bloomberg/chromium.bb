@@ -4,14 +4,14 @@
 
 cr.define('settings_search_page', function() {
   function generateSearchEngineInfo() {
-    const searchEngines0 = settings_search.createSampleSearchEngine(
-        true, false, false);
+    const searchEngines0 =
+        settings_search.createSampleSearchEngine(true, false, false);
     searchEngines0.default = true;
-    const searchEngines1 = settings_search.createSampleSearchEngine(
-        true, false, false);
+    const searchEngines1 =
+        settings_search.createSampleSearchEngine(true, false, false);
     searchEngines1.default = false;
-    const searchEngines2 = settings_search.createSampleSearchEngine(
-        true, false, false);
+    const searchEngines2 =
+        settings_search.createSampleSearchEngine(true, false, false);
     searchEngines2.default = false;
 
     return {
@@ -41,41 +41,46 @@ cr.define('settings_search_page', function() {
       document.body.appendChild(page);
     });
 
-    teardown(function() { page.remove(); });
+    teardown(function() {
+      page.remove();
+    });
 
     // Tests that the page is querying and displaying search engine info on
     // startup.
     test('Initialization', function() {
       const selectElement = page.$$('select');
 
-      return browserProxy.whenCalled('getSearchEnginesList').then(function() {
-        Polymer.dom.flush();
-        assertEquals(0, selectElement.selectedIndex);
+      return browserProxy.whenCalled('getSearchEnginesList')
+          .then(function() {
+            Polymer.dom.flush();
+            assertEquals(0, selectElement.selectedIndex);
 
-        // Simulate a user initiated change of the default search engine.
-        selectElement.selectedIndex = 1;
-        selectElement.dispatchEvent(new CustomEvent('change'));
-        return browserProxy.whenCalled('setDefaultSearchEngine');
-      }).then(function() {
-        assertEquals(1, selectElement.selectedIndex);
+            // Simulate a user initiated change of the default search engine.
+            selectElement.selectedIndex = 1;
+            selectElement.dispatchEvent(new CustomEvent('change'));
+            return browserProxy.whenCalled('setDefaultSearchEngine');
+          })
+          .then(function() {
+            assertEquals(1, selectElement.selectedIndex);
 
-        // Simulate a change that happened in a different tab.
-        const searchEnginesInfo = generateSearchEngineInfo();
-        searchEnginesInfo.defaults[0].default = false;
-        searchEnginesInfo.defaults[1].default = false;
-        searchEnginesInfo.defaults[2].default = true;
+            // Simulate a change that happened in a different tab.
+            const searchEnginesInfo = generateSearchEngineInfo();
+            searchEnginesInfo.defaults[0].default = false;
+            searchEnginesInfo.defaults[1].default = false;
+            searchEnginesInfo.defaults[2].default = true;
 
-        browserProxy.resetResolver('setDefaultSearchEngine');
-        cr.webUIListenerCallback('search-engines-changed', searchEnginesInfo);
-        Polymer.dom.flush();
-        assertEquals(2, selectElement.selectedIndex);
+            browserProxy.resetResolver('setDefaultSearchEngine');
+            cr.webUIListenerCallback(
+                'search-engines-changed', searchEnginesInfo);
+            Polymer.dom.flush();
+            assertEquals(2, selectElement.selectedIndex);
 
-        browserProxy.whenCalled('setDefaultSearchEngine').then(function() {
-          // Since the change happened in a different tab, there should be no
-          // new call to |setDefaultSearchEngine|.
-          assertNotReached('Should not call setDefaultSearchEngine again');
-        });
-      });
+            browserProxy.whenCalled('setDefaultSearchEngine').then(function() {
+              // Since the change happened in a different tab, there should be
+              // no new call to |setDefaultSearchEngine|.
+              assertNotReached('Should not call setDefaultSearchEngine again');
+            });
+          });
     });
 
     test('ControlledByExtension', function() {

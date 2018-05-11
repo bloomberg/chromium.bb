@@ -70,7 +70,6 @@ cr.define('settings_search', function() {
     setSearchEnginesInfo(searchEnginesInfo) {
       this.searchEnginesInfo_ = searchEnginesInfo;
     }
-
   }
 
   /**
@@ -85,13 +84,13 @@ cr.define('settings_search', function() {
       canBeEdited: canBeEdited,
       canBeRemoved: canBeRemoved,
       default: false,
-      displayName: "Google",
-      iconURL: "http://www.google.com/favicon.ico",
+      displayName: 'Google',
+      iconURL: 'http://www.google.com/favicon.ico',
       isOmniboxExtension: false,
-      keyword: "google.com",
+      keyword: 'google.com',
       modelIndex: 0,
-      name: "Google",
-      url: "https://search.foo.com/search?p=%s",
+      name: 'Google',
+      url: 'https://search.foo.com/search?p=%s',
       urlLocked: false,
     };
   }

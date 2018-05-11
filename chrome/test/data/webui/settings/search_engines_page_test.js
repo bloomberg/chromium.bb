@@ -67,13 +67,15 @@ cr.define('settings_search_engines_page', function() {
         document.body.appendChild(dialog);
       });
 
-      teardown(function() { dialog.remove(); });
+      teardown(function() {
+        dialog.remove();
+      });
 
       // Tests that the dialog calls 'searchEngineEditStarted' and
       // 'searchEngineEditCancelled' when closed from the 'x' button.
       test('DialogOpenAndClose', function() {
-        return browserProxy.whenCalled('searchEngineEditStarted').then(
-            function() {
+        return browserProxy.whenCalled('searchEngineEditStarted')
+            .then(function() {
               MockInteractions.tap(dialog.$.dialog.getCloseButton());
               return browserProxy.whenCalled('searchEngineEditCancelled');
             });
@@ -82,8 +84,8 @@ cr.define('settings_search_engines_page', function() {
       // Tests that the dialog calls 'searchEngineEditStarted' and
       // 'searchEngineEditCancelled' when closed from the 'cancel' button.
       test('DialogOpenAndCancel', function() {
-        return browserProxy.whenCalled('searchEngineEditStarted').then(
-            function() {
+        return browserProxy.whenCalled('searchEngineEditStarted')
+            .then(function() {
               MockInteractions.tap(dialog.$.cancel);
               return browserProxy.whenCalled('searchEngineEditCancelled');
             });
@@ -186,7 +188,9 @@ cr.define('settings_search_engines_page', function() {
         document.body.appendChild(entry);
       });
 
-      teardown(function() { entry.remove(); });
+      teardown(function() {
+        entry.remove();
+      });
 
       // Test that the <search-engine-entry> is populated according to its
       // underlying SearchEngine model.
@@ -212,8 +216,8 @@ cr.define('settings_search_engines_page', function() {
         assertTrue(!!deleteButton);
         assertFalse(deleteButton.hidden);
         MockInteractions.tap(deleteButton);
-        return browserProxy.whenCalled('removeSearchEngine').then(
-            function(modelIndex) {
+        return browserProxy.whenCalled('removeSearchEngine')
+            .then(function(modelIndex) {
               assertFalse(menu.open);
               assertEquals(entry.engine.modelIndex, modelIndex);
             });
@@ -228,8 +232,8 @@ cr.define('settings_search_engines_page', function() {
         const makeDefaultButton = entry.$.makeDefault;
         assertTrue(!!makeDefaultButton);
         MockInteractions.tap(makeDefaultButton);
-        return browserProxy.whenCalled('setDefaultSearchEngine').then(
-            function(modelIndex) {
+        return browserProxy.whenCalled('setDefaultSearchEngine')
+            .then(function(modelIndex) {
               assertFalse(menu.open);
               assertEquals(entry.engine.modelIndex, modelIndex);
             });
@@ -333,29 +337,30 @@ cr.define('settings_search_engines_page', function() {
         return browserProxy.whenCalled('getSearchEnginesList');
       });
 
-      teardown(function() { page.remove(); });
+      teardown(function() {
+        page.remove();
+      });
 
       // Tests that the page is querying and displaying search engine info on
       // startup.
       test('Initialization', function() {
-        const searchEnginesLists = page.shadowRoot.
-            querySelectorAll('settings-search-engines-list');
+        const searchEnginesLists =
+            page.shadowRoot.querySelectorAll('settings-search-engines-list');
         assertEquals(2, searchEnginesLists.length);
 
         // Note: iron-list may create hidden children, so test the length
         // if IronList.items instead of the child nodes.
         Polymer.dom.flush();
         const defaultsList = searchEnginesLists[0];
-        const defaultsEntries = Polymer.dom(defaultsList.shadowRoot).
-            querySelector('iron-list').items;
-        assertEquals(
-            searchEnginesInfo.defaults.length, defaultsEntries.length);
+        const defaultsEntries = Polymer.dom(defaultsList.shadowRoot)
+                                    .querySelector('iron-list')
+                                    .items;
+        assertEquals(searchEnginesInfo.defaults.length, defaultsEntries.length);
 
         const othersList = searchEnginesLists[1];
-        const othersEntries = Polymer.dom(othersList.shadowRoot).
-            querySelector('iron-list').items;
-        assertEquals(
-            searchEnginesInfo.others.length, othersEntries.length);
+        const othersEntries =
+            Polymer.dom(othersList.shadowRoot).querySelector('iron-list').items;
+        assertEquals(searchEnginesInfo.others.length, othersEntries.length);
 
         // Ensure that the search engines have reverse alphabetical order in the
         // model.
@@ -366,8 +371,8 @@ cr.define('settings_search_engines_page', function() {
         assertEquals(searchEnginesInfo.others[1].name, othersEntries[0].name);
         assertEquals(searchEnginesInfo.others[0].name, othersEntries[1].name);
 
-        const extensionEntries = Polymer.dom(page.shadowRoot).
-            querySelector('iron-list').items;
+        const extensionEntries =
+            Polymer.dom(page.shadowRoot).querySelector('iron-list').items;
         assertEquals(
             searchEnginesInfo.extensions.length, extensionEntries.length);
       });
@@ -376,7 +381,9 @@ cr.define('settings_search_engines_page', function() {
       // expected.
       test('NoOtherSearchEnginesMessage', function() {
         cr.webUIListenerCallback('search-engines-changed', {
-          defaults: [], others: [], extensions: [],
+          defaults: [],
+          others: [],
+          extensions: [],
         });
 
         const message = page.root.querySelector('#noOtherEngines');
@@ -431,15 +438,19 @@ cr.define('settings_search_engines_page', function() {
         function getListItems(listIndex) {
           const ironList = listIndex == 2 /* extensions */ ?
               page.shadowRoot.querySelector('iron-list') :
-              page.shadowRoot.querySelectorAll(
-                  'settings-search-engines-list')[listIndex].shadowRoot.
-                  querySelector('iron-list');
+              page.shadowRoot
+                  .querySelectorAll('settings-search-engines-list')[listIndex]
+                  .shadowRoot.querySelector('iron-list');
 
           return ironList.items;
         }
 
-        function getDefaultEntries() { return getListItems(0); }
-        function getOtherEntries() { return getListItems(1); }
+        function getDefaultEntries() {
+          return getListItems(0);
+        }
+        function getOtherEntries() {
+          return getListItems(1);
+        }
 
         function assertSearchResults(
             defaultsCount, othersCount, extensionsCount) {
@@ -508,14 +519,16 @@ cr.define('settings_search_engines_page', function() {
         MockInteractions.tap(entry.$$('button'));
       });
 
-      teardown(function() { entry.remove(); });
+      teardown(function() {
+        entry.remove();
+      });
 
       test('Manage', function() {
         const manageButton = entry.$.manage;
         assertTrue(!!manageButton);
         MockInteractions.tap(manageButton);
-        return browserProxy.whenCalled('manageExtension').then(
-            function(extensionId) {
+        return browserProxy.whenCalled('manageExtension')
+            .then(function(extensionId) {
               assertEquals(entry.engine.extension.id, extensionId);
             });
       });
@@ -524,8 +537,8 @@ cr.define('settings_search_engines_page', function() {
         const disableButton = entry.$.disable;
         assertTrue(!!disableButton);
         MockInteractions.tap(disableButton);
-        return browserProxy.whenCalled('disableExtension').then(
-            function(extensionId) {
+        return browserProxy.whenCalled('disableExtension')
+            .then(function(extensionId) {
               assertEquals(entry.engine.extension.id, extensionId);
             });
       });

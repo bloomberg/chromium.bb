@@ -26,7 +26,7 @@ SettingsAccessibilityTest.axeOptions = {
     // Disable 'skip-link' check since there are few tab stops before the main
     // content.
     'skip-link': {enabled: false},
-  // TODO(crbug.com/761461): enable after addressing flaky tests.
+    // TODO(crbug.com/761461): enable after addressing flaky tests.
     'color-contrast': {enabled: false},
   }
 };
