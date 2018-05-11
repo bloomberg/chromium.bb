@@ -169,12 +169,22 @@ void AssistantManagerServiceImpl::OnShowHtml(const std::string& html) {
 }
 
 void AssistantManagerServiceImpl::OnShowSuggestions(
-    const std::vector<std::string>& suggestions) {
+    const std::vector<action::Suggestion>& suggestions) {
+  // Convert to mojom struct for IPC.
+  std::vector<mojom::AssistantSuggestionPtr> ptrs;
+  for (const action::Suggestion& suggestion : suggestions) {
+    mojom::AssistantSuggestionPtr ptr = mojom::AssistantSuggestion::New();
+    ptr->text = suggestion.text;
+    ptr->icon_url = GURL(suggestion.icon_url);
+    ptr->action_url = GURL(suggestion.action_url);
+    ptrs.push_back(std::move(ptr));
+  }
+
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &AssistantManagerServiceImpl::OnShowSuggestionsOnMainThread,
-          weak_factory_.GetWeakPtr(), suggestions));
+          weak_factory_.GetWeakPtr(), std::move(ptrs)));
 }
 
 void AssistantManagerServiceImpl::OnShowText(const std::string& text) {
@@ -350,9 +360,10 @@ void AssistantManagerServiceImpl::OnShowHtmlOnMainThread(
 }
 
 void AssistantManagerServiceImpl::OnShowSuggestionsOnMainThread(
-    const std::vector<std::string>& suggestions) {
-  subscribers_.ForAllPtrs(
-      [&suggestions](auto* ptr) { ptr->OnSuggestionsResponse(suggestions); });
+    const std::vector<mojom::AssistantSuggestionPtr>& suggestions) {
+  subscribers_.ForAllPtrs([&suggestions](auto* ptr) {
+    ptr->OnSuggestionsResponse(mojo::Clone(suggestions));
+  });
 }
 
 void AssistantManagerServiceImpl::OnShowTextOnMainThread(

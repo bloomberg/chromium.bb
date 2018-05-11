@@ -67,7 +67,8 @@ class AssistantManagerServiceImpl
 
   // AssistantActionObserver overrides:
   void OnShowHtml(const std::string& html) override;
-  void OnShowSuggestions(const std::vector<std::string>& suggestions) override;
+  void OnShowSuggestions(
+      const std::vector<action::Suggestion>& suggestions) override;
   void OnShowText(const std::string& text) override;
   void OnOpenUrl(const std::string& url) override;
 
@@ -109,7 +110,7 @@ class AssistantManagerServiceImpl
       assistant_client::ConversationStateListener::Resolution resolution);
   void OnShowHtmlOnMainThread(const std::string& html);
   void OnShowSuggestionsOnMainThread(
-      const std::vector<std::string>& suggestions);
+      const std::vector<mojom::AssistantSuggestionPtr>& suggestions);
   void OnShowTextOnMainThread(const std::string& text);
   void OnOpenUrlOnMainThread(const std::string& url);
   void OnRecognitionStateChangedOnMainThread(

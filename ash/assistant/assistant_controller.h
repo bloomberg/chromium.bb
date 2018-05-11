@@ -33,6 +33,11 @@ class AssistantController
       public AssistantInteractionModelObserver,
       public HighlighterController::Observer {
  public:
+  using AssistantSuggestionPtr =
+      chromeos::assistant::mojom::AssistantSuggestionPtr;
+  using AssistantInteractionResolution =
+      chromeos::assistant::mojom::AssistantInteractionResolution;
+
   AssistantController();
   ~AssistantController() override;
 
@@ -88,10 +93,10 @@ class AssistantController
   // chromeos::assistant::mojom::AssistantEventSubscriber:
   void OnInteractionStarted() override;
   void OnInteractionFinished(
-      chromeos::assistant::mojom::AssistantInteractionResolution resolution)
-      override;
+      AssistantInteractionResolution resolution) override;
   void OnHtmlResponse(const std::string& response) override;
-  void OnSuggestionsResponse(const std::vector<std::string>& response) override;
+  void OnSuggestionsResponse(
+      std::vector<AssistantSuggestionPtr> response) override;
   void OnTextResponse(const std::string& response) override;
   void OnOpenUrlResponse(const GURL& url) override;
   void OnSpeechRecognitionStarted() override;

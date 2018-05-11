@@ -80,10 +80,15 @@ void AssistantInteractionModel::ClearQuery() {
 }
 
 void AssistantInteractionModel::AddSuggestions(
-    const std::vector<std::string>& suggestions) {
-  suggestions_list_.insert(suggestions_list_.end(), suggestions.begin(),
-                           suggestions.end());
-  NotifySuggestionsAdded(suggestions);
+    std::vector<AssistantSuggestionPtr> suggestions) {
+  std::vector<AssistantSuggestion*> ptrs;
+
+  for (AssistantSuggestionPtr& suggestion : suggestions) {
+    suggestions_list_.push_back(std::move(suggestion));
+    ptrs.push_back(suggestions_list_.back().get());
+  }
+
+  NotifySuggestionsAdded(ptrs);
 }
 
 void AssistantInteractionModel::ClearSuggestions() {
@@ -128,7 +133,7 @@ void AssistantInteractionModel::NotifyQueryCleared() {
 }
 
 void AssistantInteractionModel::NotifySuggestionsAdded(
-    const std::vector<std::string>& suggestions) {
+    const std::vector<AssistantSuggestion*> suggestions) {
   for (AssistantInteractionModelObserver& observer : observers_)
     observer.OnSuggestionsAdded(suggestions);
 }

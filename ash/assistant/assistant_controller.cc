@@ -140,7 +140,7 @@ void AssistantController::OnInteractionStarted() {
 }
 
 void AssistantController::OnInteractionFinished(
-    chromeos::assistant::mojom::AssistantInteractionResolution resolution) {}
+    AssistantInteractionResolution resolution) {}
 
 void AssistantController::OnInteractionDismissed() {
   assistant_interaction_model_.SetInteractionState(InteractionState::kInactive);
@@ -206,8 +206,8 @@ void AssistantController::OnSuggestionChipPressed(const std::string& text) {
 }
 
 void AssistantController::OnSuggestionsResponse(
-    const std::vector<std::string>& response) {
-  assistant_interaction_model_.AddSuggestions(response);
+    std::vector<AssistantSuggestionPtr> response) {
+  assistant_interaction_model_.AddSuggestions(std::move(response));
 }
 
 void AssistantController::OnTextResponse(const std::string& response) {

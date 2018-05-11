@@ -10,6 +10,14 @@
 
 #include "base/macros.h"
 
+namespace chromeos {
+namespace assistant {
+namespace mojom {
+class AssistantSuggestion;
+}  // namespace mojom
+}  // namespace assistant
+}  // namespace chromeos
+
 namespace ash {
 
 class AssistantUiElement;
@@ -22,6 +30,8 @@ struct Query;
 // interaction.
 class AssistantInteractionModelObserver {
  public:
+  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
+
   // Invoked when the interaction state is changed.
   virtual void OnInteractionStateChanged(InteractionState interaction_state) {}
 
@@ -45,8 +55,8 @@ class AssistantInteractionModelObserver {
 
   // Invoked when the specified |suggestions| are added to the associated
   // interaction.
-  virtual void OnSuggestionsAdded(const std::vector<std::string>& suggestions) {
-  }
+  virtual void OnSuggestionsAdded(
+      const std::vector<AssistantSuggestion*>& suggestions) {}
 
   // Invoked when all suggestions associated with the interaction are cleared.
   virtual void OnSuggestionsCleared() {}
