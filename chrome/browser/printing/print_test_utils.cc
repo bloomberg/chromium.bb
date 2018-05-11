@@ -45,6 +45,7 @@ base::Value GetPrintTicket(PrinterType type, bool cloud) {
   ticket.SetKey(kSettingPrintWithExtension, base::Value(is_extension_printer));
   ticket.SetKey(kSettingRasterizePdf, base::Value(false));
   ticket.SetKey(kSettingScaleFactor, base::Value(100));
+  ticket.SetKey(kSettingPagesPerSheet, base::Value(1));
   ticket.SetKey(kSettingDpiHorizontal, base::Value(kTestPrinterDpi));
   ticket.SetKey(kSettingDpiVertical, base::Value(kTestPrinterDpi));
   ticket.SetKey(kSettingDeviceName, base::Value(kDummyPrinterName));

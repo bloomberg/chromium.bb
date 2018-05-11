@@ -105,8 +105,8 @@ Polymer({
         'settings.layout.value, settings.margins.value, ' +
         'settings.customMargins.value, settings.mediaSize.value, ' +
         'settings.ranges.value, settings.selectionOnly.value, ' +
-        'settings.scaling.value, settings.rasterize.value, destination.id, ' +
-        'destination.capabilities)',
+        'settings.scaling.value, settings.pagesPerSheet.value, ' +
+        'settings.rasterize.value, destination.id, destination.capabilities)',
     'pluginOrDocumentStatusChanged_(pluginLoaded_, documentReady_)',
   ],
 
@@ -605,6 +605,7 @@ Polymer({
           /** @type {boolean} */ (this.getSettingValue('color'))),
       headerFooterEnabled: this.getSettingValue('headerFooter'),
       marginsType: this.getSettingValue('margins'),
+      pagesPerSheet: this.getSettingValue('pagesPerSheet'),
       isFirstRequest: this.inFlightRequestId_ == 0,
       requestID: this.inFlightRequestId_,
       previewModifiable: this.documentInfo.isModifiable,

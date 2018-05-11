@@ -37,6 +37,7 @@ print_preview_new.Setting;
  *   vendorItems: !print_preview_new.Setting,
  *   otherOptions: !print_preview_new.Setting,
  *   ranges: !print_preview_new.Setting,
+ *   pagesPerSheet: !print_preview_new.Setting,
  * }}
  */
 print_preview_new.Settings;

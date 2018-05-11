@@ -192,6 +192,9 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
                              IDS_PRINT_PREVIEW_DESTINATION_LABEL);
   source->AddLocalizedString("copiesLabel", IDS_PRINT_PREVIEW_COPIES_LABEL);
   source->AddLocalizedString("scalingLabel", IDS_PRINT_PREVIEW_SCALING_LABEL);
+  source->AddLocalizedString("pagesPerSheetLabel",
+                             IDS_PRINT_PREVIEW_PAGES_PER_SHEET_LABEL);
+
   source->AddLocalizedString("examplePageRangeText",
                              IDS_PRINT_PREVIEW_EXAMPLE_PAGE_RANGE_TEXT);
   source->AddLocalizedString("layoutLabel", IDS_PRINT_PREVIEW_LAYOUT_LABEL);
@@ -420,6 +423,10 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
   enterprise_managed = base::win::IsEnterpriseManaged();
 #endif
   source->AddBoolean("isEnterpriseManaged", enterprise_managed);
+
+  bool nup_printing_enabled =
+      base::FeatureList::IsEnabled(features::kNupPrinting);
+  source->AddBoolean("pagesPerSheetEnabled", nup_printing_enabled);
 }
 
 void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {

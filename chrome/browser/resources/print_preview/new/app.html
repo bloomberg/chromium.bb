@@ -24,6 +24,7 @@
 <link rel="import" href="media_size_settings.html">
 <link rel="import" href="margins_settings.html">
 <link rel="import" href="dpi_settings.html">
+<link rel="import" href="pages_per_sheet_settings.html">
 <link rel="import" href="scaling_settings.html">
 <link rel="import" href="other_options_settings.html">
 <link rel="import" href="advanced_options_settings.html">
@@ -119,6 +120,13 @@
             class="settings-section" disabled="[[controlsDisabled_]]"
             available="[[settings.dpi.available]]" collapsible>
         </print-preview-dpi-settings>
+        <template is="dom-if" if="[[showPagesPerSheet_]]">
+          <print-preview-pages-per-sheet-settings settings="{{settings}}"
+              class="settings-section" disabled="[[controlsDisabled_]]"
+              available="[[settings.pagesPerSheet.available]]"
+              collapsible hidden>
+          </print-preview-pages-per-sheet-settings>
+        </template>
         <print-preview-scaling-settings settings="{{settings}}"
             document-info="[[documentInfo_]]" class="settings-section"
             disabled="[[controlsDisabled_]]"

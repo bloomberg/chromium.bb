@@ -37356,6 +37356,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="17" label="DISTILL_PAGE_UNUSED"/>
   <int value="18" label="SCALING"/>
   <int value="19" label="PRINT_AS_IMAGE"/>
+  <int value="20" label="PAGES_PER_SHEET"/>
 </enum>
 
 <enum name="PrivetNotificationsEvent">

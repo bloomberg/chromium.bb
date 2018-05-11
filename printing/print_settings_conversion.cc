@@ -217,7 +217,8 @@ bool PrintSettingsFromJobSettings(const base::DictionaryValue& job_settings,
 #endif
   }
 
-  // TODO(xlou): Add logic to get |num_pages_per_sheet| from |job_settings|.
+  // TODO(crbug.com/842000): |kSettingPagesPerSheet| should be required.
+  job_settings.GetInteger(kSettingPagesPerSheet, &num_pages_per_sheet);
   settings->set_num_pages_per_sheet(num_pages_per_sheet);
 
   return true;
@@ -251,6 +252,8 @@ void PrintSettingsToJobSettingsDebug(const PrintSettings& settings,
   job_settings->SetInteger(kSettingDuplexMode, settings.duplex_mode());
   job_settings->SetBoolean(kSettingLandscape, settings.landscape());
   job_settings->SetString(kSettingDeviceName, settings.device_name());
+  job_settings->SetInteger(kSettingPagesPerSheet,
+                           settings.num_pages_per_sheet());
 
   // Following values are not read form JSON by InitSettings, so do not have
   // common public constants. So just serialize in "debug" section.
