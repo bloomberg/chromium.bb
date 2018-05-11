@@ -6,9 +6,9 @@ Tree link: https://github.com/PolymerElements/font-roboto/tree/v1.0.1
 
 Name: iron-a11y-announcer
 Repository: https://github.com/PolymerElements/iron-a11y-announcer.git
-Tree: v1.0.5
-Revision: 2432d39a1693ccd728cbe7eb55810063737d3403
-Tree link: https://github.com/PolymerElements/iron-a11y-announcer/tree/v1.0.5
+Tree: v2.1.0
+Revision: 7e2c529fcb96582cb8c13905896fcf8496763966
+Tree link: https://github.com/PolymerElements/iron-a11y-announcer/tree/v2.1.0
 
 Name: iron-a11y-keys
 Repository: https://github.com/PolymerElements/iron-a11y-keys.git
@@ -18,9 +18,9 @@ Tree link: https://github.com/PolymerElements/iron-a11y-keys/tree/v2.0.0
 
 Name: iron-a11y-keys-behavior
 Repository: https://github.com/PolymerElements/iron-a11y-keys-behavior.git
-Tree: v1.1.9
-Revision: 26243e0f8687b8ea3d95eed3cefb7661a388dbce
-Tree link: https://github.com/PolymerElements/iron-a11y-keys-behavior/tree/v1.1.9
+Tree: v2.1.1
+Revision: b7e78a4a8bdd857780ecd8b54852bb27dbf8f216
+Tree link: https://github.com/PolymerElements/iron-a11y-keys-behavior/tree/v2.1.1
 
 Name: iron-autogrow-textarea
 Repository: https://github.com/PolymerElements/iron-autogrow-textarea.git
@@ -174,9 +174,9 @@ Tree link: https://github.com/PolymerElements/iron-test-helpers/tree/v2.0.0
 
 Name: iron-validatable-behavior
 Repository: https://github.com/PolymerElements/iron-validatable-behavior.git
-Tree: v1.1.1
-Revision: 2ecd3f411e298733b29f1660f75cb9b03ea31d77
-Tree link: https://github.com/PolymerElements/iron-validatable-behavior/tree/v1.1.1
+Tree: v2.1.0
+Revision: 4b6c1c53e44a3bbb31fcfd14ede2234645518c96
+Tree link: https://github.com/PolymerElements/iron-validatable-behavior/tree/v2.1.0
 
 Name: neon-animation
 Repository: https://github.com/PolymerElements/neon-animation.git
