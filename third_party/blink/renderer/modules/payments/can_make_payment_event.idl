@@ -9,7 +9,7 @@
     Constructor(DOMString type, CanMakePaymentEventInit eventInitDict),
     Exposed=ServiceWorker
 ] interface CanMakePaymentEvent : ExtendableEvent {
-    readonly attribute USVString topLevelOrigin;
+    readonly attribute USVString topOrigin;
     readonly attribute USVString paymentRequestOrigin;
     readonly attribute FrozenArray<PaymentMethodData> methodData;
     readonly attribute FrozenArray<PaymentDetailsModifier> modifiers;

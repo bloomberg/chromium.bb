@@ -32,7 +32,7 @@ static WebPaymentMethodData CreateWebPaymentMethodDataForTest() {
 
 static WebCanMakePaymentEventData CreateWebCanMakePaymentEventDataForTest() {
   WebCanMakePaymentEventData web_data;
-  web_data.top_level_origin = WebString::FromUTF8("https://example.com");
+  web_data.top_origin = WebString::FromUTF8("https://example.com");
   web_data.payment_request_origin = WebString::FromUTF8("https://example.com");
   Vector<WebPaymentMethodData> method_data;
   method_data.push_back(CreateWebPaymentMethodDataForTest());
@@ -42,7 +42,7 @@ static WebCanMakePaymentEventData CreateWebCanMakePaymentEventDataForTest() {
 
 static WebPaymentRequestEventData CreateWebPaymentRequestEventDataForTest() {
   WebPaymentRequestEventData web_data;
-  web_data.top_level_origin = WebString::FromUTF8("https://example.com");
+  web_data.top_origin = WebString::FromUTF8("https://example.com");
   web_data.payment_request_origin = WebString::FromUTF8("https://example.com");
   web_data.payment_request_id = WebString::FromUTF8("payment-request-id");
   Vector<WebPaymentMethodData> method_data;
@@ -61,8 +61,8 @@ TEST(PaymentEventDataConversionTest, ToCanMakePaymentEventData) {
       PaymentEventDataConversion::ToCanMakePaymentEventInit(
           scope.GetScriptState(), web_data);
 
-  ASSERT_TRUE(data.hasTopLevelOrigin());
-  EXPECT_EQ("https://example.com", data.topLevelOrigin());
+  ASSERT_TRUE(data.hasTopOrigin());
+  EXPECT_EQ("https://example.com", data.topOrigin());
 
   ASSERT_TRUE(data.hasPaymentRequestOrigin());
   EXPECT_EQ("https://example.com", data.paymentRequestOrigin());
@@ -99,8 +99,8 @@ TEST(PaymentEventDataConversionTest, ToPaymentRequestEventData) {
       PaymentEventDataConversion::ToPaymentRequestEventInit(
           scope.GetScriptState(), web_data);
 
-  ASSERT_TRUE(data.hasTopLevelOrigin());
-  EXPECT_EQ("https://example.com", data.topLevelOrigin());
+  ASSERT_TRUE(data.hasTopOrigin());
+  EXPECT_EQ("https://example.com", data.topOrigin());
 
   ASSERT_TRUE(data.hasPaymentRequestOrigin());
   EXPECT_EQ("https://example.com", data.paymentRequestOrigin());

@@ -126,7 +126,7 @@ interface CanMakePaymentEvent : ExtendableEvent
     getter methodData
     getter modifiers
     getter paymentRequestOrigin
-    getter topLevelOrigin
+    getter topOrigin
     method constructor
     method respondWith
 interface CanvasGradient
@@ -973,7 +973,7 @@ interface PaymentRequestEvent : ExtendableEvent
     getter modifiers
     getter paymentRequestId
     getter paymentRequestOrigin
-    getter topLevelOrigin
+    getter topOrigin
     getter total
     method constructor
     method openWindow

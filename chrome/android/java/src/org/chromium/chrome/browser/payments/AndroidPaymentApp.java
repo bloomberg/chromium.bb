@@ -79,8 +79,8 @@ public class AndroidPaymentApp
     private static final String EXTRA_MODIFIERS = "modifiers";
     private static final String EXTRA_PAYMENT_REQUEST_ID = "paymentRequestId";
     private static final String EXTRA_PAYMENT_REQUEST_ORIGIN = "paymentRequestOrigin";
-    private static final String EXTRA_TOP_LEVEL_CERTIFICATE_CHAIN = "topLevelCertificateChain";
-    private static final String EXTRA_TOP_LEVEL_ORIGIN = "topLevelOrigin";
+    private static final String EXTRA_TOP_CERTIFICATE_CHAIN = "topLevelCertificateChain";
+    private static final String EXTRA_TOP_ORIGIN = "topLevelOrigin";
     private static final String EXTRA_TOTAL = "total";
 
     // Response from the payment app.
@@ -353,15 +353,14 @@ public class AndroidPaymentApp
 
         if (merchantName != null) extras.putString(EXTRA_MERCHANT_NAME, merchantName);
 
-        extras.putString(EXTRA_TOP_LEVEL_ORIGIN, origin);
+        extras.putString(EXTRA_TOP_ORIGIN, origin);
 
         extras.putString(EXTRA_PAYMENT_REQUEST_ORIGIN, iframeOrigin);
 
         Parcelable[] serializedCertificateChain = null;
         if (certificateChain != null && certificateChain.length > 0) {
             serializedCertificateChain = buildCertificateChain(certificateChain);
-            extras.putParcelableArray(
-                    EXTRA_TOP_LEVEL_CERTIFICATE_CHAIN, serializedCertificateChain);
+            extras.putParcelableArray(EXTRA_TOP_CERTIFICATE_CHAIN, serializedCertificateChain);
         }
 
         extras.putStringArrayList(EXTRA_METHOD_NAMES, new ArrayList<>(methodDataMap.keySet()));

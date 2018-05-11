@@ -40,8 +40,8 @@ const AtomicString& PaymentRequestEvent::InterfaceName() const {
   return EventNames::PaymentRequestEvent;
 }
 
-const String& PaymentRequestEvent::topLevelOrigin() const {
-  return top_level_origin_;
+const String& PaymentRequestEvent::topOrigin() const {
+  return top_origin_;
 }
 
 const String& PaymentRequestEvent::paymentRequestOrigin() const {
@@ -137,7 +137,7 @@ PaymentRequestEvent::PaymentRequestEvent(
     RespondWithObserver* respond_with_observer,
     WaitUntilObserver* wait_until_observer)
     : ExtendableEvent(type, initializer, wait_until_observer),
-      top_level_origin_(initializer.topLevelOrigin()),
+      top_origin_(initializer.topOrigin()),
       payment_request_origin_(initializer.paymentRequestOrigin()),
       payment_request_id_(initializer.paymentRequestId()),
       method_data_(std::move(initializer.methodData())),

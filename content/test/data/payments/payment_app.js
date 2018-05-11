@@ -14,7 +14,7 @@ self.addEventListener('canmakepayment', e => {
   e.waitUntil(clients.matchAll({includeUncontrolled: true}).then(clients => {
     clients.forEach(client => {
       if (client.url.indexOf('payment_app_invocation.html') != -1) {
-        client.postMessage(e.topLevelOrigin);
+        client.postMessage(e.topOrigin);
         client.postMessage(e.paymentRequestOrigin);
         client.postMessage(JSON.stringify(e.methodData));
         client.postMessage(JSON.stringify(e.modifiers));
@@ -38,7 +38,7 @@ self.addEventListener('paymentrequest', e => {
   e.waitUntil(clients.matchAll({includeUncontrolled: true}).then(clients => {
     clients.forEach(client => {
       if (client.url.indexOf('payment_app_invocation.html') != -1) {
-        client.postMessage(e.topLevelOrigin);
+        client.postMessage(e.topOrigin);
         client.postMessage(e.paymentRequestOrigin);
         client.postMessage(e.paymentRequestId);
         client.postMessage(JSON.stringify(e.methodData));

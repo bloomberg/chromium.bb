@@ -96,7 +96,7 @@ PaymentRequestEventInit PaymentEventDataConversion::ToPaymentRequestEventInit(
 
   ScriptState::Scope scope(script_state);
 
-  event_data.setTopLevelOrigin(web_event_data.top_level_origin);
+  event_data.setTopOrigin(web_event_data.top_origin);
   event_data.setPaymentRequestOrigin(web_event_data.payment_request_origin);
   event_data.setPaymentRequestId(web_event_data.payment_request_id);
   HeapVector<PaymentMethodData> method_data;
@@ -125,7 +125,7 @@ CanMakePaymentEventInit PaymentEventDataConversion::ToCanMakePaymentEventInit(
 
   ScriptState::Scope scope(script_state);
 
-  event_data.setTopLevelOrigin(web_event_data.top_level_origin);
+  event_data.setTopOrigin(web_event_data.top_origin);
   event_data.setPaymentRequestOrigin(web_event_data.payment_request_origin);
   HeapVector<PaymentMethodData> method_data;
   for (const auto& md : web_event_data.method_data) {

@@ -178,7 +178,7 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
       const std::string& supported_method) {
     CanMakePaymentEventDataPtr event_data = CanMakePaymentEventData::New();
 
-    event_data->top_level_origin = GURL("https://example.com");
+    event_data->top_origin = GURL("https://example.com");
 
     event_data->payment_request_origin = GURL("https://example.com");
 
@@ -202,7 +202,7 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
       const std::string& instrument_key) {
     PaymentRequestEventDataPtr event_data = PaymentRequestEventData::New();
 
-    event_data->top_level_origin = GURL("https://example.com");
+    event_data->top_origin = GURL("https://example.com");
 
     event_data->payment_request_origin = GURL("https://example.com");
 
@@ -272,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, CanMakePayment) {
 
   ClearStoragePartitionData();
 
-  EXPECT_EQ("https://example.com/", PopConsoleString() /* topLevelOrigin */);
+  EXPECT_EQ("https://example.com/", PopConsoleString() /* topOrigin */);
   EXPECT_EQ("https://example.com/",
             PopConsoleString() /* paymentRequestOrigin */);
   EXPECT_EQ("[{\"supportedMethods\":[\"basic-card\"]}]",
@@ -316,7 +316,7 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, PaymentAppInvocation) {
   registrationIds = GetAllPaymentAppRegistrationIDs();
   ASSERT_EQ(0U, registrationIds.size());
 
-  EXPECT_EQ("https://example.com/", PopConsoleString() /* topLevelOrigin */);
+  EXPECT_EQ("https://example.com/", PopConsoleString() /* topOrigin */);
   EXPECT_EQ("https://example.com/",
             PopConsoleString() /* paymentRequestOrigin */);
   EXPECT_EQ("payment-request-id", PopConsoleString() /* paymentRequestId */);
@@ -353,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, PaymentAppOpenWindowFailed) {
   registrationIds = GetAllPaymentAppRegistrationIDs();
   ASSERT_EQ(0U, registrationIds.size());
 
-  EXPECT_EQ("https://example.com/", PopConsoleString() /* topLevelOrigin */);
+  EXPECT_EQ("https://example.com/", PopConsoleString() /* topOrigin */);
   EXPECT_EQ("https://example.com/",
             PopConsoleString() /* paymentRequestOrigin */);
   EXPECT_EQ("payment-request-id", PopConsoleString() /* paymentRequestId */);

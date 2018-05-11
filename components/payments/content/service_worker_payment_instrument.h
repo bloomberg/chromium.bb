@@ -28,7 +28,7 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
   // Chrome.
   ServiceWorkerPaymentInstrument(
       content::BrowserContext* browser_context,
-      const GURL& top_level_origin,
+      const GURL& top_origin,
       const GURL& frame_origin,
       const PaymentRequestSpec* spec,
       std::unique_ptr<content::StoredPaymentApp> stored_payment_app_info,
@@ -38,7 +38,7 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
   // Chrome but can be installed when paying with it.
   ServiceWorkerPaymentInstrument(
       content::WebContents* web_contents,
-      const GURL& top_level_origin,
+      const GURL& top_origin,
       const GURL& frame_origin,
       const PaymentRequestSpec* spec,
       std::unique_ptr<WebAppInstallationInfo> installable_payment_app_info,
@@ -87,7 +87,7 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
   void OnCanMakePayment(ValidateCanMakePaymentCallback callback, bool result);
 
   content::BrowserContext* browser_context_;
-  GURL top_level_origin_;
+  GURL top_origin_;
   GURL frame_origin_;
   const PaymentRequestSpec* spec_;
   std::unique_ptr<content::StoredPaymentApp> stored_payment_app_info_;

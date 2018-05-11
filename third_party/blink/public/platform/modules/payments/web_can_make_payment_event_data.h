@@ -14,7 +14,7 @@
 namespace blink {
 
 struct WebCanMakePaymentEventData {
-  WebString top_level_origin;
+  WebString top_origin;
   WebString payment_request_origin;
   WebVector<WebPaymentMethodData> method_data;
   WebVector<WebPaymentDetailsModifier> modifiers;

@@ -35,7 +35,7 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
 
   const AtomicString& InterfaceName() const override;
 
-  const String& topLevelOrigin() const;
+  const String& topOrigin() const;
   const String& paymentRequestOrigin() const;
   const String& paymentRequestId() const;
   const HeapVector<PaymentMethodData>& methodData() const;
@@ -54,7 +54,7 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
                       RespondWithObserver*,
                       WaitUntilObserver*);
 
-  String top_level_origin_;
+  String top_origin_;
   String payment_request_origin_;
   String payment_request_id_;
   HeapVector<PaymentMethodData> method_data_;

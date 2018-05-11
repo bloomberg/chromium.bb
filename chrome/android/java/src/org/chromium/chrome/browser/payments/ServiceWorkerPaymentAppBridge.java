@@ -456,12 +456,12 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
             GetServiceWorkerPaymentAppsInfoCallback callback);
 
     private static native void nativeInvokePaymentApp(WebContents webContents, long registrationId,
-            String topLevelOrigin, String paymentRequestOrigin, String paymentRequestId,
+            String topOrigin, String paymentRequestOrigin, String paymentRequestId,
             PaymentMethodData[] methodData, PaymentItem total, PaymentDetailsModifier[] modifiers,
             PaymentInstrument.InstrumentDetailsCallback callback);
 
     private static native void nativeInstallAndInvokePaymentApp(WebContents webContents,
-            String topLevelOrigin, String paymentRequestOrigin, String paymentRequestId,
+            String topOrigin, String paymentRequestOrigin, String paymentRequestId,
             PaymentMethodData[] methodData, PaymentItem total, PaymentDetailsModifier[] modifiers,
             PaymentInstrument.InstrumentDetailsCallback callback, String appName,
             @Nullable Bitmap icon, String swUrl, String scope, boolean useCache, String method);
@@ -470,7 +470,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
             WebContents webContents, long registrationId, PaymentInstrument.AbortCallback callback);
 
     private static native void nativeCanMakePayment(WebContents webContents, long registrationId,
-            String topLevelOrigin, String paymentRequestOrigin, PaymentMethodData[] methodData,
+            String topOrigin, String paymentRequestOrigin, PaymentMethodData[] methodData,
             PaymentDetailsModifier[] modifiers, CanMakePaymentCallback callback);
 
     private static native void nativeOnClosingPaymentAppWindow(WebContents webContents);
