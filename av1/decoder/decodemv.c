@@ -416,6 +416,12 @@ static int read_skip_mode(AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
 
   if (!is_comp_ref_allowed(xd->mi[0]->sb_type)) return 0;
 
+  if (segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME) &&
+      get_segdata(&cm->seg, segment_id, SEG_LVL_REF_FRAME) == INTRA_FRAME) {
+    // This is an intra block, so skip_mode is implicitly 0.
+    return 0;
+  }
+
   const int ctx = av1_get_skip_mode_context(xd);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   const int skip_mode =

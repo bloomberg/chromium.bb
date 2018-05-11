@@ -238,6 +238,12 @@ static int write_skip_mode(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     assert(!skip_mode);
     return 0;
   }
+  if (segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME) &&
+      get_segdata(&cm->seg, segment_id, SEG_LVL_REF_FRAME) == INTRA_FRAME) {
+    // This is an intra block, so skip_mode is implicitly 0.
+    assert(!skip_mode);
+    return 0;
+  }
   const int ctx = av1_get_skip_mode_context(xd);
   aom_write_symbol(w, skip_mode, xd->tile_ctx->skip_mode_cdfs[ctx], 2);
   return skip_mode;
