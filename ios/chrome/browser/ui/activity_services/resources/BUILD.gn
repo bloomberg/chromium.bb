@@ -4,6 +4,24 @@
 
 import("//build/config/ios/asset_catalog.gni")
 
+imageset("activity_services_add_bookmark") {
+  sources = [
+    "activity_services_add_bookmark.imageset/Contents.json",
+    "activity_services_add_bookmark.imageset/activity_services_add_bookmark-60@2x.png",
+    "activity_services_add_bookmark.imageset/activity_services_add_bookmark-60@3x.png",
+    "activity_services_add_bookmark.imageset/activity_services_add_bookmark-76@2x.png",
+  ]
+}
+
+imageset("activity_services_edit_bookmark") {
+  sources = [
+    "activity_services_edit_bookmark.imageset/Contents.json",
+    "activity_services_edit_bookmark.imageset/activity_services_edit_bookmark-60@2x.png",
+    "activity_services_edit_bookmark.imageset/activity_services_edit_bookmark-60@3x.png",
+    "activity_services_edit_bookmark.imageset/activity_services_edit_bookmark-76@2x.png",
+  ]
+}
+
 imageset("activity_services_print") {
   sources = [
     "activity_services_print.imageset/Contents.json",
@@ -14,29 +32,11 @@ imageset("activity_services_print") {
   ]
 }
 
-imageset("activity_services_add_bookmark") {
-  sources = [
-    "activity_services_add_bookmark.imageset/Contents.json",
-    "activity_services_add_bookmark.imageset/activity_services_add_bookmark_60@2x.png",
-    "activity_services_add_bookmark.imageset/activity_services_add_bookmark_60@3x.png",
-    "activity_services_add_bookmark.imageset/activity_services_add_bookmark_76@2x.png",
-  ]
-}
-
-imageset("activity_services_edit_bookmark") {
-  sources = [
-    "activity_services_edit_bookmark.imageset/Contents.json",
-    "activity_services_edit_bookmark.imageset/activity_services_edit_bookmark_60@2x.png",
-    "activity_services_edit_bookmark.imageset/activity_services_edit_bookmark_60@3x.png",
-    "activity_services_edit_bookmark.imageset/activity_services_edit_bookmark_76@2x.png",
-  ]
-}
-
 imageset("activity_services_read_later") {
   sources = [
     "activity_services_read_later.imageset/Contents.json",
-    "activity_services_read_later.imageset/activity_services_read_later_60@2x.png",
-    "activity_services_read_later.imageset/activity_services_read_later_60@3x.png",
-    "activity_services_read_later.imageset/activity_services_read_later_76@2x.png",
+    "activity_services_read_later.imageset/activity_services_read_later-60@2x.png",
+    "activity_services_read_later.imageset/activity_services_read_later-60@3x.png",
+    "activity_services_read_later.imageset/activity_services_read_later-76@2x.png",
   ]
 }
