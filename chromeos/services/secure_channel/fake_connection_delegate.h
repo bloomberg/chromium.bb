@@ -27,12 +27,18 @@ class FakeConnectionDelegate : public mojom::ConnectionDelegate {
     return connection_attempt_failure_reason_;
   }
 
+  void set_closure_for_next_delegate_callback(base::OnceClosure closure) {
+    closure_for_next_delegate_callback_ = std::move(closure);
+  }
+
  private:
   // mojom::ConnectionDelegate:
   void OnConnectionAttemptFailure(
       mojom::ConnectionAttemptFailureReason reason) override;
 
   mojo::BindingSet<mojom::ConnectionDelegate> bindings_;
+
+  base::OnceClosure closure_for_next_delegate_callback_;
 
   base::Optional<mojom::ConnectionAttemptFailureReason>
       connection_attempt_failure_reason_;

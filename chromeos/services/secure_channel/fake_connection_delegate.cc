@@ -25,6 +25,9 @@ void FakeConnectionDelegate::DisconnectGeneratedPtrs() {
 void FakeConnectionDelegate::OnConnectionAttemptFailure(
     mojom::ConnectionAttemptFailureReason reason) {
   connection_attempt_failure_reason_ = reason;
+
+  if (closure_for_next_delegate_callback_)
+    std::move(closure_for_next_delegate_callback_).Run();
 }
 
 }  // namespace secure_channel

@@ -20,6 +20,8 @@ namespace {
 
 const char kTestReadableRequestTypeForLogging[] = "Test Request Type";
 const char kTestFeature[] = "testFeature";
+const mojom::ConnectionAttemptFailureReason kTestFailureReason =
+    mojom::ConnectionAttemptFailureReason::TIMEOUT_FINDING_DEVICE;
 
 enum class TestFailureDetail {
   kReasonWhichCausesRequestToBecomeInactive,
@@ -46,7 +48,7 @@ class TestPendingConnectionRequest
   void HandleConnectionFailure(TestFailureDetail failure_detail) override {
     switch (failure_detail) {
       case TestFailureDetail::kReasonWhichCausesRequestToBecomeInactive:
-        StopRequestDueToConnectionFailures();
+        StopRequestDueToConnectionFailures(kTestFailureReason);
         break;
       case TestFailureDetail::kReasonWhichDoesNotCauseRequestToBecomeInactive:
         // Do nothing.
@@ -72,8 +74,19 @@ class SecureChannelPendingConnectionRequestBaseTest : public testing::Test {
             fake_pending_connection_request_delegate_.get());
   }
 
-  TestPendingConnectionRequest* test_pending_connection_request() {
-    return test_pending_connection_request_.get();
+  void HandleConnectionFailure(TestFailureDetail test_failure_detail,
+                               bool wait_for_mojo_call) {
+    base::RunLoop run_loop;
+    if (wait_for_mojo_call) {
+      fake_connection_delegate_->set_closure_for_next_delegate_callback(
+          run_loop.QuitClosure());
+    }
+
+    test_pending_connection_request_->HandleConnectionFailure(
+        test_failure_detail);
+
+    if (wait_for_mojo_call)
+      run_loop.Run();
   }
 
   const base::Optional<
@@ -92,6 +105,11 @@ class SecureChannelPendingConnectionRequestBaseTest : public testing::Test {
     run_loop.Run();
   }
 
+  const base::Optional<mojom::ConnectionAttemptFailureReason>&
+  GetConnectionAttemptFailureReason() const {
+    return fake_connection_delegate_->connection_attempt_failure_reason();
+  }
+
  private:
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
 
@@ -107,11 +125,13 @@ class SecureChannelPendingConnectionRequestBaseTest : public testing::Test {
 
 TEST_F(SecureChannelPendingConnectionRequestBaseTest,
        HandleConnectionFailureWhichCausesRequestToBecomeInactive) {
-  test_pending_connection_request()->HandleConnectionFailure(
-      TestFailureDetail::kReasonWhichCausesRequestToBecomeInactive);
+  HandleConnectionFailure(
+      TestFailureDetail::kReasonWhichCausesRequestToBecomeInactive,
+      true /* wait_for_mojo_call */);
   EXPECT_EQ(
       PendingConnectionRequestDelegate::FailedConnectionReason::kRequestFailed,
       *GetFailedConnectionReason());
+  EXPECT_EQ(kTestFailureReason, *GetConnectionAttemptFailureReason());
 }
 
 TEST_F(SecureChannelPendingConnectionRequestBaseTest,
@@ -119,9 +139,11 @@ TEST_F(SecureChannelPendingConnectionRequestBaseTest,
   // Repeat 5 connection failures, none of which should cause the request to
   // become inactive.
   for (int i = 0; i < 5; ++i) {
-    test_pending_connection_request()->HandleConnectionFailure(
-        TestFailureDetail::kReasonWhichDoesNotCauseRequestToBecomeInactive);
+    HandleConnectionFailure(
+        TestFailureDetail::kReasonWhichDoesNotCauseRequestToBecomeInactive,
+        false /* wait_for_mojo_call */);
     EXPECT_FALSE(GetFailedConnectionReason());
+    EXPECT_FALSE(GetConnectionAttemptFailureReason());
   }
 }
 
