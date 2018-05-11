@@ -265,7 +265,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   // ChildFrameCompositor:
   blink::WebLayer* GetLayer() override;
-  void SetLayer(std::unique_ptr<blink::WebLayer> web_layer,
+  void SetLayer(scoped_refptr<cc::Layer> layer,
                 bool prevent_contents_opaque_changes) override;
   SkBitmap* GetSadPageBitmap() override;
 
@@ -316,6 +316,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 #endif
 
   // The layer used to embed the out-of-process content.
+  scoped_refptr<cc::Layer> embedded_layer_;
   std::unique_ptr<blink::WebLayer> web_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxy);

@@ -33,6 +33,10 @@ class GpuMemoryBufferVideoFramePool;
 class MediaLog;
 }
 
+namespace cc {
+class VideoLayer;
+}
+
 namespace cc_blink {
 class WebLayerImpl;
 }
@@ -259,6 +263,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
 
   scoped_refptr<MediaStreamVideoRenderer> video_frame_provider_;  // Weak
 
+  scoped_refptr<cc::VideoLayer> video_layer_;
   std::unique_ptr<cc_blink::WebLayerImpl> video_weblayer_;
 
   scoped_refptr<MediaStreamAudioRenderer> audio_renderer_;  // Weak

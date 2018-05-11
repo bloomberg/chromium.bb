@@ -221,7 +221,7 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
 
   // ChildFrameCompositor:
   blink::WebLayer* GetLayer() override;
-  void SetLayer(std::unique_ptr<blink::WebLayer> web_layer,
+  void SetLayer(scoped_refptr<cc::Layer> layer,
                 bool prevent_contents_opaque_changes) override;
   SkBitmap* GetSadPageBitmap() override;
 
@@ -284,6 +284,7 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   base::WeakPtr<RenderWidget> embedding_render_widget_;
 
   // The layer used to embed the out-of-process content.
+  scoped_refptr<cc::Layer> embedded_layer_;
   std::unique_ptr<blink::WebLayer> web_layer_;
 
   // Weak factory used in v8 |MakeWeak| callback, since the v8 callback might

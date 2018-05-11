@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "cc/blink/web_layer_impl.h"
 #include "components/viz/common/features.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_message_structs.h"
@@ -868,10 +869,12 @@ blink::WebLayer* RenderFrameProxy::GetLayer() {
   return web_layer_.get();
 }
 
-void RenderFrameProxy::SetLayer(std::unique_ptr<blink::WebLayer> web_layer,
+void RenderFrameProxy::SetLayer(scoped_refptr<cc::Layer> layer,
                                 bool prevent_contents_opaque_changes) {
+  auto web_layer = std::make_unique<cc_blink::WebLayerImpl>(layer.get());
   if (web_frame())
     web_frame()->SetWebLayer(web_layer.get(), prevent_contents_opaque_changes);
+  embedded_layer_ = std::move(layer);
   web_layer_ = std::move(web_layer);
 }
 

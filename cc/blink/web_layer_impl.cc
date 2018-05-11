@@ -36,9 +36,7 @@ using blink::WebLayer;
 
 namespace cc_blink {
 
-WebLayerImpl::WebLayerImpl() : layer_(Layer::Create()) {}
-
-WebLayerImpl::WebLayerImpl(scoped_refptr<Layer> layer) : layer_(layer) {}
+WebLayerImpl::WebLayerImpl(Layer* layer) : layer_(layer) {}
 
 WebLayerImpl::~WebLayerImpl() = default;
 
@@ -326,11 +324,11 @@ void WebLayerImpl::SetLayerClient(base::WeakPtr<cc::LayerClient> client) {
 }
 
 const cc::Layer* WebLayerImpl::CcLayer() const {
-  return layer_.get();
+  return layer_;
 }
 
 cc::Layer* WebLayerImpl::CcLayer() {
-  return layer_.get();
+  return layer_;
 }
 
 void WebLayerImpl::SetElementId(const cc::ElementId& id) {
@@ -352,7 +350,7 @@ void WebLayerImpl::SetClipParent(blink::WebLayer* parent) {
 }
 
 Layer* WebLayerImpl::layer() const {
-  return layer_.get();
+  return layer_;
 }
 
 void WebLayerImpl::SetHasWillChangeTransformHint(bool has_will_change) {

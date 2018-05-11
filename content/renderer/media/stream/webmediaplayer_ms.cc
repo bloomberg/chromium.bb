@@ -295,8 +295,8 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
 
   // Destruct compositor resources in the proper order.
   get_client()->SetWebLayer(nullptr);
-  if (video_weblayer_)
-    static_cast<cc::VideoLayer*>(video_weblayer_->layer())->StopUsingProvider();
+  if (video_layer_)
+    video_layer_->StopUsingProvider();
 
   if (frame_deliverer_)
     io_task_runner_->DeleteSoon(FROM_HERE, frame_deliverer_.release());
@@ -979,12 +979,12 @@ void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation,
   DCHECK(thread_checker_.CalledOnValidThread());
   video_rotation_ = video_rotation;
 
-  std::unique_ptr<cc_blink::WebLayerImpl> rotated_weblayer =
-      base::WrapUnique(new cc_blink::WebLayerImpl(
-          cc::VideoLayer::Create(compositor_.get(), video_rotation)));
-  rotated_weblayer->SetOpaque(is_opaque);
-  get_client()->SetWebLayer(rotated_weblayer.get());
-  video_weblayer_ = std::move(rotated_weblayer);
+  video_layer_ = cc::VideoLayer::Create(compositor_.get(), video_rotation);
+  video_layer_->SetContentsOpaque(is_opaque);
+
+  video_weblayer_ =
+      std::make_unique<cc_blink::WebLayerImpl>(video_layer_.get());
+  get_client()->SetWebLayer(video_weblayer_.get());
 }
 
 void WebMediaPlayerMS::RepaintInternal() {

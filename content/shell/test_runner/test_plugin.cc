@@ -187,7 +187,7 @@ bool TestPlugin::Initialize(blink::WebPluginContainer* container) {
     return false;
 
   layer_ = cc::TextureLayer::CreateForMailbox(this);
-  web_layer_ = std::make_unique<cc_blink::WebLayerImpl>(layer_);
+  web_layer_ = std::make_unique<cc_blink::WebLayerImpl>(layer_.get());
   bool prevent_contents_opaque_changes = false;
   container_->SetWebLayer(web_layer_.get(), prevent_contents_opaque_changes);
   if (re_request_touch_events_) {
