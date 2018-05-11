@@ -12,6 +12,9 @@
   <body>
     <h2>Coverage Report</h2>
     <p>
-      View results by: <a href='{{ component_view_href }}'>Components</a> | <a href='{{ directory_view_href }}'>Directories</a> | <a href='{{ file_view_href }}'>Files</a>
+      View results by: <a href='{{ component_view_href }}'>Components</a> | <a href='{{ directory_view_href }}'>Directories</a>
+      {% if file_view_href %}
+        | <a href='{{ file_view_href }}'>Files</a>
+      {% endif %}
     </p>
     <div class='centered'>
