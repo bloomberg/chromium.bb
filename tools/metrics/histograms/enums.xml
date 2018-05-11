@@ -27615,6 +27615,7 @@ from previous Chrome versions.
   <int value="730024226" label="enable-out-of-process-pdf"/>
   <int value="730750097" label="PermissionsBlacklist:disabled"/>
   <int value="732703958" label="enable-gesture-tap-highlight"/>
+  <int value="734900932" label="RecurrentInterstitialFeature:enabled"/>
   <int value="736911267" label="ExperimentalCrostiniUI:disabled"/>
   <int value="738868972" label="GdiTextPrinting:disabled"/>
   <int value="745868416" label="disable-system-timezone-automatic-detection"/>
@@ -27684,6 +27685,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentElideSuggestionUrlAfterHost:enabled"/>
   <int value="908523940" label="PassiveEventListenersDueToFling:disabled"/>
   <int value="909439558" label="disable-device-discovery"/>
+  <int value="913138924" label="RecurrentInterstitialFeature:disabled"/>
   <int value="916316159" label="disable-new-app-list-mixer"/>
   <int value="918046854" label="NtlmV2Enabled:disabled"/>
   <int value="921536672" label="OfflinePagesDescriptiveFailStatus:enabled"/>

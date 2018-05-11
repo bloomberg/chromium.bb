@@ -32,6 +32,7 @@
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
+#include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
@@ -3868,6 +3869,11 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin | kOsCrOS,
      FEATURE_VALUE_TYPE(features::kTouchpadOverscrollHistoryNavigation)},
 #endif
+
+    {"enable-recurrent-interstitial",
+     flag_descriptions::kRecurrentInterstitialName,
+     flag_descriptions::kRecurrentInterstitialDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kRecurrentInterstitialFeature)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

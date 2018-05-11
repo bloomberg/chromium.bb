@@ -1300,6 +1300,12 @@ const char kQueryInOmniboxDescription[] =
 const char kQuicName[] = "Experimental QUIC protocol";
 const char kQuicDescription[] = "Enable experimental QUIC protocol support.";
 
+const char kRecurrentInterstitialName[] =
+    "Show a message when the same SSL error recurs";
+const char kRecurrentInterstitialDescription[] =
+    "Enable a special message on the SSL certificate error page when the same "
+    "SSL error occurs repeatedly.";
+
 const char kReducedReferrerGranularityName[] =
     "Reduce default 'referer' header granularity.";
 const char kReducedReferrerGranularityDescription[] =
