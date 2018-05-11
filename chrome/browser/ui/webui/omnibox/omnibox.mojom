@@ -25,6 +25,7 @@ struct AutocompleteMatch {
   int32 transition;
   bool allowed_to_be_default_match;
   string type;
+  bool has_tab_match;
   string? associated_keyword;
   string keyword;
   bool starred;

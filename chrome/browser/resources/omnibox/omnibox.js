@@ -80,7 +80,7 @@ function startOmniboxQuery(event) {
  * @param {string} propertyName the name of the property in the autocomplete
  *     result record that we lookup.
  * @param {boolean} displayAlways whether the property should be displayed
- *     regardless of whether we're in detailed more.
+ *     regardless of whether we're in detailed mode.
  * @param {string} tooltip a description of the property that will be
  *     presented as a tooltip when the mouse is hovered over the column title.
  * @constructor
@@ -122,6 +122,9 @@ var PROPERTY_OUTPUT_ORDER = [
   new PresentationInfoRecord(
       'Starred', '', 'starred', false,
       'A green checkmark indicates that the result has been bookmarked.'),
+  new PresentationInfoRecord(
+      'Has tab match', '', 'hasTabMatch', false,
+      'A green checkmark indicates that the result URL matches an open tab.'),
   new PresentationInfoRecord(
       'Description', '', 'description', false, 'The page title of the result.'),
   new PresentationInfoRecord(
