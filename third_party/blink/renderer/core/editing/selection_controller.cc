@@ -770,8 +770,8 @@ static SelectionInFlatTree AdjustEndpointsAtBidiBoundary(
   DCHECK(visible_base.IsValid());
   DCHECK(visible_extent.IsValid());
 
-  RenderedPosition base(visible_base);
-  RenderedPosition extent(visible_extent);
+  RenderedPosition base = RenderedPosition::Create(visible_base);
+  RenderedPosition extent = RenderedPosition::Create(visible_extent);
 
   const SelectionInFlatTree& unchanged_selection =
       SelectionInFlatTree::Builder()
@@ -779,13 +779,12 @@ static SelectionInFlatTree AdjustEndpointsAtBidiBoundary(
                             visible_extent.DeepEquivalent())
           .Build();
 
-  if (base.IsNull() || extent.IsNull() || base.IsEquivalent(extent))
+  if (base.IsNull() || extent.IsNull() || base == extent)
     return unchanged_selection;
 
   if (base.AtLeftBoundaryOfBidiRun()) {
     if (!extent.AtRightBoundaryOfBidiRun(base.BidiLevelOnRight()) &&
-        base.IsEquivalent(
-            extent.LeftBoundaryOfBidiRun(base.BidiLevelOnRight()))) {
+        base == extent.LeftBoundaryOfBidiRun(base.BidiLevelOnRight())) {
       return SelectionInFlatTree::Builder()
           .SetBaseAndExtent(
               CreateVisiblePosition(base.PositionAtLeftBoundaryOfBiDiRun())
@@ -798,8 +797,7 @@ static SelectionInFlatTree AdjustEndpointsAtBidiBoundary(
 
   if (base.AtRightBoundaryOfBidiRun()) {
     if (!extent.AtLeftBoundaryOfBidiRun(base.BidiLevelOnLeft()) &&
-        base.IsEquivalent(
-            extent.RightBoundaryOfBidiRun(base.BidiLevelOnLeft()))) {
+        base == extent.RightBoundaryOfBidiRun(base.BidiLevelOnLeft())) {
       return SelectionInFlatTree::Builder()
           .SetBaseAndExtent(
               CreateVisiblePosition(base.PositionAtRightBoundaryOfBiDiRun())
@@ -811,8 +809,7 @@ static SelectionInFlatTree AdjustEndpointsAtBidiBoundary(
   }
 
   if (extent.AtLeftBoundaryOfBidiRun() &&
-      extent.IsEquivalent(
-          base.LeftBoundaryOfBidiRun(extent.BidiLevelOnRight()))) {
+      extent == base.LeftBoundaryOfBidiRun(extent.BidiLevelOnRight())) {
     return SelectionInFlatTree::Builder()
         .SetBaseAndExtent(
             visible_base.DeepEquivalent(),
@@ -822,8 +819,7 @@ static SelectionInFlatTree AdjustEndpointsAtBidiBoundary(
   }
 
   if (extent.AtRightBoundaryOfBidiRun() &&
-      extent.IsEquivalent(
-          base.RightBoundaryOfBidiRun(extent.BidiLevelOnLeft()))) {
+      extent == base.RightBoundaryOfBidiRun(extent.BidiLevelOnLeft())) {
     return SelectionInFlatTree::Builder()
         .SetBaseAndExtent(
             visible_base.DeepEquivalent(),
