@@ -109,8 +109,10 @@ class CoordinatorImplTest : public testing::Test {
 
   void RequestGlobalMemoryDumpForPid(
       base::ProcessId pid,
+      const std::vector<std::string>& allocator_dump_names,
       RequestGlobalMemoryDumpForPidCallback callback) {
-    coordinator_->RequestGlobalMemoryDumpForPid(pid, std::move(callback));
+    coordinator_->RequestGlobalMemoryDumpForPid(pid, allocator_dump_names,
+                                                std::move(callback));
   }
 
   void RequestGlobalMemoryDumpAndAppendToTrace(
@@ -894,9 +896,9 @@ TEST_F(CoordinatorImplTest, DumpByPidSuccess) {
             run_loop.Quit();
           }));
 
-  RequestGlobalMemoryDumpForPid(kBrowserPid, callback.Get());
-  RequestGlobalMemoryDumpForPid(kRendererPid, callback.Get());
-  RequestGlobalMemoryDumpForPid(kGpuPid, callback.Get());
+  RequestGlobalMemoryDumpForPid(kBrowserPid, {}, callback.Get());
+  RequestGlobalMemoryDumpForPid(kRendererPid, {}, callback.Get());
+  RequestGlobalMemoryDumpForPid(kGpuPid, {}, callback.Get());
   run_loop.Run();
 }
 
@@ -910,7 +912,7 @@ TEST_F(CoordinatorImplTest, DumpByPidFailure) {
   EXPECT_CALL(callback, OnCall(false, nullptr))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
 
-  RequestGlobalMemoryDumpForPid(2, callback.Get());
+  RequestGlobalMemoryDumpForPid(2, {}, callback.Get());
   run_loop.Run();
 }
 

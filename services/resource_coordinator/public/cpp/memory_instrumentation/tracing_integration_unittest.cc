@@ -126,6 +126,7 @@ class MockCoordinator : public Coordinator, public mojom::Coordinator {
 
   void RequestGlobalMemoryDumpForPid(
       base::ProcessId pid,
+      const std::vector<std::string>& allocator_dump_names,
       RequestGlobalMemoryDumpForPidCallback) override {}
 
   void RequestGlobalMemoryDumpAndAppendToTrace(

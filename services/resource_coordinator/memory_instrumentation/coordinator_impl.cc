@@ -127,6 +127,7 @@ void CoordinatorImpl::RequestGlobalMemoryDump(
 
 void CoordinatorImpl::RequestGlobalMemoryDumpForPid(
     base::ProcessId pid,
+    const std::vector<std::string>& allocator_dump_names,
     RequestGlobalMemoryDumpForPidCallback callback) {
   // Error out early if process id is null to avoid confusing with global
   // dump for all processes case when pid is kNullProcessId.
@@ -145,8 +146,8 @@ void CoordinatorImpl::RequestGlobalMemoryDumpForPid(
 
   QueuedRequest::Args args(
       base::trace_event::MemoryDumpType::SUMMARY_ONLY,
-      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND, {},
-      false /* add_to_trace */, pid);
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND,
+      allocator_dump_names, false /* add_to_trace */, pid);
   RequestGlobalMemoryDumpInternal(args,
                                   base::BindOnce(adapter, std::move(callback)));
 }

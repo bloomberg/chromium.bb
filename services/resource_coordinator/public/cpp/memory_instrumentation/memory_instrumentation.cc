@@ -69,9 +69,17 @@ void MemoryInstrumentation::RequestGlobalDump(
 void MemoryInstrumentation::RequestGlobalDumpForPid(
     base::ProcessId pid,
     RequestGlobalDumpCallback callback) {
+  RequestGlobalDumpForPid(pid, {}, callback);
+}
+
+void MemoryInstrumentation::RequestGlobalDumpForPid(
+    base::ProcessId pid,
+    const std::vector<std::string>& allocator_dump_names,
+    RequestGlobalDumpCallback callback) {
   const auto& coordinator = GetCoordinatorBindingForCurrentThread();
   coordinator->RequestGlobalMemoryDumpForPid(
-      pid, base::BindRepeating(&WrapGlobalMemoryDump, callback));
+      pid, allocator_dump_names,
+      base::BindRepeating(&WrapGlobalMemoryDump, callback));
 }
 
 void MemoryInstrumentation::RequestGlobalDumpAndAppendToTrace(

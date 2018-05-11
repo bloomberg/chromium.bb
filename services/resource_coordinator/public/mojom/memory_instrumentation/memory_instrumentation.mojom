@@ -287,7 +287,8 @@ interface Coordinator {
 
   // Sends a dump request to the client process given by the specified pid and
   // returns a summarized dump back or null if there was a failure.
-  RequestGlobalMemoryDumpForPid(mojo_base.mojom.ProcessId pid) =>
+  RequestGlobalMemoryDumpForPid(mojo_base.mojom.ProcessId pid,
+                                array<string> allocator_dump_names) =>
       (bool success, GlobalMemoryDump? global_memory_dump);
 
   // Broadcasts a dump request to all registered client processes and injects the
