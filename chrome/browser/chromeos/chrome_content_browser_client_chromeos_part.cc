@@ -25,6 +25,12 @@ bool ShouldExcludePage(content::WebContents* contents) {
   DCHECK(contents);
 
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  if (!entry) {
+    // No entry has been committed. We don't know anything about this page, so
+    // exclude it and let it have the default web prefs.
+    return true;
+  }
+
   const GURL& url = entry->GetURL();
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   if (profile && search::IsNTPURL(url, profile))
