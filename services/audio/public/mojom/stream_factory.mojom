@@ -71,4 +71,17 @@ interface StreamFactory {
   // is the reason for the associated request argument.)
   BindMuter(associated LocalMuter& request,
             mojo_base.mojom.UnguessableToken group_id);
+
+  // Creates an AudioInputStream that provides the result of looping-back and
+  // mixing-together all current and future AudioOutputStreams tagged with the
+  // given |group_id|. The loopback re-mixes audio, if necessary, so that the
+  // resulting data stream format matches the specified |params|. All other args
+  // and the result are as described in CreateInputStream() above.
+  CreateLoopbackStream(media.mojom.AudioInputStream& stream,
+                       media.mojom.AudioInputStreamClient client,
+                       media.mojom.AudioInputStreamObserver observer,
+                       media.mojom.AudioParameters params,
+                       uint32 shared_memory_count,
+                       mojo_base.mojom.UnguessableToken group_id)
+    => (media.mojom.AudioDataPipe? data_pipe);
 };

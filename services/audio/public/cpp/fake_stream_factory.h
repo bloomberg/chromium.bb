@@ -46,6 +46,14 @@ class FakeStreamFactory : public mojom::StreamFactory {
       CreateOutputStreamCallback created_callback) override {}
   void BindMuter(mojom::LocalMuterAssociatedRequest request,
                  const base::UnguessableToken& group_id) override {}
+  void CreateLoopbackStream(
+      media::mojom::AudioInputStreamRequest stream_request,
+      media::mojom::AudioInputStreamClientPtr client,
+      media::mojom::AudioInputStreamObserverPtr observer,
+      const media::AudioParameters& params,
+      uint32_t shared_memory_count,
+      const base::UnguessableToken& group_id,
+      CreateLoopbackStreamCallback created_callback) override {}
 
   mojo::Binding<mojom::StreamFactory> binding_;
 };

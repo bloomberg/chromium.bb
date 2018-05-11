@@ -81,6 +81,15 @@ class FakeStreamFactory : public audio::mojom::StreamFactory {
                void(mojom::LocalMuterAssociatedRequest request,
                     const base::UnguessableToken& group_id));
 
+  MOCK_METHOD7(CreateLoopbackStream,
+               void(media::mojom::AudioInputStreamRequest stream_request,
+                    media::mojom::AudioInputStreamClientPtr client,
+                    media::mojom::AudioInputStreamObserverPtr observer,
+                    const media::AudioParameters& params,
+                    uint32_t shared_memory_count,
+                    const base::UnguessableToken& group_id,
+                    CreateLoopbackStreamCallback created_callback));
+
   void Bind(mojo::ScopedMessagePipeHandle handle) {
     binding_.Bind(audio::mojom::StreamFactoryRequest(std::move(handle)));
   }
