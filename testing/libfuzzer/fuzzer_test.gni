@@ -180,32 +180,20 @@ template("fuzzer_test") {
   } else {
     # noop on unsupported platforms.
     # mark attributes as used.
-    assert(invoker.sources == [] || invoker.sources != [])
-    if (defined(invoker.additional_configs)) {
-      assert(
-          invoker.additional_configs == [] || invoker.additional_configs != [])
-    }
-    if (defined(invoker.deps)) {
-      assert(invoker.deps == [] || invoker.deps != [])
-    }
-    if (defined(invoker.dict)) {
-      assert(invoker.dict == [] || invoker.dict != [])
-    }
-    if (defined(invoker.libfuzzer_options)) {
-      assert(invoker.libfuzzer_options == [] || invoker.libfuzzer_options != [])
-    }
-    if (defined(invoker.seed_corpus)) {
-      assert(invoker.seed_corpus == [] || invoker.seed_corpus != [])
-    }
-    if (defined(invoker.seed_corpuses)) {
-      assert(invoker.seed_corpuses == [] || invoker.seed_corpuses != [])
-    }
-    if (defined(invoker.seed_corpus_deps)) {
-      assert(invoker.seed_corpus_deps == [] || invoker.seed_corpus_deps != [])
-    }
-    assert(!defined(invoker.check_includes) || invoker.check_includes != [])
-    assert(!defined(invoker.include_dirs) || invoker.include_dirs != [])
-    assert(!defined(invoker.defines) || invoker.defines != [])
+    not_needed(invoker,
+               [
+                 "additional_configs",
+                 "check_includes",
+                 "defines",
+                 "deps",
+                 "dict",
+                 "include_dirs",
+                 "libfuzzer_options",
+                 "seed_corpus",
+                 "seed_corpus_deps",
+                 "seed_corpuses",
+                 "sources",
+               ])
 
     group(target_name) {
     }
