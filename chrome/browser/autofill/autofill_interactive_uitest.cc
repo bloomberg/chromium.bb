@@ -1956,7 +1956,8 @@ class DynamicFormInteractiveTest : public AutofillInteractiveTestBase,
     // requirement for a secure context to fill credit cards.
     scoped_feature_list_.InitWithFeatures(
         {features::kAutofillDynamicForms},
-        {features::kAutofillRequireSecureCreditCardContext});
+        {features::kAutofillRequireSecureCreditCardContext,
+         features::kAutofillRestrictUnownedFieldsToFormlessCheckout});
     https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
     https_server_.ServeFilesFromSourceDirectory("chrome/test/data");
     ASSERT_TRUE(https_server_.InitializeAndListen());
@@ -2224,6 +2225,120 @@ IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
   ExpectFieldValue("firstname", "");  // That field value was reset dynamically.
   ExpectFieldValue("address1", "4120 Freidrich Lane");
   ExpectFieldValue("state", "CA");   // Default value.
+  ExpectFieldValue("city", "Austin");
+  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("email", "red.swingline@initech.com");
+  ExpectFieldValue("phone", "15125551234");
+}
+
+// Test that we can Autofill dynamically generated forms with no name if the
+// NameForAutofill of the first field matches.
+IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
+                       DynamicChangingFormFill_FormWithoutName) {
+  CreateTestProfile();
+
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/autofill/dynamic_form_no_name.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  TriggerFormFill("firstname");
+
+  // Wait for the re-fill to happen.
+  bool has_refilled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "hasRefilled()", &has_refilled));
+  ASSERT_TRUE(has_refilled);
+
+  // Make sure the new form was filled correctly.
+  ExpectFieldValue("firstname_form1", "Milton");
+  ExpectFieldValue("address_form1", "4120 Freidrich Lane");
+  ExpectFieldValue("state_form1", "TX");
+  ExpectFieldValue("city_form1", "Austin");
+  ExpectFieldValue("company_form1", "Initech");
+  ExpectFieldValue("email_form1", "red.swingline@initech.com");
+  ExpectFieldValue("phone_form1", "15125551234");
+}
+
+// Test that we can Autofill dynamically changing selects that have options
+// added and removed for forms with no names if the NameForAutofill of the first
+// field matches.
+IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
+                       DynamicChangingFormFill_SelectUpdated_FormWithoutName) {
+  CreateTestProfile();
+
+  GURL url = embedded_test_server()->GetURL(
+      "a.com",
+      "/autofill/dynamic_form_with_no_name_select_options_change.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  TriggerFormFill("firstname");
+
+  // Wait for the re-fill to happen.
+  bool has_refilled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "hasRefilled()", &has_refilled));
+  ASSERT_TRUE(has_refilled);
+
+  // Make sure the new form was filled correctly.
+  ExpectFieldValue("firstname", "Milton");
+  ExpectFieldValue("address1", "4120 Freidrich Lane");
+  ExpectFieldValue("state", "TX");
+  ExpectFieldValue("city", "Austin");
+  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("email", "red.swingline@initech.com");
+  ExpectFieldValue("phone", "15125551234");
+}
+
+// Test that we can Autofill dynamically generated synthetic forms if the
+// NameForAutofill of the first field matches.
+IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
+                       DynamicChangingFormFill_SyntheticForm) {
+  CreateTestProfile();
+
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/autofill/dynamic_synthetic_form.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  TriggerFormFill("firstname");
+
+  // Wait for the re-fill to happen.
+  bool has_refilled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "hasRefilled()", &has_refilled));
+  ASSERT_TRUE(has_refilled);
+
+  // Make sure the new form was filled correctly.
+  ExpectFieldValue("firstname_syntheticform1", "Milton");
+  ExpectFieldValue("address_syntheticform1", "4120 Freidrich Lane");
+  ExpectFieldValue("state_syntheticform1", "TX");
+  ExpectFieldValue("city_syntheticform1", "Austin");
+  ExpectFieldValue("company_syntheticform1", "Initech");
+  ExpectFieldValue("email_syntheticform1", "red.swingline@initech.com");
+  ExpectFieldValue("phone_syntheticform1", "15125551234");
+}
+
+// Test that we can Autofill dynamically synthetic forms when the select options
+// change if the NameForAutofill of the first field matches
+IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
+                       DynamicChangingFormFill_SelectUpdated_SyntheticForm) {
+  CreateTestProfile();
+
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/autofill/dynamic_synthetic_form_select_options_change.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  TriggerFormFill("firstname");
+
+  // Wait for the re-fill to happen.
+  bool has_refilled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "hasRefilled()", &has_refilled));
+  ASSERT_TRUE(has_refilled);
+
+  // Make sure the new form was filled correctly.
+  ExpectFieldValue("firstname", "Milton");
+  ExpectFieldValue("address1", "4120 Freidrich Lane");
+  ExpectFieldValue("state", "TX");
   ExpectFieldValue("city", "Austin");
   ExpectFieldValue("company", "Initech");
   ExpectFieldValue("email", "red.swingline@initech.com");

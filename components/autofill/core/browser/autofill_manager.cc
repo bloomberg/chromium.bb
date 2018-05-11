@@ -734,8 +734,9 @@ void AutofillManager::FillOrPreviewProfileForm(
 
     // Set up the information needed for an eventual refill of this form.
     if (base::FeatureList::IsEnabled(features::kAutofillDynamicForms) &&
-        !form_structure->form_name().empty()) {
-      auto& entry = filling_contexts_map_[form_structure->form_name()];
+        !form_structure->GetIdentifierForRefill().empty()) {
+      auto& entry =
+          filling_contexts_map_[form_structure->GetIdentifierForRefill()];
       auto filling_context = std::make_unique<FillingContext>();
       filling_context->temp_data_model = profile;
       filling_context->filled_field_name = autofill_field->unique_name();
@@ -1335,7 +1336,8 @@ void AutofillManager::FillOrPreviewDataModelForm(
   //  This fill is not a refill attempt.
   //  This is not a credit card fill.
   FillingContext* filling_context = nullptr;
-  auto itr = filling_contexts_map_.find(form_structure->form_name());
+  auto itr =
+      filling_contexts_map_.find(form_structure->GetIdentifierForRefill());
   if (itr != filling_contexts_map_.end())
     filling_context = itr->second.get();
   bool could_attempt_refill =
@@ -1652,7 +1654,8 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
     // been a refill attempt on that form yet, start the process of triggering a
     // refill.
     if (ShouldTriggerRefill(*form_structure)) {
-      auto itr = filling_contexts_map_.find(form_structure->form_name());
+      auto itr =
+          filling_contexts_map_.find(form_structure->GetIdentifierForRefill());
       DCHECK(itr != filling_contexts_map_.end());
       FillingContext* filling_context = itr->second.get();
 
@@ -2008,12 +2011,12 @@ bool AutofillManager::ShouldTriggerRefill(const FormStructure& form_structure) {
     return false;
 
   // Should not refill if a form with the same name has not been filled before.
-  auto itr = filling_contexts_map_.find(form_structure.form_name());
+  auto itr =
+      filling_contexts_map_.find(form_structure.GetIdentifierForRefill());
   if (itr == filling_contexts_map_.end())
     return false;
 
   FillingContext* filling_context = itr->second.get();
-
   base::TimeTicks now = base::TimeTicks::Now();
   base::TimeDelta delta = now - filling_context->original_fill_time;
   return !filling_context->attempted_refill &&
@@ -2022,7 +2025,8 @@ bool AutofillManager::ShouldTriggerRefill(const FormStructure& form_structure) {
 
 void AutofillManager::TriggerRefill(const FormData& form,
                                     FormStructure* form_structure) {
-  auto itr = filling_contexts_map_.find(form_structure->form_name());
+  auto itr =
+      filling_contexts_map_.find(form_structure->GetIdentifierForRefill());
   DCHECK(itr != filling_contexts_map_.end());
   FillingContext* filling_context = itr->second.get();
 
