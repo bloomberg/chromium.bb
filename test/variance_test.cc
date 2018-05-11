@@ -343,7 +343,7 @@ struct TestParams {
 
 template <typename Func>
 std::ostream &operator<<(std::ostream &os, const TestParams<Func> &p) {
-  return os << "log2width/height:" << p.log2width << "/" << p.log2height
+  return os << "width/height:" << p.width << "/" << p.height
             << " function:" << reinterpret_cast<const void *>(p.func)
             << " bit-depth:" << p.bit_depth;
 }
@@ -1189,15 +1189,21 @@ INSTANTIATE_TEST_CASE_P(
                       VarianceParams(6, 7, &aom_variance64x128_sse2),
                       VarianceParams(6, 6, &aom_variance64x64_sse2),
                       VarianceParams(6, 5, &aom_variance64x32_sse2),
+                      VarianceParams(6, 4, &aom_variance64x16_sse2),
                       VarianceParams(5, 6, &aom_variance32x64_sse2),
                       VarianceParams(5, 5, &aom_variance32x32_sse2),
                       VarianceParams(5, 4, &aom_variance32x16_sse2),
+                      VarianceParams(5, 3, &aom_variance32x8_sse2),
+                      VarianceParams(4, 6, &aom_variance16x64_sse2),
                       VarianceParams(4, 5, &aom_variance16x32_sse2),
                       VarianceParams(4, 4, &aom_variance16x16_sse2),
                       VarianceParams(4, 3, &aom_variance16x8_sse2),
+                      VarianceParams(4, 2, &aom_variance16x4_sse2),
+                      VarianceParams(3, 5, &aom_variance8x32_sse2),
                       VarianceParams(3, 4, &aom_variance8x16_sse2),
                       VarianceParams(3, 3, &aom_variance8x8_sse2),
                       VarianceParams(3, 2, &aom_variance8x4_sse2),
+                      VarianceParams(2, 4, &aom_variance4x16_sse2),
                       VarianceParams(2, 3, &aom_variance4x8_sse2),
                       VarianceParams(2, 2, &aom_variance4x4_sse2)));
 

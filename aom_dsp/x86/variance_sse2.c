@@ -24,10 +24,6 @@
 #include "av1/common/onyxc_int.h"
 #include "av1/common/reconinter.h"
 
-typedef void (*getNxMvar_fn_t)(const unsigned char *src, int src_stride,
-                               const unsigned char *ref, int ref_stride,
-                               unsigned int *sse, int *sum);
-
 unsigned int aom_get_mb_ss_sse2(const int16_t *src) {
   __m128i vsum = _mm_setzero_si128();
   int i;
@@ -52,226 +48,265 @@ static __m128i read64(const uint8_t *p, int stride, int row) {
   return _mm_unpacklo_epi8(_mm_unpacklo_epi8(row0, row1), _mm_setzero_si128());
 }
 
-static void get4x4var_sse2(const uint8_t *src, int src_stride,
-                           const uint8_t *ref, int ref_stride,
-                           unsigned int *sse, int *sum) {
-  const __m128i src0 = read64(src, src_stride, 0);
-  const __m128i src1 = read64(src, src_stride, 2);
-  const __m128i ref0 = read64(ref, ref_stride, 0);
-  const __m128i ref1 = read64(ref, ref_stride, 2);
-  const __m128i diff0 = _mm_sub_epi16(src0, ref0);
-  const __m128i diff1 = _mm_sub_epi16(src1, ref1);
+static INLINE __m128i load4x2_sse2(const uint8_t *const p, const int stride) {
+  const __m128i p0 = _mm_cvtsi32_si128(*(const uint32_t *)(p + 0 * stride));
+  const __m128i p1 = _mm_cvtsi32_si128(*(const uint32_t *)(p + 1 * stride));
+  return _mm_unpacklo_epi8(_mm_unpacklo_epi32(p0, p1), _mm_setzero_si128());
+}
 
-  // sum
-  __m128i vsum = _mm_add_epi16(diff0, diff1);
+static INLINE __m128i load8_8to16_sse2(const uint8_t *const p) {
+  const __m128i p0 = _mm_loadl_epi64((const __m128i *)p);
+  return _mm_unpacklo_epi8(p0, _mm_setzero_si128());
+}
+
+// Accumulate 4 32bit numbers in val to 1 32bit number
+static INLINE unsigned int add32x4_sse2(__m128i val) {
+  val = _mm_add_epi32(val, _mm_srli_si128(val, 8));
+  val = _mm_add_epi32(val, _mm_srli_si128(val, 4));
+  return _mm_cvtsi128_si32(val);
+}
+
+// Accumulate 8 16bit in sum to 4 32bit number
+static INLINE __m128i sum_to_32bit_sse2(const __m128i sum) {
+  const __m128i sum_lo = _mm_srai_epi32(_mm_unpacklo_epi16(sum, sum), 16);
+  const __m128i sum_hi = _mm_srai_epi32(_mm_unpackhi_epi16(sum, sum), 16);
+  return _mm_add_epi32(sum_lo, sum_hi);
+}
+
+static INLINE void variance_kernel_sse2(const __m128i src, const __m128i ref,
+                                        __m128i *const sse,
+                                        __m128i *const sum) {
+  const __m128i diff = _mm_sub_epi16(src, ref);
+  *sse = _mm_add_epi32(*sse, _mm_madd_epi16(diff, diff));
+  *sum = _mm_add_epi16(*sum, diff);
+}
+
+// Can handle 128 pixels' diff sum (such as 8x16 or 16x8)
+// Slightly faster than variance_final_256_pel_sse2()
+// diff sum of 128 pixels can still fit in 16bit integer
+static INLINE void variance_final_128_pel_sse2(__m128i vsse, __m128i vsum,
+                                               unsigned int *const sse,
+                                               int *const sum) {
+  *sse = add32x4_sse2(vsse);
+
   vsum = _mm_add_epi16(vsum, _mm_srli_si128(vsum, 8));
   vsum = _mm_add_epi16(vsum, _mm_srli_si128(vsum, 4));
   vsum = _mm_add_epi16(vsum, _mm_srli_si128(vsum, 2));
   *sum = (int16_t)_mm_extract_epi16(vsum, 0);
-
-  // sse
-  vsum =
-      _mm_add_epi32(_mm_madd_epi16(diff0, diff0), _mm_madd_epi16(diff1, diff1));
-  vsum = _mm_add_epi32(vsum, _mm_srli_si128(vsum, 8));
-  vsum = _mm_add_epi32(vsum, _mm_srli_si128(vsum, 4));
-  *sse = _mm_cvtsi128_si32(vsum);
 }
 
-void aom_get8x8var_sse2(const uint8_t *src, int src_stride, const uint8_t *ref,
-                        int ref_stride, unsigned int *sse, int *sum) {
-  const __m128i zero = _mm_setzero_si128();
-  __m128i vsum = _mm_setzero_si128();
-  __m128i vsse = _mm_setzero_si128();
-  int i;
+// Can handle 256 pixels' diff sum (such as 16x16)
+static INLINE void variance_final_256_pel_sse2(__m128i vsse, __m128i vsum,
+                                               unsigned int *const sse,
+                                               int *const sum) {
+  *sse = add32x4_sse2(vsse);
 
-  for (i = 0; i < 8; i += 2) {
-    const __m128i src0 =
-        _mm_unpacklo_epi8(xx_loadl_64(src + i * src_stride), zero);
-    const __m128i ref0 =
-        _mm_unpacklo_epi8(xx_loadl_64(ref + i * ref_stride), zero);
-    const __m128i diff0 = _mm_sub_epi16(src0, ref0);
+  vsum = _mm_add_epi16(vsum, _mm_srli_si128(vsum, 8));
+  vsum = _mm_add_epi16(vsum, _mm_srli_si128(vsum, 4));
+  *sum = (int16_t)_mm_extract_epi16(vsum, 0);
+  *sum += (int16_t)_mm_extract_epi16(vsum, 1);
+}
 
-    const __m128i src1 =
-        _mm_unpacklo_epi8(xx_loadl_64(src + (i + 1) * src_stride), zero);
-    const __m128i ref1 =
-        _mm_unpacklo_epi8(xx_loadl_64(ref + (i + 1) * ref_stride), zero);
-    const __m128i diff1 = _mm_sub_epi16(src1, ref1);
+// Can handle 512 pixels' diff sum (such as 16x32 or 32x16)
+static INLINE void variance_final_512_pel_sse2(__m128i vsse, __m128i vsum,
+                                               unsigned int *const sse,
+                                               int *const sum) {
+  *sse = add32x4_sse2(vsse);
 
-    vsum = _mm_add_epi16(vsum, diff0);
-    vsum = _mm_add_epi16(vsum, diff1);
-    vsse = _mm_add_epi32(vsse, _mm_madd_epi16(diff0, diff0));
-    vsse = _mm_add_epi32(vsse, _mm_madd_epi16(diff1, diff1));
+  vsum = _mm_add_epi16(vsum, _mm_srli_si128(vsum, 8));
+  vsum = _mm_unpacklo_epi16(vsum, vsum);
+  vsum = _mm_srai_epi32(vsum, 16);
+  *sum = add32x4_sse2(vsum);
+}
+
+// Can handle 1024 pixels' diff sum (such as 32x32)
+static INLINE void variance_final_1024_pel_sse2(__m128i vsse, __m128i vsum,
+                                                unsigned int *const sse,
+                                                int *const sum) {
+  *sse = add32x4_sse2(vsse);
+
+  vsum = sum_to_32bit_sse2(vsum);
+  *sum = add32x4_sse2(vsum);
+}
+
+static INLINE void variance4_sse2(const uint8_t *src, const int src_stride,
+                                  const uint8_t *ref, const int ref_stride,
+                                  const int h, __m128i *const sse,
+                                  __m128i *const sum) {
+  assert(h <= 256);  // May overflow for larger height.
+  *sum = _mm_setzero_si128();
+
+  for (int i = 0; i < h; i += 2) {
+    const __m128i s = load4x2_sse2(src, src_stride);
+    const __m128i r = load4x2_sse2(ref, ref_stride);
+
+    variance_kernel_sse2(s, r, sse, sum);
+    src += 2 * src_stride;
+    ref += 2 * ref_stride;
   }
-
-  // sum
-  vsum = _mm_add_epi16(vsum, _mm_srli_si128(vsum, 8));
-  vsum = _mm_add_epi16(vsum, _mm_srli_si128(vsum, 4));
-  vsum = _mm_add_epi16(vsum, _mm_srli_si128(vsum, 2));
-  *sum = (int16_t)_mm_extract_epi16(vsum, 0);
-
-  // sse
-  vsse = _mm_add_epi32(vsse, _mm_srli_si128(vsse, 8));
-  vsse = _mm_add_epi32(vsse, _mm_srli_si128(vsse, 4));
-  *sse = _mm_cvtsi128_si32(vsse);
 }
 
-void aom_get16x16var_sse2(const uint8_t *src, int src_stride,
-                          const uint8_t *ref, int ref_stride, unsigned int *sse,
-                          int *sum) {
-  const __m128i zero = _mm_setzero_si128();
-  __m128i vsum = _mm_setzero_si128();
-  __m128i vsse = _mm_setzero_si128();
-  int i;
+static INLINE void variance8_sse2(const uint8_t *src, const int src_stride,
+                                  const uint8_t *ref, const int ref_stride,
+                                  const int h, __m128i *const sse,
+                                  __m128i *const sum) {
+  assert(h <= 128);  // May overflow for larger height.
+  *sum = _mm_setzero_si128();
+  for (int i = 0; i < h; i++) {
+    const __m128i s = load8_8to16_sse2(src);
+    const __m128i r = load8_8to16_sse2(ref);
 
-  for (i = 0; i < 16; ++i) {
-    const __m128i s = xx_loadu_128(src);
-    const __m128i r = xx_loadu_128(ref);
-
-    const __m128i src0 = _mm_unpacklo_epi8(s, zero);
-    const __m128i ref0 = _mm_unpacklo_epi8(r, zero);
-    const __m128i diff0 = _mm_sub_epi16(src0, ref0);
-
-    const __m128i src1 = _mm_unpackhi_epi8(s, zero);
-    const __m128i ref1 = _mm_unpackhi_epi8(r, zero);
-    const __m128i diff1 = _mm_sub_epi16(src1, ref1);
-
-    vsum = _mm_add_epi16(vsum, diff0);
-    vsum = _mm_add_epi16(vsum, diff1);
-    vsse = _mm_add_epi32(vsse, _mm_madd_epi16(diff0, diff0));
-    vsse = _mm_add_epi32(vsse, _mm_madd_epi16(diff1, diff1));
-
+    variance_kernel_sse2(s, r, sse, sum);
     src += src_stride;
     ref += ref_stride;
   }
-
-  // sum
-  vsum = _mm_add_epi16(vsum, _mm_srli_si128(vsum, 8));
-  vsum = _mm_add_epi16(vsum, _mm_srli_si128(vsum, 4));
-  *sum =
-      (int16_t)_mm_extract_epi16(vsum, 0) + (int16_t)_mm_extract_epi16(vsum, 1);
-
-  // sse
-  vsse = _mm_add_epi32(vsse, _mm_srli_si128(vsse, 8));
-  vsse = _mm_add_epi32(vsse, _mm_srli_si128(vsse, 4));
-  *sse = _mm_cvtsi128_si32(vsse);
 }
 
-static void variance_sse2(const unsigned char *src, int src_stride,
-                          const unsigned char *ref, int ref_stride, int w,
-                          int h, unsigned int *sse, int *sum,
-                          getNxMvar_fn_t var_fn, int block_size) {
-  int i, j;
+static INLINE void variance16_kernel_sse2(const uint8_t *const src,
+                                          const uint8_t *const ref,
+                                          __m128i *const sse,
+                                          __m128i *const sum) {
+  const __m128i zero = _mm_setzero_si128();
+  const __m128i s = _mm_loadu_si128((const __m128i *)src);
+  const __m128i r = _mm_loadu_si128((const __m128i *)ref);
+  const __m128i src0 = _mm_unpacklo_epi8(s, zero);
+  const __m128i ref0 = _mm_unpacklo_epi8(r, zero);
+  const __m128i src1 = _mm_unpackhi_epi8(s, zero);
+  const __m128i ref1 = _mm_unpackhi_epi8(r, zero);
 
-  *sse = 0;
-  *sum = 0;
+  variance_kernel_sse2(src0, ref0, sse, sum);
+  variance_kernel_sse2(src1, ref1, sse, sum);
+}
 
-  for (i = 0; i < h; i += block_size) {
-    for (j = 0; j < w; j += block_size) {
-      unsigned int sse0;
-      int sum0;
-      var_fn(src + src_stride * i + j, src_stride, ref + ref_stride * i + j,
-             ref_stride, &sse0, &sum0);
-      *sse += sse0;
-      *sum += sum0;
-    }
+static INLINE void variance16_sse2(const uint8_t *src, const int src_stride,
+                                   const uint8_t *ref, const int ref_stride,
+                                   const int h, __m128i *const sse,
+                                   __m128i *const sum) {
+  assert(h <= 64);  // May overflow for larger height.
+  *sum = _mm_setzero_si128();
+
+  for (int i = 0; i < h; ++i) {
+    variance16_kernel_sse2(src, ref, sse, sum);
+    src += src_stride;
+    ref += ref_stride;
   }
 }
 
-unsigned int aom_variance4x4_sse2(const uint8_t *src, int src_stride,
-                                  const uint8_t *ref, int ref_stride,
-                                  unsigned int *sse) {
-  int sum;
-  get4x4var_sse2(src, src_stride, ref, ref_stride, sse, &sum);
-  assert(sum <= 255 * 4 * 4);
-  assert(sum >= -255 * 4 * 4);
-  return *sse - ((sum * sum) >> 4);
+static INLINE void variance32_sse2(const uint8_t *src, const int src_stride,
+                                   const uint8_t *ref, const int ref_stride,
+                                   const int h, __m128i *const sse,
+                                   __m128i *const sum) {
+  assert(h <= 32);  // May overflow for larger height.
+  // Don't initialize sse here since it's an accumulation.
+  *sum = _mm_setzero_si128();
+
+  for (int i = 0; i < h; ++i) {
+    variance16_kernel_sse2(src + 0, ref + 0, sse, sum);
+    variance16_kernel_sse2(src + 16, ref + 16, sse, sum);
+    src += src_stride;
+    ref += ref_stride;
+  }
 }
 
-unsigned int aom_variance8x4_sse2(const uint8_t *src, int src_stride,
-                                  const uint8_t *ref, int ref_stride,
-                                  unsigned int *sse) {
-  int sum;
-  variance_sse2(src, src_stride, ref, ref_stride, 8, 4, sse, &sum,
-                get4x4var_sse2, 4);
-  assert(sum <= 255 * 8 * 4);
-  assert(sum >= -255 * 8 * 4);
-  return *sse - ((sum * sum) >> 5);
+static INLINE void variance64_sse2(const uint8_t *src, const int src_stride,
+                                   const uint8_t *ref, const int ref_stride,
+                                   const int h, __m128i *const sse,
+                                   __m128i *const sum) {
+  assert(h <= 16);  // May overflow for larger height.
+  *sum = _mm_setzero_si128();
+
+  for (int i = 0; i < h; ++i) {
+    variance16_kernel_sse2(src + 0, ref + 0, sse, sum);
+    variance16_kernel_sse2(src + 16, ref + 16, sse, sum);
+    variance16_kernel_sse2(src + 32, ref + 32, sse, sum);
+    variance16_kernel_sse2(src + 48, ref + 48, sse, sum);
+    src += src_stride;
+    ref += ref_stride;
+  }
 }
 
-unsigned int aom_variance4x8_sse2(const uint8_t *src, int src_stride,
-                                  const uint8_t *ref, int ref_stride,
-                                  unsigned int *sse) {
-  int sum;
-  variance_sse2(src, src_stride, ref, ref_stride, 4, 8, sse, &sum,
-                get4x4var_sse2, 4);
-  assert(sum <= 255 * 8 * 4);
-  assert(sum >= -255 * 8 * 4);
-  return *sse - ((sum * sum) >> 5);
+static INLINE void variance128_sse2(const uint8_t *src, const int src_stride,
+                                    const uint8_t *ref, const int ref_stride,
+                                    const int h, __m128i *const sse,
+                                    __m128i *const sum) {
+  assert(h <= 8);  // May overflow for larger height.
+  *sum = _mm_setzero_si128();
+
+  for (int i = 0; i < h; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      const int offset0 = j << 5;
+      const int offset1 = offset0 + 16;
+      variance16_kernel_sse2(src + offset0, ref + offset0, sse, sum);
+      variance16_kernel_sse2(src + offset1, ref + offset1, sse, sum);
+    }
+    src += src_stride;
+    ref += ref_stride;
+  }
 }
 
-unsigned int aom_variance8x8_sse2(const unsigned char *src, int src_stride,
-                                  const unsigned char *ref, int ref_stride,
-                                  unsigned int *sse) {
-  int sum;
-  aom_get8x8var_sse2(src, src_stride, ref, ref_stride, sse, &sum);
-  assert(sum <= 255 * 8 * 8);
-  assert(sum >= -255 * 8 * 8);
-  return *sse - ((sum * sum) >> 6);
-}
-
-unsigned int aom_variance16x8_sse2(const unsigned char *src, int src_stride,
-                                   const unsigned char *ref, int ref_stride,
-                                   unsigned int *sse) {
-  int sum;
-  variance_sse2(src, src_stride, ref, ref_stride, 16, 8, sse, &sum,
-                aom_get8x8var_sse2, 8);
-  assert(sum <= 255 * 16 * 8);
-  assert(sum >= -255 * 16 * 8);
-  return *sse - ((sum * sum) >> 7);
-}
-
-unsigned int aom_variance8x16_sse2(const unsigned char *src, int src_stride,
-                                   const unsigned char *ref, int ref_stride,
-                                   unsigned int *sse) {
-  int sum;
-  variance_sse2(src, src_stride, ref, ref_stride, 8, 16, sse, &sum,
-                aom_get8x8var_sse2, 8);
-  assert(sum <= 255 * 16 * 8);
-  assert(sum >= -255 * 16 * 8);
-  return *sse - ((sum * sum) >> 7);
-}
-
-unsigned int aom_variance16x16_sse2(const unsigned char *src, int src_stride,
-                                    const unsigned char *ref, int ref_stride,
-                                    unsigned int *sse) {
-  int sum;
-  aom_get16x16var_sse2(src, src_stride, ref, ref_stride, sse, &sum);
-  assert(sum <= 255 * 16 * 16);
-  assert(sum >= -255 * 16 * 16);
-  return *sse - ((uint32_t)((int64_t)sum * sum) >> 8);
-}
-
-#define AOM_VAR_16_SSE2(bw, bh, bits)                                         \
+#define AOM_VAR_NO_LOOP_SSE2(bw, bh, bits, max_pixels)                        \
   unsigned int aom_variance##bw##x##bh##_sse2(                                \
       const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, \
       unsigned int *sse) {                                                    \
-    int sum;                                                                  \
-    variance_sse2(src, src_stride, ref, ref_stride, bw, bh, sse, &sum,        \
-                  aom_get16x16var_sse2, 16);                                  \
+    __m128i vsse = _mm_setzero_si128();                                       \
+    __m128i vsum;                                                             \
+    int sum = 0;                                                              \
+    variance##bw##_sse2(src, src_stride, ref, ref_stride, bh, &vsse, &vsum);  \
+    variance_final_##max_pixels##_pel_sse2(vsse, vsum, sse, &sum);            \
     assert(sum <= 255 * bw * bh);                                             \
     assert(sum >= -255 * bw * bh);                                            \
     return *sse - (uint32_t)(((int64_t)sum * sum) >> bits);                   \
   }
 
-AOM_VAR_16_SSE2(32, 32, 10);
-AOM_VAR_16_SSE2(32, 16, 9);
-AOM_VAR_16_SSE2(16, 32, 9);
-AOM_VAR_16_SSE2(64, 64, 12);
-AOM_VAR_16_SSE2(64, 32, 11);
-AOM_VAR_16_SSE2(32, 64, 11);
-AOM_VAR_16_SSE2(128, 128, 14);
-AOM_VAR_16_SSE2(128, 64, 13);
-AOM_VAR_16_SSE2(64, 128, 13);
+AOM_VAR_NO_LOOP_SSE2(4, 4, 4, 128);
+AOM_VAR_NO_LOOP_SSE2(4, 8, 5, 128);
+AOM_VAR_NO_LOOP_SSE2(4, 16, 6, 128);
+
+AOM_VAR_NO_LOOP_SSE2(8, 4, 5, 128);
+AOM_VAR_NO_LOOP_SSE2(8, 8, 6, 128);
+AOM_VAR_NO_LOOP_SSE2(8, 16, 7, 128);
+AOM_VAR_NO_LOOP_SSE2(8, 32, 8, 256);
+
+AOM_VAR_NO_LOOP_SSE2(16, 4, 6, 128);
+AOM_VAR_NO_LOOP_SSE2(16, 8, 7, 128);
+AOM_VAR_NO_LOOP_SSE2(16, 16, 8, 256);
+AOM_VAR_NO_LOOP_SSE2(16, 32, 9, 512);
+AOM_VAR_NO_LOOP_SSE2(16, 64, 10, 1024);
+
+AOM_VAR_NO_LOOP_SSE2(32, 8, 8, 256);
+AOM_VAR_NO_LOOP_SSE2(32, 16, 9, 512);
+AOM_VAR_NO_LOOP_SSE2(32, 32, 10, 1024);
+
+#define AOM_VAR_LOOP_SSE2(bw, bh, bits, uh, cnt)                              \
+  unsigned int aom_variance##bw##x##bh##_sse2(                                \
+      const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, \
+      unsigned int *sse) {                                                    \
+    __m128i vsse = _mm_setzero_si128();                                       \
+    __m128i vsum = _mm_setzero_si128();                                       \
+    for (int i = 0; i < cnt; ++i) {                                           \
+      __m128i vsum16;                                                         \
+      variance##bw##_sse2(src, src_stride, ref, ref_stride, uh, &vsse,        \
+                          &vsum16);                                           \
+      vsum = _mm_add_epi32(vsum, sum_to_32bit_sse2(vsum16));                  \
+      src += (src_stride * uh);                                               \
+      ref += (ref_stride * uh);                                               \
+    }                                                                         \
+    *sse = add32x4_sse2(vsse);                                                \
+    int sum = add32x4_sse2(vsum);                                             \
+    assert(sum <= 255 * bw * bh);                                             \
+    assert(sum >= -255 * bw * bh);                                            \
+    return *sse - (uint32_t)(((int64_t)sum * sum) >> bits);                   \
+  }
+
+AOM_VAR_LOOP_SSE2(32, 64, 11, 32, 2);  // 32x32 x 2
+
+AOM_VAR_NO_LOOP_SSE2(64, 16, 10, 1024);
+AOM_VAR_LOOP_SSE2(64, 32, 11, 16, 2);   // 64x16 x 2
+AOM_VAR_LOOP_SSE2(64, 64, 12, 16, 4);   // 64x16 x 4
+AOM_VAR_LOOP_SSE2(64, 128, 13, 16, 8);  // 64x16 x 8
+
+AOM_VAR_LOOP_SSE2(128, 64, 13, 8, 8);    // 128x8 x 8
+AOM_VAR_LOOP_SSE2(128, 128, 14, 8, 16);  // 128x8 x 16
 
 unsigned int aom_mse8x8_sse2(const uint8_t *src, int src_stride,
                              const uint8_t *ref, int ref_stride,
@@ -299,72 +334,6 @@ unsigned int aom_mse16x16_sse2(const uint8_t *src, int src_stride,
                                unsigned int *sse) {
   aom_variance16x16_sse2(src, src_stride, ref, ref_stride, sse);
   return *sse;
-}
-
-unsigned int aom_variance4x16_sse2(const uint8_t *src, int src_stride,
-                                   const uint8_t *ref, int ref_stride,
-                                   unsigned int *sse) {
-  int sum;
-  variance_sse2(src, src_stride, ref, ref_stride, 4, 16, sse, &sum,
-                get4x4var_sse2, 4);
-  assert(sum <= 255 * 4 * 16);
-  assert(sum >= -255 * 4 * 16);
-  return *sse - (unsigned int)(((int64_t)sum * sum) >> 6);
-}
-
-unsigned int aom_variance16x4_sse2(const uint8_t *src, int src_stride,
-                                   const uint8_t *ref, int ref_stride,
-                                   unsigned int *sse) {
-  int sum;
-  variance_sse2(src, src_stride, ref, ref_stride, 16, 4, sse, &sum,
-                get4x4var_sse2, 4);
-  assert(sum <= 255 * 16 * 4);
-  assert(sum >= -255 * 16 * 4);
-  return *sse - (unsigned int)(((int64_t)sum * sum) >> 6);
-}
-
-unsigned int aom_variance8x32_sse2(const uint8_t *src, int src_stride,
-                                   const uint8_t *ref, int ref_stride,
-                                   unsigned int *sse) {
-  int sum;
-  variance_sse2(src, src_stride, ref, ref_stride, 8, 32, sse, &sum,
-                aom_get8x8var_sse2, 8);
-  assert(sum <= 255 * 8 * 32);
-  assert(sum >= -255 * 8 * 32);
-  return *sse - (unsigned int)(((int64_t)sum * sum) >> 8);
-}
-
-unsigned int aom_variance32x8_sse2(const uint8_t *src, int src_stride,
-                                   const uint8_t *ref, int ref_stride,
-                                   unsigned int *sse) {
-  int sum;
-  variance_sse2(src, src_stride, ref, ref_stride, 32, 8, sse, &sum,
-                aom_get8x8var_sse2, 8);
-  assert(sum <= 255 * 32 * 8);
-  assert(sum >= -255 * 32 * 8);
-  return *sse - (unsigned int)(((int64_t)sum * sum) >> 8);
-}
-
-unsigned int aom_variance16x64_sse2(const uint8_t *src, int src_stride,
-                                    const uint8_t *ref, int ref_stride,
-                                    unsigned int *sse) {
-  int sum;
-  variance_sse2(src, src_stride, ref, ref_stride, 16, 64, sse, &sum,
-                aom_get16x16var_sse2, 16);
-  assert(sum <= 255 * 16 * 64);
-  assert(sum >= -255 * 16 * 64);
-  return *sse - (unsigned int)(((int64_t)sum * sum) >> 10);
-}
-
-unsigned int aom_variance64x16_sse2(const uint8_t *src, int src_stride,
-                                    const uint8_t *ref, int ref_stride,
-                                    unsigned int *sse) {
-  int sum;
-  variance_sse2(src, src_stride, ref, ref_stride, 64, 16, sse, &sum,
-                aom_get16x16var_sse2, 16);
-  assert(sum <= 255 * 64 * 16);
-  assert(sum >= -255 * 64 * 16);
-  return *sse - (unsigned int)(((int64_t)sum * sum) >> 10);
 }
 
 // The 2 unused parameters are place holders for PIC enabled build.
