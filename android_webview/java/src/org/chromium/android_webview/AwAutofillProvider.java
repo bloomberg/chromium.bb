@@ -130,13 +130,13 @@ public class AwAutofillProvider extends AutofillProvider {
                     case FormFieldData.TYPE_LIST:
                         int j = value.getListValue();
                         if (j < 0 && j >= field.mOptionValues.length) continue;
-                        field.updateValue(field.mOptionValues[j]);
+                        field.setAutofillValue(field.mOptionValues[j]);
                         break;
                     case FormFieldData.TYPE_TOGGLE:
                         field.setChecked(value.getToggleValue());
                         break;
                     case FormFieldData.TYPE_TEXT:
-                        field.updateValue((String) value.getTextValue());
+                        field.setAutofillValue((String) value.getTextValue());
                         break;
                     default:
                         break;
@@ -176,6 +176,10 @@ public class AwAutofillProvider extends AutofillProvider {
 
         public int getVirtualId(short index) {
             return toVirtualId(sessionId, index);
+        }
+
+        public FormFieldData getField(short index) {
+            return mFormData.mFields.get(index);
         }
 
         private static int findIndex(String[] values, String value) {
@@ -310,7 +314,7 @@ public class AwAutofillProvider extends AutofillProvider {
             mRequest.setFocusField(new FocusField(focusField.fieldIndex, absBound));
         }
         notifyVirtualValueChanged(index);
-        mAutofillUMA.onUserChangeFieldValue();
+        mAutofillUMA.onUserChangeFieldValue(mRequest.getField(sIndex).hasPreviouslyAutofilled());
     }
 
     @Override
