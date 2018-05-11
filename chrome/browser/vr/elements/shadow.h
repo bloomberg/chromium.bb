@@ -14,6 +14,8 @@ namespace vr {
 
 // A shadow is meant to be the ancestor of elements to which a shadow is to be
 // applied. The shadow is applied across its padding.
+// By default the direct child is used as the shadow caster. This behavior can
+// be changed by manually setting a shadow caster.
 class Shadow : public UiElement {
  public:
   Shadow();
@@ -24,6 +26,9 @@ class Shadow : public UiElement {
 
   void LayOutChildren() override;
   void set_intensity(float intensity) { intensity_ = intensity; }
+  void set_shadow_caster(UiElement* shadow_caster) {
+    shadow_caster_ = shadow_caster;
+  }
 
   class Renderer : public BaseQuadRenderer {
    public:
@@ -55,6 +60,7 @@ class Shadow : public UiElement {
  private:
   float depth_;
   float intensity_ = 1.0f;
+  UiElement* shadow_caster_ = nullptr;
   gfx::SizeF contributed_size_;
 
   DISALLOW_COPY_AND_ASSIGN(Shadow);

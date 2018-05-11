@@ -50,7 +50,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.vr_shell.keyboard.VrInputMethodManagerWrapper;
@@ -88,7 +87,6 @@ public class VrShellImpl
     private final boolean mVrBrowsingEnabled;
 
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
-    private TabModelSelectorTabModelObserver mTabModelSelectorTabModelObserver;
 
     private long mNativeVrShell;
 
@@ -378,7 +376,6 @@ public class VrShellImpl
         createTabList();
         mActivity.getTabModelSelector().addObserver(mTabModelSelectorObserver);
         attachTabModelSelectorTabObserver();
-        attachTabModelSelectorTabModelObserver();
         updateHistoryButtonsVisibility();
 
         mPresentationView.setOnTouchListener(mTouchListener);
@@ -717,7 +714,6 @@ public class VrShellImpl
         }
         mTabModelSelector.removeObserver(mTabModelSelectorObserver);
         mTabModelSelectorTabObserver.destroy();
-        mTabModelSelectorTabModelObserver.destroy();
         if (mTab != null) {
             mTab.removeObserver(mTabObserver);
             restoreTabFromVR();
@@ -944,18 +940,6 @@ public class VrShellImpl
         };
     }
 
-    /** Creates and attaches a TabModelSelectorTabModelObserver to the tab model selector. */
-    private void attachTabModelSelectorTabModelObserver() {
-        assert mTabModelSelectorTabModelObserver == null;
-        mTabModelSelectorTabModelObserver =
-                new TabModelSelectorTabModelObserver(mTabModelSelector) {
-                    @Override
-                    public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
-                        nativeOnTabSelected(mNativeVrShell, tab.isIncognito(), tab.getId());
-                    }
-                };
-    }
-
     @CalledByNative
     public boolean hasDaydreamSupport() {
         return mDelegate.hasDaydreamSupport();
@@ -1061,6 +1045,11 @@ public class VrShellImpl
     @CalledByNative
     public void openSettings() {
         mActivity.onMenuOrKeyboardAction(R.id.preferences_id, true);
+    }
+
+    @CalledByNative
+    public void closeTab(int id, boolean incognito) {
+        TabModelUtils.closeTabById(mTabModelSelector.getModel(incognito), id);
     }
 
     @CalledByNative
@@ -1262,7 +1251,6 @@ public class VrShellImpl
     private native void nativeOnTabUpdated(long nativeVrShell, boolean incognito, int id,
             String title);
     private native void nativeOnTabRemoved(long nativeVrShell, boolean incognito, int id);
-    private native void nativeOnTabSelected(long nativeVrShell, boolean incognito, int id);
     private native void nativeCloseAlertDialog(long nativeVrShell);
     private native void nativeSetAlertDialog(long nativeVrShell, float width, float height);
     private native void nativeSetDialogBufferSize(long nativeVrShell, float width, float height);

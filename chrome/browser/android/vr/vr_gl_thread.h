@@ -94,6 +94,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void OpenDownloads() override;
   void OpenShare() override;
   void OpenSettings() override;
+  void CloseTab(int id, bool incognito) override;
   void CloseAllTabs() override;
   void CloseAllIncognitoTabs() override;
   void OpenFeedback() override;
@@ -139,7 +140,6 @@ class VrGLThread : public base::android::JavaHandlerThread,
                       const base::string16& title) override;
   void RemoveTab(int id, bool incognito) override;
   void RemoveAllTabs() override;
-  void OnTabSelected(int id, bool incognito) override;
 
   void ReportUiActivityResultForTesting(
       const VrUiTestActivityResult& result) override;

@@ -55,6 +55,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   void OpenDownloads() override;
   void OpenShare() override;
   void OpenSettings() override;
+  void CloseTab(int id, bool incognito) override;
   void CloseAllTabs() override;
   void CloseAllIncognitoTabs() override;
   void OpenFeedback() override;

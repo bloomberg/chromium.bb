@@ -408,6 +408,11 @@ void VrShell::OpenSettings() {
   Java_VrShellImpl_openSettings(env, j_vr_shell_);
 }
 
+void VrShell::CloseTab(int id, bool incognito) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_VrShellImpl_closeTab(env, j_vr_shell_, id, incognito);
+}
+
 void VrShell::CloseAllTabs() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_VrShellImpl_closeAllTabs(env, j_vr_shell_);
@@ -628,13 +633,6 @@ void VrShell::OnTabRemoved(JNIEnv* env,
                            jboolean incognito,
                            jint id) {
   ui_->RemoveTab(id, incognito);
-}
-
-void VrShell::OnTabSelected(JNIEnv* env,
-                            const JavaParamRef<jobject>& obj,
-                            jboolean incognito,
-                            jint id) {
-  ui_->OnTabSelected(id, incognito);
 }
 
 void VrShell::SetAlertDialog(JNIEnv* env,

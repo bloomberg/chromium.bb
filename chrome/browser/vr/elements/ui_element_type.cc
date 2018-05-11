@@ -45,6 +45,8 @@ static const char* g_ui_element_type_strings[] = {
     "kTypeOverflowMenuItem",
     "kTypeTooltip",
     "kTypeLabel",
+    "kTypeTabItem",
+    "kTypeTabItemRemoveButton",
 };
 
 static_assert(

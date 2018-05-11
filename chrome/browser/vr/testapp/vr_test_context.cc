@@ -580,9 +580,7 @@ void VrTestContext::OpenNewTab(bool incognito) {
   ui_->AddOrUpdateTab(tab_id_++, incognito, base::UTF8ToUTF16("test"));
 }
 
-void VrTestContext::SelectTab(int id, bool incognito) {
-  ui_->OnTabSelected(id, incognito);
-}
+void VrTestContext::SelectTab(int id, bool incognito) {}
 
 void VrTestContext::OpenBookmarks() {}
 void VrTestContext::OpenRecentTabs() {}
@@ -590,6 +588,10 @@ void VrTestContext::OpenHistory() {}
 void VrTestContext::OpenDownloads() {}
 void VrTestContext::OpenShare() {}
 void VrTestContext::OpenSettings() {}
+
+void VrTestContext::CloseTab(int id, bool incognito) {
+  ui_->RemoveTab(id, incognito);
+}
 
 void VrTestContext::CloseAllTabs() {
   incognito_ = false;

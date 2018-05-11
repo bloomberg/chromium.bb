@@ -274,7 +274,7 @@ void OnSuggestionModelRemoved(UiScene* scene, SuggestionBinding* binding) {
   scene->RemoveUiElement(binding->view()->id());
 }
 
-typedef VectorBinding<TabModel, Rect> TabSetBinding;
+typedef VectorBinding<TabModel, UiElement> TabSetBinding;
 typedef typename TabSetBinding::ElementBinding TabBinding;
 
 void OnTabModelAdded(UiScene* scene,
@@ -284,7 +284,7 @@ void OnTabModelAdded(UiScene* scene,
                      AudioDelegate* audio_delegate,
                      UiBrowserInterface* browser,
                      TabBinding* element_binding) {
-  auto item = Create<Button>(kNone, kPhaseForeground, base::RepeatingClosure(),
+  auto item = Create<Button>(kNone, kPhaseForeground, base::DoNothing(),
                              audio_delegate);
   item->SetButtonColors(
       ColorScheme::GetColorScheme(incognito ? ColorScheme::kModeIncognito
@@ -293,6 +293,8 @@ void OnTabModelAdded(UiScene* scene,
   item->SetSize(kTabItemWidthDMM, kTabItemHeightDMM);
   item->SetTransitionedProperties({OPACITY});
   item->set_corner_radius(kTabItemCornerRadiusDMM);
+  item->set_hover_offset(0.0f);
+  item->SetType(kTypeTabItem);
   item->AddBinding(std::make_unique<Binding<PagedGridLayout::PageState>>(
       VR_BIND_LAMBDA(
           [](PagedGridLayout* paged_layout, UiElement* item) {
@@ -324,15 +326,21 @@ void OnTabModelAdded(UiScene* scene,
           },
           base::Unretained(element_binding)),
       VR_BIND_LAMBDA(
-          [](Button* item, UiBrowserInterface* browser, bool incognito,
-             const int& id) {
-            item->set_click_handler(base::BindRepeating(
-                [](UiBrowserInterface* browser, int id, bool incognito) {
-                  browser->SelectTab(id, incognito);
-                },
-                base::Unretained(browser), id, incognito));
+          [](TabBinding* element_binding, UiBrowserInterface* browser,
+             Model* model, bool incognito, const int& id) {
+            static_cast<Button*>(
+                element_binding->view()->GetDescendantByType(kTypeTabItem))
+                ->set_click_handler(base::BindRepeating(
+                    [](UiBrowserInterface* browser, Model* model, int id,
+                       bool incognito) {
+                      browser->SelectTab(id, incognito);
+                      model->pop_mode(kModeTabsView);
+                    },
+                    base::Unretained(browser), base::Unretained(model), id,
+                    incognito));
           },
-          base::Unretained(item.get()), base::Unretained(browser), incognito)));
+          base::Unretained(element_binding), base::Unretained(browser),
+          base::Unretained(model), incognito)));
 
   // TODO(crbug.com/838937): This is just a placeholder text. Replace with
   // proper tab item.
@@ -349,6 +357,61 @@ void OnTabModelAdded(UiScene* scene,
                      .tab_item_text);
   item->background()->AddChild(std::move(text));
 
+  auto shadow = Create<Shadow>(kNone, kPhaseForeground);
+  shadow->set_x_anchoring(RIGHT);
+  shadow->set_y_anchoring(TOP);
+  shadow->set_intensity(kTabsViewRemoveButtonShadowIntensity);
+  shadow->SetTransitionedProperties({OPACITY});
+
+  auto remove_button =
+      Create<DiscButton>(kNone, kPhaseForeground, base::DoNothing(),
+                         vector_icons::kCloseRoundedIcon, nullptr);
+  remove_button->SetTranslate(0, 0, kTabsViewRemoveButtonDepthOffsetDMM);
+  remove_button->SetSize(kTabsViewRemoveButtonSizeDMM,
+                         kTabsViewRemoveButtonSizeDMM);
+  remove_button->SetType(kTypeTabItemRemoveButton);
+  remove_button->set_hover_offset(kTabsViewRemoveButtonHoverOffsetDMM);
+  Sounds sounds;
+  sounds.hover_enter = kSoundButtonHover;
+  sounds.button_down = kSoundButtonClick;
+  remove_button->SetSounds(sounds, audio_delegate);
+  VR_BIND_BUTTON_COLORS(model, remove_button.get(),
+                        &ColorScheme::disc_button_colors,
+                        &DiscButton::SetButtonColors);
+  element_binding->bindings().push_back(std::make_unique<Binding<int>>(
+      VR_BIND_LAMBDA(
+          [](TabBinding* element_binding) {
+            return element_binding->model()->id;
+          },
+          base::Unretained(element_binding)),
+      VR_BIND_LAMBDA(
+          [](TabBinding* element_binding, UiBrowserInterface* browser,
+             bool incognito, const int& id) {
+            static_cast<Button*>(element_binding->view()->GetDescendantByType(
+                                     kTypeTabItemRemoveButton))
+                ->set_click_handler(base::BindRepeating(
+                    [](UiBrowserInterface* browser, int id, bool incognito) {
+                      browser->CloseTab(id, incognito);
+                    },
+                    base::Unretained(browser), id, incognito));
+          },
+          base::Unretained(element_binding), base::Unretained(browser),
+          incognito)));
+
+  shadow->set_shadow_caster(remove_button->background());
+  shadow->AddBinding(std::make_unique<Binding<bool>>(
+      VR_BIND_LAMBDA(
+          [](Button* item, Button* remove_button) {
+            return item->hovered() || remove_button->hovered();
+          },
+          base::Unretained(item.get()), base::Unretained(remove_button.get())),
+      VR_BIND_LAMBDA([](UiElement* shadow,
+                        const bool& hovered) { shadow->SetVisible(hovered); },
+                     base::Unretained(shadow.get()))));
+  shadow->AddChild(std::move(remove_button));
+
+  item->background()->AddChild(std::move(shadow));
+  element_binding->set_view(item.get());
   scene->AddUiElement(tabs_view, std::move(item));
 }
 
