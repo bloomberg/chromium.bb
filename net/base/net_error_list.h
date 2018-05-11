@@ -754,6 +754,10 @@ NET_ERROR(SPDY_STREAM_CLOSED, -376)
 // Client is refusing an HTTP/2 stream.
 NET_ERROR(SPDY_CLIENT_REFUSED_STREAM, -377)
 
+// A pushed HTTP/2 stream was claimed by a request based on matching URL and
+// request headers, but the pushed response headers do not match the request.
+NET_ERROR(SPDY_PUSHED_RESPONSE_DOES_NOT_MATCH, -378)
+
 // The cache does not have the requested entry.
 NET_ERROR(CACHE_MISS, -400)
 

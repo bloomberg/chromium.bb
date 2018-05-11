@@ -155,7 +155,7 @@ void SpdyStream::PushedStreamReplay() {
   base::WeakPtr<SpdyStream> weak_this = GetWeakPtr();
 
   CHECK(delegate_);
-  delegate_->OnHeadersReceived(response_headers_);
+  delegate_->OnHeadersReceived(response_headers_, &request_headers_);
 
   // OnHeadersReceived() may have closed |this|.
   if (!weak_this)
@@ -911,8 +911,17 @@ void SpdyStream::SaveResponseHeaders(const SpdyHeaderBlock& response_headers) {
 
   // If delegate is not yet attached, OnHeadersReceived() will be called after
   // the delegate gets attached to the stream.
-  if (delegate_)
-    delegate_->OnHeadersReceived(response_headers_);
+  if (!delegate_)
+    return;
+
+  if (type_ == SPDY_PUSH_STREAM) {
+    // OnPushPromiseHeadersReceived() must have been called before
+    // OnHeadersReceived().
+    DCHECK(request_headers_valid_);
+    delegate_->OnHeadersReceived(response_headers_, &request_headers_);
+  } else {
+    delegate_->OnHeadersReceived(response_headers_, nullptr);
+  }
 }
 
 #define STATE_CASE(s)                                     \

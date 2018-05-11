@@ -31,6 +31,53 @@
 
 namespace net {
 
+namespace {
+
+// TODO(https://crbug.com/831536): Add histogram to record each case.
+bool ValidatePushedHeaders(const HttpRequestInfo& request_info,
+                           const SpdyHeaderBlock& pushed_request_headers,
+                           const SpdyHeaderBlock& pushed_response_headers,
+                           const HttpResponseInfo& pushed_response_info) {
+  SpdyHeaderBlock::const_iterator status_it =
+      pushed_response_headers.find(kHttp2StatusHeader);
+  DCHECK(status_it != pushed_response_headers.end());
+  // 206 Partial Content and 416 Requested Range Not Satisfiable are range
+  // responses.
+  if (status_it->second == "206" || status_it->second == "416") {
+    std::string client_request_range;
+    if (!request_info.extra_headers.GetHeader(HttpRequestHeaders::kRange,
+                                              &client_request_range)) {
+      // Client initiated request is not a range request.
+      return false;
+    }
+    SpdyHeaderBlock::const_iterator pushed_request_range_it =
+        pushed_request_headers.find("range");
+    if (pushed_request_range_it == pushed_request_headers.end()) {
+      // Pushed request is not a range request.
+      return false;
+    }
+    if (client_request_range != pushed_request_range_it->second) {
+      // Client and pushed request ranges do not match.
+      return false;
+    }
+  }
+
+  HttpRequestInfo pushed_request_info;
+  ConvertHeaderBlockToHttpRequestHeaders(pushed_request_headers,
+                                         &pushed_request_info.extra_headers);
+  HttpVaryData vary_data;
+  if (!vary_data.Init(pushed_request_info,
+                      *pushed_response_info.headers.get())) {
+    // Pushed response did not contain non-empty Vary header.
+    return true;
+  }
+
+  return vary_data.MatchesRequest(request_info,
+                                  *pushed_response_info.headers.get());
+}
+
+}  // anonymous namespace
+
 const size_t SpdyHttpStream::kRequestBodyBufferSize = 1 << 14;  // 16KB
 
 SpdyHttpStream::SpdyHttpStream(const base::WeakPtr<SpdySession>& spdy_session,
@@ -306,7 +353,8 @@ void SpdyHttpStream::OnHeadersSent() {
 }
 
 void SpdyHttpStream::OnHeadersReceived(
-    const SpdyHeaderBlock& response_headers) {
+    const SpdyHeaderBlock& response_headers,
+    const SpdyHeaderBlock* pushed_request_headers) {
   DCHECK(!response_headers_complete_);
   response_headers_complete_ = true;
 
@@ -319,6 +367,16 @@ void SpdyHttpStream::OnHeadersReceived(
   const bool headers_valid =
       SpdyHeadersToHttpResponse(response_headers, response_info_);
   DCHECK(headers_valid);
+
+  if (pushed_request_headers &&
+      !ValidatePushedHeaders(*request_info_, *pushed_request_headers,
+                             response_headers, *response_info_)) {
+    // Cancel will call OnClose, which might call callbacks and might destroy
+    // |this|.
+    stream_->Cancel(ERR_SPDY_PUSHED_RESPONSE_DOES_NOT_MATCH);
+
+    return;
+  }
 
   response_info_->response_time = stream_->response_time();
   // Don't store the SSLInfo in the response here, HttpNetworkTransaction

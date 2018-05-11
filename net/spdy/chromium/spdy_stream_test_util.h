@@ -29,7 +29,9 @@ class ClosingDelegate : public SpdyStream::Delegate {
 
   // SpdyStream::Delegate implementation.
   void OnHeadersSent() override;
-  void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override;
+  void OnHeadersReceived(
+      const SpdyHeaderBlock& response_headers,
+      const SpdyHeaderBlock* pushed_request_headers) override;
   void OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) override;
   void OnDataSent() override;
   void OnTrailers(const SpdyHeaderBlock& trailers) override;
@@ -51,7 +53,9 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   ~StreamDelegateBase() override;
 
   void OnHeadersSent() override;
-  void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override;
+  void OnHeadersReceived(
+      const SpdyHeaderBlock& response_headers,
+      const SpdyHeaderBlock* pushed_request_headers) override;
   void OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) override;
   void OnDataSent() override;
   void OnTrailers(const SpdyHeaderBlock& trailers) override;
@@ -104,7 +108,9 @@ class StreamDelegateSendImmediate : public StreamDelegateBase {
                               SpdyStringPiece data);
   ~StreamDelegateSendImmediate() override;
 
-  void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override;
+  void OnHeadersReceived(
+      const SpdyHeaderBlock& response_headers,
+      const SpdyHeaderBlock* pushed_request_headers) override;
 
  private:
   SpdyStringPiece data_;
@@ -130,7 +136,9 @@ class StreamDelegateCloseOnHeaders : public StreamDelegateBase {
       const base::WeakPtr<SpdyStream>& stream);
   ~StreamDelegateCloseOnHeaders() override;
 
-  void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override;
+  void OnHeadersReceived(
+      const SpdyHeaderBlock& response_headers,
+      const SpdyHeaderBlock* pushed_request_headers) override;
 };
 
 }  // namespace test

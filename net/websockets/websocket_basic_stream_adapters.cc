@@ -133,7 +133,8 @@ void WebSocketSpdyStreamAdapter::OnHeadersSent() {
 }
 
 void WebSocketSpdyStreamAdapter::OnHeadersReceived(
-    const SpdyHeaderBlock& response_headers) {
+    const SpdyHeaderBlock& response_headers,
+    const SpdyHeaderBlock* pushed_request_headers) {
   if (delegate_)
     delegate_->OnHeadersReceived(response_headers);
 }

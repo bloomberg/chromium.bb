@@ -34,7 +34,8 @@ class FuzzerDelegate : public net::SpdyStream::Delegate {
 
   void OnHeadersSent() override {}
   void OnHeadersReceived(
-      const net::SpdyHeaderBlock& response_headers) override {}
+      const net::SpdyHeaderBlock& response_headers,
+      const net::SpdyHeaderBlock* pushed_request_headers) override {}
   void OnDataReceived(std::unique_ptr<net::SpdyBuffer> buffer) override {}
   void OnDataSent() override {}
   void OnTrailers(const net::SpdyHeaderBlock& trailers) override {}

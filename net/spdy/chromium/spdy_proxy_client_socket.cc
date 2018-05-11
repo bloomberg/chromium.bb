@@ -433,7 +433,8 @@ void SpdyProxyClientSocket::OnHeadersSent() {
 }
 
 void SpdyProxyClientSocket::OnHeadersReceived(
-    const SpdyHeaderBlock& response_headers) {
+    const SpdyHeaderBlock& response_headers,
+    const SpdyHeaderBlock* pushed_request_headers) {
   // If we've already received the reply, existing headers are too late.
   // TODO(mbelshe): figure out a way to make HEADERS frames useful after the
   //                initial response.

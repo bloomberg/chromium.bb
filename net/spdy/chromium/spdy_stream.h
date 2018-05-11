@@ -87,8 +87,11 @@ class NET_EXPORT_PRIVATE SpdyStream {
     //   - OnTrailers() zero or one times;
     //   - OnClose() exactly once.
 
-    // Called when headers have been received.
-    virtual void OnHeadersReceived(const SpdyHeaderBlock& response_headers) = 0;
+    // Called when response headers have been received.  In case of a pushed
+    // stream, the pushed request headers are also passed.
+    virtual void OnHeadersReceived(
+        const SpdyHeaderBlock& response_headers,
+        const SpdyHeaderBlock* pushed_request_headers) = 0;
 
     // Called when data is received.  |buffer| may be NULL, which signals EOF.
     // May cause the stream to be closed.
