@@ -1046,13 +1046,18 @@ void AutofillAgent::ReplaceElementIfNowInvalid(const FormData& original_form) {
     }
   }
 
-  // Could not find the new version of the form, bail out.
-  if (form_element.IsNull())
-    return;
+  WebVector<WebFormControlElement> elements;
+  if (form_element.IsNull()) {
+    // Could not find the new version of the form, get all the unowned elements.
+    std::vector<WebElement> fieldsets;
+    elements = form_util::GetUnownedAutofillableFormFieldElements(
+        element_.GetDocument().All(), &fieldsets);
+  } else {
+    // Get all the elements of the new version of the form.
+    form_element.GetFormControlElements(elements);
+  }
 
   // Try to find the new version of the last interacted element.
-  WebVector<WebFormControlElement> elements;
-  form_element.GetFormControlElements(elements);
   for (const WebFormControlElement& element : elements) {
     if (element_.NameForAutofill() == element.NameForAutofill()) {
       element_ = element;

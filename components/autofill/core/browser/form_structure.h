@@ -246,6 +246,12 @@ class FormStructure {
   bool operator==(const FormData& form) const;
   bool operator!=(const FormData& form) const;
 
+  // Returns an identifier that is used by the refill logic. Takes the first non
+  // empty of these or returns an empty string:
+  // - Form name
+  // - Name for Autofill of first field
+  base::string16 GetIdentifierForRefill() const;
+
  private:
   friend class AutofillMergeTest;
   friend class FormStructureTest;
