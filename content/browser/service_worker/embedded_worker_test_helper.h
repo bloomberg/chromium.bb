@@ -72,7 +72,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
     ~MockEmbeddedWorkerInstanceClient() override;
 
     static void Bind(const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
-                     mojo::ScopedMessagePipeHandle request_handle);
+                     mojom::EmbeddedWorkerInstanceClientRequest request);
 
    protected:
     // mojom::EmbeddedWorkerInstanceClient implementation.
@@ -278,6 +278,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
  private:
   class MockServiceWorkerEventDispatcher;
+  class MockRendererInterface;
 
   void DidSimulateWorkerScriptCached(int embedded_worker_id,
                                      bool pause_after_download);
@@ -360,6 +361,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   IPC::TestSink sink_;
 
+  std::unique_ptr<MockRendererInterface> mock_renderer_interface_;
   std::vector<std::unique_ptr<MockEmbeddedWorkerInstanceClient>>
       mock_instance_clients_;
   size_t mock_instance_clients_next_index_;
