@@ -22,11 +22,13 @@ class DesktopProfileSessionDurationsService
     : public KeyedService,
       public DesktopSessionDurationTracker::Observer,
       public GaiaCookieManagerService::Observer,
+      public OAuth2TokenService::Observer,
       public syncer::SyncServiceObserver {
  public:
   // Callers must ensure that the parameters outlive this object.
   DesktopProfileSessionDurationsService(
       browser_sync::ProfileSyncService* sync_service,
+      OAuth2TokenService* oath2_token_service,
       GaiaCookieManagerService* cookie_manager,
       DesktopSessionDurationTracker* tracker);
   ~DesktopProfileSessionDurationsService() override;
@@ -44,6 +46,11 @@ class DesktopProfileSessionDurationsService
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
 
+  // OAuth2TokenService::Observer:
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void OnRefreshTokenRevoked(const std::string& account_id) override;
+  void OnRefreshTokensLoaded() override;
+
  private:
   // The state the feature is in. The state starts as UNKNOWN. After it moves
   // out of UNKNOWN, it can alternate between OFF and ON.
@@ -52,17 +59,25 @@ class DesktopProfileSessionDurationsService
   // KeyedService:
   void Shutdown() override;
 
-  FeatureState GetSigninStatus(const std::vector<gaia::ListedAccount>& accounts,
-                               const GoogleServiceAuthError& error);
-
-  FeatureState GetSyncStatus(const syncer::SyncService* sync);
-
   void LogSigninDuration(base::TimeDelta session_length);
 
-  void LogSyncDuration(base::TimeDelta session_length);
+  void LogSyncAndAccountDuration(base::TimeDelta session_length);
+
+  bool ShouldLogUpdate(FeatureState new_sync_status,
+                       FeatureState new_account_status);
+
+  void UpdateSyncAndAccountStatus(FeatureState new_sync_status,
+                                  FeatureState new_account_status);
+
+  void HandleSyncAndAccountChange();
+
+  browser_sync::ProfileSyncService* sync_service_;
+  OAuth2TokenService* oauth2_token_service_;
 
   ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
       sync_observer_;
+  ScopedObserver<OAuth2TokenService, OAuth2TokenService::Observer>
+      oauth2_token_observer_;
   ScopedObserver<GaiaCookieManagerService, GaiaCookieManagerService::Observer>
       gaia_cookie_observer_;
   ScopedObserver<DesktopSessionDurationTracker,
@@ -78,10 +93,13 @@ class DesktopProfileSessionDurationsService
   // timer is absent if there's no active session.
   std::unique_ptr<base::ElapsedTimer> signin_session_timer_;
 
+  // Whether or not Chrome curently has an LST for an account.
+  FeatureState account_status_ = FeatureState::UNKNOWN;
+  // Whether or not sync is currently active.
   FeatureState sync_status_ = FeatureState::UNKNOWN;
-  // Tracks the elapsed active session time in the current sync status. The
-  // timer is absent if there's no active session.
-  std::unique_ptr<base::ElapsedTimer> sync_session_timer_;
+  // Tracks the elapsed active session time in the current sync and account
+  // status. The timer is absent if there's no active session.
+  std::unique_ptr<base::ElapsedTimer> sync_account_session_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopProfileSessionDurationsService);
 };
