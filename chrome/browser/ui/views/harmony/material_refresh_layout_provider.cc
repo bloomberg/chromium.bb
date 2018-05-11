@@ -14,6 +14,14 @@ int MaterialRefreshLayoutProvider::GetDistanceMetric(int metric) const {
   return HarmonyLayoutProvider::GetDistanceMetric(metric);
 }
 
+gfx::Insets MaterialRefreshLayoutProvider::GetInsetsMetric(int metric) const {
+  switch (metric) {
+    case INSETS_BOOKMARKS_BAR_BUTTON:
+      return gfx::Insets(5, 8);
+  }
+  return HarmonyLayoutProvider::GetInsetsMetric(metric);
+}
+
 int MaterialRefreshLayoutProvider::GetCornerRadiusMetric(
     views::EmphasisMetric emphasis_metric,
     const gfx::Size& size) const {
