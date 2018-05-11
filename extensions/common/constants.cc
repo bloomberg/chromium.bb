@@ -94,6 +94,13 @@ const int64_t kInvalidServiceWorkerVersionId = -1;
 
 namespace extension_misc {
 
+#if defined(OS_CHROMEOS)
+// The extension id for the built-in component extension.
+const char kChromeVoxExtensionId[] = "mndnfokpggljbaajbnioimlmbfngpief";
+#else
+// The extension id for the web store extension.
+const char kChromeVoxExtensionId[] = "kgejglhpjiefppelpmljglcjbhoiplfn";
+#endif
 const char kFeedbackExtensionId[] = "gfdkimpbcpahaombhbimeihdjnejgicl";
 const char kPdfExtensionId[] = "mhjfbmdgcfjbbpaeojofohoefgiehjai";
 const char kQuickOfficeComponentExtensionId[] =

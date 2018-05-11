@@ -7,11 +7,11 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/event_handler_common.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/common/constants.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/events/event.h"
 

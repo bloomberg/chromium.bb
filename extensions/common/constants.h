@@ -211,6 +211,9 @@ enum ExtensionIcons {
   EXTENSION_ICON_INVALID = 0,
 };
 
+// The extension id of the ChromeVox extension.
+extern const char kChromeVoxExtensionId[];
+
 // The extension id of the feedback component extension.
 extern const char kFeedbackExtensionId[];
 

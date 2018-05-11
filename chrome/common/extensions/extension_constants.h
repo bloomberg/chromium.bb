@@ -206,9 +206,6 @@ enum AppLaunchBucket {
   APP_LAUNCH_BUCKET_INVALID
 };
 
-// The extension id of the ChromeVox extension.
-extern const char kChromeVoxExtensionId[];
-
 #if defined(OS_CHROMEOS)
 // Path to preinstalled ChromeVox screen reader extension (relative to
 // |chrome::DIR_RESOURCES|).
