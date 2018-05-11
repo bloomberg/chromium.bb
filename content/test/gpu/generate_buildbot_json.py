@@ -288,18 +288,6 @@ FYI_WATERFALL = {
       'os_type': 'win',
       'use_gpu_trigger_script': True,
     },
-    'Win7 FYI Debug (NVIDIA)': {
-      'swarming_dimensions': [
-        {
-          'gpu': WIN7_NVIDIA_QUADRO_P400_STABLE_DRIVER,
-          'os': 'Windows-2008ServerR2-SP1',
-          'pool': 'Chrome-GPU',
-        },
-      ],
-      'build_config': 'Debug',
-      'swarming': True,
-      'os_type': 'win',
-    },
     'Win10 FYI dEQP Release (NVIDIA)': {
       'swarming_dimensions': [
         {
@@ -425,18 +413,6 @@ FYI_WATERFALL = {
         },
       ],
       'build_config': 'Release_x64',
-      'swarming': True,
-      'os_type': 'win',
-    },
-    'Win7 FYI x64 Debug (NVIDIA)': {
-      'swarming_dimensions': [
-        {
-          'gpu': WIN7_NVIDIA_QUADRO_P400_STABLE_DRIVER,
-          'os': 'Windows-2008ServerR2-SP1',
-          'pool': 'Chrome-GPU',
-        },
-      ],
-      'build_config': 'Debug_x64',
       'swarming': True,
       'os_type': 'win',
     },
@@ -2299,10 +2275,6 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       {
         'names': [
           'Linux FYI Ozone (Intel)',
-
-          # http://crbug.com/599451: this test is currently too slow
-          # to run on x64 in Debug mode. Need to shard the tests.
-          'Win7 FYI x64 Debug (NVIDIA)',
 
           # The Mac NVIDIA Retina bots don't have the capacity to run
           # this test suite on mac_optional_gpu_tests_rel.
