@@ -34,7 +34,6 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_event_listener_properties.h"
 #include "third_party/blink/public/platform/web_float_point.h"
-#include "third_party/blink/public/platform/web_image_layer.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -44,6 +43,7 @@ class SkBitmap;
 
 namespace cc {
 class AnimationHost;
+class PaintImage;
 }
 
 namespace blink {
@@ -223,7 +223,7 @@ class WebLayerTreeView {
 
   virtual void RequestBeginMainFrameNotExpected(bool new_state) {}
 
-  virtual void RequestDecode(const PaintImage& image,
+  virtual void RequestDecode(const cc::PaintImage& image,
                              base::OnceCallback<void(bool)> callback) {}
 };
 

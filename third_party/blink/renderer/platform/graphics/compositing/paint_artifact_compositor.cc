@@ -128,8 +128,11 @@ static scoped_refptr<cc::Layer> ForeignLayerForPaintChunk(
   layer_offset = gfx::Vector2dF(foreign_layer_display_item.Location().X(),
                                 foreign_layer_display_item.Location().Y());
   scoped_refptr<cc::Layer> layer = foreign_layer_display_item.GetLayer();
-  layer->SetBounds(static_cast<gfx::Size>(foreign_layer_display_item.Bounds()));
-  layer->SetIsDrawable(true);
+  DCHECK(layer->bounds() ==
+         static_cast<gfx::Size>(foreign_layer_display_item.Bounds()))
+      << "\n  layer bounds: " << layer->bounds().ToString()
+      << "\n  display item bounds: " << foreign_layer_display_item.Bounds();
+  DCHECK(layer->DrawsContent());
   return layer;
 }
 
@@ -269,6 +272,13 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   new_content_layer_clients.push_back(std::move(content_layer_client));
   if (extra_data_for_testing_enabled_)
     extra_data_for_testing_->content_layers.push_back(cc_layer);
+
+  // Set properties that foreign layers would normally control for themselves
+  // here to avoid changing foreign layers. This includes things set by
+  // GraphicsLayer on the ContentsLayer() or by video clients etc.
+  cc_layer->SetContentsOpaque(pending_layer.rect_known_to_be_opaque.Contains(
+      FloatRect(EnclosingIntRect(pending_layer.bounds))));
+
   return cc_layer;
 }
 
@@ -785,8 +795,6 @@ void PaintArtifactCompositor::Update(
     layer->SetScrollTreeIndex(scroll_id);
     layer->SetClipTreeIndex(clip_id);
     layer->SetEffectTreeIndex(effect_id);
-    layer->SetContentsOpaque(pending_layer.rect_known_to_be_opaque.Contains(
-        FloatRect(EnclosingIntRect(pending_layer.bounds))));
     bool backface_hidden =
         IsBackfaceHidden(pending_layer.property_tree_state.Transform());
     layer->SetDoubleSided(!backface_hidden);

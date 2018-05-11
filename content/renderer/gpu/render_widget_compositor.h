@@ -184,7 +184,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
                                 float bottom_height,
                                 bool shrink) override;
   void SetBrowserControlsShownRatio(float) override;
-  void RequestDecode(const PaintImage& image,
+  void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
 
   void SetOverscrollBehavior(const cc::OverscrollBehavior&) override;

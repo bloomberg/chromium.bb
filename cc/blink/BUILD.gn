@@ -11,12 +11,8 @@ cc_component("blink") {
     "cc_blink_export.h",
     "web_compositor_support_impl.cc",
     "web_compositor_support_impl.h",
-    "web_image_layer_impl.cc",
-    "web_image_layer_impl.h",
     "web_layer_impl.cc",
     "web_layer_impl.h",
-    "web_layer_impl_fixed_bounds.cc",
-    "web_layer_impl_fixed_bounds.h",
   ]
 
   defines = [ "CC_BLINK_IMPLEMENTATION" ]
@@ -33,32 +29,6 @@ cc_component("blink") {
     "//gpu",
     "//third_party/blink/public:blink",
     "//ui/gfx",
-    "//ui/gfx/geometry",
-  ]
-}
-
-cc_test("cc_blink_unittests") {
-  sources = [
-    "web_layer_impl_fixed_bounds_unittest.cc",
-
-    # Setup.
-    "test/cc_blink_test_suite.cc",
-    "test/cc_blink_test_suite.h",
-    "test/run_all_unittests.cc",
-  ]
-
-  deps = [
-    ":blink",
-    "//base/test:test_support",
-    "//base/third_party/dynamic_annotations",
-    "//cc",
-    "//cc:test_support",
-    "//cc/paint",
-    "//skia",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/blink/public:blink",
-    "//ui/gfx:test_support",
     "//ui/gfx/geometry",
   ]
 }

@@ -55,7 +55,6 @@ class WebThread;
 
 class TestingCompositorSupport : public WebCompositorSupport {
   std::unique_ptr<WebLayer> CreateLayerFromCCLayer(cc::Layer*) override;
-  std::unique_ptr<WebImageLayer> CreateImageLayer() override;
 };
 
 // A base class to override Platform methods for testing.  You can override the

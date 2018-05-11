@@ -1160,7 +1160,7 @@ void RenderWidgetCompositor::SetBrowserControlsShownRatio(float ratio) {
 }
 
 void RenderWidgetCompositor::RequestDecode(
-    const PaintImage& image,
+    const cc::PaintImage& image,
     base::OnceCallback<void(bool)> callback) {
   layer_tree_host_->QueueImageDecode(image, std::move(callback));
 

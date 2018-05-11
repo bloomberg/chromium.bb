@@ -20,7 +20,6 @@ class CC_BLINK_EXPORT WebCompositorSupportImpl
   ~WebCompositorSupportImpl() override;
 
   std::unique_ptr<blink::WebLayer> CreateLayerFromCCLayer(cc::Layer*) override;
-  std::unique_ptr<blink::WebImageLayer> CreateImageLayer() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebCompositorSupportImpl);
