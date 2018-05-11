@@ -18,7 +18,7 @@
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/next_proto.h"
-#include "net/spdy/chromium/spdy_session_key.h"
+#include "net/spdy/spdy_session_key.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_info.h"
 #include "net/websockets/websocket_handshake_stream_base.h"

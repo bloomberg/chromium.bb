@@ -10,8 +10,8 @@
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
-#include "net/spdy/chromium/spdy_read_queue.h"
-#include "net/spdy/chromium/spdy_stream.h"
+#include "net/spdy/spdy_read_queue.h"
+#include "net/spdy/spdy_stream.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/websockets/websocket_basic_stream.h"
 
