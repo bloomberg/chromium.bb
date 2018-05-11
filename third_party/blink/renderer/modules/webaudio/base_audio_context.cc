@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 
+#include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
@@ -677,9 +678,13 @@ Document* BaseAudioContext::GetDocument() const {
 }
 
 AutoplayPolicy::Type BaseAudioContext::GetAutoplayPolicy() const {
-  Document* document = GetDocument();
-  DCHECK(document);
-  return AutoplayPolicy::GetAutoplayPolicyForDocument(*document);
+// The policy is different on Android compared to Desktop.
+#if defined(OS_ANDROID)
+  return AutoplayPolicy::Type::kUserGestureRequired;
+#else
+  // Force no user gesture required on desktop.
+  return AutoplayPolicy::Type::kNoUserGestureRequired;
+#endif
 }
 
 bool BaseAudioContext::AreAutoplayRequirementsFulfilled() const {
