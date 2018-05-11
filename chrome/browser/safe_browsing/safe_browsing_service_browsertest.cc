@@ -2174,10 +2174,17 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDatabaseManagerCookieTest);
 };
 
+// TODO(crbug.com/842195): This is flaky on Ubuntu.
+#if defined(OS_LINUX)
+#define MAYBE_TestSBUpdateCookies DISABLED_TestSBUpdateCookies
+#else
+#define MAYBE_TestSBUpdateCookies TestSBUpdateCookies
+#endif
+
 // Test that a Local Safe Browsing database update request both sends cookies
 // and can save cookies.
 IN_PROC_BROWSER_TEST_F(SafeBrowsingDatabaseManagerCookieTest,
-                       TestSBUpdateCookies) {
+                       MAYBE_TestSBUpdateCookies) {
   base::RunLoop run_loop;
   auto callback_subscription =
       sb_factory_->test_safe_browsing_service()
