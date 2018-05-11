@@ -151,17 +151,17 @@ class TestVenvPackagesStage(generic_stages.BuilderStage):
     """Run untitests for infra venv projects."""
     commands.RunBuildScript(
         self._build_root,
-        './bin/test_venv_packages',
+        ['./bin/test_venv_packages'],
         cwd=os.path.join(constants.SOURCE_ROOT, 'chromeos-admin'),
     )
     commands.RunBuildScript(
         self._build_root,
-        './bin/test_venv_packages',
+        ['./bin/test_venv_packages'],
         cwd=os.path.join(constants.SOURCE_ROOT, 'infra', 'skylab_inventory'),
     )
     commands.RunBuildScript(
         self._build_root,
-        './bin/run_tests',
+        ['./bin/run_tests'],
         cwd=os.path.join(constants.SOURCE_ROOT, 'infra', 'ci_results_archiver'),
     )
 
