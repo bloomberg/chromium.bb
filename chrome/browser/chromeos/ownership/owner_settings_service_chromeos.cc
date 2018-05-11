@@ -19,9 +19,11 @@
 #include "base/stl_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
@@ -265,6 +267,27 @@ void OwnerSettingsServiceChromeOS::OnEasyUnlockKeyOpsFinished() {
 bool OwnerSettingsServiceChromeOS::HasPendingChanges() const {
   return !pending_changes_.empty() || tentative_settings_.get() ||
          has_pending_fixups_;
+}
+
+bool OwnerSettingsServiceChromeOS::IsOwner() {
+  if (g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->IsEnterpriseManaged()) {
+    return false;
+  }
+  return OwnerSettingsService::IsOwner();
+}
+
+void OwnerSettingsServiceChromeOS::IsOwnerAsync(
+    const IsOwnerCallback& callback) {
+  if (g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->IsEnterpriseManaged()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(callback, false));
+    return;
+  }
+  OwnerSettingsService::IsOwnerAsync(callback);
 }
 
 bool OwnerSettingsServiceChromeOS::HandlesSetting(const std::string& setting) {
