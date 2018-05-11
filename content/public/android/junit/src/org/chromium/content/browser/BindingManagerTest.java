@@ -30,14 +30,14 @@ import org.chromium.base.test.util.Feature;
 import java.util.ArrayList;
 
 /**
- * Unit tests for BindingManagerImpl and ChildProcessConnection.
+ * Unit tests for BindingManager and ChildProcessConnection.
  *
  * Default property of being low-end device is overriden, so that both low-end and high-end policies
  * are tested.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class BindingManagerImplTest {
+public class BindingManagerTest {
     // Creates a mocked ChildProcessConnection that is optionally added to a BindingManager.
     private static ChildProcessConnection createTestChildProcessConnection(
             int pid, BindingManager manager) {
@@ -55,7 +55,7 @@ public class BindingManagerImplTest {
     Activity mActivity;
 
     // Created in setUp() for convenience.
-    BindingManagerImpl mManager;
+    BindingManager mManager;
 
     @Before
     public void setUp() {
@@ -63,7 +63,7 @@ public class BindingManagerImplTest {
         // asserts are not triggered.
         LauncherThread.setCurrentThreadAsLauncherThread();
         mActivity = Robolectric.buildActivity(Activity.class).setup().get();
-        mManager = new BindingManagerImpl(mActivity, 4, true);
+        mManager = new BindingManager(mActivity, 4, true);
     }
 
     @After
@@ -78,7 +78,7 @@ public class BindingManagerImplTest {
     @Test
     @Feature({"ProcessManagement"})
     public void testModerateBindingDropOnBackground() {
-        final BindingManagerImpl manager = mManager;
+        final BindingManager manager = mManager;
 
         ChildProcessConnection[] connections = new ChildProcessConnection[3];
         for (int i = 0; i < connections.length; i++) {
@@ -130,7 +130,7 @@ public class BindingManagerImplTest {
     @Feature({"ProcessManagement"})
     public void testModerateBindingDropOnLowMemory() {
         final Application app = mActivity.getApplication();
-        final BindingManagerImpl manager = mManager;
+        final BindingManager manager = mManager;
 
         ChildProcessConnection[] connections = new ChildProcessConnection[4];
         for (int i = 0; i < connections.length; i++) {
@@ -156,7 +156,7 @@ public class BindingManagerImplTest {
     public void testModerateBindingDropOnTrimMemory() {
         final Application app = mActivity.getApplication();
         // This test applies only to the moderate-binding manager.
-        final BindingManagerImpl manager = mManager;
+        final BindingManager manager = mManager;
 
         ArrayList<Pair<Integer, Integer>> levelAndExpectedVictimCountList = new ArrayList<>();
         levelAndExpectedVictimCountList.add(
@@ -195,7 +195,7 @@ public class BindingManagerImplTest {
     @Test
     @Feature({"ProcessManagement"})
     public void testModerateBindingTillBackgroundedSentToBackground() {
-        BindingManagerImpl manager = mManager;
+        BindingManager manager = mManager;
 
         ChildProcessConnection connection = createTestChildProcessConnection(0, manager);
         Assert.assertTrue(connection.isModerateBindingBound());

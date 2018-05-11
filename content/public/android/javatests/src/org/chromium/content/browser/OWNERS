@@ -8,9 +8,7 @@ per-file ScreenOrientation*.java=mlamouri@chromium.org
 per-file MediaSession*.java=mlamouri@chromium.org
 
 # Process management related
-per-file BindingManagerImplTest.java=jaekyun@chromium.org
-per-file BindingManagerImplTest.java=mariakhomenko@chromium.org
-per-file ChildProcessLauncherTest.java=jaekyun@chromium.org
+per-file BindingManagerTest.java=mariakhomenko@chromium.org
 per-file ChildProcessLauncherTest.java=mariakhomenko@chromium.org
 
 # Java Bridge

@@ -260,7 +260,7 @@ public class ChildProcessLauncherHelper {
             public void run() {
                 ChildConnectionAllocator allocator =
                         getConnectionAllocator(context, true /* sandboxed */);
-                sBindingManager = new BindingManagerImpl(
+                sBindingManager = new BindingManager(
                         context, allocator.getNumberOfServices(), false /* onTesting */);
             }
         });
