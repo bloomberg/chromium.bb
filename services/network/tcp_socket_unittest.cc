@@ -114,6 +114,20 @@ class MockServerSocket : public net::ServerSocket {
   size_t next_data_provider_index_ = 0;
 };
 
+// A MockServerSocket that fails at GetLocalAddress().
+class FailingServerSocket : public MockServerSocket {
+ public:
+  FailingServerSocket()
+      : MockServerSocket(
+            std::vector<std::unique_ptr<net::StaticSocketDataProvider>>()) {}
+
+  ~FailingServerSocket() override {}
+
+  int GetLocalAddress(net::IPEndPoint* address) const override {
+    return net::ERR_FAILED;
+  }
+};
+
 // A server implemented using mojom::TCPServerSocket. It owns the server socket
 // pointer and as well as client connections. SendData() and StartReading()
 // operate on the newest client connection.
@@ -970,6 +984,20 @@ TEST_P(TCPSocketWithMockSocketTest, WriteError) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(data_provider.AllReadDataConsumed());
   EXPECT_TRUE(data_provider.AllWriteDataConsumed());
+}
+
+// Tests the case where net::ServerSocket::Listen() succeeds but
+// net::ServerSocket::GetLocalAddress() fails. This should still be considered
+// as a failure.
+TEST(TCPServerSocketTest, GetLocalAddressFailedInListen) {
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+
+  TCPServerSocket socket(nullptr /* delegate */, nullptr /* net_log */,
+                         TRAFFIC_ANNOTATION_FOR_TESTS);
+  socket.SetSocketForTest(std::make_unique<FailingServerSocket>());
+  net::IPEndPoint local_addr;
+  EXPECT_EQ(net::ERR_FAILED, socket.Listen(local_addr, 1, &local_addr));
 }
 
 }  // namespace network
