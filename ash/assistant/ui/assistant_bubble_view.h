@@ -52,7 +52,7 @@ class AssistantBubbleView : public views::View,
   void OnInputModalityChanged(InputModality input_modality) override;
   void OnUiElementAdded(const AssistantUiElement* ui_element) override;
   void OnUiElementsCleared() override;
-  void OnQueryChanged(const Query& query) override;
+  void OnQueryChanged(const AssistantQuery& query) override;
   void OnQueryCleared() override;
   void OnSuggestionsAdded(
       const std::vector<AssistantSuggestion*>& suggestions) override;

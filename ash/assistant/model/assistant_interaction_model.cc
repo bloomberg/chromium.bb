@@ -5,11 +5,13 @@
 #include "ash/assistant/model/assistant_interaction_model.h"
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/model/assistant_ui_element.h"
 
 namespace ash {
 
-AssistantInteractionModel::AssistantInteractionModel() {
+AssistantInteractionModel::AssistantInteractionModel()
+    : query_(std::make_unique<AssistantEmptyQuery>()) {
   // TODO(dmblack): Default input modality should be read from user preferences.
   input_modality_ = InputModality::kVoice;
 }
@@ -69,13 +71,15 @@ void AssistantInteractionModel::ClearUiElements() {
   NotifyUiElementsCleared();
 }
 
-void AssistantInteractionModel::SetQuery(const Query& query) {
-  query_ = query;
+void AssistantInteractionModel::SetQuery(
+    std::unique_ptr<AssistantQuery> query) {
+  DCHECK(query);
+  query_ = std::move(query);
   NotifyQueryChanged();
 }
 
 void AssistantInteractionModel::ClearQuery() {
-  query_ = {};
+  query_.reset(new AssistantEmptyQuery());
   NotifyQueryCleared();
 }
 
@@ -124,7 +128,7 @@ void AssistantInteractionModel::NotifyUiElementsCleared() {
 
 void AssistantInteractionModel::NotifyQueryChanged() {
   for (AssistantInteractionModelObserver& observer : observers_)
-    observer.OnQueryChanged(query_);
+    observer.OnQueryChanged(*query_);
 }
 
 void AssistantInteractionModel::NotifyQueryCleared() {

@@ -5,6 +5,7 @@
 #include "ash/assistant/assistant_controller.h"
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_bubble.h"
 #include "ash/session/session_controller.h"
@@ -175,11 +176,9 @@ void AssistantController::OnDialogPlateContentsChanged(
 
 void AssistantController::OnDialogPlateContentsCommitted(
     const std::string& text) {
-  Query query;
-  query.high_confidence_text = text;
-
   assistant_interaction_model_.ClearInteraction();
-  assistant_interaction_model_.SetQuery(query);
+  assistant_interaction_model_.SetQuery(
+      std::make_unique<AssistantTextQuery>(text));
 
   // Note: This does not open the mic. It only updates the input modality to
   // voice so that we will show the mic icon in the UI.
@@ -195,11 +194,9 @@ void AssistantController::OnHtmlResponse(const std::string& response) {
 }
 
 void AssistantController::OnSuggestionChipPressed(const std::string& text) {
-  Query query;
-  query.high_confidence_text = text;
-
   assistant_interaction_model_.ClearInteraction();
-  assistant_interaction_model_.SetQuery(query);
+  assistant_interaction_model_.SetQuery(
+      std::make_unique<AssistantTextQuery>(text));
 
   DCHECK(assistant_);
   assistant_->SendTextQuery(text);
@@ -224,8 +221,8 @@ void AssistantController::OnSpeechRecognitionStarted() {
 void AssistantController::OnSpeechRecognitionIntermediateResult(
     const std::string& high_confidence_text,
     const std::string& low_confidence_text) {
-  assistant_interaction_model_.SetQuery(
-      {high_confidence_text, low_confidence_text});
+  assistant_interaction_model_.SetQuery(std::make_unique<AssistantVoiceQuery>(
+      high_confidence_text, low_confidence_text));
 }
 
 void AssistantController::OnSpeechRecognitionEndOfUtterance() {
@@ -234,9 +231,8 @@ void AssistantController::OnSpeechRecognitionEndOfUtterance() {
 
 void AssistantController::OnSpeechRecognitionFinalResult(
     const std::string& final_result) {
-  Query query;
-  query.high_confidence_text = final_result;
-  assistant_interaction_model_.SetQuery(query);
+  assistant_interaction_model_.SetQuery(
+      std::make_unique<AssistantVoiceQuery>(final_result));
 }
 
 void AssistantController::OnSpeechLevelUpdated(float speech_level) {

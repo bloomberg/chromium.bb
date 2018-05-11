@@ -6,6 +6,7 @@
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
+#include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
@@ -110,28 +111,32 @@ class InteractionLabel : public views::View {
     render_text_->Draw(canvas);
   }
 
-  void SetQuery(const Query& query) {
+  void SetQuery(const AssistantQuery& query) {
     render_text_->SetColor(kTextColorPrimary);
 
     // Empty query.
-    if (query.empty()) {
+    if (query.Empty()) {
       render_text_->SetText(GetPrompt());
     } else {
       // Populated query.
-      render_text_->SetText(base::UTF8ToUTF16(query.high_confidence_text));
-      if (!query.low_confidence_text.empty()) {
-        render_text_->AppendText(base::UTF8ToUTF16(query.low_confidence_text));
-        render_text_->ApplyColor(
-            kTextColorHint, gfx::Range(query.high_confidence_text.length(),
-                                       query.high_confidence_text.length() +
-                                           query.low_confidence_text.length()));
+      switch (query.type()) {
+        case AssistantQueryType::kText:
+          SetTextQuery(static_cast<const AssistantTextQuery&>(query));
+          break;
+        case AssistantQueryType::kVoice:
+          SetVoiceQuery(static_cast<const AssistantVoiceQuery&>(query));
+          break;
+        case AssistantQueryType::kEmpty:
+          // Empty queries are already handled.
+          NOTREACHED();
+          break;
       }
     }
     PreferredSizeChanged();
     SchedulePaint();
   }
 
-  void ClearQuery() { SetQuery({}); }
+  void ClearQuery() { SetQuery(AssistantEmptyQuery()); }
 
  protected:
   // views::View:
@@ -151,6 +156,30 @@ class InteractionLabel : public views::View {
       case InputModality::kKeyboard:  // fall through
       case InputModality::kVoice:
         return base::UTF8ToUTF16(kDefaultPrompt);
+    }
+  }
+
+  void SetTextQuery(const AssistantTextQuery& query) {
+    render_text_->SetText(base::UTF8ToUTF16(query.text()));
+  }
+
+  void SetVoiceQuery(const AssistantVoiceQuery& query) {
+    const base::string16& high_confidence_speech =
+        base::UTF8ToUTF16(query.high_confidence_speech());
+
+    render_text_->SetText(high_confidence_speech);
+
+    // We render low confidence speech in a different color than high
+    // confidence speech for emphasis.
+    if (!query.low_confidence_speech().empty()) {
+      const base::string16& low_confidence_speech =
+          base::UTF8ToUTF16(query.low_confidence_speech());
+
+      render_text_->AppendText(low_confidence_speech);
+      render_text_->ApplyColor(kTextColorHint,
+                               gfx::Range(high_confidence_speech.length(),
+                                          high_confidence_speech.length() +
+                                              low_confidence_speech.length()));
     }
   }
 
@@ -178,7 +207,9 @@ class InteractionContainer : public views::View {
     PreferredSizeChanged();
   }
 
-  void SetQuery(const Query& query) { interaction_label_->SetQuery(query); }
+  void SetQuery(const AssistantQuery& query) {
+    interaction_label_->SetQuery(query);
+  }
 
   void ClearQuery() { interaction_label_->ClearQuery(); }
 
@@ -451,7 +482,7 @@ void AssistantBubbleView::OnInputModalityChanged(InputModality input_modality) {
 
   // If the query for the interaction is empty, we may need to update the prompt
   // to reflect the current input modality.
-  if (assistant_controller_->interaction_model()->query().empty()) {
+  if (assistant_controller_->interaction_model()->query().Empty()) {
     interaction_container_->ClearQuery();
   }
 }
@@ -540,7 +571,7 @@ void AssistantBubbleView::OnReleaseCards() {
   }
 }
 
-void AssistantBubbleView::OnQueryChanged(const Query& query) {
+void AssistantBubbleView::OnQueryChanged(const AssistantQuery& query) {
   interaction_container_->SetQuery(query);
 }
 

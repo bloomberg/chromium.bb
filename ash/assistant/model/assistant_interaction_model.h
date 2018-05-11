@@ -16,6 +16,7 @@
 namespace ash {
 
 class AssistantInteractionModelObserver;
+class AssistantQuery;
 class AssistantUiElement;
 
 // Enumeration of interaction input modalities.
@@ -38,28 +39,6 @@ enum class InteractionState {
 enum class MicState {
   kClosed,
   kOpen,
-};
-
-// TODO(dmblack): It is awkward to use this struct for both text and voice
-// queries. Break this out into a class and subclass TextQuery and VoiceQuery
-// respectively.
-// Models the state of the query. For a text query, only the high confidence
-// text portion will be populated. At start of a voice query, both the high and
-// low confidence text portions will be empty. As speech recognition continues,
-// the low confidence portion will become non-empty. As speech recognition
-// improves, both the high and low confidence portions of the query will be
-// non-empty. When speech is fully recognized, only the high confidence portion
-// will be populated.
-struct Query {
-  // High confidence portion of the query.
-  std::string high_confidence_text;
-  // Low confidence portion of the query.
-  std::string low_confidence_text;
-
-  // Returns true if query is empty, false otherwise.
-  bool empty() const {
-    return high_confidence_text.empty() && low_confidence_text.empty();
-  }
 };
 
 // Models the Assistant interaction. This includes query state, state of speech
@@ -106,10 +85,10 @@ class AssistantInteractionModel {
   void ClearUiElements();
 
   // Updates the query for the interaction.
-  void SetQuery(const Query& query);
+  void SetQuery(std::unique_ptr<AssistantQuery> query);
 
   // Returns the query for the interaction.
-  const Query& query() const { return query_; }
+  const AssistantQuery& query() const { return *query_; }
 
   // Clears the query for the interaction.
   void ClearQuery();
@@ -136,7 +115,7 @@ class AssistantInteractionModel {
   InteractionState interaction_state_ = InteractionState::kInactive;
   InputModality input_modality_;
   MicState mic_state_ = MicState::kClosed;
-  Query query_;
+  std::unique_ptr<AssistantQuery> query_;
   std::vector<AssistantSuggestionPtr> suggestions_list_;
   std::vector<std::unique_ptr<AssistantUiElement>> ui_element_list_;
 
