@@ -67,8 +67,8 @@ void GetRequestsTaskTest::PumpLoop() {
 }
 
 void GetRequestsTaskTest::InitializeStore(RequestQueueStore* store) {
-  store->Initialize(base::Bind(&GetRequestsTaskTest::InitializeStoreDone,
-                               base::Unretained(this)));
+  store->Initialize(base::BindOnce(&GetRequestsTaskTest::InitializeStoreDone,
+                                   base::Unretained(this)));
   PumpLoop();
 }
 
@@ -76,13 +76,15 @@ void GetRequestsTaskTest::AddItemsToStore(RequestQueueStore* store) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
-  store->AddRequest(request_1, base::Bind(&GetRequestsTaskTest::AddRequestDone,
-                                          base::Unretained(this)));
+  store->AddRequest(request_1,
+                    base::BindOnce(&GetRequestsTaskTest::AddRequestDone,
+                                   base::Unretained(this)));
   creation_time = base::Time::Now();
   SavePageRequest request_2(kRequestId2, kUrl2, kClientId2, creation_time,
                             true);
-  store->AddRequest(request_2, base::Bind(&GetRequestsTaskTest::AddRequestDone,
-                                          base::Unretained(this)));
+  store->AddRequest(request_2,
+                    base::BindOnce(&GetRequestsTaskTest::AddRequestDone,
+                                   base::Unretained(this)));
   PumpLoop();
 }
 
@@ -106,8 +108,8 @@ TEST_F(GetRequestsTaskTest, GetFromEmptyStore) {
   RequestQueueInMemoryStore store;
   InitializeStore(&store);
   GetRequestsTask task(&store,
-                       base::Bind(&GetRequestsTaskTest::GetRequestsCallback,
-                                  base::Unretained(this)));
+                       base::BindOnce(&GetRequestsTaskTest::GetRequestsCallback,
+                                      base::Unretained(this)));
   task.Run();
   PumpLoop();
   EXPECT_TRUE(callback_called());
@@ -121,8 +123,8 @@ TEST_F(GetRequestsTaskTest, GetMultipleRequests) {
   AddItemsToStore(&store);
 
   GetRequestsTask task(&store,
-                       base::Bind(&GetRequestsTaskTest::GetRequestsCallback,
-                                  base::Unretained(this)));
+                       base::BindOnce(&GetRequestsTaskTest::GetRequestsCallback,
+                                      base::Unretained(this)));
   task.Run();
   PumpLoop();
   EXPECT_TRUE(callback_called());

@@ -23,7 +23,7 @@ class ChangeRequestsStateTask : public Task {
   ChangeRequestsStateTask(RequestQueueStore* store,
                           const std::vector<int64_t>& request_ids,
                           const SavePageRequest::RequestState new_state,
-                          const RequestQueueStore::UpdateCallback& callback);
+                          RequestQueueStore::UpdateCallback callback);
   ~ChangeRequestsStateTask() override;
 
   // TaskQueue::Task implementation.

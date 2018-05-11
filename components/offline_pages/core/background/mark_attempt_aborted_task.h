@@ -18,7 +18,7 @@ class MarkAttemptAbortedTask : public UpdateRequestTask {
  public:
   MarkAttemptAbortedTask(RequestQueueStore* store,
                          int64_t request_id,
-                         const RequestQueueStore::UpdateCallback& callback);
+                         RequestQueueStore::UpdateCallback callback);
   ~MarkAttemptAbortedTask() override;
 
  protected:

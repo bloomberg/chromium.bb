@@ -77,8 +77,8 @@ class MockOfflinePageModel : public StubOfflinePageModel {
     DCHECK(mock_saving_);
     mock_saving_ = false;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(save_page_callback_,
-                              SavePageResult::ARCHIVE_CREATION_FAILED, 0));
+        FROM_HERE, base::BindOnce(save_page_callback_,
+                                  SavePageResult::ARCHIVE_CREATION_FAILED, 0));
   }
 
   void CompleteSavingAsSuccess() {
@@ -86,15 +86,15 @@ class MockOfflinePageModel : public StubOfflinePageModel {
     mock_saving_ = false;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(save_page_callback_, SavePageResult::SUCCESS, 123456));
+        base::BindOnce(save_page_callback_, SavePageResult::SUCCESS, 123456));
   }
 
   void CompleteSavingAsAlreadyExists() {
     DCHECK(mock_saving_);
     mock_saving_ = false;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(save_page_callback_,
-                              SavePageResult::ALREADY_EXISTS, 123456));
+        FROM_HERE, base::BindOnce(save_page_callback_,
+                                  SavePageResult::ALREADY_EXISTS, 123456));
   }
 
   void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
@@ -173,17 +173,17 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
   void SetUp() override;
 
   TestBackgroundLoaderOffliner* offliner() const { return offliner_.get(); }
-  Offliner::CompletionCallback const completion_callback() {
-    return base::Bind(&BackgroundLoaderOfflinerTest::OnCompletion,
-                      base::Unretained(this));
+  Offliner::CompletionCallback completion_callback() {
+    return base::BindOnce(&BackgroundLoaderOfflinerTest::OnCompletion,
+                          base::Unretained(this));
   }
   Offliner::ProgressCallback const progress_callback() {
-    return base::Bind(&BackgroundLoaderOfflinerTest::OnProgress,
-                      base::Unretained(this));
+    return base::BindRepeating(&BackgroundLoaderOfflinerTest::OnProgress,
+                               base::Unretained(this));
   }
-  Offliner::CancelCallback const cancel_callback() {
-    return base::Bind(&BackgroundLoaderOfflinerTest::OnCancel,
-                      base::Unretained(this));
+  Offliner::CancelCallback cancel_callback() {
+    return base::BindOnce(&BackgroundLoaderOfflinerTest::OnCancel,
+                          base::Unretained(this));
   }
   base::Callback<void(bool)> const can_download_callback() {
     return base::Bind(&BackgroundLoaderOfflinerTest::OnCanDownload,

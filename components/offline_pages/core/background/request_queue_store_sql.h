@@ -45,28 +45,28 @@ class RequestQueueStoreSQL : public RequestQueueStore {
   ~RequestQueueStoreSQL() override;
 
   // RequestQueueStore implementation.
-  void Initialize(const InitializeCallback& callback) override;
-  void GetRequests(const GetRequestsCallback& callback) override;
+  void Initialize(InitializeCallback callback) override;
+  void GetRequests(GetRequestsCallback callback) override;
   // Note: current implementation of this method makes a SQL query per ID. This
   // is OK as long as number of IDs stays low, which is a typical case.
   // Implementation should be revisited in case that presumption changes.
   void GetRequestsByIds(const std::vector<int64_t>& request_ids,
-                        const UpdateCallback& callback) override;
+                        UpdateCallback callback) override;
   void AddRequest(const SavePageRequest& offline_page,
-                  const AddCallback& callback) override;
+                  AddCallback callback) override;
   void UpdateRequests(const std::vector<SavePageRequest>& requests,
-                      const UpdateCallback& callback) override;
+                      UpdateCallback callback) override;
   void RemoveRequests(const std::vector<int64_t>& request_ids,
-                      const UpdateCallback& callback) override;
-  void Reset(const ResetCallback& callback) override;
+                      UpdateCallback callback) override;
+  void Reset(ResetCallback callback) override;
   StoreState state() const override;
 
  private:
   // Used to finalize DB connection initialization.
-  void OnOpenConnectionDone(const InitializeCallback& callback, bool success);
+  void OnOpenConnectionDone(InitializeCallback callback, bool success);
 
   // Used to finalize DB connection reset.
-  void OnResetDone(const ResetCallback& callback, bool success);
+  void OnResetDone(ResetCallback callback, bool success);
 
   // Helper function to return immediately if no database is found.
   bool CheckDb() const;

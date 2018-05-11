@@ -15,8 +15,8 @@
 namespace offline_pages {
 
 ReconcileTask::ReconcileTask(RequestQueueStore* store,
-                             const RequestQueueStore::UpdateCallback& callback)
-    : store_(store), callback_(callback), weak_ptr_factory_(this) {}
+                             RequestQueueStore::UpdateCallback callback)
+    : store_(store), callback_(std::move(callback)), weak_ptr_factory_(this) {}
 
 ReconcileTask::~ReconcileTask() {}
 
@@ -27,8 +27,8 @@ void ReconcileTask::Run() {
 void ReconcileTask::GetRequests() {
   // Get all the requests from the queue, we will reconcile them in the
   // callback.
-  store_->GetRequests(
-      base::Bind(&ReconcileTask::Reconcile, weak_ptr_factory_.GetWeakPtr()));
+  store_->GetRequests(base::BindOnce(&ReconcileTask::Reconcile,
+                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ReconcileTask::Reconcile(
@@ -59,14 +59,14 @@ void ReconcileTask::Reconcile(
   }
 
   store_->UpdateRequests(items_to_update,
-                         base::Bind(&ReconcileTask::UpdateCompleted,
-                                    weak_ptr_factory_.GetWeakPtr()));
+                         base::BindOnce(&ReconcileTask::UpdateCompleted,
+                                        weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ReconcileTask::UpdateCompleted(
     std::unique_ptr<UpdateRequestsResult> update_result) {
   // Send a notification to the UI that these items have updated.
-  callback_.Run(std::move(update_result));
+  std::move(callback_).Run(std::move(update_result));
   TaskComplete();
 }
 

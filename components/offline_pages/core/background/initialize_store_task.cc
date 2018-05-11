@@ -12,10 +12,10 @@ const int kRestartAttemptsMaximum = 3;
 
 InitializeStoreTask::InitializeStoreTask(
     RequestQueueStore* store,
-    const RequestQueueStore::InitializeCallback& callback)
+    RequestQueueStore::InitializeCallback callback)
     : store_(store),
       reset_attempts_left_(kRestartAttemptsMaximum),
-      callback_(callback),
+      callback_(std::move(callback)),
       weak_ptr_factory_(this) {}
 
 InitializeStoreTask::~InitializeStoreTask() {}
@@ -25,13 +25,13 @@ void InitializeStoreTask::Run() {
 }
 
 void InitializeStoreTask::InitializeStore() {
-  store_->Initialize(base::Bind(&InitializeStoreTask::CompleteIfSuccessful,
-                                weak_ptr_factory_.GetWeakPtr()));
+  store_->Initialize(base::BindOnce(&InitializeStoreTask::CompleteIfSuccessful,
+                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
 void InitializeStoreTask::CompleteIfSuccessful(bool success) {
   if (success) {
-    callback_.Run(true);
+    std::move(callback_).Run(true);
     TaskComplete();
     return;
   }
@@ -41,14 +41,14 @@ void InitializeStoreTask::CompleteIfSuccessful(bool success) {
 
 void InitializeStoreTask::TryToResetStore() {
   if (reset_attempts_left_ == 0) {
-    callback_.Run(false);
+    std::move(callback_).Run(false);
     TaskComplete();
     return;
   }
 
   reset_attempts_left_--;
-  store_->Reset(base::Bind(&InitializeStoreTask::OnStoreResetDone,
-                           weak_ptr_factory_.GetWeakPtr()));
+  store_->Reset(base::BindOnce(&InitializeStoreTask::OnStoreResetDone,
+                               weak_ptr_factory_.GetWeakPtr()));
 }
 
 void InitializeStoreTask::OnStoreResetDone(bool success) {

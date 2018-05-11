@@ -58,8 +58,8 @@ void ChangeRequestsStateTaskTest::PumpLoop() {
 
 void ChangeRequestsStateTaskTest::InitializeStore(RequestQueueStore* store) {
   store->Initialize(
-      base::Bind(&ChangeRequestsStateTaskTest::InitializeStoreDone,
-                 base::Unretained(this)));
+      base::BindOnce(&ChangeRequestsStateTaskTest::InitializeStoreDone,
+                     base::Unretained(this)));
   PumpLoop();
 }
 
@@ -68,13 +68,13 @@ void ChangeRequestsStateTaskTest::AddItemsToStore(RequestQueueStore* store) {
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
   store->AddRequest(request_1,
-                    base::Bind(&ChangeRequestsStateTaskTest::AddRequestDone,
-                               base::Unretained(this)));
+                    base::BindOnce(&ChangeRequestsStateTaskTest::AddRequestDone,
+                                   base::Unretained(this)));
   SavePageRequest request_2(kRequestId2, kUrl2, kClientId2, creation_time,
                             true);
   store->AddRequest(request_2,
-                    base::Bind(&ChangeRequestsStateTaskTest::AddRequestDone,
-                               base::Unretained(this)));
+                    base::BindOnce(&ChangeRequestsStateTaskTest::AddRequestDone,
+                                   base::Unretained(this)));
   PumpLoop();
 }
 
@@ -98,8 +98,8 @@ TEST_F(ChangeRequestsStateTaskTest, UpdateWhenStoreEmpty) {
   std::vector<int64_t> request_ids{kRequestId1};
   ChangeRequestsStateTask task(
       &store, request_ids, SavePageRequest::RequestState::PAUSED,
-      base::Bind(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
+                     base::Unretained(this)));
   task.Run();
   PumpLoop();
   ASSERT_TRUE(last_result());
@@ -118,8 +118,8 @@ TEST_F(ChangeRequestsStateTaskTest, UpdateSingleItem) {
   std::vector<int64_t> request_ids{kRequestId1};
   ChangeRequestsStateTask task(
       &store, request_ids, SavePageRequest::RequestState::PAUSED,
-      base::Bind(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
+                     base::Unretained(this)));
   task.Run();
   PumpLoop();
   ASSERT_TRUE(last_result());
@@ -140,8 +140,8 @@ TEST_F(ChangeRequestsStateTaskTest, UpdateMultipleItems) {
   std::vector<int64_t> request_ids{kRequestId1, kRequestId2};
   ChangeRequestsStateTask task(
       &store, request_ids, SavePageRequest::RequestState::PAUSED,
-      base::Bind(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
+                     base::Unretained(this)));
   task.Run();
   PumpLoop();
   ASSERT_TRUE(last_result());
@@ -179,8 +179,8 @@ TEST_F(ChangeRequestsStateTaskTest, EmptyRequestsList) {
   std::vector<int64_t> request_ids;
   ChangeRequestsStateTask task(
       &store, request_ids, SavePageRequest::RequestState::PAUSED,
-      base::Bind(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
+                     base::Unretained(this)));
   task.Run();
   PumpLoop();
   ASSERT_TRUE(last_result());
@@ -196,8 +196,8 @@ TEST_F(ChangeRequestsStateTaskTest, UpdateMissingItem) {
   std::vector<int64_t> request_ids{kRequestId1, kRequestId3};
   ChangeRequestsStateTask task(
       &store, request_ids, SavePageRequest::RequestState::PAUSED,
-      base::Bind(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
+                     base::Unretained(this)));
   task.Run();
   PumpLoop();
   ASSERT_TRUE(last_result());

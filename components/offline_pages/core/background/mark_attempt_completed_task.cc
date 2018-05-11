@@ -15,8 +15,9 @@ MarkAttemptCompletedTask::MarkAttemptCompletedTask(
     RequestQueueStore* store,
     int64_t request_id,
     FailState fail_state,
-    const RequestQueueStore::UpdateCallback& callback)
-    : UpdateRequestTask(store, request_id, callback), fail_state_(fail_state) {}
+    RequestQueueStore::UpdateCallback callback)
+    : UpdateRequestTask(store, request_id, std::move(callback)),
+      fail_state_(fail_state) {}
 
 MarkAttemptCompletedTask::~MarkAttemptCompletedTask() {}
 
@@ -32,7 +33,8 @@ void MarkAttemptCompletedTask::UpdateRequestImpl(
   read_result->updated_items[0].MarkAttemptCompleted(fail_state_);
   store()->UpdateRequests(
       read_result->updated_items,
-      base::Bind(&MarkAttemptCompletedTask::CompleteWithResult, GetWeakPtr()));
+      base::BindOnce(&MarkAttemptCompletedTask::CompleteWithResult,
+                     GetWeakPtr()));
 }
 
 }  // namespace offline_pages

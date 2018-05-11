@@ -26,16 +26,16 @@ namespace offline_pages {
 
 namespace {
 // Completes the get requests call.
-void GetRequestsDone(const RequestQueue::GetRequestsCallback& callback,
+void GetRequestsDone(RequestQueue::GetRequestsCallback callback,
                      bool success,
                      std::vector<std::unique_ptr<SavePageRequest>> requests) {
   GetRequestsResult result =
       success ? GetRequestsResult::SUCCESS : GetRequestsResult::STORE_FAILURE;
-  callback.Run(result, std::move(requests));
+  std::move(callback).Run(result, std::move(requests));
 }
 
 // Completes the add request call.
-void AddRequestDone(const RequestQueue::AddRequestCallback& callback,
+void AddRequestDone(RequestQueue::AddRequestCallback callback,
                     const SavePageRequest& request,
                     ItemActionStatus status) {
   AddRequestResult result;
@@ -54,7 +54,7 @@ void AddRequestDone(const RequestQueue::AddRequestCallback& callback,
       NOTREACHED();
       return;
   }
-  callback.Run(result, request);
+  std::move(callback).Run(result, request);
 }
 
 }  // namespace
@@ -68,54 +68,55 @@ RequestQueue::~RequestQueue() {}
 
 void RequestQueue::OnTaskQueueIsIdle() {}
 
-void RequestQueue::GetRequests(const GetRequestsCallback& callback) {
+void RequestQueue::GetRequests(GetRequestsCallback callback) {
   std::unique_ptr<Task> task(new GetRequestsTask(
-      store_.get(), base::Bind(&GetRequestsDone, callback)));
+      store_.get(), base::BindOnce(&GetRequestsDone, std::move(callback))));
   task_queue_.AddTask(std::move(task));
 }
 
 void RequestQueue::AddRequest(const SavePageRequest& request,
-                              const AddRequestCallback& callback) {
+                              AddRequestCallback callback) {
   std::unique_ptr<AddRequestTask> task(new AddRequestTask(
-      store_.get(), request, base::Bind(&AddRequestDone, callback, request)));
+      store_.get(), request,
+      base::BindOnce(&AddRequestDone, std::move(callback), request)));
   task_queue_.AddTask(std::move(task));
 }
 
 void RequestQueue::RemoveRequests(const std::vector<int64_t>& request_ids,
-                                  const UpdateCallback& callback) {
+                                  UpdateCallback callback) {
   std::unique_ptr<Task> task(
-      new RemoveRequestsTask(store_.get(), request_ids, callback));
+      new RemoveRequestsTask(store_.get(), request_ids, std::move(callback)));
   task_queue_.AddTask(std::move(task));
 }
 
 void RequestQueue::ChangeRequestsState(
     const std::vector<int64_t>& request_ids,
     const SavePageRequest::RequestState new_state,
-    const RequestQueue::UpdateCallback& callback) {
+    UpdateCallback callback) {
   std::unique_ptr<Task> task(new ChangeRequestsStateTask(
-      store_.get(), request_ids, new_state, callback));
+      store_.get(), request_ids, new_state, std::move(callback)));
   task_queue_.AddTask(std::move(task));
 }
 
 void RequestQueue::MarkAttemptStarted(int64_t request_id,
-                                      const UpdateCallback& callback) {
-  std::unique_ptr<Task> task(
-      new MarkAttemptStartedTask(store_.get(), request_id, callback));
+                                      UpdateCallback callback) {
+  std::unique_ptr<Task> task(new MarkAttemptStartedTask(
+      store_.get(), request_id, std::move(callback)));
   task_queue_.AddTask(std::move(task));
 }
 
 void RequestQueue::MarkAttemptAborted(int64_t request_id,
-                                      const UpdateCallback& callback) {
-  std::unique_ptr<Task> task(
-      new MarkAttemptAbortedTask(store_.get(), request_id, callback));
+                                      UpdateCallback callback) {
+  std::unique_ptr<Task> task(new MarkAttemptAbortedTask(
+      store_.get(), request_id, std::move(callback)));
   task_queue_.AddTask(std::move(task));
 }
 
 void RequestQueue::MarkAttemptCompleted(int64_t request_id,
                                         FailState fail_state,
-                                        const UpdateCallback& callback) {
+                                        UpdateCallback callback) {
   std::unique_ptr<Task> task(new MarkAttemptCompletedTask(
-      store_.get(), request_id, fail_state, callback));
+      store_.get(), request_id, fail_state, std::move(callback)));
   task_queue_.AddTask(std::move(task));
 }
 
@@ -128,18 +129,19 @@ void RequestQueue::PickNextRequest(
     std::set<int64_t>& disabled_requests,
     base::circular_deque<int64_t>& prioritized_requests) {
   // Using the PickerContext, create a picker task.
-  std::unique_ptr<Task> task(
-      new PickRequestTask(store_.get(), policy, picked_callback,
-                          not_picked_callback, request_count_callback,
-                          conditions, disabled_requests, prioritized_requests));
+  std::unique_ptr<Task> task(new PickRequestTask(
+      store_.get(), policy, std::move(picked_callback),
+      std::move(not_picked_callback), std::move(request_count_callback),
+      conditions, disabled_requests, prioritized_requests));
 
   // Queue up the picking task, it will call one of the callbacks when it
   // completes.
   task_queue_.AddTask(std::move(task));
 }
 
-void RequestQueue::ReconcileRequests(const UpdateCallback& callback) {
-  std::unique_ptr<Task> task(new ReconcileTask(store_.get(), callback));
+void RequestQueue::ReconcileRequests(UpdateCallback callback) {
+  std::unique_ptr<Task> task(
+      new ReconcileTask(store_.get(), std::move(callback)));
 
   // Queue up the reconcile task.
   task_queue_.AddTask(std::move(task));
@@ -155,8 +157,8 @@ void RequestQueue::CleanupRequestQueue() {
 
 void RequestQueue::Initialize() {
   std::unique_ptr<Task> task(new InitializeStoreTask(
-      store_.get(), base::Bind(&RequestQueue::InitializeStoreDone,
-                               weak_ptr_factory_.GetWeakPtr())));
+      store_.get(), base::BindOnce(&RequestQueue::InitializeStoreDone,
+                                   weak_ptr_factory_.GetWeakPtr())));
   task_queue_.AddTask(std::move(task));
 }
 

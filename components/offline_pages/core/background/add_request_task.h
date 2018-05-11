@@ -18,7 +18,7 @@ class AddRequestTask : public Task {
  public:
   AddRequestTask(RequestQueueStore* store,
                  const SavePageRequest& request,
-                 const RequestQueueStore::AddCallback& callback);
+                 RequestQueueStore::AddCallback callback);
   ~AddRequestTask() override;
 
   // Task implementation:

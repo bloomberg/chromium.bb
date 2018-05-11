@@ -64,8 +64,8 @@ void InitializeStoreTaskTest::InitializeCallback(bool success) {
 TEST_F(InitializeStoreTaskTest, SuccessfulInitialization) {
   RequestQueueInMemoryStore store;
   InitializeStoreTask task(
-      &store, base::Bind(&InitializeStoreTaskTest::InitializeCallback,
-                         base::Unretained(this)));
+      &store, base::BindOnce(&InitializeStoreTaskTest::InitializeCallback,
+                             base::Unretained(this)));
   task.Run();
   PumpLoop();
   EXPECT_TRUE(callback_called());
@@ -76,8 +76,8 @@ TEST_F(InitializeStoreTaskTest, SuccessfulInitialization) {
 TEST_F(InitializeStoreTaskTest, SuccessfulReset) {
   RequestQueueInMemoryStore store(TestScenario::LOAD_FAILED_RESET_SUCCESS);
   InitializeStoreTask task(
-      &store, base::Bind(&InitializeStoreTaskTest::InitializeCallback,
-                         base::Unretained(this)));
+      &store, base::BindOnce(&InitializeStoreTaskTest::InitializeCallback,
+                             base::Unretained(this)));
   task.Run();
   EXPECT_FALSE(callback_called());
   EXPECT_EQ(StoreState::FAILED_LOADING, store.state());
@@ -95,8 +95,8 @@ TEST_F(InitializeStoreTaskTest, SuccessfulReset) {
 TEST_F(InitializeStoreTaskTest, FailedReset) {
   RequestQueueInMemoryStore store(TestScenario::LOAD_FAILED_RESET_FAILED);
   InitializeStoreTask task(
-      &store, base::Bind(&InitializeStoreTaskTest::InitializeCallback,
-                         base::Unretained(this)));
+      &store, base::BindOnce(&InitializeStoreTaskTest::InitializeCallback,
+                             base::Unretained(this)));
   task.Run();
   PumpLoop();
   EXPECT_TRUE(callback_called());

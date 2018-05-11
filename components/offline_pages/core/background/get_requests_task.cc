@@ -12,8 +12,8 @@ namespace offline_pages {
 
 GetRequestsTask::GetRequestsTask(
     RequestQueueStore* store,
-    const RequestQueueStore::GetRequestsCallback& callback)
-    : store_(store), callback_(callback), weak_ptr_factory_(this) {}
+    RequestQueueStore::GetRequestsCallback callback)
+    : store_(store), callback_(std::move(callback)), weak_ptr_factory_(this) {}
 
 GetRequestsTask::~GetRequestsTask() {}
 
@@ -22,14 +22,14 @@ void GetRequestsTask::Run() {
 }
 
 void GetRequestsTask::ReadRequest() {
-  store_->GetRequests(base::Bind(&GetRequestsTask::CompleteWithResult,
-                                 weak_ptr_factory_.GetWeakPtr()));
+  store_->GetRequests(base::BindOnce(&GetRequestsTask::CompleteWithResult,
+                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GetRequestsTask::CompleteWithResult(
     bool success,
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
-  callback_.Run(success, std::move(requests));
+  std::move(callback_).Run(success, std::move(requests));
   TaskComplete();
 }
 

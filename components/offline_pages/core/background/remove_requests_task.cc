@@ -11,10 +11,10 @@ namespace offline_pages {
 RemoveRequestsTask::RemoveRequestsTask(
     RequestQueueStore* store,
     const std::vector<int64_t>& request_ids,
-    const RequestQueueStore::UpdateCallback& callback)
+    RequestQueueStore::UpdateCallback callback)
     : store_(store),
       request_ids_(request_ids),
-      callback_(callback),
+      callback_(std::move(callback)),
       weak_ptr_factory_(this) {}
 
 RemoveRequestsTask::~RemoveRequestsTask() {}
@@ -30,8 +30,8 @@ void RemoveRequestsTask::RemoveRequests() {
   }
 
   store_->RemoveRequests(request_ids_,
-                         base::Bind(&RemoveRequestsTask::CompleteWithResult,
-                                    weak_ptr_factory_.GetWeakPtr()));
+                         base::BindOnce(&RemoveRequestsTask::CompleteWithResult,
+                                        weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RemoveRequestsTask::CompleteEarly(ItemActionStatus status) {
@@ -44,7 +44,7 @@ void RemoveRequestsTask::CompleteEarly(ItemActionStatus status) {
 
 void RemoveRequestsTask::CompleteWithResult(
     std::unique_ptr<UpdateRequestsResult> result) {
-  callback_.Run(std::move(result));
+  std::move(callback_).Run(std::move(result));
   TaskComplete();
 }
 

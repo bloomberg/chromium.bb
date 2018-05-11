@@ -21,7 +21,7 @@ class RemoveRequestsTask : public Task {
  public:
   RemoveRequestsTask(RequestQueueStore* store,
                      const std::vector<int64_t>& request_ids,
-                     const RequestQueueStore::UpdateCallback& callback);
+                     RequestQueueStore::UpdateCallback callback);
   ~RemoveRequestsTask() override;
 
   // TaskQueue::Task implementation.

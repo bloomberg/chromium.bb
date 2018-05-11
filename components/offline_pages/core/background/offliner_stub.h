@@ -20,10 +20,10 @@ class OfflinerStub : public Offliner {
   ~OfflinerStub() override;
 
   bool LoadAndSave(const SavePageRequest& request,
-                   const CompletionCallback& completion_callback,
+                   CompletionCallback completion_callback,
                    const ProgressCallback& progress_callback) override;
 
-  bool Cancel(const CancelCallback& callback) override;
+  bool Cancel(CancelCallback callback) override;
 
   void TerminateLoadIfInProgress() override;
 
