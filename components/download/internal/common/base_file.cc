@@ -13,6 +13,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -137,14 +138,6 @@ DownloadInterruptReason BaseFile::WriteDataToFile(int64_t offset,
   // belong to the same download will be grouped together.
   CONDITIONAL_TRACE(
       NESTABLE_ASYNC_BEGIN0("download", "DownloadFileWrite", download_id_));
-  int write_result = file_.Write(offset, data, data_len);
-  DCHECK_NE(0, write_result);
-
-  // Report errors on file writes.
-  if (write_result < 0)
-    return LogSystemError("Write", logging::GetLastSystemErrorCode());
-
-  DCHECK_EQ(static_cast<size_t>(write_result), data_len);
 
   if (bytes_so_far_ != offset) {
     // A hole is created in the file.
@@ -152,7 +145,28 @@ DownloadInterruptReason BaseFile::WriteDataToFile(int64_t offset,
     secure_hash_.reset();
   }
 
-  bytes_so_far_ += data_len;
+  // Writes to the file.
+  int64_t len = base::saturated_cast<int64_t>(data_len);
+  const char* current_data = data;
+  int64_t current_offset = offset;
+  while (len > 0) {
+    // |write_result| may be less than |len|, and return an error on the next
+    // write call when the disk is unavaliable.
+    int write_result = file_.Write(current_offset, current_data, len);
+    DCHECK_NE(0, write_result);
+
+    // Report errors on file writes.
+    if (write_result < 0)
+      return LogSystemError("Write", logging::GetLastSystemErrorCode());
+
+    // Update status.
+    DCHECK_LE(write_result, len);
+    len -= write_result;
+    current_data += write_result;
+    current_offset += write_result;
+    bytes_so_far_ += write_result;
+  }
+
   CONDITIONAL_TRACE(NESTABLE_ASYNC_END1("download", "DownloadFileWrite",
                                         download_id_, "bytes", data_len));
 
