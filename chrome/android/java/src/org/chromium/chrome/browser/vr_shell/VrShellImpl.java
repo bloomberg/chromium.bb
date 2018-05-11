@@ -794,7 +794,6 @@ public class VrShellImpl
     @Override
     public void setDialogSize(int width, int height) {
         nativeSetDialogBufferSize(mNativeVrShell, width, height);
-        float scale = mContentVrWindowAndroid.getDisplay().getAndroidUIScaling();
         nativeSetAlertDialogSize(mNativeVrShell, width, height);
     }
 
