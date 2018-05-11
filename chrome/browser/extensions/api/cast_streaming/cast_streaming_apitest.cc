@@ -392,7 +392,14 @@ IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, MAYBE_EndToEnd) {
   cast_environment->Shutdown();
 }
 
-IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, RtpStreamError) {
+#if !defined(OS_MACOSX)
+#define MAYBE_RtpStreamError RtpStreamError
+#else
+// Flaky on Mac https://crbug.com/841986
+#define MAYBE_RtpStreamError DISABLED_RtpStreamError
+#endif
+IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput,
+                       MAYBE_RtpStreamError) {
   ASSERT_TRUE(RunExtensionSubtest("cast_streaming", "rtp_stream_error.html"));
 }
 
