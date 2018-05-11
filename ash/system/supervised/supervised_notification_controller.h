@@ -19,8 +19,6 @@ class ASH_EXPORT SupervisedNotificationController : public SessionObserver {
   SupervisedNotificationController();
   ~SupervisedNotificationController() override;
 
-  static base::string16 GetSupervisedUserMessage();
-
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
   void OnUserSessionAdded(const AccountId& account_id) override;

@@ -26,9 +26,13 @@ class ASH_EXPORT UnifiedSystemInfoView : public views::View {
   FRIEND_TEST_ALL_PREFIXES(UnifiedSystemInfoViewTest, EnterpriseManagedVisible);
   FRIEND_TEST_ALL_PREFIXES(UnifiedSystemInfoViewTest,
                            EnterpriseManagedVisibleForActiveDirectory);
+  FRIEND_TEST_ALL_PREFIXES(UnifiedSystemInfoViewNoSessionTest,
+                           SupervisedVisible);
 
   // EnterpriseManagedView for unit testing. Unowned.
   views::View* const enterprise_managed_;
+  // SupervisedUserView for unit testing. Unowned.
+  views::View* const supervised_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemInfoView);
 };

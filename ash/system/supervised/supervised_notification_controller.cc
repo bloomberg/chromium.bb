@@ -8,13 +8,12 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "base/strings/utf_string_conversions.h"
+#include "ash/system/supervised/supervised_icon_string.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 
-using base::UTF8ToUTF16;
 using message_center::MessageCenter;
 using message_center::Notification;
 
@@ -30,37 +29,6 @@ const char SupervisedNotificationController::kNotificationId[] =
 SupervisedNotificationController::SupervisedNotificationController() = default;
 
 SupervisedNotificationController::~SupervisedNotificationController() = default;
-
-// static
-base::string16 SupervisedNotificationController::GetSupervisedUserMessage() {
-  SessionController* session_controller = Shell::Get()->session_controller();
-  DCHECK(session_controller->IsUserSupervised());
-  DCHECK(session_controller->IsActiveUserSessionStarted());
-
-  // Get the active user session.
-  const mojom::UserSession* const user_session =
-      session_controller->GetUserSession(0);
-  DCHECK(user_session);
-
-  base::string16 first_custodian = UTF8ToUTF16(user_session->custodian_email);
-  base::string16 second_custodian =
-      UTF8ToUTF16(user_session->second_custodian_email);
-
-  // Regular supervised user. The "manager" is the first custodian.
-  if (!Shell::Get()->session_controller()->IsUserChild()) {
-    return l10n_util::GetStringFUTF16(IDS_ASH_USER_IS_SUPERVISED_BY_NOTICE,
-                                      first_custodian);
-  }
-
-  // Child supervised user.
-  if (second_custodian.empty()) {
-    return l10n_util::GetStringFUTF16(
-        IDS_ASH_CHILD_USER_IS_MANAGED_BY_ONE_PARENT_NOTICE, first_custodian);
-  }
-  return l10n_util::GetStringFUTF16(
-      IDS_ASH_CHILD_USER_IS_MANAGED_BY_TWO_PARENTS_NOTICE, first_custodian,
-      second_custodian);
-}
 
 void SupervisedNotificationController::OnActiveUserSessionChanged(
     const AccountId& account_id) {
