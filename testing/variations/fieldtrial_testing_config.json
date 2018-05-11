@@ -709,6 +709,25 @@
             ]
         }
     ],
+    "BundledConnectionHelp": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "BundledConnectionHelpEnabled",
+                    "enable_features": [
+                        "BundledConnectionHelp"
+                    ]
+                }
+            ]
+        }
+    ],
     "CSSExternalScanner": [
         {
             "platforms": [
@@ -3612,6 +3631,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SuperfishInterstitial"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SupervisedUserCommittedInterstitials": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "SupervisedUserCommittedInterstitialsEnabled",
+                    "enable_features": [
+                        "SupervisedUserCommittedInterstitials"
                     ]
                 }
             ]
