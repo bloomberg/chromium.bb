@@ -550,15 +550,19 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 - (void)createTabGridMenuItems {
   NSMutableArray* items = [NSMutableArray arrayWithArray:[self itemsForNewTab]];
   if (self.isIncognito) {
-    [items addObject:CreateTableViewItem(
-                         IDS_IOS_TOOLS_MENU_CLOSE_ALL_INCOGNITO_TABS,
-                         PopupMenuActionCloseAllIncognitoTabs, nil,
-                         kToolsMenuCloseAllIncognitoTabsId)];
+    PopupMenuToolsItem* closeAllIncognitoTabs = CreateTableViewItem(
+        IDS_IOS_TOOLS_MENU_CLOSE_ALL_INCOGNITO_TABS,
+        PopupMenuActionCloseAllIncognitoTabs, @"popup_menu_new_incognito_tab",
+        kToolsMenuCloseAllIncognitoTabsId);
+    closeAllIncognitoTabs.destructiveAction = YES;
+    [items addObject:closeAllIncognitoTabs];
   }
 
-  [items addObject:CreateTableViewItem(
-                       IDS_IOS_TOOLS_MENU_CLOSE_TAB, PopupMenuActionCloseTab,
-                       @"popup_menu_close_tab", kToolsMenuCloseTabId)];
+  PopupMenuToolsItem* closeTab =
+      CreateTableViewItem(IDS_IOS_TOOLS_MENU_CLOSE_TAB, PopupMenuActionCloseTab,
+                          @"popup_menu_close_tab", kToolsMenuCloseTabId);
+  closeTab.destructiveAction = YES;
+  [items addObject:closeTab];
 
   self.items = @[ items ];
 }

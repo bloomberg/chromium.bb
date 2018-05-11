@@ -22,6 +22,9 @@
 // Text to be displayed in the badge. Set to nil to hide the badge. The text
 // badge is only displayed if the numbered badge is hidden.
 @property(nonatomic, copy) NSString* badgeText;
+// Whether the item is associated with a destructive action. If |YES|, then a
+// specific styling is applied.
+@property(nonatomic, assign) BOOL destructiveAction;
 
 @end
 
@@ -33,6 +36,10 @@
 
 // Title label for the cell.
 @property(nonatomic, strong, readonly) UILabel* titleLabel;
+
+// Whether the cell is associated with a destructive action. If |YES|, then a
+// specific styling is applied.
+@property(nonatomic, assign) BOOL destructiveAction;
 
 // Sets the number on the badge number.
 - (void)setBadgeNumber:(NSInteger)badgeNumber;
