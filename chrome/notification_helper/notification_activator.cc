@@ -7,6 +7,7 @@
 #include <shellapi.h>
 
 #include "base/command_line.h"
+#include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "base/win/windows_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -77,7 +78,8 @@ HRESULT NotificationActivator::Activate(
   SHELLEXECUTEINFO info;
   memset(&info, 0, sizeof(info));
   info.cbSize = sizeof(info);
-  info.fMask = SEE_MASK_NOASYNC | SEE_MASK_FLAG_LOG_USAGE;
+  info.fMask =
+      SEE_MASK_NOASYNC | SEE_MASK_FLAG_LOG_USAGE | SEE_MASK_NOCLOSEPROCESS;
   info.lpFile = chrome_exe_path.value().c_str();
   info.lpParameters = params.c_str();
   info.nShow = SW_SHOWNORMAL;
@@ -86,6 +88,17 @@ HRESULT NotificationActivator::Activate(
     DWORD error_code = ::GetLastError();
     Trace(L"Unable to launch Chrome.exe; error: 0x%08X\n", error_code);
     return HRESULT_FROM_WIN32(error_code);
+  }
+
+  if (info.hProcess != nullptr) {
+    base::Process process(info.hProcess);
+    DWORD pid = ::GetProcessId(process.Handle());
+    if (!::AllowSetForegroundWindow(pid)) {
+      DWORD error_code = ::GetLastError();
+      Trace(L"Unable to forward activation privilege; error: 0x%08X\n",
+            error_code);
+      return HRESULT_FROM_WIN32(error_code);
+    }
   }
 
   return S_OK;
