@@ -1443,7 +1443,8 @@ public class ContextualSearchManagerTest {
      * Tests that a Tap gesture followed by scrolling clears the selection.
      */
     @Test
-    @DisabledTest(message = "crbug.com/841017")
+    @DisableIf.
+    Build(sdk_is_greater_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/841017")
     @SmallTest
     @Feature({"ContextualSearch"})
     public void testTapGestureFollowedByScrollClearsSelection()
