@@ -721,7 +721,11 @@ void MenuItemView::UpdateMenuPartSizes() {
   if (has_icons_)
     icon_area_width_ = std::max(icon_area_width_, GetMaxIconViewWidth());
 
-  label_start_ = config.item_left_margin + icon_area_width_;
+  const bool use_touchable_layout =
+      GetMenuController() && GetMenuController()->use_touchable_layout();
+  label_start_ = (use_touchable_layout ? config.touchable_item_left_margin
+                                       : config.item_left_margin) +
+                 icon_area_width_;
   int padding = 0;
   if (config.always_use_icon_to_label_padding) {
     padding = config.icon_to_label_padding;
@@ -729,7 +733,7 @@ void MenuItemView::UpdateMenuPartSizes() {
     padding = (has_icons_ || HasChecksOrRadioButtons()) ?
         config.icon_to_label_padding : 0;
   }
-  if (GetMenuController() && GetMenuController()->use_touchable_layout())
+  if (use_touchable_layout)
     padding = config.touchable_icon_to_label_padding;
 
   label_start_ += padding;

@@ -27,7 +27,7 @@ MenuConfig::MenuConfig()
       label_to_arrow_padding(10),
       arrow_to_edge_padding(5),
       icon_to_label_padding(10),
-      touchable_icon_to_label_padding(22),
+      touchable_icon_to_label_padding(16),
       touchable_icon_size(20),
       touchable_icon_color(SkColorSetRGB(0x5F, 0x63, 0x60)),
       check_width(kMenuCheckSize),
