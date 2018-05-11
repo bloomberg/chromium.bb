@@ -611,8 +611,9 @@ void ExistingUserController::PerformLogin(
   if (user_context.GetKey()->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN) {
     base::string16 password(
         base::UTF8ToUTF16(new_user_context.GetKey()->GetSecret()));
-    new_user_context.SetSyncPasswordData(password_manager::SyncPasswordData(
-        password, auth_mode == LoginPerformer::AUTH_MODE_EXTENSION));
+    new_user_context.SetSyncPasswordData(password_manager::PasswordHashData(
+        user_context.GetAccountId().GetUserEmail(), password,
+        auth_mode == LoginPerformer::AUTH_MODE_EXTENSION));
   }
 
   if (user_manager::UserManager::Get()->IsSupervisedAccountId(

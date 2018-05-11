@@ -208,7 +208,8 @@ enum class SyncPasswordHashChange {
 
 enum class IsSyncPasswordHashSaved {
   NOT_SAVED,
-  SAVED,
+  SAVED_VIA_STRING_PREF,
+  SAVED_VIA_LIST_PREF,
   IS_SYNC_PASSWORD_HASH_SAVED_COUNT
 };
 #endif
