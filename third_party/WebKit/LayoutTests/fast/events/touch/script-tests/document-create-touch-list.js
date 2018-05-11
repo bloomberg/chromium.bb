@@ -12,8 +12,8 @@ shouldThrow("touchList.item()");
 
 // Test createTouchList with Touch objects as arguments.
 try {
-    var t = document.createTouch(window, document.body, 12341, 60, 65, 100, 105);
-    var t2 = document.createTouch(window, document.body, 12342, 50, 55, 115, 120);
+    var t = new Touch({identifier: 12341, target: document.body, clientX: 60, clientY:65, screenX:100, screenY: 105});
+    var t2 = new Touch({identifier: 12341, target: document.body, clientX: 50, clientY:55, screenX:115, screenY: 120});
     var tl = document.createTouchList(t, t2);
 
     var evt = new TouchEvent("touchstart", {

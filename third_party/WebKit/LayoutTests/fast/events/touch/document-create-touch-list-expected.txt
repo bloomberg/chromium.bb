@@ -1,5 +1,4 @@
-CONSOLE WARNING: line 6: document.createTouchList is deprecated and will be removed in M68, around July 2018. Please use TouchEvent constructor instead. See https://www.chromestatus.com/features/5668612064935936 for more details.
-CONSOLE WARNING: line 15: document.createTouch is deprecated and will be removed in M68, around July 2018. Please use TouchEvent constructor instead. See https://www.chromestatus.com/features/5668612064935936 for more details.
+CONSOLE WARNING: line 6: document.createTouchList is deprecated and will be removed in M69, around September 2018. Please use TouchEvent constructor instead. See https://www.chromestatus.com/features/5668612064935936 for more details.
 This tests support for the document.createTouchList API.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

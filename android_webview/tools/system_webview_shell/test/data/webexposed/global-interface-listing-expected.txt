@@ -767,7 +767,6 @@ interface Document : Node
     method createProcessingInstruction
     method createRange
     method createTextNode
-    method createTouch
     method createTouchList
     method createTreeWalker
     method elementFromPoint

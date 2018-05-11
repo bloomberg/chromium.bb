@@ -167,20 +167,6 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     attribute EventHandler onpointerlockerror;
     [MeasureAs=DocumentExitPointerLock] void exitPointerLock();
 
-    // Touch Events
-    // https://w3c.github.io/touch-events/#extensions-to-the-document-interface
-    [OriginTrialEnabled=TouchEventFeatureDetection, DeprecateAs=V8Document_CreateTouch_Method, LegacyInterfaceTypeChecking, Custom=CallPrologue]
-    Touch createTouch(Window view,
-                      EventTarget target,
-                      long identifier,
-                      double pageX,
-                      double pageY,
-                      double screenX,
-                      double screenY,
-                      optional unrestricted double radiusX = 0,
-                      optional unrestricted double radiusY = 0,
-                      optional unrestricted float rotationAngle = 0,
-                      optional unrestricted float force = 0);
     [OriginTrialEnabled=TouchEventFeatureDetection, DeprecateAs=V8Document_CreateTouchList_Method] TouchList createTouchList(Touch... touches);
 
     // Custom Elements

@@ -12,7 +12,6 @@ bindings_core_v8_files =
                     "core/v8/custom/v8_custom_xpath_ns_resolver.cc",
                     "core/v8/custom/v8_custom_xpath_ns_resolver.h",
                     "core/v8/custom/v8_dev_tools_host_custom.cc",
-                    "core/v8/custom/v8_document_custom.cc",
                     "core/v8/custom/v8_element_custom.cc",
                     "core/v8/custom/v8_error_event_custom.cc",
                     "core/v8/custom/v8_event_target_custom.cc",
