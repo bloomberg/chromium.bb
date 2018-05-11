@@ -28,9 +28,7 @@ bool IsAnswerCardEnabled() {
 }
 
 bool IsBackgroundBlurEnabled() {
-  static const bool enabled =
-      base::FeatureList::IsEnabled(kEnableBackgroundBlur);
-  return enabled;
+  return base::FeatureList::IsEnabled(kEnableBackgroundBlur);
 }
 
 bool IsPlayStoreAppSearchEnabled() {
