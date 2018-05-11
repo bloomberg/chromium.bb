@@ -9,6 +9,7 @@
 
 #include "base/process/process.h"
 #include "base/unguessable_token.h"
+#include "cc/trees/render_frame_metadata.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
@@ -186,11 +187,10 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_AdvanceFocus,
                      int /* browser_plugin_instance_id */,
                      bool /* reverse */)
 
-// Informs the BrowserPlugin that the guest's auto-resize transaction is
-// complete and it should update with the provided viz::LocalSurfaceId.
-IPC_MESSAGE_CONTROL2(BrowserPluginMsg_ResizeDueToAutoResize,
+// Informs the BrowserPlugin that the guest's visual properties have changed.
+IPC_MESSAGE_CONTROL2(BrowserPluginMsg_DidUpdateVisualProperties,
                      int /* browser_plugin_instance_id */,
-                     viz::LocalSurfaceId /* child_allocated_surface_id */)
+                     cc::RenderFrameMetadata /* metadata */)
 
 // Requests a viz::LocalSurfaceId to enable auto-resize mode from the parent
 // renderer.

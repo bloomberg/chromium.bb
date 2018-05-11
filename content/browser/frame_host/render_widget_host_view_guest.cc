@@ -701,12 +701,11 @@ void RenderWidgetHostViewGuest::DisableAutoResize(const gfx::Size& new_size) {
     guest_->DisableAutoResize();
 }
 
-viz::ScopedSurfaceIdAllocator RenderWidgetHostViewGuest::ResizeDueToAutoResize(
-    const gfx::Size& new_size,
-    const viz::LocalSurfaceId& local_surface_id) {
-  base::OnceCallback<void()> allocation_task =
-      base::BindOnce(&BrowserPluginGuest::ResizeDueToAutoResize, guest_,
-                     new_size, local_surface_id);
+viz::ScopedSurfaceIdAllocator
+RenderWidgetHostViewGuest::DidUpdateVisualProperties(
+    const cc::RenderFrameMetadata& metadata) {
+  base::OnceCallback<void()> allocation_task = base::BindOnce(
+      &BrowserPluginGuest::DidUpdateVisualProperties, guest_, metadata);
   return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
 }
 

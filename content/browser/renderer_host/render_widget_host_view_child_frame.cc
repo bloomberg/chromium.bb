@@ -1083,13 +1083,12 @@ void RenderWidgetHostViewChildFrame::DisableAutoResize(
 }
 
 viz::ScopedSurfaceIdAllocator
-RenderWidgetHostViewChildFrame::ResizeDueToAutoResize(
-    const gfx::Size& new_size,
-    const viz::LocalSurfaceId& local_surface_id) {
+RenderWidgetHostViewChildFrame::DidUpdateVisualProperties(
+    const cc::RenderFrameMetadata& metadata) {
   base::OnceCallback<void()> allocation_task = base::BindOnce(
       base::IgnoreResult(
-          &RenderWidgetHostViewChildFrame::OnResizeDueToAutoResizeComplete),
-      weak_factory_.GetWeakPtr(), local_surface_id);
+          &RenderWidgetHostViewChildFrame::OnDidUpdateVisualPropertiesComplete),
+      weak_factory_.GetWeakPtr(), metadata);
   return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
 }
 
@@ -1172,10 +1171,10 @@ bool RenderWidgetHostViewChildFrame::CanBecomeVisible() {
       ->CanBecomeVisible();
 }
 
-void RenderWidgetHostViewChildFrame::OnResizeDueToAutoResizeComplete(
-    viz::LocalSurfaceId local_surface_id) {
+void RenderWidgetHostViewChildFrame::OnDidUpdateVisualPropertiesComplete(
+    const cc::RenderFrameMetadata& metadata) {
   if (frame_connector_)
-    frame_connector_->ResizeDueToAutoResize(local_surface_id);
+    frame_connector_->DidUpdateVisualProperties(metadata);
 }
 
 void RenderWidgetHostViewChildFrame::DidNavigate() {

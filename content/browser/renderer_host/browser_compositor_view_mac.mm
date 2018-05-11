@@ -340,13 +340,14 @@ bool BrowserCompositorMac::UpdateNSViewAndDisplay(
   return true;
 }
 
-void BrowserCompositorMac::UpdateForAutoResize(const gfx::Size& new_size_dip) {
-  if (new_size_dip == dfh_size_dip_)
+void BrowserCompositorMac::UpdateForAutoResize(
+    const gfx::Size& new_size_in_pixels) {
+  if (new_size_in_pixels == dfh_size_pixels_)
     return;
 
-  dfh_size_dip_ = new_size_dip;
-  dfh_size_pixels_ = gfx::ConvertSizeToPixel(dfh_display_.device_scale_factor(),
-                                             dfh_size_dip_);
+  dfh_size_dip_ = gfx::ConvertSizeToDIP(dfh_display_.device_scale_factor(),
+                                        new_size_in_pixels);
+  dfh_size_pixels_ = new_size_in_pixels;
 
   if (recyclable_compositor_)
     recyclable_compositor_->Suspend();

@@ -85,9 +85,9 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   bool UpdateNSViewAndDisplay(const gfx::Size& new_size_dip,
                               const display::Display& new_display);
 
-  // Update the renderer's SurfaceId to reflect |size_dip| in anticipation of
-  // the NSView resizing during auto-resize.
-  void UpdateForAutoResize(const gfx::Size& size_dip);
+  // Update the renderer's SurfaceId to reflect |new_size_in_pixels| in
+  // anticipation of the NSView resizing during auto-resize.
+  void UpdateForAutoResize(const gfx::Size& new_size_in_pixels);
 
   // This is used to ensure that the ui::Compositor be attached to the
   // DelegatedFrameHost while the RWHImpl is visible.

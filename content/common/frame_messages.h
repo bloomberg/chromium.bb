@@ -17,6 +17,7 @@
 
 #include "base/optional.h"
 #include "build/build_config.h"
+#include "cc/trees/render_frame_metadata.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "content/common/buildflags.h"
@@ -243,6 +244,17 @@ IPC_STRUCT_TRAITS_BEGIN(content::FrameVisualProperties)
   IPC_STRUCT_TRAITS_MEMBER(screen_space_rect)
   IPC_STRUCT_TRAITS_MEMBER(local_frame_size)
   IPC_STRUCT_TRAITS_MEMBER(capture_sequence_number)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(cc::RenderFrameMetadata)
+  IPC_STRUCT_TRAITS_MEMBER(is_scroll_offset_at_top)
+  IPC_STRUCT_TRAITS_MEMBER(root_background_color)
+  IPC_STRUCT_TRAITS_MEMBER(root_scroll_offset)
+  IPC_STRUCT_TRAITS_MEMBER(selection)
+  IPC_STRUCT_TRAITS_MEMBER(is_mobile_optimized)
+  IPC_STRUCT_TRAITS_MEMBER(device_scale_factor)
+  IPC_STRUCT_TRAITS_MEMBER(viewport_size_in_pixels)
+  IPC_STRUCT_TRAITS_MEMBER(local_surface_id)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::FramePolicy)
@@ -988,8 +1000,8 @@ IPC_MESSAGE_ROUTED0(FrameMsg_ClearFocusedElement)
 
 // Informs the parent renderer that the child has completed an autoresize
 // transaction and should update with the provided viz::LocalSurfaceId.
-IPC_MESSAGE_ROUTED1(FrameMsg_ResizeDueToAutoResize,
-                    viz::LocalSurfaceId /* child_allocated_surface_id */)
+IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateVisualProperties,
+                    cc::RenderFrameMetadata /* metadata */)
 
 // Requests a viz::LocalSurfaceId to enable auto-resize mode from the parent
 // renderer.

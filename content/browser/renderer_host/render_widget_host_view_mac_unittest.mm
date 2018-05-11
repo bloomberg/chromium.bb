@@ -1953,7 +1953,10 @@ TEST_F(RenderWidgetHostViewMacTest, ChildAllocationAcceptedInParent) {
   viz::ChildLocalSurfaceIdAllocator child_allocator;
   child_allocator.UpdateFromParent(local_surface_id1);
   viz::LocalSurfaceId local_surface_id2 = child_allocator.GenerateId();
-  host_->DidUpdateVisualProperties(gfx::Size(75, 75), local_surface_id2);
+  cc::RenderFrameMetadata metadata;
+  metadata.viewport_size_in_pixels = gfx::Size(75, 75);
+  metadata.local_surface_id = local_surface_id2;
+  host_->DidUpdateVisualProperties(metadata);
 
   viz::LocalSurfaceId local_surface_id3(rwhv_mac_->GetLocalSurfaceId());
   EXPECT_NE(local_surface_id1, local_surface_id3);
@@ -1970,7 +1973,10 @@ TEST_F(RenderWidgetHostViewMacTest, ConflictingAllocationsResolve) {
   viz::ChildLocalSurfaceIdAllocator child_allocator;
   child_allocator.UpdateFromParent(local_surface_id1);
   viz::LocalSurfaceId local_surface_id2 = child_allocator.GenerateId();
-  host_->DidUpdateVisualProperties(gfx::Size(75, 75), local_surface_id2);
+  cc::RenderFrameMetadata metadata;
+  metadata.viewport_size_in_pixels = gfx::Size(75, 75);
+  metadata.local_surface_id = local_surface_id2;
+  host_->DidUpdateVisualProperties(metadata);
 
   // Cause a conflicting viz::LocalSurfaceId allocation
   BrowserCompositorMac* browser_compositor = rwhv_mac_->BrowserCompositor();

@@ -22,6 +22,10 @@ class WebGestureEvent;
 struct WebIntrinsicSizingInfo;
 }
 
+namespace cc {
+class RenderFrameMetadata;
+}
+
 namespace viz {
 class SurfaceId;
 class SurfaceInfo;
@@ -231,11 +235,10 @@ class CONTENT_EXPORT FrameConnectorDelegate {
       ui::mojom::WindowTreeClientPtr window_tree_client) {}
 #endif
 
-  // Called by RenderWidgetHostViewChildFrame when the child frame has finished
-  // an auto-resize transaction. Provides the viz::LocalSurfaceId to use for
-  // the transaction.
-  virtual void ResizeDueToAutoResize(
-      const viz::LocalSurfaceId& child_allocated_surface_id) {}
+  // Called by RenderWidgetHostViewChildFrame when the child frame has updated
+  // its visual properties and its viz::LocalSurfaceId has changed.
+  virtual void DidUpdateVisualProperties(
+      const cc::RenderFrameMetadata& metadata) {}
 
   bool has_size() const { return has_size_; }
 

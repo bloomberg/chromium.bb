@@ -2604,12 +2604,10 @@ bool TestChildOrGuestAutoresize(bool is_guest,
   viz::LocalSurfaceId local_surface_id(current_id.parent_sequence_number(),
                                        current_id.child_sequence_number() + 1,
                                        current_id.embed_token());
-  guest_rwh_impl->DidUpdateVisualProperties(gfx::Size(75, 75),
-                                            local_surface_id);
-
-  // Auto-resize messages are handled with delayed processing, make sure it's
-  // handled now:
-  base::RunLoop().RunUntilIdle();
+  cc::RenderFrameMetadata metadata;
+  metadata.viewport_size_in_pixels = gfx::Size(75, 75);
+  metadata.local_surface_id = local_surface_id;
+  guest_rwh_impl->DidUpdateVisualProperties(metadata);
 
   // This won't generate a response, as we short-circuit auto-resizes, so cause
   // an additional update by disabling auto-resize.

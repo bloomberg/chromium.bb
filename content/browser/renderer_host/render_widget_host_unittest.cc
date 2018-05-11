@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "cc/trees/render_frame_metadata.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
@@ -995,7 +996,10 @@ TEST_F(RenderWidgetHostTest, Resize) {
   EXPECT_EQ(original_size.size(), host_->old_visual_properties_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
       ViewMsg_SynchronizeVisualProperties::ID));
-  host_->DidUpdateVisualProperties(original_size.size(), base::nullopt);
+  cc::RenderFrameMetadata metadata;
+  metadata.viewport_size_in_pixels = original_size.size();
+  metadata.local_surface_id = base::nullopt;
+  host_->DidUpdateVisualProperties(metadata);
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
 
   process_->sink().ClearMessages();
@@ -1019,7 +1023,9 @@ TEST_F(RenderWidgetHostTest, Resize) {
   // this isn't the second_size, the message handler should immediately send
   // a new resize message for the new size to the renderer.
   process_->sink().ClearMessages();
-  host_->DidUpdateVisualProperties(original_size.size(), base::nullopt);
+  metadata.viewport_size_in_pixels = original_size.size();
+  metadata.local_surface_id = base::nullopt;
+  host_->DidUpdateVisualProperties(metadata);
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
@@ -1027,7 +1033,9 @@ TEST_F(RenderWidgetHostTest, Resize) {
 
   // Send the resize ack for the latest size.
   process_->sink().ClearMessages();
-  host_->DidUpdateVisualProperties(third_size.size(), base::nullopt);
+  metadata.viewport_size_in_pixels = third_size.size();
+  metadata.local_surface_id = base::nullopt;
+  host_->DidUpdateVisualProperties(metadata);
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
   EXPECT_FALSE(process_->sink().GetFirstMessageMatching(
@@ -1186,7 +1194,10 @@ TEST_F(RenderWidgetHostTest, HiddenPaint) {
 
   // Send it an update as from the renderer.
   process_->sink().ClearMessages();
-  host_->DidUpdateVisualProperties(gfx::Size(100, 100), base::nullopt);
+  cc::RenderFrameMetadata metadata;
+  metadata.viewport_size_in_pixels = gfx::Size(100, 100);
+  metadata.local_surface_id = base::nullopt;
+  host_->DidUpdateVisualProperties(metadata);
 
   // Now unhide.
   process_->sink().ClearMessages();

@@ -57,6 +57,10 @@ namespace gfx {
 class Range;
 }  // namespace gfx
 
+namespace cc {
+class RenderFrameMetadata;
+}  // namespace cc
+
 namespace viz {
 class LocalSurfaceId;
 class SurfaceInfo;
@@ -182,9 +186,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   void EnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
   void DisableAutoResize();
-  void ResizeDueToAutoResize(
-      const gfx::Size& new_size,
-      const viz::LocalSurfaceId& child_allocated_surface_id);
+  void DidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
 
   // WebContentsObserver implementation.
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;

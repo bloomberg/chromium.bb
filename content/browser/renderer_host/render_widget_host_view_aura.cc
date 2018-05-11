@@ -2483,14 +2483,14 @@ void RenderWidgetHostViewAura::OnSynchronizedDisplayPropertiesChanged() {
                               base::nullopt);
 }
 
-viz::ScopedSurfaceIdAllocator RenderWidgetHostViewAura::ResizeDueToAutoResize(
-    const gfx::Size& new_size,
-    const viz::LocalSurfaceId& child_local_surface_id) {
+viz::ScopedSurfaceIdAllocator
+RenderWidgetHostViewAura::DidUpdateVisualProperties(
+    const cc::RenderFrameMetadata& metadata) {
   base::OnceCallback<void()> allocation_task = base::BindOnce(
       base::IgnoreResult(
           &RenderWidgetHostViewAura::SynchronizeVisualProperties),
       weak_ptr_factory_.GetWeakPtr(), cc::DeadlinePolicy::UseDefaultDeadline(),
-      child_local_surface_id);
+      metadata.local_surface_id);
   return window_->GetSurfaceIdAllocator(std::move(allocation_task));
 }
 

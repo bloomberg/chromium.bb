@@ -180,11 +180,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // to nullptr.
   void DidUnregisterFromTextInputManager(TextInputManager* text_input_manager);
 
-  // Informs the view that the renderer has resized to |new_size| because auto-
-  // resize is enabled.
-  virtual viz::ScopedSurfaceIdAllocator ResizeDueToAutoResize(
-      const gfx::Size& new_size,
-      const viz::LocalSurfaceId& local_surface_id);
+  // Informs the view that the renderer's visual properties have been updated
+  // and a new viz::LocalSurfaceId has been allocated.
+  virtual viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
+      const cc::RenderFrameMetadata& metadata);
 
   virtual bool IsLocalSurfaceIdAllocationSuppressed() const;
 

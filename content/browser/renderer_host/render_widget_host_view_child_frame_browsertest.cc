@@ -136,8 +136,11 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest,
   // Fake an auto-resize update from the parent renderer.
   viz::LocalSurfaceId local_surface_id(10, 10,
                                        base::UnguessableToken::Create());
+  cc::RenderFrameMetadata metadata;
+  metadata.viewport_size_in_pixels = gfx::Size(75, 75);
+  metadata.local_surface_id = local_surface_id;
   root->current_frame_host()->GetRenderWidgetHost()->DidUpdateVisualProperties(
-      gfx::Size(75, 75), local_surface_id);
+      metadata);
 
   // The child frame's RenderWidgetHostView should now use the auto-resize value
   // for its visible viewport.
