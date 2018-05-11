@@ -510,11 +510,56 @@ TEST_F('OutputE2ETest', 'ListBox', function() {
 });
 
 SYNC_TEST_F('OutputE2ETest', 'MessageIdAndEarconValidity', function() {
+  const kNoBrailleMessageRequired = new Set([
+    'docAbstract',
+    'docAcknowledgments',
+    'docAfterword',
+    'docAppendix',
+    'docBackLink',
+    'docBiblioEntry',
+    'docBibliography',
+    'docBiblioRef',
+    'docChapter',
+    'docColophon',
+    'docConclusion',
+    'docCover',
+    'docCredit',
+    'docCredits',
+    'docDedication',
+    'docEndnote',
+    'docEndnotes',
+    'docEpigraph',
+    'docEpilogue',
+    'docErrata',
+    'docExample',
+    'docFootnote',
+    'docForeword',
+    'docGlossary',
+    'docGlossRef',
+    'docIndex',
+    'docIntroduction',
+    'docNoteRef',
+    'docNotice',
+    'docPageBreak',
+    'docPageList',
+    'docPart',
+    'docPreface',
+    'docPrologue',
+    'docPullquote',
+    'docQna',
+    'docSubtitle',
+    'docTip',
+    'docToc',
+    'graphicsDocument',
+    'graphicsObject',
+    'graphicsSymbol',
+  ]);
   for (var key in Output.ROLE_INFO_) {
     var value = Output.ROLE_INFO_[key];
     if (value.msgId) {
       Msgs.getMsg(value.msgId);
-      Msgs.getMsg(value.msgId + '_brl');
+      if (!kNoBrailleMessageRequired.has(key))
+        Msgs.getMsg(value.msgId + '_brl');
       assertFalse(/[A-Z]+/.test(value.msgId));
     }
     if (value.earconId)

@@ -265,6 +265,11 @@ bool AXPlatformNodeBase::IsTextOnlyObject() const {
          GetData().role == ax::mojom::Role::kInlineTextBox;
 }
 
+bool AXPlatformNodeBase::IsAutofillField() {
+  return IsAutofillShown() && IsPlainTextField() &&
+         delegate_->GetFocus() == GetNativeViewAccessible();
+}
+
 bool AXPlatformNodeBase::IsPlainTextField() const {
   // We need to check both the role and editable state, because some ARIA text
   // fields may in fact not be editable, whilst some editable fields might not

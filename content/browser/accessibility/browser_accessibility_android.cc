@@ -253,9 +253,7 @@ bool BrowserAccessibilityAndroid::IsHeading() const {
   if (parent && parent->IsHeading())
     return true;
 
-  return (GetRole() == ax::mojom::Role::kColumnHeader ||
-          GetRole() == ax::mojom::Role::kHeading ||
-          GetRole() == ax::mojom::Role::kRowHeader);
+  return ui::IsHeadingOrTableHeader(GetRole());
 }
 
 bool BrowserAccessibilityAndroid::IsHierarchical() const {
@@ -265,7 +263,7 @@ bool BrowserAccessibilityAndroid::IsHierarchical() const {
 }
 
 bool BrowserAccessibilityAndroid::IsLink() const {
-  return ui::AXRoleIsLink(GetRole());
+  return ui::IsLink(GetRole());
 }
 
 bool BrowserAccessibilityAndroid::IsMultiLine() const {
@@ -418,7 +416,7 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
     }
   }
 
-  if (text.empty() && (IsLink() || GetRole() == ax::mojom::Role::kImage) &&
+  if (text.empty() && (ui::IsLink(GetRole()) || ui::IsImage(GetRole())) &&
       !HasExplicitlyEmptyName()) {
     base::string16 url = GetString16Attribute(ax::mojom::StringAttribute::kUrl);
     text = ui::AXUrlBaseText(url);
@@ -572,6 +570,123 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kDisclosureTriangle:
       message_id = IDS_AX_ROLE_DISCLOSURE_TRIANGLE;
       break;
+    case ax::mojom::Role::kDocAbstract:
+      message_id = IDS_AX_ROLE_DOC_ABSTRACT;
+      break;
+    case ax::mojom::Role::kDocAcknowledgments:
+      message_id = IDS_AX_ROLE_DOC_ACKNOWLEDGMENTS;
+      break;
+    case ax::mojom::Role::kDocAfterword:
+      message_id = IDS_AX_ROLE_DOC_AFTERWORD;
+      break;
+    case ax::mojom::Role::kDocAppendix:
+      message_id = IDS_AX_ROLE_DOC_APPENDIX;
+      break;
+    case ax::mojom::Role::kDocBackLink:
+      message_id = IDS_AX_ROLE_DOC_BACKLINK;
+      break;
+    case ax::mojom::Role::kDocBiblioEntry:
+      message_id = IDS_AX_ROLE_DOC_BIBLIO_ENTRY;
+      break;
+    case ax::mojom::Role::kDocBibliography:
+      message_id = IDS_AX_ROLE_DOC_BIBLIOGRAPHY;
+      break;
+    case ax::mojom::Role::kDocBiblioRef:
+      message_id = IDS_AX_ROLE_DOC_BIBLIO_REF;
+      break;
+    case ax::mojom::Role::kDocChapter:
+      message_id = IDS_AX_ROLE_DOC_CHAPTER;
+      break;
+    case ax::mojom::Role::kDocColophon:
+      message_id = IDS_AX_ROLE_DOC_COLOPHON;
+      break;
+    case ax::mojom::Role::kDocConclusion:
+      message_id = IDS_AX_ROLE_DOC_CONCLUSION;
+      break;
+    case ax::mojom::Role::kDocCover:
+      message_id = IDS_AX_ROLE_DOC_COVER;
+      break;
+    case ax::mojom::Role::kDocCredit:
+      message_id = IDS_AX_ROLE_DOC_CREDIT;
+      break;
+    case ax::mojom::Role::kDocCredits:
+      message_id = IDS_AX_ROLE_DOC_CREDITS;
+      break;
+    case ax::mojom::Role::kDocDedication:
+      message_id = IDS_AX_ROLE_DOC_DEDICATION;
+      break;
+    case ax::mojom::Role::kDocEndnote:
+      message_id = IDS_AX_ROLE_DOC_ENDNOTE;
+      break;
+    case ax::mojom::Role::kDocEndnotes:
+      message_id = IDS_AX_ROLE_DOC_ENDNOTES;
+      break;
+    case ax::mojom::Role::kDocEpigraph:
+      message_id = IDS_AX_ROLE_DOC_EPIGRAPH;
+      break;
+    case ax::mojom::Role::kDocEpilogue:
+      message_id = IDS_AX_ROLE_DOC_EPILOGUE;
+      break;
+    case ax::mojom::Role::kDocErrata:
+      message_id = IDS_AX_ROLE_DOC_ERRATA;
+      break;
+    case ax::mojom::Role::kDocExample:
+      message_id = IDS_AX_ROLE_DOC_EXAMPLE;
+      break;
+    case ax::mojom::Role::kDocFootnote:
+      message_id = IDS_AX_ROLE_DOC_FOOTNOTE;
+      break;
+    case ax::mojom::Role::kDocForeword:
+      message_id = IDS_AX_ROLE_DOC_FOREWORD;
+      break;
+    case ax::mojom::Role::kDocGlossary:
+      message_id = IDS_AX_ROLE_DOC_GLOSSARY;
+      break;
+    case ax::mojom::Role::kDocGlossRef:
+      message_id = IDS_AX_ROLE_DOC_GLOSS_REF;
+      break;
+    case ax::mojom::Role::kDocIndex:
+      message_id = IDS_AX_ROLE_DOC_INDEX;
+      break;
+    case ax::mojom::Role::kDocIntroduction:
+      message_id = IDS_AX_ROLE_DOC_INTRODUCTION;
+      break;
+    case ax::mojom::Role::kDocNoteRef:
+      message_id = IDS_AX_ROLE_DOC_NOTE_REF;
+      break;
+    case ax::mojom::Role::kDocNotice:
+      message_id = IDS_AX_ROLE_DOC_NOTICE;
+      break;
+    case ax::mojom::Role::kDocPageBreak:
+      message_id = IDS_AX_ROLE_DOC_PAGE_BREAK;
+      break;
+    case ax::mojom::Role::kDocPageList:
+      message_id = IDS_AX_ROLE_DOC_PAGE_LIST;
+      break;
+    case ax::mojom::Role::kDocPart:
+      message_id = IDS_AX_ROLE_DOC_PART;
+      break;
+    case ax::mojom::Role::kDocPreface:
+      message_id = IDS_AX_ROLE_DOC_PREFACE;
+      break;
+    case ax::mojom::Role::kDocPrologue:
+      message_id = IDS_AX_ROLE_DOC_PROLOGUE;
+      break;
+    case ax::mojom::Role::kDocPullquote:
+      message_id = IDS_AX_ROLE_DOC_PULLQUOTE;
+      break;
+    case ax::mojom::Role::kDocQna:
+      message_id = IDS_AX_ROLE_DOC_QNA;
+      break;
+    case ax::mojom::Role::kDocSubtitle:
+      message_id = IDS_AX_ROLE_DOC_SUBTITLE;
+      break;
+    case ax::mojom::Role::kDocTip:
+      message_id = IDS_AX_ROLE_DOC_TIP;
+      break;
+    case ax::mojom::Role::kDocToc:
+      message_id = IDS_AX_ROLE_DOC_TOC;
+      break;
     case ax::mojom::Role::kDocument:
       message_id = IDS_AX_ROLE_DOCUMENT;
       break;
@@ -595,6 +710,15 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
       break;
     case ax::mojom::Role::kGenericContainer:
       // No role description.
+      break;
+    case ax::mojom::Role::kGraphicsDocument:
+      message_id = IDS_AX_ROLE_GRAPHICS_DOCUMENT;
+      break;
+    case ax::mojom::Role::kGraphicsObject:
+      message_id = IDS_AX_ROLE_GRAPHICS_OBJECT;
+      break;
+    case ax::mojom::Role::kGraphicsSymbol:
+      message_id = IDS_AX_ROLE_GRAPHICS_SYMBOL;
       break;
     case ax::mojom::Role::kGrid:
       message_id = IDS_AX_ROLE_TABLE;
@@ -1419,7 +1543,7 @@ bool BrowserAccessibilityAndroid::HasOnlyTextAndImageChildren() const {
   for (uint32_t i = 0; i < InternalChildCount(); i++) {
     BrowserAccessibility* child = InternalGetChild(i);
     if (child->GetRole() != ax::mojom::Role::kStaticText &&
-        child->GetRole() != ax::mojom::Role::kImage) {
+        !ui::IsImage(child->GetRole())) {
       return false;
     }
   }

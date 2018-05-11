@@ -102,6 +102,50 @@
     dialog,
     directory,
     disclosureTriangle,
+    // --------------------------------------------------------------
+    // DPub Roles:
+    // https://www.w3.org/TR/dpub-aam-1.0/#mapping_role_table
+    docAbstract,
+    docAcknowledgments,
+    docAfterword,
+    docAppendix,
+    docBackLink,
+    docBiblioEntry,
+    docBibliography,
+    docBiblioRef,
+    docChapter,
+    docColophon,
+    docConclusion,
+    docCover,
+    docCredit,
+    docCredits,
+    docDedication,
+    docEndnote,
+    docEndnotes,
+    docEpigraph,
+    docEpilogue,
+    docErrata,
+    docExample,
+    docFootnote,
+    docForeword,
+    docGlossary,
+    docGlossRef,
+    docIndex,
+    docIntroduction,
+    docNoteRef,
+    docNotice,
+    docPageBreak,
+    docPageList,
+    docPart,
+    docPreface,
+    docPrologue,
+    docPullquote,
+    docQna,
+    docSubtitle,
+    docTip,
+    docToc,
+    // End DPub roles.
+    // --------------------------------------------------------------
     document,
     embeddedObject,
     feed,
@@ -110,6 +154,14 @@
     footer,
     form,
     genericContainer,
+    // --------------------------------------------------------------
+    // ARIA Graphics module roles:
+    // https://rawgit.com/w3c/graphics-aam/master/#mapping_role_table
+    graphicsDocument,
+    graphicsObject,
+    graphicsSymbol,
+    // End ARIA Graphics module roles.
+    // --------------------------------------------------------------
     grid,
     group,
     heading,
@@ -887,7 +939,7 @@
 
     // Sets the value of a text field.
     static void setValue(DOMString value);
-    
+
     // Show the context menu for this element, as if the user right-clicked.
     static void showContextMenu();
 

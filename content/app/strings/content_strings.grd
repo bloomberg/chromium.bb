@@ -269,6 +269,123 @@ below:
       <message name="IDS_AX_ROLE_DISCLOSURE_TRIANGLE" desc="Accessibility role description for a disclosure triangle, a control shaped like a triangle that expands or collapses to show or hide extra content">
         disclosure triangle
       </message>
+      <message name="IDS_AX_ROLE_DOC_ABSTRACT" desc="Accessibility role description for abstract, meaning the summary of the contents of an article or book">
+        abstract
+      </message>
+      <message name="IDS_AX_ROLE_DOC_ACKNOWLEDGMENTS" desc="Accessibility role description for acknowledgments">
+        acknowledgments
+      </message>
+      <message name="IDS_AX_ROLE_DOC_AFTERWORD" desc="Accessibility role description for afterword">
+        afterword
+      </message>
+      <message name="IDS_AX_ROLE_DOC_APPENDIX" desc="Accessibility role description for appendix, meaning the summary of the contents of an article or book">
+        appendix
+      </message>
+      <message name="IDS_AX_ROLE_DOC_BACKLINK" desc="Accessibility role description for back link">
+        back link
+      </message>
+      <message name="IDS_AX_ROLE_DOC_BIBLIO_ENTRY" desc="Accessibility role description for bibliography entry">
+        bibliography entry
+      </message>
+      <message name="IDS_AX_ROLE_DOC_BIBLIOGRAPHY" desc="Accessibility role description for bibliography">
+        bibliography
+      </message>
+      <message name="IDS_AX_ROLE_DOC_BIBLIO_REF" desc="Accessibility role description for bibliography reference">
+        bibliography reference
+      </message>
+      <message name="IDS_AX_ROLE_DOC_CHAPTER" desc="Accessibility role description for chapter">
+        chapter
+      </message>
+      <message name="IDS_AX_ROLE_DOC_COLOPHON" desc="Accessibility role description for colophon">
+        colophon
+      </message>
+      <message name="IDS_AX_ROLE_DOC_CONCLUSION" desc="Accessibility role description for conclusion">
+        conclusion
+      </message>
+      <message name="IDS_AX_ROLE_DOC_COVER" desc="Accessibility role description for cover">
+        cover
+      </message>
+      <message name="IDS_AX_ROLE_DOC_CREDIT" desc="Accessibility role description for credit, a public acknowledgement of someone who was responsible for helping with something">
+        credit
+      </message>
+      <message name="IDS_AX_ROLE_DOC_CREDITS" desc="Accessibility role description for credits">
+        credits
+      </message>
+      <message name="IDS_AX_ROLE_DOC_DEDICATION" desc="Accessibility role description for dedication">
+        dedication
+      </message>
+      <message name="IDS_AX_ROLE_DOC_ENDNOTE" desc="Accessibility role description for endnote">
+        endnote
+      </message>
+      <message name="IDS_AX_ROLE_DOC_ENDNOTES" desc="Accessibility role description for endnotes">
+        endnotes
+      </message>
+      <message name="IDS_AX_ROLE_DOC_EPIGRAPH" desc="Accessibility role description for epigraph">
+        epigraph
+      </message>
+      <message name="IDS_AX_ROLE_DOC_EPILOGUE" desc="Accessibility role description for epilogue">
+        epilogue
+      </message>
+      <message name="IDS_AX_ROLE_DOC_ERRATA" desc="Accessibility role description for errata">
+        errata
+      </message>
+      <message name="IDS_AX_ROLE_DOC_EXAMPLE" desc="Accessibility role description for example">
+        example
+      </message>
+      <message name="IDS_AX_ROLE_DOC_FOOTNOTE" desc="Accessibility role description for footnote">
+        footnote
+      </message>
+      <message name="IDS_AX_ROLE_DOC_FOREWORD" desc="Accessibility role description for foreword">
+        foreword
+      </message>
+      <message name="IDS_AX_ROLE_DOC_GLOSSARY" desc="Accessibility role description for glossary">
+        glossary
+      </message>
+      <message name="IDS_AX_ROLE_DOC_GLOSS_REF" desc="Accessibility role description for glossary reference">
+        glossary reference
+      </message>
+      <message name="IDS_AX_ROLE_DOC_INDEX" desc="Accessibility role description for index">
+        index
+      </message>
+      <message name="IDS_AX_ROLE_DOC_INTRODUCTION" desc="Accessibility role description for introduction">
+        introduction
+      </message>
+      <message name="IDS_AX_ROLE_DOC_NOTE_REF" desc="Accessibility role description for note reference">
+        note reference
+      </message>
+      <message name="IDS_AX_ROLE_DOC_NOTICE" desc="Accessibility role description for notice">
+        notice
+      </message>
+      <message name="IDS_AX_ROLE_DOC_PAGE_BREAK" desc="Accessibility role description for page break">
+        page break
+      </message>
+      <message name="IDS_AX_ROLE_DOC_PAGE_LIST" desc="Accessibility role description for page list">
+        page list
+      </message>
+      <message name="IDS_AX_ROLE_DOC_PART" desc="Accessibility role description for part, as in a part of a book">
+        part
+      </message>
+      <message name="IDS_AX_ROLE_DOC_PREFACE" desc="Accessibility role description for preface">
+        preface
+      </message>
+      <message name="IDS_AX_ROLE_DOC_PROLOGUE" desc="Accessibility role description for prologue">
+        prologue
+      </message>
+      <message name="IDS_AX_ROLE_DOC_PULLQUOTE" desc="Accessibility role description for pullquote">
+        pullquote
+      </message>
+      <message name="IDS_AX_ROLE_DOC_QNA" desc="Accessibility role description for Q+A (questions and answers)">
+        Q&amp;A
+      </message>
+      <message name="IDS_AX_ROLE_DOC_SUBTITLE" desc="Accessibility role description for subtitle">
+        subtitle
+      </message>
+      <message name="IDS_AX_ROLE_DOC_TIP" desc="Accessibility role description for tip, as in a suggestion or idea">
+        tip
+      </message>
+      <message name="IDS_AX_ROLE_DOC_TOC" desc="Accessibility role description for table of contents">
+        table of contents
+      </message>
       <message name="IDS_AX_ROLE_FEED" desc="Accessibility role description for a scrollable list of articles.">
         feed
       </message>
@@ -280,6 +397,15 @@ below:
       </message>
       <message name="IDS_AX_ROLE_FOOTER" desc="Accessibility role description for footers">
         footer
+      </message>
+      <message name="IDS_AX_ROLE_GRAPHICS_DOCUMENT" desc="Accessibility role description for graphics document">
+        graphics document
+      </message>
+      <message name="IDS_AX_ROLE_GRAPHICS_OBJECT" desc="Accessibility role description for graphics object">
+        graphics object
+      </message>
+      <message name="IDS_AX_ROLE_GRAPHICS_SYMBOL" desc="Accessibility role description for graphics symbol">
+        graphics symbol
       </message>
       <message name="IDS_AX_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA" desc="The accessibility text to speak when we display an autofill popup">
         Autofill

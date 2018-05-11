@@ -129,7 +129,9 @@ CONTENT_EXPORT base::string16 IAccessible2RoleToString(int32_t ia2_role) {
       QUOTE(IA2_ROLE_TOGGLE_BUTTON),
       QUOTE(IA2_ROLE_UNKNOWN),
       QUOTE(IA2_ROLE_VIEW_PORT),
-  };
+      QUOTE(IA2_ROLE_COMPLEMENTARY_CONTENT),
+      QUOTE(IA2_ROLE_LANDMARK),
+      QUOTE(IA2_ROLE_LEVEL_BAR)};
 
   return GetNameForPlatformConstant(ia2_table, arraysize(ia2_table), ia2_role);
 }

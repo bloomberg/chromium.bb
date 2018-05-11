@@ -983,9 +983,21 @@ enum IA2Role {
    to the main content.  If the complementary content is completely separable main
    content, it may be appropriate to use a more general role.
   */
-  IA2_ROLE_COMPLEMENTARY_CONTENT
+  IA2_ROLE_COMPLEMENTARY_CONTENT,
   
+  /** An object representing a navigational landmark, a region on a page to
+   which the user may want quick access, such as navigating, searching,
+   perusing the primary content.
+  */
+  IA2_ROLE_LANDMARK,
+
+  /**
+   * A bar that serves as a level indicator to, for instance, show
+   * the strength of a password or the charge of a battery.
+   */
+  IA2_ROLE_LEVEL_BAR
 };
+
 /*************************************************************************
  *
  *  File Name (AccessibleStates.idl)

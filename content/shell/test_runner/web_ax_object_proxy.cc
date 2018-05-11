@@ -92,6 +92,84 @@ std::string RoleToString(blink::WebAXRole role) {
       return result.append("Directory");
     case blink::kWebAXRoleDisclosureTriangle:
       return result.append("DisclosureTriangle");
+    case blink::kWebAXRoleDocAbstract:
+      return result.append("DocAbstract");
+    case blink::kWebAXRoleDocAcknowledgments:
+      return result.append("DocAcknowledgments");
+    case blink::kWebAXRoleDocAfterword:
+      return result.append("DocAfterword");
+    case blink::kWebAXRoleDocAppendix:
+      return result.append("DocAppendix");
+    case blink::kWebAXRoleDocBackLink:
+      return result.append("DocBackLink");
+    case blink::kWebAXRoleDocBiblioEntry:
+      return result.append("DocBiblioEntry");
+    case blink::kWebAXRoleDocBibliography:
+      return result.append("DocBibliography");
+    case blink::kWebAXRoleDocBiblioRef:
+      return result.append("DocBiblioRef");
+    case blink::kWebAXRoleDocChapter:
+      return result.append("DocChapter");
+    case blink::kWebAXRoleDocColophon:
+      return result.append("DocColophon");
+    case blink::kWebAXRoleDocConclusion:
+      return result.append("DocConclusion");
+    case blink::kWebAXRoleDocCover:
+      return result.append("DocCover");
+    case blink::kWebAXRoleDocCredit:
+      return result.append("DocCredit");
+    case blink::kWebAXRoleDocCredits:
+      return result.append("DocCredits");
+    case blink::kWebAXRoleDocDedication:
+      return result.append("DocDedication");
+    case blink::kWebAXRoleDocEndnote:
+      return result.append("DocEndnote");
+    case blink::kWebAXRoleDocEndnotes:
+      return result.append("DocEndnotes");
+    case blink::kWebAXRoleDocEpigraph:
+      return result.append("DocEpigraph");
+    case blink::kWebAXRoleDocEpilogue:
+      return result.append("DocEpilogue");
+    case blink::kWebAXRoleDocErrata:
+      return result.append("DocErrata");
+    case blink::kWebAXRoleDocExample:
+      return result.append("DocExample");
+    case blink::kWebAXRoleDocFootnote:
+      return result.append("DocFootnote");
+    case blink::kWebAXRoleDocForeword:
+      return result.append("DocForeword");
+    case blink::kWebAXRoleDocGlossary:
+      return result.append("DocGlossary");
+    case blink::kWebAXRoleDocGlossRef:
+      return result.append("DocGlossRef");
+    case blink::kWebAXRoleDocIndex:
+      return result.append("DocIndex");
+    case blink::kWebAXRoleDocIntroduction:
+      return result.append("DocIntroduction");
+    case blink::kWebAXRoleDocNoteRef:
+      return result.append("DocNoteRef");
+    case blink::kWebAXRoleDocNotice:
+      return result.append("DocNotice");
+    case blink::kWebAXRoleDocPageBreak:
+      return result.append("DocPageBreak");
+    case blink::kWebAXRoleDocPageList:
+      return result.append("DocPageList");
+    case blink::kWebAXRoleDocPart:
+      return result.append("DocPart");
+    case blink::kWebAXRoleDocPreface:
+      return result.append("DocPreface");
+    case blink::kWebAXRoleDocPrologue:
+      return result.append("DocPrologue");
+    case blink::kWebAXRoleDocPullquote:
+      return result.append("DocPullquote");
+    case blink::kWebAXRoleDocQna:
+      return result.append("DocQna");
+    case blink::kWebAXRoleDocSubtitle:
+      return result.append("DocSubtitle");
+    case blink::kWebAXRoleDocTip:
+      return result.append("DocTip");
+    case blink::kWebAXRoleDocToc:
+      return result.append("DocToc");
     case blink::kWebAXRoleDocument:
       return result.append("Document");
     case blink::kWebAXRoleEmbeddedObject:
@@ -106,6 +184,12 @@ std::string RoleToString(blink::WebAXRole role) {
       return result.append("Form");
     case blink::kWebAXRoleGenericContainer:
       return result.append("GenericContainer");
+    case blink::kWebAXRoleGraphicsDocument:
+      return result.append("GraphicsDocument");
+    case blink::kWebAXRoleGraphicsObject:
+      return result.append("GraphicsObject");
+    case blink::kWebAXRoleGraphicsSymbol:
+      return result.append("GraphicsSymbol");
     case blink::kWebAXRoleGrid:
       return result.append("Grid");
     case blink::kWebAXRoleGroup:
