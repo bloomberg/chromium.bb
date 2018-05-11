@@ -571,45 +571,24 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
   DISALLOW_COPY_AND_ASSIGN(MultiProfileFileManagerBrowserTest);
 };
 
-// Fails on official build. http://crbug.com/429294
-#if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
-#define MAYBE_PRE_BasicDownloads DISABLED_PRE_BasicDownloads
-#define MAYBE_BasicDownloads DISABLED_BasicDownloads
-#else
-#define MAYBE_PRE_BasicDownloads PRE_BasicDownloads
-#define MAYBE_BasicDownloads BasicDownloads
-#endif
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
-                       MAYBE_PRE_BasicDownloads) {
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, PRE_BasicDownloads) {
   AddAllUsers();
 }
 
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
-                       MAYBE_BasicDownloads) {
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, BasicDownloads) {
   AddAllUsers();
-
-  // Sanity check that normal operations work in multi-profile setting as well.
+  // Sanity check that normal operations work in multi-profile.
   set_test_case_name("keyboardCopyDownloads");
   StartTest();
 }
 
-// Flaky: crbug.com/715961.
-// Previously it was disabled via DISABLE_SLOW_FILESAPP_TESTS and in
-// OFFICIAL_BUILD, see http://crbug.com/429294.
 IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, PRE_BasicDrive) {
   AddAllUsers();
 }
 
-// Fails on official build. http://crbug.com/429294
-#if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
-#define MAYBE_BasicDrive DISABLED_BasicDrive
-#else
-#define MAYBE_BasicDrive BasicDrive
-#endif
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, MAYBE_BasicDrive) {
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, BasicDrive) {
   AddAllUsers();
-
-  // Sanity check that normal operations work in multi-profile setting as well.
+  // Sanity check that normal operations work in multi-profile.
   set_test_case_name("keyboardCopyDrive");
   StartTest();
 }
