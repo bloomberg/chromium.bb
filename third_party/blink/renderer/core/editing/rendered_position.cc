@@ -177,30 +177,13 @@ bool RenderedPosition::AtRightBoundaryOfBidiRun(
   return false;
 }
 
-PositionInFlatTree RenderedPosition::PositionAtLeftBoundaryOfBiDiRun() const {
-  DCHECK(AtLeftBoundaryOfBidiRun());
-
-  if (AtLeftmostOffsetInBox()) {
-    return PositionInFlatTree::EditingPositionOf(
-        inline_box_->GetLineLayoutItem().GetNode(), offset_);
-  }
+PositionInFlatTree RenderedPosition::GetPosition() const {
+  DCHECK(AtLeftBoundaryOfBidiRun() || AtRightBoundaryOfBidiRun());
+  DCHECK_EQ(AtLeftmostOffsetInBox(), AtLeftBoundaryOfBidiRun());
+  DCHECK_EQ(AtRightmostOffsetInBox(), AtRightBoundaryOfBidiRun());
 
   return PositionInFlatTree::EditingPositionOf(
-      NextLeafChild()->GetLineLayoutItem().GetNode(),
-      NextLeafChild()->CaretLeftmostOffset());
-}
-
-PositionInFlatTree RenderedPosition::PositionAtRightBoundaryOfBiDiRun() const {
-  DCHECK(AtRightBoundaryOfBidiRun());
-
-  if (AtRightmostOffsetInBox()) {
-    return PositionInFlatTree::EditingPositionOf(
-        inline_box_->GetLineLayoutItem().GetNode(), offset_);
-  }
-
-  return PositionInFlatTree::EditingPositionOf(
-      PrevLeafChild()->GetLineLayoutItem().GetNode(),
-      PrevLeafChild()->CaretRightmostOffset());
+      inline_box_->GetLineLayoutItem().GetNode(), offset_);
 }
 
 // Note: If the layout object has a scrolling contents layer, the selection

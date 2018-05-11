@@ -79,8 +79,7 @@ class CORE_EXPORT RenderedPosition {
     return AtRightBoundaryOfBidiRun(kMatchBidiLevel, bidi_level_of_run);
   }
 
-  PositionInFlatTree PositionAtLeftBoundaryOfBiDiRun() const;
-  PositionInFlatTree PositionAtRightBoundaryOfBiDiRun() const;
+  PositionInFlatTree GetPosition() const;
 
   // TODO(editing-dev): This function doesn't use RenderedPosition
   // instance anymore. Consider moving.
