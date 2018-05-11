@@ -46,8 +46,8 @@ class QUIC_EXPORT_PRIVATE QuartcFactory : public QuartcFactoryInterface,
 
  private:
   std::unique_ptr<QuicConnection> CreateQuicConnection(
-      const QuartcSessionConfig& quartc_session_config,
-      Perspective perspective);
+      Perspective perspective,
+      QuartcPacketWriter* packet_writer);
 
   // Used to implement QuicAlarmFactory..
   QuartcTaskRunnerInterface* task_runner_;

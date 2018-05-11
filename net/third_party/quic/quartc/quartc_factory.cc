@@ -5,6 +5,7 @@
 #include "net/third_party/quic/quartc/quartc_factory.h"
 
 #include "net/third_party/quic/core/crypto/quic_random.h"
+#include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/quartc/quartc_session.h"
 
@@ -111,8 +112,14 @@ std::unique_ptr<QuartcSessionInterface> QuartcFactory::CreateQuartcSession(
   Perspective perspective = quartc_session_config.is_server
                                 ? Perspective::IS_SERVER
                                 : Perspective::IS_CLIENT;
+
+  // QuartcSession will eventually own both |writer| and |quic_connection|.
+  auto writer =
+      QuicMakeUnique<QuartcPacketWriter>(quartc_session_config.packet_transport,
+                                         quartc_session_config.max_packet_size);
   std::unique_ptr<QuicConnection> quic_connection =
-      CreateQuicConnection(quartc_session_config, perspective);
+      CreateQuicConnection(perspective, writer.get());
+
   QuicTagVector copt;
   copt.push_back(kNSTP);
   if (quartc_session_config.congestion_control ==
@@ -177,27 +184,23 @@ std::unique_ptr<QuartcSessionInterface> QuartcFactory::CreateQuartcSession(
         QuicTime::Delta::FromSeconds(
             quartc_session_config.max_idle_time_before_crypto_handshake_secs));
   }
-  return std::unique_ptr<QuartcSessionInterface>(new QuartcSession(
+  return QuicMakeUnique<QuartcSession>(
       std::move(quic_connection), quic_config,
       quartc_session_config.unique_remote_server_id, perspective,
-      this /*QuicConnectionHelperInterface*/, clock_.get()));
+      this /*QuicConnectionHelperInterface*/, clock_.get(), std::move(writer));
 }
 
 std::unique_ptr<QuicConnection> QuartcFactory::CreateQuicConnection(
-    const QuartcSessionConfig& quartc_session_config,
-    Perspective perspective) {
-  // The QuicConnection will take the ownership.
-  std::unique_ptr<QuartcPacketWriter> writer(
-      new QuartcPacketWriter(quartc_session_config.packet_transport,
-                             quartc_session_config.max_packet_size));
+    Perspective perspective,
+    QuartcPacketWriter* packet_writer) {
   // dummy_id and dummy_address are used because Quartc network layer will not
   // use these two.
   QuicConnectionId dummy_id = 0;
   QuicSocketAddress dummy_address(QuicIpAddress::Any4(), 0 /*Port*/);
-  return std::unique_ptr<QuicConnection>(new QuicConnection(
+  return QuicMakeUnique<QuicConnection>(
       dummy_id, dummy_address, this, /*QuicConnectionHelperInterface*/
-      this /*QuicAlarmFactory*/, writer.release(), true /*own the writer*/,
-      perspective, CurrentSupportedVersions()));
+      this /*QuicAlarmFactory*/, packet_writer, /*owns_writer=*/false,
+      perspective, CurrentSupportedVersions());
 }
 
 QuicAlarm* QuartcFactory::CreateAlarm(QuicAlarm::Delegate* delegate) {

@@ -28,6 +28,24 @@ struct QUIC_EXPORT_PRIVATE QuartcSessionStats {
   QuicTime::Delta smoothed_rtt = QuicTime::Delta::Zero();
 };
 
+// Send and receive packets, like a virtual UDP socket. For example, this
+// could be implemented by WebRTC's IceTransport.
+class QUIC_EXPORT_PRIVATE QuartcPacketTransport {
+ public:
+  // Additional metadata provided for each packet written.
+  struct PacketInfo {
+    QuicPacketNumber packet_number;
+  };
+
+  virtual ~QuartcPacketTransport() {}
+
+  // Called by the QuartcPacketWriter when writing packets to the network.
+  // Return the number of written bytes. Return 0 if the write is blocked.
+  virtual int Write(const char* buffer,
+                    size_t buf_len,
+                    const PacketInfo& info) = 0;
+};
+
 // Given a PacketTransport, provides a way to send and receive separate streams
 // of reliable, in-order, encrypted data. For example, this can build on top of
 // a WebRTC IceTransport for sending and receiving data over QUIC.
@@ -89,17 +107,6 @@ class QUIC_EXPORT_PRIVATE QuartcSessionInterface {
 
   // Gets stats associated with this Quartc session.
   virtual QuartcSessionStats GetStats() = 0;
-
-  // Send and receive packets, like a virtual UDP socket. For example, this
-  // could be implemented by WebRTC's IceTransport.
-  class PacketTransport {
-   public:
-    virtual ~PacketTransport() {}
-
-    // Called by the QuartcPacketWriter when writing packets to the network.
-    // Return the number of written bytes. Return 0 if the write is blocked.
-    virtual int Write(const char* buffer, size_t buf_len) = 0;
-  };
 
   // Called when CanWrite() changes from false to true.
   virtual void OnTransportCanWrite() = 0;

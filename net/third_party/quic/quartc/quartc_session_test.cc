@@ -301,17 +301,23 @@ class FakeTransportChannel {
 };
 
 // Used by the QuartcPacketWriter.
-class FakeTransport : public QuartcSessionInterface::PacketTransport {
+class FakeTransport : public QuartcPacketTransport {
  public:
   explicit FakeTransport(FakeTransportChannel* channel) : channel_(channel) {}
 
-  int Write(const char* buffer, size_t buf_len) override {
+  int Write(const char* buffer,
+            size_t buf_len,
+            const PacketInfo& info) override {
     DCHECK(channel_);
+    last_packet_number_ = info.packet_number;
     return channel_->SendPacket(buffer, buf_len);
   }
 
+  QuicPacketNumber last_packet_number() { return last_packet_number_; }
+
  private:
   FakeTransportChannel* channel_;
+  QuicPacketNumber last_packet_number_;
 };
 
 class FakeQuartcSessionDelegate : public QuartcSessionInterface::Delegate {
@@ -369,13 +375,15 @@ class QuartcSessionForTest : public QuartcSession,
                        const string& remote_fingerprint_value,
                        Perspective perspective,
                        QuicConnectionHelperInterface* helper,
-                       QuicClock* clock)
+                       QuicClock* clock,
+                       std::unique_ptr<QuartcPacketWriter> writer)
       : QuartcSession(std::move(connection),
                       config,
                       remote_fingerprint_value,
                       perspective,
                       helper,
-                      clock) {
+                      clock,
+                      std::move(writer)) {
     stream_delegate_ = QuicMakeUnique<FakeQuartcStreamDelegate>();
     session_delegate_ =
         QuicMakeUnique<FakeQuartcSessionDelegate>((stream_delegate_.get()));
@@ -438,8 +446,10 @@ class QuartcSessionTest : public QuicTest,
   void CreateClientAndServerSessions(bool client_handshake_success = true,
                                      bool server_handshake_success = true) {
     Init();
-    client_peer_ = CreateSession(Perspective::IS_CLIENT);
-    server_peer_ = CreateSession(Perspective::IS_SERVER);
+    client_peer_ =
+        CreateSession(Perspective::IS_CLIENT, std::move(client_writer_));
+    server_peer_ =
+        CreateSession(Perspective::IS_SERVER, std::move(server_writer_));
 
     client_channel_->SetObserver(client_peer_.get());
     server_channel_->SetObserver(server_peer_.get());
@@ -465,23 +475,22 @@ class QuartcSessionTest : public QuicTest,
     server_peer_->SetServerCryptoConfig(server_config);
   }
 
-  std::unique_ptr<QuartcSessionForTest> CreateSession(Perspective perspective) {
+  std::unique_ptr<QuartcSessionForTest> CreateSession(
+      Perspective perspective,
+      std::unique_ptr<QuartcPacketWriter> writer) {
     std::unique_ptr<QuicConnection> quic_connection =
-        CreateConnection(perspective);
+        CreateConnection(perspective, writer.get());
     string remote_fingerprint_value = "value";
     QuicConfig config;
-    return std::unique_ptr<QuartcSessionForTest>(new QuartcSessionForTest(
+    return QuicMakeUnique<QuartcSessionForTest>(
         std::move(quic_connection), config, remote_fingerprint_value,
-        perspective, this, &clock_));
+        perspective, this, &clock_, std::move(writer));
   }
 
-  std::unique_ptr<QuicConnection> CreateConnection(Perspective perspective) {
-    QuartcPacketWriter* writer = perspective == Perspective::IS_CLIENT
-                                     ? client_writer_.get()
-                                     : server_writer_.get();
+  std::unique_ptr<QuicConnection> CreateConnection(Perspective perspective,
+                                                   QuartcPacketWriter* writer) {
     QuicIpAddress ip;
     ip.FromString("0.0.0.0");
-    bool owns_writer = false;
     if (!alarm_factory_) {
       // QuartcFactory is only used as an alarm factory.
       QuartcFactoryConfig config;
@@ -489,10 +498,11 @@ class QuartcSessionTest : public QuicTest,
       config.task_runner = &task_runner_;
       alarm_factory_ = QuicMakeUnique<QuartcFactory>(config);
     }
-    return std::unique_ptr<QuicConnection>(new QuicConnection(
+
+    return QuicMakeUnique<QuicConnection>(
         0, QuicSocketAddress(ip, 0), this /*QuicConnectionHelperInterface*/,
-        alarm_factory_.get(), writer, owns_writer, perspective,
-        CurrentSupportedVersions()));
+        alarm_factory_.get(), writer, /*owns_writer=*/false, perspective,
+        CurrentSupportedVersions());
   }
 
   // Runs all tasks scheduled in the next 200 ms.
@@ -747,6 +757,28 @@ TEST_F(QuartcSessionTest, StopBundlingOnIncomingData) {
   // process incoming packets.
   ASSERT_TRUE(server_peer_->has_data());
   EXPECT_EQ(server_peer_->data()[first_id], kFirstMessage);
+}
+
+TEST_F(QuartcSessionTest, WriterGivesPacketNumberToTransport) {
+  CreateClientAndServerSessions();
+  StartHandshake();
+  ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
+  ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
+
+  QuartcStreamInterface* stream =
+      client_peer_->CreateOutgoingStream(kDefaultStreamParam);
+  stream->SetDelegate(client_peer_->stream_delegate());
+
+  char kClientMessage[] = "Hello";
+  test::QuicTestMemSliceVector stream_data(
+      {std::make_pair(kClientMessage, strlen(kClientMessage))});
+  stream->Write(stream_data.span(), kDefaultWriteParam);
+  RunTasks();
+
+  // The transport should see the latest packet number sent by QUIC.
+  EXPECT_EQ(
+      client_transport_->last_packet_number(),
+      client_peer_->connection()->sent_packet_manager().GetLargestSentPacket());
 }
 
 TEST_F(QuartcSessionTest, GetStats) {

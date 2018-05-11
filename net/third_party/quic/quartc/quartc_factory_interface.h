@@ -64,7 +64,7 @@ class QUIC_EXPORT_PRIVATE QuartcFactoryInterface {
     std::string unique_remote_server_id;
     // The way the QuicConnection will send and receive packets, like a virtual
     // UDP socket. For WebRTC, this will typically be an IceTransport.
-    QuartcSessionInterface::PacketTransport* packet_transport = nullptr;
+    QuartcPacketTransport* packet_transport = nullptr;
     // The maximum size of the packet can be written with the packet writer.
     // 1200 bytes by default.
     uint64_t max_packet_size = 1200;

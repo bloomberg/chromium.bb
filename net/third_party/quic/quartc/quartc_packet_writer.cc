@@ -6,9 +6,8 @@
 
 namespace net {
 
-QuartcPacketWriter::QuartcPacketWriter(
-    QuartcSessionInterface::PacketTransport* packet_transport,
-    QuicByteCount max_packet_size)
+QuartcPacketWriter::QuartcPacketWriter(QuartcPacketTransport* packet_transport,
+                                       QuicByteCount max_packet_size)
     : packet_transport_(packet_transport), max_packet_size_(max_packet_size) {}
 
 WriteResult QuartcPacketWriter::WritePacket(
@@ -18,7 +17,13 @@ WriteResult QuartcPacketWriter::WritePacket(
     const QuicSocketAddress& peer_address,
     PerPacketOptions* options) {
   DCHECK(packet_transport_);
-  int bytes_written = packet_transport_->Write(buffer, buf_len);
+
+  QuartcPacketTransport::PacketInfo info;
+  if (connection_) {
+    info.packet_number = connection_->packet_generator().packet_number();
+  }
+
+  int bytes_written = packet_transport_->Write(buffer, buf_len, info);
   if (bytes_written <= 0) {
     writable_ = false;
     return WriteResult(WRITE_STATUS_BLOCKED, EWOULDBLOCK);
