@@ -160,7 +160,7 @@ TEST_F(StatusAreaWidgetFocusTest, FocusOutObserver) {
   views::FocusManager* focus_manager = status->GetFocusManager();
   EXPECT_EQ(status->system_tray(), focus_manager->GetFocusedView());
 
-  // A tab key event will move focus to web notification tray.
+  // A tab key event will move focus to notification tray.
   GenerateTabEvent(false);
   EXPECT_EQ(status->notification_tray(), focus_manager->GetFocusedView());
   EXPECT_EQ(0, test_observer_->focus_out_count());
@@ -174,7 +174,7 @@ TEST_F(StatusAreaWidgetFocusTest, FocusOutObserver) {
   EXPECT_EQ(0, test_observer_->reverse_focus_out_count());
 
   // A reverse tab key event will send reverse FocusOut event, since we are not
-  // handling this event, focus will still be moved to web notification tray.
+  // handling this event, focus will still be moved to notification tray.
   GenerateTabEvent(true);
   EXPECT_EQ(status->notification_tray(), focus_manager->GetFocusedView());
   EXPECT_EQ(1, test_observer_->focus_out_count());

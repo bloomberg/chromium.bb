@@ -67,8 +67,8 @@ bool disable_animations_for_test = false;
 
 }  // namespace
 
-// Class to initialize and manage the WebNotificationBubble and
-// TrayBubbleWrapper instances for a bubble.
+// Class to initialize and manage the NotificationBubble and TrayBubbleWrapper
+// instances for a bubble.
 class NotificationBubbleWrapper {
  public:
   // Takes ownership of |bubble| and creates |bubble_wrapper_|.
@@ -116,10 +116,11 @@ class NotificationBubbleWrapper {
   DISALLOW_COPY_AND_ASSIGN(NotificationBubbleWrapper);
 };
 
-class WebNotificationItem : public views::View, public gfx::AnimationDelegate {
+class NotificationTraySubview : public views::View,
+                                public gfx::AnimationDelegate {
  public:
-  WebNotificationItem(gfx::AnimationContainer* container,
-                      NotificationTray* tray)
+  NotificationTraySubview(gfx::AnimationContainer* container,
+                          NotificationTray* tray)
       : tray_(tray) {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
@@ -231,15 +232,15 @@ class WebNotificationItem : public views::View, public gfx::AnimationDelegate {
   bool delete_after_animation_ = false;
   NotificationTray* tray_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebNotificationItem);
+  DISALLOW_COPY_AND_ASSIGN(NotificationTraySubview);
 };
 
-class NotificationImage : public WebNotificationItem {
+class NotificationTrayImageSubview : public NotificationTraySubview {
  public:
-  NotificationImage(const gfx::ImageSkia& image,
-                    gfx::AnimationContainer* container,
-                    NotificationTray* tray)
-      : WebNotificationItem(container, tray) {
+  NotificationTrayImageSubview(const gfx::ImageSkia& image,
+                               gfx::AnimationContainer* container,
+                               NotificationTray* tray)
+      : NotificationTraySubview(container, tray) {
     DCHECK(image.size() ==
            gfx::Size(kTrayItemInnerIconSize, kTrayItemInnerIconSize));
     view_ = new views::ImageView();
@@ -252,13 +253,14 @@ class NotificationImage : public WebNotificationItem {
  private:
   views::ImageView* view_;
 
-  DISALLOW_COPY_AND_ASSIGN(NotificationImage);
+  DISALLOW_COPY_AND_ASSIGN(NotificationTrayImageSubview);
 };
 
-class NotificationLabel : public WebNotificationItem {
+class NotificationTrayLabelSubview : public NotificationTraySubview {
  public:
-  NotificationLabel(gfx::AnimationContainer* container, NotificationTray* tray)
-      : WebNotificationItem(container, tray) {
+  NotificationTrayLabelSubview(gfx::AnimationContainer* container,
+                               NotificationTray* tray)
+      : NotificationTraySubview(container, tray) {
     view_ = new views::Label();
     SetupLabelForTray(view_);
     AddChildView(view_);
@@ -284,7 +286,7 @@ class NotificationLabel : public WebNotificationItem {
  private:
   views::Label* view_;
 
-  DISALLOW_COPY_AND_ASSIGN(NotificationLabel);
+  DISALLOW_COPY_AND_ASSIGN(NotificationTrayLabelSubview);
 };
 
 NotificationTray::NotificationTray(Shelf* shelf,
@@ -299,19 +301,19 @@ NotificationTray::NotificationTray(Shelf* shelf,
   SetInkDropMode(InkDropMode::ON);
   gfx::ImageSkia bell_image =
       CreateVectorIcon(kShelfNotificationsIcon, kShelfIconColor);
-  bell_icon_ = std::make_unique<NotificationImage>(
+  bell_icon_ = std::make_unique<NotificationTrayImageSubview>(
       bell_image, animation_container_.get(), this);
   tray_container()->AddChildView(bell_icon_.get());
 
   gfx::ImageSkia quiet_mode_image =
       CreateVectorIcon(kNotificationCenterDoNotDisturbOnIcon,
                        kTrayItemInnerIconSize, kShelfIconColor);
-  quiet_mode_icon_ = std::make_unique<NotificationImage>(
+  quiet_mode_icon_ = std::make_unique<NotificationTrayImageSubview>(
       quiet_mode_image, animation_container_.get(), this);
   tray_container()->AddChildView(quiet_mode_icon_.get());
 
-  counter_ =
-      std::make_unique<NotificationLabel>(animation_container_.get(), this);
+  counter_ = std::make_unique<NotificationTrayLabelSubview>(
+      animation_container_.get(), this);
   tray_container()->AddChildView(counter_.get());
 
   message_center_ui_controller_ =
@@ -479,7 +481,7 @@ void NotificationTray::AnchorUpdated() {
     message_center_bubble()->bubble_view()->UpdateBubble();
     // Should check |message_center_bubble_| again here. Since UpdateBubble
     // above set the bounds of the bubble which will stop the current
-    // animation. If web notification bubble is during animation to close,
+    // animation. If notification bubble is during animation to close,
     // CloseBubbleObserver in TrayBackgroundView will close the bubble if
     // animation finished.
     if (message_center_bubble())
@@ -580,7 +582,7 @@ void NotificationTray::UpdateTrayContent() {
     if (visible_small_icons_.count(notification->id()) != 0)
       continue;
 
-    auto item = std::make_unique<NotificationImage>(
+    auto item = std::make_unique<NotificationTrayImageSubview>(
         image.AsImageSkia(), animation_container_.get(), this);
     tray_container()->AddChildViewAt(item.get(), 0);
     item->SetVisible(true);
@@ -590,7 +592,7 @@ void NotificationTray::UpdateTrayContent() {
 
   // Remove unnecessary icons.
   for (const std::string& id : notification_ids) {
-    NotificationImage* item = visible_small_icons_[id].release();
+    NotificationTrayImageSubview* item = visible_small_icons_[id].release();
     visible_small_icons_.erase(id);
     item->HideAndDelete();
   }
