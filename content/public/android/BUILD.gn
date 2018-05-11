@@ -109,7 +109,6 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/AudioFocusDelegate.java",
     "java/src/org/chromium/content/browser/BackgroundSyncNetworkObserver.java",
     "java/src/org/chromium/content/browser/BindingManager.java",
-    "java/src/org/chromium/content/browser/BindingManagerImpl.java",
     "java/src/org/chromium/content/browser/BrowserStartupController.java",
     "java/src/org/chromium/content/browser/ChildProcessCreationParams.java",
     "java/src/org/chromium/content/browser/ChildProcessLauncherHelper.java",
@@ -516,7 +515,7 @@ android_library("content_javatests") {
 
 junit_binary("content_junit_tests") {
   java_files = [
-    "junit/src/org/chromium/content/browser/BindingManagerImplTest.java",
+    "junit/src/org/chromium/content/browser/BindingManagerTest.java",
     "junit/src/org/chromium/content/browser/ChildProcessRankingTest.java",
     "junit/src/org/chromium/content/browser/SpareChildConnectionTest.java",
     "junit/src/org/chromium/content/browser/androidoverlay/DialogOverlayCoreTest.java",
