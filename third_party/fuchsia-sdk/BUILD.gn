@@ -7,6 +7,7 @@ assert(is_fuchsia)
 import("fuchsia_sdk_pkg.gni")
 
 config("sdk_lib_dirs_config") {
+  visibility = [ ":*" ]
   lib_dirs = [ "sdk/arch/${target_cpu}/lib" ]
 }
 

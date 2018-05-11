@@ -24,7 +24,7 @@ static_library("test_support") {
     sources += [ "test_utils_posix.cc" ]
   }
 
-  deps = [
+  public_deps = [
     "//base",
     "//base/test:test_support",
     "//mojo/edk",

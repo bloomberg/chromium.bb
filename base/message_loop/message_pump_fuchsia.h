@@ -5,7 +5,6 @@
 #ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_FUCHSIA_H_
 #define BASE_MESSAGE_LOOP_MESSAGE_PUMP_FUCHSIA_H_
 
-#include <fdio/io.h>
 #include <lib/async/wait.h>
 
 #include "base/base_export.h"
