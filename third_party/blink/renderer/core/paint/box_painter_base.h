@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_PAINTER_BASE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_PAINTER_BASE_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect_outsets.h"
@@ -62,7 +63,8 @@ class BoxPainterBase {
                       const LayoutRect&,
                       BackgroundBleedAvoidance,
                       BackgroundImageGeometry&,
-                      SkBlendMode = SkBlendMode::kSrcOver);
+                      SkBlendMode = SkBlendMode::kSrcOver,
+                      const LayoutSize flow_box_size = LayoutSize());
 
   void PaintMaskImages(const PaintInfo&,
                        const LayoutRect&,
@@ -142,6 +144,7 @@ class BoxPainterBase {
  protected:
   FloatRoundedRect BackgroundRoundedRectAdjustedForBleedAvoidance(
       const LayoutRect& border_rect,
+      const LayoutSize& flow_box_size,
       BackgroundBleedAvoidance,
       bool include_logical_left_edge,
       bool include_logical_right_edge) const;
@@ -149,6 +152,7 @@ class BoxPainterBase {
       const FillLayerInfo&,
       const FillLayer&,
       const LayoutRect&,
+      const LayoutSize& flow_box_size,
       BackgroundBleedAvoidance,
       LayoutRectOutsets border_padding_insets) const;
 
@@ -179,6 +183,7 @@ class BoxPainterBase {
                                          BackgroundBleedAvoidance) const = 0;
   virtual FloatRoundedRect GetBackgroundRoundedRect(
       const LayoutRect& border_rect,
+      const LayoutSize& flow_box_size,
       bool include_logical_left_edge,
       bool include_logical_right_edge) const;
 

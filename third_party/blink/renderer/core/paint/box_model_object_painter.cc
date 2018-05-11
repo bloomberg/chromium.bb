@@ -49,8 +49,7 @@ LayoutSize LogicalOffsetOnLine(const InlineFlowBox& flow_box) {
 }  // anonymous namespace
 
 BoxModelObjectPainter::BoxModelObjectPainter(const LayoutBoxModelObject& box,
-                                             const InlineFlowBox* flow_box,
-                                             const LayoutSize& flow_box_size)
+                                             const InlineFlowBox* flow_box)
     : BoxPainterBase(box,
                      &box.GetDocument(),
                      box.StyleRef(),
@@ -59,8 +58,7 @@ BoxModelObjectPainter::BoxModelObjectPainter(const LayoutBoxModelObject& box,
                      box.PaddingOutsets(),
                      box.Layer()),
       box_model_(box),
-      flow_box_(flow_box),
-      flow_box_size_(flow_box_size) {}
+      flow_box_(flow_box) {}
 
 bool BoxModelObjectPainter::
     IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
@@ -98,14 +96,16 @@ void BoxModelObjectPainter::PaintTextClipMask(GraphicsContext& context,
 
 FloatRoundedRect BoxModelObjectPainter::GetBackgroundRoundedRect(
     const LayoutRect& border_rect,
+    const LayoutSize& flow_box_size,
     bool include_logical_left_edge,
     bool include_logical_right_edge) const {
   FloatRoundedRect border = BoxPainterBase::GetBackgroundRoundedRect(
-      border_rect, include_logical_left_edge, include_logical_right_edge);
+      border_rect, flow_box_size, include_logical_left_edge,
+      include_logical_right_edge);
   if (flow_box_ && (flow_box_->NextForSameLayoutObject() ||
                     flow_box_->PrevForSameLayoutObject())) {
     FloatRoundedRect segment_border = box_model_.StyleRef().GetRoundedBorderFor(
-        LayoutRect(LayoutPoint(), LayoutSize(FlooredIntSize(flow_box_size_))),
+        LayoutRect(LayoutPoint(), LayoutSize(FlooredIntSize(flow_box_size))),
         include_logical_left_edge, include_logical_right_edge);
     border.SetRadii(segment_border.GetRadii());
   }
