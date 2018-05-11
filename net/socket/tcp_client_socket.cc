@@ -33,7 +33,8 @@ TCPClientSocket::TCPClientSocket(
       current_address_index_(-1),
       next_connect_state_(CONNECT_STATE_NONE),
       previously_disconnected_(false),
-      total_received_bytes_(0) {}
+      total_received_bytes_(0),
+      was_ever_used_(false) {}
 
 TCPClientSocket::TCPClientSocket(std::unique_ptr<TCPSocket> connected_socket,
                                  const IPEndPoint& peer_address)
@@ -43,11 +44,11 @@ TCPClientSocket::TCPClientSocket(std::unique_ptr<TCPSocket> connected_socket,
       current_address_index_(0),
       next_connect_state_(CONNECT_STATE_NONE),
       previously_disconnected_(false),
-      total_received_bytes_(0) {
+      total_received_bytes_(0),
+      was_ever_used_(false) {
   DCHECK(socket_);
 
   socket_->SetDefaultOptionsForClient();
-  use_history_.set_was_ever_connected();
 }
 
 TCPClientSocket::~TCPClientSocket() {
@@ -116,7 +117,7 @@ int TCPClientSocket::ReadCommon(IOBuffer* buf,
           ? socket_->ReadIfReady(buf, buf_len, std::move(read_callback))
           : socket_->Read(buf, buf_len, std::move(read_callback));
   if (result > 0) {
-    use_history_.set_was_used_to_convey_data();
+    was_ever_used_ = true;
     total_received_bytes_ += result;
   }
 
@@ -155,7 +156,7 @@ int TCPClientSocket::DoConnect() {
   const IPEndPoint& endpoint = addresses_[current_address_index_];
 
   if (previously_disconnected_) {
-    use_history_.Reset();
+    was_ever_used_ = false;
     connection_attempts_.clear();
     previously_disconnected_ = false;
   }
@@ -191,10 +192,8 @@ int TCPClientSocket::DoConnect() {
 }
 
 int TCPClientSocket::DoConnectComplete(int result) {
-  if (result == OK) {
-    use_history_.set_was_ever_connected();
+  if (result == OK)
     return OK;  // Done!
-  }
 
   connection_attempts_.push_back(
       ConnectionAttempt(addresses_[current_address_index_], result));
@@ -258,16 +257,12 @@ const NetLogWithSource& TCPClientSocket::NetLog() const {
   return socket_->net_log();
 }
 
-void TCPClientSocket::SetSubresourceSpeculation() {
-  use_history_.set_subresource_speculation();
-}
+void TCPClientSocket::SetSubresourceSpeculation() {}
 
-void TCPClientSocket::SetOmniboxSpeculation() {
-  use_history_.set_omnibox_speculation();
-}
+void TCPClientSocket::SetOmniboxSpeculation() {}
 
 bool TCPClientSocket::WasEverUsed() const {
-  return use_history_.was_used_to_convey_data();
+  return was_ever_used_;
 }
 
 void TCPClientSocket::EnableTCPFastOpenIfSupported() {
@@ -317,7 +312,7 @@ int TCPClientSocket::Write(
   int result = socket_->Write(buf, buf_len, std::move(write_callback),
                               traffic_annotation);
   if (result > 0)
-    use_history_.set_was_used_to_convey_data();
+    was_ever_used_ = true;
 
   return result;
 }
@@ -388,7 +383,7 @@ void TCPClientSocket::DidCompleteWrite(CompletionOnceCallback callback,
 void TCPClientSocket::DidCompleteReadWrite(CompletionOnceCallback callback,
                                            int result) {
   if (result > 0)
-    use_history_.set_was_used_to_convey_data();
+    was_ever_used_ = true;
   std::move(callback).Run(result);
 }
 
