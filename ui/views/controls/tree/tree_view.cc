@@ -261,8 +261,13 @@ void TreeView::SetSelectedNode(TreeModelNode* model_node) {
     SchedulePaintForNode(selected_node_);
   }
 
-  if (selected_node_)
-    ScrollRectToVisible(GetForegroundBoundsForNode(selected_node_));
+  if (selected_node_) {
+    // GetForegroundBoundsForNode() returns RTL-flipped coordinates for paint.
+    // Un-flip before passing to ScrollRectToVisible(), which uses layout
+    // coordinates.
+    ScrollRectToVisible(
+        GetMirroredRect(GetForegroundBoundsForNode(selected_node_)));
+  }
 
   // Notify controller if the old selection was empty to handle the case of
   // remove explicitly resetting selected_node_ before invoking this.
@@ -738,6 +743,9 @@ void TreeView::LayoutEditor() {
   DCHECK(selected_node_);
   // Position the editor so that its text aligns with the text we drew.
   gfx::Rect row_bounds = GetForegroundBoundsForNode(selected_node_);
+
+  // GetForegroundBoundsForNode() returns a "flipped" x for painting. First, un-
+  // flip it for the following calculations and ScrollRectToVisible().
   row_bounds.set_x(
       GetMirroredXWithWidthInView(row_bounds.x(), row_bounds.width()));
   row_bounds.set_x(row_bounds.x() + text_offset_);

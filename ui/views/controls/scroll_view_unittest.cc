@@ -6,6 +6,8 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/icu_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -231,8 +233,8 @@ class ScrollViewTest : public ViewsTestBase {
 class WidgetScrollViewTest : public test::WidgetTest,
                              public ui::CompositorObserver {
  public:
-  static const int kDefaultHeight = 100;
-  static const int kDefaultWidth = 100;
+  static constexpr int kDefaultHeight = 100;
+  static constexpr int kDefaultWidth = 100;
 
   WidgetScrollViewTest() {}
 
@@ -305,6 +307,9 @@ class WidgetScrollViewTest : public test::WidgetTest,
     WidgetTest::TearDown();
   }
 
+ protected:
+  Widget* widget() const { return widget_; }
+
  private:
   // ui::CompositorObserver:
   void OnCompositingDidCommit(ui::Compositor* compositor) override {
@@ -332,8 +337,74 @@ class WidgetScrollViewTest : public test::WidgetTest,
   DISALLOW_COPY_AND_ASSIGN(WidgetScrollViewTest);
 };
 
-const int WidgetScrollViewTest::kDefaultHeight;
-const int WidgetScrollViewTest::kDefaultWidth;
+constexpr int WidgetScrollViewTest::kDefaultHeight;
+constexpr int WidgetScrollViewTest::kDefaultWidth;
+
+// A gtest parameter to permute over whether ScrollView uses a left-to-right or
+// right-to-left locale, or whether it uses ui::Layers or View bounds offsets to
+// position contents (i.e. features::kUiCompositorScrollWithLayers).
+enum class UiConfig { kLtr, kLtrWithLayers, kRtl, kRtlWithLayers };
+
+class WidgetScrollViewTestRTLAndLayers
+    : public WidgetScrollViewTest,
+      public ::testing::WithParamInterface<UiConfig> {
+ public:
+  WidgetScrollViewTestRTLAndLayers() : locale_(IsTestingRtl() ? "he" : "en") {
+    if (IsTestingLayers()) {
+      layer_config_.InitAndEnableFeature(
+          features::kUiCompositorScrollWithLayers);
+    } else {
+      layer_config_.InitAndDisableFeature(
+          features::kUiCompositorScrollWithLayers);
+    }
+  }
+
+  bool IsTestingRtl() const {
+    return GetParam() == UiConfig::kRtl ||
+           GetParam() == UiConfig::kRtlWithLayers;
+  }
+
+  bool IsTestingLayers() const {
+    return GetParam() == UiConfig::kLtrWithLayers ||
+           GetParam() == UiConfig::kRtlWithLayers;
+  }
+
+  // Returns a point in the coordinate space of |target| by translating a point
+  // inset one pixel from the top of the Widget and one pixel on the leading
+  // side of the Widget. There should be no scroll bar on this side. If
+  // |flip_result| is true, automatically account for flipped coordinates in
+  // RTL.
+  gfx::Point HitTestInCorner(View* target, bool flip_result = true) const {
+    const gfx::Point test_mouse_point_in_root =
+        IsTestingRtl() ? gfx::Point(kDefaultWidth - 1, 1) : gfx::Point(1, 1);
+    gfx::Point point = test_mouse_point_in_root;
+    View::ConvertPointToTarget(widget()->GetRootView(), target, &point);
+    if (flip_result)
+      return gfx::Point(target->GetMirroredXInView(point.x()), point.y());
+    return point;
+  }
+
+ private:
+  base::test::ScopedRestoreICUDefaultLocale locale_;
+  base::test::ScopedFeatureList layer_config_;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetScrollViewTestRTLAndLayers);
+};
+
+std::string UiConfigToString(const testing::TestParamInfo<UiConfig>& info) {
+  switch (info.param) {
+    case UiConfig::kLtr:
+      return "LTR";
+    case UiConfig::kLtrWithLayers:
+      return "LTR_LAYERS";
+    case UiConfig::kRtl:
+      return "RTL";
+    case UiConfig::kRtlWithLayers:
+      return "RTL_LAYERS";
+  }
+  NOTREACHED();
+  return std::string();
+}
 
 // Verifies the viewport is sized to fit the available space.
 TEST_F(ScrollViewTest, ViewportSizedToFit) {
@@ -1438,26 +1509,136 @@ TEST_F(WidgetScrollViewTest, EventLocation) {
             contents->last_location());
 }
 
+// Ensure behavior of ScrollRectToVisible() is consistent when scrolling with
+// and without layers, and under LTR and RTL.
+TEST_P(WidgetScrollViewTestRTLAndLayers, ScrollOffsetWithoutLayers) {
+  // Set up with both scrollers. And a nested view hierarchy like:
+  // +-------------+
+  // |XX           |
+  // |  +----------|
+  // |  |          |
+  // |  |  +-------|
+  // |  |  |       |
+  // |  |  |  etc. |
+  // |  |  |       |
+  // +-------------+
+  // Note that "XX" indicates the size of the viewport.
+  constexpr int kNesting = 5;
+  constexpr int kCellWidth = kDefaultWidth;
+  constexpr int kCellHeight = kDefaultHeight;
+  constexpr gfx::Size kContentSize(kCellWidth * kNesting,
+                                   kCellHeight * kNesting);
+  ScrollView* scroll_view = AddScrollViewWithContentSize(kContentSize, false);
+  ScrollViewTestApi test_api(scroll_view);
+  EXPECT_EQ(gfx::ScrollOffset(0, 0), test_api.CurrentOffset());
+
+  // Sanity check that the contents has a layer iff testing layers.
+  EXPECT_EQ(IsTestingLayers(), !!scroll_view->contents()->layer());
+
+  if (IsTestingRtl()) {
+    // Sanity check the hit-testing logic on the root view. That is, verify that
+    // coordinates really do flip in RTL. The difference inside the viewport is
+    // that the flipping should occur consistently in the entire contents (not
+    // just the visible contents), and take into account the scroll offset.
+    EXPECT_EQ(gfx::Point(kDefaultWidth - 1, 1),
+              HitTestInCorner(scroll_view->GetWidget()->GetRootView(), false));
+    EXPECT_EQ(gfx::Point(kContentSize.width() - 1, 1),
+              HitTestInCorner(scroll_view->contents(), false));
+  } else {
+    EXPECT_EQ(gfx::Point(1, 1),
+              HitTestInCorner(scroll_view->GetWidget()->GetRootView(), false));
+    EXPECT_EQ(gfx::Point(1, 1),
+              HitTestInCorner(scroll_view->contents(), false));
+  }
+
+  // Test vertical scrolling using coordinates on the contents canvas.
+  gfx::Rect offset(0, kCellHeight * 2, kCellWidth, kCellHeight);
+  scroll_view->contents()->ScrollRectToVisible(offset);
+  EXPECT_EQ(gfx::ScrollOffset(0, offset.y()), test_api.CurrentOffset());
+
+  // Rely on auto-flipping for this and future HitTestInCorner() calls.
+  EXPECT_EQ(gfx::Point(1, kCellHeight * 2 + 1),
+            HitTestInCorner(scroll_view->contents()));
+
+  // Test horizontal scrolling.
+  offset.set_x(kCellWidth * 2);
+  scroll_view->contents()->ScrollRectToVisible(offset);
+  EXPECT_EQ(gfx::ScrollOffset(offset.x(), offset.y()),
+            test_api.CurrentOffset());
+  EXPECT_EQ(gfx::Point(kCellWidth * 2 + 1, kCellHeight * 2 + 1),
+            HitTestInCorner(scroll_view->contents()));
+
+  // Reset the scrolling.
+  scroll_view->contents()->ScrollRectToVisible(gfx::Rect(0, 0, 1, 1));
+
+  // Test transformations through a nested view hierarchy.
+  View* deepest_view = scroll_view->contents();
+  constexpr gfx::Rect kCellRect(kCellWidth, kCellHeight, kContentSize.width(),
+                                kContentSize.height());
+  for (int i = 1; i < kNesting; ++i) {
+    SCOPED_TRACE(testing::Message("Nesting = ") << i);
+    View* child = new View;
+    child->SetBoundsRect(kCellRect);
+    deepest_view->AddChildView(child);
+    deepest_view = child;
+
+    // Add a view in one quadrant. Scrolling just this view should only scroll
+    // far enough for it to become visible. That is, it should be positioned at
+    // the bottom right of the viewport, not the top-left. But since there are
+    // scroll bars, the scroll offset needs to go "a bit more".
+    View* partial_view = new View;
+    partial_view->SetSize(gfx::Size(kCellWidth / 3, kCellHeight / 3));
+    deepest_view->AddChildView(partial_view);
+    partial_view->ScrollViewToVisible();
+    int x_offset_in_cell = kCellWidth - partial_view->width();
+    if (!scroll_view->horizontal_scroll_bar()->OverlapsContent())
+      x_offset_in_cell -= scroll_view->horizontal_scroll_bar()->GetThickness();
+    int y_offset_in_cell = kCellHeight - partial_view->height();
+    if (!scroll_view->vertical_scroll_bar()->OverlapsContent())
+      y_offset_in_cell -= scroll_view->vertical_scroll_bar()->GetThickness();
+    EXPECT_EQ(gfx::ScrollOffset(kCellWidth * i - x_offset_in_cell,
+                                kCellHeight * i - y_offset_in_cell),
+              test_api.CurrentOffset());
+
+    // Now scroll the rest.
+    deepest_view->ScrollViewToVisible();
+    EXPECT_EQ(gfx::ScrollOffset(kCellWidth * i, kCellHeight * i),
+              test_api.CurrentOffset());
+
+    // The partial view should now be at the top-left of the viewport (top-right
+    // in RTL).
+    EXPECT_EQ(gfx::Point(1, 1), HitTestInCorner(partial_view));
+
+    gfx::Point origin;
+    View::ConvertPointToWidget(partial_view, &origin);
+    constexpr gfx::Point kTestPointRTL(kDefaultWidth - kCellWidth / 3, 0);
+    EXPECT_EQ(IsTestingRtl() ? kTestPointRTL : gfx::Point(), origin);
+  }
+
+  // Scrolling to the deepest view should have moved the viewport so that the
+  // (kNesting - 1) parent views are all off-screen.
+  EXPECT_EQ(gfx::ScrollOffset(kCellWidth * (kNesting - 1),
+                              kCellHeight * (kNesting - 1)),
+            test_api.CurrentOffset());
+}
+
 // Test that views scroll offsets are in sync with the layer scroll offsets.
-TEST_F(WidgetScrollViewTest, ScrollOffsetUsingLayers) {
-  // Set up with a vertical scroller, but don't commit the layer changes yet.
-  ScrollView* scroll_view =
-      AddScrollViewWithContentSize(gfx::Size(10, kDefaultHeight * 5), false);
+TEST_P(WidgetScrollViewTestRTLAndLayers, ScrollOffsetUsingLayers) {
+  // Set up with both scrollers, but don't commit the layer changes yet.
+  ScrollView* scroll_view = AddScrollViewWithContentSize(
+      gfx::Size(kDefaultWidth * 5, kDefaultHeight * 5), false);
   ScrollViewTestApi test_api(scroll_view);
 
   EXPECT_EQ(gfx::ScrollOffset(0, 0), test_api.CurrentOffset());
 
   // UI code may request a scroll before layer changes are committed.
-  gfx::Rect offset(0, kDefaultHeight * 2, 1, kDefaultHeight);
+  gfx::Rect offset(0, kDefaultHeight * 2, kDefaultWidth, kDefaultHeight);
   scroll_view->contents()->ScrollRectToVisible(offset);
   EXPECT_EQ(gfx::ScrollOffset(0, offset.y()), test_api.CurrentOffset());
 
   // The following only makes sense when layered scrolling is enabled.
   View* container = scroll_view->contents();
-#if defined(OS_MACOSX)
-  // Sanity check: Mac should always scroll with layers.
-  EXPECT_TRUE(container->layer());
-#endif
+  EXPECT_EQ(IsTestingLayers(), !!container->layer());
   if (!container->layer())
     return;
 
@@ -1495,6 +1676,15 @@ TEST_F(WidgetScrollViewTest, ScrollOffsetUsingLayers) {
 
   EXPECT_TRUE(compositor->GetScrollOffsetForLayer(layer_id, &impl_offset));
   EXPECT_EQ(gfx::ScrollOffset(0, offset.y()), impl_offset);
+
+  // Test horizontal scrolling.
+  offset.set_x(kDefaultWidth * 2);
+  scroll_view->contents()->ScrollRectToVisible(offset);
+  EXPECT_EQ(gfx::ScrollOffset(offset.x(), offset.y()),
+            test_api.CurrentOffset());
+
+  EXPECT_TRUE(compositor->GetScrollOffsetForLayer(layer_id, &impl_offset));
+  EXPECT_EQ(gfx::ScrollOffset(offset.x(), offset.y()), impl_offset);
 }
 
 // Tests to see the scroll events are handled correctly in composited and
@@ -1533,5 +1723,13 @@ TEST_F(WidgetScrollViewTest, CompositedScrollEvents) {
   // Check if the scroll view has been offset.
   EXPECT_EQ(gfx::ScrollOffset(0, 10), test_api.CurrentOffset());
 }
+
+INSTANTIATE_TEST_CASE_P(,
+                        WidgetScrollViewTestRTLAndLayers,
+                        ::testing::Values(UiConfig::kLtr,
+                                          UiConfig::kRtl,
+                                          UiConfig::kLtrWithLayers,
+                                          UiConfig::kRtlWithLayers),
+                        &UiConfigToString);
 
 }  // namespace views

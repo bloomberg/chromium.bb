@@ -512,6 +512,30 @@ void ScrollView::Layout() {
     container_size.SetToMax(viewport_bounds.size());
     contents_->SetBoundsRect(gfx::Rect(container_size));
     contents_->layer()->SetScrollable(viewport_bounds.size());
+
+    // Flip the viewport with layer transforms under RTL. Note the net effect is
+    // to flip twice, so the text is not mirrored. This is necessary because
+    // compositor scrolling is not RTL-aware. So although a toolkit-views layout
+    // will flip, increasing a horizontal gfx::ScrollOffset will move content to
+    // the left, regardless of RTL. A gfx::ScrollOffset must be positive, so to
+    // move (unscrolled) content to the right, we need to flip the viewport
+    // layer. That would flip all the content as well, so flip (and translate)
+    // the content layer. Compensating in this way allows the scrolling/offset
+    // logic to remain the same when scrolling via layers or bounds offsets.
+    if (base::i18n::IsRTL()) {
+      gfx::Transform flip;
+      flip.Translate(viewport_bounds.width(), 0);
+      flip.Scale(-1, 1);
+      contents_viewport_->layer()->SetTransform(flip);
+
+      // Add `contents_->width() - viewport_width` to the translation step. This
+      // is to prevent the top-left of the (flipped) contents aligning to the
+      // top-left of the viewport. Instead, the top-right should align in RTL.
+      gfx::Transform shift;
+      shift.Translate(2 * contents_->width() - viewport_bounds.width(), 0);
+      shift.Scale(-1, 1);
+      contents_->layer()->SetTransform(shift);
+    }
   }
 
   header_viewport_->SetBounds(contents_x, contents_y,
