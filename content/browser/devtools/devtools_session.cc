@@ -207,7 +207,11 @@ void DevToolsSession::DispatchProtocolResponse(
   // |this| may be deleted at this point.
 }
 
-void DevToolsSession::DispatchProtocolNotification(const std::string& message) {
+void DevToolsSession::DispatchProtocolNotification(
+    const std::string& message,
+    const base::Optional<std::string>& state) {
+  if (state.has_value())
+    state_cookie_ = state.value();
   client_->DispatchProtocolMessage(agent_host_, message);
   // |this| may be deleted at this point.
 }

@@ -955,10 +955,12 @@ class CrossOriginNavigationVirtualTimeTest
               .SetBudget(100)
               .Build());
     } else {
+      // For every navigation, WebScopedVirtualTimePauser is going to add
+      // 10ms of time.
       EXPECT_THAT(log_, ElementsAre("url: http://a.com/ @ 0.000000",
                                     "url: http://b.com/ @ 1010.000000",
-                                    "url: http://c.com/ @ 2010.000000",
-                                    "url: http://d.com/ @ 3010.000000"));
+                                    "url: http://c.com/ @ 2020.000000",
+                                    "url: http://d.com/ @ 3030.000000"));
       FinishAsynchronousTest();
     }
   }
