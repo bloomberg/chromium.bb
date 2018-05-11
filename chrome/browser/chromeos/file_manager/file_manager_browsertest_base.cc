@@ -661,7 +661,8 @@ void FileManagerBrowserTestBase::RunTestMessageLoop() {
       return;  // Test FAILED.
     }
 
-    // If the message in JSON format has no command, just ignore it.
+    // If the message in JSON format has no command, ignore it
+    // but note a reply is required: use std::string().
     const auto json = base::JSONReader::Read(message.message);
     const base::DictionaryValue* dictionary = nullptr;
     std::string command;
