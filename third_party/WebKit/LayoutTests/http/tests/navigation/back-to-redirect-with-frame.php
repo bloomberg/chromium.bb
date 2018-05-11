@@ -15,9 +15,14 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 
-window.onload = setTimeout(function() {
-    window.location = "resources/go-back.html"
-}, 10);
+window.onload = function() {
+    // A |setTimeout| is required here. Blink makes non-user initiated
+    // navigations triggered before and during window.onload to replace the
+    // current entry.
+    setTimeout(function() {
+        window.location = "resources/go-back.html"
+    }, 0);
+};
 </script>
 <iframe src="about:blank"></iframe>
 </body>
