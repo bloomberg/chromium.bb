@@ -11,6 +11,7 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
+import android.view.InflateException;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLayoutChangeListener;
@@ -204,33 +205,31 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
     }
 
     private boolean showRemoteViews(RemoteViews remoteViews) {
+        final View inflatedView;
         try {
-            final View inflatedView =
-                    remoteViews.apply(mActivity.getApplicationContext(), getBottomBarView());
-            if (mClickableIDs != null && mClickPendingIntent != null) {
-                for (int id: mClickableIDs) {
-                    if (id < 0) return false;
-                    View view = inflatedView.findViewById(id);
-                    if (view != null) view.setOnClickListener(mBottomBarClickListener);
-                }
-            }
-            getBottomBarView().addView(inflatedView, 1);
-            inflatedView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
-                @Override
-                public void onLayoutChange(View v, int left, int top, int right, int bottom,
-                        int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                    inflatedView.removeOnLayoutChangeListener(this);
-                    mFullscreenManager.setBottomControlsHeight(v.getHeight());
-                }
-            });
-            return true;
-        } catch (RemoteViews.ActionException e) {
-            Log.e(TAG, "Failed to inflate the RemoteViews", e);
-            return false;
-        } catch (Resources.NotFoundException e) {
+            inflatedView = remoteViews.apply(mActivity.getApplicationContext(), getBottomBarView());
+        } catch (RemoteViews.ActionException | InflateException | Resources.NotFoundException e) {
             Log.e(TAG, "Failed to inflate the RemoteViews", e);
             return false;
         }
+
+        if (mClickableIDs != null && mClickPendingIntent != null) {
+            for (int id : mClickableIDs) {
+                if (id < 0) return false;
+                View view = inflatedView.findViewById(id);
+                if (view != null) view.setOnClickListener(mBottomBarClickListener);
+            }
+        }
+        getBottomBarView().addView(inflatedView, 1);
+        inflatedView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                inflatedView.removeOnLayoutChangeListener(this);
+                mFullscreenManager.setBottomControlsHeight(v.getHeight());
+            }
+        });
+        return true;
     }
 
     private static void sendPendingIntentWithUrl(PendingIntent pendingIntent, Intent extraIntent,
