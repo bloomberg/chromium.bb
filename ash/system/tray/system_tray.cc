@@ -396,7 +396,7 @@ bool SystemTray::HasSystemTrayType(SystemTrayView::SystemTrayType type) {
 void SystemTray::DestroySystemBubble() {
   CloseSystemBubbleAndDeactivateSystemTray();
   detailed_item_ = NULL;
-  UpdateWebNotifications();
+  UpdateNotificationTrayBubblePosition();
 }
 
 base::string16 SystemTray::GetAccessibleNameForTray() {
@@ -471,7 +471,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
   else
     detailed_item_ = NULL;
 
-  UpdateWebNotifications();
+  UpdateNotificationTrayBubblePosition();
   shelf()->UpdateAutoHideState();
 
   // When we show the system menu in our alternate shelf layout, we need to
@@ -485,7 +485,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     last_button_clicked_.reset();
 }
 
-void SystemTray::UpdateWebNotifications() {
+void SystemTray::UpdateNotificationTrayBubblePosition() {
   TrayBubbleView* bubble_view = NULL;
   if (system_bubble_)
     bubble_view = system_bubble_->bubble_view();
@@ -517,7 +517,7 @@ void SystemTray::UpdateAfterShelfAlignmentChange() {
   // Destroy any existing bubble so that it is rebuilt correctly.
   CloseSystemBubbleAndDeactivateSystemTray();
   // Rebuild any notification bubble.
-  UpdateWebNotifications();
+  UpdateNotificationTrayBubblePosition();
 }
 
 void SystemTray::AnchorUpdated() {
@@ -535,7 +535,7 @@ void SystemTray::AnchorUpdated() {
 }
 
 void SystemTray::BubbleResized(const TrayBubbleView* bubble_view) {
-  UpdateWebNotifications();
+  UpdateNotificationTrayBubblePosition();
 }
 
 void SystemTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {

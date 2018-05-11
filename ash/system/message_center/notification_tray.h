@@ -31,8 +31,8 @@ namespace ash {
 class AshPopupAlignmentDelegate;
 class MessageCenterBubble;
 class NotificationBubbleWrapper;
-class NotificationImage;
-class NotificationLabel;
+class NotificationTrayImageSubview;
+class NotificationTrayLabelSubview;
 
 // Status area tray for showing System, Chrome App, Web and ARC++ app
 // notifications. This hosts a MessageCenter class which manages the
@@ -48,7 +48,7 @@ class ASH_EXPORT NotificationTray
   static void DisableAnimationsForTest(bool disable);
 
   // Sets the height of the system tray bubble (or legacy notification bubble)
-  // from the edge of the work area so that the web notification popups don't
+  // from the edge of the work area so that the notification popups don't
   // overlap with the tray. Pass 0 if no bubble is shown.
   void SetTrayBubbleHeight(int height);
 
@@ -130,12 +130,12 @@ class ASH_EXPORT NotificationTray
   std::unique_ptr<message_center::MessagePopupCollection> popup_collection_;
   std::unique_ptr<views::View> bell_icon_;
   std::unique_ptr<views::View> quiet_mode_icon_;
-  std::unique_ptr<NotificationLabel> counter_;
+  std::unique_ptr<NotificationTrayLabelSubview> counter_;
 
   scoped_refptr<gfx::AnimationContainer> animation_container_ =
       new gfx::AnimationContainer();
 
-  std::unordered_map<std::string, std::unique_ptr<NotificationImage>>
+  std::unordered_map<std::string, std::unique_ptr<NotificationTrayImageSubview>>
       visible_small_icons_;
 
   bool show_message_center_on_unlock_;

@@ -41,7 +41,7 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   void StartObserving(display::Screen* screen, const display::Display& display);
 
   // Sets the current height of the system tray bubble (or legacy notification
-  // bubble) so that web notification toasts can avoid it.
+  // bubble) so that notification toasts can avoid it.
   void SetTrayBubbleHeight(int height);
 
   // Returns the current tray bubble height or 0 if there is no bubble.

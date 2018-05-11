@@ -190,9 +190,9 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
                  bool persistent,
                  bool show_by_click);
 
-  // Checks the current status of the system tray and updates the web
-  // notification tray according to the current status.
-  void UpdateWebNotifications();
+  // Checks the current status of the system tray and updates the notification
+  // tray according to the current status.
+  void UpdateNotificationTrayBubblePosition();
 
   // Deactivate the system tray in the shelf if it was active before.
   void CloseSystemBubbleAndDeactivateSystemTray();
@@ -201,7 +201,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // and the percentage of the work area height covered by the system menu.
   void RecordSystemMenuMetrics();
 
-  // The web notification tray view that appears adjacent to this view.
+  // The notification tray view that appears adjacent to this view.
   NotificationTray* notification_tray_ = nullptr;
 
   // Items.

@@ -476,7 +476,7 @@ TEST_F(NotificationTrayTest, QuietModeIcon) {
 TEST_F(NotificationTrayTest, CloseOnActivation) {
   NotificationTray* tray = GetTray();
 
-  // Show the web notification bubble.
+  // Show the notification bubble.
   tray->ShowBubble(false /* show_by_click */);
   EXPECT_FALSE(tray->GetBubbleView()->GetWidget()->IsActive());
 
