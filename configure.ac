@@ -474,6 +474,15 @@ if test "$enable_libxml2" = "yes"; then
 fi
 
 #
+# Check json-c
+#
+PKG_CHECK_MODULES([JSONC], [json-c], [use_jsonc=yes], [use_jsonc=no])
+
+AM_CONDITIONAL(ENABLE_JSONC, test "x$use_jsonc" = "xyes")
+AC_SUBST(JSONC_CFLAGS)
+AC_SUBST(JSONC_LIBS)
+
+#
 # Set default hinting
 #
 

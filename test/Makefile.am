@@ -59,6 +59,13 @@ check_PROGRAMS += test-name-parse
 test_name_parse_LDADD = $(top_builddir)/src/libfontconfig.la
 TESTS += test-name-parse
 
+if ENABLE_JSONC
+check_PROGRAMS += test-conf
+test_conf_CFLAGS = $(JSONC_CFLAGS)
+test_conf_LDADD = $(top_builddir)/src/libfontconfig.la $(JSONC_LIBS)
+TESTS += test-conf.sh
+endif
+
 EXTRA_DIST=run-test.sh $(TESTDATA) out.expected-long-family-names out.expected-no-long-family-names
 
 CLEANFILES=out fonts.conf out.expected
