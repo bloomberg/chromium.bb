@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,48 +6,80 @@
 
 #include <utility>
 
-#include "content/browser/media/capture/desktop_capture_device_uma_types.h"
-#include "content/browser/media/forwarding_audio_stream_factory.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/web_contents_media_capture_id.h"
-#include "content/public/common/media_stream_request.h"
-#include "media/audio/audio_device_description.h"
-#include "media/audio/audio_input_device.h"
+#include "base/feature_list.h"
+#include "base/task_runner_util.h"
+#include "content/browser/media/media_internals.h"
+#include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/public/common/content_features.h"
 #include "media/base/audio_parameters.h"
 
 namespace content {
 
-namespace {
-
-void LookUpDeviceAndRespondIfFound(
-    scoped_refptr<AudioInputDeviceManager> audio_input_device_manager,
-    int32_t session_id,
-    base::OnceCallback<void(const MediaStreamDevice&)> response) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  const MediaStreamDevice* device =
-      audio_input_device_manager->GetOpenedDeviceById(session_id);
-  if (device) {
-    // Copies device.
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(std::move(response), *device));
-  }
+// static
+std::unique_ptr<RenderFrameAudioInputStreamFactoryHandle,
+                BrowserThread::DeleteOnIOThread>
+RenderFrameAudioInputStreamFactoryHandle::CreateFactory(
+    RenderFrameAudioInputStreamFactory::CreateDelegateCallback
+        create_delegate_callback,
+    content::MediaStreamManager* media_stream_manager,
+    int render_process_id,
+    int render_frame_id,
+    mojom::RendererAudioInputStreamFactoryRequest request) {
+  std::unique_ptr<RenderFrameAudioInputStreamFactoryHandle,
+                  BrowserThread::DeleteOnIOThread>
+      handle(new RenderFrameAudioInputStreamFactoryHandle(
+          std::move(create_delegate_callback), media_stream_manager,
+          render_process_id, render_frame_id));
+  // Unretained is safe since |*handle| must be posted to the IO thread prior to
+  // deletion.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&RenderFrameAudioInputStreamFactoryHandle::Init,
+                     base::Unretained(handle.get()), std::move(request)));
+  return handle;
 }
 
-}  // namespace
+RenderFrameAudioInputStreamFactoryHandle::
+    ~RenderFrameAudioInputStreamFactoryHandle() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+}
+
+RenderFrameAudioInputStreamFactoryHandle::
+    RenderFrameAudioInputStreamFactoryHandle(
+        RenderFrameAudioInputStreamFactory::CreateDelegateCallback
+            create_delegate_callback,
+        MediaStreamManager* media_stream_manager,
+        int render_process_id,
+        int render_frame_id)
+    : impl_(std::move(create_delegate_callback),
+            media_stream_manager,
+            render_process_id,
+            render_frame_id),
+      binding_(&impl_) {}
+
+void RenderFrameAudioInputStreamFactoryHandle::Init(
+    mojom::RendererAudioInputStreamFactoryRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  binding_.Bind(std::move(request));
+}
 
 RenderFrameAudioInputStreamFactory::RenderFrameAudioInputStreamFactory(
-    mojom::RendererAudioInputStreamFactoryRequest request,
-    scoped_refptr<AudioInputDeviceManager> audio_input_device_manager,
-    RenderFrameHost* render_frame_host)
-    : binding_(this, std::move(request)),
-      audio_input_device_manager_(std::move(audio_input_device_manager)),
-      render_frame_host_(render_frame_host),
+    CreateDelegateCallback create_delegate_callback,
+    MediaStreamManager* media_stream_manager,
+    int render_process_id,
+    int render_frame_id)
+    : create_delegate_callback_(std::move(create_delegate_callback)),
+      media_stream_manager_(media_stream_manager),
+      render_process_id_(render_process_id),
+      render_frame_id_(render_frame_id),
       weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(create_delegate_callback_);
+  // No thread-hostile state has been initialized yet, so we don't have to bind
+  // to this specific thread.
 }
 
 RenderFrameAudioInputStreamFactory::~RenderFrameAudioInputStreamFactory() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 void RenderFrameAudioInputStreamFactory::CreateStream(
@@ -56,48 +88,58 @@ void RenderFrameAudioInputStreamFactory::CreateStream(
     const media::AudioParameters& audio_params,
     bool automatic_gain_control,
     uint32_t shared_memory_count) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          &LookUpDeviceAndRespondIfFound, audio_input_device_manager_,
-          session_id,
-          base::BindOnce(&RenderFrameAudioInputStreamFactory::
-                             CreateStreamAfterLookingUpDevice,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(client),
-                         audio_params, automatic_gain_control,
-                         shared_memory_count)));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+#if defined(OS_CHROMEOS)
+  if (audio_params.channel_layout() ==
+      media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC) {
+    media_stream_manager_->audio_input_device_manager()
+        ->RegisterKeyboardMicStream(base::BindOnce(
+            &RenderFrameAudioInputStreamFactory::DoCreateStream,
+            weak_ptr_factory_.GetWeakPtr(), std::move(client), session_id,
+            audio_params, automatic_gain_control, shared_memory_count));
+    return;
+  }
+#endif
+  DoCreateStream(std::move(client), session_id, audio_params,
+                 automatic_gain_control, shared_memory_count,
+                 AudioInputDeviceManager::KeyboardMicRegistration());
 }
 
-void RenderFrameAudioInputStreamFactory::CreateStreamAfterLookingUpDevice(
+void RenderFrameAudioInputStreamFactory::DoCreateStream(
     mojom::RendererAudioInputStreamFactoryClientPtr client,
+    int session_id,
     const media::AudioParameters& audio_params,
     bool automatic_gain_control,
     uint32_t shared_memory_count,
-    const MediaStreamDevice& device) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ForwardingAudioStreamFactory* factory =
-      ForwardingAudioStreamFactory::ForFrame(render_frame_host_);
-  if (!factory)
-    return;
+    AudioInputDeviceManager::KeyboardMicRegistration
+        keyboard_mic_registration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  int stream_id = ++next_stream_id_;
 
-  if (WebContentsMediaCaptureId::Parse(device.id, nullptr)) {
-    CHECK(false) << "TODO(https://crbug.com/824019) not implemented.";
+  media::mojom::AudioLogPtr audio_log_ptr =
+      MediaInternals::GetInstance()->CreateMojoAudioLog(
+          media::AudioLogFactory::AUDIO_INPUT_CONTROLLER, stream_id,
+          render_process_id_, render_frame_id_);
 
-    if (device.type == MEDIA_DESKTOP_AUDIO_CAPTURE)
-      IncrementDesktopCaptureCounter(SYSTEM_LOOPBACK_AUDIO_CAPTURER_CREATED);
-  } else {
-    factory->CreateInputStream(render_frame_host_, device.id, audio_params,
-                               shared_memory_count, automatic_gain_control,
-                               std::move(client));
+  // Unretained is safe since |this| owns |streams_|.
+  streams_.insert(std::make_unique<AudioInputStreamHandle>(
+      std::move(client),
+      base::BindOnce(
+          create_delegate_callback_,
+          base::Unretained(media_stream_manager_->audio_input_device_manager()),
+          std::move(audio_log_ptr), std::move(keyboard_mic_registration),
+          shared_memory_count, stream_id, session_id, automatic_gain_control,
+          audio_params),
+      base::BindOnce(&RenderFrameAudioInputStreamFactory::RemoveStream,
+                     weak_ptr_factory_.GetWeakPtr())));
+}
 
-    // Only count for captures from desktop media picker dialog and system loop
-    // back audio.
-    if (device.type == MEDIA_DESKTOP_AUDIO_CAPTURE &&
-        (media::AudioDeviceDescription::IsLoopbackDevice(device.id))) {
-      IncrementDesktopCaptureCounter(SYSTEM_LOOPBACK_AUDIO_CAPTURER_CREATED);
-    }
-  }
+void RenderFrameAudioInputStreamFactory::RemoveStream(
+    AudioInputStreamHandle* stream) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  streams_.erase(stream);
 }
 
 }  // namespace content
