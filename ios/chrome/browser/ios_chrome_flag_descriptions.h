@@ -7,6 +7,10 @@
 
 namespace flag_descriptions {
 
+// Title and description for the flag to control upstreaming credit cards.
+extern const char kAutofillCreditCardUploadName[];
+extern const char kAutofillCreditCardUploadDescription[];
+
 // Title and description for the flag to control GPay branding in credit card
 // upstream infobar.
 extern const char kAutofillUpstreamUseGooglePayBrandingOnMobileName[];
