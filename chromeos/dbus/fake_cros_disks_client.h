@@ -35,6 +35,7 @@ class CHROMEOS_EXPORT FakeCrosDisksClient : public CrosDisksClient {
   void Mount(const std::string& source_path,
              const std::string& source_format,
              const std::string& mount_label,
+             const std::vector<std::string>& mount_options,
              MountAccessMode access_mode,
              RemountOption remount,
              VoidDBusMethodCallback callback) override;

@@ -311,6 +311,7 @@ class CHROMEOS_EXPORT DiskMountManager {
   virtual void MountPath(const std::string& source_path,
                          const std::string& source_format,
                          const std::string& mount_label,
+                         const std::vector<std::string>& mount_options,
                          MountType type,
                          MountAccessMode access_mode) = 0;
 

@@ -24,13 +24,16 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
     MountRequest(const std::string& source_path,
                  const std::string& source_format,
                  const std::string& mount_label,
+                 const std::vector<std::string>& mount_options,
                  chromeos::MountType type,
                  chromeos::MountAccessMode access_mode);
     MountRequest(const MountRequest& other);
+    ~MountRequest();
 
     std::string source_path;
     std::string source_format;
     std::string mount_label;
+    std::vector<std::string> mount_options;
     chromeos::MountType type;
     chromeos::MountAccessMode access_mode;
   };
@@ -44,7 +47,7 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
   };
 
   struct RemountAllRequest {
-    RemountAllRequest(chromeos::MountAccessMode access_mode);
+    explicit RemountAllRequest(chromeos::MountAccessMode access_mode);
     chromeos::MountAccessMode access_mode;
   };
 
@@ -79,6 +82,7 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
   void MountPath(const std::string& source_path,
                  const std::string& source_format,
                  const std::string& mount_label,
+                 const std::vector<std::string>& mount_options,
                  chromeos::MountType type,
                  chromeos::MountAccessMode access_mode) override;
   // In order to simulate asynchronous invocation of callbacks after unmount

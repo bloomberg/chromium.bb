@@ -163,7 +163,7 @@ TEST(CrosDisksClientTest, ComposeMountOptions) {
   std::string kExpectedMountLabelOption =
       std::string("mountlabel=") + kMountLabel;
   std::vector<std::string> rw_mount_options =
-      CrosDisksClient::ComposeMountOptions(kMountLabel,
+      CrosDisksClient::ComposeMountOptions({}, kMountLabel,
                                            MOUNT_ACCESS_MODE_READ_WRITE,
                                            REMOUNT_OPTION_MOUNT_NEW_DEVICE);
   ASSERT_EQ(5U, rw_mount_options.size());
@@ -174,7 +174,7 @@ TEST(CrosDisksClientTest, ComposeMountOptions) {
   EXPECT_EQ(kExpectedMountLabelOption, rw_mount_options[4]);
 
   std::vector<std::string> ro_mount_options =
-      CrosDisksClient::ComposeMountOptions(kMountLabel,
+      CrosDisksClient::ComposeMountOptions({}, kMountLabel,
                                            MOUNT_ACCESS_MODE_READ_ONLY,
                                            REMOUNT_OPTION_MOUNT_NEW_DEVICE);
   ASSERT_EQ(5U, ro_mount_options.size());
@@ -186,7 +186,7 @@ TEST(CrosDisksClientTest, ComposeMountOptions) {
 
   std::vector<std::string> remount_mount_options =
       CrosDisksClient::ComposeMountOptions(
-          kMountLabel, MOUNT_ACCESS_MODE_READ_WRITE,
+          {}, kMountLabel, MOUNT_ACCESS_MODE_READ_WRITE,
           REMOUNT_OPTION_REMOUNT_EXISTING_DEVICE);
   ASSERT_EQ(6U, remount_mount_options.size());
   EXPECT_EQ("nodev", remount_mount_options[0]);
@@ -195,6 +195,19 @@ TEST(CrosDisksClientTest, ComposeMountOptions) {
   EXPECT_EQ("rw", remount_mount_options[3]);
   EXPECT_EQ("remount", remount_mount_options[4]);
   EXPECT_EQ(kExpectedMountLabelOption, remount_mount_options[5]);
+
+  std::vector<std::string> custom_mount_options =
+      CrosDisksClient::ComposeMountOptions({"foo", "bar=baz"}, kMountLabel,
+                                           MOUNT_ACCESS_MODE_READ_WRITE,
+                                           REMOUNT_OPTION_MOUNT_NEW_DEVICE);
+  ASSERT_EQ(7U, custom_mount_options.size());
+  EXPECT_EQ("foo", custom_mount_options[0]);
+  EXPECT_EQ("bar=baz", custom_mount_options[1]);
+  EXPECT_EQ("nodev", custom_mount_options[2]);
+  EXPECT_EQ("noexec", custom_mount_options[3]);
+  EXPECT_EQ("nosuid", custom_mount_options[4]);
+  EXPECT_EQ("rw", custom_mount_options[5]);
+  EXPECT_EQ(kExpectedMountLabelOption, custom_mount_options[6]);
 }
 
 }  // namespace chromeos

@@ -10,16 +10,20 @@ FakeDiskMountManager::MountRequest::MountRequest(
     const std::string& source_path,
     const std::string& source_format,
     const std::string& mount_label,
+    const std::vector<std::string>& mount_options,
     chromeos::MountType type,
     chromeos::MountAccessMode access_mode)
     : source_path(source_path),
       source_format(source_format),
       mount_label(mount_label),
+      mount_options(mount_options),
       type(type),
       access_mode(access_mode) {}
 
 FakeDiskMountManager::MountRequest::MountRequest(const MountRequest& other) =
     default;
+
+FakeDiskMountManager::MountRequest::~MountRequest() = default;
 
 FakeDiskMountManager::UnmountRequest::UnmountRequest(
     const std::string& mount_path,
@@ -69,13 +73,15 @@ void FakeDiskMountManager::EnsureMountInfoRefreshed(
   callback.Run(true);
 }
 
-void FakeDiskMountManager::MountPath(const std::string& source_path,
-                                     const std::string& source_format,
-                                     const std::string& mount_label,
-                                     chromeos::MountType type,
-                                     chromeos::MountAccessMode access_mode) {
-  mount_requests_.emplace_back(source_path, source_format, mount_label, type,
-                               access_mode);
+void FakeDiskMountManager::MountPath(
+    const std::string& source_path,
+    const std::string& source_format,
+    const std::string& mount_label,
+    const std::vector<std::string>& mount_options,
+    chromeos::MountType type,
+    chromeos::MountAccessMode access_mode) {
+  mount_requests_.emplace_back(source_path, source_format, mount_label,
+                               mount_options, type, access_mode);
 
   const MountPointInfo mount_point(
       source_path,

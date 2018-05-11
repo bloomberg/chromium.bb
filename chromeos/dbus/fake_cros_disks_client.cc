@@ -69,6 +69,7 @@ void FakeCrosDisksClient::RemoveObserver(Observer* observer) {
 void FakeCrosDisksClient::Mount(const std::string& source_path,
                                 const std::string& source_format,
                                 const std::string& mount_label,
+                                const std::vector<std::string>& mount_options,
                                 MountAccessMode access_mode,
                                 RemountOption remount,
                                 VoidDBusMethodCallback callback) {

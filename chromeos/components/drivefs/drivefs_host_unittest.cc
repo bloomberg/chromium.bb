@@ -252,7 +252,7 @@ class DriveFsHostTest : public ::testing::Test,
         MountPath(testing::AllOf(
                       testing::StartsWith("drivefs://"),
                       testing::EndsWith("@/path/to/profile/GCache/v2/g-ID")),
-                  "", "", _, chromeos::MOUNT_ACCESS_MODE_READ_WRITE))
+                  "", "", _, _, chromeos::MOUNT_ACCESS_MODE_READ_WRITE))
         .WillOnce(testing::SaveArg<0>(&source));
 
     mojom::DriveFsBootstrapPtrInfo bootstrap;
@@ -445,7 +445,7 @@ TEST_F(DriveFsHostTest, MountWhileAlreadyMounted) {
 }
 
 TEST_F(DriveFsHostTest, UnsupportedAccountTypes) {
-  EXPECT_CALL(*disk_manager_, MountPath(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(*disk_manager_, MountPath(_, _, _, _, _, _)).Times(0);
   const AccountId unsupported_accounts[] = {
       AccountId::FromGaiaId("ID"),
       AccountId::FromUserEmail("test2@example.com"),

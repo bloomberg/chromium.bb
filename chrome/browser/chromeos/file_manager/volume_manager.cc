@@ -560,7 +560,8 @@ void VolumeManager::OnAutoMountableDiskEvent(
         // format if the second argument is empty. The third argument (mount
         // label) is not used in a disk mount operation.
         disk_mount_manager_->MountPath(disk.device_path(), std::string(),
-                                       mount_label, chromeos::MOUNT_TYPE_DEVICE,
+                                       mount_label, {},
+                                       chromeos::MOUNT_TYPE_DEVICE,
                                        GetExternalStorageAccessMode(profile_));
         mounting = true;
       }
@@ -677,7 +678,7 @@ void VolumeManager::OnFormatEvent(
         // empty. The third argument (mount label) is not used in a disk mount
         // operation.
         disk_mount_manager_->MountPath(device_path, std::string(),
-                                       std::string(),
+                                       std::string(), {},
                                        chromeos::MOUNT_TYPE_DEVICE,
                                        GetExternalStorageAccessMode(profile_));
       }
@@ -723,7 +724,7 @@ void VolumeManager::OnRenameEvent(
       // disk when it was first time mounted (to preserve mount point regardless
       // of the volume name).
       disk_mount_manager_->MountPath(device_path, std::string(), mount_label,
-                                     chromeos::MOUNT_TYPE_DEVICE,
+                                     {}, chromeos::MOUNT_TYPE_DEVICE,
                                      GetExternalStorageAccessMode(profile_));
 
       bool successfully_renamed = error_code == chromeos::RENAME_ERROR_NONE;
