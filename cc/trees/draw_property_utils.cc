@@ -1004,7 +1004,7 @@ void ComputeDrawPropertiesOfVisibleLayers(const LayerImplList* layer_list,
 }
 
 void ComputeMaskDrawProperties(LayerImpl* mask_layer,
-                               const PropertyTrees* property_trees) {
+                               PropertyTrees* property_trees) {
   // Mask draw properties are used only for rastering, so most of the draw
   // properties computed for other layers are not needed.
   // Draw transform of a mask layer has to be a 2d scale.
@@ -1016,8 +1016,17 @@ void ComputeMaskDrawProperties(LayerImpl* mask_layer,
   mask_layer->draw_properties().screen_space_transform =
       ScreenSpaceTransformInternal(mask_layer,
                                    property_trees->transform_tree);
+
+  ConditionalClip clip = LayerClipRect(property_trees, mask_layer);
+  // is_clipped should be set before visible rect computation as it is used
+  // there.
+  mask_layer->draw_properties().is_clipped = clip.is_clipped;
+  mask_layer->draw_properties().clip_rect =
+      gfx::ToEnclosingRect(clip.clip_rect);
+  // Calculate actual visible layer rect for mask layers, since we could have
+  // tiled mask layers and the tile manager would need this info for rastering.
   mask_layer->draw_properties().visible_layer_rect =
-      gfx::Rect(mask_layer->bounds());
+      LayerVisibleRect(property_trees, mask_layer);
   mask_layer->draw_properties().opacity = 1;
 }
 

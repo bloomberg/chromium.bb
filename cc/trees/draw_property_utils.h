@@ -59,7 +59,7 @@ ComputeDrawPropertiesOfVisibleLayers(const LayerImplList* layer_list,
                                      PropertyTrees* property_trees);
 
 void CC_EXPORT ComputeMaskDrawProperties(LayerImpl* mask_layer,
-                                         const PropertyTrees* property_trees);
+                                         PropertyTrees* property_trees);
 
 void CC_EXPORT ComputeSurfaceDrawProperties(PropertyTrees* property_trees,
                                             RenderSurfaceImpl* render_surface);

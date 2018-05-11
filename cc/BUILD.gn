@@ -678,6 +678,7 @@ cc_test("cc_unittests") {
     "trees/layer_tree_host_unittest_context.cc",
     "trees/layer_tree_host_unittest_copyrequest.cc",
     "trees/layer_tree_host_unittest_damage.cc",
+    "trees/layer_tree_host_unittest_masks.cc",
     "trees/layer_tree_host_unittest_occlusion.cc",
     "trees/layer_tree_host_unittest_picture.cc",
     "trees/layer_tree_host_unittest_proxy.cc",
