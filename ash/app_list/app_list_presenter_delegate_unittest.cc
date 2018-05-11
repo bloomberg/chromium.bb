@@ -1055,7 +1055,7 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, ParentWindowContainer) {
 // Tests that the background opacity change for app list.
 TEST_F(AppListPresenterDelegateHomeLauncherTest, BackgroundOpacity) {
   // Show app list in non-tablet mode. The background sheild opacity should be
-  // 95%.
+  // 70%.
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   ui::Layer* background_layer =
       GetAppListView()->app_list_background_shield_for_test()->layer();
