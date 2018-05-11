@@ -291,9 +291,12 @@ void RemoteDeviceImpl::SetConnected(bool connected) {
   }
 }
 
-void RemoteDeviceImpl::SetServicesDiscovered() {
+void RemoteDeviceImpl::SetServicesDiscovered(bool discovered) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  services_discovered_ = true;
+  services_discovered_ = discovered;
+  if (!discovered) {
+    return;
+  }
   connected_ = true;
   if (connect_cb_) {
     std::move(connect_cb_).Run(true);

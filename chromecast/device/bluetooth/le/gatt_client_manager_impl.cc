@@ -128,6 +128,7 @@ void GattClientManagerImpl::OnConnectChanged(
   // Only report disconnect callback if the connect callback was called (
   // service discovery completed).
   if (!connected && it->second->GetServicesDiscovered()) {
+    it->second->SetServicesDiscovered(false);
     observers_->Notify(FROM_HERE, &Observer::OnConnectChanged, it->second,
                        false);
   }
@@ -252,9 +253,9 @@ void GattClientManagerImpl::OnGetServices(
   it->second->OnGetServices(services);
 
   if (!it->second->GetServicesDiscovered()) {
+    it->second->SetServicesDiscovered(true);
     observers_->Notify(FROM_HERE, &Observer::OnConnectChanged, it->second,
                        true);
-    it->second->SetServicesDiscovered();
   }
 
   observers_->Notify(FROM_HERE, &Observer::OnServicesUpdated, it->second,
