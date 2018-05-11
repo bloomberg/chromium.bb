@@ -660,24 +660,37 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, DeleteSession) {
   EXPECT_EQ(expected, *ExtractSessionsList());
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyToolUITest, RenameSession) {
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest, RenameCurrentSession) {
   CreateMultipleSessionFiles(3);
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
+  // Wait until the session data is loaded.
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ("2", ExtractSinglePolicyValue("SessionId"));
 
-  // Check that a non-current session is renamed correctly.
+  // RenameSession will wait until idle.
+  RenameSession("2", "5");
+  EXPECT_FALSE(IsSessionRenameErrorMessageDisplayed());
+  base::ListValue expected;
+  expected.GetList().push_back(base::Value("5"));
+  expected.GetList().push_back(base::Value("1"));
+  expected.GetList().push_back(base::Value("0"));
+  EXPECT_EQ(expected, *ExtractSessionsList());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest, RenameNonCurrentSession) {
+  CreateMultipleSessionFiles(3);
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
+  // Wait until the session data is loaded.
+  content::RunAllTasksUntilIdle();
+  EXPECT_EQ("2", ExtractSinglePolicyValue("SessionId"));
+
+  // Rename a session and wait until idle.
   RenameSession("0", "4");
   EXPECT_FALSE(IsSessionRenameErrorMessageDisplayed());
   base::ListValue expected;
   expected.GetList().push_back(base::Value("2"));
   expected.GetList().push_back(base::Value("1"));
   expected.GetList().push_back(base::Value("4"));
-  EXPECT_EQ(expected, *ExtractSessionsList());
-
-  // Check that the current session can be renamed properly.
-  RenameSession("2", "5");
-  EXPECT_FALSE(IsSessionRenameErrorMessageDisplayed());
-  expected.GetList()[0] = base::Value("5");
   EXPECT_EQ(expected, *ExtractSessionsList());
 }
 
