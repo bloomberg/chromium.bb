@@ -624,6 +624,8 @@ class CORE_EXPORT Document : public ContainerNode,
                                  bool& did_allow_navigation);
   void DispatchUnloadEvents();
 
+  void DispatchFreezeEvent();
+
   enum PageDismissalType {
     kNoDismissal,
     kBeforeUnloadDismissal,
@@ -729,6 +731,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void SetReadyState(DocumentReadyState);
   bool IsLoadCompleted() const;
+
+  bool IsFreezingInProgress() const { return is_freezing_in_progress_; };
 
   enum ParsingState { kParsing, kInDOMContentLoaded, kFinishedParsing };
   void SetParsingState(ParsingState);
@@ -1422,6 +1426,8 @@ class CORE_EXPORT Document : public ContainerNode,
   friend class IgnoreDestructiveWriteCountIncrementer;
   friend class ThrowOnDynamicMarkupInsertionCountIncrementer;
   friend class NthIndexCache;
+  FRIEND_TEST_ALL_PREFIXES(FrameFetchContextSubresourceFilterTest,
+                           DuringOnFreeze);
   class NetworkStateObserver;
 
   bool IsDocumentFragment() const =
@@ -1530,6 +1536,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // that any changes to the declared policy are relayed to the embedder through
   // the LocalFrameClient.
   void ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy);
+
+  void SetFreezingInProgress(bool is_freezing_in_progress) {
+    is_freezing_in_progress_ = is_freezing_in_progress;
+  };
 
   DocumentLifecycle lifecycle_;
 
@@ -1649,6 +1659,8 @@ class CORE_EXPORT Document : public ContainerNode,
   bool was_discarded_;
 
   LoadEventProgress load_event_progress_;
+
+  bool is_freezing_in_progress_;
 
   double start_time_;
 

@@ -213,6 +213,11 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
     return CanRequestInternal(SecurityViolationReportingPolicy::kReport);
   }
 
+  ResourceRequestBlockedReason CanRequestKeepAlive() {
+    return CanRequestInternal(SecurityViolationReportingPolicy::kReport,
+                              true /* keepalive */);
+  }
+
   ResourceRequestBlockedReason CanRequestPreload() {
     return CanRequestInternal(
         SecurityViolationReportingPolicy::kSuppressReporting);
@@ -250,11 +255,13 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
 
  private:
   ResourceRequestBlockedReason CanRequestInternal(
-      SecurityViolationReportingPolicy reporting_policy) {
+      SecurityViolationReportingPolicy reporting_policy,
+      bool keepalive = false) {
     const KURL input_url("http://example.com/");
     ResourceRequest resource_request(input_url);
     resource_request.SetFetchCredentialsMode(
         network::mojom::FetchCredentialsMode::kOmit);
+    resource_request.SetKeepalive(keepalive);
     ResourceLoaderOptions options;
     return fetch_context->CanRequest(
         Resource::kImage, resource_request, input_url, options,
@@ -1305,6 +1312,16 @@ TEST_F(FrameFetchContextSubresourceFilterTest, Allow) {
 
   EXPECT_EQ(ResourceRequestBlockedReason::kNone, CanRequestPreload());
   EXPECT_EQ(0, GetFilteredLoadCallCount());
+}
+
+TEST_F(FrameFetchContextSubresourceFilterTest, DuringOnFreeze) {
+  document->SetFreezingInProgress(true);
+  // Only keepalive requests should succeed during onfreeze.
+  EXPECT_EQ(ResourceRequestBlockedReason::kOther, CanRequest());
+  EXPECT_EQ(ResourceRequestBlockedReason::kNone, CanRequestKeepAlive());
+  document->SetFreezingInProgress(false);
+  EXPECT_EQ(ResourceRequestBlockedReason::kNone, CanRequest());
+  EXPECT_EQ(ResourceRequestBlockedReason::kNone, CanRequestKeepAlive());
 }
 
 TEST_F(FrameFetchContextSubresourceFilterTest, WouldDisallow) {

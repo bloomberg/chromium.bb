@@ -625,6 +625,7 @@ Document::Document(const DocumentInit& initializer,
       css_target_(nullptr),
       was_discarded_(false),
       load_event_progress_(kLoadEventCompleted),
+      is_freezing_in_progress_(false),
       start_time_(CurrentTime()),
       script_runner_(ScriptRunner::Create(this)),
       xml_version_("1.0"),
@@ -3519,6 +3520,18 @@ void Document::DispatchUnloadEvents() {
           frame_->Loader().GetProvisionalDocumentLoader()->Url());
   if (!keep_event_listeners)
     RemoveAllEventListenersRecursively();
+}
+
+void Document::DispatchFreezeEvent() {
+  DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
+  const double freeze_event_start = CurrentTimeTicksInSeconds();
+  SetFreezingInProgress(true);
+  DispatchEvent(Event::Create(EventTypeNames::freeze));
+  SetFreezingInProgress(false);
+  const double freeze_event_end = CurrentTimeTicksInSeconds();
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, freeze_histogram,
+                      ("DocumentEventTiming.FreezeDuration", 0, 10000000, 50));
+  freeze_histogram.Count((freeze_event_end - freeze_event_start) * 1000000.0);
 }
 
 Document::PageDismissalType Document::PageDismissalEventBeingDispatched()
