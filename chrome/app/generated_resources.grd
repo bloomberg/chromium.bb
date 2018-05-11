@@ -10831,6 +10831,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_VR_MENU_SEND_FEEDBACK" desc="Menu item for sending feedback. [CHAR-LIMIT=27]">
         Send feedback
       </message>
+      <message name="IDS_VR_TABS_BUTTON_REGULAR" desc="Text on button for selecting regular tabs">
+        Tabs
+      </message>
+      <message name="IDS_VR_TABS_BUTTON_INCOGNITO" desc="Text on button for selecting incognito tabs">
+        Incognito
+      </message>
     </if>
 
     <message name="IDS_CONFIRM_FILE_UPLOAD_TITLE" desc="Title of dialog for confirming that many files are about to be uploaded / given to the site. [ICU Syntax]">
