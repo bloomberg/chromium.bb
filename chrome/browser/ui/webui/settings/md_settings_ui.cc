@@ -322,10 +322,6 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("unifiedConsentEnabled",
                           IsUnifiedConsentEnabled(profile));
 
-  html_source->AddBoolean("showExportPasswords",
-                          base::FeatureList::IsEnabled(
-                              password_manager::features::kPasswordExport));
-
   html_source->AddBoolean("showImportPasswords",
                           base::FeatureList::IsEnabled(
                               password_manager::features::kPasswordImport));

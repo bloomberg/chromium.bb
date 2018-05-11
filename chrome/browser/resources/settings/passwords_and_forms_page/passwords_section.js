@@ -83,7 +83,7 @@ Polymer({
     /** @private */
     showExportPasswords_: {
       type: Boolean,
-      computed: 'showExportPasswordsAndReady_(savedPasswords.splices)'
+      computed: 'hasPasswords_(savedPasswords.splices)',
     },
 
     /** @private */
@@ -369,10 +369,8 @@ Polymer({
   },
 
   /** @private */
-  showExportPasswordsAndReady_: function() {
-    return loadTimeData.valueExists('showExportPasswords') &&
-        loadTimeData.getBoolean('showExportPasswords') &&
-        this.savedPasswords.length > 0;
+  hasPasswords_: function() {
+    return this.savedPasswords.length > 0;
   },
 
   /**
