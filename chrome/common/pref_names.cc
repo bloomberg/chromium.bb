@@ -100,6 +100,11 @@ const char kSessionExitType[] = "profile.exit_type";
 // in-product help is active. Observed time is active session time in seconds.
 const char kObservedSessionTime[] = "profile.observed_session_time";
 
+// Stores counts and timestamps of SSL certificate errors that have occurred.
+// When the same error recurs within some period of time, a message is added to
+// the SSL interstitial.
+const char kRecurrentSSLInterstitial[] = "profile.ssl_recurrent_interstitial";
+
 // The last time that the site engagement service recorded an engagement event
 // for this profile for any URL. Recorded only during shutdown. Used to prevent
 // the service from decaying engagement when a user does not use Chrome at all
