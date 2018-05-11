@@ -38,10 +38,10 @@ class Transform;
 namespace viz {
 class ContextProvider;
 class RenderPass;
+class SharedBitmapReporter;
 }
 
 namespace cc {
-class LayerTreeFrameSink;
 class LayerTreeResourceProvider;
 
 // Specifies what type of data is contained in the mailboxes, as well as how
@@ -79,13 +79,10 @@ class CC_EXPORT VideoResourceUpdater
     : public base::trace_event::MemoryDumpProvider {
  public:
   // For GPU compositing |context_provider| should be provided and for software
-  // compositing |layer_tree_frame_sink| should be provided. If there is a
+  // compositing |shared_bitmap_reporter| should be provided. If there is a
   // non-null |context_provider| we assume GPU compositing.
-  // TODO(kylechar): Don't use LayerTreeFrameSink for the software compositing
-  // path. The UseSurfaceLayerForVideo path isn't compatible with this. We can
-  // maybe use mojom::CompositorFrameSink instead.
   VideoResourceUpdater(viz::ContextProvider* context_provider,
-                       LayerTreeFrameSink* layer_tree_frame_sink,
+                       viz::SharedBitmapReporter* shared_bitmap_reporter,
                        LayerTreeResourceProvider* resource_provider,
                        bool use_stream_video_draw_quad,
                        bool use_gpu_memory_buffer_resources,
@@ -184,7 +181,7 @@ class CC_EXPORT VideoResourceUpdater
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
   viz::ContextProvider* const context_provider_;
-  LayerTreeFrameSink* const layer_tree_frame_sink_;
+  viz::SharedBitmapReporter* const shared_bitmap_reporter_;
   LayerTreeResourceProvider* const resource_provider_;
   const bool use_stream_video_draw_quad_;
   const bool use_gpu_memory_buffer_resources_;

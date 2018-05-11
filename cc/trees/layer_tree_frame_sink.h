@@ -17,10 +17,9 @@
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
-#include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/resources/returned_resource.h"
+#include "components/viz/common/resources/shared_bitmap_reporter.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
-#include "mojo/public/cpp/system/buffer.h"
 #include "ui/gfx/color_space.h"
 
 namespace gpu {
@@ -43,7 +42,8 @@ class LayerTreeHostImpl;
 // If a context_provider() is present, frames should be submitted with
 // OpenGL resources (created with the context_provider()). If not, then
 // SharedMemory resources should be used.
-class CC_EXPORT LayerTreeFrameSink : public viz::ContextLostObserver {
+class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
+                                     public viz::ContextLostObserver {
  public:
   struct Capabilities {
     Capabilities() = default;
@@ -133,13 +133,10 @@ class CC_EXPORT LayerTreeFrameSink : public viz::ContextLostObserver {
   // the client did not lead to a CompositorFrame submission.
   virtual void DidNotProduceFrame(const viz::BeginFrameAck& ack) = 0;
 
-  // Associates a SharedBitmapId with a shared buffer handle.
-  virtual void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
-                                       const viz::SharedBitmapId& id) = 0;
-
-  // Disassociates a SharedBitmapId previously passed to
-  // DidAllocateSharedBitmap.
-  virtual void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) = 0;
+  // viz::SharedBitmapReporter implementation.
+  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+                               const viz::SharedBitmapId& id) override = 0;
+  void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override = 0;
 
  protected:
   class ContextLostForwarder;
