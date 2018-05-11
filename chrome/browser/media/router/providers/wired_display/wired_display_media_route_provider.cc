@@ -427,7 +427,13 @@ void WiredDisplayMediaRouteProvider::ReportSinkAvailability(
 
 void WiredDisplayMediaRouteProvider::RemovePresentationById(
     const std::string& presentation_id) {
-  presentations_.erase(presentation_id);
+  auto entry = presentations_.find(presentation_id);
+  if (entry == presentations_.end())
+    return;
+  media_router_->OnPresentationConnectionStateChanged(
+      entry->second.route().media_route_id(),
+      mojom::MediaRouter::PresentationConnectionState::TERMINATED);
+  presentations_.erase(entry);
   NotifyRouteObservers();
 }
 
