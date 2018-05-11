@@ -1260,8 +1260,17 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, ScrollEventToOOPIF) {
   EXPECT_EQ(child_frame_monitor.EventType(), blink::WebInputEvent::kMouseWheel);
 }
 
+#if defined(THREAD_SANITIZER)
+// Flaky: https://crbug.com/833380
+#define MAYBE_InputEventRouterWheelCoalesceTest \
+  DISABLED_InputEventRouterWheelCoalesceTest
+#else
+#define MAYBE_InputEventRouterWheelCoalesceTest \
+  InputEventRouterWheelCoalesceTest
+#endif
+
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       InputEventRouterWheelCoalesceTest) {
+                       MAYBE_InputEventRouterWheelCoalesceTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1420,8 +1429,14 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestWatermark) {
   HitTestWatermark(shell(), embedded_test_server());
 }
 
+#if defined(THREAD_SANITIZER)
+// Flaky: https://crbug.com/833380
+#define MAYBE_HitTestWatermark DISABLED_HitTestWatermark
+#else
+#define MAYBE_HitTestWatermark HitTestWatermark
+#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
-                       HitTestWatermark) {
+                       MAYBE_HitTestWatermark) {
   HitTestWatermark(shell(), embedded_test_server());
 }
 
@@ -1498,10 +1513,18 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   EXPECT_EQ(result.target_location.value(), parent_location);
 }
 
+#if defined(THREAD_SANITIZER)
+// Flaky: https://crbug.com/833380
+#define MAYBE_SurfaceHitTestPointerEventsNone \
+  DISABLED_SurfaceHitTestPointerEventsNone
+#else
+#define MAYBE_SurfaceHitTestPointerEventsNone SurfaceHitTestPointerEventsNone
+#endif
+
 // This test tests that browser process hittesting ignores frames with
 // pointer-events: none.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       SurfaceHitTestPointerEventsNone) {
+                       MAYBE_SurfaceHitTestPointerEventsNone) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame_pointer-events_none.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3194,26 +3217,27 @@ void CreateContextMenuTestHelper(
   EXPECT_NEAR(point.y(), params.y, 2);
 }
 
+#if defined(OS_ANDROID) || defined(OS_WIN)
+// High DPI tests don't work properly on Android, which has fixed scale factor.
+// Windows is disabled because of https://crbug.com/545547.
+#define MAYBE_CreateContextMenuTest DISABLED_CreateContextMenuTest
+#elif defined(THREAD_SANITIZER)
+// TSAN is flaky on both standard and High DPI: https://crbug.com/833380
+#define MAYBE_CreateContextMenuTest DISABLED_CreateContextMenuTest
+#else
+#define MAYBE_CreateContextMenuTest CreateContextMenuTest
+#endif
+
 // Test that a mouse right-click to an out-of-process iframe causes a context
 // menu to be generated with the correct screen position.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       CreateContextMenuTest) {
+                       MAYBE_CreateContextMenuTest) {
   CreateContextMenuTestHelper(shell(), embedded_test_server());
 }
 
 // Test that a mouse right-click to an out-of-process iframe causes a context
 // menu to be generated with the correct screen position on a screen with
 // non-default scale factor.
-#if defined(OS_ANDROID) || defined(OS_WIN)
-// High DPI tests don't work properly on Android, which has fixed scale factor.
-// Windows is disabled because of https://crbug.com/545547.
-#define MAYBE_CreateContextMenuTest DISABLED_CreateContextMenuTest
-#elif defined(THREAD_SANITIZER)
-// Flaky: https://crbug.com/833380
-#define MAYBE_CreateContextMenuTest DISABLED_CreateContextMenuTest
-#else
-#define MAYBE_CreateContextMenuTest CreateContextMenuTest
-#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
                        MAYBE_CreateContextMenuTest) {
   CreateContextMenuTestHelper(shell(), embedded_test_server());
