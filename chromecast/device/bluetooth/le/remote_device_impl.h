@@ -58,7 +58,7 @@ class RemoteDeviceImpl : public RemoteDevice {
 
   // Friend methods for GattClientManagerImpl
   void SetConnected(bool connected);
-  void SetServicesDiscovered();
+  void SetServicesDiscovered(bool discovered);
   bool GetServicesDiscovered();
   void SetMtu(int mtu);
 
