@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/echo_private_api.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -29,6 +30,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_file_task_runner.h"
+#include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
 
 namespace echo_api = extensions::api::echo_private;
@@ -242,7 +244,16 @@ void EchoPrivateGetUserConsentFunction::OnRedeemOffersAllowedChecked(
   }
 
   content::WebContents* web_contents = nullptr;
-  if (params->consent_requester.tab_id) {
+  if (!params->consent_requester.tab_id) {
+    web_contents = GetSenderWebContents();
+
+    if (!web_contents || extensions::GetViewType(web_contents) !=
+                             extensions::VIEW_TYPE_APP_WINDOW) {
+      error_ = "Not called from an app window - the tabId is required.";
+      SendResponse(false);
+      return;
+    }
+  } else {
     TabStripModel* tab_strip = nullptr;
     int tab_index = -1;
     if (!extensions::ExtensionTabUtil::GetTabById(
@@ -262,17 +273,9 @@ void EchoPrivateGetUserConsentFunction::OnRedeemOffersAllowedChecked(
       SendResponse(false);
       return;
     }
-  } else {
-    // TODO(tbarzic): Change this to GetSenderWebContets once the echo extension
-    // code is updated to send tab ID information with the request.
-    web_contents = GetAssociatedWebContentsDeprecated();
   }
 
-  if (!web_contents) {
-    error_ = "No web contents.";
-    SendResponse(false);
-    return;
-  }
+  DCHECK(web_contents);
 
   // Add ref to ensure the function stays around until the dialog listener is
   // called. The reference is release in |Finalize|.
