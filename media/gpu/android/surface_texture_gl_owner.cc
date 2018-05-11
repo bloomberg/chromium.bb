@@ -66,11 +66,20 @@ SurfaceTextureGLOwner::~SurfaceTextureGLOwner() {
   // Make sure that the SurfaceTexture isn't using the GL objects.
   surface_texture_ = nullptr;
 
-  ui::ScopedMakeCurrent scoped_make_current(context_.get(), surface_.get());
-  if (scoped_make_current.Succeeded()) {
-    glDeleteTextures(1, &texture_id_);
-    DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+  std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current;
+
+  // If the context is current, skip ScopedMakeCurrent to prevent (a) a
+  // potentially heavyweight virtual context switch and (b) a potential crash
+  // during stub destruction (https://crbug.com/839605).
+  if (!context_->IsCurrent(nullptr)) {
+    scoped_make_current =
+        std::make_unique<ui::ScopedMakeCurrent>(context_.get(), surface_.get());
+    if (!scoped_make_current->Succeeded())
+      return;
   }
+
+  glDeleteTextures(1, &texture_id_);
+  DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 }
 
 GLuint SurfaceTextureGLOwner::GetTextureId() const {
