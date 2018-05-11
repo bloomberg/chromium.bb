@@ -29,7 +29,11 @@ class UkmRecorder;
 class ProcessMemoryMetricsEmitter
     : public base::RefCountedThreadSafe<ProcessMemoryMetricsEmitter> {
  public:
+  // Use this constructor to emit UKM and UMA from all processes, i.e.
+  // browser process, gpu process, and all renderers.
   ProcessMemoryMetricsEmitter();
+  // Use this constructor to emit UKM from only a specified renderer's.
+  explicit ProcessMemoryMetricsEmitter(base::ProcessId pid_scope);
 
   // This must be called on the main thread of the browser process.
   void FetchAndEmitProcessMemoryMetrics();
@@ -85,6 +89,10 @@ class ProcessMemoryMetricsEmitter
   // The key is ProcessInfoPtr::pid.
   std::unordered_map<int64_t, resource_coordinator::mojom::ProcessInfoPtr>
       process_infos_;
+
+  // Specify this pid_scope_ to only record the memory metrics of the specific
+  // process.
+  base::ProcessId pid_scope_ = base::kNullProcessId;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessMemoryMetricsEmitter);
 };

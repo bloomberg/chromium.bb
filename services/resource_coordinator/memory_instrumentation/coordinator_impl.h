@@ -65,6 +65,7 @@ class CoordinatorImpl : public Coordinator,
       RequestGlobalMemoryDumpCallback) override;
   void RequestGlobalMemoryDumpForPid(
       base::ProcessId,
+      const std::vector<std::string>& allocator_dump_names,
       RequestGlobalMemoryDumpForPidCallback) override;
   void RequestGlobalMemoryDumpAndAppendToTrace(
       base::trace_event::MemoryDumpType,
