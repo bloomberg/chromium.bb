@@ -109,3 +109,6 @@ crbug.com/838057 [ Linux ] virtual/outofblink-cors/external/wpt/fetch/api/cors/c
 crbug.com/838057 [ Linux ] virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-redirect-preflight.any.worker.html [ Crash ]
 crbug.com/838057 [ Linux ] virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Crash ]
 crbug.com/838057 [ Linux ] virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Crash ]
+
+# Crashes on Linux Trusty MSAN
+crbug.com/842262 [ Linux ] virtual/enable_wasm/external/wpt/wasm/wasm_indexeddb_test.https.html [ Crash ]
