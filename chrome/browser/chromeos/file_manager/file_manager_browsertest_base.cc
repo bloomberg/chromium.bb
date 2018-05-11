@@ -567,6 +567,10 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     command_line->AppendSwitch(switches::kIncognito);
   }
 
+  // Block NaCl loading Files.app components crbug.com/788671
+  command_line->AppendSwitch(chromeos::switches::kDisableZipArchiverUnpacker);
+  command_line->AppendSwitch(chromeos::switches::kDisableZipArchiverPacker);
+
   ExtensionApiTest::SetUpCommandLine(command_line);
 }
 
