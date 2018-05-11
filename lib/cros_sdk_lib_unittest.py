@@ -411,6 +411,7 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
 
   def testMountedCleanup(self):
     m = self.PatchObject(osutils, 'UmountTree')
+    m2 = self.PatchObject(cros_sdk_lib, '_RescanDeviceLvmMetadata')
 
     proc_mounts = os.path.join(self.tempdir, 'proc_mounts')
     with open(proc_mounts, 'w') as f:
@@ -426,9 +427,11 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
           self.chroot_path, None, proc_mounts=proc_mounts)
 
     m.assert_called_with(self.chroot_path)
+    m2.assert_called_with('/dev/loop0')
 
   def testMountedCleanupByBuildroot(self):
     m = self.PatchObject(osutils, 'UmountTree')
+    m2 = self.PatchObject(cros_sdk_lib, '_RescanDeviceLvmMetadata')
 
     proc_mounts = os.path.join(self.tempdir, 'proc_mounts')
     with open(proc_mounts, 'w') as f:
@@ -444,10 +447,12 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
           None, self.tempdir, proc_mounts=proc_mounts)
 
     m.assert_called_with(self.chroot_path)
+    m2.assert_called_with('/dev/loop0')
 
   def testMountedCleanupWithDelete(self):
     m = self.PatchObject(osutils, 'UmountTree')
     m2 = self.PatchObject(osutils, 'SafeUnlink')
+    m3 = self.PatchObject(cros_sdk_lib, '_RescanDeviceLvmMetadata')
 
     proc_mounts = os.path.join(self.tempdir, 'proc_mounts')
     with open(proc_mounts, 'w') as f:
@@ -464,11 +469,13 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
 
     m.assert_called_with(self.chroot_path)
     m2.assert_called_with(self.chroot_img)
+    m3.assert_called_with('/dev/loop0')
 
   def testUnmountedCleanup(self):
     m = self.PatchObject(osutils, 'UmountTree')
     m2 = self.PatchObject(cros_sdk_lib, 'FindVolumeGroupForDevice')
     m2.return_value = 'cros_chroot_001'
+    m3 = self.PatchObject(cros_sdk_lib, '_RescanDeviceLvmMetadata')
 
     proc_mounts = os.path.join(self.tempdir, 'proc_mounts')
     with open(proc_mounts, 'w') as f:
@@ -486,11 +493,13 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
 
     m.assert_called_with(self.chroot_path)
     m2.assert_called_with(self.chroot_path, '/dev/loop1')
+    m3.assert_called_with('/dev/loop1')
 
   def testDevOnlyCleanup(self):
     m = self.PatchObject(osutils, 'UmountTree')
     m2 = self.PatchObject(cros_sdk_lib, 'FindVolumeGroupForDevice')
     m2.return_value = 'cros_chroot_001'
+    m3 = self.PatchObject(cros_sdk_lib, '_RescanDeviceLvmMetadata')
 
     proc_mounts = os.path.join(self.tempdir, 'proc_mounts')
     with open(proc_mounts, 'w') as f:
@@ -507,6 +516,7 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
 
     m.assert_called_with(self.chroot_path)
     m2.assert_called_with(self.chroot_path, '/dev/loop1')
+    m3.assert_called_with('/dev/loop1')
 
   def testNothingCleanup(self):
     m = self.PatchObject(osutils, 'UmountTree')

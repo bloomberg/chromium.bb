@@ -135,7 +135,11 @@ def _AttachDeviceToFile(chroot_image):
   # Result should be '/dev/loopN\n' for whatever loop device is chosen.
   result = cros_build_lib.SudoRunCommand(
       cmd, capture_output=True, print_cmd=False)
-  return result.output.strip()
+  chroot_dev = result.output.strip()
+
+  # Force rescanning the new device in case lvmetad doesn't pick it up.
+  _RescanDeviceLvmMetadata(chroot_dev)
+  return chroot_dev
 
 
 def MountChroot(chroot=None, buildroot=None, create=True,
@@ -373,3 +377,26 @@ def CleanupChrootMount(chroot=None, buildroot=None, delete_image=False,
     cros_build_lib.SudoRunCommand(cmd, capture_output=True, print_cmd=False)
   if delete_image:
     osutils.SafeUnlink(chroot_img)
+  if chroot_dev:
+    # Force a rescan after everything is gone to make sure lvmetad is updated.
+    _RescanDeviceLvmMetadata(chroot_dev)
+
+
+def _RescanDeviceLvmMetadata(chroot_dev):
+  """Forces lvmetad to rescan a device.
+
+  After attaching or detaching a loopback device, lvmetad is supposed to
+  automatically scan it.  This doesn't always happen reliably, so this function
+  lets you force an LVM rescan.  This is intended for cases where the whole
+  device will be used as an LVM PV, not for cases where you want to rescan a
+  device's partition table.  For manipulating loopback device partitions, see
+  the image_lib.LoopbackPartitions class.
+
+  Args:
+    chroot_dev: Full path to the device that should be rescanned.
+  """
+  # This may fail if lvmetad isn't in use, but it's faster to ignore the
+  # exit code than to check if we should actually run the command.
+  cmd = ['pvscan', '--cache', chroot_dev]
+  cros_build_lib.SudoRunCommand(
+      cmd, capture_output=True, print_cmd=False, error_code_ok=True)
