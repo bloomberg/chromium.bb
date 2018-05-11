@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,18 +27,14 @@ int UDPSocketTestHelper::ConnectSync(const net::IPEndPoint& remote_addr,
   int net_error = net::ERR_FAILED;
   socket_->get()->Connect(
       remote_addr, std::move(options),
-      base::BindOnce(
-          [](base::RunLoop* run_loop, int* result_out,
-             net::IPEndPoint* local_addr_out, int result,
-             const base::Optional<net::IPEndPoint>& local_addr) {
-            *result_out = result;
+      base::BindLambdaForTesting(
+          [&](int result, const base::Optional<net::IPEndPoint>& local_addr) {
+            net_error = result;
             if (local_addr) {
               *local_addr_out = local_addr.value();
             }
-            run_loop->Quit();
-          },
-          base::Unretained(&run_loop), base::Unretained(&net_error),
-          base::Unretained(local_addr_out)));
+            run_loop.Quit();
+          }));
   run_loop.Run();
   return net_error;
 }
@@ -49,18 +46,14 @@ int UDPSocketTestHelper::BindSync(const net::IPEndPoint& local_addr,
   int net_error = net::ERR_FAILED;
   socket_->get()->Bind(
       local_addr, std::move(options),
-      base::BindOnce(
-          [](base::RunLoop* run_loop, int* result_out,
-             net::IPEndPoint* local_addr_out, int result,
-             const base::Optional<net::IPEndPoint>& local_addr) {
-            *result_out = result;
+      base::BindLambdaForTesting(
+          [&](int result, const base::Optional<net::IPEndPoint>& local_addr) {
+            net_error = result;
             if (local_addr) {
               *local_addr_out = local_addr.value();
             }
-            run_loop->Quit();
-          },
-          base::Unretained(&run_loop), base::Unretained(&net_error),
-          base::Unretained(local_addr_out)));
+            run_loop.Quit();
+          }));
   run_loop.Run();
   return net_error;
 }
@@ -72,12 +65,10 @@ int UDPSocketTestHelper::SendToSync(const net::IPEndPoint& remote_addr,
   socket_->get()->SendTo(
       remote_addr, input,
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-      base::BindOnce(
-          [](base::RunLoop* run_loop, int* result_out, int result) {
-            *result_out = result;
-            run_loop->Quit();
-          },
-          base::Unretained(&run_loop), base::Unretained(&net_error)));
+      base::BindLambdaForTesting([&](int result) {
+        net_error = result;
+        run_loop.Quit();
+      }));
   run_loop.Run();
   return net_error;
 }
@@ -88,12 +79,10 @@ int UDPSocketTestHelper::SendSync(const std::vector<uint8_t>& input) {
   socket_->get()->Send(
       input,
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-      base::BindOnce(
-          [](base::RunLoop* run_loop, int* result_out, int result) {
-            *result_out = result;
-            run_loop->Quit();
-          },
-          base::Unretained(&run_loop), base::Unretained(&net_error)));
+      base::BindLambdaForTesting([&](int result) {
+        net_error = result;
+        run_loop.Quit();
+      }));
   run_loop.Run();
   return net_error;
 }
@@ -101,14 +90,11 @@ int UDPSocketTestHelper::SendSync(const std::vector<uint8_t>& input) {
 int UDPSocketTestHelper::SetBroadcastSync(bool broadcast) {
   base::RunLoop run_loop;
   int net_error = net::ERR_FAILED;
-  socket_->get()->SetBroadcast(
-      broadcast,
-      base::BindOnce(
-          [](base::RunLoop* run_loop, int* result_out, int result) {
-            *result_out = result;
-            run_loop->Quit();
-          },
-          base::Unretained(&run_loop), base::Unretained(&net_error)));
+  socket_->get()->SetBroadcast(broadcast,
+                               base::BindLambdaForTesting([&](int result) {
+                                 net_error = result;
+                                 run_loop.Quit();
+                               }));
   run_loop.Run();
   return net_error;
 }
@@ -116,14 +102,11 @@ int UDPSocketTestHelper::SetBroadcastSync(bool broadcast) {
 int UDPSocketTestHelper::JoinGroupSync(const net::IPAddress& group_address) {
   base::RunLoop run_loop;
   int net_error = net::ERR_FAILED;
-  socket_->get()->JoinGroup(
-      group_address,
-      base::BindOnce(
-          [](base::RunLoop* run_loop, int* result_out, int result) {
-            *result_out = result;
-            run_loop->Quit();
-          },
-          base::Unretained(&run_loop), base::Unretained(&net_error)));
+  socket_->get()->JoinGroup(group_address,
+                            base::BindLambdaForTesting([&](int result) {
+                              net_error = result;
+                              run_loop.Quit();
+                            }));
   run_loop.Run();
   return net_error;
 }
@@ -131,14 +114,11 @@ int UDPSocketTestHelper::JoinGroupSync(const net::IPAddress& group_address) {
 int UDPSocketTestHelper::LeaveGroupSync(const net::IPAddress& group_address) {
   base::RunLoop run_loop;
   int net_error = net::ERR_FAILED;
-  socket_->get()->LeaveGroup(
-      group_address,
-      base::BindOnce(
-          [](base::RunLoop* run_loop, int* result_out, int result) {
-            *result_out = result;
-            run_loop->Quit();
-          },
-          base::Unretained(&run_loop), base::Unretained(&net_error)));
+  socket_->get()->LeaveGroup(group_address,
+                             base::BindLambdaForTesting([&](int result) {
+                               net_error = result;
+                               run_loop.Quit();
+                             }));
   run_loop.Run();
   return net_error;
 }

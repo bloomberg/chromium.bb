@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
@@ -148,17 +149,13 @@ class TestServer {
     factory_.CreateTCPServerSocket(
         server_addr_, backlog, TRAFFIC_ANNOTATION_FOR_TESTS,
         mojo::MakeRequest(&server_socket_),
-        base::BindOnce(
-            [](base::RunLoop* run_loop, int* result_out,
-               net::IPEndPoint* local_addr_out, int result,
-               const base::Optional<net::IPEndPoint>& local_addr) {
-              *result_out = result;
+        base::BindLambdaForTesting(
+            [&](int result, const base::Optional<net::IPEndPoint>& local_addr) {
+              net_error = result;
               if (local_addr)
-                *local_addr_out = local_addr.value();
-              run_loop->Quit();
-            },
-            base::Unretained(&run_loop), base::Unretained(&net_error),
-            base::Unretained(&server_addr_)));
+                server_addr_ = local_addr.value();
+              run_loop.Quit();
+            }));
     run_loop.Run();
     EXPECT_EQ(net::OK, net_error);
   }
@@ -317,19 +314,15 @@ class TCPSocketTest : public testing::Test {
     factory_->CreateTCPConnectedSocket(
         local_addr, remote_addr_list, TRAFFIC_ANNOTATION_FOR_TESTS,
         std::move(request), std::move(observer),
-        base::BindOnce(
-            [](base::RunLoop* run_loop, int* result_out,
-               mojo::ScopedDataPipeConsumerHandle* consumer_handle,
-               mojo::ScopedDataPipeProducerHandle* producer_handle, int result,
-               mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
-               mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
-              *result_out = result;
-              *consumer_handle = std::move(receive_pipe_handle);
-              *producer_handle = std::move(send_pipe_handle);
-              run_loop->Quit();
-            },
-            base::Unretained(&run_loop), base::Unretained(&net_error),
-            receive_pipe_handle_out, send_pipe_handle_out));
+        base::BindLambdaForTesting(
+            [&](int result,
+                mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
+                mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
+              net_error = result;
+              *receive_pipe_handle_out = std::move(receive_pipe_handle);
+              *send_pipe_handle_out = std::move(send_pipe_handle);
+              run_loop.Quit();
+            }));
     run_loop.Run();
     return net_error;
   }
@@ -715,27 +708,21 @@ TEST_P(TCPSocketWithMockSocketTest, ServerAcceptWithObserverReadError) {
                                    std::move(mock_server_socket));
 
   auto callback = std::make_unique<net::TestCompletionCallback>();
-  mojom::TCPConnectedSocketPtr connected_socket;
+  mojom::TCPConnectedSocketPtr connected_socket_result;
   mojo::ScopedDataPipeConsumerHandle receive_handle;
   mojo::ScopedDataPipeProducerHandle send_handle;
   server_socket->Accept(
       observer()->GetObserverPtr(),
-      base::BindOnce(
-          [](net::CompletionOnceCallback callback,
-             mojom::TCPConnectedSocketPtr* socket_out,
-             mojo::ScopedDataPipeConsumerHandle* consumer_handle,
-             mojo::ScopedDataPipeProducerHandle* producer_handle, int result,
-             const base::Optional<net::IPEndPoint>& remote_addr,
-             mojom::TCPConnectedSocketPtr connected_socket,
-             mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
-             mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
-            std::move(callback).Run(result);
-            *socket_out = std::move(connected_socket);
-            *consumer_handle = std::move(receive_pipe_handle);
-            *producer_handle = std::move(send_pipe_handle);
-          },
-          std::move(callback->callback()), &connected_socket, &receive_handle,
-          &send_handle));
+      base::BindLambdaForTesting(
+          [&](int result, const base::Optional<net::IPEndPoint>& remote_addr,
+              mojom::TCPConnectedSocketPtr connected_socket,
+              mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
+              mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
+            std::move(callback->callback()).Run(result);
+            connected_socket_result = std::move(connected_socket);
+            receive_handle = std::move(receive_pipe_handle);
+            send_handle = std::move(send_pipe_handle);
+          }));
   EXPECT_EQ(net::OK, callback->WaitForResult());
 
   base::RunLoop().RunUntilIdle();
@@ -769,27 +756,21 @@ TEST_P(TCPSocketWithMockSocketTest, ServerAcceptWithObserverWriteError) {
                                    std::move(mock_server_socket));
 
   auto callback = std::make_unique<net::TestCompletionCallback>();
-  mojom::TCPConnectedSocketPtr connected_socket;
+  mojom::TCPConnectedSocketPtr connected_socket_result;
   mojo::ScopedDataPipeConsumerHandle receive_handle;
   mojo::ScopedDataPipeProducerHandle send_handle;
   server_socket->Accept(
       observer()->GetObserverPtr(),
-      base::BindOnce(
-          [](net::CompletionOnceCallback callback,
-             mojom::TCPConnectedSocketPtr* socket_out,
-             mojo::ScopedDataPipeConsumerHandle* consumer_handle,
-             mojo::ScopedDataPipeProducerHandle* producer_handle, int result,
-             const base::Optional<net::IPEndPoint>& remote_addr,
-             mojom::TCPConnectedSocketPtr connected_socket,
-             mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
-             mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
-            std::move(callback).Run(result);
-            *socket_out = std::move(connected_socket);
-            *consumer_handle = std::move(receive_pipe_handle);
-            *producer_handle = std::move(send_pipe_handle);
-          },
-          std::move(callback->callback()), &connected_socket, &receive_handle,
-          &send_handle));
+      base::BindLambdaForTesting(
+          [&](int result, const base::Optional<net::IPEndPoint>& remote_addr,
+              mojom::TCPConnectedSocketPtr connected_socket,
+              mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
+              mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
+            std::move(callback->callback()).Run(result);
+            connected_socket_result = std::move(connected_socket);
+            receive_handle = std::move(receive_pipe_handle);
+            send_handle = std::move(send_pipe_handle);
+          }));
   EXPECT_EQ(net::OK, callback->WaitForResult());
 
   const char kTestMsg[] = "abcdefghij";
