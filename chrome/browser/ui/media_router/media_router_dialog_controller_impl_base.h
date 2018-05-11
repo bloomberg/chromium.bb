@@ -13,7 +13,7 @@ class MediaRouterActionController;
 
 namespace media_router {
 
-class MediaRouterUI;
+class MediaRouterUIBase;
 
 // The base class for desktop implementations of MediaRouterDialogController.
 // This class is not thread safe and must be called on the UI thread.
@@ -39,8 +39,8 @@ class MediaRouterDialogControllerImplBase : public MediaRouterDialogController {
   explicit MediaRouterDialogControllerImplBase(
       content::WebContents* web_contents);
 
-  // TODO(crbug.com/826091): Replace MediaRouterUI with MediaRouterUIBase.
-  void InitializeMediaRouterUI(MediaRouterUI* media_router_ui);
+  // Called by subclasses to initialize |media_router_ui| that they use.
+  void InitializeMediaRouterUI(MediaRouterUIBase* media_router_ui);
 
  private:
   // |action_| refers to the MediaRouterAction on the toolbar, rather than

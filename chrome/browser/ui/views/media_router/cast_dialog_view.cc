@@ -65,13 +65,13 @@ base::string16 CastDialogView::GetWindowTitle() const {
 
 base::string16 CastDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  if (sink_buttons_.empty())
-    return base::string16();
-  return sink_buttons_.at(selected_sink_index_)->GetActionText();
+  return sink_buttons_.empty()
+             ? base::string16()
+             : sink_buttons_.at(selected_sink_index_)->GetActionText();
 }
 
 int CastDialogView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
+  return sink_buttons_.empty() ? ui::DIALOG_BUTTON_NONE : ui::DIALOG_BUTTON_OK;
 }
 
 bool CastDialogView::Accept() {
