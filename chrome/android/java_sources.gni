@@ -1433,6 +1433,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/RadioButtonLayout.java",
   "java/src/org/chromium/chrome/browser/widget/RadioButtonWithDescription.java",
   "java/src/org/chromium/chrome/browser/widget/RoundedIconGenerator.java",
+  "java/src/org/chromium/chrome/browser/widget/TextViewWithCompoundDrawables.java",
   "java/src/org/chromium/chrome/browser/widget/ThumbnailDiskStorage.java",
   "java/src/org/chromium/chrome/browser/widget/ThumbnailGenerator.java",
   "java/src/org/chromium/chrome/browser/widget/ThumbnailGeneratorCallback.java",
