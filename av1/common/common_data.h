@@ -47,14 +47,6 @@ static const uint8_t block_size_high[BLOCK_SIZES_ALL] = {
   32, 64, 128, 64, 128, 16, 4,  32, 8,  64, 16
 };
 
-static const uint8_t num_8x8_blocks_wide_lookup[BLOCK_SIZES_ALL] = {
-  1, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 8, 16, 16, 1, 2, 1, 4, 2, 8
-};
-
-static const uint8_t num_8x8_blocks_high_lookup[BLOCK_SIZES_ALL] = {
-  1, 1, 1, 1, 2, 1, 2, 4, 2, 4, 8, 4, 8, 16, 8, 16, 2, 1, 4, 1, 8, 2
-};
-
 // AOMMIN(3, AOMMIN(b_width_log2(bsize), b_height_log2(bsize)))
 static const uint8_t size_group_lookup[BLOCK_SIZES_ALL] = {
   0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 0, 0, 1, 1, 2, 2
