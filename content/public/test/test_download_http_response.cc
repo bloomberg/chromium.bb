@@ -121,7 +121,6 @@ TestDownloadHttpResponse::Parameters::Parameters()
       size(102400),
       pattern_generator_seed(1),
       support_byte_ranges(true),
-      support_partial_response(true),
       connection_type(
           net::HttpResponseInfo::ConnectionInfo::CONNECTION_INFO_UNKNOWN) {}
 
@@ -137,7 +136,6 @@ TestDownloadHttpResponse::Parameters::Parameters(Parameters&& that)
       size(that.size),
       pattern_generator_seed(that.pattern_generator_seed),
       support_byte_ranges(that.support_byte_ranges),
-      support_partial_response(that.support_partial_response),
       connection_type(that.connection_type),
       static_response(std::move(that.static_response)),
       injected_errors(std::move(that.injected_errors)),
@@ -148,12 +146,11 @@ TestDownloadHttpResponse::Parameters::Parameters(Parameters&& that)
 TestDownloadHttpResponse::Parameters& TestDownloadHttpResponse::Parameters::
 operator=(Parameters&& that) {
   etag = std::move(that.etag);
-  last_modified = std::move(that.last_modified);
+  last_modified = std::move(that.etag);
   content_type = std::move(that.content_type);
   size = that.size;
   pattern_generator_seed = that.pattern_generator_seed;
   support_byte_ranges = that.support_byte_ranges;
-  support_partial_response = that.support_partial_response;
   static_response = std::move(that.static_response);
   injected_errors = std::move(that.injected_errors);
   inject_error_cb = that.inject_error_cb;
@@ -300,8 +297,7 @@ void TestDownloadHttpResponse::ParseRequestHeader() {
   // Adjust the response range according to request range. The first byte offset
   // of the request may be larger than entity body size.
   request_range_ = ranges[0];
-  if (parameters_.support_partial_response)
-    range_.set_first_byte_position(request_range_.first_byte_position());
+  range_.set_first_byte_position(request_range_.first_byte_position());
   range_.ComputeBounds(parameters_.size);
 
   response_sent_offset_ = range_.first_byte_position();
@@ -329,7 +325,7 @@ void TestDownloadHttpResponse::SendResponseHeaders() {
 std::string TestDownloadHttpResponse::GetDefaultResponseHeaders() {
   std::string headers;
   // Send partial response.
-  if (parameters_.support_partial_response && parameters_.support_byte_ranges &&
+  if (parameters_.support_byte_ranges &&
       request_.headers.find(net::HttpRequestHeaders::kIfRange) !=
           request_.headers.end() &&
       request_.headers.at(net::HttpRequestHeaders::kIfRange) ==
@@ -339,7 +335,7 @@ std::string TestDownloadHttpResponse::GetDefaultResponseHeaders() {
   }
 
   // Send precondition failed for "If-Match" request header.
-  if (parameters_.support_partial_response && parameters_.support_byte_ranges &&
+  if (parameters_.support_byte_ranges &&
       request_.headers.find(net::HttpRequestHeaders::kIfMatch) !=
           request_.headers.end()) {
     if (request_.headers.at(net::HttpRequestHeaders::kIfMatch) !=

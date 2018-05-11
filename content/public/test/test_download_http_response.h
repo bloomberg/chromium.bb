@@ -108,12 +108,6 @@ class TestDownloadHttpResponse {
     // response, or contains 'Content-Range' header for HTTP 206 response.
     bool support_byte_ranges;
 
-    // Whether the server supports partial range responses. A server can claim
-    // it support byte ranges, but actually doesn't send partial responses. In
-    // that case, Set |support_byte_ranges| to true and this variable to false
-    // to simulate the case.
-    bool support_partial_response;
-
     // The connection type in the response.
     net::HttpResponseInfo::ConnectionInfo connection_type;
 
