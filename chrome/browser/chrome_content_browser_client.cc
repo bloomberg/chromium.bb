@@ -28,6 +28,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/after_startup_task_utils.h"
@@ -3276,9 +3277,8 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
     // process handle is not yet available at this point so pass in a callback
     // to allow it to be retrieved at the time the interface is actually
     // created. It is safe to pass a raw pointer to |render_process_host|: the
-    // callback will be invoked in the context of ModuleDatabase::GetInstance,
-    // which is invoked by Mojo initialization, which occurs while the
-    // |render_process_host| is alive.
+    // callback will be invoked in the context of Mojo initialization, which
+    // occurs while the |render_process_host| is alive.
     auto get_process = base::BindRepeating(
         [](content::RenderProcessHost* host) -> base::ProcessHandle {
           return host->GetProcess().Handle();
@@ -3291,7 +3291,9 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
                             std::move(get_process),
                             content::PROCESS_TYPE_RENDERER,
                             base::Unretained(ModuleDatabase::GetInstance())),
-        ui_task_runner);
+        base::CreateSequencedTaskRunnerWithTraits(
+            {base::TaskPriority::BACKGROUND,
+             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
   }
 #endif
 

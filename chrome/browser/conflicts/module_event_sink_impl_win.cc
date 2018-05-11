@@ -8,6 +8,7 @@
 
 #include <psapi.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -111,7 +112,6 @@ void ModuleEventSinkImpl::Create(
     content::ProcessType process_type,
     ModuleDatabase* module_database,
     mojom::ModuleEventSinkRequest request) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::ProcessHandle process = get_process_handle.Run();
   auto module_event_sink_impl = std::make_unique<ModuleEventSinkImpl>(
       process, process_type, module_database);
