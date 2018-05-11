@@ -2801,6 +2801,7 @@ crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-009.html [ Failure ]
 crbug.com/626703 external/wpt/console/console-countReset-logging-manual.html [ Skip ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/accelerometer/Accelerometer.https.html [ Timeout ]
+crbug.com/626703 [ Linux Win7 ] external/wpt/accelerometer/Accelerometer.https.html [ Failure Pass ]
 crbug.com/626703 [ Retina ] external/wpt/pointerevents/pointerevent_touch-action-button-test_touch-manual.html [ Skip ]
 crbug.com/626703 [ Retina ] external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ Skip ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/pointerevents/pointerevent_touch-action-button-test_touch-manual.html [ Skip ]
