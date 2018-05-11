@@ -966,6 +966,8 @@
     },
     {
       name: "PictureInPictureAPI",
+      origin_trial_feature_name: "PictureInPictureAPI",
+      origin_trial_os: ["chromeos", "linux", "macosx", "win"],
       status: "experimental",
     },
     {

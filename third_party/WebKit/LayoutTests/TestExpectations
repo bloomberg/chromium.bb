@@ -4558,6 +4558,9 @@ crbug.com/811977 virtual/video-surface-layer/media/picture-in-picture/picture-in
 crbug.com/806249 virtual/video-surface-layer/media/picture-in-picture/controls/picture-in-picture-button.html [ Failure ]
 crbug.com/806249 virtual/video-surface-layer/media/picture-in-picture/controls/picture-in-picture-video-with-audio-only-button.html [ Failure ]
 
+# TODO(fbeaufort) Remove when Picture-in-Picture Origin Trial for Desktop ends.
+crbug.com/806249 [ Android ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/picture-in-picture-api-origin-trial-interfaces.html [ Failure ]
+
 # Sheriff 2018-02-26
 crbug.com/816475 [ Win7 Linux ] external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure Pass ]
 crbug.com/816914 [ Mac ] fast/canvas/canvas-drawImage-live-video.html [ Failure Pass ]
