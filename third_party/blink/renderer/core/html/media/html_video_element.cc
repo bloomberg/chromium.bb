@@ -558,6 +558,9 @@ void HTMLVideoElement::PictureInPictureStarted() {
 void HTMLVideoElement::PictureInPictureStopped() {
   if (picture_in_picture_interstitial_)
     picture_in_picture_interstitial_->Hide();
+
+  PictureInPictureController::From(GetDocument())
+      .OnExitedPictureInPicture(nullptr);
 }
 
 bool HTMLVideoElement::IsInPictureInPictureMode() {

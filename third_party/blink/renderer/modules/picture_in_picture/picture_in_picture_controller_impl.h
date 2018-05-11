@@ -58,9 +58,8 @@ class PictureInPictureControllerImpl : public PictureInPictureController {
   // Exit Picture-in-Picture for a video element and resolve promise if any.
   void ExitPictureInPicture(HTMLVideoElement*, ScriptPromiseResolver*);
 
-  // Meant to be called internally when an element has exited successfully
-  // Picture-in-Picture.
-  void OnExitedPictureInPicture(ScriptPromiseResolver*);
+  // Implementation of PictureInPictureController.
+  void OnExitedPictureInPicture(ScriptPromiseResolver*) override;
 
   // Returns element currently in Picture-in-Picture if any. Null otherwise.
   Element* PictureInPictureElement(TreeScope&) const;

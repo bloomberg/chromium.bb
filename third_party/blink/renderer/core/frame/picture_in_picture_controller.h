@@ -44,6 +44,9 @@ class CORE_EXPORT PictureInPictureController
   // controller is allowed to request Picture-in-Picture.
   virtual Status IsElementAllowed(const HTMLVideoElement&) const = 0;
 
+  // Should be called when an element has exited Picture-in-Picture.
+  virtual void OnExitedPictureInPicture(ScriptPromiseResolver*) = 0;
+
   void Trace(blink::Visitor*) override;
 
  protected:

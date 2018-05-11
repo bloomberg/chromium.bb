@@ -92,8 +92,8 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
     ScriptPromiseResolver* resolver,
     const WebSize& picture_in_picture_window_size) {
   if (IsElementAllowed(*element) == Status::kDisabledByAttribute) {
-    resolver->Reject(DOMException::Create(kInvalidStateError, ""));
-    resolver = nullptr;
+    if (resolver)
+      resolver->Reject(DOMException::Create(kInvalidStateError, ""));
     // TODO(crbug.com/806249): Test that WMPI sends the message.
     element->exitPictureInPicture(base::DoNothing());
     return;
@@ -111,7 +111,8 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
   picture_in_picture_window_ = new PictureInPictureWindow(
       GetSupplementable(), picture_in_picture_window_size);
 
-  resolver->Resolve(picture_in_picture_window_);
+  if (resolver)
+    resolver->Resolve(picture_in_picture_window_);
 }
 
 void PictureInPictureControllerImpl::ExitPictureInPicture(
@@ -124,13 +125,21 @@ void PictureInPictureControllerImpl::ExitPictureInPicture(
 
 void PictureInPictureControllerImpl::OnExitedPictureInPicture(
     ScriptPromiseResolver* resolver) {
+  DCHECK(GetSupplementable());
+
+  // Bail out if document is not active.
+  if (!GetSupplementable()->IsActive())
+    return;
+
   if (picture_in_picture_window_)
     picture_in_picture_window_->OnClose();
 
-  HTMLVideoElement* element = picture_in_picture_element_;
-  picture_in_picture_element_ = nullptr;
-  element->DispatchEvent(
-      Event::CreateBubble(EventTypeNames::leavepictureinpicture));
+  if (picture_in_picture_element_) {
+    HTMLVideoElement* element = picture_in_picture_element_;
+    picture_in_picture_element_ = nullptr;
+    element->DispatchEvent(
+        Event::CreateBubble(EventTypeNames::leavepictureinpicture));
+  }
 
   if (resolver)
     resolver->Resolve();
