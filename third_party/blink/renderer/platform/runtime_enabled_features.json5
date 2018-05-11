@@ -1260,7 +1260,7 @@
     },
     {
       name: "UnifiedTouchAdjustment",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "UserActivationV2",

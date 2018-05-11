@@ -19,9 +19,9 @@ Wheel: 0+1
 TouchStart: 1+1
 TouchMove: 0+0
 TouchEnd: 0+0
-GestureTapDown: 1+2
-GestureShowPress: 1+2
-GestureTap: 1+4
+GestureTapDown: 0+1
+GestureShowPress: 0+1
+GestureTap: 0+3
 GestureScrollBegin: 0+1
 GestureTapCancel: 0+1
 GestureScrollUpdate: 0+0
@@ -38,9 +38,9 @@ Wheel: 0+1 0+1 0+1
 TouchStart: 2+0 2+0 1+1
 TouchMove: 0+0 0+0 0+0
 TouchEnd: 0+0 0+0 0+0
-GestureTapDown: 2+0 2+0 1+2
-GestureShowPress: 2+0 2+0 1+2
-GestureTap: 2+0 2+0 1+4
+GestureTapDown: 1+0 1+0 0+1
+GestureShowPress: 1+0 1+0 0+1
+GestureTap: 1+0 1+0 0+3
 GestureScrollBegin: 0+1 0+1 0+1
 GestureTapCancel: 1+0 1+0 0+1
 GestureScrollUpdate: 0+0 0+0 0+0
@@ -57,9 +57,9 @@ Wheel: 0+1 0+1 0+0
 TouchStart: 2+0 1+1 1+0
 TouchMove: 0+0 0+0 0+0
 TouchEnd: 0+0 0+0 0+0
-GestureTapDown: 2+0 1+1 1+0
-GestureShowPress: 2+0 1+1 1+0
-GestureTap: 2+0 1+3 1+0
+GestureTapDown: 1+0 0+1 0+0
+GestureShowPress: 1+0 0+1 0+0
+GestureTap: 1+0 0+3 0+0
 GestureScrollBegin: 0+1 0+1 0+0
 GestureTapCancel: 1+0 0+1 0+0
 GestureScrollUpdate: 0+0 0+0 0+0
@@ -76,9 +76,9 @@ Wheel: 0+1
 TouchStart: 1+1
 TouchMove: 0+0
 TouchEnd: 0+0
-GestureTapDown: 1+2
-GestureShowPress: 1+2
-GestureTap: 1+4 [with multiTargetTapNotification: 2+4]
+GestureTapDown: 0+1
+GestureShowPress: 0+1
+GestureTap: 0+3 [with multiTargetTapNotification: 1+3]
 GestureScrollBegin: 0+1
 GestureTapCancel: 0+1
 GestureScrollUpdate: 0+0

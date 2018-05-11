@@ -330,7 +330,7 @@ void PointerEventManager::AdjustTouchPointerEvent(
          WebPointerProperties::PointerType::kTouch);
 
   LayoutSize padding = GetHitTestRectForAdjustment(
-      IntSize(pointer_event.width / 2, pointer_event.height / 2));
+      LayoutSize(pointer_event.width, pointer_event.height) * 0.5f);
 
   if (padding.IsEmpty())
     return;
