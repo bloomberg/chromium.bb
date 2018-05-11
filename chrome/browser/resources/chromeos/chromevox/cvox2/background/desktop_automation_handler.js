@@ -97,7 +97,7 @@ DesktopAutomationHandler = function(node) {
  * Time to wait until processing more value changed events.
  * @const {number}
  */
-DesktopAutomationHandler.VMIN_VALUE_CHANGE_DELAY_MS = 500;
+DesktopAutomationHandler.VMIN_VALUE_CHANGE_DELAY_MS = 50;
 
 /**
  * Controls announcement of non-user-initiated events.
@@ -460,8 +460,10 @@ DesktopAutomationHandler.prototype = {
         evt.target.state[StateType.EDITABLE])
       return;
 
-    // Delegate to the edit text handler if this is an editable.
-    if (evt.target.state[StateType.EDITABLE]) {
+    // Delegate to the edit text handler if this is an editable, with the
+    // exception of spin buttons.
+    if (evt.target.state[StateType.EDITABLE] &&
+        evt.target.role != RoleType.SPIN_BUTTON) {
       this.onEditableChanged_(evt);
       return;
     }
@@ -478,10 +480,10 @@ DesktopAutomationHandler.prototype = {
       this.lastValueChanged_ = new Date();
 
       var output = new Output();
+      output.withQueueMode(cvox.QueueMode.CATEGORY_FLUSH);
 
       if (fromDesktop &&
           (!this.lastValueTarget_ || this.lastValueTarget_ !== t)) {
-        output.withQueueMode(cvox.QueueMode.CATEGORY_FLUSH);
         var range = cursors.Range.fromNode(t);
         output.withRichSpeechAndBraille(
             range, range, Output.EventType.NAVIGATE);
