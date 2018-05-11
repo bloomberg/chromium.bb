@@ -19,6 +19,9 @@ from annotation_tools import NetworkTrafficAnnotationTools
 # //tools/traffic_annotation/OWNERS.
 TEST_IS_ENABLED = True
 
+# Threshold for the change list size to trigger full test.
+CHANGELIST_SIZE_TO_TRIGGER_FULL_TEST = 100
+
 
 class NetworkTrafficAnnotationChecker():
   EXTENSIONS = ['.cc', '.mm',]
@@ -67,6 +70,11 @@ class NetworkTrafficAnnotationChecker():
               file_path)]
       if not file_paths:
         return 0
+      # If the number of changed files in the CL exceeds a threshold, trigger
+      # full test to avoid sending very long list of arguments and possible
+      # failure in argument buffers.
+      if len(file_paths) > CHANGELIST_SIZE_TO_TRIGGER_FULL_TEST:
+        file_paths = []
 
     args = ["--test-only", "--limit=%i" % limit, "--error-resilient"] + \
            file_paths
