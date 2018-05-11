@@ -54,15 +54,13 @@ declare_args() {
   # LockImpl::PriorityInheritanceAvailable() in lock_impl_posix.cc for the
   # platform requirements to safely enable priority inheritance.
   enable_mutex_priority_inheritance = false
-
-  # Determines whether libevent should be dep.
-  dep_libevent = !is_fuchsia && !is_win && !(is_nacl && !is_nacl_nonsfi)
 }
 
-declare_args() {
-  # Determines whether message_pump_libevent should be used.
-  use_libevent = dep_libevent && !is_ios
-}
+# Determines whether libevent should be dep.
+dep_libevent = !is_fuchsia && !is_win && !(is_nacl && !is_nacl_nonsfi)
+
+# Determines whether message_pump_libevent should be used.
+use_libevent = dep_libevent && !is_ios
 
 if (is_android) {
   import("//build/config/android/rules.gni")
