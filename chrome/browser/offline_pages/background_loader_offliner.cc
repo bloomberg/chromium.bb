@@ -90,10 +90,10 @@ void RecordOffliningPreviewsUMA(const ClientId& client_id,
 }
 
 void HandleLoadTerminationCancel(
-    const Offliner::CompletionCallback& completion_callback,
+    Offliner::CompletionCallback completion_callback,
     const SavePageRequest& canceled_request) {
-  completion_callback.Run(canceled_request,
-                          Offliner::RequestStatus::FOREGROUND_CANCELED);
+  std::move(completion_callback)
+      .Run(canceled_request, Offliner::RequestStatus::FOREGROUND_CANCELED);
 }
 
 }  // namespace
@@ -142,7 +142,7 @@ BackgroundLoaderOffliner* BackgroundLoaderOffliner::FromWebContents(
 
 bool BackgroundLoaderOffliner::LoadAndSave(
     const SavePageRequest& request,
-    const CompletionCallback& completion_callback,
+    CompletionCallback completion_callback,
     const ProgressCallback& progress_callback) {
   DCHECK(completion_callback);
   DCHECK(progress_callback);
@@ -208,7 +208,7 @@ bool BackgroundLoaderOffliner::LoadAndSave(
 
   // Track copy of pending request.
   pending_request_.reset(new SavePageRequest(request));
-  completion_callback_ = completion_callback;
+  completion_callback_ = std::move(completion_callback);
   progress_callback_ = progress_callback;
 
   if (IsOfflinePagesRenovationsEnabled()) {
@@ -234,7 +234,7 @@ bool BackgroundLoaderOffliner::LoadAndSave(
   return true;
 }
 
-bool BackgroundLoaderOffliner::Cancel(const CancelCallback& callback) {
+bool BackgroundLoaderOffliner::Cancel(CancelCallback callback) {
   DCHECK(pending_request_);
   // We ignore the case where pending_request_ is not set, but given the checks
   // in RequestCoordinator this should not happen.
@@ -246,13 +246,13 @@ bool BackgroundLoaderOffliner::Cancel(const CancelCallback& callback) {
   // cancel completed once the SavePage operation returns.
   if (save_state_ != NONE) {
     save_state_ = DELETE_AFTER_SAVE;
-    cancel_callback_ = callback;
+    cancel_callback_ = std::move(callback);
     return true;
   }
 
   // Post the cancel callback right after this call concludes.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, *pending_request_.get()));
+      FROM_HERE, base::BindOnce(std::move(callback), *pending_request_.get()));
   ResetState();
   return true;
 }
@@ -261,7 +261,8 @@ void BackgroundLoaderOffliner::TerminateLoadIfInProgress() {
   if (!pending_request_)
     return;
 
-  Cancel(base::Bind(HandleLoadTerminationCancel, completion_callback_));
+  Cancel(base::BindOnce(HandleLoadTerminationCancel,
+                        std::move(completion_callback_)));
 }
 
 bool BackgroundLoaderOffliner::HandleTimeout(int64_t request_id) {
@@ -304,10 +305,10 @@ void BackgroundLoaderOffliner::CanDownload(
 
   callback.Run(should_allow_downloads);
   SavePageRequest request(*pending_request_.get());
-  completion_callback_.Run(request, final_status);
+  std::move(completion_callback_).Run(request, final_status);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&BackgroundLoaderOffliner::ResetState,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&BackgroundLoaderOffliner::ResetState,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BackgroundLoaderOffliner::MarkLoadStartTime() {
@@ -342,13 +343,13 @@ void BackgroundLoaderOffliner::RenderProcessGone(
       case base::TERMINATION_STATUS_OOM:
       case base::TERMINATION_STATUS_PROCESS_CRASHED:
       case base::TERMINATION_STATUS_STILL_RUNNING:
-        completion_callback_.Run(
-            request, Offliner::RequestStatus::LOADING_FAILED_NO_NEXT);
+        std::move(completion_callback_)
+            .Run(request, Offliner::RequestStatus::LOADING_FAILED_NO_NEXT);
         break;
       case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
       default:
-        completion_callback_.Run(request,
-                                 Offliner::RequestStatus::LOADING_FAILED);
+        std::move(completion_callback_)
+            .Run(request, Offliner::RequestStatus::LOADING_FAILED);
     }
     ResetState();
   }
@@ -357,7 +358,8 @@ void BackgroundLoaderOffliner::RenderProcessGone(
 void BackgroundLoaderOffliner::WebContentsDestroyed() {
   if (pending_request_) {
     SavePageRequest request(*pending_request_.get());
-    completion_callback_.Run(request, Offliner::RequestStatus::LOADING_FAILED);
+    std::move(completion_callback_)
+        .Run(request, Offliner::RequestStatus::LOADING_FAILED);
     ResetState();
   }
 }
@@ -453,7 +455,7 @@ void BackgroundLoaderOffliner::StartSnapshot() {
         status = Offliner::RequestStatus::LOADING_FAILED;
     }
 
-    completion_callback_.Run(request, status);
+    std::move(completion_callback_).Run(request, status);
     ResetState();
     return;
   }
@@ -561,13 +563,13 @@ void BackgroundLoaderOffliner::OnPageSaved(SavePageResult save_result,
     save_status = RequestStatus::SAVE_FAILED;
   }
 
-  completion_callback_.Run(request, save_status);
+  std::move(completion_callback_).Run(request, save_status);
 }
 
 void BackgroundLoaderOffliner::DeleteOfflinePageCallback(
     const SavePageRequest& request,
     DeletePageResult result) {
-  cancel_callback_.Run(request);
+  std::move(cancel_callback_).Run(request);
 }
 
 void BackgroundLoaderOffliner::ResetState() {

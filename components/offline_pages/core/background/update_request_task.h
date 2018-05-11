@@ -22,7 +22,7 @@ class UpdateRequestTask : public Task {
  public:
   UpdateRequestTask(RequestQueueStore* store,
                     int64_t request_id,
-                    const RequestQueueStore::UpdateCallback& callback);
+                    RequestQueueStore::UpdateCallback callback);
   ~UpdateRequestTask() override;
 
   // TaskQueue::Task implementation.

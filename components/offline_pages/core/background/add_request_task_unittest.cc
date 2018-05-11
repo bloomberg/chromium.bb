@@ -75,8 +75,8 @@ void AddRequestTaskTest::ClearResults() {
 }
 
 void AddRequestTaskTest::InitializeStore(RequestQueueStore* store) {
-  store->Initialize(base::Bind(&AddRequestTaskTest::InitializeStoreDone,
-                               base::Unretained(this)));
+  store->Initialize(base::BindOnce(&AddRequestTaskTest::InitializeStoreDone,
+                                   base::Unretained(this)));
   PumpLoop();
 }
 
@@ -101,16 +101,16 @@ TEST_F(AddRequestTaskTest, AddSingleRequest) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
-  AddRequestTask task(
-      &store, request_1,
-      base::Bind(&AddRequestTaskTest::AddRequestDone, base::Unretained(this)));
+  AddRequestTask task(&store, request_1,
+                      base::BindOnce(&AddRequestTaskTest::AddRequestDone,
+                                     base::Unretained(this)));
   task.Run();
   PumpLoop();
   EXPECT_TRUE(callback_called());
   EXPECT_EQ(ItemActionStatus::SUCCESS, last_status());
 
-  store.GetRequests(base::Bind(&AddRequestTaskTest::GetRequestsCallback,
-                               base::Unretained(this)));
+  store.GetRequests(base::BindOnce(&AddRequestTaskTest::GetRequestsCallback,
+                                   base::Unretained(this)));
   PumpLoop();
   ASSERT_EQ(1ul, last_requests().size());
   EXPECT_EQ(kRequestId1, last_requests().at(0)->request_id());
@@ -126,9 +126,9 @@ TEST_F(AddRequestTaskTest, AddMultipleRequests) {
   base::Time creation_time_1 = base::Time::Now();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time_1,
                             true);
-  AddRequestTask task(
-      &store, request_1,
-      base::Bind(&AddRequestTaskTest::AddRequestDone, base::Unretained(this)));
+  AddRequestTask task(&store, request_1,
+                      base::BindOnce(&AddRequestTaskTest::AddRequestDone,
+                                     base::Unretained(this)));
   task.Run();
   PumpLoop();
   EXPECT_TRUE(callback_called());
@@ -138,16 +138,16 @@ TEST_F(AddRequestTaskTest, AddMultipleRequests) {
   base::Time creation_time_2 = base::Time::Now();
   SavePageRequest request_2(kRequestId2, kUrl2, kClientId2, creation_time_2,
                             true);
-  AddRequestTask task_2(
-      &store, request_2,
-      base::Bind(&AddRequestTaskTest::AddRequestDone, base::Unretained(this)));
+  AddRequestTask task_2(&store, request_2,
+                        base::BindOnce(&AddRequestTaskTest::AddRequestDone,
+                                       base::Unretained(this)));
   task_2.Run();
   PumpLoop();
   EXPECT_TRUE(callback_called());
   EXPECT_EQ(ItemActionStatus::SUCCESS, last_status());
 
-  store.GetRequests(base::Bind(&AddRequestTaskTest::GetRequestsCallback,
-                               base::Unretained(this)));
+  store.GetRequests(base::BindOnce(&AddRequestTaskTest::GetRequestsCallback,
+                                   base::Unretained(this)));
   PumpLoop();
   ASSERT_EQ(2ul, last_requests().size());
   int request_2_index =
@@ -166,9 +166,9 @@ TEST_F(AddRequestTaskTest, AddDuplicateRequest) {
   base::Time creation_time_1 = base::Time::Now();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time_1,
                             true);
-  AddRequestTask task(
-      &store, request_1,
-      base::Bind(&AddRequestTaskTest::AddRequestDone, base::Unretained(this)));
+  AddRequestTask task(&store, request_1,
+                      base::BindOnce(&AddRequestTaskTest::AddRequestDone,
+                                     base::Unretained(this)));
   task.Run();
   PumpLoop();
   EXPECT_TRUE(callback_called());
@@ -179,16 +179,16 @@ TEST_F(AddRequestTaskTest, AddDuplicateRequest) {
   // This was has the same request ID.
   SavePageRequest request_2(kRequestId1, kUrl2, kClientId2, creation_time_2,
                             true);
-  AddRequestTask task_2(
-      &store, request_2,
-      base::Bind(&AddRequestTaskTest::AddRequestDone, base::Unretained(this)));
-  task.Run();
+  AddRequestTask task_2(&store, request_2,
+                        base::BindOnce(&AddRequestTaskTest::AddRequestDone,
+                                       base::Unretained(this)));
+  task_2.Run();
   PumpLoop();
   EXPECT_TRUE(callback_called());
   EXPECT_EQ(ItemActionStatus::ALREADY_EXISTS, last_status());
 
-  store.GetRequests(base::Bind(&AddRequestTaskTest::GetRequestsCallback,
-                               base::Unretained(this)));
+  store.GetRequests(base::BindOnce(&AddRequestTaskTest::GetRequestsCallback,
+                                   base::Unretained(this)));
   PumpLoop();
   ASSERT_EQ(1ul, last_requests().size());
 }

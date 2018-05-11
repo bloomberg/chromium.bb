@@ -25,7 +25,7 @@ namespace offline_pages {
 class InitializeStoreTask : public Task {
  public:
   InitializeStoreTask(RequestQueueStore* store,
-                      const RequestQueueStore::InitializeCallback& callback);
+                      RequestQueueStore::InitializeCallback callback);
   ~InitializeStoreTask() override;
 
   // TaskQueue::Task implementation.

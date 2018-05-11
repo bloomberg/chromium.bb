@@ -262,8 +262,8 @@ void RequestQueueStoreTestBase::ClearResults() {
 }
 
 void RequestQueueStoreTestBase::InitializeStore(RequestQueueStore* store) {
-  store->Initialize(base::Bind(&RequestQueueStoreTestBase::InitializeCallback,
-                               base::Unretained(this)));
+  store->Initialize(base::BindOnce(
+      &RequestQueueStoreTestBase::InitializeCallback, base::Unretained(this)));
   PumpLoop();
   ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());
   ClearResults();
@@ -387,8 +387,8 @@ TYPED_TEST(RequestQueueStoreTest, UpgradeFromVersion57Store) {
     return;
   this->InitializeStore(store.get());
 
-  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
-                                base::Unretained(this)));
+  store->GetRequests(base::BindOnce(&RequestQueueStoreTestBase::GetRequestsDone,
+                                    base::Unretained(this)));
   this->PumpLoop();
   ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());
   ASSERT_EQ(1u, this->last_requests().size());
@@ -404,8 +404,8 @@ TYPED_TEST(RequestQueueStoreTest, UpgradeFromVersion58Store) {
     return;
   this->InitializeStore(store.get());
 
-  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
-                                base::Unretained(this)));
+  store->GetRequests(base::BindOnce(&RequestQueueStoreTestBase::GetRequestsDone,
+                                    base::Unretained(this)));
   this->PumpLoop();
   ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());
   ASSERT_EQ(1u, this->last_requests().size());
@@ -422,8 +422,8 @@ TYPED_TEST(RequestQueueStoreTest, UpgradeFromVersion61Store) {
     return;
   this->InitializeStore(store.get());
 
-  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
-                                base::Unretained(this)));
+  store->GetRequests(base::BindOnce(&RequestQueueStoreTestBase::GetRequestsDone,
+                                    base::Unretained(this)));
   this->PumpLoop();
   ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());
   ASSERT_EQ(1u, this->last_requests().size());
@@ -438,8 +438,8 @@ TYPED_TEST(RequestQueueStoreTest, GetRequestsEmpty) {
   std::unique_ptr<RequestQueueStore> store(this->BuildStore());
   this->InitializeStore(store.get());
 
-  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
-                                base::Unretained(this)));
+  store->GetRequests(base::BindOnce(&RequestQueueStoreTestBase::GetRequestsDone,
+                                    base::Unretained(this)));
   ASSERT_EQ(LastResult::RESULT_NONE, this->last_result());
   this->PumpLoop();
   ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());
@@ -454,20 +454,20 @@ TYPED_TEST(RequestQueueStoreTest, GetRequestsByIds) {
   SavePageRequest request1(kRequestId, kUrl, kClientId, creation_time,
                            kUserRequested);
   store->AddRequest(request1,
-                    base::Bind(&RequestQueueStoreTestBase::AddRequestDone,
-                               base::Unretained(this)));
+                    base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
+                                   base::Unretained(this)));
   SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
                            kUserRequested);
   store->AddRequest(request2,
-                    base::Bind(&RequestQueueStoreTestBase::AddRequestDone,
-                               base::Unretained(this)));
+                    base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
+                                   base::Unretained(this)));
   this->PumpLoop();
   this->ClearResults();
 
   std::vector<int64_t> request_ids{kRequestId, kRequestId2};
   store->GetRequestsByIds(
-      request_ids, base::Bind(&RequestQueueStoreTestBase::UpdateRequestDone,
-                              base::Unretained(this)));
+      request_ids, base::BindOnce(&RequestQueueStoreTestBase::UpdateRequestDone,
+                                  base::Unretained(this)));
 
   ASSERT_FALSE(this->last_update_result());
   this->PumpLoop();
@@ -490,8 +490,8 @@ TYPED_TEST(RequestQueueStoreTest, GetRequestsByIds) {
   request_ids.push_back(kRequestId);
 
   store->GetRequestsByIds(
-      request_ids, base::Bind(&RequestQueueStoreTestBase::UpdateRequestDone,
-                              base::Unretained(this)));
+      request_ids, base::BindOnce(&RequestQueueStoreTestBase::UpdateRequestDone,
+                                  base::Unretained(this)));
 
   ASSERT_FALSE(this->last_update_result());
   this->PumpLoop();
@@ -517,16 +517,16 @@ TYPED_TEST(RequestQueueStoreTest, AddRequest) {
   request.set_original_url(kUrl2);
 
   store->AddRequest(request,
-                    base::Bind(&RequestQueueStoreTestBase::AddRequestDone,
-                               base::Unretained(this)));
+                    base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
+                                   base::Unretained(this)));
   ASSERT_EQ(ItemActionStatus::NOT_FOUND, this->last_add_status());
   this->PumpLoop();
   ASSERT_EQ(ItemActionStatus::SUCCESS, this->last_add_status());
 
   // Verifying get reqeust results after a request was added.
   this->ClearResults();
-  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
-                                base::Unretained(this)));
+  store->GetRequests(base::BindOnce(&RequestQueueStoreTestBase::GetRequestsDone,
+                                    base::Unretained(this)));
   ASSERT_EQ(LastResult::RESULT_NONE, this->last_result());
   this->PumpLoop();
   ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());
@@ -536,16 +536,16 @@ TYPED_TEST(RequestQueueStoreTest, AddRequest) {
   // Verify it is not possible to add the same request twice.
   this->ClearResults();
   store->AddRequest(request,
-                    base::Bind(&RequestQueueStoreTestBase::AddRequestDone,
-                               base::Unretained(this)));
+                    base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
+                                   base::Unretained(this)));
   ASSERT_EQ(ItemActionStatus::NOT_FOUND, this->last_add_status());
   this->PumpLoop();
   ASSERT_EQ(ItemActionStatus::ALREADY_EXISTS, this->last_add_status());
 
   // Check that there is still only one item in the store.
   this->ClearResults();
-  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
-                                base::Unretained(this)));
+  store->GetRequests(base::BindOnce(&RequestQueueStoreTestBase::GetRequestsDone,
+                                    base::Unretained(this)));
   ASSERT_EQ(LastResult::RESULT_NONE, this->last_result());
   this->PumpLoop();
   ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());
@@ -560,8 +560,8 @@ TYPED_TEST(RequestQueueStoreTest, UpdateRequest) {
   SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time,
                                    kUserRequested);
   store->AddRequest(original_request,
-                    base::Bind(&RequestQueueStoreTestBase::AddRequestDone,
-                               base::Unretained(this)));
+                    base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
+                                   base::Unretained(this)));
   this->PumpLoop();
   this->ClearResults();
 
@@ -579,8 +579,8 @@ TYPED_TEST(RequestQueueStoreTest, UpdateRequest) {
                                                   updated_request2};
   store->UpdateRequests(
       requests_to_update,
-      base::Bind(&RequestQueueStoreTestBase::UpdateRequestDone,
-                 base::Unretained(this)));
+      base::BindOnce(&RequestQueueStoreTestBase::UpdateRequestDone,
+                     base::Unretained(this)));
   ASSERT_FALSE(this->last_update_result());
   this->PumpLoop();
   ASSERT_TRUE(this->last_update_result());
@@ -597,8 +597,8 @@ TYPED_TEST(RequestQueueStoreTest, UpdateRequest) {
 
   // Verifying get reqeust results after a request was updated.
   this->ClearResults();
-  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
-                                base::Unretained(this)));
+  store->GetRequests(base::BindOnce(&RequestQueueStoreTestBase::GetRequestsDone,
+                                    base::Unretained(this)));
   ASSERT_EQ(LastResult::RESULT_NONE, this->last_result());
   this->PumpLoop();
   ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());
@@ -614,20 +614,20 @@ TYPED_TEST(RequestQueueStoreTest, RemoveRequests) {
   SavePageRequest request1(kRequestId, kUrl, kClientId, creation_time,
                            kUserRequested);
   store->AddRequest(request1,
-                    base::Bind(&RequestQueueStoreTestBase::AddRequestDone,
-                               base::Unretained(this)));
+                    base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
+                                   base::Unretained(this)));
   SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
                            kUserRequested);
   store->AddRequest(request2,
-                    base::Bind(&RequestQueueStoreTestBase::AddRequestDone,
-                               base::Unretained(this)));
+                    base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
+                                   base::Unretained(this)));
   this->PumpLoop();
   this->ClearResults();
 
   std::vector<int64_t> request_ids{kRequestId, kRequestId2};
   store->RemoveRequests(
-      request_ids, base::Bind(&RequestQueueStoreTestBase::UpdateRequestDone,
-                              base::Unretained(this)));
+      request_ids, base::BindOnce(&RequestQueueStoreTestBase::UpdateRequestDone,
+                                  base::Unretained(this)));
 
   ASSERT_FALSE(this->last_update_result());
   this->PumpLoop();
@@ -644,8 +644,8 @@ TYPED_TEST(RequestQueueStoreTest, RemoveRequests) {
   EXPECT_EQ(request2, this->last_update_result()->updated_items.at(1));
   this->ClearResults();
 
-  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
-                                base::Unretained(this)));
+  store->GetRequests(base::BindOnce(&RequestQueueStoreTestBase::GetRequestsDone,
+                                    base::Unretained(this)));
   this->PumpLoop();
   ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());
   ASSERT_TRUE(this->last_requests().empty());
@@ -653,8 +653,8 @@ TYPED_TEST(RequestQueueStoreTest, RemoveRequests) {
 
   // Try to remove a request that is not in the queue.
   store->RemoveRequests(
-      request_ids, base::Bind(&RequestQueueStoreTestBase::UpdateRequestDone,
-                              base::Unretained(this)));
+      request_ids, base::BindOnce(&RequestQueueStoreTestBase::UpdateRequestDone,
+                                  base::Unretained(this)));
   ASSERT_FALSE(this->last_update_result());
   this->PumpLoop();
   ASSERT_TRUE(this->last_update_result());
@@ -678,21 +678,21 @@ TYPED_TEST(RequestQueueStoreTest, ResetStore) {
   SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time,
                                    kUserRequested);
   store->AddRequest(original_request,
-                    base::Bind(&RequestQueueStoreTestBase::AddRequestDone,
-                               base::Unretained(this)));
+                    base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
+                                   base::Unretained(this)));
   this->PumpLoop();
   this->ClearResults();
 
-  store->Reset(base::Bind(&RequestQueueStoreTestBase::ResetDone,
-                          base::Unretained(this)));
+  store->Reset(base::BindOnce(&RequestQueueStoreTestBase::ResetDone,
+                              base::Unretained(this)));
   ASSERT_EQ(LastResult::RESULT_NONE, this->last_result());
   this->PumpLoop();
   ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());
   this->ClearResults();
 
   this->InitializeStore(store.get());
-  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
-                                base::Unretained(this)));
+  store->GetRequests(base::BindOnce(&RequestQueueStoreTestBase::GetRequestsDone,
+                                    base::Unretained(this)));
   this->PumpLoop();
   ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());
   ASSERT_TRUE(this->last_requests().empty());
@@ -711,8 +711,8 @@ TEST_F(RequestQueueStoreSQLTest, SaveCloseReopenRead) {
   SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time,
                                    kUserRequested);
   store->AddRequest(original_request,
-                    base::Bind(&RequestQueueStoreTestBase::AddRequestDone,
-                               base::Unretained(this)));
+                    base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
+                                   base::Unretained(this)));
   PumpLoop();
   ClearResults();
 
@@ -722,8 +722,8 @@ TEST_F(RequestQueueStoreSQLTest, SaveCloseReopenRead) {
   store = BuildStore();
   this->InitializeStore(store.get());
 
-  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
-                                base::Unretained(this)));
+  store->GetRequests(base::BindOnce(&RequestQueueStoreTestBase::GetRequestsDone,
+                                    base::Unretained(this)));
   ASSERT_EQ(LastResult::RESULT_NONE, this->last_result());
   this->PumpLoop();
   ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());

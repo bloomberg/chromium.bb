@@ -14,8 +14,8 @@ namespace offline_pages {
 MarkAttemptStartedTask::MarkAttemptStartedTask(
     RequestQueueStore* store,
     int64_t request_id,
-    const RequestQueueStore::UpdateCallback& callback)
-    : UpdateRequestTask(store, request_id, callback) {}
+    RequestQueueStore::UpdateCallback callback)
+    : UpdateRequestTask(store, request_id, std::move(callback)) {}
 
 MarkAttemptStartedTask::~MarkAttemptStartedTask() {}
 
@@ -31,7 +31,8 @@ void MarkAttemptStartedTask::UpdateRequestImpl(
   read_result->updated_items[0].MarkAttemptStarted(base::Time::Now());
   store()->UpdateRequests(
       read_result->updated_items,
-      base::Bind(&MarkAttemptStartedTask::CompleteWithResult, GetWeakPtr()));
+      base::BindOnce(&MarkAttemptStartedTask::CompleteWithResult,
+                     GetWeakPtr()));
 }
 
 }  // namespace offline_pages

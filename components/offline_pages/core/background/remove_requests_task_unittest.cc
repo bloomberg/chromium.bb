@@ -56,8 +56,8 @@ void RemoveRequestsTaskTest::PumpLoop() {
 }
 
 void RemoveRequestsTaskTest::InitializeStore(RequestQueueStore* store) {
-  store->Initialize(base::Bind(&RemoveRequestsTaskTest::InitializeStoreDone,
-                               base::Unretained(this)));
+  store->Initialize(base::BindOnce(&RemoveRequestsTaskTest::InitializeStoreDone,
+                                   base::Unretained(this)));
   PumpLoop();
 }
 
@@ -66,13 +66,13 @@ void RemoveRequestsTaskTest::AddRequestsToStore(RequestQueueStore* store) {
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
   store->AddRequest(request_1,
-                    base::Bind(&RemoveRequestsTaskTest::AddRequestDone,
-                               base::Unretained(this)));
+                    base::BindOnce(&RemoveRequestsTaskTest::AddRequestDone,
+                                   base::Unretained(this)));
   SavePageRequest request_2(kRequestId2, kUrl2, kClientId2, creation_time,
                             true);
   store->AddRequest(request_2,
-                    base::Bind(&RemoveRequestsTaskTest::AddRequestDone,
-                               base::Unretained(this)));
+                    base::BindOnce(&RemoveRequestsTaskTest::AddRequestDone,
+                                   base::Unretained(this)));
   PumpLoop();
 }
 
@@ -96,8 +96,8 @@ TEST_F(RemoveRequestsTaskTest, RemoveWhenStoreEmpty) {
   std::vector<int64_t> request_ids{kRequestId1};
   RemoveRequestsTask task(
       &store, request_ids,
-      base::Bind(&RemoveRequestsTaskTest::RemoveRequestsCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&RemoveRequestsTaskTest::RemoveRequestsCallback,
+                     base::Unretained(this)));
   task.Run();
   PumpLoop();
   ASSERT_TRUE(last_result());
@@ -116,8 +116,8 @@ TEST_F(RemoveRequestsTaskTest, RemoveSingleItem) {
   std::vector<int64_t> request_ids{kRequestId1};
   RemoveRequestsTask task(
       &store, request_ids,
-      base::Bind(&RemoveRequestsTaskTest::RemoveRequestsCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&RemoveRequestsTaskTest::RemoveRequestsCallback,
+                     base::Unretained(this)));
   task.Run();
   PumpLoop();
   ASSERT_TRUE(last_result());
@@ -137,8 +137,8 @@ TEST_F(RemoveRequestsTaskTest, RemoveMultipleItems) {
   std::vector<int64_t> request_ids{kRequestId1, kRequestId2};
   RemoveRequestsTask task(
       &store, request_ids,
-      base::Bind(&RemoveRequestsTaskTest::RemoveRequestsCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&RemoveRequestsTaskTest::RemoveRequestsCallback,
+                     base::Unretained(this)));
   task.Run();
   PumpLoop();
   ASSERT_TRUE(last_result());
@@ -161,8 +161,8 @@ TEST_F(RemoveRequestsTaskTest, DeleteWithEmptyIdList) {
   std::vector<int64_t> request_ids;
   RemoveRequestsTask task(
       &store, request_ids,
-      base::Bind(&RemoveRequestsTaskTest::RemoveRequestsCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&RemoveRequestsTaskTest::RemoveRequestsCallback,
+                     base::Unretained(this)));
   task.Run();
   PumpLoop();
   ASSERT_TRUE(last_result());
@@ -178,8 +178,8 @@ TEST_F(RemoveRequestsTaskTest, RemoveMissingItem) {
   std::vector<int64_t> request_ids{kRequestId1, kRequestId3};
   RemoveRequestsTask task(
       &store, request_ids,
-      base::Bind(&RemoveRequestsTaskTest::RemoveRequestsCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&RemoveRequestsTaskTest::RemoveRequestsCallback,
+                     base::Unretained(this)));
   task.Run();
   PumpLoop();
   ASSERT_TRUE(last_result());

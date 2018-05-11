@@ -11,8 +11,8 @@ namespace offline_pages {
 MarkAttemptAbortedTask::MarkAttemptAbortedTask(
     RequestQueueStore* store,
     int64_t request_id,
-    const RequestQueueStore::UpdateCallback& callback)
-    : UpdateRequestTask(store, request_id, callback) {}
+    RequestQueueStore::UpdateCallback callback)
+    : UpdateRequestTask(store, request_id, std::move(callback)) {}
 
 MarkAttemptAbortedTask::~MarkAttemptAbortedTask() {}
 
@@ -28,7 +28,8 @@ void MarkAttemptAbortedTask::UpdateRequestImpl(
   read_result->updated_items[0].MarkAttemptAborted();
   store()->UpdateRequests(
       read_result->updated_items,
-      base::Bind(&MarkAttemptAbortedTask::CompleteWithResult, GetWeakPtr()));
+      base::BindOnce(&MarkAttemptAbortedTask::CompleteWithResult,
+                     GetWeakPtr()));
 }
 
 }  // namespace offline_pages

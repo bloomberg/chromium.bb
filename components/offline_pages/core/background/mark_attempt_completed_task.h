@@ -22,7 +22,7 @@ class MarkAttemptCompletedTask : public UpdateRequestTask {
   MarkAttemptCompletedTask(RequestQueueStore* store,
                            int64_t request_id,
                            FailState fail_state,
-                           const RequestQueueStore::UpdateCallback& callback);
+                           RequestQueueStore::UpdateCallback callback);
   ~MarkAttemptCompletedTask() override;
 
  protected:

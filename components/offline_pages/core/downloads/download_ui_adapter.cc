@@ -387,8 +387,8 @@ void DownloadUIAdapter::CancelDownload(const ContentId& id) {
   // TODO(fgorski): Clean this up in a way where 2 round trips + GetAllRequests
   // is not necessary. E.g. CancelByGuid(guid) might do the trick.
   request_coordinator_->GetAllRequests(
-      base::Bind(&DownloadUIAdapter::CancelDownloadContinuation,
-                 weak_ptr_factory_.GetWeakPtr(), id.id));
+      base::BindOnce(&DownloadUIAdapter::CancelDownloadContinuation,
+                     weak_ptr_factory_.GetWeakPtr(), id.id));
 }
 
 void DownloadUIAdapter::CancelDownloadContinuation(

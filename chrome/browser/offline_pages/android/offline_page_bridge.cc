@@ -658,7 +658,7 @@ void OfflinePageBridge::SavePageLater(
   params.request_origin = ConvertJavaStringToUTF8(env, j_origin);
 
   coordinator->SavePageLater(
-      params, base::Bind(&SavePageLaterCallback, j_callback_ref));
+      params, base::BindOnce(&SavePageLaterCallback, j_callback_ref));
 }
 
 void OfflinePageBridge::PublishInternalPageByOfflineId(
@@ -792,7 +792,7 @@ void OfflinePageBridge::GetRequestsInQueue(
   }
 
   coordinator->GetAllRequests(
-      base::Bind(&OnGetAllRequestsDone, j_callback_ref));
+      base::BindOnce(&OnGetAllRequestsDone, j_callback_ref));
 }
 
 void OfflinePageBridge::RemoveRequestsFromQueue(
@@ -817,7 +817,7 @@ void OfflinePageBridge::RemoveRequestsFromQueue(
   }
 
   coordinator->RemoveRequests(
-      request_ids, base::Bind(&OnRemoveRequestsDone, j_callback_ref));
+      request_ids, base::BindOnce(&OnRemoveRequestsDone, j_callback_ref));
 }
 
 void OfflinePageBridge::WillCloseTab(

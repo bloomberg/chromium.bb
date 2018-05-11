@@ -11,10 +11,10 @@ namespace offline_pages {
 
 AddRequestTask::AddRequestTask(RequestQueueStore* store,
                                const SavePageRequest& request,
-                               const RequestQueueStore::AddCallback& callback)
+                               RequestQueueStore::AddCallback callback)
     : store_(store),
       request_(request),
-      callback_(callback),
+      callback_(std::move(callback)),
       weak_ptr_factory_(this) {}
 
 AddRequestTask::~AddRequestTask() {}
@@ -24,12 +24,13 @@ void AddRequestTask::Run() {
 }
 
 void AddRequestTask::AddRequest() {
-  store_->AddRequest(request_, base::Bind(&AddRequestTask::CompleteWithResult,
-                                          weak_ptr_factory_.GetWeakPtr()));
+  store_->AddRequest(request_,
+                     base::BindOnce(&AddRequestTask::CompleteWithResult,
+                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AddRequestTask::CompleteWithResult(ItemActionStatus status) {
-  callback_.Run(status);
+  std::move(callback_).Run(status);
   TaskComplete();
 }
 

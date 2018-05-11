@@ -139,8 +139,8 @@ void CleanupTaskTest::SetUp() {
   notifier_.reset(new RequestNotifierStub());
   MakeFactoryAndTask();
 
-  store_->Initialize(base::Bind(&CleanupTaskTest::InitializeStoreDone,
-                                base::Unretained(this)));
+  store_->Initialize(base::BindOnce(&CleanupTaskTest::InitializeStoreDone,
+                                    base::Unretained(this)));
   PumpLoop();
 }
 
@@ -164,10 +164,10 @@ void CleanupTaskTest::QueueRequests(const SavePageRequest& request1,
   DeviceConditions conditions;
   std::set<int64_t> disabled_requests;
   // Add test requests on the Queue.
-  store_->AddRequest(request1, base::Bind(&CleanupTaskTest::AddRequestDone,
-                                          base::Unretained(this)));
-  store_->AddRequest(request2, base::Bind(&CleanupTaskTest::AddRequestDone,
-                                          base::Unretained(this)));
+  store_->AddRequest(request1, base::BindOnce(&CleanupTaskTest::AddRequestDone,
+                                              base::Unretained(this)));
+  store_->AddRequest(request2, base::BindOnce(&CleanupTaskTest::AddRequestDone,
+                                              base::Unretained(this)));
 
   // Pump the loop to give the async queue the opportunity to do the adds.
   PumpLoop();
@@ -201,8 +201,8 @@ TEST_F(CleanupTaskTest, CleanupExpiredRequest) {
   PumpLoop();
 
   // See what is left in the queue, should be just the other request.
-  store()->GetRequests(base::Bind(&CleanupTaskTest::GetRequestsCallback,
-                                  base::Unretained(this)));
+  store()->GetRequests(base::BindOnce(&CleanupTaskTest::GetRequestsCallback,
+                                      base::Unretained(this)));
   PumpLoop();
   EXPECT_EQ(1UL, found_requests().size());
   EXPECT_EQ(kRequestId1, found_requests().at(0)->request_id());
@@ -223,8 +223,8 @@ TEST_F(CleanupTaskTest, CleanupStartCountExceededRequest) {
   PumpLoop();
 
   // See what is left in the queue, should be just the other request.
-  store()->GetRequests(base::Bind(&CleanupTaskTest::GetRequestsCallback,
-                                  base::Unretained(this)));
+  store()->GetRequests(base::BindOnce(&CleanupTaskTest::GetRequestsCallback,
+                                      base::Unretained(this)));
   PumpLoop();
   EXPECT_EQ(1UL, found_requests().size());
   EXPECT_EQ(kRequestId1, found_requests().at(0)->request_id());
@@ -245,8 +245,8 @@ TEST_F(CleanupTaskTest, CleanupCompletionCountExceededRequest) {
   PumpLoop();
 
   // See what is left in the queue, should be just the other request.
-  store()->GetRequests(base::Bind(&CleanupTaskTest::GetRequestsCallback,
-                                  base::Unretained(this)));
+  store()->GetRequests(base::BindOnce(&CleanupTaskTest::GetRequestsCallback,
+                                      base::Unretained(this)));
   PumpLoop();
   EXPECT_EQ(1UL, found_requests().size());
   EXPECT_EQ(kRequestId1, found_requests().at(0)->request_id());
@@ -272,8 +272,8 @@ TEST_F(CleanupTaskTest, IgnoreRequestInProgress) {
   // See what is left in the queue, request1 should be left in the queue even
   // though it is expired because it was listed as in-progress while cleaning.
   // Request2 should have been cleaned out of the queue.
-  store()->GetRequests(base::Bind(&CleanupTaskTest::GetRequestsCallback,
-                                  base::Unretained(this)));
+  store()->GetRequests(base::BindOnce(&CleanupTaskTest::GetRequestsCallback,
+                                      base::Unretained(this)));
   PumpLoop();
   EXPECT_EQ(1UL, found_requests().size());
   EXPECT_EQ(kRequestId1, found_requests().at(0)->request_id());

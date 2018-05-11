@@ -21,7 +21,7 @@ namespace offline_pages {
 class ReconcileTask : public Task {
  public:
   ReconcileTask(RequestQueueStore* store,
-                const RequestQueueStore::UpdateCallback& callback);
+                RequestQueueStore::UpdateCallback callback);
   ~ReconcileTask() override;
 
   // TaskQueue::Task implementation:

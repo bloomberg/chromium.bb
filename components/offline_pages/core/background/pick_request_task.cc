@@ -42,9 +42,9 @@ PickRequestTask::PickRequestTask(
     base::circular_deque<int64_t>& prioritized_requests)
     : store_(store),
       policy_(policy),
-      picked_callback_(picked_callback),
-      not_picked_callback_(not_picked_callback),
-      request_count_callback_(request_count_callback),
+      picked_callback_(std::move(picked_callback)),
+      not_picked_callback_(std::move(not_picked_callback)),
+      request_count_callback_(std::move(request_count_callback)),
       disabled_requests_(disabled_requests),
       prioritized_requests_(prioritized_requests),
       weak_ptr_factory_(this) {
@@ -60,7 +60,7 @@ void PickRequestTask::Run() {
 void PickRequestTask::GetRequests() {
   // Get all the requests from the queue, we will classify them in the callback.
   store_->GetRequests(
-      base::Bind(&PickRequestTask::Choose, weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&PickRequestTask::Choose, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PickRequestTask::Choose(
@@ -68,8 +68,9 @@ void PickRequestTask::Choose(
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
   // If there is nothing to do, return right away.
   if (requests.empty()) {
-    request_count_callback_.Run(requests.size(), 0);
-    not_picked_callback_.Run(!kNonUserRequestsFound, !kCleanupNeeded);
+    std::move(request_count_callback_).Run(requests.size(), 0);
+    std::move(not_picked_callback_)
+        .Run(!kNonUserRequestsFound, !kCleanupNeeded);
     TaskComplete();
     return;
   }
@@ -126,7 +127,8 @@ void PickRequestTask::Choose(
     available_request_ids.insert(request->request_id());
   }
   // Report the request queue counts.
-  request_count_callback_.Run(total_request_count, available_requests->size());
+  std::move(request_count_callback_)
+      .Run(total_request_count, available_requests->size());
 
   // Search for and pick the prioritized request which is available for picking
   // from |available_request_ids|, the closer to the end means higher priority.
@@ -163,11 +165,11 @@ void PickRequestTask::Choose(
   // If we have a best request to try next, get the request coodinator to
   // start it.  Otherwise return that we have no candidates.
   if (picked_request != nullptr) {
-    picked_callback_.Run(*picked_request, std::move(available_requests),
-                         cleanup_needed);
+    std::move(picked_callback_)
+        .Run(*picked_request, std::move(available_requests), cleanup_needed);
   } else {
-    not_picked_callback_.Run(non_user_requested_tasks_remaining,
-                             cleanup_needed);
+    std::move(not_picked_callback_)
+        .Run(non_user_requested_tasks_remaining, cleanup_needed);
   }
 
   TaskComplete();

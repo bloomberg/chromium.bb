@@ -52,7 +52,7 @@ void CleanupTask::Run() {
 void CleanupTask::GetRequests() {
   // Get all the requests from the queue, we will classify them in the callback.
   store_->GetRequests(
-      base::Bind(&CleanupTask::Prune, weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&CleanupTask::Prune, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CleanupTask::Prune(
@@ -77,8 +77,8 @@ void CleanupTask::Prune(
     expired_request_ids.push_back(id_reason_pair.first);
 
   store_->RemoveRequests(expired_request_ids,
-                         base::Bind(&CleanupTask::OnRequestsExpired,
-                                    weak_ptr_factory_.GetWeakPtr()));
+                         base::BindOnce(&CleanupTask::OnRequestsExpired,
+                                        weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CleanupTask::OnRequestsExpired(

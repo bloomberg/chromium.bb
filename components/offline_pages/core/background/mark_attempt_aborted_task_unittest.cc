@@ -58,8 +58,9 @@ void MarkAttemptAbortedTaskTest::PumpLoop() {
 }
 
 void MarkAttemptAbortedTaskTest::InitializeStore(RequestQueueStore* store) {
-  store->Initialize(base::Bind(&MarkAttemptAbortedTaskTest::InitializeStoreDone,
-                               base::Unretained(this)));
+  store->Initialize(
+      base::BindOnce(&MarkAttemptAbortedTaskTest::InitializeStoreDone,
+                     base::Unretained(this)));
   PumpLoop();
 }
 
@@ -68,8 +69,8 @@ void MarkAttemptAbortedTaskTest::AddItemToStore(RequestQueueStore* store) {
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
   store->AddRequest(request_1,
-                    base::Bind(&MarkAttemptAbortedTaskTest::AddRequestDone,
-                               base::Unretained(this)));
+                    base::BindOnce(&MarkAttemptAbortedTaskTest::AddRequestDone,
+                                   base::Unretained(this)));
   PumpLoop();
 }
 
@@ -96,8 +97,8 @@ TEST_F(MarkAttemptAbortedTaskTest, MarkAttemptAbortedWhenStoreEmpty) {
 
   MarkAttemptAbortedTask task(
       &store, kRequestId1,
-      base::Bind(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
+                     base::Unretained(this)));
   task.Run();
   PumpLoop();
   ASSERT_TRUE(last_result());
@@ -116,16 +117,16 @@ TEST_F(MarkAttemptAbortedTaskTest, MarkAttemptAbortedWhenExists) {
   // First mark attempt started.
   MarkAttemptStartedTask start_request_task(
       &store, kRequestId1,
-      base::Bind(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
+                     base::Unretained(this)));
   start_request_task.Run();
   PumpLoop();
   ClearResults();
 
   MarkAttemptAbortedTask task(
       &store, kRequestId1,
-      base::Bind(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
+                     base::Unretained(this)));
 
   task.Run();
   PumpLoop();
@@ -146,8 +147,8 @@ TEST_F(MarkAttemptAbortedTaskTest, MarkAttemptAbortedWhenItemMissing) {
 
   MarkAttemptAbortedTask task(
       &store, kRequestId2,
-      base::Bind(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
+                     base::Unretained(this)));
   task.Run();
   PumpLoop();
   ASSERT_TRUE(last_result());
@@ -166,8 +167,8 @@ TEST_F(MarkAttemptAbortedTaskTest, MarkAttemptAbortedWhenPaused) {
   // First mark attempt started.
   MarkAttemptStartedTask start_request_task(
       &store, kRequestId1,
-      base::Bind(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
+                     base::Unretained(this)));
   start_request_task.Run();
   PumpLoop();
   ClearResults();
@@ -177,16 +178,16 @@ TEST_F(MarkAttemptAbortedTaskTest, MarkAttemptAbortedWhenPaused) {
   requests.push_back(kRequestId1);
   ChangeRequestsStateTask pauseTask(
       &store, requests, SavePageRequest::RequestState::PAUSED,
-      base::Bind(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
+                     base::Unretained(this)));
   pauseTask.Run();
   PumpLoop();
 
   // Abort the task, the state should not change from PAUSED.
   MarkAttemptAbortedTask abortTask(
       &store, kRequestId1,
-      base::Bind(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
+                     base::Unretained(this)));
 
   abortTask.Run();
   PumpLoop();

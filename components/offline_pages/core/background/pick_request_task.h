@@ -27,18 +27,18 @@ typedef bool (PickRequestTask::*RequestCompareFunction)(
 class PickRequestTask : public Task {
  public:
   // Callback to report when a request was available.
-  typedef base::Callback<void(
+  typedef base::OnceCallback<void(
       const SavePageRequest& request,
       std::unique_ptr<std::vector<SavePageRequest>> available_requests,
       bool cleanup_needed)>
       RequestPickedCallback;
 
   // Callback to report when no request was available.
-  typedef base::Callback<void(bool non_user_requests, bool cleanup_needed)>
+  typedef base::OnceCallback<void(bool non_user_requests, bool cleanup_needed)>
       RequestNotPickedCallback;
 
   // Callback to report available total and available queued request counts.
-  typedef base::Callback<void(size_t, size_t)> RequestCountCallback;
+  typedef base::OnceCallback<void(size_t, size_t)> RequestCountCallback;
 
   PickRequestTask(RequestQueueStore* store,
                   OfflinerPolicy* policy,

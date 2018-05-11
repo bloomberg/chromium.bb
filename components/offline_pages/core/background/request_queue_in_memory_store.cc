@@ -22,17 +22,17 @@ RequestQueueInMemoryStore::RequestQueueInMemoryStore(TestScenario scenario)
 
 RequestQueueInMemoryStore::~RequestQueueInMemoryStore() {}
 
-void RequestQueueInMemoryStore::Initialize(const InitializeCallback& callback) {
+void RequestQueueInMemoryStore::Initialize(InitializeCallback callback) {
   if (scenario_ == TestScenario::SUCCESSFUL)
     state_ = StoreState::LOADED;
   else
     state_ = StoreState::FAILED_LOADING;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, state_ == StoreState::LOADED));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), state_ == StoreState::LOADED));
 }
 
-void RequestQueueInMemoryStore::GetRequests(
-    const GetRequestsCallback& callback) {
+void RequestQueueInMemoryStore::GetRequests(GetRequestsCallback callback) {
   DCHECK_NE(state_, StoreState::NOT_LOADED);
   std::vector<std::unique_ptr<SavePageRequest>> result_requests;
   for (const auto& id_request_pair : requests_) {
@@ -41,12 +41,13 @@ void RequestQueueInMemoryStore::GetRequests(
     result_requests.push_back(std::move(request));
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, true, std::move(result_requests)));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), true, std::move(result_requests)));
 }
 
 void RequestQueueInMemoryStore::GetRequestsByIds(
     const std::vector<int64_t>& request_ids,
-    const UpdateCallback& callback) {
+    UpdateCallback callback) {
   DCHECK_NE(state_, StoreState::NOT_LOADED);
   std::unique_ptr<UpdateRequestsResult> result(
       new UpdateRequestsResult(state()));
@@ -69,11 +70,11 @@ void RequestQueueInMemoryStore::GetRequestsByIds(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, std::move(result)));
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(result)));
 }
 
 void RequestQueueInMemoryStore::AddRequest(const SavePageRequest& request,
-                                           const AddCallback& callback) {
+                                           AddCallback callback) {
   DCHECK_NE(state_, StoreState::NOT_LOADED);
   RequestsMap::iterator iter = requests_.find(request.request_id());
   ItemActionStatus status;
@@ -84,13 +85,13 @@ void RequestQueueInMemoryStore::AddRequest(const SavePageRequest& request,
     status = ItemActionStatus::ALREADY_EXISTS;
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, status));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), status));
 }
 
 void RequestQueueInMemoryStore::UpdateRequests(
     const std::vector<SavePageRequest>& requests,
-    const RequestQueue::UpdateCallback& callback) {
+    UpdateCallback callback) {
   DCHECK_NE(state_, StoreState::NOT_LOADED);
   std::unique_ptr<UpdateRequestsResult> result(
       new UpdateRequestsResult(state()));
@@ -110,12 +111,12 @@ void RequestQueueInMemoryStore::UpdateRequests(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, std::move(result)));
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(result)));
 }
 
 void RequestQueueInMemoryStore::RemoveRequests(
     const std::vector<int64_t>& request_ids,
-    const UpdateCallback& callback) {
+    UpdateCallback callback) {
   DCHECK_NE(state_, StoreState::NOT_LOADED);
   std::unique_ptr<UpdateRequestsResult> result(
       new UpdateRequestsResult(StoreState::LOADED));
@@ -136,10 +137,10 @@ void RequestQueueInMemoryStore::RemoveRequests(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, std::move(result)));
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(result)));
 }
 
-void RequestQueueInMemoryStore::Reset(const ResetCallback& callback) {
+void RequestQueueInMemoryStore::Reset(ResetCallback callback) {
   if (scenario_ != TestScenario::LOAD_FAILED_RESET_FAILED) {
     requests_.clear();
     state_ = StoreState::NOT_LOADED;
@@ -148,7 +149,8 @@ void RequestQueueInMemoryStore::Reset(const ResetCallback& callback) {
     state_ = StoreState::FAILED_RESET;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, state_ == StoreState::NOT_LOADED));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), state_ == StoreState::NOT_LOADED));
 }
 
 StoreState RequestQueueInMemoryStore::state() const {

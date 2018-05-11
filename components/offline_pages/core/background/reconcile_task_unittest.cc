@@ -92,8 +92,8 @@ void ReconcileTaskTest::SetUp() {
   store_.reset(new RequestQueueInMemoryStore());
   MakeTask();
 
-  store_->Initialize(base::Bind(&ReconcileTaskTest::InitializeStoreDone,
-                                base::Unretained(this)));
+  store_->Initialize(base::BindOnce(&ReconcileTaskTest::InitializeStoreDone,
+                                    base::Unretained(this)));
   PumpLoop();
 }
 
@@ -125,10 +125,12 @@ void ReconcileTaskTest::QueueRequests(const SavePageRequest& request1,
   DeviceConditions conditions;
   std::set<int64_t> disabled_requests;
   // Add test requests on the Queue.
-  store_->AddRequest(request1, base::Bind(&ReconcileTaskTest::AddRequestDone,
-                                          base::Unretained(this)));
-  store_->AddRequest(request2, base::Bind(&ReconcileTaskTest::AddRequestDone,
-                                          base::Unretained(this)));
+  store_->AddRequest(request1,
+                     base::BindOnce(&ReconcileTaskTest::AddRequestDone,
+                                    base::Unretained(this)));
+  store_->AddRequest(request2,
+                     base::BindOnce(&ReconcileTaskTest::AddRequestDone,
+                                    base::Unretained(this)));
 
   // Pump the loop to give the async queue the opportunity to do the adds.
   PumpLoop();
@@ -136,8 +138,8 @@ void ReconcileTaskTest::QueueRequests(const SavePageRequest& request1,
 
 void ReconcileTaskTest::MakeTask() {
   task_.reset(new ReconcileTask(
-      store_.get(), base::Bind(&ReconcileTaskTest::ReconcileCallback,
-                               base::Unretained(this))));
+      store_.get(), base::BindOnce(&ReconcileTaskTest::ReconcileCallback,
+                                   base::Unretained(this))));
 }
 
 void ReconcileTaskTest::InitializeStoreDone(bool success) {
@@ -160,8 +162,8 @@ TEST_F(ReconcileTaskTest, Reconcile) {
   PumpLoop();
 
   // See what is left in the queue, should be just the other request.
-  store()->GetRequests(base::Bind(&ReconcileTaskTest::GetRequestsCallback,
-                                  base::Unretained(this)));
+  store()->GetRequests(base::BindOnce(&ReconcileTaskTest::GetRequestsCallback,
+                                      base::Unretained(this)));
   PumpLoop();
   EXPECT_EQ(2UL, found_requests().size());
 
@@ -195,8 +197,8 @@ TEST_F(ReconcileTaskTest, NothingToReconcile) {
   PumpLoop();
 
   // See what is left in the queue, should be just the other request.
-  store()->GetRequests(base::Bind(&ReconcileTaskTest::GetRequestsCallback,
-                                  base::Unretained(this)));
+  store()->GetRequests(base::BindOnce(&ReconcileTaskTest::GetRequestsCallback,
+                                      base::Unretained(this)));
   PumpLoop();
   EXPECT_EQ(2UL, found_requests().size());
 

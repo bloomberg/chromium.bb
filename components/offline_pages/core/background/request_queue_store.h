@@ -26,35 +26,35 @@ class RequestQueueStore {
 
   using UpdateCallback = RequestQueue::UpdateCallback;
 
-  typedef base::Callback<void(bool /* success */)> InitializeCallback;
-  typedef base::Callback<void(bool /* success */)> ResetCallback;
-  typedef base::Callback<void(
+  typedef base::OnceCallback<void(bool /* success */)> InitializeCallback;
+  typedef base::OnceCallback<void(bool /* success */)> ResetCallback;
+  typedef base::OnceCallback<void(
       bool /* success */,
       std::vector<std::unique_ptr<SavePageRequest>> /* requests */)>
       GetRequestsCallback;
-  typedef base::Callback<void(ItemActionStatus)> AddCallback;
+  typedef base::OnceCallback<void(ItemActionStatus)> AddCallback;
 
   virtual ~RequestQueueStore(){};
 
   // Initializes the store. Should be called before any other methods.
-  virtual void Initialize(const InitializeCallback& callback) = 0;
+  virtual void Initialize(InitializeCallback callback) = 0;
 
   // Gets all of the requests from the store.
-  virtual void GetRequests(const GetRequestsCallback& callback) = 0;
+  virtual void GetRequests(GetRequestsCallback callback) = 0;
 
   // Gets requests with specified IDs from the store. UpdateCallback is used
   // instead of GetRequestsCallback to indicate which requests where not found.
   virtual void GetRequestsByIds(const std::vector<int64_t>& request_ids,
-                                const UpdateCallback& callback) = 0;
+                                UpdateCallback callback) = 0;
 
   // Asynchronously adds request in store. Fails if request with the same
   // offline ID already exists.
   virtual void AddRequest(const SavePageRequest& offline_page,
-                          const AddCallback& callback) = 0;
+                          AddCallback callback) = 0;
 
   // Asynchronously updates requests in store.
   virtual void UpdateRequests(const std::vector<SavePageRequest>& requests,
-                              const UpdateCallback& callback) = 0;
+                              UpdateCallback callback) = 0;
 
   // Asynchronously removes requests from the store using their IDs.
   // Result of the update, and a number of removed pages is passed in the
@@ -62,10 +62,10 @@ class RequestQueueStore {
   // Result of remove should be false, when one of the provided items couldn't
   // be deleted, e.g. because it was missing.
   virtual void RemoveRequests(const std::vector<int64_t>& request_ids,
-                              const UpdateCallback& callback) = 0;
+                              UpdateCallback callback) = 0;
 
   // Resets the store (removes any existing data).
-  virtual void Reset(const ResetCallback& callback) = 0;
+  virtual void Reset(ResetCallback callback) = 0;
 
   // Gets the store state.
   virtual StoreState state() const = 0;

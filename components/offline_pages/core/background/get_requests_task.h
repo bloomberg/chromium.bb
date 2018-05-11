@@ -17,7 +17,7 @@ namespace offline_pages {
 class GetRequestsTask : public Task {
  public:
   GetRequestsTask(RequestQueueStore* store,
-                  const RequestQueueStore::GetRequestsCallback& callback);
+                  RequestQueueStore::GetRequestsCallback callback);
   ~GetRequestsTask() override;
 
   // Task implementation:

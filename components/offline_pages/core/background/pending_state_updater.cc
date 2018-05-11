@@ -20,8 +20,8 @@ PendingStateUpdater::~PendingStateUpdater() {}
 void PendingStateUpdater::UpdateRequestsOnLossOfNetwork() {
   requests_pending_another_download_ = false;
   request_coordinator_->GetAllRequests(
-      base::Bind(&PendingStateUpdater::NotifyChangedPendingStates,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&PendingStateUpdater::NotifyChangedPendingStates,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PendingStateUpdater::UpdateRequestsOnRequestPicked(

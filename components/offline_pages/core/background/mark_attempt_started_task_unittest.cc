@@ -54,8 +54,9 @@ void MarkAttemptStartedTaskTest::PumpLoop() {
 }
 
 void MarkAttemptStartedTaskTest::InitializeStore(RequestQueueStore* store) {
-  store->Initialize(base::Bind(&MarkAttemptStartedTaskTest::InitializeStoreDone,
-                               base::Unretained(this)));
+  store->Initialize(
+      base::BindOnce(&MarkAttemptStartedTaskTest::InitializeStoreDone,
+                     base::Unretained(this)));
   PumpLoop();
 }
 
@@ -64,8 +65,8 @@ void MarkAttemptStartedTaskTest::AddItemToStore(RequestQueueStore* store) {
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
   store->AddRequest(request_1,
-                    base::Bind(&MarkAttemptStartedTaskTest::AddRequestDone,
-                               base::Unretained(this)));
+                    base::BindOnce(&MarkAttemptStartedTaskTest::AddRequestDone,
+                                   base::Unretained(this)));
   PumpLoop();
 }
 
@@ -88,8 +89,8 @@ TEST_F(MarkAttemptStartedTaskTest, MarkAttemptStartedWhenStoreEmpty) {
 
   MarkAttemptStartedTask task(
       &store, kRequestId1,
-      base::Bind(&MarkAttemptStartedTaskTest::ChangeRequestsStateCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&MarkAttemptStartedTaskTest::ChangeRequestsStateCallback,
+                     base::Unretained(this)));
   task.Run();
   PumpLoop();
   ASSERT_TRUE(last_result());
@@ -107,8 +108,8 @@ TEST_F(MarkAttemptStartedTaskTest, MarkAttemptStartedWhenExists) {
 
   MarkAttemptStartedTask task(
       &store, kRequestId1,
-      base::Bind(&MarkAttemptStartedTaskTest::ChangeRequestsStateCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&MarkAttemptStartedTaskTest::ChangeRequestsStateCallback,
+                     base::Unretained(this)));
 
   // Current time for verification.
   base::Time before_time = base::Time::Now();
@@ -136,8 +137,8 @@ TEST_F(MarkAttemptStartedTaskTest, MarkAttemptStartedWhenItemMissing) {
 
   MarkAttemptStartedTask task(
       &store, kRequestId2,
-      base::Bind(&MarkAttemptStartedTaskTest::ChangeRequestsStateCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&MarkAttemptStartedTaskTest::ChangeRequestsStateCallback,
+                     base::Unretained(this)));
   task.Run();
   PumpLoop();
   ASSERT_TRUE(last_result());

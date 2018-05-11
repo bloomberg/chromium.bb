@@ -18,7 +18,7 @@ class MarkAttemptStartedTask : public UpdateRequestTask {
  public:
   MarkAttemptStartedTask(RequestQueueStore* store,
                          int64_t request_id,
-                         const RequestQueueStore::UpdateCallback& callback);
+                         RequestQueueStore::UpdateCallback callback);
   ~MarkAttemptStartedTask() override;
 
  protected:
