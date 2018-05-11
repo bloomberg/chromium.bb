@@ -42,6 +42,7 @@ extern const base::Feature kAutofillRationalizeFieldTypePredictions;
 extern const base::Feature kAutofillSuggestInvalidProfileData;
 extern const base::Feature kAutofillSuppressDisusedAddresses;
 extern const base::Feature kAutofillSuppressDisusedCreditCards;
+extern const base::Feature kAutofillUpstream;
 extern const base::Feature kAutofillUpstreamAllowAllEmailDomains;
 extern const base::Feature kAutofillUpstreamSendDetectedValues;
 extern const base::Feature kAutofillUpstreamSendPanFirstSix;

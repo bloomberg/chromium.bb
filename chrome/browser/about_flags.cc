@@ -2369,9 +2369,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-autofill-credit-card-upload",
      flag_descriptions::kAutofillCreditCardUploadName,
      flag_descriptions::kAutofillCreditCardUploadDescription, kOsAll,
-     ENABLE_DISABLE_VALUE_TYPE(
-         autofill::switches::kEnableOfferUploadCreditCards,
-         autofill::switches::kDisableOfferUploadCreditCards)},
+     FEATURE_VALUE_TYPE(autofill::kAutofillUpstream)},
 #endif  // TOOLKIT_VIEWS || OS_ANDROID
     {"enable-md-incognito-ntp",
      flag_descriptions::kMaterialDesignIncognitoNTPName,
