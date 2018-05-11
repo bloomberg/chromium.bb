@@ -148,6 +148,7 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
     "libavutil/dict.c",
     "libavutil/display.c",
     "libavutil/downmix_info.c",
+    "libavutil/encryption_info.c",
     "libavutil/error.c",
     "libavutil/eval.c",
     "libavutil/fifo.c",
@@ -619,12 +620,6 @@ if ((use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding
     "libavcodec/arm/h264dsp_neon.S",
     "libavcodec/arm/h264idct_neon.S",
     "libavcodec/arm/h264qpel_neon.S",
-  ]
-}
-
-if (is_win && current_cpu == "x64") {
-  ffmpeg_yasm_sources += [
-    "libavutil/x86/emms.asm",
   ]
 }
 
