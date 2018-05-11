@@ -84,6 +84,8 @@ class GpuBrowserCompositorOutputSurface : public BrowserCompositorOutputSurface,
  protected:
   void OnPresentation(uint64_t swap_id,
                       const gfx::PresentationFeedback& feedback);
+  void OnUpdateVSyncParameters(base::TimeTicks timebase,
+                               base::TimeDelta interval);
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy();
 
   viz::OutputSurfaceClient* client_ = nullptr;
@@ -96,6 +98,8 @@ class GpuBrowserCompositorOutputSurface : public BrowserCompositorOutputSurface,
   ui::LatencyTracker latency_tracker_;
 
  private:
+  base::WeakPtrFactory<GpuBrowserCompositorOutputSurface> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(GpuBrowserCompositorOutputSurface);
 };
 
