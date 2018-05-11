@@ -180,7 +180,7 @@
       <message desc="The description of the readFromHere key. Displayed in the Options page." name="IDS_CHROMEVOX_READ_FROM_HERE">
         Start reading from current location
       </message>
-      <message desc="The description of the showPowerKey key. Displayed in the Options page." name="IDS_CHROMEVOX_SHOW_POWER_KEY">
+      <message desc="The description of the command to show the ChromeVox menu. This menu is the application menu for ChromeVox and contains commands, as well as other useful menu items such as help." name="IDS_CHROMEVOX_SHOW_PANEL_MENU">
         Open ChromeVox menus
       </message>
       <message desc="The description of the hidePowerKey key. Displayed in the Options page." name="IDS_CHROMEVOX_HIDE_POWER_KEY">

@@ -12,6 +12,9 @@ goog.require('CommandHandler');
 goog.require('EventSourceState');
 goog.require('GestureCommandData');
 
+goog.scope(function() {
+var RoleType = chrome.automation.RoleType;
+
 /**
  * Global setting for the enabled state of this handler.
  * @param {boolean} state
@@ -45,6 +48,18 @@ GestureCommandHandler.onAccessibilityGesture_ = function(gesture) {
     return;
 
   Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
+
+  // Map gestures to arrow keys while within menus.
+  var range = ChromeVoxState.instance.currentRange;
+  if (commandData.menuKeyOverride && range.start && range.start.node &&
+      range.start.node.role == RoleType.MENU_ITEM &&
+      (range.start.node.root.docUrl.indexOf(chrome.extension.getURL('')) == 0 ||
+       range.start.node.root.role == RoleType.DESKTOP)) {
+    var key = commandData.keyOverride;
+    BackgroundKeyboardHandler.sendKeyPress(key.keyCode, key.modifiers);
+    return;
+  }
+
   var textEditHandler = DesktopAutomationHandler.instance.textEditHandler;
   if (textEditHandler && commandData.keyOverride) {
     var key = commandData.keyOverride;
@@ -69,3 +84,5 @@ GestureCommandHandler.init_ = function() {
 };
 
 GestureCommandHandler.init_();
+
+});  // goog.scope

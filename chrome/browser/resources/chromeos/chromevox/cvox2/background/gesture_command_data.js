@@ -10,6 +10,7 @@ goog.provide('GestureCommandData');
  * @type {!Object<string,
  *     {
  *     command: string,
+ *     menuKeyOverride: (boolean|undefined),
  *     keyOverride: ({keyCode: number, modifiers: ({ctrl:
  * boolean}|undefined)}|undefined)
  *    }>}
@@ -19,16 +20,24 @@ GestureCommandData.GESTURE_COMMAND_MAP = {
   'click': {command: 'forceClickOnCurrentItem'},
   'swipeUp1': {
     command: 'previousLine',
+    menuKeyOverride: true,
     keyOverride: {keyCode: 38 /* up */, skipStart: true, multiline: true}
   },
   'swipeDown1': {
     command: 'nextLine',
+    menuKeyOverride: true,
     keyOverride: {keyCode: 40 /* Down */, skipEnd: true, multiline: true}
   },
-  'swipeLeft1':
-      {command: 'previousObject', keyOverride: {keyCode: 37 /* left */}},
-  'swipeRight1':
-      {command: 'nextObject', keyOverride: {keyCode: 39 /* right */}},
+  'swipeLeft1': {
+    command: 'previousObject',
+    menuKeyOverride: true,
+    keyOverride: {keyCode: 37 /* left */}
+  },
+  'swipeRight1': {
+    command: 'nextObject',
+    menuKeyOverride: true,
+    keyOverride: {keyCode: 39 /* right */}
+  },
   'swipeUp2': {command: 'jumpToTop'},
   'swipeDown2': {command: 'readFromHere'},
   'swipeLeft2': {
@@ -42,4 +51,5 @@ GestureCommandData.GESTURE_COMMAND_MAP = {
   'swipeUp3': {command: 'scrollBackward'},
   'swipeDown3': {command: 'scrollForward'},
   'tap2': {command: 'stopSpeech'},
+  'tap4': {command: 'showPanelMenuMostRecent'},
 };
