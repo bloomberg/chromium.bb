@@ -6,22 +6,21 @@
 <script src="../../media-controls.js"></script>
 <script src="../utils.js"></script>
 <body>
+<video controls></video>
 <script>
 async_test(t => {
-    enablePictureInPictureForTest(t);
+  enablePictureInPictureForTest(t);
 
-    var video = document.createElement('video');
-    video.setAttribute('controls', '');
-    video.src = '../../content/test.wav';
-    document.body.appendChild(video);
+  var video = document.querySelector("video");
+  video.src = '../../content/test.wav';
 
-    video.onloadeddata = t.step_func_done(function() {
-        assertPictureInPictureButtonNotVisible(video);
-    });
+  video.onloadedmetadata = t.step_func(function() {
+    assert_false(isPictureInPictureButtonEnabled(video), "button should not be visible.");
+  });
 
-    video.onloadedmetadata = t.step_func(function() {
-        assertPictureInPictureButtonNotVisible(video);
-    });
+  video.onloadeddata = t.step_func_done(function() {
+    assert_false(isPictureInPictureButtonEnabled(video), "button should not be visible.");
+  });
 });
 </script>
 </body>

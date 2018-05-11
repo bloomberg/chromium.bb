@@ -1,43 +1,33 @@
-function assertPictureInPictureButtonVisible(videoElement)
-{
-  assert_true(isVisible(pictureInPictureButton(videoElement)),
-      "Picture in picture button should be visible.");
+function pictureInPictureOverflowItem(video) {
+  return overflowItem(video, '-internal-media-controls-picture-in-picture-button');
 }
 
-function assertPictureInPictureButtonNotVisible(videoElement)
-{
-  assert_false(isVisible(pictureInPictureButton(videoElement)),
-      "Picture in picture button should not be visible.");
+function isPictureInPictureButtonEnabled(video) {
+  var button = pictureInPictureOverflowItem(video);
+  return !button.disabled && button.style.display != "none";
 }
 
-function pictureInPictureButton(videoElement)
-{
-  var elementId = '-internal-media-controls-picture-in-picture-button';
-  var button = mediaControlsElement(
-      window.internals.shadowRoot(videoElement).firstChild,
-      elementId);
-  if (!button)
-    throw 'Failed to find picture in picture button.';
-  return button;
+function clickPictureInPictureButton(video, callback) {
+  openOverflowAndClickButton(video, pictureInPictureOverflowItem(video), callback);
 }
 
-function assertPictureInPictureInterstitialVisible(videoElement)
-{
-  assert_true(isVisible(pictureInPictureInterstitial(videoElement)),
-      "Picture in picture interstitial should be visible.");
+function checkPictureInPictureInterstitialDoesNotExist(video) {
+  var controlID = '-internal-picture-in-picture-icon';
+
+  var interstitial = getElementByPseudoId(internals.shadowRoot(video), controlID);
+  if (interstitial)
+    throw 'Should not have a picture in picture interstitial';
 }
 
-function assertPictureInPictureInterstitialNotVisible(videoElement)
-{
-  assert_false(isVisible(pictureInPictureInterstitial(videoElement)),
-      "Picture in picture interstitial should not be visible.");
+function isPictureInPictureInterstitialVisible(video) {
+  return isVisible(pictureInPictureInterstitial(video));
 }
 
-function pictureInPictureInterstitial(videoElement)
+function pictureInPictureInterstitial(video)
 {
-  var elementId = '-internal-picture-in-picture-interstitial';
+  var elementId = '-internal-media-interstitial';
   var interstitial = mediaControlsElement(
-      window.internals.shadowRoot(videoElement).firstChild,
+      window.internals.shadowRoot(video).firstChild,
       elementId);
   if (!interstitial)
     throw 'Failed to find picture in picture interstitial.';
@@ -54,13 +44,4 @@ function enablePictureInPictureForTest(t)
     internals.runtimeFlags.pictureInPictureEnabled =
         pictureInPictureEnabledValue;
   });
-}
-
-function click(button)
-{
-  const pos = offset(button);
-  const rect = button.getBoundingClientRect();
-  singleTapAtCoordinates(
-      Math.ceil(pos.left + rect.width / 2),
-      Math.ceil(pos.top + rect.height / 2));
 }

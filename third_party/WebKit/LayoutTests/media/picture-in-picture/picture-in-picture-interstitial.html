@@ -6,38 +6,24 @@
 <script src="../media-controls.js"></script>
 <script src="utils.js"></script>
 <body>
+<video controls></video>
 <script>
 async_test(t => {
-    enablePictureInPictureForTest(t);
+  enablePictureInPictureForTest(t);
 
-    var video = document.createElement('video');
-    video.setAttribute('controls', '');
-    video.src = '../content/test.ogv';
-    document.body.appendChild(video);
+  var video = document.querySelector("video");
+  video.src = "../content/test.ogv";
 
-    video.play();
+  video.onloadedmetadata = t.step_func(function() {
+    assert_true(isPictureInPictureButtonEnabled(video), "button should exist");
 
-    video.onloadedmetadata = t.step_func(function() {
-        // Should have a picture in picture button.
-        var button = pictureInPictureButton(video);
-        assert_false(
-            ("display" in button.style) && (button.style.display == "none"),
-             "button should exist");
+    checkPictureInPictureInterstitialDoesNotExist(video);
 
-        // Should not have a picture in picture interstitial while the video
-        // is not playing.
-        checkPictureInPictureInterstitialDoesNotExist(video);
-
-        button.onclick = setTimeout(t.step_func_done(function() {
-            // Interstitial should appear when picture in picture button is clicked.
-            var interstitial = pictureInPictureInterstitial(video);
-            assert_equals(interstitial.style.display, '',
-                'interstitial should be visible when the video is not playing');
-        }));
-
-        video.play();
-        button.click();
-    });
+    clickPictureInPictureButton(video, t.step_func_done(() => {
+      assert_true(isPictureInPictureInterstitialVisible(video),
+          "Interstitial should be visible when button is clicked");
+    }));
+  });
 });
 </script>
 </body>
