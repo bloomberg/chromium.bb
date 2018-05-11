@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.vr_shell;
 import android.content.Context;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.FrameLayout;
 import android.widget.PopupWindow;
@@ -23,6 +22,8 @@ public class VrPopupWindow extends PopupWindow {
     private Context mContext;
     private boolean mIsShowing;
     private PopupWindow.OnDismissListener mOnDismissListener;
+    private int mWidth;
+    private int mHeight;
 
     public VrPopupWindow(Context context, VrDialogManager vrDialogManager) {
         super(context);
@@ -39,12 +40,11 @@ public class VrPopupWindow extends PopupWindow {
                 MarginLayoutParams.WRAP_CONTENT, MarginLayoutParams.WRAP_CONTENT, Gravity.CENTER);
         UiUtils.removeViewFromParent(dialogView);
         mVrPopupContainer = new FrameLayout(mContext);
-        mVrPopupContainer.setLayoutParams(new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        mVrPopupContainer.setLayoutParams(new FrameLayout.LayoutParams(mWidth, mHeight));
         mVrPopupContainer.setBackgroundDrawable(getBackground());
         mVrPopupContainer.addView(dialogView, params);
         mVrDialogManager.setDialogView(mVrPopupContainer);
-        mVrDialogManager.initVrDialog(getWidth(), getHeight());
+        mVrDialogManager.initVrDialog(mWidth, mHeight);
         mVrDialogManager.setDialogLocation(x, y);
         mIsShowing = true;
     }
@@ -79,6 +79,11 @@ public class VrPopupWindow extends PopupWindow {
 
     @Override
     public void update(int x, int y, int width, int height) {
+        mWidth = width;
+        mHeight = height;
+        if (mVrPopupContainer != null) {
+            mVrPopupContainer.setLayoutParams(new FrameLayout.LayoutParams(width, height));
+        }
         mVrDialogManager.setDialogLocation(x, y);
         mVrDialogManager.setDialogSize(width, height);
     }
