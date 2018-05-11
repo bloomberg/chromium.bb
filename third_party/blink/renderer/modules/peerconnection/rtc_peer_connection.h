@@ -103,18 +103,20 @@ class MODULES_EXPORT RTCPeerConnection final
 
   ScriptPromise setLocalDescription(ScriptState*,
                                     const RTCSessionDescriptionInit&);
-  ScriptPromise setLocalDescription(ScriptState*,
-                                    const RTCSessionDescriptionInit&,
-                                    V8VoidFunction*,
-                                    V8RTCPeerConnectionErrorCallback*);
+  ScriptPromise setLocalDescription(
+      ScriptState*,
+      const RTCSessionDescriptionInit&,
+      V8VoidFunction*,
+      V8RTCPeerConnectionErrorCallback* = nullptr);
   RTCSessionDescription* localDescription();
 
   ScriptPromise setRemoteDescription(ScriptState*,
                                      const RTCSessionDescriptionInit&);
-  ScriptPromise setRemoteDescription(ScriptState*,
-                                     const RTCSessionDescriptionInit&,
-                                     V8VoidFunction*,
-                                     V8RTCPeerConnectionErrorCallback*);
+  ScriptPromise setRemoteDescription(
+      ScriptState*,
+      const RTCSessionDescriptionInit&,
+      V8VoidFunction*,
+      V8RTCPeerConnectionErrorCallback* = nullptr);
   RTCSessionDescription* remoteDescription();
 
   String signalingState() const;

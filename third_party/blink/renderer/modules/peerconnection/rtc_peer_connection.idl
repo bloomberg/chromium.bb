@@ -96,9 +96,12 @@ enum RTCIceConnectionState {
     [CallWith=ScriptState, RaisesException] Promise<void> createOffer(RTCSessionDescriptionCallback successCallback, RTCPeerConnectionErrorCallback failureCallback, optional Dictionary rtcOfferOptions);
     // TODO(guidou): There should be no mediaConstraints argument.
     [CallWith=ScriptState] Promise<void> createAnswer(RTCSessionDescriptionCallback successCallback, RTCPeerConnectionErrorCallback failureCallback, optional Dictionary mediaConstraints);
-    [CallWith=ScriptState] Promise<void> setLocalDescription(RTCSessionDescriptionInit description, VoidFunction successCallback, [Default=Undefined] optional RTCPeerConnectionErrorCallback failureCallback);
     // TODO(guidou): The failureCallback argument should be non-optional.
-    [CallWith=ScriptState] Promise<void> setRemoteDescription(RTCSessionDescriptionInit description, VoidFunction successCallback, [Default=Undefined] optional RTCPeerConnectionErrorCallback failureCallback);
+    // TODO(crbug.com/841185): |failureCallback| is not nullable in the spec.
+    [CallWith=ScriptState] Promise<void> setLocalDescription(RTCSessionDescriptionInit description, VoidFunction successCallback, optional RTCPeerConnectionErrorCallback? failureCallback);
+    // TODO(guidou): The failureCallback argument should be non-optional.
+    // TODO(crbug.com/841185): |failureCallback| is not nullable in the spec.
+    [CallWith=ScriptState] Promise<void> setRemoteDescription(RTCSessionDescriptionInit description, VoidFunction successCallback, optional RTCPeerConnectionErrorCallback? failureCallback);
     [CallWith=ScriptState, MeasureAs=RTCPeerConnectionAddIceCandidateLegacy] Promise<void> addIceCandidate((RTCIceCandidateInit or RTCIceCandidate) candidate, VoidFunction successCallback, RTCPeerConnectionErrorCallback failureCallback);
 
     // Legacy getStats() API. The returned metrics are a completely different

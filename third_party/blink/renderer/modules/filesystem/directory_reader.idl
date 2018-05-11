@@ -32,5 +32,6 @@
 [
     NoInterfaceObject
 ] interface DirectoryReader {
-    void readEntries(EntriesCallback successCallback, optional ErrorCallback errorCallback);
+    // TODO(crbug.com/841185): |errorCallback| is not nullable in the spec.
+    void readEntries(EntriesCallback successCallback, optional ErrorCallback? errorCallback);
 };

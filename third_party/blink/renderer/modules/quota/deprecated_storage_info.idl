@@ -29,6 +29,10 @@
     const unsigned short TEMPORARY = 0;
     const unsigned short PERSISTENT = 1;
 
-    [Measure, CallWith=ScriptState] void queryUsageAndQuota(unsigned short storageType, optional StorageUsageCallback usageCallback, optional StorageErrorCallback errorCallback);
-    [Measure, CallWith=ScriptState] void requestQuota(unsigned short storageType, unsigned long long newQuotaInBytes, optional StorageQuotaCallback quotaCallback, optional StorageErrorCallback errorCallback);
+    // TODO(crbug.com/841185): |usageCallback| and |errorCallback| are not
+    // nullable in the spec.
+    [Measure, CallWith=ScriptState] void queryUsageAndQuota(unsigned short storageType, optional StorageUsageCallback? usageCallback, optional StorageErrorCallback? errorCallback);
+    // TODO(crbug.com/841185): |quotaCallback| and |errorCallback| are not
+    // nullable in the spec.
+    [Measure, CallWith=ScriptState] void requestQuota(unsigned short storageType, unsigned long long newQuotaInBytes, optional StorageQuotaCallback? quotaCallback, optional StorageErrorCallback? errorCallback);
 };

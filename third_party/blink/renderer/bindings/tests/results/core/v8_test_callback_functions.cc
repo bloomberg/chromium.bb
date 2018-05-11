@@ -159,7 +159,7 @@ static void voidMethodOptionalCallbackFunctionInArgMethod(const v8::FunctionCall
   }
   if (info[0]->IsFunction()) {
     voidCallbackFunctionArg = V8VoidCallbackFunction::Create(info[0].As<v8::Function>());
-  } else if (info[0]->IsNullOrUndefined()) {
+  } else if (info[0]->IsUndefined()) {
     voidCallbackFunctionArg = nullptr;
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodOptionalCallbackFunctionInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));

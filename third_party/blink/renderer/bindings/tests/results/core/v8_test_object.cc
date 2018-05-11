@@ -5582,7 +5582,7 @@ static void voidMethodOptionalTestCallbackInterfaceArgMethod(const v8::FunctionC
   V8TestCallbackInterface* optionalTestCallbackInterfaceArg;
   if (info[0]->IsObject()) {
     optionalTestCallbackInterfaceArg = V8TestCallbackInterface::Create(info[0].As<v8::Object>());
-  } else if (info[0]->IsNullOrUndefined()) {
+  } else if (info[0]->IsUndefined()) {
     optionalTestCallbackInterfaceArg = nullptr;
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodOptionalTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not an object."));
@@ -8668,7 +8668,7 @@ static void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethod(cons
   V8TestCallbackInterface* optionalTestCallbackInterfaceArg;
   if (info[0]->IsObject()) {
     optionalTestCallbackInterfaceArg = V8TestCallbackInterface::Create(info[0].As<v8::Object>());
-  } else if (info[0]->IsNullOrUndefined()) {
+  } else if (info[0]->IsUndefined()) {
     optionalTestCallbackInterfaceArg = nullptr;
   } else {
     exceptionState.ThrowTypeError("The callback provided as parameter 1 is not an object.");

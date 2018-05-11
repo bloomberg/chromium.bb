@@ -33,7 +33,8 @@
         MeasureAs=GeolocationGetCurrentPosition
     ] void getCurrentPosition(
         PositionCallback successCallback,
-        optional PositionErrorCallback errorCallback,
+        // TODO(crbug.com/841185): |errorCallback| is not nullable in the spec.
+        optional PositionErrorCallback? errorCallback,
         optional PositionOptions options);
 
     [
@@ -41,7 +42,8 @@
         MeasureAs=GeolocationWatchPosition
     ] long watchPosition(
         PositionCallback successCallback,
-        optional PositionErrorCallback errorCallback,
+        // TODO(crbug.com/841185): |errorCallback| is not nullable in the spec.
+        optional PositionErrorCallback? errorCallback,
         optional PositionOptions options);
 
     void clearWatch(long watchID);

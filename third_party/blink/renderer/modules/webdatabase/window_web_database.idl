@@ -32,5 +32,6 @@ callback DatabaseCallback = void (Database database);
     ImplementedAs=DOMWindowWebDatabase,
     RuntimeEnabled=Database
 ] partial interface Window {
-    [MeasureAs=OpenWebDatabase, LogActivity, RaisesException] Database openDatabase(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, optional DatabaseCallback creationCallback);
+    // TODO(crbug.com/841185): |creationCallback| is not nullable in the spec.
+    [MeasureAs=OpenWebDatabase, LogActivity, RaisesException] Database openDatabase(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, optional DatabaseCallback? creationCallback);
 };
