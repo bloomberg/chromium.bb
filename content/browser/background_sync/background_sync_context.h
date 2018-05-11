@@ -25,6 +25,8 @@ class ServiceWorkerContextWrapper;
 class CONTENT_EXPORT BackgroundSyncContext
     : public base::RefCountedDeleteOnSequence<BackgroundSyncContext> {
  public:
+  REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
+
   BackgroundSyncContext();
 
   // Init and Shutdown are for use on the UI thread when the
