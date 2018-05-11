@@ -525,7 +525,8 @@ ServiceWorkerContextWrapper::GetProviderHostIds(const GURL& origin) const {
       new std::vector<std::pair<int, int>>());
 
   for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context_core_->GetClientProviderHostIterator(origin);
+           context_core_->GetClientProviderHostIterator(
+               origin, false /* include_reserved_clients */);
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* provider_host = it->GetProviderHost();
     provider_host_ids->push_back(

@@ -178,11 +178,13 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void RemoveAllProviderHostsForProcess(int process_id);
 
   // Returns a ProviderHost iterator for all service worker clients for the
-  // |origin|. This only returns clients that are execution ready (i.e., for
-  // windows, the navigation has been committed and for workers, the final
-  // response after redirects has been delivered).
+  // |origin|. If |include_reserved_clients| is false, this only returns clients
+  // that are execution ready (i.e., for windows, the navigation has been
+  // committed and for workers, the final response after redirects has been
+  // delivered).
   std::unique_ptr<ProviderHostIterator> GetClientProviderHostIterator(
-      const GURL& origin);
+      const GURL& origin,
+      bool include_reserved_clients);
 
   // Runs the callback with true if there is a ProviderHost for |origin| of type
   // blink::mojom::ServiceWorkerProviderType::kForWindow which is a main

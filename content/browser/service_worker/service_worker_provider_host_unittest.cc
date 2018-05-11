@@ -246,7 +246,8 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   bool CanFindClientProviderHost(ServiceWorkerProviderHost* host) {
     for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
              context_->GetClientProviderHostIterator(
-                 host->document_url().GetOrigin());
+                 host->document_url().GetOrigin(),
+                 false /* include_reserved_clients */);
          !it->IsAtEnd(); it->Advance()) {
       if (host == it->GetProviderHost())
         return true;

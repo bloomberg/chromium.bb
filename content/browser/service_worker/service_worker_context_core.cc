@@ -87,10 +87,11 @@ void SuccessReportingCallback(
 }
 
 bool IsSameOriginClientProviderHost(const GURL& origin,
+                                    bool allow_reserved_client,
                                     ServiceWorkerProviderHost* host) {
   return host->IsProviderForClient() &&
          host->document_url().GetOrigin() == origin &&
-         host->is_execution_ready();
+         (allow_reserved_client || host->is_execution_ready());
 }
 
 bool IsSameOriginWindowProviderHost(const GURL& origin,
@@ -403,10 +404,13 @@ void ServiceWorkerContextCore::RemoveAllProviderHostsForProcess(
 }
 
 std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator>
-ServiceWorkerContextCore::GetClientProviderHostIterator(const GURL& origin) {
+ServiceWorkerContextCore::GetClientProviderHostIterator(
+    const GURL& origin,
+    bool include_reserved_clients) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return base::WrapUnique(new ProviderHostIterator(
-      providers_.get(), base::Bind(IsSameOriginClientProviderHost, origin)));
+      providers_.get(), base::BindRepeating(IsSameOriginClientProviderHost,
+                                            origin, include_reserved_clients)));
 }
 
 void ServiceWorkerContextCore::HasMainFrameProviderHost(
@@ -414,7 +418,8 @@ void ServiceWorkerContextCore::HasMainFrameProviderHost(
     BoolCallback callback) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ProviderHostIterator provider_host_iterator(
-      providers_.get(), base::Bind(IsSameOriginWindowProviderHost, origin));
+      providers_.get(),
+      base::BindRepeating(IsSameOriginWindowProviderHost, origin));
 
   if (provider_host_iterator.IsAtEnd()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
