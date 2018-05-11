@@ -567,7 +567,7 @@ public class DownloadManagerUi
 
     private void maybeShowDownloadSettingsTextBubble(final Tracker tracker) {
         // If the user doesn't have an SD card don't show the IPH.
-        File[] externalDirs = DownloadUtils.getAllDownloadDirectories(mActivity);
+        String[] externalDirs = DownloadUtils.getAllDownloadDirectories();
         if (externalDirs.length < 2) return;
 
         // Check to see if the help UI should be triggered.

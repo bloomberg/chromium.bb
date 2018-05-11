@@ -211,6 +211,27 @@ public abstract class PathUtils {
     }
 
     /**
+     * @return Download directories including the default storage directory on SD card, and a
+     * private directory on external SD card.
+     */
+    @SuppressWarnings("unused")
+    @CalledByNative
+    public static String[] getAllPrivateDownloadsDirectories() {
+        File[] files;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            files = ContextUtils.getApplicationContext().getExternalFilesDirs(
+                    Environment.DIRECTORY_DOWNLOADS);
+        } else {
+            files = new File[] {Environment.getExternalStorageDirectory()};
+        }
+        String[] result = new String[files.length];
+        for (int i = 0; i < files.length; ++i) {
+            result[i] = files[i].getAbsolutePath();
+        }
+        return result;
+    }
+
+    /**
      * @return the path to native libraries.
      */
     @SuppressWarnings("unused")

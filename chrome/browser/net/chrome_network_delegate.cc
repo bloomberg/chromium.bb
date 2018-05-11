@@ -60,6 +60,7 @@
 #include "net/url_request/url_request.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/path_utils.h"
 #include "chrome/browser/io_thread.h"
 #endif
 
@@ -169,6 +170,10 @@ bool IsAccessAllowedInternal(const base::FilePath& path,
                          &external_storage_path);
   if (external_storage_path.IsParent(path))
     return true;
+
+  auto all_download_dirs = base::android::GetAllPrivateDownloadsDirectories();
+  for (const auto& dir : all_download_dirs)
+    whitelist.push_back(dir);
 
   // Whitelist of other allowed directories.
   static const base::FilePath::CharType* const kLocalAccessWhiteList[] = {

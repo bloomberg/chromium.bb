@@ -1543,10 +1543,9 @@ public class DownloadManagerService
             return false;
         }
 
-        File[] externalDirs = DownloadUtils.getAllDownloadDirectories(mContext);
-        for (File dir : externalDirs) {
-            if (dir == null) continue;
-            if (filePath.contains(dir.getAbsolutePath())) return false;
+        for (String dir : DownloadUtils.getAllDownloadDirectories()) {
+            if (TextUtils.isEmpty(dir)) continue;
+            if (filePath.contains(dir)) return false;
         }
 
         return true;

@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.TextViewCompat;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -239,18 +240,15 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
         mAdditionalOptions.clear();
 
         // If there are no more additional directories, it is only the primary storage available.
-        File[] externalDirs = DownloadUtils.getAllDownloadDirectories(mContext);
+        String[] externalDirs = DownloadUtils.getAllDownloadDirectories();
         if (externalDirs.length <= 1) return;
 
         int numOtherAdditionalDirectories = 0;
-        for (File dir : externalDirs) {
-            if (dir == null) continue;
+        for (String dir : externalDirs) {
+            if (TextUtils.isEmpty(dir)) continue;
 
             // Skip the directory that is in primary storage.
-            if (dir.getAbsolutePath().contains(
-                        Environment.getExternalStorageDirectory().getAbsolutePath())) {
-                continue;
-            }
+            if (dir.contains(Environment.getExternalStorageDirectory().getAbsolutePath())) continue;
 
             // Add index (ie. SD Card 2) if there is more than one secondary storage option.
             String directoryName = (numOtherAdditionalDirectories > 0)
@@ -259,7 +257,8 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
                               numOtherAdditionalDirectories + 1)
                     : mContext.getString(org.chromium.chrome.R.string.downloads_location_sd_card);
 
-            mAdditionalOptions.add(new DirectoryOption(directoryName, dir, dir.getUsableSpace()));
+            File file = new File(dir);
+            mAdditionalOptions.add(new DirectoryOption(directoryName, file, file.getUsableSpace()));
             numOtherAdditionalDirectories++;
         }
     }
