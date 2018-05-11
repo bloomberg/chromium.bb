@@ -227,6 +227,7 @@ void DefaultSearchManager::MergePrefsDataWithPrepopulated() {
   engine->date_created = prefs_default_search_->date_created;
   engine->last_modified = prefs_default_search_->last_modified;
   engine->last_visited = prefs_default_search_->last_visited;
+  engine->favicon_url = prefs_default_search_->favicon_url;
 
   prefs_default_search_ = std::move(engine);
 }

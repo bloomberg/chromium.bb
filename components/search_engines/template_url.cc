@@ -1304,7 +1304,6 @@ bool TemplateURL::MatchesData(const TemplateURL* t_url,
          (t_url->suggestions_url_post_params() ==
           data->suggestions_url_post_params) &&
          (t_url->image_url_post_params() == data->image_url_post_params) &&
-         (t_url->favicon_url() == data->favicon_url) &&
          (t_url->safe_for_autoreplace() == data->safe_for_autoreplace) &&
          (t_url->input_encodings() == data->input_encodings) &&
          (t_url->alternate_urls() == data->alternate_urls);

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -88,10 +89,18 @@ void SearchEngineTabHelper::DidFinishNavigation(
   GenerateKeywordIfNecessary(handle);
 }
 
+void SearchEngineTabHelper::WebContentsDestroyed() {
+  favicon_driver_observer_.RemoveAll();
+}
+
 SearchEngineTabHelper::SearchEngineTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       osdd_handler_bindings_(web_contents, this) {
   DCHECK(web_contents);
+
+  favicon::CreateContentFaviconDriverForWebContents(web_contents);
+  favicon_driver_observer_.Add(
+      favicon::ContentFaviconDriver::FromWebContents(web_contents));
 }
 
 void SearchEngineTabHelper::PageHasOpenSearchDescriptionDocument(
@@ -142,6 +151,20 @@ void SearchEngineTabHelper::PageHasOpenSearchDescriptionDocument(
   TemplateURLFetcherFactory::GetForProfile(profile)->ScheduleDownload(
       keyword, osdd_url, entry->GetFavicon().url,
       base::Bind(&AssociateURLFetcherWithWebContents, web_contents()));
+}
+
+void SearchEngineTabHelper::OnFaviconUpdated(
+    favicon::FaviconDriver* driver,
+    NotificationIconType notification_icon_type,
+    const GURL& icon_url,
+    bool icon_url_changed,
+    const gfx::Image& image) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  TemplateURLService* url_service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  if (url_service && url_service->loaded())
+    url_service->UpdateProviderFavicons(driver->GetActiveURL(), icon_url);
 }
 
 void SearchEngineTabHelper::GenerateKeywordIfNecessary(

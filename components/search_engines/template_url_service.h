@@ -238,6 +238,11 @@ class TemplateURLService : public WebDataServiceConsumer,
                         const base::string16& keyword,
                         const std::string& search_url);
 
+  // Updates any search providers matching |potential_search_url| with the new
+  // favicon location |favicon_url|.
+  void UpdateProviderFavicons(const GURL& potential_search_url,
+                              const GURL& favicon_url);
+
   // Return true if the given |url| can be made the default. This returns false
   // regardless of |url| if the default search provider is managed by policy or
   // controlled by an extension.

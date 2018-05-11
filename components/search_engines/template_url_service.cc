@@ -583,6 +583,29 @@ void TemplateURLService::ResetTemplateURL(TemplateURL* url,
   Update(url, TemplateURL(data));
 }
 
+void TemplateURLService::UpdateProviderFavicons(
+    const GURL& potential_search_url,
+    const GURL& favicon_url) {
+  DCHECK(loaded_);
+  DCHECK(potential_search_url.is_valid());
+
+  const TemplateURLSet* urls_for_host =
+      provider_map_->GetURLsForHost(potential_search_url.host());
+  if (!urls_for_host)
+    return;
+
+  Scoper scoper(this);
+  for (TemplateURL* turl : *urls_for_host) {
+    if (!IsCreatedByExtension(turl) &&
+        turl->IsSearchURL(potential_search_url, search_terms_data()) &&
+        turl->favicon_url() != favicon_url) {
+      TemplateURLData data(turl->data());
+      data.favicon_url = favicon_url;
+      Update(turl, TemplateURL(data));
+    }
+  }
+}
+
 bool TemplateURLService::CanMakeDefault(const TemplateURL* url) const {
   return
       ((default_search_provider_source_ == DefaultSearchManager::FROM_USER) ||
