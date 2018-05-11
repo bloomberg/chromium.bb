@@ -130,8 +130,7 @@ SoftwareBrowserCompositorOutputSurfaceTest::CreateSurface(
       std::move(device),
       base::Bind(
           &SoftwareBrowserCompositorOutputSurfaceTest::UpdateVSyncParameters,
-          base::Unretained(this)),
-      base::ThreadTaskRunnerHandle::Get());
+          base::Unretained(this)));
 }
 
 void SoftwareBrowserCompositorOutputSurfaceTest::UpdateVSyncParameters(

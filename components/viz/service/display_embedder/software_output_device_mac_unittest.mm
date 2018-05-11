@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display_embedder/software_output_device_mac.h"
 
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/skia_util.h"
 
@@ -12,7 +13,8 @@ namespace viz {
 namespace {
 
 TEST(SoftwareOutputDeviceMacTest, Basics) {
-  auto device = std::make_unique<SoftwareOutputDeviceMac>();
+  auto device = std::make_unique<SoftwareOutputDeviceMac>(
+      base::SequencedTaskRunnerHandle::Get());
   gfx::Size pixel_size(512, 512);
   float scale_factor = 1;
 

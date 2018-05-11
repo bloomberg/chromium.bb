@@ -16,7 +16,9 @@ namespace viz {
 SoftwareOutputDeviceMac::Buffer::Buffer() = default;
 SoftwareOutputDeviceMac::Buffer::~Buffer() = default;
 
-SoftwareOutputDeviceMac::SoftwareOutputDeviceMac() {}
+SoftwareOutputDeviceMac::SoftwareOutputDeviceMac(
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : SoftwareOutputDevice(std::move(task_runner)) {}
 
 SoftwareOutputDeviceMac::~SoftwareOutputDeviceMac() {}
 

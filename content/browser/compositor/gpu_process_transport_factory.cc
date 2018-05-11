@@ -229,7 +229,8 @@ GpuProcessTransportFactory::~GpuProcessTransportFactory() {
 
 std::unique_ptr<viz::SoftwareOutputDevice>
 GpuProcessTransportFactory::CreateSoftwareOutputDevice(
-    gfx::AcceleratedWidget widget) {
+    gfx::AcceleratedWidget widget,
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kHeadless))
     return base::WrapUnique(new viz::SoftwareOutputDevice);
@@ -255,7 +256,7 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
 #elif defined(USE_X11)
   return std::make_unique<viz::SoftwareOutputDeviceX11>(widget);
 #elif defined(OS_MACOSX)
-  return std::make_unique<viz::SoftwareOutputDeviceMac>();
+  return std::make_unique<viz::SoftwareOutputDeviceMac>(std::move(task_runner));
 #else
   NOTREACHED();
   return std::unique_ptr<viz::SoftwareOutputDevice>();
@@ -506,8 +507,9 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       }
       display_output_surface =
           std::make_unique<SoftwareBrowserCompositorOutputSurface>(
-              CreateSoftwareOutputDevice(compositor->widget()),
-              std::move(vsync_callback), compositor->task_runner());
+              CreateSoftwareOutputDevice(compositor->widget(),
+                                         compositor->task_runner()),
+              std::move(vsync_callback));
     } else {
       DCHECK(context_provider);
       const auto& capabilities = context_provider->ContextCapabilities();
