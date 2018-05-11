@@ -333,7 +333,7 @@ TEST(UiElement, HitTest) {
       {gfx::PointF(-0.1f, -0.1f), false, false, false},
   };
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     SCOPED_TRACE(i);
     EXPECT_EQ(test_cases[i].expected_rect,
               rect.LocalHitTest(test_cases[i].location));
@@ -341,6 +341,37 @@ TEST(UiElement, HitTest) {
               circle.LocalHitTest(test_cases[i].location));
     EXPECT_EQ(test_cases[i].expected_rounded_rect,
               rounded_rect.LocalHitTest(test_cases[i].location));
+  }
+}
+
+TEST(UiElement, HitTestWithClip) {
+  UiElement rect;
+  rect.SetSize(1.0, 1.0);
+  // A horizontal band in the middle.
+  rect.set_clip_rect_for_test({-0.5f, 0.2f, 1.0f, 0.4f});
+  struct {
+    gfx::PointF location;
+    bool expected;
+  } test_cases[] = {
+      // Vertical walk.
+      {{0.5f, 0.0f}, false},
+      {{0.5f, 0.2f}, false},
+      {{0.5f, 0.4f}, true},
+      {{0.5f, 0.6f}, true},
+      {{0.5f, 0.8f}, false},
+      {{0.5f, 1.0f}, false},
+      // Horizontal walk.
+      {{0.0f, 0.5f}, true},
+      {{0.2f, 0.5f}, true},
+      {{0.4f, 0.5f}, true},
+      {{0.6f, 0.5f}, true},
+      {{0.8f, 0.5f}, true},
+  };
+
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
+    SCOPED_TRACE(i);
+    EXPECT_EQ(test_cases[i].expected,
+              rect.LocalHitTest(test_cases[i].location));
   }
 }
 
@@ -427,6 +458,29 @@ TEST(UiElement, EventBubbling) {
   // Events don't bubble to element since it doesn't have the bubble_events bit
   // set.
   element_handlers.ExpectCalled(false);
+}
+
+// The clip rect is properly transformed into the child's coordinates.
+TEST(UiElement, ClipChildren) {
+  auto parent = std::make_unique<UiElement>();
+  parent->SetSize(16.0f, 8.0f);
+  parent->set_clip_descendants(true);
+  auto child = std::make_unique<UiElement>();
+  child->SetSize(4.0f, 4.0f);
+  child->set_y_anchoring(TOP);
+  auto* p_child = child.get();
+  parent->AddChild(std::move(child));
+
+  parent->SizeAndLayOut();
+
+  EXPECT_FLOAT_RECT_EQ(gfx::RectF(-8.0f, 0.0f, 16.0f, 8.0f),
+                       p_child->clip_rect());
+
+  p_child->SetScale(0.5f, 0.5f, 1.0f);
+  parent->DoLayOutChildren();
+  parent->ClipChildren();
+  EXPECT_FLOAT_RECT_EQ(gfx::RectF(-16.0f, 0.0f, 32.0f, 16.0f),
+                       p_child->clip_rect());
 }
 
 }  // namespace vr

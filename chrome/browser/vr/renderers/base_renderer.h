@@ -23,6 +23,8 @@ class BaseRenderer {
   GLuint program_handle_ = 0;
   GLuint position_handle_ = 0;
 
+  GLuint clip_rect_handle_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(BaseRenderer);
 };
 

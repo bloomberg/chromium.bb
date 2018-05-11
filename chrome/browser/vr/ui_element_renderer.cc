@@ -58,7 +58,7 @@ void UiElementRenderer::DrawTexturedQuad(
     int overlay_texture_data_handle,
     TextureLocation texture_location,
     const gfx::Transform& model_view_proj_matrix,
-    const gfx::RectF& copy_rect,
+    const gfx::RectF& clip_rect,
     float opacity,
     const gfx::SizeF& element_size,
     float corner_radius,
@@ -79,7 +79,7 @@ void UiElementRenderer::DrawTexturedQuad(
   }
   FlushIfNecessary(renderer);
   renderer->AddQuad(texture_data_handle, overlay_texture_data_handle,
-                    model_view_proj_matrix, copy_rect, opacity, element_size,
+                    model_view_proj_matrix, clip_rect, opacity, element_size,
                     corner_radius, blend);
 }
 
@@ -87,13 +87,15 @@ void UiElementRenderer::DrawGradientQuad(
     const gfx::Transform& model_view_proj_matrix,
     const SkColor edge_color,
     const SkColor center_color,
+    const gfx::RectF& clip_rect,
     float opacity,
     const gfx::SizeF& element_size,
     const CornerRadii& radii) {
   TRACE_EVENT0("gpu", "UiElementRenderer::DrawGradientQuad");
   FlushIfNecessary(gradient_quad_renderer_.get());
   gradient_quad_renderer_->Draw(model_view_proj_matrix, edge_color,
-                                center_color, opacity, element_size, radii);
+                                center_color, clip_rect, opacity, element_size,
+                                radii);
 }
 
 void UiElementRenderer::DrawGradientGridQuad(

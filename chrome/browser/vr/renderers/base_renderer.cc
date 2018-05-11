@@ -27,6 +27,7 @@ BaseRenderer::BaseRenderer(const char* vertex_src, const char* fragment_src) {
   glDeleteShader(fragment_shader_handle);
 
   position_handle_ = glGetAttribLocation(program_handle_, "a_Position");
+  clip_rect_handle_ = glGetUniformLocation(program_handle_, "u_ClipRect");
 }
 
 BaseRenderer::~BaseRenderer() = default;
