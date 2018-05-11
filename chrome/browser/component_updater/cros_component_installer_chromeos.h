@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COMPONENT_UPDATER_CROS_COMPONENT_INSTALLER_H_
-#define CHROME_BROWSER_COMPONENT_UPDATER_CROS_COMPONENT_INSTALLER_H_
+#ifndef CHROME_BROWSER_COMPONENT_UPDATER_CROS_COMPONENT_INSTALLER_CHROMEOS_H_
+#define CHROME_BROWSER_COMPONENT_UPDATER_CROS_COMPONENT_INSTALLER_CHROMEOS_H_
 
 #include <memory>
 #include <string>
@@ -18,6 +18,7 @@
 namespace component_updater {
 
 class ComponentUpdateService;
+class MetadataTable;
 
 struct ComponentConfig {
   const char* name;
@@ -92,7 +93,7 @@ class CrOSComponentManager {
     virtual void EmitInstalledSignal(const std::string& component) = 0;
   };
 
-  CrOSComponentManager();
+  explicit CrOSComponentManager(std::unique_ptr<MetadataTable> metadata_table);
   ~CrOSComponentManager();
 
   void SetDelegate(Delegate* delegate);
@@ -134,6 +135,7 @@ class CrOSComponentManager {
   FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest,
                            CompatibilityMissingManifest);
   FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest, IsCompatibleOrNot);
+  FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest, CompatibleCrOSComponent);
 
   // Registers a component with a dedicated ComponentUpdateService instance.
   void Register(ComponentUpdateService* cus,
@@ -165,6 +167,7 @@ class CrOSComponentManager {
   // point).
   void FinishLoad(LoadCallback load_callback,
                   const base::TimeTicks start_time,
+                  const std::string& name,
                   base::Optional<base::FilePath> result);
 
   // Registers component |configs| to be updated.
@@ -180,9 +183,12 @@ class CrOSComponentManager {
   // A weak pointer to a Delegate for emitting D-Bus signal.
   Delegate* delegate_;
 
+  // Table storing metadata (installs, usage, etc.).
+  std::unique_ptr<MetadataTable> metadata_table_;
+
   DISALLOW_COPY_AND_ASSIGN(CrOSComponentManager);
 };
 
 }  // namespace component_updater
 
-#endif  // CHROME_BROWSER_COMPONENT_UPDATER_CROS_COMPONENT_INSTALLER_H_
+#endif  // CHROME_BROWSER_COMPONENT_UPDATER_CROS_COMPONENT_INSTALLER_CHROMEOS_H_

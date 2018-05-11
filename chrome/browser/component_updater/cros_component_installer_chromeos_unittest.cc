@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component_updater/cros_component_installer.h"
-
 #include <utility>
 
 #include "base/run_loop.h"
@@ -11,6 +9,8 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
+#include "chrome/browser/component_updater/metadata_table_chromeos.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/component_updater/mock_component_updater_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,8 +53,9 @@ class MockCrOSComponentInstallerPolicy : public CrOSComponentInstallerPolicy {
                     const std::string& min_env_version_str));
 };
 
-TEST_F(CrOSComponentInstallerTest, BPPPCompatibleCrOSComponent) {
-  component_updater::CrOSComponentManager cros_component_manager;
+TEST_F(CrOSComponentInstallerTest, CompatibleCrOSComponent) {
+  component_updater::CrOSComponentManager cros_component_manager(nullptr);
+
   const std::string kComponent = "a";
   EXPECT_FALSE(cros_component_manager.IsCompatible(kComponent));
   EXPECT_EQ(cros_component_manager.GetCompatiblePath(kComponent).value(),
@@ -110,7 +111,7 @@ TEST_F(CrOSComponentInstallerTest, RegisterComponent) {
       "star-cups-driver", "1.1",
       "6d24de30f671da5aee6d463d9e446cafe9ddac672800a9defe86877dcde6c466"};
   EXPECT_CALL(*cus, RegisterComponent(testing::_)).Times(1);
-  component_updater::CrOSComponentManager cros_component_manager;
+  component_updater::CrOSComponentManager cros_component_manager(nullptr);
   cros_component_manager.Register(cus.get(), config, base::OnceClosure());
   RunUntilIdle();
 }

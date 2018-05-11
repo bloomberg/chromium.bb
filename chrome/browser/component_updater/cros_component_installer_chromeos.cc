@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component_updater/cros_component_installer.h"
+#include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 
 #include <map>
 #include <utility>
@@ -14,6 +14,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_installer_errors.h"
+#include "chrome/browser/component_updater/metadata_table_chromeos.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/image_loader_client.h"
 #include "components/component_updater/component_updater_paths.h"
@@ -26,6 +27,7 @@ namespace component_updater {
 
 namespace {
 
+// Root path where all components are stored.
 constexpr char kComponentsRootPath[] = "cros-components";
 
 // All downloadable Chrome OS components.
@@ -50,7 +52,7 @@ const ComponentConfig* FindConfig(const std::string& name) {
       [&name](const ComponentConfig& config) { return config.name == name; });
 }
 
-// TODO(xiaochu): add metrics for component usage (crbug.com/793052).
+// TODO(xiaochu): add metrics for component usage (https://crbug.com/793052).
 void LogCustomUninstall(base::Optional<bool> result) {}
 
 std::string GenerateId(const std::string& sha2hashstr) {
@@ -198,7 +200,9 @@ bool CrOSComponentInstallerPolicy::IsCompatible(
          env_version >= min_env_version;
 }
 
-CrOSComponentManager::CrOSComponentManager() {}
+CrOSComponentManager::CrOSComponentManager(
+    std::unique_ptr<MetadataTable> metadata_table)
+    : metadata_table_(std::move(metadata_table)) {}
 
 CrOSComponentManager::~CrOSComponentManager() {}
 
@@ -232,7 +236,9 @@ bool CrOSComponentManager::Unload(const std::string& name) {
   }
   ComponentUpdateService* updater = g_browser_process->component_updater();
   const std::string id = GenerateId(config->sha2hash);
-  return updater->UnregisterComponent(id);
+  metadata_table_->DeleteComponentForCurrentUser(name);
+  return metadata_table_->HasComponentForAnyUser(name) ||
+         updater->UnregisterComponent(id);
 }
 
 void CrOSComponentManager::RegisterInstalled() {
@@ -327,7 +333,7 @@ void CrOSComponentManager::LoadInternal(const std::string& name,
             name, path,
             base::BindOnce(&CrOSComponentManager::FinishLoad,
                            base::Unretained(this), std::move(load_callback),
-                           base::TimeTicks::Now()));
+                           base::TimeTicks::Now(), name));
   } else {
     base::PostTask(
         FROM_HERE,
@@ -339,6 +345,7 @@ void CrOSComponentManager::LoadInternal(const std::string& name,
 
 void CrOSComponentManager::FinishLoad(LoadCallback load_callback,
                                       const base::TimeTicks start_time,
+                                      const std::string& name,
                                       base::Optional<base::FilePath> result) {
   // Report component image mount time.
   UMA_HISTOGRAM_LONG_TIMES("ComponentUpdater.ChromeOS.MountTime",
@@ -348,6 +355,7 @@ void CrOSComponentManager::FinishLoad(LoadCallback load_callback,
                                              ReportError(Error::MOUNT_FAILURE),
                                              base::FilePath()));
   } else {
+    metadata_table_->AddComponentForCurrentUser(name);
     base::PostTask(FROM_HERE,
                    base::BindOnce(std::move(load_callback),
                                   ReportError(Error::NONE), result.value()));

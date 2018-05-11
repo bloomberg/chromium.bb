@@ -26,7 +26,8 @@
 #include "chrome/browser/chromeos/system/system_clock.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
-#include "chrome/browser/component_updater/cros_component_installer.h"
+#include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
+#include "chrome/browser/component_updater/metadata_table_chromeos.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/account_manager/account_manager_factory.h"
@@ -107,7 +108,9 @@ void BrowserProcessPlatformPart::ShutdownSessionManager() {
 void BrowserProcessPlatformPart::InitializeCrosComponentManager() {
   DCHECK(!cros_component_manager_);
   cros_component_manager_ =
-      std::make_unique<component_updater::CrOSComponentManager>();
+      std::make_unique<component_updater::CrOSComponentManager>(
+          component_updater::MetadataTable::Create(
+              g_browser_process->local_state()));
 
   // Register all installed components for regular update.
   cros_component_manager_->RegisterInstalled();
