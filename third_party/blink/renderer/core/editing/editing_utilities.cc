@@ -25,8 +25,8 @@
 
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 
-#include "third_party/blink/renderer/core/clipboard/clipboard.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
+#include "third_party/blink/renderer/core/clipboard/pasteboard.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -1727,13 +1727,15 @@ AtomicString GetUrlStringFromNode(const Node& node) {
   return AtomicString();
 }
 
-void WriteImageNodeToClipboard(const Node& node, const String& title) {
+void WriteImageNodeToPasteboard(Pasteboard* pasteboard,
+                                const Node& node,
+                                const String& title) {
   const scoped_refptr<Image> image = ImageFromNode(node);
   if (!image.get())
     return;
   const KURL url_string = node.GetDocument().CompleteURL(
       StripLeadingAndTrailingHTMLSpaces(GetUrlStringFromNode(node)));
-  Clipboard::GetInstance().WriteImage(image.get(), url_string, title);
+  pasteboard->WriteImage(image.get(), url_string, title);
 }
 
 Element* FindEventTargetFrom(LocalFrame& frame,

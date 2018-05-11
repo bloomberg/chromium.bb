@@ -28,10 +28,10 @@
 
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/clipboard/clipboard.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer_access_policy.h"
+#include "third_party/blink/renderer/core/clipboard/pasteboard.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
@@ -622,8 +622,9 @@ void Editor::CountEvent(ExecutionContext* execution_context,
 }
 
 void Editor::CopyImage(const HitTestResult& result) {
-  WriteImageNodeToClipboard(*result.InnerNodeOrImageMapImage(),
-                            result.AltDisplayString());
+  WriteImageNodeToPasteboard(Pasteboard::GeneralPasteboard(),
+                             *result.InnerNodeOrImageMapImage(),
+                             result.AltDisplayString());
 }
 
 bool Editor::CanUndo() {
