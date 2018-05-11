@@ -229,7 +229,7 @@ void DownloadFileImpl::AddInputStream(std::unique_ptr<InputStream> stream,
     CancelRequest(offset);
     return;
   }
-  DCHECK(source_streams_.find(offset) == source_streams_.end());
+
   source_streams_[offset] =
       std::make_unique<SourceStream>(offset, length, std::move(stream));
   OnSourceStreamAdded(source_streams_[offset].get());

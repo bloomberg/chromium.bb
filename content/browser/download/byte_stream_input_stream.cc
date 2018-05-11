@@ -4,16 +4,13 @@
 
 #include "content/browser/download/byte_stream_input_stream.h"
 
-#include "components/download/public/common/download_task_runner.h"
 #include "content/browser/byte_stream.h"
 
 namespace content {
 
 ByteStreamInputStream::ByteStreamInputStream(
     std::unique_ptr<ByteStreamReader> stream_reader)
-    : stream_reader_(
-          stream_reader.release(),
-          base::OnTaskRunnerDeleter(download::GetDownloadTaskRunner())),
+    : stream_reader_(std::move(stream_reader)),
       completion_status_(download::DOWNLOAD_INTERRUPT_REASON_NONE) {}
 
 ByteStreamInputStream::~ByteStreamInputStream() = default;
