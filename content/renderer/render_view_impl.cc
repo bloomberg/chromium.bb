@@ -1331,7 +1331,7 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
 
   RenderViewImpl* view = RenderViewImpl::Create(
       compositor_deps_, std::move(view_params), std::move(show_callback),
-      creator->GetTaskRunner(blink::TaskType::kUnthrottled));
+      creator->GetTaskRunner(blink::TaskType::kInternalDefault));
 
   return view->webview();
 }
@@ -1340,7 +1340,7 @@ WebWidget* RenderViewImpl::CreatePopup(blink::WebLocalFrame* creator,
                                        blink::WebPopupType popup_type) {
   RenderWidget* widget = RenderWidget::CreateForPopup(
       this, compositor_deps_, popup_type, screen_info_,
-      creator->GetTaskRunner(blink::TaskType::kUnthrottled));
+      creator->GetTaskRunner(blink::TaskType::kInternalDefault));
   if (!widget)
     return nullptr;
   if (screen_metrics_emulator_) {
