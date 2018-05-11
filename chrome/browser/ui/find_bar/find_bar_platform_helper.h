@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 
 class FindBarController;
 
@@ -18,6 +19,9 @@ class FindBarPlatformHelper {
       FindBarController* find_bar_controller);
 
   virtual ~FindBarPlatformHelper();
+
+  // Called when the user changes the find text to |text|.
+  virtual void OnUserChangedFindText(base::string16 text) = 0;
 
  protected:
   explicit FindBarPlatformHelper(FindBarController* find_bar_controller);

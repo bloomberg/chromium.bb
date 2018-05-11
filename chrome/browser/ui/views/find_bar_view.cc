@@ -412,6 +412,8 @@ void FindBarView::Find(const base::string16& search_text) {
 
   last_searched_text_ = search_text;
 
+  controller->OnUserChangedFindText(search_text);
+
   // When the user changes something in the text box we check the contents and
   // if the textbox contains something we set it as the new search string and
   // initiate search (even though old searches might be in progress).

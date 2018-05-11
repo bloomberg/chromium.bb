@@ -5,6 +5,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
@@ -34,6 +35,11 @@ class FindBarPlatformHelperMac : public FindBarPlatformHelper {
   ~FindBarPlatformHelperMac() override {
     [[NSNotificationCenter defaultCenter]
         removeObserver:find_pasteboard_notification_observer_];
+  }
+
+  void OnUserChangedFindText(base::string16 text) override {
+    [[FindPasteboard sharedInstance]
+        setFindText:base::SysUTF16ToNSString(text)];
   }
 
  private:

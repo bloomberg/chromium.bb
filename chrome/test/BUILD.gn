@@ -4965,6 +4965,7 @@ if (!is_android) {
 
     if (is_mac) {
       sources += [
+        "../browser/ui/find_bar/find_bar_platform_helper_mac_interactive_uitest.mm",
         "base/interactive_test_utils_cocoa.h",
         "base/interactive_test_utils_cocoa.mm",
       ]
