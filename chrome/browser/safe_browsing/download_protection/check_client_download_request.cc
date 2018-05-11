@@ -861,6 +861,8 @@ void CheckClientDownloadRequest::SendRequest() {
                         ? ChromeUserPopulation::EXTENDED_REPORTING
                         : ChromeUserPopulation::SAFE_BROWSING;
   request.mutable_population()->set_user_population(population);
+  request.mutable_population()->set_profile_management_status(
+      GetProfileManagementStatus());
 
   request.set_url(SanitizeUrl(item_->GetUrlChain().back()));
   request.mutable_digests()->set_sha256(item_->GetHash());

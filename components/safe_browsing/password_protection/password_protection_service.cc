@@ -21,6 +21,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
+#include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/whitelist_checker_client.h"
 #include "components/safe_browsing/features.h"
@@ -551,6 +552,7 @@ void PasswordProtectionService::FillUserPopulation(
   user_population->set_user_population(
       IsExtendedReporting() ? ChromeUserPopulation::EXTENDED_REPORTING
                             : ChromeUserPopulation::SAFE_BROWSING);
+  user_population->set_profile_management_status(GetProfileManagementStatus());
   user_population->set_is_history_sync_enabled(IsHistorySyncEnabled());
 }
 

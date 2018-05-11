@@ -12,6 +12,7 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -166,6 +167,8 @@ void PPAPIDownloadRequest::SendRequest() {
                         ? ChromeUserPopulation::EXTENDED_REPORTING
                         : ChromeUserPopulation::SAFE_BROWSING;
   request.mutable_population()->set_user_population(population);
+  request.mutable_population()->set_profile_management_status(
+      GetProfileManagementStatus());
   request.set_download_type(ClientDownloadRequest::PPAPI_SAVE_REQUEST);
   ClientDownloadRequest::Resource* resource = request.add_resources();
   resource->set_type(ClientDownloadRequest::PPAPI_DOCUMENT);
