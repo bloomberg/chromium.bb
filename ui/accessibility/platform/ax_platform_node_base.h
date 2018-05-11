@@ -151,6 +151,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   bool IsTextOnlyObject() const;
   bool IsPlainTextField() const;
+  // Is in a focused textfield with a related autofill popup currently visible.
+  bool IsAutofillField();
   bool IsRichTextField() const;
   bool IsRangeValueSupported() const;
 

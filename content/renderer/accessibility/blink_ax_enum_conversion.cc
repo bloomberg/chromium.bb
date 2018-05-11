@@ -135,6 +135,84 @@ ax::mojom::Role AXRoleFromBlink(blink::WebAXRole role) {
       return ax::mojom::Role::kDirectory;
     case blink::kWebAXRoleDisclosureTriangle:
       return ax::mojom::Role::kDisclosureTriangle;
+    case blink::kWebAXRoleDocAbstract:
+      return ax::mojom::Role::kDocAbstract;
+    case blink::kWebAXRoleDocAcknowledgments:
+      return ax::mojom::Role::kDocAcknowledgments;
+    case blink::kWebAXRoleDocAfterword:
+      return ax::mojom::Role::kDocAfterword;
+    case blink::kWebAXRoleDocAppendix:
+      return ax::mojom::Role::kDocAppendix;
+    case blink::kWebAXRoleDocBackLink:
+      return ax::mojom::Role::kDocBackLink;
+    case blink::kWebAXRoleDocBiblioEntry:
+      return ax::mojom::Role::kDocBiblioEntry;
+    case blink::kWebAXRoleDocBibliography:
+      return ax::mojom::Role::kDocBibliography;
+    case blink::kWebAXRoleDocBiblioRef:
+      return ax::mojom::Role::kDocBiblioRef;
+    case blink::kWebAXRoleDocChapter:
+      return ax::mojom::Role::kDocChapter;
+    case blink::kWebAXRoleDocColophon:
+      return ax::mojom::Role::kDocColophon;
+    case blink::kWebAXRoleDocConclusion:
+      return ax::mojom::Role::kDocConclusion;
+    case blink::kWebAXRoleDocCover:
+      return ax::mojom::Role::kDocCover;
+    case blink::kWebAXRoleDocCredit:
+      return ax::mojom::Role::kDocCredit;
+    case blink::kWebAXRoleDocCredits:
+      return ax::mojom::Role::kDocCredits;
+    case blink::kWebAXRoleDocDedication:
+      return ax::mojom::Role::kDocDedication;
+    case blink::kWebAXRoleDocEndnote:
+      return ax::mojom::Role::kDocEndnote;
+    case blink::kWebAXRoleDocEndnotes:
+      return ax::mojom::Role::kDocEndnotes;
+    case blink::kWebAXRoleDocEpigraph:
+      return ax::mojom::Role::kDocEpigraph;
+    case blink::kWebAXRoleDocEpilogue:
+      return ax::mojom::Role::kDocEpilogue;
+    case blink::kWebAXRoleDocErrata:
+      return ax::mojom::Role::kDocErrata;
+    case blink::kWebAXRoleDocExample:
+      return ax::mojom::Role::kDocExample;
+    case blink::kWebAXRoleDocFootnote:
+      return ax::mojom::Role::kDocFootnote;
+    case blink::kWebAXRoleDocForeword:
+      return ax::mojom::Role::kDocForeword;
+    case blink::kWebAXRoleDocGlossary:
+      return ax::mojom::Role::kDocGlossary;
+    case blink::kWebAXRoleDocGlossRef:
+      return ax::mojom::Role::kDocGlossRef;
+    case blink::kWebAXRoleDocIndex:
+      return ax::mojom::Role::kDocIndex;
+    case blink::kWebAXRoleDocIntroduction:
+      return ax::mojom::Role::kDocIntroduction;
+    case blink::kWebAXRoleDocNoteRef:
+      return ax::mojom::Role::kDocNoteRef;
+    case blink::kWebAXRoleDocNotice:
+      return ax::mojom::Role::kDocNotice;
+    case blink::kWebAXRoleDocPageBreak:
+      return ax::mojom::Role::kDocPageBreak;
+    case blink::kWebAXRoleDocPageList:
+      return ax::mojom::Role::kDocPageList;
+    case blink::kWebAXRoleDocPart:
+      return ax::mojom::Role::kDocPart;
+    case blink::kWebAXRoleDocPreface:
+      return ax::mojom::Role::kDocPreface;
+    case blink::kWebAXRoleDocPrologue:
+      return ax::mojom::Role::kDocPrologue;
+    case blink::kWebAXRoleDocPullquote:
+      return ax::mojom::Role::kDocPullquote;
+    case blink::kWebAXRoleDocQna:
+      return ax::mojom::Role::kDocQna;
+    case blink::kWebAXRoleDocSubtitle:
+      return ax::mojom::Role::kDocSubtitle;
+    case blink::kWebAXRoleDocTip:
+      return ax::mojom::Role::kDocTip;
+    case blink::kWebAXRoleDocToc:
+      return ax::mojom::Role::kDocToc;
     case blink::kWebAXRoleDocument:
       return ax::mojom::Role::kDocument;
     case blink::kWebAXRoleEmbeddedObject:
@@ -151,6 +229,12 @@ ax::mojom::Role AXRoleFromBlink(blink::WebAXRole role) {
       return ax::mojom::Role::kForm;
     case blink::kWebAXRoleGenericContainer:
       return ax::mojom::Role::kGenericContainer;
+    case blink::kWebAXRoleGraphicsDocument:
+      return ax::mojom::Role::kGraphicsDocument;
+    case blink::kWebAXRoleGraphicsObject:
+      return ax::mojom::Role::kGraphicsObject;
+    case blink::kWebAXRoleGraphicsSymbol:
+      return ax::mojom::Role::kGraphicsSymbol;
     case blink::kWebAXRoleGrid:
       return ax::mojom::Role::kGrid;
     case blink::kWebAXRoleGroup:

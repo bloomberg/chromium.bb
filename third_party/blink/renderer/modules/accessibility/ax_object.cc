@@ -103,10 +103,62 @@ const RoleEntry kRoles[] = {{"alert", kAlertRole},
                             {"definition", kDefinitionRole},
                             {"dialog", kDialogRole},
                             {"directory", kDirectoryRole},
+                            // -------------------------------------------------
+                            // DPub Roles:
+                            // www.w3.org/TR/dpub-aam-1.0/#mapping_role_table
+                            {"doc-abstract", kDocAbstractRole},
+                            {"doc-acknowledgments", kDocAcknowledgmentsRole},
+                            {"doc-afterword", kDocAfterwordRole},
+                            {"doc-appendix", kDocAppendixRole},
+                            {"doc-backlink", kDocBackLinkRole},
+                            {"doc-biblioentry", kDocBiblioEntryRole},
+                            {"doc-bibliography", kDocBibliographyRole},
+                            {"doc-biblioref", kDocBiblioRefRole},
+                            {"doc-chapter", kDocChapterRole},
+                            {"doc-colophon", kDocColophonRole},
+                            {"doc-conclusion", kDocConclusionRole},
+                            {"doc-cover", kDocCoverRole},
+                            {"doc-credit", kDocCreditRole},
+                            {"doc-credits", kDocCreditsRole},
+                            {"doc-dedication", kDocDedicationRole},
+                            {"doc-endnote", kDocEndnoteRole},
+                            {"doc-endnotes", kDocEndnotesRole},
+                            {"doc-epigraph", kDocEpigraphRole},
+                            {"doc-epilogue", kDocEpilogueRole},
+                            {"doc-errata", kDocErrataRole},
+                            {"doc-example", kDocExampleRole},
+                            {"doc-footnote", kDocFootnoteRole},
+                            {"doc-foreword", kDocForewordRole},
+                            {"doc-glossary", kDocGlossaryRole},
+                            {"doc-glossref", kDocGlossRefRole},
+                            {"doc-index", kDocIndexRole},
+                            {"doc-introduction", kDocIntroductionRole},
+                            {"doc-noteref", kDocNoteRefRole},
+                            {"doc-notice", kDocNoticeRole},
+                            {"doc-pagebreak", kDocPageBreakRole},
+                            {"doc-pagelist", kDocPageListRole},
+                            {"doc-part", kDocPartRole},
+                            {"doc-preface", kDocPrefaceRole},
+                            {"doc-prologue", kDocPrologueRole},
+                            {"doc-pullquote", kDocPullquoteRole},
+                            {"doc-qna", kDocQnaRole},
+                            {"doc-subtitle", kDocSubtitleRole},
+                            {"doc-tip", kDocTipRole},
+                            {"doc-toc", kDocTocRole},
+                            // End DPub roles.
+                            // -------------------------------------------------
                             {"document", kDocumentRole},
                             {"feed", kFeedRole},
                             {"figure", kFigureRole},
                             {"form", kFormRole},
+                            // -------------------------------------------------
+                            // ARIA Graphics module roles:
+                            // https://rawgit.com/w3c/graphics-aam/master/
+                            {"graphics-document", kGraphicsDocumentRole},
+                            {"graphics-object", kGraphicsObjectRole},
+                            {"graphics-symbol", kGraphicsSymbolRole},
+                            // End ARIA Graphics module roles.
+                            // -------------------------------------------------
                             {"grid", kGridRole},
                             {"gridcell", kCellRole},
                             {"group", kGroupRole},
@@ -133,6 +185,8 @@ const RoleEntry kRoles[] = {{"alert", kAlertRole},
                             {"progressbar", kProgressIndicatorRole},
                             {"radio", kRadioButtonRole},
                             {"radiogroup", kRadioGroupRole},
+                            // TODO(accessibility) region should only be mapped
+                            // if name present. See http://crbug.com/840819.
                             {"region", kRegionRole},
                             {"row", kRowRole},
                             {"rowheader", kRowHeaderRole},
@@ -197,6 +251,50 @@ const InternalRoleEntry kInternalRoles[] = {
     {kDialogRole, "Dialog"},
     {kDirectoryRole, "Directory"},
     {kDisclosureTriangleRole, "DisclosureTriangle"},
+    // --------------------------------------------------------------
+    // DPub Roles:
+    // https://www.w3.org/TR/dpub-aam-1.0/#mapping_role_table
+    {kDocAbstractRole, "DocAbstract"},
+    {kDocAcknowledgmentsRole, "DocAcknowledgments"},
+    {kDocAfterwordRole, "DocAfterword"},
+    {kDocAppendixRole, "DocAppendix"},
+    {kDocBackLinkRole, "DocBackLink"},
+    {kDocBiblioEntryRole, "DocBiblioentry"},
+    {kDocBibliographyRole, "DocBibliography"},
+    {kDocBiblioRefRole, "DocBiblioref"},
+    {kDocChapterRole, "DocChapter"},
+    {kDocColophonRole, "DocColophon"},
+    {kDocConclusionRole, "DocConclusion"},
+    {kDocCoverRole, "DocCover"},
+    {kDocCreditRole, "DocCredit"},
+    {kDocCreditsRole, "DocCredits"},
+    {kDocDedicationRole, "DocDedication"},
+    {kDocEndnoteRole, "DocEndnote"},
+    {kDocEndnotesRole, "DocEndnotes"},
+    {kDocEpigraphRole, "DocEpigraph"},
+    {kDocEpilogueRole, "DocEpilogue"},
+    {kDocErrataRole, "DocErrata"},
+    {kDocExampleRole, "DocExample"},
+    {kDocFootnoteRole, "DocFootnote"},
+    {kDocForewordRole, "DocForeword"},
+    {kDocGlossaryRole, "DocGlossary"},
+    {kDocGlossRefRole, "DocGlossref"},
+    {kDocIndexRole, "DocIndex"},
+    {kDocIntroductionRole, "DocIntroduction"},
+    {kDocNoteRefRole, "DocNoteref"},
+    {kDocNoticeRole, "DocNotice"},
+    {kDocPageBreakRole, "DocPagebreak"},
+    {kDocPageListRole, "DocPagelist"},
+    {kDocPartRole, "DocPart"},
+    {kDocPrefaceRole, "DocPreface"},
+    {kDocPrologueRole, "DocPrologue"},
+    {kDocPullquoteRole, "DocPullquote"},
+    {kDocQnaRole, "DocQna"},
+    {kDocSubtitleRole, "DocSubtitle"},
+    {kDocTipRole, "DocTip"},
+    {kDocTocRole, "DocToc"},
+    // End DPub roles.
+    // --------------------------------------------------------------
     {kDocumentRole, "Document"},
     {kEmbeddedObjectRole, "EmbeddedObject"},
     {kFeedRole, "feed"},
@@ -205,6 +303,14 @@ const InternalRoleEntry kInternalRoles[] = {
     {kFooterRole, "Footer"},
     {kFormRole, "Form"},
     {kGenericContainerRole, "GenericContainer"},
+    // --------------------------------------------------------------
+    // ARIA Graphics module roles:
+    // https://rawgit.com/w3c/graphics-aam/master/#mapping_role_table
+    {kGraphicsDocumentRole, "GraphicsDocument"},
+    {kGraphicsObjectRole, "GraphicsObject"},
+    {kGraphicsSymbolRole, "GraphicsSymbol"},
+    // End ARIA Graphics module roles.
+    // --------------------------------------------------------------
     {kGridRole, "Grid"},
     {kGroupRole, "Group"},
     {kHeadingRole, "Heading"},
@@ -637,6 +743,23 @@ bool AXObject::IsLandmarkRelated() const {
     case kBannerRole:
     case kComplementaryRole:
     case kContentInfoRole:
+    case kDocAcknowledgmentsRole:
+    case kDocAfterwordRole:
+    case kDocAppendixRole:
+    case kDocBibliographyRole:
+    case kDocChapterRole:
+    case kDocConclusionRole:
+    case kDocCreditsRole:
+    case kDocEndnotesRole:
+    case kDocEpilogueRole:
+    case kDocErrataRole:
+    case kDocForewordRole:
+    case kDocGlossaryRole:
+    case kDocIntroductionRole:
+    case kDocPartRole:
+    case kDocPrefaceRole:
+    case kDocPrologueRole:
+    case kDocTocRole:
     case kFooterRole:
     case kFormRole:
     case kMainRole:
@@ -2579,6 +2702,10 @@ bool AXObject::NameFromContents(bool recursive) const {
     case kCheckBoxRole:
     case kColumnHeaderRole:
     case kComboBoxMenuButtonRole:
+    case kDocBackLinkRole:
+    case kDocBiblioRefRole:
+    case kDocNoteRefRole:
+    case kDocGlossRefRole:
     case kDisclosureTriangleRole:
     case kHeadingRole:
     case kLayoutTableCellRole:
@@ -2622,11 +2749,49 @@ bool AXObject::NameFromContents(bool recursive) const {
     case kDefinitionRole:
     case kDialogRole:
     case kDirectoryRole:
+    case kDocCoverRole:
+    case kDocBiblioEntryRole:
+    case kDocEndnoteRole:
+    case kDocFootnoteRole:
+    case kDocPageBreakRole:
+    case kDocAbstractRole:
+    case kDocAcknowledgmentsRole:
+    case kDocAfterwordRole:
+    case kDocAppendixRole:
+    case kDocBibliographyRole:
+    case kDocChapterRole:
+    case kDocColophonRole:
+    case kDocConclusionRole:
+    case kDocCreditRole:
+    case kDocCreditsRole:
+    case kDocDedicationRole:
+    case kDocEndnotesRole:
+    case kDocEpigraphRole:
+    case kDocEpilogueRole:
+    case kDocErrataRole:
+    case kDocExampleRole:
+    case kDocForewordRole:
+    case kDocGlossaryRole:
+    case kDocIndexRole:
+    case kDocIntroductionRole:
+    case kDocNoticeRole:
+    case kDocPageListRole:
+    case kDocPartRole:
+    case kDocPrefaceRole:
+    case kDocPrologueRole:
+    case kDocPullquoteRole:
+    case kDocQnaRole:
+    case kDocSubtitleRole:
+    case kDocTipRole:
+    case kDocTocRole:
     case kDocumentRole:
     case kEmbeddedObjectRole:
     case kFeedRole:
     case kFigureRole:
     case kFormRole:
+    case kGraphicsDocumentRole:
+    case kGraphicsObjectRole:
+    case kGraphicsSymbolRole:
     case kGridRole:
     case kGroupRole:
     case kIframePresentationalRole:

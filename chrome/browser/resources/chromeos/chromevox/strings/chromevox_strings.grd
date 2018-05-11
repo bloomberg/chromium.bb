@@ -1054,6 +1054,132 @@
       <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'dialog' (as in dialog box on a computer screen) according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_DIALOG_BRL">
         dlg
       </message>
+      <message desc="Accessibility role description for abstract" name="IDS_CHROMEVOX_ROLE_DOC_ABSTRACT">
+        Abstract
+      </message>
+      <message desc="Accessibility role description for acknowledgments" name="IDS_CHROMEVOX_ROLE_DOC_ACKNOWLEDGMENTS">
+        Acknowledgments
+      </message>
+      <message desc="Accessibility role description for afterword" name="IDS_CHROMEVOX_ROLE_DOC_AFTERWORD">
+        Afterword
+      </message>
+      <message desc="Accessibility role description for appendix" name="IDS_CHROMEVOX_ROLE_DOC_APPENDIX">
+        Appendix
+      </message>
+      <message desc="Accessibility role description for back link" name="IDS_CHROMEVOX_ROLE_DOC_BACK_LINK">
+        Back link
+      </message>
+      <message desc="Accessibility role description for bibliography entry" name="IDS_CHROMEVOX_ROLE_DOC_BIBLIO_ENTRY">
+        Bibliography entry
+      </message>
+      <message desc="Accessibility role description for bibliography" name="IDS_CHROMEVOX_ROLE_DOC_BIBLIOGRAPHY">
+        Bibliography
+      </message>
+      <message desc="Accessibility role description for bibliography reference" name="IDS_CHROMEVOX_ROLE_DOC_BIBLIO_REF">
+        Bibliography reference
+      </message>
+      <message desc="Accessibility role description for chapter" name="IDS_CHROMEVOX_ROLE_DOC_CHAPTER">
+        Chapter
+      </message>
+      <message desc="Accessibility role description for colophon" name="IDS_CHROMEVOX_ROLE_DOC_COLOPHON">
+        Colophon
+      </message>
+      <message desc="Accessibility role description for conclusion" name="IDS_CHROMEVOX_ROLE_DOC_CONCLUSION">
+        Conclusion
+      </message>
+      <message desc="Accessibility role description for cover" name="IDS_CHROMEVOX_ROLE_DOC_COVER">
+        Cover
+      </message>
+      <message desc="Accessibility role description for credit" name="IDS_CHROMEVOX_ROLE_DOC_CREDIT">
+        Credit
+      </message>
+      <message desc="Accessibility role description for credits" name="IDS_CHROMEVOX_ROLE_DOC_CREDITS">
+        Credits
+      </message>
+      <message desc="Accessibility role description for dedication" name="IDS_CHROMEVOX_ROLE_DOC_DEDICATION">
+        Dedication
+      </message>
+      <message desc="Accessibility role description for endnote" name="IDS_CHROMEVOX_ROLE_DOC_ENDNOTE">
+        Endnote
+      </message>
+      <message desc="Accessibility role description for endnotes" name="IDS_CHROMEVOX_ROLE_DOC_ENDNOTES">
+        Endnotes
+      </message>
+      <message desc="Accessibility role description for epigraph" name="IDS_CHROMEVOX_ROLE_DOC_EPIGRAPH">
+        Epigraph
+      </message>
+      <message desc="Accessibility role description for epilogue" name="IDS_CHROMEVOX_ROLE_DOC_EPILOGUE">
+        Epilogue
+      </message>
+      <message desc="Accessibility role description for errata" name="IDS_CHROMEVOX_ROLE_DOC_ERRATA">
+        Errata
+      </message>
+      <message desc="Accessibility role description for example" name="IDS_CHROMEVOX_ROLE_DOC_EXAMPLE">
+        Example
+      </message>
+      <message desc="Accessibility role description for footnote" name="IDS_CHROMEVOX_ROLE_DOC_FOOTNOTE">
+        Footnote
+      </message>
+      <message desc="Accessibility role description for foreword" name="IDS_CHROMEVOX_ROLE_DOC_FOREWORD">
+        Foreword
+      </message>
+      <message desc="Accessibility role description for glossary" name="IDS_CHROMEVOX_ROLE_DOC_GLOSSARY">
+        Glossary
+      </message>
+      <message desc="Accessibility role description for glossary reference" name="IDS_CHROMEVOX_ROLE_DOC_GLOSS_REF">
+        Glossary reference
+      </message>
+      <message desc="Accessibility role description for index" name="IDS_CHROMEVOX_ROLE_DOC_INDEX">
+        Index
+      </message>
+      <message desc="Accessibility role description for introduction" name="IDS_CHROMEVOX_ROLE_DOC_INTRODUCTION">
+        Introduction
+      </message>
+      <message desc="Accessibility role description for note reference" name="IDS_CHROMEVOX_ROLE_DOC_NOTE_REF">
+        Note reference
+      </message>
+      <message desc="Accessibility role description for notice" name="IDS_CHROMEVOX_ROLE_DOC_NOTICE">
+        Notice
+      </message>
+      <message desc="Accessibility role description for page break" name="IDS_CHROMEVOX_ROLE_DOC_PAGE_BREAK">
+        Page break
+      </message>
+      <message desc="Accessibility role description for page list" name="IDS_CHROMEVOX_ROLE_DOC_PAGE_LIST">
+        Page list
+      </message>
+      <message desc="Accessibility role description for part" name="IDS_CHROMEVOX_ROLE_DOC_PART">
+        Part
+      </message>
+      <message desc="Accessibility role description for preface" name="IDS_CHROMEVOX_ROLE_DOC_PREFACE">
+        Preface
+      </message>
+      <message desc="Accessibility role description for prologue" name="IDS_CHROMEVOX_ROLE_DOC_PROLOGUE">
+        Prologue
+      </message>
+      <message desc="Accessibility role description for pullquote" name="IDS_CHROMEVOX_ROLE_DOC_PULLQUOTE">
+        Pullquote
+      </message>
+      <message desc="Accessibility role description for Q+A (questions and answers)" name="IDS_CHROMEVOX_ROLE_DOC_QNA">
+        Q&amp;A
+      </message>
+      <message desc="Accessibility role description for subtitle" name="IDS_CHROMEVOX_ROLE_DOC_SUBTITLE">
+        subti
+      </message>
+      <message desc="Accessibility role description for tip" name="IDS_CHROMEVOX_ROLE_DOC_TIP">
+        tip
+      </message>
+      <message desc="Accessibility role description for table of contents" name="IDS_CHROMEVOX_ROLE_DOC_TOC">
+        toc
+      </message>
+      <message desc="Accessibility role description for graphics document" name="IDS_CHROMEVOX_ROLE_GRAPHICS_DOCUMENT">
+        Graphics document
+      </message>
+      <message desc="Accessibility role description for graphics object" name="IDS_CHROMEVOX_ROLE_GRAPHICS_OBJECT">
+        Graphics object
+      </message>
+      <message desc="Accessibility role description for graphics symbol" name="IDS_CHROMEVOX_ROLE_GRAPHICS_SYMBOL">
+        Graphics symbol
+      </message>
       <message desc="Describes an element with the ARIA role grid." name="IDS_CHROMEVOX_ROLE_GRID">
         Grid
       </message>
@@ -2622,11 +2748,11 @@
       </message>
       <message desc="Part of the ChromeVox tutorial, explains some common Chrome keyboard shortcuts" name="IDS_CHROMEVOX_TUTORIAL_CHROME_SHORTCUTS">
         The next few shortcuts aren’t ChromeVox commands, but they’re still very useful for getting the most out of Chrome.
-To navigate forward through actionable items like buttons and links, press the Tab key. To navigate backwards, press Shift+Tab. 
-To enter the Chrome browser address box, also called the omnibox, press Control + L. 
-To open and go to a new tab automatically, press Control+T. Your cursor will be in the omnibox. 
-To close a tab, press Control+W. 
-To move forward between open tabs, use Control+Tab. 
+To navigate forward through actionable items like buttons and links, press the Tab key. To navigate backwards, press Shift+Tab.
+To enter the Chrome browser address box, also called the omnibox, press Control + L.
+To open and go to a new tab automatically, press Control+T. Your cursor will be in the omnibox.
+To close a tab, press Control+W.
+To move forward between open tabs, use Control+Tab.
 To open the Chrome browser menu, press Alt+F.
       </message>
       <message desc="Part of the ChromeVox tutorial, explains a keyboard shortcut to press on Chromebook keyboards" name="IDS_CHROMEVOX_TUTORIAL_CHROMEBOOK_CTRL_FORWARD">

@@ -2460,6 +2460,9 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kBanner:
       return ROLE_SYSTEM_GROUPING;
 
+    case ax::mojom::Role::kBlockquote:
+      return ROLE_SYSTEM_GROUPING;
+
     case ax::mojom::Role::kButton:
       return ROLE_SYSTEM_PUSHBUTTON;
 
@@ -2469,11 +2472,17 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kCaption:
       return ROLE_SYSTEM_TEXT;
 
+    case ax::mojom::Role::kCaret:
+      return ROLE_SYSTEM_CARET;
+
     case ax::mojom::Role::kCell:
       return ROLE_SYSTEM_CELL;
 
     case ax::mojom::Role::kCheckBox:
       return ROLE_SYSTEM_CHECKBUTTON;
+
+    case ax::mojom::Role::kClient:
+      return ROLE_SYSTEM_PANE;
 
     case ax::mojom::Role::kColorWell:
       return ROLE_SYSTEM_TEXT;
@@ -2492,11 +2501,14 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kContentInfo:
-      return ROLE_SYSTEM_TEXT;
+      return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kDate:
     case ax::mojom::Role::kDateTime:
       return ROLE_SYSTEM_DROPLIST;
+
+    case ax::mojom::Role::kDefinition:
+      return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kDescriptionListDetail:
       return ROLE_SYSTEM_TEXT;
@@ -2507,6 +2519,9 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kDescriptionListTerm:
       return ROLE_SYSTEM_LISTITEM;
 
+    case ax::mojom::Role::kDesktop:
+      return ROLE_SYSTEM_PANE;
+
     case ax::mojom::Role::kDetails:
       return ROLE_SYSTEM_GROUPING;
 
@@ -2515,6 +2530,58 @@ int AXPlatformNodeWin::MSAARole() {
 
     case ax::mojom::Role::kDisclosureTriangle:
       return ROLE_SYSTEM_PUSHBUTTON;
+
+    case ax::mojom::Role::kDirectory:
+      return ROLE_SYSTEM_LIST;
+
+    case ax::mojom::Role::kDocCover:
+      return ROLE_SYSTEM_GRAPHIC;
+
+    case ax::mojom::Role::kDocBackLink:
+    case ax::mojom::Role::kDocBiblioRef:
+    case ax::mojom::Role::kDocGlossRef:
+    case ax::mojom::Role::kDocNoteRef:
+      return ROLE_SYSTEM_LINK;
+
+    case ax::mojom::Role::kDocBiblioEntry:
+    case ax::mojom::Role::kDocEndnote:
+    case ax::mojom::Role::kDocFootnote:
+      return ROLE_SYSTEM_LISTITEM;
+
+    case ax::mojom::Role::kDocPageBreak:
+      return ROLE_SYSTEM_SEPARATOR;
+
+    case ax::mojom::Role::kDocAbstract:
+    case ax::mojom::Role::kDocAcknowledgments:
+    case ax::mojom::Role::kDocAfterword:
+    case ax::mojom::Role::kDocAppendix:
+    case ax::mojom::Role::kDocBibliography:
+    case ax::mojom::Role::kDocChapter:
+    case ax::mojom::Role::kDocColophon:
+    case ax::mojom::Role::kDocConclusion:
+    case ax::mojom::Role::kDocCredit:
+    case ax::mojom::Role::kDocCredits:
+    case ax::mojom::Role::kDocDedication:
+    case ax::mojom::Role::kDocEndnotes:
+    case ax::mojom::Role::kDocEpigraph:
+    case ax::mojom::Role::kDocEpilogue:
+    case ax::mojom::Role::kDocErrata:
+    case ax::mojom::Role::kDocExample:
+    case ax::mojom::Role::kDocForeword:
+    case ax::mojom::Role::kDocGlossary:
+    case ax::mojom::Role::kDocIndex:
+    case ax::mojom::Role::kDocIntroduction:
+    case ax::mojom::Role::kDocNotice:
+    case ax::mojom::Role::kDocPageList:
+    case ax::mojom::Role::kDocPart:
+    case ax::mojom::Role::kDocPreface:
+    case ax::mojom::Role::kDocPrologue:
+    case ax::mojom::Role::kDocPullquote:
+    case ax::mojom::Role::kDocQna:
+    case ax::mojom::Role::kDocSubtitle:
+    case ax::mojom::Role::kDocTip:
+    case ax::mojom::Role::kDocToc:
+      return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kDocument:
     case ax::mojom::Role::kRootWebArea:
@@ -2528,14 +2595,32 @@ int AXPlatformNodeWin::MSAARole() {
         return ROLE_SYSTEM_CLIENT;
       }
 
+    case ax::mojom::Role::kFigcaption:
+      return ROLE_SYSTEM_GROUPING;
+
     case ax::mojom::Role::kFigure:
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kFeed:
       return ROLE_SYSTEM_GROUPING;
 
+    case ax::mojom::Role::kFooter:
+      return ROLE_SYSTEM_GROUPING;
+
+    case ax::mojom::Role::kForm:
+      return ROLE_SYSTEM_GROUPING;
+
     case ax::mojom::Role::kGenericContainer:
       return ROLE_SYSTEM_GROUPING;
+
+    case ax::mojom::Role::kGraphicsDocument:
+      return ROLE_SYSTEM_DOCUMENT;
+
+    case ax::mojom::Role::kGraphicsObject:
+      return ROLE_SYSTEM_PANE;
+
+    case ax::mojom::Role::kGraphicsSymbol:
+      return ROLE_SYSTEM_GRAPHIC;
 
     case ax::mojom::Role::kGrid:
       return ROLE_SYSTEM_TABLE;
@@ -2555,8 +2640,14 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kImage:
       return ROLE_SYSTEM_GRAPHIC;
 
+    case ax::mojom::Role::kImageMap:
+      return ROLE_SYSTEM_CLIENT;
+
     case ax::mojom::Role::kInputTime:
       return ROLE_SYSTEM_GROUPING;
+
+    case ax::mojom::Role::kInlineTextBox:
+      return ROLE_SYSTEM_STATICTEXT;
 
     case ax::mojom::Role::kLabelText:
     case ax::mojom::Role::kLegend:
@@ -2588,6 +2679,13 @@ int AXPlatformNodeWin::MSAARole() {
 
     case ax::mojom::Role::kListItem:
       return ROLE_SYSTEM_LISTITEM;
+
+    case ax::mojom::Role::kLocationBar:  // TODO(accessibility) Remove.
+      NOTREACHED();
+      return ROLE_SYSTEM_TEXT;
+
+    case ax::mojom::Role::kLog:
+      return ROLE_SYSTEM_CLIENT;
 
     case ax::mojom::Role::kMain:
       return ROLE_SYSTEM_GROUPING;
@@ -2636,6 +2734,9 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kNote:
       return ROLE_SYSTEM_GROUPING;
 
+    case ax::mojom::Role::kParagraph:
+      return ROLE_SYSTEM_GROUPING;
+
     case ax::mojom::Role::kPopUpButton: {
       std::string html_tag =
           GetData().GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
@@ -2658,8 +2759,14 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kRegion: {
       std::string html_tag =
           GetData().GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
-      if (html_tag == "section")
+      if (html_tag == "section" &&
+          GetData()
+              .GetString16Attribute(ax::mojom::StringAttribute::kName)
+              .empty()) {
+        // Do not use ARIA mapping for nameless <section>.
         return ROLE_SYSTEM_GROUPING;
+      }
+      // Use ARIA mapping.
       return ROLE_SYSTEM_PANE;
     }
 
@@ -2678,14 +2785,23 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kScrollBar:
       return ROLE_SYSTEM_SCROLLBAR;
 
+    case ax::mojom::Role::kScrollView:
+      return ROLE_SYSTEM_PANE;
+
     case ax::mojom::Role::kSearch:
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kSlider:
       return ROLE_SYSTEM_SLIDER;
 
+    case ax::mojom::Role::kSliderThumb:
+      return ROLE_SYSTEM_SLIDER;
+
     case ax::mojom::Role::kSpinButton:
       return ROLE_SYSTEM_SPINBUTTON;
+
+    case ax::mojom::Role::kSwitch:
+      return ROLE_SYSTEM_CHECKBUTTON;
 
     case ax::mojom::Role::kAnnotation:
     case ax::mojom::Role::kListMarker:
@@ -2760,6 +2876,10 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kVideo:
       return ROLE_SYSTEM_GROUPING;
 
+    case ax::mojom::Role::kWebView:
+      return ROLE_SYSTEM_CLIENT;
+
+    case ax::mojom::Role::kPane:
     case ax::mojom::Role::kWindow:
       // Do not return ROLE_SYSTEM_WINDOW as that is a special MSAA system role
       // used to indicate a real native window object. It is automatically
@@ -2767,31 +2887,11 @@ int AXPlatformNodeWin::MSAARole() {
       // matching the HWND.
       return ROLE_SYSTEM_PANE;
 
-    // TODO(dmazzoni): figure out the proper MSAA role for roles listed below.
-    case ax::mojom::Role::kBlockquote:
-    case ax::mojom::Role::kCaret:
-    case ax::mojom::Role::kClient:
-    case ax::mojom::Role::kDefinition:
-    case ax::mojom::Role::kDesktop:
-    case ax::mojom::Role::kDirectory:
-    case ax::mojom::Role::kFigcaption:
-    case ax::mojom::Role::kFooter:
-    case ax::mojom::Role::kForm:
     case ax::mojom::Role::kIgnored:
-    case ax::mojom::Role::kImageMap:
-    case ax::mojom::Role::kInlineTextBox:
-    case ax::mojom::Role::kLocationBar:
-    case ax::mojom::Role::kLog:
     case ax::mojom::Role::kNone:
-    case ax::mojom::Role::kPane:
-    case ax::mojom::Role::kParagraph:
     case ax::mojom::Role::kPresentational:
-    case ax::mojom::Role::kScrollView:
-    case ax::mojom::Role::kSliderThumb:
-    case ax::mojom::Role::kSwitch:
     case ax::mojom::Role::kUnknown:
-    case ax::mojom::Role::kWebView:
-      return ROLE_SYSTEM_CLIENT;
+      return ROLE_SYSTEM_PANE;
   }
 
   NOTREACHED();
@@ -2828,8 +2928,14 @@ std::string AXPlatformNodeWin::StringOverrideForMSAARole() {
     case ax::mojom::Role::kParagraph:
       return html_tag;
 
+    case ax::mojom::Role::kLog:
+      return "log";
+
     case ax::mojom::Role::kGenericContainer:
-      // TODO(dougt) why can't we always use div in this case?
+      // Use html tag if available. In the case where there is no tag, e.g. for
+      // anonymous content inserted by blink, treat it as a "div". This can
+      // occur if the markup had a block and inline element as siblings -- blink
+      // will wrap the inline with a block in this case.
       if (html_tag.empty())
         return "div";
       return html_tag;
@@ -2922,6 +3028,7 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
 
   switch (GetData().role) {
     case ax::mojom::Role::kBanner:
+      // CORE-AAM recommends IA2_ROLE_LANDMARK.
       ia2_role = IA2_ROLE_HEADER;
       break;
     case ax::mojom::Role::kBlockquote:
@@ -2939,10 +3046,12 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       ia2_role = IA2_ROLE_COLOR_CHOOSER;
       break;
     case ax::mojom::Role::kComplementary:
-      ia2_role = IA2_ROLE_NOTE;
+      // Note: IA2_ROLE_COMPLEMENTARY_CONTENT currently exists but CORE-AAM
+      // maps this to more general IA2_ROLE_LANDMARK.
+      ia2_role = IA2_ROLE_LANDMARK;
       break;
     case ax::mojom::Role::kContentInfo:
-      ia2_role = IA2_ROLE_PARAGRAPH;
+      ia2_role = IA2_ROLE_LANDMARK;
       break;
     case ax::mojom::Role::kDate:
     case ax::mojom::Role::kDateTime:
@@ -2953,6 +3062,47 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       break;
     case ax::mojom::Role::kDescriptionListDetail:
       ia2_role = IA2_ROLE_PARAGRAPH;
+      break;
+    case ax::mojom::Role::kDocAcknowledgments:
+    case ax::mojom::Role::kDocAfterword:
+    case ax::mojom::Role::kDocAppendix:
+    case ax::mojom::Role::kDocBibliography:
+    case ax::mojom::Role::kDocChapter:
+    case ax::mojom::Role::kDocConclusion:
+    case ax::mojom::Role::kDocCredits:
+    case ax::mojom::Role::kDocEndnotes:
+    case ax::mojom::Role::kDocEpilogue:
+    case ax::mojom::Role::kDocErrata:
+    case ax::mojom::Role::kDocForeword:
+    case ax::mojom::Role::kDocGlossary:
+    case ax::mojom::Role::kDocIndex:
+    case ax::mojom::Role::kDocIntroduction:
+    case ax::mojom::Role::kDocPageList:
+    case ax::mojom::Role::kDocPart:
+    case ax::mojom::Role::kDocPreface:
+    case ax::mojom::Role::kDocPrologue:
+    case ax::mojom::Role::kDocToc:
+      ia2_role = IA2_ROLE_LANDMARK;
+      break;
+    case ax::mojom::Role::kDocAbstract:
+    case ax::mojom::Role::kDocColophon:
+    case ax::mojom::Role::kDocCredit:
+    case ax::mojom::Role::kDocDedication:
+    case ax::mojom::Role::kDocEpigraph:
+    case ax::mojom::Role::kDocExample:
+    case ax::mojom::Role::kDocPullquote:
+    case ax::mojom::Role::kDocQna:
+      ia2_role = IA2_ROLE_SECTION;
+      break;
+    case ax::mojom::Role::kDocSubtitle:
+      ia2_role = IA2_ROLE_HEADING;
+      break;
+    case ax::mojom::Role::kDocTip:
+    case ax::mojom::Role::kDocNotice:
+      ia2_role = IA2_ROLE_NOTE;
+      break;
+    case ax::mojom::Role::kDocFootnote:
+      ia2_role = IA2_ROLE_FOOTNOTE;
       break;
     case ax::mojom::Role::kEmbeddedObject:
       if (!delegate_->GetChildCount()) {
@@ -2985,7 +3135,7 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       ia2_role = IA2_ROLE_LABEL;
       break;
     case ax::mojom::Role::kMain:
-      ia2_role = IA2_ROLE_PARAGRAPH;
+      ia2_role = IA2_ROLE_LANDMARK;
       break;
     case ax::mojom::Role::kMark:
       ia2_role = IA2_ROLE_TEXT_FRAME;
@@ -2996,8 +3146,15 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
     case ax::mojom::Role::kMenuItemRadio:
       ia2_role = IA2_ROLE_RADIO_MENU_ITEM;
       break;
+    case ax::mojom::Role::kMeter:
+      // TODO(accessibiity) Uncomment IA2_ROLE_LEVEL_BAR once screen readers
+      // adopt it. Currently, a <meter> ends up being spoken as a progress bar,
+      // which is confusing.
+      // IA2_ROLE_LEVEL_BAR is the correct mapping according to CORE-AAM.
+      // ia2_role = IA2_ROLE_LEVEL_BAR;
+      break;
     case ax::mojom::Role::kNavigation:
-      ia2_role = IA2_ROLE_SECTION;
+      ia2_role = IA2_ROLE_LANDMARK;
       break;
     case ax::mojom::Role::kNote:
       ia2_role = IA2_ROLE_NOTE;
@@ -3009,18 +3166,25 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       ia2_role = IA2_ROLE_PARAGRAPH;
       break;
     case ax::mojom::Role::kRegion: {
-      base::string16 html_tag =
-          GetString16Attribute(ax::mojom::StringAttribute::kHtmlTag);
-
-      if (html_tag == L"section") {
+      std::string html_tag =
+          GetData().GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
+      if (html_tag == "section" &&
+          GetData()
+              .GetString16Attribute(ax::mojom::StringAttribute::kName)
+              .empty()) {
+        // Do not use ARIA mapping for nameless <section>.
         ia2_role = IA2_ROLE_SECTION;
+      } else {
+        // Use ARIA mapping.
+        ia2_role = IA2_ROLE_LANDMARK;
       }
-    } break;
+      break;
+    }
     case ax::mojom::Role::kRuby:
       ia2_role = IA2_ROLE_TEXT_FRAME;
       break;
     case ax::mojom::Role::kSearch:
-      ia2_role = IA2_ROLE_SECTION;
+      ia2_role = IA2_ROLE_LANDMARK;
       break;
     case ax::mojom::Role::kSwitch:
       ia2_role = IA2_ROLE_TOGGLE_BUTTON;
@@ -3396,6 +3560,7 @@ bool AXPlatformNodeWin::ShouldNodeHaveReadonlyStateByDefault(
     case ax::mojom::Role::kDescriptionList:
     case ax::mojom::Role::kDescriptionListTerm:
     case ax::mojom::Role::kDocument:
+    case ax::mojom::Role::kGraphicsDocument:
     case ax::mojom::Role::kIframe:
     case ax::mojom::Role::kImage:
     case ax::mojom::Role::kImageMap:
@@ -3427,6 +3592,7 @@ bool AXPlatformNodeWin::ShouldNodeHaveFocusableState(
     const AXNodeData& data) const {
   switch (data.role) {
     case ax::mojom::Role::kDocument:
+    case ax::mojom::Role::kGraphicsDocument:
     case ax::mojom::Role::kRootWebArea:
     case ax::mojom::Role::kWebArea:
       return true;
@@ -3445,11 +3611,6 @@ bool AXPlatformNodeWin::ShouldNodeHaveFocusableState(
   }
 
   return data.HasState(ax::mojom::State::kFocusable);
-}
-
-bool AXPlatformNodeWin::IsAutofillField() {
-  return IsAutofillShown() && IsPlainTextField() &&
-         delegate_->GetFocus() == GetNativeViewAccessible();
 }
 
 int AXPlatformNodeWin::MSAAState() {

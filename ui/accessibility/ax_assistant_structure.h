@@ -66,7 +66,6 @@ struct AssistantTree {
 std::unique_ptr<AssistantTree> CreateAssistantTree(const AXTreeUpdate& update,
                                                    bool show_password);
 
-bool AXRoleIsLink(ax::mojom::Role role);
 base::string16 AXUrlBaseText(base::string16 url);
 const char* AXRoleToAndroidClassName(ax::mojom::Role role, bool has_parent);
 

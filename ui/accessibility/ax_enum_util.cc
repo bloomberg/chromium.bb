@@ -291,6 +291,84 @@ const char* ToString(ax::mojom::Role role) {
       return "directory";
     case ax::mojom::Role::kDisclosureTriangle:
       return "disclosureTriangle";
+    case ax::mojom::Role::kDocAbstract:
+      return "docAbstractRole";
+    case ax::mojom::Role::kDocAcknowledgments:
+      return "docAcknowledgmentsRole";
+    case ax::mojom::Role::kDocAfterword:
+      return "docAfterwordRole";
+    case ax::mojom::Role::kDocAppendix:
+      return "docAppendixRole";
+    case ax::mojom::Role::kDocBackLink:
+      return "docBackLinkRole";
+    case ax::mojom::Role::kDocBiblioEntry:
+      return "docBiblioEntryRole";
+    case ax::mojom::Role::kDocBibliography:
+      return "docBibliographyRole";
+    case ax::mojom::Role::kDocBiblioRef:
+      return "docBiblioRefRole";
+    case ax::mojom::Role::kDocChapter:
+      return "docChapterRole";
+    case ax::mojom::Role::kDocColophon:
+      return "docColophonRole";
+    case ax::mojom::Role::kDocConclusion:
+      return "docConclusionRole";
+    case ax::mojom::Role::kDocCover:
+      return "docCoverRole";
+    case ax::mojom::Role::kDocCredit:
+      return "docCreditRole";
+    case ax::mojom::Role::kDocCredits:
+      return "docCreditsRole";
+    case ax::mojom::Role::kDocDedication:
+      return "docDedicationRole";
+    case ax::mojom::Role::kDocEndnote:
+      return "docEndnoteRole";
+    case ax::mojom::Role::kDocEndnotes:
+      return "docEndnotesRole";
+    case ax::mojom::Role::kDocEpigraph:
+      return "docEpigraphRole";
+    case ax::mojom::Role::kDocEpilogue:
+      return "docEpilogueRole";
+    case ax::mojom::Role::kDocErrata:
+      return "docErrataRole";
+    case ax::mojom::Role::kDocExample:
+      return "docExampleRole";
+    case ax::mojom::Role::kDocFootnote:
+      return "docFootnoteRole";
+    case ax::mojom::Role::kDocForeword:
+      return "docForewordRole";
+    case ax::mojom::Role::kDocGlossary:
+      return "docGlossaryRole";
+    case ax::mojom::Role::kDocGlossRef:
+      return "docGlossrefRole";
+    case ax::mojom::Role::kDocIndex:
+      return "docIndexRole";
+    case ax::mojom::Role::kDocIntroduction:
+      return "docIntroductionRole";
+    case ax::mojom::Role::kDocNoteRef:
+      return "docNoteRefRole";
+    case ax::mojom::Role::kDocNotice:
+      return "docNoticeRole";
+    case ax::mojom::Role::kDocPageBreak:
+      return "docPageBreakRole";
+    case ax::mojom::Role::kDocPageList:
+      return "docPageListRole";
+    case ax::mojom::Role::kDocPart:
+      return "docPartRole";
+    case ax::mojom::Role::kDocPreface:
+      return "docPrefaceRole";
+    case ax::mojom::Role::kDocPrologue:
+      return "docPrologueRole";
+    case ax::mojom::Role::kDocPullquote:
+      return "docPullquoteRole";
+    case ax::mojom::Role::kDocQna:
+      return "docQnaRole";
+    case ax::mojom::Role::kDocSubtitle:
+      return "docSubtitleRole";
+    case ax::mojom::Role::kDocTip:
+      return "docTipRole";
+    case ax::mojom::Role::kDocToc:
+      return "docTocRole";
     case ax::mojom::Role::kDocument:
       return "document";
     case ax::mojom::Role::kEmbeddedObject:
@@ -307,6 +385,12 @@ const char* ToString(ax::mojom::Role role) {
       return "form";
     case ax::mojom::Role::kGenericContainer:
       return "genericContainer";
+    case ax::mojom::Role::kGraphicsDocument:
+      return "graphicsDocument";
+    case ax::mojom::Role::kGraphicsObject:
+      return "graphicsObject";
+    case ax::mojom::Role::kGraphicsSymbol:
+      return "graphicsSymbol";
     case ax::mojom::Role::kGrid:
       return "grid";
     case ax::mojom::Role::kGroup:

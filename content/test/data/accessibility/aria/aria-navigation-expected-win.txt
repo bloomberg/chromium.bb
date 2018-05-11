@@ -1,2 +1,2 @@
 ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
-++IA2_ROLE_SECTION xml-roles:navigation
+++IA2_ROLE_LANDMARK xml-roles:navigation

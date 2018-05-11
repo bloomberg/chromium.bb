@@ -38,6 +38,7 @@
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/accessibility/ax_enum_util.h"
+#include "ui/accessibility/ax_role_properties.h"
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
@@ -656,7 +657,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                            src.AriaActiveDescendant().AxID());
     }
 
-    if (dst->role == ax::mojom::Role::kHeading && src.HeadingLevel()) {
+    if (ui::IsHeading(dst->role) && src.HeadingLevel()) {
       dst->AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel,
                            src.HeadingLevel());
     } else if ((dst->role == ax::mojom::Role::kTreeItem ||

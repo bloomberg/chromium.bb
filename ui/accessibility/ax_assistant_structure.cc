@@ -156,7 +156,7 @@ base::string16 GetText(const AXNode* node, bool show_password) {
 
   ax::mojom::NameFrom name_from = static_cast<ax::mojom::NameFrom>(
       node->data().GetIntAttribute(ax::mojom::IntAttribute::kNameFrom));
-  if (node->data().role == ax::mojom::Role::kListItem &&
+  if (ui::IsListItem(node->data().role) &&
       name_from == ax::mojom::NameFrom::kContents) {
     if (node->child_count() > 0 && !HasOnlyTextChildren(node))
       return base::string16();
@@ -213,7 +213,7 @@ base::string16 GetText(const AXNode* node, bool show_password) {
     }
   }
 
-  if (text.empty() && (AXRoleIsLink(node->data().role) ||
+  if (text.empty() && (ui::IsLink(node->data().role) ||
                        node->data().role == ax::mojom::Role::kImage)) {
     base::string16 url =
         node->data().GetString16Attribute(ax::mojom::StringAttribute::kUrl);
@@ -388,10 +388,6 @@ std::unique_ptr<AssistantTree> CreateAssistantTree(const AXTreeUpdate& update,
   WalkAXTreeDepthFirst(tree->root(), gfx::Rect(), update, tree.get(), &config,
                        assistant_tree.get(), root);
   return assistant_tree;
-}
-
-bool AXRoleIsLink(ax::mojom::Role role) {
-  return role == ax::mojom::Role::kLink;
 }
 
 base::string16 AXUrlBaseText(base::string16 url) {
