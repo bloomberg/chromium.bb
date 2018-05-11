@@ -33,6 +33,12 @@ void RendererPrelauncher::Prelaunch() {
   rph->Init();
 }
 
+bool RendererPrelauncher::IsForURL(const GURL& gurl) const {
+  if (!site_instance())
+    return gurl_ == gurl;
+  return site_instance() == site_instance()->GetRelatedSiteInstance(gurl);
+}
+
 // We don't process any IPC messages, but we do register as an IPC receiver to
 // keep the RenderProcessHost alive.
 bool RendererPrelauncher::OnMessageReceived(const IPC::Message& message) {
