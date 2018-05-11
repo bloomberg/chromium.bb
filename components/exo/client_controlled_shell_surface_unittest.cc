@@ -1201,4 +1201,31 @@ TEST_F(ClientControlledShellSurfaceTest, SetOrientationLock) {
   EnableTabletMode(false);
 }
 
+// Tests adjust bounds locally should also request remote client bounds update.
+TEST_F(ClientControlledShellSurfaceTest, AdjustBoundsLocally) {
+  UpdateDisplay("800x600");
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(64, 64))));
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+  gfx::Rect requested_bounds;
+  shell_surface->set_bounds_changed_callback(base::BindRepeating(
+      [](gfx::Rect* dst, ash::mojom::WindowStateType current_state,
+         ash::mojom::WindowStateType requested_state, int64_t display_id,
+         const gfx::Rect& bounds, bool is_resize,
+         int bounds_change) { *dst = bounds; },
+      base::Unretained(&requested_bounds)));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  gfx::Rect client_bounds(900, 0, 200, 300);
+  shell_surface->SetGeometry(client_bounds);
+  surface->Commit();
+
+  views::Widget* widget = shell_surface->GetWidget();
+  EXPECT_EQ(gfx::Rect(774, 0, 200, 300), widget->GetWindowBoundsInScreen());
+  EXPECT_EQ(gfx::Rect(774, 0, 200, 300), requested_bounds);
+}
+
 }  // namespace exo

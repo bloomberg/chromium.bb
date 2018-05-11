@@ -759,16 +759,26 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
     {
       // Calculate a minimum window visibility required bounds.
       aura::Window* window = widget_->GetNativeWindow();
-      gfx::Rect rect(bounds);
-      wm::ConvertRectFromScreen(window->GetRootWindow(), &rect);
+      gfx::Rect root_rect(bounds);
+      wm::ConvertRectFromScreen(window->GetRootWindow(), &root_rect);
       ash::wm::ClientControlledState::AdjustBoundsForMinimumWindowVisibility(
-          window, &rect);
-      wm::ConvertRectToScreen(window->GetRootWindow(), &rect);
+          window, &root_rect);
+      gfx::Rect screen_rect(root_rect);
+      wm::ConvertRectToScreen(window->GetRootWindow(), &screen_rect);
 
-      if (bounds != rect) {
+      if (bounds != screen_rect) {
+        {
+          ScopedSetBoundsLocally scoped_set_bounds(this);
+          window->SetBounds(root_rect);
+        }
         // Request the client a new bounds to ensure that it has enough visible
         // area.
-        window->SetBounds(rect);
+        auto state_type = GetWindowState()->GetStateType();
+        int64_t display_id =
+            display::Screen::GetScreen()
+                ->GetDisplayNearestWindow(window->GetRootWindow())
+                .id();
+        OnBoundsChangeEvent(state_type, state_type, display_id, screen_rect, 0);
       } else {
         ScopedSetBoundsLocally scoped_set_bounds(this);
         widget_->SetBounds(bounds);
