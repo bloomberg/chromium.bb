@@ -151,7 +151,8 @@ IN_PROC_BROWSER_TEST_F(TabStatsTrackerBrowserTest,
   // and this should be handled correctly.
   TabStatsDataStore::TabID tab_id =
       data_store->GetTabIDForTesting(web_contents).value();
-  delete web_contents;
+  browser()->tab_strip_model()->DetachWebContentsAt(
+      browser()->tab_strip_model()->GetIndexOfWebContents(web_contents));
   EXPECT_TRUE(base::ContainsKey(*interval_map, tab_id));
   tab_stats_tracker_->OnInterval(kValidLongInterval, interval_map);
   EXPECT_EQ(1U, interval_map->size());
@@ -162,7 +163,8 @@ IN_PROC_BROWSER_TEST_F(TabStatsTrackerBrowserTest,
   // Do this a second time, ensures that the situation where there's no existing
   // tabs is handled properly.
   tab_id = data_store->GetTabIDForTesting(web_contents).value();
-  delete web_contents;
+  browser()->tab_strip_model()->DetachWebContentsAt(
+      browser()->tab_strip_model()->GetIndexOfWebContents(web_contents));
   EXPECT_TRUE(base::ContainsKey(*interval_map, tab_id));
   tab_stats_tracker_->OnInterval(kValidLongInterval, interval_map);
   EXPECT_EQ(0U, interval_map->size());

@@ -163,10 +163,8 @@ class TabStrip : public views::View,
   // immediately followed by RemoveTabAt.
   void PrepareForCloseAt(int model_index, CloseTabSource source);
 
-  // Invoked when the selection changes from |old_selection| to
-  // |new_selection|.
-  void SetSelection(const ui::ListSelectionModel& old_selection,
-                    const ui::ListSelectionModel& new_selection);
+  // Invoked when the selection is updated.
+  void SetSelection(const ui::ListSelectionModel& new_selection);
 
   // Invoked when a tab needs to show UI that it needs the user's attention.
   void SetTabNeedsAttention(int model_index, bool attention);
@@ -683,6 +681,18 @@ class TabStrip : public views::View,
   // The last tab over which the mouse was hovered which may still have a hover
   // animation in progress.
   Tab* last_hovered_tab_ = nullptr;
+
+  // This represents the Tabs in |tabs_| that have been selected.
+  //
+  // Each time tab selection should change, this class will receive a
+  // SetSelection() callback with the new tab selection. That callback only
+  // includes the new selection model. This keeps track of the previous
+  // selection model, and is always consistent with |tabs_|. This must be
+  // updated to account for tab insertions/removals/moves.
+  //
+  // TODO(erikchen): Duplicating internal state of TabStripModel is not great.
+  // Get rid of this. https://crbug.com/842194.
+  ui::ListSelectionModel selected_tabs_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };

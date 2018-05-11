@@ -64,6 +64,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/plugins/plugin_finder.h"
@@ -1002,6 +1003,18 @@ void Browser::TabInsertedAt(TabStripModel* tab_strip_model,
 void Browser::TabClosingAt(TabStripModel* tab_strip_model,
                            WebContents* contents,
                            int index) {
+  // Typically, ModalDialogs are closed when the WebContents is destroyed.
+  // However, when the tab is being closed, we must first close the dialogs [to
+  // give them an opportunity to clean up after themselves] while the state
+  // associated with their tab is still valid.
+  WebContentsModalDialogManager::FromWebContents(contents)->CloseAllDialogs();
+
+  // Page load metrics need to be informed that the WebContents will soon be
+  // destroyed, so that upcoming visiblity changes can be ignored.
+  page_load_metrics::MetricsWebContentsObserver* metrics_observer =
+      page_load_metrics::MetricsWebContentsObserver::FromWebContents(contents);
+  metrics_observer->WebContentsWillSoonBeDestroyed();
+
   exclusive_access_manager_->OnTabClosing(contents);
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile_);
@@ -1011,9 +1024,6 @@ void Browser::TabClosingAt(TabStripModel* tab_strip_model,
       chrome::NOTIFICATION_TAB_CLOSING,
       content::Source<NavigationController>(&contents->GetController()),
       content::NotificationService::NoDetails());
-
-  // Sever the WebContents' connection back to us.
-  SetAsDelegate(contents, false);
 }
 
 void Browser::TabDetachedAt(WebContents* contents, int index) {
@@ -1023,9 +1033,10 @@ void Browser::TabDetachedAt(WebContents* contents, int index) {
   if (index < old_active_index && !tab_strip_model_->closing_all()) {
     SessionService* session_service =
         SessionServiceFactory::GetForProfileIfExisting(profile_);
-    if (session_service)
+    if (session_service) {
       session_service->SetSelectedTabInWindow(session_id(),
                                               old_active_index - 1);
+    }
   }
 
   TabDetachedAtImpl(contents, index, DETACH_TYPE_DETACH);
@@ -2029,7 +2040,9 @@ void Browser::SetWebContentsBlocked(content::WebContents* web_contents,
                                     bool blocked) {
   int index = tab_strip_model_->GetIndexOfWebContents(web_contents);
   if (index == TabStripModel::kNoTab) {
-    NOTREACHED();
+    // Removal of tabs from the TabStripModel can cause observer callbacks to
+    // invoke this method. The WebContents may no longer exist in the
+    // TabStripModel.
     return;
   }
   tab_strip_model_->SetTabBlocked(index, blocked);
@@ -2442,9 +2455,8 @@ void Browser::TabDetachedAtImpl(content::WebContents* contents,
   SetAsDelegate(contents, false);
   RemoveScheduledUpdatesFor(contents);
 
-  if (find_bar_controller_.get() && index == tab_strip_model_->active_index()) {
+  if (HasFindBarController() && index == tab_strip_model_->active_index())
     find_bar_controller_->ChangeWebContents(NULL);
-  }
 
   for (size_t i = 0; i < interstitial_observers_.size(); i++) {
     if (interstitial_observers_[i]->web_contents() != contents)

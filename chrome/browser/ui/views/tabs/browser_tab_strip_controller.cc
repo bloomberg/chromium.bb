@@ -414,7 +414,7 @@ void BrowserTabStripController::ActiveTabChanged(
 void BrowserTabStripController::TabSelectionChanged(
     TabStripModel* tab_strip_model,
     const ui::ListSelectionModel& old_model) {
-  tabstrip_->SetSelection(old_model, model_->selection_model());
+  tabstrip_->SetSelection(model_->selection_model());
 }
 
 void BrowserTabStripController::TabMoved(WebContents* contents,

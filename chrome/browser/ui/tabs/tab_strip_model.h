@@ -428,6 +428,8 @@ class TabStripModel {
 
  private:
   class WebContentsData;
+  struct DetachedWebContents;
+  struct DetachNotifications;
 
   // Used when making selection notifications.
   enum class Notify {
@@ -437,9 +439,28 @@ class TabStripModel {
     kUserGesture,
   };
 
+  // Performs all the work to detach a WebContents instance but avoids sending
+  // most notifications. TabClosingAt() and TabDetachedAt() are sent because
+  // observers are reliant on the selection model being accurate at the time
+  // that TabDetachedAt() is called.
+  std::unique_ptr<content::WebContents> DetachWebContentsImpl(
+      int index,
+      bool create_historical_tab,
+      bool will_delete);
+
+  // We batch send notifications. This has two benefits:
+  //   1) This allows us to send the minimal number of necessary notifications.
+  //   This is important because some notifications cause the main thread to
+  //   synchronously communicate with the GPU process and cause jank.
+  //   https://crbug.com/826287.
+  //   2) This allows us to avoid some problems caused by re-entrancy [e.g.
+  //   using destroyed WebContents instances]. Ideally, this second check
+  //   wouldn't be necessary because we would enforce that there is no
+  //   re-entrancy in the TabStripModel, but that condition is currently
+  //   violated in tests [and possibly in the wild as well].
+  void SendDetachWebContentsNotifications(DetachNotifications* notifications);
+
   bool ContainsWebContents(content::WebContents* contents);
-  void OnWillDeleteWebContents(content::WebContents* contents,
-                               uint32_t close_types);
   bool RunUnloadListenerBeforeClosing(content::WebContents* contents);
   bool ShouldRunUnloadListenerBeforeClosing(content::WebContents* contents);
 
@@ -498,9 +519,6 @@ class TabStripModel {
   // of the indices, it is assumed they are valid.
   std::vector<content::WebContents*> GetWebContentsesByIndices(
       const std::vector<int>& indices);
-
-  // Notifies the observers if the active tab is being deactivated.
-  void NotifyIfTabDeactivated(content::WebContents* contents);
 
   // Notifies the observers if the active tab has changed.
   void NotifyIfActiveTabChanged(content::WebContents* old_contents,

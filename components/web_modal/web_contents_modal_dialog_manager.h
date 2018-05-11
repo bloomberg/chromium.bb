@@ -73,6 +73,9 @@ class WebContentsModalDialogManager
     DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
+  // Closes all WebContentsModalDialogs.
+  void CloseAllDialogs();
+
  private:
   explicit WebContentsModalDialogManager(content::WebContents* web_contents);
   friend class content::WebContentsUserData<WebContentsModalDialogManager>;
@@ -93,9 +96,6 @@ class WebContentsModalDialogManager
   void BlockWebContentsInteraction(bool blocked);
 
   bool IsWebContentsVisible() const;
-
-  // Closes all WebContentsModalDialogs.
-  void CloseAllDialogs();
 
   // Overridden from content::WebContentsObserver:
   void DidFinishNavigation(
