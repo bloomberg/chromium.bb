@@ -552,6 +552,9 @@ CommandHandler.onCommand = function(command) {
     case 'toggleKeyboardHelp':
       (new PanelCommand(PanelCommandType.OPEN_MENUS)).send();
       return false;
+    case 'showPanelMenuMostRecent':
+      (new PanelCommand(PanelCommandType.OPEN_MENUS_MOST_RECENT)).send();
+      return false;
     case 'showHeadingsList':
       (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_heading')).send();
       return false;

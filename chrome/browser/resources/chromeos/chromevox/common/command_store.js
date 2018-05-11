@@ -395,9 +395,11 @@ cvox.CommandStore.CMD_WHITELIST = {
   'toggleKeyboardHelp': {
     announce: false,
     disallowContinuation: true,
-    msgId: 'show_power_key',
+    msgId: 'show_panel_menu',
     category: 'help_commands'
   },
+  'showPanelMenuMostRecent':
+      {announce: false, msgId: 'show_panel_menu', category: 'help_commands'},
   'help': {
     announce: false,
     msgId: 'help',

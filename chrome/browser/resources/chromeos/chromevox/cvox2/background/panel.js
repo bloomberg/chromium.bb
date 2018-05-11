@@ -67,6 +67,11 @@ Panel.setPendingCallback = function(callback) {
 };
 
 /**
+ * @private {string}
+ */
+Panel.lastMenu_ = '';
+
+/**
  * Initialize the panel.
  */
 Panel.init = function() {
@@ -251,6 +256,9 @@ Panel.exec = function(command) {
       break;
     case PanelCommandType.OPEN_MENUS:
       Panel.onOpenMenus(undefined, command.data);
+      break;
+    case PanelCommandType.OPEN_MENUS_MOST_RECENT:
+      Panel.onOpenMenus(undefined, Panel.lastMenu_);
       break;
     case PanelCommandType.SEARCH:
       Panel.onSearch();
@@ -510,6 +518,8 @@ Panel.clearMenus = function() {
     $('menu-bar').removeChild(menu.menuBarItemElement);
     $('menus_background').removeChild(menu.menuContainerElement);
   }
+  if (Panel.activeMenu_)
+    Panel.lastMenu_ = Panel.activeMenu_.menuMsg;
   Panel.activeMenu_ = null;
 };
 
