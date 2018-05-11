@@ -34,6 +34,7 @@ using syncer::DataTypeManagerMock;
 using syncer::FakeSyncEngine;
 using testing::_;
 using testing::AnyNumber;
+using testing::ByMove;
 using testing::DoAll;
 using testing::Mock;
 using testing::Return;
@@ -115,17 +116,19 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   }
 
   DataTypeManagerMock* SetUpDataTypeManager() {
-    DataTypeManagerMock* data_type_manager = new DataTypeManagerMock();
+    auto data_type_manager = std::make_unique<DataTypeManagerMock>();
+    DataTypeManagerMock* data_type_manager_raw = data_type_manager.get();
     EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _, _))
-        .WillOnce(Return(data_type_manager));
-    return data_type_manager;
+        .WillOnce(Return(ByMove(std::move(data_type_manager))));
+    return data_type_manager_raw;
   }
 
   FakeSyncEngine* SetUpSyncEngine() {
-    FakeSyncEngine* sync_backend_host = new FakeSyncEngine();
+    auto sync_engine = std::make_unique<FakeSyncEngine>();
+    FakeSyncEngine* sync_engine_raw = sync_engine.get();
     EXPECT_CALL(*component_factory_, CreateSyncEngine(_, _, _, _))
-        .WillOnce(Return(sync_backend_host));
-    return sync_backend_host;
+        .WillOnce(Return(ByMove(std::move(sync_engine))));
+    return sync_engine_raw;
   }
 
   PrefService* pref_service() {

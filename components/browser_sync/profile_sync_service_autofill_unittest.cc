@@ -315,8 +315,8 @@ class WebDataServiceFake : public AutofillWebDataService {
 ACTION_P2(ReturnNewDataTypeManagerWithDebugListener,
           sync_client,
           debug_listener) {
-  return new syncer::DataTypeManagerImpl(sync_client, arg0, debug_listener,
-                                         arg2, arg3, arg4, arg5);
+  return std::make_unique<syncer::DataTypeManagerImpl>(
+      sync_client, arg0, debug_listener, arg2, arg3, arg4, arg5);
 }
 
 class MockPersonalDataManager : public PersonalDataManager {

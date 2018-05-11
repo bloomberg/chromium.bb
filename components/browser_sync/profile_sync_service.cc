@@ -601,9 +601,9 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   invalidation::InvalidationService* invalidator =
       sync_client_->GetInvalidationService();
 
-  engine_.reset(sync_client_->GetSyncApiComponentFactory()->CreateSyncEngine(
+  engine_ = sync_client_->GetSyncApiComponentFactory()->CreateSyncEngine(
       debug_identifier_, invalidator, sync_prefs_.AsWeakPtr(),
-      FormatSyncDataPath(base_directory_)));
+      FormatSyncDataPath(base_directory_));
 
   // Clear any old errors the first time sync starts.
   if (!IsFirstSetupComplete())
@@ -1064,10 +1064,10 @@ void ProfileSyncService::OnEngineInitialized(
     UpdateLastSyncedTime();
   }
 
-  data_type_manager_.reset(
+  data_type_manager_ =
       sync_client_->GetSyncApiComponentFactory()->CreateDataTypeManager(
           initial_types, debug_info_listener, &data_type_controllers_, this,
-          engine_.get(), this));
+          engine_.get(), this);
 
   crypto_->SetSyncEngine(engine_.get());
   crypto_->SetDataTypeManager(data_type_manager_.get());

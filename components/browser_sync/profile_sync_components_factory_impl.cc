@@ -296,7 +296,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   }
 }
 
-DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
+std::unique_ptr<DataTypeManager>
+ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
     syncer::ModelTypeSet initial_types,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
         debug_info_listener,
@@ -304,18 +305,19 @@ DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
     const syncer::DataTypeEncryptionHandler* encryption_handler,
     syncer::ModelTypeConfigurer* configurer,
     DataTypeManagerObserver* observer) {
-  return new DataTypeManagerImpl(sync_client_, initial_types,
-                                 debug_info_listener, controllers,
-                                 encryption_handler, configurer, observer);
+  return std::make_unique<DataTypeManagerImpl>(
+      sync_client_, initial_types, debug_info_listener, controllers,
+      encryption_handler, configurer, observer);
 }
 
-syncer::SyncEngine* ProfileSyncComponentsFactoryImpl::CreateSyncEngine(
+std::unique_ptr<syncer::SyncEngine>
+ProfileSyncComponentsFactoryImpl::CreateSyncEngine(
     const std::string& name,
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
     const base::FilePath& sync_data_folder) {
-  return new syncer::SyncBackendHostImpl(name, sync_client_, invalidator,
-                                         sync_prefs, sync_data_folder);
+  return std::make_unique<syncer::SyncBackendHostImpl>(
+      name, sync_client_, invalidator, sync_prefs, sync_data_folder);
 }
 
 std::unique_ptr<syncer::LocalDeviceInfoProvider>

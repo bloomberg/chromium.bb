@@ -25,6 +25,7 @@
 using syncer::SyncBackendHostImpl;
 using syncer::ModelType;
 using testing::_;
+using testing::ByMove;
 using testing::Return;
 
 namespace browser_sync {
@@ -171,12 +172,13 @@ void AbstractProfileSyncServiceTest::CreateSyncService(
 
   syncer::SyncApiComponentFactoryMock* components =
       profile_sync_service_bundle_.component_factory();
+  auto engine = std::make_unique<SyncEngineForProfileSyncTest>(
+      temp_dir_.GetPath(), sync_service_->GetSyncClient(),
+      profile_sync_service_bundle_.fake_invalidation_service(),
+      sync_service_->sync_prefs()->AsWeakPtr(),
+      std::move(initialization_success_callback));
   EXPECT_CALL(*components, CreateSyncEngine(_, _, _, _))
-      .WillOnce(Return(new SyncEngineForProfileSyncTest(
-          temp_dir_.GetPath(), sync_service_->GetSyncClient(),
-          profile_sync_service_bundle_.fake_invalidation_service(),
-          sync_service_->sync_prefs()->AsWeakPtr(),
-          std::move(initialization_success_callback))));
+      .WillOnce(Return(ByMove(std::move(engine))));
 
   sync_service_->SetFirstSetupComplete();
 }

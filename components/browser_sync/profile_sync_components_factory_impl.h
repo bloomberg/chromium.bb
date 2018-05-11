@@ -46,7 +46,7 @@ class ProfileSyncComponentsFactoryImpl
   void RegisterDataTypes(
       syncer::SyncService* sync_service,
       const RegisterDataTypesMethod& register_platform_types_method) override;
-  syncer::DataTypeManager* CreateDataTypeManager(
+  std::unique_ptr<syncer::DataTypeManager> CreateDataTypeManager(
       syncer::ModelTypeSet initial_types,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,
@@ -54,7 +54,7 @@ class ProfileSyncComponentsFactoryImpl
       const syncer::DataTypeEncryptionHandler* encryption_handler,
       syncer::ModelTypeConfigurer* configurer,
       syncer::DataTypeManagerObserver* observer) override;
-  syncer::SyncEngine* CreateSyncEngine(
+  std::unique_ptr<syncer::SyncEngine> CreateSyncEngine(
       const std::string& name,
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
