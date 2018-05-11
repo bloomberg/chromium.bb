@@ -165,12 +165,16 @@ void MediaRouterDialogController::HideMediaRouterDialog() {
 
 void MediaRouterDialogController::FocusOnMediaRouterDialog(
     bool dialog_needs_creation) {
+  // Show the WebContents requesting a dialog.
+  // TODO(takumif): In the case of Views dialog, if the dialog is already shown,
+  // activating the WebContents makes the dialog lose focus and disappear. The
+  // dialog needs to be created again in that case.
+  initiator_->GetDelegate()->ActivateContents(initiator_);
   if (dialog_needs_creation) {
-    initiator_observer_.reset(
-        new InitiatorWebContentsObserver(initiator_, this));
+    initiator_observer_ =
+        std::make_unique<InitiatorWebContentsObserver>(initiator_, this);
     CreateMediaRouterDialog();
   }
-  initiator_->GetDelegate()->ActivateContents(initiator_);
 }
 
 void MediaRouterDialogController::Reset() {

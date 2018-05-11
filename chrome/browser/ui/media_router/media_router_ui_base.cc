@@ -339,7 +339,7 @@ bool MediaRouterUIBase::CreateRoute(const MediaSink::Id& sink_id,
   return true;
 }
 
-void MediaRouterUIBase::CloseRoute(const MediaRoute::Id& route_id) {
+void MediaRouterUIBase::TerminateRoute(const MediaRoute::Id& route_id) {
   GetMediaRouter()->TerminateRoute(route_id);
 }
 

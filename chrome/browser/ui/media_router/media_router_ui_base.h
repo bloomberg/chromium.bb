@@ -99,14 +99,15 @@ class MediaRouterUIBase : public QueryResultManager::Observer,
   virtual bool CreateRoute(const MediaSink::Id& sink_id,
                            MediaCastMode cast_mode);
 
-  // Calls MediaRouter to close the given route.
-  void CloseRoute(const MediaRoute::Id& route_id);
+  // Calls MediaRouter to terminate the given route.
+  void TerminateRoute(const MediaRoute::Id& route_id);
 
   // Logs a UMA stat for the source that was cast if the result is successful.
   void MaybeReportCastingSource(MediaCastMode cast_mode,
                                 const RouteRequestResult& result);
 
-  // Returns a subset of |sinks_| that should be listed in the dialog.
+  // Returns a subset of |sinks_| that should be listed in the dialog. This
+  // excludes the wired display that the initiator WebContents is on.
   std::vector<MediaSinkWithCastModes> GetEnabledSinks() const;
 
   // Returns a source name that can be shown in the dialog.
