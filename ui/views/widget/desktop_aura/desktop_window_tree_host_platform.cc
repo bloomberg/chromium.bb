@@ -42,10 +42,7 @@ void DesktopWindowTreeHostPlatform::SetBoundsInDIP(
 
 void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {
   CreateAndSetDefaultPlatformWindow();
-  // TODO(sky): this should be |params.force_software_compositing|, figure out
-  // why it has to be true now.
-  const bool use_software_compositing = true;
-  CreateCompositor(viz::FrameSinkId(), use_software_compositing);
+  CreateCompositor(viz::FrameSinkId(), params.force_software_compositing);
   aura::WindowTreeHost::OnAcceleratedWidgetAvailable();
   InitHost();
   if (!params.bounds.IsEmpty())
