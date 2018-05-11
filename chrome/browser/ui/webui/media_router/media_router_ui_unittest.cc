@@ -107,7 +107,7 @@ class PresentationRequestCallbacks {
       const blink::mojom::PresentationError& expected_error)
       : expected_error_(expected_error) {}
 
-  void Success(const content::PresentationInfo&, const MediaRoute&) {}
+  void Success(const blink::mojom::PresentationInfo&, const MediaRoute&) {}
 
   void Error(const blink::mojom::PresentationError& error) {
     EXPECT_EQ(expected_error_.error_type, error.error_type);

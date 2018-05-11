@@ -8,23 +8,6 @@
 
 namespace mojo {
 
-bool StructTraits<blink::mojom::PresentationInfoDataView,
-                  content::PresentationInfo>::
-    Read(blink::mojom::PresentationInfoDataView data,
-         content::PresentationInfo* out) {
-  if (!data.ReadUrl(&(out->presentation_url)) ||
-      !data.ReadId(&(out->presentation_id))) {
-    return false;
-  }
-
-  if (out->presentation_id.empty() ||
-      !base::IsStringASCII(out->presentation_id) ||
-      out->presentation_id.length() > content::PresentationInfo::kMaxIdLength) {
-    return false;
-  }
-  return true;
-}
-
 bool UnionTraits<blink::mojom::PresentationConnectionMessageDataView,
                  content::PresentationConnectionMessage>::
     Read(blink::mojom::PresentationConnectionMessageDataView data,

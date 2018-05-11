@@ -77,8 +77,8 @@ void ReceiverPresentationServiceDelegateImpl::
         const content::ReceiverConnectionAvailableCallback&
             receiver_available_callback) {
   local_presentation_manager_->OnLocalPresentationReceiverCreated(
-      content::PresentationInfo(web_contents_->GetLastCommittedURL(),
-                                presentation_id_),
+      blink::mojom::PresentationInfo(web_contents_->GetLastCommittedURL(),
+                                     presentation_id_),
       receiver_available_callback);
 }
 

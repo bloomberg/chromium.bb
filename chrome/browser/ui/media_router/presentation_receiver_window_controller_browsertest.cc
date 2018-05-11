@@ -25,7 +25,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/presentation_connection_message.h"
-#include "content/public/common/presentation_info.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/script_executor.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -295,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowControllerBrowserTest,
   media_router::LocalPresentationManagerFactory::GetOrCreateForBrowserContext(
       browser()->profile())
       ->RegisterLocalPresentationController(
-          content::PresentationInfo(presentation_url, kPresentationId),
+          blink::mojom::PresentationInfo(presentation_url, kPresentationId),
           RenderFrameHostId(0, 0), std::move(controller_ptr),
           controller_connection.MakeConnectionRequest(),
           media_router::MediaRoute("route",

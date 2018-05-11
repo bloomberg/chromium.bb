@@ -18,7 +18,6 @@
 #include "content/public/browser/presentation_request.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/common/presentation_connection_message.h"
-#include "content/public/common/presentation_info.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
@@ -29,6 +28,8 @@ using blink::mojom::PresentationConnectionCloseReason;
 using blink::mojom::PresentationConnectionState;
 using blink::mojom::PresentationError;
 using blink::mojom::PresentationErrorType;
+using blink::mojom::PresentationInfo;
+using blink::mojom::PresentationInfoPtr;
 using blink::mojom::ScreenAvailability;
 using ::testing::_;
 using ::testing::Eq;
@@ -46,10 +47,9 @@ MATCHER_P(PresentationUrlsAre, expected_urls, "") {
   return arg.presentation_urls == expected_urls;
 }
 
-// Matches content::PresentationInfo.
+// Matches blink::mojom::PresentationInfo.
 MATCHER_P(InfoEquals, expected, "") {
-  return expected.presentation_url == arg.presentation_url &&
-         expected.presentation_id == arg.presentation_id;
+  return expected.url == arg.url && expected.id == arg.id;
 }
 
 ACTION_TEMPLATE(SaveArgByMove,
@@ -190,15 +190,15 @@ class MockPresentationServiceDelegate
 class MockPresentationReceiver : public blink::mojom::PresentationReceiver {
  public:
   void OnReceiverConnectionAvailable(
-      const content::PresentationInfo& info,
+      PresentationInfoPtr info,
       blink::mojom::PresentationConnectionPtr controller_connection,
       blink::mojom::PresentationConnectionRequest receiver_connection_request)
       override {
-    OnReceiverConnectionAvailable(info);
+    OnReceiverConnectionAvailable(*info);
   }
 
   MOCK_METHOD1(OnReceiverConnectionAvailable,
-               void(const content::PresentationInfo& info));
+               void(const PresentationInfo& info));
 };
 
 class MockReceiverPresentationServiceDelegate
@@ -233,24 +233,37 @@ class MockPresentationController : public blink::mojom::PresentationController {
  public:
   MOCK_METHOD2(OnScreenAvailabilityUpdated,
                void(const GURL& url, ScreenAvailability availability));
-  MOCK_METHOD2(OnConnectionStateChanged,
+  void OnConnectionStateChanged(PresentationInfoPtr connection,
+                                PresentationConnectionState new_state) {
+    OnConnectionStateChangedInternal(*connection, new_state);
+  }
+  MOCK_METHOD2(OnConnectionStateChangedInternal,
                void(const PresentationInfo& connection,
                     PresentationConnectionState new_state));
-  MOCK_METHOD3(OnConnectionClosed,
+  void OnConnectionClosed(
+      PresentationInfoPtr connection,
+      blink::mojom::PresentationConnectionCloseReason reason,
+      const std::string& message) {
+    OnConnectionClosedInternal(*connection, reason, message);
+  }
+  MOCK_METHOD3(OnConnectionClosedInternal,
                void(const PresentationInfo& connection,
                     blink::mojom::PresentationConnectionCloseReason reason,
                     const std::string& message));
   // PresentationConnectionMessage is move-only.
   void OnConnectionMessagesReceived(
-      const PresentationInfo& presentation_info,
+      PresentationInfoPtr presentation_info,
       std::vector<PresentationConnectionMessage> messages) {
-    OnConnectionMessagesReceivedInternal(presentation_info, messages);
+    OnConnectionMessagesReceivedInternal(*presentation_info, messages);
   }
   MOCK_METHOD2(
       OnConnectionMessagesReceivedInternal,
       void(const PresentationInfo& presentation_info,
            const std::vector<PresentationConnectionMessage>& messages));
-  MOCK_METHOD1(OnDefaultPresentationStarted,
+  void OnDefaultPresentationStarted(PresentationInfoPtr presentation_info) {
+    OnDefaultPresentationStartedInternal(*presentation_info);
+  }
+  MOCK_METHOD1(OnDefaultPresentationStartedInternal,
                void(const PresentationInfo& presentation_info));
 };
 
@@ -342,16 +355,16 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
         service_impl_->screen_availability_listeners_.end());
   }
 
-  void ExpectPresentationSuccess(const base::Optional<PresentationInfo>& info,
+  void ExpectPresentationSuccess(PresentationInfoPtr info,
                                  blink::mojom::PresentationErrorPtr error) {
-    EXPECT_TRUE(info.has_value());
+    EXPECT_FALSE(info.is_null());
     EXPECT_TRUE(error.is_null());
     presentation_cb_was_run_ = true;
   }
 
-  void ExpectPresentationError(const base::Optional<PresentationInfo>& info,
+  void ExpectPresentationError(PresentationInfoPtr info,
                                blink::mojom::PresentationErrorPtr error) {
-    EXPECT_FALSE(info.has_value());
+    EXPECT_TRUE(info.is_null());
     EXPECT_FALSE(error.is_null());
     presentation_cb_was_run_ = true;
   }
@@ -456,8 +469,8 @@ TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrls) {
 
   PresentationInfo presentation_info(presentation_url2_, kPresentationId);
 
-  EXPECT_CALL(mock_controller_,
-              OnDefaultPresentationStarted(InfoEquals(presentation_info)));
+  EXPECT_CALL(mock_controller_, OnDefaultPresentationStartedInternal(
+                                    InfoEquals(presentation_info)));
   EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _));
   std::move(callback).Run(
       PresentationInfo(presentation_url2_, kPresentationId));
@@ -490,7 +503,7 @@ TEST_F(PresentationServiceImplTest, ListenForConnectionStateChange) {
       .WillOnce(SaveArg<3>(&state_changed_cb));
   service_impl_->ListenForConnectionStateChange(connection);
 
-  EXPECT_CALL(mock_controller_, OnConnectionStateChanged(
+  EXPECT_CALL(mock_controller_, OnConnectionStateChangedInternal(
                                     InfoEquals(presentation_connection),
                                     PresentationConnectionState::TERMINATED));
   state_changed_cb.Run(PresentationConnectionStateChangeInfo(
@@ -513,10 +526,10 @@ TEST_F(PresentationServiceImplTest, ListenForConnectionClose) {
   closed_info.close_reason = PresentationConnectionCloseReason::WENT_AWAY;
   closed_info.message = "Foo";
 
-  EXPECT_CALL(
-      mock_controller_,
-      OnConnectionClosed(InfoEquals(presentation_connection),
-                         PresentationConnectionCloseReason::WENT_AWAY, "Foo"));
+  EXPECT_CALL(mock_controller_,
+              OnConnectionClosedInternal(
+                  InfoEquals(presentation_connection),
+                  PresentationConnectionCloseReason::WENT_AWAY, "Foo"));
   state_changed_cb.Run(closed_info);
   base::RunLoop().RunUntilIdle();
 }
@@ -634,7 +647,8 @@ TEST_F(PresentationServiceImplTest, Terminate) {
 }
 
 TEST_F(PresentationServiceImplTest, SetPresentationConnection) {
-  PresentationInfo presentation_info(presentation_url1_, kPresentationId);
+  PresentationInfoPtr presentation_info =
+      PresentationInfo::New(presentation_url1_, kPresentationId);
 
   blink::mojom::PresentationConnectionPtr connection;
   MockPresentationConnection mock_presentation_connection;
@@ -648,7 +662,7 @@ TEST_F(PresentationServiceImplTest, SetPresentationConnection) {
                                   _, _, InfoEquals(expected), _));
 
   service_impl_->SetPresentationConnection(
-      presentation_info, std::move(connection), std::move(request));
+      std::move(presentation_info), std::move(connection), std::move(request));
 }
 
 TEST_F(PresentationServiceImplTest, ReceiverPresentationServiceDelegate) {
@@ -670,7 +684,7 @@ TEST_F(PresentationServiceImplTest, ReceiverPresentationServiceDelegate) {
   service_impl.SetReceiver(std::move(receiver_ptr));
   EXPECT_FALSE(callback.is_null());
 
-  PresentationInfo presentation_info(presentation_url1_, kPresentationId);
+  PresentationInfo expected(presentation_url1_, kPresentationId);
 
   // Client gets notified of receiver connections.
   blink::mojom::PresentationConnectionPtr controller_connection;
@@ -680,9 +694,10 @@ TEST_F(PresentationServiceImplTest, ReceiverPresentationServiceDelegate) {
   blink::mojom::PresentationConnectionPtr receiver_connection;
 
   EXPECT_CALL(mock_receiver,
-              OnReceiverConnectionAvailable(InfoEquals(presentation_info)))
+              OnReceiverConnectionAvailable(InfoEquals(expected)))
       .Times(1);
-  callback.Run(presentation_info, std::move(controller_connection),
+  callback.Run(PresentationInfo::New(expected),
+               std::move(controller_connection),
                mojo::MakeRequest(&receiver_connection));
   base::RunLoop().RunUntilIdle();
 

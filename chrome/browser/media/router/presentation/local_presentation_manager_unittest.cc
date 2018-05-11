@@ -12,6 +12,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using blink::mojom::PresentationInfo;
+using blink::mojom::PresentationInfoPtr;
 using testing::_;
 
 namespace media_router {
@@ -25,14 +27,14 @@ const char kPresentationUrl[] = "http://www.example.com/presentation.html";
 class MockReceiverConnectionAvailableCallback {
  public:
   void OnReceiverConnectionAvailable(
-      const content::PresentationInfo& presentation_info,
+      PresentationInfoPtr presentation_info,
       content::PresentationConnectionPtr controller_conn,
       content::PresentationConnectionRequest receiver_conn_request) {
-    OnReceiverConnectionAvailableRaw(presentation_info, controller_conn.get());
+    OnReceiverConnectionAvailableRaw(*presentation_info, controller_conn.get());
   }
 
   MOCK_METHOD2(OnReceiverConnectionAvailableRaw,
-               void(const content::PresentationInfo&,
+               void(const PresentationInfo&,
                     blink::mojom::PresentationConnection*));
 };
 
@@ -61,7 +63,7 @@ class LocalPresentationManagerTest : public ::testing::Test {
   void RegisterController(const std::string& presentation_id,
                           content::PresentationConnectionPtr controller) {
     RegisterController(
-        content::PresentationInfo(GURL(kPresentationUrl), presentation_id),
+        PresentationInfo(GURL(kPresentationUrl), presentation_id),
         render_frame_host_id_, std::move(controller));
   }
 
@@ -76,7 +78,7 @@ class LocalPresentationManagerTest : public ::testing::Test {
                        std::move(controller));
   }
 
-  void RegisterController(const content::PresentationInfo& presentation_info,
+  void RegisterController(const PresentationInfo& presentation_info,
                           const RenderFrameHostId& render_frame_id,
                           content::PresentationConnectionPtr controller) {
     content::PresentationConnectionRequest receiver_conn_request;
@@ -94,7 +96,7 @@ class LocalPresentationManagerTest : public ::testing::Test {
       const std::string& presentation_id,
       MockReceiverConnectionAvailableCallback& receiver_callback) {
     manager()->OnLocalPresentationReceiverCreated(
-        content::PresentationInfo(GURL(kPresentationUrl), presentation_id),
+        PresentationInfo(GURL(kPresentationUrl), presentation_id),
         base::BindRepeating(&MockReceiverConnectionAvailableCallback::
                                 OnReceiverConnectionAvailable,
                             base::Unretained(&receiver_callback)));
@@ -116,7 +118,7 @@ class LocalPresentationManagerTest : public ::testing::Test {
 
  private:
   const RenderFrameHostId render_frame_host_id_;
-  const content::PresentationInfo presentation_info_;
+  const PresentationInfo presentation_info_;
   LocalPresentationManager manager_;
   MediaRoute route_;
 };

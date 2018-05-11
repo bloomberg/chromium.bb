@@ -24,7 +24,6 @@
 #include "content/public/browser/presentation_screen_availability_listener.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/presentation_info.h"
 #include "content/public/test/web_contents_tester.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -36,6 +35,7 @@ using ::testing::Mock;
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::WithArgs;
+using blink::mojom::PresentationInfo;
 
 namespace {
 
@@ -45,10 +45,9 @@ constexpr char kPresentationUrl3[] = "cast:233637DE";
 constexpr char kFrameUrl[] = "http://anotherframeurl.fakeurl.com/";
 constexpr char kPresentationId[] = "presentation_id";
 
-// Matches content::PresentationInfo.
+// Matches blink::mojom::PresentationInfo.
 MATCHER_P(InfoEquals, expected, "") {
-  return expected.presentation_url == arg.presentation_url &&
-         expected.presentation_id == arg.presentation_id;
+  return expected.url == arg.url && expected.id == arg.id;
 }
 
 }  // namespace
@@ -59,8 +58,7 @@ class MockDelegateObserver
     : public content::PresentationServiceDelegate::Observer {
  public:
   MOCK_METHOD0(OnDelegateDestroyed, void());
-  MOCK_METHOD1(OnDefaultPresentationStarted,
-               void(const content::PresentationInfo&));
+  MOCK_METHOD1(OnDefaultPresentationStarted, void(const PresentationInfo&));
 };
 
 class MockDefaultPresentationRequestObserver
@@ -75,7 +73,7 @@ class MockDefaultPresentationRequestObserver
 class MockCreatePresentationConnnectionCallbacks {
  public:
   MOCK_METHOD1(OnCreateConnectionSuccess,
-               void(const content::PresentationInfo& connection));
+               void(const PresentationInfo& connection));
   MOCK_METHOD1(OnCreateConnectionError,
                void(const blink::mojom::PresentationError& error));
 };
@@ -83,7 +81,7 @@ class MockCreatePresentationConnnectionCallbacks {
 class MockLocalPresentationManager : public LocalPresentationManager {
  public:
   void RegisterLocalPresentationController(
-      const content::PresentationInfo& presentation_info,
+      const PresentationInfo& presentation_info,
       const RenderFrameHostId& render_frame_id,
       content::PresentationConnectionPtr controller,
       content::PresentationConnectionRequest,
@@ -93,14 +91,14 @@ class MockLocalPresentationManager : public LocalPresentationManager {
   }
 
   MOCK_METHOD3(RegisterLocalPresentationController,
-               void(const content::PresentationInfo& presentation_info,
+               void(const PresentationInfo& presentation_info,
                     const RenderFrameHostId& render_frame_id,
                     const MediaRoute& route));
   MOCK_METHOD2(UnregisterLocalPresentationController,
                void(const std::string& presentation_id,
                     const RenderFrameHostId& render_frame_id));
   MOCK_METHOD2(OnLocalPresentationReceiverCreated,
-               void(const content::PresentationInfo& presentation_info,
+               void(const PresentationInfo& presentation_info,
                     const content::ReceiverConnectionAvailableCallback&
                         receiver_callback));
   MOCK_METHOD1(OnLocalPresentationReceiverTerminated,
@@ -147,7 +145,7 @@ class PresentationServiceDelegateImplTest
   }
 
   MOCK_METHOD1(OnDefaultPresentationStarted,
-               void(const content::PresentationInfo& presentation_info));
+               void(const PresentationInfo& presentation_info));
 
  protected:
   virtual content::WebContents* GetWebContents() { return web_contents(); }
@@ -461,7 +459,7 @@ TEST_F(PresentationServiceDelegateImplTest, ListenForConnnectionStateChange) {
   base::MockCallback<content::PresentationConnectionStateChangedCallback>
       mock_callback;
   auto callback = mock_callback.Get();
-  content::PresentationInfo connection(presentation_url1_, kPresentationId);
+  PresentationInfo connection(presentation_url1_, kPresentationId);
   EXPECT_CALL(*router_, OnAddPresentationConnectionStateChangedCallbackInvoked(
                             Equals(callback)));
   delegate_impl_->ListenForConnectionStateChange(
@@ -510,8 +508,7 @@ TEST_F(PresentationServiceDelegateImplTest, SinksObserverCantRegister) {
 TEST_F(PresentationServiceDelegateImplTest,
        TestCloseConnectionForLocalPresentation) {
   GURL presentation_url = GURL("http://www.example.com/presentation.html");
-  content::PresentationInfo presentation_info(presentation_url,
-                                              kPresentationId);
+  PresentationInfo presentation_info(presentation_url, kPresentationId);
   RenderFrameHostId rfh_id(main_frame_process_id_, main_frame_routing_id_);
   MediaRoute media_route("route_id",
                          MediaSourceForPresentationUrl(presentation_url),
@@ -565,13 +562,11 @@ TEST_F(PresentationServiceDelegateImplTest,
 
 TEST_F(PresentationServiceDelegateImplTest, ConnectToLocalPresentation) {
   RenderFrameHostId rfh_id(main_frame_process_id_, main_frame_routing_id_);
-  content::PresentationInfo presentation_info(presentation_url1_,
-                                              kPresentationId);
+  PresentationInfo presentation_info(presentation_url1_, kPresentationId);
 
-  MediaRoute media_route(
-      "route_id",
-      MediaSourceForPresentationUrl(presentation_info.presentation_url),
-      "mediaSinkId", "", true, true);
+  MediaRoute media_route("route_id",
+                         MediaSourceForPresentationUrl(presentation_info.url),
+                         "mediaSinkId", "", true, true);
   media_route.set_local_presentation(true);
 
   base::MockCallback<content::PresentationConnectionCallback> success_cb;
@@ -599,13 +594,11 @@ TEST_F(PresentationServiceDelegateImplTest, ConnectToLocalPresentation) {
 
 TEST_F(PresentationServiceDelegateImplTest, ConnectToPresentation) {
   RenderFrameHostId rfh_id(main_frame_process_id_, main_frame_routing_id_);
-  content::PresentationInfo presentation_info(presentation_url1_,
-                                              kPresentationId);
+  PresentationInfo presentation_info(presentation_url1_, kPresentationId);
 
-  MediaRoute media_route(
-      "route_id",
-      MediaSourceForPresentationUrl(presentation_info.presentation_url),
-      "mediaSinkId", "", true, true);
+  MediaRoute media_route("route_id",
+                         MediaSourceForPresentationUrl(presentation_info.url),
+                         "mediaSinkId", "", true, true);
 
   base::MockCallback<content::PresentationConnectionCallback> success_cb;
   EXPECT_CALL(success_cb, Run(_));

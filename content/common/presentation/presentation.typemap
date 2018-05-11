@@ -3,16 +3,10 @@
 # found in the LICENSE file.
 
 mojom = "//third_party/blink/public/platform/modules/presentation/presentation.mojom"
-public_headers = [
-  "//content/public/common/presentation_connection_message.h",
-  "//content/public/common/presentation_info.h",
-]
+public_headers = [ "//content/public/common/presentation_connection_message.h" ]
 traits_headers =
     [ "//content/common/presentation/presentation_struct_traits.h" ]
 deps = [
   "//url",
 ]
-type_mappings = [
-  "blink.mojom.PresentationConnectionMessage=content::PresentationConnectionMessage[move_only]",
-  "blink.mojom.PresentationInfo=content::PresentationInfo",
-]
+type_mappings = [ "blink.mojom.PresentationConnectionMessage=content::PresentationConnectionMessage[move_only]" ]
