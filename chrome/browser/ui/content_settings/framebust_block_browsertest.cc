@@ -8,11 +8,14 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/webui_url_constants.h"
@@ -29,6 +32,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
+
+namespace {
+
+const int kAllowRadioButtonIndex = 0;
+const int kDisallowRadioButtonIndex = 1;
+
+}  // namespace
 
 class FramebustBlockBrowserTest : public InProcessBrowserTest,
                                   public FramebustBlockTabHelper::Observer {
@@ -132,6 +142,94 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, ModelAllowsRedirection) {
   EXPECT_EQ(GURL(chrome::kChromeUISettingsURL), clicked_url_.value());
   EXPECT_FALSE(helper->HasBlockedUrls());
   EXPECT_EQ(blocked_urls[1], GetWebContents()->GetLastCommittedURL());
+}
+
+IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, AllowRadioButtonSelected) {
+  const GURL url = embedded_test_server()->GetURL("/iframe.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Signal that a blocked redirection happened.
+  auto* helper = GetFramebustTabHelper();
+  helper->AddBlockedUrl(url, base::BindOnce(&FramebustBlockBrowserTest::OnClick,
+                                            base::Unretained(this)));
+  EXPECT_TRUE(helper->HasBlockedUrls());
+
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            settings_map->GetContentSetting(
+                url, GURL(), CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
+
+  {
+    // Create a content bubble and simulate clicking on the first radio button
+    // before closing it.
+    ContentSettingFramebustBlockBubbleModel framebust_block_bubble_model(
+        browser()->content_setting_bubble_model_delegate(), GetWebContents(),
+        browser()->profile());
+
+    framebust_block_bubble_model.OnRadioClicked(kAllowRadioButtonIndex);
+  }
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            settings_map->GetContentSetting(
+                url, GURL(), CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
+}
+
+IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, DisallowRadioButtonSelected) {
+  const GURL url = embedded_test_server()->GetURL("/iframe.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Signal that a blocked redirection happened.
+  auto* helper = GetFramebustTabHelper();
+  helper->AddBlockedUrl(url, base::BindOnce(&FramebustBlockBrowserTest::OnClick,
+                                            base::Unretained(this)));
+  EXPECT_TRUE(helper->HasBlockedUrls());
+
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            settings_map->GetContentSetting(
+                url, GURL(), CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
+
+  {
+    // Create a content bubble and simulate clicking on the second radio button
+    // before closing it.
+    ContentSettingFramebustBlockBubbleModel framebust_block_bubble_model(
+        browser()->content_setting_bubble_model_delegate(), GetWebContents(),
+        browser()->profile());
+
+    framebust_block_bubble_model.OnRadioClicked(kDisallowRadioButtonIndex);
+  }
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            settings_map->GetContentSetting(
+                url, GURL(), CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
+}
+
+IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, ManageButtonClicked) {
+  const GURL url = embedded_test_server()->GetURL("/iframe.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Signal that a blocked redirection happened.
+  auto* helper = GetFramebustTabHelper();
+  helper->AddBlockedUrl(url, base::BindOnce(&FramebustBlockBrowserTest::OnClick,
+                                            base::Unretained(this)));
+  EXPECT_TRUE(helper->HasBlockedUrls());
+
+  // Create a content bubble and simulate clicking on the second radio button
+  // before closing it.
+  ContentSettingFramebustBlockBubbleModel framebust_block_bubble_model(
+      browser()->content_setting_bubble_model_delegate(), GetWebContents(),
+      browser()->profile());
+
+  content::TestNavigationObserver navigation_observer(nullptr);
+  navigation_observer.StartWatchingNewWebContents();
+  framebust_block_bubble_model.OnManageButtonClicked();
+  navigation_observer.Wait();
+
+  EXPECT_TRUE(base::StartsWith(navigation_observer.last_navigation_url().spec(),
+                               chrome::kChromeUISettingsURL,
+                               base::CompareCase::SENSITIVE));
 }
 
 IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, SimpleFramebust_Blocked) {

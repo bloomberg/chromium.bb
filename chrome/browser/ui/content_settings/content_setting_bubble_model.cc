@@ -134,7 +134,6 @@ void ContentSettingSimpleBubbleModel::SetTitle() {
       {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_TITLE},
       {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_TITLE},
       {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_TITLE},
-      {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_TITLE},
       {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
        IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT_TITLE},
       {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_TITLE},
@@ -731,29 +730,6 @@ void ContentSettingPluginBubbleModel::RunPluginsOnPage() {
 
 // ContentSettingSingleRadioGroup ----------------------------------------------
 
-class ContentSettingSingleRadioGroup : public ContentSettingSimpleBubbleModel {
- public:
-  ContentSettingSingleRadioGroup(Delegate* delegate,
-                                 WebContents* web_contents,
-                                 Profile* profile,
-                                 ContentSettingsType content_type);
-  ~ContentSettingSingleRadioGroup() override;
-
- protected:
-  bool settings_changed() const;
-  int selected_item() const { return selected_item_; }
-
- private:
-  void SetRadioGroup();
-  void SetNarrowestContentSetting(ContentSetting setting);
-  void OnRadioClicked(int radio_index) override;
-
-  ContentSetting block_setting_;
-  int selected_item_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentSettingSingleRadioGroup);
-};
-
 ContentSettingSingleRadioGroup::ContentSettingSingleRadioGroup(
     Delegate* delegate,
     WebContents* web_contents,
@@ -792,6 +768,14 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
   bool allowed = !content_settings->IsContentBlocked(content_type());
+
+  // For the frame busting case the content is blocked but its content type is
+  // popup, and the popup TabSpecificContentSettings is unaware of the frame
+  // busting block. Since the popup bubble won't happen without blocking, it's
+  // safe to manually set this.
+  if (content_type() == CONTENT_SETTINGS_TYPE_POPUPS)
+    allowed = false;
+
   DCHECK(!allowed || content_settings->IsContentAllowed(content_type()));
 
   RadioGroup radio_group;
@@ -992,6 +976,8 @@ ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
       popup_blocker_observer_(this) {
   if (!web_contents)
     return;
+
+  set_title(l10n_util::GetStringUTF16(IDS_BLOCKED_POPUPS_TITLE));
 
   // Build blocked popup list.
   auto* helper = PopupBlockerTabHelper::FromWebContents(web_contents);
@@ -1601,20 +1587,18 @@ void ContentSettingDownloadsBubbleModel::OnManageButtonClicked() {
 }
 
 // ContentSettingFramebustBlockBubbleModel -------------------------------------
-
 ContentSettingFramebustBlockBubbleModel::
     ContentSettingFramebustBlockBubbleModel(Delegate* delegate,
                                             WebContents* web_contents,
                                             Profile* profile)
-    : ContentSettingBubbleModel(delegate, web_contents, profile) {
+    : ContentSettingSingleRadioGroup(delegate,
+                                     web_contents,
+                                     profile,
+                                     CONTENT_SETTINGS_TYPE_POPUPS) {
   if (!web_contents)
     return;
 
-  set_manage_text_style(ContentSettingBubbleModel::ManageTextStyle::kNone);
-  set_show_learn_more(false);
   set_title(l10n_util::GetStringUTF16(IDS_REDIRECT_BLOCKED_MESSAGE));
-  set_done_button_text(l10n_util::GetStringUTF16(IDS_REDIRECT_BLOCKED_GOT_IT));
-
   auto* helper = FramebustBlockTabHelper::FromWebContents(web_contents);
 
   // Build the blocked urls list.
@@ -1642,7 +1626,7 @@ void ContentSettingFramebustBlockBubbleModel::Observe(
     FramebustBlockTabHelper::FromWebContents(web_contents())
         ->RemoveObserver(this);
   }
-  ContentSettingBubbleModel::Observe(type, source, details);
+  ContentSettingSingleRadioGroup::Observe(type, source, details);
 }
 
 void ContentSettingFramebustBlockBubbleModel::OnListItemClicked(

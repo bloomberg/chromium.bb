@@ -51,10 +51,10 @@ class RapporServiceImpl;
 //     ContentSettingSingleRadioGroup              - radio group
 //       ContentSettingCookiesBubbleModel            - cookies
 //       ContentSettingPopupBubbleModel              - popups
+//       ContentSettingFramebustBlockBubbleModel     - blocked frame busting
 //   ContentSettingMediaStreamBubbleModel        - media (camera and mic)
 //   ContentSettingSubresourceFilterBubbleModel  - filtered subresources
 //   ContentSettingDownloadsBubbleModel          - automatic downloads
-//   ContentSettingFramebustBlockBubbleModel     - blocked framebusts
 
 // Forward declaration necessary for downcasts.
 class ContentSettingSimpleBubbleModel;
@@ -298,6 +298,8 @@ class ContentSettingSimpleBubbleModel : public ContentSettingBubbleModel {
   ContentSettingSimpleBubbleModel* AsSimpleBubbleModel() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(FramebustBlockBrowserTest, ManageButtonClicked);
+
   // ContentSettingBubbleModel implementation.
   void SetTitle();
   void SetMessage();
@@ -452,10 +454,37 @@ class ContentSettingDownloadsBubbleModel : public ContentSettingBubbleModel {
   DISALLOW_COPY_AND_ASSIGN(ContentSettingDownloadsBubbleModel);
 };
 
+class ContentSettingSingleRadioGroup : public ContentSettingSimpleBubbleModel {
+ public:
+  ContentSettingSingleRadioGroup(Delegate* delegate,
+                                 content::WebContents* web_contents,
+                                 Profile* profile,
+                                 ContentSettingsType content_type);
+  ~ContentSettingSingleRadioGroup() override;
+
+ protected:
+  bool settings_changed() const;
+  int selected_item() const { return selected_item_; }
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(FramebustBlockBrowserTest, AllowRadioButtonSelected);
+  FRIEND_TEST_ALL_PREFIXES(FramebustBlockBrowserTest,
+                           DisallowRadioButtonSelected);
+
+  void SetRadioGroup();
+  void SetNarrowestContentSetting(ContentSetting setting);
+  void OnRadioClicked(int radio_index) override;
+
+  ContentSetting block_setting_;
+  int selected_item_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingSingleRadioGroup);
+};
+
 #if !defined(OS_ANDROID)
 // The model for the blocked Framebust bubble.
 class ContentSettingFramebustBlockBubbleModel
-    : public ContentSettingBubbleModel,
+    : public ContentSettingSingleRadioGroup,
       public FramebustBlockTabHelper::Observer {
  public:
   ContentSettingFramebustBlockBubbleModel(Delegate* delegate,
