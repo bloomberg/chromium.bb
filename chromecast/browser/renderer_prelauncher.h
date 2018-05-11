@@ -28,9 +28,11 @@ class RendererPrelauncher : private IPC::Listener {
                       const GURL& gurl);
   ~RendererPrelauncher() override;
 
-  void Prelaunch();
+  virtual void Prelaunch();
+  bool IsForURL(const GURL& gurl) const;
 
-  scoped_refptr<content::SiteInstance> site_instance() {
+  const GURL& url() const { return gurl_; }
+  scoped_refptr<content::SiteInstance> site_instance() const {
     return site_instance_;
   }
 
@@ -40,7 +42,7 @@ class RendererPrelauncher : private IPC::Listener {
 
   content::BrowserContext* const browser_context_;
   scoped_refptr<content::SiteInstance> site_instance_;
-  GURL gurl_;
+  const GURL gurl_;
   int32_t rph_routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererPrelauncher);

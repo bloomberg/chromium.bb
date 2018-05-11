@@ -57,6 +57,8 @@ cast_source_set("browser") {
     "devtools/cast_devtools_manager_delegate.h",
     "devtools/remote_debugging_server.cc",
     "devtools/remote_debugging_server.h",
+    "lru_renderer_cache.cc",
+    "lru_renderer_cache.h",
     "media/media_caps_impl.cc",
     "media/media_caps_impl.h",
     "media/supported_codec_finder.cc",
@@ -406,6 +408,7 @@ cast_source_set("unittests") {
     "cast_media_blocker_unittest.cc",
     "cast_touch_device_manager_unittest.cc",
     "devtools/cast_devtools_manager_delegate_unittest.cc",
+    "lru_renderer_cache_test.cc",
     "network_context_manager_unittest.cc",
   ]
 
