@@ -69,6 +69,9 @@ class CHROMEOS_EXPORT CecServiceClient : public DBusClient {
   virtual void QueryDisplayCecPowerState(PowerStateCallback callback) = 0;
 
  protected:
+  // Let test code call protected DBusClient::Init().
+  friend class CecServiceClientTest;
+
   CecServiceClient();
 
  private:

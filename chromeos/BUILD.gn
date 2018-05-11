@@ -701,6 +701,7 @@ test("chromeos_unittests") {
     "dbus/biod/biod_client_unittest.cc",
     "dbus/biod/fake_biod_client_unittest.cc",
     "dbus/blocking_method_caller_unittest.cc",
+    "dbus/cec_service_client_unittest.cc",
     "dbus/cras_audio_client_unittest.cc",
     "dbus/cros_disks_client_unittest.cc",
     "dbus/dbus_thread_manager_unittest.cc",
