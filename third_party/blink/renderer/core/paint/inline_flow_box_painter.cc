@@ -74,22 +74,23 @@ void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
   BackgroundImageGeometry geometry(*box_model);
   StyleImage* img = fill_layer.GetImage();
   bool has_fill_image = img && img->CanRender();
-  BoxModelObjectPainter box_model_painter(*box_model, &inline_flow_box_,
-                                          rect.Size());
+  BoxModelObjectPainter box_model_painter(*box_model, &inline_flow_box_);
   if ((!has_fill_image &&
        !inline_flow_box_.GetLineLayoutItem().Style()->HasBorderRadius()) ||
       (!inline_flow_box_.PrevForSameLayoutObject() &&
        !inline_flow_box_.NextForSameLayoutObject()) ||
       !inline_flow_box_.Parent()) {
     box_model_painter.PaintFillLayer(paint_info, c, fill_layer, rect,
-                                     kBackgroundBleedNone, geometry, op);
+                                     kBackgroundBleedNone, geometry, op,
+                                     rect.Size());
   } else if (inline_flow_box_.GetLineLayoutItem()
                  .Style()
                  ->BoxDecorationBreak() == EBoxDecorationBreak::kClone) {
     GraphicsContextStateSaver state_saver(paint_info.context);
     paint_info.context.Clip(PixelSnappedIntRect(rect));
     box_model_painter.PaintFillLayer(paint_info, c, fill_layer, rect,
-                                     kBackgroundBleedNone, geometry, op);
+                                     kBackgroundBleedNone, geometry, op,
+                                     rect.Size());
   } else {
     // We have a fill image that spans multiple lines.
     // FIXME: frameSize ought to be the same as rect.size().
@@ -100,9 +101,9 @@ void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
     GraphicsContextStateSaver state_saver(paint_info.context);
     // TODO(chrishtr): this should likely be pixel-snapped.
     paint_info.context.Clip(PixelSnappedIntRect(rect));
-    box_model_painter.PaintFillLayer(paint_info, c, fill_layer,
-                                     image_strip_paint_rect,
-                                     kBackgroundBleedNone, geometry, op);
+    box_model_painter.PaintFillLayer(
+        paint_info, c, fill_layer, image_strip_paint_rect, kBackgroundBleedNone,
+        geometry, op, rect.Size());
   }
 }
 

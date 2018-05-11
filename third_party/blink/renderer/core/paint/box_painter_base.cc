@@ -271,6 +271,7 @@ bool BoxPainterBase::CalculateFillLayerOcclusionCulling(
 
 FloatRoundedRect BoxPainterBase::BackgroundRoundedRectAdjustedForBleedAvoidance(
     const LayoutRect& border_rect,
+    const LayoutSize& flow_box_size,
     BackgroundBleedAvoidance bleed_avoidance,
     bool include_logical_left_edge,
     bool include_logical_right_edge) const {
@@ -304,7 +305,8 @@ FloatRoundedRect BoxPainterBase::BackgroundRoundedRectAdjustedForBleedAvoidance(
             edges[static_cast<unsigned>(BoxSide::kLeft)].Width());
 
     FloatRoundedRect background_rounded_rect = GetBackgroundRoundedRect(
-        border_rect, include_logical_left_edge, include_logical_right_edge);
+        border_rect, flow_box_size, include_logical_left_edge,
+        include_logical_right_edge);
     FloatRect inset_rect(background_rounded_rect.Rect());
     inset_rect.Expand(insets);
     FloatRoundedRect::Radii inset_radii(background_rounded_rect.GetRadii());
@@ -313,7 +315,8 @@ FloatRoundedRect BoxPainterBase::BackgroundRoundedRectAdjustedForBleedAvoidance(
     return FloatRoundedRect(inset_rect, inset_radii);
   }
 
-  return GetBackgroundRoundedRect(border_rect, include_logical_left_edge,
+  return GetBackgroundRoundedRect(border_rect, flow_box_size,
+                                  include_logical_left_edge,
                                   include_logical_right_edge);
 }
 
@@ -513,6 +516,7 @@ LayoutRectOutsets BoxPainterBase::PaddingOutsets(
 
 FloatRoundedRect BoxPainterBase::GetBackgroundRoundedRect(
     const LayoutRect& border_rect,
+    const LayoutSize& flow_box_size,
     bool include_logical_left_edge,
     bool include_logical_right_edge) const {
   return style_.GetRoundedBorderFor(border_rect, include_logical_left_edge,
@@ -525,7 +529,8 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
                                     const LayoutRect& rect,
                                     BackgroundBleedAvoidance bleed_avoidance,
                                     BackgroundImageGeometry& geometry,
-                                    SkBlendMode op) {
+                                    SkBlendMode op,
+                                    const LayoutSize flow_box_size) {
   GraphicsContext& context = paint_info.context;
   if (rect.IsEmpty())
     return;
@@ -563,8 +568,9 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
   }
 
   LayoutRectOutsets border_padding_insets = -(border_ + padding_);
-  FloatRoundedRect border_rect = RoundedBorderRectForClip(
-      info, bg_layer, rect, bleed_avoidance, border_padding_insets);
+  FloatRoundedRect border_rect =
+      RoundedBorderRectForClip(info, bg_layer, rect, flow_box_size,
+                               bleed_avoidance, border_padding_insets);
 
   // Fast path for drawing simple color backgrounds.
   if (PaintFastBottomLayer(display_item_, node_, paint_info, info, rect,
@@ -650,18 +656,19 @@ FloatRoundedRect BoxPainterBase::RoundedBorderRectForClip(
     const BoxPainterBase::FillLayerInfo& info,
     const FillLayer& bg_layer,
     const LayoutRect& rect,
+    const LayoutSize& flow_box_size,
     BackgroundBleedAvoidance bleed_avoidance,
     LayoutRectOutsets border_padding_insets) const {
   if (!info.is_rounded_fill)
     return FloatRoundedRect();
 
   FloatRoundedRect border =
-      info.is_border_fill
-          ? BackgroundRoundedRectAdjustedForBleedAvoidance(
-                rect, bleed_avoidance, info.include_left_edge,
-                info.include_right_edge)
-          : GetBackgroundRoundedRect(rect, info.include_left_edge,
-                                     info.include_right_edge);
+      info.is_border_fill ? BackgroundRoundedRectAdjustedForBleedAvoidance(
+                                rect, flow_box_size, bleed_avoidance,
+                                info.include_left_edge, info.include_right_edge)
+                          : GetBackgroundRoundedRect(rect, flow_box_size,
+                                                     info.include_left_edge,
+                                                     info.include_right_edge);
 
   // Clip to the padding or content boxes as necessary.
   if (bg_layer.Clip() == EFillBox::kContent) {
