@@ -344,6 +344,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnAudioDecoderChange(const std::string& name) override;
   void OnVideoDecoderChange(const std::string& name) override;
 
+  // When we lose the context_provider, we destroy the CompositorFrameSink to
+  // prevent frames from being submitted. The current surface_ids become
+  // invalid.
+  void OnFrameSinkDestroyed();
+
   // Actually seek. Avoids causing |should_notify_time_changed_| to be set when
   // |time_updated| is false.
   void DoSeek(base::TimeDelta time, bool time_updated);

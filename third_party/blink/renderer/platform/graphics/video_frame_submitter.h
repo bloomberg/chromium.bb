@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
@@ -24,16 +25,13 @@ namespace blink {
 // should be consistently ran from the same media SingleThreadTaskRunner.
 class PLATFORM_EXPORT VideoFrameSubmitter
     : public WebVideoFrameSubmitter,
+      public viz::ContextLostObserver,
       public viz::mojom::blink::CompositorFrameSinkClient {
  public:
-  explicit VideoFrameSubmitter(std::unique_ptr<VideoFrameResourceProvider>);
+  explicit VideoFrameSubmitter(WebContextProviderCallback,
+                               std::unique_ptr<VideoFrameResourceProvider>);
 
   ~VideoFrameSubmitter() override;
-
-  static void CreateCompositorFrameSink(
-      const viz::FrameSinkId,
-      mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient>*,
-      viz::mojom::blink::CompositorFrameSinkPtr*);
 
   bool Rendering() { return is_rendering_; };
   cc::VideoFrameProvider* Provider() { return provider_; }
@@ -44,6 +42,8 @@ class PLATFORM_EXPORT VideoFrameSubmitter
     compositor_frame_sink_ = std::move(*sink);
   }
 
+  void OnReceivedContextProvider(viz::ContextProvider*);
+
   // cc::VideoFrameProvider::Client implementation.
   void StopUsingProvider() override;
   void StartRendering() override;
@@ -52,8 +52,12 @@ class PLATFORM_EXPORT VideoFrameSubmitter
 
   // WebVideoFrameSubmitter implementation.
   void Initialize(cc::VideoFrameProvider*) override;
-  void StartSubmitting(const viz::FrameSinkId&) override;
   void SetRotation(media::VideoRotation) override;
+  void EnableSubmission(viz::FrameSinkId,
+                        WebFrameSinkDestroyedCallback) override;
+
+  // viz::ContextLostObserver implementation.
+  void OnContextLost() override;
 
   // cc::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
@@ -69,6 +73,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
       const WTF::Vector<viz::ReturnedResource>& resources) override;
 
  private:
+  void StartSubmitting();
   void SubmitFrame(viz::BeginFrameAck, scoped_refptr<media::VideoFrame>);
 
   // Pulls frame and submits it to compositor.
@@ -78,10 +83,14 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   void SubmitSingleFrame();
 
   cc::VideoFrameProvider* provider_ = nullptr;
+  viz::ContextProvider* context_provider_ = nullptr;
   viz::mojom::blink::CompositorFrameSinkPtr compositor_frame_sink_;
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> binding_;
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
+  WebContextProviderCallback context_provider_callback_;
   std::unique_ptr<VideoFrameResourceProvider> resource_provider_;
+  WebFrameSinkDestroyedCallback frame_sink_destroyed_callback_;
+  viz::FrameSinkId frame_sink_id_;
 
   bool is_rendering_;
   media::VideoRotation rotation_;

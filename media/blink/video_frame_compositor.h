@@ -80,8 +80,10 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
 
   // Signals the VideoFrameSubmitter to prepare to receive BeginFrames and
   // submit video frames given by VideoFrameCompositor.
-  virtual void EnableSubmission(const viz::FrameSinkId& id,
-                                media::VideoRotation rotation);
+  virtual void EnableSubmission(
+      const viz::FrameSinkId& id,
+      media::VideoRotation rotation,
+      blink::WebFrameSinkDestroyedCallback frame_sink_destroyed_callback);
 
   // cc::VideoFrameProvider implementation. These methods must be called on the
   // |task_runner_|.

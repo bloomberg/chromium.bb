@@ -10,6 +10,7 @@ include_rules = [
     "+base/callback.h",
     "+base/compiler_specific.h",
     "+base/message_loop",
+    "+base/task_runner.h",
     "+base/task_runner_util.h",
     "+base/threading/sequenced_task_runner_handle.h",
     "+base/threading/thread.h",
