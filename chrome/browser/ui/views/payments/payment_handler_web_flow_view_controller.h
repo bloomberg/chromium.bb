@@ -7,7 +7,9 @@
 
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
 #include "components/payments/content/payment_request_display_manager.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/views/controls/progress_bar.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -22,6 +24,7 @@ class PaymentRequestState;
 // |target| inside a views::WebView control.
 class PaymentHandlerWebFlowViewController
     : public PaymentRequestSheetController,
+      public content::WebContentsDelegate,
       public content::WebContentsObserver {
  public:
   // This ctor forwards its first 3 args to PaymentRequestSheetController's
@@ -47,6 +50,10 @@ class PaymentHandlerWebFlowViewController
   std::unique_ptr<views::Background> GetHeaderBackground() override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // content::WebContentsDelegate:
+  void LoadProgressChanged(content::WebContents* source,
+                           double progress) override;
+
   // content::WebContentsObserver:
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -59,6 +66,9 @@ class PaymentHandlerWebFlowViewController
 
   Profile* profile_;
   GURL target_;
+  bool progress_bar_is_shown_;
+  std::unique_ptr<views::ProgressBar> progress_bar_;
+  std::unique_ptr<views::View> content_header_view_;
   PaymentHandlerOpenWindowCallback first_navigation_complete_callback_;
 };
 
