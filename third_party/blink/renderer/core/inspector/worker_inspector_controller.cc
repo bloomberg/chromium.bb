@@ -136,9 +136,9 @@ void WorkerInspectorController::SendProtocolResponse(int session_id,
                                                                 response);
 }
 
-void WorkerInspectorController::SendProtocolNotification(
-    int session_id,
-    const String& message) {
+void WorkerInspectorController::SendProtocolNotification(int session_id,
+                                                         const String& message,
+                                                         const String& state) {
   thread_->GetWorkerReportingProxy().PostMessageToPageInspector(session_id,
                                                                 message);
 }

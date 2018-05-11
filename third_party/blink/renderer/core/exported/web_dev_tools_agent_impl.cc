@@ -233,7 +233,9 @@ class WebDevToolsAgentImpl::Session : public GarbageCollectedFinalized<Session>,
                             int call_id,
                             const String& response,
                             const String& state) override;
-  void SendProtocolNotification(int session_id, const String& message) override;
+  void SendProtocolNotification(int session_id,
+                                const String& message,
+                                const String& state) override;
 
   void DispatchProtocolCommandInternal(int call_id,
                                        const String& method,
@@ -366,8 +368,9 @@ void WebDevToolsAgentImpl::Session::SendProtocolResponse(int session_id,
 
 void WebDevToolsAgentImpl::Session::SendProtocolNotification(
     int session_id,
-    const String& message) {
-  host_ptr_->DispatchProtocolNotification(message);
+    const String& message,
+    const String& state) {
+  host_ptr_->DispatchProtocolNotification(message, state);
 }
 
 void WebDevToolsAgentImpl::Session::DispatchProtocolCommand(

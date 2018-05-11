@@ -32,7 +32,8 @@ class CORE_EXPORT InspectorSession
                                       const String& response,
                                       const String& state) = 0;
     virtual void SendProtocolNotification(int session_id,
-                                          const String& message) = 0;
+                                          const String& message,
+                                          const String& state) = 0;
     virtual ~Client() = default;
   };
 
@@ -74,6 +75,8 @@ class CORE_EXPORT InspectorSession
       std::unique_ptr<v8_inspector::StringBuffer> message) override;
 
   void SendProtocolResponse(int call_id, const String& message);
+
+  String GetStateToSend();
 
   Client* client_;
   std::unique_ptr<v8_inspector::V8InspectorSession> v8_session_;

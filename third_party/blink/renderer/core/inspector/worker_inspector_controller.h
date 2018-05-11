@@ -71,7 +71,9 @@ class WorkerInspectorController final
                             int call_id,
                             const String& response,
                             const String& state) override;
-  void SendProtocolNotification(int session_id, const String& message) override;
+  void SendProtocolNotification(int session_id,
+                                const String& message,
+                                const String& state) override;
 
   // WebThread::TaskObserver implementation.
   void WillProcessTask() override;

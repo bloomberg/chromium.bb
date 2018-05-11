@@ -80,7 +80,9 @@ class DevToolsSession : public protocol::FrontendChannel,
       const std::string& message,
       int call_id,
       const base::Optional<std::string>& state) override;
-  void DispatchProtocolNotification(const std::string& message) override;
+  void DispatchProtocolNotification(
+      const std::string& message,
+      const base::Optional<std::string>& state) override;
 
   mojo::AssociatedBinding<blink::mojom::DevToolsSessionHost> binding_;
   blink::mojom::DevToolsSessionAssociatedPtr session_ptr_;

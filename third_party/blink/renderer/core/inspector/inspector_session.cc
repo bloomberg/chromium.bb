@@ -124,13 +124,18 @@ void InspectorSession::SendProtocolResponse(int call_id,
   if (disposed_)
     return;
   flushProtocolNotifications();
+  client_->SendProtocolResponse(session_id_, call_id, message,
+                                GetStateToSend());
+}
+
+String InspectorSession::GetStateToSend() {
   state_->setString(kV8StateKey, ToCoreString(v8_session_->stateJSON()));
   String state_to_send = state_->serialize();
   if (state_to_send == last_sent_state_)
     state_to_send = String();
   else
     last_sent_state_ = state_to_send;
-  client_->SendProtocolResponse(session_id_, call_id, message, state_to_send);
+  return state_to_send;
 }
 
 class InspectorSession::Notification {
@@ -192,9 +197,14 @@ void InspectorSession::flushProtocolNotifications() {
     return;
   for (size_t i = 0; i < agents_.size(); i++)
     agents_[i]->FlushPendingProtocolNotifications();
+  if (!notification_queue_.size())
+    return;
+  String state_to_send = GetStateToSend();
   for (size_t i = 0; i < notification_queue_.size(); ++i) {
-    client_->SendProtocolNotification(session_id_,
-                                      notification_queue_[i]->Serialize());
+    client_->SendProtocolNotification(
+        session_id_, notification_queue_[i]->Serialize(), state_to_send);
+    // Only send state once in this series of serialized updates.
+    state_to_send = String();
   }
   notification_queue_.clear();
 }

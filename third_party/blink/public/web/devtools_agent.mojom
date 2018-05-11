@@ -99,9 +99,10 @@ interface DevToolsSessionHost {
   // |state| is a state for future reattach (see DevToolsAgent),
   // may be missing if the state did not change since last time.
   DispatchProtocolResponse(mojo_base.mojom.BigString message,
-                          int32 call_id,
-                          string? state);
+                           int32 call_id,
+                           string? state);
 
   // Dispatches protocol notification to a remote debugging client.
-  DispatchProtocolNotification(mojo_base.mojom.BigString message);
+  DispatchProtocolNotification(mojo_base.mojom.BigString message,
+                               string? state);
 };
