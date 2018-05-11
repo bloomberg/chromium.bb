@@ -13,19 +13,22 @@ import re
 
 # Some definitions don't follow all the conventions we want to enforce.
 # It's either difficult or impossible to fix this, so we ignore the problem(s).
-GRANDFATHERED_MODEL_TYPES = [
+EXCEPTION_MODEL_TYPES = [
+  # Grandfathered types:
   'UNSPECIFIED',  # Doesn't have a root tag or notification type.
   'TOP_LEVEL_FOLDER',  # Doesn't have a root tag or notification type.
   'AUTOFILL_WALLET_DATA',  # Root tag and model type string lack DATA suffix.
   'APP_SETTINGS',  # Model type string has inconsistent capitalization.
   'EXTENSION_SETTINGS',  # Model type string has inconsistent capitalization.
-  'SUPERVISED_USER_SETTINGS',  # Root tag and model type string replace
-                 # 'Supervised' with 'Managed'
-  'SUPERVISED_USERS',  # See previous.
-  'SUPERVISED_USER_WHITELISTS',  # See previous.
-  'SUPERVISED_USER_SHARED_SETTINGS',  # See previous.
   'PROXY_TABS',  # Doesn't have a root tag or notification type.
-  'NIGORI']  # Model type string is 'encryption keys'.
+  'NIGORI',  # Model type string is 'encryption keys'.
+  'SUPERVISED_USER_SETTINGS',  # Root tag and model type string replace
+                               # 'Supervised' with 'Managed'
+  'SUPERVISED_USER_WHITELISTS',  # See previous.
+
+  # Deprecated types:
+  'DEPRECATED_SUPERVISED_USERS',
+  'DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS']
 
 # Root tags are used as prefixes when creating storage keys, so certain strings
 # are blacklisted in order to prevent prefix collision.
@@ -108,7 +111,7 @@ def CheckModelTypeInfoMap(input_api, output_api, model_type_file):
         output_api, map_entry, proto_field_definitions))
     entry_problems.extend(CheckRootTagNotInBlackList(output_api, map_entry))
 
-    if map_entry.model_type not in GRANDFATHERED_MODEL_TYPES:
+    if map_entry.model_type not in EXCEPTION_MODEL_TYPES:
       entry_problems.extend(
         CheckModelTypeStringMatchesModelType(output_api, map_entry))
       entry_problems.extend(
@@ -164,6 +167,9 @@ def ParseModelTypeEntries(input_api, model_type_cc_path):
   inside_enum = False
   current_line_number = 1
   for line in file_contents.splitlines():
+    if line.strip().startswith('//'):
+        # Ignore comments.
+        continue
     if start_pattern.match(line):
       inside_enum = True
       continue

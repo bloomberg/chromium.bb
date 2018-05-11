@@ -76,6 +76,8 @@ MOCK_PROTOFILE_CONTENTS = ('\n'
   'optional AppSpecifics app = 456;\n'
   'optional AppSettingSpecifics app_setting = 789;\n'
   'optional ExtensionSettingSpecifics extension_setting = 910;\n'
+  'optional ManagedUserSharedSettingSpecifics managed_user_shared_setting'
+                                                                    ' = 915;\n'
   '//comment\n'
   '}\n')
 
@@ -84,6 +86,7 @@ MOCK_PROTOFILE_CONTENTS = ('\n'
 # in order to test presubmit parsing of the ModelTypeInfoMap in that file.
 MOCK_MODELTYPE_CONTENTS =('\n'
   'const ModelTypeInfo kModelTypeInfoMap[] = {\n'
+  '// Some comment \n'
   '{APP_SETTINGS, "APP_SETTING", "app_settings", "App settings",\n'
   'sync_pb::EntitySpecifics::kAppSettingFieldNumber, 13},\n'
   '%s\n'
@@ -105,6 +108,13 @@ class ModelTypeInfoChangeTest(unittest.TestCase):
 
   def testValidChangeGrandfatheredEntry(self):
     results = self._testChange('{PROXY_TABS, "", "", "Tabs", -1, 25},')
+    self.assertEqual(0, len(results))
+
+  def testValidChangeDeprecatedEntry(self):
+    results = self._testChange('{DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS,'
+    '"MANAGED_USER_SHARED_SETTING", "managed_user_shared_settings",'
+    '"Managed User Shared Settings",'
+    'sync_pb::EntitySpecifics::kManagedUserSharedSettingFieldNumber, 30},')
     self.assertEqual(0, len(results))
 
   def testInvalidChangeMismatchedNotificationType(self):

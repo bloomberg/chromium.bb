@@ -41,11 +41,10 @@ struct ModelTypeInfo {
   // This should be the same as the model type but space separated and the
   // first letter of every word capitalized.
   const char* model_type_string;
-  // SpecificsFieldNumber for Model Type
+  // Field number of the model type specifics in EntitySpecifics.
   int specifics_field_number;
-  // Histogram value should be unique for the Model Type, Existing histogram
-  // values should never be modified without updating "SyncModelTypes" enum in
-  // histograms.xml to maintain backward compatibility.
+  // Model type value from SyncModelTypes enum in enums.xml. Must always be in
+  // sync with the enum.
   int model_type_histogram_val;
 };
 
@@ -140,7 +139,9 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
      sync_pb::EntitySpecifics::kReadingListFieldNumber, 38},
     {USER_EVENTS, "USER_EVENT", "user_events", "User Events",
      sync_pb::EntitySpecifics::kUserEventFieldNumber, 39},
+    // ---- Proxy types ----
     {PROXY_TABS, "", "", "Tabs", -1, 25},
+    // ---- Control Types ----
     {NIGORI, "NIGORI", "nigori", "Encryption Keys",
      sync_pb::EntitySpecifics::kNigoriFieldNumber, 17},
     {EXPERIMENTS, "EXPERIMENTS", "experiments", "Experiments",
@@ -476,8 +477,8 @@ const char* ModelTypeToString(ModelType model_type) {
 // the list, and be careful to not reuse integer values that have already been
 // assigned.
 //
-// Don't forget to update the "SyncModelTypes" enum in histograms.xml when you
-// make changes to this list.
+// Don't forget to update the "SyncModelTypes" enum in enums.xml when you make
+// changes to this list.
 int ModelTypeToHistogramInt(ModelType model_type) {
   if (model_type >= UNSPECIFIED && model_type < MODEL_TYPE_COUNT)
     return kModelTypeInfoMap[model_type].model_type_histogram_val;
