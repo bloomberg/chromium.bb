@@ -1293,6 +1293,7 @@ COMMON_GTESTS = {
             'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
             'os': 'Ubuntu'
           },
+          # Qualcomm Android Adreno 418
           {
             'device_type': 'bullhead',
             'device_os': 'O',
@@ -1309,7 +1310,7 @@ COMMON_GTESTS = {
         ],
       },
     ],
-    'desktop_swarming': {
+    'swarming': {
       'shards': 4,
     },
     'test': 'angle_deqp_gles2_tests',
