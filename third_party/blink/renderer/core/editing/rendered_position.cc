@@ -46,14 +46,37 @@
 
 namespace blink {
 
-RenderedPosition::RenderedPosition(const VisiblePositionInFlatTree& position)
-    : inline_box_(nullptr), offset_(0) {
+// static
+RenderedPosition RenderedPosition::Create(
+    const VisiblePositionInFlatTree& position) {
   if (position.IsNull())
-    return;
+    return RenderedPosition();
   InlineBoxPosition box_position =
       ComputeInlineBoxPosition(position.ToPositionWithAffinity());
-  inline_box_ = box_position.inline_box;
-  offset_ = box_position.offset_in_box;
+  if (!box_position.inline_box)
+    return RenderedPosition();
+
+  const InlineBox* box = box_position.inline_box;
+  const int offset = box_position.offset_in_box;
+
+  // When at bidi boundary, ensure that |inline_box_| belongs to the higher-
+  // level bidi run.
+
+  // For example, abc FED |ghi should be changed into abc FED| ghi
+  if (offset == box->CaretLeftmostOffset()) {
+    const InlineBox* prev_box = box->PrevLeafChildIgnoringLineBreak();
+    if (prev_box && prev_box->BidiLevel() > box->BidiLevel())
+      return RenderedPosition(prev_box, prev_box->CaretRightmostOffset());
+  }
+
+  // For example, abc| FED ghi should be changed into abc |FED ghi
+  if (offset == box->CaretRightmostOffset()) {
+    const InlineBox* next_box = box->NextLeafChildIgnoringLineBreak();
+    if (next_box && next_box->BidiLevel() > box->BidiLevel())
+      return RenderedPosition(next_box, next_box->CaretLeftmostOffset());
+  }
+
+  return RenderedPosition(box, offset);
 }
 
 const InlineBox* RenderedPosition::PrevLeafChild() const {
@@ -66,14 +89,6 @@ const InlineBox* RenderedPosition::NextLeafChild() const {
   if (!next_leaf_child_.has_value())
     next_leaf_child_ = inline_box_->NextLeafChildIgnoringLineBreak();
   return next_leaf_child_.value();
-}
-
-bool RenderedPosition::IsEquivalent(const RenderedPosition& other) const {
-  return (inline_box_ == other.inline_box_ && offset_ == other.offset_) ||
-         (AtLeftmostOffsetInBox() && other.AtRightmostOffsetInBox() &&
-          PrevLeafChild() == other.inline_box_) ||
-         (AtRightmostOffsetInBox() && other.AtLeftmostOffsetInBox() &&
-          NextLeafChild() == other.inline_box_);
 }
 
 unsigned char RenderedPosition::BidiLevelOnLeft() const {

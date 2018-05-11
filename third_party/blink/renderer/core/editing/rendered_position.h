@@ -51,10 +51,12 @@ class CORE_EXPORT RenderedPosition {
 
  public:
   RenderedPosition();
-  explicit RenderedPosition(const VisiblePositionInFlatTree&);
-  bool IsEquivalent(const RenderedPosition&) const;
+  static RenderedPosition Create(const VisiblePositionInFlatTree&);
 
   bool IsNull() const { return !inline_box_; }
+  bool operator==(const RenderedPosition& other) const {
+    return inline_box_ == other.inline_box_ && offset_ == other.offset_;
+  }
 
   unsigned char BidiLevelOnLeft() const;
   unsigned char BidiLevelOnRight() const;
@@ -85,7 +87,6 @@ class CORE_EXPORT RenderedPosition {
   static CompositedSelection ComputeCompositedSelection(const FrameSelection&);
 
  private:
-  bool operator==(const RenderedPosition&) const { return false; }
   explicit RenderedPosition(const InlineBox*, int offset);
 
   const InlineBox* PrevLeafChild() const;
