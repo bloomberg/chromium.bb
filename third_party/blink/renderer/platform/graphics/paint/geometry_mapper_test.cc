@@ -714,4 +714,148 @@ TEST_P(GeometryMapperTest, InvertedClip) {
   EXPECT_FALSE(visual_rect.IsTight());
 }
 
+TEST_P(GeometryMapperTest, PointVisibleInAncestorSpaceSimpleClip) {
+  auto clip = CreateClip(ClipPaintPropertyNode::Root(),
+                         TransformPaintPropertyNode::Root(),
+                         FloatRoundedRect(10, 10, 50, 50));
+
+  PropertyTreeState local_state(TransformPaintPropertyNode::Root(), clip.get(),
+                                EffectPaintPropertyNode::Root());
+
+  PropertyTreeState ancestor_state(TransformPaintPropertyNode::Root(),
+                                   ClipPaintPropertyNode::Root(),
+                                   EffectPaintPropertyNode::Root());
+
+  EXPECT_TRUE(GeometryMapper::PointVisibleInAncestorSpace(
+      local_state, ancestor_state, FloatPoint(30, 30)));
+
+  EXPECT_TRUE(GeometryMapper::PointVisibleInAncestorSpace(
+      local_state, ancestor_state, FloatPoint(11, 11)));
+
+  EXPECT_FALSE(GeometryMapper::PointVisibleInAncestorSpace(
+      local_state, ancestor_state, FloatPoint(5, 5)));
+}
+
+TEST_P(GeometryMapperTest, PointVisibleInAncestorSpaceRoundedClip) {
+  FloatRoundedRect clip_rect(FloatRoundedRect(10, 10, 50, 50));
+  FloatRoundedRect::Radii radii;
+  radii.SetTopLeft(FloatSize(8, 8));
+  clip_rect.SetRadii(radii);
+  auto clip = CreateClip(ClipPaintPropertyNode::Root(),
+                         TransformPaintPropertyNode::Root(), clip_rect);
+
+  PropertyTreeState local_state(TransformPaintPropertyNode::Root(), clip.get(),
+                                EffectPaintPropertyNode::Root());
+
+  PropertyTreeState ancestor_state(TransformPaintPropertyNode::Root(),
+                                   ClipPaintPropertyNode::Root(),
+                                   EffectPaintPropertyNode::Root());
+
+  EXPECT_TRUE(GeometryMapper::PointVisibleInAncestorSpace(
+      local_state, ancestor_state, FloatPoint(30, 30)));
+
+  // Clipped out by radius.
+  EXPECT_FALSE(GeometryMapper::PointVisibleInAncestorSpace(
+      local_state, ancestor_state, FloatPoint(11, 11)));
+
+  EXPECT_FALSE(GeometryMapper::PointVisibleInAncestorSpace(
+      local_state, ancestor_state, FloatPoint(5, 5)));
+}
+
+TEST_P(GeometryMapperTest, PointVisibleInAncestorSpaceClipPath) {
+  RefCountedPath* path = new RefCountedPath;
+  path->MoveTo(FloatPoint(10, 10));
+  path->AddLineTo(FloatPoint(10, 60));
+  path->AddLineTo(FloatPoint(60, 60));
+  path->AddLineTo(FloatPoint(60, 10));
+  path->AddLineTo(FloatPoint(10, 10));
+
+  ClipPaintPropertyNode::State state;
+  state.local_transform_space = TransformPaintPropertyNode::Root();
+  state.clip_rect = FloatRoundedRect(FloatRect(0, 0, 500, 500));
+  state.clip_path = base::AdoptRef(path);
+  auto clip = ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
+                                            std::move(state));
+
+  PropertyTreeState local_state(TransformPaintPropertyNode::Root(), clip.get(),
+                                EffectPaintPropertyNode::Root());
+
+  PropertyTreeState ancestor_state(TransformPaintPropertyNode::Root(),
+                                   ClipPaintPropertyNode::Root(),
+                                   EffectPaintPropertyNode::Root());
+
+  EXPECT_TRUE(GeometryMapper::PointVisibleInAncestorSpace(
+      local_state, ancestor_state, FloatPoint(30, 30)));
+
+  EXPECT_TRUE(GeometryMapper::PointVisibleInAncestorSpace(
+      local_state, ancestor_state, FloatPoint(11, 11)));
+
+  EXPECT_FALSE(GeometryMapper::PointVisibleInAncestorSpace(
+      local_state, ancestor_state, FloatPoint(5, 5)));
+}
+
+TEST_P(GeometryMapperTest, PointVisibleInAncestorSpaceSimpleClipWithTransform) {
+  TransformPaintPropertyNode::State translate_transform;
+  translate_transform.matrix.Translate(10, 10);
+  auto transform = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), std::move(translate_transform));
+
+  auto clip = CreateClip(ClipPaintPropertyNode::Root(),
+                         TransformPaintPropertyNode::Root(),
+                         FloatRoundedRect(FloatRect(20, 20, 50, 50)));
+
+  PropertyTreeState local_state(transform.get(), clip.get(),
+                                EffectPaintPropertyNode::Root());
+
+  PropertyTreeState ancestor_state(TransformPaintPropertyNode::Root(),
+                                   ClipPaintPropertyNode::Root(),
+                                   EffectPaintPropertyNode::Root());
+
+  EXPECT_TRUE(GeometryMapper::PointVisibleInAncestorSpace(
+      local_state, ancestor_state, FloatPoint(30, 30)));
+
+  EXPECT_TRUE(GeometryMapper::PointVisibleInAncestorSpace(
+      local_state, ancestor_state, FloatPoint(11, 11)));
+
+  EXPECT_FALSE(GeometryMapper::PointVisibleInAncestorSpace(
+      local_state, ancestor_state, FloatPoint(5, 5)));
+}
+
+TEST_P(GeometryMapperTest, PointVisibleInAncestorSpaceClipPathWithTransform) {
+  TransformPaintPropertyNode::State translate_transform;
+  translate_transform.matrix.Translate(10, 10);
+  auto transform = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), std::move(translate_transform));
+
+  RefCountedPath* path = new RefCountedPath;
+  path->MoveTo(FloatPoint(20, 20));
+  path->AddLineTo(FloatPoint(20, 60));
+  path->AddLineTo(FloatPoint(60, 60));
+  path->AddLineTo(FloatPoint(60, 20));
+  path->AddLineTo(FloatPoint(20, 20));
+
+  ClipPaintPropertyNode::State state;
+  state.local_transform_space = TransformPaintPropertyNode::Root();
+  state.clip_rect = FloatRoundedRect(FloatRect(0, 0, 500, 500));
+  state.clip_path = base::AdoptRef(path);
+  auto clip = ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
+                                            std::move(state));
+
+  PropertyTreeState local_state(transform.get(), clip.get(),
+                                EffectPaintPropertyNode::Root());
+
+  PropertyTreeState ancestor_state(TransformPaintPropertyNode::Root(),
+                                   ClipPaintPropertyNode::Root(),
+                                   EffectPaintPropertyNode::Root());
+
+  EXPECT_TRUE(GeometryMapper::PointVisibleInAncestorSpace(
+      local_state, ancestor_state, FloatPoint(30, 30)));
+
+  EXPECT_TRUE(GeometryMapper::PointVisibleInAncestorSpace(
+      local_state, ancestor_state, FloatPoint(11, 11)));
+
+  EXPECT_FALSE(GeometryMapper::PointVisibleInAncestorSpace(
+      local_state, ancestor_state, FloatPoint(5, 5)));
+}
+
 }  // namespace blink
