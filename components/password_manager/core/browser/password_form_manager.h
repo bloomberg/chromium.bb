@@ -338,9 +338,6 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // Returns true iff |form| is a non-blacklisted match for |observed_form_|.
   bool IsMatch(const autofill::PasswordForm& form) const;
 
-  // Returns true iff |form| blacklists |observed_form_|.
-  bool IsBlacklistMatch(const autofill::PasswordForm& form) const;
-
   // Helper for Save in the case there is at least one match for the pending
   // credentials. This sends needed signals to the autofill server, and also
   // triggers some UMA reporting.
