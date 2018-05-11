@@ -531,10 +531,10 @@ bool FindBestContextMenuCandidate(Node*& target_node,
       subtargets, TouchAdjustment::HybridDistanceFunction);
 }
 
-LayoutSize GetHitTestRectForAdjustment(const IntSize& touch_area) {
+LayoutSize GetHitTestRectForAdjustment(const LayoutSize& touch_area) {
   const LayoutSize max_size(TouchAdjustment::kMaxAdjustmentRadiusDips,
                             TouchAdjustment::kMaxAdjustmentRadiusDips);
-  return LayoutSize(touch_area).ShrunkTo(max_size);
+  return touch_area.ShrunkTo(max_size);
 }
 
 }  // namespace blink

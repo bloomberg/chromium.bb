@@ -504,10 +504,6 @@ void WebRuntimeFeatures::EnablePWAFullCodeCache(bool enable) {
   RuntimeEnabledFeatures::SetPWAFullCodeCacheEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableUnifiedTouchAdjustment(bool enable) {
-  RuntimeEnabledFeatures::SetUnifiedTouchAdjustmentEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableMojoBlobURLs(bool enable) {
   RuntimeEnabledFeatures::SetMojoBlobURLsEnabled(enable);
 }

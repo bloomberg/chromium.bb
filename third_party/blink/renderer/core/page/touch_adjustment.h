@@ -43,7 +43,7 @@ bool FindBestContextMenuCandidate(Node*& target_node,
                                   const IntRect& touch_area,
                                   const HeapVector<Member<Node>>&);
 
-LayoutSize GetHitTestRectForAdjustment(const IntSize& touch_area);
+LayoutSize GetHitTestRectForAdjustment(const LayoutSize& touch_area);
 
 struct TouchAdjustmentResult {
   uint32_t unique_event_id;
