@@ -6,7 +6,6 @@
 
 #include <memory>
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
 #include "third_party/blink/renderer/platform/animation/compositor_scroll_offset_animation_curve.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"

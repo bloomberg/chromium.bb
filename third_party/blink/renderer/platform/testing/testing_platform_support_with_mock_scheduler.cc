@@ -35,13 +35,8 @@ void PrepareCurrentThread(WaitableEvent* event, WebThread* thread) {
 
 TestingPlatformSupportWithMockScheduler::
     TestingPlatformSupportWithMockScheduler()
-    : TestingPlatformSupportWithMockScheduler(
-          TestingPlatformSupport::Config()) {}
-
-TestingPlatformSupportWithMockScheduler::
-    TestingPlatformSupportWithMockScheduler(const Config& config)
-    : TestingPlatformSupport(config),
-      mock_task_runner_(new cc::OrderedSimpleTaskRunner(&clock_, true)) {
+    : mock_task_runner_(
+          base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true)) {
   DCHECK(IsMainThread());
   std::unique_ptr<scheduler::TaskQueueManagerForTest> task_queue_manager =
       scheduler::TaskQueueManagerForTest::Create(nullptr, mock_task_runner_,

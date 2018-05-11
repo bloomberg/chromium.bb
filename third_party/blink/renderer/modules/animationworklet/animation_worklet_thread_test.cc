@@ -39,10 +39,6 @@ namespace {
 
 class AnimationWorkletTestPlatform : public TestingPlatformSupport {
  public:
-  WebCompositorSupport* CompositorSupport() override {
-    return &compositor_support_;
-  }
-
   // Need to override the thread creating support so we can actually run
   // Animation Worklet code that would go on a backing thread in non-test
   // code. i.e. most tests remove the extra threads, but we need this one.
@@ -50,9 +46,6 @@ class AnimationWorkletTestPlatform : public TestingPlatformSupport {
       const blink::WebThreadCreationParams& params) override {
     return old_platform_->CreateThread(params);
   }
-
- private:
-  TestingCompositorSupport compositor_support_;
 };
 
 class TestAnimationWorkletProxyClient

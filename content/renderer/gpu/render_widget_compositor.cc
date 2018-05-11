@@ -34,7 +34,6 @@
 #include "cc/base/region.h"
 #include "cc/base/switches.h"
 #include "cc/benchmarks/micro_benchmark.h"
-#include "cc/blink/web_layer_impl.h"
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/layers/layer.h"
@@ -67,6 +66,7 @@
 #include "media/base/media_switches.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/blink.h"
@@ -798,9 +798,8 @@ viz::FrameSinkId RenderWidgetCompositor::GetFrameSinkId() {
   return frame_sink_id_;
 }
 
-void RenderWidgetCompositor::SetRootLayer(const blink::WebLayer& layer) {
-  layer_tree_host_->SetRootLayer(
-      static_cast<const cc_blink::WebLayerImpl*>(&layer)->layer());
+void RenderWidgetCompositor::SetRootLayer(blink::WebLayer* layer) {
+  layer_tree_host_->SetRootLayer(layer->CcLayer());
 }
 
 void RenderWidgetCompositor::ClearRootLayer() {
@@ -879,33 +878,25 @@ void RenderWidgetCompositor::RegisterViewportLayers(
   // registers its layers.
   if (layers.overscroll_elasticity) {
     viewport_layers.overscroll_elasticity =
-        static_cast<const cc_blink::WebLayerImpl*>(layers.overscroll_elasticity)
-            ->layer();
+        layers.overscroll_elasticity->CcLayer();
   }
-  viewport_layers.page_scale =
-      static_cast<const cc_blink::WebLayerImpl*>(layers.page_scale)->layer();
+  viewport_layers.page_scale = layers.page_scale->CcLayer();
   if (layers.inner_viewport_container) {
     viewport_layers.inner_viewport_container =
-        static_cast<const cc_blink::WebLayerImpl*>(
-            layers.inner_viewport_container)
-            ->layer();
+        layers.inner_viewport_container->CcLayer();
   }
   if (layers.outer_viewport_container) {
     viewport_layers.outer_viewport_container =
-        static_cast<const cc_blink::WebLayerImpl*>(
-            layers.outer_viewport_container)
-            ->layer();
+        layers.outer_viewport_container->CcLayer();
   }
   viewport_layers.inner_viewport_scroll =
-      static_cast<const cc_blink::WebLayerImpl*>(layers.inner_viewport_scroll)
-          ->layer();
+      layers.inner_viewport_scroll->CcLayer();
   // TODO(bokan): This check can probably be removed now, but it looks
   // like overscroll elasticity may still be nullptr until VisualViewport
   // registers its layers.
   if (layers.outer_viewport_scroll) {
     viewport_layers.outer_viewport_scroll =
-        static_cast<const cc_blink::WebLayerImpl*>(layers.outer_viewport_scroll)
-            ->layer();
+        layers.outer_viewport_scroll->CcLayer();
   }
   layer_tree_host_->RegisterViewportLayers(viewport_layers);
 }

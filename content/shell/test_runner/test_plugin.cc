@@ -14,7 +14,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/strings/stringprintf.h"
-#include "cc/blink/web_layer_impl.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/resources/cross_thread_shared_bitmap.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
@@ -22,10 +21,10 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/platform/web_touch_event.h"
@@ -187,7 +186,7 @@ bool TestPlugin::Initialize(blink::WebPluginContainer* container) {
     return false;
 
   layer_ = cc::TextureLayer::CreateForMailbox(this);
-  web_layer_ = std::make_unique<cc_blink::WebLayerImpl>(layer_.get());
+  web_layer_ = std::make_unique<blink::WebLayer>(layer_.get());
   bool prevent_contents_opaque_changes = false;
   container_->SetWebLayer(web_layer_.get(), prevent_contents_opaque_changes);
   if (re_request_touch_events_) {

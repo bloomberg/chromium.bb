@@ -38,7 +38,6 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_gesture_curve.h"
 #include "third_party/blink/public/platform/web_image.h"
@@ -3564,7 +3563,7 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
     visual_viewport_container_layer_ = visual_viewport.ContainerLayer();
     root_layer_ = root_graphics_layer_->PlatformLayer();
     UpdateDeviceEmulationTransform();
-    layer_tree_view_->SetRootLayer(*root_layer_);
+    layer_tree_view_->SetRootLayer(root_layer_);
     // We register viewport layers here since there may not be a layer
     // tree view prior to this point.
     RegisterViewportLayersWithCompositor();
@@ -3587,13 +3586,14 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
   }
 }
 
+// TODO(danakj): This should be a scoped_refptr<cc::Layer>.
 void WebViewImpl::SetRootLayer(WebLayer* layer) {
   if (!layer_tree_view_)
     return;
 
   if (layer) {
     root_layer_ = layer;
-    layer_tree_view_->SetRootLayer(*root_layer_);
+    layer_tree_view_->SetRootLayer(root_layer_);
     layer_tree_view_->SetVisible(GetPage()->IsPageVisible());
   } else {
     root_layer_ = nullptr;

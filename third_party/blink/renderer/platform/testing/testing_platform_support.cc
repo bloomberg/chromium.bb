@@ -38,7 +38,6 @@
 #include "base/run_loop.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/test_discardable_memory_allocator.h"
-#include "cc/blink/web_compositor_support_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/web_external_texture_layer.h"
@@ -88,17 +87,8 @@ class DummyThread final : public blink::WebThread {
 
 }  // namespace
 
-std::unique_ptr<WebLayer> TestingCompositorSupport::CreateLayerFromCCLayer(
-    cc::Layer*) {
-  return nullptr;
-}
-
 TestingPlatformSupport::TestingPlatformSupport()
-    : TestingPlatformSupport(TestingPlatformSupport::Config()) {}
-
-TestingPlatformSupport::TestingPlatformSupport(const Config& config)
-    : config_(config),
-      old_platform_(Platform::Current()),
+    : old_platform_(Platform::Current()),
       interface_provider_(new TestingInterfaceProvider) {
   DCHECK(old_platform_);
 }
@@ -109,13 +99,6 @@ TestingPlatformSupport::~TestingPlatformSupport() {
 
 WebString TestingPlatformSupport::DefaultLocale() {
   return WebString::FromUTF8("en-US");
-}
-
-WebCompositorSupport* TestingPlatformSupport::CompositorSupport() {
-  if (config_.compositor_support)
-    return config_.compositor_support;
-
-  return old_platform_ ? old_platform_->CompositorSupport() : nullptr;
 }
 
 WebThread* TestingPlatformSupport::CurrentThread() {
@@ -183,10 +166,7 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
   WTF::Partitions::Initialize(nullptr);
   WTF::Initialize(nullptr);
 
-  compositor_support_ = std::make_unique<cc_blink::WebCompositorSupportImpl>();
-  testing_platform_config_.compositor_support = compositor_support_.get();
-  testing_platform_support_ =
-      std::make_unique<TestingPlatformSupport>(testing_platform_config_);
+  testing_platform_support_ = std::make_unique<TestingPlatformSupport>();
   Platform::SetCurrentPlatformForTesting(testing_platform_support_.get());
 
   if (BlinkResourceCoordinatorBase::IsEnabled()) {

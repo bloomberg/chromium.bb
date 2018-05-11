@@ -5,10 +5,7 @@ include_rules = [
   "+android_webview/grit",
   "+android_webview/jni",
   "+android_webview/public/browser",
-
   "+cc",
-  "-cc/blink",
-
   "+components/autofill/android",
   "+components/autofill/content/browser",
   "+components/autofill/core/browser",

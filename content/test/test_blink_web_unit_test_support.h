@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
-#include "cc/blink/web_compositor_support_impl.h"
 #include "content/child/blink_platform_impl.h"
 #include "content/test/mock_webblob_registry_impl.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -51,8 +50,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
       const blink::WebString& value2) override;
   blink::WebString DefaultLocale() override;
 
-  blink::WebCompositorSupport* CompositorSupport() override;
-
   std::unique_ptr<blink::WebGestureCurve> CreateFlingAnimationCurve(
       blink::WebGestureDevice device_source,
       const blink::WebFloatPoint& velocity,
@@ -79,7 +76,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   std::unique_ptr<MockClipboardHost> mock_clipboard_host_;
   base::ScopedTempDir file_system_root_;
   std::unique_ptr<blink::WebURLLoaderMockFactory> url_loader_factory_;
-  cc_blink::WebCompositorSupportImpl compositor_support_;
   std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
       main_thread_scheduler_;
   std::unique_ptr<blink::WebThread> web_thread_;

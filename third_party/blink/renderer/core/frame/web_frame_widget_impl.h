@@ -215,6 +215,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   scoped_refptr<base::SingleThreadTaskRunner> mutator_task_runner_;
 
   WebLayerTreeView* layer_tree_view_;
+  // TODO(danakj): This should be a scoped_refptr<cc::Layer>.
   WebLayer* root_layer_;
   GraphicsLayer* root_graphics_layer_;
   std::unique_ptr<CompositorAnimationHost> animation_host_;

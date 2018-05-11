@@ -23,6 +23,7 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 
 namespace blink {
+class WebLayer;
 class WebLocalFrame;
 class WebMediaPlayerClient;
 class WebString;
@@ -35,10 +36,6 @@ class MediaLog;
 
 namespace cc {
 class VideoLayer;
-}
-
-namespace cc_blink {
-class WebLayerImpl;
 }
 
 namespace gpu {
@@ -264,7 +261,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   scoped_refptr<MediaStreamVideoRenderer> video_frame_provider_;  // Weak
 
   scoped_refptr<cc::VideoLayer> video_layer_;
-  std::unique_ptr<cc_blink::WebLayerImpl> video_weblayer_;
+  std::unique_ptr<blink::WebLayer> video_weblayer_;
 
   scoped_refptr<MediaStreamAudioRenderer> audio_renderer_;  // Weak
   media::PaintCanvasVideoRenderer video_renderer_;

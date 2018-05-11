@@ -131,7 +131,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
 
   // WebLayerTreeView implementation.
   viz::FrameSinkId GetFrameSinkId() override;
-  void SetRootLayer(const blink::WebLayer& layer) override;
+  void SetRootLayer(blink::WebLayer* layer) override;
   void ClearRootLayer() override;
   cc::AnimationHost* CompositorAnimationHost() override;
   blink::WebSize GetViewportSize() const override;

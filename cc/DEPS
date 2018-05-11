@@ -31,7 +31,6 @@ include_rules = [
   "+ui/latency/latency_info.h",
   "+ui/gfx",
   "+ui/gl",
-  "-cc/blink",
 ]
 
 specific_include_rules = {

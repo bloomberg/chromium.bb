@@ -40,7 +40,7 @@ class WebLayerTreeViewImplForTesting
   void SetViewportSize(const blink::WebSize&);
 
   // blink::WebLayerTreeView implementation.
-  void SetRootLayer(const blink::WebLayer&) override;
+  void SetRootLayer(blink::WebLayer*) override;
   void ClearRootLayer() override;
   cc::AnimationHost* CompositorAnimationHost() override;
   WebSize GetViewportSize() const override;

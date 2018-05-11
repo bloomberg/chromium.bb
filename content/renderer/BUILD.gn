@@ -679,7 +679,6 @@ target(link_target_type, "renderer") {
     "//base:i18n",
     "//cc",
     "//cc/animation",
-    "//cc/blink",
     "//cc/paint",
     "//components/discardable_memory/client",
     "//components/metrics",

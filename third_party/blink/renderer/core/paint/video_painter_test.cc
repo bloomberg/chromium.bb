@@ -6,7 +6,6 @@
 
 #include "cc/layers/layer.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
@@ -35,9 +34,7 @@ class StubWebMediaPlayer : public EmptyWebMediaPlayer {
     client_->ReadyStateChanged();
     layer_ = cc::Layer::Create();
     layer_->SetIsDrawable(true);
-    web_layer_ =
-        Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
-            layer_.get());
+    web_layer_ = std::make_unique<WebLayer>(layer_.get());
     client_->SetWebLayer(web_layer_.get());
   }
   NetworkState GetNetworkState() const override { return network_state_; }

@@ -29,7 +29,6 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
 
  public:
   TestingPlatformSupportWithMockScheduler();
-  explicit TestingPlatformSupportWithMockScheduler(const Config&);
   ~TestingPlatformSupportWithMockScheduler() override;
 
   // Platform:

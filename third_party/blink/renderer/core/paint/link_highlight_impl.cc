@@ -33,7 +33,6 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/paint/display_item_list.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -88,18 +87,13 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owning_web_view)
       unique_id_(NewUniqueObjectId()) {
   DCHECK(node_);
   DCHECK(owning_web_view);
-  WebCompositorSupport* compositor_support =
-      Platform::Current()->CompositorSupport();
-  DCHECK(compositor_support);
   content_layer_ = cc::PictureLayer::Create(this);
   clip_layer_ = cc::Layer::Create();
   clip_layer_->SetTransformOrigin(FloatPoint3D());
   clip_layer_->AddChild(content_layer_);
 
-  web_content_layer_ =
-      compositor_support->CreateLayerFromCCLayer(content_layer_.get());
-  web_clip_layer_ =
-      compositor_support->CreateLayerFromCCLayer(clip_layer_.get());
+  web_content_layer_ = std::make_unique<WebLayer>(content_layer_.get());
+  web_clip_layer_ = std::make_unique<WebLayer>(clip_layer_.get());
 
   compositor_animation_ = CompositorAnimation::Create();
   DCHECK(compositor_animation_);

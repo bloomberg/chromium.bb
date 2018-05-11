@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
-#include "cc/blink/web_layer_impl.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"

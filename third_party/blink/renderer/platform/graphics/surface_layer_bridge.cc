@@ -14,7 +14,6 @@
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
@@ -63,8 +62,7 @@ void SurfaceLayerBridge::CreateSolidColorLayer() {
   cc_layer_ = cc::SolidColorLayer::Create();
   cc_layer_->SetBackgroundColor(SK_ColorTRANSPARENT);
 
-  web_layer_ = Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
-      cc_layer_.get());
+  web_layer_ = std::make_unique<WebLayer>(cc_layer_.get());
 
   if (observer_)
     observer_->RegisterContentsLayer(web_layer_.get());
@@ -89,9 +87,7 @@ void SurfaceLayerBridge::OnFirstSurfaceActivation(
     surface_layer->SetIsDrawable(true);
     cc_layer_ = surface_layer;
 
-    web_layer_ =
-        Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
-            cc_layer_.get());
+    web_layer_ = std::make_unique<WebLayer>(cc_layer_.get());
     if (observer_)
       observer_->RegisterContentsLayer(web_layer_.get());
   } else if (current_surface_id_ != surface_info.id()) {

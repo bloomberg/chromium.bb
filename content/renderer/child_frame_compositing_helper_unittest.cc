@@ -4,9 +4,9 @@
 
 #include "content/renderer/child_frame_compositing_helper.h"
 
-#include "cc/blink/web_layer_impl.h"
 #include "content/renderer/child_frame_compositor.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_layer.h"
 
 namespace content {
 
@@ -25,7 +25,7 @@ class MockChildFrameCompositor : public ChildFrameCompositor {
   void SetLayer(scoped_refptr<cc::Layer> layer,
                 bool prevent_contents_opaque_changes) override {
     layer_ = std::move(layer);
-    web_layer_ = std::make_unique<cc_blink::WebLayerImpl>(layer_.get());
+    web_layer_ = std::make_unique<blink::WebLayer>(layer_.get());
   }
 
   SkBitmap* GetSadPageBitmap() override { return &sad_page_bitmap_; }

@@ -21,8 +21,9 @@ class StubChromeClientForSPv2 : public EmptyChromeClient {
     return layer_tree_view_.HasLayer(layer);
   }
 
+  // TODO(danakj): This should be a scoped_refptr<cc::Layer>.
   void AttachRootLayer(WebLayer* layer, LocalFrame* local_root) override {
-    layer_tree_view_.SetRootLayer(*layer);
+    layer_tree_view_.SetRootLayer(layer);
   }
 
  private:

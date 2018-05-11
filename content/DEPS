@@ -10,11 +10,8 @@ include_rules = [
   "+content/public/common",
   "+content/public/test",
   "+content/test",
-
   "+blink/public/resources/grit",
-
   "+cc",
-  "-cc/blink",
 
   "-components",
   # Content can depend on components that are:

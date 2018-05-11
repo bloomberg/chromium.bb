@@ -655,6 +655,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebLayerTreeView* layer_tree_view_;
   std::unique_ptr<CompositorAnimationHost> animation_host_;
 
+  // TODO(danakj): This should be a scoped_refptr<cc::Layer>.
   WebLayer* root_layer_;
   GraphicsLayer* root_graphics_layer_;
   GraphicsLayer* visual_viewport_container_layer_;

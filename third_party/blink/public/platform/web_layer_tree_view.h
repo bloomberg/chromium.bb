@@ -74,7 +74,8 @@ class WebLayerTreeView {
   // Initialization and lifecycle --------------------------------------
 
   // Sets the root of the tree. The root is set by way of the constructor.
-  virtual void SetRootLayer(const WebLayer&) {}
+  // TODO(danakj): This should be a scoped_refptr<cc::Layer>.
+  virtual void SetRootLayer(WebLayer*) {}
   virtual void ClearRootLayer() {}
 
   // TODO(loyso): This should use CompositorAnimationHost. crbug.com/584551
@@ -163,12 +164,13 @@ class WebLayerTreeView {
   virtual void SetDeferCommits(bool defer_commits) {}
 
   struct ViewportLayers {
-    const WebLayer* overscroll_elasticity = nullptr;
-    const WebLayer* page_scale = nullptr;
-    const WebLayer* inner_viewport_container = nullptr;
-    const WebLayer* outer_viewport_container = nullptr;
-    const WebLayer* inner_viewport_scroll = nullptr;
-    const WebLayer* outer_viewport_scroll = nullptr;
+    // TODO(danakj): These should be a scoped_refptr<cc::Layer>.
+    WebLayer* overscroll_elasticity = nullptr;
+    WebLayer* page_scale = nullptr;
+    WebLayer* inner_viewport_container = nullptr;
+    WebLayer* outer_viewport_container = nullptr;
+    WebLayer* inner_viewport_scroll = nullptr;
+    WebLayer* outer_viewport_scroll = nullptr;
   };
 
   // Identify key viewport layers to the compositor.

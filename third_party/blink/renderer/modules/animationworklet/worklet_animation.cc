@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/animationworklet/worklet_animation.h"
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/renderer/bindings/modules/v8/animation_effect_or_animation_effect_sequence.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
@@ -227,7 +226,6 @@ WorkletAnimation::WorkletAnimation(
       options_(std::move(options)) {
   DCHECK(IsMainThread());
   DCHECK(Platform::Current()->IsThreadedAnimationEnabled());
-  DCHECK(Platform::Current()->CompositorSupport());
 
   AnimationEffect* target_effect = effects_.at(0);
   target_effect->Attach(this);

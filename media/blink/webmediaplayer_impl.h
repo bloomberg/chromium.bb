@@ -53,6 +53,7 @@
 #endif
 
 namespace blink {
+class WebLayer;
 class WebLocalFrame;
 class WebMediaPlayerClient;
 class WebMediaPlayerEncryptedMediaClient;
@@ -65,10 +66,6 @@ class TaskRunner;
 
 namespace cc {
 class VideoLayer;
-}
-
-namespace cc_blink {
-class WebLayerImpl;
 }
 
 namespace gpu {
@@ -724,7 +721,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // The compositor layer for displaying the video content when using composited
   // playback.
   scoped_refptr<cc::VideoLayer> video_layer_;
-  std::unique_ptr<cc_blink::WebLayerImpl> video_weblayer_;
+  std::unique_ptr<blink::WebLayer> video_weblayer_;
 
   std::unique_ptr<blink::WebContentDecryptionModuleResult> set_cdm_result_;
 

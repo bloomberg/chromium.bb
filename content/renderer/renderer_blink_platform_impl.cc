@@ -1116,12 +1116,6 @@ RendererBlinkPlatformImpl::GetGpuMemoryBufferManager() {
 
 //------------------------------------------------------------------------------
 
-blink::WebCompositorSupport* RendererBlinkPlatformImpl::CompositorSupport() {
-  return &compositor_support_;
-}
-
-//------------------------------------------------------------------------------
-
 blink::WebString RendererBlinkPlatformImpl::ConvertIDNToUnicode(
     const blink::WebString& host) {
   return WebString::FromUTF16(url_formatter::IDNToUnicode(host.Utf8()));

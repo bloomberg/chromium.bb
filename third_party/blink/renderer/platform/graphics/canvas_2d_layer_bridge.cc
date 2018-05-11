@@ -34,7 +34,6 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_heuristic_parameters.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_metrics.h"
@@ -309,9 +308,7 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
     layer_->SetContentsOpaque(ColorParams().GetOpacityMode() == kOpaque);
     layer_->SetBlendBackgroundColor(ColorParams().GetOpacityMode() != kOpaque);
     layer_->SetNearestNeighbor(filter_quality_ == kNone_SkFilterQuality);
-    web_layer_ =
-        Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
-            layer_.get());
+    web_layer_ = std::make_unique<WebLayer>(layer_.get());
     GraphicsLayer::RegisterContentsLayer(web_layer_.get());
   }
 
