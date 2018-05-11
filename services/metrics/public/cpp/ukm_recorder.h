@@ -122,12 +122,6 @@ class METRICS_EXPORT UkmRecorder {
   friend password_manager::PasswordManagerMetricsRecorder;
   friend payments::JourneyLogger;
   friend translate::TranslateRankerImpl;
-  FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryWithEmptyMetrics);
-  FRIEND_TEST_ALL_PREFIXES(UkmServiceTest,
-                           LogsUploadedOnlyWhenHavingSourcesOrEntries);
-  FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, MetricsProviderTest);
-  FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, PersistAndPurge);
-  FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, WhitelistEntryTest);
 
   // Associates the SourceId with a URL. Most UKM recording code should prefer
   // to use a shared SourceId that is already associated with a URL, rather
