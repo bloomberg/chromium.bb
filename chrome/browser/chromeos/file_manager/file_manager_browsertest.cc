@@ -394,26 +394,16 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "tabindexSaveFileDialogDownloads"),
         TestParameter(IN_GUEST_MODE, "tabindexSaveFileDialogDownloads")));
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
-#define MAYBE_OpenFileDialog DISABLED_OpenFileDialog
-#else
-#define MAYBE_OpenFileDialog OpenFileDialog
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_OpenFileDialog,
+    OpenFileDialog,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "openFileDialogOnDownloads"),
-                      TestParameter(IN_GUEST_MODE,
-                                    "openFileDialogOnDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "openFileDialogOnDrive"),
-                      TestParameter(IN_INCOGNITO,
-                                    "openFileDialogOnDownloads"),
-                      TestParameter(IN_INCOGNITO,
-                                    "openFileDialogOnDrive"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "unloadFileDialog")));
+                      TestParameter(IN_GUEST_MODE, "openFileDialogOnDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "openFileDialogOnDrive"),
+                      TestParameter(IN_INCOGNITO, "openFileDialogOnDownloads"),
+                      TestParameter(IN_INCOGNITO, "openFileDialogOnDrive"),
+                      TestParameter(NOT_IN_GUEST_MODE, "unloadFileDialog")));
 
 #if defined(DISABLE_SLOW_FILESAPP_TESTS)
 #define MAYBE_CopyBetweenWindows DISABLED_CopyBetweenWindows
