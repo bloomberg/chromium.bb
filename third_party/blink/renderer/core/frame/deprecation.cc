@@ -563,16 +563,11 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                             "value for <input type='image'>",
                             kM68, "5672688152477696")};
 
-    case WebFeature::kV8Document_CreateTouch_Method:
-      return {"V8Document_CreateTouch_Method", kM68,
-              ReplacedWillBeRemoved("document.createTouch",
-                                    "TouchEvent constructor", kM68,
-                                    "5668612064935936")};
 
     case WebFeature::kV8Document_CreateTouchList_Method:
-      return {"V8Document_CreateTouchList_Method", kM68,
+      return {"V8Document_CreateTouchList_Method", kM69,
               ReplacedWillBeRemoved("document.createTouchList",
-                                    "TouchEvent constructor", kM68,
+                                    "TouchEvent constructor", kM69,
                                     "5668612064935936")};
 
     case WebFeature::kDocumentOrigin:

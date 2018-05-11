@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 1: document.createTouchList is deprecated and will be removed in M68, around July 2018. Please use TouchEvent constructor instead. See https://www.chromestatus.com/features/5668612064935936 for more details.
+CONSOLE WARNING: line 1: document.createTouchList is deprecated and will be removed in M69, around September 2018. Please use TouchEvent constructor instead. See https://www.chromestatus.com/features/5668612064935936 for more details.
 This test ensures that WebKit doesn't crash when the document.createTouchList API is called with non-Touch parameters
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

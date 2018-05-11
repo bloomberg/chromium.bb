@@ -1154,17 +1154,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // This calls checkCompleted() sync and thus can cause JavaScript execution.
   void DecrementLoadEventDelayCountAndCheckLoadEvent();
 
-  Touch* createTouch(DOMWindow*,
-                     EventTarget*,
-                     int identifier,
-                     double page_x,
-                     double page_y,
-                     double screen_x,
-                     double screen_y,
-                     double radius_x,
-                     double radius_y,
-                     float rotation_angle,
-                     float force) const;
   TouchList* createTouchList(HeapVector<Member<Touch>>&) const;
 
   const DocumentTiming& GetTiming() const { return document_timing_; }
