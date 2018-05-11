@@ -55,7 +55,17 @@ class PendingConnectionRequestBase
 
   // Derived classes should invoke this function if they would like to give up
   // on the request due to connection failures.
-  void StopRequestDueToConnectionFailures() {
+  void StopRequestDueToConnectionFailures(
+      mojom::ConnectionAttemptFailureReason failure_reason) {
+    if (has_finished_without_connection_) {
+      PA_LOG(WARNING) << "PendingConnectionRequest::"
+                      << "StopRequestDueToConnectionFailures() invoked after "
+                      << "request had already finished without a connection.";
+      return;
+    }
+
+    connection_delegate_ptr_->OnConnectionAttemptFailure(failure_reason);
+
     OnFinishedWithoutConnection(PendingConnectionRequestDelegate::
                                     FailedConnectionReason::kRequestFailed);
   }
@@ -68,6 +78,9 @@ class PendingConnectionRequestBase
 
   void OnFinishedWithoutConnection(
       PendingConnectionRequestDelegate::FailedConnectionReason reason) {
+    DCHECK(!has_finished_without_connection_);
+    has_finished_without_connection_ = true;
+
     PA_LOG(INFO) << "Request finished without connection; notifying delegate. "
                  << "Feature: \"" << feature_ << "\""
                  << ", Reason: " << reason << ", Request type: \""
@@ -78,6 +91,8 @@ class PendingConnectionRequestBase
   const std::string feature_;
   const std::string readable_request_type_for_logging_;
   mojom::ConnectionDelegatePtr connection_delegate_ptr_;
+
+  bool has_finished_without_connection_ = false;
 
   base::WeakPtrFactory<PendingConnectionRequestBase> weak_ptr_factory_;
 
