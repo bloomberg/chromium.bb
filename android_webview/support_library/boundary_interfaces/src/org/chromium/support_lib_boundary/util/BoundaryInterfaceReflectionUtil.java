@@ -24,17 +24,9 @@ public class BoundaryInterfaceReflectionUtil {
             throws ClassNotFoundException, NoSuchMethodException {
         Class<?> declaringClass =
                 Class.forName(method.getDeclaringClass().getName(), true, delegateLoader);
-        Class[] otherSideParameterClasses = method.getParameterTypes();
-        Class[] parameterClasses = new Class[otherSideParameterClasses.length];
-        for (int n = 0; n < parameterClasses.length; n++) {
-            Class<?> clazz = otherSideParameterClasses[n];
-            // Primitive classes are shared between the classloaders - so we can use the same
-            // primitive class declarations on either side. Non-primitive classes must be looked up
-            // by name.
-            parameterClasses[n] = clazz.isPrimitive()
-                    ? clazz
-                    : Class.forName(clazz.getName(), true, delegateLoader);
-        }
+        // We do not need to convert parameter types across ClassLoaders because we never pass
+        // BoundaryInterfaces in methods, but pass InvocationHandlers instead.
+        Class[] parameterClasses = method.getParameterTypes();
         return declaringClass.getDeclaredMethod(method.getName(), parameterClasses);
     }
 
