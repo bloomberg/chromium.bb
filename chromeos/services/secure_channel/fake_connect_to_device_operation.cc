@@ -16,7 +16,10 @@ FakeConnectToDeviceOperation::FakeConnectToDeviceOperation(
     : ConnectToDeviceOperation<std::string>(std::move(success_callback),
                                             std::move(failure_callback)) {}
 
-FakeConnectToDeviceOperation::~FakeConnectToDeviceOperation() = default;
+FakeConnectToDeviceOperation::~FakeConnectToDeviceOperation() {
+  if (destructor_callback_)
+    std::move(destructor_callback_).Run();
+}
 
 void FakeConnectToDeviceOperation::PerformCancellation() {
   canceled_ = true;
