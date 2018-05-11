@@ -39,7 +39,7 @@
 #include "net/quic/chromium/test_task_runner.h"
 #include "net/socket/socket_performance_watcher.h"
 #include "net/socket/socket_test_util.h"
-#include "net/spdy/chromium/spdy_http_utils.h"
+#include "net/spdy/spdy_http_utils.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"

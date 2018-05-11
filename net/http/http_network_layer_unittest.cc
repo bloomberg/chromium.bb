@@ -18,7 +18,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/socket_test_util.h"
-#include "net/spdy/chromium/spdy_session_pool.h"
+#include "net/spdy/spdy_session_pool.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_scoped_task_environment.h"

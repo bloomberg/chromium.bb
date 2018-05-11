@@ -32,7 +32,7 @@
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
-#include "net/spdy/chromium/spdy_session_pool.h"
+#include "net/spdy/spdy_session_pool.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_tag.h"

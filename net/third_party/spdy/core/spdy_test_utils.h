@@ -11,7 +11,7 @@
 #include <map>
 #include <memory>
 
-#include "net/spdy/chromium/server_push_delegate.h"
+#include "net/spdy/server_push_delegate.h"
 #include "net/test/gtest_util.h"
 #include "net/third_party/spdy/core/spdy_bug_tracker.h"
 #include "net/third_party/spdy/core/spdy_header_block.h"

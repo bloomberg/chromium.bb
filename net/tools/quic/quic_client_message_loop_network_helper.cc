@@ -19,7 +19,7 @@
 #include "net/quic/chromium/quic_chromium_packet_reader.h"
 #include "net/quic/chromium/quic_chromium_packet_writer.h"
 #include "net/socket/udp_client_socket.h"
-#include "net/spdy/chromium/spdy_http_utils.h"
+#include "net/spdy/spdy_http_utils.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_packets.h"

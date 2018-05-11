@@ -27,7 +27,7 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_test_util.h"
-#include "net/spdy/chromium/spdy_test_util_common.h"
+#include "net/spdy/spdy_test_util_common.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"

@@ -40,7 +40,7 @@
 #include "net/quic/chromium/quic_stream_factory_peer.h"
 #include "net/quic/chromium/quic_test_packet_maker.h"
 #include "net/socket/socket_test_util.h"
-#include "net/spdy/chromium/spdy_test_util_common.h"
+#include "net/spdy/spdy_test_util_common.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "net/third_party/quic/test_tools/mock_random.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"

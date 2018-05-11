@@ -11,8 +11,8 @@
 #include "base/stl_util.h"
 #include "net/http/bidirectional_stream_impl.h"
 #include "net/log/net_log_event_type.h"
-#include "net/spdy/chromium/spdy_http_stream.h"
-#include "net/spdy/chromium/spdy_session.h"
+#include "net/spdy/spdy_http_stream.h"
+#include "net/spdy/spdy_session.h"
 
 namespace net {
 

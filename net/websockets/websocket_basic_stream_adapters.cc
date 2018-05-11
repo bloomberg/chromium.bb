@@ -15,7 +15,7 @@
 #include "net/base/io_buffer.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket.h"
-#include "net/spdy/chromium/spdy_buffer.h"
+#include "net/spdy/spdy_buffer.h"
 
 namespace net {
 

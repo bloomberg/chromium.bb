@@ -32,7 +32,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/spdy/chromium/spdy_session_key.h"
+#include "net/spdy/spdy_session_key.h"
 #include "net/ssl/ssl_config.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
 

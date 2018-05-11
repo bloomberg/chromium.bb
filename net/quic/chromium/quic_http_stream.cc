@@ -19,7 +19,7 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/quic/chromium/quic_http_utils.h"
-#include "net/spdy/chromium/spdy_http_utils.h"
+#include "net/spdy/spdy_http_utils.h"
 #include "net/ssl/ssl_info.h"
 #include "net/third_party/quic/core/quic_client_promised_info.h"
 #include "net/third_party/quic/core/quic_stream_sequencer.h"

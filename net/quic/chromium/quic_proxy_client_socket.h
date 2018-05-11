@@ -14,7 +14,7 @@
 #include "net/http/proxy_client_socket.h"
 #include "net/quic/chromium/quic_chromium_client_session.h"
 #include "net/quic/chromium/quic_chromium_client_stream.h"
-#include "net/spdy/chromium/spdy_read_queue.h"
+#include "net/spdy/spdy_read_queue.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {

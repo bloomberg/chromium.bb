@@ -221,8 +221,8 @@ Refer to README.md for content description and update process.
  <item id="sigined_exchange_cert_fetcher" hash_code="79442849" type="0" content_hash_code="8138156" os_list="linux,windows" file_path="content/browser/web_package/signed_exchange_cert_fetcher.cc"/>
  <item id="signed_in_profile_avatar" hash_code="108903331" type="0" content_hash_code="72850619" os_list="linux,windows" file_path="chrome/browser/profiles/profile_downloader.cc"/>
  <item id="socket_bio_adapter" hash_code="516551" type="0" content_hash_code="21643352" os_list="linux,windows" file_path="net/socket/socket_bio_adapter.cc"/>
- <item id="spdy_push_stream" hash_code="36915753" type="0" content_hash_code="69224629" os_list="linux,windows" file_path="net/spdy/chromium/spdy_session.cc"/>
- <item id="spdy_session_control" hash_code="57143548" type="0" content_hash_code="29815792" os_list="linux,windows" file_path="net/spdy/chromium/spdy_session.cc"/>
+ <item id="spdy_push_stream" hash_code="36915753" type="0" content_hash_code="69224629" os_list="linux,windows" file_path="net/spdy/spdy_session.cc"/>
+ <item id="spdy_session_control" hash_code="57143548" type="0" content_hash_code="29815792" os_list="linux,windows" file_path="net/spdy/spdy_session.cc"/>
  <item id="speech_recognition_downstream" hash_code="26096088" type="0" content_hash_code="120733233" os_list="linux,windows" file_path="content/browser/speech/speech_recognition_engine.cc"/>
  <item id="speech_recognition_upstream" hash_code="66846958" type="0" content_hash_code="7706219" os_list="linux,windows" file_path="content/browser/speech/speech_recognition_engine.cc"/>
  <item id="spellcheck_hunspell_dictionary" hash_code="117649486" type="0" content_hash_code="45660952" os_list="linux,windows" file_path="chrome/browser/spellchecker/spellcheck_hunspell_dictionary.cc"/>

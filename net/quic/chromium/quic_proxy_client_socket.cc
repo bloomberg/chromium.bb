@@ -16,7 +16,7 @@
 #include "net/http/proxy_connect_redirect_http_stream.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
-#include "net/spdy/chromium/spdy_http_utils.h"
+#include "net/spdy/spdy_http_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
