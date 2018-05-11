@@ -122,11 +122,16 @@ class TestWindowService : public service_manager::Service,
  private:
   // WindowServiceDelegate:
   std::unique_ptr<aura::Window> NewTopLevel(
+      aura::PropertyConverter* property_converter,
       const base::flat_map<std::string, std::vector<uint8_t>>& properties)
       override {
     std::unique_ptr<aura::Window> top_level =
         std::make_unique<aura::Window>(nullptr);
     top_level->Init(LAYER_NOT_DRAWN);
+    for (auto property : properties) {
+      property_converter->SetPropertyFromTransportValue(
+          top_level.get(), property.first, &property.second);
+    }
     return top_level;
   }
 

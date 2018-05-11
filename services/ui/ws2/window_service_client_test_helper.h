@@ -5,8 +5,10 @@
 #ifndef SERVICES_UI_WS2_WINDOW_SERVICE_CLIENT_TEST_HELPER_H_
 #define SERVICES_UI_WS2_WINDOW_SERVICE_CLIENT_TEST_HELPER_H_
 
+#include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "services/ui/ws2/ids.h"
 
@@ -39,7 +41,9 @@ class WindowServiceClientTestHelper {
 
   mojom::WindowTree* window_tree();
 
-  aura::Window* NewTopLevelWindow(Id transport_window_id);
+  aura::Window* NewTopLevelWindow(
+      Id transport_window_id,
+      base::flat_map<std::string, std::vector<uint8_t>> properties = {});
   void SetWindowBounds(aura::Window* window,
                        const gfx::Rect& bounds,
                        uint32_t change_id = 1);

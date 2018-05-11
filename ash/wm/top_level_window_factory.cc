@@ -77,9 +77,9 @@ RootWindowController* GetRootWindowControllerForNewTopLevelWindow(
 
 // Returns the bounds for the new window.
 gfx::Rect CalculateDefaultBounds(
-    WindowManager* window_manager,
     RootWindowController* root_window_controller,
     aura::Window* container_window,
+    aura::PropertyConverter* property_converter,
     const std::map<std::string, std::vector<uint8_t>>* properties) {
   gfx::Rect requested_bounds;
   if (GetInitialBounds(*properties, &requested_bounds))
@@ -90,8 +90,7 @@ gfx::Rect CalculateDefaultBounds(
   auto show_state_iter =
       properties->find(ui::mojom::WindowManager::kShowState_Property);
   if (show_state_iter != properties->end()) {
-    if (IsFullscreen(window_manager->property_converter(),
-                     show_state_iter->second)) {
+    if (IsFullscreen(property_converter, show_state_iter->second)) {
       gfx::Rect bounds(root_size);
       if (!container_window) {
         const display::Display display =
@@ -121,9 +120,10 @@ gfx::Rect CalculateDefaultBounds(
 // Does the real work of CreateAndParentTopLevelWindow() once the appropriate
 // RootWindowController was found.
 aura::Window* CreateAndParentTopLevelWindowInRoot(
-    WindowManager* window_manager,
+    aura::WindowManagerClient* window_manager_client,
     RootWindowController* root_window_controller,
     ui::mojom::WindowType window_type,
+    aura::PropertyConverter* property_converter,
     std::map<std::string, std::vector<uint8_t>>* properties) {
   // TODO(sky): constrain and validate properties.
 
@@ -138,7 +138,7 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
   }
 
   gfx::Rect bounds = CalculateDefaultBounds(
-      window_manager, root_window_controller, container_window, properties);
+      root_window_controller, container_window, property_converter, properties);
 
   const bool provide_non_client_frame =
       window_type == ui::mojom::WindowType::WINDOW ||
@@ -147,12 +147,10 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
     // See NonClientFrameController for details on lifetime.
     NonClientFrameController* non_client_frame_controller =
         new NonClientFrameController(container_window, context, bounds,
-                                     window_type, properties, window_manager);
+                                     window_type, property_converter,
+                                     properties, window_manager_client);
     return non_client_frame_controller->window();
   }
-
-  aura::PropertyConverter* property_converter =
-      window_manager->property_converter();
 
   if (window_type == ui::mojom::WindowType::POPUP &&
       ShouldRenderTitleArea(property_converter, *properties)) {
@@ -164,7 +162,7 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
     // DetachedTitleAreaRendererForClient is owned by the client.
     DetachedTitleAreaRendererForClient* renderer =
         new DetachedTitleAreaRendererForClient(unparented_control_container,
-                                               properties, window_manager);
+                                               property_converter, properties);
     return renderer->widget()->GetNativeView();
   }
 
@@ -197,11 +195,13 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
 aura::Window* CreateAndParentTopLevelWindow(
     WindowManager* window_manager,
     ui::mojom::WindowType window_type,
+    aura::PropertyConverter* property_converter,
     std::map<std::string, std::vector<uint8_t>>* properties) {
   RootWindowController* root_window_controller =
       GetRootWindowControllerForNewTopLevelWindow(properties);
   aura::Window* window = CreateAndParentTopLevelWindowInRoot(
-      window_manager, root_window_controller, window_type, properties);
+      window_manager ? window_manager->window_manager_client() : nullptr,
+      root_window_controller, window_type, property_converter, properties);
   DisconnectedAppHandler::Create(window);
 
   auto ignored_by_shelf_iter = properties->find(
@@ -218,7 +218,9 @@ aura::Window* CreateAndParentTopLevelWindow(
       properties->find(ui::mojom::WindowManager::kFocusable_InitProperty);
   if (focusable_iter != properties->end()) {
     bool can_focus = mojo::ConvertTo<bool>(focusable_iter->second);
-    window_manager->window_tree_client()->SetCanFocus(window, can_focus);
+    // TODO(crbug.com/842301): Add support for window-service as a library.
+    if (window_manager)
+      window_manager->window_tree_client()->SetCanFocus(window, can_focus);
     NonClientFrameController* non_client_frame_controller =
         NonClientFrameController::Get(window);
     if (non_client_frame_controller)

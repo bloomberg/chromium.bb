@@ -281,7 +281,8 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
   WindowManager* window_manager =
       ash_test_helper_->window_manager_service()->window_manager();
   aura::Window* window = CreateAndParentTopLevelWindow(
-      window_manager, mus_window_type, &properties);
+      window_manager, mus_window_type, window_manager->property_converter(),
+      &properties);
   window->set_id(shell_window_id);
   window->Show();
   return base::WrapUnique<aura::Window>(window);
