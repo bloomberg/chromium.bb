@@ -92,7 +92,7 @@ crbug.com/702006 virtual/disable-spv175/paint/invalidation/compositing/scrolling
 
 crbug.com/784956 fast/history/frameset-repeated-name.html [ Pass Failure ]
 
-crbug.com/829740 [ Win7 Debug ] fast/history/history-back-twice-with-subframes-assert.html [ Pass Timeout ]
+crbug.com/829740 fast/history/history-back-twice-with-subframes-assert.html [ Pass Timeout ]
 
 ########## Genuinely flaky ##########
 crbug.com/624233 virtual/gpu-rasterization/images/color-profile-background-clip-text.html [ Pass Failure ]
