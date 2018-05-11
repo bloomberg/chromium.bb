@@ -29,7 +29,7 @@ class PendingConnectionRequest {
   virtual void HandleConnectionFailure(FailureDetailType failure_detail) = 0;
 
   // Note: Request ID is guaranteed to be unique among all requests.
-  const std::string& GetRequestId() {
+  const std::string& GetRequestId() const {
     static const std::string kRequestId = base::GenerateGUID();
     return kRequestId;
   }
