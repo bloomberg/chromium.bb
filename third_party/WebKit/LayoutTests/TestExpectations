@@ -4401,7 +4401,7 @@ crbug.com/831720 [ Win Linux ] media/controls/modern/doubletap-to-jump-forwards-
 crbug.com/831720 [ Win Linux ] virtual/new-remote-playback-pipeline/media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
 crbug.com/831720 [ Win Linux ] media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
 crbug.com/831720 [ Win Linux ] virtual/new-remote-playback-pipeline/media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
-crbug.com/831720 [ Win Linux ] virtual/video-surface-layer/media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
+crbug.com/831720 virtual/video-surface-layer/media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
 
 crbug.com/802915 css3/blending/isolation-should-include-non-local-background.html [ Failure ]
 
@@ -4682,3 +4682,4 @@ crbug.com/839332 [ Mac ] virtual/video-surface-layer/media/video-no-audio.html [
 
 # Sheriff 2018-05-17
 crbug.com/840792 [ Mac10.12 Mac10.13 ] external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ Pass Timeout ]
+crbug.com/810437 fast/events/hr-timestamp/input-events.html [ Pass Timeout ]
