@@ -227,7 +227,7 @@ def _GetArcBasename(build, basename):
   return basename
 
 
-def PackSdkTools(build_branch, build_id, targets, arc_bucket_url):
+def PackSdkTools(build_branch, build_id, targets, arc_bucket_url, acl):
   """Creates static SDK tools pack from ARC++ specific bucket.
 
   Ebuild needs archives to process binaries natively. This collects static SDK
@@ -242,6 +242,7 @@ def PackSdkTools(build_branch, build_id, targets, arc_bucket_url):
     targets: Dict from build key to (targe build suffix, artifact file pattern)
         pair.
     arc_bucket_url: URL of the target ARC build gs bucket
+    acl: ACL file to apply.
   """
 
   if not 'SDK_TOOLS' in targets:
@@ -299,6 +300,7 @@ def PackSdkTools(build_branch, build_id, targets, arc_bucket_url):
 
     logging.info('Creating SDK tools pack %s', sdk_tools_target_path)
     gs_context.Copy(sdk_tools_local_path, sdk_tools_target_path, version=0)
+    gs_context.ChangeACL(sdk_tools_target_path, acl_args_file=acl)
   finally:
     shutil.rmtree(sdk_tools_dir)
 
@@ -408,7 +410,8 @@ def MirrorArtifacts(android_bucket_url, android_build_branch, arc_bucket_url,
 
   CopyToArcBucket(android_bucket_url, android_build_branch, version, subpaths,
                   targets, arc_bucket_url, acls)
-  PackSdkTools(android_build_branch, version, targets, arc_bucket_url)
+  PackSdkTools(android_build_branch, version, targets, arc_bucket_url,
+               acls['SDK_TOOLS'])
 
   return version
 
