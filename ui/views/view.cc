@@ -514,7 +514,10 @@ gfx::Transform View::GetTransform() const {
 
   gfx::Transform transform = layer()->transform();
   gfx::ScrollOffset scroll_offset = layer()->CurrentScrollOffset();
-  transform.Translate(-scroll_offset.x(), -scroll_offset.y());
+  // Offsets for layer-based scrolling are never negative, but the horizontal
+  // scroll direction is reversed in RTL via canvas flipping.
+  transform.Translate((base::i18n::IsRTL() ? 1 : -1) * scroll_offset.x(),
+                      -scroll_offset.y());
   return transform;
 }
 
@@ -1464,13 +1467,8 @@ void View::OnAccessibilityEvent(ax::mojom::Event event_type) {}
 // Scrolling -------------------------------------------------------------------
 
 void View::ScrollRectToVisible(const gfx::Rect& rect) {
-  // We must take RTL UI mirroring into account when adjusting the position of
-  // the region.
-  if (parent_) {
-    gfx::Rect scroll_rect(rect);
-    scroll_rect.Offset(GetMirroredX(), y());
-    parent_->ScrollRectToVisible(scroll_rect);
-  }
+  if (parent_)
+    parent_->ScrollRectToVisible(rect + bounds().OffsetFromOrigin());
 }
 
 void View::ScrollViewToVisible() {
