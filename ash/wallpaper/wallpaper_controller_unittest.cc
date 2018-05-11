@@ -1596,24 +1596,44 @@ TEST_F(WallpaperControllerTest, SigninWallpaperIsKeptAfterRotation) {
       {wallpaper_dir_->GetPath().Append(kDefaultSmallWallpaperName)}));
 }
 
+// Display size change should trigger reload for both user wallpaper and preview
+// wallpaper.
 TEST_F(WallpaperControllerTest, ReloadWallpaper) {
   CreateAndSaveWallpapers(account_id_1);
 
-  // If |ShowUserWallpaper| is called twice with the same account id and display
-  // size, the second request shouldn't trigger a wallpaper reload
-  // (crbug.com/158383).
+  // Show a user wallpaper.
   UpdateDisplay("800x600");
   RunAllTasksUntilIdle();
   controller_->ShowUserWallpaper(InitializeUser(account_id_1));
   RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetWallpaperCount());
-
+  // Rotating the display should trigger a wallpaper reload.
+  ClearWallpaperCount();
+  UpdateDisplay("800x600/r");
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  // Calling |ShowUserWallpaper| again with the same account id and display
+  // size should not trigger wallpaper reload (crbug.com/158383).
+  ClearWallpaperCount();
   controller_->ShowUserWallpaper(InitializeUser(account_id_1));
   RunAllTasksUntilIdle();
   EXPECT_EQ(0, GetWallpaperCount());
 
+  // Start wallpaper preview.
+  SimulateUserLogin(kUser1);
+  std::unique_ptr<aura::Window> wallpaper_picker_window(
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
+  wm::GetWindowState(wallpaper_picker_window.get())->Activate();
+  ClearWallpaperCount();
+  controller_->SetCustomWallpaper(
+      InitializeUser(account_id_1), wallpaper_files_id_1, file_name_1,
+      WALLPAPER_LAYOUT_CENTER, CreateImage(640, 480, kWallpaperColor),
+      true /*preview_mode=*/);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
   // Rotating the display should trigger a wallpaper reload.
-  UpdateDisplay("800x600/r");
+  ClearWallpaperCount();
+  UpdateDisplay("800x600");
   RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetWallpaperCount());
 }
