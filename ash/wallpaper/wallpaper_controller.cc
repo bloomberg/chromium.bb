@@ -1054,10 +1054,14 @@ void WallpaperController::SetCustomWallpaper(
         &WallpaperController::SaveAndSetWallpaper, weak_factory_.GetWeakPtr(),
         std::move(user_info), wallpaper_files_id, file_name, CUSTOMIZED, layout,
         false /*show_wallpaper=*/, image);
-    ShowWallpaperImage(image,
-                       WallpaperInfo{std::string(), layout, CUSTOMIZED,
-                                     base::Time::Now().LocalMidnight()},
-                       true /*preview_mode=*/);
+    reload_preview_wallpaper_callback_ =
+        base::BindRepeating(&WallpaperController::ShowWallpaperImage,
+                            weak_factory_.GetWeakPtr(), image,
+                            WallpaperInfo{std::string(), layout, CUSTOMIZED,
+                                          base::Time::Now().LocalMidnight()},
+                            true /*preview_mode=*/);
+    // Show the preview wallpaper.
+    reload_preview_wallpaper_callback_.Run();
   } else {
     SaveAndSetWallpaper(std::move(user_info), wallpaper_files_id, file_name,
                         CUSTOMIZED, layout, is_active_user /*show_wallpaper=*/,
@@ -1202,13 +1206,13 @@ void WallpaperController::SetThirdPartyWallpaper(
 }
 
 void WallpaperController::ConfirmPreviewWallpaper() {
-  DCHECK(confirm_preview_wallpaper_callback_);
   std::move(confirm_preview_wallpaper_callback_).Run();
+  reload_preview_wallpaper_callback_.Reset();
 }
 
 void WallpaperController::CancelPreviewWallpaper() {
-  DCHECK(confirm_preview_wallpaper_callback_);
   confirm_preview_wallpaper_callback_.Reset();
+  reload_preview_wallpaper_callback_.Reset();
   ReloadWallpaper(false /*clear_cache=*/);
 }
 
@@ -1616,10 +1620,14 @@ void WallpaperController::OnOnlineWallpaperDecoded(
     confirm_preview_wallpaper_callback_ = base::BindOnce(
         &WallpaperController::SetOnlineWallpaperImpl,
         weak_factory_.GetWeakPtr(), params, image, false /*show_wallpaper=*/);
-    ShowWallpaperImage(image,
-                       WallpaperInfo{params.url.spec(), params.layout, ONLINE,
-                                     base::Time::Now().LocalMidnight()},
-                       true /*preview_mode=*/);
+    reload_preview_wallpaper_callback_ = base::BindRepeating(
+        &WallpaperController::ShowWallpaperImage, weak_factory_.GetWeakPtr(),
+        image,
+        WallpaperInfo{params.url.spec(), params.layout, ONLINE,
+                      base::Time::Now().LocalMidnight()},
+        true /*preview_mode=*/);
+    // Show the preview wallpaper.
+    reload_preview_wallpaper_callback_.Run();
   } else {
     SetOnlineWallpaperImpl(params, image, is_active_user /*show_wallpaper=*/);
   }
@@ -1821,7 +1829,9 @@ void WallpaperController::ReloadWallpaper(bool clear_cache) {
   if (clear_cache)
     wallpaper_cache_map_.clear();
 
-  if (current_user_)
+  if (reload_preview_wallpaper_callback_)
+    reload_preview_wallpaper_callback_.Run();
+  else if (current_user_)
     ShowUserWallpaper(std::move(current_user_));
   else
     ShowSigninWallpaper();

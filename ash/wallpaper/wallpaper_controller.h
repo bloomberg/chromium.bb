@@ -620,6 +620,10 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // cannot be replaced, except by another preview wallpaper.
   base::OnceClosure confirm_preview_wallpaper_callback_;
 
+  // Called when the preview wallpaper needs to be reloaded (e.g. display size
+  // change). Has the same lifetime with |confirm_preview_wallpaper_callback_|.
+  base::RepeatingClosure reload_preview_wallpaper_callback_;
+
   // If true, use a solid color wallpaper as if it is the decoded image.
   bool bypass_decode_for_testing_ = false;
 
