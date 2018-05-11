@@ -2771,6 +2771,10 @@ def CMDsync(parser, args):
     slns = {}
     for d in client.subtree(True):
       normed = d.name.replace('\\', '/').rstrip('/') + '/'
+      if normed in slns and not d.should_process:
+        # If an unprocessed dependency would override an existing dependency,
+        # ignore it.
+        continue
       slns[normed] = {
           'revision': d.got_revision,
           'scm': d.used_scm.name if d.used_scm else None,
