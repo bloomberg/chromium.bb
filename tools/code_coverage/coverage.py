@@ -292,7 +292,7 @@ class _CoverageReportHtmlGenerator(object):
 
     assert False, 'Invalid coverage percentage: "%d".' % percentage
 
-  def WriteHtmlCoverageReport(self):
+  def WriteHtmlCoverageReport(self, no_file_view):
     """Writes html coverage report.
 
     In the report, sub-directories are displayed before files and within each
@@ -311,17 +311,24 @@ class _CoverageReportHtmlGenerator(object):
     css_path = os.path.join(OUTPUT_DIR, os.extsep.join(['style', 'css']))
 
     directory_view_path = _GetDirectoryViewPath()
+    directory_view_href = _GetRelativePathToDirectoryOfFile(
+        directory_view_path, self._output_path)
     component_view_path = _GetComponentViewPath()
-    file_view_path = _GetFileViewPath()
+    component_view_href = _GetRelativePathToDirectoryOfFile(
+        component_view_path, self._output_path)
+
+    # File view is optional in the report.
+    file_view_href = None
+    if not no_file_view:
+      file_view_path = _GetFileViewPath()
+      file_view_href = _GetRelativePathToDirectoryOfFile(
+          file_view_path, self._output_path)
 
     html_header = self._header_template.render(
         css_path=_GetRelativePathToDirectoryOfFile(css_path, self._output_path),
-        directory_view_href=_GetRelativePathToDirectoryOfFile(
-            directory_view_path, self._output_path),
-        component_view_href=_GetRelativePathToDirectoryOfFile(
-            component_view_path, self._output_path),
-        file_view_href=_GetRelativePathToDirectoryOfFile(
-            file_view_path, self._output_path),
+        directory_view_href=directory_view_href,
+        component_view_href=component_view_href,
+        file_view_href=file_view_href,
         style_overrides=self._style_overrides)
 
     html_table = self._table_template.render(
@@ -561,7 +568,7 @@ def _GenerateFileViewHtmlIndexFile(per_file_coverage_summary):
         per_file_coverage_summary[file_path])
 
   html_generator.CreateTotalsEntry(totals_coverage_summary)
-  html_generator.WriteHtmlCoverageReport()
+  html_generator.WriteHtmlCoverageReport(no_file_view=False)
   logging.debug('Finished generating file view html index file.')
 
 
@@ -585,19 +592,21 @@ def _CalculatePerDirectoryCoverageSummary(per_file_coverage_summary):
   return per_directory_coverage_summary
 
 
-def _GeneratePerDirectoryCoverageInHtml(per_directory_coverage_summary,
-                                        per_file_coverage_summary):
+def _GeneratePerDirectoryCoverageInHtml(
+    per_directory_coverage_summary, per_file_coverage_summary, no_file_view):
   """Generates per directory coverage breakdown in html."""
   logging.debug('Writing per-directory coverage html reports.')
   for dir_path in per_directory_coverage_summary:
-    _GenerateCoverageInHtmlForDirectory(
-        dir_path, per_directory_coverage_summary, per_file_coverage_summary)
+    _GenerateCoverageInHtmlForDirectory(dir_path,
+                                        per_directory_coverage_summary,
+                                        per_file_coverage_summary, no_file_view)
 
   logging.debug('Finished writing per-directory coverage html reports.')
 
 
 def _GenerateCoverageInHtmlForDirectory(
-    dir_path, per_directory_coverage_summary, per_file_coverage_summary):
+    dir_path, per_directory_coverage_summary, per_file_coverage_summary,
+    no_file_view):
   """Generates coverage html report for a single directory."""
   html_generator = _CoverageReportHtmlGenerator(
       _GetCoverageHtmlReportPathForDirectory(dir_path), 'Path')
@@ -622,7 +631,7 @@ def _GenerateCoverageInHtmlForDirectory(
                                           entry_coverage_summary)
 
   html_generator.CreateTotalsEntry(per_directory_coverage_summary[dir_path])
-  html_generator.WriteHtmlCoverageReport()
+  html_generator.WriteHtmlCoverageReport(no_file_view)
 
 
 def _GenerateDirectoryViewHtmlIndexFile():
@@ -672,22 +681,22 @@ def _ExtractComponentToDirectoriesMapping():
   return component_to_directories
 
 
-def _GeneratePerComponentCoverageInHtml(per_component_coverage_summary,
-                                        component_to_directories,
-                                        per_directory_coverage_summary):
+def _GeneratePerComponentCoverageInHtml(
+    per_component_coverage_summary, component_to_directories,
+    per_directory_coverage_summary, no_file_view):
   """Generates per-component coverage reports in html."""
   logging.debug('Writing per-component coverage html reports.')
   for component in per_component_coverage_summary:
     _GenerateCoverageInHtmlForComponent(
         component, per_component_coverage_summary, component_to_directories,
-        per_directory_coverage_summary)
+        per_directory_coverage_summary, no_file_view)
 
   logging.debug('Finished writing per-component coverage html reports.')
 
 
 def _GenerateCoverageInHtmlForComponent(
     component_name, per_component_coverage_summary, component_to_directories,
-    per_directory_coverage_summary):
+    per_directory_coverage_summary, no_file_view):
   """Generates coverage html report for a component."""
   component_html_report_path = _GetCoverageHtmlReportPathForComponent(
       component_name)
@@ -712,10 +721,11 @@ def _GenerateCoverageInHtmlForComponent(
 
   html_generator.CreateTotalsEntry(
       per_component_coverage_summary[component_name])
-  html_generator.WriteHtmlCoverageReport()
+  html_generator.WriteHtmlCoverageReport(no_file_view)
 
 
-def _GenerateComponentViewHtmlIndexFile(per_component_coverage_summary):
+def _GenerateComponentViewHtmlIndexFile(per_component_coverage_summary,
+                                        no_file_view):
   """Generates the html index file for component view."""
   component_view_index_file_path = _GetComponentViewPath()
   logging.debug('Generating component view html index file as: "%s".',
@@ -733,7 +743,7 @@ def _GenerateComponentViewHtmlIndexFile(per_component_coverage_summary):
         per_component_coverage_summary[component])
 
   html_generator.CreateTotalsEntry(totals_coverage_summary)
-  html_generator.WriteHtmlCoverageReport()
+  html_generator.WriteHtmlCoverageReport(no_file_view)
   logging.debug('Finished generating component view html index file.')
 
 
@@ -1455,6 +1465,13 @@ def _ParseCommandArguments():
       'to exclude files in third_party/ and out/ folders from the report.')
 
   arg_parser.add_argument(
+      '--no-file-view',
+      action='store_true',
+      help='Don\'t generate the file view in the coverage report. When there '
+      'are large number of html files, the file view becomes heavy and may '
+      'cause the browser to freeze, and this argument comes handy.')
+
+  arg_parser.add_argument(
       '-j',
       '--jobs',
       type=int,
@@ -1544,21 +1561,24 @@ def Main():
   _GeneratePerFileLineByLineCoverageInHtml(binary_paths, profdata_file_path,
                                            absolute_filter_paths,
                                            args.ignore_filename_regex)
-  _GenerateFileViewHtmlIndexFile(per_file_coverage_summary)
+  if not args.no_file_view:
+    _GenerateFileViewHtmlIndexFile(per_file_coverage_summary)
 
   per_directory_coverage_summary = _CalculatePerDirectoryCoverageSummary(
       per_file_coverage_summary)
   _GeneratePerDirectoryCoverageInHtml(per_directory_coverage_summary,
-                                      per_file_coverage_summary)
+                                      per_file_coverage_summary,
+                                      args.no_file_view)
   _GenerateDirectoryViewHtmlIndexFile()
 
   component_to_directories = _ExtractComponentToDirectoriesMapping()
   per_component_coverage_summary = _CalculatePerComponentCoverageSummary(
       component_to_directories, per_directory_coverage_summary)
-  _GeneratePerComponentCoverageInHtml(per_component_coverage_summary,
-                                      component_to_directories,
-                                      per_directory_coverage_summary)
-  _GenerateComponentViewHtmlIndexFile(per_component_coverage_summary)
+  _GeneratePerComponentCoverageInHtml(
+      per_component_coverage_summary, component_to_directories,
+      per_directory_coverage_summary, args.no_file_view)
+  _GenerateComponentViewHtmlIndexFile(per_component_coverage_summary,
+                                      args.no_file_view)
 
   # The default index file is generated only for the list of source files, needs
   # to overwrite it to display per directory coverage view by default.
