@@ -34,10 +34,15 @@ def write(filename, content):
 
 
 class SCMMock(object):
-  def __init__(self, unit_test, name, url):
-    self.unit_test = unit_test
+  unit_test = None
+  def __init__(self, parsed_url, root_dir, name, out_fh=None, out_cb=None,
+               print_outbuf=False):
+    self.unit_test.assertTrue(
+        parsed_url.startswith('svn://example.com/'), parsed_url)
+    self.unit_test.assertTrue(
+        root_dir.startswith(self.unit_test.root_dir), root_dir)
     self.name = name
-    self.url = url
+    self.url = parsed_url
 
   def RunCommand(self, command, options, args, file_list):
     self.unit_test.assertEquals('None', command)
@@ -58,23 +63,19 @@ class GclientTest(trial_dir.TestCase):
     self.previous_dir = os.getcwd()
     os.chdir(self.root_dir)
     # Manual mocks.
-    self._old_createscm = gclient.GitDependency.CreateSCM
-    gclient.GitDependency.CreateSCM = self._createscm
+    self._old_createscm = gclient.gclient_scm.GitWrapper
+    gclient.gclient_scm.GitWrapper = SCMMock
+    SCMMock.unit_test = self
     self._old_sys_stdout = sys.stdout
     sys.stdout = gclient.gclient_utils.MakeFileAutoFlush(sys.stdout)
     sys.stdout = gclient.gclient_utils.MakeFileAnnotated(sys.stdout)
 
   def tearDown(self):
     self.assertEquals([], self._get_processed())
-    gclient.GitDependency.CreateSCM = self._old_createscm
+    gclient.gclient_scm.GitWrapper = self._old_createscm
     sys.stdout = self._old_sys_stdout
     os.chdir(self.previous_dir)
     super(GclientTest, self).tearDown()
-
-  def _createscm(self, parsed_url, root_dir, name, out_fh=None, out_cb=None):
-    self.assertTrue(parsed_url.startswith('svn://example.com/'), parsed_url)
-    self.assertTrue(root_dir.startswith(self.root_dir), root_dir)
-    return SCMMock(self, name, parsed_url)
 
   def testDependencies(self):
     self._dependencies('1')

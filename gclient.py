@@ -485,7 +485,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     if self.url is None:
       return
     url = raw_url = None
-    scm = self.CreateSCM(self.url, self.root.root_dir, self.name, self.outbuf)
+    scm = self.CreateSCM()
     if os.path.isdir(scm.checkout_path):
       revision = scm.revinfo(None, None, None)
       url = '%s@%s' % (gclient_utils.SplitUrlRevision(self.url)[0], revision)
@@ -1000,9 +1000,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       options = copy.copy(options)
       options.revision = revision_override
       self._used_revision = options.revision
-      self._used_scm = self.CreateSCM(
-          self.url, self.root.root_dir, self.name, self.outbuf,
-          out_cb=work_queue.out_cb)
+      self._used_scm = self.CreateSCM(out_cb=work_queue.out_cb)
       self._got_revision = self._used_scm.RunCommand(command, options, args,
                                                      file_list)
 
@@ -1043,7 +1041,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     if command == 'recurse':
       # Skip file only checkout.
-      scm = self.GetScmName(self.url)
+      scm = self.GetScmName()
       if not options.scm or scm in options.scm:
         cwd = os.path.normpath(os.path.join(self.root.root_dir, self.name))
         # Pass in the SCM type as an env variable.  Make sure we don't put
@@ -1097,11 +1095,10 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         else:
           print('Skipped missing %s' % cwd, file=sys.stderr)
 
-  def GetScmName(self, url):
+  def GetScmName(self):
     raise NotImplementedError()
 
-  def CreateSCM(self, url, root_dir=None, relpath=None, out_fh=None,
-                out_cb=None):
+  def CreateSCM(self, out_cb=None):
     raise NotImplementedError()
 
   def HasGNArgsFile(self):
@@ -1139,14 +1136,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       # TODO(maruel): If the user is using git, then we don't know
       # what files have changed so we always run all hooks. It'd be nice to fix
       # that.
-      if (options.force or
-          self.GetScmName(self.url) in ('git', None) or
-          os.path.isdir(os.path.join(self.root.root_dir, self.name, '.git'))):
-        result.extend(self.deps_hooks)
-      else:
-        for hook in self.deps_hooks:
-          if hook.matches(self.file_list_and_children):
-            result.append(hook)
+      result.extend(self.deps_hooks)
     for s in self.dependencies:
       result.extend(s.GetHooks(options))
     return result
@@ -1371,17 +1361,16 @@ class GitDependency(Dependency):
   """A Dependency object that represents a single git checkout."""
 
   #override
-  def GetScmName(self, url):
+  def GetScmName(self):
     """Always 'git'."""
-    del url
     return 'git'
 
   #override
-  def CreateSCM(self, url, root_dir=None, relpath=None, out_fh=None,
-                out_cb=None):
+  def CreateSCM(self, out_cb=None):
     """Create a Wrapper instance suitable for handling this git dependency."""
-    return gclient_scm.GitWrapper(url, root_dir, relpath, out_fh, out_cb,
-                                  print_outbuf=self.print_outbuf)
+    return gclient_scm.GitWrapper(
+        self.url, self.root.root_dir, self.name, self.outbuf, out_cb,
+        print_outbuf=self.print_outbuf)
 
 
 class GClient(GitDependency):
@@ -1446,8 +1435,7 @@ solutions = %(solution_list)s
     solutions."""
     for dep in self.dependencies:
       if dep.managed and dep.url:
-        scm = dep.CreateSCM(
-            dep.url, self.root_dir, dep.name, self.outbuf)
+        scm = dep.CreateSCM()
         actual_url = scm.GetActualRemoteURL(self._options)
         if actual_url and not scm.DoesRemoteURLMatch(self._options):
           mirror = scm.GetCacheMirror()
@@ -1471,10 +1459,10 @@ You should ensure that the URL listed in .gclient is correct and either change
 it or fix the checkout.
 '''  % {'checkout_path': os.path.join(self.root_dir, dep.name),
         'expected_url': dep.url,
-        'expected_scm': self.GetScmName(dep.url),
+        'expected_scm': dep.GetScmName(),
         'mirror_string' : mirror_string,
         'actual_url': actual_url,
-        'actual_scm': self.GetScmName(actual_url)})
+        'actual_scm': dep.GetScmName()})
 
   def SetConfig(self, content):
     assert not self.dependencies
@@ -1742,8 +1730,8 @@ it or fix the checkout.
             (not any(path.startswith(entry + '/') for path in entries)) and
             os.path.exists(e_dir)):
           # The entry has been removed from DEPS.
-          scm = GitDependency.CreateSCM(
-              self, prev_url, self.root_dir, entry_fixed, self.outbuf)
+          scm = gclient_scm.GitWrapper(
+              prev_url, self.root_dir, entry_fixed, self.outbuf)
 
           # Check to see if this directory is now part of a higher-up checkout.
           scm_root = None
@@ -1991,20 +1979,17 @@ class CipdDependency(Dependency):
     return True
 
   #override
-  def GetScmName(self, url):
+  def GetScmName(self):
     """Always 'cipd'."""
-    del url
     return 'cipd'
 
   #override
-  def CreateSCM(self, url, root_dir=None, relpath=None, out_fh=None,
-                out_cb=None):
+  def CreateSCM(self, out_cb=None):
     """Create a Wrapper instance suitable for handling this CIPD dependency."""
     self._CreatePackageIfNecessary()
     return gclient_scm.CipdWrapper(
-        url, root_dir, relpath, out_fh, out_cb,
-        root=self._cipd_root,
-        package=self._cipd_package)
+        self.url, self.root.root_dir, self.name, self.outbuf, out_cb,
+        root=self._cipd_root, package=self._cipd_package)
 
   def ToLines(self):
     """Return a list of lines representing this in a DEPS file."""
