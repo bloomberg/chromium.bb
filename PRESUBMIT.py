@@ -411,7 +411,7 @@ _BANNED_CPP_FUNCTIONS = (
       ),
     ),
     (
-      'MessageLoop::QuitWhenIdleClosure',
+      r'/MessageLoop(Current)?::QuitWhenIdleClosure',
       (
         'MessageLoop::QuitWhenIdleClosure is deprecated. Please use a',
         'QuitWhenIdleClosure obtained from a specific RunLoop instance.',
