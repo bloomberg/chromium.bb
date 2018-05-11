@@ -13,7 +13,12 @@ BUILT_SOURCES = $(builddir)/out.expected
 SH_LOG_COMPILER = sh
 TESTS=run-test.sh
 
-TESTDATA=4x6.pcf 8x16.pcf fonts.conf.in
+TESTDATA =			\
+	4x6.pcf			\
+	8x16.pcf		\
+	fonts.conf.in		\
+	test-90-synthetic.json	\
+	$(NULL)
 
 if FREETYPE_PCF_LONG_FAMILY_NAMES
 $(builddir)/out.expected: $(srcdir)/out.expected-long-family-names Makefile
@@ -63,10 +68,10 @@ if ENABLE_JSONC
 check_PROGRAMS += test-conf
 test_conf_CFLAGS = $(JSONC_CFLAGS)
 test_conf_LDADD = $(top_builddir)/src/libfontconfig.la $(JSONC_LIBS)
-TESTS += test-conf.sh
+TESTS += run-test-conf.sh
 endif
 
-EXTRA_DIST=run-test.sh $(TESTDATA) out.expected-long-family-names out.expected-no-long-family-names
+EXTRA_DIST=run-test.sh run-test-conf.sh $(TESTDATA) out.expected-long-family-names out.expected-no-long-family-names
 
 CLEANFILES=out fonts.conf out.expected
 
