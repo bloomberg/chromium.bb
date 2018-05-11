@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -179,8 +180,9 @@ TEST_F(MenuRunnerTest, LatinMnemonic) {
   EXPECT_NE(nullptr, delegate->on_menu_closed_menu());
 }
 
+#if !defined(OS_WIN)
 // Tests that a key press on a non-US keyboard layout activates the correct menu
-// item.
+// item. Disabled on Windows because a WM_CHAR event does not activate an item.
 TEST_F(MenuRunnerTest, NonLatinMnemonic) {
   // TODO: test uses GetContext(), which is not applicable to aura-mus.
   // http://crbug.com/663809.
@@ -204,6 +206,7 @@ TEST_F(MenuRunnerTest, NonLatinMnemonic) {
   EXPECT_EQ(1, delegate->on_menu_closed_called());
   EXPECT_NE(nullptr, delegate->on_menu_closed_menu());
 }
+#endif  // !defined(OS_WIN)
 
 // Tests that attempting to nest a menu within a drag-and-drop menu does not
 // cause a crash. Instead the drag and drop action should be canceled, and the

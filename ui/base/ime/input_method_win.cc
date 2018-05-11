@@ -97,10 +97,7 @@ bool InputMethodWin::OnUntranslatedIMEMessage(
 }
 
 ui::EventDispatchDetails InputMethodWin::DispatchKeyEvent(ui::KeyEvent* event) {
-  if (!event->HasNativeEvent())
-    return DispatchFabricatedKeyEvent(event);
-
-  const PlatformEvent& native_key_event = event->native_event();
+  MSG native_key_event = MSGFromKeyEvent(event);
   BOOL handled = FALSE;
   if (native_key_event.message == WM_CHAR) {
     auto ref = weak_ptr_factory_.GetWeakPtr();
@@ -451,21 +448,6 @@ void InputMethodWin::RefreshInputLanguage() {
     // Please refer to crbug.com/679564.
     UpdateIMEState();
   }
-}
-
-ui::EventDispatchDetails InputMethodWin::DispatchFabricatedKeyEvent(
-    ui::KeyEvent* event) {
-  // The key event if from calling input.ime.sendKeyEvent or test.
-  ui::EventDispatchDetails details = DispatchKeyEventPostIME(event);
-  if (details.dispatcher_destroyed || details.target_destroyed ||
-      event->stopped_propagation()) {
-    return details;
-  }
-
-  if ((event->is_char() || event->GetDomKey().IsCharacter()) &&
-      event->type() == ui::ET_KEY_PRESSED && GetTextInputClient())
-    GetTextInputClient()->InsertChar(*event);
-  return details;
 }
 
 void InputMethodWin::ConfirmCompositionText() {

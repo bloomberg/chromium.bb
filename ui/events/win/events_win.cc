@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
 #include "ui/events/keycodes/platform_key_map_win.h"
 #include "ui/events/win/system_event_state_lookup.h"
@@ -416,6 +417,20 @@ LPARAM GetLParamFromScanCode(uint16_t scan_code) {
   if ((scan_code & 0xE000) == 0xE000)
     l_param |= (1 << 24);
   return l_param;
+}
+
+MSG MSGFromKeyEvent(KeyEvent* event, HWND hwnd) {
+  if (event->HasNativeEvent())
+    return event->native_event();
+  uint16_t scan_code = KeycodeConverter::DomCodeToNativeKeycode(event->code());
+  LPARAM l_param = GetLParamFromScanCode(scan_code);
+  WPARAM w_param = event->GetConflatedWindowsKeyCode();
+  UINT message;
+  if (event->is_char())
+    message = WM_CHAR;
+  else
+    message = event->type() == ET_KEY_PRESSED ? WM_KEYDOWN : WM_KEYUP;
+  return {hwnd, message, w_param, l_param};
 }
 
 }  // namespace ui
