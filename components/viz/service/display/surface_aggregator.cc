@@ -1236,6 +1236,10 @@ CompositorFrame SurfaceAggregator::Aggregate(
     Surface* surface = manager_->GetSurfaceForId(it.first);
     if (surface)
       surface->TakeLatencyInfo(&frame.metadata.latency_info);
+    if (!ui::LatencyInfo::Verify(frame.metadata.latency_info,
+                                 "SurfaceAggregator::Aggregate")) {
+      break;
+    }
   }
 
   // TODO(jamesr): Aggregate all resource references into the returned frame's
