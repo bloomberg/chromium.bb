@@ -19,7 +19,7 @@ def CheckForbiddenRegex(change, forbidden_regex, message_type, message):
 
 def CheckChange(input_api, message_type):
   result = []
-  shared_source_files = re.compile("^net/spdy/(core|platform/api)/.*\.(h|cc)$")
+  shared_source_files = re.compile("^net/third_party/spdy/(core|platform/api)/.*\.(h|cc)$")
   change = [(affected_file.LocalPath(), affected_file.NewContents())
             for affected_file in input_api.AffectedTestableFiles()
             if shared_source_files.match(affected_file.LocalPath())]
@@ -30,6 +30,7 @@ def CheckChange(input_api, message_type):
       "^#include <string>$",
       r"\bstd::string\b",
       r"^#include \"base/strings/string_piece.h\"$",
+      r"^#include \"net/base/hex_utils.h\"$",
       r"\bbase::StringPiece\b",
       r"\bbase::StringPrintf\b",
       r"\bbase::StringAppendF\b",
@@ -38,14 +39,16 @@ def CheckChange(input_api, message_type):
       r"\bHexDump\b",
   ]
   messages = [
-      "Include \"spdy/platform/api/spdy_export.h\" "
+      "Include \"net/third_party/spdy/platform/api/spdy_export.h\" "
           "instead of \"net/base/net_export.h\"",
       "Use SPDY_EXPORT instead of NET_EXPORT",
       "Use SPDY_EXPORT_PRIVATE instead of NET_EXPORT_PRIVATE",
-      "Include \"spdy/platform/api/spdy_string.h\" instead of <string>",
+      "Include \"net/third_party/spdy/platform/api/spdy_string.h\" instead of <string>",
       "Use SpdyString instead of std::string",
-      "Include \"spdy/platform/api/spdy_string_piece.h\" "
+      "Include \"net/third_party/spdy/platform/api/spdy_string_piece.h\" "
           "instead of \"base/strings/string_piece.h\"",
+      "Include \"net/third_party/spdy/platform/api/spdy_string_utils.h\" "
+          "instead of \"net/base/hex_utils.h\"",
       "Use SpdyStringPiece instead of base::StringPiece",
       "Use SpdyStringPrintf instead of base::StringPrintf",
       "Use SpdyStringAppendF instead of base::StringAppendF",
