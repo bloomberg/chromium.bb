@@ -881,23 +881,32 @@ Panel.getCallbackForCurrentItem = function() {
  * was queued, execute it once focus is restored.
  */
 Panel.closeMenusAndRestoreFocus = function() {
-  // Watch for the next focus event.
-  var onFocus = function(desktop, evt) {
-    desktop.removeEventListener(chrome.automation.EventType.FOCUS, onFocus);
-    if (Panel.pendingCallback_) {
-      // Clear it before calling it, in case the callback itself triggers
-      // another pending callback.
-      var pendingCallback = Panel.pendingCallback_;
-      Panel.pendingCallback_ = null;
-      pendingCallback();
-    }
-  }.bind(this);
-
   var bkgnd = chrome.extension.getBackgroundPage();
   bkgnd.chrome.automation.getDesktop(function(desktop) {
-    onFocus = /** @type {function(chrome.automation.AutomationEvent)} */ (
-        onFocus.bind(this, desktop));
-    desktop.addEventListener(chrome.automation.EventType.FOCUS, onFocus, true);
+    // Watch for a blur on the panel, then a focus on the page.
+    var onFocus = function(evt) {
+      desktop.removeEventListener(
+          chrome.automation.EventType.FOCUS, onFocus, true);
+      if (Panel.pendingCallback_) {
+        // Clear it before calling it, in case the callback itself triggers
+        // another pending callback.
+        var pendingCallback = Panel.pendingCallback_;
+        Panel.pendingCallback_ = null;
+        pendingCallback();
+      }
+    };
+
+    var onBlur = function(evt) {
+      if (evt.docUrl != location.href)
+        return;
+
+      desktop.removeEventListener(
+          chrome.automation.EventType.BLUR, onBlur, true);
+      desktop.addEventListener(
+          chrome.automation.EventType.FOCUS, onFocus, true);
+    };
+
+    desktop.addEventListener(chrome.automation.EventType.BLUR, onBlur, true);
 
     // Make sure all menus are cleared to avoid bogous output when we re-open.
     Panel.clearMenus();
