@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/threading/simple_thread.h"
+#include "build/build_config.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device_base.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -19,6 +20,19 @@
 namespace device {
 
 class SensorReadingSharedBufferReader;
+
+// Use RELATIVE_ORIENTATION_QUATERNION rather than
+// ABSOLUTE_ORIENTATION_QUATERNION because compass readings can be inacurate
+// when used indoors, unless we're on Windows which doesn't support
+// RELATIVE_ORIENTATION_QUATERNION.
+// TODO(crbug.com/730440) If RELATIVE_ORIENTATION_QUATERNION is ever
+// implemented on Windows, use that instead.
+static constexpr mojom::SensorType kOrientationSensorType =
+#if defined(OS_WIN)
+    mojom::SensorType::ABSOLUTE_ORIENTATION_QUATERNION;
+#else
+    mojom::SensorType::RELATIVE_ORIENTATION_QUATERNION;
+#endif
 
 // This class connects the orientation sensor events to the Web VR apis.
 class DEVICE_VR_EXPORT VROrientationDevice : public VRDeviceBase,
