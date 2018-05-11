@@ -157,16 +157,17 @@ void IntersectionGeometry::ApplyRootMargin() {
 void IntersectionGeometry::ClipToRoot() {
   // Map and clip rect into root element coordinates.
   // TODO(szager): the writing mode flipping needs a test.
-  LayoutBox* ancestor = ToLayoutBox(root_);
+  LayoutBox* local_ancestor = nullptr;
+  if (!RootIsImplicit() || root_->GetDocument().IsInMainFrame())
+    local_ancestor = ToLayoutBox(root_);
   does_intersect_ = target_->MapToVisualRectInAncestorSpace(
-      ancestor, intersection_rect_, kEdgeInclusive);
-  if (!does_intersect_)
+      local_ancestor, intersection_rect_, kEdgeInclusive);
+  if (!does_intersect_ || !local_ancestor)
     return;
-  if (ancestor->HasOverflowClip())
-    intersection_rect_.Move(-ancestor->ScrolledContentOffset());
+  if (local_ancestor->HasOverflowClip())
+    intersection_rect_.Move(-local_ancestor->ScrolledContentOffset());
   LayoutRect root_clip_rect(root_rect_);
-  if (ancestor)
-    ancestor->FlipForWritingMode(root_clip_rect);
+  local_ancestor->FlipForWritingMode(root_clip_rect);
   does_intersect_ &= intersection_rect_.InclusiveIntersect(root_clip_rect);
 }
 
