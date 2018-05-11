@@ -227,6 +227,6 @@ public class OfflineContentAggregatorNotificationBridgeUi
     private boolean shouldShowNotification(OfflineItem item) {
         // Temporarily return immediately to prevent unnecessary notifications for offline pages
         // until https://crbug.com/831083 and https://crbug.com/832282 are fixed.
-        return !item.isTransient && !LegacyHelpers.isLegacyOfflinePage(item.id);
+        return !LegacyHelpers.isLegacyOfflinePage(item.id);
     }
 }
