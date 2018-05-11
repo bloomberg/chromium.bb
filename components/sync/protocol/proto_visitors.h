@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_PROTOCOL_PROTO_VISITORS_H_
 #define COMPONENTS_SYNC_PROTOCOL_PROTO_VISITORS_H_
 
+#include "components/sync/base/model_type.h"
 #include "components/sync/protocol/app_list_specifics.pb.h"
 #include "components/sync/protocol/app_notification_specifics.pb.h"
 #include "components/sync/protocol/app_setting_specifics.pb.h"
@@ -362,6 +363,9 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
+  static_assert(40 == MODEL_TYPE_COUNT,
+                "When adding a new protocol type, you will likely need to add "
+                "it here as well.");
   VISIT(encrypted);
   VISIT(app);
   VISIT(app_list);
