@@ -48,22 +48,25 @@ install:
 	  "$(BUILD_DIR)/remoting/com.google.chrome.remote_assistance.json" \
 	  "$(NATIVE_MESSAGING_DIR)/com.google.chrome.remote_assistance.json"
 
-	eu-strip -f "$(ME2ME_DEBUGFILE)" "$(ME2ME_PROGNAME)"
 	install "$(ME2ME_PROGNAME)" \
 	  "$(INSTALL_DIR)/chrome-remote-desktop-host"
+	eu-strip -f "$(ME2ME_DEBUGFILE)" \
+	  "$(INSTALL_DIR)/chrome-remote-desktop-host"
 
-	eu-strip -f "$(START_DEBUGFILE)" "$(START_PROGNAME)"
 	install "$(START_PROGNAME)" "$(INSTALL_DIR)/start-host"
+	eu-strip -f "$(START_DEBUGFILE)" "$(INSTALL_DIR)/start-host"
 
-	eu-strip -f "$(SESSION_WRAPPER_DEBUGFILE)" "$(SESSION_WRAPPER_PROGNAME)"
 	install "$(SESSION_WRAPPER_PROGNAME)" "$(INSTALL_DIR)/user-session"
+	eu-strip -f "$(SESSION_WRAPPER_DEBUGFILE)" \
+	  "$(INSTALL_DIR)/user-session"
 
-	eu-strip -f "$(ME2ME_NM_DEBUGFILE)" "$(ME2ME_NM_PROGNAME)"
 	install "$(ME2ME_NM_PROGNAME)" "$(INSTALL_DIR)/native-messaging-host"
+	eu-strip -f "$(ME2ME_NM_DEBUGFILE)" \
+	  "$(INSTALL_DIR)/native-messaging-host"
 
-	eu-strip -f "$(REMOTE_ASSISTANCE_DEBUGFILE)" \
-	  "$(REMOTE_ASSISTANCE_PROGNAME)"
 	install "$(REMOTE_ASSISTANCE_PROGNAME)" \
+	  "$(INSTALL_DIR)/remote-assistance-host"
+	eu-strip -f "$(REMOTE_ASSISTANCE_DEBUGFILE)" \
 	  "$(INSTALL_DIR)/remote-assistance-host"
 
 	install -m 0644 \
