@@ -61,7 +61,8 @@ void RunAllPendingInMessageLoop();
 // rather than flushing entire threads.
 void RunAllPendingInMessageLoop(BrowserThread::ID thread_id);
 
-// Deprecated: Use TestBrowserThreadBundle::RunUntilIdle().
+// Runs all tasks on the current thread and TaskScheduler threads until idle.
+// Note: Prefer TestBrowserThreadBundle::RunUntilIdle() in unit tests.
 void RunAllTasksUntilIdle();
 
 // Get task to quit the given RunLoop. It allows a few generations of pending
