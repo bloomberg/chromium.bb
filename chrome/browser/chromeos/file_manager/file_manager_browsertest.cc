@@ -360,8 +360,13 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileManagerBrowserTestWithLegacyEventDispatch,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "tabindexFocus")));
 
+#if defined(DISABLE_SLOW_FILESAPP_TESTS)
+#define MAYBE_TabindexFocusDownloads DISABLED_TabindexFocusDownloads
+#else
+#define MAYBE_TabindexFocusDownloads TabindexFocusDownloads
+#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    TabindexFocusDownloads,
+    MAYBE_TabindexFocusDownloads,
     FileManagerBrowserTestWithLegacyEventDispatch,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "tabindexFocusDownloads"),
