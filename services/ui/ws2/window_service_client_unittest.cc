@@ -66,12 +66,11 @@ class WindowServiceTestHelper {
   aura::Window* root() { return aura_test_helper_.root_window(); }
   TestWindowServiceDelegate* delegate() { return &delegate_; }
   TestWindowTreeClient* window_tree_client() { return &window_tree_client_; }
+  WindowServiceClientTestHelper* helper() { return helper_.get(); }
 
   std::vector<Change>* changes() {
     return window_tree_client_.tracker()->changes();
   }
-
-  std::unique_ptr<WindowServiceClientTestHelper> helper_;
 
  private:
   base::test::ScopedTaskEnvironment task_environment_{
@@ -81,6 +80,7 @@ class WindowServiceTestHelper {
   std::unique_ptr<WindowService> service_;
   TestWindowTreeClient window_tree_client_;
   std::unique_ptr<WindowServiceClient> window_service_client_;
+  std::unique_ptr<WindowServiceClientTestHelper> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServiceTestHelper);
 };
@@ -118,20 +118,34 @@ class TestLayoutManager : public aura::LayoutManager {
 TEST(WindowServiceClientTest, CreateTopLevel) {
   WindowServiceTestHelper helper;
   EXPECT_TRUE(helper.changes()->empty());
-  aura::Window* top_level = helper.helper_->NewTopLevelWindow(1);
+  aura::Window* top_level = helper.helper()->NewTopLevelWindow(1);
   ASSERT_TRUE(top_level);
   EXPECT_EQ("TopLevelCreated id=1 window_id=0,1 drawn=false",
             SingleChangeToDescription(*helper.changes()));
   helper.changes()->clear();
 }
 
+TEST(WindowServiceClientTest, CreateTopLevelWithProperties) {
+  WindowServiceTestHelper helper;
+  EXPECT_TRUE(helper.changes()->empty());
+  aura::PropertyConverter::PrimitiveType value = true;
+  std::vector<uint8_t> transport = mojo::ConvertTo<std::vector<uint8_t>>(value);
+  aura::Window* top_level = helper.helper()->NewTopLevelWindow(
+      1, {{ui::mojom::WindowManager::kAlwaysOnTop_Property, transport}});
+  ASSERT_TRUE(top_level);
+  EXPECT_EQ("TopLevelCreated id=1 window_id=0,1 drawn=false",
+            SingleChangeToDescription(*helper.changes()));
+  EXPECT_TRUE(top_level->GetProperty(aura::client::kAlwaysOnTopKey));
+  helper.changes()->clear();
+}
+
 TEST(WindowServiceClientTest, SetBounds) {
   WindowServiceTestHelper helper;
-  aura::Window* top_level = helper.helper_->NewTopLevelWindow(1);
+  aura::Window* top_level = helper.helper()->NewTopLevelWindow(1);
   helper.changes()->clear();
 
   const gfx::Rect bounds_from_client = gfx::Rect(1, 2, 300, 400);
-  helper.helper_->SetWindowBounds(top_level, bounds_from_client, 2);
+  helper.helper()->SetWindowBounds(top_level, bounds_from_client, 2);
   EXPECT_EQ(bounds_from_client, top_level->bounds());
   EXPECT_EQ("ChangeCompleted id=2 sucess=true",
             SingleChangeToDescription(*helper.changes()));
@@ -151,7 +165,7 @@ TEST(WindowServiceClientTest, SetBounds) {
   const gfx::Rect restricted_bounds = gfx::Rect(401, 405, 406, 407);
   layout_manager->set_next_bounds(restricted_bounds);
   top_level->parent()->SetLayoutManager(layout_manager);
-  helper.helper_->SetWindowBounds(top_level, bounds_from_client, 3);
+  helper.helper()->SetWindowBounds(top_level, bounds_from_client, 3);
   ASSERT_EQ(2u, helper.changes()->size());
   // The layout manager changes the bounds to a different value than the client
   // requested, so the client should get OnWindowBoundsChanged() with
@@ -167,13 +181,13 @@ TEST(WindowServiceClientTest, SetBounds) {
 
 TEST(WindowServiceClientTest, SetProperty) {
   WindowServiceTestHelper helper;
-  aura::Window* top_level = helper.helper_->NewTopLevelWindow(1);
+  aura::Window* top_level = helper.helper()->NewTopLevelWindow(1);
   helper.changes()->clear();
 
   EXPECT_FALSE(top_level->GetProperty(aura::client::kAlwaysOnTopKey));
   aura::PropertyConverter::PrimitiveType value = true;
   std::vector<uint8_t> transport = mojo::ConvertTo<std::vector<uint8_t>>(value);
-  helper.helper_->SetWindowProperty(
+  helper.helper()->SetWindowProperty(
       top_level, ui::mojom::WindowManager::kAlwaysOnTop_Property, transport, 2);
   EXPECT_EQ("ChangeCompleted id=2 sucess=true",
             SingleChangeToDescription(*helper.changes()));
@@ -184,14 +198,14 @@ TEST(WindowServiceClientTest, SetProperty) {
 TEST(WindowServiceClientTest, PointerWatcher) {
   WindowServiceTestHelper helper;
   TestWindowTreeClient* window_tree_client = helper.window_tree_client();
-  aura::Window* top_level = helper.helper_->NewTopLevelWindow(1);
+  aura::Window* top_level = helper.helper()->NewTopLevelWindow(1);
   ASSERT_TRUE(top_level);
-  helper.helper_->SetEventTargetingPolicy(top_level,
-                                          mojom::EventTargetingPolicy::NONE);
+  helper.helper()->SetEventTargetingPolicy(top_level,
+                                           mojom::EventTargetingPolicy::NONE);
   EXPECT_EQ(mojom::EventTargetingPolicy::NONE,
             top_level->event_targeting_policy());
   // Start the pointer watcher only for pointer down/up.
-  helper.helper_->window_tree()->StartPointerWatcher(false);
+  helper.helper()->window_tree()->StartPointerWatcher(false);
 
   top_level->Show();
   top_level->SetBounds(gfx::Rect(10, 10, 100, 100));
@@ -222,7 +236,7 @@ TEST(WindowServiceClientTest, PointerWatcher) {
   }
 
   // Enable observing move events.
-  helper.helper_->window_tree()->StartPointerWatcher(true);
+  helper.helper()->window_tree()->StartPointerWatcher(true);
   event_generator.MoveMouseTo(8, 9);
   {
     ASSERT_EQ(1u, window_tree_client->observed_pointer_events().size());

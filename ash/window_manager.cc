@@ -364,7 +364,8 @@ aura::Window* WindowManager::OnWmCreateTopLevelWindow(
     return nullptr;
   }
 
-  return CreateAndParentTopLevelWindow(this, window_type, properties);
+  return CreateAndParentTopLevelWindow(this, window_type,
+                                       property_converter_.get(), properties);
 }
 
 void WindowManager::OnWmClientJankinessChanged(

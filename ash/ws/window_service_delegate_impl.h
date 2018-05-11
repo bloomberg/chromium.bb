@@ -18,6 +18,7 @@ class WindowServiceDelegateImpl : public ui::ws2::WindowServiceDelegate {
 
   // ui::ws2::WindowServiceDelegate:
   std::unique_ptr<aura::Window> NewTopLevel(
+      aura::PropertyConverter* property_converter,
       const base::flat_map<std::string, std::vector<uint8_t>>& properties)
       override;
 

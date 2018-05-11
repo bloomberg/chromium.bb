@@ -24,6 +24,7 @@ class TestWindowServiceDelegate : public WindowServiceDelegate {
 
   // WindowServiceDelegate:
   std::unique_ptr<aura::Window> NewTopLevel(
+      aura::PropertyConverter* property_converter,
       const base::flat_map<std::string, std::vector<uint8_t>>& properties)
       override;
 

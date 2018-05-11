@@ -7,6 +7,7 @@
 #include "ash/ash_layout_constants.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/window_manager.h"
 #include "ash/window_manager_service.h"
 #include "ash/wm/top_level_window_factory.h"
 #include "cc/base/math_util.h"
@@ -105,9 +106,11 @@ class NonClientFrameControllerTest : public AshTestBase {
 
 TEST_F(NonClientFrameControllerTest, ContentRegionNotDrawnForClient) {
   std::map<std::string, std::vector<uint8_t>> properties;
+  auto* window_manager =
+      ash_test_helper()->window_manager_service()->window_manager();
   std::unique_ptr<aura::Window> window(CreateAndParentTopLevelWindow(
-      ash_test_helper()->window_manager_service()->window_manager(),
-      ui::mojom::WindowType::WINDOW, &properties));
+      window_manager, ui::mojom::WindowType::WINDOW,
+      window_manager->property_converter(), &properties));
   ASSERT_TRUE(window);
 
   NonClientFrameController* controller =

@@ -697,7 +697,8 @@ void WindowServiceClient::NewTopLevelWindow(
     return;
   }
   std::unique_ptr<aura::Window> top_level_ptr =
-      window_service_->delegate()->NewTopLevel(properties);
+      window_service_->delegate()->NewTopLevel(
+          window_service_->property_converter(), properties);
   if (!top_level_ptr) {
     DVLOG(1) << "NewTopLevelWindow failed (delegate window creation failed)";
     window_tree_client_->OnChangeCompleted(change_id, false);

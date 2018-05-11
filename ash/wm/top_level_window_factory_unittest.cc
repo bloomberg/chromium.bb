@@ -44,7 +44,8 @@ aura::Window* CreateFullscreenTestWindow(WindowManager* window_manager,
         mojo::ConvertTo<std::vector<uint8_t>>(display_id);
   }
   aura::Window* window = CreateAndParentTopLevelWindow(
-      window_manager, ui::mojom::WindowType::WINDOW, &properties);
+      window_manager, ui::mojom::WindowType::WINDOW,
+      window_manager->property_converter(), &properties);
   window->Show();
   return window;
 }
@@ -84,9 +85,11 @@ using TopLevelWindowFactoryAshTest = AshTestBase;
 
 TEST_F(TopLevelWindowFactoryAshTest, TopLevelNotShownOnCreate) {
   std::map<std::string, std::vector<uint8_t>> properties;
+  auto* window_manager =
+      ash_test_helper()->window_manager_service()->window_manager();
   std::unique_ptr<aura::Window> window(CreateAndParentTopLevelWindow(
-      ash_test_helper()->window_manager_service()->window_manager(),
-      ui::mojom::WindowType::WINDOW, &properties));
+      window_manager, ui::mojom::WindowType::WINDOW,
+      window_manager->property_converter(), &properties));
   ASSERT_TRUE(window);
   EXPECT_FALSE(window->IsVisible());
 }
@@ -106,7 +109,8 @@ TEST_F(TopLevelWindowFactoryAshTest, CreateTopLevelWindow) {
       ash_test_helper()->window_manager_service()->window_manager();
   // |window| is owned by its parent.
   aura::Window* window = CreateAndParentTopLevelWindow(
-      window_manager, ui::mojom::WindowType::WINDOW, &properties);
+      window_manager, ui::mojom::WindowType::WINDOW,
+      window_manager->property_converter(), &properties);
   ASSERT_TRUE(window->parent());
   EXPECT_EQ(kShellWindowId_DefaultContainer, window->parent()->id());
   EXPECT_EQ(bounds, window->bounds());

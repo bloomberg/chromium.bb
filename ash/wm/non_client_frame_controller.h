@@ -21,6 +21,7 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace aura {
+class PropertyConverter;
 class Window;
 class WindowManagerClient;
 }  // namespace aura
@@ -37,8 +38,6 @@ enum class WindowType;
 
 namespace ash {
 
-class WindowManager;
-
 // Provides the non-client frame for mus Windows.
 class ASH_EXPORT NonClientFrameController
     : public views::WidgetDelegateView,
@@ -48,15 +47,17 @@ class ASH_EXPORT NonClientFrameController
   // Creates a new NonClientFrameController and window to render the non-client
   // frame decorations. This deletes itself when |window| is destroyed. |parent|
   // is the parent to place the newly created window in, and may be null. If
-  // |parent| is null |context| is used to determine the parent Window. One of
-  // |parent| or |context| must be non-null.
+  // |parent| is null, |context| is used to determine the parent Window. One of
+  // |parent| or |context| must be non-null. |window_manager_client| may be
+  // null for now.
   NonClientFrameController(
       aura::Window* parent,
       aura::Window* context,
       const gfx::Rect& bounds,
       ui::mojom::WindowType window_type,
+      aura::PropertyConverter* property_converter,
       std::map<std::string, std::vector<uint8_t>>* properties,
-      WindowManager* window_manager);
+      aura::WindowManagerClient* window_manager_client);
 
   // Returns the NonClientFrameController for the specified window, null if
   // one was not created.
