@@ -421,7 +421,7 @@ PreviewsOptOutStoreSQL::PreviewsOptOutStoreSQL(
 
 PreviewsOptOutStoreSQL::~PreviewsOptOutStoreSQL() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  if (db_.get()) {
+  if (db_) {
     background_task_runner_->DeleteSoon(FROM_HERE, db_.release());
   }
 }
@@ -431,7 +431,7 @@ void PreviewsOptOutStoreSQL::AddPreviewNavigation(bool opt_out,
                                                   PreviewsType type,
                                                   base::Time now) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DCHECK(db_.get());
+  DCHECK(db_);
   background_task_runner_->PostTask(
       FROM_HERE, base::Bind(&AddPreviewNavigationSync, opt_out, host_name, type,
                             now, db_.get()));
@@ -440,7 +440,7 @@ void PreviewsOptOutStoreSQL::AddPreviewNavigation(bool opt_out,
 void PreviewsOptOutStoreSQL::ClearBlackList(base::Time begin_time,
                                             base::Time end_time) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DCHECK(db_.get());
+  DCHECK(db_);
   background_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ClearBlackListSync, db_.get(), begin_time, end_time));

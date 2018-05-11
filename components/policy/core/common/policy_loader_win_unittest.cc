@@ -101,7 +101,7 @@ bool InstallValue(const base::Value& value,
     }
 
     case base::Value::Type::DICTIONARY: {
-      const base::DictionaryValue* sub_dict = NULL;
+      const base::DictionaryValue* sub_dict = nullptr;
       if (!value.GetAsDictionary(&sub_dict))
         return false;
       for (base::DictionaryValue::Iterator it(*sub_dict);
@@ -115,7 +115,7 @@ bool InstallValue(const base::Value& value,
     }
 
     case base::Value::Type::LIST: {
-      const base::ListValue* list = NULL;
+      const base::ListValue* list = nullptr;
       if (!value.GetAsList(&list))
         return false;
       for (size_t i = 0; i < list->GetSize(); ++i) {
@@ -258,8 +258,8 @@ void ScopedGroupPolicyRegistrySandbox::ActivateOverrides() {
 }
 
 void ScopedGroupPolicyRegistrySandbox::RemoveOverrides() {
-  ASSERT_HRESULT_SUCCEEDED(RegOverridePredefKey(HKEY_LOCAL_MACHINE, 0));
-  ASSERT_HRESULT_SUCCEEDED(RegOverridePredefKey(HKEY_CURRENT_USER, 0));
+  ASSERT_HRESULT_SUCCEEDED(RegOverridePredefKey(HKEY_LOCAL_MACHINE, nullptr));
+  ASSERT_HRESULT_SUCCEEDED(RegOverridePredefKey(HKEY_CURRENT_USER, nullptr));
 }
 
 void ScopedGroupPolicyRegistrySandbox::DeleteKeys() {
@@ -361,7 +361,7 @@ void RegistryTestHarness::Install3rdPartyPolicy(
       base::string16(kTestPolicyKey) + kPathSep + kThirdParty + kPathSep;
   for (base::DictionaryValue::Iterator domain(*policies);
        !domain.IsAtEnd(); domain.Advance()) {
-    const base::DictionaryValue* components = NULL;
+    const base::DictionaryValue* components = nullptr;
     if (!domain.value().GetAsDictionary(&components)) {
       ADD_FAILURE();
       continue;

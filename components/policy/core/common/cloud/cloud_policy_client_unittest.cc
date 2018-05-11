@@ -257,7 +257,7 @@ class CloudPolicyClientTest : public testing::Test {
   }
 
   void CreateClient() {
-    if (client_.get())
+    if (client_)
       client_->RemoveObserver(&observer_);
 
     request_context_ =

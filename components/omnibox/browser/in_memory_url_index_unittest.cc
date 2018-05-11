@@ -1215,7 +1215,7 @@ TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
   EXPECT_EQ(rebuild_time, new_data.last_time_rebuilt_from_history_);
 
   // Compare the captured and restored for equality.
-  ExpectPrivateDataEqual(*old_data.get(), new_data);
+  ExpectPrivateDataEqual(*old_data, new_data);
 }
 
 TEST_F(InMemoryURLIndexTest, RebuildFromHistoryIfCacheOld) {
@@ -1292,7 +1292,7 @@ TEST_F(InMemoryURLIndexTest, RebuildFromHistoryIfCacheOld) {
   EXPECT_NE(fake_rebuild_time, new_data.last_time_rebuilt_from_history_);
 
   // Compare the captured and restored for equality.
-  ExpectPrivateDataEqual(*old_data.get(), new_data);
+  ExpectPrivateDataEqual(*old_data, new_data);
 }
 
 TEST_F(InMemoryURLIndexTest, CalculateWordStartsOffsets) {

@@ -408,7 +408,7 @@ void JsonPrefStore::OnFileRead(std::unique_ptr<ReadResult> read_result) {
         read_only_ = true;
         break;
       case PREF_READ_ERROR_NONE:
-        DCHECK(read_result->value.get());
+        DCHECK(read_result->value);
         unfiltered_prefs.reset(
             static_cast<base::DictionaryValue*>(read_result->value.release()));
         break;

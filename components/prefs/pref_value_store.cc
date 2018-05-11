@@ -14,7 +14,7 @@ PrefValueStore::PrefStoreKeeper::PrefStoreKeeper()
     : pref_value_store_(nullptr), type_(PrefValueStore::INVALID_STORE) {}
 
 PrefValueStore::PrefStoreKeeper::~PrefStoreKeeper() {
-  if (pref_store_.get()) {
+  if (pref_store_) {
     pref_store_->RemoveObserver(this);
     pref_store_ = nullptr;
   }
@@ -25,14 +25,14 @@ void PrefValueStore::PrefStoreKeeper::Initialize(
     PrefValueStore* store,
     PrefStore* pref_store,
     PrefValueStore::PrefStoreType type) {
-  if (pref_store_.get()) {
+  if (pref_store_) {
     pref_store_->RemoveObserver(this);
     DCHECK(!pref_store_->HasObservers());
   }
   type_ = type;
   pref_value_store_ = store;
   pref_store_ = pref_store;
-  if (pref_store_.get())
+  if (pref_store_)
     pref_store_->AddObserver(this);
 }
 

@@ -32,8 +32,8 @@ bool OSCrypt::EncryptString(const std::string& plaintext,
   input.cbData = static_cast<DWORD>(plaintext.length());
 
   DATA_BLOB output;
-  BOOL result = CryptProtectData(&input, L"", NULL, NULL, NULL,
-                                 0, &output);
+  BOOL result =
+      CryptProtectData(&input, L"", nullptr, nullptr, nullptr, 0, &output);
   if (!result)
     return false;
 
@@ -53,7 +53,7 @@ bool OSCrypt::DecryptString(const std::string& ciphertext,
   input.cbData = static_cast<DWORD>(ciphertext.length());
 
   DATA_BLOB output;
-  BOOL result = CryptUnprotectData(&input, NULL, NULL, NULL, NULL,
+  BOOL result = CryptUnprotectData(&input, nullptr, nullptr, nullptr, nullptr,
                                    0, &output);
   if (!result)
     return false;

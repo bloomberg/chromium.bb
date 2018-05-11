@@ -32,7 +32,7 @@ bool PasswordDataTypeController::PostTaskOnModelThread(
     const base::Location& from_here,
     const base::Closure& task) {
   DCHECK(CalledOnValidThread());
-  if (!password_store_.get())
+  if (!password_store_)
     return false;
   return password_store_->ScheduleTask(task);
 }
@@ -45,7 +45,7 @@ bool PasswordDataTypeController::StartModels() {
 
   OnStateChanged(sync_client_->GetSyncService());
 
-  return !!password_store_.get();
+  return !!password_store_;
 }
 
 void PasswordDataTypeController::StopModels() {

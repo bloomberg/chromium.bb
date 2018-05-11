@@ -25,7 +25,7 @@ PolicyMap& PolicyBundle::Get(const PolicyNamespace& ns) {
 const PolicyMap& PolicyBundle::Get(const PolicyNamespace& ns) const {
   DCHECK(ns.domain != POLICY_DOMAIN_CHROME || ns.component_id.empty());
   const_iterator it = policy_bundle_.find(ns);
-  return it == end() ? kEmpty_ : *it->second.get();
+  return it == end() ? kEmpty_ : *it->second;
 }
 
 void PolicyBundle::Swap(PolicyBundle* other) {

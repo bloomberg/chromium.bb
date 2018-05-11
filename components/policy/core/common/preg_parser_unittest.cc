@@ -62,18 +62,18 @@ testing::AssertionResult RegistryDictEquals(const RegistryDict& a,
         *iter_value_a->second != *iter_value_b->second) {
       return testing::AssertionFailure()
              << "Value mismatch " << iter_value_a->first << "="
-             << *iter_value_a->second.get() << " vs. " << iter_value_b->first
-             << "=" << *iter_value_b->second.get();
+             << *iter_value_a->second << " vs. " << iter_value_b->first << "="
+             << *iter_value_b->second;
     }
   }
   if (iter_value_a != a.values().end())
     return testing::AssertionFailure()
            << "Value mismatch, a has extra value " << iter_value_a->first << "="
-           << *iter_value_a->second.get();
+           << *iter_value_a->second;
   if (iter_value_b != b.values().end())
     return testing::AssertionFailure()
            << "Value mismatch, b has extra value " << iter_value_b->first << "="
-           << *iter_value_b->second.get();
+           << *iter_value_b->second;
 
   return testing::AssertionSuccess();
 }

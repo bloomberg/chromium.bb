@@ -457,7 +457,7 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RebuildFromHistory(
 bool URLIndexPrivateData::WritePrivateDataToCacheFileTask(
     scoped_refptr<URLIndexPrivateData> private_data,
     const base::FilePath& file_path) {
-  DCHECK(private_data.get());
+  DCHECK(private_data);
   DCHECK(!file_path.empty());
   return private_data->SaveToFile(file_path);
 }

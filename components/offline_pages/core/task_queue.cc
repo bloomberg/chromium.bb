@@ -29,7 +29,7 @@ bool TaskQueue::HasPendingTasks() const {
 }
 
 bool TaskQueue::HasRunningTask() const {
-  return current_task_.get() != nullptr;
+  return current_task_ != nullptr;
 }
 
 void TaskQueue::StartTaskIfAvailable() {

@@ -143,7 +143,7 @@ class UserClassifierMetricTest
       public ::testing::WithParamInterface<
           std::pair<UserClassifier::Metric, std::string>> {
  public:
-  UserClassifierMetricTest() : UserClassifierTest() {}
+  UserClassifierMetricTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UserClassifierMetricTest);

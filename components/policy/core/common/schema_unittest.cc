@@ -171,8 +171,7 @@ void TestSchemaValidationHelper(const std::string& source,
   // Test that Schema::Normalize() have actually dropped invalid and unknown
   // properties.
   if (expected_return_value) {
-    EXPECT_TRUE(
-        schema.Validate(*cloned_value.get(), SCHEMA_STRICT, nullptr, &error))
+    EXPECT_TRUE(schema.Validate(*cloned_value, SCHEMA_STRICT, nullptr, &error))
         << source;
     EXPECT_TRUE(schema.Normalize(cloned_value.get(), SCHEMA_STRICT, nullptr,
                                  &error, nullptr))

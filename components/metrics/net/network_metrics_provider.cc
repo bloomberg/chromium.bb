@@ -214,7 +214,7 @@ void NetworkMetricsProvider::ProvideSystemProfileMetrics(
   min_effective_connection_type_ = effective_connection_type_;
   max_effective_connection_type_ = effective_connection_type_;
 
-  if (!wifi_access_point_info_provider_.get()) {
+  if (!wifi_access_point_info_provider_) {
 #if defined(OS_CHROMEOS)
     wifi_access_point_info_provider_.reset(
         new WifiAccessPointInfoProviderChromeos());

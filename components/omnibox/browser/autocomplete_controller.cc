@@ -426,7 +426,7 @@ void AutocompleteController::ResetSession() {
 void AutocompleteController::UpdateMatchDestinationURLWithQueryFormulationTime(
     base::TimeDelta query_formulation_time,
     AutocompleteMatch* match) const {
-  if (!match->search_terms_args.get() ||
+  if (!match->search_terms_args ||
       match->search_terms_args->assisted_query_stats.empty())
     return;
 
@@ -660,7 +660,7 @@ void AutocompleteController::UpdateAssistedQueryStats(
     AutocompleteMatch* match = result->match_at(index);
     const TemplateURL* template_url =
         match->GetTemplateURL(template_url_service_, false);
-    if (!template_url || !match->search_terms_args.get())
+    if (!template_url || !match->search_terms_args)
       continue;
     std::string selected_index;
     // Prevent trivial suggestions from getting credit for being selected.

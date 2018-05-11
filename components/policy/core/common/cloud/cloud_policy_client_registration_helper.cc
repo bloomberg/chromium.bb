@@ -155,7 +155,7 @@ CloudPolicyClientRegistrationHelper::CloudPolicyClientRegistrationHelper(
     : context_(client->GetRequestContext()),
       client_(client),
       registration_type_(registration_type) {
-  DCHECK(context_.get());
+  DCHECK(context_);
   DCHECK(client_);
 }
 

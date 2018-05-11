@@ -156,7 +156,7 @@ bool CanonicalizeAndroidFacetURI(const std::string& input_uri,
   // We cannot use url::CanonicalizeHost as that would convert the package name
   // to lower case, but the package name is case sensitive.
   success &= CanonicalizePackageNameComponent(
-      ComponentString(input_uri.data(), input_parsed.host), &canonical_output);
+      ComponentString(input_uri, input_parsed.host), &canonical_output);
 
   canonical_output.Complete();
 

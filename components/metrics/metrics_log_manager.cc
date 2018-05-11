@@ -24,7 +24,7 @@ void MetricsLogManager::BeginLoggingWithLog(std::unique_ptr<MetricsLog> log) {
 }
 
 void MetricsLogManager::FinishCurrentLog(MetricsLogStore* log_store) {
-  DCHECK(current_log_.get());
+  DCHECK(current_log_);
   current_log_->CloseLog();
   std::string log_data;
   current_log_->GetEncodedLog(&log_data);
@@ -39,12 +39,12 @@ void MetricsLogManager::DiscardCurrentLog() {
 }
 
 void MetricsLogManager::PauseCurrentLog() {
-  DCHECK(!paused_log_.get());
+  DCHECK(!paused_log_);
   paused_log_ = std::move(current_log_);
 }
 
 void MetricsLogManager::ResumePausedLog() {
-  DCHECK(!current_log_.get());
+  DCHECK(!current_log_);
   current_log_ = std::move(paused_log_);
 }
 

@@ -821,7 +821,7 @@ TEST_F(DeviceManagementServiceTest, CancelDuringCallback) {
   SendResponse(fetcher, net::OK, 500, std::string());
 
   // Job should have been reset.
-  EXPECT_FALSE(request_job.get());
+  EXPECT_FALSE(request_job);
 }
 
 TEST_F(DeviceManagementServiceTest, RetryOnProxyError) {

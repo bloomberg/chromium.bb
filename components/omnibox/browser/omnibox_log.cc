@@ -32,7 +32,6 @@ OmniboxLog::OmniboxLog(
       completed_length(completed_length),
       elapsed_time_since_last_change_to_default_match(
           elapsed_time_since_last_change_to_default_match),
-      result(result),
-      providers_info() {}
+      result(result) {}
 
 OmniboxLog::~OmniboxLog() {}

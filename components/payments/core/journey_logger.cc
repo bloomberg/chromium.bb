@@ -19,7 +19,7 @@ namespace {
 std::string GetHistogramNameSuffix(
     int section,
     JourneyLogger::CompletionStatus completion_status) {
-  std::string name_suffix = "";
+  std::string name_suffix;
 
   switch (section) {
     case JourneyLogger::SECTION_SHIPPING_ADDRESS:

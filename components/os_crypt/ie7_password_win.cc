@@ -138,7 +138,7 @@ bool DecryptPasswords(const std::wstring& url,
   url_key.cbData = static_cast<DWORD>((lower_case_url.size() + 1) *
                                       sizeof(std::wstring::value_type));
 
-  if (CryptUnprotectData(&input, NULL, &url_key, NULL, NULL,
+  if (CryptUnprotectData(&input, nullptr, &url_key, nullptr, nullptr,
                          CRYPTPROTECT_UI_FORBIDDEN, &output)) {
     // Now that we have the decrypted information, we need to understand it.
     std::vector<unsigned char> decrypted_data;

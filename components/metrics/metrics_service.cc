@@ -563,7 +563,7 @@ void MetricsService::FinishedInitTask() {
   state_ = INIT_TASK_DONE;
 
   // Create the initial log.
-  if (!initial_metrics_log_.get()) {
+  if (!initial_metrics_log_) {
     initial_metrics_log_ = CreateLog(MetricsLog::ONGOING_LOG);
     delegating_provider_.OnDidCreateMetricsLog();
   }

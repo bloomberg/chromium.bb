@@ -311,9 +311,8 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   // This is the destination URL sans assisted query stats.  This must be set
   // so the AutocompleteController can properly de-dupe; the controller will
   // eventually overwrite it before it reaches the user.
-  match.destination_url =
-      GURL(search_url.ReplaceSearchTerms(*match.search_terms_args.get(),
-                                         search_terms_data));
+  match.destination_url = GURL(search_url.ReplaceSearchTerms(
+      *match.search_terms_args, search_terms_data));
 
   // Search results don't look like URLs.
   match.transition = suggestion.from_keyword_provider() ?

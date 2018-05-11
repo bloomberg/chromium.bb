@@ -251,7 +251,7 @@ SystemSessionAnalyzer::EvtHandle SystemSessionAnalyzer::CreateRenderContext() {
   LPCWSTR value_paths[] = {kEventIdPath, kEventTimePath};
   const DWORD kValueCnt = arraysize(value_paths);
 
-  EVT_HANDLE context = NULL;
+  EVT_HANDLE context = nullptr;
   context =
       ::EvtCreateRenderContext(kValueCnt, value_paths, EvtRenderContextValues);
   if (!context)

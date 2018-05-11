@@ -80,7 +80,7 @@ class URLBlacklistManagerTest : public testing::Test {
   }
 
   void TearDown() override {
-    if (blacklist_manager_.get())
+    if (blacklist_manager_)
       scoped_task_environment_.RunUntilIdle();
     blacklist_manager_.reset();
   }

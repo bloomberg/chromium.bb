@@ -235,7 +235,7 @@ void DownloadUIAdapter::TemporaryHiddenStatusChanged(
           observer.OnItemRemoved(item.second->ui_item->id);
       } else {
         for (auto& observer : observers_) {
-          observer.OnItemsAdded({*item.second->ui_item.get()});
+          observer.OnItemsAdded({*item.second->ui_item});
         }
       }
     }
@@ -273,7 +273,7 @@ void DownloadUIAdapter::GetVisualsForItem(
                visuals) {
           UMA_HISTOGRAM_BOOLEAN(
               "OfflinePages.DownloadUI.PrefetchedItemHasThumbnail",
-              visuals.get() != nullptr);
+              visuals != nullptr);
           std::move(result_callback).Run(std::move(visuals));
         };
     callback = base::BindOnce(report_and_callback, std::move(callback));
@@ -339,7 +339,7 @@ void DownloadUIAdapter::GetItemById(
     OfflineItems::const_iterator it = items_.find(id.id);
     if (it != items_.end() && it->second->ui_item &&
         !delegate_->IsTemporarilyHiddenInUI(it->second->client_id)) {
-      offline_item = *it->second->ui_item.get();
+      offline_item = *it->second->ui_item;
     }
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -502,7 +502,7 @@ void DownloadUIAdapter::OnRequestsLoaded(
       bool temporarily_hidden =
           delegate_->IsTemporarilyHiddenInUI(request->client_id());
       std::unique_ptr<ItemInfo> item =
-          std::make_unique<ItemInfo>(*request.get(), temporarily_hidden);
+          std::make_unique<ItemInfo>(*request, temporarily_hidden);
       items_[guid] = std::move(item);
     }
   }

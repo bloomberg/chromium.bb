@@ -26,7 +26,7 @@ AutocompleteClassifier::AutocompleteClassifier(
 
 AutocompleteClassifier::~AutocompleteClassifier() {
   // We should only reach here after Shutdown() has been called.
-  DCHECK(!controller_.get());
+  DCHECK(!controller_);
 }
 
 void AutocompleteClassifier::Shutdown() {

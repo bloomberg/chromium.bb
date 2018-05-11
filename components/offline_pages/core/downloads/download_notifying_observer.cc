@@ -37,7 +37,7 @@ void DownloadNotifyingObserver::CreateAndStartObserving(
     RequestCoordinator* request_coordinator,
     std::unique_ptr<OfflinePageDownloadNotifier> notifier) {
   DCHECK(request_coordinator);
-  DCHECK(notifier.get());
+  DCHECK(notifier);
   std::unique_ptr<DownloadNotifyingObserver> observer =
       base::WrapUnique(new DownloadNotifyingObserver(
           std::move(notifier), request_coordinator->GetPolicyController()));
@@ -46,7 +46,7 @@ void DownloadNotifyingObserver::CreateAndStartObserving(
 }
 
 void DownloadNotifyingObserver::OnAdded(const SavePageRequest& request) {
-  DCHECK(notifier_.get());
+  DCHECK(notifier_);
   if (!IsVisibleInUI(request.client_id()))
     return;
 
@@ -61,7 +61,7 @@ void DownloadNotifyingObserver::OnAdded(const SavePageRequest& request) {
 }
 
 void DownloadNotifyingObserver::OnChanged(const SavePageRequest& request) {
-  DCHECK(notifier_.get());
+  DCHECK(notifier_);
   if (!IsVisibleInUI(request.client_id()))
     return;
   NotifyRequestStateChange(request);
@@ -77,7 +77,7 @@ void DownloadNotifyingObserver::OnNetworkProgress(
 void DownloadNotifyingObserver::OnCompleted(
     const SavePageRequest& request,
     RequestCoordinator::BackgroundSavePageResult status) {
-  DCHECK(notifier_.get());
+  DCHECK(notifier_);
   if (!IsVisibleInUI(request.client_id()))
     return;
   if (status == RequestCoordinator::BackgroundSavePageResult::SUCCESS) {

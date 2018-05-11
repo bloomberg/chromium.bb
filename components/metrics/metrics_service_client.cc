@@ -8,7 +8,7 @@
 
 namespace metrics {
 
-MetricsServiceClient::MetricsServiceClient() : update_running_services_() {}
+MetricsServiceClient::MetricsServiceClient() {}
 
 MetricsServiceClient::~MetricsServiceClient() {}
 
