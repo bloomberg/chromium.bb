@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/connect_to_device_operation.h"
 
@@ -27,7 +27,11 @@ class FakeConnectToDeviceOperation
           failure_callback);
   ~FakeConnectToDeviceOperation() override;
 
-  bool canceled() { return canceled_; }
+  bool canceled() const { return canceled_; }
+
+  void set_destructor_callback(base::OnceClosure destructor_callback) {
+    destructor_callback_ = std::move(destructor_callback);
+  }
 
   // ConnectToDeviceOperation<std::string>:
   void PerformCancellation() override;
@@ -38,6 +42,7 @@ class FakeConnectToDeviceOperation
 
  private:
   bool canceled_ = false;
+  base::OnceClosure destructor_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeConnectToDeviceOperation);
 };
