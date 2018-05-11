@@ -80,7 +80,6 @@ bool FlingController::ShouldForwardForTapSuppression(
       }
       return true;
     case WebInputEvent::kGestureTapDown:
-    case WebInputEvent::kGestureShowPress:
     case WebInputEvent::kGestureTapUnconfirmed:
     case WebInputEvent::kGestureTapCancel:
     case WebInputEvent::kGestureTap:
