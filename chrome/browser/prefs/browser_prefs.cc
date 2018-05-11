@@ -143,6 +143,7 @@
 #include "extensions/browser/extension_prefs.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
+#include "chrome/browser/component_updater/metadata_table_chromeos.h"
 #endif
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -434,6 +435,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::UserImageManager::RegisterPrefs(registry);
   chromeos::UserSessionManager::RegisterPrefs(registry);
   chromeos::echo_offer::RegisterPrefs(registry);
+  component_updater::MetadataTable::RegisterPrefs(registry);
   cryptauth::CryptAuthDeviceIdProviderImpl::RegisterLocalPrefs(registry);
   extensions::ExtensionAssetsManagerChromeOS::RegisterPrefs(registry);
   extensions::lock_screen_data::LockScreenItemStorage::RegisterLocalState(

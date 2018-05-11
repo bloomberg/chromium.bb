@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -12,7 +15,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_remover.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/component_updater/cros_component_installer.h"
+#include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chromeos/dbus/concierge_client.h"

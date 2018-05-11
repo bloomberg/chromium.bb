@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "chrome/browser/component_updater/cros_component_installer.h"
+#include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {

@@ -2859,8 +2859,10 @@ jumbo_split_static_library("browser") {
     sources += [
       "ash_service_registry.cc",
       "ash_service_registry.h",
-      "component_updater/cros_component_installer.cc",
-      "component_updater/cros_component_installer.h",
+      "component_updater/cros_component_installer_chromeos.cc",
+      "component_updater/cros_component_installer_chromeos.h",
+      "component_updater/metadata_table_chromeos.cc",
+      "component_updater/metadata_table_chromeos.h",
       "download/notification/download_item_notification.cc",
       "download/notification/download_item_notification.h",
       "download/notification/download_notification_manager.cc",
