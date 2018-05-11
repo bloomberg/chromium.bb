@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping_builder.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 
@@ -17,13 +18,6 @@ namespace {
   EXPECT_EQ(type, (item).Type());                  \
   EXPECT_EQ(start, (item).StartOffset());          \
   EXPECT_EQ(end, (item).EndOffset());
-
-static scoped_refptr<ComputedStyle> CreateWhitespaceStyle(
-    EWhiteSpace whitespace) {
-  scoped_refptr<ComputedStyle> style(ComputedStyle::Create());
-  style->SetWhiteSpace(whitespace);
-  return style;
-}
 
 static String GetCollapsed(const NGOffsetMappingBuilder& builder) {
   Vector<unsigned> mapping = builder.DumpOffsetMappingForTesting();
@@ -47,40 +41,60 @@ static String GetCollapsed(const NGOffsetMappingBuilder& builder) {
   return result.ToString();
 }
 
-class NGInlineItemsBuilderTest : public testing::Test {
+class NGInlineItemsBuilderTest : public PageTestBase {
  protected:
-  void SetUp() override { style_ = ComputedStyle::Create(); }
+  void SetUp() override {
+    PageTestBase::SetUp();
+    style_ = ComputedStyle::Create();
+  }
 
   void SetWhiteSpace(EWhiteSpace whitespace) {
     style_->SetWhiteSpace(whitespace);
   }
 
-  const String& TestAppend(const String inputs[], int size) {
+  scoped_refptr<ComputedStyle> GetStyle(EWhiteSpace whitespace) {
+    if (whitespace == EWhiteSpace::kNormal)
+      return style_;
+    scoped_refptr<ComputedStyle> style(ComputedStyle::Create());
+    style->SetWhiteSpace(whitespace);
+    return style;
+  }
+
+  struct Input {
+    const String text;
+    EWhiteSpace whitespace = EWhiteSpace::kNormal;
+    LayoutText* layout_text = nullptr;
+  };
+
+  const String& TestAppend(Vector<Input> inputs) {
     items_.clear();
     NGInlineItemsBuilderForOffsetMapping builder(&items_);
-    for (int i = 0; i < size; i++)
-      builder.Append(inputs[i], style_.get());
+    for (Input& input : inputs) {
+      if (!input.layout_text)
+        input.layout_text = LayoutText::CreateEmptyAnonymous(GetDocument());
+      builder.Append(input.text, GetStyle(input.whitespace).get(),
+                     input.layout_text);
+    }
     text_ = builder.ToString();
     collapsed_ = GetCollapsed(builder.GetOffsetMappingBuilder());
     ValidateItems();
+    CheckReuseItemsProducesSameResult(inputs);
     return text_;
   }
 
   const String& TestAppend(const String& input) {
-    String inputs[] = {input};
-    return TestAppend(inputs, 1);
+    return TestAppend({Input{input}});
   }
-
+  const String& TestAppend(const Input& input1, const Input& input2) {
+    return TestAppend({input1, input2});
+  }
   const String& TestAppend(const String& input1, const String& input2) {
-    String inputs[] = {input1, input2};
-    return TestAppend(inputs, 2);
+    return TestAppend(Input{input1}, Input{input2});
   }
-
   const String& TestAppend(const String& input1,
                            const String& input2,
                            const String& input3) {
-    String inputs[] = {input1, input2, input3};
-    return TestAppend(inputs, 3);
+    return TestAppend({{input1}, {input2}, {input3}});
   }
 
   void ValidateItems() {
@@ -92,6 +106,35 @@ class NGInlineItemsBuilderTest : public testing::Test {
       current_offset = item.EndOffset();
     }
     EXPECT_EQ(current_offset, text_.length());
+  }
+
+  void CheckReuseItemsProducesSameResult(Vector<Input> inputs) {
+    Vector<NGInlineItem> reuse_items;
+    NGInlineItemsBuilder reuse_builder(&reuse_items);
+    for (Input& input : inputs) {
+      // Collect items for this LayoutObject.
+      DCHECK(input.layout_text);
+      Vector<NGInlineItem*> previous_items;
+      for (auto& item : items_) {
+        if (item.GetLayoutObject() == input.layout_text)
+          previous_items.push_back(&item);
+      }
+
+      // Try to re-use previous items, or Append if it was not re-usable.
+      bool reused = !previous_items.IsEmpty() &&
+                    reuse_builder.Append(text_, nullptr, previous_items);
+      if (!reused)
+        reuse_builder.Append(input.text, style_.get());
+    }
+
+    // Currently, NGInlineItemsBuilder does not strip trailing spaces while
+    // NGInlineItemsBuilderForOffsetMapping does. See
+    // NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::ToString().
+    String reuse_text = reuse_builder.ToString();
+    if (!reuse_text.IsEmpty() && reuse_text != text_ &&
+        reuse_text[reuse_text.length() - 1] == kSpaceCharacter)
+      reuse_text = reuse_text.Substring(0, reuse_text.length() - 1);
+    EXPECT_EQ(text_, reuse_text);
   }
 
   Vector<NGInlineItem> items_;
@@ -254,15 +297,11 @@ TEST_F(NGInlineItemsBuilderTest, CollapseBeforeAndAfterNewline) {
 
 TEST_F(NGInlineItemsBuilderTest,
        CollapsibleSpaceAfterNonCollapsibleSpaceAcrossElements) {
-  NGInlineItemsBuilderForOffsetMapping builder(&items_);
-  scoped_refptr<ComputedStyle> pre_wrap(
-      CreateWhitespaceStyle(EWhiteSpace::kPreWrap));
-  builder.Append("text ", pre_wrap.get());
-  builder.Append(" text", style_.get());
-  EXPECT_EQ("text  text", builder.ToString())
+  EXPECT_EQ("text  text",
+            TestAppend({"text ", EWhiteSpace::kPreWrap}, {" text"}))
       << "The whitespace in constructions like '<span style=\"white-space: "
          "pre-wrap\">text <span><span> text</span>' does not collapse.";
-  EXPECT_EQ("{}", GetCollapsed(builder.GetOffsetMappingBuilder()));
+  EXPECT_EQ("{}", collapsed_);
 }
 
 TEST_F(NGInlineItemsBuilderTest, CollapseZeroWidthSpaces) {
@@ -419,16 +458,11 @@ INSTANTIATE_TEST_CASE_P(NGInlineItemsBuilderTest,
 
 TEST_P(CollapsibleSpaceTest, CollapsedSpaceAfterNoWrap) {
   UChar space = GetParam();
-  Vector<NGInlineItem> items;
-  NGInlineItemsBuilderForOffsetMapping builder(&items);
-  scoped_refptr<ComputedStyle> nowrap_style(ComputedStyle::Create());
-  nowrap_style->SetWhiteSpace(EWhiteSpace::kNowrap);
-  builder.Append(String("nowrap") + space, nowrap_style.get());
-  builder.Append(" wrap", style_.get());
-  EXPECT_EQ(String("nowrap "
-                   u"\u200B"
-                   "wrap"),
-            builder.ToString());
+  EXPECT_EQ(
+      String("nowrap "
+             u"\u200B"
+             "wrap"),
+      TestAppend({String("nowrap") + space, EWhiteSpace::kNowrap}, {" wrap"}));
 }
 
 TEST_F(NGInlineItemsBuilderTest, BidiBlockOverride) {
