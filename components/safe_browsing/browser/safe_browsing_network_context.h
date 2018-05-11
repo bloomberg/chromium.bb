@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_SAFE_BROWSING_BROWSER_SAFE_BROWSING_NETWORK_CONTEXT_H_
 #define COMPONENTS_SAFE_BROWSING_BROWSER_SAFE_BROWSING_NETWORK_CONTEXT_H_
 
+#include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -29,8 +32,15 @@ namespace safe_browsing {
 // create the NetworkContext directly.  http://crbug.com/825242
 class SafeBrowsingNetworkContext {
  public:
-  explicit SafeBrowsingNetworkContext(
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter);
+  // |request_context_getter| is used only if network service is disabled.
+  // Otherwise |user_dtaa_dir| and |network_context_params_factory| are used
+  // to construct a URLRequestContext through the network service.
+  using NetworkContextParamsFactory =
+      base::RepeatingCallback<network::mojom::NetworkContextParamsPtr()>;
+  SafeBrowsingNetworkContext(
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      const base::FilePath& user_data_dir,
+      NetworkContextParamsFactory network_context_params_factory);
   ~SafeBrowsingNetworkContext();
 
   // Returns a SharedURLLoaderFactory.

@@ -7,6 +7,7 @@ include_rules = [
   "+google_apis",
   "+mojo/public/cpp",
   "+net/base",
+  "+net/net_buildflags.h",
   "+net/http",
   "+net/log",
   "+net/traffic_annotation",

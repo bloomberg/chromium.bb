@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/default_network_context_params.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
@@ -27,24 +26,19 @@
 #include "net/net_buildflags.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
 
 // Called on IOThread to disable QUIC for HttpNetworkSessions not using the
 // network service. Note that re-enabling QUIC dynamically is not supported for
 // simpliciy and requires a browser restart.
-void DisableQuicOnIOThread(
-    IOThread* io_thread,
-    safe_browsing::SafeBrowsingService* safe_browsing_service) {
+void DisableQuicOnIOThread(IOThread* io_thread) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     content::GetNetworkServiceImpl()->DisableQuic();
   io_thread->DisableQuic();
-
-  // Safebrowsing isn't yet using the IOThread's NetworkService, so must be
-  // handled separately.
-  safe_browsing_service->DisableQuicOnIOThread();
 }
 
 }  // namespace
@@ -176,21 +170,16 @@ void SystemNetworkContextManager::DisableQuic() {
   // Profiles will also have QUIC disabled (because both IOThread's
   // NetworkService and the network service, if enabled will disable QUIC).
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    content::GetNetworkService()->DisableQuic();
+  content::GetNetworkService()->DisableQuic();
 
   IOThread* io_thread = g_browser_process->io_thread();
   // Nothing more to do if IOThread has already been shut down.
   if (!io_thread)
     return;
 
-  safe_browsing::SafeBrowsingService* safe_browsing_service =
-      g_browser_process->safe_browsing_service();
-
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&DisableQuicOnIOThread, io_thread,
-                     base::Unretained(safe_browsing_service)));
+      base::BindOnce(&DisableQuicOnIOThread, io_thread));
 }
 
 void SystemNetworkContextManager::FlushProxyConfigMonitorForTesting() {

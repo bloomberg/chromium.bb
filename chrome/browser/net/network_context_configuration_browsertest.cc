@@ -1102,7 +1102,9 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
   INSTANTIATE_TEST_CASE_P(                                                 \
       SafeBrowsingNetworkContext, TestFixture,                             \
       ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
-                                  NetworkContextType::kSafeBrowsing})));   \
+                                  NetworkContextType::kSafeBrowsing}),     \
+                        TestCase({NetworkServiceState::kEnabled,           \
+                                  NetworkContextType::kSystem})));         \
                                                                            \
   INSTANTIATE_TEST_CASE_P(                                                 \
       ProfileMainNetworkContext, TestFixture,                              \
@@ -1138,7 +1140,11 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
   INSTANTIATE_TEST_CASE_P(                                                 \
       SafeBrowsingNetworkContext, TestFixture,                             \
       ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
-                                  NetworkContextType::kSafeBrowsing})));   \
+                                  NetworkContextType::kSafeBrowsing}),     \
+                        TestCase({NetworkServiceState::kEnabled,           \
+                                  NetworkContextType::kSystem}),           \
+                        TestCase({NetworkServiceState::kRestarted,         \
+                                  NetworkContextType::kSystem})));         \
                                                                            \
   INSTANTIATE_TEST_CASE_P(                                                 \
       ProfileMainNetworkContext, TestFixture,                              \
