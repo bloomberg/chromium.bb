@@ -45,16 +45,6 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
       const InitiateSurfaceRequestCB& initiate_surface_request_cb,
       mojo::InterfaceRequest<mojom::Renderer> request);
 
-  // Helper function to bind MojoRendererService with a StrongBinding,
-  // which is safely accessible via the returned StrongBindingPtr.
-  // NOTE: Some media::Renderers don't support encrypted content. This function
-  // serves the same purpose as the one above, but without forcing classes to
-  // define the forward declared MojoCdmServiceContext.
-  static mojo::StrongBindingPtr<mojom::Renderer> Create(
-      std::unique_ptr<media::Renderer> renderer,
-      const InitiateSurfaceRequestCB& initiate_surface_request_cb,
-      mojo::InterfaceRequest<mojom::Renderer> request);
-
   // |mojo_cdm_service_context| can be used to find the CDM to support
   // encrypted media. If null, encrypted media is not supported.
   MojoRendererService(MojoCdmServiceContext* mojo_cdm_service_context,

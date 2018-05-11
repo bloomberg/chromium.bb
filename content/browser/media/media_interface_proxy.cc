@@ -168,7 +168,7 @@ void MediaInterfaceProxy::CreateRenderer(
         FlingingRenderer::Create(render_frame_host_, type_specific_id);
 
     media::MojoRendererService::Create(
-        std::move(renderer),
+        nullptr, std::move(renderer),
         media::MojoRendererService::InitiateSurfaceRequestCB(),
         std::move(request));
     return;
@@ -406,8 +406,8 @@ void MediaInterfaceProxy::CreateMediaPlayerRenderer(
       base::BindRepeating(&MediaPlayerRenderer::InitiateScopedSurfaceRequest,
                           base::Unretained(renderer.get()));
 
-  media::MojoRendererService::Create(std::move(renderer), surface_request_cb,
-                                     std::move(request));
+  media::MojoRendererService::Create(nullptr, std::move(renderer),
+                                     surface_request_cb, std::move(request));
 }
 #endif  // defined(OS_ANDROID)
 
