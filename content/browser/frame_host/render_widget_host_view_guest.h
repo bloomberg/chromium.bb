@@ -156,9 +156,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
                         const gfx::Size& max_size) override;
   void DisableAutoResize(const gfx::Size& new_size) override;
 
-  viz::ScopedSurfaceIdAllocator ResizeDueToAutoResize(
-      const gfx::Size& new_size,
-      const viz::LocalSurfaceId& local_surface_id) override;
+  viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
+      const cc::RenderFrameMetadata& metadata) override;
 
  private:
   friend class RenderWidgetHostView;

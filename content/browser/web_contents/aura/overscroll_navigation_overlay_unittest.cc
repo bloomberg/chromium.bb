@@ -248,8 +248,10 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
     // correctly in RenderWidgetHostImpl.
     viz::LocalSurfaceId local_surface_id(10, 10,
                                          base::UnguessableToken::Create());
-    test_rvh()->GetWidget()->DidUpdateVisualProperties(gfx::Size(10, 10),
-                                                       local_surface_id);
+    cc::RenderFrameMetadata metadata;
+    metadata.viewport_size_in_pixels = gfx::Size(10, 10);
+    metadata.local_surface_id = local_surface_id;
+    test_rvh()->GetWidget()->DidUpdateVisualProperties(metadata);
 
     // Reset pending flags for size/paint.
     test_rvh()->GetWidget()->ResetSizeAndRepaintPendingFlags();

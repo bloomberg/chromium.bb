@@ -425,7 +425,8 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnSetFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateOrigin, OnDidUpdateOrigin)
     IPC_MESSAGE_HANDLER(InputMsg_SetFocus, OnSetPageFocus)
-    IPC_MESSAGE_HANDLER(FrameMsg_ResizeDueToAutoResize, OnResizeDueToAutoResize)
+    IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateVisualProperties,
+                        OnDidUpdateVisualProperties)
     IPC_MESSAGE_HANDLER(FrameMsg_EnableAutoResize, OnEnableAutoResize)
     IPC_MESSAGE_HANDLER(FrameMsg_DisableAutoResize, OnDisableAutoResize)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFocusedFrame, OnSetFocusedFrame)
@@ -572,8 +573,8 @@ void RenderFrameProxy::OnScrollRectToVisible(
   web_frame_->ScrollRectToVisible(rect_to_scroll, params);
 }
 
-void RenderFrameProxy::OnResizeDueToAutoResize(
-    const viz::LocalSurfaceId& child_allocated_surface_id) {
+void RenderFrameProxy::OnDidUpdateVisualProperties(
+    const cc::RenderFrameMetadata& metadata) {
   // In the auto-resize case, the child has allocated the provided
   // LocalSurfaceId and is already aware of the update. Because of this, the
   // parent (this class) only needs to update its internal ID, and doesn't need
@@ -582,8 +583,10 @@ void RenderFrameProxy::OnResizeDueToAutoResize(
   // CrossProcessFrameConnector cached ID is only ever used to send updates to
   // the child (which is already aware of this change), so this doesn't cause
   // issues.
-  parent_local_surface_id_allocator_.UpdateFromChild(
-      child_allocated_surface_id);
+  if (metadata.local_surface_id) {
+    parent_local_surface_id_allocator_.UpdateFromChild(
+        *metadata.local_surface_id);
+  }
 }
 
 void RenderFrameProxy::OnEnableAutoResize(const gfx::Size& min_size,

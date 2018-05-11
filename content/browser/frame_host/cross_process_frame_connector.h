@@ -113,8 +113,8 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   void EmbedRendererWindowTreeClientInParent(
       ui::mojom::WindowTreeClientPtr window_tree_client) override;
 #endif
-  void ResizeDueToAutoResize(
-      const viz::LocalSurfaceId& child_allocated_surface_id) override;
+  void DidUpdateVisualProperties(
+      const cc::RenderFrameMetadata& metadata) override;
 
   // Set the visibility of immediate child views, i.e. views whose parent view
   // is |view_|.

@@ -602,13 +602,13 @@ void RenderWidgetHostViewMac::DisplayTooltipText(
   ns_view_bridge_->SetTooltipText(tooltip_text);
 }
 
-viz::ScopedSurfaceIdAllocator RenderWidgetHostViewMac::ResizeDueToAutoResize(
-    const gfx::Size& new_size,
-    const viz::LocalSurfaceId& child_local_surface_id) {
+viz::ScopedSurfaceIdAllocator
+RenderWidgetHostViewMac::DidUpdateVisualProperties(
+    const cc::RenderFrameMetadata& metadata) {
   base::OnceCallback<void()> allocation_task = base::BindOnce(
       base::IgnoreResult(
-          &RenderWidgetHostViewMac::OnResizeDueToAutoResizeComplete),
-      weak_factory_.GetWeakPtr(), new_size, child_local_surface_id);
+          &RenderWidgetHostViewMac::OnDidUpdateVisualPropertiesComplete),
+      weak_factory_.GetWeakPtr(), metadata);
   return browser_compositor_->GetScopedRendererSurfaceIdAllocator(
       std::move(allocation_task));
 }
@@ -725,12 +725,13 @@ void RenderWidgetHostViewMac::UpdateNeedsBeginFramesInternal() {
   browser_compositor_->SetNeedsBeginFrames(needs_begin_frames_);
 }
 
-void RenderWidgetHostViewMac::OnResizeDueToAutoResizeComplete(
-    const gfx::Size& new_size,
-    const viz::LocalSurfaceId& child_allocated_local_surface_id) {
-  browser_compositor_->UpdateRendererLocalSurfaceIdFromChild(
-      child_allocated_local_surface_id);
-  browser_compositor_->UpdateForAutoResize(new_size);
+void RenderWidgetHostViewMac::OnDidUpdateVisualPropertiesComplete(
+    const cc::RenderFrameMetadata& metadata) {
+  if (metadata.local_surface_id) {
+    browser_compositor_->UpdateRendererLocalSurfaceIdFromChild(
+        *metadata.local_surface_id);
+    browser_compositor_->UpdateForAutoResize(metadata.viewport_size_in_pixels);
+  }
 }
 
 void RenderWidgetHostViewMac::SetWantsAnimateOnlyBeginFrames() {

@@ -358,9 +358,9 @@ bool RenderWidgetHostViewBase::IsScrollOffsetAtTop() const {
   return is_scroll_offset_at_top_;
 }
 
-viz::ScopedSurfaceIdAllocator RenderWidgetHostViewBase::ResizeDueToAutoResize(
-    const gfx::Size& new_size,
-    const viz::LocalSurfaceId& local_surface_id) {
+viz::ScopedSurfaceIdAllocator
+RenderWidgetHostViewBase::DidUpdateVisualProperties(
+    const cc::RenderFrameMetadata& metadata) {
   // This doesn't suppress allocation. Derived classes that need suppression
   // should override this function.
   return viz::ScopedSurfaceIdAllocator(base::DoNothing());

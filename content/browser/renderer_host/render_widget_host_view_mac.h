@@ -157,9 +157,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   bool ShouldContinueToPauseForFrame() override;
   gfx::Vector2d GetOffsetFromRootSurface() override;
   gfx::Rect GetBoundsInRootWindow() override;
-  viz::ScopedSurfaceIdAllocator ResizeDueToAutoResize(
-      const gfx::Size& new_size,
-      const viz::LocalSurfaceId& child_local_surface_id) override;
+  viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
+      const cc::RenderFrameMetadata& metadata) override;
   void DidNavigate() override;
 
   bool LockMouse() override;
@@ -450,9 +449,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       blink::WebMouseWheelEvent wheel_event,
       bool should_route_event);
 
-  void OnResizeDueToAutoResizeComplete(
-      const gfx::Size& new_size,
-      const viz::LocalSurfaceId& child_allocated_local_surface_id);
+  void OnDidUpdateVisualPropertiesComplete(
+      const cc::RenderFrameMetadata& metadata);
 
   void OnGotStringForDictionaryOverlay(
       int32_t targetWidgetProcessId,

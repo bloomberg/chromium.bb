@@ -832,9 +832,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                                    std::vector<IPC::Message> messages);
 
   // Called when visual properties have changed in the renderer.
-  void DidUpdateVisualProperties(const gfx::Size& viewport_size_in_dip,
-                                 const base::Optional<viz::LocalSurfaceId>&
-                                     child_allocated_local_surface_id);
+  void DidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
 
   // Give key press listeners a chance to handle this key press. This allow
   // widgets that don't have focus to still handle key presses.

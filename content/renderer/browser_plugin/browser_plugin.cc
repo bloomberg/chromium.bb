@@ -126,8 +126,8 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestReady, OnGuestReady)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_EnableAutoResize, OnEnableAutoResize)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_DisableAutoResize, OnDisableAutoResize)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_ResizeDueToAutoResize,
-                        OnResizeDueToAutoResize)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_DidUpdateVisualProperties,
+                        OnDidUpdateVisualProperties)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetMouseLock, OnSetMouseLock)
 #if defined(USE_AURA)
@@ -355,9 +355,9 @@ void BrowserPlugin::OnGuestReady(int browser_plugin_instance_id,
   SynchronizeVisualProperties();
 }
 
-void BrowserPlugin::OnResizeDueToAutoResize(
+void BrowserPlugin::OnDidUpdateVisualProperties(
     int browser_plugin_instance_id,
-    const viz::LocalSurfaceId& child_allocated_local_surface_id) {
+    const cc::RenderFrameMetadata& metadata) {
   // In the auto-resize case, the child has allocated the provided
   // LocalSurfaceId and is already aware of the update. Because of this, the
   // parent (this class) only needs to update its internal ID, and doesn't need
@@ -366,8 +366,10 @@ void BrowserPlugin::OnResizeDueToAutoResize(
   // BrowserPluginGuest cached ID is only ever used to send updates to the
   // child (which is already aware of this change), so this doesn't cause
   // issues.
-  parent_local_surface_id_allocator_.UpdateFromChild(
-      child_allocated_local_surface_id);
+  if (metadata.local_surface_id) {
+    parent_local_surface_id_allocator_.UpdateFromChild(
+        *metadata.local_surface_id);
+  }
 }
 
 void BrowserPlugin::OnEnableAutoResize(int browser_plugin_instance_id,

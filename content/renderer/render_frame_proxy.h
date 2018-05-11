@@ -250,8 +250,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnSetHasReceivedUserGesture();
   void OnScrollRectToVisible(const gfx::Rect& rect_to_scroll,
                              const blink::WebScrollIntoViewParams& params);
-  void OnResizeDueToAutoResize(
-      const viz::LocalSurfaceId& child_allocated_surface_id);
+  void OnDidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
   void OnEnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
   void OnDisableAutoResize();
   void OnSetHasReceivedUserGestureBeforeNavigation(bool value);

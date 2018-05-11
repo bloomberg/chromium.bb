@@ -2157,17 +2157,17 @@ void RenderWidgetHostImpl::DidDeleteSharedBitmap(
 }
 
 void RenderWidgetHostImpl::DidUpdateVisualProperties(
-    const gfx::Size& viewport_size_in_dip,
-    const base::Optional<viz::LocalSurfaceId>&
-        child_allocated_local_surface_id) {
+    const cc::RenderFrameMetadata& metadata) {
   TRACE_EVENT0("renderer_host",
                "RenderWidgetHostImpl::DidUpdateVisualProperties");
 
   // Update our knowledge of the RenderWidget's size.
-  DCHECK(!viewport_size_in_dip.IsEmpty());
+  DCHECK(!metadata.viewport_size_in_pixels.IsEmpty());
+
   // TODO(fsamuel): The fact that we translate the viewport_size from pixels
   // to DIP is concerning. This could result in invariants violations.
-  current_size_ = viewport_size_in_dip;
+  current_size_ = gfx::ScaleToCeiledSize(metadata.viewport_size_in_pixels,
+                                         1.f / metadata.device_scale_factor);
 
   visual_properties_ack_pending_ = false;
 
@@ -2182,11 +2182,13 @@ void RenderWidgetHostImpl::DidUpdateVisualProperties(
 
   if (auto_resize_enabled_ && view_) {
     viz::ScopedSurfaceIdAllocator scoped_allocator =
-        view_->ResizeDueToAutoResize(viewport_size_in_dip,
-                                     *child_allocated_local_surface_id);
+        view_->DidUpdateVisualProperties(metadata);
 
-    if (delegate_)
+    if (delegate_) {
+      gfx::Size viewport_size_in_dip = gfx::ScaleToCeiledSize(
+          metadata.viewport_size_in_pixels, 1.f / metadata.device_scale_factor);
       delegate_->ResizeDueToAutoResize(this, viewport_size_in_dip);
+    }
   }
 }
 
@@ -3112,9 +3114,7 @@ void RenderWidgetHostImpl::OnRenderFrameMetadataChanged() {
 
 void RenderWidgetHostImpl::OnLocalSurfaceIdChanged(
     const cc::RenderFrameMetadata& metadata) {
-  gfx::Size viewport_size_in_dip = gfx::ScaleToCeiledSize(
-      metadata.viewport_size_in_pixels, 1.f / metadata.device_scale_factor);
-  DidUpdateVisualProperties(viewport_size_in_dip, metadata.local_surface_id);
+  DidUpdateVisualProperties(metadata);
 }
 
 }  // namespace content

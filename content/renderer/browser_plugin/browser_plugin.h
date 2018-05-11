@@ -34,6 +34,10 @@ namespace base {
 class UnguessableToken;
 }
 
+namespace cc {
+class RenderFrameMetadata;
+}
+
 namespace viz {
 class SurfaceInfo;
 }
@@ -190,9 +194,8 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
       const base::Optional<viz::LocalSurfaceId>& child_local_surface_id);
   void OnGuestGone(int instance_id);
   void OnGuestReady(int instance_id, const viz::FrameSinkId& frame_sink_id);
-  void OnResizeDueToAutoResize(
-      int browser_plugin_instance_id,
-      const viz::LocalSurfaceId& child_allocated_surface_id);
+  void OnDidUpdateVisualProperties(int browser_plugin_instance_id,
+                                   const cc::RenderFrameMetadata& metadata);
   void OnEnableAutoResize(int browser_plugin_instance_id,
                           const gfx::Size& min_size,
                           const gfx::Size& max_size);
