@@ -22,14 +22,7 @@ The automated tests run chromium with a testing package of the Camera app. The C
 
 Shortcuts
 ---------
-* Left, Right - choose effects.
-* Space, Enter - take a picture.
-* Delete - deletes pictures (in the gallery).
-* Double click - saves pictures (in the gallery).
-
-Tricks
-------
-* Clicking on some effects on the ribbon, randomizes its parameters.
+* Space - take a picture.
 
 Known issues
 ------------
