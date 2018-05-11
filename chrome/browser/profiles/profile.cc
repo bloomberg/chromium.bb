@@ -222,6 +222,10 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   registry->RegisterDictionaryPref(prefs::kWebShareVisitedTargets);
   registry->RegisterDictionaryPref(prefs::kExcludedSchemes);
+
+  // Instead of registering new prefs here, please create a static method and
+  // invoke it from RegisterProfilePrefs() in
+  // chrome/browser/prefs/browser_prefs.cc.
 }
 
 std::string Profile::GetDebugName() {

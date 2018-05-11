@@ -9,7 +9,6 @@
 #include <set>
 
 #include "base/feature_list.h"
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
@@ -21,6 +20,12 @@ class Clock;
 class DictionaryValue;
 }  //  namespace base
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
+
+// The Finch feature that controls whether a message is shown when users
+// encounter the same error multiiple times.
 extern const base::Feature kRecurrentInterstitialFeature;
 
 // Tracks state related to certificate and SSL errors. This state includes:
@@ -32,6 +37,8 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
  public:
   explicit ChromeSSLHostStateDelegate(Profile* profile);
   ~ChromeSSLHostStateDelegate() override;
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // SSLHostStateDelegate:
   void AllowCert(const std::string& host,
@@ -73,21 +80,17 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
   void DidDisplayErrorPage(int error);
 
   // Returns true if DidDisplayErrorPage() has been called over a threshold
-  // number of times for a particular error. Always returns false if
-  // |kRecurrentInterstitialFeature| is not enabled. Only certain error codes of
-  // interest are tracked, so this may return false for an error code that has
-  // recurred.
+  // number of times for a particular error in a particular time period. Always
+  // returns false if |kRecurrentInterstitialFeature| is not enabled. The number
+  // of times and time period are controlled by the feature parameters. Only
+  // certain error codes of interest are tracked, so this may return false for
+  // an error code that has recurred.
   bool HasSeenRecurrentErrors(int error) const;
 
- protected:
-  // SetClock takes ownership of the passed in clock.
-  void SetClock(std::unique_ptr<base::Clock> clock);
+  // SetClockForTesting takes ownership of the passed in clock.
+  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(DefaultMemorySSLHostStateDelegateTest, AfterRestart);
-  FRIEND_TEST_ALL_PREFIXES(DefaultMemorySSLHostStateDelegateTest,
-                           QueryPolicyExpired);
-
   // Used to specify whether new content setting entries should be created if
   // they don't already exist when querying the user's settings.
   enum CreateDictionaryEntriesDisposition {

@@ -346,7 +346,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Migrate) {
 }
 
 // Tests that ChromeSSLHostStateDelegate::HasSeenRecurrentErrors returns true
-// after seeing an error of interest multiple times.
+// after seeing an error of interest multiple times, in the default mode in
+// which error occurrences are stored in-memory.
 IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, HasSeenRecurrentErrors) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeatureWithParameters(kRecurrentInterstitialFeature,
@@ -364,6 +365,127 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, HasSeenRecurrentErrors) {
   chrome_state->DidDisplayErrorPage(net::ERR_CERT_SYMANTEC_LEGACY);
   EXPECT_FALSE(chrome_state->HasSeenRecurrentErrors(
       net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
+  chrome_state->DidDisplayErrorPage(net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
+  EXPECT_TRUE(chrome_state->HasSeenRecurrentErrors(
+      net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
+}
+
+// Tests that ChromeSSLHostStateDelegate::HasSeenRecurrentErrors returns true
+// after seeing an error of interest multiple times in pref mode (where the
+// count of each error is persisted across browsing sessions).
+IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
+                       HasSeenRecurrentErrorsPref) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      kRecurrentInterstitialFeature, {{"threshold", "2"}, {"mode", "pref"}});
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
+  ChromeSSLHostStateDelegate* chrome_state =
+      static_cast<ChromeSSLHostStateDelegate*>(state);
+
+  chrome_state->DidDisplayErrorPage(net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
+  EXPECT_FALSE(chrome_state->HasSeenRecurrentErrors(
+      net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
+  chrome_state->DidDisplayErrorPage(net::ERR_CERT_SYMANTEC_LEGACY);
+  EXPECT_FALSE(
+      chrome_state->HasSeenRecurrentErrors(net::ERR_CERT_SYMANTEC_LEGACY));
+  chrome_state->DidDisplayErrorPage(net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
+  EXPECT_TRUE(chrome_state->HasSeenRecurrentErrors(
+      net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
+  chrome_state->DidDisplayErrorPage(net::ERR_CERT_SYMANTEC_LEGACY);
+  EXPECT_TRUE(
+      chrome_state->HasSeenRecurrentErrors(net::ERR_CERT_SYMANTEC_LEGACY));
+
+  // Create a new ChromeSSLHostStateDelegate to check that the state has been
+  // saved to the pref and that the new ChromeSSLHostStateDelegate reads it.
+  ChromeSSLHostStateDelegate new_state(profile);
+  EXPECT_TRUE(new_state.HasSeenRecurrentErrors(
+      net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
+  EXPECT_TRUE(new_state.HasSeenRecurrentErrors(net::ERR_CERT_SYMANTEC_LEGACY));
+
+  // Also test the logic for when the number of displayed errors exceeds the
+  // threshold.
+  new_state.DidDisplayErrorPage(net::ERR_CERT_SYMANTEC_LEGACY);
+  EXPECT_TRUE(new_state.HasSeenRecurrentErrors(net::ERR_CERT_SYMANTEC_LEGACY));
+}
+
+// Tests that ChromeSSLHostStateDelegate::HasSeenRecurrentErrors handles clocks
+// going backwards in pref mode.
+IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
+                       HasSeenRecurrentErrorsPrefClockGoesBackwards) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      kRecurrentInterstitialFeature, {{"threshold", "2"}, {"mode", "pref"}});
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
+  ChromeSSLHostStateDelegate* chrome_state =
+      static_cast<ChromeSSLHostStateDelegate*>(state);
+
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  clock->SetNow(base::Time::Now());
+  chrome_state->SetClockForTesting(
+      std::unique_ptr<base::SimpleTestClock>(clock));
+
+  chrome_state->DidDisplayErrorPage(net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
+  EXPECT_FALSE(chrome_state->HasSeenRecurrentErrors(
+      net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
+
+  // Move the clock backwards and test that the recurrent error state is reset.
+  clock->Advance(-base::TimeDelta::FromSeconds(10));
+  chrome_state->DidDisplayErrorPage(net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
+  EXPECT_FALSE(chrome_state->HasSeenRecurrentErrors(
+      net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
+
+  // If the clock continues to move forwards, a subsequent error page should
+  // trigger the recurrent error message.
+  clock->Advance(base::TimeDelta::FromSeconds(10));
+  chrome_state->DidDisplayErrorPage(net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
+  EXPECT_TRUE(chrome_state->HasSeenRecurrentErrors(
+      net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
+}
+
+// Tests that ChromeSSLHostStateDelegate::HasSeenRecurrentErrors in pref mode
+// ignores errors that occurred too far in the past. Note that this test uses a
+// threshold of 3 errors, unlike previous tests which use a threshold of 2.
+IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
+                       HasSeenRecurrentErrorsPrefErrorsInPast) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      kRecurrentInterstitialFeature,
+      {{"threshold", "3"}, {"mode", "pref"}, {"reset-time", "10"}});
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
+  ChromeSSLHostStateDelegate* chrome_state =
+      static_cast<ChromeSSLHostStateDelegate*>(state);
+
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  clock->SetNow(base::Time::Now());
+  chrome_state->SetClockForTesting(
+      std::unique_ptr<base::SimpleTestClock>(clock));
+
+  chrome_state->DidDisplayErrorPage(net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
+  EXPECT_FALSE(chrome_state->HasSeenRecurrentErrors(
+      net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
+
+  // Subsequent errors more than 10 seconds later shouldn't trigger the
+  // recurrent error message.
+  clock->Advance(base::TimeDelta::FromSeconds(12));
+  chrome_state->DidDisplayErrorPage(net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
+  EXPECT_FALSE(chrome_state->HasSeenRecurrentErrors(
+      net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
+  clock->Advance(base::TimeDelta::FromSeconds(3));
+  chrome_state->DidDisplayErrorPage(net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
+  EXPECT_FALSE(chrome_state->HasSeenRecurrentErrors(
+      net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
+
+  // But a third subsequent error within 10 seconds should.
+  clock->Advance(base::TimeDelta::FromSeconds(3));
   chrome_state->DidDisplayErrorPage(net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
   EXPECT_TRUE(chrome_state->HasSeenRecurrentErrors(
       net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
@@ -542,7 +664,7 @@ IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest, AfterRestart) {
   base::SimpleTestClock* clock = new base::SimpleTestClock();
   ChromeSSLHostStateDelegate* chrome_state =
       static_cast<ChromeSSLHostStateDelegate*>(state);
-  chrome_state->SetClock(std::unique_ptr<base::Clock>(clock));
+  chrome_state->SetClockForTesting(std::unique_ptr<base::Clock>(clock));
 
   // Start the clock at standard system time.
   clock->SetNow(base::Time::NowFromSystemTime());
@@ -591,7 +713,7 @@ IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest,
   base::SimpleTestClock* clock = new base::SimpleTestClock();
   ChromeSSLHostStateDelegate* chrome_state =
       static_cast<ChromeSSLHostStateDelegate*>(state);
-  chrome_state->SetClock(std::unique_ptr<base::Clock>(clock));
+  chrome_state->SetClockForTesting(std::unique_ptr<base::Clock>(clock));
 
   // Start the clock at standard system time but do not advance at all to
   // emphasize that instant forget works.
