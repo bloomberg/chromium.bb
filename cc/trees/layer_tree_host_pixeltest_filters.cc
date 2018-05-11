@@ -37,8 +37,8 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlur) {
       2.f, SkBlurImageFilter::kClamp_TileMode));
   blur->SetBackgroundFilters(filters);
 
-#if defined(OS_WIN)
-  // Windows has 436 pixels off by 1: crbug.com/259915
+#if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
+  // Windows and ARM64 have 436 pixels off by 1: crbug.com/259915
   float percentage_pixels_large_error = 1.09f;  // 436px / (200*200)
   float percentage_pixels_small_error = 0.0f;
   float average_error_allowed_in_bad_pixels = 1.f;
@@ -79,8 +79,8 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOutsets) {
       5.f, SkBlurImageFilter::kClamp_TileMode));
   blur->SetBackgroundFilters(filters);
 
-#if defined(OS_WIN) || defined(_MIPS_ARCH_LOONGSON)
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(_MIPS_ARCH_LOONGSON) || defined(ARCH_CPU_ARM64)
+#if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
   // Windows has 5.9325% pixels by at most 2: crbug.com/259922
   float percentage_pixels_large_error = 6.0f;
 #else
@@ -146,12 +146,17 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOffAxis) {
       2.f, SkBlurImageFilter::kClamp_TileMode));
   blur->SetBackgroundFilters(filters);
 
+#if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
 #if defined(OS_WIN)
   // Windows has 116 pixels off by at most 2: crbug.com/225027
   float percentage_pixels_large_error = 0.3f;  // 116px / (200*200), rounded up
+  int large_error_allowed = 2;
+#else
+  float percentage_pixels_large_error = 0.25f;  // 96px / (200*200), rounded up
+  int large_error_allowed = 1;
+#endif
   float percentage_pixels_small_error = 0.0f;
   float average_error_allowed_in_bad_pixels = 1.f;
-  int large_error_allowed = 2;
   int small_error_allowed = 0;
   pixel_comparator_.reset(new FuzzyPixelComparator(
       true,  // discard_alpha
@@ -419,17 +424,21 @@ class ImageScaledBackgroundFilter : public LayerTreeHostFiltersPixelTest {
     filters.Append(FilterOperation::CreateGrayscaleFilter(1.0f));
     filter->SetBackgroundFilters(filters);
 
-#if defined(OS_WIN) || defined(_MIPS_ARCH_LOONGSON)
+#if defined(OS_WIN) || defined(_MIPS_ARCH_LOONGSON) || defined(ARCH_CPU_ARM64)
 #if defined(OS_WIN)
     // Windows has 153 pixels off by at most 2: crbug.com/225027
     float percentage_pixels_large_error = 0.3825f;  // 153px / (200*200)
-#else
+    int large_error_allowed = 2;
+#elif defined(_MIPS_ARCH_LOONGSON)
     // Loongson has 2 pixels off by at most 2: crbug.com/819075
     float percentage_pixels_large_error = 0.005f;  // 2px / (200*200)
+    int large_error_allowed = 2;
+#else
+    float percentage_pixels_large_error = 0.0325f;  // 13px / (200*200)
+    int large_error_allowed = 1;
 #endif
     float percentage_pixels_small_error = 0.0f;
     float average_error_allowed_in_bad_pixels = 1.f;
-    int large_error_allowed = 2;
     int small_error_allowed = 0;
     pixel_comparator_.reset(new FuzzyPixelComparator(
         true,  // discard_alpha
@@ -736,8 +745,8 @@ class RotatedDropShadowFilterTest : public LayerTreeHostFiltersPixelTest {
 
     background->AddChild(child);
 
-#if defined(OS_WIN)
-    // Windows has 3 pixels off by 1: crbug.com/259915
+#if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
+    // Windows and ARM64 have 3 pixels off by 1: crbug.com/259915
     float percentage_pixels_large_error = 0.00333334f;  // 3px / (300*300)
     float percentage_pixels_small_error = 0.0f;
     float average_error_allowed_in_bad_pixels = 1.f;
@@ -951,9 +960,15 @@ class BlurFilterWithClip : public LayerTreeHostFiltersPixelTest {
     // Force the allocation a larger textures.
     set_enlarge_texture_amount(gfx::Size(50, 50));
 
+#if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
 #if defined(OS_WIN)
     // Windows has 1880 pixels off by 1: crbug.com/259915
     float percentage_pixels_large_error = 4.7f;  // 1880px / (200*200)
+#else
+    // Differences in floating point calculation on ARM means a small percentage
+    // of pixels will have small differences.
+    float percentage_pixels_large_error = 2.76f;  // 1104px / (200*200)
+#endif
     float percentage_pixels_small_error = 0.0f;
     float average_error_allowed_in_bad_pixels = 1.f;
     int large_error_allowed = 2;

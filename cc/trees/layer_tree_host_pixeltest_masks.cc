@@ -428,6 +428,14 @@ class LayerTreeHostMaskAsBlendingPixelTest
       average_error_allowed_in_bad_pixels = 3.5f;
       large_error_allowed = 15;
       small_error_allowed = 1;
+    } else {
+#if defined(ARCH_CPU_ARM64)
+      // Differences in floating point calculation on ARM means a small
+      // percentage of pixels will be off by 1.
+      percentage_pixels_error = 0.112f;
+      average_error_allowed_in_bad_pixels = 1.f;
+      large_error_allowed = 1;
+#endif
     }
 
     pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
