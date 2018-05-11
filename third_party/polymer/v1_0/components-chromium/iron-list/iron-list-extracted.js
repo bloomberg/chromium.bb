@@ -829,9 +829,17 @@
       } else if (change.path === 'items.splices') {
         this._adjustVirtualIndex(change.value.indexSplices);
         this._virtualCount = this.items ? this.items.length : 0;
-        // Only blur activeElement if it is a descendant of the list (#505, #507).
-        var activeElement = this._getActiveElement();
-        if (this.contains(activeElement)) activeElement.blur();
+        // Only blur if at least one item is added or removed.
+        var itemAddedOrRemoved = change.value.indexSplices.some(function(splice) {
+          return splice.addedCount > 0 || splice.removed.length > 0;
+        });
+        if (itemAddedOrRemoved) {
+          // Only blur activeElement if it is a descendant of the list (#505, #507).
+          var activeElement = this._getActiveElement();
+          if (this.contains(activeElement)) {
+            activeElement.blur();
+          }
+        }
         // Render only if the affected index is rendered.
         var affectedIndexRendered = change.value.indexSplices.some(function(splice) {
           return splice.index + splice.addedCount >= this._virtualStart &&
