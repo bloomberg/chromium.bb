@@ -266,13 +266,6 @@ class BrowserView : public BrowserWindow,
     return toolbar_button_provider_;
   }
 
-  // Returns |views| reordered in the order in which they should be painted,
-  // suitable for returning in |GetChildrenInZOrder|. This is a public method
-  // so that |TopContainerView| can call into it, as it has no knowledge of
-  // what its subviews are.
-  const views::View::Views DesiredPaintOrderForViews(
-      const views::View::Views views);
-
   // Overridden from BrowserWindow:
   void Show() override;
   void ShowInactive() override;
@@ -458,7 +451,6 @@ class BrowserView : public BrowserWindow,
 
   // Overridden from views::View:
   const char* GetClassName() const override;
-  View::Views GetChildrenInZOrder() override;
   void Layout() override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void ViewHierarchyChanged(
@@ -545,6 +537,11 @@ class BrowserView : public BrowserWindow,
   // Browser type) and there should be a subsequent re-layout to show it.
   // |contents| can be null.
   bool MaybeShowBookmarkBar(content::WebContents* contents);
+
+  // Moves the bookmark bar view to the specified parent, which may be null,
+  // |this|, or |top_container_|. Ensures that |top_container_| stays in front
+  // of |bookmark_bar_view_|.
+  void SetBookmarkBarParent(views::View* new_parent);
 
   // Prepare to show an Info Bar for the specified WebContents. Returns
   // true if there is an Info Bar to show and one is supported for this Browser

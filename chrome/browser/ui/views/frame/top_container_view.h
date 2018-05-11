@@ -23,7 +23,6 @@ class TopContainerView : public views::View {
   const char* GetClassName() const override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
   void ChildPreferredSizeChanged(views::View* child) override;
-  views::View::Views GetChildrenInZOrder() override;
 
  private:
   // The parent of this view. Not owned.
