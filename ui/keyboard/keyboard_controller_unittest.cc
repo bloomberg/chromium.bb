@@ -598,6 +598,11 @@ TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
   EXPECT_TRUE(keyboard_container->IsVisible());
   EXPECT_FALSE(WillHideKeyboard());
 
+  // RequestHideKeyboard is no-op when the keyboard is locked.
+  controller()->RequestHideKeyboard();
+  EXPECT_TRUE(keyboard_container->IsVisible());
+  EXPECT_FALSE(WillHideKeyboard());
+
   SetFocus(&input_client_1);
   EXPECT_TRUE(keyboard_container->IsVisible());
 

@@ -401,7 +401,7 @@ void KeyboardController::HideKeyboard(HideReason reason) {
 }
 
 void KeyboardController::RequestHideKeyboard() {
-  if (state_ != KeyboardControllerState::SHOWN)
+  if (state_ != KeyboardControllerState::SHOWN || keyboard_locked())
     return;
 
   ChangeState(KeyboardControllerState::WILL_HIDE);
