@@ -13,9 +13,11 @@
 #include "base/test/scoped_task_environment.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/device_info/local_device_info_provider.h"
+#include "components/sync/driver/data_type_manager.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/engine/sync_encryption_handler.h"
+#include "components/sync/engine/sync_engine.h"
 #include "components/sync/model/data_type_error_handler_mock.h"
 #include "components/sync/model/fake_syncable_service.h"
 #include "components/sync/model/sync_change.h"
@@ -41,7 +43,7 @@ class MockSyncApiComponentFactory : public SyncApiComponentFactory {
   void RegisterDataTypes(
       SyncService* sync_service,
       const RegisterDataTypesMethod& register_platform_types_method) override {}
-  DataTypeManager* CreateDataTypeManager(
+  std::unique_ptr<DataTypeManager> CreateDataTypeManager(
       ModelTypeSet initial_types,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       const DataTypeController::TypeMap* controllers,
@@ -50,10 +52,11 @@ class MockSyncApiComponentFactory : public SyncApiComponentFactory {
       DataTypeManagerObserver* observer) override {
     return nullptr;
   };
-  SyncEngine* CreateSyncEngine(const std::string& name,
-                               invalidation::InvalidationService* invalidator,
-                               const base::WeakPtr<SyncPrefs>& sync_prefs,
-                               const base::FilePath& sync_folder) override {
+  std::unique_ptr<SyncEngine> CreateSyncEngine(
+      const std::string& name,
+      invalidation::InvalidationService* invalidator,
+      const base::WeakPtr<SyncPrefs>& sync_prefs,
+      const base::FilePath& sync_folder) override {
     return nullptr;
   }
   std::unique_ptr<LocalDeviceInfoProvider> CreateLocalDeviceInfoProvider()

@@ -37,6 +37,7 @@ using syncer::DataTypeController;
 using syncer::FakeSyncEngine;
 using syncer::ModelTypeSet;
 using syncer::SyncMergeResult;
+using testing::ByMove;
 using testing::Return;
 
 namespace browser_sync {
@@ -72,7 +73,7 @@ class FakeDataTypeManager : public syncer::DataTypeManager {
 };
 
 ACTION_P(ReturnNewDataTypeManager, configure_called) {
-  return new FakeDataTypeManager(configure_called);
+  return std::make_unique<FakeDataTypeManager>(configure_called);
 }
 
 using testing::Return;
@@ -153,29 +154,12 @@ class SyncEngineCaptureInvalidateCredentials : public FakeSyncEngine {
 };
 
 ACTION(ReturnNewFakeSyncEngine) {
-  return new FakeSyncEngine();
-}
-
-ACTION(ReturnNewSyncEngineNoReturn) {
-  return new SyncEngineNoReturn();
-}
-
-ACTION_P(ReturnNewMockHostCollectDeleteDirParam, delete_dir_param) {
-  return new FakeSyncEngineCollectDeleteDirParam(delete_dir_param);
+  return std::make_unique<FakeSyncEngine>();
 }
 
 void OnClearServerDataCalled(base::Closure* captured_callback,
                              const base::Closure& callback) {
   *captured_callback = callback;
-}
-
-ACTION_P(ReturnNewMockHostCaptureClearServerData, captured_callback) {
-  return new SyncEngineCaptureClearServerData(base::Bind(
-      &OnClearServerDataCalled, base::Unretained(captured_callback)));
-}
-
-ACTION_P(ReturnNewMockHostCaptureInvalidateCredentials, callback) {
-  return new SyncEngineCaptureInvalidateCredentials(callback);
 }
 
 // A test harness that uses a real ProfileSyncService and in most cases a
@@ -305,32 +289,26 @@ class ProfileSyncServiceTest : public ::testing::Test {
         .WillRepeatedly(ReturnNewFakeSyncEngine());
   }
 
-  void ExpectSyncEngineCreationCollectDeleteDir(
-      int times,
-      std::vector<bool>* delete_dir_param) {
-    EXPECT_CALL(*component_factory_, CreateSyncEngine(_, _, _, _))
-        .Times(times)
-        .WillRepeatedly(
-            ReturnNewMockHostCollectDeleteDirParam(delete_dir_param));
-  }
-
   void ExpectSyncEngineCreationCaptureClearServerData(
       base::Closure* captured_callback) {
     EXPECT_CALL(*component_factory_, CreateSyncEngine(_, _, _, _))
-        .Times(1)
-        .WillOnce(ReturnNewMockHostCaptureClearServerData(captured_callback));
+        .WillOnce(
+            Return(ByMove(std::make_unique<SyncEngineCaptureClearServerData>(
+                base::BindRepeating(&OnClearServerDataCalled,
+                                    base::Unretained(captured_callback))))));
   }
 
   void ExpectSyncEngineCreationCaptureInvalidateCredentials(
       const base::RepeatingClosure& callback) {
     EXPECT_CALL(*component_factory_, CreateSyncEngine(_, _, _, _))
-        .Times(1)
-        .WillOnce(ReturnNewMockHostCaptureInvalidateCredentials(callback));
+        .WillOnce(Return(
+            ByMove(std::make_unique<SyncEngineCaptureInvalidateCredentials>(
+                callback))));
   }
 
   void PrepareDelayedInitSyncEngine() {
     EXPECT_CALL(*component_factory_, CreateSyncEngine(_, _, _, _))
-        .WillOnce(ReturnNewSyncEngineNoReturn());
+        .WillOnce(Return(ByMove(std::make_unique<SyncEngineNoReturn>())));
   }
 
   AccountTrackerService* account_tracker() {

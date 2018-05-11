@@ -76,8 +76,7 @@ class SyncApiComponentFactory {
       SyncService* sync_service,
       const RegisterDataTypesMethod& register_platform_types_method) = 0;
 
-  // Creates a DataTypeManager; the return pointer is owned by the caller.
-  virtual DataTypeManager* CreateDataTypeManager(
+  virtual std::unique_ptr<DataTypeManager> CreateDataTypeManager(
       ModelTypeSet initial_types,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       const DataTypeController::TypeMap* controllers,
@@ -86,7 +85,7 @@ class SyncApiComponentFactory {
       DataTypeManagerObserver* observer) = 0;
 
   // Creating this in the factory helps us mock it out in testing.
-  virtual SyncEngine* CreateSyncEngine(
+  virtual std::unique_ptr<SyncEngine> CreateSyncEngine(
       const std::string& name,
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<SyncPrefs>& sync_prefs,
