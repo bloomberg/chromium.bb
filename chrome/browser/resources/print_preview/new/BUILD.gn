@@ -30,6 +30,7 @@ js_type_check("closure_compile") {
     ":more_settings",
     ":number_settings_section",
     ":other_options_settings",
+    ":pages_per_sheet_settings",
     ":pages_settings",
     ":preview_area",
     ":print_preview_search_box",
@@ -57,6 +58,7 @@ js_library("app") {
     ":model",
     ":more_settings",
     ":other_options_settings",
+    ":pages_per_sheet_settings",
     ":pages_settings",
     ":preview_area",
     ":scaling_settings",
@@ -154,6 +156,13 @@ js_library("dpi_settings") {
     ":settings_select",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:load_time_data",
+  ]
+}
+
+js_library("pages_per_sheet_settings") {
+  deps = [
+    ":settings_behavior",
+    ":settings_section_behavior",
   ]
 }
 

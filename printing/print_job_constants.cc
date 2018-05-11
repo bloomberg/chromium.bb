@@ -169,6 +169,9 @@ const char kSettingPrintWithExtension[] = "printWithExtension";
 // Scaling factor
 const char kSettingScaleFactor[] = "scaleFactor";
 
+// Number of pages per sheet.
+const char kSettingPagesPerSheet[] = "pagesPerSheet";
+
 // Whether to rasterize the PDF for printing.
 const char kSettingRasterizePdf[] = "rasterizePDF";
 

@@ -76,6 +76,7 @@ PrintingContext::Result PrintingContext::UsePdfSettings() {
   pdf_settings->SetBoolean(kSettingPrintWithExtension, false);
   pdf_settings->SetInteger(kSettingScaleFactor, 100);
   pdf_settings->SetBoolean(kSettingRasterizePdf, false);
+  pdf_settings->SetInteger(kSettingPagesPerSheet, 1);
   return UpdatePrintSettings(*pdf_settings);
 }
 

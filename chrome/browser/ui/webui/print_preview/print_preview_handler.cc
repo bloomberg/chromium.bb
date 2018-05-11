@@ -134,6 +134,7 @@ enum PrintSettingsBuckets {
   DISTILL_PAGE_UNUSED,
   SCALING,
   PRINT_AS_IMAGE,
+  PAGES_PER_SHEET,
   PRINT_SETTINGS_BUCKET_BOUNDARY
 };
 
@@ -317,6 +318,13 @@ void ReportPrintSettingsStats(const base::DictionaryValue& settings) {
   if (settings.GetInteger(printing::kSettingScaleFactor, &scaling) &&
       scaling != 100) {
     ReportPrintSettingHistogram(SCALING);
+  }
+
+  int num_pages_per_sheet = 1;
+  if (settings.GetInteger(printing::kSettingPagesPerSheet,
+                          &num_pages_per_sheet) &&
+      num_pages_per_sheet != 1) {
+    ReportPrintSettingHistogram(PAGES_PER_SHEET);
   }
 
   bool collate = false;

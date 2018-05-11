@@ -122,8 +122,19 @@ Polymer({
           'settings.copies.available, settings.layout.available, ' +
           'settings.color.available, settings.mediaSize.available, ' +
           'settings.dpi.available, settings.margins.available, ' +
-          'settings.scaling.available, settings.otherOptions.available, ' +
-          'settings.vendorItems.available)',
+          'settings.pagesPerSheet.available, settings.scaling.available, ' +
+          'settings.otherOptions.available, settings.vendorItems.available)',
+    },
+
+    /**
+     * Whether to show pages per sheet feature or not.
+     * @private {boolean}
+     */
+    showPagesPerSheet_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('pagesPerSheetEnabled');
+      },
     },
   },
 
@@ -534,7 +545,7 @@ Polymer({
     // available sections exceeds the maximum number to show.
     return [
       'pages', 'copies', 'layout', 'color', 'mediaSize', 'margins', 'color',
-      'scaling', 'otherOptions', 'vendorItems'
+      'pagesPerSheet', 'scaling', 'otherOptions', 'vendorItems'
     ].reduce((count, setting) => {
       return this.getSetting(setting).available ? count + 1 : count;
     }, 1) > MAX_SECTIONS_TO_SHOW;

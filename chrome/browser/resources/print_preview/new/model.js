@@ -219,6 +219,13 @@ Polymer({
             available: true,
             key: 'vendorOptions',
           },
+          pagesPerSheet: {
+            value: 1,
+            unavailableValue: 1,
+            valid: true,
+            available: true,
+            key: '',
+          },
           // This does not represent a real setting value, and is used only to
           // expose the availability of the other options settings section.
           otherOptions: {
@@ -637,6 +644,7 @@ Polymer({
       printWithExtension: destination.isExtension,
       rasterizePDF: this.getSettingValue('rasterize'),
       scaleFactor: parseInt(this.getSettingValue('scaling'), 10),
+      pagesPerSheet: this.getSettingValue('pagesPerSheet'),
       dpiHorizontal: (dpi && 'horizontal_dpi' in dpi) ? dpi.horizontal_dpi : 0,
       dpiVertical: (dpi && 'vertical_dpi' in dpi) ? dpi.vertical_dpi : 0,
       deviceName: destination.id,

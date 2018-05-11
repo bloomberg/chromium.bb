@@ -5844,6 +5844,9 @@ I don't think this site should be blocked!
         <message name="IDS_PRINT_PREVIEW_SCALING_LABEL" desc="Scaling option label.">
           Scale
         </message>
+        <message name="IDS_PRINT_PREVIEW_PAGES_PER_SHEET_LABEL" desc="Pages per sheet option label.">
+          Pages Per Sheet
+        </message>
         <message name="IDS_PRINT_PREVIEW_EXAMPLE_PAGE_RANGE_TEXT" desc="Example page range text.">
           e.g. 1-5, 8, 11-13
         </message>

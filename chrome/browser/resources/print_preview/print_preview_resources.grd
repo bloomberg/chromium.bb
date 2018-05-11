@@ -252,6 +252,12 @@
       <structure name="IDR_PRINT_PREVIEW_NEW_SCALING_SETTINGS_JS"
                  file="new/scaling_settings.js"
                  type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_PAGES_PER_SHEET_SETTINGS_HTML"
+                 file="new/pages_per_sheet_settings.html"
+                 type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_PAGES_PER_SHEET_SETTINGS_JS"
+                 file="new/pages_per_sheet_settings.js"
+                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_OTHER_OPTIONS_SETTINGS_HTML"
                  file="new/other_options_settings.html"
                  type="chrome_html" />
