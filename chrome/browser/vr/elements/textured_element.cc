@@ -83,10 +83,9 @@ void TexturedElement::Render(UiElementRenderer* renderer,
   if (texture_handle_ <= 0)
     return;
 
-  gfx::RectF copy_rect(0, 0, 1, 1);
   renderer->DrawTexturedQuad(
       texture_handle_, 0, UiElementRenderer::kTextureLocationLocal,
-      model.view_proj_matrix * world_space_transform(), copy_rect,
+      model.view_proj_matrix * world_space_transform(), clip_rect(),
       computed_opacity(), size(), corner_radius(), true /* blend */);
 }
 

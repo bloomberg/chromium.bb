@@ -16,7 +16,7 @@ void FakeUiElementRenderer::DrawTexturedQuad(
     int overlay_texture_data_handle,
     TextureLocation texture_location,
     const gfx::Transform& view_proj_matrix,
-    const gfx::RectF& copy_rect,
+    const gfx::RectF& clip_rect,
     float opacity,
     const gfx::SizeF& element_size,
     float corner_radius,
@@ -29,6 +29,7 @@ void FakeUiElementRenderer::DrawGradientQuad(
     const gfx::Transform& view_proj_matrix,
     const SkColor edge_color,
     const SkColor center_color,
+    const gfx::RectF& clip_rect,
     float opacity,
     const gfx::SizeF& element_size,
     const CornerRadii& corner_radii) {

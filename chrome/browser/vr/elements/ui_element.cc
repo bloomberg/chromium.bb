@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/vr/model/camera_model.h"
+#include "chrome/browser/vr/vr_gl_util.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -466,9 +467,14 @@ bool UiElement::LocalHitTest(const gfx::PointF& point) const {
   if (point.x() < 0.0f || point.x() > 1.0f || point.y() < 0.0f ||
       point.y() > 1.0f) {
     return false;
-  } else if (corner_radii_.IsZero()) {
-    return point.x() >= 0.0f && point.x() <= 1.0f && point.y() >= 0.0f &&
-           point.y() <= 1.0f;
+  }
+  if (!clip_rect_.IsEmpty() &&
+      !CalculateTexSpaceRect(size(), clip_rect_).Contains(point)) {
+    return false;
+  }
+
+  if (corner_radii_.IsZero()) {
+    return true;
   }
 
   float width = size().width();
@@ -806,6 +812,11 @@ bool UiElement::SizeAndLayOut() {
   changed |= PrepareToDraw();
   set_update_phase(kUpdatedSize);
   DoLayOutChildren();
+  if (clips_descendants_) {
+    clip_rect_ = {-0.5f * size().width(), 0.5f * size().height(),
+                  size().width(), size().height()};
+    ClipChildren();
+  }
   set_update_phase(kUpdatedLayout);
   return changed;
 }
@@ -907,6 +918,21 @@ void UiElement::LayOutChildren() {
         y_offset += bottom_padding_;
     }
     child->SetLayoutOffset(x_offset, y_offset);
+  }
+}
+
+void UiElement::ClipChildren() {
+  for (auto& child : children_) {
+    // Nested clipping is not supported yet.
+    DCHECK(!child->clips_descendants_);
+
+    if (!child->IsVisible())
+      continue;
+
+    DCHECK(child->LocalTransform().IsScaleOrTranslation());
+    child->clip_rect_ = clip_rect_;
+    child->LocalTransform().TransformRectReverse(&child->clip_rect_);
+    child->ClipChildren();
   }
 }
 

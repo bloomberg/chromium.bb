@@ -142,18 +142,20 @@ static constexpr char const* kFragmentShader = SHADER(
   precision highp float;
   uniform sampler2D u_Texture;
   uniform sampler2D u_OverlayTexture;
-  uniform vec4 u_CopyRect;
+  uniform vec2 u_ClipRect[2];
   varying vec2 v_TexCoordinate;
   varying vec2 v_CornerPosition;
   uniform mediump float u_Opacity;
   uniform mediump float u_OverlayOpacity;
+
   void main() {
-    vec2 scaledTex =
-        vec2(u_CopyRect[0] + v_TexCoordinate.x * u_CopyRect[2],
-        u_CopyRect[1] + v_TexCoordinate.y * u_CopyRect[3]);
-    lowp vec4 color = texture2D(u_Texture, scaledTex);
+    vec2 s = step(u_ClipRect[0], v_TexCoordinate)
+        - step(u_ClipRect[1], v_TexCoordinate);
+    float insideClip = s.x * s.y;
+
+    lowp vec4 color = texture2D(u_Texture, v_TexCoordinate);
     float mask = 1.0 - step(1.0, length(v_CornerPosition));
-    gl_FragColor = color * u_Opacity * mask;
+    gl_FragColor = insideClip * color * u_Opacity * mask;
   }
 );
 // clang-format on
@@ -174,8 +176,6 @@ TexturedQuadRenderer::TexturedQuadRenderer(const char* vertex_src,
       glGetAttribLocation(program_handle_, "a_CornerPosition");
   offset_scale_handle_ = glGetAttribLocation(program_handle_, "a_OffsetScale");
 
-  copy_rect_handler_ = glGetUniformLocation(program_handle_, "u_CopyRect");
-
   opacity_handle_ = glGetUniformLocation(program_handle_, "u_Opacity");
   overlay_opacity_handle_ =
       glGetUniformLocation(program_handle_, "u_OverlayOpacity");
@@ -190,7 +190,7 @@ TexturedQuadRenderer::~TexturedQuadRenderer() = default;
 void TexturedQuadRenderer::AddQuad(int texture_data_handle,
                                    int overlay_texture_data_handle,
                                    const gfx::Transform& model_view_proj_matrix,
-                                   const gfx::RectF& copy_rect,
+                                   const gfx::RectF& clip_rect,
                                    float opacity,
                                    const gfx::SizeF& element_size,
                                    float corner_radius,
@@ -199,12 +199,13 @@ void TexturedQuadRenderer::AddQuad(int texture_data_handle,
   quad.texture_data_handle = texture_data_handle;
   quad.overlay_texture_data_handle = overlay_texture_data_handle;
   quad.model_view_proj_matrix = model_view_proj_matrix;
-  quad.copy_rect = copy_rect;
+  quad.clip_rect = CalculateTexSpaceRect(element_size, clip_rect);
   quad.opacity = opacity;
   quad.element_size = element_size;
   quad.corner_radius = corner_radius;
   quad.blend = blend;
-  quad_queue_.push(quad);
+  if (quad.clip_rect.Intersects({0.0f, 0.0f, 1.0f, 1.0f}))
+    quad_queue_.push(quad);
 }
 
 void TexturedQuadRenderer::Flush() {
@@ -216,7 +217,7 @@ void TexturedQuadRenderer::Flush() {
   float last_opacity = -1.0f;
   gfx::SizeF last_element_size;
   float last_corner_radius = -1.0f;
-  gfx::RectF last_copy_rect;
+  gfx::RectF last_clip_rect;
   bool last_blend = true;  // All elements blend by default.
 
   // Set up GL state that doesn't change between draw calls.
@@ -306,10 +307,12 @@ void TexturedQuadRenderer::Flush() {
     glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
                        MatrixToGLArray(quad.model_view_proj_matrix).data());
 
-    if (last_copy_rect != quad.copy_rect) {
-      last_copy_rect = quad.copy_rect;
-      glUniform4f(copy_rect_handler_, quad.copy_rect.x(), quad.copy_rect.y(),
-                  quad.copy_rect.width(), quad.copy_rect.height());
+    if (last_clip_rect != quad.clip_rect) {
+      last_clip_rect = quad.clip_rect;
+      const GLfloat clip_rect_data[4] = {quad.clip_rect.x(), quad.clip_rect.y(),
+                                         quad.clip_rect.right(),
+                                         quad.clip_rect.bottom()};
+      glUniform2fv(clip_rect_handle_, 2, clip_rect_data);
     }
 
     if (quad.corner_radius == 0.0f) {

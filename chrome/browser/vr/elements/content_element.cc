@@ -46,11 +46,10 @@ ContentElement::~ContentElement() = default;
 
 void ContentElement::Render(UiElementRenderer* renderer,
                             const CameraModel& model) const {
-  gfx::RectF copy_rect(0, 0, 1, 1);
   if (uses_quad_layer_) {
     renderer->DrawTexturedQuad(0, 0, texture_location(),
                                model.view_proj_matrix * world_space_transform(),
-                               copy_rect, computed_opacity(), size(),
+                               clip_rect(), computed_opacity(), size(),
                                corner_radius(), false);
     return;
   }
@@ -60,7 +59,7 @@ void ContentElement::Render(UiElementRenderer* renderer,
   if (texture_id() || overlay_texture_id) {
     renderer->DrawTexturedQuad(
         texture_id(), overlay_texture_id, texture_location(),
-        model.view_proj_matrix * world_space_transform(), copy_rect,
+        model.view_proj_matrix * world_space_transform(), clip_rect(),
         computed_opacity(), size(), corner_radius(), true);
   }
 }

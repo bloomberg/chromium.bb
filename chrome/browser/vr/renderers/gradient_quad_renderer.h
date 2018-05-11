@@ -13,6 +13,7 @@
 namespace gfx {
 class SizeF;
 class Transform;
+class RectF;
 }  // namespace gfx
 
 namespace vr {
@@ -27,6 +28,7 @@ class GradientQuadRenderer : public BaseRenderer {
   void Draw(const gfx::Transform& model_view_proj_matrix,
             SkColor edge_color,
             SkColor center_color,
+            const gfx::RectF& clip_rect,
             float opacity,
             const gfx::SizeF& element_size,
             const CornerRadii& radii);

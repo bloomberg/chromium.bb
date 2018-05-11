@@ -7,6 +7,7 @@
 #include "chrome/browser/vr/elements/corner_radii.h"
 #include "chrome/browser/vr/renderers/textured_quad_renderer.h"
 #include "chrome/browser/vr/vr_gl_util.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/transform.h"
 
@@ -37,6 +38,7 @@ static constexpr char const* kVertexShader = SHADER(
   attribute vec2 a_CornerPosition;
   attribute vec2 a_OffsetScale;
   varying vec2 v_CornerPosition;
+  varying vec2 v_TexCoordinate;
   varying vec2 v_Position;
 
   void main() {
@@ -61,6 +63,7 @@ static constexpr char const* kVertexShader = SHADER(
     } else {
       v_Position = vec2(position.x * u_AspectRatio, position.y);
     }
+    v_TexCoordinate = vec2(0.5 + position[0], 0.5 - position[1]);
     gl_Position = u_ModelViewProjMatrix * position;
   }
 );
@@ -69,10 +72,17 @@ static constexpr char const* kFragmentShader = SHADER(
   precision highp float;
   varying vec2 v_CornerPosition;
   varying vec2 v_Position;
+  varying vec2 v_TexCoordinate;
   uniform mediump float u_Opacity;
+  uniform vec2 u_ClipRect[2];
   uniform vec4 u_CenterColor;
   uniform vec4 u_EdgeColor;
+
   void main() {
+    vec2 s = step(u_ClipRect[0], v_TexCoordinate)
+        - step(u_ClipRect[1], v_TexCoordinate);
+    float insideClip = s.x * s.y;
+
     vec2 position = v_Position;
     float edge_color_weight = clamp(2.0 * length(position), 0.0, 1.0);
     float center_color_weight = 1.0 - edge_color_weight;
@@ -84,7 +94,7 @@ static constexpr char const* kFragmentShader = SHADER(
 
     color = color + n;
     color = vec4(color.rgb * color.a, color.a);
-    gl_FragColor = color * u_Opacity * mask;
+    gl_FragColor = insideClip * color * u_Opacity * mask;
   }
 );
 // clang-format on
@@ -124,6 +134,7 @@ GradientQuadRenderer::~GradientQuadRenderer() = default;
 void GradientQuadRenderer::Draw(const gfx::Transform& model_view_proj_matrix,
                                 SkColor edge_color,
                                 SkColor center_color,
+                                const gfx::RectF& clip_rect,
                                 float opacity,
                                 const gfx::SizeF& element_size,
                                 const CornerRadii& radii) {
@@ -132,6 +143,9 @@ void GradientQuadRenderer::Draw(const gfx::Transform& model_view_proj_matrix,
       SkColorGetA(center_color) == SK_AlphaTRANSPARENT) {
     return;
   }
+  auto tex_clip_rect = CalculateTexSpaceRect(element_size, clip_rect);
+  if (!tex_clip_rect.Intersects({0.0f, 0.0f, 1.0f, 1.0f}))
+    return;
 
   glUseProgram(program_handle_);
 
@@ -170,6 +184,11 @@ void GradientQuadRenderer::Draw(const gfx::Transform& model_view_proj_matrix,
   // Pass in model view project matrix.
   glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
                      MatrixToGLArray(model_view_proj_matrix).data());
+
+  const GLfloat clip_rect_data[4] = {tex_clip_rect.x(), tex_clip_rect.y(),
+                                     tex_clip_rect.right(),
+                                     tex_clip_rect.bottom()};
+  glUniform2fv(clip_rect_handle_, 2, clip_rect_data);
 
   if (radii.IsZero()) {
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT,

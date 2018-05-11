@@ -166,7 +166,7 @@ class UiElement : public cc::AnimationTarget {
   // shapes. Points within the rectangular area are mapped from 0:1 as follows,
   // though will extend outside this range when outside of the element:
   // [(0.0, 0.0), (1.0, 0.0)
-  //  (1.0, 0.0), (1.0, 1.0)]
+  //  (0.0, 1.0), (1.0, 1.0)]
   virtual bool LocalHitTest(const gfx::PointF& point) const;
 
   // Performs a hit test for the ray supplied in the request and populates the
@@ -224,6 +224,9 @@ class UiElement : public cc::AnimationTarget {
   gfx::SizeF size() const;
   void SetSize(float width, float hight);
   virtual void OnSetSize(const gfx::SizeF& size);
+
+  gfx::RectF clip_rect() const { return clip_rect_; }
+  void set_clip_rect_for_test(const gfx::RectF& rect) { clip_rect_ = rect; }
 
   gfx::PointF local_origin() const { return local_origin_; }
 
@@ -412,6 +415,10 @@ class UiElement : public cc::AnimationTarget {
   // applies anchoring.
   virtual void LayOutChildren();
 
+  // Recursive method that clips element subtrees, given that a parent is
+  // clipped.
+  void ClipChildren();
+
   UiElement* FirstLaidOutChild() const;
   UiElement* LastLaidOutChild() const;
 
@@ -462,7 +469,10 @@ class UiElement : public cc::AnimationTarget {
   // that override element hover and click methods must manage their own sounds.
   void SetSounds(Sounds sounds, AudioDelegate* delegate);
 
-  bool resizable_by_layout() { return resizable_by_layout_; }
+  bool clips_descendants() const { return clips_descendants_; }
+  void set_clip_descendants(bool clips) { clips_descendants_ = clips; }
+
+  bool resizable_by_layout() const { return resizable_by_layout_; }
   void set_resizable_by_layout(bool resizable) {
     resizable_by_layout_ = resizable;
   }
@@ -517,6 +527,13 @@ class UiElement : public cc::AnimationTarget {
 
   // The size of the object.  This does not affect children.
   gfx::SizeF size_;
+
+  // The clip of the object. The rect is in relation to the element's size,
+  // with the origin at its center.
+  gfx::RectF clip_rect_;
+
+  // Indicates that this element clips its descendants with its size.
+  bool clips_descendants_ = false;
 
   // The local orgin of the element. This can be updated, say, so that an
   // element can contain its children, even if they are not centered about its
