@@ -6,6 +6,7 @@
 #define BASE_ANDROID_PATH_UTILS_H_
 
 #include <jni.h>
+#include <vector>
 
 #include "base/base_export.h"
 
@@ -34,6 +35,10 @@ BASE_EXPORT bool GetThumbnailCacheDirectory(FilePath* result);
 // Retrieves the path to the public downloads directory. The result is placed
 // in the FilePath pointed to by 'result'.
 BASE_EXPORT bool GetDownloadsDirectory(FilePath* result);
+
+// Retrieves the paths to all download directories, including default storage
+// directory, and a private directory on external SD card.
+BASE_EXPORT std::vector<FilePath> GetAllPrivateDownloadsDirectories();
 
 // Retrieves the path to the native JNI libraries via
 // ApplicationInfo.nativeLibraryDir on the Java side. The result is placed in
