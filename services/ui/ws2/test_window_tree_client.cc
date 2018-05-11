@@ -12,11 +12,28 @@
 namespace ui {
 namespace ws2 {
 
+TestWindowTreeClient::ObservedPointerEvent::ObservedPointerEvent() = default;
+
+TestWindowTreeClient::ObservedPointerEvent::ObservedPointerEvent(
+    ObservedPointerEvent&& other) = default;
+
+TestWindowTreeClient::ObservedPointerEvent::~ObservedPointerEvent() = default;
+
 TestWindowTreeClient::TestWindowTreeClient() {
   tracker_.set_delegate(this);
 }
 
 TestWindowTreeClient::~TestWindowTreeClient() = default;
+
+TestWindowTreeClient::ObservedPointerEvent
+TestWindowTreeClient::PopObservedPointerEvent() {
+  if (observed_pointer_events_.empty())
+    return ObservedPointerEvent();
+
+  ObservedPointerEvent event = std::move(observed_pointer_events_.front());
+  observed_pointer_events_.pop();
+  return event;
+}
 
 void TestWindowTreeClient::OnChangeAdded() {}
 
@@ -145,9 +162,16 @@ void TestWindowTreeClient::OnWindowInputEvent(
   tree_->OnWindowInputEventAck(event_id, mojom::EventResult::HANDLED);
 }
 
-void TestWindowTreeClient::OnPointerEventObserved(std::unique_ptr<ui::Event>,
-                                                  Id window_id,
-                                                  int64_t display_id) {}
+void TestWindowTreeClient::OnPointerEventObserved(
+    std::unique_ptr<ui::Event> event,
+    Id window_id,
+    int64_t display_id) {
+  ObservedPointerEvent observed_pointer_event;
+  observed_pointer_event.window_id = window_id;
+  observed_pointer_event.display_id = display_id;
+  observed_pointer_event.event = std::move(event);
+  observed_pointer_events_.push(std::move(observed_pointer_event));
+}
 
 void TestWindowTreeClient::OnWindowSharedPropertyChanged(
     Id window,

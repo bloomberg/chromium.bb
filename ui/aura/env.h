@@ -48,6 +48,7 @@ class InputStateLookup;
 class MouseLocationManager;
 class MusMouseLocationUpdater;
 class Window;
+class WindowEventDispatcherObserver;
 class WindowPort;
 class WindowTreeClient;
 class WindowTreeHost;
@@ -82,6 +83,15 @@ class AURA_EXPORT Env : public ui::EventTarget,
 
   void AddObserver(EnvObserver* observer);
   void RemoveObserver(EnvObserver* observer);
+
+  void AddWindowEventDispatcherObserver(
+      WindowEventDispatcherObserver* observer);
+  void RemoveWindowEventDispatcherObserver(
+      WindowEventDispatcherObserver* observer);
+  base::ObserverList<WindowEventDispatcherObserver>&
+  window_event_dispatcher_observers() {
+    return window_event_dispatcher_observers_;
+  }
 
   EnvInputStateController* env_controller() const {
     return env_controller_.get();
@@ -201,6 +211,12 @@ class AURA_EXPORT Env : public ui::EventTarget,
   WindowTreeClient* window_tree_client_ = nullptr;
 
   base::ObserverList<EnvObserver> observers_;
+
+  // Code wanting to observe WindowEventDispatcher typically wants to observe
+  // all WindowEventDispatchers. This is made easier by having Env own all the
+  // observers.
+  base::ObserverList<WindowEventDispatcherObserver>
+      window_event_dispatcher_observers_;
 
   std::unique_ptr<EnvInputStateController> env_controller_;
   int mouse_button_flags_;

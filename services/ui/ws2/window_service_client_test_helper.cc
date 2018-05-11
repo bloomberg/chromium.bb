@@ -15,6 +15,10 @@ WindowServiceClientTestHelper::WindowServiceClientTestHelper(
 
 WindowServiceClientTestHelper::~WindowServiceClientTestHelper() = default;
 
+mojom::WindowTree* WindowServiceClientTestHelper::window_tree() {
+  return static_cast<mojom::WindowTree*>(window_service_client_);
+}
+
 aura::Window* WindowServiceClientTestHelper::NewTopLevelWindow(
     Id transport_window_id) {
   base::flat_map<std::string, std::vector<uint8_t>> properties;
@@ -32,6 +36,13 @@ void WindowServiceClientTestHelper::SetWindowBounds(aura::Window* window,
   window_service_client_->SetWindowBounds(
       change_id, window_service_client_->TransportIdForWindow(window), bounds,
       local_surface_id);
+}
+
+void WindowServiceClientTestHelper::SetEventTargetingPolicy(
+    aura::Window* window,
+    mojom::EventTargetingPolicy policy) {
+  window_service_client_->SetEventTargetingPolicy(
+      window_service_client_->TransportIdForWindow(window), policy);
 }
 
 void WindowServiceClientTestHelper::SetWindowProperty(

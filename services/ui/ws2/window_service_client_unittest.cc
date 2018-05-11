@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <queue>
 
 #include "base/test/scoped_task_environment.h"
 #include "services/ui/public/cpp/property_type_converters.h"
@@ -21,8 +22,10 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/test/aura_test_helper.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
 namespace ui {
@@ -54,10 +57,15 @@ class WindowServiceTestHelper {
   }
 
   ~WindowServiceTestHelper() {
+    window_service_client_.reset();
     service_.reset();
     aura_test_helper_.TearDown();
     ui::TerminateContextFactoryForTests();
   }
+
+  aura::Window* root() { return aura_test_helper_.root_window(); }
+  TestWindowServiceDelegate* delegate() { return &delegate_; }
+  TestWindowTreeClient* window_tree_client() { return &window_tree_client_; }
 
   std::vector<Change>* changes() {
     return window_tree_client_.tracker()->changes();
@@ -171,6 +179,68 @@ TEST(WindowServiceClientTest, SetProperty) {
             SingleChangeToDescription(*helper.changes()));
   EXPECT_TRUE(top_level->GetProperty(aura::client::kAlwaysOnTopKey));
   helper.changes()->clear();
+}
+
+TEST(WindowServiceClientTest, PointerWatcher) {
+  WindowServiceTestHelper helper;
+  TestWindowTreeClient* window_tree_client = helper.window_tree_client();
+  aura::Window* top_level = helper.helper_->NewTopLevelWindow(1);
+  ASSERT_TRUE(top_level);
+  helper.helper_->SetEventTargetingPolicy(top_level,
+                                          mojom::EventTargetingPolicy::NONE);
+  EXPECT_EQ(mojom::EventTargetingPolicy::NONE,
+            top_level->event_targeting_policy());
+  // Start the pointer watcher only for pointer down/up.
+  helper.helper_->window_tree()->StartPointerWatcher(false);
+
+  top_level->Show();
+  top_level->SetBounds(gfx::Rect(10, 10, 100, 100));
+
+  test::EventGenerator event_generator(helper.root());
+  event_generator.MoveMouseTo(50, 50);
+  ASSERT_TRUE(window_tree_client->observed_pointer_events().empty());
+
+  event_generator.MoveMouseTo(5, 6);
+  ASSERT_TRUE(window_tree_client->observed_pointer_events().empty());
+
+  event_generator.PressLeftButton();
+  {
+    ASSERT_EQ(1u, window_tree_client->observed_pointer_events().size());
+    auto event = std::move(window_tree_client->PopObservedPointerEvent().event);
+    ASSERT_TRUE(event);
+    EXPECT_EQ(ET_POINTER_DOWN, event->type());
+    EXPECT_EQ(gfx::Point(5, 6), event->AsLocatedEvent()->location());
+  }
+
+  event_generator.ReleaseLeftButton();
+  {
+    ASSERT_EQ(1u, window_tree_client->observed_pointer_events().size());
+    auto event = std::move(window_tree_client->PopObservedPointerEvent().event);
+    ASSERT_TRUE(event);
+    EXPECT_EQ(ET_POINTER_UP, event->type());
+    EXPECT_EQ(gfx::Point(5, 6), event->AsLocatedEvent()->location());
+  }
+
+  // Enable observing move events.
+  helper.helper_->window_tree()->StartPointerWatcher(true);
+  event_generator.MoveMouseTo(8, 9);
+  {
+    ASSERT_EQ(1u, window_tree_client->observed_pointer_events().size());
+    auto event = std::move(window_tree_client->PopObservedPointerEvent().event);
+    ASSERT_TRUE(event);
+    EXPECT_EQ(ET_POINTER_MOVED, event->type());
+    EXPECT_EQ(gfx::Point(8, 9), event->AsLocatedEvent()->location());
+  }
+
+  const int kTouchId = 11;
+  event_generator.MoveTouchId(gfx::Point(2, 3), kTouchId);
+  {
+    ASSERT_EQ(1u, window_tree_client->observed_pointer_events().size());
+    auto event = std::move(window_tree_client->PopObservedPointerEvent().event);
+    ASSERT_TRUE(event);
+    EXPECT_EQ(ET_POINTER_MOVED, event->type());
+    EXPECT_EQ(gfx::Point(2, 3), event->AsLocatedEvent()->location());
+  }
 }
 
 }  // namespace

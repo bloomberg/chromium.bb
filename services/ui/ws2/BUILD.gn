@@ -29,6 +29,8 @@ component("lib") {
     "client_root.h",
     "client_window.cc",
     "client_window.h",
+    "pointer_watcher.cc",
+    "pointer_watcher.h",
     "screen_provider.cc",
     "screen_provider.h",
     "window_host_frame_sink_client.cc",
@@ -127,6 +129,7 @@ source_set("tests") {
     "//third_party/mesa:osmesa",
     "//ui/aura:test_support",
     "//ui/compositor:test_support",
+    "//ui/events:test_support",
     "//ui/gl:test_support",
   ]
 

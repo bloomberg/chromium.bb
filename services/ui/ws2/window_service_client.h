@@ -22,10 +22,14 @@ class Window;
 }
 
 namespace ui {
+
+class Event;
+
 namespace ws2 {
 
 class ClientChangeTracker;
 class ClientRoot;
+class PointerWatcher;
 class WindowService;
 class WindowServiceClientBinding;
 
@@ -52,7 +56,7 @@ class WindowServiceClientBinding;
 // WindowServiceClientBinding).
 class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
     : public mojom::WindowTree,
-      aura::WindowObserver {
+      public aura::WindowObserver {
  public:
   WindowServiceClient(WindowService* window_service,
                       ClientSpecificId client_id,
@@ -63,6 +67,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   // See class description for details on Init variants.
   void InitForEmbed(aura::Window* root, mojom::WindowTreePtr window_tree_ptr);
   void InitFromFactory();
+
+  // Notifies the client that an event matching a pointer watcher has been
+  // received.
+  void SendPointerWatcherEventToClient(int64_t display_id,
+                                       std::unique_ptr<Event> event);
 
  private:
   friend class ClientRoot;
@@ -282,11 +291,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   void SetImeVisibility(Id window_id,
                         bool visible,
                         ::ui::mojom::TextInputStatePtr state) override;
-  void SetEventTargetingPolicy(
-      Id window_id,
-      ::ui::mojom::EventTargetingPolicy policy) override;
+  void SetEventTargetingPolicy(Id transport_window_id,
+                               ui::mojom::EventTargetingPolicy policy) override;
   void OnWindowInputEventAck(uint32_t event_id,
-                             ::ui::mojom::EventResult result) override;
+                             mojom::EventResult result) override;
   void DeactivateWindow(Id window_id) override;
   void StackAbove(uint32_t change_id, Id above_id, Id below_id) override;
   void StackAtTop(uint32_t change_id, Id window_id) override;
@@ -354,6 +362,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
 
   // Used to track the active change from the client.
   std::unique_ptr<ClientChangeTracker> property_change_tracker_;
+
+  // If non-null the client has requested pointer events the client would not
+  // normally get.
+  std::unique_ptr<PointerWatcher> pointer_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServiceClient);
 };

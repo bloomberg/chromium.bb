@@ -20,6 +20,7 @@
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher_observer.h"
 #include "ui/aura/window_port_for_shutdown.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -113,6 +114,16 @@ void Env::AddObserver(EnvObserver* observer) {
 
 void Env::RemoveObserver(EnvObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void Env::AddWindowEventDispatcherObserver(
+    WindowEventDispatcherObserver* observer) {
+  window_event_dispatcher_observers_.AddObserver(observer);
+}
+
+void Env::RemoveWindowEventDispatcherObserver(
+    WindowEventDispatcherObserver* observer) {
+  window_event_dispatcher_observers_.RemoveObserver(observer);
 }
 
 bool Env::IsMouseButtonDown() const {

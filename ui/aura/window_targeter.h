@@ -89,8 +89,8 @@ class AURA_EXPORT WindowTargeter : public ui::EventTargeter {
 
  protected:
   // Same as FindTargetForEvent(), but used for positional events. The location
-  // etc. of |event| are in |root|'s coordinate system. When finding the target
-  // for the event, the targeter can mutate the |event| (e.g. change the
+  // etc. of |event| are in |window|'s coordinate system. When finding the
+  // target for the event, the targeter can mutate the |event| (e.g. change the
   // coordinate to be in the returned target's coordinate system) so that it can
   // be dispatched to the target without any further modification.
   virtual Window* FindTargetForLocatedEvent(Window* window,
