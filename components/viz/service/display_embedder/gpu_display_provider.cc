@@ -114,7 +114,7 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 
   if (!gpu_compositing) {
     output_surface = std::make_unique<SoftwareOutputSurface>(
-        CreateSoftwareOutputDeviceForPlatform(surface_handle), task_runner_);
+        CreateSoftwareOutputDeviceForPlatform(surface_handle));
   } else if (renderer_settings.use_skia_renderer &&
              renderer_settings.use_skia_deferred_display_list) {
 #if defined(OS_MACOSX) || defined(OS_WIN)
@@ -208,7 +208,7 @@ GpuDisplayProvider::CreateSoftwareOutputDeviceForPlatform(
 #if defined(OS_WIN)
   return CreateSoftwareOutputDeviceWin(surface_handle, &output_device_backing_);
 #elif defined(OS_MACOSX)
-  return std::make_unique<SoftwareOutputDeviceMac>();
+  return std::make_unique<SoftwareOutputDeviceMac>(task_runner_);
 #elif defined(OS_ANDROID)
   // Android does not do software compositing, so we can't get here.
   NOTREACHED();

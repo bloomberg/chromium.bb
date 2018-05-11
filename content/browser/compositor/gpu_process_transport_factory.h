@@ -111,7 +111,8 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
 
   PerCompositorData* CreatePerCompositorData(ui::Compositor* compositor);
   std::unique_ptr<viz::SoftwareOutputDevice> CreateSoftwareOutputDevice(
-      gfx::AcceleratedWidget widget);
+      gfx::AcceleratedWidget widget,
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
   void EstablishedGpuChannel(
       base::WeakPtr<ui::Compositor> compositor,
       bool use_gpu_compositing,

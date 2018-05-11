@@ -21,7 +21,8 @@ namespace viz {
 
 class VIZ_SERVICE_EXPORT SoftwareOutputDeviceMac : public SoftwareOutputDevice {
  public:
-  SoftwareOutputDeviceMac();
+  explicit SoftwareOutputDeviceMac(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~SoftwareOutputDeviceMac() override;
 
   // SoftwareOutputDevice implementation.

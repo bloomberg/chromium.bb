@@ -6,8 +6,6 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SOFTWARE_OUTPUT_SURFACE_H_
 
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/latency/latency_info.h"
@@ -18,8 +16,8 @@ class SoftwareOutputDevice;
 
 class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
  public:
-  SoftwareOutputSurface(std::unique_ptr<SoftwareOutputDevice> software_device,
-                        scoped_refptr<base::SequencedTaskRunner> task_runner);
+  explicit SoftwareOutputSurface(
+      std::unique_ptr<SoftwareOutputDevice> software_device);
   ~SoftwareOutputSurface() override;
 
   // OutputSurface implementation.
@@ -49,7 +47,6 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
   void SwapBuffersCallback(uint64_t swap_id);
 
   OutputSurfaceClient* client_ = nullptr;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::TimeDelta refresh_interval_;
   uint64_t swap_id_ = 0;
   std::vector<ui::LatencyInfo> stored_latency_info_;

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/service/display/output_surface_client.h"
@@ -23,11 +22,9 @@ namespace content {
 
 SoftwareBrowserCompositorOutputSurface::SoftwareBrowserCompositorOutputSurface(
     std::unique_ptr<viz::SoftwareOutputDevice> software_device,
-    const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    const UpdateVSyncParametersCallback& update_vsync_parameters_callback)
     : BrowserCompositorOutputSurface(std::move(software_device),
                                      update_vsync_parameters_callback),
-      task_runner_(std::move(task_runner)),
       weak_factory_(this) {}
 
 SoftwareBrowserCompositorOutputSurface::
@@ -88,11 +85,9 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
   }
 
   ++swap_id_;
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &SoftwareBrowserCompositorOutputSurface::SwapBuffersCallback,
-          weak_factory_.GetWeakPtr(), swap_id_, frame.latency_info));
+  software_device()->OnSwapBuffers(base::BindOnce(
+      &SoftwareBrowserCompositorOutputSurface::SwapBuffersCallback,
+      weak_factory_.GetWeakPtr(), swap_id_, frame.latency_info));
 }
 
 void SoftwareBrowserCompositorOutputSurface::SwapBuffersCallback(

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/service/display/output_surface_client.h"
@@ -22,11 +21,8 @@
 namespace viz {
 
 SoftwareOutputSurface::SoftwareOutputSurface(
-    std::unique_ptr<SoftwareOutputDevice> software_device,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : OutputSurface(std::move(software_device)),
-      task_runner_(std::move(task_runner)),
-      weak_factory_(this) {}
+    std::unique_ptr<SoftwareOutputDevice> software_device)
+    : OutputSurface(std::move(software_device)), weak_factory_(this) {}
 
 SoftwareOutputSurface::~SoftwareOutputSurface() = default;
 
@@ -84,9 +80,9 @@ void SoftwareOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   // Update refresh_interval_ as well.
 
   ++swap_id_;
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SoftwareOutputSurface::SwapBuffersCallback,
-                                weak_factory_.GetWeakPtr(), swap_id_));
+  software_device()->OnSwapBuffers(
+      base::BindOnce(&SoftwareOutputSurface::SwapBuffersCallback,
+                     weak_factory_.GetWeakPtr(), swap_id_));
 }
 
 bool SoftwareOutputSurface::IsDisplayedAsOverlayPlane() const {
