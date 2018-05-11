@@ -645,6 +645,10 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     return delegates_.back().get();
   }
 
+  MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() const {
+    return view_->GetMouseWheelPhaseHandler();
+  }
+
   // Sets the |view| active in TextInputManager with the given |type|. |type|
   // cannot be ui::TEXT_INPUT_TYPE_NONE.
   // Must not be called in the destruction path of |view|.
@@ -2491,6 +2495,81 @@ TEST_F(RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest,
 TEST_F(RenderWidgetHostViewAuraAsyncWheelEventsEnabledTest,
        TouchpadFlingStartResetsWheelPhaseState) {
   TouchpadFlingStartResetsWheelPhaseState();
+}
+
+TEST_F(RenderWidgetHostViewAuraAsyncWheelEventsEnabledTest,
+       ScrollingWithExternalMouseBreaksTouchpadScrollLatching) {
+  // The test is valid only when wheel scroll latching is enabled.
+  if (wheel_scrolling_mode_ == kWheelScrollingModeNone)
+    return;
+
+  // Set the mouse_wheel_phase_handler_ timer timeout to a large value to make
+  // sure that the timer is still running when we are checking for the pending
+  // wheel end event after sending ui::MouseWheelEvent.
+  view_->event_handler()->set_mouse_wheel_wheel_phase_handler_timeout(
+      TestTimeouts::action_max_timeout());
+
+  view_->InitAsChild(nullptr);
+  view_->Show();
+  sink_->ClearMessages();
+
+  // When the user puts their fingers down a GFC is receieved.
+  ui::ScrollEvent fling_cancel(ui::ET_SCROLL_FLING_CANCEL, gfx::Point(2, 2),
+                               ui::EventTimeForNow(), 0, 0, 0, 0, 0, 2);
+  view_->OnScrollEvent(&fling_cancel);
+
+  // Start touchpad scrolling by sending a ui::ET_SCROLL event.
+  ui::ScrollEvent scroll0(ui::ET_SCROLL, gfx::Point(2, 2),
+                          ui::EventTimeForNow(), 0, 0, 5, 0, 5, 2);
+  view_->OnScrollEvent(&scroll0);
+  base::RunLoop().RunUntilIdle();
+  MockWidgetInputHandler::MessageVector events =
+      GetAndResetDispatchedMessages();
+
+  const WebMouseWheelEvent* wheel_event =
+      static_cast<const WebMouseWheelEvent*>(
+          events[0]->ToEvent()->Event()->web_event.get());
+  EXPECT_EQ("MouseWheel", GetMessageNames(events));
+  EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
+  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  // The mouse_wheel_phase_handler's timer won't be running during touchpad
+  // scroll.
+  EXPECT_FALSE(GetMouseWheelPhaseHandler()->HasPendingWheelEndEvent());
+
+  // ACK the GSB and GSU events generated from the first touchpad wheel event.
+  events = GetAndResetDispatchedMessages();
+  EXPECT_EQ("GestureScrollBegin GestureScrollUpdate", GetMessageNames(events));
+  const WebGestureEvent* gesture_event = static_cast<const WebGestureEvent*>(
+      events[0]->ToEvent()->Event()->web_event.get());
+  EXPECT_EQ(WebInputEvent::kGestureScrollBegin, gesture_event->GetType());
+  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+  gesture_event = static_cast<const WebGestureEvent*>(
+      events[1]->ToEvent()->Event()->web_event.get());
+  EXPECT_EQ(WebInputEvent::kGestureScrollUpdate, gesture_event->GetType());
+  events[1]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Start mouse wheel scrolling by sending a ui::ET_MOUSEWHEEL event. This
+  // should end the touchpad scrolling sequence and start a new timer-based
+  // wheel scrolling sequence.
+  ui::MouseWheelEvent wheel(gfx::Vector2d(0, 5), gfx::Point(2, 2),
+                            gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0);
+  view_->OnMouseEvent(&wheel);
+  base::RunLoop().RunUntilIdle();
+  events = GetAndResetDispatchedMessages();
+  EXPECT_EQ("MouseWheel GestureScrollEnd MouseWheel", GetMessageNames(events));
+  EXPECT_TRUE(events[0]->ToEvent());
+  wheel_event = static_cast<const WebMouseWheelEvent*>(
+      events[0]->ToEvent()->Event()->web_event.get());
+  EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_event->phase);
+  EXPECT_TRUE(events[2]->ToEvent());
+  wheel_event = static_cast<const WebMouseWheelEvent*>(
+      events[2]->ToEvent()->Event()->web_event.get());
+  EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
+
+  // The mouse_wheel_phase_handler's timer will be running during mouse wheel
+  // scroll.
+  EXPECT_TRUE(GetMouseWheelPhaseHandler()->HasPendingWheelEndEvent());
 }
 
 void RenderWidgetHostViewAuraTest::
