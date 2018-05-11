@@ -100,6 +100,7 @@ Bug(none) virtual/without-smil/ [ Skip ]
 Bug(none) virtual/blink-gen-property-trees/ [ Skip ]
 
 crbug.com/778875 virtual/threaded/fast/animationworklet/ [ Skip ]
+crbug.com/841567 virtual/threaded/fast/scrolling [ Skip ]
 
 # Fail on SPv1, but succeed on SPv2
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Pass ]
