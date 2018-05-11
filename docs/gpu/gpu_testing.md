@@ -561,6 +561,9 @@ Here are some examples:
     exposed a real correctness bug ([Issue 606112](http://crbug.com/606112)).
 *   A bug in glibc's `sem_post`/`sem_wait` primitives breaking V8's parallel
     garbage collection ([Issue 609249](http://crbug.com/609249)).
+*   A change to Blink's memory purging primitive which caused intermittent
+    timeouts of WebGL conformance tests on all platforms ([Issue
+    840988](http://crbug.com/840988)).
 
 If you notice flaky test failures either on the GPU waterfalls or try servers,
 please file bugs right away with the component Internals>GPU>Testing and
