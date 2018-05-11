@@ -39,22 +39,40 @@ using chrome_test_util::SystemSelectionCallout;
 using chrome_test_util::SystemSelectionCalloutCopyButton;
 
 namespace {
+// Directory containing the |kLogoPagePath| and |kLogoPageImageSourcePath|
+// resources.
 const char kServerFilesDir[] = "ios/testing/data/http_server_files/";
+// Path to a page containing the chromium logo and the text |kLogoPageText|.
 const char kLogoPagePath[] = "/chromium_logo_page.html";
+// Path to the chromium logo.
 const char kLogoPageImageSourcePath[] = "/chromium_logo.png";
+// The DOM element ID of the chromium image on the logo page.
+const char kLogoPageChromiumImageId[] = "chromium_image";
+// The text of the message on the logo page.
+const char kLogoPageText[] = "Page with some text and the chromium logo image.";
 
-const char kUrlInitialPage[] = "/scenarioContextMenuOpenInNewTab";
-const char kUrlDestinationPage[] = "/destination";
-const char kChromiumImageID[] = "chromium_image";
-const char kDestinationLinkID[] = "link";
-const char kDestinationPageMessageID[] = "message";
-
-// HTML content of the destination page that sets the page title.
+// URL to a page with a static message.
+const char kDestinationPageUrl[] = "/destination";
+// HTML content of the destination page.
 const char kDestinationHtml[] =
     "<html><body><script>document.title='new doc'</script>"
     "<span id=\"message\">You made it!</span>"
     "</body></html>";
+// The DOM element ID of the message on the destination page.
+const char kDestinationPageTextId[] = "message";
+// The text of the message on the destination page.
 const char kDestinationPageText[] = "You made it!";
+
+// URL to a page with a link to the destination page.
+const char kInitialPageUrl[] = "/scenarioContextMenuOpenInNewTab";
+// HTML content of a page with a link to the destination page.
+const char kInitialPageHtml[] =
+    "<html><body><a style='margin-left:50px' href='/destination' id='link'>"
+    "link</a></body></html>";
+// The DOM element ID of the link to the destination page.
+const char kInitialPageDestinationLinkId[] = "link";
+// The text of the link to the destination page.
+const char kInitialPageDestinationLinkText[] = "link";
 
 // Matcher for the open image button in the context menu.
 id<GREYMatcher> OpenImageButton() {
@@ -74,13 +92,10 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       std::make_unique<net::test_server::BasicHttpResponse>();
   http_response->set_code(net::HTTP_OK);
 
-  if (request.relative_url == kUrlInitialPage) {
+  if (request.relative_url == kInitialPageUrl) {
     // The initial page contains a link to the destination page.
-    http_response->set_content(
-        "<html><body><a style='margin-left:50px' href='" +
-        std::string(kUrlDestinationPage) +
-        "' id='link'>link</a></body></html>");
-  } else if (request.relative_url == kUrlDestinationPage) {
+    http_response->set_content(kInitialPageHtml);
+  } else if (request.relative_url == kDestinationPageUrl) {
     http_response->set_content(kDestinationHtml);
   } else {
     return nullptr;
@@ -174,16 +189,19 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
   const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
   [ChromeEarlGrey loadURL:pageURL];
-  [ChromeEarlGrey waitForMainTabCount:1];
+  [ChromeEarlGrey waitForWebViewContainingText:kLogoPageText];
 
-  LongPressElement(kChromiumImageID);
+  LongPressElement(kLogoPageChromiumImageId);
   TapOnContextMenuButton(OpenImageButton());
 
+  [ChromeEarlGrey waitForPageToFinishLoading];
+
   // Verify url and tab count.
+  GREYAssertEqual(chrome_test_util::GetMainTabCount(), 1,
+                  @"Image should be opened in existing tab.");
   const GURL imageURL = self.testServer->GetURL(kLogoPageImageSourcePath);
   [[EarlGrey selectElementWithMatcher:OmniboxText(imageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
-  [ChromeEarlGrey waitForMainTabCount:1];
 }
 
 // Tests that selecting "Open Image in New Tab" from the context menu properly
@@ -204,18 +222,19 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
   const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
   [ChromeEarlGrey loadURL:pageURL];
-  [ChromeEarlGrey waitForMainTabCount:1];
+  [ChromeEarlGrey waitForWebViewContainingText:kLogoPageText];
 
-  LongPressElement(kChromiumImageID);
+  LongPressElement(kLogoPageChromiumImageId);
   TapOnContextMenuButton(OpenImageInNewTabButton());
 
+  [ChromeEarlGrey waitForMainTabCount:2];
   SelectTabAtIndexInCurrentMode(1U);
+  [ChromeEarlGrey waitForPageToFinishLoading];
 
-  // Verify url and tab count.
+  // Verify url.
   const GURL imageURL = self.testServer->GetURL(kLogoPageImageSourcePath);
   [[EarlGrey selectElementWithMatcher:OmniboxText(imageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
-  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests "Open in New Tab" on context menu. (With the
@@ -231,20 +250,21 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   scopedFeatureList.InitAndDisableFeature(
       web::features::kContextMenuElementPostMessage);
 
-  const GURL initialURL = self.testServer->GetURL(kUrlInitialPage);
+  const GURL initialURL = self.testServer->GetURL(kInitialPageUrl);
   [ChromeEarlGrey loadURL:initialURL];
-  [ChromeEarlGrey waitForMainTabCount:1];
+  [ChromeEarlGrey waitForWebViewContainingText:kInitialPageDestinationLinkText];
 
-  LongPressElement(kDestinationLinkID);
+  LongPressElement(kInitialPageDestinationLinkId);
   TapOnContextMenuButton(OpenLinkInNewTabButton());
 
+  [ChromeEarlGrey waitForMainTabCount:2];
   SelectTabAtIndexInCurrentMode(1U);
+  [ChromeEarlGrey waitForWebViewContainingText:kDestinationPageText];
 
-  // Verify url and tab count.
-  const GURL destinationURL = self.testServer->GetURL(kUrlDestinationPage);
+  // Verify url.
+  const GURL destinationURL = self.testServer->GetURL(kDestinationPageUrl);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
-  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests that the context menu is displayed for an image url. (With the
@@ -263,7 +283,6 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
   const GURL imageURL = self.testServer->GetURL(kLogoPageImageSourcePath);
   [ChromeEarlGrey loadURL:imageURL];
-  [ChromeEarlGrey waitForMainTabCount:1];
 
   // Calculate a point inside the displayed image. Javascript can not be used to
   // find the element because no DOM exists.
@@ -279,8 +298,9 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
   TapOnContextMenuButton(OpenImageInNewTabButton());
   [ChromeEarlGrey waitForMainTabCount:2];
-
   SelectTabAtIndexInCurrentMode(1U);
+  [ChromeEarlGrey waitForPageToFinishLoading];
+
   // Verify url.
   [[EarlGrey selectElementWithMatcher:OmniboxText(imageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -296,10 +316,11 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
   const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
   [ChromeEarlGrey loadURL:pageURL];
-  [ChromeEarlGrey waitForMainTabCount:1];
+  [ChromeEarlGrey waitForWebViewContainingText:kLogoPageText];
 
-  LongPressElement(kChromiumImageID);
+  LongPressElement(kLogoPageChromiumImageId);
   TapOnContextMenuButton(OpenImageButton());
+  [ChromeEarlGrey waitForPageToFinishLoading];
 
   histogramTester.ExpectTotalCount("ContextMenu.DOMElementFetchDuration", 1,
                                    ^(NSString* error) {
@@ -317,16 +338,16 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
   const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
   [ChromeEarlGrey loadURL:pageURL];
-  [ChromeEarlGrey waitForMainTabCount:1];
+  [ChromeEarlGrey waitForWebViewContainingText:kLogoPageText];
 
-  LongPressElement(kChromiumImageID);
+  LongPressElement(kLogoPageChromiumImageId);
   TapOnContextMenuButton(OpenImageButton());
+  [ChromeEarlGrey waitForPageToFinishLoading];
 
-  // Verify url and tab count.
+  // Verify url.
   const GURL imageURL = self.testServer->GetURL(kLogoPageImageSourcePath);
   [[EarlGrey selectElementWithMatcher:OmniboxText(imageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
-  [ChromeEarlGrey waitForMainTabCount:1];
 }
 
 // Tests that selecting "Open Image in New Tab" from the context menu properly
@@ -347,18 +368,19 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
   const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
   [ChromeEarlGrey loadURL:pageURL];
-  [ChromeEarlGrey waitForMainTabCount:1];
+  [ChromeEarlGrey waitForWebViewContainingText:kLogoPageText];
 
-  LongPressElement(kChromiumImageID);
+  LongPressElement(kLogoPageChromiumImageId);
   TapOnContextMenuButton(OpenImageInNewTabButton());
 
+  [ChromeEarlGrey waitForMainTabCount:2];
   SelectTabAtIndexInCurrentMode(1U);
+  [ChromeEarlGrey waitForPageToFinishLoading];
 
-  // Verify url and tab count.
+  // Verify url.
   const GURL imageURL = self.testServer->GetURL(kLogoPageImageSourcePath);
   [[EarlGrey selectElementWithMatcher:OmniboxText(imageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
-  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests "Open in New Tab" on context menu. (With the
@@ -376,20 +398,21 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   scopedFeatureList.InitAndEnableFeature(
       web::features::kContextMenuElementPostMessage);
 
-  const GURL initialURL = self.testServer->GetURL(kUrlInitialPage);
+  const GURL initialURL = self.testServer->GetURL(kInitialPageUrl);
   [ChromeEarlGrey loadURL:initialURL];
-  [ChromeEarlGrey waitForMainTabCount:1];
+  [ChromeEarlGrey waitForWebViewContainingText:kInitialPageDestinationLinkText];
 
-  LongPressElement(kDestinationLinkID);
+  LongPressElement(kInitialPageDestinationLinkId);
   TapOnContextMenuButton(OpenLinkInNewTabButton());
 
+  [ChromeEarlGrey waitForMainTabCount:2];
   SelectTabAtIndexInCurrentMode(1U);
+  [ChromeEarlGrey waitForWebViewContainingText:kDestinationPageText];
 
-  // Verify url and tab count.
-  const GURL destinationURL = self.testServer->GetURL(kUrlDestinationPage);
+  // Verify url.
+  const GURL destinationURL = self.testServer->GetURL(kDestinationPageUrl);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
-  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests that the context menu is displayed for an image url. (With the
@@ -409,7 +432,6 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
   const GURL imageURL = self.testServer->GetURL(kLogoPageImageSourcePath);
   [ChromeEarlGrey loadURL:imageURL];
-  [ChromeEarlGrey waitForMainTabCount:1];
 
   // Calculate a point inside the displayed image. Javascript can not be used to
   // find the element because no DOM exists.
@@ -425,8 +447,9 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
   TapOnContextMenuButton(OpenImageInNewTabButton());
   [ChromeEarlGrey waitForMainTabCount:2];
-
   SelectTabAtIndexInCurrentMode(1U);
+  [ChromeEarlGrey waitForPageToFinishLoading];
+
   // Verify url.
   [[EarlGrey selectElementWithMatcher:OmniboxText(imageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -442,10 +465,11 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
   const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
   [ChromeEarlGrey loadURL:pageURL];
-  [ChromeEarlGrey waitForMainTabCount:1];
+  [ChromeEarlGrey waitForWebViewContainingText:kLogoPageText];
 
-  LongPressElement(kChromiumImageID);
+  LongPressElement(kLogoPageChromiumImageId);
   TapOnContextMenuButton(OpenImageButton());
+  [ChromeEarlGrey waitForPageToFinishLoading];
 
   histogramTester.ExpectTotalCount("ContextMenu.DOMElementFetchDuration", 1,
                                    ^(NSString* error) {
@@ -462,11 +486,11 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
   // Load the destination page directly because it has a plain text message on
   // it.
-  const GURL destinationURL = self.testServer->GetURL(kUrlDestinationPage);
+  const GURL destinationURL = self.testServer->GetURL(kDestinationPageUrl);
   [ChromeEarlGrey loadURL:destinationURL];
   [ChromeEarlGrey waitForWebViewContainingText:kDestinationPageText];
 
-  LongPressElement(kDestinationPageMessageID);
+  LongPressElement(kDestinationPageTextId);
 
   // Verify that context menu is not shown.
   [[EarlGrey selectElementWithMatcher:ContextMenuCopyButton()]
