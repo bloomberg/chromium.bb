@@ -41,6 +41,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/certificate_transparency/ct_known_logs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/data_usage/core/data_use_amortizer.h"
@@ -65,7 +66,6 @@
 #include "net/cert/caching_cert_verifier.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_proc.h"
-#include "net/cert/ct_known_logs.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
 #include "net/dns/host_cache.h"
@@ -521,10 +521,6 @@ void IOThread::Init() {
   UMA_HISTOGRAM_BOOLEAN("Net.NeedsHWCAP2Workaround",
                         CRYPTO_needs_hwcap2_workaround());
 #endif
-
-  std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs(
-      net::ct::CreateLogVerifiersForKnownLogs());
-  globals_->ct_logs.assign(ct_logs.begin(), ct_logs.end());
 
   ConstructSystemRequestContext();
 

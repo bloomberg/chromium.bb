@@ -26,7 +26,6 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
-#include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
@@ -131,7 +130,6 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     builder.set_user_agent(GetShellUserAgent());
 
     builder.SetCertVerifier(GetCertVerifier());
-    builder.set_ct_verifier(std::make_unique<net::DoNothingCTVerifier>());
 
     std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service =
         GetProxyService();

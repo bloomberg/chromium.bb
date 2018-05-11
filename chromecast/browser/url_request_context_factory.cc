@@ -27,7 +27,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
-#include "net/cert/do_nothing_ct_verifier.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/cert_net/nss_ocsp.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/host_resolver.h"
@@ -231,8 +231,7 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
   cert_verifier_ = net::CertVerifier::CreateDefault();
   ssl_config_service_ = new net::SSLConfigServiceDefaults;
   transport_security_state_.reset(new net::TransportSecurityState());
-  // Certificate transparency is current disabled for Chromecast.
-  cert_transparency_verifier_.reset(new net::DoNothingCTVerifier());
+  cert_transparency_verifier_.reset(new net::MultiLogCTVerifier());
   ct_policy_enforcer_.reset(new net::DefaultCTPolicyEnforcer());
 
   http_auth_handler_factory_ =

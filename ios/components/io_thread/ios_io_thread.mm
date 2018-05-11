@@ -37,8 +37,6 @@
 #include "ios/web/public/web_client.h"
 #include "ios/web/public/web_thread.h"
 #include "net/cert/cert_verifier.h"
-#include "net/cert/ct_known_logs.h"
-#include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
@@ -312,14 +310,7 @@ void IOSIOThread::Init() {
 
   globals_->transport_security_state.reset(new net::TransportSecurityState());
 
-  std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs(
-      net::ct::CreateLogVerifiersForKnownLogs());
-
-  net::MultiLogCTVerifier* ct_verifier = new net::MultiLogCTVerifier();
-  globals_->cert_transparency_verifier.reset(ct_verifier);
-  // Add built-in logs
-  ct_verifier->AddLogs(ct_logs);
-
+  globals_->cert_transparency_verifier.reset(new net::MultiLogCTVerifier());
   globals_->ct_policy_enforcer.reset(new net::DefaultCTPolicyEnforcer());
 
   globals_->ssl_config_service = new net::SSLConfigServiceDefaults();

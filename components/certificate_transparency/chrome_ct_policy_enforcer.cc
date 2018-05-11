@@ -20,7 +20,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "net/cert/ct_known_logs.h"
+#include "components/certificate_transparency/ct_known_logs.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/x509_certificate.h"
@@ -135,7 +135,7 @@ CTPolicyCompliance CheckCTPolicyCompliance(
   base::Time issuance_date = base::Time::Max();
   for (const auto& sct : verified_scts) {
     base::Time unused;
-    if (net::ct::IsLogDisqualified(sct->log_id, &unused))
+    if (IsLogDisqualified(sct->log_id, &unused))
       continue;
     issuance_date = std::min(sct->timestamp, issuance_date);
   }
@@ -150,7 +150,7 @@ CTPolicyCompliance CheckCTPolicyCompliance(
   for (const auto& sct : verified_scts) {
     base::Time disqualification_date;
     bool is_disqualified =
-        net::ct::IsLogDisqualified(sct->log_id, &disqualification_date);
+        IsLogDisqualified(sct->log_id, &disqualification_date);
     if (is_disqualified &&
         sct->origin != net::ct::SignedCertificateTimestamp::SCT_EMBEDDED) {
       // For OCSP and TLS delivered SCTs, only SCTs that are valid at the
@@ -158,7 +158,7 @@ CTPolicyCompliance CheckCTPolicyCompliance(
       continue;
     }
 
-    if (net::ct::IsLogOperatedByGoogle(sct->log_id)) {
+    if (IsLogOperatedByGoogle(sct->log_id)) {
       has_valid_google_sct |= !is_disqualified;
       if (sct->origin == net::ct::SignedCertificateTimestamp::SCT_EMBEDDED)
         has_embedded_google_sct = true;

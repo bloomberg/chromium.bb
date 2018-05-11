@@ -6,6 +6,8 @@ static_library("certificate_transparency") {
   sources = [
     "chrome_ct_policy_enforcer.cc",
     "chrome_ct_policy_enforcer.h",
+    "ct_known_logs.cc",
+    "ct_known_logs.h",
     "ct_policy_manager.cc",
     "ct_policy_manager.h",
     "features.cc",
@@ -27,6 +29,7 @@ static_library("certificate_transparency") {
   deps = [
     "//base",
     "//components/base32",
+    "//components/certificate_transparency/data:ct_log_list",
     "//components/prefs",
     "//components/url_formatter",
     "//components/url_matcher",
@@ -39,6 +42,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "chrome_ct_policy_enforcer_unittest.cc",
+    "ct_known_logs_unittest.cc",
     "ct_policy_manager_unittest.cc",
     "log_dns_client_unittest.cc",
     "mock_log_dns_traffic.cc",
@@ -51,6 +55,7 @@ source_set("unit_tests") {
     ":certificate_transparency",
     "//base/test:test_support",
     "//components/base32",
+    "//components/certificate_transparency/data:ct_log_list",
     "//components/prefs:test_support",
     "//net:test_support",
     "//testing/gmock",

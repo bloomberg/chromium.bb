@@ -21,7 +21,6 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/cert/cert_verify_result.h"
-#include "net/cert/ct_known_logs.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/ct_serialization.h"
 #include "net/cert/ct_verifier.h"

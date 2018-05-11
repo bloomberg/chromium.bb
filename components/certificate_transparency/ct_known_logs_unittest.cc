@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/cert/ct_known_logs.h"
+#include "components/certificate_transparency/ct_known_logs.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -14,12 +14,10 @@
 #include "crypto/sha2.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
-
-namespace ct {
+namespace certificate_transparency {
 
 namespace {
-#include "net/data/ssl/certificate_transparency/log_list-inc.cc"
+#include "components/certificate_transparency/data/log_list-inc.cc"
 }  // namespace
 
 TEST(CTKnownLogsTest, GoogleIDsAreSorted) {
@@ -37,6 +35,4 @@ TEST(CTKnownLogsTest, DisallowedLogsAreSortedByLogID) {
       }));
 }
 
-}  // namespace ct
-
-}  // namespace net
+}  // namespace certificate_transparency
