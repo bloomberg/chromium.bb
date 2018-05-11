@@ -101,7 +101,7 @@ suite('settings-fingerprint-progress-arc', function() {
     progressArc.canvasCircleStrokeWidth_ = 3;
     progressArc.canvasCircleBackgroundColor_ = 'rgba(0,0,0,1.0)';
     progressArc.canvasCircleProgressColor_ = 'rgba(0,0,255,1.0)';
-    progressArc.canvasCircleShadowColor_= 'rgba(0,0,0,1.0)';
+    progressArc.canvasCircleShadowColor_ = 'rgba(0,0,0,1.0)';
     progressArc.clearCanvas = function() {
       const ctx = canvas.getContext('2d');
       ctx.fillStyle = 'rgba(255,255,255,1.0)';
@@ -117,14 +117,15 @@ suite('settings-fingerprint-progress-arc', function() {
     // Verify that by drawing an arc from 0 to PI/2 with radius 50 and center at
     // (150, 75), points along that arc should be blue, and points not on that
     // arc should remain white.
-    progressArc.drawArc(0, Math.PI / 2,
-        progressArc.canvasCircleProgressColor_);
+    progressArc.drawArc(0, Math.PI / 2, progressArc.canvasCircleProgressColor_);
     /** @type {Array<Point>} */
-    let expectedPointsOnArc = [{x:200, y:75} /* 0rad */,
-        {x:185, y:110} /* PI/4rad */, {x:150, y:125} /* PI/2rad */];
+    let expectedPointsOnArc = [
+      {x: 200, y: 75} /* 0rad */, {x: 185, y: 110} /* PI/4rad */,
+      {x: 150, y: 125} /* PI/2rad */
+    ];
     /** @type {Array<Point>} */
-    let expectedPointsNotOnArc = [{x:115, y:110} /* 3PI/4rad */,
-        {x:100, y:75} /* PI */];
+    let expectedPointsNotOnArc =
+        [{x: 115, y: 110} /* 3PI/4rad */, {x: 100, y: 75} /* PI */];
     checkListOfRGBData(blue, expectedPointsOnArc);
     checkListOfRGBData(white, expectedPointsNotOnArc);
 
@@ -135,13 +136,18 @@ suite('settings-fingerprint-progress-arc', function() {
     // Verify that by drawing an arc from 3PI/2 to 5PI/2 with radius 50 and
     // center at (150, 75), points along that arc should be blue, and points not
     // on that arc should remain white.
-    progressArc.drawArc(3 * Math.PI / 2, 5 * Math.PI / 2,
+    progressArc.drawArc(
+        3 * Math.PI / 2, 5 * Math.PI / 2,
         progressArc.canvasCircleProgressColor_);
-    expectedPointsOnArc = [{x:150, y:25} /* 3PI/2 */, {x:185, y:40} /* 7PI/4 */,
-        {x:200, y:75} /* 2PI */, {x:185, y:110} /* 9PI/4 */,
-        {x:150, y:125} /* 5PI/2rad */];
-    expectedPointsNotOnArc = [{x:115, y:110} /* 3PI/4rad */,
-        {x:100, y:75} /* PI */, {x:115, y:40} /* 5PI/4 */];
+    expectedPointsOnArc = [
+      {x: 150, y: 25} /* 3PI/2 */, {x: 185, y: 40} /* 7PI/4 */,
+      {x: 200, y: 75} /* 2PI */, {x: 185, y: 110} /* 9PI/4 */,
+      {x: 150, y: 125} /* 5PI/2rad */
+    ];
+    expectedPointsNotOnArc = [
+      {x: 115, y: 110} /* 3PI/4rad */, {x: 100, y: 75} /* PI */, {x: 115, y: 40}
+      /* 5PI/4 */
+    ];
     checkListOfRGBData(blue, expectedPointsOnArc);
     checkListOfRGBData(white, expectedPointsNotOnArc);
   });
@@ -152,15 +158,17 @@ suite('settings-fingerprint-progress-arc', function() {
     // remain white.
     progressArc.drawBackgroundCircle();
     /** @type {Array<Point>} */
-    const expectedPointsInCircle = [{x:200, y:75} /* 0rad */,
-        {x:150, y:125} /* PI/2rad */, {x:100, y:75} /* PIrad */,
-        {x:150, y:25} /* 3PI/2rad */];
+    const expectedPointsInCircle = [
+      {x: 200, y: 75} /* 0rad */, {x: 150, y: 125} /* PI/2rad */,
+      {x: 100, y: 75} /* PIrad */, {x: 150, y: 25} /* 3PI/2rad */
+    ];
     /** @type {Array<Point>} */
-    const expectedPointsNotInCircle =
-        [{x:110, y:75} /* Too left, outside of stroke */,
-         {x:90, y:75} /* Too right, inside of stroke */,
-         {x:200, y:100} /* Outside of circle */,
-         {x:150, y:75} /* In the center */];
+    const expectedPointsNotInCircle = [
+      {x: 110, y: 75} /* Too left, outside of stroke */,
+      {x: 90, y: 75} /* Too right, inside of stroke */,
+      {x: 200, y: 100} /* Outside of circle */,
+      {x: 150, y: 75} /* In the center */
+    ];
     checkListOfRGBData(black, expectedPointsInCircle);
     checkListOfRGBData(white, expectedPointsNotInCircle);
 
@@ -175,13 +183,15 @@ suite('settings-fingerprint-progress-arc', function() {
     // should not be white.
     progressArc.drawShadow(20, 0, 0);
     /** @type {Array<Point>} */
-    const expectedPointsInShadowBlur10 = [{x:210, y:75} /* 0rad */,
-        {x:150, y:135} /* PI/2rad */, {x:90, y:75} /* PIrad */,
-        {x:150, y:15} /* 3PI/2rad */];
+    const expectedPointsInShadowBlur10 = [
+      {x: 210, y: 75} /* 0rad */, {x: 150, y: 135} /* PI/2rad */,
+      {x: 90, y: 75} /* PIrad */, {x: 150, y: 15} /* 3PI/2rad */
+    ];
     /** @type {Array<Point>} */
-    const expectedPointsInShadowBlur20 = [{x:220, y:75} /* 0rad */,
-        {x:150, y:145} /* PI/2rad */, {x:80, y:75} /* PIrad */,
-        {x:150, y:5} /* 3PI/2rad */];
+    const expectedPointsInShadowBlur20 = [
+      {x: 220, y: 75} /* 0rad */, {x: 150, y: 145} /* PI/2rad */,
+      {x: 80, y: 75} /* PIrad */, {x: 150, y: 5} /* 3PI/2rad */
+    ];
 
     checkListOfNotWhiteData(expectedPointsInShadowBlur10);
     checkListOfNotWhiteData(expectedPointsInShadowBlur20);

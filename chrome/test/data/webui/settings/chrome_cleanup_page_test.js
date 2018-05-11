@@ -106,8 +106,7 @@ function validateVisibleItemsList(originalItems, visibleItems) {
     MockInteractions.tap(moreItemsLink);
     Polymer.dom.flush();
 
-    visibleItemsList =
-        visibleItems.querySelectorAll('* /deep/ .visible-item');
+    visibleItemsList = visibleItems.querySelectorAll('* /deep/ .visible-item');
     assertEquals(visibleItemsList.length, originalItems.length);
     assertTrue(moreItemsLink.hidden);
   }

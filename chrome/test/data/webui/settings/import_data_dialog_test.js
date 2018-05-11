@@ -45,7 +45,7 @@ suite('ImportDataDialog', function() {
       favorites: true,
       history: true,
       index: 0,
-      name: "Mozilla Firefox",
+      name: 'Mozilla Firefox',
       passwords: true,
       search: true
     },
@@ -54,7 +54,7 @@ suite('ImportDataDialog', function() {
       favorites: true,
       history: false,
       index: 1,
-      name: "Bookmarks HTML File",
+      name: 'Bookmarks HTML File',
       passwords: false,
       search: false
     },

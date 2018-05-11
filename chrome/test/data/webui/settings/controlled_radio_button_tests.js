@@ -21,8 +21,8 @@ suite('controlled radio button', function() {
   });
 
   test('disables when pref is managed', function() {
-    radioButton.set('pref.enforcement',
-                    chrome.settingsPrivate.Enforcement.ENFORCED);
+    radioButton.set(
+        'pref.enforcement', chrome.settingsPrivate.Enforcement.ENFORCED);
     Polymer.dom.flush();
     assertTrue(radioButton.disabled);
     assertFalse(!!radioButton.$$('cr-policy-pref-indicator'));
@@ -34,7 +34,7 @@ suite('controlled radio button', function() {
     radioButton.set('pref.enforcement', undefined);
     Polymer.dom.flush();
     assertFalse(radioButton.disabled);
-    assertEquals('none',
-                 radioButton.$$('cr-policy-pref-indicator').style.display);
+    assertEquals(
+        'none', radioButton.$$('cr-policy-pref-indicator').style.display);
   });
 });

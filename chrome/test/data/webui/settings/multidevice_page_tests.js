@@ -5,8 +5,7 @@
 suite('Multidevice', function() {
   let multidevicePage = null;
 
-  suiteSetup(function() {
-  });
+  suiteSetup(function() {});
 
   setup(function() {
     PolymerTest.clearBody();

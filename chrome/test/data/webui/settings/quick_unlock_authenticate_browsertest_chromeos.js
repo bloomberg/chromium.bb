@@ -91,8 +91,8 @@ cr.define('settings_people_page_quick_unlock', function() {
         quickUnlockPrivateApi.activeModes = [QuickUnlockMode.PIN];
         passwordElement.value = 'foo';
         testElement.submitPassword_();
-        assertDeepEquals([QuickUnlockMode.PIN],
-                         quickUnlockPrivateApi.activeModes);
+        assertDeepEquals(
+            [QuickUnlockMode.PIN], quickUnlockPrivateApi.activeModes);
         assertDeepEquals([], quickUnlockPrivateApi.credentials);
       });
 
@@ -130,8 +130,10 @@ cr.define('settings_people_page_quick_unlock', function() {
         passwordElement.value = 'foo';
         testElement.submitPassword_();
 
-        assertEquals(0, fakeUma.getHistogramValue(
-            LockScreenProgress.ENTER_PASSWORD_CORRECTLY));
+        assertEquals(
+            0,
+            fakeUma.getHistogramValue(
+                LockScreenProgress.ENTER_PASSWORD_CORRECTLY));
         assertFalse(!!testElement.setModes);
       });
 
@@ -143,8 +145,10 @@ cr.define('settings_people_page_quick_unlock', function() {
         passwordElement.value = 'foo';
         testElement.submitPassword_();
 
-        assertEquals(1, fakeUma.getHistogramValue(
-            LockScreenProgress.ENTER_PASSWORD_CORRECTLY));
+        assertEquals(
+            1,
+            fakeUma.getHistogramValue(
+                LockScreenProgress.ENTER_PASSWORD_CORRECTLY));
         assertTrue(!!testElement.setModes);
       });
 
@@ -341,8 +345,10 @@ cr.define('settings_people_page_quick_unlock', function() {
       // Tapping the PIN configure button opens up the setup PIN dialog, and
       // records a chose pin or password uma.
       test('TappingConfigureOpensSetupPin', function() {
-        assertEquals(0, fakeUma.getHistogramValue(
-            LockScreenProgress.CHOOSE_PIN_OR_PASSWORD));
+        assertEquals(
+            0,
+            fakeUma.getHistogramValue(
+                LockScreenProgress.CHOOSE_PIN_OR_PASSWORD));
         assertRadioButtonActive(passwordRadioButton);
 
         MockInteractions.tap(pinPasswordRadioButton);
@@ -354,8 +360,10 @@ cr.define('settings_people_page_quick_unlock', function() {
         Polymer.dom.flush();
         const setupPinDialog = getFromElement('#setupPin');
         assertTrue(setupPinDialog.$$('#dialog').open);
-        assertEquals(1, fakeUma.getHistogramValue(
-            LockScreenProgress.CHOOSE_PIN_OR_PASSWORD));
+        assertEquals(
+            1,
+            fakeUma.getHistogramValue(
+                LockScreenProgress.CHOOSE_PIN_OR_PASSWORD));
       });
     });
   }
@@ -532,20 +540,20 @@ cr.define('settings_people_page_quick_unlock', function() {
       test('SubmittingPinCallsQuickUnlockApi', function() {
         // Entering the same (even weak) pin twice calls the quick unlock API
         // and sets up a PIN.
-        assertEquals(0, fakeUma.getHistogramValue(
-            LockScreenProgress.ENTER_PIN));
-        assertEquals(0, fakeUma.getHistogramValue(
-            LockScreenProgress.CONFIRM_PIN));
+        assertEquals(
+            0, fakeUma.getHistogramValue(LockScreenProgress.ENTER_PIN));
+        assertEquals(
+            0, fakeUma.getHistogramValue(LockScreenProgress.CONFIRM_PIN));
         pinKeyboard.value = '1111';
         MockInteractions.tap(continueButton);
-        assertEquals(1, fakeUma.getHistogramValue(
-            LockScreenProgress.ENTER_PIN));
+        assertEquals(
+            1, fakeUma.getHistogramValue(LockScreenProgress.ENTER_PIN));
 
         pinKeyboard.value = '1111';
         MockInteractions.tap(continueButton);
 
-        assertEquals(1, fakeUma.getHistogramValue(
-            LockScreenProgress.CONFIRM_PIN));
+        assertEquals(
+            1, fakeUma.getHistogramValue(LockScreenProgress.CONFIRM_PIN));
         assertDeepEquals(['PIN'], quickUnlockPrivateApi.activeModes);
         assertDeepEquals(['1111'], quickUnlockPrivateApi.credentials);
       });

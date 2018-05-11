@@ -100,19 +100,19 @@ suite('AndroidAppsPageTests', function() {
       assertTrue(!subpage.$$('settings-android-settings-element'));
       setAndroidAppsState(true, true);
       assertTrue(!!subpage.$$('settings-android-settings-element'));
-      assertTrue(!!subpage.$$('settings-android-settings-element').
-          $$('#manageApps'));
+      assertTrue(
+          !!subpage.$$('settings-android-settings-element').$$('#manageApps'));
       setAndroidAppsState(true, false);
       assertTrue(!subpage.$$('settings-android-settings-element'));
     });
 
     test('ManageAppsOpenRequest', function() {
       setAndroidAppsState(true, true);
-      const button = subpage.$$('settings-android-settings-element').
-          $$('#manageApps');
+      const button =
+          subpage.$$('settings-android-settings-element').$$('#manageApps');
       assertTrue(!!button);
-      const promise = androidAppsBrowserProxy.whenCalled(
-          'showAndroidAppsSettings');
+      const promise =
+          androidAppsBrowserProxy.whenCalled('showAndroidAppsSettings');
       // MockInteractions.tap does not work here due style is not updated.
       button.click();
       Polymer.dom.flush();
@@ -167,8 +167,8 @@ suite('AndroidAppsPageTests', function() {
       Polymer.dom.flush();
       assertFalse(!!subpage.$$('#remove'));
       assertTrue(!!subpage.$$('settings-android-settings-element'));
-      assertTrue(!!subpage.$$('settings-android-settings-element').
-          $$('#manageApps'));
+      assertTrue(
+          !!subpage.$$('settings-android-settings-element').$$('#manageApps'));
     });
   });
 
@@ -181,16 +181,16 @@ suite('AndroidAppsPageTests', function() {
 
     test('Sanity', function() {
       assertTrue(!!androidAppsPage.$$('settings-android-settings-element'));
-      assertTrue(!!androidAppsPage.$$('settings-android-settings-element').
-          $$("#manageApps"));
+      assertTrue(!!androidAppsPage.$$('settings-android-settings-element')
+                       .$$('#manageApps'));
     });
 
     test('ManageAppsOpenRequest', function() {
-      const button = androidAppsPage.$$('settings-android-settings-element').
-          $$('#manageApps');
+      const button = androidAppsPage.$$('settings-android-settings-element')
+                         .$$('#manageApps');
       assertTrue(!!button);
-      const promise = androidAppsBrowserProxy.whenCalled(
-          'showAndroidAppsSettings');
+      const promise =
+          androidAppsBrowserProxy.whenCalled('showAndroidAppsSettings');
       // MockInteractions.tap does not work here due style is not updated.
       button.click();
       Polymer.dom.flush();

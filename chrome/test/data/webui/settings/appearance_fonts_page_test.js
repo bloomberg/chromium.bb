@@ -51,7 +51,9 @@ suite('AppearanceFontHandler', function() {
     document.body.appendChild(fontsPage);
   });
 
-  teardown(function() { fontsPage.remove(); });
+  teardown(function() {
+    fontsPage.remove();
+  });
 
   test('fetchFontsData', function() {
     return fontsBrowserProxy.whenCalled('fetchFontsData');

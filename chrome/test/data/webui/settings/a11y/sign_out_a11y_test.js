@@ -56,8 +56,9 @@ AccessibilityTest.define('SettingsA11ySignOut', {
     document.body.appendChild(settingsUi);
     Polymer.dom.flush();
 
-    this.peoplePage = settingsUi.$$('settings-main').$$('settings-basic-page')
-        .$$('settings-people-page');
+    this.peoplePage = settingsUi.$$('settings-main')
+                          .$$('settings-basic-page')
+                          .$$('settings-people-page');
 
     assert(!!this.peoplePage);
   },

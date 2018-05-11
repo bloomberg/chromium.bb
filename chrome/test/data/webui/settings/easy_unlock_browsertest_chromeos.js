@@ -10,8 +10,7 @@ GEN_INCLUDE(['settings_page_browsertest.js']);
  * @constructor
  * @extends {SettingsPageBrowserTest}
  */
-function SettingsEasyUnlockBrowserTest() {
-}
+function SettingsEasyUnlockBrowserTest() {}
 
 SettingsEasyUnlockBrowserTest.prototype = {
   __proto__: SettingsPageBrowserTest.prototype,

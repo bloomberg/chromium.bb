@@ -68,7 +68,7 @@ suite('InternetDetailPage', function() {
   setup(function() {
     PolymerTest.clearBody();
     internetDetailPage =
-      document.createElement('settings-internet-detail-page');
+        document.createElement('settings-internet-detail-page');
     assertTrue(!!internetDetailPage);
     api_.resetForTest();
     internetDetailPage.networkingPrivate = api_;

@@ -15,10 +15,7 @@ suite('DisplaySizeSlider', function() {
     const tickValues = [2, 4, 8, 16, 32, 64, 128];
     ticks = [];
     for (let i = 0; i < tickValues.length; i++) {
-      ticks.push({
-        value: tickValues[i],
-        label: tickValues[i].toString()
-      });
+      ticks.push({value: tickValues[i], label: tickValues[i].toString()});
     }
 
     slider = document.createElement('display-size-slider');
@@ -79,8 +76,9 @@ suite('DisplaySizeSlider', function() {
     expectedIndex -= 1;
     expectEquals(expectedIndex, slider.index);
     expectedLeftPercentage = (expectedIndex * 100) / (ticks.length - 1);
-    expectEquals(Math.round(expectedLeftPercentage),
-                 Math.round(parseFloat(slider.$.sliderKnob.style.left)));
+    expectEquals(
+        Math.round(expectedLeftPercentage),
+        Math.round(parseFloat(slider.$.sliderKnob.style.left)));
     expectEquals(ticks[expectedIndex].value, slider.pref.value);
 
   });
@@ -140,8 +138,9 @@ suite('DisplaySizeSlider', function() {
     expectEquals(newIndex, slider.index);
 
     let expectedLeftPercentage = (newIndex * 100) / (ticks.length - 1);
-    expectEquals(Math.round(expectedLeftPercentage),
-                 Math.round(parseFloat(slider.$.sliderKnob.style.left)));
+    expectEquals(
+        Math.round(expectedLeftPercentage),
+        Math.round(parseFloat(slider.$.sliderKnob.style.left)));
   });
 
   test('check label values', function() {
@@ -187,10 +186,7 @@ suite('DisplaySizeSlider', function() {
     MockInteractions.down(sliderKnob);
 
     let currentPos = MockInteractions.middleOfNode(sliderKnob);
-    let nextPos = {
-      x: currentPos.x + tickWidth,
-      y: currentPos.y
-    };
+    let nextPos = {x: currentPos.x + tickWidth, y: currentPos.y};
     MockInteractions.move(sliderKnob, currentPos, nextPos);
 
     // Mouse is still down. So the slider should still be expanded.
@@ -264,8 +260,9 @@ suite('DisplaySizeSlider', function() {
     MockInteractions.down(sliderBar, sliderBarPos);
     let expectedLeftPercentage =
         (tickWidth * expectedIndex * 100) / sliderBar.offsetWidth;
-    expectEquals(Math.round(expectedLeftPercentage),
-                 Math.round(parseFloat(slider.$.sliderKnob.style.left)));
+    expectEquals(
+        Math.round(expectedLeftPercentage),
+        Math.round(parseFloat(slider.$.sliderKnob.style.left)));
     expectEquals(expectedIndex, slider.index);
     expectEquals(ticks[oldIndex].value, slider.pref.value);
 
@@ -281,8 +278,9 @@ suite('DisplaySizeSlider', function() {
     expectEquals(expectedIndex, slider.index);
     expectedLeftPercentage =
         (tickWidth * expectedIndex * 100) / sliderBar.offsetWidth;
-    expectEquals(Math.round(expectedLeftPercentage),
-                 Math.round(parseFloat(slider.$.sliderKnob.style.left)));
+    expectEquals(
+        Math.round(expectedLeftPercentage),
+        Math.round(parseFloat(slider.$.sliderKnob.style.left)));
 
     expectEquals(ticks[oldIndex].value, slider.pref.value);
 

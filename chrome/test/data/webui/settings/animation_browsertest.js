@@ -52,12 +52,15 @@ TEST_F('SettingsAnimationBrowserTest', 'Animation', function() {
     let options;
 
     setup(function() {
-      keyframes = [{
-        height: '100px',
-        easing: 'ease-in',
-      }, {
-        height: '200px',
-      }];
+      keyframes = [
+        {
+          height: '100px',
+          easing: 'ease-in',
+        },
+        {
+          height: '200px',
+        }
+      ];
 
       options = {
         duration: 1000,

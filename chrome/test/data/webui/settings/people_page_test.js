@@ -39,7 +39,9 @@ cr.define('settings_people_page', function() {
           });
     });
 
-    teardown(function() { peoplePage.remove(); });
+    teardown(function() {
+      peoplePage.remove();
+    });
 
     test('GetProfileInfo', function() {
       assertEquals(
@@ -101,7 +103,9 @@ cr.define('settings_people_page', function() {
         document.body.appendChild(peoplePage);
       });
 
-      teardown(function() { peoplePage.remove(); });
+      teardown(function() {
+        peoplePage.remove();
+      });
 
       test('Toast', function() {
         assertFalse(peoplePage.$.toast.open);
@@ -119,114 +123,126 @@ cr.define('settings_people_page', function() {
 
       test('GetProfileInfo', function() {
         let disconnectButton = null;
-        return browserProxy.whenCalled('getSyncStatus').then(function() {
-          Polymer.dom.flush();
-          disconnectButton = peoplePage.$$('#disconnectButton');
-          assertTrue(!!disconnectButton);
-          assertFalse(!!peoplePage.$$('#disconnectDialog'));
+        return browserProxy.whenCalled('getSyncStatus')
+            .then(function() {
+              Polymer.dom.flush();
+              disconnectButton = peoplePage.$$('#disconnectButton');
+              assertTrue(!!disconnectButton);
+              assertFalse(!!peoplePage.$$('#disconnectDialog'));
 
-          MockInteractions.tap(disconnectButton);
-          Polymer.dom.flush();
-        }).then(function() {
-          assertTrue(peoplePage.$$('#disconnectDialog').open);
-          assertFalse(peoplePage.$$('#deleteProfile').hidden);
+              MockInteractions.tap(disconnectButton);
+              Polymer.dom.flush();
+            })
+            .then(function() {
+              assertTrue(peoplePage.$$('#disconnectDialog').open);
+              assertFalse(peoplePage.$$('#deleteProfile').hidden);
 
-          const deleteProfileCheckbox = peoplePage.$$('#deleteProfile');
-          assertTrue(!!deleteProfileCheckbox);
-          assertLT(0, deleteProfileCheckbox.clientHeight);
+              const deleteProfileCheckbox = peoplePage.$$('#deleteProfile');
+              assertTrue(!!deleteProfileCheckbox);
+              assertLT(0, deleteProfileCheckbox.clientHeight);
 
-          const disconnectConfirm = peoplePage.$$('#disconnectConfirm');
-          assertTrue(!!disconnectConfirm);
-          assertFalse(disconnectConfirm.hidden);
+              const disconnectConfirm = peoplePage.$$('#disconnectConfirm');
+              assertTrue(!!disconnectConfirm);
+              assertFalse(disconnectConfirm.hidden);
 
-          const popstatePromise = new Promise(function(resolve) {
-            listenOnce(window, 'popstate', resolve);
-          });
+              const popstatePromise = new Promise(function(resolve) {
+                listenOnce(window, 'popstate', resolve);
+              });
 
-          MockInteractions.tap(disconnectConfirm);
+              MockInteractions.tap(disconnectConfirm);
 
-          return popstatePromise;
-        }).then(function() {
-          return browserProxy.whenCalled('signOut');
-        }).then(function(deleteProfile) {
-          assertFalse(deleteProfile);
+              return popstatePromise;
+            })
+            .then(function() {
+              return browserProxy.whenCalled('signOut');
+            })
+            .then(function(deleteProfile) {
+              assertFalse(deleteProfile);
 
-          sync_test_util.simulateSyncStatus({
-            signedIn: true,
-            domain: 'example.com',
-          });
+              sync_test_util.simulateSyncStatus({
+                signedIn: true,
+                domain: 'example.com',
+              });
 
-          assertFalse(!!peoplePage.$$('#disconnectDialog'));
-          MockInteractions.tap(disconnectButton);
-          Polymer.dom.flush();
+              assertFalse(!!peoplePage.$$('#disconnectDialog'));
+              MockInteractions.tap(disconnectButton);
+              Polymer.dom.flush();
 
-          return new Promise(function(resolve) { peoplePage.async(resolve); });
-        }).then(function() {
-          assertTrue(peoplePage.$$('#disconnectDialog').open);
-          assertFalse(!!peoplePage.$$('#deleteProfile'));
+              return new Promise(function(resolve) {
+                peoplePage.async(resolve);
+              });
+            })
+            .then(function() {
+              assertTrue(peoplePage.$$('#disconnectDialog').open);
+              assertFalse(!!peoplePage.$$('#deleteProfile'));
 
-          const disconnectManagedProfileConfirm =
-              peoplePage.$$('#disconnectManagedProfileConfirm');
-          assertTrue(!!disconnectManagedProfileConfirm);
-          assertFalse(disconnectManagedProfileConfirm.hidden);
+              const disconnectManagedProfileConfirm =
+                  peoplePage.$$('#disconnectManagedProfileConfirm');
+              assertTrue(!!disconnectManagedProfileConfirm);
+              assertFalse(disconnectManagedProfileConfirm.hidden);
 
-          browserProxy.resetResolver('signOut');
+              browserProxy.resetResolver('signOut');
 
-          const popstatePromise = new Promise(function(resolve) {
-            listenOnce(window, 'popstate', resolve);
-          });
+              const popstatePromise = new Promise(function(resolve) {
+                listenOnce(window, 'popstate', resolve);
+              });
 
-          MockInteractions.tap(disconnectManagedProfileConfirm);
+              MockInteractions.tap(disconnectManagedProfileConfirm);
 
-          return popstatePromise;
-        }).then(function() {
-          return browserProxy.whenCalled('signOut');
-        }).then(function(deleteProfile) {
-          assertTrue(deleteProfile);
-        });
+              return popstatePromise;
+            })
+            .then(function() {
+              return browserProxy.whenCalled('signOut');
+            })
+            .then(function(deleteProfile) {
+              assertTrue(deleteProfile);
+            });
       });
 
       test('getProfileStatsCount', function() {
-        return browserProxy.whenCalled('getSyncStatus').then(function() {
-          Polymer.dom.flush();
+        return browserProxy.whenCalled('getSyncStatus')
+            .then(function() {
+              Polymer.dom.flush();
 
-          // Open the disconnect dialog.
-          disconnectButton = peoplePage.$$('#disconnectButton');
-          assertTrue(!!disconnectButton);
-          MockInteractions.tap(disconnectButton);
+              // Open the disconnect dialog.
+              disconnectButton = peoplePage.$$('#disconnectButton');
+              assertTrue(!!disconnectButton);
+              MockInteractions.tap(disconnectButton);
 
-          return profileInfoBrowserProxy.whenCalled('getProfileStatsCount');
-        }).then(function() {
-          Polymer.dom.flush();
-          assertTrue(peoplePage.$$('#disconnectDialog').open);
+              return profileInfoBrowserProxy.whenCalled('getProfileStatsCount');
+            })
+            .then(function() {
+              Polymer.dom.flush();
+              assertTrue(peoplePage.$$('#disconnectDialog').open);
 
-          // Assert the warning message is as expected.
-          const warningMessage = peoplePage.$$('.delete-profile-warning');
+              // Assert the warning message is as expected.
+              const warningMessage = peoplePage.$$('.delete-profile-warning');
 
-          cr.webUIListenerCallback('profile-stats-count-ready', 0);
-          assertEquals(
-              loadTimeData.getStringF('deleteProfileWarningWithoutCounts',
-                                      'fakeUsername'),
-              warningMessage.textContent.trim());
+              cr.webUIListenerCallback('profile-stats-count-ready', 0);
+              assertEquals(
+                  loadTimeData.getStringF(
+                      'deleteProfileWarningWithoutCounts', 'fakeUsername'),
+                  warningMessage.textContent.trim());
 
-          cr.webUIListenerCallback('profile-stats-count-ready', 1);
-          assertEquals(
-              loadTimeData.getStringF('deleteProfileWarningWithCountsSingular',
-                                      'fakeUsername'),
-              warningMessage.textContent.trim());
+              cr.webUIListenerCallback('profile-stats-count-ready', 1);
+              assertEquals(
+                  loadTimeData.getStringF(
+                      'deleteProfileWarningWithCountsSingular', 'fakeUsername'),
+                  warningMessage.textContent.trim());
 
-          cr.webUIListenerCallback('profile-stats-count-ready', 2);
-          assertEquals(
-              loadTimeData.getStringF('deleteProfileWarningWithCountsPlural', 2,
-                                      'fakeUsername'),
-              warningMessage.textContent.trim());
+              cr.webUIListenerCallback('profile-stats-count-ready', 2);
+              assertEquals(
+                  loadTimeData.getStringF(
+                      'deleteProfileWarningWithCountsPlural', 2,
+                      'fakeUsername'),
+                  warningMessage.textContent.trim());
 
-          // Close the disconnect dialog.
-          MockInteractions.tap(peoplePage.$$('#disconnectConfirm'));
-          return new Promise(function(resolve) {
-            listenOnce(window, 'popstate', resolve);
-          });
-        });
+              // Close the disconnect dialog.
+              MockInteractions.tap(peoplePage.$$('#disconnectConfirm'));
+              return new Promise(function(resolve) {
+                listenOnce(window, 'popstate', resolve);
+              });
+            });
       });
 
       test('NavigateDirectlyToSignOutURL', function() {

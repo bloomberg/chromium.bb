@@ -12,19 +12,19 @@ suite('SiteDataDetailsSubpage', function() {
 
   /** @type {!CookieDetails} */
   const cookieDetails = {
-    accessibleToScript: "Yes",
-    content: "dummy_cookie_contents",
-    created: "Tuesday, February 7, 2017 at 11:28:45 AM",
-    domain: ".foo.com",
-    expires: "Wednesday, February 7, 2018 at 11:28:45 AM",
+    accessibleToScript: 'Yes',
+    content: 'dummy_cookie_contents',
+    created: 'Tuesday, February 7, 2017 at 11:28:45 AM',
+    domain: '.foo.com',
+    expires: 'Wednesday, February 7, 2018 at 11:28:45 AM',
     hasChildren: false,
-    id: "328",
-    idPath: "74,165,328",
-    name: "abcd",
-    path: "/",
-    sendfor: "Any kind of connection",
-    title: "abcd",
-    type: "cookie"
+    id: '328',
+    idPath: '74,165,328',
+    name: 'abcd',
+    path: '/',
+    sendfor: 'Any kind of connection',
+    title: 'abcd',
+    type: 'cookie'
   };
 
   /** @type {!CookieList} */
@@ -53,8 +53,8 @@ suite('SiteDataDetailsSubpage', function() {
   });
 
   test('DetailsShownForCookie', function() {
-    return browserProxy.whenCalled('getCookieDetails').then(
-        function(actualSite) {
+    return browserProxy.whenCalled('getCookieDetails')
+        .then(function(actualSite) {
           assertEquals(site, actualSite);
 
           Polymer.dom.flush();

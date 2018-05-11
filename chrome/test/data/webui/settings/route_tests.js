@@ -30,17 +30,18 @@ suite('route', function() {
    * @param {!settings.Route} expectedNavigatePreviousResult
    * @return {!Promise}
    */
-  function testNavigateBackUsesHistory(previousRoute, currentRoute,
-                                       expectedNavigatePreviousResult) {
+  function testNavigateBackUsesHistory(
+      previousRoute, currentRoute, expectedNavigatePreviousResult) {
     settings.navigateTo(previousRoute);
     settings.navigateTo(currentRoute);
 
     return whenPopState(function() {
-      settings.navigateToPreviousRoute();
-    }).then(function() {
-      assertEquals(expectedNavigatePreviousResult,
-                   settings.getCurrentRoute());
-    });
+             settings.navigateToPreviousRoute();
+           })
+        .then(function() {
+          assertEquals(
+              expectedNavigatePreviousResult, settings.getCurrentRoute());
+        });
   }
 
   test('tree structure', function() {
@@ -235,7 +236,7 @@ suite('route', function() {
         settings.resetRouteForTesting();
         // Check getting the absolute path while not inside settings returns the
         // correct path.
-        window.location.href = "https://example.com/path/to/page.html";
+        window.location.href = 'https://example.com/path/to/page.html';
         assertEquals(
             'chrome://settings/cloudPrinters',
             settings.routes.CLOUD_PRINTERS.getAbsolutePath());

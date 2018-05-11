@@ -116,8 +116,9 @@ SettingsPageBrowserTest.prototype = {
     const main = stampedChildren.filter(function(element) {
       return element.getAttribute('route-path') == 'default';
     });
-    assertEquals(main.length, 1, 'default card not found for section ' +
-        section.section);
+    assertEquals(
+        main.length, 1,
+        'default card not found for section ' + section.section);
     assertGT(main[0].offsetHeight, 0);
 
     // Any other stamped subpages should not be visible.
@@ -125,8 +126,10 @@ SettingsPageBrowserTest.prototype = {
       return element.getAttribute('route-path') != 'default';
     });
     for (const subpage of subpages) {
-      assertEquals(subpage.offsetHeight, 0, 'Expected subpage #' + subpage.id +
-          ' in ' + section.section + ' not to be visible.');
+      assertEquals(
+          subpage.offsetHeight, 0,
+          'Expected subpage #' + subpage.id + ' in ' + section.section +
+              ' not to be visible.');
     }
   },
 };

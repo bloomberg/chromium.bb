@@ -46,10 +46,10 @@ cr.define('settings_prefs', function() {
      */
     function assertFakeApiPrefsSet(testCaseValueIndex) {
       for (const testCase of prefsTestCases) {
-        const expectedValue = JSON.stringify(
-            testCase.nextValues[testCaseValueIndex]);
-        const actualValue = JSON.stringify(
-            fakeApi.prefs[testCase.pref.key].value);
+        const expectedValue =
+            JSON.stringify(testCase.nextValues[testCaseValueIndex]);
+        const actualValue =
+            JSON.stringify(fakeApi.prefs[testCase.pref.key].value);
         assertEquals(expectedValue, actualValue, testCase.pref.key);
       }
     }
@@ -61,10 +61,10 @@ cr.define('settings_prefs', function() {
      */
     function assertPrefsSet(testCaseValueIndex) {
       for (const testCase of prefsTestCases) {
-        const expectedValue = JSON.stringify(
-            testCase.nextValues[testCaseValueIndex]);
-        const actualValue = JSON.stringify(
-            prefs.get('prefs.' + testCase.pref.key + '.value'));
+        const expectedValue =
+            JSON.stringify(testCase.nextValues[testCaseValueIndex]);
+        const actualValue =
+            JSON.stringify(prefs.get('prefs.' + testCase.pref.key + '.value'));
         assertEquals(expectedValue, actualValue);
       }
     }
@@ -106,16 +106,16 @@ cr.define('settings_prefs', function() {
           continue;
         }
 
-        assertEquals(JSON.stringify(expectedPref),
-                     JSON.stringify(actualPref));
+        assertEquals(JSON.stringify(expectedPref), JSON.stringify(actualPref));
       }
     });
 
     test('forwards pref changes to API', function testSetPrefs() {
       // Test that settings-prefs uses the setPref API.
       for (const testCase of prefsTestCases) {
-        prefs.set('prefs.' + testCase.pref.key + '.value',
-                  deepCopy(testCase.nextValues[0]));
+        prefs.set(
+            'prefs.' + testCase.pref.key + '.value',
+            deepCopy(testCase.nextValues[0]));
       }
       // Check that setPref has been called for the right values.
       assertFakeApiPrefsSet(0);
@@ -123,8 +123,9 @@ cr.define('settings_prefs', function() {
       // Test that when setPref fails, the pref is reverted locally.
       for (const testCase of prefsTestCases) {
         fakeApi.failNextSetPref();
-        prefs.set('prefs.' + testCase.pref.key + '.value',
-                  deepCopy(testCase.nextValues[1]));
+        prefs.set(
+            'prefs.' + testCase.pref.key + '.value',
+            deepCopy(testCase.nextValues[1]));
       }
 
       assertPrefsSet(0);
@@ -132,8 +133,9 @@ cr.define('settings_prefs', function() {
       // Test that setPref is not called when the pref doesn't change.
       fakeApi.disallowSetPref();
       for (const testCase of prefsTestCases) {
-        prefs.set('prefs.' + testCase.pref.key + '.value',
-                  deepCopy(testCase.nextValues[0]));
+        prefs.set(
+            'prefs.' + testCase.pref.key + '.value',
+            deepCopy(testCase.nextValues[0]));
       }
       assertFakeApiPrefsSet(0);
       fakeApi.allowSetPref();
@@ -145,8 +147,8 @@ cr.define('settings_prefs', function() {
       fakeApi.disallowSetPref();
       let prefChanges = [];
       for (const testCase of prefsTestCases) {
-        prefChanges.push({key: testCase.pref.key,
-                          value: testCase.nextValues[0]});
+        prefChanges.push(
+            {key: testCase.pref.key, value: testCase.nextValues[0]});
       }
 
       // Send a set of changes.
@@ -155,8 +157,8 @@ cr.define('settings_prefs', function() {
 
       prefChanges = [];
       for (const testCase of prefsTestCases) {
-        prefChanges.push({key: testCase.pref.key,
-                          value: testCase.nextValues[1]});
+        prefChanges.push(
+            {key: testCase.pref.key, value: testCase.nextValues[1]});
       }
 
       // Send a second set of changes.

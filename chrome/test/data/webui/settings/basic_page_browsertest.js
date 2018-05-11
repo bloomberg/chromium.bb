@@ -45,8 +45,8 @@ TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
     /** @override */
     search(text, page) {
       if (this.searchRequest_ == null || !this.searchRequest_.isSame(text)) {
-        this.searchRequest_ = new settings.SearchRequest(
-            text, document.createElement('div'));
+        this.searchRequest_ =
+            new settings.SearchRequest(text, document.createElement('div'));
         this.searchRequest_.finished = true;
         this.searchRequest_.updateMatches(false);
 
@@ -96,34 +96,39 @@ TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
       settings.navigateTo(settings.routes.ON_STARTUP);
 
       return new Promise(function(resolve, reject) {
-        // This test checks for a regression that occurred with scrollToSection_
-        // failing to find its host element.
-        const intervalId = window.setInterval(function() {
-          if (self.getSection(page, settings.getCurrentRoute().section)) {
-            window.clearInterval(intervalId);
-            resolve();
-          }
-        }, 55);
-      }.bind(self)).then(function() {
-        // Should be scrolled to the On Startup section.
-        assertNotEquals(0, page.scroller.scrollTop);
+               // This test checks for a regression that occurred with
+               // scrollToSection_ failing to find its host element.
+               const intervalId = window.setInterval(function() {
+                 if (self.getSection(
+                         page, settings.getCurrentRoute().section)) {
+                   window.clearInterval(intervalId);
+                   resolve();
+                 }
+               }, 55);
+             }.bind(self))
+          .then(function() {
+            // Should be scrolled to the On Startup section.
+            assertNotEquals(0, page.scroller.scrollTop);
 
-        return new Promise(function(resolve) {
-          listenOnce(window, 'popstate', resolve);
-          settings.navigateToPreviousRoute();
-        });
-      }).then(function() {
-        // Should be at the top of the page after going Back from the section.
-        assertEquals(0, page.scroller.scrollTop);
+            return new Promise(function(resolve) {
+              listenOnce(window, 'popstate', resolve);
+              settings.navigateToPreviousRoute();
+            });
+          })
+          .then(function() {
+            // Should be at the top of the page after going Back from the
+            // section.
+            assertEquals(0, page.scroller.scrollTop);
 
-        return new Promise(function(resolve) {
-          listenOnce(window, 'popstate', resolve);
-          window.history.forward();
-        });
-      }).then(function() {
-        // Should scroll when navigating forwards from the BASIC page.
-        assertNotEquals(0, page.scroller.scrollTop);
-      });
+            return new Promise(function(resolve) {
+              listenOnce(window, 'popstate', resolve);
+              window.history.forward();
+            });
+          })
+          .then(function() {
+            // Should scroll when navigating forwards from the BASIC page.
+            assertNotEquals(0, page.scroller.scrollTop);
+          });
     });
 
     test('scroll to section after exiting search', function() {

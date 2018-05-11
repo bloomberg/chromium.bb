@@ -39,7 +39,9 @@ cr.define('settings_reset_page', function() {
         document.body.appendChild(resetPage);
       });
 
-      teardown(function() { resetPage.remove(); });
+      teardown(function() {
+        resetPage.remove();
+      });
 
       /**
        * @param {function(SettingsResetProfileDialogElement)}
@@ -73,19 +75,21 @@ cr.define('settings_reset_page', function() {
       // resetPageBrowserProxy calls are occurring as expected.
       test(TestNames.ResetProfileDialogOpenClose, function() {
         return testOpenCloseResetProfileDialog(function(dialog) {
-          // Test case where the 'cancel' button is clicked.
-          MockInteractions.tap(dialog.$.cancel);
-        }).then(function() {
-          return testOpenCloseResetProfileDialog(function(dialog) {
-            // Test case where the 'close' button is clicked.
-            MockInteractions.tap(dialog.$.dialog.getCloseButton());
-          });
-        }).then(function() {
-          return testOpenCloseResetProfileDialog(function(dialog) {
-            // Test case where the browser's 'back' button is clicked.
-            resetPage.currentRouteChanged(settings.routes.BASIC);
-          });
-        });
+                 // Test case where the 'cancel' button is clicked.
+                 MockInteractions.tap(dialog.$.cancel);
+               })
+            .then(function() {
+              return testOpenCloseResetProfileDialog(function(dialog) {
+                // Test case where the 'close' button is clicked.
+                MockInteractions.tap(dialog.$.dialog.getCloseButton());
+              });
+            })
+            .then(function() {
+              return testOpenCloseResetProfileDialog(function(dialog) {
+                // Test case where the browser's 'back' button is clicked.
+                resetPage.currentRouteChanged(settings.routes.BASIC);
+              });
+            });
       });
 
       // Tests that when user request to reset the profile the appropriate
@@ -103,8 +107,8 @@ cr.define('settings_reset_page', function() {
         assertTrue(!!showReportedSettingsLink);
         MockInteractions.tap(showReportedSettingsLink);
 
-        return resetPageBrowserProxy.whenCalled('showReportedSettings').then(
-            function() {
+        return resetPageBrowserProxy.whenCalled('showReportedSettings')
+            .then(function() {
               // Ensure that the checkbox was not toggled as a result of
               // clicking the link.
               assertTrue(checkbox.checked);
@@ -123,8 +127,8 @@ cr.define('settings_reset_page', function() {
         const dialog = resetPage.$$('settings-reset-profile-dialog');
         assertTrue(!!dialog);
         MockInteractions.tap(dialog.$.reset);
-        return resetPageBrowserProxy.whenCalled(
-            'performResetProfileSettings').then(function(resetRequest) {
+        return resetPageBrowserProxy.whenCalled('performResetProfileSettings')
+            .then(function(resetRequest) {
               assertEquals(expectedOrigin, resetRequest);
             });
       }
@@ -132,13 +136,17 @@ cr.define('settings_reset_page', function() {
       test(TestNames.ResetProfileDialogOriginUnknown, function() {
         settings.navigateTo(settings.routes.RESET_DIALOG);
         return resetPageBrowserProxy.whenCalled('onShowResetProfileDialog')
-            .then(function() { return testResetRequestOrigin(''); });
+            .then(function() {
+              return testResetRequestOrigin('');
+            });
       });
 
       test(TestNames.ResetProfileDialogOriginUserClick, function() {
         MockInteractions.tap(resetPage.$.resetProfile);
         return resetPageBrowserProxy.whenCalled('onShowResetProfileDialog')
-            .then(function() { return testResetRequestOrigin('userclick'); });
+            .then(function() {
+              return testResetRequestOrigin('userclick');
+            });
       });
 
       test(TestNames.ResetProfileDialogOriginTriggeredReset, function() {
@@ -163,18 +171,17 @@ cr.define('settings_reset_page', function() {
           const dialog = resetPage.$$('settings-powerwash-dialog');
           assertTrue(!!dialog);
           assertTrue(dialog.$.dialog.open);
-          const onDialogClosed = new Promise(
-            function(resolve, reject) {
-              dialog.addEventListener('close', function() {
-                assertFalse(dialog.$.dialog.open);
-                resolve();
-              });
+          const onDialogClosed = new Promise(function(resolve, reject) {
+            dialog.addEventListener('close', function() {
+              assertFalse(dialog.$.dialog.open);
+              resolve();
             });
+          });
 
           MockInteractions.tap(closeButtonFn(dialog));
           return Promise.all([
-              onDialogClosed,
-              resetPageBrowserProxy.whenCalled('onPowerwashDialogShow'),
+            onDialogClosed,
+            resetPageBrowserProxy.whenCalled('onPowerwashDialogShow'),
           ]);
         }
 
@@ -183,13 +190,14 @@ cr.define('settings_reset_page', function() {
         test(TestNames.PowerwashDialogOpenClose, function() {
           // Test case where the 'cancel' button is clicked.
           return testOpenClosePowerwashDialog(function(dialog) {
-            return dialog.$.cancel;
-          }).then(function() {
-            // Test case where the 'close' button is clicked.
-            return testOpenClosePowerwashDialog(function(dialog) {
-              return dialog.$.dialog.getCloseButton();
-            });
-          });
+                   return dialog.$.cancel;
+                 })
+              .then(function() {
+                // Test case where the 'close' button is clicked.
+                return testOpenClosePowerwashDialog(function(dialog) {
+                  return dialog.$.dialog.getCloseButton();
+                });
+              });
         });
 
         // Tests that when powerwash is requested chrome.send calls are

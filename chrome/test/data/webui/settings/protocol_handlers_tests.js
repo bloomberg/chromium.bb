@@ -80,18 +80,16 @@ suite('ProtocolHandlers', function() {
     PolymerTest.clearBody();
     testElement = document.createElement('protocol-handlers');
     document.body.appendChild(testElement);
-    return browserProxy.whenCalled('observeProtocolHandlers')
-        .then(function() {
-          Polymer.dom.flush();
-        });
+    return browserProxy.whenCalled('observeProtocolHandlers').then(function() {
+      Polymer.dom.flush();
+    });
   }
 
   test('empty list', function() {
-    return initPage()
-        .then(function() {
-          const listFrames = testElement.root.querySelectorAll('.list-frame');
-          assertEquals(0, listFrames.length);
-        });
+    return initPage().then(function() {
+      const listFrames = testElement.root.querySelectorAll('.list-frame');
+      assertEquals(0, listFrames.length);
+    });
   });
 
   test('non-empty list', function() {

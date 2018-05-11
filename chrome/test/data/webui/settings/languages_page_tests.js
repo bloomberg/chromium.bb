@@ -24,9 +24,9 @@ cr.define('languages_page_tests', function() {
     let browserProxy = null;
 
     // Enabled language pref name for the platform.
-    const languagesPref =
-        cr.isChromeOS ? 'settings.language.preferred_languages'
-                      : 'intl.accept_languages';
+    const languagesPref = cr.isChromeOS ?
+        'settings.language.preferred_languages' :
+        'intl.accept_languages';
 
     // Initial value of enabled languages pref used in tests.
     const initialLanguages = 'en-US,sw';
@@ -87,9 +87,9 @@ cr.define('languages_page_tests', function() {
       // test_util.whenAttributeIs for use elsewhere.
       const onMutation = function(mutations, observer) {
         if (mutations.some(function(mutation) {
-          return mutation.type == 'childList' &&
-              Array.from(mutation.removedNodes).includes(dialog);
-        })) {
+              return mutation.type == 'childList' &&
+                  Array.from(mutation.removedNodes).includes(dialog);
+            })) {
           // Sanity check: the dialog should no longer be in the DOM.
           assertEquals(null, languagesPage.$$('settings-add-languages-dialog'));
           observer.disconnect();
@@ -153,8 +153,8 @@ cr.define('languages_page_tests', function() {
         // the checked languages.
         MockInteractions.tap(cancelButton);
         return dialogClosedResolver.promise.then(function() {
-          assertEquals(initialLanguages,
-                       languageHelper.getPref(languagesPref).value);
+          assertEquals(
+              initialLanguages, languageHelper.getPref(languagesPref).value);
         });
       });
 
@@ -238,14 +238,15 @@ cr.define('languages_page_tests', function() {
         assertTrue(actionMenu.open);
         for (const buttonKey of Object.keys(buttonVisibility)) {
           const buttonItem = getMenuItem(buttonKey);
-          assertEquals(!buttonVisibility[buttonKey], buttonItem.hidden,
-                       'Menu item "' + buttonKey + '" hidden');
+          assertEquals(
+              !buttonVisibility[buttonKey], buttonItem.hidden,
+              'Menu item "' + buttonKey + '" hidden');
         }
       }
 
       test('structure', function() {
-        const languageOptionsDropdownTrigger = languagesCollapse.querySelector(
-            'button');
+        const languageOptionsDropdownTrigger =
+            languagesCollapse.querySelector('button');
         assertTrue(!!languageOptionsDropdownTrigger);
         MockInteractions.tap(languageOptionsDropdownTrigger);
         assertTrue(actionMenu.open);
@@ -364,21 +365,27 @@ cr.define('languages_page_tests', function() {
         // First language should not have "Move up" or "Move to top".
         MockInteractions.tap(menuButtons[0].querySelector('button'));
         assertMenuItemButtonsVisible({
-          moveToTop: false, moveUp: false, moveDown: true,
+          moveToTop: false,
+          moveUp: false,
+          moveDown: true,
         });
         actionMenu.close();
 
         // Second language should not have "Move up".
         MockInteractions.tap(menuButtons[1].querySelector('button'));
         assertMenuItemButtonsVisible({
-          moveToTop: true, moveUp: false, moveDown: true,
+          moveToTop: true,
+          moveUp: false,
+          moveDown: true,
         });
         actionMenu.close();
 
         // Middle languages should have all buttons.
         MockInteractions.tap(menuButtons[2].querySelector('button'));
         assertMenuItemButtonsVisible({
-          moveToTop: true, moveUp: true, moveDown: true,
+          moveToTop: true,
+          moveUp: true,
+          moveDown: true,
         });
         actionMenu.close();
 
@@ -386,7 +393,9 @@ cr.define('languages_page_tests', function() {
         MockInteractions.tap(
             menuButtons[menuButtons.length - 1].querySelector('button'));
         assertMenuItemButtonsVisible({
-          moveToTop: true, moveUp: true, moveDown: false,
+          moveToTop: true,
+          moveUp: true,
+          moveDown: false,
         });
         actionMenu.close();
       });
@@ -424,8 +433,7 @@ cr.define('languages_page_tests', function() {
         // en-US starts with spellcheck enabled, so the secondary row is
         // populated.
         assertTrue(triggerRow.classList.contains('two-line'));
-        assertLT(
-            0, triggerRow.querySelector('.secondary').textContent.length);
+        assertLT(0, triggerRow.querySelector('.secondary').textContent.length);
 
         MockInteractions.tap(triggerRow);
         Polymer.dom.flush();
@@ -449,8 +457,7 @@ cr.define('languages_page_tests', function() {
 
         // The second row should no longer be empty.
         assertTrue(triggerRow.classList.contains('two-line'));
-        assertLT(
-            0, triggerRow.querySelector('.secondary').textContent.length);
+        assertLT(0, triggerRow.querySelector('.secondary').textContent.length);
 
         // Force-disable spellchecking via policy.
         languageHelper.setPrefValue('browser.enable_spellchecking', false);

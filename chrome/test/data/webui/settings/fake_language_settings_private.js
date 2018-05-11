@@ -45,83 +45,97 @@ cr.define('settings', function() {
       this.onInputMethodRemoved = new FakeChromeEvent();
 
       /** @type {!Array<!chrome.languageSettingsPrivate.Language>} */
-      this.languages = [{
-        // English and some variants.
-        code: 'en',
-        displayName: 'English',
-        nativeDisplayName: 'English',
-        supportsTranslate: true,
-      }, {
-        code: 'en-CA',
-        displayName: 'English (Canada)',
-        nativeDisplayName: 'English (Canada)',
-        supportsSpellcheck: true,
-        supportsUI: true,
-      }, {
-        code: 'en-US',
-        displayName: 'English (United States)',
-        nativeDisplayName: 'English (United States)',
-        supportsSpellcheck: true,
-        supportsUI: true,
-      }, {
-        // A standalone language.
-        code: "sw",
-        displayName: "Swahili",
-        nativeDisplayName: "Kiswahili",
-        supportsTranslate: true,
-        supportsUI: true,
-      }, {
-        // A standalone language that doesn't support anything.
-        code: "tk",
-        displayName: "Turkmen",
-        nativeDisplayName: "Turkmen"
-      }, {
-        // Edge cases:
-        // Norwegian is the macrolanguage for "nb" (see below).
-        code: "no",
-        displayName: "Norwegian",
-        nativeDisplayName: "norsk",
-        supportsTranslate: true,
-      }, {
-        // Norwegian language codes don't start with "no-" but should still
-        // fall under the Norwegian macrolanguage.
-        // TODO(michaelpg): Test this is ordered correctly.
-        code: "nb",
-        displayName: "Norwegian Bokmål",
-        nativeDisplayName: "norsk bokmål",
-        supportsSpellcheck: true,
-        supportsUI: true,
-      }, {
-        // A language where displayName and nativeDisplayName have different
-        // values. Used for testing search functionality.
-        code: "el",
-        displayName: "Greek",
-        nativeDisplayName: "Ελληνικά",
-        supportsUI: true,
-      }];
+      this.languages = [
+        {
+          // English and some variants.
+          code: 'en',
+          displayName: 'English',
+          nativeDisplayName: 'English',
+          supportsTranslate: true,
+        },
+        {
+          code: 'en-CA',
+          displayName: 'English (Canada)',
+          nativeDisplayName: 'English (Canada)',
+          supportsSpellcheck: true,
+          supportsUI: true,
+        },
+        {
+          code: 'en-US',
+          displayName: 'English (United States)',
+          nativeDisplayName: 'English (United States)',
+          supportsSpellcheck: true,
+          supportsUI: true,
+        },
+        {
+          // A standalone language.
+          code: 'sw',
+          displayName: 'Swahili',
+          nativeDisplayName: 'Kiswahili',
+          supportsTranslate: true,
+          supportsUI: true,
+        },
+        {
+          // A standalone language that doesn't support anything.
+          code: 'tk',
+          displayName: 'Turkmen',
+          nativeDisplayName: 'Turkmen'
+        },
+        {
+          // Edge cases:
+          // Norwegian is the macrolanguage for "nb" (see below).
+          code: 'no',
+          displayName: 'Norwegian',
+          nativeDisplayName: 'norsk',
+          supportsTranslate: true,
+        },
+        {
+          // Norwegian language codes don't start with "no-" but should still
+          // fall under the Norwegian macrolanguage.
+          // TODO(michaelpg): Test this is ordered correctly.
+          code: 'nb',
+          displayName: 'Norwegian Bokmål',
+          nativeDisplayName: 'norsk bokmål',
+          supportsSpellcheck: true,
+          supportsUI: true,
+        },
+        {
+          // A language where displayName and nativeDisplayName have different
+          // values. Used for testing search functionality.
+          code: 'el',
+          displayName: 'Greek',
+          nativeDisplayName: 'Ελληνικά',
+          supportsUI: true,
+        }
+      ];
 
       /** @type {!Array<!chrome.languageSettingsPrivate.InputMethod>} */
-      this.componentExtensionImes = [{
-        id: '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us::eng',
-        displayName: 'US keyboard',
-        languageCodes: ['en', 'en-US'],
-        enabled: true,
-      }, {
-        id: '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:dvorak:eng',
-        displayName: 'US Dvorak keyboard',
-        languageCodes: ['en', 'en-US'],
-        enabled: true,
-      }, {
-        id: '_comp_ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:sw:sw',
-        displayName: 'Swahili keyboard',
-        languageCodes: ['sw', 'tk'],
-        enabled: false,
-      }, {
-        id: '_comp_ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:us:sw',
-        displayName: 'US Swahili keyboard',
-        languageCodes: ['en', 'en-US', 'sw'],
-        enabled: false,
-      }];
+      this.componentExtensionImes = [
+        {
+          id: '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us::eng',
+          displayName: 'US keyboard',
+          languageCodes: ['en', 'en-US'],
+          enabled: true,
+        },
+        {
+          id: '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:dvorak:eng',
+          displayName: 'US Dvorak keyboard',
+          languageCodes: ['en', 'en-US'],
+          enabled: true,
+        },
+        {
+          id: '_comp_ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:sw:sw',
+          displayName: 'Swahili keyboard',
+          languageCodes: ['sw', 'tk'],
+          enabled: false,
+        },
+        {
+          id: '_comp_ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:us:sw',
+          displayName: 'US Swahili keyboard',
+          languageCodes: ['en', 'en-US', 'sw'],
+          enabled: false,
+        }
+      ];
     }
 
     /** @param {SettingsPrefsElement} */
@@ -411,7 +425,7 @@ cr.define('settings', function() {
         key: 'settings.language.preload_engines',
         type: chrome.settingsPrivate.PrefType.STRING,
         value: '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us::eng,' +
-               '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:dvorak:eng',
+            '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:dvorak:eng',
       });
       fakePrefs.push({
         key: 'settings.language.enabled_extension_imes',

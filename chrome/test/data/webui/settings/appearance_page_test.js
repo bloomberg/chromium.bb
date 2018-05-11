@@ -145,7 +145,9 @@ suite('AppearanceHandler', function() {
     createAppearancePage();
   });
 
-  teardown(function() { appearancePage.remove(); });
+  teardown(function() {
+    appearancePage.remove();
+  });
 
   if (cr.isChromeOS) {
     test('wallpaperManager', function() {
@@ -164,7 +166,7 @@ suite('AppearanceHandler', function() {
     });
 
     test('wallpaperSettingVisible', function() {
-      appearancePage.set("pageVisibility.setWallpaper", false);
+      appearancePage.set('pageVisibility.setWallpaper', false);
       return appearanceBrowserProxy.whenCalled('isWallpaperSettingVisible')
           .then(function() {
             Polymer.dom.flush();
@@ -272,27 +274,31 @@ suite('AppearanceHandler', function() {
       return zoomLevel.options[zoomLevel.selectedIndex].textContent.trim();
     }
 
-    return appearanceBrowserProxy.whenCalled('getDefaultZoom').then(function() {
-      assertEquals('100%', getDefaultZoomText());
+    return appearanceBrowserProxy.whenCalled('getDefaultZoom')
+        .then(function() {
+          assertEquals('100%', getDefaultZoomText());
 
-      appearanceBrowserProxy.setDefaultZoom(2 / 3);
-      createAppearancePage();
-      return appearanceBrowserProxy.whenCalled('getDefaultZoom');
-    }).then(function() {
-      assertEquals('67%', getDefaultZoomText());
+          appearanceBrowserProxy.setDefaultZoom(2 / 3);
+          createAppearancePage();
+          return appearanceBrowserProxy.whenCalled('getDefaultZoom');
+        })
+        .then(function() {
+          assertEquals('67%', getDefaultZoomText());
 
-      appearanceBrowserProxy.setDefaultZoom(11 / 10);
-      createAppearancePage();
-      return appearanceBrowserProxy.whenCalled('getDefaultZoom');
-    }).then(function() {
-      assertEquals('110%', getDefaultZoomText());
+          appearanceBrowserProxy.setDefaultZoom(11 / 10);
+          createAppearancePage();
+          return appearanceBrowserProxy.whenCalled('getDefaultZoom');
+        })
+        .then(function() {
+          assertEquals('110%', getDefaultZoomText());
 
-      appearanceBrowserProxy.setDefaultZoom(1.7499999999999);
-      createAppearancePage();
-      return appearanceBrowserProxy.whenCalled('getDefaultZoom');
-    }).then(function() {
-      assertEquals('175%', getDefaultZoomText());
-    });
+          appearanceBrowserProxy.setDefaultZoom(1.7499999999999);
+          createAppearancePage();
+          return appearanceBrowserProxy.whenCalled('getDefaultZoom');
+        })
+        .then(function() {
+          assertEquals('175%', getDefaultZoomText());
+        });
   });
 
   test('show home button toggling', function() {

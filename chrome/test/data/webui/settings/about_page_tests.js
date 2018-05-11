@@ -298,8 +298,7 @@ cr.define('settings_about_page', function() {
 
       test('ErrorMessageWithHtml', function() {
         const htmlError = 'hello<br>there<br>was<pre>an</pre>error';
-        fireStatusChanged(
-            UpdateStatus.FAILED, {message: htmlError});
+        fireStatusChanged(UpdateStatus.FAILED, {message: htmlError});
         const statusMessageEl = page.$$('#updateStatusMessage div');
         assertEquals(htmlError, statusMessageEl.innerHTML);
       });
@@ -502,9 +501,9 @@ cr.define('settings_about_page', function() {
 
             MockInteractions.tap(page.$.relaunchAndPowerwash);
             return lifetimeBrowserProxy.whenCalled('factoryReset')
-              .then((requestTpmFirmwareUpdate) => {
-                assertFalse(requestTpmFirmwareUpdate);
-              });
+                .then((requestTpmFirmwareUpdate) => {
+                  assertFalse(requestTpmFirmwareUpdate);
+                });
           });
         });
 
@@ -564,8 +563,8 @@ cr.define('settings_about_page', function() {
            * @return {!Promise}
            */
           function checkRegulatoryInfo(isShowing) {
-            return aboutBrowserProxy.whenCalled('getRegulatoryInfo').then(
-                function() {
+            return aboutBrowserProxy.whenCalled('getRegulatoryInfo')
+                .then(function() {
                   const regulatoryInfoEl = page.$.regulatoryInfo;
                   assertTrue(!!regulatoryInfoEl);
                   assertEquals(isShowing, !regulatoryInfoEl.hidden);
@@ -579,34 +578,39 @@ cr.define('settings_about_page', function() {
                 });
           }
 
-          return checkRegulatoryInfo(false).then(function() {
-            regulatoryInfo = {text: 'foo', url: 'bar'};
-            aboutBrowserProxy.setRegulatoryInfo(regulatoryInfo);
-            return initNewPage();
-          }).then(function() {
-            return checkRegulatoryInfo(true);
-          });
+          return checkRegulatoryInfo(false)
+              .then(function() {
+                regulatoryInfo = {text: 'foo', url: 'bar'};
+                aboutBrowserProxy.setRegulatoryInfo(regulatoryInfo);
+                return initNewPage();
+              })
+              .then(function() {
+                return checkRegulatoryInfo(true);
+              });
         });
 
         test('TPMFirmwareUpdate', function() {
-          return initNewPage().then(function() {
-            assertTrue(page.$.aboutTPMFirmwareUpdate.hidden);
-            aboutBrowserProxy.setTPMFirmwareUpdateStatus(
-                {updateAvailable: true});
-            aboutBrowserProxy.refreshTPMFirmwareUpdateStatus();
-          }).then(function() {
-            assertFalse(page.$.aboutTPMFirmwareUpdate.hidden);
-            MockInteractions.tap(page.$.aboutTPMFirmwareUpdate);
-          }).then(function() {
-            const dialog = page.$$('settings-powerwash-dialog');
-            assertTrue(!!dialog);
-            assertTrue(dialog.$.dialog.open);
-            MockInteractions.tap(dialog.$$('#powerwash'));
-            return lifetimeBrowserProxy.whenCalled('factoryReset')
-                .then((requestTpmFirmwareUpdate) => {
-                  assertTrue(requestTpmFirmwareUpdate);
-                });
-          });
+          return initNewPage()
+              .then(function() {
+                assertTrue(page.$.aboutTPMFirmwareUpdate.hidden);
+                aboutBrowserProxy.setTPMFirmwareUpdateStatus(
+                    {updateAvailable: true});
+                aboutBrowserProxy.refreshTPMFirmwareUpdateStatus();
+              })
+              .then(function() {
+                assertFalse(page.$.aboutTPMFirmwareUpdate.hidden);
+                MockInteractions.tap(page.$.aboutTPMFirmwareUpdate);
+              })
+              .then(function() {
+                const dialog = page.$$('settings-powerwash-dialog');
+                assertTrue(!!dialog);
+                assertTrue(dialog.$.dialog.open);
+                MockInteractions.tap(dialog.$$('#powerwash'));
+                return lifetimeBrowserProxy.whenCalled('factoryReset')
+                    .then((requestTpmFirmwareUpdate) => {
+                      assertTrue(requestTpmFirmwareUpdate);
+                    });
+              });
         });
 
         test('DeviceEndOfLife', function() {
@@ -848,15 +852,20 @@ cr.define('settings_about_page', function() {
           page = document.createElement('settings-detailed-build-info');
           document.body.appendChild(page);
 
-          return Promise.all([
-            browserProxy.whenCalled('pageReady'),
-            browserProxy.whenCalled('getVersionInfo'),
-            browserProxy.whenCalled('getChannelInfo'),
-          ]).then(function() {
-            assertEquals(versionInfo.arcVersion, page.$.arcVersion.textContent);
-            assertEquals(versionInfo.osVersion, page.$.osVersion.textContent);
-            assertEquals(versionInfo.osFirmware, page.$.osFirmware.textContent);
-          });
+          return Promise
+              .all([
+                browserProxy.whenCalled('pageReady'),
+                browserProxy.whenCalled('getVersionInfo'),
+                browserProxy.whenCalled('getChannelInfo'),
+              ])
+              .then(function() {
+                assertEquals(
+                    versionInfo.arcVersion, page.$.arcVersion.textContent);
+                assertEquals(
+                    versionInfo.osVersion, page.$.osVersion.textContent);
+                assertEquals(
+                    versionInfo.osFirmware, page.$.osFirmware.textContent);
+              });
         });
 
         /**
@@ -903,13 +912,15 @@ cr.define('settings_about_page', function() {
           dialog = document.createElement('settings-channel-switcher-dialog');
           document.body.appendChild(dialog);
 
-          radioButtons = dialog.shadowRoot.querySelectorAll(
-              'paper-radio-button');
+          radioButtons =
+              dialog.shadowRoot.querySelectorAll('paper-radio-button');
           assertEquals(3, radioButtons.length);
           return browserProxy.whenCalled('getChannelInfo');
         });
 
-        teardown(function() { dialog.remove(); });
+        teardown(function() {
+          dialog.remove();
+        });
 
         test('Initialization', function() {
           const radioGroup = dialog.$$('paper-radio-group');
@@ -941,17 +952,19 @@ cr.define('settings_about_page', function() {
             assertTrue(dialog.$.changeChannelAndPowerwash.hidden);
             assertFalse(dialog.$.changeChannel.hidden);
 
-            const whenTargetChannelChangedFired = test_util.eventToPromise(
-                'target-channel-changed', dialog);
+            const whenTargetChannelChangedFired =
+                test_util.eventToPromise('target-channel-changed', dialog);
 
             MockInteractions.tap(dialog.$.changeChannel);
-            return browserProxy.whenCalled('setChannel').then(function(args) {
-              assertEquals(BrowserChannel.DEV, args[0]);
-              assertFalse(args[1]);
-              return whenTargetChannelChangedFired;
-            }).then(function(event) {
-              assertEquals(BrowserChannel.DEV, event.detail);
-            });
+            return browserProxy.whenCalled('setChannel')
+                .then(function(args) {
+                  assertEquals(BrowserChannel.DEV, args[0]);
+                  assertFalse(args[1]);
+                  return whenTargetChannelChangedFired;
+                })
+                .then(function(event) {
+                  assertEquals(BrowserChannel.DEV, event.detail);
+                });
           });
         });
 
@@ -968,17 +981,19 @@ cr.define('settings_about_page', function() {
             assertFalse(dialog.$.changeChannelAndPowerwash.hidden);
             assertTrue(dialog.$.changeChannel.hidden);
 
-            const whenTargetChannelChangedFired = test_util.eventToPromise(
-                'target-channel-changed', dialog);
+            const whenTargetChannelChangedFired =
+                test_util.eventToPromise('target-channel-changed', dialog);
 
             MockInteractions.tap(dialog.$.changeChannelAndPowerwash);
-            return browserProxy.whenCalled('setChannel').then(function(args) {
-              assertEquals(BrowserChannel.STABLE, args[0]);
-              assertTrue(args[1]);
-              return whenTargetChannelChangedFired;
-            }).then(function(event) {
-              assertEquals(BrowserChannel.STABLE, event.detail);
-            });
+            return browserProxy.whenCalled('setChannel')
+                .then(function(args) {
+                  assertEquals(BrowserChannel.STABLE, args[0]);
+                  assertTrue(args[1]);
+                  return whenTargetChannelChangedFired;
+                })
+                .then(function(event) {
+                  assertEquals(BrowserChannel.STABLE, event.detail);
+                });
           });
         });
       });

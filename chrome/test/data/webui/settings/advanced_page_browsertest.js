@@ -42,8 +42,8 @@ TEST_F('SettingsAdvancedPageBrowserTest', 'MAYBE_Load', function() {
 
     test('advanced pages', function() {
       const page = self.basicPage;
-      let sections = ['privacy', 'passwordsAndForms', 'languages', 'downloads',
-          'reset'];
+      let sections =
+          ['privacy', 'passwordsAndForms', 'languages', 'downloads', 'reset'];
       if (cr.isChromeOS)
         sections = sections.concat(['dateTime', 'a11y']);
 
