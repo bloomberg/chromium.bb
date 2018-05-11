@@ -31,8 +31,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadWorker
     // destination file.
     virtual void OnInputStreamReady(
         DownloadWorker* worker,
-        std::unique_ptr<InputStream> input_stream,
-        std::unique_ptr<DownloadCreateInfo> download_create_info) = 0;
+        std::unique_ptr<InputStream> input_stream) = 0;
   };
 
   DownloadWorker(DownloadWorker::Delegate* delegate,
