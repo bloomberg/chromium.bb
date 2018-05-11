@@ -153,8 +153,11 @@ TEST(RenderSurfaceLayerImplTest,
       viz::RenderPassDrawQuad::MaterialCast(render_pass->quad_list.front());
   EXPECT_EQ(gfx::Transform(),
             quad->shared_quad_state->quad_to_target_transform);
+  // With tiled mask layer, we only generate mask quads for visible rect. In
+  // this case |quad_layer_rect| is not fully covered, but
+  // |visible_quad_layer_rect| is fully covered.
   LayerTestCommon::VerifyQuadsExactlyCoverRect(
-      render_pass->quad_list, quad->shared_quad_state->quad_layer_rect);
+      render_pass->quad_list, quad->shared_quad_state->visible_quad_layer_rect);
 }
 
 }  // namespace
