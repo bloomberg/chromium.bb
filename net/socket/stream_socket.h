@@ -99,8 +99,9 @@ class NET_EXPORT StreamSocket : public Socket {
   virtual const NetLogWithSource& NetLog() const = 0;
 
   // Set the annotation to indicate this socket was created for speculative
-  // reasons.  This call is generally forwarded to a basic TCPClientSocket*,
-  // where a UseHistory can be updated.
+  // reasons.  This call is generally forwarded to a basic TCPClientSocket*.
+  //
+  // These methods are deprecated and are slated for removal.
   virtual void SetSubresourceSpeculation() = 0;
   virtual void SetOmniboxSpeculation() = 0;
 
@@ -180,48 +181,6 @@ class NET_EXPORT StreamSocket : public Socket {
   // the tag would inadvertently affect other streams; calling ApplySocketTag()
   // in this case will result in CHECK(false).
   virtual void ApplySocketTag(const SocketTag& tag) = 0;
-
- protected:
-  // The following class is only used to gather statistics about the history of
-  // a socket.  It is only instantiated and used in basic sockets, such as
-  // TCPClientSocket* instances.  Other classes that are derived from
-  // StreamSocket should forward any potential settings to their underlying
-  // transport sockets.
-  class UseHistory {
-   public:
-    UseHistory();
-    ~UseHistory();
-
-    // Resets the state of UseHistory and emits histograms for the
-    // current state.
-    void Reset();
-
-    void set_was_ever_connected();
-    void set_was_used_to_convey_data();
-
-    // The next two setters only have any impact if the socket has not yet been
-    // used to transmit data.  If called later, we assume that the socket was
-    // reused from the pool, and was NOT constructed to service a speculative
-    // request.
-    void set_subresource_speculation();
-    void set_omnibox_speculation();
-
-    bool was_used_to_convey_data() const;
-
-   private:
-    // Summarize the statistics for this socket.
-    void EmitPreconnectionHistograms() const;
-    // Indicate if this was ever connected.
-    bool was_ever_connected_;
-    // Indicate if this socket was ever used to transmit or receive data.
-    bool was_used_to_convey_data_;
-
-    // Indicate if this socket was first created for speculative use, and
-    // identify the motivation.
-    bool omnibox_speculation_;
-    bool subresource_speculation_;
-    DISALLOW_COPY_AND_ASSIGN(UseHistory);
-  };
 };
 
 }  // namespace net

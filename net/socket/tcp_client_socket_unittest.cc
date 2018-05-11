@@ -123,6 +123,56 @@ TEST(TCPClientSocketTest, BindLoopbackToIPv6) {
   EXPECT_THAT(connect_callback.GetResult(result), Not(IsOk()));
 }
 
+TEST(TCPClientSocketTest, WasEverUsed) {
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+
+  IPAddress lo_address = IPAddress::IPv4Localhost();
+  TCPServerSocket server(nullptr, NetLogSource());
+  ASSERT_THAT(server.Listen(IPEndPoint(lo_address, 0), 1), IsOk());
+  IPEndPoint server_address;
+  ASSERT_THAT(server.GetLocalAddress(&server_address), IsOk());
+
+  TCPClientSocket socket(AddressList(server_address), nullptr, nullptr,
+                         NetLogSource());
+
+  EXPECT_FALSE(socket.WasEverUsed());
+
+  EXPECT_THAT(socket.Bind(IPEndPoint(lo_address, 0)), IsOk());
+
+  // Just connecting the socket should not set WasEverUsed.
+  TestCompletionCallback connect_callback;
+  int connect_result = socket.Connect(connect_callback.callback());
+  EXPECT_FALSE(socket.WasEverUsed());
+
+  TestCompletionCallback accept_callback;
+  std::unique_ptr<StreamSocket> accepted_socket;
+  int result = server.Accept(&accepted_socket, accept_callback.callback());
+  ASSERT_THAT(accept_callback.GetResult(result), IsOk());
+  EXPECT_THAT(connect_callback.GetResult(connect_result), IsOk());
+
+  EXPECT_FALSE(socket.WasEverUsed());
+  EXPECT_TRUE(socket.IsConnected());
+
+  // Writing some data to the socket _should_ set WasEverUsed.
+  const char kRequest[] = "GET / HTTP/1.0";
+  auto write_buffer = base::MakeRefCounted<StringIOBuffer>(kRequest);
+  TestCompletionCallback write_callback;
+  socket.Write(write_buffer.get(), write_buffer->size(),
+               write_callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_TRUE(socket.WasEverUsed());
+  socket.Disconnect();
+  EXPECT_FALSE(socket.IsConnected());
+
+  EXPECT_TRUE(socket.WasEverUsed());
+
+  // Re-use the socket, which should set WasEverUsed to false.
+  EXPECT_THAT(socket.Bind(IPEndPoint(lo_address, 0)), IsOk());
+  TestCompletionCallback connect_callback2;
+  connect_result = socket.Connect(connect_callback2.callback());
+  EXPECT_FALSE(socket.WasEverUsed());
+}
+
 class TestSocketPerformanceWatcher : public SocketPerformanceWatcher {
  public:
   TestSocketPerformanceWatcher() : connection_changed_count_(0u) {}

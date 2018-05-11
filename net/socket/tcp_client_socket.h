@@ -151,15 +151,13 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket {
   // This socket was previously disconnected and has not been re-connected.
   bool previously_disconnected_;
 
-  // Record of connectivity and transmissions, for use in speculative connection
-  // histograms.
-  UseHistory use_history_;
-
   // Failed connection attempts made while trying to connect this socket.
   ConnectionAttempts connection_attempts_;
 
   // Total number of bytes received by the socket.
   int64_t total_received_bytes_;
+
+  bool was_ever_used_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPClientSocket);
 };
