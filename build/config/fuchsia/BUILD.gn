@@ -56,9 +56,8 @@ config("compiler") {
     "-Wl,--as-needed",
   ]
 
-  # The fdio library is always linked (via |ldflags| above) but is not on the
-  # toolchain default lib_dirs, so add the path. https://crbug.com/731217
-  configs = [ "//third_party/fuchsia-sdk:sdk_lib_dirs_config" ]
+  # Add SDK lib dir for -lfdio above.
+  lib_dirs = [ rebase_path("${fuchsia_sdk}/arch/${current_cpu}/lib") ]
 
   # TODO(crbug.com/821951): Clang enables SafeStack by default when targeting
   # Fuchsia, but it breaks some tests, notably in V8.

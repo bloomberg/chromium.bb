@@ -106,8 +106,6 @@ template("core_impl_source_set") {
       "embedder/scoped_ipc_support.cc",
       "system/atomic_flag.h",
       "system/broker.h",
-      "system/broker_host.cc",
-      "system/broker_host.h",
       "system/broker_win.cc",
       "system/channel.cc",
       "system/channel_win.cc",
@@ -136,6 +134,12 @@ template("core_impl_source_set") {
       "system/watcher_set.h",
     ]
 
+    public_deps = [
+      "//base",
+      "//mojo/edk/system/ports",
+      "//mojo/public/c/system:headers",
+    ]
+
     if (is_fuchsia) {
       sources += [
         "embedder/named_platform_handle_utils_fuchsia.cc",
@@ -143,17 +147,20 @@ template("core_impl_source_set") {
         "embedder/platform_handle_utils_fuchsia.cc",
         "system/channel_fuchsia.cc",
       ]
-    } else if (is_posix) {
-      public += [ "embedder/platform_channel_utils_posix.h" ]
 
+      public_deps += [ "//third_party/fuchsia-sdk:fdio" ]
+    }
+
+    if (is_posix) {
       sources += [
         "embedder/platform_channel_pair_posix.cc",
-        "embedder/platform_channel_utils_posix.cc",
         "embedder/platform_handle_utils_posix.cc",
       ]
 
       if (!is_nacl || is_nacl_nonsfi) {
+        public += [ "embedder/platform_channel_utils_posix.h" ]
         sources += [
+          "embedder/platform_channel_utils_posix.cc",
           "system/broker_posix.cc",
           "system/channel_posix.cc",
         ]
@@ -171,10 +178,10 @@ template("core_impl_source_set") {
       ]
     }
 
-    if (is_nacl && !is_nacl_nonsfi) {
-      sources -= [
-        "embedder/platform_channel_utils_posix.cc",
+    if (!is_nacl || is_nacl_nonsfi) {
+      sources += [
         "system/broker_host.cc",
+        "system/broker_host.h",
       ]
     }
 
@@ -182,12 +189,6 @@ template("core_impl_source_set") {
     if (!invoker.for_mojo_core) {
       defines += [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
     }
-
-    public_deps = [
-      "//base",
-      "//mojo/edk/system/ports",
-      "//mojo/public/c/system:headers",
-    ]
 
     deps = []
     if (is_android) {

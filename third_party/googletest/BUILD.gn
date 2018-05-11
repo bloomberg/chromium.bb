@@ -102,7 +102,10 @@ source_set("gtest") {
       "//base",
     ]
     if (is_fuchsia) {
-      deps += [ "//third_party/fuchsia-sdk:launchpad" ]
+      deps += [
+        "//third_party/fuchsia-sdk:fdio",
+        "//third_party/fuchsia-sdk:launchpad",
+      ]
     }
   }
 }
