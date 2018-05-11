@@ -585,8 +585,9 @@ void PasswordFormManager::ProcessMatches(
   blacklisted_matches_.clear();
   std::copy_if(
       non_federated.begin(), non_federated.end(),
-      std::back_inserter(blacklisted_matches_),
-      [this](const PasswordForm* form) { return IsBlacklistMatch(*form); });
+      std::back_inserter(blacklisted_matches_), [](const PasswordForm* form) {
+        return form->blacklisted_by_user && !form->is_public_suffix_match;
+      });
 
   UMA_HISTOGRAM_COUNTS(
       "PasswordManager.NumPasswordsNotShown",
@@ -1104,15 +1105,6 @@ void PasswordFormManager::CreatePendingCredentials() {
 
 bool PasswordFormManager::IsMatch(const autofill::PasswordForm& form) const {
   return !form.blacklisted_by_user && form.scheme == observed_form_.scheme;
-}
-
-bool PasswordFormManager::IsBlacklistMatch(
-    const autofill::PasswordForm& blacklisted_form) const {
-  return blacklisted_form.blacklisted_by_user &&
-         !blacklisted_form.is_public_suffix_match &&
-         blacklisted_form.scheme == observed_form_.scheme &&
-         blacklisted_form.origin.GetOrigin() ==
-             observed_form_.origin.GetOrigin();
 }
 
 const PasswordForm* PasswordFormManager::FindBestMatchForUpdatePassword(
