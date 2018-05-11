@@ -37,7 +37,7 @@ class SelectFileDialogExtension
   // every WebContents.
   typedef const void* RoutingID;
   static RoutingID GetRoutingIDFromWebContents(
-      const content::WebContents* web_contents);
+      content::WebContents* web_contents);
 
   static SelectFileDialogExtension* Create(
       ui::SelectFileDialog::Listener* listener,

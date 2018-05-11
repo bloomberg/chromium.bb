@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_view_host.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -115,8 +116,9 @@ content::WebContents* GetLoginWebContents() {
 }
 #endif
 
-// Given |owner_window| finds corresponding |base_window|, it's associated
-// |web_contents| and |profile|.
+// Given |owner_window| finds corresponding |base_window| and it's associated
+// |web_contents|. The |web_contents| may not be the same as the contents in
+// |owner_window| if |owner_window| does not support dialogs.
 void FindRuntimeContext(gfx::NativeWindow owner_window,
                         ui::BaseWindow** base_window,
                         content::WebContents** web_contents) {
@@ -176,11 +178,22 @@ void FindRuntimeContext(gfx::NativeWindow owner_window,
 // static
 SelectFileDialogExtension::RoutingID
 SelectFileDialogExtension::GetRoutingIDFromWebContents(
-    const content::WebContents* web_contents) {
+    content::WebContents* web_contents) {
+  // SelectFileDialogExtension::SelectFileImpl() is invoked with a
+  // gfx::NativeWindow, corresponding to the top-level window of a WebContents.
+  // From there, SelectFileImpl() may find a different WebContents to use. It
+  // is important we perform the same transformations here in order to have a
+  // stable ID given a provided WebContents.
+  gfx::NativeWindow owning_window =
+      platform_util::GetTopLevel(web_contents->GetNativeView());
+  content::WebContents* web_contents_to_use = nullptr;
+  ui::BaseWindow* base_window = nullptr;
+  FindRuntimeContext(owning_window, &base_window, &web_contents_to_use);
+
   // Use the raw pointer value as the identifier. Previously we have used the
   // tab ID for the purpose, but some web_contents, especially those of the
   // packaged apps, don't have tab IDs assigned.
-  return web_contents;
+  return web_contents_to_use;
 }
 
 // TODO(jamescook): Move this into a new file shell_dialogs_chromeos.cc
