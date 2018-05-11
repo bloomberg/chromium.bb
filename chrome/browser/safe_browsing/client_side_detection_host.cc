@@ -446,12 +446,13 @@ void ClientSideDetectionHost::DidFinishNavigation(
 }
 
 void ClientSideDetectionHost::ResourceLoadComplete(
-    const content::mojom::ResourceLoadInfo& resource_load_info,
-    bool is_main_frame) {
+    content::RenderFrameHost* render_frame_host,
+    const content::mojom::ResourceLoadInfo& resource_load_info) {
   if (!content::IsResourceTypeFrame(resource_load_info.resource_type) &&
       browse_info_.get() && should_extract_malware_features_ &&
-      resource_load_info.url.is_valid() && resource_load_info.ip.has_value()) {
-    UpdateIPUrlMap(resource_load_info.ip->ToString(),
+      resource_load_info.url.is_valid() &&
+      resource_load_info.network_info->ip_port_pair.has_value()) {
+    UpdateIPUrlMap(resource_load_info.network_info->ip_port_pair->host(),
                    resource_load_info.url.spec(), resource_load_info.method,
                    resource_load_info.referrer.spec(),
                    resource_load_info.resource_type);

@@ -192,7 +192,6 @@ void ResourceDispatcher::OnReceivedResponse(
     response_head = initial_response_head;
   }
 
-  request_info->response_start = base::TimeTicks::Now();
   request_info->mime_type = response_head.mime_type;
   request_info->network_accessed = response_head.network_accessed;
   request_info->always_access_network =
@@ -204,14 +203,7 @@ void ResourceDispatcher::OnReceivedResponse(
     DCHECK(new_peer);
     request_info->peer = std::move(new_peer);
   }
-
-  if (!response_head.socket_address.host().empty()) {
-    ignore_result(request_info->parsed_ip.AssignFromIPLiteral(
-        response_head.socket_address.host()));
-  }
-
-  request_info->mime_type = response_head.mime_type;
-  request_info->network_accessed = response_head.network_accessed;
+  request_info->host_port_pair = renderer_response_info.socket_address;
   if (!IsResourceTypeFrame(request_info->resource_type)) {
     NotifySubresourceStarted(RenderThreadImpl::DeprecatedGetMainTaskRunner(),
                              request_info->render_frame_id,
@@ -287,6 +279,8 @@ void ResourceDispatcher::OnReceivedRedirect(
         response_head.network_accessed;
     net_redirect_info->network_info->always_access_network =
         AlwaysAccessNetwork(response_head.headers);
+    net_redirect_info->network_info->ip_port_pair =
+        response_head.socket_address;
     request_info->redirect_info_chain.push_back(std::move(net_redirect_info));
 
     if (!request_info->is_deferred)
@@ -326,19 +320,20 @@ void ResourceDispatcher::OnRequestComplete(
   resource_load_info->method = request_info->response_method;
   resource_load_info->resource_type = request_info->resource_type;
   resource_load_info->request_id = request_id;
-  if (request_info->parsed_ip.IsValid())
-    resource_load_info->ip = request_info->parsed_ip;
   resource_load_info->mime_type = request_info->mime_type;
   resource_load_info->network_info = mojom::CommonNetworkInfo::New();
   resource_load_info->network_info->network_accessed =
       request_info->network_accessed;
   resource_load_info->network_info->always_access_network =
       request_info->always_access_network;
+  resource_load_info->network_info->ip_port_pair = request_info->host_port_pair;
   resource_load_info->load_timing_info = request_info->load_timing_info;
   resource_load_info->was_cached = status.exists_in_cache;
   resource_load_info->net_error = status.error_code;
   resource_load_info->redirect_info_chain =
       std::move(request_info->redirect_info_chain);
+  resource_load_info->total_received_bytes = status.encoded_data_length;
+  resource_load_info->raw_body_bytes = status.encoded_body_length;
 
   NotifyResourceLoadComplete(RenderThreadImpl::DeprecatedGetMainTaskRunner(),
                              request_info->render_frame_id,

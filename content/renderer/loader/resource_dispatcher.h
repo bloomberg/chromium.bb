@@ -27,6 +27,7 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -208,7 +209,7 @@ class CONTENT_EXPORT ResourceDispatcher {
     net::LoadTimingInfo load_timing_info;
     linked_ptr<base::SharedMemory> buffer;
     int buffer_size;
-    net::IPAddress parsed_ip;
+    net::HostPortPair host_port_pair;
     bool network_accessed = false;
     std::string mime_type;
     std::unique_ptr<NavigationResponseOverrideParameters>

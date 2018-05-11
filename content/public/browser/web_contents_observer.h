@@ -256,11 +256,11 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
       const std::string& mime_type,
       ResourceType resource_type) {}
 
-  // This method is invoked when a resource has been loaded, successfully or
-  // not.
+  // This method is invoked when a resource associate with the frame
+  // |render_frame_host| has been loaded, successfully or not.
   virtual void ResourceLoadComplete(
-      const mojom::ResourceLoadInfo& resource_load_info,
-      bool is_main_frame) {}
+      RenderFrameHost* render_frame_host,
+      const mojom::ResourceLoadInfo& resource_load_info) {}
 
   // This method is invoked when a new non-pending navigation entry is created.
   // This corresponds to one NavigationController entry being created
