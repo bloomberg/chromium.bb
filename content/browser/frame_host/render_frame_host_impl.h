@@ -31,6 +31,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/loader/global_routing_id.h"
+#include "content/browser/renderer_host/media/old_render_frame_audio_input_stream_factory.h"
 #include "content/browser/renderer_host/media/old_render_frame_audio_output_stream_factory.h"
 #include "content/browser/renderer_host/media/render_frame_audio_input_stream_factory.h"
 #include "content/browser/renderer_host/media/render_frame_audio_output_stream_factory.h"
@@ -1419,14 +1420,19 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // |FrameHostMsg_TextSurroundingSelectionResponse| message comes.
   TextSurroundingSelectionCallback text_surrounding_selection_callback_;
 
-  UniqueAudioInputStreamFactoryPtr audio_input_stream_factory_;
-
   // We switch between |audio_service_audio_output_stream_factory_| and
   // |in_content_audio_output_stream_factory_| based on
   // features::kAudioServiceAudioStreams status.
   base::Optional<RenderFrameAudioOutputStreamFactory>
       audio_service_audio_output_stream_factory_;
   UniqueAudioOutputStreamFactoryPtr in_content_audio_output_stream_factory_;
+
+  // We switch between |audio_service_audio_input_stream_factory_| and
+  // |in_content_audio_input_stream_factory_| based on
+  // features::kAudioServiceAudioStreams status.
+  base::Optional<RenderFrameAudioInputStreamFactory>
+      audio_service_audio_input_stream_factory_;
+  UniqueAudioInputStreamFactoryPtr in_content_audio_input_stream_factory_;
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   std::unique_ptr<MediaStreamDispatcherHost, BrowserThread::DeleteOnIOThread>
