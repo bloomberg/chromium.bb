@@ -53,8 +53,8 @@ class PreviewsBlackListItem {
    public:
     OptOutRecord(base::Time entry_time, bool opt_out);
     ~OptOutRecord();
-    OptOutRecord(OptOutRecord&&);
-    OptOutRecord& operator=(OptOutRecord&&);
+    OptOutRecord(OptOutRecord&&) noexcept;
+    OptOutRecord& operator=(OptOutRecord&&) noexcept;
 
     // Used to determine eviction priority.
     bool operator<(const OptOutRecord& other) const;

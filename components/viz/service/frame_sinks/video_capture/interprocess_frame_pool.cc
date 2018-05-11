@@ -207,10 +207,10 @@ bool InterprocessFramePool::CanLogSharedMemoryFailure() {
 }
 
 InterprocessFramePool::PooledBuffer::PooledBuffer() = default;
-InterprocessFramePool::PooledBuffer::PooledBuffer(PooledBuffer&& other) =
-    default;
+InterprocessFramePool::PooledBuffer::PooledBuffer(
+    PooledBuffer&& other) noexcept = default;
 InterprocessFramePool::PooledBuffer& InterprocessFramePool::PooledBuffer::
-operator=(PooledBuffer&& other) = default;
+operator=(PooledBuffer&& other) noexcept = default;
 InterprocessFramePool::PooledBuffer::~PooledBuffer() = default;
 
 }  // namespace viz

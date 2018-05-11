@@ -33,7 +33,10 @@ enum class LogoType {
 // serialize and deserialize that field.
 struct LogoMetadata {
   LogoMetadata();
-  LogoMetadata(const LogoMetadata& other);
+  LogoMetadata(const LogoMetadata&);
+  LogoMetadata(LogoMetadata&&) noexcept;
+  LogoMetadata& operator=(const LogoMetadata&);
+  LogoMetadata& operator=(LogoMetadata&&) noexcept;
   ~LogoMetadata();
 
   // For use by the client ----------------------------------------------------
@@ -116,7 +119,10 @@ enum class LogoCallbackReason {
 
 struct EncodedLogo {
   EncodedLogo();
-  EncodedLogo(const EncodedLogo& other);
+  EncodedLogo(const EncodedLogo&);
+  EncodedLogo(EncodedLogo&&) noexcept;
+  EncodedLogo& operator=(const EncodedLogo& other);
+  EncodedLogo& operator=(EncodedLogo&& other) noexcept;
   ~EncodedLogo();
 
   // The jpeg- or png-encoded image.
@@ -147,7 +153,8 @@ struct LogoCallbacks {
   LogoCallback on_fresh_decoded_logo_available;
 
   LogoCallbacks();
-  LogoCallbacks(LogoCallbacks&&);
+  LogoCallbacks(LogoCallbacks&&) noexcept;
+  LogoCallbacks& operator=(LogoCallbacks&&) noexcept;
   ~LogoCallbacks();
 };
 
