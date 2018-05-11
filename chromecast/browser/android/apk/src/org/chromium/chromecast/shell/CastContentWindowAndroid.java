@@ -65,7 +65,7 @@ public class CastContentWindowAndroid implements CastWebContentsComponent.OnComp
     @CalledByNative
     private void enableTouchInput(boolean enabled) {
         if (DEBUG) Log.d(TAG, "enableTouchInput");
-        mComponent.enableTouchInput(mInstanceId, enabled);
+        mComponent.enableTouchInput(enabled);
     }
 
     @SuppressWarnings("unused")

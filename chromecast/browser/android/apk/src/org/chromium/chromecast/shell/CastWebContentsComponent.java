@@ -71,7 +71,6 @@ public class CastWebContentsComponent {
     @VisibleForTesting
     class ActivityDelegate implements Delegate {
         private static final String TAG = "cr_CastWebContent_AD";
-        private boolean mEnableTouchInput;
         private boolean mStarted = false;
 
         public ActivityDelegate(boolean enableTouchInput) {
@@ -95,7 +94,6 @@ public class CastWebContentsComponent {
 
     private class FragmentDelegate implements Delegate {
         private static final String TAG = "cr_CastWebContent_FD";
-        private boolean mEnableTouchInput;
 
         public FragmentDelegate(boolean enableTouchInput) {
             mEnableTouchInput = enableTouchInput;
@@ -169,6 +167,7 @@ public class CastWebContentsComponent {
     private final Controller<WebContents> mHasWebContentsState = new Controller<>();
     private Delegate mDelegate;
     private boolean mStarted;
+    private boolean mEnableTouchInput;
 
     public CastWebContentsComponent(String instanceId,
             OnComponentClosedHandler onComponentClosedHandler, OnKeyDownHandler onKeyDownHandler,
@@ -297,8 +296,9 @@ public class CastWebContentsComponent {
         sendIntentSync(CastWebContentsIntentUtils.requestMoveOut(mInstanceId));
     }
 
-    public void enableTouchInput(String instanceId, boolean enabled) {
-        if (DEBUG) Log.d(TAG, "enableTouchInput");
+    public void enableTouchInput(boolean enabled) {
+        if (DEBUG) Log.d(TAG, "enableTouchInput enabled:" + enabled);
+        mEnableTouchInput = enabled;
         sendIntentSync(CastWebContentsIntentUtils.enableTouchInput(mInstanceId, enabled));
     }
 
