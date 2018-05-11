@@ -39,7 +39,8 @@ class COMPOSITOR_EXPORT ScrollInputHandler : public cc::InputHandlerClient {
   void DeliverInputForBeginFrame() override;
 
  private:
-  cc::InputHandler* input_handler_;  // Weak. Cleared in WillShutdown().
+  // Cleared in WillShutdown().
+  base::WeakPtr<cc::InputHandler> input_handler_weak_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollInputHandler);
 };

@@ -33,35 +33,40 @@ cc::ScrollState CreateScrollState(const ScrollEvent& scroll, bool is_end) {
 
 ScrollInputHandler::ScrollInputHandler(
     const base::WeakPtr<cc::InputHandler>& input_handler)
-    : input_handler_(input_handler.get()) {
-  // TODO(crbug.com/838873): Take into account the possible invalidity of
-  // this WeakPtr (input_handler).
-  input_handler_->BindToClient(this, false /* wheel_scroll_latching_enabled */);
+    : input_handler_weak_ptr_(input_handler) {
+  DCHECK(input_handler_weak_ptr_);
+  input_handler_weak_ptr_->BindToClient(
+      this, false /* wheel_scroll_latching_enabled */);
 }
 
 ScrollInputHandler::~ScrollInputHandler() {
-  DCHECK(!input_handler_);
+  DCHECK(!input_handler_weak_ptr_)
+      << "Pointer invalidated before WillShutdown() is called.";
 }
 
 bool ScrollInputHandler::OnScrollEvent(const ScrollEvent& event,
                                        Layer* layer_to_scroll) {
+  if (!input_handler_weak_ptr_)
+    return false;
+
   cc::ScrollState scroll_state = CreateScrollState(event, false);
   scroll_state.data()->set_current_native_scrolling_element(
       layer_to_scroll->element_id());
-  input_handler_->ScrollBy(&scroll_state);
+  input_handler_weak_ptr_->ScrollBy(&scroll_state);
 
   if (event.momentum_phase() == EventMomentumPhase::END) {
     scroll_state = CreateScrollState(event, true);
 
     // For now, pass false for the |should_snap| argument.
-    input_handler_->ScrollEnd(&scroll_state, false /* should_snap */);
+    input_handler_weak_ptr_->ScrollEnd(&scroll_state, false /* should_snap */);
   }
 
   return true;
 }
 
 void ScrollInputHandler::WillShutdown() {
-  input_handler_ = nullptr;
+  DCHECK(input_handler_weak_ptr_);
+  input_handler_weak_ptr_.reset();
 }
 
 void ScrollInputHandler::Animate(base::TimeTicks time) {}

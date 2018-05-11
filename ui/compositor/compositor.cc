@@ -203,7 +203,8 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   UMA_HISTOGRAM_TIMES("GPU.CreateBrowserCompositor",
                       base::TimeTicks::Now() - before_create);
 
-  if (base::FeatureList::IsEnabled(features::kUiCompositorScrollWithLayers)) {
+  if (base::FeatureList::IsEnabled(features::kUiCompositorScrollWithLayers) &&
+      host_->GetInputHandler()) {
     scroll_input_handler_.reset(
         new ScrollInputHandler(host_->GetInputHandler()));
   }
@@ -431,17 +432,14 @@ bool Compositor::IsVisible() {
 
 bool Compositor::ScrollLayerTo(int layer_id, const gfx::ScrollOffset& offset) {
   auto input_handler = host_->GetInputHandler();
-  // TODO(crbug.com/838873): Handle the case where this weak pointer is invalid.
-  DCHECK(input_handler);
-  return input_handler->ScrollLayerTo(layer_id, offset);
+  return input_handler && input_handler->ScrollLayerTo(layer_id, offset);
 }
 
 bool Compositor::GetScrollOffsetForLayer(int layer_id,
                                          gfx::ScrollOffset* offset) const {
   auto input_handler = host_->GetInputHandler();
-  // TODO(crbug.com/838873): Handle the case where this weak pointer is invalid.
-  DCHECK(input_handler);
-  return input_handler->GetScrollOffsetForLayer(layer_id, offset);
+  return input_handler &&
+         input_handler->GetScrollOffsetForLayer(layer_id, offset);
 }
 
 void Compositor::SetAuthoritativeVSyncInterval(
