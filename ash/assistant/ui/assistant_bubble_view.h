@@ -37,6 +37,8 @@ class AssistantBubbleView : public views::View,
                             public AssistantInteractionModelObserver,
                             public app_list::SuggestionChipListener {
  public:
+  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
+
   explicit AssistantBubbleView(AssistantController* assistant_controller);
   ~AssistantBubbleView() override;
 
@@ -52,7 +54,8 @@ class AssistantBubbleView : public views::View,
   void OnUiElementsCleared() override;
   void OnQueryChanged(const Query& query) override;
   void OnQueryCleared() override;
-  void OnSuggestionsAdded(const std::vector<std::string>& suggestions) override;
+  void OnSuggestionsAdded(
+      const std::vector<AssistantSuggestion*>& suggestions) override;
   void OnSuggestionsCleared() override;
 
   // app_list::SuggestionChipListener:

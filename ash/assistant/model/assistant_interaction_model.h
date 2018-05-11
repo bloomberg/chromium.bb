@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 
 namespace ash {
 
@@ -65,6 +66,10 @@ struct Query {
 // recognition, as well as renderable AssistantUiElements and suggestions.
 class AssistantInteractionModel {
  public:
+  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
+  using AssistantSuggestionPtr =
+      chromeos::assistant::mojom::AssistantSuggestionPtr;
+
   AssistantInteractionModel();
   ~AssistantInteractionModel();
 
@@ -111,7 +116,7 @@ class AssistantInteractionModel {
 
   // Adds the specified |suggestions| that should be rendered for the
   // interaction.
-  void AddSuggestions(const std::vector<std::string>& suggestions);
+  void AddSuggestions(std::vector<AssistantSuggestionPtr> suggestions);
 
   // Clears all suggestions for the interaction.
   void ClearSuggestions();
@@ -124,14 +129,15 @@ class AssistantInteractionModel {
   void NotifyUiElementsCleared();
   void NotifyQueryChanged();
   void NotifyQueryCleared();
-  void NotifySuggestionsAdded(const std::vector<std::string>& suggestions);
+  void NotifySuggestionsAdded(
+      const std::vector<AssistantSuggestion*> suggestions);
   void NotifySuggestionsCleared();
 
   InteractionState interaction_state_ = InteractionState::kInactive;
   InputModality input_modality_;
   MicState mic_state_ = MicState::kClosed;
   Query query_;
-  std::vector<std::string> suggestions_list_;
+  std::vector<AssistantSuggestionPtr> suggestions_list_;
   std::vector<std::unique_ptr<AssistantUiElement>> ui_element_list_;
 
   base::ObserverList<AssistantInteractionModelObserver> observers_;

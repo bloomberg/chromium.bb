@@ -283,6 +283,8 @@ class UiElementContainer : public views::View {
 
 class SuggestionsContainer : public views::View {
  public:
+  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
+
   explicit SuggestionsContainer(app_list::SuggestionChipListener* listener)
       : suggestion_chip_listener_(listener) {}
 
@@ -330,10 +332,10 @@ class SuggestionsContainer : public views::View {
     }
   }
 
-  void AddSuggestions(const std::vector<std::string>& suggestions) {
-    for (const std::string& suggestion : suggestions) {
+  void AddSuggestions(const std::vector<AssistantSuggestion*>& suggestions) {
+    for (const AssistantSuggestion* suggestion : suggestions) {
       AddChildView(new app_list::SuggestionChipView(
-          base::UTF8ToUTF16(suggestion), suggestion_chip_listener_));
+          base::UTF8ToUTF16(suggestion->text), suggestion_chip_listener_));
     }
     PreferredSizeChanged();
   }
@@ -547,7 +549,7 @@ void AssistantBubbleView::OnQueryCleared() {
 }
 
 void AssistantBubbleView::OnSuggestionsAdded(
-    const std::vector<std::string>& suggestions) {
+    const std::vector<AssistantSuggestion*>& suggestions) {
   suggestions_container_->AddSuggestions(suggestions);
   suggestions_container_->SetVisible(true);
 }
