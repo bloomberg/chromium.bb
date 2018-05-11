@@ -8,8 +8,8 @@
 
 #include "net/base/net_errors.h"
 #include "net/http/http_server_properties_impl.h"
-#include "net/quic/core/quic_server_id.h"
 #include "net/test/gtest_util.h"
+#include "net/third_party/quic/core/quic_server_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

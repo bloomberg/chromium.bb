@@ -4,14 +4,14 @@
 
 #include "net/tools/quic/quic_simple_server.h"
 
-#include "net/quic/core/crypto/quic_random.h"
-#include "net/quic/core/quic_crypto_stream.h"
-#include "net/quic/core/quic_utils.h"
-#include "net/quic/core/tls_server_handshaker.h"
-#include "net/quic/platform/api/quic_test.h"
-#include "net/quic/test_tools/crypto_test_utils.h"
-#include "net/quic/test_tools/mock_quic_dispatcher.h"
-#include "net/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quic/core/crypto/quic_random.h"
+#include "net/third_party/quic/core/quic_crypto_stream.h"
+#include "net/third_party/quic/core/quic_utils.h"
+#include "net/third_party/quic/core/tls_server_handshaker.h"
+#include "net/third_party/quic/platform/api/quic_test.h"
+#include "net/third_party/quic/test_tools/crypto_test_utils.h"
+#include "net/third_party/quic/test_tools/mock_quic_dispatcher.h"
+#include "net/third_party/quic/test_tools/quic_test_utils.h"
 #include "net/tools/quic/quic_simple_server_session_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

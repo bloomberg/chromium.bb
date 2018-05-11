@@ -7,10 +7,10 @@
 #include "base/stl_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "net/log/test_net_log.h"
-#include "net/quic/test_tools/mock_clock.h"
-#include "net/quic/test_tools/quic_test_utils.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
+#include "net/third_party/quic/test_tools/mock_clock.h"
+#include "net/third_party/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

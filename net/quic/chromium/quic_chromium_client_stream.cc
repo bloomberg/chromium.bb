@@ -15,10 +15,10 @@
 #include "net/log/net_log_event_type.h"
 #include "net/quic/chromium/quic_chromium_client_session.h"
 #include "net/quic/chromium/quic_http_utils.h"
-#include "net/quic/core/quic_spdy_session.h"
-#include "net/quic/core/quic_write_blocked_list.h"
-#include "net/quic/core/spdy_utils.h"
 #include "net/spdy/chromium/spdy_log_util.h"
+#include "net/third_party/quic/core/quic_spdy_session.h"
+#include "net/third_party/quic/core/quic_write_blocked_list.h"
+#include "net/third_party/quic/core/spdy_utils.h"
 
 namespace net {
 namespace {

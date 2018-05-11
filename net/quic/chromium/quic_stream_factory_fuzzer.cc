@@ -18,8 +18,6 @@
 #include "net/quic/chromium/mock_crypto_client_stream_factory.h"
 #include "net/quic/chromium/quic_http_stream.h"
 #include "net/quic/chromium/test_task_runner.h"
-#include "net/quic/test_tools/mock_clock.h"
-#include "net/quic/test_tools/mock_random.h"
 #include "net/socket/fuzzed_datagram_client_socket.h"
 #include "net/socket/fuzzed_socket_factory.h"
 #include "net/socket/socket_tag.h"
@@ -27,6 +25,8 @@
 #include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/gtest_util.h"
+#include "net/third_party/quic/test_tools/mock_clock.h"
+#include "net/third_party/quic/test_tools/mock_random.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 
 namespace net {

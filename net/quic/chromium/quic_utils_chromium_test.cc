@@ -6,7 +6,7 @@
 
 #include <map>
 
-#include "net/quic/core/crypto/crypto_protocol.h"
+#include "net/third_party/quic/core/crypto/crypto_protocol.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

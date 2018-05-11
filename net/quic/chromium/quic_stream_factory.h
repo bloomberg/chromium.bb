@@ -33,14 +33,14 @@
 #include "net/quic/chromium/quic_chromium_client_session.h"
 #include "net/quic/chromium/quic_clock_skew_detector.h"
 #include "net/quic/chromium/quic_session_key.h"
-#include "net/quic/core/quic_client_push_promise_index.h"
-#include "net/quic/core/quic_config.h"
-#include "net/quic/core/quic_crypto_stream.h"
-#include "net/quic/core/quic_packets.h"
-#include "net/quic/core/quic_server_id.h"
-#include "net/quic/platform/api/quic_string_piece.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/ssl/ssl_config_service.h"
+#include "net/third_party/quic/core/quic_client_push_promise_index.h"
+#include "net/third_party/quic/core/quic_config.h"
+#include "net/third_party/quic/core/quic_crypto_stream.h"
+#include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quic/core/quic_server_id.h"
+#include "net/third_party/quic/platform/api/quic_string_piece.h"
 
 namespace base {
 class Value;

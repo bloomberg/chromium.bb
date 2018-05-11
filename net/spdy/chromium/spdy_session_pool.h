@@ -24,11 +24,11 @@
 #include "net/base/proxy_server.h"
 #include "net/cert/cert_database.h"
 #include "net/proxy_resolution/proxy_config.h"
-#include "net/quic/core/quic_versions.h"
 #include "net/spdy/chromium/http2_push_promise_index.h"
 #include "net/spdy/chromium/server_push_delegate.h"
 #include "net/spdy/chromium/spdy_session_key.h"
 #include "net/ssl/ssl_config_service.h"
+#include "net/third_party/quic/core/quic_versions.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/third_party/spdy/platform/api/spdy_string.h"
 

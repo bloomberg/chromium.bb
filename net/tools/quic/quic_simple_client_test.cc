@@ -6,8 +6,8 @@
 
 #include "base/strings/string_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "net/quic/test_tools/crypto_test_utils.h"
-#include "net/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quic/test_tools/crypto_test_utils.h"
+#include "net/third_party/quic/test_tools/quic_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

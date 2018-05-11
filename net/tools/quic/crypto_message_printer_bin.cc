@@ -10,8 +10,8 @@
 #include <iostream>
 
 #include "base/command_line.h"
-#include "net/quic/core/crypto/crypto_framer.h"
-#include "net/quic/platform/api/quic_text_utils.h"
+#include "net/third_party/quic/core/crypto/crypto_framer.h"
+#include "net/third_party/quic/platform/api/quic_text_utils.h"
 
 using net::Perspective;
 using std::cerr;

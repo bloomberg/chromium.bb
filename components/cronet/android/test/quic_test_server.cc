@@ -17,7 +17,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/quic/chromium/crypto/proof_source_chromium.h"
 #include "net/test/test_data_directory.h"
-#include "net/tools/quic/quic_http_response_cache.h"
+#include "net/third_party/quic/tools/quic_http_response_cache.h"
 #include "net/tools/quic/quic_simple_server.h"
 
 using base::android::JavaParamRef;

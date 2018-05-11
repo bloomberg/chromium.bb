@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "net/quic/chromium/quic_http_utils.h"
-#include "net/quic/core/quic_framer.h"
-#include "net/quic/core/quic_utils.h"
-#include "net/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quic/core/quic_framer.h"
+#include "net/third_party/quic/core/quic_utils.h"
+#include "net/third_party/quic/test_tools/quic_test_utils.h"
 
 namespace net {
 namespace test {

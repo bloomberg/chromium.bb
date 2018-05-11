@@ -13,11 +13,11 @@
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_export.h"
-#include "net/quic/core/quic_connection.h"
-#include "net/quic/core/quic_packet_writer.h"
-#include "net/quic/core/quic_packets.h"
-#include "net/quic/core/quic_types.h"
 #include "net/socket/datagram_client_socket.h"
+#include "net/third_party/quic/core/quic_connection.h"
+#include "net/third_party/quic/core/quic_packet_writer.h"
+#include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quic/core/quic_types.h"
 
 namespace net {
 

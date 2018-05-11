@@ -23,12 +23,12 @@
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
 #include "net/quic/chromium/quic_address_mismatch.h"
-#include "net/quic/core/crypto/crypto_handshake_message.h"
-#include "net/quic/core/crypto/crypto_protocol.h"
-#include "net/quic/core/quic_packets.h"
-#include "net/quic/core/quic_socket_address_coder.h"
-#include "net/quic/core/quic_time.h"
-#include "net/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quic/core/crypto/crypto_handshake_message.h"
+#include "net/third_party/quic/core/crypto/crypto_protocol.h"
+#include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quic/core/quic_socket_address_coder.h"
+#include "net/third_party/quic/core/quic_time.h"
+#include "net/third_party/quic/platform/api/quic_string_piece.h"
 
 using std::string;
 

@@ -22,8 +22,8 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_stream.h"
 #include "net/log/net_log_with_source.h"
-#include "net/quic/core/quic_spdy_stream.h"
-#include "net/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quic/core/quic_spdy_stream.h"
+#include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {

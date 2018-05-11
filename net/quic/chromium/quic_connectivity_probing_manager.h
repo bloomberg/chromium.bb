@@ -10,7 +10,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/quic/chromium/quic_chromium_packet_reader.h"
 #include "net/quic/chromium/quic_chromium_packet_writer.h"
-#include "net/quic/core/quic_time.h"
+#include "net/third_party/quic/core/quic_time.h"
 
 namespace net {
 

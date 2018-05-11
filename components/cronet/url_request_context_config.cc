@@ -28,9 +28,9 @@
 #include "net/http/http_server_properties.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/quic/chromium/quic_utils_chromium.h"
-#include "net/quic/core/quic_packets.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/third_party/quic/core/quic_packets.h"
 #include "net/url_request/url_request_context_builder.h"
 
 #if BUILDFLAG(ENABLE_REPORTING)
