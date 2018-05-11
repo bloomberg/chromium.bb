@@ -26,6 +26,8 @@ class ShellExtensionsAPIClient : public ExtensionsAPIClient {
   void AttachWebContentsHelpers(content::WebContents* web_contents) const
       override;
   AppViewGuestDelegate* CreateAppViewGuestDelegate() const override;
+  WebViewGuestDelegate* CreateWebViewGuestDelegate(
+      WebViewGuest* web_view_guest) const override;
   std::unique_ptr<VirtualKeyboardDelegate> CreateVirtualKeyboardDelegate(
       content::BrowserContext* browser_context) const override;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
