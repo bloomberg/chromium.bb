@@ -193,7 +193,7 @@ void FileManagerPrivateAddMountFunction::RunAfterMarkCacheFileAsMounted(
   disk_mount_manager->MountPath(
       file_path.AsUTF8Unsafe(),
       base::FilePath(display_name.Extension()).AsUTF8Unsafe(),
-      display_name.AsUTF8Unsafe(), chromeos::MOUNT_TYPE_ARCHIVE,
+      display_name.AsUTF8Unsafe(), {}, chromeos::MOUNT_TYPE_ARCHIVE,
       chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
 }
 

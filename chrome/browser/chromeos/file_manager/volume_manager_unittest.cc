@@ -594,7 +594,8 @@ TEST_F(VolumeManagerTest, OnMountEvent_Remounting) {
           chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, false, false, false,
           false, "", ""));
   disk_mount_manager_->AddDiskForTest(std::move(disk));
-  disk_mount_manager_->MountPath("device1", "", "", chromeos::MOUNT_TYPE_DEVICE,
+  disk_mount_manager_->MountPath("device1", "", "", {},
+                                 chromeos::MOUNT_TYPE_DEVICE,
                                  chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
 
   const chromeos::disks::DiskMountManager::MountPointInfo kMountPoint(
@@ -745,9 +746,11 @@ TEST_F(VolumeManagerTest, OnFormatEvent_CompletedFailed) {
 
 TEST_F(VolumeManagerTest, OnExternalStorageDisabledChanged) {
   // Here create two mount points.
-  disk_mount_manager_->MountPath("mount1", "", "", chromeos::MOUNT_TYPE_DEVICE,
+  disk_mount_manager_->MountPath("mount1", "", "", {},
+                                 chromeos::MOUNT_TYPE_DEVICE,
                                  chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
-  disk_mount_manager_->MountPath("mount2", "", "", chromeos::MOUNT_TYPE_DEVICE,
+  disk_mount_manager_->MountPath("mount2", "", "", {},
+                                 chromeos::MOUNT_TYPE_DEVICE,
                                  chromeos::MOUNT_ACCESS_MODE_READ_ONLY);
 
   // Initially, there are two mount points.

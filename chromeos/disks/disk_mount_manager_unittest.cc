@@ -953,10 +953,10 @@ TEST_F(DiskMountManagerTest, MountPath_RecordAccessMode) {
   const std::string kMountPath1 = "/media/foo";
   const std::string kMountPath2 = "/media/bar";
 
-  manager->MountPath(kSourcePath1, kSourceFormat, std::string(),
+  manager->MountPath(kSourcePath1, kSourceFormat, std::string(), {},
                      chromeos::MOUNT_TYPE_DEVICE,
                      chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
-  manager->MountPath(kSourcePath2, kSourceFormat, std::string(),
+  manager->MountPath(kSourcePath2, kSourceFormat, std::string(), {},
                      chromeos::MOUNT_TYPE_DEVICE,
                      chromeos::MOUNT_ACCESS_MODE_READ_ONLY);
   // Simulate cros_disks reporting mount completed.
@@ -999,7 +999,7 @@ TEST_F(DiskMountManagerTest, MountPath_ReadOnlyDevice) {
 
   // Attempt to mount a read-only device in read-write mode.
   manager->MountPath(kReadOnlyDeviceSourcePath, kSourceFormat, std::string(),
-                     chromeos::MOUNT_TYPE_DEVICE,
+                     {}, chromeos::MOUNT_TYPE_DEVICE,
                      chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
   // Simulate cros_disks reporting mount completed.
   fake_cros_disks_client_->NotifyMountCompleted(

@@ -67,6 +67,7 @@ class DiskMountManagerImpl : public DiskMountManager,
   void MountPath(const std::string& source_path,
                  const std::string& source_format,
                  const std::string& mount_label,
+                 const std::vector<std::string>& mount_options,
                  MountType type,
                  MountAccessMode access_mode) override {
     // Hidden and non-existent devices should not be mounted.
@@ -79,7 +80,7 @@ class DiskMountManagerImpl : public DiskMountManager,
       }
     }
     cros_disks_client_->Mount(
-        source_path, source_format, mount_label, access_mode,
+        source_path, source_format, mount_label, mount_options, access_mode,
         REMOUNT_OPTION_MOUNT_NEW_DEVICE,
         base::BindOnce(&DiskMountManagerImpl::OnMount,
                        weak_ptr_factory_.GetWeakPtr(), source_path, type));
@@ -356,7 +357,7 @@ class DiskMountManagerImpl : public DiskMountManager,
     access_modes_[source_path] = access_mode;
 
     cros_disks_client_->Mount(
-        mount_point->second.source_path, std::string(), std::string(),
+        mount_point->second.source_path, std::string(), std::string(), {},
         access_mode, REMOUNT_OPTION_REMOUNT_EXISTING_DEVICE,
         base::BindOnce(&DiskMountManagerImpl::OnMount,
                        weak_ptr_factory_.GetWeakPtr(), source_path,

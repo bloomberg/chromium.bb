@@ -88,7 +88,7 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
     // TODO(sammc): Switch the mount type once a more appropriate mount type
     // exists.
     chromeos::disks::DiskMountManager::GetInstance()->MountPath(
-        source_path_, "", "", chromeos::MOUNT_TYPE_ARCHIVE,
+        source_path_, "", "", {}, chromeos::MOUNT_TYPE_ARCHIVE,
         chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
 
     auto bootstrap =
