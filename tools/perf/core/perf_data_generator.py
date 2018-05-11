@@ -248,20 +248,20 @@ def get_waterfall_config():
     'android', swarming=[
       {
        'os': 'Android',
-       'pool': 'Chrome-perf',
+       'pool': 'chrome.tests.perf-webview',
        'device_ids': [
-           'build112-b1--device1', 'build112-b1--device2',
-           'build112-b1--device3', 'build112-b1--device4',
-           'build112-b1--device5', 'build112-b1--device6',
-           'build112-b1--device7',
-           'build113-b1--device1', 'build113-b1--device2',
-           'build113-b1--device3', 'build113-b1--device4',
-           'build113-b1--device5', 'build113-b1--device6',
-           'build113-b1--device7',
-           'build114-b1--device1', 'build114-b1--device2',
-           'build114-b1--device3', 'build114-b1--device4',
-           'build114-b1--device5', 'build114-b1--device6',
-           'build114-b1--device7',
+           'build202-b1--device1', 'build202-b1--device2',
+           'build202-b1--device3', 'build202-b1--device4',
+           'build202-b1--device5', 'build202-b1--device6',
+           'build202-b1--device7',
+           'build203-b1--device1', 'build203-b1--device2',
+           'build203-b1--device3', 'build203-b1--device4',
+           'build203-b1--device5', 'build203-b1--device6',
+           'build203-b1--device7',
+           'build204-b1--device1', 'build204-b1--device2',
+           'build204-b1--device3', 'build204-b1--device4',
+           'build204-b1--device5', 'build204-b1--device6',
+           'build204-b1--device7',
           ],
       }
     ], replace_system_webview=True)
