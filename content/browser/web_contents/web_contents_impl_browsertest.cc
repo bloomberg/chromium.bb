@@ -9,9 +9,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -663,46 +665,61 @@ class ResourceLoadObserver : public WebContentsObserver {
 
   // Use this method with the SCOPED_TRACE macro, so it shows the caller context
   // if it fails.
-  void CheckResourceLoaded(const GURL& url,
-                           const GURL& referrer,
-                           const std::string& load_method,
-                           content::ResourceType resource_type,
-                           const std::string& mime_type,
-                           const std::string& ip_address,
-                           bool was_cached,
-                           bool first_network_request,
-                           const base::TimeTicks& before_request,
-                           const base::TimeTicks& after_request) {
+  void CheckResourceLoaded(
+      const GURL& url,
+      const GURL& referrer,
+      const std::string& load_method,
+      content::ResourceType resource_type,
+      const base::FilePath::StringPieceType& served_file_name,
+      const std::string& mime_type,
+      const std::string& ip_address,
+      bool was_cached,
+      bool first_network_request,
+      const base::TimeTicks& before_request,
+      const base::TimeTicks& after_request) {
     bool resource_load_info_found = false;
     for (const auto& resource_load_info : resource_load_infos_) {
-      if (resource_load_info->url == url) {
-        resource_load_info_found = true;
-        EXPECT_EQ(referrer, resource_load_info->referrer);
-        EXPECT_EQ(load_method, resource_load_info->method);
-        EXPECT_EQ(resource_type, resource_load_info->resource_type);
-        if (!first_network_request)
-          EXPECT_GT(resource_load_info->request_id, 0);
-        EXPECT_EQ(mime_type, resource_load_info->mime_type);
-        ASSERT_TRUE(resource_load_info->ip);
-        EXPECT_EQ(ip_address, resource_load_info->ip->ToString());
-        EXPECT_EQ(was_cached, resource_load_info->was_cached);
-        // Simple sanity check of the load timing info.
-        auto CheckTime = [before_request, after_request](auto actual) {
-          EXPECT_LE(before_request, actual);
-          EXPECT_GT(after_request, actual);
-        };
-        const net::LoadTimingInfo& timing =
-            resource_load_info->load_timing_info;
-        CheckTime(timing.request_start);
-        CheckTime(timing.receive_headers_end);
-        CheckTime(timing.send_start);
-        CheckTime(timing.send_end);
-        if (!was_cached) {
-          CheckTime(timing.connect_timing.dns_start);
-          CheckTime(timing.connect_timing.dns_end);
-          CheckTime(timing.connect_timing.connect_start);
-          CheckTime(timing.connect_timing.connect_end);
-        }
+      if (resource_load_info->url != url)
+        continue;
+
+      resource_load_info_found = true;
+      int64_t file_size = -1;
+      if (!served_file_name.empty()) {
+        base::ScopedAllowBlockingForTesting allow_blocking;
+        base::FilePath test_dir;
+        ASSERT_TRUE(base::PathService::Get(content::DIR_TEST_DATA, &test_dir));
+        base::FilePath served_file = test_dir.Append(served_file_name);
+        ASSERT_TRUE(GetFileSize(served_file, &file_size));
+      }
+      EXPECT_EQ(referrer, resource_load_info->referrer);
+      EXPECT_EQ(load_method, resource_load_info->method);
+      EXPECT_EQ(resource_type, resource_load_info->resource_type);
+      if (!first_network_request)
+        EXPECT_GT(resource_load_info->request_id, 0);
+      EXPECT_EQ(mime_type, resource_load_info->mime_type);
+      ASSERT_TRUE(resource_load_info->network_info->ip_port_pair);
+      EXPECT_EQ(ip_address,
+                resource_load_info->network_info->ip_port_pair->host());
+      EXPECT_EQ(was_cached, resource_load_info->was_cached);
+      // Simple sanity check of the load timing info.
+      auto CheckTime = [before_request, after_request](auto actual) {
+        EXPECT_LE(before_request, actual);
+        EXPECT_GT(after_request, actual);
+      };
+      const net::LoadTimingInfo& timing = resource_load_info->load_timing_info;
+      CheckTime(timing.request_start);
+      CheckTime(timing.receive_headers_end);
+      CheckTime(timing.send_start);
+      CheckTime(timing.send_end);
+      if (!was_cached) {
+        CheckTime(timing.connect_timing.dns_start);
+        CheckTime(timing.connect_timing.dns_end);
+        CheckTime(timing.connect_timing.connect_start);
+        CheckTime(timing.connect_timing.connect_end);
+      }
+      if (file_size != -1) {
+        EXPECT_EQ(file_size, resource_load_info->raw_body_bytes);
+        EXPECT_LT(file_size, resource_load_info->total_received_bytes);
       }
     }
     EXPECT_TRUE(resource_load_info_found);
@@ -716,10 +733,13 @@ class ResourceLoadObserver : public WebContentsObserver {
 
  private:
   // WebContentsObserver implementation:
-  void ResourceLoadComplete(const mojom::ResourceLoadInfo& resource_load_info,
-                            bool is_main_frame) override {
+  void ResourceLoadComplete(
+      content::RenderFrameHost* render_frame_host,
+      const mojom::ResourceLoadInfo& resource_load_info) override {
+    EXPECT_NE(nullptr, render_frame_host);
     resource_load_infos_.push_back(resource_load_info.Clone());
-    resource_is_associated_with_main_frame_.push_back(is_main_frame);
+    resource_is_associated_with_main_frame_.push_back(
+        render_frame_host->GetParent() == nullptr);
   }
 
   void DidLoadResourceFromMemoryCache(const GURL& url,
@@ -746,17 +766,17 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ResourceLoadComplete) {
   ASSERT_EQ(3U, observer.resource_load_infos().size());
   SCOPE_TRACED(observer.CheckResourceLoaded(
       page_url, /*referrer=*/GURL(), "GET", content::RESOURCE_TYPE_MAIN_FRAME,
-      "text/html", "127.0.0.1",
+      FILE_PATH_LITERAL("page_with_iframe.html"), "text/html", "127.0.0.1",
       /*was_cached=*/false, /*first_network_request=*/true, before, after));
   SCOPE_TRACED(observer.CheckResourceLoaded(
       embedded_test_server()->GetURL("/image.jpg"),
-      /*referrer=*/page_url, "GET", content::RESOURCE_TYPE_IMAGE, "image/jpeg",
-      "127.0.0.1",
+      /*referrer=*/page_url, "GET", content::RESOURCE_TYPE_IMAGE,
+      FILE_PATH_LITERAL("image.jpg"), "image/jpeg", "127.0.0.1",
       /*was_cached=*/false, /*first_network_request=*/false, before, after));
   SCOPE_TRACED(observer.CheckResourceLoaded(
       embedded_test_server()->GetURL("/title1.html"),
       /*referrer=*/page_url, "GET", content::RESOURCE_TYPE_SUB_FRAME,
-      "text/html", "127.0.0.1",
+      FILE_PATH_LITERAL("title1.html"), "text/html", "127.0.0.1",
       /*was_cached=*/false, /*first_network_request=*/false, before, after));
 }
 
@@ -776,12 +796,13 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   ASSERT_EQ(2U, observer.resource_load_infos().size());
   SCOPE_TRACED(observer.CheckResourceLoaded(
       page_url, /*referrer=*/GURL(), "GET", content::RESOURCE_TYPE_MAIN_FRAME,
-      "text/html", "127.0.0.1", /*was_cached=*/false,
+      /*served_file_name=*/FILE_PATH_LITERAL(""), "text/html", "127.0.0.1",
+      /*was_cached=*/false,
       /*first_network_request=*/true, before, after));
 
   SCOPE_TRACED(observer.CheckResourceLoaded(
       resource_url, /*referrer=*/page_url, "GET", content::RESOURCE_TYPE_SCRIPT,
-      "text/html", "127.0.0.1",
+      /*served_file_name=*/FILE_PATH_LITERAL(""), "text/html", "127.0.0.1",
       /*was_cached=*/false, /*first_network_request=*/false, before, after));
   EXPECT_TRUE(
       observer.resource_load_infos()[1]->network_info->network_accessed);
@@ -795,7 +816,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   ASSERT_EQ(1U, observer.resource_load_infos().size());
   SCOPE_TRACED(observer.CheckResourceLoaded(
       page_url, /*referrer=*/GURL(), "GET", content::RESOURCE_TYPE_MAIN_FRAME,
-      "text/html", "127.0.0.1",
+      /*served_file_name=*/FILE_PATH_LITERAL(""), "text/html", "127.0.0.1",
       /*was_cached=*/false, /*first_network_request=*/false, before, after));
   ASSERT_EQ(1U, observer.memory_cached_loaded_urls().size());
   EXPECT_EQ(resource_url, observer.memory_cached_loaded_urls()[0]);
@@ -812,11 +833,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   ASSERT_EQ(2U, observer.resource_load_infos().size());
   SCOPE_TRACED(observer.CheckResourceLoaded(
       page_url, /*referrer=*/GURL(), "GET", content::RESOURCE_TYPE_MAIN_FRAME,
-      "text/html", "127.0.0.1",
+      /*served_file_name=*/FILE_PATH_LITERAL(""), "text/html", "127.0.0.1",
       /*was_cached=*/false, /*first_network_request=*/true, before, after));
   SCOPE_TRACED(observer.CheckResourceLoaded(
       resource_url, /*referrer=*/page_url, "GET", content::RESOURCE_TYPE_SCRIPT,
-      "text/html", "127.0.0.1",
+      /*served_file_name=*/FILE_PATH_LITERAL(""), "text/html", "127.0.0.1",
       /*was_cached=*/true, /*first_network_request=*/false, before, after));
   EXPECT_TRUE(observer.memory_cached_loaded_urls().empty());
   EXPECT_FALSE(

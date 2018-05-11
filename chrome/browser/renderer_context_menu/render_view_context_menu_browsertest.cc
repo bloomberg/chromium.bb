@@ -1160,8 +1160,8 @@ class LoadImageRequestObserver : public content::WebContentsObserver {
       : content::WebContentsObserver(web_contents), path_(path) {}
 
   void ResourceLoadComplete(
-      const content::mojom::ResourceLoadInfo& resource_load_info,
-      bool is_main_frame) override {
+      content::RenderFrameHost* render_frame_host,
+      const content::mojom::ResourceLoadInfo& resource_load_info) override {
     if (resource_load_info.url.path() == path_)
       run_loop_.Quit();
   }
