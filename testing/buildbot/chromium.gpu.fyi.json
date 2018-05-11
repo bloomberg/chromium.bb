@@ -90,6 +90,49 @@
       }
     ]
   },
+  "Android FYI 32 dEQP Vk Release (Nexus 5X)": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-vulkan",
+          "--enable-xml-result-parsing",
+          "--shard-timeout=500"
+        ],
+        "name": "angle_deqp_gles2_vulkan_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "O",
+              "device_type": "bullhead",
+              "os": "Android",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ]
+        },
+        "test": "angle_deqp_gles2_tests",
+        "use_xvfb": false
+      }
+    ],
+    "isolated_scripts": []
+  },
   "Android FYI 64 Vk Release (Nexus 5X)": {
     "gtest_tests": [
       {
@@ -178,6 +221,49 @@
         }
       }
     ]
+  },
+  "Android FYI 64 dEQP Vk Release (Nexus 5X)": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-vulkan",
+          "--enable-xml-result-parsing",
+          "--shard-timeout=500"
+        ],
+        "name": "angle_deqp_gles2_vulkan_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "O",
+              "device_type": "bullhead",
+              "os": "Android",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ]
+        },
+        "test": "angle_deqp_gles2_tests",
+        "use_xvfb": false
+      }
+    ],
+    "isolated_scripts": []
   },
   "Android FYI Release (NVIDIA Shield TV)": {
     "gtest_tests": [
@@ -2834,6 +2920,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--deqp-egl-display-type=angle-gles",
           "--enable-xml-result-parsing",
           "--shard-timeout=500"
         ],
@@ -5029,8 +5116,8 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=400",
-          "--deqp-egl-display-type=angle-vulkan"
+          "--deqp-egl-display-type=angle-vulkan",
+          "--test-launcher-batch-limit=400"
         ],
         "name": "angle_deqp_gles2_vulkan_tests",
         "swarming": {
@@ -15160,8 +15247,8 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=400",
-          "--deqp-egl-display-type=angle-vulkan"
+          "--deqp-egl-display-type=angle-vulkan",
+          "--test-launcher-batch-limit=400"
         ],
         "name": "angle_deqp_gles2_vulkan_tests",
         "swarming": {
@@ -17679,8 +17766,8 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=400",
-          "--deqp-egl-display-type=angle-vulkan"
+          "--deqp-egl-display-type=angle-vulkan",
+          "--test-launcher-batch-limit=400"
         ],
         "name": "angle_deqp_gles2_vulkan_tests",
         "swarming": {

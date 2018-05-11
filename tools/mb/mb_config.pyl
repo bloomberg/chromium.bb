@@ -288,6 +288,8 @@
       'Android FYI Release (NVIDIA Shield TV)': 'android_release_trybot_arm64',
       'Android FYI 32 Vk Release (Nexus 5X)': 'gpu_tests_android_vulkan_release_trybot',
       'Android FYI 64 Vk Release (Nexus 5X)': 'gpu_tests_android_vulkan_release_trybot_arm64',
+      'Android FYI 32 dEQP Vk Release (Nexus 5X)': 'deqp_android_vulkan_release_trybot',
+      'Android FYI 64 dEQP Vk Release (Nexus 5X)': 'deqp_android_vulkan_release_trybot_arm64',
       'GPU FYI Linux Builder': 'gpu_fyi_tests_release_trybot',
       'GPU FYI Linux Ozone Builder': 'gpu_fyi_tests_ozone_linux_system_gbm_libdrm_release_trybot',
       'GPU FYI Linux Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
@@ -1257,6 +1259,14 @@
 
     'deqp_android_release_trybot_arm64': [
       'angle_deqp_tests', 'android', 'release_trybot', 'arm64',
+    ],
+
+    'deqp_android_vulkan_release_trybot': [
+      'angle_deqp_tests', 'android', 'vulkan', 'release_trybot',
+    ],
+
+    'deqp_android_vulkan_release_trybot_arm64': [
+      'angle_deqp_tests', 'android', 'vulkan', 'release_trybot', 'arm64',
     ],
 
     'deqp_release_trybot_x86': [
