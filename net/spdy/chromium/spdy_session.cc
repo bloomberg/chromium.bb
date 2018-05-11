@@ -1424,64 +1424,7 @@ bool SpdySession::ValidatePushedStream(SpdyStreamId stream_id,
     return false;
   }
 
-  if (stream_it->second->IsReservedRemote()) {
-    // Pushed response headers have not arrived yet, match stream to request.
-    // TODO(https://crbug.com/554220): This is incorrect.  Validate pushed
-    // response headers after they arrive.
-    // TODO(https://crbug.com/831536): Add histogram.
-    return true;
-  }
-
-  HttpRequestInfo pushed_request_info;
-  ConvertHeaderBlockToHttpRequestHeaders(stream_it->second->request_headers(),
-                                         &pushed_request_info.extra_headers);
-
-  HttpResponseInfo pushed_response_info;
-  if (!SpdyHeadersToHttpResponse(stream_it->second->response_headers(),
-                                 &pushed_response_info)) {
-    return false;
-  }
-
-  SpdyHeaderBlock::const_iterator status_it =
-      stream_it->second->response_headers().find(kHttp2StatusHeader);
-  // Had there not been a status header, SpdyHeadersToHttpResponse() would have
-  // returned true just above.
-  DCHECK(status_it != stream_it->second->response_headers().end());
-  // 206 Partial Content and 416 Requested Range Not Satisfiable are range
-  // responses.
-  if (status_it->second == "206" || status_it->second == "416") {
-    std::string client_request_range;
-    if (!request_info.extra_headers.GetHeader(HttpRequestHeaders::kRange,
-                                              &client_request_range)) {
-      // Client initiated request is not a range request.
-      // TODO(https://crbug.com/831536): Add histogram.
-      return false;
-    }
-    SpdyHeaderBlock::const_iterator pushed_request_range_it =
-        stream_it->second->request_headers().find("range");
-    if (pushed_request_range_it == stream_it->second->request_headers().end()) {
-      // Pushed request is not a range request.
-      // TODO(https://crbug.com/831536): Add histogram.
-      return false;
-    }
-    if (client_request_range != pushed_request_range_it->second) {
-      // Client and pushed request ranges do not match.
-      // TODO(https://crbug.com/831536): Add histogram.
-      return false;
-    }
-  }
-
-  HttpVaryData vary_data;
-  if (!vary_data.Init(pushed_request_info,
-                      *pushed_response_info.headers.get())) {
-    // Pushed response did not contain non-empty Vary header.
-    // TODO(https://crbug.com/831536): Add histogram.
-    return true;
-  }
-
-  // TODO(https://crbug.com/831536): Add histogram.
-  return vary_data.MatchesRequest(request_info,
-                                  *pushed_response_info.headers.get());
+  return true;
 }
 
 base::WeakPtr<SpdySession> SpdySession::GetWeakPtrToSession() {
@@ -1914,7 +1857,8 @@ void SpdySession::ResetStreamIterator(ActiveStreamMap::iterator it,
   SpdyErrorCode error_code = ERROR_CODE_PROTOCOL_ERROR;
   if (error == ERR_FAILED) {
     error_code = ERROR_CODE_INTERNAL_ERROR;
-  } else if (error == ERR_ABORTED) {
+  } else if (error == ERR_ABORTED ||
+             error == ERR_SPDY_PUSHED_RESPONSE_DOES_NOT_MATCH) {
     error_code = ERROR_CODE_CANCEL;
   } else if (error == ERR_SPDY_FLOW_CONTROL_ERROR) {
     error_code = ERROR_CODE_FLOW_CONTROL_ERROR;

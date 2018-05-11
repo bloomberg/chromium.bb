@@ -5006,104 +5006,113 @@ TEST_F(SpdyNetworkTransactionTest, SpdyBasicAuth) {
   EXPECT_TRUE(response_restart->auth_challenge.get() == nullptr);
 }
 
-TEST_F(SpdyNetworkTransactionTest, ServerPushMatching) {
-  struct {
-    std::vector<std::pair<base::StringPiece, base::StringPiece>>
-        extra_request_headers;
-    std::vector<std::pair<base::StringPiece, base::StringPiece>>
-        extra_pushed_request_headers;
-    std::vector<std::pair<base::StringPiece, base::StringPiece>>
-        extra_pushed_response_headers;
-    base::StringPiece pushed_status_code;
-    bool push_accepted;
-  } test_cases[] = {
-      // Base case: no extra headers.
-      {{}, {}, {}, "200", true},
-      // Cookie headers match.
-      {{{"cookie", "value=foo"}},
-       {{"cookie", "value=foo"}},
-       {{"vary", "Cookie"}},
-       "200",
-       true},
-      // Cookie headers mismatch.
-      {{{"cookie", "value=foo"}},
-       {{"cookie", "value=bar"}},
-       {{"vary", "Cookie"}},
-       "200",
-       false},
-      // Partial Content response, no Range headers.
-      {{}, {}, {}, "206", false},
-      // Partial Content response, no Range headers in pushed request.
-      {{{"range", "0-42"}}, {}, {}, "206", false},
-      // Partial Content response, no Range headers in client request.
-      {{}, {{"range", "0-42"}}, {}, "206", false},
-      // Partial Content response, mismatching Range headers.
-      {{{"range", "0-42"}}, {{"range", "10-42"}}, {}, "206", false},
-      // Partial Content response, matching Range headers.
-      {{{"range", "0-42"}}, {{"range", "0-42"}}, {}, "206", true},
-  };
+struct PushTestParams {
+  std::vector<std::pair<base::StringPiece, base::StringPiece>>
+      extra_request_headers;
+  std::vector<std::pair<base::StringPiece, base::StringPiece>>
+      extra_pushed_request_headers;
+  std::vector<std::pair<base::StringPiece, base::StringPiece>>
+      extra_pushed_response_headers;
+  base::StringPiece pushed_status_code;
+  bool push_accepted;
+} push_test_cases[] = {
+    // Base case: no extra headers.
+    {{}, {}, {}, "200", true},
+    // Cookie headers match.
+    {{{"cookie", "value=foo"}},
+     {{"cookie", "value=foo"}},
+     {{"vary", "Cookie"}},
+     "200",
+     true},
+    // Cookie headers mismatch.
+    {{{"cookie", "value=foo"}},
+     {{"cookie", "value=bar"}},
+     {{"vary", "Cookie"}},
+     "200",
+     false},
+    // Partial Content response, no Range headers.
+    {{}, {}, {}, "206", false},
+    // Partial Content response, no Range headers in pushed request.
+    {{{"range", "0-42"}}, {}, {}, "206", false},
+    // Partial Content response, no Range headers in client request.
+    {{}, {{"range", "0-42"}}, {}, "206", false},
+    // Partial Content response, mismatching Range headers.
+    {{{"range", "0-42"}}, {{"range", "10-42"}}, {}, "206", false},
+    // Partial Content response, matching Range headers.
+    {{{"range", "0-42"}}, {{"range", "0-42"}}, {}, "206", true},
+};
 
-  for (auto test_case : test_cases) {
-    SpdyTestUtil spdy_util;
+class SpdyNetworkTransactionPushTest
+    : public SpdyNetworkTransactionTest,
+      public ::testing::WithParamInterface<PushTestParams> {
+ protected:
+  void RunTest(bool pushed_response_headers_received_before_request) {
     int seq = 0;
     std::vector<MockWrite> writes;
     std::vector<MockRead> reads;
 
-    SpdySerializedFrame req1(spdy_util.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
+    SpdySerializedFrame req1(
+        spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
     writes.push_back(CreateMockWrite(req1, seq++));
 
     SpdyHeaderBlock pushed_request_headers;
     pushed_request_headers[kHttp2MethodHeader] = "GET";
-    for (const auto& header : test_case.extra_pushed_request_headers) {
+    for (const auto& header : GetParam().extra_pushed_request_headers) {
       pushed_request_headers.insert(header);
     }
-    spdy_util.AddUrlToHeaderBlock(kPushedUrl, &pushed_request_headers);
-    SpdySerializedFrame pushed_request(spdy_util.ConstructSpdyPushPromise(
+    spdy_util_.AddUrlToHeaderBlock(kPushedUrl, &pushed_request_headers);
+    SpdySerializedFrame pushed_request(spdy_util_.ConstructSpdyPushPromise(
         1, 2, std::move(pushed_request_headers)));
     reads.push_back(CreateMockRead(pushed_request, seq++));
 
     SpdySerializedFrame priority(
-        spdy_util.ConstructSpdyPriority(2, 1, IDLE, true));
+        spdy_util_.ConstructSpdyPriority(2, 1, IDLE, true));
     writes.push_back(CreateMockWrite(priority, seq++));
 
+    reads.push_back(MockRead(ASYNC, ERR_IO_PENDING, seq++));
+
     SpdyHeaderBlock pushed_response_headers;
-    pushed_response_headers[kHttp2StatusHeader] = test_case.pushed_status_code;
-    for (const auto& header : test_case.extra_pushed_response_headers) {
+    pushed_response_headers[kHttp2StatusHeader] = GetParam().pushed_status_code;
+    for (const auto& header : GetParam().extra_pushed_response_headers) {
       pushed_response_headers.insert(header);
     }
     SpdySerializedFrame pushed_response(
-        spdy_util.ConstructSpdyReply(2, std::move(pushed_response_headers)));
+        spdy_util_.ConstructSpdyReply(2, std::move(pushed_response_headers)));
     reads.push_back(CreateMockRead(pushed_response, seq++));
 
-    SpdySerializedFrame resp1(spdy_util.ConstructSpdyGetReply(nullptr, 0, 1));
+    SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
     reads.push_back(CreateMockRead(resp1, seq++));
 
-    SpdySerializedFrame body1(spdy_util.ConstructSpdyDataFrame(1, true));
+    SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
     reads.push_back(CreateMockRead(body1, seq++));
-    spdy_util.UpdateWithStreamDestruction(1);
+    spdy_util_.UpdateWithStreamDestruction(1);
 
     SpdySerializedFrame pushed_body(
-        spdy_util.ConstructSpdyDataFrame(2, "This is pushed.", true));
+        spdy_util_.ConstructSpdyDataFrame(2, "This is pushed.", true));
     reads.push_back(CreateMockRead(pushed_body, seq++));
 
     // If push is not accepted, a new request is sent on the wire.
+    SpdySerializedFrame rst;
     SpdySerializedFrame req2;
     SpdySerializedFrame resp2;
     SpdySerializedFrame body2;
-    if (!test_case.push_accepted) {
+    if (!GetParam().push_accepted) {
+      rst = spdy_util_.ConstructSpdyRstStream(2, ERROR_CODE_CANCEL);
+      writes.push_back(CreateMockWrite(rst, seq++));
+
       SpdyHeaderBlock request_headers2(
-          spdy_util.ConstructGetHeaderBlock(kPushedUrl));
-      for (const auto& header : test_case.extra_request_headers) {
+          spdy_util_.ConstructGetHeaderBlock(kPushedUrl));
+      for (const auto& header : GetParam().extra_request_headers) {
         request_headers2.insert(header);
       }
-      req2 = spdy_util.ConstructSpdyHeaders(3, std::move(request_headers2),
-                                            LOWEST, true);
+      req2 = spdy_util_.ConstructSpdyHeaders(3, std::move(request_headers2),
+                                             LOWEST, true);
       writes.push_back(CreateMockWrite(req2, seq++));
 
-      resp2 = spdy_util.ConstructSpdyGetReply(nullptr, 0, 3);
+      resp2 = spdy_util_.ConstructSpdyGetReply(nullptr, 0, 3);
       reads.push_back(CreateMockRead(resp2, seq++));
 
-      body2 = spdy_util.ConstructSpdyDataFrame(3, "This is not pushed.", true);
+      body2 = spdy_util_.ConstructSpdyDataFrame(3, "This is not pushed.", true);
       reads.push_back(CreateMockRead(body2, seq++));
     }
 
@@ -5122,6 +5131,32 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushMatching) {
     TestCompletionCallback callback1;
     int rv = trans->Start(&request_, callback1.callback(), log_);
     EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+    // Open connection.
+    base::RunLoop().RunUntilIdle();
+
+    if (pushed_response_headers_received_before_request) {
+      // Read pushed response headers.
+      data.Resume();
+      base::RunLoop().RunUntilIdle();
+    }
+
+    HttpRequestInfo request2 = CreateGetPushRequest();
+    for (const auto& header : GetParam().extra_request_headers) {
+      request2.extra_headers.SetHeader(header.first, header.second);
+    }
+    HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+    TestCompletionCallback callback2;
+    rv = trans2.Start(&request2, callback2.callback(), log_);
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+    base::RunLoop().RunUntilIdle();
+
+    if (!pushed_response_headers_received_before_request) {
+      // Read pushed response headers.
+      data.Resume();
+      base::RunLoop().RunUntilIdle();
+    }
+
     rv = callback1.WaitForResult();
     EXPECT_THAT(rv, IsOk());
 
@@ -5133,129 +5168,32 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushMatching) {
     ReadResult(trans, &result1);
     EXPECT_EQ(result1, "hello!");
 
-    HttpRequestInfo request2 = CreateGetPushRequest();
-    for (const auto& header : test_case.extra_request_headers) {
-      request2.extra_headers.SetHeader(header.first, header.second);
-    }
-    HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
-    TestCompletionCallback callback2;
-    rv = trans2.Start(&request2, callback2.callback(), log_);
-    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
     rv = callback2.WaitForResult();
     EXPECT_THAT(rv, IsOk());
 
     SpdyString result2;
     ReadResult(&trans2, &result2);
-    EXPECT_EQ(result2, test_case.push_accepted ? "This is pushed."
-                                               : "This is not pushed.");
+    EXPECT_EQ(result2, GetParam().push_accepted ? "This is pushed."
+                                                : "This is not pushed.");
 
     data.Resume();
     base::RunLoop().RunUntilIdle();
     helper.VerifyDataConsumed();
   }
+};
+
+INSTANTIATE_TEST_CASE_P(,
+                        SpdyNetworkTransactionPushTest,
+                        ::testing::ValuesIn(push_test_cases));
+
+TEST_P(SpdyNetworkTransactionPushTest,
+       PushedResponseHeadersReceivedBeforeRequest) {
+  RunTest(/* pushed_response_headers_received_before_request = */ true);
 }
 
-TEST_F(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
-  // We push a stream and attempt to claim it before the headers come down.
-  SpdySerializedFrame stream1_syn(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
-  SpdySerializedFrame stream2_priority(
-      spdy_util_.ConstructSpdyPriority(2, 1, IDLE, true));
-  MockWrite writes[] = {
-      CreateMockWrite(stream1_syn, 0, SYNCHRONOUS),
-      CreateMockWrite(stream2_priority, 3),
-  };
-
-  SpdySerializedFrame stream1_reply(
-      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
-  SpdyHeaderBlock initial_headers;
-  initial_headers[":method"] = "GET";
-  spdy_util_.AddUrlToHeaderBlock(kPushedUrl, &initial_headers);
-  SpdySerializedFrame stream2_syn(
-      spdy_util_.ConstructSpdyPushPromise(1, 2, std::move(initial_headers)));
-  SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
-  SpdyHeaderBlock late_headers;
-  late_headers[kHttp2StatusHeader] = "200";
-  late_headers["hello"] = "bye";
-  SpdySerializedFrame stream2_headers(spdy_util_.ConstructSpdyResponseHeaders(
-      2, std::move(late_headers), false));
-  const char kPushedData[] = "pushed";
-  SpdySerializedFrame stream2_body(
-      spdy_util_.ConstructSpdyDataFrame(2, kPushedData, true));
-  MockRead reads[] = {
-      CreateMockRead(stream1_reply, 1),   CreateMockRead(stream2_syn, 2),
-      CreateMockRead(stream1_body, 4),    MockRead(ASYNC, ERR_IO_PENDING, 5),
-      CreateMockRead(stream2_headers, 6), CreateMockRead(stream2_body, 7),
-      MockRead(ASYNC, ERR_IO_PENDING, 8), MockRead(ASYNC, 0, 9),  // EOF
-  };
-
-  HttpResponseInfo response;
-  HttpResponseInfo response2;
-  SpdyString expected_push_result("pushed");
-  SequencedSocketData data(reads, writes);
-
-  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
-  helper.AddData(&data);
-  helper.RunPreTestSetup();
-
-  HttpNetworkTransaction* trans = helper.trans();
-
-  // Start the transaction.
-  TestCompletionCallback callback;
-  int rv = trans->Start(&request_, callback.callback(), log_);
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-  // Run until we've received the primary HEADERS, the pushed HEADERS,
-  // and the body of the primary stream, but before we've received the HEADERS
-  // for the pushed stream.
-  data.RunUntilPaused();
-  EXPECT_THAT(callback.WaitForResult(), IsOk());
-
-  // Request the pushed path.  At this point, we've received the push, but the
-  // headers are not yet complete.
-  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
-  HttpRequestInfo request = CreateGetPushRequest();
-  rv = trans2.Start(&request, callback.callback(), log_);
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-  data.Resume();
-  data.RunUntilPaused();
-  base::RunLoop().RunUntilIdle();
-
-  // Read the server push body.
-  SpdyString result2;
-  ReadResult(&trans2, &result2);
-  // Read the response body.
-  SpdyString result;
-  ReadResult(trans, &result);
-
-  // Verify that the received push data is same as the expected push data.
-  EXPECT_EQ(result2.compare(expected_push_result), 0)
-      << "Received data: "
-      << result2
-      << "||||| Expected data: "
-      << expected_push_result;
-
-  // Verify the response headers.
-  // Copy the response info, because trans goes away.
-  response = *trans->GetResponseInfo();
-  response2 = *trans2.GetResponseInfo();
-
-  VerifyStreamsClosed(helper);
-
-  // Verify the response headers.
-  EXPECT_TRUE(response.headers);
-  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
-
-  // Verify the pushed stream.
-  EXPECT_TRUE(response2.headers);
-  EXPECT_EQ("HTTP/1.1 200", response2.headers->GetStatusLine());
-
-  // Read the final EOF (which will close the session)
-  data.Resume();
-  base::RunLoop().RunUntilIdle();
-
-  // Verify that we consumed all test data.
-  EXPECT_TRUE(data.AllReadDataConsumed());
-  EXPECT_TRUE(data.AllWriteDataConsumed());
+TEST_P(SpdyNetworkTransactionPushTest,
+       PushedResponseHeadersReceivedAfterRequest) {
+  RunTest(/* pushed_response_headers_received_before_request = */ false);
 }
 
 TEST_F(SpdyNetworkTransactionTest, ResponseHeadersTwice) {

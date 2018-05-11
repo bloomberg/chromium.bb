@@ -207,7 +207,8 @@ void BidirectionalStreamSpdyImpl::OnHeadersSent() {
 }
 
 void BidirectionalStreamSpdyImpl::OnHeadersReceived(
-    const SpdyHeaderBlock& response_headers) {
+    const SpdyHeaderBlock& response_headers,
+    const SpdyHeaderBlock* pushed_request_headers) {
   DCHECK(stream_);
 
   if (delegate_)

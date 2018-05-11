@@ -25,7 +25,8 @@ ClosingDelegate::~ClosingDelegate() = default;
 void ClosingDelegate::OnHeadersSent() {}
 
 void ClosingDelegate::OnHeadersReceived(
-    const SpdyHeaderBlock& response_headers) {}
+    const SpdyHeaderBlock& response_headers,
+    const SpdyHeaderBlock* pushed_request_headers) {}
 
 void ClosingDelegate::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {}
 
@@ -59,7 +60,8 @@ void StreamDelegateBase::OnHeadersSent() {
 }
 
 void StreamDelegateBase::OnHeadersReceived(
-    const SpdyHeaderBlock& response_headers) {
+    const SpdyHeaderBlock& response_headers,
+    const SpdyHeaderBlock* pushed_request_headers) {
   EXPECT_EQ(stream_->type() != SPDY_PUSH_STREAM, send_headers_completed_);
   response_headers_ = response_headers.Clone();
 }
@@ -122,8 +124,10 @@ StreamDelegateSendImmediate::StreamDelegateSendImmediate(
 StreamDelegateSendImmediate::~StreamDelegateSendImmediate() = default;
 
 void StreamDelegateSendImmediate::OnHeadersReceived(
-    const SpdyHeaderBlock& response_headers) {
-  StreamDelegateBase::OnHeadersReceived(response_headers);
+    const SpdyHeaderBlock& response_headers,
+    const SpdyHeaderBlock* pushed_request_headers) {
+  StreamDelegateBase::OnHeadersReceived(response_headers,
+                                        pushed_request_headers);
   if (data_.data()) {
     scoped_refptr<StringIOBuffer> buf(new StringIOBuffer(data_.as_string()));
     stream()->SendData(buf.get(), buf->size(), MORE_DATA_TO_SEND);
@@ -150,7 +154,8 @@ StreamDelegateCloseOnHeaders::StreamDelegateCloseOnHeaders(
 StreamDelegateCloseOnHeaders::~StreamDelegateCloseOnHeaders() = default;
 
 void StreamDelegateCloseOnHeaders::OnHeadersReceived(
-    const SpdyHeaderBlock& response_headers) {
+    const SpdyHeaderBlock& response_headers,
+    const SpdyHeaderBlock* pushed_request_headers) {
   stream()->Cancel(ERR_ABORTED);
 }
 
