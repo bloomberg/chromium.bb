@@ -3018,8 +3018,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestCloseTabWithUnsafePopup) {
 }
 
 // Visit a page over bad https that is a redirect to a page with good https.
-// TODO(estark): switch to SSLUITest when https://crbug.com/792221 is fixed.
-IN_PROC_BROWSER_TEST_F(SSLUITestBase, TestRedirectBadToGoodHTTPS) {
+IN_PROC_BROWSER_TEST_P(SSLUITest, TestRedirectBadToGoodHTTPS) {
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
@@ -3441,17 +3440,22 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestUnauthenticatedFrameNavigation) {
 enum class OffMainThreadFetchMode { kEnabled, kDisabled };
 enum class SSLUIWorkerFetchTestType { kUseFetch, kUseImportScripts };
 
-// TODO(estark): adapt this test class to work with committed interstitials.
-// https://crbug.com/752327
-class SSLUIWorkerFetchTest
-    : public testing::WithParamInterface<SSLUIWorkerFetchTestType>,
-      public SSLUITestBase {
+class SSLUIWorkerFetchTest : public testing::WithParamInterface<
+                                 std::pair<SSLUIWorkerFetchTestType,
+                                           bool /* committed interstitials */>>,
+                             public SSLUITestBase {
  public:
   SSLUIWorkerFetchTest() {
     EXPECT_TRUE(tmp_dir_.CreateUniqueTempDir());
   }
 
   ~SSLUIWorkerFetchTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    if (GetParam().second) {
+      command_line->AppendSwitch(switches::kCommittedInterstitials);
+    }
+  }
 
  protected:
   void WriteFile(const base::FilePath::StringType& filename,
@@ -3471,7 +3475,7 @@ class SSLUIWorkerFetchTest
               "    'message',"
               "    event => { document.title = event.data; });"
               "</script>");
-    switch (GetParam()) {
+    switch (GetParam().first) {
       case SSLUIWorkerFetchTestType::kUseFetch:
         WriteFile(FILE_PATH_LITERAL("worker_test_data.txt.mock-http-headers"),
                   "HTTP/1.1 200 OK\n"
@@ -3658,7 +3662,18 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
                                  AuthState::SHOWING_INTERSTITIAL);
-  ProceedThroughInterstitial(tab);
+  if (AreCommittedInterstitialsEnabled()) {
+    content::TestNavigationObserver nav_observer(tab, 1);
+    security_interstitials::SecurityInterstitialTabHelper* helper =
+        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+            tab);
+    helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting()
+        ->CommandReceived(
+            base::IntToString(security_interstitials::CMD_PROCEED));
+    nav_observer.Wait();
+  } else {
+    ProceedThroughInterstitial(tab);
+  }
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
                                  AuthState::NONE);
 
@@ -3882,8 +3897,15 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest, MAYBE_MixedContentSubFrame) {
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
     SSLUIWorkerFetchTest,
-    ::testing::Values(SSLUIWorkerFetchTestType::kUseFetch,
-                      SSLUIWorkerFetchTestType::kUseImportScripts));
+    ::testing::Values(
+        std::make_pair(SSLUIWorkerFetchTestType::kUseFetch,
+                       false /* committed interstitials */),
+        std::make_pair(SSLUIWorkerFetchTestType::kUseImportScripts,
+                       false /* committed interstitials */),
+        std::make_pair(SSLUIWorkerFetchTestType::kUseFetch,
+                       true /* committed interstitials */),
+        std::make_pair(SSLUIWorkerFetchTestType::kUseImportScripts,
+                       true /* committed interstititals */)));
 
 // Visits a page with unsafe content and makes sure that if a user exception
 // to the certificate error is present, the image is loaded and script

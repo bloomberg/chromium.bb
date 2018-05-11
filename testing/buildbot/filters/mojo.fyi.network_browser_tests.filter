@@ -18,8 +18,12 @@
 -MediaGalleriesPlatformAppBrowserTest.ToURL
 -NetInternalsTest.netInternalsSessionBandwidthSucceed
 -NewlibPackagedAppTest.SuccessfulLoad
--PKPModelClientTest.PKPBypass
--PKPModelClientTest.PKPEnforced
+-PKPModelClientTest.PKPBypass/0
+-PKPModelClientTest.PKPBypass/1
+-PKPModelClientTest.PKPEnforced/0
+-PKPModelClientTest.PKPEnforced/1
+-PlatformAppBrowserTest.AppWindowAdjustBoundsToBeVisibleOnScreen
+-PlatformAppBrowserTest.CreateAndCloseAppWindow
 -PolicyTest.DefaultCookiesSetting
 -PrefetchBrowserTestPredictionDisabled.ExperimentDisabled
 -PreviewsOptimizationGuideBrowserTest.NoScriptPreviewsEnabledByWhitelist
@@ -83,6 +87,9 @@
 # crbug.com/776589 Intercepting requests with net::URLRequestFilter.
 -ContinueWhereILeftOffTest.CookiesClearedOnExit
 -DownloadExtensionTest.DownloadExtensionTest_Download_FileSystemURL
+-MimeHandlerViewTests/MimeHandlerViewTest.SingleRequest/0
+-PolicyTest.CertificateTransparencyEnforcementDisabledForUrls/0
+-PolicyTest.CertificateTransparencyEnforcementDisabledForUrls/1
 -PolicyTest.ExtensionInstallSources
 -PolicyTest.ForceGoogleSafeSearch
 -ProfileBrowserTest.SendHPKPReport
@@ -231,7 +238,8 @@
 # https://crbug.com/797292
 -ProcessManagerBrowserTest.NestedURLNavigationsToExtensionBlocked
 -ProcessManagerBrowserTest.NestedURLDownloadsToExtensionAllowed
--SecurityStateTabHelperTest.DefaultSecurityLevelOnSecureFilesystemUrl
+-SecurityStateTabHelperTest.DefaultSecurityLevelOnSecureFilesystemUrl/0
+-SecurityStateTabHelperTest.DefaultSecurityLevelOnSecureFilesystemUrl/1
 
 # Tests check state of NQE in the browser process, but need to be updated to
 # watch NQE in the renderer process.
