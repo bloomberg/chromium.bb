@@ -2851,7 +2851,8 @@ def _CommonChecks(input_api, output_api):
     path, name = input_api.os_path.split(f.LocalPath())
     if name == 'PRESUBMIT.py':
       full_path = input_api.os_path.join(input_api.PresubmitLocalPath(), path)
-      if f.Action() != 'D':
+      test_file = input_api.os_path.join(path, 'PRESUBMIT_test.py')
+      if f.Action() != 'D' and input_api.os_path.exists(test_file):
         # The PRESUBMIT.py file (and the directory containing it) might
         # have been affected by being moved or removed, so only try to
         # run the tests if they still exist.
