@@ -12,7 +12,6 @@ public_headers = [
   "//chrome/common/media_router/media_source.h",
   "//chrome/common/media_router/route_request_result.h",
   "//content/public/common/presentation_connection_message.h",
-  "//content/public/common/presentation_info.h",
 ]
 public_deps = [
   "//chrome/common/media_router:router",

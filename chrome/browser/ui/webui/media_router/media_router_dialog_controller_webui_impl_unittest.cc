@@ -17,6 +17,7 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using blink::mojom::PresentationInfo;
 using content::WebContents;
 
 namespace media_router {
@@ -29,7 +30,7 @@ class MediaRouterDialogControllerWebUIImplTest : public MediaRouterWebUITest {
   void OpenMediaRouterDialog();
 
   MOCK_METHOD2(PresentationSuccessCallback,
-               void(const content::PresentationInfo&, const MediaRoute&));
+               void(const blink::mojom::PresentationInfo&, const MediaRoute&));
   MOCK_METHOD1(PresentationErrorCallback,
                void(const blink::mojom::PresentationError& error));
 

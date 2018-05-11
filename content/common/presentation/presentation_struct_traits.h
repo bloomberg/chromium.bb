@@ -12,27 +12,10 @@
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/presentation_connection_message.h"
-#include "content/public/common/presentation_info.h"
 #include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
 #include "url/mojom/url.mojom.h"
 
 namespace mojo {
-
-template <>
-struct StructTraits<blink::mojom::PresentationInfoDataView,
-                    content::PresentationInfo> {
-  static const GURL& url(const content::PresentationInfo& presentation_info) {
-    return presentation_info.presentation_url;
-  }
-
-  static const std::string& id(
-      const content::PresentationInfo& presentation_info) {
-    return presentation_info.presentation_id;
-  }
-
-  static bool Read(blink::mojom::PresentationInfoDataView data,
-                   content::PresentationInfo* out);
-};
 
 template <>
 struct UnionTraits<blink::mojom::PresentationConnectionMessageDataView,

@@ -12,7 +12,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/presentation_info.h"
 #include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
 
 #if defined(OS_ANDROID)
@@ -91,7 +90,7 @@ void StartPresentationContext::InvokeSuccessCallback(
     const MediaRoute& route) {
   if (!cb_invoked_) {
     std::move(success_cb_)
-        .Run(content::PresentationInfo(presentation_url, presentation_id),
+        .Run(blink::mojom::PresentationInfo(presentation_url, presentation_id),
              route);
     cb_invoked_ = true;
   }

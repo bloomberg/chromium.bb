@@ -11,7 +11,6 @@
 #include "chrome/common/media_router/media_route.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/common/presentation_connection_message.h"
-#include "content/public/common/presentation_info.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace media_router {

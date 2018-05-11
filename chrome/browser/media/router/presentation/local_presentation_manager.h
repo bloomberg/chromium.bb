@@ -17,10 +17,7 @@
 #include "chrome/common/media_router/media_route.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/presentation_service_delegate.h"
-
-namespace content {
-struct PresentationInfo;
-}
+#include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
 
 namespace media_router {
 // Manages all local presentations started in the associated Profile and
@@ -64,7 +61,7 @@ namespace media_router {
 //   |receiver_connection_request|: Mojo InterfaceRequest to be bind to
 //   blink::PresentationConnection object in receiver frame's render process.
 //   void PresentationServiceImpl::OnReceiverConnectionAvailable(
-//       const content::PresentationInfo& presentation_info,
+//       const blink::mojom::PresentationInfo& presentation_info,
 //       PresentationConnectionPtr controller_connection_ptr,
 //       PresentationConnectionRequest receiver_connection_request) {
 //     presentation_receiver_client_->OnReceiverConnectionAvailable(
@@ -115,7 +112,7 @@ class LocalPresentationManager : public KeyedService {
   // this class. Ownership is transferred to presentation receiver via
   // |receiver_callback| passed below.
   virtual void RegisterLocalPresentationController(
-      const content::PresentationInfo& presentation_info,
+      const blink::mojom::PresentationInfo& presentation_info,
       const RenderFrameHostId& render_frame_id,
       content::PresentationConnectionPtr controller_connection_ptr,
       content::PresentationConnectionRequest receiver_connection_request,
@@ -132,7 +129,7 @@ class LocalPresentationManager : public KeyedService {
 
   // Registers |receiver_callback| to presentation with |presentation_info|.
   virtual void OnLocalPresentationReceiverCreated(
-      const content::PresentationInfo& presentation_info,
+      const blink::mojom::PresentationInfo& presentation_info,
       const content::ReceiverConnectionAvailableCallback& receiver_callback);
 
   // Unregisters ReceiverConnectionAvailableCallback associated with
@@ -157,7 +154,7 @@ class LocalPresentationManager : public KeyedService {
   class LocalPresentation {
    public:
     explicit LocalPresentation(
-        const content::PresentationInfo& presentation_info);
+        const blink::mojom::PresentationInfo& presentation_info);
     ~LocalPresentation();
 
     // Register controller with |render_frame_id|. If |receiver_callback_| has
@@ -191,7 +188,7 @@ class LocalPresentationManager : public KeyedService {
     // controllers.
     bool IsValid() const;
 
-    const content::PresentationInfo presentation_info_;
+    const blink::mojom::PresentationInfo presentation_info_;
     base::Optional<MediaRoute> route_;
 
     // Callback to invoke whenever a receiver connection is available.
@@ -238,7 +235,7 @@ class LocalPresentationManager : public KeyedService {
 
   // Creates a local presentation with |presentation_info|.
   LocalPresentation* GetOrCreateLocalPresentation(
-      const content::PresentationInfo& presentation_info);
+      const blink::mojom::PresentationInfo& presentation_info);
 
   // Maps from presentation ID to LocalPresentation.
   LocalPresentationMap local_presentations_;
