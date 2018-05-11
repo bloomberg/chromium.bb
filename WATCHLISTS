@@ -1894,7 +1894,6 @@
     'blink_svg': ['dschulze@chromium.org',
                   'fmalita+watch@chromium.org',
                   'fs@opera.com',
-                  'gyuyoung.kim@chromium.org',
                   'kouhei+svg@chromium.org',
                   'pdr+svgwatchlist@chromium.org',
                   'schenney@chromium.org'],
