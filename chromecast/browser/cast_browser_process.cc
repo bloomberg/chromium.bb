@@ -15,10 +15,6 @@
 #include "chromecast/service/cast_service.h"
 #include "components/prefs/pref_service.h"
 
-#if defined(OS_ANDROID)
-#include "components/crash/content/browser/crash_dump_manager_android.h"
-#endif  // defined(OS_ANDROID)
-
 #if defined(USE_AURA)
 #include "chromecast/graphics/cast_screen.h"
 #endif  // defined(USE_AURA)
