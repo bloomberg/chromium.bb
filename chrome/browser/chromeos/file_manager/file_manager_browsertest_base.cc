@@ -366,10 +366,10 @@ class FakeTestVolume : public LocalTestVolume {
 
     // Note: must be kept in sync with BASIC_FAKE_ENTRY_SET defined in the
     // integration_tests/file_manager JS code.
-    CreateEntry(TestEntryInfo(FILE, "text.txt", "hello.txt", "text/plain", NONE,
-                              base::Time::Now()));
+    CreateEntry(TestEntryInfo(FILE, "text.txt", "hello.txt", "text/plain",
+                              SharedOption::NONE, base::Time::Now()));
     CreateEntry(TestEntryInfo(DIRECTORY, std::string(), "A", std::string(),
-                              NONE, base::Time::Now()));
+                              SharedOption::NONE, base::Time::Now()));
     return true;
   }
 
@@ -585,7 +585,6 @@ void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
                    base::Unretained(this));
     service_factory_for_test_ = std::make_unique<
         drive::DriveIntegrationServiceFactory::ScopedFactoryForTest>(
-
         &create_drive_integration_service_);
   }
 }
