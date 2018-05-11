@@ -1523,9 +1523,16 @@ INSTANTIATE_TEST_CASE_P(
                       VarianceParams(6, 7, &aom_variance64x128_avx2),
                       VarianceParams(6, 6, &aom_variance64x64_avx2),
                       VarianceParams(6, 5, &aom_variance64x32_avx2),
+                      VarianceParams(6, 4, &aom_variance64x16_avx2),
+                      VarianceParams(5, 6, &aom_variance32x64_avx2),
                       VarianceParams(5, 5, &aom_variance32x32_avx2),
                       VarianceParams(5, 4, &aom_variance32x16_avx2),
-                      VarianceParams(4, 4, &aom_variance16x16_avx2)));
+                      VarianceParams(5, 3, &aom_variance32x8_avx2),
+                      VarianceParams(4, 6, &aom_variance16x64_avx2),
+                      VarianceParams(4, 5, &aom_variance16x32_avx2),
+                      VarianceParams(4, 4, &aom_variance16x16_avx2),
+                      VarianceParams(4, 3, &aom_variance16x8_avx2),
+                      VarianceParams(4, 2, &aom_variance16x4_avx2)));
 
 INSTANTIATE_TEST_CASE_P(
     AVX2, AvxSubpelVarianceTest,

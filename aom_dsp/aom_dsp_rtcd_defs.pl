@@ -851,7 +851,7 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 
   add_proto qw/void aom_get8x8var/, "const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse, int *sum";
 
-  specialize qw/aom_get16x16var      avx2 neon msa/;
+  specialize qw/aom_get16x16var           neon msa/;
   specialize qw/aom_get8x8var             neon msa/;
 
 
@@ -947,12 +947,12 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   specialize qw/aom_variance64x128    sse2 avx2         /;
   specialize qw/aom_variance64x64     sse2 avx2 neon msa/;
   specialize qw/aom_variance64x32     sse2 avx2 neon msa/;
-  specialize qw/aom_variance32x64     sse2      neon msa/;
+  specialize qw/aom_variance32x64     sse2 avx2 neon msa/;
   specialize qw/aom_variance32x32     sse2 avx2 neon msa/;
   specialize qw/aom_variance32x16     sse2 avx2 msa/;
-  specialize qw/aom_variance16x32     sse2      msa/;
+  specialize qw/aom_variance16x32     sse2 avx2 msa/;
   specialize qw/aom_variance16x16     sse2 avx2 neon msa/;
-  specialize qw/aom_variance16x8      sse2      neon msa/;
+  specialize qw/aom_variance16x8      sse2 avx2 neon msa/;
   specialize qw/aom_variance8x16      sse2      neon msa/;
   specialize qw/aom_variance8x8       sse2      neon msa/;
   specialize qw/aom_variance8x4       sse2           msa/;
@@ -988,11 +988,11 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   specialize qw/aom_sub_pixel_avg_variance4x4        msa sse2 ssse3/;
 
   specialize qw/aom_variance4x16 sse2/;
-  specialize qw/aom_variance16x4 sse2/;
+  specialize qw/aom_variance16x4 sse2 avx2/;
   specialize qw/aom_variance8x32 sse2/;
-  specialize qw/aom_variance32x8 sse2/;
-  specialize qw/aom_variance16x64 sse2/;
-  specialize qw/aom_variance64x16 sse2/;
+  specialize qw/aom_variance32x8 sse2 avx2/;
+  specialize qw/aom_variance16x64 sse2 avx2/;
+  specialize qw/aom_variance64x16 sse2 avx2/;
   specialize qw/aom_sub_pixel_variance4x16 sse2 ssse3/;
   specialize qw/aom_sub_pixel_variance16x4 sse2 ssse3/;
   specialize qw/aom_sub_pixel_variance8x32 sse2 ssse3/;
