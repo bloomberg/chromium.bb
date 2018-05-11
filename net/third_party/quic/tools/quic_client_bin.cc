@@ -47,7 +47,6 @@
 #include "net/base/net_errors.h"
 #include "net/base/privacy_mode.h"
 #include "net/cert/cert_verifier.h"
-#include "net/cert/ct_known_logs.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
@@ -268,7 +267,6 @@ int main(int argc, char* argv[]) {
   std::unique_ptr<TransportSecurityState> transport_security_state(
       new TransportSecurityState);
   std::unique_ptr<MultiLogCTVerifier> ct_verifier(new MultiLogCTVerifier());
-  ct_verifier->AddLogs(net::ct::CreateLogVerifiersForKnownLogs());
   std::unique_ptr<net::CTPolicyEnforcer> ct_policy_enforcer(
       new net::DefaultCTPolicyEnforcer());
   std::unique_ptr<ProofVerifier> proof_verifier;

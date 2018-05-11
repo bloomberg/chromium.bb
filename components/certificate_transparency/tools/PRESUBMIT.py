@@ -9,9 +9,9 @@
 def _RunMakeCTLogListTests(input_api, output_api):
   """Runs make_ct_known_logs_list unittests if related files were modified."""
   files = (input_api.os_path.normpath(x) for x in
-           ('net/tools/ct_log_list/make_ct_known_logs_list.py',
-            'net/tools/ct_log_list/make_ct_known_logs_list_unittest.py',
-            'net/data/ssl/certificate_transparency/log_list.json'))
+           ('components/certificate_transparency/tools/make_ct_known_logs_list.py',
+            'components/certificate_transparency/tools/make_ct_known_logs_list_unittest.py',
+            'components/certificate_transparency/data/log_list.json'))
   if not any(f in (af.LocalPath() for af in input_api.change.AffectedFiles())
              for f in files):
     return []

@@ -3,7 +3,8 @@
 # found in the LICENSE file.
 
 action_foreach("ct_log_list") {
-  script = "//net/tools/ct_log_list/make_ct_known_logs_list.py"
+  script =
+      "//components/certificate_transparency/tools/make_ct_known_logs_list.py"
   sources = [
     "log_list.json",
   ]

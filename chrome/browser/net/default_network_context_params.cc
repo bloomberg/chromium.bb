@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/certificate_transparency/ct_known_logs.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
@@ -26,7 +27,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
-#include "net/cert/ct_known_logs.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
@@ -73,7 +73,7 @@ network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
 #if !defined(OS_ANDROID)
   // CT is only enabled on Desktop platforms for now.
   network_context_params->enforce_chrome_ct_policy = true;
-  for (const auto& ct_log : net::ct::GetKnownLogs()) {
+  for (const auto& ct_log : certificate_transparency::GetKnownLogs()) {
     // TODO(rsleevi): https://crbug.com/702062 - Remove this duplication.
     network::mojom::CTLogInfoPtr log_info = network::mojom::CTLogInfo::New();
     log_info->public_key = std::string(ct_log.log_key, ct_log.log_key_length);

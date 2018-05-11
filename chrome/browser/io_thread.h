@@ -44,11 +44,6 @@ class ExternalDataUseObserver;
 }
 #endif  // defined(OS_ANDROID)
 
-namespace certificate_transparency {
-class TreeStateTracker;
-class STHObserver;
-}
-
 namespace chrome_browser_net {
 class DnsProbeService;
 }
@@ -67,7 +62,6 @@ class EventRouterForwarder;
 
 namespace net {
 class CertVerifier;
-class CTLogVerifier;
 class HostResolver;
 class HttpAuthHandlerFactory;
 class HttpAuthPreferences;
@@ -124,7 +118,6 @@ class IOThread : public content::BrowserThreadDelegate {
     std::unique_ptr<android::ExternalDataUseObserver>
         external_data_use_observer;
 #endif  // defined(OS_ANDROID)
-    std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs;
     std::unique_ptr<net::HttpAuthPreferences> http_auth_preferences;
 
     // NetworkQualityEstimator only for use in dummy in-process
@@ -193,16 +186,8 @@ class IOThread : public content::BrowserThreadDelegate {
   // Returns the callback for updating data use prefs.
   metrics::UpdateUsagePrefCallbackType GetMetricsDataUseForwarder();
 
-  // Registers the |observer| for new STH notifications.
-  void RegisterSTHObserver(certificate_transparency::STHObserver* observer);
-
-  // Un-registers the |observer|.
-  void UnregisterSTHObserver(certificate_transparency::STHObserver* observer);
-
   // Configures |builder|'s ProxyResolutionService based on prefs and policies.
   void SetUpProxyService(network::URLRequestContextBuilderMojo* builder) const;
-
-  certificate_transparency::TreeStateTracker* ct_tree_tracker() const;
 
  private:
   // BrowserThreadDelegate implementation, runs on the IO thread.
