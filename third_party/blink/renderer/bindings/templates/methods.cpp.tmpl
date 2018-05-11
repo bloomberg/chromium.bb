@@ -169,8 +169,7 @@ if (info[{{argument.index}}]->IsObject()) {
 } else if (info[{{argument.index}}]->IsNullOrUndefined()) {
   {{argument.name}} = nullptr;
 {% elif argument.is_optional %}
-{# TODO(yukishiino): Disallows ES null for optional arguments. #}
-} else if (info[{{argument.index}}]->IsNullOrUndefined()) {
+} else if (info[{{argument.index}}]->IsUndefined()) {
   {{argument.name}} = nullptr;
 {% endif %}
 } else {
@@ -185,8 +184,7 @@ if (info[{{argument.index}}]->IsFunction()) {
 } else if (info[{{argument.index}}]->IsNullOrUndefined()) {
   {{argument.name}} = nullptr;
 {% elif argument.is_optional %}
-{# TODO(yukishiino): Disallows ES null for optional arguments. #}
-} else if (info[{{argument.index}}]->IsNullOrUndefined()) {
+} else if (info[{{argument.index}}]->IsUndefined()) {
   {{argument.name}} = nullptr;
 {% endif %}
 } else {

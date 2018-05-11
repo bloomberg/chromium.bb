@@ -50,7 +50,8 @@ enum NotificationPermission {
 ] interface Notification : EventTarget {
     [CallWith=ExecutionContext, MeasureAs=NotificationPermission] static readonly attribute NotificationPermission permission;
 
-    [CallWith=ScriptState, Exposed=Window, MeasureAs=NotificationPermissionRequested] static Promise<NotificationPermission> requestPermission(optional NotificationPermissionCallback deprecatedCallback);
+    // TODO(crbug.com/841185): |deprecatedCallback| is not nullable in the spec.
+    [CallWith=ScriptState, Exposed=Window, MeasureAs=NotificationPermissionRequested] static Promise<NotificationPermission> requestPermission(optional NotificationPermissionCallback? deprecatedCallback);
 
     static readonly attribute unsigned long maxActions;
 

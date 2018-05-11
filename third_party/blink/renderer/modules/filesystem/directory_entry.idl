@@ -33,7 +33,12 @@
     NoInterfaceObject
 ] interface DirectoryEntry : Entry {
     DirectoryReader createReader();
-    void getFile(DOMString? path, optional FileSystemFlags options, optional EntryCallback successCallback, optional ErrorCallback errorCallback);
-    void getDirectory(DOMString? path, optional FileSystemFlags options, optional EntryCallback successCallback, optional ErrorCallback errorCallback);
-    void removeRecursively(VoidCallback successCallback, optional ErrorCallback errorCallback);
+    // TODO(crbug.com/841185): |successCallback| and |errorCallback| are not
+    // nullable in the spec.
+    void getFile(DOMString? path, optional FileSystemFlags options, optional EntryCallback? successCallback, optional ErrorCallback? errorCallback);
+    // TODO(crbug.com/841185): |successCallback| and |errorCallback| are not
+    // nullable in the spec.
+    void getDirectory(DOMString? path, optional FileSystemFlags options, optional EntryCallback? successCallback, optional ErrorCallback? errorCallback);
+    // TODO(crbug.com/841185): |errorCallback| is not nullable in the spec.
+    void removeRecursively(VoidCallback successCallback, optional ErrorCallback? errorCallback);
 };

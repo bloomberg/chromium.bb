@@ -38,10 +38,18 @@
     readonly attribute DOMString fullPath;
     [CallWith=ScriptState] readonly attribute DOMFileSystem filesystem;
 
-    [CallWith=ScriptState] void getMetadata(MetadataCallback successCallback, optional ErrorCallback errorCallback);
-    [CallWith=ScriptState] void moveTo(DirectoryEntry parent, optional DOMString? name, optional EntryCallback successCallback, optional ErrorCallback errorCallback);
-    [CallWith=ScriptState] void copyTo(DirectoryEntry parent, optional DOMString? name, optional EntryCallback successCallback, optional ErrorCallback errorCallback);
+    // TODO(crbug.com/841185): |errorCallback| is not nullable in the spec.
+    [CallWith=ScriptState] void getMetadata(MetadataCallback successCallback, optional ErrorCallback? errorCallback);
+    // TODO(crbug.com/841185): |successCallback| and |errorCallback| are not
+    // nullable in the spec.
+    [CallWith=ScriptState] void moveTo(DirectoryEntry parent, optional DOMString? name, optional EntryCallback? successCallback, optional ErrorCallback? errorCallback);
+    // TODO(crbug.com/841185): |successCallback| and |errorCallback| are not
+    // nullable in the spec.
+    [CallWith=ScriptState] void copyTo(DirectoryEntry parent, optional DOMString? name, optional EntryCallback? successCallback, optional ErrorCallback? errorCallback);
     [CallWith=ScriptState] DOMString toURL();
-    [CallWith=ScriptState] void remove(VoidCallback successCallback, optional ErrorCallback errorCallback);
-    [CallWith=ScriptState] void getParent(optional EntryCallback successCallback, optional ErrorCallback errorCallback);
+    // TODO(crbug.com/841185): |errorCallback| is not nullable in the spec.
+    [CallWith=ScriptState] void remove(VoidCallback successCallback, optional ErrorCallback? errorCallback);
+    // TODO(crbug.com/841185): |successCallback| and |errorCallback| are not
+    // nullable in the spec.
+    [CallWith=ScriptState] void getParent(optional EntryCallback? successCallback, optional ErrorCallback? errorCallback);
 };
