@@ -334,7 +334,7 @@ void RequestCoordinator::GetQueuedRequestsCallback(
     GetRequestsResult result,
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
   for (auto& request : requests) {
-    pending_state_updater_.SetPendingState(*request.get());
+    pending_state_updater_.SetPendingState(*request);
   }
   callback.Run(std::move(requests));
 }
@@ -820,7 +820,7 @@ void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&RequestCoordinator::RequestCounts,
                  weak_ptr_factory_.GetWeakPtr(), is_start_of_processing),
-      *current_conditions_.get(), disabled_requests_, prioritized_requests_);
+      *current_conditions_, disabled_requests_, prioritized_requests_);
 }
 
 // Called by the request picker when a request has been picked.

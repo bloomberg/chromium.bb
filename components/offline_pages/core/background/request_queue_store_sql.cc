@@ -365,10 +365,10 @@ void GetRequestsByIdsSync(sql::Connection* db,
     if (!processed_ids.insert(request_id).second)
       continue;
     std::unique_ptr<SavePageRequest> request = GetOneRequest(db, request_id);
-    if (request.get())
+    if (request)
       result->updated_items.push_back(*request);
     ItemActionStatus status =
-        request.get() ? ItemActionStatus::SUCCESS : ItemActionStatus::NOT_FOUND;
+        request ? ItemActionStatus::SUCCESS : ItemActionStatus::NOT_FOUND;
     result->item_statuses.push_back(std::make_pair(request_id, status));
   }
 
@@ -483,7 +483,7 @@ RequestQueueStoreSQL::RequestQueueStoreSQL(
       weak_ptr_factory_(this) {}
 
 RequestQueueStoreSQL::~RequestQueueStoreSQL() {
-  if (db_.get())
+  if (db_)
     background_task_runner_->DeleteSoon(FROM_HERE, db_.release());
 }
 
@@ -499,7 +499,7 @@ void RequestQueueStoreSQL::Initialize(const InitializeCallback& callback) {
 }
 
 void RequestQueueStoreSQL::GetRequests(const GetRequestsCallback& callback) {
-  DCHECK(db_.get());
+  DCHECK(db_);
   if (!CheckDb()) {
     std::vector<std::unique_ptr<SavePageRequest>> requests;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -587,7 +587,7 @@ StoreState RequestQueueStoreSQL::state() const {
 void RequestQueueStoreSQL::OnOpenConnectionDone(
     const InitializeCallback& callback,
     bool success) {
-  DCHECK(db_.get());
+  DCHECK(db_);
   state_ = success ? StoreState::LOADED : StoreState::FAILED_LOADING;
   callback.Run(success);
 }

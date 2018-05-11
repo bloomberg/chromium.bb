@@ -32,7 +32,7 @@ FileIdPairSet CheckForMissingFiles(
             set_alias->insert(result.begin(), result.end());
           },
           &missing_files));
-  task_runner.get()->RunUntilIdle();
+  task_runner->RunUntilIdle();
   return missing_files;
 }
 

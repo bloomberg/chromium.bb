@@ -34,7 +34,7 @@ bool DriveMetricsProvider::HasSeekPenalty(const base::FilePath& path,
 
   BOOL success = DeviceIoControl(
       volume.GetPlatformFile(), IOCTL_STORAGE_QUERY_PROPERTY, &query,
-      sizeof(query), &result, sizeof(result), &bytes_returned, NULL);
+      sizeof(query), &result, sizeof(result), &bytes_returned, nullptr);
 
   if (success == FALSE || bytes_returned < sizeof(result))
     return false;

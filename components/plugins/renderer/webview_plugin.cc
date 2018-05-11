@@ -249,7 +249,7 @@ void WebViewPlugin::DidFinishLoading() {
 }
 
 void WebViewPlugin::DidFailLoading(const WebURLError& error) {
-  DCHECK(!error_.get());
+  DCHECK(!error_);
   error_.reset(new WebURLError(error));
 }
 

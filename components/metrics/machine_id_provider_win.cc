@@ -46,13 +46,8 @@ std::string MachineIdProvider::GetMachineId() {
   base::FilePath::StringType drive_name = L"\\\\.\\" + path_components[0];
 
   base::win::ScopedHandle drive_handle(
-      CreateFile(drive_name.c_str(),
-                 0,
-                 FILE_SHARE_READ | FILE_SHARE_WRITE,
-                 NULL,
-                 OPEN_EXISTING,
-                 0,
-                 NULL));
+      CreateFile(drive_name.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                 nullptr, OPEN_EXISTING, 0, nullptr));
 
   STORAGE_PROPERTY_QUERY query = {};
   query.PropertyId = StorageDeviceProperty;
@@ -61,28 +56,20 @@ std::string MachineIdProvider::GetMachineId() {
   // Perform an initial query to get the number of bytes being returned.
   DWORD bytes_returned;
   STORAGE_DESCRIPTOR_HEADER header = {};
-  BOOL status = DeviceIoControl(drive_handle.Get(),
-                                IOCTL_STORAGE_QUERY_PROPERTY,
-                                &query,
-                                sizeof(STORAGE_PROPERTY_QUERY),
-                                &header,
-                                sizeof(STORAGE_DESCRIPTOR_HEADER),
-                                &bytes_returned,
-                                NULL);
+  BOOL status = DeviceIoControl(
+      drive_handle.Get(), IOCTL_STORAGE_QUERY_PROPERTY, &query,
+      sizeof(STORAGE_PROPERTY_QUERY), &header,
+      sizeof(STORAGE_DESCRIPTOR_HEADER), &bytes_returned, nullptr);
 
   if (!status)
     return std::string();
 
   // Query for the actual serial number.
   std::vector<int8_t> output_buf(header.Size);
-  status = DeviceIoControl(drive_handle.Get(),
-                           IOCTL_STORAGE_QUERY_PROPERTY,
-                           &query,
-                           sizeof(STORAGE_PROPERTY_QUERY),
-                           &output_buf[0],
-                           output_buf.size(),
-                           &bytes_returned,
-                           NULL);
+  status =
+      DeviceIoControl(drive_handle.Get(), IOCTL_STORAGE_QUERY_PROPERTY, &query,
+                      sizeof(STORAGE_PROPERTY_QUERY), &output_buf[0],
+                      output_buf.size(), &bytes_returned, nullptr);
 
   if (!status)
     return std::string();

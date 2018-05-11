@@ -233,7 +233,7 @@ void OfflinePageModelTaskified::SavePage(
   }
 
   // The web contents is not available if archiver is not created and passed.
-  if (!archiver.get()) {
+  if (!archiver) {
     InformSavePageDone(callback, SavePageResult::CONTENT_UNAVAILABLE,
                        save_page_params.client_id, kInvalidOfflineId);
     return;

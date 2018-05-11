@@ -383,7 +383,7 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedNavigateToSearchPage) {
 
 TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
   CreatePersonalizedFieldTrial();
-  EXPECT_CALL(*client_.get(), IsAuthenticated())
+  EXPECT_CALL(*client_, IsAuthenticated())
       .WillRepeatedly(testing::Return(true));
 
   // Ensure the cache is empty.
@@ -420,7 +420,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
 
 TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
   CreatePersonalizedFieldTrial();
-  EXPECT_CALL(*client_.get(), IsAuthenticated())
+  EXPECT_CALL(*client_, IsAuthenticated())
       .WillRepeatedly(testing::Return(true));
 
   std::string url("http://www.cnn.com/");
@@ -469,7 +469,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
 
 TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
   CreatePersonalizedFieldTrial();
-  EXPECT_CALL(*client_.get(), IsAuthenticated())
+  EXPECT_CALL(*client_, IsAuthenticated())
       .WillRepeatedly(testing::Return(true));
 
   std::string url("http://www.cnn.com/");

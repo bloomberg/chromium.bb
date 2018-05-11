@@ -140,8 +140,7 @@ TEST_F(PolicyStatisticsCollectorTest, CollectPending) {
   prefs_.SetInt64(policy_prefs::kLastPolicyStatisticsUpdate,
                   (base::Time::Now() - update_delay_).ToInternalValue());
 
-  EXPECT_CALL(*policy_statistics_collector_.get(),
-              RecordPolicyUse(kTestPolicy1Id));
+  EXPECT_CALL(*policy_statistics_collector_, RecordPolicyUse(kTestPolicy1Id));
 
   policy_statistics_collector_->Initialize();
   EXPECT_EQ(1u, task_runner_->NumPendingTasks());
@@ -155,8 +154,7 @@ TEST_F(PolicyStatisticsCollectorTest, CollectPendingVeryOld) {
   prefs_.SetInt64(policy_prefs::kLastPolicyStatisticsUpdate,
                   base::Time::FromDoubleT(1.0).ToInternalValue());
 
-  EXPECT_CALL(*policy_statistics_collector_.get(),
-              RecordPolicyUse(kTestPolicy1Id));
+  EXPECT_CALL(*policy_statistics_collector_, RecordPolicyUse(kTestPolicy1Id));
 
   policy_statistics_collector_->Initialize();
   EXPECT_EQ(1u, task_runner_->NumPendingTasks());
@@ -181,10 +179,8 @@ TEST_F(PolicyStatisticsCollectorTest, MultiplePolicies) {
   prefs_.SetInt64(policy_prefs::kLastPolicyStatisticsUpdate,
                   (base::Time::Now() - update_delay_).ToInternalValue());
 
-  EXPECT_CALL(*policy_statistics_collector_.get(),
-              RecordPolicyUse(kTestPolicy1Id));
-  EXPECT_CALL(*policy_statistics_collector_.get(),
-              RecordPolicyUse(kTestPolicy2Id));
+  EXPECT_CALL(*policy_statistics_collector_, RecordPolicyUse(kTestPolicy1Id));
+  EXPECT_CALL(*policy_statistics_collector_, RecordPolicyUse(kTestPolicy2Id));
 
   policy_statistics_collector_->Initialize();
   EXPECT_EQ(1u, task_runner_->NumPendingTasks());

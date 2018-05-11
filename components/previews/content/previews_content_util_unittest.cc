@@ -72,7 +72,7 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
 
 class PreviewsContentUtilTest : public testing::Test {
  public:
-  PreviewsContentUtilTest() : enabled_previews_decider_(), context_() {}
+  PreviewsContentUtilTest() {}
   ~PreviewsContentUtilTest() override {}
 
   PreviewsDecider* enabled_previews_decider() {

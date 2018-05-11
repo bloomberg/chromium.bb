@@ -37,9 +37,9 @@ std::unique_ptr<AutocompleteProviderClient>
 TestOmniboxClient::CreateAutocompleteProviderClient() {
   std::unique_ptr<MockAutocompleteProviderClient> provider_client(
       new MockAutocompleteProviderClient());
-  EXPECT_CALL(*provider_client.get(), GetBuiltinURLs())
+  EXPECT_CALL(*provider_client, GetBuiltinURLs())
       .WillRepeatedly(testing::Return(std::vector<base::string16>()));
-  EXPECT_CALL(*provider_client.get(), GetSchemeClassifier())
+  EXPECT_CALL(*provider_client, GetSchemeClassifier())
       .WillRepeatedly(testing::ReturnRef(scheme_classifier_));
 
   std::unique_ptr<TemplateURLService> template_url_service(

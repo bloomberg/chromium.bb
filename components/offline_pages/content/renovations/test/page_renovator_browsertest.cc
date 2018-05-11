@@ -212,9 +212,9 @@ IN_PROC_BROWSER_TEST_F(PageRenovatorBrowserTest, CorrectRenovationsRun) {
   std::unique_ptr<base::Value> alwaysResult =
       content::ExecuteScriptAndGetValue(render_frame_, kCheckAlwaysScript);
 
-  ASSERT_TRUE(fooResult.get() != nullptr);
-  ASSERT_TRUE(barResult.get() != nullptr);
-  ASSERT_TRUE(alwaysResult.get() != nullptr);
+  ASSERT_TRUE(fooResult != nullptr);
+  ASSERT_TRUE(barResult != nullptr);
+  ASSERT_TRUE(alwaysResult != nullptr);
   EXPECT_TRUE(fooResult->GetBool());
   EXPECT_FALSE(barResult->GetBool());
   EXPECT_TRUE(alwaysResult->GetBool());
@@ -233,8 +233,8 @@ IN_PROC_BROWSER_TEST_F(PageRenovatorBrowserTest, WikipediaRenovationRuns) {
       content::ExecuteScriptAndGetValue(render_frame_,
                                         kCheckUnfoldHeadingScript);
 
-  ASSERT_TRUE(unfoldBlockResult.get() != nullptr);
-  ASSERT_TRUE(unfoldHeadingResult.get() != nullptr);
+  ASSERT_TRUE(unfoldBlockResult != nullptr);
+  ASSERT_TRUE(unfoldHeadingResult != nullptr);
   EXPECT_TRUE(unfoldBlockResult->GetBool());
   EXPECT_TRUE(unfoldHeadingResult->GetBool());
 }

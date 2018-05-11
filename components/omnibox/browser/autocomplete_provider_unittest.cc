@@ -454,7 +454,7 @@ void AutocompleteProviderTest::RunKeywordTest(const base::string16& input,
   controller_->UpdateAssociatedKeywords(&result);
   for (size_t j = 0; j < result.size(); ++j) {
     EXPECT_EQ(match_data[j].expected_associated_keyword,
-              result.match_at(j)->associated_keyword.get()
+              result.match_at(j)->associated_keyword
                   ? result.match_at(j)->associated_keyword->keyword
                   : base::string16());
   }

@@ -103,7 +103,7 @@ ShortcutsProvider::ShortcutsProvider(AutocompleteProviderClient* client)
       client_(client),
       initialized_(false) {
   scoped_refptr<ShortcutsBackend> backend = client_->GetShortcutsBackend();
-  if (backend.get()) {
+  if (backend) {
     backend->AddObserver(this);
     if (backend->initialized())
       initialized_ = true;
@@ -141,7 +141,7 @@ void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
   // out of history entirely. So nuke all shortcuts that map to this URL.
   scoped_refptr<ShortcutsBackend> backend =
       client_->GetShortcutsBackendIfExists();
-  if (backend.get())  // Can be NULL in Incognito.
+  if (backend)  // Can be NULL in Incognito.
     backend->DeleteShortcutsWithURL(url);
 
   matches_.erase(std::remove_if(matches_.begin(), matches_.end(),
@@ -159,7 +159,7 @@ void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
 ShortcutsProvider::~ShortcutsProvider() {
   scoped_refptr<ShortcutsBackend> backend =
       client_->GetShortcutsBackendIfExists();
-  if (backend.get())
+  if (backend)
     backend->RemoveObserver(this);
 }
 
@@ -283,7 +283,7 @@ void ShortcutsProvider::OnShortcutsLoaded() {
 void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   scoped_refptr<ShortcutsBackend> backend =
       client_->GetShortcutsBackendIfExists();
-  if (!backend.get())
+  if (!backend)
     return;
   // Get the URLs from the shortcuts database with keys that partially or
   // completely match the search term.

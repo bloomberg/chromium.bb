@@ -54,7 +54,7 @@ class PasswordManagerClientWithMockStore : public StubPasswordManagerClient {
     mock_store_->ShutdownOnUIThread();
   }
 
-  MockPasswordStore& mock_password_store() const { return *mock_store_.get(); }
+  MockPasswordStore& mock_password_store() const { return *mock_store_; }
 
  protected:
   // StubPasswordManagerClient:

@@ -88,7 +88,7 @@ ProxyConfigServiceImpl::GetLatestProxyConfig(
   net::ProxyConfigWithAnnotation system_config;
   ConfigAvailability system_availability =
       net::ProxyConfigService::CONFIG_UNSET;
-  if (base_service_.get())
+  if (base_service_)
     system_availability = base_service_->GetLatestProxyConfig(&system_config);
 
   ProxyPrefs::ConfigState config_state;
@@ -98,7 +98,7 @@ ProxyConfigServiceImpl::GetLatestProxyConfig(
 }
 
 void ProxyConfigServiceImpl::OnLazyPoll() {
-  if (base_service_.get())
+  if (base_service_)
     base_service_->OnLazyPoll();
 }
 

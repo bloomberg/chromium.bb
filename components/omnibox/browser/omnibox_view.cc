@@ -143,20 +143,20 @@ void OmniboxView::SetUserText(const base::string16& text) {
 
 void OmniboxView::SetUserText(const base::string16& text,
                               bool update_popup) {
-  if (model_.get())
+  if (model_)
     model_->SetUserText(text);
   SetWindowTextAndCaretPos(text, text.length(), update_popup, true);
 }
 
 void OmniboxView::RevertAll() {
   CloseOmniboxPopup();
-  if (model_.get())
+  if (model_)
     model_->Revert();
   TextChanged();
 }
 
 void OmniboxView::CloseOmniboxPopup() {
-  if (model_.get())
+  if (model_)
     model_->StopAutocomplete();
 }
 
@@ -230,7 +230,7 @@ OmniboxView::OmniboxView(OmniboxEditController* controller,
 
 void OmniboxView::TextChanged() {
   EmphasizeURLComponents();
-  if (model_.get())
+  if (model_)
     model_->OnChanged();
 }
 

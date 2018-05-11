@@ -151,7 +151,7 @@ void ConfigDirPolicyLoader::LoadFromPath(const base::FilePath& path,
     std::string error_msg;
     std::unique_ptr<base::Value> value =
         deserializer.Deserialize(&error_code, &error_msg);
-    if (!value.get()) {
+    if (!value) {
       LOG(WARNING) << "Failed to read configuration file "
                    << config_file_iter->value() << ": " << error_msg;
       status.Add(JsonErrorToPolicyLoadStatus(error_code));

@@ -42,7 +42,7 @@ class MockAffiliationFetcherDelegate
     result_ = std::move(result);
   }
 
-  const Result& result() const { return *result_.get(); }
+  const Result& result() const { return *result_; }
 
  private:
   std::unique_ptr<Result> result_;

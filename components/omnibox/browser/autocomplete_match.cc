@@ -136,13 +136,13 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       type(match.type),
       has_tab_match(match.has_tab_match),
       subtype_identifier(match.subtype_identifier),
-      associated_keyword(match.associated_keyword.get()
+      associated_keyword(match.associated_keyword
                              ? new AutocompleteMatch(*match.associated_keyword)
                              : nullptr),
       keyword(match.keyword),
       from_previous(match.from_previous),
       search_terms_args(
-          match.search_terms_args.get()
+          match.search_terms_args
               ? new TemplateURLRef::SearchTermsArgs(*match.search_terms_args)
               : nullptr),
       additional_info(match.additional_info),
@@ -180,13 +180,13 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   has_tab_match = match.has_tab_match;
   subtype_identifier = match.subtype_identifier;
   associated_keyword.reset(
-      match.associated_keyword.get()
+      match.associated_keyword
           ? new AutocompleteMatch(*match.associated_keyword)
           : nullptr);
   keyword = match.keyword;
   from_previous = match.from_previous;
   search_terms_args.reset(
-      match.search_terms_args.get()
+      match.search_terms_args
           ? new TemplateURLRef::SearchTermsArgs(*match.search_terms_args)
           : nullptr);
   additional_info = match.additional_info;
@@ -634,7 +634,7 @@ void AutocompleteMatch::GetKeywordUIState(
     TemplateURLService* template_url_service,
     base::string16* keyword,
     bool* is_keyword_hint) const {
-  *is_keyword_hint = associated_keyword.get() != nullptr;
+  *is_keyword_hint = associated_keyword != nullptr;
   keyword->assign(*is_keyword_hint ? associated_keyword->keyword :
       GetSubstitutingExplicitlyInvokedKeyword(template_url_service));
 }

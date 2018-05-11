@@ -42,7 +42,7 @@ bool ConfigurationPolicyProvider::IsInitializationComplete(
 
 void ConfigurationPolicyProvider::UpdatePolicy(
     std::unique_ptr<PolicyBundle> bundle) {
-  if (bundle.get())
+  if (bundle)
     policy_bundle_.Swap(bundle.get());
   else
     policy_bundle_.Clear();

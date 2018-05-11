@@ -47,7 +47,7 @@ void ReconcileTask::Reconcile(
   for (auto& request : requests) {
     if (request->request_state() == SavePageRequest::RequestState::OFFLINING) {
       request->set_request_state(SavePageRequest::RequestState::AVAILABLE);
-      items_to_update.push_back(*request.get());
+      items_to_update.push_back(*request);
     }
   }
 

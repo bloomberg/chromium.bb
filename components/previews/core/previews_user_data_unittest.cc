@@ -41,7 +41,7 @@ TEST_F(PreviewsUserDataTest, AddToURLRequest) {
   std::unique_ptr<net::URLRequest> fake_request(context->CreateRequest(
       GURL("http://www.google.com"), net::RequestPriority::IDLE, nullptr,
       TRAFFIC_ANNOTATION_FOR_TESTS));
-  PreviewsUserData* data = PreviewsUserData::GetData(*fake_request.get());
+  PreviewsUserData* data = PreviewsUserData::GetData(*fake_request);
   EXPECT_FALSE(data);
 
   data = PreviewsUserData::Create(fake_request.get(), 1u);
