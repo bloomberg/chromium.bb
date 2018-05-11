@@ -88,7 +88,8 @@ class TabLifecycleUnitTest : public ChromeRenderViewHostTestHarness {
     std::unique_ptr<content::WebContents> second_web_contents =
         CreateTestWebContents();
     content::WebContents* raw_second_web_contents = second_web_contents.get();
-    tab_strip_model_->AppendWebContents(std::move(second_web_contents), false);
+    tab_strip_model_->AppendWebContents(std::move(second_web_contents),
+                                        /*foreground=*/true);
     raw_second_web_contents->WasHidden();
   }
 

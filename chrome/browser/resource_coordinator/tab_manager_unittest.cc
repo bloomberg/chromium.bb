@@ -374,7 +374,7 @@ TEST_F(TabManagerTest, ShouldPurgeAtDefaultTime) {
 
   std::unique_ptr<WebContents> test_contents = CreateWebContents();
   WebContents* raw_test_contents = test_contents.get();
-  tab_strip->AppendWebContents(std::move(test_contents), false);
+  tab_strip->AppendWebContents(std::move(test_contents), /*foreground=*/true);
 
   tab_manager_->GetWebContentsData(raw_test_contents)->set_is_purged(false);
   tab_manager_->GetWebContentsData(raw_test_contents)
@@ -1091,7 +1091,7 @@ TEST_F(TabManagerTest, TrackingNumberOfLoadedLifecycleUnits) {
 
   // Number of loaded LifecycleUnits should go up by 1 for each new WebContents.
   for (int i = 1; i <= 5; i++) {
-    tab_strip->AppendWebContents(CreateWebContents(), false);
+    tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
     EXPECT_EQ(tab_manager_->num_loaded_lifecycle_units_, i);
   }
 
@@ -1102,7 +1102,7 @@ TEST_F(TabManagerTest, TrackingNumberOfLoadedLifecycleUnits) {
 
   // Number of loaded LifecycleUnits should go up by 1 for each new WebContents.
   for (int i = 1; i <= 5; i++) {
-    tab_strip->AppendWebContents(CreateWebContents(), false);
+    tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
     EXPECT_EQ(tab_manager_->num_loaded_lifecycle_units_, i);
   }
 
@@ -1138,7 +1138,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
   while (tab_manager_->num_loaded_lifecycle_units_ < kLowLoadedTabCount) {
     EXPECT_EQ(tab_manager_->GetTimeInBackgroundBeforeProactiveDiscard(),
               kLowOccludedTimeout);
-    tab_strip->AppendWebContents(CreateWebContents(), false);
+    tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
   }
 
   // Move through every tab count in the moderate state and verify
@@ -1179,9 +1179,9 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
 
-  tab_strip->AppendWebContents(CreateWebContents(), false);
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
   tab_strip->GetWebContentsAt(0)->WasShown();
-  tab_strip->AppendWebContents(CreateWebContents(), false);
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
   tab_strip->GetWebContentsAt(1)->WasShown();
 
   tab_strip->GetWebContentsAt(0)->WasHidden();
@@ -1226,7 +1226,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
 
   // Create enough tabs to enter the moderate state.
   for (int tabs = 0; tabs < kLowLoadedTabCount; tabs++) {
-    tab_strip->AppendWebContents(CreateWebContents(), false);
+    tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
     tab_strip->GetWebContentsAt(tabs)->WasShown();
   }
 
@@ -1270,7 +1270,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
 
   // Create enough tabs to enter the high state.
   for (int tabs = 0; tabs < kModerateLoadedTabCount; tabs++) {
-    tab_strip->AppendWebContents(CreateWebContents(), false);
+    tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
     tab_strip->GetWebContentsAt(tabs)->WasShown();
   }
 
@@ -1314,7 +1314,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
 
   // Create enough tabs to enter the excessive state.
   for (int tabs = 0; tabs < kHighLoadedTabCount; tabs++) {
-    tab_strip->AppendWebContents(CreateWebContents(), false);
+    tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
     tab_strip->GetWebContentsAt(tabs)->WasShown();
   }
 
@@ -1355,7 +1355,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
 
   // Create the minumum number of tabs to enter the high state.
   for (int tabs = 0; tabs < kModerateLoadedTabCount; tabs++) {
-    tab_strip->AppendWebContents(CreateWebContents(), false);
+    tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
     tab_strip->GetWebContentsAt(tabs)->WasShown();
   }
 
@@ -1482,7 +1482,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
 
-  tab_strip->AppendWebContents(CreateWebContents(), false);
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
   tab_strip->GetWebContentsAt(0)->WasShown();
   tab_strip->GetWebContentsAt(0)->WasHidden();
 
@@ -1506,7 +1506,7 @@ TEST_F(TabManagerTest, ProactiveDiscardDoesNotOccurWhenDisabled) {
   auto browser = std::make_unique<Browser>(params);
   TabStripModel* tab_strip = browser->tab_strip_model();
 
-  tab_strip->AppendWebContents(CreateWebContents(), false);
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
   tab_strip->GetWebContentsAt(0)->WasShown();
   tab_strip->GetWebContentsAt(0)->WasHidden();
 

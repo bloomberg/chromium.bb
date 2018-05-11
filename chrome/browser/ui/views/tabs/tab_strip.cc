@@ -435,6 +435,7 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
   tab->SetData(std::move(data));
   UpdateTabsClosingMap(model_index, 1);
   tabs_.Add(tab, model_index);
+  selected_tabs_.IncrementFrom(model_index);
 
   if (touch_layout_) {
     GenerateIdealBoundsForPinnedTabs(NULL);
@@ -489,6 +490,8 @@ void TabStrip::MoveTab(int from_model_index,
   } else {
     tabs_.Move(from_model_index, to_model_index);
   }
+  selected_tabs_.Move(from_model_index, to_model_index, /*length=*/1);
+
   StartMoveTabAnimation();
   if (MayHideNewTabButtonWhileDragging() &&
       TabDragController::IsAttachedTo(this) &&
@@ -648,11 +651,10 @@ void TabStrip::PrepareForCloseAt(int model_index, CloseTabSource source) {
   }
 }
 
-void TabStrip::SetSelection(const ui::ListSelectionModel& old_selection,
-                            const ui::ListSelectionModel& new_selection) {
-  if (old_selection.active() != new_selection.active()) {
-    if (old_selection.active() >= 0)
-      tab_at(old_selection.active())->ActiveStateChanged();
+void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
+  if (selected_tabs_.active() != new_selection.active()) {
+    if (selected_tabs_.active() >= 0)
+      tab_at(selected_tabs_.active())->ActiveStateChanged();
     if (new_selection.active() >= 0)
       tab_at(new_selection.active())->ActiveStateChanged();
   }
@@ -672,7 +674,7 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& old_selection,
       SchedulePaint();
     } else if (IsAnimating()) {
       // The selection change will have modified the ideal bounds of the tabs
-      // in |old_selection| and |new_selection|.  We need to recompute.
+      // in |selected_tabs_| and |new_selection|.  We need to recompute.
       // Note: This is safe even if we're in the midst of mouse-based tab
       // closure--we won't expand the tabstrip back to the full window
       // width--because PrepareForCloseAt() will have set
@@ -691,10 +693,10 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& old_selection,
   // and no longer selected, since selected_indices() is always sorted.
   ui::ListSelectionModel::SelectedIndices no_longer_selected =
       base::STLSetDifference<ui::ListSelectionModel::SelectedIndices>(
-          old_selection.selected_indices(), new_selection.selected_indices());
+          selected_tabs_.selected_indices(), new_selection.selected_indices());
   ui::ListSelectionModel::SelectedIndices newly_selected =
       base::STLSetDifference<ui::ListSelectionModel::SelectedIndices>(
-          new_selection.selected_indices(), old_selection.selected_indices());
+          new_selection.selected_indices(), selected_tabs_.selected_indices());
 
   // Fire accessibility events that reflect the changes to selection.
   for (size_t i = 0; i < no_longer_selected.size(); ++i) {
@@ -707,6 +709,7 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& old_selection,
   }
   tab_at(new_selection.active())
       ->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+  selected_tabs_ = new_selection;
 }
 
 void TabStrip::SetTabNeedsAttention(int model_index, bool attention) {
@@ -1762,6 +1765,7 @@ void TabStrip::RemoveTabFromViewModel(int index) {
   tabs_closing_map_[index].push_back(tab_at(index));
   UpdateTabsClosingMap(index + 1, -1);
   tabs_.Remove(index);
+  selected_tabs_.DecrementFrom(index);
 }
 
 void TabStrip::RemoveAndDeleteTab(Tab* tab) {

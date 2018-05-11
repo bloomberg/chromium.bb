@@ -78,6 +78,10 @@ class MetricsWebContentsObserver
       std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface);
   ~MetricsWebContentsObserver() override;
 
+  // Any visibility changes that occur after this method should be ignored since
+  // they are just clean up prior to destroying the WebContents instance.
+  void WebContentsWillSoonBeDestroyed();
+
   // content::WebContentsObserver implementation:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -221,6 +225,8 @@ class MetricsWebContentsObserver
   base::ObserverList<TestingObserver> testing_observers_;
   content::WebContentsFrameBindingSet<mojom::PageLoadMetrics>
       page_load_metrics_binding_;
+
+  bool web_contents_will_soon_be_destroyed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsWebContentsObserver);
 };

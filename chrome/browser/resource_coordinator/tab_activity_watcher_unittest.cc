@@ -660,7 +660,11 @@ TEST_F(ForegroundedOrClosedTest, MultipleTabs) {
         kEntryName, kTestUrls[2],
         {
             {ForegroundedOrClosed::kIsForegroundedName, 0},
-            {ForegroundedOrClosed::kMRUIndexName, 1},
+            // TODO(michaelpg): The final tab has an MRU of 0 because the
+            // remaining tabs were closed first. It would be more accurate to
+            // use the MRUIndex this tab had when CloseAllTabs() was called.
+            // See https://crbug.com/817174.
+            {ForegroundedOrClosed::kMRUIndexName, 0},
         });
 
     // The leftmost tab was in the background and was closed.

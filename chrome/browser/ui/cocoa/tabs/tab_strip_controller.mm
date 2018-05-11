@@ -1350,13 +1350,10 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 
   // Take closing tabs into account.
   if (oldContents) {
-    int oldModelIndex =
-        browser_->tab_strip_model()->GetIndexOfWebContents(oldContents);
-    if (oldModelIndex != -1) {  // When closing a tab, the old tab may be gone.
-      NSInteger oldIndex = [self indexFromModelIndex:oldModelIndex];
-      TabContentsController* oldController =
-          [tabContentsArray_ objectAtIndex:oldIndex];
-      [oldController willBecomeUnselectedTab];
+    for (TabContentsController* controller in tabContentsArray_.get()) {
+      if (controller.webContents == oldContents) {
+        [controller willBecomeUnselectedTab];
+      }
     }
   }
 

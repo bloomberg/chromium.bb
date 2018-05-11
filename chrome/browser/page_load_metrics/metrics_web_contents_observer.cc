@@ -99,6 +99,10 @@ MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
 
 MetricsWebContentsObserver::~MetricsWebContentsObserver() {}
 
+void MetricsWebContentsObserver::WebContentsWillSoonBeDestroyed() {
+  web_contents_will_soon_be_destroyed_ = true;
+}
+
 void MetricsWebContentsObserver::WebContentsDestroyed() {
   // TODO(csharrison): Use a more user-initiated signal for CLOSE.
   NotifyPageEndAllLoads(END_CLOSE, UserInitiatedInfo::NotUserInitiated());
@@ -473,6 +477,9 @@ void MetricsWebContentsObserver::DidRedirectNavigation(
 
 void MetricsWebContentsObserver::OnVisibilityChanged(
     content::Visibility visibility) {
+  if (web_contents_will_soon_be_destroyed_)
+    return;
+
   // TODO(bmcquade): Consider handling an OCCLUDED tab as not in foreground.
   bool was_in_foreground = in_foreground_;
   in_foreground_ = visibility != content::Visibility::HIDDEN;

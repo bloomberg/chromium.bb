@@ -144,7 +144,7 @@ class TabDesktopMediaListTest : public testing::Test {
     entry->GetFavicon() = favicon_info;
 
     manually_added_web_contents_.push_back(contents.get());
-    tab_strip_model->AppendWebContents(std::move(contents), false);
+    tab_strip_model->AppendWebContents(std::move(contents), true);
   }
 
   void SetUp() override {

@@ -354,6 +354,11 @@ TEST_F(TabLifecycleUnitSourceTest, DetachWebContents) {
                                       profile());
   other_tab_strip_model.AddObserver(source_);
 
+  // Make sure that the second tab strip has a foreground tab.
+  EXPECT_CALL(source_observer_, OnLifecycleUnitCreated(testing::_));
+  other_tab_strip_model.AppendWebContents(CreateTestWebContents(),
+                                          /*foreground=*/true);
+
   // Insert the tab into the second tab strip without focusing it. Verify that
   // it can be discarded.
   other_tab_strip_model.AppendWebContents(std::move(owned_contents), false);

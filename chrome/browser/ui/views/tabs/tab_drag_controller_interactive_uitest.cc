@@ -1123,7 +1123,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_TRUE(TabDragController::IsActive());
 
   // Delete the tab being dragged.
-  delete browser()->tab_strip_model()->GetWebContentsAt(0);
+  browser()->tab_strip_model()->DetachWebContentsAt(0);
 
   // Should have canceled dragging.
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
@@ -1166,51 +1166,9 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_TRUE(TabDragController::IsActive());
 
   // Delete the tab being dragged.
-  delete browser()->tab_strip_model()->GetWebContentsAt(0);
+  browser()->tab_strip_model()->DetachWebContentsAt(0);
 
   // Should have canceled dragging.
-  ASSERT_FALSE(tab_strip->IsDragSessionActive());
-  ASSERT_FALSE(TabDragController::IsActive());
-
-  EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
-
-  EXPECT_FALSE(GetIsDragged(browser()));
-}
-
-namespace {
-
-void DeleteWhileDetachedStep2(WebContents* tab) {
-  delete tab;
-}
-
-}  // namespace
-
-#if defined(OS_CHROMEOS)
-// TODO(sky,sad): Disabled as it fails due to resize locks with a real
-// compositor. crbug.com/331924
-#define MAYBE_DeleteTabWhileDetached DISABLED_DeleteTabWhileDetached
-#else
-#define MAYBE_DeleteTabWhileDetached DeleteTabWhileDetached
-#endif
-// Deletes a tab being dragged after dragging a tab so that a new window is
-// created.
-IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
-                       MAYBE_DeleteTabWhileDetached) {
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
-  TabStrip* tab_strip = GetTabStripForBrowser(browser());
-
-  // Move to the first tab and drag it enough so that it detaches.
-  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
-  WebContents* to_delete =
-      browser()->tab_strip_model()->GetWebContentsAt(0);
-  ASSERT_TRUE(PressInput(tab_0_center));
-  ASSERT_TRUE(DragInputToNotifyWhenDone(
-      tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
-      base::Bind(&DeleteWhileDetachedStep2, to_delete)));
-  QuitWhenNotDragging();
-
-  // Should not be dragging.
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
 
@@ -1273,59 +1231,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_EQ("0 3", IDString(browser()->tab_strip_model()));
 
   EXPECT_FALSE(GetIsDragged(browser()));
-}
-
-namespace {
-
-void DeleteSourceDetachedStep2(WebContents* tab,
-                               const BrowserList* browser_list) {
-  ASSERT_EQ(2u, browser_list->size());
-  Browser* new_browser = browser_list->get(1);
-  // This ends up closing the source window.
-  delete tab;
-  // Cancel the drag.
-  ui_controls::SendKeyPress(new_browser->window()->GetNativeWindow(),
-                            ui::VKEY_ESCAPE, false, false, false, false);
-}
-
-}  // namespace
-
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
-// TODO(sky,sad): Disabled as it fails due to resize locks with a real
-// compositor. crbug.com/331924
-#define MAYBE_DeleteSourceDetached DISABLED_DeleteSourceDetached
-#else
-#define MAYBE_DeleteSourceDetached DeleteSourceDetached
-#endif
-// Detaches a tab and while detached deletes a tab from the source so that the
-// source window closes then presses escape to cancel the drag.
-IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
-                       MAYBE_DeleteSourceDetached) {
-  // Add another tab.
-  AddTabAndResetBrowser(browser());
-  TabStrip* tab_strip = GetTabStripForBrowser(browser());
-
-  // Move to the first tab and drag it enough so that it detaches.
-  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
-  WebContents* to_delete = browser()->tab_strip_model()->GetWebContentsAt(1);
-  ASSERT_TRUE(PressInput(tab_0_center));
-  ASSERT_TRUE(DragInputToNotifyWhenDone(
-      tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
-      base::Bind(&DeleteSourceDetachedStep2, to_delete, browser_list)));
-  QuitWhenNotDragging();
-
-  // Should not be dragging.
-  ASSERT_EQ(1u, browser_list->size());
-  Browser* new_browser = browser_list->get(0);
-  ASSERT_FALSE(GetTabStripForBrowser(new_browser)->IsDragSessionActive());
-  ASSERT_FALSE(TabDragController::IsActive());
-
-  EXPECT_EQ("0", IDString(new_browser->tab_strip_model()));
-
-  EXPECT_FALSE(GetIsDragged(new_browser));
-
-  // Remaining browser window should not be maximized
-  EXPECT_FALSE(new_browser->window()->IsMaximized());
 }
 
 namespace {

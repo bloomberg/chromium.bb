@@ -148,10 +148,8 @@ Profile* FakeBaseTabStripController::GetProfile() const {
 }
 
 void FakeBaseTabStripController::SetActiveIndex(int new_index) {
-  ui::ListSelectionModel old_selection_model;
-  old_selection_model.SetSelectedIndex(active_index_);
   active_index_ = new_index;
   selection_model_.SetSelectedIndex(active_index_);
   if (IsValidIndex(active_index_))
-    tab_strip_->SetSelection(old_selection_model, selection_model_);
+    tab_strip_->SetSelection(selection_model_);
 }
