@@ -6,6 +6,8 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 static_library("secure_channel") {
   sources = [
+    "connect_to_device_operation.h",
+    "connect_to_device_operation_base.h",
     "pending_connection_request.h",
     "pending_connection_request_base.h",
     "pending_connection_request_delegate.cc",
@@ -16,6 +18,7 @@ static_library("secure_channel") {
     "//base",
     "//chromeos/components/proximity_auth/logging",
     "//chromeos/services/secure_channel/public/mojom",
+    "//components/cryptauth",
   ]
 }
 
@@ -23,6 +26,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "fake_connect_to_device_operation.cc",
+    "fake_connect_to_device_operation.h",
     "fake_connection_delegate.cc",
     "fake_connection_delegate.h",
     "fake_pending_connection_request.cc",
@@ -42,6 +47,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "connect_to_device_operation_base_unittest.cc",
     "pending_connection_request_base_unittest.cc",
   ]
 
@@ -50,6 +56,7 @@ source_set("unit_tests") {
     ":test_support",
     "//base/test:test_support",
     "//chromeos/services/secure_channel/public/mojom",
+    "//components/cryptauth:test_support",
     "//testing/gtest",
   ]
 }
