@@ -34,14 +34,10 @@ public class AwAutofillUMA {
     public static final int USER_NOT_SELECT_SUGGESTION_USER_NOT_CHANGE_FORM_NO_FORM_SUBMITTED = 13;
     public static final int AUTOFILL_SESSION_HISTOGRAM_COUNT = 14;
 
-    // Records how user changed form, the enumerate values are the actions we concerned,
-    // not complete list, the rate could be figured out with UMA_AUTOFILL_WEBVIEW_AUTOFILL_SESSION.
-    public static final String UMA_AUTOFILL_WEBVIEW_USER_CHANGE_FORM =
-            "Autofill.WebView.UserChangeForm";
-    // The possible value of UMA_AUTOFILL_WEBVIEW_USER_CHANGE_FORM
-    public static final int USER_INPUT_BEFORE_SUGGESTION_DISPLAYED = 0;
-    public static final int USER_CHANGE_AUTOFILLED_FIELD = 1;
-    public static final int USER_CHANGE_FORM_COUNT = 2;
+    // Records whether user changed autofilled field if user ever changed the form. The action isn't
+    // recorded if user didn't change form at all.
+    public static final String UMA_AUTOFILL_USER_CHANGED_AUTOFILLED_FIELD =
+            "Autofill.WebView.UserChangedAutofilledField";
 
     public static final String UMA_AUTOFILL_WEBVIEW_SUBMISSION_SOURCE =
             "Autofill.WebView.SubmissionSource";
@@ -66,27 +62,47 @@ public class AwAutofillUMA {
         public static final int EVENT_VIRTUAL_STRUCTURE_PROVIDED = 0x1 << 0;
         public static final int EVENT_SUGGESTION_DISPLAYED = 0x1 << 1;
         public static final int EVENT_FORM_AUTOFILLED = 0x1 << 2;
-        public static final int EVENT_USER_CHANGE_FIELD_VALUE = 0x1 << 3;
+        public static final int EVENT_USER_CHANGED_FIELD_VALUE = 0x1 << 3;
         public static final int EVENT_FORM_SUBMITTED = 0x1 << 4;
+        public static final int EVENT_USER_CHANGED_AUTOFILLED_FIELD = 0x1 << 5;
 
         public void record(int event) {
             // Not record any event until we get EVENT_VIRTUAL_STRUCTURE_PROVIDED which makes the
             // following events meaningful.
             if (event != EVENT_VIRTUAL_STRUCTURE_PROVIDED && mState == 0) return;
+            if (EVENT_USER_CHANGED_FIELD_VALUE == event && mUserChangedAutofilledField == null) {
+                mUserChangedAutofilledField = Boolean.valueOf(false);
+            } else if (EVENT_USER_CHANGED_AUTOFILLED_FIELD == event) {
+                if (mUserChangedAutofilledField == null) {
+                    mUserChangedAutofilledField = Boolean.valueOf(true);
+                }
+                mUserChangedAutofilledField = true;
+                event = EVENT_USER_CHANGED_FIELD_VALUE;
+            }
             mState |= event;
         }
 
-        public int toUMAAutofillSessionValue() {
+        public void recordHistogram() {
+            RecordHistogram.recordEnumeratedHistogram(UMA_AUTOFILL_WEBVIEW_AUTOFILL_SESSION,
+                    toUMAAutofillSessionValue(), AUTOFILL_SESSION_HISTOGRAM_COUNT);
+            // Only record if user ever changed form.
+            if (mUserChangedAutofilledField != null) {
+                RecordHistogram.recordBooleanHistogram(
+                        UMA_AUTOFILL_USER_CHANGED_AUTOFILLED_FIELD, mUserChangedAutofilledField);
+            }
+        }
+
+        private int toUMAAutofillSessionValue() {
             if (mState == 0)
                 return NO_CALLBACK_FORM_FRAMEWORK;
             else if (mState == EVENT_VIRTUAL_STRUCTURE_PROVIDED)
                 return NO_SUGGESTION_USER_NOT_CHANGE_FORM_NO_FORM_SUBMITTED;
-            else if (mState == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_USER_CHANGE_FIELD_VALUE))
+            else if (mState == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_USER_CHANGED_FIELD_VALUE))
                 return NO_SUGGESTION_USER_CHANGE_FORM_NO_FORM_SUBMITTED;
             else if (mState == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_FORM_SUBMITTED))
                 return NO_SUGGESTION_USER_NOT_CHANGE_FORM_FORM_SUBMITTED;
             else if (mState
-                    == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_USER_CHANGE_FIELD_VALUE
+                    == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_USER_CHANGED_FIELD_VALUE
                                | EVENT_FORM_SUBMITTED))
                 return NO_SUGGESTION_USER_CHANGE_FORM_FORM_SUBMITTED;
             else if (mState
@@ -99,12 +115,12 @@ public class AwAutofillUMA {
                 return USER_SELECT_SUGGESTION_USER_NOT_CHANGE_FORM_FORM_SUBMITTED;
             else if (mState
                     == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_SUGGESTION_DISPLAYED
-                               | EVENT_FORM_AUTOFILLED | EVENT_USER_CHANGE_FIELD_VALUE
+                               | EVENT_FORM_AUTOFILLED | EVENT_USER_CHANGED_FIELD_VALUE
                                | EVENT_FORM_SUBMITTED))
                 return USER_SELECT_SUGGESTION_USER_CHANGE_FORM_FORM_SUBMITTED;
             else if (mState
                     == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_SUGGESTION_DISPLAYED
-                               | EVENT_FORM_AUTOFILLED | EVENT_USER_CHANGE_FIELD_VALUE))
+                               | EVENT_FORM_AUTOFILLED | EVENT_USER_CHANGED_FIELD_VALUE))
                 return USER_SELECT_SUGGESTION_USER_CHANGE_FORM_NO_FORM_SUBMITTED;
             else if (mState == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_SUGGESTION_DISPLAYED))
                 return USER_NOT_SELECT_SUGGESTION_USER_NOT_CHANGE_FORM_NO_FORM_SUBMITTED;
@@ -114,17 +130,18 @@ public class AwAutofillUMA {
                 return USER_NOT_SELECT_SUGGESTION_USER_NOT_CHANGE_FORM_FORM_SUBMITTED;
             else if (mState
                     == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_SUGGESTION_DISPLAYED
-                               | EVENT_USER_CHANGE_FIELD_VALUE | EVENT_FORM_SUBMITTED))
+                               | EVENT_USER_CHANGED_FIELD_VALUE | EVENT_FORM_SUBMITTED))
                 return USER_NOT_SELECT_SUGGESTION_USER_CHANGE_FORM_FORM_SUBMITTED;
             else if (mState
                     == (EVENT_VIRTUAL_STRUCTURE_PROVIDED | EVENT_SUGGESTION_DISPLAYED
-                               | EVENT_USER_CHANGE_FIELD_VALUE))
+                               | EVENT_USER_CHANGED_FIELD_VALUE))
                 return USER_NOT_SELECT_SUGGESTION_USER_CHANGE_FORM_NO_FORM_SUBMITTED;
             else
                 return SESSION_UNKNOWN;
         }
 
         private int mState;
+        private Boolean mUserChangedAutofilledField;
     }
 
     private SessionRecorder mRecorder;
@@ -161,14 +178,17 @@ public class AwAutofillUMA {
         if (mRecorder != null) mRecorder.record(SessionRecorder.EVENT_FORM_AUTOFILLED);
     }
 
-    public void onUserChangeFieldValue() {
-        if (mRecorder != null) mRecorder.record(SessionRecorder.EVENT_USER_CHANGE_FIELD_VALUE);
+    public void onUserChangeFieldValue(boolean isPreviouslyAutofilled) {
+        if (mRecorder == null) return;
+        if (isPreviouslyAutofilled)
+            mRecorder.record(SessionRecorder.EVENT_USER_CHANGED_AUTOFILLED_FIELD);
+        else
+            mRecorder.record(SessionRecorder.EVENT_USER_CHANGED_FIELD_VALUE);
     }
 
     private void recordSession() {
         if (mAutofillDisabled != null && !mAutofillDisabled.booleanValue() && mRecorder != null) {
-            RecordHistogram.recordEnumeratedHistogram(UMA_AUTOFILL_WEBVIEW_AUTOFILL_SESSION,
-                    mRecorder.toUMAAutofillSessionValue(), AUTOFILL_SESSION_HISTOGRAM_COUNT);
+            mRecorder.recordHistogram();
         }
         mRecorder = null;
     }

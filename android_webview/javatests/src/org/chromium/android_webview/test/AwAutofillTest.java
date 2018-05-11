@@ -585,6 +585,14 @@ public class AwAutofillTest {
                     mCnt, new Integer[] {AUTOFILL_VALUE_CHANGED});
         }
 
+        public void simulateUserChangeAutofilledField() throws Throwable {
+            mTest.executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
+            mTest.dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_B);
+            mCnt += mTest.waitForCallbackAndVerifyTypes(mCnt,
+                    new Integer[] {
+                            AUTOFILL_VIEW_EXITED, AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
+        }
+
         public void submitForm() throws Throwable {
             mTest.executeJavaScriptAndWaitForResult("document.getElementById('formid').submit();");
             mCnt += mTest.waitForCallbackAndVerifyTypes(
@@ -628,9 +636,13 @@ public class AwAutofillTest {
                                 i);
                     }
                     mAutofillWebViewViewEnabled = new MetricsUtils.HistogramDelta(
-                            AwAutofillUMA.UMA_AUTOFILL_WEBVIEW_ENABLED, 1);
+                            AwAutofillUMA.UMA_AUTOFILL_WEBVIEW_ENABLED, 1 /*true*/);
                     mAutofillWebViewViewDisabled = new MetricsUtils.HistogramDelta(
-                            AwAutofillUMA.UMA_AUTOFILL_WEBVIEW_ENABLED, 0);
+                            AwAutofillUMA.UMA_AUTOFILL_WEBVIEW_ENABLED, 0 /*false*/);
+                    mUserChangedAutofilledField = new MetricsUtils.HistogramDelta(
+                            AwAutofillUMA.UMA_AUTOFILL_USER_CHANGED_AUTOFILLED_FIELD, 1 /*true*/);
+                    mUserChangedNonAutofilledField = new MetricsUtils.HistogramDelta(
+                            AwAutofillUMA.UMA_AUTOFILL_USER_CHANGED_AUTOFILLED_FIELD, 0 /*falsTe*/);
                 }
             });
         }
@@ -655,12 +667,46 @@ public class AwAutofillTest {
             });
         }
 
+        public void verifyUserChangedAutofilledField() throws Throwable {
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    assertEquals(0, mUserChangedNonAutofilledField.getDelta());
+                    assertEquals(1, mUserChangedAutofilledField.getDelta());
+                }
+            });
+        }
+
+        public void verifyUserChangedNonAutofilledField() throws Throwable {
+            // User changed the form, but not the autofilled field.
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    assertEquals(1, mUserChangedNonAutofilledField.getDelta());
+                    assertEquals(0, mUserChangedAutofilledField.getDelta());
+                }
+            });
+        }
+
+        public void verifyUserDidntChangeForm() throws Throwable {
+            // User didn't change the form at all.
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    assertEquals(0, mUserChangedNonAutofilledField.getDelta());
+                    assertEquals(0, mUserChangedAutofilledField.getDelta());
+                }
+            });
+        }
+
         private int mCnt = 0;
         private AwAutofillTest mTest;
         private volatile Integer mSessionValue;
         private HashMap<MetricsUtils.HistogramDelta, Integer> mSessionDelta;
         private MetricsUtils.HistogramDelta mAutofillWebViewViewEnabled;
         private MetricsUtils.HistogramDelta mAutofillWebViewViewDisabled;
+        private MetricsUtils.HistogramDelta mUserChangedAutofilledField;
+        private MetricsUtils.HistogramDelta mUserChangedNonAutofilledField;
         private volatile Integer mSourceValue;
         private HashMap<MetricsUtils.HistogramDelta, Integer> mSubmissionSourceDelta;
     }
@@ -1501,6 +1547,7 @@ public class AwAutofillTest {
                     umaTestHelper.getSessionValue());
             assertEquals(AwAutofillSessionUMATestHelper.NO_FORM_SUBMISSION,
                     umaTestHelper.getSubmissionSourceValue());
+            umaTestHelper.verifyUserChangedNonAutofilledField();
         } finally {
             webServer.shutdown();
         }
@@ -1520,6 +1567,7 @@ public class AwAutofillTest {
             assertEquals(AwAutofillUMA.NO_SUGGESTION_USER_CHANGE_FORM_FORM_SUBMITTED,
                     umaTestHelper.getSessionValue());
             assertEquals(AwAutofillUMA.FORM_SUBMISSION, umaTestHelper.getSubmissionSourceValue());
+            umaTestHelper.verifyUserChangedNonAutofilledField();
         } finally {
             webServer.shutdown();
         }
@@ -1540,6 +1588,7 @@ public class AwAutofillTest {
             assertEquals(AwAutofillUMA.USER_SELECT_SUGGESTION_USER_NOT_CHANGE_FORM_FORM_SUBMITTED,
                     umaTestHelper.getSessionValue());
             assertEquals(AwAutofillUMA.FORM_SUBMISSION, umaTestHelper.getSubmissionSourceValue());
+            umaTestHelper.verifyUserDidntChangeForm();
         } finally {
             webServer.shutdown();
         }
@@ -1562,6 +1611,7 @@ public class AwAutofillTest {
                     umaTestHelper.getSessionValue());
             assertEquals(AwAutofillSessionUMATestHelper.NO_FORM_SUBMISSION,
                     umaTestHelper.getSubmissionSourceValue());
+            umaTestHelper.verifyUserDidntChangeForm();
         } finally {
             webServer.shutdown();
         }
@@ -1583,6 +1633,7 @@ public class AwAutofillTest {
                     umaTestHelper.getSessionValue());
             assertEquals(AwAutofillSessionUMATestHelper.NO_FORM_SUBMISSION,
                     umaTestHelper.getSubmissionSourceValue());
+            umaTestHelper.verifyUserDidntChangeForm();
         } finally {
             webServer.shutdown();
         }
@@ -1603,6 +1654,7 @@ public class AwAutofillTest {
                     AwAutofillUMA.USER_NOT_SELECT_SUGGESTION_USER_NOT_CHANGE_FORM_FORM_SUBMITTED,
                     umaTestHelper.getSessionValue());
             assertEquals(AwAutofillUMA.FORM_SUBMISSION, umaTestHelper.getSubmissionSourceValue());
+            umaTestHelper.verifyUserDidntChangeForm();
         } finally {
             webServer.shutdown();
         }
@@ -1622,6 +1674,7 @@ public class AwAutofillTest {
                     umaTestHelper.getSessionValue());
             assertEquals(AwAutofillSessionUMATestHelper.NO_FORM_SUBMISSION,
                     umaTestHelper.getSubmissionSourceValue());
+            umaTestHelper.verifyUserDidntChangeForm();
         } finally {
             webServer.shutdown();
         }
@@ -1640,6 +1693,7 @@ public class AwAutofillTest {
             assertEquals(AwAutofillUMA.NO_SUGGESTION_USER_NOT_CHANGE_FORM_FORM_SUBMITTED,
                     umaTestHelper.getSessionValue());
             assertEquals(AwAutofillUMA.FORM_SUBMISSION, umaTestHelper.getSubmissionSourceValue());
+            umaTestHelper.verifyUserDidntChangeForm();
         } finally {
             webServer.shutdown();
         }
@@ -1690,6 +1744,28 @@ public class AwAutofillTest {
             umaTestHelper.verifyAutofillEnabled();
             assertEquals(AwAutofillSessionUMATestHelper.NO_FORM_SUBMISSION,
                     umaTestHelper.getSubmissionSourceValue());
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testUMAUserChangeAutofilledField() throws Throwable {
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            AwAutofillSessionUMATestHelper umaTestHelper = new AwAutofillSessionUMATestHelper(this);
+            umaTestHelper.triggerAutofill(webServer);
+            invokeOnProvideAutoFillVirtualStructure();
+            invokeOnInputUIShown();
+            umaTestHelper.simulateUserSelectSuggestion();
+            umaTestHelper.simulateUserChangeAutofilledField();
+            umaTestHelper.submitForm();
+            assertEquals(AwAutofillUMA.USER_SELECT_SUGGESTION_USER_CHANGE_FORM_FORM_SUBMITTED,
+                    umaTestHelper.getSessionValue());
+            assertEquals(AwAutofillUMA.FORM_SUBMISSION, umaTestHelper.getSubmissionSourceValue());
+            umaTestHelper.verifyUserChangedAutofilledField();
         } finally {
             webServer.shutdown();
         }
