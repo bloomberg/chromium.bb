@@ -89,6 +89,7 @@ def run_runtest(cmd_args, runtest_args):
       sys.executable,
       cmd_args.paths['runit.py'],
       '--show-path',
+      '--with-third-party-lib',
       sys.executable,
       cmd_args.paths['runtest.py'],
     ]
