@@ -74,6 +74,9 @@ class FindBarController : public content::NotificationObserver {
 
   void SetText(base::string16 text);
 
+  // Called when the find text is updated in response to a user action.
+  void OnUserChangedFindText(base::string16 text);
+
   Browser* browser() const { return browser_; }
   FindBar* find_bar() const { return find_bar_.get(); }
 

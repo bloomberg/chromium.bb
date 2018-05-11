@@ -138,7 +138,12 @@ void FindBarController::ChangeWebContents(WebContents* contents) {
 }
 
 void FindBarController::SetText(base::string16 text) {
-  find_bar_->SetFindTextAndSelectedRange(text, gfx::Range());
+  find_bar_->SetFindTextAndSelectedRange(text, find_bar_->GetSelectedRange());
+}
+
+void FindBarController::OnUserChangedFindText(base::string16 text) {
+  if (find_bar_platform_helper_)
+    find_bar_platform_helper_->OnUserChangedFindText(text);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
