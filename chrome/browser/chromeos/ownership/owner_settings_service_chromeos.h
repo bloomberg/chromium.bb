@@ -67,6 +67,8 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
   bool HasPendingChanges() const;
 
   // ownership::OwnerSettingsService implementation:
+  bool IsOwner() override;
+  void IsOwnerAsync(const IsOwnerCallback& callback) override;
   bool HandlesSetting(const std::string& setting) override;
   bool Set(const std::string& setting, const base::Value& value) override;
   bool AppendToList(const std::string& setting,
