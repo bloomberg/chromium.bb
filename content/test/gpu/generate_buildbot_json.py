@@ -836,6 +836,34 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'android',
     },
+    'Android FYI 32 dEQP Vk Release (Nexus 5X)': {
+      'swarming_dimensions': [
+        {
+          'device_type': 'bullhead',
+          'device_os': 'O',
+          'os': 'Android',
+          'pool': 'Chrome-GPU',
+        },
+      ],
+      'build_config': 'android-chromium',
+      'swarming': True,
+      'os_type': 'android',
+      'type': Types.DEQP,
+    },
+    'Android FYI 64 dEQP Vk Release (Nexus 5X)': {
+      'swarming_dimensions': [
+        {
+          'device_type': 'bullhead',
+          'device_os': 'O',
+          'os': 'Android',
+          'pool': 'Chrome-GPU',
+        },
+      ],
+      'build_config': 'android-chromium',
+      'swarming': True,
+      'os_type': 'android',
+      'type': Types.DEQP,
+    },
 
     # The following "optional" testers don't actually exist on the
     # waterfall. They are present here merely to specify additional
@@ -1233,12 +1261,11 @@ COMMON_GTESTS = {
       'shards': 4,
     },
     'test': 'angle_deqp_gles2_tests',
-    # Only pass the display type to desktop. The Android runner doesn't support
-    # passing args to the executable but only one display type is supported on
-    # Android anyways.
+    'args': [
+      '--deqp-egl-display-type=angle-gles'
+    ],
     'desktop_args': [
       '--test-launcher-batch-limit=400',
-      '--deqp-egl-display-type=angle-gles'
     ],
     'android_args': [
       '--enable-xml-result-parsing',
@@ -1266,6 +1293,12 @@ COMMON_GTESTS = {
             'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
             'os': 'Ubuntu'
           },
+          {
+            'device_type': 'bullhead',
+            'device_os': 'O',
+            'os': 'Android',
+            'pool': 'Chrome-GPU',
+          },
         ],
       },
     ],
@@ -1281,9 +1314,15 @@ COMMON_GTESTS = {
     },
     'test': 'angle_deqp_gles2_tests',
     'args': [
-      '--test-launcher-batch-limit=400',
       '--deqp-egl-display-type=angle-vulkan'
-    ]
+    ],
+    'desktop_args': [
+      '--test-launcher-batch-limit=400',
+    ],
+    'android_args': [
+      '--enable-xml-result-parsing',
+      '--shard-timeout=500'
+    ],
   },
 
   'angle_deqp_gles3_gles_tests': {
