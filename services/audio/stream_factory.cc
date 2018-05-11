@@ -9,6 +9,7 @@
 #include "base/unguessable_token.h"
 #include "services/audio/input_stream.h"
 #include "services/audio/local_muter.h"
+#include "services/audio/loopback_stream.h"
 #include "services/audio/output_stream.h"
 #include "services/audio/user_input_monitor.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
@@ -101,6 +102,26 @@ void StreamFactory::BindMuter(mojom::LocalMuterAssociatedRequest request,
   muter->AddBinding(std::move(request));
 }
 
+void StreamFactory::CreateLoopbackStream(
+    media::mojom::AudioInputStreamRequest request,
+    media::mojom::AudioInputStreamClientPtr client,
+    media::mojom::AudioInputStreamObserverPtr observer,
+    const media::AudioParameters& params,
+    uint32_t shared_memory_count,
+    const base::UnguessableToken& group_id,
+    CreateLoopbackStreamCallback created_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+
+  auto stream = std::make_unique<LoopbackStream>(
+      std::move(created_callback),
+      base::BindOnce(&StreamFactory::DestroyLoopbackStream,
+                     base::Unretained(this)),
+      audio_manager_->GetWorkerTaskRunner(), std::move(request),
+      std::move(client), std::move(observer), params, shared_memory_count,
+      &coordinator_, group_id);
+  loopback_streams_.emplace_back(std::move(stream));
+}
+
 void StreamFactory::DestroyInputStream(InputStream* stream) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   size_t erased = input_streams_.erase(stream);
@@ -121,6 +142,17 @@ void StreamFactory::DestroyMuter(LocalMuter* muter) {
                                base::MatchesUniquePtr(muter));
   DCHECK(it != muters_.end());
   muters_.erase(it);
+}
+
+void StreamFactory::DestroyLoopbackStream(LoopbackStream* stream) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  DCHECK(stream);
+
+  const auto it =
+      std::find_if(loopback_streams_.begin(), loopback_streams_.end(),
+                   base::MatchesUniquePtr(stream));
+  DCHECK(it != loopback_streams_.end());
+  loopback_streams_.erase(it);
 }
 
 }  // namespace audio

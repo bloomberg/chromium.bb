@@ -37,6 +37,7 @@ namespace audio {
 
 class InputStream;
 class LocalMuter;
+class LoopbackStream;
 class OutputStream;
 
 // This class is used to provide the StreamFactory interface. It will typically
@@ -62,7 +63,6 @@ class StreamFactory final : public mojom::StreamFactory {
                          bool enable_agc,
                          mojo::ScopedSharedBufferHandle key_press_count_buffer,
                          CreateInputStreamCallback created_callback) final;
-
   void CreateOutputStream(
       media::mojom::AudioOutputStreamRequest stream_request,
       media::mojom::AudioOutputStreamObserverAssociatedPtrInfo observer_info,
@@ -73,6 +73,14 @@ class StreamFactory final : public mojom::StreamFactory {
       CreateOutputStreamCallback created_callback) final;
   void BindMuter(mojom::LocalMuterAssociatedRequest request,
                  const base::UnguessableToken& group_id) final;
+  void CreateLoopbackStream(
+      media::mojom::AudioInputStreamRequest stream_request,
+      media::mojom::AudioInputStreamClientPtr client,
+      media::mojom::AudioInputStreamObserverPtr observer,
+      const media::AudioParameters& params,
+      uint32_t shared_memory_count,
+      const base::UnguessableToken& group_id,
+      CreateLoopbackStreamCallback created_callback) final;
 
  private:
   using InputStreamSet =
@@ -83,6 +91,7 @@ class StreamFactory final : public mojom::StreamFactory {
   void DestroyInputStream(InputStream* stream);
   void DestroyOutputStream(OutputStream* stream);
   void DestroyMuter(LocalMuter* muter);
+  void DestroyLoopbackStream(LoopbackStream* stream);
 
   SEQUENCE_CHECKER(owning_sequence_);
 
@@ -95,6 +104,7 @@ class StreamFactory final : public mojom::StreamFactory {
   // Order of the following members is important for a clean shutdown.
   GroupCoordinator coordinator_;
   std::vector<std::unique_ptr<LocalMuter>> muters_;
+  std::vector<std::unique_ptr<LoopbackStream>> loopback_streams_;
   InputStreamSet input_streams_;
   OutputStreamSet output_streams_;
 
