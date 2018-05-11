@@ -220,4 +220,40 @@ TEST_F(LayoutSVGForeignObjectTest, HitTestViewBoxForeignObject) {
   EXPECT_EQ(div, HitTest(160, 160));
 }
 
+TEST_F(LayoutSVGForeignObjectTest, HitTestUnderClipPath) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * {
+        margin: 0
+      }
+      #target {
+         width: 500px;
+         height: 500px;
+         background-color: blue;
+      }
+      #target:hover {
+        background-color: green;
+      }
+    </style>
+    <svg id="svg" style="width: 500px; height: 500px">
+      <clipPath id="c">
+        <circle cx="250" cy="250" r="200"/>
+      </clipPath>
+      <g clip-path="url(#c)">
+        <foreignObject id="foreignObject" width="100%" height="100%">
+        </foreignObject>
+      </g>
+    </svg>
+  )HTML");
+
+  const auto& svg = *GetDocument().getElementById("svg");
+  const auto& foreignObject = *GetDocument().getElementById("foreignObject");
+
+  // The fist and the third return |svg| because the circle clip-path
+  // clips out the foreignObject.
+  EXPECT_EQ(svg, GetDocument().ElementFromPoint(20, 20));
+  EXPECT_EQ(foreignObject, GetDocument().ElementFromPoint(250, 250));
+  EXPECT_EQ(svg, GetDocument().ElementFromPoint(400, 400));
+}
+
 }  // namespace blink

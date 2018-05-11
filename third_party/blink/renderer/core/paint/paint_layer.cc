@@ -85,6 +85,7 @@
 #include "third_party/blink/renderer/platform/geometry/transform_state.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_filter_operations.h"
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/length_functions.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -1977,6 +1978,17 @@ PaintLayer* PaintLayer::HitTestLayer(
   }
 
   if (HitTestClippedOutByClipPath(root_layer, hit_test_location))
+    return nullptr;
+
+  // TODO(chrishtr): this can have incorrect results for rects that are not
+  // unit-sized due to use of Center().
+  if (GetLayoutObject().IsSVGForeignObject() &&
+      !GeometryMapper::PointVisibleInAncestorSpace(
+          GetLayoutObject().FirstFragment().LocalBorderBoxProperties(),
+          container_layer->GetLayoutObject()
+              .FirstFragment()
+              .LocalBorderBoxProperties(),
+          FloatPoint(hit_test_location.BoundingBox().Center())))
     return nullptr;
 
   // The natural thing would be to keep HitTestingTransformState on the stack,
