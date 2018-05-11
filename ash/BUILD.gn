@@ -775,6 +775,8 @@ component("ash") {
     "system/status_area_widget.h",
     "system/status_area_widget_delegate.cc",
     "system/status_area_widget_delegate.h",
+    "system/supervised/supervised_icon_string.cc",
+    "system/supervised/supervised_icon_string.h",
     "system/supervised/supervised_notification_controller.cc",
     "system/supervised/supervised_notification_controller.h",
     "system/supervised/tray_supervised_user.cc",
