@@ -22,6 +22,7 @@
 #include "ui/aura/mus/mus_mouse_location_updater.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_event_dispatcher_observer.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
@@ -76,6 +77,23 @@ void ConvertEventLocationToTarget(ui::EventTarget* event_target,
 }
 
 }  // namespace
+
+WindowEventDispatcher::ObserverNotifier::ObserverNotifier(
+    WindowEventDispatcher* dispatcher,
+    const ui::Event& event)
+    : dispatcher_(dispatcher) {
+  for (WindowEventDispatcherObserver& observer :
+       Env::GetInstance()->window_event_dispatcher_observers()) {
+    observer.OnWindowEventDispatcherStartedProcessing(dispatcher, event);
+  }
+}
+
+WindowEventDispatcher::ObserverNotifier::~ObserverNotifier() {
+  for (WindowEventDispatcherObserver& observer :
+       Env::GetInstance()->window_event_dispatcher_observers()) {
+    observer.OnWindowEventDispatcherFinishedProcessingEvent(dispatcher_);
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowEventDispatcher, public:
@@ -536,11 +554,14 @@ void WindowEventDispatcher::OnEventProcessingStarted(ui::Event* event) {
 
   if (mus_mouse_location_updater_)
     mus_mouse_location_updater_->OnEventProcessingStarted(*event);
+
+  observer_notifiers_.push(std::make_unique<ObserverNotifier>(this, *event));
 }
 
 void WindowEventDispatcher::OnEventProcessingFinished(ui::Event* event) {
   if (mus_mouse_location_updater_)
     mus_mouse_location_updater_->OnEventProcessingFinished();
+  observer_notifiers_.pop();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

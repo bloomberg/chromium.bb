@@ -5,6 +5,10 @@
 #ifndef SERVICES_UI_WS2_TEST_WINDOW_TREE_CLIENT_H_
 #define SERVICES_UI_WS2_TEST_WINDOW_TREE_CLIENT_H_
 
+#include <stdint.h>
+
+#include <queue>
+
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -17,8 +21,29 @@ namespace ws2 {
 class TestWindowTreeClient : public mojom::WindowTreeClient,
                              public TestChangeTracker::Delegate {
  public:
+  // An ObservedPointerEvent is created for each call to
+  // OnPointerEventObserved()
+  struct ObservedPointerEvent {
+    ObservedPointerEvent();
+    ObservedPointerEvent(ObservedPointerEvent&& other);
+    ~ObservedPointerEvent();
+
+    std::unique_ptr<ui::Event> event;
+    Id window_id = 0;
+    int64_t display_id = 0;
+  };
+
   TestWindowTreeClient();
   ~TestWindowTreeClient() override;
+
+  std::queue<ObservedPointerEvent>& observed_pointer_events() {
+    return observed_pointer_events_;
+  }
+
+  // Returns the oldest ObservedPointerEvent that was received by way of
+  // OnPointerEventObserved(). If no pointer events have been observed, |event|
+  // in the returned object is null.
+  ObservedPointerEvent PopObservedPointerEvent();
 
   mojom::WindowTree* tree() { return tree_.get(); }
   TestChangeTracker* tracker() { return &tracker_; }
@@ -95,7 +120,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
       const gfx::PointF& event_location_in_screen_pixel_layout,
       std::unique_ptr<ui::Event> event,
       bool matches_pointer_watcher) override;
-  void OnPointerEventObserved(std::unique_ptr<ui::Event>,
+  void OnPointerEventObserved(std::unique_ptr<ui::Event> event,
                               Id window_id,
                               int64_t display_id) override;
   void OnWindowSharedPropertyChanged(
@@ -138,6 +163,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   mojom::WindowTreePtr tree_;
   Id root_window_id_ = 0;
   bool track_root_bounds_changes_ = false;
+  std::queue<ObservedPointerEvent> observed_pointer_events_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClient);
 };

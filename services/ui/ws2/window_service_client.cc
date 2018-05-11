@@ -13,6 +13,7 @@
 #include "services/ui/ws2/client_change_tracker.h"
 #include "services/ui/ws2/client_root.h"
 #include "services/ui/ws2/client_window.h"
+#include "services/ui/ws2/pointer_watcher.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_client_binding.h"
 #include "services/ui/ws2/window_service_delegate.h"
@@ -21,6 +22,7 @@
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/display/display.h"
@@ -72,6 +74,13 @@ WindowServiceClient::~WindowServiceClient() {
     // longer recognized as being created (owned) by this client.
     RemoveWindowFromKnownWindows(client_created_windows_.begin()->get());
   }
+}
+
+void WindowServiceClient::SendPointerWatcherEventToClient(
+    int64_t display_id,
+    std::unique_ptr<ui::Event> event) {
+  window_tree_client_->OnPointerEventObserved(std::move(event),
+                                              kInvalidTransportId, display_id);
 }
 
 ClientRoot* WindowServiceClient::CreateClientRoot(
@@ -724,11 +733,15 @@ void WindowServiceClient::ReleaseCapture(uint32_t change_id, Id window_id) {
 }
 
 void WindowServiceClient::StartPointerWatcher(bool want_moves) {
-  NOTIMPLEMENTED();
+  if (!pointer_watcher_)
+    pointer_watcher_ = std::make_unique<PointerWatcher>(this);
+  pointer_watcher_->set_types_to_watch(
+      want_moves ? PointerWatcher::TypesToWatch::kUpDownMoveWheel
+                 : PointerWatcher::TypesToWatch::kUpDown);
 }
 
 void WindowServiceClient::StopPointerWatcher() {
-  NOTIMPLEMENTED();
+  pointer_watcher_.reset();
 }
 
 void WindowServiceClient::SetWindowBounds(
@@ -926,9 +939,12 @@ void WindowServiceClient::SetImeVisibility(
 }
 
 void WindowServiceClient::SetEventTargetingPolicy(
-    Id window_id,
+    Id transport_window_id,
     ::ui::mojom::EventTargetingPolicy policy) {
-  NOTIMPLEMENTED();
+  aura::Window* window =
+      GetWindowByClientId(MakeClientWindowId(transport_window_id));
+  if (IsClientCreatedWindow(window) || IsClientRootWindow(window))
+    window->SetEventTargetingPolicy(policy);
 }
 
 void WindowServiceClient::OnWindowInputEventAck(

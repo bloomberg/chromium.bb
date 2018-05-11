@@ -5,6 +5,8 @@
 #ifndef SERVICES_UI_WS2_WINDOW_SERVICE_CLIENT_TEST_HELPER_H_
 #define SERVICES_UI_WS2_WINDOW_SERVICE_CLIENT_TEST_HELPER_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "services/ui/ws2/ids.h"
 
@@ -17,6 +19,13 @@ class Rect;
 }
 
 namespace ui {
+
+namespace mojom {
+class WindowTree;
+
+enum class EventTargetingPolicy;
+}  // namespace mojom
+
 namespace ws2 {
 
 class WindowServiceClient;
@@ -28,10 +37,14 @@ class WindowServiceClientTestHelper {
       WindowServiceClient* window_service_client);
   ~WindowServiceClientTestHelper();
 
+  mojom::WindowTree* window_tree();
+
   aura::Window* NewTopLevelWindow(Id transport_window_id);
   void SetWindowBounds(aura::Window* window,
                        const gfx::Rect& bounds,
                        uint32_t change_id = 1);
+  void SetEventTargetingPolicy(aura::Window* window,
+                               mojom::EventTargetingPolicy policy);
   void SetWindowProperty(aura::Window* window,
                          const std::string& name,
                          const std::vector<uint8_t>& value,

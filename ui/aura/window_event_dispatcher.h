@@ -6,6 +6,7 @@
 #define UI_AURA_WINDOW_EVENT_DISPATCHER_H_
 
 #include <memory>
+#include <queue>
 #include <vector>
 
 #include "base/callback.h"
@@ -29,6 +30,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
+class Event;
 class GestureEvent;
 class GestureRecognizer;
 class MouseEvent;
@@ -57,6 +59,8 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
  public:
   explicit WindowEventDispatcher(WindowTreeHost* host);
   ~WindowEventDispatcher() override;
+
+  WindowTreeHost* host() { return host_; }
 
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
   Window* mouse_moved_handler() { return mouse_moved_handler_; }
@@ -135,6 +139,21 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   friend class test::WindowEventDispatcherTestApi;
   friend class Window;
   friend class TestScreen;
+
+  // Used to call WindowEventDispatcherObserver when event processing starts
+  // (from the constructor) and finishes (from the destructor). Notification is
+  // handled by this object to ensure notification happens if the associated
+  // WindowEventDispatcher is destroyed during processing of the event.
+  class ObserverNotifier {
+   public:
+    ObserverNotifier(WindowEventDispatcher* dispatcher, const ui::Event& event);
+    ~ObserverNotifier();
+
+   private:
+    WindowEventDispatcher* dispatcher_;
+
+    DISALLOW_COPY_AND_ASSIGN(ObserverNotifier);
+  };
 
   // The parameter for OnWindowHidden() to specify why window is hidden.
   enum WindowHiddenReason {
@@ -300,6 +319,10 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // This callback is called when the held move event is dispatched, or when
   // pointer moves are released and there is no held move event.
   base::OnceClosure did_dispatch_held_move_event_callback_;
+
+  // See ObserverNotifier for details. This is a queue to handle the case of
+  // nested event dispatch.
+  std::queue<std::unique_ptr<ObserverNotifier>> observer_notifiers_;
 
   // Used to schedule reposting an event.
   base::WeakPtrFactory<WindowEventDispatcher> repost_event_factory_;
