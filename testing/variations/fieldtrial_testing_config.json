@@ -2313,7 +2313,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Intervention_R2",
+                    "name": "Intervention_R3",
                     "params": {
                         "pause_renderer": "true"
                     },
