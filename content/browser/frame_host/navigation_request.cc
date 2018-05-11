@@ -1003,8 +1003,6 @@ void NavigationRequest::OnRequestFailed(
     bool has_stale_copy_in_cache,
     int net_error,
     const base::Optional<net::SSLInfo>& ssl_info) {
-  RenderFrameDevToolsAgentHost::OnNavigationRequestFailed(*this, net_error);
-
   NavigationRequest::OnRequestFailedInternal(has_stale_copy_in_cache, net_error,
                                              ssl_info, false, base::nullopt);
 }
@@ -1017,6 +1015,8 @@ void NavigationRequest::OnRequestFailedInternal(
     const base::Optional<std::string>& error_page_content) {
   DCHECK(state_ == STARTED || state_ == RESPONSE_STARTED);
   DCHECK(!(net_error == net::ERR_ABORTED && error_page_content.has_value()));
+
+  RenderFrameDevToolsAgentHost::OnNavigationRequestFailed(*this, net_error);
 
   // TODO(https://crbug.com/757633): Check that ssl_info.has_value() if
   // net_error is a certificate error.
