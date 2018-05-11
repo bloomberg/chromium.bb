@@ -3538,9 +3538,9 @@ static void add_trailing_bits(struct aom_write_bit_buffer *wb) {
 
 static void write_bitstream_level(BitstreamLevel bl,
                                   struct aom_write_bit_buffer *wb) {
-  assert(bl.major >= LEVEL_MAJOR_MIN && bl.major <= LEVEL_MAJOR_MAX);
-  aom_wb_write_literal(wb, bl.major - LEVEL_MAJOR_MIN, LEVEL_MAJOR_BITS);
-  aom_wb_write_literal(wb, bl.minor, LEVEL_MINOR_BITS);
+  uint8_t seq_level_idx = major_minor_to_seq_level_idx(bl);
+  assert(is_valid_seq_level_idx(seq_level_idx));
+  aom_wb_write_literal(wb, seq_level_idx, LEVEL_BITS);
 }
 
 static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst,

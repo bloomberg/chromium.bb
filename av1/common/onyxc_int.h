@@ -1339,6 +1339,16 @@ static INLINE int is_coded_lossless(const AV1_COMMON *cm,
   return coded_lossless;
 }
 
+static INLINE int is_valid_seq_level_idx(uint8_t seq_level_idx) {
+  return seq_level_idx < 24 || seq_level_idx == 31;
+}
+
+static INLINE uint8_t major_minor_to_seq_level_idx(BitstreamLevel bl) {
+  assert(bl.major >= LEVEL_MAJOR_MIN && bl.major <= LEVEL_MAJOR_MAX);
+  assert(bl.minor >= LEVEL_MINOR_MIN && bl.minor <= LEVEL_MINOR_MAX);
+  return ((bl.major - LEVEL_MAJOR_MIN) << LEVEL_MINOR_BITS) + bl.minor;
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

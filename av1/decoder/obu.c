@@ -129,11 +129,13 @@ static int is_obu_in_current_operating_point(AV1Decoder *pbi,
 
 static uint32_t read_temporal_delimiter_obu() { return 0; }
 
-static BitstreamLevel read_bitstream_level(struct aom_read_bit_buffer *rb) {
-  BitstreamLevel bl;
-  bl.major = aom_rb_read_literal(rb, LEVEL_MAJOR_BITS) + LEVEL_MAJOR_MIN;
-  bl.minor = aom_rb_read_literal(rb, LEVEL_MINOR_BITS);
-  return bl;
+static int read_bitstream_level(BitstreamLevel *bl,
+                                struct aom_read_bit_buffer *rb) {
+  const uint8_t seq_level_idx = aom_rb_read_literal(rb, LEVEL_BITS);
+  if (!is_valid_seq_level_idx(seq_level_idx)) return 0;
+  bl->major = (seq_level_idx >> LEVEL_MINOR_BITS) + LEVEL_MAJOR_MIN;
+  bl->minor = seq_level_idx & ((1 << LEVEL_MINOR_BITS) - 1);
+  return 1;
 }
 
 static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
@@ -157,8 +159,7 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
 
   if (seq_params->reduced_still_picture_hdr) {
     seq_params->operating_point_idc[0] = 0;
-    seq_params->level[0] = read_bitstream_level(rb);
-    if (seq_params->level[0].major > LEVEL_MAJOR_MAX)
+    if (!read_bitstream_level(&seq_params->level[0], rb))
       return AOM_CODEC_UNSUP_BITSTREAM;
     seq_params->decoder_rate_model_param_present_flag[0] = 0;
   } else {
@@ -167,8 +168,7 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
     for (int i = 0; i < operating_points_cnt_minus_1 + 1; i++) {
       seq_params->operating_point_idc[i] =
           aom_rb_read_literal(rb, OP_POINTS_IDC_BITS);
-      seq_params->level[i] = read_bitstream_level(rb);
-      if (seq_params->level[i].major > LEVEL_MAJOR_MAX)
+      if (!read_bitstream_level(&seq_params->level[i], rb))
         return AOM_CODEC_UNSUP_BITSTREAM;
 #if !CONFIG_BUFFER_MODEL
       seq_params->decoder_rate_model_param_present_flag[i] =

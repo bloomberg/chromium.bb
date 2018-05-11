@@ -895,18 +895,94 @@ static void init_buffer_indices(AV1_COMP *cpi) {
   cpi->cur_poc = -1;
 }
 
+static INLINE int does_level_match(int width, int height, double fps,
+                                   int lvl_width, int lvl_height,
+                                   double lvl_fps, int lvl_dim_mult) {
+  const int64_t lvl_luma_pels = lvl_width * lvl_height;
+  const double lvl_display_sample_rate = lvl_luma_pels * lvl_fps;
+  const int64_t luma_pels = width * height;
+  const double display_sample_rate = luma_pels * fps;
+  return luma_pels <= lvl_luma_pels &&
+         display_sample_rate <= lvl_display_sample_rate &&
+         width <= lvl_width * lvl_dim_mult &&
+         height <= lvl_height * lvl_dim_mult;
+}
+
 static void set_bitstream_level(SequenceHeader *seq,
                                 const AV1EncoderConfig *oxcf) {
-  // TODO(any): This is a placeholder function.
+  // TODO(any): This is a placeholder function that only addresses dimensions
+  // and max display sample rates.
+  // Need to add checks for max bit rate, max decoded luma sample rate, header
+  // rate, etc. that are not covered by this function.
   (void)oxcf;
+  BitstreamLevel bl = { 9, 3 };
+  if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate, 512,
+                       288, 30.0, 4)) {
+    bl.major = 2;
+    bl.minor = 0;
+  } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
+                              704, 396, 30.0, 4)) {
+    bl.major = 2;
+    bl.minor = 1;
+  } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
+                              1088, 612, 30.0, 4)) {
+    bl.major = 3;
+    bl.minor = 0;
+  } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
+                              1376, 774, 30.0, 4)) {
+    bl.major = 3;
+    bl.minor = 1;
+  } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
+                              2048, 1152, 30.0, 3)) {
+    bl.major = 4;
+    bl.minor = 0;
+  } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
+                              2048, 1152, 60.0, 3)) {
+    bl.major = 4;
+    bl.minor = 1;
+  } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
+                              4096, 2176, 30.0, 2)) {
+    bl.major = 5;
+    bl.minor = 0;
+  } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
+                              4096, 2176, 60.0, 2)) {
+    bl.major = 5;
+    bl.minor = 1;
+  } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
+                              4096, 2176, 120.0, 2)) {
+    bl.major = 5;
+    bl.minor = 2;
+  } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
+                              8192, 4352, 30.0, 2)) {
+    bl.major = 6;
+    bl.minor = 0;
+  } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
+                              8192, 4352, 60.0, 2)) {
+    bl.major = 6;
+    bl.minor = 1;
+  } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
+                              8192, 4352, 120.0, 2)) {
+    bl.major = 6;
+    bl.minor = 2;
+  } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
+                              16384, 8704, 30.0, 2)) {
+    bl.major = 7;
+    bl.minor = 0;
+  } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
+                              16384, 8704, 60.0, 2)) {
+    bl.major = 7;
+    bl.minor = 1;
+  } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
+                              16384, 8704, 120.0, 2)) {
+    bl.major = 7;
+    bl.minor = 2;
+  }
   for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
-    seq->level[i].major = 5;
-    seq->level[i].major = 2;
+    seq->level[i] = bl;
   }
 }
 
 void init_seq_coding_tools(SequenceHeader *seq, const AV1EncoderConfig *oxcf) {
-  set_bitstream_level(seq, oxcf);
   seq->still_picture = (oxcf->limit == 1);
   seq->reduced_still_picture_hdr = seq->still_picture;
   seq->reduced_still_picture_hdr &= !oxcf->full_still_picture_hdr;
@@ -936,6 +1012,8 @@ void init_seq_coding_tools(SequenceHeader *seq, const AV1EncoderConfig *oxcf) {
   seq->enable_masked_compound = 1;
   seq->enable_intra_edge_filter = 1;
   seq->enable_filter_intra = 1;
+
+  set_bitstream_level(seq, oxcf);
 }
 
 static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
