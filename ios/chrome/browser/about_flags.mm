@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/sys_info.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/ios/browser/autofill_switches.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
@@ -216,6 +217,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWKHTTPSystemCookieStoreName,
      flag_descriptions::kWKHTTPSystemCookieStoreName, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kWKHTTPSystemCookieStore)},
+    {"enable-autofill-credit-card-upload",
+     flag_descriptions::kAutofillCreditCardUploadName,
+     flag_descriptions::kAutofillCreditCardUploadDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::kAutofillUpstream)},
     {"enable-autofill-credit-card-upload-google-pay-branding",
      flag_descriptions::kAutofillUpstreamUseGooglePayBrandingOnMobileName,
      flag_descriptions::
