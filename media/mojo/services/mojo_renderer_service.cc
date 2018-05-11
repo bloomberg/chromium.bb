@@ -50,16 +50,6 @@ mojo::StrongBindingPtr<mojom::Renderer> MojoRendererService::Create(
   return binding;
 }
 
-// static
-mojo::StrongBindingPtr<mojom::Renderer> MojoRendererService::Create(
-    std::unique_ptr<media::Renderer> renderer,
-    const InitiateSurfaceRequestCB& initiate_surface_request_cb,
-    mojo::InterfaceRequest<mojom::Renderer> request) {
-  return MojoRendererService::Create(nullptr, std::move(renderer),
-                                     initiate_surface_request_cb,
-                                     std::move(request));
-}
-
 MojoRendererService::MojoRendererService(
     MojoCdmServiceContext* mojo_cdm_service_context,
     std::unique_ptr<media::Renderer> renderer,
