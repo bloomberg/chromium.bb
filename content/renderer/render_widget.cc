@@ -505,7 +505,7 @@ RenderWidget* RenderWidget::CreateForFrame(
     return view->GetWidget();
   }
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      frame->GetTaskRunner(blink::TaskType::kUnthrottled);
+      frame->GetTaskRunner(blink::TaskType::kInternalDefault);
   scoped_refptr<RenderWidget> widget(
       g_create_render_widget
           ? g_create_render_widget(widget_routing_id, compositor_deps,
