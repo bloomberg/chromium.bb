@@ -3565,10 +3565,13 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
   }
   scroll_state.set_is_ending(true);
   ScrollEndImpl(&scroll_state);
-  if (settings_.is_layer_tree_for_subframe &&
-      scroll_status.thread == SCROLL_ON_IMPL_THREAD) {
-    // If we get to here, we shouldn't return SCROLL_ON_IMPL_THREAD as otherwise
-    // we'll mark the scroll as handled and the scroll won't bubble.
+  if (scroll_status.thread == SCROLL_ON_IMPL_THREAD) {
+    // Update scroll_status.thread to SCROLL_IGNORED when there is no ongoing
+    // scroll animation, we can scroll on impl thread and yet, we couldn't
+    // create a new scroll animation. This happens when the scroller has hit its
+    // extent.
+    TRACE_EVENT_INSTANT0("cc", "Ignored - Scroller at extent",
+                         TRACE_EVENT_SCOPE_THREAD);
     scroll_status.thread = SCROLL_IGNORED;
     scroll_status.main_thread_scrolling_reasons =
         MainThreadScrollingReason::kNotScrollable;

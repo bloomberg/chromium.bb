@@ -6688,9 +6688,11 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedLatchToChild) {
   EXPECT_EQ(gfx::ScrollOffset(0, 50), child_layer->CurrentScrollOffset());
   host_impl_->DidFinishImplFrame();
 
-  // Second ScrollAnimated should still latch to the grand_child_layer.
+  // Second ScrollAnimated should still latch to the grand_child_layer. Since it
+  // is already at its extent and no scrolling happens, the scroll result must
+  // be ignored.
   EXPECT_EQ(
-      InputHandler::SCROLL_ON_IMPL_THREAD,
+      InputHandler::SCROLL_IGNORED,
       host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, -100)).thread);
 
   begin_frame_args.frame_time =
