@@ -532,13 +532,7 @@ void LocalFrame::DidChangeVisibilityState() {
 void LocalFrame::DidFreeze() {
   DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
   if (GetDocument()) {
-    const double freeze_event_start = CurrentTimeTicksInSeconds();
-    GetDocument()->DispatchEvent(Event::Create(EventTypeNames::freeze));
-    const double freeze_event_end = CurrentTimeTicksInSeconds();
-    DEFINE_STATIC_LOCAL(
-        CustomCountHistogram, freeze_histogram,
-        ("DocumentEventTiming.FreezeDuration", 0, 10000000, 50));
-    freeze_histogram.Count((freeze_event_end - freeze_event_start) * 1000000.0);
+    GetDocument()->DispatchFreezeEvent();
     // TODO(fmeawad): Move the following logic to the page once we have a
     // PageResourceCoordinator in Blink. http://crbug.com/838415
     if (auto* frame_resource_coordinator = GetFrameResourceCoordinator()) {

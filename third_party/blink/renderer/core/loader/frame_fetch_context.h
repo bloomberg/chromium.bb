@@ -78,6 +78,14 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
+  ResourceRequestBlockedReason CanRequest(
+      Resource::Type type,
+      const ResourceRequest& resource_request,
+      const KURL& url,
+      const ResourceLoaderOptions& options,
+      SecurityViolationReportingPolicy reporting_policy,
+      FetchParameters::OriginRestriction origin_restriction,
+      ResourceRequest::RedirectStatus redirect_status) const override;
   mojom::FetchCacheMode ResourceRequestCachePolicy(
       const ResourceRequest&,
       Resource::Type,
