@@ -16,11 +16,11 @@
 #include "net/base/network_change_notifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/log/net_log_with_source.h"
-#include "net/quic/core/crypto/crypto_handshake_message.h"
-#include "net/quic/core/quic_connection.h"
-#include "net/quic/core/quic_packets.h"
-#include "net/quic/core/quic_spdy_session.h"
 #include "net/socket/socket_performance_watcher.h"
+#include "net/third_party/quic/core/crypto/crypto_handshake_message.h"
+#include "net/third_party/quic/core/quic_connection.h"
+#include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quic/core/quic_spdy_session.h"
 
 namespace base {
 class HistogramBase;

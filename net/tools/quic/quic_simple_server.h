@@ -16,11 +16,11 @@
 #include "net/log/net_log.h"
 #include "net/quic/chromium/quic_chromium_alarm_factory.h"
 #include "net/quic/chromium/quic_chromium_connection_helper.h"
-#include "net/quic/core/crypto/quic_crypto_server_config.h"
-#include "net/quic/core/quic_config.h"
-#include "net/quic/core/quic_version_manager.h"
-#include "net/quic/platform/impl/quic_chromium_clock.h"
-#include "net/tools/quic/quic_http_response_cache.h"
+#include "net/third_party/quic/core/crypto/quic_crypto_server_config.h"
+#include "net/third_party/quic/core/quic_config.h"
+#include "net/third_party/quic/core/quic_version_manager.h"
+#include "net/third_party/quic/platform/impl/quic_chromium_clock.h"
+#include "net/third_party/quic/tools/quic_http_response_cache.h"
 
 namespace net {
 

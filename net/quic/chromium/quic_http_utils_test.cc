@@ -8,7 +8,7 @@
 
 #include <limits>
 
-#include "net/quic/platform/api/quic_endian.h"
+#include "net/third_party/quic/platform/api/quic_endian.h"
 #include "net/third_party/spdy/core/spdy_alt_svc_wire_format.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

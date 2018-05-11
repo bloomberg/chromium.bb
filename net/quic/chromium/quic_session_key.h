@@ -5,8 +5,8 @@
 #ifndef NET_QUIC_CHROMIUM_QUIC_SESSION_KEY_H_
 #define NET_QUIC_CHROMIUM_QUIC_SESSION_KEY_H_
 
-#include "net/quic/core/quic_server_id.h"
 #include "net/socket/socket_tag.h"
+#include "net/third_party/quic/core/quic_server_id.h"
 
 namespace net {
 

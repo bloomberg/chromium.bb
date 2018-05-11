@@ -38,8 +38,8 @@
 #include "net/net_buildflags.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/quic/core/quic_packets.h"
 #include "net/ssl/ssl_config_service.h"
+#include "net/third_party/quic/core/quic_packets.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace net {

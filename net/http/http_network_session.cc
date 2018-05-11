@@ -27,17 +27,17 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/quic/chromium/quic_crypto_client_stream_factory.h"
 #include "net/quic/chromium/quic_stream_factory.h"
-#include "net/quic/core/crypto/quic_random.h"
-#include "net/quic/core/quic_packets.h"
-#include "net/quic/core/quic_tag.h"
-#include "net/quic/core/quic_utils.h"
-#include "net/quic/platform/impl/quic_chromium_clock.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_pool_manager_impl.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/spdy/chromium/spdy_session_pool.h"
+#include "net/third_party/quic/core/crypto/quic_random.h"
+#include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quic/core/quic_tag.h"
+#include "net/third_party/quic/core/quic_utils.h"
+#include "net/third_party/quic/platform/impl/quic_chromium_clock.h"
 
 namespace net {
 

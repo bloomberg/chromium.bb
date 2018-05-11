@@ -24,7 +24,7 @@
 #include "net/base/host_mapping_rules.h"
 #include "net/http/http_stream_factory.h"
 #include "net/quic/chromium/quic_utils_chromium.h"
-#include "net/quic/core/quic_packets.h"
+#include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 
 namespace {

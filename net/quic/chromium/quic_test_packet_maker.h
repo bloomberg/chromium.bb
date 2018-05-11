@@ -15,10 +15,10 @@
 
 #include "base/macros.h"
 #include "net/base/request_priority.h"
-#include "net/quic/core/quic_packets.h"
-#include "net/quic/platform/api/quic_string_piece.h"
-#include "net/quic/test_tools/mock_clock.h"
-#include "net/quic/test_tools/mock_random.h"
+#include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quic/test_tools/mock_clock.h"
+#include "net/third_party/quic/test_tools/mock_random.h"
 #include "net/third_party/spdy/core/spdy_framer.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 

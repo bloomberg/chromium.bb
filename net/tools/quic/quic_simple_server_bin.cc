@@ -17,8 +17,8 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/chromium/crypto/proof_source_chromium.h"
-#include "net/quic/core/quic_packets.h"
-#include "net/tools/quic/quic_http_response_cache.h"
+#include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quic/tools/quic_http_response_cache.h"
 #include "net/tools/quic/quic_simple_server.h"
 
 // The port the quic server will listen on.

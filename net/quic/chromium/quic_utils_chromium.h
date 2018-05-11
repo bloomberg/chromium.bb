@@ -11,7 +11,7 @@
 
 #include "base/logging.h"
 #include "net/base/net_export.h"
-#include "net/quic/core/quic_tag.h"
+#include "net/third_party/quic/core/quic_tag.h"
 
 namespace net {
 

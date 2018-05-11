@@ -12,9 +12,9 @@
 #include "base/sequenced_task_runner.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/privacy_mode.h"
-#include "net/quic/core/quic_packets.h"
-#include "net/quic/core/quic_server_id.h"
-#include "net/quic/core/quic_time.h"
+#include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quic/core/quic_server_id.h"
+#include "net/third_party/quic/core/quic_time.h"
 
 namespace net {
 

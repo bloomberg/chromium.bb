@@ -5,8 +5,8 @@
 #ifndef NET_QUIC_CHROMIUM_MOCK_QUIC_DATA_H_
 #define NET_QUIC_CHROMIUM_MOCK_QUIC_DATA_H_
 
-#include "net/quic/core/quic_packets.h"
 #include "net/socket/socket_test_util.h"
+#include "net/third_party/quic/core/quic_packets.h"
 
 namespace net {
 namespace test {

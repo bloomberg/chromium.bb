@@ -11,7 +11,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/udp_server_socket.h"
-#include "net/tools/quic/quic_dispatcher.h"
+#include "net/third_party/quic/core/quic_dispatcher.h"
 
 namespace net {
 
