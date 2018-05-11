@@ -38,8 +38,8 @@ class POLICY_EXPORT PolicyMap {
     Entry();
     ~Entry();
 
-    Entry(Entry&&);
-    Entry& operator=(Entry&&);
+    Entry(Entry&&) noexcept;
+    Entry& operator=(Entry&&) noexcept;
 
     // Returns a copy of |this|.
     Entry DeepCopy() const;

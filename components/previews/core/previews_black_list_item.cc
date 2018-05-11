@@ -17,10 +17,10 @@ PreviewsBlackListItem::OptOutRecord::OptOutRecord(base::Time entry_time,
 
 PreviewsBlackListItem::OptOutRecord::~OptOutRecord() {}
 
-PreviewsBlackListItem::OptOutRecord::OptOutRecord(OptOutRecord&&) = default;
-
+PreviewsBlackListItem::OptOutRecord::OptOutRecord(OptOutRecord&&) noexcept =
+    default;
 PreviewsBlackListItem::OptOutRecord& PreviewsBlackListItem::OptOutRecord::
-operator=(OptOutRecord&&) = default;
+operator=(OptOutRecord&&) noexcept = default;
 
 bool PreviewsBlackListItem::OptOutRecord::operator<(
     const OptOutRecord& other) const {

@@ -72,8 +72,8 @@ class VIZ_SERVICE_EXPORT InterprocessFramePool {
     mojo::ScopedSharedBufferMapping mapping;
 
     PooledBuffer();
-    PooledBuffer(PooledBuffer&&);
-    PooledBuffer& operator=(PooledBuffer&&);
+    PooledBuffer(PooledBuffer&&) noexcept;
+    PooledBuffer& operator=(PooledBuffer&&) noexcept;
     ~PooledBuffer();
   };
 
