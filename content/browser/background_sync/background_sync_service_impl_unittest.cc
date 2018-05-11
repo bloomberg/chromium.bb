@@ -142,7 +142,8 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   void CreateBackgroundSyncContext() {
     // Registering for background sync includes a check for having a same-origin
     // main frame. Use a test context that allows control over that check.
-    background_sync_context_ = new TestBackgroundSyncContext();
+    background_sync_context_ =
+        base::MakeRefCounted<TestBackgroundSyncContext>();
     background_sync_context_->Init(embedded_worker_helper_->context_wrapper());
 
     // Tests do not expect the sync event to fire immediately after

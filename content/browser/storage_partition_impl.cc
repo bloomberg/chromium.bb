@@ -628,7 +628,8 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   partition->background_fetch_context_ =
       new BackgroundFetchContext(context, partition->service_worker_context_);
 
-  partition->background_sync_context_ = new BackgroundSyncContext();
+  partition->background_sync_context_ =
+      base::MakeRefCounted<BackgroundSyncContext>();
   partition->background_sync_context_->Init(partition->service_worker_context_);
 
   partition->payment_app_context_ = new PaymentAppContextImpl();
