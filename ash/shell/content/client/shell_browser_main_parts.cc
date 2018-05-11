@@ -8,8 +8,10 @@
 #include <utility>
 
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
+#include "ash/components/touch_hud/public/mojom/constants.mojom.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/login_status.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell/content/shell_content_state_impl.h"
 #include "ash/shell/example_session_controller_client.h"
@@ -112,6 +114,12 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
       ->StartService(quick_launch::mojom::kServiceName);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kShowTapsApp)) {
+    content::ServiceManagerConnection::GetForProcess()
+        ->GetConnector()
+        ->StartService(touch_hud::mojom::kServiceName);
+  }
   ash::Shell::Get()->InitWaylandServer(nullptr);
 }
 

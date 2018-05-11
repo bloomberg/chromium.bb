@@ -22,6 +22,7 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/cast_config_controller.h"
+#include "ash/components/touch_hud/public/mojom/constants.mojom.h"
 #include "ash/dbus/ash_dbus_services.h"
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/detachable_base/detachable_base_notification_controller.h"
@@ -1274,14 +1275,14 @@ void Shell::Init(ui::ContextFactory* context_factory,
   // is started.
   display_manager_->CreateMirrorWindowAsyncIfAny();
 
-  // Mash implements the show taps feature with a separate mojo app.
+  // The show taps feature can be implemented with a separate mojo app.
   // GetShellConnector() is null in unit tests.
-  if (config == Config::MASH && shell_delegate_->GetShellConnector() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowTaps)) {
-    mash::mojom::LaunchablePtr launchable;
-    shell_delegate_->GetShellConnector()->BindInterface("touch_hud_app",
-                                                        &launchable);
-    launchable->Launch(mash::mojom::kWindow, mash::mojom::LaunchMode::DEFAULT);
+  // TODO(jamescook): Make this work in ash_shell_with_content.
+  if (shell_delegate_->GetShellConnector() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kShowTapsApp)) {
+    shell_delegate_->GetShellConnector()->StartService(
+        touch_hud::mojom::kServiceName);
   }
 
   for (auto& observer : shell_observers_)

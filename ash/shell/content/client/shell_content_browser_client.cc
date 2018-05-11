@@ -8,6 +8,7 @@
 
 #include "ash/ash_service.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
+#include "ash/components/touch_hud/public/mojom/constants.mojom.h"
 #include "ash/content/content_gpu_support.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -79,6 +80,7 @@ std::vector<content::ContentBrowserClient::ServiceManifestInfo>
 ShellContentBrowserClient::GetExtraServiceManifests() {
   return {
       {quick_launch::mojom::kServiceName, IDR_ASH_SHELL_QUICK_LAUNCH_MANIFEST},
+      {touch_hud::mojom::kServiceName, IDR_ASH_SHELL_TOUCH_HUD_MANIFEST},
       {font_service::mojom::kServiceName, IDR_ASH_SHELL_FONT_SERVICE_MANIFEST}};
 }
 
@@ -86,6 +88,8 @@ void ShellContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
   (*services)[quick_launch::mojom::kServiceName] = OutOfProcessServiceInfo(
       base::ASCIIToUTF16(quick_launch::mojom::kServiceName));
+  (*services)[touch_hud::mojom::kServiceName] = OutOfProcessServiceInfo(
+      base::ASCIIToUTF16(touch_hud::mojom::kServiceName));
   (*services)[font_service::mojom::kServiceName] = OutOfProcessServiceInfo(
       base::ASCIIToUTF16(font_service::mojom::kServiceName));
 }
@@ -105,7 +109,8 @@ void ShellContentBrowserClient::RegisterInProcessServices(
 void ShellContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
     const service_manager::Identity& identity,
     base::CommandLine* command_line) {
-  if (identity.name() == quick_launch::mojom::kServiceName) {
+  if (identity.name() == quick_launch::mojom::kServiceName ||
+      identity.name() == touch_hud::mojom::kServiceName) {
     // TODO(sky): this is necessary because WindowTreeClient only connects to
     // the gpu related interfaces if Mash is set.
     command_line->AppendSwitchASCII(switches::kEnableFeatures,

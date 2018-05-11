@@ -74,8 +74,11 @@ void TouchHudApplication::OnStart() {
       context()->connector(), context()->identity(), "views_mus_resources.pak",
       std::string(), nullptr, views::AuraInit::Mode::AURA_MUS,
       register_path_provider);
-  if (!aura_init_)
+  if (!aura_init_) {
     context()->QuitNow();
+    return;
+  }
+  Launch(mash::mojom::kWindow, mash::mojom::LaunchMode::DEFAULT);
 }
 
 void TouchHudApplication::OnBindInterface(
@@ -101,8 +104,7 @@ void TouchHudApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
     widget_->Init(params);
     widget_->Show();
   } else {
-    widget_->Close();
-    context()->QuitNow();
+    widget_->Activate();
   }
 }
 

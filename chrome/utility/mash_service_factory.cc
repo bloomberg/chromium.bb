@@ -9,6 +9,7 @@
 #include "ash/components/autoclick/autoclick_application.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/components/quick_launch/quick_launch_application.h"
+#include "ash/components/touch_hud/public/mojom/constants.mojom.h"
 #include "ash/components/touch_hud/touch_hud_application.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/window_manager_service.h"
@@ -98,7 +99,8 @@ void MashServiceFactory::RegisterOutOfProcessServices(
                       &CreateQuickLaunchApp);
   RegisterMashService(services, ash::mojom::kServiceName, &CreateAshService);
   RegisterMashService(services, "autoclick_app", &CreateAutoclickApp);
-  RegisterMashService(services, "touch_hud_app", &CreateTouchHudApp);
+  RegisterMashService(services, touch_hud::mojom::kServiceName,
+                      &CreateTouchHudApp);
   RegisterMashService(services, font_service::mojom::kServiceName,
                       &CreateFontService);
 }
