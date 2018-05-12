@@ -2544,6 +2544,15 @@ crbug.com/591500 [ Win10 ] virtual/threaded/printing/quirks-percentage-height.ht
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/standards-percentage-heights.html [ Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/subframes-percentage-height.html [ Failure ]
 
+
+crbug.com/v8/7753 http/tests/devtools/sources/debugger-breakpoints/event-listener-breakpoints-xhr.js [ Skip ]
+crbug.com/v8/7753 http/tests/devtools/sources/debugger-breakpoints/event-listener-breakpoints.js [ Skip ]
+crbug.com/v8/7753 http/tests/devtools/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.js [ Skip ]
+crbug.com/v8/7753 http/tests/devtools/sources/debugger-step/step-through-event-listeners.js [ Skip ]
+crbug.com/v8/7753 inspector-protocol/debugger/message-channel-async-stack.js [ Skip ]
+crbug.com/v8/7753 inspector-protocol/worker/worker-on-message-async-stacks.js [ Skip ]
+crbug.com/v8/7753 inspector-protocol/worker/worker-post-message-async-stacks.js [ Skip ]
+
 # TODO(chrishtr) uncomment ones marked crbug.com/591500 after fixing crbug.com/665259.
 crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
