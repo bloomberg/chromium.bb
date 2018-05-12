@@ -436,8 +436,8 @@ void SearchResultView::OnGetContextMenu(
 
 void SearchResultView::ExecuteCommand(int command_id, int event_flags) {
   if (result_) {
-    view_delegate_->ContextMenuItemSelected(result_->id(), command_id,
-                                            event_flags);
+    view_delegate_->SearchResultContextMenuItemSelected(
+        result_->id(), command_id, event_flags);
   }
 }
 

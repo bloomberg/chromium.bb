@@ -69,6 +69,14 @@ class APP_LIST_EXPORT AppListViewDelegate {
       const std::string& result_id,
       GetContextMenuModelCallback callback) = 0;
 
+  // Invoked when a context menu item of a search result is clicked.
+  // |result_id| is the clicked SearchResult's id
+  // |command_id| is the clicked menu item's command id
+  // |event_flags| is flags from the event which triggered this command
+  virtual void SearchResultContextMenuItemSelected(const std::string& result_id,
+                                                   int command_id,
+                                                   int event_flags) = 0;
+
   // Invoked when the app list is shown.
   virtual void ViewShown(int64_t display_id) = 0;
 
@@ -97,7 +105,7 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // Invoked when a context menu item of an app list item is clicked.
   // |id| is the clicked AppListItem's id
   // |command_id| is the clicked menu item's command id
-  // |event_flags| is flags from the event which issued this command
+  // |event_flags| is flags from the event which triggered this command
   virtual void ContextMenuItemSelected(const std::string& id,
                                        int command_id,
                                        int event_flags) = 0;

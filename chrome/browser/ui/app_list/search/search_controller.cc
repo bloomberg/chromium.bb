@@ -22,7 +22,7 @@ namespace app_list {
 
 SearchController::SearchController(AppListModelUpdater* model_updater,
                                    History* history)
-    : mixer_(new Mixer(model_updater)), history_(history) {}
+    : mixer_(std::make_unique<Mixer>(model_updater)), history_(history) {}
 
 SearchController::~SearchController() {}
 
@@ -88,6 +88,33 @@ void SearchController::OnResultsChanged() {
   size_t num_max_results =
       query_for_recommendation_ ? kNumStartPageTiles : kMaxSearchResults;
   mixer_->MixAndPublish(known_results, num_max_results);
+}
+
+ChromeSearchResult* SearchController::FindSearchResult(
+    const std::string& result_id) {
+  for (const auto& provider : providers_) {
+    for (const auto& result : provider->results()) {
+      if (result->id() == result_id)
+        return result.get();
+    }
+  }
+  return nullptr;
+}
+
+ChromeSearchResult* SearchController::GetResultByTitleForTest(
+    const std::string& title) {
+  base::string16 target_title = base::ASCIIToUTF16(title);
+  for (const auto& provider : providers_) {
+    for (const auto& result : provider->results()) {
+      if (result->title() == target_title &&
+          result->result_type() == ash::SearchResultType::kInstalledApp &&
+          result->display_type() !=
+              ash::SearchResultDisplayType::kRecommendation) {
+        return result.get();
+      }
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace app_list

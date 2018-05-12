@@ -13,9 +13,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
+#include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -65,6 +67,8 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
   AppListServiceImpl* service = AppListServiceImpl::GetInstance();
   ASSERT_TRUE(service);
   AppListModelUpdater* model_updater = test::GetModelUpdater(service);
+  app_list::SearchController* search_controller =
+      service->GetAppListClient()->GetSearchControllerForTest();
   ASSERT_TRUE(model_updater);
   // Getting the AppListClient to associate it with the current profile.
   ASSERT_TRUE(service->GetAppListClient());
@@ -81,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
   service->FlushForTesting();
 
   // Currently the search box is empty, so we have no result.
-  EXPECT_FALSE(model_updater->GetResultByTitleForTest(title));
+  EXPECT_FALSE(search_controller->GetResultByTitleForTest(title));
 
   // Now a search finds the extension.
   model_updater->UpdateSearchBox(base::ASCIIToUTF16(title),
@@ -89,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
 
   // Ensure everything is done, from Chrome to Ash and backwards.
   service->FlushForTesting();
-  EXPECT_TRUE(model_updater->GetResultByTitleForTest(title));
+  EXPECT_TRUE(search_controller->GetResultByTitleForTest(title));
 
   // Uninstall the extension.
   UninstallExtension(extension->id());
@@ -98,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
   service->FlushForTesting();
 
   // We cannot find the extension any more.
-  EXPECT_FALSE(model_updater->GetResultByTitleForTest(title));
+  EXPECT_FALSE(search_controller->GetResultByTitleForTest(title));
 
   service->DismissAppList();
 }

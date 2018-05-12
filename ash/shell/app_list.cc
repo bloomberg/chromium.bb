@@ -316,6 +316,12 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     NOTIMPLEMENTED();
   }
 
+  void SearchResultContextMenuItemSelected(const std::string& result_id,
+                                           int command_id,
+                                           int event_flags) override {
+    NOTIMPLEMENTED();
+  }
+
   std::unique_ptr<app_list::AppListModel> model_;
   std::unique_ptr<app_list::SearchModel> search_model_;
 

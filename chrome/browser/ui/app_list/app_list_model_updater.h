@@ -130,16 +130,9 @@ class AppListModelUpdater {
       base::OnceCallback<void(std::unique_ptr<ui::MenuModel>)>;
   virtual void GetContextMenuModel(const std::string& id,
                                    GetMenuModelCallback callback) = 0;
-  virtual void GetSearchResultContextMenuModel(
-      const std::string& result_id,
-      GetMenuModelCallback callback) = 0;
   virtual size_t BadgedItemCount() = 0;
   // For SearchModel:
   virtual bool SearchEngineIsGoogle() = 0;
-  virtual ChromeSearchResult* FindSearchResult(
-      const std::string& result_id) = 0;
-  virtual ChromeSearchResult* GetResultByTitleForTest(
-      const std::string& title) = 0;
 
   // Methods for handle model updates in ash:
   virtual void OnFolderCreated(ash::mojom::AppListItemMetadataPtr item) = 0;

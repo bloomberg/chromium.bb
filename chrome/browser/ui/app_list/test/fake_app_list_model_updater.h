@@ -57,11 +57,6 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   size_t BadgedItemCount() override;
   // For SearchModel:
   bool SearchEngineIsGoogle() override;
-  void GetSearchResultContextMenuModel(const std::string& result_id,
-                                       GetMenuModelCallback callback) override;
-  ChromeSearchResult* FindSearchResult(const std::string& result_id) override;
-  ChromeSearchResult* GetResultByTitleForTest(
-      const std::string& title) override;
   const std::vector<ChromeSearchResult*>& search_results() const {
     return search_results_;
   }

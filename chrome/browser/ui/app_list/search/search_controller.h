@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -43,6 +44,9 @@ class SearchController {
 
   // Takes ownership of |provider| and associates it with given mixer group.
   void AddProvider(size_t group_id, std::unique_ptr<SearchProvider> provider);
+
+  ChromeSearchResult* FindSearchResult(const std::string& result_id);
+  ChromeSearchResult* GetResultByTitleForTest(const std::string& title);
 
  private:
   // Invoked when the search results are changed.

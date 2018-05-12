@@ -146,6 +146,9 @@ class ASH_EXPORT AppListControllerImpl
       AppListViewDelegateMash::GetContextMenuModelCallback;
   void GetSearchResultContextMenuModel(const std::string& result_id,
                                        GetContextMenuModelCallback callback);
+  void SearchResultContextMenuItemSelected(const std::string& result_id,
+                                           int command_id,
+                                           int event_flags);
   void ViewShown(int64_t display_id);
   void ViewClosing();
   void ActivateItem(const std::string& id, int event_flags);
