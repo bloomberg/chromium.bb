@@ -58,12 +58,10 @@ class PermissionsData {
    public:
     virtual ~PolicyDelegate() {}
 
-    // Returns false if script access should be blocked on this page.
+    // Returns true if script access should be blocked on this page.
     // Otherwise, default policy should decide.
-    virtual bool CanExecuteScriptOnPage(const Extension* extension,
-                                        const GURL& document_url,
-                                        int tab_id,
-                                        std::string* error) = 0;
+    virtual bool IsRestrictedUrl(const GURL& document_url,
+                                 std::string* error) = 0;
   };
 
   static void SetPolicyDelegate(PolicyDelegate* delegate);

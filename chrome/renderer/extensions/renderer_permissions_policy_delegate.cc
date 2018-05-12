@@ -24,27 +24,22 @@ RendererPermissionsPolicyDelegate::~RendererPermissionsPolicyDelegate() {
   PermissionsData::SetPolicyDelegate(NULL);
 }
 
-bool RendererPermissionsPolicyDelegate::CanExecuteScriptOnPage(
-    const Extension* extension,
+bool RendererPermissionsPolicyDelegate::IsRestrictedUrl(
     const GURL& document_url,
-    int tab_id,
     std::string* error) {
-  if (PermissionsData::CanExecuteScriptEverywhere(extension))
-    return true;
-
   if (dispatcher_->IsExtensionActive(kWebStoreAppId)) {
     if (error)
       *error = errors::kCannotScriptGallery;
-    return false;
+    return true;
   }
 
   if (SearchBouncer::GetInstance()->IsNewTabPage(document_url)) {
     if (error)
       *error = errors::kCannotScriptNtp;
-    return false;
+    return true;
   }
 
-  return true;
+  return false;
 }
 
 }  // namespace extensions
