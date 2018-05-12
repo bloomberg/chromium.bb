@@ -142,10 +142,12 @@ void ChunkedDataPipeUploadDataStream::OnSizeReceived(int32_t status,
       // it asynchronously could result in confusing consumers.
       if (buf_)
         SetIsFinalChunk();
-    } else if (size < bytes_read_ || !data_pipe_.is_valid()) {
-      // If more data was received than was expected, or the data pipe was
-      // closed without passing in as many bytes as expected, the upload can't
-      // continue.
+    } else if (size < bytes_read_ || (buf_ && !data_pipe_.is_valid())) {
+      // If more data was received than was expected, or there's a pending read
+      // and data pipe was closed without passing in as many bytes as expected,
+      // the upload can't continue.  If there's no pending read but the pipe was
+      // closed, the closure and size difference will be noticed on the next
+      // read attempt.
       status_ = net::ERR_FAILED;
     }
   }
@@ -155,10 +157,13 @@ void ChunkedDataPipeUploadDataStream::OnSizeReceived(int32_t status,
   // next read, the file will be marked as done, so ReadInternal() won't be
   // called again.
   if (buf_ && (IsEOF() || status_ != net::OK)) {
-    // |buf_| being non-null means the pipe is being watched, unless it was
-    // closed. Stop watching the pipe, to avoid another OnHandleReadable()
-    // notification.
+    // |data_pipe_| isn't needed any more, and if it's still open, a close pipe
+    // message would cause issues, since this class normally only watches the
+    // pipe when there's a pending read.
     handle_watcher_.Cancel();
+    data_pipe_.reset();
+    // Clear |buf_| as well, so it's only non-null while there's a pending read.
+    buf_ = nullptr;
 
     OnReadCompleted(status_);
 

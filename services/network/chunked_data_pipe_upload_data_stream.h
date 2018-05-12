@@ -61,6 +61,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ChunkedDataPipeUploadDataStream
   scoped_refptr<ResourceRequestBody> resource_request_body_;
   mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter_;
   mojo::ScopedDataPipeConsumerHandle data_pipe_;
+  // Watcher for |data_pipe_|. Only armed while there's a pending read.
   mojo::SimpleWatcher handle_watcher_;
 
   // Write buffer and its length. Populated when Read() is called but returns
