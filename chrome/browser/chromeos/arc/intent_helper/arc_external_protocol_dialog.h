@@ -11,7 +11,6 @@
 
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "content/public/browser/web_contents_user_data.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -21,20 +20,6 @@ class WebContents;
 }  // namespace content
 
 namespace arc {
-
-// Having an object of this kind attached to a WebContents mean that the tab was
-// originated via an ARC request in ChromeShellDelegate.
-class ArcWebContentsData
-    : public content::WebContentsUserData<ArcWebContentsData> {
- public:
-  static const char kArcTransitionFlag[];
-
-  ArcWebContentsData() = default;
-  ~ArcWebContentsData() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcWebContentsData);
-};
 
 using GurlAndActivityInfo =
     std::pair<GURL, ArcIntentHelperBridge::ActivityName>;
@@ -76,7 +61,7 @@ GetActionResult GetActionForTesting(
 GURL GetUrlToNavigateOnDeactivateForTesting(
     const std::vector<mojom::IntentHandlerInfoPtr>& handlers);
 
-bool IsSafeToRedirectToArcWithoutUserConfirmationForTesting(
+bool GetAndResetSafeToRedirectToArcWithoutUserConfirmationFlagForTesting(
     content::WebContents* tab);
 
 bool IsChromeAnAppCandidateForTesting(
