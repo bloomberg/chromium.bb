@@ -551,9 +551,17 @@ body:not(.has-error) #toolbar.expanded {
   position: absolute;
   right: 0;
   top: 0;
-  transition: opacity 200ms, visibility 0 200ms;
+  transition: opacity 100ms, visibility 0 100ms;
   visibility: hidden;
   z-index: 1;  /* Hack to enable touch scrolling in album. */
+}
+
+body.camera #camera,
+body.browser #browser,
+body.album #album {
+  opacity: 1;
+  transition: opacity 100ms;
+  visibility: visible;
 }
 
 #camera {
@@ -704,7 +712,6 @@ body.performance-test * {
   -webkit-app-region: no-drag;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
   margin: 10px;
-  transition: -webkit-transform 50ms;
   vertical-align: middle;
   display: inline-block;
   position: relative;
@@ -748,16 +755,6 @@ body.performance-test * {
 
 #browser {
   background: rgba(0, 0, 0, 0.8);
-  outline: none;
-  visibility: hidden;
-}
-
-body.camera #camera,
-body.browser #browser,
-body.album #album {
-  opacity: 1;
-  transition: opacity 200ms;
-  visibility: visible;
 }
 
 #browser .padder {
@@ -1017,6 +1014,6 @@ html[dir='rtl'] #dialog #dialog-close-button {
 
 body:not(.initializing) #initializing {
   opacity: 0;
-  transition: opacity 200ms, visibility 0 200ms;
+  transition: opacity 100ms, visibility 0 100ms;
   visibility: hidden;
 }
