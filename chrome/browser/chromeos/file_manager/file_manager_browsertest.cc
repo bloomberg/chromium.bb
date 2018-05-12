@@ -345,13 +345,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "sortColumns"),
                       TestParameter(IN_GUEST_MODE, "sortColumns")));
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_TabIndex DISABLED_TabIndex
-#else
-#define MAYBE_TabIndex TabIndex
-#endif
+// FIXME: prefix the test name with tabindex
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_TabIndex,
+    TabIndex,
     FileManagerBrowserTestWithLegacyEventDispatch,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "searchBoxFocus")));
 
