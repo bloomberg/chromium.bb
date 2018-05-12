@@ -30,7 +30,6 @@ namespace blink {
 // TODO(jbroman): Clean up these, which are used elsewhere.
 class WebScrollbar {
  public:
-  enum Orientation { kHorizontal, kVertical };
   enum class ScrollingMode { kAuto, kAlwaysOff, kAlwaysOn, kLast = kAlwaysOn };
 };
 

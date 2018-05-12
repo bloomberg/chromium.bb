@@ -642,9 +642,6 @@ STATIC_ASSERT_ENUM(WebScrollbar::ScrollingMode::kAlwaysOff,
                    kScrollbarAlwaysOff);
 STATIC_ASSERT_ENUM(WebScrollbar::ScrollingMode::kAlwaysOn, kScrollbarAlwaysOn);
 
-STATIC_ASSERT_ENUM(WebScrollbar::kHorizontal, kHorizontalScrollbar);
-STATIC_ASSERT_ENUM(WebScrollbar::kVertical, kVerticalScrollbar);
-
 STATIC_ASSERT_ENUM(kWebScrollbarOverlayColorThemeDark,
                    kScrollbarOverlayColorThemeDark);
 STATIC_ASSERT_ENUM(kWebScrollbarOverlayColorThemeLight,
