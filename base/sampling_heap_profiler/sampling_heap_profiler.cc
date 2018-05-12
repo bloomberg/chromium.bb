@@ -329,27 +329,28 @@ void SamplingHeapProfiler::DoRecordAlloc(size_t total_allocated,
                                          uint32_t skip_frames) {
   if (entered_.Get())
     return;
-  base::AutoLock lock(mutex_);
   entered_.Set(true);
+  {
+    base::AutoLock lock(mutex_);
 
-  Sample sample(size, total_allocated, ++g_last_sample_ordinal);
-  RecordStackTrace(&sample, skip_frames);
+    Sample sample(size, total_allocated, ++g_last_sample_ordinal);
+    RecordStackTrace(&sample, skip_frames);
 
-  // Close the fast-path as inserting an element into samples_ may cause
-  // rehashing that invalidates iterators affecting all the concurrent
-  // readers.
-  base::subtle::Release_Store(&g_fast_path_is_closed, 1);
-  while (base::subtle::Acquire_Load(&g_operations_in_flight)) {
-    while (base::subtle::NoBarrier_Load(&g_operations_in_flight)) {
+    // Close the fast-path as inserting an element into samples_ may cause
+    // rehashing that invalidates iterators affecting all the concurrent
+    // readers.
+    base::subtle::Release_Store(&g_fast_path_is_closed, 1);
+    while (base::subtle::Acquire_Load(&g_operations_in_flight)) {
+      while (base::subtle::NoBarrier_Load(&g_operations_in_flight)) {
+      }
     }
+    for (auto* observer : observers_)
+      observer->SampleAdded(sample.ordinal, size, total_allocated);
+    // TODO(alph): We can do better by keeping the fast-path open when
+    // we know insert won't cause rehashing.
+    samples_.emplace(address, std::move(sample));
+    base::subtle::Release_Store(&g_fast_path_is_closed, 0);
   }
-  for (auto* observer : observers_)
-    observer->SampleAdded(sample.ordinal, size, total_allocated);
-  // TODO(alph): We can do better by keeping the fast-path open when
-  // we know insert won't cause rehashing.
-  samples_.emplace(address, std::move(sample));
-  base::subtle::Release_Store(&g_fast_path_is_closed, 0);
-
   entered_.Set(false);
 }
 
@@ -357,8 +358,10 @@ void SamplingHeapProfiler::DoRecordAlloc(size_t total_allocated,
 void SamplingHeapProfiler::RecordFree(void* address) {
   bool maybe_sampled = true;  // Pessimistically assume allocation was sampled.
   base::subtle::Barrier_AtomicIncrement(&g_operations_in_flight, 1);
-  if (LIKELY(!base::subtle::NoBarrier_Load(&g_fast_path_is_closed)))
-    maybe_sampled = instance_->samples_.count(address);
+  if (LIKELY(!base::subtle::NoBarrier_Load(&g_fast_path_is_closed))) {
+    maybe_sampled =
+        instance_->samples_.find(address) != instance_->samples_.end();
+  }
   base::subtle::Barrier_AtomicIncrement(&g_operations_in_flight, -1);
   if (maybe_sampled)
     instance_->DoRecordFree(address);
@@ -369,13 +372,15 @@ void SamplingHeapProfiler::DoRecordFree(void* address) {
     return;
   if (entered_.Get())
     return;
-  base::AutoLock lock(mutex_);
   entered_.Set(true);
-  auto it = samples_.find(address);
-  if (it != samples_.end()) {
-    for (auto* observer : observers_)
-      observer->SampleRemoved(it->second.ordinal);
-    samples_.erase(it);
+  {
+    base::AutoLock lock(mutex_);
+    auto it = samples_.find(address);
+    if (it != samples_.end()) {
+      for (auto* observer : observers_)
+        observer->SampleRemoved(it->second.ordinal);
+      samples_.erase(it);
+    }
   }
   entered_.Set(false);
 }
@@ -392,33 +397,39 @@ void SamplingHeapProfiler::SuppressRandomnessForTest(bool suppress) {
 }
 
 void SamplingHeapProfiler::AddSamplesObserver(SamplesObserver* observer) {
-  base::AutoLock lock(mutex_);
   CHECK(!entered_.Get());
   entered_.Set(true);
-  observers_.push_back(observer);
+  {
+    base::AutoLock lock(mutex_);
+    observers_.push_back(observer);
+  }
   entered_.Set(false);
 }
 
 void SamplingHeapProfiler::RemoveSamplesObserver(SamplesObserver* observer) {
-  base::AutoLock lock(mutex_);
   CHECK(!entered_.Get());
   entered_.Set(true);
-  auto it = std::find(observers_.begin(), observers_.end(), observer);
-  CHECK(it != observers_.end());
-  observers_.erase(it);
+  {
+    base::AutoLock lock(mutex_);
+    auto it = std::find(observers_.begin(), observers_.end(), observer);
+    CHECK(it != observers_.end());
+    observers_.erase(it);
+  }
   entered_.Set(false);
 }
 
 std::vector<SamplingHeapProfiler::Sample> SamplingHeapProfiler::GetSamples(
     uint32_t profile_id) {
-  base::AutoLock lock(mutex_);
   CHECK(!entered_.Get());
   entered_.Set(true);
   std::vector<Sample> samples;
-  for (auto& it : samples_) {
-    Sample& sample = it.second;
-    if (sample.ordinal > profile_id)
-      samples.push_back(sample);
+  {
+    base::AutoLock lock(mutex_);
+    for (auto& it : samples_) {
+      Sample& sample = it.second;
+      if (sample.ordinal > profile_id)
+        samples.push_back(sample);
+    }
   }
   entered_.Set(false);
   return samples;
