@@ -326,11 +326,13 @@ void MemoryInternalsDOMHandler::ReturnProcessListOnUIThread(
   // Append renderer processes.
   auto iter = content::RenderProcessHost::AllHostsIterator();
   while (!iter.IsAtEnd()) {
-    base::ProcessId renderer_pid = iter.GetCurrentValue()->GetProcess().Pid();
-    if (renderer_pid != 0) {
-      // TODO(brettw) make a better description of the process, maybe see
-      // what TaskManager does to get the page title.
-      process_list.push_back(MakeProcessInfo(renderer_pid, "Renderer"));
+    if (iter.GetCurrentValue()->GetProcess().IsValid()) {
+      base::ProcessId renderer_pid = iter.GetCurrentValue()->GetProcess().Pid();
+      if (renderer_pid != 0) {
+        // TODO(brettw) make a better description of the process, maybe see
+        // what TaskManager does to get the page title.
+        process_list.push_back(MakeProcessInfo(renderer_pid, "Renderer"));
+      }
     }
     iter.Advance();
   }
