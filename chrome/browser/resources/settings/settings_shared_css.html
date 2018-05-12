@@ -88,12 +88,6 @@
         -webkit-margin-start: 16px;
       }
 
-      /* Adjust the margin between the separator and the first button. Exclude
-       * .action-button since it has a background thus is visually different. */
-      .separator + paper-button:not(.action-button) {
-        -webkit-margin-start: calc(var(--cr-button-edge-spacing) * -1);
-      }
-
       span ~ a {
         -webkit-margin-start: 4px;
       }
@@ -325,17 +319,10 @@
        * settings. */
       .separator {
         -webkit-border-start: var(--settings-separator-line);
-        -webkit-margin-end: var(--settings-box-row-padding);
-        -webkit-margin-start: var(--settings-box-row-padding);
         flex-shrink: 0;
-        --settings-separator-gaps: 9px;
-        height: calc(var(--settings-row-min-height) -
-            var(--settings-separator-gaps));
-      }
-
-      .two-line .separator {
-        height: calc(var(--settings-row-two-line-min-height) -
-            2 * var(--settings-separator-gaps));
+        /* Match paper-button's default height. */
+        height: 32px;
+        margin: 0 16px;
       }
 
       .favicon-image {
