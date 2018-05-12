@@ -591,6 +591,9 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
             // Finish up transaction 3, verifying blob deletes.
             EXPECT_TRUE(state->transaction3->CommitPhaseTwo().ok());
             EXPECT_TRUE(test->CheckBlobRemovals());
+
+            // Clean up Transactions, etc on the IDB thread.
+            *state = TestState();
           },
           base::Unretained(this), base::Unretained(&state)));
   RunAllTasksUntilIdle();
@@ -716,6 +719,9 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRange) {
                         backing_store->removals()[0]);
               EXPECT_EQ(backing_store->writes()[2].key(),
                         backing_store->removals()[1]);
+
+              // Clean up Transactions, etc on the IDB thread.
+              *state = TestState();
             },
             base::Unretained(backing_store()), base::Unretained(&state)));
     RunAllTasksUntilIdle();
@@ -837,6 +843,9 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRangeEmptyRange) {
 
               // Verify blob removals.
               EXPECT_EQ(0UL, backing_store->removals().size());
+
+              // Clean up Transactions, etc on the IDB thread.
+              *state = TestState();
             },
             base::Unretained(backing_store()), base::Unretained(&state)));
     RunAllTasksUntilIdle();
@@ -919,6 +928,9 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, BlobJournalInterleavedTransactions) {
 
             EXPECT_TRUE(state->transaction2->CommitPhaseTwo().ok());
             EXPECT_EQ(0U, test->backing_store()->removals().size());
+
+            // Clean up Transactions, etc on the IDB thread.
+            *state = TestState();
           },
           base::Unretained(this), base::Unretained(&state)));
   RunAllTasksUntilIdle();
@@ -1022,7 +1034,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, LiveBlobJournal) {
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
-          [](IndexedDBBackingStoreTestWithBlobs* test) {
+          [](IndexedDBBackingStoreTestWithBlobs* test, TestState* state) {
             EXPECT_TRUE(test->backing_store()->IsBlobCleanupPending());
 #if DCHECK_IS_ON()
             EXPECT_EQ(3,
@@ -1040,8 +1052,11 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, LiveBlobJournal) {
                       test->backing_store()->NumBlobFilesDeletedForTesting());
 #endif
             EXPECT_FALSE(test->backing_store()->IsBlobCleanupPending());
+
+            // Clean up Transactions, etc on the IDB thread.
+            *state = TestState();
           },
-          base::Unretained(this)));
+          base::Unretained(this), base::Unretained(&state)));
   RunAllTasksUntilIdle();
 }
 

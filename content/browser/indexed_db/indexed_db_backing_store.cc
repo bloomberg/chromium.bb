@@ -585,9 +585,14 @@ IndexedDBBackingStore::IndexedDBBackingStore(
       db_(std::move(db)),
       comparator_(std::move(comparator)),
       active_blob_registry_(this),
-      committing_transaction_count_(0) {}
+      committing_transaction_count_(0) {
+  // TODO(838386): Make IndexedDBBackingStore an interface, so that we can
+  // check that |task_runner| is non-null here without breaking tests.
+  DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
+}
 
 IndexedDBBackingStore::~IndexedDBBackingStore() {
+  DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
   if (!blob_path_.empty() && !child_process_ids_granted_.empty()) {
     ChildProcessSecurityPolicyImpl* policy =
         ChildProcessSecurityPolicyImpl::GetInstance();
@@ -643,6 +648,8 @@ Status IndexedDBBackingStore::DestroyBackingStore(const FilePath& path_base,
 Status IndexedDBBackingStore::AnyDatabaseContainsBlobs(
     LevelDBTransaction* transaction,
     bool* blobs_exist) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   Status status = leveldb::Status::OK();
   std::vector<base::string16> names;
   IndexedDBMetadataCoding metadata_coding;
@@ -688,6 +695,8 @@ Status IndexedDBBackingStore::AnyDatabaseContainsBlobs(
 }
 
 WARN_UNUSED_RESULT Status IndexedDBBackingStore::SetUpMetadata() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   const IndexedDBDataFormatVersion latest_known_data_version =
       IndexedDBDataFormatVersion::GetCurrent();
   const std::string schema_version_key = SchemaVersionKey::Encode();
@@ -830,6 +839,8 @@ WARN_UNUSED_RESULT Status IndexedDBBackingStore::SetUpMetadata() {
 
 leveldb::Status IndexedDBBackingStore::GetCompleteMetadata(
     std::vector<IndexedDBDatabaseMetadata>* output) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   IndexedDBMetadataCoding metadata_coding;
   leveldb::Status status = leveldb::Status::OK();
   std::vector<base::string16> names;
@@ -855,6 +866,7 @@ leveldb::Status IndexedDBBackingStore::GetCompleteMetadata(
   return status;
 }
 
+// static
 bool IndexedDBBackingStore::ReadCorruptionInfo(const FilePath& path_base,
                                                const Origin& origin,
                                                std::string* message) {
@@ -893,6 +905,7 @@ bool IndexedDBBackingStore::ReadCorruptionInfo(const FilePath& path_base,
   return success;
 }
 
+// static
 bool IndexedDBBackingStore::RecordCorruptionInfo(const FilePath& path_base,
                                                  const Origin& origin,
                                                  const std::string& message) {
@@ -1132,6 +1145,8 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Create(
 }
 
 void IndexedDBBackingStore::GrantChildProcessPermissions(int child_process_id) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   if (!child_process_ids_granted_.count(child_process_id)) {
     child_process_ids_granted_.insert(child_process_id);
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
@@ -1140,6 +1155,8 @@ void IndexedDBBackingStore::GrantChildProcessPermissions(int child_process_id) {
 }
 
 Status IndexedDBBackingStore::DeleteDatabase(const base::string16& name) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   IDB_TRACE("IndexedDBBackingStore::DeleteDatabase");
   std::unique_ptr<LevelDBDirectTransaction> transaction =
       LevelDBDirectTransaction::Create(db_.get());
@@ -1205,7 +1222,10 @@ Status IndexedDBBackingStore::DeleteDatabase(const base::string16& name) {
   return s;
 }
 
-void IndexedDBBackingStore::Compact() { db_->CompactAll(); }
+void IndexedDBBackingStore::Compact() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  db_->CompactAll();
+}
 
 Status IndexedDBBackingStore::GetRecord(
     IndexedDBBackingStore::Transaction* transaction,
@@ -1213,6 +1233,8 @@ Status IndexedDBBackingStore::GetRecord(
     int64_t object_store_id,
     const IndexedDBKey& key,
     IndexedDBValue* record) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   IDB_TRACE("IndexedDBBackingStore::GetRecord");
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
     return InvalidDBKeyStatus();
@@ -1249,6 +1271,8 @@ Status IndexedDBBackingStore::GetRecord(
 }
 
 int64_t IndexedDBBackingStore::GetInMemoryBlobSize() const {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   int64_t total_size = 0;
   for (const auto& kvp : incognito_blob_map_) {
     for (const IndexedDBBlobInfo& blob_info : kvp.second->blob_info()) {
@@ -1268,6 +1292,8 @@ Status IndexedDBBackingStore::PutRecord(
     IndexedDBValue* value,
     std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles,
     RecordIdentifier* record_identifier) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   IDB_TRACE("IndexedDBBackingStore::PutRecord");
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
     return InvalidDBKeyStatus();
@@ -1313,6 +1339,8 @@ Status IndexedDBBackingStore::ClearObjectStore(
     IndexedDBBackingStore::Transaction* transaction,
     int64_t database_id,
     int64_t object_store_id) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   IDB_TRACE("IndexedDBBackingStore::ClearObjectStore");
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
     return InvalidDBKeyStatus();
@@ -1333,6 +1361,8 @@ Status IndexedDBBackingStore::DeleteRecord(
     int64_t database_id,
     int64_t object_store_id,
     const RecordIdentifier& record_identifier) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   IDB_TRACE("IndexedDBBackingStore::DeleteRecord");
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
     return InvalidDBKeyStatus();
@@ -1357,6 +1387,8 @@ Status IndexedDBBackingStore::DeleteRange(
     int64_t database_id,
     int64_t object_store_id,
     const IndexedDBKeyRange& key_range) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   Status s;
   std::unique_ptr<IndexedDBBackingStore::Cursor> start_cursor =
       OpenObjectStoreCursor(transaction, database_id, object_store_id,
