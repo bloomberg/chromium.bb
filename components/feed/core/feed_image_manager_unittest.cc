@@ -4,6 +4,11 @@
 
 #include "components/feed/core/feed_image_manager.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/mock_callback.h"
@@ -23,10 +28,10 @@ using testing::_;
 namespace feed {
 
 namespace {
-const std::string kImageURL = "http://pie.com/";
-const std::string kImageURL2 = "http://cake.com/";
-const std::string kImageData = "pie image";
-const std::string kImageData2 = "cake image";
+const char kImageURL[] = "http://pie.com/";
+const char kImageURL2[] = "http://cake.com/";
+const char kImageData[] = "pie image";
+const char kImageData2[] = "cake image";
 
 class FakeImageDecoder : public image_fetcher::ImageDecoder {
  public:
@@ -123,6 +128,18 @@ class FeedImageManagerTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(FeedImageManagerTest);
 };
+
+TEST_F(FeedImageManagerTest, FetchEmptyUrlVector) {
+  base::MockCallback<ImageFetchedCallback> image_callback;
+
+  // Make sure an empty image passed to callback.
+  EXPECT_CALL(image_callback,
+              Run(testing::Property(&gfx::Image::IsEmpty, testing::Eq(true))));
+  feed_image_manager()->FetchImage(std::vector<std::string>(),
+                                   image_callback.Get());
+
+  RunUntilIdle();
+}
 
 TEST_F(FeedImageManagerTest, FetchImageFromCache) {
   // Save the image in the database.
