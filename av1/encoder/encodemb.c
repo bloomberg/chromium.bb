@@ -573,8 +573,8 @@ void av1_encode_intra_block_plane(const struct AV1_COMP *cpi, MACROBLOCK *x,
                                   int enable_optimize_b, int mi_row,
                                   int mi_col) {
   const MACROBLOCKD *const xd = &x->e_mbd;
-  ENTROPY_CONTEXT ta[2 * MAX_MIB_SIZE] = { 0 };
-  ENTROPY_CONTEXT tl[2 * MAX_MIB_SIZE] = { 0 };
+  ENTROPY_CONTEXT ta[MAX_MIB_SIZE] = { 0 };
+  ENTROPY_CONTEXT tl[MAX_MIB_SIZE] = { 0 };
 
   struct encode_b_args arg = {
     cpi, x, NULL, &(xd->mi[0]->skip), ta, tl, enable_optimize_b

@@ -21,8 +21,8 @@ extern "C" {
 #endif
 
 struct optimize_ctx {
-  ENTROPY_CONTEXT ta[MAX_MB_PLANE][2 * MAX_MIB_SIZE];
-  ENTROPY_CONTEXT tl[MAX_MB_PLANE][2 * MAX_MIB_SIZE];
+  ENTROPY_CONTEXT ta[MAX_MB_PLANE][MAX_MIB_SIZE];
+  ENTROPY_CONTEXT tl[MAX_MB_PLANE][MAX_MIB_SIZE];
 };
 
 struct encode_b_args {

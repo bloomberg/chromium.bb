@@ -407,8 +407,8 @@ void av1_set_mvcost(MACROBLOCK *x, int ref, int ref_mv_idx);
 
 void av1_get_entropy_contexts(BLOCK_SIZE bsize,
                               const struct macroblockd_plane *pd,
-                              ENTROPY_CONTEXT t_above[2 * MAX_MIB_SIZE],
-                              ENTROPY_CONTEXT t_left[2 * MAX_MIB_SIZE]);
+                              ENTROPY_CONTEXT t_above[MAX_MIB_SIZE],
+                              ENTROPY_CONTEXT t_left[MAX_MIB_SIZE]);
 
 void av1_set_rd_speed_thresholds(struct AV1_COMP *cpi);
 

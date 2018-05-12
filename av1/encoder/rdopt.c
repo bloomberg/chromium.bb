@@ -94,8 +94,8 @@ typedef struct {
 struct rdcost_block_args {
   const AV1_COMP *cpi;
   MACROBLOCK *x;
-  ENTROPY_CONTEXT t_above[2 * MAX_MIB_SIZE];
-  ENTROPY_CONTEXT t_left[2 * MAX_MIB_SIZE];
+  ENTROPY_CONTEXT t_above[MAX_MIB_SIZE];
+  ENTROPY_CONTEXT t_left[MAX_MIB_SIZE];
   RD_STATS rd_stats;
   int64_t this_rd;
   int64_t best_rd;
@@ -4432,10 +4432,10 @@ static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     int idx, idy;
     int block = 0;
     int step = tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
-    ENTROPY_CONTEXT ctxa[2 * MAX_MIB_SIZE];
-    ENTROPY_CONTEXT ctxl[2 * MAX_MIB_SIZE];
-    TXFM_CONTEXT tx_above[MAX_MIB_SIZE * 2];
-    TXFM_CONTEXT tx_left[MAX_MIB_SIZE * 2];
+    ENTROPY_CONTEXT ctxa[MAX_MIB_SIZE];
+    ENTROPY_CONTEXT ctxl[MAX_MIB_SIZE];
+    TXFM_CONTEXT tx_above[MAX_MIB_SIZE];
+    TXFM_CONTEXT tx_left[MAX_MIB_SIZE];
 
     RD_STATS pn_rd_stats;
     const int init_depth =
@@ -4646,10 +4646,10 @@ static int inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     int idx, idy;
     int block = 0;
     int step = tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
-    ENTROPY_CONTEXT ctxa[2 * MAX_MIB_SIZE];
-    ENTROPY_CONTEXT ctxl[2 * MAX_MIB_SIZE];
-    TXFM_CONTEXT tx_above[MAX_MIB_SIZE * 2];
-    TXFM_CONTEXT tx_left[MAX_MIB_SIZE * 2];
+    ENTROPY_CONTEXT ctxa[MAX_MIB_SIZE];
+    ENTROPY_CONTEXT ctxl[MAX_MIB_SIZE];
+    TXFM_CONTEXT tx_above[MAX_MIB_SIZE];
+    TXFM_CONTEXT tx_left[MAX_MIB_SIZE];
     RD_STATS pn_rd_stats;
 
     av1_get_entropy_contexts(bsize, pd, ctxa, ctxl);
@@ -4966,8 +4966,8 @@ static void set_skip_flag(MACROBLOCK *x, RD_STATS *rd_stats, int bsize,
 
   // Rate.
   const int tx_size_ctx = get_txsize_entropy_ctx(tx_size);
-  ENTROPY_CONTEXT ctxa[2 * MAX_MIB_SIZE];
-  ENTROPY_CONTEXT ctxl[2 * MAX_MIB_SIZE];
+  ENTROPY_CONTEXT ctxa[MAX_MIB_SIZE];
+  ENTROPY_CONTEXT ctxl[MAX_MIB_SIZE];
   av1_get_entropy_contexts(bsize, &xd->plane[0], ctxa, ctxl);
   TXB_CTX txb_ctx;
   // Because plane is 0, plane_bsize equal to bsize
@@ -5131,8 +5131,8 @@ static int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x,
       int idx, idy;
       int block = 0;
       const int step = bh * bw;
-      ENTROPY_CONTEXT ta[2 * MAX_MIB_SIZE];
-      ENTROPY_CONTEXT tl[2 * MAX_MIB_SIZE];
+      ENTROPY_CONTEXT ta[MAX_MIB_SIZE];
+      ENTROPY_CONTEXT tl[MAX_MIB_SIZE];
       RD_STATS pn_rd_stats;
       av1_init_rd_stats(&pn_rd_stats);
       av1_get_entropy_contexts(bsizec, pd, ta, tl);
