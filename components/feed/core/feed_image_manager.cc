@@ -4,6 +4,11 @@
 
 #include "components/feed/core/feed_image_manager.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "components/feed/core/time_serialization.h"
 #include "components/image_fetcher/core/image_decoder.h"
@@ -60,7 +65,6 @@ FeedImageManager::~FeedImageManager() {
 
 void FeedImageManager::FetchImage(std::vector<std::string> urls,
                                   ImageFetchedCallback callback) {
-  DCHECK(urls.size() > 0);
   DCHECK(image_database_.get());
 
   FetchImagesFromDatabase(0, std::move(urls), std::move(callback));
