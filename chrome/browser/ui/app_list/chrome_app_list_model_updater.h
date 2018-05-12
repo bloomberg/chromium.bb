@@ -88,11 +88,6 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   void ContextMenuItemSelected(const std::string& id,
                                int command_id,
                                int event_flags) override;
-  void GetSearchResultContextMenuModel(const std::string& result_id,
-                                       GetMenuModelCallback callback) override;
-  ChromeSearchResult* FindSearchResult(const std::string& result_id) override;
-  ChromeSearchResult* GetResultByTitleForTest(
-      const std::string& title) override;
 
   // Methods for AppListSyncableService:
   void AddItemToOemFolder(
@@ -121,9 +116,6 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   // A map from a ChromeAppListItem's id to its unique pointer. This item set
   // matches the one in AppListModel.
   std::map<std::string, std::unique_ptr<ChromeAppListItem>> items_;
-  // A map from a ChromeSearchResult's id to its unique pointer. This item set
-  // matches the one in SearchModel.
-  std::map<std::string, ChromeSearchResult*> search_results_;
   Profile* const profile_ = nullptr;
   AppListModelUpdaterDelegate* delegate_ = nullptr;
   ash::mojom::AppListController* app_list_controller_ = nullptr;

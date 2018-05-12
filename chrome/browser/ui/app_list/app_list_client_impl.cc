@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/app_sync_ui_state_watcher.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/search/search_controller_factory.h"
 #include "chrome/browser/ui/app_list/search/search_resource_manager.h"
@@ -66,9 +67,9 @@ void AppListClientImpl::StartSearch(const base::string16& raw_query) {
 
 void AppListClientImpl::OpenSearchResult(const std::string& result_id,
                                          int event_flags) {
-  if (!model_updater_)
+  if (!search_controller_)
     return;
-  ChromeSearchResult* result = model_updater_->FindSearchResult(result_id);
+  ChromeSearchResult* result = search_controller_->FindSearchResult(result_id);
   if (result)
     search_controller_->OpenResult(result, event_flags);
 }
@@ -76,9 +77,9 @@ void AppListClientImpl::OpenSearchResult(const std::string& result_id,
 void AppListClientImpl::InvokeSearchResultAction(const std::string& result_id,
                                                  int action_index,
                                                  int event_flags) {
-  if (!model_updater_)
+  if (!search_controller_)
     return;
-  ChromeSearchResult* result = model_updater_->FindSearchResult(result_id);
+  ChromeSearchResult* result = search_controller_->FindSearchResult(result_id);
   if (result)
     search_controller_->InvokeResultAction(result, action_index, event_flags);
 }
@@ -86,19 +87,34 @@ void AppListClientImpl::InvokeSearchResultAction(const std::string& result_id,
 void AppListClientImpl::GetSearchResultContextMenuModel(
     const std::string& result_id,
     GetContextMenuModelCallback callback) {
-  if (!model_updater_) {
+  if (!search_controller_) {
     std::move(callback).Run(std::vector<ash::mojom::MenuItemPtr>());
     return;
   }
-  model_updater_->GetSearchResultContextMenuModel(
-      result_id,
-      base::BindOnce(
-          [](GetContextMenuModelCallback callback,
-             std::unique_ptr<ui::MenuModel> menu_model) {
-            std::move(callback).Run(
-                ash::menu_utils::GetMojoMenuItemsFromModel(menu_model.get()));
-          },
-          std::move(callback)));
+  ChromeSearchResult* result = search_controller_->FindSearchResult(result_id);
+  if (!result) {
+    std::move(callback).Run(std::vector<ash::mojom::MenuItemPtr>());
+    return;
+  }
+  result->GetContextMenuModel(base::BindOnce(
+      [](GetContextMenuModelCallback callback,
+         std::unique_ptr<ui::MenuModel> menu_model) {
+        std::move(callback).Run(
+            ash::menu_utils::GetMojoMenuItemsFromModel(menu_model.get()));
+      },
+      std::move(callback)));
+}
+
+void AppListClientImpl::SearchResultContextMenuItemSelected(
+    const std::string& result_id,
+    int command_id,
+    int event_flags) {
+  if (!search_controller_)
+    return;
+  ChromeSearchResult* result = search_controller_->FindSearchResult(result_id);
+  if (!result)
+    return;
+  result->ContextMenuItemSelected(command_id, event_flags);
 }
 
 void AppListClientImpl::ViewClosing() {
@@ -260,6 +276,10 @@ void AppListClientImpl::SetUpSearchUI() {
 
   search_controller_ = app_list::CreateSearchController(
       profile_, model_updater_, controller_delegate_);
+}
+
+app_list::SearchController* AppListClientImpl::GetSearchControllerForTest() {
+  return search_controller_.get();
 }
 
 void AppListClientImpl::OnTemplateURLServiceChanged() {

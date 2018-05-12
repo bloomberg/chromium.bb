@@ -32,6 +32,9 @@ class TestAppListClient : public mojom::AppListClient {
   void GetSearchResultContextMenuModel(
       const std::string& result_id,
       GetContextMenuModelCallback callback) override {}
+  void SearchResultContextMenuItemSelected(const std::string& result_id,
+                                           int command_id,
+                                           int event_flags) override {}
   void ViewClosing() override {}
   void ViewShown(int64_t display_id) override {}
   void ActivateItem(const std::string& id, int event_flags) override {}

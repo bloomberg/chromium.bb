@@ -429,8 +429,8 @@ void SearchResultTileItemView::OnGetContextMenuModel(
 
 void SearchResultTileItemView::ExecuteCommand(int command_id, int event_flags) {
   if (item_) {
-    view_delegate_->ContextMenuItemSelected(item_->id(), command_id,
-                                            event_flags);
+    view_delegate_->SearchResultContextMenuItemSelected(item_->id(), command_id,
+                                                        event_flags);
   }
 }
 

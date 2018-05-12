@@ -139,12 +139,9 @@ void ChromeAppListModelUpdater::PublishSearchResults(
     result->set_model_updater(this);
   if (!app_list_controller_)
     return;
-  search_results_.clear();
   std::vector<ash::mojom::SearchResultMetadataPtr> result_data;
-  for (auto* result : results) {
-    search_results_[result->id()] = result;
+  for (auto* result : results)
     result_data.push_back(result->CloneMetadata());
-  }
   app_list_controller_->PublishSearchResults(std::move(result_data));
 }
 
@@ -371,45 +368,8 @@ void ChromeAppListModelUpdater::ContextMenuItemSelected(const std::string& id,
                                                         int command_id,
                                                         int event_flags) {
   ChromeAppListItem* chrome_item = FindItem(id);
-  if (chrome_item) {
+  if (chrome_item)
     chrome_item->ContextMenuItemSelected(command_id, event_flags);
-    return;
-  }
-
-  ChromeSearchResult* chrome_search_result = FindSearchResult(id);
-  if (chrome_search_result)
-    chrome_search_result->ContextMenuItemSelected(command_id, event_flags);
-}
-
-// TODO(hejq): move the following search-related methods into SearchController.
-void ChromeAppListModelUpdater::GetSearchResultContextMenuModel(
-    const std::string& result_id,
-    GetMenuModelCallback callback) {
-  ChromeSearchResult* search_result = FindSearchResult(result_id);
-  if (search_result)
-    search_result->GetContextMenuModel(std::move(callback));
-}
-
-ChromeSearchResult* ChromeAppListModelUpdater::FindSearchResult(
-    const std::string& result_id) {
-  if (search_results_.find(result_id) == search_results_.end())
-    return nullptr;
-  return search_results_[result_id];
-}
-
-ChromeSearchResult* ChromeAppListModelUpdater::GetResultByTitleForTest(
-    const std::string& title) {
-  base::string16 target_title = base::ASCIIToUTF16(title);
-  for (const auto& result_item : search_results_) {
-    ChromeSearchResult* result = result_item.second;
-    if (result->title() == target_title &&
-        result->result_type() == ash::SearchResultType::kInstalledApp &&
-        result->display_type() !=
-            ash::SearchResultDisplayType::kRecommendation) {
-      return result;
-    }
-  }
-  return nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

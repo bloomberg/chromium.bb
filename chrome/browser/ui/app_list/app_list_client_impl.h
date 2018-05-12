@@ -48,6 +48,9 @@ class AppListClientImpl
   void GetSearchResultContextMenuModel(
       const std::string& result_id,
       GetContextMenuModelCallback callback) override;
+  void SearchResultContextMenuItemSelected(const std::string& result_id,
+                                           int command_id,
+                                           int event_flags) override;
   void ViewClosing() override;
   void ViewShown(int64_t display_id) override;
   void ActivateItem(const std::string& id, int event_flags) override;
@@ -76,6 +79,8 @@ class AppListClientImpl
   void set_controller_delegate(AppListControllerDelegate* controller_delegate) {
     controller_delegate_ = controller_delegate;
   }
+
+  app_list::SearchController* GetSearchControllerForTest();
 
   // Flushes all pending mojo call to Ash for testing.
   void FlushMojoForTesting();

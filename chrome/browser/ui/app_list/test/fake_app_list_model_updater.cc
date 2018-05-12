@@ -10,9 +10,9 @@
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "extensions/common/constants.h"
 
-FakeAppListModelUpdater::FakeAppListModelUpdater() {}
+FakeAppListModelUpdater::FakeAppListModelUpdater() = default;
 
-FakeAppListModelUpdater::~FakeAppListModelUpdater() {}
+FakeAppListModelUpdater::~FakeAppListModelUpdater() = default;
 
 void FakeAppListModelUpdater::AddItem(std::unique_ptr<ChromeAppListItem> item) {
   items_.push_back(std::move(item));
@@ -123,26 +123,6 @@ size_t FakeAppListModelUpdater::BadgedItemCount() {
 
 bool FakeAppListModelUpdater::SearchEngineIsGoogle() {
   return search_engine_is_google_;
-}
-
-void FakeAppListModelUpdater::GetSearchResultContextMenuModel(
-    const std::string& result_id,
-    GetMenuModelCallback callback) {
-  std::move(callback).Run(nullptr);
-}
-
-ChromeSearchResult* FakeAppListModelUpdater::FindSearchResult(
-    const std::string& result_id) {
-  for (auto*& result : search_results_) {
-    if (result->id() == result_id)
-      return result;
-  }
-  return nullptr;
-}
-
-ChromeSearchResult* FakeAppListModelUpdater::GetResultByTitleForTest(
-    const std::string& title) {
-  return nullptr;
 }
 
 void FakeAppListModelUpdater::PublishSearchResults(

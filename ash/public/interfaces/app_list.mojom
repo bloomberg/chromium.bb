@@ -316,6 +316,13 @@ interface AppListClient {
   // Returns the context menu model for the search result with |result_id|, or
   // an empty array if there is currently no menu for the result.
   GetSearchResultContextMenuModel(string result_id) => (array<MenuItem> items);
+  // Invoked when a context menu item of a search result is clicked.
+  // |result_id|: the clicked search result's id.
+  // |command_id|: the clicked menu item's command id.
+  // |event_flags|: flags from the event which triggered this command.
+  SearchResultContextMenuItemSelected(string result_id,
+                                      int32 command_id,
+                                      int32 event_flags);
 
   //////////////////////////////////////////////////////////////////////////////
   // Interfaces on the app list UI:
@@ -338,7 +345,7 @@ interface AppListClient {
   // Invoked when a context menu item of an app list item is clicked.
   // |id|: the clicked AppListItem's id.
   // |command_id|: the clicked menu item's command id.
-  // |event_flags|: flags from the event which issued this command.
+  // |event_flags|: flags from the event which triggered this command.
   ContextMenuItemSelected(string id, int32 command_id, int32 event_flags);
   // Invoked when a folder is created in Ash (e.g. merge items into a folder).
   OnFolderCreated(AppListItemMetadata folder);
