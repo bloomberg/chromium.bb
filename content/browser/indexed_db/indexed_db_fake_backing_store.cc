@@ -5,6 +5,7 @@
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 
 #include "base/files/file_path.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace content {
@@ -16,7 +17,7 @@ IndexedDBFakeBackingStore::IndexedDBFakeBackingStore()
                             scoped_refptr<net::URLRequestContextGetter>(),
                             std::unique_ptr<LevelDBDatabase>(),
                             std::unique_ptr<LevelDBComparator>(),
-                            nullptr /* task_runner */) {}
+                            base::SequencedTaskRunnerHandle::Get().get()) {}
 IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
     IndexedDBFactory* factory,
     base::SequencedTaskRunner* task_runner)
