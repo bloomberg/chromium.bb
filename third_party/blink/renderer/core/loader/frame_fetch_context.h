@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_FETCH_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_FETCH_CONTEXT_H_
 
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -78,7 +79,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
-  ResourceRequestBlockedReason CanRequest(
+  base::Optional<ResourceRequestBlockedReason> CanRequest(
       Resource::Type type,
       const ResourceRequest& resource_request,
       const KURL& url,

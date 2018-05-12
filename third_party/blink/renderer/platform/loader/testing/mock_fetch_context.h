@@ -68,7 +68,7 @@ class MockFetchContext : public FetchContext {
   bool AllowImage(bool images_enabled, const KURL&) const override {
     return true;
   }
-  ResourceRequestBlockedReason CanRequest(
+  base::Optional<ResourceRequestBlockedReason> CanRequest(
       Resource::Type,
       const ResourceRequest&,
       const KURL&,
@@ -76,20 +76,20 @@ class MockFetchContext : public FetchContext {
       SecurityViolationReportingPolicy,
       FetchParameters::OriginRestriction,
       ResourceRequest::RedirectStatus redirect_status) const override {
-    return ResourceRequestBlockedReason::kNone;
+    return base::nullopt;
   }
-  ResourceRequestBlockedReason CheckCSPForRequest(
+  base::Optional<ResourceRequestBlockedReason> CheckCSPForRequest(
       WebURLRequest::RequestContext,
       const KURL& url,
       const ResourceLoaderOptions& options,
       SecurityViolationReportingPolicy reporting_policy,
       ResourceRequest::RedirectStatus redirect_status) const override {
-    return ResourceRequestBlockedReason::kNone;
+    return base::nullopt;
   }
-  ResourceRequestBlockedReason CheckResponseNosniff(
+  base::Optional<ResourceRequestBlockedReason> CheckResponseNosniff(
       WebURLRequest::RequestContext,
       const ResourceResponse&) const override {
-    return ResourceRequestBlockedReason::kNone;
+    return base::nullopt;
   }
   bool ShouldLoadNewResource(Resource::Type) const override {
     return load_policy_ == kShouldLoadNewResource;

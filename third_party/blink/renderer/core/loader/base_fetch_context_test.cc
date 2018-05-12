@@ -323,7 +323,7 @@ TEST_F(BaseFetchContextTest, CheckCSPForRequest) {
 
   ResourceLoaderOptions options;
 
-  EXPECT_EQ(ResourceRequestBlockedReason::kNone,
+  EXPECT_EQ(base::nullopt,
             fetch_context_->CheckCSPForRequest(
                 WebURLRequest::kRequestContextScript, url, options,
                 SecurityViolationReportingPolicy::kReport,
@@ -337,28 +337,28 @@ TEST_F(BaseFetchContextTest, CanRequestWhenDetached) {
   ResourceRequest keepalive_request(url);
   keepalive_request.SetKeepalive(true);
 
-  EXPECT_EQ(ResourceRequestBlockedReason::kNone,
+  EXPECT_EQ(base::nullopt,
             fetch_context_->CanRequest(
                 Resource::kRaw, request, url, ResourceLoaderOptions(),
                 SecurityViolationReportingPolicy::kSuppressReporting,
                 FetchParameters::kNoOriginRestriction,
                 ResourceRequest::RedirectStatus::kNoRedirect));
 
-  EXPECT_EQ(ResourceRequestBlockedReason::kNone,
+  EXPECT_EQ(base::nullopt,
             fetch_context_->CanRequest(
                 Resource::kRaw, keepalive_request, url, ResourceLoaderOptions(),
                 SecurityViolationReportingPolicy::kSuppressReporting,
                 FetchParameters::kNoOriginRestriction,
                 ResourceRequest::RedirectStatus::kNoRedirect));
 
-  EXPECT_EQ(ResourceRequestBlockedReason::kNone,
+  EXPECT_EQ(base::nullopt,
             fetch_context_->CanRequest(
                 Resource::kRaw, request, url, ResourceLoaderOptions(),
                 SecurityViolationReportingPolicy::kSuppressReporting,
                 FetchParameters::kNoOriginRestriction,
                 ResourceRequest::RedirectStatus::kFollowedRedirect));
 
-  EXPECT_EQ(ResourceRequestBlockedReason::kNone,
+  EXPECT_EQ(base::nullopt,
             fetch_context_->CanRequest(
                 Resource::kRaw, keepalive_request, url, ResourceLoaderOptions(),
                 SecurityViolationReportingPolicy::kSuppressReporting,
@@ -388,7 +388,7 @@ TEST_F(BaseFetchContextTest, CanRequestWhenDetached) {
                 FetchParameters::kNoOriginRestriction,
                 ResourceRequest::RedirectStatus::kFollowedRedirect));
 
-  EXPECT_EQ(ResourceRequestBlockedReason::kNone,
+  EXPECT_EQ(base::nullopt,
             fetch_context_->CanRequest(
                 Resource::kRaw, keepalive_request, url, ResourceLoaderOptions(),
                 SecurityViolationReportingPolicy::kSuppressReporting,
@@ -419,7 +419,7 @@ TEST_F(BaseFetchContextTest, UACSSTest) {
                 FetchParameters::kUseDefaultOriginRestrictionForType,
                 ResourceRequest::RedirectStatus::kFollowedRedirect));
 
-  EXPECT_EQ(ResourceRequestBlockedReason::kNone,
+  EXPECT_EQ(base::nullopt,
             fetch_context_->CanRequest(
                 Resource::kImage, resource_request, data_url, options,
                 SecurityViolationReportingPolicy::kReport,
@@ -441,7 +441,7 @@ TEST_F(BaseFetchContextTest, UACSSTest_BypassCSP) {
   ResourceLoaderOptions options;
   options.initiator_info.name = FetchInitiatorTypeNames::uacss;
 
-  EXPECT_EQ(ResourceRequestBlockedReason::kNone,
+  EXPECT_EQ(base::nullopt,
             fetch_context_->CanRequest(
                 Resource::kImage, resource_request, data_url, options,
                 SecurityViolationReportingPolicy::kReport,

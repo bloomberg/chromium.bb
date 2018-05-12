@@ -275,18 +275,19 @@ bool ResourceLoader::WillFollowRedirect(
         request_context, new_url, options, reporting_policy,
         ResourceRequest::RedirectStatus::kFollowedRedirect);
 
-    ResourceRequestBlockedReason blocked_reason = Context().CanRequest(
-        resource_type, *new_request, new_url, options, reporting_policy,
-        FetchParameters::kUseDefaultOriginRestrictionForType,
-        ResourceRequest::RedirectStatus::kFollowedRedirect);
+    base::Optional<ResourceRequestBlockedReason> blocked_reason =
+        Context().CanRequest(
+            resource_type, *new_request, new_url, options, reporting_policy,
+            FetchParameters::kUseDefaultOriginRestrictionForType,
+            ResourceRequest::RedirectStatus::kFollowedRedirect);
 
     if (Context().IsAdResource(new_url, resource_type,
                                new_request->GetRequestContext())) {
       new_request->SetIsAdResource();
     }
 
-    if (blocked_reason != ResourceRequestBlockedReason::kNone) {
-      CancelForRedirectAccessCheckError(new_url, blocked_reason);
+    if (blocked_reason) {
+      CancelForRedirectAccessCheckError(new_url, blocked_reason.value());
       return false;
     }
 
@@ -532,11 +533,11 @@ void ResourceLoader::DidReceiveResponse(
       (resource_->IsCacheValidator() && response.HttpStatusCode() == 304)
           ? resource_->GetResponse()
           : response;
-  ResourceRequestBlockedReason blocked_reason =
+  base::Optional<ResourceRequestBlockedReason> blocked_reason =
       Context().CheckResponseNosniff(request_context, nosniffed_response);
-  if (blocked_reason != ResourceRequestBlockedReason::kNone) {
-    HandleError(ResourceError::CancelledDueToAccessCheckError(response.Url(),
-                                                              blocked_reason));
+  if (blocked_reason) {
+    HandleError(ResourceError::CancelledDueToAccessCheckError(
+        response.Url(), blocked_reason.value()));
     return;
   }
 
@@ -572,14 +573,15 @@ void ResourceLoader::DidReceiveResponse(
           SecurityViolationReportingPolicy::kReport,
           ResourceRequest::RedirectStatus::kFollowedRedirect);
 
-      ResourceRequestBlockedReason blocked_reason = Context().CanRequest(
-          resource_type, initial_request, original_url, options,
-          SecurityViolationReportingPolicy::kReport,
-          FetchParameters::kUseDefaultOriginRestrictionForType,
-          ResourceRequest::RedirectStatus::kFollowedRedirect);
-      if (blocked_reason != ResourceRequestBlockedReason::kNone) {
+      base::Optional<ResourceRequestBlockedReason> blocked_reason =
+          Context().CanRequest(
+              resource_type, initial_request, original_url, options,
+              SecurityViolationReportingPolicy::kReport,
+              FetchParameters::kUseDefaultOriginRestrictionForType,
+              ResourceRequest::RedirectStatus::kFollowedRedirect);
+      if (blocked_reason) {
         HandleError(ResourceError::CancelledDueToAccessCheckError(
-            original_url, blocked_reason));
+            original_url, blocked_reason.value()));
         return;
       }
     }

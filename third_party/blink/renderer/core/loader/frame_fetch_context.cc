@@ -1443,7 +1443,7 @@ ResourceLoadPriority FrameFetchContext::ModifyPriorityForExperiments(
   return ResourceLoadPriority::kLowest;
 }
 
-ResourceRequestBlockedReason FrameFetchContext::CanRequest(
+base::Optional<ResourceRequestBlockedReason> FrameFetchContext::CanRequest(
     Resource::Type type,
     const ResourceRequest& resource_request,
     const KURL& url,
