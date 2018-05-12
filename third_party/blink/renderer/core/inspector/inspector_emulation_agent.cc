@@ -42,6 +42,7 @@ static const char kVirtualTimeOffset[] = "virtualTimeOffset";
 static const char kVirtualTimePolicy[] = "virtualTimePolicy";
 static const char kVirtualTimeTaskStarvationCount[] =
     "virtualTimeTaskStarvationCount";
+static const char kWaitForNavigation[] = "waitForNavigation";
 }  // namespace EmulationAgentState
 
 InspectorEmulationAgent::InspectorEmulationAgent(
@@ -82,13 +83,47 @@ void InspectorEmulationAgent::Restore() {
   String virtual_time_policy;
   if (state_->getString(EmulationAgentState::kVirtualTimePolicy,
                         &virtual_time_policy)) {
-    double budget = 0;
-    double inital_offset = 0;
+    // Tell the scheduler about the saved virtual time progress to ensure that
+    // virtual time monotonically advances despite the cross origin navigation.
+    // This should be done regardless of the virtual time mode.
     double offset = 0;
+    state_->getDouble(EmulationAgentState::kVirtualTimeOffset, &offset);
+    web_local_frame_->View()->Scheduler()->SetInitialVirtualTimeOffset(
+        base::TimeDelta::FromMillisecondsD(offset));
+
+    // Set initial time baselines for all modes.
+    double initial_virtual_time = 0;
+    bool has_initial_time = state_->getDouble(
+        EmulationAgentState::kInitialVirtualTime, &initial_virtual_time);
+    Maybe<double> initial_time = has_initial_time
+                                     ? Maybe<double>()
+                                     : Maybe<double>(initial_virtual_time);
+
+    // Preserve wait for navigation in all modes.
+    bool wait_for_navigation = false;
+    state_->getBoolean(EmulationAgentState::kWaitForNavigation,
+                       &wait_for_navigation);
+
+    // Reinstate the stored policy.
+    double virtual_time_base_ms;
+    double virtual_time_ticks_base_ms;
+
+    // For Pause, do not pass budget or starvation count.
+    if (virtual_time_policy ==
+        protocol::Emulation::VirtualTimePolicyEnum::Pause) {
+      setVirtualTimePolicy(protocol::Emulation::VirtualTimePolicyEnum::Pause,
+                           Maybe<double>(), Maybe<int>(), wait_for_navigation,
+                           std::move(initial_time), &virtual_time_base_ms,
+                           &virtual_time_ticks_base_ms);
+      return;
+    }
+
+    // Calculate remaining budget for the advancing modes.
+    double budget = 0;
     state_->getDouble(EmulationAgentState::kVirtualTimeBudget, &budget);
+    double inital_offset = 0;
     state_->getDouble(EmulationAgentState::kVirtualTimeBudgetInitalOffset,
                       &inital_offset);
-    state_->getDouble(EmulationAgentState::kVirtualTimeOffset, &offset);
     double budget_remaining = budget + inital_offset - offset;
     DCHECK_GE(budget_remaining, 0);
 
@@ -96,24 +131,10 @@ void InspectorEmulationAgent::Restore() {
     state_->getInteger(EmulationAgentState::kVirtualTimeTaskStarvationCount,
                        &starvation_count);
 
-    // Tell the scheduler about the saved virtual time progress to ensure that
-    // virtual time monotonically advances despite the cross origin navigation.
-    double initial_virtual_time = 0;
-    bool has_initial_time = state_->getDouble(
-        EmulationAgentState::kInitialVirtualTime, &initial_virtual_time);
-    web_local_frame_->View()->Scheduler()->SetInitialVirtualTimeOffset(
-        base::TimeDelta::FromMillisecondsD(offset));
-
-    // Reinstate the stored policy.
-    double virtual_time_base_ms;
-    double virtual_time_ticks_base_ms;
-    setVirtualTimePolicy(
-        virtual_time_policy, budget_remaining, starvation_count,
-        virtual_time_policy == protocol::Emulation::VirtualTimePolicyEnum::
-                                   PauseIfNetworkFetchesPending,
-        has_initial_time ? protocol::Maybe<double>()
-                         : protocol::Maybe<double>(initial_virtual_time),
-        &virtual_time_base_ms, &virtual_time_ticks_base_ms);
+    setVirtualTimePolicy(virtual_time_policy, budget_remaining,
+                         starvation_count, wait_for_navigation,
+                         std::move(initial_time), &virtual_time_base_ms,
+                         &virtual_time_ticks_base_ms);
   }
 }
 
@@ -194,6 +215,20 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
     new_policy.policy = PageScheduler::VirtualTimePolicy::kDeterministicLoading;
   }
 
+  if (new_policy.policy == PageScheduler::VirtualTimePolicy::kPause &&
+      virtual_time_budget_ms.isJust()) {
+    LOG(ERROR) << "Can only specify virtual time budget for non-Pause policy";
+    return Response::InvalidParams(
+        "Can only specify budget for non-Pause policy");
+  }
+  if (new_policy.policy == PageScheduler::VirtualTimePolicy::kPause &&
+      max_virtual_time_task_starvation_count.isJust()) {
+    LOG(ERROR)
+        << "Can only specify virtual time starvation for non-Pause policy";
+    return Response::InvalidParams(
+        "Can only specify starvation count for non-Pause policy");
+  }
+
   if (virtual_time_budget_ms.isJust()) {
     new_policy.virtual_time_budget_ms = virtual_time_budget_ms.fromJust();
     state_->setDouble(EmulationAgentState::kVirtualTimeBudget,
@@ -231,6 +266,7 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
   }
 
   if (wait_for_navigation.fromMaybe(false)) {
+    state_->setBoolean(EmulationAgentState::kWaitForNavigation, true);
     pending_virtual_time_policy_ = std::move(new_policy);
   } else {
     ApplyVirtualTimePolicy(new_policy);
@@ -274,6 +310,7 @@ void InspectorEmulationAgent::ApplyVirtualTimePolicy(
 
 void InspectorEmulationAgent::FrameStartedLoading(LocalFrame*, FrameLoadType) {
   if (pending_virtual_time_policy_) {
+    state_->setBoolean(EmulationAgentState::kWaitForNavigation, false);
     ApplyVirtualTimePolicy(*pending_virtual_time_policy_);
     pending_virtual_time_policy_ = base::nullopt;
   }
@@ -291,6 +328,8 @@ void InspectorEmulationAgent::VirtualTimeBudgetExpired() {
   TRACE_EVENT_ASYNC_END0("renderer.scheduler", "VirtualTimeBudget", this);
   web_local_frame_->View()->Scheduler()->SetVirtualTimePolicy(
       PageScheduler::VirtualTimePolicy::kPause);
+  state_->setString(EmulationAgentState::kVirtualTimePolicy,
+                    protocol::Emulation::VirtualTimePolicyEnum::Pause);
   GetFrontend()->virtualTimeBudgetExpired();
 }
 
