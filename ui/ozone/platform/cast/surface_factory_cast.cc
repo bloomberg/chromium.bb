@@ -70,7 +70,8 @@ class CastPixmap : public gfx::NativePixmap {
                             gfx::OverlayTransform plane_transform,
                             const gfx::Rect& display_bounds,
                             const gfx::RectF& crop_rect,
-                            bool enable_blend) override {
+                            bool enable_blend,
+                            gfx::GpuFence* gpu_fence) override {
     parent_->OnOverlayScheduled(display_bounds);
     return true;
   }

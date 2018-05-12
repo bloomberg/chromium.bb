@@ -386,8 +386,10 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                      gfx::OverlayTransform plane_transform,
                                      const gfx::Rect& display_bounds,
                                      const gfx::RectF& crop_rect,
-                                     bool enable_blend) {
+                                     bool enable_blend,
+                                     gfx::GpuFence* gpu_fence) {
   DCHECK(buffer_->GetFlags() & GBM_BO_USE_SCANOUT);
+
   surface_manager_->GetSurface(widget)->QueueOverlayPlane(
       OverlayPlane(buffer_, plane_z_order, plane_transform, display_bounds,
                    crop_rect, enable_blend, base::kInvalidPlatformFile));

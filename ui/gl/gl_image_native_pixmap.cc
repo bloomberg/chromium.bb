@@ -354,7 +354,7 @@ bool GLImageNativePixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                                bool enable_blend) {
   DCHECK(pixmap_);
   return pixmap_->ScheduleOverlayPlane(widget, z_order, transform, bounds_rect,
-                                       crop_rect, enable_blend);
+                                       crop_rect, enable_blend, nullptr);
 }
 
 void GLImageNativePixmap::Flush() {
