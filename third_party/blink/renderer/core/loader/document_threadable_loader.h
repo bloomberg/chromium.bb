@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -141,7 +142,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
                       const ResourceResponse&,
                       std::unique_ptr<WebDataConsumerHandle>);
   void HandleReceivedData(const char* data, size_t data_length);
-  void HandleSuccessfulFinish(unsigned long identifier, double finish_time);
+  void HandleSuccessfulFinish(unsigned long identifier);
 
   void DidTimeout(TimerBase*);
   // Calls the appropriate loading method according to policy and data about

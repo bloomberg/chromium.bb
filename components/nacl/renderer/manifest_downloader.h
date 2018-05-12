@@ -49,7 +49,7 @@ class ManifestDownloader : public blink::WebAssociatedURLLoaderClient {
   // WebAssociatedURLLoaderClient implementation.
   void DidReceiveResponse(const blink::WebURLResponse& response) override;
   void DidReceiveData(const char* data, int data_length) override;
-  void DidFinishLoading(double finish_time) override;
+  void DidFinishLoading() override;
   void DidFail(const blink::WebURLError& error) override;
 
   std::unique_ptr<blink::WebAssociatedURLLoader> url_loader_;

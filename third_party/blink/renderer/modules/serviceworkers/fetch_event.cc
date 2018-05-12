@@ -181,7 +181,7 @@ void FetchEvent::OnNavigationPreloadError(
 
 void FetchEvent::OnNavigationPreloadComplete(
     WorkerGlobalScope* worker_global_scope,
-    double completion_time,
+    TimeTicks completion_time,
     int64_t encoded_data_length,
     int64_t encoded_body_length,
     int64_t decoded_body_length) {
@@ -194,9 +194,7 @@ void FetchEvent::OnNavigationPreloadComplete(
   // According to the Resource Timing spec, the initiator type of
   // navigation preload request is "navigation".
   scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
-      "navigation",
-      TimeTicksInSeconds(
-          resource_response.GetResourceLoadTiming()->RequestTime()),
+      "navigation", resource_response.GetResourceLoadTiming()->RequestTime(),
       false /* is_main_resource */);
   info->SetNegativeAllowed(true);
   info->SetLoadFinishTime(completion_time);

@@ -10939,13 +10939,12 @@ TEST_P(ParameterizedWebFrameTest, ImageDocumentLoadFinishTime) {
   ImageResource* resource = img_document->CachedImageResourceDeprecated();
 
   EXPECT_TRUE(resource);
-  EXPECT_NE(0, resource->LoadFinishTime());
+  EXPECT_NE(TimeTicks(), resource->LoadFinishTime());
 
   DocumentLoader* loader = document->Loader();
 
   EXPECT_TRUE(loader);
-  EXPECT_EQ(TimeTicksInSeconds(loader->GetTiming().ResponseEnd()),
-            resource->LoadFinishTime());
+  EXPECT_EQ(loader->GetTiming().ResponseEnd(), resource->LoadFinishTime());
 }
 
 class CallbackOrderingWebFrameClient

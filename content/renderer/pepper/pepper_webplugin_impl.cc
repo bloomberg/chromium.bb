@@ -258,7 +258,7 @@ void PepperWebPluginImpl::DidFinishLoading() {
   blink::WebAssociatedURLLoaderClient* document_loader =
       instance_->document_loader();
   if (document_loader)
-    document_loader->DidFinishLoading(0.0);
+    document_loader->DidFinishLoading();
 }
 
 void PepperWebPluginImpl::DidFailLoading(const blink::WebURLError& error) {

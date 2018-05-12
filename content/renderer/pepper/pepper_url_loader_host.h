@@ -52,7 +52,7 @@ class PepperURLLoaderHost : public ppapi::host::ResourceHost,
   void DidReceiveResponse(const blink::WebURLResponse& response) override;
   void DidDownloadData(int data_length) override;
   void DidReceiveData(const char* data, int data_length) override;
-  void DidFinishLoading(double finish_time) override;
+  void DidFinishLoading() override;
   void DidFail(const blink::WebURLError& error) override;
 
  private:

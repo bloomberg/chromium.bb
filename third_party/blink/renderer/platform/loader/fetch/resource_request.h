@@ -360,8 +360,8 @@ class PLATFORM_EXPORT ResourceRequest final {
     return suggested_filename_;
   }
 
-  void SetNavigationStartTime(double);
-  double NavigationStartTime() const { return navigation_start_; }
+  void SetNavigationStartTime(TimeTicks);
+  TimeTicks NavigationStartTime() const { return navigation_start_; }
 
   void SetIsSameDocumentNavigation(bool is_same_document) {
     is_same_document_navigation_ = is_same_document;
@@ -434,7 +434,7 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   static double default_timeout_interval_;
 
-  double navigation_start_ = 0;
+  TimeTicks navigation_start_;
 
   bool is_ad_resource_ = false;
 };

@@ -397,11 +397,10 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
     // or is this if statement reasonable?
     if (ResourceLoadTiming* last_chained_timing =
             redirect_chain.back().GetResourceLoadTiming()) {
-      result.last_redirect_end_time =
-          TimeTicksInSeconds(last_chained_timing->ReceiveHeadersEnd());
+      result.last_redirect_end_time = last_chained_timing->ReceiveHeadersEnd();
     } else {
       result.allow_redirect_details = false;
-      result.last_redirect_end_time = 0.0;
+      result.last_redirect_end_time = TimeTicks();
     }
     if (!result.allow_redirect_details) {
       // TODO(https://crbug.com/817691): There was previously a DCHECK that
@@ -410,12 +409,12 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
       // happen so test coverage can be added.
       if (ResourceLoadTiming* final_timing =
               final_response.GetResourceLoadTiming()) {
-        result.start_time = TimeTicksInSeconds(final_timing->RequestTime());
+        result.start_time = final_timing->RequestTime();
       }
     }
   } else {
     result.allow_redirect_details = false;
-    result.last_redirect_end_time = 0.0;
+    result.last_redirect_end_time = TimeTicks();
   }
 
   result.transfer_size = info.TransferSize();

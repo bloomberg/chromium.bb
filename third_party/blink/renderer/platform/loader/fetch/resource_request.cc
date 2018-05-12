@@ -410,7 +410,7 @@ void ResourceRequest::SetExternalRequestStateFromRequestorAddressSpace(
   is_external_request_ = requestor_space > target_space;
 }
 
-void ResourceRequest::SetNavigationStartTime(double navigation_start) {
+void ResourceRequest::SetNavigationStartTime(TimeTicks navigation_start) {
   navigation_start_ = navigation_start;
 }
 

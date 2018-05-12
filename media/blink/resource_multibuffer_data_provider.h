@@ -58,7 +58,7 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
   void DidDownloadData(int data_length) override;
   void DidReceiveData(const char* data, int data_length) override;
   void DidReceiveCachedMetadata(const char* data, int dataLength) override;
-  void DidFinishLoading(double finishTime) override;
+  void DidFinishLoading() override;
   void DidFail(const blink::WebURLError&) override;
 
   // Use protected instead of private for testing purposes.

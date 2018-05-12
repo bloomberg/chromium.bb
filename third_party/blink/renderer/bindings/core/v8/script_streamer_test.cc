@@ -101,7 +101,7 @@ class ScriptStreamingTest : public testing::Test {
   }
 
   void Finish() {
-    GetResource()->Loader()->DidFinishLoading(0.0, 0, 0, 0, false);
+    GetResource()->Loader()->DidFinishLoading(TimeTicks(), 0, 0, 0, false);
     GetResource()->SetStatus(ResourceStatus::kCached);
   }
 

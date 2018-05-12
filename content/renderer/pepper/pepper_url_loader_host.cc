@@ -167,7 +167,7 @@ void PepperURLLoaderHost::DidReceiveData(const char* data, int data_length) {
   SendUpdateToPlugin(std::move(message));
 }
 
-void PepperURLLoaderHost::DidFinishLoading(double finish_time) {
+void PepperURLLoaderHost::DidFinishLoading() {
   // Note that |loader| will be NULL for document loads.
   SendUpdateToPlugin(
       std::make_unique<PpapiPluginMsg_URLLoader_FinishedLoading>(PP_OK));

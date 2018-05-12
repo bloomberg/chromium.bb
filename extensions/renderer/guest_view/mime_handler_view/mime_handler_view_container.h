@@ -72,7 +72,7 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
 
   // WebAssociatedURLLoaderClient overrides.
   void DidReceiveData(const char* data, int data_length) override;
-  void DidFinishLoading(double finish_time) override;
+  void DidFinishLoading() override;
 
   // GuestViewContainer overrides.
   void OnRenderFrameDestroyed() override;

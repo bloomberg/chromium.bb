@@ -153,7 +153,7 @@ void ImageDocumentParser::Finish() {
     DocumentLoader* loader = GetDocument()->Loader();
     cached_image->SetResponse(loader->GetResponse());
     cached_image->Finish(
-        TimeTicksInSeconds(loader->GetTiming().ResponseEnd()),
+        loader->GetTiming().ResponseEnd(),
         GetDocument()->GetTaskRunner(TaskType::kInternalLoading).get());
 
     // Report the natural image size in the page title, regardless of zoom

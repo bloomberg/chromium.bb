@@ -228,8 +228,7 @@ void BlobBytesConsumer::DidReceiveResponse(
   OnStateChange();
 }
 
-void BlobBytesConsumer::DidFinishLoading(unsigned long identifier,
-                                         double finish_time) {
+void BlobBytesConsumer::DidFinishLoading(unsigned long identifier) {
   DCHECK_EQ(PublicState::kReadableOrWaiting, state_);
   has_finished_loading_ = true;
   loader_ = nullptr;

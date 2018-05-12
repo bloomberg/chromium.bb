@@ -48,11 +48,11 @@ PerformanceResourceTiming::PerformanceResourceTiming(
                        "resource",
                        Performance::MonotonicTimeToDOMHighResTimeStamp(
                            time_origin,
-                           TimeTicksFromSeconds(info.start_time),
+                           info.start_time,
                            info.allow_negative_values),
                        Performance::MonotonicTimeToDOMHighResTimeStamp(
                            time_origin,
-                           TimeTicksFromSeconds(info.finish_time),
+                           info.finish_time,
                            info.allow_negative_values)),
       initiator_type_(initiator_type),
       alpn_negotiated_protocol_(
@@ -60,9 +60,8 @@ PerformanceResourceTiming::PerformanceResourceTiming(
       connection_info_(static_cast<String>(info.connection_info)),
       time_origin_(time_origin),
       timing_(info.timing),
-      last_redirect_end_time_(
-          TimeTicksFromSeconds(info.last_redirect_end_time)),
-      finish_time_(TimeTicksFromSeconds(info.finish_time)),
+      last_redirect_end_time_(info.last_redirect_end_time),
+      finish_time_(info.finish_time),
       transfer_size_(info.transfer_size),
       encoded_body_size_(info.encoded_body_size),
       decoded_body_size_(info.decoded_body_size),

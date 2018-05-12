@@ -201,8 +201,7 @@ void BackgroundFetchIconLoader::DidReceiveData(const char* data,
 }
 
 void BackgroundFetchIconLoader::DidFinishLoading(
-    unsigned long resource_identifier,
-    double finish_time) {
+    unsigned long resource_identifier) {
   if (stopped_)
     return;
   if (data_) {

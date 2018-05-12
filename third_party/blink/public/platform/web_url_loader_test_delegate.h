@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_LOADER_TEST_DELEGATE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_LOADER_TEST_DELEGATE_H_
 
+#include "base/time/time.h"
 #include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
@@ -33,7 +34,7 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderTestDelegate {
                        int64_t total_encoded_body_length,
                        int64_t total_decoded_body_length);
   virtual void DidFinishLoading(WebURLLoaderClient* original_client,
-                                double finish_time,
+                                base::TimeTicks finish_time,
                                 int64_t total_encoded_data_length,
                                 int64_t total_encoded_body_length,
                                 int64_t total_decoded_body_length);

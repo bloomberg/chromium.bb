@@ -113,8 +113,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   void DidDownloadData(int /*dataLength*/) override;
   void DidReceiveData(const char*, unsigned /*dataLength*/) override;
   void DidReceiveCachedMetadata(const char*, int /*dataLength*/) override;
-  void DidFinishLoading(unsigned long /*identifier*/,
-                        double /*finishTime*/) override;
+  void DidFinishLoading(unsigned long /*identifier*/) override;
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 
@@ -288,14 +287,13 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveCachedMetadata(
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::DidFinishLoading(
-    unsigned long identifier,
-    double finish_time) {
+    unsigned long identifier) {
   if (!client_)
     return;
 
   loader_->ClientAdapterDone();
 
-  ReleaseClient()->DidFinishLoading(finish_time);
+  ReleaseClient()->DidFinishLoading();
   // |this| may be dead here.
 }
 

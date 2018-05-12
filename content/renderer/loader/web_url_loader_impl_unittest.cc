@@ -240,7 +240,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
       loader_.reset();
   }
 
-  void DidFinishLoading(double finishTime,
+  void DidFinishLoading(base::TimeTicks finishTime,
                         int64_t totalEncodedDataLength,
                         int64_t totalEncodedBodyLength,
                         int64_t totalDecodedBodyLength,

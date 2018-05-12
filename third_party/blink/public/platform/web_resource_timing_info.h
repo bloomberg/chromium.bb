@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/time/time.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_load_timing.h"
@@ -38,14 +39,14 @@ struct WebResourceTimingInfo {
   // The name to associate with the performance entry. For iframes, this is
   // typically the initial URL of the iframe resource.
   WebString name;
-  double start_time;
+  base::TimeTicks start_time;
 
   WebString alpn_negotiated_protocol;
   WebString connection_info;
 
   WebURLLoadTiming timing;
-  double last_redirect_end_time;
-  double finish_time;
+  base::TimeTicks last_redirect_end_time;
+  base::TimeTicks finish_time;
 
   uint64_t transfer_size;
   uint64_t encoded_body_size;

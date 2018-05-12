@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -215,8 +216,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   // Computes the status of an object after loading. Updates the expire date on
   // the cache entry file
-  virtual void Finish(double finish_time, base::SingleThreadTaskRunner*);
-  void FinishForTest() { Finish(0.0, nullptr); }
+  virtual void Finish(TimeTicks finish_time, base::SingleThreadTaskRunner*);
+  void FinishForTest() { Finish(TimeTicks(), nullptr); }
 
   bool PassesAccessControlCheck(const SecurityOrigin&) const;
 
@@ -305,7 +306,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual void DidDownloadData(int) {}
   virtual void DidDownloadToBlob(scoped_refptr<BlobDataHandle>) {}
 
-  double LoadFinishTime() const { return load_finish_time_; }
+  TimeTicks LoadFinishTime() const { return load_finish_time_; }
 
   void SetEncodedDataLength(int64_t value) {
     response_.SetEncodedDataLength(value);
@@ -494,7 +495,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   base::Optional<ResourceError> error_;
 
-  double load_finish_time_;
+  TimeTicks load_finish_time_;
 
   unsigned long identifier_;
 

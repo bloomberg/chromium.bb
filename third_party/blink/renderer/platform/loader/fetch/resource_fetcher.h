@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -133,7 +134,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   enum LoaderFinishType { kDidFinishLoading, kDidFinishFirstPartInMultipart };
   void HandleLoaderFinish(Resource*,
-                          double finish_time,
+                          TimeTicks finish_time,
                           LoaderFinishType,
                           uint32_t inflight_keepalive_bytes,
                           bool blocked_cross_site_document);

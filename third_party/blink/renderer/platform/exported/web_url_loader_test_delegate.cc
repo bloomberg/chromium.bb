@@ -40,7 +40,7 @@ void WebURLLoaderTestDelegate::DidFail(WebURLLoaderClient* original_client,
 
 void WebURLLoaderTestDelegate::DidFinishLoading(
     WebURLLoaderClient* original_client,
-    double finish_time,
+    base::TimeTicks finish_time,
     int64_t total_encoded_data_length,
     int64_t total_encoded_body_length,
     int64_t total_decoded_body_length) {

@@ -439,7 +439,7 @@ void ResourceMultiBufferDataProvider::DidReceiveCachedMetadata(
   NOTIMPLEMENTED();
 }
 
-void ResourceMultiBufferDataProvider::DidFinishLoading(double finishTime) {
+void ResourceMultiBufferDataProvider::DidFinishLoading() {
   DVLOG(1) << "didFinishLoading";
   DCHECK(active_loader_.get());
   DCHECK(!Available());

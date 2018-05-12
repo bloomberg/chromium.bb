@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_CONTEXT_PROXY_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_CONTEXT_PROXY_H_
 
+#include "base/time/time.h"
 #include "third_party/blink/public/common/message_port/transferable_message.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration.h"
@@ -130,7 +131,7 @@ class WebServiceWorkerContextProxy {
       int fetch_event_id,
       std::unique_ptr<WebServiceWorkerError>) = 0;
   virtual void OnNavigationPreloadComplete(int fetch_event_id,
-                                           double completion_time,
+                                           base::TimeTicks completion_time,
                                            int64_t encoded_data_length,
                                            int64_t encoded_body_length,
                                            int64_t decoded_body_length) = 0;

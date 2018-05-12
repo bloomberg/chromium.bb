@@ -121,7 +121,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   void DispatchDidDownloadToBlob(unsigned long identifier,
                                  BlobDataHandle*) override;
   void DispatchDidFinishLoading(unsigned long identifier,
-                                double finish_time,
+                                TimeTicks finish_time,
                                 int64_t encoded_data_length,
                                 int64_t decoded_body_length,
                                 bool blocked_cross_site_document) override;

@@ -1619,7 +1619,7 @@ void XMLHttpRequest::DidFailRedirectCheck() {
   HandleNetworkError();
 }
 
-void XMLHttpRequest::DidFinishLoading(unsigned long identifier, double) {
+void XMLHttpRequest::DidFinishLoading(unsigned long identifier) {
   NETWORK_DVLOG(1) << this << " didFinishLoading(" << identifier << ")";
   ScopedEventDispatchProtect protect(&event_dispatch_recursion_level_);
 

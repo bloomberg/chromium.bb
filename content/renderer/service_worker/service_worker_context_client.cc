@@ -1619,9 +1619,9 @@ void ServiceWorkerContextClient::OnNavigationPreloadComplete(
     int64_t encoded_data_length,
     int64_t encoded_body_length,
     int64_t decoded_body_length) {
-  proxy_->OnNavigationPreloadComplete(
-      fetch_event_id, (completion_time - base::TimeTicks()).InSecondsF(),
-      encoded_data_length, encoded_body_length, decoded_body_length);
+  proxy_->OnNavigationPreloadComplete(fetch_event_id, completion_time,
+                                      encoded_data_length, encoded_body_length,
+                                      decoded_body_length);
   context_->preload_requests.Remove(fetch_event_id);
 }
 

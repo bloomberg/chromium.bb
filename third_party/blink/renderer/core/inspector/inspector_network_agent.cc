@@ -1002,7 +1002,7 @@ void InspectorNetworkAgent::DidReceiveEncodedDataLength(
 
 void InspectorNetworkAgent::DidFinishLoading(unsigned long identifier,
                                              DocumentLoader* loader,
-                                             double monotonic_finish_time,
+                                             TimeTicks monotonic_finish_time,
                                              int64_t encoded_data_length,
                                              int64_t decoded_body_length,
                                              bool blocked_cross_site_document) {
@@ -1026,12 +1026,13 @@ void InspectorNetworkAgent::DidFinishLoading(unsigned long identifier,
   }
 
   resources_data_->MaybeDecodeDataToContent(request_id);
-  if (!monotonic_finish_time)
-    monotonic_finish_time = CurrentTimeTicksInSeconds();
+  if (monotonic_finish_time.is_null())
+    monotonic_finish_time = CurrentTimeTicks();
 
-  GetFrontend()->loadingFinished(request_id, monotonic_finish_time,
-                                 encoded_data_length,
-                                 blocked_cross_site_document);
+  // TODO(npm): Use TimeTicks in Network.h.
+  GetFrontend()->loadingFinished(
+      request_id, TimeTicksInSeconds(monotonic_finish_time),
+      encoded_data_length, blocked_cross_site_document);
 }
 
 void InspectorNetworkAgent::DidReceiveCORSRedirectResponse(
@@ -1041,7 +1042,7 @@ void InspectorNetworkAgent::DidReceiveCORSRedirectResponse(
     Resource* resource) {
   // Update the response and finish loading
   DidReceiveResourceResponse(identifier, loader, response, resource);
-  DidFinishLoading(identifier, loader, 0,
+  DidFinishLoading(identifier, loader, TimeTicks(),
                    WebURLLoaderClient::kUnknownEncodedDataLength, 0, false);
 }
 

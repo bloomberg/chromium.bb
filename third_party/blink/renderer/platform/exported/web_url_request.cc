@@ -392,7 +392,8 @@ network::mojom::CORSPreflightPolicy WebURLRequest::GetCORSPreflightPolicy()
   return resource_request_->CORSPreflightPolicy();
 }
 
-void WebURLRequest::SetNavigationStartTime(double navigation_start_seconds) {
+void WebURLRequest::SetNavigationStartTime(
+    base::TimeTicks navigation_start_seconds) {
   resource_request_->SetNavigationStartTime(navigation_start_seconds);
 }
 

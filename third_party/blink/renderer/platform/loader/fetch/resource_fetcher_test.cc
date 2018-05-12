@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/platform/testing/weburl_loader_mock_factory_impl.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -230,7 +231,8 @@ TEST_F(ResourceFetcherTest, NavigationTimingInfo) {
       fetcher->GetNavigationTimingInfo();
   ASSERT_TRUE(navigation_timing_info);
   long long encoded_data_length = 123;
-  resource->Loader()->DidFinishLoading(0.0, encoded_data_length, 0, 0, false);
+  resource->Loader()->DidFinishLoading(TimeTicks(), encoded_data_length, 0, 0,
+                                       false);
   EXPECT_EQ(navigation_timing_info->TransferSize(), encoded_data_length);
 
   // When there are redirects.

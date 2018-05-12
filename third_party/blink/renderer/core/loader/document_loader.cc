@@ -395,7 +395,7 @@ void DocumentLoader::NotifyFinished(Resource* resource) {
   DCHECK(GetResource());
 
   if (!resource->ErrorOccurred() && !resource->WasCanceled()) {
-    FinishedLoading(TimeTicksFromSeconds(resource->LoadFinishTime()));
+    FinishedLoading(resource->LoadFinishTime());
     return;
   }
 

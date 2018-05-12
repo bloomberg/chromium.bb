@@ -56,8 +56,7 @@ class CORE_EXPORT ThreadableLoaderClient {
                                   std::unique_ptr<WebDataConsumerHandle>) {}
   virtual void DidReceiveData(const char*, unsigned /*dataLength*/) {}
   virtual void DidReceiveCachedMetadata(const char*, int /*dataLength*/) {}
-  virtual void DidFinishLoading(unsigned long /*identifier*/,
-                                double /*finishTime*/) {}
+  virtual void DidFinishLoading(unsigned long /*identifier*/) {}
   virtual void DidFail(const ResourceError&) {}
   virtual void DidFailRedirectCheck() {}
   virtual void DidReceiveResourceTiming(const ResourceTimingInfo&) {}

@@ -23,7 +23,7 @@ class WebAssociatedURLLoaderClient {
   virtual void DidDownloadData(int data_length) {}
   virtual void DidReceiveData(const char* data, int data_length) {}
   virtual void DidReceiveCachedMetadata(const char* data, int data_length) {}
-  virtual void DidFinishLoading(double finish_time) {}
+  virtual void DidFinishLoading() {}
   virtual void DidFail(const WebURLError&) {}
 
  protected:

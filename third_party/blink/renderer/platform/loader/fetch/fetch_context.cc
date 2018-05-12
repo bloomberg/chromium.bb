@@ -93,7 +93,7 @@ void FetchContext::DispatchDidDownloadToBlob(unsigned long identifier,
                                              BlobDataHandle*) {}
 
 void FetchContext::DispatchDidFinishLoading(unsigned long,
-                                            double,
+                                            TimeTicks,
                                             int64_t,
                                             int64_t,
                                             bool) {}

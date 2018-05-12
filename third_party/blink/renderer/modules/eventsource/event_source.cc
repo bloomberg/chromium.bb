@@ -295,7 +295,7 @@ void EventSource::DidReceiveData(const char* data, unsigned length) {
   parser_->AddBytes(data, length);
 }
 
-void EventSource::DidFinishLoading(unsigned long, double) {
+void EventSource::DidFinishLoading(unsigned long) {
   DCHECK_EQ(kOpen, state_);
   DCHECK(loader_);
 

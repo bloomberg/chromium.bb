@@ -292,7 +292,7 @@ void MimeHandlerViewContainer::DidReceiveData(const char* data,
   view_id_ += std::string(data, data_length);
 }
 
-void MimeHandlerViewContainer::DidFinishLoading(double /* unused */) {
+void MimeHandlerViewContainer::DidFinishLoading() {
   DCHECK(is_embedded_);
   CreateMimeHandlerViewGuestIfNecessary();
 }

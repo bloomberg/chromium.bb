@@ -109,7 +109,7 @@ class MODULES_EXPORT EventSource final
                           const ResourceResponse&,
                           std::unique_ptr<WebDataConsumerHandle>) override;
   void DidReceiveData(const char*, unsigned) override;
-  void DidFinishLoading(unsigned long, double) override;
+  void DidFinishLoading(unsigned long) override;
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 

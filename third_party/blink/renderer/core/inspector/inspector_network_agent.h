@@ -107,7 +107,7 @@ class CORE_EXPORT InspectorNetworkAgent final
                                    int encoded_data_length);
   void DidFinishLoading(unsigned long identifier,
                         DocumentLoader*,
-                        double monotonic_finish_time,
+                        TimeTicks monotonic_finish_time,
                         int64_t encoded_data_length,
                         int64_t decoded_body_length,
                         bool blocked_cross_site_document);

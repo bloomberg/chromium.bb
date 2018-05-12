@@ -58,7 +58,7 @@ class SyncLoadingTestThreadableLoader : public ThreadableLoader {
   void Start(const ResourceRequest& request) override {
     is_started_ = true;
     client_->DidReceiveResponse(0, ResourceResponse(), std::move(handle_));
-    client_->DidFinishLoading(0, 0);
+    client_->DidFinishLoading(0);
   }
 
   void OverrideTimeout(unsigned long timeout_milliseconds) override {
@@ -155,7 +155,7 @@ TEST_F(BlobBytesConsumerTest, TwoPhaseRead) {
   EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
 
   consumer->DidReceiveResponse(0, ResourceResponse(), std::move(src));
-  consumer->DidFinishLoading(0, 0);
+  consumer->DidFinishLoading(0);
 
   auto result = (new BytesConsumerTestUtil::TwoPhaseReader(consumer))->Run();
   EXPECT_EQ(Result::kDone, result.first);
@@ -320,7 +320,7 @@ TEST_F(BlobBytesConsumerTest, ReadLastChunkBeforeDidFinishLoadingArrives) {
   ASSERT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
   EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
 
-  consumer->DidFinishLoading(0, 0);
+  consumer->DidFinishLoading(0);
   EXPECT_EQ(3, client->NumOnStateChangeCalled());
   EXPECT_EQ(PublicState::kClosed, consumer->GetPublicState());
   ASSERT_EQ(Result::kDone, consumer->BeginRead(&buffer, &available));
@@ -353,7 +353,7 @@ TEST_F(BlobBytesConsumerTest, ReadLastChunkAfterDidFinishLoadingArrives) {
   test::RunPendingTasks();
   EXPECT_EQ(2, client->NumOnStateChangeCalled());
 
-  consumer->DidFinishLoading(0, 0);
+  consumer->DidFinishLoading(0);
   test::RunPendingTasks();
   EXPECT_EQ(2, client->NumOnStateChangeCalled());
 
