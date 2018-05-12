@@ -25,7 +25,6 @@ TEST_F(BookmarkHomeViewControllerTest, LoadBookmarks) {
             dispatcher:nil];
 
     EXPECT_EQ(nil, controller.appBar);
-    EXPECT_EQ(nil, controller.contextBar);
     EXPECT_EQ(nil, controller.bookmarksTableView);
 
     [controller setRootNode:_bookmarkModel->mobile_node()];
@@ -34,7 +33,6 @@ TEST_F(BookmarkHomeViewControllerTest, LoadBookmarks) {
 
     EXPECT_NE(nil, controller);
     EXPECT_NE(nil, controller.appBar);
-    EXPECT_NE(nil, controller.contextBar);
     EXPECT_NE(nil, controller.bookmarksTableView);
   }
 }

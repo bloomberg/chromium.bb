@@ -90,9 +90,6 @@ class BookmarkNode;
 // The app bar for the bookmarks.
 @property(nonatomic, readonly) MDCAppBar* appBar;
 
-// The context bar at the bottom of the bookmarks.
-@property(nonatomic, readonly) BookmarkContextBar* contextBar;
-
 // This view is created and used if the model is not fully loaded yet by the
 // time this controller starts.
 @property(nonatomic, readonly) BookmarkHomeWaitingView* waitForModelView;

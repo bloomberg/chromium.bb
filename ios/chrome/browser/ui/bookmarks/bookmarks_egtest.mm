@@ -116,7 +116,7 @@ id<GREYMatcher> BookmarksDoneButton() {
 
 // Matcher for context bar leading button.
 id<GREYMatcher> ContextBarLeadingButtonWithLabel(NSString* label) {
-  return grey_allOf(grey_accessibilityID(@"context_bar_leading_button"),
+  return grey_allOf(grey_accessibilityID(kBookmarkHomeLeadingButtonIdentifier),
                     grey_accessibilityLabel(label),
                     grey_accessibilityTrait(UIAccessibilityTraitButton),
                     grey_sufficientlyVisible(), nil);
@@ -124,7 +124,7 @@ id<GREYMatcher> ContextBarLeadingButtonWithLabel(NSString* label) {
 
 // Matcher for context bar center button.
 id<GREYMatcher> ContextBarCenterButtonWithLabel(NSString* label) {
-  return grey_allOf(grey_accessibilityID(@"context_bar_center_button"),
+  return grey_allOf(grey_accessibilityID(kBookmarkHomeCenterButtonIdentifier),
                     grey_accessibilityLabel(label),
                     grey_accessibilityTrait(UIAccessibilityTraitButton),
                     grey_sufficientlyVisible(), nil);
@@ -132,7 +132,7 @@ id<GREYMatcher> ContextBarCenterButtonWithLabel(NSString* label) {
 
 // Matcher for context bar trailing button.
 id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
-  return grey_allOf(grey_accessibilityID(@"context_bar_trailing_button"),
+  return grey_allOf(grey_accessibilityID(kBookmarkHomeTrailingButtonIdentifier),
                     grey_accessibilityLabel(label),
                     grey_accessibilityTrait(UIAccessibilityTraitButton),
                     grey_sufficientlyVisible(), nil);
@@ -438,8 +438,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select URLs.
@@ -658,8 +659,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
       assertWithMatcher:grey_notNil()];
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Verify the delete confirmation button is gone after entering edit mode.
@@ -700,15 +702,17 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Verify the context bar is shown.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"context_bar")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeUIToolbarIdentifier)]
       assertWithMatcher:grey_notNil()];
 
   // Verify the context bar's leading and trailing buttons are shown.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_leading_button")]
+                                          kBookmarkHomeLeadingButtonIdentifier)]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -718,12 +722,14 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Verify the context bar is shown.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"context_bar")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeUIToolbarIdentifier)]
       assertWithMatcher:grey_notNil()];
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Verify context bar shows disabled "Delete" disabled "More" enabled
@@ -941,8 +947,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select URL.
@@ -968,8 +975,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   // 1. Edit the bookmark title at edit page.
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select URL.
@@ -1000,8 +1008,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   // 2. Edit the bookmark url at edit page.
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select URL.
@@ -1031,8 +1040,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   // 3. Move a single url at edit page.
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select single url.
@@ -1066,8 +1076,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select URL.
@@ -1095,8 +1106,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select URL.
@@ -1132,8 +1144,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select URLs.
@@ -1406,8 +1419,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select Folder.
@@ -1438,8 +1452,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select Folders.
@@ -1465,8 +1480,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select URL and folder.
@@ -1584,8 +1600,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   // 2. Move a single folder at edit page.
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select single folder.
@@ -1616,8 +1633,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   // 3. Test the cancel button at edit page.
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select single folder.
@@ -1780,8 +1798,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode, using context menu.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select multiple folders.
@@ -1856,8 +1875,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode, using context menu.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select URL and folder.
@@ -1946,8 +1966,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode, using context menu.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select URL and folder.
@@ -2006,8 +2027,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode, using context menu.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select URL and folder.
@@ -2050,8 +2072,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select Folder.
@@ -2113,8 +2136,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select single URL.
@@ -2150,8 +2174,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select single URL.
@@ -2187,8 +2212,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select Folder and URL.
@@ -2571,8 +2597,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Change to edit mode, using context menu.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select every URL and folder.
@@ -2621,8 +2648,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Change to edit mode, using context menu.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Delete the Folder 1 and Folder 2 programmatically in background.
@@ -2883,8 +2911,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select single URL.
@@ -2911,8 +2940,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
@@ -3258,8 +3288,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Select urls from Mobile Bookmarks and tap on a specified context bar button.
 + (void)selectUrlsAndTapOnContextBarButtonWithLabelId:(int)buttonLabelId {
   // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select URLs.
@@ -3370,7 +3401,8 @@ id<GREYMatcher> CloseToolsMenuButton() {
 - (void)verifyContextBarInDefaultStateWithSelectEnabled:(BOOL)selectEnabled
                                        newFolderEnabled:(BOOL)newFolderEnabled {
   // Verify the context bar is shown.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"context_bar")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeUIToolbarIdentifier)]
       assertWithMatcher:grey_notNil()];
 
   // Verify context bar shows enabled "New Folder" and enabled "Select".
@@ -3400,7 +3432,8 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 - (void)verifyContextBarInEditMode {
   // Verify the context bar is shown.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"context_bar")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeUIToolbarIdentifier)]
       assertWithMatcher:grey_notNil()];
 
   [[EarlGrey
@@ -3625,7 +3658,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
                                    pressReturn:(BOOL)pressReturn {
   // Click on "New Folder".
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_leading_button")]
+                                          kBookmarkHomeLeadingButtonIdentifier)]
       performAction:grey_tap()];
 
   NSString* titleIdentifier = @"bookmark_editing_text";

@@ -87,18 +87,12 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
         constraintEqualToConstant:kBookmarkTableCellImageSize]
         .active = YES;
 
-    // Create stack view.
+    // Create and configure StackView.
     UIStackView* contentStack = [[UIStackView alloc]
         initWithArrangedSubviews:@[ _iconView, _placeholderLabel, _titleText ]];
     [self.contentView addSubview:contentStack];
-
-    contentStack.layoutMargins = UIEdgeInsetsMake(
-        0, kBookmarkTableCellImagePadding, 0, kBookmarkTableCellImagePadding);
-    contentStack.layoutMarginsRelativeArrangement = YES;
     contentStack.spacing = kBookmarkTableCellImagePadding;
     contentStack.alignment = UIStackViewAlignmentCenter;
-
-    // Configure stack view layout.
     contentStack.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
       [contentStack.topAnchor
@@ -106,9 +100,11 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
       [contentStack.bottomAnchor
           constraintEqualToAnchor:self.contentView.bottomAnchor],
       [contentStack.leadingAnchor
-          constraintEqualToAnchor:self.contentView.leadingAnchor],
+          constraintEqualToAnchor:self.contentView.leadingAnchor
+                         constant:kBookmarkTableCellImagePadding],
       [contentStack.trailingAnchor
-          constraintEqualToAnchor:self.contentView.trailingAnchor]
+          constraintEqualToAnchor:self.contentView.trailingAnchor
+                         constant:-kBookmarkTableCellImagePadding]
     ]];
 
     // Add separator view.

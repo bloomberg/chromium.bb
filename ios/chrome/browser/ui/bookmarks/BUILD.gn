@@ -95,7 +95,6 @@ source_set("bookmarks") {
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/authentication:authentication_ui",
-    "//ios/chrome/browser/ui/bookmarks/bars",
     "//ios/chrome/browser/ui/bookmarks/cells",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
@@ -120,10 +119,7 @@ source_set("bookmarks") {
     "//ui/gfx",
     "//url",
   ]
-  allow_circular_includes_from = [
-    "//ios/chrome/browser/ui/bookmarks/bars",
-    "//ios/chrome/browser/ui/bookmarks/cells",
-  ]
+  allow_circular_includes_from = [ "//ios/chrome/browser/ui/bookmarks/cells" ]
   libs = [
     "CoreGraphics.framework",
     "QuartzCore.framework",

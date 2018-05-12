@@ -20,7 +20,6 @@
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
-#import "ios/chrome/browser/ui/bookmarks/bars/bookmark_context_bar.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_view_controller.h"
@@ -32,6 +31,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_table_view.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_node_item.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell.h"
@@ -106,6 +106,11 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   }
   return urls;
 }
+
+// Shadow opacity for the NavigationController Toolbar.
+const CGFloat kShadowOpacity = 0.12f;
+// Shadow radius for the NavigationController Toolbar.
+const CGFloat kShadowRadius = 12.0f;
 }  // namespace
 
 @interface BookmarkHomeViewController ()<
@@ -117,7 +122,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     BookmarkModelBridgeObserver,
     BookmarkTableCellTitleEditDelegate,
     BookmarkTableViewDelegate,
-    ContextBarDelegate,
     UIGestureRecognizerDelegate,
     UITableViewDataSource,
     UITableViewDelegate> {
@@ -167,9 +171,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 // The app bar for the bookmarks.
 @property(nonatomic, strong) MDCAppBar* appBar;
 
-// The context bar at the bottom of the bookmarks.
-@property(nonatomic, strong) BookmarkContextBar* contextBar;
-
 // This view is created and used if the model is not fully loaded yet by the
 // time this controller starts.
 @property(nonatomic, strong) BookmarkHomeWaitingView* waitForModelView;
@@ -190,6 +191,12 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 // Dispatcher for sending commands.
 @property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
+
+// Navigation UIToolbar Delete button.
+@property(nonatomic, strong) UIBarButtonItem* deleteButton;
+
+// Navigation UIToolbar More button.
+@property(nonatomic, strong) UIBarButtonItem* moreButton;
 @end
 
 @implementation BookmarkHomeViewController
@@ -204,7 +211,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 @synthesize waitForModelView = _waitForModelView;
 @synthesize homeDelegate = _homeDelegate;
 @synthesize bookmarksTableView = _bookmarksTableView;
-@synthesize contextBar = _contextBar;
 @synthesize contextBarState = _contextBarState;
 @synthesize dispatcher = _dispatcher;
 @synthesize cachedContentPosition = _cachedContentPosition;
@@ -212,6 +218,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 @synthesize sharedState = _sharedState;
 @synthesize mediator = _mediator;
 @synthesize tableViewStyler = _tableViewStyler;
+@synthesize deleteButton = _deleteButton;
+@synthesize moreButton = _moreButton;
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -253,6 +261,14 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 - (void)viewDidLoad {
   [super viewDidLoad];
 
+  // Set Toolbar Appeareance.
+  self.navigationController.toolbar.translucent = NO;
+  self.navigationController.toolbar.barTintColor = [UIColor whiteColor];
+  self.navigationController.toolbar.accessibilityIdentifier =
+      kBookmarkHomeUIToolbarIdentifier;
+  self.navigationController.toolbar.layer.shadowRadius = kShadowRadius;
+  self.navigationController.toolbar.layer.shadowOpacity = kShadowOpacity;
+
   if (self.bookmarks->loaded()) {
     [self loadBookmarkViews];
   } else {
@@ -266,6 +282,13 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   // ViewController hierarchy (as each view controller is setting itself as
   // delegate).
   self.navigationController.interactivePopGestureRecognizer.delegate = self;
+
+  // Hide the toolbar if we're displaying the root node.
+  if (_rootNode == self.bookmarks->root_node()) {
+    self.navigationController.toolbarHidden = YES;
+  } else {
+    self.navigationController.toolbarHidden = NO;
+  }
 }
 
 - (void)viewDidLayoutSubviews {
@@ -276,9 +299,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     [self setContentPosition:self.cachedContentPosition.floatValue];
     self.cachedContentPosition = nil;
   }
-  // The height of contextBar might change due to word wrapping of buttons
-  // after titleLabel or orientation changed.
-  [self.contextBar updateHeight];
 }
 
 - (BOOL)prefersStatusBarHidden {
@@ -323,7 +343,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   [self.bookmarksTableView
       setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                           UIViewAutoresizingFlexibleHeight];
-  [self.bookmarksTableView setTranslatesAutoresizingMaskIntoConstraints:NO];
   [self.view addSubview:self.bookmarksTableView];
 
   // Configure the table view.
@@ -360,9 +379,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   // After the table view has been added.
   [self setupNavigationBar];
 
-  if (_rootNode != self.bookmarks->root_node()) {
-    [self setupContextBar];
-  }
+  [self setupContextBar];
+
   if (self.isReconstructingFromCache) {
     [self setupUIStackCacheIfApplicable];
   }
@@ -944,12 +962,12 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 // Set up context bar for the new UI.
 - (void)setupContextBar {
-  self.contextBar = [[BookmarkContextBar alloc] initWithFrame:CGRectZero];
-  self.contextBar.delegate = self;
-  [self.contextBar setTranslatesAutoresizingMaskIntoConstraints:NO];
-
-  [self setContextBarState:BookmarksContextBarDefault];
-  [self.view addSubview:self.contextBar];
+  if (_rootNode != self.bookmarks->root_node()) {
+    self.navigationController.toolbarHidden = NO;
+    [self setContextBarState:BookmarksContextBarDefault];
+  } else {
+    self.navigationController.toolbarHidden = YES;
+  }
 }
 
 // Set up navigation bar for the new UI.
@@ -1035,34 +1053,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                referrer:web::Referrer()
              transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
       rendererInitiated:NO];
-}
-
-- (void)updateViewConstraints {
-  if (!_addedConstraints) {
-    if (self.contextBar && self.bookmarksTableView) {
-      NSDictionary* views = @{
-        @"tableView" : self.bookmarksTableView,
-        @"contextBar" : self.contextBar,
-      };
-      NSArray* constraints = @[
-        @"V:|[tableView][contextBar]|",
-        @"H:|[tableView]|",
-        @"H:|[contextBar]|",
-      ];
-      ApplyVisualConstraints(constraints, views);
-    } else if (self.bookmarksTableView) {
-      NSDictionary* views = @{
-        @"tableView" : self.bookmarksTableView,
-      };
-      NSArray* constraints = @[
-        @"V:|[tableView]|",
-        @"H:|[tableView]|",
-      ];
-      ApplyVisualConstraints(constraints, views);
-    }
-    _addedConstraints = YES;
-  }
-  [super updateViewConstraints];
 }
 
 - (void)addNewFolder {
@@ -1346,8 +1336,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     case BookmarksContextBarSingleFolderSelection:
       // Reset to start state, and then override with customizations that apply.
       [self setBookmarksContextBarSelectionStartState];
-      [self.contextBar setButtonEnabled:YES forButton:ContextBarCenterButton];
-      [self.contextBar setButtonEnabled:YES forButton:ContextBarLeadingButton];
+      self.moreButton.enabled = YES;
+      self.deleteButton.enabled = YES;
       break;
     case BookmarksContextBarNone:
     default:
@@ -1357,49 +1347,80 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (void)setBookmarksContextBarButtonsDefaultState {
   // Set New Folder button
-  [self.contextBar setButtonTitle:l10n_util::GetNSString(
-                                      IDS_IOS_BOOKMARK_CONTEXT_BAR_NEW_FOLDER)
-                        forButton:ContextBarLeadingButton];
-  [self.contextBar setButtonVisibility:YES forButton:ContextBarLeadingButton];
-  [self.contextBar setButtonEnabled:[self allowsNewFolder]
-                          forButton:ContextBarLeadingButton];
-  [self.contextBar setButtonStyle:ContextBarButtonStyleDefault
-                        forButton:ContextBarLeadingButton];
+  NSString* titleString =
+      l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_NEW_FOLDER);
+  UIBarButtonItem* newFolderButton =
+      [[UIBarButtonItem alloc] initWithTitle:titleString
+                                       style:UIBarButtonItemStylePlain
+                                      target:self
+                                      action:@selector(leadingButtonClicked)];
+  newFolderButton.accessibilityIdentifier =
+      kBookmarkHomeLeadingButtonIdentifier;
+  newFolderButton.enabled = [self allowsNewFolder];
 
-  // Set Center button to invisible.
-  [self.contextBar setButtonVisibility:NO forButton:ContextBarCenterButton];
+  // Spacer button.
+  UIBarButtonItem* spaceButton = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
+                           target:nil
+                           action:nil];
 
   // Set Select button.
-  [self.contextBar
-      setButtonTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_SELECT)
-           forButton:ContextBarTrailingButton];
-  [self.contextBar setButtonVisibility:YES forButton:ContextBarTrailingButton];
-  [self.contextBar setButtonEnabled:[self hasBookmarksOrFolders]
-                          forButton:ContextBarTrailingButton];
+  titleString = l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_SELECT);
+  UIBarButtonItem* selectButton =
+      [[UIBarButtonItem alloc] initWithTitle:titleString
+                                       style:UIBarButtonItemStylePlain
+                                      target:self
+                                      action:@selector(trailingButtonClicked)];
+  selectButton.accessibilityIdentifier = kBookmarkHomeTrailingButtonIdentifier;
+  selectButton.enabled = [self hasBookmarksOrFolders];
+
+  [self setToolbarItems:@[ newFolderButton, spaceButton, selectButton ]
+               animated:NO];
 }
 
 - (void)setBookmarksContextBarSelectionStartState {
   // Disabled Delete button.
-  [self.contextBar
-      setButtonTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_DELETE)
-           forButton:ContextBarLeadingButton];
-  [self.contextBar setButtonVisibility:YES forButton:ContextBarLeadingButton];
-  [self.contextBar setButtonEnabled:NO forButton:ContextBarLeadingButton];
-  [self.contextBar setButtonStyle:ContextBarButtonStyleDelete
-                        forButton:ContextBarLeadingButton];
+  NSString* titleString =
+      l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_DELETE);
+  self.deleteButton =
+      [[UIBarButtonItem alloc] initWithTitle:titleString
+                                       style:UIBarButtonItemStylePlain
+                                      target:self
+                                      action:@selector(leadingButtonClicked)];
+  self.deleteButton.tintColor = [UIColor redColor];
+  self.deleteButton.enabled = NO;
+  self.deleteButton.accessibilityIdentifier =
+      kBookmarkHomeLeadingButtonIdentifier;
 
   // Disabled More button.
-  [self.contextBar
-      setButtonTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_MORE)
-           forButton:ContextBarCenterButton];
-  [self.contextBar setButtonVisibility:YES forButton:ContextBarCenterButton];
-  [self.contextBar setButtonEnabled:NO forButton:ContextBarCenterButton];
+  titleString = l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_MORE);
+  self.moreButton =
+      [[UIBarButtonItem alloc] initWithTitle:titleString
+                                       style:UIBarButtonItemStylePlain
+                                      target:self
+                                      action:@selector(centerButtonClicked)];
+  self.moreButton.enabled = NO;
+  self.moreButton.accessibilityIdentifier = kBookmarkHomeCenterButtonIdentifier;
 
   // Enabled Cancel button.
-  [self.contextBar setButtonTitle:l10n_util::GetNSString(IDS_CANCEL)
-                        forButton:ContextBarTrailingButton];
-  [self.contextBar setButtonVisibility:YES forButton:ContextBarTrailingButton];
-  [self.contextBar setButtonEnabled:YES forButton:ContextBarTrailingButton];
+  titleString = l10n_util::GetNSString(IDS_CANCEL);
+  UIBarButtonItem* cancelButton =
+      [[UIBarButtonItem alloc] initWithTitle:titleString
+                                       style:UIBarButtonItemStylePlain
+                                      target:self
+                                      action:@selector(trailingButtonClicked)];
+  cancelButton.accessibilityIdentifier = kBookmarkHomeTrailingButtonIdentifier;
+
+  // Spacer button.
+  UIBarButtonItem* spaceButton = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
+                           target:nil
+                           action:nil];
+
+  [self setToolbarItems:@[
+    self.deleteButton, spaceButton, self.moreButton, spaceButton, cancelButton
+  ]
+               animated:NO];
 }
 
 #pragma mark - Context Menu
