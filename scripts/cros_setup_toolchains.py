@@ -263,11 +263,11 @@ class Crossdev(object):
     cmdbase.extend(['--overlays', overlays])
     cmdbase.extend(['--ov-output', CROSSDEV_OVERLAY])
 
-    # Build target by the alphabetical order to make sure
-    # armv7a-cros-linux-gnueabihf builds after armv7a-cros-linux-gnueabi
+    # Build target by the reversed alphabetical order to make sure
+    # armv7a-cros-linux-gnueabihf builds before armv7a-cros-linux-gnueabi
     # because some dependency issue. This can be reverted once we
     # migrated to armv7a-cros-linux-gnueabihf. crbug.com/711369
-    for target in sorted(targets):
+    for target in sorted(targets, reverse=True):
       if config_only and target in configured_targets:
         continue
 
