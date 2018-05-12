@@ -2530,7 +2530,7 @@ TEST_F(HistoryBackendTest, FaviconChangedNotificationNewFavicon) {
     backend_->SetFavicons({page_url1}, IconType::kFavicon, icon_url1, bitmaps);
     ASSERT_EQ(1u, favicon_changed_notifications_page_urls().size());
     EXPECT_EQ(page_url1, favicon_changed_notifications_page_urls()[0]);
-    EXPECT_EQ(0u, favicon_changed_notifications_icon_urls().size());
+    EXPECT_EQ(1u, favicon_changed_notifications_icon_urls().size());
     ClearBroadcastedNotifications();
   }
 
@@ -2544,7 +2544,7 @@ TEST_F(HistoryBackendTest, FaviconChangedNotificationNewFavicon) {
                            bitmap_data, kSmallSize);
     ASSERT_EQ(1u, favicon_changed_notifications_page_urls().size());
     EXPECT_EQ(page_url2, favicon_changed_notifications_page_urls()[0]);
-    EXPECT_EQ(0u, favicon_changed_notifications_icon_urls().size());
+    EXPECT_EQ(1u, favicon_changed_notifications_icon_urls().size());
   }
 }
 
