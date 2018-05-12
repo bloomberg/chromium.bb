@@ -237,4 +237,53 @@ metadata_pb::UkmInfo InProgressConversions::UkmInfoToProto(
   return proto;
 }
 
+DownloadInfo InProgressConversions::DownloadInfoFromProto(
+    const metadata_pb::DownloadInfo& proto) {
+  DownloadInfo info;
+  info.guid = proto.guid();
+  if (proto.has_ukm_info())
+    info.ukm_info = UkmInfoFromProto(proto.ukm_info());
+  if (proto.has_in_progress_info())
+    info.in_progress_info = InProgressInfoFromProto(proto.in_progress_info());
+  return info;
+}
+
+metadata_pb::DownloadInfo InProgressConversions::DownloadInfoToProto(
+    const DownloadInfo& info) {
+  metadata_pb::DownloadInfo proto;
+  proto.set_guid(info.guid);
+  if (info.ukm_info.has_value()) {
+    auto ukm_info = std::make_unique<metadata_pb::UkmInfo>(
+        UkmInfoToProto(info.ukm_info.value()));
+    proto.set_allocated_ukm_info(ukm_info.release());
+  }
+  if (info.in_progress_info.has_value()) {
+    auto in_progress_info = std::make_unique<metadata_pb::InProgressInfo>(
+        InProgressInfoToProto(info.in_progress_info.value()));
+    proto.set_allocated_in_progress_info(in_progress_info.release());
+  }
+  return proto;
+}
+
+DownloadDBEntry InProgressConversions::DownloadDBEntryFromProto(
+    const metadata_pb::DownloadDBEntry& proto) {
+  DownloadDBEntry entry;
+  entry.id = proto.id();
+  if (proto.has_download_info())
+    entry.download_info = DownloadInfoFromProto(proto.download_info());
+  return entry;
+}
+
+metadata_pb::DownloadDBEntry InProgressConversions::DownloadDBEntryToProto(
+    const DownloadDBEntry& info) {
+  metadata_pb::DownloadDBEntry proto;
+  proto.set_id(info.id);
+  if (info.download_info.has_value()) {
+    auto download_info = std::make_unique<metadata_pb::DownloadInfo>(
+        DownloadInfoToProto(info.download_info.value()));
+    proto.set_allocated_download_info(download_info.release());
+  }
+  return proto;
+}
+
 }  // namespace download

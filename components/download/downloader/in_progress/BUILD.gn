@@ -9,8 +9,12 @@ if (is_android) {
 
 source_set("in_progress") {
   sources = [
+    "download_db_entry.cc",
+    "download_db_entry.h",
     "download_entry.cc",
     "download_entry.h",
+    "download_info.cc",
+    "download_info.h",
     "in_progress_cache.h",
     "in_progress_cache_impl.cc",
     "in_progress_cache_impl.h",

@@ -6,7 +6,9 @@
 #define COMPONENTS_DOWNLOAD_IN_PROGRESS_IN_PROGRESS_CONVERSIONS_H_
 
 #include "base/macros.h"
+#include "components/download/downloader/in_progress/download_db_entry.h"
 #include "components/download/downloader/in_progress/download_entry.h"
+#include "components/download/downloader/in_progress/download_info.h"
 #include "components/download/downloader/in_progress/in_progress_info.h"
 #include "components/download/downloader/in_progress/proto/download_entry.pb.h"
 #include "components/download/downloader/in_progress/proto/download_source.pb.h"
@@ -49,6 +51,18 @@ class InProgressConversions {
   static metadata_pb::UkmInfo UkmInfoToProto(const UkmInfo& ukm_info);
 
   static UkmInfo UkmInfoFromProto(const metadata_pb::UkmInfo& proto);
+
+  static metadata_pb::DownloadInfo DownloadInfoToProto(
+      const DownloadInfo& download_info);
+
+  static DownloadInfo DownloadInfoFromProto(
+      const metadata_pb::DownloadInfo& proto);
+
+  static metadata_pb::DownloadDBEntry DownloadDBEntryToProto(
+      const DownloadDBEntry& entry);
+
+  static DownloadDBEntry DownloadDBEntryFromProto(
+      const metadata_pb::DownloadDBEntry& proto);
 };
 
 }  // namespace download
