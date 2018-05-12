@@ -854,3 +854,45 @@ TEST_F('EditingTest', 'EditableLineBaseLineAnchorOrFocus', function() {
     assertEquals(3, e1.endOffset);
   })
 });
+
+TEST_F('EditingTest', 'IsValidLine', function() {
+  this.runWithLoadedTree(function() {/*!
+    <div contenteditable role="textbox">
+      <p style="word-spacing:100000px">this is a test</p>
+      <p>end</p>
+    </div>
+  */}, function(root) {
+    // Each word is on its own line, but parented by a static text.
+    var text, endText;
+    [text, endText] = root.findAll({role: RoleType.STATIC_TEXT});
+
+    // The EditableLine object automatically adjusts to surround the line no
+    // matter what the input is.
+    var line = new editing.EditableLine(text, 0, text, 0);
+    assertTrue(line.isValidLine());
+
+    // During the course of editing operations, this line may become
+    // invalidted. For example, if a user starts typing into the line, the
+    // bounding nodes might change.
+    // Simulate that here by modifying private state.
+
+    // This puts the line at offset 8 (|this is a|).
+    line.localLineStartContainerOffset_ = 0;
+    line.localLineEndContainerOffset_ = 8;
+    assertFalse(line.isValidLine());
+
+    // This puts us in the first line.
+    line.localLineStartContainerOffset_ = 0;
+    line.localLineEndContainerOffset_ = 4;
+    assertTrue(line.isValidLine());
+
+    // This is still fine (for our purposes) because the line is still intact.
+    line.localLineStartContainerOffset_ = 0;
+    line.localLineEndContainerOffset_ = 2;
+    assertTrue(line.isValidLine());
+
+    // The line has changed. The end has been moved for some reason.
+    line.lineEndContainer_ = endText;
+    assertFalse(line.isValidLine());
+  })
+});
