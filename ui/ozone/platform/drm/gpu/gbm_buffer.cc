@@ -75,28 +75,14 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
     bool ret = drm_->AddFramebuffer2(
         gbm_bo_get_width(bo), gbm_bo_get_height(bo), framebuffer_pixel_format_,
         handles, strides, offsets, modifiers, &framebuffer_, addfb_flags);
-    // TODO(dcastagna): remove debugging info once we figure out why
-    // AddFramebuffer2 is failing. crbug.com/789292
-    if (!ret) {
-      PLOG(ERROR) << "AddFramebuffer2 failed: ";
-      LOG(ERROR) << base::StringPrintf(
-          "planes: %zu, width: %u, height: %u, addfb_flags: %u",
-          gbm_bo_get_num_planes(bo), gbm_bo_get_width(bo),
-          gbm_bo_get_height(bo), addfb_flags);
-      for (size_t i = 0; i < gbm_bo_get_num_planes(bo); ++i) {
-        LOG(ERROR) << "handles: " << handles[i] << ", stride: " << strides[i]
-                   << ", offset: " << offsets[i]
-                   << ", modifier: " << modifiers[i];
-      }
-    }
-    DCHECK(ret);
+    PLOG_IF(ERROR, !ret) << "AddFramebuffer2 failed";
+
     if (opaque_framebuffer_pixel_format_ != framebuffer_pixel_format_) {
       ret = drm_->AddFramebuffer2(gbm_bo_get_width(bo), gbm_bo_get_height(bo),
                                   opaque_framebuffer_pixel_format_, handles,
                                   strides, offsets, modifiers,
                                   &opaque_framebuffer_, addfb_flags);
       PLOG_IF(ERROR, !ret) << "AddFramebuffer2 failed";
-      DCHECK(ret);
     }
   }
 }
