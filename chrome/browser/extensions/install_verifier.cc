@@ -34,6 +34,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "extensions/common/one_shot_event.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
@@ -578,10 +579,10 @@ void InstallVerifier::BeginFetch() {
     ids_to_sign.insert(operation.ids.begin(), operation.ids.end());
   }
 
-  signer_.reset(new InstallSigner(
-      content::BrowserContext::GetDefaultStoragePartition(context_)->
-          GetURLRequestContext(),
-      ids_to_sign));
+  auto url_loader_factory =
+      content::BrowserContext::GetDefaultStoragePartition(context_)
+          ->GetURLLoaderFactoryForBrowserProcess();
+  signer_ = std::make_unique<InstallSigner>(url_loader_factory, ids_to_sign);
   signer_->GetSignature(base::Bind(&InstallVerifier::SignatureCallback,
                                    weak_factory_.GetWeakPtr()));
 }

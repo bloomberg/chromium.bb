@@ -18,10 +18,10 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace extensions {
 
@@ -68,8 +68,9 @@ class InstallSigner {
   // in |ids| will be successfully signed by the backend. Callers should always
   // check the set of ids in the InstallSignature passed to their callback, as
   // it may contain only a subset of the ids they passed in.
-  InstallSigner(net::URLRequestContextGetter* context_getter,
-                const ExtensionIdSet& ids);
+  InstallSigner(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const ExtensionIdSet& ids);
   ~InstallSigner();
 
   // Returns a set of ids that are forced to be considered not from webstore,
@@ -86,17 +87,14 @@ class InstallSigner {
   static bool VerifySignature(const InstallSignature& signature);
 
  private:
-  // A very simple delegate just used to call ourself back when a url fetch is
-  // complete.
-  class FetcherDelegate;
 
   // A helper function that calls |callback_| with an indication that an error
   // happened (currently done by passing an empty pointer).
   void ReportErrorViaCallback();
 
-  // Called when |url_fetcher_| has returned a result to parse the response,
+  // Called when |simple_loader_| has returned a result to parse the response,
   // and then call HandleSignatureResult with structured data.
-  void ParseFetchResponse();
+  void ParseFetchResponse(std::unique_ptr<std::string> response_body);
 
   // Handles the result from a backend fetch.
   void HandleSignatureResult(const std::string& signature,
@@ -115,9 +113,9 @@ class InstallSigner {
   std::string salt_;
 
   // These are used to make the call to a backend server for a signature.
-  net::URLRequestContextGetter* context_getter_;
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
-  std::unique_ptr<FetcherDelegate> delegate_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  // The underlying SimpleURLLoader which does the actual load.
+  std::unique_ptr<network::SimpleURLLoader> simple_loader_;
 
   // The time the request to the server was started.
   base::Time request_start_time_;
