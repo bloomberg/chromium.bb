@@ -43,11 +43,18 @@ void ShowFallbackExternalProtocolDialog(int render_process_host_id,
   new ExternalProtocolDialog(web_contents, url);
 }
 
-void CloseTabIfNeeded(int render_process_host_id, int routing_id) {
+void CloseTabIfNeeded(int render_process_host_id,
+                      int routing_id,
+                      bool safe_to_bypass_ui) {
   WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_host_id, routing_id);
-  if (web_contents && web_contents->GetController().IsInitialNavigation())
+  if (!web_contents)
+    return;
+
+  if (web_contents->GetController().IsInitialNavigation() ||
+      safe_to_bypass_ui) {
     web_contents->Close();
+  }
 }
 
 // Tells whether or not Chrome is an app candidate for the current navigation.
@@ -115,7 +122,7 @@ void HandleUrlInArc(int render_process_host_id,
 
   instance->HandleIntent(CreateIntentInfo(url_and_activity.first, ui_bypassed),
                          std::move(activity));
-  CloseTabIfNeeded(render_process_host_id, routing_id);
+  CloseTabIfNeeded(render_process_host_id, routing_id, ui_bypassed);
 }
 
 // A helper function called by GetAction().
@@ -305,10 +312,11 @@ GURL GetUrlToNavigateOnDeactivate(
 void OnIntentPickerDialogDeactivated(
     int render_process_host_id,
     int routing_id,
+    bool safe_to_bypass_ui,
     const std::vector<mojom::IntentHandlerInfoPtr>& handlers) {
   const GURL url_to_open_in_chrome = GetUrlToNavigateOnDeactivate(handlers);
   if (url_to_open_in_chrome.is_empty())
-    CloseTabIfNeeded(render_process_host_id, routing_id);
+    CloseTabIfNeeded(render_process_host_id, routing_id, safe_to_bypass_ui);
   else
     OpenUrlInChrome(render_process_host_id, routing_id, url_to_open_in_chrome);
 }
@@ -386,7 +394,7 @@ void OnIntentPickerClosed(int render_process_host_id,
     case chromeos::IntentPickerCloseReason::DIALOG_DEACTIVATED:
       // The user didn't select any ARC activity.
       OnIntentPickerDialogDeactivated(render_process_host_id, routing_id,
-                                      handlers);
+                                      safe_to_bypass_ui, handlers);
       break;
   }
 
