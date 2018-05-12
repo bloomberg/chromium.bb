@@ -128,6 +128,8 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   TrayNetwork* GetTrayNetwork() const;
   // Returns TrayBluetooth object if present or null otherwise.
   TrayBluetooth* GetTrayBluetooth() const;
+  // Returns TrayCast object if present or null otherwise.
+  TrayCast* GetTrayCast() const;
   // Returns TrayAccessibility object if present or null otherwise.
   TrayAccessibility* GetTrayAccessibility() const;
   // Returns TrayVPN object if present or null otherwise.

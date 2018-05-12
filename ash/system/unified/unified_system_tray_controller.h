@@ -59,6 +59,8 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   void ShowNetworkDetailedView();
   // Show the detailed view of bluetooth. Called from the view.
   void ShowBluetoothDetailedView();
+  // Show the detailed view of cast. Called from the view.
+  void ShowCastDetailedView();
   // Show the detailed view of accessibility. Called from the view.
   void ShowAccessibilityDetailedView();
   // Show the detailed view of VPN. Called from the view.

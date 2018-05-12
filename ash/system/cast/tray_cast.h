@@ -59,12 +59,6 @@ class ASH_EXPORT TrayCast : public SystemTrayItem,
   // casting session.
   void UpdatePrimaryView();
 
-  // Returns true if there is an active cast route. The route may be DIAL based,
-  // such as casting YouTube where the cast sink directly streams content from
-  // another server. In that case, is_mirror_casting_ will be false since this
-  // device is not actively transmitting information to the cast sink.
-  bool HasActiveRoute();
-
   std::vector<mojom::SinkAndRoutePtr> sinks_and_routes_;
 
   // True if there is a mirror-based cast session and the active-cast tray icon
