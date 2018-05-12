@@ -39,9 +39,6 @@ class ScriptingPermissionsModifier {
                                          content::BrowserContext* context,
                                          const std::string& id);
 
-  // Returns the default value for being allowed to script on all urls.
-  static bool DefaultAllowedOnAllUrls();
-
   // Sets whether the extension should be allowed to execute on all urls without
   // explicit user consent. Used when the features::kRuntimeHostPermissions
   // feature is enabled.
@@ -80,13 +77,13 @@ class ScriptingPermissionsModifier {
   // be granted, populating |granted_permissions_out| with the set of all
   // permissions that can be granted, and |withheld_permissions_out| with the
   // set of all withheld permissions.
-  // If |use_initial_state| is true, this will treat the extension as though it
-  // was just installed, not taking into account extra granted preferences.
   void WithholdPermissions(
       const PermissionSet& permissions,
       std::unique_ptr<const PermissionSet>* granted_permissions_out,
-      std::unique_ptr<const PermissionSet>* withheld_permissions_out,
-      bool use_initial_state);
+      std::unique_ptr<const PermissionSet>* withheld_permissions_out);
+
+  // Returns the subset of active permissions which can be withheld.
+  std::unique_ptr<const PermissionSet> GetRevokablePermissions();
 
  private:
   // Grants any withheld all-hosts (or all-hosts-like) permissions.

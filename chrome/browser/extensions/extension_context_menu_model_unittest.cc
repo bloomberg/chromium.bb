@@ -231,6 +231,7 @@ const Extension* ExtensionContextMenuModelTest::AddExtensionWithHostPermission(
           .Build();
   if (!extension.get())
     ADD_FAILURE();
+  service()->GrantPermissions(extension.get());
   service()->AddExtension(extension.get());
   return extension.get();
 }
@@ -618,10 +619,12 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   scoped_feature_list->InitAndEnableFeature(features::kRuntimeHostPermissions);
   InitializeEmptyExtensionService();
 
-  // Add an extension with all urls.
+  // Add an extension with all urls, and withhold permission.
   const Extension* extension =
       AddExtensionWithHostPermission("extension", manifest_keys::kBrowserAction,
                                      Manifest::INTERNAL, "*://*/*");
+  ScriptingPermissionsModifier(profile(), extension).SetAllowedOnAllUrls(false);
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
 
   const GURL kActiveUrl("http://www.example.com/");
   const GURL kOtherUrl("http://www.google.com/");
