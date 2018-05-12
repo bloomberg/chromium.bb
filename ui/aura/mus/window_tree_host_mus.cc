@@ -60,23 +60,19 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
   // If window-server is hosting viz, then use the FrameSinkId from the server.
   // In other cases, let a valid FrameSinkId be selected by
   // context_factory_private().
-  CreateCompositor(base::FeatureList::IsEnabled(features::kMash)
-                       ? window_mus->GenerateFrameSinkIdFromServerId()
-                       : viz::FrameSinkId());
-  if (!init_params.uses_real_accelerated_widget) {
-    gfx::AcceleratedWidget accelerated_widget;
+  CreateCompositor(window_mus->GenerateFrameSinkIdFromServerId());
+  gfx::AcceleratedWidget accelerated_widget;
 // We need accelerated widget numbers to be different for each window and
 // fit in the smallest sizeof(AcceleratedWidget) uint32_t has this property.
 #if defined(OS_WIN) || defined(OS_ANDROID)
-    accelerated_widget =
-        reinterpret_cast<gfx::AcceleratedWidget>(accelerated_widget_count++);
+  accelerated_widget =
+      reinterpret_cast<gfx::AcceleratedWidget>(accelerated_widget_count++);
 #else
-    accelerated_widget =
-        static_cast<gfx::AcceleratedWidget>(accelerated_widget_count++);
+  accelerated_widget =
+      static_cast<gfx::AcceleratedWidget>(accelerated_widget_count++);
 #endif
-    OnAcceleratedWidgetAvailable(accelerated_widget,
-                                 GetDisplay().device_scale_factor());
-  }
+  OnAcceleratedWidgetAvailable(accelerated_widget,
+                               GetDisplay().device_scale_factor());
 
   delegate_->OnWindowTreeHostCreated(this);
 

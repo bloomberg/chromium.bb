@@ -422,14 +422,14 @@ TEST_P(WindowTest, ContainsMouse) {
 // Tests that the root window gets a valid LocalSurfaceId.
 TEST_P(WindowTest, RootWindowHasValidLocalSurfaceId) {
   // When mus is hosting viz, the LocalSurfaceId is sent from mus.
-  if (GetParam() == BackendType::MASH)
+  if (GetParam() == BackendType::MUS)
     return;
   EXPECT_TRUE(root_window()->GetLocalSurfaceId().is_valid());
 }
 
 TEST_P(WindowTest, WindowEmbeddingClientHasValidLocalSurfaceId) {
   // When mus is hosting viz, the LocalSurfaceId is sent from mus.
-  if (GetParam() == BackendType::MASH)
+  if (GetParam() == BackendType::MUS)
     return;
   std::unique_ptr<Window> window(CreateTestWindow(
       SK_ColorWHITE, 1, gfx::Rect(10, 10, 300, 200), root_window()));
@@ -3265,14 +3265,12 @@ TEST_P(WindowTest, LocalSurfaceIdChanges) {
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         WindowTest,
                         ::testing::Values(BackendType::CLASSIC,
-                                          BackendType::MUS,
-                                          BackendType::MASH));
+                                          BackendType::MUS));
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         WindowObserverTest,
                         ::testing::Values(BackendType::CLASSIC,
-                                          BackendType::MUS,
-                                          BackendType::MASH));
+                                          BackendType::MUS));
 
 }  // namespace
 }  // namespace test

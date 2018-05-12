@@ -2084,12 +2084,6 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
     command_line->AppendSwitchASCII(
         switches::kMashServiceName,
         ash_service_registry::GetAshRelatedServiceLabel(identity.name()));
-    if (!base::FeatureList::IsEnabled(features::kMash)) {
-      // TODO(sky): this is necessary because WindowTreeClient only connects to
-      // the gpu related interfaces if Mash is set.
-      command_line->AppendSwitchASCII(switches::kEnableFeatures,
-                                      features::kMash.name);
-    }
   }
 #endif
   // TODO(sky): move to a whitelist, but currently the set of flags is rather

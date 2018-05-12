@@ -302,7 +302,6 @@ TEST_P(WindowTargeterTest, TargeterChecksOwningEventTarget) {
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         WindowTargeterTest,
                         ::testing::Values(test::BackendType::CLASSIC,
-                                          test::BackendType::MUS,
-                                          test::BackendType::MASH));
+                                          test::BackendType::MUS));
 
 }  // namespace aura

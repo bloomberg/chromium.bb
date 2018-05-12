@@ -209,8 +209,6 @@ std::unique_ptr<AshWindowTreeHost> ShellPortMus::CreateAshWindowTreeHost(
   aura_init_params.display_id = init_params.display_id;
   aura_init_params.display_init_params = std::move(display_params);
   aura_init_params.use_classic_ime = !Shell::ShouldUseIMEService();
-  aura_init_params.uses_real_accelerated_widget =
-      !base::FeatureList::IsEnabled(features::kMash);
 
   if (!base::FeatureList::IsEnabled(features::kMash)) {
     if (init_params.mirroring_unified) {

@@ -32,7 +32,6 @@
 #include "storage/browser/quota/quota_settings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_features.h"
 
 namespace ash {
 namespace shell {
@@ -104,18 +103,6 @@ void ShellContentBrowserClient::RegisterInProcessServices(
       &CreateWindowService, base::BindRepeating(&CreateContentGpuSupport));
   ws_service_info.task_runner = base::ThreadTaskRunnerHandle::Get();
   services->insert(std::make_pair(ui::mojom::kServiceName, ws_service_info));
-}
-
-void ShellContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
-    const service_manager::Identity& identity,
-    base::CommandLine* command_line) {
-  if (identity.name() == quick_launch::mojom::kServiceName ||
-      identity.name() == touch_hud::mojom::kServiceName) {
-    // TODO(sky): this is necessary because WindowTreeClient only connects to
-    // the gpu related interfaces if Mash is set.
-    command_line->AppendSwitchASCII(switches::kEnableFeatures,
-                                    features::kMash.name);
-  }
 }
 
 }  // namespace shell

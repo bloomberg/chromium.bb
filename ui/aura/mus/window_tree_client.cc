@@ -498,15 +498,11 @@ WindowTreeClient::WindowTreeClient(
       io_task_runner = io_thread_->task_runner();
     }
 
-    if (base::FeatureList::IsEnabled(features::kMash)) {
-      gpu_ =
-          ui::Gpu::Create(connector, ui::mojom::kServiceName, io_task_runner);
-      compositor_context_factory_ =
-          std::make_unique<MusContextFactory>(gpu_.get());
-      initial_context_factory_ = Env::GetInstance()->context_factory();
-      Env::GetInstance()->set_context_factory(
-          compositor_context_factory_.get());
-    }
+    gpu_ = ui::Gpu::Create(connector, ui::mojom::kServiceName, io_task_runner);
+    compositor_context_factory_ =
+        std::make_unique<MusContextFactory>(gpu_.get());
+    initial_context_factory_ = Env::GetInstance()->context_factory();
+    Env::GetInstance()->set_context_factory(compositor_context_factory_.get());
 
     // WindowServerTest will create more than one WindowTreeClient. We will not
     // create the discardable memory manager for those tests.
@@ -727,12 +723,6 @@ std::unique_ptr<WindowTreeHostMus> WindowTreeClient::CreateWindowTreeHost(
   init_params.window_port = std::move(window_port);
   init_params.window_tree_client = this;
   init_params.display_id = display_id;
-  if (window_manager_delegate_ &&
-      (window_mus_type == WindowMusType::EMBED ||
-       window_mus_type == WindowMusType::DISPLAY_AUTOMATICALLY_CREATED)) {
-    init_params.uses_real_accelerated_widget =
-        !::base::FeatureList::IsEnabled(features::kMash);
-  }
   std::unique_ptr<WindowTreeHostMus> window_tree_host =
       std::make_unique<WindowTreeHostMus>(std::move(init_params));
   window_tree_host->InitHost();
@@ -1020,9 +1010,7 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
       window_manager_client_->SetDisplayRoot(
           display, display_init_params->viewport_metrics.Clone(),
           display_init_params->is_primary_display, window->server_id(),
-          base::FeatureList::IsEnabled(features::kMash)
-              ? display_init_params->mirrors
-              : std::vector<display::Display>(),
+          display_init_params->mirrors,
           base::BindOnce(&OnAckMustSucceed, FROM_HERE));
     }
   }
@@ -1357,8 +1345,6 @@ void WindowTreeClient::OnCaptureChanged(ui::Id new_capture_window_id,
 void WindowTreeClient::OnFrameSinkIdAllocated(
     ui::Id window_id,
     const viz::FrameSinkId& frame_sink_id) {
-  if (!base::FeatureList::IsEnabled(features::kMash))
-    return;
   WindowMus* window = GetWindowByServerId(window_id);
   if (!window)
     return;

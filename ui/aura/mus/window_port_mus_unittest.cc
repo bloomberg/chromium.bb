@@ -29,7 +29,9 @@ class WindowPortMusTest : public test::AuraTestBase {
   DISALLOW_COPY_AND_ASSIGN(WindowPortMusTest);
 };
 
-TEST_F(WindowPortMusTest, LayerTreeFrameSinkGetsCorrectLocalSurfaceId) {
+// TODO(sadrul): https://crbug.com/842361.
+TEST_F(WindowPortMusTest,
+       DISABLED_LayerTreeFrameSinkGetsCorrectLocalSurfaceId) {
   Window window(nullptr);
   window.Init(ui::LAYER_NOT_DRAWN);
   window.SetBounds(gfx::Rect(300, 300));
@@ -47,20 +49,13 @@ TEST_F(WindowPortMusTest, LayerTreeFrameSinkGetsCorrectLocalSurfaceId) {
   auto mus_frame_sink = GetFrameSinkFor(&window);
   ASSERT_TRUE(mus_frame_sink);
   auto frame_sink_local_surface_id =
-      base::FeatureList::IsEnabled(features::kMash)
-          ? static_cast<viz::ClientLayerTreeFrameSink*>(mus_frame_sink.get())
-                ->local_surface_id()
-          : static_cast<LayerTreeFrameSinkLocal*>(mus_frame_sink.get())
-                ->local_surface_id();
+      static_cast<viz::ClientLayerTreeFrameSink*>(mus_frame_sink.get())
+          ->local_surface_id();
   EXPECT_TRUE(frame_sink_local_surface_id.is_valid());
   EXPECT_EQ(frame_sink_local_surface_id, local_surface_id);
 }
 
 TEST_F(WindowPortMusTest, ClientSurfaceEmbedderUpdatesLayer) {
-  // If mus is not hosting viz, we don't have ClientSurfaceEmbedder.
-  if (!base::FeatureList::IsEnabled(features::kMash))
-    return;
-
   Window window(nullptr);
   window.Init(ui::LAYER_NOT_DRAWN);
   window.SetBounds(gfx::Rect(300, 300));
