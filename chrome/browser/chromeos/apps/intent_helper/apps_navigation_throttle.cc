@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
@@ -29,10 +30,35 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
+#include "url/origin.h"
 
 namespace {
 
 constexpr char kGoogleCom[] = "google.com";
+
+// Removes the flag signaling that the current tab was started via
+// ChromeShellDelegate if the current throttle corresponds to a navigation
+// passing thru different domains or schemes, except if |current_url| has a
+// scheme different than http(s).
+void MaybeRemoveComingFromArcFlag(content::WebContents* tab,
+                                  const GURL& previous_url,
+                                  const GURL& current_url) {
+  // Let ArcExternalProtocolDialog handle these cases.
+  if (!current_url.SchemeIsHTTPOrHTTPS())
+    return;
+
+  if (url::Origin::Create(previous_url)
+          .IsSameOriginWith(url::Origin::Create(current_url))) {
+    return;
+  }
+
+  const char* key =
+      arc::ArcWebContentsData::ArcWebContentsData::kArcTransitionFlag;
+  arc::ArcWebContentsData* arc_data =
+      static_cast<arc::ArcWebContentsData*>(tab->GetUserData(key));
+  if (arc_data)
+    tab->RemoveUserData(key);
+}
 
 // Compares the host name of the referrer and target URL to decide whether
 // the navigation needs to be overriden.
@@ -433,12 +459,23 @@ AppsNavigationThrottle::HandleRequest() {
   if (handle->WasStartedFromContextMenu())
     return content::NavigationThrottle::PROCEED;
 
-  if (arc::ShouldIgnoreNavigation(handle->GetPageTransition(), kAllowFormSubmit,
+  ui::PageTransition page_transition = handle->GetPageTransition();
+  content::WebContents* web_contents = handle->GetWebContents();
+  const GURL& url = handle->GetURL();
+  if (arc::ShouldIgnoreNavigation(page_transition, kAllowFormSubmit,
                                   kAllowClientRedirect)) {
+    if ((page_transition & ui::PAGE_TRANSITION_FORWARD_BACK) ||
+        (page_transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)) {
+      // This enforces that whether we ignore the navigation or not, we make
+      // sure that the user cannot copy/paste or type a url to reuse
+      // ArcWebContentsData.
+      MaybeRemoveComingFromArcFlag(web_contents, starting_url_, url);
+    }
     return content::NavigationThrottle::PROCEED;
   }
 
-  const GURL& url = handle->GetURL();
+  MaybeRemoveComingFromArcFlag(web_contents, starting_url_, url);
+
   if (!ShouldOverrideUrlLoading(starting_url_, url))
     return content::NavigationThrottle::PROCEED;
 
@@ -459,7 +496,6 @@ AppsNavigationThrottle::HandleRequest() {
   // We didn't query ARC, so proceed with the navigation and query if we have an
   // installed desktop PWA to handle the URL.
   if (IsDesktopPwasEnabled()) {
-    content::WebContents* web_contents = handle->GetWebContents();
     std::vector<IntentPickerAppInfo> apps =
         FindPwaForUrl(web_contents, url, {});
 
