@@ -693,7 +693,7 @@ void V8TestInterface2::installV8TestInterface2Template(
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterface2::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterface2::internalFieldCount);
-  interfaceTemplate->SetCallHandler(V8TestInterface2::constructorCallback, v8::Local<v8::Value>(), v8::SideEffectType::kHasNoSideEffect);
+  interfaceTemplate->SetCallHandler(V8TestInterface2::constructorCallback);
   interfaceTemplate->SetLength(0);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);

@@ -44,8 +44,12 @@ v8::MaybeLocal<v8::Object> V8ObjectConstructor::NewInstance(
   ConstructorMode constructor_mode(isolate);
   v8::MicrotasksScope microtasks_scope(
       isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
-  v8::MaybeLocal<v8::Object> result =
-      function->NewInstance(isolate->GetCurrentContext(), argc, argv);
+  // Construct without side effect only in ConstructorMode::kWrapExistingObject
+  // cases. This allows whitelisted methods to correctly set return values
+  // without invoking Blink's internal constructors.
+  v8::MaybeLocal<v8::Object> result = function->NewInstanceWithSideEffectType(
+      isolate->GetCurrentContext(), argc, argv,
+      v8::SideEffectType::kHasNoSideEffect);
   CHECK(!isolate->IsDead());
   return result;
 }

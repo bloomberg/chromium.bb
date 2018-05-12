@@ -413,7 +413,7 @@ static void installV8TestInterfaceGarbageCollectedTemplate(
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceGarbageCollected::wrapperTypeInfo.interface_name, V8EventTarget::domTemplate(isolate, world), V8TestInterfaceGarbageCollected::internalFieldCount);
-  interfaceTemplate->SetCallHandler(V8TestInterfaceGarbageCollected::constructorCallback, v8::Local<v8::Value>(), v8::SideEffectType::kHasNoSideEffect);
+  interfaceTemplate->SetCallHandler(V8TestInterfaceGarbageCollected::constructorCallback);
   interfaceTemplate->SetLength(1);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);

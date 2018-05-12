@@ -377,7 +377,6 @@ def interface_context(interface, interfaces):
 
     context.update({
         'constructors': constructors,
-        'constructor_has_side_effect': has_extended_attribute_value(interface, 'Affects', 'Everything'),
         'has_custom_constructor': bool(custom_constructors),
         'has_html_constructor': has_html_constructor,
         'interface_length':

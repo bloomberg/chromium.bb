@@ -1,5 +1,18 @@
-Tests that invoking embedder constructors is side-effect-free. Should not crash.
-Checking functions on 'window'
-Function "Worker" failed side-effect check
-Function "SharedWorker" failed side-effect check
+Tests that embedder constructors throw on side effect. Should not crash.
+PASS: Constructor "Worker"
+has side effect: true
+PASS: Constructor "SharedWorker"
+has side effect: true
+PASS: Constructor "Audio"
+has side effect: true
+PASS: Constructor "Image"
+has side effect: true
+PASS: Constructor "Option"
+has side effect: true
+PASS: Constructor "ReadableStream"
+has side effect: true
+PASS: Constructor "WritableStream"
+has side effect: true
+PASS: Constructor "TransformStream"
+has side effect: true
 
