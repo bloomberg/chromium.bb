@@ -337,13 +337,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       scoped_refptr<network::ResourceRequestBody> body,
       bool skip_service_worker);
 
-  // Used to get a ServiceWorkerObjectInfo to send to the renderer.
-  // The object info holds a Mojo connection to the ServiceWorkerHandle for the
-  // |version| to ensure the handle stays alive while the object info is alive.
-  // A new handle is created if one does not already exist.
+  // Returns a ServiceWorkerHandle instance for |version| for this provider
+  // host. A new instance is created if one does not already exist.
   // TODO(leonhsl): Make |version| be a scoped_refptr because we'll take its
   // ownership.
-  blink::mojom::ServiceWorkerObjectInfoPtr GetOrCreateServiceWorkerHandle(
+  base::WeakPtr<ServiceWorkerHandle> GetOrCreateServiceWorkerHandle(
       ServiceWorkerVersion* version);
 
   // Returns true if |registration| can be associated with this provider.
@@ -551,6 +549,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // |registration| to ensure the host stays alive while the object info is
   // alive. A new ServiceWorkerRegistrationObjectHost instance is created if one
   // can not be found in |registration_object_hosts_|.
+  //
+  // NOTE: The registration object info should be sent over Mojo in the same
+  // task with calling this method. Otherwise, some Mojo calls to
+  // blink::mojom::ServiceWorkerRegistrationObject or
+  // blink::mojom::ServiceWorkerObject may happen before establishing the
+  // connections, and they'll end up with crashes.
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
   CreateServiceWorkerRegistrationObjectInfo(
       scoped_refptr<ServiceWorkerRegistration> registration);
