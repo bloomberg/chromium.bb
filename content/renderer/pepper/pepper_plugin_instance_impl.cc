@@ -1545,17 +1545,24 @@ void PepperPluginInstanceImpl::SelectAll() {
   if (!LoadPdfInterface())
     return;
 
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PepperPluginInstanceImpl> ref(this);
+
   // TODO(https://crbug.com/836074) |kPlatformModifier| should be
   // |ui::EF_COMMAND_DOWN| on Mac.
   static const ui::EventFlags kPlatformModifier = ui::EF_CONTROL_DOWN;
   // Synthesize a ctrl + a key event to send to the plugin and let it sort out
   // the event. See also https://crbug.com/739529.
-  ui::KeyEvent event(L'A', ui::VKEY_A, kPlatformModifier);
-  WebCursorInfo dummy_cursor_info;
+  ui::KeyEvent char_event(L'A', ui::VKEY_A, kPlatformModifier);
 
-  // No reference to |this| on the stack. Do not do any more work after this.
-  // See NOTE above.
-  HandleInputEvent(MakeWebKeyboardEvent(event), &dummy_cursor_info);
+  // Also synthesize a key up event to look more like a real key press.
+  // Otherwise the plugin will not do all the required work to keep the renderer
+  // in sync.
+  ui::KeyEvent keyup_event(ui::ET_KEY_RELEASED, ui::VKEY_A, kPlatformModifier);
+
+  WebCursorInfo dummy_cursor_info;
+  HandleInputEvent(MakeWebKeyboardEvent(char_event), &dummy_cursor_info);
+  HandleInputEvent(MakeWebKeyboardEvent(keyup_event), &dummy_cursor_info);
 }
 
 bool PepperPluginInstanceImpl::CanUndo() {
