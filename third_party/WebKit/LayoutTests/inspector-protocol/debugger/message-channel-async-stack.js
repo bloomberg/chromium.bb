@@ -42,10 +42,6 @@
       {callFrames, parent: asyncStackTrace, parentId: asyncStackTraceId},
       debuggerId);
 
-  dp.Debugger.stepInto({breakOnAsyncCall: true});
-  ({params: {asyncCallStackTraceId, callFrames}} =
-       await dp.Debugger.oncePaused());
-
   testRunner.log('\nrequested stepInto with breakOnAsyncCall flag');
   dp.Debugger.stepInto({breakOnAsyncCall: true});
   ({params: {asyncCallStackTraceId, callFrames}} =
