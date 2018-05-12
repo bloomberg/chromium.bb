@@ -1726,6 +1726,31 @@ TEST_F('CrSettingsPrintingPageTest', 'All', function() {
 });
 
 /**
+ * Test fixture for the Smb Shares page.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsSmbPageTest() {}
+
+CrSettingsSmbPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/downloads_page/smb_shares_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_util.js',
+    '../test_browser_proxy.js',
+    'smb_shares_page_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsSmbPageTest', 'All', function() {
+  mocha.run();
+});
+
+/**
  * Test fixture for the multidevice settings page.
  * @constructor
  * @extends {CrSettingsBrowserTest}
@@ -1747,10 +1772,6 @@ CrSettingsMultidevicePageTest.prototype = {
 TEST_F('CrSettingsMultidevicePageTest', 'All', function() {
   mocha.run();
 });
-
-GEN('#endif  // defined(OS_CHROMEOS)');
-
-GEN('#if defined(OS_CHROMEOS)');
 
 /**
  * Test fixture for the Linux for Chromebook (Crostini) page.
