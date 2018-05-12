@@ -86,7 +86,7 @@ class AssociatedResourceFetcherImpl::ClientImpl
 
     data_.append(data, data_length);
   }
-  void DidFinishLoading(double finishTime) override {
+  void DidFinishLoading() override {
     // The WebAssociatedURLLoader will continue after a load failure.
     // For example, for an Access Control error.
     if (completed_)

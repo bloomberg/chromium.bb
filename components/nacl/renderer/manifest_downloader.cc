@@ -64,7 +64,7 @@ void ManifestDownloader::Close() {
   delete this;
 }
 
-void ManifestDownloader::DidFinishLoading(double finish_time) {
+void ManifestDownloader::DidFinishLoading() {
   Close();
 }
 

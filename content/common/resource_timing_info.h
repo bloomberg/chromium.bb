@@ -65,13 +65,13 @@ struct ResourceTimingInfo {
   ~ResourceTimingInfo();
 
   std::string name;
-  double start_time = 0.0;
+  base::TimeTicks start_time;
   std::string initiator_type;
   std::string alpn_negotiated_protocol;
   std::string connection_info;
   base::Optional<ResourceLoadTiming> timing;
-  double last_redirect_end_time = 0.0;
-  double finish_time = 0.0;
+  base::TimeTicks last_redirect_end_time;
+  base::TimeTicks finish_time;
   uint64_t transfer_size = 0;
   uint64_t encoded_body_size = 0;
   uint64_t decoded_body_size = 0;

@@ -375,15 +375,14 @@ void WorkerThreadableLoader::DidReceiveCachedMetadata(
   client_->DidReceiveCachedMetadata(data->data(), data->size());
 }
 
-void WorkerThreadableLoader::DidFinishLoading(unsigned long identifier,
-                                              double finish_time) {
+void WorkerThreadableLoader::DidFinishLoading(unsigned long identifier) {
   DCHECK(!IsMainThread());
   if (!client_)
     return;
   auto* client = client_;
   client_ = nullptr;
   main_thread_loader_holder_ = nullptr;
-  client->DidFinishLoading(identifier, finish_time);
+  client->DidFinishLoading(identifier);
 }
 
 void WorkerThreadableLoader::DidFail(const ResourceError& error) {
@@ -590,8 +589,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::DidReceiveCachedMetadata(
 }
 
 void WorkerThreadableLoader::MainThreadLoaderHolder::DidFinishLoading(
-    unsigned long identifier,
-    double finish_time) {
+    unsigned long identifier) {
   DCHECK(IsMainThread());
   CrossThreadPersistent<WorkerThreadableLoader> worker_loader =
       worker_loader_.Release();
@@ -599,7 +597,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::DidFinishLoading(
     return;
   forwarder_->ForwardTaskWithDoneSignal(
       FROM_HERE, CrossThreadBind(&WorkerThreadableLoader::DidFinishLoading,
-                                 worker_loader, identifier, finish_time));
+                                 worker_loader, identifier));
   forwarder_ = nullptr;
 }
 

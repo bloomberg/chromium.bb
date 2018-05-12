@@ -61,7 +61,7 @@ void FileDownloader::DidReceiveData(const char* data, int data_length) {
   }
 }
 
-void FileDownloader::DidFinishLoading(double finish_time) {
+void FileDownloader::DidFinishLoading() {
   if (status_ == SUCCESS) {
     // Seek back to the beginning of the file that was just written so it's
     // easy for consumers to use.

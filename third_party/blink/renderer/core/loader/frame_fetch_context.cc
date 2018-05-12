@@ -642,7 +642,7 @@ void FrameFetchContext::DispatchDidDownloadToBlob(unsigned long identifier,
 
 void FrameFetchContext::DispatchDidFinishLoading(
     unsigned long identifier,
-    double finish_time,
+    TimeTicks finish_time,
     int64_t encoded_data_length,
     int64_t decoded_body_length,
     bool blocked_cross_site_document) {
@@ -658,8 +658,7 @@ void FrameFetchContext::DispatchDidFinishLoading(
     InteractiveDetector* interactive_detector(
         InteractiveDetector::From(*document_));
     if (interactive_detector) {
-      interactive_detector->OnResourceLoadEnd(
-          TimeTicksFromSeconds(finish_time));
+      interactive_detector->OnResourceLoadEnd(finish_time);
     }
   }
 }

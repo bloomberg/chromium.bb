@@ -1486,7 +1486,8 @@ TEST_F(FrameFetchContextTest, DispatchDidDownloadDataWhenDetached) {
 TEST_F(FrameFetchContextTest, DispatchDidFinishLoadingWhenDetached) {
   dummy_page_holder = nullptr;
 
-  fetch_context->DispatchDidFinishLoading(4, 0.3, 8, 10, false);
+  fetch_context->DispatchDidFinishLoading(4, TimeTicksFromSeconds(0.3), 8, 10,
+                                          false);
   // Should not crash.
 }
 
@@ -1534,7 +1535,7 @@ TEST_F(FrameFetchContextTest, DidLoadResourceWhenDetached) {
 
 TEST_F(FrameFetchContextTest, AddResourceTimingWhenDetached) {
   scoped_refptr<ResourceTimingInfo> info =
-      ResourceTimingInfo::Create("type", 0.3, false);
+      ResourceTimingInfo::Create("type", TimeTicksFromSeconds(0.3), false);
 
   dummy_page_holder = nullptr;
 
@@ -1592,7 +1593,7 @@ TEST_F(FrameFetchContextTest, IsLoadCompleteWhenDetached_2) {
 
 TEST_F(FrameFetchContextTest, UpdateTimingInfoForIFrameNavigationWhenDetached) {
   scoped_refptr<ResourceTimingInfo> info =
-      ResourceTimingInfo::Create("type", 0.3, false);
+      ResourceTimingInfo::Create("type", TimeTicksFromSeconds(0.3), false);
 
   dummy_page_holder = nullptr;
 

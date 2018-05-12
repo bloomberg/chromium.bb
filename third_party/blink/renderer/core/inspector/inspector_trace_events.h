@@ -92,7 +92,7 @@ class CORE_EXPORT InspectorTraceEvents
                       int data_length);
   void DidFinishLoading(unsigned long identifier,
                         DocumentLoader*,
-                        double monotonic_finish_time,
+                        TimeTicks monotonic_finish_time,
                         int64_t encoded_data_length,
                         int64_t decoded_body_length,
                         bool blocked_cross_site_document);
@@ -283,7 +283,7 @@ std::unique_ptr<TracedValue> Data(DocumentLoader*,
 namespace InspectorResourceFinishEvent {
 std::unique_ptr<TracedValue> Data(DocumentLoader*,
                                   unsigned long identifier,
-                                  double finish_time,
+                                  TimeTicks finish_time,
                                   bool did_fail,
                                   int64_t encoded_data_length,
                                   int64_t decoded_body_length);

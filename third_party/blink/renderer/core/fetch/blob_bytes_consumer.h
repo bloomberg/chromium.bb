@@ -58,7 +58,7 @@ class CORE_EXPORT BlobBytesConsumer final : public BytesConsumer,
   void DidReceiveResponse(unsigned long identifier,
                           const ResourceResponse&,
                           std::unique_ptr<WebDataConsumerHandle>) override;
-  void DidFinishLoading(unsigned long identifier, double finish_time) override;
+  void DidFinishLoading(unsigned long identifier) override;
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 

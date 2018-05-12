@@ -319,7 +319,7 @@ class MultibufferDataSourceTest : public testing::Test {
 
   void FinishLoading() {
     EXPECT_TRUE(active_loader());
-    data_provider()->DidFinishLoading(0);
+    data_provider()->DidFinishLoading();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -1624,7 +1624,7 @@ TEST_F(MultibufferDataSourceTest, Http_CheckLoadingTransition) {
   EXPECT_CALL(host_, AddBufferedByteRange(kDataSize, kDataSize + 1));
   ReceiveDataLow(1);
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 3));
-  data_provider()->DidFinishLoading(0);
+  data_provider()->DidFinishLoading();
 
   EXPECT_CALL(*this, ReadCallback(1));
   data_source_->Read(kDataSize, 2, buffer_,

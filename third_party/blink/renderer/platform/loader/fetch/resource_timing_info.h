@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -51,7 +52,7 @@ class PLATFORM_EXPORT ResourceTimingInfo
 
  public:
   static scoped_refptr<ResourceTimingInfo> Create(const AtomicString& type,
-                                                  const double time,
+                                                  const TimeTicks time,
                                                   bool is_main_resource) {
     return base::AdoptRef(new ResourceTimingInfo(type, time, is_main_resource));
   }
@@ -61,7 +62,7 @@ class PLATFORM_EXPORT ResourceTimingInfo
   // Gets a copy of the data suitable for passing to another thread.
   std::unique_ptr<CrossThreadResourceTimingInfoData> CopyData() const;
 
-  double InitialTime() const { return initial_time_; }
+  TimeTicks InitialTime() const { return initial_time_; }
   bool IsMainResource() const { return is_main_resource_; }
 
   const AtomicString& InitiatorType() const { return type_; }
@@ -74,8 +75,8 @@ class PLATFORM_EXPORT ResourceTimingInfo
     return original_timing_allow_origin_;
   }
 
-  void SetLoadFinishTime(double time) { load_finish_time_ = time; }
-  double LoadFinishTime() const { return load_finish_time_; }
+  void SetLoadFinishTime(TimeTicks time) { load_finish_time_ = time; }
+  TimeTicks LoadFinishTime() const { return load_finish_time_; }
 
   void SetInitialURL(const KURL& url) { initial_url_ = url; }
   const KURL& InitialURL() const { return initial_url_; }
@@ -115,14 +116,14 @@ class PLATFORM_EXPORT ResourceTimingInfo
 
  private:
   ResourceTimingInfo(const AtomicString& type,
-                     const double time,
+                     const TimeTicks time,
                      bool is_main_resource)
       : type_(type), initial_time_(time), is_main_resource_(is_main_resource) {}
 
   AtomicString type_;
   AtomicString original_timing_allow_origin_;
-  double initial_time_;
-  double load_finish_time_;
+  TimeTicks initial_time_;
+  TimeTicks load_finish_time_;
   KURL initial_url_;
   ResourceResponse final_response_;
   Vector<ResourceResponse> redirect_chain_;
@@ -141,8 +142,8 @@ struct CrossThreadResourceTimingInfoData {
 
   String type_;
   String original_timing_allow_origin_;
-  double initial_time_;
-  double load_finish_time_;
+  TimeTicks initial_time_;
+  TimeTicks load_finish_time_;
   KURL initial_url_;
   std::unique_ptr<CrossThreadResourceResponseData> final_response_;
   Vector<std::unique_ptr<CrossThreadResourceResponseData>> redirect_chain_;

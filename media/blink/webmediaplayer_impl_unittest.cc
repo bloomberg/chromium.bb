@@ -612,7 +612,7 @@ class WebMediaPlayerImplTest : public testing::Test {
     // Copy over the file data and indicate that's everything.
     client->DidReceiveData(reinterpret_cast<const char*>(data->data()),
                            data->data_size());
-    client->DidFinishLoading(0);
+    client->DidFinishLoading();
 
     // This runs until we reach the have current data state. Attempting to wait
     // for states < kReadyStateHaveCurrentData is unreliable due to asynchronous

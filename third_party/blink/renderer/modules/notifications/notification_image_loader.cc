@@ -141,8 +141,7 @@ void NotificationImageLoader::DidReceiveData(const char* data,
 }
 
 void NotificationImageLoader::DidFinishLoading(
-    unsigned long resource_identifier,
-    double finish_time) {
+    unsigned long resource_identifier) {
   // If this has been stopped it is not desirable to trigger further work,
   // there is a shutdown of some sort in progress.
   if (stopped_)

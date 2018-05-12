@@ -33,6 +33,7 @@
 
 #include <memory>
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
@@ -336,7 +337,7 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT network::mojom::CORSPreflightPolicy
   GetCORSPreflightPolicy() const;
 
-  BLINK_PLATFORM_EXPORT void SetNavigationStartTime(double);
+  BLINK_PLATFORM_EXPORT void SetNavigationStartTime(base::TimeTicks);
 
   // PlzNavigate: specify that the request was intended to be loaded as a same
   // document navigation. No network requests should be made and the request

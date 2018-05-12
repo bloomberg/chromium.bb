@@ -116,7 +116,7 @@ class CORE_EXPORT WorkerClassicScriptLoader final
                           std::unique_ptr<WebDataConsumerHandle>) override;
   void DidReceiveData(const char* data, unsigned data_length) override;
   void DidReceiveCachedMetadata(const char*, int /*dataLength*/) override;
-  void DidFinishLoading(unsigned long identifier, double) override;
+  void DidFinishLoading(unsigned long identifier) override;
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 

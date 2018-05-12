@@ -135,7 +135,7 @@ void InspectorTraceEvents::DidReceiveData(unsigned long identifier,
 
 void InspectorTraceEvents::DidFinishLoading(unsigned long identifier,
                                             DocumentLoader* loader,
-                                            double finish_time,
+                                            TimeTicks finish_time,
                                             int64_t encoded_data_length,
                                             int64_t decoded_body_length,
                                             bool blocked_cross_site_document) {
@@ -152,9 +152,10 @@ void InspectorTraceEvents::DidFinishLoading(unsigned long identifier,
 void InspectorTraceEvents::DidFailLoading(unsigned long identifier,
                                           DocumentLoader* loader,
                                           const ResourceError&) {
-  TRACE_EVENT_INSTANT1(
-      "devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data",
-      InspectorResourceFinishEvent::Data(loader, identifier, 0, true, 0, 0));
+  TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish",
+                       TRACE_EVENT_SCOPE_THREAD, "data",
+                       InspectorResourceFinishEvent::Data(
+                           loader, identifier, TimeTicks(), true, 0, 0));
 }
 
 void InspectorTraceEvents::Will(const probe::ExecuteScript&) {}
@@ -785,7 +786,7 @@ std::unique_ptr<TracedValue> InspectorReceiveDataEvent::Data(
 std::unique_ptr<TracedValue> InspectorResourceFinishEvent::Data(
     DocumentLoader* loader,
     unsigned long identifier,
-    double finish_time,
+    TimeTicks finish_time,
     bool did_fail,
     int64_t encoded_data_length,
     int64_t decoded_body_length) {
@@ -796,8 +797,8 @@ std::unique_ptr<TracedValue> InspectorResourceFinishEvent::Data(
   value->SetBoolean("didFail", did_fail);
   value->SetDouble("encodedDataLength", encoded_data_length);
   value->SetDouble("decodedBodyLength", decoded_body_length);
-  if (finish_time)
-    value->SetDouble("finishTime", finish_time);
+  if (!finish_time.is_null())
+    value->SetDouble("finishTime", TimeTicksInSeconds(finish_time));
   return value;
 }
 

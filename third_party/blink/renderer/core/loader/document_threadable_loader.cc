@@ -158,7 +158,7 @@ class DocumentThreadableLoader::DetachedClient final
       : self_keep_alive_(this), loader_(loader) {}
   ~DetachedClient() override {}
 
-  void DidFinishLoading(unsigned long identifier, double finish_time) override {
+  void DidFinishLoading(unsigned long identifier) override {
     self_keep_alive_.Clear();
   }
   void DidFail(const ResourceError&) override { self_keep_alive_.Clear(); }
@@ -1031,12 +1031,12 @@ void DocumentThreadableLoader::NotifyFinished(Resource* resource) {
   if (resource->ErrorOccurred()) {
     DispatchDidFail(resource->GetResourceError());
   } else {
-    HandleSuccessfulFinish(resource->Identifier(), resource->LoadFinishTime());
+    HandleSuccessfulFinish(resource->Identifier());
   }
 }
 
-void DocumentThreadableLoader::HandleSuccessfulFinish(unsigned long identifier,
-                                                      double finish_time) {
+void DocumentThreadableLoader::HandleSuccessfulFinish(
+    unsigned long identifier) {
   DCHECK(fallback_request_for_service_worker_.IsNull());
 
   if (!actual_request_.IsNull()) {
@@ -1050,7 +1050,7 @@ void DocumentThreadableLoader::HandleSuccessfulFinish(unsigned long identifier,
   // downloaded file.
   Persistent<Resource> protect = GetResource();
   Clear();
-  client->DidFinishLoading(identifier, finish_time);
+  client->DidFinishLoading(identifier);
 }
 
 void DocumentThreadableLoader::DidTimeout(TimerBase* timer) {
@@ -1254,7 +1254,7 @@ void DocumentThreadableLoader::LoadRequestSync(
     client_->DidDownloadToBlob(resource->DownloadedBlob());
   }
 
-  HandleSuccessfulFinish(identifier, 0.0);
+  HandleSuccessfulFinish(identifier);
 }
 
 void DocumentThreadableLoader::LoadRequest(

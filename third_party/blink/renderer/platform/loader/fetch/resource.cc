@@ -186,7 +186,6 @@ Resource::Resource(const ResourceRequest& request,
                    const ResourceLoaderOptions& options)
     : type_(type),
       status_(ResourceStatus::kNotStarted),
-      load_finish_time_(0),
       identifier_(0),
       preload_discovery_time_(0.0),
       encoded_size_(0),
@@ -356,7 +355,7 @@ void Resource::FinishAsError(const ResourceError& error,
   NotifyFinished();
 }
 
-void Resource::Finish(double load_finish_time,
+void Resource::Finish(TimeTicks load_finish_time,
                       base::SingleThreadTaskRunner* task_runner) {
   DCHECK(!is_revalidating_);
   load_finish_time_ = load_finish_time;

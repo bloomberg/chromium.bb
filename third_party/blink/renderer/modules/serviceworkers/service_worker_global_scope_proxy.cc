@@ -356,7 +356,7 @@ void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadError(
 
 void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadComplete(
     int fetch_event_id,
-    double completion_time,
+    TimeTicks completion_time,
     int64_t encoded_data_length,
     int64_t encoded_body_length,
     int64_t decoded_body_length) {

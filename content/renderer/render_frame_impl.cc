@@ -719,10 +719,6 @@ MhtmlSaveStatus WriteMHTMLToDisk(std::vector<WebThreadSafeData> mhtml_contents,
   return save_status;
 }
 
-double ConvertToBlinkTime(const base::TimeTicks& time_ticks) {
-  return (time_ticks - base::TimeTicks()).InSecondsF();
-}
-
 FaviconURL::IconType ToFaviconType(blink::WebIconURL::Type type) {
   switch (type) {
     case blink::WebIconURL::kTypeFavicon:
@@ -6423,8 +6419,7 @@ WebURLRequest RenderFrameImpl::CreateURLRequestForCommit(
   // for this request (since it already went to the browser).
   request.SetCheckForBrowserSideNavigation(false);
 
-  request.SetNavigationStartTime(
-      ConvertToBlinkTime(common_params.navigation_start));
+  request.SetNavigationStartTime(common_params.navigation_start);
 
   return request;
 }

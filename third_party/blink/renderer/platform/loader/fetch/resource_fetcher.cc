@@ -373,7 +373,7 @@ void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
     // Resources loaded from memory cache should be reported the first time
     // they're used.
     scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
-        params.Options().initiator_info.name, CurrentTimeTicksInSeconds(),
+        params.Options().initiator_info.name, CurrentTimeTicks(),
         resource->GetType() == Resource::kMainResource);
     PopulateTimingInfo(info.get(), resource);
     info->ClearLoadTimings();
@@ -411,7 +411,8 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
   }
 
   Context().DispatchDidFinishLoading(
-      identifier, 0, 0, resource->GetResponse().DecodedBodyLength(), false);
+      identifier, TimeTicks(), 0, resource->GetResponse().DecodedBodyLength(),
+      false);
 }
 
 static std::unique_ptr<TracedValue> UrlForTraceEvent(const KURL& url) {
@@ -491,7 +492,7 @@ Resource* ResourceFetcher::ResourceForStaticData(
   resource->SetIdentifier(CreateUniqueIdentifier());
   resource->SetCacheIdentifier(cache_identifier);
   resource->SetSourceOrigin(GetSourceOrigin(params.Options()));
-  resource->Finish(0.0, Context().GetLoadingTaskRunner().get());
+  resource->Finish(TimeTicks(), Context().GetLoadingTaskRunner().get());
 
   if (!substitute_data.IsValid())
     AddToMemoryCacheIfNeeded(params, resource);
@@ -939,9 +940,10 @@ void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
 
   // The request can already be fetched in a previous navigation. Thus
   // startTime must be set accordingly.
-  double start_time = resource->GetResourceRequest().NavigationStartTime()
-                          ? resource->GetResourceRequest().NavigationStartTime()
-                          : CurrentTimeTicksInSeconds();
+  TimeTicks start_time =
+      !resource->GetResourceRequest().NavigationStartTime().is_null()
+          ? resource->GetResourceRequest().NavigationStartTime()
+          : CurrentTimeTicks();
 
   // This buffer is created and populated for providing transferSize
   // and redirect timing opt-in information.
@@ -1402,7 +1404,7 @@ void ResourceFetcher::HandleLoadCompletion(Resource* resource) {
 }
 
 void ResourceFetcher::HandleLoaderFinish(Resource* resource,
-                                         double finish_time,
+                                         TimeTicks finish_time,
                                          LoaderFinishType type,
                                          uint32_t inflight_keepalive_bytes,
                                          bool blocked_cross_site_document) {

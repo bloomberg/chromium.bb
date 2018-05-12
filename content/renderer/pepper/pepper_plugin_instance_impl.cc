@@ -444,7 +444,7 @@ void PepperPluginInstanceImpl::ExternalDocumentLoader::ReplayReceivedData(
     document_loader->DidReceiveData(it->c_str(), it->length());
   }
   if (finished_loading_) {
-    document_loader->DidFinishLoading(0 /* finish_time */);
+    document_loader->DidFinishLoading();
   } else if (error_.get()) {
     DCHECK(!finished_loading_);
     document_loader->DidFail(*error_);
@@ -457,8 +457,7 @@ void PepperPluginInstanceImpl::ExternalDocumentLoader::DidReceiveData(
   data_.push_back(std::string(data, data_length));
 }
 
-void PepperPluginInstanceImpl::ExternalDocumentLoader::DidFinishLoading(
-    double finish_time) {
+void PepperPluginInstanceImpl::ExternalDocumentLoader::DidFinishLoading() {
   DCHECK(!finished_loading_);
 
   if (error_.get())

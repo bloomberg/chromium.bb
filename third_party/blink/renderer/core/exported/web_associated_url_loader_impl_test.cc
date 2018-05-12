@@ -154,9 +154,7 @@ class WebAssociatedURLLoaderTest : public testing::Test,
     did_receive_cached_metadata_ = true;
   }
 
-  void DidFinishLoading(double finish_time) override {
-    did_finish_loading_ = true;
-  }
+  void DidFinishLoading() override { did_finish_loading_ = true; }
 
   void DidFail(const WebURLError& error) override { did_fail_ = true; }
 

@@ -666,12 +666,12 @@ void ResourceLoader::DidFinishLoadingFirstPartInMultipart() {
       resource_->Identifier(),
       network_instrumentation::RequestOutcome::kSuccess);
 
-  fetcher_->HandleLoaderFinish(resource_.Get(), 0,
+  fetcher_->HandleLoaderFinish(resource_.Get(), TimeTicks(),
                                ResourceFetcher::kDidFinishFirstPartInMultipart,
                                0, false);
 }
 
-void ResourceLoader::DidFinishLoading(double finish_time,
+void ResourceLoader::DidFinishLoading(TimeTicks finish_time,
                                       int64_t encoded_data_length,
                                       int64_t encoded_body_length,
                                       int64_t decoded_body_length,
@@ -789,8 +789,8 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
     Context().DispatchDidDownloadToBlob(resource_->Identifier(), blob.get());
     resource_->DidDownloadToBlob(blob);
   }
-  DidFinishLoading(CurrentTimeTicksInSeconds(), encoded_data_length,
-                   encoded_body_length, decoded_body_length, false);
+  DidFinishLoading(CurrentTimeTicks(), encoded_data_length, encoded_body_length,
+                   decoded_body_length, false);
 }
 
 void ResourceLoader::Dispose() {

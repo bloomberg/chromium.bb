@@ -195,7 +195,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   // of didReceiveData().
   void DidDownloadData(int data_length) override;
   void DidDownloadToBlob(scoped_refptr<BlobDataHandle>) override;
-  void DidFinishLoading(unsigned long identifier, double finish_time) override;
+  void DidFinishLoading(unsigned long identifier) override;
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 

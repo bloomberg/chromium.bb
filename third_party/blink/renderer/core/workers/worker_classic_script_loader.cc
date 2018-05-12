@@ -189,8 +189,7 @@ void WorkerClassicScriptLoader::DidReceiveCachedMetadata(const char* data,
   memcpy(cached_metadata_->data(), data, size);
 }
 
-void WorkerClassicScriptLoader::DidFinishLoading(unsigned long identifier,
-                                                 double) {
+void WorkerClassicScriptLoader::DidFinishLoading(unsigned long identifier) {
   need_to_cancel_ = false;
   if (!failed_ && decoder_)
     source_text_.Append(decoder_->Flush());

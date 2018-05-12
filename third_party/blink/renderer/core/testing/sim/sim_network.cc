@@ -72,7 +72,7 @@ void SimNetwork::DidFail(WebURLLoaderClient* client,
 }
 
 void SimNetwork::DidFinishLoading(WebURLLoaderClient* client,
-                                  double finish_time,
+                                  TimeTicks finish_time,
                                   int64_t total_encoded_data_length,
                                   int64_t total_encoded_body_length,
                                   int64_t total_decoded_body_length) {

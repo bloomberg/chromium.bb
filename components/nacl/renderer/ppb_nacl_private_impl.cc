@@ -1696,7 +1696,7 @@ class PexeDownloader : public blink::WebAssociatedURLLoaderClient {
     }
   }
 
-  void DidFinishLoading(double finish_time) override {
+  void DidFinishLoading() override {
     int32_t result = success_ ? PP_OK : PP_ERROR_FAILED;
 
     if (content::PepperPluginInstance::Get(instance_))

@@ -547,7 +547,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
     // blink::WebAssociatedURLLoaderClient implementation.
     void DidReceiveData(const char* data, int data_length) override;
-    void DidFinishLoading(double finish_time) override;
+    void DidFinishLoading() override;
     void DidFail(const blink::WebURLError& error) override;
 
    private:

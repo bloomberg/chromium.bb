@@ -183,7 +183,7 @@ class FetchManager::Loader final
   void DidReceiveResponse(unsigned long,
                           const ResourceResponse&,
                           std::unique_ptr<WebDataConsumerHandle>) override;
-  void DidFinishLoading(unsigned long, double) override;
+  void DidFinishLoading(unsigned long) override;
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 
@@ -548,7 +548,7 @@ void FetchManager::Loader::DidReceiveResponse(
   }
 }
 
-void FetchManager::Loader::DidFinishLoading(unsigned long, double) {
+void FetchManager::Loader::DidFinishLoading(unsigned long) {
   did_finish_loading_ = true;
   // If there is an integrity verifier, and it has not already finished, it
   // will take care of finishing the load or performing a network error when
