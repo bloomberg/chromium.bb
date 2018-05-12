@@ -478,7 +478,7 @@ const views::View* TrayCast::GetDefaultView() const {
 views::View* TrayCast::CreateTrayView(LoginStatus status) {
   CHECK(tray_ == nullptr);
   tray_ = new tray::CastTrayView(this);
-  tray_->SetVisible(HasActiveRoute());
+  tray_->SetVisible(Shell::Get()->cast_config()->HasActiveRoute());
   return tray_;
 }
 
@@ -531,7 +531,7 @@ void TrayCast::OnDevicesUpdated(std::vector<mojom::SinkAndRoutePtr> devices) {
 void TrayCast::UpdatePrimaryView() {
   if (Shell::Get()->cast_config()->Connected() && !sinks_and_routes_.empty()) {
     if (default_) {
-      if (HasActiveRoute())
+      if (Shell::Get()->cast_config()->HasActiveRoute())
         default_->ActivateCastView();
       else
         default_->ActivateSelectView();
@@ -545,15 +545,6 @@ void TrayCast::UpdatePrimaryView() {
     if (tray_)
       tray_->SetVisible(false);
   }
-}
-
-bool TrayCast::HasActiveRoute() {
-  for (const auto& sr : sinks_and_routes_) {
-    if (!sr->route->title.empty() && sr->route->is_local_source)
-      return true;
-  }
-
-  return false;
 }
 
 void TrayCast::OnCastingSessionStartedOrStopped(bool started) {

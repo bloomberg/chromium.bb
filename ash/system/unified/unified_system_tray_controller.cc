@@ -12,6 +12,8 @@
 #include "ash/system/bluetooth/bluetooth_feature_pod_controller.h"
 #include "ash/system/bluetooth/tray_bluetooth.h"
 #include "ash/system/brightness/unified_brightness_slider_controller.h"
+#include "ash/system/cast/cast_feature_pod_controller.h"
+#include "ash/system/cast/tray_cast.h"
 #include "ash/system/ime/ime_feature_pod_controller.h"
 #include "ash/system/ime/tray_ime_chromeos.h"
 #include "ash/system/network/network_feature_pod_controller.h"
@@ -149,6 +151,11 @@ void UnifiedSystemTrayController::ShowBluetoothDetailedView() {
   ShowSystemTrayDetailedView(system_tray_->GetTrayBluetooth());
 }
 
+void UnifiedSystemTrayController::ShowCastDetailedView() {
+  // TODO(tetsui): Implement UnifiedSystemTray's Cast detailed view.
+  ShowSystemTrayDetailedView(system_tray_->GetTrayCast());
+}
+
 void UnifiedSystemTrayController::ShowAccessibilityDetailedView() {
   // TODO(tetsui): Implement UnifiedSystemTray's Accessibility detailed view.
   ShowSystemTrayDetailedView(system_tray_->GetTrayAccessibility());
@@ -186,6 +193,7 @@ void UnifiedSystemTrayController::InitFeaturePods() {
   AddFeaturePodItem(std::make_unique<QuietModeFeaturePodController>());
   AddFeaturePodItem(std::make_unique<RotationLockFeaturePodController>());
   AddFeaturePodItem(std::make_unique<NightLightFeaturePodController>());
+  AddFeaturePodItem(std::make_unique<CastFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<AccessibilityFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<VPNFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<IMEFeaturePodController>(this));

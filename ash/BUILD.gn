@@ -569,6 +569,8 @@ component("ash") {
     "system/brightness_control_delegate.h",
     "system/caps_lock_notification_controller.cc",
     "system/caps_lock_notification_controller.h",
+    "system/cast/cast_feature_pod_controller.cc",
+    "system/cast/cast_feature_pod_controller.h",
     "system/cast/tray_cast.cc",
     "system/cast/tray_cast.h",
     "system/date/clock_observer.h",

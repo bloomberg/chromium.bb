@@ -364,6 +364,10 @@ TrayBluetooth* SystemTray::GetTrayBluetooth() const {
   return tray_bluetooth_;
 }
 
+TrayCast* SystemTray::GetTrayCast() const {
+  return tray_cast_;
+}
+
 TrayAccessibility* SystemTray::GetTrayAccessibility() const {
   return tray_accessibility_;
 }
