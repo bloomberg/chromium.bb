@@ -161,7 +161,7 @@ static void calc_ab(int32_t *A, int32_t *B, const int32_t *C, const int32_t *D,
   const sgr_params_type *const params = &sgr_params[sgr_params_idx];
   const int r = (radius_idx == 0) ? params->r0 : params->r1;
   const int n = (2 * r + 1) * (2 * r + 1);
-  const __m128i s = _mm_set1_epi32(sgrproj_mtable[sgr_params_idx][radius_idx]);
+  const __m128i s = _mm_set1_epi32((radius_idx == 0) ? params->s0 : params->s1);
   // one_over_n[n-1] is 2^12/n, so easily fits in an int16
   const __m128i one_over_n = _mm_set1_epi32(one_by_x[n - 1]);
 
@@ -301,7 +301,7 @@ static void calc_ab_fast(int32_t *A, int32_t *B, const int32_t *C,
   const sgr_params_type *const params = &sgr_params[sgr_params_idx];
   const int r = (radius_idx == 0) ? params->r0 : params->r1;
   const int n = (2 * r + 1) * (2 * r + 1);
-  const __m128i s = _mm_set1_epi32(sgrproj_mtable[sgr_params_idx][radius_idx]);
+  const __m128i s = _mm_set1_epi32((radius_idx == 0) ? params->s0 : params->s1);
   // one_over_n[n-1] is 2^12/n, so easily fits in an int16
   const __m128i one_over_n = _mm_set1_epi32(one_by_x[n - 1]);
 

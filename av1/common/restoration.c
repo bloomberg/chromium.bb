@@ -24,13 +24,16 @@
 
 #include "aom_ports/mem.h"
 
+// The 's' values are calculated based on original 'r' and 'e' values in the
+// spec using GenSgrprojVtable().
+// Note: Setting r = 0 skips the filter; with corresponding s = -1 (invalid).
 const sgr_params_type sgr_params[SGRPROJ_PARAMS] = {
-  // r1, eps1, r2, eps2
-  // Setting r = 0 skips the filter
-  { 2, 12, 1, 4 },  { 2, 15, 1, 6 },  { 2, 18, 1, 8 },  { 2, 21, 1, 9 },
-  { 2, 24, 1, 10 }, { 2, 29, 1, 11 }, { 2, 36, 1, 12 }, { 2, 45, 1, 13 },
-  { 2, 56, 1, 14 }, { 2, 68, 1, 15 }, { 0, 0, 1, 5 },   { 0, 0, 1, 8 },
-  { 0, 0, 1, 11 },  { 0, 0, 1, 14 },  { 2, 30, 0, 0 },  { 2, 75, 0, 0 },
+  { 2, 140, 1, 3236 }, { 2, 112, 1, 2158 }, { 2, 93, 1, 1618 },
+  { 2, 80, 1, 1438 },  { 2, 70, 1, 1295 },  { 2, 58, 1, 1177 },
+  { 2, 47, 1, 1079 },  { 2, 37, 1, 996 },   { 2, 30, 1, 925 },
+  { 2, 25, 1, 863 },   { 0, -1, 1, 2589 },  { 0, -1, 1, 1618 },
+  { 0, -1, 1, 1177 },  { 0, -1, 1, 925 },   { 2, 56, 0, -1 },
+  { 2, 22, 0, -1 },
 };
 
 static AV1PixelRect whole_frame_rect(const AV1_COMMON *cm, int is_uv) {
@@ -97,6 +100,7 @@ void av1_free_restoration_struct(RestorationInfo *rst_info) {
   rst_info->unit_info = NULL;
 }
 
+#if 0
 // Pair of values for each sgrproj parameter:
 // Index 0 corresponds to r0, e0
 // Index 1 corresponds to r1, e1
@@ -121,8 +125,13 @@ static void GenSgrprojVtable() {
     }
   }
 }
+#endif
 
-void av1_loop_restoration_precal() { GenSgrprojVtable(); }
+void av1_loop_restoration_precal() {
+#if 0
+  GenSgrprojVtable();
+#endif
+}
 
 static void extend_frame_lowbd(uint8_t *data, int width, int height, int stride,
                                int border_horz, int border_vert) {
@@ -701,7 +710,7 @@ static void selfguided_restoration_fast_internal(
       // are (almost) identical, so in this case we saturate to p=0.
       uint32_t p = (a * n < b * b) ? 0 : a * n - b * b;
 
-      const uint32_t s = sgrproj_mtable[sgr_params_idx][radius_idx];
+      const uint32_t s = (radius_idx == 0) ? params->s0 : params->s1;
 
       // p * s < (2^14 * n^2) * round(2^20 / n^2 eps) < 2^34 / eps < 2^32
       // as long as eps >= 4. So p * s fits into a uint32_t, and z < 2^12
@@ -833,7 +842,7 @@ static void selfguided_restoration_internal(int32_t *dgd, int width, int height,
       // are (almost) identical, so in this case we saturate to p=0.
       uint32_t p = (a * n < b * b) ? 0 : a * n - b * b;
 
-      const uint32_t s = sgrproj_mtable[sgr_params_idx][radius_idx];
+      const uint32_t s = (radius_idx == 0) ? params->s0 : params->s1;
 
       // p * s < (2^14 * n^2) * round(2^20 / n^2 eps) < 2^34 / eps < 2^32
       // as long as eps >= 4. So p * s fits into a uint32_t, and z < 2^12

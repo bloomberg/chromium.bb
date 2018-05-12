@@ -171,14 +171,11 @@ extern "C" {
 #error "Wiener filter currently only works if WIENER_FILT_PREC_BITS == 7"
 #endif
 
-// TODO(urvang): Just replace by a struct with r0, sgrproj_mtable0, r1,
-// sgrprog_mtable1 maybe? Where sgrproj_mtable{0,1} are pre-calculated.
-// Then, 'sgrproj_mtable' and its pre-calculation can be removed.
 typedef struct {
-  int r0;
-  int e0;
-  int r1;
-  int e1;
+  int r0;  // radius #0
+  int s0;  // sgr parameter corresponding to r0, based on GenSgrprojVtable()
+  int r1;  // radius #1
+  int s1;  // sgr parameter corresponding to r1, based on GenSgrprojVtable()
 } sgr_params_type;
 
 typedef struct {
