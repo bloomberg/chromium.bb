@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_ASSISTANT_PLATFORM_AUDIO_INPUT_HOST_H_
-#define CHROME_BROWSER_CHROMEOS_ASSISTANT_PLATFORM_AUDIO_INPUT_HOST_H_
+#ifndef CHROME_BROWSER_UI_ASH_ASSISTANT_PLATFORM_AUDIO_INPUT_HOST_H_
+#define CHROME_BROWSER_UI_ASH_ASSISTANT_PLATFORM_AUDIO_INPUT_HOST_H_
 
 #include <memory>
 #include <vector>
@@ -19,17 +19,15 @@ namespace media {
 class AudioInputController;
 }  // namespace media
 
-namespace chromeos {
-namespace assistant {
-
 // Interacts with AudioController and forwards audio input stream to assistant.
-class PlatformAudioInputHost : public mojom::AudioInput {
+class PlatformAudioInputHost : public chromeos::assistant::mojom::AudioInput {
  public:
   PlatformAudioInputHost();
   ~PlatformAudioInputHost() override;
 
   // mojom::AudioInput overrides:
-  void AddObserver(mojom::AudioInputObserverPtr observer) override;
+  void AddObserver(
+      chromeos::assistant::mojom::AudioInputObserverPtr observer) override;
 
   void NotifyDataAvailable(const std::vector<int32_t>& data,
                            int32_t frames,
@@ -43,7 +41,8 @@ class PlatformAudioInputHost : public mojom::AudioInput {
   std::unique_ptr<Writer> sync_writer_;
   std::unique_ptr<EventHandler> event_handler_;
   scoped_refptr<media::AudioInputController> audio_input_controller_;
-  mojo::InterfacePtrSet<mojom::AudioInputObserver> observers_;
+  mojo::InterfacePtrSet<chromeos::assistant::mojom::AudioInputObserver>
+      observers_;
 
   bool recording_ = false;
 
@@ -52,7 +51,4 @@ class PlatformAudioInputHost : public mojom::AudioInput {
   DISALLOW_COPY_AND_ASSIGN(PlatformAudioInputHost);
 };
 
-}  // namespace assistant
-}  // namespace chromeos
-
-#endif  // CHROME_BROWSER_CHROMEOS_ASSISTANT_PLATFORM_AUDIO_INPUT_HOST_H_
+#endif  // CHROME_BROWSER_UI_ASH_ASSISTANT_PLATFORM_AUDIO_INPUT_HOST_H_

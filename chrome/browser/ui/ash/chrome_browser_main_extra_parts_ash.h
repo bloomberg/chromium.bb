@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/common/buildflags.h"
+#include "chromeos/assistant/buildflags.h"
 
 namespace aura {
 class UserActivityForwarder;
@@ -47,6 +48,10 @@ class WallpaperControllerClient;
 
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
 class ExoParts;
+#endif
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+class AssistantClient;
 #endif
 
 namespace internal {
@@ -103,6 +108,10 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
 
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
   std::unique_ptr<ExoParts> exo_parts_;
+#endif
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  std::unique_ptr<AssistantClient> assistant_client_;
 #endif
 
   // Initialized in PostProfileInit if ash config == MASH:

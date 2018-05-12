@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/assistant/platform_audio_input_host.h"
+#include "chrome/browser/ui/ash/assistant/platform_audio_input_host.h"
 
 #include <utility>
 
@@ -16,9 +16,6 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_sample_types.h"
 #include "media/base/channel_layout.h"
-
-namespace chromeos {
-namespace assistant {
 
 namespace {
 
@@ -57,14 +54,13 @@ class PlatformAudioInputHost::Writer
 
     task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&::chromeos::assistant::NotifyDataAvailable, host_,
-                       std::move(buffer), data->frames(), capture_time));
+        base::BindOnce(&::NotifyDataAvailable, host_, std::move(buffer),
+                       data->frames(), capture_time));
   }
 
   void Close() override {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&::chromeos::assistant::NotifyAudioClosed, host_));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(&::NotifyAudioClosed, host_));
   }
 
  private:
@@ -115,7 +111,7 @@ PlatformAudioInputHost::~PlatformAudioInputHost() {
 }
 
 void PlatformAudioInputHost::AddObserver(
-    mojom::AudioInputObserverPtr observer) {
+    chromeos::assistant::mojom::AudioInputObserverPtr observer) {
   observers_.AddPtr(std::move(observer));
   if (!recording_) {
     audio_input_controller_->Record();
@@ -142,6 +138,3 @@ void PlatformAudioInputHost::NotifyAudioClosed() {
   observers_.ForAllPtrs([](auto* observer) { observer->OnAudioInputClosed(); });
   observers_.CloseAll();
 }
-
-}  // namespace assistant
-}  // namespace chromeos

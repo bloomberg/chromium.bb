@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_ASSISTANT_ASSISTANT_CARD_RENDERER_H_
-#define CHROME_BROWSER_CHROMEOS_ASSISTANT_ASSISTANT_CARD_RENDERER_H_
+#ifndef CHROME_BROWSER_UI_ASH_ASSISTANT_ASSISTANT_CARD_RENDERER_H_
+#define CHROME_BROWSER_UI_ASH_ASSISTANT_ASSISTANT_CARD_RENDERER_H_
 
 #include <unordered_map>
 #include <vector>
@@ -18,9 +18,6 @@ class AccountId;
 namespace service_manager {
 class Connector;
 }  // namespace service_manager
-
-namespace chromeos {
-namespace assistant {
 
 namespace {
 class AssistantCard;
@@ -59,7 +56,4 @@ class AssistantCardRenderer : public ash::mojom::AssistantCardRenderer {
   DISALLOW_COPY_AND_ASSIGN(AssistantCardRenderer);
 };
 
-}  // namespace assistant
-}  // namespace chromeos
-
-#endif  // CHROME_BROWSER_CHROMEOS_ASSISTANT_ASSISTANT_CARD_RENDERER_H_
+#endif  // CHROME_BROWSER_UI_ASH_ASSISTANT_ASSISTANT_CARD_RENDERER_H_

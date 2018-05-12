@@ -33,6 +33,8 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/assistant/buildflags.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -47,6 +49,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/gfx/image/image_skia.h"
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+#include "chrome/browser/ui/ash/assistant/assistant_client.h"
+#endif
 
 using session_manager::Session;
 using session_manager::SessionManager;
@@ -455,6 +461,15 @@ void SessionControllerClient::OnSessionStateChanged() {
     primary_user_session_sent_ = true;
     SendUserSession(*UserManager::Get()->GetPrimaryUser());
     SendUserSessionOrder();
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+    // Assistant is initialized only once when primary user logs in.
+    if (chromeos::switches::IsAssistantEnabled()) {
+      AssistantClient::Get()->MaybeInit(
+          content::BrowserContext::GetConnectorFor(
+              ProfileManager::GetPrimaryUserProfile()));
+    }
+#endif
   }
 
   SendSessionInfoIfChanged();

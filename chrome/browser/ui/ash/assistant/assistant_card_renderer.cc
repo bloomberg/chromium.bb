@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/assistant/assistant_card_renderer.h"
+#include "chrome/browser/ui/ash/assistant/assistant_card_renderer.h"
 
 #include <memory>
 
@@ -20,9 +20,6 @@
 #include "ui/views/controls/webview/web_contents_set_background_color.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/view.h"
-
-namespace chromeos {
-namespace assistant {
 
 namespace {
 
@@ -160,6 +157,3 @@ void AssistantCardRenderer::ReleaseAll(
   for (const base::UnguessableToken& id_token : id_tokens)
     assistant_cards_.erase(id_token);
 }
-
-}  // namespace assistant
-}  // namespace chromeos
