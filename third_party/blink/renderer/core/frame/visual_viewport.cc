@@ -36,7 +36,6 @@
 #include "cc/layers/scrollbar_layer_interface.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_layer.h"
-#include "third_party/blink/public/platform/web_scrollbar.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -425,8 +424,8 @@ void VisualViewport::InitializeScrollbars() {
       inner_viewport_container_layer_->AddChild(
           overlay_scrollbar_vertical_.get());
 
-    SetupScrollbar(WebScrollbar::kHorizontal);
-    SetupScrollbar(WebScrollbar::kVertical);
+    SetupScrollbar(kHorizontalScrollbar);
+    SetupScrollbar(kVerticalScrollbar);
   } else {
     overlay_scrollbar_horizontal_->RemoveFromParent();
     overlay_scrollbar_vertical_->RemoveFromParent();
@@ -440,8 +439,8 @@ void VisualViewport::InitializeScrollbars() {
     frame->View()->VisualViewportScrollbarsChanged();
 }
 
-void VisualViewport::SetupScrollbar(WebScrollbar::Orientation orientation) {
-  bool is_horizontal = orientation == WebScrollbar::kHorizontal;
+void VisualViewport::SetupScrollbar(ScrollbarOrientation orientation) {
+  bool is_horizontal = orientation == kHorizontalScrollbar;
   GraphicsLayer* scrollbar_graphics_layer =
       is_horizontal ? overlay_scrollbar_horizontal_.get()
                     : overlay_scrollbar_vertical_.get();
@@ -463,10 +462,8 @@ void VisualViewport::SetupScrollbar(WebScrollbar::Orientation orientation) {
   if (!scrollbar_layer_group) {
     ScrollingCoordinator* coordinator = GetPage().GetScrollingCoordinator();
     DCHECK(coordinator);
-    ScrollbarOrientation webcore_orientation =
-        is_horizontal ? kHorizontalScrollbar : kVerticalScrollbar;
     scrollbar_layer_group = coordinator->CreateSolidColorScrollbarLayer(
-        webcore_orientation, thumb_thickness, scrollbar_margin, false);
+        orientation, thumb_thickness, scrollbar_margin, false);
 
     // The compositor will control the scrollbar's visibility. Set to invisible
     // by default so scrollbars don't show up in layout tests.

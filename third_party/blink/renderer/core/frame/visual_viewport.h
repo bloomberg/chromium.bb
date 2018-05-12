@@ -34,7 +34,6 @@
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/platform/web_scrollbar.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -44,6 +43,7 @@
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 
 namespace blink {
@@ -266,7 +266,7 @@ class CORE_EXPORT VisualViewport final
                      const IntRect&) const override;
   String DebugName(const GraphicsLayer*) const override;
 
-  void SetupScrollbar(WebScrollbar::Orientation);
+  void SetupScrollbar(ScrollbarOrientation);
 
   void NotifyRootFrameViewport() const;
 
