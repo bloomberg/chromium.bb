@@ -153,13 +153,6 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
   // Index of slice which contains data waiting to be written for the first
   // time. -1 if send buffer is empty or all data has been written.
   int32_t write_index_;
-
-  // Latched value of quic_reloadable_flag_quic_free_mem_slice_out_of_order.
-  const bool free_mem_slice_out_of_order_;
-
-  // Latched value of quic_reloadable_flag_quic_free_mem_slice_out_of_order and
-  // quic_reloadable_flag_quic_fast_path_on_stream_data_acked.
-  const bool enable_fast_path_on_data_acked_;
 };
 
 }  // namespace net

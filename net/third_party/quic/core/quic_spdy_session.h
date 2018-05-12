@@ -82,7 +82,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   // stream. This method will only be called for server streams.
   virtual void OnPriorityFrame(QuicStreamId stream_id, SpdyPriority priority);
 
-  // Sends contents of |iov| to hq_deframer_, returns number of bytes processed.
+  // Sends contents of |iov| to h2_deframer_, returns number of bytes processed.
   size_t ProcessHeaderData(const struct iovec& iov);
 
   // Writes |headers| for the stream |id| to the dedicated headers stream.
@@ -186,11 +186,16 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
 
   bool IsConnected() { return connection()->connected(); }
 
-  // Sets how much encoded data the hpack decoder of hq_deframer_ is willing to
+  // Sets how much encoded data the hpack decoder of h2_deframer_ is willing to
   // buffer.
   void set_max_decode_buffer_size_bytes(size_t max_decode_buffer_size_bytes) {
-    hq_deframer_.GetHpackDecoder()->set_max_decode_buffer_size_bytes(
-        max_decode_buffer_size_bytes);
+    if (use_h2_deframer_) {
+      h2_deframer_.GetHpackDecoder()->set_max_decode_buffer_size_bytes(
+          max_decode_buffer_size_bytes);
+    } else {
+      hq_deframer_.GetHpackDecoder()->set_max_decode_buffer_size_bytes(
+          max_decode_buffer_size_bytes);
+    }
   }
 
   void set_max_uncompressed_header_bytes(
@@ -242,7 +247,11 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
 
   bool supports_push_promise_;
 
+  // TODO(rch): remove |use_h2_deframer_| and |hq_deframer_| when
+  // FLAGS_quic_reloadable_flag_quic_enable_h2_deframer is deprecated.
+  const bool use_h2_deframer_;
   SpdyFramer spdy_framer_;
+  http2::Http2DecoderAdapter h2_deframer_;
   QuicHttpDecoderAdapter hq_deframer_;
   std::unique_ptr<SpdyFramerVisitor> spdy_framer_visitor_;
 

@@ -135,6 +135,9 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
 
   // Gets the number of RTTs BBR remains in STARTUP phase.
   QuicRoundTripCount num_startup_rtts() const { return num_startup_rtts_; }
+  bool has_non_app_limited_sample() const {
+    return has_non_app_limited_sample_;
+  }
 
   DebugState ExportDebugState() const;
 
@@ -312,6 +315,8 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   // Indicates whether the most recent bandwidth sample was marked as
   // app-limited.
   bool last_sample_is_app_limited_;
+  // Indicates whether any non app-limited samples have been recorded.
+  bool has_non_app_limited_sample_;
 
   // Current state of recovery.
   RecoveryState recovery_state_;
@@ -334,7 +339,7 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
 
   // If true, will not exit low gain mode until bytes_in_flight drops below BDP
   // or it's time for high gain mode.
-  bool fully_drain_queue_;
+  bool drain_to_target_;
 
   // If true, use a CWND of 0.75*BDP during probe_rtt instead of 4 packets.
   bool probe_rtt_based_on_bdp_;
