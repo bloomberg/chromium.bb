@@ -55,9 +55,9 @@ class VideoResolutionPolicy;
 }
 
 namespace shell {
-
 class CastBrowserMainParts;
 class CastResourceDispatcherHostDelegate;
+class RendererConfigManager;
 class URLRequestContextFactory;
 
 class CastContentBrowserClient : public content::ContentBrowserClient {
@@ -189,6 +189,10 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<content::NavigationUIData> GetNavigationUIData(
       content::NavigationHandle* navigation_handle) override;
 
+  RendererConfigManager* renderer_config_manager() const {
+    return renderer_config_manager_.get();
+  }
+
  protected:
   CastContentBrowserClient();
 
@@ -234,6 +238,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<CastResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
   std::unique_ptr<media::CmaBackendFactory> cma_backend_factory_;
+  std::unique_ptr<RendererConfigManager> renderer_config_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentBrowserClient);
 };
