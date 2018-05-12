@@ -130,8 +130,7 @@ static void UmaHistogramAspectRatio(const char* name, const T& size) {
       name,
       // Intentionally use integer division to truncate the result.
       size.height() ? (size.width() * 100) / size.height() : kInfiniteRatio,
-      base::CustomHistogram::ArrayToCustomRanges(
-          kCommonAspectRatios100, arraysize(kCommonAspectRatios100)));
+      base::CustomHistogram::ArrayToCustomEnumRanges(kCommonAspectRatios100));
 }
 
 // Record detected track counts by type corresponding to a src= playback.

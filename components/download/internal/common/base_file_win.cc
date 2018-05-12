@@ -257,25 +257,22 @@ DownloadInterruptReason MapShFileOperationCodes(int code) {
   if (result == DOWNLOAD_INTERRUPT_REASON_FILE_FAILED) {
     UMA_HISTOGRAM_CUSTOM_ENUMERATION(
         "Download.MapWinShErrorFileFailed", code,
-        base::CustomHistogram::ArrayToCustomRanges(
-            kAllSpecialShFileOperationCodes,
-            arraysize(kAllSpecialShFileOperationCodes)));
+        base::CustomHistogram::ArrayToCustomEnumRanges(
+            kAllSpecialShFileOperationCodes));
   }
 
   if (result == DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED) {
     UMA_HISTOGRAM_CUSTOM_ENUMERATION(
         "Download.MapWinShErrorAccessDenied", code,
-        base::CustomHistogram::ArrayToCustomRanges(
-            kAllSpecialShFileOperationCodes,
-            arraysize(kAllSpecialShFileOperationCodes)));
+        base::CustomHistogram::ArrayToCustomEnumRanges(
+            kAllSpecialShFileOperationCodes));
   }
 
   if (result == DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR) {
     UMA_HISTOGRAM_CUSTOM_ENUMERATION(
         "Download.MapWinShErrorTransientError", code,
-        base::CustomHistogram::ArrayToCustomRanges(
-            kAllSpecialShFileOperationCodes,
-            arraysize(kAllSpecialShFileOperationCodes)));
+        base::CustomHistogram::ArrayToCustomEnumRanges(
+            kAllSpecialShFileOperationCodes));
   }
 
   if (result != DOWNLOAD_INTERRUPT_REASON_NONE)

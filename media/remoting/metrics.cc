@@ -193,8 +193,7 @@ void SessionMetricsRecorder::RecordVideoConfiguration() {
                             last_video_profile_, VIDEO_CODEC_PROFILE_MAX + 1);
   UMA_HISTOGRAM_CUSTOM_ENUMERATION(
       "Media.Remoting.VideoNaturalWidth", last_natural_size_.width(),
-      base::CustomHistogram::ArrayToCustomRanges(
-          kVideoWidthBuckets, arraysize(kVideoWidthBuckets)));
+      base::CustomHistogram::ArrayToCustomEnumRanges(kVideoWidthBuckets));
   // Intentionally use integer division to truncate the result.
   const int aspect_ratio_100 =
       last_natural_size_.height()
@@ -202,8 +201,7 @@ void SessionMetricsRecorder::RecordVideoConfiguration() {
           : kInfiniteRatio;
   UMA_HISTOGRAM_CUSTOM_ENUMERATION(
       "Media.Remoting.VideoAspectRatio", aspect_ratio_100,
-      base::CustomHistogram::ArrayToCustomRanges(
-          kCommonAspectRatios100, arraysize(kCommonAspectRatios100)));
+      base::CustomHistogram::ArrayToCustomEnumRanges(kCommonAspectRatios100));
 }
 
 void SessionMetricsRecorder::RecordTrackConfiguration() {

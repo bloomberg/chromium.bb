@@ -105,16 +105,14 @@ void RecordPublicKeyHistogram(const char* chain_position,
     // binary curves - which range from 163 bits to 571 bits.
     counter = base::CustomHistogram::FactoryGet(
         histogram_name,
-        base::CustomHistogram::ArrayToCustomRanges(kEccKeySizes,
-                                                   arraysize(kEccKeySizes)),
+        base::CustomHistogram::ArrayToCustomEnumRanges(kEccKeySizes),
         base::HistogramBase::kUmaTargetedHistogramFlag);
   } else {
     // Key sizes < 1024 bits should cause errors, while key sizes > 16K are not
     // uniformly supported by the underlying cryptographic libraries.
     counter = base::CustomHistogram::FactoryGet(
         histogram_name,
-        base::CustomHistogram::ArrayToCustomRanges(kRsaDsaKeySizes,
-                                                   arraysize(kRsaDsaKeySizes)),
+        base::CustomHistogram::ArrayToCustomEnumRanges(kRsaDsaKeySizes),
         base::HistogramBase::kUmaTargetedHistogramFlag);
   }
   counter->Add(size_bits);

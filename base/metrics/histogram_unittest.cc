@@ -292,10 +292,10 @@ TEST_P(HistogramTest, LinearRangesTest) {
   EXPECT_TRUE(ranges2.Equals(histogram2->bucket_ranges()));
 }
 
-TEST_P(HistogramTest, ArrayToCustomRangesTest) {
+TEST_P(HistogramTest, ArrayToCustomEnumRangesTest) {
   const HistogramBase::Sample ranges[3] = {5, 10, 20};
   std::vector<HistogramBase::Sample> ranges_vec =
-      CustomHistogram::ArrayToCustomRanges(ranges, 3);
+      CustomHistogram::ArrayToCustomEnumRanges(ranges);
   ASSERT_EQ(6u, ranges_vec.size());
   EXPECT_EQ(5, ranges_vec[0]);
   EXPECT_EQ(6, ranges_vec[1]);

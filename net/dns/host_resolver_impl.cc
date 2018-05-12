@@ -172,8 +172,7 @@ std::vector<int> GetAllGetAddrinfoOSErrors() {
     os_errors[i] = std::abs(os_errors[i]);
   }
 
-  return base::CustomHistogram::ArrayToCustomRanges(os_errors,
-                                                    arraysize(os_errors));
+  return base::CustomHistogram::ArrayToCustomEnumRanges(os_errors);
 }
 
 enum DnsResolveStatus {
