@@ -20,6 +20,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/allocator.gni")
 import("//build/config/arm.gni")
+import("//build/config/c++/c++.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/dcheck_always_on.gni")
@@ -177,7 +178,6 @@ jumbo_component("base") {
     "android/content_uri_utils.cc",
     "android/content_uri_utils.h",
     "android/cpu_features.cc",
-    "android/cxa_demangle_stub.cc",
     "android/early_trace_event_binding.cc",
     "android/event_log.cc",
     "android/event_log.h",
@@ -1301,6 +1301,12 @@ jumbo_component("base") {
       "//third_party/android_tools:cpu_features",
       "//third_party/ashmem",
     ]
+
+    # TODO(thomasanderson): Remove this once use_custom_libcxx is always set to
+    # true on Android.
+    if (!use_custom_libcxx) {
+      deps += [ "//buildtools/third_party/libc++abi:cxa_demangle_stub" ]
+    }
 
     # Needs to be a public config so that dependent targets link against it as
     # well when doing a component build.
