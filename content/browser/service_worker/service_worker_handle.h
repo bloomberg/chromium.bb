@@ -14,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "url/origin.h"
 
@@ -46,12 +47,40 @@ class CONTENT_EXPORT ServiceWorkerHandle
   // ServiceWorkerVersion::Listener overrides.
   void OnVersionStateChanged(ServiceWorkerVersion* version) override;
 
-  // Establishes a new mojo connection into |bindings_|.
-  blink::mojom::ServiceWorkerObjectInfoPtr CreateObjectInfo();
+  // Returns an info for the ServiceWorker object of this handle. The info
+  // contains a Mojo ptr to |this| which ensures |this| stays alive while the
+  // info is alive. Furthermore, it contains a Mojo request for the
+  // ServiceWorkerObject interface in the renderer. |this| will make calls to
+  // the ServiceWorkerObject to update its state.
+  //
+  // WARNING: The returned info must be sent immediately over Mojo, because
+  // |this| will start making calls on an associated interface ptr to
+  // ServiceWorkerObject, which crashes unless the request inside the info has
+  // been sent. If the info cannot be sent immediately, use
+  // CreateIncompleteObjectInfo() instead.
+  blink::mojom::ServiceWorkerObjectInfoPtr CreateCompleteObjectInfoToSend();
+
+  // Similar to CreateCompleteObjectInfoToSend(), except the returned info has
+  // an empty Mojo request for ServiceWorkerObject. To make the info usable, the
+  // caller should add a request to the info, send the info over Mojo, and
+  // then call AddRemoteObjectPtrAndUpdateState().
+  //
+  // This function is useful when an info is needed before it can be sent over
+  // Mojo.
+  blink::mojom::ServiceWorkerObjectInfoPtr CreateIncompleteObjectInfo();
+
+  // Starts to use the |remote_object_ptr_info| as a valid Mojo pipe endpoint,
+  // and triggers statechanged event if |sent_state| is old and needs to be
+  // updated.
+  void AddRemoteObjectPtrAndUpdateState(
+      blink::mojom::ServiceWorkerObjectAssociatedPtrInfo remote_object_ptr_info,
+      blink::mojom::ServiceWorkerState sent_state);
 
   int provider_id() const { return provider_id_; }
   int handle_id() const { return handle_id_; }
   ServiceWorkerVersion* version() { return version_.get(); }
+
+  base::WeakPtr<ServiceWorkerHandle> AsWeakPtr();
 
  private:
   friend class service_worker_handle_unittest::ServiceWorkerHandleTest;
@@ -68,8 +97,6 @@ class CONTENT_EXPORT ServiceWorkerHandle
       ::blink::TransferableMessage message,
       base::OnceCallback<void(ServiceWorkerStatusCode)> callback);
 
-  base::WeakPtr<ServiceWorkerHandle> AsWeakPtr();
-
   void OnConnectionError();
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
@@ -85,9 +112,15 @@ class CONTENT_EXPORT ServiceWorkerHandle
   const int handle_id_;
   scoped_refptr<ServiceWorkerVersion> version_;
   mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerObjectHost> bindings_;
-  // Mojo connection to the content::WebServiceWorkerImpl in the renderer, which
-  // corresponds to the ServiceWorker JavaScript object.
-  blink::mojom::ServiceWorkerObjectAssociatedPtr remote_object_;
+  // Typically |remote_objects_| contains only one Mojo connection,
+  // corresponding to the content::WebServiceWorkerImpl in the renderer which
+  // corresponds to the ServiceWorker JavaScript object. However, multiple Mojo
+  // connections may exist while propagating multiple service worker object
+  // infos to the renderer process, but only the first one that arrived there
+  // will be used to create the new content::WebServiceWorkerImpl instance and
+  // be bound to it.
+  mojo::AssociatedInterfacePtrSet<blink::mojom::ServiceWorkerObject>
+      remote_objects_;
 
   base::WeakPtrFactory<ServiceWorkerHandle> weak_ptr_factory_;
 

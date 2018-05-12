@@ -573,7 +573,7 @@ ServiceWorkerProviderHost::CreateRequestHandler(
   return std::unique_ptr<ServiceWorkerRequestHandler>();
 }
 
-blink::mojom::ServiceWorkerObjectInfoPtr
+base::WeakPtr<ServiceWorkerHandle>
 ServiceWorkerProviderHost::GetOrCreateServiceWorkerHandle(
     ServiceWorkerVersion* version) {
   if (!context_ || !version)
@@ -582,11 +582,11 @@ ServiceWorkerProviderHost::GetOrCreateServiceWorkerHandle(
   const int64_t version_id = version->version_id();
   auto existing_handle = handles_.find(version_id);
   if (existing_handle != handles_.end())
-    return existing_handle->second->CreateObjectInfo();
+    return existing_handle->second->AsWeakPtr();
 
   handles_[version_id] =
       std::make_unique<ServiceWorkerHandle>(context_, this, version);
-  return handles_[version_id]->CreateObjectInfo();
+  return handles_[version_id]->AsWeakPtr();
 }
 
 bool ServiceWorkerProviderHost::CanAssociateRegistration(
@@ -607,8 +607,12 @@ void ServiceWorkerProviderHost::PostMessageToClient(
   if (!dispatcher_host_)
     return;
 
-  container_->PostMessageToClient(GetOrCreateServiceWorkerHandle(version),
-                                  std::move(message));
+  blink::mojom::ServiceWorkerObjectInfoPtr info;
+  base::WeakPtr<ServiceWorkerHandle> handle =
+      GetOrCreateServiceWorkerHandle(version);
+  if (handle)
+    info = handle->CreateCompleteObjectInfoToSend();
+  container_->PostMessageToClient(std::move(info), std::move(message));
 }
 
 void ServiceWorkerProviderHost::CountFeature(blink::mojom::WebFeature feature) {
@@ -797,8 +801,10 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
   DCHECK_EQ(associated_registration_->active_version(), controller_.get());
 
   // Set the info for the JavaScript ServiceWorkerContainer#controller object.
-  controller_info->object_info =
+  base::WeakPtr<ServiceWorkerHandle> handle =
       GetOrCreateServiceWorkerHandle(controller_.get());
+  if (handle)
+    controller_info->object_info = handle->CreateCompleteObjectInfoToSend();
 
   // Populate used features for UseCounter purposes.
   std::vector<blink::mojom::WebFeature> used_features;

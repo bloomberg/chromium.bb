@@ -95,7 +95,6 @@ ServiceWorkerDispatcher::GetOrCreateServiceWorker(
   DCHECK(info->request.is_pending());
   WorkerObjectMap::iterator found = service_workers_.find(info->handle_id);
   if (found != service_workers_.end()) {
-    found->second->RefreshConnection(std::move(info->request));
     return found->second;
   }
 

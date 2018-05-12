@@ -38,15 +38,10 @@ namespace content {
 // Handle, it passes a new Handle whenever passing this class to Blink. Blink
 // discards the new Handle if it already has one.
 //
-// When a blink::mojom::ServiceWorkerObjectInfo arrives at the renderer, there
-// are two ways to handle it.
-// 1) If there is no WebServiceWorkerImpl which represents the ServiceWorker, a
+// When a blink::mojom::ServiceWorkerObjectInfo arrives at the renderer,
+// if there is no WebServiceWorkerImpl which represents the ServiceWorker, a
 // new WebServiceWorkerImpl is created using the
-// blink::mojom::ServiceWorkerObjectInfo.
-// 2) If there is a WebServiceWorkerImpl which represents the ServiceWorker, the
-// WebServiceWorkerImpl starts to use the new browser->renderer connection
-// (blink::mojom::ServiceWorkerObject interface) and the information about the
-// service worker.
+// blink::mojom::ServiceWorkerObjectInfo, otherwise reuse the existing one.
 //
 // WebServiceWorkerImpl holds a Mojo connection (|host_|). The connection keeps
 // the ServiceWorkerHandle in the browser process alive, which in turn keeps the
@@ -57,13 +52,6 @@ class CONTENT_EXPORT WebServiceWorkerImpl
       public base::RefCounted<WebServiceWorkerImpl> {
  public:
   explicit WebServiceWorkerImpl(blink::mojom::ServiceWorkerObjectInfoPtr info);
-
-  // Closes the existing binding and binds to |request| instead. Called when the
-  // browser process sends a new blink::mojom::ServiceWorkerObjectInfo and
-  // |this| already exists for the described ServiceWorker (see the class
-  // comment).
-  void RefreshConnection(
-      blink::mojom::ServiceWorkerObjectAssociatedRequest request);
 
   // Implements blink::mojom::ServiceWorkerObject.
   void StateChanged(blink::mojom::ServiceWorkerState new_state) override;

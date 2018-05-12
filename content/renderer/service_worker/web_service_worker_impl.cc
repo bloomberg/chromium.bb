@@ -58,12 +58,6 @@ WebServiceWorkerImpl::WebServiceWorkerImpl(
   dispatcher->AddServiceWorker(info_->handle_id, this);
 }
 
-void WebServiceWorkerImpl::RefreshConnection(
-    blink::mojom::ServiceWorkerObjectAssociatedRequest request) {
-  binding_.Close();
-  binding_.Bind(std::move(request));
-}
-
 void WebServiceWorkerImpl::StateChanged(
     blink::mojom::ServiceWorkerState new_state) {
   state_ = new_state;

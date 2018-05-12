@@ -268,8 +268,13 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
   controller_info->endpoint =
       provider_host_->GetControllerServiceWorkerPtr().PassInterface();
   controller_info->client_id = provider_host_->client_uuid();
-  controller_info->object_info = provider_host_->GetOrCreateServiceWorkerHandle(
-      provider_host_->controller());
+  base::WeakPtr<ServiceWorkerHandle> handle =
+      provider_host_->GetOrCreateServiceWorkerHandle(
+          provider_host_->controller());
+  if (handle) {
+    params.controller_service_worker_handle = handle;
+    controller_info->object_info = handle->CreateIncompleteObjectInfo();
+  }
   params.controller_service_worker_info = std::move(controller_info);
   return base::Optional<SubresourceLoaderParams>(std::move(params));
 }

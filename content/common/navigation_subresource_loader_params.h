@@ -5,10 +5,13 @@
 #ifndef CONTENT_COMMON_NAVIGATION_SUBRESOURCE_LOADER_PARAMS_H_
 #define CONTENT_COMMON_NAVIGATION_SUBRESOURCE_LOADER_PARAMS_H_
 
+#include "base/memory/weak_ptr.h"
 #include "content/common/service_worker/controller_service_worker.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
+
+class ServiceWorkerHandle;
 
 // For NetworkService glues:
 // Navigation parameters that are necessary to set-up a subresource loader
@@ -28,7 +31,13 @@ struct CONTENT_EXPORT SubresourceLoaderParams {
 
   // The controller service worker, non-null if the frame is to be
   // controlled by the service worker.
+  //
+  // |controller_service_worker_info->object_info| is "incomplete". It must be
+  // updated before being sent over Mojo and then registered with
+  // |controller_service_worker_handle|. See
+  // ServiceWorkerHandle::CreateIncompleteObjectInfo() for details.
   mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info;
+  base::WeakPtr<ServiceWorkerHandle> controller_service_worker_handle;
 };
 
 }  // namespace content

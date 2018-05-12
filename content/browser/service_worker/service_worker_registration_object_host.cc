@@ -14,6 +14,22 @@
 
 namespace content {
 
+namespace {
+
+// Returns an object info to send over Mojo. The info must be sent immediately.
+// See ServiceWorkerHandle::CreateCompleteObjectInfoToSend() for details.
+blink::mojom::ServiceWorkerObjectInfoPtr CreateCompleteObjectInfoToSend(
+    ServiceWorkerProviderHost* provider_host,
+    ServiceWorkerVersion* version) {
+  base::WeakPtr<ServiceWorkerHandle> service_worker_handle =
+      provider_host->GetOrCreateServiceWorkerHandle(version);
+  if (!service_worker_handle)
+    return nullptr;
+  return service_worker_handle->CreateCompleteObjectInfoToSend();
+}
+
+}  // anonymous namespace
+
 ServiceWorkerRegistrationObjectHost::ServiceWorkerRegistrationObjectHost(
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerProviderHost* provider_host,
@@ -44,12 +60,12 @@ ServiceWorkerRegistrationObjectHost::CreateObjectInfo() {
   bindings_.AddBinding(this, mojo::MakeRequest(&info->host_ptr_info));
   info->request = mojo::MakeRequest(&remote_registration_);
 
-  info->installing = provider_host_->GetOrCreateServiceWorkerHandle(
-      registration_->installing_version());
-  info->waiting = provider_host_->GetOrCreateServiceWorkerHandle(
-      registration_->waiting_version());
-  info->active = provider_host_->GetOrCreateServiceWorkerHandle(
-      registration_->active_version());
+  info->installing = CreateCompleteObjectInfoToSend(
+      provider_host_, registration_->installing_version());
+  info->waiting = CreateCompleteObjectInfoToSend(
+      provider_host_, registration_->waiting_version());
+  info->active = CreateCompleteObjectInfoToSend(
+      provider_host_, registration_->active_version());
   return info;
 }
 
@@ -275,12 +291,12 @@ void ServiceWorkerRegistrationObjectHost::SetVersionAttributes(
   blink::mojom::ServiceWorkerObjectInfoPtr active;
   if (changed_mask.installing_changed()) {
     installing =
-        provider_host_->GetOrCreateServiceWorkerHandle(installing_version);
+        CreateCompleteObjectInfoToSend(provider_host_, installing_version);
   }
   if (changed_mask.waiting_changed())
-    waiting = provider_host_->GetOrCreateServiceWorkerHandle(waiting_version);
+    waiting = CreateCompleteObjectInfoToSend(provider_host_, waiting_version);
   if (changed_mask.active_changed())
-    active = provider_host_->GetOrCreateServiceWorkerHandle(active_version);
+    active = CreateCompleteObjectInfoToSend(provider_host_, active_version);
   DCHECK(remote_registration_);
   remote_registration_->SetVersionAttributes(
       changed_mask.changed(), std::move(installing), std::move(waiting),

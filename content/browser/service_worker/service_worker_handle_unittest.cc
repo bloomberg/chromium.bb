@@ -291,7 +291,8 @@ TEST_F(ServiceWorkerHandleTest,
   // object in the service worker execution context for |version_|.
   ServiceWorkerProviderHost* provider_host = version_->provider_host();
   blink::mojom::ServiceWorkerObjectInfoPtr info =
-      provider_host->GetOrCreateServiceWorkerHandle(version_.get());
+      provider_host->GetOrCreateServiceWorkerHandle(version_.get())
+          ->CreateCompleteObjectInfoToSend();
   ServiceWorkerHandle* sender_worker_handle =
       GetServiceWorkerHandle(provider_host, version_->version_id());
   EXPECT_EQ(1u, GetBindingsCount(sender_worker_handle));
@@ -354,7 +355,8 @@ TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_FromClient) {
   provider_host->SetDocumentUrl(pattern);
   // Prepare a ServiceWorkerHandle for the above |provider_host|.
   blink::mojom::ServiceWorkerObjectInfoPtr info =
-      provider_host->GetOrCreateServiceWorkerHandle(version_.get());
+      provider_host->GetOrCreateServiceWorkerHandle(version_.get())
+          ->CreateCompleteObjectInfoToSend();
   ServiceWorkerHandle* handle =
       GetServiceWorkerHandle(provider_host.get(), version_->version_id());
 
@@ -409,7 +411,8 @@ TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_Fail) {
   provider_host->SetDocumentUrl(pattern);
   // Prepare a ServiceWorkerHandle for the above |provider_host|.
   blink::mojom::ServiceWorkerObjectInfoPtr info =
-      provider_host->GetOrCreateServiceWorkerHandle(version_.get());
+      provider_host->GetOrCreateServiceWorkerHandle(version_.get())
+          ->CreateCompleteObjectInfoToSend();
   ServiceWorkerHandle* handle =
       GetServiceWorkerHandle(provider_host.get(), version_->version_id());
 

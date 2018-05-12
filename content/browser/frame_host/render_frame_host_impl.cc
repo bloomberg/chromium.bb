@@ -161,6 +161,7 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/platform/modules/webauth/virtual_authenticator.mojom.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
@@ -3675,13 +3676,6 @@ void RenderFrameHostImpl::CommitNavigation(
     }
   }
 
-  // Pass the controller service worker info if we have one.
-  mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info;
-  if (subresource_loader_params) {
-    controller_service_worker_info =
-        std::move(subresource_loader_params->controller_service_worker_info);
-  }
-
   // It is imperative that cross-document navigations always provide a set of
   // subresource ULFs when the Network Service is enabled.
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
@@ -3698,12 +3692,38 @@ void RenderFrameHostImpl::CommitNavigation(
                            ->GetNavigationId(),
                        common_params.should_replace_current_entry));
   } else {
+    // Pass the controller service worker info if we have one.
+    mojom::ControllerServiceWorkerInfoPtr controller;
+    blink::mojom::ServiceWorkerObjectAssociatedPtrInfo remote_object;
+    blink::mojom::ServiceWorkerState sent_state;
+    if (subresource_loader_params &&
+        subresource_loader_params->controller_service_worker_info) {
+      controller =
+          std::move(subresource_loader_params->controller_service_worker_info);
+      if (controller->object_info) {
+        controller->object_info->request = mojo::MakeRequest(&remote_object);
+        sent_state = controller->object_info->state;
+      }
+    }
+
     GetNavigationControl()->CommitNavigation(
         head, common_params, request_params,
         std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
-        std::move(subresource_overrides),
-        std::move(controller_service_worker_info), devtools_navigation_token);
+        std::move(subresource_overrides), std::move(controller),
+        devtools_navigation_token);
+
+    // |remote_object| is an associated interface ptr, so calls can't be made on
+    // it until its request endpoint is sent. Now that the request endpoint was
+    // sent, it can be used, so add it to ServiceWorkerHandle.
+    if (remote_object.is_valid()) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(
+              &ServiceWorkerHandle::AddRemoteObjectPtrAndUpdateState,
+              subresource_loader_params->controller_service_worker_handle,
+              std::move(remote_object), sent_state));
+    }
 
     // If a network request was made, update the Previews state.
     if (IsURLHandledByNetworkStack(common_params.url))

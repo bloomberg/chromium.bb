@@ -902,9 +902,15 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           subresource_loader_params_ = SubresourceLoaderParams();
           subresource_loader_params_->controller_service_worker_info =
               mojom::ControllerServiceWorkerInfo::New();
-          subresource_loader_params_->controller_service_worker_info
-              ->object_info = sw_provider_host->GetOrCreateServiceWorkerHandle(
-              sw_provider_host->controller());
+          base::WeakPtr<ServiceWorkerHandle> sw_handle =
+              sw_provider_host->GetOrCreateServiceWorkerHandle(
+                  sw_provider_host->controller());
+          if (sw_handle) {
+            subresource_loader_params_->controller_service_worker_handle =
+                sw_handle;
+            subresource_loader_params_->controller_service_worker_info
+                ->object_info = sw_handle->CreateIncompleteObjectInfo();
+          }
         }
       } else {
         is_download = is_stream = false;
