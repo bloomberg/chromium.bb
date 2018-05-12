@@ -373,13 +373,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "tabindexFocusDirectorySelected")));
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
-#define MAYBE_TabindexOpenDialog DISABLED_TabindexOpenDialog
-#else
-#define MAYBE_TabindexOpenDialog TabindexOpenDialog
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_TabindexOpenDialog,
+    TabindexOpenDialog,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "tabindexOpenDialogDrive"),
