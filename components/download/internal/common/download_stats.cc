@@ -377,8 +377,7 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
   }
 
   std::vector<base::HistogramBase::Sample> samples =
-      base::CustomHistogram::ArrayToCustomRanges(
-          kAllInterruptReasonCodes, arraysize(kAllInterruptReasonCodes));
+      base::CustomHistogram::ArrayToCustomEnumRanges(kAllInterruptReasonCodes);
   UMA_HISTOGRAM_CUSTOM_ENUMERATION("Download.InterruptedReason", reason,
                                    samples);
 

@@ -326,8 +326,8 @@
 // Samples should be one of the std::vector<int> list provided via
 // |custom_ranges|. See comments above CustomRanges::FactoryGet about the
 // requirement of |custom_ranges|. You can use the helper function
-// CustomHistogram::ArrayToCustomRanges to transform a C-style array of valid
-// sample values to a std::vector<int>.
+// CustomHistogram::ArrayToCustomEnumRanges to transform a C-style array of
+// valid sample values to a std::vector<int>.
 #define UMA_HISTOGRAM_CUSTOM_ENUMERATION(name, sample, custom_ranges)          \
     STATIC_HISTOGRAM_POINTER_BLOCK(name, Add(sample),                          \
         base::CustomHistogram::FactoryGet(name, custom_ranges,                 \

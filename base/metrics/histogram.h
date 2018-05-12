@@ -74,6 +74,7 @@
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
+#include "base/containers/span.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -513,9 +514,9 @@ class BASE_EXPORT CustomHistogram : public Histogram {
   // This function ensures that a guard bucket exists right after any
   // valid sample value (unless the next higher sample is also a valid value),
   // so that invalid samples never fall into the same bucket as valid samples.
-  // TODO(kaiwang): Change name to ArrayToCustomEnumRanges.
-  static std::vector<Sample> ArrayToCustomRanges(const Sample* values,
-                                                 uint32_t num_values);
+  static std::vector<Sample> ArrayToCustomEnumRanges(
+      base::span<const Sample> values);
+
  protected:
   class Factory;
 

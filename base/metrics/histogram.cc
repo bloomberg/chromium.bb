@@ -1193,11 +1193,10 @@ HistogramType CustomHistogram::GetHistogramType() const {
 }
 
 // static
-std::vector<Sample> CustomHistogram::ArrayToCustomRanges(
-    const Sample* values, uint32_t num_values) {
+std::vector<Sample> CustomHistogram::ArrayToCustomEnumRanges(
+    base::span<const Sample> values) {
   std::vector<Sample> all_values;
-  for (uint32_t i = 0; i < num_values; ++i) {
-    Sample value = values[i];
+  for (Sample value : values) {
     all_values.push_back(value);
 
     // Ensure that a guard bucket is added. If we end up with duplicate

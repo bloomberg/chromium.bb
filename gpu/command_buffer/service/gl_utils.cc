@@ -103,8 +103,7 @@ std::vector<int> GetAllGLErrors() {
       GL_INVALID_FRAMEBUFFER_OPERATION,
       GL_OUT_OF_MEMORY,
   };
-  return base::CustomHistogram::ArrayToCustomRanges(gl_errors,
-                                                    arraysize(gl_errors));
+  return base::CustomHistogram::ArrayToCustomEnumRanges(gl_errors);
 }
 
 bool PrecisionMeetsSpecForHighpFloat(GLint rangeMin,
