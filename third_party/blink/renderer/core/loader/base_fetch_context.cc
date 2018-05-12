@@ -46,7 +46,7 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
     request.SetExternalRequestStateFromRequestorAddressSpace(*address_space);
 }
 
-ResourceRequestBlockedReason BaseFetchContext::CanRequest(
+base::Optional<ResourceRequestBlockedReason> BaseFetchContext::CanRequest(
     Resource::Type type,
     const ResourceRequest& resource_request,
     const KURL& url,
@@ -54,13 +54,13 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequest(
     SecurityViolationReportingPolicy reporting_policy,
     FetchParameters::OriginRestriction origin_restriction,
     ResourceRequest::RedirectStatus redirect_status) const {
-  ResourceRequestBlockedReason blocked_reason =
+  base::Optional<ResourceRequestBlockedReason> blocked_reason =
       CanRequestInternal(type, resource_request, url, options, reporting_policy,
                          origin_restriction, redirect_status);
-  if (blocked_reason != ResourceRequestBlockedReason::kNone &&
+  if (blocked_reason &&
       reporting_policy == SecurityViolationReportingPolicy::kReport) {
     DispatchDidBlockRequest(resource_request, options.initiator_info,
-                            blocked_reason, type);
+                            blocked_reason.value(), type);
   }
   return blocked_reason;
 }
@@ -126,7 +126,8 @@ void BaseFetchContext::AddCSPHeaderIfNecessary(Resource::Type type,
     request.AddHTTPHeaderField("CSP", "active");
 }
 
-ResourceRequestBlockedReason BaseFetchContext::CheckCSPForRequest(
+base::Optional<ResourceRequestBlockedReason>
+BaseFetchContext::CheckCSPForRequest(
     WebURLRequest::RequestContext request_context,
     const KURL& url,
     const ResourceLoaderOptions& options,
@@ -137,7 +138,8 @@ ResourceRequestBlockedReason BaseFetchContext::CheckCSPForRequest(
       ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly);
 }
 
-ResourceRequestBlockedReason BaseFetchContext::CheckCSPForRequestInternal(
+base::Optional<ResourceRequestBlockedReason>
+BaseFetchContext::CheckCSPForRequestInternal(
     WebURLRequest::RequestContext request_context,
     const KURL& url,
     const ResourceLoaderOptions& options,
@@ -146,7 +148,7 @@ ResourceRequestBlockedReason BaseFetchContext::CheckCSPForRequestInternal(
     ContentSecurityPolicy::CheckHeaderType check_header_type) const {
   if (ShouldBypassMainWorldCSP() || options.content_security_policy_option ==
                                         kDoNotCheckContentSecurityPolicy) {
-    return ResourceRequestBlockedReason::kNone;
+    return base::nullopt;
   }
 
   const ContentSecurityPolicy* csp = GetContentSecurityPolicy();
@@ -156,10 +158,11 @@ ResourceRequestBlockedReason BaseFetchContext::CheckCSPForRequestInternal(
                  redirect_status, reporting_policy, check_header_type)) {
     return ResourceRequestBlockedReason::kCSP;
   }
-  return ResourceRequestBlockedReason::kNone;
+  return base::nullopt;
 }
 
-ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
+base::Optional<ResourceRequestBlockedReason>
+BaseFetchContext::CanRequestInternal(
     Resource::Type type,
     const ResourceRequest& resource_request,
     const KURL& url,
@@ -232,7 +235,7 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
   // restricted to data urls.
   if (options.initiator_info.name == FetchInitiatorTypeNames::uacss) {
     if (type == Resource::kImage && url.ProtocolIsData()) {
-      return ResourceRequestBlockedReason::kNone;
+      return base::nullopt;
     }
     return ResourceRequestBlockedReason::kOther;
   }
@@ -312,17 +315,18 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
     }
   }
 
-  return ResourceRequestBlockedReason::kNone;
+  return base::nullopt;
 }
 
-ResourceRequestBlockedReason BaseFetchContext::CheckResponseNosniff(
+base::Optional<ResourceRequestBlockedReason>
+BaseFetchContext::CheckResponseNosniff(
     WebURLRequest::RequestContext request_context,
     const ResourceResponse& response) const {
   bool sniffing_allowed =
       ParseContentTypeOptionsHeader(response.HttpHeaderField(
           HTTPNames::X_Content_Type_Options)) != kContentTypeOptionsNosniff;
   if (sniffing_allowed)
-    return ResourceRequestBlockedReason::kNone;
+    return base::nullopt;
 
   String mime_type = response.HttpContentType();
   if (request_context == WebURLRequest::kRequestContextStyle &&
@@ -338,7 +342,7 @@ ResourceRequestBlockedReason BaseFetchContext::CheckResponseNosniff(
   // TODO(mkwst): Move the 'nosniff' bit of 'AllowedByNosniff::MimeTypeAsScript'
   // here alongside the style checks, and put its use counters somewhere else.
 
-  return ResourceRequestBlockedReason::kNone;
+  return base::nullopt;
 }
 
 void BaseFetchContext::Trace(blink::Visitor* visitor) {

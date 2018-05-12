@@ -209,10 +209,11 @@ class PLATFORM_EXPORT ResourceFetcher
   Resource* RequestResourceInternal(FetchParameters&,
                                     const ResourceFactory&,
                                     const SubstituteData&);
-  ResourceRequestBlockedReason PrepareRequest(FetchParameters&,
-                                              const ResourceFactory&,
-                                              const SubstituteData&,
-                                              unsigned long identifier);
+  base::Optional<ResourceRequestBlockedReason> PrepareRequest(
+      FetchParameters&,
+      const ResourceFactory&,
+      const SubstituteData&,
+      unsigned long identifier);
 
   Resource* ResourceForStaticData(const FetchParameters&,
                                   const ResourceFactory&,

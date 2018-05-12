@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_FETCH_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_FETCH_CONTEXT_H_
 
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
@@ -174,7 +175,7 @@ class PLATFORM_EXPORT FetchContext
 
   virtual void AddResourceTiming(const ResourceTimingInfo&);
   virtual bool AllowImage(bool, const KURL&) const { return false; }
-  virtual ResourceRequestBlockedReason CanRequest(
+  virtual base::Optional<ResourceRequestBlockedReason> CanRequest(
       Resource::Type,
       const ResourceRequest&,
       const KURL&,
@@ -184,7 +185,7 @@ class PLATFORM_EXPORT FetchContext
       ResourceRequest::RedirectStatus) const {
     return ResourceRequestBlockedReason::kOther;
   }
-  virtual ResourceRequestBlockedReason CheckCSPForRequest(
+  virtual base::Optional<ResourceRequestBlockedReason> CheckCSPForRequest(
       WebURLRequest::RequestContext,
       const KURL&,
       const ResourceLoaderOptions&,
@@ -192,7 +193,7 @@ class PLATFORM_EXPORT FetchContext
       ResourceRequest::RedirectStatus) const {
     return ResourceRequestBlockedReason::kOther;
   }
-  virtual ResourceRequestBlockedReason CheckResponseNosniff(
+  virtual base::Optional<ResourceRequestBlockedReason> CheckResponseNosniff(
       WebURLRequest::RequestContext,
       const ResourceResponse&) const {
     return ResourceRequestBlockedReason::kOther;

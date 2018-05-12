@@ -30,7 +30,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
  public:
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
-  ResourceRequestBlockedReason CanRequest(
+  base::Optional<ResourceRequestBlockedReason> CanRequest(
       Resource::Type,
       const ResourceRequest&,
       const KURL&,
@@ -38,13 +38,13 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       SecurityViolationReportingPolicy,
       FetchParameters::OriginRestriction,
       ResourceRequest::RedirectStatus) const override;
-  ResourceRequestBlockedReason CheckCSPForRequest(
+  base::Optional<ResourceRequestBlockedReason> CheckCSPForRequest(
       WebURLRequest::RequestContext,
       const KURL&,
       const ResourceLoaderOptions&,
       SecurityViolationReportingPolicy,
       ResourceRequest::RedirectStatus) const override;
-  ResourceRequestBlockedReason CheckResponseNosniff(
+  base::Optional<ResourceRequestBlockedReason> CheckResponseNosniff(
       WebURLRequest::RequestContext,
       const ResourceResponse&) const override;
 
@@ -102,7 +102,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
  private:
   // Utility methods that are used in default implement for CanRequest,
   // CanFollowRedirect and AllowResponse.
-  ResourceRequestBlockedReason CanRequestInternal(
+  base::Optional<ResourceRequestBlockedReason> CanRequestInternal(
       Resource::Type,
       const ResourceRequest&,
       const KURL&,
@@ -111,7 +111,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       FetchParameters::OriginRestriction,
       ResourceRequest::RedirectStatus) const;
 
-  ResourceRequestBlockedReason CheckCSPForRequestInternal(
+  base::Optional<ResourceRequestBlockedReason> CheckCSPForRequestInternal(
       WebURLRequest::RequestContext,
       const KURL&,
       const ResourceLoaderOptions&,

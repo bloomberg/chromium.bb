@@ -209,22 +209,23 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
                        is_associated_with_ad_subframe)));
   }
 
-  ResourceRequestBlockedReason CanRequest() {
+  base::Optional<ResourceRequestBlockedReason> CanRequest() {
     return CanRequestInternal(SecurityViolationReportingPolicy::kReport);
   }
 
-  ResourceRequestBlockedReason CanRequestKeepAlive() {
+  base::Optional<ResourceRequestBlockedReason> CanRequestKeepAlive() {
     return CanRequestInternal(SecurityViolationReportingPolicy::kReport,
                               true /* keepalive */);
   }
 
-  ResourceRequestBlockedReason CanRequestPreload() {
+  base::Optional<ResourceRequestBlockedReason> CanRequestPreload() {
     return CanRequestInternal(
         SecurityViolationReportingPolicy::kSuppressReporting);
   }
 
-  ResourceRequestBlockedReason CanRequestAndVerifyIsAd(bool expect_is_ad) {
-    ResourceRequestBlockedReason reason =
+  base::Optional<ResourceRequestBlockedReason> CanRequestAndVerifyIsAd(
+      bool expect_is_ad) {
+    base::Optional<ResourceRequestBlockedReason> reason =
         CanRequestInternal(SecurityViolationReportingPolicy::kReport);
     const KURL url("http://example.com/");
     EXPECT_EQ(expect_is_ad, fetch_context->IsAdResource(
@@ -254,7 +255,7 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
   }
 
  private:
-  ResourceRequestBlockedReason CanRequestInternal(
+  base::Optional<ResourceRequestBlockedReason> CanRequestInternal(
       SecurityViolationReportingPolicy reporting_policy,
       bool keepalive = false) {
     const KURL input_url("http://example.com/");
@@ -1306,11 +1307,10 @@ TEST_F(FrameFetchContextSubresourceFilterTest, Filter) {
 TEST_F(FrameFetchContextSubresourceFilterTest, Allow) {
   SetFilterPolicy(WebDocumentSubresourceFilter::kAllow);
 
-  EXPECT_EQ(ResourceRequestBlockedReason::kNone,
-            CanRequestAndVerifyIsAd(false));
+  EXPECT_EQ(base::nullopt, CanRequestAndVerifyIsAd(false));
   EXPECT_EQ(0, GetFilteredLoadCallCount());
 
-  EXPECT_EQ(ResourceRequestBlockedReason::kNone, CanRequestPreload());
+  EXPECT_EQ(base::nullopt, CanRequestPreload());
   EXPECT_EQ(0, GetFilteredLoadCallCount());
 }
 
@@ -1318,19 +1318,19 @@ TEST_F(FrameFetchContextSubresourceFilterTest, DuringOnFreeze) {
   document->SetFreezingInProgress(true);
   // Only keepalive requests should succeed during onfreeze.
   EXPECT_EQ(ResourceRequestBlockedReason::kOther, CanRequest());
-  EXPECT_EQ(ResourceRequestBlockedReason::kNone, CanRequestKeepAlive());
+  EXPECT_EQ(base::nullopt, CanRequestKeepAlive());
   document->SetFreezingInProgress(false);
-  EXPECT_EQ(ResourceRequestBlockedReason::kNone, CanRequest());
-  EXPECT_EQ(ResourceRequestBlockedReason::kNone, CanRequestKeepAlive());
+  EXPECT_EQ(base::nullopt, CanRequest());
+  EXPECT_EQ(base::nullopt, CanRequestKeepAlive());
 }
 
 TEST_F(FrameFetchContextSubresourceFilterTest, WouldDisallow) {
   SetFilterPolicy(WebDocumentSubresourceFilter::kWouldDisallow);
 
-  EXPECT_EQ(ResourceRequestBlockedReason::kNone, CanRequestAndVerifyIsAd(true));
+  EXPECT_EQ(base::nullopt, CanRequestAndVerifyIsAd(true));
   EXPECT_EQ(0, GetFilteredLoadCallCount());
 
-  EXPECT_EQ(ResourceRequestBlockedReason::kNone, CanRequestPreload());
+  EXPECT_EQ(base::nullopt, CanRequestPreload());
   EXPECT_EQ(0, GetFilteredLoadCallCount());
 }
 
@@ -1341,7 +1341,7 @@ TEST_F(FrameFetchContextSubresourceFilterTest, AdTaggingBasedOnFrame) {
   SetFilterPolicy(WebDocumentSubresourceFilter::kAllow,
                   true /* is_associated_with_ad_subframe */);
 
-  EXPECT_EQ(ResourceRequestBlockedReason::kNone, CanRequestAndVerifyIsAd(true));
+  EXPECT_EQ(base::nullopt, CanRequestAndVerifyIsAd(true));
   EXPECT_EQ(0, GetFilteredLoadCallCount());
 }
 
@@ -1357,8 +1357,7 @@ TEST_F(FrameFetchContextSubresourceFilterTest,
   AppendAdScriptToAdTracker(ad_script_url);
   AppendExecutingScriptToAdTracker(ad_script_url.GetString());
 
-  EXPECT_EQ(ResourceRequestBlockedReason::kNone,
-            CanRequestAndVerifyIsAd(false));
+  EXPECT_EQ(base::nullopt, CanRequestAndVerifyIsAd(false));
   EXPECT_EQ(0, GetFilteredLoadCallCount());
 
   // After WillSendRequest probe, it should be marked as an ad.

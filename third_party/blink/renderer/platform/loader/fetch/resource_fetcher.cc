@@ -564,7 +564,7 @@ void ResourceFetcher::RemovePreload(Resource* resource) {
     preloads_.erase(it);
 }
 
-ResourceRequestBlockedReason ResourceFetcher::PrepareRequest(
+base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
     FetchParameters& params,
     const ResourceFactory& factory,
     const SubstituteData& substitute_data,
@@ -631,16 +631,17 @@ ResourceRequestBlockedReason ResourceFetcher::PrepareRequest(
                                                resource_request.Priority());
 
   KURL url = MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url());
-  ResourceRequestBlockedReason blocked_reason = Context().CanRequest(
-      resource_type, resource_request, url, options, reporting_policy,
-      params.GetOriginRestriction(), resource_request.GetRedirectStatus());
+  base::Optional<ResourceRequestBlockedReason> blocked_reason =
+      Context().CanRequest(resource_type, resource_request, url, options,
+                           reporting_policy, params.GetOriginRestriction(),
+                           resource_request.GetRedirectStatus());
 
   if (Context().IsAdResource(url, resource_type,
                              resource_request.GetRequestContext())) {
     resource_request.SetIsAdResource();
   }
 
-  if (blocked_reason != ResourceRequestBlockedReason::kNone)
+  if (blocked_reason)
     return blocked_reason;
 
   const scoped_refptr<const SecurityOrigin>& origin = options.security_origin;
@@ -684,7 +685,7 @@ ResourceRequestBlockedReason ResourceFetcher::PrepareRequest(
     resource_request.SetAllowStoredCredentials(allow_stored_credentials);
   }
 
-  return ResourceRequestBlockedReason::kNone;
+  return base::nullopt;
 }
 
 Resource* ResourceFetcher::RequestResource(
@@ -730,10 +731,10 @@ Resource* ResourceFetcher::RequestResourceInternal(
     }
   }
 
-  ResourceRequestBlockedReason blocked_reason =
+  base::Optional<ResourceRequestBlockedReason> blocked_reason =
       PrepareRequest(params, factory, substitute_data, identifier);
-  if (blocked_reason != ResourceRequestBlockedReason::kNone)
-    return ResourceForBlockedRequest(params, factory, blocked_reason);
+  if (blocked_reason)
+    return ResourceForBlockedRequest(params, factory, blocked_reason.value());
 
   Resource::Type resource_type = factory.GetType();
 

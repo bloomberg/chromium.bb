@@ -53,14 +53,13 @@ namespace blink {
 //       BlockedReasonEnum in browser_protocol.pdl and
 //       Network.NetworkRequestNode in NetworkDataGridNode.js.
 enum class ResourceRequestBlockedReason {
-  kNone,
+  kOther,
   kCSP,
   kMixedContent,
   kOrigin,
   kInspector,
   kSubresourceFilter,
   kContentType,
-  kOther,
 };
 
 enum InputToLoadPerfMetricReportPolicy : uint8_t {
