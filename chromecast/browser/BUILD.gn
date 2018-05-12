@@ -73,6 +73,8 @@ cast_source_set("browser") {
     "network_context_manager.h",
     "pref_service_helper.cc",
     "pref_service_helper.h",
+    "renderer_config.cc",
+    "renderer_config.h",
     "renderer_prelauncher.cc",
     "renderer_prelauncher.h",
     "service/cast_service_simple.cc",
@@ -410,6 +412,7 @@ cast_source_set("unittests") {
     "devtools/cast_devtools_manager_delegate_unittest.cc",
     "lru_renderer_cache_test.cc",
     "network_context_manager_unittest.cc",
+    "renderer_config_unittest.cc",
   ]
 
   deps = [

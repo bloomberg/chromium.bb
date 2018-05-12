@@ -34,6 +34,7 @@
 #include "chromecast/browser/devtools/cast_devtools_manager_delegate.h"
 #include "chromecast/browser/grit/cast_browser_resources.h"
 #include "chromecast/browser/media/media_caps_impl.h"
+#include "chromecast/browser/renderer_config.h"
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/global_descriptors.h"
@@ -158,7 +159,8 @@ GetRequestContextGetterFromBrowserContext() {
 
 CastContentBrowserClient::CastContentBrowserClient()
     : cast_browser_main_parts_(nullptr),
-      url_request_context_factory_(new URLRequestContextFactory()) {}
+      url_request_context_factory_(new URLRequestContextFactory()),
+      renderer_config_manager_(std::make_unique<RendererConfigManager>()) {}
 
 CastContentBrowserClient::~CastContentBrowserClient() {
   content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
@@ -456,6 +458,12 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
       command_line->AppendSwitchASCII(switches::kGraphicsBufferCount, "3");
     }
 #endif  // defined(USE_AURA)
+  }
+
+  auto renderer_config =
+      renderer_config_manager_->GetRendererConfig(child_process_id);
+  if (renderer_config) {
+    renderer_config->AppendSwitchesTo(command_line);
   }
 }
 
