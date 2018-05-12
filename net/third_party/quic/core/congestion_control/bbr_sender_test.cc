@@ -962,7 +962,8 @@ TEST_F(BbrSenderTest, SimpleTransferSlowerStartup) {
         // Expect the pacing rate in STARTUP to decrease once packet loss
         // is observed, but the CWND does not.
         if (bbr_sender_.connection()->GetStats().packets_lost > 0 &&
-            !sender_->ExportDebugState().is_at_full_bandwidth) {
+            !sender_->ExportDebugState().is_at_full_bandwidth &&
+            sender_->has_non_app_limited_sample()) {
           EXPECT_EQ(1.5f * max_bw, sender_->PacingRate(0));
         }
         return sender_->ExportDebugState().is_at_full_bandwidth;

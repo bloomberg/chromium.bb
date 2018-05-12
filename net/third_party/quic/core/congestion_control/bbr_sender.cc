@@ -118,6 +118,8 @@ BbrSender::BbrSender(const RttStats* rtt_stats,
       exit_probe_rtt_at_(QuicTime::Zero()),
       probe_rtt_round_passed_(false),
       last_sample_is_app_limited_(false),
+      has_non_app_limited_sample_(
+          !GetQuicReloadableFlag(quic_enable_version_42_2)),
       recovery_state_(NOT_IN_RECOVERY),
       end_recovery_at_(0),
       recovery_window_(max_congestion_window_),
@@ -125,12 +127,15 @@ BbrSender::BbrSender(const RttStats* rtt_stats,
       slower_startup_(false),
       rate_based_startup_(false),
       initial_conservation_in_startup_(CONSERVATION),
-      fully_drain_queue_(false),
+      drain_to_target_(false),
       probe_rtt_based_on_bdp_(false),
       probe_rtt_skipped_if_similar_rtt_(false),
       probe_rtt_disabled_if_app_limited_(false),
       app_limited_since_last_probe_rtt_(false),
       min_rtt_since_last_probe_rtt_(QuicTime::Delta::Infinite()) {
+  if (!has_non_app_limited_sample_) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_bbr_slower_startup2);
+  }
   EnterStartupMode();
 }
 
@@ -227,7 +232,7 @@ void BbrSender::SetFromConfig(const QuicConfig& config,
     slower_startup_ = true;
   }
   if (config.HasClientRequestedIndependentOption(kBBR3, perspective)) {
-    fully_drain_queue_ = true;
+    drain_to_target_ = true;
   }
   if (config.HasClientRequestedIndependentOption(kBBS1, perspective)) {
     rate_based_startup_ = true;
@@ -412,6 +417,7 @@ bool BbrSender::UpdateBandwidthAndMinRtt(
     BandwidthSample bandwidth_sample =
         sampler_->OnPacketAcknowledged(now, packet.packet_number);
     last_sample_is_app_limited_ = bandwidth_sample.is_app_limited;
+    has_non_app_limited_sample_ |= !bandwidth_sample.is_app_limited;
     if (!bandwidth_sample.rtt.IsZero()) {
       sample_min_rtt = std::min(sample_min_rtt, bandwidth_sample.rtt);
     }
@@ -503,7 +509,7 @@ void BbrSender::UpdateGainCyclePhase(QuicTime now,
     last_cycle_start_ = now;
     // Stay in low gain mode until the target BDP is hit.
     // Low gain mode will be exited immediately when the target BDP is achieved.
-    if (fully_drain_queue_ && pacing_gain_ < 1 &&
+    if (drain_to_target_ && pacing_gain_ < 1 &&
         kPacingGain[cycle_current_offset_] == 1 &&
         bytes_in_flight > GetTargetCongestionWindow(1)) {
       return;
@@ -527,6 +533,7 @@ void BbrSender::CheckIfFullBandwidthReached() {
   rounds_without_bandwidth_gain_++;
   if ((rounds_without_bandwidth_gain_ >= num_startup_rtts_) ||
       (exit_startup_on_loss_ && InRecovery())) {
+    DCHECK(has_non_app_limited_sample_);
     is_at_full_bandwidth_ = true;
   }
 }
@@ -674,7 +681,8 @@ void BbrSender::CalculatePacingRate() {
   }
   // Slow the pacing rate in STARTUP once loss has ever been detected.
   const bool has_ever_detected_loss = end_recovery_at_ > 0;
-  if (slower_startup_ && has_ever_detected_loss) {
+  if (slower_startup_ && has_ever_detected_loss &&
+      has_non_app_limited_sample_) {
     pacing_rate_ = kStartupAfterLossGain * BandwidthEstimate();
     return;
   }
