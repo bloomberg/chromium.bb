@@ -312,6 +312,151 @@ TEST_F(ChunkedDataPipeUploadDataStreamTest,
   EXPECT_TRUE(chunked_upload_stream_->IsEOF());
 }
 
+// Test where GetSize() is invoked before the upload is initialized.
+TEST_F(ChunkedDataPipeUploadDataStreamTest, GetSizeSucceedsBeforeInit) {
+  const std::string kData = "1234567890";
+
+  chunked_data_pipe_getter_ = std::make_unique<TestChunkedDataPipeGetter>();
+  chunked_upload_stream_ = std::make_unique<ChunkedDataPipeUploadDataStream>(
+      base::MakeRefCounted<network::ResourceRequestBody>(),
+      chunked_data_pipe_getter_->GetDataPipeGetterPtr());
+  get_size_callback_ = chunked_data_pipe_getter_->WaitForGetSize();
+  std::move(get_size_callback_).Run(net::OK, kData.size());
+  // Wait for the ChunkedUploadStream to receive the size.
+  base::RunLoop().RunUntilIdle();
+
+  net::TestCompletionCallback callback;
+  ASSERT_EQ(net::OK, chunked_upload_stream_->Init(callback.callback(),
+                                                  net::NetLogWithSource()));
+  write_pipe_ = chunked_data_pipe_getter_->WaitForStartReading();
+
+  EXPECT_TRUE(chunked_upload_stream_->is_chunked());
+  EXPECT_FALSE(chunked_upload_stream_->IsEOF());
+
+  mojo::BlockingCopyFromString(kData, write_pipe_);
+
+  std::string read_data;
+  while (read_data.size() < kData.size()) {
+    net::TestCompletionCallback callback;
+    int read_size = kData.size() - read_data.size();
+    scoped_refptr<net::IOBufferWithSize> io_buffer(
+        new net::IOBufferWithSize(read_size));
+    int result = chunked_upload_stream_->Read(
+        io_buffer.get(), io_buffer->size(), callback.callback());
+    result = callback.GetResult(result);
+    ASSERT_LT(0, result);
+    EXPECT_LE(result, read_size);
+    read_data.append(std::string(io_buffer->data(), result));
+    EXPECT_EQ(read_data.size() == kData.size(),
+              chunked_upload_stream_->IsEOF());
+  }
+}
+
+// Test where GetSize() is only invoked after the upload is reset.
+TEST_F(ChunkedDataPipeUploadDataStreamTest, GetSizeSucceedsAfterReset) {
+  const std::string kData = "1234567890";
+
+  // Read through the body once, without a size
+  std::string read_data;
+  mojo::BlockingCopyFromString(kData, write_pipe_);
+  while (read_data.size() < kData.size()) {
+    net::TestCompletionCallback callback;
+    int read_size = kData.size() - read_data.size();
+    scoped_refptr<net::IOBufferWithSize> io_buffer(
+        new net::IOBufferWithSize(read_size));
+    int result = chunked_upload_stream_->Read(
+        io_buffer.get(), io_buffer->size(), callback.callback());
+    result = callback.GetResult(result);
+    ASSERT_LT(0, result);
+    EXPECT_LE(result, read_size);
+    read_data.append(std::string(io_buffer->data(), result));
+    EXPECT_FALSE(chunked_upload_stream_->IsEOF());
+  }
+
+  // Reset, get the size, and read through the body again.
+  chunked_upload_stream_->Reset();
+
+  std::move(get_size_callback_).Run(net::OK, kData.size());
+  // Wait for the ChunkedUploadStream to receive the size.
+  base::RunLoop().RunUntilIdle();
+
+  net::TestCompletionCallback callback;
+  ASSERT_EQ(net::OK, chunked_upload_stream_->Init(callback.callback(),
+                                                  net::NetLogWithSource()));
+  write_pipe_ = chunked_data_pipe_getter_->WaitForStartReading();
+
+  read_data.erase();
+  mojo::BlockingCopyFromString(kData, write_pipe_);
+  while (read_data.size() < kData.size()) {
+    net::TestCompletionCallback callback;
+    int read_size = kData.size() - read_data.size();
+    scoped_refptr<net::IOBufferWithSize> io_buffer(
+        new net::IOBufferWithSize(read_size));
+    int result = chunked_upload_stream_->Read(
+        io_buffer.get(), io_buffer->size(), callback.callback());
+    result = callback.GetResult(result);
+    ASSERT_LT(0, result);
+    EXPECT_LE(result, read_size);
+    read_data.append(std::string(io_buffer->data(), result));
+    EXPECT_EQ(read_data.size() == kData.size(),
+              chunked_upload_stream_->IsEOF());
+  }
+}
+
+// Test where GetSize() is invoked with an error before the upload is
+// initialized.
+TEST_F(ChunkedDataPipeUploadDataStreamTest, GetSizeFailsBeforeInit) {
+  const std::string kData = "1234567890";
+
+  chunked_data_pipe_getter_ = std::make_unique<TestChunkedDataPipeGetter>();
+  chunked_upload_stream_ = std::make_unique<ChunkedDataPipeUploadDataStream>(
+      base::MakeRefCounted<network::ResourceRequestBody>(),
+      chunked_data_pipe_getter_->GetDataPipeGetterPtr());
+  get_size_callback_ = chunked_data_pipe_getter_->WaitForGetSize();
+  std::move(get_size_callback_).Run(net::ERR_ACCESS_DENIED, 0);
+  // Wait for the ChunkedUploadStream to receive the size.
+  base::RunLoop().RunUntilIdle();
+
+  net::TestCompletionCallback callback;
+  EXPECT_EQ(net::ERR_ACCESS_DENIED,
+            chunked_upload_stream_->Init(callback.callback(),
+                                         net::NetLogWithSource()));
+}
+
+// Test where GetSize() is only invoked with an error after the upload is reset.
+TEST_F(ChunkedDataPipeUploadDataStreamTest, GetSizeFailsAfterReset) {
+  const std::string kData = "1234567890";
+
+  // Read through the body once, without a size
+  std::string read_data;
+  mojo::BlockingCopyFromString(kData, write_pipe_);
+  while (read_data.size() < kData.size()) {
+    net::TestCompletionCallback callback;
+    int read_size = kData.size() - read_data.size();
+    scoped_refptr<net::IOBufferWithSize> io_buffer(
+        new net::IOBufferWithSize(read_size));
+    int result = chunked_upload_stream_->Read(
+        io_buffer.get(), io_buffer->size(), callback.callback());
+    result = callback.GetResult(result);
+    ASSERT_LT(0, result);
+    EXPECT_LE(result, read_size);
+    read_data.append(std::string(io_buffer->data(), result));
+    EXPECT_FALSE(chunked_upload_stream_->IsEOF());
+  }
+
+  // Reset, get the size, and read through the body again.
+  chunked_upload_stream_->Reset();
+
+  std::move(get_size_callback_).Run(net::ERR_ACCESS_DENIED, kData.size());
+  // Wait for the ChunkedUploadStream to receive the size.
+  base::RunLoop().RunUntilIdle();
+
+  net::TestCompletionCallback callback;
+  ASSERT_EQ(net::ERR_ACCESS_DENIED,
+            chunked_upload_stream_->Init(callback.callback(),
+                                         net::NetLogWithSource()));
+}
+
 // Three variations on when the stream can be closed before a request succeeds.
 
 // Stream is closed, then a read attempted, then the GetSizeCallback is invoked.
