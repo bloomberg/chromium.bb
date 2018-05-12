@@ -301,8 +301,6 @@ PlaybackParams::PlaybackParams(const PlaybackParams& other) = default;
 PlaybackParams& PlaybackParams::operator=(const PlaybackParams& other) =
     default;
 
-PaintOp::SerializeOptions::SerializeOptions() = default;
-
 PaintOp::SerializeOptions::SerializeOptions(
     ImageProvider* image_provider,
     TransferCacheSerializeHelper* transfer_cache,
@@ -318,8 +316,6 @@ PaintOp::SerializeOptions::SerializeOptions(
       color_space(color_space),
       can_use_lcd_text(can_use_lcd_text),
       original_ctm(original_ctm) {}
-
-PaintOp::DeserializeOptions::DeserializeOptions() = default;
 
 PaintOp::DeserializeOptions::DeserializeOptions(
     TransferCacheDeserializeHelper* transfer_cache,

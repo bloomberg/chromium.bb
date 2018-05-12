@@ -23,6 +23,8 @@ class PaintShader;
 
 class CC_PAINT_EXPORT PaintOpWriter {
  public:
+  // The SerializeOptions passed to the writer must set the required fields
+  // if it can be used for serializing images, paint records or text blobs.
   PaintOpWriter(void* memory,
                 size_t size,
                 const PaintOp::SerializeOptions& options,

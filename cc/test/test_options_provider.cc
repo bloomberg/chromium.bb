@@ -33,13 +33,15 @@ TestOptionsProvider::TestOptionsProvider()
     : discardable_manager_(sk_make_sp<DiscardableManager>()),
       strike_server_(discardable_manager_.get()),
       strike_client_(discardable_manager_),
-      color_space_(SkColorSpace::MakeSRGB()) {
-  serialize_options_.canvas = &canvas_;
-  serialize_options_.image_provider = this;
-  serialize_options_.transfer_cache = this;
-  deserialize_options_.transfer_cache = this;
-  deserialize_options_.strike_client = &strike_client_;
-}
+      color_space_(SkColorSpace::MakeSRGB()),
+      serialize_options_(this,
+                         this,
+                         &canvas_,
+                         &strike_server_,
+                         color_space_.get(),
+                         can_use_lcd_text_,
+                         SkMatrix::I()),
+      deserialize_options_(this, &strike_client_) {}
 
 TestOptionsProvider::~TestOptionsProvider() = default;
 

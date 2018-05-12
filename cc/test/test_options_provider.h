@@ -54,8 +54,6 @@ class TestOptionsProvider : public ImageProvider,
       const DrawImage& draw_image) override;
 
   testing::StrictMock<MockCanvas> canvas_;
-  PaintOp::SerializeOptions serialize_options_;
-  PaintOp::DeserializeOptions deserialize_options_;
   std::vector<DrawImage> decoded_images_;
 
   sk_sp<DiscardableManager> discardable_manager_;
@@ -63,6 +61,9 @@ class TestOptionsProvider : public ImageProvider,
   SkStrikeClient strike_client_;
   sk_sp<SkColorSpace> color_space_;
   bool can_use_lcd_text_ = true;
+
+  PaintOp::SerializeOptions serialize_options_;
+  PaintOp::DeserializeOptions deserialize_options_;
 };
 
 }  // namespace cc

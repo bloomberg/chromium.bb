@@ -140,7 +140,6 @@ class CC_PAINT_EXPORT PaintOp {
   bool operator!=(const PaintOp& other) const { return !(*this == other); }
 
   struct CC_PAINT_EXPORT SerializeOptions {
-    SerializeOptions();
     SerializeOptions(ImageProvider* image_provider,
                      TransferCacheSerializeHelper* transfer_cache,
                      SkCanvas* canvas,
@@ -165,7 +164,6 @@ class CC_PAINT_EXPORT PaintOp {
   };
 
   struct CC_PAINT_EXPORT DeserializeOptions {
-    DeserializeOptions();
     DeserializeOptions(TransferCacheDeserializeHelper* transfer_cache,
                        SkStrikeClient* strike_client);
     TransferCacheDeserializeHelper* transfer_cache = nullptr;
