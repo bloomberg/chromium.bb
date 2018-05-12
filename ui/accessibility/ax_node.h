@@ -83,54 +83,51 @@ class AX_EXPORT AXNode final {
   // Accessing accessibility attributes.
   // See |AXNodeData| for more information.
 
-  constexpr bool HasBoolAttribute(ax::mojom::BoolAttribute attribute) const {
+  bool HasBoolAttribute(ax::mojom::BoolAttribute attribute) const {
     return data().HasBoolAttribute(attribute);
   }
-  constexpr bool GetBoolAttribute(ax::mojom::BoolAttribute attribute) const {
+  bool GetBoolAttribute(ax::mojom::BoolAttribute attribute) const {
     return data().GetBoolAttribute(attribute);
   }
-  constexpr bool GetBoolAttribute(ax::mojom::BoolAttribute attribute,
-                                  bool* value) const {
+  bool GetBoolAttribute(ax::mojom::BoolAttribute attribute, bool* value) const {
     return data().GetBoolAttribute(attribute, value);
   }
 
-  constexpr bool HasFloatAttribute(ax::mojom::FloatAttribute attribute) const {
+  bool HasFloatAttribute(ax::mojom::FloatAttribute attribute) const {
     return data().HasFloatAttribute(attribute);
   }
-  constexpr float GetFloatAttribute(ax::mojom::FloatAttribute attribute) const {
+  float GetFloatAttribute(ax::mojom::FloatAttribute attribute) const {
     return data().GetFloatAttribute(attribute);
   }
-  constexpr bool GetFloatAttribute(ax::mojom::FloatAttribute attribute,
-                                   float* value) const {
+  bool GetFloatAttribute(ax::mojom::FloatAttribute attribute,
+                         float* value) const {
     return data().GetFloatAttribute(attribute, value);
   }
 
-  constexpr bool HasIntAttribute(ax::mojom::IntAttribute attribute) const {
+  bool HasIntAttribute(ax::mojom::IntAttribute attribute) const {
     return data().HasIntAttribute(attribute);
   }
-  constexpr int32_t GetIntAttribute(ax::mojom::IntAttribute attribute) const {
+  int32_t GetIntAttribute(ax::mojom::IntAttribute attribute) const {
     return data().GetIntAttribute(attribute);
   }
-  constexpr bool GetIntAttribute(ax::mojom::IntAttribute attribute,
-                                 int* value) const {
+  bool GetIntAttribute(ax::mojom::IntAttribute attribute, int* value) const {
     return data().GetIntAttribute(attribute, value);
   }
 
-  constexpr bool HasStringAttribute(
-      ax::mojom::StringAttribute attribute) const {
+  bool HasStringAttribute(ax::mojom::StringAttribute attribute) const {
     return data().HasStringAttribute(attribute);
   }
-  constexpr const std::string& GetStringAttribute(
+  const std::string& GetStringAttribute(
       ax::mojom::StringAttribute attribute) const {
     return data().GetStringAttribute(attribute);
   }
-  constexpr bool GetStringAttribute(ax::mojom::StringAttribute attribute,
-                                    std::string* value) const {
+  bool GetStringAttribute(ax::mojom::StringAttribute attribute,
+                          std::string* value) const {
     return data().GetStringAttribute(attribute, value);
   }
 
-  constexpr bool GetString16Attribute(ax::mojom::StringAttribute attribute,
-                                      base::string16* value) const {
+  bool GetString16Attribute(ax::mojom::StringAttribute attribute,
+                            base::string16* value) const {
     return data().GetString16Attribute(attribute, value);
   }
   // Cannot be constexpr because |base::string16| doesn't have a constexpr
@@ -140,39 +137,34 @@ class AX_EXPORT AXNode final {
     return data().GetString16Attribute(attribute);
   }
 
-  constexpr bool HasIntListAttribute(
-      ax::mojom::IntListAttribute attribute) const {
+  bool HasIntListAttribute(ax::mojom::IntListAttribute attribute) const {
     return data().HasIntListAttribute(attribute);
   }
-  constexpr const std::vector<int32_t>& GetIntListAttribute(
+  const std::vector<int32_t>& GetIntListAttribute(
       ax::mojom::IntListAttribute attribute) const {
     return data().GetIntListAttribute(attribute);
   }
-  constexpr bool GetIntListAttribute(ax::mojom::IntListAttribute attribute,
-                                     std::vector<int32_t>* value) const {
+  bool GetIntListAttribute(ax::mojom::IntListAttribute attribute,
+                           std::vector<int32_t>* value) const {
     return data().GetIntListAttribute(attribute, value);
   }
 
-  constexpr bool HasStringListAttribute(
-      ax::mojom::StringListAttribute attribute) const {
+  bool HasStringListAttribute(ax::mojom::StringListAttribute attribute) const {
     return data().HasStringListAttribute(attribute);
   }
-  constexpr const std::vector<std::string>& GetStringListAttribute(
+  const std::vector<std::string>& GetStringListAttribute(
       ax::mojom::StringListAttribute attribute) const {
     return data().GetStringListAttribute(attribute);
   }
-  constexpr bool GetStringListAttribute(
-      ax::mojom::StringListAttribute attribute,
-      std::vector<std::string>* value) const {
+  bool GetStringListAttribute(ax::mojom::StringListAttribute attribute,
+                              std::vector<std::string>* value) const {
     return data().GetStringListAttribute(attribute, value);
   }
 
-  constexpr bool GetHtmlAttribute(const char* attribute,
-                                  base::string16* value) const {
+  bool GetHtmlAttribute(const char* attribute, base::string16* value) const {
     return data().GetHtmlAttribute(attribute, value);
   }
-  constexpr bool GetHtmlAttribute(const char* attribute,
-                                  std::string* value) const {
+  bool GetHtmlAttribute(const char* attribute, std::string* value) const {
     return data().GetHtmlAttribute(attribute, value);
   }
 
