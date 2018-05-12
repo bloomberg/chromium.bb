@@ -303,7 +303,11 @@ AutomationRichEditableText.prototype = {
     }
 
     // Selection stayed within the same line(s) and didn't cross into new lines.
-    if (anchorLine.isSameLine(prevAnchorLine) &&
+
+    // We must validate the previous lines as state changes in the accessibility
+    // tree may have invalidated the lines.
+    if (prevAnchorLine.isValidLine() && prevFocusLine.isValidLine() &&
+        anchorLine.isSameLine(prevAnchorLine) &&
         focusLine.isSameLine(prevFocusLine)) {
       // Intra-line changes.
       this.changed(new cvox.TextChangeEvent(
@@ -1028,6 +1032,60 @@ editing.EditableLine.prototype = {
     return AutomationUtil.getDirection(
                this.lineStartContainer_, otherLine.lineStartContainer_) ==
         Dir.FORWARD;
+  },
+
+  /**
+   * Performs a validation that this line still refers to a line given its
+   * internally tracked state.
+   */
+  isValidLine: function() {
+    if (!this.lineStartContainer_ || !this.lineEndContainer_)
+      return false;
+
+    var start = new cursors.Cursor(
+        this.lineStartContainer_, this.localLineStartContainerOffset_);
+    var end = new cursors.Cursor(
+        this.lineEndContainer_, this.localLineEndContainerOffset_ - 1);
+    var localStart = start.deepEquivalent || start;
+    var localEnd = end.deepEquivalent || end;
+    var localStartNode = localStart.node;
+    var localEndNode = localEnd.node;
+
+    // Unfortunately, there are asymmetric errors in lines, so we need to check
+    // in both directions.
+    var testStartNode = localStartNode;
+    do {
+      if (testStartNode == localEndNode)
+        return true;
+
+      // Hack/workaround for broken *OnLine links.
+      if (testStartNode.nextOnLine && testStartNode.nextOnLine.role)
+        testStartNode = testStartNode.nextOnLine;
+      else if (
+          testStartNode.nextSibling &&
+          testStartNode.nextSibling.previousOnLine == testStartNode)
+        testStartNode = testStartNode.nextSibling;
+      else
+        break;
+    } while (testStartNode);
+
+    var testEndNode = localEndNode;
+    do {
+      if (testEndNode == localStartNode)
+        return true;
+
+      // Hack/workaround for broken *OnLine links.
+      if (testEndNode.previousOnLine && testEndNode.previousOnLine.role)
+        testEndNode = testEndNode.previousOnLine;
+      else if (
+          testEndNode.previousSibling &&
+          testEndNode.previousSibling.nextOnLine == testEndNode)
+        testEndNode = testEndNode.previousSibling;
+      else
+        break;
+    } while (testEndNode);
+
+    return false;
   }
 };
 
