@@ -94,7 +94,7 @@ class SecureChannelPendingConnectionRequestBaseTest : public testing::Test {
   GetFailedConnectionReason() {
     return fake_pending_connection_request_delegate_
         ->GetFailedConnectionReasonForId(
-            test_pending_connection_request_->GetRequestId());
+            test_pending_connection_request_->request_id());
   }
 
   void DisconnectConnectionDelegatePtr() {

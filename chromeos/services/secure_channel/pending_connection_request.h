@@ -29,24 +29,22 @@ class PendingConnectionRequest {
   virtual void HandleConnectionFailure(FailureDetailType failure_detail) = 0;
 
   // Note: Request ID is guaranteed to be unique among all requests.
-  const std::string& GetRequestId() const {
-    static const std::string kRequestId = base::GenerateGUID();
-    return kRequestId;
-  }
+  const std::string& request_id() const { return request_id_; }
 
  protected:
   PendingConnectionRequest(PendingConnectionRequestDelegate* delegate)
-      : delegate_(delegate) {
+      : delegate_(delegate), request_id_(base::GenerateGUID()) {
     DCHECK(delegate_);
   }
 
   void NotifyRequestFinishedWithoutConnection(
       PendingConnectionRequestDelegate::FailedConnectionReason reason) {
-    delegate_->OnRequestFinishedWithoutConnection(GetRequestId(), reason);
+    delegate_->OnRequestFinishedWithoutConnection(request_id_, reason);
   }
 
  private:
   PendingConnectionRequestDelegate* delegate_;
+  const std::string request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingConnectionRequest);
 };
