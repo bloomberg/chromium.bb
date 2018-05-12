@@ -1515,7 +1515,7 @@ static CSSValue* ConsumeImageSet(CSSParserTokenRange& range,
       return nullptr;
     if (token.Value() != "x")
       return nullptr;
-    DCHECK(token.GetUnitType() == CSSPrimitiveValue::UnitType::kUnknown);
+    DCHECK(token.GetUnitType() == CSSPrimitiveValue::UnitType::kDotsPerPixel);
     double image_scale_factor = token.NumericValue();
     if (image_scale_factor <= 0)
       return nullptr;

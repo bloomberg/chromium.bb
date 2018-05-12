@@ -83,6 +83,10 @@
       unit_type: "kDotsPerPixel",
     },
     {
+      name: "x",
+      unit_type: "kDotsPerPixel",
+    },
+    {
       name: "vw",
       unit_type: "kViewportWidth",
     },
