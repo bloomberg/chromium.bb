@@ -89,9 +89,8 @@ void OffscreenCanvasResourceProvider::SetTransferableResourceToSharedBitmap(
   }
   void* pixels = frame_resource->shared_memory->memory();
   DCHECK(pixels);
-  // TODO(xlai): Optimize to avoid copying pixels. See crbug.com/651456.
-  // However, in the case when |image| is texture backed, this function call
-  // does a GPU readback which is required.
+  // When |image| is texture backed, this function does a GPU readback which is
+  // required.
   sk_sp<SkImage> sk_image = image->PaintImageForCurrentFrame().GetSkImage();
   if (sk_image->bounds().isEmpty())
     return;
@@ -105,6 +104,9 @@ void OffscreenCanvasResourceProvider::SetTransferableResourceToSharedBitmap(
   if (RuntimeEnabledFeatures::CanvasColorManagementEnabled()) {
     image_info = image_info.makeColorType(sk_image->colorType());
   }
+
+  // TODO(junov): Optimize to avoid copying pixels for non-texture-backed
+  // sk_image. See crbug.com/651456.
   bool read_pixels_successful =
       sk_image->readPixels(image_info, pixels, image_info.minRowBytes(), 0, 0);
   DCHECK(read_pixels_successful);
