@@ -29,10 +29,6 @@
 
 [
     ActiveScriptWrappable,
-    // The Worker constructor may run a worker in parallel, fetch URLs, and
-    // modify the global worker set. See spec section 10.2.6.3, step 9.
-    // https://html.spec.whatwg.org/#dedicated-workers-and-the-worker-interface
-    Affects=Everything,
     Constructor(DOMString scriptURL, optional WorkerOptions options),
     ConstructorCallWith=ExecutionContext,
     // TODO(foolip): Exposed=(Window,Worker),

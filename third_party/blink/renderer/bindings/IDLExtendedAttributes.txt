@@ -32,7 +32,7 @@
 #
 
 ActiveScriptWrappable
-Affects=Everything|Nothing
+Affects=Nothing
 AllowShared
 CEReactions
 CachedAccessor

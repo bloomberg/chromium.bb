@@ -33,10 +33,6 @@
 
 [
     ActiveScriptWrappable,
-    // The SharedWorker constructor may run a worker in parallel, fetch URLs,
-    // and modify the global worker set. See spec section 10.2.6.4, step 11.
-    // https://html.spec.whatwg.org/#shared-workers-and-the-sharedworker-interface
-    Affects=Everything,
     // TODO(foolip): The name argument should not have a default null value.
     Constructor(DOMString scriptURL, optional DOMString name = null),
     ConstructorCallWith=ExecutionContext,
