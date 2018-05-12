@@ -366,6 +366,9 @@ TEST_F(DeveloperPrivateApiUnitTest,
   const Extension* extension = LoadUnpackedExtension();
   const std::string& id = extension->id();
 
+  ScriptingPermissionsModifier(profile(), base::WrapRefCounted(extension))
+      .SetAllowedOnAllUrls(false);
+
   TestExtensionPrefSetting(
       base::Bind(&HasPrefsPermission, &util::IsIncognitoEnabled, profile(), id),
       "incognitoAccess", id);

@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/testing_profile.h"
@@ -356,8 +357,11 @@ TEST_F(PermissionsUpdaterTest, RevokingPermissions) {
     PermissionsUpdater updater(profile());
     updater.InitializePermissions(extension.get());
 
-    // By default, all-hosts was withheld, so the extension shouldn't have
-    // access to any site (like foo.com).
+    ScriptingPermissionsModifier(profile(), extension)
+        .SetAllowedOnAllUrls(false);
+
+    // All-hosts was withheld, so the extension shouldn't have access to any
+    // site (like foo.com).
     const GURL kOrigin("http://foo.com");
 
     EXPECT_FALSE(extension->permissions_data()
