@@ -239,8 +239,13 @@ static SingleCachedMetadataHandler* GetInlineCacheHandler(const String& source,
   if (!RuntimeEnabledFeatures::CacheInlineScriptCodeEnabled())
     return nullptr;
 
+  ScriptableDocumentParser* scriptable_parser =
+      document.GetScriptableDocumentParser();
+  if (!scriptable_parser)
+    return nullptr;
+
   SourceKeyedCachedMetadataHandler* document_cache_handler =
-      document.GetScriptableDocumentParser()->GetInlineScriptCacheHandler();
+      scriptable_parser->GetInlineScriptCacheHandler();
 
   if (!document_cache_handler)
     return nullptr;
