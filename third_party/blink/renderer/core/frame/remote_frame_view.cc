@@ -84,8 +84,12 @@ void RemoteFrameView::UpdateViewportIntersectionsForSubtree(
   LayoutRect rect(0, 0, frame_rect_.Width(), frame_rect_.Height());
   rect.Move(remote_frame_->OwnerLayoutObject()->ContentBoxOffset());
   IntRect viewport_intersection;
+  VisualRectFlags flags =
+      RuntimeEnabledFeatures::IntersectionObserverGeometryMapperEnabled()
+          ? kUseGeometryMapper
+          : kDefaultVisualRectFlags;
   if (remote_frame_->OwnerLayoutObject()->MapToVisualRectInAncestorSpace(
-          nullptr, rect)) {
+          nullptr, rect, flags)) {
     IntRect root_visible_rect = local_root_view->VisibleContentRect();
     IntRect intersected_rect = EnclosingIntRect(rect);
     intersected_rect.Intersect(root_visible_rect);

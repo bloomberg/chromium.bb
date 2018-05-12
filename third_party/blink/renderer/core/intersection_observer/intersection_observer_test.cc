@@ -55,9 +55,18 @@ class TestIntersectionObserverDelegate : public IntersectionObserverDelegate {
 
 }  // namespace
 
-class IntersectionObserverTest : public SimTest {};
+class IntersectionObserverTest
+    : public testing::WithParamInterface<bool>,
+      public SimTest,
+      ScopedIntersectionObserverGeometryMapperForTest {
+ public:
+  IntersectionObserverTest()
+      : ScopedIntersectionObserverGeometryMapperForTest(GetParam()) {}
+};
 
-TEST_F(IntersectionObserverTest, ObserveSchedulesFrame) {
+INSTANTIATE_TEST_CASE_P(All, IntersectionObserverTest, testing::Bool());
+
+TEST_P(IntersectionObserverTest, ObserveSchedulesFrame) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete("<div id='target'></div>");
@@ -81,7 +90,7 @@ TEST_F(IntersectionObserverTest, ObserveSchedulesFrame) {
   EXPECT_TRUE(Compositor().NeedsBeginFrame());
 }
 
-TEST_F(IntersectionObserverTest, ResumePostsTask) {
+TEST_P(IntersectionObserverTest, ResumePostsTask) {
   WebView().Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
@@ -141,7 +150,7 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
   EXPECT_EQ(observer_delegate->CallCount(), 3);
 }
 
-TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {
+TEST_P(IntersectionObserverTest, DisconnectClearsNotifications) {
   WebView().Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
@@ -177,7 +186,7 @@ TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {
   EXPECT_EQ(observer_delegate->CallCount(), 1);
 }
 
-TEST_F(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
+TEST_P(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
   WebView().GetSettings()->SetForceZeroLayoutHeight(true);
   WebView().Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
@@ -235,7 +244,7 @@ TEST_F(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
   EXPECT_TRUE(observer_delegate->LastIntersectionRect().IsEmpty());
 }
 
-TEST_F(IntersectionObserverTest, TrackVisibilityInit) {
+TEST_P(IntersectionObserverTest, TrackVisibilityInit) {
   ScopedIntersectionObserverV2ForTest iov2_enabled(true);
   IntersectionObserverInit observer_init;
   DummyExceptionStateForTesting exception_state;

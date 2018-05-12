@@ -616,6 +616,9 @@
       status: "experimental",
     },
     {
+      name: "IntersectionObserverGeometryMapper",
+    },
+    {
       name: "IntersectionObserverV2",
     },
     {
