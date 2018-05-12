@@ -5783,8 +5783,7 @@ test("net_unittests") {
 if (!is_ios && !is_proto_quic) {
   # TODO(crbug.com/594965): this should be converted to "app" template and
   # enabled on iOS too.
-  executable("net_perftests") {
-    testonly = true
+  test("net_perftests") {
     sources = [
       "base/mime_sniffer_perftest.cc",
       "cookies/cookie_monster_perftest.cc",
@@ -5804,7 +5803,6 @@ if (!is_ios && !is_proto_quic) {
       "//base:i18n",
       "//base/test:test_support_perf",
       "//build/config:exe_and_shlib_deps",
-      "//build/win:default_exe_manifest",
       "//testing/gtest",
       "//testing/perf",
       "//url",
@@ -5815,6 +5813,9 @@ if (!is_ios && !is_proto_quic) {
     ]
     if (enable_websockets) {
       sources += [ "websockets/websocket_frame_perftest.cc" ]
+    }
+    if (is_win) {
+      deps += [ "//build/win:default_exe_manifest" ]
     }
   }
 }
