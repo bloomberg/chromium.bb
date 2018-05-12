@@ -17,6 +17,7 @@
 namespace gfx {
 class Rect;
 class RectF;
+class GpuFence;
 
 // This represents a buffer that can be directly imported via GL for
 // rendering, or exported via dma-buf fds.
@@ -54,12 +55,15 @@ class NativePixmap : public base::RefCountedThreadSafe<NativePixmap> {
   // range of [0,1].
   // |enable_blend| specifies if the plane should be alpha blended, with premul
   // apha, when scanned out.
+  // |gpu_fence| specifies a gpu fence to wait on before the pixmap is ready
+  // to be displayed.
   virtual bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                     int plane_z_order,
                                     gfx::OverlayTransform plane_transform,
                                     const gfx::Rect& display_bounds,
                                     const gfx::RectF& crop_rect,
-                                    bool enable_blend) = 0;
+                                    bool enable_blend,
+                                    gfx::GpuFence* gpu_fence) = 0;
 
   // Export the buffer for sharing across processes.
   // Any file descriptors in the exported handle are owned by the caller.
