@@ -62,19 +62,12 @@ void MessagePropertyProvider::GetChannelIDOnIOThread(
     const std::string& host,
     const ChannelIDCallback& reply) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  const net::HttpNetworkSession::Params* network_params =
-      request_context_getter->GetURLRequestContext()->GetNetworkSessionParams();
+  net::ChannelIDService* channel_id_service =
+      request_context_getter->GetURLRequestContext()->channel_id_service();
   GetChannelIDOutput* output = new GetChannelIDOutput();
   net::CompletionCallback net_completion_callback =
       base::Bind(&MessagePropertyProvider::GotChannelID, original_task_runner,
                  base::Owned(output), reply);
-  if (!network_params->enable_token_binding &&
-      !network_params->enable_channel_id) {
-    GotChannelID(original_task_runner, output, reply, net::ERR_FILE_NOT_FOUND);
-    return;
-  }
-  net::ChannelIDService* channel_id_service =
-      request_context_getter->GetURLRequestContext()->channel_id_service();
   int status = channel_id_service->GetChannelID(
       host, &output->channel_id_key, net_completion_callback, &output->request);
   if (status == net::ERR_IO_PENDING)
