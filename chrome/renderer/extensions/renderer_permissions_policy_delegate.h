@@ -19,10 +19,8 @@ class RendererPermissionsPolicyDelegate
   explicit RendererPermissionsPolicyDelegate(Dispatcher* dispatcher);
   ~RendererPermissionsPolicyDelegate() override;
 
-  bool CanExecuteScriptOnPage(const Extension* extension,
-                              const GURL& document_url,
-                              int tab_id,
-                              std::string* error) override;
+  // PermissionsData::PolicyDelegate:
+  bool IsRestrictedUrl(const GURL& document_url, std::string* error) override;
 
  private:
   Dispatcher* dispatcher_;

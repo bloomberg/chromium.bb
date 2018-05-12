@@ -101,6 +101,11 @@ bool PermissionsData::IsRestrictedUrl(const GURL& document_url,
   if (extension && CanExecuteScriptEverywhere(extension))
     return false;
 
+  if (g_policy_delegate &&
+      g_policy_delegate->IsRestrictedUrl(document_url, error)) {
+    return true;
+  }
+
   // Check if the scheme is valid for extensions. If not, return.
   if (!URLPattern::IsValidSchemeForExtensions(document_url.scheme()) &&
       document_url.spec() != url::kAboutBlankURL) {
@@ -446,10 +451,6 @@ PermissionsData::PageAccess PermissionsData::CanRunOnPage(
     const URLPatternSet* tab_url_patterns,
     std::string* error) const {
   runtime_lock_.AssertAcquired();
-  if (g_policy_delegate && !g_policy_delegate->CanExecuteScriptOnPage(
-                               extension, document_url, tab_id, error))
-    return PageAccess::kDenied;
-
   if (extension->location() != Manifest::COMPONENT &&
       extension->permissions_data()->IsRuntimeBlockedHostUnsafe(document_url)) {
     if (error)
