@@ -70,25 +70,24 @@ namespace {
 
 #if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL) || \
     defined(OS_ANDROID) && __ANDROID_API__ < 21
-static int CallStat(const char *path, stat_wrapper_t *sb) {
+int CallStat(const char* path, stat_wrapper_t* sb) {
   AssertBlockingAllowed();
   return stat(path, sb);
 }
-static int CallLstat(const char *path, stat_wrapper_t *sb) {
+int CallLstat(const char* path, stat_wrapper_t* sb) {
   AssertBlockingAllowed();
   return lstat(path, sb);
 }
-#else  //  defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL) ||
-//  defined(OS_ANDROID) && __ANDROID_API__ < 21
-static int CallStat(const char *path, stat_wrapper_t *sb) {
+#else
+int CallStat(const char* path, stat_wrapper_t* sb) {
   AssertBlockingAllowed();
   return stat64(path, sb);
 }
-static int CallLstat(const char *path, stat_wrapper_t *sb) {
+int CallLstat(const char* path, stat_wrapper_t* sb) {
   AssertBlockingAllowed();
   return lstat64(path, sb);
 }
-#endif  // !(defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL))
+#endif
 
 #if !defined(OS_NACL_NONSFI)
 // Helper for VerifyPathControlledByUser.
@@ -291,7 +290,7 @@ bool DoCopyDirectory(const FilePath& from_path,
     }
 
     // Add O_NONBLOCK so we can't block opening a pipe.
-    base::File infile(open(current.value().c_str(), O_RDONLY | O_NONBLOCK));
+    File infile(open(current.value().c_str(), O_RDONLY | O_NONBLOCK));
     if (!infile.IsValid()) {
       DPLOG(ERROR) << "CopyDirectory() couldn't open file: " << current.value();
       return false;
@@ -331,7 +330,7 @@ bool DoCopyDirectory(const FilePath& from_path,
 #else
     int mode = 0600;
 #endif
-    base::File outfile(open(target_path.value().c_str(), open_flags, mode));
+    File outfile(open(target_path.value().c_str(), open_flags, mode));
     if (!outfile.IsValid()) {
       DPLOG(ERROR) << "CopyDirectory() couldn't create file: "
                    << target_path.value();
@@ -390,7 +389,7 @@ bool DeleteFile(const FilePath& path, bool recursive) {
     return (rmdir(path_str) == 0);
 
   bool success = true;
-  base::stack<std::string> directories;
+  stack<std::string> directories;
   directories.push(path.value());
   FileEnumerator traversal(path, true,
       FileEnumerator::FILES | FileEnumerator::DIRECTORIES |
@@ -619,14 +618,15 @@ bool GetTempDir(FilePath* path) {
   const char* tmp = getenv("TMPDIR");
   if (tmp) {
     *path = FilePath(tmp);
-  } else {
-#if defined(OS_ANDROID)
-    return PathService::Get(base::DIR_CACHE, path);
-#else
-    *path = FilePath("/tmp");
-#endif
+    return true;
   }
+
+#if defined(OS_ANDROID)
+  return PathService::Get(DIR_CACHE, path);
+#else
+  *path = FilePath("/tmp");
   return true;
+#endif
 }
 #endif  // !defined(OS_MACOSX)
 
