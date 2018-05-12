@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/assistant/buildflags.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -47,11 +46,6 @@
 #include "content/public/common/service_manager_connection.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
-
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-#include "chrome/browser/chromeos/assistant/assistant_client.h"
-#include "chromeos/services/assistant/public/mojom/constants.mojom.h"
-#endif
 
 namespace chromeos {
 
@@ -129,13 +123,6 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
       policy::AppInstallEventLogManagerWrapper::CreateForProfile(user_profile);
     }
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(user_profile);
-
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-    if (chromeos::switches::IsAssistantEnabled()) {
-      assistant::AssistantClient::Get()->Start(
-          content::BrowserContext::GetConnectorFor(user_profile));
-    }
-#endif
 
     // Send the PROFILE_PREPARED notification and call SessionStarted()
     // so that the Launcher and other Profile dependent classes are created.

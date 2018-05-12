@@ -64,6 +64,10 @@
 #include "chrome/browser/exo_parts.h"
 #endif
 
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+#include "chrome/browser/ui/ash/assistant/assistant_client.h"
+#endif
+
 namespace {
 
 void PushProcessCreationTimeToAsh() {
@@ -242,6 +246,10 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
         chromeos::NetworkHandler::Get()->network_state_handler(),
         chromeos::NetworkHandler::Get()->auto_connect_handler());
   }
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  assistant_client_ = std::make_unique<AssistantClient>();
+#endif
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
@@ -263,7 +271,9 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
 
   night_light_client_.reset();
   data_promo_notification_.reset();
-
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  assistant_client_.reset();
+#endif
   chrome_launcher_controller_initializer_.reset();
 
   wallpaper_controller_client_.reset();

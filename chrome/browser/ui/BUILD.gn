@@ -8,6 +8,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
+import("//chromeos/assistant/assistant.gni")
 import("//components/nacl/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
 import("//components/signin/features.gni")
@@ -914,6 +915,7 @@ split_static_library("ui") {
     "//chrome/common",
     "//chrome/common/net",
     "//chrome/installer/util:with_no_strings",
+    "//chromeos/assistant:buildflags",
     "//components/about_ui",
     "//components/account_id",
     "//components/app_modal",
@@ -3688,6 +3690,23 @@ split_static_library("ui") {
       ]
       deps += [ "//mash/common" ]
     }
+  }
+
+  if (enable_cros_assistant) {
+    deps += [
+      "//ash/public/cpp",
+      "//chromeos/services/assistant:lib",
+      "//chromeos/services/assistant/public/mojom",
+    ]
+
+    sources += [
+      "ash/assistant/assistant_card_renderer.cc",
+      "ash/assistant/assistant_card_renderer.h",
+      "ash/assistant/assistant_client.cc",
+      "ash/assistant/assistant_client.h",
+      "ash/assistant/platform_audio_input_host.cc",
+      "ash/assistant/platform_audio_input_host.h",
+    ]
   }
 
   if (enable_extensions) {

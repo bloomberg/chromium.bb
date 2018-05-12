@@ -2,18 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/assistant/assistant_client.h"
+#include "chrome/browser/ui/ash/assistant/assistant_client.h"
 
 #include <utility>
 
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
-#include "chrome/browser/chromeos/assistant/assistant_card_renderer.h"
+#include "chrome/browser/ui/ash/assistant/assistant_card_renderer.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-
-namespace chromeos {
-namespace assistant {
 
 namespace {
 // Owned by ChromeBrowserMainChromeOS:
@@ -37,12 +34,16 @@ AssistantClient::~AssistantClient() {
   g_instance = nullptr;
 }
 
-void AssistantClient::Start(service_manager::Connector* connector) {
-  connector->BindInterface(mojom::kServiceName, &assistant_connection_);
-  mojom::AudioInputPtr audio_input_ptr;
+void AssistantClient::MaybeInit(service_manager::Connector* connector) {
+  if (initialized_)
+    return;
+  initialized_ = true;
+  connector->BindInterface(chromeos::assistant::mojom::kServiceName,
+                           &assistant_connection_);
+  chromeos::assistant::mojom::AudioInputPtr audio_input_ptr;
   audio_input_binding_.Bind(mojo::MakeRequest(&audio_input_ptr));
 
-  mojom::ClientPtr client_ptr;
+  chromeos::assistant::mojom::ClientPtr client_ptr;
   client_binding_.Bind(mojo::MakeRequest(&client_ptr));
 
   assistant_connection_->Init(std::move(client_ptr),
@@ -56,6 +57,3 @@ void AssistantClient::OnAssistantStatusChanged(bool running) {
       running ? ash::mojom::VoiceInteractionState::RUNNING
               : ash::mojom::VoiceInteractionState::STOPPED);
 }
-
-}  // namespace assistant
-}  // namespace chromeos

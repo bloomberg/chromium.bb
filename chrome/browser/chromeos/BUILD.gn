@@ -4,7 +4,6 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//chromeos/assistant/assistant.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//printing/buildflags/buildflags.gni")
@@ -71,7 +70,6 @@ source_set("chromeos") {
     "//chromeos:biod_proto",
     "//chromeos:cryptohome_proto",
     "//chromeos:cryptohome_signkey_proto",
-    "//chromeos/assistant:buildflags",
     "//chromeos/components/drivefs",
     "//chromeos/components/proximity_auth",
     "//chromeos/components/proximity_auth/logging",
@@ -1720,23 +1718,6 @@ source_set("chromeos") {
     "extensions/wallpaper_private_api.cc",
     "extensions/wallpaper_private_api.h",
   ]
-
-  if (enable_cros_assistant) {
-    deps += [
-      "//ash/public/cpp",
-      "//chromeos/services/assistant:lib",
-      "//chromeos/services/assistant/public/mojom",
-    ]
-
-    sources += [
-      "assistant/assistant_card_renderer.cc",
-      "assistant/assistant_card_renderer.h",
-      "assistant/assistant_client.cc",
-      "assistant/assistant_client.h",
-      "assistant/platform_audio_input_host.cc",
-      "assistant/platform_audio_input_host.h",
-    ]
-  }
 
   if (use_cups) {
     sources += [

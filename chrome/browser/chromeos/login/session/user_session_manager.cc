@@ -92,7 +92,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/assistant/buildflags.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -140,10 +139,6 @@
 #if BUILDFLAG(ENABLE_RLZ)
 #include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
 #include "components/rlz/rlz_tracker.h"
-#endif
-
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-#include "chrome/browser/chromeos/assistant/assistant_client.h"
 #endif
 
 namespace chromeos {
@@ -1409,13 +1404,6 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
       policy::AppInstallEventLogManagerWrapper::CreateForProfile(profile);
     }
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);
-
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-    if (chromeos::switches::IsAssistantEnabled()) {
-      assistant::AssistantClient::Get()->Start(
-          content::BrowserContext::GetConnectorFor(profile));
-    }
-#endif
 
     TetherService* tether_service = TetherService::Get(profile);
     if (tether_service)
