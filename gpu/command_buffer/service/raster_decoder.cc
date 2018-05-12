@@ -2958,11 +2958,8 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
   SkCanvas* canvas = raster_canvas_.get();
   SkMatrix original_ctm;
   cc::PlaybackParams playback_params(nullptr, original_ctm);
-  cc::PaintOp::DeserializeOptions options;
   TransferCacheDeserializeHelperImpl impl(transfer_cache_.get());
-  options.transfer_cache = &impl;
-  options.strike_client = font_manager_.strike_client();
-  options.raster_color_space_id = raster_color_space_id_;
+  cc::PaintOp::DeserializeOptions options(&impl, font_manager_.strike_client());
 
   int op_idx = 0;
   size_t paint_buffer_size = raster_shm_size;

@@ -59,7 +59,10 @@ uint32_t ClientImageTransferCacheEntry::Id() const {
 bool ClientImageTransferCacheEntry::Serialize(base::span<uint8_t> data) const {
   DCHECK_GE(data.size(), SerializedSize());
 
-  PaintOp::SerializeOptions options;
+  // We don't need to populate the SerializeOptions here since the writer is
+  // only used for serializing primitives.
+  PaintOp::SerializeOptions options(nullptr, nullptr, nullptr, nullptr, nullptr,
+                                    false, SkMatrix::I());
   PaintOpWriter writer(data.data(), data.size(), options);
   writer.Write(pixmap_->colorType());
   writer.Write(pixmap_->width());
@@ -91,7 +94,9 @@ size_t ServiceImageTransferCacheEntry::CachedSize() const {
 bool ServiceImageTransferCacheEntry::Deserialize(
     GrContext* context,
     base::span<const uint8_t> data) {
-  PaintOp::DeserializeOptions options;
+  // We don't need to populate the DeSerializeOptions here since the reader is
+  // only used for de-serializing primitives.
+  PaintOp::DeserializeOptions options(nullptr, nullptr);
   PaintOpReader reader(data.data(), data.size(), options);
   SkColorType color_type;
   reader.Read(&color_type);

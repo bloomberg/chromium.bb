@@ -20,6 +20,8 @@ class PaintShader;
 // read functions.
 class CC_PAINT_EXPORT PaintOpReader {
  public:
+  // The DeserializeOptions passed to the reader must set all fields if it can
+  // be used to for deserializing images, paint records or text blobs.
   PaintOpReader(const volatile void* memory,
                 size_t size,
                 const PaintOp::DeserializeOptions& options,

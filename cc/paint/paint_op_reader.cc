@@ -1212,10 +1212,7 @@ size_t PaintOpReader::Read(sk_sp<PaintRecord>* record) {
   if (!valid_)
     return 0;
 
-  PaintOp::DeserializeOptions options;
-  options.transfer_cache = options_.transfer_cache;
-
-  *record = PaintOpBuffer::MakeFromMemory(memory_, size_bytes, options);
+  *record = PaintOpBuffer::MakeFromMemory(memory_, size_bytes, options_);
   if (!*record) {
     SetInvalid();
     return 0;

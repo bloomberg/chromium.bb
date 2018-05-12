@@ -15,7 +15,11 @@ StructTraits<viz::mojom::PaintFilterDataView, sk_sp<cc::PaintFilter>>::data(
   std::vector<uint8_t> memory;
   memory.resize(cc::PaintOpWriter::HeaderBytes() +
                 cc::PaintFilter::GetFilterSize(filter.get()));
-  cc::PaintOp::SerializeOptions options;
+  // No need to populate the SerializeOptions here since the security
+  // constraints explicitly disable serializing images using the transfer cache
+  // and serialization of PaintRecords.
+  cc::PaintOp::SerializeOptions options(nullptr, nullptr, nullptr, nullptr,
+                                        nullptr, false, SkMatrix::I());
   cc::PaintOpWriter writer(memory.data(), memory.size(), options,
                            true /* enable_security_constraints */);
   writer.Write(filter.get());
@@ -41,7 +45,10 @@ bool StructTraits<viz::mojom::PaintFilterDataView, sk_sp<cc::PaintFilter>>::
     return true;
   }
 
-  cc::PaintOp::DeserializeOptions options;
+  // We don't need to populate the DeserializeOptions here since the security
+  // constraints explicitly disable serializing images using the transfer cache
+  // and serialization of PaintRecords.
+  cc::PaintOp::DeserializeOptions options(nullptr, nullptr);
   cc::PaintOpReader reader(buffer->data(), buffer->size(), options,
                            true /* enable_security_constraints */);
   sk_sp<cc::PaintFilter> filter;
