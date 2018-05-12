@@ -67,7 +67,7 @@ struct AX_EXPORT AXNodeData {
                          float* value) const;
 
   bool HasIntAttribute(ax::mojom::IntAttribute attribute) const;
-  int32_t GetIntAttribute(ax::mojom::IntAttribute attribute) const;
+  int GetIntAttribute(ax::mojom::IntAttribute attribute) const;
   bool GetIntAttribute(ax::mojom::IntAttribute attribute, int* value) const;
 
   bool HasStringAttribute(ax::mojom::StringAttribute attribute) const;
