@@ -12,3 +12,11 @@ NSString* const kBookmarkEditDeleteButtonIdentifier =
     @"kBookmarkEditDeleteButtonIdentifier";
 NSString* const kBookmarkFolderEditorDeleteButtonIdentifier =
     @"kBookmarkFolderEditorDeleteButtonIdentifier";
+NSString* const kBookmarkHomeLeadingButtonIdentifier =
+    @"kBookmarkHomeLeadingButtonIdentifier";
+NSString* const kBookmarkHomeCenterButtonIdentifier =
+    @"kBookmarkHomeCenterButtonIdentifier";
+NSString* const kBookmarkHomeTrailingButtonIdentifier =
+    @"kBookmarkHomeTrailingButtonIdentifier";
+NSString* const kBookmarkHomeUIToolbarIdentifier =
+    @"kBookmarkHomeUIToolbarIdentifier";
