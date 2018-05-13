@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -31,7 +33,6 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_scoped_task_environment.h"
-#include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -162,8 +163,8 @@ class SpdyHttpStreamTest : public TestWithScopedTaskEnvironment {
   }
 
   void TestSendCredentials(ChannelIDService* channel_id_service,
-                           const SpdyString& cert,
-                           const SpdyString& proof);
+                           const std::string& cert,
+                           const std::string& proof);
 
   SpdyTestUtil spdy_util_;
   TestNetLog net_log_;
@@ -656,21 +657,21 @@ TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   ASSERT_EQ(kUploadDataSize,
             http_stream->ReadResponseBody(
                 buf1.get(), kUploadDataSize, callback.callback()));
-  EXPECT_EQ(kUploadData, SpdyString(buf1->data(), kUploadDataSize));
+  EXPECT_EQ(kUploadData, std::string(buf1->data(), kUploadDataSize));
 
   // Check |chunk2| response.
   scoped_refptr<IOBuffer> buf2(new IOBuffer(kUploadData1Size));
   ASSERT_EQ(kUploadData1Size,
             http_stream->ReadResponseBody(
                 buf2.get(), kUploadData1Size, callback.callback()));
-  EXPECT_EQ(kUploadData1, SpdyString(buf2->data(), kUploadData1Size));
+  EXPECT_EQ(kUploadData1, std::string(buf2->data(), kUploadData1Size));
 
   // Check |chunk3| response.
   scoped_refptr<IOBuffer> buf3(new IOBuffer(kUploadDataSize));
   ASSERT_EQ(kUploadDataSize,
             http_stream->ReadResponseBody(
                 buf3.get(), kUploadDataSize, callback.callback()));
-  EXPECT_EQ(kUploadData, SpdyString(buf3->data(), kUploadDataSize));
+  EXPECT_EQ(kUploadData, std::string(buf3->data(), kUploadDataSize));
 
   ASSERT_TRUE(response.headers.get());
   ASSERT_EQ(200, response.headers->response_code());
@@ -754,7 +755,7 @@ TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
   ASSERT_EQ(kUploadDataSize,
             http_stream->ReadResponseBody(
                 buf1.get(), kUploadDataSize, callback.callback()));
-  EXPECT_EQ(kUploadData, SpdyString(buf1->data(), kUploadDataSize));
+  EXPECT_EQ(kUploadData, std::string(buf1->data(), kUploadDataSize));
 
   // Check |chunk2| response.
   ASSERT_EQ(0,
@@ -975,7 +976,7 @@ TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   ASSERT_EQ(kUploadDataSize,
             http_stream->ReadResponseBody(
                 buf1.get(), kUploadDataSize, callback.callback()));
-  EXPECT_EQ(kUploadData, SpdyString(buf1->data(), kUploadDataSize));
+  EXPECT_EQ(kUploadData, std::string(buf1->data(), kUploadDataSize));
 
   ASSERT_TRUE(response.headers.get());
   ASSERT_EQ(200, response.headers->response_code());

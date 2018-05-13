@@ -12,20 +12,19 @@
 #include "base/callback.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "base/values.h"
 #include "net/base/escape.h"
 #include "net/http/http_log_util.h"
 #include "net/http/http_util.h"
-#include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
-#include "net/third_party/spdy/platform/api/spdy_string.h"
 
 namespace net {
 namespace {
 
 std::unique_ptr<base::Value> ElideNetLogHeaderCallback(
-    SpdyStringPiece header_name,
-    SpdyStringPiece header_value,
-    SpdyStringPiece error_message,
+    base::StringPiece header_name,
+    base::StringPiece header_value,
+    base::StringPiece error_message,
     NetLogCaptureMode capture_mode) {
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("header_name", EscapeExternalHandlerValue(header_name));
@@ -37,7 +36,7 @@ std::unique_ptr<base::Value> ElideNetLogHeaderCallback(
   return std::move(dict);
 }
 
-bool ContainsUppercaseAscii(SpdyStringPiece str) {
+bool ContainsUppercaseAscii(base::StringPiece str) {
   return std::any_of(str.begin(), str.end(), base::IsAsciiUpper<char>);
 }
 
@@ -47,7 +46,7 @@ HeaderCoalescer::HeaderCoalescer(uint32_t max_header_list_size,
                                  const NetLogWithSource& net_log)
     : max_header_list_size_(max_header_list_size), net_log_(net_log) {}
 
-void HeaderCoalescer::OnHeader(SpdyStringPiece key, SpdyStringPiece value) {
+void HeaderCoalescer::OnHeader(base::StringPiece key, base::StringPiece value) {
   if (error_seen_)
     return;
   if (!AddHeader(key, value))
@@ -61,10 +60,11 @@ SpdyHeaderBlock HeaderCoalescer::release_headers() {
 }
 
 size_t HeaderCoalescer::EstimateMemoryUsage() const {
-  return SpdyEstimateMemoryUsage(headers_);
+  return base::trace_event::EstimateMemoryUsage(headers_);
 }
 
-bool HeaderCoalescer::AddHeader(SpdyStringPiece key, SpdyStringPiece value) {
+bool HeaderCoalescer::AddHeader(base::StringPiece key,
+                                base::StringPiece value) {
   if (key.empty()) {
     net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_INVALID_HEADER,
                       base::Bind(&ElideNetLogHeaderCallback, key, value,
@@ -72,7 +72,7 @@ bool HeaderCoalescer::AddHeader(SpdyStringPiece key, SpdyStringPiece value) {
     return false;
   }
 
-  SpdyStringPiece key_name = key;
+  base::StringPiece key_name = key;
   if (key[0] == ':') {
     if (regular_header_seen_) {
       net_log_.AddEvent(

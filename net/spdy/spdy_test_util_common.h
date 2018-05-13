@@ -10,6 +10,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -34,8 +35,6 @@
 #include "net/spdy/spdy_session.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
-#include "net/third_party/spdy/platform/api/spdy_string.h"
-#include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -286,19 +285,20 @@ class SpdyTestUtil {
   ~SpdyTestUtil();
 
   // Add the appropriate headers to put |url| into |block|.
-  void AddUrlToHeaderBlock(SpdyStringPiece url, SpdyHeaderBlock* headers) const;
+  void AddUrlToHeaderBlock(base::StringPiece url,
+                           SpdyHeaderBlock* headers) const;
 
-  static SpdyHeaderBlock ConstructGetHeaderBlock(SpdyStringPiece url);
-  static SpdyHeaderBlock ConstructGetHeaderBlockForProxy(SpdyStringPiece url);
-  static SpdyHeaderBlock ConstructHeadHeaderBlock(SpdyStringPiece url,
+  static SpdyHeaderBlock ConstructGetHeaderBlock(base::StringPiece url);
+  static SpdyHeaderBlock ConstructGetHeaderBlockForProxy(base::StringPiece url);
+  static SpdyHeaderBlock ConstructHeadHeaderBlock(base::StringPiece url,
                                                   int64_t content_length);
-  static SpdyHeaderBlock ConstructPostHeaderBlock(SpdyStringPiece url,
+  static SpdyHeaderBlock ConstructPostHeaderBlock(base::StringPiece url,
                                                   int64_t content_length);
-  static SpdyHeaderBlock ConstructPutHeaderBlock(SpdyStringPiece url,
+  static SpdyHeaderBlock ConstructPutHeaderBlock(base::StringPiece url,
                                                  int64_t content_length);
 
   // Construct an expected SPDY reply string from the given headers.
-  SpdyString ConstructSpdyReplyString(const SpdyHeaderBlock& headers) const;
+  std::string ConstructSpdyReplyString(const SpdyHeaderBlock& headers) const;
 
   // Construct an expected SPDY SETTINGS frame.
   // |settings| are the settings to set.
@@ -319,7 +319,7 @@ class SpdyTestUtil {
   // status, and description. Returns the constructed frame.
   SpdySerializedFrame ConstructSpdyGoAway(SpdyStreamId last_good_stream_id,
                                           SpdyErrorCode error_code,
-                                          const SpdyString& desc);
+                                          const std::string& desc);
 
   // Construct a SPDY WINDOW_UPDATE frame.  Returns the constructed frame.
   SpdySerializedFrame ConstructSpdyWindowUpdate(SpdyStreamId stream_id,
@@ -478,8 +478,8 @@ class SpdyTestUtil {
  private:
   // |content_length| may be NULL, in which case the content-length
   // header will be omitted.
-  static SpdyHeaderBlock ConstructHeaderBlock(SpdyStringPiece method,
-                                              SpdyStringPiece url,
+  static SpdyHeaderBlock ConstructHeaderBlock(base::StringPiece method,
+                                              base::StringPiece url,
                                               int64_t* content_length);
 
   // Multiple SpdyFramers are required to keep track of header compression
@@ -504,11 +504,11 @@ HashValue GetTestHashValue(uint8_t label);
 
 // Returns SHA1 pinning header for the of the base64 encoding of
 // GetTestHashValue(|label|).
-SpdyString GetTestPin(uint8_t label);
+std::string GetTestPin(uint8_t label);
 
 // Adds a pin for |host| to |state|.
 void AddPin(TransportSecurityState* state,
-            const SpdyString& host,
+            const std::string& host,
             uint8_t primary_label,
             uint8_t backup_label);
 

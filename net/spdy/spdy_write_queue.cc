@@ -10,10 +10,10 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/logging.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "net/spdy/spdy_buffer.h"
 #include "net/spdy/spdy_buffer_producer.h"
 #include "net/spdy/spdy_stream.h"
-#include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
 
 namespace net {
 
@@ -37,7 +37,7 @@ SpdyWriteQueue::PendingWrite& SpdyWriteQueue::PendingWrite::operator=(
     PendingWrite&& other) = default;
 
 size_t SpdyWriteQueue::PendingWrite::EstimateMemoryUsage() const {
-  return SpdyEstimateMemoryUsage(frame_producer);
+  return base::trace_event::EstimateMemoryUsage(frame_producer);
 }
 
 SpdyWriteQueue::SpdyWriteQueue() : removing_writes_(false) {}
@@ -170,7 +170,7 @@ void SpdyWriteQueue::Clear() {
 }
 
 size_t SpdyWriteQueue::EstimateMemoryUsage() const {
-  return SpdyEstimateMemoryUsage(queue_);
+  return base::trace_event::EstimateMemoryUsage(queue_);
 }
 
 }  // namespace net

@@ -10,7 +10,9 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -29,8 +31,6 @@
 #include "net/third_party/spdy/core/hpack/hpack_constants.h"
 #include "net/third_party/spdy/core/hpack/hpack_huffman_table.h"
 #include "net/third_party/spdy/core/hpack/hpack_static_table.h"
-#include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
-#include "net/third_party/spdy/platform/api/spdy_string_utils.h"
 
 namespace net {
 
@@ -478,7 +478,7 @@ void SpdySessionPool::RemoveRequestFromSpdySessionRequestMap(
 
 void SpdySessionPool::DumpMemoryStats(
     base::trace_event::ProcessMemoryDump* pmd,
-    const SpdyString& parent_dump_absolute_name) const {
+    const std::string& parent_dump_absolute_name) const {
   if (sessions_.empty())
     return;
   size_t total_size = 0;
@@ -496,11 +496,12 @@ void SpdySessionPool::DumpMemoryStats(
     if (is_session_active)
       num_active_sessions++;
   }
-  total_size += SpdyEstimateMemoryUsage(ObtainHpackHuffmanTable()) +
-                SpdyEstimateMemoryUsage(ObtainHpackStaticTable()) +
-                SpdyEstimateMemoryUsage(push_promise_index_);
+  total_size +=
+      base::trace_event::EstimateMemoryUsage(ObtainHpackHuffmanTable()) +
+      base::trace_event::EstimateMemoryUsage(ObtainHpackStaticTable()) +
+      base::trace_event::EstimateMemoryUsage(push_promise_index_);
   base::trace_event::MemoryAllocatorDump* dump =
-      pmd->CreateAllocatorDump(SpdyStringPrintf(
+      pmd->CreateAllocatorDump(base::StringPrintf(
           "%s/spdy_session_pool", parent_dump_absolute_name.c_str()));
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,
@@ -577,7 +578,7 @@ SpdySessionPool::WeakSessionList SpdySessionPool::GetCurrentSessions() const {
 }
 
 void SpdySessionPool::CloseCurrentSessionsHelper(Error error,
-                                                 const SpdyString& description,
+                                                 const std::string& description,
                                                  bool idle_only) {
   WeakSessionList current_sessions = GetCurrentSessions();
   for (base::WeakPtr<SpdySession>& session : current_sessions) {

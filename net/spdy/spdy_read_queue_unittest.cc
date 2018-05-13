@@ -6,13 +6,13 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/stl_util.h"
 #include "net/spdy/spdy_buffer.h"
-#include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -24,7 +24,7 @@ const size_t kDataSize = arraysize(kData);
 
 // Enqueues |data| onto |queue| in chunks of at most |max_buffer_size|
 // bytes.
-void EnqueueString(const SpdyString& data,
+void EnqueueString(const std::string& data,
                    size_t max_buffer_size,
                    SpdyReadQueue* queue) {
   ASSERT_GT(data.size(), 0u);
@@ -42,8 +42,8 @@ void EnqueueString(const SpdyString& data,
 
 // Dequeues all bytes in |queue| in chunks of at most
 // |max_buffer_size| bytes and returns the data as a string.
-SpdyString DrainToString(size_t max_buffer_size, SpdyReadQueue* queue) {
-  SpdyString data;
+std::string DrainToString(size_t max_buffer_size, SpdyReadQueue* queue) {
+  std::string data;
 
   // Pad the buffer so we can detect out-of-bound writes.
   size_t padding = std::max(static_cast<size_t>(4096), queue->GetTotalSize());
@@ -78,10 +78,10 @@ SpdyString DrainToString(size_t max_buffer_size, SpdyReadQueue* queue) {
 // sizes.
 void RunEnqueueDequeueTest(size_t enqueue_max_buffer_size,
                            size_t dequeue_max_buffer_size) {
-  SpdyString data(kData, kDataSize);
+  std::string data(kData, kDataSize);
   SpdyReadQueue read_queue;
   EnqueueString(data, enqueue_max_buffer_size, &read_queue);
-  const SpdyString& drained_data =
+  const std::string& drained_data =
       DrainToString(dequeue_max_buffer_size, &read_queue);
   EXPECT_EQ(data, drained_data);
 }

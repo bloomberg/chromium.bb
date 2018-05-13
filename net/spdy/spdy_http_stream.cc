@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <list>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -27,7 +28,6 @@
 #include "net/spdy/spdy_session.h"
 #include "net/third_party/spdy/core/spdy_header_block.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
-#include "net/third_party/spdy/platform/api/spdy_string.h"
 
 namespace net {
 
@@ -517,7 +517,7 @@ void SpdyHttpStream::InitializeStreamHelper() {
 }
 
 void SpdyHttpStream::ResetStream(int error) {
-  spdy_session_->ResetStream(stream()->stream_id(), error, SpdyString());
+  spdy_session_->ResetStream(stream()->stream_id(), error, std::string());
 }
 
 void SpdyHttpStream::OnRequestBodyReadCompleted(int status) {

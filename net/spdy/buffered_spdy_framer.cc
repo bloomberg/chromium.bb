@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
+#include "base/trace_event/memory_usage_estimator.h"
 
 namespace net {
 
@@ -202,7 +202,7 @@ void BufferedSpdyFramer::OnPushPromise(SpdyStreamId stream_id,
 
 void BufferedSpdyFramer::OnAltSvc(
     SpdyStreamId stream_id,
-    SpdyStringPiece origin,
+    base::StringPiece origin,
     const SpdyAltSvcWireFormat::AlternativeServiceVector& altsvc_vector) {
   visitor_->OnAltSvc(stream_id, origin, altsvc_vector);
 }
@@ -293,7 +293,7 @@ std::unique_ptr<SpdySerializedFrame> BufferedSpdyFramer::CreateDataFrame(
     const char* data,
     uint32_t len,
     SpdyDataFlags flags) {
-  SpdyDataIR data_ir(stream_id, SpdyStringPiece(data, len));
+  SpdyDataIR data_ir(stream_id, base::StringPiece(data, len));
   data_ir.set_fin((flags & DATA_FLAG_FIN) != 0);
   return std::make_unique<SpdySerializedFrame>(
       spdy_framer_.SerializeData(data_ir));
@@ -312,15 +312,15 @@ std::unique_ptr<SpdySerializedFrame> BufferedSpdyFramer::CreatePriority(
 }
 
 size_t BufferedSpdyFramer::EstimateMemoryUsage() const {
-  return SpdyEstimateMemoryUsage(spdy_framer_) +
-         SpdyEstimateMemoryUsage(deframer_) +
-         SpdyEstimateMemoryUsage(coalescer_) +
-         SpdyEstimateMemoryUsage(control_frame_fields_) +
-         SpdyEstimateMemoryUsage(goaway_fields_);
+  return base::trace_event::EstimateMemoryUsage(spdy_framer_) +
+         base::trace_event::EstimateMemoryUsage(deframer_) +
+         base::trace_event::EstimateMemoryUsage(coalescer_) +
+         base::trace_event::EstimateMemoryUsage(control_frame_fields_) +
+         base::trace_event::EstimateMemoryUsage(goaway_fields_);
 }
 
 size_t BufferedSpdyFramer::GoAwayFields::EstimateMemoryUsage() const {
-  return SpdyEstimateMemoryUsage(debug_data);
+  return base::trace_event::EstimateMemoryUsage(debug_data);
 }
 
 }  // namespace net

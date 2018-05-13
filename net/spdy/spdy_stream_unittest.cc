@@ -10,11 +10,13 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_request_info.h"
 #include "net/log/net_log_event_type.h"
@@ -35,7 +37,6 @@
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
-#include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -50,7 +51,7 @@ namespace {
 const char kPushUrl[] = "https://www.example.org/push";
 const char kPostBody[] = "\0hello!\xff";
 const size_t kPostBodyLength = arraysize(kPostBody);
-const SpdyStringPiece kPostBodyStringPiece(kPostBody, kPostBodyLength);
+const base::StringPiece kPostBodyStringPiece(kPostBody, kPostBodyLength);
 
 static base::TimeTicks g_time_now;
 
@@ -197,7 +198,7 @@ TEST_F(SpdyStreamTest, SendDataAfterOpen) {
 
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(kHttp2StatusHeader));
-  EXPECT_EQ(SpdyString(kPostBody, kPostBodyLength),
+  EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
             delegate.TakeReceivedData());
   EXPECT_TRUE(data.AllWriteDataConsumed());
 }
@@ -206,7 +207,7 @@ TEST_F(SpdyStreamTest, SendDataAfterOpen) {
 class StreamDelegateWithTrailers : public test::StreamDelegateWithBody {
  public:
   StreamDelegateWithTrailers(const base::WeakPtr<SpdyStream>& stream,
-                             SpdyStringPiece data)
+                             base::StringPiece data)
       : StreamDelegateWithBody(stream, data) {}
 
   ~StreamDelegateWithTrailers() override = default;
@@ -275,7 +276,7 @@ TEST_F(SpdyStreamTest, Trailers) {
   const SpdyHeaderBlock& received_trailers = delegate.trailers();
   SpdyHeaderBlock::const_iterator it = received_trailers.find("foo");
   EXPECT_EQ("bar", it->second);
-  EXPECT_EQ(SpdyString(kPostBody, kPostBodyLength),
+  EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
             delegate.TakeReceivedData());
   EXPECT_TRUE(data.AllWriteDataConsumed());
 }
@@ -297,12 +298,12 @@ TEST_F(SpdyStreamTest, PushedStream) {
 
   AddReadPause();
 
-  SpdyStringPiece pushed_msg("foo");
+  base::StringPiece pushed_msg("foo");
   SpdySerializedFrame pushed_body(
       spdy_util_.ConstructSpdyDataFrame(2, pushed_msg, true));
   AddRead(pushed_body);
 
-  SpdyStringPiece msg("bar");
+  base::StringPiece msg("bar");
   SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, msg, true));
   AddRead(body);
 
@@ -434,7 +435,7 @@ TEST_F(SpdyStreamTest, StreamError) {
 
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(kHttp2StatusHeader));
-  EXPECT_EQ(SpdyString(kPostBody, kPostBodyLength),
+  EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
             delegate.TakeReceivedData());
   EXPECT_TRUE(data.AllWriteDataConsumed());
 
@@ -459,7 +460,7 @@ TEST_F(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
       kDefaultUrl, 1, kPostBodyLength, LOWEST, nullptr, 0));
   AddWrite(req);
 
-  SpdyString chunk_data(kMaxSpdyFrameChunkSize, 'x');
+  std::string chunk_data(kMaxSpdyFrameChunkSize, 'x');
   SpdySerializedFrame chunk(
       spdy_util_.ConstructSpdyDataFrame(1, chunk_data, false));
   AddWrite(chunk);
@@ -488,7 +489,7 @@ TEST_F(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
   ASSERT_TRUE(stream);
   EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
-  SpdyString body_data(3 * kMaxSpdyFrameChunkSize, 'x');
+  std::string body_data(3 * kMaxSpdyFrameChunkSize, 'x');
   StreamDelegateWithBody delegate(stream, body_data);
   stream->SetDelegate(&delegate);
 
@@ -501,7 +502,7 @@ TEST_F(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
 
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(kHttp2StatusHeader));
-  EXPECT_EQ(SpdyString(), delegate.TakeReceivedData());
+  EXPECT_EQ(std::string(), delegate.TakeReceivedData());
   EXPECT_TRUE(data.AllWriteDataConsumed());
 }
 
@@ -515,7 +516,7 @@ TEST_F(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
   AddRead(resp);
 
-  SpdyString chunk_data(kMaxSpdyFrameChunkSize, 'x');
+  std::string chunk_data(kMaxSpdyFrameChunkSize, 'x');
   SpdySerializedFrame chunk(
       spdy_util_.ConstructSpdyDataFrame(1, chunk_data, false));
   AddWrite(chunk);
@@ -538,7 +539,7 @@ TEST_F(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
   ASSERT_TRUE(stream);
   EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
-  SpdyString body_data(3 * kMaxSpdyFrameChunkSize, 'x');
+  std::string body_data(3 * kMaxSpdyFrameChunkSize, 'x');
   StreamDelegateSendImmediate delegate(stream, body_data);
   stream->SetDelegate(&delegate);
 
@@ -551,7 +552,7 @@ TEST_F(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
 
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(kHttp2StatusHeader));
-  EXPECT_EQ(SpdyString(), delegate.TakeReceivedData());
+  EXPECT_EQ(std::string(), delegate.TakeReceivedData());
   EXPECT_TRUE(data.AllWriteDataConsumed());
 }
 
@@ -771,7 +772,7 @@ TEST_F(SpdyStreamTest, HeadersMustHaveStatusOnPushedStream) {
 
   EXPECT_THAT(delegate.WaitForClose(), IsOk());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(kHttp2StatusHeader));
-  EXPECT_EQ(SpdyString(kPostBody, kPostBodyLength),
+  EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
             delegate.TakeReceivedData());
 
   // Finish async network reads and writes.
@@ -873,7 +874,7 @@ TEST_F(SpdyStreamTest, HeadersMustPreceedDataOnPushedStream) {
 
   EXPECT_THAT(delegate.WaitForClose(), IsOk());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(kHttp2StatusHeader));
-  EXPECT_EQ(SpdyString(kPostBody, kPostBodyLength),
+  EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
             delegate.TakeReceivedData());
 
   // Finish async network reads and writes.
@@ -1040,7 +1041,7 @@ TEST_F(SpdyStreamTest, InformationalHeaders) {
 
   EXPECT_THAT(delegate.WaitForClose(), IsOk());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(kHttp2StatusHeader));
-  EXPECT_EQ(SpdyString(kPostBody, kPostBodyLength),
+  EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
             delegate.TakeReceivedData());
 
   // Finish async network reads and writes.
@@ -1338,7 +1339,7 @@ void SpdyStreamTest::RunResumeAfterUnstallRequestResponseTest(
 
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
-  EXPECT_EQ(SpdyString(), delegate.TakeReceivedData());
+  EXPECT_EQ(std::string(), delegate.TakeReceivedData());
   EXPECT_TRUE(data.AllWriteDataConsumed());
 }
 
@@ -1416,7 +1417,7 @@ void SpdyStreamTest::RunResumeAfterUnstallBidirectionalTest(
 
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
-  EXPECT_EQ(SpdyString(kPostBody, kPostBodyLength),
+  EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
             delegate.TakeReceivedData());
   EXPECT_TRUE(data.AllWriteDataConsumed());
 }

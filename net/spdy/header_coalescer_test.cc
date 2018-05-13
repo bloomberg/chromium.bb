@@ -9,8 +9,6 @@
 
 #include "net/log/test_net_log.h"
 #include "net/spdy/spdy_test_util_common.h"
-#include "net/third_party/spdy/platform/api/spdy_string.h"
-#include "net/third_party/spdy/platform/api/spdy_string_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,9 +23,9 @@ class HeaderCoalescerTest : public ::testing::Test {
   HeaderCoalescerTest()
       : header_coalescer_(kMaxHeaderListSizeForTest, net_log_.bound()) {}
 
-  void ExpectEntry(SpdyStringPiece expected_header_name,
-                   SpdyStringPiece expected_header_value,
-                   SpdyStringPiece expected_error_message) {
+  void ExpectEntry(base::StringPiece expected_header_name,
+                   base::StringPiece expected_header_value,
+                   base::StringPiece expected_error_message) {
     TestNetLogEntry::List entry_list;
     net_log_.GetEntries(&entry_list);
     ASSERT_EQ(1u, entry_list.size());
@@ -67,12 +65,12 @@ TEST_F(HeaderCoalescerTest, EmptyHeaderKey) {
 TEST_F(HeaderCoalescerTest, HeaderBlockTooLarge) {
   // key + value + overhead = 3 + kMaxHeaderListSizeForTest - 40 + 32
   // = kMaxHeaderListSizeForTest - 5
-  SpdyString data(kMaxHeaderListSizeForTest - 40, 'a');
+  std::string data(kMaxHeaderListSizeForTest - 40, 'a');
   header_coalescer_.OnHeader("foo", data);
   EXPECT_FALSE(header_coalescer_.error_seen());
 
   // Another 3 + 4 + 32 bytes: too large.
-  SpdyStringPiece header_value("abcd");
+  base::StringPiece header_value("abcd");
   header_coalescer_.OnHeader("bar", header_value);
   EXPECT_TRUE(header_coalescer_.error_seen());
   ExpectEntry("bar", "abcd", "Header list too large.");
@@ -95,12 +93,12 @@ TEST_F(HeaderCoalescerTest, Append) {
 
   SpdyHeaderBlock header_block = header_coalescer_.release_headers();
   EXPECT_THAT(header_block,
-              ElementsAre(Pair("foo", SpdyStringPiece("bar\0quux", 8)),
+              ElementsAre(Pair("foo", base::StringPiece("bar\0quux", 8)),
                           Pair("cookie", "baz; qux")));
 }
 
 TEST_F(HeaderCoalescerTest, HeaderNameNotValid) {
-  SpdyStringPiece header_name("\x1\x7F\x80\xFF");
+  base::StringPiece header_name("\x1\x7F\x80\xFF");
   header_coalescer_.OnHeader(header_name, "foo");
   EXPECT_TRUE(header_coalescer_.error_seen());
   ExpectEntry("%01%7F%80%FF", "foo", "Invalid character in header name.");
@@ -108,7 +106,7 @@ TEST_F(HeaderCoalescerTest, HeaderNameNotValid) {
 
 // RFC 7540 Section 8.1.2.6. Uppercase in header name is invalid.
 TEST_F(HeaderCoalescerTest, HeaderNameHasUppercase) {
-  SpdyStringPiece header_name("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+  base::StringPiece header_name("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
   header_coalescer_.OnHeader(header_name, "foo");
   EXPECT_TRUE(header_coalescer_.error_seen());
   ExpectEntry("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "foo",
@@ -122,7 +120,7 @@ TEST_F(HeaderCoalescerTest, HeaderNameHasUppercase) {
 //                  "^" / "_" / "`" / "|" / "~" / DIGIT / ALPHA
 TEST_F(HeaderCoalescerTest, HeaderNameValid) {
   // Due to RFC 7540 Section 8.1.2.6. Uppercase characters are not included.
-  SpdyStringPiece header_name(
+  base::StringPiece header_name(
       "abcdefghijklmnopqrstuvwxyz0123456789!#$%&'*+-."
       "^_`|~");
   header_coalescer_.OnHeader(header_name, "foo");

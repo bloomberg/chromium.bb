@@ -6,6 +6,7 @@
 #define NET_SPDY_SPDY_LOG_UTIL_H_
 
 #include <memory>
+#include <string>
 
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
@@ -13,7 +14,6 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/third_party/spdy/core/spdy_header_block.h"
-#include "net/third_party/spdy/platform/api/spdy_string.h"
 
 namespace base {
 class ListValue;
@@ -23,9 +23,9 @@ namespace net {
 
 // Given an HTTP/2 GOAWAY frame |debug_data|, returns the elided version
 // according to |capture_mode|.
-NET_EXPORT_PRIVATE SpdyString
-ElideGoAwayDebugDataForNetLog(NetLogCaptureMode capture_mode,
-                              base::StringPiece debug_data);
+NET_EXPORT_PRIVATE std::string ElideGoAwayDebugDataForNetLog(
+    NetLogCaptureMode capture_mode,
+    base::StringPiece debug_data);
 
 // Given a SpdyHeaderBlock, return its base::ListValue representation.
 NET_EXPORT_PRIVATE std::unique_ptr<base::ListValue>

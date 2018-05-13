@@ -47,10 +47,10 @@ namespace {
 
 // Parses a URL into the scheme, host, and path components required for a
 // SPDY request.
-void ParseUrl(SpdyStringPiece url,
-              SpdyString* scheme,
-              SpdyString* host,
-              SpdyString* path) {
+void ParseUrl(base::StringPiece url,
+              std::string* scheme,
+              std::string* host,
+              std::string* path) {
   GURL gurl(url);
   path->assign(gurl.PathForRequest());
   scheme->assign(gurl.scheme());
@@ -98,8 +98,8 @@ void AppendToHeaderBlock(const char* const extra_headers[],
 
   // Copy in the headers.
   for (int i = 0; i < extra_header_count; i++) {
-    SpdyStringPiece key(extra_headers[i * 2]);
-    SpdyStringPiece value(extra_headers[i * 2 + 1]);
+    base::StringPiece key(extra_headers[i * 2]);
+    base::StringPiece value(extra_headers[i * 2 + 1]);
     DCHECK(!key.empty()) << "Header key must not be empty.";
     headers->AppendValueOrAddHeader(key, value);
   }
@@ -168,7 +168,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
   void OnError(
       http2::Http2DecoderAdapter::SpdyFramerError spdy_framer_error) override {}
   void OnStreamError(SpdyStreamId stream_id,
-                     const SpdyString& description) override {}
+                     const std::string& description) override {}
   void OnHeaders(SpdyStreamId stream_id,
                  bool has_priority,
                  int weight,
@@ -196,13 +196,13 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
   void OnRstStream(SpdyStreamId stream_id, SpdyErrorCode error_code) override {}
   void OnGoAway(SpdyStreamId last_accepted_stream_id,
                 SpdyErrorCode error_code,
-                SpdyStringPiece debug_data) override {}
+                base::StringPiece debug_data) override {}
   void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) override {}
   void OnPushPromise(SpdyStreamId stream_id,
                      SpdyStreamId promised_stream_id,
                      SpdyHeaderBlock headers) override {}
   void OnAltSvc(SpdyStreamId stream_id,
-                SpdyStringPiece origin,
+                base::StringPiece origin,
                 const SpdyAltSvcWireFormat::AlternativeServiceVector&
                     altsvc_vector) override {}
   bool OnUnknownFrame(SpdyStreamId stream_id, uint8_t frame_type) override {
@@ -269,8 +269,8 @@ bool MockECSignatureCreator::Sign(const uint8_t* data,
   std::vector<uint8_t> private_key;
   if (!key_->ExportPrivateKey(&private_key))
     return false;
-  SpdyString head = "fakesignature";
-  SpdyString tail = "/fakesignature";
+  std::string head = "fakesignature";
+  std::string tail = "/fakesignature";
 
   signature->clear();
   signature->insert(signature->end(), head.begin(), head.end());
@@ -641,9 +641,9 @@ SpdyTestUtil::SpdyTestUtil()
 
 SpdyTestUtil::~SpdyTestUtil() = default;
 
-void SpdyTestUtil::AddUrlToHeaderBlock(SpdyStringPiece url,
+void SpdyTestUtil::AddUrlToHeaderBlock(base::StringPiece url,
                                        SpdyHeaderBlock* headers) const {
-  SpdyString scheme, host, path;
+  std::string scheme, host, path;
   ParseUrl(url, &scheme, &host, &path);
   (*headers)[kHttp2AuthorityHeader] = host;
   (*headers)[kHttp2SchemeHeader] = scheme;
@@ -651,45 +651,45 @@ void SpdyTestUtil::AddUrlToHeaderBlock(SpdyStringPiece url,
 }
 
 // static
-SpdyHeaderBlock SpdyTestUtil::ConstructGetHeaderBlock(SpdyStringPiece url) {
+SpdyHeaderBlock SpdyTestUtil::ConstructGetHeaderBlock(base::StringPiece url) {
   return ConstructHeaderBlock("GET", url, nullptr);
 }
 
 // static
 SpdyHeaderBlock SpdyTestUtil::ConstructGetHeaderBlockForProxy(
-    SpdyStringPiece url) {
+    base::StringPiece url) {
   return ConstructGetHeaderBlock(url);
 }
 
 // static
-SpdyHeaderBlock SpdyTestUtil::ConstructHeadHeaderBlock(SpdyStringPiece url,
+SpdyHeaderBlock SpdyTestUtil::ConstructHeadHeaderBlock(base::StringPiece url,
                                                        int64_t content_length) {
   return ConstructHeaderBlock("HEAD", url, nullptr);
 }
 
 // static
-SpdyHeaderBlock SpdyTestUtil::ConstructPostHeaderBlock(SpdyStringPiece url,
+SpdyHeaderBlock SpdyTestUtil::ConstructPostHeaderBlock(base::StringPiece url,
                                                        int64_t content_length) {
   return ConstructHeaderBlock("POST", url, &content_length);
 }
 
 // static
-SpdyHeaderBlock SpdyTestUtil::ConstructPutHeaderBlock(SpdyStringPiece url,
+SpdyHeaderBlock SpdyTestUtil::ConstructPutHeaderBlock(base::StringPiece url,
                                                       int64_t content_length) {
   return ConstructHeaderBlock("PUT", url, &content_length);
 }
 
-SpdyString SpdyTestUtil::ConstructSpdyReplyString(
+std::string SpdyTestUtil::ConstructSpdyReplyString(
     const SpdyHeaderBlock& headers) const {
-  SpdyString reply_string;
+  std::string reply_string;
   for (SpdyHeaderBlock::const_iterator it = headers.begin();
        it != headers.end(); ++it) {
-    SpdyString key = it->first.as_string();
+    std::string key = it->first.as_string();
     // Remove leading colon from pseudo headers.
     if (key[0] == ':')
       key = key.substr(1);
-    for (const SpdyString& value :
-         base::SplitString(it->second, SpdyStringPiece("\0", 1),
+    for (const std::string& value :
+         base::SplitString(it->second, base::StringPiece("\0", 1),
                            base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
       reply_string += key + ": " + value + "\n";
     }
@@ -733,7 +733,7 @@ SpdySerializedFrame SpdyTestUtil::ConstructSpdyGoAway(
 SpdySerializedFrame SpdyTestUtil::ConstructSpdyGoAway(
     SpdyStreamId last_good_stream_id,
     SpdyErrorCode error_code,
-    const SpdyString& desc) {
+    const std::string& desc) {
   SpdyGoAwayIR go_ir(last_good_stream_id, error_code, desc);
   return SpdySerializedFrame(headerless_spdy_framer_.SerializeFrame(go_ir));
 }
@@ -1028,10 +1028,10 @@ void SpdyTestUtil::UpdateWithStreamDestruction(int stream_id) {
 }
 
 // static
-SpdyHeaderBlock SpdyTestUtil::ConstructHeaderBlock(SpdyStringPiece method,
-                                                   SpdyStringPiece url,
+SpdyHeaderBlock SpdyTestUtil::ConstructHeaderBlock(base::StringPiece method,
+                                                   base::StringPiece url,
                                                    int64_t* content_length) {
-  SpdyString scheme, host, path;
+  std::string scheme, host, path;
   ParseUrl(url, &scheme, &host, &path);
   SpdyHeaderBlock headers;
   headers[kHttp2MethodHeader] = method.as_string();
@@ -1039,7 +1039,7 @@ SpdyHeaderBlock SpdyTestUtil::ConstructHeaderBlock(SpdyStringPiece method,
   headers[kHttp2SchemeHeader] = scheme.c_str();
   headers[kHttp2PathHeader] = path.c_str();
   if (content_length) {
-    SpdyString length_str = base::Int64ToString(*content_length);
+    std::string length_str = base::Int64ToString(*content_length);
     headers["content-length"] = length_str;
   }
   return headers;
@@ -1052,23 +1052,24 @@ HashValue GetTestHashValue(uint8_t label) {
   return hash_value;
 }
 
-SpdyString GetTestPin(uint8_t label) {
+std::string GetTestPin(uint8_t label) {
   HashValue hash_value = GetTestHashValue(label);
-  SpdyString base64;
-  base::Base64Encode(SpdyStringPiece(reinterpret_cast<char*>(hash_value.data()),
-                                     hash_value.size()),
-                     &base64);
+  std::string base64;
+  base::Base64Encode(
+      base::StringPiece(reinterpret_cast<char*>(hash_value.data()),
+                        hash_value.size()),
+      &base64);
 
-  return SpdyString("pin-sha256=\"") + base64 + "\"";
+  return std::string("pin-sha256=\"") + base64 + "\"";
 }
 
 void AddPin(TransportSecurityState* state,
-            const SpdyString& host,
+            const std::string& host,
             uint8_t primary_label,
             uint8_t backup_label) {
-  SpdyString primary_pin = GetTestPin(primary_label);
-  SpdyString backup_pin = GetTestPin(backup_label);
-  SpdyString header = "max-age = 10000; " + primary_pin + "; " + backup_pin;
+  std::string primary_pin = GetTestPin(primary_label);
+  std::string backup_pin = GetTestPin(backup_label);
+  std::string header = "max-age = 10000; " + primary_pin + "; " + backup_pin;
 
   // Construct a fake SSLInfo that will pass AddHPKPHeader's checks.
   SSLInfo ssl_info;

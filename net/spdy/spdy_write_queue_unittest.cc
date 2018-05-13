@@ -6,6 +6,7 @@
 
 #include <cstddef>
 #include <cstring>
+#include <string>
 #include <utility>
 
 #include "base/logging.h"
@@ -15,7 +16,6 @@
 #include "net/log/net_log_with_source.h"
 #include "net/spdy/spdy_buffer_producer.h"
 #include "net/spdy/spdy_stream.h"
-#include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -31,7 +31,7 @@ class SpdyWriteQueueTest : public ::testing::Test {};
 
 // Makes a SpdyFrameProducer producing a frame with the data in the
 // given string.
-std::unique_ptr<SpdyBufferProducer> StringToProducer(const SpdyString& s) {
+std::unique_ptr<SpdyBufferProducer> StringToProducer(const std::string& s) {
   auto data = std::make_unique<char[]>(s.size());
   std::memcpy(data.get(), s.data(), s.size());
   auto frame =
@@ -83,9 +83,9 @@ class RequeingBufferProducer : public SpdyBufferProducer {
 
 // Produces a frame with the given producer and returns a copy of its
 // data as a string.
-SpdyString ProducerToString(std::unique_ptr<SpdyBufferProducer> producer) {
+std::string ProducerToString(std::unique_ptr<SpdyBufferProducer> producer) {
   std::unique_ptr<SpdyBuffer> buffer = producer->ProduceBuffer();
-  return SpdyString(buffer->GetRemainingData(), buffer->GetRemainingSize());
+  return std::string(buffer->GetRemainingData(), buffer->GetRemainingSize());
 }
 
 // Produces a frame with the given producer and returns a copy of its
@@ -332,7 +332,7 @@ TEST_F(SpdyWriteQueueTest, RequeingProducerWithoutReentrance) {
     EXPECT_TRUE(
         queue.Dequeue(&frame_type, &producer, &stream, &traffic_annotation));
     EXPECT_TRUE(queue.IsEmpty());
-    EXPECT_EQ(SpdyString(kOriginal),
+    EXPECT_EQ(std::string(kOriginal),
               producer->ProduceBuffer()->GetRemainingData());
   }
   // |producer| was destroyed, and a buffer is re-queued.
@@ -345,7 +345,7 @@ TEST_F(SpdyWriteQueueTest, RequeingProducerWithoutReentrance) {
 
   EXPECT_TRUE(
       queue.Dequeue(&frame_type, &producer, &stream, &traffic_annotation));
-  EXPECT_EQ(SpdyString(kRequeued),
+  EXPECT_EQ(std::string(kRequeued),
             producer->ProduceBuffer()->GetRemainingData());
 }
 
@@ -365,7 +365,7 @@ TEST_F(SpdyWriteQueueTest, ReentranceOnClear) {
 
   EXPECT_TRUE(
       queue.Dequeue(&frame_type, &producer, &stream, &traffic_annotation));
-  EXPECT_EQ(SpdyString(kRequeued),
+  EXPECT_EQ(std::string(kRequeued),
             producer->ProduceBuffer()->GetRemainingData());
 }
 
@@ -388,7 +388,7 @@ TEST_F(SpdyWriteQueueTest, ReentranceOnRemovePendingWritesAfter) {
 
   EXPECT_TRUE(
       queue.Dequeue(&frame_type, &producer, &weak_stream, &traffic_annotation));
-  EXPECT_EQ(SpdyString(kRequeued),
+  EXPECT_EQ(std::string(kRequeued),
             producer->ProduceBuffer()->GetRemainingData());
 }
 
@@ -411,7 +411,7 @@ TEST_F(SpdyWriteQueueTest, ReentranceOnRemovePendingWritesForStream) {
 
   EXPECT_TRUE(
       queue.Dequeue(&frame_type, &producer, &weak_stream, &traffic_annotation));
-  EXPECT_EQ(SpdyString(kRequeued),
+  EXPECT_EQ(std::string(kRequeued),
             producer->ProduceBuffer()->GetRemainingData());
 }
 

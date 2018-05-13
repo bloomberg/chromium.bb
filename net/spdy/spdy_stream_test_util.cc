@@ -93,9 +93,9 @@ int StreamDelegateBase::WaitForClose() {
   return result;
 }
 
-SpdyString StreamDelegateBase::TakeReceivedData() {
+std::string StreamDelegateBase::TakeReceivedData() {
   size_t len = received_data_queue_.GetTotalSize();
-  SpdyString received_data(len, '\0');
+  std::string received_data(len, '\0');
   if (len > 0) {
     EXPECT_EQ(len, received_data_queue_.Dequeue(
                        base::string_as_array(&received_data), len));
@@ -103,10 +103,10 @@ SpdyString StreamDelegateBase::TakeReceivedData() {
   return received_data;
 }
 
-SpdyString StreamDelegateBase::GetResponseHeaderValue(
-    const SpdyString& name) const {
+std::string StreamDelegateBase::GetResponseHeaderValue(
+    const std::string& name) const {
   SpdyHeaderBlock::const_iterator it = response_headers_.find(name);
-  return (it == response_headers_.end()) ? SpdyString()
+  return (it == response_headers_.end()) ? std::string()
                                          : it->second.as_string();
 }
 
@@ -118,7 +118,7 @@ StreamDelegateDoNothing::~StreamDelegateDoNothing() = default;
 
 StreamDelegateSendImmediate::StreamDelegateSendImmediate(
     const base::WeakPtr<SpdyStream>& stream,
-    SpdyStringPiece data)
+    base::StringPiece data)
     : StreamDelegateBase(stream), data_(data) {}
 
 StreamDelegateSendImmediate::~StreamDelegateSendImmediate() = default;
@@ -136,7 +136,7 @@ void StreamDelegateSendImmediate::OnHeadersReceived(
 
 StreamDelegateWithBody::StreamDelegateWithBody(
     const base::WeakPtr<SpdyStream>& stream,
-    SpdyStringPiece data)
+    base::StringPiece data)
     : StreamDelegateBase(stream), buf_(new StringIOBuffer(data.as_string())) {}
 
 StreamDelegateWithBody::~StreamDelegateWithBody() = default;
