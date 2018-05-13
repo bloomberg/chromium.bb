@@ -47,6 +47,8 @@ class CONTENT_EXPORT ServiceWorkerRegistration
         ServiceWorkerRegistration* registration,
         ChangedVersionAttributesMask changed_mask,
         const ServiceWorkerRegistrationInfo& info) {}
+    virtual void OnUpdateViaCacheChanged(
+        ServiceWorkerRegistration* registation) {}
     virtual void OnRegistrationFailed(
         ServiceWorkerRegistration* registration) {}
     virtual void OnRegistrationFinishedUninstalling(
@@ -67,10 +69,6 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   const GURL& pattern() const { return pattern_; }
   blink::mojom::ServiceWorkerUpdateViaCache update_via_cache() const {
     return update_via_cache_;
-  }
-  void set_update_via_cache(
-      blink::mojom::ServiceWorkerUpdateViaCache update_via_cache) {
-    update_via_cache_ = update_via_cache;
   }
 
   bool is_deleted() const { return is_deleted_; }
@@ -136,6 +134,11 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   // registation, the method will reset that field to NULL, and notify
   // listeners via OnVersionAttributesChanged.
   void UnsetVersion(ServiceWorkerVersion* version);
+
+  // Sets the updateViaCache attribute, and notifies listeners via
+  // OnUpdateViaCacheChanged.
+  void SetUpdateViaCache(
+      blink::mojom::ServiceWorkerUpdateViaCache update_via_cache);
 
   // Triggers the [[Activate]] algorithm when the currently active version is
   // ready to become redundant (see IsReadyToActivate()). The algorithm is

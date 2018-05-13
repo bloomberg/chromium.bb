@@ -105,6 +105,9 @@ interface ServiceWorkerRegistrationObject {
                        ServiceWorkerObjectInfo? waiting,
                        ServiceWorkerObjectInfo? active);
 
+  // Sets ServiceWorkerRegistration#updateViaCache.
+  SetUpdateViaCache(ServiceWorkerUpdateViaCache update_via_cache);
+
   // Corresponds to ServiceWorkerRegistration#onupdatefound.
   UpdateFound();
 };

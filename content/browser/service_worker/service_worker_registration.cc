@@ -194,6 +194,15 @@ void ServiceWorkerRegistration::UnsetVersionInternal(
   }
 }
 
+void ServiceWorkerRegistration::SetUpdateViaCache(
+    blink::mojom::ServiceWorkerUpdateViaCache update_via_cache) {
+  if (update_via_cache_ == update_via_cache)
+    return;
+  update_via_cache_ = update_via_cache;
+  for (auto& observer : listeners_)
+    observer.OnUpdateViaCacheChanged(this);
+}
+
 void ServiceWorkerRegistration::ActivateWaitingVersionWhenReady() {
   DCHECK(waiting_version());
   should_activate_when_ready_ = true;

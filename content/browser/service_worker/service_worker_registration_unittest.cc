@@ -78,6 +78,9 @@ class MockServiceWorkerRegistrationObject
   int set_version_attributes_called_count() const {
     return set_version_attributes_called_count_;
   };
+  int set_update_via_cache_called_count() const {
+    return set_update_via_cache_called_count_;
+  }
   int changed_mask() const { return changed_mask_; }
   const blink::mojom::ServiceWorkerObjectInfoPtr& installing() const {
     return installing_;
@@ -87,6 +90,9 @@ class MockServiceWorkerRegistrationObject
   }
   const blink::mojom::ServiceWorkerObjectInfoPtr& active() const {
     return active_;
+  }
+  blink::mojom::ServiceWorkerUpdateViaCache update_via_cache() const {
+    return update_via_cache_;
   }
 
  private:
@@ -102,14 +108,22 @@ class MockServiceWorkerRegistrationObject
     waiting_ = std::move(waiting);
     active_ = std::move(active);
   }
+  void SetUpdateViaCache(
+      blink::mojom::ServiceWorkerUpdateViaCache update_via_cache) override {
+    set_update_via_cache_called_count_++;
+    update_via_cache_ = update_via_cache;
+  }
   void UpdateFound() override { update_found_called_count_++; }
 
   int update_found_called_count_ = 0;
   int set_version_attributes_called_count_ = 0;
+  int set_update_via_cache_called_count_ = 0;
   int changed_mask_ = 0;
   blink::mojom::ServiceWorkerObjectInfoPtr installing_;
   blink::mojom::ServiceWorkerObjectInfoPtr waiting_;
   blink::mojom::ServiceWorkerObjectInfoPtr active_;
+  blink::mojom::ServiceWorkerUpdateViaCache update_via_cache_ =
+      blink::mojom::ServiceWorkerUpdateViaCache::kImports;
 
   mojo::AssociatedBinding<blink::mojom::ServiceWorkerRegistrationObject>
       binding_;
@@ -1042,6 +1056,58 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, SetVersionAttributes) {
     EXPECT_FALSE(mask.active_changed());
     EXPECT_FALSE(mock_registration_object->active());
   }
+}
+
+TEST_F(ServiceWorkerRegistrationObjectHostTest, SetUpdateViaCache) {
+  const GURL kScope("https://www.example.com/");
+  const GURL kScriptUrl("https://www.example.com/sw.js");
+  int64_t registration_id = SetUpRegistration(kScope, kScriptUrl);
+  const int64_t kProviderId = 99;  // Dummy value
+  ServiceWorkerRemoteProviderEndpoint remote_endpoint =
+      PrepareProviderHost(kProviderId, kScope);
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info =
+      GetRegistrationFromRemote(remote_endpoint.host_ptr()->get(), kScope);
+  EXPECT_EQ(registration_id, info->registration_id);
+  EXPECT_TRUE(info->request.is_pending());
+  auto mock_registration_object =
+      std::make_unique<MockServiceWorkerRegistrationObject>(
+          std::move(info->request));
+
+  ServiceWorkerRegistration* registration =
+      context()->GetLiveRegistration(registration_id);
+  ASSERT_EQ(blink::mojom::ServiceWorkerUpdateViaCache::kImports,
+            registration->update_via_cache());
+  ASSERT_EQ(0, mock_registration_object->set_update_via_cache_called_count());
+  ASSERT_EQ(blink::mojom::ServiceWorkerUpdateViaCache::kImports,
+            mock_registration_object->update_via_cache());
+
+  registration->SetUpdateViaCache(
+      blink::mojom::ServiceWorkerUpdateViaCache::kImports);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, mock_registration_object->set_update_via_cache_called_count());
+  EXPECT_EQ(blink::mojom::ServiceWorkerUpdateViaCache::kImports,
+            mock_registration_object->update_via_cache());
+
+  registration->SetUpdateViaCache(
+      blink::mojom::ServiceWorkerUpdateViaCache::kAll);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, mock_registration_object->set_update_via_cache_called_count());
+  EXPECT_EQ(blink::mojom::ServiceWorkerUpdateViaCache::kAll,
+            mock_registration_object->update_via_cache());
+
+  registration->SetUpdateViaCache(
+      blink::mojom::ServiceWorkerUpdateViaCache::kNone);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, mock_registration_object->set_update_via_cache_called_count());
+  EXPECT_EQ(blink::mojom::ServiceWorkerUpdateViaCache::kNone,
+            mock_registration_object->update_via_cache());
+
+  registration->SetUpdateViaCache(
+      blink::mojom::ServiceWorkerUpdateViaCache::kImports);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(3, mock_registration_object->set_update_via_cache_called_count());
+  EXPECT_EQ(blink::mojom::ServiceWorkerUpdateViaCache::kImports,
+            mock_registration_object->update_via_cache());
 }
 
 TEST_F(ServiceWorkerRegistrationObjectHostTest, UpdateFound) {

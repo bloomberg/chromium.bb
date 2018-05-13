@@ -220,7 +220,7 @@ TEST_F(ServiceWorkerContextRequestHandlerTest,
 
 TEST_F(ServiceWorkerContextRequestHandlerTest,
        UpdateBefore24HoursWithUpdateViaCacheAll) {
-  registration_->set_update_via_cache(
+  registration_->SetUpdateViaCache(
       blink::mojom::ServiceWorkerUpdateViaCache::kAll);
   // Give the registration a very recent last update time and pretend
   // we're installing a new version.
@@ -233,7 +233,7 @@ TEST_F(ServiceWorkerContextRequestHandlerTest,
 
 TEST_F(ServiceWorkerContextRequestHandlerTest,
        UpdateBefore24HoursWithUpdateViaCacheNone) {
-  registration_->set_update_via_cache(
+  registration_->SetUpdateViaCache(
       blink::mojom::ServiceWorkerUpdateViaCache::kNone);
   // Give the registration a very recent last update time and pretend
   // we're installing a new version.
@@ -257,7 +257,7 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateAfter24Hours) {
 
 TEST_F(ServiceWorkerContextRequestHandlerTest,
        UpdateAfter24HoursWithUpdateViaCacheAll) {
-  registration_->set_update_via_cache(
+  registration_->SetUpdateViaCache(
       blink::mojom::ServiceWorkerUpdateViaCache::kAll);
   // Give the registration a old update time and pretend
   // we're installing a new version.
@@ -271,7 +271,7 @@ TEST_F(ServiceWorkerContextRequestHandlerTest,
 
 TEST_F(ServiceWorkerContextRequestHandlerTest,
        UpdateAfter24HoursWithUpdateViaCacheNone) {
-  registration_->set_update_via_cache(
+  registration_->SetUpdateViaCache(
       blink::mojom::ServiceWorkerUpdateViaCache::kNone);
   // Give the registration a old update time and pretend
   // we're installing a new version.
@@ -284,7 +284,7 @@ TEST_F(ServiceWorkerContextRequestHandlerTest,
 }
 
 TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateForceBypassCache) {
-  registration_->set_update_via_cache(
+  registration_->SetUpdateViaCache(
       blink::mojom::ServiceWorkerUpdateViaCache::kAll);
   // Give the registration a very recent last update time and pretend
   // we're installing a new version.
