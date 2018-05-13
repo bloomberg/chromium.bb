@@ -2139,14 +2139,6 @@ const NetLogWithSource& WrappedStreamSocket::NetLog() const {
   return transport_->NetLog();
 }
 
-void WrappedStreamSocket::SetSubresourceSpeculation() {
-  transport_->SetSubresourceSpeculation();
-}
-
-void WrappedStreamSocket::SetOmniboxSpeculation() {
-  transport_->SetOmniboxSpeculation();
-}
-
 bool WrappedStreamSocket::WasEverUsed() const {
   return transport_->WasEverUsed();
 }

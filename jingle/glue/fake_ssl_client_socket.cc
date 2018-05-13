@@ -323,14 +323,6 @@ const net::NetLogWithSource& FakeSSLClientSocket::NetLog() const {
   return transport_socket_->NetLog();
 }
 
-void FakeSSLClientSocket::SetSubresourceSpeculation() {
-  transport_socket_->SetSubresourceSpeculation();
-}
-
-void FakeSSLClientSocket::SetOmniboxSpeculation() {
-  transport_socket_->SetOmniboxSpeculation();
-}
-
 bool FakeSSLClientSocket::WasEverUsed() const {
   return transport_socket_->WasEverUsed();
 }

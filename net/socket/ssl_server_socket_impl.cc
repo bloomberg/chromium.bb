@@ -96,8 +96,6 @@ class SSLServerContextImpl::SocketImpl : public SSLServerSocket,
   int GetPeerAddress(IPEndPoint* address) const override;
   int GetLocalAddress(IPEndPoint* address) const override;
   const NetLogWithSource& NetLog() const override;
-  void SetSubresourceSpeculation() override;
-  void SetOmniboxSpeculation() override;
   bool WasEverUsed() const override;
   bool WasAlpnNegotiated() const override;
   NextProto GetNegotiatedProtocol() const override;
@@ -474,14 +472,6 @@ int SSLServerContextImpl::SocketImpl::GetLocalAddress(
 
 const NetLogWithSource& SSLServerContextImpl::SocketImpl::NetLog() const {
   return net_log_;
-}
-
-void SSLServerContextImpl::SocketImpl::SetSubresourceSpeculation() {
-  transport_socket_->SetSubresourceSpeculation();
-}
-
-void SSLServerContextImpl::SocketImpl::SetOmniboxSpeculation() {
-  transport_socket_->SetOmniboxSpeculation();
 }
 
 bool SSLServerContextImpl::SocketImpl::WasEverUsed() const {

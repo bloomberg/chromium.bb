@@ -149,22 +149,6 @@ const NetLogWithSource& HttpProxyClientSocket::NetLog() const {
   return net_log_;
 }
 
-void HttpProxyClientSocket::SetSubresourceSpeculation() {
-  if (transport_.get() && transport_->socket()) {
-    transport_->socket()->SetSubresourceSpeculation();
-  } else {
-    NOTREACHED();
-  }
-}
-
-void HttpProxyClientSocket::SetOmniboxSpeculation() {
-  if (transport_.get() && transport_->socket()) {
-    transport_->socket()->SetOmniboxSpeculation();
-  } else {
-    NOTREACHED();
-  }
-}
-
 bool HttpProxyClientSocket::WasEverUsed() const {
   if (transport_.get() && transport_->socket()) {
     return transport_->socket()->WasEverUsed();

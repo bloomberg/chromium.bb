@@ -90,8 +90,6 @@ class MockClientSocket : public net::StreamSocket {
   MOCK_CONST_METHOD1(GetPeerAddress, int(net::IPEndPoint*));
   MOCK_CONST_METHOD1(GetLocalAddress, int(net::IPEndPoint*));
   MOCK_CONST_METHOD0(NetLog, const net::NetLogWithSource&());
-  MOCK_METHOD0(SetSubresourceSpeculation, void());
-  MOCK_METHOD0(SetOmniboxSpeculation, void());
   MOCK_CONST_METHOD0(WasEverUsed, bool());
   MOCK_CONST_METHOD0(UsingTCPFastOpen, bool());
   MOCK_CONST_METHOD0(NumBytesRead, int64_t());
@@ -313,8 +311,6 @@ TEST_F(FakeSSLClientSocketTest, PassThroughMethods) {
   EXPECT_CALL(*mock_client_socket, GetPeerAddress(&ip_endpoint)).
       WillOnce(Return(kPeerAddress));
   EXPECT_CALL(*mock_client_socket, NetLog()).WillOnce(ReturnRef(net_log));
-  EXPECT_CALL(*mock_client_socket, SetSubresourceSpeculation());
-  EXPECT_CALL(*mock_client_socket, SetOmniboxSpeculation());
 
   // Takes ownership of |mock_client_socket|.
   FakeSSLClientSocket fake_ssl_client_socket(std::move(mock_client_socket));
@@ -323,8 +319,6 @@ TEST_F(FakeSSLClientSocketTest, PassThroughMethods) {
   EXPECT_EQ(kPeerAddress,
             fake_ssl_client_socket.GetPeerAddress(&ip_endpoint));
   EXPECT_EQ(&net_log, &fake_ssl_client_socket.NetLog());
-  fake_ssl_client_socket.SetSubresourceSpeculation();
-  fake_ssl_client_socket.SetOmniboxSpeculation();
 }
 
 TEST_F(FakeSSLClientSocketTest, SuccessfulHandshakeSync) {

@@ -257,10 +257,6 @@ const NetLogWithSource& TCPClientSocket::NetLog() const {
   return socket_->net_log();
 }
 
-void TCPClientSocket::SetSubresourceSpeculation() {}
-
-void TCPClientSocket::SetOmniboxSpeculation() {}
-
 bool TCPClientSocket::WasEverUsed() const {
   return was_ever_used_;
 }

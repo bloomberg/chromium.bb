@@ -153,14 +153,6 @@ const net::NetLogWithSource& FakeSocket::NetLog() const {
   return net_log_;
 }
 
-void FakeSocket::SetSubresourceSpeculation() {
-  NOTREACHED();
-}
-
-void FakeSocket::SetOmniboxSpeculation() {
-  NOTREACHED();
-}
-
 bool FakeSocket::WasEverUsed() const {
   return true;
 }

@@ -65,9 +65,6 @@ class FailingSSLClientSocket : public SSLClientSocket {
 
   const NetLogWithSource& NetLog() const override { return net_log_; }
 
-  void SetSubresourceSpeculation() override {}
-  void SetOmniboxSpeculation() override {}
-
   bool WasEverUsed() const override { return false; }
 
   void EnableTCPFastOpenIfSupported() override {}

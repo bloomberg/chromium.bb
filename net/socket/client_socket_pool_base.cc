@@ -37,15 +37,6 @@ namespace {
 // after a certain timeout has passed without receiving an ACK.
 bool g_connect_backup_jobs_enabled = true;
 
-void SetSocketMotivation(StreamSocket* socket,
-                         HttpRequestInfo::RequestMotivation motivation) {
-  if (motivation == HttpRequestInfo::PRECONNECT_MOTIVATED)
-    socket->SetSubresourceSpeculation();
-  else if (motivation == HttpRequestInfo::OMNIBOX_MOTIVATED)
-    socket->SetOmniboxSpeculation();
-  // TODO(mbelshe): Add other motivations (like EARLY_LOAD_MOTIVATED).
-}
-
 }  // namespace
 
 ConnectJob::ConnectJob(const std::string& group_name,
@@ -109,9 +100,6 @@ void ConnectJob::NotifyDelegateOfCompletion(int rv) {
   // The delegate will own |this|.
   Delegate* delegate = delegate_;
   delegate_ = NULL;
-
-  if (socket_)
-    SetSocketMotivation(socket_.get(), motivation_);
 
   LogConnectCompletion(rv);
   delegate->OnConnectJobComplete(rv, this);

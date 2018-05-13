@@ -144,8 +144,6 @@ class NetStreamSocketAdapter : public net::StreamSocket {
     return net::ERR_FAILED;
   }
   const net::NetLogWithSource& NetLog() const override { return net_log_; }
-  void SetSubresourceSpeculation() override { NOTREACHED(); }
-  void SetOmniboxSpeculation() override { NOTREACHED(); }
   bool WasEverUsed() const override {
     NOTREACHED();
     return true;

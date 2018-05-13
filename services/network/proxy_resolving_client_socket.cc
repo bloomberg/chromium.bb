@@ -149,16 +149,6 @@ const net::NetLogWithSource& ProxyResolvingClientSocket::NetLog() const {
   return net_log_;
 }
 
-void ProxyResolvingClientSocket::SetSubresourceSpeculation() {
-  if (socket_handle_->socket())
-    socket_handle_->socket()->SetSubresourceSpeculation();
-}
-
-void ProxyResolvingClientSocket::SetOmniboxSpeculation() {
-  if (socket_handle_->socket())
-    socket_handle_->socket()->SetOmniboxSpeculation();
-}
-
 bool ProxyResolvingClientSocket::WasEverUsed() const {
   if (socket_handle_->socket())
     return socket_handle_->socket()->WasEverUsed();

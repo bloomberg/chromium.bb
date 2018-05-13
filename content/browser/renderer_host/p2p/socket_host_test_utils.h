@@ -64,8 +64,6 @@ class FakeSocket : public net::StreamSocket {
   int GetPeerAddress(net::IPEndPoint* address) const override;
   int GetLocalAddress(net::IPEndPoint* address) const override;
   const net::NetLogWithSource& NetLog() const override;
-  void SetSubresourceSpeculation() override;
-  void SetOmniboxSpeculation() override;
   bool WasEverUsed() const override;
   bool WasAlpnNegotiated() const override;
   net::NextProto GetNegotiatedProtocol() const override;
