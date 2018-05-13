@@ -133,7 +133,7 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
     cursor_changed = true;
   }
 
-  if (hotspot != cursor_hotspot_) {
+  if (hotspot != hotspot_) {
     hotspot_ = hotspot;
     cursor_changed = true;
   }
