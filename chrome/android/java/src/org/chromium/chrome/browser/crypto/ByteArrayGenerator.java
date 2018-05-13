@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser.crypto;
+package org.chromium.chrome.browser.crypto;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 /**
- * Generates byte arrays for use in crypto algorithms. Defaults to pulling random data
- * from /dev/urandom, but can be overwritten for other generation methods.
+ * Reads /dev/urandom to generate byte arrays for used in cryptographic functions.
  */
 public class ByteArrayGenerator {
     /**
