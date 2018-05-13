@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer_access_policy.h"
-#include "third_party/blink/renderer/core/clipboard/pasteboard.h"
+#include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
@@ -622,9 +622,8 @@ void Editor::CountEvent(ExecutionContext* execution_context,
 }
 
 void Editor::CopyImage(const HitTestResult& result) {
-  WriteImageNodeToPasteboard(Pasteboard::GeneralPasteboard(),
-                             *result.InnerNodeOrImageMapImage(),
-                             result.AltDisplayString());
+  WriteImageNodeToClipboard(*result.InnerNodeOrImageMapImage(),
+                            result.AltDisplayString());
 }
 
 bool Editor::CanUndo() {

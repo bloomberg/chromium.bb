@@ -20,6 +20,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/loader/web_data_consumer_handle_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
+#include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/test/mock_clipboard_host.h"
 #include "content/test/web_gesture_curve_mock.h"
 #include "media/base/media.h"
@@ -169,6 +170,9 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
 
   connector_ = std::make_unique<service_manager::Connector>(
       service_manager::mojom::ConnectorPtrInfo());
+  blink_interface_provider_.reset(
+      new BlinkInterfaceProviderImpl(connector_.get()));
+
   service_manager::Connector::TestApi test_api(connector_.get());
   test_api.OverrideBinderForTesting(
       service_manager::Identity(mojom::kBrowserServiceName),
@@ -365,6 +369,10 @@ TestBlinkWebUnitTestSupport::CreateRTCCertificateGenerator() {
 
 service_manager::Connector* TestBlinkWebUnitTestSupport::GetConnector() {
   return connector_.get();
+}
+
+blink::InterfaceProvider* TestBlinkWebUnitTestSupport::GetInterfaceProvider() {
+  return blink_interface_provider_.get();
 }
 
 void TestBlinkWebUnitTestSupport::BindClipboardHost(
