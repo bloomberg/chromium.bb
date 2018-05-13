@@ -68,6 +68,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       request_context_(WebURLRequest::kRequestContextUnspecified),
       frame_type_(network::mojom::RequestContextFrameType::kNone),
       fetch_request_mode_(network::mojom::FetchRequestMode::kNoCORS),
+      fetch_importance_mode_(mojom::FetchImportanceMode::kImportanceAuto),
       fetch_credentials_mode_(network::mojom::FetchCredentialsMode::kInclude),
       fetch_redirect_mode_(network::mojom::FetchRedirectMode::kFollow),
       referrer_policy_(kReferrerPolicyDefault),
@@ -111,6 +112,7 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
   SetRequestContext(data->request_context_);
   SetFrameType(data->frame_type_);
   SetFetchRequestMode(data->fetch_request_mode_);
+  SetFetchImportanceMode(data->fetch_importance_mode_);
   SetFetchCredentialsMode(data->fetch_credentials_mode_);
   SetFetchRedirectMode(data->fetch_redirect_mode_);
   SetFetchIntegrity(data->fetch_integrity_.IsolatedCopy());
@@ -204,6 +206,7 @@ std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::CopyData()
   data->request_context_ = request_context_;
   data->frame_type_ = frame_type_;
   data->fetch_request_mode_ = fetch_request_mode_;
+  data->fetch_importance_mode_ = fetch_importance_mode_;
   data->fetch_credentials_mode_ = fetch_credentials_mode_;
   data->fetch_redirect_mode_ = fetch_redirect_mode_;
   data->fetch_integrity_ = fetch_integrity_.IsolatedCopy();

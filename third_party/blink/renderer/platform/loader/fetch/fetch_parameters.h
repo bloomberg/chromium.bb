@@ -93,6 +93,10 @@ class PLATFORM_EXPORT FetchParameters {
     resource_request_.SetRequestContext(context);
   }
 
+  void SetFetchImportanceMode(mojom::FetchImportanceMode importance_mode) {
+    resource_request_.SetFetchImportanceMode(importance_mode);
+  }
+
   const TextResourceDecoderOptions& DecoderOptions() const {
     return decoder_options_;
   }

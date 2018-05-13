@@ -86,6 +86,15 @@ enum FetchCacheMode {
   kUnspecifiedForceCacheMiss,
 };
 
+// Corresponds to Fetch request's "importance mode"
+// Currently discussed at: https://github.com/WICG/priority-hints
+// TODO(domfarolino): add a spec link to this once specified.
+enum FetchImportanceMode {
+  kImportanceLow,
+  kImportanceAuto,
+  kImportanceHigh
+};
+
 struct FetchAPIRequest {
   network.mojom.FetchRequestMode mode;
   bool is_main_resource_load;
