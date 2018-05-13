@@ -213,7 +213,7 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
       jint start,
       jint len);
 
-  void UpdateFrameInfo();
+  void UpdateFrameInfo(float page_scale);
 
   void set_root_manager(BrowserAccessibilityManagerAndroid* manager) {
     root_manager_ = manager;
@@ -252,6 +252,8 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   WebContentsImpl* const web_contents_;
 
   bool frame_info_initialized_;
+
+  float page_scale_ = 1.f;
 
   BrowserAccessibilityManagerAndroid* root_manager_;
 

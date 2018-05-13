@@ -1233,7 +1233,7 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
 
   auto* wcax = GetWebContentsAccessibilityAndroid();
   if (wcax)
-    wcax->UpdateFrameInfo();
+    wcax->UpdateFrameInfo(frame_metadata.page_scale_factor);
 
   if (!gesture_listener_manager_)
     return;

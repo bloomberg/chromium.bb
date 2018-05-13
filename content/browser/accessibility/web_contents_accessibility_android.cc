@@ -551,6 +551,7 @@ bool WebContentsAccessibilityAndroid::OnHoverEvent(
       root_manager_) {
     gfx::PointF point =
         IsUseZoomForDSFEnabled() ? event.GetPointPix() : event.GetPoint();
+    point.Scale(1 / page_scale_);
     root_manager_->HitTest(gfx::ToFlooredPoint(point));
   }
   return true;
@@ -1196,7 +1197,8 @@ BrowserAccessibilityAndroid* WebContentsAccessibilityAndroid::GetAXFromUniqueID(
       BrowserAccessibilityAndroid::GetFromUniqueId(unique_id));
 }
 
-void WebContentsAccessibilityAndroid::UpdateFrameInfo() {
+void WebContentsAccessibilityAndroid::UpdateFrameInfo(float page_scale) {
+  page_scale_ = page_scale;
   if (frame_info_initialized_)
     return;
 
