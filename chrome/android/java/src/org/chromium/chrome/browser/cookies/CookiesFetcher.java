@@ -11,8 +11,8 @@ import org.chromium.base.ImportantFileWriterAndroid;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.crypto.CipherFactory;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.content.browser.crypto.CipherFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
