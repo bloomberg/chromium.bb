@@ -126,6 +126,8 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
       blink::mojom::ServiceWorkerObjectInfoPtr installing,
       blink::mojom::ServiceWorkerObjectInfoPtr waiting,
       blink::mojom::ServiceWorkerObjectInfoPtr active) override;
+  void SetUpdateViaCache(
+      blink::mojom::ServiceWorkerUpdateViaCache update_via_cache) override;
   void UpdateFound() override;
 
   enum QueuedTaskType {

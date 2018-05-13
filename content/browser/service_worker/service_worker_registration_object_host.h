@@ -51,6 +51,8 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
       ServiceWorkerRegistration* registration,
       ChangedVersionAttributesMask changed_mask,
       const ServiceWorkerRegistrationInfo& info) override;
+  void OnUpdateViaCacheChanged(
+      ServiceWorkerRegistration* registration) override;
   void OnRegistrationFailed(ServiceWorkerRegistration* registration) override;
   void OnUpdateFound(ServiceWorkerRegistration* registration) override;
 

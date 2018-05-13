@@ -334,6 +334,11 @@ void WebServiceWorkerRegistrationImpl::SetVersionAttributes(
   }
 }
 
+void WebServiceWorkerRegistrationImpl::SetUpdateViaCache(
+    blink::mojom::ServiceWorkerUpdateViaCache update_via_cache) {
+  info_->options->update_via_cache = update_via_cache;
+}
+
 void WebServiceWorkerRegistrationImpl::UpdateFound() {
   if (proxy_)
     proxy_->DispatchUpdateFoundEvent();

@@ -241,7 +241,7 @@ void ServiceWorkerRegisterJob::ContinueWithRegistration(
 
   // "Invoke Set Registration algorithm with job’s scope url and
   // job’s update via cache mode."
-  existing_registration->set_update_via_cache(update_via_cache_);
+  existing_registration->SetUpdateViaCache(update_via_cache_);
   set_registration(existing_registration);
   // "Return the result of running the [[Update]] algorithm, or its equivalent,
   // passing registration as the argument."

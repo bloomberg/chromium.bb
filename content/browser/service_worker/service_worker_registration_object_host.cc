@@ -79,6 +79,11 @@ void ServiceWorkerRegistrationObjectHost::OnVersionAttributesChanged(
                        registration->active_version());
 }
 
+void ServiceWorkerRegistrationObjectHost::OnUpdateViaCacheChanged(
+    ServiceWorkerRegistration* registration) {
+  remote_registration_->SetUpdateViaCache(registration->update_via_cache());
+}
+
 void ServiceWorkerRegistrationObjectHost::OnRegistrationFailed(
     ServiceWorkerRegistration* registration) {
   DCHECK_EQ(registration->id(), registration_->id());
