@@ -55,8 +55,6 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket {
   int GetPeerAddress(IPEndPoint* address) const override;
   int GetLocalAddress(IPEndPoint* address) const override;
   const NetLogWithSource& NetLog() const override;
-  void SetSubresourceSpeculation() override;
-  void SetOmniboxSpeculation() override;
   bool WasEverUsed() const override;
   void EnableTCPFastOpenIfSupported() override;
   bool WasAlpnNegotiated() const override;

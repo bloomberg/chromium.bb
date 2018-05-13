@@ -98,13 +98,6 @@ class NET_EXPORT StreamSocket : public Socket {
   // Gets the NetLog for this socket.
   virtual const NetLogWithSource& NetLog() const = 0;
 
-  // Set the annotation to indicate this socket was created for speculative
-  // reasons.  This call is generally forwarded to a basic TCPClientSocket*.
-  //
-  // These methods are deprecated and are slated for removal.
-  virtual void SetSubresourceSpeculation() = 0;
-  virtual void SetOmniboxSpeculation() = 0;
-
   // Returns true if the socket ever had any reads or writes.  StreamSockets
   // layered on top of transport sockets should return if their own Read() or
   // Write() methods had been called, not the underlying transport's.

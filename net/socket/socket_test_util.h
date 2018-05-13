@@ -616,8 +616,6 @@ class MockClientSocket : public TransportClientSocket {
   int GetPeerAddress(IPEndPoint* address) const override;
   int GetLocalAddress(IPEndPoint* address) const override;
   const NetLogWithSource& NetLog() const override;
-  void SetSubresourceSpeculation() override {}
-  void SetOmniboxSpeculation() override {}
   bool WasAlpnNegotiated() const override;
   NextProto GetNegotiatedProtocol() const override;
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
@@ -766,8 +764,6 @@ class MockProxyClientSocket : public AsyncSocket, public ProxyClientSocket {
   bool GetSSLInfo(SSLInfo* ssl_info) override;
   void ApplySocketTag(const SocketTag& tag) override;
   const NetLogWithSource& NetLog() const override;
-  void SetSubresourceSpeculation() override {}
-  void SetOmniboxSpeculation() override {}
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
   void ClearConnectionAttempts() override {}
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
@@ -835,8 +831,6 @@ class MockSSLClientSocket : public AsyncSocket, public SSLClientSocket {
   crypto::ECPrivateKey* GetChannelIDKey() const override;
   void ApplySocketTag(const SocketTag& tag) override;
   const NetLogWithSource& NetLog() const override;
-  void SetSubresourceSpeculation() override {}
-  void SetOmniboxSpeculation() override {}
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
   void ClearConnectionAttempts() override {}
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
@@ -1199,8 +1193,6 @@ class WrappedStreamSocket : public TransportClientSocket {
   int GetPeerAddress(IPEndPoint* address) const override;
   int GetLocalAddress(IPEndPoint* address) const override;
   const NetLogWithSource& NetLog() const override;
-  void SetSubresourceSpeculation() override;
-  void SetOmniboxSpeculation() override;
   bool WasEverUsed() const override;
   bool WasAlpnNegotiated() const override;
   NextProto GetNegotiatedProtocol() const override;

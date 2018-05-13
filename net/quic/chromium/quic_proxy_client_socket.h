@@ -54,8 +54,6 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
   bool IsConnected() const override;
   bool IsConnectedAndIdle() const override;
   const NetLogWithSource& NetLog() const override;
-  void SetSubresourceSpeculation() override;
-  void SetOmniboxSpeculation() override;
   bool WasEverUsed() const override;
   bool WasAlpnNegotiated() const override;
   NextProto GetNegotiatedProtocol() const override;

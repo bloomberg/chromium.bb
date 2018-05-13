@@ -150,10 +150,6 @@ const net::NetLogWithSource& FakeStreamSocket::NetLog() const {
   return net_log_;
 }
 
-void FakeStreamSocket::SetSubresourceSpeculation() {}
-
-void FakeStreamSocket::SetOmniboxSpeculation() {}
-
 bool FakeStreamSocket::WasEverUsed() const {
   return false;
 }

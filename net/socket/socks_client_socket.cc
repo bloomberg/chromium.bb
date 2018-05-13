@@ -126,22 +126,6 @@ const NetLogWithSource& SOCKSClientSocket::NetLog() const {
   return net_log_;
 }
 
-void SOCKSClientSocket::SetSubresourceSpeculation() {
-  if (transport_.get() && transport_->socket()) {
-    transport_->socket()->SetSubresourceSpeculation();
-  } else {
-    NOTREACHED();
-  }
-}
-
-void SOCKSClientSocket::SetOmniboxSpeculation() {
-  if (transport_.get() && transport_->socket()) {
-    transport_->socket()->SetOmniboxSpeculation();
-  } else {
-    NOTREACHED();
-  }
-}
-
 bool SOCKSClientSocket::WasEverUsed() const {
   return was_ever_used_;
 }

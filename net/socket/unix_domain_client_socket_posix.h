@@ -50,8 +50,6 @@ class NET_EXPORT UnixDomainClientSocket : public StreamSocket {
   int GetPeerAddress(IPEndPoint* address) const override;
   int GetLocalAddress(IPEndPoint* address) const override;
   const NetLogWithSource& NetLog() const override;
-  void SetSubresourceSpeculation() override;
-  void SetOmniboxSpeculation() override;
   bool WasEverUsed() const override;
   bool WasAlpnNegotiated() const override;
   NextProto GetNegotiatedProtocol() const override;

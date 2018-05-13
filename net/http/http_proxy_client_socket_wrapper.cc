@@ -232,20 +232,6 @@ const NetLogWithSource& HttpProxyClientSocketWrapper::NetLog() const {
   return net_log_;
 }
 
-void HttpProxyClientSocketWrapper::SetSubresourceSpeculation() {
-  // This flag isn't passed to reconnected sockets, as only the first connection
-  // can be a preconnect.
-  if (transport_socket_)
-    transport_socket_->SetSubresourceSpeculation();
-}
-
-void HttpProxyClientSocketWrapper::SetOmniboxSpeculation() {
-  // This flag isn't passed to reconnected sockets, as only the first connection
-  // can be a preconnect.
-  if (transport_socket_)
-    transport_socket_->SetOmniboxSpeculation();
-}
-
 bool HttpProxyClientSocketWrapper::WasEverUsed() const {
   // TODO(mmenke):  This is a little weird.  Figure out if something else should
   // be done.

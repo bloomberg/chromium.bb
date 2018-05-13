@@ -593,22 +593,6 @@ const NetLogWithSource& SSLClientSocketImpl::NetLog() const {
   return net_log_;
 }
 
-void SSLClientSocketImpl::SetSubresourceSpeculation() {
-  if (transport_.get() && transport_->socket()) {
-    transport_->socket()->SetSubresourceSpeculation();
-  } else {
-    NOTREACHED();
-  }
-}
-
-void SSLClientSocketImpl::SetOmniboxSpeculation() {
-  if (transport_.get() && transport_->socket()) {
-    transport_->socket()->SetOmniboxSpeculation();
-  } else {
-    NOTREACHED();
-  }
-}
-
 bool SSLClientSocketImpl::WasEverUsed() const {
   return was_ever_used_;
 }

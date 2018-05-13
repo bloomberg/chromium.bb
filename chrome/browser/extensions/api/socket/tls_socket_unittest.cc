@@ -77,8 +77,6 @@ class MockSSLClientSocket : public net::SSLClientSocket {
   MOCK_CONST_METHOD1(GetPeerAddress, int(net::IPEndPoint*));
   MOCK_CONST_METHOD1(GetLocalAddress, int(net::IPEndPoint*));
   MOCK_CONST_METHOD0(NetLog, const net::NetLogWithSource&());
-  MOCK_METHOD0(SetSubresourceSpeculation, void());
-  MOCK_METHOD0(SetOmniboxSpeculation, void());
   MOCK_CONST_METHOD0(WasEverUsed, bool());
   MOCK_CONST_METHOD0(UsingTCPFastOpen, bool());
   MOCK_CONST_METHOD0(WasAlpnNegotiated, bool());

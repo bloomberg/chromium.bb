@@ -271,9 +271,6 @@ class FakeSocket : public StreamSocket {
 
   const NetLogWithSource& NetLog() const override { return net_log_; }
 
-  void SetSubresourceSpeculation() override {}
-  void SetOmniboxSpeculation() override {}
-
   bool WasEverUsed() const override { return true; }
 
   bool WasAlpnNegotiated() const override { return false; }

@@ -76,8 +76,6 @@ class MockConnectClientSocket : public TransportClientSocket {
   }
   const NetLogWithSource& NetLog() const override { return net_log_; }
 
-  void SetSubresourceSpeculation() override {}
-  void SetOmniboxSpeculation() override {}
   bool WasEverUsed() const override { return false; }
   void EnableTCPFastOpenIfSupported() override {}
   bool WasAlpnNegotiated() const override { return false; }
@@ -146,8 +144,6 @@ class MockFailingClientSocket : public TransportClientSocket {
   }
   const NetLogWithSource& NetLog() const override { return net_log_; }
 
-  void SetSubresourceSpeculation() override {}
-  void SetOmniboxSpeculation() override {}
   bool WasEverUsed() const override { return false; }
   void EnableTCPFastOpenIfSupported() override {}
   bool WasAlpnNegotiated() const override { return false; }
@@ -280,8 +276,6 @@ class MockTriggerableClientSocket : public TransportClientSocket {
   }
   const NetLogWithSource& NetLog() const override { return net_log_; }
 
-  void SetSubresourceSpeculation() override {}
-  void SetOmniboxSpeculation() override {}
   bool WasEverUsed() const override { return false; }
   void EnableTCPFastOpenIfSupported() override {}
   bool WasAlpnNegotiated() const override { return false; }
