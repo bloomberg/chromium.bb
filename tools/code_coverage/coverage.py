@@ -674,9 +674,19 @@ def _ExtractComponentToDirectoriesMapping():
   directory_to_component = component_mappings['dir-to-component']
 
   component_to_directories = defaultdict(list)
-  for directory in directory_to_component:
+  for directory in sorted(directory_to_component):
     component = directory_to_component[directory]
-    component_to_directories[component].append(directory)
+
+    # Check if we already added the parent directory of this directory. If yes,
+    # skip this sub-directory to avoid double-counting.
+    found_parent_directory = False
+    for component_directory in component_to_directories[component]:
+      if directory.startswith(component_directory + '/'):
+        found_parent_directory = True
+        break
+
+    if not found_parent_directory:
+      component_to_directories[component].append(directory)
 
   return component_to_directories
 
