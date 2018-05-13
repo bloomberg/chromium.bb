@@ -70,9 +70,10 @@ TEST_F(PointerTest, SetCursor) {
   pointer_surface->Commit();
 
   // Set pointer surface.
-  pointer->SetCursor(pointer_surface.get(), gfx::Point());
+  pointer->SetCursor(pointer_surface.get(), gfx::Point(5, 5));
   RunAllPendingInMessageLoop();
 
+  const viz::RenderPass* last_render_pass;
   {
     viz::SurfaceId surface_id = pointer->host_window()->GetSurfaceId();
     viz::SurfaceManager* surface_manager = aura::Env::GetInstance()
@@ -84,10 +85,25 @@ TEST_F(PointerTest, SetCursor) {
         surface_manager->GetSurfaceForId(surface_id)->GetActiveFrame();
     EXPECT_EQ(gfx::Rect(0, 0, 10, 10),
               frame.render_pass_list.back()->output_rect);
+    last_render_pass = frame.render_pass_list.back().get();
   }
 
   // Adjust hotspot.
-  pointer->SetCursor(pointer_surface.get(), gfx::Point(1, 1));
+  pointer->SetCursor(pointer_surface.get(), gfx::Point());
+  RunAllPendingInMessageLoop();
+
+  // Verify that adjustment to hotspot resulted in new frame.
+  {
+    viz::SurfaceId surface_id = pointer->host_window()->GetSurfaceId();
+    viz::SurfaceManager* surface_manager = aura::Env::GetInstance()
+                                               ->context_factory_private()
+                                               ->GetFrameSinkManager()
+                                               ->surface_manager();
+    ASSERT_TRUE(surface_manager->GetSurfaceForId(surface_id)->HasActiveFrame());
+    const viz::CompositorFrame& frame =
+        surface_manager->GetSurfaceForId(surface_id)->GetActiveFrame();
+    EXPECT_TRUE(frame.render_pass_list.back().get() != last_render_pass);
+  }
 
   // Unset pointer surface.
   pointer->SetCursor(nullptr, gfx::Point());
