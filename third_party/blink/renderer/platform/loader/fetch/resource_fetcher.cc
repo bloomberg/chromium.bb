@@ -168,6 +168,56 @@ static ResourceFetcher::ResourceFetcherSet& MainThreadFetchersSet() {
   return fetchers;
 }
 
+ResourceLoadPriority AdjustPriorityWithPriorityHint(
+    ResourceLoadPriority priority_so_far,
+    Resource::Type type,
+    const ResourceRequest& resource_request,
+    FetchParameters::DeferOption defer_option,
+    bool is_link_preload) {
+  mojom::FetchImportanceMode importance_mode =
+      resource_request.GetFetchImportanceMode();
+
+  ResourceLoadPriority new_priority = priority_so_far;
+
+  switch (importance_mode) {
+    case mojom::FetchImportanceMode::kImportanceAuto:
+      break;
+    case mojom::FetchImportanceMode::kImportanceHigh:
+      // Boost priority of
+      // - Late and async scripts
+      // - Images
+      // - Prefetch
+      if ((type == Resource::kScript &&
+           (FetchParameters::kLazyLoad == defer_option)) ||
+          type == Resource::kImage || type == Resource::kLinkPrefetch) {
+        new_priority = ResourceLoadPriority::kHigh;
+      }
+
+      DCHECK_LE(priority_so_far, new_priority);
+      break;
+    case mojom::FetchImportanceMode::kImportanceLow:
+      // Demote priority of:
+      // - Images
+      //     Note: this will only have a real effect on in-viewport images since
+      //     out-of-viewport images already have priority set to kLow
+      // - Link preloads
+      //     For this initial implementation we do a blanket demotion regardless
+      //     of `as` value/type. TODO(domfarolino): maybe discuss a more
+      //     granular approach with loading team
+      if (type == Resource::kImage ||
+          resource_request.GetRequestContext() ==
+              WebURLRequest::RequestContext::kRequestContextFetch ||
+          is_link_preload) {
+        new_priority = ResourceLoadPriority::kLow;
+      }
+
+      DCHECK_LE(new_priority, priority_so_far);
+      break;
+  }
+
+  return new_priority;
+}
+
 }  // namespace
 
 ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
@@ -222,6 +272,11 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
              resource_request.GetRequestContext() ==
                  WebURLRequest::kRequestContextCSPReport) {
     priority = ResourceLoadPriority::kVeryLow;
+  }
+
+  if (RuntimeEnabledFeatures::PriorityHintsEnabled()) {
+    priority = AdjustPriorityWithPriorityHint(priority, type, resource_request,
+                                              defer_option, is_link_preload);
   }
 
   // A manually set priority acts as a floor. This is used to ensure that

@@ -286,6 +286,21 @@ class PLATFORM_EXPORT ResourceRequest final {
     fetch_request_mode_ = mode;
   }
 
+  // A resource request's fetch_importance_mode_ is a developer-set priority
+  // hint that differs from priority_. It is used in
+  // ResourceFetcher::ComputeLoadPriority to possibly influence the resolved
+  // priority of a resource request.
+  // This member exists both here and in FetchParameters, as opposed just in
+  // the latter because the fetch() API creates a ResourceRequest object long
+  // before its associaed FetchParameters, so this makes it easier to
+  // communicate an importance value down to the lower-level fetching code.
+  mojom::FetchImportanceMode GetFetchImportanceMode() const {
+    return fetch_importance_mode_;
+  }
+  void SetFetchImportanceMode(mojom::FetchImportanceMode mode) {
+    fetch_importance_mode_ = mode;
+  }
+
   network::mojom::FetchCredentialsMode GetFetchCredentialsMode() const {
     return fetch_credentials_mode_;
   }
@@ -415,6 +430,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   WebURLRequest::RequestContext request_context_;
   network::mojom::RequestContextFrameType frame_type_;
   network::mojom::FetchRequestMode fetch_request_mode_;
+  mojom::FetchImportanceMode fetch_importance_mode_;
   network::mojom::FetchCredentialsMode fetch_credentials_mode_;
   network::mojom::FetchRedirectMode fetch_redirect_mode_;
   String fetch_integrity_;
@@ -480,6 +496,7 @@ struct CrossThreadResourceRequestData {
   WebURLRequest::RequestContext request_context_;
   network::mojom::RequestContextFrameType frame_type_;
   network::mojom::FetchRequestMode fetch_request_mode_;
+  mojom::FetchImportanceMode fetch_importance_mode_;
   network::mojom::FetchCredentialsMode fetch_credentials_mode_;
   network::mojom::FetchRedirectMode fetch_redirect_mode_;
   String fetch_integrity_;
