@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -28,7 +29,6 @@
 #include "net/third_party/spdy/core/spdy_framer.h"
 #include "net/third_party/spdy/core/spdy_header_block.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
-#include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
@@ -302,7 +302,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
   void OnClose(int status);
 
   // Called by the SpdySession to log stream related errors.
-  void LogStreamError(int error, const SpdyString& description);
+  void LogStreamError(int error, const std::string& description);
 
   // If this stream is active, reset it, and close it otherwise. In
   // either case the stream is deleted.
@@ -461,7 +461,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // OnHeadersReceived() on the delegate if attached.
   void SaveResponseHeaders(const SpdyHeaderBlock& response_headers);
 
-  static SpdyString DescribeState(State state);
+  static std::string DescribeState(State state);
 
   const SpdyStreamType type_;
 

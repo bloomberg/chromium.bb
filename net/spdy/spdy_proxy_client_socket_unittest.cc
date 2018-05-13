@@ -126,7 +126,7 @@ class SpdyProxyClientSocketTest : public PlatformTest,
     base::RunLoop().RunUntilIdle();
   }
 
-  void CloseSpdySession(Error error, const SpdyString& description) {
+  void CloseSpdySession(Error error, const std::string& description) {
     spdy_session_->CloseSessionOnError(error, description);
   }
 
@@ -143,7 +143,7 @@ class SpdyProxyClientSocketTest : public PlatformTest,
   SpdySessionDependencies session_deps_;
   MockConnect connect_data_;
   base::WeakPtr<SpdySession> spdy_session_;
-  SpdyString user_agent_;
+  std::string user_agent_;
   GURL url_;
   HostPortPair proxy_host_port_;
   HostPortPair endpoint_host_port_pair_;
@@ -244,7 +244,7 @@ void SpdyProxyClientSocketTest::AssertSyncReadEquals(const char* data,
                                                      int len) {
   scoped_refptr<IOBuffer> buf(new IOBuffer(len));
   ASSERT_EQ(len, sock_->Read(buf.get(), len, CompletionCallback()));
-  ASSERT_EQ(SpdyString(data, len), SpdyString(buf->data(), len));
+  ASSERT_EQ(std::string(data, len), std::string(buf->data(), len));
   ASSERT_TRUE(sock_->IsConnected());
 }
 
@@ -260,7 +260,7 @@ void SpdyProxyClientSocketTest::AssertAsyncReadEquals(const char* data,
 
   EXPECT_EQ(len, read_callback_.WaitForResult());
   EXPECT_TRUE(sock_->IsConnected());
-  ASSERT_EQ(SpdyString(data, len), SpdyString(buf->data(), len));
+  ASSERT_EQ(std::string(data, len), std::string(buf->data(), len));
 }
 
 void SpdyProxyClientSocketTest::AssertReadStarts(const char* data, int len) {
@@ -276,7 +276,7 @@ void SpdyProxyClientSocketTest::AssertReadReturns(const char* data, int len) {
 
   // Now the read will return
   EXPECT_EQ(len, read_callback_.WaitForResult());
-  ASSERT_EQ(SpdyString(data, len), SpdyString(read_buf_->data(), len));
+  ASSERT_EQ(std::string(data, len), std::string(read_buf_->data(), len));
 }
 
 void SpdyProxyClientSocketTest::AssertAsyncWriteSucceeds(const char* data,
@@ -457,7 +457,7 @@ TEST_F(SpdyProxyClientSocketTest, ConnectRedirects) {
   ASSERT_FALSE(headers->HasHeader("set-cookie"));
   ASSERT_TRUE(headers->HasHeaderValue("content-length", "0"));
 
-  SpdyString location;
+  std::string location;
   ASSERT_TRUE(headers->IsRedirect(&location));
   ASSERT_EQ(location, kRedirectUrl);
 
@@ -571,7 +571,7 @@ TEST_F(SpdyProxyClientSocketTest, WriteSendsDataInDataFrame) {
 }
 
 TEST_F(SpdyProxyClientSocketTest, WriteSplitsLargeDataIntoMultipleFrames) {
-  SpdyString chunk_data(kMaxSpdyFrameChunkSize, 'x');
+  std::string chunk_data(kMaxSpdyFrameChunkSize, 'x');
   SpdySerializedFrame conn(ConstructConnectRequestFrame());
   SpdySerializedFrame chunk(
       ConstructBodyFrame(chunk_data.data(), chunk_data.length()));
@@ -589,7 +589,7 @@ TEST_F(SpdyProxyClientSocketTest, WriteSplitsLargeDataIntoMultipleFrames) {
 
   AssertConnectSucceeds();
 
-  SpdyString big_data(kMaxSpdyFrameChunkSize * 3, 'x');
+  std::string big_data(kMaxSpdyFrameChunkSize * 3, 'x');
   scoped_refptr<IOBufferWithSize> buf(CreateBuffer(big_data.data(),
                                                    big_data.length()));
 
@@ -800,7 +800,7 @@ TEST_F(SpdyProxyClientSocketTest, MultipleReadsFromSameLargeFrame) {
   // Now attempt to do a read of more data than remains buffered
   scoped_refptr<IOBuffer> buf(new IOBuffer(kLen33));
   ASSERT_EQ(kLen3, sock_->Read(buf.get(), kLen33, read_callback_.callback()));
-  ASSERT_EQ(SpdyString(kMsg3, kLen3), SpdyString(buf->data(), kLen3));
+  ASSERT_EQ(std::string(kMsg3, kLen3), std::string(buf->data(), kLen3));
   ASSERT_TRUE(sock_->IsConnected());
 }
 
@@ -1029,7 +1029,7 @@ TEST_F(SpdyProxyClientSocketTest, ReadOnClosedSocketReturnsBufferedData) {
   ASSERT_FALSE(sock_->IsConnected());
   scoped_refptr<IOBuffer> buf(new IOBuffer(kLen1));
   ASSERT_EQ(kLen1, sock_->Read(buf.get(), kLen1, CompletionCallback()));
-  ASSERT_EQ(SpdyString(kMsg1, kLen1), SpdyString(buf->data(), kLen1));
+  ASSERT_EQ(std::string(kMsg1, kLen1), std::string(buf->data(), kLen1));
 
   ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionCallback()));
   ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionCallback()));
@@ -1121,7 +1121,7 @@ TEST_F(SpdyProxyClientSocketTest, WritePendingOnClose) {
   // Make sure the write actually starts.
   base::RunLoop().RunUntilIdle();
 
-  CloseSpdySession(ERR_ABORTED, SpdyString());
+  CloseSpdySession(ERR_ABORTED, std::string());
 
   EXPECT_THAT(write_callback_.WaitForResult(), IsError(ERR_CONNECTION_CLOSED));
 }

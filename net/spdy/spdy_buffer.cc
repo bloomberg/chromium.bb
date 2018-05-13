@@ -10,9 +10,9 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "net/base/io_buffer.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
-#include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
 
 namespace net {
 
@@ -98,7 +98,7 @@ IOBuffer* SpdyBuffer::GetIOBufferForRemainingData() {
 
 size_t SpdyBuffer::EstimateMemoryUsage() const {
   // TODO(xunjieli): Estimate |consume_callbacks_|. https://crbug.com/669108.
-  return SpdyEstimateMemoryUsage(shared_frame_->data);
+  return base::trace_event::EstimateMemoryUsage(shared_frame_->data);
 }
 
 void SpdyBuffer::ConsumeHelper(size_t consume_size,

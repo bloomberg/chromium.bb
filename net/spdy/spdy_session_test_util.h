@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
-#include "net/third_party/spdy/platform/api/spdy_string.h"
 
 namespace net {
 
@@ -24,8 +25,8 @@ class SpdySessionTestTaskObserver : public base::MessageLoop::TaskObserver {
   // Example:
   //  file_name = "foo.cc"
   //  function = "DoFoo"
-  SpdySessionTestTaskObserver(const SpdyString& file_name,
-                              const SpdyString& function_name);
+  SpdySessionTestTaskObserver(const std::string& file_name,
+                              const std::string& function_name);
   ~SpdySessionTestTaskObserver() override;
 
   // Implements MessageLoop::TaskObserver.
@@ -37,8 +38,8 @@ class SpdySessionTestTaskObserver : public base::MessageLoop::TaskObserver {
 
  private:
   uint16_t executed_count_;
-  SpdyString file_name_;
-  SpdyString function_name_;
+  std::string file_name_;
+  std::string function_name_;
 };
 
 }  // namespace net

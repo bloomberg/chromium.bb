@@ -10,6 +10,7 @@
 
 #include <list>
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -31,7 +32,6 @@
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_stream.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
-#include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
@@ -48,7 +48,7 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
   // data read/written to the socket will be transferred in data frames. This
   // object will set itself as |spdy_stream|'s delegate.
   SpdyProxyClientSocket(const base::WeakPtr<SpdyStream>& spdy_stream,
-                        const SpdyString& user_agent,
+                        const std::string& user_agent,
                         const HostPortPair& endpoint,
                         const NetLogWithSource& source_net_log,
                         HttpAuthController* auth_controller);
@@ -153,7 +153,7 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
   const HostPortPair endpoint_;
   scoped_refptr<HttpAuthController> auth_;
 
-  SpdyString user_agent_;
+  std::string user_agent_;
 
   // We buffer the response body as it arrives asynchronously from the stream.
   SpdyReadQueue read_buffer_queue_;

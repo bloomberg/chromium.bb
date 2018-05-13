@@ -15,7 +15,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "base/values.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
@@ -23,9 +25,6 @@
 #include "net/spdy/spdy_buffer_producer.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_session.h"
-#include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
-#include "net/third_party/spdy/platform/api/spdy_string_piece.h"
-#include "net/third_party/spdy/platform/api/spdy_string_utils.h"
 
 namespace net {
 
@@ -34,7 +33,7 @@ namespace {
 std::unique_ptr<base::Value> NetLogSpdyStreamErrorCallback(
     SpdyStreamId stream_id,
     int net_error,
-    const SpdyString* description,
+    const std::string* description,
     NetLogCaptureMode /* capture_mode */) {
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetInteger("stream_id", static_cast<int>(stream_id));
@@ -267,7 +266,7 @@ void SpdyStream::IncreaseSendWindowSize(int32_t delta_window_size) {
   DCHECK_GE(delta_window_size, 1);
 
   if (!AdjustSendWindowSize(delta_window_size)) {
-    SpdyString desc = SpdyStringPrintf(
+    std::string desc = base::StringPrintf(
         "Received WINDOW_UPDATE [delta: %d] for stream %d overflows "
         "send_window_size_ [current: %d]",
         delta_window_size, stream_id_, send_window_size_);
@@ -387,7 +386,7 @@ void SpdyStream::OnHeadersReceived(const SpdyHeaderBlock& response_headers,
         SpdyHeaderBlock::const_iterator it =
             response_headers.find(kHttp2StatusHeader);
         if (it == response_headers.end()) {
-          const SpdyString error("Response headers do not include :status.");
+          const std::string error("Response headers do not include :status.");
           LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
           session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
           return;
@@ -395,7 +394,7 @@ void SpdyStream::OnHeadersReceived(const SpdyHeaderBlock& response_headers,
 
         int status;
         if (!StringToInt(it->second, &status)) {
-          const SpdyString error("Cannot parse :status.");
+          const std::string error("Cannot parse :status.");
           LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
           session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
           return;
@@ -420,7 +419,7 @@ void SpdyStream::OnHeadersReceived(const SpdyHeaderBlock& response_headers,
           // A bidirectional stream or a request/response stream is ready for
           // the response headers only after request headers are sent.
           if (io_state_ == STATE_IDLE) {
-            const SpdyString error("Response received before request sent.");
+            const std::string error("Response received before request sent.");
             LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
             session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
             return;
@@ -451,7 +450,7 @@ void SpdyStream::OnHeadersReceived(const SpdyHeaderBlock& response_headers,
     case READY_FOR_DATA_OR_TRAILERS:
       // Second header block is trailers.
       if (type_ == SPDY_PUSH_STREAM) {
-        const SpdyString error("Trailers not supported for push stream.");
+        const std::string error("Trailers not supported for push stream.");
         LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
         session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
         return;
@@ -463,7 +462,7 @@ void SpdyStream::OnHeadersReceived(const SpdyHeaderBlock& response_headers,
 
     case TRAILERS_RECEIVED:
       // No further header blocks are allowed after trailers.
-      const SpdyString error("Header block received after trailers.");
+      const std::string error("Header block received after trailers.");
       LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
       session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
       break;
@@ -492,21 +491,21 @@ void SpdyStream::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {
   DCHECK(session_->IsStreamActive(stream_id_));
 
   if (response_state_ == READY_FOR_HEADERS) {
-    const SpdyString error("DATA received before headers.");
+    const std::string error("DATA received before headers.");
     LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
     session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
     return;
   }
 
   if (response_state_ == TRAILERS_RECEIVED && buffer) {
-    const SpdyString error("DATA received after trailers.");
+    const std::string error("DATA received after trailers.");
     LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
     session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
     return;
   }
 
   if (io_state_ == STATE_HALF_CLOSED_REMOTE) {
-    const SpdyString error("DATA received on half-closed (remove) stream.");
+    const std::string error("DATA received on half-closed (remove) stream.");
     LogStreamError(ERR_SPDY_STREAM_CLOSED, error);
     session_->ResetStream(stream_id_, ERR_SPDY_STREAM_CLOSED, error);
     return;
@@ -653,7 +652,7 @@ int SpdyStream::OnDataSent(size_t frame_size) {
   }
 }
 
-void SpdyStream::LogStreamError(int error, const SpdyString& description) {
+void SpdyStream::LogStreamError(int error, const std::string& description) {
   net_log_.AddEvent(NetLogEventType::HTTP2_STREAM_ERROR,
                     base::Bind(&NetLogSpdyStreamErrorCallback, stream_id_,
                                error, &description));
@@ -685,7 +684,7 @@ void SpdyStream::Cancel(int error) {
     return;
 
   if (stream_id_ != 0) {
-    session_->ResetStream(stream_id_, error, SpdyString());
+    session_->ResetStream(stream_id_, error, std::string());
   } else {
     session_->CloseCreatedStream(GetWeakPtr(), error);
   }
@@ -816,10 +815,10 @@ bool SpdyStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
 size_t SpdyStream::EstimateMemoryUsage() const {
   // TODO(xunjieli): https://crbug.com/669108. Estimate |pending_send_data_|
   // once scoped_refptr support is in.
-  return SpdyEstimateMemoryUsage(url_) +
-         SpdyEstimateMemoryUsage(request_headers_) +
-         SpdyEstimateMemoryUsage(pending_recv_data_) +
-         SpdyEstimateMemoryUsage(response_headers_);
+  return base::trace_event::EstimateMemoryUsage(url_) +
+         base::trace_event::EstimateMemoryUsage(request_headers_) +
+         base::trace_event::EstimateMemoryUsage(pending_recv_data_) +
+         base::trace_event::EstimateMemoryUsage(response_headers_);
 }
 
 void SpdyStream::UpdateHistograms() {
@@ -924,13 +923,13 @@ void SpdyStream::SaveResponseHeaders(const SpdyHeaderBlock& response_headers) {
   }
 }
 
-#define STATE_CASE(s)                                     \
-  case s:                                                 \
-    description = SpdyStringPrintf("%s (0x%08X)", #s, s); \
+#define STATE_CASE(s)                                       \
+  case s:                                                   \
+    description = base::StringPrintf("%s (0x%08X)", #s, s); \
     break
 
-SpdyString SpdyStream::DescribeState(State state) {
-  SpdyString description;
+std::string SpdyStream::DescribeState(State state) {
+  std::string description;
   switch (state) {
     STATE_CASE(STATE_IDLE);
     STATE_CASE(STATE_OPEN);
@@ -938,7 +937,8 @@ SpdyString SpdyStream::DescribeState(State state) {
     STATE_CASE(STATE_HALF_CLOSED_LOCAL);
     STATE_CASE(STATE_CLOSED);
     default:
-      description = SpdyStringPrintf("Unknown state 0x%08X (%u)", state, state);
+      description =
+          base::StringPrintf("Unknown state 0x%08X (%u)", state, state);
       break;
   }
   return description;

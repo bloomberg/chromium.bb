@@ -5,11 +5,11 @@
 #ifndef NET_SPDY_HEADER_COALESCER_H_
 #define NET_SPDY_HEADER_COALESCER_H_
 
+#include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log_with_source.h"
 #include "net/third_party/spdy/core/spdy_header_block.h"
 #include "net/third_party/spdy/core/spdy_headers_handler_interface.h"
-#include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
 namespace net {
 
@@ -20,7 +20,7 @@ class NET_EXPORT_PRIVATE HeaderCoalescer : public SpdyHeadersHandlerInterface {
 
   void OnHeaderBlockStart() override {}
 
-  void OnHeader(SpdyStringPiece key, SpdyStringPiece value) override;
+  void OnHeader(base::StringPiece key, base::StringPiece value) override;
 
   void OnHeaderBlockEnd(size_t uncompressed_header_bytes,
                         size_t compressed_header_bytes) override {}
@@ -33,7 +33,7 @@ class NET_EXPORT_PRIVATE HeaderCoalescer : public SpdyHeadersHandlerInterface {
 
  private:
   // Helper to add a header. Return true on success.
-  bool AddHeader(SpdyStringPiece key, SpdyStringPiece value);
+  bool AddHeader(base::StringPiece key, base::StringPiece value);
 
   SpdyHeaderBlock headers_;
   bool headers_valid_ = true;

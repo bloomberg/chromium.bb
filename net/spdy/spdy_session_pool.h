@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -30,7 +31,6 @@
 #include "net/ssl/ssl_config_service.h"
 #include "net/third_party/quic/core/quic_versions.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
-#include "net/third_party/spdy/platform/api/spdy_string.h"
 
 namespace base {
 namespace trace_event {
@@ -163,7 +163,7 @@ class NET_EXPORT SpdySessionPool
   void OnCertDBChanged() override;
 
   void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
-                       const SpdyString& parent_dump_absolute_name) const;
+                       const std::string& parent_dump_absolute_name) const;
 
   // Called when a SpdySession is ready. It will find appropriate Requests and
   // fulfill them.
@@ -231,7 +231,7 @@ class NET_EXPORT SpdySessionPool
   // any new ones created while this method is running continue to
   // live. If |idle_only| is true only idle sessions are closed.
   void CloseCurrentSessionsHelper(Error error,
-                                  const SpdyString& description,
+                                  const std::string& description,
                                   bool idle_only);
 
   HttpServerProperties* http_server_properties_;

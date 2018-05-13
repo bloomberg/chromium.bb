@@ -6,15 +6,16 @@
 #define NET_SPDY_SPDY_STREAM_TEST_UTIL_H_
 
 #include <memory>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_piece.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log_source.h"
 #include "net/spdy/spdy_read_queue.h"
 #include "net/spdy/spdy_stream.h"
-#include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
 namespace net {
 
@@ -68,7 +69,7 @@ class StreamDelegateBase : public SpdyStream::Delegate {
 
   // Drains all data from the underlying read queue and returns it as
   // a string.
-  SpdyString TakeReceivedData();
+  std::string TakeReceivedData();
 
   // Returns whether or not the stream is closed.
   bool StreamIsClosed() const { return !stream_.get(); }
@@ -77,7 +78,7 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   // returns the stream's ID when it was open.
   SpdyStreamId stream_id() const { return stream_id_; }
 
-  SpdyString GetResponseHeaderValue(const SpdyString& name) const;
+  std::string GetResponseHeaderValue(const std::string& name) const;
   bool send_headers_completed() const { return send_headers_completed_; }
 
  protected:
@@ -105,7 +106,7 @@ class StreamDelegateSendImmediate : public StreamDelegateBase {
  public:
   // |data| can be NULL.
   StreamDelegateSendImmediate(const base::WeakPtr<SpdyStream>& stream,
-                              SpdyStringPiece data);
+                              base::StringPiece data);
   ~StreamDelegateSendImmediate() override;
 
   void OnHeadersReceived(
@@ -113,14 +114,14 @@ class StreamDelegateSendImmediate : public StreamDelegateBase {
       const SpdyHeaderBlock* pushed_request_headers) override;
 
  private:
-  SpdyStringPiece data_;
+  base::StringPiece data_;
 };
 
 // Test delegate that sends body data.
 class StreamDelegateWithBody : public StreamDelegateBase {
  public:
   StreamDelegateWithBody(const base::WeakPtr<SpdyStream>& stream,
-                         SpdyStringPiece data);
+                         base::StringPiece data);
   ~StreamDelegateWithBody() override;
 
   void OnHeadersSent() override;

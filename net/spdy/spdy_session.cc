@@ -21,9 +21,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "net/base/url_util.h"
@@ -55,9 +57,6 @@
 #include "net/third_party/quic/core/spdy_utils.h"
 #include "net/third_party/spdy/core/spdy_frame_builder.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
-#include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
-#include "net/third_party/spdy/platform/api/spdy_string.h"
-#include "net/third_party/spdy/platform/api/spdy_string_utils.h"
 #include "url/url_constants.h"
 
 namespace net {
@@ -134,12 +133,12 @@ enum PushedStreamVaryResponseHeaderValues ParseVaryInPushedResponse(
   SpdyHeaderBlock::iterator it = headers.find(kVary);
   if (it == headers.end())
     return kNoVaryHeader;
-  SpdyStringPiece value(it->second);
+  base::StringPiece value(it->second);
   if (value.empty())
     return kVaryIsEmpty;
   if (value == kStar)
     return kVaryIsStar;
-  SpdyString lowercase_value = ToLowerASCII(value);
+  std::string lowercase_value = ToLowerASCII(value);
   if (lowercase_value == kAcceptEncoding)
     return kVaryIsAcceptEncoding;
   // Both comma and newline delimiters occur in the wild.
@@ -218,7 +217,7 @@ std::unique_ptr<base::Value> NetLogSpdyHeadersReceivedCallback(
 
 std::unique_ptr<base::Value> NetLogSpdySessionCloseCallback(
     int net_error,
-    const SpdyString* description,
+    const std::string* description,
     NetLogCaptureMode /* capture_mode */) {
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetInteger("net_error", net_error);
@@ -255,7 +254,7 @@ std::unique_ptr<base::Value> NetLogSpdySendSettingsCallback(
        it != settings->end(); ++it) {
     const SpdySettingsId id = it->first;
     const uint32_t value = it->second;
-    settings_list->AppendString(SpdyStringPrintf(
+    settings_list->AppendString(base::StringPrintf(
         "[id:%u (%s) value:%u]", id, SettingsIdToString(id).c_str(), value));
   }
   dict->Set("settings", std::move(settings_list));
@@ -268,7 +267,7 @@ std::unique_ptr<base::Value> NetLogSpdyRecvSettingCallback(
     NetLogCaptureMode /* capture_mode */) {
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString(
-      "id", SpdyStringPrintf("%u (%s)", id, SettingsIdToString(id).c_str()));
+      "id", base::StringPrintf("%u (%s)", id, SettingsIdToString(id).c_str()));
   dict->SetInteger("value", value);
   return std::move(dict);
 }
@@ -313,20 +312,20 @@ std::unique_ptr<base::Value> NetLogSpdyRecvRstStreamCallback(
   dict->SetInteger("stream_id", static_cast<int>(stream_id));
   dict->SetString(
       "error_code",
-      SpdyStringPrintf("%u (%s)", error_code, ErrorCodeToString(error_code)));
+      base::StringPrintf("%u (%s)", error_code, ErrorCodeToString(error_code)));
   return std::move(dict);
 }
 
 std::unique_ptr<base::Value> NetLogSpdySendRstStreamCallback(
     SpdyStreamId stream_id,
     SpdyErrorCode error_code,
-    const SpdyString* description,
+    const std::string* description,
     NetLogCaptureMode /* capture_mode */) {
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetInteger("stream_id", static_cast<int>(stream_id));
   dict->SetString(
       "error_code",
-      SpdyStringPrintf("%u (%s)", error_code, ErrorCodeToString(error_code)));
+      base::StringPrintf("%u (%s)", error_code, ErrorCodeToString(error_code)));
   dict->SetString("description", *description);
   return std::move(dict);
 }
@@ -348,7 +347,7 @@ std::unique_ptr<base::Value> NetLogSpdyRecvGoAwayCallback(
     int active_streams,
     int unclaimed_streams,
     SpdyErrorCode error_code,
-    SpdyStringPiece debug_data,
+    base::StringPiece debug_data,
     NetLogCaptureMode capture_mode) {
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetInteger("last_accepted_stream_id", static_cast<int>(last_stream_id));
@@ -356,7 +355,7 @@ std::unique_ptr<base::Value> NetLogSpdyRecvGoAwayCallback(
   dict->SetInteger("unclaimed_streams", unclaimed_streams);
   dict->SetString(
       "error_code",
-      SpdyStringPrintf("%u (%s)", error_code, ErrorCodeToString(error_code)));
+      base::StringPrintf("%u (%s)", error_code, ErrorCodeToString(error_code)));
   dict->SetString("debug_data",
                   ElideGoAwayDebugDataForNetLog(capture_mode, debug_data));
   return std::move(dict);
@@ -389,7 +388,7 @@ std::unique_ptr<base::Value> NetLogSpdySessionStalledCallback(
     size_t num_created_streams,
     size_t num_pushed_streams,
     size_t max_concurrent_streams,
-    const SpdyString& url,
+    const std::string& url,
     NetLogCaptureMode capture_mode) {
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetInteger("num_active_streams", num_active_streams);
@@ -705,8 +704,8 @@ void SpdyStreamRequest::Reset() {
 // static
 bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
                           const SSLInfo& ssl_info,
-                          const SpdyString& old_hostname,
-                          const SpdyString& new_hostname) {
+                          const std::string& old_hostname,
+                          const std::string& new_hostname) {
   // Pooling is prohibited if the server cert is not valid for the new domain,
   // and for connections on which client certs were sent. It is also prohibited
   // when channel ID was sent if the hosts are from different eTLDs+1.
@@ -725,7 +724,7 @@ bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
   if (!ssl_info.cert->VerifyNameMatch(new_hostname))
     return false;
 
-  SpdyString pinning_failure_log;
+  std::string pinning_failure_log;
   // DISABLE_PIN_REPORTS is set here because this check can fail in
   // normal operation without being indicative of a misconfiguration or
   // attack. Port is left at 0 as it is never used.
@@ -945,7 +944,7 @@ void SpdySession::InitializeWithSocket(
                  READ_STATE_DO_READ, OK));
 }
 
-bool SpdySession::VerifyDomainAuthentication(const SpdyString& domain) const {
+bool SpdySession::VerifyDomainAuthentication(const std::string& domain) const {
   if (availability_state_ == STATE_DRAINING)
     return false;
 
@@ -1163,7 +1162,7 @@ void SpdySession::CloseCreatedStream(const base::WeakPtr<SpdyStream>& stream,
 
 void SpdySession::ResetStream(SpdyStreamId stream_id,
                               int error,
-                              const SpdyString& description) {
+                              const std::string& description) {
   DCHECK_NE(stream_id, 0u);
 
   ActiveStreamMap::iterator it = active_streams_.find(stream_id);
@@ -1216,7 +1215,7 @@ void SpdySession::SendStreamWindowUpdate(SpdyStreamId stream_id,
 }
 
 void SpdySession::CloseSessionOnError(Error err,
-                                      const SpdyString& description) {
+                                      const std::string& description) {
   DCHECK_LT(err, ERR_IO_PENDING);
   DoDrainSession(err, description);
 }
@@ -1442,16 +1441,16 @@ size_t SpdySession::DumpMemoryStats(StreamSocket::SocketMemoryStats* stats,
   // estimated in |read_buffer_size|. TODO(xunjieli): Make them use EMU().
   size_t read_buffer_size = read_buffer_ ? kReadBufferSize : 0;
   return stats->total_size + read_buffer_size +
-         SpdyEstimateMemoryUsage(spdy_session_key_) +
-         SpdyEstimateMemoryUsage(pooled_aliases_) +
-         SpdyEstimateMemoryUsage(active_streams_) +
-         SpdyEstimateMemoryUsage(created_streams_) +
-         SpdyEstimateMemoryUsage(write_queue_) +
-         SpdyEstimateMemoryUsage(in_flight_write_) +
-         SpdyEstimateMemoryUsage(buffered_spdy_framer_) +
-         SpdyEstimateMemoryUsage(initial_settings_) +
-         SpdyEstimateMemoryUsage(stream_send_unstall_queue_) +
-         SpdyEstimateMemoryUsage(priority_dependency_state_);
+         base::trace_event::EstimateMemoryUsage(spdy_session_key_) +
+         base::trace_event::EstimateMemoryUsage(pooled_aliases_) +
+         base::trace_event::EstimateMemoryUsage(active_streams_) +
+         base::trace_event::EstimateMemoryUsage(created_streams_) +
+         base::trace_event::EstimateMemoryUsage(write_queue_) +
+         base::trace_event::EstimateMemoryUsage(in_flight_write_) +
+         base::trace_event::EstimateMemoryUsage(buffered_spdy_framer_) +
+         base::trace_event::EstimateMemoryUsage(initial_settings_) +
+         base::trace_event::EstimateMemoryUsage(stream_send_unstall_queue_) +
+         base::trace_event::EstimateMemoryUsage(priority_dependency_state_);
 }
 
 bool SpdySession::ChangeSocketTag(const SocketTag& new_tag) {
@@ -1612,7 +1611,7 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
                                       SpdyStreamId associated_stream_id,
                                       SpdyHeaderBlock headers) {
   if ((stream_id & 0x1) != 0) {
-    SpdyString description = SpdyStringPrintf(
+    std::string description = base::StringPrintf(
         "Received invalid pushed stream id %d (must be even) on stream id %d.",
         stream_id, associated_stream_id);
     LOG(WARNING) << description;
@@ -1621,7 +1620,7 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   }
 
   if ((associated_stream_id & 0x1) != 1) {
-    SpdyString description = SpdyStringPrintf(
+    std::string description = base::StringPrintf(
         "Received pushed stream id %d on invalid stream id %d (must be odd).",
         stream_id, associated_stream_id);
     LOG(WARNING) << description;
@@ -1630,7 +1629,7 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   }
 
   if (stream_id <= last_accepted_push_stream_id_) {
-    SpdyString description = SpdyStringPrintf(
+    std::string description = base::StringPrintf(
         "Received pushed stream id %d must be larger than last accepted id %d.",
         stream_id, last_accepted_push_stream_id_);
     LOG(WARNING) << description;
@@ -1851,7 +1850,7 @@ void SpdySession::CloseCreatedStreamIterator(CreatedStreamSet::iterator it,
 
 void SpdySession::ResetStreamIterator(ActiveStreamMap::iterator it,
                                       int error,
-                                      const SpdyString& description) {
+                                      const std::string& description) {
   // Send the RST_STREAM frame first as CloseActiveStreamIterator()
   // may close us.
   SpdyErrorCode error_code = ERROR_CODE_PROTOCOL_ERROR;
@@ -1880,7 +1879,7 @@ void SpdySession::ResetStreamIterator(ActiveStreamMap::iterator it,
 void SpdySession::EnqueueResetStreamFrame(SpdyStreamId stream_id,
                                           RequestPriority priority,
                                           SpdyErrorCode error_code,
-                                          const SpdyString& description) {
+                                          const std::string& description) {
   DCHECK_NE(stream_id, 0u);
 
   net_log().AddEvent(NetLogEventType::HTTP2_SESSION_SEND_RST_STREAM,
@@ -2024,8 +2023,9 @@ int SpdySession::DoReadComplete(int result) {
   }
 
   if (result < 0) {
-    DoDrainSession(static_cast<Error>(result),
-                   SpdyStringPrintf("Error %d reading from socket.", -result));
+    DoDrainSession(
+        static_cast<Error>(result),
+        base::StringPrintf("Error %d reading from socket.", -result));
     return result;
   }
   CHECK_LE(result, kReadBufferSize);
@@ -2343,9 +2343,9 @@ void SpdySession::UpdateStreamsSendWindowSize(int32_t delta_window_size) {
     if (!value.second->AdjustSendWindowSize(delta_window_size)) {
       DoDrainSession(
           ERR_SPDY_FLOW_CONTROL_ERROR,
-          SpdyStringPrintf("New SETTINGS_INITIAL_WINDOW_SIZE value overflows "
-                           "flow control window of stream %d.",
-                           value.second->stream_id()));
+          base::StringPrintf("New SETTINGS_INITIAL_WINDOW_SIZE value overflows "
+                             "flow control window of stream %d.",
+                             value.second->stream_id()));
       return;
     }
   }
@@ -2354,9 +2354,9 @@ void SpdySession::UpdateStreamsSendWindowSize(int32_t delta_window_size) {
     if (!stream->AdjustSendWindowSize(delta_window_size)) {
       DoDrainSession(
           ERR_SPDY_FLOW_CONTROL_ERROR,
-          SpdyStringPrintf("New SETTINGS_INITIAL_WINDOW_SIZE value overflows "
-                           "flow control window of stream %d.",
-                           stream->stream_id()));
+          base::StringPrintf("New SETTINGS_INITIAL_WINDOW_SIZE value overflows "
+                             "flow control window of stream %d.",
+                             stream->stream_id()));
       return;
     }
   }
@@ -2587,7 +2587,7 @@ void SpdySession::DcheckDraining() const {
   DCHECK_EQ(0u, pool_->push_promise_index()->CountStreamsForSession(this));
 }
 
-void SpdySession::DoDrainSession(Error err, const SpdyString& description) {
+void SpdySession::DoDrainSession(Error err, const std::string& description) {
   if (availability_state_ == STATE_DRAINING) {
     return;
   }
@@ -2697,14 +2697,14 @@ void SpdySession::OnError(
 
   RecordProtocolErrorHistogram(
       MapFramerErrorToProtocolError(spdy_framer_error));
-  SpdyString description = SpdyStringPrintf(
+  std::string description = base::StringPrintf(
       "Framer error: %d (%s).", spdy_framer_error,
       http2::Http2DecoderAdapter::SpdyFramerErrorToString(spdy_framer_error));
   DoDrainSession(MapFramerErrorToNetError(spdy_framer_error), description);
 }
 
 void SpdySession::OnStreamError(SpdyStreamId stream_id,
-                                const SpdyString& description) {
+                                const std::string& description) {
   CHECK(in_io_loop_);
 
   ActiveStreamMap::iterator it = active_streams_.find(stream_id);
@@ -2795,7 +2795,7 @@ void SpdySession::OnRstStream(SpdyStreamId stream_id,
 
 void SpdySession::OnGoAway(SpdyStreamId last_accepted_stream_id,
                            SpdyErrorCode error_code,
-                           SpdyStringPiece debug_data) {
+                           base::StringPiece debug_data) {
   CHECK(in_io_loop_);
 
   // TODO(jgraettinger): UMA histogram on |error_code|.
@@ -3061,7 +3061,7 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
 
 void SpdySession::OnAltSvc(
     SpdyStreamId stream_id,
-    SpdyStringPiece origin,
+    base::StringPiece origin,
     const SpdyAltSvcWireFormat::AlternativeServiceVector& altsvc_vector) {
   url::SchemeHostPort scheme_host_port;
   if (stream_id == 0) {

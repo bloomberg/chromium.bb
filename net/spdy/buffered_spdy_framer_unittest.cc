@@ -36,7 +36,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   }
 
   void OnStreamError(SpdyStreamId stream_id,
-                     const SpdyString& description) override {
+                     const std::string& description) override {
     VLOG(1) << "SpdyFramer Error on stream: " << stream_id << " "
             << description;
     error_count_++;
@@ -90,7 +90,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
 
   void OnGoAway(SpdyStreamId last_accepted_stream_id,
                 SpdyErrorCode error_code,
-                SpdyStringPiece debug_data) override {
+                base::StringPiece debug_data) override {
     goaway_count_++;
     goaway_last_accepted_stream_id_ = last_accepted_stream_id;
     goaway_error_code_ = error_code;
@@ -116,7 +116,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   }
 
   void OnAltSvc(SpdyStreamId stream_id,
-                SpdyStringPiece origin,
+                base::StringPiece origin,
                 const SpdyAltSvcWireFormat::AlternativeServiceVector&
                     altsvc_vector) override {
     altsvc_count_++;
@@ -170,11 +170,11 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   // OnGoAway parameters.
   SpdyStreamId goaway_last_accepted_stream_id_;
   SpdyErrorCode goaway_error_code_;
-  SpdyString goaway_debug_data_;
+  std::string goaway_debug_data_;
 
   // OnAltSvc parameters.
   SpdyStreamId altsvc_stream_id_;
-  SpdyString altsvc_origin_;
+  std::string altsvc_origin_;
   SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector_;
 };
 
@@ -197,7 +197,7 @@ TEST_F(BufferedSpdyFramerTest, OnSetting) {
 
 TEST_F(BufferedSpdyFramerTest, HeaderListTooLarge) {
   SpdyHeaderBlock headers;
-  SpdyString long_header_value(256 * 1024, 'x');
+  std::string long_header_value(256 * 1024, 'x');
   headers["foo"] = long_header_value;
   SpdyHeadersIR headers_ir(/*stream_id=*/1, std::move(headers));
 

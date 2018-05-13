@@ -11,8 +11,8 @@
 namespace net {
 
 SpdySessionTestTaskObserver::SpdySessionTestTaskObserver(
-    const SpdyString& file_name,
-    const SpdyString& function_name)
+    const std::string& file_name,
+    const std::string& function_name)
     : executed_count_(0), file_name_(file_name), function_name_(function_name) {
   base::MessageLoopCurrent::Get()->AddTaskObserver(this);
 }

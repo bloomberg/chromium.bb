@@ -340,9 +340,9 @@ void SpdySessionPoolTest::RunIPPoolingTest(
     SpdyPoolCloseSessionsType close_sessions_type) {
   const int kTestPort = 80;
   struct TestHosts {
-    SpdyString url;
-    SpdyString name;
-    SpdyString iplist;
+    std::string url;
+    std::string name;
+    std::string iplist;
     SpdySessionKey key;
     AddressList addresses;
   } test_hosts[] = {
@@ -358,7 +358,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   std::unique_ptr<HostResolver::Request> request[arraysize(test_hosts)];
   for (size_t i = 0; i < arraysize(test_hosts); i++) {
     session_deps_.host_resolver->rules()->AddIPLiteralRule(
-        test_hosts[i].name, test_hosts[i].iplist, SpdyString());
+        test_hosts[i].name, test_hosts[i].iplist, std::string());
 
     // This test requires that the HostResolver cache be populated.  Normal
     // code would have done this already, but we do it manually.
@@ -453,8 +453,8 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   // Cleanup the sessions.
   switch (close_sessions_type) {
     case SPDY_POOL_CLOSE_SESSIONS_MANUALLY:
-      session->CloseSessionOnError(ERR_ABORTED, SpdyString());
-      session2->CloseSessionOnError(ERR_ABORTED, SpdyString());
+      session->CloseSessionOnError(ERR_ABORTED, std::string());
+      session2->CloseSessionOnError(ERR_ABORTED, std::string());
       base::RunLoop().RunUntilIdle();
       EXPECT_FALSE(session);
       EXPECT_FALSE(session2);
@@ -505,7 +505,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
       EXPECT_FALSE(spdy_stream1);
       EXPECT_FALSE(spdy_stream2);
 
-      session2->CloseSessionOnError(ERR_ABORTED, SpdyString());
+      session2->CloseSessionOnError(ERR_ABORTED, std::string());
       base::RunLoop().RunUntilIdle();
       EXPECT_FALSE(session2);
       break;
@@ -534,8 +534,8 @@ TEST_F(SpdySessionPoolTest, IPPoolingNetLog) {
   // Define two hosts with identical IP address.
   const int kTestPort = 443;
   struct TestHosts {
-    SpdyString name;
-    SpdyString iplist;
+    std::string name;
+    std::string iplist;
     SpdySessionKey key;
     AddressList addresses;
     std::unique_ptr<HostResolver::Request> request;
@@ -547,7 +547,7 @@ TEST_F(SpdySessionPoolTest, IPPoolingNetLog) {
   session_deps_.host_resolver->set_synchronous_mode(true);
   for (size_t i = 0; i < arraysize(test_hosts); i++) {
     session_deps_.host_resolver->rules()->AddIPLiteralRule(
-        test_hosts[i].name, test_hosts[i].iplist, SpdyString());
+        test_hosts[i].name, test_hosts[i].iplist, std::string());
 
     HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
     session_deps_.host_resolver->Resolve(
@@ -614,8 +614,8 @@ TEST_F(SpdySessionPoolTest, IPPoolingDisabled) {
   // Define two hosts with identical IP address.
   const int kTestPort = 443;
   struct TestHosts {
-    SpdyString name;
-    SpdyString iplist;
+    std::string name;
+    std::string iplist;
     SpdySessionKey key;
     AddressList addresses;
     std::unique_ptr<HostResolver::Request> request;
@@ -627,7 +627,7 @@ TEST_F(SpdySessionPoolTest, IPPoolingDisabled) {
   session_deps_.host_resolver->set_synchronous_mode(true);
   for (size_t i = 0; i < arraysize(test_hosts); i++) {
     session_deps_.host_resolver->rules()->AddIPLiteralRule(
-        test_hosts[i].name, test_hosts[i].iplist, SpdyString());
+        test_hosts[i].name, test_hosts[i].iplist, std::string());
 
     HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
     session_deps_.host_resolver->Resolve(
@@ -711,7 +711,7 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
   CreateNetworkSession();
 
   // Set up session A: Going away, but with an active stream.
-  const SpdyString kTestHostA("www.example.org");
+  const std::string kTestHostA("www.example.org");
   HostPortPair test_host_port_pairA(kTestHostA, 80);
   SpdySessionKey keyA(test_host_port_pairA, ProxyServer::Direct(),
                       PRIVACY_MODE_DISABLED, SocketTag());
@@ -741,7 +741,7 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
 
   AddSSLSocketData();
 
-  const SpdyString kTestHostB("mail.example.org");
+  const std::string kTestHostB("mail.example.org");
   HostPortPair test_host_port_pairB(kTestHostB, 80);
   SpdySessionKey keyB(test_host_port_pairB, ProxyServer::Direct(),
                       PRIVACY_MODE_DISABLED, SocketTag());
@@ -762,7 +762,7 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
 
   AddSSLSocketData();
 
-  const SpdyString kTestHostC("mail.example.com");
+  const std::string kTestHostC("mail.example.com");
   HostPortPair test_host_port_pairC(kTestHostC, 80);
   SpdySessionKey keyC(test_host_port_pairC, ProxyServer::Direct(),
                       PRIVACY_MODE_DISABLED, SocketTag());
@@ -958,8 +958,8 @@ TEST_P(SpdySessionMemoryDumpTest, DumpMemoryStats) {
   const base::trace_event::ProcessMemoryDump::AllocatorDumpsMap&
       allocator_dumps = process_memory_dump->allocator_dumps();
   for (const auto& pair : allocator_dumps) {
-    const SpdyString& dump_name = pair.first;
-    if (dump_name.find("spdy_session_pool") == SpdyString::npos)
+    const std::string& dump_name = pair.first;
+    if (dump_name.find("spdy_session_pool") == std::string::npos)
       continue;
     MemoryAllocatorDump::Entry expected("active_session_count",
                                         MemoryAllocatorDump::kUnitsObjects, 0);
@@ -974,8 +974,8 @@ TEST_F(SpdySessionPoolTest, FindAvailableSessionForWebsocket) {
   // Define two hosts with identical IP address.
   const int kTestPort = 443;
   struct TestHosts {
-    SpdyString name;
-    SpdyString iplist;
+    std::string name;
+    std::string iplist;
     SpdySessionKey key;
     AddressList addresses;
     std::unique_ptr<HostResolver::Request> request;
@@ -987,7 +987,7 @@ TEST_F(SpdySessionPoolTest, FindAvailableSessionForWebsocket) {
   session_deps_.host_resolver->set_synchronous_mode(true);
   for (size_t i = 0; i < arraysize(test_hosts); i++) {
     session_deps_.host_resolver->rules()->AddIPLiteralRule(
-        test_hosts[i].name, test_hosts[i].iplist, SpdyString());
+        test_hosts[i].name, test_hosts[i].iplist, std::string());
 
     HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
     session_deps_.host_resolver->Resolve(

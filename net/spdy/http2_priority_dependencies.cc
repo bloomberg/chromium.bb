@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/spdy/http2_priority_dependencies.h"
-#include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
+#include "base/trace_event/memory_usage_estimator.h"
 
 namespace net {
 
@@ -174,7 +174,7 @@ void Http2PriorityDependencies::OnStreamDestruction(SpdyStreamId id) {
 }
 
 size_t Http2PriorityDependencies::EstimateMemoryUsage() const {
-  return SpdyEstimateMemoryUsage(id_priority_lists_);
+  return base::trace_event::EstimateMemoryUsage(id_priority_lists_);
   // TODO(xunjieli): https://crbug.com/690015. Include |entry_by_stream_id_|
   // when memory_usage_estimator.h supports std::list::iterator.
 }

@@ -7,8 +7,8 @@
 #include <tuple>
 
 #include "base/logging.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "net/base/host_port_pair.h"
-#include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
 
 namespace net {
 
@@ -46,7 +46,7 @@ bool SpdySessionKey::operator==(const SpdySessionKey& other) const {
 }
 
 size_t SpdySessionKey::EstimateMemoryUsage() const {
-  return SpdyEstimateMemoryUsage(host_port_proxy_pair_);
+  return base::trace_event::EstimateMemoryUsage(host_port_proxy_pair_);
 }
 
 }  // namespace net
