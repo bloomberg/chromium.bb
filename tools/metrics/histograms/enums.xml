@@ -8232,6 +8232,39 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="Checksum out of sync"/>
 </enum>
 
+<enum name="CryptohomeDiskCleanupProgress">
+  <int value="1" label="Ephemeral User Profiles cleaned">
+    Ephemeral users were enabled. Removed all profiles except those currently
+    mounted or belonging to the owner.
+  </int>
+  <int value="2" label="Browser Cache cleaned above target">
+    Successfully freed space above 2GB target.
+  </int>
+  <int value="3" label="Google Drive Cache cleaned above target">
+    Successfully freed space above 2GB target.
+  </int>
+  <int value="4" label="Google Drive Cache cleaned above minimum">
+    Disk space was not above 2GB target, but was above the 512MB minimum needed.
+    Decided not to proceed further with more aggressive cleanups.
+  </int>
+  <int value="5" label="Android Cache cleaned above target">
+    Successfully freed space above 2GB target.
+  </int>
+  <int value="6" label="Android Cache cleaned above minimum">
+    Disk space was not above 2GB target, but was above the 512MB minimum needed.
+    Decided not to proceed further with more aggressive cleanups.
+  </int>
+  <int value="7" label="Whole User Profiles cleaned above target">
+    Successfully freed space above 2GB target.
+  </int>
+  <int value="8" label="Whole User Profiles cleaned">
+    Disk space was not above 2GB target.
+  </int>
+  <int value="9" label="No unmounted cryptohomes">
+    No users or no logged-out users.
+  </int>
+</enum>
+
 <enum name="CryptohomeError">
   <int value="1" label="TPM returned TPM_E_FAIL"/>
   <int value="2" label="TCS key load failed"/>
