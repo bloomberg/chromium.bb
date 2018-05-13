@@ -51,13 +51,23 @@ FcDirCacheCreateUUID (FcChar8  *dir,
 		      FcBool    force,
 		      FcConfig *config)
 {
+    const FcChar8 *sysroot = FcConfigGetSysRoot (config);
+    FcChar8 *target;
     FcBool ret = FcTrue;
 #ifndef _WIN32
     FcChar8 *uuidname;
 
-    uuidname = FcStrBuildFilename (dir, ".uuid", NULL);
+    if (sysroot)
+	target = FcStrBuildFilename (sysroot, dir, NULL);
+    else
+	target = FcStrdup (dir);
+    uuidname = FcStrBuildFilename (target, ".uuid", NULL);
+
     if (!uuidname)
+    {
+	FcStrFree (target);
 	return FcFalse;
+    }
 
     if (force || access ((const char *) uuidname, F_OK) < 0)
     {
@@ -69,7 +79,7 @@ FcDirCacheCreateUUID (FcChar8  *dir,
 	struct stat statb;
 	struct timeval times[2];
 
-	if (FcStat (dir, &statb) != 0)
+	if (FcStat (target, &statb) != 0)
 	{
 	    ret = FcFalse;
 	    goto bail1;
@@ -96,7 +106,7 @@ FcDirCacheCreateUUID (FcChar8  *dir,
 	    hash_add = FcHashTableReplace;
 	else
 	    hash_add = FcHashTableAdd;
-	if (!hash_add (config->uuid_table, dir, uuid))
+	if (!hash_add (config->uuid_table, target, uuid))
 	{
 	    ret = FcFalse;
 	    goto bail3;
@@ -124,14 +134,15 @@ FcDirCacheCreateUUID (FcChar8  *dir,
 	    times[0].tv_usec = 0;
 	    times[1].tv_usec = 0;
 #endif
-	    if (utimes ((const  char *) dir, times) != 0)
+	    if (utimes ((const  char *) target, times) != 0)
 	    {
-		fprintf (stderr, "Unable to revert mtime: %s\n", dir);
+		fprintf (stderr, "Unable to revert mtime: %s\n", target);
 	    }
 	}
     }
-    bail1:
+bail1:
     FcStrFree (uuidname);
+    FcStrFree (target);
 #endif
 
     return ret;
@@ -144,10 +155,17 @@ FcDirCacheReadUUID (FcChar8  *dir,
 {
     void *u;
     uuid_t uuid;
+    const FcChar8 *sysroot = FcConfigGetSysRoot (config);
+    FcChar8 *target;
 
-    if (!FcHashTableFind (config->uuid_table, dir, &u))
+    if (sysroot)
+	target = FcStrBuildFilename (sysroot, dir, NULL);
+    else
+	target = FcStrdup (dir);
+
+    if (!FcHashTableFind (config->uuid_table, target, &u))
     {
-	FcChar8 *uuidname = FcStrBuildFilename (dir, ".uuid", NULL);
+	FcChar8 *uuidname = FcStrBuildFilename (target, ".uuid", NULL);
 	int fd;
 
 	if ((fd = FcOpen ((char *) uuidname, O_RDONLY)) >= 0)
@@ -162,7 +180,7 @@ FcDirCacheReadUUID (FcChar8  *dir,
 		{
 		    if (FcDebug () & FC_DBG_CACHE)
 			printf ("FcDirCacheReadUUID %s -> %s\n", uuidname, suuid);
-		    FcHashTableAdd (config->uuid_table, dir, uuid);
+		    FcHashTableAdd (config->uuid_table, target, uuid);
 		}
 	    }
 	    close (fd);
@@ -176,6 +194,7 @@ FcDirCacheReadUUID (FcChar8  *dir,
     }
     else
 	FcHashUuidFree (u);
+    FcStrFree (target);
 }
 #endif
 
@@ -259,18 +278,25 @@ static FcChar8 *
 FcDirCacheBasenameUUID (const FcChar8 *dir, FcChar8 cache_base[CACHEBASE_LEN], FcConfig *config)
 {
     void *u;
-    FcChar8 *alias;
+    FcChar8 *alias, *target;
+    const FcChar8 *sysroot = FcConfigGetSysRoot (config);
 
     if (!FcHashTableFind (config->alias_table, dir, (void **)&alias))
 	alias = FcStrdup (dir);
-    if (FcHashTableFind (config->uuid_table, alias, &u))
+    if (sysroot)
+	target = FcStrBuildFilename (sysroot, alias, NULL);
+    else
+	target = FcStrdup (alias);
+    if (FcHashTableFind (config->uuid_table, target, &u))
     {
 	uuid_unparse (u, (char *) cache_base);
 	strcat ((char *) cache_base, "-" FC_ARCHITECTURE FC_CACHE_SUFFIX);
 	FcHashUuidFree (u);
+	FcStrFree (target);
 	FcStrFree (alias);
 	return cache_base;
     }
+    FcStrFree (target);
     FcStrFree (alias);
     return NULL;
 }
