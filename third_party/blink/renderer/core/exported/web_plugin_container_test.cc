@@ -50,7 +50,7 @@
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
-#include "third_party/blink/renderer/core/clipboard/pasteboard.h"
+#include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/exported/fake_web_plugin.h"
@@ -245,17 +245,16 @@ WebPluginContainer* GetWebPluginContainer(WebViewImpl* web_view,
   return element.PluginContainer();
 }
 
-WebString ReadClipboard() {
+String ReadClipboard() {
   // Run all tasks in a message loop to allow asynchronous clipboard writing
   // to happen before reading from it synchronously.
   test::RunPendingTasks();
-  return Pasteboard::GeneralPasteboard()->Clipboard()->ReadPlainText(
-      mojom::ClipboardBuffer::kStandard);
+  return SystemClipboard::GetInstance().ReadPlainText();
 }
 
 void ClearClipboardBuffer() {
-  Pasteboard::GeneralPasteboard()->Clipboard()->WritePlainText(WebString(""));
-  EXPECT_EQ(WebString(""), ReadClipboard());
+  SystemClipboard::GetInstance().WritePlainText(String(""));
+  EXPECT_EQ(String(""), ReadClipboard());
 }
 
 void CreateAndHandleKeyboardEvent(WebElement* plugin_container_one_element,
@@ -457,7 +456,7 @@ TEST_F(WebPluginContainerTest, Copy) {
       ->getElementById("translated-plugin")
       ->focus();
   EXPECT_TRUE(web_view->MainFrame()->ToWebLocalFrame()->ExecuteCommand("Copy"));
-  EXPECT_EQ(WebString("x"), ReadClipboard());
+  EXPECT_EQ(String("x"), ReadClipboard());
   ClearClipboardBuffer();
 }
 
@@ -472,7 +471,7 @@ TEST_F(WebPluginContainerTest, CopyFromContextMenu) {
 
   // Make sure the right-click + command works in common scenario.
   ExecuteContextMenuCommand(web_view, "Copy");
-  EXPECT_EQ(WebString("x"), ReadClipboard());
+  EXPECT_EQ(String("x"), ReadClipboard());
   ClearClipboardBuffer();
 
   auto event = FrameTestHelpers::CreateMouseEvent(WebMouseEvent::kMouseDown,
@@ -488,7 +487,7 @@ TEST_F(WebPluginContainerTest, CopyFromContextMenu) {
   // 3) Copy should still operate on the context node, even though the focus had
   //    shifted.
   EXPECT_TRUE(web_view->MainFrameImpl()->ExecuteCommand("Copy"));
-  EXPECT_EQ(WebString("x"), ReadClipboard());
+  EXPECT_EQ(String("x"), ReadClipboard());
   ClearClipboardBuffer();
 }
 
@@ -510,12 +509,12 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest) {
       kEditingModifier | WebInputEvent::kNumLockOn | WebInputEvent::kIsLeft);
   CreateAndHandleKeyboardEvent(&plugin_container_one_element, modifier_key,
                                VKEY_C);
-  EXPECT_EQ(WebString("x"), ReadClipboard());
+  EXPECT_EQ(String("x"), ReadClipboard());
   ClearClipboardBuffer();
 
   CreateAndHandleKeyboardEvent(&plugin_container_one_element, modifier_key,
                                VKEY_INSERT);
-  EXPECT_EQ(WebString("x"), ReadClipboard());
+  EXPECT_EQ(String("x"), ReadClipboard());
   ClearClipboardBuffer();
 }
 

@@ -24,6 +24,7 @@ class WebMainThreadScheduler;
 
 namespace content {
 
+class BlinkInterfaceProviderImpl;
 class MockClipboardHost;
 
 // An implementation of BlinkPlatformImpl for tests.
@@ -67,11 +68,13 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   CreateRTCCertificateGenerator() override;
 
   service_manager::Connector* GetConnector() override;
+  blink::InterfaceProvider* GetInterfaceProvider() override;
 
  private:
   void BindClipboardHost(mojo::ScopedMessagePipeHandle handle);
 
   std::unique_ptr<service_manager::Connector> connector_;
+  std::unique_ptr<BlinkInterfaceProviderImpl> blink_interface_provider_;
   MockWebBlobRegistryImpl blob_registry_;
   std::unique_ptr<MockClipboardHost> mock_clipboard_host_;
   base::ScopedTempDir file_system_root_;

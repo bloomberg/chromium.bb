@@ -30,7 +30,10 @@
 
 #include "third_party/blink/renderer/platform/clipboard/clipboard_utilities.h"
 
+#include "net/base/escape.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -60,6 +63,29 @@ String ConvertURIListToURL(const String& uri_list) {
       return url;
   }
   return String();
+}
+
+static String EscapeForHTML(const String& str) {
+  std::string output =
+      net::EscapeForHTML(StringUTF8Adaptor(str).AsStringPiece());
+  return String(output.c_str());
+}
+
+// TODO(slangley): crbug.com/775830. Remove the implementation of
+// URLToImageMarkup from clipboard_utils.h once we can delete
+// MockClipboard.
+String URLToImageMarkup(const KURL& url, const String& title) {
+  StringBuilder builder;
+  builder.Append("<img src=\"");
+  builder.Append(EscapeForHTML(url.GetString()));
+  builder.Append("\"");
+  if (!title.IsEmpty()) {
+    builder.Append(" alt=\"");
+    builder.Append(EscapeForHTML(title));
+    builder.Append("\"");
+  }
+  builder.Append("/>");
+  return builder.ToString();
 }
 
 }  // namespace blink

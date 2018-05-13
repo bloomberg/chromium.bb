@@ -42,7 +42,6 @@ class DocumentFragment;
 class Element;
 class Event;
 class LocalFrame;
-class Pasteboard;
 
 enum class DataTransferAccessPolicy;
 enum class EditorCommandSource;
@@ -85,7 +84,7 @@ class ClipboardCommands {
   static bool CanWriteClipboard(LocalFrame&, EditorCommandSource);
 
  private:
-  static bool CanSmartReplaceWithPasteboard(LocalFrame&, Pasteboard*);
+  static bool CanSmartReplaceInClipboard(LocalFrame&);
   static bool CanDeleteRange(const EphemeralRange&);
   static Element* FindEventTargetForClipboardEvent(LocalFrame&,
                                                    EditorCommandSource);
@@ -101,23 +100,18 @@ class ClipboardCommands {
                                      const AtomicString&);
   static bool DispatchPasteEvent(LocalFrame&, PasteMode, EditorCommandSource);
 
-  static void WriteSelectionToPasteboard(LocalFrame&);
+  static void WriteSelectionToClipboard(LocalFrame&);
   static void Paste(LocalFrame&, EditorCommandSource);
   static void PasteAsFragment(LocalFrame&,
                               DocumentFragment*,
                               bool smart_replace,
                               bool match_style,
                               EditorCommandSource);
-  static void PasteAsPlainTextWithPasteboard(LocalFrame&,
-                                             Pasteboard*,
-                                             EditorCommandSource);
-  static void PasteWithPasteboard(LocalFrame&,
-                                  Pasteboard*,
-                                  EditorCommandSource);
+  static void PasteAsPlainTextFromClipboard(LocalFrame&, EditorCommandSource);
+  static void PasteFromClipboard(LocalFrame&, EditorCommandSource);
 
   using FragmentAndPlainText = std::pair<DocumentFragment*, const bool>;
-  static FragmentAndPlainText GetFragmentFromClipboard(LocalFrame&,
-                                                       Pasteboard*);
+  static FragmentAndPlainText GetFragmentFromClipboard(LocalFrame&);
 };
 
 }  // namespace blink

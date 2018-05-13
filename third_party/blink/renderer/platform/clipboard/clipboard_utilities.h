@@ -33,6 +33,7 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -42,6 +43,7 @@ PLATFORM_EXPORT void ReplaceNewlinesWithWindowsStyleNewlines(String&);
 #endif
 PLATFORM_EXPORT void ReplaceNBSPWithSpace(String&);
 PLATFORM_EXPORT String ConvertURIListToURL(const String& uri_list);
+PLATFORM_EXPORT String URLToImageMarkup(const KURL&, const String& title);
 
 }  // namespace blink
 
