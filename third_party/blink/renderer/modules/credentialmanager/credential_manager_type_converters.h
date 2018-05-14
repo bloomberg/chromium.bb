@@ -13,6 +13,8 @@
 namespace blink {
 class AuthenticatorSelectionCriteria;
 class ArrayBufferOrArrayBufferView;
+class CableAuthenticationData;
+class CableRegistrationData;
 class Credential;
 class PublicKeyCredentialCreationOptions;
 class PublicKeyCredentialDescriptor;
@@ -124,6 +126,20 @@ struct TypeConverter<
     blink::PublicKeyCredentialCreationOptions> {
   static webauth::mojom::blink::PublicKeyCredentialCreationOptionsPtr Convert(
       const blink::PublicKeyCredentialCreationOptions&);
+};
+
+template <>
+struct TypeConverter<webauth::mojom::blink::CableAuthenticationPtr,
+                     blink::CableAuthenticationData> {
+  static webauth::mojom::blink::CableAuthenticationPtr Convert(
+      const blink::CableAuthenticationData&);
+};
+
+template <>
+struct TypeConverter<webauth::mojom::blink::CableRegistrationPtr,
+                     blink::CableRegistrationData> {
+  static webauth::mojom::blink::CableRegistrationPtr Convert(
+      const blink::CableRegistrationData&);
 };
 
 template <>

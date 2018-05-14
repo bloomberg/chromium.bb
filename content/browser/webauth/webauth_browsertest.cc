@@ -311,7 +311,8 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
         std::move(rp), std::move(user), kTestChallenge, std::move(parameters),
         base::TimeDelta::FromSeconds(30),
         std::vector<webauth::mojom::PublicKeyCredentialDescriptorPtr>(),
-        nullptr, webauth::mojom::AttestationConveyancePreference::NONE);
+        nullptr, webauth::mojom::AttestationConveyancePreference::NONE,
+        nullptr);
 
     return mojo_options;
   }
@@ -333,8 +334,8 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
     auto mojo_options = webauth::mojom::PublicKeyCredentialRequestOptions::New(
         kTestChallenge, base::TimeDelta::FromSeconds(30), "acme.com",
         std::move(credentials),
-        webauth::mojom::UserVerificationRequirement::PREFERRED, base::nullopt);
-
+        webauth::mojom::UserVerificationRequirement::PREFERRED, base::nullopt,
+        std::vector<webauth::mojom::CableAuthenticationPtr>());
     return mojo_options;
   }
 

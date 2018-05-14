@@ -475,6 +475,8 @@ modules_dictionary_idl_files =
           "credentialmanager/authentication_extensions_client_inputs.idl",
           "credentialmanager/authentication_extensions_client_outputs.idl",
           "credentialmanager/authenticator_selection_criteria.idl",
+          "credentialmanager/cable_authentication_data.idl",
+          "credentialmanager/cable_registration_data.idl",
           "credentialmanager/collected_client_data.idl",
           "credentialmanager/credential_creation_options.idl",
           "credentialmanager/credential_data.idl",
