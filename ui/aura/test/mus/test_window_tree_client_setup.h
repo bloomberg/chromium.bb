@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "ui/aura/mus/window_tree_client.h"
 
 namespace display {
 class DisplayManager;
@@ -18,7 +19,6 @@ namespace aura {
 class TestWindowManagerClient;
 class TestWindowTree;
 class WindowManagerDelegate;
-class WindowTreeClient;
 class WindowTreeClientDelegate;
 
 // TestWindowTreeClientSetup is used to create a WindowTreeClient that is not
@@ -33,7 +33,9 @@ class TestWindowTreeClientSetup {
   void InitForWindowManager(WindowTreeClientDelegate* window_tree_delegate,
                             WindowManagerDelegate* window_manager_delegate);
   // TODO(sky): see if can combine with Init().
-  void InitWithoutEmbed(WindowTreeClientDelegate* window_tree_delegate);
+  void InitWithoutEmbed(
+      WindowTreeClientDelegate* window_tree_delegate,
+      WindowTreeClient::Config config = WindowTreeClient::Config::kMash);
 
   // The WindowTree that WindowTreeClient talks to.
   TestWindowTree* window_tree() { return window_tree_.get(); }
@@ -55,7 +57,8 @@ class TestWindowTreeClientSetup {
  private:
   // Called by both implementations of init to perform common initialization.
   void CommonInit(WindowTreeClientDelegate* window_tree_delegate,
-                  WindowManagerDelegate* window_manager_delegate);
+                  WindowManagerDelegate* window_manager_delegate,
+                  WindowTreeClient::Config config);
 
   std::unique_ptr<TestWindowTree> window_tree_;
 

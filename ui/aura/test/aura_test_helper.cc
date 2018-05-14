@@ -71,10 +71,13 @@ AuraTestHelper* AuraTestHelper::GetInstance() {
 
 void AuraTestHelper::EnableMusWithTestWindowTree(
     WindowTreeClientDelegate* window_tree_delegate,
-    WindowManagerDelegate* window_manager_delegate) {
+    WindowManagerDelegate* window_manager_delegate,
+    WindowTreeClient::Config config) {
   DCHECK(!setup_called_);
   DCHECK_EQ(Mode::LOCAL, mode_);
-  mode_ = Mode::MUS_CREATE_WINDOW_TREE_CLIENT;
+  mode_ = (config == WindowTreeClient::Config::kMash)
+              ? Mode::MUS_CREATE_WINDOW_TREE_CLIENT
+              : Mode::MUS2_CREATE_WINDOW_TREE_CLIENT;
   window_tree_delegate_ = window_tree_delegate;
   window_manager_delegate_ = window_manager_delegate;
 }
@@ -120,8 +123,10 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
   const Env::Mode env_mode =
       (mode_ == Mode::LOCAL) ? Env::Mode::LOCAL : Env::Mode::MUS;
 
-  if (mode_ == Mode::MUS_CREATE_WINDOW_TREE_CLIENT)
+  if (mode_ == Mode::MUS_CREATE_WINDOW_TREE_CLIENT ||
+      mode_ == Mode::MUS2_CREATE_WINDOW_TREE_CLIENT) {
     InitWindowTreeClient();
+  }
   if (!Env::GetInstanceDontCreate())
     env_ = Env::CreateInstance(env_mode);
   else
@@ -174,7 +179,8 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
     }
   }
 
-  if (mode_ == Mode::MUS_CREATE_WINDOW_TREE_CLIENT) {
+  if (mode_ == Mode::MUS_CREATE_WINDOW_TREE_CLIENT ||
+      mode_ == Mode::MUS2_CREATE_WINDOW_TREE_CLIENT) {
     window_tree_client_->focus_synchronizer()->SetActiveFocusClient(
         focus_client_.get(), root_window());
     window_tree()->AckAllChanges();

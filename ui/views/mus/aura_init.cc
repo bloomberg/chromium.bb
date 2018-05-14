@@ -93,14 +93,14 @@ bool AuraInit::Init(service_manager::Connector* connector,
                     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
                     Mode mode,
                     bool register_path_provider) {
-  env_ = aura::Env::CreateInstance(
-      (mode == Mode::AURA_MUS || mode == Mode::AURA_MUS_WINDOW_MANAGER)
-          ? aura::Env::Mode::MUS
-          : aura::Env::Mode::LOCAL);
+  env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);
 
-  if (mode == Mode::AURA_MUS) {
-    mus_client_ =
-        base::WrapUnique(new MusClient(connector, identity, io_task_runner));
+  if (mode == Mode::AURA_MUS || mode == Mode::AURA_MUS2) {
+    mus_client_ = std::make_unique<MusClient>(
+        connector, identity, io_task_runner, true,
+        MusClientTestingState::NO_TESTING,
+        mode == Mode::AURA_MUS2 ? aura::WindowTreeClient::Config::kMus2
+                                : aura::WindowTreeClient::Config::kMash);
   }
   // MaterialDesignController may have initialized already (such as happens
   // in the utility process).

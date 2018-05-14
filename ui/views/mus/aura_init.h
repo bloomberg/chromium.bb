@@ -39,13 +39,18 @@ class ViewsDelegate;
 // |resource_file| is the path to the apk file containing the resources.
 class VIEWS_MUS_EXPORT AuraInit {
  public:
+  // TODO(sky): remove Mode. https://crbug.com/842365.
   enum class Mode {
-    // Indicates AuraInit should target using aura with mus.
+    // Indicates AuraInit should target using aura with mus. This is deprecated.
     AURA_MUS,
 
     // Indicates AuraInit should target using aura with mus, for a Window
-    // Manager client.
+    // Manager client. This is deprecated.
     AURA_MUS_WINDOW_MANAGER,
+
+    // Targets ws2. Mode will eventually be removed entirely and this will be
+    // the default.
+    AURA_MUS2,
   };
 
   ~AuraInit();

@@ -37,7 +37,9 @@ namespace test {
 
 class AuraTestContextFactory;
 
-enum class BackendType { CLASSIC, MUS };
+// TODO(sky): remove MUS. https://crbug.com/842365.
+// MUS2 targets ws2. See WindowTreeClient::Config::kMus2 for details.
+enum class BackendType { CLASSIC, MUS, MUS2 };
 
 // A base class for aura unit tests.
 // TODO(beng): Instances of this test will create and own a RootWindow.
@@ -166,7 +168,7 @@ class AuraTestBase : public testing::Test,
   WindowManagerDelegate* window_manager_delegate_;
   WindowTreeClientDelegate* window_tree_client_delegate_;
 
-  bool use_mus_ = false;
+  BackendType backend_type_ = BackendType::CLASSIC;
   bool setup_called_ = false;
   bool teardown_called_ = false;
   PropertyConverter property_converter_;

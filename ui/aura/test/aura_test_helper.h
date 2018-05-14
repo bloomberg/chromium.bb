@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "ui/aura/env.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 
@@ -56,9 +57,11 @@ class AuraTestHelper {
 
   // Makes aura target mus with a mock WindowTree (TestWindowTree). Must be
   // called before SetUp().
+  // TODO(sky): remove |config|. https://crbug.com/842365
   void EnableMusWithTestWindowTree(
       WindowTreeClientDelegate* window_tree_delegate,
-      WindowManagerDelegate* window_manager_delegate);
+      WindowManagerDelegate* window_manager_delegate,
+      WindowTreeClient::Config config = WindowTreeClient::Config::kMash);
 
   // Makes aura target mus with the specified WindowTreeClient. Must be called
   // before SetUp().
@@ -105,6 +108,12 @@ class AuraTestHelper {
     // Mus with a test WindowTree implementation that does not target the real
     // service:ui.
     MUS_CREATE_WINDOW_TREE_CLIENT,
+
+    // Mus with a test WindowTree implementation that does not target the real
+    // service:ui.
+    // TODO(sky): combine this with MUS_CREATE_WINDOW_TREE_CLIENT.
+    // https://crbug.com/842365.
+    MUS2_CREATE_WINDOW_TREE_CLIENT,
 
     // Mus without creating a WindowTree. This is used when the test wants to
     // create the WindowTreeClient itself. This mode is enabled by way of

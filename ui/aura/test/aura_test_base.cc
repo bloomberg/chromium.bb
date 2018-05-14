@@ -83,7 +83,7 @@ void AuraTestBase::SetUp() {
   // The ContextFactory must exist before any Compositors are created.
   ui::ContextFactory* context_factory = nullptr;
   ui::ContextFactoryPrivate* context_factory_private = nullptr;
-  if (use_mus_) {
+  if (backend_type_ != BackendType::CLASSIC) {
     mus_context_factory_ = std::make_unique<AuraTestContextFactory>();
     context_factory = mus_context_factory_.get();
   } else {
@@ -93,9 +93,11 @@ void AuraTestBase::SetUp() {
   }
 
   helper_ = std::make_unique<AuraTestHelper>();
-  if (use_mus_) {
-    helper_->EnableMusWithTestWindowTree(window_tree_client_delegate_,
-                                         window_manager_delegate_);
+  if (backend_type_ != BackendType::CLASSIC) {
+    helper_->EnableMusWithTestWindowTree(
+        window_tree_client_delegate_, window_manager_delegate_,
+        backend_type_ == BackendType::MUS2 ? WindowTreeClient::Config::kMus2
+                                           : WindowTreeClient::Config::kMash);
   }
   helper_->SetUp(context_factory, context_factory_private);
 }
@@ -139,17 +141,17 @@ Window* AuraTestBase::CreateNormalWindow(int id, Window* parent,
 
 void AuraTestBase::EnableMusWithTestWindowTree() {
   DCHECK(!setup_called_);
-  use_mus_ = true;
+  backend_type_ = BackendType::MUS;
 }
 
 void AuraTestBase::DeleteWindowTreeClient() {
-  DCHECK(use_mus_);
+  DCHECK_NE(backend_type_, BackendType::CLASSIC);
   helper_->DeleteWindowTreeClient();
 }
 
 void AuraTestBase::ConfigureBackend(BackendType type) {
-  if (type != BackendType::CLASSIC)
-    EnableMusWithTestWindowTree();
+  DCHECK(!setup_called_);
+  backend_type_ = type;
 }
 
 void AuraTestBase::RunAllPendingInMessageLoop() {
