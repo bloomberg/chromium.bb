@@ -1215,7 +1215,15 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 // results in a scroll. This is only handled by RenderWidgetHostViewAura
 // and is needed for trackpad scrolling on Chromebooks.
 #if defined(USE_AURA)
-IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, ScrollEventToOOPIF) {
+
+#if defined(THREAD_SANITIZER)
+// Flaky: https://crbug.com/833380
+#define MAYBE_ScrollEventToOOPIF DISABLED_ScrollEventToOOPIF
+#else
+#define MAYBE_ScrollEventToOOPIF ScrollEventToOOPIF
+#endif
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       MAYBE_ScrollEventToOOPIF) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1404,8 +1412,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   OverlapSurfaceHitTestHelper(shell(), embedded_test_server());
 }
 
-#if defined(THREAD_SANITIZER)
-// Flaky: https://crbug.com/833380
+#if defined(OS_LINUX)
+// Flaky timeouts and failures: https://crbug.com/833380
 #define MAYBE_OverlapSurfaceHitTestTest DISABLED_OverlapSurfaceHitTestTest
 #else
 #define MAYBE_OverlapSurfaceHitTestTest OverlapSurfaceHitTestTest
@@ -1415,26 +1423,33 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
   OverlapSurfaceHitTestHelper(shell(), embedded_test_server());
 }
 
+#if defined(OS_LINUX)
+// Flaky timeouts and failures: https://crbug.com/833380
+#define MAYBE_HitTestLayerSquashing DISABLED_HitTestLayerSquashing
+#else
+#define MAYBE_HitTestLayerSquashing HitTestLayerSquashing
+#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       HitTestLayerSquashing) {
+                       MAYBE_HitTestLayerSquashing) {
   HitTestLayerSquashing(shell(), embedded_test_server());
 }
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
-                       HitTestLayerSquashing) {
+                       MAYBE_HitTestLayerSquashing) {
   HitTestLayerSquashing(shell(), embedded_test_server());
 }
 
-IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestWatermark) {
-  HitTestWatermark(shell(), embedded_test_server());
-}
-
-#if defined(THREAD_SANITIZER)
-// Flaky: https://crbug.com/833380
+#if defined(OS_LINUX)
+// Flaky timeouts and failures: https://crbug.com/833380
 #define MAYBE_HitTestWatermark DISABLED_HitTestWatermark
 #else
 #define MAYBE_HitTestWatermark HitTestWatermark
 #endif
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       MAYBE_HitTestWatermark) {
+  HitTestWatermark(shell(), embedded_test_server());
+}
+
 IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
                        MAYBE_HitTestWatermark) {
   HitTestWatermark(shell(), embedded_test_server());
@@ -1876,11 +1891,17 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   EXPECT_TRUE(d_frame_monitor.EventWasReceived());
 }
 
+#if defined(OS_LINUX)
+// Flaky timeouts and failures: https://crbug.com/833380
+#define MAYBE_CrossProcessMouseCapture DISABLED_CrossProcessMouseCapture
+#else
+#define MAYBE_CrossProcessMouseCapture CrossProcessMouseCapture
+#endif
 // Verify that mouse capture works on a RenderWidgetHostView level, so that
 // dragging scroll bars and selecting text continues even when the mouse
 // cursor crosses over cross-process frame boundaries.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       CrossProcessMouseCapture) {
+                       MAYBE_CrossProcessMouseCapture) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
