@@ -1094,9 +1094,12 @@ public class CustomTabsConnection {
      * @param metricName Name of the page load metric.
      * @param navigationStartTick Absolute navigation start time, as TimeTicks taken from native.
      * @param offsetMs Offset in ms from navigationStart for the page load metric.
+     *
+     * @return Whether the metric has been dispatched to the client.
      */
     boolean notifySinglePageLoadMetric(CustomTabsSessionToken session, String metricName,
             long navigationStartTick, long offsetMs) {
+        if (!mClientManager.shouldGetPageLoadMetrics(session)) return false;
         if (!mNativeTickOffsetUsComputed) {
             // Compute offset from time ticks to uptimeMillis.
             mNativeTickOffsetUsComputed = true;
