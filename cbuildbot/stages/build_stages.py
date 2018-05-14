@@ -472,8 +472,8 @@ class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
 
   def PerformStage(self):
     build_id, _ = self._run.GetCIDBHandle()
-    install_plan_fn = '/tmp/{0}_install_plan.{1}'.format(
-        self._current_board, build_id)
+    install_plan_fn = ('/tmp/%s_install_plan.%s' %
+                       (self._current_board, build_id))
 
     # We need to run chroot updates on most builders because they uprev after
     # the InitSDK stage. For the SDK builder, we can skip updates because uprev
@@ -620,8 +620,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     chroot_args = self._SetupGomaIfNecessary()
 
     build_id, _ = self._run.GetCIDBHandle()
-    install_plan_fn = '/tmp/{0}_install_plan.{1}'.format(
-        self._current_board, build_id)
+    install_plan_fn = ('/tmp/%s_install_plan.%s' %
+                       (self._current_board, build_id))
 
     commands.Build(self._build_root,
                    self._current_board,
