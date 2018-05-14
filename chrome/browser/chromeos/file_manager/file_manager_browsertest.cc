@@ -186,9 +186,6 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "openQuickView"),
                       TestParameter(NOT_IN_GUEST_MODE, "closeQuickView")));
-// Disabled due to strong flakyness (crbug.com/798772):
-//                      TestParameter(NOT_IN_GUEST_MODE,
-//                                    "openQuickViewForFoldersAfterClose")
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     DirectoryTreeContextMenu,
