@@ -249,7 +249,7 @@ void CacheStorageDispatcherHost::Has(
   if (!ValidState())
     return;
   context_->cache_manager()->HasCache(
-      origin, base::UTF16ToUTF8(cache_name),
+      origin, CacheStorageOwner::kCacheAPI, base::UTF16ToUTF8(cache_name),
       base::BindOnce(&CacheStorageDispatcherHost::OnHasCallback, this,
                      std::move(callback)));
 }
@@ -267,7 +267,7 @@ void CacheStorageDispatcherHost::Open(
   if (!ValidState())
     return;
   context_->cache_manager()->OpenCache(
-      origin, base::UTF16ToUTF8(cache_name),
+      origin, CacheStorageOwner::kCacheAPI, base::UTF16ToUTF8(cache_name),
       base::BindOnce(&CacheStorageDispatcherHost::OnOpenCallback, this, origin,
                      std::move(callback)));
 }
@@ -284,7 +284,9 @@ void CacheStorageDispatcherHost::Delete(
   }
   if (!ValidState())
     return;
-  context_->cache_manager()->DeleteCache(origin, base::UTF16ToUTF8(cache_name),
+  context_->cache_manager()->DeleteCache(origin, CacheStorageOwner::kCacheAPI,
+                                         base::UTF16ToUTF8(cache_name),
+
                                          std::move(callback));
 }
 
@@ -301,8 +303,9 @@ void CacheStorageDispatcherHost::Keys(
   if (!ValidState())
     return;
   context_->cache_manager()->EnumerateCaches(
-      origin, base::BindOnce(&CacheStorageDispatcherHost::OnKeysCallback, this,
-                             std::move(callback)));
+      origin, CacheStorageOwner::kCacheAPI,
+      base::BindOnce(&CacheStorageDispatcherHost::OnKeysCallback, this,
+                     std::move(callback)));
 }
 
 void CacheStorageDispatcherHost::Match(
@@ -324,14 +327,17 @@ void CacheStorageDispatcherHost::Match(
 
   if (match_params.cache_name.is_null()) {
     context_->cache_manager()->MatchAllCaches(
-        origin, std::move(scoped_request), std::move(match_params),
+        origin, CacheStorageOwner::kCacheAPI, std::move(scoped_request),
+        std::move(match_params),
         base::BindOnce(&CacheStorageDispatcherHost::OnMatchCallback, this,
                        std::move(callback)));
     return;
   }
   context_->cache_manager()->MatchCache(
-      origin, base::UTF16ToUTF8(match_params.cache_name.string()),
+      origin, CacheStorageOwner::kCacheAPI,
+      base::UTF16ToUTF8(match_params.cache_name.string()),
       std::move(scoped_request), std::move(match_params),
+
       base::BindOnce(&CacheStorageDispatcherHost::OnMatchCallback, this,
                      std::move(callback)));
 }
