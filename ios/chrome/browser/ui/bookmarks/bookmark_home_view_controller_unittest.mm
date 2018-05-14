@@ -17,41 +17,16 @@ namespace {
 
 using BookmarkHomeViewControllerTest = BookmarkIOSUnitTest;
 
-TEST_F(BookmarkHomeViewControllerTest, LoadBookmarks) {
+TEST_F(BookmarkHomeViewControllerTest,
+       TableViewPopulatedAfterBookmarkModelLoaded) {
   @autoreleasepool {
     BookmarkHomeViewController* controller = [[BookmarkHomeViewController alloc]
         initWithLoader:nil
           browserState:chrome_browser_state_.get()
             dispatcher:nil];
 
-    EXPECT_EQ(nil, controller.appBar);
-    EXPECT_EQ(nil, controller.bookmarksTableView);
-
     [controller setRootNode:_bookmarkModel->mobile_node()];
-    [controller view];
-    [controller loadBookmarkViews];
-
-    EXPECT_NE(nil, controller);
-    EXPECT_NE(nil, controller.appBar);
-    EXPECT_NE(nil, controller.bookmarksTableView);
-  }
-}
-
-TEST_F(BookmarkHomeViewControllerTest, LoadWaitingView) {
-  @autoreleasepool {
-    BookmarkHomeViewController* controller = [[BookmarkHomeViewController alloc]
-        initWithLoader:nil
-          browserState:chrome_browser_state_.get()
-            dispatcher:nil];
-
-    EXPECT_TRUE(controller.waitForModelView == nil);
-
-    [controller setRootNode:_bookmarkModel->mobile_node()];
-    [controller view];
-    [controller loadWaitingView];
-
-    EXPECT_TRUE(controller != nil);
-    EXPECT_TRUE(controller.waitForModelView != nil);
+    EXPECT_EQ(1, [controller numberOfSectionsInTableView:controller.tableView]);
   }
 }
 

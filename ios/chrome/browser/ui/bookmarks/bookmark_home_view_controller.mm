@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
+#include "ios/chrome/browser/ui/bookmarks/bookmark_empty_background.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_consumer.h"
@@ -30,7 +31,6 @@
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_table_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_node_item.h"
@@ -121,7 +121,6 @@ const CGFloat kShadowRadius = 12.0f;
     BookmarkHomeSharedStateObserver,
     BookmarkModelBridgeObserver,
     BookmarkTableCellTitleEditDelegate,
-    BookmarkTableViewDelegate,
     UIGestureRecognizerDelegate,
     UITableViewDataSource,
     UITableViewDelegate> {
@@ -155,9 +154,6 @@ const CGFloat kShadowRadius = 12.0f;
 // The mediator that provides data for this view controller.
 @property(nonatomic, strong) BookmarkHomeMediator* mediator;
 
-// The main view showing all the bookmarks.
-@property(nonatomic, strong) BookmarkTableView* bookmarksTableView;
-
 // The table view's styler.
 @property(nonatomic, strong) ChromeTableViewStyler* tableViewStyler;
 
@@ -170,10 +166,6 @@ const CGFloat kShadowRadius = 12.0f;
 
 // The app bar for the bookmarks.
 @property(nonatomic, strong) MDCAppBar* appBar;
-
-// This view is created and used if the model is not fully loaded yet by the
-// time this controller starts.
-@property(nonatomic, strong) BookmarkHomeWaitingView* waitForModelView;
 
 // The view controller used to view and edit a single bookmark.
 @property(nonatomic, strong) BookmarkEditViewController* editViewController;
@@ -197,6 +189,15 @@ const CGFloat kShadowRadius = 12.0f;
 
 // Navigation UIToolbar More button.
 @property(nonatomic, strong) UIBarButtonItem* moreButton;
+
+// Background shown when there is no bookmarks or folders at the current root
+// node.
+@property(nonatomic, strong) BookmarkEmptyBackground* emptyTableBackgroundView;
+
+// The loading spinner background which appears when loading the BookmarkModel
+// or syncing.
+@property(nonatomic, strong) BookmarkHomeWaitingView* spinnerView;
+
 @end
 
 @implementation BookmarkHomeViewController
@@ -208,9 +209,7 @@ const CGFloat kShadowRadius = 12.0f;
 @synthesize folderEditor = _folderEditor;
 @synthesize folderSelector = _folderSelector;
 @synthesize loader = _loader;
-@synthesize waitForModelView = _waitForModelView;
 @synthesize homeDelegate = _homeDelegate;
-@synthesize bookmarksTableView = _bookmarksTableView;
 @synthesize contextBarState = _contextBarState;
 @synthesize dispatcher = _dispatcher;
 @synthesize cachedContentPosition = _cachedContentPosition;
@@ -220,6 +219,8 @@ const CGFloat kShadowRadius = 12.0f;
 @synthesize tableViewStyler = _tableViewStyler;
 @synthesize deleteButton = _deleteButton;
 @synthesize moreButton = _moreButton;
+@synthesize spinnerView = _spinnerView;
+@synthesize emptyTableBackgroundView = _emptyTableBackgroundView;
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -231,7 +232,7 @@ const CGFloat kShadowRadius = 12.0f;
                   browserState:(ios::ChromeBrowserState*)browserState
                     dispatcher:(id<ApplicationCommands>)dispatcher {
   DCHECK(browserState);
-  self = [super initWithNibName:nil bundle:nil];
+  self = [super initWithStyle:UITableViewStylePlain];
   if (self) {
     _browserState = browserState->GetOriginalChromeBrowserState();
     _loader = loader;
@@ -246,7 +247,6 @@ const CGFloat kShadowRadius = 12.0f;
 
 - (void)dealloc {
   [self.mediator disconnect];
-  [self removeKeyboardObservers];
   _faviconTaskTracker.TryCancelAll();
   _sharedState.tableView.dataSource = nil;
   _sharedState.tableView.delegate = nil;
@@ -261,7 +261,7 @@ const CGFloat kShadowRadius = 12.0f;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  // Set Toolbar Appeareance.
+  // Set Toolbar Appearance.
   self.navigationController.toolbar.translucent = NO;
   self.navigationController.toolbar.barTintColor = [UIColor whiteColor];
   self.navigationController.toolbar.accessibilityIdentifier =
@@ -269,10 +269,14 @@ const CGFloat kShadowRadius = 12.0f;
   self.navigationController.toolbar.layer.shadowRadius = kShadowRadius;
   self.navigationController.toolbar.layer.shadowOpacity = kShadowOpacity;
 
+  // Disable separators while the loading spinner is showing. |loadBookmarkView|
+  // will bring them back if needed.
+  self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+
   if (self.bookmarks->loaded()) {
     [self loadBookmarkViews];
   } else {
-    [self loadWaitingView];
+    [self showLoadingSpinnerBackground];
   }
 }
 
@@ -284,10 +288,10 @@ const CGFloat kShadowRadius = 12.0f;
   self.navigationController.interactivePopGestureRecognizer.delegate = self;
 
   // Hide the toolbar if we're displaying the root node.
-  if (_rootNode == self.bookmarks->root_node()) {
-    self.navigationController.toolbarHidden = YES;
-  } else {
+  if (self.bookmarks->loaded() && _rootNode != self.bookmarks->root_node()) {
     self.navigationController.toolbarHidden = NO;
+  } else {
+    self.navigationController.toolbarHidden = YES;
   }
 }
 
@@ -329,21 +333,14 @@ const CGFloat kShadowRadius = 12.0f;
 
 - (void)loadBookmarkViews {
   DCHECK(_rootNode);
+
   self.sharedState =
       [[BookmarkHomeSharedState alloc] initWithBookmarkModel:_bookmarks
                                            displayedRootNode:_rootNode];
   self.sharedState.observer = self;
 
   self.automaticallyAdjustsScrollViewInsets = NO;
-  self.bookmarksTableView =
-      [[BookmarkTableView alloc] initWithSharedState:self.sharedState
-                                        browserState:self.browserState
-                                            delegate:self
-                                               frame:self.view.bounds];
-  [self.bookmarksTableView
-      setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
-                          UIViewAutoresizingFlexibleHeight];
-  [self.view addSubview:self.bookmarksTableView];
+  self.sharedState.tableView = self.tableView;
 
   // Configure the table view.
   self.tableViewStyler = [[ChromeTableViewStyler alloc] init];
@@ -374,8 +371,6 @@ const CGFloat kShadowRadius = 12.0f;
   self.sharedState.tableView.dataSource = self;
   self.sharedState.tableView.delegate = self;
 
-  [self registerForKeyboardNotifications];
-
   // After the table view has been added.
   [self setupNavigationBar];
 
@@ -386,18 +381,6 @@ const CGFloat kShadowRadius = 12.0f;
   }
   DCHECK(self.bookmarks->loaded());
   DCHECK([self isViewLoaded]);
-}
-
-- (void)loadWaitingView {
-  DCHECK(!self.waitForModelView);
-  DCHECK(self.view);
-
-  // Present a waiting view.
-  BookmarkHomeWaitingView* waitingView =
-      [[BookmarkHomeWaitingView alloc] initWithFrame:self.view.bounds];
-  self.waitForModelView = waitingView;
-  [self.view addSubview:self.waitForModelView];
-  [self.waitForModelView startWaiting];
 }
 
 - (void)cachePosition {
@@ -428,7 +411,7 @@ const CGFloat kShadowRadius = 12.0f;
 - (void)refreshContents {
   [self.mediator computeBookmarkTableViewData];
   [self cancelAllFaviconLoads];
-  [self bookmarkTableViewRefreshContextBar:self.bookmarksTableView];
+  [self handleRefreshContextBar];
   [self.sharedState.editingFolderCell stopEdit];
   [self.sharedState.tableView reloadData];
   if (self.sharedState.currentlyInEditMode &&
@@ -515,14 +498,14 @@ const CGFloat kShadowRadius = 12.0f;
 
 - (void)updateTableViewBackgroundStyle:(BookmarkHomeBackgroundStyle)style {
   if (style == BookmarkHomeBackgroundStyleDefault) {
-    [self.bookmarksTableView hideLoadingSpinnerBackground];
-    [self.bookmarksTableView hideEmptyBackground];
+    [self hideLoadingSpinnerBackground];
+    [self hideEmptyBackground];
   } else if (style == BookmarkHomeBackgroundStyleLoading) {
-    [self.bookmarksTableView hideEmptyBackground];
-    [self.bookmarksTableView showLoadingSpinnerBackground];
+    [self hideEmptyBackground];
+    [self showLoadingSpinnerBackground];
   } else if (style == BookmarkHomeBackgroundStyleEmpty) {
-    [self.bookmarksTableView hideLoadingSpinnerBackground];
-    [self.bookmarksTableView showEmptyBackground];
+    [self hideLoadingSpinnerBackground];
+    [self showEmptyBackground];
   }
 }
 
@@ -627,29 +610,25 @@ const CGFloat kShadowRadius = 12.0f;
   [self dismissWithURL:GURL()];
 }
 
-#pragma mark - BookmarkTableViewDelegate
+#pragma mark - More Private Methods
 
-- (void)bookmarkTableView:(BookmarkTableView*)view
-    selectedUrlForNavigation:(const GURL&)url {
+- (void)handleSelectUrlForNavigation:(const GURL&)url {
   [self dismissWithURL:url];
 }
 
-- (void)bookmarkTableView:(BookmarkTableView*)view
-    selectedFolderForNavigation:(const bookmarks::BookmarkNode*)folder {
+- (void)handleSelectFolderForNavigation:(const bookmarks::BookmarkNode*)folder {
   BookmarkHomeViewController* controller =
       [self createControllerWithRootFolder:folder];
   [self.navigationController pushViewController:controller animated:YES];
 }
 
-- (void)bookmarkTableView:(BookmarkTableView*)view
-    selectedNodesForDeletion:
-        (const std::set<const bookmarks::BookmarkNode*>&)nodes {
+- (void)handleSelectNodesForDeletion:
+    (const std::set<const bookmarks::BookmarkNode*>&)nodes {
   [self deleteNodes:nodes];
 }
 
-- (void)bookmarkTableView:(BookmarkTableView*)view
-        selectedEditNodes:
-            (const std::set<const bookmarks::BookmarkNode*>&)nodes {
+- (void)handleSelectEditNodes:
+    (const std::set<const bookmarks::BookmarkNode*>&)nodes {
   // Early return if bookmarks table is not in edit mode.
   if (!self.sharedState.currentlyInEditMode) {
     return;
@@ -708,8 +687,7 @@ const CGFloat kShadowRadius = 12.0f;
   return;
 }
 
-- (void)bookmarkTableView:(BookmarkTableView*)view
-    showContextMenuForNode:(const bookmarks::BookmarkNode*)node {
+- (void)handleShowContextMenuForNode:(const bookmarks::BookmarkNode*)node {
   if (node->is_url()) {
     [self presentViewController:[self contextMenuForSingleBookmarkURL:node]
                        animated:YES
@@ -726,14 +704,13 @@ const CGFloat kShadowRadius = 12.0f;
   NOTREACHED();
 }
 
-- (void)bookmarkTableView:(BookmarkTableView*)view
-              didMoveNode:(const bookmarks::BookmarkNode*)node
-               toPosition:(int)position {
+- (void)handleMoveNode:(const bookmarks::BookmarkNode*)node
+            toPosition:(int)position {
   bookmark_utils_ios::UpdateBookmarkPositionWithUndoToast(
       node, _rootNode, position, self.bookmarks, self.browserState);
 }
 
-- (void)bookmarkTableViewRefreshContextBar:(BookmarkTableView*)view {
+- (void)handleRefreshContextBar {
   // At default state, the enable state of context bar buttons could change
   // during refresh.
   if (self.contextBarState == BookmarksContextBarDefault) {
@@ -741,12 +718,8 @@ const CGFloat kShadowRadius = 12.0f;
   }
 }
 
-- (BOOL)isAtTopOfNavigation:(BookmarkTableView*)view {
+- (BOOL)isAtTopOfNavigation {
   return (self.navigationController.topViewController == self);
-}
-
-- (void)bookmarkTableViewRefreshContents:(BookmarkTableView*)view {
-  [self refreshContents];
 }
 
 #pragma mark - BookmarkTableCellTitleEditDelegate
@@ -857,37 +830,37 @@ const CGFloat kShadowRadius = 12.0f;
     self.isReconstructingFromCache = YES;
   }
 
-  DCHECK(self.waitForModelView);
+  DCHECK(self.spinnerView);
   __weak BookmarkHomeViewController* weakSelf = self;
-  [self.waitForModelView stopWaitingWithCompletion:^{
+  [self.spinnerView stopWaitingWithCompletion:^{
     BookmarkHomeViewController* strongSelf = weakSelf;
     // Early return if the controller has been deallocated.
     if (!strongSelf)
       return;
     [UIView animateWithDuration:0.2
         animations:^{
-          strongSelf.waitForModelView.alpha = 0.0;
+          strongSelf.spinnerView.alpha = 0.0;
         }
         completion:^(BOOL finished) {
-          [strongSelf.waitForModelView removeFromSuperview];
-          strongSelf.waitForModelView = nil;
+          self.sharedState.tableView.backgroundView = nil;
+          self.spinnerView = nil;
         }];
     [strongSelf loadBookmarkViews];
   }];
 }
 
 - (void)bookmarkNodeChanged:(const BookmarkNode*)node {
-  // No-op here.  Bookmarks might be refreshed at bookmarkTableView.
+  // No-op here.  Bookmarks might be refreshed in BookmarkHomeMediator.
 }
 
 - (void)bookmarkNodeChildrenChanged:(const BookmarkNode*)bookmarkNode {
-  // No-op here.  Bookmarks might be refreshed at bookmarkTableView.
+  // No-op here.  Bookmarks might be refreshed in BookmarkHomeMediator.
 }
 
 - (void)bookmarkNode:(const BookmarkNode*)bookmarkNode
      movedFromParent:(const BookmarkNode*)oldParent
             toParent:(const BookmarkNode*)newParent {
-  // No-op here.  Bookmarks might be refreshed at bookmarkTableView.
+  // No-op here.  Bookmarks might be refreshed in BookmarkHomeMediator.
 }
 
 - (void)bookmarkNodeDeleted:(const BookmarkNode*)node
@@ -1140,11 +1113,10 @@ const CGFloat kShadowRadius = 12.0f;
     }
   }
 
-  // if editNodes is changed, update it and tell BookmarkTableViewDelegate.
+  // if editNodes is changed, update it.
   if (self.sharedState.editNodes.size() != newEditNodes.size()) {
     self.sharedState.editNodes = newEditNodes;
-    [self bookmarkTableView:self.bookmarksTableView
-          selectedEditNodes:self.sharedState.editNodes];
+    [self handleSelectEditNodes:self.sharedState.editNodes];
   }
 }
 
@@ -1216,6 +1188,54 @@ const CGFloat kShadowRadius = 12.0f;
     }
   }
   return nodes;
+}
+
+#pragma mark - Loading and Empty States
+
+// Shows loading spinner background view.
+- (void)showLoadingSpinnerBackground {
+  if (!self.spinnerView) {
+    self.spinnerView = [[BookmarkHomeWaitingView alloc]
+          initWithFrame:self.sharedState.tableView.bounds
+        backgroundColor:[UIColor clearColor]];
+    [self.spinnerView startWaiting];
+  }
+  self.tableView.backgroundView = self.spinnerView;
+}
+
+// Hide the loading spinner if it is showing.
+- (void)hideLoadingSpinnerBackground {
+  if (self.spinnerView) {
+    [self.spinnerView stopWaitingWithCompletion:^{
+      [UIView animateWithDuration:0.2
+          animations:^{
+            self.spinnerView.alpha = 0.0;
+          }
+          completion:^(BOOL finished) {
+            self.sharedState.tableView.backgroundView = nil;
+            self.spinnerView = nil;
+          }];
+    }];
+  }
+}
+
+// Shows empty bookmarks background view.
+- (void)showEmptyBackground {
+  if (!self.emptyTableBackgroundView) {
+    // Set up the background view shown when the table is empty.
+    self.emptyTableBackgroundView = [[BookmarkEmptyBackground alloc]
+        initWithFrame:self.sharedState.tableView.bounds];
+    self.emptyTableBackgroundView.autoresizingMask =
+        UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    self.emptyTableBackgroundView.text =
+        l10n_util::GetNSString(IDS_IOS_BOOKMARK_NO_BOOKMARKS_LABEL);
+    self.emptyTableBackgroundView.frame = self.sharedState.tableView.bounds;
+  }
+  self.sharedState.tableView.backgroundView = self.emptyTableBackgroundView;
+}
+
+- (void)hideEmptyBackground {
+  self.sharedState.tableView.backgroundView = nil;
 }
 
 #pragma mark - ContextBarDelegate implementation
@@ -1697,80 +1717,13 @@ const CGFloat kShadowRadius = 12.0f;
     return;
   }
 
-  [self bookmarkTableView:self.bookmarksTableView showContextMenuForNode:node];
-}
-
-#pragma mark - Keyboard
-
-- (void)registerForKeyboardNotifications {
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(keyboardWasShown:)
-             name:UIKeyboardDidShowNotification
-           object:nil];
-
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(keyboardWillBeHidden:)
-             name:UIKeyboardWillHideNotification
-           object:nil];
-}
-
-- (void)removeKeyboardObservers {
-  NSNotificationCenter* notificationCenter =
-      [NSNotificationCenter defaultCenter];
-  [notificationCenter removeObserver:self
-                                name:UIKeyboardDidShowNotification
-                              object:nil];
-  [notificationCenter removeObserver:self
-                                name:UIKeyboardWillHideNotification
-                              object:nil];
-}
-
-// Called when the UIKeyboardDidShowNotification is sent
-- (void)keyboardWasShown:(NSNotification*)aNotification {
-  if (![self isAtTopOfNavigation:self.bookmarksTableView]) {
-    return;
-  }
-  NSDictionary* info = [aNotification userInfo];
-  CGFloat keyboardTop =
-      [[info objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue].origin.y;
-  CGFloat tableBottom = CGRectGetMaxY([self.bookmarksTableView
-      convertRect:self.sharedState.tableView.frame
-           toView:nil]);
-  CGFloat shiftY =
-      tableBottom - keyboardTop + [BookmarkHomeSharedState keyboardSpacingPt];
-
-  if (shiftY >= 0) {
-    UIEdgeInsets previousContentInsets =
-        self.sharedState.tableView.contentInset;
-    // Shift the content inset to prevent the editing content from being hidden
-    // by the keyboard.
-    UIEdgeInsets contentInsets =
-        UIEdgeInsetsMake(previousContentInsets.top, 0.0, shiftY, 0.0);
-    self.sharedState.tableView.contentInset = contentInsets;
-    self.sharedState.tableView.scrollIndicatorInsets = contentInsets;
-  }
-}
-
-// Called when the UIKeyboardWillHideNotification is sent
-- (void)keyboardWillBeHidden:(NSNotification*)aNotification {
-  if (![self isAtTopOfNavigation:self.bookmarksTableView]) {
-    return;
-  }
-  UIEdgeInsets previousContentInsets = self.sharedState.tableView.contentInset;
-  // Restore the content inset now that the keyboard has been hidden.
-  UIEdgeInsets contentInsets =
-      UIEdgeInsetsMake(previousContentInsets.top, 0, 0, 0);
-  self.sharedState.tableView.contentInset = contentInsets;
-  self.sharedState.tableView.scrollIndicatorInsets = contentInsets;
+  [self handleShowContextMenuForNode:node];
 }
 
 #pragma mark - BookmarkHomeSharedStateObserver
 
 - (void)sharedStateDidClearEditNodes:(BookmarkHomeSharedState*)sharedState {
-  [self bookmarkTableView:self.bookmarksTableView
-        selectedEditNodes:sharedState.editNodes];
+  [self handleSelectEditNodes:sharedState.editNodes];
 }
 
 #pragma mark UIScrollViewDelegate
@@ -1886,8 +1839,7 @@ const CGFloat kShadowRadius = 12.0f;
     const BookmarkNode* node = nodeItem.bookmarkNode;
     std::set<const BookmarkNode*> nodes;
     nodes.insert(node);
-    [self bookmarkTableView:self.bookmarksTableView
-        selectedNodesForDeletion:nodes];
+    [self handleSelectNodesForDeletion:nodes];
   }
 }
 
@@ -1921,9 +1873,7 @@ const CGFloat kShadowRadius = 12.0f;
   int newPosition = sourceIndexPath.row < destinationIndexPath.row
                         ? destinationIndexPath.row + 1
                         : destinationIndexPath.row;
-  [self bookmarkTableView:self.bookmarksTableView
-              didMoveNode:node
-               toPosition:newPosition];
+  [self handleMoveNode:node toPosition:newPosition];
 }
 
 #pragma mark - UITableViewDelegate
@@ -1948,18 +1898,15 @@ const CGFloat kShadowRadius = 12.0f;
     // If table is in edit mode, record all the nodes added to edit set.
     if (self.sharedState.currentlyInEditMode) {
       self.sharedState.editNodes.insert(node);
-      [self bookmarkTableView:self.bookmarksTableView
-            selectedEditNodes:self.sharedState.editNodes];
+      [self handleSelectEditNodes:self.sharedState.editNodes];
       return;
     }
     [self.sharedState.editingFolderCell stopEdit];
     if (node->is_folder()) {
-      [self bookmarkTableView:self.bookmarksTableView
-          selectedFolderForNavigation:node];
+      [self handleSelectFolderForNavigation:node];
     } else {
       // Open URL. Pass this to the delegate.
-      [self bookmarkTableView:self.bookmarksTableView
-          selectedUrlForNavigation:node->url()];
+      [self handleSelectUrlForNavigation:node->url()];
     }
   }
   // Deselect row.
@@ -1975,8 +1922,7 @@ const CGFloat kShadowRadius = 12.0f;
     const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
     DCHECK(node);
     self.sharedState.editNodes.erase(node);
-    [self bookmarkTableView:self.bookmarksTableView
-          selectedEditNodes:self.sharedState.editNodes];
+    [self handleSelectEditNodes:self.sharedState.editNodes];
   }
 }
 

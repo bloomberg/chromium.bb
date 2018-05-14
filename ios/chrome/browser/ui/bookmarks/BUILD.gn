@@ -34,8 +34,6 @@ source_set("bookmarks") {
     "bookmark_path_cache.mm",
     "bookmark_promo_controller.h",
     "bookmark_promo_controller.mm",
-    "bookmark_table_view.h",
-    "bookmark_table_view.mm",
     "bookmark_utils_ios.h",
     "bookmark_utils_ios.mm",
     "undo_manager_bridge_observer.h",

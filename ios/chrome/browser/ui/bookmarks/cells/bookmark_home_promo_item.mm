@@ -7,7 +7,6 @@
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_table_view.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_signin_promo_cell.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
