@@ -113,8 +113,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "videoOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "videoOpenDrive")));
 
+// Fails on official build. http://crbug.com/429294
+#if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
+#define MAYBE_OpenAudioFiles DISABLED_OpenAudioFiles
+#else
+#define MAYBE_OpenAudioFiles OpenAudioFiles
+#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    OpenAudioFiles,
+    MAYBE_OpenAudioFiles,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(IN_GUEST_MODE, "audioOpenDownloads"),
