@@ -40,7 +40,6 @@ class CORE_EXPORT EventListener
     kImageEventListenerType,
     kCPPEventListenerType,
     kConditionEventListenerType,
-    kNativeEventListenerType,
   };
 
   virtual ~EventListener() = default;
