@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_time_observer.h"
 #include "third_party/blink/renderer/platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 #include "third_party/blink/renderer/platform/scheduler/child/idle_helper.h"
@@ -723,6 +724,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     TraceableState<base::Optional<TaskDescriptionForTracing>,
                    kTracingCategoryNameInfo>
         task_description_for_tracing;  // Don't use except for tracing.
+    TraceableState<
+        base::Optional<base::sequence_manager::TaskQueue::QueuePriority>,
+        kTracingCategoryNameInfo>
+        task_priority_for_tracing;  // Only used for tracing.
     base::ObserverList<VirtualTimeObserver> virtual_time_observers;
     base::Time initial_virtual_time;
     base::TimeTicks initial_virtual_time_ticks;

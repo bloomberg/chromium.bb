@@ -203,6 +203,13 @@ const char* OptionalTaskDescriptionToString(
   return MainThreadTaskQueue::NameForQueueType(desc->queue_type.value());
 }
 
+const char* OptionalTaskPriorityToString(
+    base::Optional<TaskQueue::QueuePriority> priority) {
+  if (!priority)
+    return nullptr;
+  return TaskQueue::PriorityToString(priority.value());
+}
+
 bool IsUnconditionalHighPriorityInputEnabled() {
   return base::FeatureList::IsEnabled(kHighPriorityInput);
 }
@@ -528,6 +535,12 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
           main_thread_scheduler_impl,
           &main_thread_scheduler_impl->tracing_controller_,
           OptionalTaskDescriptionToString),
+      task_priority_for_tracing(
+          base::nullopt,
+          "Scheduler.TaskPriority",
+          main_thread_scheduler_impl,
+          &main_thread_scheduler_impl->tracing_controller_,
+          OptionalTaskPriorityToString),
       virtual_time_policy(VirtualTimePolicy::kAdvance),
       virtual_time_pause_count(0),
       max_virtual_time_task_starvation_count(0),
@@ -2426,6 +2439,11 @@ void MainThreadSchedulerImpl::OnTaskStarted(MainThreadTaskQueue* queue,
       queue
           ? base::Optional<MainThreadTaskQueue::QueueType>(queue->queue_type())
           : base::nullopt};
+
+  main_thread_only().task_priority_for_tracing =
+      queue
+          ? base::Optional<TaskQueue::QueuePriority>(queue->GetQueuePriority())
+          : base::nullopt;
 }
 
 void MainThreadSchedulerImpl::OnTaskCompleted(
@@ -2444,6 +2462,9 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
   main_thread_only().metrics_helper.RecordTaskMetrics(queue, task, start, end,
                                                       thread_time);
   main_thread_only().task_description_for_tracing = base::nullopt;
+
+  // Unset the state of |task_priority_for_tracing|.
+  main_thread_only().task_priority_for_tracing = base::nullopt;
 
   RecordTaskUkm(queue, task, start, end, thread_time);
 }
