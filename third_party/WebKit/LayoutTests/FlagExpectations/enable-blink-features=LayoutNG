@@ -25,7 +25,6 @@ crbug.com/811429 inspector-protocol/layout-fonts/cross-platform-cbdt-sbix-cff2.j
 crbug.com/636993 accessibility/removed-continuation-element-causes-crash.html [ Crash ]
 crbug.com/636993 fast/css/first-letter-removed-added.html [ Crash ]
 crbug.com/591099 fast/css/getComputedStyle/getComputedStyle-resolved-values.html [ Crash ]
-crbug.com/636993 fast/dynamic/unicode-bidi.html [ Failure ]
 crbug.com/594672 fast/events/updateLayoutForHitTest.html [ Crash Failure ]
 crbug.com/594672 virtual/mouseevent_fractional/fast/events/updateLayoutForHitTest.html [ Crash Failure ]
 
