@@ -236,11 +236,6 @@ extern const base::Feature kExperimentalCrostiniUI{
     "ExperimentalCrostiniUI", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// An experimental fullscreen prototype that allows pages to map browser and
-// system-reserved keyboard shortcuts.
-const base::Feature kExperimentalKeyboardLockUI{
-    "ExperimentalKeyboardLockUI", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // If enabled, this feature's |kExternalInstallDefaultButtonKey| field trial
 // parameter value controls which |ExternalInstallBubbleAlert| button is the
 // default.

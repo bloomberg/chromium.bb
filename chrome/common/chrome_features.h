@@ -126,8 +126,6 @@ extern const base::Feature kExperimentalAppBanners;
 extern const base::Feature kExperimentalCrostiniUI;
 #endif
 
-extern const base::Feature kExperimentalKeyboardLockUI;
-
 extern const base::Feature kExternalExtensionDefaultButtonControl;
 
 // Android expects this string from Java code, so it is always needed.

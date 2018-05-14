@@ -2261,10 +2261,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"system-keyboard-lock", flag_descriptions::kSystemKeyboardLockName,
      flag_descriptions::kSystemKeyboardLockDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSystemKeyboardLock)},
-    {"experimental-keyboard-lock-ui",
-     flag_descriptions::kExperimentalKeyboardLockUiName,
-     flag_descriptions::kExperimentalKeyboardLockUiDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kExperimentalKeyboardLockUI)},
 #if defined(OS_ANDROID)
     {"progress-bar-throttle", flag_descriptions::kProgressBarThrottleName,
      flag_descriptions::kProgressBarThrottleDescription, kOsAndroid,
