@@ -17,7 +17,6 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
@@ -1978,14 +1977,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
       frame->use_default_lower_bound_deadline);
 
   metadata.activation_dependencies = std::move(frame->activation_dependencies);
-  CHECK(metadata.latency_info.empty());
   active_tree()->FinishSwapPromises(&metadata, &frame_token_allocator_);
-  // TODO(crbug.com/834421): This is to catch instances of renderer submitting
-  // too many LatencyInfo objects.
-  if (!ui::LatencyInfo::Verify(metadata.latency_info,
-                               "LayerTreeHostImpl::DrawLayers")) {
-    base::debug::DumpWithoutCrashing();
-  }
 
   if (render_frame_metadata_observer_) {
     RenderFrameMetadata render_frame_metadata = MakeRenderFrameMetadata();

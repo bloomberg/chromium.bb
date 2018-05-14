@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/containers/adapters.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -1239,9 +1238,6 @@ CompositorFrame SurfaceAggregator::Aggregate(
       surface->TakeLatencyInfo(&frame.metadata.latency_info);
     if (!ui::LatencyInfo::Verify(frame.metadata.latency_info,
                                  "SurfaceAggregator::Aggregate")) {
-      // TODO(crbug.com/834421): This is to catch instances of renderer
-      // submitting too many LatencyInfo objects.
-      base::debug::DumpWithoutCrashing();
       break;
     }
   }
