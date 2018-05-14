@@ -119,7 +119,7 @@ function clickDirectoryTreeContextMenuItem(windowId, path, id) {
       [`[full-path-for-testing="${path}"]`]).then(function() {
     // Right click photos directory.
     return remoteCall.callRemoteTestUtil('fakeMouseRightClick', windowId,
-        [`[full-path-for-testing="${path}"]`])
+        [`[full-path-for-testing="${path}"]`]);
   }).then(function() {
     // Wait for context menu.
     return remoteCall.waitForElement(windowId,
@@ -512,5 +512,5 @@ testcase.createDirectoryFromDirectoryTreeWithoutChangingCurrentDirectory =
     function() {
   testPromise(createDirectoryFromDirectoryTree(
       false /* Do not use keyboard shortcut */,
-      false /* Do not change current directory */))
+      false /* Do not change current directory */));
 };
