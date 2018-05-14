@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
@@ -21,6 +22,8 @@
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "dbus/message.h"
 #include "extensions/browser/extension_registry.h"
@@ -38,9 +41,73 @@ chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
 }
 
+class CrostiniRestarter;
+
+class CrostiniRestarterService : public KeyedService {
+ public:
+  CrostiniRestarterService() = default;
+  ~CrostiniRestarterService() override = default;
+
+  CrostiniManager::RestartId Register(
+      std::string vm_name,
+      std::string crypothome_id,
+      std::string container_name,
+      std::string container_username,
+      CrostiniManager::RestartCrostiniCallback callback,
+      CrostiniManager::RestartObserver* observer);
+
+  void RunPendingCallbacks(CrostiniRestarter* restarter,
+                           ConciergeClientResult result);
+
+  // Aborts restart_id. A "next" restarter with the same  <vm_name,
+  // container_name> will run, if there is one.
+  void Abort(CrostiniManager::RestartId restart_id);
+
+ private:
+  void ErasePending(CrostiniRestarter* restarter);
+
+  std::map<CrostiniManager::RestartId, scoped_refptr<CrostiniRestarter>>
+      restarter_map_;
+
+  // Restarts by <vm_name, container_name>. Only one restarter flow is actually
+  // running. Other restarters will just have their callback called when the
+  // running restarter completes.
+  std::multimap<std::pair<std::string, std::string>, CrostiniManager::RestartId>
+      pending_map_;
+};
+
+class CrostiniRestarterServiceFactory
+    : public BrowserContextKeyedServiceFactory {
+ public:
+  static CrostiniRestarterService* GetForProfile(Profile* profile) {
+    return static_cast<CrostiniRestarterService*>(
+        GetInstance()->GetServiceForBrowserContext(profile, true));
+  }
+  static CrostiniRestarterServiceFactory* GetInstance() {
+    static base::NoDestructor<CrostiniRestarterServiceFactory> factory;
+    return factory.get();
+  }
+
+ private:
+  friend class base::NoDestructor<CrostiniRestarterServiceFactory>;
+
+  CrostiniRestarterServiceFactory()
+      : BrowserContextKeyedServiceFactory(
+            "CrostiniRestarterService",
+            BrowserContextDependencyManager::GetInstance()) {}
+  ~CrostiniRestarterServiceFactory() override = default;
+
+  // BrowserContextKeyedServiceFactory:
+  KeyedService* BuildServiceInstanceFor(
+      content::BrowserContext* context) const override {
+    return new CrostiniRestarterService();
+  }
+};
+
 class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
  public:
-  CrostiniRestarter(std::string vm_name,
+  CrostiniRestarter(CrostiniRestarterService* restarter_service,
+                    std::string vm_name,
                     std::string cryptohome_id,
                     std::string container_name,
                     std::string container_username,
@@ -50,14 +117,14 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
         container_name_(std::move(container_name)),
         container_username_(std::move(container_username)),
         callback_(std::move(callback)),
-        restart_id_(next_restart_id_) {
-    restarter_map_[next_restart_id_++] = base::WrapRefCounted(this);
-  }
+        restart_id_(next_restart_id_++),
+        restarter_service_(restarter_service) {}
 
   void Restart() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (is_aborted_)
       return;
+
     auto* cros_component_manager =
         g_browser_process->platform_part()->cros_component_manager();
     if (cros_component_manager) {
@@ -67,10 +134,15 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
           base::BindOnce(&CrostiniRestarter::InstallImageLoaderFinished,
                          base::WrapRefCounted(this)));
     } else {
-      // Running in test.
-      InstallImageLoaderFinishedOnUIThread(
-          component_updater::CrOSComponentManager::Error::NONE,
-          base::FilePath());
+      // Running in test. We still PostTask to prevent races between observers
+      // aborting.
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI, FROM_HERE,
+          base::BindOnce(
+              &CrostiniRestarter::InstallImageLoaderFinishedOnUIThread,
+              base::WrapRefCounted(this),
+              component_updater::CrOSComponentManager::Error::NONE,
+              base::FilePath()));
     }
   }
 
@@ -78,23 +150,18 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
     observer_list_.AddObserver(observer);
   }
 
-  CrostiniManager::RestartId GetRestartId() { return restart_id_; }
-
-  static void Abort(CrostiniManager::RestartId restart_id) {
-    auto it = restarter_map_.find(restart_id);
-    if (it != restarter_map_.end()) {
-      it->second->is_aborted_ = true;
-      restarter_map_.erase(it);
-    }
-  }
-
-  void UnrefAndRunCallback(ConciergeClientResult result) {
-    auto it = restarter_map_.find(restart_id_);
-    if (it != restarter_map_.end()) {
-      restarter_map_.erase(it);
-    }
+  void RunCallback(ConciergeClientResult result) {
     std::move(callback_).Run(result);
   }
+
+  void Abort() {
+    is_aborted_ = true;
+    observer_list_.Clear();
+  }
+
+  CrostiniManager::RestartId restart_id() const { return restart_id_; }
+  std::string vm_name() const { return vm_name_; }
+  std::string container_name() const { return container_name_; }
 
  private:
   friend class base::RefCountedThreadSafe<CrostiniRestarter>;
@@ -103,6 +170,10 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
     if (callback_) {
       LOG(ERROR) << "Destroying without having called the callback.";
     }
+  }
+
+  void FinishRestart(ConciergeClientResult result) {
+    restarter_service_->RunPendingCallbacks(this, result);
   }
 
   static void InstallImageLoaderFinished(
@@ -135,7 +206,7 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
       LOG(ERROR)
           << "Failed to install the cros-termina component with error code: "
           << static_cast<int>(error);
-      UnrefAndRunCallback(client_result);
+      FinishRestart(client_result);
       return;
     }
     CrostiniManager::GetInstance()->StartConcierge(
@@ -155,7 +226,7 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
       return;
     if (!is_started) {
       LOG(ERROR) << "Failed to start Concierge service.";
-      UnrefAndRunCallback(client_result);
+      FinishRestart(client_result);
       return;
     }
     CrostiniManager::GetInstance()->CreateDiskImage(
@@ -175,7 +246,7 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
       return;
     if (result != ConciergeClientResult::SUCCESS) {
       LOG(ERROR) << "Failed to create disk image.";
-      UnrefAndRunCallback(result);
+      FinishRestart(result);
       return;
     }
     CrostiniManager::GetInstance()->StartTerminaVm(
@@ -193,7 +264,7 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
       return;
     if (result != ConciergeClientResult::SUCCESS) {
       LOG(ERROR) << "Failed to Start Termina VM.";
-      UnrefAndRunCallback(result);
+      FinishRestart(result);
       return;
     }
     CrostiniManager::GetInstance()->StartContainer(
@@ -208,7 +279,7 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
     }
     if (is_aborted_)
       return;
-    UnrefAndRunCallback(result);
+    FinishRestart(result);
   }
 
   std::string vm_name_;
@@ -218,16 +289,83 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
   CrostiniManager::RestartCrostiniCallback callback_;
   base::ObserverList<CrostiniManager::RestartObserver> observer_list_;
   CrostiniManager::RestartId restart_id_;
+  CrostiniRestarterService* restarter_service_;
   bool is_aborted_ = false;
 
   static CrostiniManager::RestartId next_restart_id_;
-  static std::map<CrostiniManager::RestartId, scoped_refptr<CrostiniRestarter>>
-      restarter_map_;
 };
 
 CrostiniManager::RestartId CrostiniRestarter::next_restart_id_ = 0;
-std::map<CrostiniManager::RestartId, scoped_refptr<CrostiniRestarter>>
-    CrostiniRestarter::restarter_map_;
+
+CrostiniManager::RestartId CrostiniRestarterService::Register(
+    std::string vm_name,
+    std::string cryptohome_id,
+    std::string container_name,
+    std::string container_username,
+    CrostiniManager::RestartCrostiniCallback callback,
+    CrostiniManager::RestartObserver* observer) {
+  auto restarter = base::MakeRefCounted<CrostiniRestarter>(
+      this, std::move(vm_name), std::move(cryptohome_id),
+      std::move(container_name), std::move(container_username),
+      std::move(callback));
+  if (observer)
+    restarter->AddObserver(observer);
+  auto key = std::make_pair(restarter->vm_name(), restarter->container_name());
+  pending_map_.emplace(key, restarter->restart_id());
+  restarter_map_[restarter->restart_id()] = restarter;
+  if (pending_map_.count(key) > 1) {
+    VLOG(1) << "Already restarting vm " << vm_name << ", container "
+            << container_name;
+  } else {
+    restarter->Restart();
+  }
+  return restarter->restart_id();
+}
+
+void CrostiniRestarterService::RunPendingCallbacks(
+    CrostiniRestarter* restarter,
+    ConciergeClientResult result) {
+  auto key = std::make_pair(restarter->vm_name(), restarter->container_name());
+  auto range = pending_map_.equal_range(key);
+  for (auto it = range.first; it != range.second; ++it) {
+    CrostiniManager::RestartId restart_id = it->second;
+    restarter_map_[restart_id]->RunCallback(result);
+    restarter_map_.erase(restart_id);
+  }
+  pending_map_.erase(range.first, range.second);
+}
+
+void CrostiniRestarterService::Abort(CrostiniManager::RestartId restart_id) {
+  auto it = restarter_map_.find(restart_id);
+  if (it == restarter_map_.end())
+    return;
+
+  it->second->Abort();
+  ErasePending(it->second.get());
+  // Erasing |it| also invalidates |it|, so make a key from |it| now.
+  auto key =
+      std::make_pair(it->second->vm_name(), it->second->container_name());
+  restarter_map_.erase(it);
+  // Kick off the "next" (in no order) pending Restart() if any.
+  auto pending_it = pending_map_.find(key);
+  if (pending_it != pending_map_.end()) {
+    auto restarter = restarter_map_[pending_it->second];
+    restarter->Restart();
+  }
+}
+
+void CrostiniRestarterService::ErasePending(CrostiniRestarter* restarter) {
+  // Erase from pending_map_
+  auto key = std::make_pair(restarter->vm_name(), restarter->container_name());
+  auto range = pending_map_.equal_range(key);
+  for (auto it = range.first; it != range.second; ++it) {
+    if (it->second == restarter->restart_id()) {
+      pending_map_.erase(it);
+      return;
+    }
+  }
+  NOTREACHED();
+}
 
 }  // namespace
 
@@ -574,22 +712,16 @@ CrostiniManager::RestartId CrostiniManager::RestartCrostini(
     RestartCrostiniCallback callback,
     RestartObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::string cryptohome_id = CryptohomeIdForProfile(profile);
-  std::string container_username = ContainerUserNameForProfile(profile);
-
-  auto crostini_restarter = base::MakeRefCounted<CrostiniRestarter>(
-      std::move(vm_name), std::move(cryptohome_id), std::move(container_name),
-      std::move(container_username), std::move(callback));
-  if (observer) {
-    crostini_restarter->AddObserver(observer);
-  }
-  crostini_restarter->Restart();
-  return crostini_restarter->GetRestartId();
+  return CrostiniRestarterServiceFactory::GetForProfile(profile)->Register(
+      std::move(vm_name), CryptohomeIdForProfile(profile),
+      std::move(container_name), ContainerUserNameForProfile(profile),
+      std::move(callback), observer);
 }
 
 void CrostiniManager::AbortRestartCrostini(
+    Profile* profile,
     CrostiniManager::RestartId restart_id) {
-  CrostiniRestarter::Abort(restart_id);
+  CrostiniRestarterServiceFactory::GetForProfile(profile)->Abort(restart_id);
 }
 
 void CrostiniManager::OnCreateDiskImage(
@@ -711,7 +843,7 @@ void CrostiniManager::OnContainerStarted(
   // Find the callbacks to call, then erase them from the map.
   auto range = start_container_callbacks_.equal_range(
       std::make_pair(signal.vm_name(), signal.container_name()));
-  for (auto it = range.first; it != range.second; it++) {
+  for (auto it = range.first; it != range.second; ++it) {
     std::move(it->second).Run(ConciergeClientResult::SUCCESS);
   }
   start_container_callbacks_.erase(range.first, range.second);
@@ -722,7 +854,7 @@ void CrostiniManager::OnContainerStartupFailed(
   // Find the callbacks to call, then erase them from the map.
   auto range = start_container_callbacks_.equal_range(
       std::make_pair(signal.vm_name(), signal.container_name()));
-  for (auto it = range.first; it != range.second; it++) {
+  for (auto it = range.first; it != range.second; ++it) {
     std::move(it->second).Run(ConciergeClientResult::CONTAINER_START_FAILED);
   }
   start_container_callbacks_.erase(range.first, range.second);

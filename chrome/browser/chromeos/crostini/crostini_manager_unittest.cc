@@ -301,7 +301,7 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
 
   void RestartCrostiniCallback(base::OnceClosure closure,
                                ConciergeClientResult result) {
-    restart_crostini_callback_called_ = true;
+    restart_crostini_callback_count_++;
     std::move(closure).Run();
   }
 
@@ -332,7 +332,8 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
 
  protected:
   void Abort() {
-    CrostiniManager::GetInstance()->AbortRestartCrostini(restart_id_);
+    CrostiniManager::GetInstance()->AbortRestartCrostini(profile_.get(),
+                                                         restart_id_);
     loop_->Quit();
   }
 
@@ -344,7 +345,7 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
   bool abort_on_concierge_started_ = false;
   bool abort_on_disk_image_created_ = false;
   bool abort_on_vm_started_ = false;
-  bool restart_crostini_callback_called_ = false;
+  int restart_crostini_callback_count_ = 0;
   std::unique_ptr<base::RunLoop>
       loop_;  // loop_ must be created on the UI thread.
   std::unique_ptr<TestingProfile> profile_;
@@ -360,7 +361,7 @@ TEST_F(CrostiniManagerRestartTest, RestartSuccess) {
   EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_TRUE(fake_concierge_client_->start_container_called());
-  EXPECT_TRUE(restart_crostini_callback_called_);
+  EXPECT_EQ(1, restart_crostini_callback_count_);
 }
 
 TEST_F(CrostiniManagerRestartTest, AbortOnComponentLoaded) {
@@ -374,7 +375,7 @@ TEST_F(CrostiniManagerRestartTest, AbortOnComponentLoaded) {
   EXPECT_FALSE(fake_concierge_client_->create_disk_image_called());
   EXPECT_FALSE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_FALSE(fake_concierge_client_->start_container_called());
-  EXPECT_FALSE(restart_crostini_callback_called_);
+  EXPECT_EQ(0, restart_crostini_callback_count_);
 }
 
 TEST_F(CrostiniManagerRestartTest, AbortOnConciergeStarted) {
@@ -388,7 +389,7 @@ TEST_F(CrostiniManagerRestartTest, AbortOnConciergeStarted) {
   EXPECT_FALSE(fake_concierge_client_->create_disk_image_called());
   EXPECT_FALSE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_FALSE(fake_concierge_client_->start_container_called());
-  EXPECT_FALSE(restart_crostini_callback_called_);
+  EXPECT_EQ(0, restart_crostini_callback_count_);
 }
 
 TEST_F(CrostiniManagerRestartTest, AbortOnDiskImageCreated) {
@@ -402,7 +403,7 @@ TEST_F(CrostiniManagerRestartTest, AbortOnDiskImageCreated) {
   EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
   EXPECT_FALSE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_FALSE(fake_concierge_client_->start_container_called());
-  EXPECT_FALSE(restart_crostini_callback_called_);
+  EXPECT_EQ(0, restart_crostini_callback_count_);
 }
 
 TEST_F(CrostiniManagerRestartTest, AbortOnVmStarted) {
@@ -416,7 +417,28 @@ TEST_F(CrostiniManagerRestartTest, AbortOnVmStarted) {
   EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_FALSE(fake_concierge_client_->start_container_called());
-  EXPECT_FALSE(restart_crostini_callback_called_);
+  EXPECT_EQ(0, restart_crostini_callback_count_);
+}
+
+TEST_F(CrostiniManagerRestartTest, MultiRestartAllowed) {
+  CrostiniManager::GetInstance()->RestartCrostini(
+      profile_.get(), kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), loop_->QuitClosure()));
+  CrostiniManager::GetInstance()->RestartCrostini(
+      profile_.get(), kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), loop_->QuitClosure()));
+  CrostiniManager::GetInstance()->RestartCrostini(
+      profile_.get(), kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), loop_->QuitClosure()));
+
+  loop_->Run();
+  EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
+  EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+  EXPECT_TRUE(fake_concierge_client_->start_container_called());
+  EXPECT_EQ(3, restart_crostini_callback_count_);
 }
 
 }  // namespace crostini

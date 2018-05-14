@@ -41,7 +41,7 @@ void CrostiniRemover::RemoveCrostini() {
 void CrostiniRemover::OnConciergeStarted(ConciergeClientResult result) {
   // Abort RestartCrostini after it has started the Concierge service, and
   // before it starts the VM.
-  CrostiniManager::GetInstance()->AbortRestartCrostini(restart_id_);
+  CrostiniManager::GetInstance()->AbortRestartCrostini(profile_, restart_id_);
   // Now that we have started the Concierge service, we can use it to stop the
   // VM.
   if (result != ConciergeClientResult::SUCCESS) {
