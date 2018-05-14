@@ -1859,7 +1859,8 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
                                 '-tests_power_DarkResumeShutdownServer',
                                 '-tests_power_DarkResumeDisplay',
                                 '-tests_security_SMMLocked',
-                                '-tests_cheets_SELinuxTest']),
+                                '-tests_cheets_SELinuxTest',
+                                'thinlto']),
       afdo_use=True,
       latest_toolchain=True,
       manifest=constants.OFFICIAL_MANIFEST,
@@ -1968,10 +1969,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       useflags=append_useflags(['clang_tidy']),
       boards=['grunt'],
   )
-  for config in site_config:
-    if any(board in config for board in _x86_internal_release_boards):
-      if config.endswith('toolchain'):
-        site_config[config].apply(useflags=append_useflags(['thinlto']))
 
 
 def PreCqBuilders(site_config, boards_dict, ge_build_config):
@@ -3670,14 +3667,6 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
   _AdjustReleaseConfigs()
 
-  def _EnableThinLTO():
-    """Enable thinlto in release builders for selected boards."""
-    for board in _x86_internal_release_boards:
-      config_name = GetReleaseConfigName(board)
-      site_config[config_name].apply(useflags=append_useflags(['thinlto']))
-
-  _EnableThinLTO()
-
 
 def PayloadBuilders(site_config, boards_dict):
   """Create <board>-payloads configs for all payload generating boards.
@@ -3838,10 +3827,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'vm_tests':[],
       },
 
-      'terra-paladin': {
-          'useflags': append_useflags(['thinlto']),
-      },
-
       'terra-release': {
           'useflags': append_useflags(['cfi']),
       },
@@ -3896,10 +3881,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
 
       'peach_pit-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
-      'terra-chrome-pfq': {
-          'useflags': append_useflags(['thinlto'])
       },
 
       'tricky-chrome-pfq': {
