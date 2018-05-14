@@ -122,17 +122,6 @@
   },
   'blink_heap_unittests': {
     'remove_from': [
-      # On chromium.android, unclear why these aren't run on all bots.
-      'KitKat Tablet Tester',
-      'Lollipop Phone Tester',
-      'Lollipop Tablet Tester',
-      'Marshmallow Tablet Tester',
-      'Nougat Phone Tester',
-      # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Unswarmed N5 Tests Dummy Builder',
-      'Unswarmed N5X Tests Dummy Builder',
       # chromium.clang
       'CrWinAsan',
       'CrWinAsan(dll)',
