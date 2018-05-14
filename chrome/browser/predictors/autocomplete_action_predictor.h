@@ -175,8 +175,12 @@ class AutocompleteActionPredictor
   // Removes all rows from the database and caches.
   void DeleteAllRows();
 
-  // Removes rows from the database and caches that contain a URL in |rows|.
-  void DeleteRowsWithURLs(const history::URLRows& rows);
+  // Removes rows that contain a URL in |rows| from the local caches.
+  // |id_list| must not be nullptr. Every row id deleted will be added to
+  // |id_list|.
+  void DeleteRowsFromCaches(
+      const history::URLRows& rows,
+      std::vector<AutocompleteActionPredictorTable::Row::Id>* id_list);
 
   // Adds and updates rows in the database and caches.
   void AddAndUpdateRows(
@@ -198,7 +202,8 @@ class AutocompleteActionPredictor
   void DeleteOldEntries(history::URLDatabase* url_db);
 
   // Deletes any old or invalid entries from the local caches. |url_db| and
-  // |id_list| must not be NULL. Every row id deleted will be added to id_list.
+  // |id_list| must not be nullptr. Every row id deleted will be added to
+  // |id_list|.
   void DeleteOldIdsFromCaches(
       history::URLDatabase* url_db,
       std::vector<AutocompleteActionPredictorTable::Row::Id>* id_list);
