@@ -800,6 +800,38 @@ if (cros_board != "") {
   generate_vm_runner_script("cros_vm_launcher") {
     generated_script = "$root_build_dir/bin/launch_cros_vm"
   }
+
+  # The sanity test's actual binary is baked into the vm image. All we need to
+  # do is build the test wrapper and build our own browser to push to the VM
+  # before testing it.
+  generate_vm_runner_script("cros_vm_sanity_test_wrapper") {
+    test_exe = "$root_out_dir/cros_vm_sanity_test"
+    generated_script = "$root_build_dir/bin/run_cros_vm_sanity_test"
+
+    # The sanity test needs to strip down Chrome and its deps to fit it into
+    # the VM. It does so by using binutils in the toolchain. So signal that we
+    # need the toolchain in the data.
+    need_toolchain = true
+  }
+  group("cros_vm_sanity_test") {
+    testonly = true
+    write_runtime_deps = "$root_out_dir/cros_vm_sanity_test.runtime_deps"
+    data_deps = [
+      "//:chromiumos_preflight",  # Builds the browser.
+      ":cros_vm_sanity_test_wrapper",  # Builds the test wrapper.
+    ]
+
+    # The following dependencies are needed to deploy chrome to the VM. See the
+    # link for the full list:
+    # https://codesearch.chromium.org/chromium/src/third_party/chromite/lib/chrome_util.py?l=341
+    data_deps += [ "//chrome:xdg_mime" ]
+
+    # TODO(bpastene): Figure out what's generating resources/chromeos/ and
+    # declare it as a dep instead of adding the dir directly.
+    data = [
+      "$root_out_dir/resources/chromeos/",
+    ]
+  }
 }
 
 fuzzer_test("variable_expander_fuzzer") {
