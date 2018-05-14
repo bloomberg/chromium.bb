@@ -162,6 +162,11 @@ class CHROMEOS_EXPORT Printer {
   // Returns the printer protocol the printer is configured with.
   Printer::PrinterProtocol GetProtocol() const;
 
+  // Returns true if the current protocol of the printer is one of the following
+  // "network protocols":
+  //   [kIpp, kIpps, kHttp, kHttps, kSocket, kLpd]
+  bool HasNetworkProtocol() const;
+
   Source source() const { return source_; }
   void set_source(const Source source) { source_ = source; }
 

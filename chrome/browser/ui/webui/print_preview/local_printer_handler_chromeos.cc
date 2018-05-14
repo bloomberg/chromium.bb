@@ -189,6 +189,7 @@ void LocalPrinterHandlerChromeos::HandlePrinterSetup(
     case chromeos::PrinterSetupResult::kInvalidPpd:
     case chromeos::PrinterSetupResult::kFatalError:
     case chromeos::PrinterSetupResult::kNativePrintersNotAllowed:
+    case chromeos::PrinterSetupResult::kInvalidPrinterUpdate:
       LOG(ERROR) << "Unexpected error in printer setup." << result;
       break;
     case chromeos::PrinterSetupResult::kMaxValue:

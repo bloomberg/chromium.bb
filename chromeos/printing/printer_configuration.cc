@@ -157,6 +157,21 @@ Printer::PrinterProtocol Printer::GetProtocol() const {
   return PrinterProtocol::kUnknown;
 }
 
+bool Printer::HasNetworkProtocol() const {
+  Printer::PrinterProtocol current_protocol = GetProtocol();
+  switch (current_protocol) {
+    case PrinterProtocol::kIpp:
+    case PrinterProtocol::kIpps:
+    case PrinterProtocol::kHttp:
+    case PrinterProtocol::kHttps:
+    case PrinterProtocol::kSocket:
+    case PrinterProtocol::kLpd:
+      return true;
+    default:
+      return false;
+  }
+}
+
 std::string Printer::UriForCups() const {
   if (!effective_uri_.empty()) {
     return effective_uri_;

@@ -1259,6 +1259,9 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_USB" desc="The dropdown menu of the printer USB protocol on the manually add printer dialog.">
       USB
     </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_IPPUSB" desc="The dropdown menu of the printer IPPUSB protocol on the edit printer dialog.">
+      IPP over USB (IPPUSB)
+    </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_CONFIGURING_MESSAGE" desc="The configuring-in-progress message shown in the configuring printer dialog.">
       Configuring <ph name="PRINTER_NAME">$1<ex>printer</ex></ph> ...
     </message>
@@ -1306,6 +1309,9 @@
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_NATIVE_PRINTERS_NOT_ALLOWED_MESSAGE" desc="The message shown when the user is prevented from configuring printers due to an enterprise policy.">
       Printer configuration is handled by the administrator.
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_INVALID_PRINTER_UPDATE" desc="The message shown when the user attempts to edit a configured printer in a way that would make it unusable">
+      Requested printer changes would make the printer unusable.
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_REQUIRE_INTERNET_MESSAGE" desc="The message shown when there is no internet access to set up a printer.">
       Connect to the internet to add a printer

@@ -315,6 +315,9 @@ std::ostream& operator<<(std::ostream& out, const PrinterSetupResult& result) {
     case kNativePrintersNotAllowed:
       out << "native printers denied by policy";
       break;
+    case kInvalidPrinterUpdate:
+      out << "printer edits would make printer unusable";
+      break;
     case kPpdTooLarge:
       out << "PPD too large";
       break;
