@@ -572,15 +572,14 @@ v8::Local<v8::Value>
 TestRunnerForSpecificView::EvaluateScriptInIsolatedWorldAndReturnValue(
     int world_id,
     const std::string& script) {
-  WebVector<v8::Local<v8::Value>> values;
   WebScriptSource source(WebString::FromUTF8(script));
   // This relies on the iframe focusing itself when it loads. This is a bit
   // sketchy, but it seems to be what other tests do.
-  web_view()->FocusedFrame()->ExecuteScriptInIsolatedWorld(world_id, &source, 1,
-                                                           &values);
-  // Since only one script was added, only one result is expected
-  if (values.size() == 1 && !values[0].IsEmpty())
-    return values[0];
+  v8::Local<v8::Value> value =
+      web_view()->FocusedFrame()->ExecuteScriptInIsolatedWorldAndReturnValue(
+          world_id, source);
+  if (!value.IsEmpty())
+    return value;
   return v8::Local<v8::Value>();
 }
 
@@ -588,8 +587,7 @@ void TestRunnerForSpecificView::EvaluateScriptInIsolatedWorld(
     int world_id,
     const std::string& script) {
   WebScriptSource source(WebString::FromUTF8(script));
-  web_view()->FocusedFrame()->ExecuteScriptInIsolatedWorld(world_id, &source,
-                                                           1);
+  web_view()->FocusedFrame()->ExecuteScriptInIsolatedWorld(world_id, source);
 }
 
 void TestRunnerForSpecificView::SetIsolatedWorldSecurityOrigin(
