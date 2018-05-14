@@ -1355,8 +1355,7 @@ TEST_F(SyncFaviconCacheTest, HistoryFullClear) {
   EXPECT_TRUE(changes.empty());
 
   EXPECT_EQ(static_cast<size_t>(kFaviconBatchSize), GetFaviconCount());
-  cache()->OnURLsDeleted(nullptr, true, false, history::URLRows(),
-                         std::set<GURL>());
+  cache()->OnURLsDeleted(nullptr, history::DeletionInfo::ForAllHistory());
   EXPECT_EQ(0U, GetFaviconCount());
   changes = processor()->GetAndResetChangeList();
   ASSERT_EQ(changes.size(), static_cast<size_t>(kFaviconBatchSize)*2);
@@ -1405,8 +1404,9 @@ TEST_F(SyncFaviconCacheTest, HistorySubsetClear) {
   EXPECT_TRUE(changes.empty());
 
   EXPECT_EQ(static_cast<size_t>(kFaviconBatchSize), GetFaviconCount());
-  cache()->OnURLsDeleted(nullptr, false, false, history::URLRows(),
-                         favicon_urls_to_delete);
+  cache()->OnURLsDeleted(
+      nullptr, history::DeletionInfo::ForUrls(history::URLRows(),
+                                              favicon_urls_to_delete));
   EXPECT_EQ(static_cast<size_t>(kFaviconBatchSize)/2, GetFaviconCount());
   changes = processor()->GetAndResetChangeList();
   ASSERT_EQ(changes.size(), static_cast<size_t>(kFaviconBatchSize));

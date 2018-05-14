@@ -429,20 +429,17 @@ void ResourcePrefetchPredictor::LearnOrigins(
 
 void ResourcePrefetchPredictor::OnURLsDeleted(
     history::HistoryService* history_service,
-    bool all_history,
-    bool expired,
-    const history::URLRows& deleted_rows,
-    const std::set<GURL>& favicon_urls) {
+    const history::DeletionInfo& deletion_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(initialization_state_ == INITIALIZED);
 
-  if (all_history) {
+  if (deletion_info.IsAllHistory()) {
     DeleteAllUrls();
     UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.ReportingEvent",
                               REPORTING_EVENT_ALL_HISTORY_CLEARED,
                               REPORTING_EVENT_COUNT);
   } else {
-    DeleteUrls(deleted_rows);
+    DeleteUrls(deletion_info.deleted_rows());
     UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.ReportingEvent",
                               REPORTING_EVENT_PARTIAL_HISTORY_CLEARED,
                               REPORTING_EVENT_COUNT);

@@ -987,16 +987,13 @@ void FaviconCache::DropPartialFavicon(FaviconMap::iterator favicon_iter,
 }
 
 void FaviconCache::OnURLsDeleted(history::HistoryService* history_service,
-                                 bool all_history,
-                                 bool expired,
-                                 const history::URLRows& deleted_rows,
-                                 const std::set<GURL>& favicon_urls) {
+                                 const history::DeletionInfo& deletion_info) {
   // We only care about actual user (or sync) deletions.
-  if (expired)
+  if (deletion_info.is_from_expiration())
     return;
 
-  if (!all_history) {
-    DeleteSyncedFavicons(favicon_urls);
+  if (!deletion_info.IsAllHistory()) {
+    DeleteSyncedFavicons(deletion_info.favicon_urls());
     return;
   }
 
