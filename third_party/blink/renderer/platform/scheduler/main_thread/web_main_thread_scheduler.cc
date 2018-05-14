@@ -31,8 +31,9 @@ std::unique_ptr<WebMainThreadScheduler> WebMainThreadScheduler::Create(
   TRACE_EVENT_WARMUP_CATEGORY(TRACE_DISABLED_BY_DEFAULT("worker.scheduler"));
 
   std::unique_ptr<MainThreadSchedulerImpl> scheduler(
-      new MainThreadSchedulerImpl(TaskQueueManager::TakeOverCurrentThread(),
-                                  initial_virtual_time));
+      new MainThreadSchedulerImpl(
+          base::sequence_manager::TaskQueueManager::TakeOverCurrentThread(),
+          initial_virtual_time));
   return base::WrapUnique<WebMainThreadScheduler>(scheduler.release());
 }
 

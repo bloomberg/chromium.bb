@@ -10,8 +10,10 @@
 namespace blink {
 namespace scheduler {
 
+using base::sequence_manager::TaskQueue;
+
 WorkerTaskQueue::WorkerTaskQueue(
-    std::unique_ptr<internal::TaskQueueImpl> impl,
+    std::unique_ptr<base::sequence_manager::internal::TaskQueueImpl> impl,
     const TaskQueue::Spec& spec,
     NonMainThreadScheduler* non_main_thread_scheduler)
     : TaskQueue(std::move(impl), spec),

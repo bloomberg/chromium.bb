@@ -25,6 +25,8 @@
 namespace blink {
 namespace scheduler {
 
+using base::sequence_manager::TaskQueue;
+
 namespace {
 
 const char* VisibilityStateToString(bool is_visible) {

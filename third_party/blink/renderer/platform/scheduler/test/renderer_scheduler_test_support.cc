@@ -19,7 +19,7 @@ namespace scheduler {
 
 std::unique_ptr<WebMainThreadScheduler> CreateWebMainThreadSchedulerForTests() {
   return std::make_unique<scheduler::MainThreadSchedulerImpl>(
-      std::make_unique<TaskQueueManagerForTest>(
+      std::make_unique<base::sequence_manager::TaskQueueManagerForTest>(
           std::make_unique<LazyThreadControllerForTest>()),
       base::nullopt);
 }

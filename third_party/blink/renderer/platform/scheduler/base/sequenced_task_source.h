@@ -8,8 +8,8 @@
 #include "base/optional.h"
 #include "base/pending_task.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 class LazyNow;
 
 namespace internal {
@@ -23,18 +23,18 @@ class SequencedTaskSource {
 
   // Take a next task to run from a sequence.
   // TODO(altimin): Do not pass |work_type| here.
-  virtual base::Optional<base::PendingTask> TakeTask() = 0;
+  virtual Optional<PendingTask> TakeTask() = 0;
 
   // Notify a sequence that a taken task has been completed.
   virtual void DidRunTask() = 0;
 
-  // Returns the delay till the next task, or base::TimeDelta::Max() if there
+  // Returns the delay till the next task, or TimeDelta::Max() if there
   // isn't one.
-  virtual base::TimeDelta DelayTillNextTask(LazyNow* lazy_now) = 0;
+  virtual TimeDelta DelayTillNextTask(LazyNow* lazy_now) = 0;
 };
 
 }  // namespace internal
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_SEQUENCED_TASK_SOURCE_H_

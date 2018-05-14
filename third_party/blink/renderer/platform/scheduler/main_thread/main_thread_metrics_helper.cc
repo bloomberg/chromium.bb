@@ -176,7 +176,7 @@ base::TimeDelta DurationOfIntervalOverlap(base::TimeTicks start1,
 
 void MainThreadMetricsHelper::RecordTaskMetrics(
     MainThreadTaskQueue* queue,
-    const TaskQueue::Task& task,
+    const base::sequence_manager::TaskQueue::Task& task,
     base::TimeTicks start_time,
     base::TimeTicks end_time,
     base::Optional<base::TimeDelta> thread_time) {

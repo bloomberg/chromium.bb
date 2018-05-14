@@ -15,6 +15,8 @@
 namespace blink {
 namespace scheduler {
 
+using base::sequence_manager::TaskQueue;
+
 IdleHelper::IdleHelper(
     SchedulerHelper* helper,
     Delegate* delegate,

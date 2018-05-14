@@ -17,7 +17,7 @@ class PLATFORM_EXPORT CompositorMetricsHelper : public MetricsHelper {
   ~CompositorMetricsHelper();
 
   void RecordTaskMetrics(WorkerTaskQueue* queue,
-                         const TaskQueue::Task& task,
+                         const base::sequence_manager::TaskQueue::Task& task,
                          base::TimeTicks start_time,
                          base::TimeTicks end_time,
                          base::Optional<base::TimeDelta> thread_time);

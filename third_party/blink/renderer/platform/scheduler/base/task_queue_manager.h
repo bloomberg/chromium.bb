@@ -13,8 +13,8 @@
 #include "third_party/blink/renderer/platform/scheduler/base/task_time_observer.h"
 #include "third_party/blink/renderer/platform/scheduler/base/time_domain.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
 class PLATFORM_EXPORT TaskQueueManager {
  public:
@@ -44,10 +44,8 @@ class PLATFORM_EXPORT TaskQueueManager {
 
   // These functions can only be called on the same thread that the task queue
   // manager executes its tasks on.
-  virtual void AddTaskObserver(
-      base::MessageLoop::TaskObserver* task_observer) = 0;
-  virtual void RemoveTaskObserver(
-      base::MessageLoop::TaskObserver* task_observer) = 0;
+  virtual void AddTaskObserver(MessageLoop::TaskObserver* task_observer) = 0;
+  virtual void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer) = 0;
   virtual void AddTaskTimeObserver(TaskTimeObserver* task_time_observer) = 0;
   virtual void RemoveTaskTimeObserver(TaskTimeObserver* task_time_observer) = 0;
 
@@ -56,14 +54,14 @@ class PLATFORM_EXPORT TaskQueueManager {
   virtual void UnregisterTimeDomain(TimeDomain* time_domain) = 0;
   virtual RealTimeDomain* GetRealTimeDomain() const = 0;
 
-  virtual const base::TickClock* GetClock() const = 0;
-  virtual base::TimeTicks NowTicks() const = 0;
+  virtual const TickClock* GetClock() const = 0;
+  virtual TimeTicks NowTicks() const = 0;
 
   // Sets the SingleThreadTaskRunner that will be returned by
   // ThreadTaskRunnerHandle::Get on the thread associated with this
   // TaskQueueManager.
   virtual void SetDefaultTaskRunner(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) = 0;
+      scoped_refptr<SingleThreadTaskRunner> task_runner) = 0;
 
   // Removes all canceled delayed tasks.
   virtual void SweepCanceledDelayedTasks() = 0;
@@ -97,7 +95,7 @@ class PLATFORM_EXPORT TaskQueueManager {
       const TaskQueue::Spec& spec) = 0;
 };
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_MANAGER_H_

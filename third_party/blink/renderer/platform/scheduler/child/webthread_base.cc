@@ -68,12 +68,13 @@ void WebThreadBase::RemoveTaskObserver(TaskObserver* observer) {
   task_observer_map_.erase(iter);
 }
 
-void WebThreadBase::AddTaskTimeObserver(TaskTimeObserver* task_time_observer) {
+void WebThreadBase::AddTaskTimeObserver(
+    base::sequence_manager::TaskTimeObserver* task_time_observer) {
   AddTaskTimeObserverInternal(task_time_observer);
 }
 
 void WebThreadBase::RemoveTaskTimeObserver(
-    TaskTimeObserver* task_time_observer) {
+    base::sequence_manager::TaskTimeObserver* task_time_observer) {
   RemoveTaskTimeObserverInternal(task_time_observer);
 }
 
@@ -119,7 +120,8 @@ class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
   std::unique_ptr<blink::scheduler::NonMainThreadScheduler>
   CreateNonMainThreadScheduler() override {
     return std::make_unique<CompositorThreadScheduler>(
-        GetThread(), TaskQueueManager::TakeOverCurrentThread());
+        GetThread(),
+        base::sequence_manager::TaskQueueManager::TakeOverCurrentThread());
   }
 
   DISALLOW_COPY_AND_ASSIGN(WebThreadForCompositor);

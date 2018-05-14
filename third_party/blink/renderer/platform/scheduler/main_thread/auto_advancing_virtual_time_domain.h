@@ -24,7 +24,7 @@ class SchedulerHelper;
 // |ABCDE                       (Execution with AutoAdvancingVirtualTimeDomain)
 // |-----------------------------> time
 class PLATFORM_EXPORT AutoAdvancingVirtualTimeDomain
-    : public VirtualTimeDomain,
+    : public base::sequence_manager::VirtualTimeDomain,
       public base::MessageLoop::TaskObserver {
  public:
   enum class BaseTimeOverridePolicy { OVERRIDE, DO_NOT_OVERRIDE };
@@ -36,7 +36,8 @@ class PLATFORM_EXPORT AutoAdvancingVirtualTimeDomain
   ~AutoAdvancingVirtualTimeDomain() override;
 
   // TimeDomain implementation:
-  base::Optional<base::TimeDelta> DelayTillNextTask(LazyNow* lazy_now) override;
+  base::Optional<base::TimeDelta> DelayTillNextTask(
+      base::sequence_manager::LazyNow* lazy_now) override;
   void RequestWakeUpAt(base::TimeTicks now, base::TimeTicks run_time) override;
   void CancelWakeUpAt(base::TimeTicks run_time) override;
   const char* GetName() const override;

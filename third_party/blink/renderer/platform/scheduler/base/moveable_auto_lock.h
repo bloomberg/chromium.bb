@@ -7,12 +7,12 @@
 
 #include "base/synchronization/lock.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
 class MoveableAutoLock {
  public:
-  explicit MoveableAutoLock(base::Lock& lock) : lock_(lock), moved_(false) {
+  explicit MoveableAutoLock(Lock& lock) : lock_(lock), moved_(false) {
     lock_.Acquire();
   }
 
@@ -30,12 +30,12 @@ class MoveableAutoLock {
   }
 
  private:
-  base::Lock& lock_;
+  Lock& lock_;
   bool moved_;
   DISALLOW_COPY_AND_ASSIGN(MoveableAutoLock);
 };
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_MOVEABLE_AUTO_LOCK_H_

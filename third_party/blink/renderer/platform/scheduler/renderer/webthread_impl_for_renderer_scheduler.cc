@@ -52,12 +52,12 @@ void WebThreadImplForRendererScheduler::RemoveTaskObserverInternal(
 }
 
 void WebThreadImplForRendererScheduler::AddTaskTimeObserverInternal(
-    TaskTimeObserver* task_time_observer) {
+    base::sequence_manager::TaskTimeObserver* task_time_observer) {
   scheduler_->AddTaskTimeObserver(task_time_observer);
 }
 
 void WebThreadImplForRendererScheduler::RemoveTaskTimeObserverInternal(
-    TaskTimeObserver* task_time_observer) {
+    base::sequence_manager::TaskTimeObserver* task_time_observer) {
   scheduler_->RemoveTaskTimeObserver(task_time_observer);
 }
 

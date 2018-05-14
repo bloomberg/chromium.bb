@@ -39,8 +39,8 @@ class ConvertableToTraceFormat;
 }  // namespace trace_event
 }  // namespace base
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
 namespace internal {
 class TaskQueueImpl;
@@ -69,7 +69,7 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
     : public TaskQueueManager,
       public internal::SequencedTaskSource,
       public internal::TaskQueueSelector::Observer,
-      public base::RunLoop::NestingObserver {
+      public RunLoop::NestingObserver {
  public:
   // Keep public methods in sync with TaskQueueManager interface.
   // The general rule is to keep methods only used in scheduler/base just here
@@ -87,18 +87,17 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
 
   // TaskQueueManager implementation:
   void SetObserver(Observer* observer) override;
-  void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
-  void RemoveTaskObserver(
-      base::MessageLoop::TaskObserver* task_observer) override;
+  void AddTaskObserver(MessageLoop::TaskObserver* task_observer) override;
+  void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer) override;
   void AddTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
   void RemoveTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
   void RegisterTimeDomain(TimeDomain* time_domain) override;
   void UnregisterTimeDomain(TimeDomain* time_domain) override;
   RealTimeDomain* GetRealTimeDomain() const override;
-  const base::TickClock* GetClock() const override;
-  base::TimeTicks NowTicks() const override;
+  const TickClock* GetClock() const override;
+  TimeTicks NowTicks() const override;
   void SetDefaultTaskRunner(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
+      scoped_refptr<SingleThreadTaskRunner> task_runner) override;
   void SweepCanceledDelayedTasks() override;
   bool GetAndClearSystemIsQuiescentBit() override;
   void SetWorkBatchSize(int work_batch_size) override;
@@ -106,28 +105,28 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
                        const char* function_name_crash_key) override;
 
   // Implementation of SequencedTaskSource:
-  base::Optional<base::PendingTask> TakeTask() override;
+  Optional<PendingTask> TakeTask() override;
   void DidRunTask() override;
-  base::TimeDelta DelayTillNextTask(LazyNow* lazy_now) override;
+  TimeDelta DelayTillNextTask(LazyNow* lazy_now) override;
 
   // Requests that a task to process work is posted on the main task runner.
   // These tasks are de-duplicated in two buckets: main-thread and all other
   // threads. This distinction is done to reduce the overhead from locks, we
   // assume the main-thread path will be hot.
-  void MaybeScheduleImmediateWork(const base::Location& from_here);
+  void MaybeScheduleImmediateWork(const Location& from_here);
 
   // Requests that a delayed task to process work is posted on the main task
   // runner. These delayed tasks are de-duplicated. Must be called on the thread
   // this class was created on.
-  void MaybeScheduleDelayedWork(const base::Location& from_here,
+  void MaybeScheduleDelayedWork(const Location& from_here,
                                 TimeDomain* requesting_time_domain,
-                                base::TimeTicks now,
-                                base::TimeTicks run_time);
+                                TimeTicks now,
+                                TimeTicks run_time);
 
   // Cancels a delayed task to process work at |run_time|, previously requested
   // with MaybeScheduleDelayedWork.
   void CancelDelayedWork(TimeDomain* requesting_time_domain,
-                         base::TimeTicks run_time);
+                         TimeTicks run_time);
 
   LazyNow CreateLazyNow() const;
 
@@ -143,7 +142,7 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
   scoped_refptr<internal::GracefulQueueShutdownHelper>
   GetGracefulQueueShutdownHelper() const;
 
-  base::WeakPtr<TaskQueueManagerImpl> GetWeakPtr();
+  WeakPtr<TaskQueueManagerImpl> GetWeakPtr();
 
  protected:
   // Create a task queue manager where |controller| controls the thread
@@ -178,17 +177,16 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
     internal::TaskQueueImpl* task_queue;
     WorkType work_type;
   };
-  using NonNestableTaskDeque = base::circular_deque<NonNestableTask>;
+  using NonNestableTaskDeque = circular_deque<NonNestableTask>;
 
   // We have to track rentrancy because we support nested runloops but the
   // selector interface is unaware of those.  This struct keeps track off all
   // task related state needed to make pairs of TakeTask() / DidRunTask() work.
   struct ExecutingTask {
     ExecutingTask()
-        : pending_task(
-              TaskQueue::PostedTask(base::OnceClosure(), base::Location()),
-              base::TimeTicks(),
-              0) {}
+        : pending_task(TaskQueue::PostedTask(OnceClosure(), Location()),
+                       TimeTicks(),
+                       0) {}
 
     ExecutingTask(internal::TaskQueueImpl::Task&& pending_task,
                   internal::TaskQueueImpl* task_queue)
@@ -196,8 +194,8 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
 
     internal::TaskQueueImpl::Task pending_task;
     internal::TaskQueueImpl* task_queue = nullptr;
-    base::TimeTicks task_start_time;
-    base::ThreadTicks task_start_thread_time;
+    TimeTicks task_start_time;
+    ThreadTicks task_start_thread_time;
     bool should_record_thread_time = false;
   };
 
@@ -209,15 +207,15 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
     NonNestableTaskDeque non_nestable_task_queue;
     // TODO(altimin): Switch to instruction pointer crash key when it's
     // available.
-    base::debug::CrashKeyString* file_name_crash_key = nullptr;
-    base::debug::CrashKeyString* function_name_crash_key = nullptr;
+    debug::CrashKeyString* file_name_crash_key = nullptr;
+    debug::CrashKeyString* function_name_crash_key = nullptr;
 
     std::mt19937_64 random_generator;
     std::uniform_real_distribution<double> uniform_distribution;
 
     internal::TaskQueueSelector selector;
-    base::ObserverList<base::MessageLoop::TaskObserver> task_observers;
-    base::ObserverList<TaskTimeObserver> task_time_observers;
+    ObserverList<MessageLoop::TaskObserver> task_observers;
+    ObserverList<TaskTimeObserver> task_time_observers;
     std::set<TimeDomain*> time_domains;
     std::unique_ptr<RealTimeDomain> real_time_domain;
 
@@ -248,7 +246,7 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
   // TaskQueueSelector::Observer:
   void OnTaskQueueEnabled(internal::TaskQueueImpl* queue) override;
 
-  // base::RunLoop::NestingObserver:
+  // RunLoop::NestingObserver:
   void OnBeginNestedRunLoop() override;
   void OnExitNestedRunLoop() override;
 
@@ -265,7 +263,7 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
 
   internal::EnqueueOrder GetNextSequenceNumber();
 
-  std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
+  std::unique_ptr<trace_event::ConvertableToTraceFormat>
   AsValueWithSelectorResult(bool should_run,
                             internal::WorkQueue* selected_work_queue) const;
 
@@ -298,7 +296,7 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
 
   std::unique_ptr<internal::ThreadController> controller_;
 
-  mutable base::Lock any_thread_lock_;
+  mutable Lock any_thread_lock_;
   AnyThread any_thread_;
 
   struct AnyThread& any_thread() {
@@ -327,12 +325,12 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
     return main_thread_only_;
   }
 
-  base::WeakPtrFactory<TaskQueueManagerImpl> weak_factory_;
+  WeakPtrFactory<TaskQueueManagerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueManagerImpl);
 };
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_MANAGER_IMPL_H_

@@ -13,6 +13,8 @@
 namespace blink {
 namespace scheduler {
 
+using base::sequence_manager::TaskQueue;
+
 CPUTimeBudgetPool::CPUTimeBudgetPool(
     const char* name,
     BudgetPoolController* budget_pool_controller,

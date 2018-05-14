@@ -11,10 +11,14 @@
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/util/task_duration_metric_reporter.h"
 
+namespace base {
+namespace sequence_manager {
+class TaskQueue;
+}
+}  // namespace base
+
 namespace blink {
 namespace scheduler {
-
-class TaskQueue;
 
 // Helper class to take care of task metrics shared between main thread
 // and worker threads of the renderer process, including per-thread
@@ -31,18 +35,19 @@ class PLATFORM_EXPORT MetricsHelper {
   ~MetricsHelper();
 
  protected:
-  bool ShouldDiscardTask(TaskQueue* queue,
-                         const TaskQueue::Task& task,
+  bool ShouldDiscardTask(base::sequence_manager::TaskQueue* queue,
+                         const base::sequence_manager::TaskQueue::Task& task,
                          base::TimeTicks start_time,
                          base::TimeTicks end_time,
                          base::Optional<base::TimeDelta> thread_time);
 
   // Record task metrics which are shared between threads.
-  void RecordCommonTaskMetrics(TaskQueue* queue,
-                               const TaskQueue::Task& task,
-                               base::TimeTicks start_time,
-                               base::TimeTicks end_time,
-                               base::Optional<base::TimeDelta> thread_time);
+  void RecordCommonTaskMetrics(
+      base::sequence_manager::TaskQueue* queue,
+      const base::sequence_manager::TaskQueue::Task& task,
+      base::TimeTicks start_time,
+      base::TimeTicks end_time,
+      base::Optional<base::TimeDelta> thread_time);
 
  protected:
   WebThreadType thread_type_;

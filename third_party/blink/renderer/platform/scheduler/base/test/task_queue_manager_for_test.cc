@@ -6,29 +6,27 @@
 
 #include "third_party/blink/renderer/platform/scheduler/base/thread_controller_impl.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
 namespace {
 
 class ThreadControllerForTest : public internal::ThreadControllerImpl {
  public:
-  ThreadControllerForTest(
-      base::MessageLoop* message_loop,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      const base::TickClock* time_source)
+  ThreadControllerForTest(MessageLoop* message_loop,
+                          scoped_refptr<SingleThreadTaskRunner> task_runner,
+                          const TickClock* time_source)
       : ThreadControllerImpl(message_loop,
                              std::move(task_runner),
                              time_source) {}
 
-  void AddNestingObserver(base::RunLoop::NestingObserver* observer) override {
+  void AddNestingObserver(RunLoop::NestingObserver* observer) override {
     if (!message_loop_)
       return;
     ThreadControllerImpl::AddNestingObserver(observer);
   }
 
-  void RemoveNestingObserver(
-      base::RunLoop::NestingObserver* observer) override {
+  void RemoveNestingObserver(RunLoop::NestingObserver* observer) override {
     if (!message_loop_)
       return;
     ThreadControllerImpl::RemoveNestingObserver(observer);
@@ -45,9 +43,9 @@ TaskQueueManagerForTest::TaskQueueManagerForTest(
 
 // static
 std::unique_ptr<TaskQueueManagerForTest> TaskQueueManagerForTest::Create(
-    base::MessageLoop* message_loop,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const base::TickClock* clock) {
+    MessageLoop* message_loop,
+    scoped_refptr<SingleThreadTaskRunner> task_runner,
+    const TickClock* clock) {
   return std::make_unique<TaskQueueManagerForTest>(
       std::make_unique<ThreadControllerForTest>(message_loop,
                                                 std::move(task_runner), clock));
@@ -77,5 +75,5 @@ size_t TaskQueueManagerForTest::QueuesToShutdownCount() {
   return main_thread_only().queues_to_gracefully_shutdown.size();
 }
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base

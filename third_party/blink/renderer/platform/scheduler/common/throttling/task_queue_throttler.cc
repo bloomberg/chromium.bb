@@ -18,6 +18,9 @@
 namespace blink {
 namespace scheduler {
 
+using base::sequence_manager::LazyNow;
+using base::sequence_manager::TaskQueue;
+
 namespace {
 
 base::Optional<base::TimeTicks> NextTaskRunTime(LazyNow* lazy_now,

@@ -12,6 +12,8 @@
 namespace blink {
 namespace scheduler {
 
+using base::sequence_manager::TaskQueue;
+
 BudgetPool::BudgetPool(const char* name,
                        BudgetPoolController* budget_pool_controller)
     : name_(name),
@@ -51,7 +53,7 @@ void BudgetPool::DissociateQueue(TaskQueue* queue) {
   associated_task_queues_.erase(queue);
 }
 
-void BudgetPool::EnableThrottling(LazyNow* lazy_now) {
+void BudgetPool::EnableThrottling(base::sequence_manager::LazyNow* lazy_now) {
   if (is_enabled_)
     return;
   is_enabled_ = true;
@@ -61,7 +63,7 @@ void BudgetPool::EnableThrottling(LazyNow* lazy_now) {
   BlockThrottledQueues(lazy_now->Now());
 }
 
-void BudgetPool::DisableThrottling(LazyNow* lazy_now) {
+void BudgetPool::DisableThrottling(base::sequence_manager::LazyNow* lazy_now) {
   if (!is_enabled_)
     return;
   is_enabled_ = false;

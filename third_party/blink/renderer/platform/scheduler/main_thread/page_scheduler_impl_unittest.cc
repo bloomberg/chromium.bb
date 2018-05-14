@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
+using base::sequence_manager::TaskQueue;
 using testing::ElementsAre;
 using VirtualTimePolicy = blink::PageScheduler::VirtualTimePolicy;
 
@@ -41,7 +42,8 @@ class PageSchedulerImplTest : public testing::Test {
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true);
     scheduler_.reset(new MainThreadSchedulerImpl(
-        TaskQueueManagerForTest::Create(nullptr, mock_task_runner_, &clock_),
+        base::sequence_manager::TaskQueueManagerForTest::Create(
+            nullptr, mock_task_runner_, &clock_),
         base::nullopt));
     page_scheduler_.reset(new PageSchedulerImpl(
         nullptr, scheduler_.get(), DisableBackgroundTimerThrottling()));

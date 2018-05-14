@@ -40,6 +40,11 @@
 
 namespace blink {
 namespace scheduler {
+
+using base::sequence_manager::TaskQueue;
+using base::sequence_manager::TaskTimeObserver;
+using base::sequence_manager::TimeDomain;
+
 namespace {
 // The run time of loading tasks is strongly bimodal.  The vast majority are
 // very cheap, but there are usually a handful of very expensive tasks (e.g ~1
@@ -205,7 +210,8 @@ bool IsUnconditionalHighPriorityInputEnabled() {
 }  // namespace
 
 MainThreadSchedulerImpl::MainThreadSchedulerImpl(
-    std::unique_ptr<TaskQueueManager> task_queue_manager,
+    std::unique_ptr<base::sequence_manager::TaskQueueManager>
+        task_queue_manager,
     base::Optional<base::Time> initial_virtual_time)
     : helper_(std::move(task_queue_manager), this),
       idle_helper_(&helper_,

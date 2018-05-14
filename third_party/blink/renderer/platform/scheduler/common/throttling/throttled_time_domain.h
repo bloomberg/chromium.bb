@@ -13,7 +13,8 @@ namespace scheduler {
 
 // A time domain for throttled tasks. behaves like an RealTimeDomain except it
 // relies on the owner (TaskQueueThrottler) to schedule wake-ups.
-class PLATFORM_EXPORT ThrottledTimeDomain : public RealTimeDomain {
+class PLATFORM_EXPORT ThrottledTimeDomain
+    : public base::sequence_manager::RealTimeDomain {
  public:
   ThrottledTimeDomain();
   ~ThrottledTimeDomain() override;
@@ -24,7 +25,8 @@ class PLATFORM_EXPORT ThrottledTimeDomain : public RealTimeDomain {
   const char* GetName() const override;
   void RequestWakeUpAt(base::TimeTicks now, base::TimeTicks run_time) override;
   void CancelWakeUpAt(base::TimeTicks run_time) override;
-  base::Optional<base::TimeDelta> DelayTillNextTask(LazyNow* lazy_now) override;
+  base::Optional<base::TimeDelta> DelayTillNextTask(
+      base::sequence_manager::LazyNow* lazy_now) override;
 
   using TimeDomain::WakeUpReadyDelayedQueues;
 

@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/platform/scheduler/base/enqueue_order.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 namespace internal {
 
 // Note we set the first |enqueue_order_| to a specific non-zero value, because
@@ -16,10 +16,10 @@ EnqueueOrderGenerator::EnqueueOrderGenerator()
 EnqueueOrderGenerator::~EnqueueOrderGenerator() = default;
 
 EnqueueOrder EnqueueOrderGenerator::GenerateNext() {
-  base::AutoLock lock(lock_);
+  AutoLock lock(lock_);
   return enqueue_order_++;
 }
 
 }  // namespace internal
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base

@@ -32,9 +32,10 @@ class WorkerSchedulerTest : public testing::Test {
       : mock_task_runner_(new base::TestSimpleTaskRunner()),
         scheduler_(new WorkerThreadScheduler(
             WebThreadType::kTestThread,
-            TaskQueueManagerForTest::Create(nullptr,
-                                            mock_task_runner_,
-                                            &clock_),
+            base::sequence_manager::TaskQueueManagerForTest::Create(
+                nullptr,
+                mock_task_runner_,
+                &clock_),
             nullptr /* proxy */)) {
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
   }

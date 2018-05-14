@@ -27,7 +27,7 @@ class UpdateLayout;
 
 class CORE_EXPORT InspectorPerformanceAgent final
     : public InspectorBaseAgent<protocol::Performance::Metainfo>,
-      public scheduler::TaskTimeObserver {
+      public base::sequence_manager::TaskTimeObserver {
  public:
   void Trace(blink::Visitor*) override;
 
@@ -56,7 +56,7 @@ class CORE_EXPORT InspectorPerformanceAgent final
   void Will(const probe::UpdateLayout&);
   void Did(const probe::UpdateLayout&);
 
-  // scheduler::TaskTimeObserver
+  // TaskTimeObserver implementation.
   void WillProcessTask(double start_time) override;
   void DidProcessTask(double start_time, double end_time) override;
 

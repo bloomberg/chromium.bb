@@ -90,8 +90,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // If |initial_virtual_time| is specified then the scheduler will be created
   // with virtual time enabled and paused with base::Time will be overridden to
   // start at |initial_virtual_time|.
-  MainThreadSchedulerImpl(std::unique_ptr<TaskQueueManager> task_queue_manager,
-                          base::Optional<base::Time> initial_virtual_time);
+  MainThreadSchedulerImpl(
+      std::unique_ptr<base::sequence_manager::TaskQueueManager>
+          task_queue_manager,
+      base::Optional<base::Time> initial_virtual_time);
 
   ~MainThreadSchedulerImpl() override;
 
@@ -184,8 +186,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // virtual time has been enabled.
   scoped_refptr<MainThreadTaskQueue> VirtualTimeControlTaskQueue();
 
-  void RegisterTimeDomain(TimeDomain* time_domain);
-  void UnregisterTimeDomain(TimeDomain* time_domain);
+  void RegisterTimeDomain(base::sequence_manager::TimeDomain* time_domain);
+  void UnregisterTimeDomain(base::sequence_manager::TimeDomain* time_domain);
 
   using VirtualTimePolicy = PageScheduler::VirtualTimePolicy;
   using VirtualTimeObserver = PageScheduler::VirtualTimeObserver;
@@ -220,8 +222,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void AddPageScheduler(PageSchedulerImpl*);
   void RemovePageScheduler(PageSchedulerImpl*);
 
-  void AddTaskTimeObserver(TaskTimeObserver*);
-  void RemoveTaskTimeObserver(TaskTimeObserver*);
+  void AddTaskTimeObserver(base::sequence_manager::TaskTimeObserver*);
+  void RemoveTaskTimeObserver(base::sequence_manager::TaskTimeObserver*);
 
   // Snapshots this MainThreadSchedulerImpl for tracing.
   void CreateTraceEventObjectSnapshot() const;
@@ -254,13 +256,13 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   const base::TickClock* tick_clock() const;
 
-  RealTimeDomain* real_time_domain() const {
+  base::sequence_manager::RealTimeDomain* real_time_domain() const {
     return helper_.real_time_domain();
   }
 
   AutoAdvancingVirtualTimeDomain* GetVirtualTimeDomain();
 
-  TimeDomain* GetActiveTimeDomain();
+  base::sequence_manager::TimeDomain* GetActiveTimeDomain();
 
   TaskQueueThrottler* task_queue_throttler() const {
     return task_queue_throttler_.get();
@@ -271,11 +273,11 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void OnShutdownTaskQueue(const scoped_refptr<MainThreadTaskQueue>& queue);
 
   void OnTaskStarted(MainThreadTaskQueue* queue,
-                     const TaskQueue::Task& task,
+                     const base::sequence_manager::TaskQueue::Task& task,
                      base::TimeTicks start);
 
   void OnTaskCompleted(MainThreadTaskQueue* queue,
-                       const TaskQueue::Task& task,
+                       const base::sequence_manager::TaskQueue::Task& task,
                        base::TimeTicks start,
                        base::TimeTicks end,
                        base::Optional<base::TimeDelta> thread_time);
@@ -337,7 +339,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
           is_blocked(false),
           is_frozen(false),
           use_virtual_time(false),
-          priority(TaskQueue::kNormalPriority) {}
+          priority(base::sequence_manager::TaskQueue::kNormalPriority) {}
 
     bool is_enabled;
     bool is_paused;
@@ -345,11 +347,12 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     bool is_blocked;
     bool is_frozen;
     bool use_virtual_time;
-    TaskQueue::QueuePriority priority;
+    base::sequence_manager::TaskQueue::QueuePriority priority;
 
     bool IsQueueEnabled(MainThreadTaskQueue* task_queue) const;
 
-    TaskQueue::QueuePriority GetPriority(MainThreadTaskQueue* task_queue) const;
+    base::sequence_manager::TaskQueue::QueuePriority GetPriority(
+        MainThreadTaskQueue* task_queue) const;
 
     TimeDomainType GetTimeDomainType(MainThreadTaskQueue* task_queue) const;
 
@@ -558,7 +561,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   void ApplyTaskQueuePolicy(
       MainThreadTaskQueue* task_queue,
-      TaskQueue::QueueEnabledVoter* task_queue_enabled_voter,
+      base::sequence_manager::TaskQueue::QueueEnabledVoter*
+          task_queue_enabled_voter,
       const TaskQueuePolicy& old_task_queue_policy,
       const TaskQueuePolicy& new_task_queue_policy) const;
 
@@ -590,13 +594,13 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // If task belongs to a per-frame queue, this task is attributed to
   // a particular Page, otherwise it's attributed to all Pages in the process.
   void RecordTaskUkm(MainThreadTaskQueue* queue,
-                     const TaskQueue::Task& task,
+                     const base::sequence_manager::TaskQueue::Task& task,
                      base::TimeTicks start,
                      base::TimeTicks end,
                      base::Optional<base::TimeDelta> thread_time);
 
   void RecordTaskUkmImpl(MainThreadTaskQueue* queue,
-                         const TaskQueue::Task& task,
+                         const base::sequence_manager::TaskQueue::Task& task,
                          base::TimeTicks start,
                          base::TimeTicks end,
                          base::Optional<base::TimeDelta> thread_time,
@@ -623,13 +627,14 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   const scoped_refptr<MainThreadTaskQueue> compositor_task_queue_;
   const scoped_refptr<MainThreadTaskQueue> input_task_queue_;
   scoped_refptr<MainThreadTaskQueue> virtual_time_control_task_queue_;
-  std::unique_ptr<TaskQueue::QueueEnabledVoter>
+  std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
       compositor_task_queue_enabled_voter_;
-  std::unique_ptr<TaskQueue::QueueEnabledVoter> input_task_queue_enabled_voter_;
+  std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
+      input_task_queue_enabled_voter_;
 
-  using TaskQueueVoterMap =
-      std::map<scoped_refptr<MainThreadTaskQueue>,
-               std::unique_ptr<TaskQueue::QueueEnabledVoter>>;
+  using TaskQueueVoterMap = std::map<
+      scoped_refptr<MainThreadTaskQueue>,
+      std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>>;
 
   TaskQueueVoterMap task_runners_;
 

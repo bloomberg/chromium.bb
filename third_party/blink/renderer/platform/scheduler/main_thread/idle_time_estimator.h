@@ -19,7 +19,8 @@ namespace scheduler {
 class PLATFORM_EXPORT IdleTimeEstimator
     : public base::MessageLoop::TaskObserver {
  public:
-  IdleTimeEstimator(const scoped_refptr<TaskQueue>& compositor_task_runner,
+  IdleTimeEstimator(const scoped_refptr<base::sequence_manager::TaskQueue>&
+                        compositor_task_runner,
                     const base::TickClock* time_source,
                     int sample_count,
                     double estimation_percentile);
@@ -40,7 +41,7 @@ class PLATFORM_EXPORT IdleTimeEstimator
   void DidProcessTask(const base::PendingTask& pending_task) override;
 
  private:
-  scoped_refptr<TaskQueue> compositor_task_queue_;
+  scoped_refptr<base::sequence_manager::TaskQueue> compositor_task_queue_;
   cc::RollingTimeDeltaHistory per_frame_compositor_task_runtime_;
   const base::TickClock* time_source_;  // NOT OWNED
   double estimation_percentile_;

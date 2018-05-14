@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
+using base::sequence_manager::TaskQueue;
 using testing::ElementsAre;
 
 namespace blink {
@@ -605,7 +606,7 @@ class TimerForTest : public TaskRunnerTimer<TimerFiredClass> {
 };
 
 TEST_F(TimerTest, UserSuppliedTaskRunner) {
-  scoped_refptr<scheduler::TaskQueue> task_runner(
+  scoped_refptr<TaskQueue> task_runner(
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
@@ -701,7 +702,7 @@ class TaskObserver : public base::MessageLoop::TaskObserver {
 TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
   std::vector<scoped_refptr<base::SingleThreadTaskRunner>> run_order;
 
-  scoped_refptr<scheduler::TaskQueue> task_runner1(
+  scoped_refptr<TaskQueue> task_runner1(
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
@@ -710,7 +711,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
   TaskObserver task_observer1(task_runner_impl1, &run_order);
   task_runner1->AddTaskObserver(&task_observer1);
 
-  scoped_refptr<scheduler::TaskQueue> task_runner2(
+  scoped_refptr<TaskQueue> task_runner2(
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
@@ -743,7 +744,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
 TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
   std::vector<scoped_refptr<base::SingleThreadTaskRunner>> run_order;
 
-  scoped_refptr<scheduler::TaskQueue> task_runner1(
+  scoped_refptr<TaskQueue> task_runner1(
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
@@ -752,7 +753,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
   TaskObserver task_observer1(task_runner_impl1, &run_order);
   task_runner1->AddTaskObserver(&task_observer1);
 
-  scoped_refptr<scheduler::TaskQueue> task_runner2(
+  scoped_refptr<TaskQueue> task_runner2(
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
@@ -787,14 +788,14 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
 // This test checks that when inactive timer is moved to a different task
 // runner it isn't activated.
 TEST_F(TimerTest, MoveToNewTaskRunnerWithoutTasks) {
-  scoped_refptr<scheduler::TaskQueue> task_runner1(
+  scoped_refptr<TaskQueue> task_runner1(
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
   scoped_refptr<scheduler::TaskRunnerImpl> task_runner_impl1 =
       scheduler::TaskRunnerImpl::Create(task_runner1, TaskType::kInternalTest);
 
-  scoped_refptr<scheduler::TaskQueue> task_runner2(
+  scoped_refptr<TaskQueue> task_runner2(
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));

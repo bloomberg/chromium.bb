@@ -12,14 +12,16 @@ namespace scheduler {
 
 class NonMainThreadScheduler;
 
-class PLATFORM_EXPORT WorkerTaskQueue : public TaskQueue {
+class PLATFORM_EXPORT WorkerTaskQueue
+    : public base::sequence_manager::TaskQueue {
  public:
-  WorkerTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
-                  const Spec& spec,
-                  NonMainThreadScheduler* non_main_thread_scheduler);
+  WorkerTaskQueue(
+      std::unique_ptr<base::sequence_manager::internal::TaskQueueImpl> impl,
+      const Spec& spec,
+      NonMainThreadScheduler* non_main_thread_scheduler);
   ~WorkerTaskQueue() override;
 
-  void OnTaskCompleted(const TaskQueue::Task& task,
+  void OnTaskCompleted(const base::sequence_manager::TaskQueue::Task& task,
                        base::TimeTicks start,
                        base::TimeTicks end,
                        base::Optional<base::TimeDelta> thread_time);

@@ -34,10 +34,13 @@
 
 #include <stdint.h>
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 class TaskTimeObserver;
 }
+}  // namespace base
+
+namespace blink {
 
 class FrameScheduler;
 class ThreadScheduler;
@@ -103,8 +106,9 @@ class BLINK_PLATFORM_EXPORT WebThread {
   // NOTE: TaskTimeObserver implementation should be extremely fast!
   // This API is performance sensitive. Use only if you have a compelling
   // reason.
-  virtual void AddTaskTimeObserver(scheduler::TaskTimeObserver*) {}
-  virtual void RemoveTaskTimeObserver(scheduler::TaskTimeObserver*) {}
+  virtual void AddTaskTimeObserver(base::sequence_manager::TaskTimeObserver*) {}
+  virtual void RemoveTaskTimeObserver(
+      base::sequence_manager::TaskTimeObserver*) {}
 
   // Returns the scheduler associated with the thread.
   virtual ThreadScheduler* Scheduler() const = 0;

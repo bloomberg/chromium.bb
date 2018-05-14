@@ -8,8 +8,8 @@
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_time_observer.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
 class TestTaskTimeObserver : public TaskTimeObserver {
  public:
@@ -17,7 +17,7 @@ class TestTaskTimeObserver : public TaskTimeObserver {
   void DidProcessTask(double start_time, double end_time) override {}
 };
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_TEST_TASK_TIME_OBSERVER_H_

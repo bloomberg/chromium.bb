@@ -24,6 +24,8 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 
+using base::sequence_manager::LazyNow;
+using base::sequence_manager::TaskQueue;
 using testing::ElementsAre;
 
 namespace blink {
@@ -81,8 +83,8 @@ class TaskQueueThrottlerTest : public testing::Test {
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(clock_.get(), true);
     scheduler_.reset(new MainThreadSchedulerImpl(
-        TaskQueueManagerForTest::Create(nullptr, mock_task_runner_,
-                                        clock_.get()),
+        base::sequence_manager::TaskQueueManagerForTest::Create(
+            nullptr, mock_task_runner_, clock_.get()),
         base::nullopt));
     task_queue_throttler_ = scheduler_->task_queue_throttler();
     timer_queue_ = scheduler_->NewTimerTaskQueue(
@@ -118,12 +120,14 @@ class TaskQueueThrottlerTest : public testing::Test {
   }
 
   bool IsQueueBlocked(TaskQueue* task_queue) {
-    internal::TaskQueueImpl* task_queue_impl = task_queue->GetTaskQueueImpl();
+    base::sequence_manager::internal::TaskQueueImpl* task_queue_impl =
+        task_queue->GetTaskQueueImpl();
     if (!task_queue_impl->IsQueueEnabled())
       return true;
     return task_queue_impl->GetFenceForTest() ==
-           static_cast<internal::EnqueueOrder>(
-               internal::EnqueueOrderValues::kBlockingFence);
+           static_cast<base::sequence_manager::internal::EnqueueOrder>(
+               base::sequence_manager::internal::EnqueueOrderValues::
+                   kBlockingFence);
   }
 
  protected:

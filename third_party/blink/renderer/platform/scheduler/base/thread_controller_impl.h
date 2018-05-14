@@ -22,51 +22,48 @@ class MessageLoop;
 class TickClock;
 }  // namespace base
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 namespace internal {
 
-class PLATFORM_EXPORT ThreadControllerImpl
-    : public ThreadController,
-      public base::RunLoop::NestingObserver {
+class PLATFORM_EXPORT ThreadControllerImpl : public ThreadController,
+                                             public RunLoop::NestingObserver {
  public:
   ~ThreadControllerImpl() override;
 
   static std::unique_ptr<ThreadControllerImpl> Create(
-      base::MessageLoop* message_loop,
-      const base::TickClock* time_source);
+      MessageLoop* message_loop,
+      const TickClock* time_source);
 
   // ThreadController:
   void SetWorkBatchSize(int work_batch_size) override;
-  void DidQueueTask(const base::PendingTask& pending_task) override;
+  void DidQueueTask(const PendingTask& pending_task) override;
   void ScheduleWork() override;
-  void ScheduleDelayedWork(base::TimeTicks now,
-                           base::TimeTicks run_timy) override;
-  void CancelDelayedWork(base::TimeTicks run_time) override;
+  void ScheduleDelayedWork(TimeTicks now, TimeTicks run_timy) override;
+  void CancelDelayedWork(TimeTicks run_time) override;
   void SetSequencedTaskSource(SequencedTaskSource* sequence) override;
   bool RunsTasksInCurrentSequence() override;
-  const base::TickClock* GetClock() override;
-  void SetDefaultTaskRunner(
-      scoped_refptr<base::SingleThreadTaskRunner>) override;
+  const TickClock* GetClock() override;
+  void SetDefaultTaskRunner(scoped_refptr<SingleThreadTaskRunner>) override;
   void RestoreDefaultTaskRunner() override;
-  void AddNestingObserver(base::RunLoop::NestingObserver* observer) override;
-  void RemoveNestingObserver(base::RunLoop::NestingObserver* observer) override;
+  void AddNestingObserver(RunLoop::NestingObserver* observer) override;
+  void RemoveNestingObserver(RunLoop::NestingObserver* observer) override;
 
-  // base::RunLoop::NestingObserver:
+  // RunLoop::NestingObserver:
   void OnBeginNestedRunLoop() override;
   void OnExitNestedRunLoop() override;
 
  protected:
-  ThreadControllerImpl(base::MessageLoop* message_loop,
-                       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                       const base::TickClock* time_source);
+  ThreadControllerImpl(MessageLoop* message_loop,
+                       scoped_refptr<SingleThreadTaskRunner> task_runner,
+                       const TickClock* time_source);
 
   // TODO(altimin): Make these const. Blocked on removing
   // lazy initialisation support.
-  base::MessageLoop* message_loop_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  MessageLoop* message_loop_;
+  scoped_refptr<SingleThreadTaskRunner> task_runner_;
 
-  base::RunLoop::NestingObserver* nesting_observer_ = nullptr;
+  RunLoop::NestingObserver* nesting_observer_ = nullptr;
 
  private:
   void DoWork(SequencedTaskSource::WorkType work_type);
@@ -80,7 +77,7 @@ class PLATFORM_EXPORT ThreadControllerImpl
     bool immediate_do_work_posted = false;
   };
 
-  mutable base::Lock any_sequence_lock_;
+  mutable Lock any_sequence_lock_;
   AnySequence any_sequence_;
 
   struct AnySequence& any_sequence() {
@@ -100,7 +97,7 @@ class PLATFORM_EXPORT ThreadControllerImpl
     int nesting_depth = 0;
     int work_batch_size_ = 1;
 
-    base::TimeTicks next_delayed_do_work = base::TimeTicks::Max();
+    TimeTicks next_delayed_do_work = TimeTicks::Max();
   };
 
   SEQUENCE_CHECKER(sequence_checker_);
@@ -114,21 +111,21 @@ class PLATFORM_EXPORT ThreadControllerImpl
     return main_sequence_only_;
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> message_loop_task_runner_;
-  const base::TickClock* time_source_;
-  base::RepeatingClosure immediate_do_work_closure_;
-  base::RepeatingClosure delayed_do_work_closure_;
-  base::CancelableClosure cancelable_delayed_do_work_closure_;
+  scoped_refptr<SingleThreadTaskRunner> message_loop_task_runner_;
+  const TickClock* time_source_;
+  RepeatingClosure immediate_do_work_closure_;
+  RepeatingClosure delayed_do_work_closure_;
+  CancelableClosure cancelable_delayed_do_work_closure_;
   SequencedTaskSource* sequence_ = nullptr;  // NOT OWNED
-  base::debug::TaskAnnotator task_annotator_;
+  debug::TaskAnnotator task_annotator_;
 
-  base::WeakPtrFactory<ThreadControllerImpl> weak_factory_;
+  WeakPtrFactory<ThreadControllerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadControllerImpl);
 };
 
 }  // namespace internal
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_THREAD_CONTROLLER_IMPL_H_

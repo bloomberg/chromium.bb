@@ -12,6 +12,12 @@
 namespace blink {
 namespace scheduler {
 
+using base::sequence_manager::RealTimeDomain;
+using base::sequence_manager::TaskQueue;
+using base::sequence_manager::TaskQueueManager;
+using base::sequence_manager::TaskTimeObserver;
+using base::sequence_manager::TimeDomain;
+
 SchedulerHelper::SchedulerHelper(
     std::unique_ptr<TaskQueueManager> task_queue_manager)
     : task_queue_manager_(std::move(task_queue_manager)), observer_(nullptr) {

@@ -345,7 +345,8 @@ void PageSchedulerImpl::MaybeInitializeBackgroundCPUTimeBudgetPool() {
   background_time_budget_pool_ =
       main_thread_scheduler_->task_queue_throttler()->CreateCPUTimeBudgetPool(
           "background");
-  LazyNow lazy_now(main_thread_scheduler_->tick_clock());
+  base::sequence_manager::LazyNow lazy_now(
+      main_thread_scheduler_->tick_clock());
 
   BackgroundThrottlingSettings settings = GetBackgroundThrottlingSettings();
 
@@ -395,7 +396,8 @@ void PageSchedulerImpl::UpdateBackgroundBudgetPoolThrottlingState() {
   if (!background_time_budget_pool_)
     return;
 
-  LazyNow lazy_now(main_thread_scheduler_->tick_clock());
+  base::sequence_manager::LazyNow lazy_now(
+      main_thread_scheduler_->tick_clock());
   if (page_visibility_ == PageVisibilityState::kVisible ||
       has_active_connection_) {
     background_time_budget_pool_->DisableThrottling(&lazy_now);

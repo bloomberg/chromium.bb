@@ -9,8 +9,8 @@
 
 #include "base/synchronization/lock.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 namespace internal {
 
 using EnqueueOrder = uint64_t;
@@ -41,12 +41,12 @@ class EnqueueOrderGenerator {
   }
 
  private:
-  base::Lock lock_;
+  Lock lock_;
   EnqueueOrder enqueue_order_;
 };
 
 }  // namespace internal
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_ENQUEUE_ORDER_H_

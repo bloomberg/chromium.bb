@@ -8,8 +8,8 @@
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
 class TestTaskQueue : public TaskQueue {
  public:
@@ -19,14 +19,14 @@ class TestTaskQueue : public TaskQueue {
 
   using TaskQueue::GetTaskQueueImpl;
 
-  base::WeakPtr<TestTaskQueue> GetWeakPtr();
+  WeakPtr<TestTaskQueue> GetWeakPtr();
 
  private:
   // Used to ensure that task queue is deleted in tests.
-  base::WeakPtrFactory<TestTaskQueue> weak_factory_;
+  WeakPtrFactory<TestTaskQueue> weak_factory_;
 };
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_TEST_TASK_QUEUE_H_

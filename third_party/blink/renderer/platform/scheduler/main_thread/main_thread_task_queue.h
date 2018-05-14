@@ -10,6 +10,12 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 
+namespace base {
+namespace sequence_manager {
+class TaskQueueManager;
+}
+}  // namespace base
+
 namespace blink {
 
 class FrameScheduler;
@@ -18,7 +24,8 @@ namespace scheduler {
 
 class MainThreadSchedulerImpl;
 
-class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
+class PLATFORM_EXPORT MainThreadTaskQueue
+    : public base::sequence_manager::TaskQueue {
  public:
   enum class QueueType {
     // Keep MainThreadTaskQueue::NameForQueueType in sync.
@@ -88,7 +95,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
           used_for_important_tasks(false) {}
 
     QueueCreationParams SetFixedPriority(
-        base::Optional<TaskQueue::QueuePriority> priority) {
+        base::Optional<base::sequence_manager::TaskQueue::QueuePriority>
+            priority) {
       fixed_priority = priority;
       return *this;
     }
@@ -139,14 +147,16 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
       return *this;
     }
 
-    QueueCreationParams SetTimeDomain(TimeDomain* domain) {
+    QueueCreationParams SetTimeDomain(
+        base::sequence_manager::TimeDomain* domain) {
       spec = spec.SetTimeDomain(domain);
       return *this;
     }
 
     QueueType queue_type;
-    TaskQueue::Spec spec;
-    base::Optional<TaskQueue::QueuePriority> fixed_priority;
+    base::sequence_manager::TaskQueue::Spec spec;
+    base::Optional<base::sequence_manager::TaskQueue::QueuePriority>
+        fixed_priority;
     FrameScheduler* frame_scheduler;
     bool can_be_deferred;
     bool can_be_throttled;
@@ -162,7 +172,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
 
   QueueClass queue_class() const { return queue_class_; }
 
-  base::Optional<TaskQueue::QueuePriority> FixedPriority() const {
+  base::Optional<base::sequence_manager::TaskQueue::QueuePriority>
+  FixedPriority() const {
     return fixed_priority_;
   }
 
@@ -178,9 +189,10 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
 
   bool UsedForImportantTasks() const { return used_for_important_tasks_; }
 
-  void OnTaskStarted(const TaskQueue::Task& task, base::TimeTicks start);
+  void OnTaskStarted(const base::sequence_manager::TaskQueue::Task& task,
+                     base::TimeTicks start);
 
-  void OnTaskCompleted(const TaskQueue::Task& task,
+  void OnTaskCompleted(const base::sequence_manager::TaskQueue::Task& task,
                        base::TimeTicks start,
                        base::TimeTicks end,
                        base::Optional<base::TimeDelta> thread_time);
@@ -196,13 +208,14 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
  protected:
   void SetFrameSchedulerForTest(FrameScheduler* frame);
 
-  MainThreadTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
-                      const Spec& spec,
-                      const QueueCreationParams& params,
-                      MainThreadSchedulerImpl* main_thread_scheduler);
+  MainThreadTaskQueue(
+      std::unique_ptr<base::sequence_manager::internal::TaskQueueImpl> impl,
+      const Spec& spec,
+      const QueueCreationParams& params,
+      MainThreadSchedulerImpl* main_thread_scheduler);
 
  private:
-  friend class TaskQueueManager;
+  friend class base::sequence_manager::TaskQueueManager;
 
   // Clear references to main thread scheduler and frame scheduler and dispatch
   // appropriate notifications. This is the common part of ShutdownTaskQueue and
@@ -211,7 +224,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
 
   const QueueType queue_type_;
   const QueueClass queue_class_;
-  const base::Optional<TaskQueue::QueuePriority> fixed_priority_;
+  const base::Optional<base::sequence_manager::TaskQueue::QueuePriority>
+      fixed_priority_;
   const bool can_be_deferred_;
   const bool can_be_throttled_;
   const bool can_be_paused_;

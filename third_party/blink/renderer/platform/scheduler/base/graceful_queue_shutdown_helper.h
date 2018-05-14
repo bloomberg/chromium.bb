@@ -12,15 +12,15 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 namespace internal {
 
 class TaskQueueImpl;
 
 // Thread-safe helper to shutdown queues from any thread.
 class GracefulQueueShutdownHelper
-    : public base::RefCountedThreadSafe<GracefulQueueShutdownHelper> {
+    : public RefCountedThreadSafe<GracefulQueueShutdownHelper> {
  public:
   GracefulQueueShutdownHelper();
   ~GracefulQueueShutdownHelper();
@@ -33,7 +33,7 @@ class GracefulQueueShutdownHelper
   std::vector<std::unique_ptr<internal::TaskQueueImpl>> TakeQueues();
 
  private:
-  base::Lock lock_;
+  Lock lock_;
   bool task_queue_manager_deleted_;
   std::vector<std::unique_ptr<internal::TaskQueueImpl>> queues_;
 
@@ -41,7 +41,7 @@ class GracefulQueueShutdownHelper
 };
 
 }  // namespace internal
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_GRACEFUL_QUEUE_SHUTDOWN_HELPER_H_

@@ -14,7 +14,7 @@ CompositorMetricsHelper::~CompositorMetricsHelper() {}
 
 void CompositorMetricsHelper::RecordTaskMetrics(
     WorkerTaskQueue* queue,
-    const TaskQueue::Task& task,
+    const base::sequence_manager::TaskQueue::Task& task,
     base::TimeTicks start_time,
     base::TimeTicks end_time,
     base::Optional<base::TimeDelta> thread_time) {

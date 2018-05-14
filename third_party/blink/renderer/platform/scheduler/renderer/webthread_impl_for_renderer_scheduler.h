@@ -41,8 +41,10 @@ class PLATFORM_EXPORT WebThreadImplForRendererScheduler : public WebThreadBase {
   void RemoveTaskObserverInternal(
       base::MessageLoop::TaskObserver* observer) override;
 
-  void AddTaskTimeObserverInternal(TaskTimeObserver*) override;
-  void RemoveTaskTimeObserverInternal(TaskTimeObserver*) override;
+  void AddTaskTimeObserverInternal(
+      base::sequence_manager::TaskTimeObserver*) override;
+  void RemoveTaskTimeObserverInternal(
+      base::sequence_manager::TaskTimeObserver*) override;
 
   std::unique_ptr<WebSchedulerImpl> web_scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

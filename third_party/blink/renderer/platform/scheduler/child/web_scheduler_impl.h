@@ -24,9 +24,10 @@ class WebThreadScheduler;
 
 class PLATFORM_EXPORT WebSchedulerImpl : public ThreadScheduler {
  public:
-  WebSchedulerImpl(WebThreadScheduler* thread_scheduler,
-                   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner,
-                   scoped_refptr<TaskQueue> v8_task_runner);
+  WebSchedulerImpl(
+      WebThreadScheduler* thread_scheduler,
+      scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner,
+      scoped_refptr<base::sequence_manager::TaskQueue> v8_task_runner);
   ~WebSchedulerImpl() override;
 
   // ThreadScheduler implementation:

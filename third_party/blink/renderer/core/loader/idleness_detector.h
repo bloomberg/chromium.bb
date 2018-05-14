@@ -23,7 +23,7 @@ class ResourceFetcher;
 // second.
 class CORE_EXPORT IdlenessDetector
     : public GarbageCollectedFinalized<IdlenessDetector>,
-      public scheduler::TaskTimeObserver {
+      public base::sequence_manager::TaskTimeObserver {
  public:
   explicit IdlenessDetector(LocalFrame*);
 
@@ -50,7 +50,7 @@ class CORE_EXPORT IdlenessDetector
   static constexpr TimeDelta kNetworkQuietWatchdog = TimeDelta::FromSeconds(2);
   static constexpr int kNetworkQuietMaximumConnections = 2;
 
-  // scheduler::TaskTimeObserver implementation
+  // TaskTimeObserver implementation.
   void WillProcessTask(double start_time) override;
   void DidProcessTask(double start_time, double end_time) override;
 

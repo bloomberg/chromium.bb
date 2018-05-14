@@ -10,6 +10,12 @@
 namespace blink {
 namespace scheduler {
 
+using base::sequence_manager::TaskQueue;
+
+namespace internal {
+using base::sequence_manager::internal::TaskQueueImpl;
+}
+
 // static
 const char* MainThreadTaskQueue::NameForQueueType(
     MainThreadTaskQueue::QueueType queue_type) {

@@ -6,14 +6,14 @@
 
 #include "base/time/tick_clock.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
-LazyNow::LazyNow(base::TimeTicks now) : tick_clock_(nullptr), now_(now) {
+LazyNow::LazyNow(TimeTicks now) : tick_clock_(nullptr), now_(now) {
   DCHECK(!now.is_null());
 }
 
-LazyNow::LazyNow(const base::TickClock* tick_clock)
+LazyNow::LazyNow(const TickClock* tick_clock)
     : tick_clock_(tick_clock), now_() {
   DCHECK(tick_clock);
 }
@@ -21,10 +21,10 @@ LazyNow::LazyNow(const base::TickClock* tick_clock)
 LazyNow::LazyNow(LazyNow&& move_from)
     : tick_clock_(move_from.tick_clock_), now_(move_from.now_) {
   move_from.tick_clock_ = nullptr;
-  move_from.now_ = base::TimeTicks();
+  move_from.now_ = TimeTicks();
 }
 
-base::TimeTicks LazyNow::Now() {
+TimeTicks LazyNow::Now() {
   // TickClock might return null values only in tests, we're okay with
   // extra calls which might occur in that case.
   if (now_.is_null()) {
@@ -34,5 +34,5 @@ base::TimeTicks LazyNow::Now() {
   return now_;
 }
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base

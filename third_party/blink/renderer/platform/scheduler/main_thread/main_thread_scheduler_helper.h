@@ -17,7 +17,8 @@ class MainThreadSchedulerImpl;
 class PLATFORM_EXPORT MainThreadSchedulerHelper : public SchedulerHelper {
  public:
   MainThreadSchedulerHelper(
-      std::unique_ptr<TaskQueueManager> task_queue_manager,
+      std::unique_ptr<base::sequence_manager::TaskQueueManager>
+          task_queue_manager,
       MainThreadSchedulerImpl* main_thread_scheduler);
   ~MainThreadSchedulerHelper() override;
 
@@ -28,8 +29,8 @@ class PLATFORM_EXPORT MainThreadSchedulerHelper : public SchedulerHelper {
   scoped_refptr<MainThreadTaskQueue> ControlMainThreadTaskQueue();
 
  protected:
-  scoped_refptr<TaskQueue> DefaultTaskQueue() override;
-  scoped_refptr<TaskQueue> ControlTaskQueue() override;
+  scoped_refptr<base::sequence_manager::TaskQueue> DefaultTaskQueue() override;
+  scoped_refptr<base::sequence_manager::TaskQueue> ControlTaskQueue() override;
 
  private:
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED

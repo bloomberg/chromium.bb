@@ -23,9 +23,10 @@ namespace {
 
 class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
  public:
-  WorkerThreadSchedulerForTest(std::unique_ptr<TaskQueueManager> manager,
-                               WorkerSchedulerProxy* proxy,
-                               WaitableEvent* throtting_state_changed)
+  WorkerThreadSchedulerForTest(
+      std::unique_ptr<base::sequence_manager::TaskQueueManager> manager,
+      WorkerSchedulerProxy* proxy,
+      WaitableEvent* throtting_state_changed)
       : WorkerThreadScheduler(WebThreadType::kTestThread,
                               std::move(manager),
                               proxy),
@@ -57,8 +58,8 @@ class WebThreadImplForWorkerSchedulerForTest
   std::unique_ptr<NonMainThreadScheduler> CreateNonMainThreadScheduler()
       override {
     auto scheduler = std::make_unique<WorkerThreadSchedulerForTest>(
-        TaskQueueManager::TakeOverCurrentThread(), worker_scheduler_proxy(),
-        throtting_state_changed_);
+        base::sequence_manager::TaskQueueManager::TakeOverCurrentThread(),
+        worker_scheduler_proxy(), throtting_state_changed_);
     scheduler_ = scheduler.get();
     return scheduler;
   }
@@ -89,7 +90,7 @@ class WorkerSchedulerProxyTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
         main_thread_scheduler_(std::make_unique<MainThreadSchedulerImpl>(
-            TaskQueueManagerForTest::Create(
+            base::sequence_manager::TaskQueueManagerForTest::Create(
                 nullptr,
                 base::ThreadTaskRunnerHandle::Get(),
                 task_environment_.GetMockTickClock()),
