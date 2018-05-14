@@ -650,16 +650,12 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
 
   // Verify that if XHR navigation occurs and the form is properly filled out,
   // we try and save the password even though onsubmit hasn't been called.
+  FillElementWithValue("username_field", "USER");
+  FillElementWithValue("password_field", "1234");
   NavigationObserver observer(WebContents());
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
-  std::string fill_and_navigate =
-      "document.getElementById('username_field').value = 'temp';"
-      "document.getElementById('password_field').value = 'random';"
-      "send_xhr()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_navigate));
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), "send_xhr()"));
   observer.Wait();
-  EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
+  EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
@@ -670,17 +666,13 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   // we try and save the password even though onsubmit hasn't been called.
   // Specifically verify that the password form saving new passwords is treated
   // the same as a login form.
+  FillElementWithValue("signup_username_field", "USER");
+  FillElementWithValue("signup_password_field", "1234");
+  FillElementWithValue("confirmation_password_field", "1234");
   NavigationObserver observer(WebContents());
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
-  std::string fill_and_navigate =
-      "document.getElementById('signup_username_field').value = 'temp';"
-      "document.getElementById('signup_password_field').value = 'random';"
-      "document.getElementById('confirmation_password_field').value = 'random';"
-      "send_xhr()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_navigate));
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), "send_xhr()"));
   observer.Wait();
-  EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
+  EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
@@ -823,16 +815,13 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
 
   // Verify that if Fetch navigation occurs and the form is properly filled out,
   // we try and save the password even though onsubmit hasn't been called.
+  FillElementWithValue("username_field", "USER");
+  FillElementWithValue("password_field", "1234");
+
   NavigationObserver observer(WebContents());
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
-  std::string fill_and_navigate =
-      "document.getElementById('username_field').value = 'temp';"
-      "document.getElementById('password_field').value = 'random';"
-      "send_fetch()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_navigate));
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), "send_fetch()"));
   observer.Wait();
-  EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
+  EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
@@ -843,17 +832,13 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   // we try and save the password even though onsubmit hasn't been called.
   // Specifically verify that the password form saving new passwords is treated
   // the same as a login form.
+  FillElementWithValue("signup_username_field", "USER");
+  FillElementWithValue("signup_password_field", "1234");
+  FillElementWithValue("confirmation_password_field", "1234");
   NavigationObserver observer(WebContents());
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
-  std::string fill_and_navigate =
-      "document.getElementById('signup_username_field').value = 'temp';"
-      "document.getElementById('signup_password_field').value = 'random';"
-      "document.getElementById('confirmation_password_field').value = 'random';"
-      "send_fetch()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_navigate));
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), "send_fetch()"));
   observer.Wait();
-  EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
+  EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
@@ -1762,10 +1747,9 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
                        AutofillSuggestionsForPasswordFormWithoutUsernameField) {
   std::string submit =
-      "document.getElementById('password').value = 'mypassword';"
       "document.getElementById('submit-button').click();";
   VerifyPasswordIsSavedAndFilled("/password/form_with_only_password_field.html",
-                                 submit, "password", "mypassword");
+                                 std::string(), "password", submit);
 }
 
 // Test that if a form gets autofilled, then it gets autofilled on re-creation
@@ -2174,11 +2158,9 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
                        AutofillSuggestionsForLoginSignupForm) {
   std::string submit =
-      "document.getElementById('username').value = 'myusername';"
-      "document.getElementById('password').value = 'mypassword';"
       "document.getElementById('submit').click();";
-  VerifyPasswordIsSavedAndFilled("/password/login_signup_form.html",
-                                 submit, "password", "mypassword");
+  VerifyPasswordIsSavedAndFilled("/password/login_signup_form.html", "username",
+                                 "password", submit);
 }
 
 // Check that we can fill in cases where <base href> is set and the action of
@@ -2186,11 +2168,9 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
                        BaseTagWithNoActionTest) {
   std::string submit =
-      "document.getElementById('username_field').value = 'myusername';"
-      "document.getElementById('password_field').value = 'mypassword';"
       "document.getElementById('submit_button').click();";
   VerifyPasswordIsSavedAndFilled("/password/password_xhr_submit.html",
-                                 submit, "password_field", "mypassword");
+                                 "username_field", "password_field", submit);
 }
 
 // Check that a username and password are filled into forms in iframes
@@ -2414,14 +2394,9 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
 
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
                        NoFormElementTest) {
-  std::string submit =
-      "document.getElementById('username_field').value = 'myusername';"
-      "document.getElementById('password_field').value = 'mypassword';"
-      "send_xhr();";
   VerifyPasswordIsSavedAndFilled("/password/no_form_element.html",
-                                 submit,
-                                 "password_field",
-                                 "mypassword");
+                                 "username_field", "password_field",
+                                 "send_xhr();");
 }
 
 // The password manager driver will kill processes when they try to access
@@ -3263,12 +3238,10 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
                        AutofillSuggestionsForPasswordFormWithAutocompleteOff) {
   std::string submit =
-      "document.getElementById('username').value = 'temp';"
-      "document.getElementById('password').value = 'mypassword';"
       "document.getElementById('submit').click();";
   VerifyPasswordIsSavedAndFilled(
-      "/password/password_autocomplete_off_test.html", submit, "password",
-      "mypassword");
+      "/password/password_autocomplete_off_test.html", "username", "password",
+      submit);
 }
 
 IN_PROC_BROWSER_TEST_P(
