@@ -11,8 +11,6 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.util.SparseIntArray;
 
-import com.google.android.things.audio.VolumeTableReader;
-
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
@@ -27,6 +25,8 @@ import org.chromium.chromecast.media.AudioContentType;
 @TargetApi(Build.VERSION_CODES.N)
 public final class VolumeMap {
     private static final String TAG = "VolumeMap";
+
+    private static final int DEVICE_TYPE = AudioDeviceInfo.TYPE_BUILTIN_SPEAKER;
 
     private static AudioManager sAudioManager = null;
 
@@ -66,6 +66,29 @@ public final class VolumeMap {
         return ANDROID_TYPE_TO_CAST_TYPE_MAP.keyAt(i);
     }
 
+    // Returns the current volume in dB for the given stream type and volume index.
+    private static float getStreamVolumeDB(int streamType, int idx) {
+        float db = 0;
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O_MR1) {
+            // API is hidden, use reflection.
+            try {
+                db = (float) getAudioManager()
+                             .getClass()
+                             .getMethod("getStreamVolumeDb", int.class, int.class, int.class)
+                             .invoke(sAudioManager, streamType, idx, DEVICE_TYPE);
+            } catch (Exception e) {
+                Log.e(TAG, "Can not call AudioManager.getStreamVolumeDb():", e);
+            }
+            // TODO(ckuiper): when Android P becomes available add something like this to call the
+            // AudioManager.getStreamVolumeDb() directly as it is public in P.
+            //   } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            //       db = sAudioManager.getStreamVolumeDb();
+        } else {
+            Log.e(TAG, "Unsupported Android SDK version:" + Build.VERSION.SDK_INT);
+        }
+        return db;
+    }
+
     /**
      * Logs the dB value at each discrete Android volume index for the given cast type.
      * Note that this is not identical to the volume table, which may contain a different number
@@ -75,10 +98,9 @@ public final class VolumeMap {
     static void dumpVolumeTables(int castType) {
         int streamType = getStreamType(castType);
         int maxIndex = MAX_VOLUME_INDEX.get(streamType);
-        int deviceType = AudioDeviceInfo.TYPE_BUILTIN_SPEAKER;
         Log.i(TAG, "Volume points for stream " + streamType + " (maxIndex=" + maxIndex + "):");
         for (int idx = 0; idx <= maxIndex; idx++) {
-            float db = VolumeTableReader.getStreamVolumeDB(streamType, idx, deviceType);
+            float db = getStreamVolumeDB(streamType, idx);
             float level = (float) idx / (float) maxIndex;
             Log.i(TAG, "    " + idx + "(" + level + ") -> " + db);
         }
@@ -92,8 +114,7 @@ public final class VolumeMap {
         level = Math.min(1.0f, Math.max(0.0f, level));
         int streamType = getStreamType(castType);
         int volumeIndex = Math.round(level * (float) MAX_VOLUME_INDEX.get(streamType));
-        int deviceType = AudioDeviceInfo.TYPE_BUILTIN_SPEAKER;
-        return VolumeTableReader.getStreamVolumeDB(streamType, volumeIndex, deviceType);
+        return getStreamVolumeDB(streamType, volumeIndex);
     }
 
     @CalledByNative
@@ -103,11 +124,10 @@ public final class VolumeMap {
     static float dbFsToVolume(int castType, float db) {
         int streamType = getStreamType(castType);
         int maxIndex = MAX_VOLUME_INDEX.get(streamType);
-        int deviceType = AudioDeviceInfo.TYPE_BUILTIN_SPEAKER;
 
-        float dbMin = VolumeTableReader.getStreamVolumeDB(streamType, 0, deviceType);
+        float dbMin = getStreamVolumeDB(streamType, 0);
         if (db <= dbMin) return 0.0f;
-        float dbMax = VolumeTableReader.getStreamVolumeDB(streamType, maxIndex, deviceType);
+        float dbMax = getStreamVolumeDB(streamType, maxIndex);
         if (db >= dbMax) return 1.0f;
 
         // There are only a few volume index steps, so simply loop through them
@@ -117,7 +137,7 @@ public final class VolumeMap {
         int idx = 1;
         for (; idx <= maxIndex; idx++) {
             dbLeft = dbRight;
-            dbRight = VolumeTableReader.getStreamVolumeDB(streamType, idx, deviceType);
+            dbRight = getStreamVolumeDB(streamType, idx);
             if (db <= dbRight) {
                 break;
             }
