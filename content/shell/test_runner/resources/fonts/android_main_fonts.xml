@@ -6,31 +6,34 @@
             <name>sans</name>
             <name>sans serif</name>
             <name>sans-serif</name>
+            <name>Arimo</name>
             <name>Arial</name>
             <name>Helvetica</name>
         </nameset>
         <fileset>
-            <file>Arial.ttf</file>
-            <file>Arial_Bold.ttf</file>
-            <file>Arial_Italic.ttf</file>
-            <file>Arial_Bold_Italic.ttf</file>
+            <file>Arimo-Regular.ttf</file>
+            <file>Arimo-Bold.ttf</file>
+            <file>Arimo-Italic.ttf</file>
+            <file>Arimo-BoldItalic.ttf</file>
         </fileset>
     </family>
 
     <family>
         <nameset>
             <name>serif</name>
+            <name>Tinos</name>
             <name>Times</name>
             <name>Times New Roman</name>
             <name>Monaco</name>
-            <!-- Match Linux. See comments of SubpixelPositioning in fonts.conf -->
+            <!-- Match Linux. See comments of SubpixelPositioning in
+                 base/test/fontconfig_util_linux.cc -->
             <name>SubpixelPositioning</name>
         </nameset>
         <fileset>
-            <file>Times_New_Roman.ttf</file>
-            <file>Times_New_Roman_Bold.ttf</file>
-            <file>Times_New_Roman_Italic.ttf</file>
-            <file>Times_New_Roman_Bold_Italic.ttf</file>
+            <file>Tinos-Regular.ttf</file>
+            <file>Tinos-Bold.ttf</file>
+            <file>Tinos-Italic.ttf</file>
+            <file>Tinos-BoldItalic.ttf</file>
         </fileset>
     </family>
 
@@ -38,78 +41,37 @@
         <nameset>
             <name>mono</name>
             <name>monospace</name>
+            <name>Cousine</name>
             <name>Courier</name>
             <name>Courier New</name>
         </nameset>
         <fileset>
-            <file>Courier_New.ttf</file>
-            <file>Courier_New_Bold.ttf</file>
-            <file>Courier_New_Italic.ttf</file>
-            <file>Courier_New_Bold_Italic.ttf</file>
+            <file>Cousine-Regular.ttf</file>
+            <file>Cousine-Bold.ttf</file>
+            <file>Cousine-Italic.ttf</file>
+            <file>Cousine-BoldItalic.ttf</file>
         </fileset>
     </family>
 
     <family>
         <nameset>
-            <name>cursive</name>
-            <name>Comic Sans MS</name>
-        </nameset>
-        <fileset>
-            <file>Comic_Sans_MS.ttf</file>
-            <file>Comic_Sans_MS_Bold.ttf</file>
-        </fileset>
-    </family>
-
-    <family>
-        <nameset>
-            <name>fantasy</name>
-            <name>Impact</name>
-        </nameset>
-        <fileset>
-            <file>Impact.ttf</file>
-        </fileset>
-    </family>
-
-    <family>
-        <nameset>
+            <name>Gelasio</name>
             <name>Georgia</name>
         </nameset>
         <fileset>
-            <file>Georgia.ttf</file>
-            <file>Georgia_Bold.ttf</file>
-            <file>Georgia_Italic.ttf</file>
-            <file>Georgia_Bold_Italic.ttf</file>
+            <file>Gelasio-Regular.ttf</file>
+            <file>Gelasio-Bold.ttf</file>
+            <file>Gelasio-Italic.ttf</file>
+            <file>Gelasio-BoldItalic.ttf</file>
         </fileset>
     </family>
 
-    <family>
-        <nameset>
-            <name>Trebuchet MS</name>
-        </nameset>
-        <fileset>
-            <file>Trebuchet_MS.ttf</file>
-            <file>Trebuchet_MS_Bold.ttf</file>
-            <file>Trebuchet_MS_Italic.ttf</file>
-            <file>Trebuchet_MS_Bold_Italic.ttf</file>
-        </fileset>
-    </family>
-
-    <family>
-        <nameset>
-            <name>Verdana</name>
-        </nameset>
-        <fileset>
-            <file>Verdana.ttf</file>
-            <file>Verdana_Bold.ttf</file>
-            <file>Verdana_Italic.ttf</file>
-            <file>Verdana_Bold_Italic.ttf</file>
-        </fileset>
-    </family>
 
     <family>
         <nameset>
             <name>Ahem</name>
-            <!-- Match Linux. See comments of SubpixelPositioning in fonts.conf -->
+            <!-- Match Linux. See comments of SubpixelPositioning in
+                 base/test/fontconfig_util_linux.cc -->
             <name>SubpixelPositioningAhem</name>
         </nameset>
         <fileset>
