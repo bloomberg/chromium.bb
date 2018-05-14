@@ -86,15 +86,24 @@ function openFileDialog(volumeName, expectedSet) {
   return closeByOkButtonPromise;
 }
 
-testcase.openFileDialogOnDownloads = function() {
+/**
+ * Tests opening a Download entry.
+ */
+testcase.openFileDialogDownloads = function() {
   testPromise(openFileDialog('downloads', BASIC_LOCAL_ENTRY_SET));
 };
 
-testcase.openFileDialogOnDrive = function() {
+/**
+ * Tests opening a Drive entry.
+ */
+testcase.openFileDialogDrive = function() {
   testPromise(openFileDialog('drive', BASIC_DRIVE_ENTRY_SET));
 };
 
-testcase.unloadFileDialog = function() {
+/**
+ * Tests opening and then unloading the dialog.
+ */
+testcase.openFileDialogUnload = function() {
   chrome.fileSystem.chooseEntry({type: 'openFile'}, function(entry) {});
 
   testPromise(remoteCall.waitForWindow('dialog#').then(function(windowId) {
