@@ -265,10 +265,11 @@ BASE_EXPORT size_t GetPageSize();
 BASE_EXPORT size_t GetMaxFds();
 
 #if defined(OS_POSIX) && !defined(OS_FUCHSIA)
-// Sets the file descriptor soft limit to |max_descriptors| or the OS hard
-// limit, whichever is lower.
-BASE_EXPORT void SetFdLimit(unsigned int max_descriptors);
-#endif  // defined(OS_POSIX)
+// Increases the file descriptor soft limit to |max_descriptors| or the OS hard
+// limit, whichever is lower. If the limit is already higher than
+// |max_descriptors|, then nothing happens.
+BASE_EXPORT void IncreaseFdLimitTo(unsigned int max_descriptors);
+#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_ANDROID) || defined(OS_AIX) || defined(OS_FUCHSIA)
