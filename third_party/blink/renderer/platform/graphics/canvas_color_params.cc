@@ -210,7 +210,7 @@ GLenum CanvasColorParams::GLType() const {
     case kRGBA8CanvasPixelFormat:
       return GL_UNSIGNED_BYTE;
     case kF16CanvasPixelFormat:
-      return GL_HALF_FLOAT;
+      return GL_HALF_FLOAT_OES;
     default:
       break;
   }
