@@ -78,6 +78,8 @@ bool VulkanCommandBuffer::Submit(uint32_t num_wait_semaphores,
                                  VkSemaphore* wait_semaphores,
                                  uint32_t num_signal_semaphores,
                                  VkSemaphore* signal_semaphores) {
+  VkPipelineStageFlags wait_dst_stage_mask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+
   DCHECK(primary_);
   VkSubmitInfo submit_info = {};
   submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -85,6 +87,7 @@ bool VulkanCommandBuffer::Submit(uint32_t num_wait_semaphores,
   submit_info.pCommandBuffers = &command_buffer_;
   submit_info.waitSemaphoreCount = num_wait_semaphores;
   submit_info.pWaitSemaphores = wait_semaphores;
+  submit_info.pWaitDstStageMask = &wait_dst_stage_mask;
   submit_info.signalSemaphoreCount = num_signal_semaphores;
   submit_info.pSignalSemaphores = signal_semaphores;
 
