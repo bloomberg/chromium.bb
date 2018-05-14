@@ -8,6 +8,7 @@
 import argparse
 import base64
 import errno
+import hashlib
 import os
 import re
 import subprocess
@@ -258,10 +259,11 @@ def der2ascii_pretty_printer(certificate_der, unused_certificate_number):
   return process_data_with_command(["der2ascii"], certificate_der)
 
 
-def header_pretty_printer(unused_certificate_der, certificate_number):
+def header_pretty_printer(certificate_der, certificate_number):
+  cert_hash = hashlib.sha256(certificate_der).hexdigest()
   return """===========================================
-Certificate%d
-===========================================""" % certificate_number
+Certificate%d: %s
+===========================================""" % (certificate_number, cert_hash)
 
 
 # This is actually just used as a magic value, since pretty_print_certificates
