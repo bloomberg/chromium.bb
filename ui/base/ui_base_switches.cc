@@ -85,6 +85,11 @@ const char kTopChromeMDMaterialTouchOptimized[] = "material-touch-optimized";
 // |kTopChromeMD| switch.
 const char kTopChromeMDMaterialRefresh[] = "material-refresh";
 
+// Material design mode that represents a touchable version of material-refresh
+// for the |kTopChromeMD| switch.
+const char kTopChromeMDMaterialRefreshTouchOptimized[] =
+    "material-refresh-touch-optimized";
+
 // Disable partial swap which is needed for some OpenGL drivers / emulators.
 const char kUIDisablePartialSwap[] = "ui-disable-partial-swap";
 

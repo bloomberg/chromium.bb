@@ -94,6 +94,9 @@ void MaterialDesignController::Initialize() {
     SetMode(MATERIAL_TOUCH_OPTIMIZED);
   } else if (switch_value == switches::kTopChromeMDMaterialRefresh) {
     SetMode(MATERIAL_REFRESH);
+  } else if (switch_value ==
+             switches::kTopChromeMDMaterialRefreshTouchOptimized) {
+    SetMode(MATERIAL_TOUCH_REFRESH);
   } else if (switch_value == switches::kTopChromeMDMaterialAuto) {
 #if defined(OS_WIN)
     // TODO(girard): add support for switching between modes when
@@ -121,17 +124,23 @@ MaterialDesignController::Mode MaterialDesignController::GetMode() {
 // static
 bool MaterialDesignController::IsSecondaryUiMaterial() {
   return base::FeatureList::IsEnabled(features::kSecondaryUiMd) ||
-         GetMode() == MATERIAL_REFRESH;
+         IsRefreshUi();
 }
 
 // static
 bool MaterialDesignController::IsTouchOptimizedUiEnabled() {
-  return GetMode() == MATERIAL_TOUCH_OPTIMIZED;
+  return GetMode() == MATERIAL_TOUCH_OPTIMIZED ||
+         GetMode() == MATERIAL_TOUCH_REFRESH;
 }
 
 // static
 bool MaterialDesignController::IsNewerMaterialUi() {
-  return IsTouchOptimizedUiEnabled() || GetMode() == MATERIAL_REFRESH;
+  return IsTouchOptimizedUiEnabled() || IsRefreshUi();
+}
+
+// static
+bool MaterialDesignController::IsRefreshUi() {
+  return GetMode() == MATERIAL_REFRESH || GetMode() == MATERIAL_TOUCH_REFRESH;
 }
 
 // static

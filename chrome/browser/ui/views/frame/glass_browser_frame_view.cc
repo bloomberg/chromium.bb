@@ -549,7 +549,7 @@ int GlassBrowserFrameView::TabStripCaptionSpacing() const {
   // ensure the window remains draggable, which is sufficient padding to the
   // other tabstrip contents.
   using MD = ui::MaterialDesignController;
-  if (MD::GetMode() == MD::MATERIAL_REFRESH)
+  if (MD::IsRefreshUi())
     return 0;
 
   // In restored mode, the New Tab button isn't at the same height as the

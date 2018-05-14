@@ -307,12 +307,12 @@ TabStrip::~TabStrip() {
 
 // static
 bool TabStrip::ShouldDrawStrokes() {
-  return MD::GetMode() != MD::MATERIAL_REFRESH;
+  return !MD::IsRefreshUi();
 }
 
 // static
 int TabStrip::GetPinnedToNonPinnedOffset() {
-  return MD::GetMode() == MD::MATERIAL_REFRESH ? 0 : kPinnedToNonPinnedOffset;
+  return MD::IsRefreshUi() ? 0 : kPinnedToNonPinnedOffset;
 }
 
 void TabStrip::AddObserver(TabStripObserver* observer) {
@@ -782,11 +782,11 @@ bool TabStrip::SupportsMultipleSelection() {
 }
 
 bool TabStrip::ShouldHideCloseButtonForInactiveTabs() {
-  return touch_layout_ != nullptr || MD::GetMode() == MD::MATERIAL_REFRESH;
+  return touch_layout_ != nullptr || MD::IsRefreshUi();
 }
 
 bool TabStrip::ShouldShowCloseButtonOnHover() {
-  return MD::GetMode() == MD::MATERIAL_REFRESH;
+  return MD::IsRefreshUi();
 }
 
 bool TabStrip::MaySetClip() {
@@ -1130,8 +1130,7 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
         if (!tab->IsSelected()) {
           if (!stacked_layout_) {
             // In Refresh mode, defer the painting of the hovered tab to below.
-            if (MD::GetMode() == MD::MATERIAL_REFRESH &&
-                tab->IsMouseHovered()) {
+            if (MD::IsRefreshUi() && tab->IsMouseHovered()) {
               hovered_tab = tab;
             } else {
               tab->Paint(paint_info);
@@ -1447,7 +1446,7 @@ bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
 }
 
 TabStrip::NewTabButtonPosition TabStrip::GetNewTabButtonPosition() const {
-  if (MD::GetMode() != MD::MATERIAL_REFRESH)
+  if (!MD::IsRefreshUi())
     return AFTER_TABS;
 
   const auto* frame_view = static_cast<const BrowserNonClientFrameView*>(
@@ -1456,13 +1455,13 @@ TabStrip::NewTabButtonPosition TabStrip::GetNewTabButtonPosition() const {
 }
 
 int TabStrip::GetNewTabButtonSpacing() const {
-  constexpr int kSpacing[] = {-5, -6, 6, 8};
+  constexpr int kSpacing[] = {-5, -6, 6, 8, 8};
   const auto mode = MD::GetMode();
   int spacing = kSpacing[mode];
 
   // Not sure if we can reach here with no tabs (e.g. during startup), but not
   // crashing in that case is easy.
-  if (mode == MD::MATERIAL_REFRESH && tab_count()) {
+  if (MD::IsRefreshUi() && tab_count()) {
     const int adjacent_tab_index =
         (GetNewTabButtonPosition() == LEADING) ? 0 : tab_count() - 1;
     spacing -= tab_at(adjacent_tab_index)->GetCornerRadius();
@@ -1484,7 +1483,7 @@ bool TabStrip::MayHideNewTabButtonWhileDragging() const {
 
 int TabStrip::GetFrameGrabWidth() const {
   // Only Refresh has a grab area.
-  if (MD::GetMode() != MD::MATERIAL_REFRESH)
+  if (!MD::IsRefreshUi())
     return 0;
 
   // The apparent width of the grab area.

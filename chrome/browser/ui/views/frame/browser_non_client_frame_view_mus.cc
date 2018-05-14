@@ -404,7 +404,7 @@ int BrowserNonClientFrameViewMus::GetTabStripRightInset() const {
   // other tabstrip contents.
   using MD = ui::MaterialDesignController;
   constexpr int kTabstripRightSpacing = 10;
-  if (MD::GetMode() != MD::MATERIAL_REFRESH)
+  if (!MD::IsRefreshUi())
     right_inset += kTabstripRightSpacing;
 
 #if defined(FRAME_AVATAR_BUTTON)

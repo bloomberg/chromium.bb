@@ -735,8 +735,7 @@ int BrowserActionsContainer::GetResizeAreaWidth() const {
 int BrowserActionsContainer::GetSeparatorAreaWidth() const {
   // The separator is not applicable to the app menu, and is only available in
   // Material refresh.
-  if (ShownInsideMenu() || ui::MaterialDesignController::GetMode() !=
-                               ui::MaterialDesignController::MATERIAL_REFRESH) {
+  if (ShownInsideMenu() || !ui::MaterialDesignController::IsRefreshUi()) {
     return 0;
   }
   return 2 * GetLayoutConstant(TOOLBAR_STANDARD_SPACING) +

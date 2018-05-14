@@ -110,7 +110,7 @@ void BrowserNonClientFrameView::UpdateMinimumSize() {}
 int BrowserNonClientFrameView::GetTabStripLeftInset() const {
   if (profile_indicator_icon())
     return 2 * GetAvatarIconPadding() + GetIncognitoAvatarIcon().width();
-  return (MD::GetMode() == MD::MATERIAL_REFRESH) ? 8 : 4;
+  return MD::IsRefreshUi() ? 8 : 4;
 }
 
 void BrowserNonClientFrameView::ChildPreferredSizeChanged(views::View* child) {
@@ -458,7 +458,7 @@ void BrowserNonClientFrameView::UpdateTaskbarDecoration() {
 bool BrowserNonClientFrameView::ShouldShowProfileIndicatorIcon() const {
   // In Material Refresh, we use a toolbar button for all
   // profile/incognito-related purposes.
-  if (MD::GetMode() == MD::MATERIAL_REFRESH)
+  if (MD::IsRefreshUi())
     return false;
 
   Browser* browser = browser_view()->browser();

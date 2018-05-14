@@ -12,12 +12,14 @@ gfx::Size GetAshLayoutSize(AshLayoutSize size) {
   const int mode = ui::MaterialDesignController::GetMode();
   switch (size) {
     case AshLayoutSize::kBrowserCaptionMaximized: {
-      constexpr int kBrowserMaximizedCaptionButtonHeight[] = {29, 33, 41, 29};
+      constexpr int kBrowserMaximizedCaptionButtonHeight[] = {29, 33, 41, 29,
+                                                              41};
       return gfx::Size(kButtonWidth,
                        kBrowserMaximizedCaptionButtonHeight[mode]);
     }
     case AshLayoutSize::kBrowserCaptionRestored: {
-      constexpr int kBrowserRestoredCaptionButtonHeight[] = {36, 40, 48, 36};
+      constexpr int kBrowserRestoredCaptionButtonHeight[] = {36, 40, 48, 36,
+                                                             48};
       return gfx::Size(kButtonWidth, kBrowserRestoredCaptionButtonHeight[mode]);
     }
     case AshLayoutSize::kNonBrowserCaption:

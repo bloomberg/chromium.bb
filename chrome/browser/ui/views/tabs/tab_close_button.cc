@@ -48,7 +48,7 @@ void TabCloseButton::SetTabColor(SkColor color, bool tab_color_is_dark) {
   SkColor hover_color = SkColorSetRGB(0xDB, 0x44, 0x37);
   SkColor pressed_color = SkColorSetRGB(0xA8, 0x35, 0x2A);
   SkColor icon_color = SK_ColorWHITE;
-  if (MD::GetMode() == MD::MATERIAL_REFRESH) {
+  if (MD::IsRefreshUi()) {
     hover_color = tab_color_is_dark ? gfx::kGoogleGrey700 : gfx::kGoogleGrey200;
     pressed_color =
         tab_color_is_dark ? gfx::kGoogleGrey600 : gfx::kGoogleGrey300;
@@ -146,7 +146,7 @@ bool TabCloseButton::GetHitTestMask(gfx::Path* mask) const {
 }
 
 SkAlpha TabCloseButton::GetOpacity() {
-  if (MD::GetMode() != MD::MATERIAL_REFRESH && !IsMouseHovered())
+  if (!MD::IsRefreshUi() && !IsMouseHovered())
     return SK_AlphaOPAQUE;
   const double animation_value =
       static_cast<Tab*>(parent())->hover_controller()->GetAnimationValue();
