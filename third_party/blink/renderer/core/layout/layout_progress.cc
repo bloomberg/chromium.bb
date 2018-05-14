@@ -36,7 +36,7 @@ LayoutProgress::LayoutProgress(HTMLProgressElement* element)
       animation_duration_(0),
       animating_(false),
       animation_timer_(
-          element->GetDocument().GetTaskRunner(TaskType::kInternalAnimation),
+          element->GetDocument().GetTaskRunner(TaskType::kInternalDefault),
           this,
           &LayoutProgress::AnimationTimerFired) {}
 
