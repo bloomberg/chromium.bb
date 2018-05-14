@@ -4,10 +4,12 @@
 
 #include "net/test/embedded_test_server/http_response.h"
 
+#include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "net/http/http_status_code.h"
 
 namespace net {
@@ -83,6 +85,17 @@ std::string BasicHttpResponse::ToResponseString() const {
 void BasicHttpResponse::SendResponse(const SendBytesCallback& send,
                                      const SendCompleteCallback& done) {
   send.Run(ToResponseString(), done);
+}
+
+DelayedHttpResponse::DelayedHttpResponse(const base::TimeDelta delay)
+    : delay_(delay) {}
+
+DelayedHttpResponse::~DelayedHttpResponse() = default;
+
+void DelayedHttpResponse::SendResponse(const SendBytesCallback& send,
+                                       const SendCompleteCallback& done) {
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::BindOnce(send, ToResponseString(), done), delay_);
 }
 
 void HungResponse::SendResponse(const SendBytesCallback& send,

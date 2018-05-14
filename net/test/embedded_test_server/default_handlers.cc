@@ -565,24 +565,6 @@ std::unique_ptr<HttpResponse> HandleDefaultResponse(
   return std::move(http_response);
 }
 
-// Delays |delay| seconds before sending a response to the client.
-class DelayedHttpResponse : public BasicHttpResponse {
- public:
-  explicit DelayedHttpResponse(double delay) : delay_(delay) {}
-
-  void SendResponse(const SendBytesCallback& send,
-                    const SendCompleteCallback& done) override {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::BindOnce(send, ToResponseString(), done),
-        base::TimeDelta::FromSecondsD(delay_));
-  }
-
- private:
-  const double delay_;
-
-  DISALLOW_COPY_AND_ASSIGN(DelayedHttpResponse);
-};
-
 // /slow?N
 // Returns a response to the server delayed by N seconds.
 std::unique_ptr<HttpResponse> HandleSlowServer(const HttpRequest& request) {
@@ -593,7 +575,7 @@ std::unique_ptr<HttpResponse> HandleSlowServer(const HttpRequest& request) {
     delay = std::atof(request_url.query().c_str());
 
   std::unique_ptr<BasicHttpResponse> http_response(
-      new DelayedHttpResponse(delay));
+      new DelayedHttpResponse(base::TimeDelta::FromSecondsD(delay)));
   http_response->set_content_type("text/plain");
   http_response->set_content(base::StringPrintf("waited %.1f seconds", delay));
   return std::move(http_response);

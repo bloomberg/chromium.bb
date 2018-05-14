@@ -63,6 +63,8 @@ class SubresourceFilterSafeBrowsingActivationThrottle
  private:
   void CheckCurrentUrl();
   void NotifyResult();
+  // Determines whether all of the results in check_results_ are finished.
+  bool HasFinishedAllSafeBrowsingChecks();
 
   ActivationDecision ComputeActivation(ActivationList matched_list,
                                        Configuration* configuration);

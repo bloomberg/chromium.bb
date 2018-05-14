@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_database_helper.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -120,6 +121,60 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterInterceptingBrowserTest,
       web_contents(), kActivationWarningConsoleMessage);
   web_contents()->SetDelegate(&warn_console_observer);
   ui_test_utils::NavigateToURL(browser(), warn_url);
+  warn_console_observer.Wait();
+  EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+  EXPECT_EQ(warn_console_observer.message(), kActivationWarningConsoleMessage);
+}
+
+// Verify that the navigation waits on all safebrowsing results to be retrieved,
+// and doesn't just return after the final (used) result.  Also verify that the
+// results reported are correct when messages arrive out-of-order.
+IN_PROC_BROWSER_TEST_F(SubresourceFilterInterceptingBrowserTest,
+                       SafeBrowsingNotificationsWaitOnAllRedirects) {
+  // TODO(ericrobinson): If servers are slow for this test, the test will pass
+  //   by default (the delay will be high due to server time rather than due
+  //   to waiting on safebrowsing results).  While this won't cause flakiness,
+  //   it's not ideal.  Look into using a ControllableHttpResponse for each
+  //   request, and completing the first after we know the second got to
+  //   the activation throttle and check that it didn't call NotifyResults.
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  const std::string initial_host("a.com");
+  const std::string redirected_host("b.com");
+  base::TimeDelta delay = base::TimeDelta::FromSeconds(2);
+
+  GURL redirect_url(embedded_test_server()->GetURL(
+      redirected_host, "/subresource_filter/frame_with_included_script.html"));
+  GURL url(embedded_test_server()->GetURL(
+      initial_host, "/server-redirect?" + redirect_url.spec()));
+
+  // Mark the prefixes as bad so that safe browsing will request full hashes
+  // from the v4 server.
+  database_helper()->LocallyMarkPrefixAsBad(
+      url, safe_browsing::GetUrlSubresourceFilterId());
+  database_helper()->LocallyMarkPrefixAsBad(
+      redirect_url, safe_browsing::GetUrlSubresourceFilterId());
+
+  // Map URLs to policies, enforce on the initial, and warn on the redirect.
+  std::map<GURL, safe_browsing::ThreatMatch> response_map{
+      {url, GetBetterAdsMatch(url, "enforce")},
+      {redirect_url, GetBetterAdsMatch(redirect_url, "warn")}};
+  // Delay the initial response , so it arrives after the final.
+  std::map<GURL, base::TimeDelta> delay_map{{url, delay}};
+  safe_browsing::StartRedirectingV4RequestsForTesting(
+      response_map, safe_browsing_test_server(), delay_map);
+  safe_browsing_test_server()->StartAcceptingConnections();
+
+  // The navigation should wait for all safebrowsing results, and not just
+  // return the last result, which is computed quickly.
+  content::ConsoleObserverDelegate warn_console_observer(
+      web_contents(), kActivationWarningConsoleMessage);
+  web_contents()->SetDelegate(&warn_console_observer);
+  base::ElapsedTimer timer;
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_GE(timer.Elapsed(), delay);
+
+  // Make sure the action is the last one in the redirect chain, a warning.
   warn_console_observer.Wait();
   EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
   EXPECT_EQ(warn_console_observer.message(), kActivationWarningConsoleMessage);
