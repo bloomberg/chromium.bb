@@ -65,12 +65,6 @@ class SpeechRecognitionManager {
   virtual SpeechRecognitionSessionContext GetSessionContext(
       int session_id) const = 0;
 
-  // Looks up an existing session from the context tuple
-  // {render_process_id, render_frame_id, request_id}.
-  virtual int GetSession(int render_process_id,
-                         int render_frame_id,
-                         int request_id) const = 0;
-
  protected:
   virtual ~SpeechRecognitionManager() {}
 

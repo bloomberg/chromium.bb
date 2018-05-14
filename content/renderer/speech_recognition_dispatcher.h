@@ -12,6 +12,7 @@
 #include "content/common/speech_recognizer.mojom.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "third_party/blink/public/web/web_speech_recognition_handle.h"
 #include "third_party/blink/public/web/web_speech_recognizer.h"
 #include "third_party/blink/public/web/web_speech_recognizer_client.h"
@@ -21,7 +22,9 @@ struct SpeechRecognitionError;
 
 // SpeechRecognitionDispatcher is a delegate for methods used by WebKit for
 // scripted JS speech APIs. It's the complement of
-// SpeechRecognitionDispatcherHost (owned by RenderFrameHost).
+// SpeechRecognitionDispatcherHost (owned by RenderFrameHost), and communicates
+// with it using two mojo interfaces (SpeechRecognizer and
+// SpeechRecognitionSession).
 class SpeechRecognitionDispatcher : public RenderFrameObserver,
                                     public blink::WebSpeechRecognizer {
  public:
@@ -29,10 +32,7 @@ class SpeechRecognitionDispatcher : public RenderFrameObserver,
   ~SpeechRecognitionDispatcher() override;
 
  private:
-  using HandleMap = std::map<int, blink::WebSpeechRecognitionHandle>;
-
   // RenderFrameObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() override;
   void WasHidden() override;
 
@@ -45,34 +45,74 @@ class SpeechRecognitionDispatcher : public RenderFrameObserver,
   void Abort(const blink::WebSpeechRecognitionHandle&,
              const blink::WebSpeechRecognizerClient&) override;
 
-  void OnRecognitionStarted(int request_id);
-  void OnAudioStarted(int request_id);
-  void OnSoundStarted(int request_id);
-  void OnSoundEnded(int request_id);
-  void OnAudioEnded(int request_id);
-  void OnErrorOccurred(int request_id, const SpeechRecognitionError& error);
-  void OnRecognitionEnded(int request_id);
-  void OnResultsRetrieved(int request_id,
-                          const SpeechRecognitionResults& result);
-
-  int GetOrCreateIDForHandle(const blink::WebSpeechRecognitionHandle& handle);
+  // Methods to interact with |session_map_|
+  void AddHandle(const blink::WebSpeechRecognitionHandle& handle,
+                 mojom::SpeechRecognitionSessionPtr session);
   bool HandleExists(const blink::WebSpeechRecognitionHandle& handle);
-  HandleMap::iterator FindHandleInMap(
+  void RemoveHandle(const blink::WebSpeechRecognitionHandle& handle);
+  mojom::SpeechRecognitionSession* GetSession(
       const blink::WebSpeechRecognitionHandle& handle);
-  const blink::WebSpeechRecognitionHandle& GetHandleFromID(int handle_id);
 
   mojom::SpeechRecognizer& GetSpeechRecognitionHost();
 
+  // InterfacePtr used to communicate with SpeechRecognitionDispatcherHost to
+  // start a session for each WebSpeechRecognitionHandle.
   mojom::SpeechRecognizerPtr speech_recognition_host_;
 
   // The Blink client class that we use to send events back to the JS world.
+  // This is passed to each SpeechRecognitionSessionClientImpl instance.
   blink::WebSpeechRecognizerClient recognizer_client_;
 
-  // This maps between request id values and the Blink handle values.
-  HandleMap handle_map_;
-  int next_id_;
+  // Owns a SpeechRecognitionSessionClientImpl for each session created. The
+  // bindings are automatically cleaned up when the connection is closed by the
+  // browser process. We use mojo::StrongBindingSet instead of using
+  // mojo::MakeStrongBinding for each individual binding as
+  // SpeechRecognitionSessionClientImpl holds a pointer to its parent
+  // SpeechRecognitionDispatcher, and we need to clean up the
+  // SpeechRecognitionSessionClientImpl objects when |this| is deleted.
+  mojo::StrongBindingSet<mojom::SpeechRecognitionSessionClient> bindings_;
+
+  // Owns a SpeechRecognitionSessionPtr per session created. Each
+  // WebSpeechRecognitionHandle has its own speech recognition session, and is
+  // used as a key for the map.
+  using SessionMap = std::map<blink::WebSpeechRecognitionHandle,
+                              mojom::SpeechRecognitionSessionPtr>;
+  SessionMap session_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognitionDispatcher);
+  friend class SpeechRecognitionSessionClientImpl;
+};
+
+// SpeechRecognitionSessionClientImpl is owned by SpeechRecognitionDispatcher
+// and is cleaned up either when the end point is closed by the browser process,
+// or if SpeechRecognitionDispatcher is deleted.
+class SpeechRecognitionSessionClientImpl
+    : public mojom::SpeechRecognitionSessionClient {
+ public:
+  SpeechRecognitionSessionClientImpl(
+      SpeechRecognitionDispatcher* dispatcher,
+      const blink::WebSpeechRecognitionHandle& handle,
+      const blink::WebSpeechRecognizerClient& client);
+  ~SpeechRecognitionSessionClientImpl() override = default;
+
+  // mojom::SpeechRecognitionSessionClient implementation
+  void Started() override;
+  void AudioStarted() override;
+  void SoundStarted() override;
+  void SoundEnded() override;
+  void AudioEnded() override;
+  void ErrorOccurred(const content::SpeechRecognitionError& error) override;
+  void Ended() override;
+  void ResultRetrieved(
+      const std::vector<content::SpeechRecognitionResult>& results) override;
+
+ private:
+  // Not owned, |parent_dispatcher_| owns |this|.
+  SpeechRecognitionDispatcher* parent_dispatcher_;
+  // WebSpeechRecognitionHandle that this instance is associated with.
+  blink::WebSpeechRecognitionHandle handle_;
+  // The Blink client class that we use to send events back to the JS world.
+  blink::WebSpeechRecognizerClient web_client_;
 };
 
 }  // namespace content

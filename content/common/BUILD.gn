@@ -277,7 +277,6 @@ source_set("common") {
     "service_worker/service_worker_utils.h",
     "single_request_url_loader_factory.cc",
     "single_request_url_loader_factory.h",
-    "speech_recognition_messages.h",
     "swapped_out_messages.cc",
     "swapped_out_messages.h",
     "task_scheduler.cc",

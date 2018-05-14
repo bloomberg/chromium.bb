@@ -80,12 +80,6 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
     return session_ctx_;
   }
 
-  int GetSession(int render_process_id,
-                 int render_frame_id,
-                 int request_id) const override {
-    return session_id_;
-  }
-
   void FakeSpeechRecognitionEvent(FakeRecognitionEvent event) {
     if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
       content::BrowserThread::PostTask(

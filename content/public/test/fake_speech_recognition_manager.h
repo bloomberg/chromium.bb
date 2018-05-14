@@ -53,9 +53,6 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManager,
   void StopAudioCaptureForSession(int session_id) override;
   void AbortAllSessionsForRenderFrame(int render_process_id,
                                       int render_frame_id) override;
-  int GetSession(int render_process_id,
-                 int render_frame_id,
-                 int request_id) const override;
   const SpeechRecognitionSessionConfig& GetSessionConfig(
       int session_id) const override;
   SpeechRecognitionSessionContext GetSessionContext(

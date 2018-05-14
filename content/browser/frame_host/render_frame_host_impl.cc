@@ -3318,8 +3318,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
           SpeechRecognitionDispatcherHost::Create, GetProcess()->GetID(),
           routing_id_,
           base::WrapRefCounted(
-              GetProcess()->GetStoragePartition()->GetURLRequestContext()),
-          weak_ptr_factory_.GetWeakPtr()),
+              GetProcess()->GetStoragePartition()->GetURLRequestContext())),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {

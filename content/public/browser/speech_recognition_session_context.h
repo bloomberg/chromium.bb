@@ -35,9 +35,6 @@ struct CONTENT_EXPORT SpeechRecognitionSessionContext {
   int embedder_render_process_id;
   int embedder_render_frame_id;
 
-  // The request id provided by the originating SpeechRecognitionDispatcher.
-  int request_id;
-
   // Origin that is requesting recognition, for prompting security notifications
   // to the user.
   url::Origin security_origin;

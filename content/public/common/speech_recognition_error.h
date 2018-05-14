@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_COMMON_SPEECH_RECOGNITION_ERROR_H_
 #define CONTENT_PUBLIC_COMMON_SPEECH_RECOGNITION_ERROR_H_
 
+#include "content/common/content_export.h"
+
 namespace content {
 
 // A Java counterpart will be generated for this enum.
