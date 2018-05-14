@@ -34,7 +34,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
       public BluetoothTaskManagerWin::Observer {
  public:
   static base::WeakPtr<BluetoothAdapter> CreateAdapter(
-      const InitCallback& init_callback);
+      InitCallback init_callback);
 
   // BluetoothAdapter:
   std::string GetAddress() const override;
@@ -107,7 +107,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
     DISCOVERY_STOPPING
   };
 
-  explicit BluetoothAdapterWin(const InitCallback& init_callback);
+  explicit BluetoothAdapterWin(InitCallback init_callback);
   ~BluetoothAdapterWin() override;
 
   // BluetoothAdapter:

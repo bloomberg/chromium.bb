@@ -8,6 +8,8 @@
 #include <wrl/client.h>
 #include <wrl/implements.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/containers/circular_deque.h"
@@ -36,9 +38,9 @@ using ABI::Windows::Devices::Bluetooth::IBluetoothAdapter;
 class TestBluetoothAdapterWinrt : public device::BluetoothAdapterWinrt {
  public:
   TestBluetoothAdapterWinrt(ComPtr<IBluetoothAdapter> adapter,
-                            const InitCallback& init_cb)
+                            InitCallback init_cb)
       : adapter_(std::move(adapter)) {
-    Init(init_cb);
+    Init(std::move(init_cb));
   }
 
  protected:

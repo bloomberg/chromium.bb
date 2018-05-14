@@ -271,7 +271,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
   // The InitCallback is used to trigger a callback after asynchronous
   // initialization, if initialization is asynchronous on the platform.
-  using InitCallback = base::Callback<void()>;
+  using InitCallback = base::OnceClosure;
 
   using DiscoverySessionCallback =
       base::Callback<void(std::unique_ptr<BluetoothDiscoverySession>)>;
@@ -294,7 +294,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // caller is expected to call |AddRef()| on the returned pointer, typically by
   // storing it into a |scoped_refptr|.
   static base::WeakPtr<BluetoothAdapter> CreateAdapter(
-      const InitCallback& init_callback);
+      InitCallback init_callback);
 
   // Returns a weak pointer to an existing adapter for testing purposes only.
   base::WeakPtr<BluetoothAdapter> GetWeakPtrForTesting();

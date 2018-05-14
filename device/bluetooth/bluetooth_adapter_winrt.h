@@ -63,7 +63,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
   BluetoothAdapterWinrt();
   ~BluetoothAdapterWinrt() override;
 
-  void Init(const InitCallback& init_cb);
+  void Init(InitCallback init_cb);
 
   // BluetoothAdapter:
   bool SetPoweredImpl(bool powered) override;

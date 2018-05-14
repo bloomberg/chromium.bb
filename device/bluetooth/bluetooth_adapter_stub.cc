@@ -11,7 +11,7 @@ namespace device {
 // a particular platform.
 // static
 base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
-    const InitCallback& init_callback) {
+    InitCallback init_callback) {
   return base::WeakPtr<BluetoothAdapter>();
 }
 
