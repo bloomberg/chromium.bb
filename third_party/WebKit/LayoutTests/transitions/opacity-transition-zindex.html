@@ -53,8 +53,8 @@
       
       // dump the tree in the middle of the transition
       if (window.internals) {
-          window.internals.forceCompositingUpdate(document);
-          window.internals.pauseAnimations(2.5);
+          internals.forceCompositingUpdate(document);
+          internals.pauseAnimations(2.5);
       }
       if (window.testRunner) {
         waitForCompositor().then(() => {

@@ -9,13 +9,13 @@
             {
                 document.getElementById('console').innerHTML = "Scrolled by JavaScript scrollTo(): FAILED";
                 if (window.testRunner)
-                    window.testRunner.notifyDone();
+                    testRunner.notifyDone();
             }
             function scrollEventFired()
             {
                 document.getElementById('console').innerHTML = "Scrolled by JavaScript scrollTo(): PASS";
                 if (window.testRunner)
-                    window.testRunner.notifyDone();
+                    testRunner.notifyDone();
             }
             function runTest()
             {

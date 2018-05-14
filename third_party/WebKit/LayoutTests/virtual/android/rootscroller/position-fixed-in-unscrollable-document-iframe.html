@@ -4,7 +4,7 @@
   // This test is correct if the bottom of the screen has two bars, an orange
   // one over top of a green one.
   if (window.internals) {
-    window.internals.setBrowserControlsState(100, 0, false);
+    internals.setBrowserControlsState(100, 0, false);
   }
   addEventListener("load", function() {
     document.rootScroller = document.getElementById("iframe");

@@ -3,7 +3,7 @@
 <script>
 description('This tests that the maxTouchPoints setting is plumbed through to the navigator object.');
 
-window.internals.settings.setMaxTouchPoints(37);
+internals.settings.setMaxTouchPoints(37);
 shouldBe('navigator.maxTouchPoints', '37');
 </script>
 <body>

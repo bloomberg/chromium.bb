@@ -45,7 +45,7 @@
     function animationStarted()
     {
       if (window.testRunner) {
-        var layerText = window.internals.layerTreeAsText(document);
+        var layerText = internals.layerTreeAsText(document);
         // The animation can progress before the start event is handled, so remove the
         // effects as they can vary.
         layerText = layerText.replace(/\[.*,.*,.*,.*\]/g, '[...]');

@@ -8,8 +8,8 @@
 <script>
 if (document.URL.indexOf('?') == -1) {
     if (window.testRunner) {
-        window.testRunner.dumpAsText();
-        window.testRunner.waitUntilDone();
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
     }
     document.getElementById("textarea").removeAttribute("wrap");
     document.f.submit();
@@ -20,7 +20,7 @@ if (document.URL.indexOf('?') == -1) {
     else
         document.write("Failure.  The form data that should have been submitted: textarea=123456789<br>This is what was actually submitted: " + formData);    
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 }
 </script>
 </body>

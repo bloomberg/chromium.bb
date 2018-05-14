@@ -46,7 +46,7 @@ if ($_POST["submit"] == "finish") {
     // always PASS.
     echo "<script>";
     echo "if (window.internals)";
-    echo "  window.internals.evictAllResources();";
+    echo "  internals.evictAllResources();";
     echo "</script>";
     echo "<img src='resources/post-image-to-verify.php?filename=post-with-cached-subresources.tmp' onload=\"logAndFinish('PASS');\" onerror=\"logAndFinish('FAIL');\"></img>";
 } else {

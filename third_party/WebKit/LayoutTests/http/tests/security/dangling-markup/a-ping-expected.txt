@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 10: This test relies on dumping data via `window.testRunner.dumpPingLoaderCallbacks()`. No URLs containing 'block' should be pinged.
+CONSOLE ERROR: line 10: This test relies on dumping data via `testRunner.dumpPingLoaderCallbacks()`. No URLs containing 'block' should be pinged.
 PingLoader dispatched to 'http://127.0.0.1:8000/resources/square.png?1'.
 PingLoader dispatched to 'http://127.0.0.1:8000/resources/squ'.
 PingLoader dispatched to 'http://127.0.0.1:8000/security/dangling-markup/are.png?2'.

@@ -60,7 +60,7 @@
     `);
   await TestRunner.evaluateInPagePromise(`
       if (window.eventSender)
-          window.eventSender.zoomPageIn();
+          eventSender.zoomPageIn();
   `);
 
   ElementsTestRunner.dumpInspectorHighlightJSON('svg-root', TestRunner.completeTest.bind(TestRunner));

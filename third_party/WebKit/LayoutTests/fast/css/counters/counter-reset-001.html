@@ -22,7 +22,7 @@
       if (window.testRunner) {
           testRunner.dumpAsText();
           // This call ensures the layout happened before we modify the DOM tree.
-          window.internals.counterValue(document.getElementById("span1"));
+          internals.counterValue(document.getElementById("span1"));
       }
 
       var t = document.getElementById("test");
@@ -34,7 +34,7 @@
           spanList = testElement.getElementsByTagName("span");
           for (i = 0; i < spanList.length; ++i ) {
               newSpanElement = document.createElement("span");
-              newSpanElement.innerText = window.internals.counterValue(document.getElementById(spanList.item(i).getAttribute("id")));
+              newSpanElement.innerText = internals.counterValue(document.getElementById(spanList.item(i).getAttribute("id")));
               if (newSpanElement.innerText.length)
                   newSpanElement.innerText = newSpanElement.innerText + "-";
               console.appendChild(newSpanElement);

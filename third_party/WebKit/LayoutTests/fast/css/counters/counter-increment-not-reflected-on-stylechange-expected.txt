@@ -1,5 +1,5 @@
-PASS window.internals.counterValue(document.getElementById('inner1')) is "1"
-PASS window.internals.counterValue(document.getElementById('inner2')) is "2"
+PASS internals.counterValue(document.getElementById('inner1')) is "1"
+PASS internals.counterValue(document.getElementById('inner2')) is "2"
 PASS successfullyParsed is true
 
 TEST COMPLETE

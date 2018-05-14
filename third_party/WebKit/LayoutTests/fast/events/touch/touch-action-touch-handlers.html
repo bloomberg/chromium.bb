@@ -32,8 +32,8 @@ elements with various touch-action settings.
 var nestedDocument;
 
 function getTouchHandlerCount(doc) {
-    window.internals.updateStyleAndReturnAffectedElementCount();
-    return window.internals.touchStartOrMoveEventHandlerCount(doc);
+    internals.updateStyleAndReturnAffectedElementCount();
+    return internals.touchStartOrMoveEventHandlerCount(doc);
 }
 
 function runTests() {
@@ -98,7 +98,7 @@ function runTests() {
     nestedDocument.open('text/html', 'replace');
     nestedDocument.write("<!DOCTYPE html>\n<div style='touch-action: none'></div>");
     nestedDocument.close();
-    window.internals.forceCompositingUpdate(document);
+    internals.forceCompositingUpdate(document);
     shouldBe("getTouchHandlerCount(nestedDocument)", "2");
     shouldBe("getTouchHandlerCount(document)", "2");
 }

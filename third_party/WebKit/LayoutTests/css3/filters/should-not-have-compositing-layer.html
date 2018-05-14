@@ -7,7 +7,7 @@
   }
 
   function doTest() {
-    var layers = window.internals.layerTreeAsText(document);
+    var layers = internals.layerTreeAsText(document);
     document.getElementById("layertree").innerText = layers;
   }
 </script>

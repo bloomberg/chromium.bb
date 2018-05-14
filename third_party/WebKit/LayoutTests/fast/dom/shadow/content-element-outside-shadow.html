@@ -40,9 +40,9 @@ for (var i = 0; i < cases.length; ++i) {
 
     targetContainer.innerHTML = targetMarkup;
     comparisonContainer.innerHTML = expectedMarkup;
-    targetLayoutTree = removeContainerLines(window.internals.elementLayoutTreeAsText(targetContainer));
+    targetLayoutTree = removeContainerLines(internals.elementLayoutTreeAsText(targetContainer));
     targetLayoutTree = targetLayoutTree.replace(/CONTENT/g, "UNKNOWN");
-    comparisonLayoutTree = removeContainerLines(window.internals.elementLayoutTreeAsText(comparisonContainer));
+    comparisonLayoutTree = removeContainerLines(internals.elementLayoutTreeAsText(comparisonContainer));
     debug(escapeHTML(targetMarkup));
     shouldBe("targetLayoutTree", "comparisonLayoutTree");
 }

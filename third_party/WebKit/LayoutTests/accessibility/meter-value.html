@@ -14,7 +14,7 @@ if (window.testRunner)
 description("This tests that meter element attributes min, max, value are exposed to accessibility module");
 
 if (window.accessibilityController) {
-    window.axMeter1 = window.accessibilityController.accessibleElementById("meter1");
+    window.axMeter1 = accessibilityController.accessibleElementById("meter1");
 
     shouldBe("axMeter1.minValue", "0");
     shouldBe("axMeter1.maxValue", "10");

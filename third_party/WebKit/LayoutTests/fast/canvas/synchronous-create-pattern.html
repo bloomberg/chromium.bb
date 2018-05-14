@@ -25,7 +25,7 @@ function runTest() {
 function drawPatternAndFinish() {
     // Advance the image one more time to the last frame.
     // The pattern should not be affected.
-    window.internals.advanceImageAnimation(image);
+    internals.advanceImageAnimation(image);
 
     context.fillStyle = pattern;
     context.fillRect(0, 0, 200, 200);

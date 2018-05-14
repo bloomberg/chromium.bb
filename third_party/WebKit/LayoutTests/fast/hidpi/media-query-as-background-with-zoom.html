@@ -12,7 +12,7 @@
 <div id=foo></div>
 <script>
     if (window.eventSender)
-        window.eventSender.zoomPageIn();
+        eventSender.zoomPageIn();
     test(function() {
         var div = document.getElementById("foo");
         var computedStyle = window.getComputedStyle(div, null);

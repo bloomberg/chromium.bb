@@ -50,7 +50,7 @@
                     var div1 = document.getElementById(divs[i]);
                     for (var j = 0; j < divs.length; j++) {
                         var div2 = document.getElementById(divs[j]);
-                        var scrollsWithRespectTo = window.internals.scrollsWithRespectTo(div1, div2);
+                        var scrollsWithRespectTo = internals.scrollsWithRespectTo(div1, div2);
 
                         var successText = scrollsWithRespectTo ? 'scrolls with respect to' : 'does not scroll with respect to';
                         var messageText = div1.id + ' ' + successText + ' ' + div2.id;

@@ -45,7 +45,7 @@
 
   onload = function() {
     runAfterLayoutAndPaint(function(){
-      nonFastScrollableRects = window.internals.nonFastScrollableRects(document);
+      nonFastScrollableRects = internals.nonFastScrollableRects(document);
       shouldBe('nonFastScrollableRects.length', '1');
       shouldBeEqualToString('rectToString(nonFastScrollableRects[0])', '[146, 146, 240, 240]');
 

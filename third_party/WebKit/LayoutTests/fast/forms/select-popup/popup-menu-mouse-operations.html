@@ -49,7 +49,7 @@ function openPickerErrorCallback() {
 }
 openPicker(menu, test1, openPickerErrorCallback);
 function test1() {
-    picker = window.internals.pagePopupWindow.global.picker;
+    picker = internals.pagePopupWindow.global.picker;
     shouldBeEqualToString('picker._selectElement.value', '1');
     shouldBeEqualToString('menuElement.value', 'bar');
 
@@ -71,7 +71,7 @@ function test1() {
     hoverOverElement(picker._selectElement.children[0]);
     hoverOverElement(menuElement);
     eventSender.mouseUp();
-    shouldNotBe('window.internals.pagePopupWindow', 'null');
+    shouldNotBe('internals.pagePopupWindow', 'null');
     shouldBeEqualToString('picker._selectElement.value', '0');
     shouldBeEqualToString('menuElement.value', 'bar');
 
@@ -79,7 +79,7 @@ function test1() {
     shouldBe('mouseupEventCounter', '0');
 
     clickElement(picker._selectElement.children[2]);
-    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeNull('internals.pagePopupWindow');
     shouldBeEqualToString('menuElement.value', 'baz');
 
     shouldBe('clickEventCounter', '1');
@@ -91,7 +91,7 @@ function test1() {
 }
 
 function test2() {
-    picker = window.internals.pagePopupWindow.global.picker;
+    picker = internals.pagePopupWindow.global.picker;
     shouldBeEqualToString('picker._selectElement.value', '2');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'baz');
 
@@ -104,7 +104,7 @@ function test2() {
     eventSender.mouseMoveTo(300, 1);
     eventSender.mouseDown();
     eventSender.mouseUp();
-    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeNull('internals.pagePopupWindow');
     shouldBeEqualToString('menu.value', 'bar');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'bar');
 
@@ -114,7 +114,7 @@ function test2() {
 }
 
 function test3() {
-    picker = window.internals.pagePopupWindow.global.picker;
+    picker = internals.pagePopupWindow.global.picker;
     // We had a bug that almost-invisible OPTION was selected and the popup was
     // scrolled. crbug.com/558287.
     eventSender.mouseMoveTo(10, picker._selectElement.offsetHeight - 2);

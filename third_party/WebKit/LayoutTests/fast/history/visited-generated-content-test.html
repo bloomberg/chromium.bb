@@ -13,9 +13,9 @@
   <body onload="init()">
     <script>
       if (window.testRunner) {
-          window.testRunner.keepWebHistory();
-          window.testRunner.dumpAsText();
-          window.testRunner.waitUntilDone();
+          testRunner.keepWebHistory();
+          testRunner.dumpAsText();
+          testRunner.waitUntilDone();
       }
       var oVisitedLink, oUnvisitedLink;
       function init() {
@@ -30,7 +30,7 @@
           oVisitedLink.style.display = 'none';
           oUnvisitedLink.style.display = 'none';
           if (window.testRunner)
-              window.testRunner.notifyDone();
+              testRunner.notifyDone();
         }, 0);
       }
       function createInvisibleLink(sUrl) {

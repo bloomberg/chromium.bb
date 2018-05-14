@@ -42,9 +42,9 @@ onload = function() {
     return;
 
   document.getElementById('animated').style.visibility = 'hidden';
-  window.internals.forceCompositingUpdate(document);
+  internals.forceCompositingUpdate(document);
 
-  documentLayerTree = JSON.parse(window.internals.layerTreeAsText(
+  documentLayerTree = JSON.parse(internals.layerTreeAsText(
       document, window.internals.LAYER_TREE_INCLUDES_COMPOSITING_REASONS));
 
   shouldBe('hiddenLayerIsComposited(documentLayerTree)', 'true');

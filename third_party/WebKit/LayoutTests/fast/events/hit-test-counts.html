@@ -28,8 +28,8 @@ html {
 <script>
 setPrintTestResultsLazily();
 if (window.internals) {
-    window.internals.settings.setViewportEnabled(true);
-    window.internals.settings.setMockScrollbarsEnabled(true);
+    internals.settings.setViewportEnabled(true);
+    internals.settings.setMockScrollbarsEnabled(true);
 }
 var unique_event_id = 1;
 description("Count how many hit tests are required for various event scenarios.  Hit tests can be expensive and it's often tempting to add more.  These values should only ever be changed to go down, not up.");
@@ -170,12 +170,12 @@ function runTestForDocuments(targetX, targetY, documents)
 {
     clearCounts(documents);
     sendEvents(targetX, targetY, documents, false);
-    window.internals.settings.setMultiTargetTapNotificationEnabled(true);
+    internals.settings.setMultiTargetTapNotificationEnabled(true);
     for(var i = 0; i < documents.length; i++) {
         internals.clearHitTestCache(documents[i]);
     }
     sendEvents(targetX, targetY, documents, true);
-    window.internals.settings.setMultiTargetTapNotificationEnabled(false);
+    internals.settings.setMultiTargetTapNotificationEnabled(false);
 }
 
 function centerOf(element) {
@@ -189,7 +189,7 @@ function centerOf(element) {
 eventCounts = {};
 
 onload = function() {
-    window.internals.settings.setMultiTargetTapNotificationEnabled(false);
+    internals.settings.setMultiTargetTapNotificationEnabled(false);
 
     debug('Event on a simple div');
     debug('---------------------');
@@ -212,13 +212,13 @@ onload = function() {
     runTestForDocuments(rect.left + 3, rect.top + 3, [document, doc2, doc3]);
     debug('');
 
-    window.internals.settings.setViewportEnabled(false);
+    internals.settings.setViewportEnabled(false);
     debug('Event on a simple div (desktop viewport)');
     debug('---------------------');
     var point = centerOf(document.getElementById('target'));
     runTestForDocuments(point.x, point.y, [document]);
     debug('');
-    window.internals.settings.setViewportEnabled(true);
+    internals.settings.setViewportEnabled(true);
     finishJSTest();
 }
 </script>

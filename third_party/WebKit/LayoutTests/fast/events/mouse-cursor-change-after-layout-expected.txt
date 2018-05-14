@@ -7,7 +7,7 @@ Bug 26723
 
 
 Mouse move
-PASS window.internals.getCurrentCursorInfo() is "type=IBeam hotSpot=0,0"
+PASS internals.getCurrentCursorInfo() is "type=IBeam hotSpot=0,0"
 Adding overlay element
 PASS internals.getCurrentCursorInfo() is "type=Wait hotSpot=0,0"
 Moving overlay element

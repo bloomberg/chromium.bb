@@ -2,11 +2,11 @@
 <script src="resources/composited-scroll.js"></script>
 <script>
 if (window.internals)
-    window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
+    internals.settings.setPreferCompositingToLCDTextEnabled(false);
 
 if (window.testRunner) {
-    window.testRunner.dumpAsText();
-    window.testRunner.waitUntilDone();
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
 }
 
 var result = "";
@@ -41,8 +41,8 @@ onload = function() {
             }
 
             if (window.testRunner) {
-                window.testRunner.setCustomTextOutput(result);
-                window.testRunner.notifyDone();
+                testRunner.setCustomTextOutput(result);
+                testRunner.notifyDone();
             }
         });
     });

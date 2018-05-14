@@ -29,11 +29,11 @@
 </div>
 <script>
 if (window.internals)
-    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+    internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
 if (window.testRunner) {
-    window.testRunner.dumpAsText();
-    window.testRunner.waitUntilDone();
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
 }
 
 var result = "";
@@ -57,8 +57,8 @@ onload = function() {
         }
 
         if (window.testRunner) {
-            window.testRunner.setCustomTextOutput(result);
-            window.testRunner.notifyDone();
+            testRunner.setCustomTextOutput(result);
+            testRunner.notifyDone();
         }
     });
 };

@@ -97,7 +97,7 @@ non-indented lines.
 	<rect id="test-frame" x="1" y="1" width="478" height="358" fill="none" stroke="#000000"/>
 <script>
 if (window.testRunner)
-    window.testRunner.dumpSelectionRect();
+    testRunner.dumpSelectionRect();
 var range = document.createRange();
 range.selectNode(window.document.documentElement);
 var selection = window.getSelection();

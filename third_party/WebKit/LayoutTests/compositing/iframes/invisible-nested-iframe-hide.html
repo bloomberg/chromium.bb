@@ -37,7 +37,7 @@
         var div = document.getElementById('invisible');
         div.style.cssText = "display:none;";
         if (window.testRunner) {
-          document.getElementById('layers').innerHTML = window.internals.layerTreeAsText(document);
+          document.getElementById('layers').innerHTML = internals.layerTreeAsText(document);
           testRunner.notifyDone();
         }
       });

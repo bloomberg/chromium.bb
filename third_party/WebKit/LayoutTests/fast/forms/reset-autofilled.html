@@ -14,9 +14,9 @@
         var select = document.getElementById('select');
         var textarea = document.getElementById('textarea');
         if (window.internals) {
-            window.internals.setAutofilled(field, true);
-            window.internals.setAutofilled(select, true);
-            window.internals.setAutofilled(textarea, true);
+            internals.setAutofilled(field, true);
+            internals.setAutofilled(select, true);
+            internals.setAutofilled(textarea, true);
         } else {
             testFailed('This test requires a LayoutTestController.');
             return;

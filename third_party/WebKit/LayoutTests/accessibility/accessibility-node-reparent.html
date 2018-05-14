@@ -12,7 +12,7 @@
 description("This test makes sure that AccessibilityNodeObjects are properly detached when the node they point to is reparented to a location that allows them to have a renderer.");
 
 if (window.testRunner && window.accessibilityController) {
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
 
     // Create an ordinary button on the page, focus it and get its accessibility role.
     var button = document.createElement('button');

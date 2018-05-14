@@ -6,7 +6,7 @@
 // otherwise be promoted to rootScroller which changes painting and
 // invalidation.
 if (window.internals)
-  window.internals.runtimeFlags.implicitRootScrollerEnabled = false;
+  internals.runtimeFlags.implicitRootScrollerEnabled = false;
 if (window.testRunner)
   testRunner.useUnfortunateSynchronousResizeMode();
 onload = function() {

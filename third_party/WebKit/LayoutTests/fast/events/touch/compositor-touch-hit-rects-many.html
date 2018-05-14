@@ -45,7 +45,7 @@ function verifyRectCount(expectedRects) {
     log('Missing window.internals');
 
   internals.forceCompositingUpdate(document);
-  var rects = window.internals.touchEventTargetLayerRects(document);
+  var rects = internals.touchEventTargetLayerRects(document);
   log('Test node has ' + document.querySelectorAll('.child').length + ' children with ' + rects.length + ' rects');
   if (rects.length != expectedRects) {
     log('FAIL - got ' + rects.length + ' rects, expected ' + expectedRects + '.');

@@ -11,7 +11,7 @@ function testRects()
     range.selectNode(document.getElementById('div'));
     var rect = range.getBoundingClientRect();
 
-    window.internals.setPageScaleFactor(2);
+    internals.setPageScaleFactor(2);
     var scaledRange = document.createRange();
     scaledRange.selectNode(document.getElementById('div'));
     var scaledRect = scaledRange.getBoundingClientRect();

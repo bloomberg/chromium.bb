@@ -36,7 +36,7 @@ function runTest() {
         linkToRemove.parentNode.removeChild(linkToRemove);
         var brToRemove = document.getElementById('brToRemove');
         brToRemove.parentNode.removeChild(brToRemove);
-        window.setTimeout(function() { window.testRunner.notifyDone(); }, 0);
+        window.setTimeout(function() { testRunner.notifyDone(); }, 0);
     } else {
         debug("This test requires DumpRenderTree.");
     }

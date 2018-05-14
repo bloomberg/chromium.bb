@@ -18,7 +18,7 @@ var newWindow = window.open('resources/conclude-test-in-parent.html');
 newWindow.onscroll = function() {};
 
 function concludeTest() {
-    shouldBe('window.internals.scrollEventHandlerCount(newWindow.document)', '1');
+    shouldBe('internals.scrollEventHandlerCount(newWindow.document)', '1');
     testRunner.notifyDone();
 }
 </script>

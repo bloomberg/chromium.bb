@@ -36,7 +36,7 @@
     {
         var hadLayers = false;
         if (window.testRunner) {
-            var layers = window.internals.layerTreeAsText(document);
+            var layers = internals.layerTreeAsText(document);
             hadLayers = layers != "";
         }
 
@@ -44,7 +44,7 @@
             document.getElementById('iframe').className = 'collapsed';
 
             if (window.testRunner) {
-                var haveLayers = window.internals.layerTreeAsText(document) != "";
+                var haveLayers = internals.layerTreeAsText(document) != "";
                 var result;
                 if (hadLayers && haveLayers)
                   result = "PASS: Had layers before and after";

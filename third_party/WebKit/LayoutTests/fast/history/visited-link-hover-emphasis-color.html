@@ -19,7 +19,7 @@ if (window.testRunner) {
     testRunner.layoutAndPaintAsyncThen(function(){
         if (window.eventSender);
             eventSender.mouseMoveTo(anchor.offsetLeft + 1, anchor.offsetTop + 1);
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
     });
 }
 </script>

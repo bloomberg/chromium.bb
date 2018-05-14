@@ -4,7 +4,7 @@
 <script src="../editing.js" type="text/javascript"></script>
 <script type="text/javascript">
 if (window.testRunner) {  
-    window.testRunner.waitUntilDone(); 
+    testRunner.waitUntilDone(); 
     testRunner.dumpAsText();
 }
 
@@ -54,7 +54,7 @@ function runTest() {
     y = drop.offsetTop + drop.offsetHeight / 2;
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseUp();
-    window.testRunner.notifyDone();
+    testRunner.notifyDone();
 }
 
 </script>

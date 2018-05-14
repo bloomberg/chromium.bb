@@ -10,7 +10,7 @@ test(function() {
     // ensure layout is valid.
     touch_plugin.offsetLeft;
 
-    assert_equals(window.internals.touchStartOrMoveEventHandlerCount(document), 1, "One touch event handler registered.");
+    assert_equals(internals.touchStartOrMoveEventHandlerCount(document), 1, "One touch event handler registered.");
 }, "raw handler added");
 
 </script>

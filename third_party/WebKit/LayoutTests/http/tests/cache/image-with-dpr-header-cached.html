@@ -8,7 +8,7 @@ window.onload = function() {
   if (window.sessionStorage.getItem("reloaded")) {
     window.sessionStorage.removeItem("reloaded");
     if (window.testRunner) {
-      window.testRunner.notifyDone();
+      testRunner.notifyDone();
     }
   } else {
       window.sessionStorage.reloaded = "true";

@@ -13,7 +13,7 @@
     `);
   await TestRunner.evaluateInPagePromise(`
       if (window.internals)
-          window.internals.settings.setTextAutosizingWindowSizeOverride(320, 480);
+          internals.settings.setTextAutosizingWindowSizeOverride(320, 480);
 
       function getAutosizing()
       {

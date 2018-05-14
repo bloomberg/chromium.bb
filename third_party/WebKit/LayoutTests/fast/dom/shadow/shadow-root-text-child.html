@@ -5,7 +5,7 @@ function testShouldNotCrash()
 {
     if (!window.testRunner)
         return;
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
     var root = document.createElement("div");
     var shadow = root.createShadowRoot();
     var shadowBuilder = document.createElement("div");

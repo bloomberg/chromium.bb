@@ -12,7 +12,7 @@
 
     // The animation lasts 100ms so skip 12 (12*1s/120=100ms) frames to be sure.
     for (var i = 0; i < 12; i++)
-      window.internals.advanceImageAnimation(image);
+      internals.advanceImageAnimation(image);
 
     window.requestAnimationFrame(function() {
       finishRepaintTest();

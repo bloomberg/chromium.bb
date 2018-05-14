@@ -35,9 +35,9 @@
 
       function doTest() {
         if (window.internals)
-          window.internals.forceCompositingUpdate(document);
+          internals.forceCompositingUpdate(document);
         document.getElementById('host').style.left = '100px';
-        document.getElementById('console').textContent = window.internals.layerTreeAsText(document);
+        document.getElementById('console').textContent = internals.layerTreeAsText(document);
       }
     </script>
   </head>

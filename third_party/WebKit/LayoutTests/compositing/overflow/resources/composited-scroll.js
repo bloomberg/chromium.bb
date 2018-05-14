@@ -1,5 +1,5 @@
 function elementSubtreeHasCompositedScrollLayers(element) {
-    var layerTree = window.internals.elementLayerTreeAsText(element);
+    var layerTree = internals.elementLayerTreeAsText(element);
     if (layerTree === '')
         return false;
     var layers = JSON.parse(layerTree);
@@ -13,7 +13,7 @@ function elementSubtreeHasCompositedScrollLayers(element) {
 }
 
 function elementSubtreeHasOpaqueCompositedScrollingContentsLayer(element) {
-    var layerTree = window.internals.elementLayerTreeAsText(element);
+    var layerTree = internals.elementLayerTreeAsText(element);
     if (layerTree === '')
         return false;
     var layers = JSON.parse(layerTree);
@@ -26,7 +26,7 @@ function elementSubtreeHasOpaqueCompositedScrollingContentsLayer(element) {
 }
 
 function elementSubtreeHasNotOpaqueCompositedScrollingContentsLayer(element) {
-    var layerTree = window.internals.elementLayerTreeAsText(element);
+    var layerTree = internals.elementLayerTreeAsText(element);
     if (layerTree === '')
         return false;
     var layers = JSON.parse(layerTree);

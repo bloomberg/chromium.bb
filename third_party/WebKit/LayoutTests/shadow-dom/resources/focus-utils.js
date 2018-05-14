@@ -8,7 +8,7 @@ function innermostActiveElement(element) {
     return element;
   }
   if (isShadowHost(element)) {
-    let shadowRoot = window.internals.shadowRoot(element);
+    let shadowRoot = internals.shadowRoot(element);
     if (shadowRoot) {
       if (shadowRoot.activeElement)
         return innermostActiveElement(shadowRoot.activeElement);

@@ -34,13 +34,13 @@
 </body>
 <script>
   var selector = document.querySelector('select');
-  window.testRunner.dumpAsTextWithPixelResults();
-  window.testRunner.waitUntilDone();
+  testRunner.dumpAsTextWithPixelResults();
+  testRunner.waitUntilDone();
   openPicker(selector, function() {
-    window.testRunner.notifyDone();
+    testRunner.notifyDone();
   },
   function() {
-    window.testRunner.notifyDone();
+    testRunner.notifyDone();
   });
 </script>
 </html>

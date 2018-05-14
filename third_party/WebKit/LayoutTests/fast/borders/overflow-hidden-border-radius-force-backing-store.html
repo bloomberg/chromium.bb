@@ -30,14 +30,14 @@
 
 <script type="text/javascript">
     if (window.testRunner)
-        window.testRunner.dumpAsText();
+        testRunner.dumpAsText();
 
     function runTest()
     {
         if (!window.internals)
             return;
 
-        document.getElementById('layers').innerHTML = window.internals.layerTreeAsText(document);
+        document.getElementById('layers').innerHTML = internals.layerTreeAsText(document);
     }
 </script>
 

@@ -2,7 +2,7 @@ description("This test checks whether javascript programs can access clipboard."
 
 if (window.testRunner)
 {
-    window.testRunner.setJavaScriptCanAccessClipboard(false);
+    testRunner.setJavaScriptCanAccessClipboard(false);
 }
 
 var nonEditableParagraph = document.createElement("p");

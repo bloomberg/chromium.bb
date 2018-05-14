@@ -28,10 +28,10 @@ test(function () {
   editor.focus();
 
   assert_not_equals(window.internals, undefined, 'This test requires window.internals');
-  let caretHeight1 = window.internals.absoluteCaretBounds().height;
+  let caretHeight1 = internals.absoluteCaretBounds().height;
   let sel = window.getSelection();
   sel.collapse(line2, 0);
-  let caretHeight2 = window.internals.absoluteCaretBounds().height;
+  let caretHeight2 = internals.absoluteCaretBounds().height;
 
   assert_equals(caretHeight1, caretHeight2);
 }, 'The caret height should be the same in every line');
@@ -41,10 +41,10 @@ test(function () {
   editor.focus();
 
   assert_not_equals(window.internals, undefined, 'This test requires window.internals');
-  let caretHeight1 = window.internals.absoluteCaretBounds().height;
+  let caretHeight1 = internals.absoluteCaretBounds().height;
   let sel = window.getSelection();
   sel.collapse(large_font, 0);
-  let caretHeight2 = window.internals.absoluteCaretBounds().height;
+  let caretHeight2 = internals.absoluteCaretBounds().height;
 
   assert_equals(caretHeight1, caretHeight2);
 }, 'The caret height at the front of word(150%) should be the same as the caret height in other words(100%).');
@@ -57,9 +57,9 @@ test(function () {
   let sel = window.getSelection();
   sel.collapse(large_font, 0);
   sel.modify('move', 'right', 'character');
-  let caretHeight1 = window.internals.absoluteCaretBounds().height;
+  let caretHeight1 = internals.absoluteCaretBounds().height;
   sel.collapse(large_font, 1);
-  let caretHeight2 = window.internals.absoluteCaretBounds().height;
+  let caretHeight2 = internals.absoluteCaretBounds().height;
 
   assert_equals(caretHeight1, caretHeight2);
 }, 'The caret height at the end of word should be the same as the caret height in the word.');
@@ -69,10 +69,10 @@ test(function () {
   editor.focus();
 
   assert_not_equals(window.internals, undefined, 'This test requires window.internals');
-  let caretHeight1 = window.internals.absoluteCaretBounds().height;
+  let caretHeight1 = internals.absoluteCaretBounds().height;
   let sel = window.getSelection();
   sel.collapse(large_font_rtl, 0);
-  let caretHeight2 = window.internals.absoluteCaretBounds().height;
+  let caretHeight2 = internals.absoluteCaretBounds().height;
 
   assert_equals(caretHeight1, caretHeight2);
 }, 'In case of RTL, the caret height at the front of word(150%) should be the same as the caret height in other words(100%).');
@@ -85,9 +85,9 @@ test(function () {
   let sel = window.getSelection();
   sel.collapse(large_font_rtl, 0);
   sel.modify('move', 'left', 'character');
-  let caretHeight1 = window.internals.absoluteCaretBounds().height;
+  let caretHeight1 = internals.absoluteCaretBounds().height;
   sel.collapse(large_font_rtl, 1);
-  let caretHeight2 = window.internals.absoluteCaretBounds().height;
+  let caretHeight2 = internals.absoluteCaretBounds().height;
 
   assert_equals(caretHeight1, caretHeight2);
 }, 'In case of RTL, the caret height at the end of word should be the same as the caret height in the word.');

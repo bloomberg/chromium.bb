@@ -47,8 +47,8 @@
 
   function runTest(testCase) {
     return new Promise((resolve, reject) => {
-      window.internals.setPageScaleFactor(testCase.starting_scale);
-      window.internals.setVisualViewportOffset(
+      internals.setPageScaleFactor(testCase.starting_scale);
+      internals.setVisualViewportOffset(
           window.innerWidth * (1 - (1 / testCase.starting_scale)) / 2,
           window.innerHeight * (1 - (1 / testCase.starting_scale)) / 2);
 

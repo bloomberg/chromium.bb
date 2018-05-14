@@ -7,7 +7,7 @@
 <script>
 async_test(function(t) {
     // This test is not valid for modern media controls.
-    if (window.internals.runtimeFlags.modernMediaControlsEnabled)
+    if (internals.runtimeFlags.modernMediaControlsEnabled)
       t.done();
 
     var audio = document.querySelector("audio");

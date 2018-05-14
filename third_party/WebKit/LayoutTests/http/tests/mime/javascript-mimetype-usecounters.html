@@ -22,7 +22,7 @@ var counters = [SameOriginTextScript,
                 CrossOriginApplicationScript,
                 CrossOriginOtherScript];
 function getUseCounters() {
-  return counters.map(counter => window.internals.isUseCounted(document, counter));
+  return counters.map(counter => internals.isUseCounted(document, counter));
 }
 function testCase(test, callback) {
   var previousCounters = getUseCounters();

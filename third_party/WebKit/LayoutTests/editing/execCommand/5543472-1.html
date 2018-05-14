@@ -10,7 +10,7 @@ window.getSelection().setBaseAndExtent(td, 0, li, li.childNodes.length);
 document.execCommand("InsertUnorderedList");
 
 if (window.testRunner) {
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
     div = document.getElementById("div");
     p = document.getElementById("p");
     document.body.innerText = p.innerText + "\n\nDOM:\n" + div.innerHTML;

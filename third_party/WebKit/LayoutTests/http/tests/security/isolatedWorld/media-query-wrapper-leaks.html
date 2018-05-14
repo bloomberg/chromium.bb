@@ -16,7 +16,7 @@ testRunner.evaluateScriptInIsolatedWorld(1,
     '    document.querySelector("#result").innerHTML = query.expando === "nyan" ? "PASS" : "FAIL";'+
     '});');
 
-window.internals.settings.setMediaTypeOverride("print");
+internals.settings.setMediaTypeOverride("print");
 setTimeout(function () { testRunner.notifyDone(); }, 0);
 </script>
 </body>

@@ -5,7 +5,7 @@ function runTest() {
   if (!window.testRunner)
     return;
 
-  window.testRunner.dumpAsText();
+  testRunner.dumpAsText();
 
   var span = document.getElementById("root");
   eventSender.mouseMoveTo(span.offsetLeft + 10, span.offsetTop + span.offsetHeight / 2);

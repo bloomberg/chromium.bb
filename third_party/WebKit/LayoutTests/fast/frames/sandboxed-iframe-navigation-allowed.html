@@ -4,8 +4,8 @@
 <script>
 
 if (window.testRunner) {
-    window.testRunner.dumpAsText();
-    window.testRunner.waitUntilDone();
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
 }
 
 function childFrameWasNavigated()
@@ -30,7 +30,7 @@ function sandboxWasNavigated()
     isSuccessfullyParsed();
 
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 }
 
 </script>

@@ -82,7 +82,7 @@ function firstGestureScroll()
 {
     debug("first gesture");
 
-    window.internals.setZoomFactor(0.5);
+    internals.setZoomFactor(0.5);
     eventSender.gestureScrollBegin(45, 12);
     eventSender.gestureScrollUpdate(-40, 0);
     eventSender.gestureScrollEnd(0, 0);
@@ -95,7 +95,7 @@ function secondGestureScroll()
 {
     debug("second gesture");
 
-    window.internals.setZoomFactor(1.25);
+    internals.setZoomFactor(1.25);
     eventSender.gestureScrollBegin(12, 47);
     eventSender.gestureScrollUpdate(0, -40);
     eventSender.gestureScrollEnd(0, 0);

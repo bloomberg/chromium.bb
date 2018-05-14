@@ -20,8 +20,8 @@
           testRunner.dumpAsTextWithPixelResults();
 
       if (window.internals) {
-          window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
-          window.internals.runtimeFlags.accelerated2dCanvasEnabled = true;
+          internals.settings.setPreferCompositingToLCDTextEnabled(true);
+          internals.runtimeFlags.accelerated2dCanvasEnabled = true;
       }
 
       function doTest() {

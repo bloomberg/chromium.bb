@@ -4,8 +4,8 @@
 <script src="../resources/testharnessreport.js"></script>
 <body>
 <script>
-  window.internals.settings.setAutoplayPolicy('user-gesture-required');
-  window.internals.runtimeFlags.autoplayMutedVideosEnabled = true;
+  internals.settings.setAutoplayPolicy('user-gesture-required');
+  internals.runtimeFlags.autoplayMutedVideosEnabled = true;
 
   async_test(function(t) {
     // Create a video off screen.

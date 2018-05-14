@@ -25,7 +25,7 @@ function openPickerErrorCallback() {
 openPicker(menu, test1, openPickerErrorCallback);
 
 function test1() {
-    picker = window.internals.pagePopupWindow.global.picker;
+    picker = internals.pagePopupWindow.global.picker;
 
     function onUpdate() {
         setTimeout(function() {

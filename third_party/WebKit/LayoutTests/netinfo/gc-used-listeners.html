@@ -8,7 +8,7 @@
 
 description('Tests that used listeners are not collected.');
 
-shouldBe('typeof window.internals.observeGC', '"function"',
+shouldBe('typeof internals.observeGC', '"function"',
 'this test requires window.internals');
 
 var callback = function(e) {

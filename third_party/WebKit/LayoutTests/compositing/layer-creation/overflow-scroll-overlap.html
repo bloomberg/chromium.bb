@@ -46,7 +46,7 @@
         scrollDiv.scrollTop = 49;
 
         if (window.testRunner) {
-          document.getElementById('results').innerText = window.internals.layerTreeAsText(document);
+          document.getElementById('results').innerText = internals.layerTreeAsText(document);
           testRunner.notifyDone();
         }
       }, 150);

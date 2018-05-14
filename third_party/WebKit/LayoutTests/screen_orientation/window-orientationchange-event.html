@@ -42,7 +42,7 @@ if (window.internals && internals.runtimeFlags.orientationEventEnabled) {
   });
 
   function runNoChangeTest() {
-    window.testRunner.setMockScreenOrientation(orientations[currentIndex]);
+    testRunner.setMockScreenOrientation(orientations[currentIndex]);
 
     setTimeout(function() {
       noChangeTest.step(function() {
@@ -57,7 +57,7 @@ if (window.internals && internals.runtimeFlags.orientationEventEnabled) {
 
   var i = 0;
   function runChangeTest() {
-    window.testRunner.setMockScreenOrientation(orientations[getNextIndex()]);
+    testRunner.setMockScreenOrientation(orientations[getNextIndex()]);
     currentIndex = getNextIndex();
 
     setTimeout(function() {

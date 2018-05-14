@@ -9,6 +9,6 @@ print "HTTP_ORIGIN: " . $ENV{"HTTP_ORIGIN"} . "\n";
 print <<DONE
 <script>
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 </script>
 DONE

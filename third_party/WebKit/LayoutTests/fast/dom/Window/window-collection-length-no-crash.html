@@ -13,8 +13,8 @@ once the test completes.
 
 <script>
 if (window.testRunner) {
-    window.testRunner.dumpAsText();
-    window.testRunner.waitUntilDone();
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
 }
 
 var myFrames = subframe.frames;
@@ -23,7 +23,7 @@ function done() {
     var foo = myFrames.length;
     document.getElementById("status").innerText = "SUCCESS";
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 }
 
 subframe.document.location = "resources/notify-parent-done.html";

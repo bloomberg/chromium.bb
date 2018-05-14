@@ -1,5 +1,5 @@
 if (window.testRunner)
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
 
 var failed = false;
 var frames = 0;         /* number of allowed frames that called back */

@@ -18,7 +18,7 @@
       if (window.name != 'verification') {
         assert_array_equals([window.innerWidth, window.innerHeight], [800, 600], 'initial page size is valid');
         if (window.internals) {
-          window.internals.setPageScaleFactor(2);
+          internals.setPageScaleFactor(2);
           assert_array_equals([internals.visualViewportWidth(), internals.visualViewportHeight()], [400, 300], 'page is scaled');
         }
 
@@ -37,7 +37,7 @@
         // clean up
         window.name = '';
         if (window.internals)
-          setTimeout(function() {window.internals.setPageScaleFactor(1);}, 0);
+          setTimeout(function() {internals.setPageScaleFactor(1);}, 0);
         t.done();
       }
     }));

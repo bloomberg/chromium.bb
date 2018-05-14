@@ -10,7 +10,7 @@
         }
         function run()
         {
-            shouldBe("window.internals.counterValue(document.getElementById('c2'))", "'2'");
+            shouldBe("internals.counterValue(document.getElementById('c2'))", "'2'");
 
             debug('');
             debug('TEST COMPLETE');

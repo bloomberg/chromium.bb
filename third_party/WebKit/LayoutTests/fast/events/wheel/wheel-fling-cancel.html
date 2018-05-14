@@ -33,10 +33,10 @@
             testRunner.notifyDone();
     }
 
-    if (window.testRunner && window.eventSender && window.eventSender.gestureFlingStart) {
+    if (window.testRunner && window.eventSender && eventSender.gestureFlingStart) {
         eventSender.gestureFlingStart(10, 11, 1000, 1000, "touchpad");
-        window.eventSender.mouseMoveTo(100, 100);
-        window.eventSender.mouseScrollBy(0, 1);
+        eventSender.mouseMoveTo(100, 100);
+        eventSender.mouseScrollBy(0, 1);
         document.addEventListener("mousewheel", recordWheelEvent);
         testRunner.waitUntilDone();
         notifyWhenFlingIsOver();

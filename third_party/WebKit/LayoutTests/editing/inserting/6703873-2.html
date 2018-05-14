@@ -24,7 +24,7 @@
         document.execCommand("InsertNewlineInQuotedContent");
     
         if (window.testRunner) {
-            window.testRunner.dumpAsText();
+            testRunner.dumpAsText();
             div = document.getElementById("div");
             div.innerText = div.innerHTML;
         }

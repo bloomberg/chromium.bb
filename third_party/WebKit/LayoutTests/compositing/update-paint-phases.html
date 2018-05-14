@@ -36,8 +36,8 @@
         testRunner.dumpAsText();
 
     if (window.internals) {
-        window.internals.forceCompositingUpdate(document);
-        window.internals.startTrackingRepaints(document);
+        internals.forceCompositingUpdate(document);
+        internals.startTrackingRepaints(document);
     }
 
     document.querySelector('style').appendChild(document.createTextNode('#to-modify { display: none }'));
@@ -45,7 +45,7 @@
     if (window.internals) {
         var layerTree = document.createElement('pre');
         layerTree.innerHTML = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINTING_PHASES); 
-        window.internals.stopTrackingRepaints(document);
+        internals.stopTrackingRepaints(document);
         document.body.appendChild(layerTree);
     }
 </script>

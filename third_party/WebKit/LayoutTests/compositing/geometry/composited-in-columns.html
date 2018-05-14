@@ -45,7 +45,7 @@
     function dumpLayers()
     {
       if (window.testRunner)
-        document.getElementById('layers').innerText = window.internals.layerTreeAsText(document);
+        document.getElementById('layers').innerText = internals.layerTreeAsText(document);
     }
     
     window.addEventListener('load', dumpLayers, false);

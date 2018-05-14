@@ -53,7 +53,7 @@
         internals.runtimeFlags.paintUnderInvalidationCheckingEnabled = true;
 
     function finish() {
-        var layerTree = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
+        var layerTree = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
         var invalidations = JSON.parse(layerTree)["objectPaintInvalidations"];
         // Passes if there is no invalidations other than imgForAdvanceImageAnimation,
         // or only invalidations because of background obscuration change.

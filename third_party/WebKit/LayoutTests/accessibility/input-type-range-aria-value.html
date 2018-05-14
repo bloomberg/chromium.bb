@@ -20,9 +20,9 @@ if (window.testRunner)
 description("This tests that ARIA attributes can be used to override the value of an input type=range even if it doesn't have an ARIA role of slider, because it has an *implicit* ARIA role of slider already. http://www.w3.org/TR/html-aapi/#el-78");
 
 if (window.accessibilityController) {
-    window.axRange1 = window.accessibilityController.accessibleElementById("range1");
-    window.axRange2 = window.accessibilityController.accessibleElementById("range2");
-    window.axRange3 = window.accessibilityController.accessibleElementById("range3");
+    window.axRange1 = accessibilityController.accessibleElementById("range1");
+    window.axRange2 = accessibilityController.accessibleElementById("range2");
+    window.axRange3 = accessibilityController.accessibleElementById("range3");
 
     shouldBe("axRange1.minValue", "1");
     shouldBe("axRange1.maxValue", "10");

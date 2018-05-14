@@ -11,12 +11,12 @@
 document.querySelector('embed').addEventListener('message', function(message) {
     if (message.data == 'loaded')
         if (window.testRunner)
-            window.testRunner.notifyDone();
+            testRunner.notifyDone();
 });
 onload = function() {
     document.getElementById('plugin').setAttribute('type', 'application/x-blink-test-plugin');
 
     if (window.testRunner)
-        window.testRunner.waitUntilDone();
+        testRunner.waitUntilDone();
 }
 </script>

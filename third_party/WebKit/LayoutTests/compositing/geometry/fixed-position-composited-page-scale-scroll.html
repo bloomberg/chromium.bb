@@ -15,8 +15,8 @@
 </style>
 <script>
   if (window.internals && window.eventSender) {
-    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
-    window.internals.setPageScaleFactor(2);
+    internals.settings.setPreferCompositingToLCDTextEnabled(true);
+    internals.setPageScaleFactor(2);
   }
   function test() {
     window.scrollTo(100,100);

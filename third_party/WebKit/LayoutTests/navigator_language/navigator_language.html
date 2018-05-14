@@ -19,7 +19,7 @@ test(function() {
       received = true;
     }
 
-    window.testRunner.setAcceptLanguages('klingon');
+    testRunner.setAcceptLanguages('klingon');
     assert_true(received);
 }, "Test that the languagechange event fires on window.onlanguagechange");
 
@@ -29,7 +29,7 @@ test(function() {
         received = true;
     });
 
-    window.testRunner.setAcceptLanguages('klingon-FR');
+    testRunner.setAcceptLanguages('klingon-FR');
     assert_true(received);
 }, "Test that the languagechange event fires on window.addEventListener('languagechange')");
 
@@ -37,7 +37,7 @@ test(function() {
     window.received = false; // We need a global variable here.
     document.body.setAttribute('onlanguagechange', 'window.received = true;');
 
-    window.testRunner.setAcceptLanguages('klingon-US');
+    testRunner.setAcceptLanguages('klingon-US');
     assert_true(window.received);
 }, "Test that the languagechange event fires on body onlanguagechange attribute");
 
@@ -50,7 +50,7 @@ test(function() {
         fromWindowHandler = true;
     }
 
-    window.testRunner.setAcceptLanguages('klingon');
+    testRunner.setAcceptLanguages('klingon');
     assert_equals(window.received, 1);
     assert_true(fromWindowHandler);
 
@@ -62,7 +62,7 @@ test(function() {
     }
     document.body.setAttribute('onlanguagechange', 'window.received++;');
 
-    window.testRunner.setAcceptLanguages('klingon-FR');
+    testRunner.setAcceptLanguages('klingon-FR');
     assert_equals(window.received, 1);
     assert_false(fromWindowHandler);
 }, "Test that the languagechange event fires on body onlanguagechange attribute XOR window.onlanguagechange");
@@ -73,8 +73,8 @@ test(function() {
         eventsCount++;
     }
 
-    window.testRunner.setAcceptLanguages('klingon-US');
-    window.testRunner.setAcceptLanguages('klingon-US');
+    testRunner.setAcceptLanguages('klingon-US');
+    testRunner.setAcceptLanguages('klingon-US');
 
     assert_equals(eventsCount, 1);
 }, "Test that changing the language to the same value doesn't fire an event.")
@@ -85,7 +85,7 @@ test(function() {
         assert_false(e.bubbles);
     });
 
-    window.testRunner.setAcceptLanguages('klingon');
+    testRunner.setAcceptLanguages('klingon');
 }, "Test properties of the fired event.");
 
 test(function() {
@@ -110,7 +110,7 @@ test(function() {
     for (var i = 0; i < testValues.length; ++i) {
         var data = testValues[i];
 
-        window.testRunner.setAcceptLanguages(data.accept_languages);
+        testRunner.setAcceptLanguages(data.accept_languages);
         assert_equals(eventsCount, i + 1);
 
         assert_equals(navigator.languages.length, data.languages.length);
@@ -126,7 +126,7 @@ test(function() {
     assert_equals(navigator.languages, navigator.languages);
     assert_equals(navigator.languages, previous);
 
-    window.testRunner.setAcceptLanguages('fr-FR');
+    testRunner.setAcceptLanguages('fr-FR');
     assert_not_equals(navigator.languages, previous);
 }, "Test navigator.languages' caching behaviour.");
 

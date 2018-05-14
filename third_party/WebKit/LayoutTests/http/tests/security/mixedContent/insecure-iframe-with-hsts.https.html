@@ -3,7 +3,7 @@
 <script src="/resources/testharnessreport.js"></script>
 <body>
 <script>
-  window.testRunner.dumpFrameLoadCallbacks();
+  testRunner.dumpFrameLoadCallbacks();
 
   async_test(t => {
     fetch("https://hsts-example.test:8443/security/resources/hsts.php?as-fetch")

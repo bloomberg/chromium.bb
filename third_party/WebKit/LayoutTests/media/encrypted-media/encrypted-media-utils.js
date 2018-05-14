@@ -337,10 +337,10 @@ function playVideoAndWaitForTimeupdate(video, content, duration)
 function verifyMediaKeyAndMediaKeySessionCount(
     expectedMediaKeysCount, expectedMediaKeySessionCount, description)
 {
-    assert_equals(window.internals.mediaKeysCount(),
+    assert_equals(internals.mediaKeysCount(),
                   expectedMediaKeysCount,
                   description + ', MediaKeys:');
-    assert_equals(window.internals.mediaKeySessionCount(),
+    assert_equals(internals.mediaKeySessionCount(),
                   expectedMediaKeySessionCount,
                   description + ', MediaKeySession:');
 }

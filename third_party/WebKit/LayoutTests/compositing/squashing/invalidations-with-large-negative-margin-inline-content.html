@@ -19,14 +19,14 @@ if (window.testRunner) {
 }
 var updateFunction = function() {
     if (window.internals)
-        window.internals.startTrackingRepaints(document);
+        internals.startTrackingRepaints(document);
 
     document.getElementById('chip').style.backgroundColor = "blue";
 
     if (window.internals) {
         // Repaint should be at x=400px, since that is the position relative to the squashing layer.
-        var data = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
-        window.internals.stopTrackingRepaints(document);
+        var data = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
+        internals.stopTrackingRepaints(document);
 
         var output = document.getElementById('output');
         output.textContent = data;

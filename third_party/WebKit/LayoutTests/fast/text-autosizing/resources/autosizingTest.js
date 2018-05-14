@@ -1,16 +1,16 @@
 function setWindowSizeOverride(width, height) {
     if (window.internals)
-        window.internals.settings.setTextAutosizingWindowSizeOverride(width, height);
+        internals.settings.setTextAutosizingWindowSizeOverride(width, height);
 }
 
 function setFontScaleFactor(scale) {
     if (window.internals)
-        window.internals.settings.setAccessibilityFontScaleFactor(scale);
+        internals.settings.setAccessibilityFontScaleFactor(scale);
 }
 
 function initAutosizingTest() {
     if (window.internals) {
-        window.internals.settings.setTextAutosizingEnabled(true);
+        internals.settings.setTextAutosizingEnabled(true);
         setWindowSizeOverride(320, 480);
     } else if (window.console && console.warn) {
         console.warn("This test depends on Text Autosizing being enabled. Run with content shell "

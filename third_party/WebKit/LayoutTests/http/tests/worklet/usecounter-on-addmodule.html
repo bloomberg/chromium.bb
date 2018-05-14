@@ -11,9 +11,9 @@
 const kFeature = 2364;
 
 test(() => {
-  assert_false(window.internals.isUseCounted(window.document, kFeature));
+  assert_false(internals.isUseCounted(window.document, kFeature));
   CSS.paintWorklet.addModule('resources/empty-worklet-script.js');
-  assert_true(window.internals.isUseCounted(window.document, kFeature));
+  assert_true(internals.isUseCounted(window.document, kFeature));
 }, 'The usage count of Worklet.addModule() should be recorded in UseCounter.');
 
 </script>

@@ -1,4 +1,4 @@
-PASS layerTree is window.internals.layerTreeAsText(document)
+PASS layerTree is internals.layerTreeAsText(document)
 PASS successfullyParsed is true
 
 TEST COMPLETE

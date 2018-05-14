@@ -40,7 +40,7 @@ myelement {
 description("This test makes sure that focusable elements in canvas fallback content are accessible.");
 
 if (window.testRunner && window.accessibilityController) {
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
 
     function check(id, expectedRole) {
         debug(id);

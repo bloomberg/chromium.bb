@@ -30,11 +30,11 @@ there is a risk of accidentally skipping updating touch rects unless we ping the
     testRunner.dumpAsText();
 
   if (window.internals) {
-    window.internals.forceCompositingUpdate(document);
+    internals.forceCompositingUpdate(document);
     document.getElementById("touchElement").addEventListener("touchmove", dummyListener, false);
-    window.internals.forceCompositingUpdate(document);
+    internals.forceCompositingUpdate(document);
 
-    var rects = window.internals.touchEventTargetLayerRects(document);
+    var rects = internals.touchEventTargetLayerRects(document);
     if (rects && rects.length == 1)
       document.getElementById("result").innerHTML = "PASS";
     else

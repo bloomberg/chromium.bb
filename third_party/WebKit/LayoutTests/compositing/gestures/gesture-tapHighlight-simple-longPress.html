@@ -28,7 +28,7 @@ function runTest() {
 
         // Generate long press ... this should cancel highlight.
         eventSender.gestureLongPress(x, y);
-        window.setTimeout(function() { window.testRunner.notifyDone(); }, 0);
+        window.setTimeout(function() { testRunner.notifyDone(); }, 0);
     } else {
         debug("This test requires DumpRenderTree.");
     }

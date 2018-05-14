@@ -20,7 +20,7 @@ function expect(expected, actual)
 function test()
 {
     if (window.testRunner)
-        window.testRunner.dumpAsText();
+        testRunner.dumpAsText();
 
     expect(0, document.getElementsByTagName('title').length);
     document.title = 'Document title';

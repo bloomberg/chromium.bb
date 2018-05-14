@@ -21,9 +21,9 @@ function renderWebGL(gl) {
 function asyncTest() {
     debug("Check if back buffer (toDataURL) is equal to front buffer (getImageSourceURL) one frame after drawing webgl contents.")
     debug("1) when drawingBuffer is preserved.")
-    shouldBeTrue("preserve_canvas3D.toDataURL('image/png') == window.internals.getImageSourceURL(preserve_canvas3D)");
+    shouldBeTrue("preserve_canvas3D.toDataURL('image/png') == internals.getImageSourceURL(preserve_canvas3D)");
     debug("2) when drawingBuffer is not preserved. They must be different.")
-    shouldBeTrue("nonpreserve_canvas3D.toDataURL('image/png') != window.internals.getImageSourceURL(nonpreserve_canvas3D)");
+    shouldBeTrue("nonpreserve_canvas3D.toDataURL('image/png') != internals.getImageSourceURL(nonpreserve_canvas3D)");
     if (window.testRunner)
         testRunner.notifyDone();
 }
@@ -40,9 +40,9 @@ function startTestAfterFirstPaint() {
 
     debug("Check if back buffer (toDataURL) is equal to front buffer (getImageSourceURL)")
     debug("1) when drawingBuffer is preserved.")
-    shouldBeTrue("preserve_canvas3D.toDataURL('image/png') == window.internals.getImageSourceURL(preserve_canvas3D)");
+    shouldBeTrue("preserve_canvas3D.toDataURL('image/png') == internals.getImageSourceURL(preserve_canvas3D)");
     debug("2) when drawingBuffer is not preserved.")
-    shouldBeTrue("nonpreserve_canvas3D.toDataURL('image/png') == window.internals.getImageSourceURL(nonpreserve_canvas3D)");
+    shouldBeTrue("nonpreserve_canvas3D.toDataURL('image/png') == internals.getImageSourceURL(nonpreserve_canvas3D)");
 
     if (window.testRunner) {
         testRunner.waitUntilDone();

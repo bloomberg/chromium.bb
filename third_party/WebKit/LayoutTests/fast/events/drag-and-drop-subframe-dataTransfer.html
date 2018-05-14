@@ -11,12 +11,12 @@ function onDrop(evt) {
 			document.body.innerHTML = 'FAIL';
 	}
 	evt.preventDefault();
-	window.testRunner.notifyDone();
+	testRunner.notifyDone();
 }
 
 function runTest() {
-	window.testRunner.dumpAsText();
-	window.testRunner.waitUntilDone();
+	testRunner.dumpAsText();
+	testRunner.waitUntilDone();
 	var d = document.getElementById('drag');
 	var o = document.getElementById('drop');
 	eventSender.mouseMoveTo(d.offsetLeft + d.offsetWidth / 2, d.offsetTop + d.offsetHeight / 2);

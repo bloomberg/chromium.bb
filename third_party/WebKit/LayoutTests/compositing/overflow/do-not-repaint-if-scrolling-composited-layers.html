@@ -3,10 +3,10 @@
 <head>
 <script>
     if (window.testRunner)
-        window.testRunner.dumpAsText();
+        testRunner.dumpAsText();
 
     if (window.internals)
-        window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
+        internals.settings.setPreferCompositingToLCDTextEnabled(false);
 
     function hasRepaint(layerTree) {
         var layers = JSON.parse(layerTree).layers;
@@ -26,12 +26,12 @@
         document.body.offsetTop;
 
         if (window.internals)
-            window.internals.startTrackingRepaints(document);
+            internals.startTrackingRepaints(document);
 
         scroller.scrollTop = 100;
 
         if (window.internals) {
-            var layer_tree = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
+            var layer_tree = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
             var repainted = hasRepaint(layer_tree);
             var repaintedMessage = repainted ? "repainted" : "did not repaint";
             var expectedMessage = expectsRepaint ? " when expected" : " when unexpected";
@@ -39,7 +39,7 @@
                 result += "PASS " + repaintedMessage + expectedMessage + "\n";
             else
                 result += "FAIL " + repaintedMessage + expectedMessage + "\n" + layer_tree + "\n";
-            window.internals.stopTrackingRepaints(document);
+            internals.stopTrackingRepaints(document);
         }
 
         // Do all cleanup here (so as not to affect repaint rects).

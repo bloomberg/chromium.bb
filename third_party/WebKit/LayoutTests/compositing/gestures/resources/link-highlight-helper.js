@@ -47,7 +47,7 @@ function testHighlightTarget(id) {
     if (window.eventSender) {
         eventSender.gestureTapDown(x, y, 30, 30);
         eventSender.gestureShowPress(x, y, 30, 30);
-        window.setTimeout(function() { window.testRunner.notifyDone(); }, 0);
+        window.setTimeout(function() { testRunner.notifyDone(); }, 0);
     } else {
         debug("This test requires eventSender");
     }

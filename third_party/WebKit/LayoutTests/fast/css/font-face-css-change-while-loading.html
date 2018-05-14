@@ -7,7 +7,7 @@
 </style>
 <script>
 if (window.testRunner)
-    window.testRunner.waitUntilDone();
+    testRunner.waitUntilDone();
 
 function getDocumentFontFaces() {
     var faces = [];
@@ -31,7 +31,7 @@ function runTest() {
 
 function finish() {
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 }
 
 onload = function() {

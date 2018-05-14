@@ -11,14 +11,14 @@
 
   <script>
     if (window.internals)
-      window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+      internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
     if (window.testRunner) {
       testRunner.dumpAsText();
 
       window.addEventListener("load", function() {
-        document.getElementById("layerTree").innerText = window.internals.layerTreeAsText(document);
-        document.getElementById("mainThreadScrollingReasons").innerText = window.internals.mainThreadScrollingReasons(document);
+        document.getElementById("layerTree").innerText = internals.layerTreeAsText(document);
+        document.getElementById("mainThreadScrollingReasons").innerText = internals.mainThreadScrollingReasons(document);
       }, false);
     }
   </script>

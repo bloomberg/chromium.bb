@@ -9,13 +9,13 @@
             {
                 document.getElementById('console').innerHTML = "Not scrolled by WheelEvent: SUCCESS";
                 if (window.testRunner)
-                    window.testRunner.notifyDone();
+                    testRunner.notifyDone();
             }
             function scrollEventFired()
             {
                 document.getElementById('console').innerHTML = "Scrolled by WheelEvent: FAILED (Should not be scrolled).";
                 if (window.testRunner)
-                    window.testRunner.notifyDone();
+                    testRunner.notifyDone();
             }
             function runTest()
             {

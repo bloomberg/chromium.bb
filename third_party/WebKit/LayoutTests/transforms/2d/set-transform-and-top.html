@@ -34,8 +34,8 @@ function runTest() {
     checkPosition("b");
 
     if (window.testRunner) {
-        window.testRunner.dumpAsText();
-        window.testRunner.notifyDone();
+        testRunner.dumpAsText();
+        testRunner.notifyDone();
     }
 }
 </script>
@@ -47,7 +47,7 @@ function runTest() {
 
 <script>
     if (window.testRunner)
-        window.testRunner.waitUntilDone();
+        testRunner.waitUntilDone();
 
     setTimeout(move, 10);
     function move() {

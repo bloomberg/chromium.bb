@@ -15,7 +15,7 @@ function checkNoFocusRing(element, event)
         ' PASS' : ' FAIL: focus style ' + [width, style, color].join(' '));
 
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 }
 
 var element = document.getElementById('test');

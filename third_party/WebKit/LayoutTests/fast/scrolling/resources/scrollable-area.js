@@ -1,7 +1,7 @@
 var referenceResult = 0;
 var referenceResult2 = 0;
 var referenceIntermediateFunction = 0;
-var isDRT = window.testRunner && window.internals && window.internals.numberOfScrollableAreas;
+var isDRT = window.testRunner && window.internals && internals.numberOfScrollableAreas;
 
 function runTest(firstResult, intermediateFunction, secondResult)
 {

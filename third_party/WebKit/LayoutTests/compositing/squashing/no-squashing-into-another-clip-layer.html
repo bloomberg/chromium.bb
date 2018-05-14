@@ -12,7 +12,7 @@
     {
         var layersResult = document.getElementById('layers');
         if (window.testRunner)
-            layersResult.innerText = window.internals.layerTreeAsText(document);
+            layersResult.innerText = internals.layerTreeAsText(document);
     }
   window.addEventListener('load', dumpLayers, false)
 </script>

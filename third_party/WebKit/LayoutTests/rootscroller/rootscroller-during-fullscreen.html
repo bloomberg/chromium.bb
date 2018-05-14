@@ -40,12 +40,12 @@
       await nFrames(2);
       test.step(() => {
         assert_equals(
-            window.internals.effectiveRootScroller(document),
+            internals.effectiveRootScroller(document),
             document,
             "Entering fullscreen should reset root document's effective " +
             "root scroller");
         assert_equals(
-            window.internals.effectiveRootScroller(childDocument),
+            internals.effectiveRootScroller(childDocument),
             childDocument,
             "Entering fullscreen should reset iframe's effective root " +
             "scroller");
@@ -55,12 +55,12 @@
       await nFrames(2);
       test.step(() => {
         assert_equals(
-            window.internals.effectiveRootScroller(document),
+            internals.effectiveRootScroller(document),
             iframe,
             "Exiting fullscreen should set the iframe back as the root " +
             "document's effective root scroller.");
         assert_equals(
-            window.internals.effectiveRootScroller(childDocument),
+            internals.effectiveRootScroller(childDocument),
             scroller,
             "Exiting fullscreen should set the scroller div back as the " +
             "iframe's effective root scroller.");
@@ -90,12 +90,12 @@
 
     test.step(() => {
       assert_equals(
-          window.internals.effectiveRootScroller(document),
+          internals.effectiveRootScroller(document),
           iframe,
           "Root document should initially have iframe as effective root " +
           "scroller");
       assert_equals(
-          window.internals.effectiveRootScroller(childDocument),
+          internals.effectiveRootScroller(childDocument),
           scroller,
           "Iframe should initially have scroller div as effective root " +
           "scroller");

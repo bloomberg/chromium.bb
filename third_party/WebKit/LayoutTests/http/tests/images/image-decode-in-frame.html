@@ -5,11 +5,11 @@ function receiveMessage(e) {
   if (e.data !== "pass") {
     document.getElementById("error").innerHTML = "iframe decode failed.";
   }
-  window.testRunner.notifyDone();
+  testRunner.notifyDone();
 }
 
 if (window.testRunner) {
-  window.testRunner.waitUntilDone();
+  testRunner.waitUntilDone();
   window.addEventListener("message", receiveMessage, false);
 }
 </script>

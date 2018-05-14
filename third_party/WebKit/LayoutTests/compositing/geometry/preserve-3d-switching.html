@@ -59,7 +59,7 @@
             setTimeout(function() {
                 document.getElementById("parent").style.webkitTransformStyle = "preserve-3d";
                 if (window.testRunner) {
-                    var layerTree = window.internals.layerTreeAsText(document);
+                    var layerTree = internals.layerTreeAsText(document);
                     document.getElementById("layerTree").innerHTML = "<pre>" + layerTree + "</pre>";
                     testRunner.notifyDone();
                 }

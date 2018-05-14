@@ -45,7 +45,7 @@
 
   await session.evaluate(`
     window.logs = [];
-    window.internals.setFocused(false);
+    internals.setFocused(false);
     document.querySelector('#foo').addEventListener('focus', () => logs.push('focus foo'), false);
     document.querySelector('#foo').addEventListener('blur', () => logs.push('blur foo'), false);
     document.querySelector('#bar').addEventListener('focus', () => logs.push('focus bar'), false);
@@ -62,7 +62,7 @@
     logs.push('value of foo:' + document.getElementById('foo').value);
     logs.push('value of bar:' + document.getElementById('bar').value);
     logs.push('value of baz:' + document.getElementById('baz').value);
-    window.internals.setFocused(true);
+    internals.setFocused(true);
     logs.join('\\n')
   `));
   testRunner.completeTest();

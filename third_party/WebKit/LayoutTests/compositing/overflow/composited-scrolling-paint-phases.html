@@ -31,10 +31,10 @@
   </style>
   <script>
     if (window.testRunner)
-      window.testRunner.dumpAsText();
+      testRunner.dumpAsText();
 
     if (window.internals)
-      window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+      internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
     function write(str)
     {
@@ -45,15 +45,15 @@
 
     function doTest()
     {
-      write(window.internals.layerTreeAsText(document, window.internals.LAYER_TREE_INCLUDES_PAINTING_PHASES));
+      write(internals.layerTreeAsText(document, window.internals.LAYER_TREE_INCLUDES_PAINTING_PHASES));
       if (window.testRunner)
-        window.testRunner.notifyDone(); 
+        testRunner.notifyDone(); 
     }
 
     window.addEventListener('load', doTest, false);
 
     if (window.testRunner)
-      window.testRunner.waitUntilDone();
+      testRunner.waitUntilDone();
   </script>
 </head>
 <body>

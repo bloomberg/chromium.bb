@@ -38,7 +38,7 @@
     runAfterLayoutAndPaint(function()
     {
         if (window.internals)
-            window.internals.startTrackingRepaints(document);
+            internals.startTrackingRepaints(document);
         var selection = getSelection();
 
         // Case 1: selection that does not have any gaps.
@@ -46,21 +46,21 @@
 
         let layerTreeAsText = [];
         if (window.internals) {
-            layerTreeAsText.push(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS));
-            window.internals.stopTrackingRepaints(document);
+            layerTreeAsText.push(internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS));
+            internals.stopTrackingRepaints(document);
         }
 
         selection.empty();
 
         if (window.internals)
-            window.internals.startTrackingRepaints(document);
+            internals.startTrackingRepaints(document);
 
         // Case 2: selection with a gap between item1 and item2.
         selection.setBaseAndExtent(document.querySelector("#item1"), 0, document.querySelector("#item2"), 1);
 
         if (window.internals) {
-            layerTreeAsText.push(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS));
-            window.internals.stopTrackingRepaints(document);
+            layerTreeAsText.push(internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS));
+            internals.stopTrackingRepaints(document);
         }
 
         if (window.testRunner) {

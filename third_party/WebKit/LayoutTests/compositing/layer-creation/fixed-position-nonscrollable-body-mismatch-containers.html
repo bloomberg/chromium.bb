@@ -49,13 +49,13 @@
 
   <script type="text/javascript">
     if (window.internals)
-      window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+      internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
     if (window.testRunner) {
       testRunner.dumpAsText();
 
       window.addEventListener("load", function() {
-        document.getElementById("layertree").innerText = window.internals.layerTreeAsText(document);
+        document.getElementById("layertree").innerText = internals.layerTreeAsText(document);
       }, false);
     }
   </script>

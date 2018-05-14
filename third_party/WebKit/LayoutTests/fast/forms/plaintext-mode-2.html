@@ -22,7 +22,7 @@ function assert(func, args, expected) {
 <ol id="console"></ol>
 <script>
     if (window.testRunner)
-        window.testRunner.waitUntilDone();
+        testRunner.waitUntilDone();
 
 var richcontent = document.getElementById("richcontent");
 var s = window.getSelection();
@@ -37,6 +37,6 @@ window.setTimeout(paste, 500);
 function paste() {
     assert("document.execCommand", "Paste", true);
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 }
 </script>

@@ -4,8 +4,8 @@ The letters in the right image should be crisp and non-blurry like the letters i
 
 <script>
 if (window.testRunner) {
-    window.testRunner.dumpAsTextWithPixelResults();
-    window.testRunner.waitUntilDone();
+    testRunner.dumpAsTextWithPixelResults();
+    testRunner.waitUntilDone();
 }
 
 var image = new Image();
@@ -22,7 +22,7 @@ image.onload = function() {
       result.src = canvas.toDataURL('image/jpeg', 1.0);
       document.body.style.zoom = 1.3;
       if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
     }, 0);
 };
 

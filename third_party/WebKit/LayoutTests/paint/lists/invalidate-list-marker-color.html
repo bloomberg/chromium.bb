@@ -11,13 +11,13 @@ The test succeeds if the bullet is black.
 </ul>
 <script>
 if (window.testRunner)
-  window.testRunner.waitUntilDone();
+  testRunner.waitUntilDone();
 
 onload = function() {
   requestAnimationFrame(function() {
     target.style.color = 'black';
     if (window.testRunner)
-      window.testRunner.notifyDone();
+      testRunner.notifyDone();
   });
 };
 </script>

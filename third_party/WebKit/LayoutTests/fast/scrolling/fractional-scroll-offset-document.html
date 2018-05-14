@@ -35,9 +35,9 @@ function scroll()
 function runTest()
 {
     if (window.eventSender) {
-      if (window.internals.runtimeFlags.fractionalScrollOffsetsEnabled) {
+      if (internals.runtimeFlags.fractionalScrollOffsetsEnabled) {
           debug("fractional scroll offset mode");
-          window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+          internals.settings.setPreferCompositingToLCDTextEnabled(true);
           useIntegerScrollOffset = true;
       }
       scroll();

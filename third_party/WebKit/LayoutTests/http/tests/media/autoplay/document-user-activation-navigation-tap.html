@@ -5,7 +5,7 @@
 </body>
 <script>
   testRunner.waitUntilDone();
-  window.internals.settings.setAutoplayPolicy('document-user-activation-required');
+  internals.settings.setAutoplayPolicy('document-user-activation-required');
   var bounds = document.querySelector('#target').getBoundingClientRect();
   var x = bounds.left + bounds.width / 2;
   var y = bounds.top + bounds.height / 2;

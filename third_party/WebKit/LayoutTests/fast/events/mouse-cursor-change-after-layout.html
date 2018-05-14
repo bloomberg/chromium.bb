@@ -56,7 +56,7 @@
         debug('Mouse move');
         var rect = target.getBoundingClientRect();
         eventSender.mouseMoveTo(rect.left + 3, rect.top + 3);
-        shouldBeEqualToString('window.internals.getCurrentCursorInfo()', 'type=IBeam hotSpot=0,0');
+        shouldBeEqualToString('internals.getCurrentCursorInfo()', 'type=IBeam hotSpot=0,0');
         debug('Adding overlay element');
         addOverlay();
         expectSendFakeMouseMove('type=Wait hotSpot=0,0', function() {

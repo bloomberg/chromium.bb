@@ -36,7 +36,7 @@ requestAnimationFrame(function() {
     document.getElementById('parent').classList.add('fade');
     document.getElementById('child').addEventListener('transitionend', function() {
       if (window.testRunner) {
-        document.getElementsByTagName('pre')[0].textContent = window.internals.layerTreeAsText(document);
+        document.getElementsByTagName('pre')[0].textContent = internals.layerTreeAsText(document);
         setTimeout(function() {
           testRunner.notifyDone();
         });

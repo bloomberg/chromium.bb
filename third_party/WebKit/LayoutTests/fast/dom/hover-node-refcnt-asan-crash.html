@@ -13,7 +13,7 @@
 // after hovered node changes. Nodes were deref'ed and could be mistakenly freed
 // before use.
 if (window.testRunner)
-  window.testRunner.dumpAsText();
+  testRunner.dumpAsText();
 
 eventSender.mouseMoveTo(50, 100);
 eventSender.mouseDown(1);

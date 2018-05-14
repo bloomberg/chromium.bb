@@ -13,7 +13,7 @@ function runTests() {
     debug('Tests that all favicons and touch icons are in document.iconURLs()');
 
     // Fetch the actual list of icon URLs.
-    var actualURLs = window.internals.allIconURLs(document);
+    var actualURLs = internals.allIconURLs(document);
 
     if (!actualURLs[0] || actualURLs[0] != "http://test.com/oldfavicon.ico") {
         debug("Test failed.. not the right icon on first place in document.iconURLs()")

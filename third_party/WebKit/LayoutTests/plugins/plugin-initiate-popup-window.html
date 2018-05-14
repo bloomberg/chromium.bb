@@ -13,8 +13,8 @@ function test() {
     if (!window.testRunner)
         return;
     // Record current window count.
-    window.windowCount = window.testRunner.windowCount();
-    console.log("window count: " + window.testRunner.windowCount());
+    window.windowCount = testRunner.windowCount();
+    console.log("window count: " + testRunner.windowCount());
     // Send a mouse-click event to set the input focus to the test plugin.
     eventSender.mouseMoveTo(0, 0);
     eventSender.mouseMoveTo(20, 20);
@@ -26,8 +26,8 @@ function test() {
 function popup_by_mousedown() {
     window.open("about:blank", "_blank");
     // Check the new opened window and logging the result.
-    console.log("window count: " + window.testRunner.windowCount());
-    if (window.testRunner.windowCount() == (window.windowCount + 1)) {
+    console.log("window count: " + testRunner.windowCount());
+    if (testRunner.windowCount() == (window.windowCount + 1)) {
         document.getElementById("mousedown_output").innerHTML = "PASSED";
         window.windowCount++;
     }
@@ -48,8 +48,8 @@ function popup_by_keydown() {
     // Open a new window.
     window.open("about:blank", "_blank");
     // Check the new opened window and logging the result.
-    console.log("window count: " + window.testRunner.windowCount());
-    if (window.testRunner.windowCount() == (window.windowCount + 1))
+    console.log("window count: " + testRunner.windowCount());
+    if (testRunner.windowCount() == (window.windowCount + 1))
         document.getElementById("keydown_output").innerHTML = "PASSED";
     // Wait for plugin stopping and ending this test.
     setTimeout(end_test, 100);

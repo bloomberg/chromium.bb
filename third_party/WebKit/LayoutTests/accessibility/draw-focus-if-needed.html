@@ -16,9 +16,9 @@ if (window.testRunner)
     testRunner.dumpAsText();
 
 if (window.accessibilityController) {
-    window.axButton1 = window.accessibilityController.accessibleElementById("button1");
-    window.axContainer = window.accessibilityController.accessibleElementById("container");
-    window.axButton2 = window.accessibilityController.accessibleElementById("button2");
+    window.axButton1 = accessibilityController.accessibleElementById("button1");
+    window.axContainer = accessibilityController.accessibleElementById("container");
+    window.axButton2 = accessibilityController.accessibleElementById("button2");
 }
 
 var canvas = document.getElementById("canvas").getContext("2d");

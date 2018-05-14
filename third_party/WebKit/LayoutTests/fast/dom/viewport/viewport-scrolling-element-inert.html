@@ -14,8 +14,8 @@
           return;
 
         // Zoom into the page, innerWidth and innerHeight shouldn't be affected.
-        window.internals.setPageScaleFactor(2);
-        window.internals.setVisualViewportOffset(0, 0);
+        internals.setPageScaleFactor(2);
+        internals.setVisualViewportOffset(0, 0);
 
         test(function() {
               // Try scrollTo(). Since the page has no overflow, the only
@@ -51,7 +51,7 @@
 
               // Ensure scrollLeft and scrollTop don't report visual viewport
               // offset.
-              window.internals.setVisualViewportOffset(200, 200);
+              internals.setVisualViewportOffset(200, 200);
               assert_equals(document.scrollingElement.scrollLeft, 0);
               assert_equals(document.scrollingElement.scrollTop, 0);
             }, "scrollLeft and scrollTop are layout-viewport relative");

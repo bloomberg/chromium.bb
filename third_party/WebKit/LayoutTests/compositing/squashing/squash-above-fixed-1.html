@@ -65,7 +65,7 @@ body {
 
           return new Promise(function(resolve) {
               // Case 1
-              document.getElementById('Case1').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
+              document.getElementById('Case1').textContent = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
 
               resolve();
           });
@@ -75,11 +75,11 @@ body {
             return new Promise(function(resolve) {
 
                 // Case 2
-                window.internals.startTrackingRepaints(document);
+                internals.startTrackingRepaints(document);
                 window.scrollTo(0, 80);
                 runAfterLayoutAndPaint(function() {
-                    document.getElementById('Case2').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
-                    window.internals.stopTrackingRepaints(document);
+                    document.getElementById('Case2').textContent = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
+                    internals.stopTrackingRepaints(document);
 
                     resolve();
                 });
@@ -91,11 +91,11 @@ body {
             return new Promise(function(resolve) {
 
                 // Case 3
-                window.internals.startTrackingRepaints(document);
+                internals.startTrackingRepaints(document);
                 window.scrollTo(0, 120);
                 runAfterLayoutAndPaint(function() {
-                    document.getElementById('Case3').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
-                    window.internals.stopTrackingRepaints(document);
+                    document.getElementById('Case3').textContent = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
+                    internals.stopTrackingRepaints(document);
 
                     resolve();
                 });
@@ -107,11 +107,11 @@ body {
             return new Promise(function(resolve) {
 
                 // Case 4
-                window.internals.startTrackingRepaints(document);
+                internals.startTrackingRepaints(document);
                 window.scrollTo(0, 170);
                 runAfterLayoutAndPaint(function() {
-                    document.getElementById('Case4').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
-                    window.internals.stopTrackingRepaints(document);
+                    document.getElementById('Case4').textContent = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
+                    internals.stopTrackingRepaints(document);
 
                     resolve();
                 });

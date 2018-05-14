@@ -12,17 +12,17 @@ const input = document.querySelector('#input');
 const input2 = document.querySelector('#input2');
 
 function click(x, y) {
-  window.eventSender.mouseMoveTo(x, y);
-  window.eventSender.mouseDown();
-  window.eventSender.mouseUp();
+  eventSender.mouseMoveTo(x, y);
+  eventSender.mouseDown();
+  eventSender.mouseUp();
 }
 
 function doubleClick(x, y) {
-  window.eventSender.mouseMoveTo(x, y);
-  window.eventSender.mouseDown();
-  window.eventSender.mouseUp();
-  window.eventSender.mouseDown();
-  window.eventSender.mouseUp();
+  eventSender.mouseMoveTo(x, y);
+  eventSender.mouseDown();
+  eventSender.mouseUp();
+  eventSender.mouseDown();
+  eventSender.mouseUp();
 }
 
 const composedEventTypes = [
@@ -60,14 +60,14 @@ input.blur();
 
 // For keypress
 input.focus();
-window.eventSender.keyDown(' ');
+eventSender.keyDown(' ');
 
 // For wheel
-window.eventSender.mouseMoveTo(input.offsetLeft + 5, input.offsetTop + 5);
-window.eventSender.mouseScrollBy(-1, -2);
+eventSender.mouseMoveTo(input.offsetLeft + 5, input.offsetTop + 5);
+eventSender.mouseScrollBy(-1, -2);
 
 // For composition
 input.focus();
-window.textInputController.setMarkedText('1', 0, 1);
-window.textInputController.insertText('1');
+textInputController.setMarkedText('1', 0, 1);
+textInputController.insertText('1');
 </script>

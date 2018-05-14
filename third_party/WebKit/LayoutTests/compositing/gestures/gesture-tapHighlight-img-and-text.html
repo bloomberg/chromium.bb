@@ -22,7 +22,7 @@ function runTest() {
 
     if (window.eventSender) {
         eventSender.gestureShowPress(x, y);
-        window.setTimeout(function() { window.testRunner.notifyDone(); }, 0);
+        window.setTimeout(function() { testRunner.notifyDone(); }, 0);
     } else {
         debug("This test requires DumpRenderTree.");
         debug("This test is successful if the image and text below is covered in a green rectangle.");

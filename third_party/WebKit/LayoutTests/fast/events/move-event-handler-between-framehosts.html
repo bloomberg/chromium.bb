@@ -10,11 +10,11 @@ var jsTestIsAsync = true;
 var window2;
 
 function window2Loaded() {
-    shouldBe('window.internals.scrollEventHandlerCount(document)', '0');
+    shouldBe('internals.scrollEventHandlerCount(document)', '0');
     var div = window2.document.getElementById("div");
     window.document.adoptNode(div);
     window.document.body.appendChild(div);
-    shouldBe('window.internals.scrollEventHandlerCount(document)', '1');
+    shouldBe('internals.scrollEventHandlerCount(document)', '1');
 
     window2.close();
     finishJSTest();

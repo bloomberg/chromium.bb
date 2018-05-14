@@ -100,7 +100,7 @@ function testWithContentAndShadow(contentHtml, shadowHtml, label)
     cleanupContainer(targetContainer);
     var target = createTargetTree(contentHtml, shadowHtml);
     targetContainer.appendChild(target);
-    var targetLayoutTree = removeContainerLines(window.internals.elementLayoutTreeAsText(targetContainer));
+    var targetLayoutTree = removeContainerLines(internals.elementLayoutTreeAsText(targetContainer));
 
     var referenceContainer = document.getElementById("referenceContainer");
     cleanupContainer(referenceContainer);
@@ -108,7 +108,7 @@ function testWithContentAndShadow(contentHtml, shadowHtml, label)
     var referenceHtml = shadowHtml.replace("<content/>", (separator + contentHtml + separator));
     var reference = createTreeFrom(referenceHtml);
     referenceContainer.appendChild(reference);
-    var referenceLayoutTree = removeContainerLines(window.internals.elementLayoutTreeAsText(referenceContainer));
+    var referenceLayoutTree = removeContainerLines(internals.elementLayoutTreeAsText(referenceContainer));
     if (targetLayoutTree == referenceLayoutTree)
         log("PASS[" + label + "]: content=" + contentHtml + " shadow=" + shadowHtml);
     else {

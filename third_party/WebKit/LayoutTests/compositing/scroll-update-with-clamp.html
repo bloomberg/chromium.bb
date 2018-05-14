@@ -3,7 +3,7 @@
 <div id=spacer style="position: relative; width: 10px; height: 300px"></div>
 <script>
 if (window.testRunner)
-  window.testRunner.waitUntilDone();
+  testRunner.waitUntilDone();
 onload = function() {
   window.scrollTo(0, 3000);
 
@@ -20,6 +20,6 @@ function go() {
   spacer.style.height = '300px';
   spacer.offsetWidth;
   if (window.testRunner)
-    window.testRunner.notifyDone();
+    testRunner.notifyDone();
 }
 </script>

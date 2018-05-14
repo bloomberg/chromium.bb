@@ -23,7 +23,7 @@ div::before {
 // This is a regression test for crbug.com/626571
 
 if (window.testRunner)
-  window.testRunner.waitUntilDone();
+  testRunner.waitUntilDone();
 
 function waitForCompositor() {
   return dummy.animate({opacity: ['1', '1']}, 1).ready;

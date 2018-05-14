@@ -63,7 +63,7 @@
 <div id="out"></div>
 <script>
 if (window.testRunner)
-    window.testRunner.waitUntilDone();
+    testRunner.waitUntilDone();
 
 description("If no font resources are available for an @font-face rule due to download errors, the rule must be ignored but others must remain in effect.");
 
@@ -110,7 +110,7 @@ function test()
         }
     }
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 }
 
 for (var mainTestId = 0; mainTestId < expectedResults.length; mainTestId++) {

@@ -28,8 +28,8 @@ function iFrameLoaded() {
 
 function doHit() {
   var rect = document.getElementById('myframe').getBoundingClientRect();
-  window.internals.elementFromPoint(document, rect.left + 8, rect.top + 8, false, false);
-  shouldBe("window.internals.hitTestCacheHits(document)", "0");
+  internals.elementFromPoint(document, rect.left + 8, rect.top + 8, false, false);
+  shouldBe("internals.hitTestCacheHits(document)", "0");
 }
 </script>
 <body onload="loaded()" />

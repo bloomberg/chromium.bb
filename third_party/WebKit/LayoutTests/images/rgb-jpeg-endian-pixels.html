@@ -10,8 +10,8 @@ order, regardless of the underlying machine pixel buffer endianess.<br><br>
 
 <script>
 if (window.testRunner) {
-    window.testRunner.waitUntilDone();
-    window.testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+    testRunner.dumpAsText();
 }
 
 function log(message)
@@ -71,6 +71,6 @@ function test(image, expect)
     }
 
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 }
 </script>

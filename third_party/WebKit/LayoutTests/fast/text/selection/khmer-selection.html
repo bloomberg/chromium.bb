@@ -6,14 +6,14 @@
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <script>
     function main() {
-      window.eventSender.mouseMoveTo(5, 8);
-      window.eventSender.mouseDown();
+      eventSender.mouseMoveTo(5, 8);
+      eventSender.mouseDown();
 
       for (var x = 5; x < 600; x += 5) {
-        window.eventSender.mouseMoveTo(x, 8);
+        eventSender.mouseMoveTo(x, 8);
       }
 
-      window.eventSender.mouseUp();
+      eventSender.mouseUp();
     }
   </script>
 </head>

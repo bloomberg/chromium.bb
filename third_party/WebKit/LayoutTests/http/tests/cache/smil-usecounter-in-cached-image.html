@@ -12,9 +12,9 @@ window.onload = function() {
             window.location.reload();
         }
     } else {
-        shouldBeFalse("window.internals.isUseCounted(document, SVGSMILAnimationInImageRegardlessOfCache)");
+        shouldBeFalse("internals.isUseCounted(document, SVGSMILAnimationInImageRegardlessOfCache)");
         img.onload = function() {
-            shouldBeTrue("window.internals.isUseCounted(document, SVGSMILAnimationInImageRegardlessOfCache)");
+            shouldBeTrue("internals.isUseCounted(document, SVGSMILAnimationInImageRegardlessOfCache)");
             finishJSTest();
         }
     }

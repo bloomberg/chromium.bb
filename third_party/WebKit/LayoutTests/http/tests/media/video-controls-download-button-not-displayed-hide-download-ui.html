@@ -6,7 +6,7 @@
 <video controls></video>
 <script>
 async_test(function(t) {
-  window.internals.settings.setHideDownloadUI(true);
+  internals.settings.setHideDownloadUI(true);
   var video = document.querySelector("video");
   video.src = "resources/test.ogv";
   var controlID = "-internal-media-controls-download-button";

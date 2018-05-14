@@ -99,7 +99,7 @@ function runTest()
                 'iframe to an outer div when the iframe has no remaining ' +
                 'scroll offset when the preventPropagation flag is set for the gesture '+
                 'type GestureScrollUpdate.');
-        if (checkTestDependencies() && window.eventSender.gestureScrollUpdate)
+        if (checkTestDependencies() && eventSender.gestureScrollUpdate)
             firstGestureScroll();
         else
             exitIfNecessary();

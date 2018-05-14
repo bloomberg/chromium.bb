@@ -21,15 +21,15 @@ window.onload = function () {
     document.addEventListener('touchstart', function() { }, {passive: false});
 
     consoleWrite("Should have single rect on document before fullscreen");
-    window.internals.forceCompositingUpdate(document);
+    internals.forceCompositingUpdate(document);
     logRects('handler');
 
     waitForEvent(document, 'webkitfullscreenchange', function() {
-        if (window.internals.runtimeFlags.forceOverlayFullscreenVideoEnabled)
+        if (internals.runtimeFlags.forceOverlayFullscreenVideoEnabled)
             consoleWrite("Should report no rect or another rect which is not on the document");
         else
             consoleWrite("Should keep rect on document");
-        window.internals.forceCompositingUpdate(document);
+        internals.forceCompositingUpdate(document);
         logRects('handler');
         endTest();
     });

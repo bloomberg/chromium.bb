@@ -31,7 +31,7 @@ openPicker(menu, test1, openPickerErrorCallback);
 
 function test1() {
     debug('==> Arrow keys + Enter');
-    picker = window.internals.pagePopupWindow.global.picker;
+    picker = internals.pagePopupWindow.global.picker;
     shouldBeEqualToString('picker._selectElement.value', '1');
     shouldBeEqualToString('menu.value', 'bar');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'bar');
@@ -62,7 +62,7 @@ function test1() {
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'foo');
 
     eventSender.keyDown('Enter');
-    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeNull('internals.pagePopupWindow');
     shouldBeEqualToString('menu.value', 'foo');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'foo');
 
@@ -73,7 +73,7 @@ function test1() {
 
 function test2() {
     debug('==> Arrow keys + ESC');
-    picker = window.internals.pagePopupWindow.global.picker;
+    picker = internals.pagePopupWindow.global.picker;
     shouldBeEqualToString('picker._selectElement.value', '0');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'foo');
 
@@ -84,7 +84,7 @@ function test2() {
 
     // Escape should close the popup and select that keyboard selected item.
     eventSender.keyDown('Escape');
-    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeNull('internals.pagePopupWindow');
     shouldBeEqualToString('menu.value', 'bar');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'bar');
 
@@ -96,7 +96,7 @@ function test2() {
 
 function testProvisionalSelectionAndBlur() {
     debug('==> Arrow keys + blur');
-    picker = window.internals.pagePopupWindow.global.picker;
+    picker = internals.pagePopupWindow.global.picker;
     shouldBeEqualToString('picker._selectElement.value', '0');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'foo');
 
@@ -107,7 +107,7 @@ function testProvisionalSelectionAndBlur() {
 
     // Blur should close the popup and select the provisional item.
     menu.blur();
-    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeNull('internals.pagePopupWindow');
     shouldBeEqualToString('menu.value', 'bar');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'bar');
 
@@ -116,7 +116,7 @@ function testProvisionalSelectionAndBlur() {
 
 function test3() {
     debug('==> Typeahead + ESC');
-    picker = window.internals.pagePopupWindow.global.picker;
+    picker = internals.pagePopupWindow.global.picker;
     shouldBeEqualToString('picker._selectElement.value', '1');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'bar');
 
@@ -127,7 +127,7 @@ function test3() {
 
     // Escape should close the popup and select that keyboard selected item.
     eventSender.keyDown('Escape');
-    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeNull('internals.pagePopupWindow');
     shouldBeEqualToString('menu.value', 'garply');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'garply');
 
@@ -138,7 +138,7 @@ function test3() {
 
 function test4() {
     debug('==> Hover + ESC');
-    picker = window.internals.pagePopupWindow.global.picker;
+    picker = internals.pagePopupWindow.global.picker;
     shouldBeEqualToString('picker._selectElement.value', '4');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'garply');
 
@@ -149,7 +149,7 @@ function test4() {
 
     // Escape should close the popup. Simply hovering over an item should not select it.
     eventSender.keyDown('Escape');
-    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeNull('internals.pagePopupWindow');
     shouldBeEqualToString('menu.value', 'garply');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'garply');
 
@@ -160,7 +160,7 @@ function test4() {
 
 function test5() {
     debug('==> Hover + Invalid arrow + ESC');
-    picker = window.internals.pagePopupWindow.global.picker;
+    picker = internals.pagePopupWindow.global.picker;
     shouldBeEqualToString('picker._selectElement.value', '4');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'garply');
 
@@ -177,7 +177,7 @@ function test5() {
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'garply');
 
     eventSender.keyDown('Escape');
-    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeNull('internals.pagePopupWindow');
     shouldBeEqualToString('menu.value', 'garply');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'garply');
     menu.selectedIndex = 0;
@@ -189,7 +189,7 @@ function test5() {
 
 function test6() {
     debug('==> Arrow key + Click');
-    picker = window.internals.pagePopupWindow.global.picker;
+    picker = internals.pagePopupWindow.global.picker;
     shouldBeEqualToString('picker._selectElement.value', '0');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'foo');
 
@@ -199,7 +199,7 @@ function test6() {
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'bar');
 
     clickElement(picker._selectElement.children[0]);
-    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeNull('internals.pagePopupWindow');
     shouldBeEqualToString('menu.value', 'foo');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'foo');
 
@@ -211,10 +211,10 @@ function test6() {
 
 function testEnterWithoutSelection() {
     debug('==> Enter with no selected OPTION');
-    picker = window.internals.pagePopupWindow.global.picker;
+    picker = internals.pagePopupWindow.global.picker;
     shouldBeEqualToString('picker._selectElement.value', '');
     eventSender.keyDown('Enter');
-    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeNull('internals.pagePopupWindow');
     shouldBeEqualToString('menu2.value', '');
 
     finishJSTest();

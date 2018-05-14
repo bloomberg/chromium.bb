@@ -30,13 +30,13 @@ function openPickerErrorCallback() {
 openPicker(menu, test1, openPickerErrorCallback);
 
 function test1() {
-    picker = window.internals.pagePopupWindow.global.picker;
+    picker = internals.pagePopupWindow.global.picker;
     menu.addEventListener('mouseup', recordEvent);
     menu.addEventListener('click', recordEvent);
     menu.addEventListener('change', recordEvent);
     eventSender.keyDown('ArrowDown');
     eventSender.keyDown('Enter');
-    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeNull('internals.pagePopupWindow');
     shouldBeEqualToString('menu.value', 'garply');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'garply');
     shouldBeEqualToString('events[0]', 'change');

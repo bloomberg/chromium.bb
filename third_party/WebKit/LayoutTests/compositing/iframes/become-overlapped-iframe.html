@@ -33,7 +33,7 @@
     {
         document.getElementById('overlay').style.height = '150px';
         if (window.internals) {
-            document.getElementById('layers').innerHTML = window.internals.layerTreeAsText(document);
+            document.getElementById('layers').innerHTML = internals.layerTreeAsText(document);
         }
     }
 

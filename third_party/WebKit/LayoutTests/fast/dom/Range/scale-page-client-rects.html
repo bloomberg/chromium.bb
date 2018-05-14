@@ -12,7 +12,7 @@ function testRects()
     var rectList = range.getClientRects();
     var rect = rectList[0];
 
-    window.internals.setPageScaleFactor(2);
+    internals.setPageScaleFactor(2);
     var scaledRange = document.createRange();
     scaledRange.selectNode(document.getElementById('div'));
     var scaledRectList = scaledRange.getClientRects();

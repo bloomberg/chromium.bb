@@ -8,8 +8,8 @@
 <script>
 
 if (window.testRunner) {
-  window.testRunner.dumpAsText();
-  window.testRunner.waitUntilDone();
+  testRunner.dumpAsText();
+  testRunner.waitUntilDone();
 }
 
 document.designMode = "on";
@@ -26,7 +26,7 @@ function event_handler_webkitEditableContentChanged() {
   srcElement.textContent = "Pass. Test didn't crash.";
   eventHandlerActive = false;
   if (window.testRunner)
-    window.testRunner.notifyDone();
+    testRunner.notifyDone();
 }
 
 document.addEventListener("webkitEditableContentChanged", event_handler_webkitEditableContentChanged, true);

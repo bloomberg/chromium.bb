@@ -28,12 +28,12 @@
   }
 
   if (window.internals) {
-    window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
+    internals.settings.setPreferCompositingToLCDTextEnabled(false);
   }
 
   window.onload = function() {
     if (window.internals)
-      window.internals.startTrackingRepaints(document);
+      internals.startTrackingRepaints(document);
 
     window.scrollTo(0, 500);
 
@@ -43,7 +43,7 @@
       runAfterLayoutAndPaint(function() {
         if (window.internals)
           document.getElementById('layers').textContent = 
-            window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
+            internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
 
         if (window.testRunner)
             testRunner.notifyDone();

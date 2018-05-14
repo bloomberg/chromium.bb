@@ -36,7 +36,7 @@ function updateStack()
 
     setTimeout(function() {
         if (window.testRunner) {
-            window.testRunner.notifyDone();
+            testRunner.notifyDone();
         }
     }, 10);
 }
@@ -44,8 +44,8 @@ function updateStack()
 window.onload = function ()
 {
     if (window.testRunner) {
-        window.testRunner.dumpAsTextWithPixelResults();
-        window.testRunner.waitUntilDone();
+        testRunner.dumpAsTextWithPixelResults();
+        testRunner.waitUntilDone();
     }
 
     setTimeout(function() {

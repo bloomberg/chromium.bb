@@ -9,13 +9,13 @@
 
   if (window.internals) {
     addEventListener("load", function() {
-      var poster = window.internals.getImageSourceURL(document.getElementById("video-no-poster"));
+      var poster = internals.getImageSourceURL(document.getElementById("video-no-poster"));
       if (poster)
         document.getElementById("result-no-poster").innerText = "FAIL : poster was added.";
       else
         document.getElementById("result-no-poster").innerText = "PASS";
 
-      poster = window.internals.getImageSourceURL(document.getElementById("video-has-poster"));
+      poster = internals.getImageSourceURL(document.getElementById("video-has-poster"));
       if (poster) {
         if (poster == "content/abe.png")
           document.getElementById("result-has-poster").innerText = "PASS";

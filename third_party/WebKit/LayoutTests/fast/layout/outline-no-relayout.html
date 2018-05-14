@@ -6,12 +6,12 @@
 document.body.offsetTop;
 
 if (window.internals)
-    shouldBe("window.internals.needsLayoutCount()", "0", true);
+    shouldBe("internals.needsLayoutCount()", "0", true);
 
 // Adding box-shadow will cause a repaint but no layout.
 document.getElementById("test").style['outline'] = 'solid black 5px;';
 
 if (window.internals) {
-    shouldBe("window.internals.needsLayoutCount()", "0", true);
+    shouldBe("internals.needsLayoutCount()", "0", true);
 }
 </script>

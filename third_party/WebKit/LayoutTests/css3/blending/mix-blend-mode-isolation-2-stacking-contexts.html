@@ -4,7 +4,7 @@
   if (window.testRunner) {
     testRunner.dumpAsText();
     window.addEventListener('load', function () {
-     document.getElementById('layers').textContent = window.internals.layerTreeAsText(document);
+     document.getElementById('layers').textContent = internals.layerTreeAsText(document);
      document.getElementById('test').style.display = 'none';
     }, false);
   }

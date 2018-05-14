@@ -18,7 +18,7 @@ function isControlVisible(control) {
 
 function mediaControls(videoElement) {
   var controlID = '-webkit-media-controls';
-  var element = mediaControlsElement(window.internals.shadowRoot(videoElement).firstChild, controlID);
+  var element = mediaControlsElement(internals.shadowRoot(videoElement).firstChild, controlID);
   if (!element)
     throw 'Failed to find media controls';
   return element;
@@ -26,7 +26,7 @@ function mediaControls(videoElement) {
 
 function castButton(videoElement) {
     var controlID = '-internal-media-controls-cast-button';
-    var button = mediaControlsElement(window.internals.shadowRoot(videoElement).firstChild, controlID);
+    var button = mediaControlsElement(internals.shadowRoot(videoElement).firstChild, controlID);
     if (!button)
         throw 'Failed to find cast button';
     return button;
@@ -34,7 +34,7 @@ function castButton(videoElement) {
 
 function downloadButton(videoElement) {
     var controlID = '-internal-media-controls-download-button';
-    var button = mediaControlsElement(window.internals.shadowRoot(videoElement).firstChild, controlID);
+    var button = mediaControlsElement(internals.shadowRoot(videoElement).firstChild, controlID);
     if (!button)
         throw 'Failed to find download button';
     return button;
@@ -42,7 +42,7 @@ function downloadButton(videoElement) {
 
 function fullscreenButton(videoElement) {
     var controlID = '-webkit-media-controls-fullscreen-button';
-    var button = mediaControlsElement(window.internals.shadowRoot(videoElement).firstChild, controlID);
+    var button = mediaControlsElement(internals.shadowRoot(videoElement).firstChild, controlID);
     if (!button)
         throw 'Failed to find fullscreen button';
     return button;
@@ -51,7 +51,7 @@ function fullscreenButton(videoElement) {
 function overlayCastButton(videoElement)
 {
     var controlID = '-internal-media-controls-overlay-cast-button';
-    var button = mediaControlsElement(window.internals.shadowRoot(videoElement).firstChild, controlID);
+    var button = mediaControlsElement(internals.shadowRoot(videoElement).firstChild, controlID);
     if (!button)
         throw 'Failed to find cast button';
     return button;
@@ -60,7 +60,7 @@ function overlayCastButton(videoElement)
 function overflowButton(videoElement)
 {
     var controlID = '-internal-media-controls-overflow-button';
-    var button = mediaControlsElement(window.internals.shadowRoot(videoElement).firstChild, controlID);
+    var button = mediaControlsElement(internals.shadowRoot(videoElement).firstChild, controlID);
     if (!button)
         throw 'Failed to find overflow button';
     return button;
@@ -69,7 +69,7 @@ function overflowButton(videoElement)
 function textTrackMenu(video)
 {
   var controlID = '-internal-media-controls-text-track-list';
-  var element = mediaControlsElement(window.internals.shadowRoot(video).firstChild, controlID);
+  var element = mediaControlsElement(internals.shadowRoot(video).firstChild, controlID);
   if (!element)
     throw 'Failed to find the overflow menu';
   return element;
@@ -78,7 +78,7 @@ function textTrackMenu(video)
 function overflowMenu(video)
 {
   var controlID = '-internal-media-controls-overflow-menu-list';
-  var element = mediaControlsElement(window.internals.shadowRoot(video).firstChild, controlID);
+  var element = mediaControlsElement(internals.shadowRoot(video).firstChild, controlID);
   if (!element)
     throw 'Failed to find the overflow menu';
   return element;
@@ -256,7 +256,7 @@ function timelineElement(videoElement) {
 
 function timelineThumb(videoElement) {
     const timeline = timelineElement(videoElement);
-    const thumb = window.internals.shadowRoot(timeline).getElementById('thumb');
+    const thumb = internals.shadowRoot(timeline).getElementById('thumb');
     if (!thumb)
         throw 'Failed to find timeline thumb';
     return thumb;
@@ -264,7 +264,7 @@ function timelineThumb(videoElement) {
 
 function scrubbingMessageElement(videoElement) {
     var controlID = '-internal-media-controls-scrubbing-message';
-    var button = mediaControlsElement(window.internals.shadowRoot(videoElement).firstChild, controlID);
+    var button = mediaControlsElement(internals.shadowRoot(videoElement).firstChild, controlID);
     if (!button)
         throw 'Failed to find scrubbing message element';
     return button;
@@ -376,7 +376,7 @@ function checkButtonNotHasClass(button, className) {
 }
 
 function checkControlsClassName(videoElement, className) {
-  assert_equals(window.internals.shadowRoot(videoElement).firstChild.className, className);
+  assert_equals(internals.shadowRoot(videoElement).firstChild.className, className);
 }
 
 function mediaControlsOverlayPlayButton(videoElement) {
@@ -386,7 +386,7 @@ function mediaControlsOverlayPlayButton(videoElement) {
 function mediaControlsOverlayPlayButtonInternal(videoElement) {
   var controlID = '-internal-media-controls-overlay-play-button-internal';
   var element = mediaControlsElement(
-      window.internals.shadowRoot(
+      internals.shadowRoot(
           mediaControlsOverlayPlayButton(videoElement)).firstChild, controlID);
   if (!element)
     throw 'Failed to find the internal overlay play button';
@@ -396,7 +396,7 @@ function mediaControlsOverlayPlayButtonInternal(videoElement) {
 function pictureInPictureInterstitial(videoElement) {
   var controlID = '-internal-picture-in-picture-icon';
 
-  var interstitial = getElementByPseudoId(window.internals.shadowRoot(videoElement).firstChild, controlID);
+  var interstitial = getElementByPseudoId(internals.shadowRoot(videoElement).firstChild, controlID);
   if (!interstitial)
       throw 'Failed to find picture in picture interstitial';
   return interstitial;
@@ -510,7 +510,7 @@ function getElementByPseudoId(root, pseudoId) {
 
 function enableTestMode(video) {
   if (window.internals)
-    window.internals.setMediaControlsTestMode(video, true);
+    internals.setMediaControlsTestMode(video, true);
 }
 
 function enableImmersiveMode(t) {
@@ -520,6 +520,6 @@ function enableImmersiveMode(t) {
   const oldImmersive = internals.settings.immersiveModeEnabled;
   internals.settings.setImmersiveModeEnabled(true);
   t.add_cleanup(() => {
-    window.internals.settings.setImmersiveModeEnabled(oldImmersive);
+    internals.settings.setImmersiveModeEnabled(oldImmersive);
   });
 }

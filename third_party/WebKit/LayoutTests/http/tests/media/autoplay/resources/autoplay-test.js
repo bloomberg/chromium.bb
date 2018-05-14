@@ -10,7 +10,7 @@ let completedTestResults = [];
 
 function tearDown(result) {
   // Reset the flag state.
-  window.internals.settings.setAutoplayPolicy('no-user-gesture-required');
+  internals.settings.setAutoplayPolicy('no-user-gesture-required');
   let canAutoplay = true;
 
   // Ensure that play failed because autoplay was blocked. If playback failed
@@ -105,7 +105,7 @@ function runTest(pointerSequence, expectations) {
 }
 
 // Setup the flags before the test is run.
-window.internals.settings.setAutoplayPolicy('document-user-activation-required');
+internals.settings.setAutoplayPolicy('document-user-activation-required');
 
 // Setup the event listener to forward messages.
 window.addEventListener('message', (e) => { resultCallback(e.data); });

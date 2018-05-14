@@ -14,7 +14,7 @@ function triggersLayout(action) {
     // Dirty layout
     box.style.height = counter + 'px';
     counter++;
-    window.internals.updateStyleAndReturnAffectedElementCount();
+    internals.updateStyleAndReturnAffectedElementCount();
     shouldNotBe('internals.needsLayoutCount()', '0', true);
 
     // Run the action under test

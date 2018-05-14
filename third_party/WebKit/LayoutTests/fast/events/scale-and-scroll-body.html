@@ -12,10 +12,10 @@
       function scrollViaJavascript() {
           var scaleFactor = 2.0;
           if (window.internals) {
-             window.internals.setPageScaleFactor(scaleFactor);
+             internals.setPageScaleFactor(scaleFactor);
           }
 
-          // The page scale, as set by window.internals.setPageScaleFactor should not be apparent
+          // The page scale, as set by internals.setPageScaleFactor should not be apparent
           // to javascript. So, we expect scrolling to (100,100) to be page coordinates, rather
           // than device pixels.
           document.scrollingElement.scrollLeft = 100;

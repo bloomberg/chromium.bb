@@ -45,7 +45,7 @@ function openPicker(element, callback, errorCallback) {
             eventSender.keyDown("ArrowDown", ["altKey"]);
         }
     }
-    popupWindow = window.internals.pagePopupWindow;
+    popupWindow = internals.pagePopupWindow;
     if (typeof callback === "function" && popupWindow)
         setPopupOpenCallback(callback);
     else if (typeof errorCallback === "function" && !popupWindow)
@@ -56,7 +56,7 @@ function clickToOpenPicker(x, y, callback, errorCallback) {
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseDown();
     eventSender.mouseUp();
-    popupWindow = window.internals.pagePopupWindow;
+    popupWindow = internals.pagePopupWindow;
     if (typeof callback === "function" && popupWindow)
         setPopupOpenCallback(callback);
     else if (typeof errorCallback === "function" && !popupWindow)

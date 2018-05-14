@@ -14,19 +14,19 @@
   function testArrowKeys()
   {
     // Test up and down.
-    window.eventSender.keyDown('ArrowDown');
+    eventSender.keyDown('ArrowDown');
     shouldBeGreaterThan('internals.visualViewportScrollY()', '0');
 
     numScrolls = Math.ceil((pageHeight - internals.visualViewportHeight()) / internals.visualViewportScrollY());
 
     for(var i = 0; i < numScrolls - 1; ++i) {
-      window.eventSender.keyDown('ArrowDown');
+      eventSender.keyDown('ArrowDown');
     }
 
     shouldBe('internals.visualViewportScrollY()', 'pageHeight - internals.visualViewportHeight()');
 
     for(var i = 0; i < numScrolls; ++i) {
-      window.eventSender.keyDown('ArrowUp');
+      eventSender.keyDown('ArrowUp');
     }
 
     shouldBe('internals.visualViewportScrollY()', '0');
@@ -34,17 +34,17 @@
     // Now test left and right.
 
     reset();
-    window.eventSender.keyDown('ArrowRight');
+    eventSender.keyDown('ArrowRight');
     numScrolls = Math.ceil((pageWidth - internals.visualViewportWidth()) / internals.visualViewportScrollX());
 
     for(var i = 0; i < numScrolls - 1; ++i) {
-      window.eventSender.keyDown('ArrowRight');
+      eventSender.keyDown('ArrowRight');
     }
 
     shouldBe('internals.visualViewportScrollX()', 'pageWidth - internals.visualViewportWidth()');
 
     for(var i = 0; i < numScrolls; ++i) {
-      window.eventSender.keyDown('ArrowLeft');
+      eventSender.keyDown('ArrowLeft');
     }
 
     shouldBe('internals.visualViewportScrollX()', '0');
@@ -52,29 +52,29 @@
 
   function testHomeEnd()
   {
-    window.eventSender.keyDown('End');
+    eventSender.keyDown('End');
     shouldBe('window.scrollY', 'pageHeight - window.innerHeight');
     shouldBe('internals.visualViewportScrollY()', 'pageHeight - internals.visualViewportHeight()');
-    window.eventSender.keyDown('Home');
+    eventSender.keyDown('Home');
     shouldBe('window.scrollY', '0');
     shouldBe('internals.visualViewportScrollY()', '0');
   }
 
   function testPageUpDown()
   {
-    window.eventSender.keyDown('PageDown');
+    eventSender.keyDown('PageDown');
     shouldBeGreaterThan('internals.visualViewportScrollY()', '0');
 
     numScrolls = Math.ceil((pageHeight - internals.visualViewportHeight()) / internals.visualViewportScrollY());
 
     for(var i = 0; i < numScrolls - 1; ++i) {
-      window.eventSender.keyDown('PageDown');
+      eventSender.keyDown('PageDown');
     }
 
     shouldBe('internals.visualViewportScrollY()', 'pageHeight - internals.visualViewportHeight()');
 
     for(var i = 0; i < numScrolls; ++i) {
-      window.eventSender.keyDown('PageUp');
+      eventSender.keyDown('PageUp');
     }
 
     shouldBe('internals.visualViewportScrollY()', '0');
@@ -82,19 +82,19 @@
 
   function testSpacebar()
   {
-    window.eventSender.keyDown(' ');
+    eventSender.keyDown(' ');
     shouldBeGreaterThan('internals.visualViewportScrollY()', '0');
 
     numScrolls = Math.ceil((pageHeight - internals.visualViewportHeight()) / internals.visualViewportScrollY());
 
     for(var i = 0; i < numScrolls - 1; ++i) {
-      window.eventSender.keyDown(' ');
+      eventSender.keyDown(' ');
     }
 
     shouldBe('internals.visualViewportScrollY()', 'pageHeight - internals.visualViewportHeight()');
 
     for(var i = 0; i < numScrolls; ++i) {
-      window.eventSender.keyDown(' ', 'shiftKey');
+      eventSender.keyDown(' ', 'shiftKey');
     }
 
     shouldBe('internals.visualViewportScrollY()', '0');

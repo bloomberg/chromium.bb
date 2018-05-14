@@ -42,7 +42,7 @@
 
     window.onload = function() {
         if (window.internals) {
-            window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+            internals.settings.setPreferCompositingToLCDTextEnabled(true);
         }
 
         window.requestAnimationFrame(startSmoothScroll);

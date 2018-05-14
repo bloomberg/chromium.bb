@@ -12,9 +12,9 @@
 	        ctx.fillRect(0,0,ctx.canvas.width,ctx.canvas.height);
 	        
             if (window.testRunner) {
-                window.testRunner.dumpAsTextWithPixelResults();
+                testRunner.dumpAsTextWithPixelResults();
                 var console = document.getElementById("layeroutput");
-                console.innerHTML = window.internals.layerTreeAsText(document);
+                console.innerHTML = internals.layerTreeAsText(document);
             }
 	    }
 	</script>

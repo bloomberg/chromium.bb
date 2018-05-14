@@ -42,7 +42,7 @@
         var layersElement = document.getElementById('layers');
         // Do not include any text in the layers output, otherwise we need expected results for each platform.
         layersElement.style.display = "none";
-        layersElement.innerText = window.internals.layerTreeAsText(document);
+        layersElement.innerText = internals.layerTreeAsText(document);
         layersElement.style.display = "block";
         testRunner.notifyDone();
       }

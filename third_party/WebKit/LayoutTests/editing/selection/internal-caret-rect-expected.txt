@@ -1,6 +1,6 @@
 Bug 86390: Expose FrameSelection::absoluteCaretBounds via window.internals
 
-This test demonstrates the usage of window.internals.absoluteCaretBounds()
+This test demonstrates the usage of internals.absoluteCaretBounds()
 
 abcd
 PASS caretRects[0].left is 8

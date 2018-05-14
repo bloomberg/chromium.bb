@@ -47,7 +47,7 @@
   }
 
   if (window.internals) {
-    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+    internals.settings.setPreferCompositingToLCDTextEnabled(true);
   }
 
   function runTest() {
@@ -57,7 +57,7 @@
 
     if (window.eventSender) {
       eventSender.gestureShowPress(x, y);
-      window.setTimeout(function() { window.testRunner.notifyDone(); }, 0);
+      window.setTimeout(function() { testRunner.notifyDone(); }, 0);
     }
   }
 

@@ -8,7 +8,7 @@
 <script>
 function report() {
 if (window.testRunner)
-    window.testRunner.notifyDone();
+    testRunner.notifyDone();
 }
 </script>
 	<title id="test-title">linkingCircle-f.svg</title>

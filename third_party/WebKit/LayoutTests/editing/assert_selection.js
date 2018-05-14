@@ -129,7 +129,7 @@ class FlatTreeTraversal extends Traversal {
    * @param {!Node} node
    * @return {Node}
    */
-  firstChildOf(node) { return window.internals.firstChildInFlatTree(node); }
+  firstChildOf(node) { return internals.firstChildInFlatTree(node); }
 
   /**
    * @param {!Window} window
@@ -144,7 +144,7 @@ class FlatTreeTraversal extends Traversal {
    * @param {!Node} node
    * @return {Node}
    */
-  nextSiblingOf(node) { return window.internals.nextSiblingInFlatTree(node); }
+  nextSiblingOf(node) { return internals.nextSiblingInFlatTree(node); }
 }
 
 /**

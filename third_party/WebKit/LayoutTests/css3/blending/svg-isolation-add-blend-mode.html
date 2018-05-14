@@ -2,12 +2,12 @@
 <html>
     <script>
         if (window.testRunner)
-            window.testRunner.waitUntilDone();
+            testRunner.waitUntilDone();
         function addIsolation() {
             var isolator = document.getElementById('blending');
             isolator.style['mix-blend-mode'] = "difference";
             if (window.testRunner)
-                window.testRunner.notifyDone();
+                testRunner.notifyDone();
         }
         window.addEventListener('load', function () {
             window.setTimeout(addIsolation, 10);

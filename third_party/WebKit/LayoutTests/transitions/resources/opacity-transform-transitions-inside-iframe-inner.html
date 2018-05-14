@@ -55,8 +55,8 @@
 
         // dump the pixel in the middle of the transition
         if (window.internals) {
-            window.internals.forceCompositingUpdate(document);
-            window.internals.pauseAnimations(0.5);
+            internals.forceCompositingUpdate(document);
+            internals.pauseAnimations(0.5);
         }
         waitForCompositor().then(() => {
             triggerPixelResults();

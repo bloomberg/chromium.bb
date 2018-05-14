@@ -13,7 +13,7 @@
 document.body.offsetTop;
 
 if (window.internals)
-    shouldBe("window.internals.needsLayoutCount()", "0", true);
+    shouldBe("internals.needsLayoutCount()", "0", true);
 
 var parent = document.getElementById("parent");
 
@@ -22,7 +22,7 @@ var parent = document.getElementById("parent");
 parent.className = "a";
 
 if (window.internals) {
-    shouldBe("window.internals.updateStyleAndReturnAffectedElementCount()", "2", true);
-    shouldBe("window.internals.needsLayoutCount()", "0", true);
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2", true);
+    shouldBe("internals.needsLayoutCount()", "0", true);
 }
 </script>

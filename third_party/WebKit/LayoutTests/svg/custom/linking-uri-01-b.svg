@@ -12,12 +12,12 @@
   <!--======================================================================-->
 <script type="text/ecmascript"><![CDATA[
 if (window.testRunner)
-    window.testRunner.waitUntilDone();
+    testRunner.waitUntilDone();
 
 function linkClicked()
 {
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 }
 
 function clickLink() {

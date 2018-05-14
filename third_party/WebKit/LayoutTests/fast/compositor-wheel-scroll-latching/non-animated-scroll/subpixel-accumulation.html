@@ -4,8 +4,8 @@
 <script>
   let t;
   if (window.internals && chrome && chrome.gpuBenchmarking) {
-    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
-    window.internals.settings.setScrollAnimatorEnabled(false);
+    internals.settings.setPreferCompositingToLCDTextEnabled(true);
+    internals.settings.setScrollAnimatorEnabled(false);
     t = async_test("Vertical scroll shouldn't latch to horizontal scroller.");
   }
 

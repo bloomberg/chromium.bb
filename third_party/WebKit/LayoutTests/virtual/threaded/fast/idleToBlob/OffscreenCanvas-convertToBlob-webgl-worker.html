@@ -51,7 +51,7 @@ var numTestCount = 5;
 function imageLoaded() {
   numTestCount--;
   if (numTestCount == 0 && window.testRunner) {
-    window.testRunner.notifyDone();
+    testRunner.notifyDone();
   }
 }
 pngImage.addEventListener('load', imageLoaded);

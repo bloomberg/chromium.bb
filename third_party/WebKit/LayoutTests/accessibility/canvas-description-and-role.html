@@ -13,7 +13,7 @@
 description("This test makes sure that a canvas with and without fallback content each has the right role and description.")
 
 if (window.testRunner && window.accessibilityController) {
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
 
     document.getElementById('container').focus();
     var axContainer = accessibilityController.focusedElement;

@@ -75,7 +75,7 @@ TextArea
 description("This test make sure that focusable elements are mapped implicitly to AX roles.");
 
 if (window.testRunner && window.accessibilityController) {
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
 
     function hasRole(id, expectedRole) {
         debug(id);

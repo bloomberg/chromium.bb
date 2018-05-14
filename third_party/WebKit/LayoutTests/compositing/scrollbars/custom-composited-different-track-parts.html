@@ -39,11 +39,11 @@
 </style>
 <script>
   if (window.internals) {
-    window.internals.settings.setMockScrollbarsEnabled(false);
+    internals.settings.setMockScrollbarsEnabled(false);
   }
   if (window.testRunner) {
-    window.testRunner.waitUntilDone();
-    window.testRunner.dumpAsTextWithPixelResults(); // This is only useful as a pixel test.
+    testRunner.waitUntilDone();
+    testRunner.dumpAsTextWithPixelResults(); // This is only useful as a pixel test.
   }
 
   function doTest()
@@ -51,7 +51,7 @@
     window.scrollTo(400,300);
     window.setTimeout(function() {
       if (window.testRunner) {
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
       }
     }, 0);
   }

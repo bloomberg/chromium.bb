@@ -19,19 +19,19 @@
     testRunner.waitUntilDone();
   }
   if (window.internals && window.eventSender) {
-    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
-    window.internals.setPageScaleFactorLimits(0.5, 4);
+    internals.settings.setPreferCompositingToLCDTextEnabled(true);
+    internals.setPageScaleFactorLimits(0.5, 4);
 
     addEventListener("load", function() {
       window.scrollTo(100,100);
 
       document.getElementById("layerTree").innerText = internals.layerTreeAsText(document);
 
-      window.internals.setPageScaleFactor(0.5);
+      internals.setPageScaleFactor(0.5);
       setTimeout(function() {
         document.getElementById("layerTreeScaledDown").innerText = internals.layerTreeAsText(document);
 
-        window.internals.setPageScaleFactor(1.5);
+        internals.setPageScaleFactor(1.5);
         setTimeout(function() {
           document.getElementById("layerTreeScaledUp").innerText = internals.layerTreeAsText(document);
           testRunner.notifyDone();

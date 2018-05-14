@@ -50,7 +50,7 @@
 
         function finishTest()
         {
-            var layerTreeText = window.internals.layerTreeAsText(document);
+            var layerTreeText = internals.layerTreeAsText(document);
             document.getElementById("console").appendChild(document.createTextNode(layerTreeText));
             testRunner.dumpAsText();
             testRunner.notifyDone();

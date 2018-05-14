@@ -7,7 +7,7 @@
   </video>
 <script>
 if (window.testRunner)
-    window.testRunner.waitUntilDone();
+    testRunner.waitUntilDone();
 onload = runTest;
 
 var play_button = mediaControlsButton(video, "play-button");
@@ -25,6 +25,6 @@ function focusPlayButton() {
 function focusTimeline() {
     play_button.style.outline = "";
     timeline.style.outline = "2px solid black";
-    window.testRunner.notifyDone();
+    testRunner.notifyDone();
 }
 </script>

@@ -11,7 +11,7 @@ function focusinListener(evt) {
 
 function test() {
     if (window.testRunner)
-        window.testRunner.dumpAsText();
+        testRunner.dumpAsText();
     document.getElementById("a").addEventListener('focusin', focusinListener , false);
     document.getElementById("a").focus();
 }

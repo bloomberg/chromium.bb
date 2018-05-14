@@ -75,7 +75,7 @@ function scrollChildDoesNotSquash(layers) {
 onload = function() {
   if (!window.internals)
     return;
-  layers = JSON.parse(window.internals.layerTreeAsText(document));
+  layers = JSON.parse(internals.layerTreeAsText(document));
   shouldBe('scrollChildDoesNotSquash(layers)', 'true');
 };
 

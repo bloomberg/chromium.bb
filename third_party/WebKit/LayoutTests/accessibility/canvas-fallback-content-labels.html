@@ -60,7 +60,7 @@
 description("This tests that labels and elements with labels in canvas fallback content have the same accessibility properties as those same elements outside of a canvas.");
 
 if (window.testRunner && window.accessibilityController) {
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
 
     window.collapseWhitespace = function(str) {
         return str.replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');

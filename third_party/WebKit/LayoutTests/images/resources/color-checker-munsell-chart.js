@@ -122,5 +122,5 @@ function chartColorTransform(canvas) {
   log('\nResult: total RMS color error: ' + Math.sqrt(totalSquaredError / 24.0).toFixed(2));
 
   if (window.testRunner)
-    window.testRunner.notifyDone();
+    testRunner.notifyDone();
 }

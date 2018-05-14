@@ -20,8 +20,8 @@
 
     obj.onload = function() {
         runAfterLayoutAndPaint(function() {
-            shouldBeFalse("window.internals.isUseCounted(document.querySelector('object').contentDocument, SVGSVGElementFragmentSVGView)");
-            shouldBeFalse("window.internals.isUseCounted(document.querySelector('object').contentDocument, SVGSVGElementFragmentSVGViewElement)");
+            shouldBeFalse("internals.isUseCounted(document.querySelector('object').contentDocument, SVGSVGElementFragmentSVGView)");
+            shouldBeFalse("internals.isUseCounted(document.querySelector('object').contentDocument, SVGSVGElementFragmentSVGViewElement)");
 
             var obj = document.createElement('object');
             obj.data = "resources/svglogo.svg#svgView(viewBox(0,0,150,150))";
@@ -29,8 +29,8 @@
 
             obj.onload = function() {
                 runAfterLayoutAndPaint(function() {
-                    shouldBeTrue("window.internals.isUseCounted(document.querySelector('object').contentDocument, SVGSVGElementFragmentSVGView)");
-                    shouldBeFalse("window.internals.isUseCounted(document.querySelector('object').contentDocument, SVGSVGElementFragmentSVGViewElement)");
+                    shouldBeTrue("internals.isUseCounted(document.querySelector('object').contentDocument, SVGSVGElementFragmentSVGView)");
+                    shouldBeFalse("internals.isUseCounted(document.querySelector('object').contentDocument, SVGSVGElementFragmentSVGViewElement)");
 
                     var obj = document.createElement('object');
                     obj.data = "resources/svglogo-viewbox.svg#original";
@@ -38,8 +38,8 @@
 
                     obj.onload = function() {
                         runAfterLayoutAndPaint(function() {
-                            shouldBeTrue("window.internals.isUseCounted(document.querySelector('object').contentDocument, SVGSVGElementFragmentSVGView)");
-                            shouldBeTrue("window.internals.isUseCounted(document.querySelector('object').contentDocument, SVGSVGElementFragmentSVGViewElement)");
+                            shouldBeTrue("internals.isUseCounted(document.querySelector('object').contentDocument, SVGSVGElementFragmentSVGView)");
+                            shouldBeTrue("internals.isUseCounted(document.querySelector('object').contentDocument, SVGSVGElementFragmentSVGViewElement)");
                             finishJSTest();
                         });
                     };

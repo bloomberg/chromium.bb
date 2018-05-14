@@ -6,12 +6,12 @@ function runTest() {
     window.onblur = windowBlurred;
     
     if (window.testRunner) {
-        window.testRunner.dumpAsText();
-        window.testRunner.setMainFrameIsFirstResponder(true);
+        testRunner.dumpAsText();
+        testRunner.setMainFrameIsFirstResponder(true);
         
-        window.testRunner.setWindowIsKey(false);
-        window.testRunner.setWindowIsKey(true);
-        window.testRunner.setWindowIsKey(false);
+        testRunner.setWindowIsKey(false);
+        testRunner.setWindowIsKey(true);
+        testRunner.setWindowIsKey(false);
     }
 }
 

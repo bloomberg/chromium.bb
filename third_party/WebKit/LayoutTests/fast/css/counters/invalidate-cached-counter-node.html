@@ -22,7 +22,7 @@
         if (window.testRunner) {
             testRunner.dumpAsText();
             var testResult;
-            var counterValue = window.internals.counterValue(document.getElementById("keep-me"));
+            var counterValue = internals.counterValue(document.getElementById("keep-me"));
             if (counterValue == "1")
                 testResult = "PASS";
             else

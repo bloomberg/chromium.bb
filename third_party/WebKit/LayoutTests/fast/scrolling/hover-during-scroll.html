@@ -93,8 +93,8 @@ function runtest()
     if (!window.testRunner || !window.eventSender)
         return;
 
-    if (!window.internals || !window.internals.setIsCursorVisible) {
-        debug("window.internals.setIsCursorVisible is required to run this test.");
+    if (!window.internals || !internals.setIsCursorVisible) {
+        debug("internals.setIsCursorVisible is required to run this test.");
         return;
     }
 

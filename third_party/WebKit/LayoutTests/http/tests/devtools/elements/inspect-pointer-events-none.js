@@ -38,9 +38,9 @@
           var rect = target.getBoundingClientRect();
           // Simulate the mouse click over the target to trigger an event dispatch.
           if (window.eventSender) {
-              window.eventSender.mouseMoveTo(rect.left + rect.width / 2, rect.top + rect.height / 2, withShift ? "shiftKey" : "");
-              window.eventSender.mouseDown();
-              window.eventSender.mouseUp();
+              eventSender.mouseMoveTo(rect.left + rect.width / 2, rect.top + rect.height / 2, withShift ? "shiftKey" : "");
+              eventSender.mouseDown();
+              eventSender.mouseUp();
           }
       }
   `);

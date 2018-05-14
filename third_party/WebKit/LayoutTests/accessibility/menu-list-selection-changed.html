@@ -15,7 +15,7 @@ description("This test makes sure menu lists fire events on both the option that
 window.jsTestIsAsync = true;
 
 if (window.testRunner && window.accessibilityController) {
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
 
     var menulist = document.getElementById("menulist");
     menulist.selectedIndex = 0;

@@ -73,7 +73,7 @@ function testInput(id, field) {
 
 
 // We want all mouse moves sent immediately.
-window.eventSender.dragMode = false;
+eventSender.dragMode = false;
 
 debug('Tests for range dragging while it toggles to be readonly.');
 testInput('range1', 'readOnly');

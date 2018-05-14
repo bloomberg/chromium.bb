@@ -7,8 +7,8 @@
 </head>
 <body>
 <script>
-  window.internals.settings.setAutoplayPolicy('user-gesture-required');
-  window.internals.runtimeFlags.autoplayMutedVideosEnabled = true;
+  internals.settings.setAutoplayPolicy('user-gesture-required');
+  internals.runtimeFlags.autoplayMutedVideosEnabled = true;
   internals.setSaveDataEnabled(true);
 
   promise_test(function(t)

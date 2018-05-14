@@ -8,7 +8,7 @@ function go() {
   shadow_root.innerHTML = outer_html;
 }
 if (window.testRunner)
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
 </script>
 Passes if it does not crash.
 <body onload=go()>

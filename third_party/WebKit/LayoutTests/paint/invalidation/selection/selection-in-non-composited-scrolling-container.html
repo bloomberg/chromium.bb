@@ -5,7 +5,7 @@
 window.testIsAsync = true;
 onload = runRepaintAndPixelTest;
 if (window.internals)
-  window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
+  internals.settings.setPreferCompositingToLCDTextEnabled(false);
 
 function repaintTest() {
   target.focus();

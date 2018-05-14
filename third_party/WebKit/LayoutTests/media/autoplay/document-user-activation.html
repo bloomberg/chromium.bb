@@ -8,10 +8,10 @@
 <script>
 promise_test(t => {
   t.add_cleanup(() => {
-    window.internals.settings.setAutoplayPolicy('no-user-gesture-required');
+    internals.settings.setAutoplayPolicy('no-user-gesture-required');
   });
 
-  window.internals.settings.setAutoplayPolicy('document-user-activation-required');
+  internals.settings.setAutoplayPolicy('document-user-activation-required');
 
   var video = document.createElement('video');
   video.src = '../content/test.ogv';
@@ -20,10 +20,10 @@ promise_test(t => {
 
 promise_test(t => {
   t.add_cleanup(() => {
-    window.internals.settings.setAutoplayPolicy('no-user-gesture-required');
+    internals.settings.setAutoplayPolicy('no-user-gesture-required');
   });
 
-  window.internals.settings.setAutoplayPolicy('document-user-activation-required');
+  internals.settings.setAutoplayPolicy('document-user-activation-required');
   document.querySelector('#target').focus();
   eventSender.keyDown('a');
 
@@ -34,10 +34,10 @@ promise_test(t => {
 
 promise_test(t => {
   t.add_cleanup(() => {
-    window.internals.settings.setAutoplayPolicy('no-user-gesture-required');
+    internals.settings.setAutoplayPolicy('no-user-gesture-required');
   });
 
-  window.internals.settings.setAutoplayPolicy('document-user-activation-required');
+  internals.settings.setAutoplayPolicy('document-user-activation-required');
   var bounds = document.querySelector('#target').getBoundingClientRect();
   var x = bounds.left + bounds.width / 2;
   var y = bounds.top + bounds.height / 2;
@@ -62,10 +62,10 @@ promise_test(t => {
 
 promise_test(t => {
   t.add_cleanup(() => {
-    window.internals.settings.setAutoplayPolicy('no-user-gesture-required');
+    internals.settings.setAutoplayPolicy('no-user-gesture-required');
   });
 
-  window.internals.settings.setAutoplayPolicy('document-user-activation-required');
+  internals.settings.setAutoplayPolicy('document-user-activation-required');
   var bounds = document.querySelector('#target').getBoundingClientRect();
   var x = bounds.left + bounds.width / 2;
   var y = bounds.top + bounds.height / 2;
@@ -90,10 +90,10 @@ promise_test(t => {
 
 promise_test(t => {
   t.add_cleanup(() => {
-    window.internals.settings.setAutoplayPolicy('no-user-gesture-required');
+    internals.settings.setAutoplayPolicy('no-user-gesture-required');
   });
 
-  window.internals.settings.setAutoplayPolicy('document-user-activation-required');
+  internals.settings.setAutoplayPolicy('document-user-activation-required');
   var bounds = document.querySelector('#target').getBoundingClientRect();
   var x = bounds.left + bounds.width / 2;
   var y = bounds.top + bounds.height / 2;
@@ -116,11 +116,11 @@ promise_test(t => {
 
 promise_test(t => {
   t.add_cleanup(() => {
-    window.internals.settings.setAutoplayPolicy('no-user-gesture-required');
+    internals.settings.setAutoplayPolicy('no-user-gesture-required');
     document.body.removeChild(document.querySelector('iframe'));
   });
 
-  window.internals.settings.setAutoplayPolicy('document-user-activation-required');
+  internals.settings.setAutoplayPolicy('document-user-activation-required');
 
   var iframe = document.createElement('iframe');
   return new Promise((resolve, reject) => {
@@ -148,11 +148,11 @@ promise_test(t => {
 
 promise_test(t => {
   t.add_cleanup(() => {
-    window.internals.settings.setAutoplayPolicy('no-user-gesture-required');
+    internals.settings.setAutoplayPolicy('no-user-gesture-required');
     document.body.removeChild(document.querySelector('iframe'));
   });
 
-  window.internals.settings.setAutoplayPolicy('document-user-activation-required');
+  internals.settings.setAutoplayPolicy('document-user-activation-required');
 
   var iframe = document.createElement('iframe');
   return new Promise((resolve, reject) => {

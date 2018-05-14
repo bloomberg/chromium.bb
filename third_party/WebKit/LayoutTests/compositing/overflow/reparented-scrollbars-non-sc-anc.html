@@ -42,13 +42,13 @@ if (window.testRunner)
   testRunner.dumpAsText();
 
 if (window.internals) {
-  window.internals.runtimeFlags.overlayScrollbarsEnabled = true;
-  window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+  internals.runtimeFlags.overlayScrollbarsEnabled = true;
+  internals.settings.setPreferCompositingToLCDTextEnabled(true);
 }
 
 onload = function() {
   if (window.internals) {
-    document.getElementById('console').innerHTML = window.internals.layerTreeAsText(document);
+    document.getElementById('console').innerHTML = internals.layerTreeAsText(document);
   }
 }
 </script>

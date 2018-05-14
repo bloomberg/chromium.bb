@@ -6,7 +6,7 @@
 <script>
 async_test(t => {
   // Make sure this overrides any preset autoplay policy.
-  window.internals.settings.setAutoplayPolicy('document-user-activation-required');
+  internals.settings.setAutoplayPolicy('document-user-activation-required');
 
   // Setup the event listener.
   window.addEventListener('message', t.step_func_done((e) => {

@@ -242,8 +242,8 @@ function clicked(event) {
 }
 
 if (window.testRunner) {
-    window.testRunner.dumpAsText();
-    window.testRunner.waitUntilDone();
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
 }
 
 // Start the test.
@@ -269,7 +269,7 @@ window.addEventListener('load', function() {
 
             // End asynchronous test.
             if (window.testRunner)
-                window.testRunner.notifyDone();            
+                testRunner.notifyDone();            
         }, 0);
     }, 0);
 }, false);

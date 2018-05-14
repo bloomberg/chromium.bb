@@ -8,7 +8,7 @@
 
 description("Tests that it's okay to unregister the event listener while handling the event.");
 
-shouldBe('typeof window.internals.observeGC', '"function"',
+shouldBe('typeof internals.observeGC', '"function"',
 'this test requires window.internals');
 
 var otherHandler = function(e) {

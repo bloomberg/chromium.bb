@@ -205,7 +205,7 @@ Markup._get = function(node, depth)
         }
 
         if (!Markup._useHTML5libOutputFormat && window.internals) {
-            var pseudoId = window.internals.shadowPseudoId(node);
+            var pseudoId = internals.shadowPseudoId(node);
             if (pseudoId)
                 str += Markup._indent(depth + 1) + 'shadow:pseudoId="' + pseudoId + '"';
         }
@@ -246,7 +246,7 @@ Markup._get = function(node, depth)
 Markup._getShadowHostIfPossible = function (node, depth)
 {
     if (!Markup._useHTML5libOutputFormat && node.nodeType == Node.ELEMENT_NODE && window.internals) {
-        var root = window.internals.shadowRoot(node);
+        var root = internals.shadowRoot(node);
         if (root) {
             return Markup._get(root, depth + 1);
         }

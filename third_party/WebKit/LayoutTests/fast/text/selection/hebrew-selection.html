@@ -17,10 +17,10 @@ var width = document.getElementById("reference").offsetWidth;
 var target = document.getElementById("target");
 
 if (window.eventSender) {
-    window.eventSender.mouseMoveTo(target.offsetLeft + 5, target.offsetTop + 5);
-    window.eventSender.mouseDown();
-    window.eventSender.mouseMoveTo(target.offsetLeft + 5 + width / 2, target.offsetTop + 5);
-    window.eventSender.mouseUp();
+    eventSender.mouseMoveTo(target.offsetLeft + 5, target.offsetTop + 5);
+    eventSender.mouseDown();
+    eventSender.mouseMoveTo(target.offsetLeft + 5 + width / 2, target.offsetTop + 5);
+    eventSender.mouseUp();
 }
 </script>
 </body>

@@ -32,10 +32,10 @@ function shouldBe(a, b)
 }
 
 if (window.testRunner) {
-    window.testRunner.dumpAsText();
-    window.testRunner.waitUntilDone();
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
     window.onload = function() {
         runTest();
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
     }
 }

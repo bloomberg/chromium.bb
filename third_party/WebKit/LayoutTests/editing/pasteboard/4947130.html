@@ -9,7 +9,7 @@ function runTest() {
     if (!window.testRunner)
         return;
     
-    window.testRunner.waitUntilDone();  
+    testRunner.waitUntilDone();  
     
     window.setTimeout(step2, 200);
 }
@@ -29,7 +29,7 @@ function step2() {
     eventSender.mouseMoveTo(left - 28, y);
     eventSender.mouseUp();
 
-    window.testRunner.notifyDone();
+    testRunner.notifyDone();
 }
 
 runTest();

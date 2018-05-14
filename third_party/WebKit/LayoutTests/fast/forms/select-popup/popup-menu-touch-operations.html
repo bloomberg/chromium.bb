@@ -48,7 +48,7 @@ var menuElement2 = document.getElementById('menu2');
 var picker = null;
 eventSender.clearTouchPoints();
 openPicker(menuElement, function () {
-    picker = window.internals.pagePopupWindow.global.picker;
+    picker = internals.pagePopupWindow.global.picker;
     shouldBeEqualToString('picker._selectElement.value', '1');
     shouldBeEqualToString('menuElement.value', 'bar');
 
@@ -65,7 +65,7 @@ openPicker(menuElement, function () {
     eventSender.releaseTouchPoint(0);
     eventSender.touchEnd();
 
-    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeNull('internals.pagePopupWindow');
     shouldBeEqualToString('menuElement.value', 'baz');
 
     testDisabled();
@@ -78,7 +78,7 @@ function testDisabled() {
     debug("==> Test disabled option");
     menuElement.options[0].disabled = true;
     openPicker(menuElement, () => {
-        picker = window.internals.pagePopupWindow.global.picker;
+        picker = internals.pagePopupWindow.global.picker;
         shouldBeEqualToString('picker._selectElement.value', '2');
         shouldBeEqualToString('menuElement.value', 'baz');
 
@@ -96,7 +96,7 @@ function testDisabled() {
         eventSender.releaseTouchPoint(0);
         eventSender.touchEnd();
 
-        shouldNotBe('window.internals.pagePopupWindow', 'null');
+        shouldNotBe('internals.pagePopupWindow', 'null');
         shouldBeEqualToString('menuElement.value', 'baz');
 
         test2();
@@ -109,7 +109,7 @@ function testDisabled() {
 function test2() {
     debug("==> Test scrollable popup");
     openPicker(menuElement2, function () {
-        picker = window.internals.pagePopupWindow.global.picker;
+        picker = internals.pagePopupWindow.global.picker;
         shouldBeEqualToString('picker._selectElement.value', '1');
         shouldBeEqualToString('menuElement2.value', '2');
 
@@ -143,7 +143,7 @@ function test2AfterScrollEvent() {
     eventSender.touchEnd();
     eventSender.gestureScrollEnd(0, 0);
 
-    shouldNotBe('window.internals.pagePopupWindow', 'null');
+    shouldNotBe('internals.pagePopupWindow', 'null');
     shouldBeEqualToString('menuElement2.value', '2');
 
     test3();
@@ -154,7 +154,7 @@ function test3() {
     eventSender.clearTouchPoints();
     openPicker(menuElement, function () {
         eventSender.gestureTapDown(300, 300);
-        shouldBeNull('window.internals.pagePopupWindow');
+        shouldBeNull('internals.pagePopupWindow');
         test4();
     }, function () {
         testFailed('picker didn\'t open')
@@ -165,22 +165,22 @@ function test3() {
 function test4() {
   debug("==> Test popup doesn't reopen immediately after closing");
   eventSender.clearTouchPoints();
-  shouldBeNull('window.internals.pagePopupWindow');
+  shouldBeNull('internals.pagePopupWindow');
 
   // Open the popup with a GestureTap.
   var position =  elementCenterPosition(menuElement);
   eventSender.gestureTapDown(position[0], position[1]);
-  shouldBeNull('window.internals.pagePopupWindow');
+  shouldBeNull('internals.pagePopupWindow');
   eventSender.gestureTap(position[0], position[1]);
-  shouldNotBe('window.internals.pagePopupWindow', 'null');
+  shouldNotBe('internals.pagePopupWindow', 'null');
 
   // GestureTapDown on an open popup closes it.
   eventSender.gestureTapDown(position[0], position[1]);
-  shouldBeNull('window.internals.pagePopupWindow');
+  shouldBeNull('internals.pagePopupWindow');
 
   // The next GestureTap on the recently closed popup shouldn't open it.
   eventSender.gestureTap(position[0], position[1]);
-  shouldBeNull('window.internals.pagePopupWindow');
+  shouldBeNull('internals.pagePopupWindow');
 
   finishJSTest();
 }
