@@ -419,6 +419,8 @@ const CGFloat kOmniboxButtonBackgroundAlphaFactor = 0.5;
   [omniboxButton addTarget:self.dispatcher
                     action:@selector(focusOmniboxFromSearchButton)
           forControlEvents:UIControlEventTouchUpInside];
+  omniboxButton.accessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_TOOLBAR_SEARCH);
   omniboxButton.accessibilityIdentifier = kToolbarOmniboxButtonIdentifier;
 
   UIView* background = [[UIView alloc] init];
