@@ -136,10 +136,9 @@ TEST_F(ContentSettingsObserverBrowserTest, DidBlockContentType) {
 }
 
 // Tests that multiple invokations of AllowDOMStorage result in a single IPC.
-// Fails due to http://crbug.com/104300
-TEST_F(ContentSettingsObserverBrowserTest, DISABLED_AllowDOMStorage) {
+TEST_F(ContentSettingsObserverBrowserTest, AllowDOMStorage) {
   // Load some HTML, so we have a valid security origin.
-  LoadHTML("<html></html>");
+  LoadHTMLWithUrlOverride("<html></html>", "https://example.com/");
   MockContentSettingsObserver observer(view_->GetMainRenderFrame(),
                                        registry_.get());
   ON_CALL(observer,
