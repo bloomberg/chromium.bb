@@ -37,14 +37,17 @@ table {
 }
 td { white-space: pre-wrap; font-size: 14px; }
 .fileheader { position: sticky; top: 0px; }
-.fileheader div {
+.fileheader-container {
   background: #eee;
   border-bottom: 1px solid #ddd;
   border-top: 1px solid #ddd;
   box-sizing: border-box;
+  display: flex;
   line-height: 2.25em;
   padding: 0.2em 1rem 0.2em 1rem;
 }
+.filename { flex-grow: 1; }
+.fileheader button { flex-grow: 0; width: 2.25em; }
 .rename { color: #999999; display: block; }
 .fileinfo { background: #fafafa; color: #3a66d9; }
 .filehooter div { border-top: 1px solid #ddd; }
@@ -66,8 +69,24 @@ td { white-space: pre-wrap; font-size: 14px; }
 .add.strong { background: #caffca; }
 .binary { padding: 8px; border-left: 1px solid #ddd; }
 pre { white-space: pre-wrap; font-size: 14px; }
+.hidden { display: none; }
 </style>
 <body>
+<script>
+function toggleFollowingRows(button) {
+  button.textContent = button.textContent == '\\u25B2' ? '\\u25BC' : '\\u25B2';
+  let parent = button;
+  while (parent && parent.tagName != 'TR') {
+    parent = parent.parentNode;
+  }
+  if (!parent)
+    return;
+  for (let next = parent.nextSibling; next; next = next.nextSibling) {
+    if (next.tagName == 'TR')
+      next.classList.toggle('hidden')
+  }
+}
+</script>
 """
 
 
@@ -131,8 +150,12 @@ class DiffFile(object):
             additional_info = ('\n<span class=rename>Renamed from {}</span>'
                                .format(self._linkify(self._old_name)))
 
-        result_html = ('\n<table>\n<tr><td colspan=3 class=fileheader><div>' +
-                       status + ' ' + pretty_name + additional_info + '</div>')
+        result_html = (
+            '\n<table>\n<tr><td colspan=3 class=fileheader>'
+            '<div class=fileheader-container>'
+            '<div class=filename>' + status + ' ' + pretty_name + additional_info + '</div>'
+            '<button type=button onclick="toggleFollowingRows(this);">&#x25B2;</button>'
+            '</div></tr>')
 
         if self._hunks:
             for hunk in self._hunks:
