@@ -3686,6 +3686,8 @@ split_static_library("ui") {
         "ash/launcher/internal_app_window_shelf_controller.h",
         "ash/launcher/launcher_arc_app_updater.cc",
         "ash/launcher/launcher_arc_app_updater.h",
+        "ash/launcher/launcher_crostini_app_updater.cc",
+        "ash/launcher/launcher_crostini_app_updater.h",
         "views/arc_app_dialog_view.cc",
       ]
       deps += [ "//mash/common" ]
