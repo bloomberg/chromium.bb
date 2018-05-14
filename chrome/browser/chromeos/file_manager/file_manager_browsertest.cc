@@ -365,14 +365,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(IN_INCOGNITO, "openFileDialogDrive"),
                       TestParameter(NOT_IN_GUEST_MODE, "openFileDialogUnload")));
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_CopyBetweenWindows DISABLED_CopyBetweenWindows
-#else
-// flaky: http://crbug.com/500966
-#define MAYBE_CopyBetweenWindows DISABLED_CopyBetweenWindows
-#endif
+// Test does too much? Flaky on all bots: http://crbug.com/500966
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_CopyBetweenWindows,
+    DISABLED_CopyBetweenWindows,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindowsLocalToDrive"),
