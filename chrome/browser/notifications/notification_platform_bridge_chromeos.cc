@@ -40,6 +40,7 @@ void NotificationPlatformBridgeChromeOs::Display(
 
   std::string profile_notification_id =
       active_notification->notification().id();
+  active_notifications_.erase(profile_notification_id);
   active_notifications_.emplace(profile_notification_id,
                                 std::move(active_notification));
 }
