@@ -253,9 +253,9 @@ function createDirectoryFromDirectoryTree(
 }
 
 /**
- * Test case for copying a directory from directory tree by using context menu.
+ * Tests copying a directory from directory tree with context menu.
  */
-testcase.copyFromDirectoryTreeWithContextMenu = function() {
+testcase.dirCopyWithContextMenu = function() {
   var windowId;
   testPromise(setupForDirectoryTreeContextMenuTest().then(function(id) {
     windowId = id;
@@ -268,10 +268,9 @@ testcase.copyFromDirectoryTreeWithContextMenu = function() {
 };
 
 /**
- * Test case for copying a directory from directory tree by using keyboard
- * shortcut.
+ * Tests copying a directory from directory tree with the keyboard shortcut.
  */
-testcase.copyFromDirectoryTreeWithKeyboardShortcut = function() {
+testcase.dirCopyWithKeyboard = function() {
   var windowId;
   testPromise(setupForDirectoryTreeContextMenuTest().then(function(id) {
     windowId = id;
@@ -286,10 +285,9 @@ testcase.copyFromDirectoryTreeWithKeyboardShortcut = function() {
 };
 
 /**
- * Test case for copying a directory from directory tree without changing
- * current directory.
+ * Tests copying a directory without changing the current directory.
  */
-testcase.copyFromDirectoryTreeWithoutChaningCurrentDirectory = function() {
+testcase.dirCopyWithoutChangingCurrent = function() {
   var windowId;
   testPromise(setupForDirectoryTreeContextMenuTest().then(function(id) {
     windowId = id;
@@ -302,9 +300,9 @@ testcase.copyFromDirectoryTreeWithoutChaningCurrentDirectory = function() {
 };
 
 /**
- * Test case for cutting a directory from directory tree by using context menu.
+ * Tests cutting a directory with the context menu.
  */
-testcase.cutFromDirectoryTreeWithContextMenu = function() {
+testcase.dirCutWithContextMenu = function() {
   var windowId;
   testPromise(setupForDirectoryTreeContextMenuTest().then(function(id) {
     windowId = id;
@@ -321,10 +319,9 @@ testcase.cutFromDirectoryTreeWithContextMenu = function() {
 };
 
 /**
- * Test case for cutting a directory from directory tree by using keyboard
- * shortcut.
+ * Tests cutting a directory with the keyboard shortcut.
  */
-testcase.cutFromDirectoryTreeWithKeyboardShortcut = function() {
+testcase.dirCutWithKeyboard = function() {
   var windowId;
   testPromise(setupForDirectoryTreeContextMenuTest().then(function(id) {
     windowId = id;
@@ -343,10 +340,9 @@ testcase.cutFromDirectoryTreeWithKeyboardShortcut = function() {
 };
 
 /**
- * Test case for cutting a directory from directory tree without changing
- * current directory.
+ * Tests cutting a directory without changing the current directory.
  */
-testcase.cutFromDirectoryTreeWithoutChaningCurrentDirectory = function() {
+testcase.dirCutWithoutChangingCurrent = function() {
   var windowId;
   testPromise(setupForDirectoryTreeContextMenuTest().then(function(id) {
     windowId = id;
@@ -362,9 +358,9 @@ testcase.cutFromDirectoryTreeWithoutChaningCurrentDirectory = function() {
 };
 
 /**
- * Test case for pasting into folder from directory tree by using context menu.
+ * Tests pasting into folder with the context menu.
  */
-testcase.pasteIntoFolderFromDirectoryTreeWithContextMenu = function() {
+testcase.dirPasteWithContextMenu = function() {
   var windowId;
   testPromise(setupForDirectoryTreeContextMenuTest().then(function(id) {
     // Copy photos directory as a test data.
@@ -401,11 +397,9 @@ testcase.pasteIntoFolderFromDirectoryTreeWithContextMenu = function() {
 };
 
 /**
- * Test case for pasting into a folder from directory tree without changing
- * current directory.
+ * Tests pasting into a folder without changing the current directory.
  */
-testcase.pasteIntoFolderFromDirectoryTreeWithoutChaningCurrentDirectory =
-    function() {
+testcase.dirPasteWithoutChangingCurrent = function() {
   var windowId;
   testPromise(setupForDirectoryTreeContextMenuTest().then(function(id) {
     windowId = id;
@@ -429,28 +423,25 @@ testcase.pasteIntoFolderFromDirectoryTreeWithoutChaningCurrentDirectory =
 };
 
 /**
- * Test case for renaming directory from directory tree by using context menu.
+ * Tests renaming a folder with the context menu.
  */
-testcase.renameDirectoryFromDirectoryTreeWithContextMenu = function() {
+testcase.dirRenameWithContextMenu = function() {
   testPromise(renameDirectoryFromDirectoryTreeSuccessCase(
       false /* do not use keyboard shortcut */));
 };
 
 /**
- * Test case for renaming directory from directory tree by using keyboard
- * shortcut.
+ * Tests renaming folder with the keyboard shortcut.
  */
-testcase.renameDirectoryFromDirectoryTreeWithKeyboardShortcut = function() {
+testcase.dirRenameWithKeyboard = function() {
   testPromise(renameDirectoryFromDirectoryTreeSuccessCase(
       true /* use keyboard shortcut */));
 };
 
 /**
- * Test case for renaming directory from directory tree without changing current
- * directory.
+ * Tests renaming folder without changing the current directory.
  */
-testcase.renameDirectoryFromDirectoryTreeWithoutChangingCurrentDirectory =
-    function() {
+testcase.dirRenameWithoutChangingCurrent = function() {
   var windowId;
   testPromise(setupForDirectoryTreeContextMenuTest().then(function(id) {
     windowId = id;
@@ -471,45 +462,42 @@ testcase.renameDirectoryFromDirectoryTreeWithoutChangingCurrentDirectory =
 };
 
 /**
- * Test case for renaming directory to empty string.
+ * Tests renaming a folder to an empty string.
  */
-testcase.renameDirectoryToEmptyStringFromDirectoryTree = function() {
+testcase.dirRenameToEmptyString = function() {
   testPromise(renameDirectoryFromDirectoryTreeAndConfirmAlertDialog(''));
 };
 
 /**
- * Test case for renaming directory to exsiting directory name.
+ * Tests renaming folder an existing name.
  */
-testcase.renameDirectoryToExistingOneFromDirectoryTree = function() {
+testcase.dirRenameToExisting = function() {
   testPromise(renameDirectoryFromDirectoryTreeAndConfirmAlertDialog(
       'destination'));
 };
 
 /**
- * Test case for creating directory from directory tree by using context menu.
+ * Tests creating a folder with the context menu.
  */
-testcase.createDirectoryFromDirectoryTreeWithContextMenu = function() {
+testcase.dirCreateWithContextMenu = function() {
   testPromise(createDirectoryFromDirectoryTree(
       false /* do not use keyboard shortcut */,
       true /* change current directory */));
 };
 
 /**
- * Test case for creating directory from directory tree by using keyboard
- * shortcut.
+ * Tests creating a folder with the keyboard shortcut.
  */
-testcase.createDirectoryFromDirectoryTreeWithKeyboardShortcut = function() {
+testcase.dirCreateWithKeyboard = function() {
   testPromise(createDirectoryFromDirectoryTree(
       true /* use keyboard shortcut */,
       true /* change current directory */));
 };
 
 /**
- * Test case for creating directory from directory tree without changing current
- * directory.
+ * Tests creating folder without changing the current directory.
  */
-testcase.createDirectoryFromDirectoryTreeWithoutChangingCurrentDirectory =
-    function() {
+testcase.dirCreateWithoutChangingCurrent = function() {
   testPromise(createDirectoryFromDirectoryTree(
       false /* Do not use keyboard shortcut */,
       false /* Do not change current directory */));
