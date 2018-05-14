@@ -11,7 +11,6 @@
 #include "net/third_party/quic/core/quic_error_codes.h"
 #include "net/third_party/quic/core/quic_session.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
-#include "net/third_party/quic/quartc/quartc_clock_interface.h"
 #include "net/third_party/quic/quartc/quartc_packet_writer.h"
 #include "net/third_party/quic/quartc/quartc_session_interface.h"
 #include "net/third_party/quic/quartc/quartc_stream.h"

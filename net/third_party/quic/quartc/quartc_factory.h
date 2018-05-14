@@ -11,7 +11,6 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/quartc/quartc_factory_interface.h"
 #include "net/third_party/quic/quartc/quartc_packet_writer.h"
-#include "net/third_party/quic/quartc/quartc_task_runner_interface.h"
 
 namespace net {
 
@@ -20,7 +19,6 @@ namespace net {
 // using the QuartcTaskRunner. Implements the QuicConnectionHelperInterface used
 // by the QuicConnections. Only one QuartcFactory is expected to be created.
 class QUIC_EXPORT_PRIVATE QuartcFactory : public QuartcFactoryInterface,
-                                          public QuicAlarmFactory,
                                           public QuicConnectionHelperInterface {
  public:
   explicit QuartcFactory(const QuartcFactoryConfig& factory_config);
@@ -29,13 +27,6 @@ class QUIC_EXPORT_PRIVATE QuartcFactory : public QuartcFactoryInterface,
   // QuartcFactoryInterface overrides.
   std::unique_ptr<QuartcSessionInterface> CreateQuartcSession(
       const QuartcSessionConfig& quartc_session_config) override;
-
-  // QuicAlarmFactory overrides.
-  QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override;
-
-  QuicArenaScopedPtr<QuicAlarm> CreateAlarm(
-      QuicArenaScopedPtr<QuicAlarm::Delegate> delegate,
-      QuicConnectionArena* arena) override;
 
   // QuicConnectionHelperInterface overrides.
   const QuicClock* GetClock() const override;
@@ -49,12 +40,12 @@ class QUIC_EXPORT_PRIVATE QuartcFactory : public QuartcFactoryInterface,
       Perspective perspective,
       QuartcPacketWriter* packet_writer);
 
-  // Used to implement QuicAlarmFactory..
-  QuartcTaskRunnerInterface* task_runner_;
-  // Used to implement the QuicConnectionHelperInterface.
-  // The QuicClock wrapper held in this variable is owned by QuartcFactory,
-  // but the QuartcClockInterface inside of it belongs to the user!
-  std::unique_ptr<QuicClock> clock_;
+  // Used to implement QuicAlarmFactory.  Owned by the user and must outlive
+  // QuartcFactory.
+  QuicAlarmFactory* alarm_factory_;
+  // Used to implement the QuicConnectionHelperInterface.  Owned by the user and
+  // must outlive QuartcFactory.
+  QuicClock* clock_;
   SimpleBufferAllocator buffer_allocator_;
 };
 
