@@ -381,4 +381,8 @@ def run_bindings_tests(reset_results, verbose, suppress_diff):
         print 'Resetting results'
         return bindings_tests(REFERENCE_DIRECTORY, verbose, suppress_diff)
     with TemporaryDirectory() as temp_dir:
-        return bindings_tests(temp_dir, verbose, suppress_diff)
+        # TODO(peria): Remove this hack.
+        # Some internal algorithms depend on the path of output directory.
+        temp_source_path = os.path.join(temp_dir, 'third_party', 'blink', 'renderer')
+        temp_output_path = os.path.join(temp_source_path, 'bindings', 'tests', 'results')
+        return bindings_tests(temp_output_path, verbose, suppress_diff)
