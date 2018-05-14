@@ -37,8 +37,8 @@ static void ColorTransform(size_t hash, bool input) {
 
   static uint32_t output[kPixels * 4];
 
-  const auto form1 = SkColorSpaceXform::ColorFormat(hash >> 0 & 7);
-  const auto form2 = SkColorSpaceXform::ColorFormat(hash >> 3 & 7);
+  const auto form1 = SkColorSpaceXform::ColorFormat((hash >> 0) % 7);
+  const auto form2 = SkColorSpaceXform::ColorFormat((hash >> 3) % 7);
   const auto alpha = SkAlphaType(hash >> 6 & 3);
 
   transform->apply(form1, output, form2, pixels, kPixels, alpha);
