@@ -1568,6 +1568,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TOOLBAR_CLOSE_MENU" desc="The accessibility label for the toolbar close settings menu button [iOS only].">
         Close Menu
       </message>
+      <message name="IDS_IOS_TOOLBAR_SEARCH" desc="Label of the button allowing the user to focus the address bar when tapped. As usual, when the address bar is focused, the user can type a URL or a text to be searched on the internet. Read by Text-to-Speech." meaning="Search the internet. Read by Text-to-Speech.">
+        Search
+      </message>
       <message name="IDS_IOS_TOOLBAR_SETTINGS" desc="The accessibility label for the toolbar open settings menu button [iOS only].">
         Menu
       </message>
