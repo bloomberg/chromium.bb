@@ -39,6 +39,11 @@ class PictureInPictureWindow : public EventTargetWithInlineData,
 
   void Trace(blink::Visitor*) override;
 
+ protected:
+  // EventTarget overrides.
+  void AddedEventListener(const AtomicString& event_type,
+                          RegisteredEventListener&) override;
+
  private:
   // The Picture-in-Picture window size in pixels.
   WebSize size_;

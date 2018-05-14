@@ -9,5 +9,5 @@
 ]
 partial interface ShadowRoot {
     // TODO(crbug.com/656517): Define this attribute in DocumentOrShadowRoot.
-    readonly attribute HTMLVideoElement? pictureInPictureElement;
+    [Measure] readonly attribute HTMLVideoElement? pictureInPictureElement;
 };

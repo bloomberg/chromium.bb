@@ -7,8 +7,8 @@
     OriginTrialEnabled=PictureInPictureAPI
 ]
 interface PictureInPictureWindow : EventTarget {
-  readonly attribute long width;
-  readonly attribute long height;
+  [Measure] readonly attribute long width;
+  [Measure] readonly attribute long height;
 
   attribute EventHandler onresize;
 };

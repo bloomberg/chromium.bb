@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
 
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 
 namespace blink {
 
@@ -19,6 +20,18 @@ void PictureInPictureWindow::OnClose() {
 
 const AtomicString& PictureInPictureWindow::InterfaceName() const {
   return EventTargetNames::PictureInPictureWindow;
+}
+
+void PictureInPictureWindow::AddedEventListener(
+    const AtomicString& event_type,
+    RegisteredEventListener& registered_listener) {
+  if (event_type == EventTypeNames::resize) {
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kPictureInPictureWindowResizeEventListener);
+  }
+
+  EventTargetWithInlineData::AddedEventListener(event_type,
+                                                registered_listener);
 }
 
 void PictureInPictureWindow::Trace(blink::Visitor* visitor) {
