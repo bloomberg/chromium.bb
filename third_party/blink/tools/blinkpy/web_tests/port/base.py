@@ -67,7 +67,7 @@ _log = logging.getLogger(__name__)
 CONTENT_SHELL_FONTS_DIR = "test_fonts"
 
 FONT_FILES = [
-    # Other fonts: Arabic, CJK, Indic, Thai, etc.
+    [[CONTENT_SHELL_FONTS_DIR], 'Ahem.ttf', None],
     [[CONTENT_SHELL_FONTS_DIR], 'Arimo-Bold.ttf', None],
     [[CONTENT_SHELL_FONTS_DIR], 'Arimo-BoldItalic.ttf', None],
     [[CONTENT_SHELL_FONTS_DIR], 'Arimo-Italic.ttf', None],
@@ -1794,7 +1794,7 @@ class Port(object):
         """Returns list of font files that should be used by the test."""
         # TODO(sergeyu): Currently FONT_FILES is valid only on Linux. Make it
         # usable on other platforms if necessary.
-        result = [self._build_path('AHEM____.TTF')]
+        result = []
         for (font_dirs, font_file, package) in FONT_FILES:
             exists = False
             for font_dir in font_dirs:

@@ -5,6 +5,7 @@
 copy("test_fonts") {
   sources = [
     "LICENSE",
+    "test_fonts/Ahem.ttf",
     "test_fonts/Arimo-Bold.ttf",
     "test_fonts/Arimo-BoldItalic.ttf",
     "test_fonts/Arimo-Italic.ttf",
