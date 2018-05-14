@@ -136,7 +136,7 @@ class KEYBOARD_EXPORT KeyboardController
 
   // Sets the active keyboard controller. KeyboardController takes ownership of
   // the instance. Calling ResetIntance with a new instance destroys the
-  // previous one. May be called with NULL to clear the instance.
+  // previous one. May be called with nullptr to clear the instance.
   static void ResetInstance(KeyboardController* controller);
 
   // Retrieve the active keyboard controller.
