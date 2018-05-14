@@ -244,7 +244,8 @@ void BackgroundFetchContext::DidMarkForDeletion(
 
     CleanupRegistration(registration_id, {});
 
-    event_dispatcher_.DispatchBackgroundFetchAbortEvent(registration_id,
+    // TODO(rayankans): Send fetches to the event dispatcher.
+    event_dispatcher_.DispatchBackgroundFetchAbortEvent(registration_id, {},
                                                         base::DoNothing());
   } else {
     data_manager_.GetSettledFetchesForRegistration(
@@ -263,7 +264,7 @@ void BackgroundFetchContext::DidGetSettledFetches(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (error != blink::mojom::BackgroundFetchError::NONE) {
-    CleanupRegistration(registration_id, {});
+    CleanupRegistration(registration_id, {} /* fetches */);
     return;
   }
 

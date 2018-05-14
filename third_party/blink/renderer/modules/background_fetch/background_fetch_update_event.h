@@ -45,6 +45,7 @@ class MODULES_EXPORT BackgroundFetchUpdateEvent final
   BackgroundFetchUpdateEvent(
       const AtomicString& type,
       const BackgroundFetchSettledEventInit& initializer);
+
   BackgroundFetchUpdateEvent(const AtomicString& type,
                              const BackgroundFetchSettledEventInit&,
                              const String& unique_id,
@@ -56,11 +57,6 @@ class MODULES_EXPORT BackgroundFetchUpdateEvent final
                    mojom::blink::BackgroundFetchError error);
 
   Member<ServiceWorkerRegistration> registration_;
-
-  // Globally unique ID for the registration, generated in content/. Used to
-  // distinguish registrations in case a developer re-uses |developer_id_|s. Not
-  // exposed to JavaScript.
-  String unique_id_;
 };
 
 }  // namespace blink

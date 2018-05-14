@@ -68,6 +68,8 @@ class BackgroundFetchEmbeddedWorkerTestHelper
   // EmbeddedWorkerTestHelper overrides:
   void OnBackgroundFetchAbortEvent(
       const std::string& developer_id,
+      const std::string& unique_id,
+      const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorkerEventDispatcher::
           DispatchBackgroundFetchAbortEventCallback callback) override;
   void OnBackgroundFetchClickEvent(
@@ -77,6 +79,7 @@ class BackgroundFetchEmbeddedWorkerTestHelper
           DispatchBackgroundFetchClickEventCallback callback) override;
   void OnBackgroundFetchFailEvent(
       const std::string& developer_id,
+      const std::string& unique_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorkerEventDispatcher::
           DispatchBackgroundFetchFailEventCallback callback) override;

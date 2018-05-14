@@ -1366,6 +1366,8 @@ void ServiceWorkerContextClient::DispatchActivateEvent(
 
 void ServiceWorkerContextClient::DispatchBackgroundFetchAbortEvent(
     const std::string& developer_id,
+    const std::string& unique_id,
+    const std::vector<BackgroundFetchSettledFetch>& fetches,
     DispatchBackgroundFetchAbortEventCallback callback) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchBackgroundFetchAbortEvent");
@@ -1373,8 +1375,17 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchAbortEvent(
       CreateAbortCallback(&context_->background_fetch_abort_event_callbacks));
   context_->background_fetch_abort_event_callbacks.emplace(request_id,
                                                            std::move(callback));
+
+  blink::WebVector<blink::WebBackgroundFetchSettledFetch> web_fetches(
+      fetches.size());
+  for (size_t i = 0; i < fetches.size(); ++i) {
+    ToWebServiceWorkerRequest(fetches[i].request, &web_fetches[i].request);
+    ToWebServiceWorkerResponse(fetches[i].response, &web_fetches[i].response);
+  }
+
   proxy_->DispatchBackgroundFetchAbortEvent(
-      request_id, blink::WebString::FromUTF8(developer_id));
+      request_id, blink::WebString::FromUTF8(developer_id),
+      blink::WebString::FromUTF8(unique_id), web_fetches);
 }
 
 void ServiceWorkerContextClient::DispatchBackgroundFetchClickEvent(
@@ -1398,6 +1409,7 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchClickEvent(
 
 void ServiceWorkerContextClient::DispatchBackgroundFetchFailEvent(
     const std::string& developer_id,
+    const std::string& unique_id,
     const std::vector<BackgroundFetchSettledFetch>& fetches,
     DispatchBackgroundFetchFailEventCallback callback) {
   TRACE_EVENT0("ServiceWorker",
@@ -1415,7 +1427,8 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchFailEvent(
   }
 
   proxy_->DispatchBackgroundFetchFailEvent(
-      request_id, blink::WebString::FromUTF8(developer_id), web_fetches);
+      request_id, blink::WebString::FromUTF8(developer_id),
+      blink::WebString::FromUTF8(unique_id), web_fetches);
 }
 
 void ServiceWorkerContextClient::DispatchBackgroundFetchedEvent(

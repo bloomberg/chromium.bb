@@ -21,9 +21,13 @@ BackgroundFetchEmbeddedWorkerTestHelper::
 
 void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent(
     const std::string& developer_id,
+    const std::string& unique_id,
+    const std::vector<BackgroundFetchSettledFetch>& fetches,
     mojom::ServiceWorkerEventDispatcher::
         DispatchBackgroundFetchAbortEventCallback callback) {
   last_developer_id_ = developer_id;
+  last_unique_id_ = unique_id;
+  last_fetches_ = fetches;
 
   if (fail_abort_event_) {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
@@ -59,10 +63,12 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent(
 
 void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
     const std::string& developer_id,
+    const std::string& unique_id,
     const std::vector<BackgroundFetchSettledFetch>& fetches,
     mojom::ServiceWorkerEventDispatcher::
         DispatchBackgroundFetchFailEventCallback callback) {
   last_developer_id_ = developer_id;
+  last_unique_id_ = unique_id;
   last_fetches_ = fetches;
 
   if (fail_fetch_fail_event_) {

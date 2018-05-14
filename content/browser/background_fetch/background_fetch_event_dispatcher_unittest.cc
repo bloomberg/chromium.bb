@@ -44,8 +44,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchInvalidRegistration) {
       kExampleUniqueId);
 
   base::RunLoop run_loop;
-  event_dispatcher_.DispatchBackgroundFetchAbortEvent(invalid_registration_id,
-                                                      run_loop.QuitClosure());
+  event_dispatcher_.DispatchBackgroundFetchAbortEvent(
+      invalid_registration_id, {}, run_loop.QuitClosure());
 
   run_loop.Run();
 
@@ -62,14 +62,17 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
             service_worker_registration_id);
 
+  std::vector<BackgroundFetchSettledFetch> fetches;
+  fetches.push_back(BackgroundFetchSettledFetch());
+
   BackgroundFetchRegistrationId registration_id(service_worker_registration_id,
                                                 origin(), kExampleDeveloperId,
                                                 kExampleUniqueId);
 
   {
     base::RunLoop run_loop;
-    event_dispatcher_.DispatchBackgroundFetchAbortEvent(registration_id,
-                                                        run_loop.QuitClosure());
+    event_dispatcher_.DispatchBackgroundFetchAbortEvent(
+        registration_id, fetches, run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -77,6 +80,10 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
   ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
   EXPECT_EQ(kExampleDeveloperId,
             embedded_worker_test_helper()->last_developer_id().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_unique_id().has_value());
+  EXPECT_EQ(kExampleUniqueId,
+            embedded_worker_test_helper()->last_unique_id().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
 
   histogram_tester_.ExpectUniqueSample(
       "BackgroundFetch.EventDispatchResult.AbortEvent",
@@ -90,8 +97,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
 
   {
     base::RunLoop run_loop;
-    event_dispatcher_.DispatchBackgroundFetchAbortEvent(second_registration_id,
-                                                        run_loop.QuitClosure());
+    event_dispatcher_.DispatchBackgroundFetchAbortEvent(
+        second_registration_id, fetches, run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -99,6 +106,10 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
   ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
   EXPECT_EQ(kExampleDeveloperId2,
             embedded_worker_test_helper()->last_developer_id().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_unique_id().has_value());
+  EXPECT_EQ(kExampleUniqueId2,
+            embedded_worker_test_helper()->last_unique_id().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
 
   histogram_tester_.ExpectBucketCount(
       "BackgroundFetch.EventDispatchResult.AbortEvent",
