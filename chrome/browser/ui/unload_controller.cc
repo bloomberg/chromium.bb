@@ -251,7 +251,8 @@ void UnloadController::TabInsertedAt(TabStripModel* tab_strip_model,
 }
 
 void UnloadController::TabDetachedAt(content::WebContents* contents,
-                                     int index) {
+                                     int index,
+                                     bool was_active) {
   TabDetachedImpl(contents);
 }
 

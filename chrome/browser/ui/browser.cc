@@ -1026,7 +1026,7 @@ void Browser::TabClosingAt(TabStripModel* tab_strip_model,
       content::NotificationService::NoDetails());
 }
 
-void Browser::TabDetachedAt(WebContents* contents, int index) {
+void Browser::TabDetachedAt(WebContents* contents, int index, bool was_active) {
   // TabDetachedAt is called before TabStripModel has updated the
   // active index.
   int old_active_index = tab_strip_model_->active_index();
@@ -1039,7 +1039,7 @@ void Browser::TabDetachedAt(WebContents* contents, int index) {
     }
   }
 
-  TabDetachedAtImpl(contents, index, DETACH_TYPE_DETACH);
+  TabDetachedAtImpl(contents, was_active, DETACH_TYPE_DETACH);
 }
 
 void Browser::TabDeactivated(WebContents* contents) {
@@ -1149,14 +1149,14 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
                             WebContents* old_contents,
                             WebContents* new_contents,
                             int index) {
-  TabDetachedAtImpl(old_contents, index, DETACH_TYPE_REPLACE);
+  bool was_active = index == tab_strip_model_->active_index();
+  TabDetachedAtImpl(old_contents, was_active, DETACH_TYPE_REPLACE);
   exclusive_access_manager_->OnTabClosing(old_contents);
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile_);
   if (session_service)
     session_service->TabClosing(old_contents);
-  TabInsertedAt(tab_strip_model, new_contents, index,
-                (index == tab_strip_model_->active_index()));
+  TabInsertedAt(tab_strip_model, new_contents, index, was_active);
 
   if (!new_contents->GetController().IsInitialBlankNavigation()) {
     // Send out notification so that observers are updated appropriately.
@@ -2435,14 +2435,14 @@ void Browser::CloseFrame() {
 }
 
 void Browser::TabDetachedAtImpl(content::WebContents* contents,
-                                int index,
+                                bool was_active,
                                 DetachType type) {
   if (type == DETACH_TYPE_DETACH) {
     // Save the current location bar state, but only if the tab being detached
     // is the selected tab.  Because saving state can conditionally revert the
     // location bar, saving the current tab's location bar state to a
     // non-selected tab can corrupt both tabs.
-    if (contents == tab_strip_model_->GetActiveWebContents()) {
+    if (was_active) {
       LocationBar* location_bar = window()->GetLocationBar();
       if (location_bar)
         location_bar->SaveStateToContents(contents);
@@ -2455,7 +2455,7 @@ void Browser::TabDetachedAtImpl(content::WebContents* contents,
   SetAsDelegate(contents, false);
   RemoveScheduledUpdatesFor(contents);
 
-  if (HasFindBarController() && index == tab_strip_model_->active_index())
+  if (HasFindBarController() && was_active)
     find_bar_controller_->ChangeWebContents(NULL);
 
   for (size_t i = 0; i < interstitial_observers_.size(); i++) {

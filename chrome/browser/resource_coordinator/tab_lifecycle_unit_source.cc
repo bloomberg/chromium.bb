@@ -163,7 +163,8 @@ void TabLifecycleUnitSource::TabInsertedAt(TabStripModel* tab_strip_model,
 }
 
 void TabLifecycleUnitSource::TabDetachedAt(content::WebContents* contents,
-                                           int index) {
+                                           int index,
+                                           bool was_active) {
   TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(contents);
   DCHECK(lifecycle_unit);
   if (focused_lifecycle_unit_ == lifecycle_unit)

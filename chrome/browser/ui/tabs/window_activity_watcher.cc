@@ -146,7 +146,9 @@ class WindowActivityWatcher::BrowserWatcher : public TabStripModelObserver {
                      bool foreground) override {
     MaybeLogWindowMetricsUkmEntry();
   }
-  void TabDetachedAt(content::WebContents* contents, int index) override {
+  void TabDetachedAt(content::WebContents* contents,
+                     int index,
+                     bool was_active) override {
     MaybeLogWindowMetricsUkmEntry();
   }
 

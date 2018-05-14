@@ -399,7 +399,9 @@ class BrowserView : public BrowserWindow,
                      content::WebContents* contents,
                      int index,
                      bool foreground) override;
-  void TabDetachedAt(content::WebContents* contents, int index) override;
+  void TabDetachedAt(content::WebContents* contents,
+                     int index,
+                     bool was_active) override;
   void TabDeactivated(content::WebContents* contents) override;
   void TabStripEmpty() override;
   void WillCloseAllTabs() override;

@@ -391,7 +391,8 @@ void BrowserTabStripController::TabInsertedAt(TabStripModel* tab_strip_model,
 }
 
 void BrowserTabStripController::TabDetachedAt(WebContents* contents,
-                                              int model_index) {
+                                              int model_index,
+                                              bool was_active) {
   // Cancel any pending tab transition.
   hover_tab_selector_.CancelTabTransition();
 

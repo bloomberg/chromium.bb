@@ -737,7 +737,9 @@ void BrowserCommandController::TabInsertedAt(TabStripModel* tab_strip_model,
   AddInterstitialObservers(contents);
 }
 
-void BrowserCommandController::TabDetachedAt(WebContents* contents, int index) {
+void BrowserCommandController::TabDetachedAt(WebContents* contents,
+                                             int index,
+                                             bool was_active) {
   RemoveInterstitialObservers(contents);
 }
 

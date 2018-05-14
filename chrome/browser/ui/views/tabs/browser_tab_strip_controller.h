@@ -81,7 +81,9 @@ class BrowserTabStripController : public TabStripController,
                      content::WebContents* contents,
                      int model_index,
                      bool is_active) override;
-  void TabDetachedAt(content::WebContents* contents, int model_index) override;
+  void TabDetachedAt(content::WebContents* contents,
+                     int model_index,
+                     bool was_active) override;
   void ActiveTabChanged(content::WebContents* old_contents,
                         content::WebContents* new_contents,
                         int index,

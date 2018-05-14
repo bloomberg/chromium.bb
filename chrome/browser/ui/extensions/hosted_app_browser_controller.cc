@@ -299,7 +299,8 @@ void HostedAppBrowserController::TabInsertedAt(TabStripModel* tab_strip_model,
 }
 
 void HostedAppBrowserController::TabDetachedAt(content::WebContents* contents,
-                                               int index) {
+                                               int index,
+                                               bool was_active) {
   auto* rvh = contents->GetRenderViewHost();
 
   contents->GetMutableRendererPrefs()->can_accept_load_drops = true;

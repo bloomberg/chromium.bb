@@ -248,7 +248,9 @@ void TabsEventRouter::TabInsertedAt(TabStripModel* tab_strip_model,
                 std::move(args), EventRouter::USER_GESTURE_UNKNOWN);
 }
 
-void TabsEventRouter::TabDetachedAt(WebContents* contents, int index) {
+void TabsEventRouter::TabDetachedAt(WebContents* contents,
+                                    int index,
+                                    bool was_active) {
   if (!GetTabEntry(contents)) {
     // The tab was removed. Don't send detach event.
     return;

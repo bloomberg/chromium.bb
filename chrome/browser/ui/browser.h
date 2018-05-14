@@ -450,7 +450,9 @@ class Browser : public TabStripModelObserver,
   void TabClosingAt(TabStripModel* tab_strip_model,
                     content::WebContents* contents,
                     int index) override;
-  void TabDetachedAt(content::WebContents* contents, int index) override;
+  void TabDetachedAt(content::WebContents* contents,
+                     int index,
+                     bool was_active) override;
   void TabDeactivated(content::WebContents* contents) override;
   void ActiveTabChanged(content::WebContents* old_contents,
                         content::WebContents* new_contents,
@@ -830,7 +832,7 @@ class Browser : public TabStripModelObserver,
   void CloseFrame();
 
   void TabDetachedAtImpl(content::WebContents* contents,
-                         int index,
+                         bool was_active,
                          DetachType type);
 
   // Updates the loading state for the window and tabstrip.
