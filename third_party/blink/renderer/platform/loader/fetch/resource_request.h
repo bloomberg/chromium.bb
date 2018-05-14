@@ -48,20 +48,6 @@
 
 namespace blink {
 
-// NOTE: If updating this enum, also update
-//       BuildResourceRequestReason in inspector_network_agent.cc and
-//       BlockedReasonEnum in browser_protocol.pdl and
-//       Network.NetworkRequestNode in NetworkDataGridNode.js.
-enum class ResourceRequestBlockedReason {
-  kOther,
-  kCSP,
-  kMixedContent,
-  kOrigin,
-  kInspector,
-  kSubresourceFilter,
-  kContentType,
-};
-
 enum InputToLoadPerfMetricReportPolicy : uint8_t {
   kNoReport,    // Don't report metrics for this ResourceRequest.
   kReportLink,  // Report metrics for this request as initiated by a link click.

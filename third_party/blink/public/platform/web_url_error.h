@@ -37,6 +37,19 @@
 #include "third_party/blink/public/platform/web_url.h"
 
 namespace blink {
+// NOTE: If updating this enum, also update
+//       BuildResourceRequestReason in inspector_network_agent.cc and
+//       BlockedReasonEnum in browser_protocol.pdl and
+//       Network.NetworkRequestNode in NetworkDataGridNode.js.
+enum class ResourceRequestBlockedReason {
+  kOther,
+  kCSP,
+  kMixedContent,
+  kOrigin,
+  kInspector,
+  kSubresourceFilter,
+  kContentType,
+};
 
 // TODO(yhirano): Change this to a class.
 struct WebURLError {
