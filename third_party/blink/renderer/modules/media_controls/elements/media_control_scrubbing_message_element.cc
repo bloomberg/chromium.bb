@@ -18,7 +18,7 @@ MediaControlScrubbingMessageElement::MediaControlScrubbingMessageElement(
     MediaControlsImpl& media_controls)
     : MediaControlDivElement(media_controls, kMediaScrubbingMessage) {
   SetShadowPseudoId(AtomicString("-internal-media-controls-scrubbing-message"));
-  CreateShadowRootInternal();
+  CreateUserAgentShadowRoot();
   SetIsWanted(false);
 }
 
