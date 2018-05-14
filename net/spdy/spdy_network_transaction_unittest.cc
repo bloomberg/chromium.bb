@@ -2603,49 +2603,6 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushHeadDoesNotMatchGetRequest) {
   helper.VerifyDataConsumed();
 }
 
-TEST_F(SpdyNetworkTransactionTest, ServerPushBeforeHeaders) {
-  SpdySerializedFrame stream1_syn(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
-  SpdySerializedFrame stream2_priority(
-      spdy_util_.ConstructSpdyPriority(2, 1, IDLE, true));
-  MockWrite writes[] = {
-      CreateMockWrite(stream1_syn, 0), CreateMockWrite(stream2_priority, 2),
-  };
-
-  SpdySerializedFrame stream2_syn(
-      spdy_util_.ConstructSpdyPush(nullptr, 0, 2, 1, kPushedUrl));
-  SpdySerializedFrame stream1_reply(
-      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
-  SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
-  const char kPushedData[] = "pushed";
-  SpdySerializedFrame stream2_body(
-      spdy_util_.ConstructSpdyDataFrame(2, kPushedData, true));
-  MockRead reads[] = {
-      CreateMockRead(stream2_syn, 1),
-      CreateMockRead(stream1_reply, 3),
-      CreateMockRead(stream1_body, 4, SYNCHRONOUS),
-      CreateMockRead(stream2_body, 5),
-      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6),  // Force a pause
-  };
-
-  HttpResponseInfo response;
-  HttpResponseInfo response2;
-  std::string expected_push_result("pushed");
-  SequencedSocketData data(reads, writes);
-  RunServerPushTest(&data,
-                    &response,
-                    &response2,
-                    expected_push_result);
-
-  // Verify the response headers.
-  EXPECT_TRUE(response.headers);
-  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
-
-  // Verify the pushed stream.
-  EXPECT_TRUE(response2.headers);
-  EXPECT_EQ("HTTP/1.1 200", response2.headers->GetStatusLine());
-}
-
 TEST_F(SpdyNetworkTransactionTest, ServerPushSingleDataFrame2) {
   SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
@@ -5004,7 +4961,7 @@ TEST_F(SpdyNetworkTransactionTest, SpdyBasicAuth) {
   EXPECT_TRUE(response_restart->auth_challenge.get() == nullptr);
 }
 
-struct PushTestParams {
+struct PushHeaderTestParams {
   std::vector<std::pair<base::StringPiece, base::StringPiece>>
       extra_request_headers;
   std::vector<std::pair<base::StringPiece, base::StringPiece>>
@@ -5013,7 +4970,7 @@ struct PushTestParams {
       extra_pushed_response_headers;
   base::StringPiece pushed_status_code;
   bool push_accepted;
-} push_test_cases[] = {
+} push_header_test_cases[] = {
     // Base case: no extra headers.
     {{}, {}, {}, "200", true},
     // Cookie headers match.
@@ -5037,12 +4994,11 @@ struct PushTestParams {
     // Partial Content response, mismatching Range headers.
     {{{"range", "0-42"}}, {{"range", "10-42"}}, {}, "206", false},
     // Partial Content response, matching Range headers.
-    {{{"range", "0-42"}}, {{"range", "0-42"}}, {}, "206", true},
-};
+    {{{"range", "0-42"}}, {{"range", "0-42"}}, {}, "206", true}};
 
-class SpdyNetworkTransactionPushTest
+class SpdyNetworkTransactionPushHeaderTest
     : public SpdyNetworkTransactionTest,
-      public ::testing::WithParamInterface<PushTestParams> {
+      public ::testing::WithParamInterface<PushHeaderTestParams> {
  protected:
   void RunTest(bool pushed_response_headers_received_before_request) {
     int seq = 0;
@@ -5181,15 +5137,15 @@ class SpdyNetworkTransactionPushTest
 };
 
 INSTANTIATE_TEST_CASE_P(,
-                        SpdyNetworkTransactionPushTest,
-                        ::testing::ValuesIn(push_test_cases));
+                        SpdyNetworkTransactionPushHeaderTest,
+                        ::testing::ValuesIn(push_header_test_cases));
 
-TEST_P(SpdyNetworkTransactionPushTest,
+TEST_P(SpdyNetworkTransactionPushHeaderTest,
        PushedResponseHeadersReceivedBeforeRequest) {
   RunTest(/* pushed_response_headers_received_before_request = */ true);
 }
 
-TEST_P(SpdyNetworkTransactionPushTest,
+TEST_P(SpdyNetworkTransactionPushHeaderTest,
        PushedResponseHeadersReceivedAfterRequest) {
   RunTest(/* pushed_response_headers_received_before_request = */ false);
 }
@@ -5255,35 +5211,32 @@ TEST_F(SpdyNetworkTransactionTest, SyncReplyDataAfterTrailers) {
   EXPECT_THAT(out.rv, IsError(ERR_SPDY_PROTOCOL_ERROR));
 }
 
-TEST_F(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
+struct PushUrlTestParams {
+  const char* url_to_fetch;
+  const char* url_to_push;
+} push_url_test_cases[] = {
+    // http scheme cannot be pushed (except by trusted proxy).
+    {"https://www.example.org/foo.html", "http://www.example.org/foo.js"},
+    // ftp scheme cannot be pushed.
+    {"https://www.example.org/foo.html", "ftp://www.example.org/foo.js"},
+    // Cross subdomain, certificate not valid.
+    {"https://www.example.org/foo.html", "https://blat.www.example.org/foo.js"},
+    // Cross domain, certificate not valid.
+    {"https://www.example.org/foo.html", "https://www.foo.com/foo.js"}};
+
+class SpdyNetworkTransactionPushUrlTest
+    : public SpdyNetworkTransactionTest,
+      public ::testing::WithParamInterface<PushUrlTestParams> {
+ protected:
   // In this test we want to verify that we can't accidentally push content
   // which can't be pushed by this content server.
   // This test assumes that:
   //   - if we're requesting http://www.foo.com/barbaz
   //   - the browser has made a connection to "www.foo.com".
-
-  // A list of the URL to fetch, followed by the URL being pushed.
-  static const char* const kTestCases[] = {
-      "https://www.example.org/foo.html",
-      "http://www.example.org/foo.js",  // Bad protocol
-
-      "https://www.example.org/foo.html",
-      "ftp://www.example.org/foo.js",  // Invalid Protocol
-
-      "https://www.example.org/foo.html",
-      "https://blat.www.example.org/foo.js",  // Cross subdomain
-
-      "https://www.example.org/foo.html",
-      "https://www.foo.com/foo.js",  // Cross domain
-  };
-
-  for (size_t index = 0; index < arraysize(kTestCases); index += 2) {
-    const char* url_to_fetch = kTestCases[index];
-    const char* url_to_push = kTestCases[index + 1];
-
+  void RunTest() {
     SpdyTestUtil spdy_test_util;
     SpdySerializedFrame stream1_syn(
-        spdy_test_util.ConstructSpdyGet(url_to_fetch, 1, LOWEST));
+        spdy_test_util.ConstructSpdyGet(GetParam().url_to_fetch, 1, LOWEST));
     SpdySerializedFrame stream1_body(
         spdy_test_util.ConstructSpdyDataFrame(1, true));
     SpdySerializedFrame push_rst(
@@ -5294,8 +5247,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
 
     SpdySerializedFrame stream1_reply(
         spdy_test_util.ConstructSpdyGetReply(nullptr, 0, 1));
-    SpdySerializedFrame stream2_syn(
-        spdy_test_util.ConstructSpdyPush(nullptr, 0, 2, 1, url_to_push));
+    SpdySerializedFrame stream2_syn(spdy_test_util.ConstructSpdyPush(
+        nullptr, 0, 2, 1, GetParam().url_to_push));
     const char kPushedData[] = "pushed";
     SpdySerializedFrame stream2_body(
         spdy_test_util.ConstructSpdyDataFrame(2, kPushedData, true));
@@ -5313,7 +5266,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
     HttpResponseInfo response;
     SequencedSocketData data(reads, writes);
 
-    request_.url = GURL(url_to_fetch);
+    request_.url = GURL(GetParam().url_to_fetch);
 
     // Enable cross-origin push. Since we are not using a proxy, this should
     // not actually enable cross-origin SPDY push.
@@ -5358,6 +5311,14 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
     EXPECT_TRUE(response.headers);
     EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
   }
+};
+
+INSTANTIATE_TEST_CASE_P(,
+                        SpdyNetworkTransactionPushUrlTest,
+                        ::testing::ValuesIn(push_url_test_cases));
+
+TEST_P(SpdyNetworkTransactionPushUrlTest, PushUrlTest) {
+  RunTest();
 }
 
 // Verify that push works cross origin as long as the certificate is valid for
@@ -5611,46 +5572,6 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
   base::RunLoop().RunUntilIdle();
   helper.VerifyDataConsumed();
   VerifyStreamsClosed(helper);
-}
-
-TEST_F(SpdyNetworkTransactionTest, ServerPushInvalidCrossOrigin) {
-  // "spdy_pooling.pem" is valid for www.example.org,
-  // but not for invalid.example.org.
-  const char* url_to_fetch = "https://www.example.org";
-  const char* url_to_push = "https://invalid.example.org";
-
-  SpdySerializedFrame headers(
-      spdy_util_.ConstructSpdyGet(url_to_fetch, 1, LOWEST));
-  SpdySerializedFrame rst(
-      spdy_util_.ConstructSpdyRstStream(2, ERROR_CODE_REFUSED_STREAM));
-  MockWrite writes[] = {
-      CreateMockWrite(headers, 0), CreateMockWrite(rst, 3),
-  };
-
-  SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
-  SpdySerializedFrame push(
-      spdy_util_.ConstructSpdyPush(nullptr, 0, 2, 1, url_to_push));
-  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
-  const char kPushedData[] = "pushed";
-  SpdySerializedFrame pushed_body(
-      spdy_util_.ConstructSpdyDataFrame(2, kPushedData, true));
-  MockRead reads[] = {
-      CreateMockRead(reply, 1),
-      CreateMockRead(push, 2, SYNCHRONOUS),
-      CreateMockRead(body, 4),
-      CreateMockRead(pushed_body, 5, SYNCHRONOUS),
-      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6),
-  };
-
-  SequencedSocketData data(reads, writes);
-
-  request_.url = GURL(url_to_fetch);
-
-  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
-  helper.RunToCompletion(&data);
-  TransactionHelperResult out = helper.output();
-  EXPECT_EQ("HTTP/1.1 200", out.status_line);
-  EXPECT_EQ("hello!", out.response_data);
 }
 
 TEST_F(SpdyNetworkTransactionTest, RetryAfterRefused) {
