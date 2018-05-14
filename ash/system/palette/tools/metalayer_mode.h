@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_PALETTE_TOOLS_METALAYER_MODE_H_
 
 #include "ash/ash_export.h"
+#include "ash/highlighter/highlighter_controller.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/system/palette/common_palette_tool.h"
 #include "ash/voice_interaction/voice_interaction_observer.h"
@@ -21,7 +22,8 @@ namespace ash {
 // menu, but also by the stylus button click.
 class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
                                  public ui::EventHandler,
-                                 public VoiceInteractionObserver {
+                                 public VoiceInteractionObserver,
+                                 public HighlighterController::Observer {
  public:
   explicit MetalayerMode(Delegate* delegate);
   ~MetalayerMode() override;
@@ -69,6 +71,9 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
   void OnVoiceInteractionContextEnabled(bool enabled) override;
   void OnAssistantFeatureAllowedChanged(
       mojom::AssistantAllowedState state) override;
+
+  // HighlighterController::Observer:
+  void OnHighlighterEnabledChanged(HighlighterEnabledState state) override;
 
   // Update the state of the tool based on the current availability of the tool.
   void UpdateState();

@@ -128,12 +128,15 @@ void AssistantController::OnInteractionStateChanged(
   }
 }
 
-void AssistantController::OnHighlighterEnabledChanged(bool enabled) {
-  // TODO(warx): add a reason enum to distinguish the case of deselecting the
-  // tool and done with a stylus selection.
+void AssistantController::OnHighlighterEnabledChanged(
+    HighlighterEnabledState state) {
   assistant_interaction_model_.SetInputModality(InputModality::kStylus);
-  assistant_interaction_model_.SetInteractionState(
-      enabled ? InteractionState::kActive : InteractionState::kInactive);
+  if (state == HighlighterEnabledState::kEnabled) {
+    assistant_interaction_model_.SetInteractionState(InteractionState::kActive);
+  } else if (state == HighlighterEnabledState::kDisabledByUser) {
+    assistant_interaction_model_.SetInteractionState(
+        InteractionState::kInactive);
+  }
 }
 
 void AssistantController::OnInteractionStarted() {

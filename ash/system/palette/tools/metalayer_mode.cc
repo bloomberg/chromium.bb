@@ -4,7 +4,6 @@
 
 #include "ash/system/palette/tools/metalayer_mode.h"
 
-#include "ash/highlighter/highlighter_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -39,9 +38,11 @@ MetalayerMode::MetalayerMode(Delegate* delegate)
     : CommonPaletteTool(delegate), weak_factory_(this) {
   Shell::Get()->AddPreTargetHandler(this);
   Shell::Get()->voice_interaction_controller()->AddObserver(this);
+  Shell::Get()->highlighter_controller()->AddObserver(this);
 }
 
 MetalayerMode::~MetalayerMode() {
+  Shell::Get()->highlighter_controller()->RemoveObserver(this);
   Shell::Get()->voice_interaction_controller()->RemoveObserver(this);
   Shell::Get()->RemovePreTargetHandler(this);
 }
@@ -57,19 +58,26 @@ PaletteToolId MetalayerMode::GetToolId() const {
 void MetalayerMode::OnEnable() {
   CommonPaletteTool::OnEnable();
 
-  Shell::Get()->highlighter_controller()->SetExitCallback(
+  HighlighterController* controller = Shell::Get()->highlighter_controller();
+  controller->SetExitCallback(
       base::BindOnce(&MetalayerMode::OnMetalayerSessionComplete,
                      weak_factory_.GetWeakPtr()),
       !activated_via_button_ /* no retries if activated via button */);
-  Shell::Get()->highlighter_controller()->SetEnabled(true);
+  controller->UpdateEnabledState(HighlighterEnabledState::kEnabled);
   delegate()->HidePalette();
 }
 
 void MetalayerMode::OnDisable() {
   CommonPaletteTool::OnDisable();
-
-  Shell::Get()->highlighter_controller()->SetEnabled(false);
   activated_via_button_ = false;
+
+  HighlighterController* controller = Shell::Get()->highlighter_controller();
+  if (controller->enabled_state() != HighlighterEnabledState::kEnabled)
+    return;
+  // Call UpdateEnabledState() only when it hasn't been disabled to ensure this
+  // emits the disabling signal by deselecting on palette tool.
+  Shell::Get()->highlighter_controller()->UpdateEnabledState(
+      HighlighterEnabledState::kDisabledByUser);
 }
 
 const gfx::VectorIcon& MetalayerMode::GetActiveTrayIcon() const {
@@ -163,6 +171,19 @@ void MetalayerMode::OnAssistantFeatureAllowedChanged(
   UpdateState();
 }
 
+void MetalayerMode::OnHighlighterEnabledChanged(HighlighterEnabledState state) {
+  // OnHighlighterEnabledChanged is used by the caller that disables highlighter
+  // enabled state to disable the palette tool only.
+  if (state == HighlighterEnabledState::kEnabled)
+    return;
+
+  // TODO(warx): We disable palette tool of metalayer mode when receiving the
+  // disabled state of highlighter controller. And this class also calls
+  // HighlighterController's UpdateEnabledState method to send the state signal.
+  // We shall think of removing this circular dependency.
+  delegate()->DisableTool(GetToolId());
+}
+
 void MetalayerMode::UpdateState() {
   if (enabled() && !selectable())
     delegate()->DisableTool(GetToolId());
@@ -197,7 +218,8 @@ void MetalayerMode::UpdateView() {
 }
 
 void MetalayerMode::OnMetalayerSessionComplete() {
-  delegate()->DisableTool(GetToolId());
+  Shell::Get()->highlighter_controller()->UpdateEnabledState(
+      HighlighterEnabledState::kDisabledBySessionEnd);
 }
 
 }  // namespace ash

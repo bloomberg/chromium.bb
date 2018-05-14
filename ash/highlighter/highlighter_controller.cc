@@ -80,6 +80,30 @@ void HighlighterController::SetExitCallback(base::OnceClosure exit_callback,
   require_success_ = require_success;
 }
 
+void HighlighterController::UpdateEnabledState(
+    HighlighterEnabledState enabled_state) {
+  if (enabled_state_ == enabled_state)
+    return;
+  enabled_state_ = enabled_state;
+
+  SetEnabled(enabled_state == HighlighterEnabledState::kEnabled);
+  for (auto& observer : observers_)
+    observer.OnHighlighterEnabledChanged(enabled_state);
+}
+
+void HighlighterController::BindRequest(
+    mojom::HighlighterControllerRequest request) {
+  binding_.Bind(std::move(request));
+}
+
+void HighlighterController::SetClient(
+    mojom::HighlighterControllerClientPtr client) {
+  client_ = std::move(client);
+  client_.set_connection_error_handler(
+      base::BindOnce(&HighlighterController::OnClientConnectionLost,
+                     weak_factory_.GetWeakPtr()));
+}
+
 void HighlighterController::SetEnabled(bool enabled) {
   FastInkPointerController::SetEnabled(enabled);
   if (enabled) {
@@ -99,24 +123,9 @@ void HighlighterController::SetEnabled(bool enabled) {
     if (highlighter_view_ && !highlighter_view_->animating())
       DestroyPointerView();
   }
-  for (auto& observer : observers_)
-    observer.OnHighlighterEnabledChanged(enabled);
 
   if (client_)
     client_->HandleEnabledStateChange(enabled);
-}
-
-void HighlighterController::BindRequest(
-    mojom::HighlighterControllerRequest request) {
-  binding_.Bind(std::move(request));
-}
-
-void HighlighterController::SetClient(
-    mojom::HighlighterControllerClientPtr client) {
-  client_ = std::move(client);
-  client_.set_connection_error_handler(
-      base::Bind(&HighlighterController::OnClientConnectionLost,
-                 weak_factory_.GetWeakPtr()));
 }
 
 void HighlighterController::ExitHighlighterMode() {
