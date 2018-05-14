@@ -247,7 +247,9 @@ function MockCommandLinePrivate() {
     chrome.commandLinePrivate = {};
   }
   chrome.commandLinePrivate.hasSwitch = function(name, callback) {
-    callback(name in this.flags_);
+    window.setTimeout(() => {
+      callback(name in this.flags_);
+    }, 0);
   }.bind(this);
 }
 

@@ -47,12 +47,12 @@ function VolumeInfoImpl(
   this.displayRoot_ = null;
   this.teamDriveDisplayRoot_ = null;
 
-  /** @type {boolean} */
-  this.isTeamDrivesEnabled_ = false;
-
-  chrome.commandLinePrivate.hasSwitch('team-drives', function(enabled) {
-    this.isTeamDrivesEnabled_ = enabled;
-  }.bind(this));
+  /** @type {Promise<boolean>} */
+  this.isTeamDrivesEnabledPromise_ = new Promise(resolve => {
+    chrome.commandLinePrivate.hasSwitch('team-drives', enabled => {
+      resolve(enabled);
+    });
+  });
 
   /** @type {Object<!FakeEntry>} */
   this.fakeEntries_ = {};
@@ -219,6 +219,36 @@ VolumeInfoImpl.prototype = /** @struct */ {
 };
 
 /**
+ * Returns a promise to the entry for the given URL
+ * @param {string} url The filesystem URL
+ * @return {!Promise<Entry>}
+ */
+VolumeInfoImpl.resolveFileSystemUrl_ = function(url) {
+  return new Promise(window.webkitResolveLocalFileSystemURL.bind(null, url));
+};
+
+/**
+ * Sets |teamDriveDisplayRoot_| if team drives are enabled.
+ *
+ * The return value will resolve once this operation is complete.
+ * @return {!Promise<void>}
+ */
+VolumeInfoImpl.prototype.resolveTeamDrivesRoot_ = function() {
+  return this.isTeamDrivesEnabledPromise_.then(enabled => {
+    if (!enabled) {
+      return;
+    }
+    return VolumeInfoImpl
+        .resolveFileSystemUrl_(
+            this.fileSystem_.root.toURL() +
+            VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_NAME)
+        .then(teamDrivesRoot => {
+          this.teamDriveDisplayRoot_ = teamDrivesRoot;
+        });
+  });
+};
+
+/**
  * @override
  */
 VolumeInfoImpl.prototype.resolveDisplayRoot = function(opt_onSuccess,
@@ -236,25 +266,15 @@ VolumeInfoImpl.prototype.resolveDisplayRoot = function(opt_onSuccess,
     } else {
       // For Drive, we need to resolve.
       var displayRootURL = this.fileSystem_.root.toURL() + 'root';
-      this.displayRootPromise_ = new Promise(
-          window.webkitResolveLocalFileSystemURL.bind(null, displayRootURL));
-      if (this.isTeamDrivesEnabled_) {
-        // Make sure that the Team Drives display root is also resolved when
-        // Drive root is resolved.
-        this.displayRootPromise_ =
-            Promise
-                .all([
-                  this.displayRootPromise_,
-                  new Promise(window.webkitResolveLocalFileSystemURL.bind(
-                      null,
-                      this.fileSystem_.root.toURL() +
-                          VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_NAME))
-                ])
-                .then(function(displayRoots) {
-                  this.teamDriveDisplayRoot_ = displayRoots[1];
-                  return displayRoots[0];
-                }.bind(this));
-      }
+      this.displayRootPromise_ =
+          Promise
+              .all([
+                VolumeInfoImpl.resolveFileSystemUrl_(displayRootURL),
+                this.resolveTeamDrivesRoot_()
+              ])
+              .then(([root]) => {
+                return root;
+              });
     }
 
     // Store the obtained displayRoot.
