@@ -34,120 +34,86 @@ static QuartcStreamInterface::WriteParameters kDefaultWriteParam;
 static QuartcSessionInterface::OutgoingStreamParameters kDefaultStreamParam;
 static QuicByteCount kDefaultMaxPacketSize = 1200;
 
-// Single-threaded scheduled task runner based on a MockClock.
+// Single-threaded alarm implementation based on a MockClock.
 //
-// Simulates asynchronous execution on a single thread by holding scheduled
-// tasks until Run() is called. Performs no synchronization, assumes that
-// Schedule() and Run() are called on the same thread.
-class FakeTaskRunner : public QuartcTaskRunnerInterface {
+// Simulates asynchronous execution on a single thread by holding alarms
+// until Run() is called. Performs no synchronization, assumes that
+// CreateAlarm(), Set(), Cancel(), and Run() are called on the same thread.
+class FakeAlarmFactory : public QuicAlarmFactory {
  public:
-  explicit FakeTaskRunner(MockClock* clock)
-      : tasks_([this](const TaskType& l, const TaskType& r) {
-          // Items at a later time should run after items at an earlier time.
-          // Priority queue comparisons should return true if l appears after r.
-          return l->time() > r->time();
-        }),
-        clock_(clock) {}
+  class FakeAlarm : public QuicAlarm {
+   public:
+    FakeAlarm(QuicArenaScopedPtr<QuicAlarm::Delegate> delegate,
+              FakeAlarmFactory* parent)
+        : QuicAlarm(std::move(delegate)), parent_(parent) {}
 
-  ~FakeTaskRunner() override {}
+    ~FakeAlarm() override { parent_->RemoveAlarm(this); }
 
-  // Runs all tasks scheduled in the next total_ms milliseconds.  Advances the
+    void SetImpl() override { parent_->AddAlarm(this); }
+
+    void CancelImpl() override { parent_->RemoveAlarm(this); }
+
+    void Run() { Fire(); }
+
+   private:
+    FakeAlarmFactory* parent_;
+  };
+
+  explicit FakeAlarmFactory(MockClock* clock) : clock_(clock) {}
+
+  QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override {
+    return new FakeAlarm(QuicArenaScopedPtr<QuicAlarm::Delegate>(delegate),
+                         this);
+  }
+
+  QuicArenaScopedPtr<QuicAlarm> CreateAlarm(
+      QuicArenaScopedPtr<QuicAlarm::Delegate> delegate,
+      QuicConnectionArena* arena) override {
+    return arena->New<FakeAlarm>(std::move(delegate), this);
+  }
+
+  // Runs all alarms scheduled in the next total_ms milliseconds.  Advances the
   // clock by total_ms.  Runs tasks in time order.  Executes tasks scheduled at
   // the same in an arbitrary order.
   void Run(uint32_t total_ms) {
     for (uint32_t i = 0; i < total_ms; ++i) {
-      while (!tasks_.empty() && tasks_.top()->time() <= clock_->Now()) {
-        tasks_.top()->Run();
-        tasks_.pop();
+      while (!alarms_.empty() && alarms_.top()->deadline() <= clock_->Now()) {
+        alarms_.top()->Run();
+        alarms_.pop();
       }
       clock_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
     }
   }
 
  private:
-  class InnerTask {
-   public:
-    InnerTask(std::function<void()> task, QuicTime time)
-        : task_(std::move(task)), time_(time) {}
-
-    void Cancel() { cancelled_ = true; }
-
-    void Run() {
-      if (!cancelled_) {
-        task_();
+  void RemoveAlarm(FakeAlarm* alarm) {
+    std::vector<FakeAlarm*> leftovers;
+    while (!alarms_.empty()) {
+      FakeAlarm* top = alarms_.top();
+      alarms_.pop();
+      if (top == alarm) {
+        break;
       }
+      leftovers.push_back(top);
     }
-
-    QuicTime time() const { return time_; }
-
-   private:
-    bool cancelled_ = false;
-    std::function<void()> task_;
-    QuicTime time_;
-  };
-
- public:
-  // Hook for cancelling a scheduled task.
-  class ScheduledTask : public QuartcTaskRunnerInterface::ScheduledTask {
-   public:
-    explicit ScheduledTask(std::shared_ptr<InnerTask> inner)
-        : inner_(std::move(inner)) {}
-
-    // Cancel if the caller deletes the ScheduledTask.  This behavior is
-    // consistent with the actual task runner Quartc uses.
-    ~ScheduledTask() override { Cancel(); }
-
-    // ScheduledTask implementation.
-    void Cancel() override { inner_->Cancel(); }
-
-   private:
-    std::shared_ptr<InnerTask> inner_;
-  };
-
-  // See QuartcTaskRunnerInterface.
-  std::unique_ptr<QuartcTaskRunnerInterface::ScheduledTask> Schedule(
-      Task* task,
-      uint64_t delay_ms) override {
-    auto inner = std::shared_ptr<InnerTask>(new InnerTask(
-        [task] { task->Run(); },
-        clock_->Now() + QuicTime::Delta::FromMilliseconds(delay_ms)));
-    tasks_.push(inner);
-    return std::unique_ptr<QuartcTaskRunnerInterface::ScheduledTask>(
-        new ScheduledTask(inner));
+    for (FakeAlarm* leftover : leftovers) {
+      alarms_.push(leftover);
+    }
   }
 
-  // Schedules a function to run immediately.
-  void Schedule(std::function<void()> task) {
-    tasks_.push(std::shared_ptr<InnerTask>(
-        new InnerTask(std::move(task), clock_->Now())));
-  }
+  void AddAlarm(FakeAlarm* alarm) { alarms_.push(alarm); }
 
- private:
-  // InnerTasks are shared by the queue and ScheduledTask (which hooks into it
-  // to implement Cancel()).
-  using TaskType = std::shared_ptr<InnerTask>;
-  std::priority_queue<TaskType,
-                      std::vector<TaskType>,
-                      std::function<bool(const TaskType&, const TaskType&)>>
-      tasks_;
   MockClock* clock_;
-};
 
-// QuartcClock that wraps a MockClock.
-//
-// This is silly because Quartc wraps it as a QuicClock, and MockClock is
-// already a QuicClock.  But we don't have much choice.  We need to pass a
-// QuartcClockInterface into the Quartc wrappers.
-class MockQuartcClock : public QuartcClockInterface {
- public:
-  explicit MockQuartcClock(MockClock* clock) : clock_(clock) {}
+  using AlarmCompare = std::function<bool(const FakeAlarm*, const FakeAlarm*)>;
+  const AlarmCompare alarm_later_ = [](const FakeAlarm* l, const FakeAlarm* r) {
+    // Sort alarms so that the earliest deadline appears first.
+    return l->deadline() > r->deadline();
+  };
+  std::priority_queue<FakeAlarm*, std::vector<FakeAlarm*>, AlarmCompare>
+      alarms_{alarm_later_};
 
-  int64_t NowMicroseconds() override {
-    return clock_->WallNow().ToUNIXMicroseconds();
-  }
-
- private:
-  MockClock* clock_;
+  DISALLOW_COPY_AND_ASSIGN(FakeAlarmFactory);
 };
 
 // Used by QuicCryptoServerConfig to provide server credentials, returning a
@@ -245,10 +211,12 @@ class FakeTransportChannelObserver {
 
 // Simulate the P2P communication transport. Used by the
 // QuartcSessionInterface::Transport.
-class FakeTransportChannel {
+class FakeTransportChannel : QuicAlarm::Delegate {
  public:
-  explicit FakeTransportChannel(FakeTaskRunner* task_runner, MockClock* clock)
-      : task_runner_(task_runner), clock_(clock) {}
+  explicit FakeTransportChannel(QuicAlarmFactory* alarm_factory,
+                                MockClock* clock)
+      : alarm_(alarm_factory->CreateAlarm(new AlarmDelegate(this))),
+        clock_(clock) {}
 
   void SetDestination(FakeTransportChannel* dest) {
     if (!dest_) {
@@ -264,19 +232,14 @@ class FakeTransportChannel {
     }
     // Advance the time 10us to ensure the RTT is never 0ms.
     clock_->AdvanceTime(QuicTime::Delta::FromMicroseconds(10));
-    if (async_ && task_runner_) {
-      string packet(data, len);
-      task_runner_->Schedule([this, packet] { send(packet); });
+    if (async_) {
+      packet_queue_.emplace_back(data, len);
+      alarm_->Cancel();
+      alarm_->Set(clock_->Now());
     } else {
-      send(string(data, len));
+      Send(string(data, len));
     }
     return static_cast<int>(len);
-  }
-
-  void send(const string& data) {
-    DCHECK(dest_);
-    DCHECK(dest_->observer());
-    dest_->observer()->OnTransportChannelReadPacket(data);
   }
 
   FakeTransportChannelObserver* observer() { return observer_; }
@@ -288,14 +251,43 @@ class FakeTransportChannel {
   void SetAsync(bool async) { async_ = async; }
 
  private:
+  class AlarmDelegate : public QuicAlarm::Delegate {
+   public:
+    explicit AlarmDelegate(FakeTransportChannel* channel) : channel_(channel) {}
+
+    void OnAlarm() override { channel_->OnAlarm(); }
+
+   private:
+    FakeTransportChannel* channel_;
+  };
+
+  void Send(const string& data) {
+    DCHECK(dest_);
+    DCHECK(dest_->observer());
+    dest_->observer()->OnTransportChannelReadPacket(data);
+  }
+
+  void OnAlarm() override {
+    QUIC_LOG(WARNING) << "Sending packet: " << packet_queue_.front();
+    Send(packet_queue_.front());
+    packet_queue_.pop_front();
+
+    if (!packet_queue_.empty()) {
+      alarm_->Cancel();
+      alarm_->Set(clock_->Now());
+    }
+  }
+
   // The writing destination of this channel.
   FakeTransportChannel* dest_ = nullptr;
   // The observer of this channel. Called when the received the data.
   FakeTransportChannelObserver* observer_ = nullptr;
   // If async, will send packets by running asynchronous tasks.
   bool async_ = false;
-  // Used to send data asynchronously.
-  FakeTaskRunner* task_runner_;
+  // If async, packets are queued here to send.
+  QuicDeque<string> packet_queue_;
+  // Alarm used to send data asynchronously.
+  QuicArenaScopedPtr<QuicAlarm> alarm_;
   // The test clock.  Used to ensure the RTT is not 0.
   MockClock* clock_;
 };
@@ -421,9 +413,9 @@ class QuartcSessionTest : public QuicTest,
     // Quic crashes if packets are sent at time 0, and the clock defaults to 0.
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1000));
     client_channel_ =
-        QuicMakeUnique<FakeTransportChannel>(&task_runner_, &clock_);
+        QuicMakeUnique<FakeTransportChannel>(&alarm_factory_, &clock_);
     server_channel_ =
-        QuicMakeUnique<FakeTransportChannel>(&task_runner_, &clock_);
+        QuicMakeUnique<FakeTransportChannel>(&alarm_factory_, &clock_);
     // Make the channel asynchronous so that two peer will not keep calling each
     // other when they exchange information.
     client_channel_->SetAsync(true);
@@ -491,22 +483,14 @@ class QuartcSessionTest : public QuicTest,
                                                    QuartcPacketWriter* writer) {
     QuicIpAddress ip;
     ip.FromString("0.0.0.0");
-    if (!alarm_factory_) {
-      // QuartcFactory is only used as an alarm factory.
-      QuartcFactoryConfig config;
-      config.clock = &quartc_clock_;
-      config.task_runner = &task_runner_;
-      alarm_factory_ = QuicMakeUnique<QuartcFactory>(config);
-    }
-
     return QuicMakeUnique<QuicConnection>(
         0, QuicSocketAddress(ip, 0), this /*QuicConnectionHelperInterface*/,
-        alarm_factory_.get(), writer, /*owns_writer=*/false, perspective,
+        &alarm_factory_, writer, /*owns_writer=*/false, perspective,
         CurrentSupportedVersions());
   }
 
   // Runs all tasks scheduled in the next 200 ms.
-  void RunTasks() { task_runner_.Run(200); }
+  void RunTasks() { alarm_factory_.Run(200); }
 
   void StartHandshake() {
     server_peer_->StartCryptoHandshake();
@@ -596,10 +580,9 @@ class QuartcSessionTest : public QuicTest,
   }
 
  protected:
-  std::unique_ptr<QuicAlarmFactory> alarm_factory_;
-  SimpleBufferAllocator buffer_allocator_;
   MockClock clock_;
-  MockQuartcClock quartc_clock_{&clock_};
+  FakeAlarmFactory alarm_factory_{&clock_};
+  SimpleBufferAllocator buffer_allocator_;
 
   std::unique_ptr<FakeTransportChannel> client_channel_;
   std::unique_ptr<FakeTransportChannel> server_channel_;
@@ -609,8 +592,6 @@ class QuartcSessionTest : public QuicTest,
   std::unique_ptr<QuartcPacketWriter> server_writer_;
   std::unique_ptr<QuartcSessionForTest> client_peer_;
   std::unique_ptr<QuartcSessionForTest> server_peer_;
-
-  FakeTaskRunner task_runner_{&clock_};
 };
 
 TEST_F(QuartcSessionTest, StreamConnection) {

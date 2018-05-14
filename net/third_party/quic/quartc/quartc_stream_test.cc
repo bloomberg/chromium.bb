@@ -11,9 +11,9 @@
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/platform/api/quic_test_mem_slice_vector.h"
-#include "net/third_party/quic/quartc/quartc_clock_interface.h"
 #include "net/third_party/quic/quartc/quartc_factory.h"
 #include "net/third_party/quic/test_tools/mock_clock.h"
+#include "net/third_party/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -165,9 +165,7 @@ class QuartcStreamTest : public QuicTest, public QuicConnectionHelperInterface {
     ip.FromString("0.0.0.0");
     bool owns_writer = true;
 
-    // We only use QuartcFactory for its role as an alarm factory.
-    QuartcFactoryConfig config;
-    alarm_factory_ = QuicMakeUnique<QuartcFactory>(config);
+    alarm_factory_ = QuicMakeUnique<test::MockAlarmFactory>();
 
     connection_ = QuicMakeUnique<QuicConnection>(
         0, QuicSocketAddress(ip, 0), this /*QuicConnectionHelperInterface*/,
