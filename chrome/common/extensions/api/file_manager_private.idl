@@ -1079,7 +1079,7 @@ interface Functions {
 
   // Starts and mounts crostini container.
   // |callback|
-  static void mountCrostiniContainer(BooleanCallback callback);
+  static void mountCrostiniContainer(SimpleCallback callback);
 };
 
 interface Events {
