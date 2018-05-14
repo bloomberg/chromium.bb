@@ -356,12 +356,12 @@ testcase.renameFileDrive = function() {
   testPromise(testRenameFile(RootPath.DRIVE, BASIC_DRIVE_ENTRY_SET));
 };
 
-testcase.renameNewDirectoryDownloads = function() {
+testcase.renameNewFolderDownloads = function() {
   testPromise(testRenameNewDirectory(RootPath.DOWNLOADS,
       BASIC_LOCAL_ENTRY_SET, '/Downloads'));
 };
 
-testcase.renameNewDirectoryDrive = function() {
+testcase.renameNewFolderDrive = function() {
   testPromise(testRenameNewDirectory(RootPath.DRIVE, BASIC_DRIVE_ENTRY_SET,
       '/My Drive'));
 };
