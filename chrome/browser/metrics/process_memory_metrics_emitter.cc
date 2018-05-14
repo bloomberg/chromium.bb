@@ -377,18 +377,19 @@ int ProcessMemoryMetricsEmitter::GetNumberOfExtensions(base::ProcessId pid) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Retrieve the renderer process host for the given pid.
   int rph_id = -1;
-  auto iter = content::RenderProcessHost::AllHostsIterator();
-  while (!iter.IsAtEnd()) {
+  bool found = false;
+  for (auto iter = content::RenderProcessHost::AllHostsIterator();
+       !iter.IsAtEnd(); iter.Advance()) {
     if (!iter.GetCurrentValue()->GetProcess().IsValid())
       continue;
 
     if (iter.GetCurrentValue()->GetProcess().Pid() == pid) {
+      found = true;
       rph_id = iter.GetCurrentValue()->GetID();
       break;
     }
-    iter.Advance();
   }
-  if (iter.IsAtEnd())
+  if (!found)
     return 0;
 
   // Count the number of extensions associated with that renderer process host
