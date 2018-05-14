@@ -47,6 +47,7 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   void OnMouseEvent(ui::MouseEvent* event) override;
 
   // views::internal::NativeWidgetDelegate:
+  void OnNativeWidgetMove() override;
   void OnNativeWidgetSizeChanged(const gfx::Size& new_size) override;
 
  private:
@@ -73,8 +74,8 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   gfx::Size min_size_;
   gfx::Size max_size_;
 
-  // Current size of the Picture-in-Picture window.
-  gfx::Size current_size_;
+  // Current bounds of the Picture-in-Picture window.
+  gfx::Rect current_bounds_;
 
   // The natural size of the video to show. This is used to compute sizing and
   // ensuring factors such as aspect ratio is maintained.
