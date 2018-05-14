@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/smb_client/discovery/host_locator.h"
 
 namespace chromeos {
@@ -51,6 +52,17 @@ void NetworkScanner::FindHostsInNetwork(FindHostsCallback callback) {
 
 void NetworkScanner::RegisterHostLocator(std::unique_ptr<HostLocator> locator) {
   locators_.push_back(std::move(locator));
+}
+
+std::string NetworkScanner::ResolveHost(const std::string& host) const {
+  DCHECK(find_hosts_returned_);
+
+  const auto& host_iter = found_hosts_.find(base::ToLowerASCII(host));
+  if (host_iter == found_hosts_.end()) {
+    return "";
+  }
+
+  return host_iter->second;
 }
 
 void NetworkScanner::OnHostsFound(uint32_t request_id,
@@ -102,7 +114,11 @@ void NetworkScanner::FireCallbackIfFinished(uint32_t request_id) {
     RequestInfo info = std::move(request_iter->second);
     requests_.erase(request_iter);
 
-    std::move(info.callback).Run(true /* success */, info.hosts_found);
+    // Save the found hosts for name resolution.
+    found_hosts_ = std::move(info.hosts_found);
+    find_hosts_returned_ = true;
+
+    std::move(info.callback).Run(true /* success */, found_hosts_);
   }
 }
 
