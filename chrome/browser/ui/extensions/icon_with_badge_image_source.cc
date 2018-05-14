@@ -45,10 +45,7 @@ IconWithBadgeImageSource::Badge::Badge(const std::string& text,
 IconWithBadgeImageSource::Badge::~Badge() {}
 
 IconWithBadgeImageSource::IconWithBadgeImageSource(const gfx::Size& size)
-    : gfx::CanvasImageSource(size, false),
-      grayscale_(false),
-      paint_page_action_decoration_(false),
-      paint_blocked_actions_decoration_(false) {}
+    : gfx::CanvasImageSource(size, false) {}
 
 IconWithBadgeImageSource::~IconWithBadgeImageSource() {}
 
@@ -61,8 +58,14 @@ void IconWithBadgeImageSource::SetBadge(std::unique_ptr<Badge> badge) {
 }
 
 void IconWithBadgeImageSource::Draw(gfx::Canvas* canvas) {
+  // TODO(https://crbug.com/842856): There should be a cleaner delineation
+  // between what is drawn here and what is handled by the button itself.
+
   if (icon_.IsEmpty())
     return;
+
+  if (paint_blocked_actions_decoration_)
+    PaintBlockedActionDecoration(canvas);
 
   gfx::ImageSkia skia = icon_.AsImageSkia();
   gfx::ImageSkiaRep rep = skia.GetRepresentation(canvas->image_scale());
@@ -84,9 +87,6 @@ void IconWithBadgeImageSource::Draw(gfx::Canvas* canvas) {
 
   if (paint_page_action_decoration_)
     PaintPageActionDecoration(canvas);
-
-  if (paint_blocked_actions_decoration_)
-    PaintBlockedActionDecoration(canvas);
 }
 
 // Paints badge with specified parameters to |canvas|.
@@ -193,14 +193,26 @@ void IconWithBadgeImageSource::PaintPageActionDecoration(gfx::Canvas* canvas) {
 
 void IconWithBadgeImageSource::PaintBlockedActionDecoration(
     gfx::Canvas* canvas) {
-  canvas->Save();
-  gfx::ImageSkia img =
-      *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_BLOCKED_EXTENSION_SCRIPT);
-  // This decoration is positioned at the top right corner of the icon area.
-  const gfx::Point top_right = GetIconAreaRect().top_right();
-  canvas->DrawImageInt(img, top_right.x() - img.width(), top_right.y());
-  canvas->Restore();
+  SkColor fill_color;
+  switch (state_) {
+    case ToolbarActionButtonState::kNormal:
+      fill_color = SK_ColorWHITE;
+      break;
+    case ToolbarActionButtonState::kHovered:
+      fill_color = gfx::kGoogleGrey200;
+      break;
+    case ToolbarActionButtonState::kPressed:
+      fill_color = gfx::kGoogleGrey300;
+      break;
+  }
+
+  const gfx::Rect icon_rect = GetIconAreaRect();
+  cc::PaintFlags paint_flags;
+  paint_flags.setStyle(cc::PaintFlags::kFill_Style);
+  paint_flags.setAntiAlias(true);
+  paint_flags.setColor(fill_color);
+  canvas->DrawCircle(icon_rect.CenterPoint(), icon_rect.width() / 2,
+                     paint_flags);
 }
 
 gfx::Rect IconWithBadgeImageSource::GetIconAreaRect() const {

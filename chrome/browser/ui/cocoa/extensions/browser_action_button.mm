@@ -21,6 +21,7 @@
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#include "chrome/browser/ui/toolbar/toolbar_action_button_state.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
@@ -414,8 +415,17 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
   base::string16 tooltip = viewController_->GetTooltip(webContents);
   [self setToolTip:(tooltip.empty() ? nil : base::SysUTF16ToNSString(tooltip))];
 
+  // For now, on Cocoa, pretend that the button is always in the normal state.
+  // This only affects behavior when
+  // extensions::features::kRuntimeHostPermissions is enabled (which is
+  // currently off everywhere by default), and there's a good likelihood that
+  // MacViews for the toolbar (https://crbug.com/671916) may ship prior to this.
+  // Since it's a non-trivial amount of work to get this right in Cocoa, settle
+  // with this for now. (The only behavior difference is that the icon
+  // background won't darken on mouseover and click).
   gfx::Image image =
-      viewController_->GetIcon(webContents, gfx::Size([self frame].size));
+      viewController_->GetIcon(webContents, gfx::Size([self frame].size),
+                               ToolbarActionButtonState::kNormal);
 
   if (!image.IsEmpty())
     [self setImage:image.ToNSImage()];

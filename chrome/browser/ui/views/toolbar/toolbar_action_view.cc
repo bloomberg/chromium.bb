@@ -57,6 +57,7 @@ ToolbarActionView::ToolbarActionView(
       delegate_(delegate),
       called_register_command_(false),
       wants_to_run_(false),
+      is_mouse_pressed_(false),
       menu_(nullptr),
       weak_factory_(this) {
   SetInkDropMode(InkDropMode::ON);
@@ -130,9 +131,16 @@ bool ToolbarActionView::ShouldUseFloodFillInkDrop() const {
 
 std::unique_ptr<views::InkDrop> ToolbarActionView::CreateInkDrop() {
   auto ink_drop = CreateToolbarInkDrop<MenuButton>(this);
+
+  // TODO(devlin): Ink drops look weird with the blocked actions state. We'll
+  // need to resolve that.
   ink_drop->SetShowHighlightOnHover(!delegate_->ShownInsideMenu());
   ink_drop->SetShowHighlightOnFocus(true);
   return ink_drop;
+}
+
+void ToolbarActionView::StateChanged(ButtonState old_state) {
+  UpdateState();
 }
 
 std::unique_ptr<views::InkDropRipple> ToolbarActionView::CreateInkDropRipple()
@@ -171,12 +179,36 @@ void ToolbarActionView::UpdateState() {
 
   wants_to_run_ = view_controller_->WantsToRun(web_contents);
 
-  gfx::ImageSkia icon(
-      view_controller_->GetIcon(web_contents,
-                                GetPreferredSize()).AsImageSkia());
+  // We need to handle pressed state separately here (rather than just getting
+  // an image for ToolbarActionButtonState::kPressed and assigning it with
+  // SetImage(views::Button::STATE_PRESSED)) because views::MenuButtons don't
+  // always enter the pressed state when the mouse is down, instead waiting for
+  // menu activation. As a workarond, use our own pressed state tracking and
+  // apply the proper image to the Button::STATE_NORMAL state.
+  ToolbarActionButtonState button_state = ToolbarActionButtonState::kNormal;
+  if (is_mouse_pressed_)
+    button_state = ToolbarActionButtonState::kPressed;
 
-  if (!icon.isNull())
-    SetImage(views::Button::STATE_NORMAL, icon);
+  gfx::Size size = GetPreferredSize();
+  gfx::ImageSkia normal_icon(
+      view_controller_->GetIcon(web_contents, size, button_state)
+          .AsImageSkia());
+
+  if (!normal_icon.isNull())
+    SetImage(views::Button::STATE_NORMAL, normal_icon);
+
+  // Unlike with the pressed state (see above), hover state works well with the
+  // views::ImageButton methods. However, we need to make sure that we don't
+  // set if the mouse is down (and we're in pseudo-pressed state), so that it
+  // doesn't override the pressed image.
+  gfx::ImageSkia hover_icon;
+  if (!is_mouse_pressed_) {
+    hover_icon =
+        view_controller_
+            ->GetIcon(web_contents, size, ToolbarActionButtonState::kHovered)
+            .AsImageSkia();
+  }
+  SetImage(views::Button::STATE_HOVERED, hover_icon);
 
   SetTooltipText(view_controller_->GetTooltip(web_contents));
 
@@ -218,6 +250,8 @@ gfx::Size ToolbarActionView::CalculatePreferredSize() const {
 }
 
 bool ToolbarActionView::OnMousePressed(const ui::MouseEvent& event) {
+  is_mouse_pressed_ = true;
+  UpdateState();
   // views::MenuButton actions are only triggered by left mouse clicks.
   if (event.IsOnlyLeftMouseButton() && !pressed_lock_) {
     // TODO(bruthig): The ACTION_PENDING triggering logic should be in
@@ -226,6 +260,18 @@ bool ToolbarActionView::OnMousePressed(const ui::MouseEvent& event) {
     AnimateInkDrop(views::InkDropState::ACTION_PENDING, &event);
   }
   return MenuButton::OnMousePressed(event);
+}
+
+void ToolbarActionView::OnMouseReleased(const ui::MouseEvent& event) {
+  is_mouse_pressed_ = false;
+  UpdateState();
+  views::MenuButton::OnMouseReleased(event);
+}
+
+void ToolbarActionView::OnMouseExited(const ui::MouseEvent& event) {
+  is_mouse_pressed_ = false;
+  UpdateState();
+  MenuButton::OnMouseExited(event);
 }
 
 void ToolbarActionView::OnGestureEvent(ui::GestureEvent* event) {

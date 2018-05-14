@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTION_VIEW_CONTROLLER_H_
 
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/toolbar/toolbar_action_button_state.h"
 #include "ui/gfx/image/image.h"
 
 namespace content {
@@ -38,7 +39,8 @@ class ToolbarActionViewController {
 
   // Returns the icon to use for the given |web_contents| and |size|.
   virtual gfx::Image GetIcon(content::WebContents* web_contents,
-                             const gfx::Size& size) = 0;
+                             const gfx::Size& size,
+                             ToolbarActionButtonState state) = 0;
 
   // Returns the name of the action, which can be separate from the accessible
   // name or name for the tooltip.

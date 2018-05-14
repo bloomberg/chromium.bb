@@ -52,7 +52,8 @@ class ExtensionActionViewController
   std::string GetId() const override;
   void SetDelegate(ToolbarActionViewDelegate* delegate) override;
   gfx::Image GetIcon(content::WebContents* web_contents,
-                     const gfx::Size& size) override;
+                     const gfx::Size& size,
+                     ToolbarActionButtonState state) override;
   base::string16 GetActionName() const override;
   base::string16 GetAccessibleName(content::WebContents* web_contents) const
       override;
@@ -136,7 +137,8 @@ class ExtensionActionViewController
   // Returns the image source for the icon.
   std::unique_ptr<IconWithBadgeImageSource> GetIconImageSource(
       content::WebContents* web_contents,
-      const gfx::Size& size);
+      const gfx::Size& size,
+      ToolbarActionButtonState state);
 
   // Returns true if this extension has a page action and that page action wants
   // to run on the given |web_contents|.
