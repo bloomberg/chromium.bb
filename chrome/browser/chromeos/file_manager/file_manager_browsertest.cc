@@ -337,11 +337,11 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "sortColumns"),
                       TestParameter(IN_GUEST_MODE, "sortColumns")));
 
-// FIXME: prefix the test name with tabindex
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     TabIndex,
     FileManagerBrowserTestWithLegacyEventDispatch,
-    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "searchBoxFocus")));
+    ::testing::Values(
+        TestParameter(NOT_IN_GUEST_MODE, "tabindexSearchBoxFocus")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     TabindexFocus,

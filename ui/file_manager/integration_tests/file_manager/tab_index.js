@@ -7,7 +7,7 @@
 /**
  * Tests the focus behavior of the search box.
  */
-testcase.searchBoxFocus = function() {
+testcase.tabindexSearchBoxFocus = function() {
   var appId;
   StepsRunner.run([
     // Set up File Manager.
