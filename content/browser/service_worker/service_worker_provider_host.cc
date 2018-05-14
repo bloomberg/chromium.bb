@@ -262,7 +262,12 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // TODO(crbug.com/838410): The CHECKs are temporary debugging for the linked
+  // bug.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  CHECK(!in_dtor_);
+  in_dtor_ = true;
+
   if (context_)
     context_->UnregisterProviderHostByClientID(client_uuid_);
 
