@@ -33,5 +33,6 @@ void WebUsbChooserServiceDesktop::ShowChooser(
   auto* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host());
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  bubble_ = browser->GetBubbleManager()->ShowBubble(std::move(delegate));
+  if (browser)
+    bubble_ = browser->GetBubbleManager()->ShowBubble(std::move(delegate));
 }
