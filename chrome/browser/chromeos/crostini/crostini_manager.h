@@ -186,7 +186,7 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
                             RestartCrostiniCallback callback,
                             RestartObserver* observer = nullptr);
 
-  void AbortRestartCrostini(RestartId id);
+  void AbortRestartCrostini(Profile* profile, RestartId id);
 
   // ConciergeClient::Observer:
   void OnContainerStarted(
