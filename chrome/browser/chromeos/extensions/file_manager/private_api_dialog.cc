@@ -22,7 +22,7 @@ namespace {
 SelectFileDialogExtension::RoutingID GetFileDialogRoutingID(
     ChromeAsyncExtensionFunction* function) {
   return SelectFileDialogExtension::GetRoutingIDFromWebContents(
-      function->GetSenderWebContents());
+      function->GetAssociatedWebContentsDeprecated());
 }
 
 }  // namespace
