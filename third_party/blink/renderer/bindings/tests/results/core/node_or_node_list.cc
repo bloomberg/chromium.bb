@@ -10,13 +10,13 @@
 // clang-format off
 #include "node_or_node_list.h"
 
-#include "bindings/core/v8/to_v8_for_core.h"
-#include "bindings/core/v8/v8_node.h"
-#include "bindings/core/v8/v8_node_list.h"
-#include "core/dom/name_node_list.h"
-#include "core/dom/node_list.h"
-#include "core/dom/static_node_list.h"
-#include "core/html/forms/labels_node_list.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_node_list.h"
+#include "third_party/blink/renderer/core/dom/name_node_list.h"
+#include "third_party/blink/renderer/core/dom/node_list.h"
+#include "third_party/blink/renderer/core/dom/static_node_list.h"
+#include "third_party/blink/renderer/core/html/forms/labels_node_list.h"
 
 namespace blink {
 

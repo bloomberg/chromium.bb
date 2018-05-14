@@ -10,15 +10,15 @@
 // clang-format off
 #include "test_interface_or_long.h"
 
-#include "bindings/core/v8/idl_types.h"
-#include "bindings/core/v8/native_value_traits_impl.h"
-#include "bindings/core/v8/to_v8_for_core.h"
-#include "bindings/core/v8/v8_test_interface.h"
-#include "bindings/tests/idls/core/test_implements_2.h"
-#include "bindings/tests/idls/core/test_implements_3_implementation.h"
-#include "bindings/tests/idls/core/test_interface_partial.h"
-#include "bindings/tests/idls/core/test_interface_partial_2_implementation.h"
-#include "bindings/tests/idls/core/test_interface_partial_secure_context.h"
+#include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_test_interface.h"
+#include "third_party/blink/renderer/bindings/tests/idls/core/test_implements_2.h"
+#include "third_party/blink/renderer/bindings/tests/idls/core/test_implements_3_implementation.h"
+#include "third_party/blink/renderer/bindings/tests/idls/core/test_interface_partial.h"
+#include "third_party/blink/renderer/bindings/tests/idls/core/test_interface_partial_2_implementation.h"
+#include "third_party/blink/renderer/bindings/tests/idls/core/test_interface_partial_secure_context.h"
 
 namespace blink {
 

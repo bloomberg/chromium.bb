@@ -105,12 +105,16 @@ def initialize_jinja_env(cache_dir):
     return jinja_env
 
 
+_BLINK_RELATIVE_PATH_PREFIXES = ('bindings/', 'core/', 'modules/', 'platform/')
+
 def normalize_and_sort_includes(include_paths):
     normalized_include_paths = []
     for include_path in include_paths:
-        match = re.search(r'/gen/blink/(.*)$', posixpath.abspath(include_path))
+        match = re.search(r'/gen/(third_party/blink/.*)$', posixpath.abspath(include_path))
         if match:
             include_path = match.group(1)
+        elif include_path.startswith(_BLINK_RELATIVE_PATH_PREFIXES):
+            include_path = 'third_party/blink/renderer/' + include_path
         normalized_include_paths.append(include_path)
     return sorted(normalized_include_paths)
 

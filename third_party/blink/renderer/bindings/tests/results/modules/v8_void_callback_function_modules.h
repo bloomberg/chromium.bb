@@ -12,8 +12,8 @@
 #ifndef V8VoidCallbackFunctionModules_h
 #define V8VoidCallbackFunctionModules_h
 
-#include "modules/modules_export.h"
-#include "platform/bindings/callback_function_base.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/callback_function_base.h"
 
 namespace blink {
 

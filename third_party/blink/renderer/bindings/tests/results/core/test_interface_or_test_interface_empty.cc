@@ -10,14 +10,14 @@
 // clang-format off
 #include "test_interface_or_test_interface_empty.h"
 
-#include "bindings/core/v8/to_v8_for_core.h"
-#include "bindings/core/v8/v8_test_interface.h"
-#include "bindings/core/v8/v8_test_interface_empty.h"
-#include "bindings/tests/idls/core/test_implements_2.h"
-#include "bindings/tests/idls/core/test_implements_3_implementation.h"
-#include "bindings/tests/idls/core/test_interface_partial.h"
-#include "bindings/tests/idls/core/test_interface_partial_2_implementation.h"
-#include "bindings/tests/idls/core/test_interface_partial_secure_context.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_test_interface.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_test_interface_empty.h"
+#include "third_party/blink/renderer/bindings/tests/idls/core/test_implements_2.h"
+#include "third_party/blink/renderer/bindings/tests/idls/core/test_implements_3_implementation.h"
+#include "third_party/blink/renderer/bindings/tests/idls/core/test_interface_partial.h"
+#include "third_party/blink/renderer/bindings/tests/idls/core/test_interface_partial_2_implementation.h"
+#include "third_party/blink/renderer/bindings/tests/idls/core/test_interface_partial_secure_context.h"
 
 namespace blink {
 

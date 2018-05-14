@@ -10,12 +10,12 @@
 // clang-format off
 #include "test_dictionary.h"
 
-#include "bindings/tests/idls/core/test_interface_garbage_collected.h"
-#include "bindings/tests/idls/core/test_interface_implementation.h"
-#include "bindings/tests/idls/core/test_object.h"
-#include "core/dom/element.h"
-#include "core/dom/events/event_target.h"
-#include "platform/wtf/vector.h"
+#include "third_party/blink/renderer/bindings/tests/idls/core/test_interface_garbage_collected.h"
+#include "third_party/blink/renderer/bindings/tests/idls/core/test_interface_implementation.h"
+#include "third_party/blink/renderer/bindings/tests/idls/core/test_object.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

@@ -11,12 +11,12 @@
 #ifndef TestDictionaryDerivedImplementedAs_h
 #define TestDictionaryDerivedImplementedAs_h
 
-#include "bindings/core/v8/string_or_double.h"
-#include "bindings/tests/idls/core/test_dictionary.h"
-#include "core/core_export.h"
-#include "platform/heap/handle.h"
-#include "platform/wtf/text/wtf_string.h"
-#include "platform/wtf/vector.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_double.h"
+#include "third_party/blink/renderer/bindings/tests/idls/core/test_dictionary.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
