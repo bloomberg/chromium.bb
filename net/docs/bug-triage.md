@@ -85,23 +85,7 @@ uniform, predictable two day commitment for all triagers.
       the reporter indicates they'll provide data when they can.  In that case,
       use your own judgment for further pings or archiving.
 
-* Identify significant new browser process
-  [crashers](https://goto.google.com/chromecrash) that are potentially network
-  related.  You should look at crashes for the most recent canary that has at
-  least a day of data, and if there's been a dev or beta release from the start
-  of the last triager's shift to the start of yours, you should also look at
-  that once it has at least a day of data.  Recent releases available
-  [here](https://omahaproxy.appspot.com/).  If both dev and beta have been
-  released in that period, just look at beta.  File Internals>Network bugs on
-  the tracker when new crashers are found.  Bugs  should only be filed for
-  crashes that are both in the top 100 for each release and occurred for more
-  than two users.
-
-    * Make sure to check for new crashes on all platforms, not just Windows.
-
-    * [go/chromenetcrash](https://goto.google.com/chromenetcrash) has a list
-      of net crashes by version, though makes it more difficult to tell if a
-      crash makes up a significant portion of all Chrome crashes.
+* Identify significant new crashes. See [internal documentation](https://goto.google.com/network_triage_internal#looking-for-new-crashers).
 
 ### Best Effort (As you have time):
 
