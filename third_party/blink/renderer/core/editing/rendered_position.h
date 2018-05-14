@@ -60,8 +60,9 @@ class CORE_EXPORT RenderedPosition {
 
   unsigned char BidiLevelOnLeft() const;
   unsigned char BidiLevelOnRight() const;
-  RenderedPosition LeftBoundaryOfBidiRun(unsigned char bidi_level_of_run);
-  RenderedPosition RightBoundaryOfBidiRun(unsigned char bidi_level_of_run);
+  RenderedPosition LeftBoundaryOfBidiRun(unsigned char bidi_level_of_run) const;
+  RenderedPosition RightBoundaryOfBidiRun(
+      unsigned char bidi_level_of_run) const;
 
   enum ShouldMatchBidiLevel { kMatchBidiLevel, kIgnoreBidiLevel };
   bool AtLeftBoundaryOfBidiRun() const {

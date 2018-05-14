@@ -764,6 +764,32 @@ void SelectionController::SelectClosestWordOrLinkFromMouseEvent(
           .Build());
 }
 
+static bool ShouldAdjustBaseAtBidiBoundary(const RenderedPosition& base,
+                                           const RenderedPosition& extent) {
+  if (base.AtLeftBoundaryOfBidiRun()) {
+    return !extent.AtRightBoundaryOfBidiRun(base.BidiLevelOnRight()) &&
+           base == extent.LeftBoundaryOfBidiRun(base.BidiLevelOnRight());
+  }
+
+  if (base.AtRightBoundaryOfBidiRun()) {
+    return !extent.AtLeftBoundaryOfBidiRun(base.BidiLevelOnLeft()) &&
+           base == extent.RightBoundaryOfBidiRun(base.BidiLevelOnLeft());
+  }
+
+  return false;
+}
+
+static bool ShouldAdjustExtentAtBidiBoundary(const RenderedPosition& base,
+                                             const RenderedPosition& extent) {
+  if (extent.AtLeftBoundaryOfBidiRun())
+    return extent == base.LeftBoundaryOfBidiRun(extent.BidiLevelOnRight());
+
+  if (extent.AtRightBoundaryOfBidiRun())
+    return extent == base.RightBoundaryOfBidiRun(extent.BidiLevelOnLeft());
+
+  return false;
+}
+
 static SelectionInFlatTree AdjustEndpointsAtBidiBoundary(
     const VisiblePositionInFlatTree& visible_base,
     const VisiblePositionInFlatTree& visible_extent) {
@@ -782,47 +808,25 @@ static SelectionInFlatTree AdjustEndpointsAtBidiBoundary(
   if (base.IsNull() || extent.IsNull() || base == extent)
     return unchanged_selection;
 
-  if (base.AtLeftBoundaryOfBidiRun()) {
-    if (!extent.AtRightBoundaryOfBidiRun(base.BidiLevelOnRight()) &&
-        base == extent.LeftBoundaryOfBidiRun(base.BidiLevelOnRight())) {
+  if (base.AtLeftBoundaryOfBidiRun() || base.AtRightBoundaryOfBidiRun()) {
+    if (ShouldAdjustBaseAtBidiBoundary(base, extent)) {
+      const PositionInFlatTree adjusted_base =
+          CreateVisiblePosition(base.GetPosition()).DeepEquivalent();
       return SelectionInFlatTree::Builder()
-          .SetBaseAndExtent(
-              CreateVisiblePosition(base.GetPosition()).DeepEquivalent(),
-              visible_extent.DeepEquivalent())
+          .SetBaseAndExtent(adjusted_base, visible_extent.DeepEquivalent())
           .Build();
     }
     return unchanged_selection;
   }
 
-  if (base.AtRightBoundaryOfBidiRun()) {
-    if (!extent.AtLeftBoundaryOfBidiRun(base.BidiLevelOnLeft()) &&
-        base == extent.RightBoundaryOfBidiRun(base.BidiLevelOnLeft())) {
-      return SelectionInFlatTree::Builder()
-          .SetBaseAndExtent(
-              CreateVisiblePosition(base.GetPosition()).DeepEquivalent(),
-              visible_extent.DeepEquivalent())
-          .Build();
-    }
-    return unchanged_selection;
-  }
-
-  if (extent.AtLeftBoundaryOfBidiRun() &&
-      extent == base.LeftBoundaryOfBidiRun(extent.BidiLevelOnRight())) {
+  if (ShouldAdjustExtentAtBidiBoundary(base, extent)) {
+    const PositionInFlatTree adjusted_extent =
+        CreateVisiblePosition(extent.GetPosition()).DeepEquivalent();
     return SelectionInFlatTree::Builder()
-        .SetBaseAndExtent(
-            visible_base.DeepEquivalent(),
-            CreateVisiblePosition(extent.GetPosition()).DeepEquivalent())
+        .SetBaseAndExtent(visible_base.DeepEquivalent(), adjusted_extent)
         .Build();
   }
 
-  if (extent.AtRightBoundaryOfBidiRun() &&
-      extent == base.RightBoundaryOfBidiRun(extent.BidiLevelOnLeft())) {
-    return SelectionInFlatTree::Builder()
-        .SetBaseAndExtent(
-            visible_base.DeepEquivalent(),
-            CreateVisiblePosition(extent.GetPosition()).DeepEquivalent())
-        .Build();
-  }
   return unchanged_selection;
 }
 
