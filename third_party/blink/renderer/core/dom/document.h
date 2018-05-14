@@ -1503,7 +1503,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void ClearFocusedElementTimerFired(TimerBase*);
 
   bool HaveScriptBlockingStylesheetsLoaded() const;
-  bool HaveRenderBlockingStylesheetsLoaded() const;
+  bool HaveRenderBlockingResourcesLoaded() const;
   void StyleResolverMayHaveChanged();
 
   void SetHoverElement(Element*);

@@ -2400,8 +2400,7 @@ void Document::LayoutUpdated() {
   // beginFrame? This will catch the first layout in a page that does lots
   // of layout thrashing even though that layout might not be followed by
   // a paint for many seconds.
-  if (IsRenderingReady() && body() &&
-      !GetStyleEngine().HasPendingScriptBlockingSheets()) {
+  if (IsRenderingReady() && body() && HaveRenderBlockingResourcesLoaded()) {
     if (document_timing_.FirstLayout().is_null())
       document_timing_.MarkFirstLayout();
   }
@@ -2436,7 +2435,7 @@ void Document::UpdateStyleAndLayoutTreeIgnorePendingStylesheets() {
   CHECK(Lifecycle().StateAllowsTreeMutations());
   StyleEngine::IgnoringPendingStylesheet ignoring(GetStyleEngine());
 
-  if (GetStyleEngine().HasPendingScriptBlockingSheets()) {
+  if (!HaveRenderBlockingResourcesLoaded()) {
     // FIXME: We are willing to attempt to suppress painting with outdated style
     // info only once.  Our assumption is that it would be dangerous to try to
     // stop it a second time, after page content has already been loaded and
@@ -4371,7 +4370,7 @@ void Document::StyleResolverMayHaveChanged() {
   }
 
   if (DidLayoutWithPendingStylesheets() &&
-      !GetStyleEngine().HasPendingScriptBlockingSheets()) {
+      HaveRenderBlockingResourcesLoaded()) {
     // We need to manually repaint because we avoid doing all repaints in layout
     // or style recalc while sheets are still loading to avoid FOUC.
     pending_sheet_layout_ = kIgnoreLayoutWithPendingSheets;
@@ -6244,7 +6243,7 @@ bool Document::CanExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
 
 bool Document::IsRenderingReady() const {
   return style_engine_->IgnoringPendingStylesheets() ||
-         (HaveImportsLoaded() && HaveRenderBlockingStylesheetsLoaded());
+         HaveRenderBlockingResourcesLoaded();
 }
 
 bool Document::AllowInlineEventHandler(Node* node,
@@ -6815,10 +6814,13 @@ bool Document::HaveScriptBlockingStylesheetsLoaded() const {
   return style_engine_->HaveScriptBlockingStylesheetsLoaded();
 }
 
-bool Document::HaveRenderBlockingStylesheetsLoaded() const {
-  if (RuntimeEnabledFeatures::CSSInBodyDoesNotBlockPaintEnabled())
-    return style_engine_->HaveRenderBlockingStylesheetsLoaded();
-  return style_engine_->HaveScriptBlockingStylesheetsLoaded();
+bool Document::HaveRenderBlockingResourcesLoaded() const {
+  if (RuntimeEnabledFeatures::CSSInBodyDoesNotBlockPaintEnabled()) {
+    return HaveImportsLoaded() &&
+           style_engine_->HaveRenderBlockingStylesheetsLoaded();
+  }
+  return HaveImportsLoaded() &&
+         style_engine_->HaveScriptBlockingStylesheetsLoaded();
 }
 
 Locale& Document::GetCachedLocale(const AtomicString& locale) {
