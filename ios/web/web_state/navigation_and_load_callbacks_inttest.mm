@@ -1343,14 +1343,8 @@ TEST_F(NavigationAndLoadCallbacksTest, StopNavigation) {
   }));
 }
 
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_StopFinishedNavigation StopFinishedNavigation
-#else
-#define MAYBE_StopFinishedNavigation DISABLED_StopFinishedNavigation
-#endif
 // Tests stopping a finished navigation. PageLoaded is never called.
-// TODO(crbug.com/812669): Re-enable this test on devices.
-TEST_F(NavigationAndLoadCallbacksTest, MAYBE_StopFinishedNavigation) {
+TEST_F(NavigationAndLoadCallbacksTest, StopFinishedNavigation) {
   GURL url = test_server_->GetURL("/exabyte_response");
 
   NavigationContext* context = nullptr;
@@ -1371,10 +1365,9 @@ TEST_F(NavigationAndLoadCallbacksTest, MAYBE_StopFinishedNavigation) {
 
   web::test::LoadUrl(web_state(), url);
 
-  // Server does not stop responding until it's shut down. Let the server run
-  // to make web state finish the navigation.
-  EXPECT_FALSE(WaitUntilConditionOrTimeout(2.0, ^{
-    return !web_state()->IsLoading();
+  // Server will never stop responding. Wait until the navigation is committed.
+  EXPECT_FALSE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
+    return context && context->HasCommitted();
   }));
 
   // Stop the loading.
