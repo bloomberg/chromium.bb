@@ -3182,6 +3182,34 @@
             ]
         }
     ],
+    "SafeBrowsingSuspiciousSiteTrigger": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "suspicious_site_trigger_quota": "10"
+                    },
+                    "enable_features": [
+                        "SafeBrowsingSuspiciousSiteTriggerQuota"
+                    ]
+                },
+                {
+                    "name": "Control",
+                    "disable_features": [
+                        "SafeBrowsingSuspiciousSiteTriggerQuota"
+                    ]
+                }
+            ]
+        }
+    ],
     "SafeBrowsingThreatDomDetailsTagAttributes": [
         {
             "platforms": [
