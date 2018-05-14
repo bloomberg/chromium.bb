@@ -101,10 +101,6 @@ function copyBetweenVolumes(targetFile,
   ]);
 }
 
-// TODO(noel): transfer implies move to some. Change these test names to say
-// "copy" rather than "transfer" because all these tests copy something from
-// a volume to another volume.
-
 /**
  * Tests copying from Drive to Downloads.
  */
@@ -131,7 +127,6 @@ testcase.transferFromDownloadsToDrive = function() {
 
 /**
  * Tests copying from Drive shared with me to Downloads.
- * TODO(noel) naming: ...fromDriveSharedToDownloads?
  */
 testcase.transferFromSharedToDownloads = function() {
   copyBetweenVolumes(
@@ -144,7 +139,6 @@ testcase.transferFromSharedToDownloads = function() {
 
 /**
  * Tests copying from Drive shared with me to Drive.
- * TODO(noel) naming: ...fromDriveSharedToDrive?
  */
 testcase.transferFromSharedToDrive = function() {
   copyBetweenVolumes(
@@ -157,7 +151,6 @@ testcase.transferFromSharedToDrive = function() {
 
 /**
  * Tests copying from Drive offline to Downloads.
- * TODO(noel) naming: ...fromDriveOfflineToDownloads?
  */
 testcase.transferFromOfflineToDownloads = function() {
   copyBetweenVolumes(
@@ -170,7 +163,6 @@ testcase.transferFromOfflineToDownloads = function() {
 
 /**
  * Tests copying from Drive offline to Drive.
- * TODO(noel): naming: ...fromDriveOfflinetoDrive?
  */
 testcase.transferFromOfflineToDrive = function() {
   copyBetweenVolumes(
