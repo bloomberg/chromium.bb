@@ -345,7 +345,7 @@ void OnModuleEvent(const ModuleWatcher::ModuleEvent& event) {
         // task.
         base::PostTaskWithTraits(
             FROM_HERE,
-            {base::MayBlock(), base::TaskPriority::BACKGROUND,
+            {base::MayBlock(),
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
             base::Bind(&HandleModuleLoadEventWithoutTimeDateStamp,
                        event.module_path, event.module_size, load_address));
