@@ -9,8 +9,6 @@
 #ifndef PPAPI_TESTS_ARCH_DEPENDENT_SIZES_32_H_
 #define PPAPI_TESTS_ARCH_DEPENDENT_SIZES_32_H_
 
-#include "ppapi/tests/test_struct_sizes.c"
-
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(GLintptr, 4);
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(GLsizeiptr, 4);
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_CompletionCallback_Func, 4);
