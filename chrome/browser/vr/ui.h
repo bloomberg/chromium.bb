@@ -24,8 +24,9 @@ class AudioDelegate;
 class BrowserUiInterface;
 class ContentElement;
 class ContentInputDelegate;
-class ContentInputForwarder;
+class PlatformInputHandler;
 class KeyboardDelegate;
+class PlatformUiInputDelegate;
 class SkiaSurfaceProvider;
 class TextInputDelegate;
 class UiBrowserInterface;
@@ -59,7 +60,7 @@ struct UiInitialState {
 class Ui : public BrowserUiInterface, public KeyboardUiInterface {
  public:
   Ui(UiBrowserInterface* browser,
-     ContentInputForwarder* content_input_forwarder,
+     PlatformInputHandler* content_input_forwarder,
      KeyboardDelegate* keyboard_delegate,
      TextInputDelegate* text_input_delegate,
      AudioDelegate* audio_delegate,
@@ -124,7 +125,7 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   bool CanSendWebVrVSync();
 
   void SetAlertDialogEnabled(bool enabled,
-                             ContentInputDelegate* delegate,
+                             PlatformUiInputDelegate* delegate,
                              float width,
                              float height);
   void SetAlertDialogSize(float width, float height);

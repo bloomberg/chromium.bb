@@ -20,6 +20,8 @@
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/platform_toast.h"
 #include "chrome/browser/vr/model/sound_id.h"
+#include "chrome/browser/vr/platform_input_handler.h"
+#include "chrome/browser/vr/platform_ui_input_delegate.h"
 #include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
@@ -38,7 +40,7 @@ UiInitialState::UiInitialState() = default;
 UiInitialState::UiInitialState(const UiInitialState& other) = default;
 
 Ui::Ui(UiBrowserInterface* browser,
-       ContentInputForwarder* content_input_forwarder,
+       PlatformInputHandler* content_input_forwarder,
        KeyboardDelegate* keyboard_delegate,
        TextInputDelegate* text_input_delegate,
        AudioDelegate* audio_delegate,
@@ -275,7 +277,7 @@ bool Ui::CanSendWebVrVSync() {
 }
 
 void Ui::SetAlertDialogEnabled(bool enabled,
-                               ContentInputDelegate* delegate,
+                               PlatformUiInputDelegate* delegate,
                                float width,
                                float height) {
   model_->web_vr.showing_hosted_ui = enabled;
@@ -427,7 +429,7 @@ void Ui::OnSwapContents(int new_content_id) {
 }
 
 void Ui::OnContentBoundsChanged(int width, int height) {
-  content_input_delegate_->OnContentBoundsChanged(width, height);
+  content_input_delegate_->SetSize(width, height);
 }
 
 void Ui::OnPlatformControllerInitialized(PlatformController* controller) {

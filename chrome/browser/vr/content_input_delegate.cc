@@ -7,128 +7,52 @@
 #include "base/callback_helpers.h"
 #include "base/time/time.h"
 #include "chrome/browser/vr/platform_controller.h"
+#include "chrome/browser/vr/platform_input_handler.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 
 namespace vr {
 
-namespace {
-
-static constexpr gfx::PointF kOutOfBoundsPoint = {-0.5f, -0.5f};
-
-}  // namespace
-
 ContentInputDelegate::ContentInputDelegate() {}
 
-ContentInputDelegate::ContentInputDelegate(ContentInputForwarder* content)
-    : content_(content) {}
+ContentInputDelegate::ContentInputDelegate(PlatformInputHandler* input_handler)
+    : PlatformUiInputDelegate(input_handler) {}
 
 ContentInputDelegate::~ContentInputDelegate() = default;
-
-void ContentInputDelegate::OnContentEnter(
-    const gfx::PointF& normalized_hit_point) {
-  SendGestureToTarget(
-      MakeMouseEvent(blink::WebInputEvent::kMouseEnter, normalized_hit_point));
-}
-
-void ContentInputDelegate::OnContentLeave() {
-  // Note that we send an out of bounds mouse leave event. With blink feature
-  // UpdateHoverPostLayout turned on, a MouseMove event will dispatched post a
-  // Layout. Sending a mouse leave event at 0,0 will result continuous
-  // MouseMove events sent to the content if the content keeps relayout itself.
-  // See crbug.com/762573 for details.
-  SendGestureToTarget(
-      MakeMouseEvent(blink::WebInputEvent::kMouseLeave, kOutOfBoundsPoint));
-}
-
-void ContentInputDelegate::OnContentMove(
-    const gfx::PointF& normalized_hit_point) {
-  SendGestureToTarget(
-      MakeMouseEvent(blink::WebInputEvent::kMouseMove, normalized_hit_point));
-}
-
-void ContentInputDelegate::OnContentDown(
-    const gfx::PointF& normalized_hit_point) {
-  SendGestureToTarget(
-      MakeMouseEvent(blink::WebInputEvent::kMouseDown, normalized_hit_point));
-}
-
-void ContentInputDelegate::OnContentUp(
-    const gfx::PointF& normalized_hit_point) {
-  SendGestureToTarget(
-      MakeMouseEvent(blink::WebInputEvent::kMouseUp, normalized_hit_point));
-}
 
 void ContentInputDelegate::OnFocusChanged(bool focused) {
   // The call below tells the renderer to clear the focused element. Note that
   // we don't need to do anything when focused is true because the renderer
   // already knows about the focused element.
   if (!focused)
-    content_->ClearFocusedElement();
+    input_handler()->ClearFocusedElement();
 }
 
 void ContentInputDelegate::OnWebInputEdited(const EditedText& info,
                                             bool commit) {
-  if (!content_)
+  if (!input_handler())
     return;
 
   last_keyboard_edit_ = info;
 
   if (commit) {
-    content_->SubmitWebInput();
+    input_handler()->SubmitWebInput();
     return;
   }
 
-  content_->OnWebInputEdited(info.GetDiff());
-}
-
-
-void ContentInputDelegate::OnContentFlingCancel(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& normalized_hit_point) {
-  UpdateGesture(normalized_hit_point, *gesture);
-  SendGestureToTarget(std::move(gesture));
-}
-
-void ContentInputDelegate::OnContentScrollBegin(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& normalized_hit_point) {
-  UpdateGesture(normalized_hit_point, *gesture);
-  SendGestureToTarget(std::move(gesture));
-}
-
-void ContentInputDelegate::OnContentScrollUpdate(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& normalized_hit_point) {
-  UpdateGesture(normalized_hit_point, *gesture);
-  SendGestureToTarget(std::move(gesture));
-}
-
-void ContentInputDelegate::OnContentScrollEnd(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& normalized_hit_point) {
-  UpdateGesture(normalized_hit_point, *gesture);
-  SendGestureToTarget(std::move(gesture));
+  input_handler()->OnWebInputEdited(info.GetDiff());
 }
 
 void ContentInputDelegate::OnSwapContents(int new_content_id) {
   content_id_ = new_content_id;
 }
 
-void ContentInputDelegate::UpdateGesture(
-    const gfx::PointF& normalized_content_hit_point,
-    blink::WebGestureEvent& gesture) {
-  gesture.SetPositionInWidget(ScalePoint(normalized_content_hit_point,
-                                         content_tex_css_width_,
-                                         content_tex_css_height_));
-}
-
 void ContentInputDelegate::SendGestureToTarget(
     std::unique_ptr<blink::WebInputEvent> event) {
-  if (!event || !content_ || ContentGestureIsLocked(event->GetType()))
+  if (!event || !input_handler() || ContentGestureIsLocked(event->GetType()))
     return;
 
-  content_->ForwardEvent(std::move(event), content_id_);
+  input_handler()->ForwardEventToContent(std::move(event), content_id_);
 }
 
 bool ContentInputDelegate::ContentGestureIsLocked(
@@ -144,11 +68,6 @@ bool ContentInputDelegate::ContentGestureIsLocked(
   if (locked_content_id_ != content_id_)
     return true;
   return false;
-}
-
-void ContentInputDelegate::OnContentBoundsChanged(int width, int height) {
-  content_tex_css_width_ = width;
-  content_tex_css_height_ = height;
 }
 
 void ContentInputDelegate::OnWebInputIndicesChanged(
@@ -207,7 +126,7 @@ void ContentInputDelegate::OnWebInputIndicesChanged(
   pending_text_input_info_.composition_end = composition_end;
   update_state_callbacks_.emplace(std::move(callback));
   pending_text_request_state_ = kRequested;
-  content_->RequestWebInputText(base::BindOnce(
+  input_handler()->RequestWebInputText(base::BindOnce(
       &ContentInputDelegate::OnWebInputTextChanged, base::Unretained(this)));
 }
 
@@ -233,9 +152,8 @@ std::unique_ptr<blink::WebMouseEvent> ContentInputDelegate::MakeMouseEvent(
   if (!controller_)
     return nullptr;
 
-  gfx::Point location(
-      content_tex_css_width_ * normalized_web_content_location.x(),
-      content_tex_css_height_ * normalized_web_content_location.y());
+  gfx::Point location(size().width() * normalized_web_content_location.x(),
+                      size().height() * normalized_web_content_location.y());
   blink::WebInputEvent::Modifiers modifiers =
       controller_->IsButtonDown(PlatformController::kButtonSelect)
           ? blink::WebInputEvent::kLeftButtonDown

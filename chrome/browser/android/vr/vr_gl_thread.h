@@ -17,6 +17,7 @@
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/sound_id.h"
+#include "chrome/browser/vr/platform_input_handler.h"
 #include "chrome/browser/vr/text_input_delegate.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
@@ -35,7 +36,7 @@ class VrShell;
 class VrShellGl;
 
 class VrGLThread : public base::android::JavaHandlerThread,
-                   public ContentInputForwarder,
+                   public PlatformInputHandler,
                    public GlBrowserInterface,
                    public UiBrowserInterface,
                    public BrowserUiInterface {
@@ -70,10 +71,11 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void OnContentPaused(bool enabled) override;
   void ToggleCardboardGamepad(bool enabled) override;
 
-  // ContentInputForwarder
-  void ForwardEvent(std::unique_ptr<blink::WebInputEvent> event,
-                    int content_id) override;
-  void ForwardDialogEvent(std::unique_ptr<blink::WebInputEvent> event) override;
+  // PlatformInputHandler
+  void ForwardEventToPlatformUi(
+      std::unique_ptr<blink::WebInputEvent> event) override;
+  void ForwardEventToContent(std::unique_ptr<blink::WebInputEvent> event,
+                             int content_id) override;
   void ClearFocusedElement() override;
   void OnWebInputEdited(const TextEdits& edits) override;
   void SubmitWebInput() override;

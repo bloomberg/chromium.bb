@@ -39,8 +39,12 @@ gfx::Vector3dF GetNormalFromTransform(const gfx::Transform& transform) {
 ContentElement::ContentElement(
     ContentInputDelegate* delegate,
     ContentElement::ScreenBoundsChangedCallback bounds_changed_callback)
-    : PlatformUiElement(delegate),
-      bounds_changed_callback_(bounds_changed_callback) {}
+    : PlatformUiElement(),
+      bounds_changed_callback_(bounds_changed_callback),
+      content_delegate_(delegate) {
+  DCHECK(delegate);
+  SetDelegate(delegate);
+}
 
 ContentElement::~ContentElement() = default;
 
@@ -65,8 +69,8 @@ void ContentElement::Render(UiElementRenderer* renderer,
 }
 
 void ContentElement::OnFocusChanged(bool focused) {
-  if (delegate())
-    delegate()->OnFocusChanged(focused);
+  if (content_delegate_)
+    content_delegate_->OnFocusChanged(focused);
 
   focused_ = focused;
   if (event_handlers_.focus_change)
@@ -74,13 +78,13 @@ void ContentElement::OnFocusChanged(bool focused) {
 }
 
 void ContentElement::OnInputEdited(const EditedText& info) {
-  if (delegate())
-    delegate()->OnWebInputEdited(info, false);
+  if (content_delegate_)
+    content_delegate_->OnWebInputEdited(info, false);
 }
 
 void ContentElement::OnInputCommitted(const EditedText& info) {
-  if (delegate())
-    delegate()->OnWebInputEdited(info, true);
+  if (content_delegate_)
+    content_delegate_->OnWebInputEdited(info, true);
 }
 
 void ContentElement::SetOverlayTextureId(unsigned int texture_id) {

@@ -17,6 +17,7 @@
 #include "cc/animation/animation_target.h"
 #include "cc/animation/keyframe_effect.h"
 #include "cc/animation/keyframed_animation_curve.h"
+#include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/databinding/binding.h"
 #include "chrome/browser/vr/databinding/vector_binding.h"
 #include "chrome/browser/vr/elements/button.h"
@@ -60,6 +61,7 @@
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/platform_toast.h"
 #include "chrome/browser/vr/model/tab_model.h"
+#include "chrome/browser/vr/platform_ui_input_delegate.h"
 #include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/target_property.h"
 #include "chrome/browser/vr/ui.h"
@@ -768,12 +770,10 @@ std::unique_ptr<UiElement> CreateWebVrIndicator(Model* model,
 std::unique_ptr<UiElement> CreateHostedUi(
     Model* model,
     UiBrowserInterface* browser,
-    ContentInputDelegate* content_input_delegate,
     UiElementName name,
     UiElementName element_name,
     float distance) {
-  auto hosted_ui = Create<PlatformUiElement>(element_name, kPhaseForeground,
-                                             content_input_delegate);
+  auto hosted_ui = Create<PlatformUiElement>(element_name, kPhaseForeground);
   hosted_ui->SetSize(kContentWidth * kHostedUiWidthRatio,
                      kContentHeight * kHostedUiHeightRatio);
   // The hosted UI doesn't steal focus so that clikcing on an autofill
@@ -783,9 +783,10 @@ std::unique_ptr<UiElement> CreateHostedUi(
   hosted_ui->set_requires_layout(false);
   hosted_ui->set_corner_radius(kContentCornerRadius);
   hosted_ui->SetTranslate(0, 0, kHostedUiShadowOffset);
-  hosted_ui->AddBinding(VR_BIND_FUNC(
-      ContentInputDelegatePtr, Model, model, model->hosted_platform_ui.delegate,
-      PlatformUiElement, hosted_ui.get(), SetDelegate));
+  hosted_ui->AddBinding(VR_BIND_FUNC(PlatformUiInputDelegatePtr, Model, model,
+                                     model->hosted_platform_ui.delegate,
+                                     PlatformUiElement, hosted_ui.get(),
+                                     SetDelegate));
   hosted_ui->AddBinding(VR_BIND_FUNC(
       unsigned int, Model, model, model->hosted_platform_ui.texture_id,
       PlatformUiElement, hosted_ui.get(), SetTextureId));
@@ -1068,9 +1069,9 @@ void UiSceneCreator::CreateScene() {
 }
 
 void UiSceneCreator::Create2dBrowsingHostedUi() {
-  auto hosted_ui_root = CreateHostedUi(
-      model_, browser_, content_input_delegate_, k2dBrowsingHostedUi,
-      k2dBrowsingHostedUiContent, kContentDistance);
+  auto hosted_ui_root =
+      CreateHostedUi(model_, browser_, k2dBrowsingHostedUi,
+                     k2dBrowsingHostedUiContent, kContentDistance);
   scene_->AddUiElement(k2dBrowsingRepositioner, std::move(hosted_ui_root));
 }
 
@@ -1453,8 +1454,8 @@ void UiSceneCreator::CreateWebVrSubtree() {
 
   // This is needed to for accepting permissions in WebVR mode.
   auto hosted_ui_root =
-      CreateHostedUi(model_, browser_, content_input_delegate_, kWebVrHostedUi,
-                     kWebVrHostedUiContent, kTimeoutScreenDisatance);
+      CreateHostedUi(model_, browser_, kWebVrHostedUi, kWebVrHostedUiContent,
+                     kTimeoutScreenDisatance);
   scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(hosted_ui_root));
 
   // Note, this cannot be a descendant of the viewport aware root, otherwise it

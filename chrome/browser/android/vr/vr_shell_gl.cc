@@ -863,13 +863,13 @@ void VrShellGl::OnSwapContents(int new_content_id) {
   ui_->OnSwapContents(new_content_id);
 }
 
-void VrShellGl::EnableAlertDialog(ContentInputForwarder* input_forwarder,
+void VrShellGl::EnableAlertDialog(PlatformInputHandler* input_handler,
                                   float width,
                                   float height) {
   showing_vr_dialog_ = true;
-  vr_dialog_.reset(new VrDialog(width, height));
-  vr_dialog_->SetEventForwarder(input_forwarder);
-  ui_->SetAlertDialogEnabled(true, vr_dialog_.get(),
+  vr_dialog_input_delegate_.reset(new PlatformUiInputDelegate(input_handler));
+  vr_dialog_input_delegate_->SetSize(width, height);
+  ui_->SetAlertDialogEnabled(true, vr_dialog_input_delegate_.get(),
                              width / content_tex_buffer_size_.width(),
                              height / content_tex_buffer_size_.width());
   ScheduleOrCancelWebVrFrameTimeout();
@@ -878,13 +878,13 @@ void VrShellGl::EnableAlertDialog(ContentInputForwarder* input_forwarder,
 void VrShellGl::DisableAlertDialog() {
   showing_vr_dialog_ = false;
   ui_->SetAlertDialogEnabled(false, nullptr, 0, 0);
-  vr_dialog_ = nullptr;
+  vr_dialog_input_delegate_ = nullptr;
   ScheduleOrCancelWebVrFrameTimeout();
 }
 
 void VrShellGl::SetAlertDialogSize(float width, float height) {
-  if (vr_dialog_)
-    vr_dialog_->SetSize(width, height);
+  if (vr_dialog_input_delegate_)
+    vr_dialog_input_delegate_->SetSize(width, height);
   ui_->SetAlertDialogSize(width / content_tex_buffer_size_.width(),
                           height / content_tex_buffer_size_.width());
 }
