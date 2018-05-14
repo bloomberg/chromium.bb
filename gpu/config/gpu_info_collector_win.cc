@@ -420,7 +420,6 @@ void CorrectAMDSwitchableInfo(angle::SystemInfo* system_info) {
       break;
     }
   }
-  DCHECK(found_active);
 }
 
 }  // anonymous namespace
