@@ -167,18 +167,6 @@ class BLINK_PLATFORM_EXPORT WebMainThreadScheduler : public WebThreadScheduler {
   virtual std::unique_ptr<RendererPauseHandle> PauseRenderer()
       WARN_UNUSED_RESULT = 0;
 
-  enum class NavigatingFrameType { kMainFrame, kChildFrame };
-
-  // Tells the scheduler that a navigation task is pending. While any main-frame
-  // navigation tasks are pending, the scheduler will ensure that loading tasks
-  // are not blocked even if they are expensive. Must be called on the main
-  // thread.
-  virtual void AddPendingNavigation(NavigatingFrameType type) = 0;
-
-  // Tells the scheduler that a navigation task is no longer pending.
-  // Must be called on the main thread.
-  virtual void RemovePendingNavigation(NavigatingFrameType type) = 0;
-
   // Returns true if the scheduler has reason to believe that high priority work
   // may soon arrive on the main thread, e.g., if gesture events were observed
   // recently.

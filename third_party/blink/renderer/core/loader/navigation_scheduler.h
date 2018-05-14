@@ -92,9 +92,6 @@ class CORE_EXPORT NavigationScheduler final
   TaskHandle navigate_task_handle_;
   Member<ScheduledNavigation> redirect_;
 
-  // Exists because we can't deref m_frame in destructor.
-  scheduler::WebMainThreadScheduler::NavigatingFrameType frame_type_;
-
   DISALLOW_COPY_AND_ASSIGN(NavigationScheduler);
 };
 

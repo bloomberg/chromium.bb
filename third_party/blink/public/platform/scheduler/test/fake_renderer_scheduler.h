@@ -46,8 +46,6 @@ class FakeRendererScheduler : public WebMainThreadScheduler {
   void PauseTimersForAndroidWebView() override;
   void ResumeTimersForAndroidWebView() override;
 #endif
-  void AddPendingNavigation(NavigatingFrameType type) override;
-  void RemovePendingNavigation(NavigatingFrameType type) override;
   bool IsHighPriorityWorkAnticipated() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
   bool ShouldYieldForHighPriorityWork() override;

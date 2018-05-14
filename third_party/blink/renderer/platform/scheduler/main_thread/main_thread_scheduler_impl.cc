@@ -379,11 +379,6 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
                            "Scheduler.PauseCount",
                            main_thread_scheduler_impl,
                            &main_thread_scheduler_impl->tracing_controller_),
-      navigation_task_expected_count(
-          0,
-          "Scheduler.NavigationTaskExpectedCount",
-          main_thread_scheduler_impl,
-          &main_thread_scheduler_impl->tracing_controller_),
       expensive_task_policy(ExpensiveTaskPolicy::kRun,
                             "Scheduler.ExpensiveTaskPolicy",
                             main_thread_scheduler_impl,
@@ -1513,8 +1508,7 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     new_policy.rail_mode() = v8::PERFORMANCE_IDLE;
 
   if (expensive_task_policy == ExpensiveTaskPolicy::kBlock &&
-      (!main_thread_only().have_seen_a_begin_main_frame ||
-       main_thread_only().navigation_task_expected_count > 0)) {
+      !main_thread_only().have_seen_a_begin_main_frame) {
     expensive_task_policy = ExpensiveTaskPolicy::kRun;
   }
 
@@ -2090,8 +2084,6 @@ MainThreadSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
       "fling_compositor_escalation_deadline",
       (any_thread().fling_compositor_escalation_deadline - base::TimeTicks())
           .InMillisecondsF());
-  state->SetInteger("navigation_task_expected_count",
-                    main_thread_only().navigation_task_expected_count);
   state->SetDouble("last_idle_period_end_time",
                    (any_thread().last_idle_period_end_time - base::TimeTicks())
                        .InMillisecondsF());
@@ -2271,25 +2263,6 @@ void MainThreadSchedulerImpl::DispatchRequestBeginMainFrameNotExpected(
       "has_tasks", has_tasks);
   for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
     page_scheduler->RequestBeginMainFrameNotExpected(has_tasks);
-  }
-}
-
-void MainThreadSchedulerImpl::AddPendingNavigation(NavigatingFrameType type) {
-  helper_.CheckOnValidThread();
-  if (type == NavigatingFrameType::kMainFrame) {
-    main_thread_only().navigation_task_expected_count++;
-    UpdatePolicy();
-  }
-}
-
-void MainThreadSchedulerImpl::RemovePendingNavigation(
-    NavigatingFrameType type) {
-  helper_.CheckOnValidThread();
-  DCHECK_GT(main_thread_only().navigation_task_expected_count, 0);
-  if (type == NavigatingFrameType::kMainFrame &&
-      main_thread_only().navigation_task_expected_count > 0) {
-    main_thread_only().navigation_task_expected_count--;
-    UpdatePolicy();
   }
 }
 

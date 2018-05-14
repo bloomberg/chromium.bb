@@ -121,8 +121,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 #endif
   std::unique_ptr<RendererPauseHandle> PauseRenderer() override
       WARN_UNUSED_RESULT;
-  void AddPendingNavigation(NavigatingFrameType type) override;
-  void RemovePendingNavigation(NavigatingFrameType type) override;
   bool IsHighPriorityWorkAnticipated() override;
   bool ShouldYieldForHighPriorityWork() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
@@ -673,8 +671,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
         longest_jank_free_task_duration;
     TraceableCounter<int, kTracingCategoryNameInfo>
         renderer_pause_count;  // Renderer is paused if non-zero.
-    TraceableCounter<int, kTracingCategoryNameDebug>
-        navigation_task_expected_count;
     TraceableState<ExpensiveTaskPolicy, kTracingCategoryNameInfo>
         expensive_task_policy;
     TraceableState<v8::RAILMode, kTracingCategoryNameInfo>

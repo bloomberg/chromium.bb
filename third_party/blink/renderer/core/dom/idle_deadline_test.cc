@@ -37,10 +37,6 @@ class MockIdleDeadlineScheduler final : public ThreadScheduler {
   std::unique_ptr<RendererPauseHandle> PauseScheduler() override {
     return nullptr;
   }
-  void AddPendingNavigation(
-      scheduler::WebMainThreadScheduler::NavigatingFrameType) override {}
-  void RemovePendingNavigation(
-      scheduler::WebMainThreadScheduler::NavigatingFrameType) override {}
 
   base::TimeTicks MonotonicallyIncreasingVirtualTime() const override {
     return base::TimeTicks();
