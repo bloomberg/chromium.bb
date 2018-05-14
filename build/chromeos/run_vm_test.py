@@ -82,22 +82,29 @@ def host_cmd(args):
 
 
 def vm_test(args):
+  is_sanity_test = args.test_exe == 'cros_vm_sanity_test'
+
   cros_run_vm_test_cmd = [
       CROS_RUN_VM_TEST_PATH,
       '--start',
       '--board', args.board,
       '--cache-dir', args.cros_cache,
-      '--cwd', os.path.relpath(args.path_to_outdir, CHROMIUM_SRC_PATH),
   ]
 
   # cros_run_vm_test has trouble with relative paths that go up directories, so
   # cd to src/, which should be the root of all data deps.
   os.chdir(CHROMIUM_SRC_PATH)
 
-  for f in read_runtime_files(args.runtime_deps_path, args.path_to_outdir):
+  runtime_files = read_runtime_files(
+      args.runtime_deps_path, args.path_to_outdir)
+  # If we're pushing files, we need to set the cwd.
+  if runtime_files:
+      cros_run_vm_test_cmd.extend(
+          ['--cwd', os.path.relpath(args.path_to_outdir, CHROMIUM_SRC_PATH)])
+  for f in runtime_files:
     cros_run_vm_test_cmd.extend(['--files', f])
 
-  if args.test_launcher_summary_output:
+  if args.test_launcher_summary_output and not is_sanity_test:
     result_dir, result_file = os.path.split(args.test_launcher_summary_output)
     # If args.test_launcher_summary_output is a file in cwd, result_dir will be
     # an empty string, so replace it with '.' when this is the case so
@@ -110,15 +117,24 @@ def vm_test(args):
       '--results-dest-dir', result_dir,
     ]
 
-  cros_run_vm_test_cmd += [
-      '--cmd',
-      '--',
-      './' + args.test_exe,
-      '--test-launcher-shard-index=%d' % args.test_launcher_shard_index,
-      '--test-launcher-total-shards=%d' % args.test_launcher_total_shards,
-  ]
+  if is_sanity_test:
+    # run_cros_vm_test's default behavior when no cmd is specified is the sanity
+    # test that's baked into the VM image. This test smoke-checks the system
+    # browser, so deploy our locally-built chrome to the VM before testing.
+    cros_run_vm_test_cmd += [
+        '--deploy',
+        '--build-dir', os.path.relpath(args.path_to_outdir, CHROMIUM_SRC_PATH),
+    ]
+  else:
+    cros_run_vm_test_cmd += [
+        '--cmd',
+        '--',
+        './' + args.test_exe,
+        '--test-launcher-shard-index=%d' % args.test_launcher_shard_index,
+        '--test-launcher-total-shards=%d' % args.test_launcher_total_shards,
+    ]
 
-  if args.test_launcher_summary_output:
+  if args.test_launcher_summary_output and not is_sanity_test:
     cros_run_vm_test_cmd += [
       '--test-launcher-summary-output=%s' % vm_result_file,
     ]
@@ -126,8 +142,18 @@ def vm_test(args):
   logging.info('Running the following command:')
   logging.info(' '.join(cros_run_vm_test_cmd))
 
+  # deploy_chrome needs a set of GN args used to build chrome to determine if
+  # certain libraries need to be pushed to the VM. It looks for the args via an
+  # env var. To trigger the default deploying behavior, give it a dummy set of
+  # args.
+  # TODO(crbug.com/823996): Make the GN-dependent deps controllable via cmd-line
+  # args.
+  env_copy = os.environ.copy()
+  if not env_copy.get('GN_ARGS'):
+    env_copy['GN_ARGS'] = 'is_chromeos = true'
+  env_copy['PATH'] = env_copy['PATH'] + ':' + os.path.join(CHROMITE_PATH, 'bin')
   return subprocess.call(
-      cros_run_vm_test_cmd, stdout=sys.stdout, stderr=sys.stderr)
+      cros_run_vm_test_cmd, stdout=sys.stdout, stderr=sys.stderr, env=env_copy)
 
 
 def main():
@@ -155,7 +181,12 @@ def main():
       '--cros-cache', type=str, required=True, help='Path to cros cache.')
   vm_test_parser.add_argument(
       '--test-exe', type=str, required=True,
-      help='Path to test executable to run inside VM.')
+      help='Path to test executable to run inside VM. If the value is '
+           '"cros_vm_sanity_test", the sanity test that ships with the VM '
+           'image runs instead. This test smokes-check the system browser '
+           '(eg: loads a simple webpage, executes some javascript), so a '
+           'fully-built Chrome binary that can get deployed to the VM is '
+           'expected to available in the out-dir.')
   vm_test_parser.add_argument(
       '--path-to-outdir', type=str, required=True,
       help='Path to output directory, all of whose contents will be deployed '
