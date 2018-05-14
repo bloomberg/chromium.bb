@@ -142,20 +142,25 @@ function searchDownloads(searchTerm, expectedResults) {
   ]);
 }
 
-testcase.searchNormal = function() {
+/**
+ * Tests case-senstive search for an entry.
+ */
+testcase.fileSearch = function() {
   searchDownloads('hello', [ENTRIES.hello]);
 };
 
-testcase.searchCaseInsensitive = function() {
+/**
+ * Tests case-insenstive search for an entry.
+ */
+testcase.fileSearchCaseInsensitive = function() {
   searchDownloads('HELLO', [ENTRIES.hello]);
 };
 
 /**
- * Searches for a string that doesn't match anything in Downloads
- * and checks that the no items match string is displayed.
- *
+ * Tests searching for a string doesn't match anything in Downloads and that
+ * there are no displayed items that match the search string.
  */
-testcase.searchNotFound = function() {
+testcase.fileSearchNotFound = function() {
   var appId;
   var searchTerm = 'blahblah';
 
