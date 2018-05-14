@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -59,6 +60,25 @@ bool LayoutMenuList::IsChildAllowed(LayoutObject* object,
   return object->IsAnonymous() && !object->IsLayoutFullScreen();
 }
 
+scoped_refptr<ComputedStyle> LayoutMenuList::CreateInnerStyle() {
+  scoped_refptr<ComputedStyle> inner_style =
+      ComputedStyle::CreateAnonymousStyleWithDisplay(StyleRef(),
+                                                     EDisplay::kBlock);
+
+  AdjustInnerStyle(*inner_style);
+  return inner_style;
+}
+
+void LayoutMenuList::UpdateInnerStyle() {
+  DCHECK(inner_block_);
+  scoped_refptr<ComputedStyle> inner_style =
+      ComputedStyle::Clone(inner_block_->StyleRef());
+  AdjustInnerStyle(*inner_style);
+  inner_block_->SetStyleInternal(std::move(inner_style));
+  // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
+  SetNeedsPaintPropertyUpdate();
+}
+
 void LayoutMenuList::CreateInnerBlock() {
   if (inner_block_) {
     DCHECK_EQ(FirstChild(), inner_block_);
@@ -68,7 +88,8 @@ void LayoutMenuList::CreateInnerBlock() {
 
   // Create an anonymous block.
   DCHECK(!FirstChild());
-  inner_block_ = CreateAnonymousBlock();
+  inner_block_ = LayoutBlockFlow::CreateAnonymous(&GetDocument());
+  inner_block_->SetStyle(CreateInnerStyle());
 
   button_text_ = LayoutText::CreateEmptyAnonymous(GetDocument());
   // We need to set the text explicitly though it was specified in the
@@ -76,17 +97,25 @@ void LayoutMenuList::CreateInnerBlock() {
   // specified in the constructor in a case of re-transforming.
   button_text_->SetStyle(MutableStyle());
   inner_block_->AddChild(button_text_);
-
-  AdjustInnerStyle();
   LayoutFlexibleBox::AddChild(inner_block_);
+
+  // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
+  SetNeedsPaintPropertyUpdate();
 }
 
-void LayoutMenuList::AdjustInnerStyle() {
-  ComputedStyle& inner_style = inner_block_->MutableStyleRef();
+bool LayoutMenuList::HasOptionStyleChanged(
+    const ComputedStyle& inner_style) const {
+  return option_style_ &&
+         ((option_style_->Direction() != inner_style.Direction() ||
+           option_style_->GetUnicodeBidi() != inner_style.GetUnicodeBidi()));
+}
+
+void LayoutMenuList::AdjustInnerStyle(ComputedStyle& inner_style) const {
   inner_style.SetFlexGrow(1);
   inner_style.SetFlexShrink(1);
   // min-width: 0; is needed for correct shrinking.
   inner_style.SetMinWidth(Length(0, kFixed));
+
   // Use margin:auto instead of align-items:center to get safe centering, i.e.
   // when the content overflows, treat it the same as align-items: flex-start.
   // But we only do that for the cases where html.css would otherwise use
@@ -113,21 +142,16 @@ void LayoutMenuList::AdjustInnerStyle() {
       LayoutTheme::GetTheme().PopupInternalPaddingTop(StyleRef()), kFixed));
   inner_style.SetPaddingBottom(Length(
       LayoutTheme::GetTheme().PopupInternalPaddingBottom(StyleRef()), kFixed));
+  inner_style.SetTextAlign(StyleRef().IsLeftToRightDirection()
+                               ? ETextAlign::kLeft
+                               : ETextAlign::kRight);
 
-  if (option_style_) {
-    if ((option_style_->Direction() != inner_style.Direction() ||
-         option_style_->GetUnicodeBidi() != inner_style.GetUnicodeBidi()))
-      inner_block_->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-          LayoutInvalidationReason::kStyleChange);
-    inner_style.SetTextAlign(Style()->IsLeftToRightDirection()
-                                 ? ETextAlign::kLeft
-                                 : ETextAlign::kRight);
+  if (HasOptionStyleChanged(inner_style)) {
+    inner_block_->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+        LayoutInvalidationReason::kStyleChange);
     inner_style.SetDirection(option_style_->Direction());
     inner_style.SetUnicodeBidi(option_style_->GetUnicodeBidi());
   }
-
-  // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
-  SetNeedsPaintPropertyUpdate();
 }
 
 HTMLSelectElement* LayoutMenuList::SelectElement() const {
@@ -163,7 +187,7 @@ void LayoutMenuList::StyleDidChange(StyleDifference diff,
     CreateInnerBlock();
 
   button_text_->SetStyle(MutableStyle());
-  AdjustInnerStyle();
+  UpdateInnerStyle();
   UpdateInnerBlockHeight();
 }
 
@@ -195,6 +219,7 @@ void LayoutMenuList::UpdateFromElement() {
   HTMLSelectElement* select = SelectElement();
   HTMLOptionElement* option = select->OptionToBeShown();
   String text = g_empty_string;
+  bool had_option = !!option_style_;
   option_style_ = nullptr;
 
   if (select->IsMultiple()) {
@@ -228,6 +253,10 @@ void LayoutMenuList::UpdateFromElement() {
   SetText(text.StripWhiteSpace());
 
   DidUpdateActiveOption(option);
+
+  DCHECK(inner_block_);
+  if (!had_option || HasOptionStyleChanged(inner_block_->StyleRef()))
+    UpdateInnerStyle();
 }
 
 void LayoutMenuList::SetText(const String& s) {
@@ -245,7 +274,8 @@ void LayoutMenuList::SetText(const String& s) {
     is_empty_ = false;
     button_text_->SetText(s.Impl(), true);
   }
-  AdjustInnerStyle();
+  // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
+  SetNeedsPaintPropertyUpdate();
 }
 
 String LayoutMenuList::GetText() const {
