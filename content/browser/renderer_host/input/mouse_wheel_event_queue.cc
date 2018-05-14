@@ -74,6 +74,38 @@ void MouseWheelEventQueue::QueueEvent(
   LOCAL_HISTOGRAM_COUNTS_100("Renderer.WheelQueueSize", wheel_queue_.size());
 }
 
+bool MouseWheelEventQueue::CanGenerateGestureScroll(
+    InputEventAckState ack_result) const {
+  if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
+    TRACE_EVENT_INSTANT0("input", "Wheel Event Consumed",
+                         TRACE_EVENT_SCOPE_THREAD);
+    return false;
+  }
+
+  if (!ui::WebInputEventTraits::CanCauseScroll(
+          event_sent_for_gesture_ack_->event)) {
+    TRACE_EVENT_INSTANT0("input", "Wheel Event Cannot Cause Scroll",
+                         TRACE_EVENT_SCOPE_THREAD);
+    return false;
+  }
+
+  if (event_sent_for_gesture_ack_->event.resending_plugin_id != -1) {
+    TRACE_EVENT_INSTANT0("input", "Wheel Event Resending Plugin Id Is Not -1",
+                         TRACE_EVENT_SCOPE_THREAD);
+    return false;
+  }
+
+  if (scrolling_device_ != blink::kWebGestureDeviceUninitialized &&
+      scrolling_device_ != blink::kWebGestureDeviceTouchpad) {
+    TRACE_EVENT_INSTANT0("input",
+                         "Autoscroll or Touchscreen Scroll In Progress",
+                         TRACE_EVENT_SCOPE_THREAD);
+    return false;
+  }
+
+  return true;
+}
+
 void MouseWheelEventQueue::ProcessMouseWheelAck(
     InputEventAckSource ack_source,
     InputEventAckState ack_result,
@@ -87,12 +119,7 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
                                 ack_result);
 
   // If event wasn't consumed then generate a gesture scroll for it.
-  if (ack_result != INPUT_EVENT_ACK_STATE_CONSUMED &&
-      ui::WebInputEventTraits::CanCauseScroll(
-          event_sent_for_gesture_ack_->event) &&
-      event_sent_for_gesture_ack_->event.resending_plugin_id == -1 &&
-      (scrolling_device_ == blink::kWebGestureDeviceUninitialized ||
-       scrolling_device_ == blink::kWebGestureDeviceTouchpad)) {
+  if (CanGenerateGestureScroll(ack_result)) {
     WebGestureEvent scroll_update(
         WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
         event_sent_for_gesture_ack_->event.TimeStamp(),
