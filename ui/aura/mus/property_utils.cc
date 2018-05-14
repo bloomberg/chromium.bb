@@ -4,6 +4,8 @@
 
 #include "ui/aura/mus/property_utils.h"
 
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_types.h"
@@ -39,8 +41,20 @@ client::WindowType UiWindowTypeToWindowType(ui::mojom::WindowType type) {
 }  // namespace
 
 void SetWindowType(Window* window, ui::mojom::WindowType window_type) {
+  if (window_type == ui::mojom::WindowType::UNKNOWN)
+    return;
   window->SetProperty(client::kWindowTypeKey, window_type);
   window->SetType(UiWindowTypeToWindowType(window_type));
+}
+
+ui::mojom::WindowType GetWindowTypeFromProperties(
+    const std::map<std::string, std::vector<uint8_t>>& properties) {
+  auto iter =
+      properties.find(ui::mojom::WindowManager::kWindowType_InitProperty);
+  if (iter == properties.end())
+    return ui::mojom::WindowType::UNKNOWN;
+  return static_cast<ui::mojom::WindowType>(
+      mojo::ConvertTo<int32_t>(iter->second));
 }
 
 }  // namespace aura

@@ -19,6 +19,15 @@ mojom::WindowTree* WindowServiceClientTestHelper::window_tree() {
   return static_cast<mojom::WindowTree*>(window_service_client_);
 }
 
+aura::Window* WindowServiceClientTestHelper::NewWindow(
+    Id transport_window_id,
+    base::flat_map<std::string, std::vector<uint8_t>> properties) {
+  const uint32_t change_id = 1u;
+  window_service_client_->NewWindow(change_id, transport_window_id, properties);
+  return window_service_client_->GetWindowByClientId(
+      window_service_client_->MakeClientWindowId(transport_window_id));
+}
+
 aura::Window* WindowServiceClientTestHelper::NewTopLevelWindow(
     Id transport_window_id,
     base::flat_map<std::string, std::vector<uint8_t>> properties) {
