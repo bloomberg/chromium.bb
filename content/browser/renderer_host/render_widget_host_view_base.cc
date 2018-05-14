@@ -119,10 +119,6 @@ void RenderWidgetHostViewBase::OnRenderFrameSubmission() {}
 void RenderWidgetHostViewBase::OnLocalSurfaceIdChanged(
     const cc::RenderFrameMetadata& metadata) {}
 
-void RenderWidgetHostViewBase::SetBackgroundColorToDefault() {
-  SetBackgroundColor(SK_ColorWHITE);
-}
-
 gfx::Size RenderWidgetHostViewBase::GetCompositorViewportPixelSize() const {
   return gfx::ScaleToCeiledSize(GetRequestedRendererSize(),
                                 GetDeviceScaleFactor());
@@ -216,6 +212,27 @@ base::string16 RenderWidgetHostViewBase::GetSelectedText() {
   if (!GetTextInputManager())
     return base::string16();
   return GetTextInputManager()->GetTextSelection(this)->selected_text();
+}
+
+void RenderWidgetHostViewBase::SetBackgroundColor(SkColor color) {
+  DCHECK(SkColorGetA(color) == SK_AlphaOPAQUE ||
+         SkColorGetA(color) == SK_AlphaTRANSPARENT);
+  if (default_background_color_ == color)
+    return;
+
+  bool opaque = default_background_color_
+                    ? SkColorGetA(*default_background_color_)
+                    : SK_AlphaOPAQUE;
+  default_background_color_ = color;
+  UpdateBackgroundColor();
+  if (opaque != (SkColorGetA(color) == SK_AlphaOPAQUE))
+    host()->SetBackgroundOpaque(SkColorGetA(color) == SK_AlphaOPAQUE);
+}
+
+base::Optional<SkColor> RenderWidgetHostViewBase::GetBackgroundColor() const {
+  if (content_background_color_)
+    return content_background_color_;
+  return default_background_color_;
 }
 
 bool RenderWidgetHostViewBase::IsMouseLocked() {

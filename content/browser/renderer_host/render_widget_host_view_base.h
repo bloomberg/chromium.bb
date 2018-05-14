@@ -110,7 +110,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   // RenderWidgetHostView implementation.
   RenderWidgetHost* GetRenderWidgetHost() const final;
-  void SetBackgroundColorToDefault() final;
   ui::TextInputClient* GetTextInputClient() override;
   void WasUnOccluded() override {}
   void WasOccluded() override {}
@@ -118,6 +117,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   base::string16 GetSelectedText() override;
   bool IsMouseLocked() override;
   bool LockKeyboard(base::Optional<base::flat_set<ui::DomCode>> codes) override;
+  void SetBackgroundColor(SkColor color) override;
+  base::Optional<SkColor> GetBackgroundColor() const override;
   void UnlockKeyboard() override;
   bool IsKeyboardLocked() override;
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
@@ -565,6 +566,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   virtual MouseWheelPhaseHandler* GetMouseWheelPhaseHandler();
 
+  // Applies background color without notifying the RenderWidget about
+  // opaqueness changes. This allows us to, when navigating to a new page,
+  // transfer this color to that page. This allows us to pass this background
+  // color to new views on navigation.
+  virtual void UpdateBackgroundColor() = 0;
+
 #if defined(USE_AURA)
   virtual void ScheduleEmbed(
       ui::mojom::WindowTreeClientPtr client,
@@ -612,6 +619,13 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // GetTextInputManager(). It also becomes nullptr when TextInputManager is
   // destroyed before the RWHV is destroyed.
   TextInputManager* text_input_manager_;
+
+  // The background color used in the current renderer.
+  base::Optional<SkColor> content_background_color_;
+
+  // The default background color used before getting the
+  // |content_background_color|.
+  base::Optional<SkColor> default_background_color_;
 
   const bool wheel_scroll_latching_enabled_;
 

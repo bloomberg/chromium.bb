@@ -106,8 +106,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void SetInsets(const gfx::Insets& insets) override;
   gfx::NativeView GetNativeView() const override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
-  void SetBackgroundColor(SkColor color) override;
-  SkColor background_color() const override;
   gfx::Size GetCompositorViewportPixelSize() const override;
   bool IsMouseLocked() override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
@@ -260,6 +258,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   void ProcessFrameSwappedCallbacks();
 
+  // RenderWidgetHostViewBase:
+  void UpdateBackgroundColor() override;
+
   // The ID for FrameSink associated with this view.
   viz::FrameSinkId frame_sink_id_;
 
@@ -311,9 +312,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   bool has_frame_ = false;
   viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;
-
-  // The background color of the widget.
-  SkColor background_color_;
 
   gfx::Insets insets_;
 

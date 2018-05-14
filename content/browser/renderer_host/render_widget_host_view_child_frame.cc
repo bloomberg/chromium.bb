@@ -73,7 +73,6 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       frame_connector_(nullptr),
       enable_viz_(
           base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
-      background_color_(SK_ColorWHITE),
       scroll_bubbling_state_(NO_ACTIVE_GESTURE_SCROLL),
       weak_factory_(this) {
   if (base::FeatureList::IsEnabled(features::kMash)) {
@@ -360,16 +359,13 @@ RenderWidgetHostViewChildFrame::GetNativeViewAccessible() {
   return nullptr;
 }
 
-void RenderWidgetHostViewChildFrame::SetBackgroundColor(SkColor color) {
-  background_color_ = color;
+void RenderWidgetHostViewChildFrame::UpdateBackgroundColor() {
+  DCHECK(GetBackgroundColor());
 
+  SkColor color = *GetBackgroundColor();
   DCHECK(SkColorGetA(color) == SK_AlphaOPAQUE ||
          SkColorGetA(color) == SK_AlphaTRANSPARENT);
   host()->SetBackgroundOpaque(SkColorGetA(color) == SK_AlphaOPAQUE);
-}
-
-SkColor RenderWidgetHostViewChildFrame::background_color() const {
-  return background_color_;
 }
 
 gfx::Size RenderWidgetHostViewChildFrame::GetCompositorViewportPixelSize()

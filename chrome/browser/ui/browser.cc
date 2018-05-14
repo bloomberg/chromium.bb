@@ -1072,8 +1072,8 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
     // RenderWidgetHostView.
     RenderWidgetHostView* old_view = old_contents->GetMainFrame()->GetView();
     RenderWidgetHostView* new_view = new_contents->GetMainFrame()->GetView();
-    if (old_view && new_view)
-      new_view->SetBackgroundColor(old_view->background_color());
+    if (old_view && new_view && old_view->GetBackgroundColor())
+      new_view->SetBackgroundColor(*old_view->GetBackgroundColor());
   }
 #endif
 

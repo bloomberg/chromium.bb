@@ -1194,7 +1194,7 @@ void WebViewGuest::SetTransparency() {
   if (allow_transparency_)
     view->SetBackgroundColor(SK_ColorTRANSPARENT);
   else
-    view->SetBackgroundColorToDefault();
+    view->SetBackgroundColor(SK_ColorWHITE);
 }
 
 void WebViewGuest::SetAllowScaling(bool allow) {

@@ -37,7 +37,9 @@ SkColor DelegatedFrameHostClientAura::DelegatedFrameHostGetGutterColor() const {
           ->IsFullscreenForCurrentTab()) {
     return SK_ColorBLACK;
   }
-  return render_widget_host_view_->background_color_;
+  if (render_widget_host_view_->GetBackgroundColor())
+    return *render_widget_host_view_->GetBackgroundColor();
+  return SK_ColorWHITE;
 }
 
 void DelegatedFrameHostClientAura::OnFirstSurfaceActivation(
