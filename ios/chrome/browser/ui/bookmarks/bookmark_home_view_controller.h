@@ -46,7 +46,7 @@ class BookmarkNode;
 @end
 
 // Class to navigate the bookmark hierarchy.
-@interface BookmarkHomeViewController : UIViewController
+@interface BookmarkHomeViewController : UITableViewController
 
 // Set to YES, only when this view controller instance is being created
 // from cached path. Once the view controller is shown, this is set to NO.
@@ -59,14 +59,15 @@ class BookmarkNode;
 // cases.
 @property(nonatomic, weak) id<BookmarkHomeViewControllerDelegate> homeDelegate;
 
-- (instancetype)initWithNibName:(NSString*)nibNameOrNil
-                         bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
-- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
                   browserState:(ios::ChromeBrowserState*)browserState
                     dispatcher:(id<ApplicationCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
+- (instancetype)initWithNibName:(NSString*)nibNameOrNil
+                         bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
 
 // Setter to set _rootNode value.
 - (void)setRootNode:(const bookmarks::BookmarkNode*)rootNode;
@@ -75,24 +76,6 @@ class BookmarkNode;
 // It should be called at the soonest possible time after the view has been
 // loaded, and the bookmark model is loaded.
 - (void)loadBookmarkViews;
-
-// This method is called if the view needs to be loaded and the model is not
-// ready yet.
-- (void)loadWaitingView;
-
-@end
-
-@interface BookmarkHomeViewController (ExposedForTesting)
-
-// The main view showing all the bookmarks.
-@property(nonatomic, readonly) BookmarkTableView* bookmarksTableView;
-
-// The app bar for the bookmarks.
-@property(nonatomic, readonly) MDCAppBar* appBar;
-
-// This view is created and used if the model is not fully loaded yet by the
-// time this controller starts.
-@property(nonatomic, readonly) BookmarkHomeWaitingView* waitForModelView;
 
 @end
 
