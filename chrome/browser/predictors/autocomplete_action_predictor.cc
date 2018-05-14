@@ -352,11 +352,11 @@ void AutocompleteActionPredictor::DeleteAllRows() {
                             DATABASE_ACTION_DELETE_ALL, DATABASE_ACTION_COUNT);
 }
 
-void AutocompleteActionPredictor::DeleteRowsWithURLs(
-    const history::URLRows& rows) {
+void AutocompleteActionPredictor::DeleteRowsFromCaches(
+    const history::URLRows& rows,
+    std::vector<AutocompleteActionPredictorTable::Row::Id>* id_list) {
   DCHECK(initialized_);
-
-  std::vector<AutocompleteActionPredictorTable::Row::Id> id_list;
+  DCHECK(id_list);
 
   for (DBCacheMap::iterator it = db_cache_.begin(); it != db_cache_.end();) {
     if (std::find_if(rows.begin(), rows.end(),
@@ -364,22 +364,13 @@ void AutocompleteActionPredictor::DeleteRowsWithURLs(
         rows.end()) {
       const DBIdCacheMap::iterator id_it = db_id_cache_.find(it->first);
       DCHECK(id_it != db_id_cache_.end());
-      id_list.push_back(id_it->second);
+      id_list->push_back(id_it->second);
       db_id_cache_.erase(id_it);
       db_cache_.erase(it++);
     } else {
       ++it;
     }
   }
-
-  if (table_.get()) {
-    table_->GetTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&AutocompleteActionPredictorTable::DeleteRows,
-                                  table_, id_list));
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.DatabaseAction",
-                            DATABASE_ACTION_DELETE_SOME, DATABASE_ACTION_COUNT);
 }
 
 void AutocompleteActionPredictor::AddAndUpdateRows(
@@ -488,11 +479,9 @@ void AutocompleteActionPredictor::DeleteOldIdsFromCaches(
     std::vector<AutocompleteActionPredictorTable::Row::Id>* id_list) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!profile_->IsOffTheRecord());
-  DCHECK(!initialized_);
   DCHECK(url_db);
   DCHECK(id_list);
 
-  id_list->clear();
   for (DBCacheMap::iterator it = db_cache_.begin(); it != db_cache_.end();) {
     history::URLRow url_row;
 
@@ -565,10 +554,28 @@ void AutocompleteActionPredictor::OnURLsDeleted(
     const history::DeletionInfo& deletion_info) {
   DCHECK(initialized_);
 
-  if (deletion_info.IsAllHistory())
+  if (deletion_info.IsAllHistory()) {
     DeleteAllRows();
-  else
-    DeleteRowsWithURLs(deletion_info.deleted_rows());
+    return;
+  }
+
+  std::vector<AutocompleteActionPredictorTable::Row::Id> id_list;
+  DeleteRowsFromCaches(deletion_info.deleted_rows(), &id_list);
+
+  if (!deletion_info.is_from_expiration() && history_service) {
+    auto* url_db = history_service->InMemoryDatabase();
+    if (url_db)
+      DeleteOldIdsFromCaches(url_db, &id_list);
+  }
+
+  if (table_.get()) {
+    table_->GetTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(&AutocompleteActionPredictorTable::DeleteRows,
+                                  table_, std::move(id_list)));
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.DatabaseAction",
+                            DATABASE_ACTION_DELETE_SOME, DATABASE_ACTION_COUNT);
 }
 
 void AutocompleteActionPredictor::OnHistoryServiceLoaded(
