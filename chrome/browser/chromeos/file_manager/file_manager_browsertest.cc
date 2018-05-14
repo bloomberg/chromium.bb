@@ -172,9 +172,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     Delete,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestParameter(NOT_IN_GUEST_MODE,
-                      "deleteMenuItemIsDisabledWhenNoItemIsSelected"),
-        TestParameter(NOT_IN_GUEST_MODE, "deleteOneItemFromToolbar")));
+        TestParameter(NOT_IN_GUEST_MODE, "deleteMenuItemNoEntrySelected"),
+        TestParameter(NOT_IN_GUEST_MODE, "deleteEntryWithToolbar")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     QuickView,

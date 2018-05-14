@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Delete menu item should be disabled when no item is selected.
-testcase.deleteMenuItemIsDisabledWhenNoItemIsSelected = function() {
+/**
+ * Tests that the Delete menu item is disabled if no entry is selected.
+ */
+testcase.deleteMenuItemNoEntrySelected = function() {
   testPromise(setupAndWaitUntilReady(null, RootPath.DOWNLOADS).then(
       function(results) {
         var windowId = results.windowId;
@@ -26,8 +28,10 @@ testcase.deleteMenuItemIsDisabledWhenNoItemIsSelected = function() {
       }));
 };
 
-// Delete one entry from toolbar.
-testcase.deleteOneItemFromToolbar = function() {
+/**
+ * Tests deleting an entry using the toolbar.
+ */
+testcase.deleteEntryWithToolbar = function() {
   var beforeDeletion = TestEntryInfo.getExpectedRows([
       ENTRIES.photos,
       ENTRIES.hello,
