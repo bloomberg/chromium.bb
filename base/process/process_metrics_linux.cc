@@ -132,35 +132,17 @@ bool ReadProcStatusAndGetFieldAsUint64(pid_t pid,
 
 // Get the total CPU of a single process.  Return value is number of jiffies
 // on success or -1 on error.
-int GetProcessCPU(pid_t pid) {
-  // Use /proc/<pid>/task to find all threads and parse their /stat file.
-  FilePath task_path = internal::GetProcPidDir(pid).Append("task");
-
-  DIR* dir = opendir(task_path.value().c_str());
-  if (!dir) {
-    DPLOG(ERROR) << "opendir(" << task_path.value() << ")";
+int64_t GetProcessCPU(pid_t pid) {
+  std::string buffer;
+  std::vector<std::string> proc_stats;
+  if (!internal::ReadProcStats(pid, &buffer) ||
+      !internal::ParseProcStats(buffer, &proc_stats)) {
     return -1;
   }
 
-  int total_cpu = 0;
-  while (struct dirent* ent = readdir(dir)) {
-    pid_t tid = internal::ProcDirSlotToPid(ent->d_name);
-    if (!tid)
-      continue;
-
-    // Synchronously reading files in /proc does not hit the disk.
-    ThreadRestrictions::ScopedAllowIO allow_io;
-
-    std::string stat;
-    FilePath stat_path =
-        task_path.Append(ent->d_name).Append(internal::kStatFile);
-    if (ReadFileToString(stat_path, &stat)) {
-      int cpu = ParseProcStatCPU(stat);
-      if (cpu > 0)
-        total_cpu += cpu;
-    }
-  }
-  closedir(dir);
+  int64_t total_cpu =
+      internal::GetProcStatsFieldAsInt64(proc_stats, internal::VM_UTIME) +
+      internal::GetProcStatsFieldAsInt64(proc_stats, internal::VM_STIME);
 
   return total_cpu;
 }
@@ -232,7 +214,7 @@ double ProcessMetrics::GetPlatformIndependentCPUUsage() {
     return 0.0;
   }
 
-  int cpu = GetProcessCPU(process_);
+  int64_t cpu = GetProcessCPU(process_);
 
   // The number of jiffies in the time period.  Convert to percentage.
   // Note: this means this will go *over* 100 in the case where multiple threads
@@ -240,17 +222,11 @@ double ProcessMetrics::GetPlatformIndependentCPUUsage() {
   TimeDelta cpu_time = internal::ClockTicksToTimeDelta(cpu);
   TimeDelta last_cpu_time = internal::ClockTicksToTimeDelta(last_cpu_);
 
-  // If the number of threads running in the process has decreased since the
-  // last time this function was called, |last_cpu_time| will be greater than
-  // |cpu_time| which will result in a negative value in the below percentage
-  // calculation. Prevent this by clamping to 0. https://crbug.com/546565.
-  // This computation is known to be shaky when threads are destroyed between
-  // "last" and "now", but for our current purposes, it's all right.
-  double percentage = 0.0;
-  if (last_cpu_time < cpu_time) {
-    percentage = 100.0 * (cpu_time - last_cpu_time).InSecondsF() /
-        time_delta.InSecondsF();
-  }
+  // The cumulative CPU time should be monotonically increasing.
+  DCHECK_LE(last_cpu_time, cpu_time);
+
+  double percentage =
+      100.0 * (cpu_time - last_cpu_time).InSecondsF() / time_delta.InSecondsF();
 
   last_cpu_time_ = time;
   last_cpu_ = cpu;
