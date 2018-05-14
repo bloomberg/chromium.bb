@@ -65,123 +65,63 @@ RenderedPosition RenderedPosition::Create(
   // For example, abc FED |ghi should be changed into abc FED| ghi
   if (offset == box->CaretLeftmostOffset()) {
     const InlineBox* prev_box = box->PrevLeafChildIgnoringLineBreak();
-    if (prev_box && prev_box->BidiLevel() > box->BidiLevel())
-      return RenderedPosition(prev_box, prev_box->CaretRightmostOffset());
+    if (prev_box && prev_box->BidiLevel() > box->BidiLevel()) {
+      return RenderedPosition(prev_box, prev_box->CaretRightmostOffset(),
+                              BidiBoundaryType::kRightBoundary);
+    }
+    BidiBoundaryType type =
+        prev_box && prev_box->BidiLevel() == box->BidiLevel()
+            ? BidiBoundaryType::kNotBoundary
+            : BidiBoundaryType::kLeftBoundary;
+    return RenderedPosition(box, offset, type);
   }
 
   // For example, abc| FED ghi should be changed into abc |FED ghi
   if (offset == box->CaretRightmostOffset()) {
     const InlineBox* next_box = box->NextLeafChildIgnoringLineBreak();
-    if (next_box && next_box->BidiLevel() > box->BidiLevel())
-      return RenderedPosition(next_box, next_box->CaretLeftmostOffset());
+    if (next_box && next_box->BidiLevel() > box->BidiLevel()) {
+      return RenderedPosition(next_box, next_box->CaretLeftmostOffset(),
+                              BidiBoundaryType::kLeftBoundary);
+    }
+    BidiBoundaryType type =
+        next_box && next_box->BidiLevel() == box->BidiLevel()
+            ? BidiBoundaryType::kNotBoundary
+            : BidiBoundaryType::kRightBoundary;
+    return RenderedPosition(box, offset, type);
   }
 
-  return RenderedPosition(box, offset);
+  return RenderedPosition(box, offset, BidiBoundaryType::kNotBoundary);
 }
 
-const InlineBox* RenderedPosition::PrevLeafChild() const {
-  if (!prev_leaf_child_.has_value())
-    prev_leaf_child_ = inline_box_->PrevLeafChildIgnoringLineBreak();
-  return prev_leaf_child_.value();
-}
-
-const InlineBox* RenderedPosition::NextLeafChild() const {
-  if (!next_leaf_child_.has_value())
-    next_leaf_child_ = inline_box_->NextLeafChildIgnoringLineBreak();
-  return next_leaf_child_.value();
-}
-
-unsigned char RenderedPosition::BidiLevelOnLeft() const {
-  const InlineBox* box =
-      AtLeftmostOffsetInBox() ? PrevLeafChild() : inline_box_;
-  return box ? box->BidiLevel() : 0;
-}
-
-unsigned char RenderedPosition::BidiLevelOnRight() const {
-  const InlineBox* box =
-      AtRightmostOffsetInBox() ? NextLeafChild() : inline_box_;
-  return box ? box->BidiLevel() : 0;
-}
-
-RenderedPosition RenderedPosition::LeftBoundaryOfBidiRun(
-    unsigned char bidi_level_of_run) const {
-  if (!inline_box_ || bidi_level_of_run > inline_box_->BidiLevel())
-    return RenderedPosition();
-
-  const InlineBox& box =
-      InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
-          *inline_box_, bidi_level_of_run);
-  return RenderedPosition(&box, box.CaretLeftmostOffset());
-}
-
-RenderedPosition RenderedPosition::RightBoundaryOfBidiRun(
-    unsigned char bidi_level_of_run) const {
-  if (!inline_box_ || bidi_level_of_run > inline_box_->BidiLevel())
-    return RenderedPosition();
-
-  const InlineBox& box =
-      InlineBoxTraversal::FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
-          *inline_box_, bidi_level_of_run);
-  return RenderedPosition(&box, box.CaretRightmostOffset());
-}
-
-bool RenderedPosition::AtLeftBoundaryOfBidiRun(
-    ShouldMatchBidiLevel should_match_bidi_level,
-    unsigned char bidi_level_of_run) const {
-  if (!inline_box_)
+bool RenderedPosition::IsPossiblyOtherBoundaryOf(
+    const RenderedPosition& other) const {
+  DCHECK(other.AtBidiBoundary());
+  if (!AtBidiBoundary())
     return false;
-
-  if (AtLeftmostOffsetInBox()) {
-    if (should_match_bidi_level == kIgnoreBidiLevel)
-      return !PrevLeafChild() ||
-             PrevLeafChild()->BidiLevel() < inline_box_->BidiLevel();
-    return inline_box_->BidiLevel() >= bidi_level_of_run &&
-           (!PrevLeafChild() ||
-            PrevLeafChild()->BidiLevel() < bidi_level_of_run);
-  }
-
-  if (AtRightmostOffsetInBox()) {
-    if (should_match_bidi_level == kIgnoreBidiLevel)
-      return NextLeafChild() &&
-             inline_box_->BidiLevel() < NextLeafChild()->BidiLevel();
-    return NextLeafChild() && inline_box_->BidiLevel() < bidi_level_of_run &&
-           NextLeafChild()->BidiLevel() >= bidi_level_of_run;
-  }
-
-  return false;
+  if (bidi_boundary_type_ == other.bidi_boundary_type_)
+    return false;
+  return inline_box_->BidiLevel() >= other.inline_box_->BidiLevel();
 }
 
-bool RenderedPosition::AtRightBoundaryOfBidiRun(
-    ShouldMatchBidiLevel should_match_bidi_level,
-    unsigned char bidi_level_of_run) const {
-  if (!inline_box_)
+bool RenderedPosition::BidiRunContains(const RenderedPosition& other) const {
+  DCHECK(AtBidiBoundary());
+  DCHECK(!other.IsNull());
+  UBiDiLevel level = inline_box_->BidiLevel();
+  if (level > other.inline_box_->BidiLevel())
     return false;
-
-  if (AtRightmostOffsetInBox()) {
-    if (should_match_bidi_level == kIgnoreBidiLevel)
-      return !NextLeafChild() ||
-             NextLeafChild()->BidiLevel() < inline_box_->BidiLevel();
-    return inline_box_->BidiLevel() >= bidi_level_of_run &&
-           (!NextLeafChild() ||
-            NextLeafChild()->BidiLevel() < bidi_level_of_run);
-  }
-
-  if (AtLeftmostOffsetInBox()) {
-    if (should_match_bidi_level == kIgnoreBidiLevel)
-      return PrevLeafChild() &&
-             inline_box_->BidiLevel() < PrevLeafChild()->BidiLevel();
-    return PrevLeafChild() && inline_box_->BidiLevel() < bidi_level_of_run &&
-           PrevLeafChild()->BidiLevel() >= bidi_level_of_run;
-  }
-
-  return false;
+  const InlineBox& boundary_of_other =
+      bidi_boundary_type_ == BidiBoundaryType::kLeftBoundary
+          ? InlineBoxTraversal::
+                FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
+                    *other.inline_box_, level)
+          : InlineBoxTraversal::
+                FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
+                    *other.inline_box_, level);
+  return inline_box_ == &boundary_of_other;
 }
 
 PositionInFlatTree RenderedPosition::GetPosition() const {
-  DCHECK(AtLeftBoundaryOfBidiRun() || AtRightBoundaryOfBidiRun());
-  DCHECK_EQ(AtLeftmostOffsetInBox(), AtLeftBoundaryOfBidiRun());
-  DCHECK_EQ(AtRightmostOffsetInBox(), AtRightBoundaryOfBidiRun());
-
+  DCHECK(AtBidiBoundary());
   return PositionInFlatTree::EditingPositionOf(
       inline_box_->GetLineLayoutItem().GetNode(), offset_);
 }

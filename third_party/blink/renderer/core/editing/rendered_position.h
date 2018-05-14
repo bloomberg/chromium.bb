@@ -44,41 +44,32 @@ struct CompositedSelection;
 
 // TODO(xiaochengh): RenderedPosition is deprecated. It's currently only used in
 // |SelectionController| for bidi adjustment. We should break this class and
-// move relevant code to |inline_box_traversal.cc|, and templatize it so that it
+// move relevant code to |inline_box_traversal.cc|, and generalize it so that it
 // can be reused in LayoutNG.
 class CORE_EXPORT RenderedPosition {
   STACK_ALLOCATED();
 
  public:
-  RenderedPosition();
+  RenderedPosition() = default;
   static RenderedPosition Create(const VisiblePositionInFlatTree&);
 
   bool IsNull() const { return !inline_box_; }
   bool operator==(const RenderedPosition& other) const {
-    return inline_box_ == other.inline_box_ && offset_ == other.offset_;
+    return inline_box_ == other.inline_box_ && offset_ == other.offset_ &&
+           bidi_boundary_type_ == other.bidi_boundary_type_;
   }
 
-  unsigned char BidiLevelOnLeft() const;
-  unsigned char BidiLevelOnRight() const;
-  RenderedPosition LeftBoundaryOfBidiRun(unsigned char bidi_level_of_run) const;
-  RenderedPosition RightBoundaryOfBidiRun(
-      unsigned char bidi_level_of_run) const;
+  bool AtBidiBoundary() const {
+    return bidi_boundary_type_ != BidiBoundaryType::kNotBoundary;
+  }
 
-  enum ShouldMatchBidiLevel { kMatchBidiLevel, kIgnoreBidiLevel };
-  bool AtLeftBoundaryOfBidiRun() const {
-    return AtLeftBoundaryOfBidiRun(kIgnoreBidiLevel, 0);
-  }
-  bool AtRightBoundaryOfBidiRun() const {
-    return AtRightBoundaryOfBidiRun(kIgnoreBidiLevel, 0);
-  }
-  // The following two functions return true only if the current position is
-  // at the end of the bidi run of the specified bidi embedding level.
-  bool AtLeftBoundaryOfBidiRun(unsigned char bidi_level_of_run) const {
-    return AtLeftBoundaryOfBidiRun(kMatchBidiLevel, bidi_level_of_run);
-  }
-  bool AtRightBoundaryOfBidiRun(unsigned char bidi_level_of_run) const {
-    return AtRightBoundaryOfBidiRun(kMatchBidiLevel, bidi_level_of_run);
-  }
+  // Given |other|, which is a boundary of a bidi run, returns true if |this|
+  // can be the other boundary of that run by checking some conditions.
+  bool IsPossiblyOtherBoundaryOf(const RenderedPosition& other) const;
+
+  // Callable only when |this| is at boundary of a bidi run. Returns true if
+  // |other| is in that bidi run.
+  bool BidiRunContains(const RenderedPosition& other) const;
 
   PositionInFlatTree GetPosition() const;
 
@@ -87,33 +78,18 @@ class CORE_EXPORT RenderedPosition {
   static CompositedSelection ComputeCompositedSelection(const FrameSelection&);
 
  private:
-  explicit RenderedPosition(const InlineBox*, int offset);
+  enum class BidiBoundaryType { kNotBoundary, kLeftBoundary, kRightBoundary };
+  explicit RenderedPosition(const InlineBox*, int offset, BidiBoundaryType);
 
-  const InlineBox* PrevLeafChild() const;
-  const InlineBox* NextLeafChild() const;
-  bool AtLeftmostOffsetInBox() const {
-    return inline_box_ && offset_ == inline_box_->CaretLeftmostOffset();
-  }
-  bool AtRightmostOffsetInBox() const {
-    return inline_box_ && offset_ == inline_box_->CaretRightmostOffset();
-  }
-  bool AtLeftBoundaryOfBidiRun(ShouldMatchBidiLevel,
-                               unsigned char bidi_level_of_run) const;
-  bool AtRightBoundaryOfBidiRun(ShouldMatchBidiLevel,
-                                unsigned char bidi_level_of_run) const;
-
-  const InlineBox* inline_box_;
-  int offset_;
-
-  mutable base::Optional<const InlineBox*> prev_leaf_child_;
-  mutable base::Optional<const InlineBox*> next_leaf_child_;
+  const InlineBox* inline_box_ = nullptr;
+  int offset_ = 0;
+  BidiBoundaryType bidi_boundary_type_ = BidiBoundaryType::kNotBoundary;
 };
 
-inline RenderedPosition::RenderedPosition()
-    : inline_box_(nullptr), offset_(0) {}
-
-inline RenderedPosition::RenderedPosition(const InlineBox* box, int offset)
-    : inline_box_(box), offset_(offset) {}
+inline RenderedPosition::RenderedPosition(const InlineBox* box,
+                                          int offset,
+                                          BidiBoundaryType type)
+    : inline_box_(box), offset_(offset), bidi_boundary_type_(type) {}
 
 }  // namespace blink
 
