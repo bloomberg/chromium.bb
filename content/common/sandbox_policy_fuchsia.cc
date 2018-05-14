@@ -27,10 +27,10 @@ void UpdateLaunchOptionsForSandbox(service_manager::SandboxType type,
   if (type != service_manager::SANDBOX_TYPE_NO_SANDBOX) {
     // Map /pkg (read-only files deployed from the package) and /tmp into the
     // child's namespace.
-    options->paths_to_map.push_back(base::GetPackageRoot().AsUTF8Unsafe());
+    options->paths_to_map.push_back(base::GetPackageRoot());
     base::FilePath temp_dir;
     base::GetTempDir(&temp_dir);
-    options->paths_to_map.push_back(temp_dir.AsUTF8Unsafe());
+    options->paths_to_map.push_back(temp_dir);
 
     // Clear environmental variables to better isolate the child from
     // this process.
