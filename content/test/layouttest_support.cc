@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "cc/test/pixel_test_output_surface.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "content/browser/bluetooth/bluetooth_device_chooser_controller.h"
@@ -348,8 +349,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
     // Keep texture sizes exactly matching the bounds of the RenderPass to avoid
     // floating point badness in texcoords.
     renderer_settings.dont_round_texture_sizes_for_pixel_tests = true;
-    renderer_settings.use_skia_renderer =
-        cmd->HasSwitch(switches::kUseSkiaRenderer);
+    renderer_settings.use_skia_renderer = features::IsUsingSkiaRenderer();
 
     constexpr bool disable_display_vsync = false;
     constexpr double refresh_rate = 60.0;

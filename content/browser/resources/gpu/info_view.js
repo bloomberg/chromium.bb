@@ -236,6 +236,8 @@ cr.define('gpu', function() {
         'vpx_decode': 'VPx Video Decode',
         'webgl2': 'WebGL2',
         'viz_display_compositor': 'Viz Service Display Compositor',
+        'skia_renderer': 'Skia Renderer',
+        'skia_deferred_display_list': 'Skia Deferred Display List',
       };
 
       var statusMap =  {
