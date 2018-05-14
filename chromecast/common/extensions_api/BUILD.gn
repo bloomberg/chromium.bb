@@ -19,10 +19,16 @@ schema_sources = [
   "identity.idl",
   "i18n.json",
 ]
+
 root_namespace = "extensions::cast::api::%(namespace)s"
+
+extensions_api_uncompiled_sources = [
+  "extension.json",
+]
 
 json_schema_api("api") {
   sources = schema_sources
+  uncompiled_sources = extensions_api_uncompiled_sources
   schemas = true
   bundle = true
   bundle_name = "Cast"

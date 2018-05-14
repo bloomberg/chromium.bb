@@ -242,6 +242,8 @@ cast_source_set("browser") {
       "extensions/api/i18n/i18n_api.h",
       "extensions/api/identity/identity_api.cc",
       "extensions/api/identity/identity_api.h",
+      "extensions/api/module/module.cc",
+      "extensions/api/module/module.h",
       "extensions/cast_display_info_provider.cc",
       "extensions/cast_display_info_provider.h",
       "extensions/cast_extension_host_delegate.cc",
