@@ -22,6 +22,7 @@ js_type_check("js_resources") {
     ":i18n_template",
     ":i18n_template_no_process",
     ":icon",
+    ":list_property_update_behavior",
     ":load_time_data",
     ":parse_html_subset",
     ":promise_resolver",
@@ -84,6 +85,9 @@ js_library("i18n_behavior") {
   deps = [
     ":load_time_data",
   ]
+}
+
+js_library("list_property_update_behavior") {
 }
 
 js_library("load_time_data") {

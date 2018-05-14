@@ -68,6 +68,15 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'list_property_update_behavior',
+      'dependencies': [
+        '<(DEPTH)/third_party/jstemplate/compiled_resources2.gyp:jstemplate',
+        'assert',
+        'parse_html_subset',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'load_time_data',
       'dependencies': [
         '<(DEPTH)/third_party/jstemplate/compiled_resources2.gyp:jstemplate',

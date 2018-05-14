@@ -295,12 +295,6 @@
       <structure name="IDR_SETTINGS_GLOBAL_SCROLL_TARGET_BEHAVIOR_JS"
                  file="global_scroll_target_behavior.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_LIST_PROPERTY_UPDATE_BEHAVIOR_HTML"
-                 file="list_property_update_behavior.html"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_LIST_PROPERTY_UPDATE_BEHAVIOR_JS"
-                 file="list_property_update_behavior.js"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_FOCUS_ROW_BEHAVIOR_HTML"
                  file="focus_row_behavior.html"
                  type="chrome_html" />

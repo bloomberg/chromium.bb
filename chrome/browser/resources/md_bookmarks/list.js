@@ -7,6 +7,7 @@ Polymer({
 
   behaviors: [
     bookmarks.StoreClient,
+    ListPropertyUpdateBehavior,
   ],
 
   properties: {
@@ -95,30 +96,11 @@ Polymer({
    * @param {Array<string>} oldValue
    */
   onDisplayedIdsChanged_: function(newValue, oldValue) {
-    if (!oldValue) {
-      this.displayedList_ = this.displayedIds_.map(function(id) {
-        return {id: id};
-      });
-    } else {
-      const splices = Polymer.ArraySplice.calculateSplices(
-          /** @type {!Array<string>} */ (newValue),
-          /** @type {!Array<string>} */ (oldValue));
-      splices.forEach((splice) => {
-        // TODO(calamity): Could use notifySplices to improve performance here.
-        const additions =
-            newValue.slice(splice.index, splice.index + splice.addedCount)
-                .map(function(id) {
-                  return {id: id};
-                });
-        this.splice.apply(this, [
-          'displayedList_', splice.index, splice.removed.length
-        ].concat(additions));
-      });
-
-      cr.sendWithPromise(
-            'getPluralString', 'listChanged', this.displayedList_.length)
-          .then((label) => this.fire('iron-announce', {text: label}));
-    }
+    const updatedList = newValue.map(id => ({id: id}));
+    this.updateList('displayedList_', item => item.id, updatedList);
+    cr.sendWithPromise(
+          'getPluralString', 'listChanged', this.displayedList_.length)
+        .then(label => this.fire('iron-announce', {text: label}));
   },
 
   /** @private */
