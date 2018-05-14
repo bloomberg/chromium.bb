@@ -243,7 +243,7 @@ class BASE_EXPORT ProcessMetrics {
   PortProvider* port_provider_;
 #elif defined(OS_POSIX)
   // Jiffie count at the last_cpu_time_ we updated.
-  int last_cpu_;
+  uint64_t last_cpu_;
 #endif  // defined(OS_POSIX)
 #endif  // !defined(OS_IOS)
 
