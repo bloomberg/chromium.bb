@@ -244,7 +244,7 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_WIN)
-  return CreateSoftwareOutputDeviceWin(widget, software_backing_.get());
+  return CreateSoftwareOutputDeviceWinBrowser(widget, software_backing_.get());
 #elif defined(USE_OZONE)
   ui::SurfaceFactoryOzone* factory =
       ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();

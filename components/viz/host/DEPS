@@ -12,6 +12,8 @@ include_rules = [
   "+services/viz/privileged/interfaces",
   "+services/viz/public/interfaces",
   "+services/viz/public/interfaces/hit_test",
+  "+skia",
+  "+third_party/skia",
 ]
 
 specific_include_rules = {

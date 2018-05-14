@@ -10,6 +10,7 @@ mojom("compositing") {
     "external_begin_frame_controller.mojom",
     "frame_sink_manager.mojom",
     "frame_sink_video_capture.mojom",
+    "layered_window_updater.mojom",
     "renderer_settings.mojom",
   ]
 

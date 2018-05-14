@@ -144,11 +144,13 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
                 std::move(params->external_begin_frame_controller_client)));
   }
 
+  mojom::DisplayClientPtr display_client(std::move(params->display_client));
+
   std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source;
   auto display = display_provider_->CreateDisplay(
       params->frame_sink_id, params->widget, params->gpu_compositing,
-      external_begin_frame_controller.get(), params->renderer_settings,
-      &begin_frame_source);
+      display_client.get(), external_begin_frame_controller.get(),
+      params->renderer_settings, &begin_frame_source);
 
   // Creating display failed. Drop the CompositorFrameSink message pipes here
   // and let host send a new request, potential with a different compositing
@@ -164,8 +166,7 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
           std::move(params->compositor_frame_sink),
           mojom::CompositorFrameSinkClientPtr(
               std::move(params->compositor_frame_sink_client)),
-          std::move(params->display_private),
-          mojom::DisplayClientPtr(std::move(params->display_client)));
+          std::move(params->display_private), std::move(display_client));
 }
 
 void FrameSinkManagerImpl::CreateCompositorFrameSink(

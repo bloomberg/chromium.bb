@@ -92,6 +92,7 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     const FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
     bool gpu_compositing,
+    mojom::DisplayClient* display_client,
     ExternalBeginFrameControllerImpl* external_begin_frame_controller,
     const RendererSettings& renderer_settings,
     std::unique_ptr<SyntheticBeginFrameSource>* out_begin_frame_source) {
@@ -114,7 +115,7 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 
   if (!gpu_compositing) {
     output_surface = std::make_unique<SoftwareOutputSurface>(
-        CreateSoftwareOutputDeviceForPlatform(surface_handle));
+        CreateSoftwareOutputDeviceForPlatform(surface_handle, display_client));
   } else if (renderer_settings.use_skia_renderer &&
              renderer_settings.use_skia_deferred_display_list) {
 #if defined(OS_MACOSX) || defined(OS_WIN)
@@ -201,12 +202,14 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 
 std::unique_ptr<SoftwareOutputDevice>
 GpuDisplayProvider::CreateSoftwareOutputDeviceForPlatform(
-    gpu::SurfaceHandle surface_handle) {
+    gpu::SurfaceHandle surface_handle,
+    mojom::DisplayClient* display_client) {
   if (headless_)
     return std::make_unique<SoftwareOutputDevice>();
 
 #if defined(OS_WIN)
-  return CreateSoftwareOutputDeviceWin(surface_handle, &output_device_backing_);
+  return CreateSoftwareOutputDeviceWinGpu(
+      surface_handle, &output_device_backing_, display_client);
 #elif defined(OS_MACOSX)
   return std::make_unique<SoftwareOutputDeviceMac>(task_runner_);
 #elif defined(OS_ANDROID)

@@ -9,6 +9,7 @@ import "ui/gfx/mojo/ca_layer_params.mojom";
 import "ui/gfx/mojo/color_space.mojom";
 import "ui/gfx/mojo/transform.mojom";
 import "ui/latency/mojo/latency_info.mojom";
+import "services/viz/privileged/interfaces/compositing/layered_window_updater.mojom";
 
 // See ui/compositor/compositor.h: ContextFactoryPrivate.
 // The DisplayPrivate is used by privileged clients to talk to Display.
@@ -42,4 +43,10 @@ interface DisplayClient {
   // Notifies that a swap has occured after some latency info with snapshot
   // component reached the display.
   DidSwapAfterSnapshotRequestReceived(array<ui.mojom.LatencyInfo> latency_info);
+
+  // WINDOWS ONLY: Create a LayeredWindowUpdater implementation to draw into
+  // layered window.
+  // Note: This will only be used when running Windows 7 and earlier with
+  // software compositing and a transparent HWND.
+  CreateLayeredWindowUpdater(LayeredWindowUpdater& layered_window_updater);
 };

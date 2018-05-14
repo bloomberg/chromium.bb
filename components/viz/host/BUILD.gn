@@ -21,6 +21,13 @@ viz_component("host") {
     "viz_host_export.h",
   ]
 
+  if (is_win) {
+    sources += [
+      "layered_window_updater_impl.cc",
+      "layered_window_updater_impl.h",
+    ]
+  }
+
   deps = [
     "//base",
     "//components/viz/common",
