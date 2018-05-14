@@ -766,28 +766,17 @@ void SelectionController::SelectClosestWordOrLinkFromMouseEvent(
 
 static bool ShouldAdjustBaseAtBidiBoundary(const RenderedPosition& base,
                                            const RenderedPosition& extent) {
-  if (base.AtLeftBoundaryOfBidiRun()) {
-    return !extent.AtRightBoundaryOfBidiRun(base.BidiLevelOnRight()) &&
-           base == extent.LeftBoundaryOfBidiRun(base.BidiLevelOnRight());
-  }
-
-  if (base.AtRightBoundaryOfBidiRun()) {
-    return !extent.AtLeftBoundaryOfBidiRun(base.BidiLevelOnLeft()) &&
-           base == extent.RightBoundaryOfBidiRun(base.BidiLevelOnLeft());
-  }
-
-  return false;
+  DCHECK(base.AtBidiBoundary());
+  if (extent.IsPossiblyOtherBoundaryOf(base))
+    return false;
+  return base.BidiRunContains(extent);
 }
 
 static bool ShouldAdjustExtentAtBidiBoundary(const RenderedPosition& base,
                                              const RenderedPosition& extent) {
-  if (extent.AtLeftBoundaryOfBidiRun())
-    return extent == base.LeftBoundaryOfBidiRun(extent.BidiLevelOnRight());
-
-  if (extent.AtRightBoundaryOfBidiRun())
-    return extent == base.RightBoundaryOfBidiRun(extent.BidiLevelOnLeft());
-
-  return false;
+  if (!extent.AtBidiBoundary())
+    return false;
+  return extent.BidiRunContains(base);
 }
 
 static SelectionInFlatTree AdjustEndpointsAtBidiBoundary(
@@ -808,7 +797,7 @@ static SelectionInFlatTree AdjustEndpointsAtBidiBoundary(
   if (base.IsNull() || extent.IsNull() || base == extent)
     return unchanged_selection;
 
-  if (base.AtLeftBoundaryOfBidiRun() || base.AtRightBoundaryOfBidiRun()) {
+  if (base.AtBidiBoundary()) {
     if (ShouldAdjustBaseAtBidiBoundary(base, extent)) {
       const PositionInFlatTree adjusted_base =
           CreateVisiblePosition(base.GetPosition()).DeepEquivalent();
