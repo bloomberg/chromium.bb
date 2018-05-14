@@ -2765,13 +2765,12 @@ void Node::Trace(blink::Visitor* visitor) {
   visitor->Trace(parent_or_shadow_host_node_);
   visitor->Trace(previous_);
   visitor->Trace(next_);
-  // rareData() and m_data.m_layoutObject share their storage. We have to trace
-  // only one of them.
+  // rareData() and data_.node_layout_data_ share their storage. We have to
+  // trace only one of them.
   if (HasRareData())
     visitor->Trace(RareData());
-
+  visitor->Trace(GetEventTargetData());
   visitor->Trace(tree_scope_);
-  // EventTargetData is traced through EventTargetDataMap.
   EventTarget::Trace(visitor);
 }
 
