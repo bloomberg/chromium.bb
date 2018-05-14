@@ -504,9 +504,6 @@ typedef struct AV1Common {
   PARTITION_CONTEXT **above_seg_context;
   ENTROPY_CONTEXT **above_context[MAX_MB_PLANE];
   TXFM_CONTEXT **above_txfm_context;
-  TXFM_CONTEXT *top_txfm_context[MAX_MB_PLANE];
-  TXFM_CONTEXT left_txfm_context[MAX_MB_PLANE][2 * MAX_MIB_SIZE];
-  int above_context_alloc_cols;
   WarpedMotionParams global_motion[REF_FRAMES];
   aom_film_grain_table_t *film_grain_table;
   int film_grain_params_present;

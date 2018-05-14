@@ -196,17 +196,9 @@ void av1_free_above_context_buffers(AV1_COMMON *cm,
 }
 
 void av1_free_context_buffers(AV1_COMMON *cm) {
-  int i;
-  const int num_planes = av1_num_planes(cm);
   cm->free_mi(cm);
 
   av1_free_above_context_buffers(cm, cm->num_allocated_above_contexts);
-  cm->above_context_alloc_cols = 0;
-
-  for (i = 0; i < num_planes; ++i) {
-    aom_free(cm->top_txfm_context[i]);
-    cm->top_txfm_context[i] = NULL;
-  }
 
 #if LOOP_FILTER_BITMASK
   aom_free(cm->lf.lfm);
@@ -261,7 +253,6 @@ int av1_alloc_above_context_buffers(AV1_COMMON *cm,
 }
 
 int av1_alloc_context_buffers(AV1_COMMON *cm, int width, int height) {
-  const int num_planes = av1_num_planes(cm);
   int new_mi_size;
 
   av1_set_mb_mi(cm, width, height);
@@ -269,24 +260,6 @@ int av1_alloc_context_buffers(AV1_COMMON *cm, int width, int height) {
   if (cm->mi_alloc_size < new_mi_size) {
     cm->free_mi(cm);
     if (cm->alloc_mi(cm, new_mi_size)) goto fail;
-  }
-
-  if (cm->above_context_alloc_cols < cm->mi_cols) {
-    // TODO(geza.lore): These are bigger than they need to be.
-    // cm->tile_width would be enough but it complicates indexing a
-    // little elsewhere.
-    const int aligned_mi_cols =
-        ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
-    int i;
-
-    for (i = 0; i < num_planes; ++i) {
-      aom_free(cm->top_txfm_context[i]);
-      cm->top_txfm_context[i] = (TXFM_CONTEXT *)aom_calloc(
-          aligned_mi_cols, sizeof(*cm->top_txfm_context[0]));
-      if (!cm->top_txfm_context[i]) goto fail;
-    }
-
-    cm->above_context_alloc_cols = aligned_mi_cols;
   }
 
 #if LOOP_FILTER_BITMASK
