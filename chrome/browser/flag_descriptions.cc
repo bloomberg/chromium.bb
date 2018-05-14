@@ -1593,6 +1593,12 @@ const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";
 
+const char kSystemKeyboardLockName[] = "Experimental system keyboard lock";
+const char kSystemKeyboardLockDescription[] =
+    "Enables websites to use the keyboard.lock() API to intercept system "
+    "keyboard shortcuts and have the events routed directly to the website "
+    "when in fullscreen mode.";
+
 const char kTabAudioMutingName[] = "Tab audio muting UI control";
 const char kTabAudioMutingDescription[] =
     "When enabled, the audio indicators in the tab strip double as tab audio "

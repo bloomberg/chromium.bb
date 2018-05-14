@@ -1311,6 +1311,7 @@ bool DesktopWindowTreeHostX11::CaptureSystemKeyEventsImpl(
       std::move(dom_codes), GetAcceleratedWidget(),
       base::BindRepeating(&DesktopWindowTreeHostX11::DispatchKeyEvent,
                           base::Unretained(this)));
+
   return keyboard_hook_ != nullptr;
 }
 
