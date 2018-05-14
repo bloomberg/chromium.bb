@@ -1087,7 +1087,7 @@
     // default SDP semantics at RTCPeerConnection construction.
     {
       name: "RTCUnifiedPlan",
-      status: "experimental",
+      status: "stable",
     },
     // Overrides the default SDP semantics to be Unified Plan at
     // RTCPeerConnection construction (unless otherwise specified).
