@@ -118,8 +118,10 @@ bool LayoutListItem::IsEmpty() const {
   return LastChild() == marker_;
 }
 
-static LayoutObject* GetParentOfFirstLineBox(LayoutBlockFlow* curr,
-                                             LayoutObject* marker) {
+namespace {
+
+LayoutObject* GetParentOfFirstLineBox(LayoutBlockFlow* curr,
+                                      LayoutObject* marker) {
   LayoutObject* first_child = curr->FirstChild();
   if (!first_child)
     return nullptr;
@@ -159,31 +161,42 @@ static LayoutObject* GetParentOfFirstLineBox(LayoutBlockFlow* curr,
   return nullptr;
 }
 
-static LayoutObject* FirstNonMarkerChild(LayoutObject* parent) {
+LayoutObject* FirstNonMarkerChild(LayoutObject* parent) {
   LayoutObject* result = parent->SlowFirstChild();
   while (result && result->IsListMarker())
     result = result->NextSibling();
   return result;
 }
 
+void ForceLogicalHeight(LayoutObject& layout_object, const Length& height) {
+  DCHECK(layout_object.IsAnonymous());
+  if (layout_object.StyleRef().LogicalHeight() == height)
+    return;
+
+  scoped_refptr<ComputedStyle> new_style =
+      ComputedStyle::Clone(layout_object.StyleRef());
+  new_style->SetLogicalHeight(height);
+  layout_object.SetStyleInternal(std::move(new_style));
+}
+
+}  // namespace
+
 // 1. Place marker as a child of <li>. Make sure don't share parent with empty
-// inline elements which don't gernerate inlineBox.
+// inline elements which don't generate InlineBox.
 // 2. Manage the logicalHeight of marker_container(marker's anonymous parent):
-// If marker is the only child of marker_container, set logicalHeight of
-// marker_container to 0px; else restore it to logicalHeight of <li>.
+// If marker is the only child of marker_container, set LogicalHeight of
+// marker_container to 0px; else restore it to LogicalHeight of <li>.
 bool LayoutListItem::PrepareForBlockDirectionAlign(
     const LayoutObject* line_box_parent) {
   LayoutObject* marker_parent = marker_->Parent();
   // Deal with the situation of layout tree changed.
   if (marker_parent && marker_parent->IsAnonymous()) {
     // When list-position-style change from outside to inside, we need to
-    // restore logicalHeight. So add isinside().
+    // restore LogicalHeight. So add IsInside().
     if (marker_->IsInside() || marker_->NextSibling()) {
-      // Restore old marker_container logicalHeight.
-      if (marker_parent->MutableStyleRef().LogicalHeight().IsZero()) {
-        marker_parent->MutableStyleRef().SetLogicalHeight(
-            Style()->LogicalHeight());
-      }
+      // Restore old marker_container LogicalHeight.
+      if (marker_parent->StyleRef().LogicalHeight().IsZero())
+        ForceLogicalHeight(*marker_parent, StyleRef().LogicalHeight());
 
       // If marker_parent isn't the ancestor of line_box_parent, marker might
       // generate a new empty line. We need to remove marker here.E.g:
@@ -192,9 +205,8 @@ bool LayoutListItem::PrepareForBlockDirectionAlign(
         marker_->Remove();
         marker_parent = nullptr;
       }
-    } else {
-      if (line_box_parent)
-        marker_parent->MutableStyleRef().SetLogicalHeight(Length(0, kFixed));
+    } else if (line_box_parent) {
+      ForceLogicalHeight(*marker_parent, Length(0, kFixed));
     }
   }
 
@@ -202,10 +214,10 @@ bool LayoutListItem::PrepareForBlockDirectionAlign(
   if (!marker_parent) {
     LayoutObject* before_child = FirstNonMarkerChild(this);
     if (!marker_->IsInside() && before_child && before_child->IsLayoutBlock()) {
-      // Create marker_container and set its logicalHeight to 0px.
+      // Create marker_container and set its LogicalHeight to 0px.
       LayoutBlock* marker_container = CreateAnonymousBlock();
       if (line_box_parent)
-        marker_container->MutableStyleRef().SetLogicalHeight(Length(0, kFixed));
+        ForceLogicalHeight(*marker_container, Length(0, kFixed));
       marker_container->AddChild(marker_,
                                  FirstNonMarkerChild(marker_container));
       AddChild(marker_container, before_child);
