@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
@@ -45,7 +46,7 @@ class AomVideoDecoderTest : public testing::Test {
     decoder_->Initialize(
         config, false, nullptr, NewExpectedBoolCB(success),
         base::Bind(&AomVideoDecoderTest::FrameReady, base::Unretained(this)),
-        VideoDecoder::WaitingForDecryptionKeyCB());
+        base::NullCallback());
     base::RunLoop().RunUntilIdle();
   }
 

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
@@ -246,7 +247,7 @@ class AudioDecoderTest
     decoder_->Initialize(
         config, nullptr, NewExpectedBoolCB(success),
         base::Bind(&AudioDecoderTest::OnDecoderOutput, base::Unretained(this)),
-        AudioDecoder::WaitingForDecryptionKeyCB());
+        base::NullCallback());
     base::RunLoop().RunUntilIdle();
   }
 

@@ -13,6 +13,7 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/bits.h"
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
@@ -829,7 +830,7 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
                           base::Unretained(this)),
       base::BindRepeating(&VideoFrameQualityValidator::VerifyOutputFrame,
                           base::Unretained(this)),
-      VideoDecoder::WaitingForDecryptionKeyCB());
+      base::NullCallback());
 }
 
 void VideoFrameQualityValidator::InitializeCB(bool success) {

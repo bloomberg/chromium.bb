@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/filters/fake_video_decoder.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -10,7 +12,6 @@
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_frame.h"
-#include "media/filters/fake_video_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -54,7 +55,7 @@ class FakeVideoDecoderTest
     decoder_->Initialize(
         config, false, nullptr, NewExpectedBoolCB(success),
         base::Bind(&FakeVideoDecoderTest::FrameReady, base::Unretained(this)),
-        VideoDecoder::WaitingForDecryptionKeyCB());
+        base::NullCallback());
     base::RunLoop().RunUntilIdle();
     current_config_ = config;
   }

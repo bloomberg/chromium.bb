@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -140,7 +141,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
         base::Bind(&MojoAudioDecoderTest::OnInitialized,
                    base::Unretained(this)),
         base::Bind(&MojoAudioDecoderTest::OnOutput, base::Unretained(this)),
-        AudioDecoder::WaitingForDecryptionKeyCB());
+        base::NullCallback());
 
     RunLoop();
   }

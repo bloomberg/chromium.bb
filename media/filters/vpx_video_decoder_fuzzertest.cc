@@ -9,6 +9,7 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -107,8 +108,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     decoder.Initialize(
         config, true /* low_delay */, nullptr /* cdm_context */,
         base::Bind(&OnInitDone, run_loop.QuitClosure(), &success),
-        base::Bind(&OnOutputComplete),
-        VideoDecoder::WaitingForDecryptionKeyCB());
+        base::Bind(&OnOutputComplete), base::NullCallback());
     run_loop.Run();
     if (!success)
       return 0;
