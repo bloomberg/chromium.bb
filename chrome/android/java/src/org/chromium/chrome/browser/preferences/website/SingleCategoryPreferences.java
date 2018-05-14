@@ -854,12 +854,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
         thirdPartyCookiesPref.setChecked(
                 !PrefServiceBridge.getInstance().isBlockThirdPartyCookiesEnabled());
         thirdPartyCookiesPref.setEnabled(PrefServiceBridge.getInstance().isAcceptCookiesEnabled());
-        thirdPartyCookiesPref.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
-            @Override
-            public boolean isPreferenceControlledByPolicy(Preference preference) {
-                return PrefServiceBridge.getInstance().isBlockThirdPartyCookiesManaged();
-            }
-        });
+        thirdPartyCookiesPref.setManagedPreferenceDelegate(
+                preference -> PrefServiceBridge.getInstance().isBlockThirdPartyCookiesManaged());
     }
 
     private void updateNotificationsVibrateCheckBox() {

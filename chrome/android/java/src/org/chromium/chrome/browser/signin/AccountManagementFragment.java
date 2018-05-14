@@ -35,7 +35,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
-import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -391,12 +390,7 @@ public class AccountManagementFragment extends PreferenceFragment
 
             return true;
         });
-        addAccountPreference.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
-            @Override
-            public boolean isPreferenceControlledByPolicy(Preference preference) {
-                return !canAddAccounts();
-            }
-        });
+        addAccountPreference.setManagedPreferenceDelegate(preference -> !canAddAccounts());
         return addAccountPreference;
     }
 

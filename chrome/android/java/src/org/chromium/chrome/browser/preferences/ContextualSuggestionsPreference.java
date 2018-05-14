@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.preferences;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
 import android.text.SpannableString;
@@ -109,12 +108,8 @@ public class ContextualSuggestionsPreference
             }
             return true;
         });
-        mSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
-            @Override
-            public boolean isPreferenceControlledByPolicy(Preference preference) {
-                return ContextualSuggestionsBridge.isEnterprisePolicyManaged();
-            }
-        });
+        mSwitch.setManagedPreferenceDelegate(
+                preference -> ContextualSuggestionsBridge.isEnterprisePolicyManaged());
     }
 
     /** Helper method to update the enabled state of the switch. */

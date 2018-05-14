@@ -288,7 +288,8 @@ public class MainPreferences extends PreferenceFragment
                 if (PREF_SEARCH_ENGINE.equals(preference.getKey())) {
                     return TemplateUrlService.getInstance().isDefaultSearchManaged();
                 }
-                return super.isPreferenceClickDisabledByPolicy(preference);
+                return isPreferenceControlledByPolicy(preference)
+                        || isPreferenceControlledByCustodian(preference);
             }
         };
     }

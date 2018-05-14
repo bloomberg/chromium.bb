@@ -197,29 +197,26 @@ public class PrivacyPreferences extends PreferenceFragment
     }
 
     private ManagedPreferenceDelegate createManagedPreferenceDelegate() {
-        return new ManagedPreferenceDelegate() {
-            @Override
-            public boolean isPreferenceControlledByPolicy(Preference preference) {
-                String key = preference.getKey();
-                PrefServiceBridge prefs = PrefServiceBridge.getInstance();
-                if (PREF_NAVIGATION_ERROR.equals(key)) {
-                    return prefs.isResolveNavigationErrorManaged();
-                }
-                if (PREF_SEARCH_SUGGESTIONS.equals(key)) {
-                    return prefs.isSearchSuggestManaged();
-                }
-                if (PREF_SAFE_BROWSING_EXTENDED_REPORTING.equals(key)
-                        || PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
-                    return prefs.isSafeBrowsingExtendedReportingManaged();
-                }
-                if (PREF_SAFE_BROWSING.equals(key)) {
-                    return prefs.isSafeBrowsingManaged();
-                }
-                if (PREF_NETWORK_PREDICTIONS.equals(key)) {
-                    return prefs.isNetworkPredictionManaged();
-                }
-                return false;
+        return preference -> {
+            String key = preference.getKey();
+            PrefServiceBridge prefs = PrefServiceBridge.getInstance();
+            if (PREF_NAVIGATION_ERROR.equals(key)) {
+                return prefs.isResolveNavigationErrorManaged();
             }
+            if (PREF_SEARCH_SUGGESTIONS.equals(key)) {
+                return prefs.isSearchSuggestManaged();
+            }
+            if (PREF_SAFE_BROWSING_EXTENDED_REPORTING.equals(key)
+                    || PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
+                return prefs.isSafeBrowsingExtendedReportingManaged();
+            }
+            if (PREF_SAFE_BROWSING.equals(key)) {
+                return prefs.isSafeBrowsingManaged();
+            }
+            if (PREF_NETWORK_PREDICTIONS.equals(key)) {
+                return prefs.isNetworkPredictionManaged();
+            }
+            return false;
         };
     }
 
