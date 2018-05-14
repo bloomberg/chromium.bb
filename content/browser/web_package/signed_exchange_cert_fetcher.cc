@@ -179,9 +179,12 @@ void SignedExchangeCertFetcher::OnDataComplete() {
   body_.reset();
   handle_watcher_ = nullptr;
 
+  // TODO(https://crbug.com/803774): Take SignedExchangeVersion as a
+  // parameter of CreateAndStart() and use it here.
   std::unique_ptr<SignedExchangeCertificateChain> cert_chain =
       SignedExchangeCertificateChain::Parse(
-          base::as_bytes(base::make_span(body_string_)));
+          SignedExchangeVersion::kB0,
+          base::as_bytes(base::make_span(body_string_)), devtools_proxy_);
   body_string_.clear();
   if (!cert_chain) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
