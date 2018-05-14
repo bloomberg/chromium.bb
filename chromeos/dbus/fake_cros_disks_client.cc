@@ -88,6 +88,10 @@ void FakeCrosDisksClient::Mount(const std::string& source_path,
       mounted_path = GetRemovableDiskMountPoint().Append(
           base::FilePath::FromUTF8Unsafe(mount_label));
       break;
+    case MOUNT_TYPE_NETWORK_STORAGE:
+      // TODO(sammc): Support mounting fake network storage.
+      NOTREACHED();
+      return;
     case MOUNT_TYPE_INVALID:
       NOTREACHED();
       return;
