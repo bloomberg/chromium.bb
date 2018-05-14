@@ -95,8 +95,9 @@ class SpdyStream;
 class SSLInfo;
 class TransportSecurityState;
 
-// NOTE: There's an enum of the same name (also with numeric suffixes)
-// in histograms.xml. Be sure to add new values there also.
+// NOTE: There is an enum called SpdyProtocolErrorDetails2 (also with numeric
+// suffixes) in tools/metrics/histograms/enums.xml. Be sure to add new values
+// there also.
 enum SpdyProtocolErrorDetails {
   // http2::Http2DecoderAdapter::SpdyFramerError mappings.
   SPDY_ERROR_NO_ERROR = 0,
@@ -155,6 +156,31 @@ MapFramerErrorToNetError(http2::Http2DecoderAdapter::SpdyFramerError error);
 SpdyProtocolErrorDetails NET_EXPORT_PRIVATE
 MapRstStreamStatusToProtocolError(SpdyErrorCode error_code);
 SpdyErrorCode NET_EXPORT_PRIVATE MapNetErrorToGoAwayStatus(Error err);
+
+// There is an enum of the same name in tools/metrics/histograms/enums.xml.
+// Be sure to add new values there also.
+enum class SpdyPushedStreamFate {
+  kTooManyPushedStreams = 0,
+  kTimeout = 1,
+  kPromisedStreamIdParityError = 2,
+  kAssociatedStreamIdParityError = 3,
+  kStreamIdOutOfOrder = 4,
+  kGoingAway = 5,
+  kInvalidUrl = 6,
+  kInactiveAssociatedStream = 7,
+  kNonHttpSchemeFromTrustedProxy = 8,
+  kNonHttpsPushedScheme = 9,
+  kNonHttpsAssociatedScheme = 10,
+  kCertificateMismatch = 11,
+  kDuplicateUrl = 12,
+  kClientRequestNotRange = 13,
+  kPushedRequestNotRange = 14,
+  kRangeMismatch = 15,
+  kVaryMismatch = 16,
+  kAcceptedNoVary = 17,
+  kAcceptedMatchingVary = 18,
+  kMaxValue = kAcceptedMatchingVary
+};
 
 // If these compile asserts fail then SpdyProtocolErrorDetails needs
 // to be updated with new values, as do the mapping functions above.

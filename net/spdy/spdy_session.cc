@@ -1615,6 +1615,9 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
         "Received invalid pushed stream id %d (must be even) on stream id %d.",
         stream_id, associated_stream_id);
     LOG(WARNING) << description;
+    UMA_HISTOGRAM_ENUMERATION(
+        "Net.SpdyPushedStreamFate",
+        SpdyPushedStreamFate::kPromisedStreamIdParityError);
     CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, description);
     return;
   }
@@ -1624,6 +1627,9 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
         "Received pushed stream id %d on invalid stream id %d (must be odd).",
         stream_id, associated_stream_id);
     LOG(WARNING) << description;
+    UMA_HISTOGRAM_ENUMERATION(
+        "Net.SpdyPushedStreamFate",
+        SpdyPushedStreamFate::kAssociatedStreamIdParityError);
     CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, description);
     return;
   }
@@ -1633,6 +1639,8 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
         "Received pushed stream id %d must be larger than last accepted id %d.",
         stream_id, last_accepted_push_stream_id_);
     LOG(WARNING) << description;
+    UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
+                              SpdyPushedStreamFate::kStreamIdOutOfOrder);
     CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, description);
     return;
   }
@@ -1647,6 +1655,8 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   const RequestPriority request_priority = IDLE;
 
   if (availability_state_ == STATE_GOING_AWAY) {
+    UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
+                              SpdyPushedStreamFate::kGoingAway);
     EnqueueResetStreamFrame(stream_id, request_priority,
                             ERROR_CODE_REFUSED_STREAM,
                             "Push stream request received while going away.");
@@ -1658,6 +1668,8 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   // Verify that the response had a URL for us.
   GURL gurl(SpdyUtils::GetPromisedUrlFromHeaders(headers));
   if (!gurl.is_valid()) {
+    UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
+                              SpdyPushedStreamFate::kInvalidUrl);
     EnqueueResetStreamFrame(stream_id, request_priority,
                             ERROR_CODE_REFUSED_STREAM,
                             "Invalid pushed request headers.");
@@ -1677,6 +1689,8 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   ActiveStreamMap::iterator associated_it =
       active_streams_.find(associated_stream_id);
   if (associated_it == active_streams_.end()) {
+    UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
+                              SpdyPushedStreamFate::kInactiveAssociatedStream);
     EnqueueResetStreamFrame(stream_id, request_priority,
                             ERROR_CODE_STREAM_CLOSED,
                             "Inactive associated stream.");
@@ -1688,23 +1702,38 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   if (associated_url.GetOrigin() != gurl.GetOrigin()) {
     if (is_trusted_proxy_) {
       if (!gurl.SchemeIs(url::kHttpScheme)) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Net.SpdyPushedStreamFate",
+            SpdyPushedStreamFate::kNonHttpSchemeFromTrustedProxy);
         EnqueueResetStreamFrame(
             stream_id, request_priority, ERROR_CODE_REFUSED_STREAM,
             "Only http scheme allowed for cross origin push by trusted proxy.");
         return;
       }
     } else {
-      if (!gurl.SchemeIs(url::kHttpsScheme) ||
-          !associated_url.SchemeIs(url::kHttpsScheme)) {
-        EnqueueResetStreamFrame(
-            stream_id, request_priority, ERROR_CODE_REFUSED_STREAM,
-            "Both pushed URL and associated URL must have https scheme.");
+      if (!gurl.SchemeIs(url::kHttpsScheme)) {
+        UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
+                                  SpdyPushedStreamFate::kNonHttpsPushedScheme);
+        EnqueueResetStreamFrame(stream_id, request_priority,
+                                ERROR_CODE_REFUSED_STREAM,
+                                "Pushed URL must have https scheme.");
+        return;
+      }
+      if (!associated_url.SchemeIs(url::kHttpsScheme)) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Net.SpdyPushedStreamFate",
+            SpdyPushedStreamFate::kNonHttpsAssociatedScheme);
+        EnqueueResetStreamFrame(stream_id, request_priority,
+                                ERROR_CODE_REFUSED_STREAM,
+                                "Associated URL must have https scheme.");
         return;
       }
       SSLInfo ssl_info;
       CHECK(GetSSLInfo(&ssl_info));
       if (!CanPool(transport_security_state_, ssl_info, associated_url.host(),
                    gurl.host())) {
+        UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
+                                  SpdyPushedStreamFate::kCertificateMismatch);
         EnqueueResetStreamFrame(stream_id, request_priority,
                                 ERROR_CODE_REFUSED_STREAM,
                                 "Certificate does not match pushed URL.");
@@ -1716,6 +1745,8 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   // Insertion fails if there already is a pushed stream with the same path.
   if (!pool_->push_promise_index()->RegisterUnclaimedPushedStream(
           gurl, stream_id, this)) {
+    UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
+                              SpdyPushedStreamFate::kDuplicateUrl);
     EnqueueResetStreamFrame(stream_id, request_priority,
                             ERROR_CODE_REFUSED_STREAM,
                             "Duplicate pushed stream with url: " + gurl.spec());
@@ -2670,6 +2701,9 @@ void SpdySession::CancelPushedStreamIfUnclaimed(SpdyStreamId stream_id) {
     return;
   }
 
+  UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
+                            SpdyPushedStreamFate::kTimeout);
+
   LogAbandonedActiveStream(active_it, ERR_TIMED_OUT);
   // CloseActiveStreamIterator() will remove the stream from
   // |pool_->push_promise_index()|.
@@ -3028,7 +3062,8 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
     DCHECK_EQ(SPDY_PUSH_STREAM, stream->type());
     if (max_concurrent_pushed_streams_ &&
         num_active_pushed_streams_ >= max_concurrent_pushed_streams_) {
-      // TODO(https://crbug.com/831536): Add histogram.
+      UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
+                                SpdyPushedStreamFate::kTooManyPushedStreams);
       ResetStream(stream_id, ERR_SPDY_CLIENT_REFUSED_STREAM,
                   "Stream concurrency limit reached.");
       return;

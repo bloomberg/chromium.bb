@@ -42269,6 +42269,28 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="HTTP/2"/>
 </enum>
 
+<enum name="SpdyPushedStreamFate">
+  <int value="0" label="TOO_MANY_PUSHED_STREAMS"/>
+  <int value="1" label="TIMEOUT"/>
+  <int value="2" label="PROMISED_STREAM_ID_PARITY_ERROR"/>
+  <int value="3" label="ASSOCIATED_STREAM_ID_PARITY_ERROR"/>
+  <int value="4" label="STREAM_ID_OUT_OF_ORDER"/>
+  <int value="5" label="GOING_AWAY"/>
+  <int value="6" label="INVALID_URL"/>
+  <int value="7" label="INACTIVE_ASSOCIATED_STREAM"/>
+  <int value="8" label="NON_HTTP_SCHEME_FROM_TRUSTED_PROXY"/>
+  <int value="9" label="NON_HTTPS_PUSHED_SCHEME"/>
+  <int value="10" label="NON_HTTPS_ASSOCIATED_SCHEME"/>
+  <int value="11" label="CERTIFICATE_MISMATCH"/>
+  <int value="12" label="DUPLICATE_URL"/>
+  <int value="13" label="CLIENT_REQUEST_NOT_RANGE"/>
+  <int value="14" label="PUSHED_REQUEST_NOT_RANGE"/>
+  <int value="15" label="RANGE_MISMATCH"/>
+  <int value="16" label="VARY_MISMATCH"/>
+  <int value="17" label="ACCEPTED_NO_VARY"/>
+  <int value="18" label="ACCEPTED_MATCHING_VARY"/>
+</enum>
+
 <enum name="SpdySessionGet">
   <int value="0" label="created new"/>
   <int value="1" label="found existing"/>
