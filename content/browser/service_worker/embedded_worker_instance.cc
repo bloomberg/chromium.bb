@@ -644,7 +644,6 @@ void EmbeddedWorkerInstance::SendStartWorker(
   DCHECK(context_);
   DCHECK(params->dispatcher_request.is_pending());
   DCHECK(params->controller_request.is_pending());
-  DCHECK(params->service_worker_host.is_valid());
   DCHECK(!instance_host_binding_.is_bound());
   instance_host_binding_.Bind(mojo::MakeRequest(&params->instance_host));
 

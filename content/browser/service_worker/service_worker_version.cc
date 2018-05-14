@@ -1506,9 +1506,19 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   // TODO(horo): These CHECKs are for debugging crbug.com/759938.
   CHECK(event_dispatcher_.is_bound());
   CHECK(params->dispatcher_request.is_pending());
-
+  event_dispatcher_.set_connection_error_handler(base::BindOnce(
+      &OnEventDispatcherConnectionError, embedded_worker_->AsWeakPtr()));
+  blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host;
   binding_.Close();
-  binding_.Bind(mojo::MakeRequest(&params->service_worker_host));
+  binding_.Bind(mojo::MakeRequest(&service_worker_host));
+  ServiceWorkerRegistration* registration =
+      context_->GetLiveRegistration(registration_id_);
+  DCHECK(registration);
+  provider_host->SetDocumentUrl(script_url());
+  event_dispatcher_->InitializeGlobalScope(
+      std::move(service_worker_host),
+      provider_host->CreateServiceWorkerRegistrationObjectInfo(
+          scoped_refptr<ServiceWorkerRegistration>(registration)));
 
   // S13nServiceWorker:
   if (!controller_request_.is_pending()) {
@@ -1525,8 +1535,6 @@ void ServiceWorkerVersion::StartWorkerInternal() {
                      std::move(provider_host), context()),
       base::BindOnce(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
                      weak_factory_.GetWeakPtr()));
-  event_dispatcher_.set_connection_error_handler(base::BindOnce(
-      &OnEventDispatcherConnectionError, embedded_worker_->AsWeakPtr()));
 }
 
 void ServiceWorkerVersion::StartTimeoutTimer() {
