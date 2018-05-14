@@ -405,24 +405,27 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
   std::unique_ptr<developer::ExtensionInfo> info =
       GenerateExtensionInfo(all_urls_extension->id());
 
-  // The extension should want all urls, and have it currently granted.
-  EXPECT_TRUE(info->run_on_all_urls.is_enabled);
-  EXPECT_TRUE(info->run_on_all_urls.is_active);
-
-  // Revoke the all urls permission.
-  ScriptingPermissionsModifier permissions_modifier(profile(),
-                                                    all_urls_extension);
-  permissions_modifier.SetAllowedOnAllUrls(false);
-
-  // Now the extension want all urls, but not have it granted.
-  info = GenerateExtensionInfo(all_urls_extension->id());
+  // The extension should want all urls, but not currently have it.
   EXPECT_TRUE(info->run_on_all_urls.is_enabled);
   EXPECT_FALSE(info->run_on_all_urls.is_active);
+
+  // Give the extension all urls.
+  ScriptingPermissionsModifier permissions_modifier(profile(),
+                                                    all_urls_extension);
+  permissions_modifier.SetAllowedOnAllUrls(true);
+
+  // Now the extension should both want and have all urls.
+  info = GenerateExtensionInfo(all_urls_extension->id());
+  EXPECT_TRUE(info->run_on_all_urls.is_enabled);
+  EXPECT_TRUE(info->run_on_all_urls.is_active);
 
   // The other extension should neither want nor have all urls.
   info = GenerateExtensionInfo(no_urls_extension->id());
   EXPECT_FALSE(info->run_on_all_urls.is_enabled);
   EXPECT_FALSE(info->run_on_all_urls.is_active);
+
+  // Revoke the first extension's permissions.
+  permissions_modifier.SetAllowedOnAllUrls(false);
 
   // Turn off the switch and load another extension (so permissions are
   // re-initialized).
@@ -450,7 +453,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
   // show up without the switch.
   info = GenerateExtensionInfo(all_urls_extension->id());
   EXPECT_FALSE(info->run_on_all_urls.is_enabled);
-  EXPECT_FALSE(info->run_on_all_urls.is_active);
+  EXPECT_TRUE(info->run_on_all_urls.is_active);
 }
 
 // Test that file:// access checkbox does not show up when the user can't

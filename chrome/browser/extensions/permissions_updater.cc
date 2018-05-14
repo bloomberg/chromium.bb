@@ -197,25 +197,17 @@ void PermissionsUpdater::RemovePermissionsUnsafe(
 
 std::unique_ptr<const PermissionSet>
 PermissionsUpdater::GetRevokablePermissions(const Extension* extension) const {
-  // Any permissions not required by the extension are revokable.
+  // The user can revoke any permissions they granted. In other words, any
+  // permissions the extension didn't start with can be revoked.
   const PermissionSet& required =
       PermissionsParser::GetRequiredPermissions(extension);
-  std::unique_ptr<const PermissionSet> revokable_permissions =
-      PermissionSet::CreateDifference(
-          extension->permissions_data()->active_permissions(), required);
-
-  // Additionally, some required permissions may be revokable if they can be
-  // withheld by the ScriptingPermissionsModifier.
-  std::unique_ptr<const PermissionSet> revokable_scripting_permissions =
-      ScriptingPermissionsModifier(browser_context_,
-                                   base::WrapRefCounted(extension))
-          .GetRevokablePermissions();
-
-  if (revokable_scripting_permissions) {
-    revokable_permissions = PermissionSet::CreateUnion(
-        *revokable_permissions, *revokable_scripting_permissions);
-  }
-  return revokable_permissions;
+  std::unique_ptr<const PermissionSet> granted;
+  std::unique_ptr<const PermissionSet> withheld;
+  ScriptingPermissionsModifier(browser_context_,
+                               base::WrapRefCounted(extension))
+      .WithholdPermissions(required, &granted, &withheld, true);
+  return PermissionSet::CreateDifference(
+      extension->permissions_data()->active_permissions(), *granted);
 }
 
 void PermissionsUpdater::GrantActivePermissions(const Extension* extension) {
@@ -247,7 +239,8 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
   ScriptingPermissionsModifier(browser_context_,
                                base::WrapRefCounted(extension))
       .WithholdPermissions(*bounded_active, &granted_permissions,
-                           &withheld_permissions);
+                           &withheld_permissions,
+                           (init_flag_ & INIT_FLAG_TRANSIENT) != 0);
 
   if (g_delegate)
     g_delegate->InitializePermissions(extension, &granted_permissions);
