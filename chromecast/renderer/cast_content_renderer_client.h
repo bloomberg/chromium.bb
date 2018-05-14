@@ -72,6 +72,8 @@ class CastContentRendererClient
                       const base::Closure& closure) override;
   bool AllowIdleMediaSuspend() override;
   void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() override;
+  std::unique_ptr<blink::WebSpeechSynthesizer> OverrideSpeechSynthesizer(
+      blink::WebSpeechSynthesizerClient* client) override;
 
  protected:
   CastContentRendererClient();

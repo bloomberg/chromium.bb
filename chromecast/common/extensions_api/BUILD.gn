@@ -32,6 +32,10 @@ json_schema_api("api") {
   schemas = true
   bundle = true
   bundle_name = "Cast"
+  uncompiled_bundle_schema_sources = [
+    "tts.json",
+    "tts_engine.json",
+  ]
 }
 
 json_schema_api("api_registration") {

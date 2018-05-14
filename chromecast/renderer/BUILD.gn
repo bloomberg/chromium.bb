@@ -30,6 +30,8 @@ cast_source_set("renderer") {
     "cast_content_renderer_client.h",
     "cast_render_frame_action_deferrer.cc",
     "cast_render_frame_action_deferrer.h",
+    "tts_dispatcher.cc",
+    "tts_dispatcher.h",
   ]
 
   public_deps = [
@@ -48,6 +50,7 @@ cast_source_set("renderer") {
     "//base",
     "//chromecast:chromecast_buildflags",
     "//chromecast/base",
+    "//chromecast/common",
     "//chromecast/common/media",
     "//chromecast/common/mojom",
     "//chromecast/media",
@@ -79,10 +82,10 @@ cast_source_set("renderer") {
 
   if (enable_chromecast_extensions) {
     sources += [
-      "cast_extensions_renderer_client.cc",
-      "cast_extensions_renderer_client.h",
       "cast_extensions_dispatcher_delegate.cc",
       "cast_extensions_dispatcher_delegate.g",
+      "cast_extensions_renderer_client.cc",
+      "cast_extensions_renderer_client.h",
       "extensions/automation_ax_tree_wrapper.cc",
       "extensions/automation_ax_tree_wrapper.h",
       "extensions/automation_internal_custom_bindings.cc",
