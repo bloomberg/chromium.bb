@@ -8,6 +8,7 @@ import "gpu/ipc/common/sync_token.mojom";
 import "media/mojo/interfaces/media_log.mojom";
 import "media/mojo/interfaces/media_types.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
+import "ui/gfx/mojo/color_space.mojom";
 
 // Identifies a CommandBufferStub. MediaGpuChannelManager is responsible
 // for minting |channel_token| values.
@@ -60,7 +61,8 @@ interface VideoDecoder {
             associated MediaLog media_log,
             VideoFrameHandleReleaser& video_frame_handle_releaser,
             handle<data_pipe_consumer> decoder_buffer_pipe,
-            CommandBufferId? command_buffer_id);
+            CommandBufferId? command_buffer_id,
+            gfx.mojom.ColorSpace target_color_space);
 
   // Configure (or reconfigure) the decoder. This must be called before decoding
   // any frames, and must not be called while there are pending Initialize(),

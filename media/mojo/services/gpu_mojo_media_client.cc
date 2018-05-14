@@ -112,7 +112,8 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     MediaLog* media_log,
     mojom::CommandBufferIdPtr command_buffer_id,
-    RequestOverlayInfoCB request_overlay_info_cb) {
+    RequestOverlayInfoCB request_overlay_info_cb,
+    const gfx::ColorSpace& target_color_space) {
   // Both MCVD and D3D11 VideoDecoders need a command buffer.
   if (!command_buffer_id)
     return nullptr;
@@ -131,8 +132,8 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
                                               std::move(get_stub_cb)));
 #elif defined(OS_MACOSX)
   return VdaVideoDecoder::Create(
-      task_runner, gpu_task_runner_, media_log, gpu_preferences_,
-      gpu_workarounds_,
+      task_runner, gpu_task_runner_, media_log, target_color_space,
+      gpu_preferences_, gpu_workarounds_,
       base::BindRepeating(&GetCommandBufferStub, media_gpu_channel_manager_,
                           command_buffer_id->channel_token,
                           command_buffer_id->route_id));

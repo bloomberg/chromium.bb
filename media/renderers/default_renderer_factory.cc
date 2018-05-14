@@ -109,9 +109,9 @@ DefaultRendererFactory::CreateVideoDecoders(
     DCHECK_EQ(gpu_factories->GetTaskRunner(), media_task_runner);
 
     if (decoder_factory_) {
-      decoder_factory_->CreateVideoDecoders(media_task_runner, gpu_factories,
-                                            media_log_, request_overlay_info_cb,
-                                            &video_decoders);
+      decoder_factory_->CreateVideoDecoders(
+          media_task_runner, gpu_factories, media_log_, request_overlay_info_cb,
+          target_color_space, &video_decoders);
     }
 
     // MojoVideoDecoder replaces any VDA for this platform when it's enabled.

@@ -33,6 +33,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/color_space.h"
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -159,7 +160,8 @@ class FakeMojoMediaClient : public MojoMediaClient {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       MediaLog* media_log,
       mojom::CommandBufferIdPtr command_buffer_id,
-      RequestOverlayInfoCB request_overlay_info_cb) override {
+      RequestOverlayInfoCB request_overlay_info_cb,
+      const gfx::ColorSpace& target_color_space) override {
     return create_video_decoder_cb_.Run(media_log);
   }
 
@@ -184,7 +186,8 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
         mojo::MakeRequest(&remote_video_decoder));
     client_ = std::make_unique<MojoVideoDecoder>(
         base::ThreadTaskRunnerHandle::Get(), nullptr, &client_media_log_,
-        std::move(remote_video_decoder), RequestOverlayInfoCB());
+        std::move(remote_video_decoder), RequestOverlayInfoCB(),
+        gfx::ColorSpace());
   }
 
   void TearDown() override {

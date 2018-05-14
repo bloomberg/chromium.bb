@@ -113,7 +113,8 @@ void MojoVideoDecoderService::Construct(
     mojom::MediaLogAssociatedPtrInfo media_log,
     mojom::VideoFrameHandleReleaserRequest video_frame_handle_releaser,
     mojo::ScopedDataPipeConsumerHandle decoder_buffer_pipe,
-    mojom::CommandBufferIdPtr command_buffer_id) {
+    mojom::CommandBufferIdPtr command_buffer_id,
+    const gfx::ColorSpace& target_color_space) {
   DVLOG(1) << __func__;
 
   if (decoder_) {
@@ -139,7 +140,8 @@ void MojoVideoDecoderService::Construct(
       base::ThreadTaskRunnerHandle::Get(), media_log_.get(),
       std::move(command_buffer_id),
       base::Bind(&MojoVideoDecoderService::OnDecoderRequestedOverlayInfo,
-                 weak_this_));
+                 weak_this_),
+      target_color_space);
 }
 
 void MojoVideoDecoderService::Initialize(const VideoDecoderConfig& config,

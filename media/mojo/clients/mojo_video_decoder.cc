@@ -77,7 +77,8 @@ MojoVideoDecoder::MojoVideoDecoder(
     GpuVideoAcceleratorFactories* gpu_factories,
     MediaLog* media_log,
     mojom::VideoDecoderPtr remote_decoder,
-    const RequestOverlayInfoCB& request_overlay_info_cb)
+    const RequestOverlayInfoCB& request_overlay_info_cb,
+    const gfx::ColorSpace& target_color_space)
     : task_runner_(task_runner),
       remote_decoder_info_(remote_decoder.PassInterface()),
       gpu_factories_(gpu_factories),
@@ -87,6 +88,7 @@ MojoVideoDecoder::MojoVideoDecoder(
       media_log_service_(media_log),
       media_log_binding_(&media_log_service_),
       request_overlay_info_cb_(request_overlay_info_cb),
+      target_color_space_(target_color_space),
       weak_factory_(this) {
   DVLOG(1) << __func__;
   weak_this_ = weak_factory_.GetWeakPtr();
@@ -304,10 +306,11 @@ void MojoVideoDecoder::BindRemoteDecoder() {
     }
   }
 
-  remote_decoder_->Construct(
-      std::move(client_ptr_info), std::move(media_log_ptr_info),
-      std::move(video_frame_handle_releaser_request),
-      std::move(remote_consumer_handle), std::move(command_buffer_id));
+  remote_decoder_->Construct(std::move(client_ptr_info),
+                             std::move(media_log_ptr_info),
+                             std::move(video_frame_handle_releaser_request),
+                             std::move(remote_consumer_handle),
+                             std::move(command_buffer_id), target_color_space_);
 }
 
 void MojoVideoDecoder::RequestOverlayInfo(bool restart_for_transitions) {
