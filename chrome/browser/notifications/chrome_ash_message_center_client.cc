@@ -91,6 +91,10 @@ ChromeAshMessageCenterClient::~ChromeAshMessageCenterClient() {
 
 void ChromeAshMessageCenterClient::Display(
     const message_center::Notification& notification) {
+  // Null in unit tests.
+  if (!controller_)
+    return;
+
   // Remove any previous mapping to |notification.id()| before inserting a new
   // one.
   base::EraseIf(
