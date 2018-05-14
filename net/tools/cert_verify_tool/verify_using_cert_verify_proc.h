@@ -30,6 +30,6 @@ bool VerifyUsingCertVerifyProc(
     const std::vector<CertInput>& intermediate_der_certs,
     const std::vector<CertInput>& root_der_certs,
     net::CRLSet* crl_set,
-    const base::FilePath& dump_prefix_path);
+    const base::FilePath& dump_path);
 
 #endif  // NET_TOOLS_CERT_VERIFY_TOOL_VERIFY_USING_CERT_VERIFY_PROC_H_
