@@ -19,7 +19,13 @@ class FakeIdentityProvider : public IdentityProvider {
   explicit FakeIdentityProvider(OAuth2TokenService* token_service);
   ~FakeIdentityProvider() override;
 
+  // Sets the active username.
+  void SetActiveUsername(const std::string& account_id);
+
+  // Sets the active username and fires the OnActiveAccountLogin() callback.
   void LogIn(const std::string& account_id);
+
+  // Clears the active username and fires the OnActiveAccountLogout() callback.
   void LogOut();
 
   // IdentityProvider:
