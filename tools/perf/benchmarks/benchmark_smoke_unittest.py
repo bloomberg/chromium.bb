@@ -51,7 +51,7 @@ def SmokeTestGenerator(benchmark, num_pages=1):
   @decorators.Disabled('android')  # crbug.com/641934
   def BenchmarkSmokeTest(self):
     # Only measure a single page so that this test cycles reasonably quickly.
-    benchmark.options['pageset_repeat'] = 1
+    benchmark.options['smoke_test_mode'] = True
 
     # Some benchmarks are running multiple iterations
     # which is not needed for a smoke test
