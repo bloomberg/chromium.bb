@@ -402,6 +402,10 @@ bool BrowserWindowCocoa::IsFullscreenBubbleVisible() const {
   return false;  // Currently only called from toolkit-views page_info.
 }
 
+PageActionIconContainer* BrowserWindowCocoa::GetPageActionIconContainer() {
+  return [controller_ locationBarBridge];
+}
+
 LocationBar* BrowserWindowCocoa::GetLocationBar() const {
   return [controller_ locationBarBridge];
 }

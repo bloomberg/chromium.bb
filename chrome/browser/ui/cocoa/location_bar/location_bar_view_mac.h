@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
+#include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/prefs/pref_member.h"
 #include "components/security_state/core/security_state.h"
@@ -57,6 +58,7 @@ enum class PageInfoVerboseType {
 class LocationBarViewMac : public LocationBar,
                            public LocationBarTesting,
                            public ChromeOmniboxEditController,
+                           public PageActionIconContainer,
                            public zoom::ZoomEventManagerObserver {
  public:
   LocationBarViewMac(AutocompleteTextField* field,
@@ -160,6 +162,9 @@ class LocationBarViewMac : public LocationBar,
   ToolbarModel* GetToolbarModel() override;
   const ToolbarModel* GetToolbarModel() const override;
   content::WebContents* GetWebContents() override;
+
+  // PageActionIconContainer:
+  void UpdatePageActionIcon(PageActionIconType) override;
 
   PageInfoVerboseType GetPageInfoVerboseType() const;
 

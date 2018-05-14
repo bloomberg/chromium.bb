@@ -7,6 +7,7 @@
 
 class AppMenuButton;
 class BrowserActionsContainer;
+class PageActionIconContainerView;
 
 namespace views {
 class AccessiblePaneView;
@@ -18,6 +19,9 @@ class ToolbarButtonProvider {
  public:
   // Gets the browser actions container.
   virtual BrowserActionsContainer* GetBrowserActionsContainer() = 0;
+
+  // Gets the page action icon container.
+  virtual PageActionIconContainerView* GetPageActionIconContainerView() = 0;
 
   // Gets the app menu button.
   virtual AppMenuButton* GetAppMenuButton() = 0;
